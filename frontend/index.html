@@ -1177,6 +1177,8 @@
   <!-- Quick note (quick-note.js, INBOX 434): a note from any tab without
        leaving it. Alt+N or the palette; the head is the dialog-head recipe. -->
   <dialog id="quick-note" class="card space-dialog quick-note-dialog" aria-labelledby="quick-note-title">
+    <!-- Built when the dialog first opens (`surfaceBuild("quickNote")`, settings-body.js; the boot page is at its element cap). -->
+    <template data-surface="quickNote">
     <div class="dialog-head">
       <h2 id="quick-note-title" class="dialog-head-title"><i class="ph ph-lightning pop-glyph" aria-hidden="true"></i> Quick note</h2>
       <button type="button" class="icon-only ghost small graph-help-toggle dialog-head-btn"
@@ -1214,6 +1216,7 @@
       <button type="button" class="ghost small" id="quick-note-more">Open in Capture</button>
       <button type="button" class="accent small" id="quick-note-save">Save note</button>
     </div>
+    </template>
   </dialog>
   <!-- **These two live here, beside the other dialogs, and not inside
        `#tab-documents` where they were written.** A modal `<dialog>` is drawn
@@ -8374,6 +8377,13 @@ Link to another note with [[its first few words]]."></textarea>
       </div>
       <div id="wb-format-body" class="wb-format-body" role="tabpanel" aria-labelledby="wb-format-tab-style">
         <p id="wb-format-empty" class="muted empty-line">Select something on the board to format it.</p>
+        <section id="wb-board-style" class="wb-fmt-section" aria-label="Board style" hidden>
+          <h4 class="wb-fmt-head"><i class="ph ph-swatches" aria-hidden="true"></i><span>Board style</span><button type="button" class="icon-only ghost small graph-help-toggle" data-help-for="wb-fmt-help-boardstyle" aria-controls="wb-fmt-help-boardstyle" aria-expanded="false" title="About board styles" aria-label="About board styles"><i class="ph ph-question" aria-hidden="true"></i></button></h4>
+          <div class="help-body hidden" id="wb-fmt-help-boardstyle" role="dialog" aria-label="About board styles">
+            <p><b>Board style</b>: one press writes a colour scheme across every shape, line, sticky and text box on the board, in one Undo step. Shapes without a fill stay unfilled.</p>
+          </div>
+          <div id="wb-board-style-list" class="wb-board-style-list" role="group" aria-label="Board styles"></div>
+        </section>
         <p id="wb-format-none" class="muted wb-lib-keys" hidden>Nothing on this tab for what is selected.</p>
         <section class="wb-fmt-section" data-format-panel="style" aria-label="Style">
           <div class="wb-fmt-group" data-fmt-group="fill">
@@ -8420,6 +8430,7 @@ Link to another note with [[its first few words]]."></textarea>
               <p><b>Width</b>: how thick the line is, in pixels.</p>
               <p><b>Pattern</b>: solid, dashed or dotted.</p>
               <p><b>Dashes</b>: your own dash and gap lengths, such as 8 4.</p>
+              <p><b>Line style</b>: sharp corners, rounded corners, or one smooth curve through the points.</p>
               <p><b>Corners</b>: rounds the corners by this many pixels; 0 keeps them sharp.</p>
               <p><b>Flow</b>: dashes that move along the line, to show a direction.</p>
             </div>
@@ -8437,6 +8448,11 @@ Link to another note with [[its first few words]]."></textarea>
               </select>
             </label>
             <label class="wb-fmt-row" data-fmt="pattern"><span class="wb-fmt-label">Dashes</span><input type="text" id="wb-fmt-pattern" inputmode="decimal" maxlength="40" placeholder="8 4" autocomplete="off" aria-label="Custom dash pattern" title="Your own dashes, in line widths: a dash, a gap, and so on, like 8 4. Empty uses the pattern above."></label>
+            <label class="wb-fmt-row" data-fmt="linestyle"><span class="wb-fmt-label">Line style</span><select id="wb-fmt-linestyle" aria-label="Line style" title="Sharp corners, rounded corners, or one smooth curve through the points">
+                <option value="sharp">Sharp</option>
+                <option value="rounded">Rounded</option>
+                <option value="curved">Curved</option>
+              </select></label>
             <label class="wb-fmt-row" data-fmt="round" data-unit="px"><span class="wb-fmt-label">Corners</span><input type="number" id="wb-fmt-round" min="0" max="80" step="1" aria-label="Corner rounding" title="Round the corners by this much; 0 keeps them sharp"></label>
             <div class="wb-fmt-row" data-fmt="flow"><span class="wb-fmt-label">Flow</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="Dashes that move along the line, for a flow or a direction. Exports draw them still."><input type="checkbox" id="wb-fmt-flow" aria-label="Flow animation"></label></span></div>
           </div>
@@ -8537,7 +8553,7 @@ Link to another note with [[its first few words]]."></textarea>
           <div class="wb-fmt-group" data-fmt-group="style">
             <h4 class="wb-fmt-head"><i class="ph ph-palette" aria-hidden="true"></i><span>Style</span><button type="button" class="icon-only ghost small graph-help-toggle" data-help-for="wb-fmt-help-style" aria-controls="wb-fmt-help-style" aria-expanded="false" title="About style" aria-label="About style"><i class="ph ph-question" aria-hidden="true"></i></button></h4>
             <div class="help-body hidden" id="wb-fmt-help-style" role="dialog" aria-label="About style">
-              <p><b>Style</b>: copy this item's look (Ctrl+Alt+C), paste it on another (Ctrl+Alt+V), or save it to the library.</p>
+              <p><b>Style</b>: copy this item's look (Ctrl+Alt+C), paste it on another (Ctrl+Alt+V), or save it to the library; Ctrl+Alt+D makes it the default style for new shapes, connectors or text boxes on this board.</p>
             </div>
             <div class="wb-fmt-row" data-fmt="style-lib"><span class="wb-fmt-label">Style</span>
               <span class="wb-fmt-buttons">
@@ -8679,12 +8695,19 @@ Link to another note with [[its first few words]]."></textarea>
             <div class="help-body hidden" id="wb-fmt-help-data" role="dialog" aria-label="About data">
               <p><b>Tooltip</b>: words shown when the pointer rests on the item.</p>
               <p><b>Properties</b>: named values kept with the item and in its exports; %name% in its text shows one.</p>
+              <p><b>Style as text</b>: the item's look as JSON; change it and press Apply style. Its path, ends, words and properties are not in it.</p>
             </div>
             <label class="wb-fmt-row" data-fmt="tip"><span class="wb-fmt-label">Tooltip</span><input type="text" id="wb-fmt-tip" maxlength="200" placeholder="Shown on hover" aria-label="Tooltip" title="Words shown when the pointer rests on this item"></label>
             <div class="wb-fmt-props" data-fmt="props">
               <p class="muted wb-lib-keys">Named values on this item, kept with it and in its exports. Type %name% in its text to show one.</p>
               <ul id="wb-fmt-props" class="wb-fmt-prop-list" aria-label="Custom properties"></ul>
               <button type="button" id="wb-fmt-prop-add" class="ghost small" aria-label="Add a property"><i class="ph ph-plus ph-lead" aria-hidden="true"></i>Add a property</button>
+            </div>
+            <div class="wb-fmt-props" data-fmt="rawstyle">
+              <label class="wb-fmt-label" for="wb-fmt-raw">Style as text</label>
+              <textarea id="wb-fmt-raw" class="wb-fmt-raw" rows="8" spellcheck="false" autocomplete="off" aria-describedby="wb-fmt-raw-status" title="This item's style as JSON. Apply checks it and writes it in one Undo step."></textarea>
+              <p id="wb-fmt-raw-status" class="status" role="status"></p>
+              <button type="button" id="wb-fmt-raw-apply" class="ghost small"><i class="ph ph-check ph-lead" aria-hidden="true"></i>Apply style</button>
             </div>
           </div>
         </section>

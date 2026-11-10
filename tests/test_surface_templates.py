@@ -35,6 +35,12 @@ SURFACES = {
         ("wbShowCanvasView", "initWhiteboard"),
         ("whiteboard-container", "wb-tools-panel", "wb-format", "wb-outline-tree", "wb-back-to-boards"),
     ),    "ocr": ("ocr-workspace", ("library.js",), ("openOcrWorkspace",), ("ocr-close", "ocr-stage", "ocr-rail", "ocr-page-pane")),
+    "quickNote": (
+        "quick-note",
+        ("quick-note.js", "field-clear.js", "editor.js", "capture-ask.js"),
+        ("openQuickNote",),
+        ("quick-note-text", "quick-note-status", "quick-note-private", "quick-note-save", "quick-note-more", "quick-note-close", "quick-note-clear"),
+    ),
     "shortcuts": (
         "shortcuts-overlay",
         ("reveal-targets.js", "settings-wiring.js"),
@@ -63,13 +69,32 @@ def _src(name: str) -> str:
     return (JS / name).read_text(encoding="utf-8")
 
 
+#: Files that are one `(() => {` ... `})();` whole (W29 D24): their inner statements are the load-time ones.
+WRAPPED = ("quick-note.js", "field-clear.js", "whiteboard-history.js")
+
+
+def _unwrapped(path: Path) -> str:
+    """The file with its one outer `(() => {` ... `})();` wrapper taken off and its body dedented, so the
+    statements that run at load, and the functions they call, are top-level again for the checks below."""
+    text = path.read_text(encoding="utf-8")
+    if path.name not in WRAPPED:
+        return text
+    lines = text.split("\n")
+    start = next((i for i, line in enumerate(lines) if line == "(() => {"), None)
+    end = max((i for i, line in enumerate(lines) if line == "})();"), default=None)
+    if start is None or end is None or end < start:
+        return text
+    body = [line[2:] if line.startswith("  ") else line for line in lines[start + 1 : end]]
+    return "\n".join(lines[:start] + body + lines[end + 1 :])
+
+
 @pytest.mark.parametrize("name", SURFACES)
 def test_the_surface_sits_in_one_template_inside_its_live_root(name):
     root, _, _, wanted = SURFACES[name]
     before, body = _template(name)
     # The root stays live (checks of "is it open" never build it); the template
     # is its first child, comments aside.
-    opening = re.search(rf'<div id="{root}"[^>]*>\s*(?:<!--.*?-->\s*)*$', before, re.S)
+    opening = re.search(rf'<(?:div|dialog) id="{root}"[^>]*>\s*(?:<!--.*?-->\s*)*$', before, re.S)
     assert opening, f"the {name} template is not the first child of #{root}"
     ids = _ids(body)
     assert root not in ids
@@ -85,7 +110,7 @@ def test_dollar_falls_back_to_every_surface():
 @pytest.mark.parametrize("name", SURFACES)
 def test_opening_the_surface_builds_it_before_reading_it(name):
     _, globs, openers, _ = SURFACES[name]
-    text = "".join(p.read_text(encoding="utf-8") for p in _files(globs))
+    text = "".join(_unwrapped(p) for p in _files(globs))
     for opener in openers:
         m = re.search(rf"^(?:async )?function {opener}\([^)]*\) \{{\n(.*?)^\}}", text, re.S | re.M)
         assert m, f"{opener} not found"
@@ -149,7 +174,7 @@ def test_load_time_wiring_of_the_surface_waits_for_it(name):
     classes = _template_only_classes(name)
     found = []
     for path in _files(globs):
-        text = path.read_text(encoding="utf-8")
+        text = _unwrapped(path)
         functions = _top_level_functions(text)
         for number, head, block in _load_time_blocks(text):
             if head.startswith(f'onSurface("{name}"'):

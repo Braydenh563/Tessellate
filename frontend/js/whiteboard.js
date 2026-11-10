@@ -2167,6 +2167,43 @@ function wbRoundedPathD(d, radius, shaftOnly = false) {
   return out.join(" ");
 }
 
+//: A property of `wbRoundedPathD`, not a name of its own: the shared scope is at its cap (test_global_scope_ratchet).
+//: **Curved lines** (draw.io's "curved", `data.curve`): a path made only of M, L and Z
+//: becomes a Catmull-Rom spline through the same points, as cubics, so the line is smooth
+//: and still passes through every point. Fewer than three points, or any other command,
+//: comes back as it came; `shaftOnly` leaves a connector's arrowheads alone, as the rounding does.
+wbRoundedPathD.curved = function (d, shaftOnly = false) {
+  if (typeof d !== "string") return d;
+  if (shaftOnly) {
+    const cut = d.indexOf("M", 1);
+    return cut < 0 ? wbRoundedPathD.curved(d) : `${wbRoundedPathD.curved(d.slice(0, cut).trim())} ${d.slice(cut)}`;
+  }
+  const tokens = d.match(/[A-Za-z]|-?\d*\.?\d+(?:e[-+]?\d+)?/g) || [];
+  const pts = [];
+  let closed = false;
+  for (let i = 0; i < tokens.length; i += 1) {
+    if (tokens[i] === "Z") closed = true;
+    else if (tokens[i] === "M" || tokens[i] === "L") {
+      if ((tokens[i] === "M") !== (i === 0) || pts.length > 0 && closed) return d;
+      pts.push([Number(tokens[i + 1]), Number(tokens[i + 2])]);
+      i += 2;
+    } else return d;
+  }
+  if (closed && pts.length > 1 && pts[0][0] === pts.at(-1)[0] && pts[0][1] === pts.at(-1)[1]) pts.pop();
+  const n = pts.length;
+  if (n < 3 || pts.some((p) => !Number.isFinite(p[0]) || !Number.isFinite(p[1]))) return d;
+  const f = (v) => String(Math.round(v * 100) / 100);
+  const pick = (i) => (closed ? pts[(i + n) % n] : pts[Math.max(0, Math.min(n - 1, i))]);
+  let text = `M${f(pts[0][0])} ${f(pts[0][1])}`;
+  for (let i = 0; i < (closed ? n : n - 1); i += 1) {
+    const [p0, p1, p2, p3] = [pick(i - 1), pick(i), pick(i + 1), pick(i + 2)];
+    const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+    const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+    text += ` C${f(c1[0])} ${f(c1[1])} ${f(c2[0])} ${f(c2[1])} ${f(p2[0])} ${f(p2[1])}`;
+  }
+  return closed ? `${text} Z` : text;
+};
+
 //: Two head-stroke subpaths meeting at `(tipX, tipY)`, angled back from
 //: `approachAngle` (the direction the shaft arrives *from*, in radians), 
 //: factored out so both ends of an arrow can draw one (`currentArrowEndStyle`,
@@ -5857,7 +5894,7 @@ let wbCopiedStyle = null; // { kind: "sketch" | "object", style: {...} }
 // thing it lands on.
 const WB_SKETCH_STYLE_KEYS = [
   "color", "width", "dash", "fill", "fillOpacity", "opacity", "noStroke", "startCap", "endCap", "startCapSize", "endCapSize",
-  "dashPattern", "round", "flow", "gradient", "fillStyle", "jumpSize", "gapStart", "gapEnd",
+  "dashPattern", "round", "curve", "flow", "gradient", "fillStyle", "jumpSize", "gapStart", "gapEnd",
   "shadow", "shadow_x", "shadow_y", "shadow_blur",
 ];
 const WB_OBJECT_STYLE_KEYS = ["color", "bg", "border_color", "font_size", "radii", "pad", "shadow", "shadow_x", "shadow_y", "shadow_blur"];
@@ -5948,7 +5985,7 @@ async function wbPasteCopiedStyle() {
 //: sticky goes back to the first paper; a map topic back to following its
 //: map and level (`wbMapResetToBranch`'s keys). One undo step for the lot.
 const WB_SKETCH_RESET_KEYS = [
-  "color", "width", "dash", "fill", "fillOpacity", "opacity", "noStroke", "alpha", "shadow", "shadow_x", "shadow_y", "shadow_blur", "rough", "jumps", "round", "dashPattern", "flow", "gradient", "fillStyle", "jumpSize", "gapStart", "gapEnd",
+  "color", "width", "dash", "fill", "fillOpacity", "opacity", "noStroke", "alpha", "shadow", "shadow_x", "shadow_y", "shadow_blur", "rough", "jumps", "round", "curve", "dashPattern", "flow", "gradient", "fillStyle", "jumpSize", "gapStart", "gapEnd",
   "startCapSize", "endCapSize", "label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign", "label_lh", "label_ls", "label_dir", "label_alpha",
 ];
 const WB_OBJECT_RESET_KEYS = ["color", "bg", "border_color", "font_size", "bold", "italic", "underline", "strike", "font_family", "align", "valign", "line_height", "letter_spacing", "text_dir", "text_alpha", "alpha", "shadow", "shadow_x", "shadow_y", "shadow_blur", "radii", "pad", "fold"];
@@ -11512,7 +11549,7 @@ async function wbApplyHistoryEntry(from, to) {
   if (entry.action === "background") {
     const current = { ...wbBoardBackground() };
     const was = entry.before || {};
-    await wbSetBackground({ color: was.color ?? null, image: was.image ?? null, sticky_fold: was.sticky_fold ?? null, rough: was.rough ?? null }, { undo: false });
+    await wbSetBackground({ color: was.color ?? null, image: was.image ?? null, sticky_fold: was.sticky_fold ?? null, rough: was.rough ?? null, defaults: was.defaults ?? null }, { undo: false });
     to.push({ action: "background", before: current });
     return true;
   }
@@ -11702,6 +11739,7 @@ async function wbRedo() {
 //: Made on top of its own band of the stack (`wbStackNewZ`; a frame under
 //: the frames already there), so what was just made is what is on top.
 async function wbCreateObject(kind, data, x, y, width, height, z = wbStackNewZ("object", { kind })) {
+  if (kind === "text") data = wbFmtState.board?.withDefaults("text", data) ?? data;
   const body = { kind, data, board_id: window.currentBoardId, x, y, z, width, height };
   try {
     const created = await apiJson("/whiteboard/objects", { method: "POST", body: JSON.stringify(body) });
@@ -17574,6 +17612,7 @@ async function initWhiteboard() {
       const key = e.key.toLowerCase();
       if (key === "c") { e.preventDefault(); wbCopySelectedStyle(); return; }
       if (key === "v") { e.preventDefault(); wbPasteCopiedStyle(); return; }
+      if (key === "d") { e.preventDefault(); wbFmtState.board?.setDefault(); return; }
     }
     // Ctrl+D duplicates the selection in place (PLAN.md W6): the chord
     // Figma, Miro and tldraw share. Implemented as copy+paste through the
@@ -17587,6 +17626,12 @@ async function initWhiteboard() {
     if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === "d") {
       e.preventDefault();
       wbDuplicateSelection();
+      return;
+    }
+    //: Ctrl+E: Edit style as text (draw.io's Edit Style), for the one selected item.
+    if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === "e" && wbSelectedItem) {
+      e.preventDefault();
+      wbFmtState.raw?.open();
       return;
     }
     //: `]` and `[` are one step; Ctrl+] and Ctrl+[ go to the front and the
@@ -19073,8 +19118,10 @@ async function initWhiteboard() {
     //: to it (the wb ledger, 10-25: the Line tool stayed a loose path). Its
     //: ends are the tool's own, so a line binds with none.
     const bound = window.currentTool === "arrow" || window.currentTool === "line" ? wbBoundArrowData(sx, sy, x, y, 10 / zoomK(), blob) : null;
+    //: The board's default shape style starts every drawn shape and line (not pen strokes or the highlighter).
+    const drawn = isFreehand ? blob : wbFmtState.board?.withDefaults("shape", blob, { fillable: isFillable }) ?? blob;
     const sketchData = {
-      data: JSON.stringify(bound || blob),
+      data: JSON.stringify(bound || drawn),
       x: 0,
       y: 0,
       z: wbStackNewZ("sketch"),
@@ -22600,6 +22647,7 @@ function renderWhiteboard() {
     const styled = shapeData || linkData;
     const plainLine = !(linkData && wbMapCrossLinkLook(linkData));
     if (styled?.round && plainLine) pathData = wbRoundedPathD(pathData, styled.round, Boolean(linkData));
+    else if (styled?.curve && plainLine) pathData = wbRoundedPathD.curved(pathData, Boolean(linkData));
     const flowing = Boolean(styled?.flow) && plainLine;
     if (flowing && !dashArray) dashArray = wbDashArray("dashed", Number(strokeWidth) || 3);
     const flowPeriod = flowing && dashArray ? dashArray.split(" ").map(Number).reduce((a, b) => a + b, 0) * (dashArray.split(" ").length % 2 ? 2 : 1) : 0;
@@ -24806,8 +24854,7 @@ async function dragEndNode(event, d) {
        const targetAnchor = wbNearestAnchor(targetKind, targetNode, mx, my);
        const crossLink = wbIsMap() && WB_MAP_KINDS.has(d.kind) && WB_MAP_KINDS.has(targetNode.kind);
        const tool = crossLink ? wbMapCrossLinkType() : window.currentTool;
-       const sketchData = {
-         data: JSON.stringify({
+       const linkBase = {
             type: tool,
             sourceId: d.id,
             targetId: targetNode.id,
@@ -24819,7 +24866,10 @@ async function dragEndNode(event, d) {
             //: A board link wears the held tool's ends; a map's cross-link
             //: keeps the map's own look.
             ...(crossLink ? {} : wbToolCaps()),
-         }),
+       };
+       //: A board's default connector style (Set as default style) starts every new board link.
+       const sketchData = {
+         data: JSON.stringify(crossLink ? linkBase : wbFmtState.board?.withDefaults("link", linkBase) ?? linkBase),
          x: 0, y: 0, z: wbStackNewZ("sketch"),
          board_id: window.currentBoardId
        };

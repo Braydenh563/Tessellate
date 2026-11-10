@@ -3526,7 +3526,8 @@ MORE_TOPICS.extend([
             "shape's or connector's words to show that value there (a name it does not "
             "have stays as typed). %date% shows today's date and %page% the title of the "
             "frame the item sits in, unless the item has a value of that name. A shape or connector can take a Tooltip, shown "
-            "when the pointer rests on it. Find on the board reads the values too."
+            "when the pointer rests on it. Find on the board reads the values too. "
+            "Style as text (Ctrl+E) shows the item's look as JSON; Apply style checks it and saves it as one Undo step."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },
@@ -3545,6 +3546,7 @@ MORE_TOPICS.extend([
             "the other to set it instead. Same as fill (or Same as border) makes "
             "them one colour and Swap trades them, each one Undo step. Recent "
             "holds your last eight picks on this device, above the board's colours. "
+            "Palettes you saved from the Library show below the board's colours, one row each. "
             "Custom takes a colour typed or pasted: a hex box (#rgb, #rrggbb, "
             "#rrggbbaa, rgb() or hsl()) and Red, Green and Blue boxes. Opacity, "
             "a slider and a number, sets how solid that colour is: the fill's for "
@@ -3555,7 +3557,9 @@ MORE_TOPICS.extend([
             "eyedropper: the next click takes a colour instead of doing what it "
             "would, from a shape (its fill, or its border with Alt or Take a shape's border), "
             "a line, a text box or any colour button, and Escape stops it. A fill "
-            "that is off shows dimmed; picking a colour turns it on."
+            "that is off shows dimmed; picking a colour turns it on. Ctrl+Alt+D "
+            "(Set as default style) keeps the selected shape's, connector's or text box's look "
+            "as the board's default for new ones; Clear the default style undoes it."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },

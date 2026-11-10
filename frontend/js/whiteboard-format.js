@@ -77,12 +77,12 @@ function wbFmtKind(entry) {
 
 //: The fields each kind takes, by the `data-fmt` names in index.html.
 const WB_FMT_FIELDS = {
-  shape: ["stroke", "strokealpha", "width", "dash", "fill", "alpha", "shadow", "shadowset", "rough", "text", "fit", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "fillstyle", "fillalpha", "gradient", "tip"],
-  line: ["stroke", "strokealpha", "width", "dash", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
+  shape: ["stroke", "strokealpha", "width", "dash", "fill", "alpha", "shadow", "shadowset", "rough", "text", "fit", "geometry", "flip", "style-lib", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "fillstyle", "fillalpha", "gradient", "tip"],
+  line: ["stroke", "strokealpha", "width", "dash", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "tip"],
   //: A straight line or arrow: a line that takes ends.
-  arrow: ["stroke", "strokealpha", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
-  link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "linklook", "props", "pattern", "round", "flow", "jumpsize", "gapstart", "gapend", "tip"],
-  text: ["stroke", "fill", "fillalpha", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props"],
+  arrow: ["stroke", "strokealpha", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "tip"],
+  link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "linklook", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "jumpsize", "gapstart", "gapend", "tip"],
+  text: ["stroke", "fill", "fillalpha", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props", "rawstyle"],
   image: ["alpha", "shadow", "shadowset", "radii", "crop", "geometry", "angle", "props"],
   frame: ["geometry", "props"],
   table: ["alpha", "shadow", "shadowset", "radii", "geometry", "props"],
@@ -145,6 +145,7 @@ function wbFmtValue(entry, field) {
     case "dash": return s?.dash || "solid";
     case "pattern": return s?.dashPattern || "";
     case "round": return Number(s?.round) || 0;
+    case "linestyle": return s?.curve ? "curved" : s?.round ? "rounded" : "sharp";
     case "crop": return o?.crop || "";
     case "flow": return Boolean(s?.flow);
     case "fillstyle": return WB_FILL_STYLES.includes(s?.fillStyle) ? s.fillStyle : "solid";
@@ -592,7 +593,12 @@ function wbFormatSync() {
   //: The folded corner is a sticky note's, not a plain text box's.
   if (!entries.some((e) => e.kind === "object" && wbIsSticky(e.item))) fields.delete("fold");
   //: The Corners row is for a path of straight sides; an ellipse has none.
-  if (fields.has("round") && !entries.some(wbFmtCanRound)) fields.delete("round");
+  if (fields.has("round") && !entries.some(wbFmtCanRound)) {
+    fields.delete("round");
+    fields.delete("linestyle");
+  }
+  const boardStyle = document.getElementById("wb-board-style");
+  if (boardStyle) wbFmtState.board.show(boardStyle, !entries.length && wbFmtState.fmtTab === "style");
   const empty = document.getElementById("wb-format-empty");
   const map = kinds.has("topic");
   if (empty) {
@@ -615,6 +621,7 @@ function wbFormatSync() {
   wbSyncCommandRows(arrange);
   wbFmtShowGroups(panel);
   if (fields.has("props")) wbFmtSyncProps(entries);
+  if (fields.has("rawstyle")) wbFmtState.raw.sync(entries);
   const first = entries.find((e) => wbFmtKind(e) && wbFmtKind(e) !== "topic");
   if (!first) return;
   const set = (id, value, prop = "value") => {
@@ -640,7 +647,7 @@ function wbFormatSync() {
     ["wb-fmt-fill", "fill", "fill"], ["wb-fmt-route", "route", "route"], ["wb-fmt-jumps", "jumps", "jumps"], ["wb-fmt-startcap", "startcap", "caps"],
     ["wb-fmt-fillstyle", "fillstyle", "fillstyle"], ["wb-fmt-gradient-dir", "gradient-dir", "gradient"], ["wb-fmt-gradient", "gradient", "gradient"],
     ["wb-fmt-jumpsize", "jumpsize", "jumpsize"], ["wb-fmt-gapstart", "gapstart", "gapstart"], ["wb-fmt-gapend", "gapend", "gapend"], ["wb-fmt-tip", "tip", "tip"],
-    ["wb-fmt-pattern", "pattern", "pattern"], ["wb-fmt-round", "round", "round"], ["wb-fmt-crop", "crop", "crop"], ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-lsize", "lsize", "linklook"], ["wb-fmt-lcolor", "lcolor", "linklook"], ["wb-fmt-size", "size", "text"],
+    ["wb-fmt-pattern", "pattern", "pattern"], ["wb-fmt-round", "round", "round"], ["wb-fmt-linestyle", "linestyle", "linestyle"], ["wb-fmt-crop", "crop", "crop"], ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-lsize", "lsize", "linklook"], ["wb-fmt-lcolor", "lcolor", "linklook"], ["wb-fmt-size", "size", "text"],
     ["wb-fmt-shx", "shx", "shadowset"], ["wb-fmt-shy", "shy", "shadowset"], ["wb-fmt-shb", "shb", "shadowset"], ["wb-fmt-pad", "pad", "pad"],
     ["wb-fmt-r0", "r0", "radii"], ["wb-fmt-r1", "r1", "radii"], ["wb-fmt-r2", "r2", "radii"], ["wb-fmt-r3", "r3", "radii"],
     ["wb-fmt-ink", "ink", "text"], ["wb-fmt-alpha", "alpha", "alpha"], ["wb-fmt-lh", "lh", "text"], ["wb-fmt-ls", "ls", "text"], ["wb-fmt-dir", "dir", "text"], ["wb-fmt-inkalpha", "inkalpha", "text"],
@@ -930,6 +937,12 @@ onSurface("board", () => {
   on("wb-fmt-crop", "change", (e) => {
     const crop = e.target.value;
     wbFmtApply("crop", () => ({ crop: crop || undefined }), crop ? `Picture cropped to ${e.target.selectedOptions[0].textContent.toLowerCase()}.` : "Picture crop taken off.");
+  });
+  on("wb-fmt-raw-apply", "click", () => wbFmtState.raw.apply());
+  on("wb-fmt-linestyle", "change", (e) => {
+    const style = e.target.value;
+    //: Rounded keeps the radius an item already has, else 12.
+    wbFmtApply("linestyle", (entry) => ({ round: style === "rounded" ? Number(wbFmtValue(entry, "round")) || 12 : undefined, curve: style === "curved" ? true : undefined }), `Line style: ${style}.`);
   });
   on("wb-fmt-round", "change", (e) => {
     const radius = Math.max(0, Math.min(80, Math.round(Number(e.target.value) || 0)));
@@ -2274,9 +2287,39 @@ const wbColour = (() => {
     return wrap;
   }
 
+  //: The notebook's saved palettes ("Save these colours as a palette") as `{name, colours}`: real
+  //: hex colours only, lower-cased, no repeats, none empty, at most eight (the popover is not a library).
+  function wbColourPaletteList(entries) {
+    const out = [];
+    for (const entry of entries || []) {
+      if (entry?.kind !== "palette" || out.length >= 8) continue;
+      const colours = [...new Set((entry.payload?.colours || []).filter((c) => /^#[0-9a-f]{6}$/i.test(c)).map((c) => c.toLowerCase()))];
+      if (colours.length) out.push({ name: String(entry.name || "").trim() || "Palette", colours });
+    }
+    return out;
+  }
+
+  //: A box the popover holds for the saved palettes, one labelled row of swatches each. The library
+  //: index is fetched here when the Library panel has not (`/board-library`, one small request), and
+  //: the rows fill in when it lands, if the popover is still open.
+  function wbColourPalettes(pick, current) {
+    const box = document.createElement("div");
+    box.className = "wb-colour-palettes";
+    const fill = () => {
+      for (const { name, colours } of wbColourPaletteList(wbLibState.lib?.items)) {
+        const row = swatchPicker({ label: `${name} palette`, value: colours.includes(current) ? current : null, palette: Object.fromEntries(colours.map((c) => [c, c])), none: null, onChoose: pick });
+        row.title = name;
+        box.append(wbColourHeading(name), row);
+      }
+    };
+    if (wbLibState.lib) fill();
+    else apiJson("/board-library").then((lib) => { wbLibState.lib = wbLibState.lib || lib; if (box.isConnected) fill(); }).catch(() => {});
+    return box;
+  }
+
   return {
     parse: wbColourParse, fillIsOn: wbFillIsOn, fillToggle: wbFillTogglePatch, fillColour: wbFillColourPatch,
-    setAlpha: wbFmtSetAlpha, opacity: wbColourOpacity, fields: wbColourFields,
+    setAlpha: wbFmtSetAlpha, opacity: wbColourOpacity, fields: wbColourFields, palettes: wbColourPalettes,
   };
 })();
 
@@ -2389,6 +2432,7 @@ async function wbOpenColourMenu(input) {
   const byHex = Object.fromEntries(Object.entries(WB_COLOUR_SWATCHES).map(([k, v]) => [v, k]));
   const board = swatchPicker({ label: "Board colours", value: byHex[current] || null, palette: WB_COLOUR_SWATCHES, none: null, onChoose: (key) => pick(WB_COLOUR_SWATCHES[key]) });
   rows.push(board);
+  if (typeof wbLibState !== "undefined") rows.push(wbColour.palettes(pick, current));
   let opacityRow = null;
   const custom = wbColour.fields(input, (alpha) => opacityRow?.setValue(Math.round(alpha * 100)));
   opacityRow = wbColour.opacity(input);
@@ -2609,3 +2653,208 @@ onDomReady(() => {
     if (e.target instanceof HTMLInputElement && e.target.matches('input[type="color"].wb-color-picker')) wbRememberColour(e.target.value);
   }, true);
 });
+
+//: **Board style presets** (draw.io's Diagram style panel): with nothing selected, the Format panel's
+//: Style tab lists twelve colour schemes (fill, line, text); one press writes them across every shape,
+//: line, connector, sticky and text box on the board in one undo step. A shape with no fill stays
+//: unfilled, a text box with no background gets no background, pictures and frames are left alone.
+//: Hung on `wbFmtState` so the shared scope does not grow (test_global_scope_ratchet).
+wbFmtState.board = (() => {
+  const PRESETS = [
+    { name: "Blue", fill: "#dae8fc", stroke: "#6c8ebf", ink: "#1f2430" },
+    { name: "Green", fill: "#d5e8d4", stroke: "#82b366", ink: "#1f2430" },
+    { name: "Yellow", fill: "#fff2cc", stroke: "#d6b656", ink: "#1f2430" },
+    { name: "Orange", fill: "#ffe6cc", stroke: "#d79b00", ink: "#1f2430" },
+    { name: "Red", fill: "#f8cecc", stroke: "#b85450", ink: "#1f2430" },
+    { name: "Purple", fill: "#e1d5e7", stroke: "#9673a6", ink: "#1f2430" },
+    { name: "Teal", fill: "#d0f0ec", stroke: "#2f8f83", ink: "#1f2430" },
+    { name: "Pink", fill: "#fbe4ef", stroke: "#c2538a", ink: "#1f2430" },
+    { name: "Grey", fill: "#f5f5f5", stroke: "#666666", ink: "#1f2430" },
+    { name: "Paper", fill: "#ffffff", stroke: "#000000", ink: "#000000" },
+    { name: "Slate", fill: "#23445d", stroke: "#10202c", ink: "#ffffff" },
+    { name: "Night", fill: "#1f2430", stroke: "#8a8f98", ink: "#f0f0f0" },
+  ];
+
+  //: What the preset writes into one item, from `{kind, fmt, filled, data}`; null for an item it leaves alone.
+  function patchFor(preset, { kind, fmt, filled, data }) {
+    if (kind === "sketch") {
+      if (fmt === "shape") return { color: preset.stroke, ...(filled ? { fill: preset.fill, fillOpacity: 1 } : {}), label_color: preset.ink };
+      return fmt === "line" || fmt === "arrow" || fmt === "link" ? { color: preset.stroke } : null;
+    }
+    if (kind !== "object" || fmt !== "text") return null;
+    const sticky = data.bg && data.bg !== "transparent";
+    return {
+      ...(sticky ? { bg: preset.fill } : {}),
+      ...(sticky && data.border_color && data.border_color !== "transparent" ? { border_color: preset.stroke } : {}),
+      color: preset.ink,
+    };
+  }
+
+  function describe(entry) {
+    const fmt = wbFmtKind(entry);
+    const data = entry.kind === "sketch" ? wbFmtSketch(entry) : entry.item.data || {};
+    return { kind: entry.kind, fmt, filled: fmt === "shape" && Boolean(wbFmtValue(entry, "fill-on")), data };
+  }
+
+  async function apply(preset) {
+    const entries = ["sketch", "object"]
+      .flatMap((kind) => (wbState?.[WB_LIST_BY_KIND[kind]] || []).map((item) => ({ kind, id: item.id, item })))
+      .filter((entry) => !wbIsLocked(entry.kind, entry.item));
+    let changed = 0;
+    await wbRecordGesture(async () => {
+      const saves = [];
+      for (const entry of entries) {
+        const patch = patchFor(preset, describe(entry));
+        if (!patch) continue;
+        if (entry.kind === "sketch") {
+          if (!wbSketchSetProps(entry.item, patch)) continue;
+        } else {
+          entry.item.data = { ...entry.item.data, ...patch };
+        }
+        saves.push({ kind: entry.kind, item: entry.item });
+      }
+      changed = saves.length;
+      await wbSaveMany(saves);
+    });
+    wbScheduleRender();
+    wbFormatSyncSoon();
+    toast(changed ? `Board style ${preset.name} applied to ${changed} ${changed === 1 ? "item" : "items"}.` : "Nothing on the board takes a board style yet.");
+  }
+
+  //: The section shows on the Style tab when nothing is selected; its buttons are built the first time.
+  function show(section, visible) {
+    section.hidden = !visible;
+    const list = document.getElementById("wb-board-style-list");
+    if (!visible || !list || list.childElementCount) return;
+    for (const preset of PRESETS) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "ghost wb-board-style-btn";
+      button.title = `${preset.name}: fill, line and text colours across the board`;
+      button.setAttribute("aria-label", `Board style ${preset.name}`);
+      button.style.setProperty("--swatch", preset.fill);
+      button.style.color = preset.stroke;
+      button.addEventListener("click", () => apply(preset));
+      list.append(button);
+    }
+  }
+
+  //: The board's default style (draw.io's Set as default style): the selected item's look, kept on the
+  //: board under its kind (`shape`, `link`, `text`) so the tools start new items with it.
+  const FILL_KEYS = ["fill", "fillOpacity", "gradient", "fillStyle"];
+
+  function groupOf() {
+    const sketch = wbSelectedSketchOrNull();
+    if (sketch) {
+      const data = wbSketchParsedData(sketch);
+      if (!data) return null;
+      return { group: String(data.type || "").startsWith("link-") ? "link" : "shape", style: wbPickStyle(data, WB_SKETCH_STYLE_KEYS) };
+    }
+    const object = wbSelectedTextObjectOrNull();
+    return object ? { group: "text", style: wbPickStyle(object.data, WB_OBJECT_STYLE_KEYS) } : null;
+  }
+
+  async function setDefault() {
+    const picked = groupOf();
+    if (!picked || !Object.keys(picked.style).length) return toast("Select a shape, connector or text box to take its style.");
+    const kept = wbBoardBackground().defaults || {};
+    if (await wbSetBackground({ defaults: { ...kept, [picked.group]: picked.style } })) {
+      toast(`Default ${{ shape: "shape", link: "connector", text: "text box" }[picked.group]} style set. New ones on this board start with it.`);
+    }
+  }
+
+  async function clearDefault() {
+    if (!wbBoardBackground().defaults) return toast("This board has no default style.");
+    if (await wbSetBackground({ defaults: null })) toast("Default style cleared.");
+  }
+
+  //: `data` as a new item of `group` should start: the defaults win for a shape or a connector (the board's
+  //: style is explicit), the caller's values win for a text box (a sticky's own paper). A line takes no fill.
+  function withDefaults(group, data, { fillable = true } = {}) {
+    const style = wbBoardBackground().defaults?.[group];
+    if (!style) return data;
+    const own = { ...style };
+    if (!fillable) for (const key of FILL_KEYS) delete own[key];
+    return group === "text" ? { ...own, ...data } : { ...data, ...own };
+  }
+
+  return { PRESETS, patchFor, apply, show, setDefault, clearDefault, withDefaults };
+})();
+//: --- end board style
+
+//: **Edit style as text** (draw.io's Edit Style): one item's style as JSON in the Data tab; Apply checks
+//: it and writes it in one undo step. What is not style stays out of the text and out of the write: a
+//: sketch's path, type, label, ends and properties, a text box's words. `parse` returns `{patch}` (a key
+//: taken out of the text is `null`, which the apply turns into a removal) or `{error}`.
+//: Hung on `wbFmtState` so the shared scope does not grow (test_global_scope_ratchet).
+wbFmtState.raw = (() => {
+  const SKETCH_HIDDEN = /^(?:d|type|label|props|comments|library_ref|bends|waypoints|points|via|group_id|groupId|layer|locked|url|link)$|^(?:source|target)/;
+  const OBJECT_KEYS = new Set([...WB_OBJECT_STYLE_KEYS, "font_family", "bold", "italic", "underline", "strike", "align", "valign", "line_height", "letter_spacing", "text_dir"]);
+  const MAX_CHARS = 8000;
+
+  const allowed = (kind, key) => (kind === "sketch" ? !SKETCH_HIDDEN.test(key) : OBJECT_KEYS.has(key));
+
+  function show(kind, data) {
+    const out = {};
+    for (const [key, value] of Object.entries(data || {})) if (allowed(kind, key) && value !== undefined) out[key] = value;
+    return JSON.stringify(out, null, 2);
+  }
+
+  //: Values are words, numbers, switches or one small group of those (a gradient).
+  const plain = (v) => v === null || ["string", "number", "boolean"].includes(typeof v);
+  const valid = (v) => plain(v) || (v && typeof v === "object" && !Array.isArray(v) && Object.values(v).every(plain));
+
+  function parse(kind, data, text) {
+    if (String(text).length > MAX_CHARS) return { error: "That is too long for a style." };
+    let parsed = null;
+    try {
+      parsed = JSON.parse(text);
+    } catch (err) {
+      return { error: `Not valid JSON: ${err.message.replace(/^JSON\.parse: /, "")}` };
+    }
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return { error: "The style is an object in braces, like {\"color\": \"#ff0000\"}." };
+    const bad = Object.entries(parsed).find(([, v]) => !valid(v));
+    if (bad) return { error: `"${bad[0]}" has to be a word, a number, a switch or one small group of those.` };
+    const patch = {};
+    for (const key of Object.keys(data || {})) if (allowed(kind, key)) patch[key] = null;
+    for (const [key, value] of Object.entries(parsed)) if (allowed(kind, key)) patch[key] = value;
+    return { patch };
+  }
+
+  function sync(entries) {
+    const row = document.getElementById("wb-fmt-raw");
+    if (!row || document.activeElement === row) return;
+    const one = entries.length === 1 && ["sketch", "object"].includes(entries[0].kind) ? entries[0] : null;
+    row.value = one ? show(one.kind, one.kind === "sketch" ? wbFmtSketch(one) : one.item.data) : "";
+    row.dataset.item = one ? `${one.kind}:${one.id}` : "";
+    const status = document.getElementById("wb-fmt-raw-status");
+    if (status) status.textContent = "";
+  }
+
+  function apply() {
+    const box = document.getElementById("wb-fmt-raw");
+    const status = document.getElementById("wb-fmt-raw-status");
+    const entry = wbFmtEntries().find((e) => `${e.kind}:${e.id}` === box?.dataset.item);
+    if (!entry) return;
+    const data = entry.kind === "sketch" ? wbFmtSketch(entry) : entry.item.data || {};
+    const result = parse(entry.kind, data, box.value);
+    if (result.error) {
+      status.textContent = result.error;
+      status.classList.add("error");
+      return;
+    }
+    status.classList.remove("error");
+    status.textContent = "";
+    const patch = Object.fromEntries(Object.entries(result.patch).map(([key, value]) => [key, value === null ? undefined : value]));
+    wbFmtApply("rawstyle", () => patch, "Style applied.");
+  }
+
+  //: Ctrl+E and the command: the Data tab, with the box under the caret.
+  function open() {
+    wbFormatOpen("data");
+    document.getElementById("wb-fmt-raw")?.focus();
+  }
+
+  return { show, parse, sync, apply, open };
+})();
+//: --- end edit style
