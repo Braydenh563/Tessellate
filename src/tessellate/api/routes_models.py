@@ -262,19 +262,25 @@ _pull_done_seen: dict[str, float] = {}
 PULL_LIST_RETRY_SECONDS = 10.0
 
 
-def _installed_after_pulls(client, installed: list[dict], pulls: dict[str, dict]) -> list[dict]:  # noqa: ANN001
+def _recent_pulls(pulls: dict[str, dict], now: float) -> tuple[list[str], list[str], float]:
+    """`(new, recent, since)`: downloads first seen finishing on this poll, all those seen in the last
+    `PULL_LIST_RETRY_SECONDS`, and when the earliest of those finished."""
     with _installed_lock:
         for name in [n for n in _pull_done_seen if pulls.get(n, {}).get("status") != "success"]:
             del _pull_done_seen[name]
-        now = time.monotonic()
         new = [n for n, job in pulls.items() if job.get("status") == "success" and n not in _pull_done_seen]
         _pull_done_seen.update(dict.fromkeys(new, now))
         #: A download seen finishing in the last few seconds and still not listed is asked about again by the
         #: next poll too: on a busy machine the first poll's wait ran out before the list came back, and every
         #: poll after it served the list from before the download (CI on PR 216, 3.11).
-        fresh = [n for n in pulls if n in _pull_done_seen and now - _pull_done_seen[n] < PULL_LIST_RETRY_SECONDS]
-        since = min((_pull_done_seen[n] for n in fresh), default=now)
-    fresh = [n for n in fresh if not _name_matches(n, installed)]
+        recent = [n for n in pulls if n in _pull_done_seen and now - _pull_done_seen[n] < PULL_LIST_RETRY_SECONDS]
+        return new, recent, min((_pull_done_seen[n] for n in recent), default=now)
+
+
+def _installed_after_pulls(client, installed: list[dict], pulls: dict[str, dict]) -> list[dict]:  # noqa: ANN001
+    now = time.monotonic()
+    new, recent, since = _recent_pulls(pulls, now)
+    fresh = [n for n in recent if not _name_matches(n, installed)]
     if not fresh:
         return installed
     key = _flight_key(client)
