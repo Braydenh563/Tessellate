@@ -166,6 +166,11 @@ class TurnBody(BaseModel):
     by: dict | None = None
     #: The Why this answer trail's lines, kept for the same reload.
     why: list | None = Field(default=None, max_length=40)
+    #: Stopped before it finished, and changed the notebook (W1): a reopened
+    #: chat says Stopped on the meta line, and Regenerate asks before a
+    #: write runs again (audit 1028 E2). Kept only when true.
+    stopped: bool | None = None
+    wrote: bool | None = None
 
 
 class RenameBody(BaseModel):
@@ -234,7 +239,7 @@ def _turn_messages(turn: TurnBody) -> list[dict]:
     asked = now - timedelta(milliseconds=max(0, min(turn.elapsed_ms or 0, 86_400_000)))
     assistant = {"role": "assistant", "content": turn.answer, "thinking": turn.thinking, "at": now.isoformat()}
     #: Kept only when the turn has them, so an old reader sees the same message shape.
-    assistant.update({k: getattr(turn, k) for k in ("tools", "steps", "resume", "tokens", "stats", "why") if getattr(turn, k)})
+    assistant.update({k: getattr(turn, k) for k in ("tools", "steps", "resume", "tokens", "stats", "why", "stopped", "wrote") if getattr(turn, k)})
     if turn.elapsed_ms is not None:
         assistant["elapsed_ms"] = turn.elapsed_ms
     if turn.raw_results:

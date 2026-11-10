@@ -2121,15 +2121,16 @@ async function openConversation(id) {
       if (by) finishReply(null, { ...by, bubble: handles.bubble, why: message.why, records: handles.recordsHolder });
       //: A reopened conversation gets its meter back from the last turn that recorded one.
       if (message.stats) renderChatContextMeter(message.stats);
+      if (message.wrote) handles.bubble.dataset.wrote = "1";
       if (message.stats || by) {
         handles.bubble.appendChild(
           messageMetaLine({
+            ...message, // stats and stopped, as saved
             model: (message.stats || by).model,
             elapsedMs: message.elapsed_ms,
-            stats: message.stats,
             toolCount: (message.tools || []).length,
             rounds: (message.stats || by).round || 0,
-            usedTools: message.used_tools ?? null,
+            usedTools: message.used_tools,
           })
         );
       }

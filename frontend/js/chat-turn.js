@@ -950,6 +950,7 @@ async function chatSendTurn(preset, opts = {}) {
         toolCount: toolEvents.length,
         rounds: stats?.round || 0,
         usedTools: effectiveUseTools,
+        stopped,
       })
     );
   }
@@ -1106,6 +1107,9 @@ async function chatSendTurn(preset, opts = {}) {
       // thing that saw the whole turn: the server reports per-round timings,
       // and an agent turn is several rounds plus the tool calls between them.
       elapsed_ms: elapsedMs,
+      //: For a reload (W1).
+      stopped,
+      wrote: bubble.dataset.wrote,
       // The "N matching notes" disclosure's own data. Reported: "semantic
       // search results in chat messages keep disappearing" - true on every
       // reload, since none of this was ever saved. Only meaningful for a

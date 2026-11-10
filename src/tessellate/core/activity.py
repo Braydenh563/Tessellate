@@ -363,6 +363,10 @@ def tracked_stream(
                     job.run.say(said)
                 yield line
                 if job.stopped:
+                    #: A stopped stream still ends with a `done` line (t20#9):
+                    #: without one the page read a Stop as a finished answer.
+                    if not str(line).startswith('{"type": "done"'):
+                        yield json.dumps({"type": "done", "stopped": True}) + "\n"
                     break
         finally:
             close = getattr(lines, "close", None)

@@ -1308,6 +1308,8 @@ async function streamChatEvents({
       // dropped before this (routes_chat.py used to `pass` on it); now it
       // carries the remedy in `message` and the caller shows it.
       else if (event.type === "unsupported" && onUnsupported) onUnsupported(event);
+      //: A server Stop reads as the browser Stop (W1).
+      else if (event.stopped) throw Object.assign(Error(), { name: "AbortError" });
       else if (event.type === "error") {
         // The server caught something mid-stream and said so. Surfacing it
         // beats the silent truncation this used to be.
@@ -1443,9 +1445,11 @@ function metaItem(text, { title = "", kind = "", icon = "" } = {}) {
 //
 // Nothing was removed: every field is still here, and the ones that moved into
 // tooltips moved because they answer a question nobody asks mid-conversation.
-function messageMetaLine({ model, elapsedMs, stats, toolCount = 0, rounds = 0, usedTools = null }) {
+function messageMetaLine({ model, elapsedMs, stats, toolCount = 0, rounds = 0, usedTools = null, stopped }) {
   const row = document.createElement("div");
   row.className = "msg-meta muted";
+  //: 0. Stopped, first (W1).
+  if (stopped) row.appendChild(metaItem("Stopped"));
 
   // 1. What it cost. First, because it is the only field anyone looks for
   //    while actually using the app.
