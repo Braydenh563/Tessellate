@@ -1494,7 +1494,9 @@ function wbAlignGuideColor(kind) {
 //: distance badges), so an equal-gap guide says what the gap is.
 const WB_BADGE_CLEAR_PX = 22;
 function wbShowAlignmentGuides(lines) {
-  const zoomGroup = document.getElementById("wb-zoom-group");
+  //: The overlay layer, above the cards in DOM order: in `#wb-zoom-group` (the base SVG) a guide ran
+  //: under every note card it lined up with (owner, 2026-11-10, INBOX 1725). Same pan and zoom.
+  const zoomGroup = document.getElementById("wb-overlay-zoom-group") || document.getElementById("wb-zoom-group");
   if (!zoomGroup) return;
   let group = document.getElementById("wb-align-guides");
   if (!group) {
