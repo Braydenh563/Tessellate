@@ -19,11 +19,14 @@ from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from tessellate.core.database import (
+    AskTurn,
     AuditLog,
+    Conversation,
     Document,
     DocumentAiEdit,
     DocumentRevision,
     Entry,
+    Reminder,
     Space,
     WhiteboardObject,
     WhiteboardSketch,
@@ -199,6 +202,53 @@ def _members(session: Session, space_id: str) -> tuple[list[Entry], list[Documen
     return entries, documents
 
 
+def _owned_rows(session: Session, space_id: str) -> list:
+    """The chats, Ask box turns and reminders the space holds: sealed while
+    it is private (`database._SPACE_SEALED`), whatever their own fields say."""
+    from tessellate.core.deps import impersonate_workspace
+
+    with impersonate_workspace(session, ""):
+        return [row for model in (Conversation, AskTurn, Reminder) for row in session.scalars(select(model).where(model.workspace_id == space_id))]
+
+
+#: At most this many of a private space's notes go to one chat turn.
+CHAT_NOTES = 5
+#: How many of its newest notes a turn looks through: the space's notes are
+#: out of the search index and the vectors, so they are read here instead.
+CHAT_SCAN = 400
+
+
+def chat_notes(session: Session, question: str, have: set[int] = frozenset()) -> list[Entry]:  # type: ignore[assignment]
+    """A private space's own notes for a chat opened inside it, while it is
+    open (INBOX 1727): sealed notes are in no index, so they are matched here
+    by the question's words, best first. Anywhere else, or locked, nothing."""
+    from tessellate.core import private_turn, vault
+    from tessellate.search.query import search_terms
+
+    space = session.info.get("workspace_id")
+    if not session.info.get(private_turn.IN_PRIVATE_SPACE) or vault.key() is None or not space:
+        return []
+    from tessellate.entry import manager
+
+    rows = session.scalars(
+        select(Entry)
+        .where(Entry.workspace_id == space, Entry.is_private.is_(True), Entry.is_board.is_(False), Entry.is_deleted.is_(False))
+        .order_by(Entry.id.desc())
+        .limit(CHAT_SCAN)
+    ).all()
+    terms = search_terms(question)
+    scored = []
+    for entry in rows:
+        if entry.id in have:
+            continue
+        text = manager.readable_content(entry).lower()
+        score = sum(term in text for term in terms)
+        if score:
+            scored.append((score, entry))
+    scored.sort(key=lambda pair: -pair[0])
+    return [entry for _score, entry in scored[:CHAT_NOTES]]
+
+
 def member_count(session: Session, space_id: str) -> int:
     entries, documents = _members(session, space_id)
     return len(entries) + len(documents)
@@ -214,6 +264,8 @@ def seal_space_members(session: Session, space_id: str) -> int:
             count += int(seal_entry(session, entry))
     for document in documents:
         count += int(seal_document(session, document))
+    for row in _owned_rows(session, space_id):
+        seal_row(row, every_column=True)
     return count
 
 
@@ -221,6 +273,8 @@ def unseal_space_members(session: Session, space_id: str) -> int:
     """"Make them ordinary": everything the space sealed, nothing else."""
     entries, documents = _members(session, space_id)
     count = sum(int(unseal_entry(session, entry)) for entry in entries)
+    for row in _owned_rows(session, space_id):
+        unseal_row(row)
     return count + sum(int(unseal_document(session, document)) for document in documents)
 
 

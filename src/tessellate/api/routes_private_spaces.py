@@ -26,7 +26,7 @@ LOCKED_DETAIL = "Unlock your private spaces first."
 
 
 def _is_open(token: str | None) -> bool:
-    return vault.key() is not None and spacelock.is_open(token, touch=False)
+    return spacelock.opened(token)
 
 
 @router.get("/private-spaces/status")

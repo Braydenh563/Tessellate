@@ -56,20 +56,44 @@ manual parity.
   unlocked by password and by PIN 2468 (wrong PIN 401); move out: "Keep it
   private" focused by default, kept private; "Make it ordinary" unsealed.
 
+## Round 2 (pspace2-1110)
+
+- Chat: `private_space.chat_notes` matches the open space's sealed notes by
+  the question's words (they are in no index) for a chat opened inside it;
+  `deps` marks that turn private (`private_turn.IN_PRIVATE_SPACE`).
+  Conversation title and messages, AskTurn question and answer and
+  Reminder text are `SealedText` while their space is private, kept out of
+  the search index, and redacted in the audit log.
+- Links: `manager.sealed_stand_ins` gives a link to a note in a locked
+  private space an "A private note" stand-in (no title, reason or
+  properties) in the note view, the list, Connections, backlinks and the
+  graph (a muted dashed `private:<id>` node, not clickable).
+- Reminders: `notice` on every reminder row; status.js announces it.
+- Delete and restore of a private space are 423 unless open; a restore
+  seals everything that comes back (a note made ordinary meanwhile too).
+- Found and fixed: the idle lock's toast never showed (the unlock left the
+  window's state closed); `due_now` read `workspace_id` off fakes without
+  it (round 1, tests/test_reminder_notifier.py); the auth check's session
+  ran the private-space read (perf budget).
+- Drive on 8794: locked, no secret or title in dashboard, notes, timeline,
+  reminders, library, graph, the notifications panel or the palette (it
+  echoes only the typed words); graph shows "A private note"; note view
+  link preview "A private note"; counts 0/0. Inside: the menu row "Private
+  in this space" drawn (span 131x22; its button carries aria-disabled per
+  menus.js:1344, not measured); the centre recorded "A private reminder".
+  Idle at 1 minute: 78 s still, a click, status open false, toast "Private
+  spaces locked." with Unlock, no secret left in the page.
+
 ## Left
 
-- Atlas reads documents in a chat opened inside a private space, but never
-  its notes (the `is_private` filters in chat context exclude them).
-- Links from ordinary notes to a sealed note: no locked placeholder of their own.
-- Browser notifications for a private reminder (the desktop notifier is done).
-- A document outside a private space has no Private switch of its own.
-- Restoring a deleted private space while locked is untested.
-- Windows Hello (next step, out of this batch).
+- Windows Hello (next batch).
+- Recordings, bookmarks and files made inside a private space are not
+  sealed (only notes, documents, boards, chats, Ask turns and reminders).
+- Deleting a locked private space from the window shows the 423 message;
+  it does not offer the unlock prompt.
 
 ## Not verified
 
-- Dashboard, recents, palette, notifications and the desk companion were not
-  driven one by one; they read through the same ORM filter.
+- The desk companion while locked.
 - The real OS keyring PIN path (only the fake store).
-- The idle lock in a browser over ten real minutes (unit-tested with a clock).
-- The note menu's locked Private row was not opened in the browser.
+- A real model answering in a private-space chat (fake transport only).

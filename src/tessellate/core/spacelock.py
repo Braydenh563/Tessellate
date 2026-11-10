@@ -65,6 +65,14 @@ def is_open(token: str | None, *, touch: bool = True) -> bool:
         return True
 
 
+def opened(token: str | None) -> bool:
+    """Whether this session may read the private spaces now: the vault key is
+    loaded and it opened them within the idle minutes. Never touches."""
+    from tessellate.core import vault
+
+    return vault.key() is not None and is_open(token, touch=False)
+
+
 def close_for(token: str | None) -> None:
     with _lock:
         _opened.pop(token or "", None)

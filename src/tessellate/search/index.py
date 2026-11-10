@@ -888,8 +888,23 @@ def _bookmark_row(mark) -> Row | None:  # noqa: ANN001
     )
 
 
+def _in_private_space(obj) -> bool:  # noqa: ANN001
+    """A chat, an Ask turn or a reminder of a private space is sealed
+    (INBOX 1727) and so never indexed, like a private note. Raw SQL on the
+    flush's own connection: this runs inside a flush."""
+    from sqlalchemy import text
+    from sqlalchemy.orm import object_session
+
+    session = object_session(obj)
+    space = getattr(obj, "workspace_id", None)
+    if session is None or not space:
+        return False
+    found = session.connection().execute(text("SELECT 1 FROM spaces WHERE id = :id AND is_private = 1"), {"id": space})
+    return found.first() is not None
+
+
 def _reminder_row(rem) -> Row | None:  # noqa: ANN001
-    if rem is None or getattr(rem, "deleted_at", None) is not None:
+    if rem is None or getattr(rem, "deleted_at", None) is not None or _in_private_space(rem):
         return None
     flags = ["done"] if getattr(rem, "done", False) else ["open"]
     if getattr(rem, "priority", "") == "high":
@@ -909,7 +924,7 @@ def _conversation_row(conv) -> Row | None:  # noqa: ANN001
     One row per chat rather than per message: the rowid is the chat's id
     (`_rowid`), and a hit opens the chat, which is where its turns are read.
     """
-    if conv is None:
+    if conv is None or _in_private_space(conv):
         return None
     try:
         messages = json.loads(conv.messages or "[]")
@@ -936,7 +951,7 @@ def _conversation_row(conv) -> Row | None:  # noqa: ANN001
 
 def _ask_turn_row(turn) -> Row | None:  # noqa: ANN001
     """One question asked in the Ask box, with its answer."""
-    if turn is None:
+    if turn is None or _in_private_space(turn):
         return None
     return Row(
         title=turn.question or "",

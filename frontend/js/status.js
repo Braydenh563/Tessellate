@@ -599,7 +599,7 @@ async function checkDueReminders() {
       return !r.done && r.alert_minutes && at > now && at - r.alert_minutes * 60000 <= now && !already.has(`e${r.id}`);
     })
     .map((r) => ({ ...r, id: `e${r.id}`, early: true, text: `${r.text}, ${relativeWhen(r.due_at)}` }));
-  const fresh = [...due.filter((r) => !already.has(r.id)), ...early];
+  const fresh = [...due.filter((r) => !already.has(r.id)), ...early].map((r) => ({ ...r, ...r.notice }));
   if (!fresh.length) return;
   rememberAnnounced(fresh.map((r) => r.id));
   playReminderChime();

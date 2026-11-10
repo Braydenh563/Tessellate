@@ -153,6 +153,10 @@ def entry_space(entry: Entry) -> str:
 #: leaves it out.
 PRIVATE_LABEL = "Private note"
 
+#: A note in a locked private space, seen from a link outside it (INBOX 1727):
+#: the fact of the link stays, its title and reason do not.
+PRIVATE_SPACE_NOTE = "A private note"
+
 
 MAX_CATEGORY_LENGTH = 100
 
@@ -983,6 +987,47 @@ def documents_for_entries_bulk(session: Session, entry_ids: list[int]) -> dict[i
     return out
 
 
+def sealed_stand_ins(session: Session, ids: set[int]) -> dict[int, Entry]:
+    """For each of `ids` that lives in a locked private space, a stand-in
+    note that says only that (`PRIVATE_SPACE_NOTE`): the request's reads leave
+    the note itself out (`sealed_workspaces`), so a link to it would vanish.
+    Read on the table, past the space filter, for the id and space alone."""
+    sealed = session.info.get("sealed_workspaces")
+    if not sealed or not ids:
+        return {}
+    table = Entry.__table__
+    rows = session.execute(
+        select(table.c.id, table.c.workspace_id).where(
+            table.c.id.in_(ids), table.c.workspace_id.in_(sealed), table.c.is_deleted.is_(False)
+        )
+    )
+    out: dict[int, Entry] = {}
+    for row_id, space in rows:
+        stand_in = Entry(id=row_id, content="", is_private=True, is_deleted=False, is_board=False, workspace_id=space)
+        stand_in.sealed_placeholder = True
+        out[row_id] = stand_in
+    return out
+
+
+def _placeholder_link(link: EntryLink) -> EntryLink:
+    """A link to a stand-in, without its reason or properties (they speak of
+    the sealed note)."""
+    return EntryLink(
+        id=link.id, source_entry_id=link.source_entry_id, target_entry_id=link.target_entry_id,
+        created_at=link.created_at, link_type=link.link_type, origin=link.origin, two_way=link.two_way,
+        workspace_id=link.workspace_id,
+    )
+
+
+def _with_stand_ins(session: Session, links: list[EntryLink], found: dict[int, Entry]) -> dict[int, Entry]:
+    missing = {end for link in links for end in (link.source_entry_id, link.target_entry_id) if end not in found}
+    return {**found, **sealed_stand_ins(session, missing)}
+
+
+def _shown_link(link: EntryLink, other: Entry) -> EntryLink:
+    return _placeholder_link(link) if getattr(other, "sealed_placeholder", False) else link
+
+
 def links_for_entries_bulk(
     session: Session, entry_ids: list[int]
 ) -> dict[int, list[tuple[EntryLink, Entry]]]:
@@ -1010,17 +1055,18 @@ def links_for_entries_bulk(
         touched_ids.add(link.target_entry_id)
         touched_ids.add(link.source_entry_id)
     entries_by_id = {e.id: e for e in session.scalars(select(Entry).where(Entry.id.in_(touched_ids)))}
+    entries_by_id = _with_stand_ins(session, links, entries_by_id)
 
     out: dict[int, list[tuple[EntryLink, Entry]]] = {}
     for link in links:
         if link.source_entry_id in id_set:
             other = entries_by_id.get(link.target_entry_id)
             if other is not None:
-                out.setdefault(link.source_entry_id, []).append((link, other))
+                out.setdefault(link.source_entry_id, []).append((_shown_link(link, other), other))
         if link.target_entry_id in id_set and link.target_entry_id != link.source_entry_id:
             other = entries_by_id.get(link.source_entry_id)
             if other is not None:
-                out.setdefault(link.target_entry_id, []).append((link, other))
+                out.setdefault(link.target_entry_id, []).append((_shown_link(link, other), other))
     return out
 
 
@@ -2179,6 +2225,7 @@ def links_for_entry(session: Session, entry: Entry) -> list[tuple[EntryLink, Ent
         )
     )
     result = []
+    pending = []
     for link in links:
         other_id = (
             link.target_entry_id
@@ -2188,6 +2235,10 @@ def links_for_entry(session: Session, entry: Entry) -> list[tuple[EntryLink, Ent
         other = session.get(Entry, other_id)
         if other is not None:
             result.append((link, other))
+        else:
+            pending.append((link, other_id))
+    stand_ins = sealed_stand_ins(session, {other_id for _link, other_id in pending})
+    result += [(_placeholder_link(link), stand_ins[other_id]) for link, other_id in pending if other_id in stand_ins]
     return result
 
 

@@ -33,6 +33,8 @@
       $("lock-password").setAttribute("aria-label", "Password or PIN");
     }
     if (!(await asked)) return false;
+    //: `watch` reads the touch against this.
+    state.status = { ...(state.status || {}), open: true };
     vaultOpen = true;
     state.touched = Date.now();
     watch();

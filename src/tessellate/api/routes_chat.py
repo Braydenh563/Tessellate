@@ -71,7 +71,7 @@ from tessellate.core.config import user_now
 from tessellate.core.deps import get_session
 from tessellate.repo import categories as categories_repo
 from tessellate.core.logbuffer import safe_value
-from tessellate.entry import manager
+from tessellate.entry import manager, private_space
 from tessellate.entry.manager import UNCATEGORISED
 from tessellate.search import chunks as search_chunks
 from tessellate.search import search_manager
@@ -431,6 +431,9 @@ def _retrieve_ranked(session: Session, question: str, found: "_Found", attached:
     #: names, then the one that defines it, then the rest as retrieved.
     if as_of is None and found.mode != "recent":
         found.entries = note_rank.lead(found.entries, question)
+    #: A chat opened inside an open private space reads its sealed notes too (INBOX 1727).
+    if intent.needs_retrieval(found.detected) and found.stats is None:
+        found.entries += private_space.chat_notes(session, question, have={e.id for e in found.entries})
 
 
 def _prepare(

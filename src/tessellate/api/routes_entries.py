@@ -4104,6 +4104,8 @@ def _connection_label(entry, length: int = 80) -> str:  # noqa: ANN001
     B\noven temperatures", which renders on a single-line row as the hash, the
     title and the first line of the body run together.
     """
+    if getattr(entry, "sealed_placeholder", False):
+        return manager.PRIVATE_SPACE_NOTE
     if entry.is_private:
         return manager.PRIVATE_LABEL
     return manager.plain_label(manager.readable_content(entry), length)
