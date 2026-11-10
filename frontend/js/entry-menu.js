@@ -73,6 +73,10 @@ function fillEntryMenu(menu, entry) {
       title: `Now in ${entry.category || "Uncategorised"}; choose another`,
       run: () => chooseNoteCategory([entry.id], entry.category),
     },
+    //: A note with three or more headings gets a way to jump to one (S74).
+    ...(fillEntryMenu.headingCount(entry) >= 3
+      ? [{ label: "ph:list-dashes Headings", title: "Jump to a heading in this note", run: () => fillEntryMenu.headings(entry) }]
+      : []),
     //: Inside a private space the switch is locked on: no per-note opt-out (INBOX 1727).
     spacesCache.find((space) => space.id === entry.workspace_id)?.is_private
       ? { label: "ph:lock Private in this space", title: "Move it out of this space to share it", disabled: true, run: () => toast("Move it out of this space to share it.") }
@@ -388,6 +392,67 @@ function fillEntryMenu(menu, entry) {
   menu.appendChild(buildMenuItemButton(archive));
   menu.appendChild(buildMenuItemButton(danger));
 }
+
+//: **Headings (S74).** The card draws the text after its title line, so the title's own heading is not one to jump to.
+//: A clipped row carries the server's count of the whole text (`heading_count`); a whole row is counted here.
+fillEntryMenu.headingCount = function (entry) {
+  const titled = entry.title ? 1 : 0;
+  if (entry.content_truncated) return Math.max(0, (entry.heading_count ?? 0) - titled);
+  return mdTocEntries(entry.title ? bodyWithoutTitleLine(entry.content) : stripFrontmatter(entry.content)).length;
+};
+
+//: Contents recipe (`mdTocElement`) in a sheet: a link per heading, indented by level; a press closes the sheet and
+//: brings that heading to the top of the card, opened out (the card is one paragraph of text, so each heading line is
+//: a `.note-heading` span, notes-list.js).
+fillEntryMenu.headings = async function (entry) {
+  let whole;
+  try {
+    whole = await fullEntry(entry.id);
+  } catch (error) {
+    toast(error.message || "Couldn't read that note.", true);
+    return;
+  }
+  const entries = mdTocEntries(whole.title ? bodyWithoutTitleLine(whole.content) : stripFrontmatter(whole.content));
+  openSheet({
+    label: "Headings",
+    sub: entry.title || noteNamePlain(whole.content, 80),
+    name: "note-headings",
+    build: (card, close) => {
+      const toc = mdTocElement();
+      toc.querySelector(".md-toc-head").remove();
+      const list = toc.querySelector(".md-toc-list");
+      const top = entries.length ? Math.min(...entries.map((e) => e.level)) : 1;
+      entries.forEach((heading, index) => {
+        const item = document.createElement("li");
+        item.className = `md-toc-item md-toc-depth-${Math.min(3, heading.level - top)}`;
+        const link = document.createElement("a");
+        link.href = "#";
+        link.textContent = heading.text;
+        link.addEventListener("click", (event) => {
+          event.preventDefault();
+          close();
+          fillEntryMenu.jump(entry.id, index, entries.length, heading.text);
+        });
+        item.appendChild(link);
+        list.appendChild(item);
+      });
+      card.appendChild(toc);
+    },
+  });
+};
+
+fillEntryMenu.jump = async function (id, index, total, text) {
+  const row = document.querySelector(`li[data-id="${id}"]`);
+  const content = row?.querySelector(".entry-content");
+  if (!content) return;
+  const more = row.querySelector(".entry-more");
+  if (more && more.textContent === "Show more") more.click();
+  await content.fillWhole?.();
+  const spans = [...content.querySelectorAll(".note-heading")];
+  //: By place when the card drew every heading the text holds; by words when markup (a table, a column) shifted them.
+  const target = spans.length === total ? spans[index] : spans.find((s) => s.textContent.trim() === text.trim());
+  target?.scrollIntoView({ block: "start", behavior: reducedMotionWanted() ? "auto" : "smooth" });
+};
 
 // Moved here from menus.js with the rows that call them (gzip budget, laglist-1108).
 async function toggleEntryPrivacy(entry) {

@@ -257,7 +257,8 @@ HELP_TOPICS: list[dict] = [
             '"connected to Harbor", "untouched since June", "tagged '
             'work", "pinned", "filed under Cooking". Drop files anywhere in '
             "the app to add them: pictures and PDFs go to Images, anything "
-            "else becomes a document."
+            "else becomes a document. On the Notes tab, .md and .txt "
+            "files become notes instead, with Undo."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },

@@ -2502,6 +2502,21 @@ _TASK_DONE = re.compile(r"^[ \t]*(?:[-*+]|\d+[.)])[ \t]+\[[xX]\]", re.M)
 _WIKI_LINK = re.compile(r"\[\[[^\]\n]{1,120}\]\]")
 
 
+_FENCE = re.compile(r"^[ \t]*(?:```|~~~)")
+_ATX = re.compile(r"^#{1,6}[ \t]+\S")
+
+
+def _heading_count(text: str) -> int:
+    """`#` headings outside code fences, as the card's outline (`mdTocEntries`) counts them."""
+    fenced, count = False, 0
+    for line in text.split("\n"):
+        if _FENCE.match(line):
+            fenced = not fenced
+        elif not fenced and _ATX.match(line):
+            count += 1
+    return count
+
+
 def _previewed(rows: list[EntryOut], preview: int) -> list[EntryOut]:
     """`rows` with each note's text cut to `preview` characters (0 keeps it
     whole), at the last space before the cut when there is one, and
@@ -2516,6 +2531,7 @@ def _previewed(rows: list[EntryOut], preview: int) -> list[EntryOut]:
         row.tasks_open = len(_TASK_OPEN.findall(row.content))
         row.tasks_done = len(_TASK_DONE.findall(row.content))
         row.wiki_linked = bool(_WIKI_LINK.search(row.content))
+        row.heading_count = _heading_count(row.content)
         #: A meeting's card reads its sections from the whole text (`meetingGlance`), so a meeting is sent whole. So is
         #: a private note: the index never reads one, so the list's filter box matches it on the text the list holds
         #: (INBOX 1525 review). Locked, its text is the short placeholder anyway.
