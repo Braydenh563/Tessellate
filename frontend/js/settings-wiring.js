@@ -11,14 +11,14 @@
 // something to retype: and it works with no AI at all.
 
 function savedSearches() {
-  return (prefsCache && prefsCache.saved_searches) || [];
+  return prefsCache?.saved_searches || [];
 }
 
 function renderSavedSearches() {
   const box = $("saved-searches");
   const saved = savedSearches();
   box.replaceChildren();
-  box.classList.toggle("hidden", saved.length === 0);
+  box.classList.toggle("hidden", !saved.length);
   for (const item of saved) {
     const chipEl = document.createElement("span");
     chipEl.className = "chip saved-search";
@@ -664,10 +664,7 @@ document.addEventListener("keydown", (e) => {
     //: A confirm or a picker in front is a pause, not a step: Ctrl+Z reached past "Switch to mind map?" and undid the last edit behind it (dgmlive2 1108). Read only for undo and redo.
     const behindModal = () => [...document.querySelectorAll(".modal-overlay, dialog[open]")].some((m) => m.getClientRects().length);
     const inTextField = inEditable(document.activeElement);
-    //: **Ctrl+Y is redo too**, the Windows habit: the board's own Redo
-    //: button and Edit menu already print "Ctrl+Y" and nothing answered it
-    //: (the Guide agent's finding, 2026-09-24). Same rule as Ctrl+Shift+Z:
-    //: a text field keeps its own.
+    //: **Ctrl+Y is redo too** (the Windows habit; the board's Redo prints it): a text field keeps its own.
     if (!inTextField && (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "y" && !behindModal()) {
       e.preventDefault();
       runShortcut("redo");
@@ -684,8 +681,6 @@ document.addEventListener("keydown", (e) => {
       //: first (comment toggle, link) and marks the press handled; a note box does not.
       if ((id === "editorMenu" || id === "palette") && e.defaultPrevented) continue;
       if (matchesShortcut(e, def.keys)) {
-        //: Asked once the chord is one of these, not on every chord: each press of Ctrl plus a letter read the
-        //: layout of every modal (179 ms of forced layout, INBOX 1716; W13 B49).
         if ((id === "undo" || id === "redo") && behindModal()) continue;
         e.preventDefault();
         //: The chord goes through the same `performUndo`/`performRedo` the
@@ -1321,7 +1316,7 @@ function runShortcut(id) {
     },
     findAnything: () => {
       const overlay = $("finder-overlay");
-      if (overlay && overlay.classList.contains("hidden")) openFinder();
+      if (overlay?.classList.contains("hidden")) openFinder();
       else closeFinder();
     },
     search: () => {
@@ -1668,7 +1663,7 @@ function renderEntryAttachmentChips(boxId = "entry-content", hostId = "entry-att
   box.chipsSig = sig;
   box.chipsFor = textarea;
   box.replaceChildren();
-  box.classList.toggle("hidden", matches.length + staged.length === 0);
+  box.classList.toggle("hidden", !(matches.length + staged.length));
   for (const [markdown, name, url] of matches) {
     const image = stagedImageByUrl(url);
     box.append(attachmentCard({ name, url, markdown, textarea, staged: !!image, size: image?.file.size }));
@@ -1925,7 +1920,7 @@ onSurface("settings", renderInstallRow);
 
 // --- Global Drag and Drop & Paste Image Upload for Textareas ---
 document.addEventListener("dragover", (e) => {
-  if (e.target.tagName && e.target.tagName.toLowerCase() === 'textarea') {
+  if (e.target.tagName?.toLowerCase() === 'textarea') {
     e.preventDefault();
     e.target.classList.add("drag-over");
   } else if (Array.from(e.dataTransfer?.types || []).includes("Files") && fileDropBox(e.target)?.kind === "codemirror") {
@@ -1935,7 +1930,7 @@ document.addEventListener("dragover", (e) => {
 });
 
 document.addEventListener("dragleave", (e) => {
-  if (e.target.tagName && e.target.tagName.toLowerCase() === 'textarea') {
+  if (e.target.tagName?.toLowerCase() === 'textarea') {
     e.preventDefault();
     e.target.classList.remove("drag-over");
   }

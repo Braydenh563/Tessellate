@@ -289,7 +289,7 @@ function refitComposer() {
 //: under 4px, or one this function caused, does nothing.
 function fitChatEmpty() {
   const pane = document.getElementById("chat-messages");
-  const empty = pane && pane.querySelector(".chat-empty");
+  const empty = pane?.querySelector(".chat-empty");
   if (!empty) return;
   const room = pane.clientHeight;
   if (!room) return;
@@ -561,14 +561,14 @@ async function reportTimezone() {
     weekDay = null;
   }
   const body = {};
-  if (zone && !(prefsCache && prefsCache.timezone === zone)) body.timezone = zone;
-  if (weekDay !== null && !(prefsCache && prefsCache.week_start_locale === weekDay)) {
+  if (zone && !(prefsCache?.timezone === zone)) body.timezone = zone;
+  if (weekDay !== null && !(prefsCache?.week_start_locale === weekDay)) {
     body.week_start_locale = weekDay;
   }
   //: The browser's language and region, so "automatic" seasons can follow
   //: it (southern for en-AU, en-NZ, en-ZA ...) when a call carries no locale.
   const tag = String(navigator.language || "").slice(0, 35);
-  if (tag && !(prefsCache && prefsCache.season_locale === tag)) body.season_locale = tag;
+  if (tag && !(prefsCache?.season_locale === tag)) body.season_locale = tag;
   if (!Object.keys(body).length) return;
   prefsCache = await apiJson("/preferences", {
     method: "PUT",

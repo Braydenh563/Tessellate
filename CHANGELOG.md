@@ -5,6 +5,7 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
+- Fix (page lag, w13-1110, INBOX 1726): Settings redraws its profile head only when the name changed (the open's 61 ms layout read at 4x is 18 ms on the first open and 0 after), and a Ctrl chord asks whether a modal is open only when it is undo or redo (Ctrl+B or Ctrl+Q: 26 layout reads to 0). Measured at 4x with the lag-1109 probes: the modal show and hide, tab switches, the icon picker's first open, `/models/status` and the Library load are the browser's own style and layout (no handler over 50 ms of script), traced in `agent-remaining/w13-1110.md`.
 - Fix (voice notes, w6-1110, audit 1031 Z12): a Discard whose finish fails now says so with a toast and keeps the recording in Library; audit rows A32 to A36 (1029 X1 to X3, 1031 Z12, 1028 B8, B40) were already fixed on head and are struck.
 ## [Unreleased]
 - Fix (dock menus, owner 2026-11-10): every on/off row in a dock menu (Timeline "Dates beside the strip", Library "Semantic" and "Include the bin", and the rest) carries `.checkbox-label`, so its box is the app's pill switch, 32x18, not a 28x28 platform checkbox; tests/test_dock_menu_switch_1110.py.
