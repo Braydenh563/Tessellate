@@ -34,7 +34,9 @@ _BIN = re.compile(
     re.I,
 )
 _HISTORY = re.compile(
-    _LEAD + r"(?:what|where) (?:did|were|have) (?:we|you and i)\s+(?:talk(?:ed)?|chat(?:ted)?|discuss(?:ed)?|decide|decided|cover(?:ed)?|speak|spoke|say|said)\b(?P<rest>.*)$"
+    _LEAD + r"(?:what|where) (?:did|were|have) (?:we|you and i)\s+(?:talk(?:ed)?|chat(?:ted)?|discuss(?:ed)?|decide|decided|speak|spoke|say|said"
+    #: "what did we cover in lecture 5" is the study summary's; only "...cover last time" is a past chat.
+    r"|cover(?:ed)?(?=.*\b(?:last time|earlier|before|previously|the other day|recently|lately|this morning|last night)\b))\b(?P<rest>.*)$"
     r"|" + _LEAD + r"(?:search|find|look)(?: through| in| at)? (?:my |our |the )?(?:old |past |earlier |previous )?(?:chats?|conversations?)(?: history)?(?: for| about| on)?(?P<rest2>.*)$",
     re.I,
 )

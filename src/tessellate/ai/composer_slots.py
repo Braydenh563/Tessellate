@@ -851,6 +851,7 @@ def _ask_quantity(t: list[str]) -> Ask | None:
 SLOT_CUES = frozenset({"long", "fast", "far", "quick", "quickly"})
 _TRAVEL = frozenset({"going", "travelling", "traveling", "flying", "coming", "meeting", "visiting", "staying", "go", "travel", "fly", "come", "meet"})
 _DOINGS = frozenset({"take", "takes", "bake", "cook", "boil", "rest", "last", "lasts", "simmer", "roast", "fry", "wait", "prove"})
+_POSSESSIVE = frozenset({"my", "our", "the", "his", "her", "their", "a"})
 _FRAME_WORDS = frozenset({"about", "to", "for", "the", "my", "it", "take", "takes", "does", "who", "with", "how"})
 
 
@@ -860,7 +861,9 @@ def _ask_duration(t: list[str]) -> Ask | None:
     if t[:2] != ["how", "long"] or {"since", "until", "till", "ago", "been", "away", "left"} & set(t):
         return None
     #: A doing ("how long do I bake it") or the bound follow-on ("how long about banana bread"), not "how long is the trip".
-    if not (_AUX & set(t) or _DOINGS & set(t) or t[2:3] == ["about"]):
+    #: "my last run" is the latest one (a ranked noun), not "how long does it last".
+    ranked = {w for i, w in enumerate(t) if w == "last" and t[i - 1] in _POSSESSIVE}
+    if not (_AUX & set(t) or _DOINGS & (set(t) - ranked) or t[2:3] == ["about"]):
         return None
     subject = _flat(t[2:], _AUX | _SELF | _COPULA | _FILLER | _FRAME_WORDS)
     return Ask(subject) if subject else None

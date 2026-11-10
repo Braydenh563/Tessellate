@@ -390,11 +390,16 @@ _OWN_NUMBER = re.compile(r"\b(?:table|room|seat|booking|reservation|confirmation
 _WHO_NAME = re.compile(r"^who(?:'s| is| was) (?!the |a |an )\w+(?: \w+)?[?.]*$")
 
 
+#: "how long until the tax return": a countdown to something the notes may date, so a miss says no note
+#: gives the day, never "general knowledge" (the composer's `_until`).
+_COUNTDOWN = re.compile(r"^how (?:long|many (?:days|weeks|months)) (?:is it |is there |left )?(?:until|till|before)\b")
+
+
 def general(question: str) -> bool:
     """A question about the world, not the person or their notes ("what's
     the capital of France"): with nothing found it is said as such."""
     q = _clean(question)
-    if _WHO_NAME.match(q) or _TOPIC_NUDGE.match(q):
+    if _WHO_NAME.match(q) or _TOPIC_NUDGE.match(q) or _COUNTDOWN.match(q):
         return False
     return bool(_GENERAL.match(q)) and not _PERSONAL.search(q) and not _OWN_NUMBER.search(q) and not re.search(r"\b(?:you|your|note|notes)\b", q)
 

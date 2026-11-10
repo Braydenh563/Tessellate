@@ -164,8 +164,8 @@ def test_notes_become_a_timeline_by_the_day_each_was_written():
 def test_notes_become_a_mind_map_with_each_note_a_branch():
     made = cm.diagram("", want="", notes=NOTES, subject="Home")
     branches = _mindmap(made.source)
-    # Each note under the composer's own name for it (`composer_write.note_name`).
-    assert [w for d, w in branches if d == 1] == ["Boiler", "Garden", "Plumber call. He fixed the leak under\u2026"]
+    # Each note under the composer's own name for it (`composer_write.note_name`): a title, else the first clause in quotes (owner 2026-11-10).
+    assert [w for d, w in branches if d == 1] == ["Boiler", "\u201cGarden: tomatoes went in\u201d", "\u201cPlumber call\u201d"]
     assert any(d == 2 and "beans need poles" in w for d, w in branches)
 
 

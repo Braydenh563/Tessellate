@@ -119,8 +119,10 @@ def test_a_checklist_asked_for_by_name_is_shown_as_the_checklist(book, text, que
 # --- 4: "summarise my week" is the week's recap --------------------------------------------
 
 RECAPS = [
-    ("what did I do this week", ["summarise my week", "summarize my week", "summarise this week", "recap my week", "sum up the week",
-                                  "give me a recap of my week", "please summarise my week", "can you summarise this week"]),
+    #: "summarise my week" is the week in review, the one writer for chat, Ask and the Digest (audit 2, G4,
+    #: `review_words`): "what did I do this week" stays the dated log, so the week row holds the review phrasings.
+    ("summarise my week", ["summarize my week", "summarise this week", "recap my week", "sum up the week",
+                           "give me a recap of my week", "please summarise my week", "can you summarise this week"]),
     ("what did I do last week", ["summarise last week", "recap last week", "sum up my last week"]),
     ("what did I do this month", ["summarise my month", "recap this month", "summarise the month"]),
     ("what did I do yesterday", ["summarise yesterday", "recap yesterday"]),
@@ -132,7 +134,7 @@ RECAPS = [
 def test_a_summary_of_a_period_is_that_periods_recap(book, canonical, asks, chat):  # noqa: F811
     ask = book([("Thinking about the week ahead and what to plan", D(2026, 10, 28, 9))])
     want = ask(canonical, chat)
-    assert " you " in want.split(":")[0], want
+    assert " you " in f" {want.split(chr(58))[0].lower()}", want
     found = [f"{q}\n{said}" for q in asks if (said := ask(q, chat)) != want]
     assert not found, "\n\n".join(found)
 
