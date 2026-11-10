@@ -7,6 +7,17 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-10 (q31-1110: the Tessellation view, GRAPH_PLAN Q31)
+
+- Built: Q31, one Tessellation layout beside Force, Tree, Radial, Arc and Treemap (`graph-tessellate.js`, a lazy file of the graph bundle, one `gcTess` name in the shared scope), with a Look list (Cells, the default, and Hexes). Cells: a Voronoi inside each category's rectangle seeded from a link-weighted treemap, so a well-linked note owns a bigger cell; Hexes: one hexagon size under every category, linked notes in neighbouring hexagons. One layout, selection, legend, popup and hit test under both (a whole cell answers a pointer). The Map: tile area follows 1 plus a note's links (capped at 12), a category name wraps or shrinks and is never cut (`gcTess.fit`, header height from the name), and each rectangle has a title tooltip. Measured on the 75-note showcase at 390, 1280 and 1920, both themes: 7 of 7 labels drawn, 0 overflowing, 0 NaN, tooltip "Work: 17 notes".
+- Moved from GRAPH_PLAN (the section as it stood):
+
+  > ## Placed from the owner, 2026-10-11: a tessellation view (next PR)
+  >
+  > **Decision Q31 (owner, 2026-11-11, INBOX 1733, mocks in the session scratchpad `q31/`):** one Tessellation view with two looks the person switches between, Cells (A, a link-weighted Voronoi; the default, the owner leans to it) and Hexes (B, hexagons grouped by category); one layout, selection, legend and popup code under both. Mock C (territories) folds into the existing Map (treemap) instead of a third view: tile area by link weight, category names never cut ("Thoug... (2)" today; a short tile drops the count, then wraps), and a topic level under each category once topics exist.
+  >
+  > The owner: "I'm thinking next pr we should add another graph view which better resembles the essence of the name tessellate". A third view beside the force graph and the map: every note owns one cell of a plane tiled with no gaps (a Voronoi tessellation over the existing 2D layout, or a hexagon grid placed by it), neighbours are related notes, categories are coloured regions with a heavier border, and a new note settles into its cell the way the logo's third cell does. First step: mock three variants (Voronoi, hexagon grid, hexagon clusters per category) at 50, 500 and 2,000 notes for the owner to pick from, then a brief here. (open, checked 2026-11-09: no Voronoi or hexagon view exists in graph.js, graph-canvas.js or graph-worker.js.)
+
 ## Moved from the plans, 2026-11-10 (s13-1110: INBOX 1695 a, audit S93)
 
 - Built: INBOX 1695 (a) a Private toggle (`aria-pressed`, the ghost toggle recipe, lock glyph that closes) beside Open in Capture in the quick note and in the capture card's foot (`captureCard.mountLock`, built with the card's extras). It starts as the setting says; a save adds `private` only when the toggle differs, so null still follows Settings. Measured at 1440 on a fresh data dir: setting off, pressed then saved gave a private note; setting on, default pressed, pressed off gave a readable note; the card's toggle 95 x 32 px on the Save row (Save 32 px). The Capture page's own form (capture-ask.js, a boot script) is not covered: no code was added to boot scripts. Help: Quick note topic (help_topics_more.py) and the dialog's help text.

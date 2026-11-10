@@ -3160,7 +3160,7 @@ HELP_TOPICS.extend(
                 "and the selection bar can Pin, Unpin, Tag, Link together, Unlink (all undoable with Ctrl+Z) or make"
                 " a Mind map of them, built from their links round the picked or most connected note, "
                 "with Open on the notice that follows. Options (the gear) opens with View: Layout"
-                " (Force, Tree, Radial, Arc or Treemap; the dock names a fixed one), "
+                " (Force, Tree, Radial, Arc, Treemap or Tessellation; Tessellation has a Look, Cells or Hexes), "
                 "Shape (Organic, Clusters or Galaxy; the Force layout's own, dimmed under the others), Colour, Size, Match "
                 "strength (with Similarity on: raise it for closer matches), Trace, which "
                 "finds how two notes connect, and Legend, which hides the key. Then Physics (Unpin all, "
