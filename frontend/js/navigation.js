@@ -493,6 +493,8 @@ function renderMarkdown(container, text, depth = 0) {
       block.append(bar, pre);
       container.appendChild(block);
       if (language === "mermaid") mermaidSoon(block);
+      //: Coloured by the lazy `codeColour` module (code-colour.js) after the same settle.
+      else if (language) setTimeout(() => block.isConnected && ensureModule("codeColour").then((ok) => ok && block.dispatchEvent(new Event("codecolour", { bubbles: true }))), 400);
       continue;
     }
 

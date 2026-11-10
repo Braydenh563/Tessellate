@@ -2003,7 +2003,8 @@ MORE_TOPICS.extend(
             ),
             "body": (
                 "A table or a code block is drawn the "
-                "way a document draws it, with its Copy button; a search does not "
+                "way a document draws it, with its Copy button, and a code block "
+                "that names its language is coloured; a search does not "
                 "mark words inside one. A picture from the web is not loaded, "
                 "because this notebook works offline: the card says so and links "
                 "to it, to open in a new tab. A [[link]] to a note that does not "

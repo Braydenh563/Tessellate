@@ -2,9 +2,9 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8044, frontend ids 2655, CSS sections 523, backend routes 664, backend modules 9774, test files 2378, tests 19857, plan headings 1001, app scripts 28, boot scripts 37, script files 272.
+Counts: frontend functions 8048, frontend ids 2655, CSS sections 523, backend routes 664, backend modules 9774, test files 2379, tests 19862, plan headings 1000, app scripts 28, boot scripts 37, script files 273.
 
-## Frontend functions (8044)
+## Frontend functions (8048)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -103,18 +103,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `afterCharacters` | frontend/js/lazy-entries.js:165 |
-| `charactersLost` | frontend/js/lazy-entries.js:174 |
-| `emblemHead` | frontend/js/lazy-entries.js:182 |
-| `installCharacterStandIns` | frontend/js/lazy-entries.js:211 |
-| `lazyLoadFailed` | frontend/js/lazy-entries.js:244 |
-| `loadCharactersIdle` | frontend/js/lazy-entries.js:205 |
-| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:232 |
-| `onDomReady` | frontend/js/lazy-entries.js:255 |
-| `plainHead` | frontend/js/lazy-entries.js:188 |
-| `runCharacterJob` | frontend/js/lazy-entries.js:196 |
-| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:267 |
-| `warmOnFirst` | frontend/js/lazy-entries.js:286 |
+| `afterCharacters` | frontend/js/lazy-entries.js:167 |
+| `charactersLost` | frontend/js/lazy-entries.js:176 |
+| `emblemHead` | frontend/js/lazy-entries.js:184 |
+| `installCharacterStandIns` | frontend/js/lazy-entries.js:213 |
+| `lazyLoadFailed` | frontend/js/lazy-entries.js:246 |
+| `loadCharactersIdle` | frontend/js/lazy-entries.js:207 |
+| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:234 |
+| `onDomReady` | frontend/js/lazy-entries.js:257 |
+| `plainHead` | frontend/js/lazy-entries.js:190 |
+| `runCharacterJob` | frontend/js/lazy-entries.js:198 |
+| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:269 |
+| `warmOnFirst` | frontend/js/lazy-entries.js:288 |
 
 ### frontend/js/note-cards.js (27)
 
@@ -787,62 +787,62 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aboveDockFab` | frontend/js/navigation.js:2462 |
-| `activeNotesSection` | frontend/js/navigation.js:2292 |
+| `aboveDockFab` | frontend/js/navigation.js:2464 |
+| `activeNotesSection` | frontend/js/navigation.js:2294 |
 | `arrowNavTarget` | frontend/js/navigation.js:205 |
-| `backgroundWriteFailed` | frontend/js/navigation.js:1806 |
-| `chatMidStream` | frontend/js/navigation.js:1738 |
-| `closeNavHistoryMenu` | frontend/js/navigation.js:900 |
-| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1768 |
-| `coversAFormPrimary` | frontend/js/navigation.js:2595 |
-| `entryLabel` | frontend/js/navigation.js:998 |
-| `formPrimaryButtons` | frontend/js/navigation.js:2556 |
-| `goToTabHistory` | frontend/js/navigation.js:1089 |
-| `hasUnsavedWork` | frontend/js/navigation.js:1717 |
-| `hideClosedDockMenuLists` | frontend/js/navigation.js:1496 |
-| `initNotesSubtabs` | frontend/js/navigation.js:2352 |
-| `initScrollTopButton` | frontend/js/navigation.js:2615 |
-| `insideClosedDetails` | frontend/js/navigation.js:1550 |
-| `loadSurface` | frontend/js/navigation.js:1294 |
-| `measureSpacingPx` | frontend/js/navigation.js:2586 |
-| `menuOfOpener` | frontend/js/navigation.js:1572 |
-| `menuRowsOf` | frontend/js/navigation.js:1557 |
+| `backgroundWriteFailed` | frontend/js/navigation.js:1808 |
+| `chatMidStream` | frontend/js/navigation.js:1740 |
+| `closeNavHistoryMenu` | frontend/js/navigation.js:902 |
+| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1770 |
+| `coversAFormPrimary` | frontend/js/navigation.js:2597 |
+| `entryLabel` | frontend/js/navigation.js:1000 |
+| `formPrimaryButtons` | frontend/js/navigation.js:2558 |
+| `goToTabHistory` | frontend/js/navigation.js:1091 |
+| `hasUnsavedWork` | frontend/js/navigation.js:1719 |
+| `hideClosedDockMenuLists` | frontend/js/navigation.js:1498 |
+| `initNotesSubtabs` | frontend/js/navigation.js:2354 |
+| `initScrollTopButton` | frontend/js/navigation.js:2617 |
+| `insideClosedDetails` | frontend/js/navigation.js:1552 |
+| `loadSurface` | frontend/js/navigation.js:1296 |
+| `measureSpacingPx` | frontend/js/navigation.js:2588 |
+| `menuOfOpener` | frontend/js/navigation.js:1574 |
+| `menuRowsOf` | frontend/js/navigation.js:1559 |
 | `mermaidSoon` | frontend/js/navigation.js:370 |
-| `openHistoryEntry` | frontend/js/navigation.js:1149 |
-| `openNavHistoryMenu` | frontend/js/navigation.js:920 |
+| `openHistoryEntry` | frontend/js/navigation.js:1151 |
+| `openNavHistoryMenu` | frontend/js/navigation.js:922 |
 | `openRowMenu` | frontend/js/navigation.js:148 |
 | `openSelectionScope` | frontend/js/navigation.js:318 |
-| `paintTabHistory` | frontend/js/navigation.js:947 |
-| `placeDockMenuInWindow` | frontend/js/navigation.js:1365 |
-| `positionScrollTopForNested` | frontend/js/navigation.js:2471 |
-| `recordTabVisit` | frontend/js/navigation.js:1035 |
-| `recordingLive` | frontend/js/navigation.js:1745 |
+| `paintTabHistory` | frontend/js/navigation.js:949 |
+| `placeDockMenuInWindow` | frontend/js/navigation.js:1367 |
+| `positionScrollTopForNested` | frontend/js/navigation.js:2473 |
+| `recordTabVisit` | frontend/js/navigation.js:1037 |
+| `recordingLive` | frontend/js/navigation.js:1747 |
 | `renderMarkdown` | frontend/js/navigation.js:379 |
-| `resetNavigationForNewSession` | frontend/js/navigation.js:2254 |
-| `resetNavigationToDefaults` | frontend/js/navigation.js:2273 |
-| `restoreSettingsScroll` | frontend/js/navigation.js:1136 |
-| `revealTab` | frontend/js/navigation.js:811 |
+| `resetNavigationForNewSession` | frontend/js/navigation.js:2256 |
+| `resetNavigationToDefaults` | frontend/js/navigation.js:2275 |
+| `restoreSettingsScroll` | frontend/js/navigation.js:1138 |
+| `revealTab` | frontend/js/navigation.js:813 |
 | `rowMenuAtEvent` | frontend/js/navigation.js:127 |
-| `scrollTopTargetEl` | frontend/js/navigation.js:2438 |
-| `scrollingPage` | frontend/js/navigation.js:2391 |
-| `showNotesSection` | frontend/js/navigation.js:2297 |
-| `spacingPx` | frontend/js/navigation.js:2579 |
-| `stepTabHistory` | frontend/js/navigation.js:1079 |
-| `stripMarkdownPreview` | frontend/js/navigation.js:2181 |
-| `surfaceRecovered` | frontend/js/navigation.js:1272 |
-| `switchTab` | frontend/js/navigation.js:1855 |
-| `syncScrollLock` | frontend/js/navigation.js:2757 |
-| `tabLabel` | frontend/js/navigation.js:986 |
-| `tabPlaceholder` | frontend/js/navigation.js:2117 |
-| `tabSkeletonBar` | frontend/js/navigation.js:2098 |
-| `tabSkeletonDock` | frontend/js/navigation.js:2108 |
-| `tabSkeletonPiece` | frontend/js/navigation.js:2087 |
-| `usageCount` | frontend/js/navigation.js:1816 |
-| `usageFeatureName` | frontend/js/navigation.js:1812 |
-| `usageFlush` | frontend/js/navigation.js:1820 |
-| `watchDockMenuPlacement` | frontend/js/navigation.js:1427 |
+| `scrollTopTargetEl` | frontend/js/navigation.js:2440 |
+| `scrollingPage` | frontend/js/navigation.js:2393 |
+| `showNotesSection` | frontend/js/navigation.js:2299 |
+| `spacingPx` | frontend/js/navigation.js:2581 |
+| `stepTabHistory` | frontend/js/navigation.js:1081 |
+| `stripMarkdownPreview` | frontend/js/navigation.js:2183 |
+| `surfaceRecovered` | frontend/js/navigation.js:1274 |
+| `switchTab` | frontend/js/navigation.js:1857 |
+| `syncScrollLock` | frontend/js/navigation.js:2759 |
+| `tabLabel` | frontend/js/navigation.js:988 |
+| `tabPlaceholder` | frontend/js/navigation.js:2119 |
+| `tabSkeletonBar` | frontend/js/navigation.js:2100 |
+| `tabSkeletonDock` | frontend/js/navigation.js:2110 |
+| `tabSkeletonPiece` | frontend/js/navigation.js:2089 |
+| `usageCount` | frontend/js/navigation.js:1818 |
+| `usageFeatureName` | frontend/js/navigation.js:1814 |
+| `usageFlush` | frontend/js/navigation.js:1822 |
+| `watchDockMenuPlacement` | frontend/js/navigation.js:1429 |
 | `wireLongPress` | frontend/js/navigation.js:24 |
-| `zoomWheelDelta` | frontend/js/navigation.js:2775 |
+| `zoomWheelDelta` | frontend/js/navigation.js:2777 |
 
 ### frontend/js/router.js (12)
 
@@ -2881,6 +2881,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `status` | frontend/js/clip.js:35 |
 | `stored` | frontend/js/clip.js:26 |
 | `token` | frontend/js/clip.js:33 |
+
+### frontend/js/code-colour.js (4)
+
+| Name | File:line |
+|---|---|
+| `codeColourEngine` | frontend/js/code-colour.js:31 |
+| `codeColourFill` | frontend/js/code-colour.js:81 |
+| `codeColourParser` | frontend/js/code-colour.js:47 |
+| `colourBlock` | frontend/js/code-colour.js:111 |
 
 ### frontend/js/companion-menu.js (20)
 
@@ -12619,6 +12628,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/chat-private-lazy.css | 18 |
 | frontend/css/chip-bar-lazy.css | 22 |
 | frontend/css/chord-guide-lazy.css | 158 |
+| frontend/css/code-colour-lazy.css | 36 |
 | frontend/css/companion-throw-lazy.css | 54 |
 | frontend/css/companion-travel-lazy.css | 333 |
 | frontend/css/dash-night-lazy.css | 29 |
@@ -16801,8 +16811,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3569 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3702 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3570 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3703 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -25698,7 +25708,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19857)
+## Tests (19862)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25999,6 +26009,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_clock_weekday.py | 5 |
 | tests/test_clock_widgets_1617.py | 5 |
 | tests/test_cm_measure_loop_1031.py | 5 |
+| tests/test_code_colour.py | 5 |
 | tests/test_code_completion.py | 29 |
 | tests/test_code_documents.py | 50 |
 | tests/test_code_editing.py | 24 |
@@ -28083,7 +28094,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_zoom_wheel_delta.py | 3 |
 | tests/test_zoom_wrap_1717.py | 21 |
 
-## Plan headings (1001)
+## Plan headings (1000)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -28926,7 +28937,6 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/WORLD_CLASS_PLAN.md:3031 |
 | Placed from the owner, 2026-10-11: a tessellation view (next PR) | docs/roadmap/GRAPH_PLAN.md:593 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1833 |
-| Placed from the owner, 2026-11-10 (code block colouring) | docs/roadmap/UI_MODERNISATION_PLAN.md:1298 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4142 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Presentations from boards and maps, against deckcraft | docs/roadmap/ANALYSIS.md:4022 |

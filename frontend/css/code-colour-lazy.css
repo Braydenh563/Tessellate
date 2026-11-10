@@ -1,0 +1,36 @@
+/* Coloured code blocks (code-colour.js, lazy `codeColour`). The roles and the
+   tokens are the document editor's (documents.js `docCmHighlight`), so a
+   block in a reply reads like the same code in a document, in both themes. */
+.code-block code .tok-keyword {
+  color: var(--accent-text);
+  font-weight: 600;
+}
+.code-block code :is(.tok-atom, .tok-bool, .tok-number, .tok-literal) {
+  color: var(--ok);
+}
+.code-block code :is(.tok-string, .tok-string2, .tok-regexp) {
+  color: var(--warn);
+}
+.code-block code .tok-comment {
+  color: var(--muted);
+  font-style: italic;
+}
+.code-block code :is(.tok-typeName, .tok-className, .tok-namespace, .tok-macroName) {
+  color: var(--accent-text);
+}
+.code-block code :is(.tok-punctuation, .tok-operator, .tok-meta) {
+  color: var(--muted);
+}
+.code-block code .tok-invalid {
+  color: var(--error);
+}
+.code-block code .tok-inserted {
+  color: var(--ok);
+}
+.code-block code .tok-deleted {
+  color: var(--error);
+}
+.code-block code .tok-link {
+  color: var(--accent-text);
+  text-decoration: underline;
+}
