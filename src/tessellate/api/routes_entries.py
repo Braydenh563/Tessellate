@@ -4130,6 +4130,10 @@ def create_link(
 ) -> EntryOut:
     source = NOTES.writable(session, entry_id)
     target = _existing_entry(session, body.target_id)
+    # A link would put a private note's presence on a plain note's chip (and
+    # the reverse), so while the vault is locked either end refuses it (W3 A11).
+    _refuse_while_sealed(source)
+    _refuse_while_sealed(target)
     link = manager.create_link(
         session, source, target, reason=body.reason, link_type=body.link_type,
         reason_confidence=body.reason_confidence, props=body.props,
