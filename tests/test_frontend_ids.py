@@ -418,7 +418,7 @@ def test_every_model_gated_control_gives_a_reason_and_is_in_the_inventory():
 def test_the_digest_is_never_off_for_want_of_a_model():
     """UX-12 (audit 2026-10-05) gave the digest's disabled button a reason
     on the page. Since owner-1026b K3 it is not disabled at all: with no
-    model the composer says the week (`activity.week`), so the widget carries
+    model the composer says the week (`review_digest.week`), so the widget carries
     no model gate and no offline line. The shared line the status poll fills
     (`[data-offline-line]`, with the Settings link) stays for the others."""
     js = Path(__file__).resolve().parents[1] / "frontend" / "js"

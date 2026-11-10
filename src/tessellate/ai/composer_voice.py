@@ -615,13 +615,17 @@ def _review_span(v: _Voice, views: list[NoteView], today: date) -> None:
     else:
         v.t("v_review_lead").m(_count_word(len(views))).t("v_review_notes")
     oldest = min(w.written for w in views)
+    if oldest == today:
+        #: "from today to today" is just today.
+        v.word(" today").t("stop")
+        return
     v.t("v_review_span").m(v.day(oldest)).t("to_span").m(v.day(today)).t("stop")
 
 
 def _review_filed(v: _Voice, views: list[NoteView]) -> None:
     """" Most went under **Work** (three), then **Travel** (two)." Not for two
     notes or fewer, where it would only repeat the count."""
-    cats = Counter(str(w.note.get("category")) for w in views if w.note.get("category"))
+    cats = Counter(str(w.note.get("category")) for w in views if w.note.get("category") and not str(w.note.get("category")).lower().startswith("uncategor"))
     if len(views) <= 2 or not cats:
         return
     v.t("v_review_most")
@@ -648,23 +652,23 @@ def _standouts(ordered: list[NoteView]) -> list[NoteView]:
 
 
 def _review_standouts(v: _Voice, picks: list[NoteView]) -> None:
-    from tessellate.ai.composer_threads import note_from
+    from tessellate.ai import composer_frame
 
     if picks:
         v.t("para", "v_review_stand")
     for w in picks:
         v.t("line", "bullet")
-        #: A title-less note's first line is the sentence quoted after the colon: named by its day, once.
+        #: A title-less note is named by its first words (the owner's rule), which are its sentence: no second quote.
         if w.titled:
-            v.name(w)
+            v.name(w).dated(w).t("colon").quoted(lead(w))
         else:
-            v.word(note_from(w.note))
-        v.dated(w).t("colon").quoted(lead(w))
+            v.word(composer_frame.name_of(w.note)).dated(w)
 
 
 def _review_open(v: _Voice, ordered: list[NoteView]) -> None:
     """The week's open tasks, newest note first, at most `REVIEW_OPEN`."""
-    open_items = [(w, s) for w in ordered for s in w.sentences if s.kind == "task" and not s.done][:REVIEW_OPEN]
+    #: One item a note, so a shopping list is not three lines of the review.
+    open_items = [(w, next(s for s in w.sentences if s.kind == "task" and not s.done)) for w in ordered if any(s.kind == "task" and not s.done for s in w.sentences)][:REVIEW_OPEN]
     if open_items:
         v.t("para", "v_review_open")
     for w, s in open_items:

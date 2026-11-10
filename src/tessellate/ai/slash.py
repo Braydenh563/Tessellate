@@ -126,12 +126,18 @@ def _untagged(session: Session, arg: str, now: datetime) -> str:
     return f"{lead}\n\n{_rows(session, rows)}{_more(len(rows))}{tail}"
 
 
+#: A command people reach for that is two others, said as the pair (F13 f).
+_NEARBY = {"week": "**/made week** for what you wrote, or **/due week** for what is coming up"}
+
+
 def _help(session: Session, arg: str, now: datetime) -> str:
     asked = arg.strip().lstrip("/").lower()
     if asked in COMMANDS:
         command = COMMANDS[asked]
         return f"**{command.usage}**: {command.summary} For example, {command.example}."
     lines = "\n".join(f"- **{c.usage}**: {c.summary}" for c in COMMANDS.values())
+    if asked in _NEARBY:
+        return f"There's no /{asked} command. Try {_NEARBY[asked]}."
     lead = f"There's no /{asked} command. " if asked else ""
     return f"{lead}Type one of these in the chat box; each answers from your notes with no AI:\n\n{lines}"
 

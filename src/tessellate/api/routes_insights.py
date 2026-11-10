@@ -764,7 +764,9 @@ def _written_label(created_at: datetime | None, zone) -> str:  # noqa: ANN001
 def digest_question(session: Session) -> str:
     """The digest instruction for right now, with its structure sentence."""
     today = user_now(deps.get_config())
-    return DIGEST_QUESTION.format(today=_long_date(today)) + digest_structure_note(session)
+    from tessellate.ai import review_digest
+
+    return DIGEST_QUESTION.format(today=_long_date(today)) + digest_structure_note(session) + review_digest.reminder_note(session, today)
 
 
 def _digest_notes(session: Session) -> list[dict]:
@@ -851,10 +853,10 @@ def digest_structure_note(session: Session) -> str:
 
 
 def composed_week(session: Session) -> str:
-    """The weekly digest with no model, from the rows (`activity.week`)."""
-    from tessellate.ai import activity
+    """The weekly digest with no model, from the rows (`review_digest.week`)."""
+    from tessellate.ai import review_digest
 
-    return activity.week(session, user_now(deps.get_config()))
+    return review_digest.week(session, user_now(deps.get_config()))
 
 
 @router.post("/digest/stream")

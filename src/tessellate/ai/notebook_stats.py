@@ -783,6 +783,22 @@ def _untitled(session: Session) -> StatAnswer:
     return StatAnswer("untitled", f"{_plural(len(bare), 'note')} out of {len(rows)} {'has' if len(bare) == 1 else 'have'} no title. The newest {'is' if len(facts) == 1 else 'are'} listed below.", facts)
 
 
+def _title_only(content: str) -> bool:
+    """A heading and nothing under it, or nothing at all."""
+    lines = [ln for ln in str(content or "").splitlines() if ln.strip()]
+    return len(lines) <= 1 and (not lines or lines[0].lstrip().startswith("#"))
+
+
+def _empty(session: Session) -> StatAnswer:
+    """The notes with a title and no body (F13 e: "what notes are empty")."""
+    rows = session.execute(_visible(select(Entry.id, Entry.content)).order_by(Entry.created_at.desc())).all()
+    bare = [(note_id, content) for note_id, content in rows if _title_only(content)]
+    if not bare:
+        return StatAnswer("empty", "No note is empty; each has something written under its title.")
+    facts = [{"label": composer_frame.plain_snippet(content) or "Untitled", "count": 0, "id": note_id} for note_id, content in bare[:TOP_N]]
+    return StatAnswer("empty", f"{_plural(len(bare), 'note')} out of {len(rows)} {'has' if len(bare) == 1 else 'have'} a title and nothing under it. The newest {'is' if len(facts) == 1 else 'are'} listed below.", facts)
+
+
 def _same_text(content: str) -> str:
     return " ".join(re.sub(r"[#*_>\-\[\]]", " ", str(content or "").lower()).split())
 
@@ -1354,6 +1370,7 @@ _FIRST_RULES = (
     (lambda t: _asks(t, _CATEGORY_WORDS, _MOST), _top_categories),
     (lambda t: _asks(t, r"untagged|no tags|without (?:a )?tags?|missing tags?"), _untagged),
     (lambda t: _asks(t, r"untitled|title-?less|(?:no|without|missing|lack\w*) (?:a )?titles?"), _untitled),
+    (lambda t: _asks(t, r"\b(?:empty|blank|title-?only)\b", r"\bnotes?\b") and not re.search(r"\b(?:categor|folder|space|tag)", t), _empty),
     (lambda t: _asks(t, r"duplicat|same text|written twice|copies of"), _duplicates),
     (
         lambda t: _asks(t, _COUNT, r"\bnotes?\b")

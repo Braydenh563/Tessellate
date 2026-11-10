@@ -55,7 +55,9 @@ _PLAN = re.compile(
     rf"^{_LEAD}(?:how (?:should|do|can|could) i |help me |can you )?spread (?:out )?(?P<sp>.*)$|"
     rf"^{_LEAD}(?:what does|how does) (?P<w>my (?:week|day|schedule|weekend|month))(?: look| looks)?(?: like)?.*$|"
     rf"^{_LEAD}(?:my |the )?(?P<a>week ahead|day ahead|agenda|schedule)(?: for (?P<af>.+))?$|"
-    rf"^{_LEAD}(?:give me |show me )?(?:an? )?(?:agenda|schedule|plan|timetable) for (?P<g>.+)$", re.I)
+    rf"^{_LEAD}(?:give me |show me )?(?:an? )?(?:agenda|schedule|plan|timetable) for (?P<g>.+)$|"
+    #: "make a study plan": no model writes it, so the notes' own dated items are laid out (F13 g).
+    rf"^{_LEAD}(?:(?:can|could) you )?(?:make|create|build|write|draft|put together|give|get)(?: me)? (?:an? |my )?(?:study|revision|exam) (?:plan|schedule|timetable)(?P<st>.*)$", re.I)
 _UNTIL = re.compile(
     r"^(?:so |and |hey |ok |okay )*(?:how (?:long|many days|many weeks|much time|far)(?: is it| is there| do i have| have i got| have we got| left)?(?: until| till| to| before| left until| left till)"
     r"|(?:days|weeks) (?:until|till|to|before|left until)|countdown (?:to|until|for)|time (?:until|till|left until|left before)|how soon is|how close is)\s+(?:my |the |our |this )?(?P<t>.+?)\W*$", re.I)
@@ -929,6 +931,8 @@ def _answer_text(ctx: Ctx, text: str) -> Reply | None:
     if (reply := _when_reply(ctx, text)) is not None:
         return reply
     plan = _PLAN.match(text)
+    if plan and plan.group("st") is not None:
+        return _plan(ctx, ahead_default(today))
     if plan:
         return _plan(ctx, _plan_window(text, " ".join(g for g in plan.groups() if g) or "this week", today))
     return _due_reply(ctx, text, today) if _asks_due(text, today) else None

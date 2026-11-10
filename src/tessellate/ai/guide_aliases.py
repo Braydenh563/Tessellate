@@ -24,6 +24,10 @@ import re
 #: question; `.{0,40}` joins a verb to its thing without caring about the
 #: words between ("export my notes to a pdf").
 _ROWS: tuple[tuple[str, str, tuple[str, ...]], ...] = (
+    #: Before the rows below: "stop the AI" and "nothing" are words these questions share with others.
+    ("checklist", r"\b(?:make|create|add|start|write|use)\b.{0,20}\b(?:check ?lists?|to-?do lists?|task lists?)\b", ("tasks", "capture")),
+    ("ai-edits-tags", r"\b(?:stop|prevent|disable|keep)\b.{0,25}\b(?:ai|atlas)\b.{0,25}\b(?:chang\w+|edit\w*|touch\w*|add\w*)\b.{0,15}\b(?:tags?|categor\w+|notes?)\b", ("autonomous", "suggested-tags")),
+    ("nothing-happens", r"\bnothing (?:happens|works|responds)\b|\b(?:doesn'?t|does not|won'?t) (?:work|respond)\b", ("troubleshooting",)),
     ("pdf-out", r"\b(?:export|save|download|print|turn|convert|make|get|send)\b.{0,40}\bpdf\b(?!.{0,20}\b(?:scan|scanned|ocr|read|text)\b)|\bpdf\b.{0,12}\b(?:export|output)\b", ("documents", "import-export", "board-library")),
     ("print", r"\bprint(?:ing|out)?\b|\bhard copy\b", ("documents", "import-export")),
     ("edit-question", r"\b(?:edit|change|fix|correct|redo|reword|rephrase|amend)\b.{0,25}\b(?:my |a |the |that |last )?(?:question|message|prompt|query|reply|text i sent)\b|\bsent (?:it|that|a message) (?:wrong|by mistake)\b|\btypo in (?:my|a) (?:question|message)\b", ("chat-controls", "ask-chat")),
@@ -100,6 +104,11 @@ _ROWS: tuple[tuple[str, str, tuple[str, ...]], ...] = (
     ("server-away", r"\b(?:failed to fetch|server (?:is )?(?:down|away|gone|not running)|can'?t (?:connect|reach)|connection (?:lost|refused|failed)|lost connection|unsaved|didn'?t save|not saving|won'?t save)\b", ("note-outbox", "troubleshooting")),
     ("duplicates", r"\b(?:duplicates?|duplicated|same note twice|twice|two copies|repeated notes?|merge (?:notes|two notes)|clean up (?:my )?notes|tidy)\b", ("tidy", "import-export")),
     ("what-is-this", r"\b(?:what (?:is|does)|who (?:is|are)|tell me about|explain)\b.{0,12}\b(?:this|the app|tessellate|atlas|memorymap)\b(?: app| program| thing)?\b", ("what-is-atlas", "tabs-overview", "guide")),
+    #: The misses of the 97-question hand check (composer audit 2, G5): each has a topic that answers it.
+    ("see-week", r"\bsee\b.{0,12}\b(?:my |the |this )?week\b|\bweek ahead\b", ("timeline", "reminders")),
+    ("do-first", r"\bwhat (?:should|do) i do first\b|\bwhat now\b", ("first-steps", "tour")),
+    ("whats-new", r"\bwhat'?s new\b|\bwhat is new\b|\bchangelog\b|\brelease notes\b", ("manual", "updates")),
+    ("who-made", r"\bwho (?:made|built|created|wrote|developed|makes)\b.{0,15}\b(?:this|it|the app|tessellate)\b", ("credits", "name")),
     ("get-started", r"\b(?:get started|getting started|where (?:do|should) i (?:start|begin)|first steps?|new here|how to begin|beginner|first time|just (?:installed|started)|walk me through)\b", ("first-steps", "tour", "tabs-overview")),
 )
 
@@ -110,7 +119,7 @@ _ROWS: tuple[tuple[str, str, tuple[str, ...]], ...] = (
 #: an answer the question bank already gets right.
 HARD = frozenset(
     {
-        "pdf-out", "edit-question", "regenerate", "attach-chat", "stop-ai", "delete-all", "model-for-laptop",
+        "checklist", "ai-edits-tags", "nothing-happens", "pdf-out", "edit-question", "regenerate", "attach-chat", "stop-ai", "delete-all", "model-for-laptop",
         "ram-need", "ai-slow", "app-slow", "use-chatgpt", "no-answer", "export-chat", "clear-chat", "fork-chat",
         "delete-account", "delete-note", "connect-model", "switch-model", "desktop-companion",
         "empty-bin", "cant-undo", "bin-restore", "own-order", "move-note", "retitle-note", "rename-board",

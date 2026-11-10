@@ -209,6 +209,7 @@ _HOW_LINES = [
     "Good, and glad you asked. What is on your mind?",
     "Pretty well. How has your day been?",
 ]
+_HOW_LINES_ASKING = {line for line in _HOW_LINES if line.endswith("?")}
 _THANKS_LINES = ["Any time.", "Glad to. I am here whenever you want to talk it through.", "Of course. That is what I am here for.", "My pleasure. Anything else on your mind?"]
 _LOVE_LINES = [
     "That is kind of you. I am a program, but I am glad to be useful.",
@@ -385,9 +386,33 @@ def declined(question: str, history: list[dict] | None, seed: str = "") -> str |
 _THANKS_ASK = re.compile(r"^(?:ok(?:ay)?|thanks?|thank you|ty|cheers|thx|cool|great|nice|got it|noted|perfect|lovely|good|alright|all right)(?: (?:thanks|thank you|a lot|so much|mate))*$")
 
 
+#: The state people give back to "how are you getting on?" (F13 k): heard as the
+#: answer it is, not as a thanks ("fine thanks" got "My pleasure").
+_STATE = re.compile(
+    r"^(?:i(?:'m| am) |im |not |pretty |quite |really |very |so )*(?P<what>fine|good|great|well|ok|okay|alright|not bad|tired|busy|stressed|knackered|exhausted|bored|rough|so so|could be better|can't complain)"
+    r"(?: (?:today|so far|at the moment|really))?(?: (?:thanks|thank you|ty|and you|you))*$"
+)
+_STATE_GLAD = {"fine", "good", "great", "well", "ok", "okay", "alright", "not bad", "can't complain"}
+_STATE_GLAD_LINES = ["Good to hear. Anything you want to jot down or find?", "Glad to hear it. What shall we look at?"]
+_STATE_HARD_LINES = ["Sorry, {what} is no fun. Want me to pull out just one small thing to start with?", "That sounds like a lot. I can keep it to one task if that helps."]
+
+
+def answered_how(question: str, history: list[dict] | None, seed: str = "") -> str | None:
+    """A reply to the "how are you getting on?" this app just asked."""
+    if not history or not any(_last_answer(history).startswith(line) for line in _HOW_LINES_ASKING):
+        return None
+    said = _clean(question).rstrip("?!. ")
+    found = _STATE.match(said)
+    if not found or len(said.split()) > 8:
+        return None
+    what = found.group("what")
+    lines = _STATE_GLAD_LINES if what in _STATE_GLAD else _STATE_HARD_LINES
+    return _lead(lines, said, history, seed).format(what=what)
+
+
 def reply(question: str, history: list[dict] | None, seed: str = "") -> str | None:
     """Whatever the readers make of this turn, or None to search."""
-    return declined(question, history, seed) or meta(question, history, seed) or compare(question, history, seed) or social(question, history, seed) or reaction(question, history, seed)
+    return answered_how(question, history, seed) or declined(question, history, seed) or meta(question, history, seed) or compare(question, history, seed) or social(question, history, seed) or reaction(question, history, seed)
 
 
 def reaction(question: str, history: list[dict] | None, seed: str = "") -> str | None:
