@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8062, frontend ids 2665, CSS sections 523, backend routes 662, backend modules 9945, test files 2408, tests 20078, plan headings 1000, app scripts 28, boot scripts 37, script files 274.
+Counts: frontend functions 8062, frontend ids 2665, CSS sections 523, backend routes 662, backend modules 9945, test files 2409, tests 20080, plan headings 1000, app scripts 28, boot scripts 37, script files 274.
 
 ## Frontend functions (8062)
 
@@ -1308,7 +1308,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `agentCommands` | frontend/js/editor.js:712 |
-| `askAboutSelection` | frontend/js/editor.js:2303 |
+| `askAboutSelection` | frontend/js/editor.js:2304 |
 | `calloutHint` | frontend/js/editor.js:388 |
 | `calloutKindOf` | frontend/js/editor.js:321 |
 | `calloutRewriteHead` | frontend/js/editor.js:335 |
@@ -1316,76 +1316,76 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `chatSlashRows` | frontend/js/editor.js:628 |
 | `editorApplyAction` | frontend/js/editor.js:502 |
 | `editorApplyNamed` | frontend/js/editor.js:560 |
-| `editorBackOverTrail` | frontend/js/editor.js:1003 |
-| `editorBareSlashRows` | frontend/js/editor.js:1720 |
+| `editorBackOverTrail` | frontend/js/editor.js:1004 |
+| `editorBareSlashRows` | frontend/js/editor.js:1721 |
 | `editorBlock` | frontend/js/editor.js:850 |
 | `editorBlockRows` | frontend/js/editor.js:891 |
-| `editorCaretPoint` | frontend/js/editor.js:1148 |
-| `editorChoiceDialog` | frontend/js/editor.js:2327 |
-| `editorCloseMenu` | frontend/js/editor.js:1210 |
-| `editorCloseOrphans` | frontend/js/editor.js:2217 |
+| `editorCaretPoint` | frontend/js/editor.js:1149 |
+| `editorChoiceDialog` | frontend/js/editor.js:2328 |
+| `editorCloseMenu` | frontend/js/editor.js:1211 |
+| `editorCloseOrphans` | frontend/js/editor.js:2218 |
 | `editorCodeLanguageRows` | frontend/js/editor.js:879 |
-| `editorCommands` | frontend/js/editor.js:1016 |
+| `editorCommands` | frontend/js/editor.js:1017 |
 | `editorDocIsCode` | frontend/js/editor.js:82 |
 | `editorEnsureSurfaceModule` | frontend/js/editor.js:143 |
-| `editorFinishFence` | frontend/js/editor.js:1229 |
+| `editorFinishFence` | frontend/js/editor.js:1230 |
 | `editorFuzzyMatch` | frontend/js/editor.js:343 |
 | `editorFuzzyRank` | frontend/js/editor.js:364 |
-| `editorGroupStarts` | frontend/js/editor.js:1633 |
-| `editorHandleInput` | frontend/js/editor.js:1790 |
+| `editorGroupStarts` | frontend/js/editor.js:1634 |
+| `editorHandleInput` | frontend/js/editor.js:1791 |
 | `editorHintAllPlaceholders` | frontend/js/editor.js:231 |
 | `editorHintPlaceholder` | frontend/js/editor.js:203 |
-| `editorHomeMenu` | frontend/js/editor.js:1165 |
+| `editorHomeMenu` | frontend/js/editor.js:1166 |
 | `editorInsertBlock` | frontend/js/editor.js:576 |
 | `editorInsertBoardObject` | frontend/js/editor.js:606 |
 | `editorInsertBookmarkLink` | frontend/js/editor.js:593 |
-| `editorLinkBox` | frontend/js/editor.js:1200 |
-| `editorLinkMatches` | frontend/js/editor.js:1290 |
-| `editorLoadFiles` | frontend/js/editor.js:1420 |
-| `editorMenuIcon` | frontend/js/editor.js:1460 |
-| `editorMenuList` | frontend/js/editor.js:1465 |
-| `editorNextGroupStart` | frontend/js/editor.js:1643 |
+| `editorLinkBox` | frontend/js/editor.js:1201 |
+| `editorLinkMatches` | frontend/js/editor.js:1291 |
+| `editorLoadFiles` | frontend/js/editor.js:1421 |
+| `editorMenuIcon` | frontend/js/editor.js:1461 |
+| `editorMenuList` | frontend/js/editor.js:1466 |
+| `editorNextGroupStart` | frontend/js/editor.js:1644 |
 | `editorNotifyHost` | frontend/js/editor.js:414 |
-| `editorOpenMenu` | frontend/js/editor.js:1701 |
+| `editorOpenMenu` | frontend/js/editor.js:1702 |
 | `editorOpenMenuByShortcut` | frontend/js/editor.js:186 |
 | `editorPickGlyph` | frontend/js/editor.js:479 |
-| `editorPositionMenu` | frontend/js/editor.js:1170 |
-| `editorRankCommands` | frontend/js/editor.js:1283 |
+| `editorPositionMenu` | frontend/js/editor.js:1171 |
+| `editorRankCommands` | frontend/js/editor.js:1284 |
 | `editorRecentIds` | frontend/js/editor.js:823 |
-| `editorRefreshMenu` | frontend/js/editor.js:1725 |
+| `editorRefreshMenu` | frontend/js/editor.js:1726 |
 | `editorRememberBlock` | frontend/js/editor.js:832 |
-| `editorRenderMenu` | frontend/js/editor.js:1469 |
-| `editorRenderPreview` | frontend/js/editor.js:1548 |
-| `editorRevealRow` | frontend/js/editor.js:1610 |
-| `editorRunItem` | frontend/js/editor.js:1655 |
-| `editorSetActive` | frontend/js/editor.js:1589 |
+| `editorRenderMenu` | frontend/js/editor.js:1470 |
+| `editorRenderPreview` | frontend/js/editor.js:1549 |
+| `editorRevealRow` | frontend/js/editor.js:1611 |
+| `editorRunItem` | frontend/js/editor.js:1656 |
+| `editorSetActive` | frontend/js/editor.js:1590 |
 | `editorSplice` | frontend/js/editor.js:439 |
 | `editorSurfaceFor` | frontend/js/editor.js:119 |
-| `editorSurfaceGone` | frontend/js/editor.js:2213 |
+| `editorSurfaceGone` | frontend/js/editor.js:2214 |
 | `editorSurfaceKind` | frontend/js/editor.js:86 |
-| `editorTokenAt` | frontend/js/editor.js:1245 |
+| `editorTokenAt` | frontend/js/editor.js:1246 |
 | `editorWarmSurfaceModule` | frontend/js/editor.js:258 |
-| `inlineAiAvailable` | frontend/js/editor.js:2723 |
-| `inlineAiClose` | frontend/js/editor.js:2762 |
-| `inlineAiDescribeScope` | frontend/js/editor.js:2665 |
-| `inlineAiElement` | frontend/js/editor.js:2559 |
-| `inlineAiIsCode` | frontend/js/editor.js:2686 |
-| `inlineAiOpen` | frontend/js/editor.js:2728 |
-| `inlineAiPosition` | frontend/js/editor.js:2644 |
-| `inlineAiRetry` | frontend/js/editor.js:2784 |
-| `inlineAiSubmit` | frontend/js/editor.js:2795 |
-| `inlineAiSyncModel` | frontend/js/editor.js:2694 |
-| `inlineAiUndo` | frontend/js/editor.js:2775 |
-| `isEditorSurface` | frontend/js/editor.js:2176 |
-| `offerToCreateWikiTarget` | frontend/js/editor.js:2392 |
+| `inlineAiAvailable` | frontend/js/editor.js:2724 |
+| `inlineAiClose` | frontend/js/editor.js:2763 |
+| `inlineAiDescribeScope` | frontend/js/editor.js:2666 |
+| `inlineAiElement` | frontend/js/editor.js:2560 |
+| `inlineAiIsCode` | frontend/js/editor.js:2687 |
+| `inlineAiOpen` | frontend/js/editor.js:2729 |
+| `inlineAiPosition` | frontend/js/editor.js:2645 |
+| `inlineAiRetry` | frontend/js/editor.js:2785 |
+| `inlineAiSubmit` | frontend/js/editor.js:2796 |
+| `inlineAiSyncModel` | frontend/js/editor.js:2695 |
+| `inlineAiUndo` | frontend/js/editor.js:2776 |
+| `isEditorSurface` | frontend/js/editor.js:2177 |
+| `offerToCreateWikiTarget` | frontend/js/editor.js:2393 |
 | `pickIconOrEmoji` | frontend/js/editor.js:465 |
-| `selectionBarElement` | frontend/js/editor.js:2008 |
-| `selectionBarHide` | frontend/js/editor.js:2084 |
-| `selectionBarShow` | frontend/js/editor.js:2089 |
-| `selectionBarSync` | frontend/js/editor.js:2180 |
-| `selectionContextFrom` | frontend/js/editor.js:2251 |
-| `selectionContextSource` | frontend/js/editor.js:2284 |
-| `selectionOffsets` | frontend/js/editor.js:2261 |
+| `selectionBarElement` | frontend/js/editor.js:2009 |
+| `selectionBarHide` | frontend/js/editor.js:2085 |
+| `selectionBarShow` | frontend/js/editor.js:2090 |
+| `selectionBarSync` | frontend/js/editor.js:2181 |
+| `selectionContextFrom` | frontend/js/editor.js:2252 |
+| `selectionContextSource` | frontend/js/editor.js:2285 |
+| `selectionOffsets` | frontend/js/editor.js:2262 |
 | `skillCommands` | frontend/js/editor.js:735 |
 
 ### frontend/js/dashboard.js (131)
@@ -25956,7 +25956,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (20078)
+## Tests (20080)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26757,6 +26757,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_doc_paste.py | 15 |
 | tests/test_doc_properties.py | 10 |
 | tests/test_doc_prose_panel_fit.py | 4 |
+| tests/test_doc_remind_slash.py | 2 |
 | tests/test_doc_rich_paste.py | 6 |
 | tests/test_doc_save_serial.py | 2 |
 | tests/test_doc_sections.py | 7 |

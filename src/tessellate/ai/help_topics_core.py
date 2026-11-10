@@ -191,7 +191,7 @@ HELP_TOPICS: list[dict] = [
             "browser blocks them, the list and the "
             "Notifications group in Settings say so, and their ? says how to allow them. "
             "Remind me is on a note's, a document's and a board's ⋯ "
-            "menu too, and the reminder's row opens what it is about. "
+            "menu too (and in a document, the / menu's Remind me about this), and the reminder's row opens what it is about. "
             "Select words in a note and Set a reminder in the selection menu "
             "reads a reminder out of them, linked to that note. When you tell "
             'the chat you need to do something on a day ("I need to call the '
