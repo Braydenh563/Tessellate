@@ -447,10 +447,17 @@
   function docMathIndex(text) {
     const labels = new Map();
     let next = 0;
-    for (const block of String(text ?? "").matchAll(/\$\$([\s\S]+?)\$\$/g)) {
-      const key = /\\label\{([^{}]{1,40})\}/.exec(block[1])?.[1].trim();
+    //: Blocks found with indexOf, not a lazy regex: a run of `$` with no closing pair would be rescanned from every start.
+    const page = String(text ?? "");
+    for (let open = page.indexOf("$$"); open >= 0; ) {
+      const close = page.indexOf("$$", open + 2);
+      if (close < 0) break;
+      const block = page.slice(open + 2, close);
+      open = page.indexOf("$$", close + 2);
+      if (!block) continue;
+      const key = /\\label\{([^{}]{1,40})\}/.exec(block)?.[1].trim();
       if (!key || labels.has(key)) continue;
-      const tag = /\\tag\*?\{([^{}]{1,24})\}/.exec(block[1])?.[1].trim();
+      const tag = /\\tag\*?\{([^{}]{1,24})\}/.exec(block)?.[1].trim();
       labels.set(key, tag || String((next += 1)));
     }
     return labels;

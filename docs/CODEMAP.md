@@ -4060,21 +4060,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docMathBracedName` | frontend/js/documents-math.js:210 |
 | `docMathCells` | frontend/js/documents-math.js:224 |
 | `docMathCommand` | frontend/js/documents-math.js:314 |
-| `docMathElement` | frontend/js/documents-math.js:484 |
+| `docMathElement` | frontend/js/documents-math.js:491 |
 | `docMathEnvironment` | frontend/js/documents-math.js:248 |
 | `docMathIndex` | frontend/js/documents-math.js:447 |
 | `docMathLimitsBase` | frontend/js/documents-math.js:363 |
-| `docMathLooksLikeMath` | frontend/js/documents-math.js:470 |
+| `docMathLooksLikeMath` | frontend/js/documents-math.js:477 |
 | `docMathNodes` | frontend/js/documents-math.js:367 |
-| `docMathNumbered` | frontend/js/documents-math.js:508 |
+| `docMathNumbered` | frontend/js/documents-math.js:515 |
 | `docMathProblem` | frontend/js/documents-math.js:154 |
-| `docMathRender` | frontend/js/documents-math.js:492 |
+| `docMathRender` | frontend/js/documents-math.js:499 |
 | `docMathRow` | frontend/js/documents-math.js:158 |
 | `docMathStructure` | frontend/js/documents-math.js:271 |
 | `docMathToken` | frontend/js/documents-math.js:177 |
 | `docMathTokens` | frontend/js/documents-math.js:97 |
 | `docMathTree` | frontend/js/documents-math.js:418 |
-| `docMathUse` | frontend/js/documents-math.js:458 |
+| `docMathUse` | frontend/js/documents-math.js:465 |
 
 ### frontend/js/documents-mermaid.js (24)
 

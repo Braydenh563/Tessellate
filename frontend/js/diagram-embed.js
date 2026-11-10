@@ -197,7 +197,7 @@
   //: engine line with it unless the spacing still needs it.
   const CURVES = { straight: "linear", curved: "basis", stepped: "step" };
   const curveOf = (source) => {
-    const name = /^\s+curve:\s*(\w+)\s*$/m.exec(diagramModel.front(String(source)).front.join("\n"))?.[1];
+    const name = /^ +curve:[ \t]*(\w+)[ \t]*$/m.exec(diagramModel.front(String(source)).front.join("\n"))?.[1];
     return Object.keys(CURVES).find((shape) => CURVES[shape] === name) || "usual";
   };
   const withCurve = (source, shape) => {
