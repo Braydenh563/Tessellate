@@ -805,6 +805,7 @@ _ENTITY_WORDS = {
     "entry": "a note",
     #: A saved element, shape or template in the board library.
     "library_item": "a library item",
+    "space": "a space",
     "category": "a category",
     "document": "a document",
     "conversation": "a chat",
