@@ -4455,6 +4455,7 @@ let nameMarkBuddyIndexSize = null;
 
 function nameMarkBuddyIndexReset() {
   nameMarkBuddyIndex = null;
+  nmb.fitIndex = null;
   nmb.covers = null;
 }
 //: **Dropped when the tab changes size, not when it is first watched** (INBOX 1696 l, the owner's log:
@@ -4864,15 +4865,21 @@ function nameMarkBuddyChoose(tab, obstacles, near = null, per = 12, visit = fals
     nmb.fitting = true;
     nmb.scale = NMB_FIT_SCALE;
     let small = null;
+    //: Each size's walk is kept and put back (B57: a throw's landing walked 600 elements three times in flight).
+    const full = { index: nameMarkBuddyIndex, covers: nmb.covers };
+    const fit = nmb.fitIndex?.tab === tab ? nmb.fitIndex : null;
     try {
-      nameMarkBuddyIndexReset();
+      nameMarkBuddyIndex = fit ? fit.index : null;
+      nmb.covers = fit ? fit.covers : null;
       nmb.budget.until = performance.now() + nmb.budget.fitMs;
       nmb.budget.left = nmb.budget.fitHits;
       small = nameMarkBuddyChoose(tab, obstacles, near, per, visit);
     } finally {
       nmb.scale = saved;
       nmb.fitting = false;
-      nameMarkBuddyIndexReset();
+      nmb.fitIndex = nameMarkBuddyIndex ? { tab, index: nameMarkBuddyIndex, covers: nmb.covers } : null;
+      nameMarkBuddyIndex = full.index;
+      nmb.covers = full.covers;
     }
     if (small && !small.words && !["corner"].includes(small.kind) && small.legs !== "peek") return { ...small, fit: NMB_FIT_SCALE };
   }
@@ -6511,7 +6518,8 @@ function nameMarkBuddyWay(buddy, way) {
 
 //: **A body hanging by its hands has no stride** (INBOX 1698, the owner: it "flew across the top of my screen but
 //: with the walking legs animation"): a move that sets off from a hang slides along its bar without `nmb-walking`.
-nmb.feetDown = () => nmb.poseWas !== "hang";
+//: Nor one going to hang (B61: the stride loops ran through a stand to hang slide); `nmb.pose` is the pose it moves into.
+nmb.feetDown = () => nmb.poseWas !== "hang" && nmb.pose !== "hang";
 
 //: Which way of going its limbs are in (the CSS's `data-travel`), and for
 //: a move in two parts (a climb: along, then up), the part after `at` ms.

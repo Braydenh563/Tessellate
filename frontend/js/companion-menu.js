@@ -131,6 +131,7 @@ function openNameMarkViewer(seed, { visit = false } = {}) {
   //: reads every part's box and style of a dialog just appended. The first look is the frame's; the focus
   //: goes in the same frame (a key pressed before it still reaches the dialog's Escape listener).
   requestAnimationFrame(() => {
+    nmb.visit?.settle?.();
     nameMarkViewerFit(figure);
     if (overlay.isConnected) close.focus();
   });
@@ -726,7 +727,8 @@ nmb.dayLife = {
   const seen = (event) => {
     const now = new Date();
     const key = event.type === "keydown";
-    for (const kind of s.input(now, key)) if (nameMarkBuddyReact(kind)) s.hello = now.toDateString();
+    //: Not inside the input (INBOX 1726: a day's first greeting played here, 36 to 52ms of reads on a press at 4x).
+    for (const kind of s.input(now, key)) nmb.afterClean(() => nameMarkBuddyReact(kind) && (s.hello = now.toDateString()));
     if (key && !s.timer) {
       const check = () => {
         const left = s.run ? s.run[1] + s.rest - Date.now() : 0;
@@ -1055,16 +1057,21 @@ function nameMarkBuddyVisit(host) {
   if (nmb.visit.pose !== nmb.pose) {
     //: Reads, then writes (lag log: `ondblclick` 127ms, forced layout 104ms): `finish()` on one limb dirtied
     //: the style the next limb's read had to flush again. One flush for all, then every finish.
-    const limbs = buddy.querySelectorAll(".nmb-arm, .nmb-hold, .nmb-leg");
-    for (const el of limbs) getComputedStyle(el).transform;
-    const moving = [];
-    for (const el of limbs) for (const anim of el.getAnimations?.() || []) if (anim instanceof CSSTransition) moving.push(anim);
-    for (const anim of moving) anim.finish();
-    const box = buddy.querySelector(".atl-figure-box");
-    if (box?.atlasRig) {
-      box.atlasRig.fresh = true;
-      atlasRigWake(box);
-    }
+    //: In the frame, before its paint, not in the double-click (INBOX 1726: forced layout 97ms).
+    const settle = () => {
+      if (!buddy.isConnected || nmb.visit?.watch !== watch) return;
+      const limbs = buddy.querySelectorAll(".nmb-arm, .nmb-hold, .nmb-leg");
+      for (const el of limbs) getComputedStyle(el).transform;
+      const moving = [];
+      for (const el of limbs) for (const anim of el.getAnimations?.() || []) if (anim instanceof CSSTransition) moving.push(anim);
+      for (const anim of moving) anim.finish();
+      const box = buddy.querySelector(".atl-figure-box");
+      if (box?.atlasRig) {
+        box.atlasRig.fresh = true;
+        atlasRigWake(box);
+      }
+    };
+    nmb.visit.settle = settle;
   }
   watch.observe(buddy, { attributes: true, attributeFilter: ["data-pose"] });
   //: Its own act keeps its own end; with none under way, the view's beat.
