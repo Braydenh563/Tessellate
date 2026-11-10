@@ -1,0 +1,180 @@
+"""LanguageTool as an optional download (INBOX 1731 (f)).
+
+The owner, 2026-11-10: "can we like incorporate all of it or whatever you
+suggest??". Every test runs against a fake file server and a fake local
+LanguageTool; the real 6.6 archive's size and sha256 were read from
+languagetool.org when the entry was written, but the real program was not
+started here (real checking is unverified).
+"""
+
+from __future__ import annotations
+
+import http.server
+import json
+import subprocess
+import threading
+import urllib.parse
+from pathlib import Path
+
+from tessellate.core import extra_downloads, extras, languagetool, languagetool_files
+from tests.test_extras_download import _clean_extras, _point_at, _row, _wait, _zip, server  # noqa: F401
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def _archive() -> bytes:
+    return _zip({src: b"PK-jar" for src, _name in languagetool_files.MEMBERS})
+
+
+def test_the_entry_is_pinned_and_keeps_only_jars_and_the_licence():
+    extra = extras.EXTRAS_BY_ID["languagetool"]
+    (download,) = extra.downloads
+    assert download.url.startswith("https://languagetool.org/download/LanguageTool-")
+    assert len(download.sha256) == 64
+    names = [name for _src, name in languagetool_files.MEMBERS]
+    assert len(names) == len(set(names))
+    assert {"languagetool.jar", "languagetool-server.jar", "COPYING.txt"} <= set(names)
+    assert all(n.endswith(".jar") or n == "COPYING.txt" for n in names)
+    assert extra.licence == "LGPL-2.1"
+
+
+def test_listing_and_status_never_start_java_or_the_network(client, monkeypatch):
+    def refuse(*_a, **_k):
+        raise AssertionError("started a process")
+
+    monkeypatch.setattr(subprocess, "Popen", refuse)
+    assert _row(client, "languagetool")["installed"] is False
+    reply = client.post("/grammar/languagetool", json={"text": "He go home."}).json()
+    assert reply == {"available": False, "matches": []}
+
+
+def test_without_java_the_install_is_refused_with_the_reason(client, monkeypatch):
+    monkeypatch.setattr(languagetool, "java_path", lambda: None)
+    assert "Java" in _row(client, "languagetool")["unavailable"]
+    assert client.post("/extras/languagetool/install").json()["started"] is False
+
+
+def test_install_unpacks_flat_jars_then_the_check_is_available(client, monkeypatch, server):  # noqa: F811
+    monkeypatch.setattr(languagetool, "java_path", lambda: "/usr/bin/java")
+    _point_at(monkeypatch, "languagetool", server, {"lt.zip": _archive()})
+    assert client.post("/extras/languagetool/install").json()["started"] is True
+    _wait()
+    assert extras.current().outcome == "completed", extras.current().step
+    folder = extra_downloads.folder(extras.EXTRAS_BY_ID["languagetool"])
+    assert (folder / "languagetool-server.jar").is_file()
+    assert all(p.parent == folder for p in folder.rglob("*") if p.is_file())
+    assert languagetool.available()
+
+
+class _Fake(http.server.BaseHTTPRequestHandler):
+    seen: list[dict] = []
+
+    def do_POST(self):  # noqa: N802  # the stdlib's name
+        form = urllib.parse.parse_qs(self.rfile.read(int(self.headers["Content-Length"])).decode())
+        _Fake.seen.append(form)
+        agreement = {
+            "offset": 3,
+            "length": 2,
+            "message": "Agreement",
+            "rule": {"id": "HE_VERB_AGR"},
+        }
+        agreement["replacements"] = [{"value": "goes"}]
+        outside = {"offset": 99, "length": 2, "message": "outside", "rule": {"id": "X"}}
+        body = json.dumps({"matches": [agreement, outside]}).encode()
+        self.send_response(200)
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, *args):
+        pass
+
+
+def test_check_shapes_matches_and_switches_spelling_off(monkeypatch):
+    httpd = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _Fake)
+    threading.Thread(target=httpd.serve_forever, daemon=True).start()
+    monkeypatch.setattr(languagetool, "available", lambda: True)
+    monkeypatch.setattr(languagetool, "_running_port", lambda: httpd.server_port)
+    try:
+        matches = languagetool.check("He go home.", "en-AU")
+        languagetool.check("He go home.", "xx-YY")
+    finally:
+        httpd.shutdown()
+        languagetool.stop()
+    assert matches == [
+        {
+            "start": 3,
+            "end": 5,
+            "message": "Agreement",
+            "rule": "HE_VERB_AGR",
+            "suggestions": ["goes"],
+        }
+    ]
+    assert _Fake.seen[0]["language"] == ["en-AU"] and _Fake.seen[0]["disabledCategories"] == [
+        "TYPOS"
+    ]
+    assert _Fake.seen[1]["language"] == ["en-US"], "an unknown language asks for US English"
+
+
+def test_the_program_listens_on_loopback_only(monkeypatch, tmp_path):
+    seen = {}
+
+    class _Process:
+        def poll(self):
+            return None
+
+        def terminate(self):
+            pass
+
+        def wait(self, timeout=None):
+            pass
+
+    def popen(command, **_kw):
+        seen["command"] = command
+        return _Process()
+
+    monkeypatch.setattr(languagetool, "installed_folder", lambda: tmp_path)
+    monkeypatch.setattr(languagetool, "java_path", lambda: "java")
+    monkeypatch.setattr(languagetool, "_ready", lambda port: True)
+    monkeypatch.setattr(subprocess, "Popen", popen)
+    try:
+        port = languagetool._start()
+    finally:
+        languagetool.stop()
+    assert port
+    assert "--public" not in seen["command"] and seen["command"][0] == "java"
+
+
+def test_a_system_proxy_never_sees_the_text(monkeypatch):
+    httpd = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _Fake)
+    threading.Thread(target=httpd.serve_forever, daemon=True).start()
+    monkeypatch.setenv("HTTP_PROXY", "http://127.0.0.1:1")
+    monkeypatch.delenv("NO_PROXY", raising=False)
+    monkeypatch.delenv("no_proxy", raising=False)
+    monkeypatch.setattr(languagetool, "available", lambda: True)
+    monkeypatch.setattr(languagetool, "_running_port", lambda: httpd.server_port)
+    try:
+        assert languagetool.check("He go home.") is not None
+    finally:
+        httpd.shutdown()
+        languagetool.stop()
+
+
+def test_the_page_merges_without_duplicating_a_harper_span():
+    script = r"""
+    global.window = {docSpell: {}}; global.docSpellingVariant = () => "au";
+    let sent;
+    global.apiJson = async (u, o) => { sent = JSON.parse(o.body);
+      return {available: true, matches: [{start: 0, end: 4, message: "m", suggestions: ["a"]}, {start: 10, end: 12, message: "n", suggestions: []}]}; };
+    eval(require("fs").readFileSync(process.argv[1], "utf8"));
+    window.docSpell.languageTool([{kind: "Agreement", start: 2, end: 6}], "x".repeat(20)).then((r) => {
+      console.log(JSON.stringify({n: r.length, kinds: r.map((l) => l.kind), lang: sent.language}));
+    });
+    """
+    path = str(ROOT / "frontend/js/documents-languagetool.js")
+    out = subprocess.run(["node", "-e", script, path], capture_output=True, text=True, check=True)
+    assert json.loads(out.stdout) == {
+        "n": 2,
+        "kinds": ["Agreement", "LanguageTool"],
+        "lang": "en-AU",
+    }

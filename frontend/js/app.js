@@ -1633,6 +1633,7 @@ const LAZY_MODULES = {
     "/js/documents-code.js",
     "/js/documents-prose.js",
     "/js/documents-spell.js",
+    "/js/documents-languagetool.js",
     "/js/documents-print.js",
     "/js/documents-outline.js",
     "/js/documents-cm.js",

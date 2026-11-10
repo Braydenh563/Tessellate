@@ -738,7 +738,9 @@ MORE_TOPICS: list[dict] = [
             "a clip; Dictation language skips the guess; Words to expect lists "
             "names and terms it should spell your way. Embedding models lists "
             "the built-in models on this machine, each downloaded once and kept; "
-            "which one search uses is chosen in Settings, Search and index."
+            "which one search uses is chosen in Settings, Search and index. "
+            "LanguageTool, a second grammar checker (252 MB), needs Java already "
+            "installed and runs only while you write."
         ),
         "badge": {"label": "Packages", "section": "extras"},
     },
