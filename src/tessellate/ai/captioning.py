@@ -135,7 +135,7 @@ def describe_document(text: str, model_manager, ollama) -> str:
     so the caller can leave the description unset rather than storing a
     sentence that admits it. Raises nothing of its own: an unreachable model
     raises out of `ollama.chat`, and the route turns that into a 409, the same
-    contract `summarize_meeting` follows.
+    contract `meeting_summary.summarise` follows.
     """
     body = (text or "").strip()
     if not body:

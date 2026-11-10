@@ -9,11 +9,9 @@ import tempfile
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
-from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from tessellate.ai import captions, librarian, voice
-from tessellate.api import bounds
+from tessellate.ai import captions, voice
 from tessellate.core import activity, deps
 from tessellate.api.this_computer import this_computer_only
 from tessellate.core.deps import get_session
@@ -22,11 +20,6 @@ from tessellate.entry.manager import log_action
 router = APIRouter(prefix="/voice", tags=["voice"])
 
 MAX_AUDIO_BYTES = 25 * 1024 * 1024  # a spoken note, not a podcast
-# A meeting or a lecture runs far longer than a spoken note, 300MB covers
-# several hours of compressed voice audio (WebM/Opus at typical browser
-# bitrates), well past what CPU-based Whisper could transcribe in a sitting
-# anyway, so this is a sanity ceiling, not the expected common case.
-MAX_MEETING_AUDIO_BYTES = 300 * 1024 * 1024
 
 
 @router.get("/status")
@@ -112,41 +105,3 @@ def transcribe(file: UploadFile, session: Session = Depends(get_session)) -> dic
     return _transcribe_upload(
         file, session, MAX_AUDIO_BYTES, "That recording is larger than 25 MB."
     )
-
-
-@router.post("/transcribe-meeting")
-def transcribe_meeting(file: UploadFile, session: Session = Depends(get_session)) -> dict:
-    """The longer-recording sibling of `/transcribe` (§17: meeting notes):
-    same engine, same response shape, just a ceiling sized for a meeting or a
-    lecture rather than a spoken note."""
-    return _transcribe_upload(
-        file,
-        session,
-        MAX_MEETING_AUDIO_BYTES,
-        "That recording is larger than 300 MB.",
-    )
-
-
-class SummarizeBody(BaseModel):
-    #: A transcript, bounded (audit HR3: 3 MB was accepted): ten hours of
-    #: speech is about 600,000 characters.
-    text: str = Field(max_length=bounds.TRANSCRIPT_MAX)
-
-
-@router.post("/summarize")
-def summarize(body: SummarizeBody) -> dict:
-    """Decisions/action-items extraction for a meeting transcript (§25).
-    Best-effort like `/entries/suggest-tags`: a model that's offline or
-    errors mid-call must never block saving the meeting note, so every
-    failure here just means an empty summary, not a 5xx."""
-    text = body.text.strip()
-    if not text:
-        return {"summary": ""}
-    try:
-        summary = librarian.summarize_meeting(
-            text, deps.get_model_manager(), deps.get_ollama()
-        )
-    except Exception:
-        logging.getLogger("tessellate.voice").warning("meeting summary failed", exc_info=True)
-        summary = ""
-    return {"summary": summary}

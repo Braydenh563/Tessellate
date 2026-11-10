@@ -678,56 +678,6 @@ def tag_cloud(session: Session = Depends(get_session)) -> list[dict]:
     return [{"tag": tag, "count": count} for tag, count in list(ordered)[:60]]
 
 
-@router.get("/on-this-day")
-def on_this_day(session: Session = Depends(get_session)) -> list[dict]:
-    """Notes captured on today's date in earlier months/years, a gentle
-    resurfacing of old thoughts (from the original idea doc).
-
-    **Not called by this app's own frontend, and that is a decision, not an
-    oversight** (INBOX 261, found by `scratchpad/probe_dead_routes.py`, which
-    lists every route no `frontend/js/*.js` names). The dashboard's widget
-    filters `allEntries` in the browser: one fewer request, and correct once
-    the notebook has finished paging in. This stays for anything that talks
-    to the app over HTTP rather than through the bundled page, and this
-    paragraph is here so the next scan does not re-open the question.
-
-    The day-of-month and "at least 28 days old" checks used to load every
-    non-deleted entry and filter in a Python loop; SQLite does both in the
-    WHERE clause instead now, so only matching rows are ever hydrated into
-    ORM objects. Also now excludes private notes, every other view in this
-    app does (search, timeline, embeddings...), and this one, uniquely,
-    read `entry.content` straight off the column, which is ciphertext for a
-    private note, not the private-note placeholder every other surface uses.
-    """
-    now = utcnow()
-    matched_entries = list(
-        session.scalars(
-            select(Entry).where(
-                Entry.is_deleted == False,  # noqa: E712
-                Entry.is_private == False,  # noqa: E712
-                Entry.created_at <= now - timedelta(days=28),
-                func.strftime("%d", Entry.created_at) == f"{now.day:02d}",
-            )
-            #: The five it answers with, read as five (ARCH-13): every match
-            #: was hydrated, about a thirtieth of the notebook, to keep five.
-            .order_by(Entry.id)
-            .limit(5)
-        )
-    )
-    category_names = manager.bulk_category_names(session, matched_entries)
-
-    matches = [
-        {
-            "id": entry.id,
-            "content": entry.content,
-            "category": category_names.get(entry.category_id, manager.UNCATEGORISED),
-            "created_at": entry.created_at.isoformat(),
-        }
-        for entry in matched_entries
-    ]
-    return matches[:5]
-
-
 #: The digest's own instruction. `{today}` is filled in per request by
 #: `digest_question`, on the user's own clock.
 #:

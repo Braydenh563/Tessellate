@@ -1314,7 +1314,7 @@ branch's pint and simpleeval go with Brief 35 (policy 1).
 | --- | --- | --- | --- | --- | --- | --- |
 | P1 | A due item | `composer_voice._due`, reminders | Route `GET /insights/voice` and companion bubble unbuilt (`composer-everywhere-1006.md` 1 and 2) | Fires for a reminder due within the hour or overdue today, once, with the note's sentence | M | new (6) |
 | P2 | Resurfacing | `resurface.for_day` (three a day), `composer_voice._back` | Not spoken | One "back" remark a day for the top faded note, quoting its best sentence | S | new (6) |
-| P3 | On this day | `composer_voice._on_this_day`, `/insights/on-this-day` | Not in Chat or dashboard line | Same date in earlier years, one quoted sentence | S | new (6) |
+| P3 | On this day | `composer_voice._on_this_day` | Not in Chat or dashboard line | Same date in earlier years, one quoted sentence | S | new (6) |
 | P4 | A pattern | `composer_voice._patterns` | Rule thresholds | Decision 32's threshold (at least 3 mentions across at least 3 weeks), hedge fixed, marked measured | M | 6 |
 | P5 | Drift | Open items (`_open_items`) | Age threshold | A plan fact older than 30 days with no later event or tick: "still open" | S | 6 |
 | P6 | A daily line | `composer_voice.today_line` | Not drawn | One sentence under the greeting from the day's strongest signal, else nothing (nothing is a valid output) | S | new (6) |

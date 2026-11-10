@@ -1,8 +1,7 @@
 """Summarise a meeting note into decisions and action items, every line cited
 (INBOX 644, decision 3).
 
-`librarian.summarize_meeting` (the recorder's pass, §25) returns a block of
-bullets nobody can check: a small model that invents "Sam will send the deck"
+The recorder's old pass (§25, a block of bullets) returned bullets nobody can check: a small model that invents "Sam will send the deck"
 writes it in the same voice as one that read it. This pass asks for each line
 together with the exact words of the note it came from, and **keeps a line
 only when those words are really in the note** (the Ask citation rule: a
