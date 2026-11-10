@@ -37,7 +37,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import capability, fact_check, composer, composer_social, composer_unplaced, note_language, composer_aware, composer_compose, composer_digest, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, note_rank, note_recency, personal, verdicts, vocative
 from tessellate.ai import ask_chips, composer_dialogue, composer_empty, composer_intent, composer_smalltalk, composer_talk
-from tessellate.ai import consent, recognise
+from tessellate.ai import consent, consent_store, recognise
 from tessellate.ai import (
     acts,
     context,
@@ -80,7 +80,7 @@ from tessellate.api.chat_request import ChatRequest, ChatResponse, CommandRunBod
 from tessellate.api.chat_pool import _Found, _NoteCtx, _chat_payload, _composer_reads, _document_row, _frame_matches, _glossary, _holds_read_text, _in_window, _keep_window, _note_content, _or_empty_notebook, _records_beside, _slips_put_right, _whole_pool, _widened, _with_each_side, _with_holders, _with_neighbours, _with_records, _with_sources
 from tessellate.api.chat_recent import AGENT_SURFACE, ASK_SURFACE, STARTER_SUGGESTIONS, _about, _asked_key, _feature_for, _fill, _recent_questions
 from tessellate.api.chat_web import WEB_PAGES, _can_start_searxng, _torn_events, _home_place, _link_events, _offer_events, _search_service, _unmatched_recents, _web_allowed, _web_chip, _web_first, _web_page_row, _web_pref_on
-from tessellate.api.chat_agent import _agent_events, consent_events, _close_quietly, _first_agent_event, _refuse_failed, _refuse_if_off, _starter_read
+from tessellate.api.chat_agent import _agent_events, consent_events, run_card_events, _close_quietly, _first_agent_event, _refuse_failed, _refuse_if_off, _starter_read
 from tessellate.api.chat_said import MODEL_STOPPED_NOTE, acts_on_listed_task, _says_cannot, _ROWS_KEPT, _app_answers, _asked_before, _asks_capability, _asks_only_a_time, _awareness, _chart_line, _cited_titles, _composed_lines, _current_notes, _diagram_events, _engine_counts, _engine_stands, _filed_or_counted_events, _first_cited_has_list, _held_reply, _help_events, _in_notes, _late_panel, _linked_notes, _listed_below, _model_said, _name_documents, _newest_titles, _newest_word, _open_note_answer, _ping_offer, _related_elsewhere, _related_sentence, _remember_rows, _reminder_window, _reply_seed, _row_source, _rows_key, _run_title, _said_events, _save_ask_turn, _saved_joke_reply, _search_footer, _sees, _slash_chart, _stats_chart, _stats_listed, _suggest_events, _with_words_only, reply_panel
 from tessellate.api.chat_turn import _composed_support, _frame_events, _not_again, _with_frame, _asks_change, _chat_reply, _checks_grounding, _cited_scope, _composes_offline, _detect_intent, _engine_answers, _facts_turn, _insight_level, _insight_memory, _is_composing, _log_question, _may_digest, _meaning_loading, _model_stream_events, _note_with_hint, _notes_first, _notes_messages, _relay_events, _searched_question, _social_line, _trim_answer, _uncut, _verdicts, _why, _will_answer
 
@@ -1628,9 +1628,18 @@ def _act_planned_events(req: _StreamRequest, parsed: dict) -> Iterator[dict]:
     #: model's run shows (owner, 2026-10-12: the steps sat under the result).
     if planned.get("tool") and not card:
         yield planned["tool"]
+    #: How Confirm words the run, as the composer would have said it (kept on the server with the card).
+    mood = composer_compose.mood_of(req.question or "", voice=_chat_voice(req), seed=_reply_seed(req)[1], intent="act")
+    say = {"mood": mood, "intent": parsed["intent"]}
+    if card and req.offer_yes and not planned.get("duplicate"):
+        #: A bare yes to an offer (a chip, "Shall I remind you ...?"): the offer was the proposal
+        #: and the yes is the consent, so it runs now with Undo and no second card.
+        for event in run_card_events(req.session, card["label"], card["steps"], card["skipped"], say):
+            yield event
+        return
     yield {"type": "answer", "delta": planned["line"]}
     if card:
-        yield card
+        yield {**card, "_say": say}
     elif planned.get("navigate"):
         yield {"type": "navigate", "surface": planned["navigate"]}
 
@@ -1777,7 +1786,7 @@ def run_command(body: CommandRunBody, session: Session = Depends(get_session)) -
         raise HTTPException(status_code=400, detail="There is nothing to run.")
     if any(str(step.get("name") or "") not in commands.RUNNABLE for step in body.steps):
         raise HTTPException(status_code=404, detail="That names a step this app does not run from Chat.")
-    done = acts.run(session, body.steps, body.skipped)
+    done = acts.run_confirmed(session, body.steps, body.skipped, body.consent_id)
     return {"ok": done["ok"], "summary": done["summary"], "undo": done["undo"], "open": done.get("open")}
 
 
@@ -1847,7 +1856,9 @@ def _follow_up(req: _StreamRequest):
         #: rewritten to "tell me more about the Lecture 5 note" and searched.
         return more
     #: A bare "yes" takes up the offer the answer before ended with (B23); "open it" names the note the answer cited.
-    cited = composer_talk.accepted_offer(req.question, req.history, user_now(deps.get_config())) or composer_talk.cited_question(req.question, req.history, user_now(deps.get_config()))
+    offered = composer_talk.accepted_offer(req.question, req.history, user_now(deps.get_config()))
+    req.offer_yes = offered is not None and consent.says(req.question) == "yes"
+    cited = offered or composer_talk.cited_question(req.question, req.history, user_now(deps.get_config()))
     if cited is not None:
         req.question = cited
     spoken = _spoken_act(req) if req.history and not req.ollama.is_running() else None
@@ -2438,6 +2449,7 @@ def execute_confirmed_tool(
     if body.name not in tools.TOOLS:
         raise HTTPException(status_code=404, detail=f"There is no tool called '{body.name}'.")
     _refuse_if_off([body.name])
+    consent_store.take(body.consent_id)  # pressed: a yes typed after this finds nothing to run
     result = tools.execute_tool(session, body.name, body.arguments)
     if "error" in result:
         _refuse_failed(body.name, result)

@@ -234,9 +234,8 @@ def test_a_destructive_tool_cannot_paper_the_turn_with_confirm_cards(monkeypatch
     def _merge_cat(n: str) -> dict:
         return {"name": "merge_categories", "arguments": {"from": n, "into": "Hobbies"}}
 
-    fake = _FakeOllama(
-        [[_merge_cat("Movies")], [_merge_cat("Games")], [_merge_cat("Music")], []]
-    )
+    names = [f"Cat{n}" for n in range(agent.MAX_PARKED_CONFIRMS + 1)]  # one past what a turn may park
+    fake = _FakeOllama([[_merge_cat(n) for n in names], []])
     monkeypatch.setattr(agent.tools, "ollama_tools", lambda allowed=None: [])
     monkeypatch.setattr(
         agent.tools, "execute_tool", lambda *a, **k: pytest.fail("a destructive tool ran")

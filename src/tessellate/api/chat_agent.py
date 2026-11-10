@@ -13,7 +13,7 @@ import logging
 from collections.abc import Iterator
 from fastapi import HTTPException
 
-from tessellate.ai import acts, agent, budget as run_budget, commands, skill_runner, starter_acts, tools
+from tessellate.ai import acts, agent, budget as run_budget, commands, consent_store, skill_runner, starter_acts, tools
 from tessellate.api.chat_request import _StreamRequest, _in_full, _small_model_mode
 from tessellate.core import deps
 from tessellate.core.logbuffer import safe_value
@@ -160,34 +160,59 @@ def _refuse_failed(name: str, result: dict) -> None:
     )
 
 
+def _undo_steps(undo) -> list[dict]:  # noqa: ANN001
+    """A tool's undo (`{tool, arguments}`, or a batch of them) as the steps an Undo row posts."""
+    one = undo.get("steps") if isinstance(undo, dict) and undo.get("tool") == "batch" else [undo]
+    return [{"name": u["tool"], "arguments": u.get("arguments") or {}} for u in one if isinstance(u, dict) and u.get("tool") in commands.RUNNABLE]
+
+
+def run_card_events(session, label: str, steps: list[dict], skipped: list[dict], say: dict | None, consent_id: str = "") -> list[dict]:  # noqa: ANN001
+    """An act card's steps run, in the card's own words, with Undo: what Confirm and a
+    typed yes both show. `consent_id` names the card a typed yes settles."""
+    done = acts.run_said(session, label, steps, skipped, say)
+    return [
+        {"type": "answer", "delta": done["summary"]},
+        {"type": "act", "label": label, "steps": steps, "skipped": skipped, "notice": "", "done": True, "settle": bool(consent_id), "consent_id": consent_id,
+         "summary": done["summary"], "undo": done["undo"], "open": done.get("open")},
+    ]
+
+
+def _typed_tool_events(session, tool: dict | None, consent_id: str, label: str) -> list[dict] | None:  # noqa: ANN001
+    """A typed yes on a parked tool call: the run, with the Undo row and refresh Confirm gives, or None."""
+    if not (tool and str(tool.get("name") or "") in tools.TOOLS and tools.tool_enabled(str(tool["name"]))):
+        return None
+    result = tools.execute_tool(session, str(tool["name"]), tool.get("arguments") or {})
+    if "error" in result:
+        logging.getLogger("tessellate.chat").warning("typed-confirmed tool %r failed: %s", safe_value(str(tool["name"]), 40), safe_value(result["error"], 300))
+        return None
+    said = str(result.get("label") or label).rstrip(".")
+    summary = f"Done: {said[:1].lower() + said[1:]}."
+    steps = [{"name": tool["name"], "arguments": tool.get("arguments") or {}}] if tool["name"] in commands.RUNNABLE else []
+    return [
+        {"type": "answer", "delta": summary},
+        {"type": "act", "label": label, "steps": steps, "skipped": [], "notice": "", "done": True, "settle": True, "consent_id": consent_id,
+         "summary": summary, "undo": _undo_steps(result.get("undo"))},
+    ]
+
+
 def consent_events(session, found: dict) -> list[dict]:  # noqa: ANN001
     """The events for a typed yes or no to the card that waits (`ai/consent.py`).
 
-    No drops the card and writes nothing. Yes runs what Confirm would run, by
-    the same doors (`commands.RUNNABLE` for an act's steps, the registry for a
-    parked tool call), and settles the open card so it is not pressed twice."""
-    label = found["label"]
+    No drops the card and writes nothing. Yes runs what the server parked under
+    the card's id when it was drawn (`ai/consent_store.py`), by the same doors
+    Confirm uses (`commands.RUNNABLE` for an act's steps, the registry for a
+    parked tool call), with the same Undo and refresh, and settles the card so
+    it is not pressed twice. What the page sends is never what runs."""
+    proposal = consent_store.take(found["id"])
+    label = str((proposal or {}).get("label") or found["label"])
     what = label[:1].lower() + label[1:]
     if found["verdict"] == "no":
         return [
             {"type": "answer", "delta": f"Cancelled: {what.rstrip('.')}. Nothing was changed."},
-            {"type": "act", "cancel": True, "label": label},
+            {"type": "act", "cancel": True, "label": label, "consent_id": found["id"]},
         ]
-    steps, tool = found["steps"], found["tool"]
-    if steps and all(str(step.get("name") or "") in commands.RUNNABLE for step in steps):
-        done = acts.run(session, steps, found["skipped"])
-        return [
-            {"type": "answer", "delta": done["summary"]},
-            {"type": "act", "label": label, "steps": steps, "skipped": found["skipped"], "notice": "", "done": True, "settle": True,
-             "summary": done["summary"], "undo": done["undo"], "open": done.get("open")},
-        ]
-    if tool and str(tool.get("name") or "") in tools.TOOLS and tools.tool_enabled(str(tool["name"])):
-        result = tools.execute_tool(session, str(tool["name"]), tool.get("arguments") or {})
-        if "error" not in result:
-            said = str(result.get("label") or label).rstrip(".")
-            return [
-                {"type": "answer", "delta": f"Done: {said[:1].lower() + said[1:]}."},
-                {"type": "act", "settle": True, "label": label},
-            ]
-        logging.getLogger("tessellate.chat").warning("typed-confirmed tool %r failed: %s", safe_value(str(tool["name"]), 40), safe_value(result["error"], 300))
-    return [{"type": "answer", "delta": "That could not be done from here. Press Confirm on the card to do it, or Cancel."}]
+    if proposal and proposal.get("steps") and all(str(step.get("name") or "") in commands.RUNNABLE for step in proposal["steps"]):
+        return run_card_events(session, label, proposal["steps"], proposal["skipped"], proposal.get("say"), found["id"])
+    if (ran := _typed_tool_events(session, (proposal or {}).get("tool"), found["id"], label)) is not None:
+        return ran
+    return [{"type": "answer", "delta": "That card is no longer open, so nothing was done. Ask again and I will set it up."}]

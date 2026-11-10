@@ -199,24 +199,27 @@ function markSaidSentences(targets, sentences) {
 //: new note, a pin), what was done and Undo. Confirm and Undo both post the
 //: steps to `/chat/command/run`, which runs only the tools an act may use.
 function renderActCard(holder, event) {
+  //: The card a typed yes or no answered: found by its id, which stays on it after a send marks it not pending.
+  const waitingCard = (reply) => [...document.querySelectorAll(".tool-confirm")].filter((card) => (reply.consent_id ? card.consentId === reply.consent_id : !reply.label || card.dataset.askedAct === reply.label)).at(-1);
   //: "cancel" said in the chat (CHAT_PLAN X17): the server's reply closes the
   //: card it names (the last open one with that label, the one the page sent as
   //: `pending_act` in `chatHistoryToSend`), nothing else is drawn.
   if (event.cancel) {
-    const open = [...document.querySelectorAll(".tool-confirm[data-pending-act]")].filter((card) => !event.label || card.dataset.pendingAct === event.label).at(-1);
+    const open = waitingCard(event);
     if (open) open.replaceWith(toolChip("ph:x Cancelled: nothing was changed."));
     return;
   }
   //: A typed yes ran the card that waited (`ai/consent.py`): it is settled, not pressed twice.
   if (event.settle) {
-    const waiting = [...document.querySelectorAll(".tool-confirm[data-pending-act]")].filter((open) => !event.label || open.dataset.pendingAct === event.label).at(-1);
+    const waiting = waitingCard(event);
     if (waiting) waiting.remove();
+    refreshAfterToolChanges(); // what the typed yes wrote, as Confirm does
     if (!event.done) return;
   }
   const card = document.createElement("div");
   card.className = "tool-confirm";
   const run = (steps, then) =>
-    apiJson("/chat/command/run", { method: "POST", body: JSON.stringify({ steps, skipped: event.skipped || [] }) })
+    apiJson("/chat/command/run", { method: "POST", body: JSON.stringify({ steps, skipped: event.skipped || [], consent_id: steps === event.steps ? event.consent_id || null : null }) })
       .then((result) => (refreshAfterToolChanges(), then(result)))
       .catch((error) => toast(error.message, true));
   const line = (label, ...more) => {
@@ -281,8 +284,8 @@ function renderActCard(holder, event) {
     );
     line(`ph:warning ${event.label}`, notice, row);
     //: Open until Confirm settles it (`done` clears this) or Cancel replaces the card; the page tells the server (`chatHistoryToSend`).
-    card.dataset.pendingAct = event.label || "";
-    card.pendingRun = { steps: event.steps, skipped: event.skipped || [] }; // what a typed yes runs (`chatHistoryToSend`)
+    card.dataset.pendingAct = card.dataset.askedAct = event.label || "";
+    card.consentId = event.consent_id || ""; // the server holds what a typed yes runs (`chatHistoryToSend`)
   }
   if (card.childElementCount) holder.appendChild(card);
   chatScrollToEnd();

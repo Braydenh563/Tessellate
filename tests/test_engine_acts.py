@@ -55,7 +55,8 @@ def test_a_reminder_waits_for_confirm_then_has_its_undo(client, session):
     assert not waiting["act"][0].get("done") and not client.get("/reminders").json()
     out = confirmed(client, waiting)
     card = out["act"][0]
-    assert card["done"] is True and "remind you tomorrow at 5pm: call the plumber" in waiting["text"].lower()
+    assert card["done"] is True and "remind you tomorrow at 5pm: call the plumber" in out["text"]  # composed (CHAT_PLAN 1353), as before the consent order
+    assert "remind you tomorrow at 5pm: call the plumber" in waiting["text"].lower()
     reminders = client.get("/reminders").json()
     assert reminders
     assert card["undo"] == [{"name": "bin_reminder", "arguments": {"reminder_id": card["undo"][0]["arguments"]["reminder_id"]}}]

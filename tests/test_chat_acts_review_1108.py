@@ -361,43 +361,50 @@ def _node(script):
 
 
 def test_the_page_closes_only_the_card_the_reply_names():
-    """renderActCard's cancel branch on a page with two open cards (data-pending-act)."""
+    """renderActCard's cancel branch on a page with two open cards: found by the id the reply
+    names (`waitingCard`), which a send leaves on the card after it marks it not pending."""
     ask, _ = _js("ask-compose.js")
+    finder = re.search(r"  const waitingCard = .*?;\n", ask).group(0)
     branch = re.search(r"if \(event\.cancel\) \{\n(.*?)\n  \}", ask, re.S).group(1)
     out = _node(
-        "const close = (event) => {" + branch + "};"
+        finder
+        + "const close = (event) => {" + branch + "};"
         + r"""
-const mk = (label) => ({ dataset: { pendingAct: label }, replaced: false, replaceWith() { this.replaced = true; } });
+const mk = (label) => ({ dataset: { askedAct: label }, consentId: "id-" + label, replaced: false, replaceWith() { this.replaced = true; } });
 const cards = [mk("Move A to the bin"), mk("Move B to the bin")];
 var document = { querySelectorAll: () => cards };
 var toolChip = (t) => t;
-close({ label: "Move A to the bin" });
+close({ label: "Move A to the bin", consent_id: "id-Move A to the bin" });
 const one = cards.map((c) => c.replaced);
-close({ label: "Move C to the bin" });
+close({ label: "Move C to the bin", consent_id: "id-none" });
 const none = cards.map((c) => c.replaced);
 close({});
 console.log(JSON.stringify({ one, none, last: cards.map((c) => c.replaced) }));
 """
     )
     assert out["one"] == [True, False], "the named card closes, the other stays open"
-    assert out["none"] == [True, False], "a label no card has closes nothing"
-    assert out["last"] == [True, True], "no label (an older server) closes the last open card"
+    assert out["none"] == [True, False], "an id no card has closes nothing"
+    assert out["last"] == [True, True], "no id or label (an older server) closes the last open card"
 
 
 def test_the_page_sends_the_last_open_cards_label_and_the_mark_is_set():
     ask, _ = _js("ask-compose.js")
     kit, pick = _js("answer-kit.js")
-    assert "card.dataset.pendingAct = event.label" in ask and "delete card.dataset.pendingAct" in ask
+    assert "card.dataset.pendingAct = card.dataset.askedAct = event.label" in ask and "delete card.dataset.pendingAct" in ask
     assert "chatHistoryWithOpenCard" not in ask, "the comment names the function that exists"
     out = _node(
         pick("chatHistoryToSend")
         + r"""
-const cards = [{ dataset: { pendingAct: "Move A to the bin" } }, { dataset: { pendingAct: "Move B to the bin" } }];
-var $ = () => ({ querySelectorAll: () => cards });
+const cards = [{ dataset: { pendingAct: "Move A to the bin", askedAct: "Move A to the bin" }, consentId: "a1" }, { dataset: { pendingAct: "Move B to the bin", askedAct: "Move B to the bin" }, consentId: "b2" }];
+var $ = () => ({ querySelectorAll: () => cards.filter((c) => c.dataset.pendingAct) });
 var chatConv = { turns: [{ question: "a" }, { question: "b" }] };
 var chatSummary = null;
 var MAX_CLIENT_HISTORY = 10;
-console.log(JSON.stringify(chatHistoryToSend()));
+const first = chatHistoryToSend();
+const second = chatHistoryToSend();
+console.log(JSON.stringify([first, second]));
 """
     )
-    assert out[-1]["pending_act"] == "Move B to the bin" and "pending_act" not in out[0]
+    first, second = out
+    assert first[-1]["pending_act"] == "Move B to the bin" and first[-1]["pending_id"] == "b2" and "pending_act" not in first[0]
+    assert "pending_act" not in second[-1], "a send marks every card not pending: a card ignored turns ago is never run by a later yes"

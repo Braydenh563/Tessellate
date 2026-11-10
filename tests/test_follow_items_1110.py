@@ -63,7 +63,7 @@ def _waits(client, question, answer):
     HANDOVER "Consent for every act"): these acts used to run at once with Undo; none does now."""
     events = _ask(client, question, history=[{"question": "q", "answer": answer}])
     card = next(e for e in events["act"] if not e.get("done"))
-    return card, [{"question": question, "answer": events["text"], "pending_act": card["label"], "pending_steps": card["steps"], "pending_skipped": card["skipped"]}]
+    return card, [{"question": question, "answer": events["text"], "pending_act": card["label"], "pending_id": card["consent_id"]}]
 
 
 # --- the repros, through /chat/stream -----------------------------------------------------------
@@ -96,7 +96,8 @@ def test_delete_the_first_one_cancels_that_reminder_and_leaves_the_note(client, 
     _reminder(session)
     card, history = _waits(client, "delete the first one", TABLE)
     assert "bin the note" not in card["label"].lower() and _live(session) == ["Call anna"], "nothing changes before consent"
-    _ask(client, "go ahead", history=history)
+    said = _ask(client, "go ahead", history=history)["text"]
+    assert "bin the note" not in said.lower() and "Call with Anna" not in said, said
     assert _live(session) == [] and session.get(Entry, ramen.id).deleted_at is None
 
 
@@ -105,9 +106,9 @@ def test_make_it_6_moves_the_reminder_just_set(client, session):
     card, history = _waits(client, "make it 6", SET)
     session.expire_all()
     assert session.get(Reminder, row.id).due_at.replace(tzinfo=None) == datetime(2026, 11, 10, 18, 0), "nothing changes before consent"
-    _ask(client, "sure", history=history)
+    said = _ask(client, "sure", history=history)["text"]
     session.expire_all()
-    assert session.get(Reminder, row.id).due_at.replace(tzinfo=None) == datetime(2026, 11, 11, 18, 0), card["label"]
+    assert "wants to try" not in said and session.get(Reminder, row.id).due_at.replace(tzinfo=None) == datetime(2026, 11, 11, 18, 0), said
 
 
 def test_add_socks_to_it_after_a_new_note(client, session):

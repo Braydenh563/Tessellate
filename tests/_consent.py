@@ -13,7 +13,7 @@ from __future__ import annotations
 
 def _press(client, card: dict) -> dict:
     assert not card.get("done"), "an act ran before Confirm"
-    response = client.post("/chat/command/run", json={"steps": card["steps"], "skipped": card.get("skipped") or []})
+    response = client.post("/chat/command/run", json={"steps": card["steps"], "skipped": card.get("skipped") or [], "consent_id": card.get("consent_id")})
     assert response.status_code == 200, response.text
     result = response.json()
     return {**card, "notice": "", "done": True, "summary": result["summary"], "undo": result["undo"], "open": result.get("open")}

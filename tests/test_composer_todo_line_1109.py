@@ -26,9 +26,12 @@ def _note(client, title):
 @pytest.mark.parametrize("said", ["add buy stamps to my todo", "add buy stamps to my to-do list", "put buy stamps on my todo list", "add buy stamps to my tasks"])
 def test_the_line_lands_on_the_todo_note_with_undo(go, client, said):
     text, events = go(said)
-    assert "reminder" not in text.lower() and "what time" not in text.lower(), text
+    assert "reminder" not in text.lower(), text  # the waiting line ("Ready when you are") is the frame's own
     assert not _note(client, "Todo")["content"].rstrip().endswith("- [ ] Buy stamps"), "waits for Confirm (owner, 2026-11-10)"
-    card = next(e for e in confirmed(client, list(events)) if e.get("type") == "act")
+    done = confirmed(client, list(events))
+    ran = "".join(e["delta"] for e in done if e.get("type") == "answer")
+    assert "reminder" not in ran.lower() and "when" not in ran.lower(), ran  # the run asks no time
+    card = next(e for e in done if e.get("type") == "act")
     assert card.get("done") and card.get("undo"), card
     assert _note(client, "Todo")["content"].rstrip().endswith("- [ ] Buy stamps")
 

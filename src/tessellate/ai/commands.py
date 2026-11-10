@@ -1560,13 +1560,13 @@ def _plan_reminder(session: Session, parsed: dict, note_ids: list[int] | None) -
         return {"line": f"You already have a reminder “{_clip(parsed['text'], 60)}” {when_said}."}
     if _has_open_reminder(session, parsed["text"]):
         return _add_another(f"a reminder “{_clip(parsed['text'], 60)}”", card)
-    return {"line": f"{label}.", "card": card, "run": True}
+    return {"line": f"{label}.", "card": card}
 
 
 def _add_another(what: str, card: dict) -> dict:
     """The same act twice is asked, not repeated: the card waits for Confirm
     (audit 1029 C48), so a double send never makes two."""
-    return {"line": f"You already have {what}. Add another? Confirm below and I'll add it.", "card": card}
+    return {"line": f"You already have {what}. Add another? Confirm below and I'll add it.", "card": card, "duplicate": True}
 
 
 def _has_note_saying(session: Session, content: str) -> bool:
@@ -1647,7 +1647,7 @@ def _plan_new_note(session: Session, parsed: dict) -> dict:
     card = _card(label, steps)
     if _has_note_saying(session, parsed["content"]):
         return _add_another(f"a note “{_clip(title, 60)}”", card)
-    return {"line": f"{label}.", "card": card, "run": True}
+    return {"line": f"{label}.", "card": card}
 
 
 def _plan_meeting(parsed: dict) -> dict:
@@ -1657,7 +1657,6 @@ def _plan_meeting(parsed: dict) -> dict:
     return {
         "line": f"Start a meeting{named}.",
         "card": _card(f"Start a meeting{named}", steps),
-        "run": True,
     }
 
 
@@ -1688,10 +1687,11 @@ def plan(session: Session, parsed: dict, note_ids: list[int] | None = None) -> d
     if said:
         return {"line": said}
     planned = _plan_intent(session, parsed, note_ids)
-    if planned.pop("run", None) and planned.get("card"):
-        #: The owner's order (2026-11-10): no act runs at once. A plan that used
-        #: to run is a card that waits for Confirm or a typed yes, said as one.
-        planned["line"] = _confirm(planned["card"]["label"])
+    card = planned.get("card")
+    if card and planned.get("line") in (card["label"], f"{card['label']}."):
+        #: The owner's order (2026-11-10): no act runs at once. A plan that says only
+        #: its label is a card that waits for Confirm or a typed yes, said as one.
+        planned["line"] = _confirm(card["label"])
     if parsed.get("leftover") and planned.get("card"):
         #: A second request on the end of a rename is said back, not done or dropped.
         planned = {**planned, "line": f"{planned['line']} Then say “{parsed['leftover']}” and I will plan that next."}
@@ -1911,7 +1911,7 @@ def _plan_one(session: Session, parsed: dict, note_ids: list[int] | None) -> dic
     card = _card(label, steps, skipped, [_item(entry)])
     if intent in CONFIRM_INTENTS:
         return {"line": _confirm(label), "card": card}
-    return {"line": label, "card": card, "run": True}
+    return {"line": label, "card": card}
 
 
 def _item(entry) -> str:  # noqa: ANN001

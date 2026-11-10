@@ -24,7 +24,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from typing import Annotated, Literal
 
-from tessellate.ai import captioning, composer_digest, composer_frame, composer_open, librarian, memory, presets, questions, skills, tools, vocative
+from tessellate.ai import captioning, composer_digest, consent, composer_frame, composer_open, librarian, memory, presets, questions, skills, tools, vocative
 from tessellate.api import bounds
 from tessellate.api.chat_attach import _attached_boards, _attached_documents, _attached_notes
 from tessellate.api.schemas import EntryOut
@@ -98,12 +98,9 @@ class ChatTurn(BaseModel):
     pending_act: str | None = Field(default=None, max_length=300)
     #: The frame the answer was sent with, echoed back; absent from an older page.
     frame: TurnFrame | None = None
-    #: What Confirm on that card runs, sent with it so a typed yes can run it
-    #: (`ai/consent.py`): an act card's steps and skipped names, or a parked
-    #: tool call (`{name, arguments}`).
-    pending_steps: list[dict] | None = Field(default=None, max_length=12)
-    pending_skipped: list[dict] | None = Field(default=None, max_length=12)
-    pending_tool: dict | None = None
+    #: The id the server parked that card under (`ai/consent_store.py`), sent with it so a typed
+    #: yes runs what was proposed. The page never sends back steps or arguments.
+    pending_id: str | None = Field(default=None, max_length=40)
 
     @model_validator(mode="after")
     def _objects_from_links(self):  # noqa: ANN202
@@ -778,6 +775,9 @@ class _StreamRequest:
     #: own `tip` event so it is never part of the answer's saved, copied or
     #: spoken text (audit 1028 E52).
     tip: str = ""
+    #: A bare yes took up an offer ("Shall I remind you ...?"): the offer was the proposal and the
+    #: yes is the consent, so its act runs with no second card (`_follow_up`).
+    offer_yes: bool = False
 
     def tip_events(self) -> list[dict]:
         return [{"type": "tip", "text": self.tip}] if self.tip else []
@@ -796,8 +796,10 @@ def _composed(req: _StreamRequest, ollama_running: bool) -> bool:
 
 
 class CommandRunBody(BaseModel):
-    """A confirmed act's steps, or an act's undo steps (decision 38)."""
+    """A confirmed act's steps, or an act's undo steps (decision 38). `consent_id`
+    is the card's own id: the steps parked under it run, in the card's words."""
 
+    consent_id: str | None = Field(default=None, max_length=40)
     steps: list[dict] = Field(default_factory=list, max_length=60)
     skipped: list[dict] = Field(default_factory=list, max_length=60)
 
@@ -838,7 +840,7 @@ class _Turn:
 
 
 def _event(payload: dict) -> str:
-    return json.dumps(payload) + "\n"
+    return json.dumps(consent.attach(payload)) + "\n"
 
 
 def _meta_event(req: _StreamRequest, prepared: dict, t: _Turn) -> dict:
@@ -906,6 +908,8 @@ class ToolExecuteBody(BaseModel):
 
     name: str = Field(max_length=bounds.LABEL_MAX)
     arguments: dict = Field(default_factory=dict, max_length=100)
+    #: The card's own id (`ai/consent_store.py`): pressing Confirm spends it, so a yes typed after runs nothing twice.
+    consent_id: str | None = Field(default=None, max_length=40)
     #: A `{"tool": "batch", "steps": [...]}` undo (a change to several notes or
     #: board items): each step is `{"tool", "arguments"}` of a registry tool.
     #: Posted as name "batch" it used to answer 404, so such a change had an

@@ -85,7 +85,9 @@ def test_every_pin_act_fills_its_slot(notebook, first, done, reply):
     _asked, events = notebook(first, reply)
     #: The card names the change and waits; Confirm does it and the run says Done (owner, 2026-11-10).
     assert "favourites" in _said(events).lower() and "onfirm" in _said(events), _said(events)
-    assert notebook.confirmed(events) and _said(notebook.confirmed(events)).startswith("Done"), done
+    #: Any case: the confirmation's phrasing (`act_done`) is picked per reply, and
+    #: "Done: {what}." or "I have {what}." carries the label lower-cased.
+    assert done.lower() in _said(notebook.confirmed(events)).lower(), _said(notebook.confirmed(events))
 
 
 @pytest.mark.parametrize("reply", REPLIES[:4])

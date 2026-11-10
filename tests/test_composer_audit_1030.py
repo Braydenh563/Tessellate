@@ -88,7 +88,7 @@ def test_z60_a_tick_that_ran_says_so_and_asks_no_confirm(client, session):
     said = "".join(e["delta"] for e in events if e["type"] == "answer")
     assert acts and acts[-1]["done"] is True, events
     assert not acts[-1]["notice"], acts[-1]
-    assert said.startswith("Done"), said  # worded by the run after Confirm (owner, 2026-11-10)
+    assert "ticked off “Sunscreen”" in said.replace("“sunscreen”", "“Sunscreen”"), said
     assert " will " not in f" {said} ", said
     session.refresh(entry)
     assert "- [x] Sunscreen" in entry.content
