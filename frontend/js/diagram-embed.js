@@ -254,7 +254,25 @@
   //: when there is no source. `shapes` is a function that receives the source and makes board shapes
   //: of it (Turn into shapes). `draft` keys the kept unsaved copy (a reload offers it back). `existing` is `{pick, open}` for the door. `offer` is what Save may link. Done calls `onDone` once; Cancel, Escape and the X call nothing, after
   //: asking when there are changes.
-  async function open({ source = "", kind = "flowchart", title = "Edit diagram", shapes = null, offer = null, onDone = null, existing = null, named = false, draft = "" } = {}) {
+  //: **One builder at a time** (the owner, 2026-11-09: "I clicked it multiple times and it didnt close"). The first press
+  //: fetches the code, so a press that seemed to do nothing was pressed again and each press stacked its own dialog; an X
+  //: then closed one of identical copies (measured: three presses, three dialogs, three X presses). A press while one is
+  //: opening or open answers with that one and brings it forward; `leave` frees the door.
+  let current = null;
+  function open(options) {
+    if (current) {
+      current.then((dialog) => dialog?.isConnected && dialog.focus?.({ preventScroll: true }));
+      return current;
+    }
+    const opening = mount(options);
+    current = opening;
+    //: A builder that did not load answers nothing, and the next press tries again.
+    const free = () => current === opening && (current = null);
+    opening.then((dialog) => dialog || free(), free);
+    return opening;
+  }
+
+  async function mount({ source = "", kind = "flowchart", title = "Edit diagram", shapes = null, offer = null, onDone = null, existing = null, named = false, draft = "" } = {}) {
     if (!(await ensureModule("diagramBuilder"))) return toast("The block editor did not load. Try again.", "info");
     //: Without it the Source pane is a plain field (the list is an extra, so a failed load is not an error).
     const hasComplete = await ensureModule("diagramComplete");
@@ -456,6 +474,7 @@
     };
     const leave = () => {
       closing = true;
+      current = null;
       clearTimeout(timer);
       clearTimeout(keepTimer);
       window.removeEventListener("pagehide", keep);

@@ -1364,7 +1364,14 @@ function quickLinkButton(link, tint = "") {
   setLabel(hint, link.hint);
   text.append(label, hint);
   button.append(icon, text);
-  button.addEventListener("click", () => link.run());
+  //: A tile whose code is fetched on the first press (the Diagram builder: the Library bundle and its own files, seconds on
+  //: a slow machine) shows the working ring and takes no second press until it has opened (the owner, 2026-11-09).
+  button.addEventListener("click", () => {
+    const pending = link.run();
+    if (typeof pending?.then !== "function") return;
+    const ring = setTimeout(() => setBusy(button, true), 150);
+    pending.then(null, () => {}).then(() => (clearTimeout(ring), setBusy(button, false)));
+  });
   return button;
 }
 
