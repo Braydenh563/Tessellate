@@ -200,6 +200,8 @@ _VAGUE_PICK = re.compile(
 _INFERRED = (
     ("untagged", re.compile(_ASKING + r".*\b(?:untagged|no tags?|without (?:any )?tags?|not tagged|haven'?t tagged)\b", re.I)),
     ("pinned", re.compile(_ASKING + r".*\bpinn?ed\b.*\bnotes?\b|" + _ASKING + r".*\bnotes?\b.*\bpinn?ed\b", re.I)),
+    #: A note's "favourite" is the pin: the one place the notebook keeps them (W10 B31).
+    ("pinned", re.compile(_ASKING + r".*\b(?:favou?rite|starred|bookmarked) notes?\b|^(?:what|which|show|list)\b.*\bmy (?:favou?rites|bookmarks|starred)\W*$", re.I)),
     ("oldest", re.compile(_ASKING + r".*?\b(?:(\d+) )?oldest notes?\b", re.I)),
     ("todo", re.compile(_ASKING + r".*\b(?:open|unchecked|outstanding)\s+(?:to-?dos?|check ?boxes|tick ?boxes)\b", re.I)),
     ("random", re.compile(_ASKING + r".*\b(?:a|one) (?:random|rando?m) notes?\b", re.I)),

@@ -55,7 +55,7 @@ _TERMS = (
     re.compile(rf"^{_LEAD}(?:glossary|vocab(?:ulary)?|key terms|keywords?)\s*(?:{_FROM}\s+)?(?P<t>.*)$", re.I),
 )
 _SUMMARY = re.compile(
-    rf"^{_LEAD}(?P<brief>briefly\s+|quickly\s+)?(?:summari[sz]e|sum up|recap|run through|run me through|go over|give me (?:a |an |the )?(?:quick |short |brief |rough )?(?:summary|recap|overview|rundown|run-?down|tl;?dr|gist)(?:\s+{_FROM})?|tl;?dr(?:\s+{_FROM})?|"
+    rf"^{_LEAD}(?P<brief>briefly\s+|quickly\s+)?(?:summari[sz]e|sum up|boil down|condense|recap|run through|run me through|go over|give me (?:a |an |the )?(?:quick |short |brief |rough )?(?:summary|recap|overview|rundown|run-?down|tl;?dr|gist)(?:\s+{_FROM})?|tl;?dr(?:\s+{_FROM})?|"
     rf"what (?:did|have|do|was|were) (?:we|i|you) (?:cover|covered|learn|learnt|learned|study|studied|go over|discuss)(?:\s+(?:in|on|during|at|about))?|what(?:['’]?s| is| was) (?:covered|inside)(?:\s+(?:in|on))?|"
     rf"what(?:['’]?s| is) the (?:gist|summary|point|main idea)\s+{_FROM})\s*(?P<t>.*)$", re.I)
 

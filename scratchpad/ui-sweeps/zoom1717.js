@@ -6,6 +6,7 @@
 //   overflow scrollWidth > clientWidth + 1 on an element that does not scroll, or an
 //            element past the viewport's right edge
 //   clip     overflow hidden, no ellipsis, text wider than its box
+// BASE_W and BASE_H set the unzoomed window (default 1440x900; 1920x1080 for a desktop monitor).
 // Run: THEME=dark ZOOMS=125,150 ONLY=settings BASE=http://127.0.0.1:8795 SCRATCH=<dir> node zoom1717.js
 // Output: <SCRATCH>/zoom1717-<theme>.json (rows) and a count table on stdout.
 const {boot} = require('./lib.js');
@@ -14,6 +15,7 @@ const THEME = process.env.THEME || 'light';
 const SCRATCH = process.env.SCRATCH || '.';
 const ZOOMS = (process.env.ZOOMS || '125,150,175,200').split(',').map(Number);
 const ONLY = (process.env.ONLY || '').split(',').filter(Boolean);
+const BASE_W = Number(process.env.BASE_W) || 1440, BASE_H = Number(process.env.BASE_H) || 900;
 const SKIP_ROWS = process.env.COUNTS_ONLY === '1';
 
 // Runs in the page: returns findings for what is on screen now.
@@ -148,7 +150,7 @@ S('companion', async (p) => { await p.evaluate(() => { if (!document.getElementB
   let seeded = false;
   for (const zoom of ZOOMS) {
     const f = zoom / 100;
-    const mk = async () => { for (let i = 0; ; i++) { try { return await boot({viewport: {width: Math.round(1440 / f), height: Math.round(900 / f)}, deviceScaleFactor: f}); } catch (e) { if (i > 3) throw e; await new Promise((r) => setTimeout(r, 4000)); } } };
+    const mk = async () => { for (let i = 0; ; i++) { try { return await boot({viewport: {width: Math.round(BASE_W / f), height: Math.round(BASE_H / f)}, deviceScaleFactor: f}); } catch (e) { if (i > 3) throw e; await new Promise((r) => setTimeout(r, 4000)); } } };
     let {browser, page} = await mk();
     if (!seeded) {
       seeded = true;

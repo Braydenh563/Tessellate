@@ -81,7 +81,7 @@ const WB_FMT_FIELDS = {
   line: ["stroke", "strokealpha", "width", "dash", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
   //: A straight line or arrow: a line that takes ends.
   arrow: ["stroke", "strokealpha", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
-  link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "props", "pattern", "round", "flow", "jumpsize", "gapstart", "gapend", "tip"],
+  link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "linklook", "props", "pattern", "round", "flow", "jumpsize", "gapstart", "gapend", "tip"],
   text: ["stroke", "fill", "fillalpha", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props"],
   image: ["alpha", "shadow", "shadowset", "radii", "crop", "geometry", "angle", "props"],
   frame: ["geometry", "props"],
@@ -173,6 +173,10 @@ function wbFmtValue(entry, field) {
     case "startsize": return (kind === "arrow" ? wbSketchCaps(s) : wbLinkCaps(s)).startSize || "m";
     case "endsize": return (kind === "arrow" ? wbSketchCaps(s) : wbLinkCaps(s)).endSize || "m";
     case "label-t": return Math.round(wbLinkLabelT(s) * 100);
+    case "lsize": return Number(s?.label_size) || 16;
+    case "lcolor": return s?.label_color || "#1f2430";
+    case "lbold": return Boolean(s?.label_bold);
+    case "lchip": return Boolean(s?.label_chip);
     case "size": return kind === "shape" ? s.label_size || 16 : o.font_size || 16;
     case "bold": return Boolean(kind === "shape" ? s.label_bold : o.bold);
     case "italic": return Boolean(kind === "shape" ? s.label_italic : o.italic);
@@ -636,7 +640,7 @@ function wbFormatSync() {
     ["wb-fmt-fill", "fill", "fill"], ["wb-fmt-route", "route", "route"], ["wb-fmt-jumps", "jumps", "jumps"], ["wb-fmt-startcap", "startcap", "caps"],
     ["wb-fmt-fillstyle", "fillstyle", "fillstyle"], ["wb-fmt-gradient-dir", "gradient-dir", "gradient"], ["wb-fmt-gradient", "gradient", "gradient"],
     ["wb-fmt-jumpsize", "jumpsize", "jumpsize"], ["wb-fmt-gapstart", "gapstart", "gapstart"], ["wb-fmt-gapend", "gapend", "gapend"], ["wb-fmt-tip", "tip", "tip"],
-    ["wb-fmt-pattern", "pattern", "pattern"], ["wb-fmt-round", "round", "round"], ["wb-fmt-crop", "crop", "crop"], ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-size", "size", "text"],
+    ["wb-fmt-pattern", "pattern", "pattern"], ["wb-fmt-round", "round", "round"], ["wb-fmt-crop", "crop", "crop"], ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-lsize", "lsize", "linklook"], ["wb-fmt-lcolor", "lcolor", "linklook"], ["wb-fmt-size", "size", "text"],
     ["wb-fmt-shx", "shx", "shadowset"], ["wb-fmt-shy", "shy", "shadowset"], ["wb-fmt-shb", "shb", "shadowset"], ["wb-fmt-pad", "pad", "pad"],
     ["wb-fmt-r0", "r0", "radii"], ["wb-fmt-r1", "r1", "radii"], ["wb-fmt-r2", "r2", "radii"], ["wb-fmt-r3", "r3", "radii"],
     ["wb-fmt-ink", "ink", "text"], ["wb-fmt-alpha", "alpha", "alpha"], ["wb-fmt-lh", "lh", "text"], ["wb-fmt-ls", "ls", "text"], ["wb-fmt-dir", "dir", "text"], ["wb-fmt-inkalpha", "inkalpha", "text"],
@@ -669,6 +673,11 @@ function wbFormatSync() {
   if (alphaOut && takes.has("alpha")) alphaOut.textContent = mixed("alpha") ? "Mixed" : `${wbFmtValue(first, "alpha")}%`;
   if (takes.has("fillalpha")) wbFmtShowAlpha("fillalpha", mixed("fillalpha"), wbFmtValue(first, "fillalpha"));
   if (takes.has("strokealpha")) wbFmtShowAlpha("strokealpha", mixed("strokealpha"), wbFmtValue(first, "strokealpha"));
+  if (takes.has("linklook")) {
+    for (const [id, field] of [["wb-fmt-lbold", "lbold"], ["wb-fmt-lchip", "lchip"]]) {
+      document.getElementById(id)?.setAttribute("aria-pressed", mixed(field) ? "mixed" : String(wbFmtValue(first, field)));
+    }
+  }
   if (takes.has("text")) {
     const pressed = (field, value) => {
       const some = sharing.map((e) => wbFmtValue(e, field) === value);
@@ -1057,6 +1066,20 @@ onSurface("board", () => {
     const pct = Math.max(5, Math.min(95, Number(e.target.value) || 50));
     wbFmtApply("label-t", () => ({ label_t: pct === 50 ? undefined : pct / 100 }), `Label at ${pct}% along the line.`);
   });
+  //: A connector's label look (audit t20#12): size, colour, bold and a chip
+  //: behind the words, saved beside `label_t` and painted by `wbPaintLinkLabel`.
+  on("wb-fmt-lsize", "change", (e) => {
+    const size = Math.max(8, Math.min(72, Math.round(Number(e.target.value) || 16)));
+    wbFmtApply("linklook", () => ({ label_size: size === 16 ? undefined : size }), `Label size ${size}.`);
+  });
+  on("wb-fmt-lcolor", "change", (e) => wbFmtApply("linklook", () => ({ label_color: e.target.value }), "Label colour changed."));
+  for (const [id, key, word] of [["wb-fmt-lbold", "label_bold", "Label bold"], ["wb-fmt-lchip", "label_chip", "Label chip"]]) {
+    on(id, "click", (e) => {
+      const next = e.currentTarget.getAttribute("aria-pressed") !== "true";
+      e.currentTarget.setAttribute("aria-pressed", String(next));
+      wbFmtApply("linklook", () => ({ [key]: next || undefined }), `${word} ${next ? "on" : "off"}.`);
+    });
+  }
   const textPatch = (shapeKey, objectKey, value) => (entry, kind) => (kind === "shape" ? { [shapeKey]: value } : { [objectKey]: value });
   on("wb-fmt-size", "change", (e) => {
     const size = Math.max(8, Math.min(200, Math.round(Number(e.target.value) || 16)));

@@ -87,7 +87,10 @@ def _note_row(note: dict, extra: str = "") -> str:
     """One note as a list row: its title linked, its first line, where it
     is filed."""
     text = note.get("content") or note.get("preview") or note.get("title") or ""
+    #: "Uncategorised" is the lack of a filing, not a place a note is: no row says it (W10 B32).
     filed = note.get("category")
+    if str(filed or "").strip().lower() in ("uncategorised", "uncategorized"):
+        filed = None
     tags = [str(t) for t in note.get("tags") or []]
     gist = _gist(text) if note.get("content") else ""
     where = f": {gist}" if gist else ""

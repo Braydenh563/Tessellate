@@ -20595,6 +20595,11 @@ function wbPaintLinkLabel(groupEl, sketch, parsed) {
     wbWireLinkLabelDrag(label, groupEl);
   }
   if (label.textContent !== text) label.textContent = text;
+  //: The label's own look (size, colour, bold, chip); unset means the stylesheet's.
+  label.style.fontSize = Number(parsed.label_size) > 0 ? `${Number(parsed.label_size)}px` : "";
+  label.style.fontWeight = parsed.label_bold ? "700" : "";
+  label.style.fill = typeof parsed.label_color === "string" ? parsed.label_color : "";
+  label.classList.toggle("wb-link-label-chip", Boolean(parsed.label_chip));
   groupEl.dataset.labelT = String(wbLinkLabelT(parsed));
   wbLayoutLinkLabel(groupEl);
 }

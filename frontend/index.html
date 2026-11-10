@@ -8487,6 +8487,7 @@ Link to another note with [[its first few words]]."></textarea>
               <p><b>Start gap, End gap</b>: stop this far short of the shape at each end.</p>
               <p><b>Start, End</b>: the mark at each end of the line, and its size.</p>
               <p><b>Label along</b>: where the connector's label sits along it.</p>
+              <p><b>Label size, colour and look</b>: the connector label's own size, colour, bold, and a chip behind the words.</p>
             </div>
             <label class="wb-fmt-row" data-fmt="route"><span class="wb-fmt-label">Line shape</span>
               <select id="wb-fmt-route" aria-label="Line shape" title="Line shape">
@@ -8515,6 +8516,14 @@ Link to another note with [[its first few words]]."></textarea>
             <label class="wb-fmt-row" data-fmt="label-t"><span class="wb-fmt-label">Label along</span>
               <input type="range" id="wb-fmt-label-t" data-unit="%" min="5" max="95" step="5" aria-label="Label position along the line" title="Label position along the line">
             </label>
+            <label class="wb-fmt-row" data-fmt="linklook" data-unit="px"><span class="wb-fmt-label">Label size</span><input type="number" id="wb-fmt-lsize" min="8" max="72" step="1" aria-label="Label text size" title="Size of this connector's label"></label>
+            <label class="wb-fmt-row" data-fmt="linklook"><span class="wb-fmt-label">Label colour</span><input type="color" id="wb-fmt-lcolor" class="wb-color-picker" aria-label="Label colour" title="Colour of this connector's label"></label>
+            <div class="wb-fmt-row" data-fmt="linklook"><span class="wb-fmt-label">Label look</span>
+              <span class="wb-fmt-buttons">
+                <button type="button" id="wb-fmt-lbold" class="ghost small icon-only" aria-pressed="false" title="Bold label" aria-label="Bold label"><i class="ph ph-text-b" aria-hidden="true"></i></button>
+                <button type="button" id="wb-fmt-lchip" class="ghost small icon-only" aria-pressed="false" title="Chip behind the label" aria-label="Label chip"><i class="ph ph-rectangle" aria-hidden="true"></i></button>
+              </span>
+            </div>
           </div>
           <div class="wb-fmt-group" data-fmt-group="style">
             <h4 class="wb-fmt-head"><i class="ph ph-palette" aria-hidden="true"></i><span>Style</span><button type="button" class="icon-only ghost small graph-help-toggle" data-help-for="wb-fmt-help-style" aria-controls="wb-fmt-help-style" aria-expanded="false" title="About style" aria-label="About style"><i class="ph ph-question" aria-hidden="true"></i></button></h4>

@@ -2441,7 +2441,7 @@ HELP_TOPICS.extend(
                 "diamond's tips and side middles, an ellipse's compass points); drag from one to draw an "
                 "elbow connector to whatever you let go on, or to a free end. "
                 "Drag a connector's label by its words to slide "
-                "it along the line. The ends include the entity-relationship marks (one, zero or one, many, "
+                "it along the line; Format sets its size, colour, bold and a chip behind it. The ends include the entity-relationship marks (one, zero or one, many, "
                 "one or many, zero or many). With one shape or text box selected, the four arrows round it "
                 "(or Alt+Shift and an arrow key) copy it that way and join facing sides with an elbow; "
                 "a note card's arrows make a new note there instead, joined and ready to type. With two or more selected, Arrange, Tidy and connect joins them in a line or all to the first picked. Measure with a dimension line shows its length. Select a connector and drag a square at either end onto another shape to re-point it. "

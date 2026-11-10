@@ -744,13 +744,14 @@ _HOLD_KIND = {
     "date": "dates", "dates": "dates", "deadline": "dates", "deadlines": "dates",
     "list": "items", "lists": "items", "bullet": "items", "bullets": "items",
     "table": "tables", "tables": "tables",
+    "link": "links", "links": "links", "linked": "links", "wikilinks": "links", "backlinks": "links",
 }
 _HOLD_OPEN = frozenset({"open", "unticked", "unchecked", "incomplete", "unfinished", "outstanding"})
 #: Words that join the question to its kind and say nothing about it.
 _HOLD_JOIN = frozenset("that which with have has contain contains containing include includes any a an some got i do are is there in them me all of my the your".split())
 #: Words that may sit beside the kind ("bullet lists", "due dates", "to do lists").
 _HOLD_BESIDE = frozenset({"bulleted", "numbered", "ordered", "check", "to", "do", "due", "new", "item", "items", "task", "checklist"})
-_HOLD_LABEL = {"tasks": "checklists", "dates": "dates", "items": "lists", "tables": "tables", "numbered": "numbered lists"}
+_HOLD_LABEL = {"tasks": "checklists", "dates": "dates", "items": "lists", "tables": "tables", "numbered": "numbered lists", "links": "links to other notes"}
 
 
 def holding_ask(question: str) -> tuple[str, bool, str] | None:
@@ -833,6 +834,8 @@ def _holding_sentences(view, kind: str, open_only: bool, today: date) -> list:  
         return [s for s in found if s is not None]
     if kind == "tasks":
         return [s for s in view.sentences if s.kind == "task" and not (open_only and s.done)]
+    if kind == "links":
+        return view.sentences[:1] if _LINKS.search(str(view.note.get("content") or "")) else []
     return _holding_items_of(view, kind)
 
 
@@ -843,6 +846,8 @@ def _holding_items_of(view, kind: str) -> list:  # noqa: ANN001
 
 
 _NUMBERED = re.compile(r"^\s*\d{1,3}[.)]\s")
+#: A link to another note: a [[wiki link]] or a markdown link to a note's own address (W10 B31).
+_LINKS = re.compile(r"\[\[[^\]\n]{1,120}\]\]|\]\(#/notes/\d+\)")
 
 
 def _line_of_item(view, sentence) -> str:  # noqa: ANN001
@@ -866,6 +871,8 @@ def _holding_detail(view, got: list, kind: str, today: date) -> str:  # noqa: AN
     if kind == "dates":
         days = _dated(view, today, "future") or _dated(view, today, "past")
         return _day(days[0][0], today)
+    if kind == "links":
+        return _plural(len(_LINKS.findall(str(view.note.get("content") or ""))), "link")
     return _plural(len(got), "row" if kind == "tables" else "item")
 
 
