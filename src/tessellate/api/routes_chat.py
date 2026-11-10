@@ -262,7 +262,7 @@ def _computed_answer(session: Session, question: str, detected: str, as_of, atta
     stats = _activity(session, question) if as_of is None and not attached else None
     if stats is not None:
         return intent.NOTES, stats
-    stats = notebook_stats.answer_chat(question, session) if detected == intent.NOTES and as_of is None else None
+    stats = notebook_stats.answer_chat(question, session, as_of) if detected == intent.NOTES else None
     if detected == intent.UTILITY:
         detected, stats = _worked_out(question)
     if stats is None and as_of is None and not attached:
@@ -1427,7 +1427,7 @@ def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
             return redirected
     text, asks = _composed_text(req, prepared, result, follow, missed=missed, said_none=said_none)
     text = _with_older(text, older, result)
-    text = _with_words_only(text, prepared, result)
+    text = _with_words_only(text, prepared, result, req.session)
     text = _with_lapsed(text, current, result, req)
     events: list = [{"type": "answer", "delta": text}, *(_web_chip(req) if missed else []), *req.tip_events()]
     #: Every question the finished text suggests is a chip (INBOX 1497); one

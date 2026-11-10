@@ -240,9 +240,24 @@ def by_order(message: str, session: Session) -> StatAnswer | None:
     return None if placed is None else StatAnswer("note-order", note_order.say(session, placed)[0])
 
 
-def answer_chat(message: str, session: Session) -> StatAnswer | None:
-    """What the Chat counts: an ordinal question first, then the shape of the notebook."""
+def answer_chat(message: str, session: Session, as_of: date | None = None) -> StatAnswer | None:
+    """What the Chat counts: an ordinal question first, then the shape of the notebook.
+    With `as_of` (time travel) only the overview is answered, as that day's notebook (R3-32)."""
+    if as_of is not None:
+        return _coverage_as_of(message, session, as_of)
     return by_order(message, session) or answer(message, session)
+
+
+def _coverage_as_of(message: str, session: Session, day: date) -> StatAnswer | None:
+    """"What is in my notebook" as it stood at the end of `day`: the count and span of the notes written by then."""
+    text = _despell((message or "").strip().lower())
+    if not _COVERAGE.match(text.rstrip("?!. ")) or note_recency.is_recency_ask(text):
+        return None
+    made = sorted(value for value in session.scalars(_visible(select(Entry.created_at)).where(Entry.created_at <= datetime.combine(day, time.max))).all() if value)
+    when = f"{day.day} {day:%B %Y}"
+    if not made:
+        return StatAnswer("coverage-as-of", f"You had no notes on {when}.")
+    return StatAnswer("coverage-as-of", f"On {when} you had {_plural(len(made), 'note')}{_span_words(made)}.", [{"label": "notes", "count": len(made)}])
 
 
 def answer(message: str, session: Session) -> StatAnswer | None:
