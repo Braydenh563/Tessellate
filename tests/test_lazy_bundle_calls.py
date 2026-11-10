@@ -433,6 +433,7 @@ REACHED_AFTER_LOAD = {
 #: bundle defines. `file:name` keys, each with the line that proves the call is
 #: reached only after the file that defines the name is in.
 LAZY_REACHED_AFTER_LOAD: dict[str, str] = {
+    "whiteboard-format.js:swatchPicker": "wbColourPalettes fills its rows in the .then of ensureModule('categories'), which carries categories-panel.js",
     "answer-kit.js:agentTimeline": "addAssistantBubble has two callers: chat-turn.js (its own file) and sheets-selects.js's replay, after `await ensureModule(\"chatTurn\")` (line 1991)",
     "answer-kit.js:nameMark": "inside the afterCharacters callback (avatarHead and chatHead paths) or reached from it",
     "app-palette.js:quickAddPaletteRow": "typeof-guarded optional first row; null is the designed answer without it (the act row only exists once quickadd.js or the board is loaded)",

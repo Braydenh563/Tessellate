@@ -8127,8 +8127,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbGrowShapeToLabel` | frontend/js/whiteboard-format.js:1321 |
 | `wbHexOf` | frontend/js/whiteboard-format.js:1894 |
 | `wbInsertTable` | frontend/js/whiteboard-format.js:1680 |
-| `wbOpenColourMenu` | frontend/js/whiteboard-format.js:2328 |
-| `wbOpenPaperMenu` | frontend/js/whiteboard-format.js:2501 |
+| `wbOpenColourMenu` | frontend/js/whiteboard-format.js:2329 |
+| `wbOpenPaperMenu` | frontend/js/whiteboard-format.js:2502 |
 | `wbPaintTable` | frontend/js/whiteboard-format.js:1658 |
 | `wbPasteSize` | frontend/js/whiteboard-format.js:1287 |
 | `wbRecentColours` | frontend/js/whiteboard-format.js:1872 |
@@ -8140,13 +8140,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbRoughProbe` | frontend/js/whiteboard-format.js:1452 |
 | `wbRoughRandom` | frontend/js/whiteboard-format.js:1441 |
 | `wbRoughSpline` | frontend/js/whiteboard-format.js:1467 |
-| `wbSampleColour` | frontend/js/whiteboard-format.js:2567 |
+| `wbSampleColour` | frontend/js/whiteboard-format.js:2568 |
 | `wbSetColourField` | frontend/js/whiteboard-format.js:1940 |
 | `wbSetLinkRoute` | frontend/js/whiteboard-format.js:440 |
 | `wbSetTable` | frontend/js/whiteboard-format.js:1695 |
-| `wbStartEyedrop` | frontend/js/whiteboard-format.js:2543 |
+| `wbStartEyedrop` | frontend/js/whiteboard-format.js:2544 |
 | `wbStepFontSize` | frontend/js/whiteboard-format.js:1197 |
-| `wbStopEyedrop` | frontend/js/whiteboard-format.js:2556 |
+| `wbStopEyedrop` | frontend/js/whiteboard-format.js:2557 |
 | `wbSvgBoxBackdrop` | frontend/js/whiteboard-format.js:1586 |
 | `wbSvgBoxRadii` | frontend/js/whiteboard-format.js:1579 |
 | `wbSvgFoldColours` | frontend/js/whiteboard-format.js:1602 |

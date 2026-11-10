@@ -2312,8 +2312,9 @@ const wbColour = (() => {
         box.append(wbColourHeading(name), row);
       }
     };
-    if (wbLibState.lib) fill();
-    else apiJson("/board-library").then((lib) => { wbLibState.lib = wbLibState.lib || lib; if (box.isConnected) fill(); }).catch(() => {});
+    //: `swatchPicker` lives in the categories bundle, which a board may open before.
+    const lib = wbLibState.lib ? Promise.resolve(wbLibState.lib) : apiJson("/board-library").then((got) => (wbLibState.lib = wbLibState.lib || got));
+    Promise.all([ensureModule("categories"), lib]).then(fill).catch(() => {});
     return box;
   }
 
