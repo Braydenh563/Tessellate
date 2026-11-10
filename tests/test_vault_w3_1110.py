@@ -21,7 +21,8 @@ def _setup(client, session):
     private = client.post(
         "/entries", json={"content": f"# {SECRET_TITLE}\n\n{SECRET_BODY}", "tags": [SECRET_TAG]}
     ).json()["id"]
-    assert client.post(f"/entries/{private}/privacy", json={"private": True}).status_code == 200
+    sealed = client.post(f"/entries/{private}/privacy", json={"private": True})
+    assert sealed.status_code == 200
     return plain, other, private
 
 
@@ -51,7 +52,8 @@ def test_plain_links_still_work_while_locked(client, session):
 
     plain, other, _private = _setup(client, session)
     vault.close()
-    assert client.post(f"/entries/{plain}/links", json={"target_id": other}).status_code == 200
+    linked = client.post(f"/entries/{plain}/links", json={"target_id": other})
+    assert linked.status_code == 200
 
 
 def test_a_private_note_is_not_searchable_open_or_locked(client, session):
@@ -66,3 +68,19 @@ def test_a_private_note_is_not_searchable_open_or_locked(client, session):
             ids = [str(h.get("id")) for h in response.json().get("hits", [])]
             assert str(private) not in ids, (phase, url)
             assert "zxqsecrettitle" not in str(response.json().get("hits", [])).lower(), (phase, url)
+
+
+def test_a_restored_backup_cannot_switch_sign_in_off():
+    """A15: the sign-in switch is never part of a backup, so restoring one
+    (or its preferences) cannot turn the password off; only the password can."""
+    from tessellate.core import backup_bundle
+
+    assert "ask_password_on_open" in backup_bundle._NOT_BACKED_UP
+
+
+def test_link_mode_refuses_a_private_note_like_the_picker():
+    from tests._app_js import app_js_text
+
+    text = app_js_text()
+    start = text.index("function beginOrCompleteLink(entry)")
+    assert "entry.is_private" in text[start : start + 700]

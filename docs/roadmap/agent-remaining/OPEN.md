@@ -79,13 +79,13 @@ Parked until the owner's data or a check on real hardware:
 - A8 "delete all notes about gym" quietly becomes one note | 1028-agent E66
 
 **W3 Vault, lock and private notes** (A, shell and server, Sonnet; verify first). Files: `frontend/js/lock*.js`, `api/routes_graph.py`, tags and links routes, the search index. Checks: `tests/test_vault_*`, a locked-vault sweep. Done when: nothing of a private note (preview, tags, counts, link chip) leaves while locked, and the lock dialog takes focus.
-- A9 The graph carries decrypted previews of private notes | 1029-harness H15
-- A10 While locked, a private note's tags, word count and presence show in the list, graph and /tags | 1029-notes N21
-- A11 Links to a private note are accepted by API while locked; the [[ picker and link mode disagree | 1031-notes N23, N40
-- A12 Export while locked answers 200 with the placeholder as content | 1029-notes N12
-- A13 With the vault open, a private note is never searchable | 1031-notes N3
-- A14 Lock screen: focus not on the field, no dialog semantics, no throttle hint, focus dropped after errors | 1028-shell S4, S25, 1029-extras X23
-- A15 Sign-in off never driven (persistent profile, second LAN device, restored preferences) | t20#17
+- ~~A9 The graph carries decrypted previews of private notes | 1029-harness H15~~ stale: locked graph shows "Private note", open shows the person's own text by design (tests/test_vault_read_surfaces.py)
+- ~~A10 While locked, a private note's tags, word count and presence show in the list, graph and /tags | 1029-notes N21~~ stale: locked list, graph and /tags drop tags, count and text (tests/test_vault_read_surfaces.py)
+- ~~A11 Links to a private note are accepted by API while locked; the [[ picker and link mode disagree | 1031-notes N23, N40~~ fixed w3-1110: 409 "Unlock first." for either end while locked, link mode refuses a private note like the picker (tests/test_vault_w3_1110.py)
+- ~~A12 Export while locked answers 200 with the placeholder as content | 1029-notes N12~~ stale: export and history answer 409 while locked (tests/test_vault_read_surfaces.py)
+- ~~A13 With the vault open, a private note is never searchable | 1031-notes N3~~ stale: /search and /entries/query never return a private note, open or locked (tests/test_vault_w3_1110.py)
+- ~~A14 Lock screen: focus not on the field, no dialog semantics, no throttle hint, focus dropped after errors | 1028-shell S4, S25, 1029-extras X23~~ stale: Playwright 2026-11-10 shows focus on #lock-password, role dialog, aria-modal, aria-describedby, aria-invalid, focus kept after 5 wrong tries, 429 countdown on the button
+- ~~A15 Sign-in off never driven (persistent profile, second LAN device, restored preferences) | t20#17~~ driven w3-1110: persistent, relaunched and fresh browsers open with no prompt, vault stays locked; second LAN device and a real restore not driven (no second host); backups exclude the switch
 - A16 `/media` 403 and 409 unified (after Q18) | sec L14
 
 **W4 Documents that lose words** (A, documents, Sonnet; verify first). Files: `frontend/js/documents.js` save and lock paths. Checks: `tests/test_doc*`, a slow-PUT Playwright run. Done when: no typing during a save is lost, an offline first save says "Not saved" and keeps a draft, locking clears every word from the page.
