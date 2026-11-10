@@ -3983,18 +3983,22 @@ function gcDrawLabels(ctx, s, placed, fadeStep, k, beforePaint = null) {
   //: scales it up: the owner, 2026-11-10, "those note titles are screwed up
   //: visually" ("I' m taking one I nformation"). The plate and the placement
   //: stay in world units; only the text is drawn unscaled (`say` below).
+  //: No save and restore per name: they reset the font, which the canvas
+  //: parses again each time (the owner's lag log, 2026-11-10: 4 to 7 ms a
+  //: draw). The font is set once; each name moves to its spot in screen
+  //: units, then the world transform comes straight back.
   const fontPx = 12;
   ctx.textBaseline = "middle";
+  ctx.font = `500 ${fontPx}px ${gcTokens.font}`;
+  const world = ctx.getTransform();
+  const r = world.a / k;
   const say = (text, x, y, stroke) => {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.scale(1 / k, 1 / k);
-    ctx.font = `500 ${fontPx}px ${gcTokens.font}`;
+    ctx.setTransform(r, 0, 0, r, world.a * x + world.c * y + world.e, world.b * x + world.d * y + world.f);
     if (stroke) {
       ctx.lineWidth = 3;
       ctx.strokeText(text, 0, 0);
     } else ctx.fillText(text, 0, 0);
-    ctx.restore();
+    ctx.setTransform(world);
   };
   //: **A name stands on a plate, not a halo** (INBOX 493: "labels in white
   //: over the lines"). The 3px card-coloured stroke around each glyph left
