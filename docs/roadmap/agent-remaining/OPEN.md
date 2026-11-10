@@ -302,7 +302,7 @@ Parked until the owner's data or a check on real hardware:
 **W29 Structure ratchets** (D, cross-cutting, Opus design then Sonnet). Files: one carve per run, outside the files of the same session's other batches. Checks: `tests/test_global_scope_ratchet.py`, `tests/test_complexity.py`. Done when: each ratchet moves down.
 - D22 IIFE wraps (audit 37a, after iife4) and surfaces (21, 36) | fitaudit 19, 21, 36, 37
 - D23 Routes are the data layer (359 ORM queries in routes) | 1031-architecture AR1
-- D24 One global scope of 10,000 names | 1031-architecture AR2
+- D24 One global scope of 10,000 names | 1031-architecture AR2. **Part done s58-1110:** 9,096 to 9,044 names (settings-packages.js, appearance-panel.js, whiteboard-history.js wrapped whole); not wrapped, too many tests read them privately: math-field.js, ask-chart.js, lag-watch.js, capture-card-more.js; agent-activity.js has a multi-line template (wrap by hand)
 - D25 Split `run_agent`; data tables out of code | SESSION_BRIEFS 62, 63
 
 **W30 Whiteboard render cost** (D, boards render, Opus). Files: `whiteboard.js` render path, `whiteboard-map.js`. Checks: frame time on a 500-object board. Done when: one edit re-renders only what changed.

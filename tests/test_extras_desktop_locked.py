@@ -12,6 +12,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped
 
 from tessellate.core import extras
 
@@ -66,7 +67,7 @@ def test_a_packaged_build_skips_it_in_a_bulk_removal(client, monkeypatch):
 
 
 def test_the_row_menu_and_the_bars_leave_remove_out():
-    source = (ROOT / "frontend" / "js" / "settings-packages.js").read_text(encoding="utf-8")
+    source = unwrapped((ROOT / "frontend" / "js" / "settings-packages.js").read_text(encoding="utf-8"))
     can = source[source.index("function packagesCan(") :]
     can = can[: can.index("\n}\n")]
     assert "removable !== false" in can
