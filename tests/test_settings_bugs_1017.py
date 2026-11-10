@@ -201,6 +201,8 @@ def test_b55_the_web_menu_still_offers_to_start_searxng_on_duckduckgo():
         "const calls = { menu: [], dot: [] };\n"
         "let prefsCache = { search_provider: 'duckduckgo', web_search_enabled: true };\n"
         "let webSearxngTimer = null, webEngineInfo = null;\n"
+        "const prefs = { setJSON() {} };\n"
+        "async function ensureModule() { return true; }\n"
         "async function apiJson() { return { backend: 'source', state: 'stopped', responding: false, installing: false }; }\n"
         "function setWebEngineDot(state, provider) { calls.dot.push(state); }\n"
         "function renderWebPanelMenu(engine) { calls.menu.push(engine); }\n"

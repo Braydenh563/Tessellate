@@ -164,6 +164,7 @@ REACHED_AFTER_LOAD = {
     "chat-agent.js:atlasStyle": "chatHeadKey is a cache key; its typeof guard only trims the key, and it is asked for a face only after afterCharacters",
     "chat-agent.js:nameMark": "inside paintUserMarks's afterCharacters (chat-agent.js)",
     "chat.js:nameMark": "the same line is the afterCharacters callback (chat.js)",
+    "chat.js:webEngineWords": "setWebEngineDot is called only from refreshWebSearxngStrip, which awaits ensureModule(\"webClip\") first (chat.js)",
     "chat.js:chatPrivateEmpty": "chatConv.private is set only by chat-private.js (chatPrivateStart, line 42), which the stand-in loads",
     "dashboard.js:nameMarkLive": "paintDashFace is called only from paintDashEmblem's afterCharacters (dashboard.js)",
     "palette.js:chatSourcesFrom": "called only inside cmdPaletteAsk, which awaits ensureModule('chatTurn') first (answer-kit.js rides in it)",

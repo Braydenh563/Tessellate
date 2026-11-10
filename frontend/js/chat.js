@@ -489,27 +489,6 @@ function toggleWebPanel(force) {
 // beside it.
 let webSearxngTimer = null;
 
-//: What the dot says, word for word, in its title and its accessible name.
-//: "Stopped" means two different things by provider: under Automatic a search
-//: falls back to DuckDuckGo, and under SearXNG only it does not (websearch.py,
-//: `search_web`), so the sentence names which.
-function webEngineWords(state, provider) {
-  const words = {
-    off: "Web access is off",
-    remote: "Searching with DuckDuckGo: your queries leave this machine",
-    running: "SearXNG is running: your searches stay on this machine",
-    starting: "SearXNG is starting",
-    installing: "SearXNG is installing",
-    stopped:
-      provider === "searxng"
-        ? "SearXNG is stopped, so searches will fail until you start it"
-        : "SearXNG is stopped, so searches go to DuckDuckGo",
-    absent: "SearXNG is not installed, so searches go to DuckDuckGo",
-    unknown: "Search engine: checking",
-  };
-  return words[state] || words.unknown;
-}
-
 function setWebEngineDot(state, provider) {
   const dot = $("web-engine-dot");
   const words = webEngineWords(state, provider);
@@ -577,16 +556,12 @@ function renderWebPanelMenu(engine) {
 //: answers** (the owner, 2026-10-10: "the start searxng button doesnt appear
 //: for a while"; driven with the status call held 4000 ms: the control came
 //: at 4017 ms). A fresh page has no answer yet and the call can take seconds,
-//: so the settled one is kept under `webEngineLast` and drawn first; the call
-//: still has the last word. Installing and starting are not kept: they pass.
-let webEngineInfo = (() => {
-  const last = prefs.json("webEngineLast", {});
-  return ["running", "stopped", "absent"].includes(last.state)
-    ? { state: last.state, running: last.state === "running" }
-    : null;
-})();
+//: so the settled one is kept under `webEngine` and drawn first; the call
+//: still has the last word.
+let webEngineInfo = prefs.json("webEngine");
 
 async function refreshWebSearxngStrip() {
+  await ensureModule("webClip");
   const provider = (prefsCache && prefsCache.search_provider) || "auto";
   clearTimeout(webSearxngTimer);
   if (prefsCache && !prefsCache.web_search_enabled) {
@@ -602,7 +577,6 @@ async function refreshWebSearxngStrip() {
     // No usable backend (Docker or a virtualenv) to run it at all, Settings
     // → Web search explains why; there is nothing to start from here.
     webEngineInfo = null;
-    prefs.setJSON("webEngineLast", {});
     if (!prefsCache || prefsCache.web_search_enabled) setWebEngineDot("remote", provider);
     renderWebPanelMenu(null);
     return;
@@ -612,13 +586,9 @@ async function refreshWebSearxngStrip() {
     ? "installing"
     : running
       ? "running"
-      : info.state === "running"
-        ? "starting"
-        : info.state === "absent"
-          ? "absent"
-          : "stopped";
+      : { running: "starting", absent: "absent" }[info.state] || "stopped";
   webEngineInfo = { state, running };
-  prefs.setJSON("webEngineLast", { state });
+  prefs.setJSON("webEngine", webEngineInfo);
   if (!prefsCache || prefsCache.web_search_enabled) setWebEngineDot(provider === "duckduckgo" ? "remote" : state, provider);
   renderWebPanelMenu(webEngineInfo);
   // Keep polling while it settles, same as Settings' own richer view:
