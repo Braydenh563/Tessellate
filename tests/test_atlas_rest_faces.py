@@ -51,6 +51,8 @@ const document = {
   },
 };
 let painted = 0;
+let repaintBody = () => {};
+globalThis.repaintAssistantAvatars = () => repaintBody();
 globalThis.paintAssistantAvatar = () => { painted++; };
 const atlasMake = (tag, attrs, parent) => { const n = new Node(tag); n.className = (attrs && attrs.class) || ""; for (const [k, v] of Object.entries(attrs || {})) n.setAttribute(k, v); if (parent) parent.appendChild(n); return n; };
 function reply(mood = "calm") {
@@ -144,6 +146,30 @@ def test_a_painted_head_retires_the_older_ones_in_one_pass_and_wakes_nothing() -
     assert "MutationObserver" not in block and "setInterval" not in block and "requestAnimationFrame" not in block
     assert "Object.assign(window" not in block and "window." not in block
     assert block.count("\n(() => {") == 1, "wrapped whole: no new name in the shared scope"
+
+
+def test_a_repaint_of_every_head_returns_the_older_replies_to_rest() -> None:
+    """Appearance, Assistant avatar repaints each reply's head with a live one
+    (`repaintAssistantAvatars`, chat-agent.js); the older ones go back to the
+    rest form at once, not at the next reply. Heads that were waiting for the
+    characters to load (a reopened chat) are retired when the last is drawn."""
+    result = _run(
+        """
+        reply(); reply(); reply();
+        const live = (b) => { const f = reply.call(null); bubbles.pop(); b.avatar.children[0] = f; f.parent = b.avatar; };
+        repaintBody = () => { bubbles.forEach(live); };
+        listeners["atlas-repainted"]();
+        globalThis.repaintAssistantAvatars();
+        await Promise.resolve();
+        const after = bubbles.map((b) => b.avatar.children[0].count());
+        bubbles.forEach(live);
+        listeners["characters-painted"]();
+        await Promise.resolve();
+        console.log(JSON.stringify({ after, late: bubbles.map((b) => b.avatar.children[0].count()) }));
+        """
+    )
+    assert result["after"] == [2, 2, 161]
+    assert result["late"] == [2, 2, 161]
 
 
 def test_the_shared_scope_is_told_about_the_copies() -> None:

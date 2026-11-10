@@ -4131,7 +4131,10 @@ function charactersArrived() {
     characterBacklog.clear();
     const step = () => {
       const job = jobs.shift();
-      if (!job) return;
+      if (!job) {
+        document.dispatchEvent(new Event("characters-painted"));
+        return;
+      }
       runCharacterJob(typeof job[0] === "string" ? window[job[0]] : job[0], job[1]);
       setTimeout(step, 0);
     };
@@ -4197,16 +4200,30 @@ function charactersArrived() {
   //: the page, so that is the moment the ones before it are retired: no
   //: observer of its own to wake. One pass for a burst (a reopened chat).
   let queued = false;
-  const paint = globalThis.paintAssistantAvatar;
-  globalThis.paintAssistantAvatar = (holder, size) => {
-    paint(holder, size);
+  function retireSoon() {
     if (queued) return;
     queued = true;
     queueMicrotask(() => {
       queued = false;
       retireOlder();
     });
+  }
+  const paint = globalThis.paintAssistantAvatar;
+  globalThis.paintAssistantAvatar = (holder, size) => {
+    paint(holder, size);
+    retireSoon();
   };
+  //: A change of Appearance, Assistant avatar repaints every head, and heads
+  //: that waited for the characters (a reopened chat) are drawn by the loader
+  //: without passing through `paintAssistantAvatar`: both end in a retire.
+  const repaint = globalThis.repaintAssistantAvatars;
+  if (repaint) {
+    globalThis.repaintAssistantAvatars = (...args) => {
+      repaint(...args);
+      retireSoon();
+    };
+  }
+  document.addEventListener("characters-painted", retireSoon);
 
   //: A new look draws every head again: the copies are of the old look.
   document.addEventListener("atlas-repainted", () => {
