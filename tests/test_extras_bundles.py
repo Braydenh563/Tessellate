@@ -30,6 +30,7 @@ import pytest
 
 from tessellate.api import routes_tasks
 from tessellate.core import extras, jobs
+from tests._js_scope import unwrapped
 
 
 @pytest.fixture(autouse=True)
@@ -390,7 +391,7 @@ def test_the_packages_screen_is_a_lazy_bundle_reached_through_its_entry_point():
 def test_an_installed_rows_reinstall_is_in_its_kebab_menu():
     """DESIGN.md's menu recipe: Reinstall and Remove behind the row's ⋯,
     not two more buttons on a row that already holds a name and chips."""
-    source = PACKAGES_JS.read_text(encoding="utf-8")
+    source = unwrapped(PACKAGES_JS.read_text(encoding="utf-8"))
     menu = _function(source, "packagesRowMenu")
     assert "kebabMenu(" in menu
     assert "ph:arrow-clockwise Reinstall" in menu and "ph:trash Remove" in menu
@@ -411,7 +412,7 @@ def test_the_selection_bar_is_the_select_bar_recipe():
 
 
 def test_a_bulk_request_sends_allowlist_ids_and_never_a_package_name():
-    source = PACKAGES_JS.read_text(encoding="utf-8")
+    source = unwrapped(PACKAGES_JS.read_text(encoding="utf-8"))
     bulk = _function(source, "packagesBulk")
     assert '"/extras/bulk", { action, ids: extras.map((extra) => extra.id) }' in bulk
     post = bulk.split("packagesPost(", 1)[1].split("\n", 1)[0]

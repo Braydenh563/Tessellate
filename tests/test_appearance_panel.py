@@ -11,6 +11,7 @@ committed); here are the contracts a source check can hold.
 from __future__ import annotations
 
 from tests._help_text import help_chat_text
+from tests._js_scope import unwrapped
 
 import importlib.util
 import json
@@ -24,7 +25,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 CSS = ROOT / "frontend" / "css"
-PANEL = (JS / "appearance-panel.js").read_text(encoding="utf-8")
+PANEL = unwrapped((JS / "appearance-panel.js").read_text(encoding="utf-8"))
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 LAZY = (JS / "lazy-entries.js").read_text(encoding="utf-8")
 
@@ -159,8 +160,10 @@ console.log(JSON.stringify({
 def test_the_section_in_view_is_the_last_one_that_has_reached_the_line(tmp_path):
     script = tmp_path / "harness.js"
     script.write_text(HARNESS, encoding="utf-8")
+    plain = tmp_path / "appearance-panel.js"  # unwrapped: the harness reads a private name
+    plain.write_text(PANEL, encoding="utf-8")
     out = subprocess.run(
-        ["node", str(script), str(JS / "appearance-panel.js")], capture_output=True, text=True, check=True
+        ["node", str(script), str(plain)], capture_output=True, text=True, check=True
     ).stdout
     got = json.loads(out)
     assert got == {

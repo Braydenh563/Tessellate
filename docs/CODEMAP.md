@@ -1997,22 +1997,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `appearanceBuild` | frontend/js/appearance-panel.js:131 |
-| `appearanceHeadButton` | frontend/js/appearance-panel.js:120 |
-| `appearanceHost` | frontend/js/appearance-panel.js:229 |
-| `appearanceIcon` | frontend/js/appearance-panel.js:113 |
-| `appearanceJump` | frontend/js/appearance-panel.js:70 |
-| `appearanceMark` | frontend/js/appearance-panel.js:62 |
-| `appearancePaintRows` | frontend/js/appearance-panel.js:94 |
-| `appearanceSchedulePaint` | frontend/js/appearance-panel.js:102 |
-| `appearanceSectionAt` | frontend/js/appearance-panel.js:43 |
-| `appearanceSetPeek` | frontend/js/appearance-panel.js:107 |
-| `appearanceSpy` | frontend/js/appearance-panel.js:82 |
-| `appearanceTarget` | frontend/js/appearance-panel.js:52 |
-| `appearanceTop` | frontend/js/appearance-panel.js:57 |
-| `appearanceUnhost` | frontend/js/appearance-panel.js:248 |
-| `closeAppearancePanel` | frontend/js/appearance-panel.js:282 |
-| `openAppearancePanel` | frontend/js/appearance-panel.js:255 |
+| `appearanceBuild` | frontend/js/appearance-panel.js:132 |
+| `appearanceHeadButton` | frontend/js/appearance-panel.js:121 |
+| `appearanceHost` | frontend/js/appearance-panel.js:230 |
+| `appearanceIcon` | frontend/js/appearance-panel.js:114 |
+| `appearanceJump` | frontend/js/appearance-panel.js:71 |
+| `appearanceMark` | frontend/js/appearance-panel.js:63 |
+| `appearancePaintRows` | frontend/js/appearance-panel.js:95 |
+| `appearanceSchedulePaint` | frontend/js/appearance-panel.js:103 |
+| `appearanceSectionAt` | frontend/js/appearance-panel.js:44 |
+| `appearanceSetPeek` | frontend/js/appearance-panel.js:108 |
+| `appearanceSpy` | frontend/js/appearance-panel.js:83 |
+| `appearanceTarget` | frontend/js/appearance-panel.js:53 |
+| `appearanceTop` | frontend/js/appearance-panel.js:58 |
+| `appearanceUnhost` | frontend/js/appearance-panel.js:249 |
+| `closeAppearancePanel` | frontend/js/appearance-panel.js:283 |
+| `openAppearancePanel` | frontend/js/appearance-panel.js:256 |
 
 ### frontend/js/ask-chart.js (15)
 
@@ -7270,21 +7270,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `packagesBulk` | frontend/js/settings-packages.js:534 |
-| `packagesBulkFromBar` | frontend/js/settings-packages.js:582 |
-| `packagesCan` | frontend/js/settings-packages.js:193 |
-| `packagesInstallOne` | frontend/js/settings-packages.js:481 |
-| `packagesPost` | frontend/js/settings-packages.js:518 |
-| `packagesReinstallOne` | frontend/js/settings-packages.js:498 |
-| `packagesRemoveOne` | frontend/js/settings-packages.js:508 |
-| `packagesRenderBundles` | frontend/js/settings-packages.js:203 |
-| `packagesRow` | frontend/js/settings-packages.js:328 |
-| `packagesRowMenu` | frontend/js/settings-packages.js:456 |
-| `packagesStatusLine` | frontend/js/settings-packages.js:178 |
-| `packagesSyncBar` | frontend/js/settings-packages.js:561 |
-| `renderExtras` | frontend/js/settings-packages.js:30 |
-| `voiceModelsPaint` | frontend/js/settings-packages.js:101 |
-| `voiceModelsWire` | frontend/js/settings-packages.js:125 |
+| `packagesBulk` | frontend/js/settings-packages.js:535 |
+| `packagesBulkFromBar` | frontend/js/settings-packages.js:583 |
+| `packagesCan` | frontend/js/settings-packages.js:194 |
+| `packagesInstallOne` | frontend/js/settings-packages.js:482 |
+| `packagesPost` | frontend/js/settings-packages.js:519 |
+| `packagesReinstallOne` | frontend/js/settings-packages.js:499 |
+| `packagesRemoveOne` | frontend/js/settings-packages.js:509 |
+| `packagesRenderBundles` | frontend/js/settings-packages.js:204 |
+| `packagesRow` | frontend/js/settings-packages.js:329 |
+| `packagesRowMenu` | frontend/js/settings-packages.js:457 |
+| `packagesStatusLine` | frontend/js/settings-packages.js:179 |
+| `packagesSyncBar` | frontend/js/settings-packages.js:562 |
+| `renderExtras` | frontend/js/settings-packages.js:31 |
+| `voiceModelsPaint` | frontend/js/settings-packages.js:102 |
+| `voiceModelsWire` | frontend/js/settings-packages.js:126 |
 
 ### frontend/js/settings-rows.js (35)
 
@@ -8144,22 +8144,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `wbChangeFromElsewhereSoon` | frontend/js/whiteboard-history.js:354 |
-| `wbCloseHistory` | frontend/js/whiteboard-history.js:192 |
-| `wbHistBoardParam` | frontend/js/whiteboard-history.js:41 |
-| `wbHistGuard` | frontend/js/whiteboard-history.js:64 |
-| `wbHistLoadOlder` | frontend/js/whiteboard-history.js:138 |
-| `wbHistMoment` | frontend/js/whiteboard-history.js:47 |
-| `wbHistRestore` | frontend/js/whiteboard-history.js:212 |
-| `wbHistShow` | frontend/js/whiteboard-history.js:159 |
-| `wbHistSync` | frontend/js/whiteboard-history.js:82 |
-| `wbHistWords` | frontend/js/whiteboard-history.js:53 |
-| `wbOpenHistory` | frontend/js/whiteboard-history.js:104 |
-| `wbOpenSnapshots` | frontend/js/whiteboard-history.js:474 |
-| `wbRestoreToEvent` | frontend/js/whiteboard-history.js:426 |
-| `wbSnapshotPreviewBoard` | frontend/js/whiteboard-history.js:404 |
-| `wbSnapshotRow` | frontend/js/whiteboard-history.js:435 |
-| `wbTakeChangeFromElsewhere` | frontend/js/whiteboard-history.js:316 |
+| `wbChangeFromElsewhereSoon` | frontend/js/whiteboard-history.js:355 |
+| `wbCloseHistory` | frontend/js/whiteboard-history.js:193 |
+| `wbHistBoardParam` | frontend/js/whiteboard-history.js:42 |
+| `wbHistGuard` | frontend/js/whiteboard-history.js:65 |
+| `wbHistLoadOlder` | frontend/js/whiteboard-history.js:139 |
+| `wbHistMoment` | frontend/js/whiteboard-history.js:48 |
+| `wbHistRestore` | frontend/js/whiteboard-history.js:213 |
+| `wbHistShow` | frontend/js/whiteboard-history.js:160 |
+| `wbHistSync` | frontend/js/whiteboard-history.js:83 |
+| `wbHistWords` | frontend/js/whiteboard-history.js:54 |
+| `wbOpenHistory` | frontend/js/whiteboard-history.js:105 |
+| `wbOpenSnapshots` | frontend/js/whiteboard-history.js:475 |
+| `wbRestoreToEvent` | frontend/js/whiteboard-history.js:427 |
+| `wbSnapshotPreviewBoard` | frontend/js/whiteboard-history.js:405 |
+| `wbSnapshotRow` | frontend/js/whiteboard-history.js:436 |
+| `wbTakeChangeFromElsewhere` | frontend/js/whiteboard-history.js:317 |
 
 ### frontend/js/whiteboard-interchange.js (49)
 
