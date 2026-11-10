@@ -1,7 +1,7 @@
 // Graph grouping (INBOX 431 (6)): category cohesion and the loose notes' ring.
 // GROUP=0 or 1 (the View menu's Group by category). Lower cohesion is tighter.
 // Seed with a few categories and links first (150 notes, 8 categories).
-const {boot}=require('/home/user/MemoryMap-AI/scratchpad/ui-sweeps/lib.js');
+const {boot}=require('./lib.js');
 (async()=>{
  const {browser,page}=await boot();
  await page.evaluate((g)=>localStorage.setItem('graph-group', g), process.env.GROUP||'1');

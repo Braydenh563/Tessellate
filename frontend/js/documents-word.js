@@ -234,7 +234,8 @@
       },
       numbering: { config: [{ reference: "mm-numbered", levels }] },
       footnotes: ctx.footnotes,
-      sections: [{ children: children.length ? children : [new D.Paragraph("")] }],
+      features: { updateFields: Boolean(ctx.toc) },
+      sections: docWordSections(D, children),
     });
     return D.Packer.toBlob(doc);
   }
@@ -410,6 +411,62 @@
     return shape.length === count ? shape : null;
   }
 
+  //: A callout's tint and edge in Word, by the colour family the page gives its
+  //: kind (fill, then the left edge). Hex without "#", as Word writes it.
+  const DOC_WORD_TONES = { blue: ["E3EDFB", "3B6FD4"], green: ["E1F3E6", "2E8B57"], amber: ["FFF2D9", "C98A0B"], red: ["FBE3E3", "C0392B"], grey: ["EEEEEE", "777777"] };
+  const DOC_WORD_TONE_OF = { note: "blue", abstract: "blue", info: "blue", question: "blue", todo: "green", tip: "green", success: "green", warning: "amber", example: "amber", failure: "red", danger: "red", bug: "red", quote: "grey", toggle: "grey" };
+
+  //: `[TOC]` as Word's own contents field over the headings written below it
+  //: (three levels, as the page's list shows). Word refreshes the page numbers
+  //: when the file opens (`features.updateFields`, set by `docWordBlob`).
+  function docWordToc(D) {
+    return new D.TableOfContents("Contents", { hyperlink: true, headingStyleRange: "1-3" });
+  }
+
+  //: A callout as a one-cell table: the cell takes the kind's tint and the
+  //: table a thick left edge, which Word keeps when the file is edited. Word
+  //: wants a paragraph last in a cell, so one is added after a nested table.
+  function docWordCallout(D, kind, blocks) {
+    const [fill, edge] = DOC_WORD_TONES[DOC_WORD_TONE_OF[kind] || "grey"];
+    const none = { style: D.BorderStyle.NONE, size: 0, color: "auto" };
+    const children = blocks.length ? [...blocks] : [new D.Paragraph("")];
+    if (children[children.length - 1] instanceof D.Table) children.push(new D.Paragraph(""));
+    return new D.Table({
+      width: { size: 100, type: D.WidthType.PERCENTAGE },
+      borders: { top: none, bottom: none, right: none, insideHorizontal: none, insideVertical: none, left: { style: D.BorderStyle.SINGLE, size: 24, color: edge } },
+      rows: [new D.TableRow({ children: [new D.TableCell({ shading: { type: D.ShadingType.CLEAR, color: "auto", fill }, margins: { top: 80, bottom: 80, left: 160, right: 160 }, children })] })],
+    });
+  }
+
+  //: A columns marker inside something that cannot hold a section (a callout's
+  //: cell) is its columns one after another.
+  function docWordFlat(blocks) {
+    return blocks.flatMap((block) => (block.docWordColumns ? block.docWordColumns.flat() : [block]));
+  }
+
+  //: The blocks as Word sections: a `::: columns` block is its own continuous
+  //: section with that many real columns, a column break between them so each
+  //: starts at the top of its column; the text around it is one column.
+  function docWordSections(D, children) {
+    const sections = [];
+    let run = [];
+    const close = (properties) => {
+      if (run.length || !sections.length) sections.push({ properties, children: run.length ? run : [new D.Paragraph("")] });
+      run = [];
+    };
+    for (const block of children) {
+      if (!block.docWordColumns) {
+        run.push(block);
+        continue;
+      }
+      close(sections.length ? { type: D.SectionType.CONTINUOUS } : {});
+      const flow = block.docWordColumns.flatMap((col, index) => (index ? [new D.Paragraph({ children: [new D.ColumnBreak()] }), ...col] : col));
+      sections.push({ properties: { type: D.SectionType.CONTINUOUS, column: { count: block.docWordColumns.length, space: 720 } }, children: flow.length ? flow : [new D.Paragraph("")] });
+    }
+    close({ type: D.SectionType.CONTINUOUS });
+    return sections;
+  }
+
   const DOC_WORD_HEADINGS = { h1: "HEADING_1", h2: "HEADING_2", h3: "HEADING_3", h4: "HEADING_4", h5: "HEADING_5", h6: "HEADING_6" };
 
   function docWordBlocks(D, root, depth, ctx, instance = 0) {
@@ -466,6 +523,17 @@
             out.push(...docWordBlocks(D, wrap, lvl + 1, ctx, own));
           }
         });
+      } else if (el.classList.contains("md-toc")) {
+        ctx.toc = true;
+        out.push(docWordToc(D));
+      } else if (el.classList.contains("callout")) {
+        const title = el.querySelector(".callout-title");
+        const head = title ? [new D.Paragraph({ children: docWordRuns(D, title, { bold: true }, ctx) })] : [];
+        const kind = /callout-([a-z]+)/.exec(el.className)?.[1] || "note";
+        const body = el.querySelector(".callout-body");
+        out.push(docWordCallout(D, kind, docWordFlat([...head, ...(body ? docWordBlocks(D, body, depth, ctx, instance) : [])])));
+      } else if (el.classList.contains("doc-cols")) {
+        out.push({ docWordColumns: [...el.children].map((col) => docWordFlat(docWordBlocks(D, col, depth, ctx, instance))) });
       } else if (tag === "table") {
         const rows = [...el.querySelectorAll("tr")].map((tr) => new D.TableRow({
           children: [...tr.children].map((cell) => new D.TableCell({ children: [new D.Paragraph({ children: docWordRuns(D, cell, cell.tagName === "TH" ? { bold: true } : {}, ctx) })] })),

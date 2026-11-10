@@ -17,7 +17,7 @@ const fs = require("fs");
 const path = require("path");
 
 const OUT = (process.env.SCRATCH || ".") + "/shots";
-const PY = process.env.PY || "/home/user/MemoryMap-AI/.venv/bin/python";
+const PY = process.env.PY || require('path').resolve(__dirname, '..', '..', '.venv', 'bin', 'python');
 const THEME = process.env.THEME || "light";
 let failures = 0;
 function check(label, ok, detail) {

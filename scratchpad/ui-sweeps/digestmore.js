@@ -10,7 +10,7 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 const { boot } = require('./lib.js');
 
-const PY = process.env.SWEEP_PY || '/home/user/MemoryMap-AI/.venv/bin/python';
+const PY = process.env.SWEEP_PY || require('path').resolve(__dirname, '..', '..', '.venv', 'bin', 'python');
 
 //: A day apart in September, so the answer groups them by what they say
 //: rather than folding one day's ten notes into a line (needs DATA).

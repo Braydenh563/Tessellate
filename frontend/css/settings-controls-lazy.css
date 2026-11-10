@@ -119,6 +119,31 @@
 #settings-modal .settings-section > .dock:has(> .dock-identity > h3.jump-echo:only-child):not(:has(> :not(.dock-identity))) {
   display: none;
 }
+/* A dock left holding only the help button gives the row up: the dock shrinks
+   to nothing, the button sits at the pane's top right and the intro line
+   leaves room for it (Memory at 390px: the dock was 62px tall for one 44px
+   button; measured 2026-11-10). */
+@media (max-width: 819.98px) {
+  #settings-modal .settings-section:has(> .dock > .dock-identity > h3.jump-echo:only-child):has(> .dock > .dock-actions) {
+    position: relative;
+  }
+  #settings-modal .settings-section > .dock:has(> .dock-identity > h3.jump-echo:only-child):has(> .dock-actions) {
+    height: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    overflow: visible;
+  }
+  #settings-modal .settings-section > .dock:has(> .dock-identity > h3.jump-echo:only-child) > .dock-actions {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-end: 0;
+  }
+  #settings-modal .settings-section > .dock:has(> .dock-identity > h3.jump-echo:only-child):has(> .dock-actions) + p {
+    padding-inline-end: var(--target-min);
+  }
+}
 
 /* Hover tints the chip's border, not a second box (K28); lazy with Settings for the boot CSS cap. */
 .shortcut-list button.shortcut-key:is(:hover, :focus-visible) {

@@ -6,7 +6,7 @@
 // (an inline field; a new name saved and shown on the plate and legend), then
 // the old name restored. Pass: moved = members, spread < 1, pinned = members,
 // pinsRequests 1, renamed true.
-const { boot } = require("/home/user/MemoryMap-AI/scratchpad/ui-sweeps/lib.js");
+const { boot } = require('./lib.js');
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
   const puts = [];

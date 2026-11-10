@@ -2635,9 +2635,8 @@ INBOX 410 (check with AI in place, dockable suggestions, the dictionary sheet, t
     pass; one line each, recommendation first).** (a) The mind map's pie
     ring does not take focus when it opens, so Enter and the arrows still
     act on the board while it shows: recommend it takes focus when opened
-    from the keyboard only. (b) DOCX export writes `:::columns`, `[TOC]` and
-    `[!kind]` as plain text: map them to Word columns, a TOC field and a
-    shaded box. (c) Inline `$x$` maths is plain symbols in Read view: render
+    from the keyboard only. (b) ~~DOCX export writes `:::columns`, `[TOC]` and
+    `[!kind]` as plain text~~ (fixed 2026-11-10: TOC field, shaded callouts, columns). (c) Inline `$x$` maths is plain symbols in Read view: render
     it through the same TeX-to-MathML path as `$$`. (fixed: `INLINE_MATH_RE`
     (app.js) now claims a `$…$` span with no space inside either delimiter
     and no digit right after the close; `unlatex` carries it through
@@ -3017,12 +3016,14 @@ INBOX 410 (check with AI in place, dockable suggestions, the dictionary sheet, t
     the Windows format-string error, the citation number on reload, the
     Privacy pill's active state, the lightbox menu, the tools grid's one
     divider (4183), Bookmarks, the companion's menu and hotkey, reduce
-    actions, Arc fit, the injection answer. Still open (no record found, not
-    driven): the sources-fold scroll jump, responsive-mode flicker, the top
-    bar at small widths, OCR from Images, the Capture '?' scroll, line
-    numbers in the capture preview, Atlas in the tour ring, the phone and
-    tablet list, the links widget, banner actions, per-feature "same as
-    chat", AI templates, the tray menu, the constellation.
+    actions, Arc fit, the injection answer. **Driven 2026-11-10 at 390 and
+    1440 and holding (numbers in wc2-1110.md):** the sources-fold scroll jump,
+    responsive-mode flicker, OCR from Images, the Capture '?' scroll, the
+    links widget (Bookmarks), banner actions, per-feature "same as chat", AI
+    templates; Word export of a TOC, callouts and columns (423 b). Still open
+    (no record found, not driven): the top bar at small widths, line numbers
+    in the capture preview, Atlas in the tour ring, the tray menu, the
+    constellation.
 
 ## Placed from INBOX, 2026-10-04 (design work for the next Opus slots)
 
