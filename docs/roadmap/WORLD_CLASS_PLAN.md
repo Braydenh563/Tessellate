@@ -2682,7 +2682,10 @@ INBOX 410 (check with AI in place, dockable suggestions, the dictionary sheet, t
     and `:::columns` (driven, 9,960 bytes) has no literal marker, the TOC is
     a Contents list, callout and columns text stay in order; still open: a
     Word TOC field, shaded box and real columns (no `w:cols`, `w:shd`).
-    (c) (d) (f) (g) (i) built, marked above. (e) (h) (j) not driven.
+    (c) (d) (f) (g) (i) built. **wc-1110:** (e) built (filmstrip over the
+    caption at 1280x720 and 960x600; picture cap now clears it by 43 and
+    36px, `lightbox-lazy.css`); (h) answered (no stored persona, D9 draws
+    Atlas as one shared copy); (j) all three sweeps stale, none an app bug.
 
 424. **Audit of 2026-09-24 (performance measured in Playwright on a
     400-note, 1,200-link, 250-object board, 120-topic map, 30-image
@@ -2851,8 +2854,8 @@ INBOX 410 (check with AI in place, dockable suggestions, the dictionary sheet, t
     check): watch for it.
     **E20, s58left4-1110:** (a) to (l) and (p) to (r) built or answered,
     marked above. (m) built: the long panes fold (`details.settings-fold`,
-    38 in index.html). Still open, not re-measured: (n) one noun per thing,
-    (o) the Library's duplicate kind filters.
+    38 in index.html). **wc-1110:** (n) built (Skills everywhere, DESIGN.md
+    Voice, `test_one_noun_per_thing.py`); (o) built (6 chips to 4 in All).
 
 425. **The owner, 2026-09-24 (after the usage reset), with screenshots.**
     Avatars: (a) "the avatar shows even when the app is on the lock screen.
@@ -2935,9 +2938,9 @@ INBOX 410 (check with AI in place, dockable suggestions, the dictionary sheet, t
     right, and the search full width beneath it at 1408px whatever the
     greeting says; measured at 1440 and 390).
     **E20, s58left4-1110, per part (CHANGELOG reads, not re-driven):** built:
-    (a) (b) (c) (d) (h) to (m) and (q), marked above. Not checked: (e) (f)
-    (g) the greeting persona's avatar, regenerate wording and second change;
-    (n) Mycelium's start points.
+    (a) (b) (c) (d) (h) to (m) and (q), marked above. **wc-1110, driven:** (e)
+    (f) (g) hold (mark beside the select redrew on three changes; "Asking
+    Analyst"); (n) holds (4s cross-fade, irregular starts).
 
 427. **Open from INBOX 426, 2026-09-26: two calls only the owner can make.**
     Everything else in 426 (a to cc) is built and in HISTORY, "INBOX
@@ -3008,7 +3011,9 @@ INBOX 410 (check with AI in place, dockable suggestions, the dictionary sheet, t
     down from the top bar, or materialises), never a sudden pop; a "reduce
     actions" setting so waves and gestures come less often; more stances,
     Atlas's masculine and feminine each with their own.
-    **E20, s58left4-1110, per part (CHANGELOG reads, not re-driven):** built:
+    **wc-1110, driven:** the phone, tablet and Settings list holds (graph
+    controls, Documents bar, touch pan, skill logs, Contents dates, portrait
+    graph, Settings heads; numbers in CHANGELOG). **E20, s58left4-1110:** built:
     the Windows format-string error, the citation number on reload, the
     Privacy pill's active state, the lightbox menu, the tools grid's one
     divider (4183), Bookmarks, the companion's menu and hotkey, reduce
