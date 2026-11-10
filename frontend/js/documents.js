@@ -4356,45 +4356,55 @@ function docRenderBody(container, raw) {
   //: and each piece's own `renderMarkdown` would see only its half.
   const footnotes = mdFootnotePrepare(String(raw ?? "").split("\n"));
   const text = footnotes.lines.join("\n");
-  //: Equation labels over the whole document too: `\eqref{k}` above its `\label{k}` names the number below it (OPEN F1).
-  window.docMathRender?.labels.use(window.docMathRender.labels.index(raw));
-  const blocks = docColumnsBlocks(text);
-  if (!blocks.length) {
-    container.replaceChildren();
-    docRenderFlow(container, text);
-    mdFootnotesFinish(container, footnotes.notes);
-    //: Once more over the whole page: the flow is rendered in pieces (around
-    //: block embeds and columns), and a `[TOC]` has to list every heading,
-    //: not only the ones in its own piece.
-    mdFillTocs(container);
-    return;
-  }
-  container.replaceChildren();
-  //: The line an offset is on, for the pieces' `lineBase`.
-  const lineOf = (offset) => {
-    let count = 0;
-    for (let i = text.indexOf("\n"); i !== -1 && i < offset; i = text.indexOf("\n", i + 1)) count += 1;
-    return count;
-  };
-  let at = 0;
-  for (const block of blocks) {
-    if (block.from > at) docRenderFlow(container, text.slice(at, block.from), lineOf(at));
-    const box = document.createElement("div");
-    box.className = `doc-cols md-cols md-cols-${block.columns.length}`;
-    box.dataset.srcLine = String(block.openLine);
-    box.style.setProperty("--doc-cols", String(Math.max(1, block.columns.length)));
-    for (const column of block.columns) {
-      const col = document.createElement("div");
-      col.className = "doc-col";
-      docRenderFlow(col, column.text, lineOf(column.from));
-      box.appendChild(col);
+  const pieces = () => {
+    const blocks = docColumnsBlocks(text);
+    if (!blocks.length) {
+      container.replaceChildren();
+      docRenderFlow(container, text);
+      mdFootnotesFinish(container, footnotes.notes);
+      //: Once more over the whole page: the flow is rendered in pieces (around
+      //: block embeds and columns), and a `[TOC]` has to list every heading,
+      //: not only the ones in its own piece.
+      mdFillTocs(container);
+      return;
     }
-    container.appendChild(box);
-    at = block.to;
+    container.replaceChildren();
+    //: The line an offset is on, for the pieces' `lineBase`.
+    const lineOf = (offset) => {
+      let count = 0;
+      for (let i = text.indexOf("\n"); i !== -1 && i < offset; i = text.indexOf("\n", i + 1)) count += 1;
+      return count;
+    };
+    let at = 0;
+    for (const block of blocks) {
+      if (block.from > at) docRenderFlow(container, text.slice(at, block.from), lineOf(at));
+      const box = document.createElement("div");
+      box.className = `doc-cols md-cols md-cols-${block.columns.length}`;
+      box.dataset.srcLine = String(block.openLine);
+      box.style.setProperty("--doc-cols", String(Math.max(1, block.columns.length)));
+      for (const column of block.columns) {
+        const col = document.createElement("div");
+        col.className = "doc-col";
+        docRenderFlow(col, column.text, lineOf(column.from));
+        box.appendChild(col);
+      }
+      container.appendChild(box);
+      at = block.to;
+    }
+    if (at < text.length) docRenderFlow(container, text.slice(at), lineOf(at));
+    mdFootnotesFinish(container, footnotes.notes);
+    mdFillTocs(container);
+  };
+  //: Equation labels over the whole document too: `\eqref{k}` above its `\label{k}` names the number below it (OPEN F1).
+  const labels = window.docMathRender?.labels;
+  labels?.use(labels.index(raw));
+  //: Held while the pieces render: a column's own render must not re-index its text alone, or `\eqref` to another column reads (?).
+  if (labels) labels.held = true;
+  try {
+    pieces();
+  } finally {
+    if (labels) labels.held = false;
   }
-  if (at < text.length) docRenderFlow(container, text.slice(at), lineOf(at));
-  mdFootnotesFinish(container, footnotes.notes);
-  mdFillTocs(container);
 }
 
 //: `![[Document#^an-id]]` on its own line (DOCUMENTS_PLAN Phase 4 item 2).
