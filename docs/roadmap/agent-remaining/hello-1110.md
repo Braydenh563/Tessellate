@@ -11,3 +11,5 @@ Left
 - "Settings, Privacy" in the decision was read as the Privacy and security group: the switch sits in Account & security under the PIN, where the PIN is. Moving it to the Privacy page ("Where your data went") is one line in hello-unlock.js `mountSettings`.
 - A platform credential made by an abandoned enrolment stays on the authenticator (no `signalUnknownCredential` call yet).
 - done: f964a5f7f, 7d4b051fa, INBOX 1727 resolved to HISTORY; next: nothing in this brief (the Left list above).
+
+- Owner decision 2026-11-10: the desktop window moves to http://localhost and copies the 127.0.0.1 browser storage across on first open (no reset). Not built yet.
