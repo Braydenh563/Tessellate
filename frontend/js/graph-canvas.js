@@ -1335,11 +1335,13 @@ function gcTreeFrameNodes(tree, nodes) {
 function gcDrawTreemap(ctx, s, k) {
   const rects = s.tree && s.tree.treemap;
   if (!rects || !rects.length) return;
+  //: The Tessellation view draws its cells itself; its category frames are
+  //: the heavier border between regions.
+  const heavy = Boolean(s.tree.tess);
   ctx.save();
   ctx.lineJoin = "round";
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
-  ctx.font = `600 ${12 / k}px ${gcTokens.font}`;
   const inset = 1.5;
   const heads = (s.treemapHeads = {});
   for (const rect of rects) {
@@ -1349,39 +1351,34 @@ function gcDrawTreemap(ctx, s, k) {
     const h = rect.y1 - rect.y0 - 2 * inset;
     if (w <= 0 || h <= 0) continue;
     const colour = s.colourOf({ isGroup: true, category: rect.category });
-    ctx.globalAlpha = 0.07;
+    ctx.globalAlpha = heavy ? 0.04 : 0.07;
     ctx.fillStyle = colour;
     ctx.fillRect(x, y, w, h);
-    ctx.globalAlpha = 0.5;
+    ctx.globalAlpha = heavy ? 0.9 : 0.5;
     ctx.strokeStyle = colour;
-    ctx.lineWidth = 1.5 / k;
+    ctx.lineWidth = (heavy ? 3 : 1.5) / k;
     ctx.strokeRect(x, y, w, h);
-    //: INBOX 1300 C37 ("the text at the top of the boxes gets cut off with
-    //: no ellipse"): a name wider than its box ends in an ellipsis and keeps
-    //: its count; it was clipped mid-letter. The legend names it whole.
-    const text = gcEllipsize(rect.category || "Unfiled", ` (${rect.count})`, w - 12 / k, (t) => ctx.measureText(t).width);
-    heads[rect.category] = text;
-    if (!text) continue;
+    //: Q31 (INBOX 1300 C37: "Thoug... (2)"): a category's name is never cut.
+    //: `fitHeaderLabel` keeps the count while it fits, then drops it, then
+    //: wraps the name, then shrinks it; a header too small for even that
+    //: shows no text and the rectangle's title tooltip names it.
+    const measure = (t, size) => {
+      ctx.font = `600 ${size / k}px ${gcTokens.font}`;
+      return ctx.measureText(t).width * k;
+    };
+    const head = rect.head || 18;
+    //: Room in screen px: the lines the header was made tall for, at a zoom
+    //: where it is smaller than its text (k < 1) the same lines still draw.
+    const lines = Math.round((head - 18) / 14) + 1;
+    const fit = gcTess.fit(measure, rect.category, rect.count, (w - 12 / k) * k, lines * 15);
+    heads[rect.category] = fit ? fit.lines.join(" ") : "";
+    if (!fit) continue;
     ctx.globalAlpha = 1;
     ctx.fillStyle = gcTokens.ink;
-    ctx.fillText(text, x + 6 / k, y + 9 / k);
+    ctx.font = `600 ${fit.size / k}px ${gcTokens.font}`;
+    fit.lines.forEach((line, i) => ctx.fillText(line, x + 6 / k, y + ((i + 0.5) * (fit.size + 3) + 2) / k));
   }
   ctx.restore();
-}
-
-//: `name` plus `suffix`, the name cut to end in an ellipsis where the two are
-//: wider than `max`; empty when not even one letter, the ellipsis and the
-//: suffix fit. `measure` gives a string's width in the units of `max`.
-function gcEllipsize(name, suffix, max, measure) {
-  if (measure(name + suffix) <= max) return name + suffix;
-  let lo = 0;
-  let hi = name.length - 1;
-  while (lo < hi) {
-    const mid = Math.ceil((lo + hi) / 2);
-    if (measure(name.slice(0, mid).trimEnd() + "…" + suffix) <= max) lo = mid;
-    else hi = mid - 1;
-  }
-  return lo ? name.slice(0, lo).trimEnd() + "…" + suffix : "";
 }
 
 //: B71 (INBOX 904, "so messy and stuck together I couldn't read it"): each
@@ -2973,6 +2970,7 @@ function gcDraw(s = gcTab) {
 
   if (!over) {
     gcDrawNebulae(ctx, s, inView);
+    gcTess.paint(ctx, s, k);
     gcDrawTreemap(ctx, s, k);
     gcDrawTopicHulls(ctx, s, k);
   }
@@ -4191,10 +4189,9 @@ function gcNodeAtWorld(x, y, s = gcTab) {
   if (!s.nodes.length) return null;
   const slop = GC_SLOP_PX / ((s.transform && s.transform.k) || 1);
   const found = gcTreeIndex(s).find(x, y, GC_MAX_RADIUS + slop + 8);
-  if (!found) return null;
-  if (!gcVisibleAtTime(found, s)) return null;
-  const distance = Math.hypot(found.x - x, found.y - y);
-  return distance <= found.r + slop ? found : null;
+  if (found && gcVisibleAtTime(found, s) && Math.hypot(found.x - x, found.y - y) <= found.r + slop) return found;
+  //: Q31: in the Tessellation view the whole cell answers, not only its dot.
+  return s.tree && s.tree.tess ? gcTess.nodeAt(x, y, s) : null;
 }
 
 function gcWorldPoint(event, s = gcTab) {
@@ -4639,6 +4636,11 @@ function gcWireInteraction(s = gcTab) {
       s.canvas.classList.toggle("graph-plate-hover", Boolean(plate) && s.layoutKind === "force");
       if (!node && !edge) s.canvas.title = gcPlateTitle(plate, s);
     }
+    //: Q31: a category's rectangle names itself in a title tooltip.
+    if (!node && !edge && !plate && s.tree && s.tree.treemap) {
+      const title = gcTess.titleAt(x, y, s);
+      if (s.canvas.title !== title) s.canvas.title = title;
+    }
     if (id !== s.hoveredId || edge !== s.hoverEdge) {
       if (id !== s.hoveredId) {
         gcSetHovered(s, id);
@@ -4651,7 +4653,7 @@ function gcWireInteraction(s = gcTab) {
       // applies.
       //: On the tab a note answers with its hover card (`gcHoverCardFrame`),
       //: so the native tooltip is only the pane's.
-      s.canvas.title = node ? (s.size === "full" ? "" : gcTooltip(node, s)) : edge ? "Click to see this connection" : gcPlateTitle(plate, s);
+      s.canvas.title = node ? (s.size === "full" ? "" : gcTooltip(node, s)) : edge ? "Click to see this connection" : plate ? gcPlateTitle(plate, s) : gcTess.titleAt(x, y, s);
       gcRequestDraw(s, true);
     }
   });
@@ -6282,7 +6284,7 @@ async function renderGraphCanvas(s = gcTab) {
   s.tree =
     s.layoutKind === "force"
       ? null
-      : layoutHierarchy(visibleNodes.map((n) => ({ ...n })), s.layoutKind, width, height);
+      : layoutHierarchy(visibleNodes.map((n) => ({ ...n })), s.layoutKind, width, height, gcTess.info(visibleEdges));
 
   // A note already on screen keeps the spot it had settled into, so a legend
   // toggle or a slider change does not replay the whole "explode outward"
@@ -6822,8 +6824,10 @@ function graphRenderStats(data, nodes, edges, colourMode, layoutKind) {
           : layoutKind === "arc"
             ? "one line, filed left to right; arcs below show what answers what."
             : layoutKind === "treemap"
-              ? "each category's area in proportion to its notes."
-              : "";
+              ? "each category's area in proportion to its links."
+              : layoutKind === "tessellation"
+                ? "every note a cell, a bigger one for more links; categories are the framed regions."
+                : "";
   //: Notes with nothing joined to them draw as loose dots with no word on
   //: why (dog3-1026 row 17): say so, and say how to join two.
   const unlinked = noteCount > 0 && !edges.some((edge) => edge.kind === "link" || edge.kind === "thread");

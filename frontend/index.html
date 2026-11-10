@@ -4091,9 +4091,9 @@ Link to another note with [[its first few words]]."></textarea>
             <li>A bigger dot has more links; Size in the options changes that,
               and the legend says which. Click a legend colour to hide that
               category.</li>
-            <li>A Tree, Radial, Arc or Treemap layout stays still; click its
-              name in the toolbar to change it. Treemap sizes each category by
-              how many notes it holds.</li>
+            <li>A Tree, Radial, Arc, Treemap or Tessellation layout stays still; click its
+              name in the toolbar to change it. Treemap sizes categories by links;
+              Tessellation gives each note a cell.</li>
             <li>This map is built from your notes. To draw one yourself, open
               the <strong>mind map</strong> button in the toolbar.</li>
           </ul>
@@ -4143,7 +4143,7 @@ Link to another note with [[its first few words]]."></textarea>
             </div>
             <div class="help-body hidden" id="graph-view-help" role="dialog"
               aria-label="What Layout, Shape, Colour and Size do">
-              <p>Layout is how the notes are placed: Force lets links pull them together, Tree, Radial and Arc lay them out from one note, and Treemap boxes them by category.</p>
+              <p>Layout is how the notes are placed: Force lets links pull them together, Tree, Radial and Arc lay them out from one note, Treemap boxes them by category, and Tessellation gives every note a cell of a tiled plane (Look: Cells size by links, Hexes are one size).</p>
               <p>Shape is Force's own: Organic follows the links, Clusters gathers each category, Galaxy puts the best-connected notes in the middle.</p>
               <p>Colour paints the dots by category, topic, note type, age, tag or another rule; Size makes a dot bigger for more connections, a longer note or a more recent one.</p>
               <p>Match strength appears while Similarity (under Show) is on: raise it to keep only the closest matches.</p>
@@ -4160,6 +4160,17 @@ Link to another note with [[its first few words]]."></textarea>
                 <option value="radial">Radial</option>
                 <option value="arc">Arc</option>
                 <option value="treemap">Treemap</option>
+                <option value="tessellation">Tessellation</option>
+              </select>
+            </div>
+            <!-- Q31: the Tessellation view's two looks; shown under that layout only
+                 (`setGraphPhysicsEnabled`). -->
+            <div class="graph-option-row" id="graph-tess-row" hidden>
+              <label for="graph-tess-look" id="graph-tess-look-label">Look</label>
+              <select id="graph-tess-look" class="ghost small" aria-labelledby="graph-tess-look-label"
+                title="Cells follow each note's links; Hexes are one size, grouped by category">
+                <option value="cells">Cells</option>
+                <option value="hexes">Hexes</option>
               </select>
             </div>
             <!-- INBOX 693 (the owner: "different preferred shapes or ways of
@@ -4278,7 +4289,7 @@ Link to another note with [[its first few words]]."></textarea>
                  actions (Trace, Legend, Suggest links, Reset). -->
             <summary><span class="muted dock-menu-label" id="graph-physics-label">Physics</span></summary>
             <div class="help-body hidden" id="graph-physics-help" role="dialog" aria-label="What the Physics controls do">
-              <p>These shape the Force layout; under Tree, Radial, Arc and Treemap they are dimmed.</p>
+              <p>These shape the Force layout; under Tree, Radial, Arc, Treemap and Tessellation they are dimmed.</p>
               <ul>
                 <li>Gravity: how hard every note is drawn toward the middle, so the map packs tighter or spreads wider.</li>
                 <li>Spread: how far apart linked notes sit.</li>

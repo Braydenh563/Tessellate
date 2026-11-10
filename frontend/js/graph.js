@@ -170,7 +170,7 @@ function graphNodeRadius(node) {
 
 function graphLayout() {
   const saved = prefs.get("graph-layout", null);
-  return ["force", "tree", "radial", "arc", "treemap"].includes(saved) ? saved : "force";
+  return ["force", "tree", "radial", "arc", "treemap", "tessellation"].includes(saved) ? saved : "force";
 }
 
 //: **Tree, Radial and Arc compute every position, so nothing in them moves.**
@@ -234,6 +234,9 @@ function setGraphPhysicsEnabled(layoutKind) {
   //: other than force"): the worker's shapes are sets of forces, and Tree,
   //: Radial and Arc place every note by rule. Dimmed with its reason, the
   //: same as the sliders, rather than hidden.
+  //: The Tessellation view's Look row (Cells or Hexes) shows under that layout only.
+  const tess = $("graph-tess-row");
+  if (tess) tess.hidden = layoutKind !== "tessellation";
   const shape = $("graph-shape");
   if (shape) {
     shape.disabled = !applies;
@@ -336,7 +339,7 @@ function replyLoops(node, byId) {
 //: width and height with no padding between them, so the areas stay exact; the
 //: gap between two categories is drawn, not laid out (`gcDrawTreemap`). Each
 //: note keeps its cell's size so its dot never outgrows it.
-function layoutTreemap(nodes, width, height) {
+function layoutTreemap(nodes, width, height, info) {
   const byCategory = new Map();
   for (const node of nodes) {
     if (!byCategory.has(node.category)) byCategory.set(node.category, []);
@@ -344,20 +347,49 @@ function layoutTreemap(nodes, width, height) {
   }
   const done = { nodes: [], links: [], radial: false, arc: false, vertical: false, treemap: [] };
   if (!nodes.length) return done;
+  //: **A tile's area follows its links** (Q31): a note weighs 1 plus its
+  //: links, capped at 12 so one hub cannot take the page; no `info` weighs
+  //: every note 1, which is the plain count.
+  const weightOf = (note) => 1 + Math.min((info && info.degree && info.degree.get(note.id)) || 0, 12);
   const root = d3
     .hierarchy({
       children: [...byCategory].map(([category, notes]) => ({ category, children: notes.map((note) => ({ note })) })),
     })
-    .sum((d) => (d.note ? 1 : 0))
+    .sum((d) => (d.note ? weightOf(d.note) : 0))
     .sort((a, b) => b.value - a.value);
+  //: A category header is as tall as its name needs at the rectangle's width
+  //: (one line is 18, each wrapped line 14 more, three at most), so a narrow
+  //: category wraps its name instead of cutting it (Q31: "Thoug... (2)").
+  //: The width of a character is a guess at 12px semibold; `fitHeaderLabel`
+  //: measures for real when it draws.
+  function treemapHeaderH(name, count, width) {
+    const room = Math.max(24, width - 12);
+    const lines = Math.min(3, Math.max(1, Math.ceil((`${name || "Unfiled"} (${count})`.length * 7) / room)));
+    return 18 + 14 * (lines - 1);
+  }
+  const heads = new Map();
   d3
     .treemap()
     .size([width, height])
     .tile(d3.treemapSquarify)
     .paddingInner((d) => (d.depth === 0 ? 0 : 2))
-    .paddingTop((d) => (d.depth === 1 ? 18 : 0))(root);
+    .paddingTop((d) => {
+      if (d.depth !== 1) return 0;
+      const head = treemapHeaderH(d.data.category, d.children.length, d.x1 - d.x0);
+      heads.set(d.data.category, head);
+      return head;
+    })(root);
   for (const group of root.children) {
-    done.treemap.push({ category: group.data.category, count: group.value, x0: group.x0, y0: group.y0, x1: group.x1, y1: group.y1 });
+    done.treemap.push({
+      category: group.data.category,
+      count: group.children.length,
+      weight: group.value,
+      head: heads.get(group.data.category) || 18,
+      x0: group.x0,
+      y0: group.y0,
+      x1: group.x1,
+      y1: group.y1,
+    });
     for (const leaf of group.children) {
       const node = leaf.data.note;
       node.x = (leaf.x0 + leaf.x1) / 2;
@@ -374,8 +406,9 @@ function layoutTreemap(nodes, width, height) {
   return done;
 }
 
-function layoutHierarchy(nodes, kind, width, height) {
-  if (kind === "treemap") return layoutTreemap(nodes, width, height);
+function layoutHierarchy(nodes, kind, width, height, info) {
+  if (kind === "treemap") return layoutTreemap(nodes, width, height, info);
+  if (kind === "tessellation") return gcTess.layout(nodes, width, height, info, prefs.get("graph-tess-look", null));
   // Build parent → children from the notes themselves.
   const byId = new Map(nodes.map((node) => [node.id, node]));
   const groups = new Map();
@@ -4912,6 +4945,17 @@ $("graph-fullscreen")?.addEventListener("click", toggleGraphFullscreen);
   });
 })();
 
+// Q31: the Tessellation view's Look. Remembered; a change re-lays the cells out.
+(() => {
+  const look = $("graph-tess-look");
+  if (!look) return;
+  look.value = prefs.get("graph-tess-look", null) === "hexes" ? "hexes" : "cells";
+  look.addEventListener("change", () => {
+    prefs.set("graph-tess-look", look.value);
+    renderGraph();
+  });
+})();
+
 $("graph-curved")?.addEventListener("change", (event) => {
   prefs.set("graph-curved", event.target.checked ? "1" : "0");
   //: The layout keeps dots clear of the lines as drawn (the worker's
@@ -5010,6 +5054,7 @@ function graphSyncSimilarityRow() {
 // knows.
 const GRAPH_DEFAULTS = {
   layout: "force",
+  "graph-tess-look": "cells",
   "graph-colour": "category",
   "graph-size": "connections",
   "graph-gravity": "50",
