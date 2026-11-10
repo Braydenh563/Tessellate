@@ -104,6 +104,8 @@ TOPIC_LEADS: dict[str, str] = {
     "diagram-kinds": "Switch a diagram to another kind and build it from that kind's own blocks.",
     "diagram-elsewhere": "Edit a diagram as blocks wherever it is drawn, and save it as a picture.",
     "diagram-ai": "Change a diagram by asking in words, take its suggestions, and compare its versions.",
+    "diagram-lines": "Draw a flowchart's arrows straight, curved or stepped, and set its spacing.",
+    "equation-numbers": "Number a display equation with a label and cite it elsewhere in the document.",
     "documents-replace": "Find and replace words across all your documents in one go, with one Undo.",
     "live-view-marks": "Formatting stays drawn as you write, showing its markdown only where you edit.",
     "documents-features": "Extra editing tools, such as word statistics, sorting lines and numbered headings.",

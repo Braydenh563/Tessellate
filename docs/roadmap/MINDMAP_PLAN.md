@@ -1817,7 +1817,7 @@ Exists (no work): fold or unfold one branch (C), show N levels (Alt+1 to 9, Alt+
 
 The three taken first (drag to reorder siblings, copy or export one branch, dim all but the selected branch) are built: HISTORY.md, "Moved from the plans, 2026-10-25 (wb2)".
 
-Left: search inside topics' notes (10-19 item 13), rainbow every level (item 10), a legend (item 11), audio notes (item 4), Gantt (item 3).
+Left: rainbow every level (item 10), a legend (item 11), audio notes (item 4), Gantt (item 3).
 
 ## Placed from INBOX, 2026-11-04
 

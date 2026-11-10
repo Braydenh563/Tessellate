@@ -344,10 +344,10 @@ Parked until the owner's data or a check on real hardware:
 ### Tier F: plan horizon (before the BACKLOG)
 
 Rows are book5's plan sections; each batch takes its plan's open rows smallest first.
-- **W18 Diagram features** (Sonnet): R12 to R16 (find, curves, two-way arrows, minimap, edge colour, six templates), select and add on the picture, templates and align, typed zoom fields, page head (after Q26) | DOCUMENTS#22.4, oa 1661 a, c, e, l, S13, oa 1694 b2, b3
-- **F1 Documents** (Sonnet): live code blocks, the 2026-10-19 gap rows, `\eqref`, the guided equation editor, VC rows, links L6 | DOCUMENTS (book5)
-- **F2 Whiteboard** (Sonnet): nine Format gaps, save each board's view, colour picker, BPMN and icon sets, draw.io rows | WHITEBOARD (book5)
-- **F3 Mind map** (Sonnet): outline view, branch palette and font, a note node that edits, render pass 13b, XMind gaps | MINDMAP (book5)
+- **W18 Diagram features** (Sonnet): ~~R12 find, R14 both-ways arrows and shapes, R16 edge colour and block colour (built earlier: 625c1f1b0, 81b7778e2, a9378c781), R13 curve and spacing, R16 six more templates, typed zoom field (76b77b1), page head (Q26)~~ **built, s9-1110** (see HISTORY, "s9-1110"). Left: R15 corner minimap (only if a diagram routinely overflows the stage; none measured), select and add on the picture (S13), templates sorted by use, present-mode page fields typeable with a page list (oa 1694 b3) | DOCUMENTS#22.4, oa 1661 a, c, e, l, S13, oa 1694 b3
+- **F1 Documents** (Sonnet): live code blocks, the 2026-10-19 gap rows, `\eqref`, the guided equation editor, VC rows, links L6 | DOCUMENTS (book5) | s9-1110: `\eqref` built (HISTORY); the rest left
+- **F2 Whiteboard** (Sonnet): nine Format gaps, save each board's view, colour picker, BPMN and icon sets, draw.io rows | WHITEBOARD (book5) | s9-1110: save each board's view built on this device (HISTORY); the rest left
+- **F3 Mind map** (Sonnet): outline view, branch palette and font, a note node that edits, render pass 13b, XMind gaps | MINDMAP (book5) | s9-1110: search inside topic notes built (HISTORY); the rest left
 - **F4 Chat** (Opus): composition layer (INBOX 1353), Phase 5 (a) to (g), Foundation F5, "X versus Y" | CHAT (book5)
 - **F5 World class** (Sonnet): durable jobs, margin reader, multi-window, torch at launch, F1 prefs, RapidOCR (after Q27), filing vocabulary (after Q29) | WORLD_CLASS (book5)
 - **F6 UI** (Sonnet): share target, Settings panes indexed, token budget and `!important` to 0, dissolve the 08 and 10 stylesheets, statistics and utilities rows, voice dialog V1 to V8, private-by-default (after Q30) | UI_MODERNISATION (book5), SESSION_BRIEFS 58
