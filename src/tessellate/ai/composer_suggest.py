@@ -121,9 +121,16 @@ def _tokens(text: str) -> set[str]:
 _STOP = frozenset("the and for with from that this you can could would please about into onto have has not are was were your note notes".split())
 
 
+#: Acts said as a whole sentence about a kind of thing (a category, a tag, a note's text, a list, a skill): offered
+#: by name they would outscore "delete a note" on a bare "delete" (`parity_acts`).
+_SENTENCE_ONLY = frozenset({"delete_category", "merge_categories", "delete_tag", "edit_text", "to_reminders", "run_skill"})
+
+
 def _catalogue() -> list[tuple[Option, set[str], str]]:
     rows = []
     for intent, act in act_registry.ACTS.items():
+        if intent in _SENTENCE_ONLY:
+            continue
         words = _tokens(f"{act.label} {act.verb} {_SYNONYMS.get(intent, '')}")
         rows.append((Option(intent, act.label, _ASK_FOR.get(intent, act.label.capitalize())), words, f"{act.label}. {act.help}"))
     return rows

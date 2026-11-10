@@ -185,8 +185,7 @@ def _typed_tool_events(session, tool: dict | None, consent_id: str, label: str) 
     if "error" in result:
         logging.getLogger("tessellate.chat").warning("typed-confirmed tool %r failed: %s", safe_value(str(tool["name"]), 40), safe_value(result["error"], 300))
         return None
-    said = str(result.get("label") or label).rstrip(".")
-    summary = f"Done: {said[:1].lower() + said[1:]}."
+    summary = acts.done_line(str(result.get("label") or label), label)
     steps = [{"name": tool["name"], "arguments": tool.get("arguments") or {}}] if tool["name"] in commands.RUNNABLE else []
     return [
         {"type": "answer", "delta": summary},

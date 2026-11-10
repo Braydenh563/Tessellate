@@ -1903,8 +1903,8 @@ function planProposalCard(holder, event, run) {
   const row = document.createElement("div");
   row.className = "row";
   row.append(
-    smallButton("Run the plan", "Run every step; each one's writes are listed above and can be undone", () => {
-      card.replaceWith(toolChip(`ph:play Running ${nounCount(event.steps.length, "step")}`));
+    smallButton(event.runLabel || "Run the plan", "Run every step; each one's writes are listed above and can be undone", () => {
+      card.replaceWith(toolChip(`ph:play ${event.running || `Running ${nounCount(event.steps.length, "step")}`}`));
       run();
     }, false),
     smallButton("Not now", "Run nothing", () => card.replaceWith(toolChip("ph:x Not run: nothing was changed.")))

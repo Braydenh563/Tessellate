@@ -216,6 +216,13 @@ def remove(session: Session, names: list[str]) -> dict[int, list[str]]:
     return _retag(session, holders, lambda _e, tags: [t for t in tags if t not in doomed])
 
 
+def put_back(held: dict[int, list[str]], name: str) -> dict:
+    """The Undo of `remove`: the tool step that puts `name` back on exactly the notes that carried it ({} when none did)."""
+    if not held:
+        return {}
+    return {"undo": {"tool": "batch", "steps": [{"tool": "tag_note", "arguments": {"note_id": note_id, "add": [name]}} for note_id in held]}}
+
+
 def bulk_edit(
     session: Session, ids: list[int], add: list[str], remove: list[str]
 ) -> dict[int, list[str]]:

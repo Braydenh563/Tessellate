@@ -64,3 +64,15 @@ def test_the_same_links_with_a_model_up(ai_client, fake_ollama, session):
     _linked(session)
     said = _post(ai_client, "what links to it", open_note_id=6)
     assert "same clinic" in said, said
+
+
+@pytest.mark.parametrize("question", ["what links to the dentist note", "which notes link to Dentist", "what is linked to the dentist note?", "what's connected to the dentist note"])
+def test_the_links_of_a_note_named_in_the_sentence(client, session, question):
+    _linked(session)
+    said = _post(client, question)
+    assert "linked to [**Dentist**]" in said and "same clinic" in said, said
+
+
+def test_a_name_that_is_no_note_is_left_to_the_other_readers(client, session):
+    _linked(session)
+    assert "linked to [**" not in _post(client, "what links to the internet")

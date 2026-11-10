@@ -79,6 +79,12 @@
   },
   "acts": {
     "create_category": "make a category called Travel",
+    "run_skill": "run the daily review skill",
+    "delete_category": "delete the category Travel",
+    "merge_categories": "merge category Work into Job",
+    "delete_tag": "delete the tag harbor",
+    "edit_text": "edit the wifi note: use channel 6",
+    "to_reminders": "turn the action items into reminders for Friday",
     "restore": "restore the passport note from the bin",
     "set_name": "call me Sam",
     "rename_tag": "rename the tag gym to fitness",

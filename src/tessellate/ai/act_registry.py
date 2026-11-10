@@ -69,7 +69,7 @@ def propose(session, text: str, now, note_ids: list[int] | None = None) -> dict 
 #: typed yes confirms the card that waits (`ai/consent.py`), a typed no drops it.
 CONFIRM_INTENTS = frozenset({
     "reminder", "complete", "uncomplete", "cancel", "snooze", "new_note", "meeting", "pin", "unpin",
-    "delete", "rename", "rename_tag", "rename_category", "create_category", "restore", "move", "tag", "untag", "link", "unlink", "append", "set_name",
+    "delete", "rename", "rename_tag", "rename_category", "create_category", "delete_category", "merge_categories", "delete_tag", "edit_text", "to_reminders", "restore", "move", "tag", "untag", "link", "unlink", "append", "set_name",
 })
 
 
@@ -139,10 +139,22 @@ _ACTS = (
         "rename the category Work to Job", ("old", "new"), "rename_category", stem="Rename the category "),
     Act("create_category", "create", "make a category", "Names the category; it is made after you confirm, and Undo takes it away again. A name that already exists is left as it is.",
         "make a category called Hobbies", ("name",), "delete_category", stem="Create a category called "),
+    Act("delete_category", "delete", "delete a category", "Names the category; its notes stay, as Uncategorised, and Undo files them back. Waits for Confirm.",
+        "delete the category Hobbies", ("name",), "move_notes", stem="Delete the category "),
+    Act("merge_categories", "rename", "merge two categories", "Names both; the first goes into the second after you confirm, and Undo files its notes back under it.",
+        "merge category Work into Job", ("from", "into"), "move_notes", stem="Merge the category "),
+    Act("delete_tag", "delete", "delete a tag", "Names the tag; it comes off every note after you confirm, and Undo puts it back on the same notes.",
+        "delete the tag harbor", ("name",), "tag_note", stem="Remove the tag "),
+    Act("edit_text", "rename", "replace a note's text", "Names the note and the new words; the card shows the old and the new, and Undo puts the old text back.",
+        "edit the wifi note: use channel 6", ("content",), "edit_note", stem="Replace the text of "),
+    Act("to_reminders", "remind", "make reminders from a list", "Names the note's list and a time; one reminder per open checklist line, after you confirm, and Undo bins them.",
+        "turn the action items into reminders for Friday", ("due_at",), "bin_reminder", stem="Set reminders from "),
     Act("restore", "restore", "restore a note from the bin", "Names a note in the bin; waits for Confirm, Undo puts it back in the bin.",
         "restore the passport note", (), "delete_note", stem="Restore the note about "),
     Act("set_name", "call", "set your name", "Say what to call you; it is saved after you confirm, and Undo puts the old name back.",
         "call me Sam", ("name",), "set_display_name"),
+    Act("run_skill", "open", "run a skill", "Names a saved skill; the card asks before the run starts, and every change it makes can be undone.",
+        "run the daily review skill", ("name",), writes=False),
     Act("find", "find", "find a note", "Lists the notes that match.", "find my note about the passport", (), writes=False),
     Act("open", "open", "open a note", "Opens the one note named.", "open the note about the boiler", (), writes=False),
     Act("navigate", "open", "open a part of the app", "Goes to Settings, the graph, the timeline and the rest.",
@@ -159,8 +171,8 @@ ACTS: dict[str, Act] = {a.intent: a for a in _ACTS}
 def capability_line() -> str:
     """Agent mode with no model, for a sentence that is not an act: every
     write act the registry has, in order, and one example."""
-    said = [a.label for a in _ACTS if a.writes and a.intent not in ("untag", "unpin", "unlink", "append", "rename", "rename_tag", "rename_category", "create_category", "restore", "delete", "link", "pin", "set_name")]
-    single = "pin, link, rename or delete a note, rename a tag or category, make a category, restore a note from the bin (each after you confirm)"
+    said = [a.label for a in _ACTS if a.writes and a.intent not in ("untag", "unpin", "unlink", "append", "rename", "rename_tag", "rename_category", "create_category", "delete_category", "merge_categories", "delete_tag", "edit_text", "to_reminders", "restore", "delete", "link", "pin", "set_name")]
+    single = "pin, link, rename or delete a note, rename a tag or category, make a category, merge or delete one, delete a tag, replace a note\'s text, turn its open lines into reminders, restore a note from the bin (each after you confirm)"
     reads = "find or open a note"
     return (
         "With no model running I can do these myself: "
@@ -224,7 +236,7 @@ def guide_topic() -> dict:
                      "with no model running", "undo an act", "things chat does"),
         "badge": {"label": "Chat", "tab": "chat"},
         "body": "Chat does these from one sentence, with no model. " + " ".join(lines)
-        + " Every one waits for Confirm: press Confirm, or just type yes, ok or go ahead; Cancel, or no, drops it. Nothing changes before that. Undo on the card, or Ctrl+Z, takes any of them back. Say add buy milk to today's note to put a bullet in the daily note, or put it in today's note to add a note itself. Say cancel or never mind to drop a card that is waiting.",
+        + " Every one waits for Confirm: press it, or type yes or go ahead; Cancel or no drops it. Undo on the card, or Ctrl+Z, takes any of them back. Say add buy milk to today's note to put a bullet in the daily note, or put it in today's note to add a note itself.",
     }
 
 
@@ -236,7 +248,7 @@ def guide_topic() -> dict:
 ACT_TOOLS: dict[str, str] = {
     "reminder": "set_reminder", "complete": "complete_reminder", "uncomplete": "complete_reminder", "cancel": "bin_reminder", "snooze": "snooze_reminder", "tag": "tag_note", "untag": "tag_note", "move": "edit_note",
     "new_note": "create_note", "meeting": "create_note", "pin": "pin_note", "unpin": "pin_note",
-    "link": "link_notes", "unlink": "unlink_notes", "rename": "edit_note", "rename_tag": "rename_tag", "rename_category": "rename_category", "create_category": "create_category", "restore": "restore_note", "append": "edit_note",
+    "link": "link_notes", "unlink": "unlink_notes", "rename": "edit_note", "rename_tag": "rename_tag", "rename_category": "rename_category", "create_category": "create_category", "delete_category": "delete_category", "merge_categories": "merge_categories", "delete_tag": "delete_tag", "edit_text": "edit_note", "to_reminders": "set_reminder", "run_skill": "run_skill", "restore": "restore_note", "append": "edit_note",
     "delete": "delete_note", "set_name": "set_display_name", "find": "search_notes", "open": "get_note", "summarise": "summarize_notes",
 }
 
@@ -357,7 +369,7 @@ ACT_HELP_TOPICS: dict[str, tuple[str, ...]] = {
     "reminder": ("reminders", "reminders-controls"), "complete": ("tasks",), "uncomplete": ("tasks",), "cancel": ("tasks",), "snooze": ("tasks",), "meeting": ("meetings", "voice"), "link": ("links",),
     "unlink": ("links",), "tag": ("tags-categories", "tag-manager", "suggested-tags"),
     "untag": ("tags-categories", "tag-manager"), "move": ("tags-categories",), "delete": ("undo-bin",), "restore": ("undo-bin",),
-    "rename_tag": ("tags-categories", "tag-manager"), "rename_category": ("tags-categories",), "create_category": ("tags-categories",),
+    "rename_tag": ("tags-categories", "tag-manager"), "rename_category": ("tags-categories",), "create_category": ("tags-categories",), "delete_category": ("tags-categories",), "merge_categories": ("tags-categories",), "delete_tag": ("tags-categories", "tag-manager"), "edit_text": ("undo-bin",), "to_reminders": ("reminders",),
     #: Not pin: Favourites says what a pinned note is, not how to pin one, so
     #: the act's line leads "how do I pin a note" and Favourites follows.
     "find": ("ask-chat",), "summarise": ("ask-chat",),

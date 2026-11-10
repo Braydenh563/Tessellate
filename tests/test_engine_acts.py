@@ -89,7 +89,7 @@ def test_navigation_is_an_event_not_a_change(client, session):
 
 
 def test_the_run_route_refuses_a_step_it_does_not_run(client, session):
-    response = client.post("/chat/command/run", json={"steps": [{"name": "delete_category", "arguments": {"name": "Work"}}]})
+    response = client.post("/chat/command/run", json={"steps": [{"name": "web_search", "arguments": {"query": "x"}}]})
     assert response.status_code == 404
 
 

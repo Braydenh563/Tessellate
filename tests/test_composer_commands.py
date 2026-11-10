@@ -106,7 +106,7 @@ TABLE: list[tuple[str, str | None, dict]] = [
     ("did I pin the dentist note?", None, {}),
     ("can I rename a tag?", None, {}),
     ("should I link these notes", None, {}),
-    ("delete the tag urgent", None, {}),
+    ("delete the tag", None, {}),
     # Not commands: questions and chat go to the composer as before.
     ("what did I write about Japan?", None, {}),
     ("how many notes do I have", None, {}),

@@ -35,10 +35,10 @@ Pre-existing failures on the base head, not touched: `tests/test_realise.py::tes
 
 ## Remaining (one line each)
 
-- Edit a note's text: "edit the wifi note: the network is Bluegum-6G" returns the Harbor overview (`ai/commands.py` `_append` and `_plan_one`, line 1033 and 1723). Needs a replace act (`edit_note` with the whole text), a diff in the card, Undo with the old text. M.
-- Turn text into things: "turn the action items into reminders", "make a checklist from the three gates" are searches (`ai/task_acts.py`, `ai/composer_plan.py:59`). Needs a list reader and a many-step card. M.
-- Run a skill: "run the weekly review skill" is a search; `run_skill` hands the turn to the skill runner (`ai/tools/tool_turn.py:92`, `api/chat_request.py` `skill`). Composer needs a name match over `list_skills` and a card that starts the run. S to M.
-- Merge and delete a category, delete a tag: no composer act ("delete the tag harbor" says it cannot tell which note); `delete_category` and `merge_categories` return no undo (`ai/tools/categories.py:136`, `:171`), so they need an undo record first.
+- ~~Edit a note's text~~ Built (compleft-1110.md, `ai/parity_acts.py`).
+- ~~Turn text into things~~ Built (compleft-1110.md, `ai/parity_acts.py`).
+- ~~Run a skill~~ Built (compleft-1110.md, `ai/parity_acts.py`).
+- ~~Merge and delete a category, delete a tag~~ Built (compleft-1110.md, `ai/parity_acts.py`).
 - Contradictions with no model: the composer only says a model is needed. Dated figures that a newer note replaces could be listed from `ai/supersede.py` (`current`, `older_dates`). "do my notes contradict each other" is read as an imperative and answered "I am not sure how to do that one" (`ai/composer_suggest.py:361` `_IMPERATIVE`). M.
 - The model has no tool that lists the bin, so "what's in my bin" is the composer's and the model is handed its answer; a `list_bin` tool would change the "73 tools" numbers in README and ARCHITECTURE.
 - Model chips are the cited note's two chips plus lifted questions; the composer's richer `result["next"]` chips are not carried to a model turn (`api/chat_turn.py` `model_chips`, `api/routes_chat.py:1361`).
