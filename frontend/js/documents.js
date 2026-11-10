@@ -11629,6 +11629,15 @@ function docSpellLookup(word) {
   let answer = docSpellCache.get(key);
   if (answer === undefined) {
     answer = { known: docWordKnown(word), sure: null };
+    //: **The second opinion** (INBOX 1731): a word this list does not know is
+    //: put to the worker's Hunspell dictionary and to the person's own words.
+    //: Until it answers the word is not called a typo, and that answer is not
+    //: kept, so the next pass asks again.
+    if (!answer.known) {
+      const second = docSpell.answer(key);
+      if (second) answer.known = second.known;
+      else if (docSpell.want(key)) return { known: true, sure: null };
+    }
     if (!answer.known) answer.sure = docSpellConfident(word);
     //: Bounded, because a pathological document must not grow this without
     //: limit: cleared wholesale rather than evicted one at a time, which
@@ -14438,8 +14447,17 @@ const DOC_CA_KEEPS_UK =
 let docVariantMap = null;
 let docVariantFor = null;
 
+//: **"auto" is the default** (INBOX 1731): the dialect of the computer's own
+//: language, so an Australian notebook is checked as Australian without the
+//: owner finding the select first. Anything not English, or a tag with no
+//: dialect of its own, is "off" (no preference); the rest of the English-
+//: speaking world that spells the British way reads as British.
 function docSpellingVariant() {
-  return (prefsCache && prefsCache.spelling_variant) || "off";
+  const set = (prefsCache && prefsCache.spelling_variant) || "auto";
+  if (set !== "auto") return set;
+  const tag = String((typeof navigator === "object" && navigator && navigator.language) || "").toLowerCase();
+  const byTag = { "en-au": "au", "en-nz": "au", "en-gb": "uk", "en-us": "us", "en-ca": "ca", "en-in": "in" };
+  return byTag[tag] || (/^en-(ie|za|sg|my)$/.test(tag) ? "uk" : "off");
 }
 
 function docVariantLookup() {
@@ -14517,6 +14535,7 @@ async function docDictionaryWrite(words) {
     method: "PUT",
     body: JSON.stringify({ writing_dictionary: [...docDictionarySet].sort() }),
   }).catch(() => prefsCache);
+  docSpell.ownWordsSend();
   renderDocProse();
 }
 
@@ -14739,16 +14758,22 @@ function docSuggestAlternatives(finding) {
     //: did I mean to write". The two pools below stay underneath it because
     //: they still answer the cases it cannot: a word the reader added, and a
     //: word that appears in their own notes and in no dictionary.
+    //: **The dictionary's answers, most common first** (INBOX 1731): the
+    //: worker's, already ranked by how common the word is. Every pool here
+    //: drops a suggestion that changes more than a third of a short word.
+    const second = docSpell.answer(docSpellRoot(finding.text));
+    for (const word of second ? second.suggestions : []) push(docMatchCase(finding.text, word));
+    const near = (word) => docEditDistance(docSpellRoot(finding.text), word.toLowerCase(), 99) <= Math.max(1, Math.floor(finding.text.length / 3));
     if (out.length < DOC_SUGGEST_MAX) {
       const guesses = finding.guesses || docSpellGuesses(finding.text, DOC_SUGGEST_MAX);
       for (const word of guesses) {
         if (out.length >= DOC_SUGGEST_MAX) break;
-        push(docMatchCase(finding.text, word));
+        if (near(word)) push(docMatchCase(finding.text, word));
       }
     }
     if (out.length < DOC_SUGGEST_MAX) {
       for (const word of docNearestWords(finding.text, docKnownWords(), DOC_SUGGEST_MAX - out.length, seen)) {
-        push(docMatchCase(finding.text, word));
+        if (near(word)) push(docMatchCase(finding.text, word));
       }
     }
     if (out.length < DOC_SUGGEST_MAX) {
@@ -14758,7 +14783,7 @@ function docSuggestAlternatives(finding) {
       if (!docCompleteWords) docBuildVocabulary();
       const vocabulary = (docCompleteWords || []).map(([word]) => word);
       for (const word of docNearestWords(finding.text, vocabulary, DOC_SUGGEST_MAX - out.length, seen)) {
-        push(docMatchCase(finding.text, word));
+        if (near(word)) push(docMatchCase(finding.text, word));
       }
     }
   }
@@ -14834,18 +14859,7 @@ function docFindingAnswerRows(finding) {
     };
   });
   if (finding.rule === "spelling" || finding.rule === "variant") {
-    rows.push({
-      kind: "action",
-      id: "dictionary",
-      //: Short (INBOX 552): the word is the heading above it, and "Add
-      //: \u201cword\u201d to dictionary" wrapped onto two lines in a narrow panel.
-      label: "ph:book-open-text Add to dictionary",
-      title: `Add \u201c${finding.text}\u201d to the dictionary`,
-      run: async (close = () => {}) => {
-        close();
-        await docDictionaryAdd(finding.text);
-      },
-    });
+    rows.push(docSpell.dictionaryRow(finding.text));
   }
   rows.push({
     kind: "action",

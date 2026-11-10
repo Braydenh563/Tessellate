@@ -2873,6 +2873,7 @@ TOPIC_META: dict[str, dict] = {
     "ocr-workspace": {"title": "The OCR workspace", "path": "Read text, on any image or PDF"},
     "document-history": {"title": "A document's history", "path": "A document's ... menu, History"},
     "writing-checks": {"title": "Spelling, grammar and wording", "path": "The document editor"},
+    "spelling-check": {"title": "How spelling is checked", "path": "A flagged word in a document or a note box"},
     "notebook-questions": {"title": "Questions about your notebook", "path": "Chat tab, or Ask on the Notes tab"},
     "studyhelp": {"title": "Study help with no model", "path": "Chat tab, or Ask on the Notes tab"},
     "contradictions": {"title": "Notes that disagree", "path": "Dashboard tab"},
@@ -3000,7 +3001,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
+        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (

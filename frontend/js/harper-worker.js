@@ -22,6 +22,9 @@
 // Protocol:
 //   in  {id, text, dialect}          dialect: "us" | "uk" | "au" | "ca" | "in"
 //                                    ("off" is us)
+//   in  {type: "own", words}         the person's own words (no reply)
+//   in  {id, type: "spell", words, dialect}
+//   out {id, ok: true, spell: {word: {known, suggestions}}}
 //   out {id, ok: true, ms, lints: [{start, end, kind, message, problem,
 //                                    suggestions: [{kind, text}]}]}
 //   out {id, ok: false, error}       the binary did not load; the caller
@@ -33,6 +36,7 @@
 
 import { Dialect, Language, SuggestionKind } from "../vendor/harper/BinaryModule-BmeyZWwZ.js";
 import { slimBinary } from "../vendor/harper/slimBinary.js";
+import "./spell-second.js";
 
 const linters = new Map();
 
@@ -99,25 +103,46 @@ function suggestionOf(suggestion) {
   return out;
 }
 
+// The second opinion on words (INBOX 1731) is spell-second.js: a Hunspell
+// dictionary for the dialect, the person's own words, suggestions capped and
+// ranked by how common the word is. It puts `spellSecond` on `self`.
+
 self.addEventListener("message", async (event) => {
-  const { id, text, dialect } = event.data || {};
+  const { id, text, dialect, type } = event.data || {};
+  const second = self.spellSecond;
+  //: The person's own words, sent whole each time they change; no reply.
+  if (type === "own") {
+    second.setOwnWords(event.data.words);
+    return;
+  }
   const started = performance.now();
   try {
+    if (type === "spell") {
+      //: No answer rather than a failure: the page falls back to its own list.
+      const spell = await second.spellAnswers(dialect, event.data.words || []).catch(() => ({}));
+      self.postMessage({ id, ok: true, ms: Math.round(performance.now() - started), spell });
+      return;
+    }
     const linter = await linterFor(dialect);
-    const lints = linter.lint(String(text || ""), Language.Markdown, false, undefined, true, false);
+    const source = String(text || "");
+    const lints = linter.lint(source, Language.Markdown, false, undefined, true, false);
     const out = [];
     for (const lint of lints) {
       const span = lint.span();
-      out.push({
+      const made = {
         start: span.start,
         end: span.end,
         kind: lint.lint_kind(),
         message: lint.message(),
         problem: lint.get_problem_text(),
         suggestions: lint.suggestions().map(suggestionOf),
-      });
+      };
       span.free();
       lint.free();
+      //: A dictionary that did not load leaves Harper's own lint standing
+      //: rather than taking the grammar check down with it.
+      const kept = await second.refined(made, dialect, source).catch(() => made);
+      if (kept) out.push(kept);
     }
     self.postMessage({ id, ok: true, ms: Math.round(performance.now() - started), lints: out });
   } catch (error) {

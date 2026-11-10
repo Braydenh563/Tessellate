@@ -356,7 +356,7 @@ class PreferencesBody(BaseModel):
     #: `off` means "do not have an opinion about which side of the Atlantic
     #: this document is on", the honest default for a notebook that does not
     #: know who is writing in it.
-    spelling_variant: Literal["off", "uk", "us", "au", "ca", "in"] | None = None
+    spelling_variant: Literal["auto", "off", "uk", "us", "au", "ca", "in"] | None = None
     #: The grammar checker (Harper, run in the browser; INBOX 401). On by
     #: default: it costs nothing until a prose document or note box is open,
     #: and nothing on the main thread even then.
@@ -817,7 +817,7 @@ def _preferences_from(config) -> dict:
         "embedder_idle_unload_minutes": config.get_preference("embedder_idle_unload_minutes", 60),
         "insight_level": config.get_preference("insight_level", "one"),
         "writing_dictionary": config.get_preference("writing_dictionary", []),
-        "spelling_variant": config.get_preference("spelling_variant", "off"),
+        "spelling_variant": config.get_preference("spelling_variant", "auto"),
         "grammar_check": config.get_preference("grammar_check", True),
         "smart_punctuation": config.get_preference("smart_punctuation", False),
         "link_offers": config.get_preference("link_offers", True),
