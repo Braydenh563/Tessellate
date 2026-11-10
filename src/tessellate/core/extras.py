@@ -42,7 +42,7 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from tessellate.core import extra_downloads, jobs, ocr
+from tessellate.core import extra_downloads, jobs, languagetool_files, ocr
 from tessellate.core.extra_downloads import Download
 from tessellate.core.subproc import NO_WINDOW
 
@@ -545,6 +545,42 @@ EXTRAS: tuple[Extra, ...] = (
                         "package.json",
                     )
                 ),
+            ),
+        ),
+    ),
+    #: **LanguageTool (INBOX 1731 (f)).** The owner, 2026-11-10: "can we like
+    #: incorporate all of it or whatever you suggest??". A second grammar
+    #: checker, a separate Java program (LGPL-2.1, so it is run, never linked):
+    #: `core/languagetool.py` starts it on 127.0.0.1 when the person's
+    #: document is checked and the page merges its findings with Harper's.
+    #: Only the jars are kept (`core/languagetool_files.py`). It needs a Java
+    #: runtime this app does not ship, said on the card and enforced in
+    #: `unavailable_reason`. **To bump:** take the newest
+    #: `LanguageTool-<n>.zip` from languagetool.org/download, write its
+    #: size and `sha256sum` here and regenerate the member names.
+    Extra(
+        id="languagetool",
+        label="A second grammar checker (LanguageTool)",
+        short_label="LanguageTool",
+        enables="A second opinion on grammar and style in documents and notes, "
+        "run by a local program on this computer and merged with the built-in "
+        "checker's findings. Nothing you write leaves this computer, and it "
+        "is only started while you are writing.",
+        packages=("LanguageTool 6.6",),
+        module="",
+        size="~252 MB download, ~190 MB on disk",
+        caveat="Needs Java 17 or newer already installed (java on the path); "
+        "this app does not install it. Off until you install it here.",
+        kind="download",
+        version="6.6",
+        licence="LGPL-2.1",
+        downloads=(
+            Download(
+                url="https://languagetool.org/download/LanguageTool-6.6.zip",
+                sha256="53600506b399bb5ffe1e4c8dec794fd378212f14aaf38ccef9b6f89314d11631",
+                size=251998221,
+                unpack="zip",
+                members=languagetool_files.MEMBERS,
             ),
         ),
     ),
@@ -1134,6 +1170,10 @@ def unavailable_reason(extra: Extra) -> str:
     computer (`extra_downloads.platform_reason`)."""
     if extra.unavailable:
         return extra.unavailable
+    if extra.id == "languagetool":
+        from tessellate.core import languagetool
+
+        return languagetool.java_reason()
     if extra.kind == "download":
         return extra_downloads.platform_reason(extra)
     return ""

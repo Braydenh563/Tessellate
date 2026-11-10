@@ -415,6 +415,7 @@ later; until then search uses keywords. To avoid the download, pull
 | Read scanned PDFs (pypdfium2) | Scanned pages become images a vision or OCR model can read |
 | Search inside images (Tesseract OCR) | Text in images becomes searchable; also needs the Tesseract program |
 | Read images without Tesseract (RapidOCR) | A second local reader, nothing else to install; used when Tesseract isn't ready |
+| A second grammar checker (LanguageTool) | Grammar and style findings from a local Java program, merged with the built-in checker's; about 252 MB, needs Java already installed |
 | Run Python files (Pyodide) | Runs a `.py` document in a sandbox; a pinned download that works offline |
 | Tool calling without Ollama (needle) | A small built-in model that picks tools when no model server is running; a pinned download that works offline |
 | Translate offline (Bergamot, English to Spanish) | Translate this, in the command palette, with no model; a pinned 27 MB download that works offline |
