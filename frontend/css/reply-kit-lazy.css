@@ -629,16 +629,84 @@ button.reply-by {
   cursor: help;
 }
 
-/* Ask's Matching records say why each card is there in a sentence (INBOX
-   1310): it wraps inside the card rather than ellipsising, since the reason
-   is the line's whole point; the chip's corner radius holds over two lines. */
-#raw-results .entry-why .result-reason-why {
-  max-width: 100%;
-  align-items: flex-start;
+/* **A Matching records card** (INBOX 1735, the owner: "messy and
+   unprofessional"): a title, two lines of the note, one quiet facts line
+   (`category · date · score`, each present only when it has something to
+   say, the dot drawn by the next fact so no slot is ever empty), the reason
+   (INBOX 1310) as one plain secondary line and the links behind one "N links"
+   row. Built by `replyRecordCards` (reply-kit.js). Even padding on both
+   sides: the citation number sits in the padding's top corner and only the
+   title steps clear of it. Nothing is clipped that fits: the facts and the
+   reason wrap, never ellipsise. */
+#raw-results > li.record-card[data-id],
+#raw-results > li.record-card.is-numbered[data-id] {
+  padding-inline: var(--space-5);
+  --note-preview-lines: 2;
 }
 
-#raw-results .entry-why .result-reason-why .ph-text {
+#raw-results > li.record-card > .record-index {
+  right: var(--space-5);
+}
+
+.record-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  margin-top: var(--space-3);
+  color: var(--muted);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+}
+
+.record-meta > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.record-meta > * + *::before {
+  content: "\00b7";
+  margin-inline: var(--space-2);
+}
+
+.record-why {
+  margin: var(--space-1) 0 0;
+  color: var(--muted);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+#raw-results > li.record-card > .record-links-toggle {
+  min-height: 0;
+  margin-top: var(--space-1);
+  padding: var(--space-1) 0;
+  justify-content: flex-start;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+#raw-results > li.record-card > .entry-more {
+  display: block;
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+#raw-results > li.record-card > .entry-links {
+  margin-top: var(--space-2);
+}
+
+#raw-results > li.record-card .link-connection {
+  max-width: 100%;
+}
+
+#raw-results > li.record-card .link-connection > .chip.link {
   white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+#raw-results > li.record-card .link-connection > .chip.link > span:last-child {
+  overflow: visible;
+  text-overflow: clip;
 }
 
 /* **Grounded in, as a source list** (INBOX 1323, the owner: "the grounding

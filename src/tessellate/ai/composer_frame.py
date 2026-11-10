@@ -38,7 +38,9 @@ FRAME_MIN = 4
 _STOP = frozenset(
     "what whats have has had i i've ive me my mine saved save about the a an any anything do does did "
     "is are was were tell show list give all of on in for to with from notes note written wrote you your "
-    "know there so far".split()
+    "know there so far else say said more other another also can could would should please how what's "
+    "which who when where why find get we our us it its that this these those if or and but not no yes "
+    "much many some really just still ever already yet".split()
 )
 _PREFIX = lazy_compile(r"^([^:.!?\n]{2,40}):\s+(\S.*)$", re.S)
 _IMPERATIVE = lazy_compile(r"^(?:go|buy|call|book|get|ask|read|pay|send|bring|try|do|check|remember)\b", re.I)
@@ -659,9 +661,12 @@ def _by_meaning(note: dict, info: dict, about: str, by_id: dict) -> str:  # noqa
 
 def _by_word(note: dict, info: dict, about: str, by_id: dict) -> str:  # noqa: ARG001
     category = str(note.get("category") or "")
-    if category.lower() in {str(t).lower() for t in info["terms"]}:
+    terms = [str(t) for t in info["terms"]]
+    if category.lower() in {t.lower() for t in terms}:
         return f"Filed under {category}"
-    return f"Has the word “{info['terms'][0]}”"
+    #: A filler word of the question ("say") is not what the note has.
+    real = [t for t in terms if t.lower() not in _STOP] or terms
+    return f"Has the word “{real[0]}”"
 
 
 def _by_link(note: dict, info: dict, about: str, by_id: dict) -> str:  # noqa: ARG001

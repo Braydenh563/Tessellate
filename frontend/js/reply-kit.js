@@ -1620,23 +1620,105 @@ function replyFinish(answers, opts = {}) {
   if (opts.composed) replyReveal(list);
   if (opts.unsupported) renderToolsUnsupportedNotice(opts.bubble, opts.unsupported);
   if (opts.trimmed) renderHistoryTrimmedNotice(opts.bubble, opts.trimmed);
-  if (opts.match_info) replyRecordReasons(opts.match_info);
+  if (opts.match_info) replyRecordCards($("raw-results"), null, opts.match_info);
 }
 
-//: **Why each Matching records card is there, in words** (INBOX 1310, the
-//: owner: "it has no frame of reference for how related each shown matching
-//: record is or why it was shown"): the server's `match_info[id].why`
-//: ("Matches hobbies by meaning, and shares #gaming with ..."), on the Notes
-//: search's "why this result" line, wrapping inside the card. Drawn here when
-//: the answer is final, not in capture-ask.js, for the boot budget.
-function replyRecordReasons(info) {
-  for (const row of document.querySelectorAll("#raw-results > li[data-id]")) {
-    const why = info[row.dataset.id]?.why;
-    if (!why || row.querySelector(":scope > .entry-why")) continue;
-    const line = document.createElement("div");
-    line.className = "entry-why";
-    line.appendChild(chip(`ph:sparkle ${why}`, "result-reason-chip result-reason-why"));
-    row.appendChild(line);
+//: **A Matching records card is a title, two lines, one quiet facts line and a
+//: reason** (INBOX 1735, the owner: "messy and unprofessional"). The note card
+//: it is built from carries a chip lane for the Notes list (a fixed grid with
+//: empty slots, bare icons, two scores, one link chip a row); here it is
+//: replaced by one line of words, `category · date · score`, each present only
+//: when it has something to say. The links fold into one "N links" row that
+//: opens the chips, and the excerpt is two lines with a Show more. Styled in
+//: reply-kit-lazy.css (`.record-card`), so boot pays nothing.
+//:
+//: **And why each card is there, in words** (INBOX 1310, the owner: "it has no
+//: frame of reference for how related each shown matching record is or why it
+//: was shown"): the server's `match_info[id].why`, one plain secondary line
+//: under the facts. It arrives when the answer is final (`replyFinish`, with
+//: no `entries`), the cards when the records do. One function, its helpers
+//: nested: the shared scope is capped (test_global_scope_ratchet).
+function replyRecordCards(list, entries, info, scored) {
+  const byId = new Map((entries || []).map((entry) => [String(entry.id), entry]));
+  //: Two lines, then Show more (the note card's own toggle when it drew one).
+  const excerpt = (li) => {
+    const body = li.querySelector(":scope > .entry-content");
+    if (!body || li.querySelector(":scope > .entry-more")) return;
+    body.classList.add("entry-clamped");
+    const more = document.createElement("button");
+    more.type = "button";
+    more.className = "entry-more";
+    more.textContent = "Show more";
+    more.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const clamped = body.classList.toggle("entry-clamped");
+      more.textContent = clamped ? "Show more" : "Show less";
+    });
+    body.after(more);
+    //: Measured, not guessed, by the note card's own observer: a card drawn in
+    //: a hidden tab reads 0 and waits, and a text that fits loses its button.
+    body.unclip = () => {
+      noteClampFit.unobserve(body);
+      body.classList.remove("entry-clamped");
+      more.remove();
+    };
+    noteClampFit.observe(body);
+  };
+  //: Every link behind one "N links" row that opens the chips.
+  const folded = (li) => {
+    const links = li.querySelector(":scope > .entry-links");
+    if (!links) return;
+    links.querySelector(".entry-links-more")?.remove();
+    links.classList.add("show-all", "hidden");
+    const count = links.querySelectorAll(".link-connection").length;
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "ghost small disclosure-row record-links-toggle";
+    toggle.textContent = `${count} link${count === 1 ? "" : "s"}`;
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.title = "Show the notes this one is linked to";
+    toggle.addEventListener("click", (event) => {
+      event.stopPropagation();
+      toggle.setAttribute("aria-expanded", String(!links.classList.toggle("hidden")));
+    });
+    links.before(toggle);
+  };
+  for (const li of list.querySelectorAll(":scope > li[data-id]")) {
+    const old = li.querySelector(":scope > .entry-meta");
+    if (!li.classList.contains("record-card") && old && byId.has(li.dataset.id)) {
+      li.classList.add("record-card");
+      const line = document.createElement("div");
+      line.className = "record-meta";
+      const fact = (className, text, title) => {
+        const span = document.createElement("span");
+        span.className = className;
+        span.textContent = text;
+        span.title = title;
+        line.appendChild(span);
+      };
+      const category = old.querySelector(".chip.category")?.textContent.trim();
+      if (category) fact("record-cat", category, `Filed under ${category}`);
+      const date = old.querySelector(".entry-date");
+      if (date) fact("record-date", date.textContent.trim(), date.title);
+      const score = info?.[li.dataset.id]?.score;
+      if (scored && typeof score === "number") {
+        const pct = Math.round(score * 100);
+        fact("record-score", `${pct}% match`, `Matched by meaning: ${pct}% similar to your question.`);
+      }
+      old.replaceWith(line);
+      li.querySelector(":scope > .entry-why")?.remove();
+      excerpt(li);
+      folded(li);
+    }
+    const why = info?.[li.dataset.id]?.why;
+    if (why && !li.querySelector(":scope > .record-why")) {
+      const reason = document.createElement("p");
+      reason.className = "record-why";
+      reason.textContent = why;
+      const meta = li.querySelector(":scope > .record-meta");
+      if (meta) meta.after(reason);
+      else li.appendChild(reason);
+    }
   }
 }
 

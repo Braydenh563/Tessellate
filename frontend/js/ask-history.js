@@ -179,6 +179,7 @@ async function viewAskHistoryTurn(id) {
     }
     rawList.appendChild(row);
   }
+  ensureModule("replyKit").then(() => replyRecordCards(rawList, turn.raw_results, matchInfo, scored)).catch(() => {});
   if (turn.omitted_results) {
     const li = document.createElement("li");
     li.className = "muted";
