@@ -85,12 +85,6 @@ def tidy_link_reasons_run(request: Request) -> dict:
     return {"queued": True}
 
 
-@router.post("/link-reasons/stop")
-def tidy_link_reasons_stop() -> dict:
-    running = tidy.request_stop()
-    return {"stopping": running}
-
-
 @router.get("/{key}")
 def tidy_rows(key: str, level: str = Query(default="", max_length=20), session: Session = Depends(get_session)) -> dict:
     review = _review(key)

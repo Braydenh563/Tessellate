@@ -15,17 +15,22 @@ from tests._app_js import app_js_text
 INDEX = Path(__file__).resolve().parent.parent / "frontend" / "index.html"
 
 
-def test_both_forms_carry_the_toggle_and_send_its_ask():
+def test_the_three_forms_carry_the_toggle_and_send_its_ask():
+    """One implementation (`createNoteSafely.lock`, quick-note.js); the quick note, the capture
+    card and the Capture page each call it. The Capture page also keeps it in the draft."""
     js = app_js_text()
-    assert 'id="quick-note-private"' in INDEX.read_text(encoding="utf-8")
-    assert 'createNoteSafely({ content, tags: slots?.tags || [], ...notePrivateAsk($("quick-note-private")) })' in js
-    assert 'Object.assign(body, captureCard.lockAsk())' in js
-    # the card's toggle is put back to the setting after a save
-    assert 'captureCard.lockSync()' in js
+    html = INDEX.read_text(encoding="utf-8")
+    assert 'id="quick-note-private"' in html and 'id="entry-private"' in html
+    assert 'createNoteSafely({ content, tags: slots?.tags || [], ...createNoteSafely.lock.ask($("quick-note-private")) })' in js
+    assert "Object.assign(body, captureCard.lockAsk())" in js
+    assert "captureCard.lockSync()" in js
+    # the Capture page: both saves (and so the offline copy, which is the same payload), the draft key, its reset
+    assert js.count("...createNoteSafely.lock?.ask() };") == 2 and "createNoteSafely.lock?.reset()" in js
+    assert '"captureDraftPrivate"' in js and js.count("function notePrivate") == 0
 
 
 def test_the_ask_is_null_unless_it_differs_from_the_setting():
-    ask = app_js_text().split("function notePrivateAsk", 1)[1][:260]
+    ask = app_js_text().split("    ask(button = ", 1)[1][:260]
     assert "if (!button) return {}" in ask
     assert "prefsCache?.new_notes_private" in ask and "{ private: on }" in ask
 

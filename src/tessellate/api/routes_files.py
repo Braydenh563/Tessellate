@@ -298,30 +298,6 @@ GALLERY_PAGE_SIZE = 200
 GALLERY_PAGE_SIZE_MAX = 1000
 
 
-@router.get("/files/readings")
-def file_readings(
-    source: str = Query(pattern="^(attachment|upload)$"),
-    id: int = Query(ge=1),  # noqa: A002  # the file's id, named as the API names it
-    session: Session = Depends(get_session),
-) -> dict:
-    """Every reading of one file in one shape (F10, `core/readings.py`): its
-    caption, Tesseract's text, the vision model's reading and each page read
-    in the OCR workspace, as `{kind, page, text, model, at}` rows, so one
-    renderer draws all of them instead of three cards each knowing one column.
-    A private note's attachment is not read out."""
-    from tessellate.core import readings
-
-    model = Attachment if source == "attachment" else MediaUpload
-    row = session.get(model, id)
-    if row is None:
-        raise HTTPException(status_code=404, detail="That file could not be found.")
-    if source == "attachment":
-        owner = session.get(Entry, row.entry_id)
-        if owner is None or owner.is_deleted or bool(getattr(owner, "is_private", False)):
-            raise HTTPException(status_code=404, detail="That file could not be found.")
-    return {"source": source, "id": id, "readings": readings.for_file(session, source, id)}
-
-
 @router.get("/files/gallery", response_model=list[AttachmentGalleryOut])
 def list_attachment_gallery(
     response: Response,

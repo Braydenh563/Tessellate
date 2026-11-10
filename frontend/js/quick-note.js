@@ -219,27 +219,34 @@
 
   // --- Quick note --------------------------------------------------------------
 
-  //: **The lock on a new note** (INBOX 1695 a): one Private toggle on the quick note and the capture
-  //: card (capture-card.js keeps its own copy of these three, so no name joins the shared scope). It starts as Settings' "New notes start private" says; pressing it makes this one note
-  //: private (or readable). A save sends `private` only when the toggle differs from the setting,
-  //: so null still follows Settings.
-  function notePrivateSync(button, on = Boolean(prefsCache?.new_notes_private)) {
-    button.setAttribute("aria-pressed", String(on));
-    button.querySelector("i").className = `ph ${on ? "ph-lock" : "ph-lock-open"} ph-lead`;
-    button.title = on
-      ? "This note will be private: sealed, and kept out of search and the AI. Press to keep it readable."
-      : "Press to make this one note private: sealed, and kept out of search and the AI.";
-  }
-
-  function notePrivateAsk(button) {
-    if (!button) return {};
-    const on = button.getAttribute("aria-pressed") === "true";
-    return on === Boolean(prefsCache?.new_notes_private) ? {} : { private: on };
-  }
-
-  function notePrivateFlip(button) {
-    notePrivateSync(button, button.getAttribute("aria-pressed") !== "true");
-  }
+  //: **The lock on a new note** (INBOX 1695 a): one Private toggle on the quick note, the capture
+  //: card and the Capture page, all through `createNoteSafely.lock` (this file is the one copy). It
+  //: starts as Settings' "New notes start private" says, or as the draft key says; pressing it makes
+  //: this one note private (or readable). `ask` sends `private` only when the toggle differs from the
+  //: setting, so null still follows Settings. `flip` keeps the choice under `key` (a draft).
+  createNoteSafely.lock = {
+    sync(button, on = Boolean(prefsCache?.new_notes_private)) {
+      button.setAttribute("aria-pressed", String(on));
+      button.querySelector("i").className = `ph ${on ? "ph-lock" : "ph-lock-open"} ph-lead`;
+      button.title = on
+        ? "This note will be private: sealed, and kept out of search and Atlas. Press to keep it readable."
+        : "Press to make this one note private: sealed, and kept out of search and Atlas.";
+    },
+    ask(button = $("entry-private")) {
+      if (!button) return {};
+      const on = button.getAttribute("aria-pressed") === "true";
+      return on === Boolean(prefsCache?.new_notes_private) ? {} : { private: on };
+    },
+    reset() {
+      prefs.remove("captureDraftPrivate");
+      this.sync($("entry-private"));
+    },
+    flip(button, key) {
+      const on = button.getAttribute("aria-pressed") !== "true";
+      this.sync(button, on);
+      if (key) prefs.set(key, on);
+    },
+  };
 
   function quickNoteBox() {
     return $("quick-note-text");
@@ -271,7 +278,7 @@
             ? "Your unsaved words are back."
             : "",
       );
-      notePrivateSync($("quick-note-private"));
+      createNoteSafely.lock.sync($("quick-note-private"));
       dialog.showModal();
     }
     //: The chips under the box (quickadd.js): a #tag is saved as a tag; a day
@@ -358,7 +365,7 @@
     quickNoteStatus("Saving…");
     try {
       const slots = await quickAddSlots(quickNoteBox());
-      const result = await createNoteSafely({ content, tags: slots?.tags || [], ...notePrivateAsk($("quick-note-private")) });
+      const result = await createNoteSafely({ content, tags: slots?.tags || [], ...createNoteSafely.lock.ask($("quick-note-private")) });
       clearQuickNote();
       $("quick-note").close();
       if (result.queued) {
@@ -460,7 +467,12 @@
     });
     $("quick-note-save").addEventListener("click", saveQuickNote);
     $("quick-note-more").addEventListener("click", quickNoteToCapture);
-    $("quick-note-private").addEventListener("click", (event) => notePrivateFlip(event.currentTarget));
+    $("quick-note-private").addEventListener("click", (event) => createNoteSafely.lock.flip(event.currentTarget));
+    //: The Capture page's button (capture-ask.js sends its ask): wired here, not at boot. Its state is
+    //: the draft's (`captureDraftPrivate`), put back on load; until then (3 s) the button is the setting's.
+    const capturePrivate = $("entry-private");
+    capturePrivate.addEventListener("click", () => createNoteSafely.lock.flip(capturePrivate, "captureDraftPrivate"));
+    if (prefs.has("captureDraftPrivate")) createNoteSafely.lock.sync(capturePrivate, prefs.get("captureDraftPrivate") === "true");
     $("quick-note-close").addEventListener("click", () => $("quick-note").close());
     $("note-outbox-retry")?.addEventListener("click", () => flushNoteOutbox());
     //: Back on the network the browser knows about (a laptop's wifi), as well

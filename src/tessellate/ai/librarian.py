@@ -1279,42 +1279,6 @@ def suggest_thinking_words(
     return words
 
 
-def summarize_meeting(
-    text: str,
-    model_manager: ModelManager,
-    ollama: OllamaClient,
-) -> str:
-    """Pull a decisions/action-items block out of a raw meeting transcript
-    (§25: Whisper's `/voice/transcribe-meeting` returns only the transcript
-    itself, nothing structured). Same shape as `suggest_tags`: one
-    utility-model completion, raises `OllamaError` if the model is
-    unavailable and leaves it to the caller, never blocks a save on its own.
-
-    Returns "" when the model replied but found nothing worth extracting
-    (a short or off-topic recording), so the caller can skip prepending an
-    empty block rather than showing one."""
-    system = (
-        "You read meeting transcripts and pull out only what's actionable. "
-        "Reply in this exact Markdown shape, omitting a section entirely if "
-        "it has nothing in it:\n\n"
-        "**Decisions**\n- ...\n\n**Action items**\n- ...\n\n"
-        "Each bullet is one short sentence. No preamble, no closing remarks. "
-        "If the transcript has no decisions and no action items, reply with "
-        "exactly: NONE"
-    )
-    reply = ollama.chat(
-        model_manager.utility_model(),
-        [
-            {"role": "system", "content": system},
-            {"role": "user", "content": text},
-        ],
-    )
-    summary = reply["content"].strip()
-    if not summary or summary.upper() == "NONE":
-        return ""
-    return summary
-
-
 #: How many notes one map proposal is built from. A mind map of two hundred
 #: notes is not a mind map, and the prompt below has to fit a 4B model's
 #: context beside its own instructions: forty titles is about a page.

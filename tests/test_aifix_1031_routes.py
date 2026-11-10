@@ -53,13 +53,6 @@ def test_ai18_chat_refuses_an_unknown_mode_persona_or_note(ai_client):
     assert r.status_code == 200
 
 
-def test_hr3_a_transcript_has_a_bound(client):
-    r = client.post("/voice/summarize", json={"text": "x" * (bounds.TRANSCRIPT_MAX + 1)})
-    assert r.status_code == 422
-    r = client.post("/voice/summarize", json={"text": "  "})
-    assert r.status_code == 200
-
-
 def test_ai9_hr7_the_search_reads_a_bounded_slice_of_a_long_question(session):
     long_question = " ".join(f"word{i}" for i in range(2000))
     clipped = search_manager.clip_query(session, long_question)

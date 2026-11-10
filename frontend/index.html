@@ -1201,7 +1201,7 @@
         note is kept on this device and goes in by itself when it is back.
         Open in Capture moves the words to the full composer, for a title, a
         category, files or a template. Private seals this one note, out of search
-        and the AI; it starts on when Settings, Account &amp; security says new
+        and Atlas; it starts on when Settings, Account &amp; security says new
         notes start private.</p>
     </div>
     <p class="muted">Saved where you are, filed in the background.</p>
@@ -1629,6 +1629,9 @@
                 with that word when it is saved (<code>#project/garden</code>
                 nests). The tags field below takes them too, comma
                 separated.</li>
+              <li>Private, beside Save, seals just this note, out of search
+                and Atlas; it starts on when Settings, Account &amp; security
+                says new notes start private, and a reload keeps it.</li>
             </ul>
             <p class="muted">Two things worth knowing, because they are
               easy to assume and both untrue:</p>
@@ -1841,6 +1844,7 @@ Link to another note with [[its first few words]]."></textarea>
                  purpose: a draft is "save this fast, decide later", the same
                  reasoning the other three draft-creating paths already use, 
                  none of them file a category either. -->
+            <button type="button" id="entry-private" class="ghost" aria-pressed="false" title="Press to make this one note private: sealed, and kept out of search and Atlas."><i class="ph ph-lock-open ph-lead" aria-hidden="true"></i> Private</button>
             <button id="save-draft-btn" class="ghost"
               title="Keep it as a draft: nothing is filed, and it waits under Drafts in the sidebar. Save files it by category and tags."
               aria-label="Save as draft">Save as draft</button>

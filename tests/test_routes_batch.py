@@ -276,15 +276,13 @@ def test_a_page_range_read_refuses_a_missing_upload(client):
     assert refused.status_code == 404
 
 
-def test_the_bench_and_the_link_reason_run_can_be_stopped(client, monkeypatch):
+def test_the_bench_can_be_stopped_and_the_link_reason_run_queues(client, monkeypatch):
     bench = client.post("/models/bench/stop")
     assert bench.status_code == 200 and bench.json()["stopping"] is False
     queued = []
     monkeypatch.setattr(routes_tidy.jobs, "enqueue", lambda *a, **k: queued.append(a[0]))
     run = client.post("/tidy/link-reasons/run")
     assert run.json() == {"queued": True} and queued == ["tidy-link-reasons"]
-    stop = client.post("/tidy/link-reasons/stop")
-    assert stop.status_code == 200 and stop.json()["stopping"] is False
 
 
 def test_accepting_a_filing_keeps_the_category(client):

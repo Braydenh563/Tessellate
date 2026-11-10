@@ -57,30 +57,19 @@
   //: **The lock** (INBOX 1695 a): this one note private. It starts as Settings' "New notes start
   //: private" says, and a save sends `private` only when it differs, so null still follows Settings.
   //: Built with the extras (`mountCaptureExtras`), into the foot before Close.
-  captureCard.lockSync = (on = Boolean(prefsCache?.new_notes_private)) => {
-    const button = captureCardField("private");
-    if (!button) return;
-    button.setAttribute("aria-pressed", String(on));
-    button.querySelector("i").className = `ph ${on ? "ph-lock" : "ph-lock-open"} ph-lead`;
-    button.title = on
-      ? "This note will be private: sealed, and kept out of search and the AI. Press to keep it readable."
-      : "Press to make this one note private: sealed, and kept out of search and the AI.";
-  };
+  //: The two calls are quick-note.js's `createNoteSafely.lock` (`mountLock` loads that file; the desk shell has no toggle).
+  captureCard.lockSync = (on) => captureCardField("private") && createNoteSafely.lock.sync(captureCardField("private"), on);
+  captureCard.lockAsk = () => (captureCardField("private") ? createNoteSafely.lock.ask(captureCardField("private")) : {});
 
-  captureCard.lockAsk = () => {
-    const button = captureCardField("private");
-    if (!button) return {};
-    const on = button.getAttribute("aria-pressed") === "true";
-    return on === Boolean(prefsCache?.new_notes_private) ? {} : { private: on };
-  };
-
-  captureCard.mountLock = () => {
+  captureCard.mountLock = async () => {
     if (captureCardField("private")) return;
+    await ensureModule("quickNote");
     const button = captureCardEl("button", "ghost small", { type: "button", "data-cc": "private", "aria-pressed": "false" });
     button.append(captureCardEl("i", "ph ph-lock-open ph-lead", { "aria-hidden": "true" }), " Private");
-    button.addEventListener("click", () => captureCard.lockSync(button.getAttribute("aria-pressed") !== "true"));
+    button.addEventListener("click", () => createNoteSafely.lock.flip(button, "captureCardPrivate"));
     captureCardField("close").before(button);
-    captureCard.lockSync();
+    //: The card's draft keeps the lock too (a reload puts it back).
+    captureCard.lockSync(prefs.has("captureCardPrivate") ? prefs.get("captureCardPrivate") === "true" : undefined);
   };
 
   function captureCardEl(tag, className, attrs = {}) {
@@ -406,6 +395,7 @@
     captureCardField("tags").value = "";
     captureCard.colour = null;
     captureCard.due = null;
+    prefs.remove("captureCardPrivate");
     captureCard.lockSync();
     prefs.remove(CAPTURE_DRAFT_KEY);
     captureCardStatus("");
