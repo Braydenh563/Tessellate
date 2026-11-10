@@ -1289,7 +1289,9 @@ MORE_TOPICS: list[dict] = [
             "be deleted or brought back with Undo. An export leaves it out "
             "unless it is unlocked and you ask, and backups keep it encrypted. "
             "New notes start private (Account & security, off by default) seals "
-            "each new note from its first save, unfiled and unindexed."
+            "each new note from its first save, unfiled and unindexed. Make all "
+            "notes private, beside it, locks every ordinary note after a confirm, "
+            "and the Private row in the Notes sidebar lists them."
         ),
         "badge": {"label": "Account & security", "section": "account"},
     },

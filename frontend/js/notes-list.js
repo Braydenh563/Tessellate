@@ -2823,6 +2823,15 @@ function renderSidebar() {
     "",
     () => filterNotesByTag("meeting")
   ).classList.add("category-meetings-row");
+  //: **Private** (INBOX 1695 c): the `is:private` filter as a row, the way
+  //: Meetings is `tag:meeting`; not a second vault, the same notes.
+  filterRow(
+    "ph:lock Private",
+    allEntries.filter((e) => e.is_private && noteListed(e)).length,
+    noteSearch === "is:private" && !draftsOnly && !favouritesOnly,
+    "Notes you have locked. They stay out of Ask, chat, filing and meaning search.",
+    () => filterNotesBy("is:private")
+  );
   //: Tags, beside Drafts and Favourites (INBOX 432): a sheet of every tag
   //: (categories-panel.js `openTagsSheet`), not a second long list here.
   const tagRow = document.createElement("li");
