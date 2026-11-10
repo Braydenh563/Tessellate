@@ -1417,7 +1417,11 @@ HELP_TOPICS.extend(
                 "or your password, on this computer only; phones always need the "
                 "password. The computer's own protected store keeps it, never the "
                 "notebook or a backup. Five wrong PINs, a password change or "
-                "Forget PIN remove it."
+                "Forget PIN remove it. Unlock with Windows Hello, under the PIN, "
+                "lets the lock screen and private spaces take your face, finger "
+                "or Windows PIN on this computer only, with Unlock with Windows "
+                "Hello on the lock card; a password change, re-encrypting or a "
+                "restore turns it off, and your password always works."
             ),
             "badge": {"label": "Account & security", "section": "account"},
         },

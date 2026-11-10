@@ -712,15 +712,13 @@ function showLockScreen(setupMode) {
   $("lock-message").textContent = setupMode
     ? "A notebook that runs on this machine. Your notes stay here, and nothing goes online unless you turn it on later."
     : ""; // unlock wording is `lockFieldForPin`'s, below
-  //: Four is the backend's own floor (`Field(min_length=4)`,
-  //: routes_auth.py), quoted rather than restated so the two cannot drift.
+  //: The setup words are the page's own (#lock-setup-note in index.html, out
+  //: of the boot scripts' gzip budget), kept here before a restore's
+  //: "Restored." line (account-recovery.js) writes over them.
   const note = $("lock-setup-note");
   if (note) {
-    note.textContent =
-      "Choose a password, at least eight characters; a few unrelated words are best. The app asks for it " +
-      "when it opens, unless you turn that off in Settings. Ordinary notes are not encrypted and survive a reset, " +
-      "but anything you later mark private is locked with this password and cannot " +
-      "be recovered without it.";
+    note.dataset.text ??= note.textContent;
+    if (setupMode) note.textContent = note.dataset.text;
     note.classList.toggle("hidden", !setupMode);
   }
   $("lock-submit").textContent = setupMode ? "Set password & start" : "Unlock";
@@ -739,6 +737,8 @@ function showLockScreen(setupMode) {
       .then((status) => {
         pinHere = !!status?.pin_here;
         if ($("lock-overlay").dataset.mode === "unlock") lockFieldForPin(pinHere);
+        //: Windows Hello's button (hello-unlock.js, in the private spaces' lazy bundle).
+        if (status?.hello_here || $("lock-hello")) privateSpaces("hello", "lock", status?.hello_here);
       })
       .catch(() => {});
   }

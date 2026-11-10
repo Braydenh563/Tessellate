@@ -2,9 +2,9 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8002, frontend ids 2655, CSS sections 523, backend routes 661, backend modules 9577, test files 2358, tests 19629, plan headings 999, app scripts 28, boot scripts 37, script files 268.
+Counts: frontend functions 8021, frontend ids 2655, CSS sections 523, backend routes 661, backend modules 9577, test files 2359, tests 19635, plan headings 999, app scripts 28, boot scripts 37, script files 269.
 
-## Frontend functions (8002)
+## Frontend functions (8021)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -103,18 +103,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `afterCharacters` | frontend/js/lazy-entries.js:164 |
-| `charactersLost` | frontend/js/lazy-entries.js:173 |
-| `emblemHead` | frontend/js/lazy-entries.js:181 |
-| `installCharacterStandIns` | frontend/js/lazy-entries.js:210 |
-| `lazyLoadFailed` | frontend/js/lazy-entries.js:243 |
-| `loadCharactersIdle` | frontend/js/lazy-entries.js:204 |
-| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:231 |
-| `onDomReady` | frontend/js/lazy-entries.js:254 |
-| `plainHead` | frontend/js/lazy-entries.js:187 |
-| `runCharacterJob` | frontend/js/lazy-entries.js:195 |
-| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:266 |
-| `warmOnFirst` | frontend/js/lazy-entries.js:285 |
+| `afterCharacters` | frontend/js/lazy-entries.js:165 |
+| `charactersLost` | frontend/js/lazy-entries.js:174 |
+| `emblemHead` | frontend/js/lazy-entries.js:182 |
+| `installCharacterStandIns` | frontend/js/lazy-entries.js:211 |
+| `lazyLoadFailed` | frontend/js/lazy-entries.js:244 |
+| `loadCharactersIdle` | frontend/js/lazy-entries.js:205 |
+| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:232 |
+| `onDomReady` | frontend/js/lazy-entries.js:255 |
+| `plainHead` | frontend/js/lazy-entries.js:188 |
+| `runCharacterJob` | frontend/js/lazy-entries.js:196 |
+| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:267 |
+| `warmOnFirst` | frontend/js/lazy-entries.js:286 |
 
 ### frontend/js/note-cards.js (27)
 
@@ -1193,55 +1193,56 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `toggleWebSearch` | frontend/js/wiring.js:1424 |
 | `watchFullscreenSurface` | frontend/js/wiring.js:1224 |
 
-### frontend/js/settings-wiring.js (45)
+### frontend/js/settings-wiring.js (46)
 
 | Name | File:line |
 |---|---|
-| `activeOverlay` | frontend/js/settings-wiring.js:943 |
-| `captureCountText` | frontend/js/settings-wiring.js:1713 |
-| `captureShortcutKey` | frontend/js/settings-wiring.js:1447 |
-| `clearStagedImages` | frontend/js/settings-wiring.js:2110 |
-| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1242 |
-| `closeShortcuts` | frontend/js/settings-wiring.js:1477 |
-| `comboFromEvent` | frontend/js/settings-wiring.js:1278 |
-| `commitCaptureImages` | frontend/js/settings-wiring.js:2095 |
-| `fileDropBox` | frontend/js/settings-wiring.js:1958 |
-| `flashSaved` | frontend/js/settings-wiring.js:495 |
-| `handleFileUpload` | frontend/js/settings-wiring.js:2142 |
-| `hideChordGuide` | frontend/js/settings-wiring.js:1260 |
-| `inEditable` | frontend/js/settings-wiring.js:941 |
-| `loadForgottenOrder` | frontend/js/settings-wiring.js:1572 |
-| `loadShortcuts` | frontend/js/settings-wiring.js:1112 |
-| `localizeStaticChords` | frontend/js/settings-wiring.js:1155 |
+| `activeOverlay` | frontend/js/settings-wiring.js:949 |
+| `captureCountText` | frontend/js/settings-wiring.js:1719 |
+| `captureShortcutKey` | frontend/js/settings-wiring.js:1453 |
+| `clearStagedImages` | frontend/js/settings-wiring.js:2116 |
+| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1248 |
+| `closeShortcuts` | frontend/js/settings-wiring.js:1483 |
+| `comboFromEvent` | frontend/js/settings-wiring.js:1284 |
+| `commitCaptureImages` | frontend/js/settings-wiring.js:2101 |
+| `fileDropBox` | frontend/js/settings-wiring.js:1964 |
+| `flashSaved` | frontend/js/settings-wiring.js:501 |
+| `handleFileUpload` | frontend/js/settings-wiring.js:2148 |
+| `hideChordGuide` | frontend/js/settings-wiring.js:1266 |
+| `inEditable` | frontend/js/settings-wiring.js:947 |
+| `loadForgottenOrder` | frontend/js/settings-wiring.js:1578 |
+| `loadShortcuts` | frontend/js/settings-wiring.js:1118 |
+| `localizeStaticChords` | frontend/js/settings-wiring.js:1161 |
 | `lockFail` | frontend/js/settings-wiring.js:268 |
 | `lockFailed` | frontend/js/settings-wiring.js:280 |
-| `lockRequest` | frontend/js/settings-wiring.js:374 |
-| `mapEditorShown` | frontend/js/settings-wiring.js:938 |
-| `matchesShortcut` | frontend/js/settings-wiring.js:1296 |
-| `maybeShowOnboarding` | frontend/js/settings-wiring.js:964 |
-| `notebookLocked` | frontend/js/settings-wiring.js:480 |
+| `lockOpened` | frontend/js/settings-wiring.js:336 |
+| `lockRequest` | frontend/js/settings-wiring.js:378 |
+| `mapEditorShown` | frontend/js/settings-wiring.js:944 |
+| `matchesShortcut` | frontend/js/settings-wiring.js:1302 |
+| `maybeShowOnboarding` | frontend/js/settings-wiring.js:970 |
+| `notebookLocked` | frontend/js/settings-wiring.js:486 |
 | `persistSavedSearches` | frontend/js/settings-wiring.js:53 |
-| `renderCaptureFiles` | frontend/js/settings-wiring.js:1678 |
-| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1645 |
-| `renderInstallRow` | frontend/js/settings-wiring.js:1880 |
+| `renderCaptureFiles` | frontend/js/settings-wiring.js:1684 |
+| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1651 |
+| `renderInstallRow` | frontend/js/settings-wiring.js:1886 |
 | `renderSavedSearches` | frontend/js/settings-wiring.js:17 |
-| `resetShortcuts` | frontend/js/settings-wiring.js:1414 |
-| `restampShortcutHints` | frontend/js/settings-wiring.js:1165 |
-| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2083 |
-| `runShortcut` | frontend/js/settings-wiring.js:1305 |
+| `resetShortcuts` | frontend/js/settings-wiring.js:1420 |
+| `restampShortcutHints` | frontend/js/settings-wiring.js:1171 |
+| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2089 |
+| `runShortcut` | frontend/js/settings-wiring.js:1311 |
 | `saveCurrentSearch` | frontend/js/settings-wiring.js:61 |
-| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1266 |
-| `saveWhatIsInFront` | frontend/js/settings-wiring.js:558 |
+| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1272 |
+| `saveWhatIsInFront` | frontend/js/settings-wiring.js:564 |
 | `savedSearches` | frontend/js/settings-wiring.js:13 |
-| `setShortcutStatus` | frontend/js/settings-wiring.js:1431 |
-| `setShortcutStatusError` | frontend/js/settings-wiring.js:1438 |
-| `singleKeysOn` | frontend/js/settings-wiring.js:2281 |
-| `stagedImageUrl` | frontend/js/settings-wiring.js:2060 |
-| `stampShortcutTitles` | frontend/js/settings-wiring.js:1141 |
+| `setShortcutStatus` | frontend/js/settings-wiring.js:1437 |
+| `setShortcutStatusError` | frontend/js/settings-wiring.js:1444 |
+| `singleKeysOn` | frontend/js/settings-wiring.js:2287 |
+| `stagedImageUrl` | frontend/js/settings-wiring.js:2066 |
+| `stampShortcutTitles` | frontend/js/settings-wiring.js:1147 |
 | `submitLockForm` | frontend/js/settings-wiring.js:304 |
-| `textCounts` | frontend/js/settings-wiring.js:1703 |
-| `uploadStagedFiles` | frontend/js/settings-wiring.js:2119 |
-| `wordCount` | frontend/js/settings-wiring.js:1698 |
+| `textCounts` | frontend/js/settings-wiring.js:1709 |
+| `uploadStagedFiles` | frontend/js/settings-wiring.js:2125 |
+| `wordCount` | frontend/js/settings-wiring.js:1704 |
 
 ### frontend/js/spaces-find.js (24)
 
@@ -5447,6 +5448,29 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `linterFor` | frontend/js/harper-worker.js:73 |
 | `suggestionOf` | frontend/js/harper-worker.js:94 |
 
+### frontend/js/hello-unlock.js (18)
+
+| Name | File:line |
+|---|---|
+| `assertionBody` | frontend/js/hello-unlock.js:43 |
+| `button` | frontend/js/hello-unlock.js:80 |
+| `createCredential` | frontend/js/hello-unlock.js:213 |
+| `dec` | frontend/js/hello-unlock.js:16 |
+| `enc` | frontend/js/hello-unlock.js:14 |
+| `enrol` | frontend/js/hello-unlock.js:244 |
+| `forget` | frontend/js/hello-unlock.js:266 |
+| `getAssertion` | frontend/js/hello-unlock.js:55 |
+| `hello` | frontend/js/hello-unlock.js:279 |
+| `helloPost` | frontend/js/hello-unlock.js:18 |
+| `mountSettings` | frontend/js/hello-unlock.js:139 |
+| `offerLock` | frontend/js/hello-unlock.js:118 |
+| `offerSpace` | frontend/js/hello-unlock.js:124 |
+| `press` | frontend/js/hello-unlock.js:96 |
+| `prfOf` | frontend/js/hello-unlock.js:40 |
+| `renderSettings` | frontend/js/hello-unlock.js:195 |
+| `said` | frontend/js/hello-unlock.js:71 |
+| `supported` | frontend/js/hello-unlock.js:25 |
+
 ### frontend/js/help-chat.js (26)
 
 | Name | File:line |
@@ -6609,17 +6633,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `askKeep` | frontend/js/private-spaces.js:78 |
-| `edit` | frontend/js/private-spaces.js:187 |
-| `enter` | frontend/js/private-spaces.js:49 |
-| `mount` | frontend/js/private-spaces.js:136 |
-| `privateSpaces` | frontend/js/private-spaces.js:209 |
+| `askKeep` | frontend/js/private-spaces.js:80 |
+| `edit` | frontend/js/private-spaces.js:189 |
+| `enter` | frontend/js/private-spaces.js:51 |
+| `mount` | frontend/js/private-spaces.js:138 |
+| `privateSpaces` | frontend/js/private-spaces.js:211 |
 | `reread` | frontend/js/private-spaces.js:15 |
-| `save` | frontend/js/private-spaces.js:110 |
-| `setPrivate` | frontend/js/private-spaces.js:86 |
+| `save` | frontend/js/private-spaces.js:112 |
+| `setPrivate` | frontend/js/private-spaces.js:88 |
 | `status` | frontend/js/private-spaces.js:17 |
 | `unlock` | frontend/js/private-spaces.js:23 |
-| `watch` | frontend/js/private-spaces.js:58 |
+| `watch` | frontend/js/private-spaces.js:60 |
 
 ### frontend/js/questions-view.js (10)
 
@@ -6956,114 +6980,114 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addMemoryByHand` | frontend/js/settings-controls.js:1777 |
-| `addPersona` | frontend/js/settings-controls.js:1388 |
-| `addSkill` | frontend/js/settings-controls.js:2026 |
-| `addTemplate` | frontend/js/settings-controls.js:1578 |
-| `appendToolRow` | frontend/js/settings-controls.js:3723 |
-| `applyBackendChoice` | frontend/js/settings-controls.js:1320 |
-| `applyChatModel` | frontend/js/settings-controls.js:1502 |
-| `applyOcrModel` | frontend/js/settings-controls.js:1518 |
-| `applyToolFilter` | frontend/js/settings-controls.js:3787 |
-| `applyUtilityModel` | frontend/js/settings-controls.js:1537 |
-| `applyVisionModel` | frontend/js/settings-controls.js:1556 |
+| `addMemoryByHand` | frontend/js/settings-controls.js:1778 |
+| `addPersona` | frontend/js/settings-controls.js:1389 |
+| `addSkill` | frontend/js/settings-controls.js:2027 |
+| `addTemplate` | frontend/js/settings-controls.js:1579 |
+| `appendToolRow` | frontend/js/settings-controls.js:3726 |
+| `applyBackendChoice` | frontend/js/settings-controls.js:1321 |
+| `applyChatModel` | frontend/js/settings-controls.js:1503 |
+| `applyOcrModel` | frontend/js/settings-controls.js:1519 |
+| `applyToolFilter` | frontend/js/settings-controls.js:3790 |
+| `applyUtilityModel` | frontend/js/settings-controls.js:1538 |
+| `applyVisionModel` | frontend/js/settings-controls.js:1557 |
 | `changePassword` | frontend/js/settings-controls.js:185 |
-| `chosenSkillTools` | frontend/js/settings-controls.js:2088 |
-| `chosenSkillVerify` | frontend/js/settings-controls.js:2067 |
-| `decorateThemeCards` | frontend/js/settings-controls.js:3148 |
-| `deleteProfile` | frontend/js/settings-controls.js:1981 |
-| `ensureAppearancePopOut` | frontend/js/settings-controls.js:3342 |
-| `ensurePaneTabs` | frontend/js/settings-controls.js:3312 |
-| `ensureSettingsFoldAll` | frontend/js/settings-controls.js:3270 |
-| `exportFullBackup` | frontend/js/settings-controls.js:1969 |
-| `findDuplicates` | frontend/js/settings-controls.js:1735 |
-| `glassWake` | frontend/js/settings-controls.js:3906 |
-| `lanAllowHere` | frontend/js/settings-controls.js:2567 |
-| `lanCall` | frontend/js/settings-controls.js:2420 |
-| `lanEmptyRow` | frontend/js/settings-controls.js:2413 |
-| `lanListRow` | frontend/js/settings-controls.js:2395 |
-| `lanNetworkRows` | frontend/js/settings-controls.js:2478 |
+| `chosenSkillTools` | frontend/js/settings-controls.js:2089 |
+| `chosenSkillVerify` | frontend/js/settings-controls.js:2068 |
+| `decorateThemeCards` | frontend/js/settings-controls.js:3149 |
+| `deleteProfile` | frontend/js/settings-controls.js:1982 |
+| `ensureAppearancePopOut` | frontend/js/settings-controls.js:3343 |
+| `ensurePaneTabs` | frontend/js/settings-controls.js:3313 |
+| `ensureSettingsFoldAll` | frontend/js/settings-controls.js:3271 |
+| `exportFullBackup` | frontend/js/settings-controls.js:1970 |
+| `findDuplicates` | frontend/js/settings-controls.js:1736 |
+| `glassWake` | frontend/js/settings-controls.js:3909 |
+| `lanAllowHere` | frontend/js/settings-controls.js:2568 |
+| `lanCall` | frontend/js/settings-controls.js:2421 |
+| `lanEmptyRow` | frontend/js/settings-controls.js:2414 |
+| `lanListRow` | frontend/js/settings-controls.js:2396 |
+| `lanNetworkRows` | frontend/js/settings-controls.js:2479 |
 | `lanSwitch` | frontend/js/settings-controls.js:81 |
-| `lanTrustNetwork` | frontend/js/settings-controls.js:2515 |
-| `learnedBulk` | frontend/js/settings-controls.js:4454 |
-| `learnedCheckLine` | frontend/js/settings-controls.js:4892 |
-| `learnedCheckMark` | frontend/js/settings-controls.js:4924 |
-| `learnedCheckPutBack` | frontend/js/settings-controls.js:4972 |
-| `learnedCheckRefresh` | frontend/js/settings-controls.js:4935 |
-| `learnedCheckRun` | frontend/js/settings-controls.js:4943 |
-| `learnedCheckSentence` | frontend/js/settings-controls.js:4887 |
-| `learnedCheckShow` | frontend/js/settings-controls.js:4906 |
-| `learnedDelete` | frontend/js/settings-controls.js:4664 |
-| `learnedEdit` | frontend/js/settings-controls.js:4617 |
-| `learnedExport` | frontend/js/settings-controls.js:4706 |
-| `learnedForget` | frontend/js/settings-controls.js:4686 |
-| `learnedFromYouText` | frontend/js/settings-controls.js:4804 |
-| `learnedKindLabel` | frontend/js/settings-controls.js:4313 |
-| `learnedReset` | frontend/js/settings-controls.js:4643 |
-| `learnedRow` | frontend/js/settings-controls.js:4500 |
-| `learnedRunNow` | frontend/js/settings-controls.js:4725 |
-| `learnedSetSwitch` | frontend/js/settings-controls.js:4420 |
-| `maintenanceDoctorRow` | frontend/js/settings-controls.js:2910 |
-| `maintenanceSay` | frontend/js/settings-controls.js:2886 |
-| `makeMaintenanceShortcut` | frontend/js/settings-controls.js:2983 |
-| `mergeDuplicateGroup` | frontend/js/settings-controls.js:1871 |
-| `mergeNamedPrompts` | frontend/js/settings-controls.js:1994 |
-| `openMaintenanceFolder` | frontend/js/settings-controls.js:2974 |
-| `openTaskLog` | frontend/js/settings-controls.js:3194 |
-| `openUninstallSteps` | frontend/js/settings-controls.js:2994 |
-| `pickJsonFile` | frontend/js/settings-controls.js:2598 |
-| `previewTheme` | frontend/js/settings-controls.js:3074 |
-| `refreshSearxngHost` | frontend/js/settings-controls.js:1202 |
-| `releaseThemeHold` | frontend/js/settings-controls.js:3081 |
-| `renderAccount` | frontend/js/settings-controls.js:3456 |
-| `renderAutoChoices` | frontend/js/settings-controls.js:3222 |
-| `renderAutonomousReview` | frontend/js/settings-controls.js:3538 |
-| `renderDuplicateGroups` | frontend/js/settings-controls.js:1813 |
-| `renderFeatureModelRows` | frontend/js/settings-controls.js:3358 |
-| `renderLanAccess` | frontend/js/settings-controls.js:2588 |
-| `renderLanAddresses` | frontend/js/settings-controls.js:2329 |
-| `renderLanFirewall` | frontend/js/settings-controls.js:2377 |
-| `renderLanState` | frontend/js/settings-controls.js:2240 |
-| `renderLanTrust` | frontend/js/settings-controls.js:2429 |
-| `renderLearned` | frontend/js/settings-controls.js:4825 |
-| `renderLearnedFromYou` | frontend/js/settings-controls.js:4816 |
-| `renderLearnedList` | frontend/js/settings-controls.js:4577 |
-| `renderLearnedSwitches` | frontend/js/settings-controls.js:4317 |
-| `renderMaintenance` | frontend/js/settings-controls.js:2890 |
-| `renderMcpSnippet` | frontend/js/settings-controls.js:2216 |
-| `renderMemorySettings` | frontend/js/settings-controls.js:2655 |
-| `renderPinSettings` | frontend/js/settings-controls.js:3509 |
-| `renderRunBudget` | frontend/js/settings-controls.js:3641 |
-| `renderSmallModelAuto` | frontend/js/settings-controls.js:3247 |
-| `renderSmallModelMode` | frontend/js/settings-controls.js:3629 |
-| `renderStatusBarSettings` | frontend/js/settings-controls.js:2153 |
-| `renderToolFocus` | frontend/js/settings-controls.js:3603 |
-| `renderToolSettings` | frontend/js/settings-controls.js:3554 |
-| `resetAllFeatureModels` | frontend/js/settings-controls.js:1485 |
-| `restartMemoryMap` | frontend/js/settings-controls.js:1686 |
-| `restoreFullBackup` | frontend/js/settings-controls.js:1932 |
-| `runEmbeddingFallback` | frontend/js/settings-controls.js:1421 |
-| `runMaintenanceDoctor` | frontend/js/settings-controls.js:2936 |
-| `saveExportSaveDir` | frontend/js/settings-controls.js:1760 |
-| `saveModelContextWindow` | frontend/js/settings-controls.js:1355 |
-| `saveRunBudget` | frontend/js/settings-controls.js:1616 |
-| `saveToolGroup` | frontend/js/settings-controls.js:3692 |
-| `saveToolSwitch` | frontend/js/settings-controls.js:3652 |
-| `saveWebSearchSettings` | frontend/js/settings-controls.js:1653 |
-| `setCustomAccent` | frontend/js/settings-controls.js:4007 |
-| `setLanOption` | frontend/js/settings-controls.js:2538 |
-| `setMaintenanceReinstall` | frontend/js/settings-controls.js:2961 |
-| `showLanQr` | frontend/js/settings-controls.js:2296 |
-| `showVoiceSample` | frontend/js/settings-controls.js:664 |
-| `syncLearnedSelectbar` | frontend/js/settings-controls.js:4442 |
-| `textToInputs` | frontend/js/settings-controls.js:2629 |
-| `textToSteps` | frontend/js/settings-controls.js:2622 |
-| `themeEyeButton` | frontend/js/settings-controls.js:3121 |
-| `themePreviewNotice` | frontend/js/settings-controls.js:3094 |
-| `toolGroupAllPaint` | frontend/js/settings-controls.js:3681 |
-| `toolGroupBoxes` | frontend/js/settings-controls.js:3672 |
-| `waitForRestart` | frontend/js/settings-controls.js:1712 |
-| `wireLearnedSection` | frontend/js/settings-controls.js:4759 |
+| `lanTrustNetwork` | frontend/js/settings-controls.js:2516 |
+| `learnedBulk` | frontend/js/settings-controls.js:4457 |
+| `learnedCheckLine` | frontend/js/settings-controls.js:4895 |
+| `learnedCheckMark` | frontend/js/settings-controls.js:4927 |
+| `learnedCheckPutBack` | frontend/js/settings-controls.js:4975 |
+| `learnedCheckRefresh` | frontend/js/settings-controls.js:4938 |
+| `learnedCheckRun` | frontend/js/settings-controls.js:4946 |
+| `learnedCheckSentence` | frontend/js/settings-controls.js:4890 |
+| `learnedCheckShow` | frontend/js/settings-controls.js:4909 |
+| `learnedDelete` | frontend/js/settings-controls.js:4667 |
+| `learnedEdit` | frontend/js/settings-controls.js:4620 |
+| `learnedExport` | frontend/js/settings-controls.js:4709 |
+| `learnedForget` | frontend/js/settings-controls.js:4689 |
+| `learnedFromYouText` | frontend/js/settings-controls.js:4807 |
+| `learnedKindLabel` | frontend/js/settings-controls.js:4316 |
+| `learnedReset` | frontend/js/settings-controls.js:4646 |
+| `learnedRow` | frontend/js/settings-controls.js:4503 |
+| `learnedRunNow` | frontend/js/settings-controls.js:4728 |
+| `learnedSetSwitch` | frontend/js/settings-controls.js:4423 |
+| `maintenanceDoctorRow` | frontend/js/settings-controls.js:2911 |
+| `maintenanceSay` | frontend/js/settings-controls.js:2887 |
+| `makeMaintenanceShortcut` | frontend/js/settings-controls.js:2984 |
+| `mergeDuplicateGroup` | frontend/js/settings-controls.js:1872 |
+| `mergeNamedPrompts` | frontend/js/settings-controls.js:1995 |
+| `openMaintenanceFolder` | frontend/js/settings-controls.js:2975 |
+| `openTaskLog` | frontend/js/settings-controls.js:3195 |
+| `openUninstallSteps` | frontend/js/settings-controls.js:2995 |
+| `pickJsonFile` | frontend/js/settings-controls.js:2599 |
+| `previewTheme` | frontend/js/settings-controls.js:3075 |
+| `refreshSearxngHost` | frontend/js/settings-controls.js:1203 |
+| `releaseThemeHold` | frontend/js/settings-controls.js:3082 |
+| `renderAccount` | frontend/js/settings-controls.js:3457 |
+| `renderAutoChoices` | frontend/js/settings-controls.js:3223 |
+| `renderAutonomousReview` | frontend/js/settings-controls.js:3541 |
+| `renderDuplicateGroups` | frontend/js/settings-controls.js:1814 |
+| `renderFeatureModelRows` | frontend/js/settings-controls.js:3359 |
+| `renderLanAccess` | frontend/js/settings-controls.js:2589 |
+| `renderLanAddresses` | frontend/js/settings-controls.js:2330 |
+| `renderLanFirewall` | frontend/js/settings-controls.js:2378 |
+| `renderLanState` | frontend/js/settings-controls.js:2241 |
+| `renderLanTrust` | frontend/js/settings-controls.js:2430 |
+| `renderLearned` | frontend/js/settings-controls.js:4828 |
+| `renderLearnedFromYou` | frontend/js/settings-controls.js:4819 |
+| `renderLearnedList` | frontend/js/settings-controls.js:4580 |
+| `renderLearnedSwitches` | frontend/js/settings-controls.js:4320 |
+| `renderMaintenance` | frontend/js/settings-controls.js:2891 |
+| `renderMcpSnippet` | frontend/js/settings-controls.js:2217 |
+| `renderMemorySettings` | frontend/js/settings-controls.js:2656 |
+| `renderPinSettings` | frontend/js/settings-controls.js:3512 |
+| `renderRunBudget` | frontend/js/settings-controls.js:3644 |
+| `renderSmallModelAuto` | frontend/js/settings-controls.js:3248 |
+| `renderSmallModelMode` | frontend/js/settings-controls.js:3632 |
+| `renderStatusBarSettings` | frontend/js/settings-controls.js:2154 |
+| `renderToolFocus` | frontend/js/settings-controls.js:3606 |
+| `renderToolSettings` | frontend/js/settings-controls.js:3557 |
+| `resetAllFeatureModels` | frontend/js/settings-controls.js:1486 |
+| `restartMemoryMap` | frontend/js/settings-controls.js:1687 |
+| `restoreFullBackup` | frontend/js/settings-controls.js:1933 |
+| `runEmbeddingFallback` | frontend/js/settings-controls.js:1422 |
+| `runMaintenanceDoctor` | frontend/js/settings-controls.js:2937 |
+| `saveExportSaveDir` | frontend/js/settings-controls.js:1761 |
+| `saveModelContextWindow` | frontend/js/settings-controls.js:1356 |
+| `saveRunBudget` | frontend/js/settings-controls.js:1617 |
+| `saveToolGroup` | frontend/js/settings-controls.js:3695 |
+| `saveToolSwitch` | frontend/js/settings-controls.js:3655 |
+| `saveWebSearchSettings` | frontend/js/settings-controls.js:1654 |
+| `setCustomAccent` | frontend/js/settings-controls.js:4010 |
+| `setLanOption` | frontend/js/settings-controls.js:2539 |
+| `setMaintenanceReinstall` | frontend/js/settings-controls.js:2962 |
+| `showLanQr` | frontend/js/settings-controls.js:2297 |
+| `showVoiceSample` | frontend/js/settings-controls.js:665 |
+| `syncLearnedSelectbar` | frontend/js/settings-controls.js:4445 |
+| `textToInputs` | frontend/js/settings-controls.js:2630 |
+| `textToSteps` | frontend/js/settings-controls.js:2623 |
+| `themeEyeButton` | frontend/js/settings-controls.js:3122 |
+| `themePreviewNotice` | frontend/js/settings-controls.js:3095 |
+| `toolGroupAllPaint` | frontend/js/settings-controls.js:3684 |
+| `toolGroupBoxes` | frontend/js/settings-controls.js:3675 |
+| `waitForRestart` | frontend/js/settings-controls.js:1713 |
+| `wireLearnedSection` | frontend/js/settings-controls.js:4762 |
 
 ### frontend/js/settings-data.js (52)
 
@@ -12033,7 +12057,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | A notification's two controls are a column of their own (INBOX 874) | frontend/css/06-timeline-dialogs.css:3449 |
 | A rail row's ⋮ overlays the row; it never reserves a column (INBOX 722) | frontend/css/08-consistency.css:10672 |
 | A row is a pointer target (INBOX 719) | frontend/css/08-consistency.css:10587 |
-| Ask history: the personal-notes-browser panel (§ROADMAP item 6) | frontend/css/01-forms-settings.css:2817 |
+| Ask history: the personal-notes-browser panel (§ROADMAP item 6) | frontend/css/01-forms-settings.css:2828 |
 | Atlas's life: loops while the mark is on screen and motion is on | frontend/css/08-consistency.css:8026 |
 | Atlas, the app's guide (INBOX 224) | frontend/css/08-consistency.css:1819 |
 | Atlas, the assistant's own character (atlas.js) | frontend/css/08-consistency.css:6517 |
@@ -12065,7 +12089,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Icons | frontend/css/07-whiteboard-misc.css:2375 |
 | Inline AI (editor.js) | frontend/css/07-whiteboard-misc.css:6511 |
 | Lagoon: indigo and teal together | frontend/css/05-sidebars-themes.css:3283 |
-| Library -> Contents: an outline (INBOX 496) | frontend/css/01-forms-settings.css:2445 |
+| Library -> Contents: an outline (INBOX 496) | frontend/css/01-forms-settings.css:2456 |
 | Library → Documents | frontend/css/03-dashboard-widgets.css:4041 |
 | Library → Whiteboards | frontend/css/03-dashboard-widgets.css:4066 |
 | Live preview | frontend/css/04-chat-dock-appearance.css:4583 |
@@ -12094,7 +12118,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Phase 11 item 9: 44px targets, the ones the docks sweep cannot see | frontend/css/10-responsive.css:1027 |
 | Phase 11 item 9: no hover-only affordance | frontend/css/10-responsive.css:2043 |
 | Phase 11 items 2 and 3: no rail on a phone, an opener in the head | frontend/css/10-responsive.css:1377 |
-| Phase 5: quick access + toasts | frontend/css/01-forms-settings.css:2798 |
+| Phase 5: quick access + toasts | frontend/css/01-forms-settings.css:2809 |
 | Phase 5: the three things a map says about itself | frontend/css/07-whiteboard-misc.css:4518 |
 | Phones (roadmap §8: the layout had breakpoints but had never been driven at | frontend/css/05-sidebars-themes.css:3880 |
 | Placed at the end of this file on purpose. A panel keeps its original class | frontend/css/03-dashboard-widgets.css:4076 |
@@ -12110,8 +12134,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Rosewood: dusty rose and wine. Warm without being orange. | frontend/css/05-sidebars-themes.css:3478 |
 | Rows: the default way a list of notes is shown | frontend/css/01-forms-settings.css:1432 |
 | Rules that used to be inline style="" attributes. | frontend/css/06-timeline-dialogs.css:645 |
-| SETTINGS: one control height, one right edge | frontend/css/01-forms-settings.css:5069 |
-| SETTINGS: spacing, hierarchy and proximity | frontend/css/01-forms-settings.css:5219 |
+| SETTINGS: one control height, one right edge | frontend/css/01-forms-settings.css:5080 |
+| SETTINGS: spacing, hierarchy and proximity | frontend/css/01-forms-settings.css:5230 |
 | SIDEBAR COLLAPSE & PEEK | frontend/css/07-whiteboard-misc.css:471 |
 | SKILLS TAB | frontend/css/07-whiteboard-misc.css:828 |
 | Sage: quiet greens. The calmest of the set. | frontend/css/05-sidebars-themes.css:3213 |
@@ -12120,14 +12144,14 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Settings form rows share a label column (Phase 5.1) | frontend/css/07-whiteboard-misc.css:7959 |
 | Settings headings sit at one left edge | frontend/css/08-consistency.css:1462 |
 | Settings rows that wrap their actions under the title (INBOX 82) | frontend/css/08-consistency.css:2243 |
-| Settings, About, Maintenance (settings-controls.js, renderMaintenance). | frontend/css/01-forms-settings.css:6174 |
+| Settings, About, Maintenance (settings-controls.js, renderMaintenance). | frontend/css/01-forms-settings.css:6185 |
 | Settings: a section's intro sits under its heading, not above it | frontend/css/08-consistency.css:4566 |
 | TENSIONS: THE DISAGREEMENT REVIEW | frontend/css/inbox-lazy.css:244 |
 | THE CHAT ON A PHONE, MEASURED | frontend/css/04-chat-dock-appearance.css:5590 |
 | THE OCR WORKSPACE | frontend/css/07-whiteboard-misc.css:5469 |
 | THE QUIET SIDE OF THE BUTTON RAMP: A RUN OF ROW ACTIONS | frontend/css/08-consistency.css:2332 |
 | THE WRITE WITH AI ROW, ON A NARROW COLUMN | frontend/css/04-chat-dock-appearance.css:5637 |
-| THE WRITING PHASE: nodes, and an edge drawing itself | frontend/css/01-forms-settings.css:4938 |
+| THE WRITING PHASE: nodes, and an edge drawing itself | frontend/css/01-forms-settings.css:4949 |
 | Technical mono: a cool graphite ground, monospace for the numbers and | frontend/css/05-sidebars-themes.css:3601 |
 | Templates (INBOX 715) | frontend/css/library-lazy.css:3555 |
 | Text on accent-coloured surfaces (roadmap §7: colour contrast was listed as | frontend/css/05-sidebars-themes.css:3997 |
@@ -12208,7 +12232,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | a map line's end grips and the topic shapes (K31) | frontend/css/library-lazy.css:7478 |
 | a map's levels and a solid fill (MINDMAP_PLAN §14, decisions 38, 39) | frontend/css/library-lazy.css:3463 |
 | a menu is one column: rows, section labels and icons (INBOX 403) | frontend/css/08-consistency.css:8658 |
-| a model per feature (Settings, Models) | frontend/css/01-forms-settings.css:5591 |
+| a model per feature (Settings, Models) | frontend/css/01-forms-settings.css:5602 |
 | a named item in a Settings list: title, label, facts | frontend/css/08-consistency.css:3501 |
 | a narrow measure for prose, wide chrome around it | frontend/css/07-whiteboard-misc.css:5130 |
 | a note's connections: one pill each, its menu inside it | frontend/css/08-consistency.css:3263 |
@@ -12223,9 +12247,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | a traced path (§9) | frontend/css/graph-lazy.css:283 |
 | a turn that is still working says so, for as long as it is | frontend/css/03-dashboard-widgets.css:4158 |
 | a zone that cannot shrink says so, instead of spilling | frontend/css/10-responsive.css:1108 |
-| account & security | frontend/css/01-forms-settings.css:3417 |
+| account & security | frontend/css/01-forms-settings.css:3428 |
 | activity heatmap + tag cloud widgets | frontend/css/03-dashboard-widgets.css:1875 |
-| activity log | frontend/css/01-forms-settings.css:2773 |
+| activity log | frontend/css/01-forms-settings.css:2784 |
 | activity, as a timeline rather than as cards | frontend/css/library-lazy.css:3222 |
 | an embedded document, drawn as a card (INBOX 421 b) | frontend/css/05-sidebars-themes.css:6055 |
 | and inside a small phone | frontend/css/05-sidebars-themes.css:5829 |
@@ -12257,9 +12281,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | choice controls, the owner's 2026-09-24 pass (INBOX 409, 411) | frontend/css/08-consistency.css:8588 |
 | column-flex cards keep their full width | frontend/css/07-whiteboard-misc.css:3786 |
 | compressing a long conversation (§35I) | frontend/css/02-chat-graph.css:814 |
-| curated themes | frontend/css/01-forms-settings.css:3453 |
+| curated themes | frontend/css/01-forms-settings.css:3464 |
 | dark glass reads flatter, and here is which half of it does | frontend/css/10-responsive.css:361 |
-| dashboard + reminders (Wave D) | frontend/css/01-forms-settings.css:3643 |
+| dashboard + reminders (Wave D) | frontend/css/01-forms-settings.css:3654 |
 | dashboard quick links | frontend/css/03-dashboard-widgets.css:1513 |
 | dashboard widgets, de-vibecoded | frontend/css/08-consistency.css:4227 |
 | document formatting toolbar | frontend/css/05-sidebars-themes.css:1987 |
@@ -12270,14 +12294,14 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | duplicate tidy-up | frontend/css/05-sidebars-themes.css:1733 |
 | editing a question in place | frontend/css/05-sidebars-themes.css:315 |
 | empty states that sit where they should | frontend/css/08-consistency.css:4324 |
-| entry actions + links (Phase 4) | frontend/css/01-forms-settings.css:2143 |
+| entry actions + links (Phase 4) | frontend/css/01-forms-settings.css:2154 |
 | entry lists | frontend/css/01-forms-settings.css:1391 |
 | every control in a dock takes the touch floor | frontend/css/07-whiteboard-misc.css:10552 |
 | every menu scrolls down, never sideways, and never runs off the page | frontend/css/07-whiteboard-misc.css:7875 |
 | fields answer the pointer too | frontend/css/07-whiteboard-misc.css:3704 |
 | filter help (the list inside `#search-help-hint`, a `.help-body`) | frontend/css/05-sidebars-themes.css:652 |
 | finding a setting (§36B) | frontend/css/06-timeline-dialogs.css:1389 |
-| finding your way about inside Settings (INBOX 444) | frontend/css/01-forms-settings.css:5697 |
+| finding your way about inside Settings (INBOX 444) | frontend/css/01-forms-settings.css:5708 |
 | first-run onboarding tour | frontend/css/04-chat-dock-appearance.css:2323 |
 | forms | frontend/css/01-forms-settings.css:224 |
 | glass reaches the floating chrome that sat outside it | frontend/css/08-consistency.css:2672 |
@@ -12295,12 +12319,12 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | icon-only buttons are square, everywhere | frontend/css/07-whiteboard-misc.css:3499 |
 | left-aligned button lists stay left-aligned | frontend/css/07-whiteboard-misc.css:3760 |
 | line numbers for any textarea (UI_MODERNISATION_PLAN Phase 7.2) | frontend/css/07-whiteboard-misc.css:8085 |
-| live clock (reminders tab) | frontend/css/01-forms-settings.css:3644 |
+| live clock (reminders tab) | frontend/css/01-forms-settings.css:3655 |
 | lock screen (Phase 4) | frontend/css/01-forms-settings.css:2033 |
 | map nodes and their edges (MINDMAP_PLAN.md §5, Phase 2) | frontend/css/07-whiteboard-misc.css:8207 |
 | markdown tables | frontend/css/04-chat-dock-appearance.css:1898 |
 | meeting notes (§17) | frontend/css/02-chat-graph.css:1603 |
-| model cards: the Models screen's suggested downloads (INBOX 444) | frontend/css/01-forms-settings.css:5845 |
+| model cards: the Models screen's suggested downloads (INBOX 444) | frontend/css/01-forms-settings.css:5856 |
 | motion: a dialog element arrives and leaves like the popup recipe | frontend/css/ui-reveal-lazy.css:66 |
 | motion: a heavy page's first visit (INBOX 580) | frontend/css/08-consistency.css:9793 |
 | motion: a hover card leaves as it came | frontend/css/ui-reveal-lazy.css:57 |
@@ -12331,10 +12355,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | notifications | frontend/css/08-consistency.css:3765 |
 | numbered citations inside an answer | frontend/css/02-chat-graph.css:3758 |
 | one control height per Library header row | frontend/css/07-whiteboard-misc.css:5430 |
-| one gap under every card heading | frontend/css/01-forms-settings.css:4829 |
+| one gap under every card heading | frontend/css/01-forms-settings.css:4840 |
 | one line of facts: a note's meta row | frontend/css/08-consistency.css:2704 |
 | one popup, three tiers (INBOX 456, DESIGN.md "A popup window or panel") | frontend/css/08-consistency.css:9253 |
-| one size for every dropdown | frontend/css/01-forms-settings.css:4792 |
+| one size for every dropdown | frontend/css/01-forms-settings.css:4803 |
 | one switch, everywhere a checkbox means "on or off" | frontend/css/06-timeline-dialogs.css:2118 |
 | one ⋯ button, everywhere (INBOX 722) | frontend/css/00-tokens-shell.css:4325 |
 | optional extras (Settings) | frontend/css/00-tokens-shell.css:1721 |
@@ -12356,8 +12380,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | scrollbars | frontend/css/07-whiteboard-misc.css:3654 |
 | search match highlighting | frontend/css/05-sidebars-themes.css:352 |
 | settings / model manager | frontend/css/01-forms-settings.css:1989 |
-| settings modal + logs (Wave A) | frontend/css/01-forms-settings.css:3224 |
-| settings rows: one shape at rest | frontend/css/01-forms-settings.css:4601 |
+| settings modal + logs (Wave A) | frontend/css/01-forms-settings.css:3235 |
+| settings rows: one shape at rest | frontend/css/01-forms-settings.css:4612 |
 | settings, de-vibecoded | frontend/css/08-consistency.css:3170 |
 | settings: one column for every "?", and a pane title that is a title | frontend/css/08-consistency.css:3383 |
 | sidebar | frontend/css/01-forms-settings.css:111 |
@@ -12369,7 +12393,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | tab navigation (Wave A; pill style inside the top bar in Wave L) | frontend/css/00-tokens-shell.css:3567 |
 | text inputs (§36B) | frontend/css/01-forms-settings.css:225 |
 | the "/" menu and block frames | frontend/css/05-sidebars-themes.css:844 |
-| the "?" head row and its help body | frontend/css/01-forms-settings.css:5353 |
+| the "?" head row and its help body | frontend/css/01-forms-settings.css:5364 |
 | the 464 round: Settings groups, switch rows, the phone's chrome | frontend/css/08-consistency.css:9943 |
 | the AI skills dock: one row where it fits (INBOX 450, 599) | frontend/css/08-consistency.css:9457 |
 | the AI status dot | frontend/css/00-tokens-shell.css:1584 |
@@ -12466,7 +12490,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the note card's metadata, ordered (§36B) | frontend/css/06-timeline-dialogs.css:1523 |
 | the notifications centre (§36E) | frontend/css/06-timeline-dialogs.css:1682 |
 | the one control in a dock that was not the dock's height | frontend/css/10-responsive.css:402 |
-| the one generating animation | frontend/css/01-forms-settings.css:4734 |
+| the one generating animation | frontend/css/01-forms-settings.css:4745 |
 | the one map chip (MINDMAP_PLAN.md §5 item 12) | frontend/css/05-sidebars-themes.css:793 |
 | the one popover shell (UI_MODERNISATION_PLAN.md, Phase 2) | frontend/css/07-whiteboard-misc.css:7906 |
 | the orphan-row pattern, everywhere else it appears (§36B) | frontend/css/06-timeline-dialogs.css:1664 |
@@ -12487,7 +12511,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the selection tick in Rows (INBOX 426 z, image 91) | frontend/css/08-consistency.css:9010 |
 | the selection tick, in the app's own language | frontend/css/07-whiteboard-misc.css:4334 |
 | the settings jump list | frontend/css/07-whiteboard-misc.css:10511 |
-| the settings sheet takes the touch floor | frontend/css/01-forms-settings.css:5486 |
+| the settings sheet takes the touch floor | frontend/css/01-forms-settings.css:5497 |
 | the spine | frontend/css/00-tokens-shell.css:2299 |
 | the spine on the other edge (MINDMAP_PLAN.md §13e) | frontend/css/07-whiteboard-misc.css:8459 |
 | the status bar (§36D) | frontend/css/00-tokens-shell.css:3231 |
@@ -12523,7 +12547,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | user-tunable corner rounding | frontend/css/04-chat-dock-appearance.css:1927 |
 | web panel (search + reader) | frontend/css/03-dashboard-widgets.css:979 |
 | what a wide screen is for | frontend/css/00-tokens-shell.css:3667 |
-| what it learned (WORLD_CLASS_PLAN I9) | frontend/css/01-forms-settings.css:5544 |
+| what it learned (WORLD_CLASS_PLAN I9) | frontend/css/01-forms-settings.css:5555 |
 | what the AI remembers (ROADMAP §39B) | frontend/css/07-whiteboard-misc.css:2022 |
 | what the agent found, as things you can open | frontend/css/07-whiteboard-misc.css:5389 |
 | what the answering model is | frontend/css/02-chat-graph.css:4622 |
@@ -12537,7 +12561,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | File | Lines |
 |---|---|
 | frontend/css/00-tokens-shell.css | 4355 |
-| frontend/css/01-forms-settings.css | 6251 |
+| frontend/css/01-forms-settings.css | 6262 |
 | frontend/css/02-chat-graph.css | 5235 |
 | frontend/css/03-dashboard-widgets.css | 4880 |
 | frontend/css/04-chat-dock-appearance.css | 6519 |
@@ -25356,7 +25380,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19629)
+## Tests (19635)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26468,6 +26492,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_health_dir_cache.py | 3 |
 | tests/test_health_page.py | 3 |
 | tests/test_heatmap_end_1578.py | 3 |
+| tests/test_hello_ui.py | 6 |
 | tests/test_hello_unlock.py | 27 |
 | tests/test_hello_webauthn.py | 10 |
 | tests/test_help_chat.py | 54 |

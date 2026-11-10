@@ -44,7 +44,8 @@ def test_the_create_request_sends_the_switch_and_the_switcher_draws_a_lock():
 
 def test_the_lazy_file_is_registered_and_exports_one_name():
     lazy = (JS / "lazy-entries.js").read_text(encoding="utf-8")
-    assert 'privateSpaces: ["/js/private-spaces.js"]' in lazy
+    #: hello-unlock.js rides in the same bundle (INBOX 1727's Windows Hello), after it.
+    assert 'privateSpaces: ["/js/private-spaces.js", "/js/hello-unlock.js"]' in lazy
     assert 'privateSpaces: ["privateSpaces"]' in lazy
     assert "Object.assign(window, { privateSpaces });" in LAZY
 

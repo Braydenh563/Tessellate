@@ -35,6 +35,8 @@
       $("lock-password").placeholder = "Password or PIN";
       $("lock-password").setAttribute("aria-label", "Password or PIN");
     }
+    //: Windows Hello's button on this card while it is asking (hello-unlock.js).
+    if (known?.hello) ACTIONS.hello?.("space", asked);
     if (!(await asked)) return false;
     //: `watch` reads the touch against this.
     state.status = { ...(state.status || {}), open: true };
@@ -181,7 +183,7 @@
 
   const HELP = [
     "Everything in a private space is sealed with your vault password, as a private note is: notes, documents and boards. It stays out of search, the graph, the timeline, exports and Atlas until you unlock it, and it locks again after the idle minutes in Settings, Account & security, and when the window closes.",
-    "Your password opens every private space, and on this computer your PIN does too. Moving a note out asks whether it stays private.",
+    "Your password opens every private space, and on this computer your PIN or Windows Hello does too. Moving a note out asks whether it stays private.",
   ];
 
   function edit(id) {
@@ -209,6 +211,8 @@
   function privateSpaces(action, ...args) {
     return ACTIONS[action]?.(...args);
   }
+  //: hello-unlock.js, the next file in the bundle, adds `hello` here.
+  privateSpaces.actions = ACTIONS;
 
   //: The file's whole surface (ranked row 37a).
   Object.assign(window, { privateSpaces });

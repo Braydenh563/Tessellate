@@ -224,6 +224,7 @@ async function changePassword() {
     $("account-confirm").value = "";
     status.textContent = result.warning || "Password changed.";
     if (result.pin_cleared) status.textContent += " Your PIN was removed; set it up again if you want one.";
+    if (result.hello_cleared) status.textContent += " Windows Hello was turned off; turn it on again if you want it.";
     toast(
       result.other_sessions_ended
         ? `Password changed. ${result.other_sessions_ended} other session(s) were signed out.`
@@ -3488,6 +3489,8 @@ async function renderAccount() {
   if (typeof info.vault_open === "boolean") vaultOpen = info.vault_open;
   $("account-password-on-open").checked = info.password_on_open !== false;
   renderPinSettings(info.pin);
+  //: "Unlock with Windows Hello", beside the PIN (hello-unlock.js).
+  if (info.hello) privateSpaces("hello", "settings", info.hello);
   renderLanAccess().catch(() => {});
   for (const [label, value] of rows) {
     //: A label column and a value column (`.account-facts`), not "Label: value"

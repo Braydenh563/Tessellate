@@ -1273,7 +1273,7 @@ MORE_TOPICS: list[dict] = [
             "nothing else: its notes, documents and boards are out of search, "
             "the graph, the timeline, the dashboard, exports and Atlas, and a "
             "reminder from it says A private reminder. Opening it asks for your "
-            "vault password, or your PIN on this computer; one password opens "
+            "vault password, or your PIN or Windows Hello on this computer; one password opens "
             "every private space. They lock again after the idle minutes in "
             "Settings, Account & security (Lock private spaces when idle, ten "
             "by default) and always when the window closes. Inside one, a "
