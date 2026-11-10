@@ -88,7 +88,8 @@ def test_the_overview_and_the_card_count_alike(session):
     facts = {f["label"]: f["count"] for f in notebook_stats._general_stats(session).facts}  # noqa: SLF001
     card = notebook_stats._notebook_block(session, NOW)  # noqa: SLF001
     assert facts["notes"] == card["notes"] and facts["categories"] == card["categories"]
-    assert session.query(Category).count() > card["categories"], "an empty category is not 'in' any"
+    said = notebook_stats._general_stats(session).text  # noqa: SLF001
+    assert f"in {notebook_stats.categories_in_use(session)} of your {card['categories']} categories" in said, "an empty category is counted by the card and said by the overview"
 
 
 @pytest.mark.parametrize("dialogue", [pytest.param(d, id=d["name"]) for d in FIXTURE["dialogues"]])

@@ -141,15 +141,15 @@ Parked until the owner's data or a check on real hardware:
 ~~- B20 Verdict date written long (after Q8) | c13 owner question~~ **Fixed w8-1110** (Q8: `composer_ahead.long_form`; the verdict writes "No, not tomorrow. Thursday 12 November, 9:30" and keeps "at 8am" where the note said it).
 
 **W9 Composer: follow-ons, chips and acts** (B, composer, Sonnet high). Files: `ai/composer_follow.py`, `composer_dialogue.py`, `commands.py`, the chips builder. Checks: as W7. Done when: as W7.
-- B21 A follow-on loses its subject ("and the other one?", "who wrote it", "and the dentist"; Ask sends no objects) | R9-9, c13#7, E25, 1107 D6, 1031-composer C12, 1029-composer C44
+- B21 (in part, conv-1110: a demonstrative with its noun keeps the noun, `composer_talk` reads the answer before; Ask still sends no objects, "who wrote it" unchecked) A follow-on loses its subject ("and the other one?", "who wrote it", "and the dentist"; Ask sends no objects) | R9-9, c13#7, E25, 1107 D6, 1031-composer C12, 1029-composer C44
 - B22 Chips built from leftover words ("about the sara?", "about project?") | 1107 D19, R3-36, 1031-composer C47, bt#17, c13#15-18
 - B23 Offers nothing answers ("yes" after an offer) | 1107 D10
 - B24 Four confirm wordings; typed "undo" alone gives the keys | 1107 D23, E7
 - B25 "call anna" in lower case; "make a checklist for my trip" | composer-r8 L12, L14
 - B26 Remind wording, "called X with Y", one list-add rule (after Q4, Q5, Q6) | c12 L13, L14, L15
 - B27 Agent mode with no model answers the whole sentence ("find notes simlar to my dentist one yk") | t20#14
-- B28 "show the note about golf" answers the tag chart | 1031-notes N32
-- B29 No tasks: "add a task to read chapter 5 tomorrow" and the "tick off" forms | 1028-agent E10
+~~- B28 "show the note about golf" answers the tag chart | 1031-notes N32~~ **Stale** (conv-1110, route probe, model off: "show the note about golf" lists the two golf notes with links, no chart)
+- B29 No tasks: "add a task to read chapter 5 tomorrow" and the "tick off" forms | 1028-agent E10 (conv-1110: the add form now answers "Got it, I will add a task due tomorrow at 9am (the default): read chapter 5"; the tick-off forms are not re-checked)
 
 **W10 Composer: compare, summary and lists** (B, composer, Sonnet high; not beside W7). Files: `ai/composer_digest.py`, `composer_lists.py`, `composer_each.py`. Checks: as W7. Done when: as W7.
 - B30 Compare and summary shapes ("one mentions X and one mentions Y"; recipe summary is the ingredients only; summary drops "Work starts 16 November") | 1107 D20, E9, bt#14, R9-17
