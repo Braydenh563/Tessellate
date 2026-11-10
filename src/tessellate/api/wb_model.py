@@ -667,6 +667,17 @@ class WhiteboardObjectData(BaseModel):
     #: so a topic is due on a day wherever the map is opened. Content, like
     #: the markers; a reminder is made from it on request, never by itself.
     due: str | None = Field(default=None, pattern=r"^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$")
+    #: **A start day**, beside `due` (the Gantt view draws a bar from one to the
+    #: other for a topic that has both). The same shape and the same kind of
+    #: field: content, so a look reset keeps it. Which comes first is not
+    #: checked here; the view skips a topic whose start is after its due day.
+    start: str | None = Field(default=None, pattern=r"^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$")
+    #: **An audio note** (MINDMAP_PLAN gap 4, decided 2026-11-10): the id of a
+    #: recording in the Library, never audio of its own (WORLD_CLASS_PLAN,
+    #: "Audio in the notebook", decision 2: a recording is its own object).
+    #: Content like `note`. A recording later put in the bin leaves the id
+    #: dangling, which the topic's player says in words rather than failing.
+    recording: int | None = Field(default=None, ge=1, strict=True)
     #: **The bar down a topic's leading edge** (MINDMAP_PLAN.md item 177:
     #: "per-node left edge: solid, dashed or none"). Two values, because the
     #: third is the absence of the field: a map drawn before this existed and

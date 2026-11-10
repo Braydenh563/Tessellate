@@ -1314,7 +1314,7 @@ Read from the code against Notion and Obsidian. Sizes S, M, L. Nothing here is b
 5. Synced blocks: one block shown in two notes, edited in either - L.
 6. A database view of notes by property (Notion, Obsidian Bases): table, board, calendar - L.
 7. Built 2026-11-10 (s9c-1110): the / menu's "Remind me about this"; see HISTORY.md, "Moved from the plans, 2026-11-10 (s9c-1110 part 2)".
-8. Page cover and icon picker parity with Notion's gallery - S.
+8. ~~Page cover and icon picker parity with Notion's gallery - S.~~ Built 2026-11-10 (HISTORY.md, "s9c-1110 part 5").
 9. Web clipper fields on a note's properties - M.
 10. Canvas block: a board embedded and editable in place - M.
 11. Built 2026-11-10 (`\label`, `\eqref`, `\ref`): see HISTORY.md, "Moved from the plans, 2026-11-10 (s9-1110)".

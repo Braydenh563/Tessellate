@@ -2401,7 +2401,8 @@ body.printing-doc #doc-preview p,
 /* The mark of a note behind a topic (MINDMAP_PLAN.md decision 18): the link
    marker's recipe in the label's own ink, like the task box, so it reads on a
    core or filled topic's ground too. */
-.wb-map-note {
+.wb-map-note,
+.wb-map-audio {
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
@@ -2414,7 +2415,9 @@ body.printing-doc #doc-preview p,
 }
 
 .wb-map-note:hover,
-.wb-map-note:focus-visible {
+.wb-map-note:focus-visible,
+.wb-map-audio:hover,
+.wb-map-audio:focus-visible {
   color: var(--accent-text);
 }
 
@@ -8752,4 +8755,146 @@ input[type="color"].wb-mixed {
   width: 100%;
   font-family: var(--mono, ui-monospace, monospace);
   font-size: var(--text-xs);
+}
+
+/* The map's Gantt chart (whiteboard-map-more.js, MINDMAP_PLAN gap 3): a sheet wider than the usual reading width, because a bar needs room to be a length. A name column beside one shared day scale, the axis and every row on the same two columns. Each bar's left and width (percent of the scale) and a drag's offset are set from the script, not from custom properties, so the token budget stays where it was. */
+@media (min-width: 600px) {
+  [data-sheet="map-gantt"] .sheet-card:not(.sheet-card-corner) {
+    max-width: min(64rem, 100%);
+  }
+}
+.wb-gantt {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+}
+.wb-gantt-axis,
+.wb-gantt-row {
+  display: grid;
+  grid-template-columns: minmax(7rem, 22%) minmax(0, 1fr);
+  align-items: center;
+}
+.wb-gantt-ticks {
+  position: relative;
+  height: var(--space-5);
+  margin-bottom: var(--space-1);
+  border-bottom: 1px solid var(--border);
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+.wb-gantt-tick {
+  position: absolute;
+  white-space: nowrap;
+}
+.wb-gantt-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.wb-gantt-row {
+  min-height: var(--target-min);
+}
+.wb-gantt-name {
+  box-sizing: border-box;
+  padding-right: var(--space-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+}
+.wb-gantt-track {
+  position: relative;
+  height: var(--target-min);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+.wb-gantt-today {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-left: 1px dashed var(--accent);
+  pointer-events: none;
+}
+.wb-gantt-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  min-width: var(--space-3);
+  padding: 0 var(--space-1);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: var(--text-xs);
+  text-align: left;
+  cursor: grab;
+  touch-action: none;
+  overflow: hidden;
+}
+.wb-gantt-bar.is-dragging {
+  cursor: grabbing;
+  opacity: 0.8;
+}
+.wb-gantt-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+/* A topic's audio note (whiteboard-map-audio.js, MINDMAP_PLAN gap 4): the mark is `.wb-map-note`'s recipe; the player is the help popover's shell around the browser's own audio controls, the recording's name above and Choose another and Remove below. */
+.wb-map-audio-pop {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 16rem;
+}
+.wb-map-audio-pop audio {
+  width: 100%;
+}
+.wb-map-audio-title {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+.wb-map-audio-foot {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* A document's icon and cover (documents-props.js, DOCUMENTS_PLAN gap row 8): a band in the chosen category colour (set from the script as --swatch, the swatch picker's own property) with the icon sitting on its foot, then the buttons that set them; the colour row is the app's swatch picker. */
+.doc-look {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.doc-cover {
+  position: relative;
+  height: calc(var(--space-8) * 2);
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--swatch) 70%, var(--card)), color-mix(in srgb, var(--swatch) 22%, transparent));
+}
+.doc-cover-none {
+  height: auto;
+  background: none;
+}
+.doc-cover-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-1) var(--space-2);
+  font-size: calc(var(--text-lg) * 2);
+  line-height: 1.1;
+}
+.doc-cover:not(.doc-cover-none) .doc-cover-icon {
+  position: absolute;
+  left: var(--space-3);
+  bottom: calc(var(--space-4) * -1);
+  border-radius: var(--radius-md);
+  background: var(--modal-bg);
+}
+.doc-look-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
 }
