@@ -3475,8 +3475,7 @@ MORE_TOPICS.extend([
             "Type ![[name]] in a note or a document to draw that diagram document there, with a "
             "line that opens it, and Back there returns to it. The ... menu in the editor's bar has Save as SVG, Save as PNG, "
             "Copy as picture, Copy as Mermaid and Copy as SVG. A diagram's Library card "
-            "has the same pictures in its menu; its page has Download as .png and Copy as picture "
-            "in the ... menu, and Download .mmd saves the text. Source, beside Cancel, shows "
+            "has the same pictures in its menu; its page has Export in its head, and Download .mmd, in the ... menu, saves the text. Source, beside Cancel, shows "
             "the text with the picture; a diagram the blocks cannot draw, or one over 120 blocks, opens there. "
             "The New diagram window opens on a three-box starter; Clear, in the ... menu, empties it. "
             "On the last box, Tab adds a joined box; on any other, Tab moves on. Shift+Tab selects its source, F6 leaves the blocks and Ctrl+Enter keeps the diagram. "
@@ -3807,7 +3806,8 @@ MORE_TOPICS.append({
         "Normal spacing). Both are kept in the diagram's own text as front matter and Undo "
         "takes them back; the picture is then drawn by the dagre layout. A diagram's page "
         "menu keeps Download or print, Connections and History, and leaves out the "
-        "writing switches, Read aloud and Extract notes."
+        "writing switches, Read aloud and Extract notes. Export, beside Picture, List and "
+        "Source, saves it as a PNG or an SVG, or copies it as a picture, as Mermaid or as SVG."
     ),
     "badge": {"label": "Documents", "tab": "documents"},
 })

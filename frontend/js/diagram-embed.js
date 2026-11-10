@@ -662,5 +662,19 @@
     return dialog;
   }
 
-  diagramModel.embed = { open, out, outDoc, save, swapRange, link, historyKey };
+  //: The page head's Export (W18 Q26): a worded menu beside Picture, List and Source, so a diagram's pictures are one press
+  //: from the head and not behind the page's ... menu. Made here, not in the page, for the boot budget; the type toggle in
+  //: documents.js hides it for any other file. The rows are the toolbar's `out` rows.
+  function headExport() {
+    const anchor = document.querySelector("#tab-documents .doc-view-cluster");
+    if (!anchor || document.getElementById("doc-diagram-export")) return;
+    const run = (how) => () => out(how, docText(), currentDoc?.title);
+    const rows = [["ph:file-png Download as .png", "png", "file"], ["ph:file-svg Download as .svg", "svg", "file"], ["ph:image Copy as picture", "picture", "copy"], ["ph:copy Copy as Mermaid", "mermaid", "copy"], ["ph:code Copy as SVG", "svgtext", "copy"]];
+    const menu = labelledMenu("ph:export Export", rows.map(([label, how, group]) => ({ label, group, run: run(how) })), "Export this diagram");
+    menu.id = "doc-diagram-export";
+    menu.classList.add("doc-diagram-export");
+    anchor.after(menu);
+  }
+
+  diagramModel.embed = { open, out, outDoc, save, swapRange, link, historyKey, headExport };
 })();
