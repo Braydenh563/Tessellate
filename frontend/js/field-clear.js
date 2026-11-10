@@ -57,7 +57,7 @@
       },
     },
     //: A modal dialog or overlay is drawn above the toasts, so its Undo is on its own status line.
-    { button: "quick-note-clear", fields: ["quick-note-text"], status: "quick-note-status" },
+    { button: "quick-note-clear", fields: ["quick-note-text"], status: "quick-note-status", surface: "quickNote" },
     { button: "ask-clear", fields: ["question"] },
     { button: "chat-clear", fields: ["chat-input"] },
     { button: "command-palette-clear", fields: ["command-palette-input"], status: "command-palette-status" },
@@ -191,10 +191,10 @@
       field.before(anchor);
     }
 
-    for (const spec of FIELD_CLEARS) {
+    function fieldClearWire(spec) {
       fieldClearInline(spec);
       const button = document.getElementById(spec.button);
-      if (!button) continue;
+      if (!button) return;
       button.addEventListener("click", () => fieldClearRun(spec));
       for (const box of fieldClearBoxes(spec)) {
         box.addEventListener("input", () => fieldClearSync(spec));
@@ -202,6 +202,12 @@
         fieldClearWatchValue(box, spec);
       }
       fieldClearSync(spec);
+    }
+
+    //: A spec on a surface template (the quick note) is wired when the surface is built, not at load.
+    for (const spec of FIELD_CLEARS) {
+      if (spec.surface) onSurface(spec.surface, () => fieldClearWire(spec));
+      else fieldClearWire(spec);
     }
   })();
 

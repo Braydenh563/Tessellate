@@ -259,6 +259,7 @@
   }
 
   function openQuickNote() {
+    surfaceBuild("quickNote");
     const dialog = $("quick-note");
     if (!dialog) return;
     const box = quickNoteBox();
@@ -452,9 +453,9 @@
     toastAction("That is a link. Save the page it points to as a note of its own?", "Clip the page", () => clipPastedLink(text));
   });
 
-  (() => {
+  //: The dialog's own wiring waits for its template (`onSurface`): a `$` here at load would build it at boot.
+  onSurface("quickNote", () => {
     const box = quickNoteBox();
-    if (!box) return;
     box.addEventListener("input", () => {
       keepQuickNoteDraft();
       if ($("quick-note-status").classList.contains("error")) quickNoteStatus("");
@@ -468,12 +469,15 @@
     $("quick-note-save").addEventListener("click", saveQuickNote);
     $("quick-note-more").addEventListener("click", quickNoteToCapture);
     $("quick-note-private").addEventListener("click", (event) => createNoteSafely.lock.flip(event.currentTarget));
+    $("quick-note-close").addEventListener("click", () => $("quick-note").close());
+  });
+
+  (() => {
     //: The Capture page's button (capture-ask.js sends its ask): wired here, not at boot. Its state is
     //: the draft's (`captureDraftPrivate`), put back on load; until then (3 s) the button is the setting's.
     const capturePrivate = $("entry-private");
     capturePrivate.addEventListener("click", () => createNoteSafely.lock.flip(capturePrivate, "captureDraftPrivate"));
     if (prefs.has("captureDraftPrivate")) createNoteSafely.lock.sync(capturePrivate, prefs.get("captureDraftPrivate") === "true");
-    $("quick-note-close").addEventListener("click", () => $("quick-note").close());
     $("note-outbox-retry")?.addEventListener("click", () => flushNoteOutbox());
     //: Back on the network the browser knows about (a laptop's wifi), as well
     //: as the server answering again.

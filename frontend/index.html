@@ -1177,6 +1177,8 @@
   <!-- Quick note (quick-note.js, INBOX 434): a note from any tab without
        leaving it. Alt+N or the palette; the head is the dialog-head recipe. -->
   <dialog id="quick-note" class="card space-dialog quick-note-dialog" aria-labelledby="quick-note-title">
+    <!-- Built when the dialog first opens (`surfaceBuild("quickNote")`, settings-body.js; the boot page is at its element cap). -->
+    <template data-surface="quickNote">
     <div class="dialog-head">
       <h2 id="quick-note-title" class="dialog-head-title"><i class="ph ph-lightning pop-glyph" aria-hidden="true"></i> Quick note</h2>
       <button type="button" class="icon-only ghost small graph-help-toggle dialog-head-btn"
@@ -1214,6 +1216,7 @@
       <button type="button" class="ghost small" id="quick-note-more">Open in Capture</button>
       <button type="button" class="accent small" id="quick-note-save">Save note</button>
     </div>
+    </template>
   </dialog>
   <!-- **These two live here, beside the other dialogs, and not inside
        `#tab-documents` where they were written.** A modal `<dialog>` is drawn
