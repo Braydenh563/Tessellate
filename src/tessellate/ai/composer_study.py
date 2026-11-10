@@ -388,7 +388,8 @@ def _summaries(ctx: Ctx, notes: list[dict], subject: str = "") -> Reply:
         body = " ".join(re.split(r"(?<=[.!?])\s+", body)[:4]) if len(parts) < 2 else body
         title = composer_frame.note_title(note)
         if title and body.startswith(title):
-            body = body[len(title):].strip()
+            body = body[len(title):].lstrip(" .:-,;")
+            body = body[:1].upper() + body[1:]
         body = body or "Only a title, nothing more to say."
         lines += [f"- {_link(note)}: {body}"]
     #: The subject as the notes write it ("Harbor"), not as it was typed.

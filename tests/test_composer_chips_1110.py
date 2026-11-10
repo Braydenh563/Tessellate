@@ -185,3 +185,72 @@ def test_a_chip_that_acts_only_proposes(client, session):
     assert follow["text"] or any(e.get("type") == "act" for e in follow["events"])
     session.expire_all()
     assert session.scalar(select(func.count()).select_from(Reminder)) == before
+
+
+def test_the_day_before_chip_names_what_it_is_for(client, session):
+    """The chip says "about Dentist"; the follow-up must not ask what the reminder is for."""
+    seed.seed(session)
+    got = _ask(client, "when is my dentist appointment")
+    chip = next(c for c in got["chips"] if c.startswith("Remind me"))
+    follow = _ask(client, chip, _then([], "when is my dentist appointment", got))
+    assert "What is the reminder for" not in follow["text"], follow["text"]
+    assert "What should the reminder say" not in follow["text"], follow["text"]
+
+
+@pytest.mark.parametrize("thanks", ["thanks", "thank you", "cheers"])
+def test_small_talk_after_an_answer_picks_up_its_chips(client, session, thanks):
+    seed.seed(session)
+    got = _ask(client, "when is my dentist appointment")
+    follow = _ask(client, thanks, _then([], "when is my dentist appointment", got))
+    assert any(c.startswith("Remind me about Dentist") for c in follow["chips"]), follow["chips"]
+
+
+def test_small_talk_with_nothing_before_it_has_no_borrowed_chips(client, session):
+    seed.seed(session)
+    assert _ask(client, "thanks")["chips"] == []
+
+
+def test_small_talk_picks_up_the_chips_with_a_model_up_too(ai_client, fake_ollama, session):
+    seed.seed(session)
+    frame = {"note_ids": [6], "subject": "dentist", "person": "", "ask": "when is my dentist appointment", "dates": ["2026-11-21"], "items": []}
+    first = {"question": "when is my dentist appointment", "answer": "Check-up booked for 21 November.", "frame": frame}
+    with ai_client.stream("POST", "/chat/stream", json={"question": "thanks", "history": [first], "use_tools": False}) as response:
+        events = [json.loads(line) for line in response.iter_lines() if line.strip()]
+    asks = [a for e in events if e.get("type") == "offer" for a in (e["offer"].get("asks") or [])]
+    assert any(a.startswith("Remind me about") for a in asks), events
+
+
+def test_last_wrote_states_a_date_and_the_latest_does_not_repeat_it(client, session):
+    seed.seed(session)
+    last = _ask(client, "When did I last write about Harbor?")
+    latest = _ask(client, "What's the latest on Harbor?")
+    assert "You last wrote about Harbor on 6 November" in last["text"], last["text"]
+    assert last["text"] != latest["text"]
+    grounded = [e for e in last["events"] if e.get("type") == "grounding"]
+    assert grounded and not grounded[0]["support"]["unsupported"], grounded
+
+
+def test_what_else_is_on_that_week_is_offered_and_answered(client, session):
+    seed.seed(session)
+    got = _ask(client, "when is my dentist appointment")
+    assert "What else is on that week?" in got["chips"], got["chips"]
+    follow = _ask(client, "What else is on that week?", _then([], "when is my dentist appointment", got))
+    assert "Decision due by 20 November" in follow["text"] and "Check-up booked" in follow["text"], follow["text"]
+
+
+@pytest.mark.parametrize("then, window", [("and the week before?", "26 October to 1 November"), ("and the week after?", "9 November to 15 November")])
+def test_a_window_moves_off_the_one_before(client, session, then, window):
+    """F13 h: "and the week before" is the question before over the week earlier."""
+    seed.seed(session)
+    got = _ask(client, "what did I write last week")
+    assert window in _ask(client, then, _then([], "what did I write last week", got))["text"]
+
+
+@pytest.mark.parametrize("question", ["summarise my japan notes", "summarise harbor"])
+def test_a_summary_of_several_notes_is_one_shape(client, session, question):
+    """F13 i: a subject several notes are about (by tag as by title) is the short version of each, never one note and 'Say more'."""
+    seed.seed(session)
+    text = _ask(client, question)["text"]
+    assert text.startswith("Here are your 4 matching notes") or text.startswith("4 notes match"), text
+    assert "Say “more”" not in text
+    assert not re.search(r"\]\(#/notes/\d+\): [.:;,]", text), text  # no stranded full stop where a title was cut

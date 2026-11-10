@@ -17,12 +17,13 @@ from dataclasses import dataclass, field
 from datetime import date as date_type, datetime, time as time_type
 from typing import Any
 
-from tessellate.ai import composer_chip_subject, composer_frame, question_noise, recognise as rec, repair_turn, when as when_words
+from tessellate.ai import composer_chip_subject, composer_frame, composer_shift, question_noise, recognise as rec, repair_turn, when as when_words
 from tessellate.ai.composer_ask import _stem, _words, classify, compare_sides, rephrase, subject_terms
 from tessellate.ai.composer_body import _BRIEF, _FULL, _NOTE_NOUNS, _asked_span
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_quote import _pick
 from tessellate.ai.composer_read import NoteView
+from tessellate.core import clock
 from tessellate.search import query as query_understanding
 
 
@@ -383,6 +384,12 @@ def _follow_length(text: str, previous: str, last: dict, turns: list[dict]) -> A
     shorter = text.lstrip().lower().startswith(("shorter", "briefer", "in short", "tl;dr", "tldr", "summarise that", "summarize that", "less"))
     base = _without_length(previous)
     return FollowOn(f"briefly, {base}" if shorter else f"{base.rstrip('?.!')} in detail?", previous, "", "length", str(last.get("prefer") or ""))
+
+
+def _follow_shift(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
+    """"and the week before?", "what else is on that week?" (`composer_shift`)."""
+    asked = composer_shift.follow(text, previous, last, clock.today())
+    return FollowOn(asked, previous, "", "window") if asked else _NOT_THIS
 
 
 def _follow_window(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
@@ -786,7 +793,7 @@ def _follow_now(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
 
 
 _FOLLOW_READERS = (
-    _follow_more, _follow_ordinal, _follow_other, _follow_correction, _follow_length, _follow_window, _follow_meant,
+    _follow_shift, _follow_more, _follow_ordinal, _follow_other, _follow_correction, _follow_length, _follow_window, _follow_meant,
     _follow_then, _follow_bare, _follow_part, _follow_swap, _follow_which, _follow_now, _follow_pronoun, _follow_slot,
 )
 

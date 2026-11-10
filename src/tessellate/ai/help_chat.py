@@ -1003,7 +1003,9 @@ def _guide_opening(question: str, path: str, steps: tuple, lead: str) -> tuple[l
     from for a how-to with steps; else the lead sentence."""
     where = bool(path) and bool(_WHERE_ASKED.match(question))
     walk = bool(steps) and bool(_HOW_ASKED.match(question)) and len(steps) < len(_COUNTS)
-    lines = [f"It's in {_place(path)}."] if where else []
+    #: A path that is itself a sentence ("the bin: the Library's Include ...") is not "It's in" it.
+    head, colon, tail = path.partition(": ")
+    lines = [f"It's in {head}, reached with {tail}." if colon else f"It's in {_place(path)}."] if where else []
     #: The numbered list that follows says the steps; no "It takes N steps" first (G5 g).
     if lead and not walk:
         lines.append(lead)

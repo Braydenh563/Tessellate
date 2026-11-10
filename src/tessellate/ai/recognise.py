@@ -901,7 +901,7 @@ def _reminder_instant(text: str, now: datetime, locale: str | None, tense: str, 
 
 def _reminder_words(text: str, spans: list) -> tuple[str, str]:
     """The reminder's own words (the time cut out) and its priority."""
-    cuts = [(s.start, s.end) for s in spans if _is_time_words(s, text)]
+    cuts = [(s.start, s.end) for s in spans if _is_time_words(s, text, spans)]
     priority = "normal"
     said = _PRIORITY.search(text)
     if said:
@@ -913,7 +913,7 @@ def _reminder_words(text: str, spans: list) -> tuple[str, str]:
     rest = strip_lead(re.sub(r"\s+", " ", rest).strip(" ,.;:-"))
     rest = _trim_dangling(rest)
     if not any(s.kind == "recurrence" for s in spans):
-        rest = _keep_due_day(rest, [s.text for s in sorted(spans, key=lambda s: s.start) if _is_time_words(s, text)])
+        rest = _keep_due_day(rest, [s.text for s in sorted(spans, key=lambda s: s.start) if _is_time_words(s, text, spans)])
     return (rest or text.strip() or "Reminder"), priority
 
 
@@ -979,13 +979,18 @@ def _trim_dangling(rest: str) -> str:
     return " ".join(words[lead:]).strip(" ,.;:-")
 
 
-def _is_time_words(found: Span, text: str) -> bool:
+def _is_time_words(found: Span, text: str, spans: list | tuple = ()) -> bool:
     """Whether a span's words are the reminder's time and so come out of its
     text. A holiday after "the" is the thing to do ("see the new year"), not
-    the time, which is still read from it."""
+    the time, which is still read from it; so is one after "about" or "for"
+    when another span already gives the time ("call mum on sunday about
+    christmas plans", G10)."""
     if found.kind == "duration":
         return found.text.lower().startswith("in ")
-    thing = re.match(r"(?:new year|christmas)", found.text.lower()) and text[:found.start].lower().endswith("the ")
+    holiday = re.match(r"(?:new year|christmas)", found.text.lower())
+    before = text[:found.start].lower()
+    timed_elsewhere = any(o is not found and o.kind in _TIME_KINDS and o.kind != "alert" for o in spans)
+    thing = holiday and (before.endswith("the ") or timed_elsewhere and before.endswith(("about ", "for ", "re ")))
     return found.kind in _TIME_KINDS and not thing
 
 
