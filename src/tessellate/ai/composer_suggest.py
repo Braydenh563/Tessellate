@@ -53,6 +53,14 @@ _IMPERATIVE = re.compile(
     rf"^{_FILLER}(?:get|make|give|put|set|play|read|write|send|turn|run|clean|sort|organi[sz]e|tidy|fix|do|show|help me|let me|take|bring|throw|stick|get rid of|use|try|go|build|draw|plan|schedule|book|email|call|print|share|export|import|copy|merge|split|archive|clear|reset)\b",
     re.I,
 )
+#: "Give me the short version" with no answer before it to shorten.
+_FORM = re.compile(
+    rf"^{_FILLER}(?:give|show|tell|get) me (?:it |that )?(?:in )?(?:the |a )?(?:short|long|brief|quick|full|detailed|simple|plain|shorter|longer|simpler)(?: version| answer| summary| form| way| one)?[?.! ]*$", re.I
+)
+_NO_FORM = (
+    "There is no answer yet to give in a shorter form. Ask me something first, then say “shorter” and I will cut it down.",
+    "Nothing to shorten so far. Ask a question about your notes, and I can give you the short version of the answer.",
+)
 _ASKING = re.compile(r"^(?:what|when|where|who|whom|whose|which|why|how|is|are|was|were|do i|did i|does|have i|has|can i)\b", re.I)
 
 #: Words each act is also said with, so "get rid of" finds delete without the
@@ -352,6 +360,8 @@ def unknown_action(question: str, titles: list[str], *, embed=None, seed: str = 
     q = " ".join((question or "").split())
     if not q or _ASKING.match(q) or not _IMPERATIVE.match(q):
         return None
+    if _FORM.match(q):
+        return {"text": _pick(list(_NO_FORM), q, seed), "asks": []}
     tool = _app_tool(q)
     if tool:
         return {"text": tool, "asks": []}

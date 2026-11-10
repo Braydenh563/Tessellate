@@ -254,6 +254,12 @@ _SEED: ContextVar[int] = ContextVar("digest_seed", default=0)
 
 #: The gap leads already said in this answer, in order (reset per answer).
 _GAPS: ContextVar[tuple[str, ...]] = ContextVar("digest_gaps", default=())
+#: The question as asked, so an offer to remind is made only to a question about a date or a task (audit 1110 F12); None = not set, offer as before.
+_ASKED_AS: ContextVar[str | None] = ContextVar("digest_asked_as", default=None)
+_REMINDABLE = re.compile(
+    r"\b(?:when|due|deadlines?|remind\w*|to-?do|to do|tasks?|need(?:s)? to|have to|has to|must|should|supposed|expir\w+|renew\w*|book(?:ed|ing)?|appointments?|schedul\w+|upcoming|plans?|planned|forgot\w*|missed|left to|still to|outstanding|pending|overdue|(?:want|wanna|hope|hoping|wish|meaning|going) to|to (?:try|visit|watch|read|see)|bucket|wish ?list)\b",
+    re.I,
+)
 
 
 def _isolated(fn):  # noqa: ANN001, ANN202
@@ -5210,9 +5216,11 @@ def answer(question: str, notes: list[dict], **kwargs) -> dict | None:  # noqa: 
     only when the notes hold both words."""
     owned = composer_ask.NOTE_WORDS.set(composer._note_words(notes))  # noqa: SLF001
     texts = composer_ask.NOTE_TEXTS.set(tuple(f"{n.get('title') or ''} {n.get('content') or ''}" for n in notes or ()))
+    as_asked = _ASKED_AS.set(question)
     try:
         return composer_event_verdict.apply(question, _answer(question, notes, **kwargs), kwargs.get("today") or composer.user_today())
     finally:
+        _ASKED_AS.reset(as_asked)
         composer_ask.NOTE_TEXTS.reset(texts)
         composer_ask.NOTE_WORDS.reset(owned)
 
@@ -5877,7 +5885,7 @@ def _asked(offer: dict) -> dict:
     """The offer with its prose: the sentence reads "Shall I remind you to X?" while the button
     keeps its pinned label "Remind you to X?" (Q4)."""
     label = str(offer["label"])
-    return {**offer, "line": "Shall I remind you to " + label[len("Remind you to "):]} if label.startswith("Remind you to ") else offer
+    return {**offer, "line": "Shall I remind you " + label[len("Remind you "):]} if label.startswith("Remind you ") else offer
 
 
 def _fresh_chips(said: list[str], question: str) -> list[str]:
@@ -5994,6 +6002,9 @@ def _result(out: _Out, kind: str, question: str) -> dict:
     #: One paragraph a line: a single newline inside a paragraph is a space
     #: to every markdown reader, so the labelled lines ran together.
     paragraphs = composer_clean.paragraphs(list(out.lines) + out.more + out.closing[: 2 + len(out.insights)])
+    #: A reminder is offered to a question about a date or a task, never to "how much is the budget".
+    if out.offer and out.offer.get("kind") == "reminder" and _ASKED_AS.get() is not None and not _REMINDABLE.search(_ASKED_AS.get() or ""):
+        out.offer = None
     if out.offer:
         out.offer = _asked(out.offer)
         paragraphs.append(out.offer.get("line") or out.offer["label"])

@@ -67,7 +67,11 @@ def test_the_lead_names_the_category_as_typed():
 
 
 def test_a_reminder_is_offered_only_for_a_stated_task():
-    assert _social()["offer"]["label"] == "Remind you to text Daniel about the 25th?"
+    #: Audit 1110 F12 (intent moved): "what have I saved about social connections" asks for no date or task, so the
+    #: "Remind you to text Daniel about the 25th?" it used to end on is not offered; a task question still gets it.
+    assert not _social().get("offer")
+    asked = composer_digest.answer("What do I still need to do about social connections?", _notebook(ITEM), today=TODAY) or {}
+    assert not asked.get("offer") or asked["offer"].get("kind") == "reminder"
     #: With no open task left, the guide's advice is still not a reminder.
     notes = [n for n in _notebook(ITEM) if n["id"] != 104]
     offer = (composer_digest.answer(QUESTION, notes, today=TODAY) or {}).get("offer") or {}

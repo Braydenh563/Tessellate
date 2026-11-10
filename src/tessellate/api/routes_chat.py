@@ -1868,7 +1868,7 @@ def _follow_up(req: _StreamRequest):
         #: rewritten to "tell me more about the Lecture 5 note" and searched.
         return more
     #: A bare "yes" takes up the offer the answer before ended with (B23); "open it" names the note the answer cited.
-    cited = composer_talk.accepted_offer(req.question, req.history) or composer_talk.cited_question(req.question, req.history, user_now(deps.get_config()))
+    cited = composer_talk.accepted_offer(req.question, req.history, user_now(deps.get_config())) or composer_talk.cited_question(req.question, req.history, user_now(deps.get_config()))
     if cited is not None:
         req.question = cited
     spoken = _spoken_act(req) if req.history and not req.ollama.is_running() else None

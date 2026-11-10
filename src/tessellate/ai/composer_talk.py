@@ -267,7 +267,7 @@ def reply(session: Session, question: str, history: list[dict], today: date) -> 
     said = _clean(question).rstrip("?!. ")
     if not said:
         return None
-    if asks := follow_items.read(question, history)[1]:
+    if asks := follow_items.read(question, history, datetime.combine(today, time(9)))[1]:
         return [{"type": "answer", "delta": asks}]
     prev = from_history(history, today)
     for read in _READERS:
@@ -286,23 +286,26 @@ _YES = re.compile(
 )
 #: The offers an answer ends with that a sentence can carry out: a reminder, said as the prose asks it or as its button does.
 _REMIND_OFFER = re.compile(
-    r"^(?:shall i remind you to|remind you to|set a reminder to|want a nudge to|should i remind you to|want me to remind you to) (?P<action>.+?)\??$", re.I
+    r"^(?:shall i remind you|remind you|set a reminder|want a nudge|should i remind you|want me to remind you)(?: (?P<every>(?:each|every) \w+))? to (?P<action>.+?)\??$", re.I
 )
 
 
-def accepted_offer(question: str, history: list[dict] | None) -> str | None:
+def accepted_offer(question: str, history: list[dict] | None, now: datetime | None = None) -> str | None:
     """The sentence a bare "yes" stands for when the answer before it ended with an offer
     the composer can carry out ("Shall I remind you to call the plumber?" is "remind me to
     call the plumber"), else None. An offer with no act behind it is not guessed at.
     An instruction after a list or an act ("remove milk", "make it 6") is the act on
     what that answer showed (`follow_items`)."""
-    if history and (said := follow_items.read(question, history)[0]):
+    if history and (said := follow_items.read(question, history, now)[0]):
         return said
     if not history or not _YES.match(_clean(question).strip()):
         return None
     lines = [ln.strip(" *_") for ln in str(history[-1].get("answer") or "").splitlines() if ln.strip()]
     found = _REMIND_OFFER.match(lines[-1]) if lines else None
-    return f"remind me to {found.group('action').strip().rstrip('?.')}" if found else None
+    if not found:
+        return None
+    action = re.sub(r"\byour\b", "my", found.group("action").strip().rstrip("?."), flags=re.I) if found.group("every") else found.group("action").strip().rstrip("?.")
+    return f"remind me to {action}" + (f" {found.group('every').replace('each', 'every')}" if found.group("every") else "")
 
 
 def cited_question(question: str, history: list[dict] | None, now: datetime) -> str | None:
