@@ -5,7 +5,7 @@
 // expands it and measures again, at once and after the layout has settled.
 // Pass: onScreen after equals onScreen before (every note inside the box),
 // k finite and > 0.1, opacity 1. WAIT (ms, default 2500) is the collapsed time.
-const { boot } = require("/home/user/MemoryMap-AI/scratchpad/ui-sweeps/lib.js");
+const { boot } = require('./lib.js');
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
   const errors = [];

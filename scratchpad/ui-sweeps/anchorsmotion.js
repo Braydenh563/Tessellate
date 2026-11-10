@@ -28,7 +28,7 @@ const { spawn } = require('child_process');
 const { boot } = require('./lib.js');
 
 const ROOT = path.resolve(__dirname, '..', '..');
-const PY = process.env.SWEEP_PY || '/home/user/MemoryMap-AI/.venv/bin/python';
+const PY = process.env.SWEEP_PY || require('path').resolve(__dirname, '..', '..', '.venv', 'bin', 'python');
 const FAKE_PORT = Number(process.env.FAKE_PORT || 8932);
 const FAKE = `http://127.0.0.1:${FAKE_PORT}/v1`;
 const SIZES = (process.env.SIZES || '1440x900,1440x600').split(',');

@@ -17,7 +17,7 @@ const fs = require('fs');
 const W = Number(process.env.W || 1440);
 const THEME = process.env.THEME || 'light';
 const phone = W < 600;
-const PY = process.env.PY || '/home/user/MemoryMap-AI/.venv/bin/python';
+const PY = process.env.PY || require('path').resolve(__dirname, '..', '..', '.venv', 'bin', 'python');
 const LIM = Number(process.env.LIM || 0.5);
 const PHASES = (process.env.PHASES || '0').split(',').map(Number);
 

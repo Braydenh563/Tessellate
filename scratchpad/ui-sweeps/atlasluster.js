@@ -51,7 +51,7 @@ const PARTS = (process.env.PART || 'mount,blink,rig,wave,lower,fringe,wisps,dres
 const RUNS = Number(process.env.RUNS || 3);
 const REF_DIR = process.env.REF_DIR || '';
 const SCRATCH = process.env.SCRATCH || '/tmp';
-const PY = process.env.PY || '/home/user/MemoryMap-AI/.venv/bin/python';
+const PY = process.env.PY || require('path').resolve(__dirname, '..', '..', '.venv', 'bin', 'python');
 //: Pixels that differ between two PNGs (the count); the alpha at given
 //: device pixels, the largest in a 3x3 patch; the RGB at given pixels.
 const DIFF = 'import sys\nfrom PIL import Image, ImageChops\na=Image.open(sys.argv[1]).convert("RGBA");b=Image.open(sys.argv[2]).convert("RGBA")\nprint(-1 if a.size!=b.size else sum(1 for p in ImageChops.difference(a,b).getdata() if max(p)>2))';
