@@ -2401,15 +2401,39 @@ def _reassign(session: Session, from_id: int, to_id: int) -> int:
 
 def came_from_outside(entry: Entry) -> bool:
     """Whether this note's text was written by somebody other than the person:
-    clipped from a web page (`source_url`) or brought in by an import
-    (`source_path`, set by the folder, markdown and document importers).
+    clipped from a web page (`source_url`), brought in by an import
+    (`source_path`, set by the folder, markdown and document importers), or
+    an email pasted in by hand (`holds_pasted_mail`).
 
     The agent's injection guard reads this (audit 2026-10-05, SEC-02): a page
     clipped into a note and read back later is the same untrusted text a web
     search returns, so it taints the turn the same way. Derived from columns
     every clipped and imported note already has, so no row needs migrating.
     """
-    return bool(getattr(entry, "source_url", None)) or bool(getattr(entry, "source_path", None))
+    if getattr(entry, "source_url", None) or getattr(entry, "source_path", None):
+        return True
+    return not getattr(entry, "is_private", False) and holds_pasted_mail(getattr(entry, "content", None) or "")
+
+
+#: A pasted email is somebody else's words in the person's note, with no
+#: `source_url` to say so (audit 1028 E42): a reply's "On ... wrote:" line, a
+#: forwarded or original message rule, or a "From:" header beside a "Sent:",
+#: "Subject:", "Date:" or "Cc:" one. "From: 10am / To: 11am" in a meeting
+#: note is not mail. Line-anchored with bounded runs, so the scan stays linear.
+_MAIL_RULE = re.compile(
+    r"^-{3,} ?(?:forwarded message|original message) ?-{3,}[ \t]*$|^on [^\n]{4,200} wrote:[ \t]*$", re.I | re.M
+)
+_MAIL_HEADER = re.compile(r"^(from|sent|to|cc|subject|date|reply-to):[ \t]*\S", re.I | re.M)
+_MAIL_SCAN = 20_000
+
+
+def holds_pasted_mail(content: str) -> bool:
+    """Whether a note's text carries a pasted email (`_MAIL_RULE` says how)."""
+    head = content[:_MAIL_SCAN]
+    if _MAIL_RULE.search(head):
+        return True
+    names = {m.group(1).lower() for m in _MAIL_HEADER.finditer(head)}
+    return "from" in names and bool(names & {"sent", "subject", "date", "cc"})
 
 
 def document_came_from_outside(session: Session, document_id: int) -> bool:

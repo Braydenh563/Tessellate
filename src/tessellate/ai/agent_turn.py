@@ -771,6 +771,10 @@ class _TurnState:
     #: turn's searches returned (`_cleared_page`).
     named_hosts: set[str] = field(default_factory=set)
     result_pages: set[str] = field(default_factory=set)
+    #: E66: the question, and the registry's card for every note an "all"
+    #: delete names (worked out at the first delete; {} when there is none).
+    asked: str = ""
+    whole_card: dict | None = None
 
     def count_failure(self, tool_name: str) -> int:
         self.tool_failures[tool_name] = self.tool_failures.get(tool_name, 0) + 1
@@ -1090,6 +1094,53 @@ def _tool_events(event: dict, result: dict) -> Iterator[dict]:
         #: A model's act (`propose_act`, decision 53): the registry's own card,
         #: drawn as a typed act's is, waiting for Confirm; nothing ran.
         yield result["act_card"]
+
+
+def from_outside(notes: list[dict]) -> bool:
+    """SEC-02: a note retrieved for the question that was clipped from the web,
+    imported or pasted from mail is already in the prompt, so the turn starts tainted."""
+    return any(isinstance(n, dict) and n.get("from_outside") for n in notes or ())
+
+
+def _whole_card(session: Session, asked: str, now) -> dict:  # noqa: ANN001
+    """The registry's card for an "all" delete ("delete all notes about
+    gym"), when it names more than one note; {} otherwise."""
+    from tessellate.ai import act_registry
+
+    if not asked or act_registry.proposer is None:
+        return {}
+    parsed = act_registry.typed_reader(asked, now)
+    if not parsed or parsed.get("intent") != "delete" or parsed.get("single") is not False or not parsed.get("about"):
+        return {}
+    card = (act_registry.propose(session, asked, now) or {}).get("card") or {}
+    ids = {(s.get("arguments") or {}).get("note_id") for s in card.get("steps") or () if s.get("name") == "delete_note"} - {None}
+    return {"card": card, "ids": ids, "sent": False} if len(ids) > 1 else {}
+
+
+def all_it_names(session: Session, state: _TurnState, name: str, arguments: dict, now) -> tuple[dict, list[dict]] | None:  # noqa: ANN001
+    """**"Delete all" is every match, on one card** (audit 1028 E66). A model
+    asked to delete all notes about a thing queued the one best match, and the
+    rest were quietly left. A delete of a note the person's "all" names parks
+    the registry's own card for every match instead (Confirm, then Undo); a
+    second delete of one of them is already on it. `now` is the plan clock."""
+    if name != "delete_note":
+        return None
+    if state.whole_card is None:
+        state.whole_card = _whole_card(session, state.asked, now())
+    whole = state.whole_card
+    try:
+        note_id = int(arguments.get("note_id"))
+    except (TypeError, ValueError):
+        return None
+    if not whole or note_id not in whole["ids"]:
+        return None
+    if whole["sent"]:
+        return AWAITING_CONFIRMATION, []
+    whole["sent"] = True
+    state.did_write = True
+    state.ran_writes.add(name)
+    state.parked[name] = state.parked.get(name, 0) + 1
+    return AWAITING_CONFIRMATION, [whole["card"]]
 
 
 def _cleared_page(state: _TurnState, name: str, arguments: dict) -> bool:
