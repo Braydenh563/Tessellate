@@ -72,6 +72,8 @@ function editAndResend(bubble, text) {
     const edited = box.value.trim();
     if (!edited) return;
     if (edited === original) return close();
+    //: Over the limit is refused before the cut (W1 A4).
+    if (edited.length > 2e4) return chatTooLong(edited, false);
 
     const bubbles = [...$("chat-messages").querySelectorAll(".msg")];
     //: The turn rides on the bubble (addBubble), not on its place in the DOM: an offer

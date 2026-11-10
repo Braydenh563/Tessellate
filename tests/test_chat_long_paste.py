@@ -52,3 +52,12 @@ def test_send_checks_the_length_before_anything_is_cleared():
     attach = with_pieces("chat-attach.js")
     guard = attach.index("question.length > 2e4")
     assert guard < attach.index("lastChatQuestion = question;")
+
+
+def test_an_edit_over_the_limit_is_refused_before_the_chat_is_cut():
+    """Edit and resend cut the saved chat, dropped the later bubbles, and only
+    then sent: a 25,000-character edit lost the turns after it and was refused
+    (W1 A4). The length is checked before the truncate."""
+    body = _fn((JS_DIR / "chat-edit.js").read_text(encoding="utf-8"), "editAndResend")
+    guard = body.index("edited.length > 2e4")
+    assert guard < body.index("/truncate") and guard < body.index("dropChatBubble")
