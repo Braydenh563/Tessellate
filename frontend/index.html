@@ -14454,6 +14454,15 @@ Link to another note with [[its first few words]]."></textarea>
                 </span>
               </label>
 
+              <!-- INBOX 1695 (Q30): off by default; sealed before the first save. -->
+              <label class="setting-check" id="new-notes-private-row" data-synonyms="private notes start locked seal encrypt default new">
+                <input type="checkbox" id="pref-new-notes-private">
+                <span>
+                  New notes start private
+                  <small class="muted">Off by default. A new note is sealed from its first save, so it is not filed, indexed or read by Ask, chat or meaning search. Needs the app unlocked; you can still make one public from its menu.</small>
+                </span>
+              </label>
+
               <div class="row">
                 <button id="account-lock-all" class="ghost small">
                   <i class="ph ph-lock ph-lead" aria-hidden="true"></i> Lock everywhere now</button>

@@ -350,7 +350,7 @@ Rows are book5's plan sections; each batch takes its plan's open rows smallest f
 - **F3 Mind map** (Sonnet): outline view, branch palette and font, a note node that edits, render pass 13b, XMind gaps | MINDMAP (book5) | s9-1110: search inside topic notes built (HISTORY); the rest left
 - **F4 Chat** (Opus): composition layer (INBOX 1353), Phase 5 (a) to (g), Foundation F5, "X versus Y" | CHAT (book5)
 - **F5 World class** (Sonnet): durable jobs, margin reader, multi-window, torch at launch, F1 prefs, RapidOCR (after Q27), filing vocabulary (after Q29) | WORLD_CLASS (book5)
-- **F6 UI** (Sonnet): share target, Settings panes indexed, token budget and `!important` to 0, dissolve the 08 and 10 stylesheets, statistics and utilities rows, voice dialog V1 to V8, private-by-default (after Q30) | UI_MODERNISATION (book5), SESSION_BRIEFS 58
+- **F6 UI** (Sonnet): share target, Settings panes indexed, token budget and `!important` to 0, dissolve the 08 and 10 stylesheets, statistics and utilities rows, voice dialog V1 to V8, private-by-default (Q30: setting and create flag built s10-1110; left: composer lock toggle, Private view, bulk make-all) | UI_MODERNISATION (book5), SESSION_BRIEFS 58
 - **F7 Graph and timeline** (Sonnet): `?since=` cursor, tessellation view (after Q31), dot density at 5,000, day strip and spans (after Q32) | GRAPH, TIMELINE (book5)
 - **F8 Owner go** (held): sync, offline studio, audio, desktop pet, custom domain, blind panel, Fable diagram dive (after Q34) | WORLD_CLASS rows 35 to 37, OPEN shell
 

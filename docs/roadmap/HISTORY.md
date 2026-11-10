@@ -11,6 +11,9 @@ that answers "has this been done?" before anyone starts.
 
 - Built: W18 R13 line shape (Straight, Curved, Stepped, Usual in the diagram's ... menu, `config: flowchart: curve` with `layout: dagre`; measured in Mermaid 12.2 that the default ELK layout draws identical edge paths for linear, step and no curve), R16 six more flowchart templates (20 flowcharts now), Q26 page head (a diagram's page menu 13 rows to 7, Download or print first). Already built, found by grep: R12 find (625c1f1b0), R14 (1679 slice 10, dgmdd-1109), R16 edge colour and block colour (81b7778e2, a9378c781), typed zoom field (76b77b1), spacing (b9ad76226).
 - Built: F1 `\label`, `\eqref` and `\ref` (`docMathIndex`, `docMathUse` in documents-math.js; documents.js, navigation.js and the Live widget index the page); F2 a board's pan and zoom kept past a reload per device (`wb-view-<id>`, WHITEBOARD 1340); F3 Find on a map reads topic notes (MINDMAP gap 13).
+## Moved from the plans, 2026-11-10 (s10-1110: F6 private-by-default, INBOX 1695 b)
+
+Settings, Account & security, "New notes start private" (preference `new_notes_private`, off by default) and `EntryCreate.private` (None follows the switch): the note is sealed with `manager.set_private` before its first commit, skips the filer, index and embeddings, and a note the agent's create tool makes follows the switch (`private_space.starts_private`, `seal_new`). A locked vault is a 409. Test: `tests/test_private_by_default_1695.py`. Left in INBOX 1695: (a) the composer lock toggle, (c) the Private sidebar view, (d) "Make all notes private"; the private-space flag already exists.
 
 ## Moved from the plans, 2026-11-10 (codecolour-1110: coloured code blocks)
 

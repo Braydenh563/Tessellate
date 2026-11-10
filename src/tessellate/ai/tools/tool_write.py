@@ -14,7 +14,7 @@ from tessellate.core.database import Entry, Reminder
 from sqlalchemy.orm import Session
 from tessellate.core import deps
 from sqlalchemy import func, select
-from tessellate.entry import manager
+from tessellate.entry import manager, private_space
 from tessellate.repo import relation_types
 from tessellate.repo import tags as tags_repo
 from tessellate.ai.tools.reminder_rules import held_reminder, reminder_time
@@ -26,10 +26,10 @@ def _create_note(session: Session, args: dict) -> dict:
         raise ToolError("The note content is empty")
     category = str(args.get("category") or "").strip()
     tags = [str(t) for t in args.get("tags") or []]
-    if category:
-        entry = manager.create_entry(
-            session, content, category_name=category, tags=tags, ai_confidence=100
-        )
+    sealed = private_space.starts_private()  # INBOX 1695: a model never files a note it must seal
+    if category or sealed:
+        entry = manager.create_entry(session, content, category_name=category or manager.UNCATEGORISED, tags=tags, ai_confidence=100)
+        private_space.seal_new(session, entry, sealed)
     else:
         # No category given: ask the janitor, exactly like a manual save.
         try:
