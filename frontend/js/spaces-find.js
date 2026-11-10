@@ -266,7 +266,6 @@ function spaceMenuOption({ id, name, icon, deletable, hiddenFromAll, isPrivate }
   if (isPrivate) {
     const lock = document.createElement("i");
     lock.className = "ph ph-lock-simple space-option-lock";
-    lock.setAttribute("aria-hidden", "true");
     option.appendChild(lock);
     option.title = `${name}, a private space`;
   }
@@ -286,7 +285,7 @@ function spaceMenuOption({ id, name, icon, deletable, hiddenFromAll, isPrivate }
         hiddenFromAll ? `${name} is hidden from All spaces, show it there again` : `Hide ${name} from All spaces`,
         () => toggleSpaceHidden(id, !hiddenFromAll),
       ],
-      ["ph-pencil-simple", `Rename ${name}`, () => privateSpaces("edit", { id, name, icon, isPrivate })],
+      ["ph-pencil-simple", `Rename ${name}`, () => privateSpaces("edit", id)],
       ["ph-trash", `Delete ${name}`, () => rmSpace(id)],
     ]) {
       const action = document.createElement("button");
@@ -365,7 +364,7 @@ function renderSpaceMenu() {
       // deleted: the server refuses it too, but offering a button that always
       // errors is not a UI.
       hiddenFromAll: Boolean(space.hidden_from_all),
-      isPrivate: Boolean(space.is_private),
+      isPrivate: space.is_private,
       deletable: space.id !== "default",
     }));
   }
@@ -503,25 +502,11 @@ function initSpaceSwitcher() {
 
   //: The forms are empty shells that give Enter something to submit; the click handlers below do the work.
   for (const id of ["space-create-form", "space-edit-form"]) $(id)?.addEventListener("submit", (event) => event.preventDefault());
-  $("space-edit-submit")?.addEventListener("click", async () => {
-    const id = $("space-edit-id").value;
-    const name = $("space-edit-name").value.trim();
+  //: The Edit space dialog's Save is private-spaces.js's `save`; the field marking is the lock card's.
+  $("space-edit-submit")?.addEventListener("click", () => {
     const error = $("space-edit-error");
     const fail = (message) => lockFail(message, $("space-edit-name"), error);
-    error.textContent = "";
-    $("space-edit-name").removeAttribute("aria-invalid");
-    if (!name) return fail("Give the space a name.");
-    try {
-      const was = JSON.parse($("space-edit-dialog").dataset.was || "{}");
-      const now = { name, icon: $("space-edit-icon").value };
-      await apiJson(`/spaces/${encodeURIComponent(id)}`, { method: "PUT", body: JSON.stringify(now) });
-      pushRequestUndo(`Renamed the space to “${name}”`, `/spaces/${encodeURIComponent(id)}`, "PUT", { name: was.name, icon: was.icon }, now, loadSpaces);
-      if (!(await privateSpaces("applySwitch", { id, name }))) return;
-      $("space-edit-dialog").close();
-      await loadSpaces();
-    } catch (err) {
-      fail(err.message);
-    }
+    privateSpaces("save", fail);
   });
 
   $("space-create-submit")?.addEventListener("click", async () => {
@@ -532,19 +517,17 @@ function initSpaceSwitcher() {
     const fail = (message) => lockFail(message, $("space-create-name"), error);
     error.textContent = "";
     $("space-create-name").removeAttribute("aria-invalid");
-    if (!name) {
-      fail("Give the space a name.");
-      return;
-    }
+    if (!name) return fail("Give the space a name.");
+    const icon = $("space-create-icon").value;
     try {
       const space = await apiJson("/spaces", {
         method: "POST",
-        body: JSON.stringify({ name, icon: $("space-create-icon").value, is_private: $("space-create-private")?.checked === true }),
+        body: JSON.stringify({ name, icon, is_private: !!$("space-create-private")?.checked }),
       });
       $("space-create-dialog").close();
       //: Undo moves anything put in it meanwhile to the default space, then
       //: removes it; Redo makes it again under the id the server gives next.
-      const made = { name, icon: $("space-create-icon").value };
+      const made = { name, icon };
       let live = space;
       pushUndo(
         `Made the space “${name}”`,
@@ -604,7 +587,7 @@ let editingTemplateName = null;
 // The saved list as stored: the person's own templates and the edited
 // built-ins together, which is what every PUT writes back.
 function customTemplates() {
-  return (prefsCache && prefsCache.custom_templates) || [];
+  return prefsCache?.custom_templates || [];
 }
 
 function startEditingTemplate(template) {

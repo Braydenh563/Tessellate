@@ -467,7 +467,6 @@ EXEMPT: dict[str, str] = {
     "private-spaces.js:unlock": "auth: sign-in, recovery or lock; no user data",
     "private-spaces.js:report": "auth: sign-in, recovery or lock; no user data",
     "private-spaces.js:(anonymous /private-spaces/lock)": "auth: sign-in, recovery or lock; no user data",
-    "private-spaces.js:setPrivate": "settings: the Private switch is its own reverse, behind a confirm that says what it seals or unseals",
     "diagram-suggest.js:compose": "read: asks /drafts/compose for a diagram to show as ghosts; nothing is saved until a block is placed, which the builder's own Undo takes back",
     "account-recovery.js:onclick": "inverse: restoring a backup on the lock screen snapshots the empty notebook first (POST /backups/restore), and that snapshot is the way back; there is no session to hold an Undo",
     "settings-health.js:onclick": "job: the data folder check only makes missing folders again and lists missing files; it deletes and overwrites nothing",
