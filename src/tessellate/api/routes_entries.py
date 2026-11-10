@@ -3794,6 +3794,25 @@ def restore_revision(
     return _to_out(session, entry)
 
 
+class MakeAllPrivateBody(BaseModel):
+    confirm: bool
+
+
+@router.post("/make-all-private")
+def make_all_private(body: MakeAllPrivateBody, session: Session = Depends(get_session)) -> dict:
+    """Seal every ordinary note (INBOX 1695 d). The client asks first; the
+    server refuses without `confirm` so a stray call cannot do it."""
+    if not body.confirm:
+        raise HTTPException(status_code=400, detail="Confirm first: this locks every note.")
+    sealed = manager.make_all_private(session)
+    if sealed is None:
+        raise HTTPException(status_code=409, detail="Unlock the app first: the encryption key isn't loaded.")
+    session.commit()
+    if sealed:
+        manager.scrub_private_leftovers(session)
+    return {"sealed": sealed}
+
+
 @router.post("/{entry_id}/privacy", response_model=EntryOut)
 def set_entry_privacy(
     entry_id: int, body: PrivacyBody, session: Session = Depends(get_session)

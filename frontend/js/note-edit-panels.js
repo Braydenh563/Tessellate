@@ -545,7 +545,20 @@ ${textarea.value}`));
   for (const field of [titleInput, textarea]) field.addEventListener("input", recount);
   const foot = document.createElement("div");
   foot.className = "note-edit-foot";
-  foot.append(count, row);
+  //: The margin reader, the note half (WORLD_CLASS_PLAN I2): one switch with
+  //: the document editor's, its column under the text (margin-reader.js).
+  const marginBtn = document.createElement("button");
+  marginBtn.type = "button";
+  marginBtn.className = "ghost small icon-only note-edit-margin-toggle";
+  marginBtn.setAttribute("aria-pressed", "false");
+  marginBtn.setAttribute("aria-label", "Margin reader");
+  marginBtn.title = "Show notes of yours about the paragraph you are writing, under the text";
+  marginBtn.innerHTML = '<i class="ph ph-notepad" aria-hidden="true"></i>';
+  const marginHost = document.createElement("aside");
+  marginHost.className = "doc-margin note-edit-margin hidden";
+  marginHost.setAttribute("aria-label", "Margin reader");
+  marginHost.setAttribute("aria-live", "polite");
+  foot.append(count, marginBtn, row);
   const toolbarEl = noteEditToolbar(textarea.id);
   //: Preview: reported: "there is no preview", then, once there was one,
   //: "if the formatting bar was the same, the preview button would be in
@@ -575,7 +588,7 @@ ${textarea.value}`));
   const surface = document.createElement("div");
   surface.className = "note-composer note-edit-surface";
   surface.append(titleInput, meta, toolbarEl, textarea);
-  li.append(surface, chipsHost, foot);
+  li.append(surface, marginHost, chipsHost, foot);
   //: The editor's offers (quickadd.js `noteOffersAttach`): a form
   //: opened before the bundle loads has none rather than an error.
   if (typeof noteOffersAttach === "function") noteOffersAttach(textarea, { after: surface, category: categorySelect, entryId: entry.id });
@@ -593,7 +606,8 @@ ${textarea.value}`));
   //: drawn: the owner's "the first time I try editing a note after a restart,
   //: the notes page goes blank". The mount is awaited so the strip exists
   //: when the pressed state is set.
-  Promise.resolve(mountGutterFor(textarea)).then(() => requestAnimationFrame(() => applyDocGutter()));
+  //: The same wait mounts the margin reader (the bundle holds it; margin-reader.js).
+  Promise.resolve(mountGutterFor(textarea)).then(() => requestAnimationFrame(() => { applyDocGutter(); document.dispatchEvent(new CustomEvent("note-margin-mount", { detail: { textarea, host: marginHost, button: marginBtn, entryId: entry.id } })); }));
   renderEntryAttachmentChips(textarea, chipsHost);
   textarea.addEventListener("input", () => renderEntryAttachmentChips(textarea, chipsHost, { paced: true }));
   renderRelatedWhileEditing(li, entry);

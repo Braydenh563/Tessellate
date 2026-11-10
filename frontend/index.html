@@ -14463,6 +14463,14 @@ Link to another note with [[its first few words]]."></textarea>
                 </span>
               </label>
 
+              <!-- INBOX 1695 (d): every ordinary note sealed at once, behind a confirm. -->
+              <div class="row">
+                <button id="account-make-all-private" class="ghost small" type="button"
+                  title="Lock every ordinary note. Private notes are out of Ask, chat, filing and meaning search.">
+                  <i class="ph ph-lock-key ph-lead" aria-hidden="true"></i> Make all notes private</button>
+                <span id="account-make-all-status" class="status" role="status"></span>
+              </div>
+
               <div class="row">
                 <button id="account-lock-all" class="ghost small">
                   <i class="ph ph-lock ph-lead" aria-hidden="true"></i> Lock everywhere now</button>

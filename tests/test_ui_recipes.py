@@ -4810,8 +4810,8 @@ def test_the_note_edit_form_is_one_composition() -> None:
     assert 'chip("", "category note-edit-category"' in form
     assert "meta.append(categoryChip, tagField)" in form
     assert "surface.append(titleInput, meta, toolbarEl, textarea)" in form
-    assert "li.append(surface, chipsHost, foot)" in form
-    assert "foot.append(count, row)" in form
+    assert "li.append(surface, marginHost, chipsHost, foot)" in form
+    assert "foot.append(count, marginBtn, row)" in form
     assert form.index('smallButton("Cancel"') < form.index("    saveButton\n  );")
     panels = (ROOT / "frontend" / "js" / "note-edit-panels.js").read_text(encoding="utf-8")
     assert panels.count('li.insertBefore(panel, li.querySelector(":scope > .note-edit-foot"))') == 2

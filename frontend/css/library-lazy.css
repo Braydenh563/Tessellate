@@ -780,6 +780,27 @@ body.printing-doc #doc-preview p,
   gap: var(--space-1);
 }
 
+/* The margin reader in a note's edit form: the document's column, laid under
+   the text as a row of cards (two classes outrank `.doc-margin` without
+   !important). */
+.doc-margin.note-edit-margin {
+  flex: none;
+  max-height: 14rem;
+  margin-top: var(--space-2);
+  padding: var(--space-2) 0 0;
+  border-left: 0;
+  border-top: 1px solid var(--divider);
+}
+
+.doc-margin.note-edit-margin.hidden {
+  display: none;
+}
+
+.note-edit-margin .doc-margin-cards {
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  margin-top: 0;
+}
+
 @media (max-width: 599.98px) {
 #tab-library .library-card-preview {
     -webkit-line-clamp: 3;

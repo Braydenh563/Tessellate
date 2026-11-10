@@ -703,6 +703,23 @@ $("pref-new-notes-private").addEventListener("change", (e) =>
   setPreference("new_notes_private", e.target.checked)
 );
 
+//: INBOX 1695 (d): seal every ordinary note. The confirm says what private costs.
+$("account-make-all-private").addEventListener("click", async () => {
+  const status = $("account-make-all-status");
+  status.classList.remove("error");
+  status.textContent = "";
+  const ask = "Make every note private? Private notes are locked with your password and left out of Ask, chat, filing and meaning search. You can make one readable again from its menu.";
+  if (!(await confirmDialog(ask, { confirmLabel: "Make all private" }))) return;
+  try {
+    const result = await apiJson("/entries/make-all-private", { method: "POST", body: JSON.stringify({ confirm: true }) });
+    status.textContent = `Done: ${nounCount(result.sealed, "note")} made private.`;
+    loadEntries().catch(() => {});
+  } catch (err) {
+    status.classList.add("error");
+    status.textContent = err.message || "Could not make the notes private.";
+  }
+});
+
 $("pref-auto-caption-images").addEventListener("change", (e) =>
   setPreference("auto_caption_images", e.target.checked)
 );

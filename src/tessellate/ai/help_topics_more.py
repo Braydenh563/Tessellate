@@ -1058,7 +1058,9 @@ MORE_TOPICS: list[dict] = [
             "model judges a disagreement), Answers (it answers an open question "
             "from your notes), Date (a time in the paragraph, with Make a "
             "reminder) and Related. Each card has Open and Not this; nothing is "
-            "ever written into your text. It is off until you turn it on, "
+            "ever written into your text. In a note's edit form the margin "
+            "button beside the word count is the same switch, and the cards "
+            "sit under the text. It is off until you turn it on, "
             "remembered on this device, and can be switched off everywhere in "
             "Settings, What it learned, What may run, Margin reader."
         ),
@@ -1289,7 +1291,9 @@ MORE_TOPICS: list[dict] = [
             "be deleted or brought back with Undo. An export leaves it out "
             "unless it is unlocked and you ask, and backups keep it encrypted. "
             "New notes start private (Account & security, off by default) seals "
-            "each new note from its first save, unfiled and unindexed."
+            "each new note from its first save, unfiled and unindexed. Make all "
+            "notes private, beside it, locks every ordinary note after a confirm, "
+            "and the Private row in the Notes sidebar lists them."
         ),
         "badge": {"label": "Account & security", "section": "account"},
     },
