@@ -574,3 +574,16 @@ def test_every_in_surface_picker_names_a_real_feature_and_a_real_control():
     for element_id, key in pairs:
         assert key in mm.FEATURES_BY_KEY, key
         assert f'id="{element_id}"' in page, element_id
+
+
+def test_the_chat_sheet_leaves_out_same_as_chat_model():
+    """On the Chat tab's own sheet "Same as chat model" is the Default row said
+    twice (wc2-1110); the other features keep it, and "Same as utility model"
+    stays for all."""
+    text = app_js_text()
+    start = text.index("function openFeatureModelSheet(key)")
+    body = text[start : start + 4000]
+    guard = body.index('if (key !== "chat")')
+    chat_row = body.index('"Same as chat model",')
+    utility_row = body.index('"Same as utility model",')
+    assert guard < chat_row < utility_row

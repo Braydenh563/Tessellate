@@ -886,10 +886,17 @@ the context pill is the popover with Compact inside (hidden with no model,
 so its figures were not read). Composer-quality entries (the "ah," opener,
 arrows, second person, time words, insights, variation, social acts, grounded
 claims, captions) are Brief 39's eval rows, not UI parts: open until that
-brief's numbers say so. Not driven, so still open: the Guide's thinking gap,
-the SearXNG start timing, "show them" landing on Your notes, in-text
-reference hover and style, a retry on a failed web search, the web-search
-store, the suppressed-suggestions list.
+brief's numbers say so. **Driven 2026-11-10 (wc3-1110) at 390 and 1440:**
+the Guide's thinking gap holds (6.4px head to fold, 9.4px fold to phase
+line); the SearXNG control now draws from the last known state (4017 ms to 5
+ms with the status call held 4000 ms); "show them" lands on Your notes from 4
+of 4 sub-tabs; hovering an in-text reference opened the Sources disclosure,
+now it previews and a press opens it (the mark is a white digit on a blue
+pill, 10 by 13px); the web panel's Try again holds (2 requests, 1 result).
+Still open: the web-search store (only a 60 s one-shot prefetch exists, no
+stored page text, fetch time or re-fetch control) and a per-item
+suppressed-suggestions list (Settings, Data has counts by kind and Clear all
+with Undo; no list of the items).
 
 ## The assistant catalogue, 2026-10-10
 

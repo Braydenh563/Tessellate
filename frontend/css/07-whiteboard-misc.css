@@ -7851,6 +7851,16 @@ header#top-bar:not(.tabs-wrapped):not(.tabs-centred) > #tab-bar {
 header#top-bar:not(.tabs-wrapped):not(.tabs-centred) > .header-controls {
   margin-left: 0;
 }
+/* **On a phone nothing shares the gap, so the controls take it** (the owner,
+   2026-09-27: "top bar not centred at small widths"). The strip lives in the
+   phone dock below 600, so the rule above left the controls with no auto
+   margin to pair with and the whole bar packed left (measured at 390: the
+   controls ended at x=318 of 390, 72px empty on the right, 10px on the left). */
+@media (max-width: 599.98px) {
+  header#top-bar:not(.tabs-wrapped):not(.tabs-centred) > .header-controls {
+    margin-left: auto;
+  }
+}
 @media (min-width: 600px) {
   header#top-bar.tabs-centred:not(.tabs-wrapped) > #tab-bar {
     position: absolute;

@@ -431,3 +431,17 @@ def test_the_sources_panel_can_be_given_a_subset_without_renumbering_it():
         "and number each card by its place in that list, not by its place in "
         "the subset it was handed"
     )
+
+
+def test_hovering_a_mark_does_not_open_the_sources_but_pressing_it_does():
+    """The owner (2026-10-10): "Hovering over an intext reference opens up the
+    sources dropdown." Driven: a closed disclosure was open during hover (1 of
+    1 at 390 and 1440). The peek is the hover's preview; the press opens the
+    sources, as the owner's recommendation reads."""
+    start = APP.index("function showCitedPassage(")
+    body = APP[start : APP.index("\n}\n", start)]
+    assert 'setAttribute("open"' not in body, "a hover must not open a closed disclosure"
+    assert "details:not([open])" in body or 'closest("details")' in body
+    marker = APP[APP.index("function citationMarker(") : APP.index("function scheduleCitationPeek(")]
+    click = marker[marker.index('link.addEventListener("click"') : marker.index('link.addEventListener("mouseenter"')]
+    assert 'setAttribute("open"' in click, "a press opens the sources"

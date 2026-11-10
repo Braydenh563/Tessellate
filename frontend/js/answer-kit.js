@@ -329,6 +329,10 @@ function citationMarker(g, byId, numberFor) {
   });
   link.addEventListener("click", (event) => {
     event.stopPropagation();
+    //: The press is what opens the sources (hover only previews).
+    for (const card of document.querySelectorAll(`.chat-source-card[data-note-id="${g.note_id}"]`)) {
+      card.closest("details")?.setAttribute("open", "");
+    }
     openCitationPeek(link, describe(), { pinned: true });
     //: **From the keyboard, the peek is where the keyboard goes next.** The
     //: peek is lifted to `<body>`, so Tab from a mark reaches the next mark
@@ -402,11 +406,11 @@ function showCitedPassage(noteId, passage) {
     ...document.querySelectorAll(`#raw-results li[data-id="${noteId}"]`),
   ];
   for (const card of cards) {
-    //: A closed disclosure cannot show anything, and the mark is the reader
-    //: asking to see this source: opened, and left open, because closing it
-    //: again the moment the pointer moves would be the panel flickering at
-    //: every mark passed over on the way down an answer.
-    card.closest("details")?.setAttribute("open", "");
+    //: A closed disclosure stays closed on hover (the owner, 2026-10-10:
+    //: "Hovering over an intext reference opens up the sources dropdown");
+    //: the peek already shows the passage, and a press opens the sources.
+    const fold = card.closest("details");
+    if (fold && !fold.open) continue;
     card.classList.add("is-cited");
     const box = document.createElement("p");
     box.className = "chat-source-passage";
