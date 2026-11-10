@@ -240,10 +240,21 @@ def test_how_two_notes_are_related_handed_to_a_model_as_facts(ai_client, fake_ol
 # --- what only a model can do: said plainly with none, left to its tools with one ----
 
 
-@pytest.mark.parametrize("question", ["any contradictions", "are there any conflicts in my notes", "find contradictions"])
-def test_contradictions_with_no_model_say_a_model_is_needed(client, seeded, question):
+CONTRADICTION_ASKS = ["any contradictions", "are there any conflicts in my notes", "find contradictions"]
+
+
+@pytest.mark.parametrize("question", CONTRADICTION_ASKS)
+def test_contradictions_with_no_model_are_composed_from_the_dated_notes(client, seeded, question):
+    """The composer does what the model does (second audit G11): with no model
+    the dated changes of mind are the answer, not a note that a model is needed."""
     said = stream(client, question)["text"]
-    assert "needs a model" in said and "Settings" in said, said
+    assert "needs a model" not in said and "change of mind" in said, said
+
+
+@pytest.mark.parametrize("question", CONTRADICTION_ASKS)
+def test_contradictions_with_a_model_are_handed_the_same_facts(ai_client, fake_ollama, seeded, question):
+    stream(ai_client, question, use_tools=True)
+    assert "change of mind" in prompt_of(fake_ollama), prompt_of(fake_ollama)[-700:]
 
 
 @pytest.mark.parametrize("question", ["make a document about harbor", "write a report on the launch"])

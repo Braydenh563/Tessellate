@@ -42,7 +42,7 @@ _PATTERNS = re.compile(
     r"|\b(?:recurring|repeated|repeating) (?:themes?|topics?|subjects?)\b|\bwhat do i keep (?:writing|mentioning)\b",
     re.IGNORECASE,
 )
-_CONTRADICTIONS = re.compile(r"\b(?:contradict\w*|conflicting notes?|changed my mind|change of mind|disagree\w*)\b", re.IGNORECASE)
+_CONTRADICTIONS = re.compile(r"\b(?:contradict\w*|conflicting notes?|changed my mind|change of mind|disagree\w*)\b|\b(?:conflicts?|disagreements?) (?:in|between|among|across) (?:my |the |these )?notes\b", re.IGNORECASE)
 _FORGETTING = re.compile(r"\bwhat (?:am i|have i been|did i) forget\w*\b|\bwhat have i forgotten\b|\banything (?:i(?:'m| am)|i have) forgett\w+\b", re.IGNORECASE)
 
 
