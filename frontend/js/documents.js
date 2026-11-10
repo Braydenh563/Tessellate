@@ -2311,15 +2311,21 @@ function docTemplateFill(template, typedTitle = "") {
     String(now.getMonth() + 1).padStart(2, "0"),
     String(now.getDate()).padStart(2, "0"),
   ].join("-");
-  const fill = (text) => (text || "").replaceAll("{{date}}", date).replaceAll("{{isodate}}", iso);
+  const time = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const fill = (text) => (text || "").replaceAll("{{date}}", date).replaceAll("{{isodate}}", iso).replaceAll("{{time}}", time);
   //: A template's gallery label and the title it gives the document are not
   //: always the same words: "Daily" names the choice in the gallery, and the
   //: document it makes is called by its day (`docTitle`, section 14).
   //: A title the person already typed is the name they chose (audit 1028 U34).
   const title = typedTitle || (template.id === "blank" ? docNextName() : fill(template.docTitle || template.title));
+  //: `{{cursor}}` is where the caret lands (the note templates' word for it): taken out here, its offset handed back as `cursor`
+  //: (-1 for none) for the caller to place; a section's fill keeps only `content`.
+  const text = fill(template.content).replaceAll("{{title}}", title);
+  const cursor = text.indexOf("{{cursor}}");
   return {
     title,
-    content: fill(template.content).replaceAll("{{title}}", title),
+    content: text.replaceAll("{{cursor}}", ""),
+    cursor,
     //: A code template (the p5 sketch) makes a document of its own type.
     ...(template.fileType ? { file_type: template.fileType } : {}),
   };
@@ -2394,7 +2400,7 @@ async function createDocument(template = null) {
   //: left behind empty: its title carries into the template's document (U34).
   const started = currentDoc && docsMadeThisSession.has(currentDoc.id) && !docText().trim() ? $("doc-title").value.trim() : "";
   await docDropIfUntouched(null, { titled: true });
-  const body = docTemplateFill(template, started && !docIsUntouched(started, "") ? started : "");
+  const { cursor, ...body } = docTemplateFill(template, started && !docIsUntouched(started, "") ? started : "");
   const doc = await apiJson("/documents", {
     method: "POST",
     body: JSON.stringify(body),
@@ -2402,6 +2408,12 @@ async function createDocument(template = null) {
   loadCaptureDocuments(); // so Capture can attach to it straight away
   await loadDocuments(doc.id);
   offerCreateUndo(doc);
+  //: A template with a `{{cursor}}` puts the caret there; without one the title is selected to be typed over.
+  if (cursor >= 0 && docSurface()) {
+    docSurface().focus?.();
+    docSurface().setSelection(cursor);
+    return;
+  }
   $("doc-title").focus();
   $("doc-title").select();
 }
@@ -4356,45 +4368,55 @@ function docRenderBody(container, raw) {
   //: and each piece's own `renderMarkdown` would see only its half.
   const footnotes = mdFootnotePrepare(String(raw ?? "").split("\n"));
   const text = footnotes.lines.join("\n");
-  //: Equation labels over the whole document too: `\eqref{k}` above its `\label{k}` names the number below it (OPEN F1).
-  window.docMathRender?.labels.use(window.docMathRender.labels.index(raw));
-  const blocks = docColumnsBlocks(text);
-  if (!blocks.length) {
-    container.replaceChildren();
-    docRenderFlow(container, text);
-    mdFootnotesFinish(container, footnotes.notes);
-    //: Once more over the whole page: the flow is rendered in pieces (around
-    //: block embeds and columns), and a `[TOC]` has to list every heading,
-    //: not only the ones in its own piece.
-    mdFillTocs(container);
-    return;
-  }
-  container.replaceChildren();
-  //: The line an offset is on, for the pieces' `lineBase`.
-  const lineOf = (offset) => {
-    let count = 0;
-    for (let i = text.indexOf("\n"); i !== -1 && i < offset; i = text.indexOf("\n", i + 1)) count += 1;
-    return count;
-  };
-  let at = 0;
-  for (const block of blocks) {
-    if (block.from > at) docRenderFlow(container, text.slice(at, block.from), lineOf(at));
-    const box = document.createElement("div");
-    box.className = `doc-cols md-cols md-cols-${block.columns.length}`;
-    box.dataset.srcLine = String(block.openLine);
-    box.style.setProperty("--doc-cols", String(Math.max(1, block.columns.length)));
-    for (const column of block.columns) {
-      const col = document.createElement("div");
-      col.className = "doc-col";
-      docRenderFlow(col, column.text, lineOf(column.from));
-      box.appendChild(col);
+  const pieces = () => {
+    const blocks = docColumnsBlocks(text);
+    if (!blocks.length) {
+      container.replaceChildren();
+      docRenderFlow(container, text);
+      mdFootnotesFinish(container, footnotes.notes);
+      //: Once more over the whole page: the flow is rendered in pieces (around
+      //: block embeds and columns), and a `[TOC]` has to list every heading,
+      //: not only the ones in its own piece.
+      mdFillTocs(container);
+      return;
     }
-    container.appendChild(box);
-    at = block.to;
+    container.replaceChildren();
+    //: The line an offset is on, for the pieces' `lineBase`.
+    const lineOf = (offset) => {
+      let count = 0;
+      for (let i = text.indexOf("\n"); i !== -1 && i < offset; i = text.indexOf("\n", i + 1)) count += 1;
+      return count;
+    };
+    let at = 0;
+    for (const block of blocks) {
+      if (block.from > at) docRenderFlow(container, text.slice(at, block.from), lineOf(at));
+      const box = document.createElement("div");
+      box.className = `doc-cols md-cols md-cols-${block.columns.length}`;
+      box.dataset.srcLine = String(block.openLine);
+      box.style.setProperty("--doc-cols", String(Math.max(1, block.columns.length)));
+      for (const column of block.columns) {
+        const col = document.createElement("div");
+        col.className = "doc-col";
+        docRenderFlow(col, column.text, lineOf(column.from));
+        box.appendChild(col);
+      }
+      container.appendChild(box);
+      at = block.to;
+    }
+    if (at < text.length) docRenderFlow(container, text.slice(at), lineOf(at));
+    mdFootnotesFinish(container, footnotes.notes);
+    mdFillTocs(container);
+  };
+  //: Equation labels over the whole document too: `\eqref{k}` above its `\label{k}` names the number below it (OPEN F1).
+  const labels = window.docMathRender?.labels;
+  labels?.use(labels.index(raw));
+  //: Held while the pieces render: a column's own render must not re-index its text alone, or `\eqref` to another column reads (?).
+  if (labels) labels.held = true;
+  try {
+    pieces();
+  } finally {
+    if (labels) labels.held = false;
   }
-  if (at < text.length) docRenderFlow(container, text.slice(at), lineOf(at));
-  mdFootnotesFinish(container, footnotes.notes);
-  mdFillTocs(container);
 }
 
 //: `![[Document#^an-id]]` on its own line (DOCUMENTS_PLAN Phase 4 item 2).

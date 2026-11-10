@@ -1362,6 +1362,12 @@ for (const type of ["focusin", "input", "click"]) {
   });
 }
 
+//: A press on Private before quick-note.js has loaded (it is preloaded 3 s after boot) loads it and flips the lock itself:
+//: its own listener is attached after this click has gone by. Once `lock` exists its listener takes every press.
+$("entry-private")?.addEventListener("click", async (event) => {
+  if (!createNoteSafely.lock && (await ensureModule("quickNote"))) createNoteSafely.lock.flip(event.target.closest("button"), "captureDraftPrivate");
+});
+
 //: Open questions (WORLD_CLASS_PLAN I3, row 7): the Notes, Questions view is
 //: questions-view.js, lazy (INBOX 688 moved it to make room for the Ask box's
 //: answer switch). The Ask scope it sets stays here: `askQuestion` reads it.
