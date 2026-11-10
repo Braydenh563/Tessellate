@@ -1252,13 +1252,6 @@ async function refreshSearxngHost() {
     $("searxng-host-status").textContent = info.detail || "";
     return;
   }
-  // Which way it'll be run, so "a few minutes" isn't a surprise.
-  $("searxng-backend").textContent =
-    info.backend === "docker"
-      ? "Docker is installed, so it runs as a container."
-      : "Docker isn't installed, so it runs from its own virtualenv instead. " +
-        "The first start takes a few minutes to download and install.";
-
   // An install is minutes long and runs in the background, poll it so the
   // step text keeps moving instead of the screen looking stuck.
   const bar = $("searxng-install-progress");
@@ -1266,7 +1259,9 @@ async function refreshSearxngHost() {
     const stage = info.install_stage || 1;
     const stages = info.install_stages || 5;
     badge.textContent = `Installing… ${stage}/${stages}`;
-    badge.className = "chip";
+    badge.className = "chip item-label";
+    start.classList.remove("ghost");
+    stop.classList.add("ghost");
     start.disabled = true;
     stop.disabled = true;
     $("searxng-host-status").classList.remove("error");
@@ -1292,38 +1287,19 @@ async function refreshSearxngHost() {
   }
   bar.classList.add("hidden");
   $("searxng-install-line").textContent = "";
-  if (info.install_error) {
-    $("searxng-host-status").classList.add("error");
-    $("searxng-host-status").textContent = info.install_error;
-  } else if (info.detail) {
-    // e.g. "Docker isn't running, so it'll be set up in a virtualenv", an
-    // explanation of what will happen, not a failure.
-    $("searxng-host-status").classList.remove("error");
-    $("searxng-host-status").textContent = info.detail;
-  } else {
-    // Always say something current. This line used to keep whatever the last
-    // poll wrote, so a finished install left "Installing SearXNG…" sitting
-    // under a badge reading "Stopped", reported with a photo, and the
-    // install had in fact completed.
-    $("searxng-host-status").classList.remove("error");
-    $("searxng-host-status").textContent =
-      info.state === "stopped"
-        ? "Installed and ready: press Start SearXNG."
-        : info.state === "running"
-          ? "Running."
-          : "";
-  }
-  const running = info.state === "running" && info.responding;
-  badge.textContent = running
-    ? "Running"
-    : info.state === "running"
-      ? "Starting…"
-      : info.state === "stopped"
-        ? "Stopped"
-        : "Not installed";
-  badge.className = `chip item-label${running ? " is-ok" : ""}`;
+  const view = refreshSearxngHost.view(info);
+  const note = $("searxng-host-status");
+  note.classList.toggle("error", Boolean(info.install_error));
+  note.textContent = view.status;
+  $("searxng-backend").textContent = view.backend;
+  const running = view.running;
+  badge.textContent = view.badge;
+  badge.className = `chip item-label${view.running ? " is-ok is-live" : ""}`;
   start.disabled = running;
   stop.disabled = info.state === "absent";
+  // The primary action is the one that fits: Stop while it runs, Start when not.
+  start.classList.toggle("ghost", running);
+  stop.classList.toggle("ghost", !running);
   setLabel(start, info.state === "absent" ? "ph:play Install & start" : "ph:play Start SearXNG");
   // Keep polling while it's starting, so "Starting…" can't stick forever with
   // no way to tell whether anything is still happening.
@@ -1338,13 +1314,33 @@ async function refreshSearxngHost() {
   fold.classList.toggle("hidden", !said || running);
   if (said) $("searxng-output").textContent = said;
 
-  // The port, answered rather than suggested. Only three states matter, and
-  // only one of them is the user's problem to go and solve.
-  const port = info.port;
   const portLine = $("searxng-port");
-  portLine.textContent = port ? port.detail : "";
-  portLine.classList.toggle("error", Boolean(port && !port.free && !port.held_by_searxng));
+  portLine.textContent = view.port;
+  portLine.classList.toggle("error", view.portError);
 }
+
+// What the card says for one status payload (INBOX 1734). While our own
+// instance answers, the setup lines (how it will run, who held the default
+// port before it moved) are stale and read like a failure: a running card is
+// one calm line. A property of its caller, not a global.
+refreshSearxngHost.view = (info) => {
+  const running = info.state === "running" && Boolean(info.responding);
+  const badges = { running: "Starting…", stopped: "Stopped" };
+  const view = { running, badge: running ? "Running" : badges[info.state] || "Not installed", backend: "", port: "", portError: false, status: "" };
+  if (running) {
+    const port = new URL(info.url).port;
+    view.status = `Running${port ? ` on port ${port}` : ""}, ${info.backend === "docker" ? "in Docker" : "from its own virtualenv"}.`;
+    return view;
+  }
+  view.backend = info.backend === "docker"
+    ? "Docker is installed, so it runs as a container."
+    : "Docker isn't installed, so it runs from its own virtualenv instead. The first start takes a few minutes to download and install.";
+  const port = info.port;
+  view.port = port ? port.detail : "";
+  view.portError = Boolean(port && !port.free && !port.held_by_searxng);
+  view.status = info.install_error || info.detail || (info.state === "stopped" ? "Installed and ready: press Start SearXNG." : "");
+  return view;
+};
 
 // ---- from status.js (search-boot-1005): applyBackendChoice ----
 // Moved whole. Every use is in this file, so it is not needed before this file loads.

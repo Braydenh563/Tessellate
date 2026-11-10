@@ -270,3 +270,41 @@
   margin-inline: calc(-1rem - 1px);
   padding-inline: calc(1rem + 1px);
 }
+
+/* A live status label (INBOX 1734: the Running badge on the SearXNG card): the
+   label recipe's ok tint with a dot before the words, so "running" reads as a
+   state rather than a green tag. The dot is the ok ink the recipe's icon takes,
+   ringed by a softer ring of the same colour; the words stay in the ink, which
+   is what holds 4.5:1 on the tint. */
+.item-label.is-live::before {
+  content: "";
+  flex: none;
+  inline-size: var(--space-2);
+  block-size: var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--ok);
+  box-shadow: 0 0 0 var(--space-1) color-mix(in srgb, var(--ok) 22%, transparent);
+  margin-inline: var(--space-1);
+}
+
+/* The run-it-yourself disclosure is the last row of the SearXNG card (INBOX
+   1734: it sat in a card of its own, its open body 6px under the summary). It
+   is set off by a hairline like the autostart row above it, and its open body
+   is inset past the caret, with room under the summary. */
+.searxng-host > .searxng-diy {
+  padding: var(--space-3) 0 0;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  background: none;
+}
+/* The two lines that are only filled while it is not running; empty, they
+   would still take a flex gap each (two blank rows under the intro). */
+.searxng-host > p:empty {
+  display: none;
+}
+.searxng-host > .searxng-diy[open] > :not(summary) {
+  margin-inline-start: var(--space-6);
+}
+.searxng-host > .searxng-diy[open] > summary {
+  margin-bottom: var(--space-3);
+}
