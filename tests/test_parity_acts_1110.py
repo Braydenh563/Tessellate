@@ -235,3 +235,12 @@ def test_every_composer_act_here_maps_to_the_tool_the_model_has():
 
     for intent, tool in (("delete_category", "delete_category"), ("merge_categories", "merge_categories"), ("delete_tag", "delete_tag"), ("edit_text", "edit_note"), ("to_reminders", "set_reminder")):
         assert act_registry.ACT_TOOLS[intent] == tool and act_registry.ACTS[intent].confirm and tool in tools.TOOLS
+
+
+@pytest.mark.parametrize("sentence", ["turn my todo note into reminders for friday at 9am", "make reminders from my todo note for friday at 9am"])
+def test_a_note_titled_todo_is_found_by_that_word(client, session, sentence):
+    manager.create_entry(session, "# Todo\n\n- [ ] book the venue\n- [ ] email the caterer\n", category_name="Work")
+    session.commit()
+    card = card_of(stream(client, sentence))
+    assert "Todo" in json.dumps(card)
+    assert "2 reminders" in json.dumps(card) or "reminder" in json.dumps(card)
