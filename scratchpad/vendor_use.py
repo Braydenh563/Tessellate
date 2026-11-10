@@ -595,6 +595,7 @@ def codemirror_report(scripts: dict[str, str]) -> Report:
     unbundled = sorted(n for n in pkg if not any(b == n or b.startswith(n + "/") for b in bundled))
     notes = [
         f"{len(pkg)} packages pinned in package.json; not bundled: {', '.join(unbundled) or 'none'}",
+        "static highlighting of fenced code blocks (code-colour.js) uses highlight.highlightTree and classHighlighter",
         "not vendored at all: " + ", ".join(NOT_VENDORED),
     ]
     return Report("codemirror", "CodeMirror 6", available, called, groups, notes)

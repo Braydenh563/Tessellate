@@ -140,6 +140,8 @@ CSS_FILES = [
     CSS_DIR / "math-editor-lazy.css",
     #: Mermaid diagrams: the figure, its placeholder and the hidden frame (mermaid-draw.js).
     CSS_DIR / "mermaid-lazy.css",
+    #: Colour for a fenced code block (code-colour.js, lazy `codeColour`).
+    CSS_DIR / "code-colour-lazy.css",
     #: The block pane of a diagram (diagram-builder.js, `LAZY_MODULES.diagramBuilder`, 1546 P2).
     CSS_DIR / "diagram-lazy.css",
     #: The Writing room: the kind select's room and the diagram preview (lazy `writingDesk`, UX review 1031).

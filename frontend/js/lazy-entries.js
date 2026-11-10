@@ -71,6 +71,8 @@ Object.assign(LAZY_MODULES, {
   //: Every ```mermaid fence, in documents, chat and Ask (mermaid-draw.js). The 5 MB
   //: library is not here: it loads inside the hidden frame mermaid-draw.js creates.
   mermaid: ["/css/mermaid-lazy.css", "/js/mermaid-draw.js"],
+  //: Colour for a fenced code block that names a language (code-colour.js; the vendored CodeMirror parsers).
+  codeColour: ["/css/code-colour-lazy.css", "/js/code-colour.js"],
   //: Settings, Packages, with the package steps it shares with Settings, Tasks
   //: (task-steps.js); named here, not in app.js, whose gzip cap is tight.
   packages: ["/js/task-steps.js", "/js/settings-packages.js"],
