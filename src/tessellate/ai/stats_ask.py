@@ -143,6 +143,10 @@ def _period(text: str) -> str:
     return "week" if re.search(r"\bweek\b", text) else "month"
 
 
+#: A yes or no leads only when the question asked one ("am I", "did I", "have I").
+_YES_NO = re.compile(r"^(?:am|are|did|have|has|was|were|do|is) (?:i|we|my)\b")
+
+
 def _compare(text: str, session: Session, now: datetime, first_day: int) -> StatAnswer:
     if _period(text) == "week":
         review = ns.week_review(session, now, first_day)
@@ -168,7 +172,7 @@ def _compare(text: str, session: Session, now: datetime, first_day: int) -> Stat
     diff = here["notes"] - before["notes"]
     if diff:
         verdict_text += f" That is {abs(diff)} {'more' if diff > 0 else 'fewer'} {'note' if abs(diff) == 1 else 'notes'}."
-    lead = "Yes. " if diff > 0 else "About the same. " if diff == 0 else "Not so far. "
+    lead = ("Yes. " if diff > 0 else "About the same. " if diff == 0 else "Not so far. ") if _YES_NO.match(text) else ""
     return StatAnswer(
         "compare",
         f"{lead}{verdict_text}",
@@ -192,13 +196,15 @@ def _summary(text: str, session: Session, now: datetime, first_day: int) -> Stat
     text_out = f"{label}: {', '.join(pieces)}."
     if here["tags"]:
         tag, n = here["tags"].most_common(1)[0]
-        text_out += f" Most used tag: {tag} ({ns._plural(n, 'note')})."
+        #: A tag on one or two notes is not a finding.
+        if n >= 3:
+            text_out += f" Most used tag: {tag} ({ns._plural(n, 'note')})."
     #: Whole days, as `_compare`: the same point is the same day, not the same hour.
     before = _span(session, previous, min(previous + timedelta(days=(now.date() - start.date()).days + 1), start))
     gap = here["notes"] - before["notes"]
     same = "week" if _period(text) == "week" else "month"
     if gap:
-        text_out += f" That is {abs(gap)} {'more' if gap > 0 else 'fewer'} than by the same point last {same}."
+        text_out += f" That is {ns._plural(abs(gap), 'note')} {'more' if gap > 0 else 'fewer'} than by the same point last {same}."
     return StatAnswer(
         "summary",
         text_out,
@@ -210,12 +216,61 @@ def _summary(text: str, session: Session, now: datetime, first_day: int) -> Stat
     )
 
 
+_LINKS = re.compile(r"\b(?:how many|number of|count)\b.*\blinks?\b|\blinks? (?:count|total)\b")
+_ORPHANS = re.compile(r"\borphans?\b|\bunlinked\b|\bno links?\b|not linked")
+_STREAK = re.compile(r"\bstreak\b")
+_AVERAGE = re.compile(r"\b(?:average|avg|mean|typical)\b.*\b(?:words?|length|long)\b|\bwords? per note\b")
+_BUSIEST = re.compile(r"\bbusiest\b|\bmost active\b|\bwhich day\b")
+_YESTERDAY = re.compile(r"^(?:did|have) i (?:write|wrote|written|make|made|add|added|take|took)\b.*\byesterday\b")
+_UNUSED = re.compile(r"\b(?:haven.?t|have not|never|not) (?:i )?(?:used|tried|opened)\b|\bunused\b|\bwhat (?:do|did) i(?: not| never)? (?:use|used)\b.*\bnever\b")
+_NOUN = re.compile(r"\b(?:tags?|categor(?:y|ies)|folders?|spaces?)\b")
+
+
+def _page_figure(text: str, session: Session, now: datetime, usage_summary: dict) -> StatAnswer | None:
+    """What the Statistics page shows and the box used to answer with its
+    capability line (G9): links, orphans, streak, average, busiest day,
+    yesterday, features not used."""
+    if _LINKS.search(text) and not _ORPHANS.search(text):
+        n = ns._notebook_block(session, now)["links"]
+        return StatAnswer("links", f"You have {ns._plural(n, 'link')} between your notes.", [{"label": "links", "count": n}])
+    if _ORPHANS.search(text):
+        return ns._orphans(session)
+    if _STREAK.search(text):
+        from tessellate.ai import activity_new
+
+        return activity_new.streak(session, now, False)
+    if _AVERAGE.search(text):
+        block = ns._notebook_block(session, now)
+        if not block["notes"]:
+            return StatAnswer("average", "You have no notes yet.")
+        each = round(block["words"] / block["notes"])
+        return StatAnswer("average", f"Your notes average {ns._plural(each, 'word')} each, across {ns._plural(block['notes'], 'note')}.", [{"label": "words per note", "count": each}])
+    if _BUSIEST.search(text):
+        return ns._busiest(session)
+    if _YESTERDAY.search(text):
+        start = _midnight(now.date() - timedelta(days=1), now.tzinfo)
+        n = _span(session, start, start + timedelta(days=1))["notes"]
+        return StatAnswer("yesterday", f"Yes, {ns._plural(n, 'note')} yesterday." if n else "No notes yesterday.", [{"label": "yesterday", "count": n}])
+    if _UNUSED.search(text):
+        names = [_feature(n) for n in (usage_summary.get("unused") or [])]
+        days = usage_summary.get("unused_days") or 90
+        if not names:
+            return StatAnswer("unused", f"You have used every feature in the last {days} days.")
+        return StatAnswer("unused", f"Not used in {days} days: {', '.join(names[:8])}.", [{"label": n, "count": 0} for n in names[:8]])
+    return None
+
+
 def ask(question: str, session: Session, now: datetime, usage_summary: dict, first_day: int = 0) -> StatAnswer:
     """The answer to one question about the page's figures; never raises for
     a question it cannot count, it says what it can."""
     raw = (question or "").strip().lower()
     text = ns._despell(raw)
-    if _USAGE.search(text):
+    figure = _page_figure(text, session, now, usage_summary)
+    if figure is not None:
+        return figure
+    #: A noun the notebook counts (tag, category) wins over the usage verb:
+    #: "my most used tag" is a tag question.
+    if _USAGE.search(text) and not _NOUN.search(text):
         return _usage(usage_summary)
     ends = _ends(text, raw, session, now)
     if ends is not None:

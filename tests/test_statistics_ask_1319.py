@@ -69,11 +69,14 @@ def test_writing_more_than_last_month_compares_the_same_days(seeded):
 
 
 def test_a_month_summary_has_notes_words_top_tag_and_reminders(seeded):
+    #: G9 (1110): the top-tag clause needs three notes, so one more "work" note is added here.
+    seeded.add(Entry(content="one two three", tags=json.dumps(["work"]), created_at=_day(10, 6)))
+    seeded.commit()
     answer = _ask(seeded, "summarise my month")
     assert answer.kind == "summary"
-    assert "4 notes" in answer.text and "12 words" in answer.text
+    assert "5 notes" in answer.text and "15 words" in answer.text
     assert "1 reminder done" in answer.text
-    assert "work" in answer.text or "idea" in answer.text
+    assert "Most used tag: work (3 notes)" in answer.text
 
 
 def test_the_week_can_be_asked_too(seeded):
@@ -187,3 +190,44 @@ def test_a_count_over_a_past_window_is_in_the_past_tense(seeded, monkeypatch):
     monkeypatch.setattr(notebook_stats, "utcnow", lambda: NOW)
     assert notebook_stats.answer("how many notes did I write last week", seeded).text.startswith("You wrote ")
     assert notebook_stats.answer("how many notes did I write today", seeded).text.startswith("You have written ")
+
+
+# --- Composer audit 2, G9 (1110) ---
+
+_VERDICTS = ("Yes", "Not so far", "About the same")
+
+
+def test_a_tag_noun_beats_the_usage_verb(seeded):
+    answer = _ask(seeded, "what's my most used tag")
+    assert answer.kind != "usage"
+    assert "Nothing is counted" not in answer.text
+
+
+@pytest.mark.parametrize(
+    "question,needle",
+    [
+        ("how many links", "link"),
+        ("how many orphans", "linked"),
+        ("what's my streak", "streak"),
+        ("average words per note", "3 words"),
+        ("what's my busiest day", "most on"),
+        ("did I write yesterday", "yesterday"),
+        ("what haven't I used", "chat"),
+    ],
+)
+def test_page_figures_are_answered_not_the_capability_line(seeded, question, needle):
+    answer = stats_ask.ask(question, seeded, NOW, {**USAGE, "unused": ["tab:chat", "tab:maps"]})
+    assert answer.kind != "none", answer.text
+    assert needle in answer.text.lower()
+
+
+def test_a_comparison_leads_with_yes_or_no_only_when_asked_so(seeded):
+    assert not _ask(seeded, "compare this month to last month").text.startswith(_VERDICTS)
+    assert not _ask(seeded, "this week vs last week").text.startswith(_VERDICTS)
+    assert _ask(seeded, "am I writing more than last month").text.startswith(_VERDICTS)
+
+
+def test_the_summary_gap_names_notes_and_skips_a_single_use_tag(seeded):
+    text = _ask(seeded, "summarise my month").text
+    assert "note more than by the same point last month" in text
+    assert "(1 note)" not in _ask(seeded, "summarise my week").text

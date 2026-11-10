@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8044, frontend ids 2655, CSS sections 523, backend routes 664, backend modules 9706, test files 2374, tests 19805, plan headings 1001, app scripts 28, boot scripts 37, script files 272.
+Counts: frontend functions 8044, frontend ids 2655, CSS sections 523, backend routes 664, backend modules 9707, test files 2374, tests 19809, plan headings 1001, app scripts 28, boot scripts 37, script files 272.
 
 ## Frontend functions (8044)
 
@@ -13345,7 +13345,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9706)
+## Backend modules (9707)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -18452,11 +18452,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `read` | src/tessellate/ai/starter_acts.py:64 |
 | `step` | src/tessellate/ai/starter_acts.py:469 |
 
-### src/tessellate/ai/stats_ask.py (15)
+### src/tessellate/ai/stats_ask.py (16)
 
 | Name | File:line |
 |---|---|
-| `_compare` | src/tessellate/ai/stats_ask.py:146 |
+| `_compare` | src/tessellate/ai/stats_ask.py:150 |
 | `_end_note` | src/tessellate/ai/stats_ask.py:52 |
 | `_ends` | src/tessellate/ai/stats_ask.py:59 |
 | `_feature` | src/tessellate/ai/stats_ask.py:124 |
@@ -18466,11 +18466,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_name` | src/tessellate/ai/stats_ask.py:97 |
 | `_named_month` | src/tessellate/ai/stats_ask.py:101 |
 | `_next_month` | src/tessellate/ai/stats_ask.py:93 |
+| `_page_figure` | src/tessellate/ai/stats_ask.py:229 |
 | `_period` | src/tessellate/ai/stats_ask.py:142 |
 | `_span` | src/tessellate/ai/stats_ask.py:72 |
-| `_summary` | src/tessellate/ai/stats_ask.py:179 |
+| `_summary` | src/tessellate/ai/stats_ask.py:183 |
 | `_usage` | src/tessellate/ai/stats_ask.py:131 |
-| `ask` | src/tessellate/ai/stats_ask.py:213 |
+| `ask` | src/tessellate/ai/stats_ask.py:263 |
 
 ### src/tessellate/ai/study.py (41)
 
@@ -25595,7 +25596,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19805)
+## Tests (19809)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27606,7 +27607,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_static_compression.py | 6 |
 | tests/test_static_freshness.py | 5 |
 | tests/test_static_precompressed.py | 7 |
-| tests/test_statistics_ask_1319.py | 15 |
+| tests/test_statistics_ask_1319.py | 19 |
 | tests/test_statistics_left_out_1029.py | 5 |
 | tests/test_stats_fit_1319.py | 1 |
 | tests/test_stats_interactive_1319.py | 8 |
