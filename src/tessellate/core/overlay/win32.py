@@ -701,15 +701,30 @@ def _read_window_why(w: Any, hwnd: Any, own_pid: int, ignore: Any, monitors_: li
     return info, why or "perch", rect
 
 
+def _clip_to_monitor(rect: tuple[int, int, int, int], monitors_: list[tuple[int, int, int, int]], zoomed: bool) -> tuple[int, int, int, int]:
+    """A maximised window's rectangle cut to the monitor it mostly covers: its invisible resize border hangs off the
+    screen (top -8 on Windows 11), and a hang from that top would sit above the screen (INBOX 1721 b). Others are as read."""
+    if not zoomed:
+        return rect
+    def overlap(a: tuple[int, int, int, int]) -> int:
+        return max(0, min(rect[2], a[2]) - max(rect[0], a[0])) * max(0, min(rect[3], a[3]) - max(rect[1], a[1]))
+    best = max(monitors_, key=overlap, default=None)
+    if best is None or not overlap(best):
+        return rect
+    return max(rect[0], best[0]), max(rect[1], best[1]), min(rect[2], best[2]), min(rect[3], best[3])
+
+
 def _classify(w: Any, hwnd: Any, own_pid: int, ex: int, rect: Any, monitors_: list[tuple[int, int, int, int]]) -> "tuple[WinInfo, str | None]":
     """A framed window as a WinInfo, and the first reason it is no place to stand (None: it is one)."""
     pid = wintypes.DWORD(0)
     w.user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
+    zoomed = bool(w.user32.IsZoomed(hwnd))  # asked once: the scan's call budget is pinned (test_overlay_roam_runner)
+    rect = _clip_to_monitor(rect, monitors_, zoomed)  # GetWindowRect (no DWM frame) runs 8 px past the screen on each side
     full = any(rect[0] <= a[0] and rect[2] >= a[2] and rect[1] <= a[1] and rect[3] >= a[3] for a in monitors_)
     app = bool(ex & WS_EX_APPWINDOW)  # a tool window that asks for a taskbar button is a real app window (Electron, some browsers)
     reasons = (
         ("tool window", bool(ex & WS_EX_TOOLWINDOW) and not app), ("own process", int(pid.value) == own_pid),
-        ("maximised", bool(w.user32.IsZoomed(hwnd))), ("fills a monitor", full),
+        ("maximised", zoomed), ("fills a monitor", full),
         ("no title", not w.user32.GetWindowTextLengthW(hwnd)),
         ("owned popup", not _alt_tab_listed(w, hwnd)),  # T7: not the window Alt-Tab lists, it still hides what is under it
     )

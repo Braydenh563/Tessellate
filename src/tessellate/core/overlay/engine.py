@@ -2380,8 +2380,10 @@ class Engine:
                 self.goal = (self.goal[0] + dx, self.goal[1])
 
     def _grip(self, p: Perch) -> float:
-        """The y the hands take hold at on `p`: a title bar's bottom, or a bottom edge itself."""
-        return p.top + (TITLE_BAR * self._scale() if p.kind in ("top", "bar") else 0.0)
+        """The y the hands take hold at on `p`: a floating window's title-bar bottom, or the edge itself (a bottom edge,
+        and a maximised window's top: its tab strip or title bar is the screen's top, INBOX 1721 b, hands about 30 px
+        too low with the title-bar offset)."""
+        return p.top + (TITLE_BAR * self._scale() if p.kind == "top" else 0.0)
 
     def _lift(self) -> float:
         """How far the frame's top is above the hands that hold an edge."""
@@ -2698,7 +2700,8 @@ class Engine:
         for p in self.windows + self.hangs:
             lo, hi = max(left + w / 2, p.left + HANG_HANDS * w), min(right - w / 2, p.right - HANG_HANDS * w)
             edge = self._grip(p)
-            if hi - lo < 0.2 * w or p.top < top or edge - self._lift() < top or edge > self.floor_y(m) - self._lift():
+            # A bar sits on the work area's top, so its frame rises above it like the screen-top hang (`_hang`).
+            if hi - lo < 0.2 * w or p.top < top or (edge - self._lift() < top and p.kind != "bar") or edge > self.floor_y(m) - self._lift():
                 continue
             found.append((p, lo, hi))
         return found
