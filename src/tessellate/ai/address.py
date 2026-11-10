@@ -37,7 +37,7 @@ _SET = re.compile(
     r"(?:(?P<call>call me|i go by|i'm called|i am called|i'm known as)|(?P<is>my name is|my name's|change my name to|set my name to|my name should be))"
     #: The name runs to the end; its trailing stops and spaces are cut in code, not by a lazy group
     #: before `\s*[.!]*$`, which retries every split of a long blank run (CodeQL, polynomial regex).
-    r"\s+(?P<name>.+)$",
+    r"\s+(?P<name>\S.*)$",
     re.IGNORECASE,
 )
 _ASK = re.compile(
