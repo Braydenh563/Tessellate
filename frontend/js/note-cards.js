@@ -347,37 +347,6 @@ function noteIsMeeting(entry) {
   return entry.tags.includes("meeting") || /^meeting$/i.test(entry.properties?.type?.[0] || "");
 }
 
-function favouriteButton(entry) {
-  //: `.favourite-btn` names the control for the phone's swipe (`initRowSwipe`),
-  //: which presses it rather than carrying a second copy of the toggle.
-  const button = smallButton(
-    "ph:star",
-    entry.pinned ? "Remove from Favourites" : "Add to Favourites (also floats it to the top)",
-    async () => {
-      const was = Boolean(entry.pinned);
-      await api(`/entries/${entry.id}`, {
-        method: "PUT",
-        body: JSON.stringify({ pinned: !was }),
-      });
-      //: On the global stack, because a mis-click here is silent: the star
-      //: changes shape and the note moves to the top of the list, and there
-      //: was nothing that put it back. Reported as the undo stack being
-      //: "significantly outdated and dont register a lot of actions".
-      pushEntryPutUndo(
-        entry.id,
-        was ? "Removed a favourite" : "Added a favourite",
-        { pinned: was },
-        { pinned: !was }
-      );
-      await loadEntries();
-    }
-  );
-  button.classList.add("favourite-btn");
-  button.classList.toggle("is-favourite", Boolean(entry.pinned));
-  button.setAttribute("aria-pressed", Boolean(entry.pinned));
-  return button;
-}
-
 // One entry card, shared by the browse list, chat results, and the bin.
 // "2 hours ago" style, with the exact date kept for the hover tooltip
 // (Wave J). Anything older than a week just shows the date.
@@ -415,35 +384,6 @@ function notesSpanSpaces() {
     notesSpanMemo = { list: allEntries, many: allEntries.some((e) => e.workspace_id && e.workspace_id !== first) };
   }
   return notesSpanMemo.many;
-}
-
-//: A note's own attached files (the `Attachment` table, `/files/{id}`), one
-//: card each, in a wrapping grid. Pictures page through the lightbox
-//: together; the bytes need the auth header, so a picture's src is a blob url
-//: (`attachmentObjectUrl`). `editable` is the note list's own actions flag:
-//: a card on a read-only surface offers no Rename or Remove.
-function renderAttachmentCards(entry, editable) {
-  const row = document.createElement("div");
-  row.className = "att-cards";
-  const images = entry.attachments.filter((a) => a.is_image);
-  for (const attachment of entry.attachments) {
-    row.append(attachmentCard({
-      name: attachment.filename,
-      url: `/files/${attachment.id}`,
-      size: attachment.size,
-      added: attachment.created_at,
-      attachment,
-      onChange: editable ? () => loadEntries() : null,
-      thumb: attachment.is_image ? () => attachmentObjectUrl(attachment) : null,
-      gallery: attachment.is_image
-        ? () => ({
-          items: images.map((a) => ({ filename: a.filename, getUrl: () => attachmentObjectUrl(a) })),
-          index: images.indexOf(attachment),
-        })
-        : null,
-    }));
-  }
-  return row;
 }
 
 //: **A note's details line is one line** (INBOX 455 (1), the owner: "note
@@ -547,66 +487,6 @@ async function publishDraft(entry) {
   } catch (error) {
     toast(error.message || "Couldn't publish that draft.", true);
   }
-}
-
-//: The "+N" itself: a press lists what folded, each row doing what its chip
-//: does (a tag shows its notes, a suggestion is taken).
-function noteMetaMore(entry) {
-  const more = chip("+0", "note-meta-more", (event) => {
-    event.stopPropagation();
-    const at = more.getBoundingClientRect();
-    const items = [...more.parentElement.querySelectorAll(":scope > [data-tag][hidden]")].map((el) => {
-      const tag = el.dataset.tag;
-      return el.classList.contains("suggested-tag")
-        ? { label: `ph:plus ${tag}`, title: `Suggested: add #${tag}`, group: "Suggested", run: () => answerTags(entry, { take: [tag] }) }
-        : { label: `ph:hash ${tag}`, title: `Show every note tagged #${tag}`, group: "Tags", run: () => filterNotesByTag(tag) };
-    });
-    openMenuAtPoint(items, "More tags", at.left, at.bottom);
-  });
-  more.setAttribute("aria-haspopup", "menu");
-  more.hidden = true;
-  return more;
-}
-
-//: Take a note to the graph and put it in the middle, lit. The graph is its
-//: own lazy bundle and lays itself out after the tab opens, so this waits for
-//: the node to exist and to have a position rather than guessing a delay.
-//: Accept keeps the janitor's category and makes it the person's (the note
-//: leaves the queue, with Undo); Refile is the Move to category sheet, and a
-//: move is a decision already; Split is Extract notes over the whole note,
-//: which needs the model, so it is disabled with the reason when it is off.
-function noteReviewActions(entry) {
-  const row = document.createElement("div");
-  //: `.night-questions-row` is the wrapping line of small buttons this is.
-  row.className = "row night-questions-row entry-review";
-  const set = async (accepted) => {
-    await apiJson(`/entries/${entry.id}/filing`, { method: "POST", body: JSON.stringify({ accepted }) });
-    for (const e of allEntries) if (e.id === entry.id) e.user_filed = accepted;
-    renderEntries();
-  };
-  const where = entry.category || "Uncategorised";
-  const accept = smallButton("ph:check Accept", `Keep it in ${where}`, async () => {
-    try {
-      await set(true);
-    } catch (error) {
-      toast(error.message, true);
-      return;
-    }
-    const message = `Kept in ${where}.`;
-    const action = pushUndo(message, () => set(false), () => set(true));
-    toastAction(message, "Undo", async () => {
-      settleUndoFromToast(action);
-      await set(false).catch((error) => toast(error.message, true));
-    });
-  });
-  const refile = smallButton("ph:folder-open Refile…", `Now in ${where}; choose another`, () => chooseNoteCategory([entry.id], entry.category));
-  const split = smallButton(
-    "ph:scissors Split…",
-    "Split it into linked notes, with a preview first",
-    () => fullEntry(entry.id).then((whole) => openExtractPreview(whole.content || "", { sourceEntryIds: [entry.id] }), (error) => toast(error.message, true))
-  );
-  row.append(accept, refile, split);
-  return row;
 }
 
 //: A document is a node of its own (`document:<id>`, routes_graph.py) that the

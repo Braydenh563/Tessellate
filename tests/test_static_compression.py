@@ -151,7 +151,11 @@ PIECE_CAP = 32_000
 #: and the tags field does not take it for a press; same win-back item.
 #: 2026-11-08, -8,880 (260,860 to 251,980): leading indentation is stripped from served JS
 #: and CSS (asset_strip.py, STRIP_VERSION 4, newlines kept); measured 260,814 to 251,949.
-TOTAL_CAP = 251_980
+#: 2026-11-10, -1,214 (251,980 to 250,766): the note card's review actions, favourite
+#: button, attachment cards and meta menu moved into the lazy entry-card.js, the
+#: embedding apply into settings-controls.js and the history actor label into
+#: note-history.js (each had no caller at boot); measured 252,137 to 250,466.
+TOTAL_CAP = 250_766
 
 
 def _served_gzip_size(client, name: str) -> int:

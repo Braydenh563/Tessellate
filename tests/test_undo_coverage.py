@@ -562,7 +562,7 @@ EXEMPT: dict[str, str] = {
     "activity-panel.js:stopActivityJob": "job: starts or stops work or a model; deletes no user data",
     "activity-panel.js:stopActivityModel": "job: starts or stops work or a model; deletes no user data",
     "activity-panel.js:stopAllActivity": "job: starts or stops work or a model; deletes no user data",
-    "ai-tools.js:applyEmbeddingBackend": "settings: a setting with its own Reset or the settings history",
+    "settings-controls.js:applyEmbeddingBackend": "settings: a setting with its own Reset or the settings history",
     "ai-tools.js:applyFeatureModel": "settings: a setting with its own Reset or the settings history",
     "chat-tasks.js:renderTasks": "job: starts or stops work or a model; deletes no user data",
     "improve-panel.js:runImprove": "read: reads or asks the model; shows a result, writes nothing",
