@@ -11,7 +11,7 @@ from __future__ import annotations
 import re
 
 _DIGITS = re.compile(r"\+?\d[\d ()./-]{6,}\d")
-_PROPERTIES: dict[str, tuple[re.Pattern, re.Pattern, str]] = {
+_PROPERTIES: dict[str, tuple[re.Pattern, re.Pattern | str, str]] = {
     #: key: (the question's word, the sentence's word or shape, the noun said)
     "phone": (
         # "phone" alone is a thing ("when did I get my phone", "cell respiration"): only a "what is X's phone"
@@ -39,7 +39,9 @@ NUMBERED = ("table", "room", "seat", "booking", "reservation", "confirmation", "
 for _word in NUMBERED:
     _PROPERTIES[_word] = (
         re.compile(rf"\b{_word}\s+(?:number|no\.?|num|#)(?!\w)", re.I),
-        re.compile(rf"\b{_word}s?\s*(?:number|no\.?|num|ref(?:erence)?|code|id)?\s*[:#-]?\s*(?=[A-Za-z-]*\d)[\w-]+", re.I), f"{_word} number")
+        #: The shape is a string, compiled on first use by `held` (through re's own cache):
+        #: 25 of them compiled at import cost the composer's cold-import budget (PR 216 CI, 3.12).
+        rf"\b{_word}s?\s*(?:number|no\.?|num|ref(?:erence)?|code|id)?\s*[:#-]?\s*(?=[A-Za-z-]*\d)[\w-]+", f"{_word} number")
 #: A "number" that is not a phone number: a count, a reference, a place in a list.
 _NOT_PHONE = re.compile(
     r"\b(?:how many|what number|which number|serial|order|house|flat|room|page|reference|booking|account|policy|ticket|"
@@ -103,7 +105,7 @@ def asked(question: str) -> str:
 def held(key: str, text: str) -> bool:
     """Whether `text` says the property: its word, or for a phone number a long run of digits."""
     _word, shape, _noun = _PROPERTIES[key]
-    if shape.search(text):
+    if (re.search(shape, text, re.I) if isinstance(shape, str) else shape.search(text)):
         return True
     return key == "phone" and any(len(re.sub(r"\D", "", m.group(0))) >= 8 for m in _DIGITS.finditer(text))
 

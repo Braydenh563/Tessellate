@@ -15231,13 +15231,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_word_at` | src/tessellate/ai/composer_property.py:58 |
-| `_words_before` | src/tessellate/ai/composer_property.py:70 |
-| `asked` | src/tessellate/ai/composer_property.py:94 |
-| `held` | src/tessellate/ai/composer_property.py:103 |
-| `none_given` | src/tessellate/ai/composer_property.py:115 |
-| `noun` | src/tessellate/ai/composer_property.py:111 |
-| `subject` | src/tessellate/ai/composer_property.py:82 |
+| `_word_at` | src/tessellate/ai/composer_property.py:60 |
+| `_words_before` | src/tessellate/ai/composer_property.py:72 |
+| `asked` | src/tessellate/ai/composer_property.py:96 |
+| `held` | src/tessellate/ai/composer_property.py:105 |
+| `none_given` | src/tessellate/ai/composer_property.py:117 |
+| `noun` | src/tessellate/ai/composer_property.py:113 |
+| `subject` | src/tessellate/ai/composer_property.py:84 |
 
 ### src/tessellate/ai/composer_quick.py (1)
 
