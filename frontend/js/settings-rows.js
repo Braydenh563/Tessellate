@@ -41,6 +41,7 @@
     { key: "profile_enabled", id: "pref-profile-enabled" },
     { key: "notifications_muted_except_reminders", id: "pref-notif-mute-except-reminders" },
     { key: "session_idle_ttl_minutes", id: "account-idle-ttl" },
+    { key: "private_space_idle_minutes", id: "account-private-idle" },
     { key: "semantic_auto_install", id: "pref-semantic-auto-install" },
     { key: "ai_first_filing", id: "pref-ai-first-filing" },
     { key: "auto_file_sensitive", id: "pref-auto-file-sensitive" },

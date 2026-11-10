@@ -35,7 +35,7 @@ from tessellate.core.database import (
     like_escape,
 )
 from tessellate.core.deps import get_session
-from tessellate.entry import link_offers
+from tessellate.entry import link_offers, private_space
 from tessellate.repo import content as content_repo
 from tessellate.repo.content import DOCUMENTS, unshelved
 from tessellate.repo import bookmarks as bookmark_repo
@@ -514,7 +514,7 @@ def create_document(
         content=body.content,
         file_type=filetypes.normalise(body.file_type),
     )
-    log_action(session, "created", "document", document.id, document.title[:80])
+    log_action(session, "created", "document", document.id, private_space.audit_title(session, document))
     session.commit()
     _process_committed_media(session, document.content)
     return _full(document, session)
@@ -716,7 +716,7 @@ def import_document(
             else filetypes.normalise(suffix.lstrip("."))
         ),
     )
-    log_action(session, "imported", "document", document.id, document.title[:80])
+    log_action(session, "imported", "document", document.id, private_space.audit_title(session, document))
     session.commit()
     return {**_full(document, session), "truncated": viewed.truncated}
 
@@ -802,7 +802,7 @@ def delete_document(document_id: int, session: Session = Depends(get_session)) -
     the app deleted outright, and its Undo made a new document with a new id."""
     document = _existing(session, document_id)
     document.deleted_at = utcnow()
-    log_action(session, "deleted", "document", document.id, document.title[:80])
+    log_action(session, "deleted", "document", document.id, private_space.audit_title(session, document))
     session.commit()
     return {"deleted": True, "binned": True}
 
@@ -824,7 +824,7 @@ def purge_document(document_id: int, session: Session = Depends(get_session)) ->
     document = document_repo.get_any(session, document_id)
     if document.deleted_at is None:
         raise HTTPException(status_code=409, detail="Only a document in the bin can be deleted for good.")
-    log_action(session, "purged", "document", document.id, document.title[:80])
+    log_action(session, "purged", "document", document.id, private_space.audit_title(session, document))
     with other_bin.including_binned(session):
         other_bin.purge_document(session, document)
         session.commit()
@@ -840,7 +840,7 @@ def archive_document(document_id: int, session: Session = Depends(get_session)) 
     document = DOCUMENTS.writable(session, document_id)
     if not document.archived_at:
         document.archived_at = utcnow()
-        log_action(session, "archived", "document", document.id, document.title[:80])
+        log_action(session, "archived", "document", document.id, private_space.audit_title(session, document))
         session.commit()
     return _summary(document)
 
@@ -850,7 +850,7 @@ def unarchive_document(document_id: int, session: Session = Depends(get_session)
     document = DOCUMENTS.writable(session, document_id)
     if document.archived_at:
         document.archived_at = None
-        log_action(session, "unarchived", "document", document.id, document.title[:80])
+        log_action(session, "unarchived", "document", document.id, private_space.audit_title(session, document))
         session.commit()
     return _summary(document)
 
@@ -1369,7 +1369,7 @@ def restore_document_revision(
     if wanted_title:
         document.title = wanted_title
     document.updated_at = utcnow()
-    log_action(session, "restored", "document", document.id, document.title[:80])
+    log_action(session, "restored", "document", document.id, private_space.audit_title(session, document))
     session.commit()
     return _full(document, session)
 

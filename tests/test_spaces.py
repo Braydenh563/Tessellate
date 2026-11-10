@@ -378,7 +378,7 @@ def test_a_space_deleted_by_moving_comes_back_with_exactly_its_rows(client, sess
     gone = client.delete(f"/spaces/{source}?move_to={target}")
     assert gone.status_code == 200, gone.text
     restore = gone.json()["restore"]
-    assert restore["space"] == {"id": source, "name": "Old", "icon": "ph-star", "hidden_from_all": True}
+    assert restore["space"] == {"id": source, "name": "Old", "icon": "ph-star", "hidden_from_all": True, "is_private": False}
 
     back = client.post("/spaces/restore", json=restore)
     assert back.status_code == 200, back.text

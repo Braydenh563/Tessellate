@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from tessellate.api.schemas import SpaceResponse, SpaceCreate, SpaceUpdate
-from tessellate.core import deps, paths
+from tessellate.core import deps, paths, vault
 from tessellate.core.database import Base, Category, Entry, Space, workspace_scoped_models
 from tessellate.core.deps import get_session, impersonate_workspace
 from tessellate.repo import spaces as space_repo
@@ -94,7 +94,9 @@ def create_space(space_in: SpaceCreate, session: Session = Depends(get_session))
     icon = _validate_icon(space_in.icon)
     _refuse_duplicate_name(session, name)
     space_id = _generate_space_id(name, session)
-    space = Space(id=space_id, name=name, icon=icon)
+    if space_in.is_private and vault.key() is None:
+        raise HTTPException(status_code=423, detail="Unlock your private notes first.")
+    space = Space(id=space_id, name=name, icon=icon, is_private=space_in.is_private)
     session.add(space)
     session.commit()
     session.refresh(space)
@@ -216,7 +218,7 @@ def restore_space(body: SpaceRestore, session: Session = Depends(get_session)):
     _validate_name(body.space.name, restoring=True)
     name = body.space.name
     icon = _validate_icon(body.space.icon)
-    session.add(Space(id=sid, name=name, icon=icon, hidden_from_all=bool(body.space.hidden_from_all)))
+    session.add(Space(id=sid, name=name, icon=icon, hidden_from_all=bool(body.space.hidden_from_all), is_private=bool(body.space.is_private)))
     session.flush()
     if body.move_to:
         tables = {model.__table__.name: model.__table__ for model in workspace_scoped_models()}
@@ -506,6 +508,9 @@ def delete_space(
 
 class MoveNotesBody(BaseModel):
     ids: list[int] = Field(min_length=1, max_length=500)
+    #: Out of a private space (INBOX 1727): "Keep it private" (the default)
+    #: or "Make it ordinary".
+    keep_private: bool = True
 
 
 @router.post("/spaces/{space_id}/move-notes")
@@ -526,5 +531,17 @@ def move_notes_to_space(space_id: str, body: MoveNotesBody, session: Session = D
 
     if space_id == "all":
         raise HTTPException(400, "Pick one space to move them to.")
-    deps.get_or_404(session, Space, space_id, "That space could not be found.")
-    return moving.to_space(session, space_id, body.ids)
+    from tessellate.entry import manager, private_space
+
+    target = deps.get_or_404(session, Space, space_id, "That space could not be found.")
+    # A locked private space's notes are out of this read, so only the target can be locked here.
+    if target.is_private and session.info.get("sealed_workspaces"):
+        raise HTTPException(status_code=423, detail="Unlock your private spaces first.")
+    leaving = private_space.leaving_ids(session, space_id, body.ids)
+    moved = moving.to_space(session, space_id, body.ids)
+    if leaving:
+        private_space.after_leaving(session, leaving, keep_private=body.keep_private)
+        session.commit()
+    if target.is_private and moved.get("moved"):
+        manager.scrub_private_leftovers(session)
+    return moved

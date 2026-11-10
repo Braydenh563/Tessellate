@@ -89,6 +89,7 @@ from tessellate.api import (
     routes_reminders,
     routes_settings,
     routes_spaces,
+    routes_private_spaces,
     routes_tasks,
     routes_timeline,
     routes_search,
@@ -1498,6 +1499,7 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     (routes_webclip.router, LOCKED),
     (routes_backups.router, LOCKED),
     (routes_spaces.router, LOCKED),
+    (routes_private_spaces.router, LOCKED),
     (routes_files.router, LOCKED),
     # A plain `<img src>` (or a note's own inline `![]()` markdown) never
     # attaches the X-Auth-Token header, so only these routes also accept the

@@ -85,7 +85,20 @@ def _times(reminder) -> list[tuple[str, datetime, bool]]:  # noqa: ANN001  # a R
     return out
 
 
-def due_now(reminders, fired: set[str], now: datetime) -> tuple[list[Due], datetime | None]:  # noqa: ANN001
+#: What a reminder from a private space says when it fires (INBOX 1727).
+PRIVATE_REMINDER = "A private reminder"
+
+
+def shown_text(session, reminder) -> str:  # noqa: ANN001
+    """A reminder's words for a notification: never a private space's."""
+    from tessellate.entry import private_space
+
+    return PRIVATE_REMINDER if private_space.is_private_space(session, reminder.workspace_id) else reminder.text
+
+
+def due_now(
+    reminders, fired: set[str], now: datetime, private_spaces: frozenset[str] = frozenset()  # noqa: ANN001
+) -> tuple[list[Due], datetime | None]:
     """What to announce at `now` (naive UTC), and the next time anything is due.
 
     A key is the id and the due time, so a snoozed or rolled-on reminder is
@@ -100,7 +113,8 @@ def due_now(reminders, fired: set[str], now: datetime) -> tuple[list[Due], datet
             if at > now:
                 upcoming.append(at)
             elif key not in fired and now - at <= LOOKBACK:
-                fresh.append(Due(key, reminder.id, reminder.text, early))
+                text = PRIVATE_REMINDER if reminder.workspace_id in private_spaces else reminder.text
+                fresh.append(Due(key, reminder.id, text, early))
     return fresh, min(upcoming, default=None)
 
 
@@ -335,7 +349,10 @@ class ReminderNotifier:
         try:
             if not self.notebook_open(session):
                 return MAX_SLEEP_S
-            fresh, upcoming = due_now(_open_reminders(session), self.store.as_set(), now)
+            from tessellate.entry import private_space
+
+            hidden = frozenset(private_space.private_space_ids(session))
+            fresh, upcoming = due_now(_open_reminders(session), self.store.as_set(), now, hidden)
         finally:
             session.close()
         if fresh:

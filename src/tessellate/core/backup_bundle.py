@@ -98,6 +98,7 @@ KEPT_ON_RESTORE = frozenset(
         "new_window_on_launch",
         "searxng_autostart",
         "session_idle_ttl_minutes",
+        "private_space_idle_minutes",
     }
 )
 

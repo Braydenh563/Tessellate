@@ -1,0 +1,76 @@
+"""Which sessions have opened the private spaces, and for how long (INBOX 1727).
+
+A private space's contents are sealed under the vault key, as a private note
+is. This is the second door: even a session holding the key sees nothing of a
+private space until it unlocks them with the vault password or the PIN, and
+the door shuts again after `idle_minutes` without the person's own input
+(the window reports it, `/private-spaces/touch`; the app's own polls do not
+count), on lock, and when the window closes. One door for every private space (one vault
+password, the owner's answer).
+
+In memory only, like the key: a restart closes every private space.
+"""
+
+from __future__ import annotations
+
+import threading
+import time
+
+#: The owner's answer: ten minutes idle, changeable in Settings.
+DEFAULT_IDLE_MINUTES = 10
+#: The preference that changes it (Settings, Privacy).
+PREFERENCE = "private_space_idle_minutes"
+
+_lock = threading.Lock()
+#: Session token ("" for a request without one) to the time it last used them.
+_opened: dict[str, float] = {}
+
+
+def _now() -> float:
+    """Monotonic seconds; a test replaces this to step past the idle window."""
+    return time.monotonic()
+
+
+def idle_minutes() -> int:
+    """The preference, clamped to 1..240 minutes."""
+    try:
+        from tessellate.core import deps
+
+        value = int(deps.get_config().get_preference(PREFERENCE, DEFAULT_IDLE_MINUTES))
+    except Exception:  # noqa: BLE001  # no config yet: the default
+        value = DEFAULT_IDLE_MINUTES
+    return max(1, min(240, value))
+
+
+def open_for(token: str | None) -> None:
+    """This session proved the vault password or the PIN."""
+    with _lock:
+        _opened[token or ""] = _now()
+
+
+def is_open(token: str | None, *, touch: bool = True) -> bool:
+    """Whether this session may see the private spaces now. A use within the
+    idle window keeps them open (`touch`); one after it closes them."""
+    key = token or ""
+    with _lock:
+        seen = _opened.get(key)
+        if seen is None:
+            return False
+        now = _now()
+        if now - seen > idle_minutes() * 60:
+            _opened.pop(key, None)
+            return False
+        if touch:
+            _opened[key] = now
+        return True
+
+
+def close_for(token: str | None) -> None:
+    with _lock:
+        _opened.pop(token or "", None)
+
+
+def close_all() -> None:
+    """Lock, a password change, a restore: every private space shuts."""
+    with _lock:
+        _opened.clear()

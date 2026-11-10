@@ -5,6 +5,8 @@
 Object.assign(LAZY_MODULES, {
   //: A space switch, in place (space-swap.js).
   spaceSwap: ["/js/space-swap.js"],
+  //: Unlocking, editing and leaving a private space (private-spaces.js's header; INBOX 1727).
+  privateSpaces: ["/js/private-spaces.js"],
   //: What the companion says about the notebook now and then (companion-remark.js's header).
   companionRemark: ["/js/companion-remark.js"],
   //: The capture bar's card (capture-card.js; notes-list.js opens it on the first focus).
@@ -87,6 +89,7 @@ installStandIns({
   accountRecovery: ["showRestoreOffer"],
   companionSettings: ["mountBuddyCustom", "mountBuddyActivities", "mountProfileLook", "nameMarkBuddyMakeIt", "nameMarkBuddyHide", "nameMarkBuddyToggle", "nameMarkBuddyCallBack", "nameMarkRepaintAll"],
   spaceSwap: ["swapSpace", "spaceEnterFor"],
+  privateSpaces: ["privateSpaces"],
   companionRemark: ["nameMarkBuddyRemark"],
   chatPrivate: ["chatPrivateStart", "chatPrivateToggle", "chatPrivateLeave"],
   settingsPanes: ["renderTasks", "renderTaskHistory", "renderHealthBlock", "renderSamplingRows", "renderPersonas", "savePersonaList"],

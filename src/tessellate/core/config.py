@@ -197,6 +197,8 @@ DEFAULT_PREFERENCES: dict[str, Any] = {
     "show_update_bar": True,
     # How long a session can be idle before the user must log in again.
     "session_idle_ttl_minutes": 720,
+    #: INBOX 1727: the private spaces lock after this many idle minutes.
+    "private_space_idle_minutes": 10,
     #: The desktop launcher's console window (start.bat/start-desktop.bat
     #: open one; the packaged installer's build has none to show at all).
     #: "Dev view" (console visible, True) is the default a fresh install

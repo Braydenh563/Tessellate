@@ -453,6 +453,7 @@ class PreferencesBody(BaseModel):
     # Whether the app may install search by meaning itself: see core.config.
     semantic_auto_install: bool | None = None
     session_idle_ttl_minutes: int | None = Field(default=None, ge=1)
+    private_space_idle_minutes: int | None = Field(default=None, ge=1, le=240)
     # The desktop launcher's console window: see core.config's own comment.
     show_console_on_startup: bool | None = None
     # Whether the first-run Dev-view/User-view prompt has already been
@@ -836,6 +837,7 @@ def _preferences_from(config) -> dict:
         # default on every reload no matter what had actually been saved and
         # was actually in effect, which reads as "my setting didn't save."
         "session_idle_ttl_minutes": config.get_preference("session_idle_ttl_minutes", 720),
+        "private_space_idle_minutes": config.get_preference("private_space_idle_minutes", 10),
         "user_profile": config.get_preference("user_profile", ""),
         "profile_enabled": config.get_preference("profile_enabled", False),
         "custom_templates": config.get_preference("custom_templates", []),
@@ -1081,6 +1083,7 @@ _THIS_COMPUTER_PREFERENCES: dict[str, object] = {
     "web_search_enabled": False,
     "local_only_ai": True,
     "session_idle_ttl_minutes": "shorter",
+    "private_space_idle_minutes": "shorter",
 }
 
 
