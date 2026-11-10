@@ -307,6 +307,7 @@ Moved to HISTORY.md ("From DOCUMENTS_PLAN.md Phase 3", two entries) on
 
 - Group selection row (screenshot of a flowchart with "Customer" and "Warehouse" groups): built 2026-11-10 (dgroup-1110). Moved to HISTORY.md "Moved from the plans, 2026-11-10 (dgroup-1110: group selection)".
 - Owner, 2026-11-10, diagram builder ("have you integrated the ai into the diagram builder yet??"): built 2026-11-10 (dgai-1110). Moved to HISTORY.md "Moved from the plans, 2026-11-10 (dgai-1110: the AI in the diagram builder)".
+- Diagram AI left (dgai-1110 remaining list): on a phone Ask sits only inside the Blocks list sheet; mind maps, timelines and sequence diagrams get Versions but no Ask or Suggestions; the Versions list mixes ordinary saves ("Saved") with the named versions; real-model output and Ask inside the dialog (a Live figure, a board diagram) unverified.
 - INBOX 1728: **Owner, 2026-11-10, documents, verbatim (screenshot):** "I want to be able to highlight sections in a document and turn them into or append them to a new or existing note". Recommendation, taken: two items in the document selection menu and right-click menu, "New note from selection" (the note links back to the document) and "Add to note..." (the note finder, appends the text with a back link); the same in the code editor. Placed: the documents batch of the work order.
 
 ## Placed from INBOX, 2026-11-02 (the owner: the calculator, equations, insert panels and a diagram builder)
