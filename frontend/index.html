@@ -3690,7 +3690,7 @@ Link to another note with [[its first few words]]."></textarea>
               <!-- The dates beside the density strip (INBOX 1300 C36): a
                    remembered switch, wired in timeline-ticks.js, which draws
                    them. -->
-              <label class="dock-menu-check" title="Show the month and year labels beside the thin strip at the feed's right edge. Your choice is remembered.">
+              <label class="dock-menu-check checkbox-label" title="Show the month and year labels beside the thin strip at the feed's right edge. Your choice is remembered.">
                 <input type="checkbox" id="timeline-ticks-toggle" checked>
                 <i class="ph ph-calendar-dots ph-lead" aria-hidden="true"></i> Dates beside the strip
               </label>
@@ -6199,12 +6199,12 @@ Link to another note with [[its first few words]]."></textarea>
               <details class="doc-dock-menu dock-menu" id="library-filter-menu">
                 <summary class="ghost small doc-dock-menu-btn" title="Filter options: match by meaning, or include the bin"><i class="ph ph-funnel-simple ph-lead" aria-hidden="true"></i> <span class="dock-word">Filter</span> <i class="ph ph-caret-down dock-menu-caret" aria-hidden="true"></i></summary>
                 <div class="doc-dock-menu-list dock-menu-list">
-                  <label class="dock-menu-check"
+                  <label class="dock-menu-check checkbox-label"
                     title="Also match notes by meaning, not just the words you typed. Documents, chats and images still match on their words.">
                     <input type="checkbox" id="library-semantic-toggle">
                     <i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Semantic: match by meaning
                   </label>
-                  <label class="dock-menu-check" title="Also show things you have thrown away.">
+                  <label class="dock-menu-check checkbox-label" title="Also show things you have thrown away.">
                     <input type="checkbox" id="library-show-binned" class="accent-check">
                     <i class="ph ph-trash ph-lead" aria-hidden="true"></i> Include the bin
                   </label>
@@ -14660,11 +14660,11 @@ Link to another note with [[its first few words]]."></textarea>
                         <option value="error">Errors only</option>
                       </select>
                     </div>
-                    <label class="dock-menu-check"
+                    <label class="dock-menu-check checkbox-label"
                       title="The server's line for every request the app makes. Off, the log is the app's own events.">
                       <input type="checkbox" id="log-requests"> <i class="ph ph-arrows-left-right ph-lead" aria-hidden="true"></i> Show request lines
                     </label>
-                    <label class="dock-menu-check" id="log-follow-label"
+                    <label class="dock-menu-check checkbox-label" id="log-follow-label"
                       title="Keep the newest records in view. Scroll up to pause.">
                       <input type="checkbox" id="log-follow" checked> <i class="ph ph-arrow-line-down ph-lead" aria-hidden="true"></i> Follow new records
                     </label>
@@ -14679,7 +14679,7 @@ Link to another note with [[its first few words]]."></textarea>
                       title="One plain-text report of lag, errors and slow routes, with no note text, to paste into a message"><i class="ph ph-clipboard-text ph-lead" aria-hidden="true"></i> Copy diagnostics</button>
                     <button id="logs-diag-save" class="doc-dock-menu-item" type="button"
                       title="The same report as a text file"><i class="ph ph-file-text ph-lead" aria-hidden="true"></i> Save diagnostics as file</button>
-                    <label class="dock-menu-check"
+                    <label class="dock-menu-check checkbox-label"
                       title="Times the animation loops by script so the report can name a costly one. Off, the report has no animation figures.">
                       <input type="checkbox" id="logs-sampler" checked> <i class="ph ph-gauge ph-lead" aria-hidden="true"></i> Time animation loops
                     </label>

@@ -9585,10 +9585,14 @@ input[type="file"] {
 /* A switch inside a dock menu: a row you can read and tick, at the menu
    item's own padding, that does not close the menu when ticked, a person
    setting Semantic and Include bin together is making one visit. */
+/* `.checkbox-label` rides along on these rows only for its pill switch (the
+   platform box at the 28px floor was reported as "massive", 2026-11-10); its
+   chip border is not wanted in a menu row. */
 .dock-menu-check {
   display: flex;
   align-items: center;
   padding: var(--space-2) var(--space-3);
+  border: 0;
   border-radius: var(--radius-sm);
   cursor: pointer;
   white-space: nowrap;

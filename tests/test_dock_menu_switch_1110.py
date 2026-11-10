@@ -15,13 +15,12 @@ ROOT = Path(__file__).resolve().parents[1]
 CSS = (ROOT / "frontend" / "css" / "06-timeline-dialogs.css").read_text(encoding="utf-8")
 
 
-def test_the_switch_recipe_covers_dock_menu_checkboxes():
-    for state in ("", "::after", ":hover", ":checked", ":checked::after"):
-        sel = '.dock-menu-check > input[type="checkbox"]' + state + ","
-        assert sel in CSS, sel
-    body = CSS.split('.dock-menu-check > input[type="checkbox"],', 1)[1].split("{", 1)[1]
-    head = re.sub(r"/\*.*?\*/", "", body, flags=re.S).split("}", 1)[0]
-    assert re.search(r"appearance:\s*none", head) and "min-height: 1.15rem" in head
+def test_every_dock_menu_checkbox_row_carries_the_switch_class():
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    rows = re.findall(r'<label class="([^"]*\bdock-menu-check\b[^"]*)"[^>]*>\s*<input type="checkbox"', html)
+    assert len(rows) >= 4
+    assert all("checkbox-label" in r.split() or "semantic-toggle" in r.split() for r in rows), rows
+    assert '.checkbox-label>input[type="checkbox"]:not(.sr-only),' in CSS
 
 
 def test_a_dialog_label_stands_clear_of_its_field():

@@ -2155,9 +2155,6 @@
 #tool-list input[type="checkbox"],
 .library-toolbar label>input[type="checkbox"],
 .check-row input[type="checkbox"],
-/* Every on/off row in a dock menu (Dates beside the strip, Include the bin):
-   the platform box at the 28px floor was reported as "massive" (2026-11-10). */
-.dock-menu-check > input[type="checkbox"],
 .semantic-toggle input[type="checkbox"],
 .library-sort-check input[type="checkbox"],
 /* The Skills page's background-worker switches ("Run in the background", "Tag
@@ -2261,7 +2258,6 @@
 .tools-toggle input[type="checkbox"]::after,
 #tool-list input[type="checkbox"]::after,
 .check-row input[type="checkbox"]::after,
-.dock-menu-check > input[type="checkbox"]::after,
 .semantic-toggle input[type="checkbox"]::after,
 .checkbox-label>input[type="checkbox"]:not(.sr-only)::after,
 .wb-snap-label input[type="checkbox"]::after {
@@ -2285,7 +2281,6 @@
 .tools-toggle input[type="checkbox"]:hover,
 #tool-list input[type="checkbox"]:hover,
 .check-row input[type="checkbox"]:hover,
-.dock-menu-check > input[type="checkbox"]:hover,
 .semantic-toggle input[type="checkbox"]:hover,
 .checkbox-label>input[type="checkbox"]:not(.sr-only):hover,
 .wb-snap-label input[type="checkbox"]:hover,
@@ -2294,7 +2289,6 @@
 .tools-toggle input[type="checkbox"]:is(:focus-visible, :has(:focus-visible)),
 #tool-list input[type="checkbox"]:is(:focus-visible, :has(:focus-visible)),
 .check-row input[type="checkbox"]:is(:focus-visible, :has(:focus-visible)),
-.dock-menu-check > input[type="checkbox"]:is(:focus-visible,
 .semantic-toggle input[type="checkbox"]:is(:focus-visible, :has(:focus-visible)),
 .checkbox-label>input[type="checkbox"]:not(.sr-only):is(:focus-visible, :has(:focus-visible)),
 .wb-snap-label input[type="checkbox"]:is(:focus-visible, :has(:focus-visible)) {
@@ -2305,7 +2299,6 @@
 .tools-toggle input[type="checkbox"]:checked,
 #tool-list input[type="checkbox"]:checked,
 .check-row input[type="checkbox"]:checked,
-.dock-menu-check > input[type="checkbox"]:checked,
 .semantic-toggle input[type="checkbox"]:checked,
 .checkbox-label>input[type="checkbox"]:not(.sr-only):checked,
 .wb-snap-label input[type="checkbox"]:checked {
@@ -2317,7 +2310,6 @@
 .tools-toggle input[type="checkbox"]:checked::after,
 #tool-list input[type="checkbox"]:checked::after,
 .check-row input[type="checkbox"]:checked::after,
-.dock-menu-check > input[type="checkbox"]:checked::after,
 .semantic-toggle input[type="checkbox"]:checked::after,
 .checkbox-label>input[type="checkbox"]:not(.sr-only):checked::after,
 .wb-snap-label input[type="checkbox"]:checked::after {
