@@ -159,7 +159,8 @@ def _more(ctx: Ctx, found: re.Match) -> Reply | None:
     other = rest[0]
     gap = first[2] - other[2]
     asked_more = found.group("dir").lower() == "more"
-    m1, m2 = found.group("m1").capitalize(), (found.group("m2") or "").capitalize() or composer_frame.note_title(other[0])
+    title_month = re.search(_MONTHS, composer_frame.note_title(other[0]), re.I)
+    m1, m2 = found.group("m1").capitalize(), (found.group("m2") or (title_month.group(0) if title_month else "")).capitalize() or composer_frame.note_title(other[0])
     facts = f"{first[1]} was {_amount(first[2])} in {m1} ({composer_study._link(first[0])}) and {_amount(other[2])} in {m2} ({composer_study._link(other[0])})."  # noqa: SLF001
     if gap == 0:
         return Reply(f"The same: {facts}")
