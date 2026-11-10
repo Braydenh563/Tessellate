@@ -875,6 +875,22 @@ Entries are the owner's words, then the recommendation. Bugs come first, then de
 - "should we store recently retrieved website content for easy reretieval??"
   Recommendation: keep fetched page text with its fetch time and a re-fetch control, and show it in the sources list. No brief carries it; Brief 37 (web sources) is the nearest.
 
+**E20, s58left4-1110, per part.** Driven on a fresh data dir with no model
+(port 8791): built, with numbers: the empty-chats line sits above the list
+(top 152px, list 377px); Agent mode and Plan are `aria-disabled` with their
+reason ("needs a model"); in the skills menu (first 21 listed) the 12 that
+need a model are disabled and the 9 that need none are not; a composer bubble is headed
+"Atlas, Composer"; the slash menu's "A note", "A document" and "A file"
+each open the picker (3 of 3); Ask has "Forget" per question and "Clear all";
+the context pill is the popover with Compact inside (hidden with no model,
+so its figures were not read). Composer-quality entries (the "ah," opener,
+arrows, second person, time words, insights, variation, social acts, grounded
+claims, captions) are Brief 39's eval rows, not UI parts: open until that
+brief's numbers say so. Not driven, so still open: the Guide's thinking gap,
+the SearXNG start timing, "show them" landing on Your notes, in-text
+reference hover and style, a retry on a failed web search, the web-search
+store, the suppressed-suggestions list.
+
 ## The assistant catalogue, 2026-10-10
 
 The owner: "the app needs to be the best thing the world has seen without the
