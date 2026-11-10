@@ -1007,7 +1007,8 @@ MORE_TOPICS: list[dict] = [
             "a new encryption key and moves every private note onto it, so an old "
             "backup stops opening them; every other session is signed out. Sessions: Auto-lock when idle, from 5 minutes "
             "to 12 hours, and Lock everywhere now; the lock in the top bar "
-            "locks at once. Recovery key: Make a recovery key (or Replace it) "
+            "locks at once. "
+            "Recovery key: Make a recovery key (or Replace it) "
             "asks your password and shows a key once, to copy or download and "
             "keep away from this computer; the old one stops working. Forgot "
             "your password? on the lock screen, on this computer only, has two "
@@ -1262,7 +1263,7 @@ MORE_TOPICS: list[dict] = [
         "id": "private-spaces",
         "keywords": (
             "private space", "vault space", "lock a space", "locked space", "unlock private spaces",
-            "make a space private", "seal a space", "secret space",
+            "make a space private", "seal a space", "secret space", "new notes start private", "private by default",
         ),
         "body": (
             "A private space seals everything in it with your vault password, "
@@ -1286,7 +1287,9 @@ MORE_TOPICS: list[dict] = [
             "reminders. A link from an ordinary note to one inside shows as A "
             "private note while it is locked. A locked private space cannot "
             "be deleted or brought back with Undo. An export leaves it out "
-            "unless it is unlocked and you ask, and backups keep it encrypted."
+            "unless it is unlocked and you ask, and backups keep it encrypted. "
+            "New notes start private (Account & security, off by default) seals "
+            "each new note from its first save, unfiled and unindexed."
         ),
         "badge": {"label": "Account & security", "section": "account"},
     },

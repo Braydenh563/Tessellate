@@ -889,13 +889,24 @@ def _finish_new_entry(session: Session, entry, body: EntryCreate, defer: bool) -
     _process_committed_media(session, body.content)
 
 
+def _starts_sealed(session: Session, body: EntryCreate) -> tuple[bool, bool]:
+    """INBOX 1695: (sealed, sealed by this note's own ask rather than its space)."""
+    if private_space.is_private_space(session, session.info.get("workspace_id")):
+        return True, False
+    try:
+        ask = private_space.starts_private(body.private)
+    except private_space.VaultLocked as locked:
+        raise HTTPException(status_code=409, detail="Unlock the app first: the encryption key isn't loaded.") from locked
+    return ask, ask
+
+
 @router.post("", response_model=EntryOut, status_code=201)
 def create_entry(body: EntryCreate, session: Session = Depends(get_session)) -> EntryOut:
     earlier = _already_delivered(session, body.client_key)
     if earlier is not None:
         return _to_out(session, earlier, filed_by=None, similar=None)
     parent = _existing_entry(session, body.parent_id) if body.parent_id is not None else None
-    sealed = private_space.is_private_space(session, session.info.get("workspace_id"))
+    sealed, by_ask = _starts_sealed(session, body)
     if sealed:
         # INBOX 1727: the model never reads a private space's note to file it.
         category, confidence, filed_by, defer = body.category or manager.UNCATEGORISED, 100, "user", False
@@ -922,6 +933,8 @@ def create_entry(body: EntryCreate, session: Session = Depends(get_session)) -> 
     if parent is not None:
         entry.parent_id = parent.id
     _mark_new_entry(entry, body, filed_by)
+    if by_ask:
+        manager.set_private(session, entry, True)  # sealed before the first commit
     if defer:
         entry.filing_state = "pending"
     elif janitor.settled_state(filed_by) != "done":

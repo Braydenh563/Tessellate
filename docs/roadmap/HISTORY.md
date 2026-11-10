@@ -7,6 +7,10 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-10 (s10-1110: F6 private-by-default, INBOX 1695 b)
+
+Settings, Account & security, "New notes start private" (preference `new_notes_private`, off by default) and `EntryCreate.private` (None follows the switch): the note is sealed with `manager.set_private` before its first commit, skips the filer, index and embeddings, and a note the agent's create tool makes follows the switch (`private_space.starts_private`, `seal_new`). A locked vault is a 409. Test: `tests/test_private_by_default_1695.py`. Left in INBOX 1695: (a) the composer lock toggle, (c) the Private sidebar view, (d) "Make all notes private"; the private-space flag already exists.
+
 ## Moved from the plans, 2026-11-10 (codecolour-1110: coloured code blocks)
 
 - **Coloured code blocks in notes, previews and chat answers** (owner yes, 2026-11-10, after a vendoring review that declined highlight.js, marked, DOMPurify, Chart.js, jsPDF and Font Awesome).

@@ -114,6 +114,9 @@ class EntryCreate(BaseModel):
     # connection is obvious while you are writing and forgotten by the time
     # the note is in a list.
     document_ids: list[int] = Field(default_factory=list, max_length=10)
+    #: INBOX 1695: sealed from the first write (never filed, indexed or
+    #: embedded). None follows Settings, "New notes start private".
+    private: bool | None = None
     # A note captured from the text-selection popup, not yet reviewed.
     is_draft: bool = False
     #: Made by a map gesture (`Entry.map_topic`): kept out of Notes and

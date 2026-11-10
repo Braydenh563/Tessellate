@@ -85,6 +85,27 @@ def _forget_thumb(board_id: int) -> None:
     board_thumbs.forget(board_thumbs.data_dir_source(), [board_id])
 
 
+def starts_private(ask: bool | None = None) -> bool:
+    """INBOX 1695: a new note is sealed from its first write, by its own ask,
+    else by Settings' "New notes start private". A locked vault refuses rather
+    than saving it in the clear."""
+    from tessellate.core import deps, vault
+
+    if ask is None:
+        ask = bool(deps.get_config().get_preference("new_notes_private", False))
+    if ask and vault.key() is None:
+        raise VaultLocked("Unlock the app first: the encryption key isn't loaded.")
+    return ask
+
+
+def seal_new(session: Session, entry: Entry, sealed: bool) -> None:
+    """Seal a note just created (before its first commit) when it starts private."""
+    if sealed:
+        manager = importlib.import_module("tessellate.entry.manager")
+        manager.set_private(session, entry, True)
+        session.commit()
+
+
 def seal_entry(session: Session, entry: Entry) -> bool:
     """A note or board joins a private space. True when this sealed it."""
     _key()

@@ -45,6 +45,7 @@
     { key: "semantic_auto_install", id: "pref-semantic-auto-install" },
     { key: "ai_first_filing", id: "pref-ai-first-filing" },
     { key: "auto_file_sensitive", id: "pref-auto-file-sensitive" },
+    { key: "new_notes_private", id: "pref-new-notes-private" },
     { key: "filing_style", id: "pref-filing-style" },
     { key: "background_filing", id: "pref-background-filing" },
     { key: "warm_search_model_at_launch", id: "pref-warm-search-model" },

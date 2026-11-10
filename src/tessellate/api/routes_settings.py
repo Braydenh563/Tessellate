@@ -553,6 +553,8 @@ class PreferencesBody(BaseModel):
     #: WORLD_CLASS 23, decision 6: health, money, relationships, the law and
     #: identity are suggested, not filed, unless this is on.
     auto_file_sensitive: bool | None = None
+    #: INBOX 1695 (Q30): a new note is sealed from its first write; off by default.
+    new_notes_private: bool | None = None
     #: WORLD_CLASS_PLAN section 17 row 3 (`librarian.FILING_STYLES`).
     filing_style: Literal["topic", "project", "time"] | None = None
     background_filing: bool | None = None
@@ -797,6 +799,7 @@ def _preferences_from(config) -> dict:
         "recycle_bin_days": config.get_preference("recycle_bin_days", 30),
         "ai_first_filing": config.get_preference("ai_first_filing", True),
         "auto_file_sensitive": config.get_preference("auto_file_sensitive", False),
+        "new_notes_private": config.get_preference("new_notes_private", False),
         "filing_style": config.get_preference("filing_style", "topic"),
         "background_filing": config.get_preference("background_filing", True),
         "auto_caption_images": config.get_preference("auto_caption_images", True),
