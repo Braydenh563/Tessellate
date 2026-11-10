@@ -18,6 +18,7 @@ import importlib
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
+from tessellate.core import database
 from tessellate.core.database import (
     AskTurn,
     AuditLog,
@@ -79,9 +80,9 @@ def _board_items(session: Session, board_id: int) -> list:
 
 def _forget_thumb(board_id: int) -> None:
     """A board's cached picture is the board in the clear."""
-    from tessellate.core import board_thumbs, deps
+    from tessellate.core import board_thumbs
 
-    board_thumbs.forget(deps.get_config().data_dir, [board_id])
+    board_thumbs.forget(board_thumbs.data_dir_source(), [board_id])
 
 
 def seal_entry(session: Session, entry: Entry) -> bool:
@@ -191,7 +192,7 @@ def unseal_document(session: Session, document: Document) -> bool:
 
 
 def _members(session: Session, space_id: str) -> tuple[list[Entry], list[Document]]:
-    from tessellate.core.deps import impersonate_workspace
+    from tessellate.core.database import impersonate_workspace
     from tessellate.entry.bin import including_binned
 
     # Every row of the space, whatever space the request names ("" is no
@@ -205,7 +206,7 @@ def _members(session: Session, space_id: str) -> tuple[list[Entry], list[Documen
 def _owned_rows(session: Session, space_id: str) -> list:
     """The chats, Ask box turns and reminders the space holds: sealed while
     it is private (`database._SPACE_SEALED`), whatever their own fields say."""
-    from tessellate.core.deps import impersonate_workspace
+    from tessellate.core.database import impersonate_workspace
 
     with impersonate_workspace(session, ""):
         return [row for model in (Conversation, AskTurn, Reminder) for row in session.scalars(select(model).where(model.workspace_id == space_id))]
@@ -304,7 +305,7 @@ def leaving_ids(session: Session, target: str, ids: list[int]) -> list[int]:
 
 def after_leaving(session: Session, ids: list[int], *, keep_private: bool) -> int:
     """The two-way answer for notes just moved out of a private space."""
-    from tessellate.core.deps import impersonate_workspace
+    from tessellate.core.database import impersonate_workspace
 
     with impersonate_workspace(session, ""):  # they are in their new space now
         entries = session.scalars(select(Entry).where(Entry.id.in_(ids))).all()
@@ -318,3 +319,6 @@ def leave_private_space(session: Session, obj: Entry | Document, *, keep_private
             obj.sealed_by_space = False  # now its own: a later move in or out keeps it
         return False
     return unseal_document(session, obj) if isinstance(obj, Document) else unseal_entry(session, obj)
+
+
+database.JOIN_SEALER = seal_if_private_space

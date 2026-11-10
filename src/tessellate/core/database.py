@@ -20,6 +20,8 @@ import os
 import re
 import sys
 import zlib
+from collections.abc import Callable
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -52,6 +54,20 @@ from sqlalchemy.orm import (
 from sqlalchemy.orm.attributes import flag_modified
 
 from tessellate.core import concurrency
+
+
+@contextmanager
+def impersonate_workspace(session: Session, workspace_id: str):
+    """Run a block of code as if in a specific workspace."""
+    old = session.info.get("workspace_id")
+    session.info["workspace_id"] = workspace_id
+    try:
+        yield
+    finally:
+        if old is None:
+            del session.info["workspace_id"]
+        else:
+            session.info["workspace_id"] = old
 
 
 def utcnow() -> datetime:
@@ -388,14 +404,18 @@ def _note_private_space_joins(session, flush_context, instances):
             session.info.setdefault(_JOINED_PRIVATE, []).append(obj)
 
 
+#: Seals what joined a private space. entry/private_space.py sets it on import
+#: (it imports the manager, which imports this module: a cycle the other way).
+JOIN_SEALER: Callable[[Session, object], object] = lambda session, obj: None  # noqa: E731
+
+
 @event.listens_for(Session, "before_commit")
 def _seal_private_space_joins(session):
     pending = session.info.pop(_JOINED_PRIVATE, None)
     if not pending:
         return
-    private_space = importlib.import_module("tessellate.entry.private_space")
     for obj in pending:
-        private_space.seal_if_private_space(session, obj)
+        JOIN_SEALER(session, obj)
 
 
 @event.listens_for(Session, "after_soft_rollback")
