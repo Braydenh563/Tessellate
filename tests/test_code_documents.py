@@ -932,3 +932,25 @@ def test_the_topic_chip_says_why_and_how_to_change_it():
     chip = _fn(NOTES_LIST, "noteTopicChip")
     assert "Named from the words" in chip
     assert "rename it" in chip and "remove the links" in chip
+
+
+def test_a_template_fills_the_time_and_places_the_cursor():
+    """DOCUMENTS_PLAN gap row 14: `{{time}}` is filled and `{{cursor}}` leaves the text and returns its offset."""
+    if not Path(NODE).exists():
+        pytest.skip("node is not installed")
+    source = documents_text()
+    fill_start = source.index("function docTemplateFill(")
+    fill_end = source.index("\n}\n", fill_start) + 3
+    script = (
+        "const docNextName = () => 'Untitled document 1';\n"
+        + source[fill_start:fill_end]
+        + "const a = docTemplateFill({id:'t', title:'T', content:'# {{title}}\\nAt {{time}}\\n\\n{{cursor}}end'});"
+        + "const b = docTemplateFill({id:'t', title:'T', content:'plain'});"
+        + "console.log(JSON.stringify([a, b]));"
+    )
+    out = subprocess.run([NODE, "-e", script], capture_output=True, text=True, check=True, timeout=30)
+    with_cursor, plain = json.loads(out.stdout)
+    assert "{{" not in with_cursor["content"] and "At " in with_cursor["content"]
+    assert re.search(r"At \d{1,2}:\d{2}", with_cursor["content"])
+    assert with_cursor["content"][with_cursor["cursor"] :].startswith("end")
+    assert plain["cursor"] == -1

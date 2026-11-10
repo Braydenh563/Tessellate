@@ -2311,15 +2311,21 @@ function docTemplateFill(template, typedTitle = "") {
     String(now.getMonth() + 1).padStart(2, "0"),
     String(now.getDate()).padStart(2, "0"),
   ].join("-");
-  const fill = (text) => (text || "").replaceAll("{{date}}", date).replaceAll("{{isodate}}", iso);
+  const time = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const fill = (text) => (text || "").replaceAll("{{date}}", date).replaceAll("{{isodate}}", iso).replaceAll("{{time}}", time);
   //: A template's gallery label and the title it gives the document are not
   //: always the same words: "Daily" names the choice in the gallery, and the
   //: document it makes is called by its day (`docTitle`, section 14).
   //: A title the person already typed is the name they chose (audit 1028 U34).
   const title = typedTitle || (template.id === "blank" ? docNextName() : fill(template.docTitle || template.title));
+  //: `{{cursor}}` is where the caret lands (the note templates' word for it): taken out here, its offset handed back as `cursor`
+  //: (-1 for none) for the caller to place; a section's fill keeps only `content`.
+  const text = fill(template.content).replaceAll("{{title}}", title);
+  const cursor = text.indexOf("{{cursor}}");
   return {
     title,
-    content: fill(template.content).replaceAll("{{title}}", title),
+    content: text.replaceAll("{{cursor}}", ""),
+    cursor,
     //: A code template (the p5 sketch) makes a document of its own type.
     ...(template.fileType ? { file_type: template.fileType } : {}),
   };
@@ -2394,7 +2400,7 @@ async function createDocument(template = null) {
   //: left behind empty: its title carries into the template's document (U34).
   const started = currentDoc && docsMadeThisSession.has(currentDoc.id) && !docText().trim() ? $("doc-title").value.trim() : "";
   await docDropIfUntouched(null, { titled: true });
-  const body = docTemplateFill(template, started && !docIsUntouched(started, "") ? started : "");
+  const { cursor, ...body } = docTemplateFill(template, started && !docIsUntouched(started, "") ? started : "");
   const doc = await apiJson("/documents", {
     method: "POST",
     body: JSON.stringify(body),
@@ -2402,6 +2408,12 @@ async function createDocument(template = null) {
   loadCaptureDocuments(); // so Capture can attach to it straight away
   await loadDocuments(doc.id);
   offerCreateUndo(doc);
+  //: A template with a `{{cursor}}` puts the caret there; without one the title is selected to be typed over.
+  if (cursor >= 0 && docSurface()) {
+    docSurface().focus?.();
+    docSurface().setSelection(cursor);
+    return;
+  }
   $("doc-title").focus();
   $("doc-title").select();
 }
