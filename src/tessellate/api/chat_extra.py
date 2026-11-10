@@ -74,6 +74,24 @@ def events(session: Session, question: str, history: list[dict], *, now: datetim
     return out
 
 
+def talk_events(session: Session, typed: str, history: list[dict], seed: str, question: str) -> list[dict] | None:
+    """The turn when it is about the talk itself (`ai/composer_chat`: a feeling,
+    "shorter", "which is higher") or about Atlas ("do you have feelings"), read
+    on what was typed since a follow-on rewrites `question`. A feeling or a
+    missed name offers the notes on its subject only when some are found."""
+    from tessellate.ai import composer_chat, personal
+
+    said = composer_chat.reply(typed, history, seed)
+    if said is None:
+        itself = personal.about_me(question)
+        return [{"type": "answer", "delta": itself}] if itself else None
+    out: list[dict] = [{"type": "answer", "delta": said}]
+    subject = composer_chat.feeling_subject(typed)
+    if subject and mentioning(session, subject.split()[-1]):
+        out.append({"type": "offer", "offer": {"kind": "ask", "label": "", "asks": [f"What do my notes say about {subject}?"]}})
+    return out
+
+
 def welcome_line(session: Session, now: datetime, *, question: str = "", voice: str = "natural", seed: str = "", said: list[str] | None = None, link: bool = False) -> str:
     """The composed welcome (CHAT_PLAN 1353): the time of day, the reminders
     due today, the title of the last note and the writing streak, built by the

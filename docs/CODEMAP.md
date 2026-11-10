@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8044, frontend ids 2655, CSS sections 523, backend routes 664, backend modules 9624, test files 2366, tests 19698, plan headings 1000, app scripts 28, boot scripts 37, script files 272.
+Counts: frontend functions 8044, frontend ids 2655, CSS sections 523, backend routes 664, backend modules 9643, test files 2367, tests 19705, plan headings 1000, app scripts 28, boot scripts 37, script files 272.
 
 ## Frontend functions (8044)
 
@@ -13345,7 +13345,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9624)
+## Backend modules (9643)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14248,6 +14248,29 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_spoken` | src/tessellate/ai/composer_chance.py:48 |
 | `answer` | src/tessellate/ai/composer_chance.py:58 |
 | `options_in` | src/tessellate/ai/composer_chance.py:38 |
+
+### src/tessellate/ai/composer_chat.py (18)
+
+| Name | File:line |
+|---|---|
+| `_bullets` | src/tessellate/ai/composer_chat.py:88 |
+| `_clean` | src/tessellate/ai/composer_chat.py:24 |
+| `_feeling` | src/tessellate/ai/composer_chat.py:240 |
+| `_label` | src/tessellate/ai/composer_chat.py:125 |
+| `_last_answer` | src/tessellate/ai/composer_chat.py:31 |
+| `_lead` | src/tessellate/ai/composer_chat.py:71 |
+| `_pairs` | src/tessellate/ai/composer_chat.py:134 |
+| `_plain` | src/tessellate/ai/composer_chat.py:39 |
+| `_remark` | src/tessellate/ai/composer_chat.py:251 |
+| `_sentences` | src/tessellate/ai/composer_chat.py:47 |
+| `_shorter` | src/tessellate/ai/composer_chat.py:76 |
+| `_simpler` | src/tessellate/ai/composer_chat.py:83 |
+| `_value` | src/tessellate/ai/composer_chat.py:121 |
+| `compare` | src/tessellate/ai/composer_chat.py:165 |
+| `feeling_subject` | src/tessellate/ai/composer_chat.py:277 |
+| `meta` | src/tessellate/ai/composer_chat.py:92 |
+| `reply` | src/tessellate/ai/composer_chat.py:272 |
+| `social` | src/tessellate/ai/composer_chat.py:264 |
 
 ### src/tessellate/ai/composer_chip_subject.py (8)
 
@@ -19432,19 +19455,20 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_title_words` | src/tessellate/api/chat_attach.py:128 |
 | `_upload_is_sealed` | src/tessellate/api/chat_attach.py:207 |
 
-### src/tessellate/api/chat_extra.py (9)
+### src/tessellate/api/chat_extra.py (10)
 
 | Name | File:line |
 |---|---|
 | `_notes` | src/tessellate/api/chat_extra.py:25 |
 | `_reminders` | src/tessellate/api/chat_extra.py:34 |
-| `_turn_label` | src/tessellate/api/chat_extra.py:162 |
+| `_turn_label` | src/tessellate/api/chat_extra.py:180 |
 | `events` | src/tessellate/api/chat_extra.py:39 |
-| `language_events` | src/tessellate/api/chat_extra.py:106 |
-| `mentioning` | src/tessellate/api/chat_extra.py:145 |
-| `saved_joke` | src/tessellate/api/chat_extra.py:127 |
-| `slot_reply` | src/tessellate/api/chat_extra.py:171 |
-| `welcome_line` | src/tessellate/api/chat_extra.py:77 |
+| `language_events` | src/tessellate/api/chat_extra.py:124 |
+| `mentioning` | src/tessellate/api/chat_extra.py:163 |
+| `saved_joke` | src/tessellate/api/chat_extra.py:145 |
+| `slot_reply` | src/tessellate/api/chat_extra.py:189 |
+| `talk_events` | src/tessellate/api/chat_extra.py:77 |
+| `welcome_line` | src/tessellate/api/chat_extra.py:95 |
 
 ### src/tessellate/api/chat_pool.py (35)
 
@@ -25488,7 +25512,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19698)
+## Tests (19705)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26032,6 +26056,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_slots_1029b.py | 28 |
 | tests/test_composer_smalld_1108.py | 25 |
 | tests/test_composer_social.py | 15 |
+| tests/test_composer_social_1110.py | 7 |
 | tests/test_composer_social_1420.py | 14 |
 | tests/test_composer_streak_1029.py | 13 |
 | tests/test_composer_stress_1030.py | 15 |
