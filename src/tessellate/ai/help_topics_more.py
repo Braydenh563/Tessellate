@@ -2266,7 +2266,7 @@ MORE_TOPICS.extend(
                 "changes notes", "last run of a skill", "undo a skill run", "undo the run",
             ),
             "body": (
-                "Library, AI skills lists every skill: the filter beside the "
+                "Library, Skills lists every skill: the filter beside the "
                 "search shows All skills, Yours or Built-in (your own or the ones "
                 "that ship with the app, each with its count), and "
                 "the sort button (the arrows beside them) orders by Yours first, "
@@ -2981,7 +2981,7 @@ TOPIC_META: dict[str, dict] = {
     "why-this-answer": {"title": "Why this answer", "path": "Chat tab, the popup agent, or Ask in the Notes tab, under an answer"},
     "line-verdicts": {"title": "Wrong fact and Pin as true", "path": "Ask or Chat, a numbered mark in an answer"},
     "answer-pictures": {"title": "Pictures in answers", "path": "Chat tab, or Ask in the Notes tab, Cites under the answer"},
-    "library-skills": {"title": "AI skills in the Library", "path": "Library tab, AI skills"},
+    "library-skills": {"title": "Skills in the Library", "path": "Library tab, Skills"},
     "object-move": {"title": "Moving, copying and carrying cards", "path": "Notes tab, or Library tab, drag a card or press Ctrl+C; the tray in the status bar"},
     "ocr-engine": {"title": "Tesseract and the reading language", "path": "The OCR workspace, the reader button"},
     "time-and-recency": {"title": "Dates and recent notes in answers", "path": "Chat tab, or Ask on the Notes tab"},

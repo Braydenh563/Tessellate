@@ -370,12 +370,15 @@ let libraryCurrentPage = 1;
 //: default and the one you come back to, then by how often you would reach for
 //: the kind: a document is something you sat down to write, a binned note is
 //: something you threw away.
+//: `subtab: true` marks a kind with a sub-tab of its own: it is filtered there,
+//: so All does not offer its chip too (WORLD_CLASS 424 o; Files 6 and Boards 1
+//: sat beside the Files and Boards & maps sub-tabs). It shows while selected.
 const LIBRARY_KINDS = [
   { key: "all", icon: "ph:books", label: "Everything" },
   { key: "note", icon: "ph:note-pencil", label: "Notes" },
-  { key: "document", icon: "ph:file-text", label: "Documents" },
+  { key: "document", icon: "ph:file-text", label: "Documents", subtab: true },
   { key: "chat", icon: "ph:chat-circle", label: "Chats" },
-  { key: "file", icon: "ph:paperclip", label: "Files" },
+  { key: "file", icon: "ph:paperclip", label: "Files", subtab: true },
   { key: "tag", icon: "ph:tag", label: "Tags" },
   //: A board and a mind map are `Entry` rows carrying `is_board`
   //: (MINDMAP_PLAN §4 chose option B), so "Everything" listed them with a
@@ -385,8 +388,8 @@ const LIBRARY_KINDS = [
   //: rows are what let this view draw and count them as what they are. Same
   //: icons the Boards and maps sub-tab uses, so one thing has one glyph
   //: wherever it appears.
-  { key: "board", icon: "ph:pencil-circle", label: "Boards" },
-  { key: "map", icon: "ph:tree-structure", label: "Mind maps" },
+  { key: "board", icon: "ph:pencil-circle", label: "Boards", subtab: true },
+  { key: "map", icon: "ph:tree-structure", label: "Mind maps", subtab: true },
   //: A Mermaid diagram is a document of the `mmd` type (1546 D5); the server lists it as
   //: its own kind, and it opens in the Documents editor like any document.
   { key: "diagram", icon: "ph:flow-arrow", label: "Diagrams" },
@@ -597,7 +600,10 @@ function renderLibraryFilters() {
     //: the row (a class, not a removal) so the active chip, and a kind that
     //: fills while the tab is open, need no second code path; "Everything"
     //: and whichever chip is selected always show.
-    button.classList.toggle("is-empty", count === 0 && kind.key !== "all" && libraryKind !== kind.key);
+    button.classList.toggle(
+      "is-empty",
+      (count === 0 || kind.subtab) && kind.key !== "all" && libraryKind !== kind.key,
+    );
     button.addEventListener("click", () => {
       libraryKind = kind.key;
       libraryCurrentPage = 1;
@@ -10759,7 +10765,7 @@ onDomReady(() => {
         //: **A sub-tab shown a moment ago is not fetched again** (the owner:
         //: "it can be a bit glitchy and flashy switching somewhat fast
         //: through the library subtabs"). Every press re-fetched and rebuilt
-        //: its section from scratch, so flicking Documents, Boards, AI skills
+        //: its section from scratch, so flicking Documents, Boards, Skills
         //: and back rebuilt each one per press, and presses faster than a
         //: fetch stacked two rebuilds of one section on top of each other.
         //: Within a few seconds the section is shown as it was; after that,

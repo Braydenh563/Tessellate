@@ -110,7 +110,8 @@ function ok(label, pass, detail) {
     offer ? JSON.stringify(offer.box) : "absent",
   );
 
-  // The menu row: the same action, named for what it does.
+  // The menu row: the same action, named for what it does. With no model
+  // (this sandbox) the row drops "with Atlas" (entry-menu.js, aiIsOff).
   const menu = await page.evaluate(() => {
     const li = [...document.querySelectorAll(".entry-list li")].find((el) =>
       el.textContent.includes("A note with nothing filed on it yet."),
@@ -118,21 +119,25 @@ function ok(label, pass, detail) {
     const more = li && li.querySelector(".entry-more, [data-kebab], button[aria-haspopup]");
     if (!more) return { error: "no menu button on the card" };
     more.click();
-    const items = [...document.querySelectorAll(".action-menu .menu-item")].map((b) =>
-      b.textContent.trim(),
-    );
-    return { items };
+    return {};
   });
   await page.waitForTimeout(200);
 
+  if (!menu.error) menu.items = await page.evaluate(() => {
+    const li = [...document.querySelectorAll(".entry-list li")].find((el) =>
+      el.textContent.includes("A note with nothing filed on it yet."),
+    );
+    const m = li && li.querySelector(".action-menu:not(.hidden)");
+    return m ? [...m.querySelectorAll(".menu-item")].map((b) => b.textContent.trim()) : [];
+  });
   if (menu.error) {
     ok("the note's menu opens", false, menu.error);
   } else {
     ok("the note's menu opens", true, `${menu.items.length} rows`);
     ok(
       "and the action is named for what it does",
-      menu.items.some((t) => /tag and file with atlas/i.test(t)),
-      JSON.stringify(menu.items.filter((t) => /atlas|evaluat/i.test(t))),
+      menu.items.some((t) => /tag and file( with atlas)?$/i.test(t)),
+      JSON.stringify(menu.items.filter((t) => /atlas|evaluat|tag and file/i.test(t))),
     );
     ok(
       "with no row still called re-evaluate",

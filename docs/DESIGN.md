@@ -1790,6 +1790,7 @@ empty, capture a thought to begin": three tones for one situation.
 - **Verbs on buttons**: "Save current look", "Reset to default", "Add",
   "Move to bin". Never "OK", never a noun on its own where a verb fits.
 - **No exclamation marks.** Nothing in this app is that exciting.
+- **One noun per thing** (WORLD_CLASS 424 n): the skills list is "Skills" in Settings, the Library and the feature list (never "AI skills"), long writing is the Writing room (never "Write with Atlas"); "Ask" is the verb for questions to your notes, "Chat" the tab. `tests/test_one_noun_per_thing.py`.
 - **An empty state is one component**: `.empty-state` with an `.empty-icon`,
   an `.empty-title` that says what *would* be here, one sentence saying how
   to get it, and, where a single action exists, one button. Not a grey

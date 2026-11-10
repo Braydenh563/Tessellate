@@ -164,7 +164,7 @@ TOPIC_LEADS: dict[str, str] = {
     "bookmarks": "Keep a reading list of web links and mark them read as you go.",
     "web-clipper-bookmark": "Save a web page as a note with one press from your browser's bookmarks bar.",
     "contents": "Browse the whole notebook as a folding outline by category, tag or month.",
-    "library-skills": "See all your AI skills in one list, sort them, and copy one to change it.",
+    "library-skills": "See all your skills in one list, sort them, and copy one to change it.",
     "files-images": "Text in your pictures and scanned PDFs is read so you can search it.",
     "image-viewer": "Look at a picture or PDF up close, zoom, rotate and copy its text.",
     "ocr-workspace": "Read the text on an image or PDF and select, copy or find words in it.",

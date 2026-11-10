@@ -245,7 +245,7 @@ HELP_TOPICS: list[dict] = [
             "The Library is everything already made, in one searchable, "
             "filterable place: notes, documents, chats, files and tags, plus "
             "Bookmarks (a shelf for websites you visit often), Contents (a "
-            "hyperlinked outline of the whole notebook) and AI skills. "
+            "hyperlinked outline of the whole notebook) and Skills. "
             "The other sub-tabs are Documents, Boards & maps (whiteboards "
             "and mind maps), Images and Files. Each sub-tab's top bar ends "
             "with a ? that says what it holds. The Highlights chip lists every "
@@ -3486,7 +3486,7 @@ HELP_TOPICS.extend(
             "keywords": ("sub-tab", "subtab", "sort the library", "select all", "boards and maps"),
             "body": (
                 "The sub-tabs are plain words with a line under the one you are on (Notes and the document sidebar draw theirs the same way): All (everything you have made), "
-                "Documents, Boards & maps, Images, Files, AI skills, Bookmarks and "
+                "Documents, Boards & maps, Images, Files, Skills, Bookmarks and "
                 "Contents. Search, then sort newest first, oldest first, A to Z or "
                 "biggest first, and set how many show per page. Tick a card's box "
                 "to select it: the bar that appears has Select all, Open, Restore "
