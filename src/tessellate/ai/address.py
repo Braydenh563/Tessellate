@@ -76,7 +76,14 @@ def answer(name: str) -> str:
 def read_set(text: str) -> dict | None:
     """{"intent": "set_name", "name"} for "call me Sam" / "my name is Sam"; a
     time, a pronoun or a verb after "call me" ("call me later") is not a name."""
-    found = _SET.match(" ".join(str(text or "").split()))
+    plain = " ".join(str(text or "").split())
+    found = _SET.match(plain)
+    if not found and re.search(r"\bme\b", plain, re.I):
+        # "cal me Sam": a slip in the verb is read as "call" when that reads as the act.
+        from tessellate.ai import question_noise
+
+        fixed = question_noise.guided(plain, lambda t: bool(_SET.match(t)), frozenset({"call"}), real_to=None)
+        found = _SET.match(fixed) if fixed else None
     if not found:
         return None
     words = found.group("name").strip(" ,").split()
