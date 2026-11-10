@@ -509,11 +509,12 @@ def _picks(sec: Section, level: int, said: set[str]) -> list[str]:
     #: said again ("Recipe: lemon risotto.") leads nothing (W10 B30).
     #: A bare list note ("Reading list" over its items) keeps its title as the lead, which says nothing, so
     #: the list reader summarises it by its items (`composer_study._list_said`).
-    lead = 0 if sents and clean(sents[0]).strip(" -*+.:").lower() in said else next((i for i, x in enumerate(sents) if _says_something(x, said)), 0)
+    listed = list_gist(sec.text) is not None
+    lead = 0 if listed else next((i for i, x in enumerate(sents) if _says_something(x, said)), 0)
     picks = sents[lead : lead + 1]
     sents = sents[lead:]
     if level >= 0:
-        picks += _worth(sents[1:], 1 if level == 0 else 4, any_rest=level == 0 and len(sents) <= 4 and bool(picks) and _says_something(picks[0], said))
+        picks += _worth(sents[1:], 1 if level == 0 else 4, any_rest=level == 0 and len(sents) <= 4 and not listed)
     if level >= 1:
         picks = list(dict.fromkeys(picks + sents[1:5]))
     shown = 3 if level == 0 else 8

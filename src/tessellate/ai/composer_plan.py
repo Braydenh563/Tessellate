@@ -686,7 +686,11 @@ def _until(ctx: Ctx, subject: str) -> Reply | None:
     ev = _event_counting_down_to(found, wanted, today)
     if ev is None:
         #: Said, not left to the search: "tax return" held by no note is a missing day, not a missing topic.
-        if not any(wanted <= _stems(n.get("content") or "") for n in ctx.notes):
+        #: A date or holiday as the subject ("12 Dec", "christmas") is the calculator's, not a missing note.
+        from tessellate.ai import composer_calc
+
+        dated = composer_calc._resolve(subject, today) is not None  # noqa: SLF001
+        if not dated and not any(wanted <= _stems(n.get("content") or "") for n in ctx.notes):
             return Reply(f"I found no day for {subject.strip()} in your notes, so I cannot count down to it.")
         return None
     days = (ev.day - today).days
