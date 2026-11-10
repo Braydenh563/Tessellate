@@ -57,6 +57,12 @@ class Led:
     extra: dict = field(default_factory=dict)
 
 
+def own_topic(topics: list[dict], lead: str, sentences) -> dict:  # noqa: ANN001
+    """The topic the lead sentence is in, not the best-ranked one: its second
+    sentence is that topic's own (G14 g: the export answer's was about duplicates)."""
+    return next((t for t in topics if lead and lead in sentences(t["body"])), topics[0])
+
+
 def _stem(word: str) -> str:
     word = word.strip("'").lower()
     for tail in ("ies", "es", "s"):

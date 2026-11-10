@@ -315,7 +315,7 @@ def _contradictions(result: dict, args: dict) -> Said:
     if not found:
         message = str(result.get("message") or "")
         if "model" in message:
-            return "Finding where notes disagree needs a model to read them, and none is running.", "Start one in Settings, Models, then ask again.", _chips(("Open Settings, Models", settings_at("models")))
+            return "I could not tell from the notes alone which ones disagree.", "Ask “what changed” about one subject, and the dated changes are listed.", _chips(("Open the graph", GRAPH))
         return "I found no notes that disagree with each other.", "", _chips(("Open the graph", GRAPH))
     rows = []
     for t in found[:5]:

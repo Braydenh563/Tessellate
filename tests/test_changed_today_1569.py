@@ -77,7 +77,7 @@ def test_the_list_agrees_with_its_count(ask, session, edited):
     _seed(session, background=10, edited=edited, written=0)
     said = ask()
     assert said.count("- “") == 2, said
-    assert f"And {realise.count_word(edited - 2)} more." in said, said
+    assert f"And {realise.count_word(edited - 2)} more note" in said, said
 
 
 def test_one_or_two_notes_need_no_and_more(ask, session):

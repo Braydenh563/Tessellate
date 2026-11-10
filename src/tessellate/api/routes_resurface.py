@@ -43,7 +43,7 @@ def _card(session: Session, entry) -> dict:  # noqa: ANN001
         # about subj", which is a title and its body run together with the
         # break that separated them removed. A person's own first line is the
         # closest thing to a title a note without one has.
-        "title": manager.plain_label(content) or "Untitled note",
+        "title": _name(manager.plain_label(content)) or "Untitled note",
         "preview": " ".join(content.split())[:200],
         "created_at": entry.created_at,
         # The three facts the score is made of, in the card, because a panel
@@ -53,24 +53,43 @@ def _card(session: Session, entry) -> dict:  # noqa: ANN001
         "age_days": row.age_days if row else None,
         "link_count": row.link_count if row else None,
         "access_count": row.access_count if row else None,
-        "reason": _reason(row),
+        "reason": _reason(row, entry),
     }
 
 
-def _reason(row) -> str:  # noqa: ANN001
-    """"120 days old, no links, never opened", which is checkable. "0.82" is
-    not, and a number nobody can check is the fastest way to lose a panel."""
+def _name(label: str, words: int = 6) -> str:
+    """A label as a name of at most six words, never cut mid-word (G12: an
+    untitled note's first 80 characters ended "... get a suica card inste")."""
+    parts = label.split()
+    return label if len(parts) <= words else " ".join(parts[:words]).rstrip(",;:") + "…"
+
+
+_MONTH_NAMES = ("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
+_COUNT_WORDS = ("zero", "once", "twice", "three times", "four times", "five times", "six times", "seven times", "eight times", "nine times", "ten times")
+
+
+def _reason(row, entry=None) -> str:  # noqa: ANN001
+    """Why a note came back, as a sentence that can be checked: when it is
+    from, and whether it has been opened since. "From August; you have not
+    opened it since." says more than "72 days old, no links, never opened"
+    said on every row (the numbers travel beside it as `age_days`, ...)."""
     if row is None:
         return ""
-    parts = [f"{row.age_days} days old" if row.age_days else "written today"]
-    parts.append("no links" if not row.link_count else f"{row.link_count} link{'' if row.link_count == 1 else 's'}")
-    if not row.access_count:
-        parts.append("never opened")
-    elif row.access_count == 1:
-        parts.append("opened once")
+    made = getattr(entry, "created_at", None)
+    if not row.age_days:
+        start = "Written today"
+    elif made is not None:
+        start = f"From {_MONTH_NAMES[made.month - 1]}" + ("" if row.age_days < 330 else f" {made.year}")
     else:
-        parts.append(f"opened {row.access_count} times")
-    return ", ".join(parts)
+        start = f"{row.age_days} days old"
+    if not row.access_count:
+        tail = "you have not opened it since" if row.age_days else "not opened yet"
+    elif row.access_count < len(_COUNT_WORDS):
+        tail = f"opened {_COUNT_WORDS[row.access_count]}"
+    else:
+        tail = f"opened {row.access_count} times"
+    links = "" if row.link_count else ", with no links"
+    return f"{start}{links}; {tail}."
 
 
 @router.post("/compute")

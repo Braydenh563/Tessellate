@@ -107,6 +107,15 @@ def read_by_rule(text: str, now: datetime) -> dict | None:
     return parsed
 
 
+_VAGUE = re.compile(r"\b(?:some ?time|some ?day|whenever|eventually)\b", re.IGNORECASE)
+
+
+def says_no_time(text: str) -> bool:
+    """Whether the words promise a time and name none ("something sometime"):
+    a parse of it must not invent tomorrow 9am (G14 j)."""
+    return bool(_VAGUE.search(text or ""))
+
+
 def _fallback(text: str, now: datetime) -> dict:
     due = (now + timedelta(days=1)).replace(hour=9, minute=0, second=0, microsecond=0)
     return {"text": text.strip() or "Reminder", "due_at": due, "priority": "normal"}

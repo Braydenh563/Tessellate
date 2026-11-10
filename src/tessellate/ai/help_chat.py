@@ -1056,7 +1056,7 @@ def composed_answer(question: str, topics: list[dict], led: guide_lead.Led | Non
     steps = tuple(meta.get("steps") or ()) if led.steps else ()
     lead = led.lead or _stated_lead(question, topics)
     lines, where, walk = _guide_opening(question, path, steps, lead)
-    more = "" if steps else _second_sentence(question, first["body"], lead)
+    more = "" if steps else _second_sentence(question, guide_lead.own_topic(topics, lead, help_sentences)["body"], lead)
     lines += ["\n".join(f"{n}. {step}" for n, step in enumerate(steps, 1))] if steps else [more] if more else []
     if path and not where and not walk and _FIND_ASKED.search(question):
         lines.append(f"**Where:** {path}")

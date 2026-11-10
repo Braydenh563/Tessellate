@@ -17,7 +17,7 @@ from __future__ import annotations
 import re
 from datetime import datetime, timedelta
 
-from tessellate.ai import reminder_parser
+from tessellate.ai import recognise, reminder_parser
 
 _MAX = 400
 
@@ -53,11 +53,6 @@ _EVENT = re.compile(
 )
 _PAST = re.compile(
     r"\b(?:i|we)\s+(?:(?!need\b)\w+ed|went|saw|had|was|got|did|made|took|met|paid|sent|bought)\b|\b(?:was|were|had|did)\b",
-    re.IGNORECASE,
-)
-#: Where the time words begin, for a fact's own words.
-_TIME_STARTS = re.compile(
-    r"\s+(?:on|at|by|this|next|tomorrow|tonight|today|monday|tuesday|wednesday|thursday|friday|saturday|sunday|\d)\b.*$",
     re.IGNORECASE,
 )
 #: What the date reader leaves behind once it takes the date out.
@@ -115,7 +110,10 @@ def _read(sentence: str, now: datetime) -> dict | None:
         return parsed
     if _EVENT.search(sentence):
         #: A fact reads as itself: the words before its time, not the parser's remains.
-        parsed["text"] = reminder_parser.worded(_TIME_STARTS.sub("", sentence))
+        phrases = recognise.find(sentence)
+        #: "is coming thursday": the recogniser takes "coming thursday" as the date, but "coming" is the fact's verb.
+        cut = phrases[0][0] + (len("coming") if phrases[0][2].lower().startswith("coming ") else 0) if phrases else len(sentence)
+        parsed["text"] = reminder_parser.worded(sentence[:cut])
         return parsed
     return None
 

@@ -95,7 +95,7 @@ _ASKING_WORDS = frozenset(
     until also again just only some other one ones any every each main
     remind idea forgot forget remember wonder wondering deal hows whats
     wheres whens whos whys going happen happened happening news anything
-    something stuff info information details please thanks thank check
+    next last first per something stuff info information details please thanks thank check
     find look show help kind sort bit quick quickly briefly short detail
     detailed full whole remind possible maybe okay ok hey hi
     whereabouts address place put decide decided conclude concluded doing

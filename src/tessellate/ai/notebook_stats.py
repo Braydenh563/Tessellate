@@ -767,9 +767,11 @@ def _word_count(session: Session) -> StatAnswer:
 
 
 def _has_title(content: str) -> bool:
-    """A note has a title when its first line is a heading."""
-    first = next((ln for ln in str(content or "").splitlines() if ln.strip()), "")
-    return first.lstrip().startswith("#")
+    """A note has a title when its first line is a heading, or when that line
+    is all it has: a one-line note ("Suica") is named by its only line (G14 d)."""
+    lines = [ln for ln in str(content or "").splitlines() if ln.strip()]
+    first = lines[0] if lines else ""
+    return first.lstrip().startswith("#") or len(lines) == 1
 
 
 def _untitled(session: Session) -> StatAnswer:
@@ -872,9 +874,11 @@ def _shortest_notes(session: Session) -> StatAnswer:
     ]
     lead = facts[0]
     unit = "word" if lead["count"] == 1 else "words"
+    #: A note that is only its title has no words beyond it: said so, not "about 0 words" (G14 c).
+    size = "has only a title" if not lead["count"] else f"is about {lead['count']} {unit}"
     return StatAnswer(
         "shortest-notes",
-        f"Your shortest note is “{lead['label']}”, about {lead['count']} {unit}. "
+        f"Your shortest note is “{lead['label']}”; it {size}. "
         f"The {len(facts)} shortest are listed below.",
         facts,
     )

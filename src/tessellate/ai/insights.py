@@ -85,8 +85,13 @@ def _day(day: date, today: date) -> str:
 
 
 def _count_word(n: int) -> str:
-    words = ("no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten")
+    words = ("no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve")
     return words[n] if 0 <= n < len(words) else str(n)
+
+
+def _capital(subject: object) -> str:
+    said = str(subject)
+    return said[:1].upper() + said[1:]
 
 
 def _written(note: dict) -> date | None:
@@ -268,9 +273,10 @@ def for_subject(subject: str, notes: list[dict], today: date, question: str = ""
 def short(insight: Insight) -> str:
     slots = insight.slots
     if insight.rule == "recurrence":
-        return f"{slots['subject']} came up {slots['count']} times since {slots['since']}"
+        #: The subject with its capital and the count in words (G12).
+        return f"{_capital(slots['subject'])} came up {_count_word(int(slots['count']))} times since {slots['since']}"
     if insight.rule == "streak":
-        return f"{slots['subject']} every week for {slots['weeks']} weeks"
+        return f"{_capital(slots['subject'])} every week for {_count_word(int(slots['weeks']))} weeks"
     if insight.rule == "drift":
         return f"a plan from {slots['since']} still open"
     if insight.rule == "contrast":

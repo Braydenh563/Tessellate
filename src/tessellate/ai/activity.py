@@ -384,7 +384,10 @@ def _empty(asked: Asked, session: Session, today: date, zone) -> str:  # noqa: A
         return f"{lead} The last thing before it was made on {_say_day(before, today)}."
     if after:
         return f"{lead} The first thing after it was made on {_say_day(after, today)}."
-    return lead
+    #: An empty notebook says one thing on every surface (composer_empty.EMPTY_NOTEBOOK).
+    from tessellate.ai import composer_empty
+
+    return composer_empty.EMPTY_NOTEBOOK if not asked.kinds else lead
 
 
 def _summary(rows: list[tuple[datetime, str, str, str]]) -> str:
