@@ -252,28 +252,28 @@ Parked until the owner's data or a check on real hardware:
 
 **W22 Chat, Ask and the Guide** (C, Ask and help, Sonnet; not beside W1). Files: `capture-ask.js`, `ask-compose.js`, `ai/help_chat.py`, `ai/help_topics_more.py`. Checks: `tests/test_manual_parity.py`, `tests/test_guide_*`. Done when: each row fixed, help moved with it (order 13).
 - C30 Ask redesign at half width | t20#4, OPEN 22-10 doc
-- C31 Start SearXNG from a button | t20#6
-- C32 One-line summary at the top of every Help topic | oa 1607 e, 1612 b
-- C33 The Guide's no-model answer prints no "I took that to mean" | t20#13
-- C34 Ask history shows glued titles | 1107 D26
+- ~~C31 Start SearXNG from a button | t20#6~~ **Stale: built** (ask-compose.js searxng-start offer), s6-1110
+- ~~C32 One-line summary at the top of every Help topic | oa 1607 e, 1612 b~~ **Stale: built** (help_leads.py), s6-1110
+- ~~C33 The Guide's no-model answer prints no "I took that to mean" | t20#13~~ **Stale: built** (offline_answer says "Assuming you meant"), s6-1110
+- ~~C34 Ask history shows glued titles | 1107 D26~~ **Not reproduced: same cause as D5 (fixed)**, s6-1110
 - C35 Citation style (after Q1); path-first Guide answers (after Q23) | 1107 D25, E33
 - C36 "buttons disappeared" after opening Why: not reproduced, one more drive | chatfoot L4
 
 **W23 Documents daily UX** (C, documents, Sonnet; verify first; not beside W4 or W28). Files: `documents*.js` outside the save path. Checks: `tests/test_doc*`. Done when: rows fixed or struck.
-- C37 Spell and autocorrect split non-ASCII words ("café") | 1028-docs D8
-- C38 History previews leak raw markup | audit-1102-docs DX27
-- C39 Link offers have no Settings switch; "Untitled document N" naming | t20#15, t20#16
-- C40 Equation panel jump row and Inline/Display pill | DOCUMENTS 1566
+- ~~C37 Spell and autocorrect split non-ASCII words ("café") | 1028-docs D8~~ **Stale: fixed** (CHANGELOG 1499), s6-1110
+- ~~C38 History previews leak raw markup | audit-1102-docs DX27~~ **Stale: built** (7af47c4), s6-1110
+- ~~C39 Link offers have no Settings switch; "Untitled document N" naming | t20#15, t20#16~~ **Stale: built** (Settings link offers switch; documents.js Untitled document N), s6-1110
+- ~~C40 Equation panel jump row and Inline/Display pill | DOCUMENTS 1566~~ **Stale: built 6c08378**, s6-1110
 - C41 The remaining 1028-docs and 1031-docs open rows | book1 (40 and 7 rows)
 
 ### Tier D: performance and CI time
 
 **W24 CI time** (D, overlay engine and tests, Sonnet high). Files: `core/overlay/behaviour.py`, `engine.py`, `tests/test_overlay_*`, `.github/workflows/`. Checks: seeded output hashes identical before and after (the cispeed method), `--durations=0` on CI. Done when: the 3.11 and 3.12 jobs finish under 45 minutes.
-- D1 `FlowField.step` closed-form rest for a settled flow; `_next_act_pose_change` 30 samples a wake | cispeed L5
+- ~~D1 `FlowField.step` closed-form rest for a settled flow; `_next_act_pose_change` 30 samples a wake | cispeed L5~~ **Done** (Flow.step rest; `_next_act_pose_change` left), s6-1110
 - D2 The longest overlay tests (rest 81 s, life 69 s) | cispeed L4
 - D3 Slow tests outside the overlay (launcher 20 s, resurface 18 s, search spec 15 s, backup 13 s) | cispeed L6
 - D4 Find the unexplained tail: `--durations=0` on one CI run | HANDOVER 09b
-- D5 `test_complexity.py` over 15 and two lazy import cycles; complexity.yml baseline (after Q20) | fablecomp, OPEN lint debt
+- ~~D5 `test_complexity.py` over 15 and two lazy import cycles; complexity.yml baseline (after Q20) | fablecomp, OPEN lint debt~~ **Partly done** (PERF baseline zero and failing, Q20); the seed functions and two lazy cycles remain, s6-1110
 
 **W25 Palette and tab open** (D, shell, Sonnet high; not beside W11 or W20). Files: `palette.js`, `notes-list.js`, `settings*.js`. Checks: long tasks at 4x before and after. Done when: the palette is under 150 ms a keystroke at 4x.
 - D6 The palette blocks on open and on every letter (5.6 s at 4x) | 1031-shell SH1, 1031-perf PF3, UI Palette row 2

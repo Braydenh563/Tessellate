@@ -50,3 +50,16 @@ def test_no_import_cycle_at_load() -> None:
 def test_the_lazy_import_cycle_does_not_grow() -> None:
     groups = complexity.cycles(lazy=True)
     assert len(groups) <= 1 and all(len(g) <= LAZY_CYCLE_MODULES for g in groups), [len(g) for g in groups]
+
+
+def test_the_performance_rules_have_a_zero_baseline() -> None:
+    """Q20: none of the PERF rules are open, so the baseline is zero and a new one fails this test (where ruff is
+    installed). Making complexity.yml fail on them too is a CI definition edit, left for the owner (HANDOVER)."""
+    import shutil
+    import subprocess
+
+    ruff = shutil.which("ruff") or str(ROOT / ".venv" / "bin" / "ruff")
+    if not Path(ruff).exists():
+        return
+    done = subprocess.run([ruff, "check", "src", "--select", "PERF", "--output-format=concise"], cwd=ROOT, capture_output=True, text=True, check=False)
+    assert done.returncode == 0, done.stdout

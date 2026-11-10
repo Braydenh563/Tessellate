@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8048, frontend ids 2659, CSS sections 523, backend routes 664, backend modules 9901, test files 2388, tests 19997, plan headings 1000, app scripts 28, boot scripts 37, script files 273.
+Counts: frontend functions 8048, frontend ids 2659, CSS sections 523, backend routes 664, backend modules 9901, test files 2388, tests 19999, plan headings 1000, app scripts 28, boot scripts 37, script files 273.
 
 ## Frontend functions (8048)
 
@@ -18205,12 +18205,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `dated_sentence` | src/tessellate/ai/recognise.py:2768 |
 | `day_of_month` | src/tessellate/ai/recognise.py:3736 |
 | `day_offset` | src/tessellate/ai/recognise.py:2830 |
-| `days_apart` | src/tessellate/ai/recognise.py:3967 |
+| `days_apart` | src/tessellate/ai/recognise.py:3965 |
 | `days_named` | src/tessellate/ai/recognise.py:344 |
 | `days_question` | src/tessellate/ai/recognise.py:2675 |
 | `days_since` | src/tessellate/ai/recognise.py:1042 |
-| `distances` | src/tessellate/ai/recognise.py:3944 |
-| `event_window_asked` | src/tessellate/ai/recognise.py:3937 |
+| `distances` | src/tessellate/ai/recognise.py:3942 |
+| `event_window_asked` | src/tessellate/ai/recognise.py:3935 |
 | `find` | src/tessellate/ai/recognise.py:2267 |
 | `first_of` | src/tessellate/ai/recognise.py:853 |
 | `hemisphere_of` | src/tessellate/ai/recognise.py:1938 |
@@ -18221,7 +18221,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `looks_dated` | src/tessellate/ai/recognise.py:2122 |
 | `measures` | src/tessellate/ai/recognise.py:3900 |
 | `mid_sentence` | src/tessellate/ai/recognise.py:2261 |
-| `months_named` | src/tessellate/ai/recognise.py:3949 |
+| `months_named` | src/tessellate/ai/recognise.py:3947 |
 | `names_a_day` | src/tessellate/ai/recognise.py:2131 |
 | `neighbour_day` | src/tessellate/ai/recognise.py:272 |
 | `next_occurrence` | src/tessellate/ai/recognise.py:834 |
@@ -18254,7 +18254,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `told_as_past` | src/tessellate/ai/recognise.py:2733 |
 | `window` | src/tessellate/ai/recognise.py:2280 |
 | `without_ahead_words` | src/tessellate/ai/recognise.py:1482 |
-| `without_event_window_tail` | src/tessellate/ai/recognise.py:3930 |
+| `without_event_window_tail` | src/tessellate/ai/recognise.py:3928 |
 | `without_windows` | src/tessellate/ai/recognise.py:2117 |
 
 ### src/tessellate/ai/records.py (24)
@@ -25869,7 +25869,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19997)
+## Tests (19999)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26251,7 +26251,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_companion_viewer_sleep.py | 6 |
 | tests/test_companion_vitals_1719.py | 6 |
 | tests/test_companion_weights_1108.py | 3 |
-| tests/test_complexity.py | 4 |
+| tests/test_complexity.py | 5 |
 | tests/test_complexity_ratchet.py | 1 |
 | tests/test_composer_1028.py | 24 |
 | tests/test_composer_1324.py | 19 |
@@ -26853,7 +26853,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_fixa2_1025.py | 5 |
 | tests/test_fixed_day_1693.py | 3 |
 | tests/test_flaw_class_lints.py | 2 |
-| tests/test_flow_1683.py | 16 |
+| tests/test_flow_1683.py | 17 |
 | tests/test_flow_pose_1683b.py | 7 |
 | tests/test_focus_feedback_1029.py | 8 |
 | tests/test_focus_timer.py | 7 |

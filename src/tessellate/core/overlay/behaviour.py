@@ -935,6 +935,14 @@ class Flow:
             return
         ax, ay = (vx - self.last_v[0]) / dt, (vy - self.last_v[1]) / dt
         self.last_v = (vx, vy)
+        #: A flow with nothing pushing it and every spring below 1e-200 is at rest: the damped springs fall
+        #: to denormals and stall there (1.5e-323 after 6,000 s), never to 0.0, and no picture can tell 1e-200
+        #: from zero (`view` rounds to 1/`FLOW_Q` px). Snapped to zero and left alone, a settled wake is free
+        #: (70k wakes: 1 s to 0.1 s) and every output is the same.
+        if not (vx or vy or ax or ay) and max(map(abs, (x for row in (*self.pos, *self.vel) for x in row))) < 1e-200:
+            for row in (*self.pos, *self.vel):
+                row[0] = row[1] = 0.0
+            return
         n = max(1, int(math.ceil(dt / 0.02)))
         h = dt / n
         for i in range(FLOW_BANDS):
