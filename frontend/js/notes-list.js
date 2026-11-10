@@ -1470,14 +1470,8 @@ function loadEmbedDocuments() {
 }
 
 // A note card's text: block constructs first, then the inline pass.
-//
-// Notes deliberately do not go through renderMarkdown, this pass keeps
-// search-term highlighting, which that renderer has no concept of. So the two
-// block constructs the "/" menu can insert are handled here explicitly and
-// everything else falls through to exactly the inline rendering this function
-// always did. When a note contains neither, the DOM produced is identical to
-// before, which is why the fall-through appends to `element` directly rather
-// than wrapping runs in a container.
+// Not renderMarkdown: this pass keeps search-term highlighting. Block
+// constructs are handled here; the rest is inline, appended to `element`.
 function renderNoteText(element, text, terms, prose = (s) => s) {
   element.replaceChildren();
   const lines = String(text ?? "").replace(/\r\n/g, "\n").split("\n");
@@ -1538,9 +1532,7 @@ function renderNoteText(element, text, terms, prose = (s) => s) {
       i++;
       continue;
     }
-    //: A card's headings are not elements to jump to (the card is one
-    //: paragraph of text), so its contents block is the outline itself: the
-    //: note's headings, indented by level, as a list to read.
+    //: The contents block: the note's headings, indented by level.
     if (MD_TOC_LINE.test(line)) {
       flush();
       const toc = mdTocElement();
@@ -1616,6 +1608,18 @@ function renderNoteText(element, text, terms, prose = (s) => s) {
       item.appendChild(box);
       renderNoteInline(item, task[2], terms);
       element.appendChild(item);
+      buffer.push("");
+      i++;
+      continue;
+    }
+
+    //: A heading line is a span the Headings row of the ⋯ menu can scroll to
+    //: (S74); drawn as the text it always was, hashes off.
+    const heading = /^#{1,6}[ \t]+(\S.*?)(?:\s+#+)?\s*$/.exec(line);
+    if (heading) {
+      flush();
+      if (element.childNodes.length) element.append("\n");
+      renderNoteInline(element.appendChild(Object.assign(document.createElement("span"), { className: "note-heading" })), heading[1], terms);
       buffer.push("");
       i++;
       continue;

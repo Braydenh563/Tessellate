@@ -14,13 +14,12 @@
 // While it works the drop veil (DESIGN.md "A drop target") says so.
 
 const FILE_DROP_MEDIA = /\.(png|jpe?g|gif|webp|avif|bmp|ico|pdf)$/i;
-//: On the Notes tab these become notes (S71), through the Obsidian reader.
-const FILE_DROP_NOTE = /\.(md|markdown|txt)$/i;
 //: A drag that stops sending `dragover` for this long is over (a drag that
 //: left the window sends no `dragleave` to `document` in every engine).
 const FILE_DROP_QUIET_MS = 400;
 
-const fileDrop = { armed: false, veil: null, label: null, timer: 0, busy: false };
+//: `note` takes, on the Notes tab, the files that become notes (S71) through the Obsidian reader.
+const fileDrop = { armed: false, veil: null, label: null, timer: 0, busy: false, note: /\.(md|markdown|txt)$/i };
 
 function fileDragHasFiles(event) {
   return Array.from(event.dataTransfer?.types || []).includes("Files");
@@ -66,17 +65,17 @@ function fileDropHide() {
   if (fileDrop.veil?.matches(":popover-open")) fileDrop.veil.hidePopover();
 }
 
-function fileDropOnNotes() {
+fileDrop.onNotes = function () {
   return !document.getElementById("tab-notes")?.classList.contains("hidden");
-}
+};
 
-function fileDropPrompt() {
-  return fileDropOnNotes() ? "Drop notes or files to add them" : "Drop files to add them to your Library";
-}
+fileDrop.prompt = function () {
+  return fileDrop.onNotes() ? "Drop notes or files to add them" : "Drop files to add them to your Library";
+};
 
 //: Markdown and text files become notes, one undo step for the lot
 //: (the same reader and Undo as Settings > Data's Obsidian import).
-async function fileDropNotes(files) {
+fileDrop.toNotes = async function (files) {
   const form = new FormData();
   for (const file of files) form.append("files", file, file.name);
   try {
@@ -87,7 +86,7 @@ async function fileDropNotes(files) {
   } catch (error) {
     toast(error.message || "Couldn't add those notes.", true);
   }
-}
+};
 
 function fileDropOver(event) {
   if (!fileDragHasFiles(event) || fileDrop.busy || fileDropLocked()) return;
@@ -97,7 +96,7 @@ function fileDropOver(event) {
   }
   event.preventDefault();
   event.dataTransfer.dropEffect = "copy";
-  fileDropShow(fileDropPrompt());
+  fileDropShow(fileDrop.prompt());
   clearTimeout(fileDrop.timer);
   fileDrop.timer = setTimeout(fileDropHide, FILE_DROP_QUIET_MS);
 }
@@ -123,7 +122,7 @@ function fileDropArm() {
 function fileDropEnter() {
   fileDropArm();
   if (fileDrop.busy || fileDropLocked()) return;
-  fileDropShow(fileDropPrompt());
+  fileDropShow(fileDrop.prompt());
   clearTimeout(fileDrop.timer);
   fileDrop.timer = setTimeout(fileDropHide, FILE_DROP_QUIET_MS * 2);
 }
@@ -144,7 +143,7 @@ async function fileDropImport(files) {
   clearTimeout(fileDrop.timer);
   fileDropShow(files.length === 1 ? "Adding 1 file…" : `Adding ${files.length} files…`);
   const media = files.filter((file) => FILE_DROP_MEDIA.test(file.name));
-  const asNotes = fileDropOnNotes() ? files.filter((file) => FILE_DROP_NOTE.test(file.name)) : [];
+  const asNotes = fileDrop.onNotes() ? files.filter((file) => fileDrop.note.test(file.name)) : [];
   const other = files.filter((file) => !FILE_DROP_MEDIA.test(file.name) && !asNotes.includes(file));
   let added = 0;
   const lands = new Set();
@@ -176,7 +175,7 @@ async function fileDropImport(files) {
       );
       if (typeof renderLibraryImagesGallery === "function") renderLibraryImagesGallery();
     }
-    if (asNotes.length) await fileDropNotes(asNotes);
+    if (asNotes.length) await fileDrop.toNotes(asNotes);
     if (other.length) {
       await ensureModule("libraryList");
       await importLibraryDocuments(other);

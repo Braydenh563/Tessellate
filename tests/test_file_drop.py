@@ -58,10 +58,9 @@ class FormData { constructor() { this.f = {}; } append(k, v) { this.f[k] = v; } 
 const api = { upload: async (path, form) => { if (fail.has(form.f.file.name)) throw new Error("too big"); log.uploads.push([path, form.f.file.name, form.f.direct]); return { json: async () => ({ id: form.f.file.name }) }; } };
 const pushUploadUndo = (label, base, made) => log.undos.push([label, base, made && made.id]);
 const toast = (m) => log.toasts.push(m);
-const FILE_DROP_NOTE = /\\.(md|markdown|txt)$/i;
-const onNotes = process.argv[3] === "notes";
-function fileDropOnNotes() { return onNotes; }
-async function fileDropNotes(files) { log.notes = files.map((f) => f.name); }
+fileDrop.note = /\\.(md|markdown|txt)$/i;
+fileDrop.onNotes = () => process.argv[3] === "notes";
+fileDrop.toNotes = async (files) => { log.notes = files.map((f) => f.name); };
 const toastAction = (m, label) => log.toasts.push(m + " / " + label);
 async function ensureModule(n) { log.modules.push(n); return true; }
 async function importLibraryDocuments(files) { log.docs = files.map((f) => f.name); }
@@ -132,7 +131,7 @@ def test_md_dropped_off_the_notes_tab_still_becomes_a_document():
 
 
 def test_the_notes_drop_uses_the_obsidian_reader_with_undo_and_the_veil_names_it():
-    block = _block(DROP, "async function fileDropNotes(files) {", "\n}\n")
+    block = _block(DROP, "fileDrop.toNotes = async function (files) {", "\n};\n")
     assert "/import/app?source=obsidian" in block and "undoImport(" in block
     assert 'ensureModule("settingsData")' in block
     assert "Drop notes or files to add them" in DROP

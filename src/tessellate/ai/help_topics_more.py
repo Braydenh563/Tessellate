@@ -2003,7 +2003,7 @@ MORE_TOPICS.extend(
             "keywords": (
                 "table in a note", "code block in a note", "remote image",
                 "picture from the web", "image not loaded", "note card",
-                "what a card shows", "create a linked note", "link mode",
+                "what a card shows", "create a linked note", "link mode", "headings", "outline of a note", "jump to a heading",
             ),
             "body": (
                 "A table or a code block is drawn the "
@@ -2014,7 +2014,9 @@ MORE_TOPICS.extend(
                 "to it, to open in a new tab. A [[link]] to a note that does not "
                 "exist has a Create chip beside it, which offers to make the note "
                 "or a document of that name. Esc leaves link mode (Link to "
-                "another) and takes its notice down."
+                "another) and takes its notice down. A note with three or more "
+                "headings has a Headings row in its ... menu: pick one and the card "
+                "opens out and scrolls to it."
             ),
             "badge": {"label": "Notes", "tab": "notes"},
         },
