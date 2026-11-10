@@ -2466,6 +2466,9 @@ not too fast; the rule is simply one number per published release.
     (with INBOX 405), toasts and '?' popovers fade in with 4px of travel,
     toasts fade out, skeletons in the Library and Timeline. Menus' exit left
     to the menu agent (archive/agent-remaining/perfpolish.md).
+    **E20, s58left4-1110, per part:** (4) built (above). (1) to (3) were
+    briefs, not parts: their outcomes are the rows built since (the finding
+    table is 424). Nothing here is left open as a part.
 
 ## Placed from INBOX, 2026-10-03 (INBOX 403, the standing bar)
 
@@ -2621,6 +2624,12 @@ INBOX 410 (check with AI in place, dockable suggestions, the dictionary sheet, t
     but when I pressed the back navigation button it opened the settings
     panel??" (not reproduced: chat then flashEntry then Back lands on chat,
     also with chat opened from inside Settings; needs the exact path).
+    **E20, s58left4-1110, per part (driven, fresh data dir):** (a) built:
+    `mapradialmore.js` 33/33 at 1440x900, 1184x760 and 947x608, the More menu
+    4px from its sector, none in the corner. (b) to (h) built, marked above.
+    (i) built: Settings, Packages lists the optional packages (14 extras) and
+    Profile holds the name and About me. (j) still open: not reproduced,
+    needs the owner's exact path.
 
 423. **Found, not fixed, by the agents of 2026-09-24 (placed for the next
     pass; one line each, recommendation first).** (a) The mind map's pie
@@ -2667,6 +2676,13 @@ INBOX 410 (check with AI in place, dockable suggestions, the dictionary sheet, t
     "no card with a reading", tagoffer.js 2 failures (manual route and the
     empty tag row flag). Triage each as app bug or stale sweep before
     fixing; the reader's 36px page box is fixed (25d7d56).
+    **E20, s58left4-1110, per part:** (a) re-driven, the ring takes the
+    arrow keys: right-click a topic, ArrowRight, focus on `wb-radial-sibling`
+    inside the ring. (b) built in part: Word export of `[TOC]`, `[!note]`
+    and `:::columns` (driven, 9,960 bytes) has no literal marker, the TOC is
+    a Contents list, callout and columns text stay in order; still open: a
+    Word TOC field, shaded box and real columns (no `w:cols`, `w:shd`).
+    (c) (d) (f) (g) (i) built, marked above. (e) (h) (j) not driven.
 
 424. **Audit of 2026-09-24 (performance measured in Playwright on a
     400-note, 1,200-link, 250-object board, 120-topic map, 30-image
@@ -2833,6 +2849,10 @@ INBOX 410 (check with AI in place, dockable suggestions, the dictionary sheet, t
     DOM nodes 48,888 to 49,297, listeners flat. Idle Chat once measured
     599 layouts per 10s at 4x and did not reproduce (0 in a later 5s
     check): watch for it.
+    **E20, s58left4-1110:** (a) to (l) and (p) to (r) built or answered,
+    marked above. (m) built: the long panes fold (`details.settings-fold`,
+    38 in index.html). Still open, not re-measured: (n) one noun per thing,
+    (o) the Library's duplicate kind filters.
 
 425. **The owner, 2026-09-24 (after the usage reset), with screenshots.**
     Avatars: (a) "the avatar shows even when the app is on the lock screen.
@@ -2914,6 +2934,10 @@ INBOX 410 (check with AI in place, dockable suggestions, the dictionary sheet, t
     greeting and name nudge, the summary under them and the time on the
     right, and the search full width beneath it at 1408px whatever the
     greeting says; measured at 1440 and 390).
+    **E20, s58left4-1110, per part (CHANGELOG reads, not re-driven):** built:
+    (a) (b) (c) (d) (h) to (m) and (q), marked above. Not checked: (e) (f)
+    (g) the greeting persona's avatar, regenerate wording and second change;
+    (n) Mycelium's start points.
 
 427. **Open from INBOX 426, 2026-09-26: two calls only the owner can make.**
     Everything else in 426 (a to cc) is built and in HISTORY, "INBOX
@@ -2934,6 +2958,8 @@ INBOX 410 (check with AI in place, dockable suggestions, the dictionary sheet, t
     moves" (426 l) is not known. Recommendation, taken unless the owner says
     otherwise: keep it, since a pin by the edge that stayed put would end up
     off screen or under the scroll bar on a narrower window, which is 426 k.
+    **E20, s58left4-1110:** (1) taste, left to the owner. (2) taken as
+    recommended (keep the edge-pinned distance); no owner reply against it.
 
 430. **The owner, 2026-09-27 afternoon, with 37 screenshots (verbatim in the
     session; condensed here, each placed with an agent).** Bugs: agent turn
@@ -2982,6 +3008,16 @@ INBOX 410 (check with AI in place, dockable suggestions, the dictionary sheet, t
     down from the top bar, or materialises), never a sudden pop; a "reduce
     actions" setting so waves and gestures come less often; more stances,
     Atlas's masculine and feminine each with their own.
+    **E20, s58left4-1110, per part (CHANGELOG reads, not re-driven):** built:
+    the Windows format-string error, the citation number on reload, the
+    Privacy pill's active state, the lightbox menu, the tools grid's one
+    divider (4183), Bookmarks, the companion's menu and hotkey, reduce
+    actions, Arc fit, the injection answer. Still open (no record found, not
+    driven): the sources-fold scroll jump, responsive-mode flicker, the top
+    bar at small widths, OCR from Images, the Capture '?' scroll, line
+    numbers in the capture preview, Atlas in the tour ring, the phone and
+    tablet list, the links widget, banner actions, per-feature "same as
+    chat", AI templates, the tray menu, the constellation.
 
 ## Placed from INBOX, 2026-10-04 (design work for the next Opus slots)
 
