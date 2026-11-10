@@ -87,6 +87,19 @@ def test_an_address_that_is_not_a_view_is_ignored_or_lands_on_its_tab(hash_):
         assert got is None
 
 
+@pytest.mark.skipif(not shutil.which("node"), reason="needs node")
+def test_an_overlay_with_an_entry_shows_its_own_address():
+    # B43: the manual and Statistics wrote `#/dashboard` while open (Playwright,
+    # 2026-11-10). The lazy router-overlays.js gives them routes; router.js is
+    # at its gzip cap.
+    lazy = (ROOT / "frontend" / "js" / "router-overlays.js").read_text(encoding="utf-8")
+    line = 'Object.assign(ROUTE_TABS, { Manual: "Manual", Statistics: "Statistics" });'
+    assert line in lazy
+    for tab in ("Manual", "Statistics"):
+        script = _functions("routeHash") + f'\n{line}\nprocess.stdout.write(routeHash({{tab: "{tab}", section: null}}));'
+        assert subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True).stdout == f"#/{tab}"
+
+
 def test_the_stack_is_mirrored_into_the_browsers_history():
     app = app_js_text()
     record = app[app.index("function recordTabVisit(") :]

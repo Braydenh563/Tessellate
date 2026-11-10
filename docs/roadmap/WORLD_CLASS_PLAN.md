@@ -804,7 +804,7 @@ Mirrored in `agent-remaining/OPEN.md`, table B.
 | 27 | ~~H9~~ | ~~usage ledger, time to first answer, simple mode, a perf budget in CI, an axe sweep, a global capture hotkey, fault injection in `errors.js`, speculative retrieval~~ built 2026-10-05 (HISTORY); left: `boottime.js` in the CI workflow | S | HISTORY |
 | 28 | §19 | torch still loads at launch for a notebook with notes (a preference, or ONNX); the Phosphor subset; lazy stylesheets; ~~the whole `EXPLAIN QUERY PLAN` pass; queue back-pressure~~ built 2026-10-05 (HISTORY, "Moved from the plans, 2026-10-05 (19.3, 19.5)"); the Windows frozen startup | S to M | `ai/embeddings.py`, `index.html` |
 | 29 | §10 | F1 a `prefs` module, F5 `api.stream`/`api.upload` and the no-bare-fetch lint, F7's threads onto the pool (the ratchet is built), F10 a `readings` table, F12 a store (F4 built 2026-09-26) | S to L | §10 |
-| 32 | 301 | the navigation and undo audit table, then the fixes | M | every surface |
+| 32 | 301 | the navigation and undo audit table (written 2026-11-10, below); fixes: the manual and Statistics address; left: the rows marked "row" in the table | M | every surface |
 | 34 | ~~D1, D8, §13~~ | ~~drag on the grid; the reminder row recipe and a 10m snooze; the minimap's NaN rects, the tab bar at 600 to 819px, a whiteboard menu sweep, the tidy layout past five nodes (all not re-checked)~~ built or measured 2026-10-05: drag on the grid found built, the 10m snooze built, the rest measured clean (`nbf1005-recheck.js`); left with its owner: the whiteboard menu sweep (WHITEBOARD_PLAN) | done | HISTORY |
 | 35 | §2 | the offline studio (the privacy receipt, its record, API and Settings page, built 2026-09-26) | L | new |
 | 36 | B6, H5 | sync without a server | L | design first |
@@ -812,6 +812,21 @@ Mirrored in `agent-remaining/OPEN.md`, table B.
 | 38 | §20 | three open questions, each the owner's decision | none | §20 |
 
 Rows 1, 2, 4, 7, 8, 9, 11, 12, 14, 15, 20, 24, 30, 31 and 33 above are built and moved verbatim to HISTORY.md, "Moved from the plans, 2026-11-09 (book5-1109: WORLD_CLASS_PLAN)"; row numbers are kept so citations hold.
+
+**Row 32, the navigation and undo audit (w12-1110, 2026-11-10; Chromium 1440x900 and 390x700, Back = `page.goBack()`, hash read after 900 ms, fresh data dir; sweeps untracked, numbers below).** Starting from Dashboard, Notes, Library (stack index 2 of 3).
+
+| surface | Back closes it first | hash while open | hash after Back / Escape | undo survives |
+| --- | --- | --- | --- | --- |
+| Settings | yes: it has its own entry (idx 2 to 3 on open, 3 to 2 on Back) | `#/settings/models` | `#/library` both ways; Forward reopens `#/settings/models` | yes |
+| Manual | yes (entry; Back and Escape both land on idx 2) | `#/Manual` (was `#/dashboard`, fixed) | `#/library` | yes |
+| Statistics | yes, as Manual | `#/Statistics` (was `#/dashboard`, fixed) | `#/library` | yes |
+| Palette (Ctrl+K), Finder, Shortcuts, Features, Agent palette, Notifications | yes, no entry of their own: Back closes, stack stays idx 2 | the tab's (`#/library`) | unchanged | yes |
+| Sheets, dialogs, lightbox, sketch pad | yes (probed with a bare `dialog`, `openLightbox`, `openSketch`; stack unchanged) | the tab's | unchanged | yes |
+| Tabs and sub-tabs | each is a step; Back walks them | `#/notes`, `#/library/images` and the like | matches | yes |
+| Notes, documents, chats, boards | each open object is a step | `#/notes/12`, `#/docs/7`, `#/chat/45`, `#/library/board/3` | matches | the board and document histories persist in IndexedDB (`undo-store.js`); the app-wide stack (`status.js` `undoStack`, 50 steps) is never cleared by navigation, and a board or document that is open takes Ctrl+Z first (`surfaceHistory`) |
+| Settings opened by a notice (`go: {settings, focus}`) | yes | `#/settings/<section>` | matches | yes; the focused control is inside the scroller on the phone sheet (4 of 4 targets, 390x700: top 406 to 597 of 158 to 671) |
+
+Left, as rows: a pasted `#/Manual` or `#/Statistics` is ignored at load (router.js is at its gzip cap, so the routes are added by the lazy `router-overlays.js` after boot; a manual opened in the first three seconds writes `#/dashboard`); the capitalised address is not a pretty one; undo across a reload is only for boards and documents, the app-wide stack is session-only (by design, `undo-store.js`); not driven: Back with a sheet over Settings on a phone, and a real device.
 
 The 2026-09-08 week table that stood here is superseded by the list above
 (its rows are either built or carried into it) and moved to HISTORY.md, "Moved from the plans, 2026-09-24".
