@@ -871,7 +871,7 @@ the same three tabs (Style, Text, Arrange); fields per kind in
 | Fill colour, on or off | yes (`wb-fmt-fill-on`, `wb-fmt-fill`) | `addFill` (Format.js 6861), `createCellColorOption` `fillColor` | done | none |
 | Gradient: second colour plus direction (north, east, south, west, radial) | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `addFill`: `gradientColor`, `gradientDirection` (Format.js 6925) | `data.gradient {to, dir}`, drawn as an SVG `linearGradient` or `radialGradient` in the board's `<defs>`; export clones defs so SVG and PNG keep it | M |
 | Fill style: hatch, cross-hatch, dots, dashed, zigzag line, solid | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `Editor.fillStyles` (Editor.js 250), `fillStyle` select in `addFill` (Format.js 7009) | `data.fillStyle` picks one of six SVG `<pattern>` fills clipped to the shape | M |
-| Swatches and preset colours (24 presets, 40 defaults, custom row) | yes, 2026-11-10 (s9c-1110; HISTORY): saved palettes under the board colours; draw.io seeds not added | `ColorDialog.presetColors`, `defaultColors` (Dialogs.js 1805, 1815), `getCustomColors` (Format.js 7119) | one swatch popover behind every colour input, seeded with draw.io's 24 and 40, plus the board's saved palettes | S |
+| Swatches and preset colours (24 presets, 40 defaults, custom row) | yes, 2026-11-10 (s9c-1110; HISTORY): saved palettes, then draw.io's 24 preset and 40 more colours under the board colours | `ColorDialog.presetColors`, `defaultColors` (Dialogs.js 1805, 1815), `getCustomColors` (Format.js 7119) | one swatch popover behind every colour input, seeded with draw.io's 24 and 40, plus the board's saved palettes | S |
 | Line colour | yes (`wb-fmt-stroke`) | `addStroke` (Format.js 7193) `strokeColor` | done | none |
 | Line width | yes (`wb-fmt-width`) | `strokeWidth`, up to 999 | done | none |
 | Line pattern: solid, dashed, dotted | yes (`wb-fmt-dash`) | `solid`, `dashed`, `dotted` actions (Actions.js 1586 to 1630) | done | none |
@@ -888,7 +888,7 @@ the same three tabs (Style, Text, Arrange); fields per kind in
 | Set as default style, default for new connectors | yes, 2026-11-10 (s9c-1110; HISTORY) | `setAsDefaultStyle` (Actions.js 1749), `setAsDefaultForNewConnections` (1763), Ctrl+Shift+D | `board.defaults {shape, link, text}` in the board's settings row, read by the tools when they create an item; Ctrl+Shift+D writes it from the selection | M |
 | Named styles | yes (`save-style`, `wb-fmt-save-style`, library kind `style`) | style presets in the sidebar and `DiagramStylePanel.addGraphStyles` (Format.js 8383) | done for items; the whole-board presets are the next row | none |
 | Board-wide style presets (twelve colour schemes applied to every shape) | yes, 2026-11-10 (s9c-1110; HISTORY) | `DiagramStylePanel` (Format.js 8252 to 8858) | a "Board style" row in the Format panel's no-selection state, writing fill, stroke and text colour across the board in one undo step | M |
-| Edit image, replace image, crop | no (`icon-picker.js` crop is the avatar picker) | `editImage`, `image...`, `crop...` (Actions.js 884, 1998, 2112) | canvas crop to a new media row; ANALYSIS row "Crop, rotate, flip" | M |
+| Edit image, replace image, crop | partly, 2026-11-10 (s9c-1110; HISTORY): rectangle crop (Trim edges) and Replace picture built; pixel editing (Edit image) open | `editImage`, `image...`, `crop...` (Actions.js 884, 1998, 2112) | canvas crop to a new media row; ANALYSIS row "Crop, rotate, flip" | M |
 | SVG image styles and CSS variables | no | `addSvgStyles`, `addSvgVars` (Format.js 6442, 6594) | drop: draw.io-specific theming of embedded SVG | none |
 
 ### 2. Format panel, Text tab, and the Arrange tab
@@ -1190,7 +1190,7 @@ clash is listed so the choice is made once.
 | --- | --- | --- | --- | --- |
 | Insert an image (file, URL, drag, paste), embedded data URI | yes (`insert-image`, I; media rows) | `image...` (Actions.js 1998), `shape=image;image=data:...` | done | none |
 | Image as a shape fill (`image` style on any shape) | no | `STYLE_IMAGE`, `shape=image` | drop; an image is its own item | none |
-| Crop, replace, border | no | `crop` (Actions.js 2112), `editImage` | section 1 | M |
+| Crop, replace, border | crop and replace yes, 2026-11-10 (HISTORY); border open | `crop` (Actions.js 2112), `editImage` | section 1 | M |
 | Math typesetting (LaTeX in labels) | no | `mathematicalTypesetting` action (diagramly/Menus.js 840), `Editor.initMath` (diagramly/Editor.js 4701) loads MathJax | KaTeX is MIT and offline-friendly; a `$...$` span in text objects and shape labels rendered to SVG `foreignObject`; Tessellate's markdown has no math today, so it would come with notes | L |
 | Hyperlinks on shapes, to a URL, a page, or a note | yes for objects; links to a note are the app's own | `editLink`, `link=` | add to sketches; targets: note, frame, URL | S |
 | Tooltips | no | `editTooltip`, `getTooltipForCell`, `tooltips` toggle | section 3 | S |
