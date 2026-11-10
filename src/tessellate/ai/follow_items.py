@@ -18,8 +18,9 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from datetime import datetime
 
-from tessellate.ai import task_acts
+from tessellate.ai import follow_dates, task_acts
 
 #: The reading of a turn: what to say instead of the question, and/or what to ask.
 Reading = tuple[str | None, str | None]
@@ -204,8 +205,9 @@ def _rename(question: str, history: list[dict]) -> Reading:
     return f"rename the {last.title} note to {found.group('x')}", None
 
 
-def read(question: str, history: list[dict] | None) -> Reading:
-    """(the sentence the question stands for, the line that asks which), either or neither."""
+def read(question: str, history: list[dict] | None, now: datetime | None = None) -> Reading:
+    """(the sentence the question stands for, the line that asks which), either or neither.
+    With `now`, a day counted from or moved off the one just shown is read too (`follow_dates`)."""
     history = history or []
     if not history or not (question or "").strip():
         return None, None
@@ -213,4 +215,6 @@ def read(question: str, history: list[dict] | None) -> Reading:
         said, ask = reader(question, history)
         if said or ask:
             return said, ask
-    return None, None
+    if now is None:
+        return None, None
+    return follow_dates.read(question, history, now, shown(str(history[-1].get("answer") or "")))

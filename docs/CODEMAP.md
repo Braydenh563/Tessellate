@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8044, frontend ids 2655, CSS sections 523, backend routes 664, backend modules 9656, test files 2368, tests 19720, plan headings 1000, app scripts 28, boot scripts 37, script files 272.
+Counts: frontend functions 8044, frontend ids 2655, CSS sections 523, backend routes 664, backend modules 9664, test files 2369, tests 19730, plan headings 1000, app scripts 28, boot scripts 37, script files 272.
 
 ## Frontend functions (8044)
 
@@ -13345,7 +13345,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9656)
+## Backend modules (9664)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -16540,23 +16540,35 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `topic` | src/tessellate/ai/find_topic.py:20 |
 
+### src/tessellate/ai/follow_dates.py (7)
+
+| Name | File:line |
+|---|---|
+| `_anchor` | src/tessellate/ai/follow_dates.py:60 |
+| `_clock` | src/tessellate/ai/follow_dates.py:48 |
+| `_day` | src/tessellate/ai/follow_dates.py:44 |
+| `_moved` | src/tessellate/ai/follow_dates.py:96 |
+| `_relative` | src/tessellate/ai/follow_dates.py:76 |
+| `_stated_clock` | src/tessellate/ai/follow_dates.py:53 |
+| `read` | src/tessellate/ai/follow_dates.py:116 |
+
 ### src/tessellate/ai/follow_items.py (13)
 
 | Name | File:line |
 |---|---|
-| `Shown` | src/tessellate/ai/follow_items.py:29 |
-| `_add` | src/tessellate/ai/follow_items.py:165 |
-| `_last_list` | src/tessellate/ai/follow_items.py:69 |
-| `_make_it` | src/tessellate/ai/follow_items.py:177 |
-| `_named` | src/tessellate/ai/follow_items.py:88 |
-| `_pick` | src/tessellate/ai/follow_items.py:97 |
-| `_remove` | src/tessellate/ai/follow_items.py:116 |
-| `_rename` | src/tessellate/ai/follow_items.py:199 |
-| `_table_items` | src/tessellate/ai/follow_items.py:44 |
-| `_tick` | src/tessellate/ai/follow_items.py:141 |
-| `_which` | src/tessellate/ai/follow_items.py:93 |
-| `read` | src/tessellate/ai/follow_items.py:207 |
-| `shown` | src/tessellate/ai/follow_items.py:52 |
+| `Shown` | src/tessellate/ai/follow_items.py:30 |
+| `_add` | src/tessellate/ai/follow_items.py:166 |
+| `_last_list` | src/tessellate/ai/follow_items.py:70 |
+| `_make_it` | src/tessellate/ai/follow_items.py:178 |
+| `_named` | src/tessellate/ai/follow_items.py:89 |
+| `_pick` | src/tessellate/ai/follow_items.py:98 |
+| `_remove` | src/tessellate/ai/follow_items.py:117 |
+| `_rename` | src/tessellate/ai/follow_items.py:200 |
+| `_table_items` | src/tessellate/ai/follow_items.py:45 |
+| `_tick` | src/tessellate/ai/follow_items.py:142 |
+| `_which` | src/tessellate/ai/follow_items.py:94 |
+| `read` | src/tessellate/ai/follow_items.py:208 |
+| `shown` | src/tessellate/ai/follow_items.py:53 |
 
 ### src/tessellate/ai/followups.py (3)
 
@@ -17779,7 +17791,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `weeks_gone` | src/tessellate/ai/realise.py:214 |
 | `wording` | src/tessellate/ai/realise.py:377 |
 
-### src/tessellate/ai/recognise.py (218)
+### src/tessellate/ai/recognise.py (219)
 
 | Name | File:line |
 |---|---|
@@ -17951,6 +17963,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `dated_sentence` | src/tessellate/ai/recognise.py:2755 |
 | `day_of_month` | src/tessellate/ai/recognise.py:3723 |
 | `day_offset` | src/tessellate/ai/recognise.py:2817 |
+| `days_apart` | src/tessellate/ai/recognise.py:3954 |
 | `days_named` | src/tessellate/ai/recognise.py:344 |
 | `days_question` | src/tessellate/ai/recognise.py:2662 |
 | `days_since` | src/tessellate/ai/recognise.py:1042 |
@@ -25530,7 +25543,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19720)
+## Tests (19730)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25952,6 +25965,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_context_leak_1108.py | 3 |
 | tests/test_composer_conversations_1729.py | 6 |
 | tests/test_composer_dates_1029.py | 12 |
+| tests/test_composer_dates_1110.py | 10 |
 | tests/test_composer_dates_1441.py | 8 |
 | tests/test_composer_dates_1483.py | 12 |
 | tests/test_composer_days_1109.py | 3 |

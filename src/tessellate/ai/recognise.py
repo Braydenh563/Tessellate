@@ -3942,3 +3942,24 @@ def months_named(text: str) -> list[int]:
         if low in _MONTHS and (low != "may" or word[:1] == "M"):
             found.append(_MONTHS[low])
     return found
+
+
+_APART = lazy_compile(
+    r"\b(?:(?P<n>\d{1,3}|a|an|one|two|three|four|five|six|seven|eight|nine|ten|twelve|a couple of|a few)|the)\s+"
+    r"(?P<u>days?|weeks?|fortnights?)\s+(?P<d>before|earlier|prior to|after|later)\b",
+    re.IGNORECASE,
+)
+
+
+def days_apart(text: str) -> int | None:
+    """How many days "the day before", "a week before that", "two days later" sit
+    from the day they are counted from: negative for before, positive for after;
+    None when the text says no such span. "The week before" is seven days."""
+    found = _APART.search(text or "")
+    if not found:
+        return None
+    amount = 1 if found["n"] is None else _amount(found["n"])
+    if not amount:
+        return None
+    unit = {"d": 1, "w": 7, "f": 14}[found["u"][0].lower()]
+    return amount * unit * (-1 if found["d"].lower() in ("before", "earlier", "prior to") else 1)
