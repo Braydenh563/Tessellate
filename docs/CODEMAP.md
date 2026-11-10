@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8062, frontend ids 2665, CSS sections 523, backend routes 662, backend modules 9945, test files 2407, tests 20072, plan headings 1000, app scripts 28, boot scripts 37, script files 274.
+Counts: frontend functions 8062, frontend ids 2665, CSS sections 523, backend routes 662, backend modules 9945, test files 2408, tests 20078, plan headings 1000, app scripts 28, boot scripts 37, script files 274.
 
 ## Frontend functions (8062)
 
@@ -4179,17 +4179,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `docAccessFindings` | frontend/js/documents-prose.js:919 |
-| `docApplyWholeText` | frontend/js/documents-prose.js:2566 |
-| `docBulletRetype` | frontend/js/documents-prose.js:2010 |
+| `docApplyWholeText` | frontend/js/documents-prose.js:2683 |
+| `docBulletRetype` | frontend/js/documents-prose.js:2125 |
 | `docCheckLinkText` | frontend/js/documents-prose.js:185 |
-| `docCopyFormatted` | frontend/js/documents-prose.js:2609 |
-| `docDateText` | frontend/js/documents-prose.js:2429 |
-| `docEaseLabel` | frontend/js/documents-prose.js:2518 |
-| `docEditorMenuItems` | frontend/js/documents-prose.js:3230 |
-| `docEditorPaste` | frontend/js/documents-prose.js:3214 |
+| `docCopyFormatted` | frontend/js/documents-prose.js:2726 |
+| `docDateText` | frontend/js/documents-prose.js:2546 |
+| `docEaseLabel` | frontend/js/documents-prose.js:2635 |
+| `docEditorMenuItems` | frontend/js/documents-prose.js:3347 |
+| `docEditorPaste` | frontend/js/documents-prose.js:3331 |
 | `docEmojiList` | frontend/js/documents-prose.js:1669 |
 | `docEmojiMatches` | frontend/js/documents-prose.js:1682 |
-| `docFenceCloseIndent` | frontend/js/documents-prose.js:2019 |
+| `docFenceCloseIndent` | frontend/js/documents-prose.js:2134 |
 | `docFillDate` | frontend/js/documents-prose.js:1542 |
 | `docFillGhost` | frontend/js/documents-prose.js:1788 |
 | `docFillOptions` | frontend/js/documents-prose.js:1722 |
@@ -4207,8 +4207,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docGrammarRequest` | frontend/js/documents-prose.js:334 |
 | `docGrammarSend` | frontend/js/documents-prose.js:109 |
 | `docGrammarWhy` | frontend/js/documents-prose.js:82 |
-| `docHeadingRows` | frontend/js/documents-prose.js:2411 |
-| `docInCodeAt` | frontend/js/documents-prose.js:2054 |
+| `docHeadingRows` | frontend/js/documents-prose.js:2528 |
+| `docInCodeAt` | frontend/js/documents-prose.js:2169 |
 | `docIsoDay` | frontend/js/documents-prose.js:1532 |
 | `docLinkOfferAsk` | frontend/js/documents-prose.js:425 |
 | `docLinkOfferCurrent` | frontend/js/documents-prose.js:462 |
@@ -4218,46 +4218,46 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docLinkOfferIgnoredNames` | frontend/js/documents-prose.js:380 |
 | `docLinkOfferQuiet` | frontend/js/documents-prose.js:364 |
 | `docLinkOfferRequest` | frontend/js/documents-prose.js:450 |
-| `docListEnter` | frontend/js/documents-prose.js:1927 |
-| `docListExitText` | frontend/js/documents-prose.js:2004 |
-| `docListFenceExtensions` | frontend/js/documents-prose.js:2240 |
+| `docListEnter` | frontend/js/documents-prose.js:2042 |
+| `docListExitText` | frontend/js/documents-prose.js:2119 |
+| `docListFenceExtensions` | frontend/js/documents-prose.js:2357 |
 | `docLorem` | frontend/js/documents-prose.js:1520 |
-| `docMinutesLabel` | frontend/js/documents-prose.js:2512 |
-| `docNumberHeadings` | frontend/js/documents-prose.js:2391 |
-| `docOpenStatistics` | frontend/js/documents-prose.js:2545 |
-| `docPairBackspace` | frontend/js/documents-prose.js:1912 |
-| `docPairInput` | frontend/js/documents-prose.js:1872 |
-| `docPasteBlockPad` | frontend/js/documents-prose.js:2781 |
-| `docPasteChipClose` | frontend/js/documents-prose.js:2866 |
-| `docPasteChipKey` | frontend/js/documents-prose.js:2933 |
-| `docPasteChipMenu` | frontend/js/documents-prose.js:2918 |
-| `docPasteChipPlace` | frontend/js/documents-prose.js:2878 |
-| `docPasteChoose` | frontend/js/documents-prose.js:2898 |
-| `docPasteFence` | frontend/js/documents-prose.js:2762 |
-| `docPasteGuessLang` | frontend/js/documents-prose.js:2752 |
-| `docPasteIsLinewise` | frontend/js/documents-prose.js:3011 |
-| `docPasteIsTsvGrid` | frontend/js/documents-prose.js:3006 |
-| `docPasteMatch` | frontend/js/documents-prose.js:2771 |
-| `docPasteMenuOpen` | frontend/js/documents-prose.js:2926 |
-| `docPasteOffer` | frontend/js/documents-prose.js:2953 |
-| `docPasteOfferRich` | frontend/js/documents-prose.js:3067 |
-| `docPasteOfferTable` | frontend/js/documents-prose.js:3079 |
-| `docPasteSpecial` | frontend/js/documents-prose.js:3100 |
-| `docPasteSpecialApply` | frontend/js/documents-prose.js:3084 |
-| `docPasteSpecialMenu` | frontend/js/documents-prose.js:3124 |
-| `docPasteTextVariants` | frontend/js/documents-prose.js:2994 |
-| `docPasteTransform` | frontend/js/documents-prose.js:2820 |
-| `docPasteUrlEvent` | frontend/js/documents-prose.js:3017 |
-| `docPasteVariant` | frontend/js/documents-prose.js:2862 |
-| `docPasteWrite` | frontend/js/documents-prose.js:2981 |
-| `docPlainText` | frontend/js/documents-prose.js:2438 |
+| `docMinutesLabel` | frontend/js/documents-prose.js:2629 |
+| `docNumberHeadings` | frontend/js/documents-prose.js:2508 |
+| `docOpenStatistics` | frontend/js/documents-prose.js:2662 |
+| `docPairBackspace` | frontend/js/documents-prose.js:2027 |
+| `docPairInput` | frontend/js/documents-prose.js:1987 |
+| `docPasteBlockPad` | frontend/js/documents-prose.js:2898 |
+| `docPasteChipClose` | frontend/js/documents-prose.js:2983 |
+| `docPasteChipKey` | frontend/js/documents-prose.js:3050 |
+| `docPasteChipMenu` | frontend/js/documents-prose.js:3035 |
+| `docPasteChipPlace` | frontend/js/documents-prose.js:2995 |
+| `docPasteChoose` | frontend/js/documents-prose.js:3015 |
+| `docPasteFence` | frontend/js/documents-prose.js:2879 |
+| `docPasteGuessLang` | frontend/js/documents-prose.js:2869 |
+| `docPasteIsLinewise` | frontend/js/documents-prose.js:3128 |
+| `docPasteIsTsvGrid` | frontend/js/documents-prose.js:3123 |
+| `docPasteMatch` | frontend/js/documents-prose.js:2888 |
+| `docPasteMenuOpen` | frontend/js/documents-prose.js:3043 |
+| `docPasteOffer` | frontend/js/documents-prose.js:3070 |
+| `docPasteOfferRich` | frontend/js/documents-prose.js:3184 |
+| `docPasteOfferTable` | frontend/js/documents-prose.js:3196 |
+| `docPasteSpecial` | frontend/js/documents-prose.js:3217 |
+| `docPasteSpecialApply` | frontend/js/documents-prose.js:3201 |
+| `docPasteSpecialMenu` | frontend/js/documents-prose.js:3241 |
+| `docPasteTextVariants` | frontend/js/documents-prose.js:3111 |
+| `docPasteTransform` | frontend/js/documents-prose.js:2937 |
+| `docPasteUrlEvent` | frontend/js/documents-prose.js:3134 |
+| `docPasteVariant` | frontend/js/documents-prose.js:2979 |
+| `docPasteWrite` | frontend/js/documents-prose.js:3098 |
+| `docPlainText` | frontend/js/documents-prose.js:2555 |
 | `docProseExtras` | frontend/js/documents-prose.js:475 |
-| `docProseFillExtensions` | frontend/js/documents-prose.js:2279 |
-| `docProseFillOn` | frontend/js/documents-prose.js:2040 |
-| `docProseGhostPlugin` | frontend/js/documents-prose.js:2135 |
-| `docProseGhostSet` | frontend/js/documents-prose.js:2120 |
-| `docProseInputHandler` | frontend/js/documents-prose.js:2068 |
-| `docProsePairKeymap` | frontend/js/documents-prose.js:2181 |
+| `docProseFillExtensions` | frontend/js/documents-prose.js:2396 |
+| `docProseFillOn` | frontend/js/documents-prose.js:2155 |
+| `docProseGhostPlugin` | frontend/js/documents-prose.js:2252 |
+| `docProseGhostSet` | frontend/js/documents-prose.js:2237 |
+| `docProseInputHandler` | frontend/js/documents-prose.js:2185 |
+| `docProsePairKeymap` | frontend/js/documents-prose.js:2298 |
 | `docProseRemap` | frontend/js/documents-prose.js:305 |
 | `docProseToolExtensions` | frontend/js/documents-prose.js:1455 |
 | `docReadAloudExtension` | frontend/js/documents-prose.js:1411 |
@@ -4266,15 +4266,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docReadAloudStart` | frontend/js/documents-prose.js:1320 |
 | `docReadAloudStop` | frontend/js/documents-prose.js:1389 |
 | `docReadAloudVoice` | frontend/js/documents-prose.js:1304 |
-| `docRunTextTool` | frontend/js/documents-prose.js:2577 |
-| `docSentenceCase` | frontend/js/documents-prose.js:2336 |
-| `docSmartPasteEvent` | frontend/js/documents-prose.js:3036 |
+| `docRunTextTool` | frontend/js/documents-prose.js:2694 |
+| `docSentenceCase` | frontend/js/documents-prose.js:2453 |
+| `docSmartPasteEvent` | frontend/js/documents-prose.js:3153 |
 | `docSmartPunct` | frontend/js/documents-prose.js:1805 |
-| `docSmartPunctOn` | frontend/js/documents-prose.js:2047 |
-| `docSortLines` | frontend/js/documents-prose.js:2354 |
+| `docSmartPunctOn` | frontend/js/documents-prose.js:2162 |
+| `docSortLines` | frontend/js/documents-prose.js:2471 |
 | `docSpeakable` | frontend/js/documents-prose.js:1247 |
-| `docStatistics` | frontend/js/documents-prose.js:2483 |
-| `docStatsRows` | frontend/js/documents-prose.js:2523 |
+| `docStatistics` | frontend/js/documents-prose.js:2600 |
+| `docStatsRows` | frontend/js/documents-prose.js:2640 |
 | `docStructuralBlank` | frontend/js/documents-prose.js:206 |
 | `docStructuralMask` | frontend/js/documents-prose.js:196 |
 | `docSuggestActive` | frontend/js/documents-prose.js:995 |
@@ -4293,23 +4293,23 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docSuggestParse` | frontend/js/documents-prose.js:689 |
 | `docSuggestResolve` | frontend/js/documents-prose.js:825 |
 | `docSuggestResolveAll` | frontend/js/documents-prose.js:831 |
-| `docSyllables` | frontend/js/documents-prose.js:2463 |
-| `docTitleCase` | frontend/js/documents-prose.js:2322 |
-| `docTopWords` | frontend/js/documents-prose.js:2471 |
-| `docTurnInto` | frontend/js/documents-prose.js:3171 |
-| `docTurnIntoLines` | frontend/js/documents-prose.js:3156 |
-| `docTurnIntoMenu` | frontend/js/documents-prose.js:3192 |
-| `docUniqueLines` | frontend/js/documents-prose.js:2360 |
+| `docSyllables` | frontend/js/documents-prose.js:2580 |
+| `docTitleCase` | frontend/js/documents-prose.js:2439 |
+| `docTopWords` | frontend/js/documents-prose.js:2588 |
+| `docTurnInto` | frontend/js/documents-prose.js:3288 |
+| `docTurnIntoLines` | frontend/js/documents-prose.js:3273 |
+| `docTurnIntoMenu` | frontend/js/documents-prose.js:3309 |
+| `docUniqueLines` | frontend/js/documents-prose.js:2477 |
 | `noteGrammarMenu` | frontend/js/documents-prose.js:602 |
 | `noteGrammarPlugin` | frontend/js/documents-prose.js:521 |
-| `pasteClean` | frontend/js/documents-prose.js:2650 |
-| `pasteGrid` | frontend/js/documents-prose.js:2694 |
-| `pasteLines` | frontend/js/documents-prose.js:2665 |
-| `pasteLinkLabel` | frontend/js/documents-prose.js:2659 |
-| `pasteOutline` | frontend/js/documents-prose.js:2712 |
-| `pasteParseDelimited` | frontend/js/documents-prose.js:2671 |
-| `pasteStripMark` | frontend/js/documents-prose.js:2704 |
-| `pasteUrl` | frontend/js/documents-prose.js:2654 |
+| `pasteClean` | frontend/js/documents-prose.js:2767 |
+| `pasteGrid` | frontend/js/documents-prose.js:2811 |
+| `pasteLines` | frontend/js/documents-prose.js:2782 |
+| `pasteLinkLabel` | frontend/js/documents-prose.js:2776 |
+| `pasteOutline` | frontend/js/documents-prose.js:2829 |
+| `pasteParseDelimited` | frontend/js/documents-prose.js:2788 |
+| `pasteStripMark` | frontend/js/documents-prose.js:2821 |
+| `pasteUrl` | frontend/js/documents-prose.js:2771 |
 | `renderDocReadAloudState` | frontend/js/documents-prose.js:1397 |
 | `renderDocSuggestState` | frontend/js/documents-prose.js:1198 |
 | `setDocSuggestMode` | frontend/js/documents-prose.js:1000 |
@@ -25956,7 +25956,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (20072)
+## Tests (20078)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27269,6 +27269,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_list_paging_f2.py | 4 |
 | tests/test_list_routes_by_shape.py | 2 |
 | tests/test_listener_arguments.py | 1 |
+| tests/test_live_code_blocks.py | 6 |
 | tests/test_live_markdown_blocks.py | 7 |
 | tests/test_live_queries_kg7.py | 8 |
 | tests/test_live_rule_line_height.py | 1 |

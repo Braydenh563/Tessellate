@@ -15925,7 +15925,7 @@ function docCmLanguageFor(CM, ext) {
     //: features looked like a bug in this file rather than a parser that had
     //: never been told about them. `markdownLanguage` is the GitHub dialect,
     //: which is the one this app's own renderer and its toolbar both speak.
-    case "md": return CM.markdown.markdown({ base: CM.markdown.markdownLanguage });
+    case "md": return CM.markdown.markdown({ base: CM.markdown.markdownLanguage, codeLanguages: (info) => docPairInput.fenceLanguage(CM, info) });
     //: `jsx: true` because a React file is a `.js` file as often as not,
     //: and without it every `<div>` in one was an error node, underlined as
     //: a syntax error in code that runs. TypeScript stays without it: TSX

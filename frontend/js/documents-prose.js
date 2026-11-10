@@ -1846,6 +1846,121 @@ docPairInput.tagSource = (CM) => {
   };
 };
 
+// DOC-FENCE-BEGIN (tests/test_live_code_blocks.py runs this region in node)
+//: **Live code blocks** (the owner, 2026-10-07 and 2026-10-26). A fenced block
+//: that names a language is not a second editor: the Markdown parser mounts
+//: that language on the block (`codeLanguages`, documents.js), so the one
+//: editor gives it the language's colour, indentation and brackets, and the
+//: source below gives it the language's completion. The stored text stays the
+//: fenced Markdown. Properties of `docPairInput`, not globals (the scope
+//: ratchet), like `tagSource` above.
+//:
+//: The words an info string may name, and the file type each one means.
+docPairInput.fenceNames = {
+  js: "js", javascript: "js", jsx: "js", ts: "ts", typescript: "ts", tsx: "ts",
+  py: "py", python: "py", css: "css", html: "html", json: "json",
+  yaml: "yaml", yml: "yaml", sh: "bash", bash: "bash", shell: "bash", zsh: "bash",
+  sql: "sql", toml: "toml", go: "go", rust: "rs", rs: "rs", c: "c", cpp: "cpp", "c++": "cpp",
+  cs: "cs", csharp: "cs", java: "java", kotlin: "kt", kt: "kt", ruby: "rb", rb: "rb",
+  xml: "xml", svg: "xml", swift: "swift", r: "r", ini: "ini",
+};
+
+//: The file type an info string names (`python title="fit.py"`, `{.sh}`), or
+//: null for no language or one the bundle has no mode for (mermaid, text).
+docPairInput.fenceExt = (info) => {
+  const word = /^[{.\s]*([A-Za-z+#][\w+#-]*)/.exec(String(info || ""));
+  return word ? docPairInput.fenceNames[word[1].toLowerCase()] || null : null;
+};
+
+docPairInput.fenceCache = new Map();
+
+//: The `codeLanguages` callback of the Markdown language: a Language, or null.
+docPairInput.fenceLanguage = (CM, info) => {
+  const ext = docPairInput.fenceExt(info);
+  if (!ext) return null;
+  const cache = docPairInput.fenceCache;
+  if (!cache.has(ext)) {
+    const support = docCmLanguageFor(CM, ext);
+    cache.set(ext, (support && (support.language || (support.parser ? support : null))) || null);
+  }
+  return cache.get(ext);
+};
+
+//: The fenced block around a position, or null.
+docPairInput.fenceAt = (CM, state, pos) => {
+  for (let node = CM.language.syntaxTree(state).resolveInner(pos, -1); node; node = node.parent) {
+    if (node.name === "FencedCode") return node;
+  }
+  return null;
+};
+
+//: Typing the language after the opening ``` offers the names above.
+docPairInput.fenceInfo = (context, block) => {
+  const open = context.state.doc.lineAt(block.from);
+  const before = open.text.slice(0, context.pos - open.from);
+  const typed = /[\w+#-]*$/.exec(before)[0];
+  if (before.slice(0, before.length - typed.length).replace(/^\s*[`~]{3,}/, "").trim()) return null;
+  const options = Object.keys(docPairInput.fenceNames).map((label) => ({ label, type: "keyword" }));
+  return { from: context.pos - typed.length, options, validFor: /^[\w+#-]*$/ };
+};
+
+//: The completion sources the language packages bring. A package registers
+//: them in its own `LanguageSupport`, which only a file of that language
+//: mounts, so for a block they are named here, from the same bundle.
+docPairInput.fenceCompleters = new Map();
+
+docPairInput.fenceCompletersFor = (CM, ext) => {
+  const cache = docPairInput.fenceCompleters;
+  if (cache.has(ext)) return cache.get(ext);
+  const skip = ["LineComment", "BlockComment", "String", "TemplateString", "VariableDefinition", "PropertyDefinition"];
+  const list = (items) => CM.autocomplete.ifNotIn(skip, CM.autocomplete.completeFromList(items));
+  const js = CM.javascript;
+  const make = {
+    js: () => [js.localCompletionSource, js.scopeCompletionSource(globalThis), list(js.snippets)],
+    ts: () => [js.localCompletionSource, js.scopeCompletionSource(globalThis), list(js.typescriptSnippets)],
+    py: () => [CM.python.localCompletionSource, CM.python.globalCompletion],
+    css: () => [CM.css.cssCompletionSource],
+    html: () => [CM.html.htmlCompletionSource],
+  }[ext];
+  cache.set(ext, make ? make() : []);
+  return cache.get(ext);
+};
+
+//: Inside a block with a language: that language's own sources, then its
+//: reserved words for the languages without any. Every source is asked and
+//: the answers that start at the same place are one list: the first source
+//: with options is often the scope's own names, none of which match what is
+//: being typed.
+docPairInput.fenceBody = async (CM, context, block) => {
+  const info = block.node.getChild("CodeInfo");
+  const ext = docPairInput.fenceExt(info ? context.state.sliceDoc(info.from, info.to) : "");
+  if (!ext) return null;
+  let merged = null;
+  for (const source of docPairInput.fenceCompletersFor(CM, ext)) {
+    const found = await source(context);
+    if (!found || !found.options.length) continue;
+    if (!merged) merged = { ...found, options: [...found.options] };
+    else if (found.from === merged.from) merged.options.push(...found.options);
+  }
+  if (merged) return merged;
+  const word = context.matchBefore(/[A-Za-z_$][\w$]*/);
+  const words = (DOC_CODE_KEYWORDS[ext] || "").split(" ").filter(Boolean);
+  if (!words.length || !word || (word.from === word.to && !context.explicit)) return null;
+  return CM.autocomplete.completeFromList(words.map((label) => ({ label, type: "keyword" })))(context);
+};
+
+docPairInput.fenceSource = (CM) => async (context) => {
+  if (docFileType().ext !== "md") return null;
+  const block = docPairInput.fenceAt(CM, context.state, context.pos);
+  if (!block) return null;
+  const open = context.state.doc.lineAt(block.from);
+  if (context.pos <= open.to) return docPairInput.fenceInfo(context, block);
+  const close = context.state.doc.lineAt(block.to);
+  if (close.number > open.number && context.pos >= close.from && /^\s*[`~]{3,}\s*$/.test(close.text)) return null;
+  return docPairInput.fenceBody(CM, context, block);
+};
+// DOC-FENCE-END
+
 //: The characters that pair, and what closes each.
 const DOC_PAIR_CLOSE = { "(": ")", "[": "]", "{": "}", "`": "`", "_": "_", "*": "*" };
 const DOC_PAIR_CLOSERS = new Set([")", "]", "}"]);
@@ -2054,7 +2169,9 @@ function docSmartPunctOn() {
 function docInCodeAt(CM, state, pos, anyHost = false) {
   if (!anyHost && docFileType().ext !== "md") return false;
   let node = CM.language.syntaxTree(state).resolveInner(pos, -1);
-  for (let k = 0; node && k < 6; node = node.parent, k += 1) {
+  //: Deep enough to climb out of a fenced block's own language tree (a
+  //: Python string sits twelve levels under its `FencedCode`).
+  for (let k = 0; node && k < 48; node = node.parent, k += 1) {
     if (/^(FencedCode|CodeBlock|InlineCode|CodeText|HTMLBlock)$/.test(node.name)) return true;
   }
   return false;

@@ -2921,7 +2921,11 @@ HELP_TOPICS.extend(
                 "is in it or next to it, and the rest of the line stays rendered. "
                 "Every caret and selection counts. A heading, list or quote shows "
                 "its mark while the caret is on its line, and a code block while "
-                "the caret is in it. Source view shows all of it."
+                "the caret is in it. Source view shows all of it. A fenced block that "
+                "names a language (python, js, html, css, sql and more) is coloured "
+                "as that language while you edit it, indents and closes brackets "
+                "as it does, and suggests its words as you type; typing the name "
+                "after the opening fence lists the languages."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
