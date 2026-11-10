@@ -3810,7 +3810,7 @@ def make_all_private(body: MakeAllPrivateBody, session: Session = Depends(get_se
     session.commit()
     if sealed:
         manager.scrub_private_leftovers(session)
-    return {"sealed": sealed}
+    return {"sealed": len(sealed), "ids": sealed}
 
 
 @router.post("/{entry_id}/privacy", response_model=EntryOut)

@@ -714,6 +714,12 @@ $("account-make-all-private").addEventListener("click", async () => {
     const result = await apiJson("/entries/make-all-private", { method: "POST", body: JSON.stringify({ confirm: true }) });
     status.textContent = `Done: ${nounCount(result.sealed, "note")} made private.`;
     loadEntries().catch(() => {});
+    //: Undo opens the same notes again, one by one; Redo seals them again.
+    const setAll = async (on) => {
+      for (const id of result.ids || []) await apiJson(`/entries/${id}/privacy`, { method: "POST", body: JSON.stringify({ private: on }) });
+      loadEntries().catch(() => {});
+    };
+    if (result.ids?.length) offerUndo("Make all notes private", `${nounCount(result.sealed, "note")} made private.`, () => setAll(false), () => setAll(true));
   } catch (err) {
     status.classList.add("error");
     status.textContent = err.message || "Could not make the notes private.";

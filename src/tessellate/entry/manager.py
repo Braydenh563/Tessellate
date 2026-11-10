@@ -3164,9 +3164,10 @@ def set_private(session: Session, entry: Entry, private: bool) -> bool:
     return True
 
 
-def make_all_private(session: Session) -> int | None:
+def make_all_private(session: Session) -> list[int] | None:
     """Seal every ordinary note in this notebook (INBOX 1695 d). None if the
-    vault is locked; else how many were sealed. A binned note is left alone."""
+    vault is locked; else the ids sealed, which the client's Undo opens again.
+    A binned note is left alone."""
     from tessellate.core import vault
 
     if vault.key() is None:
@@ -3177,7 +3178,7 @@ def make_all_private(session: Session) -> int | None:
     sealed = [entry for entry in rows if set_private(session, entry, True)]
     for entry in sealed:
         reindex_properties(session, entry)
-    return len(sealed)
+    return [entry.id for entry in sealed]
 
 
 def scrub_private_leftovers(session: Session) -> None:

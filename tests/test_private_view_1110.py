@@ -57,3 +57,14 @@ def test_make_all_private_needs_an_open_vault(client, session):
     refused = client.post("/entries/make-all-private", json={"confirm": True})
     assert refused.status_code == 409
     assert not session.scalars(select(Entry).where(Entry.is_private.is_(True))).all()
+
+
+def test_make_all_private_names_the_notes_it_sealed_for_undo(client, session, open_vault):
+    a = client.post("/entries", json={"content": "gamma secret"}).json()["id"]
+    done = client.post("/entries/make-all-private", json={"confirm": True})
+    ids = done.json()["ids"]
+    assert ids == [a]
+    opened = client.post(f"/entries/{a}/privacy", json={"private": False})
+    assert opened.status_code == 200
+    session.expire_all()
+    assert not session.get(Entry, a).is_private
