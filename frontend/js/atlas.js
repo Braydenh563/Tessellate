@@ -4193,14 +4193,20 @@ function charactersArrived() {
     }
   }
 
-  function watch() {
-    const pane = document.getElementById("chat-messages");
-    if (!pane) return;
-    new MutationObserver((records) => {
-      if (records.some((record) => record.addedNodes.length)) retireOlder();
-    }).observe(pane, { childList: true });
-    retireOlder();
-  }
+  //: Each reply paints its head through `paintAssistantAvatar` once it is in
+  //: the page, so that is the moment the ones before it are retired: no
+  //: observer of its own to wake. One pass for a burst (a reopened chat).
+  let queued = false;
+  const paint = globalThis.paintAssistantAvatar;
+  globalThis.paintAssistantAvatar = (holder, size) => {
+    paint(holder, size);
+    if (queued) return;
+    queued = true;
+    queueMicrotask(() => {
+      queued = false;
+      retireOlder();
+    });
+  };
 
   //: A new look draws every head again: the copies are of the old look.
   document.addEventListener("atlas-repainted", () => {
@@ -4208,6 +4214,6 @@ function charactersArrived() {
     host().replaceChildren();
     retireOlder();
   });
-  watch();
+  retireOlder();
 })();
 //: rest-end

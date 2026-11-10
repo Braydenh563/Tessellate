@@ -50,8 +50,8 @@ const document = {
     return bubbles.map((b) => b.avatar.children[0]).filter((f) => f && f.className.includes("atl-tiny"));
   },
 };
-let watchers = 0;
-globalThis.MutationObserver = class { constructor(fn) { this.fn = fn; watchers++; } observe() {} };
+let painted = 0;
+globalThis.paintAssistantAvatar = () => { painted++; };
 const atlasMake = (tag, attrs, parent) => { const n = new Node(tag); n.className = (attrs && attrs.class) || ""; for (const [k, v] of Object.entries(attrs || {})) n.setAttribute(k, v); if (parent) parent.appendChild(n); return n; };
 function reply(mood = "calm") {
   const bubble = new Node("div");
@@ -127,9 +127,21 @@ def test_a_change_of_look_drops_the_old_copies_and_redraws_from_the_new_heads() 
     assert len(result["after"]) == 1
 
 
-def test_it_watches_the_chat_once_and_exports_no_global() -> None:
-    assert _run("console.log(JSON.stringify(watchers));") == 1
+def test_a_painted_head_retires_the_older_ones_in_one_pass_and_wakes_nothing() -> None:
+    result = _run(
+        """
+        reply(); reply();
+        const mine = globalThis.paintAssistantAvatar;
+        reply();
+        mine(null, 20); mine(null, 20); mine(null, 20);
+        await Promise.resolve();
+        console.log(JSON.stringify({ painted, nodes: bubbles.map((b) => b.avatar.children[0].count()) }));
+        """
+    )
+    assert result["painted"] == 3, "the wrapped original still paints every head"
+    assert result["nodes"] == [2, 2, 161]
     block = _block()
+    assert "MutationObserver" not in block and "setInterval" not in block and "requestAnimationFrame" not in block
     assert "Object.assign(window" not in block and "window." not in block
     assert block.count("\n(() => {") == 1, "wrapped whole: no new name in the shared scope"
 
