@@ -276,11 +276,11 @@ Parked until the owner's data or a check on real hardware:
 - ~~D5 `test_complexity.py` over 15 and two lazy import cycles; complexity.yml baseline (after Q20) | fablecomp, OPEN lint debt~~ **Partly done** (PERF baseline zero and failing, Q20); the seed functions and two lazy cycles remain, s6-1110
 
 **W25 Palette and tab open** (D, shell, Sonnet high; not beside W11 or W20). Files: `palette.js`, `notes-list.js`, `settings*.js`. Checks: long tasks at 4x before and after. Done when: the palette is under 150 ms a keystroke at 4x.
-- D6 The palette blocks on open and on every letter (5.6 s at 4x) | 1031-shell SH1, 1031-perf PF3, UI Palette row 2
-- D7 Opening a tab blocks for seconds at 4x; the notes list at 4x; a phone renders every note | 1031-perf PF5, 1031-notes N4, 1031-shell SH7
-- D8 Settings panes block on open; the pane-by-pane build | 1031-shell SH12, audit-1108-perf P4
-- D9 A composed chat answer mounts 500 to 860 nodes | audit-1108-perf P8
-- D10 `?preview=300` (after Q9) | fitaudit 42
+- ~~D6 The palette blocks on open and on every letter (5.6 s at 4x) | 1031-shell SH1, 1031-perf PF3, UI Palette row 2~~ **Done s7-1110** (PF3 had drawn a 24-row window; now the ranking is kept 2 s for the same words so the notes arriving redraw nothing new, and the nearest-word scan splits each row once: 500 notes, 4x, key to second frame p50 68 to 67 ms, p90 191 to 123/127/183 ms over three runs on a loaded host, 43 keys; under 150 ms at p50)
+- ~~D7 Opening a tab blocks for seconds at 4x; the notes list at 4x; a phone renders every note | 1031-perf PF5, 1031-notes N4, 1031-shell SH7~~ **Done s7-1110** (a tab opens in 150 to 400 ms wall at 4x with 500 notes, no task over 340 ms; the dashboard sizer's `checkVisibility` forced a 129 ms style pass as the tab went hidden, now the class is read first; the list is `content-visibility` rows, 1,098 nodes for 500 cards on desktop and 899 on a phone)
+- D8 Settings panes block on open; the pane-by-pane build | 1031-shell SH12, audit-1108-perf P4. **Measured s7-1110, not built:** open at 4x is 2.0 s wall with one 655 ms task (89 nodes before, 3,000 after: the whole `settings` surface template is put in at once; UpdateLayoutTree 126 ms for 969 elements); a pane click is 23 to 33 ms except Models and Appearance (250 ms) and Help (7 tasks, 289 ms). A pane-by-pane build needs one template per pane and `settingRows`, the Settings index and the palette's `settingsIndex` scan to ask for every pane: left for a design pass
+- D9 A composed chat answer mounts 500 to 860 nodes | audit-1108-perf P8. Not started in s7-1110
+- ~~D10 `?preview=300` (after Q9) | fitaudit 42~~ **Stale: built** (CHANGELOG, INBOX 1525: list pages, the by-id refresh and the Semantic list carry `?preview=300`; `tests/test_entry_writers_whole_1525.py`)
 
 **W26 Graph at scale** (D, graph, Opus). Files: `graph*.js`, `graph-worker.js`. Checks: the 500 and 2,000 note fixtures at 1x and 4x. Done when: a 2,000-note settle is under 5 s with no task over 50 ms.
 - D11 2,000 notes: layout 28 s and main-thread long tasks | 1029-graph G3, 1028-shell S2, GRAPH row 19
@@ -289,15 +289,15 @@ Parked until the owner's data or a check on real hardware:
 - D14 Redraw only while something moves; crossings and hub spokes at 40 nodes | UI 1643, oa 1643 a, GRAPH 1306
 
 **W27 Boot weight** (D, boot, Sonnet). Files: `index.html`, `meetings.js` (after W6), `prefs.js`, the boot caps. Checks: `tests/test_static_compression.py`, the boot caps. Done when: each surface is lazy, with its number.
-- D15 index.html 1.1 MB with comment blocks and companion code in the boot path | 1028-shell S3
-- D16 Meeting recorder card, graph options panel and boot CSS lazy | row21 L43, L44, L45
-- D17 Boards list lazy until visible (500-board fixture) | oa 1667 c
-- D18 Recordings: trim decodes the whole file (700 MB an hour); notes cannot embed a recording | t20#11
+- ~~D15 index.html 1.1 MB with comment blocks and companion code in the boot path | 1028-shell S3~~ **Stale, s7-1110:** `served_index_html` strips comments; served it is 811,185 bytes (156,226 gzip) of the 1,172,267 on disk; 434 KB of that is the five `<template data-surface>` blocks (settings 267 KB, board 149 KB). Inline SVG is 11 KB, inline scripts 2 KB
+- D16 Meeting recorder card, graph options panel and boot CSS lazy | row21 L43, L44, L45. **Measured s7-1110, not built:** `#graph-options` is 26,261 bytes served (5,207 gzip) with 79 ids, read by wiring.js, prefs.js, navigation.js and reveal-targets.js at boot through `document.getElementById` as well as `$`, so a template would return null there; `#meeting-overlay` is 6,815 bytes (2,089 gzip). Together under 3 percent of the gzipped page; the risk is the null reads
+- ~~D17 Boards list lazy until visible (500-board fixture) | oa 1667 c~~ **Measured fine, s7-1110:** with 500 boards the Boards & maps sub-tab adds 215 nodes and three tasks (63, 81, 75 ms) at 4x
+- D18 Recordings: trim decodes the whole file (700 MB an hour); notes cannot embed a recording | t20#11. Not started: a server-side cut needs a container writer (a design call)
 
 **W28 Documents typing and split** (D, documents, Opus; not beside W4 or W23). Files: `documents.js`, `docLivePlugin`. Checks: typing latency at 4x on the DX1 document. Done when: key-to-paint p50 under 16 ms on the long document.
-- D19 Typing in a long rich document cannot keep up; 5 layouts a key | audit-1102-docs DX1, audit-1108-perf P9
-- D20 `docHistoryPersist` serialises the undo stack every keystroke | 1028-docs D6
-- D21 Split `docLivePlugin` and `documents.js` by responsibility | DOCUMENTS D23, fitaudit 22
+- D19 Typing in a long rich document cannot keep up; 5 layouts a key | audit-1102-docs DX1, audit-1108-perf P9. **Measured s7-1110, nothing app-side left to cut cheaply:** `doctype.js` at 4x on the 20,000-word document, Live: events over 16 ms p50 56 to 112 ms, p95 96 to 752 (noisy host); per key 4.3 layouts, 7.6 style passes, 3.5 paints (tracing, 44 keys); the forced reads are CodeMirror's own `measure` and one `docCaretVisibleLine` (40 ms once); app-side `runDocFacts` 204 ms, `renderDocOutline` 122 ms over 44 keys (about 10 ms a key), CodeMirror's flush about 25 ms a key. The gate (p50 under 16 ms) is not met; the rest is the Live decoration set
+- ~~D20 `docHistoryPersist` serialises the undo stack every keystroke | 1028-docs D6~~ **Stale: built 9a5227132** (`undoStorePut(key, () => state.toJSON(...))`, serialised at the store's pause)
+- D21 Split `docLivePlugin` and `documents.js` by responsibility | DOCUMENTS D23, fitaudit 22. Not started: `docLivePlugin` is already `documents-cm.js`; the next carve is `documents.js` 16,381 to 17,190 (CodeMirror view glue, 810 lines), which costs a line in `app.js`'s library bundle list against the gzip cap (260,857 of 260,860) and breaks tests that read `documents.js` by name (`test_code_vscode.py`, `test_docs_perf_1030.py`)
 
 **W29 Structure ratchets** (D, cross-cutting, Opus design then Sonnet). Files: one carve per run, outside the files of the same session's other batches. Checks: `tests/test_global_scope_ratchet.py`, `tests/test_complexity.py`. Done when: each ratchet moves down.
 - D22 IIFE wraps (audit 37a, after iife4) and surfaces (21, 36) | fitaudit 19, 21, 36, 37
@@ -306,9 +306,9 @@ Parked until the owner's data or a check on real hardware:
 - D25 Split `run_agent`; data tables out of code | SESSION_BRIEFS 62, 63
 
 **W30 Whiteboard render cost** (D, boards render, Opus). Files: `whiteboard.js` render path, `whiteboard-map.js`. Checks: frame time on a 500-object board. Done when: one edit re-renders only what changed.
-- D26 Every render rebuilds all map nodes; no dirty set | 1028-board B3, B4
-- D27 Split `whiteboard.js` (26,103 lines) and `whiteboard-map.js` by carve | 1028-board B1, B2, WHITEBOARD#Placed 2026-11-04
-- D28 The composer's topical digests take 0.45 to 0.78 s on 500 notes (W10's files, Session 7) | audit-1108-perf P6
+- ~~D26 Every render rebuilds all map nodes; no dirty set | 1028-board B3, B4~~ **Done s7-1110** (topics and pen strokes were keyed, dec005f44; the cost left was the links: a 500-topic map with 300 cross-links at 4x CPU, median render: nothing changed 1,361 to 342 ms, one topic moved 1,501 to 309 ms, every topic moved 2,678 to 1,072 ms. One `querySelectorAll` of the topic boxes before the link pass instead of 600 `querySelector` walks, and each link's look found once a pass instead of three times, keyed on both ends' place and box. Link paths identical to a fresh computation after a move, a resize, two moves in one task)
+- D27 Split `whiteboard.js` (26,103 lines) and `whiteboard-map.js` by carve | 1028-board B1, B2, WHITEBOARD#Placed 2026-11-04. Not started in s7-1110 (the files are 26,164 and 11,050 lines)
+- D28 The composer's topical digests take 0.45 to 0.78 s on 500 notes (W10's files, Session 7) | audit-1108-perf P6. **Part done s7-1110:** every question moved `updated_at` on the 24 notes it surfaced (`onupdate` on `access_count`), which dropped the abbreviation glossary's cache key and re-read all notes; now one UPDATE that names `updated_at` (a profiled `/chat` request on 1,003 entries: 1,072k to 873k calls for three requests, 1.20 to 0.92 s; edit times no longer move on a read). Left: capping `raw_results` (12 front-end sites read it, a UI contract), the second `compose` for the chips (about 65 ms), `_subject_facts`
 
 ### Tier E: polish
 

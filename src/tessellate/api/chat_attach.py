@@ -122,6 +122,9 @@ _TITLE_FILLER = frozenset(
 )
 
 
+#: `_TITLE_FILLER` stemmed as `_title_words` stems a title: built once, not per title (400 a question).
+_FILLER_STEMS = frozenset(f.rstrip("s") for f in _TITLE_FILLER)
+
 _KIND_SAID = re.compile(r"\b(?:(?:white)?boards?|mind ?maps?|maps?|documents?|docs?)\b", re.I)
 
 
@@ -143,7 +146,7 @@ def _named_sources(session: Session, question: str) -> tuple[list, list[int]]:
     says_kind = bool(_KIND_SAID.search(question or ""))
 
     def named(title: str) -> bool:
-        words = {w for w in _title_words(title) if w not in {f.rstrip("s") for f in _TITLE_FILLER}}
+        words = _title_words(title) - _FILLER_STEMS
         return bool(words) and words <= asked and (says_kind or len(words) >= 2)
 
     documents = [
