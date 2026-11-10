@@ -694,7 +694,7 @@ def _answer_dict(out: "_Answer", shape: str, question: str, terms: list, views_l
 def _fresh_answer(views_list: list, today: date, dialogue: Dialogue | None, said: str, previous: str, voice: str, question: str) -> "_Answer":
     out = _Answer({v.id: v for v in views_list}, today)
     _from_dialogue(out, dialogue)
-    out.said, out.day_in_cite = said, bool(re.match(r"\s*when\b", question or "", re.I))  # a when-ask dates a title-less cite
+    out.said, out.day_in_cite = said, bool(re.match(r"when\b", (question or "").lstrip(), re.I))  # a when-ask dates a title-less cite
     out.subject = {_stem(t) for t in subject_terms(question)}
     out.previous = (previous or "").lstrip()
     out.voice = voice
