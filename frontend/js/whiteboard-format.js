@@ -83,7 +83,7 @@ const WB_FMT_FIELDS = {
   arrow: ["stroke", "strokealpha", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "tip"],
   link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "linklook", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "jumpsize", "gapstart", "gapend", "tip"],
   text: ["stroke", "fill", "fillalpha", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props", "rawstyle"],
-  image: ["alpha", "shadow", "shadowset", "radii", "crop", "geometry", "angle", "props"],
+  image: ["alpha", "shadow", "shadowset", "radii", "crop", "trim", "geometry", "angle", "props"],
   frame: ["geometry", "props"],
   table: ["alpha", "shadow", "shadowset", "radii", "geometry", "props"],
   note: ["geometry", "angle"],
@@ -147,6 +147,7 @@ function wbFmtValue(entry, field) {
     case "round": return Number(s?.round) || 0;
     case "linestyle": return s?.curve ? "curved" : s?.round ? "rounded" : "sharp";
     case "crop": return o?.crop || "";
+    case "trim0": case "trim1": case "trim2": case "trim3": return o?.trim?.[Number(field[4])] || "";
     case "flow": return Boolean(s?.flow);
     case "fillstyle": return WB_FILL_STYLES.includes(s?.fillStyle) ? s.fillStyle : "solid";
     case "gradient": return wbHexColour(s?.gradient?.to) || "#ffffff";
@@ -649,6 +650,7 @@ function wbFormatSync() {
     ["wb-fmt-jumpsize", "jumpsize", "jumpsize"], ["wb-fmt-gapstart", "gapstart", "gapstart"], ["wb-fmt-gapend", "gapend", "gapend"], ["wb-fmt-tip", "tip", "tip"],
     ["wb-fmt-pattern", "pattern", "pattern"], ["wb-fmt-round", "round", "round"], ["wb-fmt-linestyle", "linestyle", "linestyle"], ["wb-fmt-crop", "crop", "crop"], ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-lsize", "lsize", "linklook"], ["wb-fmt-lcolor", "lcolor", "linklook"], ["wb-fmt-size", "size", "text"],
     ["wb-fmt-shx", "shx", "shadowset"], ["wb-fmt-shy", "shy", "shadowset"], ["wb-fmt-shb", "shb", "shadowset"], ["wb-fmt-pad", "pad", "pad"],
+    ["wb-fmt-trim0", "trim0", "trim"], ["wb-fmt-trim1", "trim1", "trim"], ["wb-fmt-trim2", "trim2", "trim"], ["wb-fmt-trim3", "trim3", "trim"],
     ["wb-fmt-r0", "r0", "radii"], ["wb-fmt-r1", "r1", "radii"], ["wb-fmt-r2", "r2", "radii"], ["wb-fmt-r3", "r3", "radii"],
     ["wb-fmt-ink", "ink", "text"], ["wb-fmt-alpha", "alpha", "alpha"], ["wb-fmt-lh", "lh", "text"], ["wb-fmt-ls", "ls", "text"], ["wb-fmt-dir", "dir", "text"], ["wb-fmt-inkalpha", "inkalpha", "text"],
   ]) {
@@ -938,6 +940,14 @@ onSurface("board", () => {
     const crop = e.target.value;
     wbFmtApply("crop", () => ({ crop: crop || undefined }), crop ? `Picture cropped to ${e.target.selectedOptions[0].textContent.toLowerCase()}.` : "Picture crop taken off.");
   });
+  //: A rectangle crop: percent cut from the top, right, bottom and left; all empty is no trim.
+  for (const edge of [0, 1, 2, 3]) {
+    on(`wb-fmt-trim${edge}`, "change", () => {
+      const trim = [0, 1, 2, 3].map((i) => boxNumber(document.getElementById(`wb-fmt-trim${i}`), 0, 90) || 0);
+      const set = trim.some(Boolean) && trim[0] + trim[2] < 95 && trim[1] + trim[3] < 95;
+      wbFmtApply("trim", () => ({ trim: set ? trim : undefined }), set ? "Picture trimmed." : "Picture trim taken off.");
+    });
+  }
   on("wb-fmt-raw-apply", "click", () => wbFmtState.raw.apply());
   on("wb-fmt-linestyle", "change", (e) => {
     const style = e.target.value;

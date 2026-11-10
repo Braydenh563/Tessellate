@@ -8482,6 +8482,7 @@ Link to another note with [[its first few words]]."></textarea>
             <h4 class="wb-fmt-head"><i class="ph ph-frame-corners" aria-hidden="true"></i><span>Box and picture</span><button type="button" class="icon-only ghost small graph-help-toggle" data-help-for="wb-fmt-help-box" aria-controls="wb-fmt-help-box" aria-expanded="false" title="About box and picture" aria-label="About box and picture"><i class="ph ph-question" aria-hidden="true"></i></button></h4>
             <div class="help-body hidden" id="wb-fmt-help-box" role="dialog" aria-label="About box and picture">
               <p><b>Crop to</b>: cuts a picture to a shape; a square cropped to an ellipse is a circle.</p>
+              <p><b>Trim edges</b>: cuts a rectangle out of a picture, in percent from each edge; the shape above fits inside what is left, Undo puts it back and an export matches.</p>
               <p><b>Corner radii</b>: each corner's own rounding in pixels; all empty is the default.</p>
               <p><b>Padding</b>: space between the box's edge and its words, in pixels.</p>
             </div>
@@ -8494,6 +8495,14 @@ Link to another note with [[its first few words]]."></textarea>
                 <option value="triangle">Triangle</option>
               </select>
             </label>
+            <div class="wb-fmt-row" data-fmt="trim"><span class="wb-fmt-label">Trim edges</span>
+              <span class="wb-fmt-quad">
+                <label class="wb-fmt-num"><span class="wb-fmt-label">T</span><input type="number" id="wb-fmt-trim0" min="0" max="90" step="1" placeholder="0" aria-label="Trim the top edge, in percent" title="Cut this many percent off the top of the picture"></label>
+                <label class="wb-fmt-num"><span class="wb-fmt-label">R</span><input type="number" id="wb-fmt-trim1" min="0" max="90" step="1" placeholder="0" aria-label="Trim the right edge, in percent" title="Cut this many percent off the right of the picture"></label>
+                <label class="wb-fmt-num"><span class="wb-fmt-label">L</span><input type="number" id="wb-fmt-trim3" min="0" max="90" step="1" placeholder="0" aria-label="Trim the left edge, in percent" title="Cut this many percent off the left of the picture"></label>
+                <label class="wb-fmt-num"><span class="wb-fmt-label">B</span><input type="number" id="wb-fmt-trim2" min="0" max="90" step="1" placeholder="0" aria-label="Trim the bottom edge, in percent" title="Cut this many percent off the bottom of the picture"></label>
+              </span>
+            </div>
             <div class="wb-fmt-row" data-fmt="radii"><span class="wb-fmt-label">Corner radii</span>
               <span class="wb-fmt-quad">
                 <label class="wb-fmt-num"><span class="wb-fmt-label">TL</span><input type="number" id="wb-fmt-r0" min="0" max="200" step="1" placeholder="Auto" aria-label="Top left corner radius" title="Top left corner radius in pixels; all four empty is the default"></label>

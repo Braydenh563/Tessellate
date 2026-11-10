@@ -47,7 +47,7 @@ def test_the_export_path_matches_the_shape_at_the_pictures_size() -> None:
 
 
 def test_the_board_and_the_export_both_read_it() -> None:
-    assert 'style("clip-path", wbCropClip(d.data.crop) || null)' in WB
+    assert 'style("clip-path", wbCropClip(d.data.crop, d.data.trim) || null)' in WB
     export = WB[WB.index('if (obj.kind === "image" && obj.data.url)') :][:1600]
     assert "wbCropPath(" in export
 
@@ -65,3 +65,27 @@ def test_the_choices_are_the_servers() -> None:
     for name in ("ellipse", "diamond", "hexagon", "triangle"):
         assert f'<option value="{name}">' in HTML
 
+
+
+def test_a_rectangle_trim_shares_the_clip_with_the_shape() -> None:
+    # A plain trim is a rectangle inside the box; the export path is the same box at the picture's size.
+    assert _node("wbCropClip(undefined, [10, 20, 30, 40])") == "polygon(40% 10%, 80% 10%, 80% 70%, 40% 70%)"
+    assert _node("wbCropPath(undefined, 200, 100, [10, 20, 30, 40])") == "M 80 10 L 160 10 L 160 70 L 80 70 Z"
+    # A shape fits inside what the trim leaves: a diamond on half the box.
+    assert _node('wbCropClip("diamond", [0, 50, 0, 0])') == "polygon(25% 0%, 50% 50%, 25% 100%, 0% 50%)"
+    assert _node('wbCropClip("ellipse", [0, 50, 0, 0])') == "ellipse(25% 50% at 25% 50%)"
+    assert _node('wbCropPath("ellipse", 200, 100, [0, 50, 0, 0])').startswith("M 0 50 A 50 50")
+    # No trim, an empty one, or one that leaves nothing, changes nothing.
+    assert _node("[wbCropClip(undefined, [0, 0, 0, 0]), wbCropClip(undefined, [60, 0, 40, 0]), wbCropClip(undefined, 'x')]") == ["", "", ""]
+    assert _node('wbCropClip("diamond", [0, 0, 0, 0])') == _node('wbCropClip("diamond")')
+
+
+def test_the_panel_offers_the_trim_to_pictures_only() -> None:
+    row = re.search(r"^  image: \[(.*)\],$", FMT, re.M).group(1)
+    assert '"trim"' in row
+    for kind in ("shape", "text", "frame", "table"):
+        assert '"trim"' not in re.search(rf"^  {kind}: \[(.*)\],$", FMT, re.M).group(1)
+    for edge in range(4):
+        assert f'id="wb-fmt-trim{edge}"' in HTML and f'"wb-fmt-trim{edge}"' in FMT
+    assert 'data-fmt="trim"' in HTML and "trim: set ? trim : undefined" in FMT
+    assert "obj.data.trim" in WB[WB.index('if (obj.kind === "image" && obj.data.url)') :][:1600]

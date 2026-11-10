@@ -1841,17 +1841,30 @@ const WB_CROPS = {
   triangle: [[0.5, 0], [1, 1], [0, 1]],
 };
 
-function wbCropClip(crop) {
-  if (!Object.prototype.hasOwnProperty.call(WB_CROPS, crop)) return "";
-  const points = WB_CROPS[crop];
-  return points ? `polygon(${points.map(([x, y]) => `${x * 100}% ${y * 100}%`).join(", ")})` : "ellipse(50% 50% at 50% 50%)";
+//: **A rectangle crop** (`data.trim`, percent of the picture cut from the top, right, bottom and left) shares
+//: this clip: the shape (or a plain rectangle) is fitted inside what the trim leaves. With `size` ([w, h]) the
+//: answer is the export's SVG path at that size, without it the board's CSS `clip-path`; "" clips nothing.
+function wbCropClip(crop, trim, size) {
+  const known = Object.prototype.hasOwnProperty.call(WB_CROPS, crop);
+  const [top, right, bottom, left] = [0, 1, 2, 3].map((i) => Math.max(0, Math.min(90, Number(trim?.[i]) || 0)) / 100);
+  const fits = left + right < 0.95 && top + bottom < 0.95;
+  const [x0, y0, x1, y1] = fits ? [left, top, 1 - right, 1 - bottom] : [0, 0, 1, 1];
+  if (!known && x0 + y0 + (1 - x1) + (1 - y1) === 0) return "";
+  const [w, h] = size || [100, 100];
+  const num = (v) => +(v * 100).toFixed(2);
+  const points = (known ? WB_CROPS[crop] : [[0, 0], [1, 0], [1, 1], [0, 1]]);
+  if (points) {
+    const at = points.map(([x, y]) => [x0 + x * (x1 - x0), y0 + y * (y1 - y0)]);
+    return size ? `M ${at.map(([x, y]) => `${+(x * w).toFixed(2)} ${+(y * h).toFixed(2)}`).join(" L ")} Z`
+      : `polygon(${at.map(([x, y]) => `${num(x)}% ${num(y)}%`).join(", ")})`;
+  }
+  if (!size) return `ellipse(${num((x1 - x0) / 2)}% ${num((y1 - y0) / 2)}% at ${num((x0 + x1) / 2)}% ${num((y0 + y1) / 2)}%)`;
+  const [rx, ry, cy] = [(x1 - x0) * w / 2, (y1 - y0) * h / 2, (y0 + y1) * h / 2];
+  return `M ${x0 * w} ${cy} A ${rx} ${ry} 0 1 0 ${x1 * w} ${cy} A ${rx} ${ry} 0 1 0 ${x0 * w} ${cy} Z`;
 }
 
-function wbCropPath(crop, w, h) {
-  if (!Object.prototype.hasOwnProperty.call(WB_CROPS, crop)) return "";
-  const points = WB_CROPS[crop];
-  if (points) return `M ${points.map(([x, y]) => `${x * w} ${y * h}`).join(" L ")} Z`;
-  return `M 0 ${h / 2} A ${w / 2} ${h / 2} 0 1 0 ${w} ${h / 2} A ${w / 2} ${h / 2} 0 1 0 0 ${h / 2} Z`;
+function wbCropPath(crop, w, h, trim) {
+  return wbCropClip(crop, trim, [w, h]);
 }
 
 //: **Voting dots** (Miro's; INBOX 1313 row 14): `data.votes`, how many dots a
@@ -13860,7 +13873,7 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       //: same path the board draws, read off the drawn element as a box's is.
       const radii = wbSvgBoxRadii(document.querySelector(`#wb-html-layer .wb-object[data-id="${obj.id}"]`), obj.data, obj.width, obj.height);
       //: A crop to a shape wins over rounded corners, as it does on the board.
-      const cropPath = wbCropPath(obj.data.crop, obj.width, obj.height);
+      const cropPath = wbCropPath(obj.data.crop, obj.width, obj.height, obj.data.trim);
       const clip = cropPath || radii.some((r) => r > 0) ? `wb-export-clip-${obj.id}` : "";
       if (clip) parts.push(`<clipPath id="${clip}"><path d="${cropPath || wbSvgRoundedPath(obj.width, obj.height, radii)}" /></clipPath>`);
       parts.push(
@@ -24355,7 +24368,7 @@ function renderWbObjects(canvas) {
     }
     if (d.kind === "image") {
       el.select("img").attr("src", mediaSrc(d.data.url) || "").style("border-radius", d.data.radii ? "inherit" : null)
-        .style("clip-path", wbCropClip(d.data.crop) || null);
+        .style("clip-path", wbCropClip(d.data.crop, d.data.trim) || null);
     } else if (WB_MAP_KINDS.has(d.kind)) {
       wbPaintMapNode(el, d, mapIndex, mapColors, mapFills);
     } else if (d.kind === "frame") {
