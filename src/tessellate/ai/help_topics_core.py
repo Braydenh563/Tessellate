@@ -1093,9 +1093,9 @@ HELP_TOPICS: list[dict] = [
         "body": (
             "The document editor checks spelling, spacing and sentence length as "
             "you write, and grammar (agreement, a or an, its or it's) with Harper, "
-            "a grammar checker that runs on this computer; note boxes get the "
+            "a checker that runs on this computer; note boxes get the "
             "grammar check too, and the dictionary dialog turns it off. Code, "
-            "addresses, file paths, email addresses, units after a number "
+            "addresses, file paths, emails, units after a number "
             "(10 min, 5 km) and the words of a link are skipped; Check link "
             "text (Settings, General, Writing; or the dictionary dialog) turns the "
             "link words back on. List items, headings and table cells are "
@@ -1113,14 +1113,15 @@ HELP_TOPICS: list[dict] = [
             "its one clear fix and the crossed eye ignores it, and the arrow keys "
             "walk the rows. Fix applies every clear fix at once; the ... in the "
             "panel's head holds Check with AI, Hide all suggestions (quiets every "
-            "underline and the list until you show them), Dismissed (the "
+            "underline and the list until shown), Dismissed (the "
             "suggestions put away in this document, each with a Restore), the "
-            "Dictionary and which side the panel docks on. Where there is no "
-            'mechanical fix, an awkward sentence, "Ask the AI for wordings" '
-            "has the local model offer two or three alternatives to pick from. "
-            "Nothing is changed until you choose it. Manage the dictionary and "
-            "the spelling preference (American, British, Australian, Canadian or Indian) from the editor's own "
-            "dictionary dialog."
+            "Dictionary and which side the panel docks on. For an awkward "
+            'sentence with no mechanical fix, "Ask the AI for wordings" offers '
+            "two or three alternatives; nothing changes until you choose. "
+            "Manage the dictionary and the spelling preference (American, "
+            "British, Australian, Canadian or Indian) from the editor's own "
+            "dictionary dialog. LanguageTool, an optional second grammar "
+            "checker, is in Settings, Packages."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },
