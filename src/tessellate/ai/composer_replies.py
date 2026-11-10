@@ -383,25 +383,26 @@ NOTHING_FAMILIES: dict[str, dict[str, list[str]]] = {
 #: as the card says it ("Move the note “Gym plan” to the bin"), `{change}`
 #: the same with its first letter lowered. Every line names Confirm.
 CONFIRM: dict[str, tuple[str, ...]] = {
+    #: One frame, eight openers: each names the change and both buttons, Confirm and Cancel (B24).
     "natural": (
-        "{label}. Confirm to do it.",
-        "{label}. Press Confirm and it's done.",
-        "I can do that: {change}. Confirm to go ahead.",
-        "{label}? Confirm below and I'll do it.",
-        "Here's the change: {change}. Confirm it, or Cancel.",
-        "{label}. Nothing changes until you press Confirm.",
-        "Ready when you are: {change}. Confirm to go ahead.",
+        "{label}. Confirm or Cancel below.",
+        "{label}? Confirm to do it, or Cancel.",
+        "I can do that: {change}. Confirm or Cancel.",
+        "Here's the change: {change}; Confirm it, or Cancel.",
+        "{label}. Nothing changes until you press Confirm. Cancel drops it.",
+        "Ready when you are: {change}. Confirm or Cancel.",
         "This one waits for you: {change}. Confirm or Cancel below.",
+        "{label}. Press Confirm to do it, or Cancel.",
     ),
     "professional": (
-        "{label}. Confirm to proceed.",
-        "{label}. Select Confirm to apply this change.",
-        "Pending your confirmation: {change}.",
-        "{label}. This waits for Confirm.",
-        "Proposed change: {change}. Confirm or cancel below.",
-        "{label}. Please confirm to continue.",
-        "Ready to apply: {change}. Confirm to proceed.",
-        "{label}. No change is made until you confirm.",
+        "{label}. Confirm to proceed, or Cancel.",
+        "{label}. Select Confirm to apply this change, or Cancel.",
+        "Pending your confirmation: {change}; Confirm or Cancel.",
+        "{label}. This waits for Confirm or Cancel.",
+        "Proposed change: {change}. Confirm or Cancel below.",
+        "{label}. Please confirm to continue, or Cancel.",
+        "Ready to apply: {change}. Confirm or Cancel.",
+        "{label}. No change is made until you confirm; Cancel drops it.",
     ),
 }
 

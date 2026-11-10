@@ -527,7 +527,7 @@ function digestOffer(answerEl, offer) {
   //: A choice ("That could be Export or Export chat. Which one?") is one
   //: offer a line, each its own link (`find_it.answer`).
   for (const other of offer.also || []) digestOffer(answerEl, other);
-  const line = [...answerEl.querySelectorAll("p")].reverse().find((p) => p.textContent.trim() === offer.label);
+  const line = [...answerEl.querySelectorAll("p")].reverse().find((p) => p.textContent.trim() === (offer.line || offer.label));
   if (!line) return;
   const button = document.createElement("button");
   button.type = "button";
