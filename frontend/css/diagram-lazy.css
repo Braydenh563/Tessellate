@@ -2363,3 +2363,128 @@
   border-color: var(--accent);
   background: var(--accent-soft);
 }
+
+/* The AI in the builder (dgai-1110): the Ask box at the head of the blocks pane (the composer recipe, one height),
+   its preview (the picture of both, with what is added, removed and changed marked) and Suggestions (a disclosure
+   row over quiet row actions). The Versions sheet's compare reuses the preview's picture. */
+.dgm-ai {
+  display: grid;
+  gap: var(--space-2);
+  margin-block-end: var(--space-2);
+}
+
+.search-field.dgm-ai-form {
+  height: var(--control-h);
+  padding-inline-end: var(--space-1);
+}
+
+.dgm-ai-send {
+  flex: none;
+  width: calc(var(--control-h) - 8px);
+  height: calc(var(--control-h) - 8px);
+  min-height: 0;
+  padding: 0;
+}
+
+/* Under a finger the send is a 44 px target (measured at 390: 44 tall in a 32 px well), so the well grows to hold it. */
+@media (pointer: coarse) {
+  .search-field.dgm-ai-form {
+    height: auto;
+    min-height: var(--target-min);
+    padding-block: 0;
+  }
+}
+
+.dgm-ai-preview {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.dgm-ai-said,
+.dgm-ai-changes,
+.dgm-versions-legend {
+  margin: 0;
+}
+
+.dgm-ai-changes {
+  padding-inline-start: var(--space-4);
+}
+
+.dgm-ai .dgm-ai-fig,
+.dgm-versions .dgm-ai-fig {
+  margin: 0;
+  max-block-size: 18rem;
+  overflow: auto;
+}
+
+.dgm-ai-foot,
+.dgm-versions-legend {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.dgm-ai-lints,
+.dgm-versions-list {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dgm-versions-list {
+  max-block-size: 40vh;
+  overflow: auto;
+}
+
+.dgm-ai-lint,
+.dgm-versions-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.dgm-ai-lint-text,
+.dgm-versions-pick {
+  min-width: 0;
+}
+
+/* The pane is 224 px wide at 1440: the sentence takes the row and its one action goes under it, at its end, on one line. */
+.dgm-ai-lint {
+  flex-wrap: wrap;
+  padding-block: var(--space-1);
+  border-block-end: 1px solid var(--border);
+}
+
+.dgm-ai-lint > .row-actions {
+  margin-inline-start: auto;
+  white-space: nowrap;
+}
+
+.dgm-versions-pick {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.dgm-versions-legend > span::before {
+  content: "";
+  display: inline-block;
+  inline-size: 0.75em;
+  block-size: 0.75em;
+  margin-inline-end: var(--space-1);
+  border-radius: var(--radius-sm);
+  background: var(--ok);
+}
+
+.dgm-versions-legend > .dgm-mark-del::before {
+  background: var(--error);
+}
+
+.dgm-versions-legend > .dgm-mark-chg::before {
+  background: var(--warn);
+}

@@ -2,9 +2,9 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7972, frontend ids 2655, CSS sections 523, backend routes 654, backend modules 9465, test files 2352, tests 19525, plan headings 999, app scripts 28, boot scripts 37, script files 267.
+Counts: frontend functions 8001, frontend ids 2655, CSS sections 523, backend routes 655, backend modules 9497, test files 2354, tests 19546, plan headings 999, app scripts 28, boot scripts 37, script files 268.
 
-## Frontend functions (7972)
+## Frontend functions (8001)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3133,6 +3133,40 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `diagSave` | frontend/js/diag-report.js:204 |
 | `diagSections` | frontend/js/diag-report.js:106 |
 | `diagTable` | frontend/js/diag-report.js:96 |
+
+### frontend/js/diagram-ai.js (29)
+
+| Name | File:line |
+|---|---|
+| `applyPreview` | frontend/js/diagram-ai.js:343 |
+| `ask` | frontend/js/diagram-ai.js:298 |
+| `build` | frontend/js/diagram-ai.js:253 |
+| `compareThem` | frontend/js/diagram-ai.js:419 |
+| `copyOf` | frontend/js/diagram-ai.js:224 |
+| `counts` | frontend/js/diagram-ai.js:244 |
+| `dgaAdd` | frontend/js/diagram-ai.js:45 |
+| `dgaApply` | frontend/js/diagram-ai.js:93 |
+| `dgaArrow` | frontend/js/diagram-ai.js:31 |
+| `dgaDiff` | frontend/js/diagram-ai.js:102 |
+| `dgaFind` | frontend/js/diagram-ai.js:21 |
+| `dgaFold` | frontend/js/diagram-ai.js:17 |
+| `dgaLint` | frontend/js/diagram-ai.js:179 |
+| `dgaMarked` | frontend/js/diagram-ai.js:123 |
+| `dgaName` | frontend/js/diagram-ai.js:170 |
+| `dgaOne` | frontend/js/diagram-ai.js:64 |
+| `dgaSay` | frontend/js/diagram-ai.js:159 |
+| `dgaText` | frontend/js/diagram-ai.js:18 |
+| `dgaUnused` | frontend/js/diagram-ai.js:35 |
+| `dgaWords` | frontend/js/diagram-ai.js:152 |
+| `discard` | frontend/js/diagram-ai.js:336 |
+| `docOf` | frontend/js/diagram-ai.js:236 |
+| `draw` | frontend/js/diagram-ai.js:238 |
+| `el` | frontend/js/diagram-ai.js:228 |
+| `hues` | frontend/js/diagram-ai.js:225 |
+| `lint` | frontend/js/diagram-ai.js:362 |
+| `show` | frontend/js/diagram-ai.js:317 |
+| `versions` | frontend/js/diagram-ai.js:377 |
+| `wire` | frontend/js/diagram-ai.js:441 |
 
 ### frontend/js/diagram-bar.js (9)
 
@@ -12527,7 +12561,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 226 |
-| frontend/css/diagram-lazy.css | 2365 |
+| frontend/css/diagram-lazy.css | 2490 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -12577,7 +12611,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/web-lazy.css | 88 |
 | frontend/css/writing-desk-lazy.css | 27 |
 
-## Backend routes (654)
+## Backend routes (655)
 
 `@router.<method>(`, `@<name>_router.<method>(` and `@app.<method>(` decorators in `src/tessellate/api/*.py`, sorted by path. The line is the decorator's.
 
@@ -12720,6 +12754,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/desktop/fullscreen` | GET | `desktop_fullscreen_state` | src/tessellate/api/routes_tasks.py:845 |
 | `/desktop/fullscreen` | POST | `desktop_fullscreen_toggle` | src/tessellate/api/routes_tasks.py:860 |
 | `/diagnostics` | GET | `diagnostics` | src/tessellate/api/routes_diag.py:79 |
+| `/diagram-ask` | POST | `diagram_ask_ops` | src/tessellate/api/routes_drafts.py:204 |
 | `/digest` | POST | `weekly_digest` | src/tessellate/api/routes_insights.py:933 |
 | `/digest/stream` | POST | `weekly_digest_stream` | src/tessellate/api/routes_insights.py:860 |
 | `/dismiss` | POST | `dismiss_insight` | src/tessellate/api/routes_insights.py:535 |
@@ -13084,7 +13119,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/tidy-proposals` | GET | `tidy_proposals` | src/tessellate/api/routes_vision.py:196 |
 | `/tidy-proposals/dismiss` | POST | `dismiss_tidy` | src/tessellate/api/routes_vision.py:250 |
 | `/tidy-proposals/undismiss` | POST | `undismiss_tidy` | src/tessellate/api/routes_vision.py:262 |
-| `/title` | POST | `draft_title` | src/tessellate/api/routes_drafts.py:171 |
+| `/title` | POST | `draft_title` | src/tessellate/api/routes_drafts.py:217 |
 | `/today-line` | GET | `today_line` | src/tessellate/api/routes_insights.py:473 |
 | `/tools` | GET | `list_tools` | src/tessellate/api/routes_chat.py:2407 |
 | `/tools/execute` | POST | `execute_confirmed_tool` | src/tessellate/api/routes_chat.py:2440 |
@@ -13238,7 +13273,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9465)
+## Backend modules (9497)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -15996,6 +16031,37 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_quiet` | src/tessellate/ai/day_digest.py:142 |
 | `compose` | src/tessellate/ai/day_digest.py:165 |
 
+### src/tessellate/ai/diagram_ask.py (26)
+
+| Name | File:line |
+|---|---|
+| `_Sim` | src/tessellate/ai/diagram_ask.py:50 |
+| `_add` | src/tessellate/ai/diagram_ask.py:117 |
+| `_add_group` | src/tessellate/ai/diagram_ask.py:109 |
+| `_clause_ops` | src/tessellate/ai/diagram_ask.py:322 |
+| `_clean` | src/tessellate/ai/diagram_ask.py:46 |
+| `_delete` | src/tessellate/ai/diagram_ask.py:186 |
+| `_delete_arrow` | src/tessellate/ai/diagram_ask.py:177 |
+| `_join` | src/tessellate/ai/diagram_ask.py:157 |
+| `_named_then_rest` | src/tessellate/ai/diagram_ask.py:253 |
+| `_nest` | src/tessellate/ai/diagram_ask.py:166 |
+| `_optional` | src/tessellate/ai/diagram_ask.py:102 |
+| `_placed` | src/tessellate/ai/diagram_ask.py:131 |
+| `_rename` | src/tessellate/ai/diagram_ask.py:141 |
+| `_rule_add` | src/tessellate/ai/diagram_ask.py:295 |
+| `_rule_between` | src/tessellate/ai/diagram_ask.py:285 |
+| `_rule_join` | src/tessellate/ai/diagram_ask.py:271 |
+| `_rule_rename` | src/tessellate/ai/diagram_ask.py:262 |
+| `_rule_unjoin` | src/tessellate/ai/diagram_ask.py:280 |
+| `_split_two` | src/tessellate/ai/diagram_ask.py:243 |
+| `_text_of` | src/tessellate/ai/diagram_ask.py:228 |
+| `by_rule` | src/tessellate/ai/diagram_ask.py:333 |
+| `checked` | src/tessellate/ai/diagram_ask.py:209 |
+| `described` | src/tessellate/ai/diagram_ask.py:354 |
+| `fold` | src/tessellate/ai/diagram_ask.py:41 |
+| `read_reply` | src/tessellate/ai/diagram_ask.py:370 |
+| `with_model` | src/tessellate/ai/diagram_ask.py:385 |
+
 ### src/tessellate/ai/docreader.py (3)
 
 | Name | File:line |
@@ -16453,8 +16519,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3544 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3677 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3566 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3699 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -20107,17 +20173,23 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `update_document` | src/tessellate/api/routes_documents.py:730 |
 | `write_contents` | src/tessellate/api/routes_documents.py:572 |
 
-### src/tessellate/api/routes_drafts.py (7)
+### src/tessellate/api/routes_drafts.py (13)
 
 | Name | File:line |
 |---|---|
 | `ComposeBody` | src/tessellate/api/routes_drafts.py:33 |
+| `DiagramAskBody` | src/tessellate/api/routes_drafts.py:199 |
+| `DiagramEdgeIn` | src/tessellate/api/routes_drafts.py:178 |
+| `DiagramGroupIn` | src/tessellate/api/routes_drafts.py:185 |
+| `DiagramModelIn` | src/tessellate/api/routes_drafts.py:191 |
+| `DiagramNodeIn` | src/tessellate/api/routes_drafts.py:171 |
 | `TitleBody` | src/tessellate/api/routes_drafts.py:74 |
 | `_sources` | src/tessellate/api/routes_drafts.py:52 |
 | `_with_diagram` | src/tessellate/api/routes_drafts.py:78 |
 | `compose_draft` | src/tessellate/api/routes_drafts.py:93 |
 | `compose_draft_stream` | src/tessellate/api/routes_drafts.py:135 |
-| `draft_title` | src/tessellate/api/routes_drafts.py:172 |
+| `diagram_ask_ops` | src/tessellate/api/routes_drafts.py:205 |
+| `draft_title` | src/tessellate/api/routes_drafts.py:218 |
 
 ### src/tessellate/api/routes_duplicates.py (7)
 
@@ -25182,7 +25254,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19525)
+## Tests (19546)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25864,6 +25936,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_1661b.py | 9 |
 | tests/test_diagram_1661klm.py | 18 |
 | tests/test_diagram_1679m.py | 14 |
+| tests/test_diagram_ai.py | 5 |
+| tests/test_diagram_ask.py | 14 |
 | tests/test_diagram_behaviour_1108.py | 7 |
 | tests/test_diagram_blind_1108.py | 10 |
 | tests/test_diagram_blind_fixes.py | 6 |
@@ -26486,7 +26560,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_make_plan.py | 21 |
 | tests/test_manage_lists_504.py | 5 |
 | tests/test_manual_entry_points.py | 3 |
-| tests/test_manual_parity.py | 30 |
+| tests/test_manual_parity.py | 31 |
 | tests/test_map_actions_clear_of_label.py | 1 |
 | tests/test_map_add_speed.py | 6 |
 | tests/test_map_branch_colour_order.py | 3 |
@@ -27307,7 +27381,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_typo_routing.py | 4 |
 | tests/test_ui_1017b.py | 7 |
 | tests/test_ui_batch_726.py | 13 |
-| tests/test_ui_recipes.py | 278 |
+| tests/test_ui_recipes.py | 279 |
 | tests/test_ui_signatures.py | 2 |
 | tests/test_ui_state.py | 6 |
 | tests/test_ui_targets_1029b.py | 9 |
