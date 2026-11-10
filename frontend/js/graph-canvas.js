@@ -1187,6 +1187,95 @@ function gcNodeSprite(colour, radiusPx, hub) {
   return sprite;
 }
 
+// --- the hover and focus state (INBOX 1723) ------------------------------------
+//: The owner: "Im iffy about the blue ring that surrounds hovered over nodes
+//: in the graph ... it just feels a little out of place". It was a 3.5px
+//: accent stroke laid on the node's own edge (measured 4px of solid #78a8ff
+//: on dark), the one flat, heavy, off-palette mark on a map of soft glows and
+//: one-pixel rims.
+//:
+//: **Chosen: the node's own light, not a ring of ours.** Of the three
+//: directions (a halo plus hairline, a scale-up, the neighbourhood lighting
+//: while the rest dims), the last two were already here (`gcHoverGrow`,
+//: `GC_DIM_ALPHA`), so what was out of place was only the mark. A pointer
+//: hover is now a soft halo in the node's own colour, fading out over about
+//: half a radius, and a crisp 1.5px hairline 2px clear of the edge in that
+//: colour drawn toward the ink (lighter on dark, deeper on light), the way
+//: the app's controls answer a hover with a tint and a hairline rather than a
+//: border. A hover says "this one"; the hover card does the telling.
+//:
+//: **Focus stays an accent ring, offset** (WCAG 2.4.7): the keyboard's note,
+//: the open card's and the search's current hit keep `--accent`, now 2px and
+//: 3px clear of the node like every focus outline in the app
+//: (`outline-offset`), so it reads as focus rather than as a stroke on the
+//: dot, and measures over 3:1 against the map in both themes.
+//:
+//: **Cheap:** the halo is a sprite, one per colour, size and theme
+//: (`gcHoverMark.cache`), drawn at the node's base size and scaled with the
+//: ease, so an ease allocates nothing after its first frame; reduced motion
+//: lands `heat` at 1 at once (`gcHoverStep`).
+//:
+//: One shared name for all of it (`tests/test_global_scope_ratchet.py`: the
+//: 28 classic scripts share one scope, and its count only goes down).
+const gcHoverMark = {
+  cache: new Map(),
+  lineGap: 2, // px between the node's edge and the hairline
+  lineW: 1.5, // px
+  ringGap: 3, // px, the app's focus `outline-offset`
+  ringW: 2, // px, the app's focus outline width
+
+  sprite(colour, radiusPx) {
+    const r = Math.max(2, Math.round(radiusPx));
+    const key = `${colour}|${r}|${gcTokens.card}|${gcTokens.ink}`;
+    let sprite = this.cache.get(key);
+    if (sprite) return sprite;
+    if (this.cache.size > 120) this.cache.clear();
+    const rgb = gcHexToRgb(colour);
+    const ink = gcHexToRgb(gcTokens.ink);
+    const half = r + Math.round(r * 0.55) + 8;
+    const canvas = document.createElement("canvas");
+    canvas.width = half * 2;
+    canvas.height = half * 2;
+    if (rgb) {
+      const c = canvas.getContext("2d");
+      const tint = rgb.join(", ");
+      const g = c.createRadialGradient(half, half, r, half, half, half);
+      g.addColorStop(0, `rgba(${tint}, 0.34)`);
+      g.addColorStop(0.35, `rgba(${tint}, 0.14)`);
+      g.addColorStop(1, `rgba(${tint}, 0)`);
+      c.fillStyle = g;
+      c.beginPath();
+      c.arc(half, half, half, 0, Math.PI * 2);
+      c.arc(half, half, r, 0, Math.PI * 2, true);
+      c.fill("evenodd");
+    }
+    //: The hairline's colour: the node's own drawn 30% toward the ink, so it
+    //: is the node's colour, crisp against either ground.
+    const line = rgb && ink ? `rgb(${rgb.map((v, i) => Math.round(v + (ink[i] - v) * 0.3)).join(", ")})` : colour;
+    sprite = { canvas, half, r, line };
+    this.cache.set(key, sprite);
+    return sprite;
+  },
+
+  //: One hovered node's halo and hairline at `alpha` (its heat times its
+  //: lit-ness). A note that also holds the focus ring skips the hairline:
+  //: two concentric lines would be the ring again.
+  draw(ctx, node, alpha, k, pixelScale) {
+    if (!(alpha > 0)) return;
+    const rWorld = node.r + (node._grow || 0);
+    const sprite = this.sprite(node.colour, node.r * pixelScale);
+    const halfWorld = (sprite.half / pixelScale) * (rWorld / node.r);
+    ctx.globalAlpha = alpha;
+    ctx.drawImage(sprite.canvas, node.x - halfWorld, node.y - halfWorld, halfWorld * 2, halfWorld * 2);
+    if (node._marked) return;
+    ctx.strokeStyle = sprite.line;
+    ctx.lineWidth = this.lineW / k;
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, rWorld + (this.lineGap + this.lineW / 2) / k, 0, Math.PI * 2);
+    ctx.stroke();
+  },
+};
+
 //: **A nebula behind each cluster.** The one thing a map of a notebook can
 //: show that a list cannot is where the mass is, and seven clusters of
 //: same-coloured dots say it only once the eye has done the grouping. A wide,
@@ -1761,7 +1850,6 @@ function gcTopicColour(topic, s = gcTab) {
 }
 
 const GC_HOVER_GROW = 3;         // half the gap from a core to its own halo
-const GC_HOVER_HALO_GROW = 1.5;  // and the halo keeps clear by the same half
 const GC_HOVER_MS = 190;
 
 //: **A fit is balanced on what was drawn** (the owner, 2026-10-10, two
@@ -3088,22 +3176,27 @@ function gcDraw(s = gcTab) {
     const heat = gcHoverGrow(node, 1, s);
     if (heat > 0) hotHalos.push({ node, heat });
     const r = node.r + node._grow;
-    const haloR = node.r + 6 + gcHoverGrow(node, GC_HOVER_HALO_GROW, s);
-    void haloR;
     halo.nodes.push(node);
     drawn.push(node);
     node._dim = dim;
     //: The note whose popup is open keeps the focus ring (Brief 100 (c), a
     //: ring on the selected node), so the map says which dot the card is for.
-    const focused = node.id === s.hoveredId || node.id === gcKeyboardId(s) || node.id === openId || node.id === hl.current;
-    //: The node the pointer just left keeps its ring while it shrinks back,
-    //: fading with it, and the one it arrived on fades its ring in.
-    const leaving = !focused && node.id === s.hoverFrom && heat > 0;
-    const ringFade = leaving || (focused && node.id === s.hoverTo) ? heat : 1;
+    //: **A pointer hover wears no accent ring** (INBOX 1723, `gcHoverMark.draw`):
+    //: `marked` is the keyboard's note, the open card's and the search's current
+    //: hit, which take the offset focus ring; a note only pointed at is told by
+    //: its own colour.
+    const marked = node.id === gcKeyboardId(s) || node.id === openId || node.id === hl.current;
+    const focused = marked || node.id === s.hoveredId;
+    node._marked = marked;
+    //: The note the keyboard just left keeps its ring while it shrinks back,
+    //: fading with it, and the one it arrived on fades its ring in (a pointer
+    //: hover has no ring to keep: its hairline eases in `gcHoverMark.draw`).
+    const leaving = !marked && gcKeyboardId(s) != null && node.id === s.hoverFrom && heat > 0;
+    const ringFade = leaving || (marked && node.id === s.hoverTo) ? heat : 1;
     const matched = hl.active && hl.searchOk(node);
     const onPath = hl.onPath ? hl.onPath.has(node.id) : false;
     const special =
-      focused ||
+      marked ||
       leaving ||
       matched ||
       onPath ||
@@ -3115,7 +3208,7 @@ function gcDraw(s = gcTab) {
       !gcIsNote(node) ||
       node === s.dropTarget;
     if (special) {
-      ringed.push({ node, focused: focused || leaving, ringFade, matched, onPath, dim });
+      ringed.push({ node, focused: marked || leaving, ringFade, matched, onPath, dim });
     } else if (!dim && (s.adj.get(node.id) || { size: 0 }).size >= 3) {
       // **A hub's ring is batched, not drawn per node.** Average degree in a
       // real notebook is about four, so "degree >= 3" is most of the map: one
@@ -3240,27 +3333,13 @@ function gcDraw(s = gcTab) {
   }
   if (!over) s.lodNodes = lodNodes;
   if (!over) gcDrawLeaving(ctx, s, bornAt);
-  //: The hovered node's halo, lit. A second fill over the one the batch
-  //: already laid down, because pulling this node out of its colour batch to
-  //: give it a different alpha would cost a fill per colour rather than a fill
-  //: per hovered node, and there are at most two of those.
-  //:
-  //: 0.16 over the batch's 0.18 composites to 0.31: `1 - (1 - 0.18)(1 - 0.16)`.
-  //: Multiplying by `heat` is what makes it ease in and out with the size,
+  //: The hovered node's halo, lit, and its hairline (`gcHoverMark.draw`). At
+  //: most two nodes are here, each one `drawImage` and one arc stroke;
+  //: multiplying by `heat` is what makes both ease in and out with the size,
   //: including on the node being left, whose `heat` is counting down.
   for (const hot of hotHalos) {
     if (hot.node._dim) continue;
-    ctx.globalAlpha = 0.16 * hot.heat * gcSmooth(hot.node._lit);
-    ctx.fillStyle = hot.node.colour;
-    ctx.beginPath();
-    ctx.arc(
-      hot.node.x,
-      hot.node.y,
-      hot.node.r + 6 + gcHoverGrow(hot.node, GC_HOVER_HALO_GROW, s),
-      0,
-      Math.PI * 2,
-    );
-    ctx.fill();
+    gcHoverMark.draw(ctx, hot.node, hot.heat * gcSmooth(hot.node._lit), k, pixelScale);
   }
 
   // The ordinary ring (`.graph-core { stroke: var(--card) }`) in one pass.
@@ -3284,8 +3363,12 @@ function gcDraw(s = gcTab) {
       ctx.strokeStyle = gcTokens.accent;
       ctx.lineWidth = 3.5 / k;
     } else if (item.focused) {
+      //: The focus ring, offset (`gcHoverMark.draw`'s comment): a fresh path
+      //: at the gap rather than on the node's edge.
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, node.r + (node._grow || 0) + (gcHoverMark.ringGap + gcHoverMark.ringW / 2) / k, 0, Math.PI * 2);
       ctx.strokeStyle = gcTokens.accent;
-      ctx.lineWidth = 3.5 / k;
+      ctx.lineWidth = gcHoverMark.ringW / k;
     } else if (item.matched) {
       ctx.strokeStyle = gcTokens.accent;
       ctx.lineWidth = 3 / k;
