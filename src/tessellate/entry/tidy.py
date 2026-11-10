@@ -1214,7 +1214,7 @@ def respecify_all(workspace_id: str = "default", chunk: int = 200) -> dict:
     undoable run. Idempotent (a named link no longer matches), so a resumed
     job repeats nothing. Returns {"named", "stopped", "undo_id"}."""
     from tessellate.core import deps
-    from tessellate.core.deps import impersonate_workspace
+    from tessellate.core.database import impersonate_workspace
 
     from tessellate.core import jobruns
 
