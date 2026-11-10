@@ -2917,7 +2917,7 @@ HELP_TOPICS.extend(
                 "A web address pasted over selected words makes a link. If the "
                 "browser will not let the app read the clipboard, Paste special "
                 "applies to your next Ctrl+V. Right-click in the text for the same "
-                "choices beside Cut, Copy, Paste, Turn into and Select all (hold "
+                "choices under Paste as, beside Cut, Copy, Paste, Turn into and Select all (hold "
                 "on a phone); Shift+right-click opens the browser's own menu, with "
                 "its spelling suggestions."
             ),

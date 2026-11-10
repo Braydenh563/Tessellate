@@ -3173,7 +3173,7 @@ function docTurnIntoMenu(boxId = "doc-content", x = null, y = null) {
 }
 
 //: **The editor's own right-click menu** (docs6-1026: "paste options on right-click").
-//: Cut, Copy, Paste, the Paste special modes, Turn into, Select all. Opened by
+//: Cut, Copy, Paste, Paste as (the Paste special modes), Turn into, Select all. Opened by
 //: `docEditorMenuAtPoint` (documents.js) after the table's menu and the
 //: suggestion popover have declined; Shift+right-click keeps the browser's.
 async function docEditorPaste(view) {
@@ -3198,7 +3198,16 @@ function docEditorMenuItems(view, x, y) {
     { ...cut, label: "Cut" },
     { ...copy, label: "Copy" },
     { label: "Paste", group: "Clipboard", title: "Paste the clipboard as plain text", run: () => docEditorPaste(view) },
-    ...DOC_PASTE_SPECIAL.map(([id, label]) => ({ label, group: "Paste special", run: () => docPasteSpecial(id) })),
+    //: One "Paste as" row that flies out (owner, 2026-11-10: "I feel like paste should be a submenu"):
+    //: eight "Paste as ..." rows made the clipboard group the whole menu. Inside, the rows drop the "Paste".
+    {
+      label: "Paste as",
+      group: "Clipboard",
+      items: DOC_PASTE_SPECIAL.map(([id, label]) => ({
+        label: label.replace(/^Paste (as (a )?)?(\w)/, (...m) => m[3].toUpperCase()),
+        run: () => docPasteSpecial(id),
+      })),
+    },
     { label: "Turn into", group: "Block", title: "Change the block to a heading, list, quote or code", run: () => docTurnIntoMenu("doc-content", x, y) },
     {
       label: "Select all",
