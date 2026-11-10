@@ -7,6 +7,8 @@ Routine Overview**. Go to the gym ...")."""
 from __future__ import annotations
 
 import json
+
+import pytest
 import re
 from datetime import date, datetime
 
@@ -168,9 +170,11 @@ def test_the_records_card_draws_the_reason_on_the_why_this_result_line():
 
     js = Path(__file__).resolve().parents[1] / "frontend" / "js"
     kit = (js / "reply-kit.js").read_text(encoding="utf-8")
-    assert "if (opts.match_info) replyRecordReasons(opts.match_info);" in kit
-    body = kit.split("function replyRecordReasons(info) {", 1)[1].split("\n}\n", 1)[0]
-    assert '"entry-why"' in body and "result-reason-chip result-reason-why" in body and ".why" in body
+    assert "if (opts.match_info) replyRecordCards($(\"raw-results\"), null, opts.match_info);" in kit
+    body = kit.split("function replyRecordCards(", 1)[1].split("\n}\n", 1)[0]
+    #: INBOX 1735 moved the intent: the reason is one plain secondary line
+    #: (`.record-why`), not a chip on the `.entry-why` recipe.
+    assert '"record-why"' in body and ".why" in body and "chip(" not in body
     assert "finishReply(answerBox, { composed: answerMeta?.composed, match_info: answerMeta?.match_info });" in with_pieces("capture-ask.js")
 
 
@@ -186,3 +190,24 @@ def test_two_notes_linked_both_ways_list_each_other_once(session):
     notes = [{"id": a.id, "content": a.content, "tags": ["gym"]}, {"id": b.id, "content": b.content, "tags": ["gym"]}]
     _frame_matches(session, "gym", notes, {}, "notes")
     assert notes[0]["linked_to"] == [b.id] and notes[1]["linked_to"] == [a.id]
+
+
+@pytest.mark.parametrize(
+    ("question", "topic"),
+    [
+        ("else say university", "university"),
+        ("what else do I say about university", "university"),
+        ("can you also find anything more about my hobbies", "hobbies"),
+        ("how much have I saved for the gym", "gym"),
+    ],
+)
+def test_1735_filler_words_do_not_leak_into_the_reason_subject(question, topic):
+    from tessellate.ai.composer_frame import topic_words
+
+    assert topic_words(question) == topic
+
+
+def test_1735_a_filler_word_is_not_the_word_a_note_has():
+    info = {"type": "keyword", "terms": ["say", "university"]}
+    note = {"id": 1, "content": "# Open day", "category": "Courses", "match_info": info}
+    assert composer_frame.reasons("else say university", [note])["1"] == "Has the word “university”"

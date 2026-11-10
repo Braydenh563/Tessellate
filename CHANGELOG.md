@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Ask, Matching records (INBOX 1735, the owner: "messy and unprofessional"): each card is a title, two lines of the note (Show more for the rest), one facts line of category, date and one match percentage with no empty slots or bare icons, the reason as one plain line, and the links folded into one "N links" row that opens the chips; both sides pad 12.8px (was 26.4 and 28), the facts line is 17px tall at every width (was 24 to 52 with gaps from -257 to 200px) and nothing that fits is cut (8 clipped elements at 1440 before, 0 after); the reason no longer names filler words of the question ("Has the word say"). Measured by a seeded sweep at 390, 1024 and 1440.
 
 - Security (review 5850946759): a request without a session token can no longer open the private spaces for other tokenless callers; a full Windows Hello challenge table refuses a new sign-in (try again in two minutes) instead of dropping one in progress; a second, empty desktop handoff no longer wipes the settings still waiting to carry over.
 - Diagram builder (INBOX 1737): the corner overview rises above "Turn it sideways" while that offer shows, so they no longer overlap.

@@ -1258,7 +1258,7 @@ async function askQuestion(preset) {
       if (answerTip) answerBox.appendChild(Object.assign(document.createElement("p"), { className: "muted answer-tip", textContent: answerTip }));
       if (answerPanels.length) drawAnswerPanels(answerBox, answerPanels);
       //: `composed`, and `match_info` for each record's reason (INBOX 1310,
-      //: `replyRecordReasons`); only these, so a new meta key cannot steer it.
+      //: `replyRecordCards`); only these, so a new meta key cannot steer it.
       finishReply(answerBox, { composed: answerMeta?.composed, match_info: answerMeta?.match_info });
       //: Not awaited: it is a second model call, and the answer is already on
       //: screen. The same contract `offerFollowups` has in the Chat tab. An
@@ -1391,6 +1391,7 @@ function renderChatMeta(meta) {
   //: note list uses, pointed at this list: one implementation, and a second
   //: one is how the two would come to disagree about what "linked by" counts.
   ensureCardCounts(rawList, _entriesLoadGeneration);
+  ensureModule("replyKit").then(() => replyRecordCards(rawList, meta.raw_results, matchInfo, scored)).catch(() => {});
   $("chat-results").classList.remove("hidden");
   $("ask-idle")?.classList.add("hidden");
 }

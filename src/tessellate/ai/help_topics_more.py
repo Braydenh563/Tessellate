@@ -2234,7 +2234,11 @@ MORE_TOPICS.extend(
                 "matched, who wrote it (Atlas from your notes with no model, "
                 "or the model by name, and whether it was handed the app's "
                 "own answer as a fact), the shape it took, how many of the "
-                "matching notes it cites, and how long it took."
+                "matching notes it cites, and how long it took. "
+                "Beside an Ask answer, each Matching records card is the "
+                "note's title, two lines of it (Show more for the rest), one "
+                "line of its category, date and match percentage, the reason "
+                "it was found, and N links, which opens the notes it links to."
             ),
             "badge": {"label": "Notes", "tab": "notes"},
         },
