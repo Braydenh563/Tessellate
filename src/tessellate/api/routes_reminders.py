@@ -615,6 +615,7 @@ def suggest_reminder(body: SuggestBody) -> dict:
             "priority": found.get("priority", "normal"),
             "recurring": found.get("recurring", "none"),
             "alert_minutes": found.get("alert_minutes"),
+            "guess": bool(found.get("guess")),
         }
     }
 

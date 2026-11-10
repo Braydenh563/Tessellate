@@ -1962,7 +1962,7 @@ async function offerReminder(bubble, question) {
   bubble.querySelector(":scope > .chat-reminder-offer")?.remove();
   const row = document.createElement("div");
   row.className = "chat-reminder-offer";
-  const offer = chip(`ph:alarm Make this a reminder: ${found.text}, ${relativeWhen(found.due_at)}`, "", async () => {
+  const offer = chip(`ph:alarm Make this a reminder: ${found.text}, ${relativeWhen(found.due_at)}${found.guess ? " (a guess)" : ""}`, "", async () => {
     offer.classList.add("hidden");
     try {
       const made = await apiJson("/reminders", {
