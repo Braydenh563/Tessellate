@@ -651,6 +651,8 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 224 | Not measured: dark theme for axe target-size and scrollable-region-focusable; the 1024 width. (from a11yfix-1010.md) | docs/roadmap/agent-remaining/OPEN.md:3462 | S | unassigned |
 | 225 | Decision 45: the readings are listed (composer._readings, src/memorymap/ai/composer.py:2693); a running model does not yet pick among them (needs a... | docs/roadmap/agent-remaining/OPEN.md:3493 | S | unassigned |
 | 226 | Not verified: Ollama's real keep_alive: 0 and /api/ps (a slow fake in the agent's scratch dir stood in), the desktop window, WebKit. | docs/roadmap/agent-remaining/OPEN.md:3526 | S | unassigned |
+
+**B. Plan tails, by surface.** Moved to HISTORY.md, "OPEN.md rows closed, 2026-10-05", 2026-10-05: every row was built or held by its plan. Two stay open: MINDMAP_PLAN's mapux leftover list (this file's Mind map section, the mind map agent's) and UI_MODERNISATION_PLAN Phase 11 item 11's screenshot set for the owner. Section C, the horizon, is WORLD_CLASS_PLAN section 8's own ranked list.
 | 227 | Not verified: the .docx opened in Word itself (its XML and Mammoth's reading only); Format on a large real file; the list chords on a non-US layout... | docs/roadmap/agent-remaining/OPEN.md:3540 | S | unassigned |
 | 228 | Not verified by either: a real model's path; a screen reader toggling a chip; a browser locale other than en-US; the full suite. [f1-1010, f2-1010] | docs/roadmap/agent-remaining/OPEN.md:3581 | S | unassigned |
 | 229 | Not verified: real-model answers through the validators (fake transport and the route test only); dark mode. [f3-1010] | docs/roadmap/agent-remaining/OPEN.md:3592 | S | unassigned |
