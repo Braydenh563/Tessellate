@@ -321,13 +321,13 @@ Parked until the owner's data or a check on real hardware:
 - E6 Lower body and nebula follow the pose; landing outcomes; edge squash; portal | oa 1692 e/n, B1, B3, T1, N5, N9
 
 **W32 Backend tidy** (E, backend, Haiku verify then Sonnet). Files: small fixes in `api/`. Checks: targeted route tests.
-- E7 Validation copy leaks field names | 1031-backend BK8
-- E8 A disabled tool refused with the wrong reason; duplicated loopback lists; token sweep per request | 1029-harness H11, 1028-backend K28, K33
+~~- E7 Validation copy leaks field names | 1031-backend BK8~~ **Already built c6cc5767a** (field labels and the limit in the message; tests/test_validation_copy.py). Verified s8-1110.
+- E8 ~~A disabled tool refused with the wrong reason (H11, `_refuse_if_off` 3f0030d41); duplicated loopback lists (K28, one list in core/security)~~; token sweep per request (K33) **not built, s8-1110**: `tests/test_vault_sessions.py::test_the_key_goes_when_the_last_granted_session_expires` pins that every authenticated request sweeps (a token injected into `_active_tokens` with an old stamp must revoke the vault key on the next request). A once-a-minute sweep fails it; needs the owner to move that test's intent, or a sweep keyed on a min-expiry that the test's direct injection also lowers | 1029-harness H11, 1028-backend K28, K33
 - E9 Real Tesseract and PDFium reads never ran | sec L13, OPEN RapidOCR row
 - E10 The other 1028-backend and 1031-backend open rows | book1 (37 and 12 rows)
 
 **W33 Copy and help** (E, copy, Haiku then Sonnet). Files: help topics, copy strings.
-- E11 "Tools and features" omits 60 palette rows | 1031-extras Z3
+~~- E11 "Tools and features" omits 60 palette rows | 1031-extras Z3~~ **Already built 073cc0c6b** (`featureCommandRows`; tests/test_xfix_1031.py). Verified s8-1110.
 - E12 The tool describes itself in the answer ("Read as the days from today") | 1030-composer Z49
 - E13 "¦" written for "&" in a category; a "conversation" topic on a gym note | oa 1620 categories b, topics c
 - E14 Manual pictures as WebP made by the sweeps | oa 1612 c
