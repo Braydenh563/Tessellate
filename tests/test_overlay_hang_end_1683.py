@@ -26,10 +26,10 @@ def hang_at_ceiling(seed: int, windows: list[Perch], gait: str = "float") -> tup
 
 
 @pytest.mark.parametrize("gait", ["walk", "float"])
-def test_a_top_hang_lasts_its_full_rest_and_then_hangs_on(gait: str) -> None:
+def test_a_top_hang_lasts_its_full_rest_and_then_makes_a_calm_drop(gait: str) -> None:
     """Owner 2026-11-10: "it doesnt hang from the top of my screen for long before it falls down. it always falls
-    down". A hang from the screen top is held for the whole rest it drew, no fall roll; with nothing to pull onto or
-    drop to, it takes another full rest, and it ends only by a chosen drop or a drag."""
+    down". A hang from the screen top is held for the whole rest it drew with no fall roll; after it, with nothing to
+    pull onto or drop to, it makes a calm drop to its feet (a chosen let-go: no startled beat, no fall)."""
     for seed in range(8):
         e, t = hang_at_ceiling(seed, [], gait)
         t0, rest = t, e.state_until - t
@@ -38,11 +38,15 @@ def test_a_top_hang_lasts_its_full_rest_and_then_hangs_on(gait: str) -> None:
             t += 0.016
             e.update(t)
             assert e.state == "hang", (seed, round(t - t0, 1), e.state)
-        while t < t0 + 3 * rest:  # past the rest, and past two more
+        assert not any(leg[0].startswith("hang_") for leg in e.legs)
+        states = set()
+        while t < t0 + rest + 6.0:
             t += 0.016
             e.update(t)
-            assert e.state == "hang" and not e.releasing and e.swing_to is None, (seed, round(t - t0, 1), e.state)
-        assert not any(leg[0].startswith("hang_") for leg in e.legs)
+            states.add(e.state)
+            assert not e.releasing and e.mind.event != "startled", (seed, e.state)
+        assert states & {"stand", "sit", "rise"} and not states & {"fall", "fly"}, (seed, states)
+        assert [leg[0] for leg in e.legs if leg[0].startswith("hang_")] == ["hang_calm"], e.legs
 
 
 def test_a_hang_with_a_window_below_swings_and_drops_onto_it() -> None:
@@ -95,7 +99,7 @@ def test_no_hang_in_a_seeded_hour_ends_in_a_plain_fall() -> None:
         for seed in (1, 2, 3):
             m = simulate(gait, seed)
             hangs = [leg for leg in m["legs"] if leg[0].startswith("hang_")]
-            assert all(leg[0] in ("hang_pull", "hang_swing", "hang_react") for leg in hangs)
+            assert all(leg[0] in ("hang_pull", "hang_swing", "hang_react", "hang_calm") for leg in hangs)
 
 
 def _first_hang_end(gait: str, seed: int, scene: str) -> str:
@@ -122,16 +126,16 @@ def _first_hang_end(gait: str, seed: int, scene: str) -> str:
         t += 0.016
         e.update(t)
         e.set_windows([] if scene == "ceiling" else [win], t)
-    return next((leg[0] for leg in e.legs[n:] if leg[0].startswith("hang_")), "")  # "": it hangs on
+    return next((leg[0] for leg in e.legs[n:] if leg[0].startswith("hang_")), "")  # "hang_calm" is the top hang's own end
 
 
 @pytest.mark.parametrize("gait", ["walk", "float"])
 def test_forced_hang_ends_take_the_choice_that_the_scene_offers(gait: str) -> None:
     """A hang is rare in a seeded hour, so this forces 100 ends per scene: a window below is a swing and a drop, a
-    title bar is a pull-up or a startled let-go; a screen-top hang with nothing in reach ends in nothing (owner
-    2026-11-10: no fall roll, it hangs on)."""
+    title bar is a pull-up or a startled let-go; a screen-top hang with nothing in reach makes a calm drop (owner
+    2026-11-10: no fall roll)."""
     for scene, option in (("window below", "hang_swing"), ("title bar", "hang_pull")):
         ends = [_first_hang_end(gait, seed, scene) for seed in range(100)]
-        assert set(ends) <= {option, "", "hang_react"}, set(ends)  # "": a top hang with no window in reach hangs on; react: a window's edge only
+        assert set(ends) <= {option, "hang_calm", "hang_react"}, set(ends)  # calm: a top hang with no window in reach; react: a window's edge only
         assert ends.count(option) >= 40, (scene, ends.count(option))
-    assert {_first_hang_end(gait, seed, "ceiling") for seed in range(20)} == {""}
+    assert {_first_hang_end(gait, seed, "ceiling") for seed in range(20)} == {"hang_calm"}

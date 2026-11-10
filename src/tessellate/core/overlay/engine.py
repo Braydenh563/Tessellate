@@ -394,7 +394,7 @@ HANG_KICK_FOR = 2.4
 #: A hang ends by its own choice (INBOX 1683 h), never a plain fall on a timer: it pulls itself up onto the
 #: window it holds, swings (a bigger pendulum for `SWING_FOR` s) and drops to a window top within `SWING_REACH`
 #: logical px, or (a hang from a window's edge only) lets go after a startled beat of `REACT_FOR` s. A hang from the screen top has no such
-#: ending: with neither of the first two it keeps hanging for another full rest (owner 2026-11-10).
+#: ending: after its full rest, with neither of the first two, it makes a calm drop to its feet (owner 2026-11-10).
 SWING_FOR = 1.5
 SWING_BOOST = 1.7
 SWING_REACH = 520.0
@@ -3514,8 +3514,8 @@ class Engine:
 
     def _end_hang(self, now: float) -> None:
         """The rest is up: pull up onto the edge it holds, swing and drop to a window top, or (a window's edge only) let
-        go after a startled beat. A hang from the screen top never falls on a roll or a timer: with nothing to pull
-        onto or drop to it hangs on for another full rest (INBOX 1683 h; owner 2026-11-10)."""
+        go after a startled beat. A hang from the screen top never falls on a roll or a timer: after its full rest, with nothing to pull
+        onto or drop to, it makes a calm drop to its feet (INBOX 1683 h; owner 2026-11-10)."""
         held = self._hold_of(self.hang_on) if self.hang_on is not None else None
         w, h = self.size
         table: dict[str, float] = {"react": HANG_ENDS["react"]} if self.hang_on is not None else {}
@@ -3524,8 +3524,10 @@ class Engine:
         drop = self._drop_target()
         if drop is not None:
             table["swing"] = HANG_ENDS["swing"]
-        if not table:  # the screen top, nothing to pull onto or drop to: another full rest, never a fall on a roll (owner 2026-11-10)
-            self.state_until = now + self.rng.uniform(*bh.HANG_BY_MOOD.get(self.mind.mood(now, self.hour), HANG_FOR))
+        if not table:  # the screen top, nothing to pull onto or drop to: a chosen, calm drop to its feet, never a fall (owner 2026-11-10)
+            self.legs.append(("hang_calm", self.x, self.x, now))
+            self.hang_on = None
+            self._rise((self.x, self.ground_y()), "calm", now)
             return
         roll = self.rng.random() * sum(table.values())
         pick = next(iter(table))
