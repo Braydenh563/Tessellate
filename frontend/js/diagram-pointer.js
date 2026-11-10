@@ -116,7 +116,10 @@
       const [lo, hi] = key ? [0.3, 0.7] : [0.5, 0.5];
       if (f <= lo) return { op: "before", key: over, group: sis.parent, before: over, card, word: `Before ${said}` };
       if (f >= hi) return { op: "after", key: over, group: sis.parent, before: nextKey, card, below: true, word: `After ${said}` };
-      return { op: "join", key: over, card, word: `Connect to ${said}` };
+      //: A drop on the middle of an earlier block draws an arrow that runs back up the list; the card says so (W17 C2).
+      const own = key && h.ops.sisters(S.m, key).keys;
+      const back = own && own.includes(over) && own.indexOf(over) < own.indexOf(key);
+      return { op: "join", key: over, card, word: back ? `Connect back to ${said}` : `Connect to ${said}` };
     }
 
     function dropApply(g, target) {

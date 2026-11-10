@@ -57,6 +57,9 @@
     let editing = null;
     //: What to ask next, once the picture shows it: `{ node: id }` or `{ edge }` (the model's arrow).
     const want = [];
+    //: Keys typed between Add and the name box opening (the picture draws first) are kept for it, not run as shortcuts on the sheet (W17 C1).
+    let held = "";
+    let entered = false;
 
     const sole = () => {
       const on = layer.querySelectorAll(".dgm-box.on:not(.dgm-cluster)");
@@ -133,6 +136,8 @@
       showHandle();
       input.focus();
       input.select();
+      if (held) (input.value = held), (held = "");
+      if (entered) (entered = false), end(true);
     }
 
     const renameNode = (id) => {
@@ -175,6 +180,7 @@
     //: The next thing asked for, once the new picture has a size to place it by (an image decodes after the draw); dropped after 4 s.
     const ask = () => {
       while (want.length && want[0].until < Date.now()) want.shift();
+      if (!want.length) (held = ""), (entered = false);
       const next = want[0];
       if (!next || editing || S.drawing) return;
       //: A rename re-reads the source, so the edge asked for is a new object by now: found again by its two ends (blind task b: naming the new box lost the arrow's question).
@@ -288,6 +294,16 @@
     S.renameNode = renameNode;
     //: And a block added with the list folded (diagram-builder.js `nameOnPicture`): named here once the picture has drawn it.
     S.askNode = (id) => want.push({ node: id, until: Date.now() + 4000 });
+    S.root.addEventListener("keydown", (event) => {
+      const key = event.key;
+      if (editing || event.ctrlKey || event.metaKey || event.altKey || !(key.length === 1 || key === "Enter" || key === "Escape") || !want.some((w) => w.node && w.until > Date.now())) return;
+      event.preventDefault();
+      event.stopPropagation();
+      //: Enter is the name accepted, Escape leaves it as it was; both wait for the box like the letters do.
+      if (key === "Escape") (want.length = 0), (held = ""), (entered = false);
+      else if (key === "Enter") entered = true;
+      else held += key;
+    }, true);
     const disarm = () => {
       armed = "";
       for (const handle of handles) handle.removeAttribute("aria-pressed");

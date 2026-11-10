@@ -214,15 +214,15 @@ Parked until the owner's data or a check on real hardware:
 ### Tier C: UX and accessibility on daily surfaces
 
 **W17 Diagram builder fixes** (C, diagram, Sonnet; after W0 merges). Files: `frontend/js/diagram-*.js`. Checks: `tests/test_diagram_*`, the dgbt Playwright sweeps at 1440, 667 and 390. Done when: each row fixed or measured not reproduced.
-- C1 Keys typed straight after Add reach the sheet (a stray block, a context menu) | dgbt L19
-- C2 Label under the handles; List footer help one scroll down at 667; backward arrow from a mid drop | dgbt L20, L21, L22
-- C3 The folded shelf button covers a box at 1440; a part added while folded is named | dgmseq L15, dgpic L17
-- C4 "Connect to…" is an icon with no words; the door dialog repeats the page | diagram-fable w3, w12
-- C5 Handles at rest at 3:1 on both themes; a connector selects on a click | diagram-fable m1, oa 1661 f
-- C6 A press on empty canvas and Escape clear the selection; arrow-added nodes never overlap | oa 1661 h, g
-- C7 Name Canvas and Blocks for what they are; kind picker as a labelled Kind menu | oa 1661 i, k, S11
-- C8 Default fold (after Q14); both side panels fold to a rail | INBOX 1720, oa 1661 m, S14
-- C9 Shelf is mouse only; the diagram tray "Open" row; Done silently creating a file; Tab stops | dgml L14, DOCUMENTS#22.4 R9a, R11
+- ~~C1 Keys typed straight after Add reach the sheet (a stray block, a context menu) | dgbt L19~~ **Fixed w17-1110** (390 px, list folded: reproduced as a lost name and a stray block; letters, Enter and Escape now wait for the name box; the touch Enter-in-the-first-second case is in w17-1110.md)
+- ~~C2 Label under the handles; List footer help one scroll down at 667; backward arrow from a mid drop | dgbt L20, L21, L22~~ **Fixed w17-1110** (handles: not reproduced, 0 px on touch, 7 px into a 152 px box at 1440 clear of the text; help line was hidden under the sticky foot, now whole at scroll end; the drop word says Connect back to)
+- ~~C3 The folded shelf button covers a box at 1440; a part added while folded is named | dgmseq L15, dgpic L17~~ **Not reproduced w17-1110** (overlap 0 px2 on five diagrams, button bottom 222 over picture top 235; named in 318 to 571 ms on four kinds)
+- C4 "Connect to…" is an icon with no words; the door dialog repeats the page | diagram-fable w3, w12 **Measured w17-1110, not changed:** the arrow-only row is by design where the name would be squeezed (390: words 85 px leave the name 49 px, 320: 5 px; 1440: list 224 px); a 667 px sideways phone has room (219 px name) but the breakpoint set (test_breakpoints) has no 480 step; the door dialog is not touched (design pass, w17-1110.md)
+- ~~C5 Handles at rest at 3:1 on both themes; a connector selects on a click | diagram-fable m1, oa 1661 f~~ **Not reproduced w17-1110** (ring 5.9:1 light, 7.0:1 dark against the stage; a click 30 percent along an arrow picks it with two ends, Escape lets go; the exact midpoint opens the name box, noted in w17-1110.md)
+- ~~C6 A press on empty canvas and Escape clear the selection; arrow-added nodes never overlap | oa 1661 h, g~~ **Not reproduced w17-1110** (empty press: 1 box and 4 handles to 0 at 1440 and 390; Escape clears at 390; 14 handle-added blocks, 0 overlapping pairs)
+- ~~C7 Name Canvas and Blocks for what they are; kind picker as a labelled Kind menu | oa 1661 i, k, S11~~ **Already built, verified w17-1110** (the seg reads Picture, List, Source; the Kind button shows its sample and word, 140 px; the dialog's title row has the Kind label)
+- ~~C8 Default fold (after Q14); both side panels fold to a rail | INBOX 1720, oa 1661 m, S14~~ **Fixed w17-1110** (a blank or starter diagram opens with the list a 32 px rail while no fold was ever chosen, nothing stored; an existing one opens at 224 px; both rails exist and are named)
+- C9 Shelf is mouse only; the diagram tray "Open" row; Done silently creating a file; Tab stops | dgml L14, DOCUMENTS#22.4 R9a, R11 **Shelf: not reproduced w17-1110** (Right arrow roves six tiles and More, Enter adds); the tray row and Done not driven (code toasts the save), see w17-1110.md
 
 **W19 Whiteboard daily UX** (C, boards, Sonnet; verify first). Files: `frontend/js/whiteboard*.js` outside the render path (W30). Checks: `tests/test_wb_*`, `contrast.js` on a board. Done when: ink reads on both themes and every insert works by keyboard.
 - C10 Stored black ink does not remap on dark; white ink on a yellow sticky | 1028-ux U1, U2

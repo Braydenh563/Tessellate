@@ -792,6 +792,7 @@
 /* The next step, one line under the blocks. */
 .dgm-next {
   margin: var(--space-3) var(--space-2) 0;
+  /* Pinned above the sticky Add block / Connect row, not under it: both stuck to the same edge, and the row (z-index 1) covered the hint in any pane that scrolled (hit test at the hint's centre was a button at 667 and 700 px wide). The hint's bottom margin is the row's height, set in diagram-steps.js (not on a phone, where the hint scrolls). */
   font-size: var(--text-xs);
   /* In a short pane (a document's embedded editor) the hint stays at the pane's foot instead of being cut off below it (R6.12). */
   position: sticky;
@@ -2438,6 +2439,10 @@
 .dgm-versions-list {
   max-block-size: 40vh;
   overflow: auto;
+}
+
+.dgm-versions-head {
+  padding-block-start: var(--space-2);
 }
 
 .dgm-ai-lint,

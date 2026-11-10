@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8002, frontend ids 2655, CSS sections 523, backend routes 655, backend modules 9527, test files 2356, tests 19592, plan headings 999, app scripts 28, boot scripts 37, script files 268.
+Counts: frontend functions 8002, frontend ids 2655, CSS sections 523, backend routes 655, backend modules 9527, test files 2357, tests 19598, plan headings 999, app scripts 28, boot scripts 37, script files 268.
 
 ## Frontend functions (8002)
 
@@ -3141,7 +3141,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `applyPreview` | frontend/js/diagram-ai.js:343 |
 | `ask` | frontend/js/diagram-ai.js:298 |
 | `build` | frontend/js/diagram-ai.js:253 |
-| `compareThem` | frontend/js/diagram-ai.js:419 |
+| `compareThem` | frontend/js/diagram-ai.js:422 |
 | `copyOf` | frontend/js/diagram-ai.js:224 |
 | `counts` | frontend/js/diagram-ai.js:244 |
 | `dgaAdd` | frontend/js/diagram-ai.js:45 |
@@ -3166,7 +3166,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `lint` | frontend/js/diagram-ai.js:362 |
 | `show` | frontend/js/diagram-ai.js:317 |
 | `versions` | frontend/js/diagram-ai.js:377 |
-| `wire` | frontend/js/diagram-ai.js:441 |
+| `wire` | frontend/js/diagram-ai.js:444 |
 
 ### frontend/js/diagram-bar.js (9)
 
@@ -12562,7 +12562,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 226 |
-| frontend/css/diagram-lazy.css | 2490 |
+| frontend/css/diagram-lazy.css | 2495 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -25285,7 +25285,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19592)
+## Tests (19598)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26018,6 +26018,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_suggest.py | 22 |
 | tests/test_diagram_touch.py | 7 |
 | tests/test_diagram_view_1614.py | 10 |
+| tests/test_diagram_w17_1110.py | 6 |
 | tests/test_dialogue_b8.py | 1 |
 | tests/test_dictation_options.py | 8 |
 | tests/test_digest_structure.py | 24 |
@@ -28348,7 +28349,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1216 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:171 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:175 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4176 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3088 |

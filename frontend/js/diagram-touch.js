@@ -74,6 +74,13 @@
       list.setAttribute("aria-haspopup", "dialog");
       actions.prepend(list);
       S.root.classList.add("dgm-phonelist");
+      //: Ask sat only inside the Blocks sheet (dgai-1110 left): its own button opens that sheet with the question box in hand.
+      if (S.pane.querySelector(".dgm-ai-form")) {
+        const ask = smallButton("ph:sparkle", "Ask for a change", () => (listSheet(S, ask), S.pane.querySelector(".dgm-ai-form input")?.focus()));
+        ask.classList.add("dgm-askbtn");
+        ask.setAttribute("aria-haspopup", "dialog");
+        list.after(ask);
+      }
     }
     if (actions && !S.root.querySelector(".dgm-addsplit")) {
       const add = smallButton("ph:plus Add", "Choose a shape to add as a block (N, or ? for every key)", () => addSheet(S.root, add), false);

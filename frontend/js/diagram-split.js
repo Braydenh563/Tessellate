@@ -193,7 +193,8 @@
       handle.hidden = Boolean(v);
     };
     const press = (side) => {
-      const was = fold.get();
+      //: What is painted, not what is stored: a New diagram is folded without being kept (below), and its rail must open it.
+      const was = body.classList.contains("dgm-fold-left") ? "left" : body.classList.contains("dgm-fold-right") ? "right" : "";
       const v = fold.next(was, side);
       fold.set(v);
       paint(v);
@@ -210,7 +211,9 @@
       event.preventDefault();
       press(side);
     });
-    paint(fold.get());
+    //: A New diagram opens with its list folded (INBOX 1720, decided 2026-11-10): the picture is the way in. Only while the person has never chosen a fold and the source is the starter or blank, and not kept, so an existing diagram opens as it was left.
+    const fresh = !S.k && !prefs.has(FOLD) && ["", diagramModel.starter, diagramModel.print(diagramModel.parse(diagramModel.starter))].includes(S.source.trim());
+    paint(fresh ? "left" : fold.get());
   }
 
   diagramModel.split = { wire, math, fold };
