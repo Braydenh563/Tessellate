@@ -46,7 +46,9 @@ def test_unlocking_also_resets():
     """The lock screen is an overlay, not a page: unlocking after an idle lock
     never reloads anything, so a load-time reset alone would leave every
     sub-tab where it was hours ago, which is the reported case."""
-    block = JS.split("async function submitLockForm()")[1].split("\n}")[0]
+    # The password and Windows Hello unlocks share `lockOpened` (INBOX 1727).
+    assert "lockOpened(" in JS.split("async function submitLockForm()")[1].split("\n}")[0]
+    block = JS.split("function lockOpened(")[1].split("\n}")[0]
     assert "resetNavigationToDefaults();" in block
     assert block.index("resetNavigationToDefaults();") < block.index("startApp();"), (
         "startApp is what reads the stored section back"

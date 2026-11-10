@@ -8,7 +8,7 @@ import json
 import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
 
-from _fake_authenticator import FakeAuthenticator, b64url, cbor, unb64url
+from tests._fake_authenticator import FakeAuthenticator, b64url, cbor, unb64url
 from tessellate.core import webauthn
 
 ORIGIN = "http://localhost:8000"

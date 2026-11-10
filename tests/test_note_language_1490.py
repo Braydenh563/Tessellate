@@ -152,7 +152,10 @@ def test_a_language_none_of_the_notes_is_in_says_so_and_offers_the_web_only_as_a
 def test_with_web_off_no_web_chip(client, notebook, web):
     deps.get_config().set_preference("web_search_enabled", False)
     out = _ask(client, "korean note", use_tools=True)
-    assert "None of your notes look Korean" in out["text"] and _asks(out) == []
+    # INBOX 1729 (a): every composed answer ends with Next chips; with the
+    # web off none of them may offer the web.
+    assert "None of your notes look Korean" in out["text"], out["text"]
+    assert not any("web" in a.lower() for a in _asks(out)), _asks(out)
 
 
 @pytest.mark.parametrize("tools", [False, True])

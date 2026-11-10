@@ -74,7 +74,7 @@ def test_the_code_is_lazy():
 
 
 def test_setup_offers_a_key_and_the_reset_goes_to_setup():
-    assert 'if (mode === "setup") offerRecoveryKey(password);' in _function(app_js_text(), "submitLockForm")
+    assert 'if (mode === "setup") offerRecoveryKey(password);' in _function(app_js_text(), "lockOpened")  # shared with Hello (INBOX 1727)
     reset = _function(RECOVERY_JS, "submitPasswordReset")
     assert 'prefs.remove("token")' in reset and "showLockScreen(true)" in reset
     assert '"/auth/reset"' in reset and 'code }' in reset
