@@ -156,7 +156,7 @@ function syncChatJumpLatest() {
   //: overflow it was added for.
   const transcript = pane.parentElement;
   const hasMessages = Boolean(pane.querySelector(".msg"));
-  if (transcript && transcript.classList.contains("chat-transcript")) {
+  if (transcript?.classList.contains("chat-transcript")) {
     const had = transcript.classList.contains("has-jump-gap");
     const spare = pane.scrollHeight - pane.clientHeight; // read before the strip changes the pane's height
     if (!had) transcript.classList.add("has-jump-gap");
@@ -244,7 +244,7 @@ function notebookCard(item, extra = {}) {
 
 //: The seed for the person's own mark: their profile name, or "You".
 function userMarkSeed() {
-  return ((prefsCache && prefsCache.display_name) || "").trim() || "You";
+  return (prefsCache?.display_name || "").trim() || "You";
 }
 
 //: **Every mark of the person on screen, redrawn at once** (DESIGN.md's
@@ -259,11 +259,16 @@ function paintUserMarks() {
   //: The faces come after the page (`afterCharacters`, lazy-entries.js).
   afterCharacters(() => {
     for (const holder of document.querySelectorAll("[data-user-mark]")) {
-      holder.replaceChildren(nameMark(seed, Number(holder.dataset.userMark) || 18));
+      //: A face drawn from this name stays; the Settings preview replaces it (B47).
+      const size = +holder.dataset.userMark || 18;
+      if (holder.firstChild?.key === seed + size) continue;
+      const face = nameMark(seed, size);
+      face.key = seed + size;
+      holder.replaceChildren(face);
     }
   });
   const head = document.getElementById("profile-head-name");
-  if (head) head.textContent = ((prefsCache && prefsCache.display_name) || "").trim() || "Your profile";
+  if (head) head.textContent = (prefsCache?.display_name || "").trim() || "Your profile";
   //: The companion, when it is you (INBOX 426 d, the owner: "I changed my
   //: name but the companion which was me didnt update"): it redraws when
   //: the name it is drawn from has changed, and does nothing otherwise.
@@ -460,7 +465,7 @@ function changeRow(change, options = {}) {
             steps: change.undo.steps,
           }),
         });
-        if (result && result.error) throw new Error(result.error);
+        if (result?.error) throw new Error(result.error);
         const action = agentUndoActions.get(JSON.stringify(change.undo));
         if (action) settleUndoFromToast(action);
         row.classList.add("skill-change-undone");
@@ -873,7 +878,7 @@ function renderDraftSources() {
   const count = $("draft-sources-count");
   if (!host) return;
   host.replaceChildren();
-  host.classList.toggle("hidden", draftSources.length === 0);
+  host.classList.toggle("hidden", !draftSources.length);
   count.textContent = draftSources.length
     ? `${nounCount(draftSources.length, "note")} to write from`
     : "";
@@ -1045,7 +1050,7 @@ function updateDraftUndoButton() {
   // button came back to life half way through a stream and an Undo pressed
   // there would restore the old draft while the new one was still arriving
   // over the top of it.
-  button.disabled = !!draftController || draftUndoStack.length === 0;
+  button.disabled = !!draftController || !draftUndoStack.length;
   button.title = draftUndoStack.length
     ? `Go back to the version before the last AI pass (${draftUndoStack.length} available)`
     : "Nothing to undo yet";
