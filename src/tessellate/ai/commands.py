@@ -1066,7 +1066,7 @@ OWN_WORDS = ("content", "title", "tags", "text", "said", "old", "new")
 
 #: What an act names keeps slang as typed but a misspelling put right (the
 #: lookup is helped by it); what it writes keeps every word as typed.
-_NAMED = ("about", "asked")
+_KEYS_NAMED = ("about", "asked")
 _WRITTEN = (*OWN_WORDS, "on_list")
 _WORD = re.compile(r"[^\W_]+(?:['’][^\W_]+)*")
 
@@ -1108,7 +1108,7 @@ def _as_typed(found: dict, text: str, fixed: str, fixes: list) -> dict:
     for key in _WRITTEN:
         if key in out:
             out[key] = _put_back(out[key], pairs)
-    for key in _NAMED:
+    for key in _KEYS_NAMED:
         if key in out and slang:
             out[key] = _put_back(out[key], slang)
     return out
