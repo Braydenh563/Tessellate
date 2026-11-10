@@ -15420,7 +15420,7 @@ async function docAiReview() {
         });
         renderDocProse();
       } else if (event.type === "done") {
-        docAiCheck.state = event.ollama_running === false ? "offline" : event.message ? "failed" : "done";
+        docAiCheck.state = event.stopped ? "stopped" : event.ollama_running === false ? "offline" : event.message ? "failed" : "done";
         docAiCheck.message = event.message || "";
       }
     };

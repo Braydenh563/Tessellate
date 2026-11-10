@@ -1111,6 +1111,10 @@ class AskTurn(Base, WorkspaceMixin):
     # sentences. The sources list needs nothing here, it is built from
     # `raw_result_ids`, which this table has always kept.
     grounding: Mapped[str] = mapped_column(Text, default="[]")
+    #: No model wrote the answer (the composer did), so a reopened turn counts
+    #: its support as the live one did (`grounding.composed_support`), never
+    #: with the model counter and its draft warning (chatfoot L6, W1 A5).
+    composed: Mapped[bool] = mapped_column(Boolean, default=False)
     # Pinned turns survive "clear history" and sort first: the same shape
     # Conversation.pinned already uses for saved chats.
     pinned: Mapped[bool] = mapped_column(Boolean, default=False)

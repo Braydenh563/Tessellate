@@ -67,11 +67,11 @@ Parked until the owner's data or a check on real hardware:
 **W0 Diagram builder opens and closes in 10 to 15 s** (B, diagram, in progress: agent `dglag-1109`). Item 0, the owner hit it 2026-11-09; merge and gate it first in Session 1.
 
 **W1 Chat turns that corrupt the chat or keep running** (A, chat, Opus; verify first). Files: `frontend/js/chat*.js`, `chat-turn.js`, `api/routes_chat.py`, `api/routes_ask_history.py`. Checks: `tests/test_chat_*`, a Playwright regenerate and stop run. Done when: regenerate and edit never repeat an act or a write, Stop ends the server stream, every stopped answer ends with a done line.
-- A1 Regenerate from a non-last answer corrupts the saved chat | 1028-agent E1
-- A2 Regenerate and Edit-and-resend re-run composer acts and agent writes (two notes) | 1028-agent E2
-- A3 Browser Stop does not stop generation server-side; a stopped answer has no done line | 1028-agent E3, t20#9
-- A4 A pasted lecture over 20,000 characters returns 422 with the wrong message | 1028-agent E8
-- A5 An Ask stored turn recounts support with the model counter | chatfoot L6
+- ~~A1 Regenerate from a non-last answer corrupts the saved chat | 1028-agent E1~~ **Stale: fixed 9dbf3f956**, re-driven by w1-1110 (saved turns after regenerating turn 1 of 3: the one regenerated turn)
+- ~~A2 Regenerate and Edit-and-resend re-run composer acts and agent writes (two notes) | 1028-agent E2~~ **Fixed 936dacce6** (the confirm survives a reload; live confirm 9dbf3f956; composer acts deduped server-side)
+- ~~A3 Browser Stop does not stop generation server-side; a stopped answer has no done line | 1028-agent E3, t20#9~~ **Fixed 936dacce6** (done line on an Activity Stop, ddfece902; "Stopped" on every stopped answer; browser Stop already cut the model, 90523c72c)
+- ~~A4 A pasted lecture over 20,000 characters returns 422 with the wrong message | 1028-agent E8~~ **Fixed 2cd0513f7** (edit path; the send guard was 26b52c850)
+- ~~A5 An Ask stored turn recounts support with the model counter | chatfoot L6~~ **Fixed db9b00fdd**
 
 **W2 Outside text reaching write tools; the speller rewriting the person's words** (A, agent and acts, Opus; verify first). Files: `ai/agent.py`, the taint and confirm path, the speller module. Checks: `tests/test_agent_*`, `tests/test_composer_grammar.py`. Done when: every write from a tainted turn confirms, and a word inside an act's payload is never respelled.
 - ~~A6 Library files, imports and pasted mail reach the model untainted, so writes run unconfirmed | 1028-agent E4, E42~~ done w2-1110 (E4 doors already tainted; pasted mail now taints)
