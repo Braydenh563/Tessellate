@@ -573,6 +573,10 @@ session that builds the phase should confirm it in the product first.
   how Claude Code and similar harnesses behave; the missing piece in
   `skill_runner` today is paging inside the step.
 
+## Placed from INBOX, 2026-11-10 (libraries for the composer)
+
+- **Owner, 2026-11-10, verbatim:** "are there any other repos or libraries we can use or vendor for anything else like the composer or anything else?". Recommendation (taken, order 3; each licence read from its own LICENSE file before it comes in, AGPL-compatible only): (1) `holidays` (MIT) for holiday dates in the composer and dates reader ("last Christmas" gets its year; holiday-as-topic told from holiday-as-date, W8 left B19); (2) `inflect` (MIT) for plurals, "a"/"an", ordinals and number words in composer sentences; (3) `rapidfuzz` (MIT) for fuzzy binding of follow-ons to the previous answer's items and for speller candidates (replaces hand-written edit-distance loops where it is faster, measured); (4) `textstat` (MIT) for the readability ceiling in the voice eval (INBOX 1730 d); (5) a word-frequency list for ranking (SCOWL sizes or `wordfreq`, whose data is CC-BY-SA 4.0: checked before use). Not taken now: spaCy (MIT, a 12 MB model and compiled parts; only if the rule-based follow-on binding of 1729 falls short on the eval); anything that needs torch (CLAUDE.md section 7). Placed: with conv-1110's follow-up batch (1730), Sonnet; the dependency added in `pyproject.toml` with its licence named in `THIRD_PARTY` (or the repo's notices file) in the same commit.
+
 ## Placed from INBOX, 2026-09-09
 
 ### Found by an agent while measuring something else (2026-09-08, graph)
