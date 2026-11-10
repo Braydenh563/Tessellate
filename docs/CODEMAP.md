@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7963, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9402, test files 2342, tests 19449, plan headings 999, app scripts 28, boot scripts 37, script files 266.
+Counts: frontend functions 7963, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9402, test files 2343, tests 19450, plan headings 999, app scripts 28, boot scripts 37, script files 266.
 
 ## Frontend functions (7963)
 
@@ -25082,7 +25082,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19449)
+## Tests (19450)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26518,6 +26518,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_no_innerhtml_interpolation.py | 2 |
 | tests/test_no_report_on_expected.py | 7 |
 | tests/test_no_scipy_sklearn_imports.py | 1 |
+| tests/test_no_shadowed_constants.py | 1 |
 | tests/test_no_silent_except.py | 2 |
 | tests/test_no_style_attribute_writes.py | 1 |
 | tests/test_no_system_torch_launcher.py | 4 |
