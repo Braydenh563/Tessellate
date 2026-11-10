@@ -395,7 +395,10 @@
         const compare = smallButton("ph:git-diff Compare", "Compare the ticked versions", () => compareThem(S, doc, picked, view), false);
         compare.disabled = true;
         const view = el("div", "dgm-versions-view hidden");
-        for (const row of rows) {
+        //: The named versions (an Apply) first, the ordinary saves under their own line, so the few that mean something are not lost among the many (dgai-1110 left).
+        const ordered = [...rows.filter((r) => r.name), ...rows.filter((r) => !r.name)];
+        for (const row of ordered) {
+          if (!row.name && rows.some((r) => r.name) && row === ordered.find((r) => !r.name)) list.append(el("li", "dgm-versions-head muted text-sm", "Saves"));
           const li = el("li", "dgm-versions-row");
           const label = el("label", "dgm-versions-pick");
           const tick = el("input");

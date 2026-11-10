@@ -89,6 +89,8 @@
     const lesson = m.edges.length === 0 && m.nodes.length < 2;
     S.empty.classList.toggle("hidden", !lesson);
     S.foot?.classList.toggle("hidden", !blocks);
+    //: The hint pins above this row, so its bottom margin is the row's height (a phone's hint scrolls, see `.dgm-next`).
+    if (S.foot && S.next) S.next.style.marginBlockEnd = blocks && !matchMedia("(max-width: 599.98px)").matches ? `${S.foot.offsetHeight}px` : "";
     //: The checklist already offers the first arrow and the first box, so the foot does not say the same twice (1679 blind pass): Add block
     //: stays where the eye ends, Connect joins it once the checklist has gone, and a box that is added drops the checklist's first row.
     S.footConnect?.classList.toggle("hidden", lesson && Boolean(S.steps));

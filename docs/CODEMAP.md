@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8021, frontend ids 2655, CSS sections 523, backend routes 661, backend modules 9577, test files 2359, tests 19637, plan headings 1000, app scripts 28, boot scripts 37, script files 269.
+Counts: frontend functions 8021, frontend ids 2655, CSS sections 523, backend routes 661, backend modules 9577, test files 2360, tests 19643, plan headings 1000, app scripts 28, boot scripts 37, script files 269.
 
 ## Frontend functions (8021)
 
@@ -3142,7 +3142,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `applyPreview` | frontend/js/diagram-ai.js:343 |
 | `ask` | frontend/js/diagram-ai.js:298 |
 | `build` | frontend/js/diagram-ai.js:253 |
-| `compareThem` | frontend/js/diagram-ai.js:419 |
+| `compareThem` | frontend/js/diagram-ai.js:422 |
 | `copyOf` | frontend/js/diagram-ai.js:224 |
 | `counts` | frontend/js/diagram-ai.js:244 |
 | `dgaAdd` | frontend/js/diagram-ai.js:45 |
@@ -3167,7 +3167,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `lint` | frontend/js/diagram-ai.js:362 |
 | `show` | frontend/js/diagram-ai.js:317 |
 | `versions` | frontend/js/diagram-ai.js:377 |
-| `wire` | frontend/js/diagram-ai.js:441 |
+| `wire` | frontend/js/diagram-ai.js:444 |
 
 ### frontend/js/diagram-bar.js (9)
 
@@ -12586,7 +12586,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 226 |
-| frontend/css/diagram-lazy.css | 2490 |
+| frontend/css/diagram-lazy.css | 2495 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -25380,7 +25380,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19637)
+## Tests (19643)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26113,6 +26113,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_suggest.py | 22 |
 | tests/test_diagram_touch.py | 7 |
 | tests/test_diagram_view_1614.py | 10 |
+| tests/test_diagram_w17_1110.py | 6 |
 | tests/test_dialogue_b8.py | 1 |
 | tests/test_dictation_options.py | 8 |
 | tests/test_digest_structure.py | 24 |
