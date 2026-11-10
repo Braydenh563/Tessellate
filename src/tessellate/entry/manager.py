@@ -278,7 +278,7 @@ def set_category(session: Session, entry: Entry, name: str) -> Entry:
     # more, at the other place a row is made for a note.
     #
     # Passed as a value rather than by borrowing the session's ambient space
-    # (`deps.impersonate_workspace`): that import is `core.deps` from
+    # (`database.impersonate_workspace`): that import is `core.deps` from
     # `entry.manager`, which CodeQL flagged as the start of an import cycle,
     # and the value is the honest thing to pass anyway. It is one fact, the
     # note's own space, travelling to the one place that needs it.

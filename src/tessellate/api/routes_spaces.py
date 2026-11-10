@@ -7,7 +7,8 @@ from pydantic import BaseModel, Field
 from tessellate.api.schemas import SpaceResponse, SpaceCreate, SpaceUpdate
 from tessellate.core import deps, paths, spacelock, vault
 from tessellate.core.database import Base, Category, Entry, Space, workspace_scoped_models
-from tessellate.core.deps import get_session, impersonate_workspace
+from tessellate.core.database import impersonate_workspace
+from tessellate.core.deps import get_session
 from tessellate.repo import spaces as space_repo
 from tessellate.entry.cleantext import clean_name, is_blank, name_key
 from sqlalchemy import delete as sa_delete

@@ -22,7 +22,7 @@ import logging
 from sqlalchemy import func, select
 
 from tessellate.core import deps, jobruns
-from tessellate.core.database import Entry, EntryDate
+from tessellate.core.database import Entry, EntryDate, impersonate_workspace
 from tessellate.entry import manager, timewords
 
 logger = logging.getLogger("tessellate.redate")
@@ -64,7 +64,7 @@ def run(chunk: int = CHUNK) -> dict:
     cursor = int(config.get_preference(CURSOR_KEY, 0) or 0)
     seen = changed = 0
     with jobruns.job_run("redate") as record:
-        with deps.get_db().session() as session, deps.impersonate_workspace(session, "all"):
+        with deps.get_db().session() as session, impersonate_workspace(session, "all"):
             total = session.scalar(select(func.count(Entry.id)).where(Entry.id > cursor)) or 0
             record.step(0, total, "Reading dates in notes")
             record.say(f"{total} note{'' if total == 1 else 's'} to read.")

@@ -431,7 +431,7 @@ class _LateFiling:
         an answer inside the wait (`filing_certainty`). On this thread's own
         session: the late answer has none of the request's."""
         from tessellate.ai import filing_certainty
-        from tessellate.core.deps import impersonate_workspace
+        from tessellate.core.database import impersonate_workspace
 
         try:
             with deps.get_db().session() as session:
@@ -462,7 +462,7 @@ class _LateFiling:
         self.apply(category, confidence, stand_in)
 
     def apply(self, category: str, confidence: int, stand_in: str) -> None:
-        from tessellate.core.deps import impersonate_workspace
+        from tessellate.core.database import impersonate_workspace
 
         try:
             with deps.get_db().session() as session:
@@ -594,7 +594,7 @@ def _file_entry_in_background(entry_id: int, workspace_id: str) -> None:
     this", a moment later, in the same notification that says where it was
     filed.
     """
-    from tessellate.core.deps import impersonate_workspace
+    from tessellate.core.database import impersonate_workspace
 
     try:
         with deps.get_db().session() as session:
@@ -651,7 +651,7 @@ def retry_stand_ins() -> int:
     still coming when the app closed. Runs once per launch on the model lane
     (`app.py`). A note moved by hand or stopped in the meantime keeps its
     place (`_LateFiling.apply`). Returns how many were asked about."""
-    from tessellate.core.deps import impersonate_workspace
+    from tessellate.core.database import impersonate_workspace
 
     with deps.get_db().session() as session:
         waiting = [
@@ -689,7 +689,7 @@ def _embed_entry_in_background(entry_id: int, workspace_id: str) -> None:
     job), so the text is read again after storing and embedded again if it
     moved: the vector left behind is always the newest text's.
     """
-    from tessellate.core.deps import impersonate_workspace
+    from tessellate.core.database import impersonate_workspace
 
     try:
         with deps.get_db().session() as session:
@@ -1216,7 +1216,7 @@ def stop_all_filing(action: str = "fallback") -> int:
     of Settings, Background tasks and the activity popup. Each note is
     stopped in its own space, so the fallback weighs that space's
     categories only. Returns how many were stopped."""
-    from tessellate.core.deps import impersonate_workspace
+    from tessellate.core.database import impersonate_workspace
 
     stopped = 0
     with deps.get_db().session() as session:

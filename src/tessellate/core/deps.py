@@ -29,7 +29,7 @@ from tessellate.ai.provider import Provider
 from tessellate.core import embedmodels, jobruns, spacelock
 from tessellate.core.config import ConfigManager
 from tessellate.core import board_thumbs
-from tessellate.core.database import DatabaseManager, Entry, impersonate_workspace  # noqa: F401  # re-exported
+from tessellate.core.database import DatabaseManager, Entry
 
 _ModelT = TypeVar("_ModelT")
 
