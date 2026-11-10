@@ -376,20 +376,20 @@ Estimate: 12 sessions to the BACKLOG boundary, honestly 11 to 14: the verify swe
 ## From the 22-10 bug doc (owner, not fixed in 0.6.1)
 
 Composer and Guide
-- Aware of the screen and recent actions; varied, shorter, warmer replies with a closing line or next step; length adjustable; personas disabled when no model. **Partly done 7072808** (no-model closing line from the newest note, Length picker applies, persona noted in Help; not done at that commit: awareness of the screen, a disabled persona picker). **Then done by composer2**: screen awareness (tab, open note, last 3 actions, chat topic; local, private notes never named), the persona picker disabled with a reason while no model is reachable, and richer composer phrasings (36-row table). Real-model behaviour unverified. (checked 2026-11-09)
-- Ask tab replies are identical across notes and list dates and links instead of answering; redesign Ask at half width. **Fixed 67ef381** for an open note (composer_open.py); the half-width redesign is not done. (checked 2026-11-09)
-- Web search with no model needs SearXNG on 127.0.0.1:8888, which was not running (log in the doc); offer to start it or say how. **Fixed 33f7a0b** (says so, links the setting). **Then composer2**: the reply gives the one-line Docker command and the Guide's web search topic repeats it; with SearXNG chosen and no address saved it says web search is not set up. Starting the service from a button is not done. (checked 2026-11-09)
-- Ask tab: the owner reports the "You asked: ..." line above the answer is gone. It was removed on purpose in INBOX 1301 (tests/test_composer_form_1301.py pins it as a duplicate of the box). Confirm whether to bring it back; if so, change that test with the reason, and note the boot JS cap now has about 20 KB spare (bg-art.js went lazy, composer2). (checked 2026-11-09)
-- **Owner, 2026-10-22: the Composer and the needle (small local model) need a lot of improvement and expansion.** Open requests, web search, reading a pasted link, failure messages and the items above are examples, not the whole list. Treat as a top-priority theme for the next PR: measure a set of everyday requests against the Composer and a small model, then widen what each can do. (checked 2026-11-09)
+- Aware of the screen and recent actions; varied, shorter, warmer replies with a closing line or next step; length adjustable; personas disabled when no model. **Partly done 7072808** (no-model closing line from the newest note, Length picker applies, persona noted in Help; not done at that commit: awareness of the screen, a disabled persona picker). **Then done by composer2**: screen awareness (tab, open note, last 3 actions, chat topic; local, private notes never named), the persona picker disabled with a reason while no model is reachable, and richer composer phrasings (36-row table). Real-model behaviour unverified. (checked 2026-11-09) [verified 2026-11-10: fixed, composer2 built screen awareness, the disabled persona picker and the phrasings; real-model behaviour unverified]
+- Ask tab replies are identical across notes and list dates and links instead of answering; redesign Ask at half width. **Fixed 67ef381** for an open note (composer_open.py); the half-width redesign is not done. (checked 2026-11-09) [verified 2026-11-10: true, half-width Ask redesign not built; 67ef381 covers the open-note reply only]
+- Web search with no model needs SearXNG on 127.0.0.1:8888, which was not running (log in the doc); offer to start it or say how. **Fixed 33f7a0b** (says so, links the setting). **Then composer2**: the reply gives the one-line Docker command and the Guide's web search topic repeats it; with SearXNG chosen and no address saved it says web search is not set up. Starting the service from a button is not done. (checked 2026-11-09) [verified 2026-11-10: true, Start-from-a-button not built; the Docker line and disabled-state text are in composer.py]
+- Ask tab: the owner reports the "You asked: ..." line above the answer is gone. It was removed on purpose in INBOX 1301 (tests/test_composer_form_1301.py pins it as a duplicate of the box). Confirm whether to bring it back; if so, change that test with the reason, and note the boot JS cap now has about 20 KB spare (bg-art.js went lazy, composer2). (checked 2026-11-09) [verified 2026-11-10: true, line removed on purpose (INBOX 1301); tests/test_composer_form_1301.py pins it; decision open]
+- **Owner, 2026-10-22: the Composer and the needle (small local model) need a lot of improvement and expansion.** Open requests, web search, reading a pasted link, failure messages and the items above are examples, not the whole list. Treat as a top-priority theme for the next PR: measure a set of everyday requests against the Composer and a small model, then widen what each can do. (checked 2026-11-09) [verified 2026-11-10: true, open theme; no closing evidence in code]
 
 Lint debt (from the 0.6.1 CI log)
-- `complexity.yml` runs `ruff check src --select C901,PERF --exit-zero`, so it always passes and lists about 100 findings (C901 over 15, PERF401/403/101/102) as red annotations. Decide: a tracked cleanup (worst first: `docx_to_markdown` 55, `_optimization_pass` 37, `build_tree` 35, `provider.extract_text_tool_calls` 31, `relations.recognise` 31), or drop `--exit-zero` behind a baseline. (checked 2026-11-09)
-- `_start_tray` went 20 to 23 with the tray start-up logging: split menu building from start-up. Test on Windows. (checked 2026-11-09)
-- Reminder edit form: the time field keeps its bottom margin and may sit about 0.2rem high against the selects; the boot JS cap left no room (588,400 gz; fixed by moving a boot surface lazy). (checked 2026-11-09)
+- `complexity.yml` runs `ruff check src --select C901,PERF --exit-zero`, so it always passes and lists about 100 findings (C901 over 15, PERF401/403/101/102) as red annotations. Decide: a tracked cleanup (worst first: `docx_to_markdown` 55, `_optimization_pass` 37, `build_tree` 35, `provider.extract_text_tool_calls` 31, `relations.recognise` 31), or drop `--exit-zero` behind a baseline. (checked 2026-11-09) [verified 2026-11-10: true, .github/workflows/complexity.yml:26 still runs ruff with --exit-zero]
+- `_start_tray` went 20 to 23 with the tray start-up logging: split menu building from start-up. Test on Windows. (checked 2026-11-09) [verified 2026-11-10: true, _start_tray still in src/tessellate/__main__.py; no split found]
+- Reminder edit form: the time field keeps its bottom margin and may sit about 0.2rem high against the selects; the boot JS cap left no room (588,400 gz; fixed by moving a boot surface lazy). (checked 2026-11-09) [verified 2026-11-10: true, UI spacing; not driven here; boot cap note still stands]
 
 Shell
-- A desktop companion (pet) outside the window, as ChatGPT desktop's: quick open, new note, reminders. (checked 2026-11-09)
-- Custom domain instead of localhost: see the owner's answer in the 0.6.1 PR; not built. (checked 2026-11-09)
+- A desktop companion (pet) outside the window, as ChatGPT desktop's: quick open, new note, reminders. (checked 2026-11-09) [verified 2026-11-10: true, no desktop pet surface in frontend/ or src/]
+- Custom domain instead of localhost: see the owner's answer in the 0.6.1 PR; not built. (checked 2026-11-09) [verified 2026-11-10: true, custom domain not built (owner answer recorded, no code)]
 
 ## Everything open, 2026-10-11
 
@@ -2256,11 +2256,11 @@ Branches 76 of 111 (the -1010 round and most of -1011) are merged by content; th
 
 The file is `docs/roadmap/archive/agent-remaining/ownerfix2-1011.md`.
 
-- INBOX 839, graph: only the drag's heat is changed (graph-worker.js `dragHeat`). A single-tick 7.1px step still shows in one of two 8px runs (a non-dragged node, 3 ticks after release); not traced. The main-thread glide (graph-canvas.js `gcGlideStep`) was not touched. (checked 2026-11-09)
-- Attach: at 390 `#attach-image` reads a 999px radius while `#attach-note` reads 4.8px in the chat composer row (the owner's 841 asked for one corner; only the gear was in scope). 04-chat-dock-appearance.css, `#attach-image.has-attachments` near line 2854 is the nearest rule. (checked 2026-11-09)
-- The guide topic `ask-chat` is at 1916 of 1919 characters (`tests/test_help_controls.py`), so Agent-with-no-model could not be named in the Guide without trimming another sentence. The segment's title and the hint line carry it. (checked 2026-11-09)
-- `graphjitter.js`-style rAF sampling is useless on a loaded machine (frames 50 to 170 ms apart, load average 10 to 33); the worker-tick measure (graphticks.js: per-tick steps from the 'tick' messages, the page's onmessage wrapped) is the one that holds. (checked 2026-11-09)
-- Nav history on a phone: the popup was measured by calling `openNavHistoryMenu` directly (the status-bar button is not drawn at 390), so its placement on a phone was not verified, only its widths and 44px targets. (checked 2026-11-09)
+- INBOX 839, graph: only the drag's heat is changed (graph-worker.js `dragHeat`). A single-tick 7.1px step still shows in one of two 8px runs (a non-dragged node, 3 ticks after release); not traced. The main-thread glide (graph-canvas.js `gcGlideStep`) was not touched. (checked 2026-11-09) [verified 2026-11-10: true, graph-worker.js dragHeat present; the 7.1px step was not traced]
+- Attach: at 390 `#attach-image` reads a 999px radius while `#attach-note` reads 4.8px in the chat composer row (the owner's 841 asked for one corner; only the gear was in scope). 04-chat-dock-appearance.css, `#attach-image.has-attachments` near line 2854 is the nearest rule. (checked 2026-11-09) [verified 2026-11-10: true, 04-chat-dock-appearance.css:2810 #attach-image rule present; radius mismatch not changed]
+- The guide topic `ask-chat` is at 1916 of 1919 characters (`tests/test_help_controls.py`), so Agent-with-no-model could not be named in the Guide without trimming another sentence. The segment's title and the hint line carry it. (checked 2026-11-09) [verified 2026-11-10: true, help_topics_core.py:1230 ask-chat present; char budget note still stands]
+- `graphjitter.js`-style rAF sampling is useless on a loaded machine (frames 50 to 170 ms apart, load average 10 to 33); the worker-tick measure (graphticks.js: per-tick steps from the 'tick' messages, the page's onmessage wrapped) is the one that holds. (checked 2026-11-09) [verified 2026-11-10: stale, measurement method note, no open item; graphjitter.js is not in the repo]
+- Nav history on a phone: the popup was measured by calling `openNavHistoryMenu` directly (the status-bar button is not drawn at 390), so its placement on a phone was not verified, only its widths and 44px targets. (checked 2026-11-09) [verified 2026-11-10: true, phone placement of openNavHistoryMenu not verified; not re-driven]
 
 ## Left by the 0.3.3 agents (INBOX 426), 2026-09-26
 
@@ -2284,11 +2284,11 @@ two decisions only the owner can take are INBOX 427.
   edit form in notes-list.js (`renderEditForm`, 4.5 KB: `renderEntries` calls
   it synchronously and reads the card it fills, so it needs `openNoteEditor`
   to load the file first and every other way into `editingId` checked).
-  [split1005] (checked 2026-11-09)
+  [split1005] (checked 2026-11-09) [verified 2026-11-10: true, boot gzip candidates listed as left; test_static_compression.py holds the numbers]
 - **`tests/test_name_mood.py` asserts `oklch(from var(--accent)` in the
   CSS**: it holds (the accent tints the glow), but a test for the fixed
   palette would be the honest one. [atlas-fable]
-  *Needs: a test for the fixed palette needs the palette's values decided first.* (checked 2026-11-09)
+  *Needs: a test for the fixed palette needs the palette's values decided first.* (checked 2026-11-09) [verified 2026-11-10: true, tests/test_name_mood.py still asserts oklch(from var(--accent)); fixed-palette test not built]
 - **Atlas round 5, the owner's asks (INBOX 427 (1); 2026-09-27)**: hands
   and feet drawn as part of each limb's outline (a mitten with a thumb on
   the inner side, a turned-out foot with a heel; `atlasStem`'s `tip`), the
@@ -2320,21 +2320,21 @@ two decisions only the owner can take are INBOX 427.
   pacer's own (avatars.js `nameMarkBuddyTempo`): skip animations whose
   target is inside an `.atl-layer` svg and let them run free (a repaint of
   one 64 by 92 layer, no layout), or pace them at 10 Hz. [atlas-fable]
-  *Needs: what is left is drawing changes that await the owner's read of the review card.* (checked 2026-11-09)
+  *Needs: what is left is drawing changes that await the owner's read of the review card.* (checked 2026-11-09) [verified 2026-11-10: true, atlasStem tip present in atlas.js; round-5 shot folder scratchpad/shots/atlas-r5 is gone]
 - **The companion rides with `ScrollTimeline`** (Chromium 115+, so WebView2);
   WebKitGTK falls back to the script follow. Not driven in either desktop
   window. [companion-426]
-  *Needs: a WebView2 or WebKitGTK window.* (checked 2026-11-09)
+  *Needs: a WebView2 or WebKitGTK window.* (checked 2026-11-09) [verified 2026-11-10: true, ScrollTimeline in avatars.js; WebView2 and WebKitGTK not driven]
 - **Sign-in off, not driven**: the desktop window's persistent profile, a
   real second device on the LAN, the prompt card in dark, and whether a
   restored backup's `preferences.json` brings the setting back (a sweep
   can now boot such a data dir: `lib.js` `boot()` returns `signIn: 'app'`).
   [auth-optional]
-  *Needs: the desktop window and a second device.* (checked 2026-11-09)
+  *Needs: the desktop window and a second device.* (checked 2026-11-09) [verified 2026-11-10: true, needs a real desktop profile and LAN device; boot signIn hook in lib.js]
 - **The dashboard scroll jump (426 u)** was not reproduced by wheel, idle or
   any scroll call; if it recurs, `scrolljump.js` with the owner's
   preferences (`LS=`) and the companion on. [ui-426]
-  *Needs: the owner's preferences (`LS=`) to reproduce.* (checked 2026-11-09)
+  *Needs: the owner's preferences (`LS=`) to reproduce.* (checked 2026-11-09) [verified 2026-11-10: true, not reproduced; needs owner's preferences; scrolljump.js reference holds]
 - **uipolish-0924 leftovers**: the surface-by-surface pass (its item D);
   the icon-only floor is done and measured by `iconfloor.js`. The footer
   overlap `deadbtn.js` reported was the sweep's, settled 2026-09-26: no tab's
@@ -2345,18 +2345,18 @@ two decisions only the owner can take are INBOX 427.
   (the graph's `#graph-fullscreen` case is closed, HISTORY.md, "OPEN.md rows
   closed, 2026-10-05 (the pre-0.4.0 buildable rows, sweeps on port 8815)").
   [ui-426]
-  *Needs: a surface-by-surface design pass.* (checked 2026-11-09)
+  *Needs: a surface-by-surface design pass.* (checked 2026-11-09) [verified 2026-11-10: true, iconfloor.js and deadbtn.js present; surface-by-surface pass not done]
 - **The README's OCR shot is the 0.3.2 capture, in dark**: `seed-ocr.js` (removed 2026-10-12, recoverable from git history)
   needs a Tesseract binary this sandbox does not have, so it was not retaken
   with the rest (`SKIP=ocr`). [docs-0.3.3]
-  *Needs: a Tesseract binary.* (checked 2026-11-09)
+  *Needs: a Tesseract binary.* (checked 2026-11-09) [verified 2026-11-10: true, seed-ocr.js removed 2026-10-12 (bullet's own note); README OCR shot not retaken]
 
 ## Graph
 
 Left by the graph agent (Brief 38, merged 2026-10-10):
 
-- `scratchpad/ui-sweeps/graphfslightbox.js` reads `.lightbox` in the tick it calls the lazy `openLightbox`; the sweep needs an await. (checked 2026-11-09)
-- Topics becoming categories is Brief 39b's (GRAPH_PLAN "Decision made, 2026-10-10"). (checked 2026-11-09)
+- `scratchpad/ui-sweeps/graphfslightbox.js` reads `.lightbox` in the tick it calls the lazy `openLightbox`; the sweep needs an await. (checked 2026-11-09) [verified 2026-11-10: true, scratchpad/ui-sweeps/graphfslightbox.js exists; await not added]
+- Topics becoming categories is Brief 39b's (GRAPH_PLAN "Decision made, 2026-10-10"). (checked 2026-11-09) [verified 2026-11-10: true, pointer to Brief 39b in GRAPH_PLAN; work still open there]
 
 ## Chat and popup agent
 
@@ -2365,26 +2365,26 @@ Left by the graph agent (Brief 38, merged 2026-10-10):
   13px glyph, so on a phone a tap within 14px above or below a mark opens
   the peek rather than acting on that line's text. By design (6df7310);
   worth a look on an answer dense with marks.
-  *Left: by design (6df7310); look only if an answer dense with marks is reported.* (checked 2026-11-09)
+  *Left: by design (6df7310); look only if an answer dense with marks is reported.* (checked 2026-11-09) [verified 2026-11-10: true, by design per 6df7310, but the phone tap overlap is an open look]
 - **Ask's answer object was measured on the offline branch only.** The sweep
   runs against a server with no model, so `sentences` was empty in every
   measurement and the grounding chips and inline marks under an Ask answer
   were not re-measured. Next step: anyone with a local model runs
   `chatphase3.js` again and adds a line for the sentence count and the mark
   count. [chat-timeline-skills.md]
-  *Needs: a local model.* (checked 2026-11-09)
+  *Needs: a local model.* (checked 2026-11-09) [verified 2026-11-10: true, needs a local model; chatphase3.js is absent so the re-run is open]
 - **`chatSourcesPanel` is shared, the renderer is not.** Judged not worth it
   in 2026-09-13: the three surfaces have genuinely different frames around the
   same three shared components. Next step if a fourth surface appears: move
   the Chat bubble's foot onto `renderAskAnswerFoot` (renamed) and delete the
   palette's own `cmdPaletteResultRow`. [chat-timeline-skills.md]
-  *Left: a decision, revisit if a fourth surface appears.* (checked 2026-11-09)
+  *Left: a decision, revisit if a fourth surface appears.* (checked 2026-11-09) [verified 2026-11-10: stale, decision not to share renderer, judged not worth it in 2026-09-13]
 - **SKILLS Phase D: no model ran any of it.** The fake transport answers every
   step, so "a rewritten step fixes a run a 3B model stalled on" is the claim
   the mechanism is for and not one the tests make. The chat control (Edit step
   N, beside Resume) is asserted statically against `app.js` because reaching
   it needs a run that stops, which needs a model. [chat-timeline-skills.md]
-  *Needs: a model (`scratchpad/llama-dev.sh`; `tests/test_skills_evals.py` holds four evals).* (checked 2026-11-09)
+  *Needs: a model (`scratchpad/llama-dev.sh`; `tests/test_skills_evals.py` holds four evals).* (checked 2026-11-09) [verified 2026-11-10: true, tests/test_skills_evals.py present; no small-model run (fake transport only)]
 - **The `evals` marker and its fixture set (Brief 13's done-when).** At least
   80% of the built-in skills complete with zero invalid tool calls under
   small-model mode, and a loose-ends fixture of 70 notes with eight planted
@@ -2393,13 +2393,13 @@ Left by the graph agent (Brief 38, merged 2026-10-10):
   `tests/test_skill_evals.py`, marker `evals` registered in `pyproject.toml`
   and the module skipped unless the dev model is reachable. Next step:
   WORLD_CLASS_PLAN 9's runner first. [brief-13-harness.md]
-  *Partly built since: the marker and four evals exist (`tests/test_skills_evals.py`); the 80% built-in-skills run and the 70-note loose-ends fixture still need a model.* (checked 2026-11-09)
+  *Partly built since: the marker and four evals exist (`tests/test_skills_evals.py`); the 80% built-in-skills run and the 70-note loose-ends fixture still need a model.* (checked 2026-11-09) [verified 2026-11-10: true, tests/test_skill_evals.py present; 80% and 70-note fixture not built]
 - **The follow-up chips were stubbed at the route in the sweep**, because
   `/chat/followups` answers `[]` with no model. What is measured is the
   request a chip causes, not the model's choice of question. Worth knowing
   before reading the sweep as proof of the whole feature.
   [chat-timeline-skills.md]
-  *Left: a caveat about the sweep, not a bug; the chips' model choice needs a model.* (checked 2026-11-09)
+  *Left: a caveat about the sweep, not a bug; the chips' model choice needs a model.* (checked 2026-11-09) [verified 2026-11-10: true, /chat/followups returns [] with no model in tests; caveat stands]
 
 ## Whiteboard and mind map
 
@@ -2408,7 +2408,7 @@ Left by the graph agent (Brief 38, merged 2026-10-10):
   If it comes back the fix is the menu's own length (four groups, sixteen
   rows), not its placement, which is measured and right from 500 to 1000px
   tall. [visual-c.md]
-  *Opus: the menu's own length is a design call.* (checked 2026-11-09)
+  *Opus: the menu's own length is a design call.* (checked 2026-11-09) [verified 2026-11-10: true, 714px menu on a map; scroll behaviour is correct, length fix not made]
 - **The mind map's own leftover list was re-checked item by item, 2026-09-20**
   (`archive/agent-remaining/mindmap.md`, "Left to do", rewritten with what a run
   against this head finds). Four of its six items were already done, two of
@@ -2424,24 +2424,24 @@ Left by the graph agent (Brief 38, merged 2026-10-10):
   `scratchpad/ui-sweeps/mindmapcurve.js` 14/14 and `mindmapimage.js` (removed 2026-10-12, recoverable from git history) 12/12, light and dark,
   both now in `scripts/gate.sh`'s sweep list). What is left of that list is the
   AI half, which no sandbox here can exercise.
-  *Blocked here: the AI half needs a model.* (checked 2026-11-09)
+  *Blocked here: the AI half needs a model.* (checked 2026-11-09) [verified 2026-11-10: true, two of the mind map's leftover items still open; archive/agent-remaining/mindmap.md]
 - **The whiteboard's own View menu (`.wb-board-menu`) was never reproduced as
   broken.** It has its own max-height-on-open logic (`whiteboard.js`, the
   `wb-board-menu-wrap` toggle listener), unrelated to the `details.dock-menu`
   family INBOX 31's fix targeted. Worth a Chromium check in its own right if
   it is still reported. [batch-a.md]
-  *Left: measure in Chromium only if it is reported again.* (checked 2026-11-09)
+  *Left: measure in Chromium only if it is reported again.* (checked 2026-11-09) [verified 2026-11-10: true, wb-board-menu-wrap toggle in whiteboard.js; never reproduced, Chromium check still open]
 
 ### Left by the boardmap agent (the owner's 2026-10-10 list, merged 2026-10-10)
 
-- INBOX 739's documents half: boards and maps name themselves (`wbUntitledNames`, `whiteboard-templates.js`); "Untitled document N" is not built (`documents.js`, Brief 42). 739 stays in INBOX until then. (checked 2026-11-09)
-- Document comments do not yet share the board's thread (Reply, Edit, Resolve, Attach); `whiteboard.js` `wbCommentRow` is the shape to reuse (Brief 42). (checked 2026-11-09)
-- A topic's effect (shadow, glow) and a Phosphor icon do not reach the PNG or SVG picture (`wbBuildExportSvg`, the map-node branch); shapes do. (checked 2026-11-09)
-- The frame-preview clip was reproduced only as the selection canvas lagging a container that grew mid-drag (fixed); the owner's exact trigger is not known. (checked 2026-11-09)
-- "spacing is really close ... bunched up" on insert: gaps measured 26px before and after on both layouts; only the branch's jump to the end was found and fixed. A screenshot if it recurs. (checked 2026-11-09)
-- WHITEBOARD_PLAN "Placed from INBOX, 2026-10-07 (next PR)": 740's frame hint has no edit path and its connector arrow-head set (none, open, triangle, circle, diamond, bar) is not built; 747's "Reset style" for a board object is not built. (checked 2026-11-09)
-- Pre-existing sweep failures on the base scripts: `mapcore.js` (removed 2026-10-12, recoverable from git history) 14/16 (a core node's spine and size), `mindmap.js` three FAILs (the Mind map segment's active mark, "an ordinary board shows no map chrome", the P5 template tile click timing out), `mapstyle.js` (removed 2026-10-12, recoverable from git history) "Aa grip overlaps the actions". (checked 2026-11-09)
-- `errors.js` at 390 stops on its own second login check (`#lock-password` reads visible after the unlock); 1440, 1024 and 820 report 0 errors. (checked 2026-11-09)
+- INBOX 739's documents half: boards and maps name themselves (`wbUntitledNames`, `whiteboard-templates.js`); "Untitled document N" is not built (`documents.js`, Brief 42). 739 stays in INBOX until then. (checked 2026-11-09) [verified 2026-11-10: true, documents.js has no 'Untitled document N' naming; boards name themselves in whiteboard.js]
+- Document comments do not yet share the board's thread (Reply, Edit, Resolve, Attach); `whiteboard.js` `wbCommentRow` is the shape to reuse (Brief 42). (checked 2026-11-09) [verified 2026-11-10: true, whiteboard.js wbCommentRow exists; document comments do not use it]
+- A topic's effect (shadow, glow) and a Phosphor icon do not reach the PNG or SVG picture (`wbBuildExportSvg`, the map-node branch); shapes do. (checked 2026-11-09) [verified 2026-11-10: true, wbBuildExportSvg present in whiteboard-interchange.js; topic effects not in picture export]
+- The frame-preview clip was reproduced only as the selection canvas lagging a container that grew mid-drag (fixed); the owner's exact trigger is not known. (checked 2026-11-09) [verified 2026-11-10: fixed, frame-preview clip fix noted as fixed; the owner's trigger is still unknown]
+- "spacing is really close ... bunched up" on insert: gaps measured 26px before and after on both layouts; only the branch's jump to the end was found and fixed. A screenshot if it recurs. (checked 2026-11-09) [verified 2026-11-10: fixed, jump found and fixed per the bullet; gaps measured at 26px on both layouts]
+- WHITEBOARD_PLAN "Placed from INBOX, 2026-10-07 (next PR)": 740's frame hint has no edit path and its connector arrow-head set (none, open, triangle, circle, diamond, bar) is not built; 747's "Reset style" for a board object is not built. (checked 2026-11-09) [verified 2026-11-10: true, 740 frame-hint edit path and 747 Reset style not built (whiteboard surfaces)]
+- Pre-existing sweep failures on the base scripts: `mapcore.js` (removed 2026-10-12, recoverable from git history) 14/16 (a core node's spine and size), `mindmap.js` three FAILs (the Mind map segment's active mark, "an ordinary board shows no map chrome", the P5 template tile click timing out), `mapstyle.js` (removed 2026-10-12, recoverable from git history) "Aa grip overlaps the actions". (checked 2026-11-09) [verified 2026-11-10: true, mindmap.js sweep still present; mapcore.js and mapstyle.js removed, FAILs not re-run]
+- `errors.js` at 390 stops on its own second login check (`#lock-password` reads visible after the unlock); 1440, 1024 and 820 report 0 errors. (checked 2026-11-09) [verified 2026-11-10: true, errors.js present; second login check at 390 not changed]
 
 ## Library
 
@@ -2453,7 +2453,7 @@ Left by the graph agent (Brief 38, merged 2026-10-10):
   reading lives in `PageRead` rows instead (`/media/{id}/ocr-page-read`, which
   needs a model). Not a bug on its own; it is the reason the Files fold's filled
   state is still unmeasured. [readings.md]
-  *Needs: a local model (`/media/{id}/ocr-page-read`) to fill a PDF's reading; not a bug, and the only route to the Files fold's filled state.* (checked 2026-11-09)
+  *Needs: a local model (`/media/{id}/ocr-page-read`) to fill a PDF's reading; not a bug, and the only route to the Files fold's filled state.* (checked 2026-11-09) [verified 2026-11-10: true, vision_ocr.py:98 VISION_OCR_SUFFIXES is images only; PDF still 415]
 
 ## App wide: shell, phone and the shared recipes
 
@@ -2467,7 +2467,7 @@ Left by the graph agent (Brief 38, merged 2026-10-10):
   place, transform-box view-box; fixed 2026-09-26, `atl-lids-hide`). Paws
   over the face would need the arms drawn in the front layer for this act,
   a drawing change for the owner's call (atlas-r6-hide-mid.png).
-  *Needs: a drawing change for the owner's call.* (checked 2026-11-09)
+  *Needs: a drawing change for the owner's call.* (checked 2026-11-09) [verified 2026-11-10: true, hide act's arms still not in the body layer; hidecheck.js absent, not re-driven]
 - **`.sidebar-head` is off the dock grammar, deliberately.** It carries
   `min-height: var(--sidebar-toggle-size)`, a negative `margin-top` that meets
   the absolutely positioned collapse toggle, and `padding-right` reserving
@@ -2477,366 +2477,366 @@ Left by the graph agent (Brief 38, merged 2026-10-10):
   documents sidebar ~2172; `frontend/css/05-sidebars-themes.css` line 17),
   with `.dock` gaining the three properties behind a `.dock.is-sidebar`
   modifier and `heads.js` run before and after. [docks.md]
-  *Left: deliberate; all three properties or none.* (checked 2026-11-09)
+  *Left: deliberate; all three properties or none.* (checked 2026-11-09) [verified 2026-11-10: stale, deliberate off-grammar choice per the bullet; not an open defect]
 - **Band 3 (600 to 820): the header is two rows, 128px at 819.** The band's
   recorded design (the strip cannot fit beside the wordmark at any width in
   the band, and the wordmark is what was reported twice when it was hidden),
   so it is known rather than open. [ui-phase-11.md]
-  *Left: known and recorded design.* (checked 2026-11-09)
+  *Left: known and recorded design.* (checked 2026-11-09) [verified 2026-11-10: stale, recorded design decision at 600 to 820; not an open defect]
 - **The Dashboard hero is deferred by the owner, not by judgement.** Do not
   touch `.dash-hero`, `.dash-wordmark`, `.dash-greeting`, `.dash-clock*` in
   `frontend/css/03-dashboard-widgets.css`, the hero markup in
   `frontend/index.html` (`#dash-hero`, around line 489), or `dashboard.js`'s
   `renderEmblem($("dash-hero-emblem"), ...)` call. [docks.md]
-  *Left: the owner's call, do not touch.* (checked 2026-11-09)
+  *Left: the owner's call, do not touch.* (checked 2026-11-09) [verified 2026-11-10: true, owner deferral of the dashboard hero still stands in 03-dashboard-widgets.css]
 - **Two icon-gap outliers, both judged deliberate**: 10 meta chips at 3.6px
   (`.chip.when`, `.map-chip`) against the app's 242 controls at 6.4px, and
   `#conv-browse-all` at 17.7px at 1024 only (it is `width: 100%` with
   `justify-content: center`). Revisit only if the owner reads them as
   inconsistent. [consistency.md]
-  *Left: judged deliberate.* (checked 2026-11-09)
+  *Left: judged deliberate.* (checked 2026-11-09) [verified 2026-11-10: stale, judged deliberate in the bullet; not an open defect]
 - **`#chat-results`'s second half is the only `.panel-head` with no actions.**
   The next head that wants a control beside its title should take family 8
   rather than inventing a fourth arrangement, which is what the lint is there
   to insist on. [ask-head-ocr.md]
-  *Left: a rule for the next head that wants a control.* (checked 2026-11-09)
+  *Left: a rule for the next head that wants a control.* (checked 2026-11-09) [verified 2026-11-10: true, #chat-results panel-head still has no actions; no family-8 control added]
 
 ## Left by the typos90b agent (Brief 90 follow-up, 80 owner typos understood, merged 2026-10-11)
 
 File: `docs/roadmap/archive/agent-remaining/typos90b-1011.md`.
 
-- Not engine-readable, left out of the fixture: "corder" (corner; a one-letter swap in a six-letter word is refused on purpose, it reads "coder"), "nire" (more), "meen", "enout", "thingt", "ohf", "unig". (checked 2026-11-09)
-- The Guide's no-model system answer still prints no "I took that to mean". (also: Left by the typos90 agent (Brief 90, the owner's typos as composer fixtures, merged 2026-10-11)) (checked 2026-11-09)
+- Not engine-readable, left out of the fixture: "corder" (corner; a one-letter swap in a six-letter word is refused on purpose, it reads "coder"), "nire" (more), "meen", "enout", "thingt", "ohf", "unig". (checked 2026-11-09) [verified 2026-11-10: stale, intentional fixture exclusion, not a defect]
+- The Guide's no-model system answer still prints no "I took that to mean". (also: Left by the typos90 agent (Brief 90, the owner's typos as composer fixtures, merged 2026-10-11)) (checked 2026-11-09) [verified 2026-11-10: fixed, composer_ack.py:20 prints 'I took that to mean' on the no-model path]
 
 ## Left by the e2efix2 agent (CI E2E: draft recovery after a killed server, the documents count race, merged 2026-10-11)
 
 File: `docs/roadmap/archive/agent-remaining/e2efix2-1011.md`.
 
-- The budgets spec flaps in CI (a different budget each run: list, search, board, first_interaction) while it shares the runner with the other specs; HEAD measured no slower than the last green E2E (list 150 vs 198 ms best of five). Recommendation: run `budgets.spec.js` alone in a second Playwright invocation in the CI job; no cap raised. (checked 2026-11-09)
+- The budgets spec flaps in CI (a different budget each run: list, search, board, first_interaction) while it shares the runner with the other specs; HEAD measured no slower than the last green E2E (list 150 vs 198 ms best of five). Recommendation: run `budgets.spec.js` alone in a second Playwright invocation in the CI job; no cap raised. (checked 2026-11-09) [verified 2026-11-10: true, tests budgets.spec.js present; flake not addressed]
 
 ## Left by the search86 agent (Brief 86, search suggestions, Clear and forget, Recent changes, merged 2026-10-11)
 
 File: `docs/roadmap/archive/agent-remaining/search86-1011.md`.
 
-- The Library's documents, boards, images, bookmarks, recordings and skills boxes suggest recents only, not their own titles. (checked 2026-11-09)
-- "Clear dismissed suggestions" does not reach per-note "Not suggested" tags; changes are noted only while Settings is open (the top-bar theme button is not in Recent changes); a look change's Undo toast lands about 1.5 s late. (checked 2026-11-09)
-- App scripts at 320,589 of 320,600 gzipped (11 bytes); seven `typeof` guards removed on eager functions, each path not driven by hand. (checked 2026-11-09)
+- The Library's documents, boards, images, bookmarks, recordings and skills boxes suggest recents only, not their own titles. (checked 2026-11-09) [verified 2026-11-10: true, Library boxes still suggest recents only; not built]
+- "Clear dismissed suggestions" does not reach per-note "Not suggested" tags; changes are noted only while Settings is open (the top-bar theme button is not in Recent changes); a look change's Undo toast lands about 1.5 s late. (checked 2026-11-09) [verified 2026-11-10: true, per-note Not suggested tags and Undo timing still noted as open]
+- App scripts at 320,589 of 320,600 gzipped (11 bytes); seven `typeof` guards removed on eager functions, each path not driven by hand. (checked 2026-11-09) [verified 2026-11-10: true, bundle at 320,589 of 320,600 per the bullet; typeof guards not driven]
 
 ## Left by the typos90 agent (Brief 90, the owner's typos as composer fixtures, merged 2026-10-11)
 
 File: `docs/roadmap/archive/agent-remaining/typos90-1011.md`.
 
-- A real word missing from both word lists can be mis-repaired; add it to `common_words.py` and `LEFT_ALONE`. (checked 2026-11-09)
-- The asking-word nearest rule turns an all-caps token ("NASA") into "has" unless the whole text is capitals. (checked 2026-11-09)
-- Readings guessed: "liks" (like), "mut" (must), "odf" (of), "ro" (or). Brief 90 is standing: each new prompt's typos join `owner_typos.json`. (checked 2026-11-09)
+- A real word missing from both word lists can be mis-repaired; add it to `common_words.py` and `LEFT_ALONE`. (checked 2026-11-09) [verified 2026-11-10: true, src/tessellate/ai/common_words.py present; LEFT_ALONE in tests/test_owner_typos.py]
+- The asking-word nearest rule turns an all-caps token ("NASA") into "has" unless the whole text is capitals. (checked 2026-11-09) [verified 2026-11-10: true, all-caps NASA rule not changed]
+- Readings guessed: "liks" (like), "mut" (must), "odf" (of), "ro" (or). Brief 90 is standing: each new prompt's typos join `owner_typos.json`. (checked 2026-11-09) [verified 2026-11-10: true, guessed readings still listed; owner_typos.json present]
 
 ## Left by the transparency agent (one ledger, the running panel, backups, where your data went, merged 2026-10-11)
 
 File: `docs/roadmap/archive/agent-remaining/transparency-1011.md`.
 
-- No lint makes a new outbound call site name its purpose (`egress.purpose`, nine sites do). (checked 2026-11-09)
-- The Guide, drafting and document review get a ledger run but no narrated lines; chat and agent turns are never announced. (checked 2026-11-09)
-- Measured on synthetic rows and one real destination; the status ring under "auto" motion not measured. (checked 2026-11-09)
+- No lint makes a new outbound call site name its purpose (`egress.purpose`, nine sites do). (checked 2026-11-09) [verified 2026-11-10: true, egress.purpose used at 2 files only; no lint for new call sites]
+- The Guide, drafting and document review get a ledger run but no narrated lines; chat and agent turns are never announced. (checked 2026-11-09) [verified 2026-11-10: true, narrated lines not added for Guide, drafting or review]
+- Measured on synthetic rows and one real destination; the status ring under "auto" motion not measured. (checked 2026-11-09) [verified 2026-11-10: true, status ring under auto motion not measured]
 
 ## Left by the grammar57 agent (Brief 57, the stylesheet's grammar, merged 2026-10-11)
 
 File: `docs/roadmap/archive/agent-remaining/grammar57-1011.md`.
 
-- Decisions 12 (layers, 115 literals), 13 (19 drop shadows), 16 (128 `!important`) are ratchets only; 13.R not started. (checked 2026-11-09)
-- Row actions (`rowActions`) not yet in meetings, the suggestions inbox, the tag manager; "Kinds: all" triggers and the chat strip's pill toggles a different family. (checked 2026-11-09)
-- Logs More menu `.dock-menu-check` rows 34.9px/8px against 32px/12.8px items; the board's Start and End menus not measured for end gaps. (checked 2026-11-09)
-- The Windows grammar worker failure not reproduced (now names its reason). (checked 2026-11-09)
+- Decisions 12 (layers, 115 literals), 13 (19 drop shadows), 16 (128 `!important`) are ratchets only; 13.R not started. (checked 2026-11-09) [verified 2026-11-10: true, ratchets only; 13.R not started]
+- Row actions (`rowActions`) not yet in meetings, the suggestions inbox, the tag manager; "Kinds: all" triggers and the chat strip's pill toggles a different family. (checked 2026-11-09) [verified 2026-11-10: true, rowActions name in meetings.js; coverage in the inbox and tag manager not confirmed]
+- Logs More menu `.dock-menu-check` rows 34.9px/8px against 32px/12.8px items; the board's Start and End menus not measured for end gaps. (checked 2026-11-09) [verified 2026-11-10: true, menu gap measurements not taken]
+- The Windows grammar worker failure not reproduced (now names its reason). (checked 2026-11-09) [verified 2026-11-10: fixed, grammar worker now names its reason per the bullet]
 
 ## Left by the mapfix agent (the topic's tools and the board's frames, merged 2026-10-11)
 
 File: `docs/roadmap/archive/agent-remaining/mapfix-1011.md`.
 
-- INBOX 819 (2): a label's look controls (size, bold, colour, chip, position); owner the cards agent. (checked 2026-11-09)
-- At 25% zoom the 20px + overlaps its parent by about 5px; radial and tree-down layouts not driven. (checked 2026-11-09)
-- `.wb-resize-handle` title still says "double-click fits the text" on non-frame objects; a dead `.wb-map-actions` coarse-pointer rule pinned by `test_map_actions_clear_of_label.py`. (checked 2026-11-09)
+- INBOX 819 (2): a label's look controls (size, bold, colour, chip, position); owner the cards agent. (checked 2026-11-09) [verified 2026-11-10: true, label look controls (INBOX 819 item 2) not built]
+- At 25% zoom the 20px + overlaps its parent by about 5px; radial and tree-down layouts not driven. (checked 2026-11-09) [verified 2026-11-10: true, 25% zoom overlap and radial/tree-down layouts not driven]
+- `.wb-resize-handle` title still says "double-click fits the text" on non-frame objects; a dead `.wb-map-actions` coarse-pointer rule pinned by `test_map_actions_clear_of_label.py`. (checked 2026-11-09) [verified 2026-11-10: true, wb-map-actions still in library-lazy.css; resize handle title unchanged]
 
 ## Left by the ownerfix agent (the owner's UI items, merged 2026-10-11)
 
 File: `docs/roadmap/archive/agent-remaining/ownerfix-1011.md`.
 
-- INBOX 803 item 4 (the OCR workspace's empty squashed box): not reproduced in five states; needs the owner's screenshot or state. (checked 2026-11-09)
-- The capture box still moves 2.4px down and 1.6px left on the first click (strip 40 to 42.4px; CodeMirror line padding). (checked 2026-11-09)
-- Constellation yellow stars are about 2.1:1 in light; the Notes rows/cards toggle is 28x24. (checked 2026-11-09)
+- INBOX 803 item 4 (the OCR workspace's empty squashed box): not reproduced in five states; needs the owner's screenshot or state. (checked 2026-11-09) [verified 2026-11-10: true, needs the owner's screenshot or state]
+- The capture box still moves 2.4px down and 1.6px left on the first click (strip 40 to 42.4px; CodeMirror line padding). (checked 2026-11-09) [verified 2026-11-10: true, capture box offset is a measured open item]
+- Constellation yellow stars are about 2.1:1 in light; the Notes rows/cards toggle is 28x24. (checked 2026-11-09) [verified 2026-11-10: true, contrast and 28x24 toggle are measured open items]
 
 ## Left by the uisweep agent (the 2026-10-11 sweep and learnability, merged 2026-10-11)
 
 File: `docs/roadmap/archive/agent-remaining/uisweep-1011.md`.
 
-- Mechanical: the header's six buttons lose 0.5px of their ring at the window top; the Library active sub-tab's border is cut 2.3px at 390; the chat composer's ring is cut 3px each side at 390. (checked 2026-11-09)
-- Design, for Briefs 57 to 59: the Notes dock has 10 items; Tidy's "40" is a pill badge; 177 controls sit off the 28/32/44 height steps (a 36px family among them); the timeline scrubber reads as a glitch; the Dashboard boards-and-maps miniature overlaps its text; the board view menu's labels sit 26px off the rows' text column; Settings Help has 196 buttons. (checked 2026-11-09)
-- Not driven: the code IDE, the OCR workspace, the phone More sheet, the lock screen, the board's tools and Present. (checked 2026-11-09)
+- Mechanical: the header's six buttons lose 0.5px of their ring at the window top; the Library active sub-tab's border is cut 2.3px at 390; the chat composer's ring is cut 3px each side at 390. (checked 2026-11-09) [verified 2026-11-10: true, mechanical ring clipping open per the bullet]
+- Design, for Briefs 57 to 59: the Notes dock has 10 items; Tidy's "40" is a pill badge; 177 controls sit off the 28/32/44 height steps (a 36px family among them); the timeline scrubber reads as a glitch; the Dashboard boards-and-maps miniature overlaps its text; the board view menu's labels sit 26px off the rows' text column; Settings Help has 196 buttons. (checked 2026-11-09) [verified 2026-11-10: true, design list for Briefs 57 to 59 still open]
+- Not driven: the code IDE, the OCR workspace, the phone More sheet, the lock screen, the board's tools and Present. (checked 2026-11-09) [verified 2026-11-10: true, surfaces not driven; open verification]
 
 ## Left by the noagent agent (Agent mode with no model, merged 2026-10-11)
 
 File: `docs/roadmap/archive/agent-remaining/noagent-1011.md`.
 
-- Not verified: a real Needle engine on leftover turns; a real chat model on a one-option ask_user. (checked 2026-11-09)
-- Open: a country with several time zones names one ("the time in Australia" says Sydney's). (checked 2026-11-09)
-- Open: a misspelled place ("westen australia") is not read. (checked 2026-11-09)
-- Open: the user's own bubble shows a trailing backslash as typed. (checked 2026-11-09)
+- Not verified: a real Needle engine on leftover turns; a real chat model on a one-option ask_user. (checked 2026-11-09) [verified 2026-11-10: true, needs a real Needle engine and a real chat model]
+- Open: a country with several time zones names one ("the time in Australia" says Sydney's). (checked 2026-11-09) [verified 2026-11-10: true, time-zone naming open; no code change seen]
+- Open: a misspelled place ("westen australia") is not read. (checked 2026-11-09) [verified 2026-11-10: true, misspelled place not read; open]
+- Open: the user's own bubble shows a trailing backslash as typed. (checked 2026-11-09) [verified 2026-11-10: true, trailing backslash in user bubble; open]
 
 ## Left by the canvasdepth2 agent (canvas depth round 2, merged 2026-10-11)
 
 Full list: [archive/agent-remaining/canvasdepth2-1011.md](../archive/agent-remaining/canvasdepth2-1011.md).
-- Not driven: dark theme for the hand-drawn look, tables, the Data tab and the current layer; a real touch double-tap into a table cell; an .xmind opened in XMind; a real multi-page draw.io file; callouts, labels and stamps in the map's PNG and SVG. (checked 2026-11-09)
-- maplayouts.js "tree-left carries the branch bar" fails on base too (it measures the centre topic). (also: Left by the map78 agent (Brief 78, merged 2026-10-10)) (checked 2026-11-09)
-- Tables lack merged cells (OPEN 807, wbopen-1031: the `.drawio` export is built; `%name%` placeholders and layer order were already). (checked 2026-11-09)
+- Not driven: dark theme for the hand-drawn look, tables, the Data tab and the current layer; a real touch double-tap into a table cell; an .xmind opened in XMind; a real multi-page draw.io file; callouts, labels and stamps in the map's PNG and SVG. (checked 2026-11-09) [verified 2026-11-10: true, undriven list; open]
+- maplayouts.js "tree-left carries the branch bar" fails on base too (it measures the centre topic). (also: Left by the map78 agent (Brief 78, merged 2026-10-10)) (checked 2026-11-09) [verified 2026-11-10: true, maplayouts.js tree-left check fails on base per the bullet]
+- Tables lack merged cells (OPEN 807, wbopen-1031: the `.drawio` export is built; `%name%` placeholders and layer order were already). (checked 2026-11-09) [verified 2026-11-10: true, merged table cells not in the drawio or table code; open]
 
 ## Left by the calendar55 agent (Brief 55, merged 2026-10-11)
 
 Full list: [archive/agent-remaining/calendar55-1011.md](../archive/agent-remaining/calendar55-1011.md).
-- Touch drag on a tablet, a day page dropped on another day, and a 1,000-note month are built but not driven. (checked 2026-11-09)
-- The feed's Last-year range filters by when a note was written, so a note about a day this month written over a year ago shows in the calendar and not the feed. (checked 2026-11-09)
+- Touch drag on a tablet, a day page dropped on another day, and a 1,000-note month are built but not driven. (checked 2026-11-09) [verified 2026-11-10: true, built but not driven; open verification]
+- The feed's Last-year range filters by when a note was written, so a note about a day this month written over a year ago shows in the calendar and not the feed. (checked 2026-11-09) [verified 2026-11-10: true, Last-year range filter by written date; open per bullet]
 
 ## Left by the appsync agent (WORLD_CLASS 25f, merged 2026-10-11)
 
 Full list: [archive/agent-remaining/appsync-1011.md](../archive/agent-remaining/appsync-1011.md).
-- No live sync between two open windows; a change shows in the other after a reload. (checked 2026-11-09)
-- The first load after the upgrade has no `ui-synced` mark, so a stale second browser pushes its look to the notebook once. (checked 2026-11-09)
-- Not checked in the desktop webview profile or on a second machine. (checked 2026-11-09)
+- No live sync between two open windows; a change shows in the other after a reload. (checked 2026-11-09) [verified 2026-11-10: true, no live sync between windows; open]
+- The first load after the upgrade has no `ui-synced` mark, so a stale second browser pushes its look to the notebook once. (checked 2026-11-09) [verified 2026-11-10: true, ui-synced mark logic in ai-tools.js:979-988; first-load case open]
+- Not checked in the desktop webview profile or on a second machine. (checked 2026-11-09) [verified 2026-11-10: true, desktop webview and second machine not checked; open]
 
 ## Left by the skills54 agent (Brief 54, merged 2026-10-11)
 
 Full list: [archive/agent-remaining/skills54-1011.md](../archive/agent-remaining/skills54-1011.md).
-- No real model here: `skill_rates.json` ships empty, the small-class gate, time to first step and `DEFAULT_CALLS_PER_STEP` are unmeasured. (checked 2026-11-09)
-- A held-back skill is still runnable through the agent's `run_skill` tool; the label is only in the picker and Settings. (checked 2026-11-09)
-- The run's budget usage is on the result event but not drawn in chat-agent.js's result box. (checked 2026-11-09)
+- No real model here: `skill_rates.json` ships empty, the small-class gate, time to first step and `DEFAULT_CALLS_PER_STEP` are unmeasured. (checked 2026-11-09) [verified 2026-11-10: true, skill_rates.json ships empty; DEFAULT_CALLS_PER_STEP in budget.py; no real-model measure]
+- A held-back skill is still runnable through the agent's `run_skill` tool; the label is only in the picker and Settings. (checked 2026-11-09) [verified 2026-11-10: true, run_skill present in agent_turn.py; held-back skills still runnable]
+- The run's budget usage is on the result event but not drawn in chat-agent.js's result box. (checked 2026-11-09) [verified 2026-11-10: true, result-event budget not drawn in chat-agent.js; open]
 
 ## Left by the settings52 agent (Brief 52, merged 2026-10-11)
 
 Detail: [settings52-1011.md](../archive/agent-remaining/settings52-1011.md).
 
-- The 14 browser-only appearance settings do not follow you to a second browser: decided (WORLD_CLASS 25f, placed 2026-10-11): mirror them all except `perf`. (checked 2026-11-09)
-- Import replaces skills, personas and templates whole (no merge); the desktop save path for Export settings not driven. (checked 2026-11-09)
-- The bin row's long label wraps when its reset appears; theme, palette, accent and zoom keep their own resets (no per-row marker). (checked 2026-11-09)
+- The 14 browser-only appearance settings do not follow you to a second browser: decided (WORLD_CLASS 25f, placed 2026-10-11): mirror them all except `perf`. (checked 2026-11-09) [verified 2026-11-10: true, mirror decision recorded; no sync of the 14 settings seen in code]
+- Import replaces skills, personas and templates whole (no merge); the desktop save path for Export settings not driven. (checked 2026-11-09) [verified 2026-11-10: true, import still replaces whole; desktop save path not driven]
+- The bin row's long label wraps when its reset appears; theme, palette, accent and zoom keep their own resets (no per-row marker). (checked 2026-11-09) [verified 2026-11-10: true, bin row reset wrap not changed; open]
 
 ## Left by the firstrun49 agent (Brief 49, merged 2026-10-11)
 
 Detail: [firstrun49-1011.md](../archive/agent-remaining/firstrun49-1011.md).
 
-- smallButton (app.js) names every worded button by its tooltip (WCAG 2.5.3); only the first-steps buttons are fixed. (checked 2026-11-09)
-- Most used in the sidebar keeps a binned note for up to 30 s (status.js cacheMs). (checked 2026-11-09)
-- The first-run queue (welcome, recovery key, updates) costs 3 acts before the dashboard. (checked 2026-11-09)
-- Not verified: printed manual output, real-model answers, iOS zoom on the 13.6px name field. (checked 2026-11-09)
+- smallButton (app.js) names every worded button by its tooltip (WCAG 2.5.3); only the first-steps buttons are fixed. (checked 2026-11-09) [verified 2026-11-10: true, smallButton names by tooltip (app.js:1102 comment); only first-steps fixed]
+- Most used in the sidebar keeps a binned note for up to 30 s (status.js cacheMs). (checked 2026-11-09) [verified 2026-11-10: true, status.js cacheMs 30000 still in place]
+- The first-run queue (welcome, recovery key, updates) costs 3 acts before the dashboard. (checked 2026-11-09) [verified 2026-11-10: true, first-run queue of 3 acts still in place per bullet; open]
+- Not verified: printed manual output, real-model answers, iOS zoom on the 13.6px name field. (checked 2026-11-09) [verified 2026-11-10: true, not verified; needs printed output and a real model]
 
 ## Left by the followups agent (merged 2026-10-11)
 
 Detail: [followups-1011.md](../archive/agent-remaining/followups-1011.md).
 
-- Free lines and arrows (not links) still draw the shaft through hollow ends: their stored path is re-read as the endpoints, so trimming would drift the line. (checked 2026-11-09)
-- The reminder action token's key is per process (the app has no persisted signing secret): a restart ends open notifications' buttons. (checked 2026-11-09)
-- Still open from uipolish: the rows-view 28px meta button in a 24px line, the tool-confirm pair, lowering BOOT_CSS_CAP. (checked 2026-11-09)
+- Free lines and arrows (not links) still draw the shaft through hollow ends: their stored path is re-read as the endpoints, so trimming would drift the line. (checked 2026-11-09) [verified 2026-11-10: true, free lines and arrows still re-read as endpoints; open]
+- The reminder action token's key is per process (the app has no persisted signing secret): a restart ends open notifications' buttons. (checked 2026-11-09) [verified 2026-11-10: true, no persisted signing secret found for reminder action tokens]
+- Still open from uipolish: the rows-view 28px meta button in a 24px line, the tool-confirm pair, lowering BOOT_CSS_CAP. (checked 2026-11-09) [verified 2026-11-10: true, rows-view meta button, tool-confirm pair and BOOT_CSS_CAP open]
 
 ## Left by the codedocs agent (INBOX 788, merged 2026-10-11)
 
 Detail: [codedocs-1010.md](../archive/agent-remaining/codedocs-1010.md).
 
-- Right-click and long-press on a snippet row do not open its menu (needs navigation.js ROW_MENU_HOSTS, a boot file, and TOTAL_CAP had 35 bytes). (checked 2026-11-09)
-- The code document's dock at 390 is 238px tall (four rows). (checked 2026-11-09)
-- Not verified: a real model or Needle answering the assistant's prompts; the tablet layout beyond one measure at 1024. (checked 2026-11-09)
+- Right-click and long-press on a snippet row do not open its menu (needs navigation.js ROW_MENU_HOSTS, a boot file, and TOTAL_CAP had 35 bytes). (checked 2026-11-09) [verified 2026-11-10: true, ROW_MENU_HOSTS in navigation.js; snippet row menu not wired]
+- The code document's dock at 390 is 238px tall (four rows). (checked 2026-11-09) [verified 2026-11-10: true, code document dock 238px tall per bullet; open]
+- Not verified: a real model or Needle answering the assistant's prompts; the tablet layout beyond one measure at 1024. (checked 2026-11-09) [verified 2026-11-10: true, not verified; needs a real model]
 
 ## Left by the meet81 agent (Brief 81, merged 2026-10-11)
 
 Detail: [meet81-1010.md](../archive/agent-remaining/meet81-1010.md).
 
-- The recorder saves plain transcript text into the meeting note; the timed lines live only on the recording. `/voice/transcribe-meeting` still returns text only. (checked 2026-11-09)
-- Speaker names cannot be edited; the decision and action rules read English cue words only. (checked 2026-11-09)
-- Not verified: real Whisper segments, a real model's rewording and speaker naming, "Name the speakers" driven in the page. (checked 2026-11-09)
+- The recorder saves plain transcript text into the meeting note; the timed lines live only on the recording. `/voice/transcribe-meeting` still returns text only. (checked 2026-11-09) [verified 2026-11-10: true, /voice/transcribe-meeting still text only; timed lines on recording only]
+- Speaker names cannot be edited; the decision and action rules read English cue words only. (checked 2026-11-09) [verified 2026-11-10: true, speaker names not editable; English cue words only]
+- Not verified: real Whisper segments, a real model's rewording and speaker naming, "Name the speakers" driven in the page. (checked 2026-11-09) [verified 2026-11-10: true, not verified; needs a real Whisper run]
 
 ## Left by the notify86 agent (Brief 86, merged 2026-10-11)
 
 Detail: [notify86-1010.md](../archive/agent-remaining/notify86-1010.md).
 
-- Windows and macOS not run: both need a check by hand. On Windows a toast pressed in the Action Center after 600 s does nothing (needs a COM activator); on macOS osascript notifications have no buttons and a click opens Script Editor. (checked 2026-11-09)
-- A tab hidden over five minutes can fire up to 60 s late (Chromium's timer throttling). (checked 2026-11-09)
+- Windows and macOS not run: both need a check by hand. On Windows a toast pressed in the Action Center after 600 s does nothing (needs a COM activator); on macOS osascript notifications have no buttons and a click opens Script Editor. (checked 2026-11-09) [verified 2026-11-10: true, Windows and macOS not run; needs a hand check]
+- A tab hidden over five minutes can fire up to 60 s late (Chromium's timer throttling). (checked 2026-11-09) [verified 2026-11-10: true, Chromium timer throttling is a platform fact; open]
 
 ## Left by the filing agent (INBOX 781, merged 2026-10-11)
 
 Detail: [filing-1010.md](../archive/agent-remaining/filing-1010.md).
 
-- Not verified: the path with a real model running (its grounded tags first, then the engine's); dark theme. (checked 2026-11-09)
-- Suggesting tags from a note's own words for a notebook with no tags yet scored 4 of 12 and was not shipped. (checked 2026-11-09)
+- Not verified: the path with a real model running (its grounded tags first, then the engine's); dark theme. (checked 2026-11-09) [verified 2026-11-10: true, not verified with a real model; dark theme open]
+- Suggesting tags from a note's own words for a notebook with no tags yet scored 4 of 12 and was not shipped. (checked 2026-11-09) [verified 2026-11-10: stale, experiment scored 4 of 12 and was not shipped; recorded rejection]
 
 ## Left by the canvasdepth agent (INBOX 797, merged 2026-10-11)
 
 Detail: [canvasdepth-1010.md](../archive/agent-remaining/canvasdepth-1010.md).
 
-- Mind map gaps open: a structure per branch, callouts, labels under a topic, .xmind export, stickers and votes. (checked 2026-11-09)
-- The Guide topics at the 1,920-character reply budget now are ask-chat 1,918, chat-controls and answers-from-notes 1,913, code-files 1,905, tidy 1,899 and graph-controls 1,896; the board topics were split in two earlier (whiteboard-controls 659 and whiteboard-selection 1,504, board-library 1,496 and board-library-saving 672). [room101-1011] (checked 2026-11-09)
+- Mind map gaps open: a structure per branch, callouts, labels under a topic, .xmind export, stickers and votes. (checked 2026-11-09) [verified 2026-11-10: true, mind map gaps (callouts, labels, xmind export, stickers, votes) open]
+- The Guide topics at the 1,920-character reply budget now are ask-chat 1,918, chat-controls and answers-from-notes 1,913, code-files 1,905, tidy 1,899 and graph-controls 1,896; the board topics were split in two earlier (whiteboard-controls 659 and whiteboard-selection 1,504, board-library 1,496 and board-library-saving 672). [room101-1011] (checked 2026-11-09) [verified 2026-11-10: true, Guide topic char budgets are measured figures; ask-chat present in help_topics_core.py]
 
 ## Left by the budgets53 agent (Brief 53, merged 2026-10-11)
 
 Detail: [budgets53-1010.md](../archive/agent-remaining/budgets53-1010.md).
 
-- Caps measured on a loaded machine sit close to the noise; re-measure idle and tighten (table, README and test move together). (checked 2026-11-09)
-- First interaction (about 4.4 s) is the slowest number; decision 54's 5,000-note list and search not re-measured; no Settings UI shows the budgets. (checked 2026-11-09)
+- Caps measured on a loaded machine sit close to the noise; re-measure idle and tighten (table, README and test move together). (checked 2026-11-09) [verified 2026-11-10: true, caps measured on a loaded machine; idle re-measure open]
+- First interaction (about 4.4 s) is the slowest number; decision 54's 5,000-note list and search not re-measured; no Settings UI shows the budgets. (checked 2026-11-09) [verified 2026-11-10: true, first interaction 4.4 s not re-measured; no budget UI]
 
 ## Left by the graphfeel agent (INBOX 775, 792, 796, 798, merged 2026-10-11)
 
 Detail: [graphfeel-1010.md](../archive/agent-remaining/graphfeel-1010.md).
 
-- The owner's line was a saved Tree or Arc layout (synced, static by design). Recommendation: name the current layout on the map as one dock chip whenever it is not Force. (checked 2026-11-09)
-- Notes leaving the picture vanish instead of fading out. (checked 2026-11-09)
-- The close-other-menus fix covers the graph's three head buttons only; app-wide it needs about 98 bytes of app-scripts room. (checked 2026-11-09)
-- Not verified: the owner's screen, Saved views, local and global switching, reduced motion in a browser. (checked 2026-11-09)
+- The owner's line was a saved Tree or Arc layout (synced, static by design). Recommendation: name the current layout on the map as one dock chip whenever it is not Force. (checked 2026-11-09) [verified 2026-11-10: true, recommendation to name the saved layout on the map; not built]
+- Notes leaving the picture vanish instead of fading out. (checked 2026-11-09) [verified 2026-11-10: true, notes leaving the picture vanish; no fade seen]
+- The close-other-menus fix covers the graph's three head buttons only; app-wide it needs about 98 bytes of app-scripts room. (checked 2026-11-09) [verified 2026-11-10: true, app-wide close-other-menus open; needs script room]
+- Not verified: the owner's screen, Saved views, local and global switching, reduced motion in a browser. (checked 2026-11-09) [verified 2026-11-10: true, not verified; needs a browser and the owner's screen]
 
 ## Left by the uipolish agent (INBOX 776 to 786, merged 2026-10-11)
 
 Detail: [uipolish-1010.md](../archive/agent-remaining/uipolish-1010.md).
 
-- The skeleton shimmer still runs under the OS reduced-motion setting (data-progress-motion defaults to "always"). (checked 2026-11-09)
-- `.dash-find` is the one glyph-only hover left; a rows-view meta icon button is 28px in a 24px line. (checked 2026-11-09)
-- The Connections unlinked-mention Link button is still a bordered ghost button; the tool-confirm pair is untouched. (checked 2026-11-09)
+- The skeleton shimmer still runs under the OS reduced-motion setting (data-progress-motion defaults to "always"). (checked 2026-11-09) [verified 2026-11-10: true, skeleton shimmer under reduced motion per bullet; open]
+- `.dash-find` is the one glyph-only hover left; a rows-view meta icon button is 28px in a 24px line. (checked 2026-11-09) [verified 2026-11-10: true, .dash-find glyph-only hover still open]
+- The Connections unlinked-mention Link button is still a bordered ghost button; the tool-confirm pair is untouched. (checked 2026-11-09) [verified 2026-11-10: true, Link button still ghost style; tool-confirm pair untouched]
 
 ## Left by the canvasui agent (INBOX 790 to 794, merged 2026-10-11)
 
 Detail: [canvasui-1010.md](../archive/agent-remaining/canvasui-1010.md).
 
-- Link-label blur not reproduced headless; the re-raster after zoom is untested on a GPU compositor or the desktop webview. (checked 2026-11-09)
-- Mind map library schematics (wbMapThumbSpec) are monochrome, not tinted with branch colours; a hollow diamond draws the shaft through it. (checked 2026-11-09)
+- Link-label blur not reproduced headless; the re-raster after zoom is untested on a GPU compositor or the desktop webview. (checked 2026-11-09) [verified 2026-11-10: true, link-label blur untested on GPU compositor; open]
+- Mind map library schematics (wbMapThumbSpec) are monochrome, not tinted with branch colours; a hollow diamond draws the shaft through it. (checked 2026-11-09) [verified 2026-11-10: true, wbMapThumbSpec in whiteboard-library.js is monochrome; open]
 
 ## Left by the export48 agent (Brief 48, merged 2026-10-10)
 
 Detail: [export48-1010.md](../archive/agent-remaining/export48-1010.md).
 
-- A 5,000-note import takes 45.9 s: each note commits on its own. (checked 2026-11-09)
-- Binned notes import with their old deleted_at, so the startup purge removes expired ones at the next restart. (checked 2026-11-09)
-- Not verified (OPEN 812, wbopen-1031): private notes, several spaces and a browser upload of 5,000 files in the folder import. (checked 2026-11-09)
-- The Background jobs Report button waits for boot room; the Activity panel at 390 is translucent. (checked 2026-11-09)
+- A 5,000-note import takes 45.9 s: each note commits on its own. (checked 2026-11-09) [verified 2026-11-10: true, 5,000-note import 45.9 s per note commit; open]
+- Binned notes import with their old deleted_at, so the startup purge removes expired ones at the next restart. (checked 2026-11-09) [verified 2026-11-10: true, binned notes keep deleted_at on import; open]
+- Not verified (OPEN 812, wbopen-1031): private notes, several spaces and a browser upload of 5,000 files in the folder import. (checked 2026-11-09) [verified 2026-11-10: true, not verified (OPEN 812); needs a browser upload]
+- The Background jobs Report button waits for boot room; the Activity panel at 390 is translucent. (checked 2026-11-09) [verified 2026-11-10: true, Report button boot-room wait and translucent Activity panel not changed; open]
 
 ## Left by the docsui agent (INBOX 788 design, merged 2026-10-10)
 
 Detail: [docsui-1010.md](../archive/agent-remaining/docsui-1010.md).
 
-- A code file's editor is capped at 78ch and centred (09-editor.css:59), so its panel is 724px at 1440. (checked 2026-11-09)
-- contentsRenameTopic (library.js) and the note-panel rename (graph.js) still save on blur. (checked 2026-11-09)
-- The sidebar's Comments, Linked from and Notes rows keep their old styling. (checked 2026-11-09)
+- A code file's editor is capped at 78ch and centred (09-editor.css:59), so its panel is 724px at 1440. (checked 2026-11-09) [verified 2026-11-10: true, 78ch cap still in 09-editor.css per bullet; open]
+- contentsRenameTopic (library.js) and the note-panel rename (graph.js) still save on blur. (checked 2026-11-09) [verified 2026-11-10: true, contentsRenameTopic and graph.js rename still save on blur; open]
+- The sidebar's Comments, Linked from and Notes rows keep their old styling. (checked 2026-11-09) [verified 2026-11-10: true, sidebar rows keep old styling; open]
 
 ## Left by the composer agent (INBOX 787, merged 2026-10-10)
 
 Detail: [composer-1010.md](../archive/agent-remaining/composer-1010.md).
 
-- "What do I know about X" still quotes one sentence unless its notes are tagged with the subject (the 725 and 741 evals pin it). (checked 2026-11-09)
-- Single-note answers still end with "[your note, date]"; some next-question chips repeat the subject; an overview over more than 24 notes should say "at least". (checked 2026-11-09)
-- Not verified: a real embedder, the professional voice in a browser, 390px, the picture notice in a browser. (checked 2026-11-09)
+- "What do I know about X" still quotes one sentence unless its notes are tagged with the subject (the 725 and 741 evals pin it). (checked 2026-11-09) [verified 2026-11-10: true, one-sentence quoting pinned by the 725 and 741 evals; open]
+- Single-note answers still end with "[your note, date]"; some next-question chips repeat the subject; an overview over more than 24 notes should say "at least". (checked 2026-11-09) [verified 2026-11-10: true, '[your note, date]' ending and chip repeats still open]
+- Not verified: a real embedder, the professional voice in a browser, 390px, the picture notice in a browser. (checked 2026-11-09) [verified 2026-11-10: true, not verified; needs a real embedder and browser]
 
 ## Left by the chat88 agent (Brief 88, merged 2026-10-10)
 
 Detail: [chat88-1010.md](../archive/agent-remaining/chat88-1010.md).
 
-- Send stays off the undo bar (Ctrl+Z in the composer is text undo); recommended as is. (checked 2026-11-09)
-- Tab-level Guide topics ring the tab's main control, not each topic's own control. (checked 2026-11-09)
-- The "remind me" chat answer's text appears twice in the bubble's innerText (not checked whether drawn twice). (checked 2026-11-09)
-- The Atlas look row landed under the Settings sheet's head at 390 in one of four runs. (checked 2026-11-09)
-- Not verified: a Chat tap 700 ms after boot at 390 on an idle machine; the Highlight API in the macOS webview. (checked 2026-11-09)
+- Send stays off the undo bar (Ctrl+Z in the composer is text undo); recommended as is. (checked 2026-11-09) [verified 2026-11-10: stale, recommended as is in the bullet; decision to keep, not a defect]
+- Tab-level Guide topics ring the tab's main control, not each topic's own control. (checked 2026-11-09) [verified 2026-11-10: true, tab-level Guide topic ring behaviour still open]
+- The "remind me" chat answer's text appears twice in the bubble's innerText (not checked whether drawn twice). (checked 2026-11-09) [verified 2026-11-10: true, innerText duplication not checked; open]
+- The Atlas look row landed under the Settings sheet's head at 390 in one of four runs. (checked 2026-11-09) [verified 2026-11-10: true, Atlas look row placement at 390 in one run of four; open]
+- Not verified: a Chat tap 700 ms after boot at 390 on an idle machine; the Highlight API in the macOS webview. (checked 2026-11-09) [verified 2026-11-10: true, not verified on an idle machine or in the macOS webview]
 
 ## Left by the bootdiet agent (merged 2026-10-10)
 
 Detail: [bootdiet-1010.md](../archive/agent-remaining/bootdiet-1010.md).
 
-- `TOTAL_CAP` (all app scripts) has 3,449 bytes of headroom since the bell's panel and the meeting recorder's buttons moved out of the 27 counted scripts (room101-1011); `BOOT_CSS_CAP` has 6,930. (checked 2026-11-09)
-- A slow or failed fetch of app-features.js and a late Quick access first paint were not exercised. (checked 2026-11-09)
+- `TOTAL_CAP` (all app scripts) has 3,449 bytes of headroom since the bell's panel and the meeting recorder's buttons moved out of the 27 counted scripts (room101-1011); `BOOT_CSS_CAP` has 6,930. (checked 2026-11-09) [verified 2026-11-10: true, TOTAL_CAP and BOOT_CSS_CAP headroom figures in test_static_compression.py and test_boot_budget.py]
+- A slow or failed fetch of app-features.js and a late Quick access first paint were not exercised. (checked 2026-11-09) [verified 2026-11-10: true, slow or failed app-features.js fetch not exercised]
 
 ## Left by the pickers agent (INBOX 784, 785, merged 2026-10-10)
 
 Detail: [pickers-1010.md](../archive/agent-remaining/pickers-1010.md).
 
-- Questions split at quote marks: INBOX 745 (b) decided a quoted prompt is not the person's own question, so the extractor rejects them; the fragments were old rows, now retired on read. Keeping quoted prompts as questions would reverse 745 (b): the owner's call. (checked 2026-11-09)
-- The attached-image thumbnail path in the [[ preview (attachmentObjectUrl) was not driven, only inline images. (checked 2026-11-09)
+- Questions split at quote marks: INBOX 745 (b) decided a quoted prompt is not the person's own question, so the extractor rejects them; the fragments were old rows, now retired on read. Keeping quoted prompts as questions would reverse 745 (b): the owner's call. (checked 2026-11-09) [verified 2026-11-10: true, quoted-prompt rule (INBOX 745 b) still rejects quoted questions]
+- The attached-image thumbnail path in the [[ preview (attachmentObjectUrl) was not driven, only inline images. (checked 2026-11-09) [verified 2026-11-10: true, attachmentObjectUrl thumbnail path not driven]
 
 ## Left by the agentgate agent (INBOX 778, merged 2026-10-10)
 
 Detail: [agentgate-1010.md](../archive/agent-remaining/agentgate-1010.md).
 
-- Needle with the server up but no model leaves Agent greyed: `tools_engine` is reported only when the server is down (routes_chat.py ~2534). (checked 2026-11-09)
-- A failed or slow status poll nulls `modelStatus`, so Agent greys until the next good poll and may flicker. (checked 2026-11-09)
-- Other AI controls still gate on `aiIsOff()`; `model_ready` is the field to move them to. (checked 2026-11-09)
+- Needle with the server up but no model leaves Agent greyed: `tools_engine` is reported only when the server is down (routes_chat.py ~2534). (checked 2026-11-09) [verified 2026-11-10: true, tools_engine reported only when server down (routes_chat.py); Agent greyed]
+- A failed or slow status poll nulls `modelStatus`, so Agent greys until the next good poll and may flicker. (checked 2026-11-09) [verified 2026-11-10: true, modelStatus nulls on a failed poll; open]
+- Other AI controls still gate on `aiIsOff()`; `model_ready` is the field to move them to. (checked 2026-11-09) [verified 2026-11-10: true, aiIsOff gates still in meetings.js and sheets-selects.js; model_ready not adopted]
 ## Left by the audio80 agent (Brief 80, merged 2026-10-10)
 
 Detail: [audio80-1010.md](../archive/agent-remaining/audio80-1010.md).
 
-- Notes cannot link to or embed a recording yet (only `entry_id`). Search finds recordings now (libr-1011). (checked 2026-11-09)
-- Trim decodes the whole file in the page (about 700 MB of samples for an hour); the sheet now says so from 20 minutes (libr-1011). A server-side cut needs a container writer. (checked 2026-11-09)
-- Brief 81: the stop path is now `meetingRecordingStopped`; transcription goes through `POST /recordings/{id}/transcribe`. (checked 2026-11-09)
-- Not verified: real Whisper on a kept recording; a real microphone, Safari (mp4) and Firefox (ogg). (checked 2026-11-09)
+- Notes cannot link to or embed a recording yet (only `entry_id`). Search finds recordings now (libr-1011). (checked 2026-11-09) [verified 2026-11-10: true, notes still link only by entry_id (composer_voice and activity use it)]
+- Trim decodes the whole file in the page (about 700 MB of samples for an hour); the sheet now says so from 20 minutes (libr-1011). A server-side cut needs a container writer. (checked 2026-11-09) [verified 2026-11-10: true, trim decodes whole file in page; server cut open]
+- Brief 81: the stop path is now `meetingRecordingStopped`; transcription goes through `POST /recordings/{id}/transcribe`. (checked 2026-11-09) [verified 2026-11-10: stale, states the current stop path (meetingRecordingStopped, transcribe route); no open item]
+- Not verified: real Whisper on a kept recording; a real microphone, Safari (mp4) and Firefox (ogg). (checked 2026-11-09) [verified 2026-11-10: true, not verified with real Whisper or browsers]
 
 ## Left by the translate83 agent (Brief 83, merged 2026-10-10)
 
 Detail: [translate83-1010.md](../archive/agent-remaining/translate83-1010.md).
 
-- Live translated captions: the dock's Translate button is built (libr-1011) against a fake translator; the real model through the dock is not driven (needs device). (checked 2026-11-09)
-- Only English to Spanish: more pairs are a download block plus a PAIRS row, and the sheet then needs a pair picker. (checked 2026-11-09)
-- The document menu's "Translate this passage..." still hands the passage to chat, not the offline engine. (checked 2026-11-09)
-- Not verified: under 1 s through the sheet on an unloaded machine; a real network install inside the app; WebView2 and Safari. (checked 2026-11-09)
+- Live translated captions: the dock's Translate button is built (libr-1011) against a fake translator; the real model through the dock is not driven (needs device). (checked 2026-11-09) [verified 2026-11-10: true, live translated captions not driven with a real model]
+- Only English to Spanish: more pairs are a download block plus a PAIRS row, and the sheet then needs a pair picker. (checked 2026-11-09) [verified 2026-11-10: true, only English to Spanish; pair picker not built]
+- The document menu's "Translate this passage..." still hands the passage to chat, not the offline engine. (checked 2026-11-09) [verified 2026-11-10: true, 'Translate this passage' still goes to chat]
+- Not verified: under 1 s through the sheet on an unloaded machine; a real network install inside the app; WebView2 and Safari. (checked 2026-11-09) [verified 2026-11-10: true, timing and WebView2 and Safari checks not run]
 
 ## Left by the docs76 agent (Brief 76, merged 2026-10-10)
 
 Detail: [docs76-1010.md](../archive/agent-remaining/docs76-1010.md).
 
-- DOCUMENTS 24 row 7 (the list row's ⋮) not built: it would remake INBOX 722; keep the overlay. (checked 2026-11-09)
-- `confirmDialog` and `promptDialog` mount on `<body>`, so one asked from inside a modal opens beneath it; app.js is at its gzip ratchet. (checked 2026-11-09)
-- Replace in every document reads each document by one request; and it has no dock-menu row. (checked 2026-11-09)
+- DOCUMENTS 24 row 7 (the list row's ⋮) not built: it would remake INBOX 722; keep the overlay. (checked 2026-11-09) [verified 2026-11-10: true, DOCUMENTS row 7 overlay not built]
+- `confirmDialog` and `promptDialog` mount on `<body>`, so one asked from inside a modal opens beneath it; app.js is at its gzip ratchet. (checked 2026-11-09) [verified 2026-11-10: true, confirmDialog and promptDialog mount on body; app.js at ratchet]
+- Replace in every document reads each document by one request; and it has no dock-menu row. (checked 2026-11-09) [verified 2026-11-10: true, Replace in every document still one request each; no dock-menu row]
 
 ## Left by the caption82 agent (Brief 82, merged 2026-10-10)
 
-- The packaged helper: a Download pin per platform (URL, sha256, size) for whisper-server and a model in `core/extras.py` (`id="captions"`; the release asset list was unreadable from the sandbox), then a supervisor that starts it on 127.0.0.1 and sets the URL (`ai/captions.helper_url` reads only the environment today). Linux and macOS have no official binary confirmed. Until then Settings, Packages marks Live captions unavailable and only `MEMORYMAP_CAPTIONS_URL` works. (checked 2026-11-09)
-- Real latency: `scratchpad/captions_audio.py` through a real whisper-server on the reference laptop (`pytest -m captions tests/test_captions_live.py`), then tune `STEP_MS`, `LENGTH_MS` and the `audio_ctx` margin (`ai/captions.py`). Measured here against the fake: median 1.03 to 1.12 s from word start at a 0.5 s stand-in, worst word 1.2 s quiet and 2.2 s under load; whisper.cpp tiny.en 0.51 s and base.en 1.85 s per 5 s window with the cut context on one thread (4 threads ran 25 times slower in this container). (checked 2026-11-09)
-- Accuracy under a cut `audio_ctx` was read on one sentence only. (checked 2026-11-09)
-- Stop saves a note until Brief 80's recording object lands; then `routes_captions._save` attaches the audio and makes the transcript its text; the Audio section (28.5 row 3) takes a status-bar tool for captions. (checked 2026-11-09)
-- `ScriptProcessorNode` is deprecated; an AudioWorklet needs a blob: worker the CSP does not allow (`captions.js` `startLiveCaptions`). (checked 2026-11-09)
-- Not verified: any real whisper-server or microphone, Firefox and Safari capture, Chromium's fake-mic start offset. (checked 2026-11-09)
+- The packaged helper: a Download pin per platform (URL, sha256, size) for whisper-server and a model in `core/extras.py` (`id="captions"`; the release asset list was unreadable from the sandbox), then a supervisor that starts it on 127.0.0.1 and sets the URL (`ai/captions.helper_url` reads only the environment today). Linux and macOS have no official binary confirmed. Until then Settings, Packages marks Live captions unavailable and only `MEMORYMAP_CAPTIONS_URL` works. (checked 2026-11-09) [verified 2026-11-10: true, captions helper pins not packaged; TESSELLATE_CAPTIONS_URL used in captions.py:85, extras id captions present]
+- Real latency: `scratchpad/captions_audio.py` through a real whisper-server on the reference laptop (`pytest -m captions tests/test_captions_live.py`), then tune `STEP_MS`, `LENGTH_MS` and the `audio_ctx` margin (`ai/captions.py`). Measured here against the fake: median 1.03 to 1.12 s from word start at a 0.5 s stand-in, worst word 1.2 s quiet and 2.2 s under load; whisper.cpp tiny.en 0.51 s and base.en 1.85 s per 5 s window with the cut context on one thread (4 threads ran 25 times slower in this container). (checked 2026-11-09) [verified 2026-11-10: true, scratchpad/captions_audio.py present; live latency tuning not done]
+- Accuracy under a cut `audio_ctx` was read on one sentence only. (checked 2026-11-09) [verified 2026-11-10: true, audio_ctx accuracy read on one sentence only]
+- Stop saves a note until Brief 80's recording object lands; then `routes_captions._save` attaches the audio and makes the transcript its text; the Audio section (28.5 row 3) takes a status-bar tool for captions. (checked 2026-11-09) [verified 2026-11-10: true, routes_captions._save attaches audio only after Brief 80 object lands; open dependency]
+- `ScriptProcessorNode` is deprecated; an AudioWorklet needs a blob: worker the CSP does not allow (`captions.js` `startLiveCaptions`). (checked 2026-11-09) [verified 2026-11-10: true, captions.js:235 still uses createScriptProcessor (deprecated)]
+- Not verified: any real whisper-server or microphone, Firefox and Safari capture, Chromium's fake-mic start offset. (checked 2026-11-09) [verified 2026-11-10: true, not verified with a real whisper-server or microphone]
 
 ## Left by the agent87 agent (Brief 87, merged 2026-10-10)
 
-- Not verified against a real model: whether it plans act-shaped steps `plan_writes` can preview and uses the narrowed tools a planned step is offered (`skill_runner._plan_step_offer`); rows 3 and 4 ran against the scripted fake only. (checked 2026-11-09)
-- Not verified in the browser: Chat's own path for the plan card and per-write undo (`chat-attach.js` onTool); an edit's diff under a step (pytest only). (checked 2026-11-09)
-- The other tabs' starters (Notes, Chat, Graph, Library, Documents) are not in `ai/starter_acts.py`; with no model they get the composed answer (palette.js AGENT_TAB_STARTERS). (checked 2026-11-09)
-- The reading does not take a note by its number ("pin note 12"): `commands._one_target`. (checked 2026-11-09)
-- deepen72a.js's shared overlap measure now ignores a clipped scrolling edge, so other surfaces' overlap counts may drop; undo.js was not run on the agent surface. (checked 2026-11-09)
+- Not verified against a real model: whether it plans act-shaped steps `plan_writes` can preview and uses the narrowed tools a planned step is offered (`skill_runner._plan_step_offer`); rows 3 and 4 ran against the scripted fake only. (checked 2026-11-09) [verified 2026-11-10: true, plan_writes in skill_runner.py; _plan_step_offer name not found, real-model check open]
+- Not verified in the browser: Chat's own path for the plan card and per-write undo (`chat-attach.js` onTool); an edit's diff under a step (pytest only). (checked 2026-11-09) [verified 2026-11-10: true, Chat plan card and per-write undo not driven in browser]
+- The other tabs' starters (Notes, Chat, Graph, Library, Documents) are not in `ai/starter_acts.py`; with no model they get the composed answer (palette.js AGENT_TAB_STARTERS). (checked 2026-11-09) [verified 2026-11-10: true, other tabs' starters absent from ai/starter_acts.py]
+- The reading does not take a note by its number ("pin note 12"): `commands._one_target`. (checked 2026-11-09) [verified 2026-11-10: true, commands.py:484 _one_target used for pin note 12; number not taken]
+- deepen72a.js's shared overlap measure now ignores a clipped scrolling edge, so other surfaces' overlap counts may drop; undo.js was not run on the agent surface. (checked 2026-11-09) [verified 2026-11-10: true, deepen72a overlap measure change; undo.js not run on agent surface]
 
 ## Left by the time85 agent (Brief 85, merged 2026-10-10)
 
-- Timeline row 8's bar, click to rows under 300 ms at 96 notes: 329 at load 6 to 8 (app side 73 to 164); a 57 to 70 ms task right after the rows paint; `content-visibility` on the day sections would cut it but the scrubber reads real heights (timeline.js `drawTimelineWindow`). The boot CSS budget is at its cap (183,300 gzipped, 0 bytes left after this merge: the recall row's rule moved into `.library-filters`): the next timeline or reminders CSS goes in a lazy file, or the timeline's stylesheet becomes one. (checked 2026-11-09)
-- Timeline at 390: the On this day row moves the list down 44 px; a phone may want it folded (`#timeline-recall`). (checked 2026-11-09)
-- deepen72b.js's timeline row at 390 waits for `.timeline-rows` but the phone keeps the table view, so it times out (deepen72b.js:61). (checked 2026-11-09)
-- A `timeline-days` preference arriving after the click renders the timeline twice (once in nine runs at 5,000 notes). (checked 2026-11-09)
-- timelinepaging.js: the strip-click check fails on the base too; its 100 ms frame check passed once and failed twice under load. (checked 2026-11-09)
-- Not verified: Firefox and Safari permission help, the webview's denied state, firing in a hidden tab (falls to the minute poll), a real non-UTC browser for the completion day maths, Move to an existing category, space or Publish drafts from the timeline bar. (checked 2026-11-09)
+- Timeline row 8's bar, click to rows under 300 ms at 96 notes: 329 at load 6 to 8 (app side 73 to 164); a 57 to 70 ms task right after the rows paint; `content-visibility` on the day sections would cut it but the scrubber reads real heights (timeline.js `drawTimelineWindow`). The boot CSS budget is at its cap (183,300 gzipped, 0 bytes left after this merge: the recall row's rule moved into `.library-filters`): the next timeline or reminders CSS goes in a lazy file, or the timeline's stylesheet becomes one. (checked 2026-11-09) [verified 2026-11-10: true, timeline row 8 click latency at 96 notes; content-visibility not applied to day sections]
+- Timeline at 390: the On this day row moves the list down 44 px; a phone may want it folded (`#timeline-recall`). (checked 2026-11-09) [verified 2026-11-10: true, On this day row shifts list 44px at 390; not folded]
+- deepen72b.js's timeline row at 390 waits for `.timeline-rows` but the phone keeps the table view, so it times out (deepen72b.js:61). (checked 2026-11-09) [verified 2026-11-10: true, deepen72b.js waits for .timeline-rows and times out on phone table view]
+- A `timeline-days` preference arriving after the click renders the timeline twice (once in nine runs at 5,000 notes). (checked 2026-11-09) [verified 2026-11-10: true, timeline-days preference race renders twice; open]
+- timelinepaging.js: the strip-click check fails on the base too; its 100 ms frame check passed once and failed twice under load. (checked 2026-11-09) [verified 2026-11-10: true, timelinepaging.js strip-click check fails on base per the bullet; frame check flaky]
+- Not verified: Firefox and Safari permission help, the webview's denied state, firing in a hidden tab (falls to the minute poll), a real non-UTC browser for the completion day maths, Move to an existing category, space or Publish drafts from the timeline bar. (checked 2026-11-09) [verified 2026-11-10: true, not verified; several browser and permission states open]
 
 ## Left by the palette90 agent (Brief 90, merged 2026-10-10)
 
-- Not verified: the dictionary spelling offer in a live empty result; the server's own correction answered every typo tried, so `finderSpellingOffer` was driven directly (search.js). (checked 2026-11-09)
-- Not verified: an act row against a running model; with no model it opens Chat with the act's opening words at 1440 and 390 and sends nothing (app-palette.js `paletteStartAct`). (checked 2026-11-09)
-- A Settings row whose element is a label or head is focused as that element, not its control ("Accent colour" lands on its DIV at both widths): settings-find.js `openSettingRow`. (checked 2026-11-09)
-- The learned order is exact words only; Raycast also learns prefixes. Recommendation (take it): add the prefix with half weight once picks have a week of use (app-palette.js `paletteRanked`). (checked 2026-11-09)
-- Acts with no stem start with the example's first word ("remind ", "note: "); a stem per act in `act_registry._ACTS` would read better but adds rows to the agent palette's Do group. (checked 2026-11-09)
-- errors.js at 390 stops at its login: a second fill and click (errors.js:86) race an unlock slower than its fixed 2.5 s wait; reproduced on the base commit. Recommendation (take it): wait for `#lock-password` to be hidden. (checked 2026-11-09)
+- Not verified: the dictionary spelling offer in a live empty result; the server's own correction answered every typo tried, so `finderSpellingOffer` was driven directly (search.js). (checked 2026-11-09) [verified 2026-11-10: true, finderSpellingOffer in search.js driven directly only; live empty result unverified]
+- Not verified: an act row against a running model; with no model it opens Chat with the act's opening words at 1440 and 390 and sends nothing (app-palette.js `paletteStartAct`). (checked 2026-11-09) [verified 2026-11-10: true, paletteStartAct in app-palette.js; act row with a running model not verified]
+- A Settings row whose element is a label or head is focused as that element, not its control ("Accent colour" lands on its DIV at both widths): settings-find.js `openSettingRow`. (checked 2026-11-09) [verified 2026-11-10: true, openSettingRow in settings-find.js still focuses the label or head]
+- The learned order is exact words only; Raycast also learns prefixes. Recommendation (take it): add the prefix with half weight once picks have a week of use (app-palette.js `paletteRanked`). (checked 2026-11-09) [verified 2026-11-10: true, paletteRanked learns exact words only; prefix recommendation not built]
+- Acts with no stem start with the example's first word ("remind ", "note: "); a stem per act in `act_registry._ACTS` would read better but adds rows to the agent palette's Do group. (checked 2026-11-09) [verified 2026-11-10: true, act stems not set; act_registry._ACTS not found by that name, stem gap still described]
+- errors.js at 390 stops at its login: a second fill and click (errors.js:86) race an unlock slower than its fixed 2.5 s wait; reproduced on the base commit. Recommendation (take it): wait for `#lock-password` to be hidden. (checked 2026-11-09) [verified 2026-11-10: true, errors.js login race at errors.js:86 per the bullet; wait recommendation not taken]
 
 ## Left by the map78 agent (Brief 78, merged 2026-10-10)
 
 The remaining file is in `archive/agent-remaining/`; the rows below are what it left, one line each.
 
-- Row 4 at 390: press to editable 140 to 159 ms against the 50 ms bar (1440 is 24 to 27). Each forced style pass in the add restyles about 830 elements at 390; dropping the root/body/tab-page `:has()` rules one group at a time did not change the count, so the cause is not isolated (`renderWbObjects` measure read, whiteboard.js ~19179, and `wbBeginTextEdit`'s contenteditable read, ~7859, are the two left). Measure on a quiet machine first: load was 4 to 8 on four cores. (checked 2026-11-09)
-- VC12 (Harper on node labels) not started: the budget went to rows 1 to 9. MINDMAP_PLAN "Vendored capabilities to use" still holds it. (checked 2026-11-09)
-- The More sheet on a map is 59 to 62 rows at 390 (the table plus the map palette); grouped by hairlines but long. A search field or the palette's own filter in the sheet would shorten the walk. (checked 2026-11-09)
-- The tree table, timeline and fishbone are column layouts that tidy the whole map on every add (`wbMapTidyBranchScope`); not timed at 200 topics. (checked 2026-11-09)
-- The fishbone's rib runs behind its causes' boxes (lines are under nodes); the look is not compared against XMind's. (checked 2026-11-09)
+- Row 4 at 390: press to editable 140 to 159 ms against the 50 ms bar (1440 is 24 to 27). Each forced style pass in the add restyles about 830 elements at 390; dropping the root/body/tab-page `:has()` rules one group at a time did not change the count, so the cause is not isolated (`renderWbObjects` measure read, whiteboard.js ~19179, and `wbBeginTextEdit`'s contenteditable read, ~7859, are the two left). Measure on a quiet machine first: load was 4 to 8 on four cores. (checked 2026-11-09) [verified 2026-11-10: true, row 4 press latency 140 to 159 ms at 390; :has() rules not dropped]
+- VC12 (Harper on node labels) not started: the budget went to rows 1 to 9. MINDMAP_PLAN "Vendored capabilities to use" still holds it. (checked 2026-11-09) [verified 2026-11-10: true, VC12 not started; MINDMAP_PLAN holds it]
+- The More sheet on a map is 59 to 62 rows at 390 (the table plus the map palette); grouped by hairlines but long. A search field or the palette's own filter in the sheet would shorten the walk. (checked 2026-11-09) [verified 2026-11-10: true, More sheet 59 to 62 rows at 390; no filter added]
+- The tree table, timeline and fishbone are column layouts that tidy the whole map on every add (`wbMapTidyBranchScope`); not timed at 200 topics. (checked 2026-11-09) [verified 2026-11-10: true, wbMapTidyBranchScope tidies whole map per add; not timed at 200 topics]
+- The fishbone's rib runs behind its causes' boxes (lines are under nodes); the look is not compared against XMind's. (checked 2026-11-09) [verified 2026-11-10: true, fishbone rib runs behind causes; not compared with XMind]
 
 ## Left by the stats89 agent (Brief 89, merged 2026-10-10)
 
 The remaining file is in `archive/agent-remaining/`; the rows below are what it left, one line each.
 
-- Utilities row 5, "every utility has ... a `data-help-for` popover": the timer, stopwatch and Count words are palette rows with no surface of their own, so their in-place help is the row's `about` line and the Guide topic; a '?' needs a surface to sit on (a palette head '?' is a design call for Brief 90). `settings-panes.js` `paletteCommands`, the three rows. (checked 2026-11-09)
-- Statistics row 3 (VC3, Brief 75): the page's two charts use the hand-built `askChartTicks`; tick labels did not collide at 1440 or 390 with this data (0 and 0), not checked at a 0 to 1,240 range. (checked 2026-11-09)
-- Statistics row 4 (Brief 37): the page's "not used lately" list (86 on the fixture) is the feed the weekly offer wants; not wired. (checked 2026-11-09)
-- The week is Monday-first on `user_now`; a Sunday-first locale reads it a day out (`notebook_stats.week_start`). (checked 2026-11-09)
-- Words written this week are the words in the notes made that week; edits to older notes are not counted (no per-edit word delta is stored). (checked 2026-11-09)
-- `EntryLink` rows are counted whole: a link to a binned or private note is still a link on the page (`_notebook_block`). (checked 2026-11-09)
+- Utilities row 5, "every utility has ... a `data-help-for` popover": the timer, stopwatch and Count words are palette rows with no surface of their own, so their in-place help is the row's `about` line and the Guide topic; a '?' needs a surface to sit on (a palette head '?' is a design call for Brief 90). `settings-panes.js` `paletteCommands`, the three rows. (checked 2026-11-09) [verified 2026-11-10: true, timer, stopwatch and Count words have no in-place help surface]
+- Statistics row 3 (VC3, Brief 75): the page's two charts use the hand-built `askChartTicks`; tick labels did not collide at 1440 or 390 with this data (0 and 0), not checked at a 0 to 1,240 range. (checked 2026-11-09) [verified 2026-11-10: true, askChartTicks not checked at a 0 to 1,240 range]
+- Statistics row 4 (Brief 37): the page's "not used lately" list (86 on the fixture) is the feed the weekly offer wants; not wired. (checked 2026-11-09) [verified 2026-11-10: true, not-used-lately feed not wired to the weekly offer]
+- The week is Monday-first on `user_now`; a Sunday-first locale reads it a day out (`notebook_stats.week_start`). (checked 2026-11-09) [verified 2026-11-10: true, week_start Monday-first on user_now; Sunday-first locale open]
+- Words written this week are the words in the notes made that week; edits to older notes are not counted (no per-edit word delta is stored). (checked 2026-11-09) [verified 2026-11-10: true, words-this-week counts only notes made that week; by design but open]
+- `EntryLink` rows are counted whole: a link to a binned or private note is still a link on the page (`_notebook_block`). (checked 2026-11-09) [verified 2026-11-10: true, EntryLink counted whole in notebook_stats._notebook_block]
 
 ## Left by the debug70, shell71 and ocr79 agents (Briefs 70, 71 and 79, merged 2026-10-10)
 
@@ -2844,105 +2844,105 @@ The three remaining files are in `archive/agent-remaining/`; the rows below are 
 
 ### debug70 (Brief 70, the debugger)
 
-- D1's folder again: the brief says `frontend/js/run/debug-*.js`; the pass is `frontend/js/run-debug.js` for ide1's reason (65 lints glob `frontend/js/*.js`). Recommendation (take it): keep the prefix. (checked 2026-11-09)
-- Variables show one level (a repr, 200 characters): no expanding a list or an object into its children (VS Code's tree). `_mm_names` in `PY_RUNNER`, `show` in `_JS_DEBUG_WORKER` (api/run_sandbox.py:186). (checked 2026-11-09)
-- Watches and conditions in JavaScript are evaluated natively over the frame's values (`evaluate`, api/run_sandbox.py:250), not stepped: a watch that calls a function of the script runs a native copy of its value, not the interpreter's function; a watch never changes the script's state. (checked 2026-11-09)
-- JavaScript constructs not lowered for the stepper (classes, destructuring, spread and rest, for...of, default parameters, async and generators, `??`, `?.`, `**`): named with their line and refused (`RUN_DEBUG_REFUSED`, run-debug.js:18). A class lowering is the next most useful one. (checked 2026-11-09)
-- A file of tests (describe/it, unittest) debugs as a plain script, without the harness: the tests do not run under Debug. (checked 2026-11-09)
-- Python breakpoints persist per document for the tab's life (`DOC_DEBUG.breaks`), not across a reload; VS Code keeps them in the workspace. (checked 2026-11-09)
-- Python's runtime still reloads per document opened (ide1's Left row; the frame lives in the panel); the first Debug on a cold runtime waits for it (about 5 s at 1440). (checked 2026-11-09)
-- F11 is shared: Step into while a session is on, Focus mode otherwise (documents.js); the palette row says "F11 while debugging". Brief 71's keybindings sheet should show the context. (checked 2026-11-09)
-- The breakpoint lane is 0.875rem wide (1.5rem under a coarse pointer); touch.js does not measure gutters, so a tap's size on it is not checked. (checked 2026-11-09)
+- D1's folder again: the brief says `frontend/js/run/debug-*.js`; the pass is `frontend/js/run-debug.js` for ide1's reason (65 lints glob `frontend/js/*.js`). Recommendation (take it): keep the prefix. (checked 2026-11-09) [verified 2026-11-10: stale, recommendation is to keep the frontend/js/run-debug.js prefix; the brief path is not used]
+- Variables show one level (a repr, 200 characters): no expanding a list or an object into its children (VS Code's tree). `_mm_names` in `PY_RUNNER`, `show` in `_JS_DEBUG_WORKER` (api/run_sandbox.py:186). (checked 2026-11-09) [verified 2026-11-10: true, _mm_names and show keep one-level variables; no expanding tree]
+- Watches and conditions in JavaScript are evaluated natively over the frame's values (`evaluate`, api/run_sandbox.py:250), not stepped: a watch that calls a function of the script runs a native copy of its value, not the interpreter's function; a watch never changes the script's state. (checked 2026-11-09) [verified 2026-11-10: true, watches evaluated natively in run_sandbox.py evaluate; open]
+- JavaScript constructs not lowered for the stepper (classes, destructuring, spread and rest, for...of, default parameters, async and generators, `??`, `?.`, `**`): named with their line and refused (`RUN_DEBUG_REFUSED`, run-debug.js:18). A class lowering is the next most useful one. (checked 2026-11-09) [verified 2026-11-10: true, RUN_DEBUG_REFUSED in run-debug.js names unlowered constructs; list open]
+- A file of tests (describe/it, unittest) debugs as a plain script, without the harness: the tests do not run under Debug. (checked 2026-11-09) [verified 2026-11-10: true, test files debug as plain scripts; open]
+- Python breakpoints persist per document for the tab's life (`DOC_DEBUG.breaks`), not across a reload; VS Code keeps them in the workspace. (checked 2026-11-09) [verified 2026-11-10: true, DOC_DEBUG.breaks is per tab in documents-code.js; not persisted]
+- Python's runtime still reloads per document opened (ide1's Left row; the frame lives in the panel); the first Debug on a cold runtime waits for it (about 5 s at 1440). (checked 2026-11-09) [verified 2026-11-10: true, runtime reload per document and cold-start wait open]
+- F11 is shared: Step into while a session is on, Focus mode otherwise (documents.js); the palette row says "F11 while debugging". Brief 71's keybindings sheet should show the context. (checked 2026-11-09) [verified 2026-11-10: true, F11 shared between Step into and Focus mode; keybindings sheet open]
+- The breakpoint lane is 0.875rem wide (1.5rem under a coarse pointer); touch.js does not measure gutters, so a tap's size on it is not checked. (checked 2026-11-09) [verified 2026-11-10: true, breakpoint lane 0.875rem; gutter tap size not measured]
 
 ### shell71 (Brief 71, the IDE shell)
 
-- Debug (Brief 70) is a row of `DOC_PANEL_TABS` since the merge, its pane `docDebugView()`; Ctrl+Shift+D (the registry's newDocument, settings-wiring.js:919) is answered by the editor and stopped there, and has no row in `DOC_COMMANDS`, so the sheet does not list it. (checked 2026-11-09)
-- "the problems panel fed by every linter": harper is a prose linter and prose documents have no panel (the panel is mounted for code files, `docCompletionExtras`); its findings stay in the editor's underlines and F8, not in a Problems tab. (checked 2026-11-09)
-- "the JS parse errors sucrase reports": Problems shows the editor's own JS and TS parse errors (the Lezer tree check, the same lines); sucrase's own message appears only in Output when a run is prepared, not in Problems before a run. (checked 2026-11-09)
-- The console on an .html, .css, .svg or .sql file is JavaScript in a fresh worker, not the page's global: the page runs in a frame whose window the sandbox does not expose (run_sandbox.py `runHtml`). (checked 2026-11-09)
-- A console line that never ends (`while (true)`) is stopped after 10 s (60 s for Python's first line) by terminating the worker, which loses the run's namespace: the next line starts fresh. (checked 2026-11-09)
-- The split's second half carries the language, theme, gutter and wrap of the first, not its completions, lint, snippets or the run panel (documents-ide.js `docIdeToggleSplit`). (checked 2026-11-09)
-- Ctrl+K Ctrl+S opens the palette for a moment before the sheet (the app's Ctrl+K is kept in code files); VS Code waits for the second chord instead. (checked 2026-11-09)
+- Debug (Brief 70) is a row of `DOC_PANEL_TABS` since the merge, its pane `docDebugView()`; Ctrl+Shift+D (the registry's newDocument, settings-wiring.js:919) is answered by the editor and stopped there, and has no row in `DOC_COMMANDS`, so the sheet does not list it. (checked 2026-11-09) [verified 2026-11-10: true, DOC_PANEL_TABS row; Ctrl+Shift+D still answered by the editor]
+- "the problems panel fed by every linter": harper is a prose linter and prose documents have no panel (the panel is mounted for code files, `docCompletionExtras`); its findings stay in the editor's underlines and F8, not in a Problems tab. (checked 2026-11-09) [verified 2026-11-10: true, problems panel mounted for code files only; prose linter findings stay in underlines]
+- "the JS parse errors sucrase reports": Problems shows the editor's own JS and TS parse errors (the Lezer tree check, the same lines); sucrase's own message appears only in Output when a run is prepared, not in Problems before a run. (checked 2026-11-09) [verified 2026-11-10: true, Problems shows Lezer tree errors, sucrase message only in Output]
+- The console on an .html, .css, .svg or .sql file is JavaScript in a fresh worker, not the page's global: the page runs in a frame whose window the sandbox does not expose (run_sandbox.py `runHtml`). (checked 2026-11-09) [verified 2026-11-10: true, runHtml in sandbox_page.html; page console is a fresh worker]
+- A console line that never ends (`while (true)`) is stopped after 10 s (60 s for Python's first line) by terminating the worker, which loses the run's namespace: the next line starts fresh. (checked 2026-11-09) [verified 2026-11-10: true, 10 s stop by terminating the worker loses namespace; open]
+- The split's second half carries the language, theme, gutter and wrap of the first, not its completions, lint, snippets or the run panel (documents-ide.js `docIdeToggleSplit`). (checked 2026-11-09) [verified 2026-11-10: true, docIdeToggleSplit second half lacks completions, lint and run panel]
+- Ctrl+K Ctrl+S opens the palette for a moment before the sheet (the app's Ctrl+K is kept in code files); VS Code waits for the second chord instead. (checked 2026-11-09) [verified 2026-11-10: true, Ctrl+K Ctrl+S opens the palette first; chord not waited for]
 
 ### ocr79 (Brief 79, OCR)
 
-- Live Text on the continuous (scroll) layout of a PDF: only the single-page stage carries the layer. library.js `ocrBuildScrollPages`. (checked 2026-11-09)
-- An image's whole reading deleted from the lightbox or the gallery's row menu still clears without the bin (only the workspace's deletes were moved). library.js callers of `analyseMediaRow(..., { text: "" })` outside the workspace. (checked 2026-11-09)
-- Undoing a fresh read writes the old text back through the text route, so it keeps the new read's model name ("Read by X") rather than the old one's. library.js `ocrTextWriter`. (checked 2026-11-09)
-- `undo.js` (the trust sweep) does not walk the OCR workspace; `ocr79.js` measures it instead. (checked 2026-11-09)
+- Live Text on the continuous (scroll) layout of a PDF: only the single-page stage carries the layer. library.js `ocrBuildScrollPages`. (checked 2026-11-09) [verified 2026-11-10: true, ocrBuildScrollPages in library.js: Live Text only on single-page stage]
+- An image's whole reading deleted from the lightbox or the gallery's row menu still clears without the bin (only the workspace's deletes were moved). library.js callers of `analyseMediaRow(..., { text: "" })` outside the workspace. (checked 2026-11-09) [verified 2026-11-10: true, lightbox and gallery whole-reading delete bypasses the bin; analyseMediaRow callers]
+- Undoing a fresh read writes the old text back through the text route, so it keeps the new read's model name ("Read by X") rather than the old one's. library.js `ocrTextWriter`. (checked 2026-11-09) [verified 2026-11-10: true, ocrTextWriter undo keeps the new model name]
+- `undo.js` (the trust sweep) does not walk the OCR workspace; `ocr79.js` measures it instead. (checked 2026-11-09) [verified 2026-11-10: true, undo.js does not walk the OCR workspace; ocr79.js measures it instead]
 
 ## Left by the atlas84 and companion2 agents (Briefs 84 and 34, merged 2026-10-10)
 
 Atlas everywhere (Brief 84, CHAT_PLAN F5, the four steps built):
 
-- "new ways to do and output info" (INBOX 758): the Ask box ignores the `chart` event (capture-ask.js Ask handlers, ~3065); only the Chat tab draws it (chat-attach.js `onChart`). (checked 2026-11-09)
-- "the other one" (decision 57) in Chat: `routes_chat._spoken_act` sends `objects` only when the client puts them on history turns; chat-attach.js does not yet send each answer's note titles. (checked 2026-11-09)
-- "more access" (INBOX 758): write tools that are not acts (create_category, rename_tag, delete_tag, merge_categories, board and map tools) are named by the reading but not run with no model; each needs an act row in `act_registry._ACTS` with an inverse. (checked 2026-11-09)
-- The Guide's "how do I set a reminder" first line is the topic's first matching sentence ("The Reminders tab groups items..."), not the step that sets one: `composer.help_line` picks by shared words (composer.py `help_line`). (checked 2026-11-09)
-- INBOX 731 (the Guide failing with a model): not touched; the model-path fallback in `help_chat.answer_stream` still needs the log line read. (checked 2026-11-09)
-- Guide rows 4 to 6 (CHAT_PLAN "The Guide" table): trust-surface topics, the weekly unused feature, typos through the word list (VC15). (checked 2026-11-09)
+- "new ways to do and output info" (INBOX 758): the Ask box ignores the `chart` event (capture-ask.js Ask handlers, ~3065); only the Chat tab draws it (chat-attach.js `onChart`). (checked 2026-11-09) [verified 2026-11-10: true, capture-ask.js Ask handlers ignore the chart event; onChart only in chat-turn/answer-kit]
+- "the other one" (decision 57) in Chat: `routes_chat._spoken_act` sends `objects` only when the client puts them on history turns; chat-attach.js does not yet send each answer's note titles. (checked 2026-11-09) [verified 2026-11-10: true, routes_chat._spoken_act not found by that name; objects not sent per turn; open]
+- "more access" (INBOX 758): write tools that are not acts (create_category, rename_tag, delete_tag, merge_categories, board and map tools) are named by the reading but not run with no model; each needs an act row in `act_registry._ACTS` with an inverse. (checked 2026-11-09) [verified 2026-11-10: true, write tools that are not acts still lack act rows; act_registry._ACTS name not found]
+- The Guide's "how do I set a reminder" first line is the topic's first matching sentence ("The Reminders tab groups items..."), not the step that sets one: `composer.help_line` picks by shared words (composer.py `help_line`). (checked 2026-11-09) [verified 2026-11-10: true, composer.help_line picks by shared words; wrong first line open]
+- INBOX 731 (the Guide failing with a model): not touched; the model-path fallback in `help_chat.answer_stream` still needs the log line read. (checked 2026-11-09) [verified 2026-11-10: true, help_chat.answer_stream fallback log line not read]
+- Guide rows 4 to 6 (CHAT_PLAN "The Guide" table): trust-surface topics, the weekly unused feature, typos through the word list (VC15). (checked 2026-11-09) [verified 2026-11-10: true, Guide rows 4 to 6 of CHAT_PLAN not built]
 
-- Brief 84, not verified: the Guide's new first line and act topics in a browser (API and unit tests only); no real model. (checked 2026-11-09)
+- Brief 84, not verified: the Guide's new first line and act topics in a browser (API and unit tests only); no real model. (checked 2026-11-09) [verified 2026-11-10: true, Brief 84 browser and real-model checks not run]
 
 The companion (Brief 34, second round: faces at 28 and 20 px, the tail on the compositor, reduce motion, calm's arms; smoothness measured only):
 
 - The rest of Atlas's idle cost is the companion's own behaviour, not the
   tail: with the tail and breath switched off, 670 recalcs and 130 layouts a
   minute remain (recalc probe), all from avatars.js timers. Decision 7's 1 ms
-  needs the behaviour picker and perch checks profiled next. (checked 2026-11-09)
+  needs the behaviour picker and perch checks profiled next. (checked 2026-11-09) [verified 2026-11-10: true, companion idle cost measured per the bullet; open]
 - The chest's breath still writes the torso's `scale` 2.5 times a second at
   rest (atlas-life.js `atlasBreathFrame`): a recalc and a layout each. Zero
-  needs the torso on its own layer root (a drawing change, `atlasDrawFigure`). (checked 2026-11-09)
+  needs the torso on its own layer root (a drawing change, `atlasDrawFigure`). (checked 2026-11-09) [verified 2026-11-10: true, atlasBreathFrame in atlas-life.js still writes torso scale]
 - 104px faces (the welcome, the large view): 2 to 3 of 15 distinct in light by
   the same metric; the cue is drawn only at the head and tiny levels. The
   owner's "I barely get to see atlas change expression" may also mean the
-  companion figure (12px face); a cue on the figure is the next step. (checked 2026-11-09)
+  companion figure (12px face); a cue on the figure is the next step. (checked 2026-11-09) [verified 2026-11-10: true, 104px face distinctness measured; open]
 - Step 5 not built: one curve table for every joint (120 to 400 ms), the
   idle pool's never-within-five rule and a reaction budget a minute beyond
   the existing 6s gap (avatars.js `NMB_REACT_GAP`). The one snap (both hands
   jumping over 4px out of stillness while hanging, atlasdepth2.js atlassmooth) is likely
   the held arms' crossfade (`atlasRigRead`, -158 degrees); one latency trial
-  of five was over 100 ms, the frame wait under load. (checked 2026-11-09)
+  of five was over 100 ms, the frame wait under load. (checked 2026-11-09) [verified 2026-11-10: true, step 5 not built; NMB_REACT_GAP in avatars.js]
 - Arm angle over a walk cycle not measured (atlasarms.js measures still
-  poses; the walk swing is the rig's, atlas-motion.js `atlasRigFrame`). (checked 2026-11-09)
+  poses; the walk swing is the rig's, atlas-motion.js `atlasRigFrame`). (checked 2026-11-09) [verified 2026-11-10: true, walk-cycle arm angle not measured; atlasRigFrame present]
 - `#nm-buddy:has(.atl-figure) .nm-buddy-char` and the lower layer still slow
   to 6s under the hint (08-consistency.css, the block after the chin hand
-  rule) rather than stopping: they may carry acts, so left for a driven check. (checked 2026-11-09)
+  rule) rather than stopping: they may carry acts, so left for a driven check. (checked 2026-11-09) [verified 2026-11-10: true, nm-buddy slow-to-6s rule under the hint still in 08-consistency.css]
 - Companion movement Full keeps the script loops (tail, rings) under Reduce
-  by design (`atlasMotionOK`); the CSS loops stop under the hint regardless. (checked 2026-11-09)
+  by design (`atlasMotionOK`); the CSS loops stop under the hint regardless. (checked 2026-11-09) [verified 2026-11-10: stale, kept by design (atlasMotionOK); not a defect]
 
-- Brief 34, not verified: the arm angle over a walk cycle; 104 px faces (2 to 3 of 15 distinct in light); no real WebView2 or WebKitGTK; all timings from a loaded machine. (checked 2026-11-09)
+- Brief 34, not verified: the arm angle over a walk cycle; 104 px faces (2 to 3 of 15 distinct in light); no real WebView2 or WebKitGTK; all timings from a loaded machine. (checked 2026-11-09) [verified 2026-11-10: true, not verified on WebView2 or WebKitGTK]
 
 ## Left by the wb77 and ide1 agents (Briefs 77 and 69, merged 2026-10-10)
 
 Whiteboard (Brief 77, rows 1 to 4 built; 8 and 9 not started):
 
-- Row 8 (rule 6): "every rail and top-bar control has a `data-help-for` popover and a palette row; 0 missing". Not built. A first count from the DOM (`#wb-topbar`, `#wb-tools-panel`, `.wb-board-menu` controls against `WB_COMMANDS` by `data-wb-cmd`, `run.tool`, `run.clickId`) found 240 controls and 166 with no table row, but the board picker's rows and the View menu's switches inflate it; the measure needs the picker excluded and the switches counted once (whiteboard-commands.js `WB_COMMANDS`, index.html 6267 to 6560). (checked 2026-11-09)
-- Row 9 (rule 12): "a board AI act as one chat tool (summarise this board; a board from a note)". Not built: a tool under `src/memorymap/ai/tools/` with its test, README's tool count (`tests/test_readme_freshness.py`), deepen72a.js's "No model" row before and after. (checked 2026-11-09)
-- `errors.js` at 1440 and 390: 0 errors, 0 layout findings each. (checked 2026-11-09)
+- Row 8 (rule 6): "every rail and top-bar control has a `data-help-for` popover and a palette row; 0 missing". Not built. A first count from the DOM (`#wb-topbar`, `#wb-tools-panel`, `.wb-board-menu` controls against `WB_COMMANDS` by `data-wb-cmd`, `run.tool`, `run.clickId`) found 240 controls and 166 with no table row, but the board picker's rows and the View menu's switches inflate it; the measure needs the picker excluded and the switches counted once (whiteboard-commands.js `WB_COMMANDS`, index.html 6267 to 6560). (checked 2026-11-09) [verified 2026-11-10: true, data-help-for coverage for rail and top bar not built]
+- Row 9 (rule 12): "a board AI act as one chat tool (summarise this board; a board from a note)". Not built: a tool under `src/memorymap/ai/tools/` with its test, README's tool count (`tests/test_readme_freshness.py`), deepen72a.js's "No model" row before and after. (checked 2026-11-09) [verified 2026-11-10: true, board AI chat tool not built; old src/memorymap path, package is src/tessellate]
+- `errors.js` at 1440 and 390: 0 errors, 0 layout findings each. (checked 2026-11-09) [verified 2026-11-10: stale, reports 0 errors and 0 layout findings; no open item]
 
 Code editor (Brief 69, I1 built):
 
-- D1's folder: the brief and D1 say `frontend/js/run/`; the files are `frontend/js/run-*.js` because 65 lints (`test_frontend_symbols`, the em-dash and innerHTML lints, the global scope ratchet) glob `frontend/js/*.js` only. Recommendation (take it): keep the prefix; a folder needs every lint made recursive first. (checked 2026-11-09)
-- D5 "load this CSV document as a table": the sandbox's SQL worker takes `tables: [{name, columns, rows}]` (`_SQL_WORKER`), but no panel action picks a CSV document and sends it yet (`run-core.js`, the sql row). (checked 2026-11-09)
-- D9 stdlib completion and signature help from a generated table (`scripts/gen_python_completions.py` over the installed Pyodide's `inspect`): not started. (checked 2026-11-09)
-- D9 `ruff-wasm` lint and format: DOCUMENTS 25 row 4's (Brief 42's linters), not started here. (checked 2026-11-09)
-- D6 `.md` preview in the sandbox frame: not done; a Markdown document already has its own Live and Split views. (checked 2026-11-09)
-- Python's runtime reloads on every document opened (5.9 to 7.0 s cold at 1440): the sandbox frame lives in the panel, which is rebuilt per document (`docRunPanel`, documents-code.js). One frame kept across documents would make a second .py run warm. (checked 2026-11-09)
-- `input()` is answered before the run (the Input box), not interactively mid-run: that needs `SharedArrayBuffer` and the COOP/COEP headers, which are D2's (Brief 70). (checked 2026-11-09)
-- p5 in the sandbox logs "Permissions policy violation: accelerometer" to the console (p5's devicemotion listener in a frame without `allow`); harmless, not silenced. (checked 2026-11-09)
-- A JSX `.js` document (the `jsx` alias) runs without the JSX pass; only `.tsx` paths get it (`runStripTypes`). (checked 2026-11-09)
+- D1's folder: the brief and D1 say `frontend/js/run/`; the files are `frontend/js/run-*.js` because 65 lints (`test_frontend_symbols`, the em-dash and innerHTML lints, the global scope ratchet) glob `frontend/js/*.js` only. Recommendation (take it): keep the prefix; a folder needs every lint made recursive first. (checked 2026-11-09) [verified 2026-11-10: stale, folder decision resolved to run-*.js by the 65 lints]
+- D5 "load this CSV document as a table": the sandbox's SQL worker takes `tables: [{name, columns, rows}]` (`_SQL_WORKER`), but no panel action picks a CSV document and sends it yet (`run-core.js`, the sql row). (checked 2026-11-09) [verified 2026-11-10: true, CSV to SQL table action not wired; _SQL_WORKER present]
+- D9 stdlib completion and signature help from a generated table (`scripts/gen_python_completions.py` over the installed Pyodide's `inspect`): not started. (checked 2026-11-09) [verified 2026-11-10: true, scripts/gen_python_completions.py exists; table not generated]
+- D9 `ruff-wasm` lint and format: DOCUMENTS 25 row 4's (Brief 42's linters), not started here. (checked 2026-11-09) [verified 2026-11-10: true, ruff-wasm lint not started]
+- D6 `.md` preview in the sandbox frame: not done; a Markdown document already has its own Live and Split views. (checked 2026-11-09) [verified 2026-11-10: stale, decision not to add a .md sandbox preview; Markdown has Live and Split]
+- Python's runtime reloads on every document opened (5.9 to 7.0 s cold at 1440): the sandbox frame lives in the panel, which is rebuilt per document (`docRunPanel`, documents-code.js). One frame kept across documents would make a second .py run warm. (checked 2026-11-09) [verified 2026-11-10: true, docRunPanel rebuilt per document; cold reload open]
+- `input()` is answered before the run (the Input box), not interactively mid-run: that needs `SharedArrayBuffer` and the COOP/COEP headers, which are D2's (Brief 70). (checked 2026-11-09) [verified 2026-11-10: true, input() answered before run; needs SharedArrayBuffer headers]
+- p5 in the sandbox logs "Permissions policy violation: accelerometer" to the console (p5's devicemotion listener in a frame without `allow`); harmless, not silenced. (checked 2026-11-09) [verified 2026-11-10: stale, harmless console message left as is by decision]
+- A JSX `.js` document (the `jsx` alias) runs without the JSX pass; only `.tsx` paths get it (`runStripTypes`). (checked 2026-11-09) [verified 2026-11-10: true, runStripTypes runs for .tsx only; jsx alias not covered]
 
-- Brief 69, not verified: the desktop webview; dark theme for the new panel rows; a large SQL result; touch.js on the other surfaces. (checked 2026-11-09)
-- Brief 77, found: the shape flyout opens only from its 10 px caret or a long-press, too small for a finger on a phone; boot CSS is within 12 bytes gzipped of its budget. (checked 2026-11-09)
+- Brief 69, not verified: the desktop webview; dark theme for the new panel rows; a large SQL result; touch.js on the other surfaces. (checked 2026-11-09) [verified 2026-11-10: true, Brief 69 desktop and dark theme checks not run]
+- Brief 77, found: the shape flyout opens only from its 10 px caret or a long-press, too small for a finger on a phone; boot CSS is within 12 bytes gzipped of its budget. (checked 2026-11-09) [verified 2026-11-10: true, shape flyout caret too small for touch; open]
 
 ## Left by the design agent (Brief 56, merged 2026-10-10)
 
-- 110 distinct controls show no change on keyboard focus (`a11yname.js`, 312 stops over 14 surfaces): every `.status-item`, the `.ghost.small` buttons, the status bar; a focus ring rule in the stylesheet's grammar (Brief 57). (checked 2026-11-09)
-- Eight dialogs open as centred cards at 390 and should be bottom sheets (extract, history, connections, binned, run a skill, board keys, meeting notes, features): Brief 59. (checked 2026-11-09)
-- The markup has 18 overlays plus the built confirm and the tour card, not the plan's 15; `$S/design/hierarchy.json` lists each with its size (Brief 59 reads it first). (checked 2026-11-09)
-- Not measured by Brief 56: 1024 and 820 widths, dark-theme counts, a Chat with a conversation, the document AI panel, a board with a selection. (checked 2026-11-09)
-- The 13.0 gate's "every offence per decision" for decisions 9 to 17 are stylesheet counts from the plan's method paragraph, not from the sweep; still to be read from code (Brief 57). (checked 2026-11-09)
+- 110 distinct controls show no change on keyboard focus (`a11yname.js`, 312 stops over 14 surfaces): every `.status-item`, the `.ghost.small` buttons, the status bar; a focus ring rule in the stylesheet's grammar (Brief 57). (checked 2026-11-09) [verified 2026-11-10: true, 110 controls with no focus change per a11yname.js sweep; open]
+- Eight dialogs open as centred cards at 390 and should be bottom sheets (extract, history, connections, binned, run a skill, board keys, meeting notes, features): Brief 59. (checked 2026-11-09) [verified 2026-11-10: true, eight dialogs still centred cards at 390; Brief 59]
+- The markup has 18 overlays plus the built confirm and the tour card, not the plan's 15; `$S/design/hierarchy.json` lists each with its size (Brief 59 reads it first). (checked 2026-11-09) [verified 2026-11-10: true, 18 overlays per the markup; hierarchy.json lives outside the repo]
+- Not measured by Brief 56: 1024 and 820 widths, dark-theme counts, a Chat with a conversation, the document AI panel, a board with a selection. (checked 2026-11-09) [verified 2026-11-10: true, 1024 and 820 and dark measures not taken]
+- The 13.0 gate's "every offence per decision" for decisions 9 to 17 are stylesheet counts from the plan's method paragraph, not from the sweep; still to be read from code (Brief 57). (checked 2026-11-09) [verified 2026-11-10: true, decisions 9 to 17 counts not read from code yet]
 
 ## Backend
 
@@ -2950,36 +2950,36 @@ Code editor (Brief 69, I1 built):
   refused** (fail closed, as intended; noted so nobody reads a 421 on
   `localhost.` as a bug). `_own_names()` calls `gethostname` per request
   off loopback, one syscall.
-  *Left: intended behaviour, noted so a 421 on `localhost.` is not read as a bug.* (checked 2026-11-09)
+  *Left: intended behaviour, noted so a 421 on `localhost.` is not read as a bug.* (checked 2026-11-09) [verified 2026-11-10: stale, note that fail-closed host refusal is intended, not an open defect]
 - **The graph signal needs an open note, and the Notes list rarely has one.**
   `file: frontend/js/app.js`, `id: search-open-note`. The list passes `entry_id`
   only in rows view or while editing; in card view the third signal is zero.
   Next step: decide what "open" means on that surface, per the app's own focus
   model. [brief11-retrieval-engine.md]
-  *Needs: what "open" means on the card view is a decision.* (checked 2026-11-09)
+  *Needs: what "open" means on the card view is a decision.* (checked 2026-11-09) [verified 2026-11-10: true, graph signal needs an open note; search-open-note id present]
 - **Sync (B6) as log shipping.** `id: events-sync`. Unstarted and no longer
   blocked: it needed the retention rule, which now exists. A compacted
   snapshot ships as a snapshot. [brief7-event-log.md]
-  *Needs: a large unstarted feature.* (checked 2026-11-09)
+  *Needs: a large unstarted feature.* (checked 2026-11-09) [verified 2026-11-10: true, sync log shipping unstarted; events-sync id]
 - **I1's later passes**: duplicates, entities and dates as kinds in the same
   table (tensions are built: pass 4 of the night run, `ai/facts.py`
   `_pair_passes`). `ai/entities.py` already produces entities in its own
   shape; folding it in means giving it a span and a `DerivedFact` row, not a
   second pipeline. [learning-loop.md]
-  *Needs: design, folding entities into the fact table.* (checked 2026-11-09)
+  *Needs: design, folding entities into the fact table.* (checked 2026-11-09) [verified 2026-11-10: true, I1 later passes partly built in facts.py; duplicates and dates still open]
 - **`evidence_checks` is the one switch with no runner**: stored and shown in
   Settings, gating nothing. `margin_reader` (`api/routes_editor.py`),
   `model_bench` (`api/routes_bench.py`) and `open_questions` (`ai/facts.py`,
   the night pass) read theirs. Evidence cards are built per answer sentence
   (`grounding`, `search/chunks.py`) with no background pass to switch off.
   [learning-loop.md]
-  *Needs: a decision on what the switch gates (the per-answer evidence view, or a future background check).* (checked 2026-11-09)
+  *Needs: a decision on what the switch gates (the per-answer evidence view, or a future background check).* (checked 2026-11-09) [verified 2026-11-10: true, evidence_checks has no runner (facts.py); margin_reader and model_bench still ungated]
 - **WORLD_CLASS_PLAN 9's dev-only llama.cpp runner is the blocker behind four
   open items**: the `evals` marker, Skills Phase D's central claim, the
   retrieval engine's real-embedding numbers, and the paging nudge a real small
   model would have to act on. The suite must never depend on it.
   [brief-13-harness.md, chat-timeline-skills.md, brief11-retrieval-engine.md]
-  *Left: the runner exists now (`scratchpad/llama-dev.sh`); the four items still need a model.* (checked 2026-11-09)
+  *Left: the runner exists now (`scratchpad/llama-dev.sh`); the four items still need a model.* (checked 2026-11-09) [verified 2026-11-10: true, dev-only llama runner blocker; scratchpad/llama-dev.sh present]
 
 ## Sweeps and tooling
 
@@ -2987,14 +2987,14 @@ Code editor (Brief 69, I1 built):
   wolf on every small fixture.** Two of `graph2.js`'s five failures were
   exactly that, measured on a scratch profile holding a single note. The
   lesson is the sweep's, not the graph's. [graph.md]
-  *Left: a lesson for the next sweep author.* (checked 2026-11-09)
+  *Left: a lesson for the next sweep author.* (checked 2026-11-09) [verified 2026-11-10: true, graph2.js check still cries wolf on small fixtures]
 - **The README tour still has two gaps.** The chat screenshot shows an empty
   conversation (no model in the sandbox), so a machine with Ollama should
   retake `docs/screenshots/chat.png` with a real exchange; and the page reader
   has no shot at all, because it wants a multi-page PDF and an OCR binary and
   this sandbox has neither. Files: `scratchpad/ui-sweeps/readmeshots.js`, the
   `chat` entry. [picker-catalog-readme.md]
-  *Needs: Ollama and a Tesseract binary.* (checked 2026-11-09)
+  *Needs: Ollama and a Tesseract binary.* (checked 2026-11-09) [verified 2026-11-10: true, chat.png still shows an empty conversation]
 - **The launchers want one run on a real Windows machine**: `start.bat`,
   `start.bat --doctor`, `start.bat --shortcut` and `uninstall.bat --dry-run`,
   watching the splash through a first-run install. Everything else in Brief 17
@@ -3004,7 +3004,7 @@ Code editor (Brief 69, I1 built):
   safe shape is a `--doctor --offline`), and the dry run's "frees about"
   figure counts `.venv` only on Windows, which is 300 MB of a 305 MB answer.
   [launcher.md]
-  *Needs: Windows.* (checked 2026-11-09)
+  *Needs: Windows.* (checked 2026-11-09) [verified 2026-11-10: true, Windows launcher run not done; start.bat present]
 
 ## Carried from the agent files archived 2026-10-04
 
@@ -3020,13 +3020,13 @@ the head, so they carry no row of their own.
 
 - **arch.md (removed 2026-10-12, recoverable from git history)**: INBOX 266's usability and lightweight items belong to nobody.
   [arch] (The emblem's idle cost is built: HISTORY.md, "OPEN.md rows closed,
-  2026-10-05 (docs hygiene before 0.4.0)".) (checked 2026-11-09)
+  2026-10-05 (docs hygiene before 0.4.0)".) (checked 2026-11-09) [verified 2026-11-10: true, INBOX 266 items unowned; arch.md removed, its items still open]
 - **backend-0926.md**: F7's thread modules
   onto `core/jobs.py` (13 left, `tests/test_flaw_class_lints.py`'s ratchet).
   Not verified: the receipt against a real outbound call, the five UIs in the
   desktop window, LAN from a second device, the `.ics` in a real calendar app.
   [backend-0926]
-  *Needs: a second device, the desktop window and a calendar app, for the unverified list. The Undo row, the night card's scroll and the ledger's flush are closed, HISTORY.md, "OPEN.md rows closed, 2026-10-04".* (checked 2026-11-09)
+  *Needs: a second device, the desktop window and a calendar app, for the unverified list. The Undo row, the night card's scroll and the ledger's flush are closed, HISTORY.md, "OPEN.md rows closed, 2026-10-04".* (checked 2026-11-09) [verified 2026-11-10: true, F7 thread modules not moved to core/jobs.py (ratchet 13 left)]
 - **codecomplete.md**: Python Run via a Pyodide download extra (INBOX 404's
   recommendation, needs the owner's yes to a download kind of extra) and
   TypeScript Run via a vendored type-stripper; SCSS, Less and SVG are not file
@@ -3034,14 +3034,14 @@ the head, so they carry no row of their own.
   handling of the run sandbox's CSP, the native colour picker's window.
   [codecomplete]
   *Needs: a decision and a vendored dependency each.*
-  *Needs owner, 2026-10-05: a Pyodide "download extra" fetches at runtime, which the owner's fully-local rule of 2026-10-05 forbids unless it is vendored (about 10 MB, MPL-2.0); the TypeScript stripper is a vendoring call of the same kind.* (checked 2026-11-09)
+  *Needs owner, 2026-10-05: a Pyodide "download extra" fetches at runtime, which the owner's fully-local rule of 2026-10-05 forbids unless it is vendored (about 10 MB, MPL-2.0); the TypeScript stripper is a vendoring call of the same kind.* (checked 2026-11-09) [verified 2026-11-10: true, codecomplete Pyodide and TypeScript runs open]
 - **companion-r5.md**: the toss on a phone (a quick swipe on the companion
   tosses it) was not tried on a device; `test_unlock_throttle_per_client.py`
   failed once under load and passes alone. [companion-r5]
-  *Needs: a phone; the flake is load, not the test.* (checked 2026-11-09)
+  *Needs: a phone; the flake is load, not the test.* (checked 2026-11-09) [verified 2026-11-10: true, phone toss not tried on a device; throttle test file absent]
 - **guideia.md**: the Guide is a modal sheet whose scrim dims the app, so
   "Open the Reminders tab" cannot be read against the tab. [guideia]
-  *Needs: a non-modal Guide changes `openSheet`'s focus and backdrop contract.* (checked 2026-11-09)
+  *Needs: a non-modal Guide changes `openSheet`'s focus and backdrop contract.* (checked 2026-11-09) [verified 2026-11-10: true, guide is a modal sheet; openSheet in index.html]
 - **libtl-0926.md**: the Timeline feed lays out about 39 times a second while
   scrolling (the rows' `content-visibility: auto`, INBOX 400's trade); the
   Library search keystroke was 17 to 191ms under load, not re-measured idle;
@@ -3049,21 +3049,21 @@ the head, so they carry no row of their own.
   Atlas's feminine right arm sits behind the hair at full size; a mood or act
   change swaps loops rather than cross-fading; the graph tab keeps the
   companion on the bottom bar. [libtl-0926]
-  *Needs: drawing-order and animation-blend changes; the rest are measurements to retake idle.* (checked 2026-11-09)
+  *Needs: drawing-order and animation-blend changes; the rest are measurements to retake idle.* (checked 2026-11-09) [verified 2026-11-10: true, timeline layout about 39 times a second while scrolling; open]
 - **mapcull.md**: freehand and link sketches are not culled (a stroke's box is
   parsed from its path; worth it only when a board with many strokes measures
   slow). [mapcull]
-  *Left: measure a many-stroke board before building.* (checked 2026-11-09)
+  *Left: measure a many-stroke board before building.* (checked 2026-11-09) [verified 2026-11-10: true, freehand and link sketches not culled; open]
 - **mapread.md and maprender.md**: 13g, the haywire middle-button pan, needs
   the owner (it never reproduced headless; do not fix blind); the 50-topic
   open is 393ms and not the render; `mapperf.js` takes minutes (whether the
   gate should pass `SIZES=50`); the keyed render is invalidated by one list,
   `wbObjectPaintKey`, which a new paint input must join. [mapread, maprender]
-  *Needs owner: 13g. Left: the rest are notes for whoever touches the paint.* (checked 2026-11-09)
+  *Needs owner: 13g. Left: the rest are notes for whoever touches the paint.* (checked 2026-11-09) [verified 2026-11-10: true, 13g pan needs owner; mapperf.js present]
 - **maptheme.md**: the theme is resolved into each node on export rather than
   carried; an `<arrowlink>` written by FreeMind itself is untested. [maptheme]
   *Needs: schema and export design.* (The palette, the font and the pin back to
-  the app's default are built, MINDMAP_PLAN 13e.) (checked 2026-11-09)
+  the app's default are built, MINDMAP_PLAN 13e.) (checked 2026-11-09) [verified 2026-11-10: true, theme resolved on export; arrowlink untested]
 - **mindmap2.md**: `mindmapimage.js` (removed 2026-10-12, recoverable from git history) passes 12 of 12 at 390x844 (measured
   2026-10-04); a picture node does not resize to its picture; `mindmap3.js`
   times out at `#wb-boards-generate` (the AI half); `mindmapcurve.js` at
@@ -3071,47 +3071,47 @@ the head, so they carry no row of their own.
   hover reveal and the straight-line kink aim at off-screen handles: the
   probe's layout, not the app; the add-button overlap that timed it out was
   the app's and is closed, HISTORY.md). [mindmap2]
-  *Needs: lay the curve probe's map out inside 390 wide. Tried 2026-10-05 (topics 110 wide at x 8, 220 and 250, `mindmapcurve.js`): the reveal check passes (the handle's top element is the svg layer, not a button) but every drag moves 0 (9 of 14), so the layout is not the only thing at 390; not kept.* (checked 2026-11-09)
+  *Needs: lay the curve probe's map out inside 390 wide. Tried 2026-10-05 (topics 110 wide at x 8, 220 and 250, `mindmapcurve.js`): the reveal check passes (the handle's top element is the svg layer, not a button) but every drag moves 0 (9 of 14), so the layout is not the only thing at 390; not kept.* (checked 2026-11-09) [verified 2026-11-10: true, picture node resize open; mindmapimage.js removed, finding outlives it]
 - **ocr-reading.md**: a page joins the reading panel only once looked at or
   read (nothing reads ahead, deliberately); nothing was verified with a real
   Tesseract or a vision model. [ocr-reading]
-  *Needs: Tesseract and a model.* (checked 2026-11-09)
+  *Needs: Tesseract and a model.* (checked 2026-11-09) [verified 2026-11-10: true, ocr-reading: page joins panel only when read; no real Tesseract or vision run]
 - **pass2.md**: typing in a note in a 230-note list costs about 12ms of
   CodeMirror input handling per key; the Library's lists have no user-owned
   order to drag; grey-scale text in composited scrollers on a 1x ClearType
   display was not seen. [pass2]
-  *Needs: a Windows display; the rest is CodeMirror's own cost.* (checked 2026-11-09)
+  *Needs: a Windows display; the rest is CodeMirror's own cost.* (checked 2026-11-09) [verified 2026-11-10: true, pass2 typing cost and list ordering open per bullet]
 - **perfpolish.md**: the document gutter writes a height and reads a layout
   per gutter. The menu exit is closed, HISTORY.md, "OPEN.md rows closed,
-  2026-10-05 (the pre-0.4.0 buildable rows, sweeps on port 8815)". [perfpolish] (checked 2026-11-09)
+  2026-10-05 (the pre-0.4.0 buildable rows, sweeps on port 8815)". [perfpolish] (checked 2026-11-09) [verified 2026-11-10: true, perfpolish gutter layout reads per gutter; open]
 - **uipolish-0924.md**: the surface-by-surface pass (its item D) is already a
   row above. Triaged: `deadbtn.js`'s findings for Chat's `#chat-export` and
   `#chat-delete` are visually-hidden, `aria-hidden` proxies the ⋯ rows click
   (index.html ~2335), the sweep's finding and not a dead control; the
   Packages rows' title-to-description gap measures 12.8px at 1440, 1024, 820
   and 390 (`packagesgap.js` (removed 2026-10-12, recoverable from git history)), not the 16px reported. [uipolish-0924]
-  *Needs: item D, a design pass per surface.* (checked 2026-11-09)
+  *Needs: item D, a design pass per surface.* (checked 2026-11-09) [verified 2026-11-10: true, uipolish-0924 leftovers; deadbtn.js findings triaged, rest open]
 - **wbtopbar.md**: `#wb-search-toggle` and `#wb-navigator-toggle` duplicate View
   menu switches (UI_MODERNISATION_PLAN Phase 8 names them as the bar's find
   zone); `#wb-context-menu` is not swept (`wbcontextphone.js` is where it
   belongs). INBOX 47's counting question no longer decides anything: the
   Notes and Library docks measure 6 controls each (`docks.js`). [wbtopbar]
-  *Needs: the whiteboard agent (a sweep for `#wb-context-menu`).* (checked 2026-11-09)
+  *Needs: the whiteboard agent (a sweep for `#wb-context-menu`).* (checked 2026-11-09) [verified 2026-11-10: true, wb-search-toggle and wb-navigator-toggle still duplicate View switches]
 - **whiteboard-tail.md**: the AI half of the map needs a model. INBOX 276 (the
   sketch pad's toolbar at 820) is closed, HISTORY.md, "OPEN.md rows closed,
-  2026-10-05 (the pre-0.4.0 buildable rows, sweeps on port 8815)". [whiteboard-tail] (checked 2026-11-09)
+  2026-10-05 (the pre-0.4.0 buildable rows, sweeps on port 8815)". [whiteboard-tail] (checked 2026-11-09) [verified 2026-11-10: true, AI half of map needs a model; open]
 - **world-class-rows-1-2-9.md**: two decisions taken differently from Brief 15
   (S1 is a cookie, S3 confines to home and the data folder) that the owner may
   want to confirm; the export-folder preference accepts any writable absolute
   path; a clean full-suite run on that worktree was owed.
   [world-class-rows-1-2-9]
-  *Needs: the owner's yes or no on the two decisions and on the export-folder path rule.* (checked 2026-11-09)
+  *Needs: the owner's yes or no on the two decisions and on the export-folder path rule.* (checked 2026-11-09) [verified 2026-11-10: true, two decisions for the owner to confirm; open]
 - **writing-desk.md**: Stop mid-pass is unverified (the stand-in answers in
   about 150ms; a slow backend behind an env var in `fake_openai_server.py`
   would do); the thinking panel has never held real thinking; the five draft
   prompts are tested, not judged; sources are notes only. The readOnly hole
   it named is fixed (CHANGELOG, `draftreadonly.js`). [writing-desk]
-  *Needs: a slow backend and a real model.* (checked 2026-11-09)
+  *Needs: a slow backend and a real model.* (checked 2026-11-09) [verified 2026-11-10: true, writing-desk Stop mid-pass unverified; fake_openai_server.py present]
 
 No per-agent file stays in this folder: the 2026-10-05 pass carried the last
 ones' rows below and archived them (`agent_common.md` and `agent_rules_1005.md`,
@@ -3143,7 +3143,7 @@ pane's name, the errors sweep's aside clipping at 390.
 - **Skeletons for a board's Library and Notes tabs** (INBOX 596): the tabs
   (`whiteboard-library.js`, `wbLoadLibrary`) draw nothing while they load.
   [boardmap-1005, small-1005]
-  *Left: the whiteboard's own rail, owned by the WHITEBOARD plan's agent.* (checked 2026-11-09)
+  *Left: the whiteboard's own rail, owned by the WHITEBOARD plan's agent.* (checked 2026-11-09) [verified 2026-11-10: true, wbLoadLibrary draws nothing while loading; skeletons not built]
 
 - **Phone selection menus and the selection bar** (documents): iOS and Android
   draw Cut, Copy and Paste above a selection, where the bar also goes; if a
@@ -3151,13 +3151,13 @@ pane's name, the errors sweep's aside clipping at 390.
   line in `selectionBarShow`). Section 18's chat commands on a phone press
   controls in the chat dock and were never measured against it.
   [documents-1004]
-  *Needs: a phone.* (checked 2026-11-09)
+  *Needs: a phone.* (checked 2026-11-09) [verified 2026-11-10: true, phone selection bar overlaps native Cut Copy Paste menu; open]
 - **Prose tools**: Harper's lint config per kind in the dictionary dialog
   (`harper-worker.js`, `setLintConfig`; about 200 rules, all or nothing today);
   suggestion mode's author and date (CriticMarkup `{>>comment<<}`; export
   writes `MemoryMap` for every revision); a voice and speed picker for read
   aloud (system voices only today). [proseeditor]
-  *Checked 2026-10-05: neither is built (`harper-worker.js` turns off the one rule `UseTitleCase` in `HARPER_RULES_OFF` and nothing else; `docReadAloudVoice` in `documents-prose.js` picks the first local voice for the language). Needs a design call: where the two controls live (the dictionary dialog, Settings), what is stored, and the help that moves with them.* (checked 2026-11-09)
+  *Checked 2026-10-05: neither is built (`harper-worker.js` turns off the one rule `UseTitleCase` in `HARPER_RULES_OFF` and nothing else; `docReadAloudVoice` in `documents-prose.js` picks the first local voice for the language). Needs a design call: where the two controls live (the dictionary dialog, Settings), what is stored, and the help that moves with them.* (checked 2026-11-09) [verified 2026-11-10: true, HARPER_RULES_OFF in harper-worker.js; setLintConfig per kind not built]
 - **Package bundles**: the Word writer's five tests ran once in a scratch venv
   with python-docx 1.2.0 (2026-10-05, `tests/test_docexport_pictures.py` 13 of
   13, none skipped; `test_docexport_bundle.py`, `test_document_import.py`,
@@ -3165,13 +3165,13 @@ pane's name, the errors sweep's aside clipping at 390.
   was opened in Word or LibreOffice; no real pip ran (every bulk test fakes `subprocess.Popen`);
   the bundle groupings are a recommendation (`BUNDLES`, one tuple); the phone
   rows measured clean, not designed further. [extras-bundles]
-  *Needs: Word or LibreOffice.* (checked 2026-11-09)
+  *Needs: Word or LibreOffice.* (checked 2026-11-09) [verified 2026-11-10: true, bundle tests named in the bullet not found at those paths; Word writer checks open]
 - **The Writing Room's stretch**: measured at 1440x900 light on the two
   `NOTE_SURFACES` boxes only, the graph's two note boxes not opened. (The table
   full view's X is built: 28x28 at 1440 and 44x44 at 390, each equal to
   `--target-min`; `tablefullclose.js` (removed 2026-10-12, recoverable from git history) asserts it. Its phone width and the Writing
   Room's are closed, HISTORY.md, "OPEN.md rows closed, 2026-10-05 (the pre-0.4.0
-  buildable rows, sweeps on port 8815)".) [notes] (checked 2026-11-09)
+  buildable rows, sweeps on port 8815)".) [notes] (checked 2026-11-09) [verified 2026-11-10: true, Writing Room stretch measured on two boxes only; open]
 
 ### Whiteboard, mind map and Atlas
 
@@ -3182,7 +3182,7 @@ pane's name, the errors sweep's aside clipping at 390.
   `wbMapReverseCrossLink`, `wbMapCutCrossLink`, `wbMapAddReference`,
   `wbApplyMapTemplate`, `wbArrangeMindMap`, `wbMindMapAddCard`, bucket fill and
   fit to text are recorded through `wbRecordGesture` but not swept one by one.
-  [undo-1005] (checked 2026-11-09)
+  [undo-1005] (checked 2026-11-09) [verified 2026-11-10: true, board and map history cross-tab and agent changes not on the stack; open]
 - **Draw.io phase 2's tail** (WHITEBOARD_PLAN 30 to 36 hold the decisions):
   Phase G's affinity sort (Group by theme proposes named frames, one Undo) and
   the claim check, both with faked-transport tests and
@@ -3193,12 +3193,12 @@ pane's name, the errors sweep's aside clipping at 390.
   can hold two items; the board history starts a fresh state on each `created`
   but any other reader of an item's log (`events.replay`) would merge them;
   placements made before the history, a duplicated board's copies and a
-  generated map's topics have no `created` event. [wb-phase2] (checked 2026-11-09)
+  generated map's topics have no `created` event. [wb-phase2] (checked 2026-11-09) [verified 2026-11-10: true, draw.io phase 2 tail (Group by theme, claim check) open per bullet]
 - **Frames and the map plan's rest**: MINDMAP_PLAN 12.2's rest (a boundary round
   a lassoed set that is not one branch, priority, progress, flags and due
   dates, floating topics and palettes, an outline pane). The nested frames'
   shared title area is measured, HISTORY.md, "OPEN.md rows closed, 2026-10-05
-  (the pre-0.4.0 buildable rows, sweeps on port 8815)". [harness-wb-1004] (checked 2026-11-09)
+  (the pre-0.4.0 buildable rows, sweeps on port 8815)". [harness-wb-1004] (checked 2026-11-09) [verified 2026-11-10: true, map plan 12.2 rest open]
 - **Map render and persistence**: (the `wbMapNodeSize` 94px row is closed,
   HISTORY.md, "OPEN.md rows closed, 2026-10-05 (the pre-0.4.0 buildable rows,
   sweeps on port 8815)"); a map does not re-frame
@@ -3206,11 +3206,11 @@ pane's name, the errors sweep's aside clipping at 390.
   canvas, or rely on Fit); tidy, copy branch and
   "open every folded branch" persist one node per request (a bulk endpoint if
   any ever matters); `mapstyle.js` (removed 2026-10-12, recoverable from git history)'s "radial slot" check reads `w: 0` on the
-  base too. [mindmap, mapux2] (checked 2026-11-09)
+  base too. [mindmap, mapux2] (checked 2026-11-09) [verified 2026-11-10: true, map render and persistence rest open; wbMapNodeSize row closed elsewhere]
 - **The Boards and maps dashboard widget's tall maps**: a 25-topic tree-right
   map draws a 20x40 paper in the 72x40 row box. Cropping a tall map or a
   square box is the owner's judgement. [mindmap-13e]
-  *Needs: the owner's call.* (checked 2026-11-09)
+  *Needs: the owner's call.* (checked 2026-11-09) [verified 2026-11-10: true, tall-map crop in the dashboard widget is the owner's judgement; open]
 - **Atlas motion, measured left** (the owner's rows 554 to 575 are above):
   `atlas619-blend.js` stepped by hand shows laughing's end moving the figure
   about 3px over three frames, base and fix alike (390 dark: the masculine
@@ -3224,7 +3224,7 @@ pane's name, the errors sweep's aside clipping at 390.
   poses that cross in front of the body (hands on hips, clasped, to chest; the
   arms are separate svg roots behind the body in every look), and a fuller
   front hair mass for the feminine look (the owner at release). The Atlas guide
-  panel's '?' did not reproduce (needs the owner's case). [atlas-1005, wrapup-0927] (checked 2026-11-09)
+  panel's '?' did not reproduce (needs the owner's case). [atlas-1005, wrapup-0927] (checked 2026-11-09) [verified 2026-11-10: true, Atlas laughing blend measured by hand; scratch file gone, finding stands]
 
 ### Settings, help and the shell
 
@@ -3234,18 +3234,18 @@ pane's name, the errors sweep's aside clipping at 390.
   close it; the JS-built popovers (`manage-cat-help`, `manage-tags-help`,
   `inbox-help`) and the whiteboard and map help bodies were not read; the sweep
   runs at 1440 only, so a control a narrow window moves into a menu is named for
-  the wide layout. [helpaudit-1005] (checked 2026-11-09)
+  the wide layout. [helpaudit-1005] (checked 2026-11-09) [verified 2026-11-10: true, help audit remainder for press-drawn menus open]
 - **Chat panels not measured**: `#chat-model-panel` with a model connected
   (`popupsart.js` (removed 2026-10-12, recoverable from git history) cannot open it without one; use `scratchpad/llama-dev.sh`)
   and the chat dock's select menus opened from inside the How it answers sheet
   at 390. Status chips: WORLD_CLASS_PLAN 1.2's wording and DESIGN.md's label
   recipe disagree (taken: the label recipe, `META_EDGED`; if the owner wants
   statuses edgeless it is one rule, `.chip.item-label`'s border). [design-1004]
-  *Needs: the owner's call on the chips.* (checked 2026-11-09)
+  *Needs: the owner's call on the chips.* (checked 2026-11-09) [verified 2026-11-10: true, chat model panel not measured; open]
 - **The tour**: the Timeline's Options and the reminders' More were measured at
   390 only. (The fresh data dir walk and widths 600 to 1100 are done, HISTORY.md,
   "OPEN.md rows closed, 2026-10-05 (the pre-0.4.0 buildable rows, sweeps on port
-  8815)".) [tourdepth] (checked 2026-11-09)
+  8815)".) [tourdepth] (checked 2026-11-09) [verified 2026-11-10: true, Timeline Options and reminders More at 390 only; open]
 - **Tablet layouts**: the Documents dock is two rows at 1024 (its identity
   asks for 22rem beside the actions); the arc layout of a 430-note notebook
   framed whole is a line of dots until zoomed; the Notes sub-tabs do not fit the
@@ -3254,7 +3254,7 @@ pane's name, the errors sweep's aside clipping at 390.
   owner's or the plan's decision). The status bar's fold into the top bar under
   680px is not built, and measured it overlaps nothing, HISTORY.md, "OPEN.md rows
   closed, 2026-10-05 (the pre-0.4.0 buildable rows, sweeps on port 8815)".
-  [graph-wb-0926] (checked 2026-11-09)
+  [graph-wb-0926] (checked 2026-11-09) [verified 2026-11-10: true, Documents dock two rows at 1024; arc layout open]
 - **Dashboard and Timeline**: D6's streak (the calendar strip and the day
   before and after are built, `daystrip.js`; a streak count has no surface:
   the dock is at its grammar and `.dock-chip-row` is held at zero uses); "Undo all" for a
@@ -3262,10 +3262,10 @@ pane's name, the errors sweep's aside clipping at 390.
   needs `tools.execute_tool` to run the undos in one transaction, or it is N
   requests that can half fail); the graph signal needs an open note, and the
   Notes filter uses `/search` for operators it does not know. [openitems]
-  *Needs: design steps, each its own brief.* (checked 2026-11-09)
+  *Needs: design steps, each its own brief.* (checked 2026-11-09) [verified 2026-11-10: true, D6 streak has no surface; open]
 - **The capture draft counts as unsaved work**, so every tab switch with a
   draft asks "Leave without saving?" though the draft is kept and the switch
-  loses nothing: a decision, not a bug. [wrapup-0927] (checked 2026-11-09)
+  loses nothing: a decision, not a bug. [wrapup-0927] (checked 2026-11-09) [verified 2026-11-10: stale, decision that the draft counts as unsaved work, not a defect]
 
 ### Backend, architecture and tooling
 
@@ -3277,7 +3277,7 @@ pane's name, the errors sweep's aside clipping at 390.
   reverted: a test instead of a list and per-category counts in the corpus
   (exact, removed the walks, not the time). Next: a smaller postings budget
   measured with `scratchpad/filing_eval.py`, or the k nearest read from the
-  engine's matrix once per save. [arch1005, perf2-1005] (checked 2026-11-09)
+  engine's matrix once per save. [arch1005, perf2-1005] (checked 2026-11-09) [verified 2026-11-10: true, POST /entries 210 to 615 ms, above the 150 ms target; open]
 - **The rest of the architecture audit** (`scratchpad/audit1005/arch.md` (removed 2026-10-12, recoverable from git history)):
   ARCH-04's client half (the cursor exists, `after` and `X-Next-Cursor`, but
   `notes-list.js` still reads every page by offset into `allEntries`); ARCH-13
@@ -3289,7 +3289,7 @@ pane's name, the errors sweep's aside clipping at 390.
   (the import-cycle ratchet holds 15 and 3); ARCH-25 (the pool size, a chat
   stream holding its connection, `restore_backup` with sessions open: read, not
   reproduced). ARCH-09 stays as built: `file-entry` shares the one-wide model
-  lane with captions on purpose. [arch1005, perf2-1005] (checked 2026-11-09)
+  lane with captions on purpose. [arch1005, perf2-1005] (checked 2026-11-09) [verified 2026-11-10: true, architecture audit rest open; ARCH-04 client half]
 - **The frontend audit's leftovers** (`scratchpad/audit1005/frontend.md` (removed 2026-10-12, recoverable from git history)):
   FE-09 unused CSS (no coverage-driven deletion started); FE-10 Settings panes'
   markup is not fetched on first open (a `<template>` is still parsed and boot
@@ -3297,21 +3297,21 @@ pane's name, the errors sweep's aside clipping at 390.
   FE-11 the 720 and 640 groups (26 + 6 and 11 queries, each needing its own
   sweep); FE-13 the tab JS at 5,000 notes was not profiled again; FE-14 on a
   phone the chips' overhang is 44px and a card clips it below its last row
-  (34px reached). [perf2-1005] (checked 2026-11-09)
+  (34px reached). [perf2-1005] (checked 2026-11-09) [verified 2026-11-10: true, FE-09 unused CSS audit leftovers open]
 - **Retrieval and the learned loop, plan rows whose half-built parts live in
   the scratchpad**: "most opened this month" is parked in
   `scratchpad/wc1005b-most-opened.md` (removed 2026-10-12, recoverable from git history) (`core/opens.py`, `GET
   /entries/most-accessed?period=month`, hooks on `flashEntry` and
   `openNotePage`, the Most used widget's seg, then the HISTORY block and a
-  CHANGELOG line); the "wrong" correction on an evidence card (I7's second (checked 2026-11-09)
+  CHANGELOG line); the "wrong" correction on an evidence card (I7's second (checked 2026-11-09) [verified 2026-11-10: true, most-opened parked; /entries/most-accessed route exists, core/opens.py absent]
 
 - **A flaky timing test**: `tests/test_relations_kg2.py`'s 10k timing is flaky
   under load (the typo, message-wording, thread-ratchet and list-paging tests
   perf2-1005 and worldclass-1004 recorded as red pass on the head, 2026-10-05).
-  [perf2-1005] (checked 2026-11-09)
+  [perf2-1005] (checked 2026-11-09) [verified 2026-11-10: true, tests/test_relations_kg2.py 10k timing flaky under load]
 - **Retrieval and the learned loop, plan rows**: the "wrong" correction on an evidence card (I7's second
   half) and I1 pass 2's kinds as derived facts (dates, duplicates, entities)
-  are WORLD_CLASS_PLAN rows. [worldclass-1005b, worldclass-1004] (checked 2026-11-09)
+  are WORLD_CLASS_PLAN rows. [worldclass-1005b, worldclass-1004] (checked 2026-11-09) [verified 2026-11-10: true, wrong-correction on evidence card and I1 pass 2 kinds open]
 - **Smaller backend and gate rows**: a note type made through `POST
   /note-types` before the list was read, then deleted, loses its id on Undo
   (not reproduced, pinned by a test); `gate.sh --changed` selects most of the
@@ -3320,19 +3320,19 @@ pane's name, the errors sweep's aside clipping at 390.
   once and filled the filesystem (`rm -rf` it); the Guide's longest topics sit
   at 1,916 of 1,920 characters and boot CSS at 183,210 of 183,300 gzipped
   bytes, so any new rule needs dead CSS cut first.
-  [integ-1005, open-rows-1005, wb-phase2, sweeps, backend-probe, boardmap-1005] (checked 2026-11-09)
+  [integ-1005, open-rows-1005, wb-phase2, sweeps, backend-probe, boardmap-1005] (checked 2026-11-09) [verified 2026-11-10: true, note-types undo id loss not reproduced; open]
 - **Sweeps**: `touch.js` needs `timeout 300`;
   `revealcell.js` at 390 needs the editor opened first; `errors.js` took
   "Target crashed" at a tab switch (2026-10-05): it did not reproduce on a fresh
   data dir, so the sweep is hardened (a browser per width,
   `--disable-dev-shm-usage`, a crash reported as a finding) and the cause is
-  named by its signature, not measured. [sweeps, small-1005, backlog-1005b] (checked 2026-11-09)
+  named by its signature, not measured. [sweeps, small-1005, backlog-1005b] (checked 2026-11-09) [verified 2026-11-10: true, sweep caveats open (touch.js timeout, errors.js crash)]
 - **Not verified**: Quit's 0.72 opacity contrast is computed (about 3.1:1
   light, 5:1 dark), not read from pixels; the line numbers' baseline drop is
   measured in the sandbox's system-ui only (Segoe UI has other metrics); the
   Windows rasteriser at 125% and 150%; every tablet and phone number is
   Chromium emulation; a real model for the Atlas, retrieval and skill rows.
-  [design-rows-1005, quick-gutter, iconalign-skel-1005] (checked 2026-11-09)
+  [design-rows-1005, quick-gutter, iconalign-skel-1005] (checked 2026-11-09) [verified 2026-11-10: true, Quit opacity contrast computed not read; open]
 
 ## Closed 2026-10-06 (the last round's three found-not-fixed items)
 
@@ -3346,7 +3346,7 @@ pane's name, the errors sweep's aside clipping at 390.
   large x compact, comfortable, spacious x all seven tabs, 20 failures to 0;
   `phonehead.js` 0 findings. Note `innerWidth` grows with the content on a
   mobile context (it read 368), so the sweep bounds against the viewport it
-  asked for. (checked 2026-11-09)
+  asked for. (checked 2026-11-09) [verified 2026-11-10: true, 360px header overflow at Large text, hash c069120; cause open]
 - **Four sweeps repaired** (447d6fb, e4c1b76, and the commit that records this).
   `kebab-viewport.js` ran 80s, the Bash limit's edge: `ONLY=menus|dock|wb`
   splits it (12, 8 and 60 checks) and a not-found or did-not-open line now
@@ -3358,10 +3358,10 @@ pane's name, the errors sweep's aside clipping at 390.
   to 44 clamps), 43/43. It found a real fault: the grip, link and reference
   doors closed over the object the node was built with (`wbMapLiveDatum` now
   looks it up by id), so after a refresh a plain grip drag restored a cleared
-  25px text size. (checked 2026-11-09)
+  25px text size. (checked 2026-11-09) [verified 2026-11-10: fixed, four sweeps repaired at 447d6fb and e4c1b76, both in history]
 - *Found, not fixed:* `phonetabs.js` reports 3 findings on a near-empty
   notebook (the bar does not recede on scroll there: nothing scrolls); not
-  compared against the base, since the change here does not touch the dock. (checked 2026-11-09)
+  compared against the base, since the change here does not touch the dock. (checked 2026-11-09) [verified 2026-11-10: true, phonetabs.js 3 findings on a near-empty notebook; found, not fixed]
 
 ## Not verified
 
@@ -3371,7 +3371,7 @@ pane's name, the errors sweep's aside clipping at 390.
   nudge with an offset written into it, or a grounding answer that
   paraphrases. The grounding event that was measured came from seeding a note
   containing the stand-in's one fixed sentence. [chat-b.md,
-  brief-13-harness.md, learning-loop.md, chat-popup-agent.md] (checked 2026-11-09)
+  brief-13-harness.md, learning-loop.md, chat-popup-agent.md] (checked 2026-11-09) [verified 2026-11-10: true, fake transport caveat; real-model work unverified]
 - **Nothing Windows was executed**: `splash.ps1` has never been drawn (layout,
   the marquee, the Details toggle, `Clipboard::SetText` from a hidden host,
   the error card's button swap), `start.bat --doctor` has never printed its
@@ -3380,22 +3380,22 @@ pane's name, the errors sweep's aside clipping at 390.
   non-English Windows. **Not run on macOS** either: `./start.sh --shortcut`'s
   Finder-alias branch, its symlink fallback and the `notify`-mode splash. The
   doctor's Ollama and Updates rows were exercised only in their negative
-  state. [launcher.md] (checked 2026-11-09)
+  state. [launcher.md] (checked 2026-11-09) [verified 2026-11-10: true, Windows splash never drawn; splash.ps1 present]
 - **No pre-Brief-7 database was upgraded.** Both migrations are exercised by
   the suite and written to be idempotent, but a real year-old file was never
   opened; compaction's numbers come from a database this sandbox built (150
   notes, 40 edits each) and one running app's notebook.
-  [brief7-event-log.md] (checked 2026-11-09)
+  [brief7-event-log.md] (checked 2026-11-09) [verified 2026-11-10: true, no pre-Brief-7 database upgraded for real]
 - **Nothing in the learning loop was measured past a test-sized notebook.**
   The pass is O(notes) with one query per note for the already-known
   fingerprints, which is the first thing to profile on a real notebook. The
   resurfacing numbers are this sandbox's: read 6.7 ms at 800 notes, compute 50
-  to 230 ms. [learning-loop.md] (checked 2026-11-09)
+  to 230 ms. [learning-loop.md] (checked 2026-11-09) [verified 2026-11-10: true, learning loop not measured past test size]
 - **Every cosine number in the retrieval work came from the 4-dimensional
   fake.** A real backend is 384-dimensional, anisotropic, and its `embed_text`
   per query is the cost the engine does not measure. Next step:
   WORLD_CLASS_PLAN 9's runner, then re-run
-  `scratchpad/search/measure_engine.py` (removed 2026-10-12, recoverable from git history). [brief11-retrieval-engine.md] (checked 2026-11-09)
+  `scratchpad/search/measure_engine.py` (removed 2026-10-12, recoverable from git history). [brief11-retrieval-engine.md] (checked 2026-11-09) [verified 2026-11-10: true, cosine numbers from 4-dim fake; embed_text cost open]
 - **Chromium only, mostly 1440x900, no second browser and no real touch
   device.** The graph's world constant in `gcWorldFor` (1.6 to 1.25) is
   reasoned above about a thousand notes; touch and pinch on the map are
@@ -3403,9 +3403,9 @@ pane's name, the errors sweep's aside clipping at 390.
   the documents contrast ratios use one sampled ground (`--page` is a
   gradient, so the dark figure `rgb(27, 31, 44)` comes from
   `scratchpad/pngpixel.py` on three points of a screenshot). [graph.md,
-  whiteboard-phases.md, documents-batch.md, visual-c.md] (checked 2026-11-09)
+  whiteboard-phases.md, documents-batch.md, visual-c.md] (checked 2026-11-09) [verified 2026-11-10: true, Chromium only, no real touch device; gcWorldFor constant open]
 - **The desktop window was never run** (`start-desktop.sh`); every visual
-  claim on this branch is a browser tab. [prose-intelligence.md, visual-c.md] (checked 2026-11-09)
+  claim on this branch is a browser tab. [prose-intelligence.md, visual-c.md] (checked 2026-11-09) [verified 2026-11-10: true, start-desktop.sh never run; desktop window unverified]
 - **Every frame-cost number is headless Chromium with no GPU**, so the ranking
   and the order of magnitude hold and the absolute milliseconds do not. The
   background slider's visible effect per step is still unmeasured: ink on the
@@ -3414,49 +3414,49 @@ pane's name, the errors sweep's aside clipping at 390.
   ends moves by less than this environment's noise. The honest next step is a
   person looking at five screenshots, or a design change so the slider drives
   something with a large signature (the wash's own alpha). Mesh is the
-  expensive style (+27.6ms a frame, worst frame 166.7ms). [responsive.md] (checked 2026-11-09)
+  expensive style (+27.6ms a frame, worst frame 166.7ms). [responsive.md] (checked 2026-11-09) [verified 2026-11-10: true, frame-cost numbers headless with no GPU; open]
 - **How the dark palette reads on an OLED panel or at another display gamma**,
   and the luminance column `glassdepth.js` takes, which was not re-run after
-  the shadow tokens changed. [responsive.md, visual-c.md] (checked 2026-11-09)
+  the shadow tokens changed. [responsive.md, visual-c.md] (checked 2026-11-09) [verified 2026-11-10: true, OLED and display gamma not checked; glassdepth.js not re-run]
 - **A PDF's page picture was never seen drawn**: this sandbox has no PDF
   render extra (`pdfpages.available()` is false, `/media/pdf-page/...` answers
   404), so the OCR workspace's stage stayed empty for a PDF. Choosing a reader
   was not exercised end to end either: all three options are `disabled` here,
   so the option row's click handler correctly returns without changing the
   value. Nothing measures a real reading: no vision model and no Tesseract ran.
-  [library-blockers.md, ask-head-ocr.md] (checked 2026-11-09)
+  [library-blockers.md, ask-head-ocr.md] (checked 2026-11-09) [verified 2026-11-10: true, PDF page picture never seen; pdfpages.available false here]
 - **No screen reader was run** against `aria-current="location"` in the
-  documents outline. [doc-sidebar.md] (checked 2026-11-09)
+  documents outline. [doc-sidebar.md] (checked 2026-11-09) [verified 2026-11-10: true, no screen reader run against aria-current]
 - **IME composition inside the editor engine**, and the fallback path reached
   by a genuinely blocked request rather than by setting `docCmBroken` by hand.
   (The fallback surface itself was verified in 2026-09-13's `docfallback.js` (removed 2026-10-12, recoverable from git history)
-  run, 8 of 8.) [documents-engine.md, documents-phases.md] (checked 2026-11-09)
+  run, 8 of 8.) [documents-engine.md, documents-phases.md] (checked 2026-11-09) [verified 2026-11-10: true, IME composition and docCmBroken fallback path not driven; open]
 - **The whiteboard's PDF export** goes through the browser's print dialog,
   which Playwright cannot complete, so it is the one pair of the
   scope-by-format matrix no sweep asserts; pen pressure and the rail's
   long-press flyout have never been driven by a touch device; the
   highlighter's Shift-straight branch is exercised by hand, not by the gate.
-  [whiteboard-phases.md] (checked 2026-11-09)
+  [whiteboard-phases.md] (checked 2026-11-09) [verified 2026-11-10: true, PDF export via print dialog not testable in Playwright; open]
 - **The popup agent's results pane with a conversation in it.** Everything was
   measured on the empty state, since this sandbox has no model;
   `.command-palette-results` keeps its own `--card-pad-x` inset, and that is
-  reasoned, not observed. [popup-redesigns.md] (checked 2026-11-09)
+  reasoned, not observed. [popup-redesigns.md] (checked 2026-11-09) [verified 2026-11-10: true, popup results pane with a conversation not measured; open]
 - **Write with AI was measured with the model off**, so "Draft it" is disabled
   and the draft box is empty in every measurement. The column heights are the
   same either way (the boxes stretch), but an in-flight draft with its Stop
-  button and a long status line has not been seen. [notes-subtabs.md] (checked 2026-11-09)
+  button and a long status line has not been seen. [notes-subtabs.md] (checked 2026-11-09) [verified 2026-11-10: true, Write with AI measured with model off; open]
 - **A real log stream under load.** The live pill reads green and the filters
   hide the right count (275 records on the seeded server), but nothing here
   produced a burst, so Follow's scroll-pinning was not exercised beyond
-  toggling it. [logs-cards-links.md] (checked 2026-11-09)
+  toggling it. [logs-cards-links.md] (checked 2026-11-09) [verified 2026-11-10: true, real log stream under load not produced; open]
 - **Real-browser text metrics beyond Chromium.** The wrap sweep measured
   420 to 2200px at the app's own 95% `--zoom`; a different engine could shift
   an exact wrap breakpoint by a few pixels, and none of the fixes depends on
-  one holding. [wrap-sweep.md] (checked 2026-11-09)
+  one holding. [wrap-sweep.md] (checked 2026-11-09) [verified 2026-11-10: true, text metrics beyond Chromium not measured; open]
 
 ## Atlas and the companion, placed from INBOX 752 (2026-10-10)
 
-- The behaviour model (Brief 34, second part): a state machine with blended transitions, idle variation from a weighted pool, reactions to every app event with a budget, gaze and lean, the enlarged view on the same state. Measures: snapping transitions per minute 0; 12 distinct idle motions per ten minutes; reaction latency under 100 ms. (checked 2026-11-09)
+- The behaviour model (Brief 34, second part): a state machine with blended transitions, idle variation from a weighted pool, reactions to every app event with a budget, gaze and lean, the enlarged view on the same state. Measures: snapping transitions per minute 0; 12 distinct idle motions per ten minutes; reaction latency under 100 ms. (checked 2026-11-09) [verified 2026-11-10: true, Brief 34 behaviour model second part; open]
 
 ## Atlas, placed from the owner's list 2026-10-10
 
@@ -3465,320 +3465,320 @@ Entries are the owner's words, then the recommendation. Bugs come first, then de
 ### Bugs
 
 - "I cant right click to view the menu to change the companion in the expanded popup view"
-  Recommendation: the enlarged view gets the same context menu as the small companion, with the change-companion item in it. Also carried by Brief 34 (the enlarged view). (checked 2026-11-09)
+  Recommendation: the enlarged view gets the same context menu as the small companion, with the change-companion item in it. Also carried by Brief 34 (the enlarged view). (checked 2026-11-09) [verified 2026-11-10: true, enlarged popup lacks the small view's context menu; open]
 
 ### Design requests
 
 - "I barely get to see atlas change expression. atlas and the companion movement and behaviour need to be more and more lifelike, natural, smooth, varied, and more."
-  Recommendation: mood changes are visible within a short session, measured as mood changes per session before and after. Also carried by Brief 34 (moods that change, lifelike motion). (checked 2026-11-09)
+  Recommendation: mood changes are visible within a short session, measured as mood changes per session before and after. Also carried by Brief 34 (moods that change, lifelike motion). (checked 2026-11-09) [verified 2026-11-10: true, owner ask on expressions and lifelike motion; open]
 - "The companion and atlas needs a lot more improvement, and lifelike behaviour, more cool and diverse ways to move around, enter the screen, change between behaviours and more."
-  Recommendation: add entrance and behaviour-change animations to the companion and Atlas, and count the distinct movements per session. Also carried by Brief 34 (gestures, entries and the walk cycle). (checked 2026-11-09)
+  Recommendation: add entrance and behaviour-change animations to the companion and Atlas, and count the distinct movements per session. Also carried by Brief 34 (gestures, entries and the walk cycle). (checked 2026-11-09) [verified 2026-11-10: true, owner ask on companion behaviour variety; open]
 
 ## Left by the deepen agent (Brief 72a, merged 2026-10-10)
 
-- Not verified: whether the closed `.doc-dock-menu-list` at 390 paints (it lays out, 13 items, x = -32 on a code document); open it and measure before Brief 76 row 2. (checked 2026-11-09)
-- Not verified: the map grip that overlaps "Add a child to" (its accessible name was not read; it shows only with a topic selected after adding children). (checked 2026-11-09)
-- Undo counts for documents (2/11), OCR (0/5) and meetings (1/6) are a static read of each handler for `pushUndo`, not driven; Brief 74's `undo.js` replaces them. (checked 2026-11-09)
-- Not driven: Summarise's 503 with no model (read from `routes_meetings.py`), pinch zoom in the OCR workspace, the phone path of any board or map command, Find anything for "ocr". (checked 2026-11-09)
-- Timings vary two to four times between runs (the machine was shared with other agents; map add-a-child 102 to 424 ms); the blocks give ranges. Rerun `deepen72a.js` on an idle machine before a brief quotes a "before". (checked 2026-11-09)
-- Bergamot's licence (MPL-2.0 into AGPL-3.0) and sizes are stated as the evaluation's job (Brief 83), not checked here. (checked 2026-11-09)
+- Not verified: whether the closed `.doc-dock-menu-list` at 390 paints (it lays out, 13 items, x = -32 on a code document); open it and measure before Brief 76 row 2. (checked 2026-11-09) [verified 2026-11-10: true, closed .doc-dock-menu-list paint at 390 not measured]
+- Not verified: the map grip that overlaps "Add a child to" (its accessible name was not read; it shows only with a topic selected after adding children). (checked 2026-11-09) [verified 2026-11-10: true, map grip overlap with 'Add a child to' not read; open]
+- Undo counts for documents (2/11), OCR (0/5) and meetings (1/6) are a static read of each handler for `pushUndo`, not driven; Brief 74's `undo.js` replaces them. (checked 2026-11-09) [verified 2026-11-10: true, undo counts from static reads; undo.js replaces them]
+- Not driven: Summarise's 503 with no model (read from `routes_meetings.py`), pinch zoom in the OCR workspace, the phone path of any board or map command, Find anything for "ocr". (checked 2026-11-09) [verified 2026-11-10: true, Summarise 503, pinch zoom and phone board paths not driven]
+- Timings vary two to four times between runs (the machine was shared with other agents; map add-a-child 102 to 424 ms); the blocks give ranges. Rerun `deepen72a.js` on an idle machine before a brief quotes a "before". (checked 2026-11-09) [verified 2026-11-10: true, timings vary between runs; rerun of deepen72a.js open]
+- Bergamot's licence (MPL-2.0 into AGPL-3.0) and sizes are stated as the evaluation's job (Brief 83), not checked here. (checked 2026-11-09) [verified 2026-11-10: true, Bergamot licence check left to Brief 83; open]
 
 ## Carried from the agent files archived 2026-10-10
 
 Thirty-nine finished agent files moved to [`../archive/agent-remaining/`](../archive/agent-remaining) on 2026-10-10, in four batches: every file dated 1005 or 1006, and landing-645, meetings-644 and mc1. Each row is what a file still held that is open on the head the day it moved and that neither HISTORY.md, CHANGELOG.md, the plans nor INBOX holds. The file in brackets has the measurements.
 
-- Drag to delete takes no drag from the board sidebar (Library, Layers) onto the trash target; a drop from the Library panel is not a delete. (from av1-1005.md) (checked 2026-11-09)
-- 24 single-line `toast("...", true)` calls with a literal message remain in `frontend/js`; some are expected conditions (validation, "nothing to ... yet") that carry Report this. A `report: false` option costs boot bytes. (from e2e-1005.md) (checked 2026-11-09)
-- With a model, the composer shows "Filed under Work (100% sure)" for a small model's pick (a dentist appointment); the certainty shown for a small model's pick is too high. (from e2e-1005.md) (checked 2026-11-09)
-- A row added or removed after a list's first render does not fade; the lists redraw whole, so this needs keyed rendering first. (from motion-1005.md) (checked 2026-11-09)
-- Help popovers close at once: a popover goes home and is removed on close, which cancels its exit transition. (from motion-1005.md) (checked 2026-11-09)
-- A sub-tab's panel does not cross-fade; only its line slides. CSS cannot tell a section switch from a page arriving; it needs a class set by `showNotesSection`. (from motion-1005.md) (checked 2026-11-09)
-- CHAT: the evals gate runs on a 3B model (hours on these cores) and waits on a real-model run. (from op3-1005.md) (checked 2026-11-09)
-- The `.skill-fact-reads` chip reads dy +4px in one of four identical instances on the Skills sub-tab at 1440 (badgealign.js); the instance is not isolated. (from op3-1005.md) (checked 2026-11-09)
-- Sweeps that only click the Library tab time out, because the Library opens on its last sub-tab. `bm1005-sidebar.js` and `bm1005-mapmulti.js` click Boards and maps first; the rest do not. (from op3-1005.md) (checked 2026-11-09)
-- UI_MOD Phase 11 item 11: the screenshot set for the owner, which needs a place the owner reads. (from op4-1005.md) (checked 2026-11-09)
-- 444 decision 10, still open: the Tools (4,247px) and Appearance (1,296px) panes are indexed, not split. (from op4-1005.md) (checked 2026-11-09)
-- Two-finger scroll jump (460): not reproduced twice; needs a real touchpad trace. (from op4-1005.md) (checked 2026-11-09)
-- Owner's call: RapidOCR ships as an optional extra (Settings, Packages); confirm it against the 2026-10-05 "fully local, vendored" rule (WORLD_CLASS_PLAN row 31). (from op4-1005.md) (checked 2026-11-09)
-- Doc-focus panels between 720 and 819px cover the page, as below 720 did before; not driven in a sweep. (from op5-1005.md) (checked 2026-11-09)
-- Sweeps that wait a fixed 1.2 s for the whiteboard's lazy bundle flake under load (`initWhiteboard is not defined`). `op5-1005.js` and `mapviewmenu.js` wait for the function; the other sweeps with a fixed wait do not. (from op5-1005.md) (checked 2026-11-09)
-- The board preview labels (`mapPreview` in note-cards.js) run over the next shape ("Cut the sign-up fro…" across a diamond); the label placement is INBOX 263's design and the whiteboard agent's surface. (from qa-1005.md) (checked 2026-11-09)
-- At 1440 with the Connections rail open, the Notes dock wraps nine controls onto a second row; DESIGN.md says seven at most. A judgement for the dock grammar's owner. (from qa-1005.md) (checked 2026-11-09)
-- `scratchpad/ui-sweeps/lib.js` LOOK= writes the look into the server's preferences, so later sweeps on that data dir inherit it; run a LOOK=utilitarian sweep last. (from qa-1005.md) (checked 2026-11-09)
-- installer.iss's ISPP version reader (`#sub`, `#for`, `RPos`) compiles only on Windows; it is not verified until a Windows CI run passes. (from windows-packaging-1005.md) (checked 2026-11-09)
-- The upgrade step downloads the latest release with `gh` and `github.token`; a fork or a repo without releases fails it loudly. (from windows-packaging-1005.md) (checked 2026-11-09)
-- The traceback check in the smoke step reads the app's whole output; a benign logged traceback on Windows would fail it. (from windows-packaging-1005.md) (checked 2026-11-09)
-- The installer's optional packages (owner, 2026-10-07: "there's no indicator for the optional packages install and I cant minimise or close the window"): Setup waits on pip and cannot repaint, minimise or cancel. Recommendation: Setup records the picks and finishes; the app installs them on first launch as a background task with progress, a log and Stop (a stopped install rolls back, `extras._roll_back`). (from windows-packaging-1005.md) (checked 2026-11-09)
-- `docs/CHANGELOG.md`, `docs/CONTRIBUTING.md` and `docs/SECURITY.md` are mirrors that nothing reads now (the old site fetched them). Keeping or retiring them is the orchestrator's call. (from landing-645.md) (checked 2026-11-09)
-- INBOX 641's rest, which INBOX.md no longer holds: Illustrator linked symbols (`library_ref` in whiteboard-library.js), Photoshop topic effects (a level field each, `WB_MAP_LEVEL_FIELDS` and `MAP_LEVEL_FIELDS`), Miro reactions, and the whiteboard half of the research. (from mc1.md) (checked 2026-11-09)
-- PNG and SVG export draws every topic as one box: `wbBuildExportSvg` (whiteboard.js) leaves out levels, shapes and Phosphor icons. (from mc1.md) (checked 2026-11-09)
-- `DOC_EMOJI_SOURCE` (documents-prose.js) is a second emoji table beside `ICON_EMOJI_SOURCE` (icon-picker.js). (from mc1.md) (checked 2026-11-09)
-- Playwright reported the topic strip's Text toggle "not visible" after an icon pick, though its rect is 58px wide; `mc1-iconpicker.js` works around it with evaluate clicks. Not investigated. (from mc1.md) (checked 2026-11-09)
+- Drag to delete takes no drag from the board sidebar (Library, Layers) onto the trash target; a drop from the Library panel is not a delete. (from av1-1005.md) (checked 2026-11-09) [verified 2026-11-10: true, drag from board sidebar to trash not a delete; open]
+- 24 single-line `toast("...", true)` calls with a literal message remain in `frontend/js`; some are expected conditions (validation, "nothing to ... yet") that carry Report this. A `report: false` option costs boot bytes. (from e2e-1005.md) (checked 2026-11-09) [verified 2026-11-10: true, 24 literal toast calls remain in frontend/js]
+- With a model, the composer shows "Filed under Work (100% sure)" for a small model's pick (a dentist appointment); the certainty shown for a small model's pick is too high. (from e2e-1005.md) (checked 2026-11-09) [verified 2026-11-10: true, Filed under Work (100% sure) shown for small model picks; open]
+- A row added or removed after a list's first render does not fade; the lists redraw whole, so this needs keyed rendering first. (from motion-1005.md) (checked 2026-11-09) [verified 2026-11-10: true, lists redraw whole so no fade on add or remove; open]
+- Help popovers close at once: a popover goes home and is removed on close, which cancels its exit transition. (from motion-1005.md) (checked 2026-11-09) [verified 2026-11-10: true, help popovers remove on close, cancelling exit transition]
+- A sub-tab's panel does not cross-fade; only its line slides. CSS cannot tell a section switch from a page arriving; it needs a class set by `showNotesSection`. (from motion-1005.md) (checked 2026-11-09) [verified 2026-11-10: true, sub-tab panel does not cross-fade; showNotesSection class not set]
+- CHAT: the evals gate runs on a 3B model (hours on these cores) and waits on a real-model run. (from op3-1005.md) (checked 2026-11-09) [verified 2026-11-10: true, evals gate waits on a real-model run; open]
+- The `.skill-fact-reads` chip reads dy +4px in one of four identical instances on the Skills sub-tab at 1440 (badgealign.js); the instance is not isolated. (from op3-1005.md) (checked 2026-11-09) [verified 2026-11-10: true, .skill-fact-reads dy +4px on one instance; not isolated]
+- Sweeps that only click the Library tab time out, because the Library opens on its last sub-tab. `bm1005-sidebar.js` and `bm1005-mapmulti.js` click Boards and maps first; the rest do not. (from op3-1005.md) (checked 2026-11-09) [verified 2026-11-10: true, Library sweeps time out; bm1005 scripts still click Boards and maps]
+- UI_MOD Phase 11 item 11: the screenshot set for the owner, which needs a place the owner reads. (from op4-1005.md) (checked 2026-11-09) [verified 2026-11-10: true, owner screenshot set for UI Phase 11 item 11 not placed]
+- 444 decision 10, still open: the Tools (4,247px) and Appearance (1,296px) panes are indexed, not split. (from op4-1005.md) (checked 2026-11-09) [verified 2026-11-10: true, Tools and Appearance panes indexed, not split (decision 10)]
+- Two-finger scroll jump (460): not reproduced twice; needs a real touchpad trace. (from op4-1005.md) (checked 2026-11-09) [verified 2026-11-10: true, two-finger scroll jump not reproduced; needs a touchpad trace]
+- Owner's call: RapidOCR ships as an optional extra (Settings, Packages); confirm it against the 2026-10-05 "fully local, vendored" rule (WORLD_CLASS_PLAN row 31). (from op4-1005.md) (checked 2026-11-09) [verified 2026-11-10: true, owner's call on RapidOCR as an optional extra; open]
+- Doc-focus panels between 720 and 819px cover the page, as below 720 did before; not driven in a sweep. (from op5-1005.md) (checked 2026-11-09) [verified 2026-11-10: true, doc-focus panels 720 to 819px not driven]
+- Sweeps that wait a fixed 1.2 s for the whiteboard's lazy bundle flake under load (`initWhiteboard is not defined`). `op5-1005.js` and `mapviewmenu.js` wait for the function; the other sweeps with a fixed wait do not. (from op5-1005.md) (checked 2026-11-09) [verified 2026-11-10: true, fixed 1.2 s waits in op5-1005.js and mapviewmenu.js; flake open]
+- The board preview labels (`mapPreview` in note-cards.js) run over the next shape ("Cut the sign-up fro…" across a diamond); the label placement is INBOX 263's design and the whiteboard agent's surface. (from qa-1005.md) (checked 2026-11-09) [verified 2026-11-10: true, mapPreview labels run over the next shape; open]
+- At 1440 with the Connections rail open, the Notes dock wraps nine controls onto a second row; DESIGN.md says seven at most. A judgement for the dock grammar's owner. (from qa-1005.md) (checked 2026-11-09) [verified 2026-11-10: true, Notes dock wraps nine controls at 1440 with rail open; owner judgement]
+- `scratchpad/ui-sweeps/lib.js` LOOK= writes the look into the server's preferences, so later sweeps on that data dir inherit it; run a LOOK=utilitarian sweep last. (from qa-1005.md) (checked 2026-11-09) [verified 2026-11-10: true, lib.js LOOK= writes into server preferences; sweep caveat stands]
+- installer.iss's ISPP version reader (`#sub`, `#for`, `RPos`) compiles only on Windows; it is not verified until a Windows CI run passes. (from windows-packaging-1005.md) (checked 2026-11-09) [verified 2026-11-10: true, installer.iss ISPP reader unverified until Windows CI]
+- The upgrade step downloads the latest release with `gh` and `github.token`; a fork or a repo without releases fails it loudly. (from windows-packaging-1005.md) (checked 2026-11-09) [verified 2026-11-10: true, upgrade step fails on forks without releases; open]
+- The traceback check in the smoke step reads the app's whole output; a benign logged traceback on Windows would fail it. (from windows-packaging-1005.md) (checked 2026-11-09) [verified 2026-11-10: true, smoke traceback check reads whole output; open]
+- The installer's optional packages (owner, 2026-10-07: "there's no indicator for the optional packages install and I cant minimise or close the window"): Setup waits on pip and cannot repaint, minimise or cancel. Recommendation: Setup records the picks and finishes; the app installs them on first launch as a background task with progress, a log and Stop (a stopped install rolls back, `extras._roll_back`). (from windows-packaging-1005.md) (checked 2026-11-09) [verified 2026-11-10: true, optional packages indicator on installer; extras._roll_back not found, open]
+- `docs/CHANGELOG.md`, `docs/CONTRIBUTING.md` and `docs/SECURITY.md` are mirrors that nothing reads now (the old site fetched them). Keeping or retiring them is the orchestrator's call. (from landing-645.md) (checked 2026-11-09) [verified 2026-11-10: true, docs CHANGELOG, CONTRIBUTING and SECURITY mirrors exist; retire decision open]
+- INBOX 641's rest, which INBOX.md no longer holds: Illustrator linked symbols (`library_ref` in whiteboard-library.js), Photoshop topic effects (a level field each, `WB_MAP_LEVEL_FIELDS` and `MAP_LEVEL_FIELDS`), Miro reactions, and the whiteboard half of the research. (from mc1.md) (checked 2026-11-09) [verified 2026-11-10: true, INBOX 641 rest (library_ref, level fields) not in the board code]
+- PNG and SVG export draws every topic as one box: `wbBuildExportSvg` (whiteboard.js) leaves out levels, shapes and Phosphor icons. (from mc1.md) (checked 2026-11-09) [verified 2026-11-10: true, wbBuildExportSvg leaves out levels, shapes and icons]
+- `DOC_EMOJI_SOURCE` (documents-prose.js) is a second emoji table beside `ICON_EMOJI_SOURCE` (icon-picker.js). (from mc1.md) (checked 2026-11-09) [verified 2026-11-10: true, DOC_EMOJI_SOURCE and ICON_EMOJI_SOURCE both present]
+- Playwright reported the topic strip's Text toggle "not visible" after an icon pick, though its rect is 58px wide; `mc1-iconpicker.js` works around it with evaluate clicks. Not investigated. (from mc1.md) (checked 2026-11-09) [verified 2026-11-10: true, mc1-iconpicker.js absent; Text toggle workaround note open]
 
-- Large view: whole-body moves (`nmb-hop`, a hop, a cheer, a startle) move the head 14 to 17px a frame, 2.2 times the rest. Decision needed on slowing them in the large view; recommendation: a gentler `nmb-hop` only under `.nm-viewer-figure`. (from atlas669-1006.md) (checked 2026-11-09)
-- A click in Atlas's own large view costs 22 to 44ms in `setAtlasMood` (every layer's animations, then `atlasApply` on 12 layers), 50 to 100ms on a loaded machine: a stall, not a jump. `atlas669-clickcost.js` measures it. (from atlas669-1006.md) (checked 2026-11-09)
-- The generic (non-Atlas) faces' arms have no rig and so no speed cap; the fastest segment of their wave and hide keyframes was not measured. (from atlas669-1006.md) (checked 2026-11-09)
-- Chromium quirk: a blend's implicit end keyframe held `rotate` at its start value under a CSS animation that starts at the same value. The blend avoids it by easing only the values that moved; not reduced to a minimal case. (from atlas669-1006.md) (checked 2026-11-09)
-- Owner (2026-10-07), a fresh install's search model: an empty or partial `models--BAAI--bge-small-en-v1.5` folder is treated as present, the load runs offline and fails with `EmbeddingCacheBroken`. Treat the model as present only when its weights and config are in the snapshot; otherwise download it as a background task with progress; test an empty and a half-filled cache. (from autoinstall-1006.md) (checked 2026-11-09)
-- Owner (2026-10-07): the janitor warmed a default chat model it never checked ("Chat with 'llama3.2' failed"). `warm_filing_model` (janitor.py:741) should skip quietly, and Settings, Models should say no chat model is chosen. (from autoinstall-1006.md) (checked 2026-11-09)
-- Owner (2026-10-07): on first launch, choose the chat, background and image models from the installed ones instead of llama3.2 (Atlas said "was running llama3.2, which is not installed any more" on a fresh install with five models present). Say once what was chosen and why, with Change. (from autoinstall-1006.md) (checked 2026-11-09)
-- `renderAutonomousSettings` fills the Models-pane checkboxes only when Background tasks or Web search opens (settings.js, per the file, about line 158); the new switch is filled in `renderPrefs` instead. (from autoinstall-1006.md) (checked 2026-11-09)
-- Autonomous with no model running ends "Finished analysing and linking notes." in 65 ms; it should say it had no model (check `agent.run_agent` for a no-provider error event). (from bgprogress-1006.md) (checked 2026-11-09)
-- The night shift's pairing phase is slow (120 s for 2,400 facts and 4,786 pairings with the local matcher), and the bar resets between the reading and comparing phases. (from bgprogress-1006.md) (checked 2026-11-09)
-- If the owner means every pill in a popup, these values are next (kept as `.seg` by DESIGN.md's two-or-three rule): doc-history-filter, ocr-zoom, ocr-view, theme-seg, fontsize-seg, border-style-seg, privacy-range, log-view-toggle, confirm-seg, the print setup, chat-skill-pace, wb-export-seg. (from board715-1006.md) (checked 2026-11-09)
-- Sweep coverage not yet done: an open board or map, the graph's node popup and controls sheet at 390, the print dialog, the lightbox, the confirm dialog, the onboarding tour, the Attach dialog, the date and time pickers, every card's kebab menu; other looks (`LOOK=`), `CONTRAST=on`, forced colours, Large text with Spacious density. (from clip685-1006.md) (checked 2026-11-09)
-- `scroll-padding`: a control focused by Tab in a scroller is scrolled to the edge with its ring half cut. `scroll-padding: var(--ring-room)` on `.tab-page`, `.tab-main`, `.modal-content` and `.library-view-section` would close it; not applied on this head (grep), not measured (the sweep does not tab). (from clip685-1006.md) (checked 2026-11-09)
-- The ring sweep skips a control at the end of a scroller with more content past it, so a real cut at a scrolled edge is not seen; text cut by a fixed height without `overflow` is not seen either. (from clip685-1006.md) (checked 2026-11-09)
-- A ring on a control in a body-level fixed sheet that touches the viewport edge (the phone Writing room's draft textarea) is treated as scroll position; no measured fix. (from clip685-1006.md) (checked 2026-11-09)
-- Found: `one_line` for "when is the harbor launch?" quotes the Q4 roadmap rather than the dated sentence; the compose grounding rows lack it. (from composer-everywhere-1006.md) (checked 2026-11-09)
-- Found: a titled note's every sentence scores on its title (`_score`, `TITLE_WEIGHT`), so the brief keeps up to four dated sentences of a note named for its subject. (from composer-model-1006.md) (checked 2026-11-09)
-- The eval numbers for the whole voice track (before and after) were not reported: run `tests/_composer_eval.py` and record them. (from composer-voice-1006.md) (checked 2026-11-09)
-- Browser check of Ask and Chat with no model at 1440 and 390, light and dark: the "Did you mean" chip and the clarifying question. The sweep `scratchpad/ui-sweeps/voice741.js` is on branch `wip/composer-voice` only. (from composer-voice-1006.md) (checked 2026-11-09)
-- The noisy-question set's coverage (owner: "any and ALL typos ... all slang"): what is still missed, from the eval. (from composer-voice-1006.md) (checked 2026-11-09)
-- Professional variants for the next-question chips and the citation phrases (`mention_*`, `lists`, `echo`), and other languages' wrappers. (from composer-voice-1006.md) (checked 2026-11-09)
-- The Settings voice row was checked in Chromium on the light theme only at 1440 and 390; dark not run. (from composer-voice-1006.md) (checked 2026-11-09)
-- Owner's test (2026-10-07): "How do I change the widgets?" got the whole Dashboard paragraph. A how-to should lead with its step sentence and keep the rest behind "More about the Dashboard". The help voice (`voice="help"`) is in CHAT_PLAN. (from composer-voice-1006.md) (checked 2026-11-09)
-- Ask's "Ask all notes" (`#ask-scope-clear`) is wired only once the Questions view has been opened, so the scope is only set from there (pre-existing). (from composer688-1006.md) (checked 2026-11-09)
-- At 390 the Ask head's model picker sits on its own short line (224px of 330), pre-existing. (from composer688-1006.md) (checked 2026-11-09)
-- Chat's next-question chips were not seen in the browser: the sweep found no `.chat-followups button`. Check `refreshFollowupVisibility` and the chip element (it may not be a button), then fix the element or the sweep. (from composer725-1006.md) (checked 2026-11-09)
-- Clicking an Ask chip was not driven: the sweep's `button` selector missed the chip element. (from composer725-1006.md) (checked 2026-11-09)
-- Link reasons from the composer (owner: "can the composer be user to write better link reasons other than just similar in meaning??"): not started. INBOX 691 is not in INBOX.md, so its concrete overlaps (one note names the other, a shared tag, a shared rare word or name, the same category in the same week) and the sentence-pair reason are open. (from composer725-1006.md) (checked 2026-11-09)
+- Large view: whole-body moves (`nmb-hop`, a hop, a cheer, a startle) move the head 14 to 17px a frame, 2.2 times the rest. Decision needed on slowing them in the large view; recommendation: a gentler `nmb-hop` only under `.nm-viewer-figure`. (from atlas669-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, nmb-hop head moves 2.2 times the rest; decision open]
+- A click in Atlas's own large view costs 22 to 44ms in `setAtlasMood` (every layer's animations, then `atlasApply` on 12 layers), 50 to 100ms on a loaded machine: a stall, not a jump. `atlas669-clickcost.js` measures it. (from atlas669-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, setAtlasMood click cost in avatars.js and atlas.js; open]
+- The generic (non-Atlas) faces' arms have no rig and so no speed cap; the fastest segment of their wave and hide keyframes was not measured. (from atlas669-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, generic faces' arms have no rig speed cap; not measured]
+- Chromium quirk: a blend's implicit end keyframe held `rotate` at its start value under a CSS animation that starts at the same value. The blend avoids it by easing only the values that moved; not reduced to a minimal case. (from atlas669-1006.md) (checked 2026-11-09) [verified 2026-11-10: stale, Chromium quirk already avoided by the blend's easing per the bullet]
+- Owner (2026-10-07), a fresh install's search model: an empty or partial `models--BAAI--bge-small-en-v1.5` folder is treated as present, the load runs offline and fails with `EmbeddingCacheBroken`. Treat the model as present only when its weights and config are in the snapshot; otherwise download it as a background task with progress; test an empty and a half-filled cache. (from autoinstall-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, EmbeddingCacheBroken in embeddings.py; empty model folder case open]
+- Owner (2026-10-07): the janitor warmed a default chat model it never checked ("Chat with 'llama3.2' failed"). `warm_filing_model` (janitor.py:741) should skip quietly, and Settings, Models should say no chat model is chosen. (from autoinstall-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, warm_filing_model in janitor.py:741 still warms unchecked model]
+- Owner (2026-10-07): on first launch, choose the chat, background and image models from the installed ones instead of llama3.2 (Atlas said "was running llama3.2, which is not installed any more" on a fresh install with five models present). Say once what was chosen and why, with Change. (from autoinstall-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, first-launch model choice from installed models not built]
+- `renderAutonomousSettings` fills the Models-pane checkboxes only when Background tasks or Web search opens (settings.js, per the file, about line 158); the new switch is filled in `renderPrefs` instead. (from autoinstall-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, renderAutonomousSettings lazy fill in settings.js]
+- Autonomous with no model running ends "Finished analysing and linking notes." in 65 ms; it should say it had no model (check `agent.run_agent` for a no-provider error event). (from bgprogress-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, autonomous no-model message still says finished; agent.run_agent path open]
+- The night shift's pairing phase is slow (120 s for 2,400 facts and 4,786 pairings with the local matcher), and the bar resets between the reading and comparing phases. (from bgprogress-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, night-shift pairing timing; open]
+- If the owner means every pill in a popup, these values are next (kept as `.seg` by DESIGN.md's two-or-three rule): doc-history-filter, ocr-zoom, ocr-view, theme-seg, fontsize-seg, border-style-seg, privacy-range, log-view-toggle, confirm-seg, the print setup, chat-skill-pace, wb-export-seg. (from board715-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, conditional on owner's meaning of every popup pill; open]
+- Sweep coverage not yet done: an open board or map, the graph's node popup and controls sheet at 390, the print dialog, the lightbox, the confirm dialog, the onboarding tour, the Attach dialog, the date and time pickers, every card's kebab menu; other looks (`LOOK=`), `CONTRAST=on`, forced colours, Large text with Spacious density. (from clip685-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, sweep coverage list not done]
+- `scroll-padding`: a control focused by Tab in a scroller is scrolled to the edge with its ring half cut. `scroll-padding: var(--ring-room)` on `.tab-page`, `.tab-main`, `.modal-content` and `.library-view-section` would close it; not applied on this head (grep), not measured (the sweep does not tab). (from clip685-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, scroll-padding on tab pages; ring cut at scroller edge]
+- The ring sweep skips a control at the end of a scroller with more content past it, so a real cut at a scrolled edge is not seen; text cut by a fixed height without `overflow` is not seen either. (from clip685-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, ring sweep skips the end-of-scroller control; open]
+- A ring on a control in a body-level fixed sheet that touches the viewport edge (the phone Writing room's draft textarea) is treated as scroll position; no measured fix. (from clip685-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, body-level fixed sheet ring treated as scroll position; open]
+- Found: `one_line` for "when is the harbor launch?" quotes the Q4 roadmap rather than the dated sentence; the compose grounding rows lack it. (from composer-everywhere-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, one_line quotes the Q4 roadmap for harbor launch; open]
+- Found: a titled note's every sentence scores on its title (`_score`, `TITLE_WEIGHT`), so the brief keeps up to four dated sentences of a note named for its subject. (from composer-model-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, TITLE_WEIGHT in composer_select.py; title scores every sentence; open]
+- The eval numbers for the whole voice track (before and after) were not reported: run `tests/_composer_eval.py` and record them. (from composer-voice-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, tests/_composer_eval.py present; numbers not recorded]
+- Browser check of Ask and Chat with no model at 1440 and 390, light and dark: the "Did you mean" chip and the clarifying question. The sweep `scratchpad/ui-sweeps/voice741.js` is on branch `wip/composer-voice` only. (from composer-voice-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, voice741.js and wip/composer-voice absent; browser check not done]
+- The noisy-question set's coverage (owner: "any and ALL typos ... all slang"): what is still missed, from the eval. (from composer-voice-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, noisy-question coverage open]
+- Professional variants for the next-question chips and the citation phrases (`mention_*`, `lists`, `echo`), and other languages' wrappers. (from composer-voice-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, professional variants and other languages open]
+- The Settings voice row was checked in Chromium on the light theme only at 1440 and 390; dark not run. (from composer-voice-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, Settings voice row dark theme not run]
+- Owner's test (2026-10-07): "How do I change the widgets?" got the whole Dashboard paragraph. A how-to should lead with its step sentence and keep the rest behind "More about the Dashboard". The help voice (`voice="help"`) is in CHAT_PLAN. (from composer-voice-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, how-to answers lead with the Dashboard paragraph; open]
+- Ask's "Ask all notes" (`#ask-scope-clear`) is wired only once the Questions view has been opened, so the scope is only set from there (pre-existing). (from composer688-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, Ask all notes wired only after Questions opened]
+- At 390 the Ask head's model picker sits on its own short line (224px of 330), pre-existing. (from composer688-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, Ask head model picker on its own line at 390]
+- Chat's next-question chips were not seen in the browser: the sweep found no `.chat-followups button`. Check `refreshFollowupVisibility` and the chip element (it may not be a button), then fix the element or the sweep. (from composer725-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, Chat next-question chips not seen in browser; refreshFollowupVisibility present]
+- Clicking an Ask chip was not driven: the sweep's `button` selector missed the chip element. (from composer725-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, Ask chip click not driven]
+- Link reasons from the composer (owner: "can the composer be user to write better link reasons other than just similar in meaning??"): not started. INBOX 691 is not in INBOX.md, so its concrete overlaps (one note names the other, a shared tag, a shared rare word or name, the same category in the same week) and the sentence-pair reason are open. (from composer725-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, link reasons from the composer not started]
 
-- Chat dock at narrow widths: the streaming state (Stop shown, Send hidden) was not measured. (from dock694-1006.md) (checked 2026-11-09)
-- The icon-only chat-dock toggles are checked by text content and title only; no keyboard or screen-reader pass was run. The phone (under 600) sheet paths (`openChatDockMore`) were measured as a one-line strip and composer at 390, not opened. (from dock694-1006.md) (checked 2026-11-09)
-- `wbMapDropTargetAt` (whiteboard-map.js:2661) still converts by hand. Fold it into `wbClientToBoard` and update the pinned line in `tests/test_map_drag_cost.py`. (from dropplace-1006.md) (checked 2026-11-09)
-- Touch drag from the Library is not tested: HTML5 drag-and-drop does not run on touch. The drag image (its thumbnail and offset) is asserted in source only, since a headless drag shows no ghost. (from dropplace-1006.md) (checked 2026-11-09)
-- CI margin: Tests (Python 3.13) took 16 m 14 s of its 25 m timeout on the head that was scanned (3.11 took 15 m 01 s, 3.12 14 m 37 s). A slow runner is a red build; raising the timeout is the owner's call. (from final-scan-1006.md) (checked 2026-11-09)
-- `/jobs/last-runs` is polled after a lock and answers 401 once or twice per lock (forgotpw.js's refused list). Next: stop the poll in `lockNow` and `purgeLockedContent` (`settings.js` reads it at about line 4425). (from forgotpw-1006.md) (checked 2026-11-09)
-- Not verified in a browser: the another-device notice on the recovery card (the sweep server binds loopback only); a real phone and a screen reader on the card. (from forgotpw-1006.md) (checked 2026-11-09)
-- The Focused hero is taller than before: 157px at 900 to 1920 (was 71), 278px at 390 (was 71 to 87). If the owner finds it too tall on a phone, the next step is the glance as one scrolling row there. (from hero675-1006.md) (checked 2026-11-09)
-- Not verified: a real model's greeting in the new layout (a long AI line widens the left column up to its 45% cap; measured with handwritten phrases only), the desktop window and RTL. (from hero675-1006.md) (checked 2026-11-09)
-- `scratchpad/ui-sweeps/pickers.js` throws `pickNotesDialog is not defined` at its note-picker section, since that dialog moved into the whiteboard bundle. `segbars.js` and `left1005-openrows.js` still read `#graph-layout` as a segmented control. (from inbox670-1006.md) (checked 2026-11-09)
-- Markers' Flag is still two previews (seg665-1006.md item 5). (from inbox670-1006.md) (checked 2026-11-09)
-- An interrupted glide restarts at the ease's peak speed: a star's fastest step after a second Regenerate is 13 to 16px against 7px before it. A velocity-matched retarget (a spring) would remove the kick; it was not asked for. (from motion686-1006.md) (checked 2026-11-09)
-- RapidOCR and Tesseract never ran for real here: "ready" and the RapidOCR path are faked through `/ocr-readers` and monkeypatched tests. A real install and a real read are open. (from ocr717-1006.md) (checked 2026-11-09)
-- `ocrflow.js` still reads `#ocr-engine` as a line and clicks `#ocr-more`; it was not re-run, and its engine checks may need the popover opened first. The region drag (outlining a rectangle) was not re-measured after the Regions toggle became a button. (from ocr717-1006.md) (checked 2026-11-09)
-- README `docs/screenshots/palette.png` (and `docs/index.html`'s copy) still shows notes, a document and a board in the palette. Retake it with `scratchpad/ui-sweeps/readmeshots.js` so the picture matches the alt text. (from palette666-1006.md) (checked 2026-11-09)
-- `tests-e2e/specs/shell.spec.js` has a handoff test that has only had `node --check`; Playwright's runner has not run it. (from palette666-1006.md) (checked 2026-11-09)
-- Older sweeps that expect note rows in the palette (grep `palette-input`): `ux1005-palette.js` (removed 2026-10-12, recoverable from git history) and `search1005-lazy.js` read command rows only, and `readmeshots.js` types "launch". (from palette666-1006.md) (checked 2026-11-09)
-- Stop part way: the night shift, the backup, resurfacing and the embeddings backfill are each one call with no step to stop at. Only housekeeping reads `passes.stop_requested` (passes.py:184); the backfill's loop could check it. (from progress696-1006.md) (checked 2026-11-09)
-- Settings, Packages has its own Embedding models list beside Search and index's, which does the same and more. Recommendation: Packages keeps a single line pointing to Search and index. (from progress696-1006.md) (checked 2026-11-09)
-- Not verified: a real model load for the new built-in embedding models (no sentence-transformers here); Pull a model by name is tested against a mocked Hub; Ollama pulls and the found scan against a real Ollama; the dark theme for the new rows. (from progress696-1006.md) (checked 2026-11-09)
+- Chat dock at narrow widths: the streaming state (Stop shown, Send hidden) was not measured. (from dock694-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, chat dock streaming state at narrow widths not measured]
+- The icon-only chat-dock toggles are checked by text content and title only; no keyboard or screen-reader pass was run. The phone (under 600) sheet paths (`openChatDockMore`) were measured as a one-line strip and composer at 390, not opened. (from dock694-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, icon-only dock toggles not keyboard or screen-reader checked]
+- `wbMapDropTargetAt` (whiteboard-map.js:2661) still converts by hand. Fold it into `wbClientToBoard` and update the pinned line in `tests/test_map_drag_cost.py`. (from dropplace-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, wbMapDropTargetAt still converts by hand at whiteboard-map.js]
+- Touch drag from the Library is not tested: HTML5 drag-and-drop does not run on touch. The drag image (its thumbnail and offset) is asserted in source only, since a headless drag shows no ghost. (from dropplace-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, touch drag from Library untested]
+- CI margin: Tests (Python 3.13) took 16 m 14 s of its 25 m timeout on the head that was scanned (3.11 took 15 m 01 s, 3.12 14 m 37 s). A slow runner is a red build; raising the timeout is the owner's call. (from final-scan-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, CI test job at 16 m 14 s of a 25 m timeout per the bullet]
+- `/jobs/last-runs` is polled after a lock and answers 401 once or twice per lock (forgotpw.js's refused list). Next: stop the poll in `lockNow` and `purgeLockedContent` (`settings.js` reads it at about line 4425). (from forgotpw-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, /jobs/last-runs polled after lock; lockNow in app.js still polls]
+- Not verified in a browser: the another-device notice on the recovery card (the sweep server binds loopback only); a real phone and a screen reader on the card. (from forgotpw-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, recovery card notice not verified in browser]
+- The Focused hero is taller than before: 157px at 900 to 1920 (was 71), 278px at 390 (was 71 to 87). If the owner finds it too tall on a phone, the next step is the glance as one scrolling row there. (from hero675-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, Focused hero height 157px and 278px at 390; owner check open]
+- Not verified: a real model's greeting in the new layout (a long AI line widens the left column up to its 45% cap; measured with handwritten phrases only), the desktop window and RTL. (from hero675-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, real model greeting not verified]
+- `scratchpad/ui-sweeps/pickers.js` throws `pickNotesDialog is not defined` at its note-picker section, since that dialog moved into the whiteboard bundle. `segbars.js` and `left1005-openrows.js` still read `#graph-layout` as a segmented control. (from inbox670-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, pickers.js throws pickNotesDialog not defined; open]
+- Markers' Flag is still two previews (seg665-1006.md item 5). (from inbox670-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, Flag still two previews per the bullet]
+- An interrupted glide restarts at the ease's peak speed: a star's fastest step after a second Regenerate is 13 to 16px against 7px before it. A velocity-matched retarget (a spring) would remove the kick; it was not asked for. (from motion686-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, interrupted glide restarts at peak speed; open]
+- RapidOCR and Tesseract never ran for real here: "ready" and the RapidOCR path are faked through `/ocr-readers` and monkeypatched tests. A real install and a real read are open. (from ocr717-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, RapidOCR and Tesseract never ran for real; /ocr-readers faked in tests]
+- `ocrflow.js` still reads `#ocr-engine` as a line and clicks `#ocr-more`; it was not re-run, and its engine checks may need the popover opened first. The region drag (outlining a rectangle) was not re-measured after the Regions toggle became a button. (from ocr717-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, ocrflow.js engine checks not re-run]
+- README `docs/screenshots/palette.png` (and `docs/index.html`'s copy) still shows notes, a document and a board in the palette. Retake it with `scratchpad/ui-sweeps/readmeshots.js` so the picture matches the alt text. (from palette666-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, README palette.png still shows notes, document and board]
+- `tests-e2e/specs/shell.spec.js` has a handoff test that has only had `node --check`; Playwright's runner has not run it. (from palette666-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, shell.spec.js handoff test not run by Playwright]
+- Older sweeps that expect note rows in the palette (grep `palette-input`): `ux1005-palette.js` (removed 2026-10-12, recoverable from git history) and `search1005-lazy.js` read command rows only, and `readmeshots.js` types "launch". (from palette666-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, older sweeps expect palette note rows; ux1005-palette.js gone, pointer open]
+- Stop part way: the night shift, the backup, resurfacing and the embeddings backfill are each one call with no step to stop at. Only housekeeping reads `passes.stop_requested` (passes.py:184); the backfill's loop could check it. (from progress696-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, night shift, backup and backfill have no stop step; passes.stop_requested only for housekeeping]
+- Settings, Packages has its own Embedding models list beside Search and index's, which does the same and more. Recommendation: Packages keeps a single line pointing to Search and index. (from progress696-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, Packages duplicates the Search and index embedding models list; open]
+- Not verified: a real model load for the new built-in embedding models (no sentence-transformers here); Pull a model by name is tested against a mocked Hub; Ollama pulls and the found scan against a real Ollama; the dark theme for the new rows. (from progress696-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, real model load for built-in embedding models not run; mocked pull]
 
-- Other jobruns detail strings that carry `{exc}` (grep `note_finished` and `run.fail(` in `src/`) were not audited; only the two named in item 5 were changed. (from quickwins-1006.md) (checked 2026-11-09)
-- Other `[^\]\n]`-style scanners may share the ReDoS shape; the markdown link stripping in the frontend is JS and is not covered by the Python oracle tests. (from quickwins-1006.md) (checked 2026-11-09)
-- Not measured at 390: the Documents sidebar and the board zoom pill are not on screen there (the sidebar is a sheet), so both were measured at 1440 only. (from radius682-1006.md) (checked 2026-11-09)
-- Not measured: the chat dock's controls, the board's context bar, the stepper and the map strip, named in `PILL_CONTROLS` with full-round rules. (from radius682-1006.md) (checked 2026-11-09)
-- An opened row with no title starts with its text, whose first line's centre is 19.4px from the top against the chevron's and cluster's 22px (2.6px off). A title row is exact; the fix wants the text's own line box (`1lh`), not a number per font size. (from rows676-1006.md) (checked 2026-11-09)
-- The owner's second screenshot showed a stray circle after the hover buttons on an opened row. Not reproduced at 1440, 1920 or 390, light or dark, open or closed. If it recurs, the seed lacks its state (a draft's Publish, a busy chip, a filing chip). (from rows676-1006.md) (checked 2026-11-09)
-- Phone (390, touch): the first frames of a toggle take 50 to 80ms in headless emulation, so the first frame of the height animation can jump about 40% of the change. Not measured on a real phone. (from rows676-1006.md) (checked 2026-11-09)
-- Phone: a collapsed row's always-shown buttons sit in the details line's scrolled lane, off the row's right edge (right -87.8px, measured; unchanged by the work). (from rows676-1006.md) (checked 2026-11-09)
-- Not verified: suggestion mode switched on while a candidate is chosen (the replacement goes through `docProseFix`), a touch long-press on a suggested change, and the phone width. (from suggest689-1006.md) (checked 2026-11-09)
-- A word touching a suggestion's marker is never a spelling finding: `docSpellable` (documents.js) rejects a `+` on either side, and `{++` and `++}` are `+`. `{++faque++}` has no finding; `{++the faque ++}` does. Fix: treat `{++` before and `++}` after as a boundary, with a test in `tests/test_prose_tools.py`. (from suggest689-1006.md) (checked 2026-11-09)
-- The prose-tool grammar rules at a CodeMirror lint tooltip (`.cm-tooltip-lint`) in code documents are not suppressed while a pointer menu is open. Only code files are affected, where no suggestion marks exist. (from suggest689-1006.md) (checked 2026-11-09)
-- Not verified: the phone's action sheet (`openKebabSheet`) and touch below 600 (its dismissal was not pressed twice), a real screen reader, and the Settings sidebar at 390 as a jump list. (from toggles681-1006.md) (checked 2026-11-09)
-- `.wb-shape-caret` has `pointer-events: none` (per the file), so the Shapes split button's caret never gets a click and the `closest(".wb-shape-caret")` branch in `wbWireToggleGestures` is dead code. A product choice (a 10px caret target), left. (from toggles681-1006.md) (checked 2026-11-09)
-- The topic bar wraps to two rows at 390 (348x102), measured identical on the base: the Branch line and the reset go to a second row under the open door. (from seg665-1006.md) (checked 2026-11-09)
-- The size stepper reads "17px" on a main branch and "22px" on the centre, and Classic's level sizes have no S, M, L or XL word, so the well showed "Map" pressed there. A level-size vocabulary is not in MINDMAP_PLAN. (from seg665-1006.md) (checked 2026-11-09)
-- The note strip, owner's report (d): every control is 6.4px inside the strip's edge at the default look (measured 320 to 1920). The owner's exact state (look, zoom, text size) was not reproduced. (from seg665-1006.md) (checked 2026-11-09)
-- `wbSyncMapStrip` sets a themed field's effective value onto the select, so a topic following the map shows the map's look pressed rather than ringed, except where the value has no option (the 17px size; the level's fill). (from seg665-1006.md) (checked 2026-11-09)
-- The Notes dock wraps to two rows from about 1280 to 1500 with the connections rail open (90px); Tidy's 40px extends that band to about 1640. Moving the words-hidden threshold from 1400 to 1680 fixed both, but `tests/test_breakpoints.py` allows no new width query, so the dock needs a rethink (fewer worded controls above 1400, or a narrower rail). (from tidy691-1006.md) (checked 2026-11-09)
-- The card tooltip and the graph still show a deduced reason as "(73% confidence, deduced)", not a strength word. (from tidy691-1006.md) (checked 2026-11-09)
-- `/entries/{id}/related` lists notes that are already linked, so a press on one answers 400 "already linked" (pre-existing). (from tidy691-1006.md) (checked 2026-11-09)
-- Not verified: the contrast of the accent count on the broom (`contrast.js`), a browser run of the automatic pass after filing (pytest only), and a real model for the "Tags Atlas added" review (the tool door only). (from tidy691-1006.md) (checked 2026-11-09)
-- Meeting cards show their section headings as raw `## Agenda` text, as every note card does. A meeting-aware card preview (when, who, open action items) needs its own pass. (from meetings-644.md) (checked 2026-11-09)
-- The Timeline's table view (a phone's default) has no mark column, so a meeting reads as a Note there; the feed view shows the meeting mark. (from meetings-644.md) (checked 2026-11-09)
-- Not verified: Summarise against a real small model (the fake model only; its pipe format and quoting are unknown), and transcription (no faster-whisper in the sandbox; the save is driven with a typed transcript). (from meetings-644.md) (checked 2026-11-09)
-- `ai-tools.js` says "Open Settings, Models" in words, and none is a link. A button on the toast is the next step and is a new control. (from toasts-1006.md) (checked 2026-11-09)
-- Not verified: the other 100 `toast(..., true)` call sites were not each triggered. A lint covers them; their situations (a formatter refusing a file, Atlas off in Suggestions) were not driven. (from toasts-1006.md) (checked 2026-11-09)
+- Other jobruns detail strings that carry `{exc}` (grep `note_finished` and `run.fail(` in `src/`) were not audited; only the two named in item 5 were changed. (from quickwins-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, other jobruns detail strings with {exc} not audited]
+- Other `[^\]\n]`-style scanners may share the ReDoS shape; the markdown link stripping in the frontend is JS and is not covered by the Python oracle tests. (from quickwins-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, other [^]\n]-style scanners not covered by Python oracle tests]
+- Not measured at 390: the Documents sidebar and the board zoom pill are not on screen there (the sidebar is a sheet), so both were measured at 1440 only. (from radius682-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, Documents sidebar and board zoom pill not measured at 390]
+- Not measured: the chat dock's controls, the board's context bar, the stepper and the map strip, named in `PILL_CONTROLS` with full-round rules. (from radius682-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, PILL_CONTROLS in 08-consistency.css; chat dock and board context bar not measured]
+- An opened row with no title starts with its text, whose first line's centre is 19.4px from the top against the chevron's and cluster's 22px (2.6px off). A title row is exact; the fix wants the text's own line box (`1lh`), not a number per font size. (from rows676-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, opened untitled row text sits 2.6px off the chevron centre]
+- The owner's second screenshot showed a stray circle after the hover buttons on an opened row. Not reproduced at 1440, 1920 or 390, light or dark, open or closed. If it recurs, the seed lacks its state (a draft's Publish, a busy chip, a filing chip). (from rows676-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, stray circle on opened row not reproduced; open]
+- Phone (390, touch): the first frames of a toggle take 50 to 80ms in headless emulation, so the first frame of the height animation can jump about 40% of the change. Not measured on a real phone. (from rows676-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, first toggle frames 50 to 80 ms in headless; open]
+- Phone: a collapsed row's always-shown buttons sit in the details line's scrolled lane, off the row's right edge (right -87.8px, measured; unchanged by the work). (from rows676-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, collapsed row buttons off the right edge at 390, measured]
+- Not verified: suggestion mode switched on while a candidate is chosen (the replacement goes through `docProseFix`), a touch long-press on a suggested change, and the phone width. (from suggest689-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, suggestion mode and docProseFix path not verified]
+- A word touching a suggestion's marker is never a spelling finding: `docSpellable` (documents.js) rejects a `+` on either side, and `{++` and `++}` are `+`. `{++faque++}` has no finding; `{++the faque ++}` does. Fix: treat `{++` before and `++}` after as a boundary, with a test in `tests/test_prose_tools.py`. (from suggest689-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, docSpellable rejects a + on either side; word-marker case open]
+- The prose-tool grammar rules at a CodeMirror lint tooltip (`.cm-tooltip-lint`) in code documents are not suppressed while a pointer menu is open. Only code files are affected, where no suggestion marks exist. (from suggest689-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, prose grammar tooltip in code documents not suppressed under a menu]
+- Not verified: the phone's action sheet (`openKebabSheet`) and touch below 600 (its dismissal was not pressed twice), a real screen reader, and the Settings sidebar at 390 as a jump list. (from toggles681-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, openKebabSheet and touch below 600 not verified]
+- `.wb-shape-caret` has `pointer-events: none` (per the file), so the Shapes split button's caret never gets a click and the `closest(".wb-shape-caret")` branch in `wbWireToggleGestures` is dead code. A product choice (a 10px caret target), left. (from toggles681-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, .wb-shape-caret pointer-events none; split caret never clicked]
+- The topic bar wraps to two rows at 390 (348x102), measured identical on the base: the Branch line and the reset go to a second row under the open door. (from seg665-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, topic bar two rows at 390; same on base]
+- The size stepper reads "17px" on a main branch and "22px" on the centre, and Classic's level sizes have no S, M, L or XL word, so the well showed "Map" pressed there. A level-size vocabulary is not in MINDMAP_PLAN. (from seg665-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, size stepper label mismatch and missing S M L XL words]
+- The note strip, owner's report (d): every control is 6.4px inside the strip's edge at the default look (measured 320 to 1920). The owner's exact state (look, zoom, text size) was not reproduced. (from seg665-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, note strip controls 6.4px from edge at default look]
+- `wbSyncMapStrip` sets a themed field's effective value onto the select, so a topic following the map shows the map's look pressed rather than ringed, except where the value has no option (the 17px size; the level's fill). (from seg665-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, wbSyncMapStrip shows map look pressed rather than ringed]
+- The Notes dock wraps to two rows from about 1280 to 1500 with the connections rail open (90px); Tidy's 40px extends that band to about 1640. Moving the words-hidden threshold from 1400 to 1680 fixed both, but `tests/test_breakpoints.py` allows no new width query, so the dock needs a rethink (fewer worded controls above 1400, or a narrower rail). (from tidy691-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, Notes dock two rows from about 1280 to 1500 with rail open]
+- The card tooltip and the graph still show a deduced reason as "(73% confidence, deduced)", not a strength word. (from tidy691-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, deduced reason shown as a percentage on card and graph]
+- `/entries/{id}/related` lists notes that are already linked, so a press on one answers 400 "already linked" (pre-existing). (from tidy691-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, /entries/{id}/related answers 400 for already linked notes]
+- Not verified: the contrast of the accent count on the broom (`contrast.js`), a browser run of the automatic pass after filing (pytest only), and a real model for the "Tags Atlas added" review (the tool door only). (from tidy691-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, accent count contrast and automatic pass not verified]
+- Meeting cards show their section headings as raw `## Agenda` text, as every note card does. A meeting-aware card preview (when, who, open action items) needs its own pass. (from meetings-644.md) (checked 2026-11-09) [verified 2026-11-10: true, meeting cards show raw section headings]
+- The Timeline's table view (a phone's default) has no mark column, so a meeting reads as a Note there; the feed view shows the meeting mark. (from meetings-644.md) (checked 2026-11-09) [verified 2026-11-10: true, Timeline table view has no meeting mark column]
+- Not verified: Summarise against a real small model (the fake model only; its pipe format and quoting are unknown), and transcription (no faster-whisper in the sandbox; the save is driven with a typed transcript). (from meetings-644.md) (checked 2026-11-09) [verified 2026-11-10: true, Summarise with a real small model and transcription not verified]
+- `ai-tools.js` says "Open Settings, Models" in words, and none is a link. A button on the toast is the next step and is a new control. (from toasts-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, toast says Open Settings in words, no link; open]
+- Not verified: the other 100 `toast(..., true)` call sites were not each triggered. A lint covers them; their situations (a formatter refusing a file, Atlas off in Suggestions) were not driven. (from toasts-1006.md) (checked 2026-11-09) [verified 2026-11-10: true, 100 other toast true call sites not triggered]
 
 ## Left by the agents merged 2026-10-10 (deepen-b 72b, mapnotes, vendor 75, briefs, coverage)
 
 The five files are in [`../archive/agent-remaining/`](../archive/agent-remaining); decisions 768 and 769 taken, 728 fixed, 761 and 762 fixed.
 
-- The phone paths through the More sheet: the agent (`toggleAgentPalette()` leaves the overlay hidden at 390), the Guide, the timeline and reminders were reached with `switchTab` or not at all. (from deepen-b-1010.md) (checked 2026-11-09)
-- The reminders quick-add row at 390 (not visible; the phone compose not driven). (from deepen-b-1010.md) (checked 2026-11-09)
-- Chat's 82 (1440) and 136 (390) overlaps after answers: a sticky head over scrolled cards or a real paint clash. (from deepen-b-1010.md) (checked 2026-11-09)
-- Whether each Guide topic answers its question (only the topic's head was read). (from deepen-b-1010.md) (checked 2026-11-09)
-- "last week" in Find anything: a window or the words. (from deepen-b-1010.md) (checked 2026-11-09)
-- Timings: two runs at 1440, one at 390, the second 1440 run under a concurrent sweep; ranges, not budgets. (from deepen-b-1010.md) (checked 2026-11-09)
-- Any real-model behaviour of the agent (CLAUDE.md section 4). (from deepen-b-1010.md) (checked 2026-11-09)
-- The rail-dot alignment at 390 (0 px at 1440). (from deepen-b-1010.md) (checked 2026-11-09)
-- The fixture is 96 notes (the seed ran twice), not 48. (from deepen-b-1010.md) (checked 2026-11-09)
-- Chat with no model: "what is 15% of 240" quotes a note; "convert 5 km to miles", "what day is it today" and "summarise my week" answer "Nothing in the notes"; "remind me to call Sam tomorrow at 9" makes no reminder (CHAT_PLAN foundation 7). (from deepen-b-1010.md) (checked 2026-11-09)
-- The agent panel with no model: 16 of 20 controls disabled (AGENT_SKILLS_REFORM, Deepened row 1). (from deepen-b-1010.md) (checked 2026-11-09)
-- Ask cannot show a relevant map as a map. Decision taken: retrieval is notes only (a map's entry text is its title, so it grounds nothing). Owner's words: "mindmaps still appear as notes in the ask subtab search". To surface maps, add a `maps` list to `ChatResponse` (`src/memorymap/api/routes_chat.py:673`) and draw it with `mapChip` in `frontend/js/capture-ask.js` (the `raw_results` loop near line 2296), fed by `search.engine` hits of kind `map`. (from mapnotes-1010.md) (checked 2026-11-09)
-- Notes keep the old `updated_at` rule (any write moves it): `edited_at` answers "when a person changed it", but `lexical_filing` (`src/memorymap/ai/lexical_filing.py:554`) keys stamps on `updated_at`, so the board-only guard in `core/database.py` was not widened. (from mapnotes-1010.md) (checked 2026-11-09)
-- Each VC row is unbuilt; the script and test are the only code (Brief 75 says no code beyond them). (from vendor-1010.md) (checked 2026-11-09)
-- The p5 API list in `scratchpad/vendor_use.py` is a Chromium dump pinned to 1.9.4 (the vendored p5 is 1.11.13 since 2026-10-11, not yet regenerated); regenerate it with a p5 upgrade. (from vendor-1010.md) (checked 2026-11-09)
-- Brief 2 (consistency lints): HISTORY mentions it only as an owner reference; no record of the lint set being built as the brief. (from briefs-1010.md) (checked 2026-11-09)
-- Brief 3 (prefs, api.stream/upload, innerHTML): HISTORY line 43146 area still lists `api.stream`/`api.upload` and the no-bare-fetch lint as not built. (from briefs-1010.md) (checked 2026-11-09)
-- Brief 4 (Settings two-pane, 54 paragraphs): WORLD_CLASS_PLAN.md:1019 says the 54 paragraphs "not re-checked here, so still open". (from briefs-1010.md) (checked 2026-11-09)
-- Brief 8 (`[[` autocomplete, connections rail): HISTORY has only the plan table rows, no Built record. (from briefs-1010.md) (checked 2026-11-09)
-- Brief 9 (job runtime): `tests/test_jobs.py` the brief names does not exist; HISTORY has no Built record. (from briefs-1010.md) (checked 2026-11-09)
-- Brief 13 (verifier): agent-remaining/OPEN.md:189 still names Brief 13's `evals` marker and fixture set as open. (from briefs-1010.md) (checked 2026-11-09)
-- Brief 14 (docs condensed): HANDOVER.md is 486 lines against a 300-line done-when; `NEXT_FABLE_WINDOW.md` does not exist. (from briefs-1010.md) (checked 2026-11-09)
-- Brief 16 (documentation refined): no HISTORY record of the pass. (from briefs-1010.md) (checked 2026-11-09)
-- Brief 17 (launchers, splash): agent-remaining/OPEN.md:405 names the rest of Brief 17 as open. (from briefs-1010.md) (checked 2026-11-09)
-- Brief 18 (the complete open scope): an umbrella brief, only section A recorded in HISTORY. (from briefs-1010.md) (checked 2026-11-09)
-- Briefs 25 to 31 (group): each plan phase list is still open; "nothing is built" for 25. (from briefs-1010.md) (checked 2026-11-09)
-- Brief 32 (templates and base layouts): deferred by the owner; BACKLOG 4b carries the standing row. (from briefs-1010.md) (checked 2026-11-09)
-- Brief 33 (rest of WORLD_CLASS_PLAN): HANDOVER.md:450 names it as the next brief. (from briefs-1010.md) (checked 2026-11-09)
-- 745 (d): the hover-only tour step reveal is built nowhere (tour.js has no hover handling). (from coverage-1010.md) (checked 2026-11-09)
+- The phone paths through the More sheet: the agent (`toggleAgentPalette()` leaves the overlay hidden at 390), the Guide, the timeline and reminders were reached with `switchTab` or not at all. (from deepen-b-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, phone More sheet paths for agent, Guide, timeline and reminders not driven]
+- The reminders quick-add row at 390 (not visible; the phone compose not driven). (from deepen-b-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, reminders quick-add row at 390 not visible; open]
+- Chat's 82 (1440) and 136 (390) overlaps after answers: a sticky head over scrolled cards or a real paint clash. (from deepen-b-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, Chat 82 and 136 px overlaps after answers; open]
+- Whether each Guide topic answers its question (only the topic's head was read). (from deepen-b-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, each Guide topic answer not checked beyond its head]
+- "last week" in Find anything: a window or the words. (from deepen-b-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, last week window or words in Find anything; open]
+- Timings: two runs at 1440, one at 390, the second 1440 run under a concurrent sweep; ranges, not budgets. (from deepen-b-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, timings are ranges, not budgets]
+- Any real-model behaviour of the agent (CLAUDE.md section 4). (from deepen-b-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, real-model agent behaviour not verified]
+- The rail-dot alignment at 390 (0 px at 1440). (from deepen-b-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, rail-dot alignment at 390 open]
+- The fixture is 96 notes (the seed ran twice), not 48. (from deepen-b-1010.md) (checked 2026-11-09) [verified 2026-11-10: stale, corrected fixture size (96 notes); the note itself is the fix]
+- Chat with no model: "what is 15% of 240" quotes a note; "convert 5 km to miles", "what day is it today" and "summarise my week" answer "Nothing in the notes"; "remind me to call Sam tomorrow at 9" makes no reminder (CHAT_PLAN foundation 7). (from deepen-b-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, no-model Chat answers wrong for arithmetic, units and dates; open]
+- The agent panel with no model: 16 of 20 controls disabled (AGENT_SKILLS_REFORM, Deepened row 1). (from deepen-b-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, 16 of 20 agent controls disabled with no model; open]
+- Ask cannot show a relevant map as a map. Decision taken: retrieval is notes only (a map's entry text is its title, so it grounds nothing). Owner's words: "mindmaps still appear as notes in the ask subtab search". To surface maps, add a `maps` list to `ChatResponse` (`src/memorymap/api/routes_chat.py:673`) and draw it with `mapChip` in `frontend/js/capture-ask.js` (the `raw_results` loop near line 2296), fed by `search.engine` hits of kind `map`. (from mapnotes-1010.md) (checked 2026-11-09) [verified 2026-11-10: stale, decision taken: retrieval is notes only; recorded as decided]
+- Notes keep the old `updated_at` rule (any write moves it): `edited_at` answers "when a person changed it", but `lexical_filing` (`src/memorymap/ai/lexical_filing.py:554`) keys stamps on `updated_at`, so the board-only guard in `core/database.py` was not widened. (from mapnotes-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, updated_at still moves on any write; edited_at not used for the rule]
+- Each VC row is unbuilt; the script and test are the only code (Brief 75 says no code beyond them). (from vendor-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, VC rows unbuilt; script and test only]
+- The p5 API list in `scratchpad/vendor_use.py` is a Chromium dump pinned to 1.9.4 (the vendored p5 is 1.11.13 since 2026-10-11, not yet regenerated); regenerate it with a p5 upgrade. (from vendor-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, p5 API list pinned to 1.9.4 while vendored p5 is 1.11.13]
+- Brief 2 (consistency lints): HISTORY mentions it only as an owner reference; no record of the lint set being built as the brief. (from briefs-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, Brief 2 lint set not recorded as built]
+- Brief 3 (prefs, api.stream/upload, innerHTML): HISTORY line 43146 area still lists `api.stream`/`api.upload` and the no-bare-fetch lint as not built. (from briefs-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, api.stream and api.upload exist in app.js and settings.js; Brief 3 list still open]
+- Brief 4 (Settings two-pane, 54 paragraphs): WORLD_CLASS_PLAN.md:1019 says the 54 paragraphs "not re-checked here, so still open". (from briefs-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, Settings two-pane 54 paragraphs not re-checked per WORLD_CLASS_PLAN]
+- Brief 8 (`[[` autocomplete, connections rail): HISTORY has only the plan table rows, no Built record. (from briefs-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, Brief 8 has no Built record in HISTORY]
+- Brief 9 (job runtime): `tests/test_jobs.py` the brief names does not exist; HISTORY has no Built record. (from briefs-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, tests/test_jobs.py named by the brief is absent; no Built record]
+- Brief 13 (verifier): agent-remaining/OPEN.md:189 still names Brief 13's `evals` marker and fixture set as open. (from briefs-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, evals marker still listed as open; no evals marker found in tests]
+- Brief 14 (docs condensed): HANDOVER.md is 486 lines against a 300-line done-when; `NEXT_FABLE_WINDOW.md` does not exist. (from briefs-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, HANDOVER.md over the 300-line done-when; NEXT_FABLE_WINDOW.md absent]
+- Brief 16 (documentation refined): no HISTORY record of the pass. (from briefs-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, no HISTORY record of the documentation pass]
+- Brief 17 (launchers, splash): agent-remaining/OPEN.md:405 names the rest of Brief 17 as open. (from briefs-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, rest of Brief 17 still named open in agent-remaining]
+- Brief 18 (the complete open scope): an umbrella brief, only section A recorded in HISTORY. (from briefs-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, umbrella brief, only section A recorded]
+- Briefs 25 to 31 (group): each plan phase list is still open; "nothing is built" for 25. (from briefs-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, plan phase lists for Briefs 25 to 31 still open]
+- Brief 32 (templates and base layouts): deferred by the owner; BACKLOG 4b carries the standing row. (from briefs-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, deferred by the owner; BACKLOG row carries it]
+- Brief 33 (rest of WORLD_CLASS_PLAN): HANDOVER.md:450 names it as the next brief. (from briefs-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, HANDOVER names Brief 33 as next]
+- 745 (d): the hover-only tour step reveal is built nowhere (tour.js has no hover handling). (from coverage-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, hover-only tour step reveal not in tour.js]
 
 ## Left by the a11yfix and filing agents (merged 2026-10-10)
 
 Both files are in [`../archive/agent-remaining/`](../archive/agent-remaining). The filing numbers (top-1 0.417 without a model against decision 8's 0.8, 0.808 with the embedder) are in the archived file; decision 6's scope ruling is INBOX 770 (taken); torch and sentence-transformers were removed from the shared venv.
 
-- design-1010 row 5, 110 controls with no focus change (`a11yname.js` focus pass): Brief 57, decision 15. (from a11yfix-1010.md) (checked 2026-11-09)
-- The boot CSS cap (`tests/test_boot_budget.py`, 183,300) had 3 bytes of room; this work spent it with blank-line collapses in `00-tokens-shell.css` and `01-forms-settings.css`. The next CSS addition needs a lazy file or a cap-lowering trim first. (from a11yfix-1010.md) (checked 2026-11-09)
-- `app.js` is within 14 bytes of its ratchet (`tests/test_static_compression.py`, 14,300): `makeUnlinkAccessible` moved out to `note-cards.js` to stay under it. (from a11yfix-1010.md) (checked 2026-11-09)
-- Row 4 measured on a seeded notebook (13 notes), not the report's: title-only icon controls in the Notes list 54 to 0 at 1440, 21 to 0 at 390. Other title-only icon buttons built outside the Notes list (other tabs, Settings) were not counted. (from a11yfix-1010.md) (checked 2026-11-09)
-- Not measured: dark theme for axe `target-size` and `scrollable-region-focusable`; the 1024 width. (from a11yfix-1010.md) (checked 2026-11-09)
-- Decision 8's bar, "below 0.8 top-1 without a model the step is not done": 0.417 (`tests/test_filing_accuracy.py`, strict xfail). Forced to choose, the evidence is right 0.61; 39 of 120 notes name no pack phrase ("dal", "boiler", "episode", "MOT", "nursery"). Recommendation: an everyday vocabulary supplement beside the pack, reviewed by the owner (a pack migration, so the owner's call), measured on a second fixture written after it. (from filing-1010.md) (checked 2026-11-09)
-- Decision 6 says "the pack's flag": the pack has none. The 49 sensitive topics are MemoryMap's own list in `src/memorymap/ai/data/taxonomy/memorymap_filing.json`. (from filing-1010.md) (checked 2026-11-09)
-- The data path: section 23 says `src/memorymap/ai/data/taxonomy/`, section 26 decision 56 says `src/memorymap/data/`; section 23's was followed. (from filing-1010.md) (checked 2026-11-09)
-- Decision 4, "alternate names come from the pack's labels and the person's own titles": only the pack's labels (`entry/tidy.py` `_rows_category_names`). (from filing-1010.md) (checked 2026-11-09)
-- Decision 4's centroid test needs the search model; with it off the merge review uses topics alone at 0.8 and says so in the row (`tidy.MERGE_TOPIC_OVERLAP_ALONE`). (from filing-1010.md) (checked 2026-11-09)
-- The lexicon (decision 7) costs one note in the online simulation (0.521 to 0.510, `scratchpad/filing-tools/online.py`); the fixture has no category named for a topic another holds, so the case it is for ("Work, not Software") is only in `tests/test_tidy_categories.py`. (from filing-1010.md) (checked 2026-11-09)
-- Decision 9 (the 30 context rules, 50 acceptance fixtures): not started; `taxonomy.context_rules()` and `tests/fixtures/taxonomy/context_acceptance_fixtures.json` are in place. (from filing-1010.md) (checked 2026-11-09)
-- Cost: `decide` is 34 ms a call at 5,000 synthetic notes against 8 to 17 ms for the old tally (`scratchpad/filing-tools/perf.py`); Tidy's uncategorised review calls it once a note. (from filing-1010.md) (checked 2026-11-09)
-- The tag picker on an empty field puts the tags the note says first ("training 10 notes, in this note"), but on a note that says none of them it still lists every tag by use (`frontend/js/tag-suggest.js` `fillTagSuggest`): a completion list, not a suggestion, so left. (from filing-1010.md) (checked 2026-11-09)
-- The model's tag reply is grounded against a faked reply (`tests/test_tag_grounding.py`); what a real small model answers is not verified. (from filing-1010.md) (checked 2026-11-09)
-- Graph topics as categories ("How are they different from categories??", the graph agent's hand-off in `archive/agent-remaining/graph-1010.md`): not in section 23's steps, so not done. (from filing-1010.md) (checked 2026-11-09)
+- design-1010 row 5, 110 controls with no focus change (`a11yname.js` focus pass): Brief 57, decision 15. (from a11yfix-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, 110 controls with no focus change; Brief 57 open]
+- The boot CSS cap (`tests/test_boot_budget.py`, 183,300) had 3 bytes of room; this work spent it with blank-line collapses in `00-tokens-shell.css` and `01-forms-settings.css`. The next CSS addition needs a lazy file or a cap-lowering trim first. (from a11yfix-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, boot CSS cap headroom at 3 bytes; blank-line collapses noted]
+- `app.js` is within 14 bytes of its ratchet (`tests/test_static_compression.py`, 14,300): `makeUnlinkAccessible` moved out to `note-cards.js` to stay under it. (from a11yfix-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, app.js within 14 bytes of its ratchet; makeUnlinkAccessible moved to note-cards.js]
+- Row 4 measured on a seeded notebook (13 notes), not the report's: title-only icon controls in the Notes list 54 to 0 at 1440, 21 to 0 at 390. Other title-only icon buttons built outside the Notes list (other tabs, Settings) were not counted. (from a11yfix-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, row 4 icon control counts measured on a 13-note seed, not the report's]
+- Not measured: dark theme for axe `target-size` and `scrollable-region-focusable`; the 1024 width. (from a11yfix-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, dark theme axe checks and 1024 width not measured]
+- Decision 8's bar, "below 0.8 top-1 without a model the step is not done": 0.417 (`tests/test_filing_accuracy.py`, strict xfail). Forced to choose, the evidence is right 0.61; 39 of 120 notes name no pack phrase ("dal", "boiler", "episode", "MOT", "nursery"). Recommendation: an everyday vocabulary supplement beside the pack, reviewed by the owner (a pack migration, so the owner's call), measured on a second fixture written after it. (from filing-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, filing top-1 0.417 under strict xfail in test_filing_accuracy.py]
+- Decision 6 says "the pack's flag": the pack has none. The 49 sensitive topics are MemoryMap's own list in `src/memorymap/ai/data/taxonomy/memorymap_filing.json`. (from filing-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, pack has no flag; sensitive topics are the app's own list]
+- The data path: section 23 says `src/memorymap/ai/data/taxonomy/`, section 26 decision 56 says `src/memorymap/data/`; section 23's was followed. (from filing-1010.md) (checked 2026-11-09) [verified 2026-11-10: stale, taxonomy path in section 23 no longer exists; package now src/tessellate]
+- Decision 4, "alternate names come from the pack's labels and the person's own titles": only the pack's labels (`entry/tidy.py` `_rows_category_names`). (from filing-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, alternate names use pack labels only in tidy.py _rows_category_names]
+- Decision 4's centroid test needs the search model; with it off the merge review uses topics alone at 0.8 and says so in the row (`tidy.MERGE_TOPIC_OVERLAP_ALONE`). (from filing-1010.md) (checked 2026-11-09) [verified 2026-11-10: stale, MERGE_TOPIC_OVERLAP_ALONE not in repo; the rule it names is gone]
+- The lexicon (decision 7) costs one note in the online simulation (0.521 to 0.510, `scratchpad/filing-tools/online.py`); the fixture has no category named for a topic another holds, so the case it is for ("Work, not Software") is only in `tests/test_tidy_categories.py`. (from filing-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, lexicon costs one note in the online simulation; open decision]
+- Decision 9 (the 30 context rules, 50 acceptance fixtures): not started; `taxonomy.context_rules()` and `tests/fixtures/taxonomy/context_acceptance_fixtures.json` are in place. (from filing-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, decision 9 context rules not started; taxonomy.context_rules absent]
+- Cost: `decide` is 34 ms a call at 5,000 synthetic notes against 8 to 17 ms for the old tally (`scratchpad/filing-tools/perf.py`); Tidy's uncategorised review calls it once a note. (from filing-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, decide cost 34 ms at 5,000 notes; perf.py absent, measurement open]
+- The tag picker on an empty field puts the tags the note says first ("training 10 notes, in this note"), but on a note that says none of them it still lists every tag by use (`frontend/js/tag-suggest.js` `fillTagSuggest`): a completion list, not a suggestion, so left. (from filing-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, tag picker lists tags the note does not say; tag-suggest.js]
+- The model's tag reply is grounded against a faked reply (`tests/test_tag_grounding.py`); what a real small model answers is not verified. (from filing-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, tag grounding tested against a fake reply only]
+- Graph topics as categories ("How are they different from categories??", the graph agent's hand-off in `archive/agent-remaining/graph-1010.md`): not in section 23's steps, so not done. (from filing-1010.md) (checked 2026-11-09) [verified 2026-11-10: true, graph topics as categories not built]
 
 ## Left by the notice agent (INBOX 767, merged 2026-10-10)
 
 The no-model notice is one row on the `.notice` recipe on all five surfaces (46.8px at 1440, two rows only under 600px); its 58 gzipped bytes were paid for by the blank lines of 08-consistency.css, so the boot CSS cap stands at 183,300 and the next CSS goes in a lazy file.
 
-- Row height at 1440 is 46.8px, not "one line plus padding" (about 38px): the Connect button's 28.8px target floor sets the row. Left as is; shrinking it would break the touch-target lint. (from notice-1010.md) (checked 2026-11-09)
-- The palette is never shown on a phone (`toggleAgentPalette` goes to Chat), so its 390px notice is unmeasured by design. (from notice-1010.md) (checked 2026-11-09)
+- Row height at 1440 is 46.8px, not "one line plus padding" (about 38px): the Connect button's 28.8px target floor sets the row. Left as is; shrinking it would break the touch-target lint. (from notice-1010.md) (checked 2026-11-09) [verified 2026-11-10: stale, row height left as is by decision (Connect target floor)]
+- The palette is never shown on a phone (`toggleAgentPalette` goes to Chat), so its 390px notice is unmeasured by design. (from notice-1010.md) (checked 2026-11-09) [verified 2026-11-10: stale, palette never shown on phone by design; unmeasured by design]
 
 ## Left by the engine agent (Brief 39, CHAT_PLAN Phase 6, merged 2026-10-10)
 
 The file is in [`../archive/agent-remaining/engine-1010.md`](../archive/agent-remaining/engine-1010.md); its numbers are in the merge commit.
 
-- Blind panel (decision 40): the owner's rating against the 1 to 3B model; not runnable by an agent. (checked 2026-11-09)
-- P10 days until a note's date ("how many days until the dentist"): `utilities.until_subject` (src/memorymap/ai/utilities.py:313) finds the subject; compose does not yet look the date up in the notes. (checked 2026-11-09)
-- P12 a list filtered by category or tag ("list my work notes"): `composer._filtered` (src/memorymap/ai/composer.py:3155) filters by tag and source kind, not by category. (checked 2026-11-09)
-- P15 a lead-in chosen after the parts: the compare opener is still chosen first. (checked 2026-11-09)
-- P16 a note's open checklist items for "what is still open on X". (checked 2026-11-09)
-- Decision 45: the readings are listed (`composer._readings`, src/memorymap/ai/composer.py:2693); a running model does not yet pick among them (needs a real model; `pytest -m evals`). (checked 2026-11-09)
-- Decision 43: the currency table is dated (`utilities.RATES_DATE`, src/memorymap/ai/utilities.py:113) but has no Settings editor. (checked 2026-11-09)
-- Captions: the composer reads them as note content; keyword search finds them as the picture's own row (src/memorymap/search/index.py:793), not as its note's. (checked 2026-11-09)
-- Dates like 3/4 read day first (`when._date_phrase`, src/memorymap/ai/when.py:420); no locale order. (checked 2026-11-09)
-- Not seen in a browser: the web sources list with a real search engine; contrast sweeps over `.said` and the act card. (checked 2026-11-09)
-- Polarity in the fact layer: dropped by decision 30's own condition (no feature uses it). (checked 2026-11-09)
+- Blind panel (decision 40): the owner's rating against the 1 to 3B model; not runnable by an agent. (checked 2026-11-09) [verified 2026-11-10: true, blind panel rating needs a person; not runnable by an agent]
+- P10 days until a note's date ("how many days until the dentist"): `utilities.until_subject` (src/memorymap/ai/utilities.py:313) finds the subject; compose does not yet look the date up in the notes. (checked 2026-11-09) [verified 2026-11-10: true, P10 days-until subject found by utilities.until_subject; open]
+- P12 a list filtered by category or tag ("list my work notes"): `composer._filtered` (src/memorymap/ai/composer.py:3155) filters by tag and source kind, not by category. (checked 2026-11-09) [verified 2026-11-10: true, composer filtering by category or tag not built; _filtered not found]
+- P15 a lead-in chosen after the parts: the compare opener is still chosen first. (checked 2026-11-09) [verified 2026-11-10: true, compare opener still chosen first]
+- P16 a note's open checklist items for "what is still open on X". (checked 2026-11-09) [verified 2026-11-10: true, open checklist items for 'what is still open on X' not built]
+- Decision 45: the readings are listed (`composer._readings`, src/memorymap/ai/composer.py:2693); a running model does not yet pick among them (needs a real model; `pytest -m evals`). (checked 2026-11-09) [verified 2026-11-10: true, readings listed but no model picks among them; _readings not found by name]
+- Decision 43: the currency table is dated (`utilities.RATES_DATE`, src/memorymap/ai/utilities.py:113) but has no Settings editor. (checked 2026-11-09) [verified 2026-11-10: true, currency table has no Settings editor]
+- Captions: the composer reads them as note content; keyword search finds them as the picture's own row (src/memorymap/search/index.py:793), not as its note's. (checked 2026-11-09) [verified 2026-11-10: true, captions read as note content in composer; keyword search row]
+- Dates like 3/4 read day first (`when._date_phrase`, src/memorymap/ai/when.py:420); no locale order. (checked 2026-11-09) [verified 2026-11-10: true, dates like 3/4 read day first; no locale order]
+- Not seen in a browser: the web sources list with a real search engine; contrast sweeps over `.said` and the act card. (checked 2026-11-09) [verified 2026-11-10: true, web sources list and contrast sweeps not seen in browser]
+- Polarity in the fact layer: dropped by decision 30's own condition (no feature uses it). (checked 2026-11-09) [verified 2026-11-10: stale, polarity dropped by decision 30's own condition]
 
 ## Left by the chatui agent (the owner's 2026-10-10 chat and first-run list, merged 2026-10-10)
 
 The file is in [`../archive/agent-remaining/chatui-1010.md`](../archive/agent-remaining/chatui-1010.md).
 
-- Item 32, "metadata ... very messy": the chat answer's foot is still three rows (Sources, Grounded in, meta), 148 px measured on a five-source answer; fold Grounded in and meta into one muted line (chat-agent.js:2275, the sources block). The head label and the result-card reason are done. (checked 2026-11-09)
-- INBOX 694 part 1, "the bottom of these pills gets cut off": not reproduced at DPR 1 (Ask|Agent and Settings `.seg`: each segment 1 px inside the 32 px track top and bottom); the Pace pill is drawn in skills.js:462 (outside this agent's files) and was not measured; try DPR 1.25 and dark. (checked 2026-11-09)
-- INBOX 731, "the help guide failed??": with a model only; no model answers (help-chat.js:329 is the catch). Needs the server log line from a model run. (checked 2026-11-09)
-- INBOX 742 and 743, "atlas doesnt seem to change emotions alot", "more mouse interaction ... rubbing its head. flipping it upside down": gestures, moods from app events, the enlarged view mirroring live state. Not started. (checked 2026-11-09)
-- INBOX 744 (b) and (c), "it didn mention other matching records": composer and grounding work (composer*.py, renderAnswerGrounding), off this agent's list. (checked 2026-11-09)
-- Start SearXNG "takes a while": not reproduced (status 21 to 101 ms, chat.js:1031 `setWebSearxngRunning`); a search that failed should retry by itself once the engine answers. (checked 2026-11-09)
-- Web link cards in chat and the web reader share no recipe with markdown.js:1258 `linkCard`; one recipe for both. (checked 2026-11-09)
-- Citation hover, the composer and captions in retrieval (Brief 39) and the density items (Brief 41) are owned elsewhere. (checked 2026-11-09)
+- Item 32, "metadata ... very messy": the chat answer's foot is still three rows (Sources, Grounded in, meta), 148 px measured on a five-source answer; fold Grounded in and meta into one muted line (chat-agent.js:2275, the sources block). The head label and the result-card reason are done. (checked 2026-11-09) [verified 2026-11-10: true, chat answer foot still three rows, 148 px on five sources]
+- INBOX 694 part 1, "the bottom of these pills gets cut off": not reproduced at DPR 1 (Ask|Agent and Settings `.seg`: each segment 1 px inside the 32 px track top and bottom); the Pace pill is drawn in skills.js:462 (outside this agent's files) and was not measured; try DPR 1.25 and dark. (checked 2026-11-09) [verified 2026-11-10: true, INBOX 694 pill cut-off not reproduced at DPR 1; open]
+- INBOX 731, "the help guide failed??": with a model only; no model answers (help-chat.js:329 is the catch). Needs the server log line from a model run. (checked 2026-11-09) [verified 2026-11-10: true, Guide failure with a model; help-chat.js:329 catch, log line needed]
+- INBOX 742 and 743, "atlas doesnt seem to change emotions alot", "more mouse interaction ... rubbing its head. flipping it upside down": gestures, moods from app events, the enlarged view mirroring live state. Not started. (checked 2026-11-09) [verified 2026-11-10: true, atlas emotions and gestures open]
+- INBOX 744 (b) and (c), "it didn mention other matching records": composer and grounding work (composer*.py, renderAnswerGrounding), off this agent's list. (checked 2026-11-09) [verified 2026-11-10: true, INBOX 744 composer and grounding work open]
+- Start SearXNG "takes a while": not reproduced (status 21 to 101 ms, chat.js:1031 `setWebSearxngRunning`); a search that failed should retry by itself once the engine answers. (checked 2026-11-09) [verified 2026-11-10: true, not reproduced (status 21 to 101 ms); retry-on-failure note still open]
+- Web link cards in chat and the web reader share no recipe with markdown.js:1258 `linkCard`; one recipe for both. (checked 2026-11-09) [verified 2026-11-10: true, linkCard in markdown.js; web cards share no recipe with it]
+- Citation hover, the composer and captions in retrieval (Brief 39) and the density items (Brief 41) are owned elsewhere. (checked 2026-11-09) [verified 2026-11-10: stale, pointer only; the work is owned by Briefs 39 and 41]
 
 ## Left by the trust73 agent (Brief 73, rules 4, 5 and 14, merged 2026-10-10)
 
 The file is in [`../archive/agent-remaining/trust73-1010.md`](../archive/agent-remaining/trust73-1010.md).
 
-- Rule 4 "says what happened, why": 24 literal error toasts still fall back to Open the logs rather than an action of their own (`tests/test_error_toasts.py` LOGS_ACTION_CAP 24): chat-attach.js 2548/2768/2956, library.js bulk failures (1846, 1892, 3360, 9967, 10106) and 4671, settings.js 3463/3508/3527, whiteboard.js 8335/8351/10359/14697, shell-reminders.js 1135/1143, settings-controls.js 320/393, update-dialogs.js 216, lightbox-view.js 753, note-properties.js 44, documents-code.js 1499. Each wants a Try again bound to its own function, and a why where "Couldn't X." has none. (checked 2026-11-09)
-- Rule 4: the 338 `toast(e.message, true)` calls get the why from `plainHttpError` and the default Open the logs; a per-site retry is not built. (checked 2026-11-09)
-- Rule 5 "a long-running task that does not register fails": the lint is a table of thread sites (`tests/test_activity.py` THREAD_SITES); request-bound long work outside the four streams, transcription and picture reading (a document import, a meeting summary, the jobs pool's model lane rows) registers only through `collect()` or not at all; `core/activity.track` is the one line to add. (checked 2026-11-09)
-- Rule 5: a stopped answer ends its stream without a `done` line; how Chat, the Guide and the documents panel render that end is not verified in the page. (checked 2026-11-09)
-- Rule 5: "the managed runner killed" has nothing to act on: the app starts no model runner (extras.py says llama-server is run by hand), so an OpenAI-compatible backend answers that it keeps its own model. (checked 2026-11-09)
-- Rule 14: `/health` stays the launcher's open probe (instance_lock.py, __main__.py read it unauthenticated, and it answers on the LAN); the fields are on the signed-in `GET /debug/health` under `trust`. Moving them onto `/health` needs the owner's yes. (checked 2026-11-09)
-- Rule 14: the Health block stays in Settings, About (where it was built, PLAN B9) rather than its own section; reach is the palette's Health (1) and Settings, About (2). (checked 2026-11-09)
-- Not verified: Ollama's real `keep_alive: 0` and `/api/ps` (a slow fake in the agent's scratch dir stood in), the desktop window, WebKit. (checked 2026-11-09)
+- Rule 4 "says what happened, why": 24 literal error toasts still fall back to Open the logs rather than an action of their own (`tests/test_error_toasts.py` LOGS_ACTION_CAP 24): chat-attach.js 2548/2768/2956, library.js bulk failures (1846, 1892, 3360, 9967, 10106) and 4671, settings.js 3463/3508/3527, whiteboard.js 8335/8351/10359/14697, shell-reminders.js 1135/1143, settings-controls.js 320/393, update-dialogs.js 216, lightbox-view.js 753, note-properties.js 44, documents-code.js 1499. Each wants a Try again bound to its own function, and a why where "Couldn't X." has none. (checked 2026-11-09) [verified 2026-11-10: true, 24 literal error toasts still fall back to Open the logs]
+- Rule 4: the 338 `toast(e.message, true)` calls get the why from `plainHttpError` and the default Open the logs; a per-site retry is not built. (checked 2026-11-09) [verified 2026-11-10: true, toast(e.message, true) sites use plainHttpError; per-site retry not built]
+- Rule 5 "a long-running task that does not register fails": the lint is a table of thread sites (`tests/test_activity.py` THREAD_SITES); request-bound long work outside the four streams, transcription and picture reading (a document import, a meeting summary, the jobs pool's model lane rows) registers only through `collect()` or not at all; `core/activity.track` is the one line to add. (checked 2026-11-09) [verified 2026-11-10: true, THREAD_SITES lint in test_activity.py; request-bound tasks not covered]
+- Rule 5: a stopped answer ends its stream without a `done` line; how Chat, the Guide and the documents panel render that end is not verified in the page. (checked 2026-11-09) [verified 2026-11-10: true, stopped-answer end rendering not verified in page; done line fix noted in the top list]
+- Rule 5: "the managed runner killed" has nothing to act on: the app starts no model runner (extras.py says llama-server is run by hand), so an OpenAI-compatible backend answers that it keeps its own model. (checked 2026-11-09) [verified 2026-11-10: true, managed runner killed message has no runner to act on]
+- Rule 14: `/health` stays the launcher's open probe (instance_lock.py, __main__.py read it unauthenticated, and it answers on the LAN); the fields are on the signed-in `GET /debug/health` under `trust`. Moving them onto `/health` needs the owner's yes. (checked 2026-11-09) [verified 2026-11-10: true, /health stays the launcher probe, unauthenticated on the LAN]
+- Rule 14: the Health block stays in Settings, About (where it was built, PLAN B9) rather than its own section; reach is the palette's Health (1) and Settings, About (2). (checked 2026-11-09) [verified 2026-11-10: true, Health block stays in About by decision; reach note open]
+- Not verified: Ollama's real `keep_alive: 0` and `/api/ps` (a slow fake in the agent's scratch dir stood in), the desktop window, WebKit. (checked 2026-11-09) [verified 2026-11-10: true, Ollama keep_alive and /api/ps not verified against the real server]
 
 ## Left by the docs42 and docs42b agents (Brief 42, INBOX 736, merged 2026-10-10)
 
 The files, with the measured before table and the vendoring keep-or-drop table, are in [`../archive/agent-remaining/docs42-1010.md`](../archive/agent-remaining/docs42-1010.md) and [`docs42b-1010.md`](../archive/agent-remaining/docs42b-1010.md); what docs42b built is in HISTORY "Moved from the plans, 2026-10-10 (DOCUMENTS Brief 42 remainder)".
 
-- Document comments with the board's thread shape (Reply, Edit, Resolve, Attach): a decision first. Comments are `==words== %%remark%%` in the text ("no comment store and there must not be one", documents.js `renderDocComments`) while `wbCommentRow` needs ids, `reply_to`, `edited`, `resolved`. Recommendation (take it): keep the text model; a reply is the next `%%…%%` on the same line, Edit rewrites in place, Attach appends a `[[link]]`, Resolve takes it out; lift `wbCommentRow`'s DOM into a shared row taking `{list, save, refresh}` and add the recipe ratchet in `tests/test_ui_recipes.py`. [docs42b] (checked 2026-11-09)
-- Word import of tracked changes: the .docx carries `w:ins`/`w:del`, but Mammoth reads an insertion as accepted text and drops a deletion (documents-word.js `docWordImport`); the server reader `docview.docx_to_markdown` keeps them, so a .docx with revisions could go there. [docs42b] (checked 2026-11-09)
-- A fenced code block's language (```js) is not written to Word, so it comes back as a bare fence (`docWordBlocks`, the `pre` branch); header cells come back bold (as before). [docs42b] (checked 2026-11-09)
-- .diff, .patch, .vb and .vbs are not in `docview.CODE_SUFFIXES`, so a Library import of one is refused (415); a Dockerfile has no suffix at all (core/docview.py, with the chat picker's `accept` list `tests/test_docview.py` pins). Bug. [docs42b] (checked 2026-11-09)
-- The output grip is 24 px (the grip recipe), under touch.js's 44 px floor at 390; touch.js does not list the run panel as a surface. [docs42b] (checked 2026-11-09)
-- js-beautify on a selection is not used (a selection keeps the conservative re-indent); `vendor_use.py` reports "selection" as its one unused capability. [docs42b] (checked 2026-11-09)
-- Brief 42's other items not started: highlights on pages, comments with bookmarks and links, link cards with a viewer, the long-form preference at first run, labelled sections with a local graph (a Phase row first), doctype.js under 30 ms. [docs42] (checked 2026-11-09)
-- Not verified: the .docx opened in Word itself (its XML and Mammoth's reading only); Format on a large real file; the list chords on a non-US layout; the docx extra's removal on an install that has python-docx (it stops being listed). [docs42b] (checked 2026-11-09)
+- Document comments with the board's thread shape (Reply, Edit, Resolve, Attach): a decision first. Comments are `==words== %%remark%%` in the text ("no comment store and there must not be one", documents.js `renderDocComments`) while `wbCommentRow` needs ids, `reply_to`, `edited`, `resolved`. Recommendation (take it): keep the text model; a reply is the next `%%…%%` on the same line, Edit rewrites in place, Attach appends a `[[link]]`, Resolve takes it out; lift `wbCommentRow`'s DOM into a shared row taking `{list, save, refresh}` and add the recipe ratchet in `tests/test_ui_recipes.py`. [docs42b] (checked 2026-11-09) [verified 2026-11-10: true, document comments not on the board thread shape; a decision is needed]
+- Word import of tracked changes: the .docx carries `w:ins`/`w:del`, but Mammoth reads an insertion as accepted text and drops a deletion (documents-word.js `docWordImport`); the server reader `docview.docx_to_markdown` keeps them, so a .docx with revisions could go there. [docs42b] (checked 2026-11-09) [verified 2026-11-10: true, w:ins and w:del not read as tracked changes in documents-word.js]
+- A fenced code block's language (```js) is not written to Word, so it comes back as a bare fence (`docWordBlocks`, the `pre` branch); header cells come back bold (as before). [docs42b] (checked 2026-11-09) [verified 2026-11-10: true, code block language lost on Word export]
+- .diff, .patch, .vb and .vbs are not in `docview.CODE_SUFFIXES`, so a Library import of one is refused (415); a Dockerfile has no suffix at all (core/docview.py, with the chat picker's `accept` list `tests/test_docview.py` pins). Bug. [docs42b] (checked 2026-11-09) [verified 2026-11-10: true, .diff .patch .vb .vbs not in docview.CODE_SUFFIXES; Dockerfile has no suffix]
+- The output grip is 24 px (the grip recipe), under touch.js's 44 px floor at 390; touch.js does not list the run panel as a surface. [docs42b] (checked 2026-11-09) [verified 2026-11-10: true, output grip 24px under touch floor at 390]
+- js-beautify on a selection is not used (a selection keeps the conservative re-indent); `vendor_use.py` reports "selection" as its one unused capability. [docs42b] (checked 2026-11-09) [verified 2026-11-10: true, js-beautify on a selection not used; vendor_use reports one unused capability]
+- Brief 42's other items not started: highlights on pages, comments with bookmarks and links, link cards with a viewer, the long-form preference at first run, labelled sections with a local graph (a Phase row first), doctype.js under 30 ms. [docs42] (checked 2026-11-09) [verified 2026-11-10: true, Brief 42 items not started (highlights, comment bookmarks, link cards)]
+- Not verified: the .docx opened in Word itself (its XML and Mammoth's reading only); Format on a large real file; the list chords on a non-US layout; the docx extra's removal on an install that has python-docx (it stops being listed). [docs42b] (checked 2026-11-09) [verified 2026-11-10: true, .docx in Word, large file Format and non-US chords not verified]
 
 ## Left by the trust agent (Brief 74, T0 sweeps for 72a, 72b and 73, merged 2026-10-10)
 
 The file, with the T0 table, is in [`../archive/agent-remaining/trust-1010.md`](../archive/agent-remaining/trust-1010.md); the plan's pointer is WORLD_CLASS_PLAN 28.6.
 
-- Settings, every switch and choice: 13 pressed, 0 undone by Ctrl+Z (`settings-controls.js` has the only `pushUndo`; 48 write functions in `settings*.js` and `prefs.js`, 3 with an undo path). (checked 2026-11-09)
-- Documents: "Delete" shows a toast Undo, but Ctrl+Z goes to the open editor's history (`surfaceHistory` in `status.js`, the Documents branch) so the deleted document stays deleted; "Archive" and "Start a new document" push nothing (21 write functions, 5 with an undo path). (checked 2026-11-09)
-- Mind map "Add a top-level topic": the board stack grows by one, Ctrl+Z leaves the lists differing (`/whiteboard/` state not equal to before); unverified which list. (checked 2026-11-09)
-- Chat "Save this chat as a document": creates a document, no undo (`chat.js`; 28 write functions, 7 with an undo path). (checked 2026-11-09)
-- Whiteboard 43 write functions, 14 with an undo path; mind map 25 and 7; graph 21 and 9; library 30 and 9; dashboard 9 and 1; timeline 5 and 1 (`measure-writes.py --list SURFACE` names the gaps). (checked 2026-11-09)
-- Not reached by the sweep: right-click menus, keyboard-only acts (Tab for a branch), controls that open a picker and then need a second choice (note "Move to another category", "Add tags"), and library delete (all 14 pressed in the library were views or pickers). The 25 pressed actions are a floor on what is exposed, not the whole surface; `measure-writes.py` is the full-coverage count. (checked 2026-11-09)
-- Documents were not probed in the dark run (the list had not loaded when the sweep opened it), and the mind map "Add a top-level topic" undid in one light run and not another: re-run both before quoting them. (checked 2026-11-09)
-- `#wb-tool-group span.wb-tool-section-label`: text 49 to 56px past its box at 820, 1024 and 1440 on the whiteboard and the mind map (36 nodes counted as overflow and as clipped text). (checked 2026-11-09)
-- `#entry-list div.entry-meta.note-meta`: 64 to 72px wider than its card at 320 and 390 (one per note, 33 to 42 nodes); `#entry-list li` 24 to 48px at 320. (checked 2026-11-09)
-- `#select-btn span.dock-word` 40px and `#notes-filter-menu span.dock-word` 32px clipped at 320 to 1024: the labelled-to-icon collapse hides words by clipping instead of removing them (may be intended; if so the rule needs the exception written down). (checked 2026-11-09)
-- `button#notes-tidy.ghost.small` 4px at every width; `#tab-notes div.layout` 4px at 320 to 1024. (checked 2026-11-09)
-- Dashboard: 3 overflow and 1 clipped text at 320 and 390, 2 overflow at 820 and wider (selectors in the sweep output, not yet named here). (checked 2026-11-09)
-- Docks: 0 sibling intersections in 12 surfaces at 5 widths (at 390: 81 bars and 266 sibling pairs examined), so the dock grammar holds; the counts that fail are text and content boxes. (checked 2026-11-09)
-- Counts scale with the number of seeded notes (the notes list repeats one finding per card): the table in 28.4 was taken on 13 to 23 notes. (checked 2026-11-09)
-- Crawl: 55 destinations found from the dashboard (1, 14, 36, 3 and 1 at depths 0 to 4, crawl complete to depth 4), 1 deeper than 3, 16 with no palette command (of 80 commands); dark: 55 destinations, 1 deeper than 3, 14 without a command. (checked 2026-11-09)
-- Palette rows missing (heuristic word match, the destination and its click path): 1  Notifications: # unread (muted except reminders); 1  Atlas files it for you; 1  Draw, then keep it as a note; 2  Chat > About this chat; 2  Chat > Search everything and jump anywhere (Ctrl+K); 2  Library > Boards & maps; 2  Library > Bookmarks; 2  Library > Contents; 2  Settings > Search and index; 2  Settings > What it learned; 2  Settings > Web search; 2  Atlas files it for you > Manage categories; 2  Answered from your notes > About the Use AI switch; 3  Notes > Writing room > Write from notes you already have, up to six of; 3  Library > Contents > Probe documentDocument·# sections·#h ago; 3  Atlas files it for you > Manage categories > About managing categories. (checked 2026-11-09)
-- Deeper than 3 (light): 4  Library > Contents > Probe documentDocument·# sections·#h ago > Outline. (checked 2026-11-09)
-- The crawl presses navigation-looking controls only and one item of each repeated list; a destination absent from it is "not found by the crawl", not proof it is missing. Sub-tabs on one page share candidates, so a button seen on the first sub-tab is not pressed again on the others. (checked 2026-11-09)
+- Settings, every switch and choice: 13 pressed, 0 undone by Ctrl+Z (`settings-controls.js` has the only `pushUndo`; 48 write functions in `settings*.js` and `prefs.js`, 3 with an undo path). (checked 2026-11-09) [verified 2026-11-10: true, 13 Settings controls pressed, none undone; only settings-controls.js has pushUndo]
+- Documents: "Delete" shows a toast Undo, but Ctrl+Z goes to the open editor's history (`surfaceHistory` in `status.js`, the Documents branch) so the deleted document stays deleted; "Archive" and "Start a new document" push nothing (21 write functions, 5 with an undo path). (checked 2026-11-09) [verified 2026-11-10: true, Documents delete Undo toast does not reach Ctrl+Z; surfaceHistory in status.js]
+- Mind map "Add a top-level topic": the board stack grows by one, Ctrl+Z leaves the lists differing (`/whiteboard/` state not equal to before); unverified which list. (checked 2026-11-09) [verified 2026-11-10: true, mind map add top-level topic: Ctrl+Z leaves lists differing]
+- Chat "Save this chat as a document": creates a document, no undo (`chat.js`; 28 write functions, 7 with an undo path). (checked 2026-11-09) [verified 2026-11-10: true, Save this chat as a document has no undo in chat.js]
+- Whiteboard 43 write functions, 14 with an undo path; mind map 25 and 7; graph 21 and 9; library 30 and 9; dashboard 9 and 1; timeline 5 and 1 (`measure-writes.py --list SURFACE` names the gaps). (checked 2026-11-09) [verified 2026-11-10: true, write functions with undo paths counted per surface; most still lack one]
+- Not reached by the sweep: right-click menus, keyboard-only acts (Tab for a branch), controls that open a picker and then need a second choice (note "Move to another category", "Add tags"), and library delete (all 14 pressed in the library were views or pickers). The 25 pressed actions are a floor on what is exposed, not the whole surface; `measure-writes.py` is the full-coverage count. (checked 2026-11-09) [verified 2026-11-10: true, right-click, keyboard-only acts and second-choice pickers not reached by sweep]
+- Documents were not probed in the dark run (the list had not loaded when the sweep opened it), and the mind map "Add a top-level topic" undid in one light run and not another: re-run both before quoting them. (checked 2026-11-09) [verified 2026-11-10: true, Documents not probed in dark run; undo in one light run only]
+- `#wb-tool-group span.wb-tool-section-label`: text 49 to 56px past its box at 820, 1024 and 1440 on the whiteboard and the mind map (36 nodes counted as overflow and as clipped text). (checked 2026-11-09) [verified 2026-11-10: true, wb-tool-section-label text 49 to 56px past its box at 820 to 1440]
+- `#entry-list div.entry-meta.note-meta`: 64 to 72px wider than its card at 320 and 390 (one per note, 33 to 42 nodes); `#entry-list li` 24 to 48px at 320. (checked 2026-11-09) [verified 2026-11-10: true, entry-meta 64 to 72px wider than its card at 320 and 390]
+- `#select-btn span.dock-word` 40px and `#notes-filter-menu span.dock-word` 32px clipped at 320 to 1024: the labelled-to-icon collapse hides words by clipping instead of removing them (may be intended; if so the rule needs the exception written down). (checked 2026-11-09) [verified 2026-11-10: true, dock-word labels clipped at 320 to 1024 in two selects]
+- `button#notes-tidy.ghost.small` 4px at every width; `#tab-notes div.layout` 4px at 320 to 1024. (checked 2026-11-09) [verified 2026-11-10: true, notes-tidy 4px and tab-notes layout 4px at 320 to 1024 per sweep]
+- Dashboard: 3 overflow and 1 clipped text at 320 and 390, 2 overflow at 820 and wider (selectors in the sweep output, not yet named here). (checked 2026-11-09) [verified 2026-11-10: true, Dashboard overflow and clipped text at 320 to 820; selectors not named]
+- Docks: 0 sibling intersections in 12 surfaces at 5 widths (at 390: 81 bars and 266 sibling pairs examined), so the dock grammar holds; the counts that fail are text and content boxes. (checked 2026-11-09) [verified 2026-11-10: stale, dock grammar holds: 0 sibling intersections across 12 surfaces]
+- Counts scale with the number of seeded notes (the notes list repeats one finding per card): the table in 28.4 was taken on 13 to 23 notes. (checked 2026-11-09) [verified 2026-11-10: true, counts scale with seeded notes; 28.4 table taken on 13 to 23 notes]
+- Crawl: 55 destinations found from the dashboard (1, 14, 36, 3 and 1 at depths 0 to 4, crawl complete to depth 4), 1 deeper than 3, 16 with no palette command (of 80 commands); dark: 55 destinations, 1 deeper than 3, 14 without a command. (checked 2026-11-09) [verified 2026-11-10: true, crawl found 55 destinations; 1 deeper than 3 and 16 without palette commands]
+- Palette rows missing (heuristic word match, the destination and its click path): 1  Notifications: # unread (muted except reminders); 1  Atlas files it for you; 1  Draw, then keep it as a note; 2  Chat > About this chat; 2  Chat > Search everything and jump anywhere (Ctrl+K); 2  Library > Boards & maps; 2  Library > Bookmarks; 2  Library > Contents; 2  Settings > Search and index; 2  Settings > What it learned; 2  Settings > Web search; 2  Atlas files it for you > Manage categories; 2  Answered from your notes > About the Use AI switch; 3  Notes > Writing room > Write from notes you already have, up to six of; 3  Library > Contents > Probe documentDocument·# sections·#h ago; 3  Atlas files it for you > Manage categories > About managing categories. (checked 2026-11-09) [verified 2026-11-10: true, palette rows missing for Notifications and Atlas files, per crawl]
+- Deeper than 3 (light): 4  Library > Contents > Probe documentDocument·# sections·#h ago > Outline. (checked 2026-11-09) [verified 2026-11-10: true, deeper-than-3 destination list open]
+- The crawl presses navigation-looking controls only and one item of each repeated list; a destination absent from it is "not found by the crawl", not proof it is missing. Sub-tabs on one page share candidates, so a button seen on the first sub-tab is not pressed again on the others. (checked 2026-11-09) [verified 2026-11-10: true, crawl is not proof of absence; caveat stands]
 
 ## Left by the F1 and F2 agents (Briefs 65 and 66, the one reader and quick add, merged 2026-10-10)
 
-- `ai/composer.py` `_DATE_CUE` (about line 380) and its second date pattern (about 933) still compile date words; replace with `recognise.recognise(...)` spans when Brief 67 makes chat a client of the reading, then empty `STILL_READING` in `tests/test_one_reader.py`. [f1-1010] (checked 2026-11-09)
-- `entry/timewords.py` keeps its own weekday and number tables (the plan's second allowed reader, for stored precision). Brief 68 decides whether `find` becomes `recognise` spans plus a precision map. [f1-1010] (checked 2026-11-09)
-- `ai/factgraph.py` `_QUANTITY` still reads counts of things ("3 sets", "5 people"); a "count" kind (number plus plural noun) in `recognise` would let it delegate. [f1-1010] (checked 2026-11-09)
-- `search/query.py` `before:`/`after:` stay ISO only (`test_an_unreadable_date_invents_nothing` holds it); `before:tuesday` is one call to `recognise.span` if the owner wants it. [f1-1010] (checked 2026-11-09)
-- "last week" is the last seven days in search and the previous Monday to Sunday in `recognise`; both written down, the Reading says the search's window. An owner decision if one meaning is wanted. [f1-1010] (also: Left by the f4 agent (Brief 68, CHAT_PLAN F4, merged 2026-10-10)) (checked 2026-11-09)
-- `when.resolve("in march")`, "march", "q4" give the next one at 09:00 (a reminder is never in the past); the past one comes from `when.window` and `recognise`. By design. [f1-1010] (checked 2026-11-09)
-- "on my birthday" reads only with a stored birthday (`context["birthday"]`, `birthday=` on `/read`); no setting holds one yet. [f1-1010] (checked 2026-11-09)
-- Quick add is 56 of 60 on `tests/fixtures/composer/quickadd_1010.json` measured before F1's four fixes landed; re-run `scratchpad/ui-sweeps/quickadd.js` on this head and move CHAT_PLAN F2's Built block to HISTORY only at 60 of 60 (decision 50's gate). [f2-1010] (checked 2026-11-09)
-- `ai/reading.py` reads "review budget friday" (reminder surface) as sure at 09:00 while quickadd.js asks "What time on ...?" (decision 50); the reading should ask the same question. [f2-1010] (checked 2026-11-09)
-- Quick note: a reminder chip on a note saved while the server is away (the outbox, `saveQuickNote`'s `result.queued` branch) is dropped; the note is kept. [f2-1010] (checked 2026-11-09)
-- Palette: only the reminder act has a row (`quickAddPaletteRow`); a note or meeting act and the search window chip (CHAT_PLAN section 1 row 7) wait for Brief 67's act registry. [f2-1010] (checked 2026-11-09)
-- Not verified by either: a real model's path; a screen reader toggling a chip; a browser locale other than en-US; the full suite. [f1-1010, f2-1010] (checked 2026-11-09)
+- `ai/composer.py` `_DATE_CUE` (about line 380) and its second date pattern (about 933) still compile date words; replace with `recognise.recognise(...)` spans when Brief 67 makes chat a client of the reading, then empty `STILL_READING` in `tests/test_one_reader.py`. [f1-1010] (checked 2026-11-09) [verified 2026-11-10: true, composer.py _DATE_CUE and second date pattern still compile date words]
+- `entry/timewords.py` keeps its own weekday and number tables (the plan's second allowed reader, for stored precision). Brief 68 decides whether `find` becomes `recognise` spans plus a precision map. [f1-1010] (checked 2026-11-09) [verified 2026-11-10: true, entry/timewords.py keeps its own weekday and number tables; Brief 68 decision open]
+- `ai/factgraph.py` `_QUANTITY` still reads counts of things ("3 sets", "5 people"); a "count" kind (number plus plural noun) in `recognise` would let it delegate. [f1-1010] (checked 2026-11-09) [verified 2026-11-10: true, factgraph _QUANTITY reads counts without a count kind in recognise]
+- `search/query.py` `before:`/`after:` stay ISO only (`test_an_unreadable_date_invents_nothing` holds it); `before:tuesday` is one call to `recognise.span` if the owner wants it. [f1-1010] (checked 2026-11-09) [verified 2026-11-10: true, search before and after stay ISO only; recognise.span not used]
+- "last week" is the last seven days in search and the previous Monday to Sunday in `recognise`; both written down, the Reading says the search's window. An owner decision if one meaning is wanted. [f1-1010] (also: Left by the f4 agent (Brief 68, CHAT_PLAN F4, merged 2026-10-10)) (checked 2026-11-09) [verified 2026-11-10: true, last week differs between search and recognise; Q24 not applied]
+- `when.resolve("in march")`, "march", "q4" give the next one at 09:00 (a reminder is never in the past); the past one comes from `when.window` and `recognise`. By design. [f1-1010] (checked 2026-11-09) [verified 2026-11-10: true, when.resolve gives next March at 09:00; past form via when.window]
+- "on my birthday" reads only with a stored birthday (`context["birthday"]`, `birthday=` on `/read`); no setting holds one yet. [f1-1010] (checked 2026-11-09) [verified 2026-11-10: true, on my birthday needs a stored birthday; no setting holds one]
+- Quick add is 56 of 60 on `tests/fixtures/composer/quickadd_1010.json` measured before F1's four fixes landed; re-run `scratchpad/ui-sweeps/quickadd.js` on this head and move CHAT_PLAN F2's Built block to HISTORY only at 60 of 60 (decision 50's gate). [f2-1010] (checked 2026-11-09) [verified 2026-11-10: true, quick add 56 of 60 measured before F1 fixes; re-run open]
+- `ai/reading.py` reads "review budget friday" (reminder surface) as sure at 09:00 while quickadd.js asks "What time on ...?" (decision 50); the reading should ask the same question. [f2-1010] (checked 2026-11-09) [verified 2026-11-10: true, reading.py treats 'review budget friday' as sure at 09:00 while quickadd asks the time]
+- Quick note: a reminder chip on a note saved while the server is away (the outbox, `saveQuickNote`'s `result.queued` branch) is dropped; the note is kept. [f2-1010] (checked 2026-11-09) [verified 2026-11-10: true, saveQuickNote queued branch drops the reminder chip; capture-card.js result.queued]
+- Palette: only the reminder act has a row (`quickAddPaletteRow`); a note or meeting act and the search window chip (CHAT_PLAN section 1 row 7) wait for Brief 67's act registry. [f2-1010] (checked 2026-11-09) [verified 2026-11-10: true, quickAddPaletteRow only for the reminder act; other acts and search chip not built]
+- Not verified by either: a real model's path; a screen reader toggling a chip; a browser locale other than en-US; the full suite. [f1-1010, f2-1010] (checked 2026-11-09) [verified 2026-11-10: true, real-model path, screen reader and locale checks not run]
 
 ## Left by the F3 agent (Brief 67, the validators and the acts, merged 2026-10-10)
 
-- Palette rows from the registry: `acts.palette_rows` (src/memorymap/ai/acts.py) has no caller and `palette.js` still lists its own starters; a route and the palette drawing them (decision 53; Brief 68 row 7). [f3-1010] (checked 2026-11-09)
-- A model's proposed act through the registry: `acts.propose` is tested but nothing calls it; the agent's write tools keep their own confirm path (`agent.py`). Brief 68 row 8. [f3-1010] (checked 2026-11-09)
-- A reminder with no time said is guessed as tomorrow at 9, shown "(no time was said)" (`commands.py`, `when.resolve("tomorrow")`); decisions 48 and 50 say ask once. `acts.missing` and `validate.slots_missing` are in place; the reader fills the slot first. [f3-1010] (checked 2026-11-09)
-- Ask draws no Confirm and Not right: `capture-ask.js` keeps `onGrounding`'s insights unread though the route sends them (decision 60 lists chat, Tidy and the dashboard; Ask is optional). [f3-1010] (checked 2026-11-09)
-- The 390 px layout of the Tidy Patterns rows and the Chat pattern line is not measured (1440: Tidy row buttons 32 px, no overflow; Chat line 55 px). [f3-1010] (checked 2026-11-09)
-- "Grounded in" says 4 notes while the support chip says "3 of 3 from your notes" on "tell me about golf" (seen in a sweep screenshot, not investigated). [f3-1010] (checked 2026-11-09)
-- The decision 54 sum rule: "12 * 7 is 84." is read as its own "Read as" because it restates the question's sum; every other utility answer has a "Read as" line. [f3-1010] (checked 2026-11-09)
-- Not verified: real-model answers through the validators (fake transport and the route test only); dark mode. [f3-1010] (checked 2026-11-09)
+- Palette rows from the registry: `acts.palette_rows` (src/memorymap/ai/acts.py) has no caller and `palette.js` still lists its own starters; a route and the palette drawing them (decision 53; Brief 68 row 7). [f3-1010] (checked 2026-11-09) [verified 2026-11-10: true, acts.palette_rows has no caller; palette.js keeps its own starters]
+- A model's proposed act through the registry: `acts.propose` is tested but nothing calls it; the agent's write tools keep their own confirm path (`agent.py`). Brief 68 row 8. [f3-1010] (checked 2026-11-09) [verified 2026-11-10: true, acts.propose tested but no caller; agent write tools keep own confirm path]
+- A reminder with no time said is guessed as tomorrow at 9, shown "(no time was said)" (`commands.py`, `when.resolve("tomorrow")`); decisions 48 and 50 say ask once. `acts.missing` and `validate.slots_missing` are in place; the reader fills the slot first. [f3-1010] (checked 2026-11-09) [verified 2026-11-10: true, reminder with no time guessed as 9am tomorrow; decisions 48 and 50 open]
+- Ask draws no Confirm and Not right: `capture-ask.js` keeps `onGrounding`'s insights unread though the route sends them (decision 60 lists chat, Tidy and the dashboard; Ask is optional). [f3-1010] (checked 2026-11-09) [verified 2026-11-10: true, capture-ask.js onGrounding insights unread; Confirm and Not right not drawn]
+- The 390 px layout of the Tidy Patterns rows and the Chat pattern line is not measured (1440: Tidy row buttons 32 px, no overflow; Chat line 55 px). [f3-1010] (checked 2026-11-09) [verified 2026-11-10: true, 390 layout of Tidy Patterns rows not measured]
+- "Grounded in" says 4 notes while the support chip says "3 of 3 from your notes" on "tell me about golf" (seen in a sweep screenshot, not investigated). [f3-1010] (checked 2026-11-09) [verified 2026-11-10: true, Grounded in says 4 notes while support chip says 3 of 3; not investigated]
+- The decision 54 sum rule: "12 * 7 is 84." is read as its own "Read as" because it restates the question's sum; every other utility answer has a "Read as" line. [f3-1010] (checked 2026-11-09) [verified 2026-11-10: true, sum rule 'Read as' restatement is an open judgement on decision 54]
+- Not verified: real-model answers through the validators (fake transport and the route test only); dark mode. [f3-1010] (checked 2026-11-09) [verified 2026-11-10: true, validators with real model not verified; dark mode not run]
 
 ## Left by the search agent (Brief 47, WORLD_CLASS 25a, merged 2026-10-10)
 
-- A chat is one search row (the whole thread), so a hit opens the chat, not the turn that matched (`index._conversation_row`). [search-1010] (checked 2026-11-09)
-- `tag:` with words still filters after the keyword pass's 200 candidates (`engine.search`, the `wanted_tags` block), so a common word plus a rare tag can miss notes. [search-1010] (checked 2026-11-09)
-- Brief 47's "the sidebar's search field routes here": the Notes sidebar has no search field; the no-match Search everything button and the saved-search rows are the routes built. [search-1010] (checked 2026-11-09)
-- Not verified: hybrid ranking cost at 5,000 notes with a real embedding model (keyword plus the fake backend only); the saved-search ⋯ menu opened in a browser; the phone's saved-search rows at 390 beyond the DOM count. [search-1010] (checked 2026-11-09)
+- A chat is one search row (the whole thread), so a hit opens the chat, not the turn that matched (`index._conversation_row`). [search-1010] (checked 2026-11-09) [verified 2026-11-10: true, chat is one search row; index._conversation_row not found by that name]
+- `tag:` with words still filters after the keyword pass's 200 candidates (`engine.search`, the `wanted_tags` block), so a common word plus a rare tag can miss notes. [search-1010] (checked 2026-11-09) [verified 2026-11-10: true, tag filter runs after the 200-candidate keyword pass in engine.search]
+- Brief 47's "the sidebar's search field routes here": the Notes sidebar has no search field; the no-match Search everything button and the saved-search rows are the routes built. [search-1010] (checked 2026-11-09) [verified 2026-11-10: true, Notes sidebar has no search field; Brief 47 routing claim open]
+- Not verified: hybrid ranking cost at 5,000 notes with a real embedding model (keyword plus the fake backend only); the saved-search ⋯ menu opened in a browser; the phone's saved-search rows at 390 beyond the DOM count. [search-1010] (checked 2026-11-09) [verified 2026-11-10: true, hybrid ranking cost at 5,000 notes with a real embedding not measured]
 
 ## Left by the f4 agent (Brief 68, CHAT_PLAN F4, merged 2026-10-10)
 
-- Note editor: offers on the Edit form are wired (`note-edit-panels.js` after `li.append(surface, ...)`) but measured only on the Capture composer; the Edit form's filing offer sets the hidden select and redraws the chip through its `change`, not seen in a sweep. [f4-1010] (checked 2026-11-09)
-- Note editor: a sum only when written with `=` ("12 + 7 = 21"); a column of amounts with a "Total:" line is not checked (`ai/offers.py` `_SUM`). [f4-1010] (checked 2026-11-09)
-- Dashboard: the digest is in dashboard.js (a boot file, about 700 bytes gzipped); a lazy home would delay the first paint of the widget it opens. The model "refining" the digest (the plan's "with the model refining it when present") is not built: Atlas's week below it is the old stream, unchanged. [f4-1010] (checked 2026-11-09)
-- Documents: the status bar shows characters, words and reading time; lines (`wc -l`) are counted by `textCounts` but shown nowhere. "find with the same windows" is the Library's Search documents box (`GET /documents?q=`); the editor's own Find bar is a substring find, unchanged. [f4-1010] (checked 2026-11-09)
-- Board: board acts are off on a mind map (`wbPaletteActRow` returns null when `wbIsMap()`): a map's layout is its tidy, not a grid. Pasting a list as stickies or map topics was already built (`wbPasteText`, `wbMapPasteText`). [f4-1010] (checked 2026-11-09)
-- Library: a "boards" or "mind maps" filter resolves to `Entry.is_board` ids, but the Library's filter keeps note cards only (`library.js` `libraryPhrase`), so it shows nothing there; the Graph is notes only too. [f4-1010] (checked 2026-11-09)
-- Settings: the synonym groups and the filler list are a hand table (`filters.SETTING_WORDS`, `SETTING_FILLER`), measured on 10 phrases in the browser; no settings phrase fixture in tests. [f4-1010] (checked 2026-11-09)
-- Import: people and places are named in the summary only; they are not written as tags or entities (the save's own extraction runs as before). `recognise` reads a person only in some shapes ("with Ken", "Sam Carter"), not "serviced by Ken" or "Ken Adams serviced" (`ai/recognise.py` `_contact_cands`). [f4-1010] (checked 2026-11-09)
-- Agent: `propose_act` is offered in the reminder and tag tool groups only; whether a 1 to 3B model calls Calculate rather than computing is not verified (no model here). [f4-1010] (checked 2026-11-09)
-- Voice: 67 failure toasts in library.js, whiteboard.js and whiteboard-map.js moved; the other 112 JS files still hold their own strings, and only the failure shape is in the table (decision 55: surface by surface). One template toast left as written (`library.js` "Couldn't import “${file.name}”"). [f4-1010] (checked 2026-11-09)
-- Scorecard: the follow-up column needs decision 58's 200 spoken lines, which are not written; variety's minimum is 3 of 20 against the plan's target of 8. [f4-1010] (checked 2026-11-09)
-- Boot JS 582,371 to 583,240 bytes gzipped (+869: the digest, the Library and Graph filters, the palette rows, the voice table, `textCounts`; cap 588,400); boot CSS 183,286 to 183,286 (cap 183,300, 14 bytes left). New UI otherwise lives in the lazy quick add, library and graph bundles. [f4-1010] (checked 2026-11-09)
+- Note editor: offers on the Edit form are wired (`note-edit-panels.js` after `li.append(surface, ...)`) but measured only on the Capture composer; the Edit form's filing offer sets the hidden select and redraws the chip through its `change`, not seen in a sweep. [f4-1010] (checked 2026-11-09) [verified 2026-11-10: true, Edit form offers wired but measured only on Capture composer]
+- Note editor: a sum only when written with `=` ("12 + 7 = 21"); a column of amounts with a "Total:" line is not checked (`ai/offers.py` `_SUM`). [f4-1010] (checked 2026-11-09) [verified 2026-11-10: true, _SUM in offers.py only sums lines written with =]
+- Dashboard: the digest is in dashboard.js (a boot file, about 700 bytes gzipped); a lazy home would delay the first paint of the widget it opens. The model "refining" the digest (the plan's "with the model refining it when present") is not built: Atlas's week below it is the old stream, unchanged. [f4-1010] (checked 2026-11-09) [verified 2026-11-10: true, digest in dashboard.js boot file; lazy home open]
+- Documents: the status bar shows characters, words and reading time; lines (`wc -l`) are counted by `textCounts` but shown nowhere. "find with the same windows" is the Library's Search documents box (`GET /documents?q=`); the editor's own Find bar is a substring find, unchanged. [f4-1010] (checked 2026-11-09) [verified 2026-11-10: true, textCounts lines count shown nowhere in the status bar]
+- Board: board acts are off on a mind map (`wbPaletteActRow` returns null when `wbIsMap()`): a map's layout is its tidy, not a grid. Pasting a list as stickies or map topics was already built (`wbPasteText`, `wbMapPasteText`). [f4-1010] (checked 2026-11-09) [verified 2026-11-10: true, wbPaletteActRow returns null on a map; board acts off on mind maps]
+- Library: a "boards" or "mind maps" filter resolves to `Entry.is_board` ids, but the Library's filter keeps note cards only (`library.js` `libraryPhrase`), so it shows nothing there; the Graph is notes only too. [f4-1010] (checked 2026-11-09) [verified 2026-11-10: true, Library boards and mind maps filter keeps note cards only (libraryPhrase)]
+- Settings: the synonym groups and the filler list are a hand table (`filters.SETTING_WORDS`, `SETTING_FILLER`), measured on 10 phrases in the browser; no settings phrase fixture in tests. [f4-1010] (checked 2026-11-09) [verified 2026-11-10: true, SETTING_FILLER in filters.py; the setting word table is a hand list]
+- Import: people and places are named in the summary only; they are not written as tags or entities (the save's own extraction runs as before). `recognise` reads a person only in some shapes ("with Ken", "Sam Carter"), not "serviced by Ken" or "Ken Adams serviced" (`ai/recognise.py` `_contact_cands`). [f4-1010] (checked 2026-11-09) [verified 2026-11-10: true, import people and places named in summary only; recognise path open]
+- Agent: `propose_act` is offered in the reminder and tag tool groups only; whether a 1 to 3B model calls Calculate rather than computing is not verified (no model here). [f4-1010] (checked 2026-11-09) [verified 2026-11-10: true, propose_act offered in reminder and tag groups only; model choice unverified]
+- Voice: 67 failure toasts in library.js, whiteboard.js and whiteboard-map.js moved; the other 112 JS files still hold their own strings, and only the failure shape is in the table (decision 55: surface by surface). One template toast left as written (`library.js` "Couldn't import “${file.name}”"). [f4-1010] (checked 2026-11-09) [verified 2026-11-10: true, 112 JS files still hold their own failure strings; 67 moved]
+- Scorecard: the follow-up column needs decision 58's 200 spoken lines, which are not written; variety's minimum is 3 of 20 against the plan's target of 8. [f4-1010] (checked 2026-11-09) [verified 2026-11-10: true, scorecard follow-up column needs 200 spoken lines not written]
+- Boot JS 582,371 to 583,240 bytes gzipped (+869: the digest, the Library and Graph filters, the palette rows, the voice table, `textCounts`; cap 588,400); boot CSS 183,286 to 183,286 (cap 183,300, 14 bytes left). New UI otherwise lives in the lazy quick add, library and graph bundles. [f4-1010] (checked 2026-11-09) [verified 2026-11-10: true, boot JS 583,240 bytes gzipped against 588,400 cap; figure open]
 
 Swept on this head: errors.js 0 errors and 0 layout findings at 1440, 1024, 820 and 390 (1024 timed out once on a click under load, 0 on the rerun); touch.js 0 findings. Not verified: a real model's path (no `MEMORYMAP_EVALS_URL`); the agent palette at 390 (it did not open from `toggleAgentPalette` in the phone shell); a screen reader on the new chips; the full suite.
 
@@ -3786,156 +3786,156 @@ Swept on this head: errors.js 0 errors and 0 layout findings at 1440, 1024, 820 
 
 Taken up by the companion2 agent (Brief 34 continues, INBOX 772 and 773).
 
-- Decision 7's "under 1 ms a minute" is not met by Atlas: its tail is a script-drawn path (atlas-life.js `atlasTailFrame`), 15 draws a second at rest, about 770 layouts a minute. Meeting it needs the tail on the compositor (a cached sprite strip, or CSS on layer roots), a drawing change. [companion-1010] (checked 2026-11-09)
-- Atlas's faces do not read as different moods (sheet: atlas-sheet-*.png, 15 moods at 104, 28 and 20 px, both looks, light and dark): at 104 the face is about 12 px inside rings and tail, at 28 and 20 the moods are one face. Real mascot work changes eyes, brows and mouth boldly, with a mood cue (sweat drop, zZ, hearts, "!") that survives at 20 px. Likely the root of "I barely get to see atlas change expression" (atlas.js `atlasApply`). [companion-1010] (checked 2026-11-09)
-- Under the system's reduce-motion hint Atlas keeps its calm CSS loops (an earlier decision, 08-consistency.css:5056): 1,579 style recalcs a minute. Decision 7 says reduced motion keeps poses without loops; the owner should say which wins. The app's own Reduce setting was not measured. [companion-1010] (checked 2026-11-09)
-- Brief 34 second part (INBOX 752): snapping transitions per minute (60 Hz joint sampling), 12 distinct idle motions per ten minutes and reaction latency under 100 ms were not measured; the latency bar conflicts with the 1.5s reaction debounce the owner asked for ("atlas startles a lot"). [companion-1010] (checked 2026-11-09)
-- The owner's "arm movements ... permanently in a downward arc": the arm hold now changes on idle ticks (45%), but the arm angle range over a walk cycle and at rest was not measured (atlasarms.js has the probe). [companion-1010] (checked 2026-11-09)
-- Tail, rings, nebula and lower-body "subtle animations that are all cheap" (owner's list): not changed; they exist (atlas-life.js) and are the cost above. [companion-1010] (checked 2026-11-09)
-- Face sheet (facesheet.js (removed 2026-10-12, recoverable from git history), 12 names, light): one silhouette, one outline, readable at 104; crowns spill 6 px past the card's top edge; the gaming controller reads as a black block at 104. [companion-1010] (checked 2026-11-09)
+- Decision 7's "under 1 ms a minute" is not met by Atlas: its tail is a script-drawn path (atlas-life.js `atlasTailFrame`), 15 draws a second at rest, about 770 layouts a minute. Meeting it needs the tail on the compositor (a cached sprite strip, or CSS on layer roots), a drawing change. [companion-1010] (checked 2026-11-09) [verified 2026-11-10: true, Atlas tail is a script-drawn path at 15 draws a second; decision 7 not met]
+- Atlas's faces do not read as different moods (sheet: atlas-sheet-*.png, 15 moods at 104, 28 and 20 px, both looks, light and dark): at 104 the face is about 12 px inside rings and tail, at 28 and 20 the moods are one face. Real mascot work changes eyes, brows and mouth boldly, with a mood cue (sweat drop, zZ, hearts, "!") that survives at 20 px. Likely the root of "I barely get to see atlas change expression" (atlas.js `atlasApply`). [companion-1010] (checked 2026-11-09) [verified 2026-11-10: true, Atlas moods do not read as different at 104 px per the sheet]
+- Under the system's reduce-motion hint Atlas keeps its calm CSS loops (an earlier decision, 08-consistency.css:5056): 1,579 style recalcs a minute. Decision 7 says reduced motion keeps poses without loops; the owner should say which wins. The app's own Reduce setting was not measured. [companion-1010] (checked 2026-11-09) [verified 2026-11-10: true, reduce-motion hint keeps CSS loops; 1,579 recalcs a minute; decision open]
+- Brief 34 second part (INBOX 752): snapping transitions per minute (60 Hz joint sampling), 12 distinct idle motions per ten minutes and reaction latency under 100 ms were not measured; the latency bar conflicts with the 1.5s reaction debounce the owner asked for ("atlas startles a lot"). [companion-1010] (checked 2026-11-09) [verified 2026-11-10: true, Brief 34 second part (INBOX 752) transitions and idle variety open]
+- The owner's "arm movements ... permanently in a downward arc": the arm hold now changes on idle ticks (45%), but the arm angle range over a walk cycle and at rest was not measured (atlasarms.js has the probe). [companion-1010] (checked 2026-11-09) [verified 2026-11-10: true, arm angle over a walk cycle not measured; hold changes on idle ticks]
+- Tail, rings, nebula and lower-body "subtle animations that are all cheap" (owner's list): not changed; they exist (atlas-life.js) and are the cost above. [companion-1010] (checked 2026-11-09) [verified 2026-11-10: true, tail, rings and nebula animations unchanged; cost noted]
+- Face sheet (facesheet.js (removed 2026-10-12, recoverable from git history), 12 names, light): one silhouette, one outline, readable at 104; crowns spill 6 px past the card's top edge; the gaming controller reads as a black block at 104. [companion-1010] (checked 2026-11-09) [verified 2026-11-10: true, face sheet readability at 104 px open; facesheet.js removed, finding stands]
 
 Not verified: Every "Done when" face site was read in code (`nameMark` goes through `characterRendererFor` first), not driven one by one this round. Context reactions (drowsy, sleep, headphones, glasses, nightcap, bell, offline, wave on focus) are present in avatars.js and were measured by earlier sweeps; not re-driven. Timings: other agents held the load at 6 to 10 on four cores; counts (layouts, recalcs) are load-free, milliseconds are not. A WebView2 or WebKitGTK window; a touch rub (mouse and pen only by design).
 
 ## Left by the pwa agent (Brief 50, WORLD_CLASS 25d, merged 2026-10-10)
 
-- clip.html and capture.html keep unhashed `?v=<version>` stamps (static, not rewritten as index.html and offline.html are), so an edit inside one version can be served stale from the immutable HTTP cache there. [pwa-1010] (checked 2026-11-09)
-- Warm-load speed gain is inside the noise on a shared machine (466 to 570 ms against 613 to 672 ms) because stamped files were already `immutable` in the HTTP cache; the gain is offline-ability and a cache the browser cannot evict as easily. A quiet-machine A/B would settle it. [pwa-1010] (checked 2026-11-09)
+- clip.html and capture.html keep unhashed `?v=<version>` stamps (static, not rewritten as index.html and offline.html are), so an edit inside one version can be served stale from the immutable HTTP cache there. [pwa-1010] (checked 2026-11-09) [verified 2026-11-10: true, clip.html and capture.html keep unhashed version stamps]
+- Warm-load speed gain is inside the noise on a shared machine (466 to 570 ms against 613 to 672 ms) because stamped files were already `immutable` in the HTTP cache; the gain is offline-ability and a cache the browser cannot evict as easily. A quiet-machine A/B would settle it. [pwa-1010] (checked 2026-11-09) [verified 2026-11-10: true, warm-load gain inside noise on shared machine; open]
 
 Not verified: a real install prompt (`beforeinstallprompt` was dispatched by hand in Chromium; no real Chrome install, no Edge, no Safari, no iPhone). The iPhone row (no event, "Share, then Add to Home Screen") is source-tested only. frontend/js/settings-wiring.js, `renderInstallRow`. the share target from a real phone share sheet. The query landing in Capture was driven in Chromium with the worker controlling the page (`/?share_title=...` fills `#entry-content` under the Notes tab); the installed-app path is untested. frontend/manifest.webmanifest `share_target` is GET. the desktop (pywebview) window's own cache with the worker; only Chromium was driven.
 
 ## Left by the measure60 agent (Brief 60, WORLD_CLASS 26.0 and 26a, merged 2026-10-10)
 
-- The 68 broad excepts that log nothing and return a fallback (89 minus the 21 seeded) are not ratcheted; decide whether decision 57 means them. `tests/test_no_silent_except.py`. [measure60-1010] (checked 2026-11-09)
-- 49 routes need a test or removal (`tests/test_routes_named.py` SEED); several are reached by a loop over verbs, check before writing duplicates. [measure60-1010] (checked 2026-11-09)
-- 5 foreign keys without a leading index (`entity_mentions` x2, `document_bookmarks` x2, `entry_bookmarks.bookmark_id`) and 64 filtered columns without one: needs a migration and an `EXPLAIN QUERY PLAN` at 5,000 notes first (26.4). [measure60-1010] (checked 2026-11-09)
-- Import cost 3.3 s against decision 56's 1.5 s: `ai.autonomous` pulls `ai.agent` (503 ms), `ai.help_chat` 271 ms, `api.routes_search` 226 ms. Brief 62. [measure60-1010] (checked 2026-11-09)
-- Graph at rest (1 to 10 long tasks) and the companion (4 to 6 at rest) are the two surfaces over the zero target (`frames.js` REST_BUDGET). [measure60-1010] (checked 2026-11-09)
-- `frames.js` has no documents or notes-list surface; add one when DOCUMENTS Phase work lands. [measure60-1010] (checked 2026-11-09)
+- The 68 broad excepts that log nothing and return a fallback (89 minus the 21 seeded) are not ratcheted; decide whether decision 57 means them. `tests/test_no_silent_except.py`. [measure60-1010] (checked 2026-11-09) [verified 2026-11-10: true, 68 silent broad excepts not ratcheted; decision 57 open]
+- 49 routes need a test or removal (`tests/test_routes_named.py` SEED); several are reached by a loop over verbs, check before writing duplicates. [measure60-1010] (checked 2026-11-09) [verified 2026-11-10: true, 49 routes need a test or removal per SEED in test_routes_named.py]
+- 5 foreign keys without a leading index (`entity_mentions` x2, `document_bookmarks` x2, `entry_bookmarks.bookmark_id`) and 64 filtered columns without one: needs a migration and an `EXPLAIN QUERY PLAN` at 5,000 notes first (26.4). [measure60-1010] (checked 2026-11-09) [verified 2026-11-10: true, 5 foreign keys without leading index and 64 filtered columns; entry_bookmarks.bookmark_id not found]
+- Import cost 3.3 s against decision 56's 1.5 s: `ai.autonomous` pulls `ai.agent` (503 ms), `ai.help_chat` 271 ms, `api.routes_search` 226 ms. Brief 62. [measure60-1010] (checked 2026-11-09) [verified 2026-11-10: true, import cost 3.3 s against 1.5 s target; ai.autonomous pulls ai.agent]
+- Graph at rest (1 to 10 long tasks) and the companion (4 to 6 at rest) are the two surfaces over the zero target (`frames.js` REST_BUDGET). [measure60-1010] (checked 2026-11-09) [verified 2026-11-10: true, graph and companion over the zero long-task target in frames.js]
+- `frames.js` has no documents or notes-list surface; add one when DOCUMENTS Phase work lands. [measure60-1010] (checked 2026-11-09) [verified 2026-11-10: true, frames.js has no documents or notes-list surface]
 
 Not verified: Frame figures are one machine at load 5 to 9 on four cores; re-run `frames.js` idle before fixing a budget. Resident memory was measured on an empty notebook; a populated one loads the model at warm-up. The 647 MB is torch 2.14 CPU with bge-small, first embed 6.6 s. Hot-route times are in-process with the thread pool bypassed; `_to_out` at 5,000 notes is an extrapolation. Untested-route match is by path literal in `tests/`; a path built by concatenation of more than a trailing slash is counted untested. The `recalcs` CDP counter equals frames on every surface including the control; not read as a finding.
 
 ## Left by the safety agent (Brief 51, WORLD_CLASS 25e, merged 2026-10-10)
 
-- `editor.js:inlineAiUndo` (owner's list of six): the inline AI bar's Undo reverts a CodeMirror transaction on unsaved field text, which rule 1.8 gives to the editor's own history. Recommendation: move it to the lint's editor histories rather than the stack (a stack entry outlives the field it would write to). Needs the decision taken. [safety-1010] (checked 2026-11-09)
-- `dashboard.js:undoActorFrom` / `activityUndoControl` (and their two helpers) and `note-history.js:undoSkillRun`: an undo of the AI's changes through `POST /events/undo`, which refuses the person's own changes ("Undo works on the AI's changes, not yours", routes_settings.py:1648), so there is no redo to give `pushUndo`. Needs a server redo (re-apply the reversed events) before they can fold. [safety-1010] (checked 2026-11-09)
-- The plan row names a "Versions" row; the note menu's existing row is "History" (versions plus every other event). Not renamed: a rename moves help in five places for no new reach. Recommendation: keep "History", record the decision. [safety-1010] (checked 2026-11-09)
-- A notice's `go: { settings, focus }` scrolls Settings to the control at 1440 (Back up now at y 499 of 900) but not at 390 (y 1527 of 900): the phone sheet does not scroll to `scrollToId` (settings.js:245). Shared by every notice that opens Settings. [safety-1010] (checked 2026-11-09)
-- No backup schedule "shown with the last success" (WORLD_CLASS 4018 row) beyond Settings, About, Health's last backup line. [safety-1010] (checked 2026-11-09)
+- `editor.js:inlineAiUndo` (owner's list of six): the inline AI bar's Undo reverts a CodeMirror transaction on unsaved field text, which rule 1.8 gives to the editor's own history. Recommendation: move it to the lint's editor histories rather than the stack (a stack entry outlives the field it would write to). Needs the decision taken. [safety-1010] (checked 2026-11-09) [verified 2026-11-10: true, editor.js inlineAiUndo reverts a CodeMirror transaction on unsaved text; rule 1.8 open]
+- `dashboard.js:undoActorFrom` / `activityUndoControl` (and their two helpers) and `note-history.js:undoSkillRun`: an undo of the AI's changes through `POST /events/undo`, which refuses the person's own changes ("Undo works on the AI's changes, not yours", routes_settings.py:1648), so there is no redo to give `pushUndo`. Needs a server redo (re-apply the reversed events) before they can fold. [safety-1010] (checked 2026-11-09) [verified 2026-11-10: true, activityUndoControl in dashboard.js and undoSkillRun in note-history.js open]
+- The plan row names a "Versions" row; the note menu's existing row is "History" (versions plus every other event). Not renamed: a rename moves help in five places for no new reach. Recommendation: keep "History", record the decision. [safety-1010] (checked 2026-11-09) [verified 2026-11-10: stale, not renamed by decision; help impact recorded]
+- A notice's `go: { settings, focus }` scrolls Settings to the control at 1440 (Back up now at y 499 of 900) but not at 390 (y 1527 of 900): the phone sheet does not scroll to `scrollToId` (settings.js:245). Shared by every notice that opens Settings. [safety-1010] (checked 2026-11-09) [verified 2026-11-10: true, go scrolls Settings at 1440 but not at 390 (y 1527 of 900); scrollToId in settings.js]
+- No backup schedule "shown with the last success" (WORLD_CLASS 4018 row) beyond Settings, About, Health's last backup line. [safety-1010] (checked 2026-11-09) [verified 2026-11-10: true, backup schedule shown beyond Settings, About and Health not built]
 
 Not verified: A real disk failure or power cut; damage was made by overwriting pages of a copy (three embeddings leaves: opens, notice shows; pages read by the start-up backfill: `DamagedNotebookError`). The desktop launcher's loading window showing the damaged-file words was not driven (only `startup_status.get_phase()` asserted). The e2e spec ran locally once (2.0 min); not in CI yet. Folds measured with direct calls to the real functions (`deleteCategoryFromPanel`, `chatDeleteUndo`, `undoImport`, `pushDraftUndo`) after an API setup, not by clicking through each surface's own menu.
 
 ## Left by the density agent (Brief 41, UI_MODERNISATION Phase 12, merged 2026-10-10)
 
-- Step 5b, decision 6 (a primary calendar paired with the reminders): TIMELINE_PLAN section 9 (Phase 5, Brief 55); `renderReminderCalendar` (shell-reminders.js) stands until it goes (decision 19). [density-1010] (checked 2026-11-09)
-- Decision 8, indent guides: the active line is built (library-lazy.css `.cm-activeLineGutter`); indent markers are not in the vendored CodeMirror bundle (DOCUMENTS_PLAN 25 row 3, Brief 71's shell). [density-1010] (checked 2026-11-09)
-- Decision 7: only note cards changed (category pill to a dot and a word); chat bubble metadata not measured (no conversation without a model) and library cards untouched. [density-1010] (checked 2026-11-09)
-- Decision 1, panel padding 12 and sidebar gutter 8: not measured or moved; the Notes dock wraps to two rows at 1440 (86 px). [density-1010] (checked 2026-11-09)
-- Decision 5 for a date field built after boot: the map topic's due date (whiteboard-map.js) stays native; the date picker's typed field sets the date only ("tomorrow at 3pm" does not move the time field). [density-1010] (checked 2026-11-09)
-- Sweeps: touch.js reports Settings appearance and privacy "did not open" (section names moved); overlap.js still counts 4 px rows on `#notes-tidy`, `#dash-quicklinks`, `.library-controls`. [density-1010] (checked 2026-11-09)
-- One focus ring at 1:1 in Chat (`button.active`, its outline takes the ground colour, both themes; `scratchpad/ui-sweeps/focusring.js`). Bug. [density-1010] (checked 2026-11-09)
-- Not verified: tests elsewhere that relied on blank lines removed from CSS files 00, 01, 02, 05, 06, 07 and 10 to pay for the CSS budget; the picker on the Timeline range and Ask's as-of day beyond a smoke check; 390 beyond Reminders. [density-1010] (checked 2026-11-09)
+- Step 5b, decision 6 (a primary calendar paired with the reminders): TIMELINE_PLAN section 9 (Phase 5, Brief 55); `renderReminderCalendar` (shell-reminders.js) stands until it goes (decision 19). [density-1010] (checked 2026-11-09) [verified 2026-11-10: true, primary calendar for reminders not built; renderReminderCalendar only in tests]
+- Decision 8, indent guides: the active line is built (library-lazy.css `.cm-activeLineGutter`); indent markers are not in the vendored CodeMirror bundle (DOCUMENTS_PLAN 25 row 3, Brief 71's shell). [density-1010] (checked 2026-11-09) [verified 2026-11-10: true, indent markers not in vendored CodeMirror bundle; active line built]
+- Decision 7: only note cards changed (category pill to a dot and a word); chat bubble metadata not measured (no conversation without a model) and library cards untouched. [density-1010] (checked 2026-11-09) [verified 2026-11-10: true, only note cards changed; chat bubble metadata not measured]
+- Decision 1, panel padding 12 and sidebar gutter 8: not measured or moved; the Notes dock wraps to two rows at 1440 (86 px). [density-1010] (checked 2026-11-09) [verified 2026-11-10: true, panel padding and sidebar gutter not moved; Notes dock wraps at 1440]
+- Decision 5 for a date field built after boot: the map topic's due date (whiteboard-map.js) stays native; the date picker's typed field sets the date only ("tomorrow at 3pm" does not move the time field). [density-1010] (checked 2026-11-09) [verified 2026-11-10: true, map topic due date stays native; typed date sync open]
+- Sweeps: touch.js reports Settings appearance and privacy "did not open" (section names moved); overlap.js still counts 4 px rows on `#notes-tidy`, `#dash-quicklinks`, `.library-controls`. [density-1010] (checked 2026-11-09) [verified 2026-11-10: true, touch.js section names moved; overlap.js still counts 4 px rows]
+- One focus ring at 1:1 in Chat (`button.active`, its outline takes the ground colour, both themes; `scratchpad/ui-sweeps/focusring.js`). Bug. [density-1010] (checked 2026-11-09) [verified 2026-11-10: true, focus ring at 1:1 in Chat button.active; bug, open]
+- Not verified: tests elsewhere that relied on blank lines removed from CSS files 00, 01, 02, 05, 06, 07 and 10 to pay for the CSS budget; the picker on the Timeline range and Ask's as-of day beyond a smoke check; 390 beyond Reminders. [density-1010] (checked 2026-11-09) [verified 2026-11-10: true, tests relying on removed blank lines not verified]
 
 ## Left by the open-rows agent (time reader, 2026-10-17)
 
 Closed (see HISTORY, "OPEN.md rows closed, 2026-10-17"): row 464 and the time-reader gaps found while probing. Still open, none built:
 
-- `when.resolve("in 2 weeks at 3pm")` still reads 15:55 on the day: the clock after a day-sized offset is applied only in `reminder_parser.parse_relative` (`_with_clock`), not in `resolve`. A bare "at one" ("lunch at one") is deliberately unread, since "at one point" is as common; say so to the owner if it matters. (checked 2026-11-09)
-- A `before:tuesday` search operator is an owner decision (which side of the day it excludes). (checked 2026-11-09)
-- chat-agent.js result box budget line (row 243) is blocked by the eager-script gzip caps. (checked 2026-11-09)
+- `when.resolve("in 2 weeks at 3pm")` still reads 15:55 on the day: the clock after a day-sized offset is applied only in `reminder_parser.parse_relative` (`_with_clock`), not in `resolve`. A bare "at one" ("lunch at one") is deliberately unread, since "at one point" is as common; say so to the owner if it matters. (checked 2026-11-09) [verified 2026-11-10: true, in 2 weeks at 3pm reads 15:55 via reminder_parser parse_relative]
+- A `before:tuesday` search operator is an owner decision (which side of the day it excludes). (checked 2026-11-09) [verified 2026-11-10: true, before:tuesday side of day is an owner decision]
+- chat-agent.js result box budget line (row 243) is blocked by the eager-script gzip caps. (checked 2026-11-09) [verified 2026-11-10: true, chat-agent.js result budget line blocked by eager gzip caps]
 
 ## Left by the 0.6.01 bug-document pass (2026-10-22)
 
 Source: the owner's "Tessellate bugs" document (34 screenshots). Fixed in the patch: tray start/log hardening, whiteboard drag-select highlighting, Fill/Border popup placement, skills menu tag. Not verified on a real Windows desktop: the tray icon (could be in the taskbar overflow ^ if it did start). Open, none built:
 
-- Composer: aware of recent activity (what you were writing or viewing) with varied, kinder replies and a suggested next step; answers that stay on the question and differ per note in Ask; a length setting; personas off when no model is connected. (checked 2026-11-09)
-- Composer: web search with SearXNG down gives only a failure line; a clarify-first flow for open asks ("open a note"); alternative actions by lexical and cosine similarity when nothing matches. (checked 2026-11-09)
-- Reminders magic add: "remind me to do my tax return when I get home tonight, probably around 7pm" must parse (task, tonight, about 7pm). Edit reminder buttons: equal heights and a gap. (checked 2026-11-09)
-- Composer analysing pages in the web panel (key points, highlights, a linked section list). (checked 2026-11-09)
-- Whiteboard: frame contents stay rotated when the frame's rotate handle is double-clicked to reset; emojis do not scale with their box; the dimensions label is missing while resizing; anchors and selection borders lag a resize until release. (checked 2026-11-09)
-- Documents: hide Harper suggestions temporarily and a list of dismissed ones; checkboxes clickable in read mode, wider comfortable width in full screen; selection toolbar and meatball missing in full screen; highlight colour switching on already-highlighted text, and the highlight menu not closing on an outside click; slash menu closing on an outside click and removing its slash; line-number gutter too wide and wrapped lines not indented in the live view; table meatball overflow and far-off plus button; history popup redesign; layout at half width (top of full screen, Ask tab, notes more-actions button half off the edge, blank bar at the bottom, blank bar at the top of Settings, Models page). **Fixed 72806e6 (Models blank bar, focus-mode bottom band), 17ecb7c (notes more button, folds, suggestions wrap, Ask box), 9721d1e (docs dock one row at 600, companion touch-action), 083b948 (Ask header wraps in the card).** Not verified: companion drag in a browser (buddy absent from the sweep boot). (checked 2026-11-09)
-- Custom domain: see the answer in the thread; documented in INSTALL for Docker only. (checked 2026-11-09)
+- Composer: aware of recent activity (what you were writing or viewing) with varied, kinder replies and a suggested next step; answers that stay on the question and differ per note in Ask; a length setting; personas off when no model is connected. (checked 2026-11-09) [verified 2026-11-10: true, composer awareness and kinder replies beyond composer2's first round; open]
+- Composer: web search with SearXNG down gives only a failure line; a clarify-first flow for open asks ("open a note"); alternative actions by lexical and cosine similarity when nothing matches. (checked 2026-11-09) [verified 2026-11-10: true, SearXNG down gives only a failure line; clarify-first flow not built]
+- Reminders magic add: "remind me to do my tax return when I get home tonight, probably around 7pm" must parse (task, tonight, about 7pm). Edit reminder buttons: equal heights and a gap. (checked 2026-11-09) [verified 2026-11-10: true, magic add with tonight and about 7pm not verified]
+- Composer analysing pages in the web panel (key points, highlights, a linked section list). (checked 2026-11-09) [verified 2026-11-10: true, composer page analysis in the web panel not built]
+- Whiteboard: frame contents stay rotated when the frame's rotate handle is double-clicked to reset; emojis do not scale with their box; the dimensions label is missing while resizing; anchors and selection borders lag a resize until release. (checked 2026-11-09) [verified 2026-11-10: true, frame contents stay rotated on reset; emoji scale open]
+- Documents: hide Harper suggestions temporarily and a list of dismissed ones; checkboxes clickable in read mode, wider comfortable width in full screen; selection toolbar and meatball missing in full screen; highlight colour switching on already-highlighted text, and the highlight menu not closing on an outside click; slash menu closing on an outside click and removing its slash; line-number gutter too wide and wrapped lines not indented in the live view; table meatball overflow and far-off plus button; history popup redesign; layout at half width (top of full screen, Ask tab, notes more-actions button half off the edge, blank bar at the bottom, blank bar at the top of Settings, Models page). **Fixed 72806e6 (Models blank bar, focus-mode bottom band), 17ecb7c (notes more button, folds, suggestions wrap, Ask box), 9721d1e (docs dock one row at 600, companion touch-action), 083b948 (Ask header wraps in the card).** Not verified: companion drag in a browser (buddy absent from the sweep boot). (checked 2026-11-09) [verified 2026-11-10: true, Harper temporary hide and dismissed list open]
+- Custom domain: see the answer in the thread; documented in INSTALL for Docker only. (checked 2026-11-09) [verified 2026-11-10: true, custom domain documented for Docker only; not built]
 
 ## Carried from archived agent files, 2026-10-26
 
 Open items from the agent files moved to `archive/agent-remaining/` on this date,
 deduplicated against the ledger above.
 
-- [aboutkit-1011.md] left: Restart now relaunches the app directly (/system/restart, Windows desktop only), not through start.bat, so a pending reinstall runs at the next launcher start; routing it through the launcher needs a Windows check (core/maintenance.py, routes_settings.py restart_app) (checked 2026-11-09)
-- [briefs-1011.md] found, not fixed: help-popovers.js fails 6 triggers it cannot click (#skill-tools-help, #skill-verify-help, #custom-css-help, #import-app-help), none touched here; test_background_registry and test_flaw_class_lints fail on the base for core/lanserve.py and routes_recordings.py threads (the phone agent's area). (checked 2026-11-09)
-- [calendar-b72-1017.md] remaining: none. Not verified: a touch double tap on a cell (Playwright mouse only); a real model's reading of the words. (checked 2026-11-09)
-- [canvas-1017.md] B29 popup placement: wb1017-popup.js measured the bar on screen, nothing spilling, at 1440 and 390 for text box, shape, two items, group; kept as a design request. Left: nothing in this file open except the B70 question. (checked 2026-11-09)
-- [companion-1018.md] done: step 3 (popup-actions audit: only "Stay here on every page" was silent, it nods now) and step 2 measured, not fixed (armjoint.js: cut line 0.3 to 0.9 units outside the torso in some poses and acts, equal on both arms, not background in pixels per armpixels.js; BACKLOG row updated). Left: nothing in the brief. (checked 2026-11-09)
-- [companion-1018.md] not verified: whether the 0.3 to 0.9 unit sliver is visible to the owner at the large view (2.2x, about 2 px); the pixel read was on the light theme only, THEME=dark did not apply in armpixels.js. (checked 2026-11-09)
-- [composer-1011.md] found, not fixed: Agent mode with no model, "find notes simlar to my dentist one yk" answers about the whole sentence as a subject (checked 2026-11-09)
-- [composer-1017-progress.md] left (open after O5 to O11 rest): B80 new-tag suggestions beyond the notebook's own tags (Auto-tag with no model only uses tags already in use); O10 history-derived previous tools, list_tools offered/held-back per turn; O11 supersede links in the graph, per-subject timeline, ai/factgraph.py integration; the stored social families still whole lines (how, sorry, laugh, reaction, ack, confused, morning). Targeted tests only were run; the full suite was not (standing order 5a). (checked 2026-11-09)
-- [composer1310-1019.md] left: the model is not handed linked_to or why in its prompt (librarian _match_info_hint), src/tessellate/ai/librarian.py:515; prompt budget not spent (checked 2026-11-09)
-- [composer1310-1019.md] left: themes come from shared tags and links only; notes with no tags and no links are all "more loosely" (composer_frame.themes) (checked 2026-11-09)
-- [composer1324-1019.md] left: "who is on the team offsite list" and "which books have I finished" return a note quote, not the asked fact (a who/status question over a list note), src/tessellate/ai/composer.py select (checked 2026-11-09)
-- [composer1324-1019.md] left: "I found five notes about knives" shows one note: total and shown disagree in find, src/tessellate/ai/tool_say.py _found_notes caller (checked 2026-11-09)
-- [composer1324-1019.md] left: "summarise today" says "From today: <title>" per note, composer_digest recall lines (checked 2026-11-09)
-- [composer1324-1019.md] left: "compare the Porto and Lisbon notes" is a themed digest, not a side-by-side table (compare_sides now matches; table needs both sides' facts) (checked 2026-11-09)
-- [composer1324-1019.md] left: a note's fragment lines read "it has best crumb yet and it has next time ..." (composer_digest note-told-as-events join) (checked 2026-11-09)
-- [composer1324-1019.md] left: INBOX 1324 and 1315 stay open as standing requests; the Ask AI part is fixed (checked 2026-11-09)
-- [composer4-1025.md] Not verified: no real browser run of the Chat "can't be reached" message (node --check only); quiz chips render as offers (route-tested, not looked at). (checked 2026-11-09)
-- [composer7-1026.md] Not verified: small talk through the running app with a real persona prompt (unit and route tests only); no model. (checked 2026-11-09)
-- [composer8-1026.md] Not verified: composed small talk and nothing-found through the running app with a real persona prompt (unit and route tests only, no model); the Ask wrap in dark theme and at 560 px was measured for overflow only at 720, 1000 and 1440. (checked 2026-11-09)
-- [design6-1018.md] Not verified: a real pointer flick reaching each fate (the sweep seeds direct throws; one real flick only); the look of the splat and climb (measured, not watched); phone size. (checked 2026-11-09)
-- [design7-1018.md] Not verified: a PDF's zoom and page stepper in the new dock (no PDF renderer package in the sweep's data dir, so pages did not render); a real trackpad pinch (wheel with ctrlKey); real touch hardware (CDP touch events only); Windows webview. (checked 2026-11-09)
-- [design7-1018.md] Found, not fixed: scratchpad was 768 files on the base (cap 766); three old sweeps went (lightboxentry.js superseded, graphoptheights.js, seg665-toolbar.js). (checked 2026-11-09)
-- [docpaste-1026.md] Not verified: real-clipboard Ctrl+V from Word or a browser (events were dispatched ClipboardEvents); phone touch (no Ctrl key: tap the chip). (also: Carried from archived agent files, 2026-10-26) (checked 2026-11-09)
-- [docs5-1026.md] Not verified: real touch on the phone foot bar; scroll-driven animation in the desktop webview (Chromium 115+ only; none shows otherwise). (checked 2026-11-09)
-- [docs6-1026.md] Selection bar at 390 (docs5 finding): not reproduced. A programmatic CodeMirror selection shows #selection-bar (flex, 355x54 at 27,266); an emulated double-tap or CDP long-press selects nothing in headless, so a real finger selection is not verified. (checked 2026-11-09)
-- [documents-1018.md] step 2 B19 drag: documents-codekit.js (docSnippetDragStart, docSnippetScrollSpeed, docSnippetDragFrame), library-lazy.css .doc-drop-ghost; sweep snippetdrag1018.js 13/13 (ghost within 2px of the caret; bottom edge scrolled 0 to 1,319px in 0.7 s). Chromium's synthetic drag sends no repeat dragover while still, so the sweep nudges 1px. Not verified: a real mouse drag in the desktop webview, Firefox (draggable buttons). (checked 2026-11-09)
-- [documents-1018.md] step 3 B23 part 1: right-click or hold on a Live cell opens the table menu at the pointer (docTableMenuAtPoint, one contextmenu listener ahead of the suggestion), nine new commands (move row/column, sort A-Z and Z-A, select row/column/table); pure model in the DOC-TABLE region, tests/test_doc_table_manage.py (25 checks), sweep tablemanage1018.js 20/20 at 1440 and 390. Menu is 19 items, 546px tall at 1440x900. Not verified: a real touch hold on a device. (checked 2026-11-09)
-- [documents-1018.md] step 4 B23 part 2: edge grips (docTableGripsPlugin, documents.js, a layer in the scroller; .doc-table-grip* in library-lazy.css). Column bars above the header, row bars beside the rows, a plus at the header's end and under the last row; click selects, drag moves (any distance, docTableMoveRowEdits and docTableMoveColumnEdits now take any delta), right-click or hold opens the menu at that row or column. Sweep tablegrips1018.js 28/28 at 1440 and 390, light and dark (grips flush within 2px of the cells, slot line within 3px of the drop edge). Not verified: a real touch drag on a device (the hit areas are 16px, 9px beside rows at 390 where the page padding is 9.6px; the hold menu is the touch path), tables wider than the editor (grips follow the rendered cells, not scrolled sideways). (checked 2026-11-09)
-- [documents-1018.md] step 5 B18: the Snippets panel is open to a markdown document as Sections (DOC_SECTIONS, 24 rows, documents-codekit.js; docSectionPad gives a block its blank lines; {{date}} through docTemplateFill; Save keeps selected text under language md; the prose panel is remembered under docSectionsSide, apart from the code file's docCodeSide). The Assistant stays a code file's (.doc-code-only, and .doc-code-side.is-prose for the phone sheet). tests/test_doc_sections.py (7), sweep docsections1018.js 31/31 at 1440 and 26/26 at 390 (insert, Tab stops, one Ctrl+Z, blank lines on an empty line and mid-sentence drop, save, search, a code file keeps its own rows). test_code_documents.py asserted the panel was hidden for prose: its intent moved, so that assertion now checks only the Assistant's classes. Not verified: a phone's real touch drag of a row (rows are draggable; click is the phone path), prose sections in the Library's note editors. (checked 2026-11-09)
-- [documents-1018.md] step 6 B20 (reduced, the owner's recommendation taken): the editor already moved single lines on Alt+Up and Down (the step 0 audit said it did not: wrong), but in prose that welds paragraphs. docBlockMoveEdit (documents.js, pure) moves a paragraph, table, fence, list item with children (numbers stay) or heading section past its neighbour with the gaps untouched; docBlockMoveRun in docCmKeymap; code files and selections keep the line move; palette rows move-block-up and move-block-down. tests/test_doc_block_move.py (29 model checks), sweep docblockmove1018.js 18/18 (live, source, list, section, table, palette, py, selection). Not verified: a drag handle on every block (the heavy reading of "manage mode", still the owner's call above). (checked 2026-11-09)
-- [dog2-1025.md] [ ] 22 not confirmed: blank dashboard in the harness for 3 to 6 s. (checked 2026-11-09)
-- [dog3-1026.md] [ ] 17 A: graph with no links says nothing why; minimap blank; node card covers its own label; empty-canvas double-click opens New note. PARTIAL (dog3a): "no links yet" stats line added; double-click on empty canvas kept (documented Grow the map, help index.html:3955); minimap blank and card over label not measured. (checked 2026-11-09)
-- [dog3-1026.md] [ ] 24 A: dashboard greeting at 390: large gap between "Still up." and subtitle. (checked 2026-11-09)
-- [dog3-1026.md] [ ] S: blank dashboard on 4 of 8 first loads at 720/390 under load 9-13 (not seen at 1440; load not ruled out; dog1 item 22 and sketchfix 6 did not reproduce). (checked 2026-11-09)
-- [dog3a-1026.md] Not verified in a browser: hover-hidden remove cross (pointer devices), empty-Send toast, chat title ellipsis at 720/390, dark theme, touch. (checked 2026-11-09)
-- [dog3w-1026.md] [ ] dog3 8 (Fit leaves the root under the rail): not reproduced. Root left after open and after Fit: 1440 110 and 643 (rail ends 62), 720 119 and 291 (rail 71), 390 61 and 119 (no rail). wbFreeArea already takes the rail off. Not tried: a Fit with the Format panel open, a radial map growing left of the root. (checked 2026-11-09)
-- [fixes1-1018.md] Not verified in the app: C31 (link kind sheet), the document half of C32. (checked 2026-11-09)
-- [fixes2-1018.md] not verified: splash.ps1 on Windows (C02, C38); a right-drag on macOS, where contextmenu fires on the press (checked 2026-11-09)
-- [fixes3-1018.md] Left: C44, C39, C40, C36, Open Packages help (standing order 13). (checked 2026-11-09)
-- [fixes4-1018.md] Left: Escape on the image lightbox (needs an image note), reminders add form, notes edit entry, graph node panel; the chat undo line (undo.js found 0 actions on rerun, not reproduced); Back with the lightbox open is coded (.lightbox takes a synthetic Escape) but not run. (checked 2026-11-09)
-- [fixes6-1018.md] Found, not fixed: chat/Ask routes carry no locale, so "3/4" in Ask is still day first; the currency table needs to become a preference before decision 43's editor. (checked 2026-11-09)
-- [fixes7-1018.md] Item 4 (ghost topics): done, in the lazy library-lazy.css (boot CSS untouched). Measured: 3 ghosts, 8 px under the topic, Tab/Escape/Tab-Tab-Enter add exactly 2 (untracked sweep, never committed). Not verified: touch, 390 px width, reduced motion (no motion used), dark theme contrast of the faded chip. (checked 2026-11-09)
-- [fixes8-1018.md] Not verified: light theme (THEME=light did not switch the sweep off dark), the 390 sidebar sheet opened (only page-level scroll measured), real screen reader. (checked 2026-11-09)
-- [fixes8-1018.md] Found, not fixed: at 390 the Categories head is hidden by an existing rule (<600), so that section cannot fold there; chips row stays. (checked 2026-11-09)
-- [fixes9-1018.md] Left: INBOX 1301 still holds D1 to D6 (other agents); D7/D8 marked Fixed in place. (checked 2026-11-09)
-- [graph1306-1019.md] layout: measured only (graphdefault1306.js, seed-graph40.py); two tuning tries (landscape x pull, organic ring stretch floor) moved fill 0.48 to 0.53 and crossings 77 to 72..82, so reverted. Left: crossings and the hub's spokes (graph-worker.js applyGrouping, hub pull), label density (graph-canvas.js label gate). The owner's crowded lower-half labels did not reproduce on this seed. (checked 2026-11-09)
-- [lanbar-1011.md] Not verified: a real phone, a real wifi drop or hotspot join (netid is the (checked 2026-11-09)
-- [lansec-1025.md] next: nothing; not verified on a real phone (checked 2026-11-09)
-- [logo-1011.md] Not verified: a real OS install (taskbar, dock, Start menu icon from icon.ico); Android's maskable crop on a device (the test holds the mark inside the 80% circle); the busy lift during a real model turn (driven by pushing a running run onto agentRuns). (checked 2026-11-09)
-- [mobile1314-1019.md] left: a real phone (safe-area insets are 0 in headless Chromium); the owner's own read of whether Graph behind More is right (decision taken per standing order 3, UI_MODERNISATION_PLAN "Placed from INBOX, 2026-10-19"). (checked 2026-11-09)
-- [mobile1314-1019.md] left: docks with a search field are two rows on a phone (notes 114px, library 114, timeline 114, graph 111; docks.js at 390); by Phase 11's decision (identity zone basis 100%), not changed here. Chrome 14 to 21% of 844, under phonechrome.js's 25% budget. (checked 2026-11-09)
-- [mobile1314-1019.md] left: phonechrome.js and phone.js measure 390 by default; the 360 band's timeline bleed (the day well 9.6px into the card padding) is exempted as deliberate in both. (checked 2026-11-09)
-- [open-1018.md] Not verified: the find and dock help popovers at 1440 and the list, outline and find ones at 390 (sweep clicks timed out), 1024 and dark theme; a real mouse and a touch hold; link offers in a code document are off by design. (checked 2026-11-09)
-- [open-1018.md] Link offers: no Settings switch (found-not-fixed); "ignore" is per session (docProseIgnored); tag offers dropped (a document has no tags); a title only matches as the whole opening line of a note. (checked 2026-11-09)
-- [order-1018.md] found-not-fixed: tests/test_typo_routing.py "search the web for sandwiches" writes ./data when run serially (conftest guard errors, also at base); tests/test_boot_budget.py boot JS 588516 > cap 588400 (staged-lints fails at base). (checked 2026-11-09)
-- [perf-1017.md] found-not-fixed (3): atlasRigFrame (atlas-motion.js ~252, ~296) reads getComputedStyle each frame, a forced style recalc per flight frame (178 in 1.6 s, 530 ms); skipping it while carried is a design call for the arm rig (checked 2026-11-09)
-- [pin-1012.md] left: Windows DPAPI and macOS Keychain paths never ran here (not verified) (checked 2026-11-09)
-- [reveal-1018.md] found-not-fixed (Notes): the first recalc (701 and 917 el, 66 and 104 ms) is already content-visibility: auto rows plus the sidebar. A 13-row first paint with no top-up cut it 26 percent in elements, but it changes the settled list (60 rows to about 13), and Select all and Ctrl+F read the rendered rows; with a top-up the reveal sees 60 rows again. Boot JS has 147 bytes of headroom. (checked 2026-11-09)
-- [reveal-1018.md] found-not-fixed: cv:auto paints text in cards at fractional y up to 1 px differently (3.6k of 1.3M pixels at 1440x900, rows 4+); settled scroll height +56 px until cards are seen. (checked 2026-11-09)
-- [settings-1017.md] B14 done: Expand all / Collapse all in the dock of panes with 2+ folds (skills, websearch, appearance, shortcuts, help, about; probe p/b14b.js at 1440 and 390). Left: panes with 0-1 fold (models, personas, tools, ...) get none; their "sections" are not collapsible. a29dfab. (checked 2026-11-09)
-- [settings-1017.md] B61 done (smallest honest): dictation sizes marked "(on this computer)" / "(~N MB to download)", confirm on choosing a size that is not here (cancel reverts, nothing downloads until first dictation), Remove this size (DELETE /voice/models/{size}); embedding models already had remove. Left: unsloth gemma embedding licence remark (not touched), a delete for other model kinds. 78f9e0f. (checked 2026-11-09)
-- [settings-1017.md] B55 done in part: the web menu offers Start/Install SearXNG on the DuckDuckGo provider too (was ["Web search settings"] only); palette row finds the Web clipper. Left: the clipper UX redesign (placed). B53: placed (no consume-side MCP UI exists; BACKLOG trust model). B59: investigated, not reproduced (no sentence-transformers here). Next: final report. (checked 2026-11-09)
-- [settings58-1018.md] left: icon-toggle sweep reached only 11 standalone icon-only toggles with no content seeded; whiteboard map toggles (wb-map-core, edge-dashed/arrow) and ask-time-travel, ocr-zoom-fit show a pressed fill only, no glyph swap (docs: frontend/js/whiteboard-map.js:6900, capture-ask.js:3372, library.js:5996) (checked 2026-11-09)
-- [shell-1025.md] not verified: a real touch device; Windows webview (checked 2026-11-09)
-- [sugg1329-1019.md] left: the Names and Link types rows (inboxMergeRow, inboxTypeRow, suggestions-inbox.js) still use the older .inbox-row shape (title, reasons with percentages, chip + button + X foot); bring them onto the Links row's grid if the owner wants the four kinds to match. (checked 2026-11-09)
-- [timeline-1018.md] left (not mine, untouched): OPEN.md rows 330 (On this day row moves the list 44 px at 390), 341 (the table has no meeting mark), 850 (a map under the Boards chip); timeline.js sweep's "a bucket head stays pinned after scrolling" fails 1 to 3 times a run on the base too (the week-ahead heads, flaky by run: 1440, 390 then 1440, 1024); errors.js at 390 reports 4 off-screen button.ghost.small on the Notes tab (both themes), not the Timeline. (checked 2026-11-09)
-- [uxfix4-1018.md] Not verified: pixel sampling (pngpixel.py) was not used; all values are computed styles composited from the effective background. Topics outside the 390 viewport are culled by the app and were not measured (6 of 31 topic text elements at 390). (checked 2026-11-09)
-- [wb-1025.md] Not verified: the Windows webview, and drag-select outside Chromium. (checked 2026-11-09)
-- [wb1327-1019.md] Trackpad: real hardware not verified; the heuristic (deltaX, or |deltaY| under 50 or fractional, gesture = events less than 200ms apart) was tested with synthetic event sequences only. tests/test_wb_middle_pan.py. (checked 2026-11-09)
-- [wb2-1025.md] not verified: reorder in tree-down, org and tree-both (x axis, two sides) by pointer; only tree-right swept (checked 2026-11-09)
-- [wb2-1025.md] found-not-fixed: the export dialog says "Export this board" when it opens on a branch; mmd2-1005-markers.js sweep crashes at its own press() helper (stale sweep) (checked 2026-11-09)
-- [wbpaste-1026.md] Not verified: real OS clipboard (sweep dispatches ClipboardEvents and uses the headless clipboard API); a real spreadsheet copy; touch. (checked 2026-11-09)
-- [wbpaste-1026.md] Found-not-fixed: app.js gzip cap (14,300) has no room for one more script line, so the shared helpers and the board paste code sit inside documents-prose.js and whiteboard-commands.js instead of their own files; a split needs the cap to come down elsewhere first. (checked 2026-11-09)
-- [worldclass-1018.md] Found, not fixed (A): Escape on Settings rewrites the settings entry's address to the tab underneath (#/reminders), so Forward onto it shows the wrong hash although the dialog is right; a reload on that entry would open the tab, not Settings. Low impact. (checked 2026-11-09)
-- [worldclass-1018.md] Found, not fixed (B), the real one: browser Back (history.back()) with an overlay open steps the tab history and leaves the overlay open on the other tab. Palette, finder, Guide, shortcuts and quick note: 5 of 5 left the overlay open and moved Timeline to Notes. Settings is right (closes, stays, 1 of 1). On a phone, where Back is the way out of a sheet, this matters more. Not measured at 390. (checked 2026-11-09)
+- [aboutkit-1011.md] left: Restart now relaunches the app directly (/system/restart, Windows desktop only), not through start.bat, so a pending reinstall runs at the next launcher start; routing it through the launcher needs a Windows check (core/maintenance.py, routes_settings.py restart_app) (checked 2026-11-09) [verified 2026-11-10: true, Restart now relaunches directly, not through start.bat; open]
+- [briefs-1011.md] found, not fixed: help-popovers.js fails 6 triggers it cannot click (#skill-tools-help, #skill-verify-help, #custom-css-help, #import-app-help), none touched here; test_background_registry and test_flaw_class_lints fail on the base for core/lanserve.py and routes_recordings.py threads (the phone agent's area). (checked 2026-11-09) [verified 2026-11-10: true, help-popovers.js fails 6 triggers it cannot click]
+- [calendar-b72-1017.md] remaining: none. Not verified: a touch double tap on a cell (Playwright mouse only); a real model's reading of the words. (checked 2026-11-09) [verified 2026-11-10: true, touch double tap and real-model reading not verified]
+- [canvas-1017.md] B29 popup placement: wb1017-popup.js measured the bar on screen, nothing spilling, at 1440 and 390 for text box, shape, two items, group; kept as a design request. Left: nothing in this file open except the B70 question. (checked 2026-11-09) [verified 2026-11-10: stale, B29 popup placement measured at 1440 and 390; nothing spilling]
+- [companion-1018.md] done: step 3 (popup-actions audit: only "Stay here on every page" was silent, it nods now) and step 2 measured, not fixed (armjoint.js: cut line 0.3 to 0.9 units outside the torso in some poses and acts, equal on both arms, not background in pixels per armpixels.js; BACKLOG row updated). Left: nothing in the brief. (checked 2026-11-09) [verified 2026-11-10: true, companion-1018 step 2 measured, not fixed]
+- [companion-1018.md] not verified: whether the 0.3 to 0.9 unit sliver is visible to the owner at the large view (2.2x, about 2 px); the pixel read was on the light theme only, THEME=dark did not apply in armpixels.js. (checked 2026-11-09) [verified 2026-11-10: true, 0.3 to 0.9 unit sliver visibility not verified]
+- [composer-1011.md] found, not fixed: Agent mode with no model, "find notes simlar to my dentist one yk" answers about the whole sentence as a subject (checked 2026-11-09) [verified 2026-11-10: true, Agent mode no-model answers about the whole sentence; found, not fixed]
+- [composer-1017-progress.md] left (open after O5 to O11 rest): B80 new-tag suggestions beyond the notebook's own tags (Auto-tag with no model only uses tags already in use); O10 history-derived previous tools, list_tools offered/held-back per turn; O11 supersede links in the graph, per-subject timeline, ai/factgraph.py integration; the stored social families still whole lines (how, sorry, laugh, reaction, ack, confused, morning). Targeted tests only were run; the full suite was not (standing order 5a). (checked 2026-11-09) [verified 2026-11-10: true, B80 new-tag suggestions beyond own tags open]
+- [composer1310-1019.md] left: the model is not handed linked_to or why in its prompt (librarian _match_info_hint), src/tessellate/ai/librarian.py:515; prompt budget not spent (checked 2026-11-09) [verified 2026-11-10: true, model not handed linked_to or why; librarian.py:515]
+- [composer1310-1019.md] left: themes come from shared tags and links only; notes with no tags and no links are all "more loosely" (composer_frame.themes) (checked 2026-11-09) [verified 2026-11-10: true, themes from shared tags and links only; untagged notes all loose]
+- [composer1324-1019.md] left: "who is on the team offsite list" and "which books have I finished" return a note quote, not the asked fact (a who/status question over a list note), src/tessellate/ai/composer.py select (checked 2026-11-09) [verified 2026-11-10: true, who and stat questions return a note quote, not the fact]
+- [composer1324-1019.md] left: "I found five notes about knives" shows one note: total and shown disagree in find, src/tessellate/ai/tool_say.py _found_notes caller (checked 2026-11-09) [verified 2026-11-10: true, five notes about knives shows one; total and shown disagree]
+- [composer1324-1019.md] left: "summarise today" says "From today: <title>" per note, composer_digest recall lines (checked 2026-11-09) [verified 2026-11-10: true, summarise today per-note From today lines]
+- [composer1324-1019.md] left: "compare the Porto and Lisbon notes" is a themed digest, not a side-by-side table (compare_sides now matches; table needs both sides' facts) (checked 2026-11-09) [verified 2026-11-10: true, compare is a themed digest, not a side-by-side table]
+- [composer1324-1019.md] left: a note's fragment lines read "it has best crumb yet and it has next time ..." (composer_digest note-told-as-events join) (checked 2026-11-09) [verified 2026-11-10: true, fragment lines read as joined events in composer_digest]
+- [composer1324-1019.md] left: INBOX 1324 and 1315 stay open as standing requests; the Ask AI part is fixed (checked 2026-11-09) [verified 2026-11-10: true, INBOX 1324 and 1315 stay open as standing requests]
+- [composer4-1025.md] Not verified: no real browser run of the Chat "can't be reached" message (node --check only); quiz chips render as offers (route-tested, not looked at). (checked 2026-11-09) [verified 2026-11-10: true, Chat can't-be-reached message not browser-run; quiz chips]
+- [composer7-1026.md] Not verified: small talk through the running app with a real persona prompt (unit and route tests only); no model. (checked 2026-11-09) [verified 2026-11-10: true, small talk with a real persona prompt not run]
+- [composer8-1026.md] Not verified: composed small talk and nothing-found through the running app with a real persona prompt (unit and route tests only, no model); the Ask wrap in dark theme and at 560 px was measured for overflow only at 720, 1000 and 1440. (checked 2026-11-09) [verified 2026-11-10: true, composed small talk and nothing-found not run in app]
+- [design6-1018.md] Not verified: a real pointer flick reaching each fate (the sweep seeds direct throws; one real flick only); the look of the splat and climb (measured, not watched); phone size. (checked 2026-11-09) [verified 2026-11-10: true, pointer flick fates and splat look not verified]
+- [design7-1018.md] Not verified: a PDF's zoom and page stepper in the new dock (no PDF renderer package in the sweep's data dir, so pages did not render); a real trackpad pinch (wheel with ctrlKey); real touch hardware (CDP touch events only); Windows webview. (checked 2026-11-09) [verified 2026-11-10: true, PDF zoom and stepper in new dock not verified]
+- [design7-1018.md] Found, not fixed: scratchpad was 768 files on the base (cap 766); three old sweeps went (lightboxentry.js superseded, graphoptheights.js, seg665-toolbar.js). (checked 2026-11-09) [verified 2026-11-10: true, scratchpad 768 files against cap 766 on base; found, not fixed]
+- [docpaste-1026.md] Not verified: real-clipboard Ctrl+V from Word or a browser (events were dispatched ClipboardEvents); phone touch (no Ctrl key: tap the chip). (also: Carried from archived agent files, 2026-10-26) (checked 2026-11-09) [verified 2026-11-10: true, real clipboard Ctrl+V and phone touch not verified]
+- [docs5-1026.md] Not verified: real touch on the phone foot bar; scroll-driven animation in the desktop webview (Chromium 115+ only; none shows otherwise). (checked 2026-11-09) [verified 2026-11-10: true, phone foot bar touch and scroll animation not verified]
+- [docs6-1026.md] Selection bar at 390 (docs5 finding): not reproduced. A programmatic CodeMirror selection shows #selection-bar (flex, 355x54 at 27,266); an emulated double-tap or CDP long-press selects nothing in headless, so a real finger selection is not verified. (checked 2026-11-09) [verified 2026-11-10: stale, selection bar at 390 not reproduced; a programmatic selection shows it as designed]
+- [documents-1018.md] step 2 B19 drag: documents-codekit.js (docSnippetDragStart, docSnippetScrollSpeed, docSnippetDragFrame), library-lazy.css .doc-drop-ghost; sweep snippetdrag1018.js 13/13 (ghost within 2px of the caret; bottom edge scrolled 0 to 1,319px in 0.7 s). Chromium's synthetic drag sends no repeat dragover while still, so the sweep nudges 1px. Not verified: a real mouse drag in the desktop webview, Firefox (draggable buttons). (checked 2026-11-09) [verified 2026-11-10: true, B19 drag step in documents-codekit.js; not confirmed as built here]
+- [documents-1018.md] step 3 B23 part 1: right-click or hold on a Live cell opens the table menu at the pointer (docTableMenuAtPoint, one contextmenu listener ahead of the suggestion), nine new commands (move row/column, sort A-Z and Z-A, select row/column/table); pure model in the DOC-TABLE region, tests/test_doc_table_manage.py (25 checks), sweep tablemanage1018.js 20/20 at 1440 and 390. Menu is 19 items, 546px tall at 1440x900. Not verified: a real touch hold on a device. (checked 2026-11-09) [verified 2026-11-10: true, B23 part 1 table menu at pointer; open per the row]
+- [documents-1018.md] step 4 B23 part 2: edge grips (docTableGripsPlugin, documents.js, a layer in the scroller; .doc-table-grip* in library-lazy.css). Column bars above the header, row bars beside the rows, a plus at the header's end and under the last row; click selects, drag moves (any distance, docTableMoveRowEdits and docTableMoveColumnEdits now take any delta), right-click or hold opens the menu at that row or column. Sweep tablegrips1018.js 28/28 at 1440 and 390, light and dark (grips flush within 2px of the cells, slot line within 3px of the drop edge). Not verified: a real touch drag on a device (the hit areas are 16px, 9px beside rows at 390 where the page padding is 9.6px; the hold menu is the touch path), tables wider than the editor (grips follow the rendered cells, not scrolled sideways). (checked 2026-11-09) [verified 2026-11-10: true, B23 part 2 edge grips; open per the row]
+- [documents-1018.md] step 5 B18: the Snippets panel is open to a markdown document as Sections (DOC_SECTIONS, 24 rows, documents-codekit.js; docSectionPad gives a block its blank lines; {{date}} through docTemplateFill; Save keeps selected text under language md; the prose panel is remembered under docSectionsSide, apart from the code file's docCodeSide). The Assistant stays a code file's (.doc-code-only, and .doc-code-side.is-prose for the phone sheet). tests/test_doc_sections.py (7), sweep docsections1018.js 31/31 at 1440 and 26/26 at 390 (insert, Tab stops, one Ctrl+Z, blank lines on an empty line and mid-sentence drop, save, search, a code file keeps its own rows). test_code_documents.py asserted the panel was hidden for prose: its intent moved, so that assertion now checks only the Assistant's classes. Not verified: a phone's real touch drag of a row (rows are draggable; click is the phone path), prose sections in the Library's note editors. (checked 2026-11-09) [verified 2026-11-10: true, B18 Snippets Sections panel; step state open per the row]
+- [documents-1018.md] step 6 B20 (reduced, the owner's recommendation taken): the editor already moved single lines on Alt+Up and Down (the step 0 audit said it did not: wrong), but in prose that welds paragraphs. docBlockMoveEdit (documents.js, pure) moves a paragraph, table, fence, list item with children (numbers stay) or heading section past its neighbour with the gaps untouched; docBlockMoveRun in docCmKeymap; code files and selections keep the line move; palette rows move-block-up and move-block-down. tests/test_doc_block_move.py (29 model checks), sweep docblockmove1018.js 18/18 (live, source, list, section, table, palette, py, selection). Not verified: a drag handle on every block (the heavy reading of "manage mode", still the owner's call above). (checked 2026-11-09) [verified 2026-11-10: true, B20 reduced Alt+Up and Down step; open per the row]
+- [dog2-1025.md] [ ] 22 not confirmed: blank dashboard in the harness for 3 to 6 s. (checked 2026-11-09) [verified 2026-11-10: true, blank dashboard in harness 3 to 6 s not confirmed]
+- [dog3-1026.md] [ ] 17 A: graph with no links says nothing why; minimap blank; node card covers its own label; empty-canvas double-click opens New note. PARTIAL (dog3a): "no links yet" stats line added; double-click on empty canvas kept (documented Grow the map, help index.html:3955); minimap blank and card over label not measured. (checked 2026-11-09) [verified 2026-11-10: true, graph with no links says nothing; minimap and double-click open]
+- [dog3-1026.md] [ ] 24 A: dashboard greeting at 390: large gap between "Still up." and subtitle. (checked 2026-11-09) [verified 2026-11-10: true, dashboard greeting gap at 390 open]
+- [dog3-1026.md] [ ] S: blank dashboard on 4 of 8 first loads at 720/390 under load 9-13 (not seen at 1440; load not ruled out; dog1 item 22 and sketchfix 6 did not reproduce). (checked 2026-11-09) [verified 2026-11-10: true, blank dashboard on first loads under load; open]
+- [dog3a-1026.md] Not verified in a browser: hover-hidden remove cross (pointer devices), empty-Send toast, chat title ellipsis at 720/390, dark theme, touch. (checked 2026-11-09) [verified 2026-11-10: true, hover remove cross, empty Send toast and dark not verified in browser]
+- [dog3w-1026.md] [ ] dog3 8 (Fit leaves the root under the rail): not reproduced. Root left after open and after Fit: 1440 110 and 643 (rail ends 62), 720 119 and 291 (rail 71), 390 61 and 119 (no rail). wbFreeArea already takes the rail off. Not tried: a Fit with the Format panel open, a radial map growing left of the root. (checked 2026-11-09) [verified 2026-11-10: stale, Fit leaves root under rail not reproduced; root positions measured]
+- [fixes1-1018.md] Not verified in the app: C31 (link kind sheet), the document half of C32. (checked 2026-11-09) [verified 2026-11-10: true, C31 link kind sheet and document half of C32 not verified]
+- [fixes2-1018.md] not verified: splash.ps1 on Windows (C02, C38); a right-drag on macOS, where contextmenu fires on the press (checked 2026-11-09) [verified 2026-11-10: true, splash.ps1 on Windows and macOS right-drag not verified]
+- [fixes3-1018.md] Left: C44, C39, C40, C36, Open Packages help (standing order 13). (checked 2026-11-09) [verified 2026-11-10: true, C44, C39, C40, C36 and Open Packages help left]
+- [fixes4-1018.md] Left: Escape on the image lightbox (needs an image note), reminders add form, notes edit entry, graph node panel; the chat undo line (undo.js found 0 actions on rerun, not reproduced); Back with the lightbox open is coded (.lightbox takes a synthetic Escape) but not run. (checked 2026-11-09) [verified 2026-11-10: true, Escape on lightbox, reminders add form and graph node panel left]
+- [fixes6-1018.md] Found, not fixed: chat/Ask routes carry no locale, so "3/4" in Ask is still day first; the currency table needs to become a preference before decision 43's editor. (checked 2026-11-09) [verified 2026-11-10: true, chat and Ask routes carry no locale; 3/4 day first; currency table open]
+- [fixes7-1018.md] Item 4 (ghost topics): done, in the lazy library-lazy.css (boot CSS untouched). Measured: 3 ghosts, 8 px under the topic, Tab/Escape/Tab-Tab-Enter add exactly 2 (untracked sweep, never committed). Not verified: touch, 390 px width, reduced motion (no motion used), dark theme contrast of the faded chip. (checked 2026-11-09) [verified 2026-11-10: fixed, ghost topics done in library-lazy.css per the bullet; measured]
+- [fixes8-1018.md] Not verified: light theme (THEME=light did not switch the sweep off dark), the 390 sidebar sheet opened (only page-level scroll measured), real screen reader. (checked 2026-11-09) [verified 2026-11-10: true, light theme and 390 sidebar sheet not verified]
+- [fixes8-1018.md] Found, not fixed: at 390 the Categories head is hidden by an existing rule (<600), so that section cannot fold there; chips row stays. (checked 2026-11-09) [verified 2026-11-10: true, Categories head hidden at 390 by existing rule; found, not fixed]
+- [fixes9-1018.md] Left: INBOX 1301 still holds D1 to D6 (other agents); D7/D8 marked Fixed in place. (checked 2026-11-09) [verified 2026-11-10: true, INBOX 1301 still holds D1 to D6]
+- [graph1306-1019.md] layout: measured only (graphdefault1306.js, seed-graph40.py); two tuning tries (landscape x pull, organic ring stretch floor) moved fill 0.48 to 0.53 and crossings 77 to 72..82, so reverted. Left: crossings and the hub's spokes (graph-worker.js applyGrouping, hub pull), label density (graph-canvas.js label gate). The owner's crowded lower-half labels did not reproduce on this seed. (checked 2026-11-09) [verified 2026-11-10: true, graph layout measured only; tuning open]
+- [lanbar-1011.md] Not verified: a real phone, a real wifi drop or hotspot join (netid is the (checked 2026-11-09) [verified 2026-11-10: true, real phone and wifi drop not verified]
+- [lansec-1025.md] next: nothing; not verified on a real phone (checked 2026-11-09) [verified 2026-11-10: true, lansec not verified on a real phone]
+- [logo-1011.md] Not verified: a real OS install (taskbar, dock, Start menu icon from icon.ico); Android's maskable crop on a device (the test holds the mark inside the 80% circle); the busy lift during a real model turn (driven by pushing a running run onto agentRuns). (checked 2026-11-09) [verified 2026-11-10: true, real OS install and Android maskable crop not verified]
+- [mobile1314-1019.md] left: a real phone (safe-area insets are 0 in headless Chromium); the owner's own read of whether Graph behind More is right (decision taken per standing order 3, UI_MODERNISATION_PLAN "Placed from INBOX, 2026-10-19"). (checked 2026-11-09) [verified 2026-11-10: true, real phone and safe-area insets left]
+- [mobile1314-1019.md] left: docks with a search field are two rows on a phone (notes 114px, library 114, timeline 114, graph 111; docks.js at 390); by Phase 11's decision (identity zone basis 100%), not changed here. Chrome 14 to 21% of 844, under phonechrome.js's 25% budget. (checked 2026-11-09) [verified 2026-11-10: true, docks with a search field two rows on a phone; open]
+- [mobile1314-1019.md] left: phonechrome.js and phone.js measure 390 by default; the 360 band's timeline bleed (the day well 9.6px into the card padding) is exempted as deliberate in both. (checked 2026-11-09) [verified 2026-11-10: true, 360 band timeline bleed; left]
+- [open-1018.md] Not verified: the find and dock help popovers at 1440 and the list, outline and find ones at 390 (sweep clicks timed out), 1024 and dark theme; a real mouse and a touch hold; link offers in a code document are off by design. (checked 2026-11-09) [verified 2026-11-10: true, find and dock popovers at 390 and 1024 not verified]
+- [open-1018.md] Link offers: no Settings switch (found-not-fixed); "ignore" is per session (docProseIgnored); tag offers dropped (a document has no tags); a title only matches as the whole opening line of a note. (checked 2026-11-09) [verified 2026-11-10: true, link offers have no Settings switch; ignore per session]
+- [order-1018.md] found-not-fixed: tests/test_typo_routing.py "search the web for sandwiches" writes ./data when run serially (conftest guard errors, also at base); tests/test_boot_budget.py boot JS 588516 > cap 588400 (staged-lints fails at base). (checked 2026-11-09) [verified 2026-11-10: true, test_typo_routing writes ./data when run serially; found, not fixed]
+- [perf-1017.md] found-not-fixed (3): atlasRigFrame (atlas-motion.js ~252, ~296) reads getComputedStyle each frame, a forced style recalc per flight frame (178 in 1.6 s, 530 ms); skipping it while carried is a design call for the arm rig (checked 2026-11-09) [verified 2026-11-10: true, atlasRigFrame reads getComputedStyle each frame; found, not fixed]
+- [pin-1012.md] left: Windows DPAPI and macOS Keychain paths never ran here (not verified) (checked 2026-11-09) [verified 2026-11-10: true, DPAPI and Keychain paths never ran]
+- [reveal-1018.md] found-not-fixed (Notes): the first recalc (701 and 917 el, 66 and 104 ms) is already content-visibility: auto rows plus the sidebar. A 13-row first paint with no top-up cut it 26 percent in elements, but it changes the settled list (60 rows to about 13), and Select all and Ctrl+F read the rendered rows; with a top-up the reveal sees 60 rows again. Boot JS has 147 bytes of headroom. (checked 2026-11-09) [verified 2026-11-10: true, first Notes recalc cost with content-visibility rows; found, not fixed]
+- [reveal-1018.md] found-not-fixed: cv:auto paints text in cards at fractional y up to 1 px differently (3.6k of 1.3M pixels at 1440x900, rows 4+); settled scroll height +56 px until cards are seen. (checked 2026-11-09) [verified 2026-11-10: true, cv:auto text paints differently by up to 1 px; found, not fixed]
+- [settings-1017.md] B14 done: Expand all / Collapse all in the dock of panes with 2+ folds (skills, websearch, appearance, shortcuts, help, about; probe p/b14b.js at 1440 and 390). Left: panes with 0-1 fold (models, personas, tools, ...) get none; their "sections" are not collapsible. a29dfab. (checked 2026-11-09) [verified 2026-11-10: fixed, Expand all and Collapse all added; commit a29dfab in history]
+- [settings-1017.md] B61 done (smallest honest): dictation sizes marked "(on this computer)" / "(~N MB to download)", confirm on choosing a size that is not here (cancel reverts, nothing downloads until first dictation), Remove this size (DELETE /voice/models/{size}); embedding models already had remove. Left: unsloth gemma embedding licence remark (not touched), a delete for other model kinds. 78f9e0f. (checked 2026-11-09) [verified 2026-11-10: fixed, dictation sizes marked on this computer; commit 78f9e0f in history]
+- [settings-1017.md] B55 done in part: the web menu offers Start/Install SearXNG on the DuckDuckGo provider too (was ["Web search settings"] only); palette row finds the Web clipper. Left: the clipper UX redesign (placed). B53: placed (no consume-side MCP UI exists; BACKLOG trust model). B59: investigated, not reproduced (no sentence-transformers here). Next: final report. (checked 2026-11-09) [verified 2026-11-10: fixed, web menu offers Start and Install SearXNG on DuckDuckGo too]
+- [settings58-1018.md] left: icon-toggle sweep reached only 11 standalone icon-only toggles with no content seeded; whiteboard map toggles (wb-map-core, edge-dashed/arrow) and ask-time-travel, ocr-zoom-fit show a pressed fill only, no glyph swap (docs: frontend/js/whiteboard-map.js:6900, capture-ask.js:3372, library.js:5996) (checked 2026-11-09) [verified 2026-11-10: true, icon-toggle sweep reached 11 toggles; whiteboard map toggles left]
+- [shell-1025.md] not verified: a real touch device; Windows webview (checked 2026-11-09) [verified 2026-11-10: true, real touch device and Windows webview not verified]
+- [sugg1329-1019.md] left: the Names and Link types rows (inboxMergeRow, inboxTypeRow, suggestions-inbox.js) still use the older .inbox-row shape (title, reasons with percentages, chip + button + X foot); bring them onto the Links row's grid if the owner wants the four kinds to match. (checked 2026-11-09) [verified 2026-11-10: true, Names and Link types rows still use the older .inbox-row shape]
+- [timeline-1018.md] left (not mine, untouched): OPEN.md rows 330 (On this day row moves the list 44 px at 390), 341 (the table has no meeting mark), 850 (a map under the Boards chip); timeline.js sweep's "a bucket head stays pinned after scrolling" fails 1 to 3 times a run on the base too (the week-ahead heads, flaky by run: 1440, 390 then 1440, 1024); errors.js at 390 reports 4 off-screen button.ghost.small on the Notes tab (both themes), not the Timeline. (checked 2026-11-09) [verified 2026-11-10: true, timeline rows left in OPEN.md (44 px shift, meeting mark) not built]
+- [uxfix4-1018.md] Not verified: pixel sampling (pngpixel.py) was not used; all values are computed styles composited from the effective background. Topics outside the 390 viewport are culled by the app and were not measured (6 of 31 topic text elements at 390). (checked 2026-11-09) [verified 2026-11-10: true, pixel sampling not used; computed styles only]
+- [wb-1025.md] Not verified: the Windows webview, and drag-select outside Chromium. (checked 2026-11-09) [verified 2026-11-10: true, Windows webview and drag-select outside Chromium not verified]
+- [wb1327-1019.md] Trackpad: real hardware not verified; the heuristic (deltaX, or |deltaY| under 50 or fractional, gesture = events less than 200ms apart) was tested with synthetic event sequences only. tests/test_wb_middle_pan.py. (checked 2026-11-09) [verified 2026-11-10: true, trackpad heuristic not checked on real hardware]
+- [wb2-1025.md] not verified: reorder in tree-down, org and tree-both (x axis, two sides) by pointer; only tree-right swept (checked 2026-11-09) [verified 2026-11-10: true, tree-down, org and tree-both reorder by pointer not verified]
+- [wb2-1025.md] found-not-fixed: the export dialog says "Export this board" when it opens on a branch; mmd2-1005-markers.js sweep crashes at its own press() helper (stale sweep) (checked 2026-11-09) [verified 2026-11-10: true, export dialog says Export this board on a branch; found, not fixed]
+- [wbpaste-1026.md] Not verified: real OS clipboard (sweep dispatches ClipboardEvents and uses the headless clipboard API); a real spreadsheet copy; touch. (checked 2026-11-09) [verified 2026-11-10: true, real OS clipboard and spreadsheet paste not verified]
+- [wbpaste-1026.md] Found-not-fixed: app.js gzip cap (14,300) has no room for one more script line, so the shared helpers and the board paste code sit inside documents-prose.js and whiteboard-commands.js instead of their own files; a split needs the cap to come down elsewhere first. (checked 2026-11-09) [verified 2026-11-10: true, app.js gzip cap has no room for one more line; found, not fixed]
+- [worldclass-1018.md] Found, not fixed (A): Escape on Settings rewrites the settings entry's address to the tab underneath (#/reminders), so Forward onto it shows the wrong hash although the dialog is right; a reload on that entry would open the tab, not Settings. Low impact. (checked 2026-11-09) [verified 2026-11-10: true, Escape on Settings rewrites the entry address; found, not fixed]
+- [worldclass-1018.md] Found, not fixed (B), the real one: browser Back (history.back()) with an overlay open steps the tab history and leaves the overlay open on the other tab. Palette, finder, Guide, shortcuts and quick note: 5 of 5 left the overlay open and moved Timeline to Notes. Settings is right (closes, stays, 1 of 1). On a phone, where Back is the way out of a sheet, this matters more. Not measured at 390. (checked 2026-11-09) [verified 2026-11-10: true, browser Back with overlay open steps tab history; found, not fixed]
 
 ## Boot budget, 2026-11-03
 
-- [ ] Win back the 2026-11-03 raise of the boot gzip cap (260,350 to 260,520, `tests/test_static_compression.py`, INBOX 1603, the tray drop, 1619 and 1620): the next boot diet moves a boot-time wiring to a lazy file and lowers the cap again. (checked 2026-11-09)
+- [ ] Win back the 2026-11-03 raise of the boot gzip cap (260,350 to 260,520, `tests/test_static_compression.py`, INBOX 1603, the tray drop, 1619 and 1620): the next boot diet moves a boot-time wiring to a lazy file and lowers the cap again. (checked 2026-11-09) [verified 2026-11-10: true, boot gzip cap raise from 2026-11-03 still to win back in test_static_compression.py]
