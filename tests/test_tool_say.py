@@ -172,7 +172,8 @@ def test_each_family_leads_with_a_sentence_then_its_shape(family):
             text = tool_say.say(name, case["result"], case["args"])["text"]
             lead = text.split("\n\n")[0].splitlines()[0].strip()
             assert re.search(r"[.:?]$", lead), (name, lead)
-            ids = _items(case["result"])
+            #: Moved 2026-11-10 (F13 b, composer audit 1110): a search that matched nothing says so and stops; the newest notes it used to list are no answer.
+            ids = [] if text.startswith("Nothing matched") else _items(case["result"])
             if ids:
                 #: Two or more things: a list or a table, a count in the lead
                 #: and a link to each one shown (eight at most).

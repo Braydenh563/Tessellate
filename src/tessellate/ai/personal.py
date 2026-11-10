@@ -139,7 +139,7 @@ _ASKS: tuple[tuple[str, re.Pattern], ...] = (
     #: Every learn question one verb stem: "what am I learning", "what have I
     #: been studying", "what do I want to learn" (audit 1030 Z59).
     ("learning", re.compile(r"^what (?:\w+ )?(?:am i|have i been|do i want to|i'?m) (?:learn|study)(?:ing)?\b")),
-    ("profile", re.compile(r"^(?:what do you know about me|do you (?:remember|know) me|tell me about (?:me|myself)|who am i|"
+    ("profile", re.compile(r"^(?:what do you know about me|do you (?:remember|know) me|tell me about (?:me|myself)|who am i(?=\s*$)|"
                            r"what have i told you about (?:me|myself))\b")),
     ("advice", re.compile(r"^(?:what|which) should i (eat|watch|listen to|read|cook)\b")),
 )

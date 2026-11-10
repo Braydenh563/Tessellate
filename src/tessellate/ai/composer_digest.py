@@ -3794,11 +3794,12 @@ _ASK_VERB = re.compile(
 _ASK_NOUN = re.compile(r"\bhow (?:much|many) ([a-z]{3,}) (?:for|of|do|does|did|is|are)\b", re.I)
 #: "my last run", "the last one": the newest by the sentence's own day, as "latest" asks.
 _LAST_ONE = re.compile(r"\b(?:my|the) last (?!week|month|year|night|weekend|time|few)\w+", re.I)
-_NOT_AN_ASK_VERB = frozenset("is are was were have has had get got put find know need want mention mentions say said write wrote the my and for did does".split())
+_NOT_AN_ASK_VERB = frozenset("is are was were have has had get got put find know need want mention mentions write wrote the my and for did does".split())
 #: What a note says in place of the ask's verb.
 _ASK_VERB_SAYS = {
     "think": "think thought loved liked hated enjoyed disliked", "teach": "teach teacher taught", "love": "love loved liked",
     "like": "like liked loved", "eat": "eat eats ate", "live": "live lives lived", "feed": "feed fed",
+    "say": "say says said tell tells told",
 }
 
 
@@ -3862,6 +3863,17 @@ def _titled_for_yes_no(f: Fact, stems: set[str], yes_no: bool) -> bool:
     return bool(yes_no and stems and f.view.titled and all(composer._holds(st, f.view.title_words) for st in stems))
 
 
+#: Words a heading can carry beside its subject and still be the note that defines it: "Reading list", "Budget November".
+_HEADING_EXTRA = frozenset({"list", "checklist", "note", "notes", *(m for m in ("january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"))})
+
+
+def _title_is_subject(f: Fact, stems: set[str]) -> bool:
+    """The note's heading is the subject, bar a kind or month word: the note that defines it (F8, 1110).
+    "Dentist bill" is a note about a bill, so a line on the dentist can beat it."""
+    return bool(stems and f.view.titled and all(composer._holds(st, f.view.title_words) for st in stems)  # noqa: SLF001
+                and not {w for w in f.view.title_words if not composer._holds(w, stems)} - _HEADING_EXTRA)  # noqa: SLF001
+
+
 def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fact | None:
     #: Without the asking words: "what day did I run 8 km" is not about a "day".
     stems = set(_subject(question))
@@ -3921,7 +3933,9 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
         opens = titled and _opening(f)
         #: "what is Doug", "who is Marek": the sentence that says what it is ("is called Doug", "Builder is Marek", R9-3).
         names_it = _names_it(f.sentence.text, names_a_thing, subject_words)
-        return (not asked_back, not _in_a_place(f.sentence.text, stems), doing_now, acts, _cued(cue, f.sentence.text), _ahead_if(now_ask, f), not (latest and f.sentence.kind in {"item", "task"}), id(f.view) not in old, _label_asked(f.label, question), titled, opens, names_it, says_it, hits, newest, newest_own, _titled_for_yes_no(f, stems, yes_no), own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
+        #: The note titled for the whole subject speaks for it before a title-less one that only repeats its words (F8, 1110).
+        is_the_subject = _title_is_subject(f, stems)
+        return (not asked_back, not _in_a_place(f.sentence.text, stems), doing_now, acts, _cued(cue, f.sentence.text), _ahead_if(now_ask, f), not (latest and f.sentence.kind in {"item", "task"}), id(f.view) not in old, _label_asked(f.label, question), titled, opens, names_it, says_it, hits, newest, newest_own, is_the_subject, _titled_for_yes_no(f, stems, yes_no), own, asks_feeling and _feeling(f.sentence.text), f.view.titled, same_figure, -f.view.rank, -f.sentence.order)
 
     return max(facts, key=rank) if facts else None
 
