@@ -15,6 +15,7 @@ import tempfile
 import time
 import zipfile
 from pathlib import Path
+from typing import BinaryIO
 
 import json
 
@@ -32,17 +33,19 @@ router = APIRouter(tags=["import"])
 MAX_FILES = 5000
 
 
-def _received(files: list[UploadFile]) -> list[tuple[str, bytes]]:
+def _received(files: list[UploadFile]) -> list[tuple[str, BinaryIO]]:
+    """The uploads as the spooled files Starlette already wrote (K34): sized
+    by seeking, never read whole here; `app_import.expand` opens a zip from
+    the file and reads one member at a time."""
     if len(files) > MAX_FILES:
         raise HTTPException(status_code=422, detail=f"{len(files)} files at once is more than one import takes ({MAX_FILES}).")
-    raw: list[tuple[str, bytes]] = []
+    raw: list[tuple[str, BinaryIO]] = []
     total = 0
     for upload in files:
-        data = upload.file.read(app_import.MAX_ARCHIVE_BYTES + 1)
-        total += len(data)
+        total += app_import.size_of(upload.file)
         if total > app_import.MAX_ARCHIVE_BYTES:
             raise HTTPException(status_code=413, detail="That export is larger than 200 MB.")
-        raw.append((upload.filename or "note", data))
+        raw.append((upload.filename or "note", upload.file))
     return raw
 
 

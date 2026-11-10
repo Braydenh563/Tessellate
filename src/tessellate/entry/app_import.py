@@ -44,6 +44,7 @@ import re
 import zipfile
 from dataclasses import dataclass, field
 from datetime import datetime, time, timezone
+from typing import BinaryIO
 from urllib.parse import unquote
 
 SOURCES = ("notion", "obsidian", "evernote", "apple", "memorymap")
@@ -98,23 +99,43 @@ class TooBig(ValueError):
 # --- files in, files out ------------------------------------------------------
 
 
-def expand(files: list[tuple[str, bytes]], skipped: list[str] | None = None,
+def size_of(data: "bytes | BinaryIO") -> int:
+    if isinstance(data, bytes):
+        return len(data)
+    here = data.tell()
+    end = data.seek(0, io.SEEK_END)
+    data.seek(here)
+    return end
+
+
+def _bytes(data: "bytes | BinaryIO") -> bytes:
+    if isinstance(data, bytes):
+        return data
+    data.seek(0)
+    return data.read()
+
+
+def expand(files: list[tuple[str, "bytes | BinaryIO"]], skipped: list[str] | None = None,
            max_file: int = MAX_FILE_BYTES) -> list[tuple[str, bytes]]:
     """Every file, with zips (and zips inside zips, one level) opened.
 
     Nothing is written to disk: members are read into memory, so a name with
     `..` in it is only a string. The sizes are capped as they are read. A
     file left out is named in `skipped`, with why, for the import report.
+
+    A file may be bytes or a seekable file object (the spooled upload, K34):
+    a zip is opened from it and read one member at a time, so the upload is
+    never held whole in memory beside its members.
     """
     skipped = [] if skipped is None else skipped
     out: list[tuple[str, bytes]] = []
     total = 0
 
-    def add(name: str, data: bytes, depth: int) -> None:
+    def add(name: str, data: "bytes | BinaryIO", depth: int) -> None:
         nonlocal total
         if name.lower().endswith(".zip") and depth < 2:
             try:
-                archive = zipfile.ZipFile(io.BytesIO(data))
+                archive = zipfile.ZipFile(io.BytesIO(data) if isinstance(data, bytes) else data)
             except zipfile.BadZipFile:
                 skipped.append(f"{name}: not a zip that can be opened")
                 return
@@ -131,10 +152,10 @@ def expand(files: list[tuple[str, bytes]], skipped: list[str] | None = None,
                     continue
                 add(inner, archive.read(info), depth + 1)
             return
-        if len(data) > max_file and not name.lower().endswith(".enex"):
+        if size_of(data) > max_file and not name.lower().endswith(".enex"):
             skipped.append(f"{name}: larger than {max_file // (1024 * 1024)} MB")
             return
-        out.append((name.replace("\\", "/").lstrip("/"), data))
+        out.append((name.replace("\\", "/").lstrip("/"), _bytes(data)))
 
     for name, data in files:
         add(name, data, 0)
@@ -359,7 +380,7 @@ def read_apple(files: list[tuple[str, bytes]]) -> ReadResult:
     return result
 
 
-def read(source: str, files: list[tuple[str, bytes]], parse_frontmatter=None) -> ReadResult:  # noqa: ANN001
+def read(source: str, files: list[tuple[str, "bytes | BinaryIO"]], parse_frontmatter=None) -> ReadResult:  # noqa: ANN001
     if source not in SOURCES:
         raise ValueError(source)
     skipped: list[str] = []
