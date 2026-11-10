@@ -5835,6 +5835,13 @@ button.ghost.doc-template-choice.wb-template-choice {
     order: -1;
     width: auto;
   }
+  /* The typeable page number is a target a thumb reaches: 28 px tall beside 44 px buttons (measured at 390, 1694 b3); the touch height token. */
+  .wb-present-bar .wb-present-page .value-field .value-field-input {
+    box-sizing: border-box;
+    min-height: var(--control-h-touch);
+    min-width: var(--control-h-touch);
+    text-align: center;
+  }
 }
 
 /* The template gallery's group heads (INBOX 788, `openDocTemplateDialog`):

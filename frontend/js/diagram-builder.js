@@ -679,6 +679,8 @@
     }
     if (S && (await ensureModule("diagramAi"))) diagramModel.ai.wire(S, helpers);
     if (S) refreshMore(S);
+    //: A diagram page (its io has the document's key; the dialog's has none) gets Export in its head (embed.headExport).
+    if (S && io.key && (await ensureModule("diagramEmbed"))) diagramModel.embed.headExport();
     //: The phone's palette sheet and pinch (diagram-touch.js).
     if (S && (S.k || matchMedia(COMPACT).matches) && (await ensureModule("diagramTouch"))) diagramModel.touch.wire(S);
     //: Zoom, pan and fit for the picture, in every window (diagram-view.js, 1614).

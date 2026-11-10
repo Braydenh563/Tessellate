@@ -345,6 +345,8 @@
     bar.append(group);
     stage.append(bar);
     stage.append(note);
+    //: The overview in the corner, for a picture larger than the pane (W18 R15); a diagram that fits never fetches it.
+    lazyScript("/js/diagram-minimap.js").then(() => diagramModel.minimap?.wire(S, stage, fig));
 
     let shown = null;
     let seen = [0, 0];

@@ -263,6 +263,7 @@ function syncDocFileType({ prose = true } = {}) {
   setLabel($("doc-export-md"), `ph:download-simple Download as .${type.ext}`);
   $("doc-export-md").title = `Download as a .${type.ext} file`;
   for (const id of ["doc-export-svg", "doc-export-picture", "doc-copy-picture"]) $(id)?.classList.toggle("hidden", type.ext !== "mmd");
+  document.querySelector(".doc-diagram-export")?.classList.toggle("hidden", type.ext !== "mmd");
   //: A diagram's head menu keeps what is a verb on a diagram (Download first, Connections, History, Delete): the editor and writing
   //: switches, Read aloud and Extract notes mean nothing for a picture (OPEN W18, Q26: hide the file chrome).
   for (const el of [...(syncDocFileType.groups || []), $("doc-read-aloud"), $("doc-extract")]) el?.classList.toggle("hidden", type.ext === "mmd");
