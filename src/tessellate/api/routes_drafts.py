@@ -17,7 +17,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from tessellate.ai import composer_mermaid, drafter, no_model_text
+from tessellate.ai import composer_mermaid, diagram_ask, drafter, no_model_text
 from tessellate.core import activity, deps
 from tessellate.core.database import Entry
 
@@ -166,6 +166,52 @@ def compose_draft_stream(
         media_type="application/x-ndjson",
         headers={"X-Accel-Buffering": "no", "Cache-Control": "no-cache"},
     )
+
+
+class DiagramNodeIn(BaseModel):
+    id: str = Field(min_length=1, max_length=60)
+    text: str = Field(default="", max_length=200)
+    shape: str = Field(default="rect", max_length=20)
+    group: str | None = Field(default=None, max_length=60)
+
+
+class DiagramEdgeIn(BaseModel):
+    model_config = {"populate_by_name": True}
+    source: str = Field(alias="from", max_length=60)
+    to: str = Field(max_length=60)
+    label: str = Field(default="", max_length=200)
+
+
+class DiagramGroupIn(BaseModel):
+    id: str = Field(min_length=1, max_length=60)
+    title: str = Field(default="", max_length=200)
+    parent: str | None = Field(default=None, max_length=60)
+
+
+class DiagramModelIn(BaseModel):
+    """The D1 model as the builder holds it, capped at the pane's own limits (`diagram_ask.MAX_BLOCKS`)."""
+
+    nodes: list[DiagramNodeIn] = Field(default_factory=list, max_length=diagram_ask.MAX_BLOCKS)
+    edges: list[DiagramEdgeIn] = Field(default_factory=list, max_length=600)
+    subgraphs: list[DiagramGroupIn] = Field(default_factory=list, max_length=60)
+
+
+class DiagramAskBody(BaseModel):
+    ask: str = Field(max_length=diagram_ask.ASK_CHARS)
+    model: DiagramModelIn = Field(default_factory=DiagramModelIn)
+
+
+@router.post("/diagram-ask")
+def diagram_ask_ops(body: DiagramAskBody) -> dict:
+    """An ask in the diagram builder as operations on its model (dgai-1110 F1 to F5): by rule with no model, from
+    the model when it runs, the same five verbs either way and every op checked against the model."""
+    if not body.ask.strip():
+        raise HTTPException(status_code=400, detail="Write what to change first.")
+    model = body.model.model_dump(by_alias=True)
+    ollama = deps.get_ollama()
+    if not ollama.is_running():
+        return diagram_ask.by_rule(body.ask, model)
+    return diagram_ask.with_model(body.ask, model, deps.get_model_manager().for_feature("writing").chat_model(), ollama)
 
 
 @router.post("/title")
