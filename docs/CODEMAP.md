@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8048, frontend ids 2659, CSS sections 523, backend routes 664, backend modules 9901, test files 2388, tests 19999, plan headings 1000, app scripts 28, boot scripts 37, script files 273.
+Counts: frontend functions 8048, frontend ids 2659, CSS sections 523, backend routes 664, backend modules 9902, test files 2388, tests 19999, plan headings 1000, app scripts 28, boot scripts 37, script files 273.
 
 ## Frontend functions (8048)
 
@@ -13359,7 +13359,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9901)
+## Backend modules (9902)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -19778,28 +19778,29 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_given` | src/tessellate/api/chat_chips.py:26 |
 | `continue_chips` | src/tessellate/api/chat_chips.py:52 |
 
-### src/tessellate/api/chat_extra.py (18)
+### src/tessellate/api/chat_extra.py (19)
 
 | Name | File:line |
 |---|---|
+| `_early_events` | src/tessellate/api/chat_extra.py:99 |
 | `_notes` | src/tessellate/api/chat_extra.py:26 |
 | `_reminders` | src/tessellate/api/chat_extra.py:35 |
-| `_turn_label` | src/tessellate/api/chat_extra.py:334 |
-| `events` | src/tessellate/api/chat_extra.py:99 |
-| `facts_events` | src/tessellate/api/chat_extra.py:180 |
-| `figures_events` | src/tessellate/api/chat_extra.py:219 |
-| `hello_events` | src/tessellate/api/chat_extra.py:164 |
-| `language_events` | src/tessellate/api/chat_extra.py:278 |
-| `mentioning` | src/tessellate/api/chat_extra.py:317 |
-| `name_events` | src/tessellate/api/chat_extra.py:202 |
+| `_turn_label` | src/tessellate/api/chat_extra.py:338 |
+| `events` | src/tessellate/api/chat_extra.py:111 |
+| `facts_events` | src/tessellate/api/chat_extra.py:184 |
+| `figures_events` | src/tessellate/api/chat_extra.py:223 |
+| `hello_events` | src/tessellate/api/chat_extra.py:168 |
+| `language_events` | src/tessellate/api/chat_extra.py:282 |
+| `mentioning` | src/tessellate/api/chat_extra.py:321 |
+| `name_events` | src/tessellate/api/chat_extra.py:206 |
 | `notebook_events` | src/tessellate/api/chat_extra.py:49 |
-| `read_events` | src/tessellate/api/chat_extra.py:187 |
-| `reminder_events` | src/tessellate/api/chat_extra.py:141 |
-| `saved_joke` | src/tessellate/api/chat_extra.py:299 |
-| `slot_reply` | src/tessellate/api/chat_extra.py:343 |
+| `read_events` | src/tessellate/api/chat_extra.py:191 |
+| `reminder_events` | src/tessellate/api/chat_extra.py:145 |
+| `saved_joke` | src/tessellate/api/chat_extra.py:303 |
+| `slot_reply` | src/tessellate/api/chat_extra.py:347 |
 | `starter_leads` | src/tessellate/api/chat_extra.py:79 |
-| `talk_events` | src/tessellate/api/chat_extra.py:231 |
-| `welcome_line` | src/tessellate/api/chat_extra.py:251 |
+| `talk_events` | src/tessellate/api/chat_extra.py:235 |
+| `welcome_line` | src/tessellate/api/chat_extra.py:255 |
 
 ### src/tessellate/api/chat_pool.py (35)
 

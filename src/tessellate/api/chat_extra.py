@@ -96,20 +96,24 @@ def starter_leads(session: Session, now: datetime) -> list[str]:
     return leads
 
 
+def _early_events(session: Session, typed: str, history: list[dict], now: datetime) -> list[dict] | None:
+    """The readers that go before any note is read. Each reads what was typed, not the rewritten
+    question: a follow-up rewrites that ("no cancel it" became a question about a note)."""
+    #: "cancel" while a card waits drops that card (CHAT_PLAN X17); the card waiting is not a topic.
+    if (dropped := composer_cancel.reply(typed, history)) is not None:
+        return dropped
+    #: A follow-on that reads the turn before ("any other diagrams", "what are those tags", INBOX 1729 b).
+    if (talked := composer_talk.reply(session, typed, history, now.date())) is not None:
+        return talked
+    return notebook_events(session, typed, now=now)
+
+
 def events(session: Session, question: str, history: list[dict], *, now: datetime, seed: str, open_ids: list[int],
            follow_kind: str = "", said: str = "", asked: str = "", ask: bool = False, voice: str = "natural") -> list[dict] | None:
     """The answer events for a question this module reads, else None. A
     failure is logged and leaves the question to the older readers."""
-    #: "cancel" while a card waits drops that card (CHAT_PLAN X17).
-    #: Read on what was typed (`asked`), not on `question`: a follow-up rewrites that
-    #: ("no cancel it" became a question about a note), and the card waiting is not a topic.
-    if (dropped := composer_cancel.reply(asked or question, history)) is not None:
-        return dropped
-    #: A follow-on that reads the turn before ("any other diagrams", "what are those tags", INBOX 1729 b).
-    if (talked := composer_talk.reply(session, asked or question, history, now.date())) is not None:
-        return talked
-    if (shaped := notebook_events(session, asked or question, now=now)) is not None:
-        return shaped
+    if (early := _early_events(session, asked or question, history, now)) is not None:
+        return early
     #: "Summarise this" and "summarise Travel" read the open note or a whole
     #: category, which the digest does better than a title match here.
     if composer_digest.about_this(question) or composer_digest.named_category(
