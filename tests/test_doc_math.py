@@ -133,6 +133,19 @@ check("display when asked", docMathTree("x", true).attrs.display === "block", ""
 // An equation number: \tag{n} leaves the formula and rides on the tree, display only.
 check("tag is taken off a display formula", sketch(docMathTree("a \\tag{1}", true)) === sketch(docMathTree("a", true)) && docMathTree("a \\tag{1}", true).label === "1", docMathTree("a \\tag{1}", true).label);
 check("no tag inline", docMathTree("a \\tag{1}", false).label === "", "");
+
+// Labels and references (OPEN F1): `\label{k}` takes the next number or its own `\tag`, `\eqref{k}` is that number in parentheses.
+const doc = "See \\eqref{b}.\n$$a = 1 \\label{a}$$\n$$b = 2 \\label{b} \\tag{A}$$\n$$c = 3 \\label{c}$$\n";
+const index = docMathIndex(doc);
+check("a label takes the next number, a tag is its own and uses none up", index.get("a") === "1" && index.get("b") === "A" && index.get("c") === "2", JSON.stringify([...index]));
+docMathUse(index);
+check("a labelled display shows its number and never the label", docMathTree("c = 3 \\label{c}", true).label === "2" && !sketch(docMathTree("c = 3 \\label{c}", true)).includes("label"), sketch(docMathTree("c = 3 \\label{c}", true)));
+check("a tag wins over the label's number", docMathTree("b \\label{b} \\tag{A}", true).label === "A", "");
+check("eqref is the number in parentheses, before or after the equation", sketch(docMathTree("\\eqref{a}")).includes("(1)") && sketch(docMathTree("\\ref{b}")).includes("(A)"), sketch(docMathTree("\\eqref{a}")));
+check("an unknown key reads (?)", sketch(docMathTree("\\eqref{zz}")).includes("(?)"), "");
+check("an inline label draws nothing and has no number", docMathTree("x \\label{a}", false).label === "", "");
+docMathUse(new Map());
+check("with no index the number is empty and eqref says (?)", docMathTree("a \\label{a}", true).label === "" && sketch(docMathTree("\\eqref{a}")).includes("(?)"), "");
 check("no inline styles",JSON.stringify(docMathTree("\\mathbf{a}")).includes("mathvariant"), "");
 
 // **What is math and what is a price.**
