@@ -3974,6 +3974,8 @@ function atlasDrift() {
   const phase = atlasDriftState.phase(new Date().getHours());
   atlasDriftState.timer = setTimeout(atlasDrift, (35000 + Math.random() * 40000) * atlasDriftState.pace[phase]);
   if (document.documentElement.hasAttribute("data-atlas-hidden") || atlasMoodNow !== "calm" || Date.now() - atlasDriftState.changedAt < 20000) return;
+  //: Not at rest (owner decision Q10): a mood is two face changes, 40 layouts; the next input ends the rest (`atlasTailCalm.rest`).
+  if (globalThis.atlasTailCalm?.rest.on) return;
   if (!document.querySelector(".nm-atlas")) return;
   const pool = ATLAS_DRIFT_POOL[phase].filter(([mood]) => !atlasDriftState.recent.includes(mood));
   let r = Math.random() * pool.reduce((sum, [, w]) => sum + w, 0);
@@ -4088,7 +4090,7 @@ if (typeof MutationObserver === "function") {
 
 //: A sentence in the chat's box: Atlas leans in to listen.
 document.addEventListener("focusin", (event) => {
-  if (event.target?.id === "chat-input" && atlasMoodNow === "calm") setAtlasMood("curious", 2400, { quiet: true });
+  if (event.target?.id === "chat-input" && atlasMoodNow === "calm" && !(globalThis.atlasTailCalm?.rest.on)) setAtlasMood("curious", 2400, { quiet: true });
 });
 
 // --- the character interface ---------------------------------------------------

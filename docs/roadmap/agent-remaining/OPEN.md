@@ -183,14 +183,14 @@ Parked until the owner's data or a check on real hardware:
 - ~~B52 Library tab click, openDoc, panel-movable, objDragMove on a large notebook~~ **Open, needs a large notebook** (w13-1110, 4x, 44 notes, no library cards): Library click 35 to 40 ms of script, the draw is skipped when `/library` answers the same; `Response.json.then` 129 ms (first load) is spread over small functions (setLabel 27, libraryCard 17, none over 30 ms) | lag L10, oa 1667 f, i, m
 
 **W14 The companion at rest and in the way** (B, in-app companion, Sonnet high; after Q10). Files: `frontend/js/avatars.js`, `atlas*.js`, `lag-watch.js`. Checks: `tests/test_atlas_*`, `tests/test_overlay_idle*`, a 10 s at-rest layout count. Done when: the companion at rest makes under 1 layout a second and typing with it on matches typing with it off.
-- B53 At rest it restyles the page 20 to 27 times a second (a seventh of a core); 130 animations on Chat | audit-1108-perf P1, 1031-perf PF2, 1031-ai AI1
-- B54 Typing with Atlas on makes 3.4x the layouts; chat send keydown 712 ms in `nameMarkBuddyTempo` | audit-1108-perf P5, 1031-perf PF1, oa 1643 c
+- ~~B53 At rest it restyles the page 20 to 27 times a second (a seventh of a core); 130 animations on Chat | audit-1108-perf P1, 1031-perf PF2, 1031-ai AI1~~ **Fixed** (w14-1110: layouts a second at rest, chat 43 to 0, graph 36 to 0.1; recalcs 45 to 7)
+- ~~B54 Typing with Atlas on makes 3.4x the layouts; chat send keydown 712 ms in `nameMarkBuddyTempo` | audit-1108-perf P5, 1031-perf PF1, oa 1643 c~~ **Fixed at rest** (w14-1110: 37 characters, 41 to 43 layouts on, 43 hidden; was 210; companion active in the 2 s after a pointer move still watches and nods as before)
 - B55 An agent turn spends a second reading animations | 1031-harness HR1
 - B56 The 4.5 s avatars.js timer after opening a note; keep-up reads | oa 1667 l, d, oa 1620 lag: Atlas, INBOX 1716
 - B57 The throw must not scroll the page; no layout reads in a throw frame | oa 1667/1634 a, 1667 b, 1634 c, d
-- B58 On a phone, after a resize, it covers Send; its bubble overflows at 480 and 390 | bt#25, zoom4 found-not-fixed
-- B59 The chat area spasms up and down with the companion on | oa 1693 b1, S18
-- B60 Reset appearance does not clear its motion and entrances prefs | fablecomp Reset appearance
+- B58 (not reproduced 2026-11-10, w14-1110: after 1440 to 480 to 390 the figure is 10 px clear of Send at 480 and far from it at 390; the bubble not exercised) On a phone, after a resize, it covers Send; its bubble overflows at 480 and 390 | bt#25, zoom4 found-not-fixed
+- ~~B59 The chat area spasms up and down with the companion on | oa 1693 b1, S18~~ **Fixed (class writes)** (w14-1110: 36 `ring-held` rewrites for 37 keys to 1, the clear button's `hidden` too; the chat area's pixel movement not separately measured)
+- ~~B60 Reset appearance does not clear its motion and entrances prefs | fablecomp Reset appearance~~ **Fixed** (w14-1110: Reset appearance clears Companion movement, Motion at rest and Showy entrances)
 - B61 Stand-to-hang walks keep the walk class on the way out | appdrag L5
 
 **W15 The desk companion** (B, overlay, Sonnet; real Windows unverified). Files: `src/tessellate/core/overlay/*`, desk windows. Checks: `tests/test_overlay_*` (serially), the 1696 lists. Done when: each list row is built or has a reason.

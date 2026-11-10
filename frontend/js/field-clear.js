@@ -71,7 +71,8 @@
     const button = document.getElementById(spec.button);
     if (!button) return;
     const full = fieldClearBoxes(spec).some((box) => box.value.trim()) || (spec.held ? spec.held() > 0 : false);
-    button.classList.toggle("hidden", !full);
+    //: Only on a change: a forced `toggle` rewrites the class attribute on every key (B59).
+    if (button.classList.contains("hidden") === full) button.classList.toggle("hidden", !full);
   }
 
   //: Sets a box and tells the page it changed, so the counter, the draft kept

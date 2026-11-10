@@ -331,10 +331,16 @@ function lagRafInstall() {
         all.ms += ms;
         if (ms > all.max) all.max = ms;
         LAG_RAF.owners.set(owner, all);
-        if (t0 - LAG_RAF.second >= 1000) lagRafClose(t0);
       }
     });
   };
+  //: **The second closes on a 1 s timer** (owner decision Q10), not on the first callback after it: the wrapper then
+  //: does its counting and nothing else, and a second with no frame at all is closed too. Idle when the sampler is off.
+  const tick = () => {
+    if (LAG_RAF.on) lagRafClose(performance.now());
+    setTimeout(tick, 1000);
+  };
+  setTimeout(tick, 1000);
 }
 
 //: Errors by message and first frame, counted: a loop that throws sixty times

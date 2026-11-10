@@ -12166,6 +12166,19 @@ Link to another note with [[its first few words]]."></textarea>
                   <option value="fades">Minimal: fades only</option>
                 </select>
               </div>
+              <!-- Whether it keeps moving when nothing is happening (the owner, decision 55; atlas-life.js,
+                   `atlasTailCalm.rest`): two seconds from the last input the drawn loops stop, always, never, or on battery. -->
+              <div class="setting-row" id="avatar-buddy-rest-row">
+                <div class="setting-label">
+                  <span>Motion at rest</span>
+                  <small class="muted">Whether it keeps breathing, swaying and glancing when you are not doing anything.</small>
+                </div>
+                <select id="avatar-buddy-rest" class="small-select setting-control" aria-label="Motion at rest">
+                  <option value="mains">Alive on mains power only</option>
+                  <option value="always">Always alive</option>
+                  <option value="still">Still when idle</option>
+                </select>
+              </div>
               <!-- How it comes in on a new page (INBOX 1463): a short fade or
                    a few steps by default; the glide, walk on, tumble, fall
                    and starlight only when chosen (`mountBuddyShowy`). -->

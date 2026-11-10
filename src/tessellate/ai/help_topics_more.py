@@ -176,7 +176,10 @@ MORE_TOPICS: list[dict] = [
             "Appearance, Atlas and faces. The rest of the time it sits, looks around, "
             "stretches, yawns, grooms, sniffs, sighs or shakes itself off. With "
             "Motion off, or Interface animations off, it only fades or "
-            "stays put. To keep it still, set Corner companion to Off in "
+            "stays put. Two seconds after your last move it can go still to save "
+            "power: Motion at rest, in the same place, keeps it always alive, "
+            "alive on mains power only (the default), or still when idle. "
+            "To keep it still, set Corner companion to Off in "
             "Settings, Appearance, Atlas and faces."
         ),
         "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},

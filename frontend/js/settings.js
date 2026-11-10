@@ -2961,6 +2961,7 @@ function renderAppearance() {
   } catch (e) {
     $("avatar-buddy-motion").value = "follow";
   }
+  $("avatar-buddy-rest").value = prefs.get("avatar-buddy-rest", null) || "mains";
   nameMarkBuddyMotionApply();
   nameMarkBuddySizeSelect();
   $("atlas-style").value = appearancePref("atlas-style");
@@ -3236,7 +3237,7 @@ function renderPaletteGrid() {
 
 function resetAppearance() {
   for (const key of [
-    "fontsize", "font", "density", "glass", "perf", "motion", "ui-motion", "reply-motion", "progress-motion", "avatar-motion", "avatar-follow", "avatar-buddy", "avatar-buddy-size", "avatar-buddy-actions", "atlas-style", "assistant-avatar", "atlas-look", "face-look", "dash-mark", "bg-intensity", "accent",
+    "fontsize", "font", "density", "glass", "perf", "motion", "ui-motion", "reply-motion", "progress-motion", "avatar-motion", "avatar-follow", "avatar-buddy", "avatar-buddy-size", "avatar-buddy-actions", "avatar-buddy-motion", "avatar-buddy-rest", "avatar-buddy-entrances", "atlas-style", "assistant-avatar", "atlas-look", "face-look", "dash-mark", "bg-intensity", "accent",
     "contrast", "bgArt", "theme", "radius", "glass-blur", "glass-opacity",
     "glass-sheen", "glass-sheen-strength", "glass-controls", "page-wash", "bg-style", "bg-motion", "palette", "themePreset",
     "accent-custom", "page-bg", "custom-css", "zoom",
