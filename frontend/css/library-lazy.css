@@ -8707,3 +8707,29 @@ input[type="color"].wb-mixed {
 .wb-context .wb-snap-label:is(:focus-visible, :has(:focus-visible)) {
   background: var(--row-hover-bg);
 }
+
+/* The saved palettes in the colour popover: a few rows, scrolling past that rather than growing the popover. */
+.wb-colour-palettes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: 30vh;
+  overflow-y: auto;
+}
+.wb-colour-palettes:empty {
+  display: none;
+}
+
+/* Board style presets (Format panel, nothing selected): a grid of two-colour tiles, fill behind a border in the text colour, which the tile sets to the line colour. */
+.wb-board-style-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--space-8) * 2), 1fr));
+  gap: var(--space-2);
+}
+.wb-board-style-list .wb-board-style-btn {
+  --swatch: transparent;
+  min-height: var(--space-8);
+  padding: 0;
+  border: var(--space-1) solid currentcolor;
+  background: var(--swatch);
+}

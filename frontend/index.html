@@ -8375,6 +8375,13 @@ Link to another note with [[its first few words]]."></textarea>
       </div>
       <div id="wb-format-body" class="wb-format-body" role="tabpanel" aria-labelledby="wb-format-tab-style">
         <p id="wb-format-empty" class="muted empty-line">Select something on the board to format it.</p>
+        <section id="wb-board-style" class="wb-fmt-section" aria-label="Board style" hidden>
+          <h4 class="wb-fmt-head"><i class="ph ph-swatches" aria-hidden="true"></i><span>Board style</span><button type="button" class="icon-only ghost small graph-help-toggle" data-help-for="wb-fmt-help-boardstyle" aria-controls="wb-fmt-help-boardstyle" aria-expanded="false" title="About board styles" aria-label="About board styles"><i class="ph ph-question" aria-hidden="true"></i></button></h4>
+          <div class="help-body hidden" id="wb-fmt-help-boardstyle" role="dialog" aria-label="About board styles">
+            <p><b>Board style</b>: one press writes a colour scheme across every shape, line, sticky and text box on the board, in one Undo step. Shapes without a fill stay unfilled.</p>
+          </div>
+          <div id="wb-board-style-list" class="wb-board-style-list" role="group" aria-label="Board styles"></div>
+        </section>
         <p id="wb-format-none" class="muted wb-lib-keys" hidden>Nothing on this tab for what is selected.</p>
         <section class="wb-fmt-section" data-format-panel="style" aria-label="Style">
           <div class="wb-fmt-group" data-fmt-group="fill">

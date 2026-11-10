@@ -2355,6 +2355,8 @@ HELP_TOPICS.extend(
                 "clear formatting",
                 "rounded corners",
                 "round corners",
+                "curved line",
+                "line style",
                 "dash pattern",
                 "custom dashes",
                 "flow animation",
@@ -2379,8 +2381,8 @@ HELP_TOPICS.extend(
             "body": (
                 "The top bar's Format button, Ctrl+Shift+P or View > Format panel opens "
                 "the Format panel on the right, with three tabs. Style: line colour, width and pattern, "
-                "your own dashes (a dash and a gap in line widths, like 8 4), rounded corners, flow (dashes that move), "
-                "fill (gradient, hatch, dots or zigzag), fill and line opacity (presets 0 to 100), opacity, shadow (offset, blur), box corner radii and padding, a picture's crop to a shape, and for a connector its line shape (curved, straight or elbow), "
+                "your own dashes (a dash and a gap in line widths, like 8 4), a line style (sharp, rounded or curved), flow (dashes that move), "
+                "fill (gradient, hatch, dots or zigzag), fill and line opacity (presets 0 to 100), opacity, shadow, box corner radii and padding, a picture's crop to a shape, and for a connector its line shape (curved, straight or elbow), "
                 "its line jumps (it hops over a line under it with an arc, a gap or a "
                 "sharp peak, of a size you set), a gap to stop short of the shape at each end, its two ends (twenty-one marks, three sizes) "
                 "and where its label sits. Text: font (default, serif, monospace, wide sans, handwritten), size, colour, bold, italic, underline, strikethrough, "

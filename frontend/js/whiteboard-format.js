@@ -597,6 +597,8 @@ function wbFormatSync() {
     fields.delete("round");
     fields.delete("linestyle");
   }
+  const boardStyle = document.getElementById("wb-board-style");
+  if (boardStyle) wbFmtState.board.show(boardStyle, !entries.length && wbFmtState.fmtTab === "style");
   const empty = document.getElementById("wb-format-empty");
   const map = kinds.has("topic");
   if (empty) {
@@ -2283,9 +2285,39 @@ const wbColour = (() => {
     return wrap;
   }
 
+  //: The notebook's saved palettes ("Save these colours as a palette") as `{name, colours}`: real
+  //: hex colours only, lower-cased, no repeats, none empty, at most eight (the popover is not a library).
+  function wbColourPaletteList(entries) {
+    const out = [];
+    for (const entry of entries || []) {
+      if (entry?.kind !== "palette" || out.length >= 8) continue;
+      const colours = [...new Set((entry.payload?.colours || []).filter((c) => /^#[0-9a-f]{6}$/i.test(c)).map((c) => c.toLowerCase()))];
+      if (colours.length) out.push({ name: String(entry.name || "").trim() || "Palette", colours });
+    }
+    return out;
+  }
+
+  //: A box the popover holds for the saved palettes, one labelled row of swatches each. The library
+  //: index is fetched here when the Library panel has not (`/board-library`, one small request), and
+  //: the rows fill in when it lands, if the popover is still open.
+  function wbColourPalettes(pick, current) {
+    const box = document.createElement("div");
+    box.className = "wb-colour-palettes";
+    const fill = () => {
+      for (const { name, colours } of wbColourPaletteList(wbLibState.lib?.items)) {
+        const row = swatchPicker({ label: `${name} palette`, value: colours.includes(current) ? current : null, palette: Object.fromEntries(colours.map((c) => [c, c])), none: null, onChoose: pick });
+        row.title = name;
+        box.append(wbColourHeading(name), row);
+      }
+    };
+    if (wbLibState.lib) fill();
+    else apiJson("/board-library").then((lib) => { wbLibState.lib = wbLibState.lib || lib; if (box.isConnected) fill(); }).catch(() => {});
+    return box;
+  }
+
   return {
     parse: wbColourParse, fillIsOn: wbFillIsOn, fillToggle: wbFillTogglePatch, fillColour: wbFillColourPatch,
-    setAlpha: wbFmtSetAlpha, opacity: wbColourOpacity, fields: wbColourFields,
+    setAlpha: wbFmtSetAlpha, opacity: wbColourOpacity, fields: wbColourFields, palettes: wbColourPalettes,
   };
 })();
 
@@ -2398,6 +2430,7 @@ async function wbOpenColourMenu(input) {
   const byHex = Object.fromEntries(Object.entries(WB_COLOUR_SWATCHES).map(([k, v]) => [v, k]));
   const board = swatchPicker({ label: "Board colours", value: byHex[current] || null, palette: WB_COLOUR_SWATCHES, none: null, onChoose: (key) => pick(WB_COLOUR_SWATCHES[key]) });
   rows.push(board);
+  if (typeof wbLibState !== "undefined") rows.push(wbColour.palettes(pick, current));
   let opacityRow = null;
   const custom = wbColour.fields(input, (alpha) => opacityRow?.setValue(Math.round(alpha * 100)));
   opacityRow = wbColour.opacity(input);
@@ -2618,3 +2651,92 @@ onDomReady(() => {
     if (e.target instanceof HTMLInputElement && e.target.matches('input[type="color"].wb-color-picker')) wbRememberColour(e.target.value);
   }, true);
 });
+
+//: **Board style presets** (draw.io's Diagram style panel): with nothing selected, the Format panel's
+//: Style tab lists twelve colour schemes (fill, line, text); one press writes them across every shape,
+//: line, connector, sticky and text box on the board in one undo step. A shape with no fill stays
+//: unfilled, a text box with no background gets no background, pictures and frames are left alone.
+//: Hung on `wbFmtState` so the shared scope does not grow (test_global_scope_ratchet).
+wbFmtState.board = (() => {
+  const PRESETS = [
+    { name: "Blue", fill: "#dae8fc", stroke: "#6c8ebf", ink: "#1f2430" },
+    { name: "Green", fill: "#d5e8d4", stroke: "#82b366", ink: "#1f2430" },
+    { name: "Yellow", fill: "#fff2cc", stroke: "#d6b656", ink: "#1f2430" },
+    { name: "Orange", fill: "#ffe6cc", stroke: "#d79b00", ink: "#1f2430" },
+    { name: "Red", fill: "#f8cecc", stroke: "#b85450", ink: "#1f2430" },
+    { name: "Purple", fill: "#e1d5e7", stroke: "#9673a6", ink: "#1f2430" },
+    { name: "Teal", fill: "#d0f0ec", stroke: "#2f8f83", ink: "#1f2430" },
+    { name: "Pink", fill: "#fbe4ef", stroke: "#c2538a", ink: "#1f2430" },
+    { name: "Grey", fill: "#f5f5f5", stroke: "#666666", ink: "#1f2430" },
+    { name: "Paper", fill: "#ffffff", stroke: "#000000", ink: "#000000" },
+    { name: "Slate", fill: "#23445d", stroke: "#10202c", ink: "#ffffff" },
+    { name: "Night", fill: "#1f2430", stroke: "#8a8f98", ink: "#f0f0f0" },
+  ];
+
+  //: What the preset writes into one item, from `{kind, fmt, filled, data}`; null for an item it leaves alone.
+  function patchFor(preset, { kind, fmt, filled, data }) {
+    if (kind === "sketch") {
+      if (fmt === "shape") return { color: preset.stroke, ...(filled ? { fill: preset.fill, fillOpacity: 1 } : {}), label_color: preset.ink };
+      return fmt === "line" || fmt === "arrow" || fmt === "link" ? { color: preset.stroke } : null;
+    }
+    if (kind !== "object" || fmt !== "text") return null;
+    const sticky = data.bg && data.bg !== "transparent";
+    return {
+      ...(sticky ? { bg: preset.fill } : {}),
+      ...(sticky && data.border_color && data.border_color !== "transparent" ? { border_color: preset.stroke } : {}),
+      color: preset.ink,
+    };
+  }
+
+  function describe(entry) {
+    const fmt = wbFmtKind(entry);
+    const data = entry.kind === "sketch" ? wbFmtSketch(entry) : entry.item.data || {};
+    return { kind: entry.kind, fmt, filled: fmt === "shape" && Boolean(wbFmtValue(entry, "fill-on")), data };
+  }
+
+  async function apply(preset) {
+    const entries = ["sketch", "object"]
+      .flatMap((kind) => (wbState?.[WB_LIST_BY_KIND[kind]] || []).map((item) => ({ kind, id: item.id, item })))
+      .filter((entry) => !wbIsLocked(entry.kind, entry.item));
+    let changed = 0;
+    await wbRecordGesture(async () => {
+      const saves = [];
+      for (const entry of entries) {
+        const patch = patchFor(preset, describe(entry));
+        if (!patch) continue;
+        if (entry.kind === "sketch") {
+          if (!wbSketchSetProps(entry.item, patch)) continue;
+        } else {
+          entry.item.data = { ...entry.item.data, ...patch };
+        }
+        saves.push({ kind: entry.kind, item: entry.item });
+      }
+      changed = saves.length;
+      await wbSaveMany(saves);
+    });
+    wbScheduleRender();
+    wbFormatSyncSoon();
+    toast(changed ? `Board style ${preset.name} applied to ${changed} ${changed === 1 ? "item" : "items"}.` : "Nothing on the board takes a board style yet.");
+  }
+
+  //: The section shows on the Style tab when nothing is selected; its buttons are built the first time.
+  function show(section, visible) {
+    section.hidden = !visible;
+    const list = document.getElementById("wb-board-style-list");
+    if (!visible || !list || list.childElementCount) return;
+    for (const preset of PRESETS) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "ghost wb-board-style-btn";
+      button.title = `${preset.name}: fill, line and text colours across the board`;
+      button.setAttribute("aria-label", `Board style ${preset.name}`);
+      button.style.setProperty("--swatch", preset.fill);
+      button.style.color = preset.stroke;
+      button.addEventListener("click", () => apply(preset));
+      list.append(button);
+    }
+  }
+
+  return { PRESETS, patchFor, apply, show };
+})();
+//: --- end board style
