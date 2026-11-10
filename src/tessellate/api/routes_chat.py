@@ -893,8 +893,7 @@ def _hello_reply(req: _StreamRequest, seed: str, recent: list[str]) -> str:
     invite = "" if "“" in welcome or "](#/notes/" in welcome else _newest_word(req.session)
     asks = composer_smalltalk.invitation(req.question, invite, _composer_voice(), seed) if invite else composer_smalltalk.greeting_ask(req.question, _composer_voice(), seed)
     how = composer_smalltalk.hello_how(req.question, _composer_voice(), [welcome, *recent], seed)
-    #: The name on the first hello of a chat only (`ai/address.py`).
-    welcome = address.greet(welcome, address.name_of(deps.get_config()), req.history)
+    welcome = address.greet(welcome, address.name_of(deps.get_config()), req.history)  # first hello only (G7)
     return "\n\n".join(p for p in (" ".join(p for p in (welcome, how or asks) if p), sees) if p)
 
 
@@ -1974,8 +1973,7 @@ def _choose_events(req: _StreamRequest, prepared: dict, t: _Turn) -> tuple:
     Small talk never goes near the agent: "hey" is not a request to do
     anything, and handing it a toolbox invites it to invent an errand."""
     if (named := chat_extra.name_events(req.session, req.question or "")) is not None:
-        #: A fact about the person, the same with a model up or not (G7).
-        return iter(named), None
+        return iter(named), None  # the person's name, model up or not (G7)
     if t.facts:
         return _fact_events(req, prepared, t), None
     events = _first_events(req, prepared, t.ollama_running, t.tools_only)
