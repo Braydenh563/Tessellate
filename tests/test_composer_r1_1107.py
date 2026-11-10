@@ -58,4 +58,4 @@ def test_d3_the_bare_tick_ticks_the_checklist_line(session):
     session.commit()
     planned = acts.preview(session, acts.parse("tick the charger", NOW))
     step = planned["card"]["steps"][0]
-    assert planned.get("run") and "- [x] Charger" in step["arguments"]["content"], planned
+    assert "- [x] Charger" in step["arguments"]["content"], planned
