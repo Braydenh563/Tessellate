@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8072, frontend ids 2679, CSS sections 523, backend routes 662, backend modules 9985, test files 2431, tests 20192, plan headings 1000, app scripts 28, boot scripts 37, script files 275.
+Counts: frontend functions 8072, frontend ids 2679, CSS sections 523, backend routes 662, backend modules 9985, test files 2432, tests 20195, plan headings 1000, app scripts 28, boot scripts 37, script files 275.
 
 ## Frontend functions (8072)
 
@@ -1558,7 +1558,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `syncTimelineFilterChip` | frontend/js/timeline.js:910 |
 | `syncTimelineKindsLabel` | frontend/js/timeline.js:400 |
 | `syncTimelineSelectUi` | frontend/js/timeline.js:2302 |
-| `syncTimelineViewSeg` | frontend/js/timeline.js:2353 |
+| `syncTimelineViewSeg` | frontend/js/timeline.js:2355 |
 | `syncTimelineYears` | frontend/js/timeline.js:680 |
 | `timelineAheadBuckets` | frontend/js/timeline.js:1036 |
 | `timelineAutoScale` | frontend/js/timeline.js:454 |
@@ -1594,7 +1594,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `timelineRowGroups` | frontend/js/timeline.js:866 |
 | `timelineRowMoment` | frontend/js/timeline.js:102 |
 | `timelineScaleChoice` | frontend/js/timeline.js:438 |
-| `timelineScrollToToday` | frontend/js/timeline.js:2467 |
+| `timelineScrollToToday` | frontend/js/timeline.js:2472 |
 | `timelineScrubTo` | frontend/js/timeline.js:1999 |
 | `timelineSortValue` | frontend/js/timeline.js:2076 |
 | `timelineSortedRows` | frontend/js/timeline.js:2087 |
@@ -12732,7 +12732,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/sidebar-folds-lazy.css | 28 |
 | frontend/css/sketch-pad.css | 791 |
 | frontend/css/tidy-lazy.css | 331 |
-| frontend/css/timeline-calendar-lazy.css | 299 |
+| frontend/css/timeline-calendar-lazy.css | 304 |
 | frontend/css/timeline-ticks-lazy.css | 42 |
 | frontend/css/ui-reveal-lazy.css | 91 |
 | frontend/css/update-bar-lazy.css | 15 |
@@ -26030,7 +26030,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (20192)
+## Tests (20195)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28170,6 +28170,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_tie_chip_b9.py | 5 |
 | tests/test_time_travel_spec.py | 9 |
 | tests/test_timeline.py | 33 |
+| tests/test_timeline_allday_band.py | 2 |
 | tests/test_timeline_auto_scale.py | 3 |
 | tests/test_timeline_cal_add.py | 4 |
 | tests/test_timeline_cal_span_glide.py | 1 |
@@ -28178,7 +28179,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_timeline_feed_ahead.py | 3 |
 | tests/test_timeline_load_more_range_change.py | 1 |
 | tests/test_timeline_on_this_day.py | 5 |
-| tests/test_timeline_opens_on_today.py | 2 |
+| tests/test_timeline_opens_on_today.py | 3 |
 | tests/test_timeline_query_count.py | 5 |
 | tests/test_timeline_rail_centre.py | 1 |
 | tests/test_timeline_strip_ahead_1316.py | 3 |
