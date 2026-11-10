@@ -3748,12 +3748,12 @@ function atlasClassicFigure() {
 //: the companion through its own sync, the dashboard's mark and the
 //: welcome's card if it is open.
 function atlasRepaint() {
-  for (const svg of document.querySelectorAll("svg.nm-atlas")) {
+  for (const svg of document.querySelectorAll("svg.nm-atlas, svg.atl-rest")) {
     //: Not the shared defs (`atlasDefs`): each look keeps its gradients in a
     //: hidden `svg.nm-atlas.atl-defs` under <body>, and redrawing it made a
     //: visible 20px head at the bottom left, one more per change of look
     //: (the owner's "column of four small Atlas heads"; strayheads.js).
-    if (svg.closest("#nm-buddy") || !svg.isConnected || svg.classList.contains("atl-defs")) continue;
+    if (svg.closest("#nm-buddy, #atl-rest-host") || !svg.isConnected || svg.classList.contains("atl-defs")) continue;
     //: A layer of a layered figure (the large view) is not a drawing of its
     //: own: redrawing it made a whole figure in place of each layer. The
     //: figure is redrawn once, whole (INBOX 430).
@@ -3774,6 +3774,7 @@ function atlasRepaint() {
     syncNameMarkBuddy();
   }
   if (typeof paintDashEmblem === "function") paintDashEmblem();
+  document.dispatchEvent(new Event("atlas-repainted"));
 }
 
 // --- moods that follow the app ------------------------------------------------
@@ -3825,7 +3826,7 @@ function setAtlasMood(mood, forMs = 0, { quiet = false, easeMs = 0, backEaseMs =
   if (next !== atlasMoodNow) atlasDriftState.changedAt = Date.now();
   atlasMoodNow = next;
   if (!quiet && typeof nameMarkBuddyCue === "function") nameMarkBuddyCue(ATLAS_MOODS[next].cue);
-  const marks = [...document.querySelectorAll(".nm-atlas")];
+  const marks = [...document.querySelectorAll(".nm-atlas:not([data-atl-rest])")];
   clearTimeout(atlasState.easeTimer);
   //: **The ease is written inside `apply`, after the hand-over has read.**
   //: `nameMarkBuddyBlend` reads where every part is before the change; the
@@ -3904,7 +3905,7 @@ function setAtlasMood(mood, forMs = 0, { quiet = false, easeMs = 0, backEaseMs =
 //: frames on, the first of which restyles without it, so the move starts over;
 //: a newer play of the same move takes over from an older one still waiting.
 function atlasPlay(name, ms = 900) {
-  const marks = [...document.querySelectorAll(".nm-atlas")];
+  const marks = [...document.querySelectorAll(".nm-atlas:not([data-atl-rest])")];
   const cls = `atl-play-${name}`;
   for (const svg of marks) svg.classList.remove(cls);
   if (!marks.length || document.hidden) return;
@@ -4137,3 +4138,76 @@ function charactersArrived() {
     step();
   }, 0);
 }
+
+//: **Older replies wear their face at rest** (D9, s58left3-1110). A chat
+//: reply's corner mark is Atlas's tiny head: 161 nodes, so a long chat held
+//: tens of thousands of them for a picture that does not move (faces under
+//: 28px are never watched, `watchNameMark`). Only the newest reply keeps the
+//: drawn head (it takes the mood changes and the poke); every older one is
+//: an `<svg><use></svg>` of one shared copy per look, mood and size, kept in
+//: a hidden host: 2 nodes a reply, the same picture. The copy is a clone of
+//: the head being retired, so it looks exactly as that head did; it is
+//: frozen (`data-atl-rest`: `setAtlasMood` and `atlasPlay` skip it) and
+//: redrawn with the others on a change of look (`atlas-repainted`). Wrapped
+//: whole and exporting nothing, so it adds no global name.
+//: rest-begin
+(() => {
+  const sources = new Map();
+  let made = 0;
+
+  function host() {
+    let el = document.getElementById("atl-rest-host");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "atl-rest-host";
+      el.className = "atl-rest-host";
+      el.setAttribute("aria-hidden", "true");
+      document.body.appendChild(el);
+    }
+    return el;
+  }
+
+  function restFace(live) {
+    const width = live.getAttribute("width");
+    const height = live.getAttribute("height");
+    const key = `${live.dataset.atlasLook}|${live.dataset.atlasMood}|${width}|${height}`;
+    let id = sources.get(key);
+    if (!id) {
+      id = `atl-rest-${++made}`;
+      const source = live.cloneNode(true);
+      source.id = id;
+      source.dataset.atlRest = "";
+      host().appendChild(source);
+      sources.set(key, id);
+    }
+    const face = atlasMake("svg", { class: "atl-rest", width, height, "aria-hidden": "true", focusable: "false" });
+    atlasMake("use", { href: `#${id}`, width, height }, face);
+    return face;
+  }
+
+  function retireOlder() {
+    const bubbles = document.querySelectorAll("#chat-messages .msg.assistant");
+    const newest = bubbles[bubbles.length - 1];
+    for (const face of document.querySelectorAll("#chat-messages .msg.assistant .msg-avatar > svg.atl-tiny")) {
+      if (!newest.contains(face)) face.replaceWith(restFace(face));
+    }
+  }
+
+  function watch() {
+    const pane = document.getElementById("chat-messages");
+    if (!pane) return;
+    new MutationObserver((records) => {
+      if (records.some((record) => record.addedNodes.length)) retireOlder();
+    }).observe(pane, { childList: true });
+    retireOlder();
+  }
+
+  //: A new look draws every head again: the copies are of the old look.
+  document.addEventListener("atlas-repainted", () => {
+    sources.clear();
+    host().replaceChildren();
+    retireOlder();
+  });
+  watch();
+})();
+//: rest-end
