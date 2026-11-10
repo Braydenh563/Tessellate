@@ -96,15 +96,15 @@ Parked until the owner's data or a check on real hardware:
 - ~~A21 Locking leaves the document's words on the page; the AI panel sits over the lock~~ (stale: built, tests/test_lock_document_panels_1031.py) | 1031-docs DC1, DC2
 
 **W5 Server integrity** (A, backend, Sonnet; verify first). Files: `api/routes_entries.py`, `api/security.py`, `routes_auth.py`, board and backup routes, `core/db`. Checks: `tests/test_routes_*`, `tests/test_auth*`, a 24-parallel-POST test. Done when: a burst of creates all land, binned notes refuse writes, tokens and throttle are thread safe.
-- A22 24 parallel note creations: 5 answer 500 after 30 s (pool timeout) | 1031-backend BK1
-- A23 A note in the bin can be edited by PUT | 1031-backend BK2
-- A24 A binned note comes back in default search; opening it says "No such note." | 1029-notes N3
-- A25 Session token store has no lock; the login throttle is check-then-act | 1028-backend K2, K3, K23, 1031-backend BK7
-- A26 Board x and y are unbounded; one far object breaks the board | 1031-board BD1
-- A27 Backups DELETE with a traversal and inconsistent id shapes | 1031-backend BK9
-- A28 `safeHref` lets `java\tscript:` through | 1028-docs D14
-- A29 No pre-Brief-7 database was ever upgraded for real | t20#18
-- A30 Deleting a space still purges in one path | 1029-extras X5, 1031-extras Z20
+- ~~A22 24 parallel note creations: 5 answer 500 after 30 s (pool timeout) | 1031-backend BK1~~ fixed (core/concurrency.py, test_concurrency_sizing_1031)
+- ~~A23 A note in the bin can be edited by PUT | 1031-backend BK2~~ fixed (test_bin_guard_1031)
+- ~~A24 A binned note comes back in default search; opening it says "No such note." | 1029-notes N3~~ stale: search excludes the bin (probe w5-1110)
+- ~~A25 Session token store has no lock; the login throttle is check-then-act | 1028-backend K2, K3, K23, 1031-backend BK7~~ fixed (test_token_tables_1031)
+- ~~A26 Board x and y are unbounded; one far object breaks the board | 1031-board BD1~~ fixed (test_board_coordinates_1031)
+- ~~A27 Backups DELETE with a traversal and inconsistent id shapes | 1031-backend BK9~~ fixed (test_drifted_copies_1031)
+- ~~A28 `safeHref` lets `java\tscript:` through | 1028-docs D14~~ fixed (notes-list.js:858, test_link_schemes_controls)
+- ~~A29 No pre-Brief-7 database was ever upgraded for real | t20#18~~ done w5-1110: tests/test_upgrade_pre_brief7_db.py upgrades a real pre-Brief-7 dump; no bug found
+- ~~A30 Deleting a space still purges in one path | 1029-extras X5, 1031-extras Z20~~ fixed (purge needs ?purge=1, name typed; test_space_delete_confirm_1031)
 - A31 Key storage and MCP auth (after Q22) | a30i-1102 B40, B33, B24, D46, K26, K11, K13, E43
 
 **W6 Recordings and swallowed deletes** (A, voice notes, Sonnet; verify first). Files: `frontend/js/meetings.js`, `media.js`, the board delete handlers. Checks: `tests/test_meeting*`, a Playwright record and reload run. Done when: no audio is dropped on pause, close warns while recording, typing a title never starts the mic.

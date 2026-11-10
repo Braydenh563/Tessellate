@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7963, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9402, test files 2346, tests 19460, plan headings 1000, app scripts 28, boot scripts 37, script files 266.
+Counts: frontend functions 7963, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9402, test files 2347, tests 19464, plan headings 1000, app scripts 28, boot scripts 37, script files 266.
 
 ## Frontend functions (7963)
 
@@ -25082,7 +25082,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19460)
+## Tests (19464)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27229,6 +27229,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_update_dialogs_x12.py | 3 |
 | tests/test_update_verify_1031.py | 14 |
 | tests/test_upgrade_keeps_data_folder.py | 6 |
+| tests/test_upgrade_pre_brief7_db.py | 4 |
 | tests/test_usage_ledger.py | 8 |
 | tests/test_user_profile_context.py | 8 |
 | tests/test_utilities_zones.py | 4 |
