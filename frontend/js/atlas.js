@@ -3566,17 +3566,19 @@ atlasHiddenSync();
 //: mouth, blush, tilt, squash and halo, and eases between them.
 function atlasApply(svg, mood) {
   const next = ATLAS_MOODS[mood] ? mood : "calm";
-  svg.dataset.atlasMood = next;
+  //: Written only on a change: a same-value write still restyles ancestors' :has() (INBOX 1726).
+  if (svg.dataset.atlasMood !== next) svg.dataset.atlasMood = next;
   //: The layered figure's box carries the mood too: a mood's body move
   //: (08-consistency.css, `.atl-figure-box[data-atlas-mood]`) runs on the
   //: box, one element on the compositor moving every layer together, not
   //: on the `.atl-mood` group inside each layer's svg.
   const box = svg.classList.contains("atl-layer") ? svg.closest(".atl-figure-box") : null;
-  if (box && box.classList.contains("atl-figure-box")) box.dataset.atlasMood = next;
+  if (box && box.classList.contains("atl-figure-box") && box.dataset.atlasMood !== next) box.dataset.atlasMood = next;
   const name = typeof aiNameNow === "function" ? aiNameNow() : "Atlas";
   const words = ATLAS_MOODS[next].words;
   const title = svg.querySelector(":scope > title");
-  if (title) title.textContent = words ? `${name}, ${words}` : `${name}, the keeper of this notebook`;
+  const said = words ? `${name}, ${words}` : `${name}, the keeper of this notebook`;
+  if (title && title.textContent !== said) title.textContent = said;
 }
 
 // --- the classic globe ----------------------------------------------------------

@@ -10474,7 +10474,13 @@ document.addEventListener("keydown", (event) => {
   const now = Date.now();
   if (now - nmb.watchAt > 400) {
     nmb.watchAt = now;
-    const box = field.getBoundingClientRect();
+    //: The box is re-read after 2s or in another field, not per aim (INBOX 1726: a layout read in the key's first listener).
+    if (nmb.watchField !== field || now - nmb.watchBoxAt > 2000) {
+      nmb.watchField = field;
+      nmb.watchBoxAt = now;
+      nmb.watchBox = field.getBoundingClientRect();
+    }
+    const box = nmb.watchBox;
     const px = Math.min(Math.max(nmb.x + NMB_W / 2, box.left), box.right);
     const py = Math.min(Math.max(nmb.y + NMB_HEAD / 2, box.top), box.bottom);
     if (Math.hypot(px - (nmb.x + NMB_W / 2), py - (nmb.y + NMB_HEAD / 2)) > 420) return;
