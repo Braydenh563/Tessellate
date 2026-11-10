@@ -303,6 +303,10 @@ Moved to HISTORY.md ("From DOCUMENTS_PLAN.md Phase 3", two entries) on
 2026-09-12: a plan holds open work only. What the phase left behind is in
 `archive/agent-remaining/documents-phase4.md`.
 
+## Placed from INBOX, 2026-11-10 (selection to a note)
+
+- INBOX 1728: **Owner, 2026-11-10, documents, verbatim (screenshot):** "I want to be able to highlight sections in a document and turn them into or append them to a new or existing note". Recommendation, taken: two items in the document selection menu and right-click menu, "New note from selection" (the note links back to the document) and "Add to note..." (the note finder, appends the text with a back link); the same in the code editor. Placed: the documents batch of the work order.
+
 ## Placed from INBOX, 2026-11-02 (the owner: the calculator, equations, insert panels and a diagram builder)
 
 Each row is the owner's words and the recommendation taken; built rows move to HISTORY.md.

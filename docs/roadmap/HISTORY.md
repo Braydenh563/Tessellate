@@ -54074,3 +54074,5 @@ Bullets already marked closed in OPEN.md, moved verbatim, grouped by their OPEN.
 
 1720. **Decision wanted, diagram builder default fold (agent dgpolish-1109, from dgml-1109):** both blind tasks (a sequence of 3 participants, 4 messages, a note and an alt; a flowchart with a decision and two labelled branches) pass with the blocks list folded, which by the spec's rule says the list should open folded by default (diagram-split.js `diagram.fold`, now "" both open). Not flipped: it changes what every first-time person sees. Recommendation: fold the list by default on a diagram opened from New diagram only, and leave an existing diagram as the person left it; a one-line change plus the rail's label already says what it holds.
 
+1725. **Owner, 2026-11-10, whiteboard, verbatim (screenshot):** "whiteboard alignment bars go behind objects like notes". The dashed alignment guide runs under a note card. Built: the guides draw in `#wb-overlay-zoom-group`, above the card layer (tests/test_wb_guides_over_cards_1110.py).
+
