@@ -71,7 +71,8 @@ def reset_password(session: Session, config: ConfigManager) -> ResetOutcome:
     session.commit()
     # The PIN wraps the key of the vault just deleted: the terminal reset
     # runs where the OS store is the same user's, so it goes here too.
-    from tessellate.core import pinstore
+    from tessellate.core import hellostore, pinstore
 
     pinstore.forget(config.data_dir)
+    hellostore.forget(config.data_dir)  # the Hello record wraps the same key
     return ResetOutcome(had_password=True, private_notes=private_notes, lan_was_on=lan_was_on)
