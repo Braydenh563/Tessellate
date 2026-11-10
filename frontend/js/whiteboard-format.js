@@ -83,7 +83,7 @@ const WB_FMT_FIELDS = {
   arrow: ["stroke", "strokealpha", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "tip"],
   link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "linklook", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "jumpsize", "gapstart", "gapend", "tip"],
   text: ["stroke", "fill", "fillalpha", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props", "rawstyle"],
-  image: ["alpha", "shadow", "shadowset", "radii", "crop", "trim", "geometry", "angle", "props"],
+  image: ["alpha", "shadow", "shadowset", "radii", "crop", "trim", "replace", "geometry", "angle", "props"],
   frame: ["geometry", "props"],
   table: ["alpha", "shadow", "shadowset", "radii", "geometry", "props"],
   note: ["geometry", "angle"],
@@ -939,6 +939,23 @@ onSurface("board", () => {
   on("wb-fmt-crop", "change", (e) => {
     const crop = e.target.value;
     wbFmtApply("crop", () => ({ crop: crop || undefined }), crop ? `Picture cropped to ${e.target.selectedOptions[0].textContent.toLowerCase()}.` : "Picture crop taken off.");
+  });
+  //: Replace picture: the button opens the file box; the new file is uploaded and the picture's address
+  //: swapped in one Undo step, so its place, size, crop and style stay.
+  on("wb-fmt-replace", "click", () => document.getElementById("wb-fmt-replace-file")?.click());
+  on("wb-fmt-replace-file", "change", async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !file.type?.startsWith("image/")) return;
+    if (file.size > 50 * 1024 * 1024) return toast("That picture is over 50 MB. Pick a smaller one.");
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const uploaded = await apiJson("/media/upload", { method: "POST", headers: authHeaders(), body });
+      await wbFmtApply("replace", () => ({ url: uploaded.url }), "Picture replaced.");
+    } catch (err) {
+      toast(err?.message || "The picture could not be uploaded.");
+    }
   });
   //: A rectangle crop: percent cut from the top, right, bottom and left; all empty is no trim.
   for (const edge of [0, 1, 2, 3]) {

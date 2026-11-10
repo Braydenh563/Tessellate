@@ -89,3 +89,13 @@ def test_the_panel_offers_the_trim_to_pictures_only() -> None:
         assert f'id="wb-fmt-trim{edge}"' in HTML and f'"wb-fmt-trim{edge}"' in FMT
     assert 'data-fmt="trim"' in HTML and "trim: set ? trim : undefined" in FMT
     assert "obj.data.trim" in WB[WB.index('if (obj.kind === "image" && obj.data.url)') :][:1600]
+
+
+def test_replace_picture_is_a_pictures_only_row_that_uploads_then_swaps_the_address() -> None:
+    row = re.search(r"^  image: \[(.*)\],$", FMT, re.M).group(1)
+    assert '"replace"' in row
+    for kind in ("shape", "text", "frame", "table"):
+        assert '"replace"' not in re.search(rf"^  {kind}: \[(.*)\],$", FMT, re.M).group(1)
+    assert 'data-fmt="replace"' in HTML and 'id="wb-fmt-replace"' in HTML and 'id="wb-fmt-replace-file"' in HTML
+    handler = FMT[FMT.index('on("wb-fmt-replace-file"') :][:900]
+    assert '"/media/upload"' in handler and 'wbFmtApply("replace", () => ({ url: uploaded.url })' in handler

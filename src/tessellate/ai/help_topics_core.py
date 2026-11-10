@@ -2373,6 +2373,8 @@ HELP_TOPICS.extend(
                 "crop to a circle",
                 "trim a picture",
                 "rectangle crop",
+                "replace a picture",
+                "swap an image",
                 "picture shape",
                 "line jumps",
                 "line jump",
@@ -2384,7 +2386,7 @@ HELP_TOPICS.extend(
                 "The top bar's Format button, Ctrl+Shift+P or View > Format panel opens "
                 "the Format panel on the right, with three tabs. Style: line colour, width and pattern, "
                 "your own dashes (a dash and a gap in line widths, like 8 4), a line style (sharp, rounded or curved), flow (dashes that move), "
-                "fill (gradient, hatch, dots or zigzag), fill and line opacity (presets 0 to 100), opacity, shadow, box corner radii and padding, a picture's crop and trim edges, and for a connector its line shape (curved, straight or elbow), "
+                "fill (gradient, hatch, dots or zigzag), fill and line opacity (presets 0 to 100), opacity, shadow, box corner radii and padding, a picture's crop and trim, and for a connector its line shape (curved, straight or elbow), "
                 "its line jumps (it hops over a line under it with an arc, a gap or a "
                 "sharp peak, of a size you set), a gap to stop short of the shape at each end, its two ends (twenty-one marks, three sizes) "
                 "and where its label sits. Text: font (default, serif, monospace, wide sans, handwritten), size, colour, bold, italic, underline, strikethrough, "
