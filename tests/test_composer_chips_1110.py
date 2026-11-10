@@ -218,3 +218,39 @@ def test_small_talk_picks_up_the_chips_with_a_model_up_too(ai_client, fake_ollam
         events = [json.loads(line) for line in response.iter_lines() if line.strip()]
     asks = [a for e in events if e.get("type") == "offer" for a in (e["offer"].get("asks") or [])]
     assert any(a.startswith("Remind me about") for a in asks), events
+
+
+def test_last_wrote_states_a_date_and_the_latest_does_not_repeat_it(client, session):
+    seed.seed(session)
+    last = _ask(client, "When did I last write about Harbor?")
+    latest = _ask(client, "What's the latest on Harbor?")
+    assert "You last wrote about Harbor on 6 November" in last["text"], last["text"]
+    assert last["text"] != latest["text"]
+    grounded = [e for e in last["events"] if e.get("type") == "grounding"]
+    assert grounded and not grounded[0]["support"]["unsupported"], grounded
+
+
+def test_what_else_is_on_that_week_is_offered_and_answered(client, session):
+    seed.seed(session)
+    got = _ask(client, "when is my dentist appointment")
+    assert "What else is on that week?" in got["chips"], got["chips"]
+    follow = _ask(client, "What else is on that week?", _then([], "when is my dentist appointment", got))
+    assert "Decision due by 20 November" in follow["text"] and "Check-up booked" in follow["text"], follow["text"]
+
+
+@pytest.mark.parametrize("then, window", [("and the week before?", "26 October to 1 November"), ("and the week after?", "9 November to 15 November")])
+def test_a_window_moves_off_the_one_before(client, session, then, window):
+    """F13 h: "and the week before" is the question before over the week earlier."""
+    seed.seed(session)
+    got = _ask(client, "what did I write last week")
+    assert window in _ask(client, then, _then([], "what did I write last week", got))["text"]
+
+
+@pytest.mark.parametrize("question", ["summarise my japan notes", "summarise harbor"])
+def test_a_summary_of_several_notes_is_one_shape(client, session, question):
+    """F13 i: a subject several notes are about (by tag as by title) is the short version of each, never one note and 'Say more'."""
+    seed.seed(session)
+    text = _ask(client, question)["text"]
+    assert text.startswith("Here are your 4 matching notes") or text.startswith("4 notes match"), text
+    assert "Say “more”" not in text
+    assert not re.search(r"\]\(#/notes/\d+\): [.:;,]", text), text  # no stranded full stop where a title was cut

@@ -4008,6 +4008,18 @@ def _say_fact(out: _Out, lead: Fact, today: date, question: str) -> None:
     else:
         out.lines.append(_from_source(lead.view, body[0].upper() + body[1:], today))
     out.rows.append(_row(body, lead))
+    _dated_last(out, lead, today, question)
+
+
+#: "When did I last write about Harbor?" is answered with the day, not only with the note (F5).
+_LAST_WROTE = re.compile(r"^\s*when did i last (?:write|wrote|note|jot|save|mention) (?:about |on |down )?(?P<subject>.+?)\s*\??\s*$", re.I)
+
+
+def _dated_last(out: _Out, lead: Fact, today: date, question: str) -> None:
+    """The day first for "when did I last write about X", so it differs from "what's the latest on X"."""
+    asked = _LAST_WROTE.match(clean(question))
+    if asked and lead.view.written and out.lines:
+        out.lines.insert(len(out.lines) - 1, f"You last wrote about {asked.group('subject')} on {_day(lead.view.written, today)}.")
 
 
 #: "when did I buy that gaming mouse": one thing that happened, asked for

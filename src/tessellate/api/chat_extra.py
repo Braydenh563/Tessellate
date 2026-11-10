@@ -4,6 +4,7 @@ stream events. Kept out of `routes_chat.py`, which is large enough."""
 
 from __future__ import annotations
 
+import json
 import logging
 import re
 from datetime import datetime
@@ -24,11 +25,20 @@ log = logging.getLogger("tessellate.chat")
 
 def _notes(session: Session) -> list[dict]:
     rows = (
-        session.query(Entry.id, Entry.content, Entry.created_at, Category.name, Entry.archived_at, Entry.is_draft)
+        session.query(Entry.id, Entry.content, Entry.created_at, Category.name, Entry.archived_at, Entry.is_draft, Entry.tags)
         .outerjoin(Category, Entry.category_id == Category.id)
         .filter(*_visible()).order_by(Entry.created_at.desc()).limit(NOTE_LIMIT).all()
     )
-    return [{"id": i, "content": c or "", "created_at": made, "category": cat or "", "archived": gone is not None, "draft": bool(draft)} for i, c, made, cat, gone, draft in rows]
+    return [{"id": i, "content": c or "", "created_at": made, "category": cat or "", "archived": gone is not None, "draft": bool(draft), "tags": _tags(tags)} for i, c, made, cat, gone, draft, tags in rows]
+
+
+def _tags(raw: str | None) -> list[str]:
+    """A note's tags (the column is a JSON array); none when it is not one."""
+    try:
+        got = json.loads(raw or "[]")
+    except ValueError:
+        return []
+    return [str(t) for t in got] if isinstance(got, list) else []
 
 
 def _reminders(session: Session) -> list[dict]:
@@ -172,12 +182,13 @@ def name_events(session: Session, question: str) -> list[dict] | None:
     return [{"type": "answer", "delta": line}]
 
 
-def figures_events(session: Session, typed: str, history: list[dict], today) -> list[dict] | None:  # noqa: ANN001  # a date
-    """A comparison, count or sum over the figures the last answers showed (`ai/composer_figures`, F6)."""
-    from tessellate.ai import composer_figures
+def figures_events(session: Session, typed: str, history: list[dict], today, open_ids: tuple = ()) -> list[dict] | None:  # noqa: ANN001  # a date
+    """A comparison, count or sum over the figures the last answers showed (`ai/composer_figures`, F6),
+    or the links of the note "it" is (`ai/composer_openlinks`, F13 j)."""
+    from tessellate.ai import composer_figures, composer_openlinks
 
     try:
-        said = composer_figures.answer(session, typed, history, today)
+        said = composer_figures.answer(session, typed, history, today) or composer_openlinks.answer(session, typed, history, list(open_ids))
     except Exception:  # noqa: BLE001  # the ordinary readers answer
         log.exception("chat: the figures reader failed")
         return None

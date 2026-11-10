@@ -16,7 +16,7 @@ from tessellate.ai import composer, composer_chips
 
 _log = logging.getLogger("tessellate.chat")
 #: Chips that act or open: not tried against the notes.
-_NOT_TRIED = ("Open ", "Remind me", "Tomorrow", "Friday", "In an hour", "Which is higher")
+_NOT_TRIED = ("Open ", "Remind me", "What else is on that", "Tomorrow", "Friday", "In an hour", "Which is higher")
 
 
 def _asked(history: list[dict] | None, question: str) -> list[str]:
@@ -46,7 +46,7 @@ def _candidates(result: dict, current: list[dict], today) -> list[tuple[str, lis
     frame, ids = result.get("frame") or {}, set((result.get("frame") or {}).get("note_ids") or [])
     scope = [n for n in current if n.get("source_id", n.get("id")) in ids] or current
     own = composer_chips.frame_chips(frame, current, str(result.get("text") or ""), today.isoformat())
-    return [*((c, scope) for c in own), *((c, current) for c in result.get("next") or [])]
+    return [*((c, scope) for c in own), *((c, current) for c in result.get("next") or []), *((c, current) for c in composer_chips.week_chips(frame, today.isoformat()))]
 
 
 def continue_chips(result: dict, question: str, history: list[dict] | None, current: list[dict], today, voice: str, says_cannot) -> list[str]:  # noqa: ANN001

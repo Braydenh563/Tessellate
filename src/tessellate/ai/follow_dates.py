@@ -57,6 +57,17 @@ def _stated_clock(phrase: str, now: datetime) -> bool:
     return one is not None and (one.hour, one.minute) != (3, 17)
 
 
+def _stated_day(history: list[dict], answer: str) -> tuple[int, int] | None:
+    """(month, day) of the one date the last answer is about: its frame's single date (which
+    knows the subject even when the rows it lists state others), else the one it states."""
+    framed = {str(d) for d in (((history or [{}])[-1].get("frame") or {}).get("dates") or [])}
+    if len(framed) == 1:
+        _year, month, day = (int(part) for part in next(iter(framed)).split("-"))
+        return month, day
+    days = {(m, d) for _y, m, d, _w in recognise.date_mentions(answer) if m}
+    return next(iter(days)) if len(days) == 1 else None
+
+
 def _anchor(history: list[dict], last, now: datetime) -> tuple[datetime, str, str, bool] | None:  # noqa: ANN001
     """(the day counted from, what it is for, its note's title, whether it is a set reminder),
     from the answer before: a reminder just set, else the one date a fact stated."""
@@ -64,17 +75,8 @@ def _anchor(history: list[dict], last, now: datetime) -> tuple[datetime, str, st
         at = recognise.resolve(last.when, now)
         return (at, last.title, "", True) if at else None
     answer = _PLAIN.sub(lambda m: m.group(1) or "", str((history or [{}])[-1].get("answer") or ""))
-    frame = (history or [{}])[-1].get("frame") or {}
-    #: The frame knows the answer's subject date even when the rows it lists state others.
-    framed = {str(d) for d in frame.get("dates") or []}
-    days = {(m, d) for _y, m, d, _w in recognise.date_mentions(answer) if m}
-    if len(framed) == 1:
-        _year, month, day = (int(part) for part in next(iter(framed)).split("-"))
-    elif len(days) == 1:
-        month, day = next(iter(days))
-    else:
-        return None
-    at =recognise.resolve(f"{day} {calendar.month_name[month]}", now)
+    stated = _stated_day(history, answer)
+    at = recognise.resolve(f"{stated[1]} {calendar.month_name[stated[0]]}", now) if stated else None
     named = _FROM_NOTE.search(answer)
     return (at, "", (named.group("title") or named.group("bold")) if named else "", False) if at else None
 

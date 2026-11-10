@@ -130,6 +130,14 @@ def _day_chips(frame: dict, title: str, today: str) -> list[str]:
     return [f"Remind me about {title} the day before" if title else "Remind me the day before"] if coming else []
 
 
+WEEK_CHIP = "What else is on that week?"
+
+
+def week_chips(frame: dict, today: str) -> list[str]:
+    """The agenda of a coming day's week; offered after the other chips, only where they leave room."""
+    return [WEEK_CHIP] if any(d > today for d in (frame or {}).get("dates") or []) else []
+
+
 def frame_chips(frame: dict, notes: list[dict], text: str, today: str = "") -> list[str]:
     """The next questions the turn's own frame opens, in the order a person would ask them: the
     person's other facts, the lead note's other facts, a coming day (a reminder), then the rows
@@ -149,21 +157,26 @@ def asks_time(text: str) -> bool:
     return bool(_ASKS_TIME.search(str(text or "").strip()))
 
 
-def resume_chips(session, history: list[dict] | None, today: str, question: str) -> list[str]:  # noqa: ANN001
-    """The chips a small-talk reply ("thanks") ends with: the last answer's own, so the chat can
-    pick up where it was. Read from the frame the turn before was sent with; none without one."""
+def _frame_notes(session, frame: dict) -> list[dict]:  # noqa: ANN001
+    """The notes a frame names, as the chips read them (id and text), those still there."""
     from sqlalchemy import select
 
     from tessellate.core.database import Entry
 
-    frame = next((t.get("frame") for t in reversed(history or []) if isinstance(t, dict) and t.get("frame")), None) or {}
     ids = [i for i in frame.get("note_ids") or [] if isinstance(i, int)]
-    if not ids:
+    rows = {e.id: {"id": e.id, "content": e.content} for e in session.scalars(select(Entry).where(Entry.id.in_(ids or [0]), Entry.deleted_at.is_(None)))}
+    return [rows[i] for i in ids if i in rows]
+
+
+def resume_chips(session, history: list[dict] | None, today: str, question: str) -> list[str]:  # noqa: ANN001
+    """The chips a small-talk reply ("thanks") ends with: the last answer's own, so the chat can
+    pick up where it was. Read from the frame the turn before was sent with; none without one."""
+    turns = [t for t in history or [] if isinstance(t, dict)]
+    frame = next((t["frame"] for t in reversed(turns) if t.get("frame")), None)
+    if not frame:
         return []
-    rows = {e.id: {"id": e.id, "content": e.content} for e in session.scalars(select(Entry).where(Entry.id.in_(ids), Entry.deleted_at.is_(None)))}
-    notes = [rows[i] for i in ids if i in rows]
-    asked = [question, *(str(t.get("question") or "") for t in history or [] if isinstance(t, dict))]
-    chips = frame_chips(frame, notes, str((history or [{}])[-1].get("answer") or ""), today)
+    asked = [question, *(str(t.get("question") or "") for t in turns)]
+    chips = [*frame_chips(frame, _frame_notes(session, frame), str(turns[-1].get("answer") or ""), today), *week_chips(frame, today)]
     return [c for c in chips if not spent(c, asked)][:MAX_CHIPS]
 
 

@@ -380,6 +380,11 @@ def acts_for(session: Session, prev: Prev, today: date, *, generic: bool = True)
     return ["What did I write this week?", "Notebook statistics", "What can you do?"] if generic else []
 
 
+def _offers_chips(event: dict) -> bool:
+    """Whether the event is an offer or carries Next chips (the turn has its own)."""
+    return event.get("type") == "offer" or event.get("type") == "grounding" and bool(event.get("next"))
+
+
 class Closing:
     """Watches a composed turn's events and, when it ends with no Next chips,
     adds the subject's own (INBOX 1729 a). A turn whose only offer is an
@@ -399,7 +404,7 @@ class Closing:
 
     def _note(self, event: dict) -> None:
         kind = event.get("type")
-        self.offered = self.offered or kind == "offer" or kind == "grounding" and bool(event.get("next"))
+        self.offered = self.offered or _offers_chips(event)
         self.framed = self.framed or kind == "frame"
         self.asked = self.asked or kind == "offer" and (event.get("offer") or {}).get("kind") == "ask"
         if kind == "grounding" and event.get("next") or kind == "offer" and (event.get("offer") or {}).get("kind") == "ask":

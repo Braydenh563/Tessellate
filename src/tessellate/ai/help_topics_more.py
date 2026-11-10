@@ -917,7 +917,8 @@ MORE_TOPICS: list[dict] = [
             "parts of the app",
         ),
         "body": (
-            "Tessellate has seven tabs along the top. Dashboard: your day at a "
+            "Tessellate is a notebook on your own computer, where a local AI files your notes "
+            "and answers questions about them. It has seven tabs along the top. Dashboard: your day at a "
             "glance and quick actions. Notes: capture and your notes list. "
             "Chat: ask and let the agent act on your notes. Graph: how notes "
             "connect. Library: documents, whiteboards, mind maps, files and "
