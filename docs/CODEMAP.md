@@ -2,9 +2,9 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8062, frontend ids 2666, CSS sections 523, backend routes 662, backend modules 9945, test files 2410, tests 20087, plan headings 1000, app scripts 28, boot scripts 37, script files 274.
+Counts: frontend functions 8065, frontend ids 2666, CSS sections 523, backend routes 662, backend modules 9945, test files 2411, tests 20092, plan headings 1000, app scripts 28, boot scripts 37, script files 274.
 
-## Frontend functions (8062)
+## Frontend functions (8065)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -4058,29 +4058,32 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `overlaps` | frontend/js/documents-languagetool.js:27 |
 | `paragraphs` | frontend/js/documents-languagetool.js:36 |
 
-### frontend/js/documents-math.js (19)
+### frontend/js/documents-math.js (22)
 
 | Name | File:line |
 |---|---|
 | `docMathArgument` | frontend/js/documents-math.js:163 |
+| `docMathBlocks` | frontend/js/documents-math.js:449 |
 | `docMathBracedName` | frontend/js/documents-math.js:210 |
 | `docMathCells` | frontend/js/documents-math.js:224 |
 | `docMathCommand` | frontend/js/documents-math.js:314 |
-| `docMathElement` | frontend/js/documents-math.js:491 |
+| `docMathElement` | frontend/js/documents-math.js:545 |
 | `docMathEnvironment` | frontend/js/documents-math.js:248 |
-| `docMathIndex` | frontend/js/documents-math.js:447 |
+| `docMathEquationFrom` | frontend/js/documents-math.js:511 |
+| `docMathEquationLabel` | frontend/js/documents-math.js:528 |
+| `docMathIndex` | frontend/js/documents-math.js:465 |
 | `docMathLimitsBase` | frontend/js/documents-math.js:363 |
-| `docMathLooksLikeMath` | frontend/js/documents-math.js:477 |
+| `docMathLooksLikeMath` | frontend/js/documents-math.js:491 |
 | `docMathNodes` | frontend/js/documents-math.js:367 |
-| `docMathNumbered` | frontend/js/documents-math.js:515 |
+| `docMathNumbered` | frontend/js/documents-math.js:569 |
 | `docMathProblem` | frontend/js/documents-math.js:154 |
-| `docMathRender` | frontend/js/documents-math.js:499 |
+| `docMathRender` | frontend/js/documents-math.js:553 |
 | `docMathRow` | frontend/js/documents-math.js:158 |
 | `docMathStructure` | frontend/js/documents-math.js:271 |
 | `docMathToken` | frontend/js/documents-math.js:177 |
 | `docMathTokens` | frontend/js/documents-math.js:97 |
 | `docMathTree` | frontend/js/documents-math.js:418 |
-| `docMathUse` | frontend/js/documents-math.js:465 |
+| `docMathUse` | frontend/js/documents-math.js:479 |
 
 ### frontend/js/documents-mermaid.js (24)
 
@@ -25957,7 +25960,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (20087)
+## Tests (20092)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26735,6 +26738,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_doc_dictionary_sheet.py | 5 |
 | tests/test_doc_dock.py | 11 |
 | tests/test_doc_edit_kept.py | 7 |
+| tests/test_doc_equation_env.py | 5 |
 | tests/test_doc_find_is_the_editors_panel.py | 2 |
 | tests/test_doc_focus_resize_1408.py | 3 |
 | tests/test_doc_focus_sidebar.py | 4 |

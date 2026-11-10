@@ -3787,7 +3787,7 @@ MORE_TOPICS.append({
         "labelled equation is (1), the next (2). Add \\tag{A} to choose the number yourself. "
         "\\eqref{name}, or \\ref{name}, written anywhere in the same document, shows that "
         "number in parentheses, in Live and Read view, and follows the equation if the "
-        "numbers change. A name that no equation carries reads (?)."
+        "numbers change. A name that no equation carries reads (?). A \\begin{equation} block numbers itself in Read view, \\begin{equation*} does not."
     ),
     "badge": {"label": "Documents", "tab": "documents"},
 })
