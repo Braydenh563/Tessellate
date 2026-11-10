@@ -900,7 +900,7 @@ def _composed_lines(req: _StreamRequest, events: list[dict]) -> list[str]:
     meta = {"type": "meta", "raw_results": [], "picture_alts": {}, "picture_sizes": {}, "search_mode": "command",
             "connected_ids": [], "match_info": {}, "when_phrase": None, "as_of": None, "as_of_revisions": {},
             "answered_by": None, "ollama_running": req.ollama.is_running(), "composed": True}
-    events = events if req.skill else composer_talk.Closing(req.session, req.body.question or "", user_now(deps.get_config()).date()).apply(events)
+    events = events if req.skill else composer_talk.Closing(req.session, req.body.question or "", user_now(deps.get_config()).date(), history=req.history).apply(events)
     return [json.dumps(e) + "\n" for e in ({"type": "status", "stage": "searching"}, meta, *events, {"type": "done"})]
 
 

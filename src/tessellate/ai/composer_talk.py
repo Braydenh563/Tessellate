@@ -27,7 +27,7 @@ from datetime import date, datetime, time, timedelta
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import composer_chips, follow_items, realise, recognise, slash, slash_more
+from tessellate.ai import composer_chips, follow_items, intent, realise, recognise, slash, slash_more
 
 #: The charts the app can already draw from the notes, in the order offered.
 CHARTS = ("time", "tag", "category", "weekday")
@@ -386,16 +386,20 @@ class Closing:
     "open" button carries the chips inside it (`also`), since the page keeps
     one offer a turn. `active=False` makes every call a no-op."""
 
-    def __init__(self, session: Session, question: str, today: date, active: bool = True) -> None:
+    def __init__(self, session: Session, question: str, today: date, active: bool = True, history: list[dict] | None = None) -> None:
         self.session, self.question, self.today, self.active = session, question, today, active
+        self.history = history
         self.chipped = not active
         self.shown: set = set()
         #: A frame was sent: the answer has a subject, so the generic trio is not its chips (F5).
         self.framed = False
         self.asked = False
+        #: Chips came with the turn (a model's, an offer), whether or not this closing is active.
+        self.offered = False
 
     def _note(self, event: dict) -> None:
         kind = event.get("type")
+        self.offered = self.offered or kind == "offer" or kind == "grounding" and bool(event.get("next"))
         self.framed = self.framed or kind == "frame"
         self.asked = self.asked or kind == "offer" and (event.get("offer") or {}).get("kind") == "ask"
         if kind == "grounding" and event.get("next") or kind == "offer" and (event.get("offer") or {}).get("kind") == "ask":
@@ -426,6 +430,9 @@ class Closing:
         if not self.asked and composer_chips.asks_time(answer):
             return [{"type": "offer", "offer": {"kind": "ask", "label": "", "asks": composer_chips.TIME_CHIPS}}]
         asks = [] if self.chipped or not answer.strip() else self.asks(answer)
+        if not asks and not self.offered and answer.strip() and not self.framed and intent.classify(self.question) == intent.SMALLTALK:
+            #: "thanks" has no subject of its own: it offers the last answer's chips (F5).
+            asks = composer_chips.resume_chips(self.session, self.history, self.today.isoformat(), self.question)
         return [{"type": "offer", "offer": {"kind": "ask", "label": "", "asks": asks}}] if asks else []
 
     def apply(self, events: list[dict]) -> list[dict]:

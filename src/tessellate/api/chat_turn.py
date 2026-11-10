@@ -602,7 +602,7 @@ def _relay_events(req: _StreamRequest, prepared: dict, t: _Turn, events) -> Iter
     #: before anything reads or saves it (`fence.AnswerScrubber`).
     scrubber = fence.AnswerScrubber()
     #: A composed turn ends with Next chips (INBOX 1729 a).
-    closing = composer_talk.Closing(req.session, req.body.question or "", user_now(deps.get_config()).date(), t.composing or t.composed or prepared["stats"] is not None)
+    closing = composer_talk.Closing(req.session, req.body.question or "", user_now(deps.get_config()).date(), t.composing or t.composed or prepared["stats"] is not None, req.history)
     try:
         for payload in events:
             kind = payload.get("type")

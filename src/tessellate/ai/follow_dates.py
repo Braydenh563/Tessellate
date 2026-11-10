@@ -64,13 +64,32 @@ def _anchor(history: list[dict], last, now: datetime) -> tuple[datetime, str, st
         at = recognise.resolve(last.when, now)
         return (at, last.title, "", True) if at else None
     answer = _PLAIN.sub(lambda m: m.group(1) or "", str((history or [{}])[-1].get("answer") or ""))
+    frame = (history or [{}])[-1].get("frame") or {}
+    #: The frame knows the answer's subject date even when the rows it lists state others.
+    framed = {str(d) for d in frame.get("dates") or []}
     days = {(m, d) for _y, m, d, _w in recognise.date_mentions(answer) if m}
-    if len(days) != 1:
+    if len(framed) == 1:
+        _year, month, day = (int(part) for part in next(iter(framed)).split("-"))
+    elif len(days) == 1:
+        month, day = next(iter(days))
+    else:
         return None
-    month, day = next(iter(days))
-    at = recognise.resolve(f"{day} {calendar.month_name[month]}", now)
+    at =recognise.resolve(f"{day} {calendar.month_name[month]}", now)
     named = _FROM_NOTE.search(answer)
     return (at, "", (named.group("title") or named.group("bold")) if named else "", False) if at else None
+
+
+def _about(rest: str) -> tuple[str, str]:
+    """("Dentist", "the day before") for "about Dentist the day before": the
+    subject the person named, then the span; ("", rest) when no span follows."""
+    words = rest.split()
+    if not words or words[0].lower() != "about":
+        return "", rest
+    for cut in range(2, len(words)):
+        tail = " ".join(words[cut:])
+        if recognise.days_apart(tail) is not None:
+            return " ".join(words[1:cut]).strip(" ,"), tail
+    return "", rest
 
 
 def _relative(question: str, history: list[dict], last, now: datetime) -> Reading:  # noqa: ANN001
@@ -78,6 +97,7 @@ def _relative(question: str, history: list[dict], last, now: datetime) -> Readin
     said = " ".join(question.split())
     found = _REMIND.match(said) or _AND_SPAN.match(said)
     rest = found.group("rest") if found else ""
+    subject, rest = _about(rest)
     span = recognise.days_apart(rest) if found else None
     if span is None or len(rest.split()) > 8:
         return None, None
@@ -88,6 +108,7 @@ def _relative(question: str, history: list[dict], last, now: datetime) -> Readin
     target = at + timedelta(days=span)
     if is_reminder:
         return f"remind me to {what} on {_day(target, now)} at {_clock(target)}", None
+    title = title or subject
     if not title:
         return None, phrasing.choose(_DATED_UNTITLED, said, [str(t.get("answer") or "") for t in history], "span").format(day=_day(target, now))
     return f"remind me about the {title} note on {_day(target, now)} at 9am", None

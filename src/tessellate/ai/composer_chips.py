@@ -149,6 +149,24 @@ def asks_time(text: str) -> bool:
     return bool(_ASKS_TIME.search(str(text or "").strip()))
 
 
+def resume_chips(session, history: list[dict] | None, today: str, question: str) -> list[str]:  # noqa: ANN001
+    """The chips a small-talk reply ("thanks") ends with: the last answer's own, so the chat can
+    pick up where it was. Read from the frame the turn before was sent with; none without one."""
+    from sqlalchemy import select
+
+    from tessellate.core.database import Entry
+
+    frame = next((t.get("frame") for t in reversed(history or []) if isinstance(t, dict) and t.get("frame")), None) or {}
+    ids = [i for i in frame.get("note_ids") or [] if isinstance(i, int)]
+    if not ids:
+        return []
+    rows = {e.id: {"id": e.id, "content": e.content} for e in session.scalars(select(Entry).where(Entry.id.in_(ids), Entry.deleted_at.is_(None)))}
+    notes = [rows[i] for i in ids if i in rows]
+    asked = [question, *(str(t.get("question") or "") for t in history or [] if isinstance(t, dict))]
+    chips = frame_chips(frame, notes, str((history or [{}])[-1].get("answer") or ""), today)
+    return [c for c in chips if not spent(c, asked)][:MAX_CHIPS]
+
+
 def lead(text: str) -> str:
     """The first line of an answer, as the repeat check reads it."""
     return str(text or "").strip().split("\n", 1)[0].strip()

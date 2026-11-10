@@ -185,3 +185,36 @@ def test_a_chip_that_acts_only_proposes(client, session):
     assert follow["text"] or any(e.get("type") == "act" for e in follow["events"])
     session.expire_all()
     assert session.scalar(select(func.count()).select_from(Reminder)) == before
+
+
+def test_the_day_before_chip_names_what_it_is_for(client, session):
+    """The chip says "about Dentist"; the follow-up must not ask what the reminder is for."""
+    seed.seed(session)
+    got = _ask(client, "when is my dentist appointment")
+    chip = next(c for c in got["chips"] if c.startswith("Remind me"))
+    follow = _ask(client, chip, _then([], "when is my dentist appointment", got))
+    assert "What is the reminder for" not in follow["text"], follow["text"]
+    assert "What should the reminder say" not in follow["text"], follow["text"]
+
+
+@pytest.mark.parametrize("thanks", ["thanks", "thank you", "cheers"])
+def test_small_talk_after_an_answer_picks_up_its_chips(client, session, thanks):
+    seed.seed(session)
+    got = _ask(client, "when is my dentist appointment")
+    follow = _ask(client, thanks, _then([], "when is my dentist appointment", got))
+    assert any(c.startswith("Remind me about Dentist") for c in follow["chips"]), follow["chips"]
+
+
+def test_small_talk_with_nothing_before_it_has_no_borrowed_chips(client, session):
+    seed.seed(session)
+    assert _ask(client, "thanks")["chips"] == []
+
+
+def test_small_talk_picks_up_the_chips_with_a_model_up_too(ai_client, fake_ollama, session):
+    seed.seed(session)
+    frame = {"note_ids": [6], "subject": "dentist", "person": "", "ask": "when is my dentist appointment", "dates": ["2026-11-21"], "items": []}
+    first = {"question": "when is my dentist appointment", "answer": "Check-up booked for 21 November.", "frame": frame}
+    with ai_client.stream("POST", "/chat/stream", json={"question": "thanks", "history": [first], "use_tools": False}) as response:
+        events = [json.loads(line) for line in response.iter_lines() if line.strip()]
+    asks = [a for e in events if e.get("type") == "offer" for a in (e["offer"].get("asks") or [])]
+    assert any(a.startswith("Remind me about") for a in asks), events
