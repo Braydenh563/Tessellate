@@ -6518,7 +6518,8 @@ function nameMarkBuddyWay(buddy, way) {
 
 //: **A body hanging by its hands has no stride** (INBOX 1698, the owner: it "flew across the top of my screen but
 //: with the walking legs animation"): a move that sets off from a hang slides along its bar without `nmb-walking`.
-nmb.feetDown = () => nmb.poseWas !== "hang";
+//: Nor one going to hang (B61: the stride loops ran through a stand to hang slide); `nmb.pose` is the pose it moves into.
+nmb.feetDown = () => nmb.poseWas !== "hang" && nmb.pose !== "hang";
 
 //: Which way of going its limbs are in (the CSS's `data-travel`), and for
 //: a move in two parts (a climb: along, then up), the part after `at` ms.
