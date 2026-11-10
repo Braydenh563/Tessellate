@@ -35,7 +35,9 @@ _WORD = re.compile(r"^[^\W\d_][\w'’.-]{0,29}$")
 _SET = re.compile(
     r"^(?:(?:please|hey|ok|okay|so|well)[ ,]+)*(?:you (?:can|may|could) |just |from now on )*"
     r"(?:(?P<call>call me|i go by|i'm called|i am called|i'm known as)|(?P<is>my name is|my name's|change my name to|set my name to|my name should be))"
-    r"\s+(?P<name>.+?)\s*[.!]*$",
+    #: The name runs to the end; its trailing stops and spaces are cut in code, not by a lazy group
+    #: before `\s*[.!]*$`, which retries every split of a long blank run (CodeQL, polynomial regex).
+    r"\s+(?P<name>.+)$",
     re.IGNORECASE,
 )
 _ASK = re.compile(
@@ -90,7 +92,7 @@ def read_set(text: str) -> dict | None:
     found = _match_set(" ".join(str(text or "").split()))
     if not found:
         return None
-    words = found.group("name").strip(" ,").split()
+    words = found.group("name").rstrip(" .!").strip(" ,").split()
     if not 1 <= len(words) <= 3 or not all(_WORD.match(w) for w in words):
         return None
     if found.group("call") and (len(words) > 2 or any(w.lower().strip(".") in _NOT_A_NAME for w in words)):

@@ -13562,16 +13562,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_match_set` | src/tessellate/ai/address.py:76 |
-| `answer` | src/tessellate/ai/address.py:69 |
-| `asks` | src/tessellate/ai/address.py:61 |
-| `clean` | src/tessellate/ai/address.py:51 |
-| `dashboard_append` | src/tessellate/ai/address.py:140 |
-| `greet` | src/tessellate/ai/address.py:128 |
-| `name_of` | src/tessellate/ai/address.py:57 |
-| `plan` | src/tessellate/ai/address.py:104 |
-| `read_set` | src/tessellate/ai/address.py:87 |
-| `run_step` | src/tessellate/ai/address.py:115 |
+| `_match_set` | src/tessellate/ai/address.py:78 |
+| `answer` | src/tessellate/ai/address.py:71 |
+| `asks` | src/tessellate/ai/address.py:63 |
+| `clean` | src/tessellate/ai/address.py:53 |
+| `dashboard_append` | src/tessellate/ai/address.py:142 |
+| `greet` | src/tessellate/ai/address.py:130 |
+| `name_of` | src/tessellate/ai/address.py:59 |
+| `plan` | src/tessellate/ai/address.py:106 |
+| `read_set` | src/tessellate/ai/address.py:89 |
+| `run_step` | src/tessellate/ai/address.py:117 |
 
 ### src/tessellate/ai/agent.py (48)
 
