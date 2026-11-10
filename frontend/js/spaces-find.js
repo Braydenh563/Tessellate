@@ -286,7 +286,7 @@ function spaceMenuOption({ id, name, icon, deletable, hiddenFromAll, isPrivate }
         hiddenFromAll ? `${name} is hidden from All spaces, show it there again` : `Hide ${name} from All spaces`,
         () => toggleSpaceHidden(id, !hiddenFromAll),
       ],
-      ["ph-pencil-simple", `Edit ${name}`, () => privateSpaces("edit", { id, name, icon, isPrivate })],
+      ["ph-pencil-simple", `Rename ${name}`, () => privateSpaces("edit", { id, name, icon, isPrivate })],
       ["ph-trash", `Delete ${name}`, () => rmSpace(id)],
     ]) {
       const action = document.createElement("button");
@@ -503,7 +503,27 @@ function initSpaceSwitcher() {
 
   //: The forms are empty shells that give Enter something to submit; the click handlers below do the work.
   for (const id of ["space-create-form", "space-edit-form"]) $(id)?.addEventListener("submit", (event) => event.preventDefault());
-  //: Save on the Edit space dialog is private-spaces.js's, bound when it opens the dialog.
+  $("space-edit-submit")?.addEventListener("click", async () => {
+    const id = $("space-edit-id").value;
+    const name = $("space-edit-name").value.trim();
+    const error = $("space-edit-error");
+    const fail = (message) => lockFail(message, $("space-edit-name"), error);
+    error.textContent = "";
+    $("space-edit-name").removeAttribute("aria-invalid");
+    if (!name) return fail("Give the space a name.");
+    try {
+      const was = JSON.parse($("space-edit-dialog").dataset.was || "{}");
+      const now = { name, icon: $("space-edit-icon").value };
+      await apiJson(`/spaces/${encodeURIComponent(id)}`, { method: "PUT", body: JSON.stringify(now) });
+      pushRequestUndo(`Renamed the space to “${name}”`, `/spaces/${encodeURIComponent(id)}`, "PUT", { name: was.name, icon: was.icon }, now, loadSpaces);
+      if (!(await privateSpaces("applySwitch", { id, name }))) return;
+      $("space-edit-dialog").close();
+      await loadSpaces();
+      await loadEntries().catch(() => {});
+    } catch (err) {
+      fail(err.message);
+    }
+  });
 
   $("space-create-submit")?.addEventListener("click", async () => {
     const name = $("space-create-name").value.trim();

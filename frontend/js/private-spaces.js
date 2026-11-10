@@ -9,7 +9,7 @@
 // only real idleness, locks on close, and asks the two-way question when
 // something leaves a private space.
 (() => {
-  const state = { status: null, bound: false, touched: 0, watching: false };
+  const state = { status: null, touched: 0, watching: false };
 
   async function status() {
     state.status = await apiJson("/private-spaces/status", { silent: true }).catch(() => null);
@@ -103,30 +103,13 @@
     return true;
   }
 
-  async function save() {
-    const id = $("space-edit-id").value;
-    const name = $("space-edit-name").value.trim();
-    const error = $("space-edit-error");
-    const fail = (message) => lockFail(message, $("space-edit-name"), error);
-    error.textContent = "";
-    $("space-edit-name").removeAttribute("aria-invalid");
-    if (!name) return fail("Give the space a name.");
+  //: Called by the Edit space dialog's Save (spaces-find.js) after the rename: applies the Private switch if it moved.
+  async function applySwitch({ id, name }) {
     const was = JSON.parse($("space-edit-dialog").dataset.was || "{}");
-    const wantPrivate = $("space-edit-private").checked;
-    try {
-      const now = { name, icon: $("space-edit-icon").value };
-      await apiJson(`/spaces/${encodeURIComponent(id)}`, { method: "PUT", body: JSON.stringify(now) });
-      pushRequestUndo(`Renamed the space to “${name}”`, `/spaces/${encodeURIComponent(id)}`, "PUT", { name: was.name, icon: was.icon }, now, loadSpaces);
-      if (wantPrivate !== Boolean(was.isPrivate) && !(await setPrivate({ id, name }, wantPrivate))) {
-        $("space-edit-private").checked = Boolean(was.isPrivate);
-        return;
-      }
-      $("space-edit-dialog").close();
-      await loadSpaces();
-      await loadEntries().catch(() => {});
-    } catch (err) {
-      fail(err.message);
-    }
+    const want = $("space-edit-private").checked;
+    if (want === Boolean(was.isPrivate) || (await setPrivate({ id, name }, want))) return true;
+    $("space-edit-private").checked = Boolean(was.isPrivate);
+    return false;
   }
 
   //: The Private switch (`label.setting-check`) and the dialog head's '?'
@@ -194,10 +177,6 @@
     $("space-edit-dialog").dataset.was = JSON.stringify({ name, icon, isPrivate: Boolean(isPrivate) });
     $("space-edit-error").textContent = "";
     spaceIconPicker($("space-edit-icon-picker"), $("space-edit-icon"));
-    if (!state.bound) {
-      state.bound = true;
-      $("space-edit-submit").addEventListener("click", save);
-    }
     $("space-edit-dialog").showModal();
     $("space-edit-name").focus();
   }
@@ -207,7 +186,7 @@
     fetch("/private-spaces/lock", { method: "POST", keepalive: true, headers: authHeaders() }).catch(() => {});
   });
 
-  const ACTIONS = { edit, enter, unlock, askKeep, mount };
+  const ACTIONS = { edit, enter, unlock, askKeep, mount, applySwitch };
   function privateSpaces(action, ...args) {
     return ACTIONS[action]?.(...args);
   }
