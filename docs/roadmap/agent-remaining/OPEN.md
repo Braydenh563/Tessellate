@@ -74,9 +74,9 @@ Parked until the owner's data or a check on real hardware:
 - A5 An Ask stored turn recounts support with the model counter | chatfoot L6
 
 **W2 Outside text reaching write tools; the speller rewriting the person's words** (A, agent and acts, Opus; verify first). Files: `ai/agent.py`, the taint and confirm path, the speller module. Checks: `tests/test_agent_*`, `tests/test_composer_grammar.py`. Done when: every write from a tainted turn confirms, and a word inside an act's payload is never respelled.
-- A6 Library files, imports and pasted mail reach the model untainted, so writes run unconfirmed | 1028-agent E4, E42
-- A7 The speller respells the person's words before acts ("uni", "oat milk" to "At milk") | 1028-agent E9, 1029-composer C40
-- A8 "delete all notes about gym" quietly becomes one note | 1028-agent E66
+- ~~A6 Library files, imports and pasted mail reach the model untainted, so writes run unconfirmed | 1028-agent E4, E42~~ done w2-1110 (E4 doors already tainted; pasted mail now taints)
+- ~~A7 The speller respells the person's words before acts ("uni", "oat milk" to "At milk") | 1028-agent E9, 1029-composer C40~~ done w2-1110 ("oat milk" already fixed; "uni" with a misspelt verb fixed)
+- ~~A8 "delete all notes about gym" quietly becomes one note | 1028-agent E66~~ done w2-1110 (composer already listed all; Agent mode now one card for all)
 
 **W3 Vault, lock and private notes** (A, shell and server, Sonnet; verify first). Files: `frontend/js/lock*.js`, `api/routes_graph.py`, tags and links routes, the search index. Checks: `tests/test_vault_*`, a locked-vault sweep. Done when: nothing of a private note (preview, tags, counts, link chip) leaves while locked, and the lock dialog takes focus.
 - A9 The graph carries decrypted previews of private notes | 1029-harness H15

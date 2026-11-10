@@ -64,6 +64,8 @@ from tessellate.ai.agent_policy import (
 )
 from tessellate.ai.agent_turn import (
     AWAITING_CONFIRMATION,
+    all_it_names,
+    from_outside as _from_outside,
     _cleared_page,
     _copies_what_was_read,
     _first_round_tools,
@@ -462,6 +464,8 @@ def _confirm_gate(c: _Call) -> _Verdict | None:
     outside = c.state.tainted and parks_when_tainted(c.name) and not _cleared_page(c.state, c.name, c.arguments)
     if not (tools.needs_confirm(c.name, c.arguments, c.state.approved) or outside):
         return None
+    if (whole := all_it_names(c.session, c.state, c.name, c.arguments, plan_now)) is not None:
+        return whole
     waiting = c.state.parked.get(c.name, 0)
     if waiting >= MAX_PARKED_CONFIRMS:
         c.state.count_failure(c.name)
@@ -1095,12 +1099,6 @@ def _exhausted_events(
     }
 
 
-def _from_outside(notes: list[dict]) -> bool:
-    """SEC-02: a note retrieved for the question that was clipped from the web
-    or imported is already in the prompt, so the turn starts tainted."""
-    return any(isinstance(n, dict) and n.get("from_outside") for n in notes or ())
-
-
 def _blocked_for_turn(
     blocked_tools: frozenset[str] | set[str] | None,
 ) -> frozenset[str] | set[str] | None:
@@ -1179,6 +1177,7 @@ def run_agent(
         offered=plan.offered,
         named_hosts=_hosts_named(question),
         approved=approved,
+        asked=question or "",
     )
     state.outside = _from_outside(notes)
     loop = _Loop(allowance=plan.granted, ceiling=plan.ceiling)

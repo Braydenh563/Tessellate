@@ -1064,14 +1064,54 @@ def _summarise(text: str) -> dict | None:
 OWN_WORDS = ("content", "title", "tags", "text", "said", "old", "new")
 
 
-def _about_as_typed(found: dict, text: str, now: datetime, locale: str | None) -> dict:
-    """Only slang spelled out, no misspelling put right: the notes a command
-    names keep the person's own word ("delete notes about uni" is their
-    category Uni, not "university"; audit 1028 E9)."""
-    typed = read(text, now, locale)
-    if typed is not None and typed.get("intent") == found.get("intent") and "about" in typed:
-        return {**found, "about": typed["about"]}
-    return found
+#: What an act names keeps slang as typed but a misspelling put right (the
+#: lookup is helped by it); what it writes keeps every word as typed.
+_NAMED = ("about", "asked")
+_WRITTEN = (*OWN_WORDS, "on_list")
+_WORD = re.compile(r"[^\W_]+(?:['’][^\W_]+)*")
+
+
+def _respellings(text: str, fixed: str, fixes: list) -> list[tuple[str, str, bool]]:
+    """Each word the speller changed one for one, as (chosen, typed, slang).
+    A chosen word the person also typed somewhere is left out: "at" put back
+    as "oat" would undo their own "at"."""
+    from difflib import SequenceMatcher
+
+    typed, read_as = _WORD.findall(text.lower()), _WORD.findall(fixed.lower())
+    put_right = {(str(a).lower(), str(b).lower()) for a, b in fixes}
+    pairs = []
+    for op, i1, i2, j1, j2 in SequenceMatcher(None, typed, read_as, autojunk=False).get_opcodes():
+        if op == "replace" and i2 - i1 == j2 - j1:
+            pairs += [(b, a, (a, b) not in put_right) for a, b in zip(typed[i1:i2], read_as[j1:j2]) if b not in typed]
+    return pairs
+
+
+def _put_back(value, pairs: list[tuple[str, str, bool]]):  # noqa: ANN001, ANN202
+    if isinstance(value, list):
+        return [_put_back(v, pairs) for v in value]
+    if not isinstance(value, str):
+        return value
+    for chosen, typed, _ in pairs:
+        value = re.sub(rf"\b{re.escape(chosen)}\b", lambda m, t=typed: t[:1].upper() + t[1:] if m.group(0)[:1].isupper() else t, value, flags=re.I)
+    return value
+
+
+def _as_typed(found: dict, text: str, fixed: str, fixes: list) -> dict:
+    """The person's own words back in the act (audit 1028 E9, 1029 C40):
+    "delte my uni note" names their category Uni, not "university", and "add
+    uni fees to the todo list" writes "Uni fees". The speller served the verb."""
+    pairs = _respellings(text, fixed, fixes)
+    if not pairs:
+        return found
+    slang = [p for p in pairs if p[2]]
+    out = dict(found)
+    for key in _WRITTEN:
+        if key in out:
+            out[key] = _put_back(out[key], pairs)
+    for key in _NAMED:
+        if key in out and slang:
+            out[key] = _put_back(out[key], slang)
+    return out
 
 
 def _words_as_typed(found: dict, text: str, now: datetime, locale: str | None) -> dict:
@@ -1100,10 +1140,8 @@ def read_typed(text: str, now: datetime, locale: str | None = None) -> dict | No
     #: The words an act writes are the person's own, never spell-corrected
     #: ("add oat milk to the packing list" must not write "At milk"); the
     #: speller only serves the verb and the target (audit 1029 C40).
-    if found is not None and "about" in found and fixed != text and not fixes:
-        found = _about_as_typed(found, text, now, locale)
     if found is not None and fixed != text:
-        found = _words_as_typed(found, text, now, locale)
+        found = _as_typed(_words_as_typed(found, text, now, locale), text, fixed, fixes)
     if found is not None or not text:
         return found
     #: One word a slip from a word the commands read ("pin the dentist noe",
