@@ -24,6 +24,8 @@ import re
 
 from sqlalchemy.orm import Session
 
+from tessellate.repo import relations as relations_repo
+
 _LEAD = r"^(?:(?:please|pls|hey|ok|okay|so|and|then|can you|could you)\s+)*"
 _BIN = re.compile(
     _LEAD + r"(?:(?:what(?:'s|’s| is)|what do i have)(?: in)?|show(?: me)?(?: what(?:'s|’s| is) in)?|list|open|see|check)\s+"
@@ -117,6 +119,9 @@ def _related(session: Session, first: str, second: str) -> str | None:
 
     a, b = _first_note(session, first), _first_note(session, second)
     if a is None or b is None or a == b:
+        return None
+    #: A link the person gave a reason is said with it by the composer (audit 1031 C49), not as a bare chain.
+    if any(reason for _, _, reason in relations_repo.among(session, [a, b])):
         return None
     args = {"note_id": a, "other_note_id": b}
     return tool_say.say("path_between", agent_tools.execute_tool(session, "path_between", args), args)["text"]
