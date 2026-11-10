@@ -11549,7 +11549,7 @@ async function wbApplyHistoryEntry(from, to) {
   if (entry.action === "background") {
     const current = { ...wbBoardBackground() };
     const was = entry.before || {};
-    await wbSetBackground({ color: was.color ?? null, image: was.image ?? null, sticky_fold: was.sticky_fold ?? null, rough: was.rough ?? null }, { undo: false });
+    await wbSetBackground({ color: was.color ?? null, image: was.image ?? null, sticky_fold: was.sticky_fold ?? null, rough: was.rough ?? null, defaults: was.defaults ?? null }, { undo: false });
     to.push({ action: "background", before: current });
     return true;
   }
@@ -11739,6 +11739,7 @@ async function wbRedo() {
 //: Made on top of its own band of the stack (`wbStackNewZ`; a frame under
 //: the frames already there), so what was just made is what is on top.
 async function wbCreateObject(kind, data, x, y, width, height, z = wbStackNewZ("object", { kind })) {
+  if (kind === "text") data = wbFmtState.board?.withDefaults("text", data) ?? data;
   const body = { kind, data, board_id: window.currentBoardId, x, y, z, width, height };
   try {
     const created = await apiJson("/whiteboard/objects", { method: "POST", body: JSON.stringify(body) });
@@ -17611,6 +17612,7 @@ async function initWhiteboard() {
       const key = e.key.toLowerCase();
       if (key === "c") { e.preventDefault(); wbCopySelectedStyle(); return; }
       if (key === "v") { e.preventDefault(); wbPasteCopiedStyle(); return; }
+      if (key === "d") { e.preventDefault(); wbFmtState.board?.setDefault(); return; }
     }
     // Ctrl+D duplicates the selection in place (PLAN.md W6): the chord
     // Figma, Miro and tldraw share. Implemented as copy+paste through the
@@ -19110,8 +19112,10 @@ async function initWhiteboard() {
     //: to it (the wb ledger, 10-25: the Line tool stayed a loose path). Its
     //: ends are the tool's own, so a line binds with none.
     const bound = window.currentTool === "arrow" || window.currentTool === "line" ? wbBoundArrowData(sx, sy, x, y, 10 / zoomK(), blob) : null;
+    //: The board's default shape style starts every drawn shape and line (not pen strokes or the highlighter).
+    const drawn = isFreehand ? blob : wbFmtState.board?.withDefaults("shape", blob, { fillable: isFillable }) ?? blob;
     const sketchData = {
-      data: JSON.stringify(bound || blob),
+      data: JSON.stringify(bound || drawn),
       x: 0,
       y: 0,
       z: wbStackNewZ("sketch"),
@@ -24844,8 +24848,7 @@ async function dragEndNode(event, d) {
        const targetAnchor = wbNearestAnchor(targetKind, targetNode, mx, my);
        const crossLink = wbIsMap() && WB_MAP_KINDS.has(d.kind) && WB_MAP_KINDS.has(targetNode.kind);
        const tool = crossLink ? wbMapCrossLinkType() : window.currentTool;
-       const sketchData = {
-         data: JSON.stringify({
+       const linkBase = {
             type: tool,
             sourceId: d.id,
             targetId: targetNode.id,
@@ -24857,7 +24860,10 @@ async function dragEndNode(event, d) {
             //: A board link wears the held tool's ends; a map's cross-link
             //: keeps the map's own look.
             ...(crossLink ? {} : wbToolCaps()),
-         }),
+       };
+       //: A board's default connector style (Set as default style) starts every new board link.
+       const sketchData = {
+         data: JSON.stringify(crossLink ? linkBase : wbFmtState.board?.withDefaults("link", linkBase) ?? linkBase),
          x: 0, y: 0, z: wbStackNewZ("sketch"),
          board_id: window.currentBoardId
        };

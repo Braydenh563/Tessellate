@@ -2737,6 +2737,45 @@ wbFmtState.board = (() => {
     }
   }
 
-  return { PRESETS, patchFor, apply, show };
+  //: The board's default style (draw.io's Set as default style): the selected item's look, kept on the
+  //: board under its kind (`shape`, `link`, `text`) so the tools start new items with it.
+  const FILL_KEYS = ["fill", "fillOpacity", "gradient", "fillStyle"];
+
+  function groupOf() {
+    const sketch = wbSelectedSketchOrNull();
+    if (sketch) {
+      const data = wbSketchParsedData(sketch);
+      if (!data) return null;
+      return { group: String(data.type || "").startsWith("link-") ? "link" : "shape", style: wbPickStyle(data, WB_SKETCH_STYLE_KEYS) };
+    }
+    const object = wbSelectedTextObjectOrNull();
+    return object ? { group: "text", style: wbPickStyle(object.data, WB_OBJECT_STYLE_KEYS) } : null;
+  }
+
+  async function setDefault() {
+    const picked = groupOf();
+    if (!picked || !Object.keys(picked.style).length) return toast("Select a shape, connector or text box to take its style.");
+    const kept = wbBoardBackground().defaults || {};
+    if (await wbSetBackground({ defaults: { ...kept, [picked.group]: picked.style } })) {
+      toast(`Default ${{ shape: "shape", link: "connector", text: "text box" }[picked.group]} style set. New ones on this board start with it.`);
+    }
+  }
+
+  async function clearDefault() {
+    if (!wbBoardBackground().defaults) return toast("This board has no default style.");
+    if (await wbSetBackground({ defaults: null })) toast("Default style cleared.");
+  }
+
+  //: `data` as a new item of `group` should start: the defaults win for a shape or a connector (the board's
+  //: style is explicit), the caller's values win for a text box (a sticky's own paper). A line takes no fill.
+  function withDefaults(group, data, { fillable = true } = {}) {
+    const style = wbBoardBackground().defaults?.[group];
+    if (!style) return data;
+    const own = { ...style };
+    if (!fillable) for (const key of FILL_KEYS) delete own[key];
+    return group === "text" ? { ...own, ...data } : { ...data, ...own };
+  }
+
+  return { PRESETS, patchFor, apply, show, setDefault, clearDefault, withDefaults };
 })();
 //: --- end board style
