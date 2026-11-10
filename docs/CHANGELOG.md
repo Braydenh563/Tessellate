@@ -5,6 +5,7 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
+- Timeline (INBOX 1733 follow-up): switching to Feed from Table or Calendar, or picking another bucket size, now lands on Today as a fresh open does; before, the feed repainted at scroll 0 and the seven empty days ahead pushed Today 415 px down (0 px after, at 1440 and 2000).
 - Chat (INBOX 1733): an answer's time is never cut off: when the stats line no longer fits beside the chips (900 to 1300 px wide) it drops whole to a second line at the end instead of being clipped (the time element's scrollWidth equals its clientWidth at 900 to 2000).
 - Mind maps (s9c-1110, F3): a topic that is one of your notes now edits it in place: its menu, Content, Edit the note's text… opens the note's whole text in the topic-note box, saves to the note when closed (Esc or Ctrl+Enter) and is one Ctrl+Z on the board's history (measured at 1440 and 390: the box opens at 416 and 366 px wide, the note read May then June, Ctrl+Z gave May back; `tests/test_map_note_edit.py`).
 - Mind maps (s9c-1110, F3): View, How this map looks, Show a legend draws the main branches' colours (named by their topics) and only the markers the map uses (priority, flag, progress, icons) over the map, scrolling inside 40% of the board when long (measured at 1440 and 390: 3 branch swatches and 3 marker rows, 133 x 179 px, inside the window; off removes it; `tests/test_map_legend.py`).
