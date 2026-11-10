@@ -286,7 +286,7 @@ _YES = re.compile(
 )
 #: The offers an answer ends with that a sentence can carry out: a reminder, said as the prose asks it or as its button does.
 _REMIND_OFFER = re.compile(
-    r"^(?:shall i remind you to|remind you to|set a reminder to|want a nudge to|should i remind you to|want me to remind you to) (?P<action>.+?)\??$", re.I
+    r"^(?:shall i remind you|remind you|set a reminder|want a nudge|should i remind you|want me to remind you)(?: (?P<every>(?:each|every) \w+))? to (?P<action>.+?)\??$", re.I
 )
 
 
@@ -302,7 +302,10 @@ def accepted_offer(question: str, history: list[dict] | None, now: datetime | No
         return None
     lines = [ln.strip(" *_") for ln in str(history[-1].get("answer") or "").splitlines() if ln.strip()]
     found = _REMIND_OFFER.match(lines[-1]) if lines else None
-    return f"remind me to {found.group('action').strip().rstrip('?.')}" if found else None
+    if not found:
+        return None
+    action = re.sub(r"\byour\b", "my", found.group("action").strip().rstrip("?."), flags=re.I) if found.group("every") else found.group("action").strip().rstrip("?.")
+    return f"remind me to {action}" + (f" {found.group('every').replace('each', 'every')}" if found.group("every") else "")
 
 
 def cited_question(question: str, history: list[dict] | None, now: datetime) -> str | None:

@@ -9,6 +9,10 @@ about a note, read ahead of any search.
 - **Comparison.** "which is higher" binds to the numbers the previous answer
   stated, never to general knowledge.
 
+- **Reactions.** "Really?", "maybe", "are you sure", "where did you get that",
+  "more detail", "what was my first question": read against the answer before.
+- **Declined.** "No thanks" after an offer drops it; "no" after an ack is no repair.
+
 Each reader returns the answer text, or None to leave the turn to the others.
 """
 
@@ -269,9 +273,126 @@ def social(question: str, history: list[dict] | None, seed: str = "") -> str | N
     return _remark(said, history, seed) or _feeling(said, history, seed)
 
 
+# --- reactions to the answer before ------------------------------------------------------------
+
+_RE_DOUBT = re.compile(rf"^(?:oh |ah |and )*(?:really|seriously|truly|honestly|is that (?:right|true|so)|(?:are )?you (?:really |quite )?(?:sure|certain)(?: about (?:that|it|this))?|sure about (?:that|it)){_END}")
+_RE_MUSE = re.compile(rf"^(?:oh |ah |well |um |so |and )*(?:maybe|perhaps|hmm+|hm+|interesting|i see|i guess|possibly|and then|then what|so what|what then){_END}")
+_RE_SOURCE = re.compile(
+    rf"^{_POLITE}(?:where did (?:you|that|this) (?:get|find|come|read|see)(?: that| it| this)?(?: from)?|where(?:'s| is) (?:that|this|it) from|what(?:'s| is) (?:your|the) source(?:s)?|"
+    rf"(?:which|what) note(?:s)? (?:is|was|are|were) (?:that|this|it)(?: from| in)?|how do you know(?: that| this)?|who (?:says|said) (?:that|so)|source(?:s)?){{1}}{_END}"
+)
+_RE_DETAIL = re.compile(rf"^{_POLITE}(?:(?:give me |tell me |show me |i want |with )?(?:a bit |a little )?more (?:detail|details|info|information)|in (?:more )?detail|elaborate|expand(?: on (?:that|it))?|go into (?:more )?detail|can you elaborate){_END}")
+_RE_FIRST = re.compile(rf"^(?:what|which) (?:was|is) (?:my|the) (?:very )?first (?:question|message|thing i (?:asked|said))(?: (?:to you|today|here))?{_END}")
+
+_LINK = re.compile(r"\[([^\]]+)\]\(#/notes/\d+\)")
+_CITED = re.compile(r"\bfrom your (?P<t>.+?) note\b|\[\*\*(?P<b>[^*\]]+)\*\*\]", re.I)
+
+_SURE_LINES = [
+    "As sure as your notes are: that comes from your {names} {note}.",
+    "It is what your {names} {note} says, word for word, so yes.",
+    "I only say what your notes do, and that was from your {names} {note}.",
+]
+_SURE_NONE = ["I am only repeating what your notes say, and I do not see a note behind that one. Ask me again and I will check.", "That one is my own wording, not a quote, so double-check it against your notes."]
+_SOURCE_LINES = ["That came from your {names} {note}.", "It is from your {names} {note}.", "I took it from your {names} {note}."]
+_SOURCE_NONE = ["That was my own wording rather than a quote from a note.", "No note sits behind that one; it was my own line."]
+_NOTHING_YET = ["There is nothing before that to check yet. Ask me something and I will tell you where it comes from.", "We have not got that far: ask me something first, then I can say where it came from."]
+_MUSE_LINES = ["Take your time. Ask whenever you like.", "Fair enough. I am here when you want to dig into it.", "No rush. Say the word if you want more on that.", "Mm. Tell me if you want me to look further."]
+_DETAIL_LINES = ["That is everything I have on it here. The note itself has the rest: {links}.", "I have shown all of it that I can sum up. For the full text, open {links}."]
+_DETAIL_NONE = ["That is all I have on it. Ask about a particular part and I will look.", "There is no more to add from my side. Name a detail and I will look for it."]
+
+
+def _sources(history: list[dict] | None) -> list[str]:
+    """The notes the last answer rests on, named as it names them: links, bold
+    citations, "from your X note"."""
+    said = _last_answer(history)
+    names = [m.group(1) for m in _LINK.finditer(said)] + [m.group("t") or m.group("b") for m in _CITED.finditer(said)]
+    return list(dict.fromkeys(n.strip() for n in names if n and n.strip()))
+
+
+def _named(names: list[str]) -> tuple[str, str]:
+    quoted = [f"“{n}”" for n in names[:3]]
+    joined = quoted[0] if len(quoted) == 1 else ", ".join(quoted[:-1]) + " and " + quoted[-1]
+    return joined, "note" if len(quoted) == 1 else "notes"
+
+
+def _first_question(history: list[dict] | None) -> str:
+    first = next((str(t.get("question") or "") for t in (history or []) if str(t.get("question") or "").strip()), "")
+    return f"The earliest question I can see here is “{first.strip()}”." if first else "You have not asked me anything yet in this chat."
+
+
+def _more_detail(said: str, history: list[dict] | None, seed: str) -> str:
+    links = ", ".join(dict.fromkeys(m.group(0) for m in _LINK.finditer(_last_answer(history))))
+    return _lead(_DETAIL_LINES, said, history, seed).format(links=links) if links else _lead(_DETAIL_NONE, said, history, seed)
+
+
+def _about_sources(said: str, history: list[dict] | None, seed: str, lines: list[str], none: list[str]) -> str:
+    """"Are you sure" and "where did you get that": the notes the answer rests on, named."""
+    if not _last_answer(history):
+        return _lead(_NOTHING_YET, said, history, seed)
+    names = _sources(history)
+    if not names:
+        return _lead(none, said, history, seed)
+    joined, noun = _named(names)
+    return _lead(lines, said, history, seed).format(names=joined, note=noun)
+
+
+def _react(said: str, history: list[dict] | None, seed: str) -> str | None:
+    """A doubt, a musing or a question about where the answer came from, answered
+    from the answer before; None when the text is none of these."""
+    if _RE_FIRST.match(said):
+        return _first_question(history)
+    if _RE_DETAIL.match(said):
+        return _more_detail(said, history, seed)
+    if _RE_DOUBT.match(said):
+        return _about_sources(said, history, seed, _SURE_LINES, _SURE_NONE)
+    if _RE_SOURCE.match(said):
+        return _about_sources(said, history, seed, _SOURCE_LINES, _SOURCE_NONE)
+    return _lead(_MUSE_LINES, said, history, seed) if _RE_MUSE.match(said) else None
+
+
+# --- a no -----------------------------------------------------------------------------------------
+
+_NO = re.compile(rf"^(?:oh )?(?:no|nope|nah|no thanks|no thank you|no thank u|not now|not right now|not really|no need|no it'?s fine|it'?s fine|i'?m good|im good|maybe later|not today)(?:,? (?:thanks|thank you|it'?s fine|really))*{_END}")
+_OFFER_LEAD = re.compile(
+    r"^(?:shall i|should i|want me to|would you like me to|remind you|set a reminder|want a nudge|save it as|gather them|track your|note the|start a list|try one)\b", re.I
+)
+_DROPPED = ["No problem, I will leave it.", "All right, leaving it there.", "Fine by me. Ask whenever you like.", "Okay, no reminder then.", "Understood. It stays as it is."]
+_DROPPED_OTHER = ["No problem, I will leave it.", "All right, leaving it there.", "Fine by me. Ask whenever you like.", "Understood. It stays as it is."]
+_ACKED = ["All right.", "Okay. I am here if you need anything.", "No problem. Ask whenever you like.", "Sure thing. Just say if something comes up."]
+
+
+def _offer_pending(history: list[dict] | None) -> str:
+    lines = [ln.strip(" *_") for ln in _last_answer(history).splitlines() if ln.strip()]
+    return lines[-1] if lines and lines[-1].endswith("?") and _OFFER_LEAD.match(lines[-1]) else ""
+
+
+def declined(question: str, history: list[dict] | None, seed: str = "") -> str | None:
+    """"No thanks" after an offer drops it, in one line and with no second offer; a
+    "no" after an ack (a thanks, a feeling line) is no complaint about it. A "no"
+    after an ordinary answer is left to the repair reader."""
+    said = _clean(question)
+    if not history or not _NO.match(said):
+        return None
+    if offer := _offer_pending(history):
+        return _lead(_DROPPED if offer.lower().find("remind") >= 0 else _DROPPED_OTHER, said, history, seed)
+    last = history[-1]
+    asked = str(last.get("question") or "")
+    if asked and not _last_answer(history).rstrip().endswith("?") and (social(asked, None) or _THANKS_ASK.match(_clean(asked).rstrip("?!. "))):
+        return _lead(_ACKED, said, history, seed)
+    return None
+
+
+_THANKS_ASK = re.compile(r"^(?:ok(?:ay)?|thanks?|thank you|ty|cheers|thx|cool|great|nice|got it|noted|perfect|lovely|good|alright|all right)(?: (?:thanks|thank you|a lot|so much|mate))*$")
+
+
 def reply(question: str, history: list[dict] | None, seed: str = "") -> str | None:
-    """Whatever the three readers make of this turn, or None to search."""
-    return meta(question, history, seed) or compare(question, history, seed) or social(question, history, seed)
+    """Whatever the readers make of this turn, or None to search."""
+    return declined(question, history, seed) or meta(question, history, seed) or compare(question, history, seed) or social(question, history, seed) or reaction(question, history, seed)
+
+
+def reaction(question: str, history: list[dict] | None, seed: str = "") -> str | None:
+    said = _clean(question).rstrip("?!. ")
+    return _react(said, history, seed) if said and len(said.split()) <= 8 else None
 
 
 def feeling_subject(question: str) -> str:
