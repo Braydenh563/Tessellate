@@ -2787,22 +2787,10 @@ function renderSidebar() {
     renderEntries();
   };
 
-  // A drafts count, not a category, asked for directly: a Drafts filter
-  // findable in the same place categories are, so a note drafted with the
-  // AI (Writing Room) or captured from a selection isn't only markable one
-  // at a time via its own chip (entryItem). Always shown, even at 0, so it
-  // stays discoverable rather than appearing only once something lands in it.
+  // Drafts: a filter row beside the categories, always shown (even at 0) so it stays findable.
   filterRow("ph:pencil-simple-line Drafts", allEntries.filter((e) => e.is_draft).length, draftsOnly, "", toggleFilter(true));
 
-  // **Favourites.** Asked for as "a favourites folder or side parallel category
-  // that isnt an actual category but could be treated as one if toggled", so
-  // it is built exactly like Drafts directly above: a row where the categories
-  // are, a count, a toggle, and mutually exclusive with the other two filters.
-  // This app already has one pseudo-category, and a second that behaved
-  // differently would be a second sign for the same idea.
-  //
-  // The notes it collects are the pinned ones (see `favouritesOnly`), no new
-  // flag, no second place to star something.
+  // **Favourites**: built like Drafts, over the pinned notes (see `favouritesOnly`); no second place to star.
   filterRow(
     "ph:star Favourites",
     allEntries.filter((e) => e.pinned && noteListed(e)).length,
@@ -2816,22 +2804,11 @@ function renderSidebar() {
   //: `meeting` tag (`entry/meetings.py`), so the filter is `tag:meeting` in
   //: the box, visible and editable as a tag chip's is. Always shown, so it is
   //: there to find before the first meeting.
-  filterRow(
-    "ph:users-three Meetings",
-    allEntries.filter((e) => e.tags.includes("meeting") && noteListed(e)).length,
-    noteSearch === "tag:meeting" && !draftsOnly && !favouritesOnly,
-    "",
-    () => filterNotesByTag("meeting")
-  ).classList.add("category-meetings-row");
-  //: **Private** (INBOX 1695 c): the `is:private` filter as a row, the way
-  //: Meetings is `tag:meeting`; not a second vault, the same notes.
-  filterRow(
-    "ph:lock Private",
-    allEntries.filter((e) => e.is_private && noteListed(e)).length,
-    noteSearch === "is:private" && !draftsOnly && !favouritesOnly,
-    "Notes you have locked. They stay out of Ask, chat, filing and meaning search.",
-    () => filterNotesBy("is:private")
-  );
+  //: **Private** (INBOX 1695 c) is the same shape over `is:private`.
+  const queryRow = (label, keep, query, title) =>
+    filterRow(label, allEntries.filter((e) => keep(e) && noteListed(e)).length, noteSearch === query && !draftsOnly && !favouritesOnly, title, () => filterNotesBy(query));
+  queryRow("ph:users-three Meetings", (e) => e.tags.includes("meeting"), "tag:meeting", "").classList.add("category-meetings-row");
+  queryRow("ph:lock Private", (e) => e.is_private, "is:private", "");
   //: Tags, beside Drafts and Favourites (INBOX 432): a sheet of every tag
   //: (categories-panel.js `openTagsSheet`), not a second long list here.
   const tagRow = document.createElement("li");

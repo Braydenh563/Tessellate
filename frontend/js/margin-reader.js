@@ -31,7 +31,9 @@
   };
 
   //: The reader's state in this editing session, one name in the shared scope.
-  const marginState = { on: false, timer: null, inFlight: false, paragraph: "", top: 0 };
+  //: `note` is the note editor's textarea and column while its form is open
+  //: (`note-margin-mount`); null means the document editor is the one read.
+  const marginState = { on: false, timer: null, inFlight: false, paragraph: "", top: 0, note: null };
   //: Sources shown, or dismissed, in this editing session: never shown twice.
   const marginSeen = new Set();
   //: Holds source ids and, for a date card, `date:<when>` keys (see `marginCardKey`).
@@ -50,7 +52,38 @@
     window.lagNoteError?.(`Margin reader: ${error?.message || error}`, error?.stack);
   }
 
+  //: The note form's textarea, while it is still on the page.
+  function marginNote() {
+    const note = marginState.note;
+    if (note && note.textarea.isConnected) return note;
+    marginState.note = null;
+    return null;
+  }
+
+  function marginHost() {
+    return marginNote()?.host || $("doc-margin");
+  }
+
+  //: The same paragraph rule as the document's, over a textarea: the lines
+  //: around the caret up to the blank ones. The column sits under the text
+  //: in a note, so there is no offset to pin it to.
+  function marginNoteParagraph(textarea) {
+    //: Once the rendering editor is mounted the textarea is only its mirror.
+    const view = typeof noteSurfaceViews !== "undefined" ? noteSurfaceViews.get(textarea) : null;
+    const value = view ? view.state.doc.toString() : textarea.value;
+    const lines = value.split("\n");
+    const head = view ? view.state.selection.main.head : textarea.selectionStart;
+    const caret = value.slice(0, head).split("\n").length - 1;
+    let first = caret;
+    let last = caret;
+    while (first > 0 && lines[first - 1].trim() !== "") first--;
+    while (last < lines.length - 1 && lines[last + 1].trim() !== "") last++;
+    return { text: lines.slice(first, last + 1).join("\n").trim(), top: 0, ordinal: first + 1 };
+  }
+
   function marginParagraphAtCaret() {
+    const note = marginNote();
+    if (note) return marginNoteParagraph(note.textarea);
     const view = typeof docCmView !== "undefined" ? docCmView : null;
     if (!view) return null;
     const doc = view.state.doc;
@@ -122,7 +155,7 @@
   }
 
   function marginRender(cards) {
-    const host = $("doc-margin");
+    const host = marginHost();
     if (!host) return;
     const list = document.createElement("div");
     list.className = "doc-margin-cards";
@@ -149,7 +182,8 @@
     const body = {
       paragraph: at.text,
       ordinal: at.ordinal,
-      document_id: currentDoc ? currentDoc.id : null,
+      document_id: marginNote() || !currentDoc ? null : currentDoc.id,
+      entry_id: marginNote()?.entryId ?? null,
       exclude: [...marginDismissed].filter(Number.isInteger),
       judge,
     };
@@ -159,7 +193,7 @@
       const now = marginParagraphAtCaret();
       if (!marginState.on || !now || now.text !== at.text) return; // the paragraph moved on
       if (reply.off) {
-        $("doc-margin").replaceChildren(marginOffNote());
+        marginHost().replaceChildren(marginOffNote());
         return;
       }
       const cards = (reply.cards || []).filter((c) => !marginDismissed.has(marginCardKey(c)));
@@ -197,17 +231,36 @@
     }
     $("doc-margin")?.classList.toggle("hidden", !on);
     $("doc-source-wrap")?.classList.toggle("has-margin", on);
+    const note = marginNote();
+    note?.host.classList.toggle("hidden", !on);
+    note?.button.setAttribute("aria-pressed", String(on));
     if (on) marginSchedule();
-    else $("doc-margin")?.replaceChildren();
+    else {
+      $("doc-margin")?.replaceChildren();
+      note?.host.replaceChildren();
+    }
   }
 
-  $("doc-margin-reader")?.addEventListener("click", () => {
+  function marginToggle() {
     try {
       prefs.set(MARGIN_KEY, marginState.on ? "0" : "1");
     } catch {
       // A private window can refuse storage; the switch still applies for now.
     }
     applyMarginReader(!marginState.on);
+  }
+
+  $("doc-margin-reader")?.addEventListener("click", marginToggle);
+
+  //: The note editor's margin (WORLD_CLASS_PLAN I2, the note half): the same
+  //: reader and the same switch, with the column under the text. Called by
+  //: the edit form with a `note-margin-mount` event once the Library bundle is here (note-edit-panels.js).
+  document.addEventListener("note-margin-mount", ({ detail: { textarea, host, button, entryId } }) => {
+    marginState.note = { textarea, host, button, entryId };
+    button.addEventListener("click", marginToggle);
+    //: The surface holds both the textarea and, once mounted, its editor.
+    for (const type of ["keyup", "mouseup"]) textarea.closest(".note-composer")?.addEventListener(type, marginSchedule);
+    applyMarginReader(marginState.on);
   });
 
   //: Typing and moving the caret both mean "this paragraph": the editor's own

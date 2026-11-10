@@ -13,11 +13,9 @@ from tessellate.core.database import Entry
 
 def test_sidebar_has_private_row_over_is_private():
     js = app_js_text()
-    assert 'filterRow(\n    "ph:lock Private"' in js
-    row = js.split('"ph:lock Private"', 1)[1][:600]
-    assert 'noteSearch === "is:private"' in row
-    assert 'filterNotesBy("is:private")' in row
-    assert "e.is_private" in row
+    assert 'queryRow("ph:lock Private", (e) => e.is_private, "is:private"' in js
+    helper = js.split("const queryRow = ", 1)[1][:400]
+    assert "noteSearch === query" in helper and "filterNotesBy(query)" in helper
 
 
 @pytest.fixture
@@ -40,13 +38,15 @@ def test_make_all_private_seals_every_ordinary_note(client, session, open_vault)
         row = session.get(Entry, entry_id)
         assert row.is_private and "secret" not in row.content
     # idempotent: nothing left to seal
-    assert client.post("/entries/make-all-private", json={"confirm": True}).json()["sealed"] == 0
+    again = client.post("/entries/make-all-private", json={"confirm": True})
+    assert again.json()["sealed"] == 0
 
 
 def test_make_all_private_needs_the_confirm(client, session, open_vault):
     note = client.post("/entries", json={"content": "keep me"}).json()["id"]
-    assert client.post("/entries/make-all-private", json={}).status_code == 422
-    assert client.post("/entries/make-all-private", json={"confirm": False}).status_code == 400
+    missing = client.post("/entries/make-all-private", json={})
+    declined = client.post("/entries/make-all-private", json={"confirm": False})
+    assert (missing.status_code, declined.status_code) == (422, 400)
     session.expire_all()
     assert not session.get(Entry, note).is_private
 

@@ -1224,17 +1224,7 @@ Owners: grammar57 (button families), the ownerfix agent (Sonnet) for the rest.
 
 Measured from the code: live captions exist (captions.js, Brief 82) but are reached only from the command palette, so the owner could not find them; the voice note has no device, noise or gain control; transcription runs inside the dialog's request.
 
-Decisions made:
-- V1. Transcription is a background run in the one ledger (transparency): closing the dialog never stops it; the Recordings row shows its progress; a notification says done or failed with Open; Stop sits on the row and in the running panel. A recording in progress survives the dialog too, as a shell pill with its timer, Pause and Stop.
-- V2. Input: a device picker (every microphone the browser lists, remembered), noise suppression, echo cancellation and automatic gain as switches (the browser's own constraints), a live level meter and a 3-second mic test; in the dialog and in Settings, Voice.
-- V3. Enhancement on save, local: a high-pass and loudness normalise pass on the kept audio, a switch, on by default; the original is kept until the transcript is accepted.
-- V4. The level line draws the analyser's real signal and is measured to move; with reduced motion it is a static meter.
-- V5. Live transcription: while recording, the captions pipeline writes the words into the dialog as they are spoken; the full pass replaces them after.
-- V6. Live captions are reachable where a person looks: a Captions button in the voice note dialog and the Recordings bar, a row in the shell's tools menu, the palette, and a Guide topic "How do I get live captions".
-- V7. The dialog redesigned from DESIGN recipes: name field, one large record control with the timer, the level line, the device chip, Pause, Stop and Discard; after saving, the transcript's first lines and Open.
-- V8. The focus timer: a ring with the time large, presets as a segmented control plus a custom stepper, Start and Pause as one primary, a chime and a notification at the end, an optional break cycle, and today's focused minutes.
-
-Rows (owner: voiceup, Opus, after libraryup): V1 to V8, each a commit with a test, measured at 1440 and 390, help moving with it (standing order 13).
+V1 to V8 (voice notes, live captions, the focus timer) are built (70f2622cc, 72fc97ee8, 1a27526f8); the decisions moved to HISTORY.md, "Moved from the plans, 2026-11-10 (s10b-1110)".
 
 ## Placed from INBOX, 2026-10-11 (Tidy, undoing a pattern, menu gaps)
 
