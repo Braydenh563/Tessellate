@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8062, frontend ids 2665, CSS sections 523, backend routes 662, backend modules 9945, test files 2406, tests 20069, plan headings 1000, app scripts 28, boot scripts 37, script files 274.
+Counts: frontend functions 8062, frontend ids 2665, CSS sections 523, backend routes 662, backend modules 9945, test files 2407, tests 20074, plan headings 1000, app scripts 28, boot scripts 37, script files 274.
 
 ## Frontend functions (8062)
 
@@ -5646,52 +5646,52 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `activityDetailText` | frontend/js/library.js:1518 |
-| `activitySettingValue` | frontend/js/library.js:1502 |
-| `allBookmarkGroups` | frontend/js/library.js:11523 |
-| `analyseMediaRow` | frontend/js/library.js:8578 |
-| `applyLibraryMediaView` | frontend/js/library.js:3997 |
-| `attachBoardTick` | frontend/js/library.js:11173 |
-| `binRoutes` | frontend/js/library.js:1293 |
-| `bookmarkAddress` | frontend/js/library.js:4203 |
-| `bookmarkRow` | frontend/js/library.js:11895 |
-| `bookmarkSiteSection` | frontend/js/library.js:11858 |
-| `bookmarkSort` | frontend/js/library.js:11785 |
-| `buildFileReadingSummary` | frontend/js/library.js:8736 |
-| `bulkDeleteLibraryBoards` | frontend/js/library.js:11212 |
-| `bulkDeleteLibraryLinks` | frontend/js/library.js:11419 |
-| `bulkDeleteLibraryMedia` | frontend/js/library.js:8879 |
-| `bulkMoveLibraryLinks` | frontend/js/library.js:11467 |
-| `bulkUpdateLibraryLinks` | frontend/js/library.js:11441 |
-| `clearLibraryBoardsSelection` | frontend/js/library.js:11204 |
-| `clearLibraryLinksSelection` | frontend/js/library.js:11367 |
-| `clearLibraryMediaSelection` | frontend/js/library.js:8873 |
-| `closeBinnedReader` | frontend/js/library.js:1894 |
-| `closeOcrWorkspace` | frontend/js/library.js:5975 |
-| `contentsBuildSection` | frontend/js/library.js:12628 |
-| `contentsDocRow` | frontend/js/library.js:12541 |
-| `contentsGlyph` | frontend/js/library.js:12476 |
-| `contentsGroupMark` | frontend/js/library.js:12612 |
-| `contentsGroups` | frontend/js/library.js:12320 |
-| `contentsMonthKey` | frontend/js/library.js:12313 |
-| `contentsNoteFacts` | frontend/js/library.js:12503 |
-| `contentsNoteMark` | frontend/js/library.js:12483 |
-| `contentsNoteName` | frontend/js/library.js:12416 |
-| `contentsNoteRow` | frontend/js/library.js:12515 |
-| `contentsOpenDocument` | frontend/js/library.js:12434 |
-| `contentsOrderedKeys` | frontend/js/library.js:12389 |
-| `contentsRenameTopic` | frontend/js/library.js:12704 |
-| `contentsRowBody` | frontend/js/library.js:12463 |
-| `contentsSectionLabel` | frontend/js/library.js:12369 |
-| `contentsSetAll` | frontend/js/library.js:12914 |
-| `contentsTopicNames` | frontend/js/library.js:12378 |
-| `contentsTreeItem` | frontend/js/library.js:12449 |
-| `contentsTreeKeys` | frontend/js/library.js:12929 |
-| `contentsWireTopicHeading` | frontend/js/library.js:12678 |
-| `createLibrarySelectbar` | frontend/js/library.js:11108 |
-| `deleteBookmarkGroup` | frontend/js/library.js:11562 |
-| `deleteBookmarksWithUndo` | frontend/js/library.js:11378 |
-| `deleteSkillWithUndo` | frontend/js/library.js:2830 |
+| `activityDetailText` | frontend/js/library.js:1524 |
+| `activitySettingValue` | frontend/js/library.js:1508 |
+| `allBookmarkGroups` | frontend/js/library.js:11529 |
+| `analyseMediaRow` | frontend/js/library.js:8584 |
+| `applyLibraryMediaView` | frontend/js/library.js:4003 |
+| `attachBoardTick` | frontend/js/library.js:11179 |
+| `binRoutes` | frontend/js/library.js:1299 |
+| `bookmarkAddress` | frontend/js/library.js:4209 |
+| `bookmarkRow` | frontend/js/library.js:11901 |
+| `bookmarkSiteSection` | frontend/js/library.js:11864 |
+| `bookmarkSort` | frontend/js/library.js:11791 |
+| `buildFileReadingSummary` | frontend/js/library.js:8742 |
+| `bulkDeleteLibraryBoards` | frontend/js/library.js:11218 |
+| `bulkDeleteLibraryLinks` | frontend/js/library.js:11425 |
+| `bulkDeleteLibraryMedia` | frontend/js/library.js:8885 |
+| `bulkMoveLibraryLinks` | frontend/js/library.js:11473 |
+| `bulkUpdateLibraryLinks` | frontend/js/library.js:11447 |
+| `clearLibraryBoardsSelection` | frontend/js/library.js:11210 |
+| `clearLibraryLinksSelection` | frontend/js/library.js:11373 |
+| `clearLibraryMediaSelection` | frontend/js/library.js:8879 |
+| `closeBinnedReader` | frontend/js/library.js:1900 |
+| `closeOcrWorkspace` | frontend/js/library.js:5981 |
+| `contentsBuildSection` | frontend/js/library.js:12634 |
+| `contentsDocRow` | frontend/js/library.js:12547 |
+| `contentsGlyph` | frontend/js/library.js:12482 |
+| `contentsGroupMark` | frontend/js/library.js:12618 |
+| `contentsGroups` | frontend/js/library.js:12326 |
+| `contentsMonthKey` | frontend/js/library.js:12319 |
+| `contentsNoteFacts` | frontend/js/library.js:12509 |
+| `contentsNoteMark` | frontend/js/library.js:12489 |
+| `contentsNoteName` | frontend/js/library.js:12422 |
+| `contentsNoteRow` | frontend/js/library.js:12521 |
+| `contentsOpenDocument` | frontend/js/library.js:12440 |
+| `contentsOrderedKeys` | frontend/js/library.js:12395 |
+| `contentsRenameTopic` | frontend/js/library.js:12710 |
+| `contentsRowBody` | frontend/js/library.js:12469 |
+| `contentsSectionLabel` | frontend/js/library.js:12375 |
+| `contentsSetAll` | frontend/js/library.js:12920 |
+| `contentsTopicNames` | frontend/js/library.js:12384 |
+| `contentsTreeItem` | frontend/js/library.js:12455 |
+| `contentsTreeKeys` | frontend/js/library.js:12935 |
+| `contentsWireTopicHeading` | frontend/js/library.js:12684 |
+| `createLibrarySelectbar` | frontend/js/library.js:11114 |
+| `deleteBookmarkGroup` | frontend/js/library.js:11568 |
+| `deleteBookmarksWithUndo` | frontend/js/library.js:11384 |
+| `deleteSkillWithUndo` | frontend/js/library.js:2836 |
 | `docSizeText` | frontend/js/library.js:202 |
 | `docTypeFilter` | frontend/js/library.js:173 |
 | `docTypeFilterKey` | frontend/js/library.js:158 |
@@ -5699,224 +5699,224 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docTypeHeadingsFit` | frontend/js/library.js:152 |
 | `docTypeItems` | frontend/js/library.js:117 |
 | `docTypeMenu` | frontend/js/library.js:191 |
-| `duplicateSkill` | frontend/js/library.js:2802 |
-| `emptyBookmarkGroups` | frontend/js/library.js:11500 |
-| `ensureLibraryGridStop` | frontend/js/library.js:1756 |
-| `fetchAllBookmarks` | frontend/js/library.js:11325 |
-| `fileMetaLine` | frontend/js/library.js:4184 |
-| `filterBookmarks` | frontend/js/library.js:11800 |
-| `filterLibraryImagesGallery` | frontend/js/library.js:9137 |
-| `flashLibraryItem` | frontend/js/library.js:1940 |
-| `focusLibraryFile` | frontend/js/library.js:4131 |
-| `importLibraryDocuments` | frontend/js/library.js:3428 |
-| `isImageUrl` | frontend/js/library.js:3959 |
-| `keepLibraryScroll` | frontend/js/library.js:1410 |
-| `libraryActions` | frontend/js/library.js:1018 |
-| `libraryBackgroundRun` | frontend/js/library.js:4360 |
-| `libraryCard` | frontend/js/library.js:1536 |
-| `libraryColumnCount` | frontend/js/library.js:707 |
-| `libraryCopyActions` | frontend/js/library.js:976 |
-| `libraryCustomCmp` | frontend/js/library.js:615 |
-| `libraryDocSort` | frontend/js/library.js:3404 |
-| `libraryDocsMatchesProperty` | frontend/js/library.js:3325 |
-| `libraryDocsNewMount` | frontend/js/library.js:3503 |
-| `libraryDocsPropertyOptions` | frontend/js/library.js:3310 |
-| `libraryImageOrigin` | frontend/js/library.js:9070 |
-| `libraryImagesFingerprint` | frontend/js/library.js:3902 |
-| `libraryKeyOf` | frontend/js/library.js:434 |
-| `libraryLightboxItems` | frontend/js/library.js:8680 |
-| `libraryMediaBinItem` | frontend/js/library.js:8854 |
-| `libraryMediaRepaint` | frontend/js/library.js:8859 |
-| `libraryMediaSort` | frontend/js/library.js:9027 |
-| `libraryNewDocument` | frontend/js/library.js:3483 |
-| `librarySelectedItems` | frontend/js/library.js:1368 |
-| `librarySorted` | frontend/js/library.js:619 |
-| `libraryTitleAndPreview` | frontend/js/library.js:1454 |
-| `libraryView` | frontend/js/library.js:430 |
-| `linkNoteFromLibrary` | frontend/js/library.js:1311 |
+| `duplicateSkill` | frontend/js/library.js:2808 |
+| `emptyBookmarkGroups` | frontend/js/library.js:11506 |
+| `ensureLibraryGridStop` | frontend/js/library.js:1762 |
+| `fetchAllBookmarks` | frontend/js/library.js:11331 |
+| `fileMetaLine` | frontend/js/library.js:4190 |
+| `filterBookmarks` | frontend/js/library.js:11806 |
+| `filterLibraryImagesGallery` | frontend/js/library.js:9143 |
+| `flashLibraryItem` | frontend/js/library.js:1946 |
+| `focusLibraryFile` | frontend/js/library.js:4137 |
+| `importLibraryDocuments` | frontend/js/library.js:3434 |
+| `isImageUrl` | frontend/js/library.js:3965 |
+| `keepLibraryScroll` | frontend/js/library.js:1416 |
+| `libraryActions` | frontend/js/library.js:1024 |
+| `libraryBackgroundRun` | frontend/js/library.js:4366 |
+| `libraryCard` | frontend/js/library.js:1542 |
+| `libraryColumnCount` | frontend/js/library.js:713 |
+| `libraryCopyActions` | frontend/js/library.js:982 |
+| `libraryCustomCmp` | frontend/js/library.js:621 |
+| `libraryDocSort` | frontend/js/library.js:3410 |
+| `libraryDocsMatchesProperty` | frontend/js/library.js:3331 |
+| `libraryDocsNewMount` | frontend/js/library.js:3509 |
+| `libraryDocsPropertyOptions` | frontend/js/library.js:3316 |
+| `libraryImageOrigin` | frontend/js/library.js:9076 |
+| `libraryImagesFingerprint` | frontend/js/library.js:3908 |
+| `libraryKeyOf` | frontend/js/library.js:437 |
+| `libraryLightboxItems` | frontend/js/library.js:8686 |
+| `libraryMediaBinItem` | frontend/js/library.js:8860 |
+| `libraryMediaRepaint` | frontend/js/library.js:8865 |
+| `libraryMediaSort` | frontend/js/library.js:9033 |
+| `libraryNewDocument` | frontend/js/library.js:3489 |
+| `librarySelectedItems` | frontend/js/library.js:1374 |
+| `librarySorted` | frontend/js/library.js:625 |
+| `libraryTitleAndPreview` | frontend/js/library.js:1460 |
+| `libraryView` | frontend/js/library.js:433 |
+| `linkNoteFromLibrary` | frontend/js/library.js:1317 |
 | `loadDocTypeTable` | frontend/js/library.js:100 |
-| `loadLibrary` | frontend/js/library.js:450 |
-| `manageBookmarkGroups` | frontend/js/library.js:11588 |
-| `mediaFileIcon` | frontend/js/library.js:4145 |
-| `mediaFileKind` | frontend/js/library.js:4227 |
-| `mediaHasBeenRead` | frontend/js/library.js:8606 |
-| `mediaReading` | frontend/js/library.js:8602 |
-| `mediaReadingBadge` | frontend/js/library.js:8614 |
-| `mediaReadingSummary` | frontend/js/library.js:8643 |
-| `mediaRowDeleteEndpoint` | frontend/js/library.js:8847 |
-| `mediaRowKey` | frontend/js/library.js:8840 |
-| `metaLine` | frontend/js/library.js:4167 |
-| `newBookmarkGroup` | frontend/js/library.js:11566 |
-| `noteAnyImage` | frontend/js/library.js:13104 |
-| `noteFirstImage` | frontend/js/library.js:13093 |
-| `ocrAllText` | frontend/js/library.js:7884 |
-| `ocrApplyFind` | frontend/js/library.js:7245 |
-| `ocrApplyPageCount` | frontend/js/library.js:5600 |
-| `ocrApplyZoom` | frontend/js/library.js:6503 |
-| `ocrAskRange` | frontend/js/library.js:7773 |
-| `ocrBase` | frontend/js/library.js:8497 |
-| `ocrBinField` | frontend/js/library.js:8553 |
-| `ocrBinPage` | frontend/js/library.js:8548 |
-| `ocrBuildPageRail` | frontend/js/library.js:5900 |
-| `ocrBuildScrollPages` | frontend/js/library.js:6736 |
-| `ocrCan` | frontend/js/library.js:7092 |
-| `ocrCanOpen` | frontend/js/library.js:6118 |
-| `ocrChooseReader` | frontend/js/library.js:7128 |
-| `ocrCleanLoops` | frontend/js/library.js:8561 |
-| `ocrClearRegionSelection` | frontend/js/library.js:5166 |
-| `ocrCloseEdit` | frontend/js/library.js:7878 |
-| `ocrDockApply` | frontend/js/library.js:7567 |
-| `ocrDockFits` | frontend/js/library.js:7543 |
-| `ocrDocumentReading` | frontend/js/library.js:5458 |
-| `ocrEmptyLine` | frontend/js/library.js:7819 |
-| `ocrFetchFileText` | frontend/js/library.js:6125 |
-| `ocrFieldText` | frontend/js/library.js:8512 |
-| `ocrFillPageCaptions` | frontend/js/library.js:5547 |
-| `ocrFindMarkRegion` | frontend/js/library.js:7222 |
-| `ocrFindShowCurrent` | frontend/js/library.js:7272 |
-| `ocrFindStep` | frontend/js/library.js:7301 |
-| `ocrFitDock` | frontend/js/library.js:7577 |
-| `ocrFitLiveText` | frontend/js/library.js:4661 |
-| `ocrFitStage` | frontend/js/library.js:6399 |
-| `ocrIsLocal` | frontend/js/library.js:7085 |
-| `ocrIsPdf` | frontend/js/library.js:4293 |
-| `ocrIsTextFile` | frontend/js/library.js:6111 |
-| `ocrKeepCentre` | frontend/js/library.js:6588 |
-| `ocrKeepNodes` | frontend/js/library.js:4587 |
-| `ocrKnownPages` | frontend/js/library.js:5570 |
-| `ocrLiveTextSelection` | frontend/js/library.js:4682 |
-| `ocrLoadPage` | frontend/js/library.js:5614 |
-| `ocrLoadReaders` | frontend/js/library.js:6870 |
-| `ocrLoadReadersNow` | frontend/js/library.js:6875 |
-| `ocrLoadSiblings` | frontend/js/library.js:6078 |
-| `ocrLocalName` | frontend/js/library.js:7101 |
-| `ocrMoveOverlays` | frontend/js/library.js:5158 |
-| `ocrNaturalScale` | frontend/js/library.js:6499 |
-| `ocrNoRendererLink` | frontend/js/library.js:5890 |
-| `ocrOfferBinUndo` | frontend/js/library.js:8532 |
-| `ocrOfferTextUndo` | frontend/js/library.js:8526 |
-| `ocrOpenEdit` | frontend/js/library.js:7868 |
-| `ocrOpenReaderSettings` | frontend/js/library.js:7703 |
-| `ocrOpenSibling` | frontend/js/library.js:6272 |
-| `ocrPageImageUrl` | frontend/js/library.js:4319 |
-| `ocrPaintBoxes` | frontend/js/library.js:4621 |
-| `ocrPaintCaption` | frontend/js/library.js:5524 |
-| `ocrPaintEmpty` | frontend/js/library.js:7792 |
-| `ocrPaintLiveText` | frontend/js/library.js:4531 |
-| `ocrPaintRegionRect` | frontend/js/library.js:5176 |
-| `ocrPlaceRegionPopover` | frontend/js/library.js:5193 |
-| `ocrRailActive` | frontend/js/library.js:5588 |
-| `ocrRailKey` | frontend/js/library.js:5957 |
-| `ocrReadImage` | frontend/js/library.js:7313 |
-| `ocrReadInFlight` | frontend/js/library.js:4402 |
-| `ocrReadMenuItems` | frontend/js/library.js:7718 |
-| `ocrReadRange` | frontend/js/library.js:7447 |
-| `ocrReader` | frontend/js/library.js:7078 |
-| `ocrReaderName` | frontend/js/library.js:7116 |
-| `ocrReaderNameFor` | frontend/js/library.js:7105 |
-| `ocrRefusedPress` | frontend/js/library.js:7067 |
-| `ocrRegionCrop` | frontend/js/library.js:5257 |
-| `ocrRegionPage` | frontend/js/library.js:7159 |
-| `ocrRegionPoint` | frontend/js/library.js:5241 |
-| `ocrRegionsUrl` | frontend/js/library.js:4297 |
-| `ocrRenderOtherReadings` | frontend/js/library.js:4452 |
-| `ocrRenderRail` | frontend/js/library.js:6223 |
-| `ocrRenderRailSwitch` | frontend/js/library.js:6139 |
-| `ocrRenderRegions` | frontend/js/library.js:4703 |
-| `ocrRepaintReading` | frontend/js/library.js:8501 |
-| `ocrRevealRegionsForPage` | frontend/js/library.js:7187 |
-| `ocrRoveKeys` | frontend/js/library.js:7839 |
-| `ocrRoveSync` | frontend/js/library.js:7830 |
-| `ocrRunRegion` | frontend/js/library.js:5355 |
-| `ocrScheduleFitDock` | frontend/js/library.js:7623 |
-| `ocrScrollToPage` | frontend/js/library.js:6798 |
-| `ocrSelectImage` | frontend/js/library.js:5148 |
-| `ocrSelectRegion` | frontend/js/library.js:4429 |
-| `ocrSelectStage` | frontend/js/library.js:5144 |
-| `ocrSetBox` | frontend/js/library.js:4646 |
-| `ocrSetLiveWord` | frontend/js/library.js:4567 |
-| `ocrSetViewMode` | frontend/js/library.js:6673 |
-| `ocrSetZoom` | frontend/js/library.js:7708 |
-| `ocrShowRegionResult` | frontend/js/library.js:5278 |
-| `ocrShownZoom` | frontend/js/library.js:6541 |
-| `ocrSizeStage` | frontend/js/library.js:6416 |
-| `ocrStageRead` | frontend/js/library.js:7768 |
-| `ocrStepPage` | frontend/js/library.js:6838 |
-| `ocrStepZoom` | frontend/js/library.js:6571 |
-| `ocrStopRead` | frontend/js/library.js:4409 |
-| `ocrStoredPageReads` | frontend/js/library.js:5427 |
-| `ocrStoredViewMode` | frontend/js/library.js:6648 |
-| `ocrSyncCanRead` | frontend/js/library.js:7042 |
-| `ocrSyncMoreMenu` | frontend/js/library.js:7380 |
-| `ocrSyncPager` | frontend/js/library.js:6812 |
-| `ocrSyncReadMenu` | frontend/js/library.js:7739 |
-| `ocrSyncReaderButton` | frontend/js/library.js:6994 |
-| `ocrSyncStopButton` | frontend/js/library.js:4419 |
-| `ocrSyncToolsMenu` | frontend/js/library.js:7650 |
-| `ocrSyncViewButtons` | frontend/js/library.js:6662 |
-| `ocrSyncZoomButtons` | frontend/js/library.js:6602 |
-| `ocrTearDownScroll` | frontend/js/library.js:6718 |
-| `ocrTextWriter` | frontend/js/library.js:8519 |
-| `ocrVisibleStages` | frontend/js/library.js:6406 |
-| `ocrWatchDock` | frontend/js/library.js:7636 |
-| `ocrWatchPane` | frontend/js/library.js:6465 |
-| `ocrWatchScroll` | frontend/js/library.js:6773 |
-| `ocrWireRegionJump` | frontend/js/library.js:7167 |
-| `ocrZoomAbout` | frontend/js/library.js:6555 |
-| `openBinnedNote` | frontend/js/library.js:1865 |
-| `openLibraryCreatePicker` | frontend/js/library.js:2438 |
-| `openLibraryItem` | frontend/js/library.js:1779 |
-| `openOcrWorkspace` | frontend/js/library.js:6305 |
-| `openPageReader` | frontend/js/library.js:6021 |
-| `pushBookmarksPutUndo` | frontend/js/library.js:11431 |
-| `refreshLibraryPhrase` | frontend/js/library.js:2019 |
-| `refreshLibrarySemantic` | frontend/js/library.js:666 |
-| `refreshLibraryServerSearch` | frontend/js/library.js:1993 |
-| `remindAbout` | frontend/js/library.js:13055 |
-| `renameBookmarkGroup` | frontend/js/library.js:11535 |
-| `renderBookmarkGroupChips` | frontend/js/library.js:11692 |
-| `renderBookmarks` | frontend/js/library.js:11336 |
-| `renderContents` | frontend/js/library.js:12758 |
+| `loadLibrary` | frontend/js/library.js:453 |
+| `manageBookmarkGroups` | frontend/js/library.js:11594 |
+| `mediaFileIcon` | frontend/js/library.js:4151 |
+| `mediaFileKind` | frontend/js/library.js:4233 |
+| `mediaHasBeenRead` | frontend/js/library.js:8612 |
+| `mediaReading` | frontend/js/library.js:8608 |
+| `mediaReadingBadge` | frontend/js/library.js:8620 |
+| `mediaReadingSummary` | frontend/js/library.js:8649 |
+| `mediaRowDeleteEndpoint` | frontend/js/library.js:8853 |
+| `mediaRowKey` | frontend/js/library.js:8846 |
+| `metaLine` | frontend/js/library.js:4173 |
+| `newBookmarkGroup` | frontend/js/library.js:11572 |
+| `noteAnyImage` | frontend/js/library.js:13110 |
+| `noteFirstImage` | frontend/js/library.js:13099 |
+| `ocrAllText` | frontend/js/library.js:7890 |
+| `ocrApplyFind` | frontend/js/library.js:7251 |
+| `ocrApplyPageCount` | frontend/js/library.js:5606 |
+| `ocrApplyZoom` | frontend/js/library.js:6509 |
+| `ocrAskRange` | frontend/js/library.js:7779 |
+| `ocrBase` | frontend/js/library.js:8503 |
+| `ocrBinField` | frontend/js/library.js:8559 |
+| `ocrBinPage` | frontend/js/library.js:8554 |
+| `ocrBuildPageRail` | frontend/js/library.js:5906 |
+| `ocrBuildScrollPages` | frontend/js/library.js:6742 |
+| `ocrCan` | frontend/js/library.js:7098 |
+| `ocrCanOpen` | frontend/js/library.js:6124 |
+| `ocrChooseReader` | frontend/js/library.js:7134 |
+| `ocrCleanLoops` | frontend/js/library.js:8567 |
+| `ocrClearRegionSelection` | frontend/js/library.js:5172 |
+| `ocrCloseEdit` | frontend/js/library.js:7884 |
+| `ocrDockApply` | frontend/js/library.js:7573 |
+| `ocrDockFits` | frontend/js/library.js:7549 |
+| `ocrDocumentReading` | frontend/js/library.js:5464 |
+| `ocrEmptyLine` | frontend/js/library.js:7825 |
+| `ocrFetchFileText` | frontend/js/library.js:6131 |
+| `ocrFieldText` | frontend/js/library.js:8518 |
+| `ocrFillPageCaptions` | frontend/js/library.js:5553 |
+| `ocrFindMarkRegion` | frontend/js/library.js:7228 |
+| `ocrFindShowCurrent` | frontend/js/library.js:7278 |
+| `ocrFindStep` | frontend/js/library.js:7307 |
+| `ocrFitDock` | frontend/js/library.js:7583 |
+| `ocrFitLiveText` | frontend/js/library.js:4667 |
+| `ocrFitStage` | frontend/js/library.js:6405 |
+| `ocrIsLocal` | frontend/js/library.js:7091 |
+| `ocrIsPdf` | frontend/js/library.js:4299 |
+| `ocrIsTextFile` | frontend/js/library.js:6117 |
+| `ocrKeepCentre` | frontend/js/library.js:6594 |
+| `ocrKeepNodes` | frontend/js/library.js:4593 |
+| `ocrKnownPages` | frontend/js/library.js:5576 |
+| `ocrLiveTextSelection` | frontend/js/library.js:4688 |
+| `ocrLoadPage` | frontend/js/library.js:5620 |
+| `ocrLoadReaders` | frontend/js/library.js:6876 |
+| `ocrLoadReadersNow` | frontend/js/library.js:6881 |
+| `ocrLoadSiblings` | frontend/js/library.js:6084 |
+| `ocrLocalName` | frontend/js/library.js:7107 |
+| `ocrMoveOverlays` | frontend/js/library.js:5164 |
+| `ocrNaturalScale` | frontend/js/library.js:6505 |
+| `ocrNoRendererLink` | frontend/js/library.js:5896 |
+| `ocrOfferBinUndo` | frontend/js/library.js:8538 |
+| `ocrOfferTextUndo` | frontend/js/library.js:8532 |
+| `ocrOpenEdit` | frontend/js/library.js:7874 |
+| `ocrOpenReaderSettings` | frontend/js/library.js:7709 |
+| `ocrOpenSibling` | frontend/js/library.js:6278 |
+| `ocrPageImageUrl` | frontend/js/library.js:4325 |
+| `ocrPaintBoxes` | frontend/js/library.js:4627 |
+| `ocrPaintCaption` | frontend/js/library.js:5530 |
+| `ocrPaintEmpty` | frontend/js/library.js:7798 |
+| `ocrPaintLiveText` | frontend/js/library.js:4537 |
+| `ocrPaintRegionRect` | frontend/js/library.js:5182 |
+| `ocrPlaceRegionPopover` | frontend/js/library.js:5199 |
+| `ocrRailActive` | frontend/js/library.js:5594 |
+| `ocrRailKey` | frontend/js/library.js:5963 |
+| `ocrReadImage` | frontend/js/library.js:7319 |
+| `ocrReadInFlight` | frontend/js/library.js:4408 |
+| `ocrReadMenuItems` | frontend/js/library.js:7724 |
+| `ocrReadRange` | frontend/js/library.js:7453 |
+| `ocrReader` | frontend/js/library.js:7084 |
+| `ocrReaderName` | frontend/js/library.js:7122 |
+| `ocrReaderNameFor` | frontend/js/library.js:7111 |
+| `ocrRefusedPress` | frontend/js/library.js:7073 |
+| `ocrRegionCrop` | frontend/js/library.js:5263 |
+| `ocrRegionPage` | frontend/js/library.js:7165 |
+| `ocrRegionPoint` | frontend/js/library.js:5247 |
+| `ocrRegionsUrl` | frontend/js/library.js:4303 |
+| `ocrRenderOtherReadings` | frontend/js/library.js:4458 |
+| `ocrRenderRail` | frontend/js/library.js:6229 |
+| `ocrRenderRailSwitch` | frontend/js/library.js:6145 |
+| `ocrRenderRegions` | frontend/js/library.js:4709 |
+| `ocrRepaintReading` | frontend/js/library.js:8507 |
+| `ocrRevealRegionsForPage` | frontend/js/library.js:7193 |
+| `ocrRoveKeys` | frontend/js/library.js:7845 |
+| `ocrRoveSync` | frontend/js/library.js:7836 |
+| `ocrRunRegion` | frontend/js/library.js:5361 |
+| `ocrScheduleFitDock` | frontend/js/library.js:7629 |
+| `ocrScrollToPage` | frontend/js/library.js:6804 |
+| `ocrSelectImage` | frontend/js/library.js:5154 |
+| `ocrSelectRegion` | frontend/js/library.js:4435 |
+| `ocrSelectStage` | frontend/js/library.js:5150 |
+| `ocrSetBox` | frontend/js/library.js:4652 |
+| `ocrSetLiveWord` | frontend/js/library.js:4573 |
+| `ocrSetViewMode` | frontend/js/library.js:6679 |
+| `ocrSetZoom` | frontend/js/library.js:7714 |
+| `ocrShowRegionResult` | frontend/js/library.js:5284 |
+| `ocrShownZoom` | frontend/js/library.js:6547 |
+| `ocrSizeStage` | frontend/js/library.js:6422 |
+| `ocrStageRead` | frontend/js/library.js:7774 |
+| `ocrStepPage` | frontend/js/library.js:6844 |
+| `ocrStepZoom` | frontend/js/library.js:6577 |
+| `ocrStopRead` | frontend/js/library.js:4415 |
+| `ocrStoredPageReads` | frontend/js/library.js:5433 |
+| `ocrStoredViewMode` | frontend/js/library.js:6654 |
+| `ocrSyncCanRead` | frontend/js/library.js:7048 |
+| `ocrSyncMoreMenu` | frontend/js/library.js:7386 |
+| `ocrSyncPager` | frontend/js/library.js:6818 |
+| `ocrSyncReadMenu` | frontend/js/library.js:7745 |
+| `ocrSyncReaderButton` | frontend/js/library.js:7000 |
+| `ocrSyncStopButton` | frontend/js/library.js:4425 |
+| `ocrSyncToolsMenu` | frontend/js/library.js:7656 |
+| `ocrSyncViewButtons` | frontend/js/library.js:6668 |
+| `ocrSyncZoomButtons` | frontend/js/library.js:6608 |
+| `ocrTearDownScroll` | frontend/js/library.js:6724 |
+| `ocrTextWriter` | frontend/js/library.js:8525 |
+| `ocrVisibleStages` | frontend/js/library.js:6412 |
+| `ocrWatchDock` | frontend/js/library.js:7642 |
+| `ocrWatchPane` | frontend/js/library.js:6471 |
+| `ocrWatchScroll` | frontend/js/library.js:6779 |
+| `ocrWireRegionJump` | frontend/js/library.js:7173 |
+| `ocrZoomAbout` | frontend/js/library.js:6561 |
+| `openBinnedNote` | frontend/js/library.js:1871 |
+| `openLibraryCreatePicker` | frontend/js/library.js:2444 |
+| `openLibraryItem` | frontend/js/library.js:1785 |
+| `openOcrWorkspace` | frontend/js/library.js:6311 |
+| `openPageReader` | frontend/js/library.js:6027 |
+| `pushBookmarksPutUndo` | frontend/js/library.js:11437 |
+| `refreshLibraryPhrase` | frontend/js/library.js:2025 |
+| `refreshLibrarySemantic` | frontend/js/library.js:672 |
+| `refreshLibraryServerSearch` | frontend/js/library.js:1999 |
+| `remindAbout` | frontend/js/library.js:13061 |
+| `renameBookmarkGroup` | frontend/js/library.js:11541 |
+| `renderBookmarkGroupChips` | frontend/js/library.js:11698 |
+| `renderBookmarks` | frontend/js/library.js:11342 |
+| `renderContents` | frontend/js/library.js:12764 |
 | `renderIncrementally` | frontend/js/library.js:243 |
-| `renderLibrary` | frontend/js/library.js:740 |
-| `renderLibraryContextBars` | frontend/js/library.js:1330 |
-| `renderLibraryDocsPropertyFilter` | frontend/js/library.js:3342 |
-| `renderLibraryDocuments` | frontend/js/library.js:3545 |
-| `renderLibraryFilters` | frontend/js/library.js:540 |
-| `renderLibraryImageOrigins` | frontend/js/library.js:9088 |
-| `renderLibraryImagesGallery` | frontend/js/library.js:8916 |
-| `renderLibraryOverview` | frontend/js/library.js:518 |
-| `renderLibraryView` | frontend/js/library.js:438 |
-| `renderSkillCards` | frontend/js/library.js:2877 |
-| `renderSkillLogs` | frontend/js/library.js:3133 |
-| `renderSkillsDashboard` | frontend/js/library.js:2981 |
-| `reopenOcrWorkspace` | frontend/js/library.js:5994 |
-| `runLibrarySearch` | frontend/js/library.js:2032 |
-| `seedLibraryDocsAll` | frontend/js/library.js:3472 |
-| `setEmptyBookmarkGroups` | frontend/js/library.js:11511 |
-| `setLibraryCardStop` | frontend/js/library.js:1752 |
-| `setLibraryMediaKind` | frontend/js/library.js:4069 |
-| `setLibraryMediaView` | frontend/js/library.js:4027 |
-| `showDetailDialog` | frontend/js/library.js:13006 |
-| `shownTicksIn` | frontend/js/library.js:11077 |
-| `skillCard` | frontend/js/library.js:2593 |
-| `skillColumnCount` | frontend/js/library.js:2856 |
-| `skillLastRunIndex` | frontend/js/library.js:2582 |
-| `skillSort` | frontend/js/library.js:2789 |
-| `startLibraryImagesPoll` | frontend/js/library.js:3932 |
-| `stopLibraryImagesPoll` | frontend/js/library.js:3945 |
-| `syncLibraryBoardsTicks` | frontend/js/library.js:11159 |
-| `syncLibraryDocsSelectbar` | frontend/js/library.js:3820 |
-| `syncLibraryFilterButton` | frontend/js/library.js:2069 |
-| `syncLibraryMediaSelectbar` | frontend/js/library.js:8864 |
-| `syncSelectAllLabels` | frontend/js/library.js:11081 |
-| `syncSelectbarCount` | frontend/js/library.js:11054 |
-| `toggleLibrarySelection` | frontend/js/library.js:1372 |
-| `trackOcrRead` | frontend/js/library.js:4371 |
-| `updateLibraryCreateButton` | frontend/js/library.js:2531 |
-| `watchLibraryColumns` | frontend/js/library.js:726 |
-| `watchSkillColumns` | frontend/js/library.js:2867 |
-| `withLibraryCopyActions` | frontend/js/library.js:996 |
+| `renderLibrary` | frontend/js/library.js:746 |
+| `renderLibraryContextBars` | frontend/js/library.js:1336 |
+| `renderLibraryDocsPropertyFilter` | frontend/js/library.js:3348 |
+| `renderLibraryDocuments` | frontend/js/library.js:3551 |
+| `renderLibraryFilters` | frontend/js/library.js:543 |
+| `renderLibraryImageOrigins` | frontend/js/library.js:9094 |
+| `renderLibraryImagesGallery` | frontend/js/library.js:8922 |
+| `renderLibraryOverview` | frontend/js/library.js:521 |
+| `renderLibraryView` | frontend/js/library.js:441 |
+| `renderSkillCards` | frontend/js/library.js:2883 |
+| `renderSkillLogs` | frontend/js/library.js:3139 |
+| `renderSkillsDashboard` | frontend/js/library.js:2987 |
+| `reopenOcrWorkspace` | frontend/js/library.js:6000 |
+| `runLibrarySearch` | frontend/js/library.js:2038 |
+| `seedLibraryDocsAll` | frontend/js/library.js:3478 |
+| `setEmptyBookmarkGroups` | frontend/js/library.js:11517 |
+| `setLibraryCardStop` | frontend/js/library.js:1758 |
+| `setLibraryMediaKind` | frontend/js/library.js:4075 |
+| `setLibraryMediaView` | frontend/js/library.js:4033 |
+| `showDetailDialog` | frontend/js/library.js:13012 |
+| `shownTicksIn` | frontend/js/library.js:11083 |
+| `skillCard` | frontend/js/library.js:2599 |
+| `skillColumnCount` | frontend/js/library.js:2862 |
+| `skillLastRunIndex` | frontend/js/library.js:2588 |
+| `skillSort` | frontend/js/library.js:2795 |
+| `startLibraryImagesPoll` | frontend/js/library.js:3938 |
+| `stopLibraryImagesPoll` | frontend/js/library.js:3951 |
+| `syncLibraryBoardsTicks` | frontend/js/library.js:11165 |
+| `syncLibraryDocsSelectbar` | frontend/js/library.js:3826 |
+| `syncLibraryFilterButton` | frontend/js/library.js:2075 |
+| `syncLibraryMediaSelectbar` | frontend/js/library.js:8870 |
+| `syncSelectAllLabels` | frontend/js/library.js:11087 |
+| `syncSelectbarCount` | frontend/js/library.js:11060 |
+| `toggleLibrarySelection` | frontend/js/library.js:1378 |
+| `trackOcrRead` | frontend/js/library.js:4377 |
+| `updateLibraryCreateButton` | frontend/js/library.js:2537 |
+| `watchLibraryColumns` | frontend/js/library.js:732 |
+| `watchSkillColumns` | frontend/js/library.js:2873 |
+| `withLibraryCopyActions` | frontend/js/library.js:1002 |
 
 ### frontend/js/lightbox-actions.js (3)
 
@@ -12676,7 +12676,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/key-grid-lazy.css | 55 |
 | frontend/css/lan-lazy.css | 131 |
 | frontend/css/library-lazy.css | 8702 |
-| frontend/css/lightbox-lazy.css | 425 |
+| frontend/css/lightbox-lazy.css | 435 |
 | frontend/css/manual-lazy.css | 168 |
 | frontend/css/math-editor-lazy.css | 169 |
 | frontend/css/math-field-lazy.css | 72 |
@@ -25956,7 +25956,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (20069)
+## Tests (20074)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27250,7 +27250,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_library_subtabs_hide_on_board.py | 2 |
 | tests/test_library_tab_leaves_board.py | 1 |
 | tests/test_library_visit_cost.py | 3 |
-| tests/test_lightbox.py | 21 |
+| tests/test_lightbox.py | 22 |
 | tests/test_lightbox_pinch_1694.py | 2 |
 | tests/test_like_escaping.py | 5 |
 | tests/test_line_clipboard.py | 5 |
@@ -27528,6 +27528,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_ollama_tools_reliability.py | 6 |
 | tests/test_one_download_helper.py | 3 |
 | tests/test_one_minute_tick_s38.py | 3 |
+| tests/test_one_noun_per_thing.py | 4 |
 | tests/test_one_reader.py | 2 |
 | tests/test_one_when_shape.py | 2 |
 | tests/test_open_244_snippet_menu.py | 2 |
@@ -28375,14 +28376,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 
 | Heading | File:line |
 |---|---|
-| 0. Checked in the code, 2026-10-10 | docs/roadmap/CHAT_PLAN.md:895 |
+| 0. Checked in the code, 2026-10-10 | docs/roadmap/CHAT_PLAN.md:911 |
 | 0. Performance and "not device heavy" (cross-cutting, first) | docs/roadmap/PLAN.md:26 |
 | 0. The diagnosis in one page | docs/roadmap/WORLD_CLASS_PLAN.md:25 |
 | 0. The operating protocol (read every session, it is short) | docs/roadmap/SESSION_BRIEFS.md:17 |
 | 0.6.01 bug-document pass (2026-10-22, branch claude/project-thread-ol5yuv) | docs/roadmap/HANDOVER.md:83 |
 | 1. Format panel, Style tab | docs/roadmap/WHITEBOARD_PLAN.md:861 |
 | 1. Live log console (started, not finished) | docs/roadmap/BACKLOG.md:31 |
-| 1. Research read, 2026-10-10, and what each changes here | docs/roadmap/CHAT_PLAN.md:1508 |
+| 1. Research read, 2026-10-10, and what each changes here | docs/roadmap/CHAT_PLAN.md:1524 |
 | 1. The consistency contract (the system under the little things) | docs/roadmap/WORLD_CLASS_PLAN.md:84 |
 | 1. The instruction, verbatim | docs/roadmap/DOCUMENTS_PLAN.md:11 |
 | 1. The instruction, verbatim | docs/roadmap/MINDMAP_PLAN.md:13 |
@@ -28392,7 +28393,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 1. What exists (checked in the code) | docs/roadmap/WHITEBOARD_PLAN.md:12 |
 | 1. What exists (checked in the code, not assumed) | docs/roadmap/GRAPH_PLAN.md:14 |
 | 1. What it is, its size, its licence, how alive | docs/roadmap/ANALYSIS.md:2237 |
-| 1. What the best rule-based and offline assistants do | docs/roadmap/CHAT_PLAN.md:941 |
+| 1. What the best rule-based and offline assistants do | docs/roadmap/CHAT_PLAN.md:957 |
 | 1. Whiteboard: to the level of Miro / FigJam / tldraw | docs/roadmap/PLAN.md:41 |
 | 1. Why this file exists | docs/roadmap/FABLE_BRIEF.md:8 |
 | 1.1 Stack | docs/roadmap/MODERNISATION_AUDIT.md:59 |
@@ -28531,11 +28532,11 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 2. Packaging and distribution | docs/roadmap/ANALYSIS.md:4195 |
 | 2. Quick wins | docs/roadmap/BACKLOG.md:84 |
 | 2. Surface by surface, against this app | docs/roadmap/ANALYSIS.md:2281 |
-| 2. The capability catalogue without a model | docs/roadmap/CHAT_PLAN.md:1177 |
+| 2. The capability catalogue without a model | docs/roadmap/CHAT_PLAN.md:1193 |
 | 2. The prompt | docs/roadmap/FABLE_BRIEF.md:16 |
 | 2. What already exists (checked in the code, not assumed) | docs/roadmap/MINDMAP_PLAN.md:44 |
 | 2. What exists (checked in the code, not assumed) | docs/roadmap/DOCUMENTS_PLAN.md:31 |
-| 2. Where the layer joins each surface | docs/roadmap/CHAT_PLAN.md:1520 |
+| 2. Where the layer joins each surface | docs/roadmap/CHAT_PLAN.md:1536 |
 | 2. Why it disappoints (from the screenshots, each checked in the code) | docs/roadmap/WHITEBOARD_PLAN.md:28 |
 | 2. Why it disappoints (measured against the screenshots) | docs/roadmap/CHAT_PLAN.md:28 |
 | 2. Why it disappoints (measured, 48 notes across six months, 1358px) | docs/roadmap/TIMELINE_PLAN.md:24 |
@@ -28565,44 +28566,44 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 23. List styles, decision 40 (INBOX 1696 cc, built 2026-11-08) | docs/roadmap/DOCUMENTS_PLAN.md:1485 |
 | 23. Organisation: manual grouping and multi-category notes | docs/roadmap/BACKLOG.md:1612 |
 | 23. The code editor as an IDE: run, preview, test and debug (INBOX 748) | docs/roadmap/DOCUMENTS_PLAN.md:1009 |
-| 24. Codebase census, 2026-10-10 | docs/roadmap/WORLD_CLASS_PLAN.md:3168 |
+| 24. Codebase census, 2026-10-10 | docs/roadmap/WORLD_CLASS_PLAN.md:3204 |
 | 24. Dashboard: more widgets, and layout depth | docs/roadmap/BACKLOG.md:1644 |
 | 24. Deepened 2026-10-10: the documents editor (Brief 72a, decision 71) | docs/roadmap/DOCUMENTS_PLAN.md:1106 |
-| 24.1 Size and complexity | docs/roadmap/WORLD_CLASS_PLAN.md:3172 |
-| 24.2 Duplicated blocks | docs/roadmap/WORLD_CLASS_PLAN.md:3292 |
-| 24.3 Dead-code candidates | docs/roadmap/WORLD_CLASS_PLAN.md:3332 |
-| 24.4 Coupling of the classic scripts | docs/roadmap/WORLD_CLASS_PLAN.md:3385 |
-| 24.5 Counts | docs/roadmap/WORLD_CLASS_PLAN.md:3472 |
-| 24.6 Console errors per surface | docs/roadmap/WORLD_CLASS_PLAN.md:3578 |
-| 24.6b Interaction timings, 2026-10-10 | docs/roadmap/WORLD_CLASS_PLAN.md:3591 |
+| 24.1 Size and complexity | docs/roadmap/WORLD_CLASS_PLAN.md:3208 |
+| 24.2 Duplicated blocks | docs/roadmap/WORLD_CLASS_PLAN.md:3328 |
+| 24.3 Dead-code candidates | docs/roadmap/WORLD_CLASS_PLAN.md:3368 |
+| 24.4 Coupling of the classic scripts | docs/roadmap/WORLD_CLASS_PLAN.md:3421 |
+| 24.5 Counts | docs/roadmap/WORLD_CLASS_PLAN.md:3508 |
+| 24.6 Console errors per surface | docs/roadmap/WORLD_CLASS_PLAN.md:3614 |
+| 24.6b Interaction timings, 2026-10-10 | docs/roadmap/WORLD_CLASS_PLAN.md:3627 |
 | 25. App control: tray, health checks, and dependency repair | docs/roadmap/BACKLOG.md:1676 |
 | 25. Deepened 2026-10-10: the code editor (Brief 72a, decision 71) | docs/roadmap/DOCUMENTS_PLAN.md:1147 |
-| 25. The whole app against world class, 2026-10-10 (Fable) | docs/roadmap/WORLD_CLASS_PLAN.md:3668 |
-| 25.1 The bar | docs/roadmap/WORLD_CLASS_PLAN.md:3687 |
-| 25.2 Surface by surface | docs/roadmap/WORLD_CLASS_PLAN.md:3704 |
-| 25.3 Decisions, 2026-10-10 (do not re-decide) | docs/roadmap/WORLD_CLASS_PLAN.md:3742 |
-| 25.4 Phases with gates (each a brief; measure first) | docs/roadmap/WORLD_CLASS_PLAN.md:3782 |
-| 25.5 Not verified | docs/roadmap/WORLD_CLASS_PLAN.md:3798 |
+| 25. The whole app against world class, 2026-10-10 (Fable) | docs/roadmap/WORLD_CLASS_PLAN.md:3704 |
+| 25.1 The bar | docs/roadmap/WORLD_CLASS_PLAN.md:3723 |
+| 25.2 Surface by surface | docs/roadmap/WORLD_CLASS_PLAN.md:3740 |
+| 25.3 Decisions, 2026-10-10 (do not re-decide) | docs/roadmap/WORLD_CLASS_PLAN.md:3778 |
+| 25.4 Phases with gates (each a brief; measure first) | docs/roadmap/WORLD_CLASS_PLAN.md:3818 |
+| 25.5 Not verified | docs/roadmap/WORLD_CLASS_PLAN.md:3834 |
 | 26. Data lifecycle: archive, a full wipe, and a real trust page | docs/roadmap/BACKLOG.md:1742 |
-| 26. The backend against world class, 2026-10-10 (Fable) | docs/roadmap/WORLD_CLASS_PLAN.md:3806 |
-| 26.1 Judgement, by layer | docs/roadmap/WORLD_CLASS_PLAN.md:3828 |
-| 26.2 Decisions, 2026-10-10 (do not re-decide) | docs/roadmap/WORLD_CLASS_PLAN.md:3844 |
-| 26.3 Phases with gates | docs/roadmap/WORLD_CLASS_PLAN.md:3874 |
-| 26.4 Measured, 2026-10-10 (Brief 60, numbers only) | docs/roadmap/WORLD_CLASS_PLAN.md:3884 |
-| 26.5 Complexity, cycles, hot routes and frames, 2026-10-10 (decision 63, numbers only) | docs/roadmap/WORLD_CLASS_PLAN.md:3905 |
-| 27. Every feature, its utility and its popups, 2026-10-10 (Fable) | docs/roadmap/WORLD_CLASS_PLAN.md:3920 |
+| 26. The backend against world class, 2026-10-10 (Fable) | docs/roadmap/WORLD_CLASS_PLAN.md:3842 |
+| 26.1 Judgement, by layer | docs/roadmap/WORLD_CLASS_PLAN.md:3864 |
+| 26.2 Decisions, 2026-10-10 (do not re-decide) | docs/roadmap/WORLD_CLASS_PLAN.md:3880 |
+| 26.3 Phases with gates | docs/roadmap/WORLD_CLASS_PLAN.md:3910 |
+| 26.4 Measured, 2026-10-10 (Brief 60, numbers only) | docs/roadmap/WORLD_CLASS_PLAN.md:3920 |
+| 26.5 Complexity, cycles, hot routes and frames, 2026-10-10 (decision 63, numbers only) | docs/roadmap/WORLD_CLASS_PLAN.md:3941 |
+| 27. Every feature, its utility and its popups, 2026-10-10 (Fable) | docs/roadmap/WORLD_CLASS_PLAN.md:3956 |
 | 27. Onboarding and first-run experience | docs/roadmap/BACKLOG.md:1819 |
-| 27.1 Feature by feature: what it offers, what a professional expects, the gap | docs/roadmap/WORLD_CLASS_PLAN.md:3934 |
-| 27.2 The popups, one by one | docs/roadmap/WORLD_CLASS_PLAN.md:3962 |
-| 27.3 Decisions, 2026-10-10 (do not re-decide) | docs/roadmap/WORLD_CLASS_PLAN.md:3983 |
+| 27.1 Feature by feature: what it offers, what a professional expects, the gap | docs/roadmap/WORLD_CLASS_PLAN.md:3970 |
+| 27.2 The popups, one by one | docs/roadmap/WORLD_CLASS_PLAN.md:3998 |
+| 27.3 Decisions, 2026-10-10 (do not re-decide) | docs/roadmap/WORLD_CLASS_PLAN.md:4019 |
 | 28. In-app help: an AI that knows the docs, built | docs/roadmap/BACKLOG.md:1849 |
-| 28. The trust contract, 2026-10-10 (INBOX 750) | docs/roadmap/WORLD_CLASS_PLAN.md:3997 |
-| 28.1 The rules, each with its measure | docs/roadmap/WORLD_CLASS_PLAN.md:4006 |
-| 28.2 Decisions, 2026-10-10 (do not re-decide) | docs/roadmap/WORLD_CLASS_PLAN.md:4025 |
-| 28.3 Phases | docs/roadmap/WORLD_CLASS_PLAN.md:4047 |
-| 28.4 Deepened 2026-10-10: the OCR workspace (Brief 72a, decision 71) | docs/roadmap/WORLD_CLASS_PLAN.md:4056 |
-| 28.5 Deepened 2026-10-10: the audio set (Brief 72a, decision 71) | docs/roadmap/WORLD_CLASS_PLAN.md:4090 |
-| 28.6 T0 numbers, 2026-10-10 | docs/roadmap/WORLD_CLASS_PLAN.md:4134 |
+| 28. The trust contract, 2026-10-10 (INBOX 750) | docs/roadmap/WORLD_CLASS_PLAN.md:4033 |
+| 28.1 The rules, each with its measure | docs/roadmap/WORLD_CLASS_PLAN.md:4042 |
+| 28.2 Decisions, 2026-10-10 (do not re-decide) | docs/roadmap/WORLD_CLASS_PLAN.md:4061 |
+| 28.3 Phases | docs/roadmap/WORLD_CLASS_PLAN.md:4083 |
+| 28.4 Deepened 2026-10-10: the OCR workspace (Brief 72a, decision 71) | docs/roadmap/WORLD_CLASS_PLAN.md:4092 |
+| 28.5 Deepened 2026-10-10: the audio set (Brief 72a, decision 71) | docs/roadmap/WORLD_CLASS_PLAN.md:4126 |
+| 28.6 T0 numbers, 2026-10-10 | docs/roadmap/WORLD_CLASS_PLAN.md:4170 |
 | 29. Extensibility ideas, not yet scoped | docs/roadmap/BACKLOG.md:1855 |
 | 29b. Carried out of the §40 audit | docs/roadmap/BACKLOG.md:2037 |
 | 29c. Whiteboard, brainstormed: not yet triaged | docs/roadmap/BACKLOG.md:1882 |
@@ -28615,13 +28616,13 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 3. Metadata and dependencies | docs/roadmap/ANALYSIS.md:4222 |
 | 3. Research: what the field actually offers | docs/roadmap/MINDMAP_PLAN.md:79 |
 | 3. The diagnosis | docs/roadmap/DOCUMENTS_PLAN.md:54 |
-| 3. The five modules | docs/roadmap/CHAT_PLAN.md:1537 |
+| 3. The five modules | docs/roadmap/CHAT_PLAN.md:1553 |
 | 3. The strongest things worth taking | docs/roadmap/ANALYSIS.md:2424 |
 | 3. The target, in one paragraph | docs/roadmap/CHAT_PLAN.md:60 |
 | 3. The target, in one paragraph | docs/roadmap/GRAPH_PLAN.md:61 |
 | 3. The target, in one paragraph | docs/roadmap/TIMELINE_PLAN.md:44 |
 | 3. The target, in one paragraph | docs/roadmap/WHITEBOARD_PLAN.md:61 |
-| 3. The universal layer: the same capability, with a model and without | docs/roadmap/CHAT_PLAN.md:1330 |
+| 3. The universal layer: the same capability, with a model and without | docs/roadmap/CHAT_PLAN.md:1346 |
 | 3. What this session left behind | docs/roadmap/FABLE_BRIEF.md:152 |
 | 3.1 Structure and layout | docs/roadmap/MINDMAP_PLAN.md:83 |
 | 3.1 The surface is a `<textarea>`, and everything the user misses follows from that | docs/roadmap/DOCUMENTS_PLAN.md:59 |
@@ -28644,18 +28645,18 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 4. Decisions made (do not re-decide) | docs/roadmap/TIMELINE_PLAN.md:58 |
 | 4. Decisions made (do not re-decide) | docs/roadmap/WHITEBOARD_PLAN.md:76 |
 | 4. Decisions to make first | docs/roadmap/GRAPH_PLAN.md:73 |
-| 4. Decisions, 2026-10-10 (not to be remade; numbered after Phase 6's 45) | docs/roadmap/CHAT_PLAN.md:1547 |
+| 4. Decisions, 2026-10-10 (not to be remade; numbered after Phase 6's 45) | docs/roadmap/CHAT_PLAN.md:1563 |
 | 4. Library tab: chats, documents, images, archive | docs/roadmap/BACKLOG.md:203 |
 | 4. Provenance and publication practice | docs/roadmap/ANALYSIS.md:4234 |
 | 4. Scope decision (make this call first) | docs/roadmap/MINDMAP_PLAN.md:119 |
 | 4. The backend, made revolutionary (and still SQLite, still offline) | docs/roadmap/WORLD_CLASS_PLAN.md:478 |
 | 4. The decision to make first: the editing surface | docs/roadmap/DOCUMENTS_PLAN.md:108 |
-| 4. The eval sets this implies for Brief 39 step 10 | docs/roadmap/CHAT_PLAN.md:1401 |
+| 4. The eval sets this implies for Brief 39 step 10 | docs/roadmap/CHAT_PLAN.md:1417 |
 | 4. What it does worse than us | docs/roadmap/ANALYSIS.md:2504 |
 | 4a. A real whiteboard, not just a bigger sketch | docs/roadmap/BACKLOG.md:270 |
 | 4b. Templates and base layouts (boards, maps, documents) | docs/roadmap/BACKLOG.md:282 |
 | 5. Abilities without AI (the app must be excellent with the model off) | docs/roadmap/WORLD_CLASS_PLAN.md:672 |
-| 5. Build first: fifteen capabilities by value over cost | docs/roadmap/CHAT_PLAN.md:1442 |
+| 5. Build first: fifteen capabilities by value over cost | docs/roadmap/CHAT_PLAN.md:1458 |
 | 5. Connection points and constraints | docs/roadmap/WHITEBOARD_PLAN.md:972 |
 | 5. Documents | docs/roadmap/BACKLOG.md:286 |
 | 5. Features by surface, not covered before | docs/roadmap/ANALYSIS.md:4266 |
@@ -28663,7 +28664,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 5. Phases | docs/roadmap/GRAPH_PLAN.md:95 |
 | 5. Phases | docs/roadmap/TIMELINE_PLAN.md:114 |
 | 5. Phases | docs/roadmap/WHITEBOARD_PLAN.md:487 |
-| 5. Phases with gates | docs/roadmap/CHAT_PLAN.md:1569 |
+| 5. Phases with gates | docs/roadmap/CHAT_PLAN.md:1585 |
 | 5. Ship order (suggested sprints, each ends green + measured) | docs/roadmap/PLAN.md:114 |
 | 5. The feature set, in build order | docs/roadmap/MINDMAP_PLAN.md:156 |
 | 5. The phases | docs/roadmap/DOCUMENTS_PLAN.md:112 |
@@ -28677,7 +28678,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 6. Files this will touch | docs/roadmap/MINDMAP_PLAN.md:160 |
 | 6. Layers and pages | docs/roadmap/WHITEBOARD_PLAN.md:986 |
 | 6. Measuring "professional" without telemetry | docs/roadmap/WORLD_CLASS_PLAN.md:700 |
-| 6. Not verified | docs/roadmap/CHAT_PLAN.md:1580 |
+| 6. Not verified | docs/roadmap/CHAT_PLAN.md:1596 |
 | 6. OpenAI-compatible backends: **done** | docs/roadmap/BACKLOG.md:408 |
 | 6. Semantic search and the knowledge graph, "the ultimate upgrade" | docs/roadmap/PLAN.md:128 |
 | 6. The companion and device pairing | docs/roadmap/ANALYSIS.md:4295 |
@@ -28688,7 +28689,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 65. Highlight/web-clip capture | docs/roadmap/BACKLOG.md:2098 |
 | 66. Kortex.co, read and triaged, and the second-frontend question decided | docs/roadmap/ANALYSIS.md:912 |
 | 7. Acceptance | docs/roadmap/MINDMAP_PLAN.md:175 |
-| 7. Deepened 2026-10-10: the deterministic features (Brief 72b, decision 71) | docs/roadmap/CHAT_PLAN.md:1584 |
+| 7. Deepened 2026-10-10: the deterministic features (Brief 72b, decision 71) | docs/roadmap/CHAT_PLAN.md:1600 |
 | 7. Design system | docs/roadmap/ANALYSIS.md:4312 |
 | 7. Desktop packaging | docs/roadmap/BACKLOG.md:412 |
 | 7. Files this will touch | docs/roadmap/DOCUMENTS_PLAN.md:236 |
@@ -28710,7 +28711,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 79b. New items, raised by the §85/§86 audit, not yet triaged | docs/roadmap/BACKLOG.md:2276 |
 | 8. Acceptance for the whole plan | docs/roadmap/DOCUMENTS_PLAN.md:246 |
 | 8. Dashboard | docs/roadmap/PLAN.md:176 |
-| 8. Deepened 2026-10-10: chat access to information (Brief 72b, decision 71) | docs/roadmap/CHAT_PLAN.md:1616 |
+| 8. Deepened 2026-10-10: chat access to information (Brief 72b, decision 71) | docs/roadmap/CHAT_PLAN.md:1632 |
 | 8. Execution order for the coming week (Opus/Sonnet sessions) | docs/roadmap/WORLD_CLASS_PLAN.md:778 |
 | 8. Open bug list | docs/roadmap/BACKLOG.md:510 |
 | 8. Research: tldraw, Excalidraw, Miro, FigJam, and what it changes here | docs/roadmap/WHITEBOARD_PLAN.md:559 |
@@ -28722,7 +28723,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 8b. Web search: two Windows bugs found, and what is left | docs/roadmap/BACKLOG.md:544 |
 | 9. Built: Phase 1 (backend) | docs/roadmap/MINDMAP_PLAN.md:211 |
 | 9. Declined, with why | docs/roadmap/ANALYSIS.md:4364 |
-| 9. Deepened 2026-10-10: the Guide (Brief 72b, decisions 59 and 71) | docs/roadmap/CHAT_PLAN.md:1639 |
+| 9. Deepened 2026-10-10: the Guide (Brief 72b, decisions 59 and 71) | docs/roadmap/CHAT_PLAN.md:1655 |
 | 9. Find and replace | docs/roadmap/WHITEBOARD_PLAN.md:1088 |
 | 9. Notes (capture + list) | docs/roadmap/PLAN.md:186 |
 | 9. On testing with a real model in the sandbox | docs/roadmap/WORLD_CLASS_PLAN.md:836 |
@@ -28844,7 +28845,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Bugs | docs/roadmap/CHAT_PLAN.md:772 |
 | Bugs | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Bugs | docs/roadmap/UI_MODERNISATION_PLAN.md:901 |
-| Bugs | docs/roadmap/WORLD_CLASS_PLAN.md:3035 |
+| Bugs | docs/roadmap/WORLD_CLASS_PLAN.md:3071 |
 | Build first | docs/roadmap/WHITEBOARD_PLAN.md:1260 |
 | Built, 2026-09-09: one surface per panel, and the Arrange section | docs/roadmap/WHITEBOARD_PLAN.md:481 |
 | Built, Phase 2 (the space) | docs/roadmap/GRAPH_PLAN.md:166 |
@@ -28896,7 +28897,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | D7 Timeline (L, in progress: see TIMELINE_PLAN.md) | docs/roadmap/WORLD_CLASS_PLAN.md:399 |
 | D8 Reminders (S, Sonnet) | docs/roadmap/WORLD_CLASS_PLAN.md:403 |
 | D9 Links and the web clipper (M, Opus) | docs/roadmap/WORLD_CLASS_PLAN.md:414 |
-| Decided by the rows agent, 2026-10-11 (standing order 3; house2 ledger rows) | docs/roadmap/WORLD_CLASS_PLAN.md:4146 |
+| Decided by the rows agent, 2026-10-11 (standing order 3; house2 ledger rows) | docs/roadmap/WORLD_CLASS_PLAN.md:4182 |
 | Decided, 2026-09-12: what a Files row is for (do not remake) | docs/roadmap/UI_MODERNISATION_PLAN.md:273 |
 | Decided, 2026-09-12: what the bottom of a picture card is (do not remake) | docs/roadmap/UI_MODERNISATION_PLAN.md:296 |
 | Decided, 2026-09-13: how the page reader is reached (do not remake) | docs/roadmap/UI_MODERNISATION_PLAN.md:237 |
@@ -28937,7 +28938,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Design requests | docs/roadmap/CHAT_PLAN.md:823 |
 | Design requests | docs/roadmap/DOCUMENTS_PLAN.md:1265 |
 | Design requests | docs/roadmap/UI_MODERNISATION_PLAN.md:917 |
-| Design requests | docs/roadmap/WORLD_CLASS_PLAN.md:3052 |
+| Design requests | docs/roadmap/WORLD_CLASS_PLAN.md:3088 |
 | Deta Surf (deta) | docs/roadmap/ANALYSIS.md:1991 |
 | Diagrams: mermaid as the interchange format | docs/roadmap/BACKLOG.md:2559 |
 | Direction, 2026-10-10 (Fable orchestrating): the thesis, the policies, the tracks | docs/ROADMAP.md:26 |
@@ -29004,7 +29005,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/BACKLOG.md:4167 |
 | Ideas | docs/roadmap/CHAT_PLAN.md:867 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1276 |
-| Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3077 |
+| Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3113 |
 | If Opus is the orchestrator (no Fable available) | docs/roadmap/HANDOVER.md:105 |
 | Image notes and the Library, against photocraft and lightcraft | docs/roadmap/ANALYSIS.md:3955 |
 | Is its backend better designed? No: and it says so about itself | docs/roadmap/ANALYSIS.md:810 |
@@ -29072,8 +29073,8 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed (last 20, newest first) | docs/roadmap/INBOX.md:168 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4176 |
-| Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3088 |
-| Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/CHAT_PLAN.md:1680 |
+| Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3124 |
+| Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/CHAT_PLAN.md:1696 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/DOCUMENTS_PLAN.md:1292 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/GRAPH_PLAN.md:578 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/MINDMAP_PLAN.md:1748 |
@@ -29110,13 +29111,13 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-03 (INBOX 266) | docs/roadmap/BACKLOG.md:4020 |
 | Placed from INBOX, 2026-10-03 (INBOX 268) | docs/roadmap/AGENT_SKILLS_REFORM.md:176 |
 | Placed from INBOX, 2026-10-03 (INBOX 303, music) | docs/roadmap/BACKLOG.md:3956 |
-| Placed from INBOX, 2026-10-03 (INBOX 391, 392) | docs/roadmap/WORLD_CLASS_PLAN.md:2491 |
+| Placed from INBOX, 2026-10-03 (INBOX 391, 392) | docs/roadmap/WORLD_CLASS_PLAN.md:2494 |
 | Placed from INBOX, 2026-10-03 (INBOX 397) | docs/roadmap/BACKLOG.md:4133 |
-| Placed from INBOX, 2026-10-03 (INBOX 403, the standing bar) | docs/roadmap/WORLD_CLASS_PLAN.md:2470 |
+| Placed from INBOX, 2026-10-03 (INBOX 403, the standing bar) | docs/roadmap/WORLD_CLASS_PLAN.md:2473 |
 | Placed from INBOX, 2026-10-03 (INBOX 409: the AI assistant bar is what stays open) | docs/roadmap/DOCUMENTS_PLAN.md:1229 |
 | Placed from INBOX, 2026-10-03 (the chat stutter, INBOX 413) | docs/roadmap/CHAT_PLAN.md:617 |
-| Placed from INBOX, 2026-10-03 (the tray at its cap) | docs/roadmap/WORLD_CLASS_PLAN.md:2569 |
-| Placed from INBOX, 2026-10-04 (design work for the next Opus slots) | docs/roadmap/WORLD_CLASS_PLAN.md:2986 |
+| Placed from INBOX, 2026-10-03 (the tray at its cap) | docs/roadmap/WORLD_CLASS_PLAN.md:2572 |
+| Placed from INBOX, 2026-10-04 (design work for the next Opus slots) | docs/roadmap/WORLD_CLASS_PLAN.md:3022 |
 | Placed from INBOX, 2026-10-04: parity with Obsidian's graph | docs/roadmap/GRAPH_PLAN.md:482 |
 | Placed from INBOX, 2026-10-05 | docs/roadmap/MINDMAP_PLAN.md:1409 |
 | Placed from INBOX, 2026-10-05 | docs/roadmap/WHITEBOARD_PLAN.md:770 |
@@ -29125,13 +29126,13 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-05 (OPEN.md triage) | docs/roadmap/DOCUMENTS_PLAN.md:1233 |
 | Placed from INBOX, 2026-10-05 (OPEN.md triage) | docs/roadmap/UI_MODERNISATION_PLAN.md:870 |
 | Placed from INBOX, 2026-10-05 (OPEN.md triage) | docs/roadmap/WHITEBOARD_PLAN.md:777 |
-| Placed from INBOX, 2026-10-05 (OPEN.md triage) | docs/roadmap/WORLD_CLASS_PLAN.md:2998 |
+| Placed from INBOX, 2026-10-05 (OPEN.md triage) | docs/roadmap/WORLD_CLASS_PLAN.md:3034 |
 | Placed from INBOX, 2026-10-05 (boardmap-1005) | docs/roadmap/WHITEBOARD_PLAN.md:785 |
 | Placed from INBOX, 2026-10-07 (next PR) | docs/roadmap/DOCUMENTS_PLAN.md:1238 |
 | Placed from INBOX, 2026-10-07 (next PR) | docs/roadmap/WHITEBOARD_PLAN.md:797 |
 | Placed from INBOX, 2026-10-10 (code as documents) | docs/roadmap/DOCUMENTS_PLAN.md:1296 |
-| Placed from INBOX, 2026-10-10 (filing suggestions) | docs/roadmap/WORLD_CLASS_PLAN.md:4138 |
-| Placed from INBOX, 2026-10-10 (the coverage pass over 729 to 744) | docs/roadmap/CHAT_PLAN.md:1671 |
+| Placed from INBOX, 2026-10-10 (filing suggestions) | docs/roadmap/WORLD_CLASS_PLAN.md:4174 |
+| Placed from INBOX, 2026-10-10 (the coverage pass over 729 to 744) | docs/roadmap/CHAT_PLAN.md:1687 |
 | Placed from INBOX, 2026-10-10 (the owner on feature depth) | docs/roadmap/MINDMAP_PLAN.md:1752 |
 | Placed from INBOX, 2026-10-10 (the owner on feature depth) | docs/roadmap/WHITEBOARD_PLAN.md:1436 |
 | Placed from INBOX, 2026-10-10 (the owner on the graph, again) | docs/roadmap/GRAPH_PLAN.md:582 |
@@ -29146,7 +29147,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-11 (the owner on buttons, OCR and the constellation) | docs/roadmap/UI_MODERNISATION_PLAN.md:1208 |
 | Placed from INBOX, 2026-10-11 (the owner on dragging the force graph) | docs/roadmap/GRAPH_PLAN.md:587 |
 | Placed from INBOX, 2026-10-11 (the owner's sweep request) | docs/roadmap/UI_MODERNISATION_PLAN.md:1202 |
-| Placed from INBOX, 2026-10-11 (the owner: Atlas as the app's assistant) | docs/roadmap/CHAT_PLAN.md:1684 |
+| Placed from INBOX, 2026-10-11 (the owner: Atlas as the app's assistant) | docs/roadmap/CHAT_PLAN.md:1700 |
 | Placed from INBOX, 2026-10-11 (the topic's tools) | docs/roadmap/MINDMAP_PLAN.md:1769 |
 | Placed from INBOX, 2026-10-11 (voice notes, live captions, the focus timer; voiceup) | docs/roadmap/UI_MODERNISATION_PLAN.md:1220 |
 | Placed from INBOX, 2026-10-12 (grammar in digest answers) | docs/roadmap/BACKLOG.md:4296 |
@@ -29160,10 +29161,10 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-19 (per-board view, Format on a map; next PR) | docs/roadmap/WHITEBOARD_PLAN.md:1544 |
 | Placed from INBOX, 2026-10-19 (wb1327) | docs/roadmap/WHITEBOARD_PLAN.md:1538 |
 | Placed from INBOX, 2026-10-26 | docs/roadmap/WHITEBOARD_PLAN.md:1563 |
-| Placed from INBOX, 2026-10-26 (the owner: the composer composes, everywhere) | docs/roadmap/CHAT_PLAN.md:1828 |
+| Placed from INBOX, 2026-10-26 (the owner: the composer composes, everywhere) | docs/roadmap/CHAT_PLAN.md:1844 |
 | Placed from INBOX, 2026-10-26 (the owner: the force view is messy, popups and controls hard to learn) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from INBOX, 2026-10-26b | docs/roadmap/WHITEBOARD_PLAN.md:1576 |
-| Placed from INBOX, 2026-10-26b | docs/roadmap/WORLD_CLASS_PLAN.md:4155 |
+| Placed from INBOX, 2026-10-26b | docs/roadmap/WORLD_CLASS_PLAN.md:4191 |
 | Placed from INBOX, 2026-10-27 | docs/roadmap/DOCUMENTS_PLAN.md:1343 |
 | Placed from INBOX, 2026-10-27 | docs/roadmap/UI_MODERNISATION_PLAN.md:1248 |
 | Placed from INBOX, 2026-10-27 | docs/roadmap/WHITEBOARD_PLAN.md:1581 |
@@ -29187,11 +29188,11 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-11-04 | docs/roadmap/WHITEBOARD_PLAN.md:1611 |
 | Placed from INBOX, 2026-11-04 (1657, what the two lag rounds left) | docs/roadmap/UI_MODERNISATION_PLAN.md:1268 |
 | Placed from INBOX, 2026-11-04 (audit Rank 36, hover decision) | docs/roadmap/GRAPH_PLAN.md:611 |
-| Placed from INBOX, 2026-11-05 (the Ask columns and folds) | docs/roadmap/CHAT_PLAN.md:1841 |
-| Placed from INBOX, 2026-11-07 (room for 1694) | docs/roadmap/CHAT_PLAN.md:1852 |
+| Placed from INBOX, 2026-11-05 (the Ask columns and folds) | docs/roadmap/CHAT_PLAN.md:1857 |
+| Placed from INBOX, 2026-11-07 (room for 1694) | docs/roadmap/CHAT_PLAN.md:1868 |
 | Placed from INBOX, 2026-11-08 | docs/roadmap/UI_MODERNISATION_PLAN.md:1278 |
 | Placed from INBOX, 2026-11-08 (companion catalogue, 1696 dd, v, kk) | docs/roadmap/PLAN.md:322 |
-| Placed from INBOX, 2026-11-09 (the tray at its cap) | docs/roadmap/CHAT_PLAN.md:1856 |
+| Placed from INBOX, 2026-11-09 (the tray at its cap) | docs/roadmap/CHAT_PLAN.md:1872 |
 | Placed from INBOX, 2026-11-09 (the tray at its cap) | docs/roadmap/UI_MODERNISATION_PLAN.md:1282 |
 | Placed from INBOX, 2026-11-09 (what 1698 left) | docs/roadmap/UI_MODERNISATION_PLAN.md:1272 |
 | Placed from INBOX, 2026-11-10 (libraries for the composer) | docs/roadmap/CHAT_PLAN.md:576 |
@@ -29209,10 +29210,10 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/TIMELINE_PLAN.md:198 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/UI_MODERNISATION_PLAN.md:896 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/WHITEBOARD_PLAN.md:801 |
-| Placed from the owner's list, 2026-10-10 | docs/roadmap/WORLD_CLASS_PLAN.md:3031 |
+| Placed from the owner's list, 2026-10-10 | docs/roadmap/WORLD_CLASS_PLAN.md:3067 |
 | Placed from the owner, 2026-10-11: a tessellation view (next PR) | docs/roadmap/GRAPH_PLAN.md:593 |
-| Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1833 |
-| Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4142 |
+| Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1849 |
+| Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4178 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Presentations from boards and maps, against deckcraft | docs/roadmap/ANALYSIS.md:4022 |
 | Promoted to ROADMAP.md, Tier 3, items 32–36 | docs/roadmap/ANALYSIS.md:741 |
@@ -29270,10 +29271,10 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Tables in notes and documents, against gridcraft | docs/roadmap/ANALYSIS.md:3891 |
 | The 2026-10-12 sweep: everything said and not done, so nothing is missed | docs/roadmap/BACKLOG.md:4353 |
 | The `pytesseract` vendoring question, measured | docs/roadmap/ANALYSIS.md:2102 |
-| The assistant catalogue, 2026-10-10 | docs/roadmap/CHAT_PLAN.md:878 |
+| The assistant catalogue, 2026-10-10 | docs/roadmap/CHAT_PLAN.md:894 |
 | The asymmetry these exploit | docs/roadmap/WORLD_CLASS_PLAN.md:1061 |
 | The constraint that governs everything below, **now half-lifted** | docs/roadmap/ANALYSIS.md:257 |
-| The deterministic foundation, 2026-10-10 (INBOX 746) | docs/roadmap/CHAT_PLAN.md:1491 |
+| The deterministic foundation, 2026-10-10 (INBOX 746) | docs/roadmap/CHAT_PLAN.md:1507 |
 | The dock grammar (the rule the whole phase enforces) | docs/roadmap/UI_MODERNISATION_PLAN.md:404 |
 | The draw.io programme, 2026-10-10 | docs/roadmap/WHITEBOARD_PLAN.md:805 |
 | The features audit's Phase G, what is left (placed 2026-10-05, op3-1005) | docs/roadmap/MINDMAP_PLAN.md:1551 |
@@ -29289,7 +29290,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | The one thing deliberately not decided | docs/roadmap/ANALYSIS.md:670 |
 | The one-line answers to the three questions asked | docs/roadmap/ANALYSIS.md:899 |
 | The order, and the rule | docs/roadmap/WORLD_CLASS_PLAN.md:1898 |
-| The owner's brainstorm, 2026-10-11 (after INBOX 812) | docs/roadmap/CHAT_PLAN.md:1766 |
+| The owner's brainstorm, 2026-10-11 (after INBOX 812) | docs/roadmap/CHAT_PLAN.md:1782 |
 | The peer apps: fourteen triaged, five read properly | docs/roadmap/ANALYSIS.md:3250 |
 | The plan documents, in one list (read this before opening any of them) | docs/ROADMAP.md:268 |
 | The quarter's briefs: each item is a row in its plan; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:100 |
@@ -29309,14 +29310,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Traps that have each cost real time | docs/ROADMAP.md:383 |
 | Twenty-four repositories read for Tessellate, 2026-09-21 | docs/roadmap/ANALYSIS.md:2588 |
 | Vendor candidates, 2026-10-11 | docs/roadmap/ANALYSIS.md:4400 |
-| Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/CHAT_PLAN.md:1664 |
+| Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/CHAT_PLAN.md:1680 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/DOCUMENTS_PLAN.md:1281 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/GRAPH_PLAN.md:572 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/TIMELINE_PLAN.md:306 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/UI_MODERNISATION_PLAN.md:1091 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/WHITEBOARD_PLAN.md:1425 |
-| Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/WORLD_CLASS_PLAN.md:4129 |
+| Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/WORLD_CLASS_PLAN.md:4165 |
 | Verification, every phase | docs/roadmap/UI_MODERNISATION_PLAN.md:220 |
 | W1: Design system (owner: DS) | docs/roadmap/MODERNISATION_AUDIT.md:910 |
 | W2: UX overhauls for the core journeys (owner: FE + DS) | docs/roadmap/MODERNISATION_AUDIT.md:925 |

@@ -122,7 +122,7 @@ function featureCatalog() {
       { name: "Images", desc: "Every picture in the notebook, with its caption and where it is used.", reveal: "library-images" },
       { name: "Files", desc: "PDFs and other files, with a first-page preview and what has been read from them.", reveal: "library-files" },
       { name: "Bookmarks", desc: "Bookmarks, grouped, with the page's own title and description.", reveal: "library-links" },
-      { name: "AI skills", desc: "The skills you can run, what each one does, and how to add your own.", reveal: "library-skills" },
+      { name: "Skills", desc: "The skills you can run, what each one does, and how to add your own.", reveal: "library-skills" },
       { name: "Contents", desc: "A table of contents for the whole notebook, by category and tag.", reveal: "library-contents" },
       { name: "Where a file is used", desc: "Every file says which notes, documents and boards reference it.", reveal: "library-files" },
     ]},

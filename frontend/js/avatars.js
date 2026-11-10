@@ -7226,7 +7226,7 @@ function placeNameMarkBuddy(buddy = document.getElementById("nm-buddy"), instant
 //: that went (a sub-tab's dock hidden with its view, a card re-drawn, a
 //: board's content panned away) left it sitting on the air where the edge
 //: had been: measured (`scratchpad/ui-sweeps/smooth1005-perch.js`) on the
-//: Library's AI skills, seated on a dock its view had hidden. Asked of the
+//: Library's Skills, seated on a dock its view had hidden. Asked of the
 //: page itself, not of the perch it remembers: under the middle of its
 //: seat, soles or hands, is there a visible element whose top edge (bottom,
 //: hanging) is within 2px of that line? Floating, peeking over the bar,
