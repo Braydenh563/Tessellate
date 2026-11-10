@@ -355,3 +355,12 @@ def test_hello_opens_the_private_spaces(client, fake):
     assert local.get("/private-spaces/status").json()["open"] is False
     assert local.post("/private-spaces/unlock-hello", json=_assertion(local, device)).status_code == 200
     assert local.get("/private-spaces/status").json()["open"] is True
+
+
+def test_pressing_the_hello_button_never_locks_out_the_password(client, fake):
+    """Review 2026-11-10: `begin` once left a throttle attempt open each press,
+    so six presses answered 429 to the password too."""
+    local, _device, _ = _with_hello(client)
+    for _ in range(10):
+        assert local.post("/auth/hello/begin").status_code == 200
+    assert local.post("/auth/unlock", json={"password": PASSWORD}).status_code == 200

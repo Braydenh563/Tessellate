@@ -210,7 +210,13 @@ def begin(request: Request, config: ConfigManager = Depends(get_config)) -> dict
     """A challenge for the stored credential: the lock screen and the private
     spaces both start here. Open, like the lock screen, but this computer only."""
     _here(request)
-    routes_auth._refuse_if_throttled(routes_auth._client_key(request))
+    client = routes_auth._client_key(request)
+    routes_auth._refuse_if_throttled(client)
+    # Only a check: a challenge is no guess, so the attempt the throttle just
+    # opened is answered at once, and pressing the button never locks out
+    # the password (the assertion route counts the real attempt).
+    with routes_auth._throttle_lock:
+        routes_auth._answered(routes_auth._bucket(client))
     made = hellostore.record(config.data_dir)
     if made is None or made.get("rp") != _rp_id(request):
         raise HTTPException(status_code=404, detail="Windows Hello is not set up here. Use your password.")
