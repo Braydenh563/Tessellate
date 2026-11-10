@@ -3546,7 +3546,7 @@ MORE_TOPICS.extend([
             "the other to set it instead. Same as fill (or Same as border) makes "
             "them one colour and Swap trades them, each one Undo step. Recent "
             "holds your last eight picks on this device, above the board's colours. "
-            "Palettes you saved from the Library show below the board's colours, one row each. "
+            "Palettes you saved from the Library show below the board's colours, one row each, then 24 preset and 40 more colours. "
             "Custom takes a colour typed or pasted: a hex box (#rgb, #rrggbb, "
             "#rrggbbaa, rgb() or hsl()) and Red, Green and Blue boxes. Opacity, "
             "a slider and a number, sets how solid that colour is: the fill's for "

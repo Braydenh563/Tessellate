@@ -2314,8 +2314,28 @@ const wbColour = (() => {
     };
     //: `swatchPicker` lives in the categories bundle, which a board may open before.
     const lib = wbLibState.lib ? Promise.resolve(wbLibState.lib) : apiJson("/board-library").then((got) => (wbLibState.lib = wbLibState.lib || got));
-    Promise.all([ensureModule("categories"), lib]).then(fill).catch(() => {});
+    Promise.all([ensureModule("categories"), lib]).then(fill).catch(() => {}).then(() => seeds(box, pick, current));
     return box;
+  }
+
+  //: draw.io's two seed sets for the swatch box, under the saved palettes: its 24 preset colours and a
+  //: 40-colour grid (ten greys, then pastel, mid and strong rings), hex without the hash.
+  const SEEDS = {
+    "Preset colours": "e6d0de cda2be b5739d e1d5e7 c3abd0 a680b8 d4e1f5 a9c4eb 7ea6e0 d5e8d4 9ac7bf 67ab9f b9e0a5 97d077 fff2cc ffe599 ffd966 fff4c3 ffce9f ffb570 f8cecc f19c99 ea6b66 b85450",
+    "More colours": "ffffff e6e6e6 cccccc b3b3b3 999999 808080 666666 4d4d4d 333333 000000 ffcccc ffe6cc ffffcc e6ffcc ccffcc ccffff cce5ff ccccff e5ccff ffcce6 ff9999 ffcc99 ffff99 ccff99 99ff99 99ffff 99ccff 9999ff cc99ff ff99cc ff6666 ffb366 ffff66 b3ff66 66ff66 66ffff 66b2ff 6666ff b266ff ff66b3",
+  };
+
+  function seeds(box, pick, current) {
+    if (typeof swatchPicker !== "function") return;
+    for (const [name, list] of Object.entries(SEEDS)) {
+      const colours = list.split(" ").map((c) => `#${c}`);
+      const row = swatchPicker({ label: name, value: colours.includes(current) ? current : null, palette: Object.fromEntries(colours.map((c) => [c, c])), none: null, onChoose: pick });
+      box.append(wbColourHeading(name), row);
+    }
+    //: The rows landed after the popover was placed: pull it back inside the window if they pushed it out.
+    const menu = box.closest("#wb-colour-menu");
+    const over = menu ? menu.getBoundingClientRect().bottom - (window.innerHeight - 8) : 0;
+    if (over > 0) menu.style.top = `${Math.max(8, Math.round(menu.getBoundingClientRect().top - over))}px`;
   }
 
   return {
