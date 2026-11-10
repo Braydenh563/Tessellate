@@ -1517,7 +1517,7 @@ Built; moved whole to HISTORY.md ("Moved from the plans, 2026-10-03", "From MIND
      the main sections needs to be wayyy more fast, intuitive, guided,
      assisted, automated, easy manually, and smooth to use." And: "there have
      obviously been a lot of bugs that have been missed if something as big
-     as filing a note was very broken so I'm worried."
+     as filing a note was very broken so I'm worried." **Per part, s58left3-1110 (ledger and code, not re-driven):** (a) (b) (e) built and recorded above; (f) the dialog head is DESIGN.md's recipe; (g) docs/screenshots exist; (c) (d) companion motion, props and states are built across the CHANGELOG's Atlas lines (the tools/avatar-lab.html test page is there); the 2026-09-28 addendum's perch z-order, the whiteboard and mind map minimap-fit drag lag and the popup agent's unanswered prompts are not re-checked and stay open for a driven pass.
      Same day, also open: the graph's default layout "looks messy and is
      distributed wierdly"; the slash menu's Link card and Web link render the
      same on a line of their own (a lone link is a card, CHAT_PLAN decision

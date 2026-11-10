@@ -10,9 +10,14 @@
 // The gate is DOCUMENTS_PLAN Phase 2's: keydown to paint under 30 ms in Live
 // on this document.
 //
+// Options (D19, s58left3-1110): TYPOS=1 makes every fifth word a misspelling, so the
+// app's own spell marks have 4,000 words to underline; NOSPELL=1 empties the word list
+// after it loads (no marks, the browser's checker back on); the run also types in Source.
+//
 //   BASE=http://127.0.0.1:8786 node scratchpad/ui-sweeps/doctype.js
 const { boot } = require("./lib.js");
 
+const TYPOS = Boolean(process.env.TYPOS);
 const PHRASE = " the quick brown fox jumps over the lazy dog";
 
 (async () => {
@@ -34,13 +39,20 @@ const PHRASE = " the quick brown fox jumps over the lazy dog";
   });
   await page.waitForTimeout(2000);
 
-  await page.evaluate(() => {
+  await page.evaluate((TYPOS) => {
     const words = [];
-    for (let i = 0; i < 20000; i += 1) words.push(i % 17 === 0 ? "\n\n## Section " + i : "word" + i);
+    for (let i = 0; i < 20000; i += 1) words.push(i % 17 === 0 ? "\n\n## Section " + i : TYPOS && i % 5 === 0 ? "blorptastic" : "word" + i);
     docSurface().text = "# Big document\n\n" + words.join(" ");
     docSurfaceInput();
-  });
-  await page.waitForTimeout(1200);
+  }, Boolean(process.env.TYPOS));
+  await page.waitForTimeout(4000);
+  const marks = () => page.evaluate(() => document.querySelectorAll(".cm-finding").length);
+  console.log("spell marks on screen", await marks());
+  if (process.env.NOSPELL) {
+    await page.evaluate(() => { docWordlist = null; docSurfaceInput(); });
+    await page.waitForTimeout(1500);
+    console.log("spell marks after emptying the list", await marks());
+  }
 
   const arm = () =>
     page.evaluate(() => {
@@ -86,6 +98,17 @@ const PHRASE = " the quick brown fox jumps over the lazy dog";
   await page.keyboard.type(PHRASE, { delay: 40 });
   await page.waitForTimeout(1200);
   console.log("live", JSON.stringify(await read()));
+
+  // --- Source, the plain markdown with no Live decoration set ---------------
+  await page.evaluate(() => setDocView("source"));
+  await page.waitForTimeout(1000);
+  await page.click((await page.$("#doc-editor .cm-content")) ? "#doc-editor .cm-content" : "#doc-content");
+  await page.keyboard.press("Control+End");
+  await page.waitForTimeout(500);
+  await arm();
+  await page.keyboard.type(PHRASE, { delay: 40 });
+  await page.waitForTimeout(1200);
+  console.log("source", JSON.stringify(await read()));
 
   // --- Split, where the preview is repainted as well -----------------------
   await page.evaluate(() => setDocView("split"));

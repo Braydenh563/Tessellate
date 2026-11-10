@@ -5,6 +5,7 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
+- Chat (s58left3-1110, D9): an older reply's corner head is a picture of one shared copy (`svg` and `use`, 2 nodes) instead of a drawn Atlas (161); only the newest reply keeps the live head (tests/test_atlas_rest_faces.py). Measured: 167 to 8 nodes a reply, pixels within 2 of 255 of the drawn head. `doctype.js` also types in Source.
 - Notes (s12b-1110, audit S71, S74): .md and .txt files dropped on the Notes tab become notes, with Undo; a note with three or more headings has a Headings row in its ... menu that opens a list of jump links (tests/test_file_drop.py, tests/test_note_headings_s74.py).
 - Import (s12-1110, audit K34): an app import (Notion, Obsidian, Evernote, Apple Notes, a Tessellate folder) is sized and opened from the spooled upload file, not read whole into memory; a zip is read one member at a time (tests/test_import_spool.py).
 - Code (s58-1110, OPEN W29 D24): settings-packages.js, appearance-panel.js and whiteboard-history.js wrapped whole in one closure, one or two exports each; the shared scope's names 9,096 to 9,044 (the cap follows). The tests that slice them read `unwrapped`.
