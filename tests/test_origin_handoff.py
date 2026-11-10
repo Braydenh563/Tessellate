@@ -47,6 +47,7 @@ def test_window_host_is_localhost_and_bind_stays_loopback(monkeypatch):
 def test_first_open_goes_through_the_bridge_then_straight_to_localhost(monkeypatch, tmp_path):
     monkeypatch.setenv("TESSELLATE_DATA_DIR", str(tmp_path))
     monkeypatch.delenv("TESSELLATE_LOCAL_NAME", raising=False)
+    monkeypatch.setitem(launcher._LOCALHOST_VERDICT, 8795, True)  # no real server to probe
     assert launcher._window_url(8795) == "http://127.0.0.1:8795/origin-bridge.html?to=localhost"
     assert launcher._window_url(8795) == "http://localhost:8795"
     assert launcher._window_url(8795) == "http://localhost:8795"
@@ -118,3 +119,61 @@ def test_the_bridge_page_is_served_and_not_part_of_the_boot_page(client):
     page = client.get("/origin-bridge.html")
     assert page.status_code == 200 and "/js/origin-bridge.js" in page.text
     assert "origin-bridge" not in (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+
+
+# --- every opener uses the window host; localhost falls back to the bind address ---
+
+
+def _loopback(monkeypatch, addrs, probe_ok=True):
+    import socket
+
+    launcher._LOCALHOST_VERDICT.clear()
+    monkeypatch.delenv("TESSELLATE_LOCAL_NAME", raising=False)
+    monkeypatch.setattr(socket, "getaddrinfo", lambda *a, **k: [(2, 1, 6, "", (a_, 0)) for a_ in addrs])
+
+    import http.client
+
+    class _Conn:
+        def __init__(self, *a, **k):
+            pass
+
+        def request(self, *a, **k):
+            if not probe_ok:
+                raise OSError("refused")
+
+        def getresponse(self):
+            return type("R", (), {"status": 200})()
+
+        def close(self):
+            pass
+
+    monkeypatch.setattr(http.client, "HTTPConnection", _Conn)
+
+
+def test_window_host_is_localhost_when_it_is_loopback_and_answers(monkeypatch):
+    _loopback(monkeypatch, ["127.0.0.1", "::1"])
+    assert launcher.window_host(8796) == "localhost"
+
+
+def test_fallback_when_localhost_resolves_off_loopback(monkeypatch):
+    _loopback(monkeypatch, ["10.1.2.3"])
+    assert launcher.window_host(8797) == "127.0.0.1"
+    assert launcher._window_url(8797) == "http://127.0.0.1:8797"
+
+
+def test_fallback_when_the_probe_fails(monkeypatch):
+    _loopback(monkeypatch, ["127.0.0.1"], probe_ok=False)
+    assert launcher.window_host(8798) == "127.0.0.1"
+
+
+def test_every_opener_uses_the_window_host(monkeypatch):
+    src = (ROOT / "src" / "tessellate" / "__main__.py").read_text(encoding="utf-8")
+    assert "page_host" not in src
+    _loopback(monkeypatch, ["127.0.0.1"])
+    opened = []
+    import webbrowser
+
+    monkeypatch.setattr(webbrowser, "open", lambda u, **k: opened.append(u))
+    monkeypatch.setattr(launcher, "_existing_instance", lambda: ("live", type("R", (), {"port": 8799})()))
+    assert launcher._capture() == 0
+    assert opened == ["http://localhost:8799/capture.html"]
