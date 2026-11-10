@@ -12,6 +12,10 @@
 //: The manual and Statistics are places too (INBOX 1335): overlays that push an
 //: entry on open, as Settings does; their own close steps back off it.
 const OVERLAY_TABS = { Manual: 1, Statistics: 1 };
+//: They read as `#/Manual` and `#/Statistics` while open (B43): routeHash found
+//: no route for them and wrote `#/dashboard`, the tab under the overlay. Here,
+//: not in router.js, which is at its gzip cap.
+Object.assign(ROUTE_TABS, { Manual: "Manual", Statistics: "Statistics" });
 const routerBack = { swallow: 0, timer: 0 };
 
 //: The top overlay, closed the way its own Escape closes it. True when one was

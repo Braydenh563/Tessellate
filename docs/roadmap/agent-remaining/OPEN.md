@@ -169,10 +169,10 @@ Parked until the owner's data or a check on real hardware:
 - B42 `before:` excludes its day (after Q25) | OPEN 456
 
 **W12 Navigation and overlays** (B, shell, Sonnet). Files: `frontend/js/navigation.js`, `settings.js`, notices. Checks: `tests/test_navigation*`, a Playwright Back and Forward run. Done when: Back closes an open overlay first and the hash matches what shows.
-- B43 Browser Back with an overlay open steps the tab history and leaves it open | t20#2
-- B44 Escape on Settings rewrites the hash to the tab beneath | t20#3
-- B45 A notice's `go: {settings, focus}` does not scroll the phone Settings sheet | t20#7
-- B46 The navigation and undo audit table, then its fixes | WORLD_CLASS#8 row 32
+- ~~B43 Browser Back with an overlay open steps the tab history and leaves it open | t20#2~~ **Stale for the overlays** (w12-1110, Chromium: shortcuts, palette, finder, features, agent palette, notifications, dialog, lightbox, sketch all close on Back with the stack unchanged); the real gap was the manual and Statistics address, fixed
+- ~~B44 Escape on Settings rewrites the hash to the tab beneath | t20#3~~ **Stale** (w12-1110: Escape on Settings from #/library gives #/library idx 2, Forward gives #/settings/models, Back #/library)
+- ~~B45 A notice's `go: {settings, focus}` does not scroll the phone Settings sheet | t20#7~~ **Stale** (w12-1110, 390x700: 4 of 4 targets inside the sheet scroller, also with Settings already open)
+- ~~B46 The navigation and undo audit table, then its fixes | WORLD_CLASS#8 row 32~~ **Built w12-1110**: audit table in WORLD_CLASS_PLAN row 32; fix: overlay addresses; left rows are listed under the table
 
 **W13 Page lag outside the companion** (B, settings, dashboard, library, Sonnet high; trace first). Files: `settings*.js`, `dashboard.js`, `library*.js`, `api/routes_models.py`. Checks: the lag-1109 probes (`lagprobe.js`, `lagset.js`, `lagboot.js`) at 4x, before and after numbers. Done when: each named handler is under 50 ms at 4x or traced to the browser.
 - B47 Settings open: `/health` continuation 204 ms forced layout; backdrop click 880 ms | lag L7, L8, oa 1620 lag
