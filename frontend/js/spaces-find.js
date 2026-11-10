@@ -519,7 +519,6 @@ function initSpaceSwitcher() {
       if (!(await privateSpaces("applySwitch", { id, name }))) return;
       $("space-edit-dialog").close();
       await loadSpaces();
-      await loadEntries().catch(() => {});
     } catch (err) {
       fail(err.message);
     }

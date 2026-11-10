@@ -11,6 +11,9 @@
 (() => {
   const state = { status: null, touched: 0, watching: false };
 
+  //: Locking or unlocking changes which notes the whole notebook shows, so the one full re-read is here.
+  const reread = () => loadEntries().catch(() => {});
+
   async function status() {
     state.status = await apiJson("/private-spaces/status", { silent: true }).catch(() => null);
     return state.status;
@@ -39,7 +42,7 @@
     state.touched = Date.now();
     watch();
     toast("Private spaces unlocked.");
-    await loadEntries().catch(() => {});
+    await reread();
     return true;
   }
 
@@ -63,7 +66,7 @@
       if (!now) return;
       state.status = { ...(state.status || {}), open: now.open };
       if (was && !now.open) {
-        await loadEntries().catch(() => {});
+        await reread();
         toastAction("Private spaces locked.", "Unlock", unlock);
       }
     };
@@ -107,7 +110,8 @@
   async function applySwitch({ id, name }) {
     const was = JSON.parse($("space-edit-dialog").dataset.was || "{}");
     const want = $("space-edit-private").checked;
-    if (want === Boolean(was.isPrivate) || (await setPrivate({ id, name }, want))) return true;
+    if (want === Boolean(was.isPrivate)) return true;
+    if (await setPrivate({ id, name }, want)) return reread(), true;
     $("space-edit-private").checked = Boolean(was.isPrivate);
     return false;
   }
