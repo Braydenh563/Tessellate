@@ -5,7 +5,10 @@ from __future__ import annotations
 from datetime import datetime
 
 from tessellate.entry import manager
-from tests._seed_r9_1109 import NOW, ask, fix_clock  # noqa: F401
+from tests._seed_r9_1109 import NOW, ask, fix_clock
+
+#: Re-exported for the bt tests (`sd.ask`, `sd.fix_clock`); `__all__` marks them used (CodeQL 2127).
+__all__ = ["NOTES", "NOW", "ask", "fix_clock", "seed"]
 
 # (content, created_at); the tester captured all ten today, in this order
 NOTES = [
