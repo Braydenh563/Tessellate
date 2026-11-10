@@ -381,7 +381,7 @@ function renderMarkdown(container, text, depth = 0) {
   let lines = unlatex(text).replace(/\r\n/g, "\n").split("\n");
   const footnotes = depth === 0 ? mdFootnotePrepare(lines) : null;
   //: A render of its own (a note card, a chat answer) indexes its own equation labels (a document indexes its whole text first, documents.js).
-  if (depth === 0 && /\\(?:label|eqref|ref)\{/.test(text)) window.docMathRender?.labels.use(window.docMathRender.labels.index(text));
+  if (depth === 0) window.docMathRender?.labels.page(text);
   if (footnotes) lines = footnotes.lines;
   //: The text before `unlatex` swapped its symbols, line for line (it never
   //: crosses a newline): a `$$` block is handed to the maths renderer as it

@@ -527,5 +527,10 @@
   //: The file's whole surface: what documents-cm.js, markdown.js and navigation.js call.
   Object.assign(window, { docMathLooksLikeMath, docMathRender });
   //: The page's equation numbers ride on the renderer rather than take two more names in the shared scope.
-  docMathRender.labels = { index: docMathIndex, use: docMathUse };
+  docMathRender.labels = {
+    index: docMathIndex,
+    use: docMathUse,
+    //: A render of its own (a note card, a chat answer) indexes its own labels, only when it has some (navigation.js, boot-size budget).
+    page: (text) => /\\(?:label|eqref|ref)\{/.test(text) && docMathUse(docMathIndex(text)),
+  };
 })();
