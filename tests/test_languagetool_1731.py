@@ -180,3 +180,27 @@ def test_the_page_merges_without_duplicating_a_harper_span():
         "kinds": ["Agreement", "LanguageTool"],
         "lang": "en-AU",
     }
+
+
+def test_a_second_check_sends_only_the_paragraphs_touched_and_maps_them_back():
+    script = r"""
+    global.window = {docSpell: {}}; global.docSpellingVariant = () => "us";
+    const sent = [];
+    global.apiJson = async (u, o) => { const b = JSON.parse(o.body); sent.push(b.text);
+      return {available: true, matches: [...b.text.matchAll(/bad/g)].map((m) => ({start: m.index, end: m.index + 3, message: "m", suggestions: []}))}; };
+    eval(require("fs").readFileSync(process.argv[1], "utf8"));
+    const one = "bad one\n\nfine two\nbad three";
+    const two = "bad one\n\nfine two edited\nbad three";
+    const lt = window.docSpell.languageTool;
+    (async () => {
+      const a = await lt([], one);
+      const b = await lt([], two);
+      console.log(JSON.stringify({sent, a: a.map((l) => l.start), b: b.map((l) => l.start)}));
+    })();
+    """
+    path = str(ROOT / "frontend/js/documents-languagetool.js")
+    out = subprocess.run(["node", "-e", script, path], capture_output=True, text=True, check=True)
+    got = json.loads(out.stdout)
+    assert got["sent"] == ["bad one\n\nfine two\nbad three", "fine two edited"]
+    assert got["a"] == [0, 18]
+    assert got["b"] == [0, 25]
