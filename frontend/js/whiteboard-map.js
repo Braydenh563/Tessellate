@@ -189,7 +189,7 @@ function wbMapThemeDefault(field, node = wbSelectedMapNode()) {
 
 //: The two theme keys that are not a look a topic can take: the preset's name
 //: and the per-level overrides. Never merged onto a topic's data.
-const WB_MAP_THEME_META = new Set(["hierarchy", "levels", "spacing", "rainbow"]);
+const WB_MAP_THEME_META = new Set(["hierarchy", "levels", "spacing", "rainbow", "legend"]);
 
 //: The seven fields a level can set (the server's `MAP_LEVEL_FIELDS`). `fill`
 //: here is `solid`, `tint` or `none`: a level's fill, read by the paint pass
@@ -594,7 +594,8 @@ function wbRenderMapLegend(passed = null) {
   const box = document.getElementById("wb-map-legend");
   if (!box) return;
   const perspective = wbMapPerspective();
-  if (!wbIsMap() || perspective === "branch") {
+  const own = perspective === "branch" && wbMapTheme().legend;
+  if (!wbIsMap() || (perspective === "branch" && !own)) {
     box.hidden = true;
     box.replaceChildren();
     return;
@@ -603,8 +604,38 @@ function wbRenderMapLegend(passed = null) {
   const facets = wbMapFacets();
   const palette = wbMapPalette();
   const quiet = wbMapQuietColour();
+  //: **The map's own legend** (MINDMAP_PLAN gap 11): the colour of each main
+  //: branch, named by its topic, and each marker the map actually uses (a
+  //: priority, a flag, a progress pie, each icon) with the words it carries
+  //: elsewhere. Only what is on the map is listed, so a legend never explains a
+  //: mark nobody can see. Branch rows are capped at ten.
+  const ownRows = () => {
+    const colors = wbMapColors(index);
+    const out = [];
+    const branches = index.nodes.filter((n) => n.parent_id != null && index.byId.get(n.parent_id)?.parent_id == null);
+    for (const node of branches.slice(0, 10)) {
+      const colour = colors.get(node.id);
+      if (colour) out.push({ label: wbMapLabel(node) || "Untitled", colour });
+    }
+    if (branches.length > 10) out.push({ label: `${branches.length - 10} more branches`, colour: quiet });
+    const used = { priority: false, progress: false, flag: false, icons: new Set() };
+    for (const node of index.nodes) {
+      const parts = wbMapMarkerParts(node.data);
+      used.priority ||= parts.priority != null;
+      used.progress ||= parts.progress != null;
+      used.flag ||= parts.flag;
+      parts.icons.forEach((icon) => used.icons.add(icon));
+    }
+    if (used.priority) out.push({ marker: { priority: 1 }, label: "Priority, 1 is first" });
+    if (used.progress) out.push({ marker: { progress: 50 }, label: "How far along" });
+    if (used.flag) out.push({ marker: { flag: true }, label: "Flagged" });
+    for (const icon of used.icons) out.push({ marker: { markers: [icon] }, label: WB_MAP_MARKER_ICON_NAMES.get(icon) || icon });
+    return out;
+  };
   const rows = [];
-  if (perspective === "notes") {
+  if (own) {
+    rows.push(...ownRows());
+  } else if (perspective === "notes") {
     rows.push({ label: "Stands for a note", colour: palette[0] });
     rows.push({ label: "A topic of its own", colour: quiet });
   } else if (perspective === "age") {
@@ -626,7 +657,8 @@ function wbRenderMapLegend(passed = null) {
 
   const title = document.createElement("span");
   title.className = "wb-map-legend-title";
-  title.textContent = `Colour: ${WB_MAP_PERSPECTIVES.find((p) => p.key === perspective)?.label || perspective}`;
+  title.textContent = own ? "Legend" : `Colour: ${WB_MAP_PERSPECTIVES.find((p) => p.key === perspective)?.label || perspective}`;
+  box.dataset.own = own ? "1" : "";
   const list = document.createElement("div");
   list.className = "wb-map-legend-rows";
   for (const row of rows) {
@@ -637,10 +669,17 @@ function wbRenderMapLegend(passed = null) {
     swatch.setAttribute("aria-hidden", "true");
     // Through the CSSOM, not an inline `style` attribute in markup: the CSP
     // drops those (CLAUDE.md, "a policy silently refusing the work").
-    swatch.style.background = row.colour;
+    if (!row.marker) swatch.style.background = row.colour;
     const text = document.createElement("span");
     text.textContent = row.label;
-    line.append(swatch, text);
+    let lead = swatch;
+    if (row.marker) {
+      lead = document.createElement("span");
+      lead.className = "wb-map-markers wb-map-legend-mark";
+      lead.setAttribute("aria-hidden", "true");
+      wbMapPaintMarkers(lead, row.marker);
+    }
+    line.append(lead, text);
     list.appendChild(line);
   }
   box.replaceChildren(title, list);
@@ -855,6 +894,7 @@ const WB_MAP_THEME_GROUPS = [
         ["", "Normal"], ["compact", "Compact"], ["roomy", "Roomy"],
       ] },
       { key: "rainbow", label: "Colour every level", kind: "check" },
+      { key: "legend", label: "Show a legend", kind: "check" },
     ],
   },
   {

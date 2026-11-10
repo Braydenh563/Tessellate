@@ -1507,6 +1507,19 @@ body.printing-doc #doc-preview p,
   white-space: nowrap;
 }
 
+/* The map's own legend (data-own) lists branches and markers, so it can be
+   long: it scrolls inside a share of the board rather than covering it, and a
+   marker in it is drawn in the ink of the text beside it. */
+.wb-map-legend[data-own="1"] {
+  max-height: 40%;
+  overflow-y: auto;
+}
+
+.wb-map-legend-mark {
+  color: var(--text);
+  min-width: 0.75rem;
+}
+
 /* The swatch carries the colour it is standing for as a `background` set from
    the data, so this rule sets everything except that. */
 .wb-map-legend-swatch {
