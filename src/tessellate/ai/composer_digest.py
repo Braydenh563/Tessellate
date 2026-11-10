@@ -3781,6 +3781,17 @@ def _ahead(fact: Fact, today: date) -> bool:
     return any(fact.sentence.start <= at < fact.sentence.end for _day, at in composer_body._days_named(fact.view, today, "future"))  # noqa: SLF001
 
 
+#: "When did I last see the dentist": the day that went by, never the booking still ahead.
+_WHEN_LAST = re.compile(r"^\s*(?:when\s+(?:did|have)\s+(?:i|we)\s+last|when\s+was\s+the\s+last\s+time\s+(?:i|we))\b", re.I)
+
+
+def _behind_if(on: bool, fact: Fact, today: date | None) -> bool:
+    """Whether a "when did I last" ask is answered by a sentence naming a day that has gone by."""
+    from tessellate.ai import composer_body
+
+    return on and today is not None and any(fact.sentence.start <= at < fact.sentence.end for _day, at in composer_body._days_named(fact.view, today, "past"))  # noqa: SLF001
+
+
 def _ahead_if(on: bool, fact: Fact) -> bool:
     """Whether a present-tense "when" ask is answered by a day still to come (R3-18)."""
     return on and _ahead(fact, _TODAY.get())
@@ -3915,6 +3926,7 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
     going = _AM_DOING.search(clean(question))
     going_on = re.compile(rf"\b{re.escape(going.group(1))}\b", re.I) if going else None
     now_ask = bool(_WHEN_NOW.match(clean(question))) and _TODAY.get() is not None
+    last_ask = bool(_WHEN_LAST.match(clean(question)))
     #: "what is Project Atlas" is the note titled that, whatever other note repeats the name (round 1 D1).
     #: Only a "what/who is X" ask: any other ask is weighed by what the lines say (review 1).
     titled_views = {id(f.view) for f in facts if names_a_thing and _defines(f.view, subject_words) == 2}
@@ -3949,7 +3961,7 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
         names_it = _names_it(f.sentence.text, names_a_thing, subject_words)
         #: The note titled for the whole subject speaks for it before a title-less one that only repeats its words (F8, 1110).
         is_the_subject = _title_is_subject(f, stems)
-        return (not asked_back, not _in_a_place(f.sentence.text, stems), doing_now, acts, _cued(cue, f.sentence.text), _ahead_if(now_ask, f), not (latest and f.sentence.kind in {"item", "task"}), id(f.view) not in old, _label_asked(f.label, question), titled, opens, names_it, says_it, hits, newest, newest_own, is_the_subject, _titled_for_yes_no(f, stems, yes_no), own, asks_feeling and _feeling(f.sentence.text), f.view.titled, same_figure, -f.view.rank, -f.sentence.order)
+        return (not asked_back, not _in_a_place(f.sentence.text, stems), doing_now, acts, _cued(cue, f.sentence.text), _behind_if(last_ask, f, _TODAY.get()), _ahead_if(now_ask, f), not (latest and f.sentence.kind in {"item", "task"}), id(f.view) not in old, _label_asked(f.label, question), titled, opens, names_it, says_it, hits, newest, newest_own, is_the_subject, _titled_for_yes_no(f, stems, yes_no), own, asks_feeling and _feeling(f.sentence.text), f.view.titled, same_figure, -f.view.rank, -f.sentence.order)
 
     return max(facts, key=rank) if facts else None
 
