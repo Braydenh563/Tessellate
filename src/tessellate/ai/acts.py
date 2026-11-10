@@ -84,14 +84,30 @@ def ticked_line(card: dict, frame) -> str:  # noqa: ANN001
     return f"{frame(what)} {commands.not_done(card.get('skipped') or [])}".strip()
 
 
+def plain_say(label: str) -> dict:
+    """The wording of a card nobody worded when it was drawn (a starter's, a model's proposal):
+    the neutral voice, seeded by the card, so Confirm answers in the confirmations' own frames."""
+    from tessellate.ai import composer_compose
+
+    return {"mood": composer_compose.mood_of(seed=label, intent="act"), "intent": "act"}
+
+
+def done_line(what: str, label: str = "") -> str:
+    """"Done: ..." as the composer's confirmations say it, for a run that has only its words
+    (a parked tool call)."""
+    from tessellate.ai import composer_compose
+
+    what = what.rstrip(".")
+    return composer_compose.frame("act_done", plain_say(label or what)["mood"], what=f"{what[:1].lower()}{what[1:]}")
+
+
 def run_said(session: Session, label: str, steps: list[dict], skipped: list[dict] | None, say: dict | None) -> dict:
     """`run` for a confirmed card, in the composer's own words (the ones the card was
     drawn with): "Done: I saved that to Shopping.", "I will remind you on Friday at 9:
     call the dentist.", "ticked off “Sunscreen”". `say` is `{mood, intent}`, None for plain."""
     from tessellate.ai import composer_compose
 
-    if not say:
-        return run(session, steps, skipped)
+    say = say or plain_say(label)
     mood = say["mood"]
     done = run(session, steps, skipped, lambda what: composer_compose.frame("act_done", mood, what=f"{what[:1].lower()}{what[1:]}"))
     if done["ok"] and say["intent"] == "reminder":

@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8062, frontend ids 2664, CSS sections 523, backend routes 666, backend modules 9952, test files 2407, tests 20081, plan headings 1000, app scripts 28, boot scripts 37, script files 274.
+Counts: frontend functions 8062, frontend ids 2664, CSS sections 523, backend routes 666, backend modules 9954, test files 2408, tests 20084, plan headings 1000, app scripts 28, boot scripts 37, script files 274.
 
 ## Frontend functions (8062)
 
@@ -13385,7 +13385,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9952)
+## Backend modules (9954)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -13558,24 +13558,26 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `runs` | src/tessellate/ai/activity_new.py:198 |
 | `streak` | src/tessellate/ai/activity_new.py:225 |
 
-### src/tessellate/ai/acts.py (15)
+### src/tessellate/ai/acts.py (17)
 
 | Name | File:line |
 |---|---|
-| `_align_slots` | src/tessellate/ai/acts.py:183 |
-| `_distribute_slots` | src/tessellate/ai/acts.py:188 |
-| `_grid_slots` | src/tessellate/ai/acts.py:173 |
-| `_same_size_slots` | src/tessellate/ai/acts.py:193 |
-| `board_label` | src/tessellate/ai/acts.py:220 |
-| `board_parse` | src/tessellate/ai/acts.py:201 |
-| `inverse` | src/tessellate/ai/acts.py:113 |
+| `_align_slots` | src/tessellate/ai/acts.py:199 |
+| `_distribute_slots` | src/tessellate/ai/acts.py:204 |
+| `_grid_slots` | src/tessellate/ai/acts.py:189 |
+| `_same_size_slots` | src/tessellate/ai/acts.py:209 |
+| `board_label` | src/tessellate/ai/acts.py:236 |
+| `board_parse` | src/tessellate/ai/acts.py:217 |
+| `done_line` | src/tessellate/ai/acts.py:95 |
+| `inverse` | src/tessellate/ai/acts.py:129 |
 | `missing` | src/tessellate/ai/acts.py:59 |
 | `parse` | src/tessellate/ai/acts.py:51 |
+| `plain_say` | src/tessellate/ai/acts.py:87 |
 | `preview` | src/tessellate/ai/acts.py:65 |
-| `propose` | src/tessellate/ai/acts.py:122 |
+| `propose` | src/tessellate/ai/acts.py:138 |
 | `run` | src/tessellate/ai/acts.py:71 |
-| `run_confirmed` | src/tessellate/ai/acts.py:104 |
-| `run_said` | src/tessellate/ai/acts.py:87 |
+| `run_confirmed` | src/tessellate/ai/acts.py:120 |
+| `run_said` | src/tessellate/ai/acts.py:104 |
 | `ticked_line` | src/tessellate/ai/acts.py:77 |
 
 ### src/tessellate/ai/address.py (10)
@@ -19800,7 +19802,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_stoppable` | src/tessellate/api/chat_agent.py:134 |
 | `_typed_tool_events` | src/tessellate/api/chat_agent.py:180 |
 | `_undo_steps` | src/tessellate/api/chat_agent.py:163 |
-| `consent_events` | src/tessellate/api/chat_agent.py:198 |
+| `consent_events` | src/tessellate/api/chat_agent.py:197 |
 | `run_card_events` | src/tessellate/api/chat_agent.py:169 |
 
 ### src/tessellate/api/chat_attach.py (19)
@@ -25961,7 +25963,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (20081)
+## Tests (20084)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26573,6 +26575,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_connection_row_cues.py | 7 |
 | tests/test_connections_block.py | 9 |
 | tests/test_consent_1110.py | 26 |
+| tests/test_consent_voice_1110.py | 3 |
 | tests/test_consistency_contract.py | 8 |
 | tests/test_constellation_glide_686.py | 10 |
 | tests/test_constellation_modal_rest_1620.py | 2 |
