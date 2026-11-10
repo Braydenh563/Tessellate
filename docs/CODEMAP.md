@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8105, frontend ids 2683, CSS sections 523, backend routes 662, backend modules 9999, test files 2445, tests 20257, plan headings 1001, app scripts 28, boot scripts 37, script files 277.
+Counts: frontend functions 8105, frontend ids 2683, CSS sections 523, backend routes 662, backend modules 10002, test files 2446, tests 20260, plan headings 1001, app scripts 28, boot scripts 37, script files 277.
 
 ## Frontend functions (8105)
 
@@ -13458,7 +13458,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9999)
+## Backend modules (10002)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14255,25 +14255,27 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `what_is` | src/tessellate/ai/composer_ask.py:217 |
 | `when_terms` | src/tessellate/ai/composer_ask.py:762 |
 
-### src/tessellate/ai/composer_aware.py (15)
+### src/tessellate/ai/composer_aware.py (17)
 
 | Name | File:line |
 |---|---|
 | `Awareness` | src/tessellate/ai/composer_aware.py:62 |
-| `_asked_already` | src/tessellate/ai/composer_aware.py:188 |
-| `_closing_howto` | src/tessellate/ai/composer_aware.py:225 |
-| `_closing_line` | src/tessellate/ai/composer_aware.py:232 |
-| `_lower` | src/tessellate/ai/composer_aware.py:105 |
-| `_pick` | src/tessellate/ai/composer_aware.py:100 |
-| `_where` | src/tessellate/ai/composer_aware.py:114 |
-| `about_open` | src/tessellate/ai/composer_aware.py:177 |
+| `_asked_already` | src/tessellate/ai/composer_aware.py:214 |
+| `_closing_howto` | src/tessellate/ai/composer_aware.py:251 |
+| `_closing_line` | src/tessellate/ai/composer_aware.py:258 |
+| `_lower` | src/tessellate/ai/composer_aware.py:107 |
+| `_pick` | src/tessellate/ai/composer_aware.py:102 |
+| `_where` | src/tessellate/ai/composer_aware.py:116 |
+| `about_open` | src/tessellate/ai/composer_aware.py:203 |
 | `build` | src/tessellate/ai/composer_aware.py:94 |
 | `clean_actions` | src/tessellate/ai/composer_aware.py:74 |
-| `closing` | src/tessellate/ai/composer_aware.py:194 |
-| `model_context` | src/tessellate/ai/composer_aware.py:244 |
-| `opening` | src/tessellate/ai/composer_aware.py:138 |
+| `closing` | src/tessellate/ai/composer_aware.py:220 |
+| `is_date_word` | src/tessellate/ai/composer_aware.py:172 |
+| `is_day_topic` | src/tessellate/ai/composer_aware.py:177 |
+| `model_context` | src/tessellate/ai/composer_aware.py:270 |
+| `opening` | src/tessellate/ai/composer_aware.py:140 |
 | `tab_name` | src/tessellate/ai/composer_aware.py:90 |
-| `unfinished` | src/tessellate/ai/composer_aware.py:164 |
+| `unfinished` | src/tessellate/ai/composer_aware.py:190 |
 
 ### src/tessellate/ai/composer_body.py (65)
 
@@ -20079,7 +20081,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_small_model_mode` | src/tessellate/api/chat_request.py:650 |
 | `_titled_note` | src/tessellate/api/chat_request.py:439 |
 
-### src/tessellate/api/chat_said.py (58)
+### src/tessellate/api/chat_said.py (59)
 
 | Name | File:line |
 |---|---|
@@ -20087,30 +20089,30 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_asked_before` | src/tessellate/api/chat_said.py:666 |
 | `_asks_capability` | src/tessellate/api/chat_said.py:320 |
 | `_asks_only_a_time` | src/tessellate/api/chat_said.py:613 |
-| `_awareness` | src/tessellate/api/chat_said.py:749 |
+| `_awareness` | src/tessellate/api/chat_said.py:768 |
 | `_chart_line` | src/tessellate/api/chat_said.py:631 |
-| `_chat_topic` | src/tessellate/api/chat_said.py:732 |
-| `_cited_ids` | src/tessellate/api/chat_said.py:759 |
-| `_cited_titles` | src/tessellate/api/chat_said.py:774 |
+| `_chat_topic` | src/tessellate/api/chat_said.py:748 |
+| `_cited_ids` | src/tessellate/api/chat_said.py:778 |
+| `_cited_titles` | src/tessellate/api/chat_said.py:793 |
 | `_closing_name` | src/tessellate/api/chat_said.py:430 |
-| `_composed_lines` | src/tessellate/api/chat_said.py:896 |
+| `_composed_lines` | src/tessellate/api/chat_said.py:915 |
 | `_count_lead` | src/tessellate/api/chat_said.py:199 |
 | `_counted_lead` | src/tessellate/api/chat_said.py:212 |
 | `_current_notes` | src/tessellate/api/chat_said.py:564 |
-| `_diagram_events` | src/tessellate/api/chat_said.py:849 |
+| `_diagram_events` | src/tessellate/api/chat_said.py:868 |
 | `_engine_counts` | src/tessellate/api/chat_said.py:525 |
 | `_engine_stands` | src/tessellate/api/chat_said.py:492 |
 | `_filed_or_counted_events` | src/tessellate/api/chat_said.py:287 |
 | `_filed_said` | src/tessellate/api/chat_said.py:255 |
-| `_first_cited_has_list` | src/tessellate/api/chat_said.py:826 |
+| `_first_cited_has_list` | src/tessellate/api/chat_said.py:845 |
 | `_held_reply` | src/tessellate/api/chat_said.py:545 |
 | `_help_events` | src/tessellate/api/chat_said.py:601 |
 | `_in_notes` | src/tessellate/api/chat_said.py:336 |
 | `_late_panel` | src/tessellate/api/chat_said.py:470 |
-| `_linked_notes` | src/tessellate/api/chat_said.py:800 |
+| `_linked_notes` | src/tessellate/api/chat_said.py:819 |
 | `_listed_below` | src/tessellate/api/chat_said.py:478 |
 | `_model_said` | src/tessellate/api/chat_said.py:536 |
-| `_name_documents` | src/tessellate/api/chat_said.py:791 |
+| `_name_documents` | src/tessellate/api/chat_said.py:810 |
 | `_newest_titles` | src/tessellate/api/chat_said.py:417 |
 | `_newest_word` | src/tessellate/api/chat_said.py:388 |
 | `_older_dates` | src/tessellate/api/chat_said.py:572 |
@@ -20124,22 +20126,23 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_reply_seed` | src/tessellate/api/chat_said.py:356 |
 | `_row_source` | src/tessellate/api/chat_said.py:676 |
 | `_rows_key` | src/tessellate/api/chat_said.py:654 |
-| `_run_title` | src/tessellate/api/chat_said.py:864 |
+| `_run_title` | src/tessellate/api/chat_said.py:883 |
 | `_said_events` | src/tessellate/api/chat_said.py:275 |
 | `_save_ask_turn` | src/tessellate/api/chat_said.py:61 |
 | `_saved_joke_reply` | src/tessellate/api/chat_said.py:373 |
 | `_says_cannot` | src/tessellate/api/chat_said.py:711 |
-| `_search_footer` | src/tessellate/api/chat_said.py:838 |
+| `_search_footer` | src/tessellate/api/chat_said.py:857 |
 | `_sees` | src/tessellate/api/chat_said.py:366 |
-| `_slash_chart` | src/tessellate/api/chat_said.py:880 |
+| `_slash_chart` | src/tessellate/api/chat_said.py:899 |
 | `_stats_chart` | src/tessellate/api/chat_said.py:189 |
 | `_stats_listed` | src/tessellate/api/chat_said.py:510 |
 | `_suggest_events` | src/tessellate/api/chat_said.py:410 |
 | `_things_counted` | src/tessellate/api/chat_said.py:240 |
 | `_things_lead` | src/tessellate/api/chat_said.py:227 |
+| `_topic_word` | src/tessellate/api/chat_said.py:732 |
 | `_with_words_only` | src/tessellate/api/chat_said.py:583 |
 | `_worked_kind` | src/tessellate/api/chat_said.py:464 |
-| `acts_on_listed_task` | src/tessellate/api/chat_said.py:907 |
+| `acts_on_listed_task` | src/tessellate/api/chat_said.py:926 |
 | `reply_panel` | src/tessellate/api/chat_said.py:446 |
 
 ### src/tessellate/api/chat_turn.py (39)
@@ -26091,7 +26094,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (20257)
+## Tests (20260)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26761,6 +26764,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_dashboard_streak.py | 2 |
 | tests/test_dashboard_widget_copy.py | 1 |
 | tests/test_data_dir_selfcheck.py | 13 |
+| tests/test_date_answers_1739.py | 3 |
 | tests/test_date_field_dynamic.py | 1 |
 | tests/test_date_field_when.py | 2 |
 | tests/test_dates_1031.py | 4 |
