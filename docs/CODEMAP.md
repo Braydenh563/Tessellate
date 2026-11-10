@@ -2,9 +2,9 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8062, frontend ids 2664, CSS sections 523, backend routes 666, backend modules 9952, test files 2407, tests 20081, plan headings 1000, app scripts 28, boot scripts 37, script files 274.
+Counts: frontend functions 8065, frontend ids 2664, CSS sections 523, backend routes 666, backend modules 9952, test files 2407, tests 20083, plan headings 1000, app scripts 28, boot scripts 37, script files 274.
 
-## Frontend functions (8062)
+## Frontend functions (8065)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -144,7 +144,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `publishDraft` | frontend/js/note-cards.js:480 |
 | `showNoteInGraph` | frontend/js/note-cards.js:497 |
 
-### frontend/js/menus.js (30)
+### frontend/js/menus.js (31)
 
 | Name | File:line |
 |---|---|
@@ -163,6 +163,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `escapeMenuToBody` | frontend/js/menus.js:751 |
 | `fitActionMenuInWindow` | frontend/js/menus.js:509 |
 | `focusMenuItem` | frontend/js/menus.js:642 |
+| `historyActorLabel` | frontend/js/menus.js:1584 |
 | `inlineActionIs` | frontend/js/menus.js:8 |
 | `isEditConflict` | frontend/js/menus.js:1579 |
 | `menuClippingAncestor` | frontend/js/menus.js:656 |
@@ -4046,13 +4047,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docIdeToggleSplit` | frontend/js/documents-ide.js:409 |
 | `formatDocHistoryWhen` | frontend/js/documents-ide.js:146 |
 
-### frontend/js/documents-languagetool.js (3)
+### frontend/js/documents-languagetool.js (6)
 
 | Name | File:line |
 |---|---|
 | `asLint` | frontend/js/documents-languagetool.js:17 |
-| `merge` | frontend/js/documents-languagetool.js:33 |
+| `ask` | frontend/js/documents-languagetool.js:46 |
+| `matchesByParagraph` | frontend/js/documents-languagetool.js:60 |
+| `merge` | frontend/js/documents-languagetool.js:86 |
 | `overlaps` | frontend/js/documents-languagetool.js:27 |
+| `paragraphs` | frontend/js/documents-languagetool.js:36 |
 
 ### frontend/js/documents-math.js (19)
 
@@ -6283,11 +6287,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderNoteBookmarksWhileEditing` | frontend/js/note-edit-panels.js:83 |
 | `renderRelatedWhileEditing` | frontend/js/note-edit-panels.js:26 |
 
-### frontend/js/note-history.js (4)
+### frontend/js/note-history.js (3)
 
 | Name | File:line |
 |---|---|
-| `historyActorLabel` | frontend/js/note-history.js:376 |
 | `openEntryHistory` | frontend/js/note-history.js:8 |
 | `toggleThenAndNow` | frontend/js/note-history.js:268 |
 | `undoSkillRun` | frontend/js/note-history.js:340 |
@@ -25966,7 +25969,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (20081)
+## Tests (20083)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26073,7 +26076,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_micro.py | 10 |
 | tests/test_atlas_morph_1709.py | 4 |
 | tests/test_atlas_rest_1402.py | 10 |
-| tests/test_atlas_rest_faces.py | 5 |
+| tests/test_atlas_rest_faces.py | 6 |
 | tests/test_atlas_rest_motion.py | 3 |
 | tests/test_atlas_saccade_1109.py | 2 |
 | tests/test_atlas_shape.py | 51 |
@@ -27216,7 +27219,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_lag_models_status_1662.py | 5 |
 | tests/test_lag_panel_moving_1591.py | 4 |
 | tests/test_lan.py | 126 |
-| tests/test_languagetool_1731.py | 8 |
+| tests/test_languagetool_1731.py | 9 |
 | tests/test_launch_splash.py | 25 |
 | tests/test_launch_status.py | 25 |
 | tests/test_launcher_port_stuck_1637.py | 8 |
