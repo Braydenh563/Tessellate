@@ -432,6 +432,50 @@ def _space_known(session: Session, workspace_id: str) -> bool:
     return workspace_id in ids
 
 
+#: Paths that act on the private spaces themselves, or on the sign-in, and
+#: so must reach a locked one: unlocking it is a POST that names it.
+_UNSEALED_PATHS = ("/auth/", "/spaces", "/private-spaces/")
+#: The chat and the model's other readers: a private space is out of them
+#: unless the chat is opened inside it (INBOX 1727).
+_AI_PATHS = ("/chat", "/insights", "/questions", "/help/", "/night", "/editor")
+
+
+def _seal_private_spaces(session: Session, request: Request, workspace_id: str | None) -> None:
+    """INBOX 1727: a private space's rows are out of every read of this
+    request until its session opened them (`core/spacelock.py`) with the
+    vault key loaded. `database._add_workspace_filter` reads the ids; a write
+    that names a locked private space is refused here, before it can land a
+    row nothing could seal."""
+    from tessellate.core import spacelock, vault
+    from tessellate.core.database import Space
+
+    private = [row[0] for row in session.query(Space.id).filter(Space.is_private.is_(True)).all()]
+    if not private:
+        return
+    opened = vault.key() is not None and spacelock.is_open(request.headers.get("X-Auth-Token"))
+    # An export leaves them out unless they are open and the person said so.
+    confirmed = request.query_params.get("include_private_spaces") == "1"
+    path = request.url.path
+    if opened and path.startswith(_AI_PATHS):
+        # The AI reads a private space only from a chat opened inside it.
+        private = [space for space in private if space != workspace_id]
+        if not private:
+            return
+    elif opened and (confirmed or not path.startswith("/export")):
+        return
+    session.info["sealed_workspaces"] = private
+    if (
+        workspace_id in private
+        and request.method not in ("GET", "HEAD", "OPTIONS")
+        and not request.url.path.startswith(_UNSEALED_PATHS)
+    ):
+        session.close()
+        raise HTTPException(
+            status_code=423,
+            detail={"detail": "This private space is locked. Unlock it first.", "code": "private_space_locked", "hint": None},
+        )
+
+
 def _refuse_unknown_space(workspace_id: str) -> HTTPException:
     return HTTPException(
         status_code=422,
@@ -552,6 +596,7 @@ def _open_session(request: Request | None) -> Iterator[Session]:
                     .filter(Space.hidden_from_all.is_(True))
                     .all()
                 ]
+        _seal_private_spaces(session, request, workspace_id)
     try:
         yield session
     finally:

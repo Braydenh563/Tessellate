@@ -61,7 +61,7 @@ from tessellate.core.database import (
 )
 from tessellate.core.database import LIKE_ESCAPE
 from tessellate.core.deps import get_session
-from tessellate.entry import duplicates, link_facts, manager
+from tessellate.entry import duplicates, link_facts, manager, private_space
 from tessellate.repo import bookmarks as bookmark_repo
 from tessellate.repo import relation_types
 from tessellate.repo import relations as relations_repo
@@ -895,7 +895,12 @@ def create_entry(body: EntryCreate, session: Session = Depends(get_session)) -> 
     if earlier is not None:
         return _to_out(session, earlier, filed_by=None, similar=None)
     parent = _existing_entry(session, body.parent_id) if body.parent_id is not None else None
-    category, confidence, filed_by, defer = _decide_filing(session, body, parent)
+    sealed = private_space.is_private_space(session, session.info.get("workspace_id"))
+    if sealed:
+        # INBOX 1727: the model never reads a private space's note to file it.
+        category, confidence, filed_by, defer = body.category or manager.UNCATEGORISED, 100, "user", False
+    else:
+        category, confidence, filed_by, defer = _decide_filing(session, body, parent)
     content, tags = _new_note_text(session, body)
     try:
         entry = manager.create_entry(
@@ -921,7 +926,9 @@ def create_entry(body: EntryCreate, session: Session = Depends(get_session)) -> 
         entry.filing_state = "pending"
     elif janitor.settled_state(filed_by) != "done":
         entry.filing_state = janitor.settled_state(filed_by)
-    session.commit()
+    session.commit()  # a note in a private space is sealed on the way in (`database._seal_private_space_joins`)
+    if sealed:
+        manager.scrub_private_leftovers(session)
     _finish_new_entry(session, entry, body, defer)
     out = _to_out(
         session,
@@ -3768,6 +3775,9 @@ def set_entry_privacy(
     only exists in memory while it is.
     """
     entry = NOTES.writable(session, entry_id)
+    if not body.private and private_space.is_private_space(session, entry.workspace_id):
+        # INBOX 1727: no per-note opt-out inside a private space.
+        raise HTTPException(status_code=409, detail=private_space.MOVE_OUT_TO_SHARE)
     if not manager.set_private(session, entry, body.private):
         raise HTTPException(
             status_code=409,

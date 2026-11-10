@@ -817,8 +817,9 @@ def _register_all() -> None:
 
 
 def _document_row(doc) -> Row | None:  # noqa: ANN001
-    #: A binned document is out of search until it is restored (5 item 10).
-    if doc is None or getattr(doc, "deleted_at", None) is not None:
+    #: A binned document is out of search until it is restored (5 item 10),
+    #: and a private one (INBOX 1727) never is in, as a private note is not.
+    if doc is None or getattr(doc, "deleted_at", None) is not None or getattr(doc, "is_private", False):
         return None
     flags = ["archived"] if getattr(doc, "archived_at", None) else []
     return Row(

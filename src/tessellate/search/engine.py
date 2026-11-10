@@ -766,11 +766,13 @@ def _session_space(session: Session):  # noqa: ANN202
     and snippets included, and spaces hidden from "All spaces" too.
     """
     workspace = session.info.get("workspace_id")
+    # INBOX 1727: a locked private space answers nothing, from anywhere.
+    sealed = tuple(session.info.get("sealed_workspaces") or ())
     if workspace and workspace != "all":
-        return workspace
+        return "\x00sealed" if workspace in sealed else workspace
     if workspace == "all":
-        return tuple(session.info.get("hidden_workspaces") or ())
-    return None
+        return tuple(session.info.get("hidden_workspaces") or ()) + sealed
+    return sealed or None
 
 
 def _narrow(

@@ -38,6 +38,7 @@ from sqlalchemy import (
     create_engine,
     event,
     inspect as sa_inspect,
+    select,
     text as sql_text,
 )
 from sqlalchemy.orm import (
@@ -152,6 +153,10 @@ class Space(Base):
     #: the everything-view. Anything that must actually be unreadable is what
     #: the private-note vault is for.
     hidden_from_all: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="0")
+    #: A private space (INBOX 1727): membership is the privacy. Everything in
+    #: it is sealed under the vault key, and its rows are out of every read
+    #: until this session opens the private spaces (`core/spacelock.py`).
+    is_private: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="0")
 
 
 
@@ -185,6 +190,17 @@ def _add_workspace_filter(execute_state):
     # the caller's own. A feature that needs a space to be private has to enforce it.
     # Only filter if the statement is a select() or similar ORM statement
     if execute_state.is_select or execute_state.is_update or execute_state.is_delete:
+        # INBOX 1727: a locked private space is out of every read, whatever
+        # space the request names (`deps._seal_private_spaces` sets the ids).
+        sealed = execute_state.session.info.get("sealed_workspaces")
+        if sealed:
+            execute_state.statement = execute_state.statement.options(
+                with_loader_criteria(
+                    WorkspaceMixin,
+                    lambda cls: cls.workspace_id.notin_(sealed),
+                    include_aliases=True
+                )
+            )
         workspace_id = execute_state.session.info.get("workspace_id")
         if workspace_id and workspace_id != "all":
             # Add criteria to all entities that have a workspace_id column
@@ -235,6 +251,63 @@ def _hide_binned(execute_state):
     )
 
 
+#: Per sealed class: the columns `SealedText` encrypts, and how to find
+#: whether the row's owner is private (INBOX 1727). A document owns itself.
+_SEALED_COLUMNS: dict[type, tuple[str, ...]] = {}
+
+
+def _sealed_owner_private(session: Session, obj: object) -> bool:
+    if isinstance(obj, Document):
+        return bool(obj.is_private)
+    if isinstance(obj, (DocumentRevision, DocumentAiEdit)):
+        owner = session.get(Document, obj.document_id) if obj.document_id is not None else None
+        return bool(owner is not None and owner.is_private)
+    owner = session.get(Entry, obj.board_id) if getattr(obj, "board_id", None) is not None else None
+    return bool(owner is not None and owner.is_private)
+
+
+def _already_sealed(value: str) -> bool:
+    """A value written back already sealed (a replay of a logged state)."""
+    from tessellate.core import crypto
+
+    return crypto.is_encrypted(value)
+
+
+def seal_row(obj: object, *, every_column: bool = False) -> None:
+    """Mark `obj`'s sealed columns for encryption at the next flush: the
+    ones that changed, or all of them (`every_column`, when the row itself
+    is being sealed and nothing in it changed)."""
+    state = sa_inspect(obj)
+    for name in _SEALED_COLUMNS.get(type(obj), ()):
+        value = state.dict.get(name) if not every_column else getattr(obj, name)
+        if not isinstance(value, str) or isinstance(value, SealMe) or _already_sealed(value):
+            continue
+        if not every_column and not state.attrs[name].history.has_changes() and state.has_identity:
+            continue
+        setattr(obj, name, SealMe(value))
+        if every_column:
+            flag_modified(obj, name)
+
+
+def unseal_row(obj: object) -> None:
+    """Write `obj`'s sealed columns back as plain text (its owner was made
+    ordinary): what is loaded is the plain text, so rewrite it as it is."""
+    for name in _SEALED_COLUMNS.get(type(obj), ()):
+        value = getattr(obj, name)
+        if isinstance(value, str):
+            setattr(obj, name, str(value))
+            flag_modified(obj, name)
+
+
+@event.listens_for(Session, "before_flush")
+def _seal_private_writes(session, flush_context, instances):
+    """Every write to a row whose owner is private goes in encrypted."""
+    with session.no_autoflush:
+        for obj in list(session.new) + list(session.dirty):
+            if type(obj) in _SEALED_COLUMNS and _sealed_owner_private(session, obj):
+                seal_row(obj)
+
+
 @event.listens_for(Session, "before_flush")
 def _set_workspace(session, flush_context, instances):
     workspace_id = session.info.get("workspace_id")
@@ -244,6 +317,61 @@ def _set_workspace(session, flush_context, instances):
                 # Ensure we don't overwrite if manually set elsewhere
                 if not obj.__dict__.get("workspace_id"):
                     obj.workspace_id = workspace_id
+
+
+#: `session.info` key: notes and moved documents that joined a private space
+#: in this transaction, sealed by `_seal_private_space_joins` before it lands.
+_JOINED_PRIVATE = "joined_private_space"
+
+
+def _joined_space(obj: object, new: bool) -> bool:
+    if new:
+        return True
+    history = sa_inspect(obj).attrs["workspace_id"].history
+    return history.has_changes()
+
+
+@event.listens_for(Session, "before_flush")
+def _note_private_space_joins(session, flush_context, instances):
+    """INBOX 1727: whatever is made in, or moved into, a private space is
+    sealed, by whichever route wrote it. A new document is sealed before its
+    first write; a note (whose sealing is `set_private`, too much to run in
+    a flush) and a moved document are sealed before the commit lands."""
+    joined = [
+        (obj, obj in session.new)
+        for obj in list(session.new) + list(session.dirty)
+        if isinstance(obj, (Entry, Document)) and (not obj.is_private or getattr(obj, "is_board", False))
+    ]
+    joined = [(obj, new) for obj, new in joined if _joined_space(obj, new)]
+    if not joined:
+        return
+    with session.no_autoflush:
+        private = set(session.scalars(select(Space.id).where(Space.is_private.is_(True))))
+    for obj, new in joined:
+        if (obj.workspace_id or "default") not in private:
+            continue
+        if isinstance(obj, Document) and new:
+            obj.is_private = True
+            obj.sealed_by_space = True
+            seal_row(obj, every_column=True)
+        else:
+            session.info.setdefault(_JOINED_PRIVATE, []).append(obj)
+
+
+@event.listens_for(Session, "before_commit")
+def _seal_private_space_joins(session):
+    pending = session.info.pop(_JOINED_PRIVATE, None)
+    if not pending:
+        return
+    private_space = importlib.import_module("tessellate.entry.private_space")
+    for obj in pending:
+        private_space.seal_if_private_space(session, obj)
+
+
+@event.listens_for(Session, "after_soft_rollback")
+def _forget_private_space_joins(session, previous_transaction):
+    session.info.pop(_JOINED_PRIVATE, None)
+
 
 class User(Base):
     """Single-user unlock. One row, bcrypt password hash."""
@@ -431,6 +559,9 @@ class Entry(Base, WorkspaceMixin):
     # Private notes have their content encrypted at rest. Scalar default so
     # the additive auto-migrator backfills every existing row as not-private.
     is_private: Mapped[bool] = mapped_column(Boolean, default=False)
+    #: Sealed because it joined a private space, not by its own switch: "Make
+    #: it ordinary" on the way out unseals only these (INBOX 1727).
+    sealed_by_space: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="0")
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime, default=None)
     # ROADMAP.md item 34. Null means "never scanned"; set (even with zero
     # entities found) after a pass, so a note that genuinely mentions none
@@ -698,6 +829,63 @@ class LinkProps(TypeDecorator):
         except (crypto.DecryptionError, ValueError):
             return None
         return parsed if isinstance(parsed, dict) else None
+
+
+class SealMe(str):
+    """A value `SealedText` encrypts on the way in: the marker the private
+    space hook (`_seal_private_writes`) puts on a write to a sealed row."""
+
+
+class SealedWriteRefused(RuntimeError):
+    """A sealed row was written while no key is loaded: refused rather than
+    stored in the clear."""
+
+
+class SealedText(TypeDecorator):
+    """A document's or a board item's text, sealed when its owner is private
+    (INBOX 1727): read back as plain text while the key is loaded and as
+    `locked` while it is not, so every reader is unchanged, as `LinkReason`
+    does for a link's reason. Whether a row is sealed is a fact about its
+    owner, which a column type cannot see, so the hook marks the value
+    (`SealMe`) and this type does the encryption."""
+
+    impl = Text
+    cache_ok = True
+
+    def __init__(self, *args, locked: str = "", **kwargs):  # noqa: ANN002, ANN003
+        super().__init__(*args, **kwargs)
+        self.locked = locked
+
+    def process_bind_param(self, value, dialect):
+        if not isinstance(value, SealMe):
+            return value
+        from tessellate.core import crypto
+
+        key = LinkReason.key_source()
+        if key is None:
+            raise SealedWriteRefused("a private row cannot be written while the vault is locked")
+        return crypto.encrypt(key, str(value))
+
+    def process_result_value(self, value, dialect):
+        if not value:
+            return value
+        from tessellate.core import crypto
+
+        if not crypto.is_encrypted(value):
+            return value
+        key = LinkReason.key_source()
+        if key is None:
+            return self.locked
+        try:
+            return crypto.decrypt(key, value)
+        except crypto.DecryptionError:
+            return self.locked
+
+
+class SealedTitle(SealedText):
+    """`SealedText` on a short column (`String(n)`)."""
+
+    impl = String
 
 
 #: The columns whose change is a person editing a board or mind map. Anything
@@ -1480,8 +1668,8 @@ class Document(Base, WorkspaceMixin):
     __tablename__ = "documents"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    title: Mapped[str] = mapped_column(String(200), default="Untitled")
-    content: Mapped[str] = mapped_column(Text, default="")
+    title: Mapped[str] = mapped_column(SealedTitle(200, locked="Private document"), default="Untitled")
+    content: Mapped[str] = mapped_column(SealedText(), default="")
     # What kind of file this is, a bare extension, no dot ("md", "py",
     # "sql"). See core/filetypes.py for the table and why it is shared with
     # the frontend rather than duplicated there. A scalar default (not a
@@ -1494,12 +1682,16 @@ class Document(Base, WorkspaceMixin):
     #: (core/docthreads.py). Additive; "" is none, as every older row reads.
     #: The server default too, so a build from before the column can still
     #: insert a document into a database this one created.
-    threads: Mapped[str] = mapped_column(Text, default="", server_default=sql_text("''"))
+    threads: Mapped[str] = mapped_column(SealedText(), default="", server_default=sql_text("''"))
     #: Where the Graph holds this document's node in place, as a note's
     #: `graph_pin_x`/`graph_pin_y` do (B78: a document node can be pinned by
     #: double-click or drag, and had nowhere to keep it). Additive.
     graph_pin_x: Mapped[float | None] = mapped_column(Float, default=None)
     graph_pin_y: Mapped[float | None] = mapped_column(Float, default=None)
+    #: Sealed under the vault key, as a private note is (INBOX 1727): only a
+    #: document in a private space is, and `sealed_by_space` says so.
+    is_private: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="0")
+    sealed_by_space: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="0")
     # Same "kept, out of the way" column as Entry.archived_at/
     # Conversation.archived_at (BACKLOG §30b): never implies deletion.
     archived_at: Mapped[datetime | None] = mapped_column(DateTime, default=None)
@@ -1563,13 +1755,13 @@ class DocumentAiEdit(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     document_id: Mapped[int] = mapped_column(ForeignKey("documents.id"), index=True)
     verb: Mapped[str] = mapped_column(String(10), default="edit")
-    instruction: Mapped[str] = mapped_column(String(500), default="")
+    instruction: Mapped[str] = mapped_column(SealedTitle(500), default="")
     #: Whichever passage was targeted, trimmed to a display-sized excerpt, 
     #: never the full document (that's what before_content is for), just
     #: enough for the changelog entry to say what it touched.
-    selection_excerpt: Mapped[str] = mapped_column(String(200), default="")
-    before_content: Mapped[str] = mapped_column(Text, default="")
-    after_content: Mapped[str] = mapped_column(Text, default="")
+    selection_excerpt: Mapped[str] = mapped_column(SealedTitle(200), default="")
+    before_content: Mapped[str] = mapped_column(SealedText(), default="")
+    after_content: Mapped[str] = mapped_column(SealedText(), default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 
@@ -1787,8 +1979,8 @@ class DocumentRevision(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     document_id: Mapped[int] = mapped_column(ForeignKey("documents.id"), index=True)
-    title: Mapped[str] = mapped_column(String(200), default="")
-    content: Mapped[str] = mapped_column(Text, default="")
+    title: Mapped[str] = mapped_column(SealedTitle(200), default="")
+    content: Mapped[str] = mapped_column(SealedText(), default="")
     #: How the change was made: "edit" (a person), "ai" (an accepted AI
     #: suggestion), "restore" (rolled back to an earlier revision). Shown in
     #: the list, because "who changed this" is the first question a history
@@ -1851,7 +2043,7 @@ class WhiteboardSketch(Base, WorkspaceMixin):
     id: Mapped[int] = mapped_column(primary_key=True)
     board_id: Mapped[int | None] = mapped_column(ForeignKey("entries.id"), default=None)
     # The strokes data (JSON/SVG). Can be encrypted at rest later if needed.
-    data: Mapped[str] = mapped_column(Text)
+    data: Mapped[str] = mapped_column(SealedText(locked="{}"))
     x: Mapped[float] = mapped_column(Float, default=0.0)
     y: Mapped[float] = mapped_column(Float, default=0.0)
     z: Mapped[int] = mapped_column(Integer, default=0)
@@ -1883,7 +2075,7 @@ class WhiteboardObject(Base, WorkspaceMixin):
     #: `topic` carries its own `content`, a `note`/`document`/`file`/`link`
     #: node carries the id of the library item it stands for in `ref_id`, and
     #: both may carry `collapsed`/`pinned`.
-    data: Mapped[str] = mapped_column(Text)
+    data: Mapped[str] = mapped_column(SealedText(locked="{}"))
     #: This node's parent in a mindmap's tree: NULL for a root topic and for
     #: every object on an ordinary whiteboard, which is what makes the map a
     #: *mode* of the board rather than a second data model (MINDMAP_PLAN.md
@@ -2190,6 +2382,16 @@ class AuditLog(Base):
     payload: Mapped[dict | None] = mapped_column(JSON, default=None)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
+
+_SEALED_COLUMNS.update(
+    {
+        Document: ("title", "content", "threads"),
+        DocumentRevision: ("title", "content"),
+        DocumentAiEdit: ("instruction", "selection_excerpt", "before_content", "after_content"),
+        WhiteboardSketch: ("data",),
+        WhiteboardObject: ("data",),
+    }
+)
 
 _logger = logging.getLogger("tessellate.database")
 

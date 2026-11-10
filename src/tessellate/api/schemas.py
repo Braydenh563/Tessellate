@@ -29,6 +29,8 @@ class SpaceCreate(BaseModel):
     id: str | None = None
     name: str = Field(min_length=1)
     icon: str = Field(min_length=1, default="ph-circles-four")
+    #: A private space (INBOX 1727): made sealed, so it needs the vault key.
+    is_private: bool = False
 
 class SpaceUpdate(BaseModel):
     # Optional: update_space only writes fields the caller actually sent,
@@ -47,6 +49,8 @@ class SpaceResponse(BaseModel):
     icon: str
     #: True when this space's contents are kept out of "All spaces".
     hidden_from_all: bool = False
+    #: A private space: shown with a lock, its contents sealed (INBOX 1727).
+    is_private: bool = False
 
 #: The longest a note may be, and the longest a tag may be.
 #:
