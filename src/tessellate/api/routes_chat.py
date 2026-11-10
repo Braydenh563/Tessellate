@@ -57,7 +57,6 @@ from tessellate.ai import (
 from tessellate.ai.answer_trim import trim_assistant_padding
 from tessellate.ai.grounding import (
     ground_answer_sentences,
-    composed_support,
     support as grounding_support,
 )
 from tessellate.ai.ollama_client import OllamaError
@@ -83,7 +82,7 @@ from tessellate.api.chat_recent import AGENT_SURFACE, ASK_SURFACE, STARTER_SUGGE
 from tessellate.api.chat_web import WEB_PAGES, _can_start_searxng, _torn_events, _home_place, _link_events, _offer_events, _search_service, _unmatched_recents, _web_allowed, _web_chip, _web_first, _web_page_row, _web_pref_on
 from tessellate.api.chat_agent import _agent_events, _close_quietly, _first_agent_event, _refuse_failed, _refuse_if_off, _starter_read
 from tessellate.api.chat_said import MODEL_STOPPED_NOTE, acts_on_listed_task, _says_cannot, _ROWS_KEPT, _app_answers, _asked_before, _asks_capability, _asks_only_a_time, _awareness, _chart_line, _cited_titles, _composed_lines, _current_notes, _diagram_events, _engine_counts, _engine_stands, _filed_or_counted_events, _first_cited_has_list, _held_reply, _help_events, _in_notes, _late_panel, _linked_notes, _listed_below, _model_said, _name_documents, _newest_titles, _newest_word, _open_note_answer, _ping_offer, _related_elsewhere, _related_sentence, _remember_rows, _reminder_window, _reply_seed, _row_source, _rows_key, _run_title, _said_events, _save_ask_turn, _saved_joke_reply, _search_footer, _sees, _slash_chart, _stats_chart, _stats_listed, _suggest_events, _with_words_only, reply_panel
-from tessellate.api.chat_turn import _asks_change, _chat_reply, _checks_grounding, _cited_scope, _composes_offline, _detect_intent, _engine_answers, _facts_turn, _insight_level, _insight_memory, _is_composing, _log_question, _may_digest, _meaning_loading, _model_stream_events, _note_with_hint, _notes_first, _notes_messages, _relay_events, _searched_question, _social_line, _trim_answer, _uncut, _verdicts, _why, _will_answer
+from tessellate.api.chat_turn import _composed_support, _frame_events, _not_again, _with_frame, _asks_change, _chat_reply, _checks_grounding, _cited_scope, _composes_offline, _detect_intent, _engine_answers, _facts_turn, _insight_level, _insight_memory, _is_composing, _log_question, _may_digest, _meaning_loading, _model_stream_events, _note_with_hint, _notes_first, _notes_messages, _relay_events, _searched_question, _social_line, _trim_answer, _uncut, _verdicts, _why, _will_answer
 
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -792,11 +791,6 @@ def _web_answer(req: _StreamRequest, question: str) -> tuple[dict, list[dict]] |
     return result, sources
 
 
-def _composed_support(result: dict) -> dict:
-    """The support of an answer no model wrote (`grounding.composed_support`)."""
-    return composed_support(result["support"], result.get("grounding") or [])
-
-
 def _web_events(result: dict, sources: list[dict]) -> Iterator[dict]:
     yield {"type": "answer", "delta": result["text"]}
     yield {
@@ -1317,7 +1311,9 @@ def _composed_result(req: _StreamRequest, prepared: dict) -> tuple:
     today = user_now(deps.get_config()).date()
     #: O11: a newer note on the same thing is the current one.
     current, older = _current_notes(req, prepared["notes"])
-    result = _open_note_answer(req, follow, current, today) or _digest_for(req, prepared, follow, current, restated, today) or _compose_for(req, prepared, follow, current, today)
+    answer = lambda f, r: _open_note_answer(req, f, current, today) or _digest_for(req, prepared, f, current, r, today) or _compose_for(req, prepared, f, current, today)  # noqa: E731
+    result, follow = _not_again(answer, follow, restated, req)
+    _with_frame(result, follow, req.question, current, today)
     if follow is not None and follow.kind == "more" and not result.get("grounding"):
         #: Nothing left unsaid: say so, with how much there is (B8).
         result = composer_digest.all_said(follow.question, prepared["notes"], today=today, voice=_answer_voice()) or result
@@ -1432,7 +1428,7 @@ def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
     text = _with_older(text, older, result)
     text = _with_words_only(text, prepared, result, req.session)
     text = _with_lapsed(text, current, result, req)
-    events: list = [*chat_web.nothing_found_meta(prepared, missed), {"type": "answer", "delta": text}, *(_web_chip(req) if missed else []), *req.tip_events()]
+    events: list = [*chat_web.nothing_found_meta(prepared, missed), {"type": "answer", "delta": text}, *(_web_chip(req) if missed else []), *req.tip_events(), *_frame_events(result)]
     #: Every question the finished text suggests is a chip (INBOX 1497); one
     #: the grounding event already carries is not said twice.
     suggested = [q for q in ask_chips.lift(f"{text}\n{req.tip}") if q not in (result.get("next") or []) and q not in asks]

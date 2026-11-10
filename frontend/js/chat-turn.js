@@ -282,6 +282,7 @@ async function chatSendTurn(preset, opts = {}) {
   let whyLines = null; // the why event (B30), drawn last
   let groundingSupport = null; // the stream's own support, saved with a composed turn (INBOX 1706)
   let composedNext = []; // a composed answer's own next questions (INBOX 725)
+  let turnFrame = null; // what the composed answer showed, echoed with the next turn
   //: **Numbered while it streams, as the Ask tab is** (INBOX 320, the
   //: askcite row): the backend sends the rows so far each time a sentence
   //: completes (`grounding_live`), and the markers are put back after every
@@ -715,6 +716,7 @@ async function chatSendTurn(preset, opts = {}) {
         chatScrollToEnd();
       },
       onOffer: (event) => { chatOffer = event.offer || null; },
+      onFrame: (frame) => { turnFrame = frame || null; },
       onTip: (event) => { chatTip = event.text || ""; },
       onWhy: (event) => { whyLines = event.lines; },
       onStats: (event) => {
@@ -1059,7 +1061,7 @@ async function chatSendTurn(preset, opts = {}) {
   assistantMessageActions({ bubble, text: answerRaw, question });
 
   // Regenerate replaces the last turn; a normal send appends a new one.
-  const turnRecord = { question, answer: answerRaw, objects: chatTurnObjects(turnSources) };
+  const turnRecord = { question, answer: answerRaw, objects: chatTurnObjects(turnSources), ...(turnFrame ? { frame: turnFrame } : {}) };
   if (opts.replaceLast && convRef.turns.length) convRef.turns[convRef.turns.length - 1] = turnRecord;
   else convRef.turns.push(turnRecord);
   // Persist the finished turn so the chat survives restarts. A checkpoint

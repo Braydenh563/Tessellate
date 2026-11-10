@@ -20,7 +20,7 @@ from sqlalchemy.orm import Session
 from tessellate.ai import composer_digest, composer_lists, composer_slots, composer_talk, context, fence, intent, librarian, question_noise, recognise, verdicts, why
 from tessellate.ai import composer_dialogue
 from tessellate.ai.answer_trim import trim_assistant_padding
-from tessellate.ai.grounding import SentenceGrounder
+from tessellate.ai.grounding import SentenceGrounder, composed_support
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.api.chat_agent import _starter_read
 from tessellate.api.chat_pool import _Found
@@ -295,6 +295,8 @@ def _cited_scope(req: _StreamRequest, follow) -> list[int]:  # noqa: ANN001
     about it": audit 1030 Z53). It is read like an open note: the follow-on
     keeps its subject, and the slot runs on that note rather than on
     whichever note best matches the bare words."""
+    if follow is not None and follow.note_ids and not req.body.note_ids:
+        return _framed_scope(req, follow)
     objects = ((req.history or [{}])[-1].get("objects") or []) if req.history else []
     if not objects or req.body.note_ids or (follow is not None and follow.kind != "pronoun") or not composer_dialogue.refers_back(req.question):
         return []
@@ -305,6 +307,54 @@ def _cited_scope(req: _StreamRequest, follow) -> list[int]:  # noqa: ANN001
         ).limit(25)
     ).all()
     return [row.id for row in rows if _turn_label(row.content).lower() == label][:1]
+
+
+def _framed_scope(req: _StreamRequest, follow) -> list[int]:  # noqa: ANN001
+    """The notes the last answer's frame binds this turn to (fable-composer-1110 F1). The ids are
+    client input, so each is read again: a deleted or private note is never reached through them.
+    A turn whose own words name another note's title ("who is mia" after Anna) is not bound."""
+    rows = req.session.execute(
+        select(Entry.id, Entry.content).where(Entry.id.in_(list(follow.note_ids)), Entry.is_deleted == False, Entry.is_private == False)  # noqa: E712
+    ).all()
+    if not rows:
+        return []
+    bound = " ".join(row.content or "" for row in rows).lower()
+    if follow.kind == "bound" and any(_titled_elsewhere(req.session, term) for term in composer_dialogue.subject_terms(req.question) if term.lower() not in bound):
+        return []
+    return [row.id for row in rows]
+
+
+def _titled_elsewhere(session, term: str) -> bool:  # noqa: ANN001
+    """Whether a visible note's title is `term` ("Mia")."""
+    rows = session.execute(
+        select(Entry.content).where(Entry.is_deleted == False, Entry.is_private == False, Entry.content.ilike(f"%{like_escape(term)}%", escape=LIKE_ESCAPE)).limit(25)  # noqa: E712
+    ).all()
+    return any(_turn_label(row.content).lower() == term.lower() for row in rows)
+
+
+def _composed_support(result: dict) -> dict:
+    """The support of an answer no model wrote (`grounding.composed_support`)."""
+    return composed_support(result["support"], result.get("grounding") or [])
+
+
+def _not_again(answer, follow, restated: bool, req: _StreamRequest) -> tuple:  # noqa: ANN001
+    """`answer(follow, restated)`, asked again plainly when the follow-on's reading gave the answer
+    before again: "and kyoto?" after the budget is never the budget twice (fable-composer-1110 F1)."""
+    result = answer(follow, restated)
+    if follow is not None and follow.fallback and composer_dialogue.repeats(str(result.get("text") or ""), req.history):
+        follow = composer_dialogue.FollowOn(follow.fallback, follow.previous, kind="subject")
+        result = answer(follow, True)
+    return result, follow
+
+
+def _with_frame(result: dict, follow, question: str, current: list, today) -> None:  # noqa: ANN001
+    """The frame the answer is sent with (`composer_dialogue.turn_frame`), read from the question
+    as the follow-on put it."""
+    result["frame"] = composer_dialogue.turn_frame(follow.question if follow else question, result, current, today)
+
+
+def _frame_events(result: dict) -> list[dict]:
+    return [{"type": "frame", "frame": result["frame"]}] if result.get("frame") else []
 
 
 def _searched_question(req: _StreamRequest, follow) -> str:

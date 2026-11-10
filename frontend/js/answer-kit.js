@@ -1099,6 +1099,7 @@ async function streamChatEvents({
   onGroundingLive,
   onAnswerFinal,
   onRelated,
+  onFrame,
   onUnsupported,
   onWebSources,
   onWhy,
@@ -1303,6 +1304,8 @@ async function streamChatEvents({
       // more than its notes, so the answer names what else mentions it
       // (routes_chat.py's `_related_elsewhere`).
       else if (event.type === "related" && onRelated) onRelated(event);
+      //: What a composed answer showed, sent back with the next turn (fable-composer-1110 F1).
+      else if (event.type === "frame" && onFrame) onFrame(event.frame);
       // INBOX 272 part 1: Agent mode was asked for and the model couldn't
       // call tools, so it answered as a plain question instead. Silently
       // dropped before this (routes_chat.py used to `pass` on it); now it
