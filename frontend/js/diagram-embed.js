@@ -191,6 +191,36 @@
   };
   //: end withSpacing
 
+  //: The line shape (R13, 1109): `config: flowchart: curve` is read by dagre only, as the spacing is: measured in Mermaid 12.2, the
+  //: default ELK layout ignores `flowchart.curve` (the same paths for linear, step and none), while under `layout: dagre` linear draws
+  //: straight runs, basis cubic curves and step right angles. So a shape names the engine too; Usual takes the curve out, and the
+  //: engine line with it unless the spacing still needs it.
+  const CURVES = { straight: "linear", curved: "basis", stepped: "step" };
+  const curveOf = (source) => {
+    const name = /^\s+curve:\s*(\w+)\s*$/m.exec(diagramModel.front(String(source)).front.join("\n"))?.[1];
+    return Object.keys(CURVES).find((shape) => CURVES[shape] === name) || "usual";
+  };
+  const withCurve = (source, shape) => {
+    const { front, rest } = diagramModel.front(String(source).replace(/\r/g, ""));
+    let kept = front[0] === "---" ? front.slice(1, front.lastIndexOf("---")) : [];
+    if (kept.some((line) => /^config:\s*\S/.test(line))) return null;
+    kept = kept.filter((line) => !/^ {4}curve:/.test(line));
+    if (shape === "usual" && !kept.some((line) => /^ {4}(nodeSpacing|rankSpacing):/.test(line))) kept = kept.filter((line) => !/^ {2}layout:\s*dagre\s*$/.test(line));
+    const bare = (key, depth) => (line, i) => !(new RegExp(`^ {${depth}}${key}:\\s*$`).test(line) && !new RegExp(`^ {${depth + 1},}\\S`).test(kept[i + 1] || ""));
+    kept = kept.filter(bare("flowchart", 2));
+    kept = kept.filter(bare("config", 0));
+    if (shape !== "usual") {
+      if (!kept.some((line) => /^config:\s*$/.test(line))) kept.push("config:");
+      const at = kept.findIndex((line) => /^config:\s*$/.test(line));
+      if (!kept.some((line) => /^ {2}layout:\s*dagre\s*$/.test(line))) kept.splice(at + 1, 0, "  layout: dagre");
+      let flow = kept.findIndex((line) => /^ {2}flowchart:\s*$/.test(line));
+      if (flow < 0) kept.splice(at + 2, 0, "  flowchart:"), (flow = at + 2);
+      kept.splice(flow + 1, 0, `    curve: ${CURVES[shape]}`);
+    }
+    return (kept.length ? `---\n${kept.join("\n")}\n---\n` : "") + rest;
+  };
+  //: end withCurve
+
   //: The document's name from the Title field: nothing a `![[ ]]` link or a `Title#^id` block reference reads as syntax, and never a name
   //: another document has (links resolve to the first document of that title, so a repeat would show the earlier diagram). Blank is dated.
   const cleanTitle = (text) => String(text || "").replace(/[\[\]|#]+/g, " ").replace(/\s+/g, " ").trim();
@@ -346,6 +376,7 @@
           //: One look row, the one that is not on: the menu never says "Hand-drawn" while it is already drawn so, and it is rebuilt with every pane.
           lookRow(),
           ...spacingRows(),
+          ...curveRows(),
           makeMenuItem("ph:books Save to Library", "Keep it in the Library to show it with ![[name]]", () => save(history[at], offer?.link ? { label: "Link this diagram", run: (row) => link(offer.link, row, history[at]) } : offer)),
         ];
       },
@@ -359,9 +390,23 @@
       io.set(next);
       apply();
     };
+    //: Normal spacing takes the engine line out, which would stop a set line shape drawing: the shape is written again after it.
+    const setCurve = (shape) => {
+      const next = withCurve(history[at], shape);
+      if (next === null) return toast("The front matter has a config line the menu cannot edit. Change it in Source.", "info");
+      io.set(next);
+      apply();
+    };
+    function curveRows() {
+      const now = curveOf(history[at]);
+      const rows = { straight: ["ph:line-segment Straight lines", "Draw arrows as straight runs. Kept in the diagram's own text; Undo takes it back"], curved: ["ph:wave-sine Curved lines", "Draw arrows as smooth curves. Kept in the diagram's own text; Undo takes it back"], stepped: ["ph:path Stepped lines", "Draw arrows with right angles. Kept in the diagram's own text; Undo takes it back"], usual: ["ph:arrows-horizontal Usual lines", "Draw arrows the usual way again"] };
+      return Object.keys(rows).filter((shape) => shape !== now).map((shape) => makeMenuItem(rows[shape][0], rows[shape][1], () => setCurve(shape)));
+    }
     //: The spacing rows are the two levels that are not on, like the look row: Normal is the way back from either.
     const setSpacing = (level) => {
-      const next = withSpacing(history[at], level);
+      const shape = curveOf(history[at]);
+      let next = withSpacing(history[at], level);
+      if (next !== null && shape !== "usual") next = withCurve(next, shape);
       if (next === null) return toast("The front matter has a config line the menu cannot edit. Change it in Source.", "info");
       io.set(next);
       apply();
