@@ -238,7 +238,9 @@ def test_loading_window_swaps_to_the_real_url_once_the_server_answers(monkeypatc
 
     window = calls["window"]
     assert window is not None
-    assert window.load_url_calls == [f"http://{launcher.HOST}:{launcher.PORT}"]
+    # First open: the bridge on 127.0.0.1 hands the saved settings to localhost
+    # (tests/test_origin_handoff.py holds the rest).
+    assert window.load_url_calls == [f"http://{launcher.HOST}:{launcher.PORT}/origin-bridge.html?to=localhost"]
     # Asked for directly: the window must take focus once it swaps from the
     # loading page to the real app, not just navigate silently in place.
     assert window.show_calls >= 1

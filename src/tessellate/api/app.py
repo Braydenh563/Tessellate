@@ -90,6 +90,7 @@ from tessellate.api import (
     routes_settings,
     routes_spaces,
     routes_hello,
+    routes_origin_handoff,
     routes_private_spaces,
     routes_tasks,
     routes_timeline,
@@ -1467,6 +1468,7 @@ OPEN, LOCKED, MEDIA = "open", "locked", "media"
 ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     (routes_auth.router, OPEN),
     (routes_hello.router, OPEN),
+    (routes_origin_handoff.router, OPEN),
     (routes_entries.router, LOCKED),
     (routes_mentions.router, LOCKED),
     (routes_meetings.router, LOCKED),

@@ -39,6 +39,9 @@ ALLOWED = {
     # session token, read once for their one request.
     "capture.js": 1,
     "clip.js": 1,
+    # The 127.0.0.1 -> localhost carry-over page (origin-bridge.html): it moves
+    # the raw keys, so it reads and writes them as they are, before prefs.js.
+    "origin-bridge.js": 3,
 }
 
 GET = re.compile(r"localStorage\.getItem\(")
@@ -66,7 +69,7 @@ def test_no_direct_storage_read_outside_the_door() -> None:
 #: in a private window, now `prefs.set` (which answers false instead) and
 #: `prefs.remove`. What stays is what runs before prefs.js: app.js writes and
 #: clears the session token.
-WRITES_ALLOWED = {"app.js": 2}
+WRITES_ALLOWED = {"app.js": 2, "origin-bridge.js": 2}  # the carry-over page, as above
 
 WRITE = re.compile(r"localStorage\.(?:setItem|removeItem)\(")
 

@@ -51,6 +51,9 @@ ALLOWED = {
     # The desktop companion's window (desktop-companion.html): a page of its
     # own as well, one `call` carrying the token.
     "desk-companion.js": 1,
+    # The 127.0.0.1 -> localhost carry-over page (origin-bridge.html): no
+    # app.js, no token (the routes are this computer only), one POST helper.
+    "origin-bridge.js": 1,
     # A Web Worker (the offline translator, Brief 83) has no app.js and so no
     # `api()`: its engine (.wasm) and model files, from an open route.
     "translate-worker.js": 2,

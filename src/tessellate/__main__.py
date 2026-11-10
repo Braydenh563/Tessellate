@@ -42,6 +42,40 @@ def page_host() -> str:
     return netbind.local_name() or HOST
 
 
+#: Left in the webview profile once the desktop window has been through
+#: `origin-bridge.html` (the carry-over from 127.0.0.1 to localhost).
+_ORIGIN_MOVED = "origin-moved"
+
+
+def window_host() -> str:
+    """The name the desktop window opens: `localhost`, not the bind address.
+    Windows Hello (WebAuthn) refuses an IP address as an RP id, so the window
+    must be at a name (owner decision, HANDOVER "Hello origin", 2026-11-10);
+    the server still binds `HOST` only. `TESSELLATE_LOCAL_NAME` wins."""
+    from tessellate.core import netbind
+
+    return netbind.local_name() or "localhost"
+
+
+def _window_url(port: int) -> str:
+    """The desktop window's address. The first time (no marker in the webview
+    profile) it is the bridge page on 127.0.0.1, which hands the saved settings
+    of that origin over to `window_host()` and goes on to the app; after that
+    it is the app. The marker is written here, so a failed carry-over is not
+    retried on every launch (the settings then start from their defaults)."""
+    plain = f"http://{window_host()}:{port}"
+    from tessellate.core.config import resolved_data_dir
+    try:
+        marker = resolved_data_dir() / "webview" / _ORIGIN_MOVED
+        if marker.exists():
+            return plain
+        marker.parent.mkdir(parents=True, exist_ok=True)
+        marker.write_text("1", encoding="utf-8")
+    except OSError:
+        return plain
+    return f"http://{HOST}:{port}/origin-bridge.html?to={window_host()}"
+
+
 def _port_from_env(raw: str | None = None) -> int:
     """The port the server binds, from TESSELLATE_PORT, default 8000.
 
@@ -1067,7 +1101,7 @@ def _boot_and_swap(window) -> None:
         # every launch 1.5s slower, and the missing splash it was aimed at is
         # the pre-Python one, which this page cannot be.
         _mark_start_step_done(window)
-        window.load_url(f"http://{page_host()}:{PORT}")
+        window.load_url(_window_url(PORT))
         _focus_window(window)
     else:
         try:
@@ -1799,7 +1833,7 @@ def _open_window_onto(port: int) -> None:
     tray, no loading page (the server is already up). Shares the running
     window's storage, since the saved sign-in and theme belong to the one
     address both windows open. Closing it ends this process only."""
-    url = f"http://{page_host()}:{port}"
+    url = _window_url(port)
     try:
         import webview
     except ImportError:
@@ -2192,7 +2226,7 @@ def _attach_desk_companion(webview, window, tray_icon):  # noqa: ANN001
         webview,
         window,
         _open_main,
-        lambda: f"http://{page_host()}:{PORT}/desktop-companion.html",
+        lambda: f"http://{window_host()}:{PORT}/desktop-companion.html",
         on_change=getattr(tray_icon, "update_menu", None),
     )
 

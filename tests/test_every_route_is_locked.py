@@ -113,6 +113,11 @@ OPEN = {
     #: wrong one like a wrong password (tests/test_hello_unlock.py).
     "/auth/hello/begin",
     "/auth/hello/unlock",
+    # One-shot carry-over of saved settings from the 127.0.0.1 origin to
+    # localhost (api/routes_origin_handoff.py): this computer only, two
+    # minutes, one use, never the token (tests/test_origin_handoff.py).
+    "/origin-handoff/put",
+    "/origin-handoff/take",
 }
 
 #: Prefixes, for the same reason, where the path carries a file name.
