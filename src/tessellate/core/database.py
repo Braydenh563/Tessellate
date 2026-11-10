@@ -272,8 +272,9 @@ def _hide_binned(execute_state):
 _SEALED_COLUMNS: dict[type, tuple[str, ...]] = {}
 
 
-#: Rows a space owns outright: sealed while their space is private.
-_SPACE_SEALED: tuple[type, ...] = ()
+#: Rows a space owns outright: sealed while their space is private. Filled
+#: once the classes exist (end of module); one list, never reassigned.
+_SPACE_SEALED: list[type] = []
 
 
 #: `session.info` key: the private space ids, read once when a request opens
@@ -297,7 +298,7 @@ def _forget_private_spaces(session, flush_context, instances):
 
 
 def _sealed_owner_private(session: Session, obj: object, private_spaces: set[str] | None = None) -> bool:
-    if isinstance(obj, _SPACE_SEALED):
+    if isinstance(obj, tuple(_SPACE_SEALED)):
         # Before `_set_workspace` has stamped a new row: the request's space.
         space = obj.workspace_id or session.info.get("workspace_id") or "default"
         return space in (_private_space_ids(session) if private_spaces is None else private_spaces)
@@ -348,7 +349,7 @@ def _seal_private_writes(session, flush_context, instances):
     """Every write to a row whose owner is private goes in encrypted."""
     with session.no_autoflush:
         rows = [obj for obj in list(session.new) + list(session.dirty) if type(obj) in _SEALED_COLUMNS]
-        private_spaces = _private_space_ids(session) if any(isinstance(obj, _SPACE_SEALED) for obj in rows) else set()
+        private_spaces = _private_space_ids(session) if any(isinstance(obj, tuple(_SPACE_SEALED)) for obj in rows) else set()
         for obj in rows:
             if _sealed_owner_private(session, obj, private_spaces):
                 seal_row(obj)
@@ -2447,7 +2448,7 @@ _SEALED_COLUMNS.update(
         Reminder: ("text",),
     }
 )
-_SPACE_SEALED = (Conversation, AskTurn, Reminder)
+_SPACE_SEALED.extend((Conversation, AskTurn, Reminder))
 
 _logger = logging.getLogger("tessellate.database")
 
