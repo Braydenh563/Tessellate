@@ -3977,8 +3977,25 @@ function gcDrawLabels(ctx, s, placed, fadeStep, k, beforePaint = null) {
   s.labelLit = next;
   if (fading && beforePaint) beforePaint();
   if (!draws.length && !leaving.length) return fading;
-  ctx.font = `500 ${12 / k}px ${gcTokens.font}`;
+  //: **The name's glyphs are set at 12 screen pixels, not `12 / k` world
+  //: pixels under the zoom.** Zoomed in, `12 / k` is a 1 to 2px font, and the
+  //: browser snaps each glyph's advance at that size before the transform
+  //: scales it up: the owner, 2026-11-10, "those note titles are screwed up
+  //: visually" ("I' m taking one I nformation"). The plate and the placement
+  //: stay in world units; only the text is drawn unscaled (`say` below).
+  const fontPx = 12;
   ctx.textBaseline = "middle";
+  const say = (text, x, y, stroke) => {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(1 / k, 1 / k);
+    ctx.font = `500 ${fontPx}px ${gcTokens.font}`;
+    if (stroke) {
+      ctx.lineWidth = 3;
+      ctx.strokeText(text, 0, 0);
+    } else ctx.fillText(text, 0, 0);
+    ctx.restore();
+  };
   //: **A name stands on a plate, not a halo** (INBOX 493: "labels in white
   //: over the lines"). The 3px card-coloured stroke around each glyph left
   //: every line that ran under a name showing between the letters, chopped
@@ -4005,7 +4022,7 @@ function gcDrawLabels(ctx, s, placed, fadeStep, k, beforePaint = null) {
     if (!plates) {
       ctx.globalAlpha = a;
       ctx.textAlign = draw.spot.align;
-      ctx.strokeText(draw.spot.text, x, y);
+      say(draw.spot.text, x, y, true);
     } else if (box) {
       ctx.globalAlpha = 0.88 * a;
       ctx.fillStyle = gcTokens.card;
@@ -4016,7 +4033,7 @@ function gcDrawLabels(ctx, s, placed, fadeStep, k, beforePaint = null) {
     ctx.globalAlpha = a;
     ctx.fillStyle = gcTokens.ink;
     ctx.textAlign = draw.spot.align;
-    ctx.fillText(draw.spot.text, x, y);
+    say(draw.spot.text, x, y, false);
   }
   ctx.globalAlpha = 1;
   return fading;

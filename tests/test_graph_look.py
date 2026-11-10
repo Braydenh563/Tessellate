@@ -208,7 +208,10 @@ def test_label_backgrounds_are_a_switch_and_off_is_the_old_halo():
     draw = canvas[canvas.index("function gcDrawLabels") :]
     draw = draw[: draw.index("\n}\n")]
     assert "const plates = gcLabelPlates(s);" in draw
-    assert "ctx.strokeText(draw.spot.text, x, y);" in draw and "ctx.lineWidth = 3 / k;" in draw
+    # The halo is drawn by `say` in screen pixels since 2026-11-10 (labels set
+    # at 12 screen px, not 12 / k under the zoom); the halo itself is unchanged.
+    assert "say(draw.spot.text, x, y, true);" in draw and "ctx.strokeText(text, 0, 0);" in draw
+    assert "ctx.lineWidth = 3 / k;" in draw
     graph = (JS / "graph.js").read_text(encoding="utf-8")
     assert '"graph-label-plates": true,' in graph
     assert 'prefs.set("graph-label-plates"' in graph

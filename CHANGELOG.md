@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 - Fix (voice notes, w6-1110, audit 1031 Z12): a Discard whose finish fails now says so with a toast and keeps the recording in Library; audit rows A32 to A36 (1029 X1 to X3, 1031 Z12, 1028 B8, B40) were already fixed on head and are struck.
 ## [Unreleased]
+- Fix (graph, owner 2026-11-10): note names on the map are set at 12 screen pixels rather than a `12 / k` font under the zoom, so zoomed in their letters no longer drift apart ("I' m taking one I nformation"); Linux Chromium does not show the fault, real Windows unverified.
 - Fix (dock menus, owner 2026-11-10): every on/off row in a dock menu (Timeline "Dates beside the strip", Library "Semantic" and "Include the bin", and the rest) carries `.checkbox-label`, so its box is the app's pill switch, 32x18, not a 28x28 platform checkbox; tests/test_dock_menu_switch_1110.py.
 - Change (documents, owner 2026-11-10): the editor's right-click menu folds the eight paste modes into one "Paste as" submenu (Plain text, Markdown source, Matching the surrounding text, Code block, Quote, Table, Link, Checklist).
 - Fix (whiteboard, owner 2026-11-10, INBOX 1725): alignment guides are drawn in the overlay layer above note cards, not under them.
