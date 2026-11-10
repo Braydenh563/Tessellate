@@ -111,3 +111,33 @@ def test_a_list_of_notes_leads_with_the_fuller_titled_note(ask5):
 def test_a_latest_ask_still_leads_with_the_newest(ask5):
     text = ask5("what is the latest on Lisbon")
     assert "Lisbon offsite" in text, text
+
+
+# --- B5 a lower-case pair is two subjects (E10, composer-r6 L23, composer-r8 L13) ---------------------------
+
+@pytest.mark.parametrize("question", ["anna and josé", "Anna and José", "tom and sara", "Tom and Sara"])
+def test_a_pair_of_names_is_a_block_each_whatever_its_case(ask5, question):
+    text = ask5(question)
+    first, second = (w.capitalize() for w in question.split(" and "))
+    assert f"**{first}**" in text and f"**{second}**" in text, text
+    assert f"mentions {first}" in text and f"mentions {second}" in text, text  # said as the notes write the names
+    assert "notes about" not in text
+
+
+# --- B8 two sides that both name one note (c13#2) ----------------------------------------------------------
+
+import tests._seed_bt_1109 as seed_bt  # noqa: E402
+
+
+@pytest.fixture
+def ask_bt(client, session, monkeypatch):
+    seed_bt.seed(session)
+    seed_bt.fix_clock(monkeypatch)
+    return lambda q: seed_bt.ask(client, q)["text"]
+
+
+@pytest.mark.parametrize("question", ["compare Priya and Marcus", "Priya vs Marcus", "how do Priya and Marcus differ"])
+def test_a_note_naming_both_sides_does_not_hide_a_side(ask_bt, question):
+    text = ask_bt(question)
+    assert "**Priya**" in text and "**Marcus**" in text, text
+    assert "nothing mentions" not in text and "couldn't find" not in text, text

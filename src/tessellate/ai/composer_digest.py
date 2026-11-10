@@ -5190,7 +5190,7 @@ def answer(question: str, notes: list[dict], **kwargs) -> dict | None:  # noqa: 
     the notes' words set, as `compose` does: "tom and sara" is two subjects
     only when the notes hold both words."""
     owned = composer_ask.NOTE_WORDS.set(composer._note_words(notes))  # noqa: SLF001
-    texts = composer_ask.NOTE_TEXTS.set(tuple(f"{n.get('title') or ''} {n.get('content') or ''}".lower() for n in notes or ()))
+    texts = composer_ask.NOTE_TEXTS.set(tuple(f"{n.get('title') or ''} {n.get('content') or ''}" for n in notes or ()))
     try:
         return composer_event_verdict.apply(question, _answer(question, notes, **kwargs), kwargs.get("today") or composer.user_today())
     finally:

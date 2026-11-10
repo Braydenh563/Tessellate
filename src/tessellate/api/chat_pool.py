@@ -17,7 +17,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import composer, composer_frame, composer_intent, composer_lists, composer_money, composer_slots, composer_sum, composer_versus, glossary, librarian, neighbours, question_noise
-from tessellate.ai import composer_ask, composer_property
+from tessellate.ai import composer_ask, composer_property, composer_tables
 from tessellate.api.chat_attach import _MEDIA_REF, _attached_boards, _attachment_readings, _media_readings, _mostly_pictures, _named_sources, _picture_alts, _picture_sizes
 from tessellate.core import deps
 from tessellate.core.database import Category, Entry, like_escape, LIKE_ESCAPE, MediaUpload
@@ -251,7 +251,7 @@ def _with_each_side(session: Session, question: str, entries: list, locale: str 
     """A comparison needs both things in hand: a search for "Lisbon vs Porto"
     can fill its few slots with one side, so each side is searched on its own
     and the best of each is added."""
-    sides = composer.compare_sides(question)
+    sides = composer.compare_sides(question) or _lower_pair(session, question, entries, locale)
     if not sides:
         return entries
     merged = list(entries)
@@ -268,6 +268,25 @@ def _with_each_side(session: Session, question: str, entries: list, locale: str 
                 seen.add(entry.id)
                 merged.append(entry)
     return merged
+
+
+def _lower_pair(session: Session, question: str, entries: list, locale: str | None) -> tuple[str, ...] | None:  # noqa: ANN001
+    """"tom and sara" typed in lower case is two names when the notes hold both words: each word is
+    looked up on its own (the pool of the pair may hold only one), then the pair is read with those
+    notes' words (W7 B5, composer-r6 L23)."""
+    pair = composer_tables.LOWER_PAIR.match(question.strip())
+    if not pair:
+        return None
+    pooled = list(entries)
+    for word in (pair.group("a"), pair.group("b")):
+        pooled += search_manager.retrieve_detailed(session, word, deps.get_embeddings(), limit=3, locale=locale).entries
+    notes = [{"content": e.content or ""} for e in pooled]
+    words, texts = composer_ask.NOTE_WORDS.set(composer._note_words(notes)), composer_ask.NOTE_TEXTS.set(tuple(n["content"] for n in notes))  # noqa: SLF001
+    try:
+        return composer.compare_sides(question)
+    finally:
+        composer_ask.NOTE_TEXTS.reset(texts)
+        composer_ask.NOTE_WORDS.reset(words)
 
 
 def _titled_entry(session: Session, side: str):  # noqa: ANN202
