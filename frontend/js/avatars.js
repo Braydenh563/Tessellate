@@ -5922,11 +5922,12 @@ function nameMarkBuddyTempo() {
     //: hands are paused where they are, and taken up again within a second
     //: of showing.
     if (!buddy.matches(NMB_HOLD_SHOWN)) {
-      nmbTempo.anims = nmbTempo.anims.filter((a) => {
-        if (!a.effect.target.closest(".nmb-hold")) return true;
-        if (a.playState === "running") a.pause();
-        return false;
-      });
+      //: Read every state, then pause (lag log: `nameMarkBuddyTempo` 26ms, forced layout 25ms): a `pause()` ahead of
+      //: the next animation's `playState` made that read settle the figure's style again.
+      const hidden = nmbTempo.anims.filter((a) => a.effect.target.closest(".nmb-hold"));
+      const running = hidden.filter((a) => a.playState === "running");
+      nmbTempo.anims = nmbTempo.anims.filter((a) => !hidden.includes(a));
+      for (const a of running) a.pause();
     }
     //: **What animates inside one of Atlas's layers goes at half that**
     //: (libtl-0926, from the Atlas agent's report): a mood's small effects

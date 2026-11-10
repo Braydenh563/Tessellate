@@ -544,6 +544,8 @@ function panelSave(panel) {
   panelSync(panel);
   panelPushSync();
 }
+//: Panels with a first look waiting on the next frame (the pointerover listener).
+panelAdopt.hoverWait = new WeakSet();
 //: **A popover hung from a caret or a button is re-based on the middle of the
 //: window** (INBOX 1542), where every stored place is measured from: it keeps
 //: the place it was given (the offset is the difference in layout, so a grow in
@@ -1153,7 +1155,15 @@ if (typeof document !== "undefined" && document.addEventListener) {
   document.addEventListener("pointerover", (e) => {
     const t = e.target;
     //: Anywhere in a panel, not only its head, so its edges resize from the first touch (INBOX 1536).
-    if (t instanceof Element && t.closest('dialog, [role="dialog"]') && !t.closest(".panel-movable-on")) { const p = panelOf(t); if (p) panelAdopt(p); }
+    //: **Not measured inside the pointerover** (lag log: `document.onpointerover` 54ms, forced layout 51ms): the
+    //: adopt reads the panel's box, which the hover's own style change has just dirtied. One look per panel, a
+    //: frame on (as the focus path above does), and none while one is waiting.
+    if (t instanceof Element && t.closest('dialog, [role="dialog"]') && !t.closest(".panel-movable-on")) {
+      const p = panelOf(t);
+      if (!p || panelAdopt.hoverWait.has(p)) return;
+      panelAdopt.hoverWait.add(p);
+      afterFrames(() => setTimeout(() => { panelAdopt.hoverWait.delete(p); panelAdopt(p); }, 0), 1);
+    }
   }, true);
   document.addEventListener("pointerdown", (e) => {
     if (!(e.target instanceof Element)) return;

@@ -65,7 +65,7 @@ def test_the_large_view_opens_on_its_resting_limbs() -> None:
     visit = _fn((ROOT / "frontend" / "js" / "companion-menu.js").read_text(encoding="utf-8"), "nameMarkBuddyVisit")
     cut = visit[visit.index("if (nmb.visit.pose !== nmb.pose) {") :]
     assert visit.index("host.appendChild(buddy);") < visit.index("if (nmb.visit.pose !== nmb.pose) {")
-    assert "anim instanceof CSSTransition) anim.finish();" in cut
+    assert "anim instanceof CSSTransition) moving.push(anim);" in cut and "for (const anim of moving) anim.finish();" in cut
     assert "box.atlasRig.fresh = true;" in cut and "atlasRigWake(box);" in cut
 
 

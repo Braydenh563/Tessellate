@@ -127,9 +127,13 @@ function openNameMarkViewer(seed, { visit = false } = {}) {
   if (visiting) home = nameMarkBuddyVisit(figure);
   if (visiting && !home) figure.appendChild(characterFor(seed).figure());
   if (home) card.appendChild(nameMarkViewerActs(document.getElementById("nm-buddy")));
-  nameMarkViewerFit(figure);
-  requestAnimationFrame(() => nameMarkViewerFit(figure));
-  close.focus();
+  //: **Fitted in the frame, not in the double-click** (lag log: `ondblclick` 127ms, forced layout 104ms): the fit
+  //: reads every part's box and style of a dialog just appended. The first look is the frame's; the focus
+  //: goes in the same frame (a key pressed before it still reaches the dialog's Escape listener).
+  requestAnimationFrame(() => {
+    nameMarkViewerFit(figure);
+    if (overlay.isConnected) close.focus();
+  });
   //: Its lines, one every 7 to 13 seconds while the view is open; not
   //: asleep, not under a line it has just been poked into saying.
   const talk = () => {
@@ -1049,10 +1053,13 @@ function nameMarkBuddyVisit(host) {
   //: places at once (their transitions finished, Atlas's rig set in one
   //: frame) rather than lowering from the hang's raised arms while you look.
   if (nmb.visit.pose !== nmb.pose) {
-    for (const el of buddy.querySelectorAll(".nmb-arm, .nmb-hold, .nmb-leg")) {
-      getComputedStyle(el).transform;
-      for (const anim of el.getAnimations?.() || []) if (anim instanceof CSSTransition) anim.finish();
-    }
+    //: Reads, then writes (lag log: `ondblclick` 127ms, forced layout 104ms): `finish()` on one limb dirtied
+    //: the style the next limb's read had to flush again. One flush for all, then every finish.
+    const limbs = buddy.querySelectorAll(".nmb-arm, .nmb-hold, .nmb-leg");
+    for (const el of limbs) getComputedStyle(el).transform;
+    const moving = [];
+    for (const el of limbs) for (const anim of el.getAnimations?.() || []) if (anim instanceof CSSTransition) moving.push(anim);
+    for (const anim of moving) anim.finish();
     const box = buddy.querySelector(".atl-figure-box");
     if (box?.atlasRig) {
       box.atlasRig.fresh = true;
