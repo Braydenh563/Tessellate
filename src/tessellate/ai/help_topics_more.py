@@ -3547,7 +3547,7 @@ MORE_TOPICS.extend([
             "the other to set it instead. Same as fill (or Same as border) makes "
             "them one colour and Swap trades them, each one Undo step. Recent "
             "holds your last eight picks on this device, above the board's colours. "
-            "Palettes you saved from the Library show below the board's colours, one row each. "
+            "Palettes you saved from the Library show below the board's colours, one row each, then 24 preset and 40 more colours. "
             "Custom takes a colour typed or pasted: a hex box (#rgb, #rrggbb, "
             "#rrggbbaa, rgb() or hsl()) and Red, Green and Blue boxes. Opacity, "
             "a slider and a number, sets how solid that colour is: the fill's for "
@@ -3559,7 +3559,7 @@ MORE_TOPICS.extend([
             "would, from a shape (its fill, or its border with Alt or Take a shape's border), "
             "a line, a text box or any colour button, and Escape stops it. A fill "
             "that is off shows dimmed; picking a colour turns it on. Ctrl+Alt+D "
-            "(Set as default style) keeps the selected shape's, connector's or text box's look "
+            "(Set as default style) keeps the selected shape's, connector's, text box's or pen stroke's look "
             "as the board's default for new ones; Clear the default style undoes it."
         ),
         "badge": {"label": "Library", "tab": "library"},

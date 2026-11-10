@@ -524,6 +524,8 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         "keep_ratio": None,
         # And with a picture's crop to a shape (INBOX 1313, plan row 13).
         "crop": None,
+        # And with a picture's rectangle crop (Trim edges).
+        "trim": None,
         # And with a board item's voting dots (INBOX 1313, plan row 14).
         "votes": None,
     }
@@ -1191,6 +1193,15 @@ def test_a_pictures_crop_shape_is_kept_and_only_a_known_one(board_client):
     assert board_client.get("/whiteboard/").json()["objects"][0]["data"]["crop"] == "hexagon"
     refused = board_client.post("/whiteboard/objects", json={"kind": "image", "data": {"url": "/media/abc123.png", "crop": "url(x)"}})
     assert refused.status_code == 422
+
+
+def test_a_pictures_rectangle_trim_is_kept_and_bounded(board_client):
+    made = board_client.post("/whiteboard/objects", json={"kind": "image", "data": {"url": "/media/abc123.png", "trim": [10, 0, 20, 40]}})
+    assert made.status_code == 201, made.text
+    assert board_client.get("/whiteboard/").json()["objects"][0]["data"]["trim"] == [10, 0, 20, 40]
+    for bad in ([10, 0, 20], [10, 0, 20, 95], [-1, 0, 0, 0]):
+        refused = board_client.post("/whiteboard/objects", json={"kind": "image", "data": {"url": "/media/abc123.png", "trim": bad}})
+        assert refused.status_code == 422, bad
 
 
 def test_a_board_items_votes_are_kept_and_bounded(board_client):

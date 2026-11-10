@@ -1,4 +1,4 @@
-"""A board's default style (draw.io's "Set as default style", Ctrl+Shift+D;
+"""A board's default style (draw.io's "Set as default style", Ctrl+Alt+D;
 WHITEBOARD_PLAN "The draw.io programme" section 1): `background.defaults`
 holds `{shape, link, text}`, each a small dict of style values the tools start
 a new item with. It rides in the background family, so the state route and the
@@ -48,8 +48,21 @@ def test_defaults_that_are_not_style_are_refused_or_dropped(ai_client):
 def test_the_page_sets_reads_and_clears_them():
     assert "setDefault" in FMT and "withDefaults" in FMT
     # New sketches and objects start from them; the undo step restores them.
-    assert 'wbFmtState.board?.withDefaults("link"' in JS and 'wbFmtState.board?.withDefaults("shape"' in JS
+    assert 'wbFmtState.board?.withDefaults("link"' in JS and 'wbFmtState.board?.withDefaults(group, blob' in JS
     assert 'wbFmtState.board?.withDefaults("text"' in JS
     assert "defaults: was.defaults ?? null" in JS
     assert 'id: "set-default-style"' in CMD and 'keys: "Ctrl+Alt+D"' in CMD
     assert 'id: "clear-default-style"' in CMD
+
+
+def test_pen_and_highlighter_strokes_and_cross_links_take_a_default(ai_client):
+    board = _board(ai_client)
+    url = f"/whiteboard/boards/{board['id']}"
+    defaults = {"pen": {"color": "#112233", "width": 6}, "highlighter": {"color": "#ffee00", "width": 24, "opacity": 0.4}}
+    out = ai_client.put(url, json={"background": {"defaults": defaults}}).json()["background"]
+    assert out["defaults"] == defaults
+    # The page picks the group from the stroke's own shape and applies it to each tool.
+    assert '{ draw: "pen", highlighter: "highlighter" }[data.shape]' in FMT
+    assert 'isHighlighter ? "highlighter" : "pen"' in JS
+    # A map's cross-link goes through the same call as a board link.
+    assert 'JSON.stringify(wbFmtState.board?.withDefaults("link", linkBase) ?? linkBase)' in JS

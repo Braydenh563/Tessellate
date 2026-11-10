@@ -464,6 +464,9 @@ class WhiteboardObjectData(BaseModel):
     #: A picture cropped to a shape (INBOX 1313): a name from this short list,
     #: never a path, so nothing a client sends reaches a style.
     crop: str | None = Field(default=None, pattern="^(ellipse|diamond|hexagon|triangle)$")
+    #: A picture's rectangle crop: percent cut from the top, right, bottom and left
+    #: (the Format panel's Trim edges). It shares the clip with `crop`.
+    trim: list[Annotated[int, Field(ge=0, le=90)]] | None = Field(default=None, min_length=4, max_length=4)
     #: Voting dots on a board item (Miro's; INBOX 1313): how many it holds.
     #: Content, not a look. Zero is "none", so it is not stored.
     votes: int | None = Field(default=None, ge=1, le=99)

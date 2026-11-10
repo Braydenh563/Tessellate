@@ -83,7 +83,7 @@ const WB_FMT_FIELDS = {
   arrow: ["stroke", "strokealpha", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "tip"],
   link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "linklook", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "jumpsize", "gapstart", "gapend", "tip"],
   text: ["stroke", "fill", "fillalpha", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props", "rawstyle"],
-  image: ["alpha", "shadow", "shadowset", "radii", "crop", "geometry", "angle", "props"],
+  image: ["alpha", "shadow", "shadowset", "radii", "crop", "trim", "replace", "geometry", "angle", "props"],
   frame: ["geometry", "props"],
   table: ["alpha", "shadow", "shadowset", "radii", "geometry", "props"],
   note: ["geometry", "angle"],
@@ -147,6 +147,7 @@ function wbFmtValue(entry, field) {
     case "round": return Number(s?.round) || 0;
     case "linestyle": return s?.curve ? "curved" : s?.round ? "rounded" : "sharp";
     case "crop": return o?.crop || "";
+    case "trim0": case "trim1": case "trim2": case "trim3": return o?.trim?.[Number(field[4])] || "";
     case "flow": return Boolean(s?.flow);
     case "fillstyle": return WB_FILL_STYLES.includes(s?.fillStyle) ? s.fillStyle : "solid";
     case "gradient": return wbHexColour(s?.gradient?.to) || "#ffffff";
@@ -649,6 +650,7 @@ function wbFormatSync() {
     ["wb-fmt-jumpsize", "jumpsize", "jumpsize"], ["wb-fmt-gapstart", "gapstart", "gapstart"], ["wb-fmt-gapend", "gapend", "gapend"], ["wb-fmt-tip", "tip", "tip"],
     ["wb-fmt-pattern", "pattern", "pattern"], ["wb-fmt-round", "round", "round"], ["wb-fmt-linestyle", "linestyle", "linestyle"], ["wb-fmt-crop", "crop", "crop"], ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-lsize", "lsize", "linklook"], ["wb-fmt-lcolor", "lcolor", "linklook"], ["wb-fmt-size", "size", "text"],
     ["wb-fmt-shx", "shx", "shadowset"], ["wb-fmt-shy", "shy", "shadowset"], ["wb-fmt-shb", "shb", "shadowset"], ["wb-fmt-pad", "pad", "pad"],
+    ["wb-fmt-trim0", "trim0", "trim"], ["wb-fmt-trim1", "trim1", "trim"], ["wb-fmt-trim2", "trim2", "trim"], ["wb-fmt-trim3", "trim3", "trim"],
     ["wb-fmt-r0", "r0", "radii"], ["wb-fmt-r1", "r1", "radii"], ["wb-fmt-r2", "r2", "radii"], ["wb-fmt-r3", "r3", "radii"],
     ["wb-fmt-ink", "ink", "text"], ["wb-fmt-alpha", "alpha", "alpha"], ["wb-fmt-lh", "lh", "text"], ["wb-fmt-ls", "ls", "text"], ["wb-fmt-dir", "dir", "text"], ["wb-fmt-inkalpha", "inkalpha", "text"],
   ]) {
@@ -938,6 +940,31 @@ onSurface("board", () => {
     const crop = e.target.value;
     wbFmtApply("crop", () => ({ crop: crop || undefined }), crop ? `Picture cropped to ${e.target.selectedOptions[0].textContent.toLowerCase()}.` : "Picture crop taken off.");
   });
+  //: Replace picture: the button opens the file box; the new file is uploaded and the picture's address
+  //: swapped in one Undo step, so its place, size, crop and style stay.
+  on("wb-fmt-replace", "click", () => document.getElementById("wb-fmt-replace-file")?.click());
+  on("wb-fmt-replace-file", "change", async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !file.type?.startsWith("image/")) return;
+    if (file.size > 50 * 1024 * 1024) return toast("That picture is over 50 MB. Pick a smaller one.");
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const uploaded = await apiJson("/media/upload", { method: "POST", headers: authHeaders(), body });
+      await wbFmtApply("replace", () => ({ url: uploaded.url }), "Picture replaced.");
+    } catch (err) {
+      toast(err?.message || "The picture could not be uploaded.");
+    }
+  });
+  //: A rectangle crop: percent cut from the top, right, bottom and left; all empty is no trim.
+  for (const edge of [0, 1, 2, 3]) {
+    on(`wb-fmt-trim${edge}`, "change", () => {
+      const trim = [0, 1, 2, 3].map((i) => boxNumber(document.getElementById(`wb-fmt-trim${i}`), 0, 90) || 0);
+      const set = trim.some(Boolean) && trim[0] + trim[2] < 95 && trim[1] + trim[3] < 95;
+      wbFmtApply("trim", () => ({ trim: set ? trim : undefined }), set ? "Picture trimmed." : "Picture trim taken off.");
+    });
+  }
   on("wb-fmt-raw-apply", "click", () => wbFmtState.raw.apply());
   on("wb-fmt-linestyle", "change", (e) => {
     const style = e.target.value;
@@ -2314,8 +2341,28 @@ const wbColour = (() => {
     };
     //: `swatchPicker` lives in the categories bundle, which a board may open before.
     const lib = wbLibState.lib ? Promise.resolve(wbLibState.lib) : apiJson("/board-library").then((got) => (wbLibState.lib = wbLibState.lib || got));
-    Promise.all([ensureModule("categories"), lib]).then(fill).catch(() => {});
+    Promise.all([ensureModule("categories"), lib]).then(fill).catch(() => {}).then(() => seeds(box, pick, current));
     return box;
+  }
+
+  //: draw.io's two seed sets for the swatch box, under the saved palettes: its 24 preset colours and a
+  //: 40-colour grid (ten greys, then pastel, mid and strong rings), hex without the hash.
+  const SEEDS = {
+    "Preset colours": "e6d0de cda2be b5739d e1d5e7 c3abd0 a680b8 d4e1f5 a9c4eb 7ea6e0 d5e8d4 9ac7bf 67ab9f b9e0a5 97d077 fff2cc ffe599 ffd966 fff4c3 ffce9f ffb570 f8cecc f19c99 ea6b66 b85450",
+    "More colours": "ffffff e6e6e6 cccccc b3b3b3 999999 808080 666666 4d4d4d 333333 000000 ffcccc ffe6cc ffffcc e6ffcc ccffcc ccffff cce5ff ccccff e5ccff ffcce6 ff9999 ffcc99 ffff99 ccff99 99ff99 99ffff 99ccff 9999ff cc99ff ff99cc ff6666 ffb366 ffff66 b3ff66 66ff66 66ffff 66b2ff 6666ff b266ff ff66b3",
+  };
+
+  function seeds(box, pick, current) {
+    if (typeof swatchPicker !== "function") return;
+    for (const [name, list] of Object.entries(SEEDS)) {
+      const colours = list.split(" ").map((c) => `#${c}`);
+      const row = swatchPicker({ label: name, value: colours.includes(current) ? current : null, palette: Object.fromEntries(colours.map((c) => [c, c])), none: null, onChoose: pick });
+      box.append(wbColourHeading(name), row);
+    }
+    //: The rows landed after the popover was placed: pull it back inside the window if they pushed it out.
+    const menu = box.closest("#wb-colour-menu");
+    const over = menu ? menu.getBoundingClientRect().bottom - (window.innerHeight - 8) : 0;
+    if (over > 0) menu.style.top = `${Math.max(8, Math.round(menu.getBoundingClientRect().top - over))}px`;
   }
 
   return {
@@ -2741,7 +2788,7 @@ wbFmtState.board = (() => {
   }
 
   //: The board's default style (draw.io's Set as default style): the selected item's look, kept on the
-  //: board under its kind (`shape`, `link`, `text`) so the tools start new items with it.
+  //: board under its kind (`shape`, `link`, `text`, `pen`, `highlighter`) so the tools start new items with it.
   const FILL_KEYS = ["fill", "fillOpacity", "gradient", "fillStyle"];
 
   function groupOf() {
@@ -2749,7 +2796,8 @@ wbFmtState.board = (() => {
     if (sketch) {
       const data = wbSketchParsedData(sketch);
       if (!data) return null;
-      return { group: String(data.type || "").startsWith("link-") ? "link" : "shape", style: wbPickStyle(data, WB_SKETCH_STYLE_KEYS) };
+      const group = String(data.type || "").startsWith("link-") ? "link" : { draw: "pen", highlighter: "highlighter" }[data.shape] || "shape";
+      return { group, style: wbPickStyle(data, WB_SKETCH_STYLE_KEYS) };
     }
     const object = wbSelectedTextObjectOrNull();
     return object ? { group: "text", style: wbPickStyle(object.data, WB_OBJECT_STYLE_KEYS) } : null;
@@ -2757,10 +2805,10 @@ wbFmtState.board = (() => {
 
   async function setDefault() {
     const picked = groupOf();
-    if (!picked || !Object.keys(picked.style).length) return toast("Select a shape, connector or text box to take its style.");
+    if (!picked || !Object.keys(picked.style).length) return toast("Select a shape, connector, text box or stroke to take its style.");
     const kept = wbBoardBackground().defaults || {};
     if (await wbSetBackground({ defaults: { ...kept, [picked.group]: picked.style } })) {
-      toast(`Default ${{ shape: "shape", link: "connector", text: "text box" }[picked.group]} style set. New ones on this board start with it.`);
+      toast(`Default ${{ shape: "shape", link: "connector", text: "text box", pen: "pen stroke", highlighter: "highlighter stroke" }[picked.group]} style set. New ones on this board start with it.`);
     }
   }
 

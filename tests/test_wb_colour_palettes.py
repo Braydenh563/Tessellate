@@ -49,3 +49,15 @@ def test_the_popover_shows_them_under_the_board_colours():
     assert "palettes: wbColourPalettes" in FMT
     # The library index is fetched on demand, never at load, and without drawing the Library panel.
     assert 'apiJson("/board-library")' in _kit_function("wbColourPalettes")
+
+
+def test_draw_io_seed_sets_follow_the_saved_palettes():
+    start = FMT.index("  const SEEDS = {")
+    script = FMT[start : FMT.index("\n  };", start) + 5] + "\nconsole.log(JSON.stringify(SEEDS))"
+    seeds = json.loads(subprocess.run(["node", "-e", script], capture_output=True, text=True, timeout=30, check=True).stdout)
+    sets = {name: value.split(" ") for name, value in seeds.items()}
+    # draw.io's 24 preset colours and a 40-colour grid; each a real hex of six characters, no repeats.
+    assert len(sets["Preset colours"]) == 24 and len(sets["More colours"]) == 40
+    for colours in sets.values():
+        assert len(set(colours)) == len(colours) and all(len(c) == 6 and int(c, 16) >= 0 for c in colours)
+    assert ".then(() => seeds(box, pick, current))" in _kit_function("wbColourPalettes")

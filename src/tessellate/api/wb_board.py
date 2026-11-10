@@ -527,7 +527,7 @@ def _on_current_layer(db: Session, board_id: int | None, data: dict) -> dict:
     return {**data, "layer": layer} if layer else data
 
 
-DEFAULT_GROUPS = ("shape", "link", "text")
+DEFAULT_GROUPS = ("shape", "link", "text", "pen", "highlighter")
 _DEFAULT_KEY_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]{0,31}$")
 
 
@@ -545,7 +545,7 @@ def _default_value(value, *, nested: bool = True):
 
 
 def _clean_defaults(value, *, strict: bool = False) -> dict:
-    """`{shape, link, text}` of style dicts; an unknown group is dropped, an empty one stores nothing,
+    """`{shape, link, text, pen, highlighter}` of style dicts; an unknown group is dropped, an empty one stores nothing,
     and anything that is not style raises when `strict` (the route) and is skipped when not (a read)."""
     if not isinstance(value, dict):
         if strict:
