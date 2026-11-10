@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import logging
 import re
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -32,7 +32,7 @@ def _notes(session: Session) -> list[dict]:
 
 
 def _reminders(session: Session) -> list[dict]:
-    rows = reminder_repo.every(session, limit=300)
+    rows = reminder_repo.every(session, include_done=True, limit=300)
     return [{"id": r.id, "text": r.text, "due_at": r.due_at, "done": r.done, "entry_id": r.entry_id, "priority": r.priority} for r in rows]
 
 
@@ -74,6 +74,24 @@ def events(session: Session, question: str, history: list[dict], *, now: datetim
     return out
 
 
+def reminder_events(session: Session, question: str, *, now: datetime) -> list[dict] | None:
+    """What the reminders answer to `question` ("do I have any reminders today",
+    "did I pay the phone bill", "when do the bins go out"), as an answer event,
+    or None. With no model it is the answer (`composer_extra`); with one it is
+    handed over as facts, so both paths read the same reminders (audit 2 G3 parity)."""
+    from tessellate.ai import composer_plan, composer_reminders
+    from tessellate.ai.composer_study import Ctx
+
+    text = " ".join((question or "").split())
+    try:
+        ctx = Ctx(question=text, notes=[], now=now, reminders=_reminders(session))
+        reply = composer_reminders.answer(ctx) or composer_plan._when_reply(ctx, text)  # noqa: SLF001
+    except Exception:  # noqa: BLE001  # the model answers as before
+        log.exception("chat: the reminder reader failed")
+        return None
+    return [{"type": "answer", "delta": reply.text}] if reply else None
+
+
 def talk_events(session: Session, typed: str, history: list[dict], seed: str, question: str) -> list[dict] | None:
     """The turn when it is about the talk itself (`ai/composer_chat`: a feeling,
     "shorter", "which is higher") or about Atlas ("do you have feelings"), read
@@ -97,7 +115,7 @@ def welcome_line(session: Session, now: datetime, *, question: str = "", voice: 
     due today, the title of the last note and the writing streak, built by the
     composition layer in the person's voice. A failure to count anything
     leaves that clause out; it never fails the greeting."""
-    from tessellate.ai import composer_compose, greeting_compose, study
+    from tessellate.ai import composer_compose, due_summary, greeting_compose, study
 
     #: The dashboard counts neither a draft nor an archived note as a note, so
     #: neither is "the last note" here (audit 1028 S11).
@@ -109,16 +127,14 @@ def welcome_line(session: Session, now: datetime, *, question: str = "", voice: 
         log.exception("welcome: the notebook's numbers failed")
         facts = greeting_compose.NotebookFacts()
         total = len(notes)
-    #: "N due today" is the dashboard's count: every open reminder due before
-    #: tomorrow, an overdue one included.
-    tomorrow = now.date() + timedelta(days=1)
-    due = sum(1 for r in _reminders(session) if hasattr(r["due_at"], "date") and r["due_at"].date() < tomorrow)
+    #: The count is `due_summary`'s: today's and the overdue are said apart, as the dashboard says them.
+    counted = due_summary.of(_reminders(session), now)
     last = study.title_of(notes[0]["content"]) if notes else ""
     mood = composer_compose.mood_of(question, voice=voice, seed=seed, said=said or [], intent="welcome")
     #: In Chat the last note is a link the client opens (INBOX 1485: "didnt
     #: reference the note and no link or source was shown?").
     href = f"#/notes/{notes[0]['id']}" if link and notes else ""
-    return composer_compose.welcome(mood, hour=now.hour, due=due, last=realise.cut_title(last, 60), streak=facts.streak, notes=total, question=question, last_href=href)
+    return composer_compose.welcome(mood, hour=now.hour, due=counted.today, overdue=counted.overdue, last=realise.cut_title(last, 60), streak=facts.streak, notes=total, question=question, last_href=href)
 
 
 def language_events(session: Session, language: str, *, web_on: bool) -> list[dict]:

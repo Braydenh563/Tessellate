@@ -394,7 +394,25 @@ def _cap(text: str) -> str:
 def _imperative_of(text: str, verb_word: str) -> bool:
     """"Call mum about christmas plans" opens with the verb asked ("did I call mum"): a to-do, not a record (R9-7)."""
     first = (re.findall(r"[A-Za-z']+", re.sub(r"^\s*[-*]\s*(?:\[[ xX]\]\s*)?", "", text)) or [""])[0].lower()
-    return bool(first) and first == verb_word.lower() and not first.endswith("ed")
+    typed = verb_word.lower()
+    #: "have I called mum" meets "Call mum": the question's verb is read by its stem (audit 2 G1).
+    bare = {typed} | ({typed[:-2], typed[:-1]} if typed.endswith("ed") else set()) | ({typed[:-3]} if typed.endswith("ing") else set())
+    return bool(first) and first in bare and not first.endswith("ed")
+
+
+#: A line that lists what is still to come ("Three gates before then: ... the pricing page signed off") is a plan, not a record.
+_GATE = re.compile(r"\b(?:gates?|before then|criteria|requirements?|conditions?|still to)\b", re.I)
+
+
+def _newest_saying(views: list, verb: frozenset[str], obj, best):  # noqa: ANN001, ANN202
+    """The (view, sentence) of the newest note that says the doing, when one is
+    newer than `best`: "Pricing page still not signed off" (today) outranks
+    the plan that lists it (September), so the newest dated fact leads (audit 2 G1)."""
+    if best is None or best[1].kind == "task" or not best[0].written:
+        return best
+    newer = [(v, s) for v in views if v.written and v.written > best[0].written
+             for s in v.sentences if s.kind != "task" and _holds(s, obj) and _says_verb(s, verb)]
+    return max(newer, key=lambda vs: vs[0].written) if newer else best
 
 
 def _say_did(out, view, s, verb_word: str, today: date) -> None:  # noqa: ANN001
@@ -402,7 +420,7 @@ def _say_did(out, view, s, verb_word: str, today: date) -> None:  # noqa: ANN001
         _verdict(out, view, s, verb_word)
     elif _UNDONE.search(s.text):
         _say_line(out, view, s, f"No, {_note_of(view, today)} says")
-    elif planned(s.text) or _imperative_of(s.text, verb_word):
+    elif planned(s.text) or _GATE.search(s.text) or _imperative_of(s.text, verb_word):
         _say_line(out, view, s, f"Not yet, as far as your notes go. {_cap(_note_of(view, today))} only plans it")
     else:
         _say_line(out, view, s, f"Yes, {_note_of(view, today)} says so", via=_title_of(view, s))
@@ -539,6 +557,7 @@ def _did(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
     best = _first_did(views, verb, obj)
     if best is not None and best[1].kind == "task" and not best[1].done:
         best = _done_later(views, verb, obj, best[0]) or best
+    best = _newest_saying(views, verb, obj, best)
     if best is None:
         _not_said(out, views, obj, words, today, verb)
         return True

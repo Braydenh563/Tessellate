@@ -347,9 +347,20 @@ def greeted_as(question: str, hour: int) -> str:
     return "evening" if part == "night" else part
 
 
-def welcome(mood: Mood, *, hour: int = 9, due: int | None = None, last: str = "", streak: int = 0, notes: int = 1, question: str = "", last_href: str = "") -> str:
+def _due_clause(mood: Mood, due: int | None, overdue: int) -> str | None:
+    """What is due, said once: today's count, then the overdue apart ("1 reminder due today, 2 overdue");
+    nothing due is the quiet line, None when the count is unknown."""
+    if due:
+        said = frame("w_due", mood, due=f"{due} reminder{'s' if due != 1 else ''}")
+        return f"{said.rstrip('.')}, {overdue} overdue." if overdue else said
+    if overdue:
+        return f"{overdue} reminder{'s' if overdue != 1 else ''} overdue."
+    return frame("w_quiet", mood) if due == 0 else None
+
+
+def welcome(mood: Mood, *, hour: int = 9, due: int | None = None, overdue: int = 0, last: str = "", streak: int = 0, notes: int = 1, question: str = "", last_href: str = "") -> str:
     """A greeting built from what the app knows: the time of day, what is due
-    today (`due`, None when unknown), the title of the last note (`last`, a
+    today (`due`, None when unknown; `overdue` is said apart), the title of the last note (`last`, a
     link to `last_href` when given) and the streak in days. No note yet is
     the empty welcome. Each known fact is one clause; which come, in what
     order and joined how is the mood's."""
@@ -358,10 +369,8 @@ def welcome(mood: Mood, *, hour: int = 9, due: int | None = None, last: str = ""
         return new if _stable(mood.seed, "tod") < 0.5 else f"{frame('hello', mood, tod=greeted_as(question, hour))} {new}"
     parts = [frame("hello", mood, tod=greeted_as(question, hour))]
     clauses: list[tuple[str, str]] = []
-    if due:
-        clauses.append(("due", frame("w_due", mood, due=f"{due} reminder{'s' if due != 1 else ''}")))
-    elif due == 0:
-        clauses.append(("due", frame("w_quiet", mood)))
+    if (said := _due_clause(mood, due, overdue)) is not None:
+        clauses.append(("due", said))
     if last:
         named = f"[{last.replace('[', '(').replace(']', ')')}]({last_href})" if last_href else f"“{last}”"
         clauses.append(("last", frame("w_last", mood, last=named)))

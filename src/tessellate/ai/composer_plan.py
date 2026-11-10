@@ -79,6 +79,8 @@ _WHEN_IS_ALT = re.compile(
 #: "What's my next exam", "exam date", "my exam day": the same ask as "when
 #: is my exam" (composer5); a reminder must name the subject, else the notes'
 #: reader answers.
+#: "when do the bins go out": the reminder names the thing; a reminder-only ask (audit 2 G3).
+_WHEN_DO = re.compile(rf"^{_LEAD}when (?:do|does|will|shall) (?:the |my |our )(?P<t>.+?)\W*$", re.I)
 _WHEN_IS_NEXT = re.compile(
     rf"^{_LEAD}(?:what(?:'s|’s| is| are) (?:my |the |our )?next\s+(?P<t>.+?)"
     r"|(?:my |the |our )?(?P<t2>\S.*?) (?:date|day|deadline|time))\W*$", re.I)
@@ -99,6 +101,10 @@ _FILLER_STEMS = frozenset(study.stem(w) for w in (
     "what whats is are do have got any anything due deadlines deadline coming up upcoming on my plate the this next week today tomorrow "
     "tonight weekend month happening scheduled ahead for me tell show list give need know check calendar horizon hand submit plan "
     "organise organize schedule agenda busy look like day rest days few couple month by in a an of to am we doing soon important urgent planned".split()))
+
+
+#: Words that carry no thing in "when do the bins go out" (audit 2 G3).
+_LIGHT_STEMS = frozenset(study.stem(w) for w in "go goes going out happen happens happening".split())
 
 
 @dataclass
@@ -835,7 +841,7 @@ def _left(ctx: Ctx) -> Reply | None:
 def _when_is(ctx: Ctx, subject: str) -> Reply | None:
     """"When is my exam": a reminder that names it first, then the note's own
     sentence. Left to the notes' reader when no reminder does."""
-    wanted = _stems(subject) - _FILLER_STEMS
+    wanted = _stems(subject) - _FILLER_STEMS - _LIGHT_STEMS
     if not wanted:
         return None
     mine = [r for r in _open_reminders(ctx) if wanted <= _stems(str(r.get("text") or ""))]
@@ -860,6 +866,8 @@ def _when_reply(ctx: Ctx, text: str) -> Reply | None:
     when = _WHEN_IS.match(text) or _WHEN_IS_ALT.match(text)
     if when:
         return _when_is(ctx, when.group("t"))
+    if (doing := _WHEN_DO.match(text)):
+        return _when_is(ctx, doing.group("t"))
     nxt = _WHEN_IS_NEXT.match(text)
     return _when_is(ctx, nxt.group("t") or nxt.group("t2")) if nxt else None
 

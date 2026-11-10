@@ -569,6 +569,17 @@ def _current_notes(req: _StreamRequest, notes: list[dict]) -> tuple[list[dict], 
     return supersede.current(req.question or "", notes)
 
 
+def _older_dates(req: _StreamRequest, current: list[dict], result: dict, older: list) -> list:
+    """`older` when a note was set aside, else the older date of the same event
+    for a when-answer: the newest dated fact leads and the older is said once
+    (audit 2 G1, `supersede.older_dates`)."""
+    from tessellate.ai import supersede
+
+    if older or not result.get("grounding"):
+        return older
+    return supersede.older_dates(req.question or "", str(result.get("text") or ""), current, user_now(deps.get_config()).date())
+
+
 def _with_words_only(text: str, prepared: dict, result: dict, session=None) -> str:  # noqa: ANN001
     """"Your only note on it" is a claim about the whole notebook; a search
     that read words only (no search by meaning) cannot make it, so the line

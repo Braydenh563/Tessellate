@@ -17,7 +17,7 @@ from datetime import datetime, time, timedelta, timezone
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import questions, realise
+from tessellate.ai import due_summary, questions, realise
 from tessellate.core.database import Category, Entry, Reminder
 
 #: A topic is quiet when its newest note is older than this.
@@ -71,7 +71,6 @@ def _notes():
 
 def _due(session: Session, now: datetime) -> list[dict]:
     end = _naive(datetime.combine(now.date(), time.max, tzinfo=now.tzinfo))
-    start = _naive(datetime.combine(now.date(), time.min, tzinfo=now.tzinfo))
     rows = session.scalars(
         select(Reminder)
         .where(Reminder.done == False, Reminder.deleted_at.is_(None), Reminder.due_at <= end)  # noqa: E712
@@ -79,8 +78,9 @@ def _due(session: Session, now: datetime) -> list[dict]:
     ).all()
     if not rows:
         return []
-    late = sum(1 for r in rows if _naive(r.due_at) < start)
-    today = len(rows) - late
+    #: The count is `due_summary`'s, the rule every surface shares (audit 2 G3).
+    counted = due_summary.of(rows, now)
+    today, late = counted.today, counted.overdue
     parts = []
     if today:
         parts.append(f"{realise.count_noun(today, 'reminder')} due today")
