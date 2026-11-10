@@ -117,7 +117,8 @@ _RECENCY = re.compile(r"\b(?:latest|last|newest|recent(?:ly)?|new)\b", re.I)
 
 def _size(note: Any) -> int:
     """How many words the note holds, capped so a long dump does not beat a note about the subject."""
-    return min(len(_content(note).split()), 60)
+    prose = [ln for ln in _content(note).splitlines() if not ln.lstrip().startswith("|")]
+    return min(len(" ".join(prose).split()), 60)
 
 
 def lead_by(items: list, question: str, note_of: Any = lambda x: x) -> list:

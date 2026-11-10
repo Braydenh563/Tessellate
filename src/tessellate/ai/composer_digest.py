@@ -30,6 +30,7 @@ The connecting words are in `PHRASES`, one table, so a voice preset
 
 from __future__ import annotations
 
+import functools
 import calendar
 import re
 import sys
@@ -1687,11 +1688,25 @@ def _members(question: str, views: list[composer.NoteView]) -> list[composer.Not
     return _acting(_typed_first([v for h, v in scored if h >= need], question), question)
 
 
+@functools.lru_cache(maxsize=1)
+def _NEIGHBOURS() -> frozenset[str]:  # noqa: N802
+    """The stems whose synonym group is a set of different things of one kind, not one thing said twice."""
+    return frozenset(composer._stem(w) for w in ("cat", "dog", "bird", "fish", "kitten", "puppy", "pet", "animal", "boiler", "heater", "radiator"))  # noqa: SLF001
+
+
+def _spelled(named: list[str], views: list[composer.NoteView]) -> list[composer.NoteView]:
+    """The notes that write a naming word itself, for the groups of neighbours only: "shop" and "buy" are one thing."""
+    return [v for v in views if any(st in _pool(v) for st in named)] if any(st in _NEIGHBOURS() for st in named) else []
+
+
 def _scored_members(stems: list[str], views: list[composer.NoteView]) -> list[tuple[int, composer.NoteView]]:
     """Each note holding a naming word of the question, with how many of its words it holds."""
     named = [st for st in stems if st not in _VERBS()] or stems
+    #: A synonym is a neighbour, not the thing: with notes that write the word itself, a note that only
+    #: shares a synonym group with it ("cat" and "fish", "boiler" and "radiator") is not about it (W7 B6).
+    spelled = _spelled(named, views)
     return [
-        (hits, v) for v in views
+        (hits, v) for v in spelled or views
         if any(composer._holds(st, _pool(v)) for st in named) and (hits := sum(1 for st in stems if composer._holds(st, _pool(v))))
     ]
 
@@ -5658,11 +5673,14 @@ def _left(out: _Out, question: str, members, views, names: set[str], today: date
     if not lists:
         return False
     v, s, head = lists[-1]
-    items = [i.strip().rstrip(".") for i in head.group(2).split(",") if i.strip()]
-    what = head.group(1).strip().lower()
+    #: "..., and Piranesi": the list's own "and" is not part of its last item (W7 B7).
+    items = [re.sub(r"^and\s+", "", i.strip().rstrip("."), flags=re.I) for i in head.group(2).split(",") if i.strip()]
+    what = re.sub(r"^(?:want|need|have|plan)s? to ", "to ", head.group(1).strip().lower())
+    #: A note with a name of its own is named by it, not by the day it was written.
+    source = f"your {v.title} note" if v.titled and v.title and v.title.lower() != what else f"your list of {_day(v.written, today)}"
     #: Decision 71: what is left is a checklist, the opening then a box an
     #: item, so the list reads down rather than along one sentence.
-    opening = f"{realise.count_word(len(items)).capitalize()} {what}, from your list of {_day(v.written, today)}"
+    opening = f"{realise.count_word(len(items)).capitalize()} {what}, from {source}"
     out.lines.append(opening + ":\n" + "\n".join(f"- [ ] {item}" for item in items))
     out.rows.append({"sentence": opening, "note_id": v.note.get("source_id", v.id), "source": s.text,
                      "start": s.start, "end": s.end, "score": 1.0, "digest": True})

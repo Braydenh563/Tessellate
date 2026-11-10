@@ -141,3 +141,61 @@ def test_a_note_naming_both_sides_does_not_hide_a_side(ask_bt, question):
     text = ask_bt(question)
     assert "**Priya**" in text and "**Marcus**" in text, text
     assert "nothing mentions" not in text and "couldn't find" not in text, text
+
+
+# --- B3 the bare "Marcus Lee" note is counted and named (D11, c13#10) ----------------------------------------
+
+@pytest.mark.parametrize("question", ["who is Marcus", "what do I know about Marcus", "tell me about Marcus"])
+def test_who_is_a_first_name_counts_the_bare_full_name_note(ask_bt, question):
+    text = ask_bt(question)
+    assert "four notes" in text and "Marcus Lee, chair of the garden committee" in text, text
+
+
+@pytest.mark.parametrize("question", ["show me notes about Marcus", "open Marcus Lee", "list my notes"])
+def test_the_bare_note_has_one_name_in_lists(ask_bt, question):
+    assert "[Marcus Lee, chair of the garden committee](#/notes/" in ask_bt(question) or "[**Marcus Lee, chair of the garden committee**](#/notes/" in ask_bt(question)
+
+
+# --- B4 a pronoun-led line is quoted with the person (D12, R3-25) -----------------------------------------------
+
+@pytest.mark.parametrize("question", ["what do I know about the boiler", "who fixes the boiler", "what does José fix"])
+def test_a_pronoun_line_names_its_person(ask5, question):
+    text = ask5(question)
+    assert "José" in text and "fixes the boiler" in text, text
+    assert "He fixes" not in text, text
+
+
+# --- B6 a synonym is a neighbour, not the thing (R9-11, c12 L6) -------------------------------------------------
+
+import tests._seed_r9_1109 as seed_r9  # noqa: E402
+
+
+@pytest.fixture
+def ask9(client, session, monkeypatch):
+    seed_r9.seed(session)
+    go = seed_r9.asker(client, monkeypatch, chat=True)
+    return lambda q: go(q)[0]
+
+
+@pytest.mark.parametrize("question", ["what do I know about my cat", "what do I know about the cat", "tell me about the cat"])
+def test_cat_is_not_the_fish_note(ask9, question):
+    text = ask9(question)
+    assert "Pickle is our cat" in text and "fish" not in text.replace("Felix", ""), text
+
+
+@pytest.mark.parametrize("question", ["what do I know about the boiler", "anything about the boiler?"])
+def test_boiler_is_not_the_radiator_note(ask9, question):
+    text = ask9(question)
+    assert "boiler pressure" in text and "radiator" not in text, text
+
+
+def test_a_synonym_still_answers_when_no_note_writes_the_word(ask9):
+    assert "Pickle" in ask9("what do I know about my pet")
+
+
+# --- B7 a list of what is left is named by its note, and its last item is whole (R3-22) ---------------------------
+
+def test_what_do_i_need_to_read_is_named_by_its_note(ask9):
+    text = ask9("what do I need to read")
+    assert text.startswith("Three to read, from your Reading note:"), text
+    assert "- [ ] Piranesi" in text and "and Piranesi" not in text and "Three three" not in text, text
