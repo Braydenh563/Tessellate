@@ -592,6 +592,8 @@ Owner: the graph agent (Opus), when a slot frees.
 
 ## Placed from the owner, 2026-10-11: a tessellation view (next PR)
 
+**Decision Q31 (owner, 2026-11-11, INBOX 1733, mocks in the session scratchpad `q31/`):** one Tessellation view with two looks the person switches between, Cells (A, a link-weighted Voronoi; the default, the owner leans to it) and Hexes (B, hexagons grouped by category); one layout, selection, legend and popup code under both. Mock C (territories) folds into the existing Map (treemap) instead of a third view: tile area by link weight, category names never cut ("Thoug... (2)" today; a short tile drops the count, then wraps), and a topic level under each category once topics exist.
+
 The owner: "I'm thinking next pr we should add another graph view which better resembles the essence of the name tessellate". A third view beside the force graph and the map: every note owns one cell of a plane tiled with no gaps (a Voronoi tessellation over the existing 2D layout, or a hexagon grid placed by it), neighbours are related notes, categories are coloured regions with a heavier border, and a new note settles into its cell the way the logo's third cell does. First step: mock three variants (Voronoi, hexagon grid, hexagon clusters per category) at 50, 500 and 2,000 notes for the owner to pick from, then a brief here. (open, checked 2026-11-09: no Voronoi or hexagon view exists in graph.js, graph-canvas.js or graph-worker.js.)
 
 ## Placed from INBOX, 2026-10-26 (the owner: the force view is messy, popups and controls hard to learn)
