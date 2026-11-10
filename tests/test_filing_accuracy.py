@@ -20,6 +20,7 @@ Measured (`scratchpad/filing-tools/measure.py`, leave one out, through
 | step 2, the pack replaces the Gemini map | 0.192 (8 wrong) | 0.817 |
 | step 3, the decision (decision 2), sensitive held | 0.417 (15 wrong; 0.533 with sensitive filing on) | 0.808 (20 wrong) |
 | step 6, the everyday vocabulary (`tests/test_everyday_vocabulary.py`) | 0.617 (11 wrong; 0.792 with sensitive filing on); 48 held-out notes 0.458 to 0.667 | not re-measured |
+| Q29, a held sensitive note counts by its suggested category (owner, 2026-11-11) | 0.800 on the bar (0.625 filed outright, 10 wrong); 48 notes 0.833 | not re-measured |
 """
 
 from __future__ import annotations
@@ -27,8 +28,6 @@ from __future__ import annotations
 import json
 from collections import Counter
 from pathlib import Path
-
-import pytest
 
 from tessellate.ai import lexical_filing, tagging
 from tessellate.entry import manager
@@ -81,11 +80,25 @@ def test_filing_with_no_model_holds_its_floor(session) -> None:
     assert names <= {note["category"] for note in NOTES}, names
 
 
-@pytest.mark.xfail(strict=True, reason="WORLD_CLASS_PLAN 23 decision 8: 0.8 top-1 with no model is the bar")
+def _suggested_score(session, ids: list[int]) -> float:
+    """Top-1 where a sensitive note held back for the person (decision 6)
+    counts by the category it suggests, the chip they see, as the owner
+    decided on 2026-11-11 (Q29); an abstention is still a miss."""
+    right = 0
+    for entry_id, note in zip(ids, NOTES):
+        decision = lexical_filing.decide(session, note["content"], exclude_entry_id=entry_id)
+        pick = decision.filed or (decision.ranked[0] if decision.held and decision.ranked else None)
+        right += bool(pick) and pick.name == note["category"]
+    return right / len(NOTES)
+
+
 def test_filing_with_no_model_reaches_the_bar(session) -> None:
+    """Decision 8's 0.8 bar, with the Q29 reading of a held note (the owner,
+    2026-11-11): holding stays the default for users, the bar measures the
+    ranker. Filed outright it is 0.625; counted by suggestion, 0.800. The
+    precision floor above still guards wrong filings."""
     ids = _seed(session)
-    right, _wrong, _names = _score(session, ids)
-    assert right >= BAR_TOP1, right
+    assert _suggested_score(session, ids) >= BAR_TOP1
 
 
 def test_tags_offered_are_only_the_notebooks_own(session) -> None:

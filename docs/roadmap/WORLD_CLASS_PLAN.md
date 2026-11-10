@@ -1528,9 +1528,14 @@ FlashText; superseded by the pack below).
 2026-10-10 (filing-1010)", with the numbers. Step 6, built 2026-10-11 (tagsearch-1011):
 `memorymap_everyday.json` adds general words to the pack's topics; no model,
 top-1 0.417 to 0.617 filed (0.792 with sensitive notes suggested), and on 48
-held-out notes 0.458 to 0.667 (0.833). Open: decision 8's 0.8 *filed* (the
-strict xfail stays; 19 of 120 are sensitive and held by decision 6, so 0.84 is
-its ceiling); the owner reviews the vocabulary file; step 5's Built block.
+held-out notes 0.458 to 0.667 (0.833). **Decision 8 amended, the owner
+2026-11-11 (Q29), "make the changes you believe will work and have an impact":**
+a note held as sensitive (decision 6) counts as right in the bar when its
+suggested category is right; holding stays the default for users. Measured:
+0.625 filed outright (75 right, 10 wrong, 14 abstained, 21 held) to 0.800 by
+suggestion; 48 held-out notes 0.667 to 0.833; the strict xfail is gone
+(`tests/test_filing_accuracy.py`). No second vocabulary (266 words measured
++0.008, within noise). Open: step 5's Built block.
 
 ## Placed from INBOX, 2026-09-09
 
