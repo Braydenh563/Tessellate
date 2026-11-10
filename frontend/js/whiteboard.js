@@ -17628,6 +17628,12 @@ async function initWhiteboard() {
       wbDuplicateSelection();
       return;
     }
+    //: Ctrl+E: Edit style as text (draw.io's Edit Style), for the one selected item.
+    if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === "e" && wbSelectedItem) {
+      e.preventDefault();
+      wbFmtState.raw?.open();
+      return;
+    }
     //: `]` and `[` are one step; Ctrl+] and Ctrl+[ go to the front and the
     //: back (FEAT-07: draw.io's, Figma's and PowerPoint's split). `e.code`
     //: as well, because Ctrl changes what some layouts report as the key.

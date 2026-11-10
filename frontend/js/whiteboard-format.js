@@ -77,12 +77,12 @@ function wbFmtKind(entry) {
 
 //: The fields each kind takes, by the `data-fmt` names in index.html.
 const WB_FMT_FIELDS = {
-  shape: ["stroke", "strokealpha", "width", "dash", "fill", "alpha", "shadow", "shadowset", "rough", "text", "fit", "geometry", "flip", "style-lib", "props", "pattern", "round", "linestyle", "flow", "fillstyle", "fillalpha", "gradient", "tip"],
-  line: ["stroke", "strokealpha", "width", "dash", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "linestyle", "flow", "tip"],
+  shape: ["stroke", "strokealpha", "width", "dash", "fill", "alpha", "shadow", "shadowset", "rough", "text", "fit", "geometry", "flip", "style-lib", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "fillstyle", "fillalpha", "gradient", "tip"],
+  line: ["stroke", "strokealpha", "width", "dash", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "tip"],
   //: A straight line or arrow: a line that takes ends.
-  arrow: ["stroke", "strokealpha", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "linestyle", "flow", "tip"],
-  link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "linklook", "props", "pattern", "round", "linestyle", "flow", "jumpsize", "gapstart", "gapend", "tip"],
-  text: ["stroke", "fill", "fillalpha", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props"],
+  arrow: ["stroke", "strokealpha", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "tip"],
+  link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "linklook", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "jumpsize", "gapstart", "gapend", "tip"],
+  text: ["stroke", "fill", "fillalpha", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props", "rawstyle"],
   image: ["alpha", "shadow", "shadowset", "radii", "crop", "geometry", "angle", "props"],
   frame: ["geometry", "props"],
   table: ["alpha", "shadow", "shadowset", "radii", "geometry", "props"],
@@ -621,6 +621,7 @@ function wbFormatSync() {
   wbSyncCommandRows(arrange);
   wbFmtShowGroups(panel);
   if (fields.has("props")) wbFmtSyncProps(entries);
+  if (fields.has("rawstyle")) wbFmtState.raw.sync(entries);
   const first = entries.find((e) => wbFmtKind(e) && wbFmtKind(e) !== "topic");
   if (!first) return;
   const set = (id, value, prop = "value") => {
@@ -937,6 +938,7 @@ onSurface("board", () => {
     const crop = e.target.value;
     wbFmtApply("crop", () => ({ crop: crop || undefined }), crop ? `Picture cropped to ${e.target.selectedOptions[0].textContent.toLowerCase()}.` : "Picture crop taken off.");
   });
+  on("wb-fmt-raw-apply", "click", () => wbFmtState.raw.apply());
   on("wb-fmt-linestyle", "change", (e) => {
     const style = e.target.value;
     //: Rounded keeps the radius an item already has, else 12.
@@ -2779,3 +2781,80 @@ wbFmtState.board = (() => {
   return { PRESETS, patchFor, apply, show, setDefault, clearDefault, withDefaults };
 })();
 //: --- end board style
+
+//: **Edit style as text** (draw.io's Edit Style): one item's style as JSON in the Data tab; Apply checks
+//: it and writes it in one undo step. What is not style stays out of the text and out of the write: a
+//: sketch's path, type, label, ends and properties, a text box's words. `parse` returns `{patch}` (a key
+//: taken out of the text is `null`, which the apply turns into a removal) or `{error}`.
+//: Hung on `wbFmtState` so the shared scope does not grow (test_global_scope_ratchet).
+wbFmtState.raw = (() => {
+  const SKETCH_HIDDEN = /^(?:d|type|label|props|comments|library_ref|bends|waypoints|points|via|group_id|groupId|layer|locked|url|link)$|^(?:source|target)/;
+  const OBJECT_KEYS = new Set([...WB_OBJECT_STYLE_KEYS, "font_family", "bold", "italic", "underline", "strike", "align", "valign", "line_height", "letter_spacing", "text_dir"]);
+  const MAX_CHARS = 8000;
+
+  const allowed = (kind, key) => (kind === "sketch" ? !SKETCH_HIDDEN.test(key) : OBJECT_KEYS.has(key));
+
+  function show(kind, data) {
+    const out = {};
+    for (const [key, value] of Object.entries(data || {})) if (allowed(kind, key) && value !== undefined) out[key] = value;
+    return JSON.stringify(out, null, 2);
+  }
+
+  //: Values are words, numbers, switches or one small group of those (a gradient).
+  const plain = (v) => v === null || ["string", "number", "boolean"].includes(typeof v);
+  const valid = (v) => plain(v) || (v && typeof v === "object" && !Array.isArray(v) && Object.values(v).every(plain));
+
+  function parse(kind, data, text) {
+    if (String(text).length > MAX_CHARS) return { error: "That is too long for a style." };
+    let parsed = null;
+    try {
+      parsed = JSON.parse(text);
+    } catch (err) {
+      return { error: `Not valid JSON: ${err.message.replace(/^JSON\.parse: /, "")}` };
+    }
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return { error: "The style is an object in braces, like {\"color\": \"#ff0000\"}." };
+    const bad = Object.entries(parsed).find(([, v]) => !valid(v));
+    if (bad) return { error: `"${bad[0]}" has to be a word, a number, a switch or one small group of those.` };
+    const patch = {};
+    for (const key of Object.keys(data || {})) if (allowed(kind, key)) patch[key] = null;
+    for (const [key, value] of Object.entries(parsed)) if (allowed(kind, key)) patch[key] = value;
+    return { patch };
+  }
+
+  function sync(entries) {
+    const row = document.getElementById("wb-fmt-raw");
+    if (!row || document.activeElement === row) return;
+    const one = entries.length === 1 && ["sketch", "object"].includes(entries[0].kind) ? entries[0] : null;
+    row.value = one ? show(one.kind, one.kind === "sketch" ? wbFmtSketch(one) : one.item.data) : "";
+    row.dataset.item = one ? `${one.kind}:${one.id}` : "";
+    const status = document.getElementById("wb-fmt-raw-status");
+    if (status) status.textContent = "";
+  }
+
+  function apply() {
+    const box = document.getElementById("wb-fmt-raw");
+    const status = document.getElementById("wb-fmt-raw-status");
+    const entry = wbFmtEntries().find((e) => `${e.kind}:${e.id}` === box?.dataset.item);
+    if (!entry) return;
+    const data = entry.kind === "sketch" ? wbFmtSketch(entry) : entry.item.data || {};
+    const result = parse(entry.kind, data, box.value);
+    if (result.error) {
+      status.textContent = result.error;
+      status.classList.add("error");
+      return;
+    }
+    status.classList.remove("error");
+    status.textContent = "";
+    const patch = Object.fromEntries(Object.entries(result.patch).map(([key, value]) => [key, value === null ? undefined : value]));
+    wbFmtApply("rawstyle", () => patch, "Style applied.");
+  }
+
+  //: Ctrl+E and the command: the Data tab, with the box under the caret.
+  function open() {
+    wbFormatOpen("data");
+    document.getElementById("wb-fmt-raw")?.focus();
+  }
+
+  return { show, parse, sync, apply, open };
+})();
+//: --- end edit style

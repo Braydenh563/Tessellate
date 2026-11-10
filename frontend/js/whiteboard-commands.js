@@ -133,6 +133,7 @@ const WB_COMMANDS = [
   { id: "delete", group: "Edit", icon: "ph:trash", label: "Delete", keys: "Del", surface: "both", needs: "selection", run: () => deleteWbSelection() },
   { id: "copy-style", group: "Edit", icon: "ph:eyedropper", label: "Copy style", keys: "Ctrl+Alt+C", surface: "board", needs: "one", run: () => wbCopySelectedStyle() },
   { id: "paste-style", group: "Edit", icon: "ph:paint-bucket", label: "Paste style", keys: "Ctrl+Alt+V", surface: "board", needs: "selection", run: () => wbPasteCopiedStyle() },
+  { id: "edit-style", group: "Edit", icon: "ph:code", label: "Edit style as text", keys: "Ctrl+E", surface: "board", needs: "one", run: () => wbFmtState.raw.open() },
   { id: "set-default-style", group: "Edit", icon: "ph:push-pin", label: "Set as default style", keys: "Ctrl+Alt+D", surface: "board", needs: "one", run: () => wbFmtState.board?.setDefault() },
   { id: "clear-default-style", group: "Edit", icon: "ph:push-pin-slash", label: "Clear the default style", keys: "", surface: "board", run: () => wbFmtState.board?.clearDefault() },
   { id: "reset-style", group: "Edit", icon: "ph:arrow-counter-clockwise", label: "Reset style", keys: "", surface: "both", needs: "selection", run: () => wbResetSelectedStyle() },

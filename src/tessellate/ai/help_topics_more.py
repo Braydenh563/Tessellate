@@ -3526,7 +3526,8 @@ MORE_TOPICS.extend([
             "shape's or connector's words to show that value there (a name it does not "
             "have stays as typed). %date% shows today's date and %page% the title of the "
             "frame the item sits in, unless the item has a value of that name. A shape or connector can take a Tooltip, shown "
-            "when the pointer rests on it. Find on the board reads the values too."
+            "when the pointer rests on it. Find on the board reads the values too. "
+            "Style as text (Ctrl+E) shows the item's look as JSON; Apply style checks it and saves it as one Undo step."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },

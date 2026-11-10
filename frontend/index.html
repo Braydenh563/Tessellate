@@ -8693,12 +8693,19 @@ Link to another note with [[its first few words]]."></textarea>
             <div class="help-body hidden" id="wb-fmt-help-data" role="dialog" aria-label="About data">
               <p><b>Tooltip</b>: words shown when the pointer rests on the item.</p>
               <p><b>Properties</b>: named values kept with the item and in its exports; %name% in its text shows one.</p>
+              <p><b>Style as text</b>: the item's look as JSON; change it and press Apply style. Its path, ends, words and properties are not in it.</p>
             </div>
             <label class="wb-fmt-row" data-fmt="tip"><span class="wb-fmt-label">Tooltip</span><input type="text" id="wb-fmt-tip" maxlength="200" placeholder="Shown on hover" aria-label="Tooltip" title="Words shown when the pointer rests on this item"></label>
             <div class="wb-fmt-props" data-fmt="props">
               <p class="muted wb-lib-keys">Named values on this item, kept with it and in its exports. Type %name% in its text to show one.</p>
               <ul id="wb-fmt-props" class="wb-fmt-prop-list" aria-label="Custom properties"></ul>
               <button type="button" id="wb-fmt-prop-add" class="ghost small" aria-label="Add a property"><i class="ph ph-plus ph-lead" aria-hidden="true"></i>Add a property</button>
+            </div>
+            <div class="wb-fmt-props" data-fmt="rawstyle">
+              <label class="wb-fmt-label" for="wb-fmt-raw">Style as text</label>
+              <textarea id="wb-fmt-raw" class="wb-fmt-raw" rows="8" spellcheck="false" autocomplete="off" aria-describedby="wb-fmt-raw-status" title="This item's style as JSON. Apply checks it and writes it in one Undo step."></textarea>
+              <p id="wb-fmt-raw-status" class="status" role="status"></p>
+              <button type="button" id="wb-fmt-raw-apply" class="ghost small"><i class="ph ph-check ph-lead" aria-hidden="true"></i>Apply style</button>
             </div>
           </div>
         </section>
