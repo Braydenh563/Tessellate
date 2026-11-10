@@ -1938,8 +1938,10 @@ def _plan_read(session: Session, parsed: dict) -> dict:
             result = {**result, "notes": result["notes"][:1]}
         name, args = "search_notes", {"query": about}
         said = tool_say.say("search_notes", result, {"query": about})
+        #: An exact title is the note itself, not the closest one (F13 c, 1110): "open it" after Kyoto ideas.
+        exact = bool(result["notes"]) and note_title(str(result["notes"][0].get("content") or ""), size=60).lower() == about.strip().lower()
         line = (
-            f"The closest note about “{about}” is {said['body'].lstrip('- ').strip()}"
+            f"{'Here it is:' if exact else f'The closest note about “{about}” is'} {said['body'].lstrip('- ').strip()}"
             if parsed["intent"] == "open"
             else f"{said['lead']}\n\n{said['body']}"
         )

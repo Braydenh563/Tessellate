@@ -890,7 +890,7 @@ def _stale_notes(session: Session) -> StatAnswer:
         )
     facts = [
         {
-            "label": composer_frame.plain_snippet(content),
+            "label": composer_frame.note_title(content, size=60) or composer_frame.plain_snippet(content),
             "id": note_id,
             "when": touched.isoformat() if touched else "",
         }

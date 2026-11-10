@@ -483,7 +483,9 @@ def _listed_below(stats: dict) -> str:
     if not rows or "listed below" not in str(stats.get("text") or ""):
         return ""
     def line(f: dict) -> str:
-        return f"- [{f['label']}](#/notes/{f['id']}), {realise.count_noun(int(f.get('count') or 0), 'word')}"
+        #: A row with no count (the notes gone stale) is its link alone, not ", no words" (F13 d, 1110).
+        tail = f", {realise.count_noun(int(f['count']), 'word')}" if isinstance(f.get("count"), int) else ""
+        return f"- [{f['label']}](#/notes/{f['id']}){tail}"
     return "\n\n" + "\n".join(line(f) for f in rows)
 
 

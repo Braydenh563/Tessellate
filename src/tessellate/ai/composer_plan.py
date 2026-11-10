@@ -292,10 +292,38 @@ _PRONOUN_LEAD = re.compile(r"(?:he|she|it) (?=(?:is|was|will|has)\b)", re.I)
 _WEEKDAY_ONLY = re.compile(r"^(?:on |this |next )?(?:mon|tues|wednes|thurs|fri|satur|sun)day$", re.I)
 
 
+#: Where a line written without full stops runs one thing into the next:
+#: "landlord called back, plumber is coming thursday between 8 and 10".
+_CLAUSE_SPLIT = re.compile(r"(,\s+|\s+and\s+|(?<=[.!?])\s+(?=[a-z]))")
+#: A clause with a verb of its own is a thing that can be dated apart from
+#: its neighbours; "Tuesday" or "3pm" after a comma, or the 10 of "between 8
+#: and 10", is a detail of the last one.
+_HAS_VERB = re.compile(r"\b(?:is|are|was|were|will|has|have|had|am|be|need|needs|needed|want|wants|must|should|got|get|gets|due|booked)\b|\b[a-z]{3,}(?:ed|ing)\b", re.I)
+#: A feeling ("feeling pretty tired today") says how the writer is, not what is to be done, even when "today" dates it.
+_MOOD = re.compile(r"^\W*(?:i(?:'|’)?m |i am |im )?(?:feeling|feel|felt|so|really|very|pretty)\b", re.I)
+
+
+def _clauses(sentence: str) -> list[str]:
+    """A sentence in the clauses that each have a verb; one with no such split stays whole."""
+    parts = _CLAUSE_SPLIT.split(sentence)
+    clauses: list[str] = []
+    for text, joint in zip(parts[0::2], [*parts[1::2], ""]):
+        if clauses and not _HAS_VERB.search(text):
+            clauses[-1] += text + joint
+        elif text.strip():
+            clauses.append(text + joint)
+        elif clauses:
+            clauses[-1] += joint
+    clauses = [c.strip().rstrip(",") for c in clauses]
+    return clauses if len(clauses) > 1 else [sentence]
+
+
 def _dated_lines(content: str):  # noqa: ANN202
     for line in content.splitlines():
         if line.strip() and not _DONE.match(line) and recognise.dated_sentence(line) and not line.lstrip().startswith(("```", ">")):
-            yield from (s for s in _SENTENCE.split(line) if recognise.dated_sentence(s))
+            for sentence in _SENTENCE.split(line):
+                if recognise.dated_sentence(sentence):
+                    yield from (c for c in _clauses(sentence) if recognise.dated_sentence(c) and not _MOOD.match(c))
 
 
 #: Reading a note's dates costs the recogniser; the same note is asked about
@@ -310,6 +338,12 @@ def _not_due(sentence: str, title: str) -> bool:
     """A day gone ("Wednesday bench 60kg." in a gym log, E20) or a habit ("Gym on Monday, Wednesday and Friday",
     bt-compcomp-1109 item 8): neither is a day that falls due."""
     return bool(recognise.logged_day(sentence, title) or recognise.recurring_schedule(sentence))
+
+
+def _sentence_case(text: str) -> str:
+    """A clause lifted out of a line written in lower case: a capital to open it and on its weekdays."""
+    text = re.sub(r"\b(mon|tues|wednes|thurs|fri|satur|sun)day\b", lambda m: m.group(0).capitalize(), text)
+    return text[:1].upper() + text[1:]
 
 
 def _note_days(note: dict, now: datetime) -> tuple[tuple[date, str], ...]:
@@ -334,7 +368,7 @@ def _note_days(note: dict, now: datetime) -> tuple[tuple[date, str], ...]:
         if lead and title and len(title.split()) <= 4 and not title.endswith("…"):
             text = f"{title} {text[lead.end():]}"
         if day is not None and 3 <= len(text) <= 160:
-            found.append((day, text))
+            found.append((day, _sentence_case(text)))
     if len(_DAYS_CACHE) >= _CACHE_MAX:
         _DAYS_CACHE.clear()
     _DAYS_CACHE[key] = tuple(found)
