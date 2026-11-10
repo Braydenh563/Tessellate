@@ -887,6 +887,8 @@ def _spoken_instant(spans: list) -> datetime | None:
 
 def _reminder_instant(text: str, now: datetime, locale: str | None, tense: str, spans: list, repeat: Span | None) -> datetime | None:
     """When the sentence says the reminder is due, or None."""
+    if _only_topics(text, spans):
+        return None
     #: The past (a timeline entry, "on 3 october") is the recogniser's
     #: reading; `resolve` reads only time to come.
     at = resolve(text, now, locale=locale) if tense == "future" else None
@@ -979,6 +981,22 @@ def _trim_dangling(rest: str) -> str:
     return " ".join(words[lead:]).strip(" ,.;:-")
 
 
+#: What may follow a holiday word and still be its time ("christmas eve", "christmas at 5", "christmas and new year").
+_TIME_CONTINUES = frozenset({"day", "eve", "morning", "evening", "night", "afternoon", "at", "on", "by", "before", "after", "and", "or", "next", "this", "every", "each", "early", "late", "tomorrow", "today", "tonight", "in", "from", "until", "till", "to"})
+
+
+def _names_a_topic(before: str, after: str) -> bool:
+    """"about christmas plans": a holiday word, after "about" and before a plain noun, names what the task is about, not when."""
+    nxt = re.match(r"\s*([a-z]+)", after.lower())
+    return before.endswith(("about ", "re ")) and bool(nxt) and nxt.group(1) not in _TIME_CONTINUES
+
+
+def _only_topics(text: str, spans: list) -> bool:
+    """Every time the sentence holds is a holiday word naming the task's topic ("call mum about christmas plans"): no time is said."""
+    timed = [s for s in spans if s.kind in _TIME_KINDS and s.kind != "alert"]
+    return bool(timed) and all(re.match(r"(?:new year|christmas)", s.text.lower()) and _names_a_topic(text[:s.start].lower(), text[s.end:]) for s in timed)
+
+
 def _is_time_words(found: Span, text: str, spans: list | tuple = ()) -> bool:
     """Whether a span's words are the reminder's time and so come out of its
     text. A holiday after "the" is the thing to do ("see the new year"), not
@@ -990,7 +1008,7 @@ def _is_time_words(found: Span, text: str, spans: list | tuple = ()) -> bool:
     holiday = re.match(r"(?:new year|christmas)", found.text.lower())
     before = text[:found.start].lower()
     timed_elsewhere = any(o is not found and o.kind in _TIME_KINDS and o.kind != "alert" for o in spans)
-    thing = holiday and (before.endswith("the ") or timed_elsewhere and before.endswith(("about ", "for ", "re ")))
+    thing = holiday and (before.endswith("the ") or timed_elsewhere and before.endswith(("about ", "for ", "re ")) or _names_a_topic(before, text[found.end:]))
     return found.kind in _TIME_KINDS and not thing
 
 

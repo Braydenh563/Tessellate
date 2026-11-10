@@ -1208,7 +1208,7 @@ def read(text: str, now: datetime, locale: str | None = None) -> dict | None:
 #: word, "the dentist" or "my boss", and for the phone verbs a name in lower case ("call anna", B25).
 _KIN = r"mum|mom|dad|nan|nana|gran|granny|grandma|grandpa|auntie|aunty|uncle"
 _BARE_CALL = re.compile(
-    rf"^(?i:(?P<verb>call|ring|phone|text|email|message|ping|whatsapp))\s+(?P<who>(?:[A-Z][\w'’-]+(?: [A-Z][\w'’-]+)?)|(?i:{_KIN})|(?i:(?:the|my|our) [a-z]+))$"
+    rf"^(?i:(?P<verb>call|ring|phone|text|email|message|ping|whatsapp))\s+(?P<who>(?:[A-Z][\w'’-]+(?: [A-Z][\w'’-]+)?)|(?i:{_KIN})|(?i:(?:the|my|our) [a-z]+))(?P<more>\s+(?i:(?:on|at|by|about|for|tomorrow|tonight|today|this|next|in)\b).+)?$"
     rf"|^(?i:(?P<verb2>call|ring|phone))\s+(?P<who2>[a-z][a-z'’-]{{1,20}})$"
 )
 #: What a lower-case "call X" is not a person: a pronoun, a time or a place.
