@@ -82,7 +82,7 @@ from tessellate.api.chat_recent import AGENT_SURFACE, ASK_SURFACE, STARTER_SUGGE
 from tessellate.api.chat_web import WEB_PAGES, _can_start_searxng, _torn_events, _home_place, _link_events, _offer_events, _search_service, _unmatched_recents, _web_allowed, _web_chip, _web_first, _web_page_row, _web_pref_on
 from tessellate.api.chat_agent import _agent_events, consent_events, run_card_events, _close_quietly, _first_agent_event, _refuse_failed, _refuse_if_off, _starter_read
 from tessellate.api.chat_said import MODEL_STOPPED_NOTE, acts_on_listed_task, _says_cannot, _ROWS_KEPT, _app_answers, _asked_before, _asks_capability, _asks_only_a_time, _awareness, _chart_line, _cited_titles, _composed_lines, _current_notes, _older_dates, _diagram_events, _engine_counts, _engine_stands, _filed_or_counted_events, _first_cited_has_list, _held_reply, _help_events, _in_notes, _late_panel, _linked_notes, _listed_below, _model_said, _name_documents, _newest_titles, _newest_word, _open_note_answer, _ping_offer, _related_elsewhere, _related_sentence, _remember_rows, _reminder_window, _reply_seed, _row_source, _rows_key, _run_title, _said_events, _save_ask_turn, _saved_joke_reply, _search_footer, _sees, _slash_chart, _stats_chart, _stats_listed, _suggest_events, _with_words_only, reply_panel
-from tessellate.api.chat_turn import _composed_support, _frame_events, _not_again, _with_frame, _asks_change, _chat_reply, _checks_grounding, _cited_scope, _composes_offline, _detect_intent, _engine_answers, _facts_turn, _insight_level, _insight_memory, _is_composing, _log_question, _may_digest, _meaning_loading, _model_stream_events, _note_with_hint, _notes_first, _notes_messages, _relay_events, _searched_question, _social_line, _trim_answer, _uncut, _verdicts, _why, _will_answer
+from tessellate.api.chat_turn import _composed_support, _frame_events, _not_again, _with_frame, _asks_change, _chat_reply, _checks_grounding, _cited_scope, _composes_offline, _detect_intent, _engine_answers, _facts_turn, _insight_level, _insight_memory, _is_composing, _log_question, _may_digest, _meaning_loading, model_chips, _model_stream_events, _note_with_hint, _notes_first, _notes_messages, _relay_events, _searched_question, _social_line, _trim_answer, _uncut, _verdicts, _why, _will_answer
 
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -1813,7 +1813,7 @@ def _exact_note_events(req: _StreamRequest, notes: list) -> list[dict]:
     current, _older = _current_notes(req, notes) if notes else (notes, [])
     result = composer_digest.exact(req.question or "", current, today=user_now(deps.get_config()).date()) if notes else None
     if not result:
-        return chat_extra.reminder_events(req.session, req.question or "", now=user_now(deps.get_config()).replace(tzinfo=None)) or []
+        return chat_extra.facts_events(req.session, req.question or "", now=user_now(deps.get_config()).replace(tzinfo=None), chat=not req.body.notes_only) or []
     return [{"type": "answer", "delta": result["text"]}, _composed_grounding_event(req, result)]
 
 
@@ -2077,6 +2077,7 @@ def _settle_turn(req: _StreamRequest, prepared: dict, t: _Turn) -> Iterator[str]
     grounding, grounding_event = _ground_final(req, prepared, t)
     if grounding_event is not None:
         yield _event(grounding_event)
+    yield from map(_event, model_chips(req.session, t, grounding))
     if req.body.notes_only and t.answer_text and not req.body.peek and not private_turn.active():
         _save_ask_turn(req.session, _in_full(req), t.answer_text, prepared, grounding, composed=t.written_by_app)
     #: A model that wrote a counted answer's words still gets its panel

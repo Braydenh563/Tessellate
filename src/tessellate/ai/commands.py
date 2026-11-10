@@ -45,12 +45,12 @@ from tessellate.ai.filed_name import filed_listing
 VERBS = ("remind", "complete", "cancel", "snooze", "tag", "untag", "file", "rename", "restore", "pin", "unpin", "link", "unlink", "delete", "create", "add", "summarise", "find", "open")
 #: The intents `read` gives, each with its verb.
 _VERB_OF = {
-    "reminder": "remind", "tag": "tag", "untag": "untag", "move": "file", "rename": "rename", "rename_tag": "rename", "rename_category": "rename", "restore": "restore", "pin": "pin",
+    "reminder": "remind", "tag": "tag", "untag": "untag", "move": "file", "rename": "rename", "rename_tag": "rename", "rename_category": "rename", "create_category": "create", "restore": "restore", "pin": "pin",
     "unpin": "unpin", "link": "link", "unlink": "unlink", "delete": "delete", "new_note": "create",
     "meeting": "create", "append": "add", "complete": "complete", "uncomplete": "complete", "cancel": "cancel", "snooze": "snooze", "set_name": "rename", "summarise": "summarise", "find": "find", "open": "open", "navigate": "open",
 }
 #: The intents that write: each is shown as a card.
-WRITE_INTENTS = frozenset({"reminder", "tag", "untag", "move", "rename", "rename_tag", "rename_category", "restore", "pin", "unpin", "link", "unlink", "delete", "new_note", "meeting", "append", "complete", "uncomplete", "cancel", "snooze", "set_name"})
+WRITE_INTENTS = frozenset({"reminder", "tag", "untag", "move", "rename", "rename_tag", "rename_category", "create_category", "restore", "pin", "unpin", "link", "unlink", "delete", "new_note", "meeting", "append", "complete", "uncomplete", "cancel", "snooze", "set_name"})
 #: Read only: answered at once, nothing to confirm.
 READ_INTENTS = frozenset({"find", "open", "navigate", "summarise"})
 #: The writes that wait for Confirm: anything that removes, renames, moves or
@@ -71,7 +71,7 @@ def __getattr__(name: str) -> str:
 #: Steps a command card may run. The registry tools are the agent's; the two
 #: others are this module's own, for what no registry tool does.
 RUNNABLE = frozenset(
-    {"set_reminder", "tag_note", "edit_note", "create_note", "delete_note", "restore_note", "rename_tag", "rename_category",
+    {"set_reminder", "tag_note", "edit_note", "create_note", "delete_note", "restore_note", "rename_tag", "rename_category", "create_category", "delete_category",
      "pin_note", "link_notes", "unlink_notes", "start_meeting", "bin_reminder", "complete_reminder", "restore_reminder", "snooze_reminder", "set_display_name"}
 )
 
@@ -1227,7 +1227,7 @@ def _bare_call(text: str, now: datetime, locale: str | None) -> dict | None:
 
 
 def _read_folded(command: str, question: bool, polite: bool, urgent: bool, now: datetime, locale: str | None) -> dict | None:
-    for reader in (address.read_set, task_acts.read_checklist_note, _meeting, lambda t: _reminder(t, now, locale), lambda t: task_acts.read_add(t, lambda r: _reminder(r, now, locale)),
+    for reader in (address.read_set, object_acts.read_make, task_acts.read_checklist_note, _meeting, lambda t: _reminder(t, now, locale), lambda t: task_acts.read_add(t, lambda r: _reminder(r, now, locale)),
                    task_acts.read_uncomplete, task_acts.read_complete, task_acts.read_cancel, lambda t: task_acts.read_snooze(t, lambda w: _time_of(w, now, locale)), lambda t: _bare_call(t, now, locale), _new_note, _untag, _tag, _move, _delete, _pin, _link, object_acts.read_rename, lambda t: object_acts.read_restore(t, _one_target), _rename,
                    _append, _summarise, _navigate, _find):
         found = reader(command)
@@ -1274,7 +1274,7 @@ def parse(text: str, now: datetime) -> Command | None:
         obj = found["surface"]
     elif intent in ("rename_tag", "rename_category"):
         obj = found["old"]
-    elif intent == "set_name":
+    elif intent in ("set_name", "create_category"):
         obj = found["name"]
     elif found.get("note_id") is not None:
         obj = f"note {found['note_id']}"
@@ -1716,7 +1716,7 @@ def _plan_intent(session: Session, parsed: dict, note_ids: list[int] | None) -> 
         return _plan_meeting(parsed)
     if intent in ("tag", "move"):
         return _plan_tag_or_move(session, parsed, note_ids, intent)
-    if intent in ("rename_tag", "rename_category", "restore", "set_name"):
+    if intent in ("rename_tag", "rename_category", "create_category", "restore", "set_name"):
         return object_acts.plan(session, parsed, object_acts.Helpers(_card, _confirm, _item, note_title, summarise_done))
     if _deletes_all(parsed):
         return _plan_delete_all(session, parsed["about"])

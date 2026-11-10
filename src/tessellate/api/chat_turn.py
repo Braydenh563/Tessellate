@@ -25,7 +25,7 @@ from tessellate.api.chat_agent import _starter_read
 from tessellate.api.chat_pool import _Found
 from tessellate.api.chat_extra import _turn_label
 from tessellate.api.chat_request import ChatRequest, _StreamRequest, _Turn, _event, _in_full
-from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _app_answers, _asks_capability, _in_notes
+from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _app_answers, _asks_capability, _cited_titles, _first_cited_has_list, _in_notes
 from tessellate.core import deps, private_turn
 from tessellate.core.config import user_now
 from datetime import datetime
@@ -416,6 +416,23 @@ def _will_answer(req: _StreamRequest, prepared: dict, t: _Turn) -> bool:
     if not (t.ollama_running if t.conversational else (t.ollama_running or t.tools_only)):
         return False
     return bool(prepared["notes"]) or bool(req.images_raw) or req.use_tools or t.conversational
+
+
+def model_chips(session: Session, t: "_Turn", grounding: list[dict]) -> list[dict]:
+    """The next steps under a model's answer (first audit F14; 26 of 30 model
+    turns had none): the chips the composer puts under an answer that cites a
+    note, "Open it" and "What is left in it", and any question the model's
+    own words suggest (`ask_chips`). Only a model-written answer that sent no
+    offer of its own, so the composer's and the engine's chips stand."""
+    if not t.ollama_running or t.written_by_app or t.conversational or "offer" in t.sent_kinds or not t.answer_text:
+        return []
+    from tessellate.ai import ask_chips
+
+    result = {"grounding": grounding}
+    titles = _cited_titles(session, result)[:1]
+    asks = [f"Open \u201c{titles[0]}\u201d", *([f"What is left in \u201c{titles[0]}\u201d?"] if _first_cited_has_list(session, result) else [])] if titles else []
+    asks += [q for q in ask_chips.lift(t.answer_text) if q not in asks]
+    return [{"type": "offer", "offer": {"kind": "ask", "label": "", "asks": asks[:4]}}] if asks else []
 
 
 def _uncut(title: str) -> str:
