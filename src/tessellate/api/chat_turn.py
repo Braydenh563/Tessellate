@@ -639,7 +639,7 @@ def _relay_events(req: _StreamRequest, prepared: dict, t: _Turn, events) -> Iter
         # `exc`'s own str() is untrusted and can embed a file path or
         # connection detail; same sanitiser librarian.model_error_message
         # already trusts for this exact shape.
-        yield _event({"type": "answer", "delta": f"\n\nSomething went wrong: {safe_value(exc)}"})
+        yield _event({"type": "answer", "delta": "\n\nThat did not work. Nothing was changed."})
 
 
 def _trim_answer(t: _Turn) -> Iterator[str]:

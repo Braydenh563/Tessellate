@@ -33,7 +33,8 @@ def _tool_group(name: str) -> str:
     if name in ("web_search", "read_url"):
         return "online"
     spec = TOOLS[name]
-    return "confirm" if spec.destructive or name in CHANGE_TOOLS else "write" if name in WRITE_TOOLS else "read"
+    #: Every write asks first now (the owner, 2026-11-10), so no tool is in a "write" group.
+    return "confirm" if spec.destructive or name in CHANGE_TOOLS or name in WRITE_TOOLS else "read"
 
 
 def _list_tools(session: Session, args: dict) -> dict:

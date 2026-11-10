@@ -329,7 +329,7 @@ def test_an_unhandled_error_mid_run_still_reaches_done(
     events = _events(ai_client, "ph:lightning Tidy up", skill="Tidy up", use_tools=True)
     assert any(e["type"] == "plan" for e in events)
     answers = "".join(e["delta"] for e in events if e["type"] == "answer")
-    assert "simulated failure mid-run" in answers
+    assert "That did not work. Nothing was changed." in answers and "simulated failure" not in answers  # the cause is logged, never shown
     assert events[-1]["type"] == "done"
 
 

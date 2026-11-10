@@ -16,6 +16,7 @@ from tessellate.api import routes_chat
 from tessellate.core import clock, config
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
+from tests._consent import confirmed
 
 NOW = datetime(2026, 11, 4, 10, 5)
 
@@ -58,8 +59,9 @@ def test_an_ask_for_a_reminder_asks_what_and_when(client, notebook, said):
 
 @pytest.mark.parametrize("said", BOTH)
 def test_an_ask_with_what_and_when_sets_it(client, notebook, said):
-    out = _ask(client, said)
-    assert out["text"].startswith("Done. I will remind you"), out["text"]
+    waiting = _ask(client, said)
+    assert "remind you" in waiting["text"].lower() and "onfirm" in waiting["text"], waiting["text"]  # waits (owner, 2026-11-10)
+    assert confirmed(client, waiting)["act"][0]["done"]
 
 
 @pytest.mark.parametrize("said", NO_TIME)

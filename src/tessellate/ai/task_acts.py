@@ -664,7 +664,7 @@ def _without_line(content: str, line: str) -> str:
 
 
 def plan_snooze(session: Session, parsed: dict, card, title, said_when, now=None) -> dict:  # noqa: ANN001
-    """The card that moves a reminder's time, run at once with Undo. Only a
+    """The card that moves a reminder's time, with Undo once confirmed. Only a
     reminder has a time, so a checklist line is told so; `said_when` says a
     time against today (`commands.reminder_when`)."""
     item, say = pick(session, parsed, title)
@@ -675,6 +675,8 @@ def plan_snooze(session: Session, parsed: dict, card, title, said_when, now=None
     due = parsed.get("due_at")
     if due is None:
         return {"line": f"Until when? Say it like: snooze {parsed['about']} until Friday."}
+    #: Read on the person's clock (aware), compared and stored as wall time like `now` (naive).
+    due = due.replace(tzinfo=None)
     #: The run stores with `restore=True`, which skips the route's past check.
     if now is not None and due <= now:
         return {"line": f"That time has passed. Say a later one, like: snooze {parsed['about']} until tomorrow."}

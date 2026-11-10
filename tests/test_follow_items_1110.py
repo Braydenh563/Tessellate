@@ -58,13 +58,23 @@ def _turn(client, question, answer):
     return _ask(client, question, history=[{"question": "q", "answer": answer}])["text"]
 
 
+def _waits(client, question, answer):
+    """The card an instruction after a list leaves waiting. Intent moved (owner, 2026-11-10,
+    HANDOVER "Consent for every act"): these acts used to run at once with Undo; none does now."""
+    events = _ask(client, question, history=[{"question": "q", "answer": answer}])
+    card = next(e for e in events["act"] if not e.get("done"))
+    return card, [{"question": question, "answer": events["text"], "pending_act": card["label"], "pending_steps": card["steps"], "pending_skipped": card["skipped"]}]
+
+
 # --- the repros, through /chat/stream -----------------------------------------------------------
 
 
 def test_remove_milk_takes_the_line_off_the_list_and_never_bins_the_note(client, session):
     note = _shopping(session)
-    said = _turn(client, "remove milk", LIST)
-    assert "bin" not in said.lower() and "Milk" not in _body(session, note.id)
+    card, history = _waits(client, "remove milk", LIST)
+    assert "bin" not in card["label"].lower() and "Milk" in _body(session, note.id), "nothing changes before consent"
+    _ask(client, "yes", history=history)
+    assert "Milk" not in _body(session, note.id)
     assert "Eggs" in _body(session, note.id) and session.get(Entry, note.id).deleted_at is None
 
 
@@ -84,16 +94,20 @@ def test_and_cheese_adds_a_line_too(client, session):
 def test_delete_the_first_one_cancels_that_reminder_and_leaves_the_note(client, session):
     ramen = manager.create_entry(session, "Call with Anna wants to try the new ramen place.")
     _reminder(session)
-    said = _turn(client, "delete the first one", TABLE)
-    assert "bin the note" not in said.lower() and "Call with Anna" not in said
+    card, history = _waits(client, "delete the first one", TABLE)
+    assert "bin the note" not in card["label"].lower() and _live(session) == ["Call anna"], "nothing changes before consent"
+    _ask(client, "go ahead", history=history)
     assert _live(session) == [] and session.get(Entry, ramen.id).deleted_at is None
 
 
 def test_make_it_6_moves_the_reminder_just_set(client, session):
     row = _reminder(session)
-    said = _turn(client, "make it 6", SET)
+    card, history = _waits(client, "make it 6", SET)
     session.expire_all()
-    assert "wants to try" not in said and session.get(Reminder, row.id).due_at.replace(tzinfo=None) == datetime(2026, 11, 11, 18, 0), said
+    assert session.get(Reminder, row.id).due_at.replace(tzinfo=None) == datetime(2026, 11, 10, 18, 0), "nothing changes before consent"
+    _ask(client, "sure", history=history)
+    session.expire_all()
+    assert session.get(Reminder, row.id).due_at.replace(tzinfo=None) == datetime(2026, 11, 11, 18, 0), card["label"]
 
 
 def test_add_socks_to_it_after_a_new_note(client, session):

@@ -128,12 +128,12 @@ def test_ask_names_the_act_it_read():
 
 
 def test_a_models_proposed_act_waits_for_confirm(client, session):
-    """Decision 53: a reminder typed runs at once; the same act proposed by a
-    model is a card that waits for Confirm."""
+    """Decision 53, moved by the owner's consent order (2026-11-10): a reminder typed and
+    the same act proposed by a model are both a card that waits for Confirm."""
     _seed(session)
     typed = acts.preview(session, acts.parse("remind me to call mum on Friday at 9", NOW))
     proposed = acts.propose(session, "remind me to call mum on Friday at 9", NOW)
-    assert typed.get("run") is True
+    assert "run" not in typed and typed["card"]["steps"] == proposed["card"]["steps"]
     assert "run" not in proposed and proposed["card"]["proposed"] is True
     assert acts.propose(session, "what is the boiler pressure?", NOW) is None
 
@@ -178,8 +178,13 @@ def test_a_reminder_is_said_back_with_the_note_it_comes_from(client, session, mo
     assert card["items"] == ["Dentist"]
     assert card["steps"][0]["arguments"]["note_id"] == dentist.id
     #: Said back in the composer's words (CHAT_PLAN 1353), the card's label exact.
-    assert out["text"].endswith("remind you on Friday at 9: call the dentist.") and "!" not in out["text"], out["text"]
+    assert "remind you on friday at 9: call the dentist" in out["text"].lower() and "!" not in out["text"], out["text"]
     assert "call the dentist" in phrase.lower()
+    assert session.scalars(select(Reminder)).all() == [], "nothing is set before Confirm"
+    from tessellate.ai import commands
+
+    commands.run(session, card["steps"], card["skipped"])
+    session.expire_all()
     reminder = session.scalars(select(Reminder)).one()
     assert reminder.entry_id == dentist.id and reminder.due_at.strftime("%a %H:%M") == "Fri 09:00"
 

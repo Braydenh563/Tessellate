@@ -9,6 +9,7 @@ import json
 from datetime import datetime
 
 import pytest
+from tests._consent import confirmed
 
 NOW = datetime(2026, 11, 9, 10, 0)
 HOME = "# Home\n\n- [ ] email landlord\n- [ ] call plumber\n- [ ] water plants"
@@ -16,7 +17,7 @@ HOME = "# Home\n\n- [ ] email landlord\n- [ ] call plumber\n- [ ] water plants"
 
 def _ask(client, question):
     with client.stream("POST", "/chat/stream", json={"question": question, "use_tools": True}) as r:
-        events = [json.loads(line) for line in r.iter_lines() if line.strip()]
+        events = confirmed(client, [json.loads(line) for line in r.iter_lines() if line.strip()])
     return next((e for e in events if e.get("type") == "act"), None), "".join(e.get("delta", "") for e in events if e.get("type") == "answer")
 
 

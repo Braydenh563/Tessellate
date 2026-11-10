@@ -64,8 +64,13 @@ def propose(session, text: str, now, note_ids: list[int] | None = None) -> dict 
     return proposer(session, text, now, note_ids)
 
 
-#: The write intents that wait for Confirm before anything changes.
-CONFIRM_INTENTS = frozenset({"delete", "rename", "rename_tag", "rename_category", "restore", "move", "tag", "untag", "link", "unlink", "append"})
+#: The write intents that wait for Confirm before anything changes: all of them
+#: (the owner, 2026-11-10, "any and all actions need the user's consent"). A
+#: typed yes confirms the card that waits (`ai/consent.py`), a typed no drops it.
+CONFIRM_INTENTS = frozenset({
+    "reminder", "complete", "uncomplete", "cancel", "snooze", "new_note", "meeting", "pin", "unpin",
+    "delete", "rename", "rename_tag", "rename_category", "restore", "move", "tag", "untag", "link", "unlink", "append",
+})
 
 
 @dataclass(frozen=True)
@@ -94,15 +99,15 @@ class Act:
 
 #: In the order the capability line says them.
 _ACTS = (
-    Act("reminder", "remind", "set a reminder", "Say what and when; it is set at once with Undo. Say add buy stamps to my todo, with no time, to put a checklist line on your Todo note instead.",
+    Act("reminder", "remind", "set a reminder", "Say what and when; it is set after you confirm. Say add buy stamps to my todo, with no time, to put a checklist line on your Todo note instead.",
         "remind me to call mum on Friday at 9", ("text", "due_at"), "bin_reminder"),
-    Act("complete", "complete", "tick off a task", "Names a reminder or a checklist line; it is ticked at once with Undo, and asked about if more than one fits. After a list, tick the first one counts from that list.",
+    Act("complete", "complete", "tick off a task", "Names a reminder or a checklist line; it is ticked after you confirm, and asked about if more than one fits. After a list, tick the first one counts from that list.",
         "tick off buy milk", (), "complete_reminder", stem="Tick off "),
-    Act("uncomplete", "complete", "untick a task", "Names a ticked reminder or checklist line; it is reopened at once with Undo.",
+    Act("uncomplete", "complete", "untick a task", "Names a ticked reminder or checklist line; it is reopened after you confirm.",
         "untick buy milk", (), "complete_reminder", stem="Untick "),
-    Act("cancel", "cancel", "cancel a task", "Names a reminder or a checklist line; a reminder goes to the bin and a checklist line is taken out of its note, at once with Undo.",
+    Act("cancel", "cancel", "cancel a task", "Names a reminder or a checklist line; a reminder goes to the bin and a checklist line is taken out of its note, after you confirm.",
         "cancel the dentist task", (), "restore_reminder", stem="Cancel the task "),
-    Act("snooze", "snooze", "snooze a reminder", "Names a reminder and a new time; it moves at once with Undo. Only reminders have a time, so a checklist line cannot be snoozed.",
+    Act("snooze", "snooze", "snooze a reminder", "Names a reminder and a new time; it moves after you confirm. Only reminders have a time, so a checklist line cannot be snoozed.",
         "snooze the dentist task until Friday", ("due_at",), "snooze_reminder", stem="Snooze the task "),
     Act("tag", "tag", "tag notes", "Name the notes and the tags; the change waits for Confirm.",
         "tag the knife note with kitchen", ("tags",), "edit_note", stem="Tag the note about "),
@@ -110,13 +115,13 @@ _ACTS = (
         "remove the tag urgent from the boiler note", ("tags",), "edit_note"),
     Act("move", "file", "move notes to a category", "Name the notes and the category; waits for Confirm.",
         "move the sourdough note to Cooking", ("category",), "edit_note", stem="Move the note about "),
-    Act("new_note", "create", "make a new note", "Start with \"note:\" and the words; saved at once with Undo.",
+    Act("new_note", "create", "make a new note", "Start with \"note:\" and the words; saved after you confirm, and Undo takes it back.",
         "note: buy milk and eggs", ("content",), "delete_note"),
-    Act("meeting", "create", "start a meeting", "Starts a meeting note now; Undo bins it.",
+    Act("meeting", "create", "start a meeting", "Starts a meeting note after you confirm; Undo bins it.",
         "start a meeting", (), "delete_note", stem="Start a meeting"),
-    Act("pin", "pin", "pin a note", "Pins one note to the top of the list; Undo unpins it.",
+    Act("pin", "pin", "pin a note", "Pins one note to the top of the list after you confirm; Undo unpins it.",
         "pin the dentist note", (), "pin_note", stem="Pin the note about "),
-    Act("unpin", "unpin", "unpin a note", "Takes one note's pin off; Undo pins it again.",
+    Act("unpin", "unpin", "unpin a note", "Takes one note's pin off after you confirm; Undo pins it again.",
         "unpin the dentist note", (), "pin_note"),
     Act("link", "link", "link two notes", "Names both notes; waits for Confirm, Undo unlinks them.",
         "link the gym note to the running note", (), "unlink_notes", stem="Link the note about "),
@@ -208,7 +213,6 @@ def palette_rows() -> list[dict]:
 def guide_topic() -> dict:
     """The Guide's topic on acts, generated from the registry."""
     lines = [f"{a.label[:1].upper() + a.label[1:]}: \"{a.example}\"." for a in _ACTS]
-    waits = ", ".join(a.label for a in _ACTS if a.confirm)
     return {
         "id": "chat-acts",
         "title": "Things Chat does for you",
@@ -216,7 +220,7 @@ def guide_topic() -> dict:
                      "with no model running", "undo an act", "things chat does"),
         "badge": {"label": "Chat", "tab": "chat"},
         "body": "Chat does these from one sentence, with no model. " + " ".join(lines)
-        + f" These wait for Confirm: {waits}. The rest run at once. Undo on the card, or Ctrl+Z, takes any of them back. Say add buy milk to today's note to put a bullet in the daily note, or put it in today's note to add a note itself. Say cancel or never mind to drop a card that is waiting.",
+        + " Every one waits for Confirm: press Confirm, or just type yes, ok or go ahead; Cancel, or no, drops it. Nothing changes before that. Undo on the card, or Ctrl+Z, takes any of them back. Say add buy milk to today's note to put a bullet in the daily note, or put it in today's note to add a note itself. Say cancel or never mind to drop a card that is waiting.",
     }
 
 

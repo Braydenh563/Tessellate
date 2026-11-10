@@ -587,6 +587,21 @@ _BARE_NOTE = frozenset({
 })
 
 
+#: What "make a note ..." can be followed by that is a setting of a note, not its words.
+_NOTE_SETTINGS = frozenset({"private", "public", "locked", "secret", "hidden", "pinned", "archived"})
+
+
+def _wordless_note(head: str, rest: str) -> dict | None | bool:
+    """A "note ..." with nothing to write (G2): None for a look-up or a setting ("note about
+    suica", "make a note private" are never a new note), the ask for its words for "make a
+    note about suica", False when `rest` carries words to save."""
+    if rest.lower().strip(" .") in _NOTE_SETTINGS:
+        return None
+    if rest.lower().startswith("about ") and ":" not in rest:
+        return {"intent": "new_note", "content": "", "no_subject": True} if head != "note" else None
+    return False
+
+
 def _note_lead(rest: str) -> tuple[str, bool]:
     """`rest` without its "that", "saying", "called" ...; whether that was a name."""
     for lead in ("that ", "saying ", "of ", "about ", "to say ", *_NAMED):
@@ -608,6 +623,8 @@ def _new_note(text: str) -> dict | None:
         if needs_colon and not rest.startswith(":") and not rest.lower().startswith((*_NAMED, "about ")):
             return None
         rest = rest.lstrip(" :-")
+        if (wordless := _wordless_note(head, rest)) is not False:
+            return wordless
         rest, named = _note_lead(rest)
         if named:
             said = _name_and_words(rest)
@@ -1671,6 +1688,10 @@ def plan(session: Session, parsed: dict, note_ids: list[int] | None = None) -> d
     if said:
         return {"line": said}
     planned = _plan_intent(session, parsed, note_ids)
+    if planned.pop("run", None) and planned.get("card"):
+        #: The owner's order (2026-11-10): no act runs at once. A plan that used
+        #: to run is a card that waits for Confirm or a typed yes, said as one.
+        planned["line"] = _confirm(planned["card"]["label"])
     if parsed.get("leftover") and planned.get("card"):
         #: A second request on the end of a rename is said back, not done or dropped.
         planned = {**planned, "line": f"{planned['line']} Then say “{parsed['leftover']}” and I will plan that next."}

@@ -10,6 +10,7 @@ import pytest
 
 import tests._seed_1031c as seed_c
 from tessellate.ai import task_acts
+from tests._consent import confirmed
 
 
 @pytest.fixture
@@ -25,8 +26,9 @@ def _note(client, title):
 @pytest.mark.parametrize("said", ["add buy stamps to my todo", "add buy stamps to my to-do list", "put buy stamps on my todo list", "add buy stamps to my tasks"])
 def test_the_line_lands_on_the_todo_note_with_undo(go, client, said):
     text, events = go(said)
-    assert "reminder" not in text.lower() and "when" not in text.lower(), text
-    card = next(e for e in events if e.get("type") == "act")
+    assert "reminder" not in text.lower() and "what time" not in text.lower(), text
+    assert not _note(client, "Todo")["content"].rstrip().endswith("- [ ] Buy stamps"), "waits for Confirm (owner, 2026-11-10)"
+    card = next(e for e in confirmed(client, list(events)) if e.get("type") == "act")
     assert card.get("done") and card.get("undo"), card
     assert _note(client, "Todo")["content"].rstrip().endswith("- [ ] Buy stamps")
 

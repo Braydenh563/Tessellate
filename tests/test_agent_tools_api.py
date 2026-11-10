@@ -187,17 +187,17 @@ def test_agent_runs_tool_then_answers(ai_client, fake_ollama):
 
     events = _stream_events(ai_client, "save a note to buy milk")
 
-    tool_events = [e for e in events if e["type"] == "tool"]
-    assert len(tool_events) == 1
-    assert tool_events[0]["ok"] is True
-    assert "Created “buy milk”" in tool_events[0]["label"]  # by title, not id (audit 1029 C47)
-    answer = "".join(e["delta"] for e in events if e["type"] == "answer")
-    assert answer == "Done: I saved that to Shopping."
+    #: Every write parks for a Confirm card (owner, 2026-11-10, "any and all actions need the
+    #: user's consent"): the model proposes, nothing is created until the person confirms.
+    confirms = [e for e in events if e["type"] == "confirm"]
+    assert len(confirms) == 1 and confirms[0]["name"] == "create_note"
+    assert not any(e["content"] == "buy milk" for e in ai_client.get("/entries").json())
     assert events[-1]["type"] == "done"
 
-    # The note really exists now.
-    entries = ai_client.get("/entries").json()
-    assert any(e["content"] == "buy milk" for e in entries)
+    # Confirm (the card's button, or a typed yes) runs it.
+    ran = ai_client.post("/chat/tools/execute", json={"name": confirms[0]["name"], "arguments": confirms[0]["arguments"]})
+    assert ran.status_code == 200
+    assert any(e["content"] == "buy milk" for e in ai_client.get("/entries").json())
 
 
 def test_agent_feeds_tool_results_back_to_model(ai_client, fake_ollama):
@@ -294,7 +294,9 @@ def test_agent_works_on_an_empty_notebook(ai_client, fake_ollama):
         [{"name": "create_note", "arguments": {"content": "first ever note"}}]
     ]
     events = _stream_events(ai_client, "save my first note")
-    assert [e for e in events if e["type"] == "tool"]
+    confirm = next(e for e in events if e["type"] == "confirm")  # parked for consent (owner, 2026-11-10)
+    assert not ai_client.get("/entries").json()
+    ai_client.post("/chat/tools/execute", json={"name": confirm["name"], "arguments": confirm["arguments"]})
     assert any(e["content"] == "first ever note" for e in ai_client.get("/entries").json())
 
 
@@ -396,9 +398,10 @@ def test_agent_recovers_text_emitted_tool_call(ai_client, fake_ollama):
         '<tool_call>{"name": "create_note", "arguments": '
         '{"content": "recovered note"}}</tool_call>'
     )
-    _stream_events(ai_client, "save a note that says recovered note")
-    entries = ai_client.get("/entries").json()
-    assert any(e["content"] == "recovered note" for e in entries)
+    events = _stream_events(ai_client, "save a note that says recovered note")
+    confirm = next(e for e in events if e["type"] == "confirm")  # recovered, then parked for consent (owner, 2026-11-10)
+    assert confirm["name"] == "create_note" and confirm["arguments"]["content"] == "recovered note"
+    assert not any(e["content"] == "recovered note" for e in ai_client.get("/entries").json())
 
 
 def test_agent_warns_on_hallucinated_write(ai_client, fake_ollama):
