@@ -43,7 +43,7 @@ def test_it_takes_only_what_nothing_else_took():
     assert "event.defaultPrevented" in arm and "fileDropLocked()" in arm
 
 
-def _run(names: list[str], fail: set[str] | None = None) -> dict:
+def _run(names: list[str], fail: set[str] | None = None, tab: str = "library") -> dict:
     node = shutil.which("node")
     if not node:  # pragma: no cover
         pytest.skip("node is not available")
@@ -53,11 +53,15 @@ def _run(names: list[str], fail: set[str] | None = None) -> dict:
         + _block(DROP, "async function fileDropImport(files) {", "\n}\n")
         + """
 const names = JSON.parse(process.argv[1]); const fail = new Set(JSON.parse(process.argv[2]));
-const log = { uploads: [], docs: [], toasts: [], says: [], modules: [], undos: [] };
+const log = { uploads: [], docs: [], notes: [], toasts: [], says: [], modules: [], undos: [] };
 class FormData { constructor() { this.f = {}; } append(k, v) { this.f[k] = v; } }
 const api = { upload: async (path, form) => { if (fail.has(form.f.file.name)) throw new Error("too big"); log.uploads.push([path, form.f.file.name, form.f.direct]); return { json: async () => ({ id: form.f.file.name }) }; } };
 const pushUploadUndo = (label, base, made) => log.undos.push([label, base, made && made.id]);
 const toast = (m) => log.toasts.push(m);
+const FILE_DROP_NOTE = /\\.(md|markdown|txt)$/i;
+const onNotes = process.argv[3] === "notes";
+function fileDropOnNotes() { return onNotes; }
+async function fileDropNotes(files) { log.notes = files.map((f) => f.name); }
 const toastAction = (m, label) => log.toasts.push(m + " / " + label);
 async function ensureModule(n) { log.modules.push(n); return true; }
 async function importLibraryDocuments(files) { log.docs = files.map((f) => f.name); }
@@ -71,7 +75,7 @@ function fileDropHide() { log.says.push("hidden"); }
 })();
 """
     )
-    out = subprocess.run([node, "-e", script, json.dumps(names), json.dumps(sorted(fail or []))], capture_output=True, text=True, timeout=60, check=False)
+    out = subprocess.run([node, "-e", script, json.dumps(names), json.dumps(sorted(fail or [])), tab], capture_output=True, text=True, timeout=60, check=False)
     assert out.returncode == 0, out.stderr
     return json.loads(out.stdout)
 
@@ -111,3 +115,24 @@ def test_a_notice_about_a_pdf_opens_library_files_not_images():
     assert 'data-media-kind="${action.media}"' in bell
     kept = (ROOT / "frontend/js/chat-attach.js").read_text(encoding="utf-8")
     assert '{ go: { tab: "library", media: "files" } }' in kept
+
+
+def test_md_and_txt_dropped_on_the_notes_tab_become_notes_everything_else_keeps_its_route():
+    """S71: only on the Notes tab, only .md, .markdown and .txt; pictures, PDFs
+    and other files go where they always went."""
+    got = _run(["a.md", "b.TXT", "c.docx", "d.png"], tab="notes")
+    assert got["notes"] == ["a.md", "b.TXT"]
+    assert got["docs"] == ["c.docx"]
+    assert got["uploads"] == [["/media/upload", "d.png", "true"]]
+
+
+def test_md_dropped_off_the_notes_tab_still_becomes_a_document():
+    got = _run(["a.md", "b.txt"], tab="library")
+    assert got["notes"] == [] and got["docs"] == ["a.md", "b.txt"]
+
+
+def test_the_notes_drop_uses_the_obsidian_reader_with_undo_and_the_veil_names_it():
+    block = _block(DROP, "async function fileDropNotes(files) {", "\n}\n")
+    assert "/import/app?source=obsidian" in block and "undoImport(" in block
+    assert 'ensureModule("settingsData")' in block
+    assert "Drop notes or files to add them" in DROP
