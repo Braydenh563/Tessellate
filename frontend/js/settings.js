@@ -739,9 +739,10 @@ function closeSettingsModal() {
   //: away with the window: closing Settings with one open left the list
   //: floating over the page (measured, scratchpad/ui-sweeps/menus.js).
   closeActionMenus();
-  $("settings-modal").classList.add("hidden");
+  //: Focus first, then hide (INBOX 1726: 123ms, 105 forced layout at 4x): the reads find a clean page.
   focusBackTo(overlayReturnFocus, "#settings-btn");
   overlayReturnFocus = null;
+  $("settings-modal").classList.add("hidden");
 }
 
 // --- logs viewer (Wave A) ---------------------------------------------------------
