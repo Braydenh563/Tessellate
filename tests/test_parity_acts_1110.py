@@ -62,7 +62,8 @@ def confirm(client, card: dict) -> dict:
 
 def undo(client, done: dict) -> None:
     assert done["undo"], done
-    assert client.post("/chat/command/run", json={"steps": done["undo"]}).status_code == 200
+    undone = client.post("/chat/command/run", json={"steps": done["undo"]})
+    assert undone.status_code == 200
 
 
 def filed(session, title: str) -> str:
