@@ -53,7 +53,8 @@ def test_a_composed_answer_hands_two_or_three_asks_about_its_subject(asks, quest
     found = asks(question)
     assert 2 <= len(found) <= 3, found
     assert all(subject in q.lower() for q in found), found
-    assert all(q.endswith("?") and q[:1].isupper() for q in found), found
+    #: A dated answer also offers the reminder it proposes (F5, 2026-11-10): that one chip is an ask to act, not a question.
+    assert all((q.endswith("?") or q.startswith("Remind me about")) and q[:1].isupper() for q in found), found
 
 
 @pytest.mark.parametrize("question", ["what did I do in design class", "when is the dentist", "how many lectures did I have"])
