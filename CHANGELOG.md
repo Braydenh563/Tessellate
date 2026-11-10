@@ -5,6 +5,7 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
+- Feature (diagram builder, dgroup-1110): a group (subgraph) in the drawn diagram is selected by a click on its border or its title, rings like a node, and takes Delete and the right-click menu; a double click on the border or title renames it in place (Enter commits, Esc cancels). One hit test, `clusterEdgeAt` (6 px border band, 32 px title strip), shared by pick, rename and menu.
 - Fix (voice notes, w6-1110, audit 1031 Z12): a Discard whose finish fails now says so with a toast and keeps the recording in Library; audit rows A32 to A36 (1029 X1 to X3, 1031 Z12, 1028 B8, B40) were already fixed on head and are struck.
 ## [Unreleased]
 - Fix (graph, owner 2026-11-10): note names on the map are set at 12 screen pixels rather than a `12 / k` font under the zoom, so zoomed in their letters no longer drift apart ("I' m taking one I nformation"); Linux Chromium does not show the fault, real Windows unverified.
