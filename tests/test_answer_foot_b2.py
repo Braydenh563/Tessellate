@@ -100,17 +100,18 @@ def test_the_row_and_an_open_part_are_on_the_spacing_tokens() -> None:
 
 
 def test_the_row_is_one_row() -> None:
-    """The review of B2 measured "one row" wrapping: Ask 54px for 4 chips at
-    1440, the popup agent 49px at 1440 and 120px at 390. The row does not wrap:
-    the chips keep their words, the stats line gives way and is cut (its words
-    in its title), and past that the row scrolls inside itself."""
+    """The row is one row while it fits (B2 review: Ask 54px for 4 chips at 1440).
+    The owner's Windows window (INBOX 1733) showed "Mon 4:52 p" clipped: the
+    stats line was a shrinking, overflow-hidden item, cut to nothing at 900 to
+    1100. That intent moved: the time is never cut, so the row wraps and the
+    stats line keeps its whole width, dropping to a second line at the end."""
     bar = CSS[CSS.index(".answer-foot-bar {") :]
     bar = bar[: bar.index("}")]
-    assert "flex-wrap: nowrap;" in bar and "overflow-x: auto;" in bar and "flex-wrap: wrap" not in bar
+    assert "flex-wrap: wrap;" in bar and "flex-wrap: nowrap" not in bar
     assert ".answer-foot-bar > .answer-foot-chip {\n  flex: none;" in CSS
     meta = CSS[CSS.index(".answer-foot-bar > .msg-meta {") :]
     meta = meta[: meta.index("}")]
-    assert "min-width: 0;" in meta and "overflow: hidden;" in meta
+    assert "flex: 0 0 auto;" in meta and "overflow" not in meta and "min-width: 0" not in meta
     gather = _body(KIT, "function answerFootGather(scope) {")
     assert "kept.title = " in gather
 

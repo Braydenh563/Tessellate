@@ -2346,8 +2346,10 @@ $("timeline-view-seg").addEventListener("click", (event) => {
   prefs.set("timeline-view", mode);
   syncTimelineViewSeg();
   // A repaint, not a reload: `timelineRows` is already in memory and both
-  // views render from it.
+  // views render from it. A feed painted from the table or the calendar has
+  // scrollTop 0, which is the days ahead, not Today (INBOX 1733).
   paintTimeline();
+  if (mode === "feed") timelineScrollToToday();
 });
 
 function syncTimelineViewSeg() {
@@ -2367,6 +2369,9 @@ function syncTimelineViewSeg() {
 $("timeline-scale").addEventListener("change", (event) => {
   prefs.set("timeline-scale", event.target.value);
   paintTimeline();
+  //: A re-cut feed is empty for a frame, so its scroll is 0; stepScale's own
+  //: anchoring runs after this and wins.
+  if (timelineViewMode() === "feed") timelineScrollToToday();
 });
 
 //: Grouping decides what the band filter offers, so it rebuilds the options

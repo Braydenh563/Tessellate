@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8072, frontend ids 2679, CSS sections 523, backend routes 662, backend modules 9994, test files 2436, tests 20215, plan headings 1000, app scripts 28, boot scripts 37, script files 275.
+Counts: frontend functions 8072, frontend ids 2679, CSS sections 523, backend routes 662, backend modules 9994, test files 2437, tests 20218, plan headings 1001, app scripts 28, boot scripts 37, script files 275.
 
 ## Frontend functions (8072)
 
@@ -1558,7 +1558,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `syncTimelineFilterChip` | frontend/js/timeline.js:910 |
 | `syncTimelineKindsLabel` | frontend/js/timeline.js:400 |
 | `syncTimelineSelectUi` | frontend/js/timeline.js:2302 |
-| `syncTimelineViewSeg` | frontend/js/timeline.js:2353 |
+| `syncTimelineViewSeg` | frontend/js/timeline.js:2355 |
 | `syncTimelineYears` | frontend/js/timeline.js:680 |
 | `timelineAheadBuckets` | frontend/js/timeline.js:1036 |
 | `timelineAutoScale` | frontend/js/timeline.js:454 |
@@ -1594,7 +1594,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `timelineRowGroups` | frontend/js/timeline.js:866 |
 | `timelineRowMoment` | frontend/js/timeline.js:102 |
 | `timelineScaleChoice` | frontend/js/timeline.js:438 |
-| `timelineScrollToToday` | frontend/js/timeline.js:2467 |
+| `timelineScrollToToday` | frontend/js/timeline.js:2472 |
 | `timelineScrubTo` | frontend/js/timeline.js:1999 |
 | `timelineSortValue` | frontend/js/timeline.js:2076 |
 | `timelineSortedRows` | frontend/js/timeline.js:2087 |
@@ -12732,7 +12732,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/sidebar-folds-lazy.css | 28 |
 | frontend/css/sketch-pad.css | 791 |
 | frontend/css/tidy-lazy.css | 331 |
-| frontend/css/timeline-calendar-lazy.css | 299 |
+| frontend/css/timeline-calendar-lazy.css | 304 |
 | frontend/css/timeline-ticks-lazy.css | 42 |
 | frontend/css/ui-reveal-lazy.css | 91 |
 | frontend/css/update-bar-lazy.css | 15 |
@@ -26039,7 +26039,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (20215)
+## Tests (20218)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28183,6 +28183,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_tie_chip_b9.py | 5 |
 | tests/test_time_travel_spec.py | 9 |
 | tests/test_timeline.py | 33 |
+| tests/test_timeline_allday_band.py | 2 |
 | tests/test_timeline_auto_scale.py | 3 |
 | tests/test_timeline_cal_add.py | 4 |
 | tests/test_timeline_cal_span_glide.py | 1 |
@@ -28191,7 +28192,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_timeline_feed_ahead.py | 3 |
 | tests/test_timeline_load_more_range_change.py | 1 |
 | tests/test_timeline_on_this_day.py | 5 |
-| tests/test_timeline_opens_on_today.py | 2 |
+| tests/test_timeline_opens_on_today.py | 3 |
 | tests/test_timeline_query_count.py | 5 |
 | tests/test_timeline_rail_centre.py | 1 |
 | tests/test_timeline_strip_ahead_1316.py | 3 |
@@ -28482,7 +28483,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_zoom_wheel_delta.py | 3 |
 | tests/test_zoom_wrap_1717.py | 21 |
 
-## Plan headings (1000)
+## Plan headings (1001)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -29027,7 +29028,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Decision made, 2026-10-10: a category is where a note is filed, a topic is what its links say it is about | docs/roadmap/GRAPH_PLAN.md:532 |
 | Decision made, 2026-10-11: a drag moves, a double-click pins | docs/roadmap/GRAPH_PLAN.md:260 |
 | Decision made, 2026-10-11: the drawn map is for reading | docs/roadmap/GRAPH_PLAN.md:315 |
-| Decision made, 2026-10-26: a landscape map is laid out landscape, a hub's lines are rays | docs/roadmap/GRAPH_PLAN.md:601 |
+| Decision made, 2026-10-26: a landscape map is laid out landscape, a hub's lines are rays | docs/roadmap/GRAPH_PLAN.md:603 |
 | Decisions left to the owner | docs/roadmap/ANALYSIS.md:3633 |
 | Decisions made | docs/roadmap/AGENT_SKILLS_REFORM.md:141 |
 | Decisions made | docs/roadmap/MINDMAP_PLAN.md:833 |
@@ -29182,7 +29183,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1217 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:170 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:172 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4176 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3130 |
@@ -29274,7 +29275,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-19 (wb1327) | docs/roadmap/WHITEBOARD_PLAN.md:1538 |
 | Placed from INBOX, 2026-10-26 | docs/roadmap/WHITEBOARD_PLAN.md:1563 |
 | Placed from INBOX, 2026-10-26 (the owner: the composer composes, everywhere) | docs/roadmap/CHAT_PLAN.md:1851 |
-| Placed from INBOX, 2026-10-26 (the owner: the force view is messy, popups and controls hard to learn) | docs/roadmap/GRAPH_PLAN.md:597 |
+| Placed from INBOX, 2026-10-26 (the owner: the force view is messy, popups and controls hard to learn) | docs/roadmap/GRAPH_PLAN.md:599 |
 | Placed from INBOX, 2026-10-26b | docs/roadmap/WHITEBOARD_PLAN.md:1576 |
 | Placed from INBOX, 2026-10-26b | docs/roadmap/WORLD_CLASS_PLAN.md:4197 |
 | Placed from INBOX, 2026-10-27 | docs/roadmap/DOCUMENTS_PLAN.md:1335 |
@@ -29285,7 +29286,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-28 (present bar picker, lag, movable panels, companion) | docs/roadmap/PLAN.md:304 |
 | Placed from INBOX, 2026-10-29 (1435 Appearance panel, 1436 sketch and noise art) | docs/roadmap/UI_MODERNISATION_PLAN.md:1255 |
 | Placed from INBOX, 2026-10-30 | docs/roadmap/WHITEBOARD_PLAN.md:1587 |
-| Placed from INBOX, 2026-10-31 | docs/roadmap/GRAPH_PLAN.md:605 |
+| Placed from INBOX, 2026-10-31 | docs/roadmap/GRAPH_PLAN.md:607 |
 | Placed from INBOX, 2026-10-31 | docs/roadmap/UI_MODERNISATION_PLAN.md:1261 |
 | Placed from INBOX, 2026-10-31 | docs/roadmap/WHITEBOARD_PLAN.md:1591 |
 | Placed from INBOX, 2026-11-01 (1510(a), the draw.io Format panel gap list; board-1101) | docs/roadmap/WHITEBOARD_PLAN.md:1595 |
@@ -29299,7 +29300,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-11-04 | docs/roadmap/PLAN.md:318 |
 | Placed from INBOX, 2026-11-04 | docs/roadmap/WHITEBOARD_PLAN.md:1611 |
 | Placed from INBOX, 2026-11-04 (1657, what the two lag rounds left) | docs/roadmap/UI_MODERNISATION_PLAN.md:1268 |
-| Placed from INBOX, 2026-11-04 (audit Rank 36, hover decision) | docs/roadmap/GRAPH_PLAN.md:611 |
+| Placed from INBOX, 2026-11-04 (audit Rank 36, hover decision) | docs/roadmap/GRAPH_PLAN.md:613 |
 | Placed from INBOX, 2026-11-05 (the Ask columns and folds) | docs/roadmap/CHAT_PLAN.md:1864 |
 | Placed from INBOX, 2026-11-07 (room for 1694) | docs/roadmap/CHAT_PLAN.md:1875 |
 | Placed from INBOX, 2026-11-08 | docs/roadmap/UI_MODERNISATION_PLAN.md:1278 |
@@ -29421,6 +29422,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Top five, ranked | docs/roadmap/ANALYSIS.md:4467 |
 | Traps that have each cost real time | docs/ROADMAP.md:383 |
 | Twenty-four repositories read for Tessellate, 2026-09-21 | docs/roadmap/ANALYSIS.md:2588 |
+| Vector index: sqlite-vec when the notebook outgrows brute force (owner question, 2026-11-11, INBOX 1733) | docs/roadmap/BACKLOG.md:4497 |
 | Vendor candidates, 2026-10-11 | docs/roadmap/ANALYSIS.md:4400 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/CHAT_PLAN.md:1687 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/DOCUMENTS_PLAN.md:1273 |
