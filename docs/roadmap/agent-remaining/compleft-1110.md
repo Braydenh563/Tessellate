@@ -36,3 +36,19 @@ Left:
 - Not started: g1014 G12 Patterns template (five test files pin it), G14 a, e, f, i and the JS composed rows, s10 F4 "X versus Y" (composition layer, `composer.compare_sides` before the digest), "whose birthday is next".
 - The tiers case needs lines of "Label number"; a prose line ("Plus tier at $5 a month") is not read by the label lookup.
 - Not verified: the browser (a typed yes starting a skill from the page was not driven in Playwright; `node --check` only), real model inference.
+
+## compleft3 (third pass)
+
+Done:
+
+- "whose birthday is next": one birthday answers ("Anna's is next, on 3 December, 23 days away"), "who has the next birthday" and "when is the next birthday" read it, "Birthday: December 3" and "the 9th of February" are read (`composer_figures._birthday_of`, `_BIRTH`; `tests/test_birthday_next_1110.py`). A model up is handed the note and its distance in the prompt; the figures reader is not a facts turn (`chat_turn._facts_turn` takes stats and tool reads only), so the model writes this one from the notes.
+- g1014 G12 Patterns template: "Golf has come up four times since 5 September, three of them after work; that may be a hobby forming." (`composer_tables.INSIGHT_TEMPLATES["recurrence"]`, `insights._shown`), the hedge said once in a list (`insights.listed`, used by `chat_extra.notebook_events`). Pins moved with it: `tests/test_insights.py` (sentence; the capital-start copy rule now accepts the subject slot), `test_engine_phase6_spec.py` ("four times"), `_composer_eval.py` (fills the template through `insights.shown`), `test_composer_cfix_1031.py` (reads "has come up N times" so the one-count check does not go vacuous). `tests/test_patterns_g12_1110.py`.
+- s10 F4 "X versus Y": `composer_amounts._VERSUS` ("A versus/vs/compared to/against B") sets two notes of "Label number" lines side by side (differences, then what is the same), reads a line of sentences ("Rent 650. Groceries 140.") only for this ask, and gives two labels of one note ("free versus plus") with the gap (`tests/test_composer_versus_f4_1110.py`). Read-only, so no consent; a model with tools reads both notes.
+
+Left:
+
+- G14 a, e, f: probed again on the audit notebook with reminders seeded and still not reproduced ("what are my reminders" is a two-column table; "what do I know about harbor" says four and lists four, then "More loosely related to harbor"; the "Ask" chips for "the harbor launch" come back with no offer on this path). Need the owner's real notebook.
+- G14 i and the composed list rows in JS (`dashboard.js:526`, `:633`, `:3018`, `:4229`, `statistics.js:121`, `reminder-notify.js:92`, `avatars.js:2731`): not built. Dashboard, `statistics.js` and `avatars.js` are boot scripts and `tests/test_static_compression.py` is already red on the base, so each byte must be won back; and the page's dates follow the reader's locale (`whenText`, WORLD_CLASS_PLAN "every date and time follows one setting") while composed text is English day-month, so "one formatter" is an owner decision (locale versus fixed English) before it is code.
+- F4 beyond labelled notes: "harbor versus japan" (topics of several notes each) still prints two columns with the ranker's lead, not the defining note (`composer_body._compare`, `note_rank.lead`); the tiers case still needs "Label number" lines (a prose line "Free and Plus at $6 a month" is not read).
+- "what's most important right now" still unrouted.
+- Not verified: the browser (no JS changed), real model inference.
