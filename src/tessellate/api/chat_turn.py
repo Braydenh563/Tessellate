@@ -14,6 +14,7 @@ import logging
 import re
 import time
 from collections.abc import Iterator
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from tessellate.ai import composer_digest, composer_lists, composer_slots, composer_talk, context, fence, intent, librarian, question_noise, recognise, verdicts, why
@@ -28,6 +29,7 @@ from tessellate.api.chat_request import ChatRequest, _StreamRequest, _Turn, _eve
 from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _app_answers, _asks_capability, _cited_titles, _first_cited_has_list, _in_notes
 from tessellate.core import deps, private_turn
 from tessellate.core.config import user_now
+from tessellate.core.database import Entry
 from datetime import datetime
 from tessellate.core.logbuffer import safe_value
 from tessellate.entry import manager
@@ -62,9 +64,18 @@ def _log_question(session: Session, found: "_Found", question: str, surface: str
         #: again; the log line carries no words of it either.
         logging.getLogger("tessellate.chat").info("chat: %d note(s) via %s search (private)", len(found.entries), found.mode)
         return
-    # Every entry this question surfaced counts as "used".
-    for entry in found.entries:
-        entry.access_count += 1
+    # Every entry this question surfaced counts as "used": one UPDATE that names
+    # `updated_at`, which stops its `onupdate` moving the note's edit time. Reading a
+    # note is not editing it, and everything keyed on the newest edit (the abbreviation
+    # glossary: every note re-read per question, 40 to 130 ms) was dropped by the bump.
+    used = list(dict.fromkeys(entry.id for entry in found.entries if getattr(entry, "id", None) is not None))
+    if used:
+        session.execute(
+            update(Entry)
+            .where(Entry.id.in_(used))
+            .values(access_count=Entry.access_count + 1, updated_at=Entry.updated_at)
+            .execution_options(synchronize_session=False)
+        )
     manager.log_action(session, "queried", surface, detail=question)
     session.commit()
     logging.getLogger("tessellate.chat").info(
