@@ -1590,14 +1590,23 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   grid-area: 1 / 1;
 }
 
-.graph-popup-ident > .graph-popup-confidence {
-  grid-area: 1 / 3;
+/* The category and how sure the filing was, on one row under the title and level with the meta lines below
+   (owner, 2026-11-10: the chip sat indented under the title and the bare "95%" floated at the far right). */
+.graph-popup-ident > .graph-popup-filed {
+  grid-area: 2 / 1 / auto / -1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
 }
 
-.graph-popup-ident > .chip {
-  grid-area: 2 / 2 / auto / -1;
-  justify-self: start;
+.graph-popup-filed > .chip {
   max-inline-size: 100%;
+  min-width: 0;
+}
+
+.graph-popup-filed:not(:has(> :not(.hidden))) {
+  display: none;
 }
 
 /* **One line, ellipsised, and the close button never moves.** Reported on

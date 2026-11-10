@@ -2392,8 +2392,9 @@ function renderGraphPopupHeader(entry, node) {
   //: that note. `entry.title` when the AI (or the owner) gave it one, the
   //: first line otherwise, which is what every other note surface shows.
   const firstLine = noteNamePlain(entry.content);
+  //: A heading's own colon ("Ice Breakers:") is the note's punctuation, not its name (owner, 2026-11-10).
   titleEl.textContent =
-    entry.title || firstLine.slice(0, 80).trim() || node.category || "Note";
+    (entry.title || firstLine.slice(0, 80).trim()).replace(/[\s:;,.–-]+$/, "") || node.category || "Note";
   //: The title is ellipsised to one line now, so the whole of it has to be
   //: reachable some other way: hover is the cheapest, and it is what every
   //: other truncated label in this app already does.
@@ -2409,7 +2410,7 @@ function renderGraphPopupHeader(entry, node) {
   const hasConfidence = typeof entry.ai_confidence === "number" && entry.ai_confidence > 0 && !entry.user_filed;
   confidence.classList.toggle("hidden", !hasConfidence);
   if (hasConfidence) {
-    confidence.textContent = `${entry.ai_confidence}%`;
+    confidence.textContent = `${entry.ai_confidence}% sure`;
     confidence.title = `Atlas's estimate that this is the right category: ${entry.ai_confidence}%`;
   }
 
@@ -3294,7 +3295,8 @@ function renderGraphPopupInfo(entry) {
   const links = (entry.links || []).length;
   const views = entry.access_count || 0;
   const parts = [
-    new Date(entry.created_at).toLocaleDateString(),
+    //: "Created 3 Aug 2026", not "03/08/2026": a numeric date reads two ways, and the edit beside it says "7 Oct".
+    `Created ${shortDate(entry.created_at)}`,
     nounCount(links, "link"),
     nounCount(views, "view"),
   ];
