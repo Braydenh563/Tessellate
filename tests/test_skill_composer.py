@@ -9,6 +9,8 @@ days" (no "in")."""
 
 from __future__ import annotations
 
+import re
+
 import json
 from datetime import date
 
@@ -98,7 +100,7 @@ def test_the_catalogue_says_which_skills_run_without_a_model(client):
 
 def test_summarise_my_week_is_answered_from_the_notes(client, notebook):
     out = _stream(client, skill="Summarise my week")
-    assert "notes in the last 7 days" in out["text"] and "Golf" in out["text"], out["text"]
+    assert re.search(r"[Ii]n the last 7 days, you wrote \w+ notes", out["text"]) and "Golf" in out["text"], out["text"]
     assert out["meta"][0]["composed"] is True
     assert "regarding" not in out["text"]
 
