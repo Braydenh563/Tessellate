@@ -27,7 +27,7 @@ from datetime import date, datetime, time, timedelta
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import realise, recognise, slash, slash_more
+from tessellate.ai import follow_items, realise, recognise, slash, slash_more
 
 #: The charts the app can already draw from the notes, in the order offered.
 CHARTS = ("time", "tag", "category", "weekday")
@@ -267,6 +267,8 @@ def reply(session: Session, question: str, history: list[dict], today: date) -> 
     said = _clean(question).rstrip("?!. ")
     if not said:
         return None
+    if asks := follow_items.read(question, history)[1]:
+        return [{"type": "answer", "delta": asks}]
     prev = from_history(history, today)
     for read in _READERS:
         events = read(session, said, prev, today)
@@ -291,7 +293,11 @@ _REMIND_OFFER = re.compile(
 def accepted_offer(question: str, history: list[dict] | None) -> str | None:
     """The sentence a bare "yes" stands for when the answer before it ended with an offer
     the composer can carry out ("Shall I remind you to call the plumber?" is "remind me to
-    call the plumber"), else None. An offer with no act behind it is not guessed at."""
+    call the plumber"), else None. An offer with no act behind it is not guessed at.
+    An instruction after a list or an act ("remove milk", "make it 6") is the act on
+    what that answer showed (`follow_items`)."""
+    if history and (said := follow_items.read(question, history)[0]):
+        return said
     if not history or not _YES.match(_clean(question).strip()):
         return None
     lines = [ln.strip(" *_") for ln in str(history[-1].get("answer") or "").splitlines() if ln.strip()]
