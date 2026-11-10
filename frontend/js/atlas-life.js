@@ -611,10 +611,34 @@ function atlasTailCalm(tail, box) {
 //: breath, glow) stay on the compositor; what stops is the script that rewrites SVG paths. `rest.at` is the last
 //: pointer, key, wheel or touch; the first input after a rest calls every waker, so a stopped loop starts within a frame.
 atlasTailCalm.rest = { at: performance.now(), wake: new Set(), after: 2000 };
+//: **Whether the rest may hold now** (the owner, 2026-11-10, decision 55: a setting, the full animation on mains power only): Settings, Appearance,
+//: "Motion at rest" (`avatar-buddy-rest`): "always" never rests, "mains" (the default) rests on battery, "still" always rests. Read once a second;
+//: a machine that cannot say (`getBattery`) is on mains.
+atlasTailCalm.rest.holds = () => {
+  const r = atlasTailCalm.rest;
+  const t = performance.now();
+  if (t - (r.modeAt || -1e9) > 1000) {
+    r.modeAt = t;
+    try {
+      r.mode = (typeof prefs === "object" && prefs.get("avatar-buddy-rest", null)) || "mains";
+    } catch (e) {
+      r.mode = "mains";
+    }
+    if (r.mode === "mains" && !r.asked && globalThis.navigator?.getBattery) {
+      r.asked = true;
+      navigator.getBattery().then((b) => {
+        const read = () => (r.battery = !b.charging);
+        read();
+        b.addEventListener("chargingchange", read);
+      }, () => {});
+    }
+  }
+  return r.mode === "still" || (r.mode === "mains" && !!r.battery);
+};
 //: At rest: a corner companion, in a calm lower-body state, not walking, doing no act, and two seconds from the last input.
 atlasTailCalm.resting = (box, state) => {
   const buddy = box.closest("#nm-buddy");
-  return !!buddy && atlasTailCalm.states.has(state) && !/\bnmb-(walking|act-|think|music|reading|poofing|dodge|stir|fitting)/.test(buddy.className) && performance.now() - atlasTailCalm.rest.at > atlasTailCalm.rest.after;
+  return !!buddy && atlasTailCalm.states.has(state) && !/\bnmb-(walking|act-|think|music|reading|poofing|dodge|stir|fitting)/.test(buddy.className) && performance.now() - atlasTailCalm.rest.at > atlasTailCalm.rest.after && atlasTailCalm.rest.holds();
 };
 //: Entering a rest pauses the loops that never end (the sway, the breath, the glow: on SVG parts they are drawn on the main
 //: thread, a restyle and layout a frame, 38 a second at rest); leaving it plays the ones this paused. A finite one (a blink

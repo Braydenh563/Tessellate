@@ -41,6 +41,7 @@ def test_resting_needs_two_quiet_seconds_a_calm_state_and_no_act() -> None:
         'atlasTailCalm.states = new Set(["idle", "sit"]);\n'
         "let clock = 10000;\nconst performance = { now: () => clock };\n"
         + _block(LIFE, "atlasTailCalm.rest = {", "//: Entering a rest pauses")
+        + "atlasTailCalm.rest.holds = () => true;\n"
         + r"""
 const buddy = (cls) => ({ className: cls });
 const box = (cls) => ({ closest: () => (cls === null ? null : buddy(cls)) });
@@ -86,3 +87,53 @@ def test_a_key_does_not_rewrite_the_drowsy_class() -> None:
 
 def test_a_blink_does_not_wake_the_rig() -> None:
     assert re.search(r"replace\(/\\batl-blinking\\b/g", MOTION)
+
+
+@needs_node
+def test_motion_at_rest_is_a_setting_alive_on_mains_by_default() -> None:
+    # Decision 55: "always" never rests, "mains" (the default) rests on battery only, "still" always rests;
+    # a machine with no battery reading is on mains.
+    code = (
+        "const atlasTailCalm = () => {};\n"
+        "let clock = 0, stored = null;\nconst performance = { now: () => clock };\n"
+        "const prefs = { get: (k, f) => (stored === null ? f : stored) };\n"
+        "let charging = true;\nObject.defineProperty(globalThis, \"navigator\", { configurable: true, value: { getBattery: () => Promise.resolve({ get charging() { return charging; }, addEventListener() {} }) } });\n"
+        + _block(LIFE, "atlasTailCalm.rest = {", "//: **Whether the rest may hold now**")
+        + _block(LIFE, "//: **Whether the rest may hold now**", "//: At rest: a corner companion")
+        + r"""
+const at = async (mode, onBattery) => {
+  stored = mode; charging = !onBattery; clock += 5000; atlasTailCalm.rest.asked = false; atlasTailCalm.rest.battery = false;
+  atlasTailCalm.rest.holds();
+  await Promise.resolve(); await Promise.resolve();
+  clock += 5000; return atlasTailCalm.rest.holds();
+};
+(async () => {
+  process.stdout.write(JSON.stringify({
+    unset: await at(null, false), unsetBattery: await at(null, true),
+    always: await at("always", true), still: await at("still", false),
+    mainsPlugged: await at("mains", false), mainsBattery: await at("mains", true),
+  }));
+})();
+"""
+    )
+    run = subprocess.run(["node", "-e", code], capture_output=True, text=True)
+    assert run.returncode == 0, run.stderr[-1500:]
+    assert json.loads(run.stdout) == {"unset": False, "unsetBattery": True, "always": False, "still": True, "mainsPlugged": False, "mainsBattery": True}
+
+
+def test_the_setting_is_wired_and_reset_clears_it() -> None:
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    controls = (JS / "settings-controls.js").read_text(encoding="utf-8")
+    settings = (JS / "settings.js").read_text(encoding="utf-8")
+    assert 'id="avatar-buddy-rest"' in html and html.count('<option value="mains">') == 1
+    assert 'prefs.set("avatar-buddy-rest", e.target.value)' in controls
+    reset = settings[settings.index("function resetAppearance()") : settings.index("// --- generative background")]
+    for key in ("avatar-buddy-motion", "avatar-buddy-rest", "avatar-buddy-entrances"):
+        assert f'"{key}"' in reset, f"Reset appearance clears {key} (B60)"
+
+
+def test_a_key_rewrites_no_class_on_the_chat_dock_or_its_clear_button() -> None:
+    panes = (JS / "settings-panes.js").read_text(encoding="utf-8")
+    clear = (JS / "field-clear.js").read_text(encoding="utf-8")
+    assert 'if (dock?.classList.contains("ring-held")) dock.classList.remove("ring-held");' in panes
+    assert 'if (button.classList.contains("hidden") === full) button.classList.toggle("hidden", !full);' in clear

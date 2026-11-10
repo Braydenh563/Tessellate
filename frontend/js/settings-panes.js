@@ -347,7 +347,8 @@ function chatDockSuppressRing() {
 
 function chatDockReleaseRing() {
   const dock = document.querySelector(".chat-dock");
-  if (dock) dock.classList.remove("ring-held");
+  //: Only on a change: `remove` rewrites the attribute even when the class is absent, a restyle of the dock on every key (B59).
+  if (dock?.classList.contains("ring-held")) dock.classList.remove("ring-held");
 }
 
 // The chat composer can be dragged taller, and remembers it.

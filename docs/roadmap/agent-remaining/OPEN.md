@@ -188,9 +188,9 @@ Parked until the owner's data or a check on real hardware:
 - B55 An agent turn spends a second reading animations | 1031-harness HR1
 - B56 The 4.5 s avatars.js timer after opening a note; keep-up reads | oa 1667 l, d, oa 1620 lag: Atlas, INBOX 1716
 - B57 The throw must not scroll the page; no layout reads in a throw frame | oa 1667/1634 a, 1667 b, 1634 c, d
-- B58 On a phone, after a resize, it covers Send; its bubble overflows at 480 and 390 | bt#25, zoom4 found-not-fixed
-- B59 The chat area spasms up and down with the companion on | oa 1693 b1, S18
-- B60 Reset appearance does not clear its motion and entrances prefs | fablecomp Reset appearance
+- B58 (not reproduced 2026-11-10, w14-1110: after 1440 to 480 to 390 the figure is 10 px clear of Send at 480 and far from it at 390; the bubble not exercised) On a phone, after a resize, it covers Send; its bubble overflows at 480 and 390 | bt#25, zoom4 found-not-fixed
+- ~~B59 The chat area spasms up and down with the companion on | oa 1693 b1, S18~~ **Fixed (class writes)** (w14-1110: 36 `ring-held` rewrites for 37 keys to 1, the clear button's `hidden` too; the chat area's pixel movement not separately measured)
+- ~~B60 Reset appearance does not clear its motion and entrances prefs | fablecomp Reset appearance~~ **Fixed** (w14-1110: Reset appearance clears Companion movement, Motion at rest and Showy entrances)
 - B61 Stand-to-hang walks keep the walk class on the way out | appdrag L5
 
 **W15 The desk companion** (B, overlay, Sonnet; real Windows unverified). Files: `src/tessellate/core/overlay/*`, desk windows. Checks: `tests/test_overlay_*` (serially), the 1696 lists. Done when: each list row is built or has a reason.

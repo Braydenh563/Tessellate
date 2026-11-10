@@ -4068,6 +4068,14 @@ $("avatar-buddy-motion").addEventListener("change", (e) => {
   }
   nameMarkBuddyMotionApply();
 });
+//: Motion at rest (atlas-life.js, `atlasTailCalm.rest.holds`): read once a second, so the choice is taken up within a second.
+$("avatar-buddy-rest").addEventListener("change", (e) => {
+  try {
+    prefs.set("avatar-buddy-rest", e.target.value);
+  } catch (err) {
+    // For this visit only.
+  }
+});
 $("avatar-buddy-actions").addEventListener("change", (e) => {
   try {
     prefs.set("avatar-buddy-actions", e.target.value);
