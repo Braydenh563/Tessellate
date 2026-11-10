@@ -55,6 +55,10 @@ def put(body: HandoffIn) -> dict:
         raise HTTPException(status_code=413, detail="Too much to carry over.")
     if sum(len(k) + len(v) for k, v in items.items()) > MAX_TOTAL_CHARS:
         raise HTTPException(status_code=413, detail="Too much to carry over.")
+    #: A second, empty put (the bridge opened twice, a reload) does not wipe a set still held (review 5850946759).
+    held = _held.get("items")
+    if not items and isinstance(held, dict) and held and _now() <= float(_held.get("expires", 0.0)):  # type: ignore[arg-type]
+        return {"ok": True, "count": 0, "kept": len(held)}
     _held.clear()
     _held.update(items=items, expires=_now() + TTL_SECONDS)
     return {"ok": True, "count": len(items)}

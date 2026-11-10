@@ -88,6 +88,14 @@ class EnrolIn(BaseModel):
     prf: str = Field(min_length=1, max_length=128)
 
 
+def _issue(kind: str, extra: dict | None = None) -> tuple[str, bytes]:
+    """A challenge, or 429 while the table is full of live ones (they expire in two minutes)."""
+    try:
+        return hellostore.issue(kind, extra)
+    except hellostore.Busy:
+        raise HTTPException(status_code=429, detail="Too many Windows Hello requests are waiting. Try again in two minutes.") from None
+
+
 @router.post("/enrol/begin", dependencies=[Depends(routes_auth.require_unlock), Depends(this_computer_only)])
 def enrol_begin(
     body: PasswordIn,
@@ -109,9 +117,9 @@ def enrol_begin(
         vault.open_with(session, body.current_password)
         session.commit()  # the vault row, when open_with had to create one
         vault.grant(x_auth_token)
-    get_ticket, get_challenge = hellostore.issue("enrol-get")
     salt = secrets.token_bytes(32)
-    ticket, challenge = hellostore.issue("enrol", {"get": get_ticket, "salt": salt})
+    get_ticket, get_challenge = _issue("enrol-get")
+    ticket, challenge = _issue("enrol", {"get": get_ticket, "salt": salt})
     return {
         "ticket": ticket,
         "get_ticket": get_ticket,
@@ -220,7 +228,7 @@ def begin(request: Request, config: ConfigManager = Depends(get_config)) -> dict
     made = hellostore.record(config.data_dir)
     if made is None or made.get("rp") != _rp_id(request):
         raise HTTPException(status_code=404, detail="Windows Hello is not set up here. Use your password.")
-    ticket, challenge = hellostore.issue("get")
+    ticket, challenge = _issue("get")
     return {
         "ticket": ticket,
         "rp_id": made["rp"],

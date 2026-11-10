@@ -177,3 +177,18 @@ def test_every_opener_uses_the_window_host(monkeypatch):
     monkeypatch.setattr(launcher, "_existing_instance", lambda: ("live", type("R", (), {"port": 8799})()))
     assert launcher._capture() == 0
     assert opened == ["http://localhost:8799/capture.html"]
+
+
+def test_an_empty_second_put_keeps_the_held_set(client, _clock):
+    """Review 5850946759: the bridge opened twice (a reload) sent an empty put that wiped the first."""
+    local = _local(client)
+    local.post("/origin-handoff/put", json={"items": {"theme": "dark"}})
+    kept = local.post("/origin-handoff/put", json={"items": {}})
+    assert kept.json() == {"ok": True, "count": 0, "kept": 1}
+    assert local.post("/origin-handoff/take").json() == {"items": {"theme": "dark"}}
+    # Once the held set is past its window, an empty put replaces it as before.
+    local.post("/origin-handoff/put", json={"items": {"zoom": "110"}})
+    _clock["t"] += 10_000
+    local.post("/origin-handoff/put", json={"items": {}})
+    _clock["t"] += 1
+    assert local.post("/origin-handoff/take").json() == {"items": {}}

@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8096, frontend ids 2680, CSS sections 523, backend routes 662, backend modules 9997, test files 2443, tests 20243, plan headings 1001, app scripts 28, boot scripts 37, script files 276.
+Counts: frontend functions 8096, frontend ids 2680, CSS sections 523, backend routes 662, backend modules 9999, test files 2444, tests 20248, plan headings 1001, app scripts 28, boot scripts 37, script files 276.
 
 ## Frontend functions (8096)
 
@@ -3472,15 +3472,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `box` | frontend/js/diagram-outline.js:122 |
-| `drop` | frontend/js/diagram-outline.js:113 |
+| `box` | frontend/js/diagram-outline.js:130 |
+| `drop` | frontend/js/diagram-outline.js:121 |
 | `flow` | frontend/js/diagram-outline.js:9 |
-| `move` | frontend/js/diagram-outline.js:105 |
+| `move` | frontend/js/diagram-outline.js:113 |
 | `offer` | frontend/js/diagram-outline.js:60 |
 | `order` | frontend/js/diagram-outline.js:35 |
-| `stuck` | frontend/js/diagram-outline.js:80 |
-| `swap` | frontend/js/diagram-outline.js:88 |
-| `tail` | frontend/js/diagram-outline.js:119 |
+| `stuck` | frontend/js/diagram-outline.js:88 |
+| `swap` | frontend/js/diagram-outline.js:96 |
+| `tail` | frontend/js/diagram-outline.js:127 |
 | `whose` | frontend/js/diagram-outline.js:59 |
 
 ### frontend/js/diagram-overlay.js (1)
@@ -12833,7 +12833,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/backups/retention` | PUT | `set_retention` | src/tessellate/api/routes_backups.py:154 |
 | `/backups/summary` | GET | `backup_summary` | src/tessellate/api/routes_backups.py:112 |
 | `/backups/{name:path}` | DELETE | `delete_backup` | src/tessellate/api/routes_backups.py:249 |
-| `/begin` | POST | `begin` | src/tessellate/api/routes_hello.py:208 |
+| `/begin` | POST | `begin` | src/tessellate/api/routes_hello.py:216 |
 | `/bin/{kind}/{item_id}/restore` | POST | `restore_from_bin` | src/tessellate/api/routes_library.py:1099 |
 | `/board-library` | GET | `list_library` | src/tessellate/api/routes_board_library.py:539 |
 | `/board-library` | POST | `create_library_item` | src/tessellate/api/routes_board_library.py:598 |
@@ -12938,8 +12938,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/embedding-models/use` | POST | `use_embedding_model` | src/tessellate/api/routes_settings.py:2234 |
 | `/embedding-models/{model_id}` | DELETE | `remove_embedding_model` | src/tessellate/api/routes_settings.py:2330 |
 | `/embedding-models/{model_id}/download` | POST | `download_embedding_model` | src/tessellate/api/routes_settings.py:2294 |
-| `/enrol/begin` | POST | `enrol_begin` | src/tessellate/api/routes_hello.py:91 |
-| `/enrol/finish` | POST | `enrol_finish` | src/tessellate/api/routes_hello.py:134 |
+| `/enrol/begin` | POST | `enrol_begin` | src/tessellate/api/routes_hello.py:99 |
+| `/enrol/finish` | POST | `enrol_finish` | src/tessellate/api/routes_hello.py:142 |
 | `/entries/{entry_id}/files` | POST | `upload_file` | src/tessellate/api/routes_files.py:105 |
 | `/entries/{entry_id}/meeting` | GET | `read_meeting` | src/tessellate/api/routes_meetings.py:87 |
 | `/entries/{entry_id}/meeting/append` | POST | `append_to_meeting` | src/tessellate/api/routes_meetings.py:170 |
@@ -12992,7 +12992,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/files/{name}` | GET | `translate_file` | src/tessellate/api/routes_translate.py:27 |
 | `/flags` | GET | `flags` | src/tessellate/api/routes_learned_audit.py:42 |
 | `/followups` | POST | `chat_followups` | src/tessellate/api/routes_chat.py:150 |
-| `/forget` | POST | `forget` | src/tessellate/api/routes_hello.py:192 |
+| `/forget` | POST | `forget` | src/tessellate/api/routes_hello.py:200 |
 | `/grammar/languagetool` | POST | `post_languagetool` | src/tessellate/api/routes_spelling.py:39 |
 | `/graph` | GET | `graph` | src/tessellate/api/routes_graph.py:756 |
 | `/graph/local/{entry_id}` | GET | `graph_local` | src/tessellate/api/routes_graph.py:1270 |
@@ -13150,9 +13150,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/preferences/export` | GET | `export_preferences` | src/tessellate/api/routes_settings.py:1275 |
 | `/preferences/import` | POST | `import_preferences` | src/tessellate/api/routes_settings.py:1319 |
 | `/preview` | POST | `preview_merge` | src/tessellate/api/routes_duplicates.py:116 |
-| `/private-spaces/lock` | POST | `lock` | src/tessellate/api/routes_private_spaces.py:119 |
+| `/private-spaces/lock` | POST | `lock` | src/tessellate/api/routes_private_spaces.py:121 |
 | `/private-spaces/status` | GET | `status` | src/tessellate/api/routes_private_spaces.py:33 |
-| `/private-spaces/touch` | POST | `touch` | src/tessellate/api/routes_private_spaces.py:112 |
+| `/private-spaces/touch` | POST | `touch` | src/tessellate/api/routes_private_spaces.py:114 |
 | `/private-spaces/unlock` | POST | `unlock` | src/tessellate/api/routes_private_spaces.py:53 |
 | `/private-spaces/unlock-hello` | POST | `unlock_hello` | src/tessellate/api/routes_private_spaces.py:81 |
 | `/provider` | POST | `set_provider` | src/tessellate/api/routes_models.py:1175 |
@@ -13236,7 +13236,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/spaces/{space_id}` | PUT | `update_space` | src/tessellate/api/routes_spaces.py:107 |
 | `/spaces/{space_id}/counts` | GET | `space_counts` | src/tessellate/api/routes_spaces.py:84 |
 | `/spaces/{space_id}/move-notes` | POST | `move_notes_to_space` | src/tessellate/api/routes_spaces.py:549 |
-| `/spaces/{space_id}/private` | PUT | `set_space_private` | src/tessellate/api/routes_private_spaces.py:138 |
+| `/spaces/{space_id}/private` | PUT | `set_space_private` | src/tessellate/api/routes_private_spaces.py:140 |
 | `/spec` | GET | `model_spec` | src/tessellate/api/routes_models.py:750 |
 | `/spelling/own-words` | GET | `get_own_words` | src/tessellate/api/routes_spelling.py:29 |
 | `/start` | POST | `start` | src/tessellate/api/routes_captions.py:96 |
@@ -13271,7 +13271,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/system/reinstall-on-start` | POST | `reinstall_on_start` | src/tessellate/api/routes_maintenance.py:63 |
 | `/system/restart` | POST | `restart_app` | src/tessellate/api/routes_settings.py:1424 |
 | `/tag-cloud` | GET | `tag_cloud` | src/tessellate/api/routes_insights.py:670 |
-| `/take` | POST | `take` | src/tessellate/api/routes_origin_handoff.py:63 |
+| `/take` | POST | `take` | src/tessellate/api/routes_origin_handoff.py:67 |
 | `/tasks` | GET | `list_tasks` | src/tessellate/api/routes_tasks.py:562 |
 | `/tasks/autonomous/last` | GET | `last_autonomous_pass` | src/tessellate/api/routes_tasks.py:804 |
 | `/tasks/autonomous/last/clear` | POST | `clear_last_autonomous_pass` | src/tessellate/api/routes_tasks.py:821 |
@@ -13301,7 +13301,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/undo/{undo_id}` | POST | `tidy_undo` | src/tessellate/api/routes_tidy.py:70 |
 | `/unforget` | POST | `unforget_everything` | src/tessellate/api/routes_learned.py:264 |
 | `/unlock` | POST | `unlock` | src/tessellate/api/routes_auth.py:1009 |
-| `/unlock` | POST | `unlock` | src/tessellate/api/routes_hello.py:277 |
+| `/unlock` | POST | `unlock` | src/tessellate/api/routes_hello.py:285 |
 | `/unlock-vault` | POST | `unlock_vault` | src/tessellate/api/routes_auth.py:1165 |
 | `/utilities/units` | GET | `units` | src/tessellate/api/routes_utilities.py:28 |
 | `/utilities/work` | GET | `work` | src/tessellate/api/routes_utilities.py:22 |
@@ -13441,7 +13441,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9997)
+## Backend modules (9999)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -21276,24 +21276,25 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `topic_summary` | src/tessellate/api/routes_graph.py:1505 |
 | `unpin_all_nodes` | src/tessellate/api/routes_graph.py:1940 |
 
-### src/tessellate/api/routes_hello.py (14)
+### src/tessellate/api/routes_hello.py (15)
 
 | Name | File:line |
 |---|---|
 | `AssertionIn` | src/tessellate/api/routes_hello.py:71 |
 | `EnrolIn` | src/tessellate/api/routes_hello.py:80 |
 | `PasswordIn` | src/tessellate/api/routes_hello.py:67 |
-| `_b64std` | src/tessellate/api/routes_hello.py:233 |
-| `_decode` | src/tessellate/api/routes_hello.py:127 |
+| `_b64std` | src/tessellate/api/routes_hello.py:241 |
+| `_decode` | src/tessellate/api/routes_hello.py:135 |
 | `_here` | src/tessellate/api/routes_hello.py:48 |
+| `_issue` | src/tessellate/api/routes_hello.py:91 |
 | `_origin` | src/tessellate/api/routes_hello.py:63 |
 | `_rp_id` | src/tessellate/api/routes_hello.py:53 |
-| `begin` | src/tessellate/api/routes_hello.py:209 |
-| `dek_from_assertion` | src/tessellate/api/routes_hello.py:237 |
-| `enrol_begin` | src/tessellate/api/routes_hello.py:92 |
-| `enrol_finish` | src/tessellate/api/routes_hello.py:135 |
-| `forget` | src/tessellate/api/routes_hello.py:193 |
-| `unlock` | src/tessellate/api/routes_hello.py:278 |
+| `begin` | src/tessellate/api/routes_hello.py:217 |
+| `dek_from_assertion` | src/tessellate/api/routes_hello.py:245 |
+| `enrol_begin` | src/tessellate/api/routes_hello.py:100 |
+| `enrol_finish` | src/tessellate/api/routes_hello.py:143 |
+| `forget` | src/tessellate/api/routes_hello.py:201 |
+| `unlock` | src/tessellate/api/routes_hello.py:286 |
 
 ### src/tessellate/api/routes_help.py (8)
 
@@ -21639,7 +21640,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_here` | src/tessellate/api/routes_origin_handoff.py:42 |
 | `_now` | src/tessellate/api/routes_origin_handoff.py:38 |
 | `put` | src/tessellate/api/routes_origin_handoff.py:52 |
-| `take` | src/tessellate/api/routes_origin_handoff.py:64 |
+| `take` | src/tessellate/api/routes_origin_handoff.py:68 |
 
 ### src/tessellate/api/routes_privacy.py (5)
 
@@ -21655,15 +21656,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `PrivateBody` | src/tessellate/api/routes_private_spaces.py:126 |
+| `PrivateBody` | src/tessellate/api/routes_private_spaces.py:128 |
 | `UnlockBody` | src/tessellate/api/routes_private_spaces.py:48 |
 | `_is_open` | src/tessellate/api/routes_private_spaces.py:29 |
 | `_open_spaces` | src/tessellate/api/routes_private_spaces.py:98 |
-| `_refuse_unless_open` | src/tessellate/api/routes_private_spaces.py:133 |
-| `lock` | src/tessellate/api/routes_private_spaces.py:120 |
-| `set_space_private` | src/tessellate/api/routes_private_spaces.py:139 |
+| `_refuse_unless_open` | src/tessellate/api/routes_private_spaces.py:135 |
+| `lock` | src/tessellate/api/routes_private_spaces.py:122 |
+| `set_space_private` | src/tessellate/api/routes_private_spaces.py:141 |
 | `status` | src/tessellate/api/routes_private_spaces.py:34 |
-| `touch` | src/tessellate/api/routes_private_spaces.py:113 |
+| `touch` | src/tessellate/api/routes_private_spaces.py:115 |
 | `unlock` | src/tessellate/api/routes_private_spaces.py:54 |
 | `unlock_hello` | src/tessellate/api/routes_private_spaces.py:82 |
 
@@ -23325,26 +23326,27 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `total_memory_bytes` | src/tessellate/core/hardware.py:31 |
 | `total_memory_gb` | src/tessellate/core/hardware.py:79 |
 
-### src/tessellate/core/hellostore.py (16)
+### src/tessellate/core/hellostore.py (17)
 
 | Name | File:line |
 |---|---|
-| `_account` | src/tessellate/core/hellostore.py:54 |
-| `_b64` | src/tessellate/core/hellostore.py:58 |
-| `_now` | src/tessellate/core/hellostore.py:172 |
-| `_read` | src/tessellate/core/hellostore.py:62 |
-| `_wrap_key` | src/tessellate/core/hellostore.py:77 |
-| `_write` | src/tessellate/core/hellostore.py:73 |
-| `available` | src/tessellate/core/hellostore.py:83 |
-| `forget` | src/tessellate/core/hellostore.py:152 |
-| `is_set` | src/tessellate/core/hellostore.py:97 |
-| `issue` | src/tessellate/core/hellostore.py:177 |
-| `note_sign_count` | src/tessellate/core/hellostore.py:139 |
-| `record` | src/tessellate/core/hellostore.py:87 |
-| `reset_for_tests` | src/tessellate/core/hellostore.py:202 |
-| `save` | src/tessellate/core/hellostore.py:101 |
-| `take` | src/tessellate/core/hellostore.py:190 |
-| `unwrap` | src/tessellate/core/hellostore.py:128 |
+| `Busy` | src/tessellate/core/hellostore.py:170 |
+| `_account` | src/tessellate/core/hellostore.py:56 |
+| `_b64` | src/tessellate/core/hellostore.py:60 |
+| `_now` | src/tessellate/core/hellostore.py:179 |
+| `_read` | src/tessellate/core/hellostore.py:64 |
+| `_wrap_key` | src/tessellate/core/hellostore.py:79 |
+| `_write` | src/tessellate/core/hellostore.py:75 |
+| `available` | src/tessellate/core/hellostore.py:85 |
+| `forget` | src/tessellate/core/hellostore.py:154 |
+| `is_set` | src/tessellate/core/hellostore.py:99 |
+| `issue` | src/tessellate/core/hellostore.py:184 |
+| `note_sign_count` | src/tessellate/core/hellostore.py:141 |
+| `record` | src/tessellate/core/hellostore.py:89 |
+| `reset_for_tests` | src/tessellate/core/hellostore.py:209 |
+| `save` | src/tessellate/core/hellostore.py:103 |
+| `take` | src/tessellate/core/hellostore.py:197 |
+| `unwrap` | src/tessellate/core/hellostore.py:130 |
 
 ### src/tessellate/core/ics_import.py (13)
 
@@ -24613,13 +24615,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_now` | src/tessellate/core/spacelock.py:36 |
-| `close_all` | src/tessellate/core/spacelock.py:86 |
-| `close_for` | src/tessellate/core/spacelock.py:81 |
-| `idle_minutes` | src/tessellate/core/spacelock.py:41 |
-| `is_open` | src/tessellate/core/spacelock.py:56 |
-| `open_for` | src/tessellate/core/spacelock.py:50 |
-| `opened` | src/tessellate/core/spacelock.py:73 |
+| `_now` | src/tessellate/core/spacelock.py:38 |
+| `close_all` | src/tessellate/core/spacelock.py:97 |
+| `close_for` | src/tessellate/core/spacelock.py:92 |
+| `idle_minutes` | src/tessellate/core/spacelock.py:43 |
+| `is_open` | src/tessellate/core/spacelock.py:65 |
+| `open_for` | src/tessellate/core/spacelock.py:52 |
+| `opened` | src/tessellate/core/spacelock.py:84 |
 
 ### src/tessellate/core/startup_status.py (2)
 
@@ -26072,7 +26074,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (20243)
+## Tests (20248)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26815,7 +26817,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_kinds.py | 33 |
 | tests/test_diagram_let_go_1696.py | 3 |
 | tests/test_diagram_library_1594.py | 8 |
-| tests/test_diagram_minimap_1110.py | 6 |
+| tests/test_diagram_minimap_1110.py | 7 |
 | tests/test_diagram_model.py | 15 |
 | tests/test_diagram_multi_r5.py | 19 |
 | tests/test_diagram_object_kind.py | 2 |
@@ -27678,7 +27680,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_opener_toggles.py | 3 |
 | tests/test_optional_sign_in.py | 22 |
 | tests/test_orient_script.py | 2 |
-| tests/test_origin_handoff.py | 14 |
+| tests/test_origin_handoff.py | 15 |
 | tests/test_orphan_links.py | 3 |
 | tests/test_other_device_limits.py | 16 |
 | tests/test_out_of_space.py | 8 |
@@ -27974,6 +27976,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_restore_roundtrip.py | 2 |
 | tests/test_restored_focus_opens_nothing.py | 2 |
 | tests/test_resurface_spec.py | 16 |
+| tests/test_review_5850946759.py | 3 |
 | tests/test_review_digest_1110.py | 14 |
 | tests/test_review_fixes_1029.py | 6 |
 | tests/test_review_fixes_palette_docs.py | 6 |
@@ -29222,7 +29225,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1217 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:171 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:175 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4176 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3130 |

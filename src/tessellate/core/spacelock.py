@@ -24,7 +24,9 @@ DEFAULT_IDLE_MINUTES = 10
 PREFERENCE = "private_space_idle_minutes"
 
 _lock = threading.Lock()
-#: Session token ("" for a request without one) to the time it last used them.
+#: Session token to the time it last used them. A request without a token never
+#: opens them: one shared "" slot let every tokenless caller in after one opened it
+#: (review 5850946759).
 _opened: dict[str, float] = {}
 
 
@@ -48,15 +50,24 @@ def idle_minutes() -> int:
 
 
 def open_for(token: str | None) -> None:
-    """This session proved the vault password or the PIN."""
+    """This session proved the vault password or the PIN. Stale sessions are
+    dropped here too, so the table does not grow with old tokens."""
+    if not token:
+        return
+    now = _now()
+    window = idle_minutes() * 60
     with _lock:
-        _opened[token or ""] = _now()
+        for old in [k for k, seen in _opened.items() if now - seen > window]:
+            _opened.pop(old, None)
+        _opened[token] = now
 
 
 def is_open(token: str | None, *, touch: bool = True) -> bool:
     """Whether this session may see the private spaces now. A use within the
     idle window keeps them open (`touch`); one after it closes them."""
-    key = token or ""
+    if not token:
+        return False
+    key = token
     with _lock:
         seen = _opened.get(key)
         if seen is None:

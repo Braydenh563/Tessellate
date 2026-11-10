@@ -46,7 +46,9 @@ log = logging.getLogger("tessellate.hello")
 _AAD_PREFIX = b"tessellate-hello-v1|"
 _HKDF_INFO = b"tessellate-hello-v1 vault wrap"
 CHALLENGE_SECONDS = 120
-#: Pending challenges at most: `begin` needs no session, so the table is capped.
+#: Pending challenges at most: `begin` needs no session, so the table is capped. A
+#: full table refuses a new one (`Busy`) rather than evicting one a ceremony in
+#: progress still needs (review 5850946759).
 _MAX_PENDING = 16
 PRF_BYTES = 32
 
@@ -164,6 +166,11 @@ def forget(data_dir: Path) -> bool:
 
 # --- challenges -----------------------------------------------------------------
 
+
+class Busy(Exception):
+    """The challenge table is full of live ceremonies: try again when they expire."""
+
+
 _lock = threading.Lock()
 #: ticket -> (kind, challenge, expires, extra)
 _pending: dict[str, tuple[str, bytes, float, dict]] = {}
@@ -180,8 +187,8 @@ def issue(kind: str, extra: dict | None = None) -> tuple[str, bytes]:
     with _lock:
         for ticket in [t for t, (_, _, until, _) in _pending.items() if until <= now]:
             _pending.pop(ticket, None)
-        while len(_pending) >= _MAX_PENDING:
-            _pending.pop(next(iter(_pending)))
+        if len(_pending) >= _MAX_PENDING:
+            raise Busy("too many Windows Hello requests are waiting")
         ticket, challenge = secrets.token_urlsafe(18), secrets.token_bytes(32)
         _pending[ticket] = (kind, challenge, now + CHALLENGE_SECONDS, dict(extra or {}))
     return ticket, challenge

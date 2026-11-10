@@ -96,6 +96,8 @@ def unlock_hello(
 
 
 def _open_spaces(session: Session, x_auth_token: str | None) -> dict:
+    #: Every unlock path (password, PIN, Windows Hello) comes through here, so the vault grant
+    #: lives here once: a path that opened the spaces without it would leave notes sealed.
     vault.grant(x_auth_token)
     if vault.key() is None:
         raise HTTPException(status_code=409, detail="The private notes key could not be opened.")
