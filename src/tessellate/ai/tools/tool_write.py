@@ -531,9 +531,7 @@ def _rename_tag(session: Session, args: dict) -> dict:
 
 
 def _delete_tag(session: Session, args: dict) -> dict:
-    changed = len(tags_repo.remove(session, [str(args["name"])]))
+    name = str(args["name"])
+    held = tags_repo.remove(session, [name])
     session.commit()
-    return {
-        "entries_changed": changed,
-        "label": f"ph:tag Removed the tag “{args['name']}” from {changed} notes",
-    }
+    return {"entries_changed": len(held), "label": f"ph:tag Removed the tag “{name}” from {len(held)} notes", **tags_repo.put_back(held, name)}

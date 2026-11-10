@@ -31,12 +31,12 @@ def _seed(session):
     session.commit()
 
 
-def _state(session, categories: bool = False) -> tuple:
+def _state(session, categories: bool = False, by_name: bool = False) -> tuple:
     """Everything an act may change, as plain values. The category by its id and by its
     name: a rename keeps the id, so the id alone cannot see rename_category change anything."""
     session.expire_all()
     notes = tuple(
-        (e.id, e.content, e.category_id, manager.category_name_for(session, e), e.tags, e.pinned, e.deleted_at is None)
+        (e.id, e.content, None if by_name else e.category_id, manager.category_name_for(session, e), e.tags, e.pinned, e.deleted_at is None)
         for e in session.scalars(select(Entry).order_by(Entry.id))
         if e.deleted_at is None
     )
@@ -68,7 +68,12 @@ _BEFORE = {
     "unpin": "pin the dentist note", "unlink": "link the gym note to the running note", "untag": "tag the boiler note with urgent",
     #: A tag, a category and a binned note must exist before they are renamed or restored.
     "rename_tag": "tag the gym note with gym", "rename_category": "move the gym note to Work", "restore": "delete the passport note",
+    #: Parity acts (1110): the category, the tag, the two categories a merge needs.
+    "delete_category": ("move the gym note to Hobbies",), "delete_tag": ("tag the gym note with harbor",),
+    "merge_categories": ("move the gym note to Work", "move the running note to Job"),
 }
+#: A category row is made again by Undo with a new id, so these compare the categories by name.
+_BY_NAME = frozenset({"delete_category", "merge_categories"})
 
 
 @pytest.mark.parametrize("act", WRITES, ids=[a.intent for a in WRITES])
@@ -77,8 +82,14 @@ def test_every_write_act_has_an_inverse_that_restores_the_notebook(client, sessi
     if act.intent == "restore":
         manager.create_entry(session, "# Passport\n\nRenew in May.")
         session.commit()
-    if act.intent in _BEFORE:
-        setup = acts.preview(session, acts.parse(_BEFORE[act.intent], NOW))
+    if act.intent == "edit_text":
+        manager.create_entry(session, "# Wifi\n\nNetwork is Bluegum-5G.")
+        session.commit()
+    if act.intent == "to_reminders":
+        manager.create_entry(session, "# Action items\n\n- [ ] book the venue\n- [ ] email the caterer\n")
+        session.commit()
+    for before_sentence in (lambda x: (x,) if isinstance(x, str) else x)(_BEFORE.get(act.intent, ())):
+        setup = acts.preview(session, acts.parse(before_sentence, NOW))
         acts.run(session, setup["card"]["steps"])
         session.commit()
     if act.intent == "uncomplete":
@@ -90,23 +101,23 @@ def test_every_write_act_has_an_inverse_that_restores_the_notebook(client, sessi
         #: real clock.
         session.add(Reminder(text="Buy milk" if act.intent == "complete" else "Call the dentist", due_at=datetime(2030, 1, 1, 9)))
         session.commit()
-    before = _state(session, act.intent == "create_category")
+    before = _state(session, act.intent in ("create_category", *_BY_NAME), act.intent in _BY_NAME)
     # The store refuses a reminder due in the past by the real clock, so a
     # fixed NOW turns "on Friday" into a past date once that week is over
     # (a snooze too: its plan refuses a time already passed on the real clock).
-    now = datetime.now().replace(hour=12, minute=0, second=0, microsecond=0) if act.intent in ("reminder", "snooze") else NOW
+    now = datetime.now().replace(hour=12, minute=0, second=0, microsecond=0) if act.intent in ("reminder", "snooze", "to_reminders") else NOW
     planned = acts.preview(session, acts.parse(act.example, now))
     card = planned["card"]
     assert card["steps"], act.intent
     done = acts.run(session, card["steps"], card.get("skipped"))
     session.commit()
     assert done["ok"], (act.intent, done)
-    assert _state(session, act.intent == "create_category") != before, f"{act.intent} changed nothing"
+    assert _state(session, act.intent in ("create_category", *_BY_NAME), act.intent in _BY_NAME) != before, f"{act.intent} changed nothing"
     assert done["undo"] and done["undo"][0]["name"] == act.inverse, (act.intent, done["undo"])
     undone = acts.run(session, done["undo"])
     session.commit()
     assert undone["ok"], (act.intent, undone)
-    assert _state(session, act.intent == "create_category") == before, act.intent
+    assert _state(session, act.intent in ("create_category", *_BY_NAME), act.intent in _BY_NAME) == before, act.intent
 
 
 def test_read_acts_have_no_inverse_and_write_acts_all_do():

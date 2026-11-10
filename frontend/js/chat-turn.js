@@ -686,7 +686,7 @@ async function chatSendTurn(preset, opts = {}) {
         clearPending();
         timeline.tool(toolChip(event.label, true));
         toolEvents.push({ label: event.label, ok: true });
-        status.textContent = `Starting “${event.skill}”…`;
+        status.textContent = `Waiting for you to run “${event.skill}”…`;
         handoff = event;
         chatScrollToEnd();
       },
@@ -1018,7 +1018,8 @@ async function chatSendTurn(preset, opts = {}) {
     //: with each step's writes listed); a skill the person saved starts.
     const plan = handoff;
     if (plan.type === "run_plan") showWaiting(recordsHolder, planProposalCard, plan, () => startPlannedRun(plan.goal, plan.steps));
-    else setTimeout(() => startSkill({ name: plan.skill }, plan.inputs || {}), 0);
+    //: A skill by sentence or by the model asks the same way (decision 75): the press is the consent.
+    else showWaiting(recordsHolder, planProposalCard, { goal: `Run the skill “${plan.skill}”?`, steps: plan.changes_notes ? ["It can change your notes. Each change can be undone."] : [], runLabel: "Run the skill", running: `Starting “${plan.skill}”` }, () => startSkill({ name: plan.skill }, plan.inputs || {}));
   }
   if (!answerRaw) {
     // The model returned nothing. This used to return early and leave the

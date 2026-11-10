@@ -9,7 +9,7 @@ from __future__ import annotations
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.core.database import Category
+from tessellate.core.database import Category, Entry
 from tessellate.entry import manager
 
 from ._common import ToolError
@@ -153,6 +153,7 @@ def _merge_categories(session: Session, args: dict) -> dict:
             f"“{source.name}” and “{target.name}” are in different spaces, so they can't be merged."
         )
     source_name, target_name = source.name, target.name
+    ids = _live_ids(session, source.id)
     try:
         result = manager.rename_category(session, source.id, target_name)
     except ValueError as exc:
@@ -161,6 +162,7 @@ def _merge_categories(session: Session, args: dict) -> dict:
         "from": source_name,
         "into": target_name,
         "notes_moved": result["moved"],
+        "undo": _filed_back(source_name, ids),
         "label": (
             f"ph:folder Merged “{source_name}” into “{target_name}” "
             f"({result['moved']} notes moved)"
@@ -168,16 +170,30 @@ def _merge_categories(session: Session, args: dict) -> dict:
     }
 
 
+def _live_ids(session: Session, category_id: int) -> list[int]:
+    """The notes in a category that are not in the bin: what an Undo of a delete or a merge files back
+    (a binned note keeps its place in the bin and is left out)."""
+    return list(session.scalars(select(Entry.id).where(Entry.category_id == category_id, Entry.is_deleted.is_(False)).order_by(Entry.id)))
+
+
+def _filed_back(name: str, ids: list[int]) -> dict:
+    """The Undo of a category that went away: file the same notes under its name (made when new), or just make it."""
+    if ids:
+        return {"tool": "move_notes", "arguments": {"ids": ids, "category": name}}
+    return {"tool": "create_category", "arguments": {"name": name}}
+
+
 def _delete_category(session: Session, args: dict) -> dict:
     """Remove a category. Its notes survive as Uncategorised.
 
     Deleting a category never deletes notes, an organising action that could
     destroy writing is not what anyone means by "delete category". Still marked
-    destructive, so the user approves it before it runs: it is not reversible
-    from here, because nothing records which notes were moved out.
+    destructive, so the user approves it before it runs; Undo files the notes
+    it held back under the name.
     """
     category = _find_category(session, str(args.get("name") or ""))
     name = category.name
+    ids = _live_ids(session, category.id)
     try:
         result = manager.delete_category(session, category.id)
     except ValueError as exc:
@@ -189,6 +205,8 @@ def _delete_category(session: Session, args: dict) -> dict:
             f"ph:folder Deleted the category “{name}”: {result['moved']} "
             f"note{'' if result['moved'] == 1 else 's'} kept, now Uncategorised"
         ),
+        #: The notes it held are named before they move, so Undo files them back (the description is not kept).
+        "undo": _filed_back(name, ids),
     }
 
 

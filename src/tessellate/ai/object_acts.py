@@ -314,6 +314,8 @@ def guard(session: Session, name: str, args: dict) -> str | None:
         return _tag_refusal(session, old, cleaned[0] if cleaned else new)
     if name == "rename_category":
         return _category_refusal(session, old, manager.category_label(new))
+    if name == "delete_tag" and _private_hold(session, str(args.get("name") or "")):
+        return f"The tag “{args.get('name')}” is also on private notes, and the vault is locked, so I will not remove it from here. Unlock the vault first, or use the Tag manager."
     if name == "restore_note":
         from tessellate.core.database import Entry
 
