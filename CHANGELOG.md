@@ -5,6 +5,7 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
+- Fix (voice notes, w6-1110, audit 1031 Z12): a Discard whose finish fails now says so with a toast and keeps the recording in Library; audit rows A32 to A36 (1029 X1 to X3, 1031 Z12, 1028 B8, B40) were already fixed on head and are struck.
 ## [Unreleased]
 - Fix (graph, owner 2026-11-10): the note popup's header drops a heading's own colon from the title, puts the category chip and the filing confidence (now "95% sure") on one row level with the meta line, and spells the date out ("Created 3 Aug 2026", not "03/08/2026").
 - Fix (documents, w4-1110, audit 1028 D3, D36): a document started by typing whose first save fails (offline, a 500) says "Not saved", keeps its words on this device under the id "new", stops posting again on every key (one retry after 8 s), and the next open of Documents offers them back ("Put it back"); D1, D2, D36 and 1031 DC1, DC2 were already built (tests/test_doc_save_serial.py, test_doc_edit_kept.py, test_lock_document_panels_1031.py); tests/test_doc_new_draft_1110.py; slow-PUT run: 2 PUTs (first, then first second) and the server holds the second, offline first save: "Not saved" and a draft.

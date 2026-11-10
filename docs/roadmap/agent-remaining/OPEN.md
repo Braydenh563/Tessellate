@@ -108,11 +108,11 @@ Parked until the owner's data or a check on real hardware:
 - A31 Key storage and MCP auth (after Q22) | a30i-1102 B40, B33, B24, D46, K26, K11, K13, E43
 
 **W6 Recordings and swallowed deletes** (A, voice notes, Sonnet; verify first). Files: `frontend/js/meetings.js`, `media.js`, the board delete handlers. Checks: `tests/test_meeting*`, a Playwright record and reload run. Done when: no audio is dropped on pause, close warns while recording, typing a title never starts the mic.
-- A32 The voice dialog opens on Record: a typed space starts the mic, other keys fire shortcuts | 1029-extras X1
-- A33 Closing or reloading during a recording gives no warning | 1029-extras X2
-- A34 Up to 10 s of audio lost on pause (no requestData) | 1029-extras X3
-- A35 A failed Discard is swallowed and the dialog closes | 1031-extras Z12
-- A36 Board delete failures swallowed; undo pushed before the DELETE | 1028-board B8, B40
+- ~~A32 The voice dialog opens on Record: a typed space starts the mic, other keys fire shortcuts | 1029-extras X1~~ [struck 2026-11-10 w6-1110: verified fixed on head, tests in test_recording_is_unsaved_work_1029.py, test_xfix_1031.py, test_wb_board_1028.py]
+- ~~A33 Closing or reloading during a recording gives no warning | 1029-extras X2~~ [struck 2026-11-10 w6-1110: verified fixed on head, tests in test_recording_is_unsaved_work_1029.py, test_xfix_1031.py, test_wb_board_1028.py]
+- ~~A34 Up to 10 s of audio lost on pause (no requestData) | 1029-extras X3~~ [struck 2026-11-10 w6-1110: verified fixed on head, tests in test_recording_is_unsaved_work_1029.py, test_xfix_1031.py, test_wb_board_1028.py]
+- ~~A35 A failed Discard is swallowed and the dialog closes | 1031-extras Z12~~ [struck 2026-11-10 w6-1110: verified fixed on head, tests in test_recording_is_unsaved_work_1029.py, test_xfix_1031.py, test_wb_board_1028.py]
+- ~~A36 Board delete failures swallowed; undo pushed before the DELETE | 1028-board B8, B40~~ [struck 2026-11-10 w6-1110: verified fixed on head, tests in test_recording_is_unsaved_work_1029.py, test_xfix_1031.py, test_wb_board_1028.py]
 
 ### Tier B: daily bugs, core flows, lag, the companion in the way
 
