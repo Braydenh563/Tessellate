@@ -10,12 +10,14 @@ the layer list in `composer.py`'s docstring, never back to `composer`.
 
 from __future__ import annotations
 
+import calendar
 import hashlib
 import re
 from dataclasses import dataclass, field
+from datetime import date as date_type, datetime, time as time_type
 from typing import Any
 
-from tessellate.ai import composer_chip_subject, question_noise, recognise as rec, repair_turn, when as when_words
+from tessellate.ai import composer_chip_subject, composer_frame, question_noise, recognise as rec, repair_turn, when as when_words
 from tessellate.ai.composer_ask import _stem, _words, classify, compare_sides, rephrase, subject_terms
 from tessellate.ai.composer_body import _BRIEF, _FULL, _NOTE_NOUNS, _asked_span
 from tessellate.ai.composer_phrases import PHRASES
@@ -233,6 +235,12 @@ class FollowOn:
     #: The question a later terse turn leans on in place of this one, when this one only asked a
     #: property of the subject ("what should I pack"): the subject's own question stays the one.
     stands: str = ""
+    #: The notes the last answer's frame says this turn is about ("who is it with" after the
+    #: dentist answer): read like an open note, rechecked by the server (`chat_turn._cited_scope`).
+    note_ids: tuple = ()
+    #: Asked instead when the reading gives the answer before again ("and kyoto?" after the
+    #: budget is not the budget twice): the new subject asked plainly (fable-composer-1110 F1).
+    fallback: str = ""
 
 
 def _named_notes(answer: str) -> list[str]:
@@ -272,6 +280,9 @@ def _defining_ask(question: str, turns: list[dict]) -> FollowOn | None:
     return FollowOn(f"what do I know about {subject}", previous, "", "subject") if subject else None
 
 
+_ABOUT_THE_TALK = re.compile(r"^\s*(?:thanks|thank you|thx|cheers)\b|\b(?:did|are|were) you\b(?! mean)|\bwhere(?:'d| did) you\b", re.I)
+
+
 def follow_on(question: str, history: list[dict] | None) -> FollowOn | None:
     """"Tell me more", "what about the second one", "when was that": a
     follow-up that only means something against the turn before (INBOX 725,
@@ -292,8 +303,9 @@ def follow_on(question: str, history: list[dict] | None) -> FollowOn | None:
     defining = _defining_ask(question, turns)
     if defining is not None:
         return defining
-    #: "I don't need that" is a reply, not a question about "that" (INBOX 1668 b).
-    if not turns or repair_turn.is_repair(question):
+    #: "I don't need that" is a reply, not a question about "that" (INBOX 1668 b); "thanks that's
+    #: all" and "where did you get that" are about the talk, not a subject (fable-composer-1110 F1).
+    if not turns or repair_turn.is_repair(question) or _ABOUT_THE_TALK.search(question or ""):
         return None
     return _follow_one(question, _standing(turns))
 
@@ -303,7 +315,7 @@ def follow_on(question: str, history: list[dict] | None) -> FollowOn | None:
 #: launch one") lean on the question before, which stays the one the next
 #: terse turn leans on: "why?" after "longer" asks about the subject, not
 #: about "longer".
-_RESTATES = frozenset({"window", "subject", "entity", "pronoun", "did_you_mean", "ordinal", "part"})
+_RESTATES = frozenset({"window", "subject", "entity", "pronoun", "did_you_mean", "ordinal", "part", "bound"})
 
 
 def _standing(turns: list[dict]) -> list[dict]:
@@ -382,7 +394,11 @@ def _follow_window(text: str, previous: str, last: dict, turns: list[dict]) -> A
     if not (found_time and not window_text.replace(found_time[0][2], "").strip(" ,")):
         return _NOT_THIS
     base = previous
-    for _s, _e, old_phrase in when_words.find(previous):
+    if not when_words.find(previous):
+        #: "what about yesterday" after "summarise it": the turn that had a time is asked again,
+        #: not "summarise first yesterday" (fable-composer-1110 F1).
+        base = next((q for q in (str(t.get("question") or "") for t in reversed(turns[:-1])) if when_words.find(q)), previous)
+    for _s, _e, old_phrase in when_words.find(base):
         base = base.replace(old_phrase, "")
     base = " ".join(base.split()).rstrip(" ?.!")
     return FollowOn(f"{base} {found_time[0][2]}?", previous, "", "window")
@@ -427,9 +443,12 @@ def _swap_in_shape(previous: str, other: str, subject: str, entity: bool) -> Fol
     start = previous.lower().find(subject.lower())
     before = previous[:start]
     if re.search(r"\b(the|my|a|an)\s+$", before, re.I):
+        #: "and kyoto?" after "how much is the budget" is "how much is kyoto", not "the kyoto".
+        bare = " " not in other.strip() and not entity
         other = re.sub(r"^(the|my|a|an)\s+", "", other, flags=re.I)
+        before = re.sub(r"\b(?:the|a|an)\s+$", "", before, flags=re.I) if bare else before
     resolved = before + other + previous[start + len(subject):]
-    return FollowOn(resolved, previous, "", "entity" if entity else "subject")
+    return FollowOn(resolved, previous, "", "entity" if entity else "subject", fallback=f"what do my notes say about {other}?")
 
 
 def _swap_plain_what(previous: str, other: str, subject: str, entity: bool) -> FollowOn:
@@ -450,7 +469,21 @@ def _swap_plain_what(previous: str, other: str, subject: str, entity: bool) -> F
     return FollowOn(f"{head} {joined}{tail}", previous, "", kind)
 
 
+#: A question that asked for an act ("remind me about it a week before") is not asked again of
+#: something else: "what about mia" after it stands as typed (fable-composer-1110 F1).
+_ACT_LEAD = re.compile(r"^\s*(?:remind|add|delete|remove|tick|untick|rename|move|tag|pin|create|cancel|undo|new note)\b", re.I)
+
+
 def _follow_swap(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
+    person = _person_swap(text, last)
+    if person is not None:
+        return person
+    if _ACT_LEAD.match(previous) and (_SWAP.match(text) or _SWAP.match(rephrase(text))):
+        return None
+    return _swap_reading(text, previous)
+
+
+def _swap_reading(text: str, previous: str) -> Any:
     swap = _SWAP.match(text) or _SWAP.match(rephrase(text))
     if swap and swap.group("y") is not None and not text.rstrip().endswith("?"):
         swap = None
@@ -557,8 +590,13 @@ _DEMONSTRATIVE_THING = re.compile(
 
 def _follow_pronoun(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
     kind = _pronoun_kind(text)
-    if not kind or _DEMONSTRATIVE_THING.search(text):
+    if not kind:
+        return _NOT_THIS
+    if _DEMONSTRATIVE_THING.search(text):
         return None
+    bound = _bound_pronoun(text, kind, previous, last, turns)
+    if bound is not None:
+        return bound
     source = _carried_source(previous, turns)
     subject = _asked_span(source, subject_terms(source))
     if not subject:
@@ -567,12 +605,132 @@ def _follow_pronoun(text: str, previous: str, last: dict, turns: list[dict]) -> 
     #: A bare "that" keeps the old bare subject; the newer slot and person
     #: follow-ons read with the article ("how much does the Lisbon trip cost").
     named = (article.group(0).strip() + " " if article and kind != "bare" else "") + subject
+    return _pronoun_read(text, kind, named, previous, source if kind == "property" else "")
+
+
+def _pronoun_read(text: str, kind: str, named: str, previous: str, stands: str, ids: tuple = ()) -> FollowOn:
+    """`text` with its pronoun read as `named`, the way its kind asks."""
     if kind in ("total", "property"):
-        return FollowOn(f"{text.rstrip(' ?.!')} for {named}?", previous, "", "pronoun", stands=source if kind == "property" else "")
+        return FollowOn(f"{text.rstrip(' ?.!')} for {named}?", previous, "", "pronoun", stands=stands, note_ids=ids)
     if kind == "person_thing":
         thing = re.sub(r"^(?:(?:and|also|but|so)[, ]+)?(?:(?:what|how) about\s+)?", "", text.strip().rstrip("?.! "), flags=re.I)
-        return FollowOn("what is " + _pronoun_swap(thing, named, "person"), previous, "", "pronoun")
-    return FollowOn(_pronoun_swap(text, named, kind), previous, "", "pronoun")
+        return FollowOn("what is " + _pronoun_swap(thing, named, "person"), previous, "", "pronoun", note_ids=ids)
+    return FollowOn(_pronoun_swap(text, named, kind), previous, "", "pronoun", note_ids=ids)
+
+
+# --- the turn frame (fable-composer-1110 F1) -------------------------------------
+#
+# Each composed answer sends a frame (`turn_frame`): the notes it used, the person or thing it was
+# about, the question it answered, the days and list lines it showed. The page sends it back on
+# the next turn; a follow-on binds to it first, and the text reading above stays for a turn
+# without one (an older page, an act, a model's answer).
+
+
+def _frames(turns: list[dict]) -> list[dict]:
+    """The frames the last four turns carried, newest first."""
+    return [t["frame"] for t in reversed(turns[-4:]) if isinstance(t.get("frame"), dict)]
+
+
+def _frame_of(turn: dict) -> dict:
+    frame = turn.get("frame")
+    return frame if isinstance(frame, dict) else {}
+
+
+def _frame_thing(frame: dict, *, article: bool) -> tuple[str, tuple]:
+    """The thing a frame was about, as a question names it, and its lead note."""
+    subject = " ".join(str(frame.get("subject") or "").split())
+    ids = tuple(i for i in frame.get("note_ids") or [] if isinstance(i, int))[:1]
+    if not subject or not ids:
+        return "", ()
+    plain = not article or not subject[:1].islower() or re.match(r"(?:the|my|our|a|an)\s", subject, re.I)
+    return (subject if plain else f"the {subject}"), ids
+
+
+def _bound_pronoun(text: str, kind: str, previous: str, last: dict, turns: list[dict]) -> FollowOn | None:
+    """"what does she like": the person the last answers were about, not the last question's words;
+    "who is it with": the thing the last answer showed, read on its note."""
+    if kind in ("person", "person_thing"):
+        person = next((str(f.get("person")) for f in _frames(turns) if f.get("person")), "")
+        return _pronoun_read(text, kind, person, previous, "") if person else None
+    frame = _frame_of(last)
+    named, ids = _frame_thing(frame, article=kind != "bare")
+    if not named:
+        return None
+    return _pronoun_read(text, kind, named, previous, str(frame.get("ask") or "") if kind == "property" else "", ids)
+
+
+#: A turn that names an app thing is its own question, never a slot of the note before.
+_APP_NOUNS = re.compile(r"\b(?:you|your|reminders?|tasks?|tags?|categor(?:y|ies)|documents?|notes?|charts?|lists?|statistics|stats|todo)\b", re.I)
+_SLOT_WORDS_MAX = 5
+
+
+#: Comparing or counting over what was shown ("which is higher", "what's the difference") is
+#: computed from it (audit F6), not read as a slot of one note.
+_COMPARES = re.compile(r"^which\b|\b(?:difference|between|total|compare|versus|vs|more|less|first|last)\b", re.I)
+
+
+def _follow_slot(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
+    """"what temperature", "what room", "who am I going with" right after an answer: a slot of
+    the note that answer showed, read on that note, not searched for "temperature"
+    (fable-composer-1110 F1, step 3). Asked of the note's subject; the server keeps the person's
+    own words when the note holds them, and lets go when they are another note's
+    (`chat_turn._framed_scope`)."""
+    q = " ".join(text.split()).rstrip("?.! ")
+    if not _ASKS_SLOT.match(q) or len(q.split()) > _SLOT_WORDS_MAX or _OWNED.search(q) or _APP_NOUNS.search(q) or _COMPARES.search(q):
+        return _NOT_THIS
+    if re.search(r"\b[A-Z][a-z]|\d", q[1:]) or rec.without_windows(q) != q or _PRONOUN.search(q):
+        return _NOT_THIS
+    named, ids = _frame_thing(_frame_of(last), article=True)
+    return FollowOn(f"{q} about {named}?", previous, "", "bound", note_ids=ids) if ids else _NOT_THIS
+
+
+#: "until then", "before then": the day the last answer showed.
+_THEN = re.compile(r"\b(?:until|till|til|before|after|since|by) then\b", re.I)
+
+
+def _follow_then(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
+    found = _THEN.search(text)
+    days = [d for d in _frame_of(last).get("dates") or [] if isinstance(d, str)]
+    if not found or not days:
+        return _NOT_THIS
+    try:
+        day = date_type.fromisoformat(days[0])
+    except ValueError:
+        return _NOT_THIS
+    said = found.group(0)[: -len("then")] + f"{day.day} {day:%B} {day.year}"
+    return FollowOn(text[: found.start()] + said + text[found.end():], previous, "", "bound")
+
+
+#: "and mia", "what about Sam?": the same question of another person.
+_AND_WHO = re.compile(r"^(?:and|(?:and |so )?(?:what|how) about)\s+(?P<x>[a-z][\w'-]*(?: [a-z][\w'-]*)?)\W*$", re.I)
+_NOT_A_NAME = re.compile(r"^(?:the|a|an|my|our|your|that|this|it|then|so|more|else|now|next|last|other|again|after|before)\b|\b(?:it|that|this|them)$", re.I)
+
+
+def _person_swap(text: str, last: dict) -> FollowOn | None:
+    """"and mia" after "when is anna's birthday" is "when is mia's birthday": the last answer's
+    person, swapped in the question it answered (`_follow_swap` reads anything else)."""
+    got = _AND_WHO.match(text.strip())
+    frame = _frame_of(last)
+    person, ask = str(frame.get("person") or ""), str(frame.get("ask") or "")
+    if not got or _NOT_A_NAME.search(got.group("x")) or not person or _ACT_LEAD.match(ask):
+        return None
+    if not re.search(rf"\b{re.escape(person)}\b", ask, re.I):
+        return None
+    return FollowOn(re.sub(rf"\b{re.escape(person)}\b", got.group("x"), ask, flags=re.I), ask, "", "entity")
+
+
+#: "and the other" after "the first one": the next note the list before it showed.
+_OTHER_ONE = re.compile(r"^(?:and |what about |how about )?the other(?: one| note)?\W*$", re.I)
+
+
+def _follow_other(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
+    if not _OTHER_ONE.match(text.strip()) or len(turns) < 2:
+        return _NOT_THIS
+    listed, picked = _frame_of(turns[-2]), _frame_of(last).get("note_ids") or []
+    left = [i for i in listed.get("note_ids") or [] if isinstance(i, int) and i not in picked[:1]]
+    if not left:
+        return _NOT_THIS
+    return FollowOn(str(listed.get("ask") or previous), previous, "", "bound", note_ids=(left[0],))
 
 
 #: "and the flights", "also the hotel?": a part of the thing the turn before named, with no verb.
@@ -628,8 +786,8 @@ def _follow_now(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
 
 
 _FOLLOW_READERS = (
-    _follow_more, _follow_ordinal, _follow_correction, _follow_length, _follow_window, _follow_meant,
-    _follow_bare, _follow_part, _follow_swap, _follow_which, _follow_now, _follow_pronoun,
+    _follow_more, _follow_ordinal, _follow_other, _follow_correction, _follow_length, _follow_window, _follow_meant,
+    _follow_then, _follow_bare, _follow_part, _follow_swap, _follow_which, _follow_now, _follow_pronoun, _follow_slot,
 )
 
 
@@ -713,3 +871,81 @@ def _WORDED_PHRASES() -> list[str]:  # noqa: N802  # a cached table, read like o
     if not _WORDED:
         _WORDED.extend(v for v in set(PHRASES.values()) if len(v.strip()) >= 6 and _TEMPLATE_WORDS.search(v))
     return _WORDED
+
+
+# --- the frame a composed answer sends (fable-composer-1110 F1) ---------------------
+
+FRAME_NOTES = 5
+FRAME_ITEMS = 12
+FRAME_TEXT = 80
+_LINKED = re.compile(r"\]\(#/notes/(\d+)\)")
+_NAME = re.compile(r"(?<![.!?]\s)(?<!^)\b[A-Z][a-z]{1,20}\b", re.M)
+_CALENDAR_NAMES = frozenset([*calendar.month_name[1:], *calendar.day_name])
+_THIRD_PERSON = re.compile(r"\b(?:she|he|her|his|him)\b", re.I)
+_LIST_LINE = re.compile(r"^\s*(?:[-*]|\d+[.)])\s+(?P<line>\S.*)$", re.M)
+_MARKS = re.compile(r"\[([^\]]*)\]\([^)]*\)|[*_`]|\[\s*[xX ]?\s*\]")
+
+
+def _frame_ids(result: dict) -> list[int]:
+    ids: list[int] = []
+    for row in result.get("grounding") or []:
+        if isinstance(row.get("note_id"), int) and row["note_id"] not in ids:
+            ids.append(row["note_id"])
+    ids += [int(i) for i in _LINKED.findall(str(result.get("text") or "")) if int(i) not in ids]
+    return list(dict.fromkeys(ids))[:FRAME_NOTES]
+
+
+def _plain(text: str) -> str:
+    return " ".join(_MARKS.sub(lambda m: m.group(1) or "", text).split())[:FRAME_TEXT]
+
+
+def _person(asked: str, lead: dict) -> str:
+    """The person the answer was about: a name the question used that the lead note writes as a
+    name (in its title or mid-sentence) and says "she" or "he" of."""
+    body = str(lead.get("content") or "")
+    if not _THIRD_PERSON.search(body):
+        return ""
+    names = set(re.findall(r"\b[A-Z][a-z]{1,20}\b", composer_frame.note_title(lead))) | set(_NAME.findall(body))
+    #: "28 November" names a day, not a person.
+    return next((n for n in sorted(names) if re.search(rf"\b{n}\b", asked, re.I) and n not in _CALENDAR_NAMES), "")
+
+
+def _frame_days(text: str, today) -> list[str]:  # noqa: ANN001  # a date
+    lead = text.strip().split("\n\n", 1)[0]
+    days: list[str] = []
+    for _s, _e, phrase in when_words.find(lead):
+        got = when_words.resolve(phrase, datetime.combine(today, time_type(9)))
+        if got is not None and got.date().isoformat() not in days:
+            days.append(got.date().isoformat())
+    return days[:FRAME_NOTES]
+
+
+def turn_frame(asked: str, result: dict, notes: list[dict], today) -> dict:  # noqa: ANN001  # a date
+    """What a composed answer showed, sent with it and echoed back by the page with the next
+    turn: the notes it used (ids, at most five), the thing and person it was about, the
+    question it answered, the days its lead named and its list lines. Small, and nothing a
+    later turn could not already read: ids, names and the answer's own words, never a note's
+    body. Empty when the answer used no note."""
+    ids = _frame_ids(result)
+    if not ids:
+        return {}
+    by_id = {n.get("source_id", n.get("id")): n for n in notes or []}
+    lead = by_id.get(ids[0]) or {}
+    span = _asked_span(asked, subject_terms(asked)).strip(" “”\"'") if asked else ""
+    text = str(result.get("text") or "")
+    return {
+        "note_ids": ids,
+        "subject": _plain(span or composer_frame.note_title(lead)),
+        "person": _person(asked, lead) if lead else "",
+        "ask": " ".join(asked.split())[:200],
+        "dates": _frame_days(text, today),
+        "items": [_plain(m.group("line")) for m in _LIST_LINE.finditer(text)][:FRAME_ITEMS],
+    }
+
+
+def repeats(text: str, history: list[dict] | None) -> bool:
+    """Whether `text` opens as the last answer did: a follow-on that gives the answer before
+    again ("and kyoto?" answered with the budget) was read wrongly."""
+    lead = (text or "").strip().split("\n", 1)[0].strip()
+    last = str(((history or [{}])[-1] or {}).get("answer") or "").strip().split("\n", 1)[0].strip()
+    return bool(lead) and lead == last

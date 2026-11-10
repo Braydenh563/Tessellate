@@ -1020,6 +1020,7 @@ async function askQuestion(preset) {
   let answerTip = ""; // the pick-up line, under the answer as in Chat (audit 1028 E52)
   const answerPanels = []; // the app's panels under the answer (INBOX 1300 C06)
   let composedNext = []; // a composed answer's own next questions (INBOX 725)
+  let turnFrame = null; // what the composed answer showed, echoed with the next turn
   //: Kept beyond the callback that receives them, because the answer element
   //: is rebuilt after the stream ends and the markers have to be put back.
   let groundedSentences = [];
@@ -1153,6 +1154,7 @@ async function askQuestion(preset) {
         groundedInsights = Array.isArray(event.insights) ? event.insights : [];
         composedNext = Array.isArray(event.next) ? event.next : [];
       },
+      onFrame: (frame) => { turnFrame = frame || null; },
       onOffer: (event) => {
         answerOffer = event.offer || null;
       },
@@ -1198,7 +1200,7 @@ async function askQuestion(preset) {
     if (!hinted) {
       //: The notes this answer cited ride with the turn, as Chat's do, so
       //: "how much does it cost" after an Ask answer names what "it" was.
-      conversation.push({ question, answer: answerRaw, objects: chatTurnObjects(liveSources) });
+      conversation.push({ question, answer: answerRaw, objects: chatTurnObjects(liveSources), ...(turnFrame ? { frame: turnFrame } : {}) });
       show("retry-btn", "copy-btn", "speak-btn", "new-chat-btn");
       //: What the ⋯ keeps (B12): the answer as written, and the notes it cites.
       askKept = {

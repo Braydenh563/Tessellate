@@ -252,9 +252,17 @@ _PARTED = ("overview", "tags", "categories", "documents", "month")
 _READERS = (_other_chart, _chart_by, _part_of)
 
 
+def _previous_turn(turn: dict, today: date) -> Prev:
+    """One turn's kind. A dated question answered from a note ("the first one", whose frame names
+    the note it read) showed that note, not a chart of the days (fable-composer-1110 F1)."""
+    said = previous(str(turn.get("question") or ""), str(turn.get("answer") or ""), today)
+    frame = turn.get("frame") if isinstance(turn.get("frame"), dict) else {}
+    return Prev("notes") if said.kind == "window" and not said.empty and frame.get("note_ids") else said
+
+
 def from_history(history: list[dict], today: date) -> Prev:
     """The turn before, with every chart the last few turns drew."""
-    turns = [previous(str(t.get("question") or ""), str(t.get("answer") or ""), today) for t in (history or [])[-6:]]
+    turns = [_previous_turn(t, today) for t in (history or [])[-6:]]
     if not turns:
         return Prev()
     last = turns[-1]

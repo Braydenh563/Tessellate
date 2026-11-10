@@ -20,7 +20,7 @@ from sqlalchemy.orm import Session
 from tessellate.ai import composer_digest, composer_lists, composer_slots, composer_talk, context, fence, intent, librarian, question_noise, recognise, verdicts, why
 from tessellate.ai import composer_dialogue
 from tessellate.ai.answer_trim import trim_assistant_padding
-from tessellate.ai.grounding import SentenceGrounder
+from tessellate.ai.grounding import SentenceGrounder, composed_support
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.api.chat_agent import _starter_read
 from tessellate.api.chat_pool import _Found
@@ -295,6 +295,8 @@ def _cited_scope(req: _StreamRequest, follow) -> list[int]:  # noqa: ANN001
     about it": audit 1030 Z53). It is read like an open note: the follow-on
     keeps its subject, and the slot runs on that note rather than on
     whichever note best matches the bare words."""
+    if follow is not None and follow.note_ids and not req.body.note_ids:
+        return _framed_scope(req, follow)
     objects = ((req.history or [{}])[-1].get("objects") or []) if req.history else []
     if not objects or req.body.note_ids or (follow is not None and follow.kind != "pronoun") or not composer_dialogue.refers_back(req.question):
         return []
@@ -305,6 +307,66 @@ def _cited_scope(req: _StreamRequest, follow) -> list[int]:  # noqa: ANN001
         ).limit(25)
     ).all()
     return [row.id for row in rows if _turn_label(row.content).lower() == label][:1]
+
+
+def _framed_scope(req: _StreamRequest, follow) -> list[int]:  # noqa: ANN001
+    """The notes the last answer's frame binds this turn to (fable-composer-1110 F1). The ids are
+    client input, so each is read again: a deleted or private note is never reached through them.
+    Not bound, and searched instead, when the turn's own words are held by another note and not by
+    this one ("what is the standard deviation" after the Harbor answer), or the thing it names is
+    another note's title ("did I finish it" when the answer before cited the wrong note)."""
+    rows = req.session.execute(
+        select(Entry.id, Entry.content).where(Entry.id.in_(list(follow.note_ids)), Entry.is_deleted == False, Entry.is_private == False)  # noqa: E712
+    ).all()
+    ids = [row.id for row in rows]
+    bound = " ".join(row.content or "" for row in rows).lower()
+    asked = composer_dialogue.subject_terms(req.question) if follow.kind == "bound" else []
+    own = [t for t in asked if t.lower() not in bound]
+    if follow.kind == "bound" and not own:
+        follow.question = req.question  # "how many sets": the note holds the words, so they are asked as typed
+    if not ids or any(_visible_elsewhere(req.session, t, ids) for t in own) or any(_visible_elsewhere(req.session, t, ids, titled=True) for t in [*asked, *composer_dialogue.subject_terms(follow.question)]):
+        follow.question = req.question if follow.kind == "bound" else follow.question  # let go: the turn's own words, searched
+        return []
+    return ids
+
+
+def _visible_elsewhere(session, term: str, ids: list[int], *, titled: bool = False) -> bool:  # noqa: ANN001
+    """Whether a visible note outside `ids` holds `term`, or with `titled`, is titled `term` ("Mia")."""
+    rows = session.execute(
+        select(Entry.content).where(
+            Entry.is_deleted == False, Entry.is_private == False, Entry.id.notin_(ids), Entry.content.ilike(f"%{like_escape(term)}%", escape=LIKE_ESCAPE)  # noqa: E712
+        ).limit(25 if titled else 1)
+    ).all()
+    return any(_turn_label(row.content).lower() == term.lower() for row in rows) if titled else bool(rows)
+
+
+def _composed_support(result: dict) -> dict:
+    """The support of an answer no model wrote (`grounding.composed_support`)."""
+    return composed_support(result["support"], result.get("grounding") or [])
+
+
+def _not_again(answer, follow, restated: bool, req: _StreamRequest) -> tuple:  # noqa: ANN001
+    """`answer(follow, restated)`, asked again plainly when the follow-on's reading gave the answer
+    before again: "and kyoto?" after the budget is never the budget twice (fable-composer-1110 F1)."""
+    result = answer(follow, restated)
+    if follow is not None and follow.fallback and composer_dialogue.repeats(str(result.get("text") or ""), req.history):
+        follow = composer_dialogue.FollowOn(follow.fallback, follow.previous, kind="subject")
+        result = answer(follow, True)
+    return result, follow
+
+
+def _with_frame(result: dict, follow, req: _StreamRequest, current: list, today) -> None:  # noqa: ANN001
+    """The frame the answer is sent with (`composer_dialogue.turn_frame`), read from the question
+    as the follow-on put it. A slot read on the note before ("how much flour") is still about that
+    note's subject, so "what temperature" next is asked of the banana bread, not of "flour"."""
+    result["frame"] = frame = composer_dialogue.turn_frame(follow.question if follow else req.question, result, current, today)
+    before = ((req.history or [{}])[-1] or {}).get("frame") or {}
+    if frame and follow is not None and follow.kind == "bound" and before.get("subject") and frame["note_ids"][:1] == before.get("note_ids", [])[:1]:
+        frame["subject"] = before["subject"]
+
+
+def _frame_events(result: dict) -> list[dict]:
+    return [{"type": "frame", "frame": result["frame"]}] if result.get("frame") else []
 
 
 def _searched_question(req: _StreamRequest, follow) -> str:
