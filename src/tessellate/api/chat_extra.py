@@ -76,7 +76,7 @@ def notebook_events(session: Session, question: str, *, now: datetime) -> list[d
                     "I found no change of mind in your dated notes. Notes that say different things about the same subject on different days would show here.")
         elif _PATTERNS.search(text):
             found = insights.from_session(session, now.date(), limit=4)
-            said = ("\n".join(f"- {i.text}" for i in found) if found else
+            said = ("\n".join(f"- {line}" for line in insights.listed(found)) if found else
                     "Nothing repeats enough to call a pattern yet. A subject needs to turn up in several notes over a few weeks.")
         else:
             return None

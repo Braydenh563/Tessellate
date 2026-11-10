@@ -113,8 +113,38 @@ def _week(day: date) -> tuple[int, int]:
     return iso[0], iso[1]
 
 
+def _shown(rule: str, slots: dict) -> dict:
+    """The slots as the sentence says them: a recurrence's subject with its capital and its count in
+    words (G12), the slot values themselves staying typed for the lint and Confirm."""
+    if rule != "recurrence":
+        return dict(slots)
+    return {**slots, "subject": _capital(slots["subject"]), "count": _count_word(int(slots["count"]))}
+
+
 def _fill(rule: str, slots: dict) -> str:
-    return composer_tables.INSIGHT_TEMPLATES[rule].format(**{k: v for k, v in slots.items()})
+    return composer_tables.INSIGHT_TEMPLATES[rule].format(**_shown(rule, slots))
+
+
+def shown(rule: str, slots: dict) -> dict:
+    """`_shown` for the eval, which fills the template from a row's own numbers."""
+    return _shown(rule, slots)
+
+
+def listed(found: list["Insight"]) -> list[str]:
+    """The sentences of a list of insights, each recurrence's hedge said once: the same "that keeps
+    coming up" three times in a row reads as a stamp (G12)."""
+    said: set[str] = set()
+    lines = []
+    for item in found:
+        hedge = str(item.slots.get("hedge") or "")
+        tail = f"; {hedge}."
+        if item.rule == "recurrence" and hedge in said and item.text.endswith(tail):
+            lines.append(f"{item.text[: -len(tail)]}.")
+            continue
+        if item.rule == "recurrence":
+            said.add(hedge)
+        lines.append(item.text)
+    return lines
 
 
 def _leisure(notes: list[dict]) -> bool:

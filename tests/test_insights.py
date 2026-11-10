@@ -63,7 +63,7 @@ def test_every_fired_insight_fills_its_slots_with_their_kind():
 
 def test_recurrence_fires_at_three_notes_across_three_weeks_only():
     assert insights.recurrence("golf", GOLF, TODAY).text == (
-        "You have written about golf 4 times since 5 September, three of them after work; that may be a hobby forming."
+        "Golf has come up four times since 5 September, three of them after work; that may be a hobby forming."
     )
     assert insights.recurrence("golf", GOLF[:2], TODAY) is None
     same_week = [_note(i, "# Chess\n\nChess club tonight.", f"2026-09-0{i}") for i in (1, 2, 3)]
@@ -120,7 +120,8 @@ def test_an_insight_is_never_a_fact():
 @pytest.mark.parametrize("rule", sorted(composer_tables.INSIGHT_TEMPLATES))
 def test_every_template_follows_the_copy_rules(rule):
     text = composer_tables.INSIGHT_TEMPLATES[rule]
-    assert "!" not in text and chr(0x2014) not in text and text[0].isupper()
+    #: A template that opens on the subject slot gets its capital from `insights._shown` (G12).
+    assert "!" not in text and chr(0x2014) not in text and (text[0].isupper() or text.startswith("{subject}"))
 
 
 def test_the_patterns_route(client, session):
