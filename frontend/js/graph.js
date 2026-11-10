@@ -1950,6 +1950,8 @@ function initGraphKeyboard() {
       ["INPUT", "TEXTAREA", "SELECT"].includes(event.target?.tagName) ||
       event.target?.isContentEditable;
     if (typingTarget) return;
+    //: A button inside a popup (Private, Add to map) keeps its own Space and Enter (INBOX 1736: the map ate them to open a note).
+    if (event.target?.closest?.(".graph-popup")) return;
     if (!graphNodesRef?.length) return;
     const current = graphNodeById(graphKeyboardId) || graphNodesRef[0];
 
@@ -3708,6 +3710,8 @@ function openGraphNewNote(event, linkFrom = null) {
     ? "This note will be linked to the one you grew it from."
     : "It joins the map as soon as you add it.";
   popup.classList.remove("hidden");
+  //: The lock is Capture's (quick-note.js): each opening starts as Settings' "New notes start private" says.
+  ensureModule("quickNote").then(() => createNoteSafely.lock.sync($("graph-new-private")));
   graphLate.newAt = event ? { x: event.clientX, y: event.clientY } : null;
   placeGraphNewNote();
   watchGraphPopupSize(popup, placeGraphNewNote);
@@ -3763,7 +3767,7 @@ async function saveGraphNewNote() {
     //: are (INBOX 434): the map draws the note at once, wherever it lands.
     const created = await apiJson("/entries", {
       method: "POST",
-      body: JSON.stringify({ content, tags, defer_filing: true, inline_tags: true }),
+      body: JSON.stringify({ content, tags, defer_filing: true, inline_tags: true, ...createNoteSafely.lock?.ask($("graph-new-private")) }),
     });
     if (created.filing_state === "pending") watchFiling(created);
     pushEntryCreateUndo(created, "Added a note to the map");

@@ -64,8 +64,8 @@
   captureCard.mountLock = async () => {
     if (captureCardField("private")) return;
     await ensureModule("quickNote");
-    const button = captureCardEl("button", "ghost small", { type: "button", "data-cc": "private", "aria-pressed": "false" });
-    button.append(captureCardEl("i", "ph ph-lock-open ph-lead", { "aria-hidden": "true" }), " Private");
+    const button = captureCardEl("button", "ghost small lock-toggle", { type: "button", "data-cc": "private", "aria-pressed": "false" });
+    button.append(captureCardEl("i", "ph ph-lock-open ph-lead", { "aria-hidden": "true" }), " ", captureCardEl("span", "lock-toggle-label"));
     button.addEventListener("click", () => createNoteSafely.lock.flip(button, "captureCardPrivate"));
     captureCardField("close").before(button);
     //: The card's draft keeps the lock too (a reload puts it back).

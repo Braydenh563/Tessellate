@@ -586,6 +586,25 @@ button.ghost:not(.icon-only, .icon-button) > .ph-lead {
 button.ghost:is(.active, .is-on, [aria-pressed="true"], [aria-expanded="true"]):not(.icon-only, .icon-button) > .ph-lead {
   color: inherit;
 }
+/* **A lock toggle** (INBOX 1736, the owner: "there is no active state to the
+   private buttons"): the Private button on every new-note surface (the note
+   editor foot, Capture, the quick note, the capture card, the graph's New
+   note). Off it is a quiet ghost; on it is the accent fill (`--accent-surface`
+   under `--on-accent`, the pair a `.seg` segment uses), a bolder label that
+   reads "Private on" and the closed lock (quick-note.js `createNoteSafely.lock`
+   sets all three with `aria-pressed`). The ring is the page's own, drawn here
+   too so a pressed button never loses it. */
+button.ghost.lock-toggle[aria-pressed="true"],
+button.ghost.lock-toggle[aria-pressed="true"]:is(:hover, :active, :focus-visible) {
+  background: var(--accent-surface);
+  border-color: var(--accent-surface);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+button.lock-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 /* Not on a destructive one: Stop's square was accent blue beside red text,
    and sat off the text's centre line (release). A danger button's icon takes
    its own colour and the row centres it. */
