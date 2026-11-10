@@ -11,8 +11,8 @@ const { boot } = require('./lib.js');
   await page.evaluate(async () => { await apiJson('/documents', { method: 'POST', body: JSON.stringify({ title: 'Phone doc', content: 'A line.' }) }).catch(() => {}); });
   const findings = [];
   const surfaces = [
-    { tab: 'notes', aside: 'sidebar', dock: '[data-dock-name="notes"]', page: '#tab-notes main' },
-    { tab: 'chat', aside: 'chat-sidebar', dock: '[data-dock-name="chat"]', page: '#tab-chat main, #tab-chat .chat-main' },
+    { tab: 'notes', aside: 'sidebar', dock: '[data-dock-name="notes"]', page: '#tab-notes .tab-main' },
+    { tab: 'chat', aside: 'chat-sidebar', dock: '[data-dock-name="chat"]', page: '#tab-chat .tab-main, #tab-chat main, #tab-chat .chat-main' },
     { tab: 'documents', aside: 'doc-sidebar', dock: '.doc-dock', page: '.doc-main' },
   ];
   for (const s of surfaces) {
@@ -35,7 +35,8 @@ const { boot } = require('./lib.js');
     }, s);
     console.log(s.tab, JSON.stringify(r));
     if (r.asideX > 0) findings.push(`${s.tab}: the closed sidebar still shows ${r.asideX}px at 390`);
-    if (r.mainPad !== '0px') findings.push(`${s.tab}: the page beside the sidebar still pads ${r.mainPad}`);
+    // The rail is 60px on a tablet; a phone keeps only the page's own 4px gutter.
+    if (!(parseFloat(r.mainPad) <= 8)) findings.push(`${s.tab}: the page beside the sidebar still pads ${r.mainPad}`);
     if (!r.opener) findings.push(`${s.tab}: no opener in the dock`);
     else { if (r.opener.h < 44 || r.opener.w < 44) findings.push(`${s.tab}: opener ${r.opener.w}x${r.opener.h}`); if (!r.openerFirst) findings.push(`${s.tab}: the opener is not the dock's first child`); }
     if (r.railToggleShown) findings.push(`${s.tab}: the rail toggle still shows while closed`);
@@ -56,7 +57,7 @@ const { boot } = require('./lib.js');
   await page.setViewportSize({ width: 768, height: 1024 });
   await page.evaluate(() => switchTab('notes'));
   await page.waitForTimeout(700);
-  const tab = await page.evaluate(() => ({ pad: getComputedStyle(document.querySelector('#tab-notes main')).paddingLeft, opener: document.querySelector('[data-dock-name="notes"] > .dock-nav').getBoundingClientRect().width, toggle: document.querySelector('#sidebar > .sidebar-collapse-toggle').getBoundingClientRect().width }));
+  const tab = await page.evaluate(() => ({ pad: getComputedStyle(document.querySelector('#tab-notes .tab-main')).paddingLeft, opener: document.querySelector('[data-dock-name="notes"] > .dock-nav').getBoundingClientRect().width, toggle: document.querySelector('#sidebar > .sidebar-collapse-toggle').getBoundingClientRect().width }));
   console.log('768', JSON.stringify(tab));
   if (tab.pad === '0px') findings.push('768: the tablet lost its rail');
   if (tab.opener > 0) findings.push('768: the phone opener shows on a tablet');

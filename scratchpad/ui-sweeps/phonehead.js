@@ -30,7 +30,7 @@ const { boot } = require('./lib.js');
     if (bar.n > 3) findings.push(`${w}: ${bar.n} header controls, the phone bar takes three`);
     if (bar.heights.length !== 1) findings.push(`${w}: header controls at ${bar.heights.join('/')}px, one height expected`);
     if (bar.right > w) findings.push(`${w}: a header control ends at ${bar.right}`);
-    if (!bar.ids.includes('More')) findings.push(`${w}: no More menu in the bar`);
+    if (!bar.ids.includes('App menu')) findings.push(`${w}: no App menu in the bar`);
   }
   // The menu: four rows, Lock following the desktop lock button, Escape closes.
   await page.setViewportSize({ width: 390, height: 844 });
@@ -55,7 +55,7 @@ const { boot } = require('./lib.js');
   // The four app verbs end the menu; since INBOX 392 the status bar's own
   // controls are the rows above them (`PHONE_STATUS_ROWS`), the bar being off
   // a phone's screen.
-  const app = ['Light or dark', 'Settings', 'Lock', 'Quit MemoryMap'];
+  const app = ['Light or dark', 'Settings', 'Lock', 'Quit Tessellate'];
   if (menu.rows.slice(-4).join('|') !== app.join('|')) findings.push('the More menu does not end with ' + app.join(', ') + ': ' + menu.rows.join(', '));
   if (!menu.rows.includes('Recent places')) findings.push('the status bar rows are missing from the More menu');
   if (menu.lockShown === menu.lockBtnHidden) findings.push('the Lock row does not follow the lock button');
