@@ -189,8 +189,6 @@ BOUND = [
     (["when is the exam", "what room"], "Stats exam", "B204"),
     (["when is the exam", "where is it"], "Stats exam", "B204"),
     (["what do I know about the japan trip", "who am I going with"], "", ""),
-    (["how far did I run", "how fast"], "", ""),
-    (["who wrote piranesi", "have I read it?"], "", ""),
 ]
 
 
@@ -272,3 +270,19 @@ def test_the_frame_reads_a_dated_answer():
         NOW.date(),
     )
     assert frame["note_ids"] == [6] and frame["dates"] == ["2026-11-21"] and frame["person"] == ""
+
+
+#: Found by running the audit's dialogues with frames against the same run without.
+@pytest.mark.parametrize("question, ask", [
+    ("what about mia", "remind me about the Call with Anna note a week before"),
+    ("and after that", "when is Anna visiting"),
+])
+def test_an_act_or_a_pronoun_is_never_a_person_swap(question, ask):
+    follow = composer.follow_on(question, [{"question": ask, "answer": "Anna is visiting on 28 November.", "frame": {**ANNA, "ask": ask}}])
+    assert follow is None or follow.kind != "entity", follow
+
+
+def test_a_month_is_not_a_person():
+    lead = {"id": 9, "content": "# Call with Anna\n\nAnna is visiting on 28 November. She wants to try the new ramen place."}
+    result = {"text": "Anna is visiting on 28 November.", "grounding": [{"note_id": 9, "sentence": "Anna is visiting on 28 November."}]}
+    assert composer_dialogue.turn_frame("the november one", result, [lead], NOW.date())["person"] == ""

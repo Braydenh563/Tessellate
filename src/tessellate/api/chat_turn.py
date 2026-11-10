@@ -312,24 +312,32 @@ def _cited_scope(req: _StreamRequest, follow) -> list[int]:  # noqa: ANN001
 def _framed_scope(req: _StreamRequest, follow) -> list[int]:  # noqa: ANN001
     """The notes the last answer's frame binds this turn to (fable-composer-1110 F1). The ids are
     client input, so each is read again: a deleted or private note is never reached through them.
-    A turn whose own words name another note's title ("who is mia" after Anna) is not bound."""
+    Not bound, and searched instead, when the turn's own words are held by another note and not by
+    this one ("what is the standard deviation" after the Harbor answer), or the thing it names is
+    another note's title ("did I finish it" when the answer before cited the wrong note)."""
     rows = req.session.execute(
         select(Entry.id, Entry.content).where(Entry.id.in_(list(follow.note_ids)), Entry.is_deleted == False, Entry.is_private == False)  # noqa: E712
     ).all()
-    if not rows:
-        return []
+    ids = [row.id for row in rows]
     bound = " ".join(row.content or "" for row in rows).lower()
-    if follow.kind == "bound" and any(_titled_elsewhere(req.session, term) for term in composer_dialogue.subject_terms(req.question) if term.lower() not in bound):
+    asked = composer_dialogue.subject_terms(req.question) if follow.kind == "bound" else []
+    own = [t for t in asked if t.lower() not in bound]
+    if follow.kind == "bound" and not own:
+        follow.question = req.question  # "how many sets": the note holds the words, so they are asked as typed
+    if not ids or any(_visible_elsewhere(req.session, t, ids) for t in own) or any(_visible_elsewhere(req.session, t, ids, titled=True) for t in [*asked, *composer_dialogue.subject_terms(follow.question)]):
+        follow.question = req.question if follow.kind == "bound" else follow.question  # let go: the turn's own words, searched
         return []
-    return [row.id for row in rows]
+    return ids
 
 
-def _titled_elsewhere(session, term: str) -> bool:  # noqa: ANN001
-    """Whether a visible note's title is `term` ("Mia")."""
+def _visible_elsewhere(session, term: str, ids: list[int], *, titled: bool = False) -> bool:  # noqa: ANN001
+    """Whether a visible note outside `ids` holds `term`, or with `titled`, is titled `term` ("Mia")."""
     rows = session.execute(
-        select(Entry.content).where(Entry.is_deleted == False, Entry.is_private == False, Entry.content.ilike(f"%{like_escape(term)}%", escape=LIKE_ESCAPE)).limit(25)  # noqa: E712
+        select(Entry.content).where(
+            Entry.is_deleted == False, Entry.is_private == False, Entry.id.notin_(ids), Entry.content.ilike(f"%{like_escape(term)}%", escape=LIKE_ESCAPE)  # noqa: E712
+        ).limit(25 if titled else 1)
     ).all()
-    return any(_turn_label(row.content).lower() == term.lower() for row in rows)
+    return any(_turn_label(row.content).lower() == term.lower() for row in rows) if titled else bool(rows)
 
 
 def _composed_support(result: dict) -> dict:
@@ -347,10 +355,14 @@ def _not_again(answer, follow, restated: bool, req: _StreamRequest) -> tuple:  #
     return result, follow
 
 
-def _with_frame(result: dict, follow, question: str, current: list, today) -> None:  # noqa: ANN001
+def _with_frame(result: dict, follow, req: _StreamRequest, current: list, today) -> None:  # noqa: ANN001
     """The frame the answer is sent with (`composer_dialogue.turn_frame`), read from the question
-    as the follow-on put it."""
-    result["frame"] = composer_dialogue.turn_frame(follow.question if follow else question, result, current, today)
+    as the follow-on put it. A slot read on the note before ("how much flour") is still about that
+    note's subject, so "what temperature" next is asked of the banana bread, not of "flour"."""
+    result["frame"] = frame = composer_dialogue.turn_frame(follow.question if follow else req.question, result, current, today)
+    before = ((req.history or [{}])[-1] or {}).get("frame") or {}
+    if frame and follow is not None and follow.kind == "bound" and before.get("subject") and frame["note_ids"][:1] == before.get("note_ids", [])[:1]:
+        frame["subject"] = before["subject"]
 
 
 def _frame_events(result: dict) -> list[dict]:

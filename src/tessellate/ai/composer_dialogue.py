@@ -10,6 +10,7 @@ the layer list in `composer.py`'s docstring, never back to `composer`.
 
 from __future__ import annotations
 
+import calendar
 import hashlib
 import re
 from dataclasses import dataclass, field
@@ -663,21 +664,24 @@ _APP_NOUNS = re.compile(r"\b(?:you|your|reminders?|tasks?|tags?|categor(?:y|ies)
 _SLOT_WORDS_MAX = 5
 
 
+#: Comparing or counting over what was shown ("which is higher", "what's the difference") is
+#: computed from it (audit F6), not read as a slot of one note.
+_COMPARES = re.compile(r"^which\b|\b(?:difference|between|total|compare|versus|vs|more|less|first|last)\b", re.I)
+
+
 def _follow_slot(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
-    """"what temperature", "how fast", "who am I going with", "have I read it" right after an
-    answer: a slot of the note that answer showed, read on that note before anything is searched,
-    not a search for "temperature" (fable-composer-1110 F1, step 3)."""
+    """"what temperature", "what room", "who am I going with" right after an answer: a slot of
+    the note that answer showed, read on that note, not searched for "temperature"
+    (fable-composer-1110 F1, step 3). Asked of the note's subject; the server keeps the person's
+    own words when the note holds them, and lets go when they are another note's
+    (`chat_turn._framed_scope`)."""
     q = " ".join(text.split()).rstrip("?.! ")
-    asks = _ASKS_SLOT.match(q) or re.match(r"(?:have|has|had) (?:i|we)\b", q, re.I)
-    if not asks or len(q.split()) > _SLOT_WORDS_MAX or _OWNED.search(q) or _APP_NOUNS.search(q):
+    if not _ASKS_SLOT.match(q) or len(q.split()) > _SLOT_WORDS_MAX or _OWNED.search(q) or _APP_NOUNS.search(q) or _COMPARES.search(q):
         return _NOT_THIS
-    if re.search(r"\b[A-Z][a-z]|\d", q[1:]) or rec.without_windows(q) != q:
+    if re.search(r"\b[A-Z][a-z]|\d", q[1:]) or rec.without_windows(q) != q or _PRONOUN.search(q):
         return _NOT_THIS
     named, ids = _frame_thing(_frame_of(last), article=True)
-    if not named:
-        return _NOT_THIS
-    asked = _pronoun_swap(q, named, "bare") if _PRONOUN.search(q) else f"{q} about {named}"
-    return FollowOn(f"{asked}?", previous, "", "bound", note_ids=ids)
+    return FollowOn(f"{q} about {named}?", previous, "", "bound", note_ids=ids) if ids else _NOT_THIS
 
 
 #: "until then", "before then": the day the last answer showed.
@@ -699,7 +703,7 @@ def _follow_then(text: str, previous: str, last: dict, turns: list[dict]) -> Any
 
 #: "and mia", "what about Sam?": the same question of another person.
 _AND_WHO = re.compile(r"^(?:and|(?:and |so )?(?:what|how) about)\s+(?P<x>[a-z][\w'-]*(?: [a-z][\w'-]*)?)\W*$", re.I)
-_NOT_A_NAME = re.compile(r"^(?:the|a|an|my|our|your|that|this|it|then|so|more|else|now|next|last|other|again)\b", re.I)
+_NOT_A_NAME = re.compile(r"^(?:the|a|an|my|our|your|that|this|it|then|so|more|else|now|next|last|other|again|after|before)\b|\b(?:it|that|this|them)$", re.I)
 
 
 def _person_swap(text: str, last: dict) -> FollowOn | None:
@@ -708,7 +712,9 @@ def _person_swap(text: str, last: dict) -> FollowOn | None:
     got = _AND_WHO.match(text.strip())
     frame = _frame_of(last)
     person, ask = str(frame.get("person") or ""), str(frame.get("ask") or "")
-    if not got or _NOT_A_NAME.match(got.group("x")) or not person or not re.search(rf"\b{re.escape(person)}\b", ask, re.I):
+    if not got or _NOT_A_NAME.search(got.group("x")) or not person or _ACT_LEAD.match(ask):
+        return None
+    if not re.search(rf"\b{re.escape(person)}\b", ask, re.I):
         return None
     return FollowOn(re.sub(rf"\b{re.escape(person)}\b", got.group("x"), ask, flags=re.I), ask, "", "entity")
 
@@ -874,6 +880,7 @@ FRAME_ITEMS = 12
 FRAME_TEXT = 80
 _LINKED = re.compile(r"\]\(#/notes/(\d+)\)")
 _NAME = re.compile(r"(?<![.!?]\s)(?<!^)\b[A-Z][a-z]{1,20}\b", re.M)
+_CALENDAR_NAMES = frozenset([*calendar.month_name[1:], *calendar.day_name])
 _THIRD_PERSON = re.compile(r"\b(?:she|he|her|his|him)\b", re.I)
 _LIST_LINE = re.compile(r"^\s*(?:[-*]|\d+[.)])\s+(?P<line>\S.*)$", re.M)
 _MARKS = re.compile(r"\[([^\]]*)\]\([^)]*\)|[*_`]|\[\s*[xX ]?\s*\]")
@@ -899,7 +906,8 @@ def _person(asked: str, lead: dict) -> str:
     if not _THIRD_PERSON.search(body):
         return ""
     names = set(re.findall(r"\b[A-Z][a-z]{1,20}\b", composer_frame.note_title(lead))) | set(_NAME.findall(body))
-    return next((n for n in sorted(names) if re.search(rf"\b{n}\b", asked, re.I)), "")
+    #: "28 November" names a day, not a person.
+    return next((n for n in sorted(names) if re.search(rf"\b{n}\b", asked, re.I) and n not in _CALENDAR_NAMES), "")
 
 
 def _frame_days(text: str, today) -> list[str]:  # noqa: ANN001  # a date

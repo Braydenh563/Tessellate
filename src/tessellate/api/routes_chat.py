@@ -1313,7 +1313,7 @@ def _composed_result(req: _StreamRequest, prepared: dict) -> tuple:
     current, older = _current_notes(req, prepared["notes"])
     answer = lambda f, r: _open_note_answer(req, f, current, today) or _digest_for(req, prepared, f, current, r, today) or _compose_for(req, prepared, f, current, today)  # noqa: E731
     result, follow = _not_again(answer, follow, restated, req)
-    _with_frame(result, follow, req.question, current, today)
+    _with_frame(result, follow, req, current, today)
     if follow is not None and follow.kind == "more" and not result.get("grounding"):
         #: Nothing left unsaid: say so, with how much there is (B8).
         result = composer_digest.all_said(follow.question, prepared["notes"], today=today, voice=_answer_voice()) or result
