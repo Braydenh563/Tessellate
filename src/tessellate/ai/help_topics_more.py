@@ -3798,7 +3798,7 @@ MORE_TOPICS.append({
     "id": "diagram-lines",
     "keywords": (
         "curved arrows", "straight arrows", "stepped arrows", "arrow lines", "line shape",
-        "diagram spacing", "compact spacing", "roomy spacing", "diagram page menu",
+        "diagram spacing", "compact spacing", "roomy spacing", "diagram page menu", "diagram minimap", "diagram overview",
     ),
     "body": (
         "A flowchart's ... menu sets how arrows are drawn (Straight lines, Curved lines, "
@@ -3807,11 +3807,13 @@ MORE_TOPICS.append({
         "takes them back; the picture is then drawn by the dagre layout. A diagram's page "
         "menu keeps Download or print, Connections and History, and leaves out the "
         "writing switches, Read aloud and Extract notes. Export, beside Picture, List and "
-        "Source, saves it as a PNG or an SVG, or copies it as a picture, as Mermaid or as SVG."
+        "Source, saves it as a PNG or an SVG, or copies it as a picture, as Mermaid or as SVG. "
+        "A picture larger than its pane (zoomed in, or a big diagram at Fit) shows a small overview in "
+        "its lower left corner: press or drag it to move the picture. A phone pans by finger instead."
     ),
     "badge": {"label": "Documents", "tab": "documents"},
 })
-TOPIC_META["diagram-lines"] = {"title": "Arrow lines, spacing and the page menu of a diagram", "path": "A diagram document, the ... menu"}
+TOPIC_META["diagram-lines"] = {"title": "Arrow lines, spacing, the page menu and the overview of a diagram", "path": "A diagram document, the ... menu"}
 
 
 #: DOCUMENTS_PLAN 16: the guided equation editor (math-editor.js).
