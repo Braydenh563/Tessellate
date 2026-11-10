@@ -2,9 +2,9 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8065, frontend ids 2665, CSS sections 523, backend routes 662, backend modules 9971, test files 2415, tests 20115, plan headings 1000, app scripts 28, boot scripts 37, script files 275.
+Counts: frontend functions 8069, frontend ids 2665, CSS sections 523, backend routes 662, backend modules 9971, test files 2416, tests 20121, plan headings 1000, app scripts 28, boot scripts 37, script files 275.
 
-## Frontend functions (8065)
+## Frontend functions (8069)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -4379,22 +4379,26 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docTableStepCell` | frontend/js/documents-tables.js:535 |
 | `docTableStepRow` | frontend/js/documents-tables.js:565 |
 
-### frontend/js/documents-word.js (13)
+### frontend/js/documents-word.js (17)
 
 | Name | File:line |
 |---|---|
 | `docWordBlob` | frontend/js/documents-word.js:195 |
-| `docWordBlocks` | frontend/js/documents-word.js:415 |
+| `docWordBlocks` | frontend/js/documents-word.js:472 |
+| `docWordCallout` | frontend/js/documents-word.js:429 |
 | `docWordCodeLang` | frontend/js/documents-word.js:52 |
-| `docWordExport` | frontend/js/documents-word.js:324 |
+| `docWordExport` | frontend/js/documents-word.js:325 |
+| `docWordFlat` | frontend/js/documents-word.js:443 |
 | `docWordHasRevisions` | frontend/js/documents-word.js:84 |
 | `docWordImport` | frontend/js/documents-word.js:124 |
 | `docWordLib` | frontend/js/documents-word.js:23 |
-| `docWordListShape` | frontend/js/documents-word.js:398 |
+| `docWordListShape` | frontend/js/documents-word.js:399 |
 | `docWordMarkSuggestions` | frontend/js/documents-word.js:144 |
 | `docWordPicture` | frontend/js/documents-word.js:160 |
-| `docWordRuns` | frontend/js/documents-word.js:354 |
-| `docWordText` | frontend/js/documents-word.js:338 |
+| `docWordRuns` | frontend/js/documents-word.js:355 |
+| `docWordSections` | frontend/js/documents-word.js:450 |
+| `docWordText` | frontend/js/documents-word.js:339 |
+| `docWordToc` | frontend/js/documents-word.js:422 |
 | `docWordUploadPicture` | frontend/js/documents-word.js:62 |
 
 ### frontend/js/documents.js (478)
@@ -25995,7 +25999,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (20115)
+## Tests (20121)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28398,6 +28402,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_windowed_streams.py | 4 |
 | tests/test_word_count_cjk.py | 4 |
 | tests/test_word_files_b42.py | 4 |
+| tests/test_word_toc_callout_columns.py | 6 |
 | tests/test_words_review.py | 7 |
 | tests/test_worker_guard.py | 6 |
 | tests/test_workspace_header_1031.py | 6 |
