@@ -210,6 +210,13 @@ def consent_events(session, found: dict) -> list[dict]:  # noqa: ANN001
             {"type": "answer", "delta": f"Cancelled: {what.rstrip('.')}. Nothing was changed."},
             {"type": "act", "cancel": True, "label": label, "consent_id": found["id"]},
         ]
+    if proposal and proposal.get("handoff"):
+        #: The page's own skill or plan card: the hand-over goes again, already agreed, and the card settles.
+        return [
+            {"type": "answer", "delta": f"Starting: {what.rstrip('?.')}."},
+            {"type": "act", "settle": True, "label": label, "consent_id": found["id"]},
+            {**proposal["handoff"], "consented": True},
+        ]
     if proposal and proposal.get("steps") and all(str(step.get("name") or "") in commands.RUNNABLE for step in proposal["steps"]):
         return run_card_events(session, label, proposal["steps"], proposal["skipped"], proposal.get("say"), found["id"])
     if (ran := _typed_tool_events(session, (proposal or {}).get("tool"), found["id"], label)) is not None:

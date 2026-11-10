@@ -1904,12 +1904,18 @@ function planProposalCard(holder, event, run) {
   row.className = "row";
   row.append(
     smallButton(event.runLabel || "Run the plan", "Run every step; each one's writes are listed above and can be undone", () => {
+      delete card.dataset.pendingAct;
       card.replaceWith(toolChip(`ph:play ${event.running || `Running ${nounCount(event.steps.length, "step")}`}`));
       run();
     }, false),
     smallButton("Not now", "Run nothing", () => card.replaceWith(toolChip("ph:x Not run: nothing was changed.")))
   );
   card.append(head, list, row);
+  //: Open until a press settles it; the page tells the server so a typed yes or no reaches it (`chatHistoryToSend`, `ai/consent.py`).
+  if (event.consent_id) {
+    card.dataset.pendingAct = card.dataset.askedAct = event.ask_label || "";
+    card.consentId = event.consent_id;
+  }
   holder.appendChild(card);
   return card;
 }

@@ -196,7 +196,9 @@ def test_run_a_skill_by_sentence_hands_the_page_the_models_own_event(client, not
 
     out = stream(client, "run the daily review skill")
     event = out["run_skill"][0]
-    assert event == tool_handoff.validate_run_skill({"name": "Daily review"}), event
+    #: The same event; the card now also waits for a typed yes (consent id and label ride along).
+    own = {k: v for k, v in event.items() if k not in ("consent_id", "ask_label")}
+    assert own == tool_handoff.validate_run_skill({"name": "Daily review"}), event
     assert "Run the skill" in out["text"] and not out.get("act"), out["text"]
 
 
