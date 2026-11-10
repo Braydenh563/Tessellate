@@ -21,7 +21,7 @@ from sqlalchemy.orm import Session
 from tessellate.core import deps, undo_bin
 from tessellate.core.database import LIKE_ESCAPE, AskTurn, Entry, like_escape
 from tessellate.core.deps import get_session
-from tessellate.ai.grounding import support as grounding_support
+from tessellate.ai.grounding import composed_support, support as grounding_support
 from tessellate.entry import manager
 
 router = APIRouter(prefix="/ask-history", tags=["ask-history"])
@@ -130,8 +130,19 @@ def get_ask_turn(turn_id: int, session: Session = Depends(get_session)) -> dict:
         #: deleted since does not make the answer any better or worse backed
         #: than it was). Same counter as the live stream, so a reopened turn
         #: shows the notice the live one did.
-        "support": grounding_support(turn.answer or "", json.loads(turn.grounding or "[]")),
+        "support": _saved_support(turn),
     }
+
+
+def _saved_support(turn: AskTurn) -> dict:
+    """The notice's numbers for a stored turn, by the counter the live answer
+    used: a composed answer's (`composed_support`, never the model-draft
+    warning) when no model wrote it, else the model's (chatfoot L6, W1 A5).
+    The chat's saved turns branch the same way (routes_conversations.py)."""
+    rows = json.loads(turn.grounding or "[]")
+    if turn.composed:
+        return composed_support(None, rows)
+    return grounding_support(turn.answer or "", rows)
 
 
 def _live_grounding(session: Session, turn: AskTurn) -> list[dict]:

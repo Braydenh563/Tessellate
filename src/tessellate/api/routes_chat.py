@@ -2092,7 +2092,7 @@ def _settle_turn(req: _StreamRequest, prepared: dict, t: _Turn) -> Iterator[str]
     if grounding_event is not None:
         yield _event(grounding_event)
     if req.body.notes_only and t.answer_text and not req.body.peek and not private_turn.active():
-        _save_ask_turn(req.session, _in_full(req), t.answer_text, prepared, grounding)
+        _save_ask_turn(req.session, _in_full(req), t.answer_text, prepared, grounding, composed=t.written_by_app)
     #: A model that wrote a counted answer's words still gets its panel
     #: (INBOX 1300 C06; decision 75: the panel assists, the model leads).
     yield from map(_event, _late_panel(prepared, req.question, t.answer_text, t.sent_kinds))

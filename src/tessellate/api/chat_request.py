@@ -803,6 +803,9 @@ class _Turn:
     #: Rows an answer brought with it, exact by construction (the composed
     #: and the extractive answers): kept, saved, and never re-grounded.
     exact_grounding: list | None = None
+    #: The live notice said no model wrote it (`support.by_model` False): the
+    #: saved Ask turn keeps that, so its reopened count matches (W1 A5).
+    written_by_app: bool = False
     shape: str | None = None
     sent_kinds: set = field(default_factory=set)
     model_checks: dict | None = None

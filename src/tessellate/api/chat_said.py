@@ -62,6 +62,7 @@ def _save_ask_turn(
     answer: str,
     prepared: dict,
     grounding: list[dict] | None = None,
+    composed: bool = False,
 ) -> None:
     """Durable record of one Ask-box turn, for routes_ask_history.py's browse
     panel. Only ever called for `notes_only` requests (the Ask box's own
@@ -83,6 +84,7 @@ def _save_ask_turn(
             #: than reopening a turn as bare prose (INBOX 241). The rows are
             #: already plain dicts of primitives by the time they reach here.
             grounding=json.dumps(grounding or []),
+            composed=composed,
         )
     )
     session.commit()

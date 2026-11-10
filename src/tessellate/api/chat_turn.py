@@ -489,6 +489,7 @@ def _note_kind(t: _Turn, kind: str, payload: dict) -> None:
     if kind == "grounding":
         if payload.get("exact"):
             t.exact_grounding = payload.get("sentences") or []
+            t.written_by_app = (payload.get("support") or {}).get("by_model") is False
         t.shape = (payload.get("support") or {}).get("shape") or t.shape
     if kind == "answer" and "answered" not in t.marks:
         t.marks["answered"] = time.perf_counter() - t.started
