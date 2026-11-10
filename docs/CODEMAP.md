@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8072, frontend ids 2673, CSS sections 523, backend routes 662, backend modules 9985, test files 2431, tests 20186, plan headings 1000, app scripts 28, boot scripts 37, script files 275.
+Counts: frontend functions 8072, frontend ids 2673, CSS sections 523, backend routes 662, backend modules 9985, test files 2431, tests 20187, plan headings 1000, app scripts 28, boot scripts 37, script files 275.
 
 ## Frontend functions (8072)
 
@@ -26024,7 +26024,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (20186)
+## Tests (20187)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26996,7 +26996,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_fc_ranking_1110.py | 11 |
 | tests/test_feature_catalog.py | 7 |
 | tests/test_feature_instead_class_1026.py | 3 |
-| tests/test_feature_models.py | 39 |
+| tests/test_feature_models.py | 40 |
 | tests/test_fence_scrub.py | 4 |
 | tests/test_field_clear.py | 8 |
 | tests/test_file_drop.py | 9 |

@@ -37,16 +37,20 @@
         //: The two "Same as ..." rows (INBOX 430): a feature that wants to
         //: follow a role other than its own, on purpose, rather than being
         //: pinned to one model that goes stale the moment that role changes.
-        list.appendChild(
-          sheetRow(
-            row.override_kind === "chat" ? "ph ph-check" : "ph ph-arrows-clockwise",
-            "Same as chat model",
-            () => {
-              close();
-              if (row.override_kind !== "chat") applyFeatureModel(key, featureModelFollow.chat);
-            }
-          )
-        );
+        //: The Chat tab's own sheet leaves "Same as chat model" out: for the
+        //: chat feature it is the Default row said twice (wc2-1110).
+        if (key !== "chat") {
+          list.appendChild(
+            sheetRow(
+              row.override_kind === "chat" ? "ph ph-check" : "ph ph-arrows-clockwise",
+              "Same as chat model",
+              () => {
+                close();
+                if (row.override_kind !== "chat") applyFeatureModel(key, featureModelFollow.chat);
+              }
+            )
+          );
+        }
         list.appendChild(
           sheetRow(
             row.override_kind === "utility" ? "ph ph-check" : "ph ph-arrows-clockwise",
