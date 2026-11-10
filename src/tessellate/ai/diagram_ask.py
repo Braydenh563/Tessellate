@@ -220,7 +220,13 @@ def checked(ops, model: dict) -> tuple[list[dict], int]:
 
 # --- by rule ---------------------------------------------------------------------------------------
 
-_CLAUSES = re.compile(r"\s*(?:;|\n|\.\s+|,?\s+and then\s+|,\s*then\s+)\s*", re.I)
+# Matched on text whose whitespace runs are already one space (_one_spaced), so no two
+# quantifiers share a run of spaces (CodeQL 2129: a tab run backtracked).
+_CLAUSES = re.compile(r" ?(?:;|\. |,? and then |, ?then ) ?", re.I)
+
+
+def _one_spaced(text: str) -> str:
+    return re.sub(r"[^\S\n]+", " ", text).replace("\n", ";")
 _LEAD = re.compile(r"^(?:then|and|also|please|can you|could you)\s+", re.I)
 _BLOCK_WORD = re.compile(r"\s+(?:step|box|block|node)$", re.I)
 
@@ -333,7 +339,7 @@ NOT_READ = "That did not read as a change. Try â€œadd Refund after In stock? Noâ
 def by_rule(ask: str, model: dict) -> dict:
     """The ask read by rule, clause by clause, each checked against the model as the earlier ones left it."""
     sim, kept, dropped, unread = _Sim(model), [], 0, 0
-    for clause in [c for c in _CLAUSES.split(str(ask or "")[:ASK_CHARS]) if c.strip()]:
+    for clause in [c for c in _CLAUSES.split(_one_spaced(str(ask or "")[:ASK_CHARS])) if c.strip()]:
         ops = _clause_ops(clause, sim)
         if not ops:
             unread += 1

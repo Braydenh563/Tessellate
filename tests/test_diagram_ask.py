@@ -150,3 +150,16 @@ def test_the_route_caps_what_it_is_sent(client):
         for body in ({"ask": "x" * 301, "model": SHOP}, {"ask": " ", "model": SHOP}, {"ask": "add x", "model": many})
     ]
     assert codes == [422, 400, 422]
+
+
+def test_the_clause_split_stays_linear_on_a_long_whitespace_run():
+    # CodeQL 2129: the old split's \s* and \s+ shared a tab run and backtracked.
+    import time
+
+    from tessellate.ai import diagram_ask as da
+
+    text = "add A" + "\t" * 20000 + "x"
+    start = time.perf_counter()
+    da._CLAUSES.split(da._one_spaced(text))
+    assert time.perf_counter() - start < 0.05
+    assert da._CLAUSES.split(da._one_spaced("add A;\tthen\t add B\nrename C to D")) == ["add A", "then add B", "rename C to D"]
