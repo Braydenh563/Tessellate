@@ -962,9 +962,9 @@ def _app_said(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list
     ("do you have feelings", the owner, 2026-10-11), a capability, a call, a
     place ("where is the bin?", `ai/find_it.py`, with a link that opens it),
     or that nothing is open."""
-    itself = personal.about_me(req.question or "")
+    itself = chat_extra.talk_events(req.session, req.body.question or "", req.history or [], _reply_seed(req)[1], req.question or "")
     if itself:
-        return [{"type": "answer", "delta": itself}]
+        return itself
     if _asks_capability(req, prepared):
         return [{"type": "answer", "delta": _capability_answer(req, ollama_running)}]
     if req.address is not None and req.address.call:

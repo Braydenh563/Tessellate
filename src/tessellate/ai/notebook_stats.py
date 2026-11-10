@@ -206,6 +206,24 @@ def _despell(text: str) -> str:
     return re.sub(r"[a-z]+", fix, text)
 
 
+#: "Stats" is the subject only when it is the thing asked for: "statistics",
+#: "show my stats", "notebook stats". A noun after it ("the stats exam",
+#: "statistics lecture") or a when/where/who lead is a question about a note
+#: (audit 1110 F2), and "show my statistics" is the overview (conv-1110).
+_STATS_SUBJECT = re.compile(
+    r"^(?:(?:please|can you|could you|will you|just|hey|ok|okay|so)\s+)*"
+    r"(?:(?:show|open|give|see|tell|get|display|pull up|bring up)(?: me)?\s+)?"
+    r"(?:what(?:'s| is| are)\s+)?"
+    r"(?:(?:my|the|our|your|notebook|note|notes|writing|overall|general|all|some|a|few|quick)\s+)*"
+    r"stat(?:istic)?s"
+    r"(?:\s+(?:please|now|page|overview|summary|again|so far|today|for me|of my notes|of my notebook))*$"
+)
+
+
+def stats_is_subject(text: str) -> bool:
+    return bool(_STATS_SUBJECT.match(text.strip().rstrip("?!. ")))
+
+
 def _asks(text: str, *patterns: str) -> bool:
     return all(re.search(pattern, text) for pattern in patterns)
 
@@ -226,7 +244,7 @@ def looks_like_a_question_about_the_notebook(message: str) -> bool:
         or re.search(r"\bwords?\b|word ?count|writ(?:ten|ing)|\bwr(?:ite|ote)\b", text)
         or re.search(r"stale|forgotten|untouched|abandoned", text)
         or re.search(r"^what (?:are|were) (?:my |the )?(?:main |biggest |top |common |recurring )?(?:themes|topics|subjects|areas)\b", text)
-        or re.search(r"\bstat(?:istic)?s\b", text)
+        or stats_is_subject(text)
         or re.search(r"\b(?:pinned|archived|checklists?|reminders?|unticked|unchecked|tasks?)\b", text)
     )
 
@@ -335,7 +353,7 @@ def _whole_notebook(text: str, session: Session) -> StatAnswer | None:
     #: "What have I written lately" asks for the newest notes (INBOX 441, 1590), not the topics covered.
     if _COVERAGE.match(text.rstrip("?!. ")) and not note_recency.is_recency_ask(text):
         return _coverage(session)
-    if _asks(text, r"\bstat(?:istic)?s\b"):
+    if stats_is_subject(text):
         return _general_stats(session)
     return None
 

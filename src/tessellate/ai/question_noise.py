@@ -1913,7 +1913,7 @@ SOCIAL.update({
     "stunning": "compliment", "fabulous": "compliment", "superb": "compliment",
     "outstanding": "compliment", "incredible": "compliment", "marvelous": "compliment",
     "genius": "compliment", "clever": "compliment", "intelligent": "compliment",
-    "kind": "compliment", "rad": "compliment", "sick": "compliment", "epic": "compliment",
+    "kind": "compliment", "rad": "compliment", "epic": "compliment",
     "ugly": "insult", "horrible": "insult", "crap": "insult", "trash": "insult",
     "garbage": "insult", "rubbish": "insult", "junk": "insult", "sucks": "insult",
     "stinks": "insult", "boring": "insult", "lame": "insult", "weak": "insult",
