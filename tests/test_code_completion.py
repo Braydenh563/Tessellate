@@ -269,7 +269,9 @@ def test_the_tools_stay_off_for_prose_and_plain():
     #: Plain text keeps its inert completer: no sources, no typing trigger.
     #: Markdown has one source since doclist-1108, the `#tag` list, which
     #: answers only while a `#word` is typed (the stated intent moved there).
-    assert 'override: type.ext === "md" ? [docPairInput.tagSource(CM)] : []' in tools
+    #: And a second since live code blocks (2026-11-10): the fence source,
+    #: which answers only inside a fenced block that names a language.
+    assert 'override: type.ext === "md" ? [docPairInput.tagSource(CM), docPairInput.fenceSource(CM)] : []' in tools
     assert 'activateOnTyping: type.ext === "md"' in tools
     assert "docCompletionExtras(CM, type)" in tools
 

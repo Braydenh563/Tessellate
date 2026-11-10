@@ -444,21 +444,35 @@
   //: The numbers a page's labels stand for: each `$$ ... $$` block with a `\label{k}` takes its `\tag{n}` or the next number
   //: (equations with a tag do not use one up). The caller (a page render) hands the map to `docMathUse` before it draws.
   let DOC_MATH_LABELS = new Map();
-  function docMathIndex(text) {
-    const labels = new Map();
-    let next = 0;
+  //: The numbered blocks of a page in reading order: each `$$ ... $$` and each `\begin{equation} ... \end{equation}`
+  //: (the latter with its `eq-auto-N` key, N counting those, starred ones left out).
+  function docMathBlocks(page) {
+    const blocks = [];
     //: Blocks found with indexOf, not a lazy regex: a run of `$` with no closing pair would be rescanned from every start.
-    const page = String(text ?? "");
     for (let open = page.indexOf("$$"); open >= 0; ) {
       const close = page.indexOf("$$", open + 2);
       if (close < 0) break;
-      const block = page.slice(open + 2, close);
+      if (close > open + 2) blocks.push({ at: open, body: page.slice(open + 2, close), auto: "" });
       open = page.indexOf("$$", close + 2);
-      if (!block) continue;
-      const key = /\\label\{([^{}]{1,40})\}/.exec(block)?.[1].trim();
-      if (!key || labels.has(key)) continue;
-      const tag = /\\tag\*?\{([^{}]{1,24})\}/.exec(block)?.[1].trim();
-      labels.set(key, tag || String((next += 1)));
+    }
+    let n = 0;
+    for (const found of page.matchAll(/^[ \t]*\\begin\{equation\}([\s\S]*?)\\end\{equation\}/gm)) {
+      n += 1;
+      blocks.push({ at: found.index, body: found[1], auto: `eq-auto-${n}` });
+    }
+    return blocks.sort((a, b) => a.at - b.at);
+  }
+  function docMathIndex(text) {
+    const labels = new Map();
+    let next = 0;
+    for (const { body, auto } of docMathBlocks(String(text ?? ""))) {
+      const key = /\\label\{([^{}]{1,40})\}/.exec(body)?.[1].trim();
+      const dup = key && labels.has(key);
+      if ((!key && !auto) || (dup && !auto)) continue;
+      const tag = /\\tag\*?\{([^{}]{1,24})\}/.exec(body)?.[1].trim();
+      const number = tag || String((next += 1));
+      if (key && !dup) labels.set(key, number);
+      if (auto) labels.set(auto, number);
     }
     return labels;
   }
@@ -481,6 +495,46 @@
   }
 
   // DOC-MATH-END
+
+  // DOC-EQUATION-BEGIN (tests/test_doc_equation_env.py runs this in node)
+  //: `\begin{equation} ... \end{equation}` is a display equation that numbers
+  //: itself, `equation*` is the same without a number (LaTeX's rule). The block
+  //: opens at the start of a line and ends at the line with `\end{...}` (or on
+  //: the same line). A numbered one is handed on with a `\label{eq-auto-N}` the
+  //: page index (`docMathIndex`) knows, N counting the numbered openers before
+  //: it; one that has its own `\label` or `\tag` keeps it.
+  //:
+  //: **Taken in front of the boot script's door** (`mdMathBlockFrom`,
+  //: markdown.js) when this file loads, rather than as lines in it: the boot
+  //: scripts are on a byte ratchet and this is only needed where math draws. A
+  //: page with no math module loaded shows the block as the text it is.
+  function docMathEquationFrom(lines, start) {
+    const open = /^\s*\\begin\{(equation\*?)\}(.*)$/.exec(String(lines[start] || ""));
+    if (!open) return null;
+    const close = `\\end{${open[1]}}`;
+    const body = [];
+    let tail = open[2];
+    for (let i = start; i < lines.length; i += 1, tail = lines[i] ?? "") {
+      const at = tail.indexOf(close);
+      if (at >= 0) {
+        body.push(tail.slice(0, at));
+        return { tex: docMathEquationLabel(lines, start, open[1], body.join("\n").trim()), end: i + 1 };
+      }
+      body.push(tail);
+    }
+    return null;
+  }
+
+  function docMathEquationLabel(lines, start, name, tex) {
+    if (name.endsWith("*") || /\\(?:label|tag)\{/.test(tex)) return tex;
+    let before = 0;
+    for (let i = 0; i < start; i += 1) if (/^\s*\\begin\{equation\}/.test(String(lines[i] || ""))) before += 1;
+    return `${tex} \\label{eq-auto-${before + 1}}`;
+  }
+
+  const mdDoor = window.mdMathBlockFrom;
+  if (mdDoor) window.mdMathBlockFrom = (lines, start) => docMathEquationFrom(lines, start) || mdDoor(lines, start);
+  // DOC-EQUATION-END
 
   //: The tree as elements. MathML is its own namespace: built with
   //: `createElement` the tags are unknown HTML elements, which render as their
@@ -531,7 +585,7 @@
     index: docMathIndex,
     use: docMathUse,
     //: A render of its own (a note card, a chat answer) indexes its own labels, only when it has some (navigation.js, boot-size budget).
-    page: (text) => !docMathRender.labels.held && /\\(?:label|eqref|ref)\{/.test(text) && docMathUse(docMathIndex(text)),
+    page: (text) => !docMathRender.labels.held && /\\(?:label|eqref|ref)\{|\\begin\{equation\}/.test(text) && docMathUse(docMathIndex(text)),
     //: True while a document renders its pieces (columns): each piece keeps the whole page's map instead of indexing its own text.
     held: false,
   };

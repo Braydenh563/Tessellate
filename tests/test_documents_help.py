@@ -33,6 +33,7 @@ DOCK_MENU_WORDS = {
     "doc-export-picture": ".png",
     "doc-copy-picture": "Copy as picture",
     "doc-export-html": ".html",
+    "doc-export-slides": "slides",
     "doc-export-zip": "with images",
     "doc-export-docx": ".docx",
     "doc-export-pdf": "PDF",

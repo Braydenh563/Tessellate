@@ -191,7 +191,7 @@ HELP_TOPICS: list[dict] = [
             "browser blocks them, the list and the "
             "Notifications group in Settings say so, and their ? says how to allow them. "
             "Remind me is on a note's, a document's and a board's ⋯ "
-            "menu too, and the reminder's row opens what it is about. "
+            "menu too (and in a document, the / menu's Remind me about this), and the reminder's row opens what it is about. "
             "Select words in a note and Set a reminder in the selection menu "
             "reads a reminder out of them, linked to that note. When you tell "
             'the chat you need to do something on a day ("I need to call the '
@@ -2921,7 +2921,11 @@ HELP_TOPICS.extend(
                 "is in it or next to it, and the rest of the line stays rendered. "
                 "Every caret and selection counts. A heading, list or quote shows "
                 "its mark while the caret is on its line, and a code block while "
-                "the caret is in it. Source view shows all of it."
+                "the caret is in it. Source view shows all of it. A fenced block that "
+                "names a language (python, js, html, css, sql and more) is coloured "
+                "as that language while you edit it, indents and closes brackets "
+                "as it does, and suggests its words as you type; typing the name "
+                "after the opening fence lists the languages."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
