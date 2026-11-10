@@ -2790,6 +2790,10 @@ class Engine:
         mode = ""
         if not plain and dist > 12 * self._scale():
             mode = self._leg_mode(goal, then)
+            mode = self._short_of_warp(mode, dist)
+            if mode == "here":
+                self._arrive(now)
+                return
             if mode == "edge":  # walks off one edge, comes in from the other (a warp only for the slip itself)
                 self.modes.append(mode)
                 self._start_edge(goal, then, now)
@@ -2871,6 +2875,16 @@ class Engine:
             run_ok=abs(goal[0] - self.x) >= RUN_MIN * self._scale(), between=then == "spell" or seen,
         )
         return mode
+
+    def _short_of_warp(self, mode: str, dist: float) -> str:
+        """A vanish needs somewhere else to go (INBOX 1721 c: "vanishes and reappears in the same spot"): a leg under
+        `WARP_MIN` figure widths is walked or glided instead, or for a floater between two spells ("here") is not made at
+        all (a glide between spells is never seen, INBOX 1696: it is there already)."""
+        if mode not in tv.WARPS or dist >= WARP_MIN * self.size[0]:
+            return mode
+        if self.gait == "float":
+            return "here" if self.then in ("spell", "settle") else "glide"
+        return "walk"
 
     def _box_at(self, x: float, y: float, frame: str = "stand") -> tv.Rect:
         """The drawn box of `frame` for a window at (x, y), in screen px."""
@@ -4319,6 +4333,7 @@ class Engine:
             # INBOX 1690 c: the click opens the menu; the hanger keeps its grip
             # (letting go here left a floater drifting mid-air beside the menu). It still answers the pat (1721 a).
             self.state = "hang"
+            self.ex.fire("pat", now)
         else:
             self.mind.feel("happy", now)
             if now - self.last_click < 4.0 and not self.reduced:  # a second pat: it purrs
@@ -4333,7 +4348,6 @@ class Engine:
             # On the floor at once, without a fall: it would otherwise hang
             # where it was let go, in mid-air, with nothing to bring it down.
             self._place_on_floor()
-            self.ex.fire("pat", now)
             self.settled_now = True
             self._enter("sit", now)
         elif self.y >= self.ground_y() - 0.5 and self.gait == "walk":
