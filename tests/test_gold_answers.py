@@ -82,8 +82,9 @@ def test_the_owners_question_opens_with_the_count():
     assert "Nothing yet on assessments or due dates." in lines
     #: The note's Thursday (6 August) has gone by: the offer drops the day
     #: and says what to ask, from the line beside it (the owner, 2026-10-11).
-    assert lines[-1] == "Remind you to ask the tutor about big O?"
-    assert result["offer"] == {"kind": "reminder", "label": lines[-1], "text": "Ask the tutor about big O"}
+    #: Q4 (2026-11-10): the prose asks "Shall I remind you to ...?", the button keeps its label.
+    assert lines[-1] == "Shall I remind you to ask the tutor about big O?"
+    assert result["offer"] == {"kind": "reminder", "label": "Remind you to ask the tutor about big O?", "line": lines[-1], "text": "Ask the tutor about big O"}
 
 
 def test_the_joke_is_never_a_fact_about_the_person():
@@ -203,8 +204,9 @@ def test_every_kind_ends_with_one_offer_the_app_can_do(question, kind, label, te
     """CHAT_PLAN B12: one acting offer, the answer's last line, done in one
     press (a reminder or a note); never two."""
     result = composer_digest.answer(question, NOTES, today=TODAY)
-    assert result["offer"] == {"kind": kind, "label": label, "text": text}
-    assert result["text"].split("\n\n")[-1] == label
+    #: Q4: a reminder's prose is "Shall I remind you to ...?" (`line`); its button keeps `label`.
+    assert {k: v for k, v in result["offer"].items() if k != "line"} == {"kind": kind, "label": label, "text": text}
+    assert result["text"].split("\n\n")[-1] == result["offer"].get("line", label)
     assert result["text"].count("?") == 1
 
 

@@ -35,7 +35,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import note_recency, object_acts, reminder_parser, task_acts, when
+from tessellate.ai import find_topic, note_recency, object_acts, reminder_parser, task_acts, when
 from tessellate.ai import act_registry, act_steps
 from tessellate.ai.composer_frame import note_title
 from tessellate.ai.act_registry import CONFIRM_INTENTS
@@ -769,6 +769,7 @@ def _found_object(intent: str, head: str, rest: str) -> dict | None:
     free find ("find dentist") its topic."""
     #: A name the app cut short ("I had work today…", a chip's label).
     rest = _NOTES_SCOPE.sub("", rest).rstrip("…").rstrip()
+    rest = find_topic.topic(rest) if intent == "find" else rest
     number = re.fullmatch(r"(?:(?:note|entry) )?#?(\d{1,9})", rest, re.IGNORECASE)
     if number and (rest.startswith("#") or not rest.isdigit()):
         return {"intent": intent, "note_id": int(number.group(1))}
@@ -777,6 +778,7 @@ def _found_object(intent: str, head: str, rest: str) -> dict | None:
         return {"intent": intent, "about": found["about"]}
     if intent == "find" and head in _FREE_FIND and rest and _note_topic(rest):
         about = _drop_article(_TOPIC_FILLER.sub("", _NOTES_SCOPE.sub("", rest), count=1)) or _drop_article(rest)
+        about = find_topic.topic(about)  # "similar to my dentist one you know" searches "dentist" (B27)
         return {"intent": "find", "about": about} if about else None
     return None
 
@@ -1185,17 +1187,25 @@ def read(text: str, now: datetime, locale: str | None = None) -> dict | None:
     return found
 
 
-#: "call Anna": a bare imperative to a person, a task not a search. A name as typed (capitalised) or a kin word.
+#: "call Anna": a bare imperative to a person, a task not a search. A name as typed (capitalised), a kin
+#: word, "the dentist" or "my boss", and for the phone verbs a name in lower case ("call anna", B25).
+_KIN = r"mum|mom|dad|nan|nana|gran|granny|grandma|grandpa|auntie|aunty|uncle"
 _BARE_CALL = re.compile(
-    r"^(?P<verb>call|ring|phone|text|email|message|ping|whatsapp)\s+(?P<who>(?:[A-Z][\w'’-]+(?: [A-Z][\w'’-]+)?)|(?i:mum|mom|dad|nan|nana|gran|granny|grandma|grandpa|auntie|aunty|uncle))$"
+    rf"^(?i:(?P<verb>call|ring|phone|text|email|message|ping|whatsapp))\s+(?P<who>(?:[A-Z][\w'’-]+(?: [A-Z][\w'’-]+)?)|(?i:{_KIN})|(?i:(?:the|my|our) [a-z]+))$"
+    rf"|^(?i:(?P<verb2>call|ring|phone))\s+(?P<who2>[a-z][a-z'’-]{{1,20}})$"
 )
+#: What a lower-case "call X" is not a person: a pronoun, a time or a place.
+_NOT_A_PERSON = frozenset({"me", "it", "us", "back", "them", "him", "her", "you", "again", "later", "now", "today", "tomorrow", "tonight", "home", "off", "out", "up", "down", "in", "over", "this", "that", "these", "those", "ahead", "away"})
 
 
 def _bare_call(text: str, now: datetime, locale: str | None) -> dict | None:
     """"call Anna" is "remind me to call Anna": the same reminder, asking when (composer-r8)."""
     found = _BARE_CALL.match(text)
-    if not found or found.group("who").lower() in {"me", "it", "us", "back"}:
+    who = found and (found.group("who") or found.group("who2"))
+    if not found or who.lower() in _NOT_A_PERSON:
         return None
+    if found.group("who2"):  # "call anna": the name is said with its capital
+        text = f"{found.group('verb2')} {who[:1].upper()}{who[1:]}"
     return _reminder(f"remind me to {text}", now, locale)
 
 
@@ -1586,6 +1596,8 @@ def _plan_tag_or_move(session: Session, parsed: dict, note_ids: list[int] | None
     ok, skipped = _split_allowed(entries)
     items = [_item(e) for e in ok]
     count = f"{len(ok)} note{'' if len(ok) == 1 else 's'}"
+    if len(ok) == 1:  # the note is named by its title, never "1 note about “Car”" (B24)
+        count, which = "the note", f"“{note_title(ok[0].content, size=48)}”"
     if intent == "tag":
         tags = " ".join(f"#{t}" for t in parsed["tags"])
         steps = [{"name": "tag_note", "arguments": {"note_ids": [e.id for e in ok], "add": parsed["tags"]}}] if ok else []

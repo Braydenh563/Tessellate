@@ -275,6 +275,39 @@ def reply(session: Session, question: str, history: list[dict], today: date) -> 
     return None
 
 
+# --- an offer taken up (B23) ----------------------------------------------------
+
+_YES = re.compile(
+    r"^(?:oh )?(?:yes|yeah|yep|yup|ya|sure|ok|okay|alright|all right|please|do it|go ahead|go on|why not|sounds good|that would be great|that'd be great)"
+    r"(?:[,.!]? (?:please|do it|go ahead|thanks|thank you|then))*[.!]*$",
+    re.I,
+)
+#: The offers an answer ends with that a sentence can carry out: a reminder, said as the prose asks it or as its button does.
+_REMIND_OFFER = re.compile(
+    r"^(?:shall i remind you to|remind you to|set a reminder to|want a nudge to|should i remind you to|want me to remind you to) (?P<action>.+?)\??$", re.I
+)
+
+
+def accepted_offer(question: str, history: list[dict] | None) -> str | None:
+    """The sentence a bare "yes" stands for when the answer before it ended with an offer
+    the composer can carry out ("Shall I remind you to call the plumber?" is "remind me to
+    call the plumber"), else None. An offer with no act behind it is not guessed at."""
+    if not history or not _YES.match(_clean(question).strip()):
+        return None
+    lines = [ln.strip(" *_") for ln in str(history[-1].get("answer") or "").splitlines() if ln.strip()]
+    found = _REMIND_OFFER.match(lines[-1]) if lines else None
+    return f"remind me to {found.group('action').strip().rstrip('?.')}" if found else None
+
+
+def cited_question(question: str, history: list[dict] | None, now: datetime) -> str | None:
+    """"Open it", "tell me more about the starter" (audit 1029 C44): the question with its referent
+    named, the leading note the last answer cited, so it is never searched by its own words."""
+    from tessellate.ai import reading
+
+    turns = [{"text": str(t.get("question") or ""), "objects": t.get("objects") or []} for t in (history or [])[-reading.FOLLOW_TURNS:]]
+    return reading.cited_follow(question, turns, now) if history else None
+
+
 # --- what to offer next ---------------------------------------------------------
 
 

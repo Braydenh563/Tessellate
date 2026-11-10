@@ -62,6 +62,12 @@ def _owner_as_typed(name: str, question: str) -> str:
     return said.group(1) if said else ""
 
 
+def _owned(word: str, views: list) -> bool:
+    """Whether a note says "the/my <word>": a name the notes never put after an article is no "the Sara" (B22)."""
+    pattern = re.compile(rf"\b(?:the|a|an|my|our|your|his|her|their) {re.escape(word)}\b", re.I)
+    return any(pattern.search(str(v.note.get("content") or "")) for v in views)
+
+
 def clean(subject: str, views: list, question: str = "") -> str:
     """`subject` as a chip names it, or "" when it is no noun phrase the notes use."""
     owner, core = _split_owner(subject)
@@ -72,6 +78,9 @@ def clean(subject: str, views: list, question: str = "") -> str:
     titled = _titles(views).get(name.lower())
     if titled:
         #: A bare name keeps the note's capitals ("Japan"); "the plumber" stays as typed.
+        #: A one-word proper title no note puts after an article is a name, not "the Sara" (B22).
+        if owner and titled[:1].isupper() and " " not in titled and not _owned(name, views):
+            return titled
         return titled if not owner else f"{owner} {name}"
     if not views:
         return name  # no notes to check it against, so no owner word either

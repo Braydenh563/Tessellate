@@ -493,13 +493,19 @@ def _follow_referent(raw: str, low: str, turns: list[dict]) -> str | None:
     return None
 
 
+#: What takes an act back, said as the sentence that does it (B24): "undo" after a tick, an untick, a pin or an unpin.
+_INVERSE = {"complete": "untick {about}", "uncomplete": "tick off {about}", "pin": "unpin the {about} note", "unpin": "pin the {about} note"}
+
+
 def _untick_of(turn: dict, now: datetime) -> tuple[str, str] | None:
-    """The untick that takes back the last turn when it ticked a task, else None
-    (so "undo" after anything else is still the help line about the keys)."""
+    """The sentence that takes the last turn back when it ticked, unticked, pinned or
+    unpinned something, else None (so "undo" after anything else is still the help
+    line about the keys)."""
     from tessellate.ai import commands
 
     done = commands.read(str(turn.get("text") or ""), now)
-    return (f"untick {done['about']}", "undo") if done and done["intent"] == "complete" else None
+    inverse = _INVERSE.get(done["intent"]) if done and done.get("about") else None
+    return (inverse.format(about=done["about"]), "undo") if inverse else None
 
 
 def cited_follow(text: str, turns: list[dict] | None, now: datetime) -> str | None:

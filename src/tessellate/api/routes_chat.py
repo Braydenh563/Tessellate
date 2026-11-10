@@ -1853,16 +1853,6 @@ def _note_tool_read(req: _StreamRequest, prepared: dict, t: _Turn) -> None:
             prepared["notes"] = []
 
 
-def _cited_question(req: _StreamRequest) -> str | None:
-    """"Open it", "tell me more about the starter" (audit 1029 C44): the
-    question with its referent named, the leading note the last answer
-    cited, so it is never searched by its own words. Model up or down."""
-    from tessellate.ai import reading
-
-    turns = [{"text": str(t.get("question") or ""), "objects": t.get("objects") or []} for t in (req.history or [])[-reading.FOLLOW_TURNS:]]
-    return reading.cited_follow(req.question, turns, user_now(deps.get_config()))
-
-
 def _follow_up(req: _StreamRequest):
     """The follow-up the turn before gives this one: a spoken act stands in
     for the question itself; a composed turn's "tell me more" is
@@ -1877,7 +1867,8 @@ def _follow_up(req: _StreamRequest):
         #: name its objects (audit 1030 Z53), "more" after a summary was
         #: rewritten to "tell me more about the Lecture 5 note" and searched.
         return more
-    cited = _cited_question(req) if req.history else None
+    #: A bare "yes" takes up the offer the answer before ended with (B23); "open it" names the note the answer cited.
+    cited = composer_talk.accepted_offer(req.question, req.history) or composer_talk.cited_question(req.question, req.history, user_now(deps.get_config()))
     if cited is not None:
         req.question = cited
     spoken = _spoken_act(req) if req.history and not req.ollama.is_running() else None

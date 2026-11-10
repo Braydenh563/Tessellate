@@ -142,12 +142,12 @@ Parked until the owner's data or a check on real hardware:
 
 **W9 Composer: follow-ons, chips and acts** (B, composer, Sonnet high). Files: `ai/composer_follow.py`, `composer_dialogue.py`, `commands.py`, the chips builder. Checks: as W7. Done when: as W7.
 - B21 (in part, conv-1110: a demonstrative with its noun keeps the noun, `composer_talk` reads the answer before; Ask still sends no objects, "who wrote it" unchecked) A follow-on loses its subject ("and the other one?", "who wrote it", "and the dentist"; Ask sends no objects) | R9-9, c13#7, E25, 1107 D6, 1031-composer C12, 1029-composer C44
-- B22 Chips built from leftover words ("about the sara?", "about project?") | 1107 D19, R3-36, 1031-composer C47, bt#17, c13#15-18
-- B23 Offers nothing answers ("yes" after an offer) | 1107 D10
-- B24 Four confirm wordings; typed "undo" alone gives the keys | 1107 D23, E7
-- B25 "call anna" in lower case; "make a checklist for my trip" | composer-r8 L12, L14
-- B26 Remind wording, "called X with Y", one list-add rule (after Q4, Q5, Q6) | c12 L13, L14, L15
-- B27 Agent mode with no model answers the whole sentence ("find notes simlar to my dentist one yk") | t20#14
+~~- B22 Chips built from leftover words ("about the sara?", "about project?") | 1107 D19, R3-36, 1031-composer C47, bt#17, c13#15-18~~ **Fixed w9b-1110, in part** ("the Sara" is "Sara": `composer_chip_subject._owned`; the audit's other chips were re-driven on the 1031 seed and no longer appear; tag chips such as "about project" are the person's own tags, left).
+~~- B23 Offers nothing answers ("yes" after an offer) | 1107 D10~~ **Fixed w9b-1110, for reminders** (`composer_talk.accepted_offer`: "yes" after "Shall I remind you to X?" sets it; the checklist, list and table offers have no act behind a bare "yes" yet).
+~~- B24 Four confirm wordings; typed "undo" alone gives the keys | 1107 D23, E7~~ **Fixed w9b-1110** (every `CONFIRM` wording names Confirm and Cancel, eight openers kept for test_reply_variety; a tag or move names the note by title; "undo" after a pin or unpin takes it back; "undo" with no act before it still gives the keys, by design).
+~~- B25 "call anna" in lower case; "make a checklist for my trip" | composer-r8 L12, L14~~ **Fixed w9b-1110** (`commands._bare_call`: lower-case names for call/ring/phone, "the dentist", "my boss"; `task_acts._subject_checklist`: "Trip checklist" with one empty line).
+- B26 Remind wording, "called X with Y", one list-add rule (after Q4, Q5, Q6) | c12 L13, L14, L15 **Built in part w9b-1110: Q4 only** (prose "Shall I remind you to X?", button label pinned, `offer.line`). Q5 and Q6 not built: both would rewrite pinned tests (test_new_note_called_1102 has "called Shopping with milk, eggs and bread" as title and body) and wait for the owner's yes.
+~~- B27 Agent mode with no model answers the whole sentence ("find notes simlar to my dentist one yk") | t20#14~~ **Fixed w9b-1110** (`find_topic.topic` in `commands._found_object`: the likeness words, "one" and the filler come off; searches "dentist").
 ~~- B28 "show the note about golf" answers the tag chart | 1031-notes N32~~ **Stale** (conv-1110, route probe, model off: "show the note about golf" lists the two golf notes with links, no chart)
 - B29 No tasks: "add a task to read chapter 5 tomorrow" and the "tick off" forms | 1028-agent E10 (conv-1110: the add form now answers "Got it, I will add a task due tomorrow at 9am (the default): read chapter 5"; the tick-off forms are not re-checked)
 

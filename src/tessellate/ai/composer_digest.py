@@ -5873,6 +5873,13 @@ def _next_asks(kind: str, question: str, rows: list[dict]) -> list[str]:
     return _fresh_chips(said, question)[:3]
 
 
+def _asked(offer: dict) -> dict:
+    """The offer with its prose: the sentence reads "Shall I remind you to X?" while the button
+    keeps its pinned label "Remind you to X?" (Q4)."""
+    label = str(offer["label"])
+    return {**offer, "line": "Shall I remind you to " + label[len("Remind you to "):]} if label.startswith("Remind you to ") else offer
+
+
 def _fresh_chips(said: list[str], question: str) -> list[str]:
     """The chips not the question just asked, a name in its capitals ("about
     Tom", never "about tom": the who path lower-cases the name it asked
@@ -5988,7 +5995,8 @@ def _result(out: _Out, kind: str, question: str) -> dict:
     #: to every markdown reader, so the labelled lines ran together.
     paragraphs = composer_clean.paragraphs(list(out.lines) + out.more + out.closing[: 2 + len(out.insights)])
     if out.offer:
-        paragraphs.append(out.offer["label"])
+        out.offer = _asked(out.offer)
+        paragraphs.append(out.offer.get("line") or out.offer["label"])
     #: A full-width stop or closing bracket already ends the quoted sentence,
     #: so no ASCII stop follows it ("（笑）." read as a stray dot, INBOX 1524);
     #: after a bare CJK character the stop is the full-width one.

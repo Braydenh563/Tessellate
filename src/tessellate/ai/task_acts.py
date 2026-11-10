@@ -135,6 +135,22 @@ def _checklist_title_items(found: re.Match) -> tuple[str, str]:
     return title[:1].upper() + title[1:], said
 
 
+_SUBJECT_ONLY = re.compile(r"^(?:the |my |our |a |an )?(?P<subject>[\w'’-]+(?: [\w'’-]+){0,3})$")
+
+
+def _subject_checklist(found: re.Match, said: str) -> dict | None:
+    """"make a checklist for my trip": one subject and no items is a checklist note named for it ("Trip
+    checklist") with one empty line to fill, not a search for the word (B25)."""
+    if found.group("join").lower() != "for" or found.group("name") or "," in said or re.search(r"\band\b|&|:", said, re.I):
+        return None
+    subject = _SUBJECT_ONLY.match(said.strip())
+    if not subject:
+        return None
+    kind = _CHECKLIST_TITLES.get(found.group("kind").lower().replace("-", "").replace(" ", ""), "Checklist")
+    name = f"{subject.group('subject').strip()} {kind.lower()}"
+    return {"intent": "new_note", "content": f"# {name[:1].upper() + name[1:]}\n\n- [ ] ", "checklist": True}
+
+
 def read_checklist_note(text: str) -> dict | None:
     """A new note that is a checklist of the items named, as the `new_note` act
     (composer-r8): "make a checklist note of milk, eggs and bread". "for" counts
@@ -143,6 +159,9 @@ def read_checklist_note(text: str) -> dict | None:
     if not found:
         return None
     title, said = _checklist_title_items(found)
+    subject = _subject_checklist(found, said)
+    if subject:
+        return subject
     items = _checklist_items(said)
     if not items or len(items) > 30 or any(len(i.split()) > 6 for i in items) or (found.group("join").lower() == "for" and len(items) < 2):
         return None
