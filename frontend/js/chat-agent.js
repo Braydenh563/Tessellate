@@ -259,7 +259,12 @@ function paintUserMarks() {
   //: The faces come after the page (`afterCharacters`, lazy-entries.js).
   afterCharacters(() => {
     for (const holder of document.querySelectorAll("[data-user-mark]")) {
+      //: A holder already drawn from this name is left alone: Settings redrew its head on every open, a
+      //: 61 ms forced layout at 4x for the same picture (W13 B47, INBOX 1726).
+      const drawn = `${seed}|${holder.dataset.userMark}`;
+      if (holder.dataset.userMarkDrawn === drawn && holder.firstElementChild) continue;
       holder.replaceChildren(nameMark(seed, Number(holder.dataset.userMark) || 18));
+      holder.dataset.userMarkDrawn = drawn;
     }
   });
   const head = document.getElementById("profile-head-name");

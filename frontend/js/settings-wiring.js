@@ -675,7 +675,6 @@ document.addEventListener("keydown", (e) => {
     }
     for (const [id, def] of Object.entries(shortcuts)) {
       if ((id === "undo" || id === "redo" || id === "pasteNote") && inTextField) continue;
-      if ((id === "undo" || id === "redo") && behindModal()) continue;
       //: INBOX 321: on an open board the same chord duplicates the selection.
       //: And an editor that already answered it keeps it: the documents
       //: editor binds Ctrl+D to "select the next match" (CodeMirror's search
@@ -685,6 +684,9 @@ document.addEventListener("keydown", (e) => {
       //: first (comment toggle, link) and marks the press handled; a note box does not.
       if ((id === "editorMenu" || id === "palette") && e.defaultPrevented) continue;
       if (matchesShortcut(e, def.keys)) {
+        //: Asked once the chord is one of these, not on every chord: each press of Ctrl plus a letter read the
+        //: layout of every modal (179 ms of forced layout, INBOX 1716; W13 B49).
+        if ((id === "undo" || id === "redo") && behindModal()) continue;
         e.preventDefault();
         //: The chord goes through the same `performUndo`/`performRedo` the
         //: status bar's buttons press, which is where the board handoff
