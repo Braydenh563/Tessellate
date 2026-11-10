@@ -3020,10 +3020,10 @@ INBOX 410 (check with AI in place, dockable suggestions, the dictionary sheet, t
     1440 and holding (numbers in wc2-1110.md):** the sources-fold scroll jump,
     responsive-mode flicker, OCR from Images, the Capture '?' scroll, the
     links widget (Bookmarks), banner actions, per-feature "same as chat", AI
-    templates; Word export of a TOC, callouts and columns (423 b). Still open
-    (no record found, not driven): the top bar at small widths, line numbers
-    in the capture preview, Atlas in the tour ring, the tray menu, the
-    constellation.
+    templates; Word export of a TOC, callouts and columns (423 b). **Driven 2026-11-10 (wc3-1110):** the phone top
+    bar packed left (72px empty at 390; now 10px each side, fixed); capture
+    line numbers, Atlas in the tour ring (0px spill), nine tray actions and
+    the Constellation background hold (numbers in wc3-1110.md). Done.
 
 ## Placed from INBOX, 2026-10-04 (design work for the next Opus slots)
 
