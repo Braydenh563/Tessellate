@@ -237,6 +237,30 @@ def test_how_two_notes_are_related_handed_to_a_model_as_facts(ai_client, fake_ol
     assert "linked directly" in prompt_of(fake_ollama)
 
 
+# --- what only a model can do: said plainly with none, left to its tools with one ----
+
+
+@pytest.mark.parametrize("question", ["any contradictions", "are there any conflicts in my notes", "find contradictions"])
+def test_contradictions_with_no_model_say_a_model_is_needed(client, seeded, question):
+    said = stream(client, question)["text"]
+    assert "needs a model" in said and "Settings" in said, said
+
+
+@pytest.mark.parametrize("question", ["make a document about harbor", "write a report on the launch"])
+def test_a_document_with_no_model_is_handed_off(client, seeded, question):
+    said = stream(client, question)["text"]
+    assert "needs a model" in said and "#/docs" in said, said
+
+
+def test_a_model_keeps_its_tools_for_both_and_is_not_told_none_runs(ai_client, fake_ollama, seeded):
+    from tessellate.ai import tools
+
+    assert {"find_contradictions", "create_document"} <= set(tools.TOOLS)
+    for question in ("any contradictions", "make a document about harbor"):
+        out = stream(ai_client, question, use_tools=True)
+        assert "none is running" not in out["text"] and "none is running" not in prompt_of(fake_ollama)
+
+
 # --- acts the model has a tool for: make a category, restore the last deleted note ----
 
 

@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8044, frontend ids 2655, CSS sections 523, backend routes 664, backend modules 9811, test files 2381, tests 19912, plan headings 1001, app scripts 28, boot scripts 37, script files 272.
+Counts: frontend functions 8044, frontend ids 2655, CSS sections 523, backend routes 664, backend modules 9814, test files 2381, tests 19915, plan headings 1001, app scripts 28, boot scripts 37, script files 272.
 
 ## Frontend functions (8044)
 
@@ -13345,7 +13345,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9811)
+## Backend modules (9814)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -17587,17 +17587,20 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_terms` | src/tessellate/ai/page_analysis.py:108 |
 | `analyse` | src/tessellate/ai/page_analysis.py:101 |
 
-### src/tessellate/ai/parity_reads.py (7)
+### src/tessellate/ai/parity_reads.py (10)
 
 | Name | File:line |
 |---|---|
-| `_bin` | src/tessellate/ai/parity_reads.py:48 |
-| `_chat_row` | src/tessellate/ai/parity_reads.py:70 |
-| `_first_note` | src/tessellate/ai/parity_reads.py:91 |
-| `_history` | src/tessellate/ai/parity_reads.py:76 |
-| `_related` | src/tessellate/ai/parity_reads.py:99 |
-| `_topic` | src/tessellate/ai/parity_reads.py:61 |
-| `answer` | src/tessellate/ai/parity_reads.py:117 |
+| `_bin` | src/tessellate/ai/parity_reads.py:62 |
+| `_chat_row` | src/tessellate/ai/parity_reads.py:84 |
+| `_contradictions` | src/tessellate/ai/parity_reads.py:125 |
+| `_first_note` | src/tessellate/ai/parity_reads.py:105 |
+| `_history` | src/tessellate/ai/parity_reads.py:90 |
+| `_history_of` | src/tessellate/ai/parity_reads.py:142 |
+| `_related` | src/tessellate/ai/parity_reads.py:113 |
+| `_related_of` | src/tessellate/ai/parity_reads.py:146 |
+| `_topic` | src/tessellate/ai/parity_reads.py:75 |
+| `answer` | src/tessellate/ai/parity_reads.py:161 |
 
 ### src/tessellate/ai/passive_capture.py (6)
 
@@ -19665,21 +19668,21 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_notes` | src/tessellate/api/chat_extra.py:25 |
-| `_reminders` | src/tessellate/api/chat_extra.py:34 |
-| `_turn_label` | src/tessellate/api/chat_extra.py:258 |
-| `events` | src/tessellate/api/chat_extra.py:39 |
-| `facts_events` | src/tessellate/api/chat_extra.py:116 |
-| `hello_events` | src/tessellate/api/chat_extra.py:100 |
-| `language_events` | src/tessellate/api/chat_extra.py:202 |
-| `mentioning` | src/tessellate/api/chat_extra.py:241 |
-| `name_events` | src/tessellate/api/chat_extra.py:138 |
-| `read_events` | src/tessellate/api/chat_extra.py:123 |
-| `reminder_events` | src/tessellate/api/chat_extra.py:79 |
-| `saved_joke` | src/tessellate/api/chat_extra.py:223 |
-| `slot_reply` | src/tessellate/api/chat_extra.py:267 |
-| `talk_events` | src/tessellate/api/chat_extra.py:155 |
-| `welcome_line` | src/tessellate/api/chat_extra.py:175 |
+| `_notes` | src/tessellate/api/chat_extra.py:26 |
+| `_reminders` | src/tessellate/api/chat_extra.py:35 |
+| `_turn_label` | src/tessellate/api/chat_extra.py:259 |
+| `events` | src/tessellate/api/chat_extra.py:40 |
+| `facts_events` | src/tessellate/api/chat_extra.py:117 |
+| `hello_events` | src/tessellate/api/chat_extra.py:101 |
+| `language_events` | src/tessellate/api/chat_extra.py:203 |
+| `mentioning` | src/tessellate/api/chat_extra.py:242 |
+| `name_events` | src/tessellate/api/chat_extra.py:139 |
+| `read_events` | src/tessellate/api/chat_extra.py:124 |
+| `reminder_events` | src/tessellate/api/chat_extra.py:80 |
+| `saved_joke` | src/tessellate/api/chat_extra.py:224 |
+| `slot_reply` | src/tessellate/api/chat_extra.py:268 |
+| `talk_events` | src/tessellate/api/chat_extra.py:156 |
+| `welcome_line` | src/tessellate/api/chat_extra.py:176 |
 
 ### src/tessellate/api/chat_pool.py (35)
 
@@ -25745,7 +25748,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19912)
+## Tests (19915)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27418,7 +27421,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_panel_movable_whole_1448.py | 1 |
 | tests/test_panel_rim_1536.py | 3 |
 | tests/test_panel_scrim_lift_1029.py | 3 |
-| tests/test_parity_1110.py | 30 |
+| tests/test_parity_1110.py | 33 |
 | tests/test_passes.py | 7 |
 | tests/test_passive_capture.py | 9 |
 | tests/test_password_floor.py | 6 |

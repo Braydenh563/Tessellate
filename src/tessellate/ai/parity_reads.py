@@ -11,6 +11,11 @@ so both paths say the same thing.
 - earlier chats ("what did we talk about last time", the `search_chat_history` tool);
 - how two notes are related ("how are japan trip and kyoto ideas related", `path_between`);
 - where the notebook is exported (no tool: a hand-off to Settings).
+
+Two more are said only when no model runs (`answer(..., model=False)`), because
+a model has the tool and the composer cannot do what it does: finding notes
+that disagree (`find_contradictions`) and writing a document (`create_document`).
+Each says so and where to turn a model on, in the tool's own words.
 """
 
 from __future__ import annotations
@@ -36,6 +41,15 @@ _WHEN = re.compile(r"\b(?:last time|the last time|earlier|before|previously|the 
 _RELATED = re.compile(
     _LEAD + r"how (?:are|is|do|does) (?:the |my )?(?P<a>.+?) (?:and|with|to) (?:the |my )?(?P<b>.+?) (?:related|connected|linked|relate|connect|link)\W*$"
     r"|" + _LEAD + r"(?:what|how) (?:links|connects|joins|relates) (?:the |my )?(?P<a2>.+?) (?:and|to|with) (?:the |my )?(?P<b2>.+?)\W*$",
+    re.I,
+)
+_CONTRADICTION = re.compile(
+    _LEAD + r"(?:(?:are there|is there|do i have|have i got|find|show|check|look for|any)\s+)*(?:any\s+)?(?:contradictions?|conflicts?|inconsistenc(?:y|ies))(?: in my notes)?\W*$"
+    r"|" + _LEAD + r"(?:do|does|are|is) (?:any of )?(?:my|the) notes (?:contradict|disagree|conflict)(?: with each other| with one another)?\W*$",
+    re.I,
+)
+_DOCUMENT = re.compile(
+    _LEAD + r"(?:make|create|write|draft|start|put together)(?: me)? (?:a |an )(?:new )?(?:long )?(?:document|doc|report|essay|write-up|writeup)\b.*$",
     re.I,
 )
 _EXPORT = re.compile(
@@ -108,21 +122,49 @@ def _related(session: Session, first: str, second: str) -> str | None:
     return tool_say.say("path_between", agent_tools.execute_tool(session, "path_between", args), args)["text"]
 
 
+def _contradictions(session: Session) -> str:
+    from tessellate.ai import tool_say
+    from tessellate.ai import tools as agent_tools
+
+    return tool_say.say("find_contradictions", agent_tools.execute_tool(session, "find_contradictions", {}))["text"]
+
+
+_DOCUMENT_LINE = (
+    "Writing a document needs a model, and none is running. Turn one on in [Settings, Models](#/settings/models), "
+    "or start a blank one yourself in [Documents](#/docs)."
+)
 _EXPORT_LINE = (
     "Exporting is done in Settings, Import & export: JSON, CSV, Markdown, or the whole notebook as a folder, "
     "and a full backup you can seal with a password. [Open Import & export](#/settings/data)"
 )
 
 
-def answer(session: Session, question: str) -> str | None:
-    """The text for a sentence one of these readers owns, else None."""
+def _history_of(session: Session, found: re.Match) -> str:
+    return _history(session, found.group("rest") or found.group("rest2") or "")
+
+
+def _related_of(session: Session, found: re.Match) -> str | None:
+    return _related(session, found.group("a") or found.group("a2"), found.group("b") or found.group("b2"))
+
+
+#: (pattern, reader, only when no model runs), in the order they are tried.
+_READERS = (
+    (_CONTRADICTION, lambda session, _found: _contradictions(session), True),
+    (_DOCUMENT, lambda _session, _found: _DOCUMENT_LINE, True),
+    (_BIN, lambda session, _found: _bin(session), False),
+    (_HISTORY, _history_of, False),
+    (_RELATED, _related_of, False),
+    (_EXPORT, lambda _session, _found: _EXPORT_LINE, False),
+)
+
+
+def answer(session: Session, question: str, *, model: bool = False) -> str | None:
+    """The text for a sentence one of these readers owns, else None. `model`: a
+    model is up, which has the tools the readers marked so stand in for."""
     text = " ".join((question or "").split())
     if not text or len(text) > 160:
         return None
-    if _BIN.match(text):
-        return _bin(session)
-    if found := _HISTORY.match(text):
-        return _history(session, found.group("rest") or found.group("rest2") or "")
-    if related := _RELATED.match(text):
-        return _related(session, related.group("a") or related.group("a2"), related.group("b") or related.group("b2"))
-    return _EXPORT_LINE if _EXPORT.match(text) else None
+    for pattern, reader, bare in _READERS:
+        if (found := pattern.match(text)) and not (bare and model):
+            return reader(session, found)
+    return None
