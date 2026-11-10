@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8052, frontend ids 2661, CSS sections 523, backend routes 664, backend modules 9931, test files 2399, tests 20042, plan headings 1000, app scripts 28, boot scripts 37, script files 273.
+Counts: frontend functions 8052, frontend ids 2661, CSS sections 523, backend routes 664, backend modules 9933, test files 2400, tests 20047, plan headings 1000, app scripts 28, boot scripts 37, script files 273.
 
 ## Frontend functions (8052)
 
@@ -12875,7 +12875,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/export.ics` | GET | `export_ics` | src/tessellate/api/routes_reminders.py:402 |
 | `/export/backup` | GET | `export_backup` | src/tessellate/api/routes_settings.py:2723 |
 | `/export/csv` | GET | `export_csv` | src/tessellate/api/routes_settings.py:3439 |
-| `/export/folder` | GET | `export_notebook_folder` | src/tessellate/api/routes_import.py:147 |
+| `/export/folder` | GET | `export_notebook_folder` | src/tessellate/api/routes_import.py:150 |
 | `/export/json` | GET | `export_json` | src/tessellate/api/routes_settings.py:2747 |
 | `/export/markdown` | GET | `export_markdown` | src/tessellate/api/routes_settings.py:2875 |
 | `/extract/commit` | POST | `extract_commit` | src/tessellate/api/routes_entries.py:4328 |
@@ -12945,11 +12945,11 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/images` | GET | `list_images` | src/tessellate/api/wb_boards.py:229 |
 | `/import` | POST | `import_document` | src/tessellate/api/routes_documents.py:620 |
 | `/import.ics` | POST | `import_ics` | src/tessellate/api/routes_reminders.py:476 |
-| `/import/app` | POST | `import_app` | src/tessellate/api/routes_import.py:80 |
+| `/import/app` | POST | `import_app` | src/tessellate/api/routes_import.py:83 |
 | `/import/directory` | POST | `import_directory` | src/tessellate/api/routes_settings.py:3216 |
 | `/import/document` | POST | `import_document` | src/tessellate/api/routes_settings.py:3343 |
 | `/import/markdown` | POST | `import_markdown` | src/tessellate/api/routes_settings.py:3236 |
-| `/import/reports/{report_id}` | GET | `import_report_page` | src/tessellate/api/routes_import.py:138 |
+| `/import/reports/{report_id}` | GET | `import_report_page` | src/tessellate/api/routes_import.py:141 |
 | `/improve` | POST | `improve_writing` | src/tessellate/api/routes_entries.py:1740 |
 | `/inspect` | POST | `inspect_model` | src/tessellate/api/routes_models.py:1004 |
 | `/instance` | GET | `instance` | src/tessellate/api/app.py:1647 |
@@ -13365,7 +13365,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9931)
+## Backend modules (9933)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -21182,13 +21182,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_excluded` | src/tessellate/api/routes_import.py:66 |
-| `_progress` | src/tessellate/api/routes_import.py:49 |
-| `_received` | src/tessellate/api/routes_import.py:35 |
-| `_summary` | src/tessellate/api/routes_import.py:60 |
-| `export_notebook_folder` | src/tessellate/api/routes_import.py:148 |
-| `import_app` | src/tessellate/api/routes_import.py:81 |
-| `import_report_page` | src/tessellate/api/routes_import.py:139 |
+| `_excluded` | src/tessellate/api/routes_import.py:69 |
+| `_progress` | src/tessellate/api/routes_import.py:52 |
+| `_received` | src/tessellate/api/routes_import.py:36 |
+| `_summary` | src/tessellate/api/routes_import.py:63 |
+| `export_notebook_folder` | src/tessellate/api/routes_import.py:151 |
+| `import_app` | src/tessellate/api/routes_import.py:84 |
+| `import_report_page` | src/tessellate/api/routes_import.py:142 |
 
 ### src/tessellate/api/routes_inbox.py (18)
 
@@ -24638,37 +24638,39 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `set_fullscreen_handler` | src/tessellate/core/window_hook.py:33 |
 | `toggle` | src/tessellate/core/window_hook.py:49 |
 
-### src/tessellate/entry/app_import.py (27)
+### src/tessellate/entry/app_import.py (29)
 
 | Name | File:line |
 |---|---|
-| `Imported` | src/tessellate/entry/app_import.py:70 |
-| `ReadResult` | src/tessellate/entry/app_import.py:86 |
-| `TooBig` | src/tessellate/entry/app_import.py:94 |
-| `_absolute_day` | src/tessellate/entry/app_import.py:405 |
-| `_already_here` | src/tessellate/entry/app_import.py:455 |
-| `_enex_time` | src/tessellate/entry/app_import.py:277 |
-| `_enml` | src/tessellate/entry/app_import.py:287 |
-| `_html_body` | src/tessellate/entry/app_import.py:172 |
-| `_make` | src/tessellate/entry/app_import.py:470 |
-| `_max_file` | src/tessellate/entry/app_import.py:374 |
-| `_notion_links` | src/tessellate/entry/app_import.py:189 |
-| `_notion_name` | src/tessellate/entry/app_import.py:181 |
-| `_read_expanded` | src/tessellate/entry/app_import.py:380 |
-| `_text` | src/tessellate/entry/app_import.py:144 |
-| `_title_from_body` | src/tessellate/entry/app_import.py:153 |
-| `_with_title` | src/tessellate/entry/app_import.py:161 |
-| `expand` | src/tessellate/entry/app_import.py:101 |
-| `people_and_places` | src/tessellate/entry/app_import.py:435 |
-| `preview` | src/tessellate/entry/app_import.py:499 |
-| `read` | src/tessellate/entry/app_import.py:362 |
-| `read_apple` | src/tessellate/entry/app_import.py:342 |
-| `read_evernote` | src/tessellate/entry/app_import.py:303 |
-| `read_notion` | src/tessellate/entry/app_import.py:203 |
-| `read_obsidian` | src/tessellate/entry/app_import.py:240 |
-| `source_key` | src/tessellate/entry/app_import.py:450 |
-| `write` | src/tessellate/entry/app_import.py:521 |
-| `written_on` | src/tessellate/entry/app_import.py:423 |
+| `Imported` | src/tessellate/entry/app_import.py:71 |
+| `ReadResult` | src/tessellate/entry/app_import.py:87 |
+| `TooBig` | src/tessellate/entry/app_import.py:95 |
+| `_absolute_day` | src/tessellate/entry/app_import.py:426 |
+| `_already_here` | src/tessellate/entry/app_import.py:476 |
+| `_bytes` | src/tessellate/entry/app_import.py:111 |
+| `_enex_time` | src/tessellate/entry/app_import.py:298 |
+| `_enml` | src/tessellate/entry/app_import.py:308 |
+| `_html_body` | src/tessellate/entry/app_import.py:193 |
+| `_make` | src/tessellate/entry/app_import.py:491 |
+| `_max_file` | src/tessellate/entry/app_import.py:395 |
+| `_notion_links` | src/tessellate/entry/app_import.py:210 |
+| `_notion_name` | src/tessellate/entry/app_import.py:202 |
+| `_read_expanded` | src/tessellate/entry/app_import.py:401 |
+| `_text` | src/tessellate/entry/app_import.py:165 |
+| `_title_from_body` | src/tessellate/entry/app_import.py:174 |
+| `_with_title` | src/tessellate/entry/app_import.py:182 |
+| `expand` | src/tessellate/entry/app_import.py:118 |
+| `people_and_places` | src/tessellate/entry/app_import.py:456 |
+| `preview` | src/tessellate/entry/app_import.py:520 |
+| `read` | src/tessellate/entry/app_import.py:383 |
+| `read_apple` | src/tessellate/entry/app_import.py:363 |
+| `read_evernote` | src/tessellate/entry/app_import.py:324 |
+| `read_notion` | src/tessellate/entry/app_import.py:224 |
+| `read_obsidian` | src/tessellate/entry/app_import.py:261 |
+| `size_of` | src/tessellate/entry/app_import.py:102 |
+| `source_key` | src/tessellate/entry/app_import.py:471 |
+| `write` | src/tessellate/entry/app_import.py:542 |
+| `written_on` | src/tessellate/entry/app_import.py:444 |
 
 ### src/tessellate/entry/bin.py (6)
 
@@ -25915,7 +25917,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (20042)
+## Tests (20047)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27099,6 +27101,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_import_one_step.py | 5 |
 | tests/test_import_preview.py | 7 |
 | tests/test_import_report.py | 5 |
+| tests/test_import_spool.py | 5 |
 | tests/test_inbox_431_visuals.py | 3 |
 | tests/test_inbox_434_capture.py | 8 |
 | tests/test_inbox_435.py | 12 |
