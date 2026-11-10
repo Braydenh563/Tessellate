@@ -507,11 +507,13 @@ def _picks(sec: Section, level: int, said: set[str]) -> list[str]:
     sents = sentences(sec.text)
     #: The lead is the first sentence that says something: a note's name
     #: said again ("Recipe: lemon risotto.") leads nothing (W10 B30).
-    lead = next((i for i, x in enumerate(sents) if _says_something(x, said)), 0)
+    #: A bare list note ("Reading list" over its items) keeps its title as the lead, which says nothing, so
+    #: the list reader summarises it by its items (`composer_study._list_said`).
+    lead = 0 if sents and clean(sents[0]).strip(" -*+.:").lower() in said else next((i for i, x in enumerate(sents) if _says_something(x, said)), 0)
     picks = sents[lead : lead + 1]
     sents = sents[lead:]
     if level >= 0:
-        picks += _worth(sents[1:], 1 if level == 0 else 4, any_rest=level == 0 and len(sents) <= 4)
+        picks += _worth(sents[1:], 1 if level == 0 else 4, any_rest=level == 0 and len(sents) <= 4 and bool(picks) and _says_something(picks[0], said))
     if level >= 1:
         picks = list(dict.fromkeys(picks + sents[1:5]))
     shown = 3 if level == 0 else 8
@@ -530,7 +532,7 @@ def _says_something(pick: str, titles: set[str]) -> bool:
     words = clean(pick).strip(" -*+")
     #: "Recipe: lemon risotto." under the note "Lemon risotto" is the name said again with a label (W10 B30).
     named = words.partition(":")[2].strip(" .").lower() if _LABEL_ONLY.match(words.partition(":")[0] + ":") else ""
-    return bool(words) and words.rstrip(":").lower() not in titles and not (named and named in titles) and not _LABEL_ONLY.match(words)
+    return bool(words) and words.rstrip(":. ").lower() not in titles and not (named and named in titles) and not _LABEL_ONLY.match(words)
 
 
 def summary(content: str, level: int = 0) -> list[tuple[str, list[str]]]:

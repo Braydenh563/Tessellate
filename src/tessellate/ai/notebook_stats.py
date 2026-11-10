@@ -767,11 +767,13 @@ def _word_count(session: Session) -> StatAnswer:
 
 
 def _has_title(content: str) -> bool:
-    """A note has a title when its first line is a heading, or when that line
-    is all it has: a one-line note ("Suica") is named by its only line (G14 d)."""
+    """A note has a title when its first line is a heading, or when that line is all it has and is
+    only a name ("Suica", G14 d), never a one-line sentence ("Just missed the bus": the composer names
+    that one by its quoted first words, `composer_frame.name_of`)."""
     lines = [ln for ln in str(content or "").splitlines() if ln.strip()]
-    first = lines[0] if lines else ""
-    return first.lstrip().startswith("#") or len(lines) == 1
+    if lines and lines[0].lstrip().startswith("#"):
+        return True
+    return len(lines) == 1 and not composer_frame.name_of({"content": content}).startswith("\u201c")
 
 
 def _untitled(session: Session) -> StatAnswer:

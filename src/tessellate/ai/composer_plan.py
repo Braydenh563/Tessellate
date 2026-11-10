@@ -685,6 +685,9 @@ def _until(ctx: Ctx, subject: str) -> Reply | None:
     found = note_rank.lead_by(found, subject, lambda e: by_id.get(e.note_id) or {"content": ""})
     ev = _event_counting_down_to(found, wanted, today)
     if ev is None:
+        #: Said, not left to the search: "tax return" held by no note is a missing day, not a missing topic.
+        if not any(wanted <= _stems(n.get("content") or "") for n in ctx.notes):
+            return Reply(f"I found no day for {subject.strip()} in your notes, so I cannot count down to it.")
         return None
     days = (ev.day - today).days
     lead = pick(ctx.seed, "until", (

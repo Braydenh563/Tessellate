@@ -157,7 +157,8 @@ def test_a_bare_list_note_is_summarised_by_its_items(ask):
 
 
 def test_a_title_only_note_has_too_little_to_summarise(ask):
-    assert "too little in it to summarise" in ask("summarise the Todo note")
+    #: Said as "only a title" now, not "too little in it" (audit 2, G11: a short note is said whole).
+    assert "is only a title, so there is nothing more to summarise" in ask("summarise the Todo note")
 
 
 @pytest.mark.parametrize(("items", "ticked", "said"), [

@@ -51,5 +51,6 @@ def test_e22_a_name_only_titles_write_keeps_its_capital(ask):
 
 
 def test_d21_a_feature_word_gets_one_short_line_not_a_settings_paragraph(ask):
-    said = ask("what is my name")["text"]
+    #: "what is my name" is the G7 name question now (`ai/address.py`); the feature word is "backup".
+    said = ask("backup")["text"]
     assert "one of the app's own tools" in said and len(said.split()) <= 40, said

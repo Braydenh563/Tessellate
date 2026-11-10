@@ -23,7 +23,7 @@ def test_the_note_named_for_the_window_is_the_answer(go):
 
 def test_a_real_recall_by_the_window_is_unchanged(go):
     text, _ = go("what did I write last weekend")
-    assert "4 notes last weekend" in text, text
+    assert "four notes last weekend" in text, text  # counts are words in a sentence (voice engine, 2026-11-10)
 
 
 def test_a_topic_with_no_titled_note_still_says_nothing_was_written(go):
