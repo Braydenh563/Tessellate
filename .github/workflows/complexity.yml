@@ -22,8 +22,15 @@ jobs:
           python-version: "3.12"
       - run: python -m pip install --upgrade pip ruff radon
 
-      - name: Ruff complexity and performance rules (report only)
-        run: ruff check src --select C901,PERF --config "lint.mccabe.max-complexity = 15" --output-format=github --exit-zero
+      #: Performance rules fail the job (there are none to start with, so the
+      #: baseline is zero and can only stay there). Complexity is gated by
+      #: tests/test_complexity.py against complexity_seed.json, which only
+      #: shrinks; ruff's own C901 count is printed here for the reading.
+      - name: Ruff performance rules (fail on any)
+        run: ruff check src --select PERF --output-format=github
+
+      - name: Ruff complexity (gated by tests/test_complexity.py)
+        run: ruff check src --select C901 --config "lint.mccabe.max-complexity = 15" --output-format=github --exit-zero
 
       - name: Radon summary
         run: |

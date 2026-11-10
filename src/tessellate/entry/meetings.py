@@ -220,8 +220,8 @@ def _inline(lines: list[str], start: int, section: str) -> list:
         found = _LABELLED.match(lines[index])
         if not found or _section_of(found.group(1)) != section:
             continue
-        for text in _split_inline(found.group(2)) if section == DECISIONS else [found.group(2).strip(" .")]:
-            out.append({"line": index, "text": text, "done": False, "owner": None, "cited": False} if section == ACTIONS else text)
+        texts = _split_inline(found.group(2)) if section == DECISIONS else [found.group(2).strip(" .")]
+        out.extend({"line": index, "text": text, "done": False, "owner": None, "cited": False} if section == ACTIONS else text for text in texts)
     return out
 
 

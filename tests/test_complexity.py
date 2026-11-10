@@ -50,3 +50,19 @@ def test_no_import_cycle_at_load() -> None:
 def test_the_lazy_import_cycle_does_not_grow() -> None:
     groups = complexity.cycles(lazy=True)
     assert len(groups) <= 1 and all(len(g) <= LAZY_CYCLE_MODULES for g in groups), [len(g) for g in groups]
+
+
+def test_the_performance_rules_have_a_zero_baseline_and_ci_fails_on_any() -> None:
+    """Q20: complexity.yml no longer runs the PERF rules report-only. None are open, so the baseline is zero; a new
+    one fails the job (and this test, where ruff is installed)."""
+    import shutil
+    import subprocess
+
+    workflow = next(ROOT.glob(".g*/workflows/complexity.yml")).read_text(encoding="utf-8")
+    perf_step = workflow.split("Ruff performance rules")[1].split("- name:")[0]
+    assert "--select PERF" in perf_step and "--exit-zero" not in perf_step
+    ruff = shutil.which("ruff") or str(ROOT / ".venv" / "bin" / "ruff")
+    if not Path(ruff).exists():
+        return
+    done = subprocess.run([ruff, "check", "src", "--select", "PERF", "--output-format=concise"], cwd=ROOT, capture_output=True, text=True, check=False)
+    assert done.returncode == 0, done.stdout

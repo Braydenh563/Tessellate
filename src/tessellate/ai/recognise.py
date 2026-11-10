@@ -3904,9 +3904,7 @@ def measures(text: str) -> list[Measure]:
     Money is a dimension too ("money"), its base unit the currency, so "$86"
     is (money, 86.0, "$", offset) and "$1.5k" is 1500."""
     raw = text or ""
-    found = []
-    for m in _AMOUNT.finditer(raw):
-        found.append(Measure("money", float(m.group(2).replace(",", "")) * (1000 if m.group(3) else 1), m.group(1), m.start(), m.end()))
+    found = [Measure("money", float(m.group(2).replace(",", "")) * (1000 if m.group(3) else 1), m.group(1), m.start(), m.end()) for m in _AMOUNT.finditer(raw)]
     for m in _rx("quantity").finditer(raw.lower()):
         name, glued, written = m.group(3), not m.group(2), raw[m.start(3):m.end(3)]
         if name in _NOT_IN_TEXT or name in CURRENCY_NAMES or (name in _GLUED_ONLY and not glued and written not in _SPACED_CAPITALS):
