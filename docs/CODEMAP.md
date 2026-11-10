@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8072, frontend ids 2679, CSS sections 523, backend routes 662, backend modules 9994, test files 2437, tests 20218, plan headings 1001, app scripts 28, boot scripts 37, script files 275.
+Counts: frontend functions 8072, frontend ids 2679, CSS sections 523, backend routes 662, backend modules 9997, test files 2438, tests 20222, plan headings 1001, app scripts 28, boot scripts 37, script files 275.
 
 ## Frontend functions (8072)
 
@@ -13411,7 +13411,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9994)
+## Backend modules (9997)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -19007,7 +19007,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `todo_note` | src/tessellate/ai/task_acts.py:742 |
 | `undo_step` | src/tessellate/ai/task_acts.py:729 |
 
-### src/tessellate/ai/taxonomy.py (47)
+### src/tessellate/ai/taxonomy.py (50)
 
 | Name | File:line |
 |---|---|
@@ -19017,18 +19017,21 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_children` | src/tessellate/ai/taxonomy.py:124 |
 | `_data` | src/tessellate/ai/taxonomy.py:66 |
 | `_filing_data` | src/tessellate/ai/taxonomy.py:515 |
-| `_fold_plurals` | src/tessellate/ai/taxonomy.py:591 |
+| `_fold_plurals` | src/tessellate/ai/taxonomy.py:619 |
 | `_functional` | src/tessellate/ai/taxonomy.py:93 |
 | `_hits` | src/tessellate/ai/taxonomy.py:538 |
 | `_keyword_index` | src/tessellate/ai/taxonomy.py:161 |
-| `_labels` | src/tessellate/ai/taxonomy.py:616 |
-| `_name_topics` | src/tessellate/ai/taxonomy.py:622 |
+| `_labels` | src/tessellate/ai/taxonomy.py:644 |
+| `_name_topics` | src/tessellate/ai/taxonomy.py:650 |
 | `_normalize_term` | src/tessellate/ai/taxonomy.py:451 |
 | `_occupation_data` | src/tessellate/ai/taxonomy.py:302 |
 | `_occupation_processor` | src/tessellate/ai/taxonomy.py:307 |
-| `_parent_topics` | src/tessellate/ai/taxonomy.py:641 |
+| `_pack_weights` | src/tessellate/ai/taxonomy.py:590 |
+| `_parent_topics` | src/tessellate/ai/taxonomy.py:669 |
 | `_read` | src/tessellate/ai/taxonomy.py:61 |
+| `_related` | src/tessellate/ai/taxonomy.py:562 |
 | `_weak_terms` | src/tessellate/ai/taxonomy.py:102 |
+| `_with_related` | src/tessellate/ai/taxonomy.py:571 |
 | `analyze_note` | src/tessellate/ai/taxonomy.py:408 |
 | `audit_taxonomy` | src/tessellate/ai/taxonomy.py:284 |
 | `build_alias_index` | src/tessellate/ai/taxonomy.py:467 |
@@ -19046,17 +19049,17 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `get_taxonomy_processor` | src/tessellate/ai/taxonomy.py:180 |
 | `merge_reviewed_topic_terms` | src/tessellate/ai/taxonomy.py:486 |
 | `merge_taxonomy` | src/tessellate/ai/taxonomy.py:457 |
-| `name_topics` | src/tessellate/ai/taxonomy.py:606 |
+| `name_topics` | src/tessellate/ai/taxonomy.py:634 |
 | `normalize_text` | src/tessellate/ai/taxonomy.py:153 |
 | `parent_of` | src/tessellate/ai/taxonomy.py:117 |
 | `purpose_hits` | src/tessellate/ai/taxonomy.py:532 |
 | `reload_taxonomy` | src/tessellate/ai/taxonomy.py:432 |
 | `reset_taxonomy_processors` | src/tessellate/ai/taxonomy.py:188 |
 | `sensitive_topics` | src/tessellate/ai/taxonomy.py:519 |
-| `strong_topics` | src/tessellate/ai/taxonomy.py:575 |
+| `strong_topics` | src/tessellate/ai/taxonomy.py:602 |
 | `taxonomy_map` | src/tessellate/ai/taxonomy.py:77 |
 | `topic_hits` | src/tessellate/ai/taxonomy.py:524 |
-| `topic_weights` | src/tessellate/ai/taxonomy.py:561 |
+| `topic_weights` | src/tessellate/ai/taxonomy.py:583 |
 | `weak_terms` | src/tessellate/ai/taxonomy.py:97 |
 
 ### src/tessellate/ai/tensions.py (23)
@@ -26039,7 +26042,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (20218)
+## Tests (20222)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27889,6 +27892,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_region_read.py | 16 |
 | tests/test_related_elsewhere.py | 9 |
 | tests/test_related_notes.py | 39 |
+| tests/test_related_topics.py | 4 |
 | tests/test_relation_types_kg3.py | 11 |
 | tests/test_relations_kg2.py | 15 |
 | tests/test_release_smoke_step.py | 21 |
