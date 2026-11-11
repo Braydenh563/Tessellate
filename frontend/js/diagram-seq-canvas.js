@@ -417,10 +417,10 @@
       const key = act.add(S, tile, { spot: spotOf(S, plusAt), edit: false, sel: null });
       if (typeof key === "string") S.seqOpen = key;
     }
-    function plusMenu() {
+    function plusMenu(anchor = btn) {
       const rows = S.k.tiles.filter((t) => t.type !== "a").map((t) => ({ label: `ph:${t.icon} ${t.name}`, group: t.group, title: `Adds ${t.about}.`, run: () => addAt(t) }));
-      const r = btn.getBoundingClientRect();
-      openMenuAtPoint(rows, "Add at this gap", r.right, r.bottom, btn);
+      const r = anchor.getBoundingClientRect();
+      openMenuAtPoint(rows, "Add at this gap", r.right, r.bottom, anchor);
     }
     function showPlus(event) {
       const layer = layerOf(S);
@@ -438,7 +438,7 @@
         btn.setAttribute("aria-label", "Add at this gap");
         btn.setAttribute("aria-haspopup", "menu");
         btn.innerHTML = '<i class="ph ph-plus" aria-hidden="true"></i>';
-        btn.addEventListener("click", plusMenu);
+        btn.addEventListener("click", () => plusMenu());
         layer.append(btn);
       }
       const g = gap(S.hit, f.uy(event.clientY));
@@ -453,6 +453,16 @@
       if (!event.relatedTarget?.closest?.(".dgm-gap-plus")) hidePlus();
     });
     (fig.onzoom ||= []).push(hidePlus);
+    //: The keyboard path to the same menu (the "+" shows on hover only): "+" on the picture adds after the picked step.
+    fig.addEventListener("keydown", (event) => {
+      if (event.key !== "+" || event.target !== fig || event.ctrlKey || event.metaKey || event.altKey || !S.sel || !S.hit) return;
+      const row = S.hit.boxes.find((b) => b.id === S.sel && ROWS.has(b.et));
+      if (!row) return;
+      event.preventDefault();
+      event.stopPropagation();
+      plusAt = gap(S.hit, span(row).pivot + 1).key;
+      plusMenu(fig);
+    });
     fig.addEventListener("keydown", (event) => {
       if (drag && event.key === "Escape") (drag = null), clear(S);
     });

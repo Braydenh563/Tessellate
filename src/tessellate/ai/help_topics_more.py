@@ -3452,10 +3452,9 @@ MORE_TOPICS.extend([
             "On a sequence, mind map or timeline picture a press picks a part, a double press, Enter or F2 renames it, Delete removes it, "
             "Alt+Up or Down moves it; a mind map or timeline part dragged onto another lands before, after or in it. On a sequence "
             "a head dragged sideways reorders, a drag from one lifeline to another adds a message, and the + at a gap opens the Add menu; "
-            "from the keyboard, Insert in the blocks list adds a step under the selected one. "
-            "Suggest and Templates serve each kind. A suggestion of its own kind arrives as ghosts to take; "
-            "one of another kind says so and is left out when the diagram has blocks, and replaces "
-            "a blank one. Hand-drawn look, in the ... menu, sketches any; Clean look takes it back."
+            "from the keyboard, Insert in the blocks list adds a step under the selected one, + on the picture. "
+            "A suggestion of its own kind arrives as ghosts to take; "
+            "one of another kind says so and is left out when the diagram has blocks, and replaces a blank one. Hand-drawn look, in the ... menu, sketches any; Clean look takes it back."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },

@@ -154,9 +154,13 @@
       }
       const r = more.getBoundingClientRect();
       //: Each row wears its tile's glyph through the item's own `lead` (the menu has no icon field for a drawn shape), so a menu that regroups or reorders its rows cannot put a glyph on another row.
+      //: Found by the shape's id, not by the row's place.
+      const glyphOf = new Map(specs.map((t) => [t.data.tile || t.name, t.glyph]));
       const lead = (t) => () => {
+        const id = t.data.tile || t.name;
         const slot = make("span", "dgm-menu-glyph");
-        slot.append(t.glyph.cloneNode(true));
+        slot.dataset.tile = id;
+        slot.append(glyphOf.get(id).cloneNode(true));
         return slot;
       };
       const menu = openMenuAtPoint(specs.map((t) => ({ label: t.name, group: t.group, title: t.hint, run: t.press, lead: lead(t) })), "Add to the diagram", r.right, r.bottom, more);
