@@ -83,7 +83,7 @@ const WB_FMT_FIELDS = {
   arrow: ["stroke", "strokealpha", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "tip"],
   link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "linklook", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "jumpsize", "gapstart", "gapend", "tip"],
   text: ["stroke", "fill", "fillalpha", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props", "rawstyle"],
-  image: ["alpha", "shadow", "shadowset", "radii", "crop", "trim", "replace", "geometry", "angle", "props"],
+  image: ["alpha", "shadow", "shadowset", "radii", "crop", "trim", "pixels", "replace", "geometry", "angle", "props"],
   frame: ["geometry", "props"],
   table: ["alpha", "shadow", "shadowset", "radii", "geometry", "props"],
   note: ["geometry", "angle"],
@@ -147,6 +147,12 @@ function wbFmtValue(entry, field) {
     case "round": return Number(s?.round) || 0;
     case "linestyle": return s?.curve ? "curved" : s?.round ? "rounded" : "sharp";
     case "crop": return o?.crop || "";
+    case "turn": return Number(o?.turn) || 0;
+    case "flipx": return o?.flip_x === true;
+    case "flipy": return o?.flip_y === true;
+    case "grey": return o?.grey === true;
+    case "bright": return Number.isInteger(o?.bright) ? o.bright : "";
+    case "contrast": return Number.isInteger(o?.contrast) ? o.contrast : "";
     case "trim0": case "trim1": case "trim2": case "trim3": return o?.trim?.[Number(field[4])] || "";
     case "flow": return Boolean(s?.flow);
     case "fillstyle": return WB_FILL_STYLES.includes(s?.fillStyle) ? s.fillStyle : "solid";
@@ -650,7 +656,7 @@ function wbFormatSync() {
     ["wb-fmt-jumpsize", "jumpsize", "jumpsize"], ["wb-fmt-gapstart", "gapstart", "gapstart"], ["wb-fmt-gapend", "gapend", "gapend"], ["wb-fmt-tip", "tip", "tip"],
     ["wb-fmt-pattern", "pattern", "pattern"], ["wb-fmt-round", "round", "round"], ["wb-fmt-linestyle", "linestyle", "linestyle"], ["wb-fmt-crop", "crop", "crop"], ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-lsize", "lsize", "linklook"], ["wb-fmt-lcolor", "lcolor", "linklook"], ["wb-fmt-size", "size", "text"],
     ["wb-fmt-shx", "shx", "shadowset"], ["wb-fmt-shy", "shy", "shadowset"], ["wb-fmt-shb", "shb", "shadowset"], ["wb-fmt-pad", "pad", "pad"],
-    ["wb-fmt-trim0", "trim0", "trim"], ["wb-fmt-trim1", "trim1", "trim"], ["wb-fmt-trim2", "trim2", "trim"], ["wb-fmt-trim3", "trim3", "trim"],
+    ["wb-fmt-bright", "bright", "pixels"], ["wb-fmt-contrast", "contrast", "pixels"], ["wb-fmt-trim0", "trim0", "trim"], ["wb-fmt-trim1", "trim1", "trim"], ["wb-fmt-trim2", "trim2", "trim"], ["wb-fmt-trim3", "trim3", "trim"],
     ["wb-fmt-r0", "r0", "radii"], ["wb-fmt-r1", "r1", "radii"], ["wb-fmt-r2", "r2", "radii"], ["wb-fmt-r3", "r3", "radii"],
     ["wb-fmt-ink", "ink", "text"], ["wb-fmt-alpha", "alpha", "alpha"], ["wb-fmt-lh", "lh", "text"], ["wb-fmt-ls", "ls", "text"], ["wb-fmt-dir", "dir", "text"], ["wb-fmt-inkalpha", "inkalpha", "text"],
   ]) {
@@ -678,6 +684,11 @@ function wbFormatSync() {
   }
   const sticky = entries.find((e) => e.kind === "object" && wbIsSticky(e.item));
   if (sticky) set("wb-fmt-fold", wbStickyFolds(sticky.item), "checked");
+  if (takes.has("pixels")) {
+    for (const [id, field] of [["wb-fmt-flipx", "flipx"], ["wb-fmt-flipy", "flipy"], ["wb-fmt-grey", "grey"]]) {
+      document.getElementById(id)?.setAttribute("aria-pressed", mixed(field) ? "mixed" : String(wbFmtValue(first, field)));
+    }
+  }
   const alphaOut = document.getElementById("wb-fmt-alpha-out");
   if (alphaOut && takes.has("alpha")) alphaOut.textContent = mixed("alpha") ? "Mixed" : `${wbFmtValue(first, "alpha")}%`;
   if (takes.has("fillalpha")) wbFmtShowAlpha("fillalpha", mixed("fillalpha"), wbFmtValue(first, "fillalpha"));
@@ -957,6 +968,20 @@ onSurface("board", () => {
       toast(err?.message || "The picture could not be uploaded.");
     }
   });
+  //: Edit image: a quarter turn, two flips, greyscale and two sliders, all kept as the picture's style
+  //: (the file is untouched), each one Undo step; Reset clears them together.
+  const PIX_KEYS = ["turn", "flip_x", "flip_y", "grey", "bright", "contrast"];
+  on("wb-fmt-turn", "click", () => wbFmtApply("pixels", (entry) => ({ turn: ((Number(wbFmtValue(entry, "turn")) + 90) % 360) || undefined }), "Picture turned a quarter."));
+  on("wb-fmt-flipx", "click", () => wbFmtApply("pixels", (entry) => ({ flip_x: wbFmtValue(entry, "flipx") ? undefined : true }), "Picture flipped left to right."));
+  on("wb-fmt-flipy", "click", () => wbFmtApply("pixels", (entry) => ({ flip_y: wbFmtValue(entry, "flipy") ? undefined : true }), "Picture flipped top to bottom."));
+  on("wb-fmt-grey", "click", () => wbFmtApply("pixels", (entry) => ({ grey: wbFmtValue(entry, "grey") ? undefined : true }), "Greyscale toggled."));
+  for (const [id, key, word] of [["wb-fmt-bright", "bright", "Brightness"], ["wb-fmt-contrast", "contrast", "Contrast"]]) {
+    on(id, "change", (e) => {
+      const pct = boxNumber(e.target, 20, 200);
+      wbFmtApply("pixels", () => ({ [key]: pct === undefined || pct === 100 ? undefined : pct }), pct === undefined ? `${word} as shot.` : `${word} ${pct}.`);
+    });
+  }
+  on("wb-fmt-pixreset", "click", () => wbFmtApply("pixels", () => Object.fromEntries(PIX_KEYS.map((k) => [k, undefined])), "Picture edits cleared."));
   //: A rectangle crop: percent cut from the top, right, bottom and left; all empty is no trim.
   for (const edge of [0, 1, 2, 3]) {
     on(`wb-fmt-trim${edge}`, "change", () => {

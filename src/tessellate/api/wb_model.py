@@ -13,7 +13,7 @@ import math
 import re
 import unicodedata
 
-from typing import Annotated
+from typing import Annotated, Literal
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, StrictInt, StringConstraints, field_validator, model_serializer
 from fastapi import HTTPException
 from tessellate.core.validation_copy import Said
@@ -467,6 +467,14 @@ class WhiteboardObjectData(BaseModel):
     #: A picture's rectangle crop: percent cut from the top, right, bottom and left
     #: (the Format panel's Trim edges). It shares the clip with `crop`.
     trim: list[Annotated[int, Field(ge=0, le=90)]] | None = Field(default=None, min_length=4, max_length=4)
+    #: Edit image: a picture's quarter turn, flips and filters, drawn over the
+    #: untouched file (non-destructive). Brightness and contrast are percent, 100 is as-is.
+    turn: Literal[0, 90, 180, 270] | None = None
+    flip_x: bool | None = None
+    flip_y: bool | None = None
+    grey: bool | None = None
+    bright: int | None = Field(default=None, ge=20, le=200)
+    contrast: int | None = Field(default=None, ge=20, le=200)
     #: Voting dots on a board item (Miro's; INBOX 1313): how many it holds.
     #: Content, not a look. Zero is "none", so it is not stored.
     votes: int | None = Field(default=None, ge=1, le=99)
