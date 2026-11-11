@@ -7803,10 +7803,12 @@ Link to another note with [[its first few words]]."></textarea>
       <!-- A connector's line shape (Phase B): curved, straight or elbow. -->
       <div class="wb-context-group hidden" data-wb-ctx="route" data-fold-label="Shape">
         <div class="wb-fold-controls">
-          <select id="wb-prop-route" aria-label="Line shape" title="Line shape: curved, straight, or elbow (right angles round the shapes)">
+          <select id="wb-prop-route" aria-label="Line shape" title="Line shape: curved, straight, elbow (right angles round the shapes), entity relation or isometric">
             <option value="curved">Curved</option>
             <option value="straight">Straight</option>
             <option value="elbow">Elbow</option>
+            <option value="er">Entity relation</option>
+            <option value="iso">Isometric</option>
           </select>
           <!-- **Said on screen** (INBOX 819, the owner: nothing on the board says a
                connector takes a label): it was reachable only by pressing
@@ -8601,7 +8603,7 @@ Link to another note with [[its first few words]]."></textarea>
           <div class="wb-fmt-group" data-fmt-group="connector">
             <h4 class="wb-fmt-head"><i class="ph ph-flow-arrow" aria-hidden="true"></i><span>Connector</span><button type="button" class="icon-only ghost small graph-help-toggle" data-help-for="wb-fmt-help-connector" aria-controls="wb-fmt-help-connector" aria-expanded="false" title="About connector" aria-label="About connector"><i class="ph ph-question" aria-hidden="true"></i></button></h4>
             <div class="help-body hidden" id="wb-fmt-help-connector" role="dialog" aria-label="About connector">
-              <p><b>Line shape</b>: curved, straight or elbow: the path the connector takes.</p>
+              <p><b>Line shape</b>: curved, straight, elbow, entity relation or isometric: the path the connector takes. The last two run from end to end and take no bends.</p>
               <p><b>Line jumps</b>: a hop where this line crosses one under it; Jump size is its width.</p>
               <p><b>Start gap, End gap</b>: stop this far short of the shape at each end.</p>
               <p><b>Start, End</b>: the mark at each end of the line, and its size.</p>
@@ -8613,6 +8615,8 @@ Link to another note with [[its first few words]]."></textarea>
                 <option value="curved">Curved</option>
                 <option value="straight">Straight</option>
                 <option value="elbow">Elbow</option>
+                <option value="er">Entity relation</option>
+                <option value="iso">Isometric</option>
               </select>
             </label>
             <label class="wb-fmt-row" data-fmt="jumps"><span class="wb-fmt-label">Line jumps</span>

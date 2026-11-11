@@ -461,6 +461,8 @@ TAIL_TOPICS.extend(
             "id": "board-connectors",
             "keywords": (
                 "elbow",
+                "entity relation line",
+                "isometric line",
                 "right angle",
                 "orthogonal",
                 "connector shape",
@@ -502,14 +504,15 @@ TAIL_TOPICS.extend(
                 "Every connector takes bends: drag the small ring in the middle "
                 "of a run (or double-click the line) to add one, drag a bend to move it, double-click it to "
                 "take it out. A straight line runs through its bends, a curved one curves smoothly through "
-                "them, and an elbow turns at right angles and goes round the shapes it joins; changing the "
-                "line shape keeps the bends; moving both things a connector joins moves its bends too. "
+                "them, and an elbow turns at right angles round the shapes it joins; Entity relation and "
+                "Isometric go end to end with no bends; changing the "
+                "line shape keeps the bends; moving both things it joins moves its bends too. "
                 "With Select, pointing at a shape, card or text box shows its connection points; drag from one to draw an "
                 "elbow connector to whatever you let go on, or to a free end. "
                 "Drag a connector's label by its words to slide "
                 "it along the line; Format sets its size, colour, bold and a chip behind it. The ends include the entity-relationship marks. With one shape or text box selected, the four arrows round it "
                 "(or Alt+Shift and an arrow key) copy it that way and join facing sides with an elbow; View, Connection arrows and Connection points hide them; "
-                "a note card's arrows make a new note there instead, joined and ready to type. With two or more selected, Arrange, Tidy and connect joins them in a line or all to the first picked. Measure with a dimension line shows its length. Select a connector and drag a square at either end onto another shape to re-point it. "
+                "a note card's arrows make a new note there instead, joined and ready to type. With two or more selected, Arrange, Tidy and connect joins them in a line or all to the first picked. Measure with a dimension line shows its length. Drag a square at a connector's end onto another shape to re-point it. "
                 "Insert, Diagram, Mermaid, draw.io or board SVG brings in a Mermaid flowchart, state, class or "
                 "sequence diagram, a .drawio file (pages and swimlanes as frames) or an SVG a board "
                 "here exported, as shapes and connectors; Export writes an Outline, a Mermaid flowchart or a .drawio file."

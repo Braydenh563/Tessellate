@@ -440,8 +440,8 @@ async function wbFmtFlip(axis) {
   wbAnnounce(axis === "h" ? "Flipped left to right." : "Flipped top to bottom.");
 }
 
-//: A connector's line shape: curved, straight, or elbow (a straight link
-//: with `route: "elbow"`, see `wbLinkRouteName`). Its bends go with it, as
+//: A connector's line shape: curved, straight, elbow, entity relation or isometric (a straight link
+//: with `route: "elbow"`, `"er"` or `"iso"`, see `wbLinkRouteName`). Its bends go with it, as
 //: draw.io keeps an edge's waypoints across styles: every style takes them
 //: (wb-phase2 step 1), and an old link's single `bend` becomes one.
 async function wbSetLinkRoute(value) {
@@ -451,7 +451,7 @@ async function wbSetLinkRoute(value) {
     const points = wbLinkWaypoints(parsed, wbResolveLinkEndpoints(parsed));
     return {
       type: value === "curved" ? "link-curved" : "link-straight",
-      route: value === "elbow" ? "elbow" : undefined,
+      route: ["elbow", "er", "iso"].includes(value) ? value : undefined,
       points: points.length ? points.map((p) => ({ x: Math.round(p.x), y: Math.round(p.y) })) : undefined,
       bend: undefined,
     };

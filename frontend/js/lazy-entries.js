@@ -24,6 +24,7 @@ Object.assign(LAZY_MODULES, {
     "/js/whiteboard-hints.js", //: The View switches for the arrow grips and the connection dots; needs only the page and `prefs`.
     "/js/whiteboard-keys.js",
     "/js/whiteboard-layers-more.js",
+    "/js/whiteboard-draw-more.js",
     "/js/whiteboard-interchange.js",
     "/js/whiteboard-history.js",
   ],
