@@ -78,8 +78,8 @@ def test_a_wheel_notch_is_one_step_and_a_trackpad_delta_is_smaller_and_the_size_
 
 
 def test_the_view_is_one_lazy_file_with_one_export_a_zoom_bar_on_the_dock_recipe_and_a_listener_list():
-    #: The view is still the one lazy script; its value-field styles (the zoom percentage field) ride with it (INBOX 1694).
-    assert 'diagramView: ["/css/value-field.css", "/js/diagram-view.js"]' in MERMAID_JS
+    #: The view is still the one lazy script; its value field (styles and script, the zoom percentage) rides with it (INBOX 1694).
+    assert 'diagramView: ["/css/value-field.css", "/js/value-field.js", "/js/diagram-view.js"]' in MERMAID_JS
     assert VIEW.startswith("//") and "\n(() => {" in VIEW and VIEW.rstrip().endswith("})();")
     assert VIEW.count("diagramModel.view = ") == 1 and "window." not in VIEW
     assert 'ensureModule("diagramView")' in BUILDER and "diagramModel.view.wire(S)" in BUILDER
