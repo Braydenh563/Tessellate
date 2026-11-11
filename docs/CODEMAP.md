@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2697, CSS sections 523, backend routes 671, backend modules 10148, test files 2484, tests 20498, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2697, CSS sections 523, backend routes 671, backend modules 10148, test files 2486, tests 20502, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -404,63 +404,63 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `CLIP_LIMITS` | frontend/js/chat.js:53 |
-| `aiWritingTrace` | frontend/js/chat.js:1335 |
-| `applyCompression` | frontend/js/chat.js:1218 |
-| `askAboutPage` | frontend/js/chat.js:629 |
-| `atlasSuggestion` | frontend/js/chat.js:200 |
-| `batteryModeOn` | frontend/js/chat.js:1260 |
-| `bodyTextWithCitations` | frontend/js/chat.js:85 |
-| `chatEmptySettle` | frontend/js/chat.js:221 |
-| `chatTranscriptText` | frontend/js/chat.js:1149 |
-| `citeWebPage` | frontend/js/chat.js:686 |
-| `clearChatEmptyState` | frontend/js/chat.js:350 |
-| `clearWebSearchHistory` | frontend/js/chat.js:619 |
-| `clipFor` | frontend/js/chat.js:59 |
-| `closeWebReader` | frontend/js/chat.js:420 |
-| `compactTokens` | frontend/js/chat.js:99 |
-| `compressChatContext` | frontend/js/chat.js:1178 |
-| `compressSizeText` | frontend/js/chat.js:1199 |
-| `copyToClipboard` | frontend/js/chat.js:150 |
-| `copyViaTextarea` | frontend/js/chat.js:110 |
-| `fillPersonaMark` | frontend/js/chat.js:952 |
-| `flashCopied` | frontend/js/chat.js:132 |
-| `loadResponseModes` | frontend/js/chat.js:901 |
-| `loadWebSearchHistory` | frontend/js/chat.js:608 |
-| `mountChatActionsMenu` | frontend/js/chat.js:1093 |
-| `openWebReader` | frontend/js/chat.js:646 |
-| `personaOptions` | frontend/js/chat.js:969 |
-| `progressMotionWanted` | frontend/js/chat.js:1287 |
-| `progressPhaseText` | frontend/js/chat.js:1531 |
-| `refreshWebSearxngStrip` | frontend/js/chat.js:565 |
-| `regenerateFromBubble` | frontend/js/chat.js:188 |
-| `regenerateLastAnswer` | frontend/js/chat.js:193 |
-| `renderChatContextMeter` | frontend/js/chat.js:1047 |
-| `renderChatEmptyState` | frontend/js/chat.js:231 |
-| `renderChatTurnCount` | frontend/js/chat.js:1073 |
-| `renderChatUsage` | frontend/js/chat.js:1030 |
-| `renderCompressionState` | frontend/js/chat.js:1231 |
-| `renderModelContextBox` | frontend/js/chat.js:759 |
-| `renderModelHealthNote` | frontend/js/chat.js:863 |
-| `renderModelSpec` | frontend/js/chat.js:791 |
-| `renderWebPageAttachment` | frontend/js/chat.js:713 |
-| `renderWebPanelMenu` | frontend/js/chat.js:508 |
-| `scheduleThinkingWordTick` | frontend/js/chat.js:1449 |
-| `setResponseMode` | frontend/js/chat.js:930 |
-| `setWebEngineDot` | frontend/js/chat.js:494 |
-| `showCompressReview` | frontend/js/chat.js:1206 |
-| `startThinkingWordRotation` | frontend/js/chat.js:1477 |
-| `stopThinkingWordRotation` | frontend/js/chat.js:1499 |
-| `stopWebRequest` | frontend/js/chat.js:405 |
-| `togglePersonaPrompt` | frontend/js/chat.js:1022 |
-| `toggleWebPanel` | frontend/js/chat.js:433 |
-| `typingDots` | frontend/js/chat.js:1553 |
-| `webPageMarkdown` | frontend/js/chat.js:653 |
-| `webReaderIsOpen` | frontend/js/chat.js:416 |
-| `webRequestEnd` | frontend/js/chat.js:395 |
-| `webRequestStart` | frontend/js/chat.js:386 |
-| `wheelScrollsHorizontally` | frontend/js/chat.js:1384 |
-| `wireHorizontalWheelScrolling` | frontend/js/chat.js:1417 |
+| `CLIP_LIMITS` | frontend/js/chat.js:55 |
+| `aiWritingTrace` | frontend/js/chat.js:1337 |
+| `applyCompression` | frontend/js/chat.js:1220 |
+| `askAboutPage` | frontend/js/chat.js:631 |
+| `atlasSuggestion` | frontend/js/chat.js:202 |
+| `batteryModeOn` | frontend/js/chat.js:1262 |
+| `bodyTextWithCitations` | frontend/js/chat.js:87 |
+| `chatEmptySettle` | frontend/js/chat.js:223 |
+| `chatTranscriptText` | frontend/js/chat.js:1151 |
+| `citeWebPage` | frontend/js/chat.js:688 |
+| `clearChatEmptyState` | frontend/js/chat.js:352 |
+| `clearWebSearchHistory` | frontend/js/chat.js:621 |
+| `clipFor` | frontend/js/chat.js:61 |
+| `closeWebReader` | frontend/js/chat.js:422 |
+| `compactTokens` | frontend/js/chat.js:101 |
+| `compressChatContext` | frontend/js/chat.js:1180 |
+| `compressSizeText` | frontend/js/chat.js:1201 |
+| `copyToClipboard` | frontend/js/chat.js:152 |
+| `copyViaTextarea` | frontend/js/chat.js:112 |
+| `fillPersonaMark` | frontend/js/chat.js:954 |
+| `flashCopied` | frontend/js/chat.js:134 |
+| `loadResponseModes` | frontend/js/chat.js:903 |
+| `loadWebSearchHistory` | frontend/js/chat.js:610 |
+| `mountChatActionsMenu` | frontend/js/chat.js:1095 |
+| `openWebReader` | frontend/js/chat.js:648 |
+| `personaOptions` | frontend/js/chat.js:971 |
+| `progressMotionWanted` | frontend/js/chat.js:1289 |
+| `progressPhaseText` | frontend/js/chat.js:1533 |
+| `refreshWebSearxngStrip` | frontend/js/chat.js:567 |
+| `regenerateFromBubble` | frontend/js/chat.js:190 |
+| `regenerateLastAnswer` | frontend/js/chat.js:195 |
+| `renderChatContextMeter` | frontend/js/chat.js:1049 |
+| `renderChatEmptyState` | frontend/js/chat.js:233 |
+| `renderChatTurnCount` | frontend/js/chat.js:1075 |
+| `renderChatUsage` | frontend/js/chat.js:1032 |
+| `renderCompressionState` | frontend/js/chat.js:1233 |
+| `renderModelContextBox` | frontend/js/chat.js:761 |
+| `renderModelHealthNote` | frontend/js/chat.js:865 |
+| `renderModelSpec` | frontend/js/chat.js:793 |
+| `renderWebPageAttachment` | frontend/js/chat.js:715 |
+| `renderWebPanelMenu` | frontend/js/chat.js:510 |
+| `scheduleThinkingWordTick` | frontend/js/chat.js:1451 |
+| `setResponseMode` | frontend/js/chat.js:932 |
+| `setWebEngineDot` | frontend/js/chat.js:496 |
+| `showCompressReview` | frontend/js/chat.js:1208 |
+| `startThinkingWordRotation` | frontend/js/chat.js:1479 |
+| `stopThinkingWordRotation` | frontend/js/chat.js:1501 |
+| `stopWebRequest` | frontend/js/chat.js:407 |
+| `togglePersonaPrompt` | frontend/js/chat.js:1024 |
+| `toggleWebPanel` | frontend/js/chat.js:435 |
+| `typingDots` | frontend/js/chat.js:1555 |
+| `webPageMarkdown` | frontend/js/chat.js:655 |
+| `webReaderIsOpen` | frontend/js/chat.js:418 |
+| `webRequestEnd` | frontend/js/chat.js:397 |
+| `webRequestStart` | frontend/js/chat.js:388 |
+| `wheelScrollsHorizontally` | frontend/js/chat.js:1386 |
+| `wireHorizontalWheelScrolling` | frontend/js/chat.js:1419 |
 
 ### frontend/js/chat-agent.js (42)
 
@@ -521,24 +521,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `attachSelectionContext` | frontend/js/chat-attach.js:537 |
 | `attachedNotes` | frontend/js/chat-attach.js:590 |
 | `attachmentChip` | frontend/js/chat-attach.js:87 |
-| `chatDeleteUndo` | frontend/js/chat-attach.js:1348 |
+| `chatDeleteUndo` | frontend/js/chat-attach.js:1349 |
 | `chatDockMoreOpen` | frontend/js/chat-attach.js:1099 |
-| `chatLeaveHeld` | frontend/js/chat-attach.js:1257 |
+| `chatLeaveHeld` | frontend/js/chat-attach.js:1258 |
 | `chatTidyTyped` | frontend/js/chat-attach.js:1148 |
-| `chatWriteRecord` | frontend/js/chat-attach.js:1377 |
+| `chatWriteRecord` | frontend/js/chat-attach.js:1378 |
 | `clearSelectionAttachment` | frontend/js/chat-attach.js:561 |
 | `closeChatDockMore` | frontend/js/chat-attach.js:1136 |
 | `closeExtractPreview` | frontend/js/chat-attach.js:54 |
 | `closeNotePicker` | frontend/js/chat-attach.js:1083 |
-| `deleteCurrentChat` | frontend/js/chat-attach.js:1322 |
-| `exportChatMarkdown` | frontend/js/chat-attach.js:1382 |
+| `deleteCurrentChat` | frontend/js/chat-attach.js:1323 |
+| `exportChatMarkdown` | frontend/js/chat-attach.js:1383 |
 | `flattenNoteMarkdown` | frontend/js/chat-attach.js:619 |
-| `followupMatches` | frontend/js/chat-attach.js:1182 |
-| `followupTrail` | frontend/js/chat-attach.js:1185 |
+| `followupMatches` | frontend/js/chat-attach.js:1183 |
+| `followupTrail` | frontend/js/chat-attach.js:1186 |
 | `importChatDocuments` | frontend/js/chat-attach.js:301 |
 | `isImageFile` | frontend/js/chat-attach.js:252 |
 | `keepUnreadableChatFile` | frontend/js/chat-attach.js:272 |
-| `newChatConversation` | frontend/js/chat-attach.js:1268 |
+| `newChatConversation` | frontend/js/chat-attach.js:1269 |
 | `noteLabel` | frontend/js/chat-attach.js:596 |
 | `noteNamePlain` | frontend/js/chat-attach.js:656 |
 | `notePickerColumns` | frontend/js/chat-attach.js:943 |
@@ -554,8 +554,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openExtractPreview` | frontend/js/chat-attach.js:22 |
 | `openNotePicker` | frontend/js/chat-attach.js:1045 |
 | `plainText` | frontend/js/chat-attach.js:634 |
-| `promptTitle` | frontend/js/chat-attach.js:1366 |
-| `releaseChatComposer` | frontend/js/chat-attach.js:1226 |
+| `promptTitle` | frontend/js/chat-attach.js:1367 |
+| `releaseChatComposer` | frontend/js/chat-attach.js:1227 |
 | `renderAttachments` | frontend/js/chat-attach.js:709 |
 | `renderBoardAttachments` | frontend/js/chat-attach.js:456 |
 | `renderDocumentAttachments` | frontend/js/chat-attach.js:502 |
@@ -566,7 +566,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `setActiveChoice` | frontend/js/chat-attach.js:642 |
 | `setNoteLabel` | frontend/js/chat-attach.js:666 |
 | `setNotePickerSource` | frontend/js/chat-attach.js:1018 |
-| `syncChatPrivate` | frontend/js/chat-attach.js:1263 |
+| `syncChatPrivate` | frontend/js/chat-attach.js:1264 |
 
 ### frontend/js/sheets-selects.js (54)
 
@@ -1087,66 +1087,66 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `buildSettingsJumpList` | frontend/js/phone-shell.js:1800 |
-| `clearAppCache` | frontend/js/phone-shell.js:2271 |
+| `buildSettingsJumpList` | frontend/js/phone-shell.js:1810 |
+| `clearAppCache` | frontend/js/phone-shell.js:2281 |
 | `closeNotePageIfGone` | frontend/js/phone-shell.js:1118 |
-| `dockArrangeLabel` | frontend/js/phone-shell.js:1964 |
-| `dockArrangeSlot` | frontend/js/phone-shell.js:1953 |
+| `dockArrangeLabel` | frontend/js/phone-shell.js:1974 |
+| `dockArrangeSlot` | frontend/js/phone-shell.js:1963 |
 | `dockChatAttachments` | frontend/js/phone-shell.js:1250 |
 | `dockChatTools` | frontend/js/phone-shell.js:1308 |
 | `dockPhoneStatus` | frontend/js/phone-shell.js:808 |
-| `dockShown` | frontend/js/phone-shell.js:2043 |
+| `dockShown` | frontend/js/phone-shell.js:2053 |
 | `dockTabBar` | frontend/js/phone-shell.js:647 |
-| `dockTight` | frontend/js/phone-shell.js:2050 |
+| `dockTight` | frontend/js/phone-shell.js:2060 |
 | `dropRepeatedTitle` | frontend/js/phone-shell.js:1046 |
-| `echoSettingsPaneTitle` | frontend/js/phone-shell.js:1792 |
+| `echoSettingsPaneTitle` | frontend/js/phone-shell.js:1802 |
 | `emblemArt` | frontend/js/phone-shell.js:86 |
 | `emblemHsl` | frontend/js/phone-shell.js:36 |
 | `emblemPalette` | frontend/js/phone-shell.js:57 |
 | `emblemSetBusy` | frontend/js/phone-shell.js:132 |
-| `fitDock` | frontend/js/phone-shell.js:2170 |
-| `floatPrimaryActions` | frontend/js/phone-shell.js:1890 |
+| `fitDock` | frontend/js/phone-shell.js:2180 |
+| `floatPrimaryActions` | frontend/js/phone-shell.js:1900 |
 | `focusTabPage` | frontend/js/phone-shell.js:386 |
-| `foldDockActions` | frontend/js/phone-shell.js:2116 |
-| `foldDockArrange` | frontend/js/phone-shell.js:2061 |
-| `foldSiblingsIntoMenu` | frontend/js/phone-shell.js:2008 |
-| `foldZoneIntoMenu` | frontend/js/phone-shell.js:1976 |
-| `forceReloadApp` | frontend/js/phone-shell.js:2286 |
+| `foldDockActions` | frontend/js/phone-shell.js:2126 |
+| `foldDockArrange` | frontend/js/phone-shell.js:2071 |
+| `foldSiblingsIntoMenu` | frontend/js/phone-shell.js:2018 |
+| `foldZoneIntoMenu` | frontend/js/phone-shell.js:1986 |
+| `forceReloadApp` | frontend/js/phone-shell.js:2296 |
 | `initBottomTabBar` | frontend/js/phone-shell.js:678 |
-| `initDockFolding` | frontend/js/phone-shell.js:2183 |
+| `initDockFolding` | frontend/js/phone-shell.js:2193 |
 | `initHeaderHeightToken` | frontend/js/phone-shell.js:555 |
-| `initKeyboardInset` | frontend/js/phone-shell.js:1713 |
+| `initKeyboardInset` | frontend/js/phone-shell.js:1723 |
 | `initNotePage` | frontend/js/phone-shell.js:1123 |
 | `initNotesSubtabHeightToken` | frontend/js/phone-shell.js:590 |
 | `initOcrPhonePage` | frontend/js/phone-shell.js:1210 |
 | `initPhoneChatRow` | frontend/js/phone-shell.js:1363 |
 | `initPhoneHeaderMore` | frontend/js/phone-shell.js:722 |
 | `initPhoneStatus` | frontend/js/phone-shell.js:844 |
-| `initPrimaryFab` | frontend/js/phone-shell.js:1916 |
+| `initPrimaryFab` | frontend/js/phone-shell.js:1926 |
 | `initRowSwipe` | frontend/js/phone-shell.js:942 |
 | `mountPhoneSidebarOpeners` | frontend/js/phone-shell.js:878 |
-| `nameFoldedButton` | frontend/js/phone-shell.js:1996 |
+| `nameFoldedButton` | frontend/js/phone-shell.js:2006 |
 | `ocrPhonePage` | frontend/js/phone-shell.js:1174 |
 | `openNotePage` | frontend/js/phone-shell.js:1056 |
 | `openSheet` | frontend/js/phone-shell.js:1403 |
-| `phoneMoreDueCount` | frontend/js/phone-shell.js:1666 |
-| `phoneMoreRunCount` | frontend/js/phone-shell.js:1631 |
+| `phoneMoreDueCount` | frontend/js/phone-shell.js:1676 |
+| `phoneMoreRunCount` | frontend/js/phone-shell.js:1641 |
 | `phoneSheetDialogs` | frontend/js/phone-shell.js:1229 |
-| `quitApp` | frontend/js/phone-shell.js:2238 |
+| `quitApp` | frontend/js/phone-shell.js:2248 |
 | `refreshNotePage` | frontend/js/phone-shell.js:1104 |
 | `releaseDetachedEmblems` | frontend/js/phone-shell.js:168 |
 | `releaseEmblem` | frontend/js/phone-shell.js:151 |
 | `renderBrandLogo` | frontend/js/phone-shell.js:218 |
 | `renderEmblem` | frontend/js/phone-shell.js:174 |
 | `renderEmblemWhenShown` | frontend/js/phone-shell.js:255 |
-| `renderExportsList` | frontend/js/phone-shell.js:2297 |
-| `sheetRow` | frontend/js/phone-shell.js:1605 |
+| `renderExportsList` | frontend/js/phone-shell.js:2307 |
+| `sheetRow` | frontend/js/phone-shell.js:1615 |
 | `syncEmblemBusy` | frontend/js/phone-shell.js:122 |
-| `syncPhoneMoreButton` | frontend/js/phone-shell.js:1675 |
-| `syncPhoneMoreRuns` | frontend/js/phone-shell.js:1640 |
+| `syncPhoneMoreButton` | frontend/js/phone-shell.js:1685 |
+| `syncPhoneMoreRuns` | frontend/js/phone-shell.js:1650 |
 | `tabFromTop` | frontend/js/phone-shell.js:487 |
 | `tabPageScroller` | frontend/js/phone-shell.js:402 |
-| `toggleAutonomousPanel` | frontend/js/phone-shell.js:2333 |
+| `toggleAutonomousPanel` | frontend/js/phone-shell.js:2343 |
 | `watchEmblemVisibility` | frontend/js/phone-shell.js:16 |
 | `watchStatusBarIdle` | frontend/js/phone-shell.js:790 |
 
@@ -2794,32 +2794,32 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addBubble` | frontend/js/chat-turn.js:2396 |
-| `agentTimeline` | frontend/js/chat-turn.js:1219 |
-| `appendRunResumeControls` | frontend/js/chat-turn.js:2290 |
-| `assistantMessageActions` | frontend/js/chat-turn.js:2495 |
-| `chatAttachmentStrip` | frontend/js/chat-turn.js:2165 |
+| `addBubble` | frontend/js/chat-turn.js:2399 |
+| `agentTimeline` | frontend/js/chat-turn.js:1222 |
+| `appendRunResumeControls` | frontend/js/chat-turn.js:2293 |
+| `assistantMessageActions` | frontend/js/chat-turn.js:2498 |
+| `chatAttachmentStrip` | frontend/js/chat-turn.js:2168 |
 | `chatSendTurn` | frontend/js/chat-turn.js:11 |
-| `commitStagedImages` | frontend/js/chat-turn.js:2068 |
-| `continueRunControls` | frontend/js/chat-turn.js:2668 |
-| `deleteChatTurn` | frontend/js/chat-turn.js:2616 |
-| `forkFromBubble` | frontend/js/chat-turn.js:2713 |
-| `manualPauseControls` | frontend/js/chat-turn.js:2742 |
-| `markFollowup` | frontend/js/chat-turn.js:2768 |
-| `mountChatTimer` | frontend/js/chat-turn.js:2117 |
-| `offerFollowups` | frontend/js/chat-turn.js:2003 |
-| `offerReminder` | frontend/js/chat-turn.js:1942 |
-| `paintChatTimer` | frontend/js/chat-turn.js:2104 |
-| `removeChatBubble` | frontend/js/chat-turn.js:2792 |
-| `renderAgentQuestion` | frontend/js/chat-turn.js:1730 |
-| `renderMemoryProposal` | frontend/js/chat-turn.js:1814 |
-| `renderRecordsDetails` | frontend/js/chat-turn.js:2573 |
-| `revalidateSelection` | frontend/js/chat-turn.js:1886 |
-| `saveFollowups` | frontend/js/chat-turn.js:2089 |
-| `selectionContextBlock` | frontend/js/chat-turn.js:2041 |
-| `settlePendingAgentQuestion` | frontend/js/chat-turn.js:2149 |
-| `startChatTimer` | frontend/js/chat-turn.js:2130 |
-| `stopChatTimer` | frontend/js/chat-turn.js:2139 |
+| `commitStagedImages` | frontend/js/chat-turn.js:2071 |
+| `continueRunControls` | frontend/js/chat-turn.js:2671 |
+| `deleteChatTurn` | frontend/js/chat-turn.js:2619 |
+| `forkFromBubble` | frontend/js/chat-turn.js:2716 |
+| `manualPauseControls` | frontend/js/chat-turn.js:2745 |
+| `markFollowup` | frontend/js/chat-turn.js:2771 |
+| `mountChatTimer` | frontend/js/chat-turn.js:2120 |
+| `offerFollowups` | frontend/js/chat-turn.js:2006 |
+| `offerReminder` | frontend/js/chat-turn.js:1945 |
+| `paintChatTimer` | frontend/js/chat-turn.js:2107 |
+| `removeChatBubble` | frontend/js/chat-turn.js:2795 |
+| `renderAgentQuestion` | frontend/js/chat-turn.js:1733 |
+| `renderMemoryProposal` | frontend/js/chat-turn.js:1817 |
+| `renderRecordsDetails` | frontend/js/chat-turn.js:2576 |
+| `revalidateSelection` | frontend/js/chat-turn.js:1889 |
+| `saveFollowups` | frontend/js/chat-turn.js:2092 |
+| `selectionContextBlock` | frontend/js/chat-turn.js:2044 |
+| `settlePendingAgentQuestion` | frontend/js/chat-turn.js:2152 |
+| `startChatTimer` | frontend/js/chat-turn.js:2133 |
+| `stopChatTimer` | frontend/js/chat-turn.js:2142 |
 
 ### frontend/js/chat-undo.js (10)
 
@@ -26355,7 +26355,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20498)
+## Tests (20502)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26643,6 +26643,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_chat_queue_1321.py | 2 |
 | tests/test_chat_reload_by_1693.py | 3 |
 | tests/test_chat_resume_controls.py | 6 |
+| tests/test_chat_save_window_busy.py | 2 |
 | tests/test_chat_scroll_534.py | 4 |
 | tests/test_chat_slash_order.py | 2 |
 | tests/test_chat_stop_done_w1.py | 9 |
@@ -28389,6 +28390,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_settings_switch_divider.py | 2 |
 | tests/test_settings_weight.py | 3 |
 | tests/test_share_target.py | 3 |
+| tests/test_sheet_modeless_resize.py | 2 |
 | tests/test_sheet_rows_1661.py | 1 |
 | tests/test_shell_fixes.py | 8 |
 | tests/test_shell_halfwindow.py | 9 |

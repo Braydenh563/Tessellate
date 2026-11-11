@@ -4,6 +4,8 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Chat (sm-1111 row 25): a message sent in the moment between the end of an answer and its save is queued and sent after, instead of starting a second conversation.
+- Sheets (sm-1111 row 24): the Guide and Clock panels, opened wide and then shrunk to a phone, get their scrim and modal behaviour back instead of staying see-through.
 - Notes (sm-1111 row 6): Save in the edit form sends tags and category only when you changed them, so tags filed while the form was open are kept.
 - Security (sm-1111 row 8): importing a Tessellate folder whose private notes are readable is refused while private notes are locked ("Unlock private notes, then import again."); they had come in as ordinary notes.
 - Media (sm-1111 row 9): a picture read or caption that finishes after a hand edit keeps the edit (`vision_ocr_and_store`, `caption_and_store`).
