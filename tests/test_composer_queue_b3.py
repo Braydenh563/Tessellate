@@ -128,4 +128,4 @@ def test_a_queued_chat_send_keeps_the_box() -> None:
     attach = _read("chat-attach.js")
     send = attach[attach.index("async function sendChatMessage(") :][:1200]
     assert "chatQueue.take(" in send and "chatQueue.next()" in send and "chatQueue.held = false" in send
-    assert _read("wiring.js").count("chatQueue.held = true") == 0  # Chat's Stop clears the hold (next-queue-1102)
+    assert _read("wiring.js").count("chatQueue.held = true") == 2  # Stop holds the queue (owner, 2026-11-11)
