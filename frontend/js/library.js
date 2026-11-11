@@ -10840,7 +10840,18 @@ onDomReady(() => {
             //: every time, not behind a probe for the bundle: the gallery
             //: replaces them with its own on its first paint either way.
             showSkeletons($("library-boards-grid"), 4);
-            wbShowBoardsLanding();
+            //: The list and the miniature drawer are asked for now, beside the
+            //: bundle, not after it: the gallery's own fetch used to leave only
+            //: once every board file had run, and the drawer once the list was
+            //: back (INBOX 1772). `renderLibraryBoardsGallery` takes this once.
+            window.libraryBoardsPrefetch = {
+              at: Date.now(),
+              list: apiPagedList("/whiteboard/boards", 200, { silent: true }).catch(() => null),
+            };
+            ensureModule("mapPreview");
+            //: The cards are drawn by the small gallery file, not by the board code, so they
+            //: do not wait for 2.3 MB to be fetched and run (INBOX 1772); `show` says the rest.
+            ensureModule("boardsGallery").then((ok) => ok ? renderLibraryBoardsGallery.show() : lazyLoadFailed());
           } else if (targetId === "library-view-docs") {
             renderLibraryDocuments();
           } else if (targetId === "library-view-skills") {
