@@ -1017,14 +1017,16 @@ def test_a_drop_shadow_is_an_elevation_token():
 #: full-screen pass (graph card, board, document focus now win by id and
 #: class), 96 after the settings Peek, the folded rail, the board's ink swatch,
 #: the ambient canvas, the status-bar slots and the print reset went by
-#: specificity. The count is of declarations outside comments (`grep -c` reads
+#: specificity, 87 after the dead `.dock-native-hidden` rule (no markup or script
+#: ever applied the class) and the emblem mark's size (the script already draws
+#: it at the same 24px inline) went. The count is of declarations outside comments (`grep -c` reads
 #: the lines that explain them too, which is why it says 166). Most left are
 #: the motion switches overriding every element's own animation (02, 08,
 #: motion-still), the Appearance border-style and the `.hidden` utility they
 #: answer, the native selects kept out of flow whose id rules outrank a class,
 #: print, the companion's states and inline styles set by script; each goes by
 #: specificity, and the count only falls.
-IMPORTANT_LEFT = 96
+IMPORTANT_LEFT = 87
 
 
 def test_important_only_falls():
