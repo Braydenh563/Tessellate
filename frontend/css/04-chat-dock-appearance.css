@@ -3544,6 +3544,16 @@ span > .chip {
     margin-inline-end: 0;
     translate: none;
   }
+  /* **Three controls in 286px (wrapzoom 2026-11-11, 360x800 measured 96px, two
+     rows).** Copy and Insert are 44px icons, Save as note is 146px with its 44px
+     caret: 294 with 8px gaps, 8 too many for the phone's column. A 4px gap and the
+     save word's 8px sides make it 262, one 44px row. */
+  .draft-actions-row {
+    column-gap: var(--space-1);
+  }
+  .draft-actions-row #draft-save {
+    padding-inline: var(--space-3);
+  }
 }
 
 /* The tags row's label is inside the surface, the way `.ask-composer-icon` is

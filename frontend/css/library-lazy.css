@@ -7104,9 +7104,13 @@ input[type="color"].wb-mixed {
    200 % the dock is 544 to 806px and a code document's tools need 410 to 600, so the
    title and Back (246px, the input's own 128px floor) sat on a line above them.
    Back is its arrow from 820 down (its title and aria-label name it), the title may
-   shrink to 5rem, and the save state leaves the row from 600. */
+   shrink to 5rem, and the save state leaves the row below 820 (wrapzoom 2026-11-11:
+   at 768x1024 the dock is 652px, the 44px touch targets make the actions 539 and the
+   name asked for 128 beside them, so the name sat on a line of its own, 94px; without
+   the 64px save state the row is 603 and one line, 44px, for a markdown and a .py file). */
 @container docdock (max-width: 819.98px) {
-  .doc-back-label {
+  .doc-back-label,
+  .doc-dock-status {
     display: none;
   }
   #tab-documents .doc-dock > .doc-dock-identity {
@@ -7119,9 +7123,6 @@ input[type="color"].wb-mixed {
   }
 }
 @container docdock (max-width: 599.98px) {
-  .doc-dock-status {
-    display: none;
-  }
   #tab-documents .doc-dock > .doc-dock-identity {
     flex-basis: 8rem;
   }

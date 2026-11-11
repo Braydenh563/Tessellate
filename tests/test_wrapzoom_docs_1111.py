@@ -74,6 +74,24 @@ def test_a_code_documents_dock_folds_its_words_before_it_wraps():
     assert 'title="Install Python in Settings, Packages, to run Python files">Install Python in Settings, Packages</button>' in html
 
 
+def test_the_dock_is_one_row_at_a_tablet_and_the_drafts_actions_at_a_phone():
+    """768x1024: the dock is 652px, the 44px targets make the actions 539 and
+    the name asked for 128 beside them, so it took a line (94px). Below 820 of
+    dock the save state leaves the row (it did only below 600), which is 603
+    and one 44px line for markdown and .py. The writing room's draft actions
+    were 294px in a 286px column at 360 (96px): a 4px gap and the save word's
+    8px sides make them one 44px row. Phase 9's breakpoints only."""
+    css = _css("library-lazy.css")
+    mid = "".join(_at_blocks(css, "@container docdock (max-width: 819.98px)"))
+    assert "display: none" in _rule(mid, ".doc-dock-status")
+    phone = "".join(_at_blocks(css, "@container docdock (max-width: 599.98px)"))
+    assert ".doc-dock-status" not in phone
+    chat = _css("04-chat-dock-appearance.css")
+    small = "".join(_at_blocks(chat, "@media (max-width: 599.98px)"))
+    assert re.search(r"\.draft-actions-row \{\s*column-gap: var\(--space-1\)", small)
+    assert "padding-inline: var(--space-3)" in _rule(small, "#draft-save")
+
+
 # ---- a split button breaking apart ---------------------------------------------
 
 

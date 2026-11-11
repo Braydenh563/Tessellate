@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Fix (one row at a tablet and a phone): the Documents dock at 768x1024 was two rows (94px, the name on a line of its own) and is one 44px row, the save state leaving the row below 820 of dock; the writing room's draft actions at 360 were two rows (96px) and are one 44px row.
 - Fix: the speaker models and the French, German and Spanish spelling packs each have their one-line install notice; the code editor's minimap box is set only once the documents bundle has defined its pref reader.
 - Fix (one reader of date words): "what will the date be tomorrow" and the other CLINC150 neighbour-day phrasings are read by `recognise.neighbour_day`, not a second pattern in `ai/utilities.py`, so the composer's clock answers take them too; `composer_aboutme.py`'s note, age and goodbye patterns recorded as masks.
 - Fix: the code editor's minimap box is set after the documents bundle loads, so a cold open no longer logs "docToolPref is not defined".
