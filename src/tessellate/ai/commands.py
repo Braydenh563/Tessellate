@@ -908,7 +908,9 @@ def _delete(text: str) -> dict | None:
     rest = text[len(verb):].strip()
     if re.match(r"(?:the |a |my )?(?:tags?|labels?|reminders?|categor(?:y|ies)|board|map|document)\b", rest, re.I):
         return None
-    found = _one_target(rest, bare=True)
+    found = _one_target(rest)
+    if found is None and (found := _bare_target(rest)):
+        found = {**found, "bare": True}  # a title alone named it: it must be the title (F3)
     return {"intent": "delete", **found} if found else None
 
 
@@ -1890,6 +1892,13 @@ def _the_titled(found: list, about: str) -> object | None:
     return None
 
 
+def _title_holds(entry, about: str) -> bool:  # noqa: ANN001
+    """Whether the note's title carries every word of `about` (singular or plural)."""
+    title = {w.rstrip("s") for w in re.findall(r"[\w'’-]+", note_title(entry.content, size=120).lower())}
+    wanted = [w.rstrip("s") for w in re.findall(r"[\w'’-]+", about.lower())]
+    return bool(wanted) and all(w in title for w in wanted)
+
+
 def _resolve_one(session: Session, about: str | None, note_ids: list[int] | None, these: bool, number: int | None = None) -> tuple[object | None, str]:
     """The one note a single-note act names, or None and the question to ask
     (decision 24's shape: one question, the candidates named). `number`: the
@@ -1958,6 +1967,9 @@ def _plan_one(session: Session, parsed: dict, note_ids: list[int] | None) -> dic
     if not ok:
         return {"line": summarise_done([], skipped)}
     name = f"“{note_title(entry.content, size=48)}”"
+    if intent == "delete" and parsed.get("bare") and not _title_holds(entry, parsed.get("about") or ""):
+        #: "remove milk" after a shopping list names a thing on the list, not the note that holds the word (F3).
+        return {"line": f"“{parsed.get('about')}” is not the name of a note, but {name} holds it. To bin that note, say: delete the {note_title(entry.content, size=48)} note."}
     if intent == "delete":
         steps = [{"name": "delete_note", "arguments": {"note_id": entry.id}}]
         label = f"Move the note {name} to the bin"

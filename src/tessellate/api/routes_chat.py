@@ -837,7 +837,7 @@ def _tool_read_events(req: _StreamRequest, notes: list | None = None) -> list[di
     names the tool (`reading.tool_of`), Chat runs it with no arguments, and
     the realiser says it in one line and draws it in its form. Empty when the
     sentence names no such tool, so the composer answers as before."""
-    from tessellate.ai import act_registry, question_noise, reading, realise, tool_say
+    from tessellate.ai import act_registry, composer_slots, question_noise, reading, realise, tool_say
     from tessellate.ai import tools as agent_tools
 
     now = user_now(deps.get_config())
@@ -848,8 +848,8 @@ def _tool_read_events(req: _StreamRequest, notes: list | None = None) -> list[di
     if early:
         return early
     got = reading.read(asked, now=now)
-    if got.tool not in act_registry.NO_MODEL_READS or got.intent in act_registry.ACTS:
-        return []
+    if got.tool not in act_registry.NO_MODEL_READS or got.intent in act_registry.ACTS or composer_slots.asks_state(asked):
+        return []  # "which tasks are done" is a checklist's state (E21), never the reminders list
     result = agent_tools.execute_tool(req.session, got.tool, {})
     if _notes_answer_due(req, got.tool, result, notes):
         return []

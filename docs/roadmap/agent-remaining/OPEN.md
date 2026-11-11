@@ -4164,71 +4164,71 @@ Format: id | file:line | one line | status.
 
 **BC6 (composer, 20 rows)**
 
-- E16 | audit-1107-composer-r2:36 | "what did I do on 3 October" | partial
-- E18 | audit-1107-composer-r2:38 | "what happened last week", "what did I write about in October" | open
-- E21 | audit-1107-composer-r2:41 | "what is my shortest note", "what is not done", "what did I tick", "which tasks are done", "what haven't | open
-- E24 | audit-1107-composer-r2:44 | "which notes mention the boiler", "list my notes about Lisbon", "what is my oldest note", "list everythin | open
-- P1 | audit-1107-composer-r2:47 | ux (code) | open
-- D1 | audit-1107-composer-r2:53 | Defining note does not lead for "what do I know about X" (round 1's fix leads a title only for "what is X | open
-- D19 | audit-1107-composer-r2:59 | Chips from leftover words, now accumulating along a chain | open
-- D22 | audit-1107-composer-r2:61 | Dead ends | open
-- D23 | audit-1107-composer-r2:62 | Four confirm wordings | open
-- R3-8 | audit-1107-composer-r3:37 | "do I have anything on Wednesday" -> "I found three notes about “Wednesday”." (list of notes) but "what i | open
-- R3-15 | audit-1107-composer-r3:49 | One title-less note, five names in five answers | partial
-- R3-17 | audit-1107-composer-r3:56 | "wat do i know abuot lisbn" -> "I read that as “what do i know about” | partial
-- R3-20 | audit-1107-composer-r3:59 | "who is Priya" -> "Priya comes up in two notes | partial
-- R3-21 | audit-1107-composer-r3:60 | "have I been to Tokyo" -> "I found nothing in your notes about Tokyo." | partial
-- R3-22 | audit-1107-composer-r3:61 | "what am I reading" -> "Three, from your Reading note | partial
-- R3-25 | audit-1107-composer-r3:64 | "who is Priya" / "what do I know about the garden" / "what do I know about the boiler" -> "You wrote “She | open
-- R3-27 | audit-1107-composer-r3:66 | after "what is the Lisbon trip" | partial
-- R3-28 | audit-1107-composer-r3:67 | "how long is the Tokyo trip" -> "Flights cost $900 return, leaving 3 April..." ("Staying in Shinjuku for | partial
-- R3-29 | audit-1107-composer-r3:68 | "when is my next dentist appointment" -> correct line then "None of these records discuss “appointment”." | open
-- R3-31 | audit-1107-composer-r3:75 | One-note notebook: "what is in my todo" -> "Your one newest notes, from today | partial
+- E16 | audit-1107-composer-r2:36 | "what did I do on 3 October" | partial | 1111: partial: line run-on (Phone 020 7946 0011 Dentist check-up) left, see bc6-1111.md
+- E18 | audit-1107-composer-r2:38 | "what happened last week", "what did I write about in October" | open | 1111: left: repeat in the milk line, see bc6-1111.md
+- E21 | audit-1107-composer-r2:41 | "what is my shortest note", "what is not done", "what did I tick", "which tasks are done", "what haven't | open | 1111: fixed 2026-11-11 (tests/test_composer_bc6_1111.py: which tasks are done, what isn't ticked)
+- E24 | audit-1107-composer-r2:44 | "which notes mention the boiler", "list my notes about Lisbon", "what is my oldest note", "list everythin | open | 1111: stale 2026-11-11: probe on the seeded notebook answers it correctly
+- P1 | audit-1107-composer-r2:47 | ux (code) | open | 1111: left: gating, see bc6-1111.md
+- D1 | audit-1107-composer-r2:53 | Defining note does not lead for "what do I know about X" (round 1's fix leads a title only for "what is X | open | 1111: owned by 1743 (overview answer shape)
+- D19 | audit-1107-composer-r2:59 | Chips from leftover words, now accumulating along a chain | open | 1111: left: chips not probed
+- D22 | audit-1107-composer-r2:61 | Dead ends | open | 1111: stale 2026-11-11: probe on the seeded notebook answers it correctly
+- D23 | audit-1107-composer-r2:62 | Four confirm wordings | open | 1111: left: client-side undo wording
+- R3-8 | audit-1107-composer-r3:37 | "do I have anything on Wednesday" -> "I found three notes about “Wednesday”." (list of notes) but "what i | open | 1111: fixed 2026-11-11 for the todo ask (tests/test_composer_bc6_1111.py); the bare list ask does not yet ask which list
+- R3-15 | audit-1107-composer-r3:49 | One title-less note, five names in five answers | partial | 1111: left: naming
+- R3-17 | audit-1107-composer-r3:56 | "wat do i know abuot lisbn" -> "I read that as “what do i know about” | partial | 1111: stale 2026-11-11: probe on the seeded notebook answers it correctly
+- R3-20 | audit-1107-composer-r3:59 | "who is Priya" -> "Priya comes up in two notes | partial | 1111: owned by 1743 (overview answer shape)
+- R3-21 | audit-1107-composer-r3:60 | "have I been to Tokyo" -> "I found nothing in your notes about Tokyo." | partial | 1111: stale 2026-11-11: probe on the seeded notebook answers it correctly
+- R3-22 | audit-1107-composer-r3:61 | "what am I reading" -> "Three, from your Reading note | partial | 1111: stale 2026-11-11: probe on the seeded notebook answers it correctly
+- R3-25 | audit-1107-composer-r3:64 | "who is Priya" / "what do I know about the garden" / "what do I know about the boiler" -> "You wrote “She | open | 1111: owned by 1743 (overview answer shape)
+- R3-27 | audit-1107-composer-r3:66 | after "what is the Lisbon trip" | partial | 1111: stale 2026-11-11: probe on the seeded notebook answers it correctly
+- R3-28 | audit-1107-composer-r3:67 | "how long is the Tokyo trip" -> "Flights cost $900 return, leaving 3 April..." ("Staying in Shinjuku for | partial | 1111: stale 2026-11-11: probe on the seeded notebook answers it correctly
+- R3-29 | audit-1107-composer-r3:68 | "when is my next dentist appointment" -> correct line then "None of these records discuss “appointment”." | open | 1111: stale 2026-11-11: probe on the seeded notebook answers it correctly
+- R3-31 | audit-1107-composer-r3:75 | One-note notebook: "what is in my todo" -> "Your one newest notes, from today | partial | 1111: fixed 2026-11-11 (tests/test_composer_bc6_1111.py: no Todo note says so)
 
 **BC7 (composer, 20 rows)**
 
-- R3-32 | audit-1107-composer-r3:76 | as_of set (time travel): "what is in my notebook" -> "I found no mention of “notebook” | partial
-- R3-33 | audit-1107-composer-r3:77 | Chat acts: "add buy stamps to my todo" -> "When's good for a reminder to buy stamps? Tomorrow at 9, ..." | partial
-- R3-34 | audit-1107-composer-r3:78 | "From your Biology note, today | partial
-- R3-35 | audit-1107-composer-r3:79 | "tell me about the dentist" -> "six notes", "dentist" -> "five notes"; "Sara comes up in seven notes" vs | partial
-- R3-36 | audit-1107-composer-r3:80 | chips: "What else have I saved about table is anna?", "...date is the biology Exam?", "...book am I readi | open
-- D1 | audit-1107-composer:36 | Defining note does not lead when its title only contains the subject or the question names a titled note | partial
-- D7 | audit-1107-composer:42 | Number and property questions answered by a sentence without the number | partial
-- D10 | audit-1107-composer:45 | Offers the composer makes that nothing answers; acts read as questions | open
-- D13 | audit-1107-composer:48 | "Written today" and "as your X note has it" are bolted on every "when" and fact answer | open
-- D16 | audit-1107-composer:51 | Footers name words of the question that the answer did not need, or promise what is not there | open
-- D17 | audit-1107-composer:52 | Date answers: filler, repeated heads, recurring words placed on one date | open
-- D18 | audit-1107-composer:53 | Event questions are answered from the creation log | open
-- D19 | audit-1107-composer:54 | Chips are built from the leftover words of the question | open
-- D20 | audit-1107-composer:55 | Compare and summary shapes | open
-- D22 | audit-1107-composer:57 | Dead ends where the notebook can answer | open
-- D23 | audit-1107-composer:58 | Act replies: wording and gaps | open
-- D24 | audit-1107-composer:59 | Shapes differ by phrasing | open
-- D28 | audit-1107-composer:63 | Model-on parity (decision 75) not exercised | open
-- P6 | audit-1108-perf:43 | composer_digest.py:1570 _subject_facts and :1447 _said_piece still present; raw_results cap not seen | open
-- F1 | fable-composer-1110:45 | Follow-on reads what the last answer showed | open
+- R3-32 | audit-1107-composer-r3:76 | as_of set (time travel): "what is in my notebook" -> "I found no mention of “notebook” | partial | 1111: stale 2026-11-11: probe on the seeded notebook answers it correctly
+- R3-33 | audit-1107-composer-r3:77 | Chat acts: "add buy stamps to my todo" -> "When's good for a reminder to buy stamps? Tomorrow at 9, ..." | partial | 1111: stale 2026-11-11: probe on the seeded notebook answers it correctly
+- R3-34 | audit-1107-composer-r3:78 | "From your Biology note, today | partial | 1111: stale 2026-11-11: probe on the seeded notebook answers it correctly
+- R3-35 | audit-1107-composer-r3:79 | "tell me about the dentist" -> "six notes", "dentist" -> "five notes"; "Sara comes up in seven notes" vs | partial | 1111: fixed 2026-11-11 (tests/test_composer_bc6_1111.py: comes-up count)
+- R3-36 | audit-1107-composer-r3:80 | chips: "What else have I saved about table is anna?", "...date is the biology Exam?", "...book am I readi | open | 1111: left: chips not probed
+- D1 | audit-1107-composer:36 | Defining note does not lead when its title only contains the subject or the question names a titled note | partial | 1111: owned by 1743 (overview answer shape)
+- D7 | audit-1107-composer:42 | Number and property questions answered by a sentence without the number | partial | 1111: fixed 2026-11-11 (tests/test_composer_bc7_1111.py: what does Tom want)
+- D10 | audit-1107-composer:45 | Offers the composer makes that nothing answers; acts read as questions | open | 1111: left: yes after a card
+- D13 | audit-1107-composer:48 | "Written today" and "as your X note has it" are bolted on every "when" and fact answer | open | 1111: stale 2026-11-11: probe on the seeded notebook answers it correctly
+- D16 | audit-1107-composer:51 | Footers name words of the question that the answer did not need, or promise what is not there | open | 1111: stale 2026-11-11: probe on the seeded notebook answers it correctly
+- D17 | audit-1107-composer:52 | Date answers: filler, repeated heads, recurring words placed on one date | open | 1111: stale 2026-11-11: probe on the seeded notebook answers it correctly
+- D18 | audit-1107-composer:53 | Event questions are answered from the creation log | open | 1111: stale 2026-11-11: probe on the seeded notebook answers it correctly
+- D19 | audit-1107-composer:54 | Chips are built from the leftover words of the question | open | 1111: left: chips not probed
+- D20 | audit-1107-composer:55 | Compare and summary shapes | open | 1111: left: compare opener and repeated cite, see bc6-1111.md
+- D22 | audit-1107-composer:57 | Dead ends where the notebook can answer | open | 1111: stale 2026-11-11: probe on the seeded notebook answers it correctly
+- D23 | audit-1107-composer:58 | Act replies: wording and gaps | open | 1111: left: client-side undo wording
+- D24 | audit-1107-composer:59 | Shapes differ by phrasing | open | 1111: stale 2026-11-11: probe on the seeded notebook answers it correctly
+- D28 | audit-1107-composer:63 | Model-on parity (decision 75) not exercised | open | 1111: left: naming parity test
+- P6 | audit-1108-perf:43 | composer_digest.py:1570 _subject_facts and :1447 _said_piece still present; raw_results cap not seen | open | 1111: left: perf
+- F1 | fable-composer-1110:45 | Follow-on reads what the last answer showed | open | 1111: left
 
 **BC8 (composer, 19 rows)**
 
-- F3 | fable-composer-1110:78 | Next instruction knows what it acts on (follow_items.py, follow_dates.py built); "undo" after "delete it" | open
-- F4 | fable-composer-1110:99 | Social and meta turns read (composer_chat.py); bare reactions ("really?", "maybe"), "are you sure", "what | open
-- F5 | fable-composer-1110:129 | Chips continue the conversation (composer_chips.py, chat_chips.py); small-talk replies still end with no | open
-- F8 | fable-composer-1110:177 | Defining note leads (composer_digest._best); "wats on my shoping list" typo, "do I have a dentist appoint | open
-- F9 | fable-composer-1110:191 | Agenda clauses built (composer_plan._clauses); "this week" without a day is no clause, chips from the fir | open
-- F13 | fable-composer-1110:218 | a to g and k built; h ("the week before"), i (two summary shapes), j ("what links to it") left (g45-1110. | open
-- G1 | fable-composer2-1110:40 | Ask yes/newer-note: _newest_saying, supersede built (g13-1110.md); "when did I last see the dentist" read | open
-- G3 | fable-composer2-1110:64 | Reminders in Ask built (due_summary.py, composer_reminders.py); stats ask fifth wording, "agenda deadline | open
-- G5 | fable-composer2-1110:92 | Guide lead built (guide_lead.py, review_words.py); "how do I record a meeting" lead keeps "there", "where | open
-- G8 | fable-composer2-1110:149 | Companion remarks: dated thing in next three days via composer_plan, poke lines table avatars.js:2731 (g6 | open
-- G10 | fable-composer2-1110:172 | Reminder chip built; "call mum on sunday about christmas plans" loses "christmas" (reminder_parser.read_b | open
-- G11 | fable-composer2-1110:180 | Summaries/amounts/function words built; "which is cheaper", "how much more did I spend eating out", "whos | open
-- G12 | fable-composer2-1110:190 | Short form/resurfacing/starter chips built; Patterns sentence template, hedge-once-per-list and its five | open
-- G14 | fable-composer2-1110:201 | Smaller rows a to d, g, h, j partly; a, e, f not reproduced / chip code, "Something sometime" magic add | open
-- FX1 | fable-fix-1030:10 | Three pre-existing red composer tests at the 1030 base (test_composer_owner_1017 hello, test_composer_own | open
-- FX2 | fable-fix-1030:11 | Z59 (streak line pinned by test_composer_streak_1029), Z57, Z58, Z68, Z70, Z46 recast, Z23, Z26, Z27 (com | open
-- FC2 | fablecomp-1031:19 | tests/test_complexity.py failed as merged (composer_digest, composer_lists, composer_study, agent.run_age | open
-- 1693b3 | owner-asks-audit-1108:132 | "whatcha doing" gets a companion line | open
-- PAR1 | parity-1110:40 | Parity: contradictions with no model (supersede.current/older_dates; composer_suggest.py:361 _IMPERATIVE | open
+- F3 | fable-composer-1110:78 | Next instruction knows what it acts on (follow_items.py, follow_dates.py built); "undo" after "delete it" | open | 1111: fixed 2026-11-11 for the bare delete (tests/test_composer_bc8_1111.py); undo after delete is client-side, left
+- F4 | fable-composer-1110:99 | Social and meta turns read (composer_chat.py); bare reactions ("really?", "maybe"), "are you sure", "what | open | 1111: left: social turns, see bc6-1111.md
+- F5 | fable-composer-1110:129 | Chips continue the conversation (composer_chips.py, chat_chips.py); small-talk replies still end with no | open | 1111: left: not examined this pass
+- F8 | fable-composer-1110:177 | Defining note leads (composer_digest._best); "wats on my shoping list" typo, "do I have a dentist appoint | open | 1111: left: typo, dentist appointment, see bc6-1111.md
+- F9 | fable-composer-1110:191 | Agenda clauses built (composer_plan._clauses); "this week" without a day is no clause, chips from the fir | open | 1111: left: not examined this pass
+- F13 | fable-composer-1110:218 | a to g and k built; h ("the week before"), i (two summary shapes), j ("what links to it") left (g45-1110. | open | 1111: left: h and the who-am-I-going-with ask, see bc6-1111.md
+- G1 | fable-composer2-1110:40 | Ask yes/newer-note: _newest_saying, supersede built (g13-1110.md); "when did I last see the dentist" read | open | 1111: left: how far did I run counts the goal, see bc6-1111.md
+- G3 | fable-composer2-1110:64 | Reminders in Ask built (due_summary.py, composer_reminders.py); stats ask fifth wording, "agenda deadline | open | 1111: left: not examined this pass
+- G5 | fable-composer2-1110:92 | Guide lead built (guide_lead.py, review_words.py); "how do I record a meeting" lead keeps "there", "where | open | 1111: left: not examined this pass
+- G8 | fable-composer2-1110:149 | Companion remarks: dated thing in next three days via composer_plan, poke lines table avatars.js:2731 (g6 | open | 1111: left: not examined this pass
+- G10 | fable-composer2-1110:172 | Reminder chip built; "call mum on sunday about christmas plans" loses "christmas" (reminder_parser.read_b | open | 1111: left: not examined this pass
+- G11 | fable-composer2-1110:180 | Summaries/amounts/function words built; "which is cheaper", "how much more did I spend eating out", "whos | open | 1111: left: arithmetic in the route
+- G12 | fable-composer2-1110:190 | Short form/resurfacing/starter chips built; Patterns sentence template, hedge-once-per-list and its five | open | 1111: left: not examined this pass
+- G14 | fable-composer2-1110:201 | Smaller rows a to d, g, h, j partly; a, e, f not reproduced / chip code, "Something sometime" magic add | open | 1111: left: not examined this pass
+- FX1 | fable-fix-1030:10 | Three pre-existing red composer tests at the 1030 base (test_composer_owner_1017 hello, test_composer_own | open | 1111: left: not examined this pass
+- FX2 | fable-fix-1030:11 | Z59 (streak line pinned by test_composer_streak_1029), Z57, Z58, Z68, Z70, Z46 recast, Z23, Z26, Z27 (com | open | 1111: left: not examined this pass
+- FC2 | fablecomp-1031:19 | tests/test_complexity.py failed as merged (composer_digest, composer_lists, composer_study, agent.run_age | open | 1111: left: not examined this pass
+- 1693b3 | owner-asks-audit-1108:132 | "whatcha doing" gets a companion line | open | 1111: left: not examined this pass
+- PAR1 | parity-1110:40 | Parity: contradictions with no model (supersede.current/older_dates; composer_suggest.py:361 _IMPERATIVE | open | 1111: left: not examined this pass
 
 **BS1 (shell, 19 rows)**
 
