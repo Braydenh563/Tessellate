@@ -13,7 +13,7 @@ from tessellate.api import routes_auth as auth
 def _clean():
     auth._active_tokens.clear()
     auth._media_links.clear()
-    auth._last_sweep = 0.0
+    auth._sweep_state["last"] = 0.0
     yield
     auth._active_tokens.clear()
     auth._media_links.clear()

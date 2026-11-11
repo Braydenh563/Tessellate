@@ -375,18 +375,17 @@ def _revoke_media(request: Request, response: Response) -> None:
 #: The sweep walks every token, so it runs at most this often from the per-request check (audit 1028 K33); the token being
 #: asked about is judged on its own entry every time, so an idle session is still refused at once.
 _SWEEP_EVERY = 30.0
-_last_sweep = 0.0
+_sweep_state = {"last": 0.0}  # a dict, not a rebound global: one place reads and writes it
 
 
 def _token_valid(token: str | None, idle_ttl: int) -> bool:
     """Is this token live? Using it also keeps it alive."""
-    global _last_sweep
     now = time.time()
     with _token_lock:
         entry = _active_tokens.get(token) if token else None
         own_dead = entry is not None and (now - entry[1] > idle_ttl or now - entry[0] > _SESSION_MAX_AGE)
-    if entry is None or own_dead or now - _last_sweep >= _SWEEP_EVERY or now < _last_sweep:
-        _last_sweep = now
+    if entry is None or own_dead or now - _sweep_state["last"] >= _SWEEP_EVERY or now < _sweep_state["last"]:
+        _sweep_state["last"] = now
         _sweep_expired(idle_ttl)
     with _token_lock:
         entry = _active_tokens.get(token) if token else None
