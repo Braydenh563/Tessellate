@@ -1172,8 +1172,7 @@ def _conversational_messages(req: _StreamRequest, prepared: dict, ollama_running
             part
             for part in (
                 _capability_answer(req, ollama_running) if _asks_capability(req, prepared) else "",
-                composer_aware.model_context(_awareness(req)) if req.body.screen else "",
-                chat_extra.remark_facts(req.session, req.question or ""),  # parity, INBOX 1749
+                composer_aware.model_context(_awareness(req)) if req.body.screen else "", chat_extra.remark_facts(req.session, req.question or ""),  # remark parity, INBOX 1749
             )
             if part
         ),
