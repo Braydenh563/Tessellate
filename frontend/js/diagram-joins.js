@@ -1,8 +1,8 @@
 // diagram-joins.js: a flowchart's connectors, in the block pane (1546 P2 built them, P4 moved them out so
 // diagram-builder.js, which every diagram opens, stays small). Lazy: `LAZY_MODULES.diagramJoins`,
 // registered at the foot of documents-mermaid.js and fetched by the builder on the first press of a
-// connector row or of Connect to. Two things: the menu a connector row opens (its line, its label, remove) and the
-// picker that connects one block to another, which can also make the other block (1594). R6: the menu hangs from its row,
+// connector row or of Connect to. Two things: the items of the menu a connector row opens (its line, its label, remove) and the
+// picker that connects one block to another, which can also make the other block (1594). R6: the menu hangs from its row (the builder's kebabMenu, `anchor`),
 // each line kind has its own drawn glyph, the picker shows each block's shape, and a second branch off a decision asks for its words.
 //
 // One closure, one export: `diagramModel.joins`. `h` is the builder's helpers (`say`, `commit`, `ops`, `blockEl`).
@@ -31,8 +31,19 @@
 
   function items(S, edge, h) {
     const to = titleOf(h, S, edge.to);
+    //: The six line kinds are drawn (`dgm-link` through the item's `lead`), where one arrow icon stood for four of them; the kind the connector is wears `current`.
     const links = LINKS.map((kind) => ({
-      label: `${isKind(edge, kind) ? "ph:check" : kind[3] ? "ph:arrows-left-right" : "ph:arrow-right"} ${kind[2]}`,
+      label: kind[2],
+      lead: () => {
+        const slot = Object.assign(document.createElement("span"), { className: "dgm-menu-glyph" });
+        const glyph = Object.assign(document.createElement("span"), { className: "dgm-link" });
+        glyph.dataset.style = kind[0];
+        glyph.dataset.arrow = kind[3] ? "both" : String(kind[1]);
+        slot.setAttribute("aria-hidden", "true");
+        slot.append(glyph);
+        return slot;
+      },
+      current: isKind(edge, kind),
       run: () => {
         const [style, arrow, name, both] = kind;
         Object.assign(edge, { style, arrow });
@@ -83,75 +94,6 @@
     h.select(S, key);
     h.blockEl(S, key)?.scrollIntoView({ block: "nearest" });
     h.say(S, `Went to ${titleOf(h, S, id)}, where the connector ${end === "to" ? `from ${titleOf(h, S, edge.from)} ends` : `to ${titleOf(h, S, edge.to)} starts`}.`);
-  }
-
-  //: The menu off the row that opened it (INBOX 1771, the owner: "appears on top of it and not next to it"). `openMenuAtPoint` hangs a menu
-  //: from a one-pixel point, so a menu taller than the room below flipped up from that point and lay across the row (measured at 1440x900:
-  //: the row at 475 to 499, the menu 101 to 505). Placed here against the row's whole box instead: below, above, then to the right or the left,
-  //: the first that fits the window; none fitting, the larger of below and above with the menu scrolling inside it.
-  function beside(menu, row, opener) {
-    if (!menu) return;
-    const [margin, gap] = [8, 4];
-    escapeMenuToBody(menu, opener);
-    menu.style.visibility = "hidden";
-    menu.style.maxHeight = "";
-    menu.style.left = "0px";
-    menu.style.top = "0px";
-    const [vw, vh] = [window.innerWidth, window.innerHeight];
-    const box = menu.getBoundingClientRect();
-    const clamp = (n, size, room) => Math.max(margin, Math.min(n, room - margin - size));
-    const fits = (top) => top >= margin && top + box.height <= vh - margin;
-    let [left, top] = [clamp(row.right - box.width, box.width, vw), 0];
-    if (fits(row.bottom + gap)) top = row.bottom + gap;
-    else if (fits(row.top - gap - box.height)) top = row.top - gap - box.height;
-    else if (row.right + gap + box.width <= vw - margin) [left, top] = [row.right + gap, clamp(row.top, box.height, vh)];
-    else if (row.left - gap - box.width >= margin) [left, top] = [row.left - gap - box.width, clamp(row.top, box.height, vh)];
-    else {
-      const room = [vh - margin - (row.bottom + gap), row.top - gap - margin];
-      const below = room[0] >= room[1];
-      menu.style.maxHeight = `${Math.max(120, Math.floor(room[below ? 0 : 1]))}px`;
-      top = below ? row.bottom + gap : Math.max(margin, row.top - gap - menu.getBoundingClientRect().height);
-    }
-    menu.style.left = `${Math.round(left)}px`;
-    menu.style.top = `${Math.round(top)}px`;
-    menu.style.visibility = "";
-  }
-
-  //: The connector row's menu (R6.4). It hangs from the row's right edge, as every menu does, so it opens under its row and
-  //: not at the window's left; the six line kinds are drawn (`dgm-link`), where one arrow icon stood for four of them.
-  function menu(S, { edge, chip }, h) {
-    //: The whole row, not its ⋯: the menu stays off the words it belongs to.
-    const line = chip.closest(".dgm-joinline") || chip;
-    let r = line.getBoundingClientRect();
-    const rows = items(S, edge, h);
-    const open = openMenuAtPoint(rows, "This connector", r.right, r.bottom, chip);
-    r = line.getBoundingClientRect();
-    beside(open, r, chip);
-    open?.querySelectorAll(":scope > .menu-item").forEach((row, i) => {
-      if (i >= LINKS.length) return;
-      const [style, arrow, name, both] = LINKS[i];
-      const made = document.createElement("button");
-      made.type = "button";
-      made.className = "menu-item dgm-shape-row";
-      made.setAttribute("role", "menuitem");
-      const glyph = document.createElement("span");
-      glyph.className = "dgm-link";
-      glyph.dataset.style = style;
-      glyph.dataset.arrow = both ? "both" : String(arrow);
-      glyph.setAttribute("aria-hidden", "true");
-      made.append(glyph, Object.assign(document.createElement("span"), { className: "menu-item-words", textContent: name }));
-      if (isKind(edge, LINKS[i])) {
-        made.setAttribute("aria-current", "true");
-        made.append(Object.assign(document.createElement("i"), { className: "ph ph-check dgm-shape-check" }));
-      }
-      made.addEventListener("click", (event) => {
-        event.stopPropagation();
-        closeActionMenus();
-        rows[i].run();
-      });
-      row.replaceWith(made);
-    });
-    open?.querySelector(".menu-item")?.focus({ preventScroll: true });
   }
 
   //: The words for a decision's arrow, in one dialog: the field holds the offer (yes, then no) and a yes | no pair fills it, so one press answers. "" when cancelled.
@@ -223,5 +165,5 @@
     }
   }
 
-  diagramModel.joins = { items, menu, pick, ask, go };
+  diagramModel.joins = { items, pick, ask, go };
 })();

@@ -622,10 +622,19 @@
   text-overflow: ellipsis;
 }
 
-/* A flowchart row's name stays on one line and ends in an ellipsis with its full words in the title (INBOX 1771, the owner's screenshot:
-   "Can you reproduce it?" wrapped to two lines because Connect squeezed it). It used to wrap to two lines before it was cut (blind test,
-   dgbt-1109 10: "Order plac..."); a wrapped name made the rows uneven and moved the ones below, so the tight list gives the name the
-   room instead: a smaller gap between the row's controls, and its menu and Connect arrow kept square. The name being typed keeps the line. */
+/* A flowchart row's name wraps to two lines before it is cut, and its full words are in the title: the arrow, swatch, grip and menu leave a
+   209 px row 73 px for them ("Order plac...", blind test dgbt-1109 10; "Can you reproduce it?" was 43 px short of 125 at 1440 and 76 px at 390, the
+   owner's no-clipping rule, INBOX 1771). The tight list keeps a smaller gap between the row's controls, and a phone's row does not
+   show Connect's words (below) so the name keeps their 78 px. The name being typed keeps the single line. */
+.dgm-card:has(> .dgm-connect) > .dgm-label:not(.dgm-editing) {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 .dgm-tight .dgm-card:has(> .dgm-connect) {
   gap: var(--space-1);
 }
@@ -718,11 +727,11 @@
   cursor: pointer;
 }
 
-.dgm-join-more {
+.dgm-joinline > .dgm-menu {
   flex: none;
 }
 
-.dgm-join-more button {
+.dgm-joinline > .dgm-menu > button {
   min-height: var(--control-h-dense);
   min-width: var(--control-h-dense);
 }
@@ -760,19 +769,22 @@
   border-inline-start-width: 4px;
 }
 
-.dgm-join-to {
+/* The words a connector row points at wrap to two lines before they are cut, as a block's name does (the whole name is in the row's title). */
+.dgm-join-to,
+.dgm-join-label {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   min-width: 0;
   overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
+  text-align: start;
 }
 
 .dgm-join-label {
   flex: none;
   max-inline-size: 40%;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
 }
 
 .dgm-join-label::before {
@@ -1402,7 +1414,8 @@
     order: 1;
   }
 
-  .dgm-connect .ph-text {
+  /* Not on the row pointed at or focused either: a tap focuses a row, and its 78 px of words cut the name ("Can you reproduce it?" 49 of 125 px at 390). */
+  .dgm-card:not(.dgm-connecting) .dgm-connect .ph-text {
     display: none;
   }
 
@@ -2361,7 +2374,7 @@
   .dgm-swatch,
   .dgm-card > button.dgm-connect,
   .dgm-join,
-  .dgm-join-more button {
+  .dgm-joinline > .dgm-menu > button {
     min-block-size: 2.75rem;
     min-inline-size: 2.75rem;
   }
@@ -2476,6 +2489,12 @@
   max-block-size: 60dvh;
   border: 0;
   background: transparent;
+}
+
+/* The sheet is outside the dialog's container, so the container rules above do not reach the list in it: Connect keeps only its arrow here too,
+   or its 78 px of words cut every name ("Can you reproduce it?" 49 of 125 px at 390). */
+.sheet-card > .dgm-pane .dgm-card:not(.dgm-connecting) .dgm-connect .ph-text {
+  display: none;
 }
 
 .dgm-listbtn {

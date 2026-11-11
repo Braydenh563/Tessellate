@@ -27,29 +27,31 @@ def _body(source: str, head: str) -> str:
 
 
 def test_the_connector_menu_is_placed_off_its_row_not_over_it():
-    joins = _read("diagram-joins.js")
-    menu = _body(joins, "function menu(S, { edge, chip }, h) {")
-    assert "beside(open, r, chip)" in menu
+    # Intent kept, mechanism moved (the hub's review of 1771): the row's ⋯ is a `kebabMenu` with `anchor`, so the recipe places it.
+    selects = _read("sheets-selects.js")
+    opener = _body(selects, "function kebabMenu(items, ariaLabel, { vertical = false, anchor = null } = {}) {")
     # Opening the menu focuses its first item, which scrolls the pane (the row moved 28px at 820x900, 676 to 648, under a menu placed
-    # for the 676): the row is measured again once the menu is open, and that box is the one the menu is placed against.
-    assert menu.index("openMenuAtPoint(") < menu.rindex("r = line.getBoundingClientRect()") < menu.index("beside(open, r, chip)")
-    place = _body(joins, "function beside(menu, row, opener) {")
-    # below, then above, then to a side: never across the row; a menu taller than the room scrolls instead.
-    assert place.index("row.bottom + gap") < place.index("row.top - gap") < place.index("row.right + gap") < place.index("row.left - gap")
+    # for the 676): the anchor is measured after the menu is open, and that box is the one the menu is placed against.
+    assert opener.index("openActionMenu(menu, opener)") < opener.index("kebabMenu.beside(menu, anchor.getBoundingClientRect(), opener)")
+    place = _body(selects, "kebabMenu.beside = (menu, row, opener) => {").split("\n};", 1)[0]
+    # below if it fits, else above, else the larger of the two: never across the row; a menu taller than the room scrolls instead.
+    assert place.index("[down, up]") < place.index("const below") < place.index("style.maxHeight = `") < place.index("row.top - gap - menu.")
     assert "maxHeight" in place and "escapeMenuToBody" in place
+    assert "openMenuAtPoint" not in _read("diagram-joins.js") and "function beside" not in _read("diagram-joins.js")
 
 
 # --- b: a connector row goes to the blocks it connects -----------------------------------------------
 
 
-def test_a_connector_row_picks_the_arrow_and_goes_to_its_target_and_the_menu_is_its_own_button():
+def test_a_connector_row_picks_the_arrow_and_goes_to_its_target_and_the_menu_is_its_own_kebab():
     builder = _read("diagram-builder.js")
     chip = _body(builder, "function joinChip(S, edge, index) {")
     assert 'joins(S, "go", { edge: S.m.edges[index] || edge, end: "to" })' in chip
     assert 'aria-label", `Go to ${to}.' in chip
-    # the menu is a second button, in a `.menu-wrap` so the row's own guards (select, drag, keys) leave it alone.
-    assert 'el("span", "menu-wrap dgm-join-more")' in chip and 'joins(S, "menu"' in chip
-    assert chip.index('"go"') < chip.index('joins(S, "menu"')
+    # the menu is a second control, a lazy `kebabMenu` (never a hand-drawn ⋯: test_icon_conventions) kept off the whole row.
+    assert 'diagramModel.library.lazyKebab(' in chip and '"Change this connector", { anchor: line }' in chip
+    assert 'joins(S, "items", S.m.edges[index] || edge)' in chip and "dots-three" not in builder
+    assert chip.index('"go"') < chip.index("lazyKebab(")
     joins = _read("diagram-joins.js")
     go = _body(joins, 'function go(S, { edge, end = "to" }, h) {')
     assert "S.pickEdge?.(edge)" in go and "h.select(S, key)" in go and "scrollIntoView" in go

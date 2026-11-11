@@ -96,7 +96,6 @@ def test_in_script_the_overflow_glyph_belongs_to_the_menu_builders_alone() -> No
         "documents.js",  # the dock's More toggle label
         "whiteboard-commands.js",  # the legend naming the menu key
         "editor.js",  # (comment on the section break: not a glyph)
-        "diagram-builder.js",  # a connector row's own opener (INBOX 1771): diagram-joins.js places and draws that menu, so it is not a kebabMenu's
     }
     users = {
         name
@@ -119,7 +118,7 @@ def test_kebab_menu_draws_the_vertical_glyph_only_when_asked() -> None:
     source = JS["sheets-selects.js"]
     start = source.index("function kebabMenu(")
     body = source[start : start + 900]
-    assert "{ vertical = false } = {}" in body
+    assert "{ vertical = false, anchor = null } = {}" in body
     assert 'vertical ? "ph:dots-three-vertical" : "ph:dots-three"' in body
 
 
