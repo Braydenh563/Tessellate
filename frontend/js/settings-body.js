@@ -38,7 +38,7 @@ function surfaceBuild(name) {
   window.hideClosedDockMenuLists?.(host);
   window.localizeStaticChords?.(host);
   window.stampShortcutTitles?.(host);
-  for (const run of entry.after.splice(0)) run();
+  for (const run of entry.after.splice(0)) try { run(); } catch (error) { console.error(error); }
   return true;
 }
 
