@@ -111,9 +111,9 @@ def test_text_size_and_line_spacing_are_menu_rows_with_prose_only_css():
     for ident in ("doc-text-size", "doc-text-size-label", "doc-line-spacing", "doc-line-spacing-label"):
         assert f'id="{ident}"' in markup
     assert 'docRunControl("doc-text-size"' in documents and 'docRunControl("doc-line-spacing"' in documents
-    # A code file keeps its own metrics: every size and spacing rule excludes it.
+    # A code file keeps its own metrics: every size and spacing rule excludes it (six: large, xlarge, xxlarge, small, compact, relaxed; D28 added two).
     rules = re.findall(r"#tab-documents\.doc-(?:size|spacing)-\w+ [^{]*\{", css)
-    assert len(rules) == 4 and all(":not(.doc-content-code)" in r for r in rules)
+    assert len(rules) == 6 and all(":not(.doc-content-code)" in r for r in rules)
     assert "!important" not in css[css.index("Text size and line spacing for prose") :]
 
 

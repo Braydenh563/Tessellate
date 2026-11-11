@@ -1139,7 +1139,9 @@ function reminderItem(reminder, label) {
     //: by the server from the rule (every weekday, the last Friday of the
     //: month) in this person's own days; its undo puts the due time back.
     if (checkbox.checked && reminder.recurring && reminder.recurring !== "none") {
-      const rolled = await apiJson(`/reminders/${reminder.id}/complete?tz_offset_minutes=${-new Date().getTimezoneOffset()}`, { method: "POST" });
+      const rolled = await apiJson(`/reminders/${reminder.id}/complete?tz_offset_minutes=${-new Date().getTimezoneOffset()}&expected_due_at=${encodeURIComponent(reminder.due_at)}`, { method: "POST" }).catch(() => null);
+      //: A 409 means another tab or press already rolled this occurrence: show the new time, roll nothing.
+      if (!rolled) { loadReminders(); return; }
       const put = (body) => async () => {
         await apiJson(`/reminders/${reminder.id}`, { method: "PUT", body: JSON.stringify({ ...body, restore: true }) });
         loadReminders();

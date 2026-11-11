@@ -134,6 +134,7 @@ def test_an_http_write_naming_an_agent_is_filed_under_it(client):
 
 
 def test_an_mcp_write_is_filed_under_the_client(client):
+    deps.get_config().set_preference("mcp_writes_enabled", True)
     handle_request(
         {
             "jsonrpc": "2.0",

@@ -553,6 +553,7 @@ function paletteCommands() {
     //: The one way in to private notes was a chip on a card (audit 1031 N49).
     { label: "ph:lock-key Unlock private notes", keywords: "unlock private notes vault password open", about: "Enter your password to read your private notes.", act: () => unlockPrivateNotes() },
     { label: "ph:lock Lock Tessellate", about: "Close the notebook until the password is typed again.", act: lockNow },
+    { label: "ph:clock-counter-clockwise Where you left off", keywords: "unsaved typed draft recent resume pick up", about: "Every box that holds words you typed and have not saved, one press to jump back to it.", act: () => typedWords("open") },
     //: The top bar's other controls, so each is in the palette too (ledger 1410).
     { label: "ph:gear Open Settings", chord: "settings", act: () => openSettingsModal() },
     { label: "ph:bell Open notifications", keywords: "bell", act: () => openNotifications() },

@@ -442,6 +442,8 @@ class PreferencesBody(BaseModel):
     # copy still says two.
     web_search_enabled: bool | None = None
     web_store_enabled: bool | None = None
+    # Q22 (audit 1028 K13): whether an outside MCP client may change notes.
+    mcp_writes_enabled: bool | None = None
     # The other opt-in network call (Settings -> About): see core.config.
     update_check_enabled: bool | None = None
     # Separate switch: "notify me" vs. "download and run the installer

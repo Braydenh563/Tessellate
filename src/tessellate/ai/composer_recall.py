@@ -380,6 +380,8 @@ def _overview_bullets(out: _Answer, views: list[NoteView], stems: set[str], text
     """One line a note, oldest first: its day, then the line that stands
     for it (a picture's reading as what it shows and the words in it)."""
     for i, view in enumerate(sorted(views, key=lambda v: (v.written or date.min, v.rank))):
+        #: A note of a word or two ("something lol") has no quotable sentence: its first line stands in, never an empty bullet.
+        units = _overview().best_line(view.sentences, stems, text_stems) or _label_line(view)
         if i or not first:
             out.t("line")
         out.t("bullet")
@@ -389,7 +391,7 @@ def _overview_bullets(out: _Answer, views: list[NoteView], stems: set[str], text
         elif view.titled or not view.written:
             #: The card carries the day (INBOX 1441): a titled note is named.
             out.name(view, cap=True).t("colon")
-        _overview_line(out, _overview().best_line(view.sentences, stems, text_stems), stems)
+        _overview_line(out, units, stems)
     return len(views)
 
 

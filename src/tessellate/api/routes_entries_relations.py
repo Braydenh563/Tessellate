@@ -419,8 +419,8 @@ def accept_tension(body: TensionPair, session: Session = Depends(get_session)) -
     the same audit entry, the same self-link and duplicate guards, and the
     same graph/traversal treatment as one made by hand.
     """
-    earlier = _existing_entry(session, body.earlier_id)
-    later = _existing_entry(session, body.later_id)
+    earlier = NOTES.writable(session, body.earlier_id)
+    later = NOTES.writable(session, body.later_id)
     link = manager.create_link(
         session,
         earlier,
