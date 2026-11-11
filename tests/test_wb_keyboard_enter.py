@@ -61,3 +61,11 @@ def test_the_canvas_key_handler_asks_it_first():
     assert "wbKeyboardEnter()" in WB
     handler = WB[WB.index("&& !wbIsMap() && wbKeyboardEnter()") - 160 :]
     assert 'e.key === "Enter"' in handler[:260]
+
+
+def test_the_placing_tools_say_enter_places_too():
+    """W23 (sweep-1028b): the tooltip said only "click the canvas" while Enter on the focused canvas also places."""
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    for tool in ("sticky", "text", "frame"):
+        tag = html[html.index(f'data-tool="{tool}"') :].split(">", 1)[0]
+        assert "press Enter on it" in tag, tool
