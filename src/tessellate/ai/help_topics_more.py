@@ -1533,11 +1533,14 @@ MORE_TOPICS: list[dict] = [
             "Press Sync through a folder, type the folder and a sync passphrase (at least 8 characters, the same on "
             "every computer; it is never saved) and press Sync now. Each computer writes only its own file there, "
             "encrypted, and reads the others'; press it on each computer to bring them level. Notes, documents, boards "
-            "and attached files travel; private notes never go into the folder. A change made on both computers keeps "
+            "and attached files travel; private notes never go into the folder, and a note made private after it was "
+            "shared is withdrawn from the other computer, with its History there (one changed there is kept and says "
+            "so). A change made on both computers keeps "
             "the later one and the other words stay in History, so nothing is lost; a note moved to the bin on one "
             "lands in the other's bin, and a file removed on one is removed on the other. A file that cannot be opened "
-            "(a different passphrase) is counted and left alone. The last-synced line under the group says when and "
-            "which way."
+            "(a different passphrase) is counted and left alone. A notebook folder copied to another computer has the "
+            "same sync id and is refused: on one copy, delete the file named sync-state in its data folder, then sync again. "
+            "The last-synced line under the group says when and which way."
         ),
         "badge": {"label": "Import & export", "section": "data"},
     },

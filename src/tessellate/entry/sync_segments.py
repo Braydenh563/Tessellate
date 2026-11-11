@@ -11,7 +11,10 @@ the second time, so a segment cut off part way is simply applied again;
 the caller moves its cursor only after the last note (`sync_pull.pull`).
 
 Private notes travel as the ciphertext in their column and land as it:
-the key never leaves (decision 5).
+the key never leaves (decision 5). The folder, which carries no key, sends a
+note made private after it went out in the clear as a `withheld` marker
+instead (INBOX 1783): the receiver deletes its plain copy and History, unless
+the note was written or changed here, which it keeps and says so.
 """
 
 from __future__ import annotations
@@ -20,6 +23,7 @@ import hashlib
 import json
 import threading
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 from sqlalchemy import func, select
@@ -27,7 +31,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.core import events
 from tessellate.core.database import AuditLog, Entry, EntryRevision, Space, impersonate_workspace
-from tessellate.entry import manager, sync_keys
+from tessellate.entry import manager, manager_purge, sync_keys
 
 FORMAT = 1
 #: Notes per segment; a longer log answers `more` and is pulled in turns.
@@ -35,6 +39,10 @@ MAX_NOTES = 200
 #: `client_key` prefix of a note that came from another computer.
 KEY_PREFIX = "sync:"
 DAMAGED = "A sync segment arrived damaged or cut off; nothing from it was applied."
+SAME_ID = ("This computer and the other one have the same sync id, so one notebook folder was copied from the other; "
+           "nothing was synced. On one of them, delete the file named sync-state in its data folder, then sync again.")
+WITHHELD_KEPT = ("Made private on the other computer; kept here because it was written or changed on this computer, "
+                 "so it is still readable here.")
 _FIELDS = {"sid": str, "content": str, "tags": list, "category": str, "space": str,
            "is_private": bool, "is_deleted": bool, "updated_at": str}
 
@@ -99,6 +107,12 @@ def note_state(session: Session, entry: Entry, device: str) -> dict[str, Any]:
         "pinned": bool(entry.pinned),
         "colour": entry.colour,
     }
+
+
+def withheld(state: dict) -> dict[str, Any]:
+    """A note made private where the reader holds no key: its name and time only, nothing of what it says."""
+    return {"sid": state["sid"], "content": "", "tags": [], "category": "", "space": "default", "is_private": True,
+            "is_deleted": False, "updated_at": state["updated_at"], "withheld": True}
 
 
 def digest(notes: list) -> str:
@@ -220,6 +234,33 @@ def _keep_theirs_as_version(session: Session, entry: Entry, item: dict) -> None:
     manager.log_action(session, "revised", "entry", entry.id, "the other computer's version")
 
 
+def _changed_here(session: Session, entry_id: int) -> tuple[bool, bool]:
+    """(a person or Atlas here ever changed the note, the keep was already said): only a sync or a system job did not."""
+    rows = session.execute(select(AuditLog.actor, AuditLog.action, AuditLog.detail).where(
+        AuditLog.entity_type == "entry", AuditLog.entity_id == entry_id)).all()
+    said = any(detail == WITHHELD_KEPT for _, _, detail in rows)
+    here = any(not (actor or "").startswith(("sync:", "system:")) and action not in events.QUIET_ACTIONS
+               for actor, action, _ in rows)
+    return here, said
+
+
+def _withdraw(session: Session, me: str, item: dict, uploads: Path | None) -> str:
+    """A note made private on the other computer after it came here in the clear (INBOX 1783): the copy, its
+    History and its words in the log go, unless it was written or changed here, which stays and says so once."""
+    entry = _find(session, me, item["sid"])
+    if entry is None or entry.is_private:
+        return "same"
+    here, said = _changed_here(session, entry.id)
+    if said:
+        return "same"
+    if here or item["sid"].partition(":")[0] == me:
+        manager.log_action(session, "kept", "entry", entry.id, WITHHELD_KEPT)
+        return "conflicts"
+    manager_purge.seal_private_events(session, [entry.id])
+    manager_purge.purge_entries(session, [entry], uploads_dir=uploads)
+    return "applied"
+
+
 def _apply_one(session: Session, me: str, peer: str, item: dict, both: sync_keys.Keys | None = None) -> str:
     entry = _find(session, me, item["sid"])
     if entry is None:
@@ -244,15 +285,20 @@ def _apply_one(session: Session, me: str, peer: str, item: dict, both: sync_keys
     return "same"
 
 
-def apply_segment(session: Session, me: str, segment: dict, both: sync_keys.Keys | None = None) -> dict[str, int]:
+def apply_segment(session: Session, me: str, segment: dict, both: sync_keys.Keys | None = None,
+                  uploads: Path | None = None) -> dict[str, int]:
     """Apply a checked segment, one committed note at a time; counts by outcome.
 
-    `both` (the other computer's data key and this one's) reseals its private notes here."""
+    `both` (the other computer's data key and this one's) reseals its private notes here; `uploads` is where a
+    withdrawn note's files are deleted from."""
     notes = check(segment, me)
     peer = segment["device"]
     report = {"applied": 0, "same": 0, "conflicts": 0}
     with events.acting_as(sync_actor(peer)), impersonate_workspace(session, ""):
         for item in notes:
-            report[_apply_one(session, me, peer, sync_keys.opened(item, both), both)] += 1
+            if item.get("withheld") is True:
+                report[_withdraw(session, me, item, uploads)] += 1
+            else:
+                report[_apply_one(session, me, peer, sync_keys.opened(item, both), both)] += 1
             session.commit()
     return report

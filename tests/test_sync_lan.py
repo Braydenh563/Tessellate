@@ -25,7 +25,7 @@ from fastapi.testclient import TestClient
 
 from tessellate.api import routes_auth
 from tessellate.core import deps, lancert, lantrust, sync_state
-from tessellate.entry import sync_link
+from tessellate.entry import sync_link, sync_segments
 
 ROOT = Path(__file__).resolve().parent.parent
 PASSWORDS = {"a": "the first computer's password", "b": "the second computer's password"}
@@ -400,3 +400,41 @@ def test_a_first_press_at_another_address_leaves_the_working_pairing_alone(tmp_p
     assert (kept["host"], kept["peer"], kept["sync_pass"], kept["authority"]) == (
         "192.168.1.20", "abc123def456", "the pass", pems[0])
     assert sync_link.load(here) is not None
+
+
+def test_pairing_with_a_computer_that_has_this_ones_sync_id_is_refused(tmp_path, monkeypatch):
+    """PR 216 review: a data folder copied to a second computer answers with this computer's own device id."""
+    there = tmp_path / "there"
+    there.mkdir()
+    lancert.ensure(there, ["127.0.0.1"])
+    authority = lancert.authority_pem(there).decode()
+    here = tmp_path / "here"
+    here.mkdir()
+    me = sync_state.device_id(here)
+    monkeypatch.setattr(sync_link, "_authority", lambda host, port: authority)
+    monkeypatch.setattr(sync_link, "_sign_in", lambda wire, password, cookie: "token")
+    answer = json.dumps({"pass": "p", "device": me}).encode()
+    monkeypatch.setattr(sync_link._Wire, "call", lambda self, method, path, **kw: (200, answer))  # noqa: SLF001
+    with pytest.raises(sync_link.PairError):
+        sync_link.pair(here, "192.168.1.20:8443", "the password")  # the certificate to check first
+    with pytest.raises(sync_link.PairError):
+        sync_link.pair(here, "192.168.1.20:8443", "the password")
+    assert sync_link.last_problem() == sync_segments.SAME_ID
+    assert sync_link.load(here) is None
+
+
+def test_a_pull_from_a_link_named_as_this_computer_applies_nothing(tmp_path):
+    from tessellate.entry import sync_pull
+
+    here = tmp_path / "here"
+    here.mkdir()
+    me = sync_state.device_id(here)
+
+    class Twin:
+        name = me
+
+        def fetch(self, since, peer):  # noqa: ANN001, ANN202
+            raise AssertionError("never asked")
+
+    done = sync_pull.pull_from(None, here, Twin(), "network")
+    assert done["error"] == sync_segments.SAME_ID

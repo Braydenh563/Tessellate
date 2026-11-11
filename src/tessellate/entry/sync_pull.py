@@ -29,7 +29,7 @@ from sqlalchemy.orm import Session
 from tessellate.core import sync_state
 from tessellate.entry import sync_keys, sync_link
 from tessellate.entry.sync_extras_apply import pull_extras
-from tessellate.entry.sync_segments import DAMAGED, SegmentError, apply_segment, last_problem
+from tessellate.entry.sync_segments import DAMAGED, SAME_ID, SegmentError, apply_segment, last_problem
 
 logger = logging.getLogger("tessellate.sync")
 
@@ -81,7 +81,7 @@ def _round(session: Session, data_dir: Path, link: Transport, me: str, totals: d
     segment = link.fetch(since, me)
     if not isinstance(segment, dict) or segment.get("device") != link.name:
         raise SegmentError(WRONG_PEER if isinstance(segment, dict) else DAMAGED)
-    for key, count in apply_segment(session, me, segment, sync_keys.keys(data_dir)).items():
+    for key, count in apply_segment(session, me, segment, sync_keys.keys(data_dir), data_dir / "uploads").items():
         totals[key] += count
     sync_state.save_peer(data_dir, link.name, cursor=segment["upto"])
     return bool(segment.get("more")) and segment["upto"] > since
@@ -90,6 +90,8 @@ def _round(session: Session, data_dir: Path, link: Transport, me: str, totals: d
 def _drain(session: Session, data_dir: Path, link: Transport, totals: dict) -> str:
     """Pull until the other computer has nothing more; the failure sentence, or ''."""
     me = sync_state.device_id(data_dir)
+    if link.name == me:  # a notebook folder copied to the other computer: its own notes are not the peer's
+        return SAME_ID
     try:
         for _ in range(MAX_ROUNDS):
             if not _round(session, data_dir, link, me, totals):

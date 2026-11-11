@@ -108,6 +108,8 @@ def sync_pass(body: PassBody, request: Request) -> dict:
     raw = request.cookies.get(lantrust.DEVICE_COOKIE, "")
     if not 20 <= len(raw) <= 100:
         raise HTTPException(status_code=403, detail=NO_DEVICE)
+    if body.peer == sync_state.device_id(data_dir):  # a copy of this notebook's folder: its notes are these
+        raise HTTPException(status_code=403, detail=sync_segments.SAME_ID)
     must_wait = is_another_device(request) and lantrust.load(data_dir)["ask_new_devices"]
     if must_wait and not lantrust.device_known(data_dir, raw):
         raise HTTPException(status_code=403, detail=NO_DEVICE)
