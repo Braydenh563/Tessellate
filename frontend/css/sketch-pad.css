@@ -671,7 +671,7 @@
    the pad's buttons keep it on a page of its own. */
 @media (max-width: 819.98px), (pointer: coarse) {
   .sp-root {
-    --target-min: 2.75rem;
+    --target-min: max(2.75rem, 44px);
   }
 }
 /* The palette, size and style fold into one popover under the bar. */

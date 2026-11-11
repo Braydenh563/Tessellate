@@ -108,3 +108,30 @@ def test_the_strip_window_comes_from_an_observer_not_hit_tests():
     # The scroll listener only asks for the next page now.
     listener = source[source.index('$("timeline-scroll").addEventListener("scroll"') :][:400]
     assert "drawTimelineWindow" not in listener
+
+
+def test_the_library_first_chunk_is_a_screen_of_cards_and_the_pump_fills_the_rest():
+    # Audit 1029 X15: sixty cards were 3,300 nodes in one task (170 to 240ms
+    # at 4x CPU) when a 1440px window shows about a dozen. The frame pump
+    # carries on while the sentinel is within its margin, so the grid still
+    # fills before it is scrolled to.
+    source = read("library.js")
+    call = source[source.index("renderIncrementally(grid, items, (item, i) =>") :]
+    call = call[: call.index("});", call.rindex("initial:"))]
+    assert re.search(r"initial:\s*12\b", call)
+    assert re.search(r"budgetMs:\s*\d+", call)
+
+
+def test_a_library_cards_menu_rows_are_built_on_its_first_open():
+    # Audit 1029 X15: the rows were 43 of a card's 55 nodes (2,451 of the
+    # grid's 3,135 at 57 cards) for menus nobody had opened. `rowMenu` keeps
+    # the items, so a right-click and F2 do not need the rows built.
+    selects = read("sheets-selects.js")
+    assert "kebabMenu.rows(menu, items);" in function_body(selects, "kebabMenu")
+    assert "kebabMenu.rows = (menu, items) => {" in selects
+    library = read("library.js")
+    card = library[library.index("const menu = kebabMenu([], label);") :][:700]
+    assert "menu.rowMenu = { items: actions, ariaLabel: label };" in card
+    # Capture phase, once: it runs before the opener's own handler, and so
+    # before `objKebabRows` counts the rows that are there.
+    assert "kebabMenu.rows(menu.lastChild, actions), { capture: true, once: true }" in card

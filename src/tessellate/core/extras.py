@@ -887,8 +887,8 @@ BUNDLES: tuple[Bundle, ...] = (
     Bundle(
         id="languages",
         label="Languages",
-        about="Translate a passage into Spanish on this computer, with no model.",
-        extras=("translate",),
+        about="Translate a passage into Spanish, and check grammar a second way, on this computer.",
+        extras=("translate", "languagetool"),
     ),
     Bundle(
         id="code",

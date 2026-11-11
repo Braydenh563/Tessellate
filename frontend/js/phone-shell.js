@@ -2205,10 +2205,18 @@ function initDockFolding() {
     }
     docks.forEach(fitDock);
   });
-  for (const dock of document.querySelectorAll(".dock[data-dock-name]")) {
-    watcher.observe(dock);
-    for (const zone of dock.querySelectorAll(":scope > .dock-identity, :scope > .dock-find, :scope > .dock-actions")) watcher.observe(zone);
-  }
+  //: Docks of a surface built later (Notes, Timeline) are watched when it is.
+  const seen = new WeakSet();
+  const watchDocks = () => {
+    for (const dock of document.querySelectorAll(".dock[data-dock-name]")) {
+      if (seen.has(dock)) continue;
+      seen.add(dock);
+      watcher.observe(dock);
+      for (const zone of dock.querySelectorAll(":scope > .dock-identity, :scope > .dock-find, :scope > .dock-actions")) watcher.observe(zone);
+    }
+  };
+  watchDocks();
+  for (const name of SURFACES.keys()) onSurface(name, watchDocks);
 }
 
 initDockFolding();

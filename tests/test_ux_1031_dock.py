@@ -33,6 +33,16 @@ def test_every_dock_folds_by_width_and_never_by_count():
     assert "new ResizeObserver" in text and "contentRect.width" in text
 
 
+def test_a_dock_in_a_template_surface_is_watched_once_it_is_built():
+    """C20 (W34): Notes is a `<template data-surface>` built on its first open (X15), so its dock was not
+    in the page when `initDockFolding` looked: nothing watched it and, with the connections rail open, it
+    wrapped to two rows (82 px against 46) at 1366 to 1500. Each surface's docks are watched as it is built."""
+    text = _js("phone-shell.js")
+    init = text.split("function initDockFolding()", 1)[1].split("\n}\n", 1)[0]
+    assert "watchDocks" in init and "onSurface(" in init and "SURFACES" in init
+    assert "WeakSet" in init, "a dock is observed once, however many surfaces build around it"
+
+
 def test_a_batch_act_hands_focus_back_to_select():
     text = _js("skills.js")
     body = text.split("function exitSelectMode()", 1)[1].split("\n}\n", 1)[0]

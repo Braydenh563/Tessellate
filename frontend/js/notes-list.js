@@ -534,16 +534,6 @@ function isRenderableUrl(url) {
 }
 
 
-/** The one-line form of the attachment card, for a surface too small for a card. */
-function fileChip(name, url) {
-  const label = name && name !== url ? name : url.split("/").pop();
-  const chipEl = document.createElement("span");
-  chipEl.className = "chip file-chip";
-  setLabel(chipEl, `${(attachmentIconClass(url, name) || "ph-file").replace("ph-", "ph:")} ${label}`);
-  chipEl.title = `${fileKindLabel(url, name)}: ${label}`;
-  return chipEl;
-}
-
 //: **One card for every file attached to anything** (INBOX 440 (2), DESIGN.md
 //: "A file attached to a note"). The owner: "all of the attachment cards ui
 //: and ux and utility need a massive redesign and upgrade." One note measured

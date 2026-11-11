@@ -165,14 +165,19 @@ S('graph-popup', async (p) => {
   await p.evaluate(async () => { const n = [...gcTab.byId.values()].find((x) => typeof x.id === 'number' || /^\d+$/.test(String(x.id))) || [...gcTab.byId.values()][0]; await openGraphPopup({ stopPropagation() {}, clientX: innerWidth / 2, clientY: innerHeight / 2 }, n); });
   await wait(p, 1500);
 });
-S('graph-new', async (p) => { await graphOpen(p); await p.evaluate(() => openGraphNewNote({ clientX: innerWidth / 2, clientY: innerHeight / 2 })); await wait(p, 700); });
+// The panel eases into place and is re-placed once its content lands: 0.8 s
+// after opening it still ran 31px past the graph box, settled at 1.5 s.
+S('graph-new', async (p) => { await graphOpen(p); await p.evaluate(() => openGraphNewNote({ clientX: innerWidth / 2, clientY: innerHeight / 2 })); await wait(p, 2000); });
 S('graph-trace', async (p) => { await graphOpen(p); await p.evaluate(() => setTracePanelOpen(true)); await wait(p, 700); });
 S('graph-selection', async (p) => { await graphOpen(p); await p.evaluate(() => { gcTab.selected = new Set([...gcTab.byId.keys()].slice(0, 3)); gcSelectionChanged(); }); await wait(p, 600); });
 S('graph-topic', async (p) => {
   await graphOpen(p);
-  await p.evaluate(() => { const t = (typeof graphStructure !== 'undefined' && graphStructure?.topics || [])[0]; if (!t) throw new Error('no topics in graphStructure'); gcOpenTopic(t); });
+  // Topics are only worked out in the topic colouring (graph-canvas.js, `graphStructure`).
+  await p.evaluate(() => { const c = document.getElementById('graph-colour'); if (c.value !== 'topic') { c.value = 'topic'; c.dispatchEvent(new Event('change', { bubbles: true })); } });
+  await p.waitForFunction(() => graphStructure?.topics?.length, null, { timeout: 8000 }).catch(() => {});
+  await p.evaluate(() => { const t = (graphStructure?.topics || [])[0]; if (!t) throw new Error('no topics in graphStructure'); gcOpenTopic(t); });
   await wait(p, 800);
-});
+}, { after: (p) => p.evaluate(() => { const c = document.getElementById('graph-colour'); c.value = 'category'; c.dispatchEvent(new Event('change', { bubbles: true })); }) });
 S('graph-search', async (p) => { await graphOpen(p); await p.fill('#graph-search', 'zoom note planning'); await wait(p, 900); });
 S('graph-fullscreen', async (p) => { await graphOpen(p); await p.evaluate(() => toggleGraphFullscreen()); await wait(p, 1200); }, { after: (p) => p.evaluate(() => { if (document.querySelector('.graph-fullscreen, :fullscreen, [data-graph-full]')) toggleGraphFullscreen(); }) });
 
