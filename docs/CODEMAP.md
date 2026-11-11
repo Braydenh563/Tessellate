@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2705, CSS sections 523, backend routes 671, backend modules 10177, test files 2494, tests 20551, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2705, CSS sections 523, backend routes 671, backend modules 10177, test files 2494, tests 20552, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -15917,16 +15917,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_count` | src/tessellate/ai/composer_reminders.py:53 |
-| `_day_said` | src/tessellate/ai/composer_reminders.py:41 |
-| `_did` | src/tessellate/ai/composer_reminders.py:102 |
-| `_have` | src/tessellate/ai/composer_reminders.py:72 |
-| `_kind` | src/tessellate/ai/composer_reminders.py:123 |
-| `_line` | src/tessellate/ai/composer_reminders.py:47 |
-| `_matching` | src/tessellate/ai/composer_reminders.py:92 |
-| `_open` | src/tessellate/ai/composer_reminders.py:36 |
-| `_shown` | src/tessellate/ai/composer_reminders.py:57 |
-| `answer` | src/tessellate/ai/composer_reminders.py:136 |
+| `_count` | src/tessellate/ai/composer_reminders.py:57 |
+| `_day_said` | src/tessellate/ai/composer_reminders.py:45 |
+| `_did` | src/tessellate/ai/composer_reminders.py:111 |
+| `_have` | src/tessellate/ai/composer_reminders.py:76 |
+| `_kind` | src/tessellate/ai/composer_reminders.py:132 |
+| `_line` | src/tessellate/ai/composer_reminders.py:51 |
+| `_matching` | src/tessellate/ai/composer_reminders.py:101 |
+| `_open` | src/tessellate/ai/composer_reminders.py:40 |
+| `_shown` | src/tessellate/ai/composer_reminders.py:61 |
+| `answer` | src/tessellate/ai/composer_reminders.py:145 |
 
 ### src/tessellate/ai/composer_replies.py (1)
 
@@ -26397,7 +26397,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20551)
+## Tests (20552)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28047,7 +28047,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_out_of_space.py | 8 |
 | tests/test_outbound_fetch_guard.py | 5 |
 | tests/test_outbound_inventory.py | 4 |
-| tests/test_output_forms.py | 7 |
+| tests/test_output_forms.py | 8 |
 | tests/test_outside_text_taints_chat.py | 3 |
 | tests/test_overlay_alive_1670.py | 12 |
 | tests/test_overlay_bob_1670.py | 3 |

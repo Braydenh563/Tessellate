@@ -33,6 +33,10 @@ _KIND = re.compile(rf"^{_LEAD}(?:what|which) (?P<kind>\w+(?:\s\w+)?) (?:are|is|d
 _GENERIC = frozenset({"things", "thing", "tasks", "task", "items", "item", "reminders", "reminder", "stuff", "bits", "jobs", "deadlines", "notes", "todos"})
 
 
+#: The open reminders listed when none is due today; more than this are counted.
+_COMING = 5
+
+
 def _open(ctx: Ctx) -> list[dict]:
     rows = [r for r in ctx.reminders if isinstance(r.get("due_at"), datetime) and not r.get("done")]
     return sorted(rows, key=lambda r: r["due_at"])
@@ -75,18 +79,23 @@ def _have(ctx: Ctx, found: re.Match) -> Reply | None:
     if found.group("rest").strip() and win is None:
         return None  # "reminders about the boiler" is a search, not a count
     rows = _open(ctx)
+    cap = 10
     got = _shown(rows, today, found.string, win)
     if got is None:
         shown = [r for r in rows if r["due_at"].date() <= today]
         if shown:
             head = f"You have {due_summary.say(due_summary.of(rows, ctx.now)).lower()}."
         elif rows:
-            head = f"Nothing is due today. The next is “{str(rows[0].get('text') or '').strip()}”, {_day_said(rows[0]['due_at'], today)}."
+            #: Every open reminder is named while they are few, else the next few and a count.
+            first = f"“{str(rows[0].get('text') or '').strip()}”, {_day_said(rows[0]['due_at'], today)}"
+            head = f"Nothing is due today. The next is {first}." if len(rows) == 1 else f"Nothing is due today. You have {len(rows)} open reminders, the next is {first}."
+            shown, cap = rows, _COMING
         else:
             head = "You have no open reminders."
         got = shown, head
     shown, head = got
-    return Reply("\n".join([head, *([""] + [_line(r, today) for r in shown[:10]] if shown else [])]))
+    more = [f"and {len(shown) - cap} more."] if len(shown) > cap else []
+    return Reply("\n".join([head, *([""] + [_line(r, today) for r in shown[:cap]] + more if shown else [])]))
 
 
 def _matching(ctx: Ctx, wanted: set[str], verbs: frozenset[str] = frozenset()) -> list[dict]:
