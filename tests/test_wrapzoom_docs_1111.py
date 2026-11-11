@@ -64,7 +64,9 @@ def test_a_code_documents_dock_folds_its_words_before_it_wraps():
     assert "text-overflow: ellipsis" in why and "white-space: nowrap" in why and "max-width" in why
     assert "flex-basis: 8rem" in _rule(wide, ".doc-dock > .doc-dock-identity")
     assert "min-width: 5rem" in _rule(wide, ".doc-dock-identity > .doc-title-input")
-    state = "#tab-documents.doc-is-code .doc-dock:has(#doc-code-run-why:not(.hidden))"
+    #: A class the dock wears while the Python line shows (docRunSyncAvailability),
+    #: not a `:has()`: test_has_invalidation caps those.
+    state = "#tab-documents.doc-is-code .doc-dock.doc-run-why"
     assert "display: none" in _rule(css, state + " :is(.doc-ai-label, #doc-code-format > .toolbar-word)")
     assert "flex-basis: 8rem" in _rule(css, state + " > .doc-dock-identity")
     narrow = "".join(_at_blocks(css, "@container docdock (max-width: 819.98px)"))
