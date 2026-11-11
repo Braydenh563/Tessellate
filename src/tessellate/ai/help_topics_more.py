@@ -1939,7 +1939,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "code-run",
+        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
@@ -2782,6 +2782,27 @@ MORE_TOPICS.append({
     "badge": {"label": "Documents", "tab": "documents"},
 })
 TOPIC_META["document-graph"] = {"title": "Graph a function in a document", "path": "A document, the / menu, Graph"}
+
+
+#: DOCUMENTS_PLAN gap row 6: the base block (documents-base.js), a read-only table of notes by property.
+MORE_TOPICS.append({
+    "id": "document-base",
+    "keywords": (
+        "base", "notes table", "database view", "table of notes", "properties table", "query notes",
+        "```base", "bases", "obsidian bases",
+    ),
+    "body": (
+        "Type /notes table in a document, or write a code block marked base, to list the notes that share a property. "
+        "type: Book lists the notes whose properties say type: Book. where: status = read narrows it (any number of "
+        "these, all must hold; a list property matches any of its values). columns: author, rating chooses what to show, "
+        "sort: rating desc orders it (numbers and dates sort as such), and limit: 50 caps the rows at 300. "
+        "The first column is the note's name: press it to open the note. The table is read-only: a value is changed in "
+        "the note's own properties, and the refresh button reads the notes again. Private notes never appear. "
+        "It is a table only; boards and calendars are not built."
+    ),
+    "badge": {"label": "Documents", "tab": "documents"},
+})
+TOPIC_META["document-base"] = {"title": "A table of notes in a document", "path": "A document, the / menu, Notes table"}
 
 
 #: OPEN W18 (s9-1110): the diagram's line shape, spacing and page menu.

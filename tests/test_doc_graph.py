@@ -109,7 +109,7 @@ def test_read_swaps_the_fence_and_live_draws_it() -> None:
     assert "docMathRender.graphField(CM)" in docs
     # Lazy, and registered from a lazy file so it costs the boot scripts nothing.
     assert 'docGraph: ["/css/doc-graph-lazy.css", "/js/documents-graph.js"]' in (JS / "lazy-entries.js").read_text(encoding="utf-8")
-    assert 'ensureModule("docGraph")' in math
+    assert 'module: "docGraph"' in math and "ensureModule(spec.module)" in math
     assert '{ id: "graph"' in editor and "```graph" in editor
     graph = (JS / "documents-graph.js").read_text(encoding="utf-8")
     # No eval, no Function constructor, no innerHTML: the text of a document is data.
