@@ -122,7 +122,7 @@
       return;
     }
     if (phase === "installing") {
-      const body = await apiJson("/tasks/cancel", { method: "POST", body: JSON.stringify({ kind: "extra", name: id }) }).catch(() => null);
+      const body = await apiJson("/tasks/cancel", { method: "POST", body: JSON.stringify({ kind: "extra", name: id }) }).catch(() => ({ detail: "Couldn't stop the install. Try again." }));
       toast(body?.detail || "Stopping the install.", "info");
       return;
     }

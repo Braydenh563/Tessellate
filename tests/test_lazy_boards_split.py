@@ -19,6 +19,7 @@ sweep (`docs/roadmap/agent-remaining/dec-1111-d2.md`) drove path by path.
 from __future__ import annotations
 
 import re
+import sys
 
 from tessellate.api.asset_strip import strip_js_comments
 from tests import test_lazy_bundle_calls as bundles
@@ -127,7 +128,7 @@ def test_the_detector_sees_a_bare_call_and_not_its_guards(monkeypatch):
         "door": ('await ensureModule("boards");\nwbOnlyOnBoards(1);\n', 0),
     }
     for label, (text, expected) in sources.items():
-        monkeypatch.setattr(__import__(__name__), "_code", lambda name, t=text: t)
+        monkeypatch.setattr(sys.modules[__name__], "_code", lambda name, t=text: t)
         assert len(_calls_without_a_door()) == expected, label
 
 
