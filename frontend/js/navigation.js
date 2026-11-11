@@ -2271,7 +2271,8 @@ function resetNavigationToDefaults() {
   if (allTab && !allTab.classList.contains("active")) allTab.click();
   // If the Notes strip is already built, put it back on its front page now;
   // on a cold load it has not been built yet and will read the cleared key.
-  if ($("notes-subtabs")?.dataset.ready) {
+  //: `getElementById`, not `$`: `$` would build the unbuilt Notes pane on every unlock (audit 1030 Y5).
+  if (document.getElementById("notes-subtabs")?.dataset.ready) {
     showNotesSection("browse");
   }
 }
