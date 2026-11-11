@@ -2759,9 +2759,12 @@ dialog::backdrop {
 /* Picking an icon from a grid rather than typing "ph-briefcase" into a text
    box, which is what the first version asked for and which nobody outside
    this repo could possibly know how to fill in. */
+/* The track is never narrower than a button's touch floor: at 768 the floor
+   is 44px and the 2.25rem tracks were 39.8px, so the square buttons ran 4px
+   out of the picker (wrapzoom 2026-11-11). */
 .space-icon-picker {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(2.25rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(max(2.25rem, var(--target-min)), 1fr));
   gap: var(--space-2);
   margin-top: var(--space-2);
 }
