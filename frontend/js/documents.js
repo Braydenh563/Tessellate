@@ -154,7 +154,7 @@ function docTypeMount() {
     const press = (selector) => () => document.querySelector(selector)?.click();
     const more = kebabMenu(
       [
-        { label: "ph:question About this list", run: press('#doc-sidebar-list [data-help-for="doc-list-help"]') },
+        { label: "ph:question About this list", run: press("#doc-sidebar-list .doc-head-tools .graph-help-toggle") },
         { label: "ph:layout New from a template", run: press("#doc-new-template") },
         { label: "ph:flow-arrow New diagram", run: press("#doc-new-diagram") },
       ],

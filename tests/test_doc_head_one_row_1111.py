@@ -32,7 +32,7 @@ def test_a_narrow_sidebar_sheds_the_word_then_folds_the_icons_into_a_kebab():
 
 def test_the_kebab_presses_the_real_buttons_and_is_built_in_js():
     body = DOCS_JS.split("function docTypeMount()", 1)[1].split("\n}\n", 1)[0]
-    for target in ("doc-list-help", "#doc-new-template", "#doc-new-diagram"):
+    for target in ("graph-help-toggle", "#doc-new-template", "#doc-new-diagram"):
         assert target in body
     assert "kebabMenu(" in body
     assert "doc-head-more" not in HTML  # the boot document is element-capped
