@@ -26,7 +26,7 @@ import time
 import urllib.parse
 import urllib.request
 
-from tessellate.core import extras, jobs
+from tessellate.core import egress, extras, jobs
 from tessellate.core.languagetool_files import java_path
 from tessellate.core.subproc import NO_WINDOW
 
@@ -64,6 +64,7 @@ def _opener() -> urllib.request.OpenerDirector:
     return urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
 
+@egress.labelled("Waiting for LanguageTool on this computer to start")
 def _ready(port: int) -> bool:
     try:
         with _opener().open(f"http://127.0.0.1:{port}/v2/languages", timeout=2) as reply:
@@ -165,6 +166,7 @@ def _shape(match: dict, text: str) -> dict | None:
     }
 
 
+@egress.labelled("Checking grammar with LanguageTool on this computer")
 def check(text: str, language: str = "en-US") -> list[dict] | None:
     """Matches for the text, or None when it is not installed, will not
     start, or did not answer. Never raises: a missing second opinion is not

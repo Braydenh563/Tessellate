@@ -27,6 +27,13 @@ def test_with_no_model_the_name_is_the_documents_own_words_and_nothing_is_saved(
     assert client.get(f"/documents/{doc['id']}").json()["title"] == "Untitled"
 
 
+def test_the_suggest_title_path_is_called_by_a_plain_id(client):
+    # The route ratchet (test_routes_named) reads a literal like "/documents/{did}/suggest-title"; the
+    # tests above index into the dict inside the f-string, which it cannot read.
+    did = _doc(client)["id"]
+    assert client.post(f"/documents/{did}/suggest-title").status_code == 200
+
+
 def test_a_running_model_writes_the_name(ai_client, fake_ollama):
     doc = _doc(ai_client)
     fake_ollama.librarian_reply = "Coast trip packing"

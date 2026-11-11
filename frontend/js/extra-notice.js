@@ -38,10 +38,12 @@
   const dismiss = (id) => dismissed(id) || saveDismissed([...dismissedList(), id]);
   const forget = (id) => dismissed(id) && saveDismissed(dismissedList().filter((one) => one !== id));
 
-  //: `GET /extras` once per few seconds however many notices ask.
+  //: `GET /extras` once per few seconds however many notices ask. The cache here holds only finished
+  //: answers, so two notices asking in the same tick both fetched (measured at the Settings open);
+  //: `cacheMs` makes the second share the first's request.
   async function extraRows(fresh = false) {
     if (!fresh && cache.rows && Date.now() - cache.at < 3000) return cache.rows;
-    const body = await apiJson("/extras", { silent: true }).catch(() => null);
+    const body = await apiJson("/extras", { silent: true, ...(fresh ? {} : { cacheMs: 3000 }) }).catch(() => null);
     cache = { at: Date.now(), rows: body ? body.extras : null };
     return cache.rows;
   }
