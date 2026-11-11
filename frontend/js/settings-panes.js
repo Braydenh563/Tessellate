@@ -1170,12 +1170,13 @@ const POPUP_TOOLS = [
     guide: "timer", open: () => ensureModule("utilities").then(() => openClockPanel("alarm")),
   },
   //: The Diagram builder (INBOX 1588): one opener, `diagramModel.door` (documents-mermaid.js), for every list.
+  //: A text box or board in hand needs the Library (the door writes into it); with none, the model file alone opens the builder (INBOX 1722), and `lazyScript` fetches it once whichever asks first.
   {
     id: "diagram", name: "Diagram builder", icon: "ph:flow-arrow", group: "Documents", widgetExempt: "It needs a full dialog or a document, too big for a card.",
     keywords: "flowchart mind map timeline sequence mermaid mmd draw process boxes arrows",
     about: "Build a flowchart, mind map, timeline or sequence diagram from blocks, into what you write, a board or a new .mmd file.",
     keys: "/diagram", where: "Diagram builder, from Insert or Ctrl+K",
-    guide: "diagram-builder", open: (t) => ensureModule("library").then(() => diagramModel.door({ target: t || null })),
+    guide: "diagram-builder", open: (t) => (t ? ensureModule("library") : lazyScript("/js/documents-mermaid.js")).then(() => diagramModel.door({ target: t || null })),
   },
 ];
 
