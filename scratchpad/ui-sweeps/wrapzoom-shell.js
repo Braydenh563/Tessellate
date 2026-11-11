@@ -150,7 +150,10 @@ function detect() {
   const cutOf = (el, rr) => {
     const excused = {};
     for (const { a, s, cx, cy } of clips(el)) {
-      const b = box(a);
+      const b0 = box(a);
+      // `overflow: clip` paints out to its overflow-clip-margin (the ring-room recipe, 08-consistency.css).
+      const m = (s.overflowX === 'clip' || s.overflowY === 'clip') ? parseFloat(s.overflowClipMargin) || 0 : 0;
+      const b = { left: b0.left - (s.overflowX === 'clip' ? m : 0), right: b0.right + (s.overflowX === 'clip' ? m : 0), top: b0.top - (s.overflowY === 'clip' ? m : 0), bottom: b0.bottom + (s.overflowY === 'clip' ? m : 0) };
       const maxL = a.scrollWidth - a.clientWidth, maxT = a.scrollHeight - a.clientHeight;
       const scrollX = /auto|scroll/.test(s.overflowX) && maxL > 1, scrollY = /auto|scroll/.test(s.overflowY) && maxT > 1;
       const cut = {};
