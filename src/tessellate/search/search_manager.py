@@ -1439,7 +1439,7 @@ def _latest_about(session: Session, query: str, embeddings: EmbeddingService, li
     filters first, then the newest of what it left (audit 1029 C31); the
     newest notes of the whole notebook were the answer to a subject never
     searched. None when the query is no such request."""
-    from tessellate.ai import note_recency
+    from tessellate.ai import composer_aliases, note_recency
 
     #: A find's topic keeps no noun ("latest", "last three"): short, it is read bare.
     bare = len(query.split()) <= 3
@@ -1448,15 +1448,22 @@ def _latest_about(session: Session, query: str, embeddings: EmbeddingService, li
         #: "What's the latest on uni": every note on the subject, so the answer
         #: can lead with the newest one (it is not the search's first).
         about = note_recency.status_subject(query)
-        return _retrieve(session, about, embeddings, max(limit, 20), False, found, locale) if about else None
+        if not about:
+            return None
+        got, how = _retrieve(session, about, embeddings, max(limit, 20), False, found, locale)
+        #: ...and the notes that say the name the subject's own notes give it (W7b B7: "Doug" for sourdough).
+        return composer_aliases.widen(session, about, got)[0], how
     if not rec.subject:
         return (_without_private(recent_entries(session, limit=rec.count)), "recent") if (rec.said_count or bare) and not rec.oldest else None
     entries, mode = _retrieve(session, rec.subject, embeddings, max(limit, 20), False, found, locale)
     terms = _meaningful_terms(rec.subject)
+    entries, names = composer_aliases.widen(session, rec.subject, entries, skip=bool(rec.said_count))
+    terms = [*terms, *(n.lower() for n in names)]
     #: A tag is the subject too: "my 2 latest baking notes" are the notes tagged #baking.
     held = [e for e in entries if mode != "recent" and any(t in f"{e.content or ''} {e.tags or ''}".lower() for t in terms)]
     held.sort(key=lambda e: (e.created_at, e.id), reverse=not rec.oldest)
-    return _without_private(held[: rec.count]), mode if held else "keyword"
+    #: With a name found the notes saying it need the subject's own beside them to be read as its latest.
+    return _without_private(held[: max(rec.count, 5 * len(names[:1]))]), mode if held else "keyword"
 
 
 def _when_nothing_ranked(session: Session, entries: list, asked, mentioned: set, scope, semantic, any_time, limit: int, found: dict, subject: str):  # noqa: ANN001, ANN202

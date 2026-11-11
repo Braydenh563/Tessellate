@@ -74,7 +74,8 @@ def test_z8_a_to_do_rides_only_on_an_answer_about_it(ask, question, kept, droppe
 def test_z9_the_count_is_the_notes_listed_as_about_it(ask):
     said = _said(ask, "what do I know about books")
     assert said.startswith("You have two notes about books"), said
-    assert "More loosely related to books" in said, said
+    #: "You need to book the tram" is the verb, not a book: it is no longer listed as loosely related (W7b B10).
+    assert "More loosely related to books" not in said and "book the tram" not in said.lower(), said
 
 
 def test_z10_one_word_count_for_longest_and_longer(ask):

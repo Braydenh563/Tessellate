@@ -35,7 +35,8 @@ def test_and_the_others_goes_on_with_the_question_before(chain):
 
 def test_how_is_it_now_asks_for_the_latest_on_the_subject(chain):
     _first, now = chain("what do I know about sourdough", "how is it now")
-    assert now.startswith("Too dense again"), now  # the newest note titled sourdough, not the first one
+    #: The newest note about it, not the first one: the starter note the person's notes call "Doug" is a day old (W7b B7).
+    assert now.startswith("Doug the starter is bubbly again"), now
 
 
 def test_who_wrote_it_says_the_notes_do_not_when_none_does(chain):
