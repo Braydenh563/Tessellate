@@ -1311,7 +1311,7 @@
   }
 
   /* With an arrow drawn the list is a sheet (diagram-touch.js) and the picture takes the page. */
-  .dgm-phonelist.dgm-listless .dgm-body > .dgm-pane {
+  .dgm-phonelist.dgm-listless .dgm-body > :is(.dgm-pane, .dgm-listcol) {
     display: none;
   }
 
