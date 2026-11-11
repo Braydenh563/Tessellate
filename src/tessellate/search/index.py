@@ -895,7 +895,7 @@ def _bookmark_row(mark) -> Row | None:  # noqa: ANN001
     return Row(
         title=mark.title or mark.url or "",
         body="\n".join(part for part in (mark.url, mark.note) if part),
-        tags=getattr(mark, "group_name", "") or "",
+        tags=" ".join(part for part in (getattr(mark, "group_name", ""), (getattr(mark, "tags", "") or "").replace(",", " ")) if part),
         space=getattr(mark, "workspace_id", "default") or "default",
         flags=" ".join(flags),
         written=_written(getattr(mark, "created_at", None)),

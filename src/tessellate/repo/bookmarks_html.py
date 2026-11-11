@@ -41,6 +41,7 @@ class _Reader(HTMLParser):
         self._text: list[str] = []
         self._href = ""
         self._added = ""
+        self._tags = ""
         self._opened: list[bool] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
@@ -58,6 +59,7 @@ class _Reader(HTMLParser):
                 values = {k.lower(): (v or "") for k, v in attrs}
                 self._href = values.get("href", "")
                 self._added = values.get("add_date", "")
+                self._tags = values.get("tags", "")
 
     def handle_data(self, data: str) -> None:
         if self._in:
@@ -83,7 +85,7 @@ class _Reader(HTMLParser):
                 self.skipped += 1
                 return
             group = GROUP_SEP.join(p for p in self.path if p)[:GROUP_MAX].strip()
-            self.rows.append({"url": url, "title": title[:TITLE_MAX], "group_name": group, "added": self._added})
+            self.rows.append({"url": url, "title": title[:TITLE_MAX], "group_name": group, "added": self._added, "tags": self._tags})
 
 
 def parse(html: str) -> tuple[list[dict], int]:
@@ -113,7 +115,9 @@ def render(rows: list[dict]) -> str:
         added = ""
         if isinstance(stamp, datetime):
             added = f' ADD_DATE="{int(stamp.replace(tzinfo=timezone.utc).timestamp())}"'
-        return f'<DT><A HREF="{escape(row["url"], quote=True)}"{added}>{escape(row.get("title") or row["url"])}</A>'
+        tags = ",".join(row.get("tags") or [])
+        marked = f' TAGS="{escape(tags, quote=True)}"' if tags else ""
+        return f'<DT><A HREF="{escape(row["url"], quote=True)}"{added}{marked}>{escape(row.get("title") or row["url"])}</A>'
 
     #: A tree of the group paths: `Work/Reading` is a folder Reading inside a folder Work.
     tree: dict = {"links": [], "kids": {}}

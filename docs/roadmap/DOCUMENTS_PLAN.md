@@ -1299,7 +1299,7 @@ Decisions made (the Links half extends WORLD_CLASS D9 and Brief 42; do not re-de
 - L3. A link's details: the card shows icon, title, site and a two-line excerpt; the full extract is behind "Show page text" in the L1 reader, never a wall of raw lines; the URL is a quiet copyable chip.
 - L4. Folders: drag a link onto another to make a folder (named "Folder", renamed in place), drag into and out of folders, and New folder in the bar; folders nest one level.
 - L5. Each link and folder takes an icon (the site's own, an app icon or an emoji) and a highlight colour from the palette tokens, from its kebab menu and from the details card.
-- L6. More from the read of Raindrop, Pocket and browser bookmark managers, ranked by how often a person meets it: sort and view (list, cards), tags, a read-later state, duplicate finding, import and export of browser bookmarks HTML. Built in that order after L1 to L5. Import and export built 2026-11-11 (HISTORY.md, F1 graph block); tags on bookmarks are open.
+- L6. More from the read of Raindrop, Pocket and browser bookmark managers, ranked by how often a person meets it: sort and view (list, cards), tags, a read-later state, duplicate finding, import and export of browser bookmarks HTML. Built in that order after L1 to L5. Import, export and tags built 2026-11-11 (HISTORY.md, F1 graph block).
 
 Rows (owner: libraryup, Opus, after canvasdepth3): R1 to R6 build L1 to L6, each a commit with a test, measured at 1440 and 390, help moving with it (standing order 13).
 
@@ -1307,7 +1307,7 @@ Rows (owner: libraryup, Opus, after canvasdepth3): R1 to R6 build L1 to L6, each
 
 Read from the code against Notion and Obsidian. Sizes S, M, L. Nothing here is built yet this run; the app already has callouts, toggles, columns, tables, footnotes, wiki links, backlinks, the slash menu, find and replace, outline and versions.
 
-1. Video and audio embed from a link or a local file in a note (Notion "Embed", Obsidian `![[file.mp4]]`) - M.
+1. Built 2026-11-11 (F1 run) as a recording embed; video stays out (no player, decision 2): see HISTORY.md, "Moved from the plans, 2026-11-11 (F1 graph block, DOCUMENTS_PLAN 16)".
 2. Built 2026-11-11 (bd-1111): `[@key]` citations listed at the foot, the "/" menu's Citation; see CHANGELOG.
 3. Built (found by grep, checked 2026-11-10): the / menu's "Link to this block" copies `[[Title#^id]]`; see HISTORY.md, "Moved from the plans, 2026-11-10 (s9c-1110 part 2)".
 4. Built 2026-10-26 (docs5-1026): see HISTORY.md, "Moved from the plans, 2026-10-26 (docs5-1026)".

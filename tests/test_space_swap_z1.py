@@ -104,7 +104,6 @@ EXEMPT = {
     "graphHighlightIds": "reset in the graph row",
     "graphGroupOf": "reset in the graph row",
     "graphTrace": "reset in the graph row",
-    "bookmarkGroupFilter": "a filter name chosen on the page",
     "contentsTopics": "the topics of an open document, redrawn on open",
     "docFileTypes": "file types, per notebook",
     "librarySemanticIds": "the ids of one search, replaced by the next",

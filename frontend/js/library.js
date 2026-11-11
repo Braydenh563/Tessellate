@@ -10975,6 +10975,7 @@ onDomReady(() => {
     const urlInput = $("bookmark-url-input");
     const titleInput = $("bookmark-title-input");
     const groupInput = $("bookmark-group-input");
+    const tagsInput = $("bookmark-tags-input");
     const url = urlInput.value.trim();
     if (!url) return;
     try {
@@ -10984,17 +10985,19 @@ onDomReady(() => {
           url,
           title: titleInput.value.trim(),
           group_name: groupInput.value.trim(),
+          tags: (tagsInput?.value || "").split(","),
           note: ($("bookmark-note-input")?.value || "").trim(),
         }),
       });
       urlInput.value = "";
       titleInput.value = "";
       groupInput.value = "";
+      if (tagsInput) tagsInput.value = "";
       if ($("bookmark-note-input")) $("bookmark-note-input").value = "";
       urlInput.focus();
       if (!created.duplicate_of && created.id != null) {
         let liveId = created.id;
-        const body = { url, title: created.title || "", group_name: created.group_name || "", note: created.note || "" };
+        const body = { url, title: created.title || "", group_name: created.group_name || "", tags: created.tags || [], note: created.note || "" };
         pushUndo(
           `Added the bookmark “${clipText(created.title || url, 40)}”`,
           async () => {
@@ -11052,7 +11055,8 @@ onDomReady(() => {
   $("bookmark-no-match-clear")?.addEventListener("click", () => {
     const search = $("bookmark-search");
     if (search) search.value = "";
-    bookmarkGroupFilter = null;
+    bookmarkScope.group = null;
+    bookmarkScope.tag = null;
     bookmarkStateFilter = "all";
     renderBookmarkGroupChips();
     filterBookmarks();
@@ -11360,7 +11364,8 @@ onDomReady(() => {
 // documents already linkable to each other via [[wiki links]] ------------
 
 let bookmarksCache = [];
-let bookmarkGroupFilter = null; // null = all groups
+// The group and the tag the Links tab is narrowed to (null = all): one object, so a new filter adds no global name.
+const bookmarkScope = { group: null, tag: null };
 let bookmarkStateFilter = "all"; // "all" | "unread" | "pinned"
 //: Sites folded away in the "By site" grouping, for this visit.
 const bookmarkFoldedSites = new Set();
@@ -11474,7 +11479,7 @@ renderBookmarks.file = {
 
 async function deleteBookmarksWithUndo(links) {
   const kept = links.map((b) => ({
-    url: b.url, title: b.title, note: b.note, group_name: b.group_name,
+    url: b.url, title: b.title, note: b.note, group_name: b.group_name, tags: b.tags || [],
     pinned: Boolean(b.pinned), is_read: Boolean(b.is_read),
   }));
   let deleted = 0;
@@ -11647,7 +11652,7 @@ async function renameBookmarkGroup(from, to) {
   const empties = emptyBookmarkGroups().filter((g) => g !== from);
   if (to) empties.push(to);
   setEmptyBookmarkGroups(empties);
-  if (bookmarkGroupFilter === from) bookmarkGroupFilter = to || null;
+  if (bookmarkScope.group === from) bookmarkScope.group = to || null;
   if (written.length) pushBookmarksPutUndo(to ? `Renamed the group “${from}”` : `Deleted the group “${from}”`, written);
   return moved;
 }
@@ -11665,7 +11670,7 @@ async function newBookmarkGroup() {
   if (!name) return;
   if (allBookmarkGroups().includes(name)) {
     toast(`"${name}" already exists.`);
-    bookmarkGroupFilter = name;
+    bookmarkScope.group = name;
     renderBookmarks();
     return;
   }
@@ -11674,7 +11679,7 @@ async function newBookmarkGroup() {
   // the group you just made, needs no second trip to the group field.
   const groupInput = $("bookmark-group-input");
   if (groupInput) groupInput.value = name;
-  bookmarkGroupFilter = name;
+  bookmarkScope.group = name;
   renderBookmarks();
   toast(`Group "${name}" created. Add a bookmark to it, or it'll be forgotten on the next device.`);
 }
@@ -11796,12 +11801,13 @@ function renderBookmarkGroupChips() {
   );
   box.replaceChildren();
   if (bookmarksCache.length === 0) {
-    bookmarkGroupFilter = null;
+    bookmarkScope.group = null;
+    bookmarkScope.tag = null;
     bookmarkStateFilter = "all";
     return;
   }
   //: A group that has gone (renamed, emptied) cannot stay the filter.
-  if (bookmarkGroupFilter !== null && !groups.includes(bookmarkGroupFilter)) bookmarkGroupFilter = null;
+  if (bookmarkScope.group !== null && !groups.includes(bookmarkScope.group)) bookmarkScope.group = null;
   const apply = () => { renderBookmarkGroupChips(); filterBookmarks(); };
   const chip = (label, count, active, onPress) => {
     const el = document.createElement("button");
@@ -11825,9 +11831,10 @@ function renderBookmarkGroupChips() {
   //: and the groups below narrow it further.
   const unread = bookmarksCache.filter((b) => !b.is_read).length;
   const pinned = bookmarksCache.filter((b) => b.pinned).length;
-  chip("All", bookmarksCache.length, bookmarkStateFilter === "all" && bookmarkGroupFilter === null, () => {
+  chip("All", bookmarksCache.length, bookmarkStateFilter === "all" && bookmarkScope.group === null && bookmarkScope.tag === null, () => {
     bookmarkStateFilter = "all";
-    bookmarkGroupFilter = null;
+    bookmarkScope.group = null;
+    bookmarkScope.tag = null;
     apply();
   });
   chip("Unread", unread, bookmarkStateFilter === "unread", () => {
@@ -11846,10 +11853,20 @@ function renderBookmarkGroupChips() {
     const count = bookmarksCache.filter((b) => b.group_name === group).length;
     // "Work/Reading" renders as "Work / Reading", the "/" is a grouping
     // convention for the user to type, not meant to display as a raw slash.
-    chip(group.split("/").join(" / "), count, bookmarkGroupFilter === group, () => {
-      bookmarkGroupFilter = bookmarkGroupFilter === group ? null : group;
+    chip(group.split("/").join(" / "), count, bookmarkScope.group === group, () => {
+      bookmarkScope.group = bookmarkScope.group === group ? null : group;
       apply();
     });
+  }
+  //: Tags after the groups: a link carries several, so a tag filters across groups (one at a time, like a group).
+  const tagCounts = new Map();
+  for (const b of bookmarksCache) for (const tag of b.tags || []) tagCounts.set(tag.toLowerCase(), { tag, n: (tagCounts.get(tag.toLowerCase())?.n || 0) + 1 });
+  if (bookmarkScope.tag !== null && !tagCounts.has(bookmarkScope.tag)) bookmarkScope.tag = null;
+  for (const [key, { tag, n }] of [...tagCounts].sort((a, b) => a[0].localeCompare(b[0]))) {
+    chip(`#${tag}`, n, bookmarkScope.tag === key, () => {
+      bookmarkScope.tag = bookmarkScope.tag === key ? null : key;
+      apply();
+    }).classList.add("bookmark-tag-chip");
   }
 }
 
@@ -11900,7 +11917,8 @@ function filterBookmarks() {
   if (!list) return;
   const query = ($("bookmark-search")?.value || "").trim().toLowerCase();
   const visible = bookmarksCache.filter((b) => {
-    if (bookmarkGroupFilter !== null && b.group_name !== bookmarkGroupFilter) return false;
+    if (bookmarkScope.group !== null && b.group_name !== bookmarkScope.group) return false;
+    if (bookmarkScope.tag !== null && !(b.tags || []).some((tag) => tag.toLowerCase() === bookmarkScope.tag)) return false;
     if (bookmarkStateFilter === "unread" && b.is_read) return false;
     if (bookmarkStateFilter === "pinned" && !b.pinned) return false;
     if (!query) return true;
@@ -11910,7 +11928,8 @@ function filterBookmarks() {
       b.title.toLowerCase().includes(query) ||
       b.url.toLowerCase().includes(query) ||
       b.note.toLowerCase().includes(query) ||
-      (b.group_name || "").toLowerCase().includes(query)
+      (b.group_name || "").toLowerCase().includes(query) ||
+      (b.tags || []).some((tag) => tag.toLowerCase().includes(query))
     );
   });
   list.replaceChildren();
@@ -12086,6 +12105,7 @@ function bookmarkRow(bookmark) {
         //: not carrying.
         bookmark.title ? address.host : address.rest,
         bookmark.group_name ? bookmark.group_name.split("/").join(" / ") : "",
+        (bookmark.tags || []).map((tag) => `#${tag}`).join(" "),
         bookmark.note,
       ],
       "bookmark-meta",
@@ -12158,6 +12178,7 @@ function bookmarkRow(bookmark) {
     const urlInput = field("URL", bookmark.url, "https://example.com");
     // Blank is meaningful here and always was: it means "no group".
     const groupInput = field("Group", bookmark.group_name, "e.g. Work/Reading");
+    const tagsInput = field("Tags", (bookmark.tags || []).join(", "), "Separate with commas");
     //: The note had no way in once a link was saved: the Add form never asked
     //: for one and this form never showed it, though the row and the search
     //: both read it.
@@ -12207,9 +12228,10 @@ function bookmarkRow(bookmark) {
           title: titleInput.value.trim(),
           url,
           group_name: groupInput.value.trim(),
+          tags: tagsInput.value.split(","),
           note: noteInput.value.trim(),
         };
-        const wasFields = { title: bookmark.title || "", url: bookmark.url, group_name: bookmark.group_name || "", note: bookmark.note || "" };
+        const wasFields = { title: bookmark.title || "", url: bookmark.url, group_name: bookmark.group_name || "", tags: bookmark.tags || [], note: bookmark.note || "" };
         await apiJson(`/bookmarks/${bookmark.id}`, { method: "PUT", body: JSON.stringify(edited) });
         pushBookmarksPutUndo("Edited a bookmark", [{ id: bookmark.id, before: wasFields, after: edited }]);
         renderBookmarks();
@@ -12274,6 +12296,7 @@ function bookmarkRow(bookmark) {
     addr.textContent = bookmark.url;
     const facts = [kind.label];
     if (bookmark.group_name) facts.push(bookmark.group_name.split("/").join(" / "));
+    if ((bookmark.tags || []).length) facts.push(bookmark.tags.map((tag) => `#${tag}`).join(" "));
     const saved = new Date(bookmark.created_at);
     if (!Number.isNaN(saved.getTime())) facts.push(`saved ${saved.toLocaleDateString()}`);
     facts.push(bookmark.is_read ? "read" : "unread");
@@ -12325,7 +12348,7 @@ function bookmarkRow(bookmark) {
         ),
         group: "look",
       },
-      { ...makeMenuItem("ph:pencil-simple Edit this bookmark", "Change the title, address, group or note", startEditing), group: "change" },
+      { ...makeMenuItem("ph:pencil-simple Edit this bookmark", "Change the title, address, group, tags or note", startEditing), group: "change" },
       { ...makeMenuItem("ph:folder-simple Move to group", "Move this bookmark to a group", moveToGroup), group: "change" },
       {
         ...makeMenuItem("ph:copy Copy address", "Copy the address to the clipboard", async () => {

@@ -518,6 +518,23 @@ textarea.has-gutter {
   margin-bottom: 0;
 }
 
+/* A recording embedded in a document (documents-embeds.js, gap row 1): the take's name over the browser's own audio controls. */
+.doc-embed-recording {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: var(--space-2) 0;
+  width: 28rem;
+  max-width: 100%;
+}
+.doc-embed-recording figcaption {
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+.doc-embed-recording audio {
+  width: 100%;
+}
+
 /* The two states the shared classes already colour, given a ground here so a
    change is findable by scanning rather than by reading every line. The
    strike-through the chat's one-line removal carries is cancelled: over forty

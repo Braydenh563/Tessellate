@@ -22,6 +22,7 @@ class BookmarkCreate(BaseModel):
     title: str = Field(default="", max_length=200)
     note: str = Field(default="", max_length=2000)
     group_name: str = Field(default="", max_length=120)
+    tags: list[str] = Field(default_factory=list, max_length=40)
     #: Carried on create so an Undo of a delete can put a link back exactly as
     #: it was, pin and read state included.
     pinned: bool = False
@@ -35,6 +36,7 @@ class BookmarkUpdate(BaseModel):
     pinned: bool | None = None
     is_read: bool | None = None
     group_name: str | None = Field(default=None, max_length=120)
+    tags: list[str] | None = Field(default=None, max_length=40)
 
 
 def _to_out(bookmark, duplicate_of: int | None = None) -> dict:
@@ -46,6 +48,7 @@ def _to_out(bookmark, duplicate_of: int | None = None) -> dict:
         "pinned": bookmark.pinned,
         "is_read": bool(bookmark.is_read),
         "group_name": bookmark.group_name,
+        "tags": bookmarks.tag_list(bookmark.tags),
         "created_at": bookmark.created_at.isoformat(),
     }
     if duplicate_of is not None:
@@ -88,7 +91,7 @@ class BookmarksImport(BaseModel):
 def export_bookmarks(session: Session = Depends(get_session)) -> Response:
     """Every bookmark as the bookmarks file a browser imports."""
     rows = [
-        {"url": b.url, "title": b.title, "group_name": b.group_name, "created_at": b.created_at}
+        {"url": b.url, "title": b.title, "group_name": b.group_name, "tags": bookmarks.tag_list(b.tags), "created_at": b.created_at}
         for b in bookmarks.everything(session)
     ]
     return Response(

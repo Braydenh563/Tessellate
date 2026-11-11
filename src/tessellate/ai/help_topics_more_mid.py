@@ -533,7 +533,9 @@ MID_TOPICS.extend(
                 "inserts a saved bookmark as a link. The ... menu's Import "
                 "bookmarks file adds the links of a file your browser exported, "
                 "folders as groups, skipping ones already saved, with Undo; "
-                "Export bookmarks saves them all as a file a browser can import."
+                "Export bookmarks saves them all as a file a browser can import. "
+                "A link can carry tags (commas, in the Add form or Edit): each tag is a chip "
+                "that filters across groups, search finds them, and the file keeps them."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

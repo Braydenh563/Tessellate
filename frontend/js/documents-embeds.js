@@ -47,7 +47,30 @@
     const file =
       files.find((row) => named(row) === wanted) ||
       files.find((row) => named(row).replace(/\.[^.]+$/, "") === wanted);
-    return file ? { kind: "file", file } : null;
+    if (file) return { kind: "file", file };
+    //: **Audio is a recording, never a file** (WORLD_CLASS_PLAN "Audio in the
+    //: notebook", decision 2): the only thing `![[…]]` can play is a recording,
+    //: named the way the Library names it.
+    const take = (docRecordings.rows || []).find((row) => String(row.title || "").trim().toLowerCase() === wanted);
+    return take ? { kind: "recording", recording: take } : null;
+  }
+
+  //: The Library's recordings, fetched once when an embed names something that
+  //: does not resolve yet, the way the file index is.
+  const docRecordings = { rows: null, pending: null, at: 0 };
+  //: A list older than half a minute is asked for again (a take made since still embeds); a failed ask counts as an answer.
+  const docRecordingsStale = () => Date.now() - docRecordings.at > 30000;
+  function docRecordingsLoad() {
+    docRecordings.pending ||= apiJson("/recordings?limit=500", { silent: true })
+      .then((body) => {
+        docRecordings.rows = Array.isArray(body?.recordings) ? body.recordings : [];
+      })
+      .catch(() => {})
+      .finally(() => {
+        docRecordings.pending = null;
+        docRecordings.at = Date.now();
+      });
+    return docRecordings.pending;
   }
 
   //: The card for a target, from whichever renderer already owns that kind.
@@ -98,6 +121,21 @@
       box.className = "doc-embed-map";
       box.appendChild(mapChip(target.entry, { interactive: false }));
       box.appendChild(mapPreview(target.entry, { size: "card" }));
+      return box;
+    }
+    if (target.kind === "recording") {
+      //: The browser's own audio controls under the take's name; nothing loads
+      //: until Play (`preload = "none"`), the way a recording row does.
+      const box = document.createElement("figure");
+      box.className = "doc-embed-recording";
+      const title = document.createElement("figcaption");
+      title.textContent = target.recording.title || name;
+      const audio = document.createElement("audio");
+      audio.controls = true;
+      audio.preload = "none";
+      audio.src = `/media/recordings/${target.recording.id}`;
+      audio.setAttribute("aria-label", `Recording: ${target.recording.title || name}`);
+      box.append(title, audio);
       return box;
     }
     if (target.kind === "file") {
@@ -206,23 +244,28 @@
         });
       return;
     }
-    host.replaceChildren(docEmbedChip(name, target));
-    //: The Library's index is the one thing that might not be loaded yet, so a
-    //: name that is a file reads as "nothing called that" until it arrives. One
-    //: fetch, once, and the widget fills itself in rather than waiting for a
-    //: repaint that a document nobody is typing in will never get.
-    if (target || typeof editorLoadFiles !== "function") return;
-    if (typeof editorFileCache !== "undefined" && editorFileCache) return;
-    editorLoadFiles()
-      .then(() => {
-        if (!host.isConnected) return;
-        const later = docEmbedNode(docEmbedTarget(name), name);
-        if (later) {
-          host.replaceChildren(later);
-          if (later.tagName === "IMG") imageApplyOptions(later, options);
-        }
-      })
-      .catch(() => {});
+    //: `keep` is the Read view asking: it already drew its own "Nothing called that yet" box and only wants it
+    //: swapped if the name turns out to be a file or a recording once they have loaded.
+    if (!options?.keep) host.replaceChildren(docEmbedChip(name, target));
+    //: The Library's file index and its recordings are the two things that
+    //: might not be loaded yet, so a name that is one of them reads as "nothing
+    //: called that" until they arrive. One fetch each, once, and the widget
+    //: fills itself in rather than waiting for a repaint that a document nobody
+    //: is typing in will never get.
+    if (target) return;
+    const loads = [];
+    const loadFiles = window.editorLoadFiles;
+    if (loadFiles && !(typeof editorFileCache !== "undefined" && editorFileCache)) loads.push(loadFiles());
+    if (docRecordingsStale()) loads.push(docRecordingsLoad());
+    if (!loads.length) return;
+    Promise.all(loads.map((load) => Promise.resolve(load).catch(() => {}))).then(() => {
+      if (!host.isConnected) return;
+      const later = docEmbedNode(docEmbedTarget(name), name);
+      if (later) {
+        host.replaceChildren(later);
+        if (later.tagName === "IMG") imageApplyOptions(later, options);
+      }
+    });
   }
 
   //: **One resolver for a `[[name]]`, and now it really is one.**
@@ -344,6 +387,6 @@
     return surface && !surface.classList.contains("doc-content-code") ? surface : null;
   }
 
-  //: The file's whole surface: what documents.js and documents-cm.js call.
+  //: The file's whole surface: what documents.js, documents-cm.js and markdown.js call.
   Object.assign(window, { docEmbedFill, docImageLive, docResolveWikiTarget, docWikiTargetLabel, docOpenResolvedWikiTarget, docOpenWikiTarget, docOpenLink, docFileDropBox });
 })();

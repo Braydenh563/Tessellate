@@ -29,7 +29,30 @@ ALLOWED_URL_SCHEMES = ("http", "https", "mailto", "tel")
 _SCHEME_RE = re.compile(r"^([a-z][a-z0-9+.-]*):", re.IGNORECASE)
 
 #: The fields `update` may change, each already cleaned by `clean_fields`.
-EDITABLE = ("url", "title", "note", "pinned", "is_read", "group_name")
+EDITABLE = ("url", "title", "note", "pinned", "is_read", "group_name", "tags")
+
+#: A link's tags: how many, and how long one may be. A tag never holds a comma (the stored form is comma-joined).
+MAX_TAGS = 12
+MAX_TAG_CHARS = 30
+
+
+def clean_tags(raw: object) -> str:
+    """Tags as stored: a list or a comma-separated string, trimmed, one space between words, no '#' lead,
+    without repeats (case ignored, the first spelling kept), at most `MAX_TAGS` of `MAX_TAG_CHARS`."""
+    parts = raw.split(",") if isinstance(raw, str) else [str(p).replace(",", " ") for p in (raw or [])]
+    seen: set[str] = set()
+    out: list[str] = []
+    for part in parts:
+        tag = " ".join(part.split()).lstrip("#").strip()[:MAX_TAG_CHARS].strip()
+        if tag and tag.lower() not in seen:
+            seen.add(tag.lower())
+            out.append(tag)
+    return ",".join(out[:MAX_TAGS])
+
+
+def tag_list(stored: str | None) -> list[str]:
+    """The stored tags as a list."""
+    return [t for t in (stored or "").split(",") if t]
 
 
 def normalise_url(raw: str) -> str:
@@ -69,6 +92,8 @@ def clean_fields(fields: dict) -> dict:
     for name in ("title", "note", "group_name"):
         if out.get(name) is not None:
             out[name] = out[name].strip()
+    if out.get("tags") is not None:
+        out["tags"] = clean_tags(out["tags"])
     return out
 
 
@@ -137,7 +162,9 @@ def import_rows(session: Session, rows: list[dict]) -> tuple[list[Bookmark], int
             twins += 1
             continue
         have.add(url)
-        bookmark = Bookmark(url=url, title=row.get("title", ""), group_name=row.get("group_name", ""))
+        bookmark = Bookmark(
+            url=url, title=row.get("title", ""), group_name=row.get("group_name", ""), tags=clean_tags(row.get("tags", ""))
+        )
         stamp = str(row.get("added") or "")
         if stamp.isdigit():
             try:
