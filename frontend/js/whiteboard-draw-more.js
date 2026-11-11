@@ -2,6 +2,8 @@
   // whiteboard-draw-more.js: the last of draw.io's connector rows (WHITEBOARD_PLAN section 10). Two more line
   // shapes beside curved, straight and elbow, both drawn from the two ends alone (a bend dragged on either is not
   // used): Entity relation (`route: "er"`) and Isometric (`route: "iso"`). `wbLinkPathD` calls `routeStops` for them.
+  // And the self-loop: a curved connector from a shape back to itself (`loop`: top, right, bottom or left, with the two
+  // ends on that side) is drawn as a loop out of that side; `addLoop` makes one, `bindLoopRow` is Format's Loop side.
 
   const STUB = 30;
 
@@ -57,5 +59,79 @@
     return route === "iso" ? isometricStops(s, t) : entityStops(s, t);
   }
 
-  wbFmtState.drawMore = { routeStops, entityStops, isometricStops };
+  //: Where a loop's two ends sit on its side (fractions of the shape's box) and the way it leaves.
+  const SIDES = {
+    top: { out: { x: 0, y: -1 }, start: { x: 0.3, y: 0 }, end: { x: 0.7, y: 0 } },
+    right: { out: { x: 1, y: 0 }, start: { x: 1, y: 0.3 }, end: { x: 1, y: 0.7 } },
+    bottom: { out: { x: 0, y: 1 }, start: { x: 0.7, y: 1 }, end: { x: 0.3, y: 1 } },
+    left: { out: { x: -1, y: 0 }, start: { x: 0, y: 0.7 }, end: { x: 0, y: 0.3 } },
+  };
+  const ORDER = ["top", "right", "bottom", "left"];
+
+  const sameEnd = (parsed) => parsed && parsed.sourceId != null && parsed.sourceId === parsed.targetId && (parsed.sourceKind || "node") === (parsed.targetKind || "node");
+
+  //: One cubic out of the side and back into it: both control points out by a reach that grows with the gap
+  //: between the ends, so a wide shape gets a wide loop. Shaped for `wbCurvePathD`.
+  function loopSegs(side, s, t) {
+    const out = (SIDES[side] || SIDES.top).out;
+    const reach = Math.max(36, Math.min(120, Math.hypot(t.x - s.x, t.y - s.y) * 1.25));
+    return [{ a: { x: s.x, y: s.y }, c1: { x: s.x + out.x * reach, y: s.y + out.y * reach }, c2: { x: t.x + out.x * reach, y: t.y + out.y * reach }, b: { x: t.x, y: t.y } }];
+  }
+
+  //: The loop on the selected shape, on the first side that has none yet, joined from and to the shape itself.
+  async function addLoop() {
+    const source = wbCloneSource();
+    if (!source) {
+      toast("Select one shape or text box first.");
+      return;
+    }
+    const used = new Set();
+    for (const sk of wbState.sketches || []) {
+      const p = wbIsLinkSketch(sk) ? wbSketchParsedData(sk) : null;
+      if (sameEnd(p) && p.sourceId === source.id && (p.sourceKind || "node") === source.kind) used.add(p.loop || "top");
+    }
+    const side = ORDER.find((name) => !used.has(name)) || "top";
+    const data = {
+      type: "link-curved", color: window.currentStrokeColor || "#888888", width: 2, endCap: "arrow", loop: side,
+      sourceId: source.id, targetId: source.id, sourceAnchor: SIDES[side].start, targetAnchor: SIDES[side].end,
+    };
+    if (source.kind !== "node") {
+      data.sourceKind = source.kind;
+      data.targetKind = source.kind;
+    }
+    let made = null;
+    await wbRecordGesture(async () => {
+      made = await apiJson("/whiteboard/sketches", {
+        method: "POST",
+        body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z: wbStackNewZ("sketch"), board_id: window.currentBoardId ?? null }),
+      });
+      wbState.sketches.push(made);
+    });
+    wbScheduleRender();
+    if (made) selectWbItem("sketch", made.id);
+    wbAnnounce(`Loop added on the ${side}.`);
+  }
+
+  //: Format's Loop side: shown only when every selected connector is a loop, and writes the side with its two ends.
+  function syncLoopRow(takes, entries) {
+    const row = document.querySelector('[data-fmt="loop"]');
+    if (!row || !takes.has("loop")) return;
+    const loops = entries.filter((e) => e.kind === "sketch").map(wbFmtSketch);
+    const all = loops.length > 0 && loops.every(sameEnd);
+    row.hidden = !all;
+    const select = document.getElementById("wb-fmt-loop");
+    if (!all || !select || document.activeElement === select) return;
+    wbFmtShowMixed(select, new Set(loops.map((l) => l.loop || "top")).size > 1, loops[0].loop || "top");
+  }
+
+  function bindLoopRow() {
+    document.getElementById("wb-fmt-loop")?.addEventListener("change", (e) => {
+      const side = ORDER.includes(e.target.value) ? e.target.value : "top";
+      wbFmtApply("loop", (entry) => (sameEnd(wbFmtSketch(entry)) ? { loop: side, sourceAnchor: SIDES[side].start, targetAnchor: SIDES[side].end } : null), `Loop on the ${side}.`);
+    });
+  }
+
+  onSurface("board", bindLoopRow);
+
+  wbFmtState.drawMore = { routeStops, entityStops, isometricStops, loopSegs, addLoop, syncLoopRow, sameEnd, SIDES };
 })();

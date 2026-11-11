@@ -932,7 +932,6 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Group padding | no | `addGroupPadding` (Format.js 3663) | frame padding row (`tint` and `hint` exist on frames) | S |
 | Table: rows, columns, merge, stripes | no | `addTable` (Format.js 2162), section 12 below | section 12 | M |
 | Arrow shape geometry (width of a block arrow connector) | no | `addArrowGeometry` (Format.js 3972) | needs the `flexArrow` connector shape, section 4 | M |
-| Connector direction: reverse, loop side | reverse yes, 2026-10-18 (whiteboard-1018; HISTORY); loop side no | `addEdgeTurn` (Format.js 2811), `addLoopDirection` (2650) | a `reverse` command swaps ends and caps; self-loops are not drawn today | S |
 | Edit data, copy and paste data, edit tooltip, note, link, open link | no (links on items exist) | `editData` (Actions.js 742), `editTooltip` (748), `editNote` (786), `editLink` (812) | section 3 | M |
 
 ### 3. Edit style, Edit data, placeholders, tooltips
@@ -964,7 +963,6 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Perimeter spacing (gap between line end and shape) | yes, 2026-10-18 (whiteboard-1018; HISTORY), as `gapStart` and `gapEnd` | `sourcePerimeterSpacing`, `targetPerimeterSpacing`, `perimeterSpacing` (Format.js `addStroke`) | `gap_start`, `gap_end` subtracted along the end tangent | S |
 | Source and target connect to a shape, an edge, or float | partly: links join cards and shapes; a free end floats | `mxConnectionHandler`, `Graph.connectVertex` (Graph.js 14940) | done for items; edge-to-edge is drop | none |
 | Hover connection arrows to create a connected shape | yes (`wb-clone-grips`, `wbCloneConnect`) | `HoverIcons` (Graph.js 17581), `connectVertex` | done; add a shape picker after a drag from a grip to empty space (section 17) | S |
-| Reverse direction, self-loop side | reverse yes, 2026-10-18 (whiteboard-1018; HISTORY); self-loop no | `addEdgeTurn`, `addLoopDirection` (Format.js 2811, 2650) | `reverse` command; self-loop as a drawn arc | S |
 | Rounded and curved polylines | rounded: yes, 2026-10-18 (an elbow connector; whiteboard-1018, HISTORY); curved: no | `rounded`, `curved` styles | `data.round` on link polylines | M |
 | Edge shadow and opacity | yes | `shadow`, `opacity` | done | none |
 

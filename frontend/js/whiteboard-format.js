@@ -81,7 +81,7 @@ const WB_FMT_FIELDS = {
   line: ["stroke", "strokealpha", "width", "dash", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "tip"],
   //: A straight line or arrow: a line that takes ends.
   arrow: ["stroke", "strokealpha", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "tip"],
-  link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "linklook", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "jumpsize", "gapstart", "gapend", "tip"],
+  link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "linklook", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "jumpsize", "gapstart", "gapend", "tip", "loop"],
   text: ["stroke", "fill", "fillalpha", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props", "rawstyle"],
   image: ["alpha", "shadow", "shadowset", "radii", "crop", "trim", "cropbox", "pixels", "replace", "geometry", "angle", "props"],
   frame: ["pad", "geometry", "props"],
@@ -742,6 +742,7 @@ function wbFormatSync() {
     }
   }
   wbFmtState.label?.sync(takes, sharing);
+  wbFmtState.drawMore?.syncLoopRow(takes, sharing);
   if (takes.has("text")) {
     const pressed = (field, value) => {
       const some = sharing.map((e) => wbFmtValue(e, field) === value);

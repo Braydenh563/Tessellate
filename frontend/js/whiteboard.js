@@ -4810,6 +4810,8 @@ function wbLinkCaps(parsed) {
 //: when set, the link is one quadratic curve through it. `shape`
 //: (`wbLinkShape`): an elbow, routed round its two boxes through its bends.
 function wbLinkPathD(type, sPt, tPt, caps, width, bend, shape = null) {
+  //: A curved connector from a shape back to itself: a loop out of its side (`wbFmtState.drawMore`).
+  if (shape?.route === "loop") return wbCurvePathD(wbFmtState.drawMore.loopSegs(shape.side, sPt, tPt), caps, width);
   //: Entity relation and isometric (`wbFmtState.drawMore`): drawn from the two ends alone.
   if (shape?.route === "er" || shape?.route === "iso") {
     const held = wbGapEnds(sPt, tPt, shape.gap);
@@ -5297,6 +5299,8 @@ function wbLinkShape(parsed) {
   const gap = wbLinkGap(parsed);
   if (parsed?.route === "elbow") return { route: "elbow", points, gap };
   if (parsed?.route === "er" || parsed?.route === "iso") return { route: parsed.route, points: [], gap };
+  //: A curved connector from a shape back to itself is a loop (`wbFmtState.drawMore`).
+  if (parsed?.type === "link-curved" && !parsed.route && parsed.sourceId != null && parsed.sourceId === parsed.targetId && (parsed.sourceKind || "node") === (parsed.targetKind || "node")) return { route: "loop", side: parsed.loop || "top", points: [], gap };
   if (!points.length && !gap) return null;
   return { route: parsed.type === "link-straight" ? "straight" : "curved", points, gap };
 }
@@ -21292,7 +21296,7 @@ function wbRenderLinkEndpointHandles(sketch, parsed) {
 //: curve through all of them. A link from before this with the old single
 //: `bend` shows that as one waypoint, and the first edit writes `points`.
 function wbRenderWaypointHandles(group, sketch, parsed, endpoints) {
-  if (parsed.route === "er" || parsed.route === "iso") return;
+  if (["er", "iso", "loop"].includes(wbLinkShape(parsed)?.route)) return;
   const elbow = parsed.route === "elbow";
   const points = wbLinkWaypoints(parsed, endpoints).map((p) => ({ x: p.x, y: p.y }));
   const groupEl = () => document.querySelector(`.sketch-group[data-id="${sketch.id}"]`);
@@ -21419,7 +21423,7 @@ function wbLinkDrawnLine(parsed, ends) {
 function wbWaypointAddSpots(parsed, ends, drawnD) {
   const shape = wbLinkShape(parsed);
   const spots = [];
-  if (shape?.route === "er" || shape?.route === "iso") return spots;
+  if (["er", "iso", "loop"].includes(shape?.route)) return spots;
   if (shape?.route === "elbow") {
     const line = wbLinkDrawnLine(parsed, ends);
     for (let i = 0; i < line.length - 1; i++) {
@@ -22669,8 +22673,8 @@ function renderWhiteboard() {
       }
       if (!parsed || !(parsed.type || "").startsWith("link-")) return;
       event.stopPropagation();
-      if (parsed.route === "er" || parsed.route === "iso") {
-        toast("This line shape is drawn from its two ends. Change the line shape to add bends.", "info");
+      if (["er", "iso", "loop"].includes(wbLinkShape(parsed)?.route)) {
+        toast("This line is drawn from its two ends. Change the line shape to add bends.", "info");
         return;
       }
       const endpoints = wbResolveLinkEndpoints(parsed);

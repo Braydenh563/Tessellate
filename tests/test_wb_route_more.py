@@ -30,7 +30,7 @@ def _stops(route: str, s: dict, t: dict) -> list[dict]:
     if not node:
         pytest.skip("node is not installed")
     script = (
-        "const wbFmtState = {};\n" + frontend_text("whiteboard-draw-more.js")
+        "const wbFmtState = {};\nconst onSurface = () => {};\n" + frontend_text("whiteboard-draw-more.js")
         + f"\nconsole.log(JSON.stringify(wbFmtState.drawMore.routeStops({json.dumps(route)}, {json.dumps(s)}, {json.dumps(t)})));"
     )
     return json.loads(subprocess.run([node, "-e", script], capture_output=True, text=True, timeout=30, check=True).stdout)
@@ -97,8 +97,8 @@ def test_the_board_draws_and_names_the_new_shapes():
     assert 'parsed?.route === "er" || parsed?.route === "iso"' in shape and "points: []" in shape
     assert '["elbow", "er", "iso"].includes(parsed?.route)' in _function("wbLinkRouteName")
     #: No bend grips, no add-a-bend spots and no bend by double-click: the shape ignores them, so none are offered.
-    assert 'parsed.route === "er" || parsed.route === "iso"' in _function("wbRenderWaypointHandles")
-    assert 'shape?.route === "er" || shape?.route === "iso"' in _function("wbWaypointAddSpots")
+    assert '["er", "iso", "loop"].includes(wbLinkShape(parsed)?.route)' in _function("wbRenderWaypointHandles")
+    assert '["er", "iso", "loop"].includes(shape?.route)' in _function("wbWaypointAddSpots")
     assert "drawn from its two ends" in WB
 
 
