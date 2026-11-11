@@ -8230,6 +8230,7 @@ input[type="color"].wb-mixed {
 .wb-fmt-row input[type="range"] {
   width: 100%;
   min-width: 0;
+  margin: 0;
 }
 /* One height for every field in the panel: a number field drew taller than
    the select beside it. */
@@ -8248,6 +8249,13 @@ input[type="color"].wb-mixed {
 }
 .wb-format input[type="number"]:is(:hover, :focus-visible) {
   -moz-appearance: auto;
+}
+/* **A paired cell holds four digits** (width sweep 1111): the global field's
+   --space-5 side padding left a 26px content box in a 62px cell, so "812"
+   read "8(". The cell trades that padding for a hair and centres its value. */
+.wb-format .wb-fmt-cell input[type="number"] {
+  padding-inline: var(--space-1);
+  text-align: center;
 }
 .wb-fmt-out {
   min-width: 3ch;
@@ -8336,9 +8344,6 @@ input[type="color"].wb-mixed {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-}
-.wb-fmt-commands .wb-fmt-buttons {
-  flex-wrap: nowrap;
 }
 /* A pressed toggle (bold, italic, an alignment) on the selection's soft
    ground, the sidebar tab's own state. */
