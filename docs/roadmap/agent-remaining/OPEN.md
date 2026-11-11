@@ -292,7 +292,7 @@ Parked until the owner's data or a check on real hardware:
 ~~- E2 In-app-only acts that need desk frames (dangle, kick_legs, hang_one_hand) | INBOX 1710~~ **Built (W31 E1, E2)**: `dangle`, `kick0`, `kick1`, `hang_one` for both looks; fire only on a window top (with room for the hem) and inside a long hang (tests/test_overlay_desk_acts_1710.py)
 - E3 The life-1109 ranked list (follow-through, startle settle, micro-saccades, stand-loop drift) | INBOX 1719 (b), life-1109 W34: owner-call (tracked in the plans), w34-L1-1111.md.
 - E4 Masculine Atlas: head, eyes, shoulder join, expressions | oa 1607 b, c, d, B16 W34: owner-call (tracked in the plans), w34-L1-1111.md.
-- E5 Own activities with props; wind-spirit travel; ambient acts by hour | oa 1692 e, n, d W34: owner-call (tracked in the plans), w34-L1-1111.md.
+- ~~E5 Own activities with props; wind-spirit travel; ambient acts by hour | oa 1692 e, n, d~~ **Built in PR 216 (owner decision 10, e5-1111.md): dinner, bubbles and knitting on both sides; the wind ride on the desk and in the app; day weights from the shared catalogue.**
 - ~~E6 Lower body and nebula follow the pose; landing outcomes; edge squash; portal | oa 1692 e/n, B1, B3, T1, N5, N9~~ done e6-1111 (commits 3614f4e03, 9075c49dc and the pose step: soft, stumble and roll landings, edge squash, portal share pinned, lean/dangle/kick/swing/sloth rows; T1 prop tip-over marked out with a reason in owner-asks-audit-1108.md).
 
 **W32 Backend tidy** (E, backend, Haiku verify then Sonnet). Files: small fixes in `api/`. Checks: targeted route tests.
