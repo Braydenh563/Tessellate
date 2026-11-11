@@ -97,7 +97,8 @@ def loops_that_write(text: str) -> set[str]:
 
 def board_loops() -> set[str]:
     found: set[str] = set()
-    for path in sorted(JS.glob("whiteboard*.js")):
+    #: The Boards & maps gallery moved out of whiteboard.js to boards-gallery.js (INBOX 1772).
+    for path in sorted([*JS.glob("whiteboard*.js"), JS / "boards-gallery.js"]):
         found |= loops_that_write(path.read_text(encoding="utf-8"))
     return found
 
