@@ -135,8 +135,9 @@ def test_the_list_stays_and_the_guide_says_so() -> None:
     # Stop never empties the list
     wiring = _read("wiring.js")
     assert "chatQueue.items" not in wiring
+    # The topic moved with the "every feature since 0.3.0" group (K24).
     topics = (
-        Path(__file__).resolve().parent.parent / "src" / "tessellate" / "ai" / "help_topics_more.py"
+        Path(__file__).resolve().parent.parent / "src" / "tessellate" / "ai" / "help_topics_more_mid.py"
     )
     body = topics.read_text(encoding="utf-8")
     body = body[body.index('"id": "queued-messages"') :][:1800]
