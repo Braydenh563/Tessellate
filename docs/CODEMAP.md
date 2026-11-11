@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10178, test files 2497, tests 20567, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10178, test files 2498, tests 20569, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -2125,16 +2125,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasMotionOK` | frontend/js/atlas-motion.js:172 |
 | `atlasProbeWatch` | frontend/js/atlas-motion.js:221 |
 | `atlasRigAttach` | frontend/js/atlas-motion.js:180 |
-| `atlasRigFrame` | frontend/js/atlas-motion.js:482 |
-| `atlasRigGesture` | frontend/js/atlas-motion.js:267 |
-| `atlasRigRead` | frontend/js/atlas-motion.js:232 |
-| `atlasRigSpring` | frontend/js/atlas-motion.js:292 |
-| `atlasRigWake` | frontend/js/atlas-motion.js:312 |
-| `atlasStarsFade` | frontend/js/atlas-motion.js:472 |
-| `atlasTossAt` | frontend/js/atlas-motion.js:364 |
-| `atlasTossBob` | frontend/js/atlas-motion.js:378 |
-| `atlasTossDraw` | frontend/js/atlas-motion.js:441 |
-| `atlasTossState` | frontend/js/atlas-motion.js:386 |
+| `atlasRigFrame` | frontend/js/atlas-motion.js:487 |
+| `atlasRigGesture` | frontend/js/atlas-motion.js:272 |
+| `atlasRigRead` | frontend/js/atlas-motion.js:237 |
+| `atlasRigSpring` | frontend/js/atlas-motion.js:297 |
+| `atlasRigWake` | frontend/js/atlas-motion.js:317 |
+| `atlasStarsFade` | frontend/js/atlas-motion.js:477 |
+| `atlasTossAt` | frontend/js/atlas-motion.js:369 |
+| `atlasTossBob` | frontend/js/atlas-motion.js:383 |
+| `atlasTossDraw` | frontend/js/atlas-motion.js:446 |
+| `atlasTossState` | frontend/js/atlas-motion.js:391 |
 
 ### frontend/js/atlas.js (97)
 
@@ -26401,7 +26401,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20567)
+## Tests (20569)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27704,6 +27704,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_lag_models_status_1662.py | 5 |
 | tests/test_lag_panel_moving_1591.py | 4 |
 | tests/test_lag_rest_1741.py | 3 |
+| tests/test_lag_rig_seed_1741.py | 2 |
 | tests/test_lag_timer_named_1741.py | 4 |
 | tests/test_lag_wblib_1726.py | 2 |
 | tests/test_lan.py | 126 |

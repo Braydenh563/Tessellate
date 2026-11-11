@@ -60,6 +60,7 @@ const ctx = {
   matchMedia: () => ({ matches: false }),
   getComputedStyle: () => { reads.cs += 1; return { transform: `matrix(${Math.cos(ang)}, ${Math.sin(ang)}, ${-Math.sin(ang)}, ${Math.cos(ang)}, 0, 0)`, rotate: "none", opacity: "1" }; },
   requestAnimationFrame: (f) => { frames.push(f); return frames.length; },
+  setTimeout: (f) => { frames.push(() => f()); return frames.length; },  // the first look runs in a timer after the frame (`atlasRigWake.afterPaint`)
   atlasTailWake() {}, atlasFix: (n) => +n.toFixed(2), atlasArmPath: () => "M0 0", atlasArmHand: () => "", atlasState: {},
   ATLAS_LOOKS: {}, nameMarkBuddyBehindCover: () => false,  // 1667: the rig holds its reads behind a dialog
 };
@@ -69,7 +70,7 @@ vm.runInContext(process.argv[1] + "\n;globalThis.__wake = atlasRigWake; globalTh
 const classes = new Set(["nmb-walking"]);
 const buddy = { id: "nm-buddy", dataset: {}, classList: { contains: (c) => classes.has(c) }, style: { getPropertyValue: () => "" } };
 const box = { isConnected: true, dataset: { atlasMood: "calm" }, classList: { contains: (c) => c === "atl-figure-box" }, closest: () => buddy, toggleAttribute() {} };
-const arm = (side) => ({ side, sgn: side === "r" ? 1 : -1, probe: {}, running: { get size() { return probeAnims.length; } }, hold: null, groups: [el()], paths: [el()], hand: el(), geo: {}, j: { sh: { x: 0, v: 0, w: 14, t: null }, el: { x: 0, v: 0, w: 14, t: null }, wr: { x: 0, v: 0, w: 14, t: null }, sy: { x: 1, v: 0, w: 14, t: null } }, hist: [], drawn: [0, 0], shown: "", antic: null });
+const arm = (side) => ({ side, sgn: side === "r" ? 1 : -1, probe: { getAnimations: () => [] }, running: { get size() { return probeAnims.length; } }, hold: null, groups: [el()], paths: [el()], hand: el(), geo: {}, j: { sh: { x: 0, v: 0, w: 14, t: null }, el: { x: 0, v: 0, w: 14, t: null }, wr: { x: 0, v: 0, w: 14, t: null }, sy: { x: 1, v: 0, w: 14, t: null } }, hist: [], drawn: [0, 0], shown: "", antic: null });
 const rig = { box, body: {}, look: "masculine", arms: [arm("l"), arm("r")], raf: 0, at: 0, still: 0, host: buddy, observer: {}, pose: el(), heads: [el()], lag: { x: 0, v: 0, w: 9, t: null }, fresh: false };
 box.atlasRig = rig;
 const run = (n) => { for (let i = 0; i < n; i += 1) { clock += 16.7; const f = frames; frames = []; for (const g of f) g(clock); } };

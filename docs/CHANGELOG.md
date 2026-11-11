@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Lag (INBOX 1741): the Atlas rig reads the arm probe's running animations at its first look, after a frame has drawn, not when the figure attaches (`atlasProbeWatch.seed`; the attach's `getAnimations` flush 15.5 to 5ms of a boot, medians of 4 at 4x CPU; tests/test_lag_rig_seed_1741.py). tests/test_atlas_frame_reads.py's fake gets the `setTimeout` the first look already used.
 - Lag (INBOX 1741): the dashboard's cards are sized once, as the veil lifts, not on every fill behind it (`sizeDashWidgets` 6 calls to 2 at boot; the 1.2s settle timer is named `dashSettleTimeout`; tests/test_lag_dash_spans_1741.py).
 - Lag (INBOX 1726): the board Library panel draws a closed group's tiles when it is opened, not with the panel (`wbLibGroup`; 220 tiles to 73 on a first open, `wbRenderLibrary` median 133 to 63ms at 4x CPU; tests/test_lag_wblib_1726.py).
 - Fixed (code scanning 2151, 2152): the desk companion's start-up log names a look as "a drawn companion" or "an Atlas look" instead of printing the look, whose capture key code scanning read as a secret (`desk_companion._look_label`; tests/test_desk_overlay_wiring.py).
