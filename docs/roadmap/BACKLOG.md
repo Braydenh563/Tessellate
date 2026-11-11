@@ -299,7 +299,7 @@ The owner's reports this plan owns, moved whole from INBOX.md with their numbers
 - ~~**Document history**~~ **Built, see `core/database.py:1398` (`DocumentRevision`), `#doc-history-dialog` and DOCUMENTS_PLAN Phase 5 item 2.** Notes have `EntryRevision`; documents had no
   equivalent table, and the AI edit overwrote on accept
 
-- **D30: language packs for spelling and grammar** (from INBOX 1582, the owner: "can we make it so the user just has to install the packages for their language??"). Word's proofing tools are closed and cannot ship. Keep Harper plus the open Hunspell dictionaries (the LibreOffice and Mozilla word lists, per language) and LanguageTool's open rule sets where the licence allows (AGPL may take LGPL). One download per language from Setup (dictionary, affix rules, autocorrect list, contraction table), joined with the languages setting. The English contraction family is built (`autocorrectState` in autocorrect.js, a30x); a pack's autocorrect list plugs into the same table.
+- ~~**D30: language packs for spelling and grammar**~~ **Built d30-1111 (2026-11-11):** French, German and Spanish spelling are optional downloads (Settings, Packages: `spell-fr`, `spell-de`, `spell-es`; sha256-pinned Hunspell files from the `dictionary-*` npm tarballs, kept in the data folder, never vendored, egress labelled), built lazily in the Harper worker when a document's `lang:` matches; the panel note offers the install through `extraNoticeMount`. English unchanged. Grammar stays English; autocorrect lists per language are not built. Evidence: `tests/test_spell_packs_1111.py` (22, fake transport); real pinned French tarball through a local mirror in the app: note and Install notice before, French misspellings flagged after, no console errors; worker build fr 4.4 s, de 0.9 s, es 1.0 s; 44 words in 35 to 40 ms; 0% of dictionary stems missed. Not driven in a browser: de and es, dark or narrow layouts, the Packages card visually. d30-1111.md. Left from the original: LanguageTool rule sets for grammar and a per-language autocorrect list (the English contraction family is built, `autocorrectState` in autocorrect.js).
 
 ### Asked for this session, not yet built
 
@@ -2938,7 +2938,7 @@ laziness.
    whether that's a real gap or just a different (arguably more
    consistent-with-the-rest-of-the-app) design before building a second
    collection type.
-8. **Basic local speaker separation on a transcript** **Next:** faster-whisper does not diarize and a diarization library pulls torch (CLAUDE.md section 7); the only no-dependency route is a pause-and-energy heuristic, unreliable, so this is the owner's call. (Speaker 1/2/3, no
+8. ~~**Basic local speaker separation on a transcript**~~ **Built (owner, 2026-11-11), see `ai/diarize.py`, the `speakers` and `speakermodels` extras and `tests/test_diarize_1111.py`.** Original scoping: **Next:** faster-whisper does not diarize and a diarization library pulls torch (CLAUDE.md section 7); the only no-dependency route is a pause-and-energy heuristic, unreliable, so this is the owner's call. (Speaker 1/2/3, no
    naming needed): checked, genuinely absent (`grep -i speaker` across
    `src/` is empty). A fully local diarization pass, if the transcription
    library already in use supports one, would be a real, contained
@@ -3460,7 +3460,7 @@ Genuinely open, ranked by value-per-effort:
    schema (decisions, owners, dates) that renders as a form and stores
    structured values. The meeting-summary block already proves the output
    shape is useful; this generalises it.
-3. **Speaker labelling on transcripts** (gap 12): **Next:** same decision as section 102 item 8 (the owner). Transcription is already
+3. ~~**Speaker labelling on transcripts** (gap 12)~~ **Built (owner, 2026-11-11), see `ai/diarize.py`, the `speakers` and `speakermodels` extras, `POST /recordings/{id}/speakers/voice` and `tests/test_diarize_1111.py`; a rename stays in the stored transcript (`PUT /recordings/{id}/speakers`), so no column was added.** Original scoping: **Next:** same decision as section 102 item 8 (the owner). Transcription is already
    local, so "Speaker 1/2/3" by voice is an incremental local win. Named
    speakers need no platform integration if the user can rename a label once
    and have it stick for that recording.
@@ -3612,7 +3612,7 @@ anything already built is named as such so nobody rebuilds it.
    all exist and nothing lists them in one place.
 8. **Per-note pinned AI context**, **Built 2026-10-05**, section 109.4 (HISTORY.md, "backlog-1005"). A note that is always in scope for chat
    ("my current project"), instead of relying on retrieval to find it.
-9. **Speaker labelling on transcripts.** **Next:** the owner's call, section 102 item 8. Transcription is already local, so
+9. ~~**Speaker labelling on transcripts.**~~ **Built (owner, 2026-11-11), see item 3 above and `ai/diarize.py`.** Original scoping: **Next:** the owner's call, section 102 item 8. Transcription is already local, so
    "Speaker 1/2/3" by voice is incremental; letting a user rename a label
    once and having it stick for that recording covers the rest.
 10. ~~**A conflict-safe editor.**~~ **Built, see `frontend/js/edit-conflict.js` and `api/edit_conflicts.py` (a save that lost a race comes back 409 and opens the compare dialog).** Two windows on the same note is silently

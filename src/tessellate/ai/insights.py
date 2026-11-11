@@ -221,6 +221,18 @@ def _own_plan(note: dict, fact) -> bool:  # noqa: ANN001
     return not _OTHERS_PLAN.search(str(note.get("content") or "")[: fact.start])
 
 
+def _followed_up(notes: list[dict], note: dict, written: date, words: list[str]) -> bool:
+    """Whether a later note mentions at least half of the plan's words."""
+    need = (len(words) + 1) // 2
+    for other in notes:
+        if other is note or not (day := _written(other)) or day <= written:
+            continue
+        content = str(other.get("content") or "").lower()
+        if sum(1 for w in words if re.search(rf"\b{w}", content)) >= need:
+            return True
+    return False
+
+
 def drift(notes: list[dict], today: date) -> list[Insight]:
     """Plans at least `DRIFT_DAYS` old that no later note follows up: the
     plan's own words, quoted, and the day it was written."""
@@ -237,11 +249,7 @@ def drift(notes: list[dict], today: date) -> list[Insight]:
             words = [w for w in re.findall(r"[a-z]{4,}", fact.attrs.get("object", "").lower()) if w not in _PLAIN]
             if not words:
                 continue
-            later = [
-                n for n in notes
-                if n is not note and (d := _written(n)) and d > written and sum(1 for w in words if re.search(rf"\b{w}", str(n.get("content") or "").lower())) >= (len(words) + 1) // 2
-            ]
-            if later:
+            if _followed_up(notes, note, written, words):
                 continue
             slots = {"plan": fact.text, "since": _day(written, today)}
             out.append(Insight("drift", _fill("drift", slots), [note["id"]], slots))

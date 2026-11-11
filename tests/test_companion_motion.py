@@ -201,10 +201,10 @@ def test_it_rides_its_panels_scroll_and_leaves_with_it() -> None:
     ride = _fn("nameMarkBuddyRide")
     assert "new ScrollTimeline({ source: want" in ride
     assert 'rangeEnd: `${NMB_RIDE_PX}px`' in ride and 'rangeStart: "0px"' in ride
-    # It stays in the body, in its own band: the app's scroll boxes are
-    # never given a child.
+    # It stays out of the app's scroll boxes, in its own band under <html>
+    # (INBOX 1726: a node under <body> re-asks every :has() subject).
     build = _fn("nameMarkBuddyBuild")
-    assert 'band.id = "nm-buddy-band"' in build and "document.body.appendChild(band)" in build
+    assert 'band.id = "nm-buddy-band"' in build and "document.documentElement.appendChild(band)" in build
     assert "#nm-buddy-band.nmb-riding {\n  overflow: clip;" in CSS08
     # A scroll of the area it rides reads no box and moves nothing.
     listener = AV[AV.index('document.addEventListener("scroll", (event) => {\n  //: Any scroll') :]
@@ -544,7 +544,7 @@ def test_it_keeps_out_of_the_tours_ring() -> None:
     # character in a field, audit 1101.)
     # Looked after a frame has drawn the press (INBOX 1534): the timer wraps `look` (since INBOX
     # 1587 through `nmb.afterClean`, a frame and a timer, tests/test_atlas_cover_1587.py).
-    assert "nmbDodgeLate = setTimeout(afterPaint, 700);" in AV and "const afterPaint = () => nmb.afterClean(look);" in AV
+    assert "nmbDodgeLate = setTimeout(afterPaint, 700);" in AV and "const afterPaint = () => nmb.afterCalm(look);" in AV
     assert "const look = nameMarkBuddyTypingKey(e) ? nameMarkBuddyDodgeTyping : nameMarkBuddyDodge;" in AV
     assert 'buddy.querySelector(".nm-figure")' in _fn("nameMarkBuddyDodge")
 

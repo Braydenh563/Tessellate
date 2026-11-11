@@ -93,14 +93,8 @@ HELP_TOPICS: list[dict] = [
             "why?, shorter, no, the gym one) read against the question before; "
             "a cited board, map or document opens in its own place. With no "
             "model, Chat also acts (remind me to..., pin or delete the X note), with Undo. "
-            "An answer from your notes can end with one offer as a link: Remind you to..., Save it as a checklist note, "
-            "Start a list of films to watch next, Note the first as your pick, Gather them into one note, Track your "
-            "lifts in a table. Press it and it is done, with Undo; in Chat, typing yes does the same for a reminder, a checklist, a list or a pick "
-            "(Gather and the table are the link's), and no thanks drops it. "
-            "A story over many notes tells the ones it read and says so at the end (That tells five of the twelve; ask for a month or a tag to see the rest). "
-            "A counting "
-            "question in Ask (how many notes per category this month) also gets "
-            "a chart from your notes, with its numbers and Save as PNG. A note's "
+            "An answer can end with an offer as a link, or a chart (see Offers and charts in an answer). "
+            "A note's "
             "... menu, under AI actions, has Explain this note: read aloud, then what it links to "
             "and why. Agent mode "
             "(a toggle in Chat) lets the assistant use its tools to search, link, "
@@ -792,6 +786,9 @@ HELP_TOPICS: list[dict] = [
             "transcribe",
             "recording",
             "recordings",
+            "speaker",
+            "speakers",
+            "who spoke",
             "trim",
             "marker",
             "read aloud",
@@ -819,7 +816,8 @@ HELP_TOPICS: list[dict] = [
             "play from it; a line's copy button copies it, Shift-click picks a run of "
             "lines, and the transcript's more menu copies the picked lines or all of "
             "them, with or without times) and downloads them as SRT or VTT subtitles; with "
-            "the AI on, each turn is labelled with who spoke, and a recording's menu has Rename a speaker to correct a name everywhere. "
+            "the Speakers bundle (Settings, Packages) a transcript labels who speaks by voice, as Speaker 1, 2 and so on (Label speakers by voice in the menu does an old one); "
+            "with only the AI on, turns are labelled from what is said. Rename a speaker names a label for good. "
             "Read aloud plays an answer back to you; its item turns to Stop "
             "reading while it speaks, and Settings, General, Read aloud sets the speed (0.75x to 1.5x)."
         ),

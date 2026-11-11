@@ -426,6 +426,23 @@ def decayed(weight: float, days: float) -> float:
     return weight * math.pow(0.5, days / HALF_LIFE_DAYS)
 
 
+def _boost_key(item) -> tuple | None:  # noqa: ANN001
+    """What a correction teaches about, in its family's key shape; None when it names nothing usable."""
+    if item.kind == "refile":
+        return (item.from_value or "", item.to_value or "")
+    if item.kind in ("open_after_ask", "wrong_answer"):
+        question = str(item.subject.get("question") or "")
+        entry_id = item.subject.get("entry_id")
+        return (question, entry_id) if question and entry_id is not None else None
+    if item.kind == "dismiss_link":
+        a, b = item.subject.get("a"), item.subject.get("b")
+        return (min(a, b), max(a, b)) if a is not None and b is not None else None
+    if item.kind == "dismiss_resurface":
+        entry_id = item.subject.get("entry_id")
+        return (entry_id,) if entry_id is not None else None
+    return None
+
+
 def boosts(session: Session, kind: str) -> dict[tuple, float]:
     """The weight each subject has earned, keyed by what the reader looks up.
 
@@ -459,22 +476,7 @@ def boosts(session: Session, kind: str) -> dict[tuple, float]:
     # before the limit rather than after it.
     items = [item for correction_kind in kinds for item in corrections(session, kind=correction_kind)]
     for item in sorted(items, key=lambda row: row.id):
-        key: tuple | None = None
-        if item.kind == "refile":
-            key = (item.from_value or "", item.to_value or "")
-        elif item.kind in ("open_after_ask", "wrong_answer"):
-            question = str(item.subject.get("question") or "")
-            entry_id = item.subject.get("entry_id")
-            if question and entry_id is not None:
-                key = (question, entry_id)
-        elif item.kind == "dismiss_link":
-            a, b = item.subject.get("a"), item.subject.get("b")
-            if a is not None and b is not None:
-                key = (min(a, b), max(a, b))
-        elif item.kind == "dismiss_resurface":
-            entry_id = item.subject.get("entry_id")
-            if entry_id is not None:
-                key = (entry_id,)
+        key = _boost_key(item)
         if key is None:
             continue
         out[key] = min(MAX_BOOST, out.get(key, 0.0) + PER_CORRECTION)

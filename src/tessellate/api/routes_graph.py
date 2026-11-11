@@ -26,7 +26,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai.embeddings import bytes_to_vector, similar_pairs
 from tessellate.api import bounds
-from tessellate.core import cjk
+from tessellate.core import cjk, companion_events
 from tessellate.core import deps
 from tessellate.core.database import Attachment, EmbeddingRecord, Entry, NoteType
 from tessellate.core.deps import get_session
@@ -515,67 +515,80 @@ def _add_map_edges(
     `taken` is the route's own pair ledger, passed in so a map edge cannot
     duplicate a link edge the note already had.
     """
-    from tessellate.api.routes_whiteboard import _board_settings
-    from tessellate.core.database import WhiteboardObject
-
     board_ids = {e.id for e in entries if getattr(e, "is_board", False)}
     if board_ids:
-        by_id = {n["id"]: n for n in nodes}
-        maps: set[int] = set()
-        for entry in entries:
-            if entry.id not in board_ids:
-                continue
-            board_type, _layout = _board_settings(entry)
-            node = by_id.get(entry.id)
-            if node is None:
-                continue
-            # `board` and `map` both, because the graph's own reason for
-            # marking these is that a board of any kind is not a note the
-            # way every other node here is, and a whiteboard that says so
-            # is more honest than one drawn as a note with a heading.
-            node["type"] = board_type
-            if board_type == "map":
-                maps.add(entry.id)
+        maps = _mark_board_nodes(entries, nodes, board_ids)
         if maps:
-            #: **`kind == "note"` only, and this is not a tidiness
-            #: preference.** The first version queried every
-            #: `MAP_REFERENCE_KINDS` row and filtered on `ref_id in
-            #: node_ids` afterwards, reasoning that a document/file/
-            #: bookmark id simply would not be an entry id. It is: these
-            #: are four independent autoincrement sequences, so document 1
-            #: and note 1 both exist in any notebook with one of each.
-            #: `tests/test_mindmap.py` caught it emitting `{source: 1,
-            #: target: 1}`, a map joined to *itself* through a document
-            #: node: on the second row it was ever given. An id is only
-            #: meaningful with its table, and the kind is the table.
-            rows = session.execute(
-                select(WhiteboardObject.board_id, WhiteboardObject.data).where(
-                    WhiteboardObject.board_id.in_(maps),
-                    WhiteboardObject.kind == "note",
-                )
-            )
-            for board_id, raw in rows:
-                try:
-                    ref_id = (json.loads(raw or "{}") or {}).get("ref_id")
-                except (TypeError, ValueError):
-                    # A row edited by hand, or written before `data` was
-                    # JSON. A map node nobody can read points at nothing.
-                    continue
-                # A note that has since been deleted, or a private one the
-                # caller's `entries` query never returned: an edge naming a
-                # node the client did not receive is silently dropped by
-                # d3, which is an invisible failure rather than a visible
-                # one.
-                if not isinstance(ref_id, int) or ref_id not in node_ids:
-                    continue
-                # A map that somehow points at itself is not a connection.
-                if ref_id == board_id:
-                    continue
-                pair = frozenset((board_id, ref_id))
-                if pair in taken:
-                    continue
-                taken.add(pair)
-                edges.append({"source": board_id, "target": ref_id, "kind": "map"})
+            _add_map_member_edges(session, maps, edges, node_ids, taken)
+
+
+def _mark_board_nodes(entries: list, nodes: list[dict], board_ids: set[int]) -> set[int]:
+    """Type each board's node, and return the ids of the ones that are maps."""
+    from tessellate.api.routes_whiteboard import _board_settings
+
+    by_id = {n["id"]: n for n in nodes}
+    maps: set[int] = set()
+    for entry in entries:
+        if entry.id not in board_ids:
+            continue
+        board_type, _layout = _board_settings(entry)
+        node = by_id.get(entry.id)
+        if node is None:
+            continue
+        # `board` and `map` both, because the graph's own reason for
+        # marking these is that a board of any kind is not a note the
+        # way every other node here is, and a whiteboard that says so
+        # is more honest than one drawn as a note with a heading.
+        node["type"] = board_type
+        if board_type == "map":
+            maps.add(entry.id)
+    return maps
+
+
+def _add_map_member_edges(
+    session: Session, maps: set[int], edges: list[dict], node_ids: set[int], taken: set[frozenset[int]]
+) -> None:
+    from tessellate.core.database import WhiteboardObject
+
+    #: **`kind == "note"` only, and this is not a tidiness
+    #: preference.** The first version queried every
+    #: `MAP_REFERENCE_KINDS` row and filtered on `ref_id in
+    #: node_ids` afterwards, reasoning that a document/file/
+    #: bookmark id simply would not be an entry id. It is: these
+    #: are four independent autoincrement sequences, so document 1
+    #: and note 1 both exist in any notebook with one of each.
+    #: `tests/test_mindmap.py` caught it emitting `{source: 1,
+    #: target: 1}`, a map joined to *itself* through a document
+    #: node: on the second row it was ever given. An id is only
+    #: meaningful with its table, and the kind is the table.
+    rows = session.execute(
+        select(WhiteboardObject.board_id, WhiteboardObject.data).where(
+            WhiteboardObject.board_id.in_(maps),
+            WhiteboardObject.kind == "note",
+        )
+    )
+    for board_id, raw in rows:
+        try:
+            ref_id = (json.loads(raw or "{}") or {}).get("ref_id")
+        except (TypeError, ValueError):
+            # A row edited by hand, or written before `data` was
+            # JSON. A map node nobody can read points at nothing.
+            continue
+        # A note that has since been deleted, or a private one the
+        # caller's `entries` query never returned: an edge naming a
+        # node the client did not receive is silently dropped by
+        # d3, which is an invisible failure rather than a visible
+        # one.
+        if not isinstance(ref_id, int) or ref_id not in node_ids:
+            continue
+        # A map that somehow points at itself is not a connection.
+        if ref_id == board_id:
+            continue
+        pair = frozenset((board_id, ref_id))
+        if pair in taken:
+            continue
+        taken.add(pair)
+        edges.append({"source": board_id, "target": ref_id, "kind": "map"})
 
 
 def _add_tag_nodes(nodes: list[dict], edges: list[dict]) -> None:
@@ -784,9 +797,11 @@ def graph(
         session=session,
     ).body
     if include_entities or include_documents or include_unresolved or include_attachments:
+        companion_events.record("graph_laid")
         return Response(content=build(), media_type="application/json")
     key = _payload_key(session, similarity, include_maps, include_tags)
     body = _cached(f"payload:{bool(similarity)}:{include_maps}:{include_tags}:{slim}", key, build)
+    companion_events.record("graph_laid")  # the graph tab drawing (a kind and a time for the desk companion, W31)
     return Response(content=body, media_type="application/json")
 
 

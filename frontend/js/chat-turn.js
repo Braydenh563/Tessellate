@@ -888,6 +888,7 @@ chatSendTurn.stage = {
     assistantMessageActions({ bubble, text: answerRaw, question });
 
     // Regenerate replaces the last turn; a normal send appends a new one.
+    chatHistoryToSend.heldOffer = t.groundingSupport?.offer?.offer_id || "";
     const turnRecord = { question, answer: answerRaw, objects: chatTurnObjects(turnSources), ...(t.turnFrame ? { frame: t.turnFrame } : {}) };
     if (opts.replaceLast && convRef.turns.length) convRef.turns[convRef.turns.length - 1] = turnRecord;
     else convRef.turns.push(turnRecord);

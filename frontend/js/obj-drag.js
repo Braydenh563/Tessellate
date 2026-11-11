@@ -22,6 +22,8 @@
   //: A finger's hold: still this long lifts the card (before it, a move is a scroll).
   //: Under the 500 ms of `wireLongPress`: a card lifted and not moved by then is that menu's press.
   const OBJ_TOUCH_MS = 350;
+  //: How long the pointer rests on a card before its grip appears (the popup hit test is paid once, for the card it stops on).
+  const OBJ_GRIP_REST_MS = 90;
   //: A visible handle on a card: a press on it is a drag from the first move.
   const OBJ_GRIP = "[data-obj-grip]";
   //: Where a press never starts a drag: the card's own controls.
@@ -295,6 +297,7 @@
     let grip = null;
     let card = null;
     let timer = 0;
+    let rested = 0;
 
     //: The card under `target` that some mode would move, or null.
     const movable = (target) => {
@@ -304,6 +307,7 @@
 
     const hide = () => {
       clearTimeout(timer);
+      clearTimeout(rested);
       card = null;
       grip?.classList.remove("is-on");
       window.removeEventListener("scroll", hide, true);
@@ -317,7 +321,8 @@
 
     function show(next) {
       clearTimeout(timer);
-      if (next === card) return;
+      clearTimeout(rested);
+      if (next === card || !next.isConnected) return;
       if (!grip) {
         grip = document.createElement("span");
         grip.className = "obj-grip";
@@ -329,7 +334,8 @@
         const dots = document.createElement("i");
         dots.className = "ph ph-dots-six-vertical";
         grip.append(dots);
-        document.body.append(grip);
+        //: Under `<html>`, not `<body>` (INBOX 1726): a node added to the body re-asks every `:has()` subject of the page, 124 to 213ms on the Library Images tab at 4x.
+        document.documentElement.append(grip);
       }
       const box = next.getBoundingClientRect();
       //: Half out of the card's left edge, level with the middle of a short card or the first line of a tall one.
@@ -370,7 +376,15 @@
       over = null;
       if (!target?.isConnected) return;
       const next = movable(target);
-      if (next) return show(next);
+      //: **Rest before showing** (INBOX 1716 lag log, `show` 1192ms of self time on a hover): the popup test below is a hit test, 8 to 54ms a card at 4x on a
+      //: page of 30,000 nodes, and a pointer crossing cards paid it for each. A card under the pointer for `OBJ_GRIP_REST_MS` gets the grip; the card already holding it is kept at once.
+      clearTimeout(rested);
+      if (next === card) return show(next);
+      if (next) {
+        clearTimeout(timer);
+        rested = setTimeout(() => show(next), OBJ_GRIP_REST_MS);
+        return;
+      }
       if (card) {
         clearTimeout(timer);
         timer = setTimeout(settle, 160);
@@ -404,6 +418,7 @@
       rest = null;
       if (event.target === grip || grip?.contains(event.target)) {
         over = null;
+        clearTimeout(rested);
         return clearTimeout(timer);
       }
       over = event.target;

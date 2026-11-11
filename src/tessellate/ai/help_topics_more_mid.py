@@ -181,8 +181,10 @@ MID_TOPICS.extend(
                 "reply is being written. Press Enter and what you typed waits in a "
                 "list by the box; each one goes, oldest first, when the reply before "
                 "it ends. Edit puts a waiting message back in the box, and the x "
-                "removes it. Stop holds the list until you send again, and what you "
-                "are typing stays in the box while the list sends."
+                "removes it. Stop ends the reply and keeps the list: nothing sends by "
+                "itself, so press Send to run the waiting messages in order, with "
+                "what you typed last. What you are typing stays in the box while "
+                "the list sends."
             ),
             "badge": {"label": "Chat", "tab": "chat"},
         },
@@ -244,14 +246,32 @@ MID_TOPICS.extend(
                 "where it is and File it myself, and Stop in Settings, Background "
                 "tasks files every waiting note by meaning. A note you file "
                 "yourself is never moved by a late answer, and moving notes by "
-                "hand teaches the filing where things go. In Settings, Background tasks, Load "
-                "the search model when the app starts chooses when filing by "
-                "meaning gets ready: at launch, or on the first note, which then "
-                "waits a few seconds. Let the search model go after an idle hour "
-                "frees its memory when nothing has been searched or filed for an "
-                "hour; the next search loads it again. Filing style (Settings, Background tasks) files by topic, "
-                "by project or by time. Filings Atlas was unsure of wait in "
-                "is:review, with Accept the filing on the note's menu."
+                "hand teaches the filing where things go. Filings Atlas was "
+                "unsure of wait in is:review, with Accept the filing on the "
+                "note's menu. More switches: Filing settings."
+            ),
+            "badge": {"label": "Notes", "tab": "notes"},
+        },
+        {
+            "id": "filing-settings",
+            "keywords": (
+                "ask when unsure", "ask me when filing is not sure", "filing options",
+                "filing options menu", "unsure filing", "wait for me to choose",
+                "load the search model", "search model at launch", "filing style",
+                "filing settings",
+            ),
+            "body": (
+                "Filing's switches, in Settings, Background tasks. Ask me when "
+                "filing is not sure (off by default; also the Filing options "
+                "menu beside Filing on the Capture tab) keeps a filing under 70% "
+                "from being applied: the note waits in Uncategorised and offers "
+                "the closest two or three to pick from, in the Capture hint and "
+                "on the saved note. Load the search model when the app starts "
+                "chooses when filing by meaning gets ready: at launch, or on "
+                "the first note, which then waits a few seconds. Let the search "
+                "model go after an idle hour frees its memory when nothing has "
+                "been searched or filed for an hour; the next search loads it "
+                "again. Filing style files by topic, by project or by time."
             ),
             "badge": {"label": "Notes", "tab": "notes"},
         },

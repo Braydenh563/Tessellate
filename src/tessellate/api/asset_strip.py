@@ -61,6 +61,38 @@ def _keep(comment: str) -> bool:
     )
 
 
+def _drop_span(text: str, start: int, end: int, cursor: int, joiner: str, out: list[str]) -> int:
+    """Emit the text before one comment span and what replaces it; the new cursor."""
+    n = len(text)
+    line_start = max(text.rfind("\n", 0, start), text.rfind("\r", 0, start)) + 1
+    line_end = end
+    while line_end < n and text[line_end] in " \t":
+        line_end += 1
+    alone_before = line_start >= cursor and not text[line_start:start].strip(" \t")
+    alone_after = line_end >= n or text[line_end] in "\r\n"
+    body = text[start:end]
+    if alone_before and alone_after:
+        out.append(text[cursor:line_start])
+        out.append("\n" * body.count("\n"))
+        return line_end  # the line's own newline stays, as text
+    before = text[cursor:start]
+    if alone_after:
+        # A trailing comment: drop it and the spaces before it.
+        out.append(before.rstrip(" \t"))
+        out.append("\n" * body.count("\n"))
+        return end
+    out.append(before)
+    if joiner and "\n" in body:
+        out.append("\n" * body.count("\n"))
+    elif not (before[-1:].isspace() or text[end : end + 1].isspace()):
+        out.append(joiner)
+    elif before[-1:] in (" ", "\t"):
+        # `a /* c */ + b` reads `a + b`, not `a  + b`.
+        while end < n and text[end] in " \t":
+            end += 1
+    return end
+
+
 def _rebuild(text: str, spans: list[tuple[int, int]], joiner: str = " ") -> str:
     """The text with each comment span removed, **every line number kept**.
 
@@ -74,39 +106,10 @@ def _rebuild(text: str, spans: list[tuple[int, int]], joiner: str = " ") -> str:
     with it."""
     out: list[str] = []
     cursor = 0
-    n = len(text)
     for start, end in spans:
         if start < cursor:
             continue
-        line_start = max(text.rfind("\n", 0, start), text.rfind("\r", 0, start)) + 1
-        line_end = end
-        while line_end < n and text[line_end] in " \t":
-            line_end += 1
-        alone_before = line_start >= cursor and not text[line_start:start].strip(" \t")
-        alone_after = line_end >= n or text[line_end] in "\r\n"
-        body = text[start:end]
-        if alone_before and alone_after:
-            out.append(text[cursor:line_start])
-            out.append("\n" * body.count("\n"))
-            cursor = line_end  # the line's own newline stays, as text
-            continue
-        before = text[cursor:start]
-        if alone_after:
-            # A trailing comment: drop it and the spaces before it.
-            out.append(before.rstrip(" \t"))
-            out.append("\n" * body.count("\n"))
-            cursor = end
-            continue
-        out.append(before)
-        if joiner and "\n" in body:
-            out.append("\n" * body.count("\n"))
-        elif not (before[-1:].isspace() or text[end : end + 1].isspace()):
-            out.append(joiner)
-        elif before[-1:] in (" ", "\t"):
-            # `a /* c */ + b` reads `a + b`, not `a  + b`.
-            while end < n and text[end] in " \t":
-                end += 1
-        cursor = end
+        cursor = _drop_span(text, start, end, cursor, joiner, out)
     out.append(text[cursor:])
     return "".join(out)
 
@@ -442,9 +445,12 @@ _HTML_NEXT = re.compile(r"<(!--|/?[a-zA-Z])")
 #: as written: everything inside is passed over to the matching close tag.
 #: Not `template`: its content is ordinary markup, and Settings' body (62 KB of
 #: comments in 317 KB) sits in one (INBOX 1501), so its comments go like the
-#: page's own.
+#: page's own. Nor a `<script type="text/x-surface">`: a surface's markup kept
+#: as raw text so the parser makes no nodes for it at boot, which is markup all
+#: the same (comments go; the lint holds that none holds a `<script` of its own).
 _HTML_OPAQUE = ("script", "style", "textarea", "title", "pre", "xmp")
 _TAG_NAME = re.compile(r"[a-zA-Z][a-zA-Z0-9-]*")
+_SURFACE_SCRIPT = re.compile(r'<script\s+type="text/x-surface"[\s>]', re.I)
 
 
 def _html_tag_end(text: str, i: int) -> int:
@@ -461,6 +467,31 @@ def _html_tag_end(text: str, i: int) -> int:
             return j + 1
         j += 1
     return n
+
+
+def _opens_opaque(text: str, i: int, tag: str, tag_end: int) -> bool:
+    """Whether the tag at `i` opens an element whose content is passed over as written."""
+    if tag not in _HTML_OPAQUE or text[i:tag_end].rstrip(">").endswith("/"):
+        return False
+    return not (tag == "script" and _SURFACE_SCRIPT.match(text, i))
+
+
+def _opaque_end(text: str, lower: str, tag: str, tag_end: int) -> int:
+    """Past the matching close tag, counting nested ones of the same name."""
+    n = len(text)
+    depth = 1
+    j = tag_end
+    opener = re.compile(rf"<(/?){tag}(?=[\s/>])")
+    while depth and j < n:
+        found = opener.search(lower, j)
+        if found is None:
+            return n
+        if tag in ("script", "style", "textarea", "title", "xmp") and not found.group(1):
+            j = found.end()  # raw text: an opener inside is just text
+            continue
+        depth += -1 if found.group(1) else 1
+        j = _html_tag_end(text, found.start())
+    return j
 
 
 def html_comment_spans(text: str) -> list[tuple[int, int]]:
@@ -483,24 +514,8 @@ def html_comment_spans(text: str) -> list[tuple[int, int]]:
         if text[i + 1] != "/":
             name = _TAG_NAME.match(text, i + 1)
             tag = name.group(0).lower() if name else ""
-            if tag in _HTML_OPAQUE and not text[i:tag_end].rstrip(">").endswith("/"):
-                # Past the matching close tag, counting nested ones of the same name.
-                depth = 1
-                j = tag_end
-                opener = re.compile(rf"<(/?){tag}(?=[\s/>])")
-                while depth and j < n:
-                    found = opener.search(lower, j)
-                    if found is None:
-                        j = n
-                        break
-                    if tag in ("script", "style", "textarea", "title", "xmp") and not found.group(
-                        1
-                    ):
-                        j = found.end()  # raw text: an opener inside is just text
-                        continue
-                    depth += -1 if found.group(1) else 1
-                    j = _html_tag_end(text, found.start())
-                i = j
+            if _opens_opaque(text, i, tag, tag_end):
+                i = _opaque_end(text, lower, tag, tag_end)
                 continue
         i = tag_end
     return spans

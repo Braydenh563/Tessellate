@@ -3524,11 +3524,23 @@ const nmb = {
   //: since that frame (`pageAt`, the views observer) or inside
   //: `uiSettlingUntil`, it waits one frame more, six at most.
   pageAt: 0,
+  //: Written to within the last 100ms (a frame at 4x CPU is 50): a read now would settle it (`nameMarkBuddyBlend`, the pacer).
+  written: () => nmb.pageAt > 0 && performance.now() - nmb.pageAt < 100,
   //: `snap` runs instead of `fn` when the page is still being written after the last try: a hand-over
   //: makes its change without reading rather than read a dirty page.
   //: `calm` (ms): also waits out a pointer that moved that recently, and then runs `fn` rather than `snap`
   //: (lagjj-1108: a mood's hand-over, 132 to 248ms of reads at 4x, landed inside a pointer's move and every
   //: pointerout waited behind it, 288 to 504ms).
+  //: **`afterCalm` never reads a dirty page** (INBOX 1766, the owner's lag log: `avatars.js TimerHandler:setTimeout
+  //: 715ms (forced layout 685ms)` with `input 552ms keydown on body`, typing in a document with a diagram). A look
+  //: made after six dirty tries ran anyway (`snap` = `fn`), and a page typing and a diagram redraw keep dirty put
+  //: the whole layout into its first box read. Here a dirty page after the tries asks again a quarter second on, for
+  //: `rounds` rounds, and then lets this look go: the late timer or the next press asks for another.
+  afterCalm(fn, rounds = 4) {
+    nmb.afterClean(fn, 6, function nameMarkBuddyPostpone() {
+      if (rounds > 1) setTimeout(nmb.afterCalm, 250, fn, rounds - 1);
+    });
+  },
   afterClean(fn, tries = 6, snap = fn, calm = 0) {
     afterFrames(() => {
       const frame = performance.now();
@@ -4186,7 +4198,7 @@ function nameMarkBuddyDodge() {
   //: The drawn figure's box, not the face button's: the tail and the
   //: skirt hang below the button, and a tour ring under them was missed.
   const face = buddy.querySelector(".nm-figure") || buddy.querySelector(".nm-buddy-face") || buddy;
-  const me = face.getBoundingClientRect();
+  const me = nameMarkBuddyDodge.box(face);
   const over = [...nameMarkBuddyPopups(), ...nameMarkBuddyAttention()].some((b) => b.left < me.right && b.right > me.left && b.top < me.bottom && b.bottom > me.top);
   buddy.classList.toggle("nmb-dodge", over);
   //: Faded to a ghost, it is not a place the keyboard may stop either: a
@@ -4199,6 +4211,15 @@ function nameMarkBuddyDodge() {
   clearTimeout(nmbDodgeTimer);
   nmbDodgeTimer = setTimeout(nameMarkBuddyDodge, 500);
 }
+//: Its box from where it was put (the shape's union), as long as it stands or sits still: only a walk in
+//: flight (a running animation) has moved from `nmb.x, y`, and a settled page has the rect for the asking.
+nameMarkBuddyDodge.box = function nameMarkBuddyDodgeBox(face) {
+  if (Number.isFinite(nmb.x) && Number.isFinite(nmb.y) && nmb.anim?.playState !== "running") {
+    const shape = nameMarkBuddyShape(nmb.x, nmb.y, nmb.pose, nmb.legs);
+    return { left: Math.min(...shape.map((b) => b.left)), right: Math.max(...shape.map((b) => b.right)), top: Math.min(...shape.map((b) => b.top)), bottom: Math.max(...shape.map((b) => b.bottom)) };
+  }
+  return face.getBoundingClientRect();
+};
 let nmbDodgeTimer = 0;
 let nmbDodgeLate = 0;
 //: **A letter typed in a field does not look at the page** (audit 1101, row
@@ -4236,7 +4257,7 @@ for (const type of ["click", "keyup"]) {
     //: between the press's writes and the frame, and its boxes settled the layout
     //: (146 to 191ms at 4x, INBOX 1534).
     const look = nameMarkBuddyTypingKey(e) ? nameMarkBuddyDodgeTyping : nameMarkBuddyDodge;
-    const afterPaint = () => nmb.afterClean(look);
+    const afterPaint = () => nmb.afterCalm(look);
     nmbDodgeTimer = setTimeout(afterPaint, 80);
     //: And once the page has settled: a tour step that changes tab, or a
     //: panel that slides in, lands its box after the first look.
@@ -5276,6 +5297,7 @@ function nameMarkBuddyRideFrames(s0, up, down, upSpan = up, downSpan = down) {
   const shut = (u) => (u < at ? -down * Math.min(1, (at - u) / spanDown) : up * Math.min(1, (u - at) / spanUp));
   const us = [...new Set([0, Math.max(0, at - spanDown), at, at + spanUp, R])].sort((a, b) => a - b);
   return {
+    shut,
     shutter: us.map((u) => ({ offset: u / R, transform: `translateY(${shut(u)}px)` })),
     rider: us.map((u) => ({ offset: u / R, transform: `translateY(${-(u + shut(u))}px)` })),
   };
@@ -5702,8 +5724,28 @@ function nameMarkBuddyKeepUp(ms = 1500, wake = true) {
     nmbFollow.timer = 0;
   }
   nmbFollow.until = Math.max(nmbFollow.until, performance.now() + ms);
-  if (!nmbFollow.frame && !nmbFollow.timer) nmbFollow.frame = requestAnimationFrame(nameMarkBuddyFollowFrame);
+  if (!nmbFollow.frame && !nmbFollow.timer) nameMarkBuddyFollowFrame.ask();
 }
+//: **The follow loop looks in a task after a drawn frame, never in a frame callback** (INBOX 1766, the owner's lag
+//: log on a documents page: `nameMarkBuddyKeepUp 110ms (forced layout 109ms)`). A frame callback runs after every
+//: writer since the last draw and its first box read paid for all of it. The turn asks for a frame (`stage` "raf"),
+//: and that frame's callback only hands over to a timer (`stage` "task"), which runs once the frame has drawn: the
+//: page is clean, so the panel's box, `checkVisibility` and `getAnimations` are lookups. `frame` stays set across
+//: both, so a loop in either stage counts as asked for; `cancel` ends whichever it is in.
+nameMarkBuddyFollowFrame.ask = function nameMarkBuddyFollowAsk() {
+  nmbFollow.stage = "raf";
+  nmbFollow.frame = requestAnimationFrame(function nameMarkBuddyFollowTurn() {
+    nmbFollow.stage = "task";
+    nmbFollow.frame = setTimeout(function nameMarkBuddyFollowTask() {
+      nameMarkBuddyFollowFrame(performance.now());
+    }, 0);
+  });
+};
+nameMarkBuddyFollowFrame.cancel = function nameMarkBuddyFollowCancel() {
+  if (nmbFollow.stage === "raf") cancelAnimationFrame(nmbFollow.frame);
+  else clearTimeout(nmbFollow.frame);
+  nmbFollow.frame = 0;
+};
 //: A panel that has held still for three reads is read at 8Hz, not every
 //: frame, until something announces a move (`nameMarkBuddyKeepUp` with
 //: `wake`): content growing under a streaming answer fires the observer
@@ -5766,11 +5808,11 @@ function nameMarkBuddyFollowFrame(now) {
           nmbFollow.timer = 0;
           nameMarkBuddyKeepUp(0, false);
           if (!nmbFollow.frame) return;
-          cancelAnimationFrame(nmbFollow.frame);
+          nameMarkBuddyFollowFrame.cancel();
           nameMarkBuddyFollowFrame(performance.now());
         }, 3);
       }, Math.max(16, nmbFollow.nap - performance.now())));
-    } else nmbFollow.frame = requestAnimationFrame(nameMarkBuddyFollowFrame);
+    } else nameMarkBuddyFollowFrame.ask();
   }
   //: Its panel came to rest somewhere new: a floating button may be over it
   //: now (INBOX 521: content grew above a Library card, and it rode the
@@ -5935,7 +5977,7 @@ function nameMarkBuddyTempo() {
   nmbTempo.skips = 0;
   //: Not while a page or popup is arriving: `getAnimations` flushes all the style it has dirtied (306ms at 4x, INBOX 1534).
   //: Nor behind a modal (INBOX 1587): the beats go on with the list it has.
-  const due = now - nmbTempo.seen > 1000 && now >= (window.uiSettlingUntil || 0) && !nameMarkBuddyBehindCover() && nmbTempo.calm(now);
+  const due = now - nmbTempo.seen > 1000 && now >= (window.uiSettlingUntil || 0) && !nmb.written() && !nameMarkBuddyBehindCover() && nmbTempo.calm(now);
   //: **The periodic look waits for the page to be drawn** (the lag log: `avatars.js TimerHandler:setTimeout
   //: 623ms (forced layout 465ms)`; 15 reads, 596ms, max 514ms at 4x CPU across seven tab clicks, right after
   //: the hold below ended and the arriving page was still dirty). An idle callback runs after the frame that
@@ -7541,7 +7583,17 @@ function nameMarkBuddyCheck() {
   }
   //: Near its shape first (`nameMarkBuddyNear`): the whole tab's controls
   //: only once one is under it, to find the nearest clear place.
-  const yours = (boxes) => (nmb.perch === "yours" ? nameMarkBuddyYoursObstacles(boxes, nmb.spot) : boxes);
+  //: **A head the shutter has cut is not over what is under the cut** (INBOX 1598, the owner: "I scrolled down and up
+  //: on the ask subtab and the companion got carried to be cut off and floating at the top of the screen"; reproduced
+  //: at 1366x768 by a pixel diff of the top bar with it hidden and shown). Riding a perch scrolled back into view
+  //: from under the bars, its head is behind the bars and the sub-tab strip, and the look that finds a control
+  //: under the figure counted the top bar's tabs under that head, stepped aside, and the move set it down again
+  //: whole, its head drawn over the bar (44px of it). Controls wholly above the clip line, the band's top as the
+  //: shutter has brought it down by this scroll, are not covered by what is drawn.
+  const ride = nmb.ride;
+  const cut = ride?.height ? ride.top + Math.max(0, nameMarkBuddyRideFrames(ride.s0, ride.up, ride.down, ride.upSpan, ride.downSpan).shut(ride.el.scrollTop)) : -Infinity;
+  const seen = (boxes) => (cut > -Infinity ? boxes.filter((box) => box.bottom + 4 > cut) : boxes);
+  const yours = (boxes) => seen(nmb.perch === "yours" ? nameMarkBuddyYoursObstacles(boxes, nmb.spot) : boxes);
   //: **Clear a moment ago, and nothing has been written since** (the lag log: this look ran twice a
   //: tab press, 33 then 9ms at 4x on 320 notes, the second reading the same boxes): same place, same
   //: window, same body children, no write to a tab page and no scroll since it found nothing under it.
@@ -7724,12 +7776,14 @@ if (globalThis.MutationObserver) {
     nmb.pageAt = performance.now();
     for (const r of records) {
       const el = r.target;
+      //: A typed character (INBOX 1766) dirties the page like a node does; it is not a view changing.
+      if (r.type === "characterData") continue;
       if (r.type !== "attributes" || el.classList.contains("tab-page") || !el.matches(NMB_VIEWS)) continue;
       if (/(^|\s)hidden(\s|$)/.test(r.oldValue || "") !== el.classList.contains("hidden")) return nameMarkBuddyViewChanged();
     }
   });
   const watch = () => {
-    for (const page of document.querySelectorAll(".tab-page")) views.observe(page, { subtree: true, childList: true, attributes: true, attributeFilter: ["class", "hidden"], attributeOldValue: true });
+    for (const page of document.querySelectorAll(".tab-page")) views.observe(page, { subtree: true, childList: true, attributes: true, attributeFilter: ["class", "hidden"], attributeOldValue: true, characterData: true });
   };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", watch);
   else watch();
@@ -9796,6 +9850,11 @@ function nameMarkBuddyAsleep(buddy) {
 //: mood loops (a giggle, a hop, a wag) going back to its idle use both
 //: (atlas.js, `setAtlasMood`, INBOX 600: "it might sway or do something for
 //: a couple seconds but will then snap still").
+//: **A hand-over does not read a page written to this instant** (INBOX 1766, the owner's lag log: `avatars.js
+//: TimerHandler:setTimeout 715ms (forced layout 685ms)`, typing in a document with a diagram): its reads before
+//: and after `change` (`getAnimations`, the parts' styles) are 15 to 64ms each at 4x on a page a keystroke and a
+//: redraw keep dirty. Within 100ms of a write the change is made as it is under reduced motion, without the
+//: ease: a jolt at most, on a page that is busy in any case.
 const NMB_BLEND_MS = 480;
 //: Into an act: shorter, so a quick one (a hop, 800ms) still reads as itself.
 const NMB_BLEND_IN_MS = 300;
@@ -9803,7 +9862,7 @@ const NMB_BLEND_PROPS = ["transform", "translate", "rotate", "scale", "opacity"]
 const NMB_BLEND_PARTS = ".nm-buddy-char, .nm-buddy-head, .nm-figure, .nmb-leg-l, .nmb-leg-r, :is(.nmb-arm-l, .nmb-arm-r):not(.atl-rigged, .atl-arm-probe)";
 function nameMarkBuddyBlend(buddy, change, ms = NMB_BLEND_MS) {
   const roots = (Array.isArray(buddy) ? buddy : [buddy]).filter((el) => el && typeof el.getAnimations === "function");
-  if (!roots.length || nameMarkIdleQuiet()) {
+  if (!roots.length || nameMarkIdleQuiet() || nmb.written()) {
     change();
     return;
   }
@@ -10757,9 +10816,10 @@ function nameMarkBuddyBuild() {
   //: **A band and a rider** (INBOX 426 x, `nameMarkBuddyRide`): the band
   //: is the window, or the visible box of the panel's scroll area it rides
   //: in, and clips it there; the rider inside it is moved by the browser
-  //: with that scroll. It stays in the body: the app's own scroll boxes
-  //: (the dashboard's flex page, the notes list) are never given a child
-  //: they did not make. Between them the shutter, which closes the band
+  //: with that scroll. It sits under `<html>`, not in the body (INBOX 1726):
+  //: a node added under `<body>` re-asks every `:has()` subject (124 to 213ms
+  //: on the Library Images tab at 4x), under `<html>` it is 1 to 9ms; the text
+  //: it took from body is restated in 08-consistency.css. Between them the shutter, which closes the band
   //: down to the bar its perch has gone under (`nameMarkBuddyRideFrames`).
   const band = document.createElement("div");
   band.id = "nm-buddy-band";
@@ -10770,7 +10830,7 @@ function nameMarkBuddyBuild() {
   rider.appendChild(buddy);
   shutter.appendChild(rider);
   band.appendChild(shutter);
-  document.body.appendChild(band);
+  document.documentElement.appendChild(band);
   nameMarkBuddyLockSync();
   nameMarkBuddySetSize(nameMarkBuddyScaleSaved(), false);
   nameMarkBuddyToggles(buddy);

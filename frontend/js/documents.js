@@ -10236,10 +10236,6 @@ function applyDocToolbarMode(mode) {
     //: so an unset attribute is the safe shape rather than an unstyled one.
     if (row) bar.dataset.toolbarMode = "row";
     else delete bar.dataset.toolbarMode;
-    //: Refit now: the mode change alone does not resize the bar, so the
-    //: width observer never fired and the note editor's "fit on one row"
-    //: button looked like it did nothing (reported at release).
-    fitDocToolbarRow(bar);
   }
   const button = document.getElementById("doc-toolbar-mode");
   const label = document.getElementById("doc-toolbar-mode-label");
@@ -10251,6 +10247,9 @@ function applyDocToolbarMode(mode) {
   //: The strip's own layout button and this menu entry are two views of one
   //: setting, so painting one without the other is how they drift.
   applyDocToolbarLayoutButtons();
+  //: Refit now: the mode change alone does not resize the bar, so the width observer never fired and the
+  //: note editor's "fit on one row" button looked like it did nothing (reported at release). Once, after
+  //: the layout button moved, not once per strip before it as well.
   fitDocToolbars();
 }
 
@@ -10613,10 +10612,33 @@ function applyDocToolbarLayoutButtons(only = null) {
 //:
 //: A wrapping strip (the default, and the note edit form's always) is left
 //: alone: it has nothing to fold.
+//: The index the fold starts from, worked out from positions read once: every item from it to the end
+//: folds. `lefts[i]` is item i's left edge, or null when it takes no room (hidden). Folding items i..end
+//: leaves the group (`toolsLeft`) where the first of them with room stood, so the row fits when the
+//: group's right edge, moved left by that much, is inside `edge`. A margin between items is not in
+//: `lefts` (measured: three of 94 widths folded one tool too many without it), so the start is one item
+//: short of what the positions say, and the caller folds one at a time from there to exactly the old row.
+//: `lefts.length` means nothing folds.
+//: A property of `fitDocToolbarRow`, its only caller (one global name fewer).
+fitDocToolbarRow.foldFrom = function (lefts, toolsLeft, toolsRight, edge) {
+  if (toolsRight <= edge + 0.5) return lefts.length;
+  let next = null;
+  for (let i = lefts.length - 1; i >= 0; i--) {
+    if (lefts[i] !== null) next = lefts[i];
+    if (next !== null && toolsRight - (toolsLeft - next) <= edge + 0.5) return Math.min(i + 1, lefts.length);
+  }
+  return 0;
+};
+
 function fitDocToolbarRow(bar) {
   const tools = bar.querySelector(":scope > .doc-toolbar-tools");
   const more = tools?.querySelector(".doc-toolbar-more");
   if (!tools || !more) return;
+  //: **A strip nobody can see is fitted when it is shown** (INBOX 1716 lag log, 489 ms): fitting writes
+  //: classes and then reads, a style pass and a layout of the page, 120 ms a strip with the Library Images
+  //: tab drawn at 4x. The width observer sees a hidden strip go from 0 to its width and fits it then.
+  //: Read before any write, so it costs nothing when the page is clean.
+  if (!bar.getClientRects().length) return;
   const items = [...bar.children].filter((el) => el !== tools);
   const open = bar.classList.contains("is-more-open");
   //: Measured as the closed row, whatever the reader has open: what fits is
@@ -10645,12 +10667,21 @@ function fitDocToolbarRow(bar) {
       //: so it is never out of reach.
       //: A note strip has no layout toggle to fold (INBOX 616).
       if (box.width < 600 && !bar.classList.contains("note-toolbar")) bar.classList.add("is-layout-folded");
-      for (let i = items.length - 1; i >= 0 && !fits(); i--) {
-        items[i].classList.add("doc-toolbar-over");
+      //: **Folded in one batch, then checked** (INBOX 1716 lag log, 489 ms): a class and a
+      //: width read per item is a style pass and a layout each, 2 to 10 ms a pass with the
+      //: Library Images tab drawn. The positions are read once and the batch is what they say
+      //: must fold; any item still over after it folds one at a time, as before.
+      const fold = (el) => {
+        el.classList.add("doc-toolbar-over");
         //: A menu folded while open would stay open with nothing to anchor
         //: it: closed with its button.
-        if (items[i].tagName === "DETAILS" && !open) items[i].open = false;
-      }
+        if (el.tagName === "DETAILS" && !open) el.open = false;
+      };
+      const lefts = items.map((el) => (el.getClientRects().length ? el.getBoundingClientRect().left : null));
+      const row = tools.getBoundingClientRect();
+      const from = fitDocToolbarRow.foldFrom(lefts, row.left, row.right, edge);
+      for (let i = items.length - 1; i >= from; i--) fold(items[i]);
+      for (let i = from - 1; i >= 0 && !fits(); i--) fold(items[i]);
       const shown = items.filter((el) => !el.classList.contains("doc-toolbar-over"));
       for (let i = shown.length - 1; i >= 0 && shown[i].classList.contains("doc-toolbar-sep"); i--) {
         shown[i].classList.add("doc-toolbar-over");
@@ -10839,7 +10870,9 @@ function watchDocToolbarContents(bar) {
 }
 
 function fitDocToolbars() {
-  for (const bar of document.querySelectorAll(".doc-toolbar")) fitDocToolbarRow(bar);
+  //: The reads first: a strip's fit writes classes, and the next strip's visibility read would pay for them.
+  const shown = [...document.querySelectorAll(".doc-toolbar")].filter((bar) => bar.getClientRects().length);
+  for (const bar of shown) fitDocToolbarRow(bar);
 }
 
 //: Applied on load as well as on click: the toolbar exists before a document
@@ -11889,7 +11922,9 @@ function docProseSkipMask(text) {
 //: panel can jump to it and the fix can replace it without searching for the
 //: text again (which would find the wrong occurrence in a document that says
 //: the same thing twice).
-function docProseFindings(text) {
+//: `lang` is the document's, read from its frontmatter; a paragraph passed alone (`docProse.near`)
+//: has none, so the caller says it.
+function docProseFindings(text, lang = docProse.langOf(text)) {
   const found = [];
   //: Kicked off here rather than at load: this is the first moment anything
   //: wants to know whether a word is a word. It returns immediately, and the
@@ -11903,7 +11938,7 @@ function docProseFindings(text) {
   //: rather than every character of it: a rule whose match straddles the end
   //: of a code fence is about the code, not the prose after it.
   const skipped = (at) => skip[at] === 1;
-  const english = docProse.langOf(text) === "en";
+  const english = lang === "en";
   for (const rule of DOC_PROSE_RULES) {
     if (!rule.test) continue;
     //: English word lists (repeat, confusion) would misfire on another language.
@@ -12025,6 +12060,9 @@ function docProseFindings(text) {
       replacement: sure ? docMatchCase(hit[0], sure) : null,
     });
   }
+  //: Another language: its installed spelling pack answers in the worker (documents-spell.js, D30)
+  //: and finds nothing until it has, or when no pack is installed.
+  if (!english) found.push(...docSpell.packFindings(text, lang, skipped));
   //: Long sentences, measured over the prose only. Code fences and headings
   //: are skipped: a fenced block has no sentences, and a heading that runs
   //: long is a heading, not a run-on.
@@ -12178,10 +12216,12 @@ const docProse = {
     return key ? key[1].toLowerCase() : "en";
   },
   //: Why the checker is quiet for a non-English document: the English list would
-  //: flag every word, and no other pack is installed yet (a30h-1102 step 4).
+  //: flag every word, and no pack for its language is installed (a30h-1102 step 4). With a
+  //: pack (D30, documents-spell.js) spelling is checked and the note says so.
   langNote(text) {
     const lang = this.langOf(text);
-    return lang === "en" ? "" : `Spelling and grammar are off for this document: its language is set to ${lang}, and only the English checks are installed.`;
+    if (lang === "en") return "";
+    return docSpell.packNote(lang) || `Spelling and grammar are off for this document: its language is set to ${docSpell.langName(lang)}, and only the English checks are installed.`;
   },
   hidden: false,
   panelView: "list",
@@ -12204,7 +12244,7 @@ const docProse = {
   dirty: false,
   nearMin: 8000,
   rules(part, again) {
-    const key = [docProseIgnored.size, docWordlist ? docWordlist.size : -1, docDictionary().size, docSpellingVariant(), docCheckLinkText()].join("|");
+    const key = [docProseIgnored.size, docWordlist ? docWordlist.size : -1, docDictionary().size, docSpellingVariant(), docCheckLinkText(), docSpell.packKey()].join("|");
     const memo = this.memo;
     if (!((again || this.typing) && memo && memo.part === part && memo.key === key)) {
       const near = (this.typing || again) && memo && memo.key === key && part.length >= this.nearMin && memo.part !== part ? this.near(memo, part) : null;
@@ -12213,7 +12253,7 @@ const docProse = {
         this.dirty = true;
         this.settle();
       } else {
-        const found = docProseFindings(part);
+        const found = docProseFindings(part, docProse.langOf(part));
         //: Kept here, not read back from `docProseSkipMask.memo`: a grammar
         //: answer for an older text replaces that one between two keys.
         this.memo = { part, key, found, mask: part.length >= this.nearMin ? docProseSkipMask(part) : null };
@@ -12255,7 +12295,7 @@ const docProse = {
     if (fences % 2 === 1) return null;
     const shift = part.length - old.length;
     const stop = to - shift;
-    const inside = docProseFindings(zone);
+    const inside = docProseFindings(zone, docProse.langOf(part));
     const mask = new Uint8Array(part.length);
     mask.set(before.subarray(0, from), 0);
     mask.set(docProseSkipMask(zone), from);
@@ -12716,18 +12756,15 @@ function renderDocProsePanel() {
     what.className = "muted";
     what.textContent = `Checked for spelling, ${docGrammarEnabled() ? "grammar, " : ""}spacing, sentence length and accessibility; these read the text, not its meaning.`;
     empty.append(mark, said, what);
-    const langNote = docProse.langNote(docText());
-    if (langNote) {
-      const note = document.createElement("p");
-      note.className = "muted";
-      note.textContent = langNote;
-      empty.appendChild(note);
-    }
+    const langRow = docSpell.langRow(docText());
+    if (langRow) empty.appendChild(langRow);
     panel.appendChild(empty);
     return;
   }
   panel.appendChild(docProseHeader());
   if (aiStatus) panel.appendChild(aiStatus);
+  const langRow = docSpell.langRow(docText());
+  if (langRow) panel.appendChild(langRow);
 
   //: **Grouped by kind, with a count on each group** (DOCUMENTS_PLAN Phase 0
   //: item 3). A flat list of twenty rows is twenty separate decisions in

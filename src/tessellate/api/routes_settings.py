@@ -557,6 +557,9 @@ class PreferencesBody(BaseModel):
     #: WORLD_CLASS 23, decision 6: health, money, relationships, the law and
     #: identity are suggested, not filed, unless this is on.
     auto_file_sensitive: bool | None = None
+    #: The owner, 2026-11-11: a filing under `lexical_filing.UNSURE_LINE` is
+    #: not applied; the capture offers the top choices instead. Off by default.
+    ask_when_unsure: bool | None = None
     #: INBOX 1695 (Q30): a new note is sealed from its first write; off by default.
     new_notes_private: bool | None = None
     #: WORLD_CLASS_PLAN section 17 row 3 (`librarian.FILING_STYLES`).
@@ -804,6 +807,7 @@ def _prefs_notebook(config) -> dict:
         "recycle_bin_days": config.get_preference("recycle_bin_days", 30),
         "ai_first_filing": config.get_preference("ai_first_filing", True),
         "auto_file_sensitive": config.get_preference("auto_file_sensitive", False),
+        "ask_when_unsure": config.get_preference("ask_when_unsure", False),
         "new_notes_private": config.get_preference("new_notes_private", False),
         "filing_style": config.get_preference("filing_style", "topic"),
         "background_filing": config.get_preference("background_filing", True),

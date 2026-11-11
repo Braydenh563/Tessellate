@@ -20,10 +20,11 @@ import re
 from pathlib import Path
 
 from tessellate.api.routes_whiteboard import _is_one_emoji
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-PICKER = (JS / "icon-picker.js").read_text(encoding="utf-8")
+PICKER = _js_scope.unwrapped((JS / "icon-picker.js").read_text(encoding="utf-8"))
 APP = (JS / "app.js").read_text(encoding="utf-8")
 
 

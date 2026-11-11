@@ -282,6 +282,18 @@ def _rows_weak_links(session, level: str) -> list[dict]:  # noqa: ANN001
     return rows
 
 
+def _tag_states(payload) -> tuple[dict, dict]:  # noqa: ANN001
+    """The after and before states of an audit payload, each {} when absent."""
+    payload = payload if isinstance(payload, dict) else {}
+    after = payload.get("after") if isinstance(payload.get("after"), dict) else {}
+    before = payload.get("before") if isinstance(payload.get("before"), dict) else {}
+    return after, before
+
+
+def _new_tags(after: dict, before: dict) -> set[str]:
+    return {str(t).casefold() for t in (after.get("tags") or [])} - {str(t).casefold() for t in (before.get("tags") or [])}
+
+
 def _auto_added(session) -> dict[int, dict[str, str]]:  # noqa: ANN001
     """{entry id: {tag casefold: actor}} for tags another actor put on a note
     whose tags no person has changed since."""
@@ -294,20 +306,17 @@ def _auto_added(session) -> dict[int, dict[str, str]]:  # noqa: ANN001
         ).order_by(AuditLog.id)
     ).all()
     for row_id, entry_id, actor, payload, _action in rows:
-        payload = payload if isinstance(payload, dict) else {}
-        after = payload.get("after") if isinstance(payload.get("after"), dict) else {}
+        after, before = _tag_states(payload)
         if "tags" not in after:
             continue
-        before = payload.get("before") if isinstance(payload.get("before"), dict) else {}
         if actor == ACTOR:
             continue  # Tidy's own removal or undo says nothing about who chose a tag
         if (actor or "user") in PERSON:
             # The person changed this note's tags: everything earlier is theirs now.
             added.pop(entry_id, None)
             continue
-        new = {str(t).casefold() for t in (after.get("tags") or [])} - {str(t).casefold() for t in (before.get("tags") or [])}
         mine = added.setdefault(entry_id, {})
-        for tag in new:
+        for tag in _new_tags(after, before):
             mine[tag] = (actor, row_id)
     return {eid: {tag: who for tag, (who, _id) in tags.items()} for eid, tags in added.items() if tags}
 
@@ -791,6 +800,25 @@ def _apply_move(session, chosen: list[dict]) -> tuple[int, dict]:  # noqa: ANN00
     return len(undo), {"moved": undo}
 
 
+def _merged_tags(entries: list) -> list[str]:
+    tags: list[str] = []
+    for entry in entries:
+        for tag in _tags(entry):
+            if tag not in tags:
+                tags.append(tag)
+    return tags
+
+
+def _merged_content(entries: list) -> str:
+    merged = "\n\n---\n\n".join((e.content or "").strip() for e in entries)
+    #: The text of the longest note when one already holds all the others'
+    #: words (the usual near-duplicate: one note and its longer retelling).
+    longest = max(entries, key=lambda e: len(e.content or ""))
+    if all(set((e.content or "").split()) <= set((longest.content or "").split()) for e in entries):
+        merged = longest.content
+    return merged
+
+
 def _apply_merge_notes(session, chosen: list[dict]) -> tuple[int, dict]:  # noqa: ANN001
     undo = []
     for row in chosen:
@@ -799,20 +827,10 @@ def _apply_merge_notes(session, chosen: list[dict]) -> tuple[int, dict]:  # noqa
         if any(e is None or e.is_deleted or e.is_private for e in entries):
             continue
         keeper = entries[0]
-        tags: list[str] = []
-        for entry in entries:
-            for tag in _tags(entry):
-                if tag not in tags:
-                    tags.append(tag)
+        tags = _merged_tags(entries)
         undo.append({"keeper": keeper.id, "content": keeper.content, "tags": _tags(keeper), "binned": ids[1:]})
         manager.record_revision(session, keeper)
-        merged = "\n\n---\n\n".join((e.content or "").strip() for e in entries)
-        #: The text of the longest note when one already holds all the others'
-        #: words (the usual near-duplicate: one note and its longer retelling).
-        longest = max(entries, key=lambda e: len(e.content or ""))
-        if all(set((e.content or "").split()) <= set((longest.content or "").split()) for e in entries):
-            merged = longest.content
-        manager.update_entry(session, keeper, content=merged, tags=tags)
+        manager.update_entry(session, keeper, content=_merged_content(entries), tags=tags)
         for entry in entries[1:]:
             manager.soft_delete_entry(session, entry)
     return len(undo), {"merged": undo}

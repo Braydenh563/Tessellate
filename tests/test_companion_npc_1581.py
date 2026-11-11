@@ -43,6 +43,13 @@ TOPICS = help_more_text()
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
 
+def _look(src: str) -> str:
+    """The rig's look, `atlasRigWake.look` (a task after a drawn frame, INBOX 1766)."""
+    match = re.search(r"^atlasRigWake\.look = function atlasRigLook\(.*?^\};", src, re.S | re.M)
+    assert match
+    return match.group(0)
+
+
 def _fn(src: str, name: str) -> str:
     match = re.search(rf"^(?:async )?function {name}\(.*?^\}}", src, re.S | re.M)
     assert match, name
@@ -306,10 +313,10 @@ def test_the_app_tells_it_what_happened() -> None:
 
 
 def test_first_readers_wait_for_an_arriving_page() -> None:
-    frame = _fn(MOTION, "atlasRigFrame")
-    assert "const settling = !!rig.reads && (now < (globalThis.uiSettlingUntil || 0) || (!!buddy && nameMarkBuddyBehindCover()));" in frame  # INBOX 1667: a dialog over the figure holds the rig the same way
-    assert "const look = (rig.dirty || !rig.reads) && !settling;" in frame
-    assert "rig.still = busy || (settling && rig.dirty) ? 0" in frame, "it stays awake until it has read again"
+    # INBOX 1766: the look is its own task (`atlasRigLook`) after a drawn frame; the frame reads nothing.
+    look = _look(MOTION)
+    assert "rig.reads && (now < (globalThis.uiSettlingUntil || 0) || (!!buddy && nameMarkBuddyBehindCover()))" in look  # INBOX 1667: a dialog over the figure holds the rig the same way
+    assert "if (rig.dirty) atlasRigWake.look.soon(rig, 100);" in look, "it asks again until it has read"
     mood = _fn(ATLAS, "setAtlasMood")
     assert "window.uiSettlingUntil" in mood and "nmb.afterClean(() => nameMarkBuddyBlend(boxes, latest, 700), 14, latest, 160), Math.max(0, settling + 20))" in mood  # INBOX 1667: a frame on as well, and a dirty page snaps; `latest` is the newest call only (review: mood race)
     # The follow frame holds only while it is glued to a panel (1575's hold). One

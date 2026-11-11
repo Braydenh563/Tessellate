@@ -675,17 +675,7 @@ def clean_media_reading_loops(
         for name, value in changed.items():
             setattr(upload, name, value)
         session.commit()
-    return MediaUploadOut(
-        id=upload.id,
-        url=f"/media/{upload.filename}",
-        original_name=upload.original_name,
-        ocr_text=upload.ocr_text or "",
-        caption=upload.caption or "",
-        caption_model=upload.caption_model or "",
-        caption_edited=upload.caption_edited,
-        vision_ocr_text=upload.vision_ocr_text or "",
-        vision_ocr_model=upload.vision_ocr_model or "",
-    )
+    return _media_out(upload)
 
 
 class VisionOcrBody(BaseModel):
@@ -714,6 +704,50 @@ class VisionOcrBody(BaseModel):
     text: str | None = Field(default=None, max_length=10_000)
 
 
+def _store_typed_reading(session: Session, upload, body: VisionOcrBody) -> None:  # noqa: ANN001
+    """A hand-typed correction, or "" to clear a wrong reading."""
+    # Checked before the backend is: fixing a bad transcription must not require
+    # the model that produced it to still be running.
+    upload.vision_ocr_text = body.text.strip() or None
+    if not upload.vision_ocr_text:
+        # Clearing the text clears the attribution with it, "Read by X"
+        # under nothing is a claim about a reading that no longer exists.
+        upload.vision_ocr_model = None
+    session.commit()
+    if body.edited:
+        rf._set_edited_reading(rf._page_read_key(None, upload.id), upload.vision_ocr_text, "vision")
+    else:
+        #: A stored edit describes the text it was made on; any other
+        #: replacement (a clear, a fixture) makes it stale.
+        rf._forget_regions(rf._page_read_key(None, upload.id), only_source="edited-")
+
+
+def _require_vision_model() -> None:
+    if not deps.get_ollama().is_running():
+        raise HTTPException(status_code=409, detail="The AI model isn't running.")
+    model = deps.get_model_manager().resolve_ocr_model(deps.get_ollama())
+    if not model:
+        raise HTTPException(
+            status_code=409,
+            detail="No installed model can read images. Install or "
+            "pick one in Settings, Models.",
+        )
+
+
+def _media_out(upload) -> MediaUploadOut:  # noqa: ANN001
+    return MediaUploadOut(
+        id=upload.id,
+        url=f"/media/{upload.filename}",
+        original_name=upload.original_name,
+        ocr_text=upload.ocr_text or "",
+        caption=upload.caption or "",
+        caption_model=upload.caption_model or "",
+        caption_edited=upload.caption_edited,
+        vision_ocr_text=upload.vision_ocr_text or "",
+        vision_ocr_model=upload.vision_ocr_model or "",
+    )
+
+
 @router.post("/media/{upload_id}/vision-ocr", response_model=MediaUploadOut)
 def vision_ocr_media(
     upload_id: int, body: VisionOcrBody = VisionOcrBody(), session: Session = Depends(get_session)
@@ -732,54 +766,12 @@ def vision_ocr_media(
     if Path(upload.filename).suffix.lower() not in vision_ocr.VISION_OCR_SUFFIXES:
         raise HTTPException(status_code=415, detail="Only images can be read this way.")
     if body.text is not None:
-        # A hand-typed correction, or "" to clear a wrong reading. Checked
-        # before the backend is: fixing a bad transcription must not require
-        # the model that produced it to still be running.
-        upload.vision_ocr_text = body.text.strip() or None
-        if not upload.vision_ocr_text:
-            # Clearing the text clears the attribution with it, "Read by X"
-            # under nothing is a claim about a reading that no longer exists.
-            upload.vision_ocr_model = None
-        session.commit()
-        if body.edited:
-            rf._set_edited_reading(rf._page_read_key(None, upload.id), upload.vision_ocr_text, "vision")
-        else:
-            #: A stored edit describes the text it was made on; any other
-            #: replacement (a clear, a fixture) makes it stale.
-            rf._forget_regions(rf._page_read_key(None, upload.id), only_source="edited-")
-        return MediaUploadOut(
-            id=upload.id,
-            url=f"/media/{upload.filename}",
-            original_name=upload.original_name,
-            ocr_text=upload.ocr_text or "",
-            caption=upload.caption or "",
-            caption_model=upload.caption_model or "",
-            caption_edited=upload.caption_edited,
-            vision_ocr_text=upload.vision_ocr_text or "",
-            vision_ocr_model=upload.vision_ocr_model or "",
-        )
-    if not deps.get_ollama().is_running():
-        raise HTTPException(status_code=409, detail="The AI model isn't running.")
-    model = deps.get_model_manager().resolve_ocr_model(deps.get_ollama())
-    if not model:
-        raise HTTPException(
-            status_code=409,
-            detail="No installed model can read images. Install or "
-            "pick one in Settings, Models.",
-        )
+        _store_typed_reading(session, upload, body)
+        return _media_out(upload)
+    _require_vision_model()
     media_dir = deps.get_config().data_dir / "media"
     vision_ocr.vision_ocr_and_store(upload.id, media_dir / upload.filename, force=body.force)
     session.refresh(upload)
     #: A fresh reading replaces a hand edit of the sections, same as Tesseract's.
     rf._forget_regions(rf._page_read_key(None, upload.id), only_source="edited-")
-    return MediaUploadOut(
-        id=upload.id,
-        url=f"/media/{upload.filename}",
-        original_name=upload.original_name,
-        ocr_text=upload.ocr_text or "",
-        caption=upload.caption or "",
-        caption_model=upload.caption_model or "",
-        caption_edited=upload.caption_edited,
-        vision_ocr_text=upload.vision_ocr_text or "",
-        vision_ocr_model=upload.vision_ocr_model or "",
-    )
+    return _media_out(upload)

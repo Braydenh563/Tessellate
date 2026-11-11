@@ -66,7 +66,25 @@ def reevaluate_entry(entry_id: int, session: Session = Depends(get_session)) -> 
             status_code=400, detail="Make this note readable first: Atlas doesn't read private notes."
         )
 
-    # 1. Re-file: refresh confidence, and the category if the AI owns it.
+    filed_by, recategorised_to = _reevaluate_refile(session, entry)
+
+    # 2. Suggest tags (best effort: never blocks the re-evaluation).
+    suggested_tags = _reevaluate_tags(session, entry)
+
+    suggested_links = _reevaluate_links(session, entry)
+
+    return {
+        "entry": _to_out(session, entry, filed_by=filed_by).model_dump(),
+        "recategorised_to": recategorised_to,
+        "suggested_categories": _other_categories(session, entry),
+        "suggested_tags": suggested_tags,
+        "suggested_tag_reasons": {} if getattr(entry, "is_private", False) else _tag_reasons(entry.content or "", suggested_tags),
+        "suggested_links": suggested_links,
+    }
+
+
+def _reevaluate_refile(session: Session, entry) -> tuple[str | None, str | None]:  # noqa: ANN001
+    """Step 1: refresh confidence, and the category if the AI owns it."""
     filed_by = None
     recategorised_to = None
     # The last "filing" run (INBOX 438). This step swallows its own errors so a
@@ -115,11 +133,11 @@ def reevaluate_entry(entry_id: int, session: Session = Depends(get_session)) -> 
     finally:
         #: Every way out, a cancel included: nothing stays "running" (B77).
         refiling.finish()
+    return filed_by, recategorised_to
 
-    # 2. Suggest tags (best effort: never blocks the re-evaluation).
-    suggested_tags = _reevaluate_tags(session, entry)
 
-    # 3. Suggest links: semantic neighbours that aren't connected yet.
+def _reevaluate_links(session: Session, entry) -> list[dict]:  # noqa: ANN001
+    """Step 3: semantic neighbours that aren't connected yet."""
     suggested_links: list[dict] = []
     try:
         already = _linked_entry_ids(session, entry)
@@ -137,15 +155,7 @@ def reevaluate_entry(entry_id: int, session: Session = Depends(get_session)) -> 
     except Exception:
         logger.warning("re-evaluation's link step failed", exc_info=True)
         suggested_links = []
-
-    return {
-        "entry": _to_out(session, entry, filed_by=filed_by).model_dump(),
-        "recategorised_to": recategorised_to,
-        "suggested_categories": _other_categories(session, entry),
-        "suggested_tags": suggested_tags,
-        "suggested_tag_reasons": {} if getattr(entry, "is_private", False) else _tag_reasons(entry.content or "", suggested_tags),
-        "suggested_links": suggested_links,
-    }
+    return suggested_links
 
 
 def _other_categories(session: Session, entry) -> list[dict]:  # noqa: ANN001

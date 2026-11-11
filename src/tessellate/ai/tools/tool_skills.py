@@ -26,6 +26,34 @@ from tessellate.ai import skills
 
 
 
+def _excerpts(messages: list, term: str) -> list[dict]:
+    """The matching turns of one chat, or its opening exchange when none match."""
+    # The matching exchanges, not the whole thread: a long conversation
+    # would spend the entire budget on one tool call. Whole turns, though
+    #, a question that matched without the answer that followed it is
+    # useless for "what did we decide?", which is the question this tool
+    # exists to answer.
+    wanted_indexes: set[int] = set()
+    for index, message in enumerate(messages):
+        content = str(message.get("content", ""))
+        if not term or term.lower() in content.lower():
+            turn_start = index - (index % 2)
+            wanted_indexes.update({turn_start, turn_start + 1})
+        if len(wanted_indexes) >= 6:
+            break
+    excerpts = [
+        {
+            "role": messages[i].get("role"),
+            "text": _clip(str(messages[i].get("content", "")), PREVIEW_CHARS),
+        }
+        for i in sorted(wanted_indexes)
+        if i < len(messages)
+    ]
+    return excerpts or [
+        {"role": m.get("role"), "text": _clip(str(m.get("content", "")), PREVIEW_CHARS)} for m in messages[:2]
+    ]
+
+
 def _search_chat_history(session: Session, args: dict) -> dict:
     """Past conversations. "What did we decide last week?" was unanswerable:
     each turn only ever saw its own thread, so the assistant had no memory of
@@ -58,37 +86,14 @@ def _search_chat_history(session: Session, args: dict) -> dict:
             messages = json.loads(conversation.messages)
         except ValueError:
             messages = []
-        # The matching exchanges, not the whole thread: a long conversation
-        # would spend the entire budget on one tool call. Whole turns, though
-        #, a question that matched without the answer that followed it is
-        # useless for "what did we decide?", which is the question this tool
-        # exists to answer.
-        wanted_indexes: set[int] = set()
-        for index, message in enumerate(messages):
-            content = str(message.get("content", ""))
-            if not term or term.lower() in content.lower():
-                turn_start = index - (index % 2)
-                wanted_indexes.update({turn_start, turn_start + 1})
-            if len(wanted_indexes) >= 6:
-                break
-        excerpts = [
-            {
-                "role": messages[i].get("role"),
-                "text": _clip(str(messages[i].get("content", "")), PREVIEW_CHARS),
-            }
-            for i in sorted(wanted_indexes)
-            if i < len(messages)
-        ]
+        excerpts = _excerpts(messages, term)
         found.append(
             {
                 "id": conversation.id,
                 "title": conversation.title,
                 "updated_at": conversation.updated_at.isoformat(),
                 "turns": len(messages) // 2,
-                "excerpts": excerpts or [
-                    {"role": m.get("role"), "text": _clip(str(m.get("content", "")), PREVIEW_CHARS)}
-                    for m in messages[:2]
-                ],
+                "excerpts": excerpts,
             }
         )
     return {

@@ -124,7 +124,7 @@ def test_a_look_waits_for_a_frame_that_left_the_page_clean() -> None:
     # waits for an idle frame (`wait`) instead of reading the dirty page, so the call is `afterClean(look, 6, wait)`.
     assert "nmb.afterClean(look, 6, wait);" in _fn(AV, "queueNameMarkBuddyCheck")
     assert "nmb.afterClean(() => {" in _fn(AV, "nameMarkBuddyBeat")
-    assert "const afterPaint = () => nmb.afterClean(look);" in AV, "the dodge after a press"
+    assert "const afterPaint = () => nmb.afterCalm(look);" in AV, "the dodge after a press (INBOX 1766: it never reads a page that stays dirty)"
 
 
 def test_the_tail_eases_home_without_reading_the_style() -> None:

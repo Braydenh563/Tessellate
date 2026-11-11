@@ -40,8 +40,14 @@ NOTES = json.loads((Path(__file__).parent / "fixtures" / "filing" / "notes.json"
 #: files"). Sensitive notes held back (decision 6) count as not filed.
 FLOOR_TOP1 = 0.60
 FLOOR_PRECISION = 0.75
-#: Decision 8: below this top-1 with no model, the step is not done.
-BAR_TOP1 = 0.8
+#: Decision 8, as the owner moved it on 2026-11-11 (HANDOVER decision 6, OPEN
+#: row 260): below this top-1 with no model, the step is not done. 0.6, filed
+#: outright (a sensitive note held for the person counts as not filed); the
+#: model path keeps 0.8.
+BAR_TOP1 = 0.6
+#: The ranker's own score, a held note counted by the category it suggests
+#: (Q29, 2026-11-11): kept at its old height as a guard on the ranking.
+SUGGESTED_TOP1 = 0.8
 
 
 def _seed(session) -> list[int]:
@@ -94,12 +100,19 @@ def _suggested_score(session, ids: list[int]) -> float:
 
 
 def test_filing_with_no_model_reaches_the_bar(session) -> None:
-    """Decision 8's 0.8 bar, with the Q29 reading of a held note (the owner,
-    2026-11-11): holding stays the default for users, the bar measures the
-    ranker. Filed outright it is 0.625; counted by suggestion, 0.800. The
-    precision floor above still guards wrong filings."""
+    """Decision 8's bar, 0.6 top-1 with no model (the owner, 2026-11-11):
+    measured honestly, filed outright, a note held back for the person
+    counted as not filed. The precision floor above guards wrong filings."""
     ids = _seed(session)
-    assert _suggested_score(session, ids) >= BAR_TOP1
+    right, _wrong, _names = _score(session, ids)
+    assert right >= BAR_TOP1, right
+
+
+def test_the_ranker_still_puts_the_right_category_first(session) -> None:
+    """Q29 (the owner, 2026-11-11): counted by the category a held note
+    suggests, the ranker reaches 0.8. A guard on the ranking, not the bar."""
+    ids = _seed(session)
+    assert _suggested_score(session, ids) >= SUGGESTED_TOP1
 
 
 def test_tags_offered_are_only_the_notebooks_own(session) -> None:

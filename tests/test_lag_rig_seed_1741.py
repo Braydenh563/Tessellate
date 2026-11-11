@@ -31,6 +31,7 @@ def test_the_first_look_seeds_the_set_once() -> None:
     assert "arm.probe.getAnimations()" in seed and "arm.running.add(a.animationName)" in seed
     frame = _fn("atlasRigFrame")
     assert "getAnimations" not in frame, "the frame itself never scans"
-    call = frame.index("atlasProbeWatch.seed(arm)")
-    assert "if (!rig.reads)" in frame[call - 80 : call], "only before anything has been read"
-    assert call < frame.index("atlasRigRead("), "and before the first read uses the set"
+    look = MOTION[MOTION.index("atlasRigWake.look = function atlasRigLook") : MOTION.index("atlasRigWake.look.soon =")]
+    call = look.index("atlasProbeWatch.seed(arm)")
+    assert "if (!rig.reads)" in look[call - 80 : call], "only before anything has been read"
+    assert call < look.index("atlasRigRead("), "and before the first read uses the set"

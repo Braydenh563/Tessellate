@@ -300,6 +300,27 @@ def _changed(session: Session) -> list:
     return [*session.new, *(obj for obj in session.dirty if not _only_bookkeeping(obj))]
 
 
+def _flush_work(session: Session) -> list[tuple[Source, int, Row | None]]:
+    """Every index row this flush has to write or remove, boards included."""
+    work: list[tuple[Source, int, Row | None]] = []
+    for obj in list(session.deleted):
+        for source in _BY_MODEL.get(type(obj), ()):
+            ref_id = getattr(obj, "id", None)
+            if ref_id is not None:
+                work.append((source, ref_id, None))
+    for obj in _changed(session):
+        for source in _BY_MODEL.get(type(obj), ()):
+            ref_id = getattr(obj, "id", None)
+            if ref_id is None:
+                continue
+            try:
+                work.append((source, ref_id, source.read(obj)))
+            except Exception:  # noqa: BLE001  # see the docstring
+                logger.warning("could not index %s %s", source.name, ref_id, exc_info=True)
+    work.extend(_boards_touched_by_objects(session, {(s.name, ref) for s, ref, _ in work}))
+    return work
+
+
 @event.listens_for(Session, "after_flush")
 def _index_on_flush(session: Session, flush_context) -> None:  # noqa: ANN001
     """Keep the index in step with whatever just changed, in the same
@@ -321,22 +342,7 @@ def _index_on_flush(session: Session, flush_context) -> None:  # noqa: ANN001
         return
     if _table_missing(session):
         return
-    work: list[tuple[Source, int, Row | None]] = []
-    for obj in list(session.deleted):
-        for source in _BY_MODEL.get(type(obj), ()):
-            ref_id = getattr(obj, "id", None)
-            if ref_id is not None:
-                work.append((source, ref_id, None))
-    for obj in _changed(session):
-        for source in _BY_MODEL.get(type(obj), ()):
-            ref_id = getattr(obj, "id", None)
-            if ref_id is None:
-                continue
-            try:
-                work.append((source, ref_id, source.read(obj)))
-            except Exception:  # noqa: BLE001  # see the docstring
-                logger.warning("could not index %s %s", source.name, ref_id, exc_info=True)
-    work.extend(_boards_touched_by_objects(session, {(s.name, ref) for s, ref, _ in work}))
+    work = _flush_work(session)
     if not work:
         return
     connection = session.connection()
@@ -347,19 +353,8 @@ def _index_on_flush(session: Session, flush_context) -> None:  # noqa: ANN001
             logger.warning("could not write index row for %s %s", source.name, ref_id, exc_info=True)
 
 
-def _boards_touched_by_objects(
-    session: Session, done: set[tuple[str, int]]
-) -> list[tuple[Source, int, Row | None]]:
-    """The board and map rows a whiteboard object's write changed.
-
-    A topic is not a row of its own; its words are part of its board's row
-    (`_board_words`), so adding, editing or deleting one has to re-read that
-    board. A dirty object whose `data` and `board_id` did not change (a node
-    dragged, a colour picked) says nothing new and is skipped: a drag saves
-    on every drop, and each would otherwise rewrite the board's row for
-    nothing. `done` is what the entry pass already wrote this flush.
-    """
-    from tessellate.core.database import Entry, WhiteboardObject
+def _touched_board_ids(session: Session) -> set[int]:
+    from tessellate.core.database import WhiteboardObject
 
     board_ids: set[int] = set()
     for obj in [*session.new, *session.deleted]:
@@ -375,6 +370,24 @@ def _boards_touched_by_objects(
         for board_id in [*(moved.deleted or ()), obj.board_id]:
             if board_id is not None:
                 board_ids.add(int(board_id))
+    return board_ids
+
+
+def _boards_touched_by_objects(
+    session: Session, done: set[tuple[str, int]]
+) -> list[tuple[Source, int, Row | None]]:
+    """The board and map rows a whiteboard object's write changed.
+
+    A topic is not a row of its own; its words are part of its board's row
+    (`_board_words`), so adding, editing or deleting one has to re-read that
+    board. A dirty object whose `data` and `board_id` did not change (a node
+    dragged, a colour picked) says nothing new and is skipped: a drag saves
+    on every drop, and each would otherwise rewrite the board's row for
+    nothing. `done` is what the entry pass already wrote this flush.
+    """
+    from tessellate.core.database import Entry
+
+    board_ids = _touched_board_ids(session)
     if not board_ids:
         return []
     out: list[tuple[Source, int, Row | None]] = []

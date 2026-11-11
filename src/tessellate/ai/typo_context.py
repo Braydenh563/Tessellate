@@ -18,6 +18,7 @@ punctuation. When two readings stay close the likelier is answered and the other
 from __future__ import annotations
 
 import re
+from collections import Counter
 from collections.abc import Iterable
 from contextvars import ContextVar
 from dataclasses import dataclass, field
@@ -160,7 +161,20 @@ def _plain(token: str) -> str:
     return (token or "").strip("?!.,:;\"'()").lower()
 
 
-def _hits(word: str, left: str, right: str, right_raw: str, words: list[str]) -> set[tuple[str, str]]:
+def seen(tokens: Iterable[str]) -> Counter:
+    """The words of a sentence as `lean` reads them, counted: a caller that asks about every word of one long
+    sentence builds this once and keeps it up to date, not one list a word (quadratic on a run of 50,000
+    characters)."""
+    return Counter(_plain(w) for w in tokens)
+
+
+def swap(words: Counter, old: str, new: str) -> None:
+    """`words` after the word `old` was read as `new`."""
+    words[_plain(old)] -= 1
+    words[_plain(new)] += 1
+
+
+def _hits(word: str, left: str, right: str, right_raw: str, words: Counter) -> set[tuple[str, str]]:
     """The cues in the sentence that say `word`, each as (slot, cue)."""
     cues = SENSES.get(word)
     found: set[tuple[str, str]] = set()
@@ -176,7 +190,7 @@ def _hits(word: str, left: str, right: str, right_raw: str, words: list[str]) ->
         found.add(("right", "_digit"))
     elif NAME in cues.right and right_raw[:1].isupper():
         found.add(("right", NAME))
-    found.update(("near", w) for w in set(words) if w in cues.near and w != word)
+    found.update(("near", w) for w in cues.near if w != word and words.get(w, 0) > 0)
     return found
 
 
@@ -198,12 +212,12 @@ def speaks_for(readings) -> bool:  # noqa: ANN001
     return all(r in SENSES for r in readings)
 
 
-def lean(typed: str, readings: list[str], before: str, after_raw: str, sentence: Iterable[str], real: bool) -> tuple[str, str | None]:
+def lean(typed: str, readings: list[str], before: str, after_raw: str, sentence: Iterable[str] | Counter, real: bool) -> tuple[str, str | None]:
     """`(chosen, alternative)` for `typed` among `readings`, the typed word itself being one when `real` (it is a
     word, and starts ahead). The likeliest by context is chosen; when its lead is small the runner-up is
     offered. No alternative when the lead is sure or the runner-up has no support at all."""
     ctx = CTX.get()
-    words = [_plain(w) for w in sentence]
+    words = sentence if isinstance(sentence, Counter) else seen(sentence)
     left, right, low = _plain(before), _plain(after_raw), typed.lower()
     pool = [low, *[r for r in readings if r != low]] if real else list(readings)
     lead = _COMMON_LEAD if low in _STAYS else _TYPED_LEAD
@@ -224,14 +238,14 @@ def _worth_offering(scored: dict[str, float], best: str, other: str | None, low:
     return not ((other != low and scored[other] <= 0.0) or (other == low and low in _RARE))
 
 
-def real_slip(tokens: list[str], i: int) -> tuple[str, str | None] | None:
+def real_slip(tokens: list[str], i: int, words: Counter | None = None) -> tuple[str, str | None] | None:
     """`(chosen, alternative)` for the real word at `tokens[i]` when it may be another word, else None (it is
-    not in a confusion set)."""
+    not in a confusion set). `words` is `seen(tokens)` when the caller keeps it."""
     word = _plain(tokens[i])
     others = CONFUSIONS.get(word)
     if not others:
         return None
-    return lean(word, list(others), tokens[i - 1] if i else "", tokens[i + 1] if i + 1 < len(tokens) else "", tokens, True)
+    return lean(word, list(others), tokens[i - 1] if i else "", tokens[i + 1] if i + 1 < len(tokens) else "", seen(tokens) if words is None else words, True)
 
 
 def prefers(word: str, reading: str) -> bool:

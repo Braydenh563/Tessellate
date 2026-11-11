@@ -36,6 +36,9 @@ TOPIC_LEADS: dict[str, str] = {
     "capture": "Write a note in seconds, and let a local AI file and tag it for you.",
     "quick-note": "Jot a note from any tab without leaving what you are doing.",
     "quick-add": "Type a date, time or tag in plain words and see how it was read before saving.",
+    "package-models": "Dictation sizes, embedding models and LanguageTool, set up in Packages.",
+    "spelling-packs": "Check spelling in French, German or Spanish with a small pack per language.",
+    "answer-offers": "One-press offers at the end of an answer, and the chart a counting question gets.",
     "editor-offers": "Small offers while you write, such as a reminder for a date or a fixed sum.",
     "autocorrect": "Fixes clear typos and missing apostrophes as you finish each word.",
     "chat-typos": "Chat reads a slip by its sentence and your notes, and offers the other reading.",
@@ -61,6 +64,7 @@ TOPIC_LEADS: dict[str, str] = {
     # Filing, tags and categories
     "tags-categories": "How notes get a category and tags, and how to change them yourself.",
     "filing": "What the percentage beside a note's category means, and who filed it.",
+    "filing-settings": "Ask me when filing is not sure, the search model at launch and the filing style.",
     "suggested-tags": "Add or turn down the tags Atlas suggested when it filed a note.",
     "tag-manager": "Rename, merge or remove tags across all your notes at once.",
     "manage-categories": "Make, rename, merge, split or delete categories without losing notes.",

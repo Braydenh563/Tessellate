@@ -54,6 +54,24 @@ def _one_line(text: str, limit: int = 240) -> str:
     return " ".join(str(text or "").replace("“", '"').replace("”", '"').split())[:limit]
 
 
+def _fields(line: str) -> tuple[str, str, str, str] | None:
+    """(kind, text, owner, quote) of a `DECISION | text | quote` or `ACTION | text | owner | quote` line, else None."""
+    parts = [part.strip() for part in line.split("|")]
+    kind = parts[0].upper().rstrip(":") if parts else ""
+    if kind == "DECISION" and len(parts) >= 3:
+        return kind, parts[1], "", "|".join(parts[2:])
+    if kind == "ACTION" and len(parts) >= 4:
+        return kind, parts[1], parts[2], "|".join(parts[3:])
+    return None
+
+
+def _owner_word(owner: str) -> str:
+    """The owner's first word without punctuation; empty for a placeholder like "blank" or "n/a"."""
+    if not owner or owner.lower() in {"blank", "none", "-", "n/a"}:
+        return ""
+    return re.sub(r"[^\w.'-]", "", owner.split(" ")[0])
+
+
 def parse_reply(reply: str, source: str) -> dict:
     """`{"decisions": [...], "actions": [...], "dropped": n}` from the model's
     lines, each kept item carrying the `quote` it was found by. Pure, so the
@@ -67,15 +85,11 @@ def parse_reply(reply: str, source: str) -> dict:
         line = raw.strip().lstrip("-*• ").strip()
         if not line or line.upper() == "NONE":
             continue
-        parts = [part.strip() for part in line.split("|")]
-        kind = parts[0].upper().rstrip(":") if parts else ""
-        if kind == "DECISION" and len(parts) >= 3:
-            text, quote, owner = parts[1], "|".join(parts[2:]), ""
-        elif kind == "ACTION" and len(parts) >= 4:
-            text, owner, quote = parts[1], parts[2], "|".join(parts[3:])
-        else:
+        fields = _fields(line)
+        if fields is None:
             dropped += 1
             continue
+        kind, text, owner, quote = fields
         text = _one_line(text)
         quote = _one_line(_EDGE.sub("", quote), 300)
         if not text or not _found(quote, source_norm):
@@ -85,7 +99,7 @@ def parse_reply(reply: str, source: str) -> dict:
         if key in seen:
             continue
         seen.add(key)
-        owner_word = re.sub(r"[^\w.'-]", "", (owner or "").split(" ")[0]) if owner and owner.lower() not in {"blank", "none", "-", "n/a"} else ""
+        owner_word = _owner_word(owner)
         item = {"text": text, "quote": quote}
         if kind == "DECISION":
             decisions.append(item)

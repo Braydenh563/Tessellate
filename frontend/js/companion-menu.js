@@ -728,7 +728,7 @@ nmb.dayLife = {
     const now = new Date();
     const key = event.type === "keydown";
     //: Not inside the input (INBOX 1726: a day's first greeting played here, 36 to 52ms of reads on a press at 4x).
-    for (const kind of s.input(now, key)) nmb.afterClean(() => nameMarkBuddyReact(kind) && (s.hello = now.toDateString()));
+    for (const kind of s.input(now, key)) nmb.afterCalm(() => nameMarkBuddyReact(kind) && (s.hello = now.toDateString()));
     if (key && !s.timer) {
       const check = () => {
         const left = s.run ? s.run[1] + s.rest - Date.now() : 0;

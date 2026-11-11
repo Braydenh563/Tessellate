@@ -633,16 +633,22 @@ const ATLAS_LOOKS = {
     //: The shoulders are 15 across now (0.88 about the middle above y 44),
     //: the head 0.8 (the CSS), 1.31; the V stays at 1.58 to the waist, and
     //: each arm moved in whole by 1 with its root (atlasm1108.js).
-    torso: "M26.2 35.4C23.3 36.4 22.9 40.4 24.3 43.6C25.8 47.6 26.8 55.4 26 61C28 63.4 34 63.4 36 61C35.2 55.4 36.2 47.6 37.7 43.6C39.1 40.4 38.7 36.4 35.8 35.4Z",
+    //: **A ball at the shoulder** (INBOX 1607 c, the owner: "the shoulder to
+    //: arm join should be smoother"): the flank turns round each arm's pivot
+    //: on a circle of 2.2 (T1 23.68 39.93 to T2 23.54 41.77, mirrored), and
+    //: the arm starts on the pivot 4.4 across, so its root corners sit on
+    //: that circle at every turn and its sides leave it on the tangent: no
+    //: step at any angle the acts use (measured 0 to 130 degrees, CHANGELOG 1607).
+    torso: "M26.2 35.4C25.3 36.4 24.46 38.53 23.68 39.93C23.36 40.49 23.31 41.17 23.54 41.77C25.09 45.89 26.8 55.4 26 61C28 63.4 34 63.4 36 61C35.2 55.4 36.91 45.89 38.46 41.77C38.69 41.17 38.64 40.49 38.32 39.93C37.54 38.53 36.7 36.4 35.8 35.4Z",
     //: **Arms that hang** (INBOX 564, 567, 568, the owner: "the arms still
     //: look separate and they stick straight out of the body and dont hang
     //: naturally"): from the shoulder the upper arm drops 13 degrees off
     //: vertical to the elbow, which bends 15 degrees, and the forearm falls
     //: back in beside the hip; 4.4 at the shoulder to 1.8 at the wrist,
     //: with a smaller mitten (0.9).
-    armL: [[25.6, 40.4, 24.6, 43.4, 23.8, 46.6, 23.4, 49.6], [23.4, 49.6, 23, 52.6, 23.2, 55.4, 23.6, 57.8]],
-    arm: [[36.4, 40.4, 37.4, 43.4, 38.2, 46.6, 38.6, 49.6], [38.6, 49.6, 39, 52.6, 38.8, 55.4, 38.4, 57.8]],
-    armWidth: [3.8, 1.6],
+    armL: [[25.6, 41, 24.6, 44, 23.8, 46.6, 23.4, 49.6], [23.4, 49.6, 23, 52.6, 23.2, 55.4, 23.6, 57.8]],
+    arm: [[36.4, 41, 37.4, 44, 38.2, 46.6, 38.6, 49.6], [38.6, 49.6, 39, 52.6, 38.8, 55.4, 38.4, 57.8]],
+    armWidth: [4.4, 1.6],
     armHands: [-1, 1],
     handScale: 0.9,
     //: Where the right mitten grips a bell or a lantern (`atlasHandProps`).
@@ -973,7 +979,9 @@ function atlasTorsoEdge(d) {
   const start = d.match(/^M[^C]+/)[0];
   const curves = d.match(/C[^CZ]+/g);
   const at = (c) => c.trim().split(/[\s,]+/).slice(-2).join(" ");
-  return `${start}${curves[0]}${curves[1]}M${at(curves[curves.length - 3])}${curves[curves.length - 2]}${curves[curves.length - 1]}`;
+  //: The hem is the middle curve: five for hers, seven for his shoulder arcs.
+  const h = (curves.length - 1) / 2;
+  return `${start}${curves.slice(0, h).join("")}M${at(curves[h])}${curves.slice(h + 1).join("")}`;
 }
 
 //: Thinking, a hand at the chin (the reference sheet): the right arm bent
@@ -3553,7 +3561,12 @@ function atlasHiddenSync() {
   const hidden = document.hidden || Boolean(lock && !lock.classList.contains("hidden") && lock.dataset.mode !== "prompt");
   if (hidden === document.documentElement.hasAttribute("data-atlas-hidden")) return;
   document.documentElement.toggleAttribute("data-atlas-hidden", hidden);
-  if (!hidden) for (const box of document.querySelectorAll(".atl-figure-box")) atlasTailWake(box);
+  if (!hidden) {
+    for (const box of document.querySelectorAll(".atl-figure-box")) {
+      atlasTailWake(box);
+      atlasRigWake(box);
+    }
+  }
 }
 document.addEventListener("visibilitychange", atlasHiddenSync);
 //: `typeof MutationObserver`: tests/test_atlas_shape.py loads this file in a node vm with a bare `document`.

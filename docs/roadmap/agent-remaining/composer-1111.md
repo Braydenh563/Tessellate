@@ -13,7 +13,7 @@ Batch from the hub, in order. Update at each step.
 - Batch 2 (hub, 2026-11-11): base failures (engine_dialogue x3, gold_answers x2, reply_variety x2) fixed at their cause, no test changed, none pins owner-decided behaviour (the woven path is 1743; the plain digest is reached by the fall-back); found-not-fixed: a date's own figures (`source_check._day_gaps`), "are we meeting on Tuesday" (`composer_event_verdict.day_question`), "Rung mum" (`composer_digest._as_you`), latest-on ties (`search_manager._latest_about`, outside the composer's files), "books" count (`composer_likeness._COLLECTIVE`); B23 (`composer_talk._note_offer_sentence`, `task_acts._checklist_items` keeps a quoted item whole); Guide text and `test_manual_parity`; smart-browser design entry in CHAT_PLAN (I4).
 
 ## Remaining
-- Gather and Track-in-a-table offers cannot be taken up by a typed yes: they carry notes' words the next turn does not hold. Needs the offer sent back with the turn (a server-held id like `consent_store`); small, not started.
+- Gather and Track-in-a-table offers are taken up by a typed yes since batch 3 (server-held `offer_id`).
 - Merge the W7/W10 and W8 agents' branches; strike their OPEN.md rows with shas.
 
 ## Decisions made here (not asked)

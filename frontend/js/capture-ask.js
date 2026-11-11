@@ -290,6 +290,7 @@ async function loadCaptureDocuments() {
   //: list-paging.md`). `apiPagedList` is one request at any realistic size.
   //: A failed read keeps the list already held (null) rather than emptying the picker.
   renderCaptureDocuments(await apiPagedList("/documents", 200).catch(() => null));
+  document.dispatchEvent(new Event("filing-options"));
 }
 
 // Ask for a title and start an empty document. Shared by the capture box and
@@ -389,6 +390,41 @@ function renderCaptureDocumentAdder() {
   const adder = labelledMenu("ph:file-plus Add to document", items, "Add to document", "ghost");
   slot.replaceChildren(adder);
 }
+
+//: Filing options (owner, 2026-11-11, decision 6): a kebabMenu by the Filing row for
+//: `ask_when_unsure`, the key Settings writes. A block of its own adds no shared name.
+(() => {
+  async function render(on) {
+    const slot = $("capture-filing-options");
+    if (!slot) return;
+    if (typeof on !== "boolean") on = Boolean((await apiJson("/preferences").catch(() => null))?.ask_when_unsure);
+    const flip = async () => {
+      //: Read back: `setPreference` toasts a failed save, and the label must not flip then.
+      await setPreference("ask_when_unsure", !on);
+      render();
+    };
+    slot.replaceChildren(
+      kebabMenu(
+        [
+          {
+            ...makeMenuItem(`ph:${on ? "check-circle" : "circle"} Ask me when it is not sure: ${on ? "on" : "off"}`, "Unsure filings wait for you", flip),
+            group: "Filing",
+          },
+          {
+            ...makeMenuItem("ph:gear Filing settings", "In Settings, Background tasks", () => openSettingsModal("tasks", "pref-ask-when-unsure")),
+            group: "Settings",
+          },
+        ],
+        "Filing options",
+      ),
+    );
+  }
+  document.addEventListener("filing-options", () => render());
+  //: Delegated: `$()` on a Settings id would build it at load.
+  document.addEventListener("change", (e) => {
+    if (e.target?.id === "pref-ask-when-unsure") render(e.target.checked);
+  });
+})();
 
 //: **Template variables** (WORLD_CLASS_PLAN 5 item 4). `{date}` was the one
 //: a note template had; `{{date}}` and `{{time}}` read the same way (one or

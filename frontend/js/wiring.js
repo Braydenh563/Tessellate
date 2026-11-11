@@ -265,11 +265,10 @@ onSurface("chat", () => {
     closeChatDockMore();
     $("chat-dock-more-btn").focus();
   });
-  //: Stop clears the hold rather than setting it: a Stop that landed before the turn's `finally` left
-  //: `held` set until the next send, so a queued message was stuck (next-queue-1102). The stopped
-  //: reply's end sends the next one.
+  //: Stop ends the answer and keeps the queue (owner, 2026-11-11): the hold stays set, so nothing
+  //: auto-sends, and the person's next Send runs the waiting messages in order (`sendChatMessage`).
   $("chat-stop").addEventListener("click", () => {
-    chatQueue.held = false;
+    chatQueue.held = true;
     chatController?.abort();
   });
   //: **Escape stops the answer being written** (CHAT_PLAN section 6, the
@@ -292,7 +291,7 @@ onSurface("chat", () => {
     if ($("chat-stop").classList.contains("hidden")) return;
     if (document.querySelector(".modal-overlay:not(.hidden), .sheet-overlay:not(.hidden)")) return;
     event.preventDefault();
-    chatQueue.held = false;
+    chatQueue.held = true;
     chatController.abort();
   });
   $("chat-new").addEventListener("click", newChatConversation);

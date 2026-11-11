@@ -382,15 +382,7 @@ def _archive(session: Session) -> list[dict]:
     # markdown, no Attachment): the bin shouldn't be less consistent than
     # the live list just because it's a smaller surface.
     entry_ids = [entry.id for entry in rows]
-    thumb_by_entry: dict[int, int] = {}
-    if entry_ids:
-        thumb_rows = session.execute(
-            select(Attachment.entry_id, Attachment.id)
-            .where(Attachment.entry_id.in_(entry_ids), Attachment.mime.like("image/%"))
-            .order_by(Attachment.created_at.asc())
-        ).all()
-        for owner_id, attachment_id in thumb_rows:
-            thumb_by_entry.setdefault(owner_id, attachment_id)
+    thumb_by_entry = _first_image_by_entry(session, entry_ids)
     items = []
     for entry in rows:
         content = entry.content or ""
@@ -478,6 +470,74 @@ def _other_binned(session: Session) -> list[dict]:
     return items
 
 
+def _first_image_by_entry(session: Session, entry_ids: list[int]) -> dict[int, int]:
+    """The first image attachment of each note, one query for the page."""
+    thumb_by_entry: dict[int, int] = {}
+    if entry_ids:
+        thumb_rows = session.execute(
+            select(Attachment.entry_id, Attachment.id)
+            .where(Attachment.entry_id.in_(entry_ids), Attachment.mime.like("image/%"))
+            .order_by(Attachment.created_at.asc())
+        ).all()
+        for owner_id, attachment_id in thumb_rows:
+            thumb_by_entry.setdefault(owner_id, attachment_id)
+    return thumb_by_entry
+
+
+def _shelved_chats(session: Session) -> list[dict]:
+    items = []
+    for chat in session.scalars(
+        select(Conversation)
+        .where(Conversation.archived_at.is_not(None))
+        .order_by(Conversation.archived_at.desc())
+        .limit(PER_KIND_LIMIT)
+    ).all():
+        try:
+            messages = json.loads(chat.messages)
+        except (ValueError, TypeError):
+            messages = []
+        first_question = next(
+            (m.get("content", "") for m in messages if m.get("role") == "user"), ""
+        )
+        items.append(
+            {
+                "kind": "shelved",
+                "subtype": "chat",
+                "id": chat.id,
+                "title": chat.title or "Untitled chat",
+                "preview": _clip(first_question),
+                "updated_at": chat.archived_at.isoformat(),
+                "detail": "archived",
+                "size": len(messages) // 2,
+                "entry_id": None,
+                "mime": None,
+                "pinned": False,
+            }
+        )
+    return items
+
+
+def _shelved_note(entry, thumb_id: int | None) -> dict:  # noqa: ANN001
+    content = entry.content or ""
+    own_title = extract_title(content) if content else None
+    preview_source = remove_title(content) if own_title else content
+    return {
+        "kind": "shelved",
+        "subtype": "note",
+        "id": entry.id,
+        "title": own_title or (_clip(content)[:60] or "Empty note"),
+        "preview": _clip(preview_source),
+        "updated_at": entry.archived_at.isoformat(),
+        "detail": "archived",
+        "size": len(content),
+        "entry_id": entry.id,
+        "mime": None,
+        "pinned": False,
+        "thumb_attachment_id": thumb_id,
+        "thumb_url": None if thumb_id else _first_inline_image_url(content),
+    }
+
+
 def _shelved(session: Session) -> list[dict]:
     """A real archive (BACKLOG §30b / ROADMAP Tier 3), distinct on purpose
     from `_archive()` above despite the similar name.
@@ -512,66 +572,9 @@ def _shelved(session: Session) -> list[dict]:
     # Same reasoning as `_notes()`/`_archive()`: this shouldn't be less
     # consistent about sketch vs. pasted-image thumbnails than either.
     entry_ids = [entry.id for entry in rows]
-    thumb_by_entry: dict[int, int] = {}
-    if entry_ids:
-        thumb_rows = session.execute(
-            select(Attachment.entry_id, Attachment.id)
-            .where(Attachment.entry_id.in_(entry_ids), Attachment.mime.like("image/%"))
-            .order_by(Attachment.created_at.asc())
-        ).all()
-        for owner_id, attachment_id in thumb_rows:
-            thumb_by_entry.setdefault(owner_id, attachment_id)
-    items = []
-    for entry in rows:
-        content = entry.content or ""
-        own_title = extract_title(content) if content else None
-        preview_source = remove_title(content) if own_title else content
-        thumb_id = thumb_by_entry.get(entry.id)
-        items.append(
-            {
-                "kind": "shelved",
-                "subtype": "note",
-                "id": entry.id,
-                "title": own_title or (_clip(content)[:60] or "Empty note"),
-                "preview": _clip(preview_source),
-                "updated_at": entry.archived_at.isoformat(),
-                "detail": "archived",
-                "size": len(content),
-                "entry_id": entry.id,
-                "mime": None,
-                "pinned": False,
-                "thumb_attachment_id": thumb_id,
-                "thumb_url": None if thumb_id else _first_inline_image_url(content),
-            }
-        )
-    for chat in session.scalars(
-        select(Conversation)
-        .where(Conversation.archived_at.is_not(None))
-        .order_by(Conversation.archived_at.desc())
-        .limit(PER_KIND_LIMIT)
-    ).all():
-        try:
-            messages = json.loads(chat.messages)
-        except (ValueError, TypeError):
-            messages = []
-        first_question = next(
-            (m.get("content", "") for m in messages if m.get("role") == "user"), ""
-        )
-        items.append(
-            {
-                "kind": "shelved",
-                "subtype": "chat",
-                "id": chat.id,
-                "title": chat.title or "Untitled chat",
-                "preview": _clip(first_question),
-                "updated_at": chat.archived_at.isoformat(),
-                "detail": "archived",
-                "size": len(messages) // 2,
-                "entry_id": None,
-                "mime": None,
-                "pinned": False,
-            }
-        )
+    thumb_by_entry = _first_image_by_entry(session, entry_ids)
+    items = [_shelved_note(entry, thumb_by_entry.get(entry.id)) for entry in rows]
+    items.extend(_shelved_chats(session))
     items.extend(
         {
             "kind": "shelved",
@@ -598,6 +601,59 @@ _LIVE_NOTE = (
     Entry.archived_at.is_(None),
     Entry.is_draft == False,  # noqa: E712
 )
+
+
+def _note_item(entry, category: str | None, thumb_id: int | None) -> dict:  # noqa: ANN001
+    private = bool(getattr(entry, "is_private", False))
+    text = "" if private else (entry.content or "")
+    # A note that gave itself a heading, Capture's "Optional title"
+    # field, or an AI-generated title, is titled by that heading,
+    # verbatim. The old title was a 60-character clip of the raw
+    # content instead, which (for a titled note) quoted the heading
+    # *and* however many words of the body fit in what was left, then
+    # the preview line underneath opened with the same heading text
+    # again: a note titled "Car insurance renewal" read as "Car
+    # insurance renewal Renew the car..." over "Car insurance renewal
+    # Renew the car insurance before...". Titleless notes are
+    # unaffected: `extract_title` returns None for them, same fallback
+    # as before.
+    own_title = extract_title(text) if text else None
+    preview_source = remove_title(text) if own_title else text
+    return {
+        "kind": _entry_kind(entry),
+        "id": entry.id,
+        "title": own_title or ((_clip(text)[:60] if text else "Private note") or "Empty note"),
+        "preview": "" if private else _clip(preview_source, NOTE_PREVIEW_CHARS),
+        "updated_at": entry.created_at.isoformat(),
+        "detail": category or "Uncategorised",
+        "size": len(text),
+        "entry_id": entry.id,
+        "mime": None,
+        "pinned": bool(entry.pinned),
+        "private": private,
+        # A meeting note is tagged "meeting" at the point it's saved
+        # (saveMeetingNote in app.js): this is what lets the
+        # toolbar's "Meetings only" toggle filter for real, rather
+        # than the earlier "Meeting Notes" sub-tab's `tag:meeting`
+        # in the search box, which matched nothing: this endpoint
+        # never sent tags at all, so it always showed an empty grid.
+        "tags": shown_tags(entry),
+        # Never for a private note, hiding the text but showing a
+        # thumbnail of what it's a photo of would be the same
+        # encryption bypass showing the preview text would be.
+        "thumb_attachment_id": None if private else thumb_id,
+        # The other half of the same picture: a note whose image was
+        # pasted or dropped in (inline markdown, no Attachment row)
+        # rather than drawn (a sketch, an Attachment), only checked
+        # once there's no Attachment thumbnail, so a sketch that also
+        # happens to mention `![...]() ` in its caption still shows
+        # its own drawing, not whatever the caption points at.
+        "thumb_url": (
+            None
+            if private or thumb_id
+            else _first_inline_image_url(text)
+        ),
+    }
 
 
 def _notes(session: Session, q: str = "") -> list[dict]:
@@ -644,70 +700,8 @@ def _notes(session: Session, q: str = "") -> list[dict]:
     # showing a thumbnail costs one extra query total rather than one per
     # note.
     entry_ids = [entry.id for entry, _ in rows]
-    thumb_by_entry: dict[int, int] = {}
-    if entry_ids:
-        thumb_rows = session.execute(
-            select(Attachment.entry_id, Attachment.id)
-            .where(Attachment.entry_id.in_(entry_ids), Attachment.mime.like("image/%"))
-            .order_by(Attachment.created_at.asc())
-        ).all()
-        for owner_id, attachment_id in thumb_rows:
-            thumb_by_entry.setdefault(owner_id, attachment_id)
-    items = []
-    for entry, category in rows:
-        private = bool(getattr(entry, "is_private", False))
-        text = "" if private else (entry.content or "")
-        # A note that gave itself a heading, Capture's "Optional title"
-        # field, or an AI-generated title, is titled by that heading,
-        # verbatim. The old title was a 60-character clip of the raw
-        # content instead, which (for a titled note) quoted the heading
-        # *and* however many words of the body fit in what was left, then
-        # the preview line underneath opened with the same heading text
-        # again: a note titled "Car insurance renewal" read as "Car
-        # insurance renewal Renew the car..." over "Car insurance renewal
-        # Renew the car insurance before...". Titleless notes are
-        # unaffected: `extract_title` returns None for them, same fallback
-        # as before.
-        own_title = extract_title(text) if text else None
-        preview_source = remove_title(text) if own_title else text
-        items.append(
-            {
-                "kind": _entry_kind(entry),
-                "id": entry.id,
-                "title": own_title or ((_clip(text)[:60] if text else "Private note") or "Empty note"),
-                "preview": "" if private else _clip(preview_source, NOTE_PREVIEW_CHARS),
-                "updated_at": entry.created_at.isoformat(),
-                "detail": category or "Uncategorised",
-                "size": len(text),
-                "entry_id": entry.id,
-                "mime": None,
-                "pinned": bool(entry.pinned),
-                "private": private,
-                # A meeting note is tagged "meeting" at the point it's saved
-                # (saveMeetingNote in app.js): this is what lets the
-                # toolbar's "Meetings only" toggle filter for real, rather
-                # than the earlier "Meeting Notes" sub-tab's `tag:meeting`
-                # in the search box, which matched nothing: this endpoint
-                # never sent tags at all, so it always showed an empty grid.
-                "tags": shown_tags(entry),
-                # Never for a private note, hiding the text but showing a
-                # thumbnail of what it's a photo of would be the same
-                # encryption bypass showing the preview text would be.
-                "thumb_attachment_id": None if private else thumb_by_entry.get(entry.id),
-                # The other half of the same picture: a note whose image was
-                # pasted or dropped in (inline markdown, no Attachment row)
-                # rather than drawn (a sketch, an Attachment), only checked
-                # once there's no Attachment thumbnail, so a sketch that also
-                # happens to mention `![...]() ` in its caption still shows
-                # its own drawing, not whatever the caption points at.
-                "thumb_url": (
-                    None
-                    if private or thumb_by_entry.get(entry.id)
-                    else _first_inline_image_url(text)
-                ),
-            }
-        )
-    return items
+    thumb_by_entry = _first_image_by_entry(session, entry_ids)
+    return [_note_item(entry, category, thumb_by_entry.get(entry.id)) for entry, category in rows]
 
 
 #: How many notes are read for their highlights in one request. The marks are

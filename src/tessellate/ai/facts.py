@@ -314,15 +314,22 @@ def own_question(content: str, start: int, end: int) -> bool:
         return False
     if re.search(r"(?:for example|for instance|e\.g\.|such as)\W*$", before, re.I):
         return False
+    return not (_pasted_text(content, line, core) or _answered_like_a_joke(content, end, line_end))
+
+
+def _pasted_text(content: str, line: str, core: str) -> bool:
+    """A line of a script or dialogue, or guide text that speaks to "you"."""
     if _SCRIPT.search(content) or _SPEAKER.match(line):
+        return True
+    return len(_HEADING.findall(content)) >= 2 and bool(_YOU.search(core))
+
+
+def _answered_like_a_joke(content: str, end: int, line_end: int) -> bool:
+    """A question closing its line and answered on the next, in a note that does that more than once or whose reply opens "Because"."""
+    if content[end:line_end].strip() != "":
         return False
-    if len(_HEADING.findall(content)) >= 2 and _YOU.search(core):
-        return False
-    if content[end:line_end].strip() == "":
-        reply = _answered_next(content, line_end)
-        if reply is not None and (reply.lower().startswith(("because", "cause ")) or _qa_pairs(content) >= 2):
-            return False
-    return True
+    reply = _answered_next(content, line_end)
+    return reply is not None and (reply.lower().startswith(("because", "cause ")) or _qa_pairs(content) >= 2)
 
 
 def kept_question(content: str, start: int, end: int) -> bool:
@@ -943,6 +950,10 @@ class _Similar:
         query = self._vector(text)
         if query is None:
             return [pair for pair in by_words if pair[0] >= PAIR_WORDS][:k]
+        return self._by_cosine(query, by_words)[:k]
+
+    def _by_cosine(self, query, by_words: list[tuple[float, DerivedFact]]) -> list[tuple[float, DerivedFact]]:  # noqa: ANN001
+        """The best word matches re-scored by meaning, best first, those under the cosine floor dropped."""
         rescored = []
         for _words, row in by_words[: self.RESCORE]:
             vector = self._vector(row.text)
@@ -951,7 +962,7 @@ class _Similar:
                 if cosine >= PAIR_COSINE:
                     rescored.append((cosine, row))
         rescored.sort(key=lambda pair: (-pair[0], pair[1].id))
-        return rescored[:k]
+        return rescored
 
 
 def _pair_key(kind: str, a: int, b: int) -> str:

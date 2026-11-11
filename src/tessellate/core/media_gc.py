@@ -137,36 +137,7 @@ def _conversation_referenced_ids(session: Session) -> set[int]:
     return ids
 
 
-def usage_map(session: Session) -> tuple[dict[str, list[dict]], bool]:
-    """The reverse of `_referenced_filenames`: filename -> where it is used.
-
-    The Library's Files & Images tab showed a thumbnail, a filename and two
-    empty prompts, and nothing about what the file was *for*, so a gallery of
-    sixty uploads could not answer the only question anyone brings to it,
-    which is "where did this come from and what is it attached to?". Reported
-    as the Files tab needing to be "properly integrated" rather than
-    redesigned.
-
-    Built from `referenced_names` rather than a second scanner, so this and
-    the orphan check can never disagree about what "referenced" means: an
-    important property, because a file this says is used and the GC says is
-    orphaned would be a file the GC deletes out from under a live note.
-
-    Returns `(map, skipped_private)`. `skipped_private` carries the same
-    meaning it does for the orphan pass: a locked private note could not be
-    read, so the answer is incomplete rather than negative, and the UI says so
-    instead of claiming a file is unused.
-    """
-    from tessellate.core import crypto, vault
-
-    used: dict[str, list[dict]] = {}
-    skipped_private = False
-
-    def note(name: str, kind: str, ident, label: str) -> None:
-        used.setdefault(name, []).append(
-            {"kind": kind, "id": ident, "label": (label or "").strip()[:80] or "Untitled"}
-        )
-
+def _board_uses(session: Session, note) -> None:  # noqa: ANN001
     #: Every object, for the reason `_referenced_filenames` gives above: a map
     #: topic carrying a picture is a use of that upload, and a screen that says
     #: "nothing points at this file" while a topic is drawing it is the screen
@@ -185,10 +156,12 @@ def usage_map(session: Session) -> tuple[dict[str, list[dict]], bool]:
         for name in referenced_names(json.dumps(item.payload or {})):
             note(name, "library", item.id, f"Board library: {item.name}")
 
-    for doc in session.scalars(select(Document).where(_could_name_a_file(Document.content))):
-        for name in referenced_names(doc.content):
-            note(name, "document", doc.id, doc.title)
 
+def _note_uses(session: Session, note) -> bool:  # noqa: ANN001
+    """Record each note's media uses; True when a locked private note was skipped."""
+    from tessellate.core import crypto, vault
+
+    skipped_private = False
     for entry in session.scalars(
         select(Entry).where(Entry.is_deleted == False, _could_name_a_file(Entry.content))  # noqa: E712
     ):
@@ -217,6 +190,41 @@ def usage_map(session: Session) -> tuple[dict[str, list[dict]], bool]:
             # markdown, and one that tries shows `# Title ![alt](/media/…)`
             # verbatim: reported exactly that way.
             note(name, "note", entry.id, manager.plain_label(content))
+    return skipped_private
+
+
+def usage_map(session: Session) -> tuple[dict[str, list[dict]], bool]:
+    """The reverse of `_referenced_filenames`: filename -> where it is used.
+
+    The Library's Files & Images tab showed a thumbnail, a filename and two
+    empty prompts, and nothing about what the file was *for*, so a gallery of
+    sixty uploads could not answer the only question anyone brings to it,
+    which is "where did this come from and what is it attached to?". Reported
+    as the Files tab needing to be "properly integrated" rather than
+    redesigned.
+
+    Built from `referenced_names` rather than a second scanner, so this and
+    the orphan check can never disagree about what "referenced" means: an
+    important property, because a file this says is used and the GC says is
+    orphaned would be a file the GC deletes out from under a live note.
+
+    Returns `(map, skipped_private)`. `skipped_private` carries the same
+    meaning it does for the orphan pass: a locked private note could not be
+    read, so the answer is incomplete rather than negative, and the UI says so
+    instead of claiming a file is unused.
+    """
+    used: dict[str, list[dict]] = {}
+
+    def note(name: str, kind: str, ident, label: str) -> None:
+        used.setdefault(name, []).append(
+            {"kind": kind, "id": ident, "label": (label or "").strip()[:80] or "Untitled"}
+        )
+
+    _board_uses(session, note)
+    for doc in session.scalars(select(Document).where(_could_name_a_file(Document.content))):
+        for name in referenced_names(doc.content):
+            note(name, "document", doc.id, doc.title)
+    skipped_private = _note_uses(session, note)
 
     return used, skipped_private
 

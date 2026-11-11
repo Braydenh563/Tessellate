@@ -117,6 +117,18 @@ self.addEventListener("message", async (event) => {
   }
   const started = performance.now();
   try {
+    //: A spelling pack for another language (D30): load its two Hunspell files once, then ask.
+    if (type === "packload") {
+      //: Answered `ok` either way, with `loaded` in the `spell` slot the page reads: a pack that
+      //: will not parse must not take the grammar check down (the page treats `ok: false` as that).
+      const loaded = await second.packLoad(event.data.lang, String(event.data.aff || ""), String(event.data.dic || "")).then(() => true, () => false);
+      self.postMessage({ id, ok: true, ms: Math.round(performance.now() - started), spell: { loaded } });
+      return;
+    }
+    if (type === "packspell") {
+      self.postMessage({ id, ok: true, ms: Math.round(performance.now() - started), spell: second.packAnswers(event.data.lang, event.data.words || []) });
+      return;
+    }
     if (type === "spell") {
       //: No answer rather than a failure: the page falls back to its own list.
       const spell = await second.spellAnswers(dialect, event.data.words || []).catch(() => ({}));

@@ -831,20 +831,38 @@ function atlasPropLoops(box) {
 function atlasPropsFrame(box, live, tick) {
   const loops = box.atlasPropLoops;
   if (!loops?.length || (live && tick % 8)) return;
-  if (!live) box.atlasPropsAt = 0;
-  else if (box.atlasPropsAt > (box.atlasDirtyAt || 0) + 1500) return;
-  else box.atlasPropsAt = performance.now();
-  const shown = new Map();
-  for (const loop of loops) {
-    if (!shown.has(loop.root)) shown.set(loop.root, live && +getComputedStyle(loop.root).opacity > 0.05);
-    const on = shown.get(loop.root);
-    if (on === loop.on) continue;
-    loop.on = on;
-    if (on) {
-      loop.anim.play();
-      loop.anim.currentTime = loop.lag;
-    } else loop.anim.cancel();
+  const set = (shown) => {
+    for (const loop of loops) {
+      const on = shown ? shown.get(loop.root) : false;
+      if (on === loop.on) continue;
+      loop.on = on;
+      if (on) {
+        loop.anim.play();
+        loop.anim.currentTime = loop.lag;
+      } else loop.anim.cancel();
+    }
+  };
+  if (!live) {
+    box.atlasPropsAt = 0;
+    set(null);
+    return;
   }
+  if (box.atlasPropsAt > (box.atlasDirtyAt || 0) + 1500 || box.atlasPropsLooking) return;
+  box.atlasPropsAt = performance.now();
+  //: **The opacity is read in a task after a drawn frame, never in the tail's frame callback** (INBOX 1766, the
+  //: owner's Windows log: "animation loops 73 ms", 47 to 137ms of forced style at 4x CPU, once a wake). The tail's
+  //: step runs before the frame's style pass, so a read here paid for every class an act or a mood had written
+  //: since the last draw; the read in the task that follows the frame (`atlasRigWake.afterPaint`, as the rig's own
+  //: look) finds style settled. A prop's fade is 0.16s and the look is a frame late: the loop starts as it is whole.
+  box.atlasPropsLooking = true;
+  atlasRigWake.afterPaint(() => {
+    box.atlasPropsLooking = false;
+    //: Gone, hidden or not live since (`atlasPropsAt` zeroed): nothing to read.
+    if (!box.isConnected || document.hidden || !box.atlasPropsAt) return;
+    const shown = new Map();
+    for (const loop of loops) if (!shown.has(loop.root)) shown.set(loop.root, +getComputedStyle(loop.root).opacity > 0.05);
+    set(shown);
+  }, 1);
 }
 
 //: **The chest breathes** (INBOX 687, the owner: "does the companion or at

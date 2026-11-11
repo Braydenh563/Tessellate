@@ -556,7 +556,7 @@
        sheet is built and thrown away on every open; `openHelpChat()` moves
        this one copy in and puts it back on close. -->
   <div id="atlas-host" hidden>
-  <template data-surface="atlasChat">
+  <script type="text/x-surface" data-surface="atlasChat">
     <div class="settings-group help-chat-group atlas-chat" id="help-chat-group">
       <div class="atlas-intro">
         <span class="atlas-mark" data-atlas-avatar="32" aria-hidden="true"><i class="ph ph-compass" aria-hidden="true"></i></span>
@@ -628,12 +628,12 @@
         </p>
       </div>
     </div>
-  </template>
+  </script>
   </div>
 
   <div id="command-palette-overlay" class="lock-overlay command-palette-overlay hidden"
     role="dialog" aria-modal="true" aria-label="Agent command palette">
-  <template data-surface="palette">
+  <script type="text/x-surface" data-surface="palette">
     <div class="card glass command-palette-card">
       <!-- **A dialog in this app says what it is and how to leave it.**
            INBOX 126, the owner: "I want the popup agent better redesigned with
@@ -783,7 +783,7 @@
           title="Stop the answer being written"><i class="ph ph-stop ph-lead" aria-hidden="true"></i> Stop</button>
       </div>
     </div>
-  </template>
+  </script>
   </div>
 
 
@@ -1182,7 +1182,7 @@
        leaving it. Alt+N or the palette; the head is the dialog-head recipe. -->
   <dialog id="quick-note" class="card space-dialog quick-note-dialog" aria-labelledby="quick-note-title">
     <!-- Built when the dialog first opens (`surfaceBuild("quickNote")`, settings-body.js; the boot page is at its element cap). -->
-    <template data-surface="quickNote">
+    <script type="text/x-surface" data-surface="quickNote">
     <div class="dialog-head">
       <h2 id="quick-note-title" class="dialog-head-title"><i class="ph ph-lightning pop-glyph" aria-hidden="true"></i> Quick note</h2>
       <button type="button" class="icon-only ghost small graph-help-toggle dialog-head-btn"
@@ -1220,7 +1220,7 @@
       <button type="button" class="ghost small" id="quick-note-more">Open in Capture</button>
       <button type="button" class="accent small" id="quick-note-save">Save note</button>
     </div>
-    </template>
+    </script>
   </dialog>
   <!-- **These two live here, beside the other dialogs, and not inside
        `#tab-documents` where they were written.** A modal `<dialog>` is drawn
@@ -1486,7 +1486,7 @@
 
   <!-- ======================= NOTES TAB (the current app) ================== -->
   <div class="tab-page hidden" id="tab-notes" role="tabpanel" aria-labelledby="tab-btn-notes" tabindex="-1">
-  <template data-surface="notes">
+  <script type="text/x-surface" data-surface="notes">
     <div class="layout">
       <!-- Category sidebar: built from the loaded entries, click to filter -->
       <aside class="card sidebar-panel" id="sidebar">
@@ -1829,6 +1829,9 @@ Link to another note with [[its first few words]]."></textarea>
                  `renderCaptureDocumentAdder` fills this with `labelledMenu`. -->
             <span id="entry-document-adder"></span>
             <span id="entry-document-chips" class="entry-meta"></span>
+            <!-- The owner, 2026-11-11: a small filing options menu (a kebabMenu,
+                 an IIFE in capture-ask.js): ask when unsure, and the way to Settings. -->
+            <span id="capture-filing-options" class="capture-filing-options"></span>
           </div>
           <!-- Commit, and nothing else on the row. The space line used to sit
                between two control rows as a loose paragraph, which is how a
@@ -2735,12 +2738,12 @@ Link to another note with [[its first few words]]."></textarea>
         <div class="notes-rail-body" id="notes-rail-body" aria-live="polite"></div>
       </aside>
     </div>
-  </template>
+  </script>
   </div>
 
   <!-- ======================= CHAT TAB ====================================== -->
   <div class="tab-page hidden" id="tab-chat" role="tabpanel" aria-labelledby="tab-btn-chat" tabindex="-1">
-  <template data-surface="chat">
+  <script type="text/x-surface" data-surface="chat">
     <div class="layout">
       <!-- **Recent chats, not every chat (§36F).** Browsing what you have ever
            asked is the Library's job now, and two lists of the same thing is
@@ -3588,7 +3591,7 @@ Link to another note with [[its first few words]]."></textarea>
         </aside>
       </div><!-- .tab-main -->
     </div>
-  </template>
+  </script>
   </div>
 
   <!-- ======================= GRAPH TAB ===================================== -->
@@ -3597,7 +3600,7 @@ Link to another note with [[its first few words]]."></textarea>
        sorted list. -->
   <div class="tab-page hidden" id="tab-timeline" role="tabpanel"
     aria-labelledby="tab-btn-timeline" tabindex="-1">
-  <template data-surface="timeline">
+  <script type="text/x-surface" data-surface="timeline">
     <section class="card">
       <!-- Same split as the graph toolbar (§37F/DESIGN.md's control-strip
            rule): what you touch while reading, the view mode and the
@@ -3919,11 +3922,11 @@ Link to another note with [[its first few words]]."></textarea>
         <button class="ghost small" type="button" id="timeline-clear-search"><i class="ph ph-x ph-lead" aria-hidden="true"></i> Clear the search</button>
       </div>
     </section>
-  </template>
+  </script>
   </div>
 
   <div class="tab-page hidden" id="tab-graph" role="tabpanel" aria-labelledby="tab-btn-graph" tabindex="-1">
-  <template data-surface="graph">
+  <script type="text/x-surface" data-surface="graph">
     <section class="card" id="graph-card">
       <!-- Two rows, split by *how often you touch them*, reported as "the ui
            elements above the graph are messy and a lot to take in", and it was
@@ -4815,7 +4818,7 @@ Link to another note with [[its first few words]]."></textarea>
         </div>
       </div>
     </section>
-  </template>
+  </script>
   </div>
 
   <!-- ======================= DOCUMENTS TAB ======================= -->
@@ -4824,7 +4827,7 @@ Link to another note with [[its first few words]]."></textarea>
        write, and mixing them would put every half-finished draft into search
        results and the graph. -->
   <div class="tab-page hidden" id="tab-documents" role="tabpanel" aria-label="Documents" tabindex="-1">
-  <template data-surface="documents">
+  <script type="text/x-surface" data-surface="documents">
     <!-- **Focus mode's own dock** (INBOX 425 i). Everything else on the
          page is gone while the mode is on, so this is what is left of it:
          which document this is, whether it is saved, full screen when the
@@ -5944,12 +5947,12 @@ Link to another note with [[its first few words]]."></textarea>
          distinct from the app's own session-only global undo stack, which
          also fires on every accept for an immediate Ctrl+Z but forgets
          everything on reload. -->
-  </template>
+  </script>
   </div>
 
   <!-- ======================= REMINDERS TAB ================================= -->
   <div class="tab-page hidden" id="tab-reminders" role="tabpanel" aria-labelledby="tab-btn-reminders" tabindex="-1">
-  <template data-surface="reminders">
+  <script type="text/x-surface" data-surface="reminders">
     <!-- Compose: the two ways to add a reminder, kept apart from the list -->
     <section class="card reminders-card" id="reminder-compose">
       <div class="row space-between reminders-head">
@@ -6176,7 +6179,7 @@ Link to another note with [[its first few words]]."></textarea>
         <p class="muted">Add one above, or hit Remind on any note.</p>
       </div>
     </section>
-  </template>
+  </script>
   </div>
 
   <!-- ======================= LIBRARY TAB (§4, §36F) =======================
@@ -6191,7 +6194,7 @@ Link to another note with [[its first few words]]."></textarea>
        same length it was. A library that duplicated two lists that already
        existed would be a third place to look. -->
   <div class="tab-page hidden" id="tab-library" role="tabpanel" aria-labelledby="tab-btn-library" tabindex="-1">
-  <template data-surface="library">
+  <script type="text/x-surface" data-surface="library" data-nests="board">
     <div class="library-subtabs tabs-line edge-fade" id="library-subtabs" role="tablist">
       <!-- Reordered, and the first one renamed. It was called "Documents"
            while actually showing everything you have ever made, notes,
@@ -9103,13 +9106,14 @@ Link to another note with [[its first few words]]."></textarea>
             title="About recordings" aria-label="About recordings"><i class="ph ph-question" aria-hidden="true"></i></button>
           <div class="help-body hidden" id="recordings-help" role="dialog" aria-label="About recordings">
             <p>Everything recorded in the app: meetings, lectures and voice notes. Captions, beside this, writes what the microphone hears as it is said; it is shown once a captions helper is set up (Settings, Packages). Search finds a recording by its name or by what was said in it; a hit shows the line, and pressing it plays from there. The audio is saved every 10 seconds while it records, so closing the tab keeps all but the last few seconds, and the next start says "Recording recovered".</p>
-            <p>Play at 0.5 to 2x; press or drag the waveform to jump, the line on it and the time beside it say where you are. Press M or the pin to mark the playhead with an optional comment (M or Marker while recording marks the moment too); each mark under the player plays from its time and opens the transcript at that line. Download audio in the ⋯ saves the file. Trim keeps a part as a new recording; the original stays until you empty the bin. Delete puts a recording in the bin. Transcribe in the ⋯ runs in the background: the card shows how far it is with a Stop, and a notification says when it is done. Once transcribed, Transcript lists its lines with their times: press one to play from that moment, and the ⋯ menu downloads them as subtitles (SRT or VTT). With the local AI on, each turn is labelled with who spoke, read from what was said (Name the speakers does it again). Kept as the browser recorded it (webm or ogg), or wav after a trim.</p>
+            <p>Play at 0.5 to 2x; press or drag the waveform to jump, the line on it and the time beside it say where you are. Press M or the pin to mark the playhead with an optional comment (M or Marker while recording marks the moment too); each mark under the player plays from its time and opens the transcript at that line. Download audio in the ⋯ saves the file. Trim keeps a part as a new recording; the original stays until you empty the bin. Delete puts a recording in the bin. Transcribe in the ⋯ runs in the background: the card shows how far it is with a Stop, and a notification says when it is done. Once transcribed, Transcript lists its lines with their times: press one to play from that moment, and the ⋯ menu downloads them as subtitles (SRT or VTT). With the Speakers bundle installed (Settings, Packages), the transcript labels who speaks, by voice, as Speaker 1, Speaker 2 and so on, all on this computer; Label speakers by voice does it for a transcript you already have, and Rename a speaker gives a label a name that stays for that recording. Without it, and with the local AI on, each turn is labelled with who spoke, read from what was said (Name the speakers does it again). Kept as the browser recorded it (webm or ogg), or wav after a trim.</p>
           </div>
           <button id="recordings-record" class="small" type="button" title="Open the recorder for a voice note">
             <i class="ph ph-microphone ph-lead" aria-hidden="true"></i> Open recorder</button>
         </div>
       </div>
       <p class="muted library-lede">Meetings, lectures and voice notes, kept as audio.</p>
+      <div id="xn-speakers"></div>
       <ul id="recordings-list" class="recordings-list" aria-label="Recordings"></ul>
     </section>
   </div>
@@ -9196,7 +9200,7 @@ Link to another note with [[its first few words]]."></textarea>
        view above rendered as a direct child of <body>, outside the flex
        column and its padding, which is why it had no margins and didn't
        sit at the top. Keep this as the LAST thing inside #tab-library. -->
-  </template>
+  </script>
   </div>
   </main>
 
@@ -9524,7 +9528,7 @@ Link to another note with [[its first few words]]."></textarea>
   <div id="ocr-workspace" class="modal-overlay ocr-workspace hidden" role="dialog" data-panel-layout="2"
     aria-modal="true" aria-label="OCR workspace: read text from images and documents">
     <!-- Built when the workspace first opens (`surfaceBuild("ocr")`, settings-body.js; audit 1031 row 21). -->
-    <template data-surface="ocr">
+    <script type="text/x-surface" data-surface="ocr">
     <div class="card modal-card ocr-card">
       <!-- **Two rows: the dialog head, then one row of tools** (INBOX 717).
            The head says what you are reading and where you are in it; the
@@ -9875,7 +9879,7 @@ Link to another note with [[its first few words]]."></textarea>
         </div>
       </div>
     </div>
-    </template>
+    </script>
   </div>
 
   <!-- **Managing the dictionary**, asked for by name: "adding to dictionary (a
@@ -10192,7 +10196,7 @@ Link to another note with [[its first few words]]."></textarea>
         <div class="modal-content" tabindex="-1">
           <!-- Built on the first open, or the first lookup of one of its ids (`settingsBodyBuild`,
                settings-body.js; INBOX 1501): 2,700 nodes that cost every boot and none of its views. -->
-          <template id="settings-body-template" data-surface="settings">
+          <script type="text/x-surface" id="settings-body-template" data-surface="settings">
 
           <!-- Models -->
           <section class="settings-section" id="settings-models">
@@ -13456,7 +13460,9 @@ Link to another note with [[its first few words]]."></textarea>
                   squat (Fitness), like the 9 notes in Gym"). A note about
                   health, money, family, the law or identity is offered as a
                   choice instead, unless "File health, money and family notes
-                  by their words too" is on.
+                  by their words too" is on. With "Ask me when filing is not
+                  sure" on, a filing under 70% waits the same way, and Capture's
+                  Filing options menu turns it on and off.
                 </p>
               </div>
               <label class="check-row">
@@ -13517,6 +13523,13 @@ Link to another note with [[its first few words]]."></textarea>
               <label class="check-row">
                 <input type="checkbox" id="pref-auto-file-sensitive">
                 <span>File health, money and family notes by their words too (off: they wait for you to choose)</span>
+              </label>
+              <!-- The owner, 2026-11-11: off by default. A filing under the
+                   confidence line is not applied; the capture offers the top
+                   choices. Also in the capture tab's filing options menu. -->
+              <label class="check-row">
+                <input type="checkbox" id="pref-ask-when-unsure">
+                <span>Ask me when filing is not sure (a filing under 70% waits for you to choose)</span>
               </label>
               <!-- On by default. With this off, Save blocks until the model
                    has decided a category, which is what the setting above
@@ -15486,7 +15499,7 @@ Link to another note with [[its first few words]]."></textarea>
             </div>
           </section>
 
-          </template>
+          </script>
         </div>
       </div>
     </div>
@@ -15664,7 +15677,7 @@ Link to another note with [[its first few words]]."></textarea>
   <div id="shortcuts-overlay" class="modal-overlay hidden" role="dialog"
     aria-modal="true" aria-label="Keyboard shortcuts">
     <!-- Built when the sheet first opens (`surfaceBuild("shortcuts")`, settings-body.js; audit 1031 row 21). -->
-    <template data-surface="shortcuts">
+    <script type="text/x-surface" data-surface="shortcuts">
     <div class="card modal-card" id="shortcuts-card">
       <div class="dialog-head">
         <h2 class="dialog-head-title"><i class="ph ph-keyboard pop-glyph" aria-hidden="true"></i> Keyboard shortcuts</h2>
@@ -15734,7 +15747,7 @@ Link to another note with [[its first few words]]."></textarea>
       </p>
       <p class="muted">Tip: most actions also live in the command palette.</p>
     </div>
-    </template>
+    </script>
   </div>
 
   <!-- **The board's help and shortcut sheet** (INBOX 566, the owner: "the

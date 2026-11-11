@@ -691,6 +691,7 @@ function packagesNoticeTarget(message) {
   if (/Python|Pyodide/.test(message)) return "pyodide";
   if (/Translate/.test(message)) return "translate";
   if (/Live captions/.test(message)) return "captions";
+  if (/Speaker labels/.test(message)) return "speakers";
   return "";
 }
 

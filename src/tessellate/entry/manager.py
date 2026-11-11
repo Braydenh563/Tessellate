@@ -1362,6 +1362,55 @@ def _redact_link_audit(session: Session, entry: Entry, key: bytes) -> None:
             row.payload = {**payload, "after": {**state, "reason": crypto.encrypt(key, text)}}
 
 
+def _link_between(session: Session, source: Entry, target: Entry) -> EntryLink | None:
+    """The link joining the two notes, in either direction."""
+    return session.scalar(
+        select(EntryLink).where(
+            or_(
+                (EntryLink.source_entry_id == source.id)
+                & (EntryLink.target_entry_id == target.id),
+                (EntryLink.source_entry_id == target.id)
+                & (EntryLink.target_entry_id == source.id),
+            )
+        )
+    )
+
+
+def _link_reason(
+    session: Session, source: Entry, target: Entry, reason: str | None, reason_confidence: float | None
+) -> tuple[str | None, float | None]:
+    """The reason to store and its confidence: the given one, else a deduced one."""
+    reason = (reason or "").strip() or None
+    #: A reason the suggestions' signals wrote keeps their confidence (KG9);
+    #: a person's own words have none, as before.
+    confidence = None if reason is None or reason_confidence is None else max(0.0, min(1.0, reason_confidence))
+    if reason is None:
+        reason, confidence = _deduce_reason(session, source.id, target.id)
+    return reason, confidence
+
+
+def _log_linked(
+    session: Session, link: EntryLink, source: Entry, target: Entry, reason: str | None, shown_reason: str | None
+) -> None:
+    detail = f"-> entry {target.id}" + (f" ({shown_reason})" if shown_reason else "")
+    log_action(
+        session,
+        "linked",
+        "entry",
+        source.id,
+        detail,
+        payload={
+            "after": {
+                "link_id": link.id,
+                "source_entry_id": source.id,
+                "target_entry_id": target.id,
+                "reason": reason,  # as stored: ciphertext on a private link
+                "link_type": link.link_type,
+            }
+        },
+    )
+
+
 @events.writes("entry", "linked")
 def create_link(
     session: Session,
@@ -1412,24 +1461,9 @@ def create_link(
     # finished one end of it first is a bigger claim than this rule supports.)
     if bool(source.is_draft) != bool(target.is_draft):
         return None
-    existing = session.scalar(
-        select(EntryLink).where(
-            or_(
-                (EntryLink.source_entry_id == source.id)
-                & (EntryLink.target_entry_id == target.id),
-                (EntryLink.source_entry_id == target.id)
-                & (EntryLink.target_entry_id == source.id),
-            )
-        )
-    )
-    if existing is not None:
+    if _link_between(session, source, target) is not None:
         return None
-    reason = (reason or "").strip() or None
-    #: A reason the suggestions' signals wrote keeps their confidence (KG9);
-    #: a person's own words have none, as before.
-    confidence = None if reason is None or reason_confidence is None else max(0.0, min(1.0, reason_confidence))
-    if reason is None:
-        reason, confidence = _deduce_reason(session, source.id, target.id)
+    reason, confidence = _link_reason(session, source, target, reason, reason_confidence)
     # A reason is a sentence about the two notes, so on a link with a private
     # end it is stored encrypted and kept out of the activity log's text
     # (`entry_links.reason` decrypts on load, `database.LinkReason`).
@@ -1475,23 +1509,7 @@ def create_link(
         # The attribute holds the ciphertext just stored; make the next read
         # go back through the decrypting load (`expire_on_commit` is off).
         session.expire(link, ["reason", "props"])
-    detail = f"-> entry {target.id}" + (f" ({shown_reason})" if shown_reason else "")
-    log_action(
-        session,
-        "linked",
-        "entry",
-        source.id,
-        detail,
-        payload={
-            "after": {
-                "link_id": link.id,
-                "source_entry_id": source.id,
-                "target_entry_id": target.id,
-                "reason": reason,  # as stored: ciphertext on a private link
-                "link_type": link.link_type,
-            }
-        },
-    )
+    _log_linked(session, link, source, target, reason, shown_reason)
     session.commit()
     return link
 

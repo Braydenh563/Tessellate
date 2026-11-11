@@ -76,7 +76,7 @@ from tessellate.search import chunks as search_chunks
 from tessellate.search import search_manager
 from sqlalchemy import func
 from tessellate.api.chat_attach import _MEDIA_REF, _attached_boards, _attached_documents, _attached_files, _attached_media_files, _attached_notes, _files_on, _grounding_candidates, _note_dates, _time_words
-from tessellate.api.chat_request import ChatRequest, ChatResponse, CommandRunBody, CompressBody, FollowupBody, RememberBody, ToolExecuteBody, _StreamRequest, _Turn, _apply_open, _apply_scope, _bind_cited, _chat_model_sees_images, _check_refs, _composed, _event, _image_caption_context, _in_full, _meta_event, _nothing_open, _resolve_chat_images, _resolve_mode, _resolve_persona, _resolve_skill
+from tessellate.api.chat_request import ChatRequest, ChatResponse, CommandRunBody, CompressBody, FollowupBody, RememberBody, ToolExecuteBody, _StreamRequest, _Turn, take_up_offer, _apply_open, _apply_scope, _chat_model_sees_images, _check_refs, _composed, _event, _image_caption_context, _in_full, _meta_event, _nothing_open, _resolve_chat_images, _resolve_mode, _resolve_persona, _resolve_skill
 from tessellate.api.chat_pool import _Found, _NoteCtx, _chat_payload, _composer_reads, _document_row, _frame_matches, _glossary, _holds_read_text, _in_window, _keep_window, _note_content, _or_empty_notebook, _records_beside, _slips_put_right, _whole_pool, _widened, _with_each_side, _with_holders, _with_neighbours, _with_records, _window_documents, _with_sources
 from tessellate.api.chat_recent import AGENT_SURFACE, ASK_SURFACE, STARTER_SUGGESTIONS, _about, _asked_key, _feature_for, _fill, _recent_questions
 from tessellate.api.chat_web import WEB_PAGES, _can_start_searxng, _torn_events, _home_place, _link_events, _offer_events, _search_service, _unmatched_recents, _web_allowed, _web_chip, _web_first, _web_page_row, _web_pref_on
@@ -1605,7 +1605,7 @@ def _act_events(req: _StreamRequest, prepared: dict) -> Iterator[dict]:
     client too: it names the act it read and says where it is done."""
     from tessellate.ai import act_registry
 
-    parsed = acts.parse(req.question, user_now(deps.get_config()), req.history)
+    parsed = {"intent": "new_note", "content": req.offer_note} if req.offer_note else acts.parse(req.question, user_now(deps.get_config()), req.history)
     app_verb = act_registry.app_verb(req.question) if parsed is None else None
     if app_verb:
         yield {"type": "answer", "delta": act_registry.app_verb_line(app_verb)}
@@ -1854,12 +1854,8 @@ def _follow_up(req: _StreamRequest):
         #: name its objects (audit 1030 Z53), "more" after a summary was
         #: rewritten to "tell me more about the Lecture 5 note" and searched.
         return more
-    #: A bare "yes" takes up the offer the answer before ended with (B23); "open it" names the note the answer cited.
-    offered = composer_talk.accepted_offer(req.question, req.history, user_now(deps.get_config()))
-    req.offer_yes = offered is not None and consent.says(req.question) == "yes"
-    cited = offered or composer_talk.cited_question(req.question, req.history, user_now(deps.get_config()))
-    if cited is not None:
-        req.question = _bind_cited(req.session, req.body, cited)
+    if take_up_offer(req):
+        return None
     spoken = _spoken_act(req) if req.history and not req.ollama.is_running() else None
     if spoken is not None:
         req.question = spoken

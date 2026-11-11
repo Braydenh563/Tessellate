@@ -27,7 +27,7 @@ from datetime import date, datetime, time, timedelta
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import composer_chips, composer_remark, follow_items, intent, realise, recognise, slash, slash_more
+from tessellate.ai import consent_store, composer_chips, composer_remark, follow_items, intent, realise, recognise, slash, slash_more
 
 #: The charts the app can already draw from the notes, in the order offered.
 CHARTS = ("time", "tag", "category", "weekday")
@@ -314,6 +314,23 @@ def accepted_offer(question: str, history: list[dict] | None, now: datetime | No
         return _note_offer_sentence(lines)
     action = re.sub(r"\byour\b", "my", found.group("action").strip().rstrip("?."), flags=re.I) if found.group("every") else found.group("action").strip().rstrip("?.")
     return f"remind me to {action}" + (f" {found.group('every').replace('each', 'every')}" if found.group("every") else "")
+
+
+def held_offer(question: str, history: list[dict] | None) -> str | None:
+    """The text of the note a bare "yes" makes when the answer before it ended with an offer the server
+    holds (Gather them into one note, Track your lifts in a table): their words are the notes', which the turn
+    sent back no longer has. The id is spent by the yes; it is taken only while the offer is still the answer's
+    last line, so a yes to another question reaches nothing."""
+    last = (history or [{}])[-1] if history else {}
+    key = str(last.get("offer_id") or "")
+    if not key or not _YES.match(_clean(question).strip()):
+        return None
+    held = (consent_store.peek(key) or {}).get("offer")
+    lines = [ln.strip(" *_") for ln in str(last.get("answer") or "").splitlines() if ln.strip()]
+    if not held or not lines or lines[-1] != str(held.get("line") or "").strip(" *_"):
+        return None
+    consent_store.take(key)
+    return str(held["text"])
 
 
 #: The offers that save a note, said as the button's label says them (`composer_digest.PHRASES`).

@@ -693,6 +693,7 @@ function renderAutonomousSettings() {
   $("pref-autonomous-tasks").checked = Boolean(prefsCache.autonomous_tasks_enabled);
   $("pref-ai-first-filing").checked = prefsCache.ai_first_filing ?? true;
   $("pref-auto-file-sensitive").checked = Boolean(prefsCache.auto_file_sensitive);
+  $("pref-ask-when-unsure").checked = Boolean(prefsCache.ask_when_unsure);
   $("pref-filing-style").value = prefsCache.filing_style || "topic";
   $("pref-background-filing").checked = prefsCache.background_filing ?? true;
   $("pref-warm-search-model").checked = prefsCache.warm_search_model_at_launch ?? true;
@@ -785,6 +786,7 @@ async function checkForSourceUpdateNotice() {
 //: controls for one preference is a reasonable convenience and a reliable way
 //: to get them out of step; this is the list that keeps them honest.
 const MIRRORED_PREFS = {
+  ask_when_unsure: ["pref-ask-when-unsure"],
   autonomous_tasks_enabled: ["pref-autonomous-tasks", "skills-auto-toggle"],
   auto_tag_enabled: ["pref-auto-tag", "skills-auto-tag"],
   auto_link_enabled: ["pref-auto-link", "skills-auto-link"],

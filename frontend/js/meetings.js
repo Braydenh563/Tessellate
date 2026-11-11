@@ -1541,6 +1541,8 @@ async function renderRecordings() {
   }
   noteRecoveredRecordings(body.recovered);
   const rows = body.recordings;
+  //: Speaker labels are an optional package: the notice shows where transcripts are, until it is installed or hidden.
+  if (rows.some((row) => row.transcribed)) extraNoticeMount($("xn-speakers"), "speakers");
   if (!q) nounCount.dock?.("library-recordings", rows.length, "recording");
   list.replaceChildren(...rows.map(recordingRow));
   if (!rows.length) list.appendChild(recordingsEmpty(q ? "match" : "none"));
@@ -1597,6 +1599,7 @@ function recordingFacts(rec) {
 //: The transcript's state in words, on the card's one line of facts.
 function recordingTranscriptState(rec) {
   const run = rec.transcription;
+  if (run?.state === "running" && run.task === "voices") return "labelling speakers";
   if (run?.state === "running") return run.progress == null ? "transcribing" : `transcribing ${Math.round(run.progress * 100)}%`;
   if (rec.transcribed) return "transcribed";
   if (run?.state === "failed") return "transcription failed";
@@ -2091,6 +2094,25 @@ function recordingMenu(rec) {
   }));
   if (rec.transcribed) {
     const name = (rec.title || "recording").replace(/[^A-Za-z0-9._ -]/g, "_");
+    //: By voice, from the audio: behind the optional Speakers bundle, which the action points to when it is missing.
+    //: Speaker 1, 2, 3 from the audio, as a background run on the card. It replaces the names the transcript has, so it asks first when there are any.
+    items.push(makeMenuItem("ph:waveform Label speakers by voice", "Tell who speaks each line from their voice, on this computer", async () => {
+      try {
+        voiceStatus = await apiJson("/voice/status").catch(() => voiceStatus || { available: false });
+        if (!voiceStatus.speakers_by_voice) {
+          toast("Telling voices apart needs “Speaker labels” in Settings, Packages. Install the Speakers bundle, then try again.", "info");
+          extraNoticeMount($("xn-speakers"), "speakers", { fresh: true });
+          return;
+        }
+        const body = await apiJson(`/recordings/${rec.id}/transcript`);
+        if (body.speakers && !(await confirmDialog("This replaces the speaker names in this transcript, including any you renamed.", { confirmLabel: "Label by voice" }))) return;
+        const started = await apiJson(`/recordings/${rec.id}/speakers/voice`, { method: "POST" });
+        watchRecordingTranscription(rec, {});
+        recordingCardsRun(rec.id, started.transcription);
+      } catch (error) {
+        toast(error.message || "Couldn't label the speakers.", true);
+      }
+    }));
     //: Row 11: offered only with a model on; with none, no label is shown.
     if (!aiIsOff()) items.push(makeMenuItem("ph:users-three Name the speakers", "Let the local AI name who speaks each turn, from what is said", () => nameRecordingSpeakers(rec)));
     items.push(makeMenuItem("ph:user-switch Rename a speaker", "Change a speaker's name everywhere in this transcript", () => renameRecordingSpeaker(rec)));
@@ -2111,7 +2133,7 @@ async function renameRecordingSpeaker(rec) {
     const body = await apiJson(`/recordings/${rec.id}/transcript`);
     const names = [...new Set(body.segments.map((seg) => seg.speaker).filter(Boolean))];
     if (!names.length) {
-      toast("This transcript has no speaker names yet. Name the speakers first.", "info");
+      toast("This transcript has no speaker labels yet. Label the speakers first.", "info");
       return;
     }
     let from = names[0];
@@ -2238,7 +2260,16 @@ async function recordingTranscriptionEnded(rec, run, hooks) {
   }
   recordingCardsRun(rec.id, run);
   const here = hooks.here?.() || false;
-  if (run.state === "done") {
+  if (run.task === "voices") {
+    if (run.state === "done" && run.speakers) {
+      recordNotification({ kind: "task", title: `Speakers labelled: “${name}”`, detail: nounCount(run.speakers, "speaker"), key: `voices:${rec.id}:${Date.now()}`, action: { open: "recording", id: rec.id } });
+      toastAction(`Speakers labelled: “${name}”.`, "Open", () => openRecordings(rec.id));
+    } else if (run.state === "done") toast(`“${name}” sounds like one voice, so nothing was labelled.`, "info");
+    else {
+      recordNotification({ kind: "error", title: `Couldn't label the speakers in “${name}”`, detail: run.error, key: `voices:${rec.id}:${Date.now()}`, action: { open: "recording", id: rec.id } });
+      toastAction(`Couldn't label the speakers in “${name}”: ${run.error}`, "Open", () => openRecordings(rec.id));
+    }
+  } else if (run.state === "done") {
     await hooks.done?.(run);
     if (!here) {
       recordNotification({ kind: "task", title: `Transcript ready: “${name}”`, detail: nounCount(run.words, "word"), key: `transcription:${rec.id}:${Date.now()}`, action: { open: "recording", id: rec.id } });
@@ -2276,10 +2307,15 @@ function recordingRunLine(li) {
     line.className = "recording-run";
     const bar = document.createElement("progress");
     bar.className = "recording-run-bar";
-    bar.setAttribute("aria-label", `Transcribing ${rec.title || "this recording"}`);
-    const stop = smallButton("ph:stop Stop", "Stop transcribing; nothing is kept", () => stopRecordingTranscription(rec.id));
-    stop.classList.add("quiet");
-    line.append(bar, stop);
+    const voices = rec.transcription.task === "voices";
+    bar.setAttribute("aria-label", `${voices ? "Labelling the speakers in" : "Transcribing"} ${rec.title || "this recording"}`);
+    line.append(bar);
+    //: Telling voices apart cannot be stopped half way, so it has no Stop.
+    if (!voices) {
+      const stop = smallButton("ph:stop Stop", "Stop transcribing; nothing is kept", () => stopRecordingTranscription(rec.id));
+      stop.classList.add("quiet");
+      line.append(stop);
+    }
     li.querySelector(".recording-player").after(line);
   }
   const bar = line.querySelector("progress");

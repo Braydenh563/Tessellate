@@ -492,6 +492,7 @@ function digestOffer(answerEl, offer) {
   button.textContent = offer.label;
   button.addEventListener("click", async () => {
     button.disabled = true;
+    if (offer.offer_id && chatHistoryToSend.heldOffer === offer.offer_id) chatHistoryToSend.heldOffer = ""; // pressed: a later yes must not make it twice
     try {
       let undo = null;
       let redo = null;

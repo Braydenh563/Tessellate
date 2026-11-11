@@ -37,7 +37,7 @@ import re
 from tessellate.core.lazyre import lazy_compile
 from collections import Counter
 
-from tessellate.ai import act_registry, repair_turn, spelling, typo_context
+from tessellate.ai import act_registry, composer_aboutme, repair_turn, spelling, typo_context
 from tessellate.ai.spelling import distance  # noqa: F401 - re-exported: the speller owns it, so the two modules do not import each other
 
 # --- 1. slang and text-speak ----------------------------------------------------
@@ -2191,7 +2191,9 @@ def _spoken_to_kind(message: str) -> str | None:
     what I asked" (INBOX 1668 b), whatever else the message could be."""
     if asks_identity(message):
         return "who"
-    return "repair" if repair_turn.is_repair(message) else addressed_kind(message)
+    if repair_turn.is_repair(message):
+        return "repair"
+    return addressed_kind(message) or composer_aboutme.kind(message)
 
 
 def social_kind(message: str) -> str | None:
@@ -2407,19 +2409,20 @@ _ITS_NOUNS = frozenset(
 _AUX_BEFORE_KNOW = frozenset({"do", "did", "does", "can", "could", "would", "should", "to"})
 
 
-def _context_slip(out: list[str], i: int, fixed: list | None, report: list | None) -> None:
+def _context_slip(out: list[str], i: int, fixed: list | None, report: list | None, words) -> None:  # noqa: ANN001
     """A real word that the sentence and the notebook say is another ("notes form last week", "run my skull"):
     read as it (`typo_context`), the other offered when the two stay close. The notebook's own words weigh in there."""
     word = out[i].rstrip("?!.,:;")
     if not word.islower() or (i and out[i - 1].rstrip("?!.,:;") != out[i - 1]):
         return
-    read = typo_context.real_slip(out, i)
+    read = typo_context.real_slip(out, i, words)
     if read is None:
         return
     chosen, other = read
     if report is not None and other:
         report.append({"typed": word, "chosen": chosen, "alternative": other})
     if chosen != word.lower():
+        typo_context.swap(words, word, chosen)
         out[i] = chosen + out[i][len(word):]
         if fixed is not None:
             fixed.append((word, chosen))
@@ -2427,8 +2430,10 @@ def _context_slip(out: list[str], i: int, fixed: list | None, report: list | Non
 
 def _real_word_slips(tokens: list[str], fixed: list | None, report: list | None = None) -> list[str]:
     out = list(tokens)
+    #: Counted once and kept up to date, so a long question is read in one pass.
+    words = typo_context.seen(out)
     for i in range(len(out)):
-        _context_slip(out, i, fixed, report)
+        _context_slip(out, i, fixed, report, words)
     for i in range(1, len(out)):
         prev = out[i - 1].lower().rstrip("?!.,:;")
         word = out[i].rstrip("?!.,:;")

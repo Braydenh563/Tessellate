@@ -1,7 +1,7 @@
 """The owner, 2026-11-11: the hover toolbar (edit, copy, delete) "covers the content in the top corner of that row".
 The document block bar was centred on the block's top edge, over the last line above and the first words below. It now
 stands in a column in the preview's right gutter. Measured in Chromium with a callout and three long paragraphs
-(scratchpad/ui-sweeps/blockbar-gutter.js): the bar's overlap with every text line and every block was 0 px² at 1440 and
+(a throwaway sweep, see CHANGELOG): the bar's overlap with every text line and every block was 0 px² at 1440 and
 390, and it stayed inside the preview (it was 611 to 833 px² over a block at 1440 before the gutter was reserved)."""
 
 from pathlib import Path

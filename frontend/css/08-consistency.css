@@ -5137,6 +5137,11 @@ body .chip.item-label,
    1010, so with a modal open it is seen dimmed behind the scrim, as the
    modal rule has it for every other thing on the page. */
 #nm-buddy-band {
+  /* Under <html>, not <body> (avatars.js, `nameMarkBuddyBuild`), so it says what it took from body. */
+  font-family: var(--ui-font, system-ui, -apple-system, "Segoe UI", sans-serif);
+  color: var(--ink);
+  font-size: var(--text-lg);
+  line-height: 1.5;
   position: fixed;
   left: 0;
   top: 0;
@@ -6991,7 +6996,7 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
    out at shoulder height over the rings, 72%; it is now up beside the head
    (163deg; 145deg for her longer-reaching left arm, which at 163 covered
    her eye). Shy's third variant swung an arm out the same way; it clasps. */
-.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="happy"] { --atl-ar0: -28deg; --atl-al0: 28deg; --atl-chin0: 0; --atl-ar1: -120deg; --atl-al1: 18deg; --atl-chin1: 0; --atl-ar2: -40deg; --atl-al2: 40deg; --atl-chin2: 0; --atl-low: 0.3; }
+.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="happy"] { --atl-ar0: -28deg; --atl-al0: 28deg; --atl-chin0: 0; --atl-ar1: -120deg; --atl-al1: 18deg; --atl-chin1: 0; --atl-ar2: -40deg; --atl-al2: 40deg; --atl-chin2: 0; --atl-lid: 0; --atl-low: 0.42; --atl-brow-y: -1.8px; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="delighted"] { --atl-ar0: -44deg; --atl-al0: 44deg; --atl-chin0: 0; --atl-ar1: -130deg; --atl-al1: 130deg; --atl-chin1: 0; --atl-ar2: -50deg; --atl-al2: 50deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="laughing"] { --atl-ar0: -38deg; --atl-al0: 38deg; --atl-chin0: 0; --atl-ar1: 0deg; --atl-al1: 16deg; --atl-chin1: 1; --atl-ar2: 14deg; --atl-al2: -14deg; --atl-chin2: 0; }
 /* Thinking's second way folded both arms across the chest for the whole
@@ -6999,7 +7004,7 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="thinking"] { --atl-ar0: 0deg; --atl-al0: -10deg; --atl-chin0: 1; --atl-ar1: -18deg; --atl-al1: -14deg; --atl-chin1: 0; --atl-ar2: 0deg; --atl-al2: -14deg; --atl-chin2: 1; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="curious"] { --atl-ar0: -40deg; --atl-al0: 0deg; --atl-chin0: 0; --atl-ar1: 0deg; --atl-al1: 40deg; --atl-chin1: 0; --atl-ar2: -60deg; --atl-al2: 10deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="surprised"] { --atl-ar0: -120deg; --atl-al0: 120deg; --atl-chin0: 0; --atl-ar1: -150deg; --atl-al1: 150deg; --atl-chin1: 0; --atl-ar2: -140deg; --atl-al2: 60deg; --atl-chin2: 0; --atl-brow-y: -4.2px; }
-.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="confused"] { --atl-ar0: 0deg; --atl-al0: 163deg; --atl-chin0: 0; --atl-ar1: -163deg; --atl-al1: 0deg; --atl-chin1: 0; --atl-ar2: -20deg; --atl-al2: 163deg; --atl-chin2: 0; }
+.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="confused"] { --atl-ar0: 0deg; --atl-al0: 163deg; --atl-chin0: 0; --atl-ar1: -163deg; --atl-al1: 0deg; --atl-chin1: 0; --atl-ar2: -20deg; --atl-al2: 163deg; --atl-chin2: 0; --atl-tilt: 9deg; }
 /* **Sleepy arms stay off the rings** (the owner: "no arm resting on the
    orbit rings"). Measured (atlasarms.js): the eye-rub turned the arm the
    wrong way, out and up over the rings (masculine left hand at 9.8,25.6,
@@ -7011,7 +7016,7 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="sad"] { --atl-ar0: 8deg; --atl-al0: -8deg; --atl-chin0: 0; --atl-ar1: 10deg; --atl-al1: -10deg; --atl-chin1: 0; --atl-ar2: 6deg; --atl-al2: -6deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="proud"] { --atl-ar0: -24deg; --atl-al0: 24deg; --atl-chin0: 0; --atl-ar1: -28deg; --atl-al1: 28deg; --atl-chin1: 0; --atl-ar2: -24deg; --atl-al2: 24deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="shy"] { --atl-ar0: 16deg; --atl-al0: -16deg; --atl-chin0: 0; --atl-ar1: 16deg; --atl-al1: -16deg; --atl-chin1: 0; --atl-ar2: 14deg; --atl-al2: -14deg; --atl-chin2: 0; }
-.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="determined"] { --atl-ar0: -14deg; --atl-al0: 14deg; --atl-chin0: 0; --atl-ar1: -18deg; --atl-al1: 18deg; --atl-chin1: 0; --atl-ar2: -30deg; --atl-al2: 22deg; --atl-chin2: 0; --atl-low: 0.24; --atl-knit: 2deg; }
+.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="determined"] { --atl-ar0: -14deg; --atl-al0: 14deg; --atl-chin0: 0; --atl-ar1: -18deg; --atl-al1: 18deg; --atl-chin1: 0; --atl-ar2: -30deg; --atl-al2: 22deg; --atl-chin2: 0; --atl-low: 0.3; --atl-knit: 2deg; --atl-brow-y: 0.4px; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="love"] { --atl-ar0: 16deg; --atl-al0: -16deg; --atl-chin0: 0; --atl-ar1: 16deg; --atl-al1: -16deg; --atl-chin1: 0; --atl-ar2: -120deg; --atl-al2: 0deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="worried"] { --atl-ar0: 16deg; --atl-al0: -16deg; --atl-chin0: 0; --atl-ar1: 16deg; --atl-al1: -16deg; --atl-chin1: 0; --atl-ar2: 16deg; --atl-al2: -12deg; --atl-chin2: 0; --atl-knit: -15deg; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="miffed"] { --atl-ar0: 6deg; --atl-al0: -6deg; --atl-chin0: 0; --atl-ar1: 10deg; --atl-al1: -10deg; --atl-chin1: 0; --atl-ar2: -26deg; --atl-al2: 26deg; --atl-chin2: 0; }

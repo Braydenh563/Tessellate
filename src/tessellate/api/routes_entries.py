@@ -8,6 +8,7 @@ calls run (plan §4).
 from __future__ import annotations
 
 import contextlib
+import dataclasses
 import functools
 import json
 import logging
@@ -52,7 +53,7 @@ from tessellate.api.schemas import (
     LinkOut,
     SimilarOut,
 )
-from tessellate.core import cjk, deps, events, jobruns, jobs, vault
+from tessellate.core import cjk, companion_events, deps, events, jobruns, jobs, vault
 from tessellate.core.database import (
     LIKE_ESCAPE,
     EmbeddingRecord,
@@ -166,50 +167,62 @@ def _to_out(
         created_at=entry.created_at,
         deleted_at=entry.deleted_at if entry.is_deleted else None,
         archived_at=entry.archived_at,
-        dates=[
-            EntryDateOut(
-                phrase=d.phrase,
-                at=d.at.date(),
-                precision=d.precision,
-                time=d.at.strftime("%H:%M") if d.precision == "minute" else None,
-            )
-            for d in resolved_dates
-        ],
+        dates=_date_outs(resolved_dates),
         documents=[
             DocumentRefOut(id=doc.id, title=doc.title) for doc in resolved_documents
         ],
-        links=[
-            LinkOut(
-                link_id=link.id,
-                entry_id=other.id,
-                preview=_connection_label(other, 60),
-                reason=link.reason,
-                reason_confidence=link.reason_confidence,
-                # The one fact the merged list could never carry. See
-                # `LinkOut.direction`.
-                direction="out" if link.source_entry_id == entry.id else "in",
-                link_type=link.link_type,
-                link_label=manager.relation_label(
-                    relation_types.kinds(session), link.link_type, link.source_entry_id == entry.id
-                ),
-                props=link.props,
-            )
-            for link, other in resolved_links
-        ],
-        attachments=[
-            AttachmentOut(
-                id=a.id,
-                filename=a.filename,
-                size=a.size,
-                is_image=a.mime.startswith("image/"),
-                created_at=a.created_at.isoformat() if a.created_at else "",
-            )
-            for a in resolved_attachments
-        ],
+        links=_link_outs(session, entry, resolved_links),
+        attachments=_attachment_outs(resolved_attachments),
         filed_by=filed_by,
         filing_state=getattr(entry, "filing_state", "done") or "done",
         similar=similar,
     )
+
+
+def _date_outs(dates: list) -> list[EntryDateOut]:
+    return [
+        EntryDateOut(
+            phrase=d.phrase,
+            at=d.at.date(),
+            precision=d.precision,
+            time=d.at.strftime("%H:%M") if d.precision == "minute" else None,
+        )
+        for d in dates
+    ]
+
+
+def _link_outs(session: Session, entry, links: list) -> list[LinkOut]:  # noqa: ANN001
+    return [
+        LinkOut(
+            link_id=link.id,
+            entry_id=other.id,
+            preview=_connection_label(other, 60),
+            reason=link.reason,
+            reason_confidence=link.reason_confidence,
+            # The one fact the merged list could never carry. See
+            # `LinkOut.direction`.
+            direction="out" if link.source_entry_id == entry.id else "in",
+            link_type=link.link_type,
+            link_label=manager.relation_label(
+                relation_types.kinds(session), link.link_type, link.source_entry_id == entry.id
+            ),
+            props=link.props,
+        )
+        for link, other in links
+    ]
+
+
+def _attachment_outs(attachments: list) -> list[AttachmentOut]:
+    return [
+        AttachmentOut(
+            id=a.id,
+            filename=a.filename,
+            size=a.size,
+            is_image=a.mime.startswith("image/"),
+            created_at=a.created_at.isoformat() if a.created_at else "",
+        )
+        for a in attachments
+    ]
 
 
 def _json_tags(raw: str | None) -> list[str]:
@@ -238,6 +251,13 @@ def _open_suggestions(entry) -> list[str]:  # noqa: ANN001
 
 #: Longest note whose reasons are remembered: the cache holds the text as its key.
 REASONS_CACHE_CHARS = 20_000
+#: A note longer than this, opened, is the in-app companion's reading glasses (`avatars.js` `nameMarkBuddyNoteOpened`).
+LONG_NOTE_CHARS = 1200
+
+
+def _kept_private(session: Session, entry) -> bool:  # noqa: ANN001
+    """A private note, or one in a private space: the desk companion hears only the generic kind for these."""
+    return bool(entry.is_private) or private_space.is_private_space(session, entry.workspace_id)
 
 
 def _tag_reasons(content: str, tags: list[str]) -> dict[str, str]:
@@ -456,6 +476,8 @@ class _LateFiling:
         if lexical_filing.holds_sensitive(self._content, category):
             return  # decision 6: the model's late answer is held like an early one
         confidence = self._calibrated(category, confidence)
+        if lexical_filing.is_unsure(confidence):
+            return  # ask when unsure: a late pick under the line waits like an early one
         with self._lock:
             if self._stand_in is None:
                 self._early = (category, confidence)
@@ -1262,6 +1284,20 @@ def _filing_similar(session: Session, entry) -> dict | None:  # noqa: ANN001
     return {"id": other.id, "preview": _connection_label(other, 60)}
 
 
+def _choices_filled(session: Session, content: str, entry_id: int, category: str, choices: list[tuple[str, str]]) -> list[tuple[str, str]]:
+    """The filing call's choices, then recent categories by the words, up to three, never the current one."""
+    from tessellate.ai import lexical_filing
+
+    explained = [(name, reason) for name, reason in choices if name != category]
+    if len(explained) < 3:
+        taken = {name for name, _ in explained} | {category}
+        for name, reason in lexical_filing.suggest_categories_explained(session, content, exclude_entry_id=entry_id, limit=4):
+            if name not in taken:
+                explained.append((name, reason))
+                taken.add(name)
+    return explained
+
+
 def _offered_categories(session: Session, entry, category: str) -> tuple[list[str], dict[str, str], dict | None, dict | None, str]:  # noqa: ANN001
     """`(suggestions, reasons, proposal, held, why)`: up to three categories to offer as
     one-tap choices (INBOX 434), each one's line, a new category the pack proposes
@@ -1278,13 +1314,12 @@ def _offered_categories(session: Session, entry, category: str) -> tuple[list[st
     try:
         content = manager.readable_content(entry) or ""
         call = lexical_filing.filing_call(session, content, exclude_entry_id=entry.id)
-        explained = [(name, reason) for name, reason in call.choices if name != category]
-        if len(explained) < 3:
-            taken = {name for name, _ in explained} | {category}
-            for name, reason in lexical_filing.suggest_categories_explained(session, content, exclude_entry_id=entry.id, limit=4):
-                if name not in taken:
-                    explained.append((name, reason))
-                    taken.add(name)
+        explained = _choices_filled(session, content, entry.id, category, call.choices)
+        #: A pick the person asked to be asked about (a model's, or by
+        #: meaning) is first among the choices, with the words' reason.
+        if call.category and call.category != category and lexical_filing.ask_when_unsure():
+            explained = [(call.category, call.why)] + [row for row in explained if row[0] != call.category]
+            call = dataclasses.replace(call, why=lexical_filing.ASK_WHY)
         explained = explained[:3]
         if call.proposal is not None:
             proposal = {"name": call.proposal.name, "why": call.proposal.why}
@@ -2071,6 +2106,12 @@ def get_entry(
         # pill pointing at whatever was newest. Same guard as the count: a
         # note read on its way out of the bin has not been come back to.
         entry.last_opened_at = utcnow()
+        #: The in-app companion's reading glasses and covered eyes, for the desk one (W31): a kind and a time. A private
+        #: note is only ever the generic kind (not its length, not which note).
+        if _kept_private(session, entry):
+            companion_events.record("private_note")
+        elif len(entry.content or "") > LONG_NOTE_CHARS:
+            companion_events.record("long_note")
     if not entry.is_deleted:
         # A private note has no audit trail at all otherwise, encrypted at
         # rest and invisible to the AI is the whole promise, but nothing
@@ -2303,6 +2344,7 @@ def delete_entry(
     )
     if not entry.is_deleted:
         manager.soft_delete_entry(session, entry)
+        companion_events.record("private_note" if _kept_private(session, entry) else "note_binned")  # kind and time only (W31)
     return _to_out(session, entry)
 
 

@@ -110,31 +110,10 @@ def _unseal_link_reasons(session: Session, entry: Entry) -> None:
             _set_stored_props(session, link, dict(link.props))
 
 
-def rekey_private_extras(session: Session, old_key: bytes, new_key: bytes) -> None:
-    """Move what a private note keeps outside its own row onto a new key.
-
-    `/rotate-vault-key` re-encrypts the notes; the version snapshots, the
-    event payloads and the link reasons are encrypted under the same data key
-    (`_encrypt_history`, `_seal_link_reasons`), so left alone they would stay
-    under the OLD key and read as empty the moment the vault row pointed at
-    the new one. Nothing is committed here: the caller's one commit makes the
-    notes, these and the vault row real together, or none.
-    """
+def _rekey_audit_payloads(session: Session, swap) -> None:  # noqa: ANN001
     from tessellate.core import crypto
     from tessellate.core.database import AuditLog
 
-    def swap(value: str) -> str:
-        # A value the old key cannot open was sealed under a vault a password
-        # reset removed (INBOX 663): unreadable before and after, so it is
-        # kept as it is rather than failing the whole re-key (see the route).
-        try:
-            return crypto.encrypt(new_key, crypto.decrypt(old_key, value))
-        except crypto.DecryptionError:
-            return value
-
-    for revision in session.scalars(select(EntryRevision)):
-        if crypto.is_encrypted(revision.content):
-            revision.content = swap(revision.content)
     for row in session.scalars(select(AuditLog).where(AuditLog.payload.is_not(None))):
         payload = row.payload
         if not isinstance(payload, dict):
@@ -153,6 +132,11 @@ def rekey_private_extras(session: Session, old_key: bytes, new_key: bytes) -> No
                 changed[side] = {**state, **fresh}
         if changed:
             row.payload = {**payload, **changed}
+
+
+def _rekey_link_columns(session: Session, swap) -> None:  # noqa: ANN001
+    from tessellate.core import crypto
+
     # Raw SQL: the typed column would hand back plaintext, not the stored text.
     for link_id, stored in session.execute(
         text("SELECT id, reason FROM entry_links WHERE reason LIKE :p"),
@@ -174,6 +158,35 @@ def rekey_private_extras(session: Session, old_key: bytes, new_key: bytes) -> No
                 text("UPDATE entry_links SET props = :r WHERE id = :i"),
                 {"r": json.dumps(swap(sealed)), "i": link_id},
             )
+
+
+def rekey_private_extras(session: Session, old_key: bytes, new_key: bytes) -> None:
+    """Move what a private note keeps outside its own row onto a new key.
+
+    `/rotate-vault-key` re-encrypts the notes; the version snapshots, the
+    event payloads and the link reasons are encrypted under the same data key
+    (`_encrypt_history`, `_seal_link_reasons`), so left alone they would stay
+    under the OLD key and read as empty the moment the vault row pointed at
+    the new one. Nothing is committed here: the caller's one commit makes the
+    notes, these and the vault row real together, or none.
+    """
+    from tessellate.core import crypto
+    from tessellate.core.database import EntryRevision
+
+    def swap(value: str) -> str:
+        # A value the old key cannot open was sealed under a vault a password
+        # reset removed (INBOX 663): unreadable before and after, so it is
+        # kept as it is rather than failing the whole re-key (see the route).
+        try:
+            return crypto.encrypt(new_key, crypto.decrypt(old_key, value))
+        except crypto.DecryptionError:
+            return value
+
+    for revision in session.scalars(select(EntryRevision)):
+        if crypto.is_encrypted(revision.content):
+            revision.content = swap(revision.content)
+    _rekey_audit_payloads(session, swap)
+    _rekey_link_columns(session, swap)
 
 
 #: What a stored answer says once a note it quoted has been made private
