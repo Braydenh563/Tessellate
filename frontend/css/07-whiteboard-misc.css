@@ -1460,40 +1460,33 @@ body.has-agent-monitor #timeline-scroll {
      that reads as "not quite right" without ever being seen. */
   border-top: 1px solid var(--border-light);
 }
-/* The status pushes the buttons right; Stop takes Start-over's place while
-   a turn is running, so the row never changes length. */
-.command-palette-foot > #command-palette-status {
-  margin-right: auto;
+/* **Nothing in the foot is cut** (INBOX 1778 a; it supersedes INBOX 208's one
+   line). The toggle names the open note, which can be called anything, and the
+   status is a sentence the agent writes mid-run ("Done, 1 step, last: ..."): both
+   ellipsised, and the status measured 0px wide at every viewport, so it never
+   showed. Now the row wraps: a long toggle takes a line of its own and wraps its
+   caption, the status takes the rest of the second line, and Stop and the menu
+   keep their size. scrollWidth equals clientWidth on each, 360 to 2560 wide. */
+.command-palette-foot {
+  flex-wrap: wrap;
 }
-/* **The row is one control high, whatever is in it** (INBOX 208). The toggle
-   is the only thing here whose text is variable (it names the open note, and
-   a note can be called anything), so it is the one thing that has to be told
-   it may not grow the row: it takes the space that is left and ellipsises,
-   rather than wrapping to two lines at 1440 and three at 390 and pushing
-   "Start over" out of line with the checkbox. The status is a `role="status"`
-   that the agent writes a sentence into mid-run, so it is held to one line for
-   the same reason. Measured: 75px at 1440 and 124px at 390, now 51px at both. */
 .command-palette-foot > #command-palette-use-note-label {
   min-width: 0;
   flex: 0 1 auto;
-  /* `.row` wraps at phone widths, which put the checkbox on one line and its
-     caption on the next and took the row back to 76px at 390 even with the
-     caption ellipsised. This one never wraps: the caption gives characters
-     instead, which is what the ellipsis is for. */
+  max-width: 100%;
   flex-wrap: nowrap;
 }
 .command-palette-foot > #command-palette-use-note-label > #command-palette-use-note-text,
 .command-palette-foot > #command-palette-status {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   min-width: 0;
+  overflow-wrap: anywhere;
 }
-/* The status gives first: it is a progress line, the toggle is a control you
-   are about to press. A zero basis that grows lets it take the slack and hand
-   it back before the label loses a character. */
 .command-palette-foot > #command-palette-status {
-  flex: 1 1 0;
+  flex: 1 1 8rem;
+}
+.command-palette-foot > :is(#command-palette-stop, #command-palette-menu) {
+  flex: none;
+  white-space: nowrap;
 }
 /* The agent activity monitor. */
 #agent-monitor .monitor-header {
