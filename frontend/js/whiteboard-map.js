@@ -7831,6 +7831,7 @@ async function wbMapTakePicture(file) {
   try {
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("board", "true");
     // The same request `wbPlaceUploadedImage` makes, header and all: the
     // token goes in `X-Auth-Token` because the body is a FormData and
     // `apiJson` leaves the content type to the browser for one.

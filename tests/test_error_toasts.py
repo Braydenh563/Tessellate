@@ -217,6 +217,9 @@ for _name, _messages in EXPECTED_RULE4.items():
 #: fault. Anything that passes `true` and is not a failed request's own
 #: `.message` has to appear here.
 FAULTS = {
+    'whiteboard-format.js': {
+        'err?.message || "The picture could not be saved to the Library."': 'the Save to Library request failed (the server gave no message)',
+    },
     'entity-page.js': {
         '"Couldn\'t load the people and things in your notes. Try again."': 'the entities request failed',
     },

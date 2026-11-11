@@ -458,6 +458,45 @@ async function wbSetLinkRoute(value) {
   }, `Line shape: ${value}.`);
 }
 
+//: (A method of `wbFmtState`, not a global of its own: the shared scope is counted.)
+//: A saved picture's caption as one muted line under it, on a board's picture or a map topic's (K18). Off until Show captions is pressed; the
+//: caption is read once per picture (`GET /media/meta`) and a picture still on the board only has none.
+wbFmtState.paintCaptions = function () {
+  const show = prefs.get("wb-show-captions", null) === "1";
+  if (!show && !wbFmtState.captionsDrawn) return;
+  wbFmtState.captionsDrawn = show;
+  const cache = wbFmtState.captions || (wbFmtState.captions = new Map());
+  for (const o of wbState.objects || []) {
+    //: A board picture, or a map topic that carries one.
+    const url = (o.kind === "image" ? o.data?.url : WB_MAP_KINDS.has(o.kind) ? o.data?.image : "") || "";
+    if (!url) continue;
+    const el = document.querySelector(`#wb-html-layer .wb-object[data-id="${o.id}"]`);
+    if (!el) continue;
+    let line = el.querySelector(":scope > .wb-object-caption");
+    if (show && url && !cache.has(url)) {
+      cache.set(url, "");
+      apiJson(`/media/meta/${encodeURIComponent(url.split("/").pop())}`, { headers: authHeaders() })
+        .then((meta) => {
+          cache.set(url, meta.caption || "");
+          wbFmtState.paintCaptions();
+        })
+        .catch(() => {});
+    }
+    const text = show ? cache.get(url) || "" : "";
+    if (!text) {
+      line?.remove();
+      continue;
+    }
+    if (!line) {
+      line = document.createElement("div");
+      line.className = "wb-object-caption";
+      el.append(line);
+    }
+    if (line.textContent !== text) line.textContent = text;
+    line.style.color = wbDefaultInk("#000000");
+  }
+};
+
 function wbFormatPanel() {
   return document.getElementById("wb-format");
 }
@@ -955,6 +994,33 @@ onSurface("board", () => {
     const crop = e.target.value;
     wbFmtApply("crop", () => ({ crop: crop || undefined }), crop ? `Picture cropped to ${e.target.selectedOptions[0].textContent.toLowerCase()}.` : "Picture crop taken off.");
   });
+  //: Save to Library and Show captions (owner-1026b K18). A picture on a board stays on the board: it is
+  //: not in the Library, not searched, not read. Save to Library files it (and starts its readers); Show
+  //: captions draws a saved picture's caption as one muted line under it, off until asked for.
+  on("wb-fmt-tolibrary", "click", async () => {
+    const urls = wbFmtEntries().filter((e) => e.kind === "object" && e.item.kind === "image").map((e) => e.item.data?.url).filter(Boolean);
+    let saved = 0;
+    try {
+      for (const url of urls) {
+        const meta = await apiJson(`/media/meta/${encodeURIComponent(url.split("/").pop())}`, { headers: authHeaders() });
+        if (!meta.board_only) continue;
+        await apiJson(`/media/${meta.id}/library`, { method: "POST", headers: authHeaders() });
+        wbFmtState.captions?.delete(url);
+        saved += 1;
+      }
+    } catch (err) {
+      return toast(err?.message || "The picture could not be saved to the Library.", true, { action: ["Try again", () => document.getElementById("wb-fmt-tolibrary")?.click()] });
+    }
+    toast(saved ? "Saved to the Library. Its caption is written in the background." : "That picture is already in the Library.");
+  });
+  on("wb-fmt-showcaption", "click", (e) => {
+    const next = prefs.get("wb-show-captions", null) !== "1";
+    prefs.set("wb-show-captions", next ? "1" : "0");
+    e.currentTarget.setAttribute("aria-pressed", String(next));
+    wbFmtState.captions = new Map();
+    wbFmtState.paintCaptions();
+  });
+  document.getElementById("wb-fmt-showcaption")?.setAttribute("aria-pressed", String(prefs.get("wb-show-captions", null) === "1"));
   //: Replace picture: the button opens the file box; the new file is uploaded and the picture's address
   //: swapped in one Undo step, so its place, size, crop and style stay.
   on("wb-fmt-replace", "click", () => document.getElementById("wb-fmt-replace-file")?.click());
@@ -966,6 +1032,7 @@ onSurface("board", () => {
     try {
       const body = new FormData();
       body.append("file", file);
+      body.append("board", "true");
       const uploaded = await apiJson("/media/upload", { method: "POST", headers: authHeaders(), body });
       await wbFmtApply("replace", () => ({ url: uploaded.url }), "Picture replaced.");
     } catch (err) {
