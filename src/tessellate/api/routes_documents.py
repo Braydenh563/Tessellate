@@ -1230,6 +1230,33 @@ def rephrase_passage(
     }
 
 
+@router.post("/{document_id}/suggest-title")
+def suggest_document_title(document_id: int, session: Session = Depends(get_session)) -> dict:
+    """A name for this document, on request (INBOX 904 B17). The model writes
+    it when one runs; with none, the document's own words are cut to a title
+    (`composer_voice.title_for`, as for a note). Nothing is saved: the client
+    renames through the same undoable path as Rename."""
+    from tessellate.ai import composer_voice, librarian
+    from tessellate.ai.ollama_client import OllamaError
+
+    doc = _existing(session, document_id)
+    text = strip_properties(doc.content or "").strip()
+    if not text:
+        raise HTTPException(status_code=422, detail="There is nothing in this document to name it from yet.")
+    if deps.get_ollama().is_running():
+        try:
+            title = librarian.generate_title(text[:4000], deps.get_model_manager(), deps.get_ollama())
+        except OllamaError:
+            logger.warning("document title generation failed", exc_info=True)
+            title = ""
+        if title:
+            return {"title": title, "by": "model"}
+    title = composer_voice.title_for(text)
+    if not title:
+        raise HTTPException(status_code=422, detail="There is no sentence here to take a name from yet.")
+    return {"title": title, "by": "composer"}
+
+
 class DocumentRevisionOut(BaseModel):
     """One entry in a document's history."""
 
