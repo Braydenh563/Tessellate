@@ -381,8 +381,38 @@ function drawLibraryBoardsGallery(listed) {
   }
 }
 
+//: **New's arrow** (INBOX 1520): the main press makes a blank board, and this
+//: menu holds the other starts. A map is made at once and named "Untitled map
+//: N" (MINDMAP_PLAN 15 row 1); From a template is the dialog, whose Mind map
+//: tab holds the map templates. The rows keep the ids the old menu's rows had,
+//: so the Library's and the Dashboard's New board and New mind map reach them.
+//: Built here, with the cards, so the arrow is there when they are; each row waits
+//: for the board code (`ensureModule` is instant once it has run) before it acts.
+function wbNewMenuMount() {
+  const slot = $("wb-boards-new-slot");
+  if (!slot || slot.firstChild) return;
+  const afterBoards = (act) => () => ensureModule("boards").then(act);
+  const wrap = kebabMenu([
+    { label: "ph:note-pencil Whiteboard", title: "An empty canvas you arrange by hand", run: afterBoards(() => wbNewUntitledBoard()) },
+    { label: "ph:tree-structure Mind map", title: "Topics branching from one central idea", run: afterBoards(() => wbNewUntitledBoard("map")) },
+    { label: "ph:squares-four From a template", title: "Kanban, planning and decision boards, and map shapes", run: afterBoards(() => createNewBoard("board", { reveal: true })) },
+  ], "Other ways to start a board");
+  const opener = wrap.querySelector(":scope > button");
+  const menu = wrap.querySelector(":scope > .action-menu");
+  const rows = menu.querySelectorAll(".menu-item");
+  rows[1].id = "wb-boards-new-map";
+  rows[2].id = "wb-boards-new-template";
+  opener.id = "wb-boards-new-more";
+  opener.classList.remove("icon-only", "ghost");
+  opener.classList.add("split-button-caret");
+  setLabel(opener, "ph:caret-down");
+  opener.title = "More ways to start: a mind map or a template";
+  slot.replaceChildren(wrap);
+}
+
 //: The gallery's own two controls: its search box and the Reload button beside "+ New board".
 onDomReady(() => {
+  wbNewMenuMount();
   //: The landing's other buttons are wired by the board code (whiteboard.js), which is fetched after the
   //: cards are up. A press before it has run fetches it, then presses again.
   $("wb-boards-landing")?.addEventListener("click", (event) => {
