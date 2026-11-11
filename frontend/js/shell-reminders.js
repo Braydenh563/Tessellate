@@ -98,7 +98,8 @@ startClockTicker();
 tickClocks();
 
 window.addEventListener("resize", () => {
-  //: `typeof`, for the reason `refreshArtForTheme` below already records:
+  //: Guarded with `typeof` (88bfe5341 removed it, 87139afcf put it back, and
+  //: tests/test_boot_guards_late_scripts.py pins it):
   //: `sizeDashWidgets` lives in dashboard.js, which loads after this file,
   //: and the desktop window resizes itself while the scripts are still being
   //: fetched (pywebview shows the window, then sizes it to the saved
