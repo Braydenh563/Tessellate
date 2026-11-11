@@ -41,6 +41,12 @@ SURFACES = {
         ("openQuickNote",),
         ("quick-note-text", "quick-note-status", "quick-note-private", "quick-note-save", "quick-note-more", "quick-note-close", "quick-note-clear"),
     ),
+    "atlasChat": (
+        "atlas-host",
+        ("help-chat.js",),
+        ("openHelpChat",),
+        ("help-chat-group", "help-chat-messages", "help-chat-form", "help-chat-input", "help-chat-send", "help-chat-menu", "help-chat-starters"),
+    ),
     "shortcuts": (
         "shortcuts-overlay",
         ("reveal-targets.js", "settings-wiring.js"),
