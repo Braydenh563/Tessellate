@@ -4407,7 +4407,7 @@ Format: id | file:line | one line | status.
 
 **BK1 (companion, 24 rows)**
 
-- X15 | audit-1029-extras:121 | Dashboard has about 13,250 DOM nodes with six notes, 16.6k to 19.9k after opening settings and dialogs | partial: Guide chat is a template (6,831 to 6,437 nodes on a fresh folder); hidden tab panes (3,400 nodes) and the palette (438) still parse at boot, each wired by id at load
+- X15 | audit-1029-extras:121 | Dashboard has about 13,250 DOM nodes with six notes, 16.6k to 19.9k after opening settings and dialogs | partial: Guide chat, Reminders, Timeline, Graph, Documents panes and the palette are templates (boot nodes 5,640 to 3,887); chat (533), library (529, nested board template) and notes (1,034) still parse at boot (x15-1111.md)
 - ~~A36 | audit-1030-ai:67 | Esc on a companion menu returns focus to an anonymous kebab-opener.pointer-menu-anchor, not the companion | partial~~ fixed 6254337 (checked 2026-11-11)
 - A37 | audit-1030-ai:68 | The companion fades to opacity 0 behind the Settings dialog; on phone it sits at about (314,728) over the | open
 - ~~Z18 | audit-1031-extras:121 | Background art, when on, costs 0.203 s of script per 5 s (about 4 percent of one core) at 20 fps on this | open~~ fixed 405fbdcaf (12 fps after 30 s without a pointer; checked 2026-11-11)
