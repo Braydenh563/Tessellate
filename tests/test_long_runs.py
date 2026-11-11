@@ -58,7 +58,7 @@ def test_a_turn_doing_new_work_runs_past_the_flat_cap(ai_client, fake_ollama):
     MAX_ROUNDS allows, and the turn is not cut off part-way."""
     ids = [_note(ai_client, f"note number {n}") for n in range(agent.MAX_ROUNDS + 3)]
     fake_ollama.tool_script = [
-        [{"name": "tag_note", "arguments": {"note_id": note_id, "tags": ["filed"]}}]
+        [{"name": "get_note", "arguments": {"note_id": note_id}}]
         for note_id in ids
     ]
     events = _events(ai_client, "tag every one of my notes", use_tools=True)
@@ -108,7 +108,7 @@ def test_the_ceiling_still_holds(ai_client, fake_ollama):
         for n in range(agent.MAX_ROUNDS + agent.EARNED_ROUNDS + 4)
     ]
     fake_ollama.tool_script = [
-        [{"name": "tag_note", "arguments": {"note_id": note_id, "tags": ["x"]}}]
+        [{"name": "get_note", "arguments": {"note_id": note_id}}]
         for note_id in ids
     ]
     events = _events(ai_client, "tag all of them", use_tools=True)
@@ -127,9 +127,13 @@ def test_running_out_says_so_as_its_own_event(ai_client, fake_ollama):
     written, because "it stopped" and "it stopped having changed six notes"
     need different words."""
     note_id = _note(ai_client, "a note")
+    # Every write now parks for a Confirm card (owner, 2026-11-10), so the
+    # write is the first round and the rounds that earn the rest are reads of
+    # different notes.
+    others = [_note(ai_client, f"another note {n}") for n in range(agent.MAX_ROUNDS + agent.EARNED_ROUNDS + 2)]
     fake_ollama.tool_script = [
-        [{"name": "tag_note", "arguments": {"note_id": note_id, "tags": [f"t{n}"]}}]
-        for n in range(agent.MAX_ROUNDS + agent.EARNED_ROUNDS + 2)
+        [{"name": "tag_note", "arguments": {"note_id": note_id, "add": ["t0"]}}],
+        *[[{"name": "get_note", "arguments": {"note_id": other}}] for other in others],
     ]
     events = _events(ai_client, "keep tagging that note", use_tools=True)
     limits = [e for e in events if e["type"] == "limit"]
