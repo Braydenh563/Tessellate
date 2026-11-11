@@ -8430,7 +8430,12 @@ function nameMarkBuddyAct(act, ms) {
   //: startle, a lie-down's closed eyes) lets it go over 1.8s
   //: (`nmb-easing`), not in the frame its class comes off. The small ones
   //: (a blink, a look) have no face of their own.
-  if (was && was !== act && !NMB_FACELESS_ACTS.includes(was)) nameMarkBuddyEase(buddy, 1800);
+  //: **Written inside the hand-over, not before it** (the ease below and `data-variant` further on): the
+  //: hand-over's first read settles whatever is dirty, so a class or an attribute written ahead of it
+  //: made a restyle of its own before the change's (a wave's `data-variant` 11ms, the ease class 19ms at 4x
+  //: CPU on Documents with 30k nodes), and the change's restyle covers the same elements again. Written in
+  //: `leave` and `into` they settle once, after the parts have been read where they are.
+  const easeOut = !!was && was !== act && !NMB_FACELESS_ACTS.includes(was);
   //: `nmb-arms` marks an act that moves the arms (any but the faceless ones),
   //: so the mood's chin hand gives way to it (INBOX 1589: it was a cheer's
   //: third arm). Kept while another such act's class is on, whichever of the
@@ -8440,6 +8445,7 @@ function nameMarkBuddyAct(act, ms) {
   //: now waits and is written inside the enter's change. The same act twice, and a land
   //: after a throw (no enter blend), keep their own.
   const leave = () => {
+    if (easeOut) nameMarkBuddyEase(buddy, 1800);
     buddy.classList.remove(`nmb-act-${was}`);
     if (![...buddy.classList].some((c) => c.startsWith("nmb-act-") && !NMB_FACELESS_ACTS.includes(c.slice(8)))) buddy.classList.remove("nmb-arms");
   };
@@ -8502,16 +8508,21 @@ function nameMarkBuddyAct(act, ms) {
   //: CSS's), and every act's own animations run a little faster or slower
   //: this time (`nameMarkBuddyVary`, below).
   const variants = NMB_VARIANTS[act] || 0;
+  let variant = "";
   if (variants) {
     const v = nameMarkBuddyPickVariant(variants, nmb.variant?.[act] ?? -1);
     nmb.variant = { ...(nmb.variant || {}), [act]: v };
-    buddy.dataset.variant = String(v);
-  } else delete buddy.dataset.variant;
+    variant = String(v);
+  }
   if (act === "tilt") nameMarkBuddyTilt(Math.random() < 0.5 ? -0.7 : 0.7, (ms || spec.ms) - 400);
   //: **Into an act eased** (INBOX 619): parts mid-swing are handed over from
   //: where they were. Down from a throw nothing swings (its loops restart
   //: with the flight's end), so the land skips the 8 to 40ms read.
-  const into = () => buddy.classList.add(`nmb-act-${act}`, ...(NMB_FACELESS_ACTS.includes(act) ? [] : ["nmb-arms"]));
+  const into = () => {
+    if (variant) buddy.dataset.variant = variant;
+    else delete buddy.dataset.variant;
+    buddy.classList.add(`nmb-act-${act}`, ...(NMB_FACELESS_ACTS.includes(act) ? [] : ["nmb-arms"]));
+  };
   if (act === "land" && nmb.afterLand) {
     if (joined) nameMarkBuddyBlend(buddy, leave);
     into();
@@ -9915,6 +9926,12 @@ function nameMarkBuddyBlend(buddy, change, ms = NMB_BLEND_MS) {
   //: eases are skipped in the second.
   const eases = [];
   const eased = new Map();
+  //: **The read after `change()` cannot be made cheaper** (lag 1111, 4x CPU, Documents with 30k nodes): it pays
+  //: the act's own restyle (20ms median, 95 for a cheer or a read, whose custom properties restyle the whole
+  //: figure). `document.getAnimations()`, one element's `getAnimations()` and `getComputedStyle` cost the same,
+  //: containment on the companion does not shrink it, and with no hand-over the restyle lands in the next frame
+  //: (62.9 against 65.4ms), where the jolt this hand-over prevents would be painted. What it owns is what is
+  //: dirty before its first read: a caller writes nothing ahead of `change` (`nameMarkBuddyAct`'s `leave`, `into`).
   let alive;
   change();
   for (const { anim, el, from } of held) {
