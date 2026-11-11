@@ -32,7 +32,6 @@
  "src/tessellate/ai/lexical_filing.py::_tally": 25,
  "src/tessellate/ai/lexical_filing.py::_with_proposal": 18,
  "src/tessellate/ai/meeting_summary.py::parse_reply": 19,
- "src/tessellate/ai/notebook_stats.py::_top_subjects": 16,
  "src/tessellate/ai/notebook_stats.py::answer": 17,
  "src/tessellate/ai/ollama_client.py::OllamaClient.chat_tools": 22,
  "src/tessellate/ai/ollama_client.py::OllamaClient.chat_tools_stream": 24,
