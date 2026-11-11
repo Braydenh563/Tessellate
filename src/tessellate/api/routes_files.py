@@ -2163,10 +2163,10 @@ def get_media(filename: str, session: Session = Depends(get_session)) -> FileRes
 
 
 # The OCR routes and their helpers live in routes_files_ocr.py (K24). Imported
-# last because that module imports this one; the names are re-exported because
-# code here, routes_files_readings.py and the tests reach them as
-# `routes_files.<name>`, and the moved code reaches back through `rf.<name>` so
-# a patch on this module applies.
+# last, once everything above exists, and re-exported here because code in this
+# module, routes_files_readings.py and the tests reach them as
+# `routes_files.<name>`; the moved code reaches back through `rf.<name>` (bound
+# below) so a patch on this module applies.
 from tessellate.api.routes_files_ocr import (  # noqa: E402,F401
     _REGION_LOCKS,
     _REGION_MISSES,
@@ -2195,3 +2195,7 @@ from tessellate.api.routes_files_ocr import (  # noqa: E402,F401
     _set_edited_reading,
     _stored_page_reads,
 )
+
+from tessellate.api import routes_files_ocr as _routes_files_ocr  # noqa: E402
+
+_routes_files_ocr.bind(sys.modules[__name__])

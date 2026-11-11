@@ -1,7 +1,7 @@
 """OCR routes of files and media: the reading workbench's regions, page reads, readers and language.
 
 Split out of routes_files.py (K24); mounted next to that module's router in app.py.
-Import routes_files first (it re-exports this module at its foot).
+routes_files binds itself into `rf` below once it has loaded, so import that module, not this one.
 Helpers that tests patch as `routes_files.<name>` are reached here as `rf.<name>`
 (the way routes_files_readings.py does), so a patch on routes_files still applies;
 routes_files re-exports them from this module at its foot.
@@ -10,7 +10,6 @@ routes_files re-exports them from this module at its foot.
 from __future__ import annotations
 
 import contextlib
-import importlib
 import json
 import logging
 import tempfile
@@ -33,19 +32,17 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["files"])
 
 
-class _RoutesFiles:
-    """`routes_files` by attribute, looked up at call time.
-
-    routes_files re-exports this module at its foot, so importing it here would
-    be an import cycle at load; looking it up on each use also means a test's
-    patch of `routes_files.<name>` is what these routes see.
-    """
-
-    def __getattr__(self, name: str):
-        return getattr(importlib.import_module("tessellate.api.routes_files"), name)
+#: `routes_files`, bound by that module at its foot (`bind`). It re-exports this
+#: module, so importing it here would close an import cycle; a back-reference set
+#: after both are loaded does not, and `rf.<name>` is read at call time, so a
+#: test's patch of `routes_files.<name>` is what these routes see.
+rf = None
 
 
-rf = _RoutesFiles()
+def bind(module) -> None:  # noqa: ANN001
+    """Called once by routes_files after it has finished loading."""
+    global rf
+    rf = module
 
 
 class OcrRegionBox(BaseModel):
