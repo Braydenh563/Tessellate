@@ -80,4 +80,5 @@ def test_the_idle_warm_fetches_scripts_only_so_it_restyles_nothing():
     lazy = APP_JS.read_text(encoding="utf-8")
     for name in ("graph", "library"):
         assert re.search(rf"{name}: \[[^\]]*\"/css/\w+-lazy\.css\"", lazy), name
-    assert all(f[1] > "c" for f in ("/js/a.js", "/vendor/d3.js")) and not "/css/a.css"[1] > "c"
+    sample = ["/js/a.js", "/vendor/d3.js", "/css/a.css"]
+    assert [f for f in sample if f[1] > "c"] == ["/js/a.js", "/vendor/d3.js"]
