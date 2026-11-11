@@ -1188,7 +1188,7 @@ function paletteCaughtNow() {
 function paletteKeys(match) {
   if (match.keys) return match.keys;
   if (match.chord && typeof shortcuts !== "undefined") return shortcuts[match.chord]?.keys || "";
-  if (match.tab) {
+  if (match.tab && typeof TAB_JUMP_KEYS !== "undefined") {
     const letter = Object.keys(TAB_JUMP_KEYS).find((key) => TAB_JUMP_KEYS[key] === match.tab);
     if (letter) return `T ${letter.toUpperCase()}`;
   }
