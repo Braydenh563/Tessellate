@@ -17,10 +17,11 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-LIFE = (JS / "atlas-life.js").read_text(encoding="utf-8")
+LIFE = unwrapped((JS / "atlas-life.js").read_text(encoding="utf-8"))
 AVATARS = (JS / "avatars.js").read_text(encoding="utf-8")
 MICRO = (JS / "atlas-micro.js").read_text(encoding="utf-8")
 ATLAS = (JS / "atlas.js").read_text(encoding="utf-8")
@@ -123,7 +124,7 @@ const at = async (mode, onBattery) => {
 
 def test_the_setting_is_wired_and_reset_clears_it() -> None:
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-    controls = (JS / "settings-controls.js").read_text(encoding="utf-8")
+    controls = unwrapped((JS / "settings-controls.js").read_text(encoding="utf-8"))
     settings = (JS / "settings.js").read_text(encoding="utf-8")
     assert 'id="avatar-buddy-rest"' in html and html.count('<option value="mains">') == 1
     assert 'prefs.set("avatar-buddy-rest", e.target.value)' in controls

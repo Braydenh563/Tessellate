@@ -14,9 +14,10 @@ import json
 import re
 import subprocess
 from pathlib import Path
+from tests._js_scope import unwrapped, unwrapped_copy
 
 ROOT = Path(__file__).resolve().parents[1]
-JS = (ROOT / "frontend" / "js" / "settings-find.js").read_text(encoding="utf-8")
+JS = unwrapped((ROOT / "frontend" / "js" / "settings-find.js").read_text(encoding="utf-8"))
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
 
@@ -34,8 +35,9 @@ console.log(call(process.argv[2]));
 
 
 def _node(expr: str):
+    unwrapped_copy(ROOT / "frontend" / "js" / "meaning.js")  # the harness reads it from beside the copy of settings-find.js
     out = subprocess.run(
-        ["node", "-e", HARNESS, str(ROOT / "frontend" / "js" / "settings-find.js"), expr],
+        ["node", "-e", HARNESS, str(unwrapped_copy(ROOT / "frontend" / "js" / "settings-find.js")), expr],
         capture_output=True,
         text=True,
         check=True,

@@ -9,6 +9,7 @@ holds `reveal:manual`. The Guide's text names its More actions menu.
 
 from tests._help_text import help_more_text
 from pathlib import Path
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -24,7 +25,7 @@ def test_the_palette_and_find_anything_have_an_open_the_manual_command():
 
 
 def test_the_manual_topic_in_settings_help_opens_the_manual_itself():
-    find = (JS / "settings-find.js").read_text(encoding="utf-8")
+    find = unwrapped((JS / "settings-find.js").read_text(encoding="utf-8"))
     assert 'topic.id === "manual" ? { manual: true' in find
     assert "if (link.manual) button.addEventListener" in find
 

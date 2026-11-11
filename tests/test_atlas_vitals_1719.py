@@ -12,6 +12,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped, unwrapped_copy
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -48,7 +49,7 @@ console.log(JSON.stringify(out));
 
 def run(which: str = "doc") -> dict:
     got = subprocess.run(
-        ["node", "-e", HARNESS, str(JS / "atlas-motion.js"), str(JS / "atlas-life.js"), str(ROOT / "frontend" / "companion-catalogue.json"), which],
+        ["node", "-e", HARNESS, str(JS / "atlas-motion.js"), str(unwrapped_copy(JS / "atlas-life.js")), str(ROOT / "frontend" / "companion-catalogue.json"), which],
         capture_output=True, text=True, timeout=60, check=True,
     )
     return json.loads(got.stdout)
@@ -81,7 +82,7 @@ def test_before_the_catalogue_arrives_nothing_changes():
 
 
 def test_the_beat_sets_the_rate_and_the_blink_clock_reads_the_gap():
-    life = (JS / "atlas-life.js").read_text(encoding="utf-8")
+    life = unwrapped((JS / "atlas-life.js").read_text(encoding="utf-8"))
     motion = (JS / "atlas-motion.js").read_text(encoding="utf-8")
     assert re.search(r"atlasBreathFrame\(box, live\);\n\s*atlasBreathFrame\.rate\(box\.atlasBreath,", life)
     assert "4200 * gap);" in motion and "atlasBlink.vitals(" in motion

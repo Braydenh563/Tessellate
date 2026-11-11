@@ -134,7 +134,7 @@ def test_the_tail_eases_home_without_reading_the_style() -> None:
     # open. The pose comes from the sway's own eased progress and keyframes instead.
     if not shutil.which("node"):
         pytest.skip("node not installed")
-    life = (JS / "atlas-life.js").read_text(encoding="utf-8")
+    life = unwrapped((JS / "atlas-life.js").read_text(encoding="utf-8"))
     src = "const atlasFix = (v) => +v.toFixed(2);\n" + _fn(life, "atlasTailRest") + "\n" + _fn(life, "atlasTailUnrest")
     script = r"""
 const vm = require("vm");

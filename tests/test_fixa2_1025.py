@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 LAZY_CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
@@ -46,7 +47,7 @@ def test_settings_search_phone_ranks_other_devices_first():
     # Browser: scratchpad/ui-sweeps/settingsphone.js (findSettings("phone")[0]).
     index = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert '<h3 data-synonyms="phone phones tablet lan wifi">Other devices</h3>' in index
-    find = (ROOT / "frontend" / "js" / "settings-find.js").read_text(encoding="utf-8")
+    find = unwrapped((ROOT / "frontend" / "js" / "settings-find.js").read_text(encoding="utf-8"))
     assert "row.synonyms.includes(w)" in find
 
 

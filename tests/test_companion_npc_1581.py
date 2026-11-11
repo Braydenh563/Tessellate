@@ -36,7 +36,7 @@ JS = ROOT / "frontend" / "js"
 AV = unwrapped((JS / "avatars.js").read_text(encoding="utf-8"))
 ATLAS = (JS / "atlas.js").read_text(encoding="utf-8")
 MOTION = (JS / "atlas-motion.js").read_text(encoding="utf-8")
-MENU = (JS / "companion-menu.js").read_text(encoding="utf-8")
+MENU = unwrapped((JS / "companion-menu.js").read_text(encoding="utf-8"))
 SETTINGS = (JS / "companion-settings.js").read_text(encoding="utf-8")
 CARDS = (JS / "note-cards.js").read_text(encoding="utf-8")
 TOPICS = help_more_text()

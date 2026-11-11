@@ -10,6 +10,7 @@ from pathlib import Path
 
 import pytest
 from tests._app_js import with_pieces
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -203,7 +204,7 @@ def test_hr22_the_engine_detail_reads_on_the_hover_tone():
 
 def test_hr18_a_shut_model_group_builds_no_cards_until_it_opens():
     """Settings > Models built all 31 cards on open; a shut fold builds none (HR18)."""
-    js = (ROOT / "frontend" / "js" / "settings-models.js").read_text(encoding="utf-8")
+    js = unwrapped((ROOT / "frontend" / "js" / "settings-models.js").read_text(encoding="utf-8"))
     fill = js[js.index("for (const group of groups) {\n    const grid") :][:300]
     assert "!grid.parentNode.open" in fill, fill
     toggle = js[js.index('section.addEventListener("toggle"') :][:260]

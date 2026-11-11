@@ -20,6 +20,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 SETTINGS = (JS / "settings.js").read_text(encoding="utf-8")
@@ -106,7 +107,7 @@ def test_every_sidebar_pick_goes_through_the_one_helper():
     for name in ("notes-list.js", "menus.js"):
         assert "nearestScrollParent.reveal" not in (JS / name).read_text(encoding="utf-8"), name
     #: The follow's old 8px pad is gone, not kept beside the helper.
-    assert "const pad = 8;" not in (JS / "settings-find.js").read_text(encoding="utf-8")
+    assert "const pad = 8;" not in unwrapped((JS / "settings-find.js").read_text(encoding="utf-8"))
 
 
 def test_a_short_window_scrolls_the_manual_contents_rather_than_squeezing_them():

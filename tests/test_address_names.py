@@ -7,6 +7,7 @@ import pytest
 
 from tessellate.api import routes_auth
 from tessellate.core import netbind
+from tests._js_scope import unwrapped
 
 PASSWORD = "testpassword123"
 PHONE = ("192.168.0.50", 50000)
@@ -121,7 +122,7 @@ def test_the_settings_group_is_wired_and_a_new_domain_asks_for_the_password():
 
     root = Path(__file__).resolve().parent.parent
     html = (root / "frontend" / "index.html").read_text(encoding="utf-8")
-    js = (root / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8")
+    js = unwrapped((root / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8"))
     for ident in ("account-local-name", "account-domains", "account-names-save", "address-names-help"):
         assert f'id="{ident}"' in html, ident
     assert 'data-help-for="address-names-help"' in html

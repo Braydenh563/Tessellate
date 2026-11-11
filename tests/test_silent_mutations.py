@@ -17,6 +17,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from tests._js_scope import unwrapped
+
 from tessellate.api.asset_strip import strip_js
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
@@ -52,7 +54,7 @@ def test_the_named_writes_say_when_they_fail():
         "shell-reminders.js": "/reminders/${r.id}`, { method: \"DELETE\" })",
     }
     for file, url in named.items():
-        code = strip_js((JS / file).read_text(encoding="utf-8"))
+        code = strip_js(unwrapped((JS / file).read_text(encoding="utf-8")))
         at = code.index(url)
         window = code[at : at + 260]
         assert not SILENT.search(window), f"{file}: {url} still fails silently"

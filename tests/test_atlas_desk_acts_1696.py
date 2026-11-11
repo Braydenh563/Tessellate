@@ -260,7 +260,7 @@ def test_the_slow_down_keeps_the_planets_where_they_are_and_the_waking_rings_eas
     playback rate instead, and the rings' opacity is a transition both ways."""
     css08 = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
     assert re.search(r"#nm-buddy \.atl-figure-box > \.atl-orbits \{[^}]*transition: [^;}]*opacity", css08)
-    life = (JS / "atlas-life.js").read_text(encoding="utf-8")
+    life = unwrapped((JS / "atlas-life.js").read_text(encoding="utf-8"))
     assert 'classList.contains("nmb-act-blanket") ? 1 / 3 : 1' in life
     assert "updatePlaybackRate(pace)" in life and '.closest?.(".atl-orbits")' in life
 

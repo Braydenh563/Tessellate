@@ -97,7 +97,7 @@ def test_it_opens_from_the_palette_the_top_bar_and_the_settings_page():
     assert re.search(r'label: "ph:palette Appearance panel".*act: \(\) => openAppearancePanel\(\)', panes)
     settings = (JS / "settings.js").read_text(encoding="utf-8")
     assert '$("theme-btn").addEventListener("contextmenu"' in settings and "openAppearancePanel()" in settings
-    controls = (JS / "settings-controls.js").read_text(encoding="utf-8")
+    controls = unwrapped((JS / "settings-controls.js").read_text(encoding="utf-8"))
     assert "function ensureAppearancePopOut" in controls and "Pop out" in controls
     assert 'if (box.id === "settings-appearance") ensureAppearancePopOut(box);' in controls
 

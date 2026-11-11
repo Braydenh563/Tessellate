@@ -7,6 +7,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from tessellate.ai import help_chat
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -53,7 +54,7 @@ def test_settings_has_the_switch_with_its_help_beside_the_pin():
         "initHelpToggles(head);",
     ):
         assert needle in HELLO, needle
-    controls = (JS / "settings-controls.js").read_text(encoding="utf-8")
+    controls = unwrapped((JS / "settings-controls.js").read_text(encoding="utf-8"))
     assert 'privateSpaces("hello", "settings", info.hello)' in controls
 
 

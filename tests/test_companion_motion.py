@@ -1792,7 +1792,7 @@ def test_nothing_runs_behind_the_lock_and_an_idle_page_is_not_polled() -> None:
     assert "is-idle" in poll
     assert "nameMarkBuddyLockSync();" in _fn("nameMarkBuddyBuild")
     assert '"none"' in _fn("nameMarkBuddyLockSync")
-    life = (ROOT / "frontend" / "js" / "atlas-life.js").read_text(encoding="utf-8")
+    life = unwrapped((ROOT / "frontend" / "js" / "atlas-life.js").read_text(encoding="utf-8"))
     frame = _fn("atlasTailFrame", life)
     assert 'data-atlas-hidden' in frame and "tail.calm" in frame and "ATLAS_TAIL_CALM_MS" in frame
     # The large view keeps the frame loop: it is the one thing on screen.

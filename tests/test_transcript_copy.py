@@ -5,9 +5,10 @@ as a Shift-click run, or all of them, with or without times
 from __future__ import annotations
 
 from pathlib import Path
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1] / "frontend"
-JS = (ROOT / "js" / "meetings.js").read_text(encoding="utf-8")
+JS = unwrapped((ROOT / "js" / "meetings.js").read_text(encoding="utf-8"))
 CSS = (ROOT / "css" / "meetings-lazy.css").read_text(encoding="utf-8")
 
 

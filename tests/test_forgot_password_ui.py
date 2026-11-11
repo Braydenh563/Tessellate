@@ -16,6 +16,7 @@ from pathlib import Path
 from tests import _js_scope
 
 from tests._app_js import app_js_text
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
@@ -114,7 +115,7 @@ def test_settings_names_the_button_for_what_it_does():
     assert "await recoveryAccountRow(info)" in account
     lazy = _js_scope.unwrapped((ROOT / "frontend" / "js" / "account-recovery.js").read_text(encoding="utf-8"))
     assert '"Replace it" : "Make a recovery key"' in _function(lazy, "recoveryAccountRow")
-    controls = (ROOT / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8")
+    controls = unwrapped((ROOT / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8"))
     assert '$("account-recovery-make").addEventListener("click", () => makeRecoveryKey())' in controls
     assert "showRecoveryKey(result.recovery_key" in controls  # after a re-key
 

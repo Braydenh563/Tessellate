@@ -12,6 +12,7 @@ from pathlib import Path
 
 from tests import _js_scope
 from tests._app_js import app_js_text
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = app_js_text()
@@ -60,7 +61,7 @@ def test_a_suggested_link_is_two_chips_a_bar_and_a_reason_on_request():
 def test_the_vault_rekey_has_a_button():
     assert 'id="account-rekey"' in HTML and 'id="account-rekey-password"' not in HTML
     assert 'data-help-for="rekey-help"' in HTML
-    controls = (JS / "settings-controls.js").read_text(encoding="utf-8")
+    controls = unwrapped((JS / "settings-controls.js").read_text(encoding="utf-8"))
     assert '"/auth/rotate-vault-key"' in controls
     #: The password on the lock card's prompt, not a second password field.
     assert "askPasswordPrompt({" in controls[controls.index('$("account-rekey")') :][:1200]

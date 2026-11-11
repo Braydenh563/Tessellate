@@ -27,6 +27,7 @@ from pathlib import Path
 
 from tests import _js_scope
 from tests._app_js import app_js_family, app_js_text, frontend_text, with_pieces, documents_text
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parent.parent
 CSS = sorted((ROOT / "frontend" / "css").glob("*.css"))
@@ -3956,7 +3957,7 @@ def test_a_settings_pane_lists_its_groups_in_the_sidebar() -> None:
     current = _css_block('#settings-nav .settings-nav-group[aria-current="location"]')
     assert "var(--accent)" in current and "font-weight: 650" in current
     assert "--accent-surface" not in current and "background" not in current
-    code = (ROOT / "frontend" / "js" / "settings-find.js").read_text(encoding="utf-8")
+    code = unwrapped((ROOT / "frontend" / "js" / "settings-find.js").read_text(encoding="utf-8"))
     assert "scrollIntoView" not in re.sub(r"//.*", "", code), "scroll the pane's own scrollTop"
     assert code.count('"settings-nav-groups"') >= 1 and "aria-current" in code
 
@@ -3978,7 +3979,7 @@ def test_a_model_card_is_the_surface_three_tile_with_one_primary_action() -> Non
     card = _css_block(".model-card")
     assert "var(--surface-3)" in card
     assert "border: 1px solid transparent" in card
-    code = (ROOT / "frontend" / "js" / "settings-models.js").read_text(encoding="utf-8")
+    code = unwrapped((ROOT / "frontend" / "js" / "settings-models.js").read_text(encoding="utf-8"))
     assert code.count('classList.add("model-card-primary")') == 1, "one primary action per card"
     assert "const filled = !!model.recommended || !!model.custom;" in code
     assert "innerHTML" not in code
@@ -4784,7 +4785,7 @@ def test_every_settings_pane_opens_on_its_dock() -> None:
     settings = with_pieces("settings.js")
     body = _function_body(settings, "ensureSettingsPaneTitle")
     assert '"dock settings-pane-title"' in body and '"dock-identity"' in body
-    find = (ROOT / "frontend" / "js" / "settings-find.js").read_text(encoding="utf-8")
+    find = unwrapped((ROOT / "frontend" / "js" / "settings-find.js").read_text(encoding="utf-8"))
     # The index is the sidebar's second level now (INBOX 622), not a strip in
     # this dock.
     assert '$("settings-nav")' in _function_body(find, "settingsIndexBuild")
@@ -4934,7 +4935,7 @@ def test_the_installed_models_are_model_cards():
     installed; the boot copy and its fixed-column CSS are gone, and the
     status poll calls it behind a `typeof` guard, as it does the suggested
     list."""
-    lazy = (ROOT / "frontend" / "js" / "settings-models.js").read_text(encoding="utf-8")
+    lazy = unwrapped((ROOT / "frontend" / "js" / "settings-models.js").read_text(encoding="utf-8"))
     body = _function_body(lazy, "renderInstalledModels")
     assert "buildModelCard(model, state)" in body and 'listed: "installed"' in body
     assert "list.dataset.sig === sig" in body, "a poll must not redraw the cards under an open menu"
@@ -5849,7 +5850,7 @@ def test_an_address_for_another_device_is_one_block_drawn_by_one_renderer() -> N
     devices and the privacy receipt draw one block, from one function: the
     first address large with Copy, the rest behind a disclosure row."""
     js = ROOT / "frontend" / "js"
-    controls = (js / "settings-controls.js").read_text(encoding="utf-8")
+    controls = unwrapped((js / "settings-controls.js").read_text(encoding="utf-8"))
     body = controls.split("function renderLanAddresses(", 1)[1].split("\n}\n", 1)[0]
     assert '"lan-address"' in body and "copyToClipboard(" in body
     assert "disclosure-row" in body and "aria-expanded" in body
@@ -6658,7 +6659,7 @@ def test_a_pane_tab_row_names_sections_that_exist() -> None:
                 assert target in html.replace("'", '"') or target.replace('"', "'") in html, f"{name}: {target}"
         for ident in re.findall(r'class="pop-count" id="([a-z-]+)"', inner):
             assert any(f'$("{ident}")' in p.read_text(encoding="utf-8") for p in JS), f"nothing fills #{ident}"
-    controls = (ROOT / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8")
+    controls = unwrapped((ROOT / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8"))
     assert "function ensurePaneTabs(box)" in controls and "  ensurePaneTabs(box);" in controls
     activity = html[html.index('id="activity-tabs"') : html.index('id="activity-running"')]
     assert activity.count("pop-tab-glyph") == 2 and activity.count("pop-count") == 2
@@ -7363,7 +7364,7 @@ def test_a_settings_row_with_a_text_value_shares_one_alignment() -> None:
     rule = re.search(r"\.setting-row:has\(>\s*\.setting-control\.muted:not\(\.row\)\)\s*\{([^}]*)\}", css)
     assert rule, "the text-value row rule is gone (04-chat-dock-appearance.css)"
     assert re.search(r"align-items:\s*baseline", rule.group(1))
-    doctor = (ROOT / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8")
+    doctor = unwrapped((ROOT / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8"))
     assert 'value.className = "setting-control muted"' in doctor
     assert "A Settings row whose right side is text" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
 
@@ -7648,7 +7649,7 @@ def test_a_picked_sidebar_row_keeps_a_row_of_room():
     #: The room is the row's own height, not a pad in pixels.
     assert "Math.min(at.height," in helper and "box.scrollTo(" in helper
     #: A sidebar's own follow and the trees' keys never scroll by hand again beside it.
-    find = (js / "settings-find.js").read_text(encoding="utf-8")
+    find = unwrapped((js / "settings-find.js").read_text(encoding="utf-8"))
     follow = find.split("function settingsNavFollow(link) {", 1)[1].split("\n}\n", 1)[0]
     assert "nearestScrollParent.reveal(" in follow and "scrollTo(" not in follow and "scrollIntoView" not in follow
     library = (js / "library.js").read_text(encoding="utf-8")

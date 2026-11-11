@@ -13,12 +13,13 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_an_installed_model_card_is_one_level_under_its_h3() -> None:
-    text = (ROOT / "frontend" / "js" / "settings-models.js").read_text(encoding="utf-8")
+    text = unwrapped((ROOT / "frontend" / "js" / "settings-models.js").read_text(encoding="utf-8"))
     card = text.split("function buildModelCard(model, state)", 1)[1].split("\n}\n", 1)[0]
     assert 'document.createElement(model.listed === "installed" ? "h4" : "h5")' in card
     assert 'listed: "installed"' in text, "the installed list marks its cards"

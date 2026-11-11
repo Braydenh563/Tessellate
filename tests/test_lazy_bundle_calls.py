@@ -453,7 +453,6 @@ LAZY_REACHED_AFTER_LOAD: dict[str, str] = {
     "appearance-panel.js:releaseThemeHold": "closeAppearancePanel returns unless APPEARANCE_PANEL.open, and openAppearancePanel awaits settingsControls before it sets it (line 265)",
     "appearance-panel.js:settingDefaults": "the panel is opened only by openAppearancePanel, which awaits settingsControls and settings-rows.js (line 265) before it sets APPEARANCE_PANEL.open, and this returns while it is not open",
     "appearance-panel.js:settingRowsIn": "the panel is opened only by openAppearancePanel, which awaits settingsControls and settings-rows.js (line 265) before it sets APPEARANCE_PANEL.open, and this returns while it is not open",
-    "appearance-panel.js:settingsControlState": "the panel is opened only by openAppearancePanel, which awaits settingsControls and settings-rows.js (line 265) before it sets APPEARANCE_PANEL.open, and closeAppearancePanel returns while it is not open",
     "ask-compose.js:wbMapTidyFresh": "after `await openWhiteboardBoard(...)`, a stand-in that loads the library bundle (whiteboard-map.js) first",
     "atlas-motion.js:atlasRigLower": "`if (rig.lower)`: only atlasRigLowerAttach (atlas-life.js) sets it, and the atlasLife bundle carries atlas-motion.js",
     "atlas.js:atlasTailFrame": "reached only through a tail atlasTailAttach (atlas-life.js) made, as the line above says",

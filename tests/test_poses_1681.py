@@ -23,7 +23,7 @@ from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 AV = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
-LIFE = (ROOT / "frontend" / "js" / "atlas-life.js").read_text(encoding="utf-8")
+LIFE = unwrapped((ROOT / "frontend" / "js" / "atlas-life.js").read_text(encoding="utf-8"))
 MOTION = (ROOT / "frontend" / "js" / "atlas-motion.js").read_text(encoding="utf-8")
 TRAVEL = (ROOT / "frontend" / "css" / "companion-travel-lazy.css").read_text(encoding="utf-8")
 ATLAS_CSS = (ROOT / "frontend" / "css" / "atlas-lazy.css").read_text(encoding="utf-8")

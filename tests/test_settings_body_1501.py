@@ -18,6 +18,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from tests._js_scope import unwrapped
+
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -71,7 +73,7 @@ def test_the_script_loads_before_app_js_which_calls_it():
 
 
 def _src(name: str) -> str:
-    return (FRONTEND / "js" / name).read_text(encoding="utf-8")
+    return unwrapped((FRONTEND / "js" / name).read_text(encoding="utf-8"))
 
 
 def test_opening_the_window_builds_the_body_first():

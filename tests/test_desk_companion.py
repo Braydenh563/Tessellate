@@ -19,6 +19,7 @@ from types import SimpleNamespace
 import pytest
 
 from tessellate.core import desk_companion as dc
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parent.parent
 MAIN = (ROOT / "src" / "tessellate" / "__main__.py").read_text(encoding="utf-8")
@@ -389,7 +390,7 @@ def test_settings_has_the_switch_with_its_help_and_the_tray_names_it():
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert 'id="pref-desktop-companion"' in html
     assert 'data-help-for="desktop-companion-help"' in html and 'id="desktop-companion-help"' in html
-    controls = (ROOT / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8")
+    controls = unwrapped((ROOT / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8"))
     assert 'setPreference("desktop_companion", checked)' in controls
     assert "Show desktop companion" in (ROOT / "src" / "tessellate" / "core" / "desk_companion.py").read_text(encoding="utf-8")
 
@@ -544,7 +545,7 @@ def test_the_installers_make_no_desktop_shortcut_unless_asked():
 
 
 def test_the_companions_menu_has_the_desktop_row_only_in_the_desktop_app():
-    menu = (ROOT / "frontend" / "js" / "companion-menu.js").read_text(encoding="utf-8")
+    menu = unwrapped((ROOT / "frontend" / "js" / "companion-menu.js").read_text(encoding="utf-8"))
     assert "if (isDesktopShell === true)" in menu
     assert "Hide from desktop" in menu and "Show on desktop" in menu
     assert 'setPreference("desktop_companion", !onDesktop)' in menu

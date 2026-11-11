@@ -8,6 +8,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from tests._js_scope import unwrapped_copy
+
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -15,7 +17,7 @@ needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
 SCRIPT = r"""
 const fs = require("fs"), vm = require("vm");
-const src = fs.readFileSync("frontend/js/atlas-life.js", "utf8");
+const src = fs.readFileSync(process.argv[1], "utf8");
 const ctx = { atlasFix: (v) => Math.round(v * 100) / 100, console, Math, Map, Set, Object, Array, Number, performance, document: {}, window: {}, setTimeout, clearTimeout };
 vm.createContext(ctx);
 vm.runInContext(src + "\n;this.__x = { L: ATLAS_LOWER_STATES, H: ATLAS_HAIR_STATES, N: ATLAS_NEB_STATES, of: atlasRigLower.blend.of, byState: atlasRigLower.flowByState, parts: atlasRigLower.flowParts, flow: atlasRigLower.flow, at: atlasRigLower.flowAt };", ctx);
@@ -51,7 +53,7 @@ console.log(JSON.stringify(out));
 
 @needs_node
 def test_every_pose_has_six_or_more_arrangements_inside_the_authored_turn() -> None:
-    out = subprocess.run(["node", "-e", SCRIPT], capture_output=True, text=True, timeout=30, check=True, cwd=ROOT)
+    out = subprocess.run(["node", "-e", SCRIPT, str(unwrapped_copy(ROOT / "frontend" / "js" / "atlas-life.js"))], capture_output=True, text=True, timeout=30, check=True, cwd=ROOT)
     got = json.loads(out.stdout)
     for state, row in got["states"].items():
         assert row["n"][0] == row["n"][1] == row["n"][2] >= 6, (state, "lower body, hair and stream agree on six or more")
@@ -62,7 +64,7 @@ def test_every_pose_has_six_or_more_arrangements_inside_the_authored_turn() -> N
 
 @needs_node
 def test_each_part_drifts_on_its_own_closed_path_under_the_rest() -> None:
-    out = subprocess.run(["node", "-e", SCRIPT], capture_output=True, text=True, timeout=30, check=True, cwd=ROOT)
+    out = subprocess.run(["node", "-e", SCRIPT, str(unwrapped_copy(ROOT / "frontend" / "js" / "atlas-life.js"))], capture_output=True, text=True, timeout=30, check=True, cwd=ROOT)
     got = json.loads(out.stdout)
     assert got["paths"] == 7 and got["loops"] == [7, 7], "one path per element, replaced not stacked"
     assert got["closed"], "a path ends where it began, so it loops without a cut"
@@ -91,5 +93,5 @@ console.log(JSON.stringify(out));
 def test_no_part_turns_more_than_four_degrees_in_any_pose() -> None:
     """Review of 1683b: tails reached 1.6 x 2.2 x 1.6 = 5.6 degrees on a startle; the lower body stays within 4 of the torso.
     Intent moved (2026-11-07): the path no longer turns at all (the CSS sway owns `rotate`), so it holds at 0."""
-    out = subprocess.run(["node", "-e", TURN_SCRIPT], capture_output=True, text=True, timeout=60, check=True, cwd=ROOT)
+    out = subprocess.run(["node", "-e", TURN_SCRIPT, str(unwrapped_copy(ROOT / "frontend" / "js" / "atlas-life.js"))], capture_output=True, text=True, timeout=60, check=True, cwd=ROOT)
     assert json.loads(out.stdout)["max"] <= 4.0

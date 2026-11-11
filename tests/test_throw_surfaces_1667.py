@@ -19,7 +19,7 @@ def app_js_text() -> str:
 
 
 def frontend_text(name: str) -> str:
-    return (JS / name).read_text(encoding="utf-8")
+    return unwrapped((JS / name).read_text(encoding="utf-8"))
 
 READS = ("getBoundingClientRect", "getComputedStyle", "offsetWidth", "offsetHeight", "scrollHeight", "elementFromPoint", "getClientRects")
 

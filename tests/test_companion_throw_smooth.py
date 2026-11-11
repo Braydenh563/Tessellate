@@ -27,7 +27,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 #: The companion's code: avatars.js and the lazy files its settings and throw moved to (audit AI23).
 AV = "\n".join(unwrapped((ROOT / "frontend" / "js" / n).read_text(encoding="utf-8")) for n in ("avatars.js", "companion-throw.js"))
-THROW = (ROOT / "frontend" / "js" / "companion-throw.js").read_text(encoding="utf-8")
+THROW = unwrapped((ROOT / "frontend" / "js" / "companion-throw.js").read_text(encoding="utf-8"))
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
 

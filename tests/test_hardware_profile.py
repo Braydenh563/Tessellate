@@ -18,6 +18,7 @@ import pytest
 
 from tessellate.ai import model_cards
 from tessellate.core import hardware
+from tests._js_scope import unwrapped
 
 
 # --- reading the machine ----------------------------------------------------------
@@ -140,7 +141,7 @@ def test_the_models_page_shows_the_hardware_and_can_correct_it():
     from tests._app_js import JS_DIR, FRONTEND_DIR
 
     page = (FRONTEND_DIR / "index.html").read_text(encoding="utf-8")
-    code = (JS_DIR / "settings-models.js").read_text(encoding="utf-8")
+    code = unwrapped((JS_DIR / "settings-models.js").read_text(encoding="utf-8"))
     for element in ("suggested-hardware-edit", "suggested-hardware-form", "hardware-ram", "hardware-vram", "hardware-reset"):
         assert f'id="{element}"' in page
     assert '"/models/hardware", { method: "PUT"' in code
@@ -161,7 +162,7 @@ def test_the_profile_reports_the_processor_cores(monkeypatch):
 def test_the_hardware_line_names_the_cores():
     from tests._app_js import JS_DIR
 
-    code = (JS_DIR / "settings-models.js").read_text(encoding="utf-8")
+    code = unwrapped((JS_DIR / "settings-models.js").read_text(encoding="utf-8"))
     assert "hw.cpu_cores" in code and "processor core" in code
 
 

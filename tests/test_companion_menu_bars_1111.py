@@ -14,9 +14,10 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC = (ROOT / "frontend" / "js" / "companion-menu.js").read_text(encoding="utf-8")
+SRC = unwrapped((ROOT / "frontend" / "js" / "companion-menu.js").read_text(encoding="utf-8"))
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
 START = SRC.index("  const margin = 8;\n  const room = ")
