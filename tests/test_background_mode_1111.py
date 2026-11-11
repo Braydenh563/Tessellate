@@ -50,3 +50,13 @@ def test_every_short_background_call_asks_for_the_background_preset(name, count)
     source = (AI / name).read_text()
     assert source.count("mode=presets.BACKGROUND_MODE") == count, name
     assert "from tessellate.ai import presets" in source or "import presets" in source, name
+
+
+def test_the_bench_runs_at_temperature_zero_so_a_rerun_matches():
+    """B74, measured on Qwen2.5-1.5B (llama-cpp-python, server sampling): two
+    runs of the same 29 tasks scored 0.667 and 0.611, against the plan's two
+    points. The bench's three calls ask for the preset; it is not on the picker."""
+    mode = presets.resolve(presets.BENCH_MODE)
+    assert mode.id == presets.BENCH_MODE and mode.temperature == 0.0
+    assert presets.BENCH_MODE not in presets.MODES
+    assert (AI / "bench.py").read_text().count("mode=presets.BENCH_MODE") == 3
