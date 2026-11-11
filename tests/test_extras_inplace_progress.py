@@ -37,3 +37,36 @@ def test_progress_numbers_do_not_shift_the_line():
     rule = CSS[CSS.index(".extras-install-progress-text {") :]
     rule = rule[: rule.index("}")]
     assert "font-variant-numeric: tabular-nums" in rule
+
+
+# The same rebuild-every-poll on the other progress surfaces (INBOX 1776).
+# Measured with a fake transport over 15 s, Playwright, scrollHeight and
+# scrollTop sampled every 250 ms:
+#   Packages spell-fr / ocr rows: scrollHeight 4823, 0 rows replaced (above).
+#   Model cards (/models/status pulls): scrollHeight 3531, 0 cards replaced
+#     (modelCardFor keeps a card by signature, the bar updated in place).
+#   OCR engine line (workspace host): 16 of 16 ticks replaced the bar before,
+#     0 after; host height 44px throughout.
+#   Embedding switch rows: scrollHeight 3256 throughout, 15 of 15 rows replaced
+#     per tick before, 0 after.
+OCR_JS = (ROOT / "frontend/js/ocr-engine.js").read_text(encoding="utf-8")
+EMBED_JS = (ROOT / "frontend/js/embed-choices.js").read_text(encoding="utf-8")
+
+
+def test_ocr_engine_install_line_is_kept_between_ticks():
+    paint = OCR_JS[OCR_JS.index("function ocrEnginePaint(host)") : OCR_JS.index("function ocrEnginePaintFailure")]
+    fast = paint.index("host._ocrInstalling === installingNow")
+    assert fast < paint.index("host.replaceChildren()")
+    assert "keptDetail.textContent" in paint
+    assert "host._ocrInstalling = ocrEngineInstall.extra" in paint
+
+
+def test_embed_rows_painted_in_place_while_a_switch_runs():
+    render = EMBED_JS[EMBED_JS.index("async function renderEmbedChoices") : EMBED_JS.index("function embedRowKey")]
+    assert "embedPaintRows(list, body, now)" in render
+    assert "list.replaceChildren(...body.choices" not in render
+    # The switch's progress is not part of a row's identity, or every tick rebuilds it.
+    key = EMBED_JS[EMBED_JS.index("function embedRowKey") : EMBED_JS.index("function embedPaintRows")]
+    assert "const { done, started, ...rest } = body.switch" in key
+    paint = EMBED_JS[EMBED_JS.index("function embedPaintRows") : EMBED_JS.index("function embedPaintProgress")]
+    assert "kept._embedKey === key" in paint and "embedPaintProgress(" in paint
