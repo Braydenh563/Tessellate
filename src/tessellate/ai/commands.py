@@ -1965,19 +1965,8 @@ def _plan_delete_all(session: Session, about: str) -> dict:
     return {"line": _confirm(label), "card": _card(label, steps, skipped, [_item(e) for e in ok])}
 
 
-def _plan_one(session: Session, parsed: dict, note_ids: list[int] | None) -> dict:
-    """Delete, pin, rename, add to, link: one note, named or attached."""
-    intent = parsed["intent"]
-    entry, question = _resolve_one(session, parsed.get("about"), note_ids, bool(parsed.get("these")), parsed.get("note_id"))
-    if entry is None:
-        return {"line": question}
-    ok, skipped = _split_allowed([entry])
-    if not ok:
-        return {"line": summarise_done([], skipped)}
-    name = f"“{note_title(entry.content, size=48)}”"
-    if intent == "delete" and parsed.get("bare") and not _title_holds(entry, parsed.get("about") or ""):
-        #: "remove milk" after a shopping list names a thing on the list, not the note that holds the word (F3).
-        return {"line": f"“{parsed.get('about')}” is not the name of a note, but {name} holds it. To bin that note, say: delete the {note_title(entry.content, size=48)} note."}
+def _one_steps(session: Session, intent: str, parsed: dict, entry, name: str) -> dict:  # noqa: ANN001
+    """`{"steps", "label"}` for one named note's act, or `{"line"}` when the other note is not found."""
     if intent == "delete":
         steps = [{"name": "delete_note", "arguments": {"note_id": entry.id}}]
         label = f"Move the note {name} to the bin"
@@ -2002,6 +1991,26 @@ def _plan_one(session: Session, parsed: dict, note_ids: list[int] | None) -> dic
         tool = "link_notes" if intent == "link" else "unlink_notes"
         steps = [{"name": tool, "arguments": {"note_id": entry.id, "other_note_id": other.id}}]
         label = f"{'Link' if intent == 'link' else 'Unlink'} {name} {'and' if intent == 'link' else 'from'} “{note_title(other.content, size=48)}”"
+    return {"steps": steps, "label": label}
+
+
+def _plan_one(session: Session, parsed: dict, note_ids: list[int] | None) -> dict:
+    """Delete, pin, rename, add to, link: one note, named or attached."""
+    intent = parsed["intent"]
+    entry, question = _resolve_one(session, parsed.get("about"), note_ids, bool(parsed.get("these")), parsed.get("note_id"))
+    if entry is None:
+        return {"line": question}
+    ok, skipped = _split_allowed([entry])
+    if not ok:
+        return {"line": summarise_done([], skipped)}
+    name = f"“{note_title(entry.content, size=48)}”"
+    if intent == "delete" and parsed.get("bare") and not _title_holds(entry, parsed.get("about") or ""):
+        #: "remove milk" after a shopping list names a thing on the list, not the note that holds the word (F3).
+        return {"line": f"“{parsed.get('about')}” is not the name of a note, but {name} holds it. To bin that note, say: delete the {note_title(entry.content, size=48)} note."}
+    built = _one_steps(session, intent, parsed, entry, name)
+    if "line" in built:
+        return built
+    steps, label = built["steps"], built["label"]
     card = _card(label, steps, skipped, [_item(entry)])
     if intent in CONFIRM_INTENTS:
         return {"line": _confirm(label), "card": card}
