@@ -983,7 +983,8 @@ function editorBlockRows(context) {
   }
 
   // --- Advanced --------------------------------------------------------------
-  add({ id: "footnote", group: "Advanced", icon: "ph:push-pin", label: "Footnote", about: "A reference here, its text at the foot", keys: "[^1]", keywords: ["footnote", "reference", "cite", "aside", "note"], run: (t) => editorApplyNamed(t, "footnote") });
+  add({ id: "footnote", group: "Advanced", icon: "ph:push-pin", label: "Footnote", about: "A reference here, its text at the foot", keys: "[^1]", keywords: ["footnote", "reference", "aside", "note"], run: (t) => editorApplyNamed(t, "footnote") });
+  if (inDocument) add({ id: "cite", group: "Advanced", icon: "ph:quotes", label: "Citation", about: "A source, listed at the foot", keys: "[@]", keywords: ["cite", "source"], run: (t) => editorApplyNamed(t, "cite") });
   add({ id: "comment", group: "Advanced", icon: "ph:eye-slash", label: "Private comment", about: "Kept in the file, never shown", keys: "%% %%", keywords: ["comment", "private", "hidden", "note to self"], run: (t) => editorApplyNamed(t, "comment") });
   if (inDocument) {
     add({ id: "remind", group: "Advanced", icon: "ph:bell", label: "Remind me about this", about: "Opens this document when due", keys: "", keywords: ["remind", "reminder", "follow up"], run: () => (currentDoc?.id ? ensureModule("library").then((ok) => ok && remindAbout({ title: currentDoc.title || "this document", documentId: currentDoc.id })) : toast("Save the document first.", "info")) });

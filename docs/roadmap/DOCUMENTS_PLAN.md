@@ -1308,7 +1308,7 @@ Rows (owner: libraryup, Opus, after canvasdepth3): R1 to R6 build L1 to L6, each
 Read from the code against Notion and Obsidian. Sizes S, M, L. Nothing here is built yet this run; the app already has callouts, toggles, columns, tables, footnotes, wiki links, backlinks, the slash menu, find and replace, outline and versions.
 
 1. Video and audio embed from a link or a local file in a note (Notion "Embed", Obsidian `![[file.mp4]]`) - M.
-2. Citations: a reference list built from footnote-style keys (Obsidian citations plugin) - M.
+2. Built 2026-11-11 (bd-1111): `[@key]` citations listed at the foot, the "/" menu's Citation; see CHANGELOG.
 3. Built (found by grep, checked 2026-11-10): the / menu's "Link to this block" copies `[[Title#^id]]`; see HISTORY.md, "Moved from the plans, 2026-11-10 (s9c-1110 part 2)".
 4. Built 2026-10-26 (docs5-1026): see HISTORY.md, "Moved from the plans, 2026-10-26 (docs5-1026)".
 5. Synced blocks: one block shown in two notes, edited in either - L.

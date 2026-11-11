@@ -1338,7 +1338,11 @@ function docLivePlugin(CM) {
       //: Scanned rather than taken from the tree because the lezer markdown
       //: grammar here has no footnote extension: `[^1]` parses as ordinary
       //: text, which is also why nothing was drawing it before this.
-      scan(/\[\^([^\][\s]{1,40})\](:?)/g, (match, from, to) => {
+      //: A citation `[@key]` is the same shape, drawn as its key when the document defines it (`docPairInput.citeKeys`).
+      let citeKeys = null;
+      scan(/\[([\^@])([^\][\s]{1,40})\](:?)/g, (match, from, to) => {
+        if (match[1] === "@" && !(citeKeys ||= docPairInput.citeKeys(docStr(doc))).includes(match[2])) return;
+        match = [match[0], match[2], match[3]];
         const line = doc.lineAt(from);
         const definition = match[2] === ":" && line.from === from;
         const idFrom = from + 2;
