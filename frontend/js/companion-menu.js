@@ -392,27 +392,46 @@ function nameMarkBuddyMenu(buddy, at = null) {
     .find((el) => !el.classList.contains("hidden") && el.getBoundingClientRect().width);
   nmb.menu = menu || null;
   if (!menu) return;
+  //: The rows the menu may take, and its box measured with them: the gap
+  //: between the two bars when it holds the menu (INBOX 1111: a tall menu at
+  //: 390 wide sat at top 8 over the top bar), and when the menu is taller
+  //: than the gap, a cap to the gap so its own scroll takes the rest (it was
+  //: 522px in a 563px window at 150% zoom, over the top bar). A gap too small
+  //: to read in keeps the window.
+  const margin = 8;
+  const room = () => {
+    menu.style.translate = "";
+    menu.style.maxHeight = "";
+    const bars = nameMarkBuddyLedges();
+    let lo = bars.top ? Math.ceil(bars.top.bottom) + margin : margin;
+    let hi = bars.bottom ? Math.floor(bars.bottom.top) - margin : innerHeight - margin;
+    let now = menu.getBoundingClientRect();
+    if (hi - lo < now.height && hi - lo >= 160) {
+      menu.style.maxHeight = `${hi - lo}px`;
+      now = menu.getBoundingClientRect();
+    } else if (hi - lo < now.height) {
+      lo = margin;
+      hi = innerHeight - margin;
+    }
+    return { lo, hi, now };
+  };
   //: At the pointer: only kept inside the window.
   const inside = () => {
-    menu.style.translate = "";
-    const now = menu.getBoundingClientRect();
-    const margin = 8;
+    const { lo, hi, now } = room();
     const dx = Math.min(0, innerWidth - margin - now.right) + Math.max(0, margin - now.left);
-    const dy = Math.min(0, innerHeight - margin - now.bottom) + Math.max(0, margin - now.top);
+    const dy = Math.min(0, hi - now.bottom) + Math.max(0, lo - now.top);
     if (dx || dy) menu.style.translate = `${Math.round(dx)}px ${Math.round(dy)}px`;
   };
   //: Placed from the companion's box as it is each time: a panel moving
   //: under it while the menu is open (a transform) carries both.
   const beside = () => {
     const box = face.getBoundingClientRect();
-    menu.style.translate = "";
-    const now = menu.getBoundingClientRect();
+    const { lo, hi, now } = room();
     const gap = 6;
-    const margin = 8;
     let left = box.right + gap;
     if (left + now.width > innerWidth - margin) left = box.left - gap - now.width;
     left = Math.min(Math.max(margin, left), innerWidth - margin - now.width);
-    const top = Math.min(Math.max(margin, box.top), innerHeight - margin - now.height);
+    const top = Math.min(Math.max(lo, box.top), hi - now.height);
     menu.style.translate = `${Math.round(left - now.left)}px ${Math.round(top - now.top)}px`;
   };
   //: Placed now, and once more on the next frame: the menu's own opening

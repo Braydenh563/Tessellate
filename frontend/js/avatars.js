@@ -5325,6 +5325,10 @@ function nameMarkBuddyRideBox(x = nmb.x, y = nmb.y, fresh = false, pose = undefi
   if (fresh || r.insetTop === undefined) {
     const { lo, hi } = nameMarkBuddyBand(r.el, nmb.glue?.el);
     const over = nameMarkBuddyOverhang(pose);
+    //: The bars' own edges, whole px (a cut on a fraction left a row of figure over the bar's last pixel), for the cut a move keeps while it is aloft (`nameMarkBuddyAloft.cut`).
+    const bars = nameMarkBuddyLedges();
+    r.barLo = bars.top ? Math.ceil(bars.top.bottom) : 0;
+    r.barHi = bars.bottom ? Math.floor(bars.bottom.top) : innerHeight;
     r.insetTop = Math.min(lo, y - over.top) - box.top;
     r.insetBottom = box.bottom - Math.max(hi, y + NMB_H + over.bottom);
     const own = nmb.place.client(r.el);
@@ -5355,6 +5359,7 @@ function nameMarkBuddyRideBox(x = nmb.x, y = nmb.y, fresh = false, pose = undefi
     band.style.top = `${top}px`;
     band.style.width = `${width}px`;
     band.style.height = `${height}px`;
+    if (band.style.clipPath) band.style.clipPath = nameMarkBuddyAloft.cut(r);
   }
 }
 
@@ -6308,6 +6313,7 @@ function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
   if (nmb.visit) return;
   //: Any other move ends a flight where it is (`nameMarkBuddyThrow`).
   nmb.flight?.stop();
+  const fromKind = nmb.perch;
   const x = Math.round(Math.min(Math.max(0, spot.x), innerWidth - NMB_W));
   const y = Math.round(Math.min(Math.max(0, spot.y), innerHeight - NMB_H));
   //: **Never a teleport** (the owner: "let the companions appear smoothly
@@ -6409,7 +6415,8 @@ function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
   //: from a throw): the blend's reads are two restyles of the rig.
   if (buddy.classList.contains("nmb-poofing") || buddy.classList.contains("nmb-walking")) nameMarkBuddyBlend(buddy, stop);
   nameMarkBuddyGo(buddy, dx, dy, spot, poseChanged, was, underway);
-  nameMarkBuddyAloft();
+  const overBars = ["bar", "hang", "dock", "corner", "pinned"];
+  nameMarkBuddyAloft(!overBars.includes(spot.kind) && !overBars.includes(fromKind));
   nameMarkBuddyState(buddy);
   const moving = nmb.anim;
   moving?.finished.then(() => nmb.anim === moving && nameMarkBuddyState(buddy), () => {});
@@ -6432,12 +6439,18 @@ function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
 //: Library's sub-tabs onto a card was cut at the list's top edge for 528ms
 //: (tests/test_companion_fall_split_1463.py). Lifted while a move plays, back
 //: when it lands, unless a newer move is flying by then.
-function nameMarkBuddyAloft() {
+//: **But not over the top or bottom bar on the way between two perches in a panel**
+//: (INBOX 1111, 390 wide: a glide to a new perch after a scroll drew 15px of Atlas's tail over
+//: the top bar for 264ms; the lift let a figure the shutter had cut at rest show whole over the bar).
+//: `cut` keeps the lift but clips the band at the bars' edges. An entrance from above the window,
+//: a move from or to a bar and a flight stay whole.
+function nameMarkBuddyAloft(cut = false) {
   const band = document.getElementById("nm-buddy-band");
   const anim = nmb.anim;
   if (!band || anim?.playState !== "running") return;
   const clip = (on) => {
     for (const el of [band, band.firstElementChild]) if (el) el.style.overflow = on ? "" : "visible";
+    band.style.clipPath = !on && cut && nmb.ride ? nameMarkBuddyAloft.cut(nmb.ride) : "";
   };
   clip(false);
   const land = () => {
@@ -6446,6 +6459,9 @@ function nameMarkBuddyAloft() {
   anim.addEventListener("finish", land, { once: true });
   anim.addEventListener("cancel", land, { once: true });
 }
+//: The band's clip for a move in the air: from the top bar's bottom edge to the bottom bar's top edge, in the
+//: band's own px (its box is where `nameMarkBuddyRideBox` put it), open at the sides so nothing is cut across.
+nameMarkBuddyAloft.cut = (r) => `inset(${r.barLo - r.top}px -9999px ${r.top + r.height - r.barHi}px -9999px)`;
 
 //: **How it gets there: by the way its body moves, never a slide** (the
 //: owner, 2026-09-27: "instead the slight position displacements, the
