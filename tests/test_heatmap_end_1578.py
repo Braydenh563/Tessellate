@@ -39,3 +39,11 @@ def test_a_reader_who_scrolled_away_is_left_where_they_are():
     body = _widget()
     assert "if (!atEnd || !last) return;" in body
     assert "atEnd = grid.scrollWidth - grid.clientWidth - grid.scrollLeft < 2;" in body
+
+
+def test_it_writes_only_when_off_the_end_and_reads_the_scroll_two_frames_on():
+    """Lag rest (INBOX 1741): an unconditional write fired a scroll event whose handler read scrollWidth in the event (132 to 187ms forced at 4x)."""
+    body = _widget()
+    assert "if (Math.abs(off) >= 1) grid.scrollLeft += off;" in body
+    scroll = body.split('grid.addEventListener("scroll"', 1)[1].split("}, { passive: true });", 1)[0]
+    assert "afterFrames(" in scroll
