@@ -363,7 +363,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `captureNeedsWords` | frontend/js/capture-ask.js:566 |
 | `clearAskAnswerFoot` | frontend/js/capture-ask.js:1085 |
 | `clearCaptureTagSuggestions` | frontend/js/capture-ask.js:506 |
-| `copyAnswer` | frontend/js/capture-ask.js:1297 |
+| `copyAnswer` | frontend/js/capture-ask.js:1254 |
 | `createDocumentNamed` | frontend/js/capture-ask.js:297 |
 | `evidenceSpan` | frontend/js/capture-ask.js:1032 |
 | `evidenceSwitchReset` | frontend/js/capture-ask.js:1051 |
@@ -375,12 +375,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `focusCaptureBox` | frontend/js/capture-ask.js:468 |
 | `heldOffline` | frontend/js/capture-ask.js:582 |
 | `holdPictureTokens` | frontend/js/capture-ask.js:1068 |
-| `liveMarkdownRenderer` | frontend/js/capture-ask.js:1207 |
-| `loadAskHistoryBadge` | frontend/js/capture-ask.js:1333 |
+| `liveMarkdownRenderer` | frontend/js/capture-ask.js:1164 |
+| `loadAskHistoryBadge` | frontend/js/capture-ask.js:1290 |
 | `loadCaptureDocuments` | frontend/js/capture-ask.js:286 |
-| `loadSuggestions` | frontend/js/capture-ask.js:1303 |
-| `loadTemplates` | frontend/js/capture-ask.js:1405 |
-| `newChat` | frontend/js/capture-ask.js:1278 |
+| `loadSuggestions` | frontend/js/capture-ask.js:1260 |
+| `loadTemplates` | frontend/js/capture-ask.js:1362 |
+| `newChat` | frontend/js/capture-ask.js:1235 |
 | `noteSurfaceIfAny` | frontend/js/capture-ask.js:433 |
 | `noteTemplateForUse` | frontend/js/capture-ask.js:415 |
 | `noteTemplateText` | frontend/js/capture-ask.js:404 |
@@ -392,15 +392,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderCaptureDocuments` | frontend/js/capture-ask.js:322 |
 | `renderCaptureTagSuggestions` | frontend/js/capture-ask.js:517 |
 | `resetCaptureForm` | frontend/js/capture-ask.js:475 |
-| `retryAnswer` | frontend/js/capture-ask.js:1293 |
+| `retryAnswer` | frontend/js/capture-ask.js:1250 |
 | `saveEntry` | frontend/js/capture-ask.js:596 |
 | `saveEntryAsDraft` | frontend/js/capture-ask.js:709 |
 | `scheduleCaptureTagSuggestions` | frontend/js/capture-ask.js:543 |
 | `scrollEditingEntryIntoView` | frontend/js/capture-ask.js:835 |
 | `settleCaptureStatus` | frontend/js/capture-ask.js:129 |
-| `showAskAsOf` | frontend/js/capture-ask.js:1378 |
+| `showAskAsOf` | frontend/js/capture-ask.js:1335 |
 | `stampDate` | frontend/js/capture-ask.js:402 |
-| `stopAnswer` | frontend/js/capture-ask.js:1274 |
+| `stopAnswer` | frontend/js/capture-ask.js:1231 |
 | `watchFiling` | frontend/js/capture-ask.js:52 |
 | `withTitle` | frontend/js/capture-ask.js:453 |
 
