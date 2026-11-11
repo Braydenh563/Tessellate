@@ -7114,6 +7114,65 @@ input[type="color"].wb-mixed {
     flex-basis: 8rem;
   }
 }
+/* **The dock stays one row at every zoom (wrapzoom 2026-11-11).** A code file's
+   actions measured 808px (1062 with "Install Python in Settings, Packages")
+   in a 931px dock at 1280, so the name sat on a line of its own and the
+   actions broke in two, Snippets and the menu on a third line; a markdown
+   document's 733 did the same beside the title's 22rem. Below 75rem of dock
+   the lesser buttons are their icons (title and aria-label name them; Run,
+   the bar's one filled action, keeps its word), the name asks for 12rem, and
+   the Python line is cut with an ellipsis (its title says it whole). Prose
+   keeps its words down to 60rem: its actions are 733px with them. Under 820
+   the Python line leaves the row: the card's install notice says the same. */
+@container docdock (max-width: 74.99rem) {
+  #tab-documents .doc-dock > .doc-dock-identity {
+    flex-basis: 12rem;
+    min-width: 0;
+  }
+  #tab-documents.doc-is-code .doc-ai-label,
+  #doc-code-format > .toolbar-word {
+    display: none;
+  }
+  #tab-documents.doc-is-code :is(#doc-code-snippets-open, #doc-code-assist-open),
+  #doc-code-format {
+    flex: 0 0 var(--target-min);
+    justify-content: center;
+    padding-inline: 0;
+  }
+  :is(#doc-code-snippets-open, #doc-code-assist-open, #doc-code-format) > .ph-lead {
+    margin: 0;
+  }
+  #tab-documents.doc-is-code .doc-view-cluster .seg > button {
+    padding-inline: var(--space-2);
+  }
+  #doc-code-run-why {
+    display: inline-block;
+    max-width: 9rem;
+    line-height: var(--control-h);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+@container docdock (max-width: 59.99rem) {
+  .doc-ai-label,
+  #doc-format-show > span {
+    display: none;
+  }
+  :is(#doc-ai, #doc-format-show, #doc-code-snippets-open, #doc-code-assist-open) {
+    flex: 0 0 var(--target-min);
+    justify-content: center;
+    padding-inline: 0;
+  }
+  :is(#doc-ai, #doc-format-show, #doc-code-snippets-open, #doc-code-assist-open) > .ph-lead {
+    margin: 0;
+  }
+}
+@container docdock (max-width: 819.98px) {
+  #doc-code-run-why {
+    display: none;
+  }
+}
 
 /* **Read, full screen: a wider page.** Reported: "comfortable width too narrow
    in full screen". The Read view's 72ch cap was measured at 736px inside a
