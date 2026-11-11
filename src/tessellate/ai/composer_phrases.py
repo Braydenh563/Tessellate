@@ -32,6 +32,10 @@ PHRASES: dict[str, str] = {
     "close_quote": "”",
     "open_paren": " (",
     "close_paren": ")",
+    #: A note the timeline files under the day its text names, not the day it was written (INBOX 1739).
+    "written_a": " (written ",
+    "written_top": "Written ",
+    "about_a": ", about ",
     #: The note an answer rests on, said once in a chat (decision D25: no bracketed title): "From your Gym log note."
     "cite_from": " From your ",
     "cite_note": " note.",
@@ -182,6 +186,13 @@ PHRASES: dict[str, str] = {
     "recall_note": " note ",
     "recall_notes": " notes ",
     "recall_b": ", newest first:",
+    #: A day's documents are counted beside its notes (INBOX 1739).
+    "recall_made": "You made ",
+    "recall_note_and": " note and made ",
+    "recall_notes_and": " notes and made ",
+    "recall_doc": " document ",
+    "recall_docs": " documents ",
+    "doc_lead": "Document ",
     "recall_dated_note": " note falls ",
     "recall_dated_notes": " notes fall ",
     #: The window held more than the list shows (audit 1029 C11): say so.

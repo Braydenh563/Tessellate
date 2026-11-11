@@ -199,6 +199,8 @@ class _Found:
     when_phrase: str = ""
     #: As of a date: per note, the revision its text came from.
     as_of_then: dict = field(default_factory=dict)
+    #: The days a time recall asked about, so the documents made then are read beside the notes.
+    window: tuple | None = None
 
 
 @dataclass
@@ -231,6 +233,7 @@ def _in_window(found: _Found, session: Session, asked, question: str) -> None:  
         window = search_manager.entries_between(session, asked.window[0], asked.window[1], limit=1000 if stems else 40, archived=archived)
         found.entries = [e for e in window if composer_intent.holds_any(stems, e.content or "")][:40] if stems else window
     found.mode, found.connected_ids, found.match_info, found.when_phrase = "window", set(), {}, asked.window_phrase
+    found.window = asked.window
 
 
 def _keep_window(found: _Found, asked) -> None:  # noqa: ANN001
@@ -615,6 +618,22 @@ def _matched_rows(session: Session, question: str, skip: set[tuple[str, int]]) -
         row["attached"] = False
         row["named"] = True
     return rows[:MATCHED_SOURCES]
+
+
+#: How many documents of a window are read beside its notes.
+WINDOW_DOCUMENTS = 8
+
+
+def _window_documents(session: Session, found: "_Found") -> list[dict]:
+    """The documents made in the days a time recall asked about, as rows beside
+    its notes: "what did I write on 3 November" counts a diagram made that day
+    too (INBOX 1739). Read by the composer and the model alike (decision 75)."""
+    if found.mode != "window" or not found.window:
+        return []
+    rows = [_document_row(d, session) for d in documents_repo.made_between(session, found.window[0], found.window[1], WINDOW_DOCUMENTS)]
+    for row in rows:
+        row["attached"] = False
+    return rows
 
 
 def _with_sources(session: Session, question: str, notes: list[dict], mode: str) -> list[dict]:

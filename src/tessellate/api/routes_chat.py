@@ -77,7 +77,7 @@ from tessellate.search import search_manager
 from sqlalchemy import func
 from tessellate.api.chat_attach import _MEDIA_REF, _attached_boards, _attached_documents, _attached_files, _attached_media_files, _attached_notes, _files_on, _grounding_candidates, _note_dates, _time_words
 from tessellate.api.chat_request import ChatRequest, ChatResponse, CommandRunBody, CompressBody, FollowupBody, RememberBody, ToolExecuteBody, _StreamRequest, _Turn, _apply_open, _apply_scope, _chat_model_sees_images, _check_refs, _composed, _event, _image_caption_context, _in_full, _meta_event, _nothing_open, _resolve_chat_images, _resolve_mode, _resolve_persona, _resolve_skill
-from tessellate.api.chat_pool import _Found, _NoteCtx, _chat_payload, _composer_reads, _document_row, _frame_matches, _glossary, _holds_read_text, _in_window, _keep_window, _note_content, _or_empty_notebook, _records_beside, _slips_put_right, _whole_pool, _widened, _with_each_side, _with_holders, _with_neighbours, _with_records, _with_sources
+from tessellate.api.chat_pool import _Found, _NoteCtx, _chat_payload, _composer_reads, _document_row, _frame_matches, _glossary, _holds_read_text, _in_window, _keep_window, _note_content, _or_empty_notebook, _records_beside, _slips_put_right, _whole_pool, _widened, _with_each_side, _with_holders, _with_neighbours, _with_records, _window_documents, _with_sources
 from tessellate.api.chat_recent import AGENT_SURFACE, ASK_SURFACE, STARTER_SUGGESTIONS, _about, _asked_key, _feature_for, _fill, _recent_questions
 from tessellate.api.chat_web import WEB_PAGES, _can_start_searxng, _torn_events, _home_place, _link_events, _offer_events, _search_service, _unmatched_recents, _web_allowed, _web_chip, _web_first, _web_page_row, _web_pref_on
 from tessellate.api.chat_agent import _agent_events, consent_events, run_card_events, _close_quietly, _first_agent_event, _refuse_failed, _refuse_if_off, _starter_read
@@ -358,6 +358,15 @@ def _rewind_as_of(session: Session, question: str, found: _Found, as_of, locale:
         )
 
 
+def _placed(dates) -> dict | None:  # noqa: ANN001
+    """The first date a note's text names, as the timeline's feed places the note
+    (`routes_timeline._place_notes`: the lowest-id mention), or None."""
+    first = next(iter(dates), None)
+    if first is None:
+        return None
+    return {"on": first.at.date().isoformat(), "phrase": first.phrase, "precision": first.precision}
+
+
 def _context_note(ctx: _NoteCtx, entry) -> dict:  # noqa: ANN001
     found, as_of = ctx.found, ctx.as_of
     content = _note_content(ctx, entry)
@@ -390,6 +399,9 @@ def _context_note(ctx: _NoteCtx, entry) -> dict:  # noqa: ANN001
         "written": _note_dates(entry, ctx.zone)
         + (f", as it read on {as_of.day} {as_of:%B %Y}" if entry.id in found.as_of_then else ""),
         "dates": _time_words(ctx.time_words.get(entry.id, []), ctx.today),
+        #: The day the timeline files it under when that is not the day it was written
+        #: (the first date its text names; INBOX 1739), so an answer says both days.
+        "placed": _placed(ctx.time_words.get(entry.id, [])),
         #: Its tags and the files on it, which the model never saw (INBOX 594,
         #: the owner: "it only mentions one of the sketches not all the
         #: sketches").
@@ -477,7 +489,7 @@ def _prepare(
     #: Only the notes: a document or a file row has another table's id.
     _frame_matches(session, question, notes[: len(found.entries)], found.match_info, found.mode)
     if not (attached or attached_docs or attached_files or attached_boards or skip_search) and found.stats is None and as_of is None:
-        notes = _with_sources(session, question, notes, found.mode)
+        notes = _with_sources(session, question, notes, found.mode) + _window_documents(session, found)
     config = deps.get_config()
 
     _log_question(session, found, question, surface)

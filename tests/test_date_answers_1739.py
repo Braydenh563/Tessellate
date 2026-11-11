@@ -77,3 +77,90 @@ def test_the_resume_line_is_english_and_says_the_topic(topic, seed):
     line = composer_aware.closing(composer_aware.build(topic=topic), seed, asked="and what about them?")
     assert "pull the notes on it up" not in line and not re.search(r"We were on (?!the subject)", line)
     assert topic in line
+
+
+# (a) the answer and the timeline file a note under the same day
+
+def test_the_timeline_files_the_uni_note_under_friday(notebook, client):
+    rows = client.get("/timeline", params={"start": "2026-10-29T00:00:00", "end": "2026-11-05T23:59:59"}).json()["rows"]
+    uni = next(r for r in rows if r["key"] == "note:1")
+    assert uni["bucket"] == "2026-10-30" and uni["written_at"].startswith("2026-11-03")
+
+
+def test_the_date_answer_says_both_days_when_the_timeline_files_it_elsewhere(client, notebook):
+    said = _ask(client, FIRST, history=[])["text"]
+    assert "written 3 november, about friday 30 october" in said.lower(), said
+
+
+def test_a_note_the_timeline_files_on_its_written_day_says_one_day(client, notebook):
+    said = _ask(client, "What did I write on 2 November?", history=[])["text"]
+    assert "Golf" in said and "(2 November)" in said and "about" not in said, said
+
+
+# (c) a short personal note is quoted as written, its title once
+
+def test_a_short_personal_note_is_quoted_not_retold(client, notebook):
+    said = _ask(client, FIRST, history=[])["text"]
+    #: The note has no heading, so it is its words: quoted whole, once, not named and then repeated.
+    assert f"“Uni is done!! :D {UNI_BODY}”" in said, said
+    assert "your final assignment" not in said
+    assert said.count("Uni is done") == 1, said
+
+
+def test_a_headed_short_note_is_quoted_without_its_title_repeated(client, session):
+    entry = manager.create_entry(session, "# Run done\n\nI ran 5 km before work and my knee felt fine.")
+    entry.created_at = entry.updated_at = datetime(2026, 11, 3, 10, 0)
+    session.commit()
+    said = _ask(client, FIRST, history=[])["text"]
+    assert "“I ran 5 km before work and my knee felt fine.”" in said and said.count("Run done") == 1, said
+
+
+def test_an_untitled_short_note_is_quoted_once_under_its_day(client, session):
+    entry = manager.create_entry(session, "Booked my dentist for the 21st and told my mum.")
+    entry.created_at = entry.updated_at = datetime(2026, 11, 3, 10, 0)
+    session.commit()
+    said = _ask(client, FIRST, history=[])["text"]
+    assert said.count("Booked my dentist") == 1 and "“Booked my dentist for the 21st and told my mum.”" in said, said
+
+
+def test_a_long_note_is_still_retold_in_the_second_person(client, session):
+    body = " ".join(f"I went to the shop number {n} and I bought my bread there." for n in range(1, 8))
+    entry = manager.create_entry(session, f"Shopping\n\n{body}")
+    entry.created_at = entry.updated_at = datetime(2026, 11, 3, 10, 0)
+    session.commit()
+    said = _ask(client, FIRST, history=[])["text"]
+    assert f"“{body}”" not in said, said
+
+
+# (b) documents made on the day count too, named as documents
+
+def test_the_day_counts_its_documents_too(client, notebook):
+    said = _ask(client, FIRST, history=[])["text"]
+    assert "Untitled document 2" in said and "one document" in said, said
+    assert said.startswith("You wrote one note and made one document on 3 November"), said
+
+
+def test_a_day_with_only_a_document_is_the_documents(client, session):
+    session.add(Document(title="Quarter plan", content="Goals", created_at=datetime(2026, 11, 3, 8, 0)))
+    session.commit()
+    said = _ask(client, FIRST, history=[])["text"]
+    assert "Quarter plan" in said and "document" in said and "note" not in said.split("\n")[0], said
+
+
+def test_a_document_on_another_day_is_not_counted(client, notebook):
+    said = _ask(client, "What did I write on 4 November?", history=[])["text"]
+    assert "Untitled document 2" not in said and "Gym" in said, said
+
+
+# model on and off give the same facts (CHAT_PLAN decision 75)
+
+def _prompt(fake) -> str:
+    rounds = [*fake.chat_calls[-1:], *fake.tool_rounds[-1:]]
+    return "\n".join(str(m.get("content") or "") for messages in rounds for m in messages)
+
+
+def test_a_model_is_handed_the_same_facts_for_the_day(ai_client, fake_ollama, notebook):
+    _ask(ai_client, FIRST, use_tools=False, history=[])
+    sent = _prompt(fake_ollama)
+    assert "Untitled document 2" in sent, sent[-900:]
+    assert UNI_BODY in sent and "Friday 30 October" in sent, sent[-900:]

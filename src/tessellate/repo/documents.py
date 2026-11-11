@@ -103,6 +103,21 @@ def live(session: Session, *, limit: int, file_type: str | None = None) -> list[
     return list(session.scalars(query.order_by(*_NEWEST).limit(limit)))
 
 
+def made_between(session: Session, since, until, limit: int) -> list[Document]:  # noqa: ANN001
+    """The documents made on the days `since` to `until` (both kept), not in
+    the bin or on the shelf, newest first: a date answer counts them with the
+    notes of the days (INBOX 1739)."""
+    from datetime import time, timedelta
+
+    start, end = datetime.combine(since, time(0)), datetime.combine(until + timedelta(days=1), time(0))
+    return list(session.scalars(
+        select(Document)
+        .where(Document.deleted_at.is_(None), Document.archived_at.is_(None), Document.created_at >= start, Document.created_at < end)
+        .order_by(Document.created_at.desc(), Document.id.desc())
+        .limit(limit)
+    ))
+
+
 def mentioning(session: Session, document_id: int, like: str, limit: int) -> list[Document]:
     """Other unshelved documents whose text matches the LIKE pattern, for
     backlinks."""
