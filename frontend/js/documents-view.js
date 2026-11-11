@@ -199,7 +199,9 @@ function docIdeCall(name, ...args) {
   return lazyScript("/js/documents-ide.js").then((ok) => ok && window[name](...args));
 }
 
-lazyScript("/js/documents-ide.js").then(() => {
+//: Waits for the whole bundle too: documents.js, later in it, declares `docCmView`, and a quick
+//: answer from the IDE script would otherwise reach it first (the lint of INBOX 1530).
+Promise.all([lazyScript("/js/documents-ide.js"), ensureModule("library")]).then(() => {
   const CM = window.CM6;
   if (docCmView && CM && docCmParts.code && !docFileType().previewable) {
     docCmView.dispatch({ effects: docCmParts.code.reconfigure(docCodeTools(CM)) });
