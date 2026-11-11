@@ -11,6 +11,7 @@ Only words the person wrote are kept; nothing is added.
 
 from __future__ import annotations
 
+import bisect
 import re
 
 #: About how many words a note may run before it is said by its gist.
@@ -40,17 +41,27 @@ def unjoined(text: str) -> str:
 
 def _whole_head(text: str, limit: int) -> str:
     """The longest run of `text` up to a clause break that fits `limit` words,
-    ending on a whole word; "" when no such break leaves enough to say."""
-    best = ""
+    ending on a whole word; "" when no such break leaves enough to say.
+
+    Linear, not one slice and split per break: `", " * 25000` took 1.6 s
+    that way (PR 216). Each head is `text[:k]`, k being the break with the
+    trailing " ,;:" taken off, and its word count is the words starting before k."""
+    stop = [0] * (len(text) + 1)  # stop[i]: where text[:i].rstrip(" ,;:") ends
+    for i, char in enumerate(text, 1):
+        stop[i] = stop[i - 1] if char in " ,;:" else i
+    words = [(m.start(), m.end()) for m in re.finditer(r"\S+", text)]
+    starts = [start for start, _ in words]
+    best = 0
     for found in _CLAUSE_BREAK.finditer(text):
-        head = text[: found.start()].rstrip(" ,;:")
-        words = head.split()
-        if _count(head) > limit:
+        k = stop[found.start()]
+        count = bisect.bisect_left(starts, k)
+        if count > limit:
             break
         #: A head that is only a lead ("four weeks ago, on 8 October") is not the gist.
-        if _count(head) >= MIN_HEAD and words[-1].lower().strip(",;:") not in _DANGLES:
-            best = head
-    return best
+        last = text[words[count - 1][0]:min(words[count - 1][1], k)] if count else ""
+        if count >= MIN_HEAD and last.lower().strip(",;:") not in _DANGLES:
+            best = k
+    return text[:best]
 
 
 def brief(text: str, limit: int = BRIEF_WORDS, squeeze: bool = False) -> str:

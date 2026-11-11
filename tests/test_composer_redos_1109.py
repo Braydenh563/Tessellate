@@ -56,3 +56,22 @@ def test_brief_sentence_split_is_linear(junk):
     long_note = "The roof leaks again." + junk * LONG + "x " * 40
     assert _fast(composer_brief.brief, long_note, 5) < 0.05
     assert composer_brief.brief("The roof leaks again.\t\tCall the builder " + "soon " * 30, 5) == "The roof leaks again"
+
+
+@pytest.mark.parametrize("junk", [", ", "; ", ",", " "])
+def test_whole_head_is_linear_on_a_run_of_clause_breaks(junk):
+    """`_whole_head` sliced and split the note once per break: 1.6 s on 25,000 commas (PR 216)."""
+    from tessellate.ai import composer_brief
+
+    assert _fast(composer_brief._whole_head, "word " + junk * 25_000 + "x", 25) < 0.1
+    assert _fast(composer_brief.brief, "word " * 30 + junk * 25_000 + "x") < 0.2
+
+
+def test_whole_head_still_cuts_at_the_last_clause_that_fits():
+    from tessellate.ai import composer_brief
+
+    text = ("Cloud computing is the delivery of computing services over the internet to many users, "
+            "which lets a team pay only for what it uses, and grow without buying servers of its own")
+    head = composer_brief._whole_head(text, 25)
+    assert head == ("Cloud computing is the delivery of computing services over the internet to many users, "
+                    "which lets a team pay only for what it uses")
