@@ -56,11 +56,13 @@
       return target.card.classList.add("dgm-target");
     }
     if (target.card) {
-      const pane = S.pane.getBoundingClientRect();
+      //: The drop line sits in the part that scrolls (`S.scroll`, diagram-steps.js); the kinds' panes scroll themselves.
+      const box = S.scroll || S.pane;
+      const pane = box.getBoundingClientRect();
       const r = target.card.getBoundingClientRect();
       line.classList.remove("hidden");
-      line.style.top = `${(target.below ? r.bottom : r.top) - pane.top + S.pane.scrollTop - 1}px`;
-      line.style.left = `${r.left - pane.left + S.pane.scrollLeft}px`;
+      line.style.top = `${(target.below ? r.bottom : r.top) - pane.top + box.scrollTop - 1}px`;
+      line.style.left = `${r.left - pane.left + box.scrollLeft}px`;
       line.style.width = `${r.width}px`;
     }
   }
@@ -154,7 +156,7 @@
       seed: seedBlock,
       grab: () => ({}),
       begin(g) {
-        g.scroller = g.S.pane;
+        g.scroller = g.S.scroll || g.S.pane;
         g.dragEls = g.tile ? [] : (carried(g.S, g.key) || [g.key]).map((k) => h.blockEl(g.S, k));
         g.dragEls.forEach((b) => b?.classList.add("dgm-lifted"));
         if (g.card.classList.contains("dgm-box")) g.card.classList.add("dgm-lifted");

@@ -199,16 +199,23 @@
   margin: var(--space-2) var(--space-3);
   /* Left of the zoom bar (about 12rem, bottom right). */
   max-inline-size: calc(100% - 2 * var(--space-3) - 12rem);
-  display: flex;
-  flex-wrap: wrap;
+  /* A `.notice` (DESIGN.md's notice recipe) with two actions. The buttons never wrap: below the width the words need, the words
+     wrap and the row grows, not the buttons (the owner, 2026-11-11: "Keep" fell to a second row and the offer was 140px tall). */
+  flex-wrap: nowrap;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  padding-block: var(--space-1);
   background: var(--modal-bg);
   box-shadow: var(--shadow-md);
-  font-size: var(--text-sm);
+}
+
+.dgm-sideways > span {
+  flex: 0 1 auto;
+  min-width: 6rem;
+}
+
+.dgm-sideways > button {
+  flex: none;
+  white-space: nowrap;
 }
 
 .dgm-sideways.hidden {
@@ -259,6 +266,24 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--surface-1);
+}
+
+/* The framed pane (diagram-steps.js `frame`): the part that scrolls (`.dgm-scroll`) and, under it, the foot, so the foot never lies
+   over a line of the list (the owner, 2026-11-11). The pane hugs its content up to the room it has: no dead gap under the foot. */
+.dgm-pane.dgm-framed {
+  display: flex;
+  flex-direction: column;
+  max-block-size: 100%;
+  overflow: hidden;
+  padding: 0;
+}
+
+.dgm-scroll {
+  position: relative;
+  flex: 0 1 auto;
+  min-block-size: 0;
+  overflow: auto;
+  padding: var(--space-2);
 }
 
 /* Two classes, not one: mermaid-lazy.css loads after this file and gives `.md-mermaid` a block margin, which
@@ -799,7 +824,8 @@
 
 /* The pane's purpose line and foot (diagram-steps.js `frame`, 1679 k). The line holds three lines of room (the purpose wraps to three
    in a narrow pane; two let the list jump 17px under the pointer on the first hover, dgmlive2 1108) so the list does not
-   jump when a control's words replace it; the foot sticks to the pane's bottom edge and, in a short list, sits right under it. */
+   jump when a control's words replace it; the foot is under the part that scrolls, never over it (the owner, 2026-11-11: the sticky foot
+   covered the hint while it scrolled), and in a short list it sits right under the blocks. */
 .dgm-purpose {
   margin: 0 var(--space-2) var(--space-2);
   min-block-size: calc(3 * 1.4em);
@@ -812,13 +838,10 @@
 }
 
 .dgm-foot {
-  position: sticky;
-  inset-block-end: 0;
-  z-index: 1;
+  flex: none;
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-  margin-block-start: var(--space-2);
   padding: var(--space-2);
   border-block-start: 1px solid var(--border);
   background: var(--surface-1);
@@ -828,22 +851,10 @@
   display: none;
 }
 
-/* The next step, one line under the blocks. */
+/* The next step, one line under the blocks; it scrolls with them, inside `.dgm-scroll`, and the foot is under both. */
 .dgm-next {
   margin: var(--space-3) var(--space-2) 0;
-  /* Pinned above the sticky Add block / Connect row, not under it: both stuck to the same edge, and the row (z-index 1) covered the hint in any pane that scrolled (hit test at the hint's centre was a button at 667 and 700 px wide). The hint's bottom margin is the row's height, set in diagram-steps.js (not on a phone, where the hint scrolls). */
   font-size: var(--text-xs);
-  /* In a short pane (a document's embedded editor) the hint stays at the pane's foot instead of being cut off below it (R6.12). */
-  position: sticky;
-  inset-block-end: 0;
-  padding-block: var(--space-1);
-  background: var(--surface-1);
-}
-/* On a phone the pane is a short strip and the sticky hint sat over the row under it, taking its taps (measured at 390: elementFromPoint on a row's menu button was the hint), so it scrolls with the rows there. */
-@media (max-width: 599.98px) {
-  .dgm-next {
-    position: static;
-  }
 }
 
 /* A group's blocks sit in it, one step in, behind a rule. */
@@ -1451,6 +1462,24 @@
   max-height: none;
 }
 
+/* The diagram in a document taken to the full screen builder (Expand, diagram-embed.js `expand`): the card fills the window less
+   one gap, and the head, the toolbar and the foot keep their places. A phone's card is full already, so it has no Expand. */
+.modal-overlay.dgm-expanded {
+  padding: var(--space-3);
+}
+
+.modal-overlay.dgm-expanded .dgm-dialog {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+}
+
+@media (max-width: 599.98px) {
+  .dgm-dock .dgm-expand {
+    display: none;
+  }
+}
+
 /* The kind of diagram (diagram-kindbar.js, 1661 k): one button in the Title row, its sample, word and caret. */
 .dgm-kindbtn {
   flex: none;
@@ -1684,11 +1713,6 @@
 
   .dgm-keychip {
     margin-inline-end: auto;
-  }
-
-  /* The offer's words take a line, its two buttons the next: Keep was a third line (96 px for a one-line question). */
-  .dgm-sideways > span {
-    flex: 1 0 100%;
   }
 
   /* The door's "Open an existing diagram" is its folder glyph here; its name is the button's label. */
@@ -2166,6 +2190,8 @@
   .dgm-listcol {
     display: flex;
     flex-direction: column;
+    align-self: start;
+    max-block-size: 100%;
     min-width: 0;
     min-block-size: 12rem;
     overflow: hidden;
@@ -2175,7 +2201,7 @@
   }
 
   .dgm-listcol > .dgm-pane {
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     min-block-size: 0;
     border: 0;
     border-radius: 0;

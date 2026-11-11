@@ -69,13 +69,17 @@
     if (!show) return S.sideways?.classList.add("hidden"), lift(false);
     if (!S.sideways) {
       const line = document.createElement("div");
-      line.className = "dgm-sideways muted";
+      //: A `.notice` (DESIGN.md): the mark, the words, then the two actions; the words wrap before the buttons do.
+      line.className = "notice dgm-sideways";
+      const mark = document.createElement("i");
+      mark.className = "ph ph-arrows-left-right";
+      mark.setAttribute("aria-hidden", "true");
       const words = document.createElement("span");
       words.textContent = "This chart is tall for this pane.";
       const done = () => answered.add(whose(S));
       const turn = smallButton("ph:arrow-right Turn it sideways", "Draw it left to right", () => (done(), S.turn("LR")), false);
       const keep = smallButton("Keep", "Leave it top to bottom", () => (done(), line.classList.add("hidden"), lift(false)));
-      line.append(words, turn, keep);
+      line.append(mark, words, turn, keep);
       //: In the picture's stage, not the whole builder: it straddled the list and the picture (blind test 1108).
       (S.fig.parentElement || S.note.parentElement).append(line);
       S.sideways = line;
