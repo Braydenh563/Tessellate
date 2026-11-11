@@ -107,7 +107,8 @@ SURFACES = {
 #: (file, surface) of a partial IIFE the lint reads whole but whose chat-pane ids sit only inside
 #: functions that run later (atlas.js `retireOlder` reads the bubbles when a face rests, never at load)
 #: or inside `onSurface("chat", ...)` (answer-kit.js watches the message list once the pane is built).
-INSIDE_FUNCTIONS = {("atlas.js", "chat"), ("answer-kit.js", "chat")}
+#: vault-unlock.js reads TYPED_IDS (chat, library, notes fields) only at lock time, inside functions.
+INSIDE_FUNCTIONS = {("atlas.js", "chat"), ("answer-kit.js", "chat"), ("vault-unlock.js", "chat"), ("vault-unlock.js", "library"), ("vault-unlock.js", "notes")}
 
 
 def _template(name: str) -> tuple[str, str]:

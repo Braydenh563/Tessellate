@@ -897,32 +897,32 @@ const RESPONSE_MODE_SELECTS = ["response-mode-select", "ask-mode-select"];
 
 // The response presets, fetched once. Served by /chat/modes rather than
 // listed here so adding a fourth is a change to `ai/presets.py` alone (§11).
-let responseModesBody = null;
-async function loadResponseModes() {
-  responseModesBody = await apiJson("/chat/modes", { silent: true }).catch(() => null);
-  paintResponseModes();
-}
-//: Again when the Chat pane is built, from the answer already read.
-function paintResponseModes() {
-  const body = responseModesBody;
-  const selects = RESPONSE_MODE_SELECTS.map((id) => document.getElementById(id)).filter(Boolean);
-  if (!selects.length || !body || !body.modes) return;
-  const active = body.modes.find((m) => m.id === body.active);
-  for (const select of selects) {
-    select.replaceChildren();
-    for (const mode of body.modes) {
-      const option = document.createElement("option");
-      option.value = mode.id;
-      option.textContent = mode.label;
-      option.title = mode.description;
-      if (mode.id === body.active) option.selected = true;
-      select.appendChild(option);
+//: The answer is read once and painted again when the Chat pane is built.
+const loadResponseModes = (() => {
+  let body = null;
+  const paint = () => {
+    const selects = RESPONSE_MODE_SELECTS.map((id) => document.getElementById(id)).filter(Boolean);
+    if (!selects.length || !body || !body.modes) return;
+    const active = body.modes.find((m) => m.id === body.active);
+    for (const select of selects) {
+      select.replaceChildren();
+      for (const mode of body.modes) {
+        const option = document.createElement("option");
+        option.value = mode.id;
+        option.textContent = mode.label;
+        option.title = mode.description;
+        if (mode.id === body.active) option.selected = true;
+        select.appendChild(option);
+      }
+      if (active) select.title = active.description;
     }
-    if (active) select.title = active.description;
-  }
-}
-
-onSurface("chat", paintResponseModes);
+  };
+  onSurface("chat", paint);
+  return async () => {
+    body = await apiJson("/chat/modes", { silent: true }).catch(() => null);
+    paint();
+  };
+})();
 
 // Picking in one picker moves the other. Without this the two would drift
 // apart the moment either was touched, and the one you weren't looking at

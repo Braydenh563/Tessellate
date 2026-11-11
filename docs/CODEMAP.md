@@ -2,9 +2,9 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2696, CSS sections 523, backend routes 670, backend modules 10144, test files 2482, tests 20485, plan headings 1003, app scripts 28, boot scripts 37, script files 278.
+Counts: frontend functions 8131, frontend ids 2696, CSS sections 523, backend routes 670, backend modules 10144, test files 2482, tests 20485, plan headings 1003, app scripts 28, boot scripts 37, script files 278.
 
-## Frontend functions (8132)
+## Frontend functions (8131)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -400,7 +400,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `watchFiling` | frontend/js/capture-ask.js:52 |
 | `withTitle` | frontend/js/capture-ask.js:453 |
 
-### frontend/js/chat.js (58)
+### frontend/js/chat.js (57)
 
 | Name | File:line |
 |---|---|
@@ -429,7 +429,6 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `loadWebSearchHistory` | frontend/js/chat.js:608 |
 | `mountChatActionsMenu` | frontend/js/chat.js:1093 |
 | `openWebReader` | frontend/js/chat.js:646 |
-| `paintResponseModes` | frontend/js/chat.js:906 |
 | `personaOptions` | frontend/js/chat.js:969 |
 | `progressMotionWanted` | frontend/js/chat.js:1287 |
 | `progressPhaseText` | frontend/js/chat.js:1531 |
@@ -1154,39 +1153,39 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addAtlasLine` | frontend/js/wiring.js:209 |
-| `askAtlasAbout` | frontend/js/wiring.js:198 |
-| `chatRecallStep` | frontend/js/wiring.js:781 |
-| `clearDueNudges` | frontend/js/wiring.js:1468 |
-| `closeGlobalFind` | frontend/js/wiring.js:619 |
-| `dashboardGreetingPersona` | frontend/js/wiring.js:890 |
-| `escapeForFind` | frontend/js/wiring.js:397 |
-| `globalFindClearHighlights` | frontend/js/wiring.js:455 |
-| `globalFindRun` | frontend/js/wiring.js:466 |
-| `globalFindShowActive` | frontend/js/wiring.js:538 |
-| `globalFindStep` | frontend/js/wiring.js:551 |
-| `globalFindWalkableRoot` | frontend/js/wiring.js:430 |
-| `initGraphOptionFolds` | frontend/js/wiring.js:974 |
-| `initHelpToggles` | frontend/js/wiring.js:218 |
-| `noteSourceOn` | frontend/js/wiring.js:854 |
-| `nudgeDueShown` | frontend/js/wiring.js:1472 |
-| `openGlobalFind` | frontend/js/wiring.js:557 |
-| `openReminderCompose` | frontend/js/wiring.js:1427 |
-| `paintDashboardPersonaMark` | frontend/js/wiring.js:896 |
+| `addAtlasLine` | frontend/js/wiring.js:138 |
+| `askAtlasAbout` | frontend/js/wiring.js:127 |
+| `chatRecallStep` | frontend/js/wiring.js:710 |
+| `clearDueNudges` | frontend/js/wiring.js:1397 |
+| `closeGlobalFind` | frontend/js/wiring.js:548 |
+| `dashboardGreetingPersona` | frontend/js/wiring.js:819 |
+| `escapeForFind` | frontend/js/wiring.js:326 |
+| `globalFindClearHighlights` | frontend/js/wiring.js:384 |
+| `globalFindRun` | frontend/js/wiring.js:395 |
+| `globalFindShowActive` | frontend/js/wiring.js:467 |
+| `globalFindStep` | frontend/js/wiring.js:480 |
+| `globalFindWalkableRoot` | frontend/js/wiring.js:359 |
+| `initGraphOptionFolds` | frontend/js/wiring.js:903 |
+| `initHelpToggles` | frontend/js/wiring.js:147 |
+| `noteSourceOn` | frontend/js/wiring.js:783 |
+| `nudgeDueShown` | frontend/js/wiring.js:1401 |
+| `openGlobalFind` | frontend/js/wiring.js:486 |
+| `openReminderCompose` | frontend/js/wiring.js:1356 |
+| `paintDashboardPersonaMark` | frontend/js/wiring.js:825 |
 | `reflectOnlineState` | frontend/js/wiring.js:16 |
-| `renameCurrentConversation` | frontend/js/wiring.js:708 |
-| `renderPlanToggle` | frontend/js/wiring.js:1262 |
-| `renderWebSearchToggle` | frontend/js/wiring.js:1213 |
-| `setFullscreenSurface` | frontend/js/wiring.js:1074 |
-| `setGraphOptionsOpen` | frontend/js/wiring.js:995 |
-| `setNoteSource` | frontend/js/wiring.js:869 |
-| `settingsSectionContaining` | frontend/js/wiring.js:443 |
-| `startNewNote` | frontend/js/wiring.js:1134 |
-| `syncNoteSourceButtons` | frontend/js/wiring.js:862 |
-| `timelineSelectableRows` | frontend/js/wiring.js:1184 |
-| `toggleSelectAllRows` | frontend/js/wiring.js:1168 |
-| `toggleWebSearch` | frontend/js/wiring.js:1297 |
-| `watchFullscreenSurface` | frontend/js/wiring.js:1080 |
+| `renameCurrentConversation` | frontend/js/wiring.js:637 |
+| `renderPlanToggle` | frontend/js/wiring.js:1191 |
+| `renderWebSearchToggle` | frontend/js/wiring.js:1142 |
+| `setFullscreenSurface` | frontend/js/wiring.js:1003 |
+| `setGraphOptionsOpen` | frontend/js/wiring.js:924 |
+| `setNoteSource` | frontend/js/wiring.js:798 |
+| `settingsSectionContaining` | frontend/js/wiring.js:372 |
+| `startNewNote` | frontend/js/wiring.js:1063 |
+| `syncNoteSourceButtons` | frontend/js/wiring.js:791 |
+| `timelineSelectableRows` | frontend/js/wiring.js:1113 |
+| `toggleSelectAllRows` | frontend/js/wiring.js:1097 |
+| `toggleWebSearch` | frontend/js/wiring.js:1226 |
+| `watchFullscreenSurface` | frontend/js/wiring.js:1009 |
 
 ### frontend/js/settings-wiring.js (46)
 
