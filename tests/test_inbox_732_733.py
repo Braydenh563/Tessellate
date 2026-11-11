@@ -131,10 +131,12 @@ def test_the_library_menu_names_its_kind_and_does_not_show_the_canvas_itself():
         line = WB[start : WB.index("\n", start)]
         assert call in line, line
         assert "wbShowCanvasView" not in line, line
-    mount = WB[WB.index("function wbNewMenuMount(") :]
+    gallery = (ROOT / "frontend" / "js" / "boards-gallery.js").read_text(encoding="utf-8")
+    mount = gallery[gallery.index("function wbNewMenuMount(") :]
     mount = mount[: mount.index("\n}\n")]
-    assert 'run: () => wbNewUntitledBoard("map")' in mount
-    assert 'run: () => wbNewUntitledBoard()' in mount
+    # The rows wait for the board code (the arrow is up with the cards), then act.
+    assert 'run: afterBoards(() => wbNewUntitledBoard("map"))' in mount
+    assert 'run: afterBoards(() => wbNewUntitledBoard())' in mount
     assert 'createNewBoard("board", { reveal: true })' in mount
     assert "wbShowCanvasView" not in mount
 

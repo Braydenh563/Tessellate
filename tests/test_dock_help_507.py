@@ -66,11 +66,11 @@ def test_boards_and_maps_dock_has_one_new_split_button():
 
 
 def test_the_new_caret_lists_both_kinds_and_the_templates_with_a_hint_each():
-    """The caret's rows are built by `wbNewMenuMount` (whiteboard.js) and keep
+    """The caret's rows are built by `wbNewMenuMount` (boards-gallery.js, so the arrow is up with the cards) and keep
     the ids the old rows had, so the Library's and the Dashboard's New board and
     New mind map reach them as before. Each row's hint is its title: a kebab
     row has one line, and the word says what it makes."""
-    wb = (INDEX.parent / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    wb = (INDEX.parent / "js" / "boards-gallery.js").read_text(encoding="utf-8")
     start = wb.index("function wbNewMenuMount(")
     body = wb[start : wb.index("\n}\n", start)]
     for text in ("Whiteboard", "Mind map", "From a template"):
