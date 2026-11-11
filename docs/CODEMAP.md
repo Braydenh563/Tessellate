@@ -14104,17 +14104,17 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_http` | src/tessellate/ai/captions.py:108 |
 | `_is_local` | src/tessellate/ai/captions.py:98 |
 | `_own_helper` | src/tessellate/ai/captions.py:362 |
-| `_post` | src/tessellate/ai/captions.py:373 |
+| `_post` | src/tessellate/ai/captions.py:375 |
 | `_rms` | src/tessellate/ai/captions.py:146 |
-| `_sweep_spools` | src/tessellate/ai/captions.py:397 |
-| `begin` | src/tessellate/ai/captions.py:410 |
-| `end` | src/tessellate/ai/captions.py:449 |
-| `expired` | src/tessellate/ai/captions.py:461 |
-| `get` | src/tessellate/ai/captions.py:444 |
+| `_sweep_spools` | src/tessellate/ai/captions.py:399 |
+| `begin` | src/tessellate/ai/captions.py:412 |
+| `end` | src/tessellate/ai/captions.py:451 |
+| `expired` | src/tessellate/ai/captions.py:463 |
+| `get` | src/tessellate/ai/captions.py:446 |
 | `helper_url` | src/tessellate/ai/captions.py:88 |
 | `infer` | src/tessellate/ai/captions.py:340 |
 | `model_label` | src/tessellate/ai/captions.py:94 |
-| `running` | src/tessellate/ai/captions.py:438 |
+| `running` | src/tessellate/ai/captions.py:440 |
 | `status` | src/tessellate/ai/captions.py:115 |
 | `wav_of` | src/tessellate/ai/captions.py:154 |
 
