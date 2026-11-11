@@ -68,11 +68,11 @@ Not verified: a screen reader, real touch hardware, the hand-drawn picture rende
 
 ## Not built
 
-- DD-5: a Mermaid completion list (needs a keyword table and a menu; the other Source keys are built).
-- DD-10: a drawn sample in the blank picture of an empty diagram (the checklist and widths are built).
-- DD-11: a lost action after a rename. Not reproduced: 0 lost in 20 trials at 4x CPU with a 500 ms gap (harness `lost.js`: rename, Enter, wait, drag the right handle onto the other box); a guard that dropped the hit map while a redraw was pending was built, measured (boxes 0 during 57 to 672 ms of settling, progress cursor) and left out, because nothing was lost without it and it hides the handles for that time after every edit.
-- DD-12: a Versions list of the dialog's history steps.
-- DD-13: node and rank spacing (a `config: flowchart: nodeSpacing` front matter did not change the drawn size in the frame).
+- DD-5: a Mermaid completion list (needs a keyword table and a menu; the other Source keys are built). **Stale, built (rows15-1111):** frontend/js/diagram-complete.js, tests/test_diagram_complete.py (CHANGELOG: Source completion list, Ctrl+Space).
+- DD-10: a drawn sample in the blank picture of an empty diagram (the checklist and widths are built). **Stale, covered (rows15-1111):** a new diagram opens on the drawn 3-box starter (DD-3; driven at 1440 and 390: 3 blocks on open); Clear starts the kind's empty source on purpose (diagram-embed.js:375).
+- DD-11: a lost action after a rename. Not reproduced: 0 lost in 20 trials at 4x CPU with a 500 ms gap (harness `lost.js`: rename, Enter, wait, drag the right handle onto the other box); a guard that dropped the hit map while a redraw was pending was built, measured (boxes 0 during 57 to 672 ms of settling, progress cursor) and left out, because nothing was lost without it and it hides the handles for that time after every edit. **Blocked (rows15-1111):** not reproducible (0 of 20 at 4x); the guard was built, measured and rejected, a decision not remade; needs the owner's timing to reopen.
+- DD-12: a Versions list of the dialog's history steps. **Stale, built (rows15-1111):** diagram-ai.js:226 and :376 list the document's versions; tests/test_diagram_w17_1110.py:42. A dialog with no document has no version store (design, not a defect).
+- DD-13: node and rank spacing (a `config: flowchart: nodeSpacing` front matter did not change the drawn size in the frame). **Stale, built (rows15-1111):** Compact, Roomy, Normal spacing via `layout: dagre` plus the two gaps; tests/test_diagram_spacing.py.
 - DD-9 rest: already there on inspection, not changed: the Create menu and Ctrl+K list "New diagram" (app-features.js, library.js), the New caret menu has a Diagram (.mmd) row, the empty documents list has a labelled New diagram button, and at `(pointer: coarse)` the dock buttons are 44 px (820 touch: no control under 40 px but the shrunk connect handles, 24 x 44). The documents head's New diagram stays an icon with a tooltip.
-- DD-9a: pre-warming the lazy modules (open to first block is already under 1,000 ms at 4x).
-- DD-15, and the real-model and real-touch checks: only emulated touch was driven; no screen reader was run.
+- DD-9a: pre-warming the lazy modules (open to first block is already under 1,000 ms at 4x). **Stale (rows15-1111):** target met (open to first block 758 ms at 4x, under 1,000); not built by decision.
+- DD-15, and the real-model and real-touch checks: only emulated touch was driven; no screen reader was run. **Blocked (rows15-1111):** DD-15 is L and out of scope by the dive's own words (owner decision); real touch, screen reader and model need the owner's machine.
