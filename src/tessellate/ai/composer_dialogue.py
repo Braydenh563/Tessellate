@@ -740,6 +740,15 @@ def _person_swap(text: str, last: dict) -> FollowOn | None:
 _OTHER_ONE = re.compile(r"^(?:and |what about |how about )?the other(?: one| note)?\W*$", re.I)
 
 
+def other_in_frames(text: str, turns: list[dict]) -> bool:
+    """Whether "and the other" is answered by the frames the page echoed (the list before the pick still
+    holds a note the pick was not), so it is bound to that note and `reading.follow` leaves it alone."""
+    if not _OTHER_ONE.match(text.strip()) or len(turns) < 2:
+        return False
+    picked = _frame_of(turns[-1]).get("note_ids") or []
+    return any(isinstance(i, int) and i not in picked[:1] for i in _frame_of(turns[-2]).get("note_ids") or [])
+
+
 def _follow_other(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
     if not _OTHER_ONE.match(text.strip()) or len(turns) < 2:
         return _NOT_THIS

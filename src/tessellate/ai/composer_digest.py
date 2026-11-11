@@ -5474,7 +5474,9 @@ def _scored_insights(found: list, ids: set, members, said: str, learned) -> list
         if insights.key(item) in dismissed or not item.note_ids:
             continue
         #: The person's word on a sentence beats an inference that quotes it.
-        if known and known.quoted_in(item.text):
+        #: (The plan a drift rests on is the line's own words, which the
+        #: insight's text only paraphrases.)
+        if known and (known.quoted_in(item.text) or known.quoted_in(str(item.slots.get("plan") or ""))):
             continue
         if _old_news(item, members, said):
             continue
