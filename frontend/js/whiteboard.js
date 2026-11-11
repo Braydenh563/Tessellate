@@ -3833,7 +3833,7 @@ function wbSearchTextFor(kind, item, byId) {
   //: reads first, and what this one missed.
   if (kind === "sketch") {
     const data = wbSketchData(item);
-    return `${data?.label || ""}${wbPropsText(data?.props)}`.toLowerCase();
+    return `${data?.label || ""}${data?.label2 ? `\n${data.label2}` : ""}${wbPropsText(data?.props)}`.toLowerCase();
   }
   return "";
 }
@@ -3926,17 +3926,17 @@ function wbReplaceInProps(props, find, to, opts = {}) {
 }
 
 //: A Replace all hit written into its item in memory (the caller saves the lot).
-function wbReplaceWrite(kind, item, { text, values, grid, note }) {
+function wbReplaceWrite(kind, item, { text, values, grid, note, second }) {
   const props = values.count ? { props: values.props } : {};
   const noted = note?.count ? { note: note.text } : {};
   if (kind === "object") item.data = { ...item.data, content: text.text, ...props, ...noted, ...(grid.count ? { cells: grid.cells } : {}) };
-  else wbSketchSetProps(item, { label: text.text, ...props });
+  else wbSketchSetProps(item, { label: text.text, ...props, ...(second?.count ? { label2: second.text } : {}) });
 }
 
 //: **Replace all** (canvasdepth; WHITEBOARD_PLAN section 9): text boxes,
 //: shape labels and connector labels, one undo step. A card is a note and
 //: keeps its words; the announcement says how many cards hold the words.
-async function wbBoardReplaceAll(find, to) {
+async function wbBoardReplaceAll(find, to, only = null) {
   const needle = String(find || "").trim() ? String(find) : "";
   if (!needle) return 0;
   const pattern = wbSearchPattern(needle, wbBoardSearch);
@@ -3950,6 +3950,8 @@ async function wbBoardReplaceAll(find, to) {
   for (const kind of ["object", "sketch", "node"]) {
     for (const item of wbState[WB_LIST_BY_KIND[kind]] || []) {
       if (wbItemHidden(kind, item) || wbIsLocked(kind, item)) continue;
+      //: Replace (one) is the same pass over the item the find bar is on.
+      if (only && (only.kind !== kind || only.id !== item.id)) continue;
       if (kind === "node") {
         if (pattern.has(wbSearchTextFor("node", item, null))) cards += 1;
         continue;
@@ -3963,10 +3965,12 @@ async function wbBoardReplaceAll(find, to) {
       const grid = kind === "object" ? wbReplaceInCells(own?.cells, needle, to, wbBoardSearch) : { cells: undefined, count: 0 };
       //: A map topic's note (`data.note`) is searched, so it is rewritten too (undo already holds the whole payload).
       const note = kind === "object" && typeof own?.note === "string" ? wbReplaceText(own.note, needle, to, wbBoardSearch) : { text: "", count: 0 };
-      const done = { count: text.count + values.count + grid.count + note.count };
+      //: A connector's second label (`label2`) is searched, so it is rewritten too.
+      const second = kind === "sketch" && typeof own?.label2 === "string" ? wbReplaceText(own.label2, needle, to, wbBoardSearch) : { text: "", count: 0 };
+      const done = { count: text.count + values.count + grid.count + note.count + second.count };
       if (!done.count) continue;
       undo.push({ action: "move", kind, id: item.id, before: WB_KIND_INFO[kind].payload(item) });
-      wbReplaceWrite(kind, item, { text, values, grid, note });
+      wbReplaceWrite(kind, item, { text, values, grid, note, second });
       rows.push({ kind, item });
       changes += done.count;
     }
@@ -3980,6 +3984,28 @@ async function wbBoardReplaceAll(find, to) {
   wbBoardSearchRun(document.getElementById("wb-search-input")?.value || "");
   return changes;
 }
+
+//: **Replace** (`wbBoardSearch.replaceOne`, a method so it adds no global name; the one the find bar is on, draw.io's Replace beside Replace all): the first press goes to the first
+//: match, the next ones replace in the match the bar is on and move to the next. A card keeps its words.
+wbBoardSearch.replaceOne = async (find, to) => {
+  if (wbBoardSearch.index < 0) {
+    wbBoardSearchGo(1);
+    return 0;
+  }
+  const match = wbBoardSearch.matches[wbBoardSearch.index];
+  if (!match) return 0;
+  const at = wbBoardSearch.index;
+  const changes = await wbBoardReplaceAll(find, to, match);
+  //: A replaced item usually stops matching, so the next one is at the same place; one that still matches (a card,
+  //: or words that hold the needle) is stepped past.
+  const total = wbBoardSearch.matches.length;
+  if (total) {
+    const still = wbBoardSearch.matches.findIndex((m) => m.kind === match.kind && m.id === match.id);
+    wbBoardSearch.index = ((still >= 0 ? still + 1 : at) % total) - 1;
+    wbBoardSearchGo(1);
+  }
+  return changes;
+};
 
 function wbBoardSearchRun(query) {
   wbBoardSearch.query = query;
@@ -4113,8 +4139,16 @@ function wbEnsureReplaceRow(bar) {
   all.id = "wb-replace-all";
   all.className = "small";
   all.textContent = "Replace all";
-  const go = () => wbBoardReplaceAll(document.getElementById("wb-search-input")?.value || "", field.value);
+  const query = () => document.getElementById("wb-search-input")?.value || "";
+  const go = () => wbBoardReplaceAll(query(), field.value);
   all.addEventListener("click", go);
+  const one = document.createElement("button");
+  one.type = "button";
+  one.id = "wb-replace-one";
+  one.className = "small";
+  one.textContent = "Replace";
+  one.title = "Replace in the match the bar is on, then go to the next";
+  one.addEventListener("click", () => wbBoardSearch.replaceOne(query(), field.value));
   field.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
@@ -4124,7 +4158,7 @@ function wbEnsureReplaceRow(bar) {
       wbCloseBoardSearch();
     }
   });
-  row.append(field, all);
+  row.append(field, one, all);
   bar.append(row);
 }
 
@@ -4322,6 +4356,14 @@ function wbPortFractions(kind, item) {
   //: come before anything guessed from the path.
   if (Array.isArray(parsed.ports) && parsed.ports.length) {
     const own = parsed.ports.filter((q) => Number.isFinite(q?.x) && Number.isFinite(q?.y));
+    //: A port flagged `perimeter` is held on the outline, wherever the box has been resized to (`snapToOutline`).
+    if (own.some((q) => q.perimeter)) {
+      const held = wbPortCache.get(item.id);
+      if (held && held.d === parsed.d && held.own === parsed.ports) return held.ports;
+      const ports = own.map((q) => (q.perimeter ? wbFmtState.drawMore?.snapToOutline(q, parsed.d) || q : q));
+      wbPortCache.set(item.id, { d: parsed.d, own: parsed.ports, ports });
+      return ports;
+    }
     if (own.length) return own;
   }
   const cached = wbPortCache.get(item.id);
@@ -4372,7 +4414,8 @@ function wbAnchorPositions(kind, item) {
   const c = wbBoxCenter(box);
   const rot = wbItemRotation(kind, item);
   return wbPortFractions(kind, item).map((a) => {
-    const pt = wbRotatePoint({ x: box.minX + a.x * w, y: box.minY + a.y * h }, c, rot);
+    //: A port may carry a pixel offset from its place in the box (`dx`, `dy`; draw.io's `points` offsets).
+    const pt = wbRotatePoint({ x: box.minX + a.x * w + (Number(a.dx) || 0), y: box.minY + a.y * h + (Number(a.dy) || 0) }, c, rot);
     return { anchor: a, x: pt.x, y: pt.y };
   });
 }
@@ -4384,7 +4427,7 @@ function wbAnchorPoint(kind, item, anchor) {
   if (!anchor || !Number.isFinite(anchor.x) || !Number.isFinite(anchor.y)) return null;
   const box = wbItemBBox(kind, item);
   if (!box) return null;
-  const pt = { x: box.minX + anchor.x * (box.maxX - box.minX), y: box.minY + anchor.y * (box.maxY - box.minY) };
+  const pt = { x: box.minX + anchor.x * (box.maxX - box.minX) + (Number(anchor.dx) || 0), y: box.minY + anchor.y * (box.maxY - box.minY) + (Number(anchor.dy) || 0) };
   return wbRotatePoint(pt, wbBoxCenter(box), wbItemRotation(kind, item));
 }
 
@@ -4718,7 +4761,7 @@ function wbResolveLinkEndpoints(parsed) {
   if (parsed.targetId != null && !targetNode) return null;
   if (!sourceNode && !parsed.sourcePoint) return null;
   if (!targetNode && !parsed.targetPoint) return null;
-  const way = parsed.route !== "elbow" && Array.isArray(parsed.points) && parsed.points.length ? parsed.points : null;
+  const way = !["elbow", "er", "iso"].includes(parsed.route) && Array.isArray(parsed.points) && parsed.points.length ? parsed.points : null;
   const aim = way ? { source: way[0], target: way[way.length - 1] } : null;
   if (sourceNode && targetNode) {
     return wbLinkEndpoints(sourceNode, parsed.sourceAnchor, targetNode, parsed.targetAnchor, sourceKind, targetKind, aim);
@@ -4778,6 +4821,13 @@ function wbLinkCaps(parsed) {
 //: when set, the link is one quadratic curve through it. `shape`
 //: (`wbLinkShape`): an elbow, routed round its two boxes through its bends.
 function wbLinkPathD(type, sPt, tPt, caps, width, bend, shape = null) {
+  //: A curved connector from a shape back to itself: a loop out of its side (`wbFmtState.drawMore`).
+  if (shape?.route === "loop") return wbCurvePathD(wbFmtState.drawMore.loopSegs(shape.side, sPt, tPt), caps, width);
+  //: Entity relation and isometric (`wbFmtState.drawMore`): drawn from the two ends alone.
+  if (shape?.route === "er" || shape?.route === "iso") {
+    const held = wbGapEnds(sPt, tPt, shape.gap);
+    return wbElbowPathD(wbFmtState.drawMore.routeStops(shape.route, held.source, held.target), caps, width);
+  }
   if (shape?.route === "elbow") {
     //: The gap is taken after a floating end has settled on its side, and
     //: along the way the route leaves it.
@@ -5183,7 +5233,7 @@ function wbApplyLineJumps(groups) {
   for (const { el, parsed } of links) {
     const plain = el.querySelector(".sketch-hitbox")?.getAttribute("d") || "";
     const pts = wbShaftPoints(plain);
-    const straight = parsed.route === "elbow" || (parsed.type === "link-straight" && !(parsed.bend && (parsed.bend.x || parsed.bend.y) && !parsed.points?.length));
+    const straight = ["elbow", "er", "iso"].includes(parsed.route) || (parsed.type === "link-straight" && !(parsed.bend && (parsed.bend.x || parsed.bend.y) && !parsed.points?.length));
     if (straight && parsed.jumps && parsed.jumps !== "none" && under.length && pts.length > 1) {
       const path = el.querySelector(".sketch-path");
       const caps = String(path?.getAttribute("d") || "").split(/\s(?=M)/).slice(1).join(" ");
@@ -5248,7 +5298,7 @@ function wbPolylineAt(pts, p) {
 //: `route: "elbow"`, so every reader that only knows the two old types (the
 //: assistant's board tools, an older build) still draws it as a link.
 function wbLinkRouteName(parsed) {
-  if (parsed?.route === "elbow") return "elbow";
+  if (["elbow", "er", "iso"].includes(parsed?.route)) return parsed.route;
   return parsed?.type === "link-straight" ? "straight" : "curved";
 }
 
@@ -5259,6 +5309,9 @@ function wbLinkShape(parsed) {
   const points = Array.isArray(parsed?.points) ? parsed.points : [];
   const gap = wbLinkGap(parsed);
   if (parsed?.route === "elbow") return { route: "elbow", points, gap };
+  if (parsed?.route === "er" || parsed?.route === "iso") return { route: parsed.route, points: [], gap };
+  //: A curved connector from a shape back to itself is a loop (`wbFmtState.drawMore`).
+  if (parsed?.type === "link-curved" && !parsed.route && parsed.sourceId != null && parsed.sourceId === parsed.targetId && (parsed.sourceKind || "node") === (parsed.targetKind || "node")) return { route: "loop", side: parsed.loop || "top", points: [], gap };
   if (!points.length && !gap) return null;
   return { route: parsed.type === "link-straight" ? "straight" : "curved", points, gap };
 }
@@ -5337,7 +5390,14 @@ function wbShowAnchorHints(kind, item, nearAnchor) {
     dot.setAttribute("fill", near ? "var(--accent)" : "var(--card)");
     dot.setAttribute("stroke", "var(--accent)");
     dot.setAttribute("stroke-width", "1.5");
+    //: A named port (a stencil's `N`, `S`, `Out`) says so: a title on its dot, and the name beside the lit one.
+    if (a.name) {
+      const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+      title.textContent = a.name;
+      dot.appendChild(title);
+    }
     hints.appendChild(dot);
+    if (near && a.name) wbFmtState.drawMore?.nameBeside(hints, a.name, x, y);
   }
 }
 
@@ -9896,7 +9956,7 @@ function wbBuildContextMenu(kind) {
   //: map: a topic's place in a tree is its order (FEAT-17).
   if (!wbIsMap()) {
     subItem("Arrange", (sub) => {
-      for (const id of ["group", "ungroup", "lock", "flip-h", "flip-v", "change-shape", "tidy-down", "tidy-right"]) {
+      for (const id of ["group", "ungroup", "lock", "flip-h", "flip-v", "change-shape", "edit-ports", "reset-ports", "tidy-down", "tidy-right"]) {
         const row = wbCommandMenuRow(id);
         if (row) sub(...row);
       }
@@ -12305,7 +12365,7 @@ function wbTakesLink(kind, item) {
 function wbItemLink(kind, item) {
   if (!wbTakesLink(kind, item)) return "";
   const link = kind === "sketch" ? wbSketchParsedData(item)?.link : item.data?.link;
-  return typeof link === "string" && (/^https?:\/\//i.test(link) || routeEntry(link)) ? link : "";
+  return typeof link === "string" && (/^https?:\/\//i.test(link) || routeEntry(link) || wbFmtState.drawMore?.frameOf(link)) ? link : "";
 }
 
 //: What a typed or pasted address becomes: an app link's hash, a web
@@ -12333,7 +12393,9 @@ async function wbSetItemLink(kind, item, link) {
 }
 
 function wbOpenItemLink(link) {
-  if (link.startsWith("#/")) location.hash = link;
+  const page = wbFmtState.drawMore?.frameOf(link);
+  if (page) wbPageGo(page.id);
+  else if (link.startsWith("#/")) location.hash = link;
   else window.open(link, "_blank", "noopener,noreferrer");
 }
 
@@ -12359,11 +12421,13 @@ function wbEditItemLink() {
       await wbSetItemLink(kind, item, link);
     }),
   ];
+  const at = wbContextMoreWrap()?.getBoundingClientRect();
+  const pages = wbFmtState.drawMore?.pageLinkItem((link) => wbSetItemLink(kind, item, link), at ? at.left : 80, at ? at.bottom + 4 : 80);
+  if (pages) items.push(pages);
   if (now) {
-    items.push(makeMenuItem("ph:arrow-square-out Open the link", now, () => wbOpenItemLink(now)));
+    items.push(makeMenuItem("ph:arrow-square-out Open the link", wbFmtState.drawMore?.linkWords(now) || now, () => wbOpenItemLink(now)));
     items.push(makeMenuItem("ph:link-break Remove the link", "Take the link off; the shape stays", () => wbSetItemLink(kind, item, "")));
   }
-  const at = wbContextMoreWrap()?.getBoundingClientRect();
   openMenuAtPoint(items, "Link", at ? at.left : 80, at ? at.bottom + 4 : 80);
 }
 
@@ -12422,9 +12486,10 @@ function wbPaintLinkMarks() {
     }
     const mark = pin.firstElementChild;
     const inApp = link.startsWith("#/");
-    const words = inApp ? appAddressLabel(link) : link;
+    const pageWords = wbFmtState.drawMore?.linkWords(link);
+    const words = pageWords || (inApp ? appAddressLabel(link) : link);
     mark.dataset.link = link;
-    mark.firstElementChild.className = `ph ${inApp ? "ph-note" : "ph-arrow-square-out"}`;
+    mark.firstElementChild.className = `ph ${pageWords ? "ph-presentation" : inApp ? "ph-note" : "ph-arrow-square-out"}`;
     mark.setAttribute("aria-label", `Open the link: ${words}`);
     mark.title = words;
     pin.style.left = `${box.minX}px`;
@@ -20755,7 +20820,8 @@ function wbLinkLength(d) {
 }
 
 function wbLayoutLinkLabel(groupEl) {
-  const label = groupEl?.querySelector?.(":scope > .wb-link-label");
+  wbFmtState.drawMore?.layoutLabel2(groupEl);
+  const label = groupEl?.querySelector?.(":scope > .wb-link-label:not(.wb-link-label2)");
   if (!label) return;
   //: A label that shows the length is worded again on every layout, so a drag
   //: of either end shows the new number as it moves, not after the drop.
@@ -20823,9 +20889,10 @@ function wbWireLinkLabelDrag(label, groupEl) {
 }
 
 function wbPaintLinkLabel(groupEl, sketch, parsed) {
+  wbFmtState.drawMore?.paintLabel2(groupEl, sketch, parsed);
   const text = wbLinkTakesLabel(sketch, parsed) && typeof parsed.label === "string" ? wbExpandPlaceholders(parsed.label, parsed.props, wbPlaceholderBuiltins("sketch", sketch, groupEl)) : "";
   groupEl.__wbMeasured = text && parsed.label.includes("%length%") ? { sketch, parsed } : null;
-  let label = groupEl.querySelector(":scope > .wb-link-label");
+  let label = groupEl.querySelector(":scope > .wb-link-label:not(.wb-link-label2)");
   if (!text) {
     label?.remove();
     return;
@@ -21254,6 +21321,7 @@ function wbRenderLinkEndpointHandles(sketch, parsed) {
 //: curve through all of them. A link from before this with the old single
 //: `bend` shows that as one waypoint, and the first edit writes `points`.
 function wbRenderWaypointHandles(group, sketch, parsed, endpoints) {
+  if (["er", "iso", "loop"].includes(wbLinkShape(parsed)?.route)) return;
   const elbow = parsed.route === "elbow";
   const points = wbLinkWaypoints(parsed, endpoints).map((p) => ({ x: p.x, y: p.y }));
   const groupEl = () => document.querySelector(`.sketch-group[data-id="${sketch.id}"]`);
@@ -21304,7 +21372,7 @@ function wbRenderWaypointHandles(group, sketch, parsed, endpoints) {
   //: A label is pressed by its words (INBOX 1404), so a ring that would sit
   //: on them waits: the press would otherwise land on the ring.
   let labelBox = null;
-  try { labelBox = groupEl()?.querySelector(":scope > .wb-link-label")?.getBBox() || null; } catch { labelBox = null; }
+  try { labelBox = groupEl()?.querySelector(":scope > .wb-link-label:not(.wb-link-label2)")?.getBBox() || null; } catch { labelBox = null; }
   const underLabel = (a) => Boolean(labelBox && labelBox.width && a.x > labelBox.x - 6 && a.x < labelBox.x + labelBox.width + 6 && a.y > labelBox.y - 6 && a.y < labelBox.y + labelBox.height + 6);
   for (const add of wbWaypointAddSpots(live(), ends(), groupEl()?.querySelector(".sketch-hitbox")?.getAttribute("d")).filter((a) => !underLabel(a))) {
     const grip = group.append("circle")
@@ -21380,6 +21448,7 @@ function wbLinkDrawnLine(parsed, ends) {
 function wbWaypointAddSpots(parsed, ends, drawnD) {
   const shape = wbLinkShape(parsed);
   const spots = [];
+  if (["er", "iso", "loop"].includes(shape?.route)) return spots;
   if (shape?.route === "elbow") {
     const line = wbLinkDrawnLine(parsed, ends);
     for (let i = 0; i < line.length - 1; i++) {
@@ -22629,6 +22698,10 @@ function renderWhiteboard() {
       }
       if (!parsed || !(parsed.type || "").startsWith("link-")) return;
       event.stopPropagation();
+      if (["er", "iso", "loop"].includes(wbLinkShape(parsed)?.route)) {
+        toast("This line is drawn from its two ends. Change the line shape to add bends.", "info");
+        return;
+      }
       const endpoints = wbResolveLinkEndpoints(parsed);
       if (!endpoints) return;
       const [px, py] = wbClientToBoard(event.clientX, event.clientY);
@@ -25259,6 +25332,8 @@ function wbShowCanvasView() {
 }
 
 function wbShowBoardsLanding() {
+  //: A document's board panel (documents-board.js) answers this by closing itself: the board list is not what that page wants.
+  if (!document.dispatchEvent(new CustomEvent("wb-leave", { cancelable: true }))) return;
   wbRememberBoardView();
   // First, because the boards list lives inside the element full screen
   // pins to the viewport, see `wbLeaveFullscreen` for what that looked
@@ -25319,11 +25394,13 @@ function wbCancelBoardTimers() {
 }
 
 // Jump to the real whiteboard canvas with a specific board loaded.
-async function openWhiteboardBoard(boardId) {
+async function openWhiteboardBoard(boardId, opts = null) {
   wbRememberBoardView();
-  switchTab("library");
-  const wbSubtab = document.querySelector('#library-subtabs button[data-target="library-view-whiteboard"]');
-  wbSubtab?.click();
+  //: `stay`: the caller has put `#library-view-whiteboard` where the board is wanted (a document's board panel, documents-board.js).
+  if (!opts?.stay) {
+    switchTab("library");
+    document.querySelector('#library-subtabs button[data-target="library-view-whiteboard"]')?.click();
+  }
   wbShowCanvasView();
   const nudgeSaved = wbCancelBoardTimers();
   wbLinkParseCache.clear(); // the next board's sketches are other ids

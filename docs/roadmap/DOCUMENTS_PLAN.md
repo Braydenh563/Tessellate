@@ -1311,12 +1311,12 @@ Read from the code against Notion and Obsidian. Sizes S, M, L. Nothing here is b
 2. Built 2026-11-11 (bd-1111): `[@key]` citations listed at the foot, the "/" menu's Citation; see CHANGELOG.
 3. Built (found by grep, checked 2026-11-10): the / menu's "Link to this block" copies `[[Title#^id]]`; see HISTORY.md, "Moved from the plans, 2026-11-10 (s9c-1110 part 2)".
 4. Built 2026-10-26 (docs5-1026): see HISTORY.md, "Moved from the plans, 2026-10-26 (docs5-1026)".
-5. Synced blocks: one block shown in two notes, edited in either - L.
-6. A database view of notes by property (Notion, Obsidian Bases): table, board, calendar - L.
+5. Built 2026-11-11 (F1 run 2): the block lives in its source document, an embed edits it in place (DOCUMENTS_PLAN 26, decision 82); HISTORY.md, "F1 run 2".
+6. Table built 2026-11-11 (F1 run 2): a ```base block, read-only (HISTORY.md, "F1 run 2"). Board and calendar views stay open - M.
 7. Built 2026-11-10 (s9c-1110): the / menu's "Remind me about this"; see HISTORY.md, "Moved from the plans, 2026-11-10 (s9c-1110 part 2)".
 8. ~~Page cover and icon picker parity with Notion's gallery - S.~~ Built 2026-11-10 (HISTORY.md, "s9c-1110 part 5").
 9. Built 2026-11-11 (F1 run): see HISTORY.md, "Moved from the plans, 2026-11-11 (F1 graph block, DOCUMENTS_PLAN 16)".
-10. Canvas block: a board embedded and editable in place - M.
+10. Built 2026-11-11 (F1 run 2): a board card in a document has Edit here, which lends the whiteboard's one view to a dialog over the document (DOCUMENTS_PLAN 26); a second, per-instance whiteboard stays unbuilt (HISTORY.md, "F1 run 2").
 11. Built 2026-11-10 (`\label`, `\eqref`, `\ref`): see HISTORY.md, "Moved from the plans, 2026-11-10 (s9-1110)".
 12. Built 2026-11-11 (s9c-1110 part 6): sort, filter rows and `=SUM`/`=AVG`/`=COUNT`/`=MIN`/`=MAX`; see HISTORY.md, "Moved from the plans, 2026-11-11 (s9c-1110 part 6)".
 13. Built 2026-10-26 (docs5-1026): the Read view takes a progress line; see HISTORY.md.
@@ -1490,3 +1490,13 @@ Block `docLists`, documents-cm.js. Scout of the bundled CodeMirror:
 ## Placed from W34, 2026-11-11 (gap5: the diagram builder's open cost)
 
 - **Diagram builder opens with about 251 row listeners (M; perfdgm-1108:4).** Each row attaches about 3 (shape, connect, chip) in diagram-builder.js `show` (:656); the mermaid fetch already starts first. First step: delegate them to one listener on `S.tree`, then idle-slice rows past 40 blocks. Check: listeners on open 251 to under 20; the blind-tester on keyboard row selection. The audit's 2,500 listeners and 766 / 1,128 ms relabel long tasks did not reproduce (host loaded): re-measure first.
+
+## 26. Synced blocks, decision 82 (row 5, F1 run 2, 2026-11-11)
+**Decision 82 (taken on the recommendation).** A block exists once, in the document it was written in (it carries `^id`). Every other place is a window onto it: `![[Doc#^id]]` shows the block, and its pencil edits the text there. Save reads the source afresh, rewrites that one block (the `^id` stays, so every link and embed still resolves) and saves the document through `PUT /documents/{id}` with the document's own `base_hash`, so the change has a revision and an edit of the same document elsewhere stays.
+- **Refused, not merged:** a block changed elsewhere since the box opened (the text is kept), and a block made two by a blank line.
+- **Not built:** a copy that stays in step in both places (no second source of truth, no sync engine); a pencil in the block's own document (it is edited there as text); live refresh of other open windows after a save (they update when the document is next drawn).
+- Code: `frontend/js/documents-synced.js` (lazy, `LAZY_MODULES.docSynced`), the pencil in `docEmbedNode` (documents-embeds.js), `tests/test_doc_blockrefs.py`; Guide topic `document-synced`.
+
+**Row 10, a board editable from a document (built 2026-11-11).** The whiteboard is one page-wide instance (`wbState`, `#whiteboard-container`, ids all through 25,000 lines), so there is no second one to mount in a document. A board card (`![[board:12]]`) has Edit here, which lends `#library-view-whiteboard` to a dialog over the document (`documents-board.js`, lazy `docBoard`) and puts it back on close. Whiteboard side, two hooks only: `openWhiteboardBoard(id, { stay: true })`, and a cancelable `wb-leave` event before `wbShowBoardsLanding`.
+- **Cost:** while the dialog is open the Library has no board window (closing leaves it on its list of boards, not on the board that was open there); the dialog is modal, so the document cannot be typed in meanwhile.
+- **Not built:** the board drawn live and editable inside the page's text flow (needs the whiteboard state made per instance first, a refactor of whiteboard.js that the whiteboard owner has to make).

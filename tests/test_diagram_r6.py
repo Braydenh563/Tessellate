@@ -17,7 +17,8 @@ CSS = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8
 BUILDER = (JS / "diagram-builder.js").read_text(encoding="utf-8")
 EMBED = (JS / "diagram-embed.js").read_text(encoding="utf-8")
 JOINS = (JS / "diagram-joins.js").read_text(encoding="utf-8")
-SELECTS = (JS / "sheets-selects.js").read_text(encoding="utf-8")
+# `kebabMenu.beside` (the menu hung from a whole row) lives in diagram-library.js since the boot-bundle ratchet; sheets-selects.js only calls it.
+SELECTS = (JS / "sheets-selects.js").read_text(encoding="utf-8") + (JS / "diagram-library.js").read_text(encoding="utf-8")
 TOUCH = (JS / "diagram-touch.js").read_text(encoding="utf-8")
 STEPS = (JS / "diagram-steps.js").read_text(encoding="utf-8")
 MERMAID_JS = (JS / "documents-mermaid.js").read_text(encoding="utf-8")

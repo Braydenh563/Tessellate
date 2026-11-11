@@ -95,6 +95,9 @@ CSS_FILES = [
     CSS_DIR / "meetings-lazy.css",
     #: What a click shows fades in and out (`LAZY_MODULES.uiReveal`, INBOX 1565).
     CSS_DIR / "ui-reveal-lazy.css",
+    #: The ```graph and ```base blocks of a document (`LAZY_MODULES.docGraph`, `LAZY_MODULES.docBase`).
+    CSS_DIR / "doc-graph-lazy.css",
+    CSS_DIR / "doc-base-lazy.css",
     #: The quoted span a source opens at (`LAZY_MODULES.reveal`, Brief 88).
     CSS_DIR / "reveal-lazy.css",
     #: The manual (manual.js loads it, WORLD_CLASS_PLAN 25c).

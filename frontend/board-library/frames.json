@@ -335,6 +335,180 @@
     ],
     "links": []
    }
+  },
+  {
+   "key": "page-a4-portrait",
+   "kind": "element",
+   "name": "A4 page, portrait",
+   "tags": [
+    "a4",
+    "paper",
+    "page",
+    "print",
+    "document",
+    "portrait"
+   ],
+   "payload": {
+    "box": {
+     "w": 794,
+     "h": 1123
+    },
+    "items": [
+     {
+      "key": "f0",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "A4 page, portrait"
+      },
+      "x": 0,
+      "y": 0,
+      "w": 794,
+      "h": 1123,
+      "z": -1
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "page-a4-landscape",
+   "kind": "element",
+   "name": "A4 page, landscape",
+   "tags": [
+    "a4",
+    "paper",
+    "page",
+    "print",
+    "document",
+    "landscape"
+   ],
+   "payload": {
+    "box": {
+     "w": 1123,
+     "h": 794
+    },
+    "items": [
+     {
+      "key": "f0",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "A4 page, landscape"
+      },
+      "x": 0,
+      "y": 0,
+      "w": 1123,
+      "h": 794,
+      "z": -1
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "page-a3-landscape",
+   "kind": "element",
+   "name": "A3 page, landscape",
+   "tags": [
+    "a3",
+    "paper",
+    "page",
+    "print",
+    "poster",
+    "landscape"
+   ],
+   "payload": {
+    "box": {
+     "w": 1587,
+     "h": 1123
+    },
+    "items": [
+     {
+      "key": "f0",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "A3 page, landscape"
+      },
+      "x": 0,
+      "y": 0,
+      "w": 1587,
+      "h": 1123,
+      "z": -1
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "page-letter-portrait",
+   "kind": "element",
+   "name": "Letter page, portrait",
+   "tags": [
+    "letter",
+    "us letter",
+    "paper",
+    "page",
+    "print",
+    "portrait"
+   ],
+   "payload": {
+    "box": {
+     "w": 816,
+     "h": 1056
+    },
+    "items": [
+     {
+      "key": "f0",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Letter page, portrait"
+      },
+      "x": 0,
+      "y": 0,
+      "w": 816,
+      "h": 1056,
+      "z": -1
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "slide-16-9",
+   "kind": "element",
+   "name": "Slide, 16:9",
+   "tags": [
+    "slide",
+    "presentation",
+    "16:9",
+    "widescreen",
+    "deck"
+   ],
+   "payload": {
+    "box": {
+     "w": 1280,
+     "h": 720
+    },
+    "items": [
+     {
+      "key": "f0",
+      "kind": "object",
+      "type": "frame",
+      "data": {
+       "content": "Slide, 16:9"
+      },
+      "x": 0,
+      "y": 0,
+      "w": 1280,
+      "h": 720,
+      "z": -1
+     }
+    ],
+    "links": []
+   }
   }
  ]
 }

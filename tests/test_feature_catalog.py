@@ -77,6 +77,9 @@ SCRIPTS = (
     "tidy.js",
     #: The Activity panel (Brief 73), lazy behind `LAZY_MODULES.activity`.
     "activity-panel.js",
+    #: The equation editor, lazy behind `LAZY_MODULES.mathEditor`: the Ctrl+K
+    #: Insert equation row in app-features.js calls `openMathEditor`, defined here.
+    "math-editor.js",
     #: The Statistics page (Brief 89), lazy behind `LAZY_MODULES.statistics`.
     "statistics.js",
     #: The palette's timer, stopwatch, counts and templates (Brief 89),

@@ -40,11 +40,7 @@
         folder.value = last.folder || "";
         folder.placeholder = "Path to the shared folder";
         folder.setAttribute("aria-label", "Shared folder");
-        const phrase = document.createElement("input");
-        phrase.type = "password";
-        phrase.autocomplete = "off";
-        phrase.placeholder = "The same on every computer";
-        phrase.setAttribute("aria-label", "Sync passphrase");
+        const phrase = document.getElementById("sync-folder-passphrase").content.firstElementChild.cloneNode(true);
         const status = document.createElement("p");
         status.className = "muted";
         status.setAttribute("role", "status");

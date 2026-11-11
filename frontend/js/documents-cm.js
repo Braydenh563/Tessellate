@@ -656,7 +656,7 @@ function docLivePlugin(CM) {
       //: The card opens its target, except where the card already has a
       //: control of its own under the pointer.
       host.addEventListener("click", (event) => {
-        if (event.target instanceof Element && event.target.closest("button, a, input")) return;
+        if (event.target instanceof Element && event.target.closest("button, a, input, textarea")) return;
         docOpenWikiTarget(this.name);
       });
       return host;

@@ -932,7 +932,6 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Group padding | no | `addGroupPadding` (Format.js 3663) | frame padding row (`tint` and `hint` exist on frames) | S |
 | Table: rows, columns, merge, stripes | no | `addTable` (Format.js 2162), section 12 below | section 12 | M |
 | Arrow shape geometry (width of a block arrow connector) | no | `addArrowGeometry` (Format.js 3972) | needs the `flexArrow` connector shape, section 4 | M |
-| Connector direction: reverse, loop side | reverse yes, 2026-10-18 (whiteboard-1018; HISTORY); loop side no | `addEdgeTurn` (Format.js 2811), `addLoopDirection` (2650) | a `reverse` command swaps ends and caps; self-loops are not drawn today | S |
 | Edit data, copy and paste data, edit tooltip, note, link, open link | no (links on items exist) | `editData` (Actions.js 742), `editTooltip` (748), `editNote` (786), `editLink` (812) | section 3 | M |
 
 ### 3. Edit style, Edit data, placeholders, tooltips
@@ -942,11 +941,10 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Edit style as text | no | `editStyle` (Actions.js 1717): a dialog with the `key=value;` string | an "Edit data" dialog showing the item's `data` JSON, parsed and validated on Apply, one undo step; the same field is how AI sees it | M |
 | Edit data: custom properties | yes, 2026-10-11 (canvasdepth2; HISTORY) | `EditDataDialog` (Dialogs.js 3707): key and value rows, id, placeholders toggle | `data.props {key: value}` shown as a two-column editor; search and the AI tools read it | M |
 | Placeholders `%name%` in labels | yes, 2026-10-18 (whiteboard-1018 and fixes7-1018; HISTORY), `%date%` and `%page%` included | `Graph.replacePlaceholders` (Graph.js 14099), `updatePlaceholders` (13534) | the label renderer replaces `%key%` from `data.props`, `%date%`, `%page%`; export bakes the values | M |
-| Tooltip | yes, 2026-10-18 (whiteboard-1018; HISTORY), shapes and connectors; a native SVG title, not a popover | `getTooltipForCell` (Graph.js 17291), `editTooltip` | `data.tip` rendered as a hover popover on the SVG item; a link row already exists for notes | S |
 | Note on a shape | no (comments exist, `comment` command) | `editNote` (Actions.js 786) | covered by board comments | none |
 | Link on a shape (URL or page) | yes (object links, WHITEBOARD_PLAN decision) | `getLinkForCell` (Graph.js 15330), `editLink`, `openLink`, `link=`; `data:page/id,` links to pages | done for objects; add sketches and a "frame" target | S |
 | Edit geometry as numbers | yes (`wb-fmt-x/y/w/h`) | `editGeometry` (Menus.js 962) | done | none |
-| Edit polygon points, edit connection points | no | `editPolygon` (Menus.js 991), `editConnectionPoints` (1011) | section 5 (the ports editor); polygon editing is a later "edit points" tool on a path | M |
+| Edit polygon points | no | `editPolygon` (Menus.js 991) | a later "edit points" tool on a path (connection points are built: HISTORY 2026-11-11 f2-1111 batch 2) | M |
 | Edit shape (custom stencil XML) | no | `editShape` (Menus.js 768), `EditShapeDialog` | drop; the library's "Save as a shape" (`save-shape`) covers it | none |
 
 ### 4. Connectors: edge styles, waypoints, jumps, arrowheads, labels
@@ -955,17 +953,14 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | --- | --- | --- | --- | --- |
 | Straight, curved, elbow routes | yes (three: `wb-fmt-route`, `line-curved/straight/elbow`) | `edgeStyle` menu (Menus.js 59): straight, orthogonal, curved, entity relation, elbow horizontal and vertical, isometric horizontal and vertical, sequence | done | none |
 | Orthogonal routing that avoids other shapes | partly: elbow detours around its own two end boxes only (`wbElbowRoute`, `wbElbowDetour`) | mxEdgeStyle plus libavoid (`LibavoidRouting.js`, `libavoidRouting=1`), loaded when the extensions bundle is | an obstacle grid over item boxes (A* on a coarse grid, then simplify to corners); `route: "elbow"` keeps its shape, the router becomes the default behind it | L |
-| Entity relation, isometric and sequence routes | no | `entityRelationEdgeStyle`, `isometricEdgeStyle`, `addSequenceEdgeStyleItem` (Menus.js 59 to 105) | `route: "er"` (an S-shape with fixed stubs), `"iso"` (30 degree legs); sequence is a UML rule, drop | S |
 | Waypoints: add, move, remove, clear | yes (`waypoint` in `whiteboard-map.js`; `points` in the link data); "Clear the connector's bends" command 2026-10-18 (whiteboard-1018; HISTORY), the numeric list not | `addWaypoint`, `removeWaypoint`, `clearWaypoints` (Actions.js 1782, 1830, 1871), `addEdgeWaypoints` list (Format.js 4278) | done; add a "Clear waypoints" command and the numeric list in the Arrange tab | S |
 | Line jumps (arc, gap, sharp) with size | yes, size 2026-10-18 (whiteboard-1018; HISTORY) | `addLineJumps` (Format.js 7835), `jumpStyle`, `jumpSize` | add `jump_size` | S |
 | Arrowheads: about 40 (classic, block, open, oval, diamond, thin variants, async, box, half circle, dash, cross, circle plus, ER set, double block), filled or hollow, with size | partly: 11 stroked kinds (`WB_CAP_KINDS`: arrow, circle, square, multiline, six ER); no filled heads, no size | `Format.processMenuIcon` list (Format.js 140 to 175), `startArrow`, `endArrow`, `startFill`, `endFill`, `startSize`, `endSize` | caps become `{kind, fill, size}`; add block, diamond, oval filled and hollow, open, dash, cross, half circle; draw as closed subpaths like `wbCapPath` | M |
 | Connector shapes: line, link (double), flex arrow, simple arrow, tapered arrow, filled edge, pipe, wire | no | `edgeShape` menu (Menus.js 107); `Shapes.js` `link`, `flexArrow`, `taperedArrow`, `filledEdge`, `pipe`, `wire` | `link-*` gains `shape` (line, double, block arrow, pipe) drawn as a closed outline around the centre line | L |
 | Edge labels: text, position along the line, background | yes (`wb-fmt-label-t`, `wblinklabel.js`) | `edge value`, label offset in `mxGeometry`; background `labelBackgroundColor` | done; add `label_bg` (section 2) and a perpendicular offset | S |
-| Multiple labels on one edge | no | child cells of the edge with relative geometry | a second label field `label2_*` is enough; more is drop | S |
 | Perimeter spacing (gap between line end and shape) | yes, 2026-10-18 (whiteboard-1018; HISTORY), as `gapStart` and `gapEnd` | `sourcePerimeterSpacing`, `targetPerimeterSpacing`, `perimeterSpacing` (Format.js `addStroke`) | `gap_start`, `gap_end` subtracted along the end tangent | S |
 | Source and target connect to a shape, an edge, or float | partly: links join cards and shapes; a free end floats | `mxConnectionHandler`, `Graph.connectVertex` (Graph.js 14940) | done for items; edge-to-edge is drop | none |
 | Hover connection arrows to create a connected shape | yes (`wb-clone-grips`, `wbCloneConnect`) | `HoverIcons` (Graph.js 17581), `connectVertex` | done; add a shape picker after a drag from a grip to empty space (section 17) | S |
-| Reverse direction, self-loop side | reverse yes, 2026-10-18 (whiteboard-1018; HISTORY); self-loop no | `addEdgeTurn`, `addLoopDirection` (Format.js 2811, 2650) | `reverse` command; self-loop as a drawn arc | S |
 | Rounded and curved polylines | rounded: yes, 2026-10-18 (an elbow connector; whiteboard-1018, HISTORY); curved: no | `rounded`, `curved` styles | `data.round` on link polylines | M |
 | Edge shadow and opacity | yes | `shadow`, `opacity` | done | none |
 
@@ -974,9 +969,6 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | Fixed ports on a shape (eight, or polygon corners and side middles) | yes (`wbPortFractions`, `wbPortsForPath`, whiteboard.js 2321 to 2510) | `getAllConnectionConstraints` (Graph.js 23647): the `points` style, else the shape's `getConstraints`, else the stencil's `constraints` | done; `data.ports` (section "Decisions") supplies a shape's own list first | S |
-| Ports from a stencil (names, perimeter flag) | no (converter writes them; the board does not read them) | `mxStencil` `<connections><constraint x y perimeter name>` | `wbPortFractions` returns `parsed.ports` when present; names become port tooltips; `perimeter` ports snap to the outline | S |
-| Custom ports with an offset (`points=[[x,y,perimeter,dx,dy]]`) | no | `points` style (Graph.js 23651 comment) | `data.ports` entries take optional `dx`, `dy` in pixels | S |
-| Add and delete a port by clicking | no | `addConnectionPoint` (Actions.js 1814), `getConnectionConstraintForPoint` (Graph.js 23719), `clearAnchors` (Actions.js 1841), `editConnectionPoints` | a "Ports" mode on a selected shape: click the outline to add, click a port to delete; writes `data.ports` | M |
 | Fixed versus floating end | yes (omit `sourceAnchor` for floating) | `exitX`, `exitY`, `entryX`, `entryY`, `exitPerimeter` | done | none |
 | Show ports while dragging a connector end | yes (`wb-port-preview`, whiteboard.js 13437) | `mxConstraintHandler` (blue crosses) | done | none |
 | Connection arrows and points as View toggles | yes, 2026-11-11 (f2-1111; HISTORY) | `connectionArrows`, `connectionPoints` actions (Actions.js 1389, 1396) | two View toggles (hide grips, hide ports) | S |
@@ -987,15 +979,7 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
-| Named layers: add, rename, duplicate, delete | no: `wb-layers-tree` lists items grouped by kind (`wbRenderLayers`, whiteboard-library.js 1474) | `LayersWindow` (Dialogs.js 4593): `addLayer`, `rename`, `duplicate`, `delete`, an `mxCell` child of the root per layer | `board.layers [{id, name, visible, locked}]` in the board settings row; items carry `layer` in `data` (sketch, object) or a card column; the tree gains a Layers group above the item groups | M |
-| Show and hide a layer | no | eye toggle per layer, `show`, `hide` | filtered out in render and in hit-testing (`wbItemHidden` already exists for search) | S |
-| Lock a layer | partly: per-item `lock` (`wbIsLocked`) | `lock`, `unlock` | `wbIsLocked` also reads the layer's flag | S |
-| Current layer (new items land in it) | yes, 2026-10-11 (canvasdepth2; HISTORY) | `currentLayer` radio | `wbState.layer`, read by every `create` path | S |
-| Move selection to a layer, select all in a layer | no | `moveSelectionTo`, `selectObjectsInLayer` (LayersWindow) | two commands in `WB_COMMANDS` | S |
-| Layer order | no (z is per item) | `toFront`, `toBack` on the layer | layer z base added to item z | S |
 | Pages (tabs) in one file: insert, duplicate, rename, delete, move, sort | by decision (WHITEBOARD_PLAN decision 22: frames are the pages; boards are separate rows) | `Pages.js` (2,834 lines), `insertPage`, `removePage`, `renamePage`, `duplicatePage`, `sortPages` (diagramly/Menus.js 264 to 292) | done by decision; a "Pages" side tab already lists frames (`wb-side-tab-pages`) | none |
-| Links between pages | no | `data:page/id,` link target (Graph.js `getLinkForCell`) | a link target of "frame" scrolls and zooms to it (the present mode already knows frames) | S |
-| Page view and paper size (A4, Letter, custom, landscape) | no | `pageView`, `PageSetupDialog` (Dialogs.js), `pageScale`; Format panel "Paper size" (Format.js 9231) | frame presets: A4, A3, Letter, slide 16:9, each a `frames.json` entry; export frame already exists | S |
 | Page background colour and image | yes (board background, `wb1005-bg.js`) | `DiagramFormatPanel.addView` (Format.js 8906) | done | none |
 | Units (points, inches, mm, cm, m) | no | `units` menu (diagramly/Menus.js 370) | drop: the board has no print scale | none |
 
@@ -1090,7 +1074,6 @@ product; the NOTICE says so).
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | Find text, next and previous, highlight, count | yes for cards and objects (`wbBoardSearchRun`, whiteboard.js 2210; `wb-search-*`; Ctrl+F) | `FindWindow` (diagramly/Dialogs.js 9512), `findReplace` action (Ctrl+F) | done; extend to shape and connector labels (`label`) and `data.props` | S |
-| Replace and replace all | no | `FindWindow` with `withReplace`: replace field, Replace, Replace all | a second field and two buttons on `wb-search-bar`; one undo step per Replace all through `wbRecordGesture` | S |
 | Regular expression, all pages, case | regex and whole word yes, 2026-10-18 (whiteboard-1018; HISTORY); "all frames" open: find already spans every frame of the board, so the row needs a decision (a "this frame only" scope?) | `regularExpression` and `allPages` checkboxes (Dialogs.js 9512 onward); matches in label text and, with regex, in metadata | regex toggle and "all frames" (not boards); case-insensitive by default | S |
 | Find in custom data | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `testMeta` over the cell's attributes | with `data.props` | S |
 | Tags on shapes, filter by tag | no | `tags` action (Ctrl+K, diagramly/Menus.js 1299), `tags` style attribute | `data.tags` with a tag filter that dims the rest; the Library already has tags | M |
@@ -1122,8 +1105,6 @@ clash is listed so the choice is made once.
 | Ctrl+Z, Ctrl+Shift+Z or Ctrl+Y | undo, redo | Ctrl+Z, Ctrl+Y | add Ctrl+Shift+Z |
 | Ctrl+X, C, V | cut, copy, paste | same | paste here and paste size: none |
 | Delete, Backspace | delete | Del | Backspace: add on the board only |
-| Ctrl+Delete | delete with connections | none | S |
-| Shift+Delete | delete labels only | none | S |
 | Ctrl+D | duplicate | Ctrl+D | same |
 | Ctrl+A | select all | same | |
 | Ctrl+Shift+I | select vertices | none, 2026-10-18: a command without the key (whiteboard-1018) | one command, "Select all shapes" |
@@ -1151,7 +1132,6 @@ clash is listed so the choice is made once.
 | Ctrl+J, Ctrl+Shift+J | fit page, fit two pages | none | with page frames |
 | Ctrl+0 | custom zoom | 100 percent | differs |
 | Ctrl+plus, Ctrl+minus | zoom in, out | Ctrl+=, Ctrl+- | same |
-| Home, Shift+Home | reset view, home | none | S |
 | Ctrl+Home, Ctrl+End | collapse, expand | none | with collapse |
 | Ctrl+Shift+Home, Ctrl+Shift+End | exit group, enter group | none | with enter group |
 | Ctrl+Shift+Plus, Ctrl+Shift+Minus, Ctrl+{ , Ctrl+} | font size up, down | none | section 2 |
@@ -1193,7 +1173,6 @@ clash is listed so the choice is made once.
 | Crop, replace, border | crop and replace yes, 2026-11-10 (HISTORY); border open | `crop` (Actions.js 2112), `editImage` | section 1 | M |
 | Math typesetting (LaTeX in labels) | no | `mathematicalTypesetting` action (diagramly/Menus.js 840), `Editor.initMath` (diagramly/Editor.js 4701) loads MathJax | KaTeX is MIT and offline-friendly; a `$...$` span in text objects and shape labels rendered to SVG `foreignObject`; Tessellate's markdown has no math today, so it would come with notes | L |
 | Hyperlinks on shapes, to a URL, a page, or a note | yes for objects; links to a note are the app's own | `editLink`, `link=` | add to sketches; targets: note, frame, URL | S |
-| Tooltips | no | `editTooltip`, `getTooltipForCell`, `tooltips` toggle | section 3 | S |
 | Embedded notes | no (comments) | `editNote` | comments cover it | none |
 | Edit data and placeholders | no | section 3 | section 3 | M |
 
