@@ -761,6 +761,8 @@ function wbMapConcealed(index) {
   for (const id of wbMapFocusHidden(index)) concealed.add(id);
   //: Study's hidden answers (decision 36), a view like focus.
   if (wbStudy.on) for (const id of wbStudy.hidden) concealed.add(id);
+  //: Build up's not-yet-shown topics (INBOX 1774), the same kind of view.
+  if (wbMapBuild.on) for (const id of wbMapBuild.hidden) concealed.add(id);
   return concealed;
 }
 
@@ -2874,9 +2876,32 @@ async function wbMapExpandAll() {
 //: step (`WB_RECORDED`, whiteboard.js).
 async function wbMapFoldToLevel(level) {
   if (!wbIsMap()) return;
-  const want = Math.max(1, Math.min(9, Math.round(Number(level) || 1)));
   const index = wbMapIndex();
   const changed = [];
+  //: **One more or one less level** (INBOX 1774): `{ by: 1 }` opens the
+  //: shallowest ring of folded topics, `{ by: -1 }` folds the deepest ring
+  //: of open ones, so a ragged map is never re-levelled and a branch opened
+  //: by hand is never shut by "more".
+  if (level && typeof level === "object") {
+    const by = Number(level.by) < 0 ? -1 : 1;
+    const ring = wbMapBuild.ring(index, wbMapHidden(index), by);
+    if (!ring.ids.length) {
+      toast(by > 0 ? "Every level is showing." : "Only the centre is showing.");
+      return;
+    }
+    for (const id of ring.ids) {
+      const node = index.byId.get(id);
+      node.data = { ...node.data, collapsed: ring.fold };
+      changed.push(node);
+    }
+    await wbSaveMany(changed.map((item) => ({ kind: "object", item })));
+    renderWhiteboardNow();
+    wbSyncMapToolState();
+    const shown = wbMapBuild.levels(index, wbMapHidden(index));
+    toast(shown === 1 ? "Showing the trunks only." : `Showing ${shown} levels.`);
+    return;
+  }
+  const want = Math.max(1, Math.min(9, Math.round(Number(level) || 1)));
   const seen = new Set();
   const stack = index.roots.map((root) => [root, 1]);
   while (stack.length) {
@@ -5105,6 +5130,13 @@ function mapPaletteCommands() {
   row("This map", "ph:broom Tidy the map", () => wbMapTidy());
   row("This map", "ph:arrows-out-simple Open every folded branch", () => wbMapExpandAll());
   row("This map", "ph:list-dashes Show two levels", () => wbMapFoldToLevel(2), "Alt+2");
+  {
+    //: Only when they change something (INBOX 1774, the rule of 1773).
+    const index = wbMapIndex();
+    const folded = wbMapHidden(index);
+    if (wbMapBuild.ring(index, folded, 1).ids.length) row("This map", "ph:plus-circle Show one more level", () => wbMapFoldToLevel({ by: 1 }), "Alt+=");
+    if (wbMapBuild.ring(index, folded, -1).ids.length) row("This map", "ph:minus-circle Show one less level", () => wbMapFoldToLevel({ by: -1 }), "Alt+-");
+  }
   if (wbMapFocusState) {
     row("This map", "ph:x-circle Show the whole map again", () => wbMapClearFocus());
   }
@@ -5113,6 +5145,7 @@ function mapPaletteCommands() {
   row("This map", numbered ? "ph:list-bullets Stop numbering the topics" : "ph:list-numbers Number the topics", () => wbMapSetNumbered(!numbered));
   row("This map", "ph:chart-bar What this map is made of", () => wbShowMapStats());
   row("This map", "ph:presentation Present branches", () => wbStartPresenting());
+  row("This map", "ph:steps Build up branch by branch", () => wbMapBuild.start());
   row("This map", "ph:student Study the map", () => wbMapStartStudy());
   row("This map", "ph:chart-bar-horizontal Gantt chart of the dated topics", () => wbMapLazy.openGantt());
   row("This map", "ph:funnel Filter by marker…", () => wbMapChooseMarkerFilter());
@@ -9829,6 +9862,181 @@ function wbMapPresentSteps() {
   return steps;
 }
 
+// --- Build up branch by branch (INBOX 1774, MINDMAP_PLAN 2026-11-11) -------
+//
+//: **Presenting a map from the centre out**, a branch and a level at a time:
+//: the central topic(s) alone, then for each branch in the order Present
+//: branches walks, the branch topic, then its next level, to its last visible
+//: level, then the whole map. A folded branch stays out, so folding first
+//: trims the talk. What step i shows is everything revealed in steps 0 to i,
+//: worked out from the map, so Home, End, a typed page and the page picker
+//: all land right, and Previous hides exactly one step's part. Hidden is a
+//: view like Study's (decision 36): nothing is folded, saved or put on the
+//: Undo list, so the map is as it was after Escape and a shared map works.
+//: Outer to inner is the same steps backwards (End, then Previous).
+//: `plan`, `hiddenAt`, `ring`, `depths` and `levels` are pure, so the whole
+//: object is the marked region, run in node by
+//: `tests/test_map_build_up_1774.py` (the other methods read the board only
+//: when called). `run` is the plan being presented.
+// WB-MAP-BUILD-BEGIN
+const wbMapBuild = {
+  on: false,
+  hidden: new Set(),
+  steps: [],
+  run: [],
+  //: `folded` is what `wbMapHidden` answers: topics under a folded one.
+  plan(index, folded) {
+    const out = [];
+    const seen = new Set();
+    const roots = index.roots.filter((r) => !folded.has(r.id));
+    for (const r of roots) seen.add(r.id);
+    out.push({ kind: "centre", id: null, root: null, level: 0, reveal: roots.map((r) => r.id) });
+    for (const root of roots) {
+      for (const branch of index.childrenOf.get(root.id) || []) {
+        if (folded.has(branch.id) || seen.has(branch.id)) continue;
+        let ring = [branch];
+        for (let level = 1; ring.length; level += 1) {
+          ring = ring.filter((n) => !seen.has(n.id));
+          if (!ring.length) break;
+          for (const n of ring) seen.add(n.id);
+          out.push({ kind: "branch", id: branch.id, root: root.id, level, reveal: ring.map((n) => n.id) });
+          ring = ring.flatMap((n) => (index.childrenOf.get(n.id) || []).filter((k) => !folded.has(k.id)));
+        }
+      }
+    }
+    //: Anything the walk did not reach still ends on a whole map.
+    const left = index.nodes.filter((n) => !folded.has(n.id) && !seen.has(n.id)).map((n) => n.id);
+    out.push({ kind: "whole", id: null, root: null, level: 0, reveal: left });
+    return out;
+  },
+  //: Everything shown at step `at` is the union of steps 0 to `at`; this is
+  //: what is not.
+  hiddenAt(plan, at) {
+    const hidden = new Set(plan.flatMap((s) => s.reveal));
+    for (const s of plan.slice(0, at + 1)) for (const id of s.reveal) hidden.delete(id);
+    return hidden;
+  },
+  //: The ring one more or one less level changes: every visible folded
+  //: topic at the shallowest depth (`fold` false), or every visible open
+  //: topic with a branch at the deepest (`fold` true). A trunk is depth 1.
+  ring(index, folded, dir) {
+    const depth = wbMapBuild.depths(index);
+    const want = dir < 0;
+    let best = null;
+    let ids = [];
+    for (const node of index.nodes) {
+      if (folded.has(node.id) || !(index.childrenOf.get(node.id) || []).length) continue;
+      if (Boolean(node.data?.collapsed) === want) continue;
+      const d = depth.get(node.id);
+      if (d === undefined) continue;
+      if (best === null || (want ? d > best : d < best)) {
+        best = d;
+        ids = [];
+      }
+      if (d === best) ids.push(node.id);
+    }
+    return { ids, fold: want };
+  },
+  depths(index) {
+    const depth = new Map();
+    const queue = index.roots.map((r) => [r, 1]);
+    while (queue.length) {
+      const [node, d] = queue.shift();
+      if (depth.has(node.id)) continue;
+      depth.set(node.id, d);
+      for (const kid of index.childrenOf.get(node.id) || []) queue.push([kid, d + 1]);
+    }
+    return depth;
+  },
+  //: How many levels are showing now.
+  levels(index, folded) {
+    let most = 0;
+    for (const [id, d] of wbMapBuild.depths(index)) if (!folded.has(id)) most = Math.max(most, d);
+    return most;
+  },
+  //: The box a step fits: the trunk's topic plus what of the branch is showing.
+  box(at) {
+    const step = wbMapBuild.run[at];
+    const now = wbMapIndex();
+    const pad = 24;
+    let ids;
+    if (step.kind === "branch") {
+      const shown = new Set(wbMapBuild.run.slice(0, at + 1).flatMap((s) => s.reveal));
+      ids = [step.root, ...wbMapSubtree(now, step.id).map((n) => n.id).filter((id) => shown.has(id))];
+    } else if (step.kind === "centre") {
+      ids = step.reveal;
+    } else {
+      const b = wbContentBounds();
+      return b && Number.isFinite(b.minX) ? { x: b.minX - pad, y: b.minY - pad, w: b.maxX - b.minX + pad * 2, h: b.maxY - b.minY + pad * 2 } : null;
+    }
+    let box = null;
+    for (const id of ids) {
+      const node = now.byId.get(id);
+      if (!node) continue;
+      const size = wbMapNodeSize(node);
+      const r = { minX: node.x, minY: node.y, maxX: node.x + size.w, maxY: node.y + size.h };
+      box = box ? { minX: Math.min(box.minX, r.minX), minY: Math.min(box.minY, r.minY), maxX: Math.max(box.maxX, r.maxX), maxY: Math.max(box.maxY, r.maxY) } : r;
+    }
+    return box ? { x: box.minX - pad, y: box.minY - pad, w: box.maxX - box.minX + pad * 2, h: box.maxY - box.minY + pad * 2 } : null;
+  },
+  title(at) {
+    const step = wbMapBuild.run[at];
+    const name = (id) => wbMapLabel(wbMapIndex().byId.get(id) || {}) || "Topic";
+    if (step.kind === "centre") {
+      const roots = wbMapIndex().roots;
+      return roots.length === 1 ? name(roots[0].id) : "The central topics";
+    }
+    if (step.kind === "whole") return "The whole map";
+    return step.level === 1 ? name(step.id) : `${name(step.id)}, level ${step.level}`;
+  },
+  start() {
+    const index = wbMapIndex();
+    const plan = wbMapBuild.plan(index, wbMapHidden(index));
+    if (!plan.some((s) => s.kind === "branch")) {
+      toast("Nothing to build up yet: add a branch first.");
+      return;
+    }
+    wbMapBuild.run = plan;
+    wbMapBuild.steps = plan.map((s, i) => ({
+      title: () => wbMapBuild.title(i),
+      box: () => wbMapBuild.box(i),
+      reveal: s.reveal,
+      enter: () => wbMapBuild.enter(i),
+    }));
+    wbMapBuild.on = true;
+    wbMapBuild.hidden = wbMapBuild.hiddenAt(plan, 0);
+    renderWhiteboardNow();
+    wbStartPresenting();
+  },
+  //: The shell calls this as step `at` is shown: set what is hidden from the
+  //: step alone, so any jump lands right, and ring what just appeared.
+  enter(at) {
+    if (!wbMapBuild.on || !wbMapBuild.run[at]) return;
+    wbMapBuild.hidden = wbMapBuild.hiddenAt(wbMapBuild.run, at);
+    renderWhiteboardNow();
+    wbMapBuild.unring();
+    if (wbMapBuild.run[at].kind === "whole") return;
+    const stage = document.getElementById("whiteboard-container");
+    for (const id of wbMapBuild.run[at].reveal) {
+      stage?.querySelector(`.wb-object[data-id="${id}"]`)?.classList.add("flash-target", "flash");
+    }
+  },
+  unring() {
+    for (const el of document.querySelectorAll(".wb-object.flash-target")) el.classList.remove("flash-target", "flash");
+  },
+  //: Called by `wbStopPresenting`: the map draws whole again.
+  end() {
+    if (!wbMapBuild.on) return;
+    wbMapBuild.on = false;
+    wbMapBuild.hidden = new Set();
+    wbMapBuild.steps = [];
+    wbMapBuild.run = [];
+    wbMapBuild.unring();
+    renderWhiteboardNow();
+  },
+};
+// WB-MAP-BUILD-END
+
 // --- Study the map (MINDMAP_PLAN §12.3 item 5, decision 36) ----------------
 //
 //: **Presenting, with each branch's topics hidden until recalled.** The
@@ -9839,7 +10047,24 @@ function wbMapPresentSteps() {
 //: or written. The marks are kept per map on this device (`wbStudy:<id>`),
 //: and a branch missed last time says so in its step.
 //: `revealed` holds the note questions whose answer has been shown.
-const wbStudy = { on: false, hidden: new Set(), revealed: new Set(), steps: [], marks: {}, boardId: null };
+const wbStudy = {
+  on: false, hidden: new Set(), revealed: new Set(), steps: [], marks: {}, boardId: null,
+  key() {
+    return `wbStudy:${wbStudy.boardId}`;
+  },
+  //: Through the one door to saved settings (prefs.js), which already
+  //: survives blocked storage and an unreadable value.
+  load() {
+    return prefs.json(wbStudy.key(), {}) || {};
+  },
+  save() {
+    try {
+      prefs.set(wbStudy.key(), JSON.stringify(wbStudy.marks));
+    } catch {
+      // storage blocked (a private window): the run still works, unremembered
+    }
+  },
+};
 
 // WB-MAP-STUDY-BEGIN
 //: The questions: each trunk's children with a branch under them, in sibling
@@ -9893,24 +10118,6 @@ function wbMapStudyTally(questions, marks) {
 }
 // WB-MAP-STUDY-END
 
-function wbMapStudyKey() {
-  return `wbStudy:${wbStudy.boardId}`;
-}
-
-function wbMapStudyLoad() {
-  //: Through the one door to saved settings (prefs.js), which already
-  //: survives blocked storage and an unreadable value.
-  return prefs.json(wbMapStudyKey(), {}) || {};
-}
-
-function wbMapStudySave() {
-  try {
-    prefs.set(wbMapStudyKey(), JSON.stringify(wbStudy.marks));
-  } catch {
-    // storage blocked (a private window): the run still works, unremembered
-  }
-}
-
 //: The steps the presenting shell walks: one per question, fitted to what
 //: is showing of the branch (the question alone, then the answer).
 function wbMapStudySteps() {
@@ -9949,7 +10156,7 @@ function wbMapStartStudy() {
   wbStudy.steps = questions;
   wbStudy.hidden = new Set(questions.flatMap((q) => q.hides));
   wbStudy.revealed = new Set();
-  wbStudy.marks = wbMapStudyLoad();
+  wbStudy.marks = wbStudy.load();
   renderWhiteboardNow();
   wbStartPresenting();
   wbMapStudySyncBar();
@@ -9982,7 +10189,7 @@ function wbMapStudyMark(knew) {
   if (!step) return;
   const was = wbStudy.marks[step.id] || { knew: 0, missed: 0 };
   wbStudy.marks[step.id] = { ...was, [knew ? "knew" : "missed"]: (was[knew ? "knew" : "missed"] || 0) + 1, last: knew ? "knew" : "missed" };
-  wbMapStudySave();
+  wbStudy.save();
   if (wbPresent.at < wbStudy.steps.length - 1) {
     wbPresentShow(wbPresent.at + 1);
     wbMapStudySyncBar();

@@ -687,8 +687,7 @@ TAIL_TOPICS.extend(
                 "alphabetical branches",
             ),
             "body": (
-                "Mind map keys (a map lives in the Library under Boards and "
-                "maps). With a topic selected: Tab adds a child, Enter adds a "
+                "Mind map keys (Library, Boards and maps). With a topic selected: Tab adds a child, Enter adds a "
                 "topic right after it and Shift+Enter right before it (what you "
                 "type next is the new topic's words), Ctrl+D copies it as the "
                 "next sibling, Ctrl+Shift and the arrows move it among its "
@@ -698,8 +697,8 @@ TAIL_TOPICS.extend(
                 "keeps the name, Tab or Ctrl+Enter adds the next topic, / and [[ add "
                 "links), Delete removes the topic and "
                 "everything under it, C folds or unfolds its branch (or click the "
-                "chevron), Alt+1 to Alt+9 show that many levels of the whole map "
-                "(Alt+1: the trunks alone), Shift+C draws a cross-link to another topic, F shows "
+                "chevron), Alt+1 to Alt+9 show that many levels "
+                "(Alt+1: the trunks alone), Alt+= and Alt+- show one more or one less level, Shift+C draws a cross-link to another topic, F shows "
                 "only this branch and its neighbours (F again: all), Shift+F10 "
                 "opens every action. Ctrl+Z undoes (100 steps, kept across a "
                 "reload), Ctrl+Shift+Z redoes. "
@@ -768,7 +767,7 @@ TAIL_TOPICS.extend(
                 "The layout picker: tree, radial, logic chart, "
                 "timeline, fishbone, tree table or free; Tidy lays every unpinned topic out again. "
                 "View sets Colour by (branch, category, age, note) and opens every "
-                "folded branch; Present branches shows it branch by branch. A topic's menu, "
+                "folded branch; Present branches shows it branch by branch.  A topic's menu, "
                 "Content, Markers sets a priority (1 to 5), how far along it is, a "
                 "flag, a start day, a due day and up to six icons; View, Gantt chart draws "
                 "a bar from start to due for each topic with both, and a dragged bar moves its dates (Undo); "
