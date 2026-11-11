@@ -144,28 +144,20 @@ def _ask_model(topic: str, parent: str, rows: list[tuple[Entry, str, str]]) -> l
     return out
 
 
-@router.post("/boards/{board_id}/nodes/{node_id}/suggest")
-def suggest_branches(board_id: int, node_id: int, db: Session = Depends(get_session)) -> dict:
-    """Up to five children for this topic, each grounded in one of the
-    person's notes, and nothing written."""
-    node = _node_or_404(db, board_id, node_id)
-    topic = _topic_text(db, node)
-    if not topic:
-        raise HTTPException(status_code=422, detail="Give the topic some words first: they are what the notes are found by.")
-    parent = None
-    if node.parent_id is not None:
-        up = db.get(WhiteboardObject, node.parent_id)
-        parent = _topic_text(db, up) if up is not None else None
-    children = db.scalars(select(WhiteboardObject).where(WhiteboardObject.parent_id == node.id)).all()
-    have = {_topic_text(db, child).casefold() for child in children} | {topic.casefold()}
-    rows = _candidates(db, board_id, f"{topic} {parent or ''}".strip(), have)
-    if not rows:
-        return {"topic": topic, "suggestions": [], "source": "notebook", "reason": "nothing"}
+def _parent_topic(db: Session, node: WhiteboardObject) -> str | None:
+    if node.parent_id is None:
+        return None
+    up = db.get(WhiteboardObject, node.parent_id)
+    return _topic_text(db, up) if up is not None else None
+
+
+def _pick_branches(topic: str, parent: str, rows: list) -> tuple[list[tuple[str, int]], str, str]:
+    """The model's picks when it answers, else the notes' own titles."""
     picked: list[tuple[str, int]] = []
     source, reason = "notebook", "offline"
     if deps.get_ollama().is_running():
         try:
-            picked = _ask_model(topic, parent or "", rows)
+            picked = _ask_model(topic, parent, rows)
             reason = "unusable"
         except Exception:
             logging.getLogger("tessellate.whiteboard").warning("Branch suggestions: the model failed", exc_info=True)
@@ -174,6 +166,10 @@ def suggest_branches(board_id: int, node_id: int, db: Session = Depends(get_sess
             source, reason = "model", "model"
     if not picked:
         picked = [(title, i) for i, (_, title, _) in enumerate(rows)]
+    return picked, source, reason
+
+
+def _dedupe_branches(picked: list[tuple[str, int]], rows: list, have: set[str]) -> list[dict]:
     out, seen = [], set(have)
     for text, index in picked:
         if not text or text.casefold() in seen:
@@ -183,6 +179,25 @@ def suggest_branches(board_id: int, node_id: int, db: Session = Depends(get_sess
         out.append({"text": text, "note_id": entry.id, "note_title": title})
         if len(out) >= SUGGESTIONS:
             break
+    return out
+
+
+@router.post("/boards/{board_id}/nodes/{node_id}/suggest")
+def suggest_branches(board_id: int, node_id: int, db: Session = Depends(get_session)) -> dict:
+    """Up to five children for this topic, each grounded in one of the
+    person's notes, and nothing written."""
+    node = _node_or_404(db, board_id, node_id)
+    topic = _topic_text(db, node)
+    if not topic:
+        raise HTTPException(status_code=422, detail="Give the topic some words first: they are what the notes are found by.")
+    parent = _parent_topic(db, node)
+    children = db.scalars(select(WhiteboardObject).where(WhiteboardObject.parent_id == node.id)).all()
+    have = {_topic_text(db, child).casefold() for child in children} | {topic.casefold()}
+    rows = _candidates(db, board_id, f"{topic} {parent or ''}".strip(), have)
+    if not rows:
+        return {"topic": topic, "suggestions": [], "source": "notebook", "reason": "nothing"}
+    picked, source, reason = _pick_branches(topic, parent or "", rows)
+    out = _dedupe_branches(picked, rows, have)
     return {"topic": topic, "suggestions": out, "source": source, "reason": reason}
 
 
