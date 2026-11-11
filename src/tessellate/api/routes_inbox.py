@@ -23,6 +23,7 @@ from tessellate.api.routes_mentions import note_names
 from tessellate.core.database import LINK_TYPES, Entity, EntityMention, Entry
 from tessellate.core.deps import get_session
 from tessellate.repo import relations as relations_repo
+from tessellate.repo import tags as tag_repo
 from tessellate.entry import manager
 from tessellate.entry.manager import WIKI_LINK, plain_label
 from tessellate.entry.mentions import MENTION_MIN_TITLE_CHARS, backlink_spans, sentence_around
@@ -280,28 +281,19 @@ def restore_dismissed_suggestions(body: DismissedRestore, session: Session = Dep
     from tessellate.api.routes_entries import TENSION_DISMISSED_KEY
     from tessellate.core import deps
 
-    import json
 
-    from sqlalchemy import text
 
     restored = learning.restore_dismissals(session, body.ids)
     for raw_id, tags in body.note_tags.items():
         if not raw_id.isdigit() or not tags:
             continue
         # Put back beside any tags still turned down (one Restore leaves the rest).
-        row = session.execute(text("SELECT discarded_tags FROM entries WHERE id = :id AND is_deleted = 0"), {"id": int(raw_id)}).first()
-        if row is None:
+        have = tag_repo.turned_down_on(session, int(raw_id))
+        if have is None:
             continue
-        try:
-            have = [str(tag) for tag in json.loads(row[0] or "[]") if tag]
-        except (TypeError, ValueError):
-            have = []
         fresh = [str(tag) for tag in tags if str(tag) not in have]
         if fresh:
-            session.execute(
-                text("UPDATE entries SET discarded_tags = :tags WHERE id = :id"),
-                {"tags": json.dumps((have + fresh)[-200:]), "id": int(raw_id)},
-            )
+            tag_repo.set_turned_down_on(session, int(raw_id), have + fresh)
             restored += len(fresh)
     session.commit()
     if body.tensions:
@@ -425,15 +417,13 @@ def _restore_pair(session: Session, pair: str) -> tuple[list[int], list[str]]:
 
 
 def _restore_note_tag(session: Session, rest: str) -> dict:
-    import json
 
-    from sqlalchemy import text
 
     raw_id, _, tag = rest.partition(":")
     have = _turned_down_on_notes(session).get(int(raw_id), []) if raw_id.isdigit() else []
     if tag not in have:
         return {}
-    session.execute(text("UPDATE entries SET discarded_tags = :tags WHERE id = :id"), {"tags": json.dumps([t for t in have if t != tag]), "id": int(raw_id)})
+    tag_repo.set_turned_down_on(session, int(raw_id), [t for t in have if t != tag])
     return {raw_id: [tag]}
 
 

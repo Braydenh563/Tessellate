@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8107, frontend ids 2686, CSS sections 523, backend routes 664, backend modules 10011, test files 2453, tests 20312, plan headings 1002, app scripts 28, boot scripts 37, script files 277.
+Counts: frontend functions 8107, frontend ids 2686, CSS sections 523, backend routes 664, backend modules 10013, test files 2453, tests 20312, plan headings 1002, app scripts 28, boot scripts 37, script files 277.
 
 ## Frontend functions (8107)
 
@@ -12818,7 +12818,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |  | GET | `list_types` | src/tessellate/api/routes_relations.py:43 |
 |  | GET | `search` | src/tessellate/api/routes_search.py:98 |
 |  | GET | `state` | src/tessellate/api/routes_bench.py:241 |
-|  | GET | `suggestions` | src/tessellate/api/routes_inbox.py:121 |
+|  | GET | `suggestions` | src/tessellate/api/routes_inbox.py:122 |
 |  | GET | `tidy_summary` | src/tessellate/api/routes_tidy.py:50 |
 |  | GET | `timeline` | src/tessellate/api/routes_timeline.py:376 |
 |  | GET | `today` | src/tessellate/api/routes_resurface.py:106 |
@@ -12942,11 +12942,11 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/digest` | POST | `weekly_digest` | src/tessellate/api/routes_insights.py:947 |
 | `/digest/stream` | POST | `weekly_digest_stream` | src/tessellate/api/routes_insights.py:874 |
 | `/dismiss` | POST | `dismiss_insight` | src/tessellate/api/routes_insights.py:547 |
-| `/dismissed` | GET | `dismissed_suggestions` | src/tessellate/api/routes_inbox.py:237 |
-| `/dismissed/clear` | POST | `clear_dismissed_suggestions` | src/tessellate/api/routes_inbox.py:251 |
-| `/dismissed/item/restore` | POST | `restore_one_dismissed` | src/tessellate/api/routes_inbox.py:440 |
-| `/dismissed/items` | GET | `dismissed_items` | src/tessellate/api/routes_inbox.py:390 |
-| `/dismissed/restore` | POST | `restore_dismissed_suggestions` | src/tessellate/api/routes_inbox.py:278 |
+| `/dismissed` | GET | `dismissed_suggestions` | src/tessellate/api/routes_inbox.py:238 |
+| `/dismissed/clear` | POST | `clear_dismissed_suggestions` | src/tessellate/api/routes_inbox.py:252 |
+| `/dismissed/item/restore` | POST | `restore_one_dismissed` | src/tessellate/api/routes_inbox.py:430 |
+| `/dismissed/items` | GET | `dismissed_items` | src/tessellate/api/routes_inbox.py:382 |
+| `/dismissed/restore` | POST | `restore_dismissed_suggestions` | src/tessellate/api/routes_inbox.py:279 |
 | `/documents/run-jobs` | POST | `start_run_job` | src/tessellate/api/run_sandbox.py:336 |
 | `/documents/run-jobs/{job_id}` | DELETE | `end_run_job` | src/tessellate/api/run_sandbox.py:356 |
 | `/documents/run-jobs/{job_id}/beat` | POST | `beat_run_job` | src/tessellate/api/run_sandbox.py:348 |
@@ -13136,8 +13136,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/memory/{preference_id}/answer` | POST | `answer_memory_proposal` | src/tessellate/api/routes_settings.py:1721 |
 | `/merge` | POST | `merge_notes` | src/tessellate/api/routes_duplicates.py:135 |
 | `/merge` | POST | `merge_tags` | src/tessellate/api/routes_tags.py:84 |
-| `/merges/accept` | POST | `accept_merge` | src/tessellate/api/routes_inbox.py:140 |
-| `/merges/dismiss` | POST | `dismiss_merge` | src/tessellate/api/routes_inbox.py:154 |
+| `/merges/accept` | POST | `accept_merge` | src/tessellate/api/routes_inbox.py:141 |
+| `/merges/dismiss` | POST | `dismiss_merge` | src/tessellate/api/routes_inbox.py:155 |
 | `/merges/{undo_id}/undo` | POST | `undo_merge_route` | src/tessellate/api/routes_entities.py:228 |
 | `/mermaid-frame` | GET | `mermaid_frame` | src/tessellate/api/app.py:1600 |
 | `/models/{size}` | DELETE | `remove_model` | src/tessellate/api/routes_voice.py:44 |
@@ -13319,8 +13319,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/transcribe` | POST | `transcribe` | src/tessellate/api/routes_voice.py:103 |
 | `/turned-down` | GET | `list_turned_down` | src/tessellate/api/routes_tags.py:126 |
 | `/turned-down/offer-again` | POST | `offer_tag_again` | src/tessellate/api/routes_tags.py:149 |
-| `/types/accept` | POST | `accept_type` | src/tessellate/api/routes_inbox.py:166 |
-| `/types/dismiss` | POST | `dismiss_type` | src/tessellate/api/routes_inbox.py:183 |
+| `/types/accept` | POST | `accept_type` | src/tessellate/api/routes_inbox.py:167 |
+| `/types/dismiss` | POST | `dismiss_type` | src/tessellate/api/routes_inbox.py:184 |
 | `/undo` | POST | `undo` | src/tessellate/api/routes_learned_audit.py:52 |
 | `/undo/{undo_id}` | POST | `tidy_undo` | src/tessellate/api/routes_tidy.py:70 |
 | `/unforget` | POST | `unforget_everything` | src/tessellate/api/routes_learned.py:264 |
@@ -13465,7 +13465,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10011)
+## Backend modules (10013)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -21350,34 +21350,34 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `DismissedItem` | src/tessellate/api/routes_inbox.py:334 |
-| `DismissedRestore` | src/tessellate/api/routes_inbox.py:202 |
-| `MergeAccept` | src/tessellate/api/routes_inbox.py:128 |
-| `MergeDismiss` | src/tessellate/api/routes_inbox.py:134 |
-| `TypeDecision` | src/tessellate/api/routes_inbox.py:161 |
-| `_dismissal_label` | src/tessellate/api/routes_inbox.py:369 |
-| `_entity_name` | src/tessellate/api/routes_inbox.py:349 |
-| `_merges` | src/tessellate/api/routes_inbox.py:50 |
-| `_note_name` | src/tessellate/api/routes_inbox.py:338 |
-| `_pair_key` | src/tessellate/api/routes_inbox.py:356 |
-| `_restore_note_tag` | src/tessellate/api/routes_inbox.py:427 |
-| `_restore_pair` | src/tessellate/api/routes_inbox.py:411 |
-| `_sentence` | src/tessellate/api/routes_inbox.py:68 |
-| `_subject` | src/tessellate/api/routes_inbox.py:364 |
-| `_tension_keys` | src/tessellate/api/routes_inbox.py:230 |
-| `_turned_down_on_notes` | src/tessellate/api/routes_inbox.py:209 |
-| `_types` | src/tessellate/api/routes_inbox.py:84 |
-| `_visible` | src/tessellate/api/routes_inbox.py:39 |
-| `accept_merge` | src/tessellate/api/routes_inbox.py:141 |
-| `accept_type` | src/tessellate/api/routes_inbox.py:167 |
-| `clear_dismissed_suggestions` | src/tessellate/api/routes_inbox.py:252 |
-| `dismiss_merge` | src/tessellate/api/routes_inbox.py:155 |
-| `dismiss_type` | src/tessellate/api/routes_inbox.py:184 |
-| `dismissed_items` | src/tessellate/api/routes_inbox.py:391 |
-| `dismissed_suggestions` | src/tessellate/api/routes_inbox.py:238 |
-| `restore_dismissed_suggestions` | src/tessellate/api/routes_inbox.py:279 |
-| `restore_one_dismissed` | src/tessellate/api/routes_inbox.py:441 |
-| `suggestions` | src/tessellate/api/routes_inbox.py:122 |
+| `DismissedItem` | src/tessellate/api/routes_inbox.py:326 |
+| `DismissedRestore` | src/tessellate/api/routes_inbox.py:203 |
+| `MergeAccept` | src/tessellate/api/routes_inbox.py:129 |
+| `MergeDismiss` | src/tessellate/api/routes_inbox.py:135 |
+| `TypeDecision` | src/tessellate/api/routes_inbox.py:162 |
+| `_dismissal_label` | src/tessellate/api/routes_inbox.py:361 |
+| `_entity_name` | src/tessellate/api/routes_inbox.py:341 |
+| `_merges` | src/tessellate/api/routes_inbox.py:51 |
+| `_note_name` | src/tessellate/api/routes_inbox.py:330 |
+| `_pair_key` | src/tessellate/api/routes_inbox.py:348 |
+| `_restore_note_tag` | src/tessellate/api/routes_inbox.py:419 |
+| `_restore_pair` | src/tessellate/api/routes_inbox.py:403 |
+| `_sentence` | src/tessellate/api/routes_inbox.py:69 |
+| `_subject` | src/tessellate/api/routes_inbox.py:356 |
+| `_tension_keys` | src/tessellate/api/routes_inbox.py:231 |
+| `_turned_down_on_notes` | src/tessellate/api/routes_inbox.py:210 |
+| `_types` | src/tessellate/api/routes_inbox.py:85 |
+| `_visible` | src/tessellate/api/routes_inbox.py:40 |
+| `accept_merge` | src/tessellate/api/routes_inbox.py:142 |
+| `accept_type` | src/tessellate/api/routes_inbox.py:168 |
+| `clear_dismissed_suggestions` | src/tessellate/api/routes_inbox.py:253 |
+| `dismiss_merge` | src/tessellate/api/routes_inbox.py:156 |
+| `dismiss_type` | src/tessellate/api/routes_inbox.py:185 |
+| `dismissed_items` | src/tessellate/api/routes_inbox.py:383 |
+| `dismissed_suggestions` | src/tessellate/api/routes_inbox.py:239 |
+| `restore_dismissed_suggestions` | src/tessellate/api/routes_inbox.py:280 |
+| `restore_one_dismissed` | src/tessellate/api/routes_inbox.py:431 |
+| `suggestions` | src/tessellate/api/routes_inbox.py:123 |
 
 ### src/tessellate/api/routes_insights.py (38)
 
@@ -25673,7 +25673,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `own_words` | src/tessellate/repo/spelling.py:26 |
 
-### src/tessellate/repo/tags.py (18)
+### src/tessellate/repo/tags.py (20)
 
 | Name | File:line |
 |---|---|
@@ -25694,7 +25694,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `rename` | src/tessellate/repo/tags.py:180 |
 | `reset_tag_cache` | src/tessellate/repo/tags.py:60 |
 | `restore` | src/tessellate/repo/tags.py:249 |
+| `set_turned_down_on` | src/tessellate/repo/tags.py:332 |
 | `tagged` | src/tessellate/repo/tags.py:294 |
+| `turned_down_on` | src/tessellate/repo/tags.py:320 |
 
 ### src/tessellate/repo/uploads.py (2)
 

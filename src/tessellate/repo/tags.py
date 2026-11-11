@@ -312,3 +312,32 @@ def mentioning(words: list[str], *, whole_start: bool = False) -> list:
     if whole_start:
         return [func.lower(Entry.tags).like(f'%"{like_escape(w.rstrip("s"))}%', escape=LIKE_ESCAPE) for w in words]
     return [func.lower(Entry.tags).like(f"%{like_escape(w)}%", escape=LIKE_ESCAPE) for w in words]
+
+
+# --- tags turned down on one note (Entry.discarded_tags) ----------------------
+
+
+def turned_down_on(session: Session, entry_id: int) -> list[str] | None:
+    """The tags turned down on a live note, or None when there is no such note."""
+    raw = session.scalar(select(Entry.discarded_tags).where(Entry.id == entry_id, Entry.is_deleted.is_(False)))
+    if raw is None:
+        exists = session.scalar(select(Entry.id).where(Entry.id == entry_id, Entry.is_deleted.is_(False)))
+        return None if exists is None else []
+    try:
+        return [str(tag) for tag in json.loads(raw or "[]") if tag]
+    except (TypeError, ValueError):
+        return []
+
+
+def set_turned_down_on(session: Session, entry_id: int, tags: list[str]) -> None:
+    """Replace a note's turned-down tags (the newest 200); never commits.
+
+    A plain UPDATE, not the ORM: turning a tag down or back is not an edit, and
+    the ORM flush would move `updated_at` (its `onupdate`).
+    """
+    from sqlalchemy import text
+
+    session.execute(
+        text("UPDATE entries SET discarded_tags = :tags WHERE id = :id"),
+        {"tags": json.dumps([str(tag) for tag in tags][-200:]), "id": entry_id},
+    )
