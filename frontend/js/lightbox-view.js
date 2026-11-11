@@ -2255,6 +2255,11 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     copyBtn.title = perPage
       ? `Copy the text read from page ${docPage + 1}`
       : "Copy the text read from this image";
+    //: No reader at all (no Tesseract, no RapidOCR, no vision model): the one
+    //: optional-package notice, since "Read text" is left out of the menu then.
+    if (ok && !docPageCount && modelStatus && modelStatus.tesseract_available === false && !modelStatus.vision_model_resolved) {
+      extraNoticeMount(info, "rapidocr");
+    }
   }
 
   //: Per file: the title and count, the filmstrip's current tile, what the

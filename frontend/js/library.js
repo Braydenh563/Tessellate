@@ -6963,11 +6963,13 @@ async function ocrLoadReadersNow() {
       : "Install RapidOCR in Settings, Packages.";
   }
   $("ocr-rapidocr-missing")?.classList.toggle("hidden", rapidReady || !ocrReaders.engine);
-  //: Nothing can read text yet (no Tesseract, no RapidOCR): the one optional-package
-  //: notice (extra-notice.js), shown until RapidOCR is installed, closable.
+  //: Nothing can read text (no Tesseract, no RapidOCR, no vision model): the one
+  //: optional-package notice (extra-notice.js), "the quickest way", with Install
+  //: that turns to Undo once pressed, closable. `needed: false` keeps it only
+  //: for an install pressed here, so its Undo outlives the first repaint.
   const ocrHead = $("ocr-workspace")?.querySelector(".ocr-head");
-  if (ocrHead && ocrReaders.engine && !ocrCan("tesseract") && !rapidReady) {
-    extraNoticeMount(ocrHead, "rapidocr", { fresh: true });
+  if (ocrHead && ocrReaders.engine && !ocrCan("tesseract")) {
+    extraNoticeMount(ocrHead, "rapidocr", { fresh: true, needed: !ocrReaders.vision && !ocrReaders.ocr });
   } else {
     ocrHead?.querySelector(":scope > .extra-notice")?.remove();
   }

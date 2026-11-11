@@ -6,6 +6,13 @@
 // package is missing, and a dismissal lasts until that package's state
 // changes: seen installed, the dismissal is forgotten, so an uninstall brings
 // the notice back.
+//
+// **The button turns to Undo once pressed** (the owner, 2026-11-11: "turns to
+// an undo if pressed"). The Install click is the consent, so there is no
+// dialog. While the install runs the same button is Undo and stops the
+// download (`POST /tasks/cancel`, kind "extra"); once it has landed the notice
+// stays, says so, and Undo removes the package again (`POST
+// /extras/{id}/uninstall`). SearXNG has no uninstall: its Undo stops it.
 (() => {
   const DISMISSED_KEY = "tessellate-extra-notice-dismissed";
   //: One sentence per package in the registry (`core/extras.py`), plus SearXNG,
@@ -17,7 +24,7 @@
     semantic: "Search by meaning needs the meaning package.",
     documents: "Importing documents needs the documents package.",
     ocr: "Reading text in images needs Tesseract.",
-    rapidocr: "Reading text in images needs an OCR package.",
+    rapidocr: "RapidOCR is the quickest way to read text in images.",
     pyodide: "Running Python files needs the Python runner.",
     languagetool: "Grammar checks need the LanguageTool package.",
     needle: "Local tool calls need the Needle package.",
@@ -27,6 +34,9 @@
     searxng: "Private web search needs SearXNG, which is not installed.",
   };
   let cache = { at: 0, rows: null };
+  //: Packages this session pressed Install on: id -> "installing" | "installed".
+  //: What turns the button to Undo, and what keeps a finished notice on screen.
+  const pressed = new Map();
 
   //: Kept in `prefs` (localStorage), so a dismissal outlives the session.
   function dismissedList() {
@@ -59,48 +69,109 @@
     return { missing: Boolean(row && !row.installed), row: row || null };
   }
 
-  async function extraNoticeInstall(id, row) {
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  //: Waits for the one install lane to be free (`GET /extras` `running`).
+  async function extraNoticeWaitIdle() {
+    for (let waited = 0; waited < 600; waited += 1) {
+      await sleep(1500);
+      const body = await apiJson("/extras", { silent: true }).catch(() => null);
+      if (body && !body.running) return;
+    }
+  }
+
+  //: Starts the install. The click was the consent, so nothing is asked first.
+  //: Returns whether it started; the caller waits and repaints.
+  async function extraNoticeInstall(id) {
     if (id === "searxng") {
       const result = await startSearxng(true, () => {}).catch((error) => ({ error: error.message }));
       if (result.error) toast(result.error, "info", { action: ["Open Settings", () => openSettingsModal("websearch")] });
       else toast("SearXNG is installing. Settings, Web search shows its progress.", "info");
+      return !result.error;
+    }
+    const result = await apiJson(`/extras/${id}/install`, { method: "POST" }).catch((error) => ({ started: false, message: error.message }));
+    if (!result.started) {
+      toast(result.message || "The install could not start.", "info", { action: ["Open Packages", () => openSettingsModal("extras")] });
+      return false;
+    }
+    toast("Installing. Undo on the notice stops it.", "info");
+    return true;
+  }
+
+  //: Undo. While installing it stops the download; once installed it removes
+  //: the package. The caller repaints from the server's answer afterwards.
+  async function extraNoticeUndo(id, phase) {
+    if (id === "searxng") {
+      await apiJson("/websearch/searxng/stop", { method: "POST" }).catch((error) => toast(error.message, "info"));
       return;
     }
-    if (!(await confirmDialog(`Install ${row.label}?\n\nAbout ${row.size.replace(/^~/, "")} is downloaded from ${row.source}. It runs on this computer.`))) return;
-    const result = await apiJson(`/extras/${id}/install`, { method: "POST" }).catch((error) => ({ started: false, message: error.message }));
-    if (!result.started) return toast(result.message || "The install could not start.", "info", { action: ["Open Packages", () => openSettingsModal("extras")] });
-    toast(`Installing ${row.label}.`, "info");
-    for (let waited = 0; waited < 600; waited += 1) {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      const body = await apiJson("/extras", { silent: true }).catch(() => null);
-      if (body && !body.running) break;
+    if (phase === "installing") {
+      const body = await apiJson("/tasks/cancel", { method: "POST", body: JSON.stringify({ kind: "extra", name: id }) }).catch(() => null);
+      toast(body?.detail || "Stopping the install.", "info");
+      return;
     }
+    const result = await apiJson(`/extras/${id}/uninstall`, { method: "POST" }).catch((error) => ({ started: false, message: error.message }));
+    if (!result.started) return toast(result.message || "It could not be removed.", "info", { action: ["Open Packages", () => openSettingsModal("extras")] });
+    await extraNoticeWaitIdle();
   }
 
   //: Draws or clears `host`. Seen present: the dismissal is forgotten first, so
-  //: the notice returns if the package is removed later.
-  async function extraNoticeCheck(host, id, fresh = false) {
+  //: the notice returns if the package is removed later. `needed` is false
+  //: where the feature has another way to work (a vision model reads pages):
+  //: the notice then shows only for an install this session started.
+  async function extraNoticeCheck(host, id, fresh = false, needed = true) {
     const { missing, row } = await extraNoticeState(id, fresh);
     if (!missing) forget(id);
-    const show = missing && !dismissed(id);
+    let phase = pressed.get(id) || "";
+    //: Pressed, but it did not land (stopped, failed) or was removed elsewhere.
+    if (phase === "installed" && missing && id !== "searxng") phase = "";
+    if (phase === "installing" && !missing && !row?.installing && id !== "searxng") phase = "installed";
+    if (phase) pressed.set(id, phase);
+    else pressed.delete(id);
+    const show = Boolean(phase) || (missing && needed && !dismissed(id));
     host.replaceChildren();
     host.classList.toggle("hidden", !show);
     if (!show) return;
     setLabel(host, "ph:package");
     const text = document.createElement("span");
     text.className = "ai-offline-text";
-    text.textContent = EXTRA_NOTICE_WHAT[id];
+    if (phase === "installing") text.textContent = id === "searxng" ? "Setting SearXNG up." : "Installing…";
+    else if (phase === "installed") text.textContent = id === "searxng" ? "SearXNG is on. Undo stops it." : "Installed. Undo removes it.";
+    else text.textContent = EXTRA_NOTICE_WHAT[id];
     const install = document.createElement("button");
     install.type = "button";
     install.className = "ghost small";
     const manual = Boolean(row && row.unavailable);
-    install.textContent = manual ? "Open Packages" : "Install";
-    install.title = manual ? row.unavailable : `Installs it from Settings, Packages.${row ? ` ${row.enables}` : ""}`;
+    if (phase) {
+      install.textContent = "Undo";
+      install.dataset.extraUndo = phase;
+      install.title = phase === "installing" ? "Stops the download and removes what it fetched." : id === "searxng" ? "Stops SearXNG." : "Removes the package again.";
+    } else {
+      install.textContent = manual ? "Open Packages" : "Install";
+      install.title = manual ? row.unavailable : `Installs it from Settings, Packages.${row ? ` ${row.enables}` : ""}`;
+    }
     install.addEventListener("click", async () => {
+      if (phase) {
+        install.disabled = true;
+        await extraNoticeUndo(id, phase);
+        //: A removal is over here; a stopped install repaints from its own wait.
+        if (phase === "installed") pressed.delete(id);
+        return phase === "installed" ? extraNoticeCheck(host, id, true, needed) : undefined;
+      }
       if (manual) return openSettingsModal("extras");
+      pressed.set(id, "installing");
       install.disabled = true;
-      await extraNoticeInstall(id, row);
-      extraNoticeCheck(host, id, true);
+      const started = await extraNoticeInstall(id);
+      if (!started) {
+        pressed.delete(id);
+        return extraNoticeCheck(host, id, true, needed);
+      }
+      extraNoticeCheck(host, id, true, needed);
+      if (id !== "searxng") await extraNoticeWaitIdle();
+      const after = await extraNoticeState(id, true);
+      if (id === "searxng" || !after.missing) pressed.set(id, "installed");
+      else pressed.delete(id);
+      extraNoticeCheck(host, id, true, needed);
     });
     host.append(text, install);
     const close = document.createElement("button");
@@ -111,7 +182,9 @@
     close.title = "Hide this until the package is installed or removed";
     close.setAttribute("aria-label", "Hide this notice until the package is installed or removed");
     close.addEventListener("click", () => {
-      dismiss(id);
+      //: Closing a finished install ends its Undo; it is not a "never ask".
+      if (phase === "installed") pressed.delete(id);
+      else if (!phase) dismiss(id);
       host.replaceChildren();
       host.classList.add("hidden");
     });
@@ -120,7 +193,7 @@
 
   //: Puts the notice as the first child of `parent` (one per package there) and
   //: checks it. Safe to call on every open of the feature.
-  function extraNoticeMount(parent, id, { fresh = false } = {}) {
+  function extraNoticeMount(parent, id, { fresh = false, needed = true } = {}) {
     if (!parent || !EXTRA_NOTICE_WHAT[id]) return Promise.resolve();
     let host = parent.querySelector(`:scope > .extra-notice[data-extra="${id}"]`);
     if (!host) {
@@ -130,7 +203,7 @@
       host.setAttribute("role", "status");
       parent.prepend(host);
     }
-    return extraNoticeCheck(host, id, fresh);
+    return extraNoticeCheck(host, id, fresh, needed);
   }
 
   Object.assign(window, { extraNoticeMount });

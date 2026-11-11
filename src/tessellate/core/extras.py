@@ -1218,6 +1218,13 @@ def cancel(_name: str = "") -> tuple[bool, str]:
         _state.cancelled = True
         _state.step = "Stopping…"
         return True, "Stopping the download."
+    if _state.running and process is None:
+        #: Pip is not launched yet (the command is being built): the flag alone
+        #: is the stop, and `_run_install` ends pip the moment it starts. The
+        #: notice's Undo is pressable in this window.
+        _state.cancelled = True
+        _state.step = "Stopping…"
+        return True, "Stopping the install."
     if not _state.running or process is None:
         if _bulk.running:
             return True, "Stopping before the next package."
@@ -1503,7 +1510,9 @@ def _install_ocr_binary(extra: Extra) -> None:
 
 
 def _install_cleanup(extra: Extra, pip_tmp: Path, before, constraints_copy: Path | None) -> None:  # noqa: ANN001
-    _state.running = False
+    #: `running` stays true until `_run_install`'s finally: a client that waits for
+    #: idle (the notice's Undo) must not see a stopped install's files before the
+    #: roll-back has taken them out.
     _state.process = None
     if _state.cancelled:
         # Terminating pip mid-download makes it exit non-zero, which the
@@ -1514,6 +1523,7 @@ def _install_cleanup(extra: Extra, pip_tmp: Path, before, constraints_copy: Path
         _state.outcome = "cancelled"
         _state.step = "Stopped before it finished."
         _roll_back(before)
+        importlib.invalidate_caches()
     shutil.rmtree(pip_tmp, ignore_errors=True)
     # See the module docstring's numbered note above `_logger`: this call
     # was missing entirely until now, which is the actual reason a failed
@@ -1593,6 +1603,9 @@ def _run_install(extra: Extra, reinstall: bool = False) -> None:
             env={**os.environ, "TMPDIR": str(pip_tmp), "TEMP": str(pip_tmp), "TMP": str(pip_tmp)},
         )
         _state.process = process
+        if _state.cancelled:
+            #: Stopped while pip was being launched (`cancel`'s no-process branch).
+            process.terminate()
         for line in process.stdout or []:
             line = line.rstrip()
             if not line:
