@@ -2247,7 +2247,7 @@ HELP_TOPICS.extend(
                 "holding the selection; its eye and lock act on all of it. Tinted rows are selected on the board "
                 "(the head counts them; Clear drops them), and a frame lists what it holds under its row. A locked item shows a lock when the pointer "
                 "is on it; right-click it to unlock it. The Library holds "
-                "built-in sets (General shapes, Callouts and notes, Flowchart, UML, Entity relationship, Wireframe, C4, Arrows, Frames (a frame, a timeline lane and swimlanes in rows or columns) "
+                "built-in sets (General shapes, Callouts and notes, Flowchart, UML, Entity relationship, Wireframe, BPMN, C4, Arrows, Frames (a frame, a timeline lane and swimlanes in rows or columns), Cloud and network and Devices and people icons "
                 "and 1,530 icons), five draw.io sets (196 shapes "
                 "with their own connection points), then Favourites, Recent and your own "
                 "libraries; the search field finds any of them by name or tag. Click a tile or press Enter "

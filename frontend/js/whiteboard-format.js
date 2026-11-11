@@ -83,7 +83,7 @@ const WB_FMT_FIELDS = {
   arrow: ["stroke", "strokealpha", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "tip"],
   link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "linklook", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "jumpsize", "gapstart", "gapend", "tip"],
   text: ["stroke", "fill", "fillalpha", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props", "rawstyle"],
-  image: ["alpha", "shadow", "shadowset", "radii", "crop", "trim", "replace", "geometry", "angle", "props"],
+  image: ["alpha", "shadow", "shadowset", "radii", "crop", "trim", "cropbox", "pixels", "replace", "geometry", "angle", "props"],
   frame: ["geometry", "props"],
   table: ["alpha", "shadow", "shadowset", "radii", "geometry", "props"],
   note: ["geometry", "angle"],
@@ -147,6 +147,12 @@ function wbFmtValue(entry, field) {
     case "round": return Number(s?.round) || 0;
     case "linestyle": return s?.curve ? "curved" : s?.round ? "rounded" : "sharp";
     case "crop": return o?.crop || "";
+    case "turn": return Number(o?.turn) || 0;
+    case "flipx": return o?.flip_x === true;
+    case "flipy": return o?.flip_y === true;
+    case "grey": return o?.grey === true;
+    case "bright": return Number.isInteger(o?.bright) ? o.bright : "";
+    case "contrast": return Number.isInteger(o?.contrast) ? o.contrast : "";
     case "trim0": case "trim1": case "trim2": case "trim3": return o?.trim?.[Number(field[4])] || "";
     case "flow": return Boolean(s?.flow);
     case "fillstyle": return WB_FILL_STYLES.includes(s?.fillStyle) ? s.fillStyle : "solid";
@@ -573,6 +579,10 @@ function wbFmtShowGroups(panel) {
 function wbFormatSync() {
   const panel = wbFormatPanel();
   if (!panel || panel.classList.contains("hidden")) return;
+  //: The crop box belongs to the one picture it was opened on: another selection, or a repaint that
+  //: dropped its element, ends it.
+  const cropping = wbFmtState.cropEdit;
+  if (cropping && (wbFmtEntries().length !== 1 || wbFmtEntries()[0].id !== cropping.id || !document.querySelector(".wb-crop-frame"))) cropping.close();
   for (const tab of panel.querySelectorAll("[data-format-tab]")) {
     const on = tab.dataset.formatTab === wbFmtState.fmtTab;
     tab.setAttribute("aria-selected", String(on));
@@ -650,7 +660,7 @@ function wbFormatSync() {
     ["wb-fmt-jumpsize", "jumpsize", "jumpsize"], ["wb-fmt-gapstart", "gapstart", "gapstart"], ["wb-fmt-gapend", "gapend", "gapend"], ["wb-fmt-tip", "tip", "tip"],
     ["wb-fmt-pattern", "pattern", "pattern"], ["wb-fmt-round", "round", "round"], ["wb-fmt-linestyle", "linestyle", "linestyle"], ["wb-fmt-crop", "crop", "crop"], ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-lsize", "lsize", "linklook"], ["wb-fmt-lcolor", "lcolor", "linklook"], ["wb-fmt-size", "size", "text"],
     ["wb-fmt-shx", "shx", "shadowset"], ["wb-fmt-shy", "shy", "shadowset"], ["wb-fmt-shb", "shb", "shadowset"], ["wb-fmt-pad", "pad", "pad"],
-    ["wb-fmt-trim0", "trim0", "trim"], ["wb-fmt-trim1", "trim1", "trim"], ["wb-fmt-trim2", "trim2", "trim"], ["wb-fmt-trim3", "trim3", "trim"],
+    ["wb-fmt-bright", "bright", "pixels"], ["wb-fmt-contrast", "contrast", "pixels"], ["wb-fmt-trim0", "trim0", "trim"], ["wb-fmt-trim1", "trim1", "trim"], ["wb-fmt-trim2", "trim2", "trim"], ["wb-fmt-trim3", "trim3", "trim"],
     ["wb-fmt-r0", "r0", "radii"], ["wb-fmt-r1", "r1", "radii"], ["wb-fmt-r2", "r2", "radii"], ["wb-fmt-r3", "r3", "radii"],
     ["wb-fmt-ink", "ink", "text"], ["wb-fmt-alpha", "alpha", "alpha"], ["wb-fmt-lh", "lh", "text"], ["wb-fmt-ls", "ls", "text"], ["wb-fmt-dir", "dir", "text"], ["wb-fmt-inkalpha", "inkalpha", "text"],
   ]) {
@@ -678,6 +688,11 @@ function wbFormatSync() {
   }
   const sticky = entries.find((e) => e.kind === "object" && wbIsSticky(e.item));
   if (sticky) set("wb-fmt-fold", wbStickyFolds(sticky.item), "checked");
+  if (takes.has("pixels")) {
+    for (const [id, field] of [["wb-fmt-flipx", "flipx"], ["wb-fmt-flipy", "flipy"], ["wb-fmt-grey", "grey"]]) {
+      document.getElementById(id)?.setAttribute("aria-pressed", mixed(field) ? "mixed" : String(wbFmtValue(first, field)));
+    }
+  }
   const alphaOut = document.getElementById("wb-fmt-alpha-out");
   if (alphaOut && takes.has("alpha")) alphaOut.textContent = mixed("alpha") ? "Mixed" : `${wbFmtValue(first, "alpha")}%`;
   if (takes.has("fillalpha")) wbFmtShowAlpha("fillalpha", mixed("fillalpha"), wbFmtValue(first, "fillalpha"));
@@ -957,6 +972,129 @@ onSurface("board", () => {
       toast(err?.message || "The picture could not be uploaded.");
     }
   });
+  //: Edit image: a quarter turn, two flips, greyscale and two sliders, all kept as the picture's style
+  //: (the file is untouched), each one Undo step; Reset clears them together.
+  const PIX_KEYS = ["turn", "flip_x", "flip_y", "grey", "bright", "contrast"];
+  on("wb-fmt-turn", "click", () => wbFmtApply("pixels", (entry) => ({ turn: ((Number(wbFmtValue(entry, "turn")) + 90) % 360) || undefined }), "Picture turned a quarter."));
+  on("wb-fmt-flipx", "click", () => wbFmtApply("pixels", (entry) => ({ flip_x: wbFmtValue(entry, "flipx") ? undefined : true }), "Picture flipped left to right."));
+  on("wb-fmt-flipy", "click", () => wbFmtApply("pixels", (entry) => ({ flip_y: wbFmtValue(entry, "flipy") ? undefined : true }), "Picture flipped top to bottom."));
+  on("wb-fmt-grey", "click", () => wbFmtApply("pixels", (entry) => ({ grey: wbFmtValue(entry, "grey") ? undefined : true }), "Greyscale toggled."));
+  for (const [id, key, word] of [["wb-fmt-bright", "bright", "Brightness"], ["wb-fmt-contrast", "contrast", "Contrast"]]) {
+    on(id, "change", (e) => {
+      const pct = boxNumber(e.target, 20, 200);
+      wbFmtApply("pixels", () => ({ [key]: pct === undefined || pct === 100 ? undefined : pct }), pct === undefined ? `${word} as shot.` : `${word} ${pct}.`);
+    });
+  }
+  on("wb-fmt-pixreset", "click", () => wbFmtApply("pixels", () => Object.fromEntries(PIX_KEYS.map((k) => [k, undefined])), "Picture edits cleared."));
+  //: **Crop on the picture**: a box with eight handles over the picture, in the picture's own (turned)
+  //: frame; dragging a handle moves that edge and writes the same `trim` the four numbers write, so
+  //: the numbers stay as the exact path. The box keeps its place: only the edges you drag move.
+  //: Arrow keys on a focused handle nudge it a percent. Escape or the button again ends it.
+  const cropBox = { frame: null };
+  const cropKey = (e) => {
+    if (e.key === "Escape" && cropBox.frame) {
+      e.preventDefault();
+      e.stopPropagation();
+      cropClose();
+    }
+  };
+  const cropClose = () => {
+    cropBox.frame?.remove();
+    cropBox.frame = null;
+    wbFmtState.cropEdit = null;
+    document.getElementById("wb-fmt-cropbox")?.setAttribute("aria-pressed", "false");
+    document.removeEventListener("keydown", cropKey, true);
+  };
+  const cropOpen = () => {
+    const entry = wbFmtEntries().find((e) => e.kind === "object" && e.item.kind === "image");
+    const el = entry && document.querySelector(`#wb-html-layer .wb-object[data-id="${entry.id}"]`);
+    if (!el) return;
+    const frame = document.createElement("div");
+    frame.className = "wb-crop-frame";
+    const rect = document.createElement("div");
+    rect.className = "wb-crop-rect";
+    frame.append(rect);
+    for (const name of ["nw", "n", "ne", "e", "se", "s", "sw", "w"]) {
+      const grip = document.createElement("button");
+      grip.type = "button";
+      grip.className = "wb-crop-grip";
+      grip.dataset.grip = name;
+      grip.setAttribute("aria-label", `Crop handle ${name.toUpperCase()}`);
+      rect.append(grip);
+    }
+    el.append(frame);
+    cropBox.frame = frame;
+    wbFmtState.cropEdit = { id: entry.id, close: cropClose };
+    document.getElementById("wb-fmt-cropbox")?.setAttribute("aria-pressed", "true");
+    document.addEventListener("keydown", cropKey, true);
+    let trim = [0, 1, 2, 3].map((i) => Number(entry.item.data?.trim?.[i]) || 0);
+    const place = () => {
+      const pix = wbPixel(entry.item.data, el.offsetWidth, el.offsetHeight);
+      frame.style.width = `${pix.w}px`;
+      frame.style.height = `${pix.h}px`;
+      frame.style.transform = `translate(-50%, -50%) ${pix.transform.replace("translate(-50%, -50%)", "").trim()}`.trim();
+      rect.style.inset = `${trim[0]}% ${trim[1]}% ${trim[2]}% ${trim[3]}%`;
+      const img = el.querySelector("img");
+      if (img) img.style.clipPath = wbCropClip(entry.item.data?.crop, trim.some(Boolean) ? trim : undefined) || "";
+    };
+    place();
+    const fits = (t) => t[0] + t[2] < 95 && t[1] + t[3] < 95;
+    const commit = () => {
+      const whole = trim.map((v) => Math.round(v));
+      const set = whole.some(Boolean) && fits(whole);
+      trim = set ? whole : [0, 0, 0, 0];
+      wbFmtApply("trim", () => ({ trim: set ? whole : undefined }), set ? "Picture trimmed." : "Picture trim taken off.");
+      place();
+    };
+    const move = (name, from, dx, dy) => {
+      const next = from.slice();
+      const w = frame.offsetWidth || 1, h = frame.offsetHeight || 1;
+      if (name.includes("n")) next[0] = from[0] + (dy / h) * 100;
+      if (name.includes("s")) next[2] = from[2] - (dy / h) * 100;
+      if (name.includes("w")) next[3] = from[3] + (dx / w) * 100;
+      if (name.includes("e")) next[1] = from[1] - (dx / w) * 100;
+      const clamped = next.map((v) => Math.max(0, Math.min(90, v)));
+      return fits(clamped) ? clamped : from;
+    };
+    for (const grip of frame.querySelectorAll(".wb-crop-grip")) {
+      grip.addEventListener("pointerdown", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        grip.setPointerCapture(e.pointerId);
+        const from = trim.slice();
+        //: Screen pixels to the picture's own frame: the frame's turn and flips are an orthogonal matrix, so
+        //: its inverse is its transpose, and the board's zoom is the box's drawn size over its layout size.
+        const m = new DOMMatrix(getComputedStyle(frame).transform);
+        const drawn = frame.getBoundingClientRect();
+        const turned = Math.abs(m.b) > 0.5;
+        const scale = (turned ? drawn.width / (frame.offsetHeight || 1) : drawn.width / (frame.offsetWidth || 1)) || 1;
+        const at = [e.clientX, e.clientY];
+        const drag = (ev) => {
+          const sx = (ev.clientX - at[0]) / scale, sy = (ev.clientY - at[1]) / scale;
+          trim = move(grip.dataset.grip, from, m.a * sx + m.b * sy, m.c * sx + m.d * sy);
+          place();
+        };
+        const stop = () => {
+          grip.removeEventListener("pointermove", drag);
+          grip.removeEventListener("pointerup", stop);
+          grip.removeEventListener("pointercancel", stop);
+          commit();
+        };
+        grip.addEventListener("pointermove", drag);
+        grip.addEventListener("pointerup", stop);
+        grip.addEventListener("pointercancel", stop);
+      });
+      grip.addEventListener("keydown", (e) => {
+        const step = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+        if (!step) return;
+        e.preventDefault();
+        e.stopPropagation();
+        trim = move(grip.dataset.grip, trim, (step[0] * frame.offsetWidth) / 100, (step[1] * frame.offsetHeight) / 100);
+        commit();
+      });
+    }
+  };
+  on("wb-fmt-cropbox", "click", () => (cropBox.frame ? cropClose() : cropOpen()));
   //: A rectangle crop: percent cut from the top, right, bottom and left; all empty is no trim.
   for (const edge of [0, 1, 2, 3]) {
     on(`wb-fmt-trim${edge}`, "change", () => {
@@ -2794,8 +2932,14 @@ wbFmtState.board = (() => {
   function groupOf() {
     const sketch = wbSelectedSketchOrNull();
     if (sketch) {
-      const data = wbSketchParsedData(sketch);
-      if (!data) return null;
+      //: Plain parse: the shape reader wants a drawn path (`d`), which a connector does not have.
+      let data = null;
+      try {
+        data = JSON.parse(sketch.data);
+      } catch {
+        return null;
+      }
+      if (!data || typeof data !== "object") return null;
       const group = String(data.type || "").startsWith("link-") ? "link" : { draw: "pen", highlighter: "highlighter" }[data.shape] || "shape";
       return { group, style: wbPickStyle(data, WB_SKETCH_STYLE_KEYS) };
     }

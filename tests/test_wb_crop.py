@@ -99,3 +99,17 @@ def test_replace_picture_is_a_pictures_only_row_that_uploads_then_swaps_the_addr
     assert 'data-fmt="replace"' in HTML and 'id="wb-fmt-replace"' in HTML and 'id="wb-fmt-replace-file"' in HTML
     handler = FMT[FMT.index('on("wb-fmt-replace-file"') :][:900]
     assert '"/media/upload"' in handler and 'wbFmtApply("replace", () => ({ url: uploaded.url })' in handler
+
+
+def test_a_picture_has_a_draggable_crop_box_that_writes_the_same_trim() -> None:
+    row = re.search(r"^  image: \[(.*)\],$", FMT, re.M).group(1)
+    assert '"cropbox"' in row
+    for kind in ("shape", "text", "frame", "table"):
+        assert '"cropbox"' not in re.search(rf"^  {kind}: \[(.*)\],$", FMT, re.M).group(1)
+    assert 'data-fmt="cropbox"' in HTML and 'id="wb-fmt-cropbox"' in HTML and '"wb-fmt-cropbox"' in FMT
+    box = FMT[FMT.index("const cropBox = ") : FMT.index('on("wb-fmt-cropbox"')]
+    # Eight grips, the numbers' own write path, a keyboard way, and Escape to end it.
+    assert '["nw", "n", "ne", "e", "se", "s", "sw", "w"]' in box
+    assert 'wbFmtApply("trim"' in box and "ArrowLeft" in box and "Escape" in box
+    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    assert ".wb-crop-grip" in css and ".wb-crop-rect" in css
