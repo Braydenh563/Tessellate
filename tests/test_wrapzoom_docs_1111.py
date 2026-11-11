@@ -50,17 +50,23 @@ def _rule(block: str, selector_part: str) -> str:
 def test_a_code_documents_dock_folds_its_words_before_it_wraps():
     """A code file's actions were 808px (1062 with the Python line) in a 931px
     dock at 1280, so the name took a line and the actions broke in two. Below
-    75rem of dock the lesser buttons are their icons and the Python line is
-    cut with an ellipsis; under 820 it leaves the row for the card's notice."""
+    Phase 9's 1100 of dock (test_breakpoints: no width of its own) Back is its
+    arrow, Snippets its icon, a code file's Format and Assistant theirs, and the
+    Python line is cut with an ellipsis; while that line is in the row its
+    lesser buttons are icons at any width (the 1100 to 1165 band); under 820 it
+    leaves the row for the card's notice."""
     css = _css("library-lazy.css")
-    wide = "".join(_at_blocks(css, "@container docdock (max-width: 74.99rem)"))
+    wide = "".join(_at_blocks(css, "@container docdock (max-width: 1099.98px)"))
+    assert ".doc-back-label" in wide and "#doc-code-snippets-open > .doc-ai-label" in wide
     assert "#tab-documents.doc-is-code .doc-ai-label" in wide
     assert "#doc-code-format > .toolbar-word" in wide
     why = _rule(wide, "#doc-code-run-why")
     assert "text-overflow: ellipsis" in why and "white-space: nowrap" in why and "max-width" in why
-    assert "flex-basis: 12rem" in _rule(wide, ".doc-dock > .doc-dock-identity")
-    prose = "".join(_at_blocks(css, "@container docdock (max-width: 59.99rem)"))
-    assert ".doc-ai-label" in prose and "#doc-format-show > span" in prose
+    assert "flex-basis: 8rem" in _rule(wide, ".doc-dock > .doc-dock-identity")
+    assert "min-width: 5rem" in _rule(wide, ".doc-dock-identity > .doc-title-input")
+    state = "#tab-documents.doc-is-code .doc-dock:has(#doc-code-run-why:not(.hidden))"
+    assert "display: none" in _rule(css, state + " :is(.doc-ai-label, #doc-code-format > .toolbar-word)")
+    assert "flex-basis: 8rem" in _rule(css, state + " > .doc-dock-identity")
     narrow = "".join(_at_blocks(css, "@container docdock (max-width: 819.98px)"))
     assert "display: none" in _rule(narrow, "#doc-code-run-why")
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")

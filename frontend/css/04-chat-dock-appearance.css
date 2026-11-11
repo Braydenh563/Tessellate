@@ -3423,7 +3423,13 @@ span > .chip {
    and what the AI made of it at the same time. */
 .draft-columns {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* **The draft's side never narrows below its actions.** Copy, Insert into
+     a note and Save as note need 476px on one line; at 1280 an even split
+     gave the column 472 (wrapzoom 2026-11-11), and two columns run down to
+     the 1152 window where they become one. So the draft asks for 30rem and
+     the thoughts take what is left (464px at 1280, 360 at 1153): no width
+     query, the row keeps its words wherever there are two columns. */
+  grid-template-columns: minmax(0, 1fr) minmax(30rem, 1fr);
   gap: 1rem;
   /* **`stretch`, not `start`.** With `start` each column was only as tall as
      its own contents, and the two contents were different: measured at
@@ -3435,8 +3441,6 @@ span > .chip {
 }
 
 .draft-column {
-  /* The actions row's words leave by this column's width (below). */
-  container: draft-column / inline-size;
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
@@ -3515,14 +3519,14 @@ span > .chip {
    right read as two. */
 .draft-actions-row {
   justify-content: flex-end;
-  /* **One line at every width** (wrapzoom sweep: at 1280 the column is 472px
-     and the three need 476, so "Insert into a note" went onto a second line
-     under the split button). Below 30rem of column Copy and Insert keep their
-     icon and clip their word (the `.toolbar-word` recipe, DESIGN.md): still
-     their accessible name, their title names them for a pointer. */
+  /* **One line at every width.** Two columns give the draft 30rem (above);
+     one column is the card's width from 600 up. Under 600 Copy and Insert
+     keep their icon and clip their word (the `.toolbar-word` recipe,
+     DESIGN.md): still their accessible name, their title names them for a
+     pointer. */
   flex-wrap: nowrap;
 }
-@container draft-column (max-width: 30rem) {
+@media (max-width: 599.98px) {
   .draft-actions-row > button .toolbar-word {
     position: absolute;
     width: 1px;
