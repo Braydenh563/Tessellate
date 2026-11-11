@@ -9311,7 +9311,9 @@ function wbCloneSource() {
   return bbox ? { kind, id, item, bbox } : null;
 }
 
-async function wbCloneConnect(dirName) {
+//: `at`: a board point to put the copy's middle on (a drag from the arrow to empty space, which opened the shape
+//: picker and took its first row); else one step along the arrow.
+async function wbCloneConnect(dirName, at = null) {
   const source = wbCloneSource();
   const dir = WB_CLONE_DIRS[dirName];
   if (!source || !dir) {
@@ -9327,7 +9329,8 @@ async function wbCloneConnect(dirName) {
   //: the copy keeps the turn (the payload carries it).
   const rot = wbItemRotation(source.kind, source.item);
   const step = wbRotatePoint({ x: dir.x * (w + WB_CLONE_GAP), y: dir.y * (h + WB_CLONE_GAP) }, { x: 0, y: 0 }, rot);
-  const dx = Math.round(step.x), dy = Math.round(step.y);
+  const dx = at ? Math.round(at[0] - (source.bbox.minX + source.bbox.maxX) / 2) : Math.round(step.x);
+  const dy = at ? Math.round(at[1] - (source.bbox.minY + source.bbox.maxY) / 2) : Math.round(step.y);
   let copy = null;
   await wbRecordGesture(async () => {
     const [made] = await wbCreateCopies([{ kind: source.kind, payload: WB_KIND_INFO[source.kind].payload(source.item) }], dx, dy);
@@ -9437,9 +9440,14 @@ function wbRenderCloneGrips() {
       ? `New note ${dir.words}, joined (Alt+Shift+Arrow)`
       : `Copy ${dir.words} and join (Alt+Shift+Arrow)`;
     grip.append(title);
-    grip.addEventListener("pointerdown", (e) => e.stopPropagation());
+    //: A drag from the arrow to empty space opens the shape picker there (`wbFmtState.libraryMore`); a click copies.
+    grip.addEventListener("pointerdown", (e) => {
+      e.stopPropagation();
+      if (source.kind !== "node") wbFmtState.libraryMore?.gripPress(e, name);
+    });
     grip.addEventListener("click", (e) => {
       e.stopPropagation();
+      if (source.kind !== "node" && wbFmtState.libraryMore?.dragged()) return;
       wbCloneConnect(name);
     });
     at.append(grip);
@@ -9958,7 +9966,7 @@ function wbBuildContextMenu(kind) {
   //: map: a topic's place in a tree is its order (FEAT-17).
   if (!wbIsMap()) {
     subItem("Arrange", (sub) => {
-      for (const id of ["group", "ungroup", "lock", "flip-h", "flip-v", "flip-layout-h", "flip-layout-v", "parallel-edges", "change-shape", "edit-ports", "edit-points", "reset-ports", "tidy-down", "tidy-right"]) {
+      for (const id of ["group", "ungroup", "lock", "flip-h", "flip-v", "flip-layout-h", "flip-layout-v", "parallel-edges", "change-shape", "replace-library", "edit-ports", "edit-points", "reset-ports", "tidy-down", "tidy-right"]) {
         const row = wbCommandMenuRow(id);
         if (row) sub(...row);
       }

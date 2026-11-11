@@ -359,7 +359,9 @@ TAIL_TOPICS.extend(
                 "export dialog, which opens on Whole board when nothing is selected (On screen is one press away); Board, Show hints brings the first-steps card back (an empty board keeps a one-line cue meanwhile). "
                 "For diagrams, the UML set has class, interface, enumeration and package boxes with the six "
                 "relations; Entity relationship has entities, attributes and crow's foot lines; Wireframe has "
-                "a window, button, input, checkbox, dropdown, image, navigation bar and card."
+                "a window, button, input, checkbox, dropdown, image, navigation bar and card. "
+                "Insert, Shape picker searches the library at the pointer and Enter places the match there; More, Replace with a library shape "
+                "swaps a selected shape's outline and keeps its words and connectors; dragging a copy arrow to empty space opens the picker there."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

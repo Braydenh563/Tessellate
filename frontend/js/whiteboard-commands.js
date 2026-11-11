@@ -220,6 +220,7 @@ const WB_COMMANDS = [
   { id: "edit-ports", group: "Arrange", icon: "ph:crosshair-simple", label: "Edit connection points: press the outline to add one, a point to take it out", menu: "Edit connection points", keys: "", surface: "board", needs: "swappable", run: () => wbFmtState.drawMore.editPorts() },
   { id: "edit-points", group: "Arrange", icon: "ph:polygon", label: "Edit the points of a shape: drag one, press the outline to add one", menu: "Edit shape points", keys: "", surface: "board", needs: "polygon", run: () => wbFmtState.shapeMore.editPoints() },
   { id: "reset-ports", group: "Arrange", icon: "ph:arrow-counter-clockwise", label: "Connection points back to the standard ones", menu: "Reset connection points", keys: "", surface: "board", needs: "swappable", run: () => wbFmtState.drawMore.resetPorts() },
+  { id: "replace-library", group: "Arrange", icon: "ph:swap", label: "Replace the shape with one from the library, keeping its words and connectors", menu: "Replace with a library shape…", keys: "", surface: "board", needs: "swappable", run: () => wbFmtState.libraryMore.open({ mode: "replace" }) },
   { id: "change-shape", group: "Arrange", icon: "ph:shapes", label: "Change the shape to another kind…", menu: "Change the shape…", keys: "", surface: "board", needs: "swappable", run: () => wbOpenShapeSwapMenu() },
   { id: "text-fit", group: "Edit", icon: "ph:arrows-in-simple", label: "Shrink the text to fit the shape (on or off)", keys: "", surface: "board", needs: "swappable", run: () => wbToggleLabelFit() },
   { id: "vote", group: "Edit", icon: "ph:circle", label: "Add a vote dot to the selected items", menu: "Add a vote dot", keys: "", surface: "board", needs: "voteable", run: () => wbVoteSelection(1) },
@@ -253,6 +254,7 @@ const WB_COMMANDS = [
   { id: "insert-image", group: "Insert", icon: "ph:image", label: "Image from a file", keys: "I", surface: "board", run: wbClickId("wb-add-image") },
   { id: "insert-note", group: "Insert", icon: "ph:note-pencil", label: "A note from the library", keys: "", surface: "both", run: wbClickId("wb-add-note") },
   //: MINDMAP_PLAN decision 44: a sticker, or (dropped on a topic) its icon.
+  { id: "shape-picker", group: "Insert", icon: "ph:magnifying-glass", label: "Shape picker: search the library and place a shape at the pointer", menu: "Shape picker…", keys: "", surface: "board", run: () => wbFmtState.libraryMore.open({ mode: "place" }) },
   { id: "insert-sticker", group: "Insert", icon: "ph:smiley-sticker", label: "Emoji and icon stickers", menu: "Emoji and icons…", keys: "", surface: "both", run: () => wbOpenStickerPicker() },
   // Tools
   { id: "tool-select", group: "Tools", icon: "ph:cursor", label: "Select tool", keys: "V", surface: "both", run: wbTool("select") },
