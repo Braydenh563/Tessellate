@@ -1803,13 +1803,6 @@ function highlightInto(element, text, terms) {
   }
 }
 
-// The words worth highlighting in a result, operators aren't text to find.
-function searchHighlightTerms() {
-  if (!noteSearch) return [];
-  const query = parseNoteQuery(noteSearch);
-  return [...query.phrases, ...query.words].filter((t) => t.length > 1);
-}
-
 // "Why this result", in words rather than a number, from the three scores the
 // engine returns with every hit (`search/engine.py`). Asked for by Brief 11
 // directly: the list says *matched the title*, *similar meaning*, *linked to

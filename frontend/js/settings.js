@@ -935,12 +935,6 @@ function activeLogContainer() {
   return $(logView === "terminal" ? "log-terminal" : "log-list");
 }
 
-function nearLogBottom() {
-  const list = activeLogContainer();
-  // 40px of slack: "close enough to the bottom that you meant to be there".
-  return list.scrollHeight - list.scrollTop - list.clientHeight < 40;
-}
-
 function scrollLogToBottom() {
   const list = activeLogContainer();
   list.scrollTop = list.scrollHeight;
@@ -1235,18 +1229,6 @@ function closeLogs() {
   setLogLive("paused", "paused");
 }
 
-async function copyLogs() {
-  const shown = logRecords.filter(logMatchesFilters);
-  if (!shown.length) {
-    toast("Nothing to copy: the filters above are hiding every record.", "info");
-    return;
-  }
-  const text = shown.map(logRecordText).join("\n");
-  if (await copyToClipboard(text)) {
-    toast(`Copied ${nounCount(shown.length, "record")}.`);
-  }
-}
-
 // The button copies what is ON SCREEN, not the whole buffer, so it has to say
 // which. "Copy all" while a filter hides 400 records is a promise it does not
 // keep: and the reader would not find out until they pasted it.
@@ -1515,12 +1497,6 @@ function applyEffectiveAccent() {
 
 function contrastOn() {
   return prefs.get("contrast", null) === "on";
-}
-
-function applyContrast(on) {
-  if (on) document.documentElement.dataset.contrast = "on";
-  else delete document.documentElement.dataset.contrast;
-  prefs.set("contrast", on ? "on" : "off");
 }
 
 // --- Wave O: expanded appearance controls -------------------------------------------
@@ -1866,27 +1842,6 @@ function manualOverrides() {
   return OVERRIDABLE_KEYS.filter((key) => prefs.get(key, null) !== null);
 }
 
-// Drop the manual layer, keeping the chosen theme, the counterpart to
-// "reset the theme" below.
-function clearManualOverrides() {
-  for (const key of manualOverrides()) prefs.remove(key);
-  applyCustomAccent(null);
-  applyPageBackground(null);
-  applyThemePreset(activeThemePreset());
-  renderAppearance();
-  toast("Your manual changes are cleared, the theme is showing on its own.");
-}
-
-// Drop the theme, keeping every manual change, so "reset the theme to
-// default because I want my own colours instead" does exactly that, rather
-// than wiping the colours too (user request).
-function resetThemeOnly() {
-  prefs.remove("themePreset");
-  applyThemePreset("");
-  renderAppearance();
-  toast("Theme reset to the app default. Your own changes are still applied.");
-}
-
 // --- building a scheme from one colour ---------------------------------------
 //
 // Picking an accent is easy. Picking a page background that *goes* with it is
@@ -1967,36 +1922,6 @@ function harmonyScheme(baseHex, kind, dark) {
 // `resolvedTheme` rather than the raw preference: under "System" there is no
 // stored light/dark to read, and generating a light background for someone
 // looking at a dark page is the one way this feature can be obviously wrong.
-
-function applyHarmony() {
-  const base = $("harmony-base").value;
-  const kind = $("harmony-kind").value;
-  const scheme = harmonyScheme(base, kind, resolvedTheme() === "dark");
-  const note = $("harmony-note");
-  if (!scheme) {
-    note.textContent = "That colour didn't parse: try picking it again.";
-    return;
-  }
-  prefs.set("accent-custom", scheme.accent);
-  // A scheme's background is worked out *for a mode*, the same accent wants a
-  // near-white page in light and a near-black one in dark. Storing only the one
-  // for whichever mode happened to be on is what made the light/dark toggle
-  // "stop working on the background": the stored value is written inline on
-  // <html>, and an inline custom property outranks every `[data-mode="dark"]`
-  // rule in the stylesheet, so the page stayed put while the rest of the UI
-  // changed around it. Both are computed and stored; `currentPageBackground`
-  // picks the right one whenever the mode changes.
-  const dark = harmonyScheme(base, kind, true);
-  const light = harmonyScheme(base, kind, false);
-  prefs.set("page-bg", light ? light.page : scheme.page);
-  prefs.set("page-bg-dark", dark ? dark.page : scheme.page);
-  applyCustomAccent(scheme.accent);
-  applyPageBackground(currentPageBackground());
-  renderAppearance();
-  note.textContent =
-    `Accent ${scheme.accent}, background ${scheme.page}. ` +
-    "Both have their own Clear buttons above if you'd rather start again.";
-}
 
 // --- your own saved themes ---------------------------------------------------
 //

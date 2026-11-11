@@ -536,3 +536,30 @@ async function removeEntryTitle(entry) {
     toast(error.message || "Couldn't remove the title.", true);
   }
 }
+
+//: Moved here from the boot files (W27): only this file calls them.
+function inlineActionIs(id, kind) {
+  return inlineAction && inlineAction.id === id && inlineAction.kind === kind;
+}
+
+//: **Translate a note from where it is read** (INBOX 405). Writing room
+//: already translates; this takes the note there, loaded and set to the last
+//: language picked, rather than asking the reader to copy it across. Nothing
+//: runs until Draft is pressed, like every other starting point on the desk,
+//: and a desk that already holds writing is asked about before it is
+//: replaced.
+async function translateNoteInDesk(entry) {
+  entry = await fullEntry(entry.id).catch(() => entry); // the list holds a preview (INBOX 1525)
+  if (entry.content_truncated) return;
+  const busy = $("draft-thoughts").value.trim() || $("draft-text").value.trim();
+  if (busy && !(await confirmDialog("Replace what is in the Writing room with this note?"))) return;
+  switchTab("notes");
+  showNotesSection("writing-room");
+  $("draft-thoughts").value = entry.content || "";
+  $("draft-text").value = "";
+  $("draft-kind").value = draftTranslateKind();
+  $("draft-kind").dispatchEvent(new Event("change"));
+  saveDraftLocally();
+  toast("Pick the language in the menu beside Draft, then press Draft.");
+  $("draft-kind").closest(".select-shell")?.querySelector("button")?.focus();
+}

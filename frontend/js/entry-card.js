@@ -1364,3 +1364,19 @@ function noteMetaMore(entry) {
   more.hidden = true;
   return more;
 }
+
+//: Moved here from the boot files (W27): only this file calls them.
+function notesSpanSpaces() {
+  if (notesSpanMemo.list !== allEntries) {
+    const first = allEntries[0]?.workspace_id;
+    notesSpanMemo = { list: allEntries, many: allEntries.some((e) => e.workspace_id && e.workspace_id !== first) };
+  }
+  return notesSpanMemo.many;
+}
+
+// The words worth highlighting in a result, operators aren't text to find.
+function searchHighlightTerms() {
+  if (!noteSearch) return [];
+  const query = parseNoteQuery(noteSearch);
+  return [...query.phrases, ...query.words].filter((t) => t.length > 1);
+}
