@@ -1841,7 +1841,7 @@ TOPIC_META: dict[str, dict] = {
     "board-format": {"title": "The board's Format panel", "path": "A board, Ctrl+Shift+P or the selection's More menu"},
     "board-connectors": {"title": "Connector bends, connection points and importing diagrams", "path": "A board, Insert, Diagram, Mermaid, draw.io or board SVG"},
     "board-workshop": {"title": "Voting dots and a workshop timer", "path": "A board, Board menu, Workshop"},
-    "board-diagram-tools": {"title": "Diagram tools: zoom to the selection, tidy as a tree, change a shape, link a shape, shrink text to fit", "path": "A board, Arrange, View, or a selection's More"},
+    "board-diagram-tools": {"title": "Diagram tools: zoom to the selection, Home, tidy as a tree, change a shape, link a shape, shrink text to fit, clear labels", "path": "A board, Arrange, View, or a selection's More"},
     "board-paste": {"title": "Paste on a board or map: options and Paste special", "path": "A board, Edit, Paste in other ways, Paste special"},
     "mind-map-controls": {"title": "Mind map keys and controls", "path": "Library tab, Boards & maps"},
     "documents-controls": {"title": "Document editor keys and controls", "path": "Library tab, Documents"},
@@ -2214,7 +2214,7 @@ MORE_TOPICS.extend([
         "id": "board-current-layer",
         "keywords": (
             "current layer", "draw on a layer", "draw on this layer", "new things on a layer",
-            "active layer", "which layer", "layer new items go on",
+            "active layer", "which layer", "layer new items go on", "layer to the front", "send layer to back", "duplicate a layer",
         ),
         "body": (
             "The current layer, as in draw.io: in a board's sidebar, Layers, press a "
@@ -2222,7 +2222,9 @@ MORE_TOPICS.extend([
             "or placed from the library) goes on it; the row is tinted while it is "
             "current. Press the name again, or its ⋯ menu's Stop drawing on it, "
             "for no layer. A hidden or locked layer takes nothing new. Undo brings "
-            "a deleted item back on the layer it was on."
+            "a deleted item back on the layer it was on. The same menu has Bring the "
+            "layer to the front, Send the layer to the back (its items keep their "
+            "order) and Duplicate the layer (a copy on a new layer, one Undo)."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },

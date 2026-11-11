@@ -81,7 +81,7 @@ const WB_FMT_FIELDS = {
   line: ["stroke", "strokealpha", "width", "dash", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "tip"],
   //: A straight line or arrow: a line that takes ends.
   arrow: ["stroke", "strokealpha", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "tip"],
-  link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "linklook", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "jumpsize", "gapstart", "gapend", "tip"],
+  link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "linklook", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "jumpsize", "gapstart", "gapend", "tip", "loop", "label2", "label2-t"],
   text: ["stroke", "fill", "fillalpha", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props", "rawstyle"],
   image: ["alpha", "shadow", "shadowset", "radii", "crop", "trim", "cropbox", "pixels", "replace", "geometry", "angle", "props"],
   frame: ["pad", "geometry", "props"],
@@ -181,6 +181,8 @@ function wbFmtValue(entry, field) {
     case "startsize": return (kind === "arrow" ? wbSketchCaps(s) : wbLinkCaps(s)).startSize || "m";
     case "endsize": return (kind === "arrow" ? wbSketchCaps(s) : wbLinkCaps(s)).endSize || "m";
     case "label-t": return Math.round(wbLinkLabelT(s) * 100);
+    case "label2": return typeof s?.label2 === "string" ? s.label2 : "";
+    case "label2-t": return Math.round(wbFmtState.drawMore.label2T(s) * 100);
     case "lsize": return Number(s?.label_size) || 16;
     case "lcolor": return s?.label_color || "#1f2430";
     case "lbold": return Boolean(s?.label_bold);
@@ -440,8 +442,8 @@ async function wbFmtFlip(axis) {
   wbAnnounce(axis === "h" ? "Flipped left to right." : "Flipped top to bottom.");
 }
 
-//: A connector's line shape: curved, straight, or elbow (a straight link
-//: with `route: "elbow"`, see `wbLinkRouteName`). Its bends go with it, as
+//: A connector's line shape: curved, straight, elbow, entity relation or isometric (a straight link
+//: with `route: "elbow"`, `"er"` or `"iso"`, see `wbLinkRouteName`). Its bends go with it, as
 //: draw.io keeps an edge's waypoints across styles: every style takes them
 //: (wb-phase2 step 1), and an old link's single `bend` becomes one.
 async function wbSetLinkRoute(value) {
@@ -451,7 +453,7 @@ async function wbSetLinkRoute(value) {
     const points = wbLinkWaypoints(parsed, wbResolveLinkEndpoints(parsed));
     return {
       type: value === "curved" ? "link-curved" : "link-straight",
-      route: value === "elbow" ? "elbow" : undefined,
+      route: ["elbow", "er", "iso"].includes(value) ? value : undefined,
       points: points.length ? points.map((p) => ({ x: Math.round(p.x), y: Math.round(p.y) })) : undefined,
       bend: undefined,
     };
@@ -696,7 +698,7 @@ function wbFormatSync() {
     ["wb-fmt-stroke", "stroke", "stroke"], ["wb-fmt-width", "width", "width"], ["wb-fmt-dash", "dash", "dash"],
     ["wb-fmt-fill", "fill", "fill"], ["wb-fmt-route", "route", "route"], ["wb-fmt-jumps", "jumps", "jumps"], ["wb-fmt-startcap", "startcap", "caps"],
     ["wb-fmt-fillstyle", "fillstyle", "fillstyle"], ["wb-fmt-gradient-dir", "gradient-dir", "gradient"], ["wb-fmt-gradient", "gradient", "gradient"],
-    ["wb-fmt-jumpsize", "jumpsize", "jumpsize"], ["wb-fmt-gapstart", "gapstart", "gapstart"], ["wb-fmt-gapend", "gapend", "gapend"], ["wb-fmt-tip", "tip", "tip"],
+    ["wb-fmt-jumpsize", "jumpsize", "jumpsize"], ["wb-fmt-gapstart", "gapstart", "gapstart"], ["wb-fmt-gapend", "gapend", "gapend"], ["wb-fmt-tip", "tip", "tip"], ["wb-fmt-label2", "label2", "label2"], ["wb-fmt-label2-t", "label2-t", "label2-t"],
     ["wb-fmt-pattern", "pattern", "pattern"], ["wb-fmt-round", "round", "round"], ["wb-fmt-linestyle", "linestyle", "linestyle"], ["wb-fmt-crop", "crop", "crop"], ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-lsize", "lsize", "linklook"], ["wb-fmt-lcolor", "lcolor", "linklook"], ["wb-fmt-size", "size", "text"],
     ["wb-fmt-shx", "shx", "shadowset"], ["wb-fmt-shy", "shy", "shadowset"], ["wb-fmt-shb", "shb", "shadowset"], ["wb-fmt-pad", "pad", "pad"],
     ["wb-fmt-bright", "bright", "pixels"], ["wb-fmt-contrast", "contrast", "pixels"], ["wb-fmt-trim0", "trim0", "trim"], ["wb-fmt-trim1", "trim1", "trim"], ["wb-fmt-trim2", "trim2", "trim"], ["wb-fmt-trim3", "trim3", "trim"],
@@ -742,6 +744,7 @@ function wbFormatSync() {
     }
   }
   wbFmtState.label?.sync(takes, sharing);
+  wbFmtState.drawMore?.syncLoopRow(takes, sharing);
   if (takes.has("text")) {
     const pressed = (field, value) => {
       const some = sharing.map((e) => wbFmtValue(e, field) === value);

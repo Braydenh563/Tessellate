@@ -287,6 +287,9 @@ TAIL_TOPICS.extend(
                 "order of frames",
                 "frame order",
                 "frames in the presentation",
+                "paper size",
+                "a4 page",
+                "letter page",
                 "locked item",
                 "unlock",
                 "drag a template",
@@ -305,7 +308,7 @@ TAIL_TOPICS.extend(
                 "holding the selection; its eye and lock act on all of it. Tinted rows are selected on the board "
                 "(the head counts them; Clear drops them), and a frame lists what it holds under its row. A locked item shows a lock when the pointer "
                 "is on it; right-click it to unlock it. The Library holds "
-                "built-in sets (General shapes, Callouts and notes, Flowchart, UML, Entity relationship, Wireframe, BPMN, C4, Arrows, Frames (a frame, a timeline lane and swimlanes in rows or columns), Cloud and network and Devices and people icons "
+                "built-in sets (General shapes, Callouts and notes, Flowchart, UML, Entity relationship, Wireframe, BPMN, C4, Arrows, Frames (a frame, a timeline lane, swimlanes, A4, A3, Letter, 16:9), Cloud and network and Devices and people icons "
                 "and 1,530 icons), five draw.io sets (196 shapes "
                 "with their own connection points), then Favourites, Recent and your own "
                 "libraries; the search field finds any of them by name or tag. Click a tile or press Enter "
@@ -461,6 +464,8 @@ TAIL_TOPICS.extend(
             "id": "board-connectors",
             "keywords": (
                 "elbow",
+                "entity relation line",
+                "isometric line",
                 "right angle",
                 "orthogonal",
                 "connector shape",
@@ -471,6 +476,9 @@ TAIL_TOPICS.extend(
                 "er diagram",
                 "connection point",
                 "connection points",
+                "edit connection points",
+                "add a connection point",
+                "reset connection points",
                 "port",
                 "ports",
                 "anchor point",
@@ -493,6 +501,8 @@ TAIL_TOPICS.extend(
                 "new note next to",
                 "arrows round a card",
                 "dimension line",
+                "second label",
+                "two labels on a connector",
                 "measure",
                 "measure between",
                 "length of a line",
@@ -501,15 +511,16 @@ TAIL_TOPICS.extend(
             "body": (
                 "Every connector takes bends: drag the small ring in the middle "
                 "of a run (or double-click the line) to add one, drag a bend to move it, double-click it to "
-                "take it out. A straight line runs through its bends, a curved one curves smoothly through "
-                "them, and an elbow turns at right angles and goes round the shapes it joins; changing the "
-                "line shape keeps the bends; moving both things a connector joins moves its bends too. "
+                "take it out. A straight line runs through its bends, a curved one curves through "
+                "them, an elbow turns at right angles round the shapes it joins; Entity relation and "
+                "Isometric take no bends; changing the line shape keeps them. "
                 "With Select, pointing at a shape, card or text box shows its connection points; drag from one to draw an "
                 "elbow connector to whatever you let go on, or to a free end. "
+                "Arrange, Edit connection points gives a shape points of its own (press the outline to add, a point to remove); Reset connection points undoes it. "
                 "Drag a connector's label by its words to slide "
-                "it along the line; Format sets its size, colour, bold and a chip behind it. The ends include the entity-relationship marks. With one shape or text box selected, the four arrows round it "
+                "it along the line; Format sets its size, colour, bold, a chip and a second label. With one shape or text box selected, the four arrows round it "
                 "(or Alt+Shift and an arrow key) copy it that way and join facing sides with an elbow; View, Connection arrows and Connection points hide them; "
-                "a note card's arrows make a new note there instead, joined and ready to type. With two or more selected, Arrange, Tidy and connect joins them in a line or all to the first picked. Measure with a dimension line shows its length. Select a connector and drag a square at either end onto another shape to re-point it. "
+                "a note card's arrows make a new note there instead, joined and ready to type. With two or more selected, Arrange, Tidy and connect joins them in a line or to the first picked. Measure with a dimension line gives its length. Drag a connector's end square onto another shape to re-point it. "
                 "Insert, Diagram, Mermaid, draw.io or board SVG brings in a Mermaid flowchart, state, class or "
                 "sequence diagram, a .drawio file (pages and swimlanes as frames) or an SVG a board "
                 "here exported, as shapes and connectors; Export writes an Outline, a Mermaid flowchart or a .drawio file."
@@ -542,6 +553,18 @@ TAIL_TOPICS.extend(
                 "link a shape to a note",
                 "hyperlink on a board",
                 "open a shape's link",
+                "home key",
+                "back to the top left",
+                "reset the view",
+                "clear labels",
+                "shift+delete",
+                "delete the labels",
+                "replace one match",
+                "link to a page",
+                "link to a frame",
+                "self loop",
+                "loop on a shape",
+                "connector to itself",
             ),
             "body": (
                 "Shift+2 (or View, Zoom to the selection) frames what is selected, "
@@ -552,11 +575,14 @@ TAIL_TOPICS.extend(
                 "shape…, in a closed shape's More, the right-click Arrange and Ctrl+K, turns it into another "
                 "kind (rectangle, ellipse, diamond, cylinder, cloud and the rest) in the same box, keeping "
                 "its text, colours, line and connectors. Link…, in a shape's, text box's or picture's More "
-                "and its right-click menu, links it to one of your notes or a web page (or an app link "
-                "from Copy app link); a small mark on its top-left corner opens it, a note in the app and "
-                "a page in a new tab, and the same Link… changes or removes it. Fit, in the Format "
+                "and its right-click menu, links it to one of your notes, a page (frame) of this board or a web page (or an app link "
+                "from Copy app link); a small mark on its top-left corner opens it, and the same Link… changes or removes it. Fit, in the Format "
                 "panel's Text tab for a shape (or Ctrl+K, Shrink the text to fit), makes long words shrink "
-                "until they fit inside the shape, never past the size you gave them."
+                "until they fit inside the shape, never past the size you gave them. "
+                "Home goes back to the top left of what is drawn at the zoom you have, and Shift+Home resets the view to 100% there. "
+                "Shift+Delete clears the labels of the selected shapes and connectors; one Undo puts them back. "
+                "In the find bar (Ctrl+H), Replace changes the current match and moves on; Replace all changes every one. "
+                "Arrange, Loop on the shape draws a connector from a shape back to itself; Format, Loop side moves it."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

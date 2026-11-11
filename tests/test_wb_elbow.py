@@ -134,7 +134,7 @@ def test_a_new_bend_takes_its_place_along_the_line() -> None:
 
 def test_an_elbow_is_a_straight_link_with_a_route() -> None:
     """Every reader that only knows the two old types still draws it."""
-    assert 'route: value === "elbow" ? "elbow" : undefined' in (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
+    assert 'route: ["elbow", "er", "iso"].includes(value) ? value : undefined' in (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
     assert 'type: value === "curved" ? "link-curved" : "link-straight"' in (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
     #: Every place a link's path is drawn passes its shape.
     calls = re.findall(r"wbLinkPathD\(parsed\.type, [^;]*\);", SOURCE)
