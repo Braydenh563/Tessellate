@@ -3,7 +3,8 @@
 "make sure the wrapping and ui issues arent an issue anywhere else from zoom
 or resolution." `scratchpad/ui-sweeps/wrapzoom-shell.js` measured the shell
 over nine viewports (1280 to 2560 at 100%, and 1920 at 125, 150 and 200%)
-and 768x1024. `scratchpad/ui-sweeps/dashedit-zoom.js` measures these fixes.
+and 768x1024. It measures these fixes too (the `dash-edit`, `dash-quick-edit`,
+`dash-widgets-dialog` and `top-notifications` states).
 What a static test can pin is pinned here; the rings are in
 `tests/test_ring_room.py`.
 """
