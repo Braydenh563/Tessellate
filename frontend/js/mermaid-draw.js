@@ -641,5 +641,5 @@
     });
   }
 
-  Object.assign(window, { mermaidAltFor, mermaidDrawBlock, mermaidFillShare, mermaidDrawIn, mermaidFailure, mermaidFill, mermaidInlineForExport, mermaidKnown, mermaidRequest, mermaidSettled, mermaidShow, mermaidThemeNow });
+  Object.assign(window, { mermaidAltFor, mermaidDrawBlock, mermaidDrawIn, mermaidFailure, mermaidFill, mermaidInlineForExport, mermaidKnown, mermaidRequest, mermaidSettled, mermaidShow, mermaidThemeNow });
 })();

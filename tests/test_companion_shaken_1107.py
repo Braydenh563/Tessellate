@@ -121,8 +121,11 @@ def test_the_follow_loop_asks_for_a_shake_at_twice_the_toss_speed_and_loads_the_
     avatars = AV
     follow = avatars[avatars.index("function nameMarkBuddyFollow(") :][:4000]
     assert "Math.hypot(sx, sy) > NMB_TOSS_SPEED * 2" in follow
-    assert 'ensureModule("companionThrow")' in follow and "self.nameMarkBuddyShaken?.(buddy, g, sx, sy)" in follow
-    assert follow.index("nameMarkBuddyShaken") < follow.index("g.dx = g.fx")  # before the panel's box places it again
+    # Location moved, intent kept (2026-11-11): companion-throw.js is wrapped in a closure, so the shaker is
+    # reached as `nmb.shakenOff`, which the file sets when it loads (a `self.` lookup found nothing once wrapped).
+    assert 'ensureModule("companionThrow")' in follow and "nmb.shakenOff?.(buddy, g, sx, sy)" in follow
+    assert "nmb.shakenOff = nameMarkBuddyShaken;" in THROW
+    assert follow.index("nmb.shakenOff?.(") < follow.index("g.dx = g.fx")  # before the panel's box places it again
     assert "nameMarkBuddyShaken" in avatars and "NMB_TOSS_SPEED = 0.6" in avatars
 
 

@@ -1295,8 +1295,8 @@ function wbDiagramFillColour(data) {
 
 function wbDiagramFillShare() {
   const strong = document.documentElement.dataset.contrast === "on";
-  //: The lazy module may not be in yet, so the same two numbers stand by.
-  return globalThis.mermaidFillShare?.(strong) ?? (strong ? 0.28 : 0.16);
+  //: The same two numbers as mermaid-draw.js `mermaidFillShare`, read here without loading that lazy module.
+  return strong ? 0.28 : 0.16;
 }
 
 function wbDiagramDataUrl(obj) {
