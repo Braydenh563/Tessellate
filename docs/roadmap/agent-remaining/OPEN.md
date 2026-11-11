@@ -237,7 +237,7 @@ Parked until the owner's data or a check on real hardware:
 - ~~C38 History previews leak raw markup | audit-1102-docs DX27~~ **Stale: built** (7af47c4), s6-1110
 - ~~C39 Link offers have no Settings switch; "Untitled document N" naming | t20#15, t20#16~~ **Stale: built** (Settings link offers switch; documents.js Untitled document N), s6-1110
 - ~~C40 Equation panel jump row and Inline/Display pill | DOCUMENTS 1566~~ **Stale: built 6c08378**, s6-1110
-- C41 The remaining 1028-docs and 1031-docs open rows | book1 (40 and 7 rows)
+- ~~C41 The remaining 1028-docs and 1031-docs open rows | book1 (40 and 7 rows)~~ **Re-verified 1111 docs spoke, one by one:** built D2, D3 (W4: test_doc_save_serial, test_doc_new_draft_1110), D36 (`docDropIfUntouched` re-adds the row on a failed delete), DC8 (archived PUT is 409; `filetypes.require` refuses an unknown type), DC11 (the template dialog focuses the checked radio, measured; the panel reads "Fix all N" and "N suggestions in view"); stale D29, D34, D40, D41, DC7, DC10; built here D28; won't D25, D23, D45, D46; deferred large (D22, D42, D43, D47, D52, DC13); partial D39 (a status-bar Autocorrect switch is not built, the Editor menu one is); DC1 and DC2 (lock leaves words on the page; AI panel over the lock screen) are lock code, another worker's
 - ~~D28 Text size is three steps, no Ctrl+wheel | 1028-docs D28~~ built e2775e4 (five sizes, Ctrl+wheel, tests/test_doc_text_zoom_1111.py); D29, D40, D41 stale (built); D25 won't do (rules interleave with the shared note toolbar and theme overrides, no measured defect, cascade-order risk in a move)
 
 ### Tier D: performance and CI time
