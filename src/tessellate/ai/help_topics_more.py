@@ -21,6 +21,26 @@ from __future__ import annotations
 
 MORE_TOPICS: list[dict] = [
     {
+        "id": "graph-categories",
+        "keywords": (
+            "graph category", "category on the graph", "select a category", "select a whole category",
+            "category header", "category name on the graph", "treemap category", "tessellation category",
+            "frame a category", "category menu graph", "select all notes in a category",
+        ),
+        "body": (
+            "On the Graph, in the Treemap and Tessellation layouts, each category's name bar is a "
+            "control. Point at it and it lights with a rim and a pointing hand. Click it to select "
+            "every note in that category (Shift adds to what is selected), and the selection bar acts "
+            "on them all, as it does after a lasso. Double-click it to zoom to that category. "
+            "Right-click it, or hold it on a phone, for its menu: Select its notes, Frame it, "
+            "Rename, Colour, Merge into, Split, Delete and Manage categories, the same as the Notes "
+            "sidebar. From the keyboard, click the map, press C to step through the categories "
+            "(Shift and C goes back), Enter to select the one lit, Esc to let it go. In Tree and "
+            "Radial, the category's own dot does the same."
+        ),
+        "badge": {"label": "Graph", "tab": "graph"},
+    },
+    {
         "id": "companion",
         "keywords": (
             "companion", "corner companion", "buddy", "mascot", "sidekick",

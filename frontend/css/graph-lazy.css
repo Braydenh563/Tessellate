@@ -9,6 +9,13 @@
   cursor: grab;
 }
 
+/* **A category's header is a target** (INBOX 1744): the pointing hand over a
+   Map or Tessellation header band or a Tree or Radial category node
+   (`gcCategoryAtWorld`). */
+#graph-canvas.graph-cat-hover {
+  cursor: pointer;
+}
+
 /* **A topic renamed where its name is** ("I cant rename a topic??"): the
    field `gcRenameTopicInline` opens in place of the name on the topic's card
    or a note's panel, or floating over the plate on the map. The app's own

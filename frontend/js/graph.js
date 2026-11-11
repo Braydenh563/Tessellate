@@ -2019,6 +2019,30 @@ function initGraphKeyboard() {
       return;
     }
 
+    //: INBOX 1744: C steps through the Map's and Tessellation's categories
+    //: (Shift+C back), Enter selects the lit one's notes, Escape lets it go.
+    const regions = gcTab.tree && gcTab.tree.treemap;
+    if ((event.key === "c" || event.key === "C") && !event.ctrlKey && !event.metaKey && !event.altKey && regions && regions.length) {
+      event.preventDefault();
+      const at = regions.findIndex((r) => r.category === gcTab.kbCat);
+      const next = regions[(at + (event.shiftKey ? -1 : 1) + regions.length) % regions.length];
+      gcTab.kbCat = next.category;
+      gcRequestDraw(gcTab, true);
+      announce(`${next.category || "Unfiled"}, ${nounCount(next.count, "note")}. Enter selects them, Escape leaves.`);
+      return;
+    }
+    if (gcTab.kbCat != null && (event.key === "Enter" || event.key === " " || event.key === "Escape")) {
+      event.preventDefault();
+      const category = gcTab.kbCat;
+      gcTab.kbCat = null;
+      if (event.key !== "Escape") gcCat.select(category, gcTab, event.shiftKey);
+      else gcRequestDraw(gcTab, true);
+      return;
+    }
+    if (gcTab.kbCat != null) {
+      gcTab.kbCat = null;
+      gcRequestDraw(gcTab, true);
+    }
     const directions = {
       ArrowRight: "right",
       ArrowLeft: "left",

@@ -284,3 +284,61 @@ def test_a_cell_pans_and_only_its_dot_is_a_node_for_a_gesture():
     assert "if (gcNodeAtWorld(x, y, s, true)) return;" in CANVAS
     # A wobble under the drag threshold is still a click on the cell.
     assert ".clickDistance(GC_DRAG_THRESHOLD_PX)" in CANVAS
+
+
+@needs_node
+def test_a_category_header_band_is_the_target_not_the_cells_below_it():
+    """INBOX 1744: the band is the rectangle's top `head` px; a point under it
+    (a cell) and a point off every rectangle are no category."""
+    script = "\n".join(
+        [
+            "globalThis.gcTab = null; globalThis.gcVisibleAtTime = () => true;",
+            CANVAS[CANVAS.index("const gcCat = (() => {") : CANVAS.index("\n})();\n", CANVAS.index("const gcCat = (() => {")) + 7],
+            """
+const s = { size: "full", tree: { treemap: [
+  { category: "Events", x0: 0, y0: 0, x1: 100, y1: 80, head: 32 },
+  { category: "Work", x0: 100, y0: 0, x1: 200, y1: 80, head: 18 },
+] } };
+const pane = { size: "pane", tree: s.tree };
+console.log(JSON.stringify({
+  inBand: gcCat.at(50, 20, s).category,
+  second: gcCat.at(150, 10, s).category,
+  below: gcCat.at(50, 60, s),
+  off: gcCat.at(500, 5, s),
+  pane: gcCat.at(50, 20, pane),
+  group: gcCat.of({ isGroup: true, id: "group:Home", category: "Home" }, 0, 0, s),
+  root: gcCat.of({ isGroup: true, id: "root" }, 0, 0, s),
+  note: gcCat.of({ id: 3, category: "Home" }, 50, 20, s),
+  bare: gcCat.of(null, 50, 20, s),
+  none: gcCat.of(null, 50, 60, s),
+}));
+""",
+        ]
+    )
+    out = subprocess.run([NODE, "-e", script], capture_output=True, text=True, timeout=60)
+    assert out.returncode == 0, out.stderr
+    r = json.loads(out.stdout.strip().splitlines()[-1])
+    assert (r["inBand"], r["second"]) == ("Events", "Work")
+    assert r["below"] is None and r["off"] is None and r["pane"] is None
+    assert (r["group"], r["bare"]) == ("Home", "Events")
+    assert r.get("root") is None and r.get("note") is None and r.get("none") is None  # undefined drops from JSON
+
+
+def test_the_category_target_is_wired_to_click_double_click_menu_hold_and_keys():
+    assert "gcCat.select(band.category, s, event.shiftKey)" in CANVAS
+    assert "gcCat.frame(band, s)" in CANVAS
+    assert CANVAS.count("gcCat.menu(category,") == 2  # right-click and the hold
+    assert "categoryMenuItems(meta)" in CANVAS[CANVAS.index("const gcCat = ") :][:3000]  # the app's own rows
+    assert "gcCat.select(node.category" in _function(CANVAS, "gcClickNode")  # Tree and Radial
+    assert "s.kbCat" in _function(CANVAS, "gcDrawTreemap")
+    assert 'event.key === "c"' in GRAPH and "gcCat.select(category, gcTab" in GRAPH
+    css = (ROOT / "frontend" / "css" / "graph-lazy.css").read_text(encoding="utf-8")
+    assert "#graph-canvas.graph-cat-hover" in css
+
+
+def test_the_guide_has_a_graph_categories_topic():
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = next(t["body"] for t in HELP_TOPICS if t["id"] == "graph-categories")
+    assert len(body) < 1900 and "Shift" in body and "Esc" in body
+
