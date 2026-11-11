@@ -44,6 +44,12 @@ CERT_CHANGED = "The other computer's certificate is not the one paired; nothing 
 TIMEOUT = 30.0
 
 
+def confirm_sentence(fingerprint_text: str) -> str:
+    """The first press's answer: the certificate to compare before any password leaves this computer."""
+    return (f"Check that the other computer's certificate is {fingerprint_text}, as Settings, Account & security, "
+            "Other devices shows it there, then press Pair again.")
+
+
 #: The last PairError sentence, per thread: what the route shows, never text read off the exception
 #: (CodeQL, information exposure through an exception; the ai/skills.py pattern).
 _LAST_PROBLEM = threading.local()
@@ -142,13 +148,18 @@ def pair(data_dir: Path, address: str, password: str) -> dict:
     before = sync_state.link(data_dir)
     same_place = before.get("host") == host and before.get("port") == port
     cookie = before.get("cookie") if same_place and before.get("cookie") else secrets.token_urlsafe(32)
-    authority = before["authority"] if same_place and before.get("authority") else _authority(host, port)
+    known = bool(same_place and before.get("authority"))
+    authority = before["authority"] if known else _authority(host, port)
     # The cookie and authority are kept before the sign-in, so a press after Allow
     # is the same device to the other computer and checks the same certificate.
     # A new address starts a new pairing; a wrong password for the same one keeps the old pass.
     fresh = {} if same_place else {"peer": "", "sync_pass": ""}
     sync_state.save_link(data_dir, host=host, port=port, cookie=cookie, authority=authority,
                          fingerprint=fingerprint(authority), **fresh)
+    if not known:
+        # Trust on first use, made a choice: a new certificate is shown, not used, so the password goes
+        # only to the computer the person checked (someone else on the network could answer the first call).
+        raise PairError(confirm_sentence(fingerprint(authority)))
     wire = _Wire(host, port, authority)
     try:
         token = _sign_in(wire, password, cookie)

@@ -125,11 +125,18 @@ def _texts(server: Server) -> list[str]:
 
 def test_two_computers_pair_over_https_and_sync_a_note_both_ways(two_computers):
     a, b = two_computers
-    # A wrong password is a plain sentence and leaves nothing paired.
+    # The first press only names the certificate to check (test_the_first_press_sends_no_password below).
+    status, first = a.call("POST", "/sync/pair", {"address": f"127.0.0.1:{b.port}", "password": "not it"})
+    b_print = lancert.read(b.data).authority_fingerprint
+    assert status == 200 and first["error"] == sync_link.confirm_sentence(b_print) and first["paired"] is False
+    # A wrong password, on the second press, is a plain sentence and leaves nothing paired.
     status, wrong = a.call("POST", "/sync/pair", {"address": f"127.0.0.1:{b.port}", "password": "not it"})
     assert status == 200 and wrong["error"] == sync_link.WRONG_PASSWORD and wrong["paired"] is False
 
     for here, there in ((a, b), (b, a)):
+        if here is b:  # b has not checked a's certificate yet
+            status, first = here.call("POST", "/sync/pair", {"address": f"127.0.0.1:{there.port}", "password": PASSWORDS[there.name]})
+            assert first["error"] == sync_link.confirm_sentence(lancert.read(there.data).authority_fingerprint)
         status, paired = here.call("POST", "/sync/pair", {"address": f"127.0.0.1:{there.port}", "password": PASSWORDS[there.name]})
         assert status == 200 and paired["error"] == "" and paired["paired"] is True, paired
         assert paired["address"] == f"127.0.0.1:{there.port}"
@@ -341,3 +348,32 @@ def test_pairing_is_for_this_computer_only(notebook):
     paired = other.post("/sync/pair", json={"address": "192.168.0.9:8443", "password": "x"})
     unpaired = other.delete("/sync/pair")
     assert paired.status_code == 403 and unpaired.status_code == 403
+
+
+def test_the_first_press_sends_no_password_and_the_second_uses_the_checked_certificate(tmp_path, monkeypatch):
+    """Trust on first use, made a choice: someone else on the network could answer the first call, so the
+    certificate it gives is shown, kept and checked by the person before any password leaves this computer."""
+    there = tmp_path / "there"
+    there.mkdir()
+    lancert.ensure(there, ["127.0.0.1"])
+    authority = lancert.authority_pem(there).decode()
+    fetched, signed = [], []
+    monkeypatch.setattr(sync_link, "_authority", lambda host, port: fetched.append(host) or authority)
+
+    def sign_in(wire, password, cookie):
+        signed.append((wire.host, password))
+        raise sync_link.PairError(sync_link.WRONG_PASSWORD)
+
+    monkeypatch.setattr(sync_link, "_sign_in", sign_in)
+    here = tmp_path / "here"
+    here.mkdir()
+    with pytest.raises(sync_link.PairError):
+        sync_link.pair(here, "192.168.1.20:8443", "the password")
+    assert fetched == ["192.168.1.20"] and signed == []
+    assert sync_link.last_problem() == sync_link.confirm_sentence(sync_link.fingerprint(authority))
+    with pytest.raises(sync_link.PairError):
+        sync_link.pair(here, "192.168.1.20:8443", "the password")
+    assert fetched == ["192.168.1.20"] and signed == [("192.168.1.20", "the password")]  # the kept certificate
+    with pytest.raises(sync_link.PairError):
+        sync_link.pair(here, "192.168.1.21:8443", "the password")  # a new address is a new first press
+    assert fetched == ["192.168.1.20", "192.168.1.21"] and len(signed) == 1

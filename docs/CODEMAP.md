@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8222, frontend ids 2756, CSS sections 524, backend routes 695, backend modules 10688, test files 2633, tests 21501, plan headings 1013, app scripts 29, boot scripts 38, script files 290.
+Counts: frontend functions 8222, frontend ids 2756, CSS sections 524, backend routes 695, backend modules 10689, test files 2633, tests 21502, plan headings 1013, app scripts 29, boot scripts 38, script files 290.
 
 ## Frontend functions (8222)
 
@@ -7508,7 +7508,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `syncLine` | frontend/js/settings-rows.js:547 |
 | `syncNow` | frontend/js/settings-rows.js:580 |
 | `syncPair` | frontend/js/settings-rows.js:586 |
-| `syncUnpair` | frontend/js/settings-rows.js:599 |
+| `syncUnpair` | frontend/js/settings-rows.js:600 |
 | `wireSettingsFile` | frontend/js/settings-rows.js:533 |
 
 ### frontend/js/shared-intake.js (2)
@@ -13743,7 +13743,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10688)
+## Backend modules (10689)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -17620,8 +17620,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2542 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2694 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2543 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2695 |
 
 ### src/tessellate/ai/help_words.py (3)
 
@@ -26495,21 +26495,22 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `own_key_for_peer` | src/tessellate/entry/sync_keys.py:41 |
 | `wrap_peer_key` | src/tessellate/entry/sync_keys.py:29 |
 
-### src/tessellate/entry/sync_link.py (11)
+### src/tessellate/entry/sync_link.py (12)
 
 | Name | File:line |
 |---|---|
-| `LanLink` | src/tessellate/entry/sync_link.py:168 |
-| `PairError` | src/tessellate/entry/sync_link.py:52 |
-| `_Wire` | src/tessellate/entry/sync_link.py:82 |
-| `_authority` | src/tessellate/entry/sync_link.py:118 |
-| `_json` | src/tessellate/entry/sync_link.py:110 |
-| `_sign_in` | src/tessellate/entry/sync_link.py:129 |
-| `fingerprint` | src/tessellate/entry/sync_link.py:75 |
-| `last_problem` | src/tessellate/entry/sync_link.py:60 |
-| `load` | src/tessellate/entry/sync_link.py:203 |
-| `pair` | src/tessellate/entry/sync_link.py:139 |
-| `parse_address` | src/tessellate/entry/sync_link.py:65 |
+| `LanLink` | src/tessellate/entry/sync_link.py:179 |
+| `PairError` | src/tessellate/entry/sync_link.py:58 |
+| `_Wire` | src/tessellate/entry/sync_link.py:88 |
+| `_authority` | src/tessellate/entry/sync_link.py:124 |
+| `_json` | src/tessellate/entry/sync_link.py:116 |
+| `_sign_in` | src/tessellate/entry/sync_link.py:135 |
+| `confirm_sentence` | src/tessellate/entry/sync_link.py:47 |
+| `fingerprint` | src/tessellate/entry/sync_link.py:81 |
+| `last_problem` | src/tessellate/entry/sync_link.py:66 |
+| `load` | src/tessellate/entry/sync_link.py:214 |
+| `pair` | src/tessellate/entry/sync_link.py:145 |
+| `parse_address` | src/tessellate/entry/sync_link.py:71 |
 
 ### src/tessellate/entry/sync_pull.py (8)
 
@@ -27375,7 +27376,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21501)
+## Tests (21502)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29647,7 +29648,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_sweep_1004_log_scrub_speed.py | 2 |
 | tests/test_sweep_1004_private_entities.py | 1 |
 | tests/test_sync_extras.py | 9 |
-| tests/test_sync_lan.py | 7 |
+| tests/test_sync_lan.py | 8 |
 | tests/test_sync_segments.py | 11 |
 | tests/test_sync_settings_group.py | 4 |
 | tests/test_syntax_check.py | 18 |

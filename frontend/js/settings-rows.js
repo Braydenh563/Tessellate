@@ -592,7 +592,8 @@
       method: "POST",
       body: JSON.stringify({ address: $("sync-address").value, password: password.value }),
     }));
-    password.value = "";
+    //: The first press only shows the certificate to check; the password stays typed for the second.
+    if ($("sync-pair-row")?.classList.contains("hidden")) password.value = "";
     button.disabled = false;
   }
 
