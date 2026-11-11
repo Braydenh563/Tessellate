@@ -83,9 +83,10 @@ def _make(job: activity.Job, lines: list[str], title: str, derived: str, workspa
         state = "stopped"
     except Exception:  # noqa: BLE001  # a bad voice is a run that says so, never a dead thread
         logger.warning("studio overview failed", exc_info=True)
-        state, error = "failed", "Couldn't make that overview. Check the Natural voice package in Settings, Packages."
+        sentence = "Couldn't make that overview. Check the Natural voice package in Settings, Packages."
+        state, error = "failed", sentence
         if job.run is not None:
-            job.run.fail(error)
+            job.run.fail(sentence)
     finally:
         _set(job.id, state=state, error=error, recording_id=recording_id)
         activity.finish(job)
