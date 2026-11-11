@@ -307,7 +307,8 @@ def test_the_other_computer_waits_for_allow_and_remove_ends_its_pass(notebook, m
     held = other.post("/auth/unlock", json={"password": PASSWORD})
     assert held.status_code == 403 and held.json()["device_pending"] is True
     device = lantrust.device_hash(COOKIE)
-    assert notebook.post(f"/auth/lan-devices/{device}/allow").status_code == 200
+    allowed = notebook.post(f"/auth/lan-devices/{device}/allow")
+    assert allowed.status_code == 200
 
     signed_in = other.post("/auth/unlock", json={"password": PASSWORD}).json()["token"]
     issued = other.post("/sync/pass", json={"peer": "abcdefabcdef"}, headers={"X-Auth-Token": signed_in}).json()
@@ -319,7 +320,8 @@ def test_the_other_computer_waits_for_allow_and_remove_ends_its_pass(notebook, m
     forged = other.get("/sync/segment", params={"peer": "x"}, headers={"X-Sync-Pass": "a forged pass"})
     assert forged.status_code == 401
 
-    assert notebook.delete(f"/auth/lan-devices/{device}").status_code == 200
+    forgotten = notebook.delete(f"/auth/lan-devices/{device}")
+    assert forgotten.status_code == 200
     gone = other.get("/sync/segment", params={"since": 0, "peer": "abcdefabcdef"}, headers={"X-Sync-Pass": issued["pass"]})
     assert gone.status_code == 401
 
@@ -336,7 +338,8 @@ def test_with_asking_off_the_paired_computer_is_still_listed_so_remove_works(not
     lantrust.set_flag(data_dir, "ask_new_devices", False)
     other = _other_computer(notebook)
     signed_in = other.post("/auth/unlock", json={"password": PASSWORD}).json()["token"]
-    assert other.post("/sync/pass", json={"peer": "abcdefabcdef"}, headers={"X-Auth-Token": signed_in}).status_code == 200
+    issued = other.post("/sync/pass", json={"peer": "abcdefabcdef"}, headers={"X-Auth-Token": signed_in})
+    assert issued.status_code == 200
     [listed] = lantrust.devices(data_dir)
     assert listed["id"] == lantrust.device_hash(COOKIE) and listed["name"].startswith("Paired notebook")
 

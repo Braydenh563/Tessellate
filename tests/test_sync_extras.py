@@ -260,4 +260,5 @@ def test_the_routes_serve_a_manifest_items_and_a_file(client, app_state):
     sid = manifest["items"][0]["sid"]
     [item] = client.get("/sync/items", params={"kind": "document", "sid": sid, "peer": "abcdefabcdef"}).json()["items"]
     assert (item["title"], item["content"]) == ("Doc", "Body") and entry["id"]
-    assert client.get("/sync/file", params={"sid": "nothing:1", "peer": "abcdefabcdef"}).status_code == 404
+    missing = client.get("/sync/file", params={"sid": "nothing:1", "peer": "abcdefabcdef"})
+    assert missing.status_code == 404

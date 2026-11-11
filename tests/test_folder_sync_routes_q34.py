@@ -40,6 +40,7 @@ def test_one_sync_at_a_time_over_either_transport(client, tmp_path, monkeypatch)
     try:
         busy = client.post("/sync/folder", json={"folder": str(folder), "passphrase": "correct horse battery"})
         assert busy.status_code == 409 and busy.json()["detail"] == sync_pull.BUSY
-        assert client.post("/sync/now").json()["error"] == sync_pull.BUSY
+        now = client.post("/sync/now")
+        assert now.json()["error"] == sync_pull.BUSY
     finally:
         sync_pull.RUNNING.release()
