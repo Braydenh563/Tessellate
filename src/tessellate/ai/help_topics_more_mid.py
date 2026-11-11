@@ -589,7 +589,8 @@ MID_TOPICS.extend(
                 "image viewer", "lightbox", "view a picture", "zoom a picture",
                 "rotate a picture", "actual size", "filmstrip", "next picture",
                 "pinch to zoom", "swipe pictures", "download a picture",
-                "open in a new tab", "picture details",
+                "open in a new tab", "picture details", "copy an image", "copy image",
+                "copy a picture", "save a picture",
             ),
             "body": (
                 "A picture or file opens in the viewer. The bar at the top names "
@@ -605,7 +606,9 @@ MID_TOPICS.extend(
                 "filmstrip above it jumps to any of them. Scroll zooms where the "
                 "pointer is, drag moves a zoomed picture, double-click switches "
                 "between fit and actual size. Keys: Left and Right, plus and "
-                "minus, 0, 1, R, I, Escape. On a phone, swipe and pinch. The bars "
+                "minus, 0, 1, R, I, Ctrl+C (copy the picture), Escape. Right-click a picture here, "
+                "in the Library, in the chat or on a staged file (hold it on a phone) for Copy image and "
+                "Save image; if the browser will not copy a picture, its link is copied. On a phone, swipe and pinch. The bars "
                 "fade while the mouse rests on the picture and come back when it "
                 "moves; never for the keyboard or reduced motion."
             ),
