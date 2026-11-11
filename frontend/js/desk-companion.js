@@ -125,6 +125,7 @@
     if (state === "rest") return;
     let height = SIZES[state][1] - (overlay ? OVERLAY_TRIM : 0);
     if (overlay) height = panelHeight($(PANELS[state]), height, state);
+    else if (state === "menu" || state === "context") height = cardHeight(height, state);
     if (Math.abs(height - asked) <= 2) return;
     asked = height;
     ask("set_size", SIZES[state][0], height, state);
@@ -155,6 +156,17 @@
     return Math.min(wanted, kind === "search" ? Math.min(most, SEARCH_MOST) : most);
   }
   const SEARCH_MOST = 520;
+
+  //: The card window (macOS, and Windows when the see-through figure fails) holds the menu
+  //: above the companion, so its height is the menu's own plus the companion's box and the gap:
+  //: the fixed 312 and 268 left the six-row menu scrolling 95 px and the context 24 px (Q34
+  //: sweep, 2026-11-11). A locked menu (Open only) gets a shorter window the same way.
+  function cardHeight(fallback, kind) {
+    const pet = $("desk-pet").getBoundingClientRect().height;
+    const gap = parseFloat(getComputedStyle($("desk-pet").parentElement).rowGap) || 0;
+    if (!(pet > 0)) return fallback;
+    return Math.ceil(panelHeight($(PANELS[kind]), fallback - pet - gap, kind) + pet + gap);
+  }
 
   //: Why the figure stands still, for the right-click menu's one muted line.
   const STILL_WHY = {
