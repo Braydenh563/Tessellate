@@ -22,10 +22,16 @@ from tessellate.launcher_loading import (
 )
 
 #: Names other modules read from here; they live in `launcher_loading` now.
-from tessellate.launcher_loading import (  # noqa: F401
+from tessellate.launcher_loading import (
     _LOADING_HTML,
     _recolour_loading_page,
 )
+
+#: Re-exported: tests read them as `__main__._LOADING_HTML`.
+__all__ = [
+    "_LOADING_HTML",
+    "_recolour_loading_page",
+]
 
 # **A packaged build writes no bytecode into its own folder.** The bundle's
 # modules are precompiled, but Alembic runs `migrations/env.py` and every

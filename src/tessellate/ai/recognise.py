@@ -73,7 +73,7 @@ from tessellate.ai.recognise_windows import (
 )
 
 #: Names other modules read from here; they live in `recognise_windows` now.
-from tessellate.ai.recognise_windows import (  # noqa: F401
+from tessellate.ai.recognise_windows import (
     AHEAD_DAY_WORDS,
     LATELY_DAYS,
     MONTH_NAMES,
@@ -98,6 +98,33 @@ from tessellate.ai.recognise_windows import (  # noqa: F401
     without_ahead_words,
     without_windows,
 )
+
+#: Re-exported for callers that read these as `recognise.NAME`.
+__all__ = [
+    "AHEAD_DAY_WORDS",
+    "LATELY_DAYS",
+    "MONTH_NAMES",
+    "PHRASE_FILLER",
+    "SPAN_MINUTES",
+    "WEEKDAY_NAMES",
+    "WEEKDAY_WORD",
+    "a_topic_phrase",
+    "adverbial",
+    "ahead_window",
+    "configure_date_order",
+    "configure_hemisphere",
+    "count_of",
+    "hemisphere_of",
+    "looks_dated",
+    "mid_sentence",
+    "names_a_day",
+    "note_locale",
+    "proper_days",
+    "says_a_recent_day",
+    "window",
+    "without_ahead_words",
+    "without_windows",
+]
 
 # --- "in 20 minutes": an offset, not a wall-clock target (from reminder_parser) ----
 #

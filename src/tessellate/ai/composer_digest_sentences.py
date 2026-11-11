@@ -220,7 +220,7 @@ _TURN: ContextVar[int] = ContextVar("digest_turn", default=0)
 #: The question's own number (INBOX 870): picks among a phrase's wordings,
 #: so two questions in a row are not joined the same way.
 _SEED: ContextVar[int] = ContextVar("digest_seed", default=0)
-
+__all__ = ["_GAPS", "_ASKED_AS", "_REMINDABLE", "_DAYS_PLURAL", "_RELATIVE", "_PREFIX", "_TIME_LABEL", "_ACTION", "_STILL_TO", "_RATING", "_WORK", "_FEELING_ASK", "_CUES", "_STRONG_CUES", "_FRAME_WORDS", "_ASKING", "_VERBS", "_NAMES", "_ASKS_WORDS", "_SUBJECT_STEMS", "_KNOWN"]  # read by the digest halves that import them
 
 #: The gap leads already said in this answer, in order (reset per answer).
 _GAPS: ContextVar[tuple[str, ...]] = ContextVar("digest_gaps", default=())

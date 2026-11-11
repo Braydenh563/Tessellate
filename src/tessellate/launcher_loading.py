@@ -374,3 +374,9 @@ _STARTUP_PHASE_PERCENT = {
     "Warming up search…": 75,
     "Starting the server…": 92,
 }
+
+
+#: Read by `__main__` (imported there).
+__all__ = [
+    "_STARTUP_PHASE_PERCENT",
+]

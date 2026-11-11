@@ -39,7 +39,7 @@ from tessellate.ai.composer_digest_sentences import (
     _note_called, _pin, _second_person, _span, _spans, _stems, _title_capitals, _title_only,
     _titled_names, _unlinked, _vary, _verb_led, _your_note,
 )
-
+__all__ = ["_CJK_ENDS", "_CJK_STOP", "_LATEST_ASK", "_NAMES_A_THING", "_WHEN_NOW", "_WHEN_LAST", "_AM_DOING", "_LAST_ONE"]  # read by the digest halves that import them
 
 #: The note's own asides, dropped when its words are said back (the owner,
 #: 2026-10-11: "You just bought a new gaming mouse ... haha" is "you bought a
