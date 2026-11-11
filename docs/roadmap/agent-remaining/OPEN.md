@@ -178,12 +178,12 @@ Parked until the owner's data or a check on real hardware:
 
 **W16 Real-model check** (B, chat with a model, Sonnet; needs `scratchpad/llama-dev.sh serve`). Files: tests first, then fixes where they fall. Checks: `pytest -m evals`. Done when: each row reports a measured number or a fixed failure.
 - B68 Model-on parity: composer text as context, not the answer (decision 75) | 1107 D28, P1, fable-fix F6 W34: owner-call (tracked in the plans), w34-L1-1111.md.
-- B69 Evals gate: 8 of 8 loose ends, 80 % of skills with no invalid call on a 3B | CHAT#5 Phase 4 W34: hardware-only (3B model), w34-unv1-1111.md.
-- B70 SKILLS Phase D never ran on a model | t20#19 W34: hardware-only (3B model), w34-unv1-1111.md.
-- B71 Entity extraction and topic sentence on a local model | GRAPH#KG1-KG9 W34: hardware-only (model), w34-unv1-1111.md.
-- B72 BACKGROUND_MODE (think off) for utility jobs, measured | CHAT 1691, oa 1691 W34: hardware-only (needs a model with a think switch), w34-unv1-1111.md.
+- B69 Evals gate: 8 of 8 loose ends, 80 % of skills with no invalid call on a 3B | CHAT#5 Phase 4 W34: hardware-only (3B model), w34-unv1-1111.md. **Real model run 2026-11-11 (w34-unv1-1111.md): not measurable on this box.** Qwen2.5-3B Q4_K_M ran (llama-cpp-python 0.3.36 prebuilt wheel), but at load average 13 to 19 on 4 cores it decoded about 3 s a token, so one plain answer took 271 to 344 s; the 8 loose ends and the 80 % skills bar were not reached. No gate figure
+- B70 SKILLS Phase D never ran on a model | t20#19 W34: hardware-only (3B model), w34-unv1-1111.md. **Real model run 2026-11-11: not run** (same box limit as B69). No figure
+- B71 Entity extraction and topic sentence on a local model | GRAPH#KG1-KG9 W34: hardware-only (model), w34-unv1-1111.md. **Real model run 2026-11-11: not run** (same box limit as B69; no extraction was timed). No figure
+- B72 BACKGROUND_MODE (think off) for utility jobs, measured | CHAT 1691, oa 1691 W34: hardware-only (needs a model with a think switch), w34-unv1-1111.md. **Real model run 2026-11-11: not run** (no Qwen3-class model fetched; the box is too slow to time think-off). No figure
 - ~~B73 The probe cache (after Q11) | deskperf L4, audit-1108-perf P7~~ **Fixed 94cff43** (30 s up window, dropped on a failure and on seeing Ollama online; tests/test_ollama_probe_30s.py)
-- B74 Tool contracts on Ollama, model bench gates | WORLD_CLASS#8 rows 5, 6, 19, 21 W34: hardware-only (Ollama), w34-unv1-1111.md.
+- B74 Tool contracts on Ollama, model bench gates | WORLD_CLASS#8 rows 5, 6, 19, 21 W34: hardware-only (Ollama), w34-unv1-1111.md. **Real model run 2026-11-11: not run** (Ollama is not installed here and was not fetched). No figure
 
 ### Tier C: UX and accessibility on daily surfaces
 
