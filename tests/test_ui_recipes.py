@@ -7754,3 +7754,25 @@ def test_a_missing_optional_package_notice_has_one_builder() -> None:
     assert not stray, f"an optional-package notice built outside {own}: {stray}"
     assert "notice extra-notice hidden" in (ROOT / "frontend" / "js" / own).read_text(encoding="utf-8")
     assert "A notice for a missing optional package" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+
+
+# ---- The wrapzoom sweep (the owner, 2026-11-11: "make sure the wrapping and
+# ui issues arent an issue anywhere else from zoom or resolution"). Measured by
+# `scratchpad/ui-sweeps/wrapzoom-notes.js` across the zoom and resolution
+# matrix; each test pins the cause of one defect class on the Notes, Library,
+# Timeline and Reminders surfaces.
+
+
+def test_a_footer_row_of_worded_buttons_clips_its_words_rather_than_wrapping() -> None:
+    """The Writing room's Copy, Insert into a note and Save as note needed 476px
+    in a 472px column at 1280, so Insert went onto a second line. The row never
+    wraps; under 30rem of column the two ghosts keep their icon (`.toolbar-word`)."""
+    row = _sheet_rule("04-chat-dock-appearance.css", ".draft-actions-row")
+    assert "flex-wrap: nowrap" in row
+    assert "container: draft-column / inline-size" in _sheet_rule("04-chat-dock-appearance.css", ".draft-column")
+    css = (_SHEETS / "04-chat-dock-appearance.css").read_text(encoding="utf-8")
+    assert "@container draft-column (max-width: 30rem)" in css
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    row_html = html[html.index('class="row draft-controls draft-actions-row"') :]
+    row_html = row_html[: row_html.index('id="draft-save-split"')]
+    assert row_html.count('<span class="toolbar-word">') == 2
