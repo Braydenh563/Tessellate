@@ -192,7 +192,9 @@ function showSettingsSection(name) {
   //: open of Settings).
   if (typeof settingsIndexWatchSection === "function") settingsIndexWatchSection(name);
   //: The chosen pane's row keeps a row of room in the sidebar (INBOX 1696 e), after its "On this page" list is drawn.
-  nearestScrollParent.reveal(document.querySelector(`#settings-nav button[data-section="${name}"]`));
+  //: A frame on: the section was just switched, and this walk's style reads (`nearestScrollParent`) plus two
+  //: rects laid the window out inside the press (54ms style and 14 layout at 4x, INBOX 1111).
+  afterFrames(() => nearestScrollParent.reveal(document.querySelector(`#settings-nav button[data-section="${name}"]`)), 1);
   updatePeekAvailability(name);
   // The log stream is the only section that holds a connection open, so it is
   // the only one that has to be told it is no longer being looked at.
