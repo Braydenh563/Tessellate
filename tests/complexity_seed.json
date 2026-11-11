@@ -41,7 +41,6 @@
  "src/tessellate/ai/tools/whiteboard.py::_add_map_node": 19,
  "src/tessellate/api/app.py::RevalidatedStatic._precompressed": 21,
  "src/tessellate/api/asset_strip.py::_js_scan": 24,
- "src/tessellate/api/asset_strip.py::_rebuild": 17,
  "src/tessellate/api/routes_board_history.py::_board_events": 20,
  "src/tessellate/api/routes_board_history.py::_states_at": 21,
  "src/tessellate/api/routes_board_library.py::transform_path": 20,
