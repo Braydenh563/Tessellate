@@ -1242,6 +1242,12 @@ function renderDocList() {
           if (!next || next === doc.title) return;
           await renameDocumentWithUndo(doc, next).catch((e) => toast(e.message, true));
         }),
+        //: INBOX 904 B17: the model names it when one runs, else the document's
+        //: own words do; renamed through Rename's undoable path.
+        makeMenuItem("ph:sparkle Suggest a name", "A name from what the document says", async () => {
+          const got = await apiJson(`/documents/${doc.id}/suggest-title`, { method: "POST" }).catch((e) => toast(e.message, true));
+          if (got?.title && got.title !== doc.title) await renameDocumentWithUndo(doc, got.title).catch((e) => toast(e.message, true));
+        }),
         appLinkMenuItem("document", doc.id),
         // Not destructive, so not grouped with Delete below, same
         // "keep it, but out of the way" action the Notes tab already has
