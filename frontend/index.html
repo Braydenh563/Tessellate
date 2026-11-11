@@ -7158,6 +7158,8 @@ Link to another note with [[its first few words]]."></textarea>
                 </select>
               </div>
               <label class="wb-menu-row wb-snap-label" title="Snap items to the grid while dragging"><span><i class="ph ph-magnet ph-lead" aria-hidden="true"></i>Snap to grid</span><input type="checkbox" id="wb-snap-toggle"></label>
+              <label class="wb-menu-row wb-snap-label" title="Show the four arrows round a selected shape that copy it and join the copy"><span><i class="ph ph-arrows-out-cardinal ph-lead" aria-hidden="true"></i>Connection arrows</span><input type="checkbox" id="wb-view-grips" checked></label>
+              <label class="wb-menu-row wb-snap-label" title="Show the dots where a line can join a shape while you draw one; joining still snaps to them when hidden"><span><i class="ph ph-crosshair-simple ph-lead" aria-hidden="true"></i>Connection points</span><input type="checkbox" id="wb-view-ports" checked></label>
               <label class="wb-menu-row wb-snap-label" data-wb-surface="board" title="Draw the bottom corner of this board's sticky notes folded over; a note's Format panel can differ"><span><i class="ph ph-note ph-lead" aria-hidden="true"></i>Folded sticky corners</span><input type="checkbox" id="wb-sticky-fold" checked></label>
               <label class="wb-menu-row wb-snap-label" data-wb-surface="board" title="Draw this board's shapes and lines rough, as by hand; a shape's Format panel can differ"><span><i class="ph ph-scribble-loop ph-lead" aria-hidden="true"></i>Hand-drawn look</span><input type="checkbox" id="wb-rough-toggle"></label>
             </div>
@@ -8539,7 +8541,7 @@ Link to another note with [[its first few words]]."></textarea>
               <p><b>Replace picture</b>: swaps in another file; the place, size, crop and style stay, and Undo brings the old one back.</p>
               <p><b>Save to Library</b>: a picture on a board stays on the board, unlisted and unread; this files it in the Library, where it is searched and captioned. <b>Captions</b>, in the next row, draws a saved picture's caption under it, on every board and under the pictures in a note's popup in the Graph and its timeline view (the popup's menu has the same switch).</p>
               <p><b>Corner radii</b>: each corner's own rounding in pixels; all empty is the default.</p>
-              <p><b>Padding</b>: space between the box's edge and its words, in pixels.</p>
+              <p><b>Padding</b>: space between the box's edge and its words, or a frame's edge and what it holds when fitted, in pixels.</p>
             </div>
             <label class="wb-fmt-row" data-fmt="crop"><span class="wb-fmt-label">Crop to</span>
               <select id="wb-fmt-crop" aria-label="Crop the picture to a shape" title="Crop the picture to a shape; a square picture cropped to an ellipse is a circle">
@@ -8594,7 +8596,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <label class="wb-fmt-num"><span class="wb-fmt-label">BR</span><input type="number" id="wb-fmt-r2" min="0" max="200" step="1" placeholder="Auto" aria-label="Bottom right corner radius" title="Bottom right corner radius in pixels"></label>
               </span>
             </div>
-            <label class="wb-fmt-row" data-fmt="pad" data-unit="px"><span class="wb-fmt-label">Padding</span><input type="number" id="wb-fmt-pad" min="0" max="80" step="1" placeholder="Auto" aria-label="Padding between the edge and the text, in pixels" title="Space between the box's edge and its text, in pixels; empty is the default"></label>
+            <label class="wb-fmt-row" data-fmt="pad" data-unit="px"><span class="wb-fmt-label">Padding</span><input type="number" id="wb-fmt-pad" min="0" max="80" step="1" placeholder="Auto" aria-label="Padding, in pixels" title="Space between a box's edge and its text, or between a frame's edge and what it holds when you fit it, in pixels; empty is the default"></label>
           </div>
           <div class="wb-fmt-group" data-fmt-group="connector">
             <h4 class="wb-fmt-head"><i class="ph ph-flow-arrow" aria-hidden="true"></i><span>Connector</span><button type="button" class="icon-only ghost small graph-help-toggle" data-help-for="wb-fmt-help-connector" aria-controls="wb-fmt-help-connector" aria-expanded="false" title="About connector" aria-label="About connector"><i class="ph ph-question" aria-hidden="true"></i></button></h4>
@@ -8724,6 +8726,41 @@ Link to another note with [[its first few words]]."></textarea>
               </select>
             </label>
             <label class="wb-fmt-row" data-fmt="text" data-unit="%"><span class="wb-fmt-label">Text opacity</span><input type="number" id="wb-fmt-inkalpha" min="10" max="100" step="5" aria-label="Text opacity, in percent" title="How solid the words are; 100 is solid"></label>
+          </div>
+          <div class="wb-fmt-group" data-fmt-group="shapelabel">
+            <h4 class="wb-fmt-head"><i class="ph ph-selection-background" aria-hidden="true"></i><span>Label</span><button type="button" class="icon-only ghost small graph-help-toggle" data-help-for="wb-fmt-help-shapelabel" aria-controls="wb-fmt-help-shapelabel" aria-expanded="false" title="About the label" aria-label="About the label"><i class="ph ph-question" aria-hidden="true"></i></button></h4>
+            <div class="help-body hidden" id="wb-fmt-help-shapelabel" role="dialog" aria-label="About the label">
+              <p><b>Background, Outline</b>: a box behind the words; the tick turns it on or off.</p>
+              <p><b>Position</b>: inside the shape, or above, below, left or right of it.</p>
+              <p><b>Width</b>: where the words wrap, in pixels; empty follows the shape.</p>
+              <p><b>Wrap words</b>: off keeps each line whole until you break it yourself.</p>
+              <p><b>Spacing</b>: pixels kept clear of the words at the top, right, bottom and left.</p>
+            </div>
+            <div class="wb-fmt-row" data-fmt="shapelabel"><span class="wb-fmt-label">Background</span>
+              <span class="wb-fmt-buttons"><label class="wb-snap-label" title="Background behind the words"><input type="checkbox" id="wb-fmt-lbg-on" aria-label="Background behind the words"></label><input type="color" id="wb-fmt-lbg" class="wb-color-picker" value="#fff3b0" data-seed="#fff3b0" aria-label="Label background colour" title="Label background colour"></span>
+            </div>
+            <div class="wb-fmt-row" data-fmt="shapelabel"><span class="wb-fmt-label">Outline</span>
+              <span class="wb-fmt-buttons"><label class="wb-snap-label" title="Outline around the words"><input type="checkbox" id="wb-fmt-lborder-on" aria-label="Outline around the words"></label><input type="color" id="wb-fmt-lborder" class="wb-color-picker" value="#8a8f98" data-seed="#8a8f98" aria-label="Label outline colour" title="Label outline colour"></span>
+            </div>
+            <label class="wb-fmt-row" data-fmt="shapelabel"><span class="wb-fmt-label">Position</span>
+              <select id="wb-fmt-lpos" aria-label="Where the words sit" title="Where the words sit, against the shape">
+                <option value="">Inside</option>
+                <option value="above">Above</option>
+                <option value="below">Below</option>
+                <option value="left">Left</option>
+                <option value="right">Right</option>
+              </select>
+            </label>
+            <label class="wb-fmt-row" data-fmt="shapelabel" data-unit="px"><span class="wb-fmt-label">Width</span><input type="number" id="wb-fmt-lwidth" min="24" max="2000" step="4" placeholder="Auto" aria-label="Width the words wrap at, in pixels" title="Width the words wrap at, in pixels; empty follows the shape"></label>
+            <div class="wb-fmt-row" data-fmt="shapelabel"><span class="wb-fmt-label">Wrap words</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="Off keeps each line whole until you break it"><input type="checkbox" id="wb-fmt-lwrap" checked aria-label="Wrap words"></label></span></div>
+            <div class="wb-fmt-row" data-fmt="shapelabel" role="group" aria-label="Spacing around the words"><span class="wb-fmt-label">Spacing</span>
+              <span class="wb-fmt-quad">
+                <label class="wb-fmt-num"><span class="wb-fmt-label">T</span><input type="number" id="wb-fmt-lpad0" min="0" max="80" step="1" placeholder="0" aria-label="Spacing at the top of the words, in pixels" title="Pixels kept clear at the top"></label>
+                <label class="wb-fmt-num"><span class="wb-fmt-label">R</span><input type="number" id="wb-fmt-lpad1" min="0" max="80" step="1" placeholder="0" aria-label="Spacing at the right of the words, in pixels" title="Pixels kept clear at the right"></label>
+                <label class="wb-fmt-num"><span class="wb-fmt-label">B</span><input type="number" id="wb-fmt-lpad2" min="0" max="80" step="1" placeholder="0" aria-label="Spacing at the bottom of the words, in pixels" title="Pixels kept clear at the bottom"></label>
+                <label class="wb-fmt-num"><span class="wb-fmt-label">L</span><input type="number" id="wb-fmt-lpad3" min="0" max="80" step="1" placeholder="0" aria-label="Spacing at the left of the words, in pixels" title="Pixels kept clear at the left"></label>
+              </span>
+            </div>
           </div>
         </section>
         <section class="wb-fmt-section" data-format-panel="arrange" aria-label="Arrange" hidden>

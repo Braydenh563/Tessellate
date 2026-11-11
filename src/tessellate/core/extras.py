@@ -2021,9 +2021,8 @@ def _release_captions_helper(extra: Extra) -> None:
         # statement here is a cycle (tests/test_no_import_cycles.py).
         importlib.import_module("tessellate.ai.captions_process").stop()
     elif extra.id in VOICE_IDS:
-        # importlib for the same reason: ai.natural_voice reads this module.
-        # It holds the voice file open (Windows cannot replace it).
-        importlib.import_module("tessellate.ai.natural_voice").release()
+        # The same reason: ai.natural_voice reads this module's paths.
+        importlib.import_module("tessellate.ai.natural_voice").release()  # it holds the voice file open (Windows cannot replace it)
 
 
 def _install_refusal(extra: Extra, reinstall: bool) -> str:

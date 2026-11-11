@@ -2109,7 +2109,7 @@ summary > .ph-lead,
   gap: var(--space-2);
   flex-wrap: nowrap;
   padding-top: var(--space-4);
-  border-top: 1px solid var(--border-light);
+  border-top: 1px solid var(--glass-border);
 }
 .atlas-composer > #help-chat-input {
   flex: 1 1 auto;
@@ -2199,7 +2199,7 @@ summary > .ph-lead,
 .help-atlas {
   margin: var(--space-2) 0 0;
   padding-top: var(--space-2);
-  border-top: 1px solid var(--border-light);
+  border-top: 1px solid var(--glass-border);
   font-size: var(--text-sm);
 }
 /* In a centred empty state the rule has no paragraph edge to run along: it
@@ -6592,9 +6592,7 @@ body .chip.item-label,
   --atl-glow-c: color-mix(in oklab, var(--accent) 35%, #c3d8f8);
   --atl-ring-c: color-mix(in oklab, var(--accent) 25%, #c8d6ff);
   --atl-blush: #ff7d9c;
-  --atl-tongue: #ff94aa;
   --atl-heart-c: #ff4f7e;
-  --atl-tear-c: #a5dcff;
   --atl-gold: #ffd35c;
   --atl-gold-line: #9a6f00;
   --atl-amber: #f2a65a;
@@ -6627,7 +6625,6 @@ body .chip.item-label,
   --atl-belly: none;
   --atl-tip: none;
   --atl-aura-a: 0.2;
-  --atl-shade-a: 0.4;
   --atl-k: 0;
   --atl-side: 1;
   /* The face at rest (calm). Every mood below overrides some of these. */
@@ -7203,7 +7200,7 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .nm-atlas .atl-st-dp { stop-color: var(--atl-dp); }
 .nm-atlas .atl-st-rim { stop-color: var(--atl-rim); }
 .nm-atlas .atl-st-clear { stop-color: var(--atl-rim); stop-opacity: 0; }
-.nm-atlas .atl-st-shade { stop-color: var(--atl-rim); stop-opacity: var(--atl-shade-a); }
+.nm-atlas .atl-st-shade { stop-color: var(--atl-rim); stop-opacity: 0.4; }
 .nm-atlas .atl-st-white { stop-color: white; stop-opacity: 1; }
 .nm-atlas .atl-st-white-mid { stop-color: white; stop-opacity: 0.55; }
 .nm-atlas .atl-st-white-0 { stop-color: white; stop-opacity: 0; }
@@ -7276,7 +7273,7 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .nm-atlas .atl-brow-straight { stroke-width: 1.5; opacity: 0.6; }
 .nm-atlas .atl-lashes { fill: none; stroke: var(--atl-line); stroke-width: 0.9; stroke-linecap: round; }
 .nm-atlas[data-atlas-look="feminine"] .atl-cheek { rx: 4.3px; ry: 2.6px; }
-.nm-atlas .atl-tongue { fill: var(--atl-tongue); }
+.nm-atlas .atl-tongue { fill: #ff94aa; }
 /* The ears, the wisps and the mane: an inner ear of galaxy inside a
    lighter rim, the nebula gathering toward the ends, each lock of the
    mane translucent with a lighter leading edge, a star at each tip. */
@@ -7441,7 +7438,7 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .nm-atlas .atl-z { stroke: var(--atl-line); stroke-width: 1.1; opacity: 0.85; }
 .nm-atlas .atl-mark-dot { fill: var(--ink); }
 .nm-atlas .atl-dot { fill: var(--atl-hi); stroke: var(--atl-line); stroke-width: 0.6; }
-.nm-atlas .atl-drop { fill: var(--atl-tear-c); stroke: var(--atl-line); stroke-width: 0.5; }
+.nm-atlas .atl-drop { fill: #a5dcff; stroke: var(--atl-line); stroke-width: 0.5; }
 /* The face, read from the mood's numbers. */
 .nm-atlas .atl-eye-l { --atl-side: 1; }
 .nm-atlas .atl-eye-r { --atl-side: -1; }

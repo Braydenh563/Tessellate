@@ -20,6 +20,8 @@ Object.assign(LAZY_MODULES, {
     //: The New board dialog and every template's picture (INBOX 715).
     "/js/whiteboard-templates.js",
     "/js/whiteboard-format.js",
+    "/js/whiteboard-label.js", //: After whiteboard-format.js: it joins that file's field lists and `wbFmtState`.
+    "/js/whiteboard-hints.js", //: The View switches for the arrow grips and the connection dots; needs only the page and `prefs`.
     "/js/whiteboard-interchange.js",
     "/js/whiteboard-history.js",
   ],

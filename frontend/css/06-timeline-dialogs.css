@@ -1019,7 +1019,7 @@
 }
 #settings-modal.peeking .modal-card {
   opacity: 1;
-  background: color-mix(in srgb, var(--panel) 14%, transparent);
+  background: color-mix(in srgb, var(--card) 14%, transparent);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -1032,7 +1032,7 @@
   opacity: 0.32;
 }
 .modal-overlay.peeking .modal-card > .dialog-head {
-  background: color-mix(in srgb, var(--panel) 88%, transparent);
+  background: color-mix(in srgb, var(--card) 88%, transparent);
   border-radius: var(--radius-md);
 }
 /* A saved look: its name applies it, the ✕ deletes it. One chip rather than a

@@ -915,7 +915,14 @@ def test_colour_literals_live_in_the_two_colour_files():
 #: 423 on Brief 57's base; the merge set it at the merged tree's count, 429:
 #: the calendar's six own sizes (timeline-calendar-lazy.css, decision 14) landed
 #: beside it, and inlining them would grow the literal-heights ratchet instead.
-TOKEN_BUDGET = 428
+#: 417 after the 1111 pass (OPEN F6): six single-use tokens inlined, five
+#: root-only names for other tokens merged into them. The floor under the
+#: decision's 200 is measured, not guessed: 170 tokens are named by a script
+#: (atlas.js writes 31 through templates), 81 more change with the theme or
+#: the element and are read twice or more, 251 already; the rest are recipe
+#: tokens a test pins, state a selector sets, or values a literal ratchet
+#: keeps out of the rules. A merge that lowers it lowers this too.
+TOKEN_BUDGET = 417
 
 
 def test_the_token_count_only_falls():
