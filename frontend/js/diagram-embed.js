@@ -119,6 +119,8 @@
     const title = `Diagram ${new Date().toISOString().slice(0, 16).replace("T", " ")} ${Math.random().toString(36).slice(2, 6)}`;
     const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title, content: `${text}\n`, file_type: "mmd" }) }).catch(() => (toast("Not saved. Try again.", "info"), null));
     if (!made) return;
+    //: The undo store is the Library's; the builder may have opened without it (INBOX 1722), so it comes in now, after the save.
+    await ensureModule("library");
     offerCreateUndo(made);
     diagramModel.madeKnown?.(made);
     const said = `Saved “${made.title || title}” to the Library.`;
@@ -232,7 +234,7 @@
   //: end freshTitle
   const documentName = async (typed) => {
     const base = cleanTitle(typed) || `Diagram ${new Date().toISOString().slice(0, 16).replace("T", " ")}`;
-    const all = await apiPagedList("/documents", 200).catch(() => (Array.isArray(docs) ? docs : []));
+    const all = await apiPagedList("/documents", 200).catch(() => (typeof docs !== "undefined" && Array.isArray(docs) ? docs : []));
     return freshTitle(base, new Set(all.map((d) => String(d.title || "").trim().toLowerCase())));
   };
 
