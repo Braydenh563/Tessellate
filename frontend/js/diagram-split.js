@@ -43,9 +43,23 @@
     col.after(handle);
     body.classList.add("dgm-split");
 
-    const room = () => body.getBoundingClientRect().width - handle.getBoundingClientRect().width;
+    //: **The widths are kept, not asked for** (INBOX 1766, the owner's lag log on a Documents page with a diagram open:
+    //: `diagram-split.js` forced layout; 20 drag moves were 239ms of it at 4x CPU). Every move wrote `--dgm-list` and the
+    //: next read of the body's and the handle's boxes laid the page out again. The three widths the handlers need are
+    //: measured when something outside them may have changed one (the wire, a press on the handle, a window resize, the
+    //: dialog's view, a reset: `tight`), and a drag move or an arrow key works from them and the column it just set.
+    const size = { body: 0, handle: 0, pane: 0 };
+    const measure = () => {
+      size.body = body.getBoundingClientRect().width;
+      size.handle = handle.getBoundingClientRect().width;
+      size.pane = S.pane.getBoundingClientRect().width;
+    };
+    measure();
+    const room = () => size.body - size.handle;
     const apply = (want, remember = true) => {
-      const px = math.clamp(want, body.getBoundingClientRect().width, handle.getBoundingClientRect().width);
+      const px = math.clamp(want, size.body, size.handle);
+      //: What the column will be: the next move or arrow key starts from it.
+      size.pane = px;
       body.style.setProperty("--dgm-list", `${px}px`);
       body.classList.toggle("dgm-tight", px < TIGHT);
       if (remember) {
@@ -74,7 +88,8 @@
     //: A list too narrow for the words on its rows says so with a class (CSS cannot ask a grid column its width).
     const tight = () => {
       if (!body.isConnected) return window.removeEventListener("resize", tight); // the pane was remounted
-      body.classList.toggle("dgm-tight", S.pane.getBoundingClientRect().width < TIGHT);
+      measure();
+      body.classList.toggle("dgm-tight", size.pane < TIGHT);
       handle.setAttribute("aria-valuemax", Math.max(MIN, Math.round(room() - KEEP)) || 640);
     };
     window.addEventListener("resize", tight);
@@ -91,7 +106,8 @@
     handle.addEventListener("pointerdown", (event) => {
       event.preventDefault();
       const startX = event.clientX;
-      const start = S.pane.getBoundingClientRect().width;
+      measure();
+      const start = size.pane;
       document.body.classList.add("resizing-sidebar");
       const move = (e) => apply(start + (e.clientX - startX));
       const stop = () => {
@@ -104,7 +120,7 @@
     });
     handle.addEventListener("keydown", (event) => {
       const step = event.shiftKey ? BIG : STEP;
-      const now = S.pane.getBoundingClientRect().width;
+      const now = size.pane;
       if (event.key === "ArrowLeft") apply(now - step);
       else if (event.key === "ArrowRight") apply(now + step);
       else if (event.key === "Home") {
@@ -183,13 +199,21 @@
     const right = toggle("right", false);
     stage.append(right);
     //: On the zoom dock's right edge (INBOX 1738). The picture's own scrollbar only matters where the picture starts above the button's bottom (the shelf folded): there the offset is the bar's width, if that is more.
-    const clear = () => {
+    //: **Read first, write once, in the task after a drawn frame** (INBOX 1766, the owner's lag log: forced layout in
+    //: `diagram-split.js`). It ran in every picture draw (a keystroke in a block's name) and began with a write, so its
+    //: four reads each laid out a page the draw had just changed. The reads come before the one write now, and the
+    //: draw and the zoom only ask for them (`clear`): a button's offset from a scrollbar is a frame late, not a layout.
+    let clearing = 0;
+    const clearNow = () => {
+      clearing = 0;
       const dock = stage.querySelector(".dgm-zoom");
       const base = (dock && Number.parseFloat(getComputedStyle(dock).insetInlineEnd)) || 0;
-      right.style.insetInlineEnd = "";
       const under = S.fig.getBoundingClientRect().top < right.getBoundingClientRect().bottom;
       const bar = under ? Math.max(0, S.fig.offsetWidth - S.fig.clientWidth - S.fig.clientLeft) : 0;
-      if (base && bar + 4 > base) right.style.insetInlineEnd = `${bar + 4}px`;
+      right.style.insetInlineEnd = base && bar + 4 > base ? `${bar + 4}px` : "";
+    };
+    const clear = () => {
+      if (!clearing) clearing = 1, afterFrames(() => setTimeout(clearNow), 1);
     };
     (S.fig.onzoom ||= []).push(clear);
     (S.fig.onpaint ||= []).push(clear);
