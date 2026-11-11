@@ -323,6 +323,10 @@ def _safe_href(href: str, base: str) -> str:
 _CONTAINERS = {"ul", "ol", "table", "tr", "div", "section", "article", "main", "figure", "dl", "tbody", "thead", "html", "body"}
 
 
+#: The inline tags that wrap their text in a markdown mark.
+_INLINE_MARKS = {"strong": "**", "b": "**", "em": "*", "i": "*", "code": "`"}
+
+
 class _Markdown:
     def __init__(self, base: str):
         self.base = base
@@ -333,25 +337,24 @@ class _Markdown:
             return re.sub(r"\s+", " ", node)
         inner = "".join(self.inline(child) for child in node.children)
         tag = node.tag
-        if tag in ("strong", "b") and inner.strip():
-            return f"**{inner.strip()}**"
-        if tag in ("em", "i") and inner.strip():
-            return f"*{inner.strip()}*"
-        if tag == "code" and inner.strip():
-            return f"`{inner.strip()}`"
+        mark = _INLINE_MARKS.get(tag)
+        if mark and inner.strip():
+            return f"{mark}{inner.strip()}{mark}"
         if tag == "br":
             return "\n"
         if tag == "a":
-            href = _safe_href(node.attrs.get("href", ""), self.base)
-            label = inner.strip()
-            # A link to a place on the same page means nothing in a note.
-            same_page = "#" in href and href.split("#", 1)[0] == self.base.split("#", 1)[0]
-            if href and label and not same_page:
-                return f"[{label}]({href})"
-            return label
+            return self._link(node, inner.strip())
         if tag == "img":
             return ""
         return inner
+
+    def _link(self, node, label: str) -> str:
+        href = _safe_href(node.attrs.get("href", ""), self.base)
+        # A link to a place on the same page means nothing in a note.
+        same_page = "#" in href and href.split("#", 1)[0] == self.base.split("#", 1)[0]
+        if href and label and not same_page:
+            return f"[{label}]({href})"
+        return label
 
     def flush_inline(self, parts: list[str]) -> None:
         text = re.sub(r"[ \t]+", " ", "".join(parts)).strip()
