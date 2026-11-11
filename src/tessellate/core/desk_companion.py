@@ -960,6 +960,7 @@ class DeskCompanion:
         self._dispatch = dispatch or jobs.thread
         self.window: Any = None
         self.main_hidden = False
+        self._away_at: float | None = None  # when `main_hidden` last changed (`set_main_hidden`'s log line)
         self.closing = False
         self.size = REST_SIZE
         self.corner: tuple[int, int] | None = None
@@ -1884,7 +1885,18 @@ class DeskCompanion:
             rect = (*self.top_left(), *self.size)
             logger.info("desk companion: raised above the desktop at %s: %s", rect, raise_on_desktop(self.window, rect))
 
-    def set_main_hidden(self, hidden: bool) -> None:
+    def set_main_hidden(self, hidden: bool, source: str = "") -> None:
+        now = self._now()
+        if hidden != self.main_hidden:
+            #: Which event flipped it and how long it held (the owner's 2026-11-10 log: the figure shown and hidden four times in
+            #: 16 s, "due=True" then "due=False (window away=False)" every 3 to 4 s; a flip back within a second or two is a
+            #: window event that fires twice, a steady 3 to 4 s is something else that raises and lowers the window).
+            held = now - self._away_at if self._away_at is not None else None
+            logger.info(
+                "desk companion: the app window is %s (%s)%s", "away" if hidden else "back", source or "unnamed",
+                f", {held:.1f} s after the last change" if held is not None else "",
+            )
+            self._away_at = now
         self.main_hidden = hidden
         self._dispatch("desk-companion", self.sync)
 
@@ -2021,12 +2033,12 @@ def _follow(main_window: Any, companion: DeskCompanion) -> list[str]:
 
     def shown(*args: Any, **kwargs: Any) -> Any:
         result = show(*args, **kwargs)
-        companion.set_main_hidden(False)
+        companion.set_main_hidden(False, "show")
         return result
 
     def hidden(*args: Any, **kwargs: Any) -> Any:
         result = hide(*args, **kwargs)
-        companion.set_main_hidden(True)
+        companion.set_main_hidden(True, "hide")
         return result
 
     main_window.show, main_window.hide = shown, hidden
@@ -2040,8 +2052,8 @@ def _follow(main_window: Any, companion: DeskCompanion) -> list[str]:
         if event is None:
             continue
 
-        def follow(*_args: Any, _away: bool = away) -> None:
-            companion.set_main_hidden(_away)
+        def follow(*_args: Any, _away: bool = away, _name: str = name) -> None:
+            companion.set_main_hidden(_away, "event " + _name)
 
         try:
             event += follow
