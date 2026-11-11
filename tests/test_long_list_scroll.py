@@ -108,3 +108,16 @@ def test_the_strip_window_comes_from_an_observer_not_hit_tests():
     # The scroll listener only asks for the next page now.
     listener = source[source.index('$("timeline-scroll").addEventListener("scroll"') :][:400]
     assert "drawTimelineWindow" not in listener
+
+
+def test_the_library_first_chunk_is_a_screen_of_cards_and_the_pump_fills_the_rest():
+    # Audit 1029 X15: sixty cards were 3,300 nodes in one task (170 to 240ms
+    # at 4x CPU) when a 1440px window shows about a dozen. The frame pump
+    # carries on while the sentinel is within its margin, so the grid still
+    # fills before it is scrolled to.
+    source = read("library.js")
+    call = source[source.index("renderIncrementally(grid, items, (item, i) =>") :]
+    call = call[: call.index("});", call.rindex("initial:"))]
+    assert re.search(r"initial:\s*12\b", call)
+    assert re.search(r"budgetMs:\s*\d+", call)
+

@@ -880,6 +880,10 @@ function renderLibrary(options) {
       columns[i % columns.length].appendChild(card);
       return document.createDocumentFragment();
     }, {
+      //: The first chunk is one screen's cards, not sixty (audit 1029 X15): sixty cards were 3,300 nodes built in one
+      //: task (170 to 240ms at 4x CPU) when a 1440px window shows about a dozen; the frame pump below carries on
+      //: for as long as the sentinel is within 600px, so the grid still fills before it is scrolled to.
+      initial: 12,
       budgetMs: 6,
       afterChunk: () => {
         renderLibraryContextBars();
