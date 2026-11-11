@@ -2905,9 +2905,11 @@ async function wbMapFoldToLevel(level) {
 //: Open every folded branch. `open` counts the topics with a branch under
 //: them that are open (what a level-1 fold would change); `sync` enables the
 //: two twins only when they would change something. Properties, not globals.
-wbMapFoldToLevel.open = (index = wbMapIndex()) =>
-  index.nodes.filter((n) => !n.data?.collapsed && (index.childrenOf.get(n.id) || []).length).length;
-wbMapFoldToLevel.sync = () => {
+wbMapFoldToLevel.open = function foldOpen(index) {
+  const map = index || wbMapIndex();
+  return map.nodes.filter((n) => !n.data?.collapsed && (map.childrenOf.get(n.id) || []).length).length;
+};
+wbMapFoldToLevel.sync = function foldSync() {
   if (!wbIsMap()) return;
   const index = wbMapIndex();
   const open = wbMapFoldToLevel.open(index);
