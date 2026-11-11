@@ -80,6 +80,20 @@ def _excluded(text: str) -> set[str]:
     return set(keys)
 
 
+def _refuse_open_private_while_locked(source: str, notes: list) -> None:
+    """A Tessellate folder exported unlocked carries its private notes readable,
+    flagged `is_private`. Written while this notebook's private notes are locked
+    there is no key to seal them with, and they landed as ordinary notes, words
+    open and indexed (sm-1111 row 8). Refused before a note is made; sealed ones
+    (exported locked) are fine, they stay sealed."""
+    from tessellate.core import vault
+
+    if source != "memorymap" or vault.key() is not None:
+        return
+    if any(n.record.get("is_private") and not n.record.get("sealed") for n in notes):
+        raise HTTPException(status_code=409, detail="Some of these notes are private. Unlock private notes, then import again.")
+
+
 @router.post("/import/app", status_code=201)
 def import_app(
     files: list[UploadFile],
@@ -107,6 +121,7 @@ def import_app(
         return {"source": source, "label": label, "found": len(read.notes), "skipped": read.skipped[:50],
                 **app_import.preview(session, source, read.notes)}
     read.notes = [note for note in read.notes if note.key not in left_out]
+    _refuse_open_private_while_locked(source, read.notes)
     with jobruns.job_run("import", title=f"Importing from {label}", origin="you") as run, activity.track(
         "import", f"Importing from {label}", ledger=False
     ) as job:
