@@ -209,8 +209,18 @@ def test_no_second_password_form():
     #: cannot be its recipe either.
     pin = ('id="account-pin-new" type="password"', 'id="account-pin-confirm" type="password"')
     assert all(field in html for field in pin)
-    assert html.count('type="password"') == 10, (
-        "lock card, Change password's three, the sealed backup's two, the forgot card's two, the PIN's two"
+    #: And one more, named: the other computer's password in Settings, Sync
+    #: over the home network. It is a secret for a different machine, typed
+    #: once to pair and never stored, so the lock card (which checks this
+    #: account's password) cannot be its recipe.
+    assert 'id="sync-password" type="password"' in html
+    #: And one more, named: the sync passphrase on the folder sheet, kept in a
+    #: template here (sync-folder.js clones it) because no script may build a
+    #: password field. It seals the shared folder's files, not this account.
+    assert '<template id="sync-folder-passphrase">' in html
+    assert html.count('type="password"') == 12, (
+        "lock card, Change password's three, the sealed backup's two, the forgot card's two, the PIN's two, "
+        "the other computer's password when pairing, the folder sync passphrase"
     )
     for path in sorted(APP_JS.parent.glob("*.js")):
         source = path.read_text(encoding="utf-8")

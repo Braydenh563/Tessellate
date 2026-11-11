@@ -49,5 +49,8 @@ def test_the_studio_sheet_can_be_stopped_and_the_sync_sheet_never_keeps_the_pass
     studio = _js("studio.js")
     assert "/studio/runs/${id}/stop" in studio and "Nothing was kept." in studio
     sync = _js("sync-folder.js")
-    assert 'phrase.type = "password"' in sync and "localStorage" not in sync and "prefs.set" not in sync
+    #: The field is a password field declared in index.html (a script may not build one, test_lock_boundary.py).
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    assert '"sync-folder-passphrase"' in sync and '<template id="sync-folder-passphrase">' in html
+    assert "localStorage" not in sync and "prefs.set" not in sync
     assert "style." not in studio and "style." not in sync

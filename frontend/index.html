@@ -13887,6 +13887,11 @@ Link to another note with [[its first few words]]."></textarea>
             <!-- WORLD_CLASS_PLAN B6: sync between computers, two ways in and one apply
                  path (decision 14). Wired by settings-rows.js (lazy, with Settings);
                  the folder's sheet is sync-folder.js. -->
+            <!-- The folder sheet's passphrase field lives here, not in sync-folder.js:
+                 every password field is declared in this file (tests/test_lock_boundary.py). -->
+            <template id="sync-folder-passphrase">
+              <input type="password" autocomplete="off" placeholder="The same on every computer" aria-label="Sync passphrase">
+            </template>
             <div class="settings-group" id="sync-group">
               <div class="row help-head">
                 <h3>Sync between computers</h3>
