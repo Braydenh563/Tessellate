@@ -1366,7 +1366,7 @@ function initPhoneChatRow() {
   });
 }
 
-initPhoneChatRow();
+onSurface("chat", initPhoneChatRow);
 
 // --- a sheet, the phone's own dialog ------------------------------------------
 // DESIGN.md's recipe index, "A sheet". UI_MODERNISATION_PLAN.md Phase 11.
@@ -2200,6 +2200,7 @@ function initDockFolding() {
 initDockFolding();
 watchOverlays(); // page behind a dialog must not scroll
 initAutoGrow(); // capture + magic-add boxes follow their content
+onSurface("chat", initAutoGrow);
 // Used to reopen on whichever tab was last active, with only the very
 // first-ever visit defaulting to Dashboard. Changed on direct request: every
 // load should open on Dashboard, not just the first one, closing the app on
@@ -2366,5 +2367,5 @@ $("note-template-manage")?.addEventListener("click", () => {
 });
 
 // Chat tab (Wave C).
-$("chat-send").addEventListener("click", () => sendChatMessage());
+onSurface("chat", () => $("chat-send").addEventListener("click", () => sendChatMessage()));
 

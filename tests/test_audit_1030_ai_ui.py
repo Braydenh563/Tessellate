@@ -40,7 +40,7 @@ def test_the_edit_hint_names_the_shortcut_a22():
 def test_escape_closes_the_web_panel_and_the_model_panel_a23_a27():
     js = app_js_text()
     assert '$("web-panel").addEventListener("keydown"' in js
-    assert "toggleWebPanel(false);\n  $(\"web-search-toggle\").focus();" in js
+    assert "toggleWebPanel(false);\n    $(\"web-search-toggle\").focus();" in js
     assert 'panel._dismiss = dismiss;' in js
     assert "!chatDockMoreOpen()" in js
 

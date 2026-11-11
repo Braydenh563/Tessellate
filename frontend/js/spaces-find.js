@@ -693,13 +693,13 @@ watchForSelects();
 //: Clicking it does the one thing its name promises, and hands the pane back
 //: to the follow logic by landing at the bottom, the next `scroll` event sets
 //: `data-stuck` to "1" and the stream resumes carrying the view with it.
-$("chat-jump-latest")?.addEventListener("click", () => {
+onSurface("chat", () => $("chat-jump-latest")?.addEventListener("click", () => {
   const pane = $("chat-messages");
   if (!pane) return;
   pane.scrollTo({ top: pane.scrollHeight, behavior: reducedMotionWanted() ? "auto" : "smooth" });
   pane.dataset.stuck = "1";
   syncChatJumpLatest();
-});
+}));
 
 //: The panel-wide half of "mark as unread": one gesture that puts every row
 //: back to read, overrides included. See `forcedUnreadIds`.

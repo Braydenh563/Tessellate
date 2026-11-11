@@ -49,8 +49,8 @@ def test_every_part_an_answer_draws_under_it_is_a_chip_in_the_row() -> None:
 def test_the_row_is_watched_on_all_three_surfaces() -> None:
     for root in (
         'answerFootWatch($("ai-answer")?.parentElement);',
-        'answerFootWatch($("chat-messages"), ".msg.assistant");',
-        'answerFootWatch($("command-palette-results"), ".msg.assistant");',
+        'onSurface("chat", () => answerFootWatch($("chat-messages"), ".msg.assistant"));',
+        'onSurface("palette", () => answerFootWatch($("command-palette-results"), ".msg.assistant"));',
     ):
         assert root in KIT, root
 

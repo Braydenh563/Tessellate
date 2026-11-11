@@ -268,7 +268,7 @@
 
   //: Wired here, not in wiring.js: the reader opens only once this module is in
   //: (chat.js loads it first), so the button cannot be pressed before this runs.
-  $("web-reader-analyse").addEventListener("click", analyseWebPage);
+  onSurface("chat", () => $("web-reader-analyse").addEventListener("click", analyseWebPage));
 
   //: The reader's Save as note (moved from chat.js with the reader: its button
   //: is on screen only once `showWebReader` has drawn a page).

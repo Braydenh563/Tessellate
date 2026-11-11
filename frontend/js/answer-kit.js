@@ -3084,6 +3084,6 @@ function agentRunTool(run, node) {
   //: look, and the boot scripts' gzip budget carries no path for it.
   lazyScript("/css/answer-foot-lazy.css");
   answerFootWatch($("ai-answer")?.parentElement);
-  answerFootWatch($("chat-messages"), ".msg.assistant");
+  onSurface("chat", () => answerFootWatch($("chat-messages"), ".msg.assistant"));
   onSurface("palette", () => answerFootWatch($("command-palette-results"), ".msg.assistant"));
 })();

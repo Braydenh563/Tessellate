@@ -242,144 +242,146 @@ for (const [id, question, label] of [
 restoreDraftLocally();
 
 // --- note picker wiring ---
-$("attach-note").addEventListener("click", () => {
-  if (notePickerOpen()) closeNotePicker();
-  else openNotePicker();
-});
-$("note-picker-close").addEventListener("click", () => {
-  closeNotePicker();
-  $("attach-note").focus();
-});
-
-// --- image attachment wiring (vision-capable models) ---
-$("attach-image").addEventListener("click", () => $("chat-image-input").click());
-$("chat-image-input").addEventListener("change", async (e) => {
-  if (e.target.files.length) await attachChatFiles(e.target.files);
-  e.target.value = ""; // so choosing the same file twice still fires "change"
-});
-let notePickerSearchDebounceTimeout;
-$("note-picker-search").addEventListener("input", () => {
-  clearTimeout(notePickerSearchDebounceTimeout);
-  notePickerSearchDebounceTimeout = setTimeout(renderNotePickerList, 150);
-});
-for (const button of document.querySelectorAll("#note-picker-sources [data-picker-source]")) {
-  button.addEventListener("click", () => setNotePickerSource(button.dataset.pickerSource));
-}
-
-$("note-picker-done").addEventListener("click", () => {
-  closeNotePicker();
-  $("chat-input").focus();
-});
-$("note-picker-clear").addEventListener("click", () => {
-  //: Clear means clear. This emptied `attachedNoteIds` only, so pressing it
-  //: with three files and a map ticked left every one of them staged while the
-  //: count line under the button re-read "Nothing attached yet", the panel
-  //: contradicting itself in two places at once.
-  //:
-  //: Images too, now (INBOX 485: the count still read "1 image attached"
-  //: after Clear). A staged one holds a live object URL, revoked here exactly
-  //: as the send path revokes it, or its Blob leaks for the life of the tab.
-  for (const image of attachedImages) if (image.objectUrl) URL.revokeObjectURL(image.objectUrl);
-  attachedImages = [];
-  renderImageAttachments();
-  attachedNoteIds = [];
-  attachedDocuments = [];
-  attachedFiles = [];
-  attachedBoards = [];
-  renderAttachments();
-  renderDocumentAttachments();
-  renderFileAttachments();
-  renderBoardAttachments();
-  renderNotePickerList();
-});
-// Click-away and Escape close it, like every other popover in the app.
-document.addEventListener("click", (event) => {
-  if (!notePickerOpen()) return;
-  // `.action-menu` for the same reason the notifications panel needs it: a
-  // menu this panel owns is reparented to <body> while open, so a click on
-  // one of its options is not a descendant of the panel and would otherwise
-  // read as a click away. `.sheet-overlay` the same, on a phone
-  // (`openNotePicker`'s own sheet path, chat-attach.js): the panel moves
-  // out of `.note-picker` into the sheet's card, and the sheet already
-  // owns its own scrim-click and Escape dismissal, so this listener has
-  // nothing to add there and every click inside it, otherwise, closed the
-  // sheet the instant it was touched.
-  if (event.target.closest(".note-picker, .action-menu, .sheet-overlay")) return;
-  closeNotePicker();
-});
-$("note-picker-panel").addEventListener("keydown", (event) => {
-  if (event.key === "Escape") {
-    event.stopPropagation();
+onSurface("chat", () => {
+  $("attach-note").addEventListener("click", () => {
+    if (notePickerOpen()) closeNotePicker();
+    else openNotePicker();
+  });
+  $("note-picker-close").addEventListener("click", () => {
     closeNotePicker();
     $("attach-note").focus();
-    return;
-  }
-  notePickerKeydown(event);
-});
-
-// --- chat dock "more" disclosure wiring (§37C) ---
-$("chat-dock-more-btn").addEventListener("click", () => {
-  if (chatDockMoreOpen()) closeChatDockMore();
-  else openChatDockMore();
-});
-document.addEventListener("click", (event) => {
-  if (!chatDockMoreOpen()) return;
-  if (event.target.closest(".chat-dock-more, .action-menu, .select-menu, .sheet-overlay")) return;
-  closeChatDockMore();
-});
-document.addEventListener("keydown", (event) => {
-  if (event.key !== "Escape" || event.defaultPrevented || !chatDockMoreOpen()) return;
-  if (document.querySelector(".sheet-overlay:not(.hidden), .action-menu:not(.hidden)")) return;
-  closeChatDockMore();
-  $("chat-dock-more-btn").focus();
-});
-$("chat-stop").addEventListener("click", () => {
-  chatQueue.held = true;
-  chatController?.abort();
-});
-//: **Escape stops the answer being written** (CHAT_PLAN section 6, the
-//: consistency rules: "Enter sends, Shift+Enter newline, Ctrl+K palette,
-//: Escape stops streaming"). Only Ctrl+. did (the shortcut table's
-//: `stopAI`); Escape mid-answer did nothing, measured by `chataudit.js`,
-//: part `keys`. On the document, not the tab, so it is heard from the box
-//: (open mid-answer for the queue, INBOX 1321), the Stop button or the page.
-//: Only while the Chat tab is on screen and an answer is streaming, and not
-//: while anything is open on top: a dialog, the note picker, a menu, each of
-//: which takes its own Escape first (they stop the key or prevent it).
-//: And only the answer on screen: a turn keeps streaming into the chat it
-//: was asked in while the reader opens another (`releaseChatComposer` hides
-//: Stop and gives the box back), and an Escape in the new chat's box used
-//: to stop that answer unseen (the review, 2026-09-27). Stop is shown
-//: exactly while the chat on screen is being answered, so Escape asks it.
-document.addEventListener("keydown", (event) => {
-  if (event.key !== "Escape" || event.defaultPrevented || !chatController) return;
-  if ($("tab-chat").classList.contains("hidden")) return;
-  if ($("chat-stop").classList.contains("hidden")) return;
-  if (document.querySelector(".modal-overlay:not(.hidden), .sheet-overlay:not(.hidden)")) return;
-  event.preventDefault();
-  chatQueue.held = true;
-  chatController.abort();
-});
-$("chat-new").addEventListener("click", newChatConversation);
-$("chat-private-toggle").addEventListener("click", chatPrivateToggle);
-{
-  const sortSelect = $("chat-sidebar-sort");
-  sortSelect.value = prefs.get(CHAT_SIDEBAR_SORT_KEY, null) || "recent";
-  sortSelect.addEventListener("change", () => {
-    prefs.set(CHAT_SIDEBAR_SORT_KEY, sortSelect.value);
-    loadConversationList();
   });
-}
-//: E47: search the saved chats. A search field clears itself with its X (and Escape, where
-//: the browser does that) and says `input`, so one listener covers both.
-$("chat-sidebar-search").addEventListener("input", () => {
-  clearTimeout(loadConversationList.wait);
-  loadConversationList.wait = setTimeout(loadConversationList, 200);
-});
-$("persona-peek").addEventListener("click", togglePersonaPrompt);
-$("chat-tune-search").addEventListener("click", () => {
-  closeChatDockMore();
-  openSettingsModal("searchindex", "search-relevance-group");
+
+  // --- image attachment wiring (vision-capable models) ---
+  $("attach-image").addEventListener("click", () => $("chat-image-input").click());
+  $("chat-image-input").addEventListener("change", async (e) => {
+    if (e.target.files.length) await attachChatFiles(e.target.files);
+    e.target.value = ""; // so choosing the same file twice still fires "change"
+  });
+  let notePickerSearchDebounceTimeout;
+  $("note-picker-search").addEventListener("input", () => {
+    clearTimeout(notePickerSearchDebounceTimeout);
+    notePickerSearchDebounceTimeout = setTimeout(renderNotePickerList, 150);
+  });
+  for (const button of document.querySelectorAll("#note-picker-sources [data-picker-source]")) {
+    button.addEventListener("click", () => setNotePickerSource(button.dataset.pickerSource));
+  }
+
+  $("note-picker-done").addEventListener("click", () => {
+    closeNotePicker();
+    $("chat-input").focus();
+  });
+  $("note-picker-clear").addEventListener("click", () => {
+    //: Clear means clear. This emptied `attachedNoteIds` only, so pressing it
+    //: with three files and a map ticked left every one of them staged while the
+    //: count line under the button re-read "Nothing attached yet", the panel
+    //: contradicting itself in two places at once.
+    //:
+    //: Images too, now (INBOX 485: the count still read "1 image attached"
+    //: after Clear). A staged one holds a live object URL, revoked here exactly
+    //: as the send path revokes it, or its Blob leaks for the life of the tab.
+    for (const image of attachedImages) if (image.objectUrl) URL.revokeObjectURL(image.objectUrl);
+    attachedImages = [];
+    renderImageAttachments();
+    attachedNoteIds = [];
+    attachedDocuments = [];
+    attachedFiles = [];
+    attachedBoards = [];
+    renderAttachments();
+    renderDocumentAttachments();
+    renderFileAttachments();
+    renderBoardAttachments();
+    renderNotePickerList();
+  });
+  // Click-away and Escape close it, like every other popover in the app.
+  document.addEventListener("click", (event) => {
+    if (!notePickerOpen()) return;
+    // `.action-menu` for the same reason the notifications panel needs it: a
+    // menu this panel owns is reparented to <body> while open, so a click on
+    // one of its options is not a descendant of the panel and would otherwise
+    // read as a click away. `.sheet-overlay` the same, on a phone
+    // (`openNotePicker`'s own sheet path, chat-attach.js): the panel moves
+    // out of `.note-picker` into the sheet's card, and the sheet already
+    // owns its own scrim-click and Escape dismissal, so this listener has
+    // nothing to add there and every click inside it, otherwise, closed the
+    // sheet the instant it was touched.
+    if (event.target.closest(".note-picker, .action-menu, .sheet-overlay")) return;
+    closeNotePicker();
+  });
+  $("note-picker-panel").addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      event.stopPropagation();
+      closeNotePicker();
+      $("attach-note").focus();
+      return;
+    }
+    notePickerKeydown(event);
+  });
+
+  // --- chat dock "more" disclosure wiring (§37C) ---
+  $("chat-dock-more-btn").addEventListener("click", () => {
+    if (chatDockMoreOpen()) closeChatDockMore();
+    else openChatDockMore();
+  });
+  document.addEventListener("click", (event) => {
+    if (!chatDockMoreOpen()) return;
+    if (event.target.closest(".chat-dock-more, .action-menu, .select-menu, .sheet-overlay")) return;
+    closeChatDockMore();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || event.defaultPrevented || !chatDockMoreOpen()) return;
+    if (document.querySelector(".sheet-overlay:not(.hidden), .action-menu:not(.hidden)")) return;
+    closeChatDockMore();
+    $("chat-dock-more-btn").focus();
+  });
+  $("chat-stop").addEventListener("click", () => {
+    chatQueue.held = true;
+    chatController?.abort();
+  });
+  //: **Escape stops the answer being written** (CHAT_PLAN section 6, the
+  //: consistency rules: "Enter sends, Shift+Enter newline, Ctrl+K palette,
+  //: Escape stops streaming"). Only Ctrl+. did (the shortcut table's
+  //: `stopAI`); Escape mid-answer did nothing, measured by `chataudit.js`,
+  //: part `keys`. On the document, not the tab, so it is heard from the box
+  //: (open mid-answer for the queue, INBOX 1321), the Stop button or the page.
+  //: Only while the Chat tab is on screen and an answer is streaming, and not
+  //: while anything is open on top: a dialog, the note picker, a menu, each of
+  //: which takes its own Escape first (they stop the key or prevent it).
+  //: And only the answer on screen: a turn keeps streaming into the chat it
+  //: was asked in while the reader opens another (`releaseChatComposer` hides
+  //: Stop and gives the box back), and an Escape in the new chat's box used
+  //: to stop that answer unseen (the review, 2026-09-27). Stop is shown
+  //: exactly while the chat on screen is being answered, so Escape asks it.
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || event.defaultPrevented || !chatController) return;
+    if ($("tab-chat").classList.contains("hidden")) return;
+    if ($("chat-stop").classList.contains("hidden")) return;
+    if (document.querySelector(".modal-overlay:not(.hidden), .sheet-overlay:not(.hidden)")) return;
+    event.preventDefault();
+    chatQueue.held = true;
+    chatController.abort();
+  });
+  $("chat-new").addEventListener("click", newChatConversation);
+  $("chat-private-toggle").addEventListener("click", chatPrivateToggle);
+  {
+    const sortSelect = $("chat-sidebar-sort");
+    sortSelect.value = prefs.get(CHAT_SIDEBAR_SORT_KEY, null) || "recent";
+    sortSelect.addEventListener("change", () => {
+      prefs.set(CHAT_SIDEBAR_SORT_KEY, sortSelect.value);
+      loadConversationList();
+    });
+  }
+  //: E47: search the saved chats. A search field clears itself with its X (and Escape, where
+  //: the browser does that) and says `input`, so one listener covers both.
+  $("chat-sidebar-search").addEventListener("input", () => {
+    clearTimeout(loadConversationList.wait);
+    loadConversationList.wait = setTimeout(loadConversationList, 200);
+  });
+  $("persona-peek").addEventListener("click", togglePersonaPrompt);
+  $("chat-tune-search").addEventListener("click", () => {
+    closeChatDockMore();
+    openSettingsModal("searchindex", "search-relevance-group");
+  });
 });
 // Searching your chats lives in the Library now (§36F): with the documents,
 // the files and the bin, and with sort beside it. This is the way there, said
@@ -645,40 +647,42 @@ window.addEventListener("tabSwitched", () => {
   if (!$("global-find-bar").classList.contains("hidden")) closeGlobalFind();
 });
 
-$("conv-browse-all").addEventListener("click", async () => {
-  //: Awaited: `libraryKind` is a `let` in library.js and the two renders are
-  //: its functions, so all three need that file present (A1). Without the
-  //: await the assignment would create a stray global that library.js then
-  //: shadows, and the Library would open unfiltered.
-  await switchTab("library");
-  libraryKind = "chat";
-  renderLibraryFilters();
-  renderLibrary();
-});
+onSurface("chat", () => {
+  $("conv-browse-all").addEventListener("click", async () => {
+    //: Awaited: `libraryKind` is a `let` in library.js and the two renders are
+    //: its functions, so all three need that file present (A1). Without the
+    //: await the assignment would create a stray global that library.js then
+    //: shadows, and the Library would open unfiltered.
+    await switchTab("library");
+    libraryKind = "chat";
+    renderLibraryFilters();
+    renderLibrary();
+  });
 
-//: **Fork: keep this thread, try another direction.** Asked for directly.
-//: The server copies (`POST /conversations/{id}/fork`) rather than branching: 
-//: see that route's docstring for why a tree with shared ancestry is the
-//: wrong size of machinery for one JSON blob per chat.
-//:
-//: Only meaningful once something has been said, so the button hides itself
-//: on an empty pane rather than offering to duplicate nothing.
-$("chat-fork").addEventListener("click", async () => {
-  if (!chatConv || chatConv.id === null) {
-    toast("Nothing to fork yet, ask something first.");
-    return;
-  }
-  try {
-    const fork = await apiJson(`/conversations/${chatConv.id}/fork`, {
-      method: "POST",
-      body: JSON.stringify({}),
-    });
-    await loadConversationList();
-    chatWriteRecord("chatForkUndo", fork);
-    toastAction(`Forked to “${fork.title}”.`, "Open it", () => openConversation(fork.id), { go: { open: "conversation", id: fork.id } });
-  } catch (error) {
-    toast(error.message || "Couldn't fork this conversation.", true);
-  }
+  //: **Fork: keep this thread, try another direction.** Asked for directly.
+  //: The server copies (`POST /conversations/{id}/fork`) rather than branching: 
+  //: see that route's docstring for why a tree with shared ancestry is the
+  //: wrong size of machinery for one JSON blob per chat.
+  //:
+  //: Only meaningful once something has been said, so the button hides itself
+  //: on an empty pane rather than offering to duplicate nothing.
+  $("chat-fork").addEventListener("click", async () => {
+    if (!chatConv || chatConv.id === null) {
+      toast("Nothing to fork yet, ask something first.");
+      return;
+    }
+    try {
+      const fork = await apiJson(`/conversations/${chatConv.id}/fork`, {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
+      await loadConversationList();
+      chatWriteRecord("chatForkUndo", fork);
+      toastAction(`Forked to “${fork.title}”.`, "Open it", () => openConversation(fork.id), { go: { open: "conversation", id: fork.id } });
+    } catch (error) {
+      toast(error.message || "Couldn't fork this conversation.", true);
+    }
+  });
 });
 
 //: Renaming, where the name is. It used to mean leaving the tab and finding
@@ -726,43 +730,47 @@ async function renameCurrentConversation() {
 
 //: Built once, at boot, the header's ⋯ is the same for every conversation,
 //: unlike a note card's, which is rebuilt per row.
-mountChatActionsMenu();
+onSurface("chat", () => {
+  mountChatActionsMenu();
 
-//: The context pill's popover is wired in usage-ledger.js, with its rows.
+  //: The context pill's popover is wired in usage-ledger.js, with its rows.
 
-$("chat-title").addEventListener("click", renameCurrentConversation);
-$("chat-title").addEventListener("keydown", (event) => {
-  //: Space and Enter, because this is a focusable `<h2>` and the browser
-  //: only gives those two keys to a real `<button>` for free.
-  if (event.key === "Enter" || event.key === " ") {
-    event.preventDefault();
-    renameCurrentConversation();
-  }
-});
-$("chat-compress").addEventListener("click", compressChatContext);
-$("chat-compress-apply").addEventListener("click", applyCompression);
-$("chat-compress-cancel").addEventListener("click", () =>
-  $("chat-compress-panel").classList.add("hidden")
-);
-$("chat-uncompress").addEventListener("click", () => {
-  // Undo is one assignment, because nothing was ever removed, the turns have
-  // been sitting there all along.
-  chatSummary = null;
-  renderCompressionState();
-  toast("Back to sending the real messages.");
+  $("chat-title").addEventListener("click", renameCurrentConversation);
+  $("chat-title").addEventListener("keydown", (event) => {
+    //: Space and Enter, because this is a focusable `<h2>` and the browser
+    //: only gives those two keys to a real `<button>` for free.
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      renameCurrentConversation();
+    }
+  });
+  $("chat-compress").addEventListener("click", compressChatContext);
+  $("chat-compress-apply").addEventListener("click", applyCompression);
+  $("chat-compress-cancel").addEventListener("click", () =>
+    $("chat-compress-panel").classList.add("hidden")
+  );
+  $("chat-uncompress").addEventListener("click", () => {
+    // Undo is one assignment, because nothing was ever removed, the turns have
+    // been sitting there all along.
+    chatSummary = null;
+    renderCompressionState();
+    toast("Back to sending the real messages.");
+  });
 });
 // Debounced, because the matcher walks every installed skill and this fires on
 // every keystroke. 250ms is under the pause between words, so the suggestion is
 // there by the time you stop typing to read it, and never mid-word.
 let chatNudgeTimer = null;
-$("chat-input").addEventListener("input", () => {
-  clearTimeout(chatNudgeTimer);
-  chatNudgeTimer = setTimeout(() => {
-    // Emptying the box by hand is the same event as sending, as far as the
-    // suggestions are concerned: the draft they were about is gone.
-    if (!$("chat-input").value.trim()) resetChatNudge();
-    else renderChatNudge();
-  }, 250);
+onSurface("chat", () => {
+  $("chat-input").addEventListener("input", () => {
+    clearTimeout(chatNudgeTimer);
+    chatNudgeTimer = setTimeout(() => {
+      // Emptying the box by hand is the same event as sending, as far as the
+      // suggestions are concerned: the draft they were about is gone.
+      if (!$("chat-input").value.trim()) resetChatNudge();
+      else renderChatNudge();
+    }, 250);
+  });
 });
 //: The composer's recall position: an index into the conversation's sent
 //: messages, or null when the box holds your own typing. `draft` is what was
@@ -795,43 +803,45 @@ function chatRecallStep(box, direction) {
   return true;
 }
 
-$("chat-input").addEventListener("keydown", (e) => {
-  // Enter sends, Shift+Enter (or Ctrl/Cmd+Enter) writes a newline. The box is
-  // a textarea now, so "send" has to be chosen rather than inherited.
-  if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
-    e.preventDefault();
-    sendChatMessage();
-    return;
-  }
-  //: **ArrowUp and ArrowDown step through what you sent**, the way a terminal
-  //: or a chat app's composer does (the owner, 2026-09-24: "the small things
-  //: every user expects", then "include down arrow as well to toggle between
-  //: previous inputs"). Up from an empty box (or from a recalled message you
-  //: have not changed) fills the box with the one before; Down walks back to
-  //: the newest, then to what you had typed. A box you have typed into keeps
-  //: its arrows for moving the caret.
-  if ((e.key === "ArrowUp" || e.key === "ArrowDown") && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) {
-    if (chatRecallStep(e.target, e.key === "ArrowUp" ? -1 : 1)) e.preventDefault();
-  }
-});
-$("persona-select").addEventListener("change", async () => {
-  // Remember the choice so the Notes quick-ask uses the same persona.
-  const persona = $("persona-select").value;
-  await apiJson("/preferences", {
-    method: "PUT",
-    body: JSON.stringify({ active_persona: persona }),
-  }).catch(() => {});
-  // Update the local cache too, not just the server, renderChatEmptyState()
-  // and the Notes quick-ask both read prefsCache.active_persona directly,
-  // and neither reloads preferences on its own after this change.
-  if (prefsCache) prefsCache.active_persona = persona;
-  // If a fresh, empty chat is on screen right now, its greeting named the
-  // *previous* persona: redraw it rather than leaving it stale until the
-  // next "+ New" (ROADMAP Tier 3 §21).
-  if ($("chat-messages").querySelector(".chat-empty")) {
-    $("chat-messages").querySelector(".chat-empty").remove();
-    renderChatEmptyState();
-  }
+onSurface("chat", () => {
+  $("chat-input").addEventListener("keydown", (e) => {
+    // Enter sends, Shift+Enter (or Ctrl/Cmd+Enter) writes a newline. The box is
+    // a textarea now, so "send" has to be chosen rather than inherited.
+    if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault();
+      sendChatMessage();
+      return;
+    }
+    //: **ArrowUp and ArrowDown step through what you sent**, the way a terminal
+    //: or a chat app's composer does (the owner, 2026-09-24: "the small things
+    //: every user expects", then "include down arrow as well to toggle between
+    //: previous inputs"). Up from an empty box (or from a recalled message you
+    //: have not changed) fills the box with the one before; Down walks back to
+    //: the newest, then to what you had typed. A box you have typed into keeps
+    //: its arrows for moving the caret.
+    if ((e.key === "ArrowUp" || e.key === "ArrowDown") && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) {
+      if (chatRecallStep(e.target, e.key === "ArrowUp" ? -1 : 1)) e.preventDefault();
+    }
+  });
+  $("persona-select").addEventListener("change", async () => {
+    // Remember the choice so the Notes quick-ask uses the same persona.
+    const persona = $("persona-select").value;
+    await apiJson("/preferences", {
+      method: "PUT",
+      body: JSON.stringify({ active_persona: persona }),
+    }).catch(() => {});
+    // Update the local cache too, not just the server, renderChatEmptyState()
+    // and the Notes quick-ask both read prefsCache.active_persona directly,
+    // and neither reloads preferences on its own after this change.
+    if (prefsCache) prefsCache.active_persona = persona;
+    // If a fresh, empty chat is on screen right now, its greeting named the
+    // *previous* persona: redraw it rather than leaving it stale until the
+    // next "+ New" (ROADMAP Tier 3 §21).
+    if ($("chat-messages").querySelector(".chat-empty")) {
+      $("chat-messages").querySelector(".chat-empty").remove();
+      renderChatEmptyState();
+    }
+  });
 });
 //: **Live or Source, never a separate Preview** (INBOX 430, the owner: "note
 //: forms use the live view with a source toggle, no Preview"). The note box
@@ -875,7 +885,7 @@ syncNoteSourceButtons();
 //: The persona the greeting speaks as: the override, or Chat's own when the
 //: override is "Same as Chat", or the assistant's name when Chat has none.
 function dashboardGreetingPersona() {
-  return (prefsCache && prefsCache.dashboard_persona) || $("persona-select")?.value || aiNameNow();
+  return (prefsCache && prefsCache.dashboard_persona) || document.getElementById("persona-select")?.value || personaDisplayName(prefsCache?.active_persona);
 }
 
 //: Its face beside the picker (the owner: "I want the persona avatar to
@@ -885,7 +895,7 @@ function paintDashboardPersonaMark() {
 }
 
 for (const id of RESPONSE_MODE_SELECTS) {
-  $(id)?.addEventListener("change", (e) => setResponseMode(e.target.value));
+  onSurface(id === "ask-mode-select" ? "notes" : "chat", () => $(id).addEventListener("change", (e) => setResponseMode(e.target.value)));
 }
 // The AI status dot. Hover is CSS; these are the paths hover doesn't cover: 
 // touch, where there is no hover at all, and keyboards.
@@ -1169,23 +1179,26 @@ $("batch-tag").addEventListener("click", batchTag);
 $("batch-delete").addEventListener("click", batchDelete);
 $("batch-cancel").addEventListener("click", exitSelectMode);
 
-$("tools-toggle").addEventListener("change", async () => {
-  // The pill reads from this checkbox, so anything else that flips it, a
-  // skill that needs tools, a restored preference, has to redraw the pair or
-  // the two disagree about which mode you are in.
-  renderChatModeSeg();
-  // Remember the choice so it survives restarts.
-  await apiJson("/preferences", {
-    method: "PUT",
-    body: JSON.stringify({ tools_enabled: $("tools-toggle").checked }),
-  }).catch(() => {});
+onSurface("chat", () => {
+  $("tools-toggle").addEventListener("change", async () => {
+    // The pill reads from this checkbox, so anything else that flips it, a
+    // skill that needs tools, a restored preference, has to redraw the pair or
+    // the two disagree about which mode you are in.
+    renderChatModeSeg();
+    // Remember the choice so it survives restarts.
+    await apiJson("/preferences", {
+      method: "PUT",
+      body: JSON.stringify({ tools_enabled: $("tools-toggle").checked }),
+    }).catch(() => {});
+  });
 });
 
 // In-chat web-search toggle: reflects and flips the web_search_enabled pref,
 // with a clear active state (it's the same setting as Settings, Web search).
 function renderWebSearchToggle() {
   const on = Boolean(prefsCache && prefsCache.web_search_enabled);
-  const button = $("web-search-toggle");
+  const button = document.getElementById("web-search-toggle");
+  if (!button) return;
   button.classList.toggle("active", on);
   button.setAttribute("aria-pressed", on ? "true" : "false");
   //: **Web stays pressable with no model, and says what it does then** (the
@@ -1241,26 +1254,28 @@ function renderPlanToggle() {
     : `Plan mode: plan the request first, ${aiNameNow()} draws the steps and shows them before it starts`;
 }
 
-$("chat-plan").addEventListener("click", async () => {
-  planModeOn = !planModeOn;
-  renderPlanToggle();
-  if (!planModeOn) {
-    toast("Plan mode off.");
-    return;
-  }
-  // A plan whose steps cannot be carried out is a list, so arming the mode
-  // arms what it needs. Announced rather than silent: a mode that changed
-  // under you and said so beats "why did nothing happen?".
-  if (!$("tools-toggle").checked) {
-    await setChatMode("agent");
-    toast("Plan mode on, and switched to Agent, a plan needs to be able to act.");
-  } else {
-    toast("Plan mode on: your next message gets planned first.");
-  }
-  $("chat-input").focus();
-});
+onSurface("chat", () => {
+  $("chat-plan").addEventListener("click", async () => {
+    planModeOn = !planModeOn;
+    renderPlanToggle();
+    if (!planModeOn) {
+      toast("Plan mode off.");
+      return;
+    }
+    // A plan whose steps cannot be carried out is a list, so arming the mode
+    // arms what it needs. Announced rather than silent: a mode that changed
+    // under you and said so beats "why did nothing happen?".
+    if (!$("tools-toggle").checked) {
+      await setChatMode("agent");
+      toast("Plan mode on, and switched to Agent, a plan needs to be able to act.");
+    } else {
+      toast("Plan mode on: your next message gets planned first.");
+    }
+    $("chat-input").focus();
+  });
 
-renderPlanToggle();
+  renderPlanToggle();
+});
 
 //: `openFirst` is the button's own click: with web on and the panel shut it opens the
 //: panel rather than turning web off. The palette and slash row pass nothing and always toggle.
@@ -1292,93 +1307,95 @@ async function toggleWebSearch({ openFirst = false } = {}) {
 }
 //: On with the panel shut, a click opens the panel rather than turning web off (the owner,
 //: 2026-10-26: it took off-then-on to see it). A click with the panel open turns web off.
-$("web-search-toggle").addEventListener("click", () => toggleWebSearch({ openFirst: true }));
-$("web-panel-close").addEventListener("click", () => toggleWebPanel(false));
-$("web-panel").addEventListener("keydown", (e) => {
-  if (e.key !== "Escape" || e.defaultPrevented) return;
-  toggleWebPanel(false);
-  $("web-search-toggle").focus();
-});
-//: Enter searches; there is no Search button to press. ArrowDown walks from
-//: the field into the results (and ArrowUp from the first result back to the
-//: field, below), which is how every search list the owner compares this to
-//: behaves. Skipped while an input method is composing, where Enter picks a
-//: candidate.
-$("web-query").addEventListener("keydown", (e) => {
-  if (e.isComposing) return;
-  if (e.key === "Enter") {
-    e.preventDefault();
-    runWebSearch();
-  } else if (e.key === "ArrowDown") {
-    const first = document.querySelector(
-      "#web-reader:not(.hidden) #web-reader-back, #web-results .web-result-title, #web-search-history:not(.hidden) .web-recent"
-    );
-    if (first) {
+onSurface("chat", () => {
+  $("web-search-toggle").addEventListener("click", () => toggleWebSearch({ openFirst: true }));
+  $("web-panel-close").addEventListener("click", () => toggleWebPanel(false));
+  $("web-panel").addEventListener("keydown", (e) => {
+    if (e.key !== "Escape" || e.defaultPrevented) return;
+    toggleWebPanel(false);
+    $("web-search-toggle").focus();
+  });
+  //: Enter searches; there is no Search button to press. ArrowDown walks from
+  //: the field into the results (and ArrowUp from the first result back to the
+  //: field, below), which is how every search list the owner compares this to
+  //: behaves. Skipped while an input method is composing, where Enter picks a
+  //: candidate.
+  $("web-query").addEventListener("keydown", (e) => {
+    if (e.isComposing) return;
+    if (e.key === "Enter") {
       e.preventDefault();
-      first.focus();
+      runWebSearch();
+    } else if (e.key === "ArrowDown") {
+      const first = document.querySelector(
+        "#web-reader:not(.hidden) #web-reader-back, #web-results .web-result-title, #web-search-history:not(.hidden) .web-recent"
+      );
+      if (first) {
+        e.preventDefault();
+        first.focus();
+      }
+    } else if (e.key === "Escape" && webRequest) {
+      e.preventDefault();
+      e.stopPropagation();
+      stopWebRequest();
     }
-  } else if (e.key === "Escape" && webRequest) {
+  });
+  $("web-query").addEventListener("input", renderWebSearchHistory);
+  $("web-stop").addEventListener("click", stopWebRequest);
+  $("web-results").addEventListener("keydown", (e) => {
+    if (e.key !== "ArrowUp" || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    const first = $("web-results").querySelector(".web-result-title");
+    if (e.target !== first) return;
+    e.preventDefault();
+    $("web-query").focus();
+  });
+  //: The recent rows walk with the arrows too; they are a short vertical list,
+  //: so this is the plain previous/next rather than ARROW_NAV_LISTS's geometry.
+  $("web-search-history").addEventListener("keydown", (e) => {
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+    const rows = [...$("web-search-history").querySelectorAll(".web-recent")];
+    const at = rows.indexOf(e.target);
+    if (at < 0) return;
+    e.preventDefault();
+    const next = rows[at + (e.key === "ArrowDown" ? 1 : -1)];
+    (next || (e.key === "ArrowUp" ? $("web-query") : rows[at])).focus();
+  });
+  $("web-reader-back").addEventListener("click", closeWebReader);
+  //: Escape inside the reader goes back to the results, as a browser's Back
+  //: would; the find bar has its own Escape and stops it first.
+  $("web-reader").addEventListener("keydown", (e) => {
+    if (e.key !== "Escape" || e.defaultPrevented) return;
     e.preventDefault();
     e.stopPropagation();
-    stopWebRequest();
-  }
+    closeWebReader();
+  });
+  $("web-reader-save").addEventListener("click", async () => {
+    await ensureModule("webClip");
+    saveWebPageAsNote();
+  });
+  //: Same act as the result row's own "Save as bookmark", from the other side
+  //: of the panel: you often only decide a page is worth keeping after reading
+  //: it, and until now that decision had nowhere to go from here.
+  $("web-reader-bookmark").addEventListener("click", async () => {
+    await ensureModule("webClip");
+    readerBookmark();
+  });
+  $("web-reader-ask").addEventListener("click", () => {
+    if (webReaderPage) askAboutPage(webReaderPage.url, webReaderPage.title);
+  });
+  $("web-reader-cite").addEventListener("click", () => {
+    if (webReaderPage) citeWebPage(webReaderPage);
+  });
+  $("web-reader-copy").addEventListener("click", async (e) => {
+    const button = e.currentTarget;
+    await ensureModule("webClip");
+    if (webReaderPage) copyWebLink(webReaderPage.url, button);
+  });
+  $("web-reader-open").addEventListener("click", async () => {
+    await ensureModule("webClip");
+    if (webReaderPage) openWebPageExternally(webReaderPage.url);
+  });
+  $("web-reader-find").addEventListener("click", () => openGlobalFind({ scope: "web-reader" }));
 });
-$("web-query").addEventListener("input", renderWebSearchHistory);
-$("web-stop").addEventListener("click", stopWebRequest);
-$("web-results").addEventListener("keydown", (e) => {
-  if (e.key !== "ArrowUp" || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
-  const first = $("web-results").querySelector(".web-result-title");
-  if (e.target !== first) return;
-  e.preventDefault();
-  $("web-query").focus();
-});
-//: The recent rows walk with the arrows too; they are a short vertical list,
-//: so this is the plain previous/next rather than ARROW_NAV_LISTS's geometry.
-$("web-search-history").addEventListener("keydown", (e) => {
-  if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
-  const rows = [...$("web-search-history").querySelectorAll(".web-recent")];
-  const at = rows.indexOf(e.target);
-  if (at < 0) return;
-  e.preventDefault();
-  const next = rows[at + (e.key === "ArrowDown" ? 1 : -1)];
-  (next || (e.key === "ArrowUp" ? $("web-query") : rows[at])).focus();
-});
-$("web-reader-back").addEventListener("click", closeWebReader);
-//: Escape inside the reader goes back to the results, as a browser's Back
-//: would; the find bar has its own Escape and stops it first.
-$("web-reader").addEventListener("keydown", (e) => {
-  if (e.key !== "Escape" || e.defaultPrevented) return;
-  e.preventDefault();
-  e.stopPropagation();
-  closeWebReader();
-});
-$("web-reader-save").addEventListener("click", async () => {
-  await ensureModule("webClip");
-  saveWebPageAsNote();
-});
-//: Same act as the result row's own "Save as bookmark", from the other side
-//: of the panel: you often only decide a page is worth keeping after reading
-//: it, and until now that decision had nowhere to go from here.
-$("web-reader-bookmark").addEventListener("click", async () => {
-  await ensureModule("webClip");
-  readerBookmark();
-});
-$("web-reader-ask").addEventListener("click", () => {
-  if (webReaderPage) askAboutPage(webReaderPage.url, webReaderPage.title);
-});
-$("web-reader-cite").addEventListener("click", () => {
-  if (webReaderPage) citeWebPage(webReaderPage);
-});
-$("web-reader-copy").addEventListener("click", async (e) => {
-  const button = e.currentTarget;
-  await ensureModule("webClip");
-  if (webReaderPage) copyWebLink(webReaderPage.url, button);
-});
-$("web-reader-open").addEventListener("click", async () => {
-  await ensureModule("webClip");
-  if (webReaderPage) openWebPageExternally(webReaderPage.url);
-});
-$("web-reader-find").addEventListener("click", () => openGlobalFind({ scope: "web-reader" }));
 
 //: Enter adds it; Escape clears the box, and on an empty one leaves it (a phone sheet's own Escape wins).
 // **What a phone comes to Reminders for is the list** (INBOX 392,

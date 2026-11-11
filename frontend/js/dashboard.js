@@ -1198,7 +1198,7 @@ function dashboardMarkSeed() {
   //: persona" only shows Atlas while Atlas is that persona.
   if (choice === "atlas") return "Atlas";
   if (choice === "persona") {
-    return prefsCache?.dashboard_persona || document.getElementById("persona-select")?.value || "Atlas";
+    return prefsCache?.dashboard_persona || document.getElementById("persona-select")?.value || personaDisplayName(prefsCache?.active_persona) || "Atlas";
   }
   return null;
 }

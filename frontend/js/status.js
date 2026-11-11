@@ -2145,6 +2145,7 @@ document.addEventListener(
 
 //: The body's own controls are gated when it is built (settings-body.js), not before.
 onSurface("settings", () => syncModelGatedControls());
+onSurface("chat", () => { syncModelGatedControls(); renderChatActiveModelBadge(); syncFeatureModelSelects(); wireFeatureModelSelects(); });
 onSurface("palette", () => { syncModelGatedControls(); syncAgentPaletteAvailability(); });
 function syncModelGatedControls(status = modelStatus) {
   const off = status ? status.ollama_running === false : false;
@@ -2211,7 +2212,7 @@ function syncModelGatedControls(status = modelStatus) {
   //: answered from the notes by the composer, so the box stays open and the
   //: line says what a model would add rather than that nothing answers.
   renderAiOfflineNotice(
-    $("chat-offline"),
+    document.getElementById("chat-offline"),
     "No model connected. Chat answers from your notes. Plan and Agent need a model.",
     { dismissible: true, detail: "Chat quotes your notes until one is connected. A model adds AI answers, Plan and Agent mode." }
   );
@@ -2845,7 +2846,7 @@ function renderChatModeSeg() {
         : agentButton.dataset.enabledTitle;
   }
   renderWebSearchToggle();
-  const agent = $("tools-toggle").checked && !gated;
+  const agent = document.getElementById("tools-toggle")?.checked && !gated;
   if (!(agent && modelStatus?.model_ready !== true)) showAgentNoModelHint(false);
   // Two `addEventListener` calls for Quit and Clear-history used to sit here,
   // spliced into the middle of this function by an editing accident. It parsed,
@@ -2864,7 +2865,7 @@ function renderChatModeSeg() {
 //: Agent with no model (INBOX 840, CHAT_PLAN 22a): the first choice of it says
 //: so under the composer; the segment's title always does.
 function showAgentNoModelHint(on) {
-  const line = $("chat-agent-hint");
+  const line = document.getElementById("chat-agent-hint");
   if (line) line.classList.toggle("hidden", !on);
 }
 

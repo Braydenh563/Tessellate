@@ -71,6 +71,12 @@ SURFACES = {
         ("switchTab",),
         ("doc-editor", "doc-title", "doc-list", "doc-toolbar", "doc-new"),
     ),
+    "chat": (
+        "tab-chat",
+        ("*.js",),
+        ("switchTab",),
+        ("chat-input", "chat-send", "chat-sidebar", "chat-new", "chat-compress", "chat-fork"),
+    ),
     "palette": (
         "command-palette-overlay",
         ("palette.js", "app-palette.js", "editor.js", "field-clear.js", "status.js", "wiring.js", "settings-wiring.js", "lazy-entries.js", "dashboard.js", "navigation.js"),
@@ -84,6 +90,12 @@ SURFACES = {
         ("shortcuts-card", "shortcuts-close", "shortcut-list", "shortcut-list-whiteboard"),
     ),
 }
+
+
+#: (file, surface) of a partial IIFE the lint reads whole but whose chat-pane ids sit only inside
+#: functions that run later (atlas.js `retireOlder` reads the bubbles when a face rests, never at load)
+#: or inside `onSurface("chat", ...)` (answer-kit.js watches the message list once the pane is built).
+INSIDE_FUNCTIONS = {("atlas.js", "chat"), ("answer-kit.js", "chat")}
 
 
 def _template(name: str) -> tuple[str, str]:
@@ -106,7 +118,7 @@ def _src(name: str) -> str:
 
 
 #: Files that are one `(() => {` ... `})();` whole (W29 D24): their inner statements are the load-time ones.
-WRAPPED = ("quick-note.js", "field-clear.js", "whiteboard-history.js")
+WRAPPED = ("quick-note.js", "field-clear.js", "whiteboard-history.js", "chat-private.js", "attach-to.js", "obj-tray.js", "pick-row.js", "tidy.js", "usage-ledger.js", "web-clip.js", "web-results.js")
 
 
 def _unwrapped(path: Path) -> str:
@@ -216,6 +228,8 @@ def test_load_time_wiring_of_the_surface_waits_for_it(name):
         functions = _top_level_functions(text)
         for number, head, block in _load_time_blocks(text):
             if head.startswith(f'onSurface("{name}"'):
+                continue
+            if (path.name, name) in INSIDE_FUNCTIONS:
                 continue
             reached = block + "".join(functions.get(f, "") for f in set(re.findall(r"\b(\w+)\(", block)))
             if head.startswith("onSurface("):

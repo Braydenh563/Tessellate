@@ -1846,8 +1846,8 @@ $("sketch-btn").addEventListener("click", () => openSketch());
 $("mic-note").addEventListener("click", () =>
   toggleDictation($("mic-note"), $("entry-content"))
 );
-$("mic-chat").addEventListener("click", () =>
-  toggleDictation($("mic-chat"), $("chat-input"))
+onSurface("chat", () =>
+  $("mic-chat").addEventListener("click", () => toggleDictation($("mic-chat"), $("chat-input")))
 );
 $("speak-btn").addEventListener("click", (e) => speakText($("ai-answer").textContent, e.currentTarget));
 
