@@ -103,7 +103,8 @@ def test_a_one_count_from_one_pool_and_every_note_said_or_counted(client, notebo
 
 def test_b_the_opening_says_what_the_notes_are_about_in_one_short_sentence(answer):
     text, _g, _e = answer
-    group = next(p for p in text.split("\n\n") if p.startswith("Your university"))
+    #: 1743: the opening is the lead of the woven overview (the "Your university notes share ..." group line is gone).
+    group = text.split("\n\n")[0]
     first = re.split(r"(?<=[.!?])\s+", group)[0]
     assert len(first.split()) <= 25, first
     assert first.count("“") <= 1, first
@@ -141,7 +142,8 @@ def test_d_the_card_still_rounds_the_way_the_answer_does():
 
 def test_d_the_answer_and_the_card_agree_on_the_missed_bus_note(answer):
     text, _g, _e = answer
-    assert "Four weeks ago, on 8 October" in text and "Three weeks ago" not in text
+    #: 1743: a woven overview dates by month ("In October"), so only the wrong count is refused here.
+    assert "Three weeks ago" not in text and "In October" in text
 
 
 @pytest.mark.parametrize(
@@ -194,7 +196,8 @@ def test_f_no_note_is_said_twice_no_phrase_is_cut_every_sentence_is_cited(answer
     for paragraph in text.split("\n\n"):
         if not paragraph.startswith(_FRAME):
             assert any(r["sentence"] in paragraph for r in rows), paragraph
-    assert "You didnt lock in" in text and "You didnt lock." not in text
+    #: 1743: the person's own words are quoted, not re-voiced as "You didnt lock in".
+    assert "“I didnt lock in”" in text and "You didnt lock." not in text
     assert "at work need to" not in text
     assert text.lower().count("lock-in") + text.lower().count("lock in") <= 2
 

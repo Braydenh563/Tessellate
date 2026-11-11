@@ -50,6 +50,7 @@ from tessellate.ai import composer_ahead, composer_ask, composer_clean, composer
 from tessellate.ai import composer_chip_subject
 from tessellate.ai import composer_read
 from tessellate.ai import composer_select
+from tessellate.ai import composer_story
 from tessellate.ai import composer_credit, composer_each, composer_label, composer_likeness, composer_refer, composer_tally
 from tessellate.ai.composer_lists import clean
 from tessellate.ai import recognise as recogniser
@@ -784,6 +785,8 @@ class _Out:
     insights: list[dict] = field(default_factory=list)
     #: Said by theme (INBOX 1310): a facet gap on one note is not the answer's.
     framed: bool = False
+    #: The insight a woven overview keeps in reserve (INBOX 1743): (line, row).
+    spare: tuple = ()
 
 
 _KIND_NOUN = {"document": "document", "board": "board", "map": "mind map", "picture": "picture"}
@@ -3659,7 +3662,33 @@ def _fold_past_budget(out: _Out, kind: str) -> None:
         del out.lines[keep:]
 
 
+def _storied(out: _Out, question: str, members, facts, today: date) -> bool:  # noqa: ANN001
+    """An overview of several dated notes written as paragraphs (INBOX 1743):
+    the lead, a paragraph a stretch, the read of how it went, one insight.
+    False, with `out` untouched, when the notes do not fit that shape."""
+    dated = sorted((v for v in members if v.written), key=lambda v: (v.written, v.id))
+    if len(dated) != len(members) or (plan := composer_story.plan([v.written for v in dated], [v.note.get("content") or "" for v in dated])) is None:
+        return False
+    gisted = _gists(members, facts)
+    units = []
+    for v in dated:
+        scratch = _Out()
+        held = [f for f in gisted if f.view.id == v.id]
+        _narrate(scratch, v, held, today)
+        if not scratch.lines:
+            _lines(scratch, held, 1, by_day=today, weave=True)
+        unit = composer_story.clause_of(v, scratch.lines[0] if scratch.lines else "", scratch.rows[0] if scratch.rows else None, sys.modules[__name__])
+        if unit is None:
+            return False
+        units.append(unit)
+    out.framed = True
+    composer_story.story(out, _count(len(dated)), units, [v.written for v in dated], _topic(question, members), plan)
+    return True
+
+
 def _overview(out: _Out, question: str, members, facts, today: date, kind: str) -> None:  # noqa: ANN001
+    if kind == "overview" and not _GOING.search(question) and _storied(out, question, _chosen_members(question, members, kind), facts, today):
+        return
     groups, counted = _counted_groups(question, members, kind)
     moved, facts = _overview_opening(out, question, members, facts, today, kind, counted)
     shown_notes = {f.view.id for f in facts}
@@ -5014,7 +5043,13 @@ def _finish(out: _Out, kind: str, asked: str, members: list, facts: list[Fact], 
         _tie_closing(out, asked, members, tie[1], tie[2])
     elif kind in ("overview", "likes"):
         _confirmed_first(out, asked, members, learned)
-        _volunteer(out, asked, members, notes, today, insight, learned)
+        #: A woven overview closes on its own cited insight (INBOX 1743); the
+        #: volunteered rules speak when it has none.
+        if out.spare and insight != "off":
+            out.closing.append(out.spare[0])
+            out.rows.append(out.spare[1])
+        else:
+            _volunteer(out, asked, members, notes, today, insight, learned)
     #: A fact answer ("what is the Krebs cycle") offers a to-do only when it is
     #: about it; an overview of notes that hold an open task still offers it.
     out.offer = out.offer or _offer(_answered(out, facts), asked if kind == "fact" else None) or _kind_offer(kind, asked, members, facts, today, out)
@@ -6152,3 +6187,8 @@ def web(question: str, pages: list[dict], composed: dict | None = None) -> dict 
 
 composer_lists.bind(_day, _row, Fact, _span, _your_note)
 composer_frame.bind_lower(_said_in_a_frame)
+
+
+def _chosen_members(question: str, members, kind: str):  # noqa: ANN001
+    """The notes an overview counts: the ones the frame does not call loosely related."""
+    return _counted_groups(question, members, kind)[1] or members

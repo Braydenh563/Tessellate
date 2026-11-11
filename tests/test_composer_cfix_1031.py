@@ -1119,7 +1119,8 @@ def test_c31_a_pronoun_line_names_the_note_it_was_about(notebook, question):
 def test_c32_a_list_says_whose_it_is_and_never_that_you_said_it(notebook, question):
     said, _ = notebook(question)
     assert not re.search(r"(?i)you (?:mentioned|noted|wrote|said)[^.\n]*questions to ask", said), said
-    assert "Your Ice Breakers note lists three questions to ask:" in said or "social" not in question, said
+    #: 1743: a woven overview says it mid-sentence ("Soon after, your Ice Breakers note lists ..."), so the capital is not asked.
+    assert "your ice breakers note lists three questions to ask:" in said.lower().replace("\n", " ") or "social" not in question, said
 
 
 @pytest.mark.parametrize("question", ["what do I know about the dentist", "tell me about the Lisbon trip", "what do I know about Lisbon", "what have I written about the dentist"])

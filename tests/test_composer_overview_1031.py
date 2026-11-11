@@ -17,7 +17,6 @@ import re
 
 import pytest
 
-from tessellate.ai import composer_digest, realise
 from tests.test_composer_route_688 import _ask
 import tests.test_composer_timing_1461 as timing
 
@@ -53,32 +52,22 @@ def _paragraphs(text: str) -> list[str]:
 
 
 @pytest.mark.parametrize("question", QUESTIONS)
-def test_ten_notes_are_summarised_by_name_then_counted(answer, question):
+def test_ten_notes_are_woven_and_counted_once(answer, question):
+    """1743 moved the intent: ten notes were "They include X and seven more"; they are now a lead that counts them and a few paragraphs that tell each one (INBOX 1461 asked for no read-back; 1743 for an overview)."""
     text, _support, _cited = answer(NOTES + MORE, question)
     paras = _paragraphs(text)
     assert re.match(r"(?:You have|Your notebook holds|Found) ten notes\b", paras[0]), paras[0]
-    named = re.match(r"They include (.+) and (\w+) more\.$", paras[1])
-    assert named, paras[1]
-    shown = len(re.split(r", | and ", named.group(1)))
-    assert 2 <= shown <= 3, paras[1]
-    assert named.group(2) == realise.count_word(10 - shown), paras[1]
+    assert "They include" not in text and 3 <= len(paras) <= 6, text
     assert "the Cloud computing" not in text and "the had " not in text, text
 
 
 @pytest.mark.parametrize("question", QUESTIONS)
-def test_the_fold_and_the_counts_agree(answer, question):
+def test_the_counts_agree_with_no_fold(answer, question):
+    """1743 moved the intent: no "Show N more" and no "N more on the right"; every counted note is told and cited, and the total is said once."""
     text, support, cited = answer(NOTES + MORE, question)
-    paras = _paragraphs(text)
-    more = (support.get("more") or {}).get("lines") or []
-    if more:
-        first_folded = paras.index(more[0])
-        #: The opening, the summary line, then at most LINES told lines.
-        assert first_folded - 2 <= composer_digest.LINES["overview"], paras[:first_folded]
-        assert support["more"]["label"] == f"Show {realise.count_word(len(more))} more"
-    right = re.search(r"\b(\w+) more on the right\.", text)
-    on_right = 0 if not right else {realise.count_word(n).lower(): n for n in range(1, 11)}[right.group(1).lower()]
-    assert len(cited) + on_right == 10, (sorted(cited), right)
-    #: The total is said once.
+    assert not (support.get("more") or {}).get("lines"), support
+    assert not re.search(r"\bmore on the right\b", text), text
+    assert len(cited) == 10, sorted(cited)
     assert len(re.findall(r"\bten notes\b", text)) == 1, text
 
 
