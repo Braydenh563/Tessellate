@@ -1870,6 +1870,7 @@ function wbNamedLayerMenu(layer) {
       wbApplySelectionHighlight();
       wbUpdateSelectionBar();
     } },
+    ...wbFmtState.layersMore.rows(layer),
     { label: "ph:pencil-simple Rename", run: async () => {
       const name = await promptDialog("Rename the layer", layer.name, { confirmLabel: "Rename" });
       if (name && name.trim()) wbNamedLayerSet(layer.id, { name: name.trim().slice(0, 60) }, "Layer renamed.");

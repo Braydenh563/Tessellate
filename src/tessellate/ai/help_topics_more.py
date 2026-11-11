@@ -2204,7 +2204,7 @@ MORE_TOPICS.extend([
         "id": "board-current-layer",
         "keywords": (
             "current layer", "draw on a layer", "draw on this layer", "new things on a layer",
-            "active layer", "which layer", "layer new items go on",
+            "active layer", "which layer", "layer new items go on", "layer to the front", "send layer to back", "duplicate a layer",
         ),
         "body": (
             "The current layer, as in draw.io: in a board's sidebar, Layers, press a "
@@ -2212,7 +2212,9 @@ MORE_TOPICS.extend([
             "or placed from the library) goes on it; the row is tinted while it is "
             "current. Press the name again, or its ⋯ menu's Stop drawing on it, "
             "for no layer. A hidden or locked layer takes nothing new. Undo brings "
-            "a deleted item back on the layer it was on."
+            "a deleted item back on the layer it was on. The same menu has Bring the "
+            "layer to the front, Send the layer to the back (its items keep their "
+            "order) and Duplicate the layer (a copy on a new layer, one Undo)."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },
