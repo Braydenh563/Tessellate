@@ -66,7 +66,8 @@ TOP_LEVEL_LETS_CAP = 699
 #: extract-preview, timeline-detail, scroll-row, assistant-avatar and confirmed-patterns wrapped whole, one export each; measured 9,688. Then date-field, link-types, vault-unlock, offline-split and pick-row wrapped whole; measured 9,678. iife2-1109: twenty lazy files wrapped whole (see CHANGELOG); measured 9,598. iife3-1109: tidy, lan-watch, documents-ai and model-menu wrapped whole (six exports in all); measured 9,513. Then ocr-engine and note-properties wrapped whole; measured 9,490. iife4-1109: twenty-one files that tests reached privately wrapped whole (the tests read them through `_js_scope.unwrapped`, or run the vm with `window` as the context); measured 9,096. s58-1110 (W29 D24): settings-packages.js, appearance-panel.js and whiteboard-history.js wrapped whole; measured 9,044.
 #: 2026-11-11, W29 carve 1: panel-movable.js wrapped whole, one export (panelId). Measured 8,966.
 #: W29 carve 2: suggestions-inbox.js wrapped whole, one export (openSuggestionsInbox). Measured 8,940.
-GLOBAL_NAMES_CAP = 8940
+#: W29 carve 3: tour.js wrapped whole, exporting `TOUR_ENABLED`, `openTour` and `renderTourReplay`. Measured 8,883.
+GLOBAL_NAMES_CAP = 8883
 
 
 def _code() -> dict[str, str]:

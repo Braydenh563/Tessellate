@@ -10,9 +10,10 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parent.parent
-TOUR = (ROOT / "frontend" / "js" / "tour.js").read_text(encoding="utf-8")
+TOUR = _js_scope.unwrapped((ROOT / "frontend" / "js" / "tour.js").read_text(encoding="utf-8"))
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 JS_TEXT = "\n".join(p.read_text(encoding="utf-8") for p in (ROOT / "frontend" / "js").glob("*.js"))
 

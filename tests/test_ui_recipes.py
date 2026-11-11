@@ -1725,7 +1725,7 @@ def test_the_rendered_blocks_carry_the_line_they_came_from() -> None:
 
 # --- the guided tour (DESIGN.md, "A guided tour of the interface") ------------
 
-TOUR_JS = ROOT / "frontend" / "js" / "tour.js"
+TOUR_JS = _js_scope.unwrapped_copy(ROOT / "frontend" / "js" / "tour.js")
 TOUR_TABLE = re.compile(r"const TOUR_SECTIONS = \[(.*?)\n\];", re.S)
 TOUR_STEP = re.compile(r"\{\s*target: \"([^\"]+)\",\s*side: \"([a-z]+)\",(.*?)\n      \}", re.S)
 
@@ -5772,7 +5772,7 @@ def test_a_set_to_start_is_rows_with_their_descriptions_not_a_wall() -> None:
     """DESIGN.md, "A set of things to start" (INBOX 804): Help's fourteen tour
     buttons became one row each, the section's name over its one-line blurb,
     under the pane's one filled button (Start the tour) and a quiet second."""
-    tour = _function_body((ROOT / "frontend" / "js" / "tour.js").read_text(encoding="utf-8"), "renderTourReplay")
+    tour = _function_body(_js_scope.unwrapped((ROOT / "frontend" / "js" / "tour.js").read_text(encoding="utf-8")), "renderTourReplay")
     assert '"ghost small tour-row"' in tour and "tour-row-blurb" in tour and "section.blurb" in tour
     assert 'createElement("li")' in tour
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
