@@ -290,31 +290,6 @@ const noteClampFit = new ResizeObserver((seen) => {
 });
 
 
-//: **The facts about a file, as facts.** Asked for directly with the Files
-//: sub-tab redesign: "the card format is difficult with files as they can be
-//: quite long and large, a single image or ocr caption doesnt fit them. there
-//: should be details on the name, a generated description that cna happen,
-//: file details such as the type, size, topic/category, linked notes and
-//: other features."
-//:
-//: A tile could show a thumbnail, a name and a caption; everything else a
-//: person actually brings to a file list, how big is it, how many pages,
-//: when did it arrive, has it been read, was either absent or buried. These
-//: are the ones the row can state in one line.
-function formatFileSize(bytes) {
-  const size = Number(bytes) || 0;
-  if (size <= 0) return ""; // unknown, or the file is gone, say nothing
-  if (size < 1024) return `${size} B`;
-  const units = ["KB", "MB", "GB"];
-  let value = size / 1024;
-  let unit = 0;
-  while (value >= 1024 && unit < units.length - 1) {
-    value /= 1024;
-    unit += 1;
-  }
-  // One decimal below 10 (2.4 MB reads better than 2 MB), none above it.
-  return `${value < 10 ? value.toFixed(1) : Math.round(value)} ${units[unit]}`;
-}
 
 
 //: The page size each of those lists is asked for, matching the server's own

@@ -36,13 +36,24 @@ window.lazyScript = (file) => {
 //: on first use as the app fetches it (`LAZY_MODULES`, lazy-entries.js).
 const DESK_MODULES = ["atlasMotion", "atlasLife", "atlasFaces"];
 window.ensureModule = (name) => {
-  const files = { captureCard: ["/css/capture-card-lazy.css", "/js/capture-card.js"] }[name];
+  const files = { captureCard: ["/css/capture-card-lazy.css", "/js/att-chip.js", "/js/capture-card.js"] }[name];
   return files ? Promise.all(files.map((file) => window.lazyScript(file))).then((done) => done.every(Boolean)) : Promise.resolve(DESK_MODULES.includes(name));
 };
 
-//: The card's second file (colours, the bell, pictures, tag suggestions) needs the app's
-//: pickers, menus and uploads, which this page has none of: the card runs on its core.
+//: The card's second file (colours, the bell, Draw, tag suggestions) needs the app's
+//: pickers and menus, which this page has none of: the card runs on its core and on the
+//: staging file (capture-stage.js: pictures and files, chips, upload on Save), which it fetches.
 window.lazyScript = ((load) => (file) => (file === "/js/capture-card-more.js" ? Promise.resolve(false) : load(file)))(window.lazyScript);
+
+//: `setLabel` for the one chip att-chip.js builds (its remove x): the glyph marker and the words.
+window.setLabel = (el, label) => {
+  const match = /^ph:([a-z0-9-]{1,40})\s*(.*)$/.exec(String(label ?? ""));
+  if (!match) return void (el.textContent = label);
+  const mark = document.createElement("i");
+  mark.className = `ph ph-${match[1]}`;
+  mark.setAttribute("aria-hidden", "true");
+  el.replaceChildren(mark, ...(match[2] ? [document.createTextNode(match[2])] : []));
+};
 
 //: A note's title as its leading heading (`withTitle`, capture-ask.js, minus the property
 //: block a desk note never has).

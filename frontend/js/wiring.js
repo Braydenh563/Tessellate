@@ -183,6 +183,7 @@ onSurface("chat", () => {
   });
 
   // --- image attachment wiring (vision-capable models) ---
+  lazyScript("/js/attach-accept.js").then(() => { $("chat-image-input").accept = ATTACH_ACCEPT; });
   $("attach-image").addEventListener("click", () => $("chat-image-input").click());
   $("chat-image-input").addEventListener("change", async (e) => {
     if (e.target.files.length) await attachChatFiles(e.target.files);
