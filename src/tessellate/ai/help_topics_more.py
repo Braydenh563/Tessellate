@@ -2954,6 +2954,7 @@ TOPIC_META: dict[str, dict] = {
     "tags-categories": {"title": "Tags and categories", "path": "A note's own row, or Capture's Filing menu"},
     "code-files": {"title": "Code documents", "path": "Library tab, Documents"},
     "code-completions": {"title": "Completions and snippets in code", "path": "A code document, as you type"},
+    "code-tabs": {"title": "Tabs for open code files", "path": "A code document, the strip above the editor"},
     "code-run": {"title": "Running, previewing and testing code", "path": "A code document, Run", "steps": (
         "Open a code document (.js, .ts, .sql, .py, .html, .css, .svg).",
         "Press Run, or Ctrl+Shift+Enter.",
@@ -3072,7 +3073,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "equation-numbers", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
+        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "equation-numbers", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
