@@ -530,7 +530,12 @@ MID_TOPICS.extend(
                 "field, and selecting several offers Move to group, Mark read and "
                 "Pin; pinned links lead every order but By site, and every delete "
                 "has Undo. In a note or document, the / menu's Bookmark link "
-                "inserts a saved bookmark as a link."
+                "inserts a saved bookmark as a link. The ... menu's Import "
+                "bookmarks file adds the links of a file your browser exported, "
+                "folders as groups, skipping ones already saved, with Undo; "
+                "Export bookmarks saves them all as a file a browser can import. "
+                "A link can carry tags (commas, in the Add form or Edit): each tag is a chip "
+                "that filters across groups, search finds them, and the file keeps them."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

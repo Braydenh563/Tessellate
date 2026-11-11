@@ -6,13 +6,13 @@ a document. The first resource behind a repository (INBOX 1499); see
 from __future__ import annotations
 
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import delete as sa_delete
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.core.database import Bookmark, DocumentBookmark, EntryBookmark
+from tessellate.core.database import Bookmark, DocumentBookmark, EntryBookmark, utcnow
 from tessellate.entry.manager import log_action
 from tessellate.repo import Invalid, NotFound
 
@@ -29,7 +29,30 @@ ALLOWED_URL_SCHEMES = ("http", "https", "mailto", "tel")
 _SCHEME_RE = re.compile(r"^([a-z][a-z0-9+.-]*):", re.IGNORECASE)
 
 #: The fields `update` may change, each already cleaned by `clean_fields`.
-EDITABLE = ("url", "title", "note", "pinned", "is_read", "group_name")
+EDITABLE = ("url", "title", "note", "pinned", "is_read", "group_name", "tags")
+
+#: A link's tags: how many, and how long one may be. A tag never holds a comma (the stored form is comma-joined).
+MAX_TAGS = 12
+MAX_TAG_CHARS = 30
+
+
+def clean_tags(raw: object) -> str:
+    """Tags as stored: a list or a comma-separated string, trimmed, one space between words, no '#' lead,
+    without repeats (case ignored, the first spelling kept), at most `MAX_TAGS` of `MAX_TAG_CHARS`."""
+    parts = raw.split(",") if isinstance(raw, str) else [str(p).replace(",", " ") for p in (raw or [])]
+    seen: set[str] = set()
+    out: list[str] = []
+    for part in parts:
+        tag = " ".join(part.split()).lstrip("#").strip()[:MAX_TAG_CHARS].strip()
+        if tag and tag.lower() not in seen:
+            seen.add(tag.lower())
+            out.append(tag)
+    return ",".join(out[:MAX_TAGS])
+
+
+def tag_list(stored: str | None) -> list[str]:
+    """The stored tags as a list."""
+    return [t for t in (stored or "").split(",") if t]
 
 
 def normalise_url(raw: str) -> str:
@@ -69,6 +92,8 @@ def clean_fields(fields: dict) -> dict:
     for name in ("title", "note", "group_name"):
         if out.get(name) is not None:
             out[name] = out[name].strip()
+    if out.get("tags") is not None:
+        out["tags"] = clean_tags(out["tags"])
     return out
 
 
@@ -114,6 +139,46 @@ def create(session: Session, **fields) -> tuple[Bookmark, int | None]:
     session.flush()
     log_action(session, "created", "bookmark", bookmark.id, bookmark.title or bookmark.url)
     return bookmark, twin
+
+
+def everything(session: Session) -> list[Bookmark]:
+    """Every saved link, oldest first (an export keeps the order it was saved in)."""
+    return list(session.scalars(select(Bookmark).order_by(Bookmark.created_at, Bookmark.id)))
+
+
+def import_rows(session: Session, rows: list[dict]) -> tuple[list[Bookmark], int]:
+    """Save the links of a browser's export; the ones already on the shelf (by address) are skipped.
+
+    A link keeps the day the browser saved it (`added`, seconds since 1970) when that reads as a sane
+    date, so a long export does not all land on today. Returns the new rows and the number skipped as
+    twins, of the shelf or of an earlier row in the same file.
+    """
+    have = set(session.scalars(select(Bookmark.url)))
+    made: list[Bookmark] = []
+    twins = 0
+    for row in rows:
+        url = row["url"]
+        if url in have:
+            twins += 1
+            continue
+        have.add(url)
+        bookmark = Bookmark(
+            url=url, title=row.get("title", ""), group_name=row.get("group_name", ""), tags=clean_tags(row.get("tags", ""))
+        )
+        stamp = str(row.get("added") or "")
+        if stamp.isdigit():
+            try:
+                when = datetime.fromtimestamp(int(stamp), tz=timezone.utc).replace(tzinfo=None)
+            except (OverflowError, OSError, ValueError):
+                when = None
+            if when is not None and datetime(1995, 1, 1) <= when <= utcnow().replace(tzinfo=None):
+                bookmark.created_at = when
+        session.add(bookmark)
+        made.append(bookmark)
+    session.flush()
+    if made:
+        log_action(session, "imported", "bookmark", made[0].id, f"{len(made)} bookmarks from a file")
+    return made, twins
 
 
 def update(session: Session, bookmark_id: int, **fields) -> Bookmark:

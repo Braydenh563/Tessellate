@@ -26,7 +26,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.core import events
 from tessellate.core.database import AuditLog, Entry, EntryRevision, Space, impersonate_workspace
-from tessellate.entry import manager
+from tessellate.entry import manager, sync_keys
 
 FORMAT = 1
 #: Notes per segment; a longer log answers `more` and is pulled in turns.
@@ -81,6 +81,8 @@ def note_state(session: Session, entry: Entry, device: str) -> dict[str, Any]:
         "deleted_at": _iso(entry.deleted_at),
         "archived_at": _iso(entry.archived_at),
         "updated_at": _iso(entry.updated_at) or "",
+        "pinned": bool(entry.pinned),
+        "colour": entry.colour,
     }
 
 
@@ -151,7 +153,7 @@ def _space(session: Session, item: dict) -> str:
 
 
 def _set_state(session: Session, entry: Entry, item: dict) -> None:
-    """Write the whole state; the content goes in as it came (ciphertext stays ciphertext)."""
+    """Write the whole state; ciphertext stays ciphertext, sealed with this key when `sync_keys.opened` could."""
     entry.content = item["content"]
     entry.tags = json.dumps(item["tags"])
     entry.category_id = manager.get_or_create_category(session, item["category"], workspace_id=entry.workspace_id).id
@@ -159,6 +161,8 @@ def _set_state(session: Session, entry: Entry, item: dict) -> None:
     entry.is_deleted = item["is_deleted"]
     entry.deleted_at = _when(item.get("deleted_at"))
     entry.archived_at = _when(item.get("archived_at"))
+    entry.pinned = bool(item.get("pinned"))
+    entry.colour = item.get("colour") if isinstance(item.get("colour"), str) else None
     session.flush()
     if not entry.is_private:
         manager.record_dates(session, entry)
@@ -179,9 +183,14 @@ def _create(session: Session, item: dict) -> None:
                        payload={"after": events.entry_state(entry)})
 
 
+def _words(state: dict) -> str | None:
+    """The words to compare: in the clear for a private note opened with both keys (decision 12)."""
+    return state["plain"] if "plain" in state else state["content"]
+
+
 def _comparable(state: dict) -> tuple:
-    return (state["content"], tuple(state["tags"]), state["category"], state["is_private"],
-            state["is_deleted"], bool(state.get("archived_at")))
+    return (_words(state), tuple(state["tags"]), state["category"], state["is_private"],
+            state["is_deleted"], bool(state.get("archived_at")), bool(state.get("pinned")), state.get("colour"))
 
 
 def _theirs_win(entry: Entry, item: dict, me: str, peer: str) -> bool:
@@ -196,34 +205,39 @@ def _keep_theirs_as_version(session: Session, entry: Entry, item: dict) -> None:
     manager.log_action(session, "revised", "entry", entry.id, "the other computer's version")
 
 
-def _apply_one(session: Session, me: str, peer: str, item: dict) -> str:
+def _apply_one(session: Session, me: str, peer: str, item: dict, both: sync_keys.Keys | None = None) -> str:
     entry = _find(session, me, item["sid"])
     if entry is None:
         _create(session, item)
         return "applied"
-    if _comparable(note_state(session, entry, me)) == _comparable(item):
+    mine = note_state(session, entry, me)
+    if "plain" in item:
+        mine["plain"] = sync_keys.local_plain(entry.content, both)
+    if _comparable(mine) == _comparable(item):
         return "same"
     if _theirs_win(entry, item, me, peer):
-        if entry.content != item["content"]:
+        if _words(mine) != _words(item):
             manager.record_revision(session, entry)
         was = events.entry_state(entry)
         _set_state(session, entry, item)
         manager.log_action(session, "edited", "entry", entry.id, "from the other computer",
                            payload=events.changed(was, events.entry_state(entry)))
         return "applied"
-    if entry.content != item["content"]:
+    if _words(mine) != _words(item):
         _keep_theirs_as_version(session, entry, item)
         return "conflicts"
     return "same"
 
 
-def apply_segment(session: Session, me: str, segment: dict) -> dict[str, int]:
-    """Apply a checked segment, one committed note at a time; counts by outcome."""
+def apply_segment(session: Session, me: str, segment: dict, both: sync_keys.Keys | None = None) -> dict[str, int]:
+    """Apply a checked segment, one committed note at a time; counts by outcome.
+
+    `both` (the other computer's data key and this one's) reseals its private notes here."""
     notes = check(segment, me)
     peer = segment["device"]
     report = {"applied": 0, "same": 0, "conflicts": 0}
     with events.acting_as(sync_actor(peer)), impersonate_workspace(session, ""):
         for item in notes:
-            report[_apply_one(session, me, peer, item)] += 1
+            report[_apply_one(session, me, peer, sync_keys.opened(item, both), both)] += 1
             session.commit()
     return report

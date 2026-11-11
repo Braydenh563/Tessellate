@@ -28,9 +28,12 @@ def test_both_sheets_are_lazy_with_stand_ins_and_a_way_in():
     assert 'studio: ["/js/studio.js"]' in entries and 'syncFolder: ["/js/sync-folder.js"]' in entries
     assert 'studio: ["openStudio", "speakNatural"]' in entries and 'syncFolder: ["openFolderSync"]' in entries
     features = _js("app-features.js")
-    assert 'reveal: "studio"' in features and 'reveal: "sync-folder"' in features
+    # The folder's sheet is one of two ways in under Settings' Sync between computers (WORLD_CLASS_PLAN B6
+    # decision 14): the palette and feature rows open that group, and its button opens the sheet.
+    assert 'reveal: "studio"' in features and 'reveal: "sync-group"' in features
     targets = _js("reveal-targets.js")
-    assert "openStudio()" in targets and "openFolderSync()" in targets
+    assert "openStudio()" in targets and '"sync-group": { settings: "data", el: "sync-group" }' in targets
+    assert '$("sync-folder-open")?.addEventListener("click", () => openFolderSync());' in _js("settings-rows.js")
     text = app_js_text()
     assert "function openStudio()" in text and "async function openFolderSync()" in text
 

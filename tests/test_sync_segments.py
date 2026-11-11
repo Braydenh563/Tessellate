@@ -2,9 +2,10 @@
 
 Two notebooks, each its own data folder and SQLite file, pull from each other
 through `sync_pull.pull` over a fake transport: the segment goes through JSON
-as it would over the wire, and nothing else is shared. What a real pair of
-computers adds (the LAN fetch, the sign-in it carries) is not built; see the
-plan's decision 4 and the module docstring of `entry/sync_pull.py`.
+as it would over the wire, and nothing else is shared. The real pair of
+computers (the LAN sign-in, the pass, private notes with both keys) is
+`tests/test_sync_lan.py`; here no keys are shared, so a private note stays
+ciphertext on the other side.
 
 Times are fixed: every note's `updated_at` is stamped by the test, never read
 off the clock, because the later stamp is what decides a conflict.
@@ -21,7 +22,7 @@ from sqlalchemy import select
 
 from tessellate.core import crypto, sync_state, vault
 from tessellate.core.database import DatabaseManager, Entry, EntryRevision
-from tessellate.entry import manager, sync_pull, sync_segments
+from tessellate.entry import manager, sync_extras, sync_pull, sync_segments
 from tessellate.entry.manager_private import set_private
 
 
@@ -71,6 +72,17 @@ class Link:
         if self.tamper and segment["notes"]:
             segment["notes"][0]["content"] += " (changed on the way)"
         return segment
+
+    # Decision 13: documents, boards and files (`tests/test_sync_extras.py`).
+    def manifest(self, me: str) -> dict:
+        return json.loads(json.dumps(sync_extras.manifest(self.source.session, self.source.dir, self.name)))
+
+    def items(self, kind: str, sids: list[str], me: str) -> list:
+        return json.loads(json.dumps(sync_extras.items(self.source.session, self.source.dir, self.name, kind, sids)))
+
+    def file(self, sid: str, me: str) -> bytes | None:
+        found = sync_extras.file_bytes(self.source.session, self.source.dir, self.name, sid)
+        return found[0] if found else None
 
 
 @pytest.fixture()

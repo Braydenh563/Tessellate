@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from tessellate.core.deps import get_session
-from tessellate.repo import bookmarks
+from tessellate.repo import bookmarks, bookmarks_html
 
 router = APIRouter(prefix="/bookmarks", tags=["bookmarks"])
 
@@ -22,6 +22,7 @@ class BookmarkCreate(BaseModel):
     title: str = Field(default="", max_length=200)
     note: str = Field(default="", max_length=2000)
     group_name: str = Field(default="", max_length=120)
+    tags: list[str] = Field(default_factory=list, max_length=40)
     #: Carried on create so an Undo of a delete can put a link back exactly as
     #: it was, pin and read state included.
     pinned: bool = False
@@ -35,6 +36,7 @@ class BookmarkUpdate(BaseModel):
     pinned: bool | None = None
     is_read: bool | None = None
     group_name: str | None = Field(default=None, max_length=120)
+    tags: list[str] | None = Field(default=None, max_length=40)
 
 
 def _to_out(bookmark, duplicate_of: int | None = None) -> dict:
@@ -46,6 +48,7 @@ def _to_out(bookmark, duplicate_of: int | None = None) -> dict:
         "pinned": bookmark.pinned,
         "is_read": bool(bookmark.is_read),
         "group_name": bookmark.group_name,
+        "tags": bookmarks.tag_list(bookmark.tags),
         "created_at": bookmark.created_at.isoformat(),
     }
     if duplicate_of is not None:
@@ -77,6 +80,37 @@ def list_bookmarks(
     response.headers["X-Total-Count"] = str(total)
     paging.finish(response, offset, limit, total)
     return [_to_out(b) for b in rows]
+
+
+class BookmarksImport(BaseModel):
+    #: The text of a browser's exported bookmarks file (Netscape format; every browser writes it).
+    html: str = Field(min_length=1, max_length=bookmarks_html.MAX_CHARS)
+
+
+@router.get("/export")
+def export_bookmarks(session: Session = Depends(get_session)) -> Response:
+    """Every bookmark as the bookmarks file a browser imports."""
+    rows = [
+        {"url": b.url, "title": b.title, "group_name": b.group_name, "tags": bookmarks.tag_list(b.tags), "created_at": b.created_at}
+        for b in bookmarks.everything(session)
+    ]
+    return Response(
+        content=bookmarks_html.render(rows),
+        media_type="text/html; charset=utf-8",
+        headers={"Content-Disposition": 'attachment; filename="tessellate-bookmarks.html"'},
+    )
+
+
+@router.post("/import")
+def import_bookmarks(body: BookmarksImport, session: Session = Depends(get_session)) -> dict:
+    """Save the links of a browser's bookmarks file; ones already saved (by address) are skipped.
+
+    The ids come back so the caller's Undo can take exactly these away.
+    """
+    rows, skipped = bookmarks_html.parse(body.html)
+    made, twins = bookmarks.import_rows(session, rows)
+    session.commit()
+    return {"added": len(made), "ids": [b.id for b in made], "duplicates": twins, "skipped": skipped, "found": len(rows)}
 
 
 @router.post("", status_code=201)

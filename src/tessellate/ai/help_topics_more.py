@@ -1161,7 +1161,9 @@ MORE_TOPICS: list[dict] = [
             "only the text you had selected. Your own browser sends the page, so "
             "nothing is fetched from the web: it works with web search off and on "
             "pages you signed in to see. No browser extension is needed. A clipped "
-            "note keeps its address, Atlas treats its text as someone else's words "
+            "note opens with properties (source, site, author, published and the day "
+            "you clipped it, whichever the page names), so you can find and sort "
+            "clips by them. Atlas treats its text as someone else's words "
             "and never follows instructions in it, and clipping the same page again "
             "points you to the note it made the first time."
         ),
@@ -1523,17 +1525,19 @@ MORE_TOPICS: list[dict] = [
             "merge notes", "another computer", "sync conflict", "edited on both",
         ),
         "body": (
-            "Sync between computers in the command palette (Ctrl+K) shares your notes through a folder you choose, with no "
-            "server: a USB stick, a Syncthing folder or a cloud drive's folder on each computer. Type the folder and a sync "
-            "passphrase (at least 8 characters, the same on every computer; it is never saved) and press Sync now. Each "
-            "computer writes only its own file there, encrypted, and reads the others'; press it on each computer to "
-            "bring them level. Private notes never go into the folder. A note edited on both computers keeps the later "
-            "edit and the other words stay in the note's History, so nothing is lost; a note deleted on one is deleted on "
-            "the other unless the other changed it later. Links, reminders, attachments and boards do not travel, only the "
-            "notes' words, tags, category, colour and pin. A file that cannot be opened (a different passphrase) is counted "
-            "and left alone."
+            "Sync between computers (Settings, Import & export; or the command palette, Ctrl+K) has two ways in with "
+            "one result: Sync over the home network (Two computers) when both are on the same network, and Sync through "
+            "a folder when they are not: a USB stick, a Syncthing folder or a cloud drive's folder on each computer. "
+            "Press Sync through a folder, type the folder and a sync passphrase (at least 8 characters, the same on "
+            "every computer; it is never saved) and press Sync now. Each computer writes only its own file there, "
+            "encrypted, and reads the others'; press it on each computer to bring them level. Notes, documents, boards "
+            "and attached files travel; private notes never go into the folder. A change made on both computers keeps "
+            "the later one and the other words stay in History, so nothing is lost; a note moved to the bin on one "
+            "lands in the other's bin, and a file removed on one is removed on the other. A file that cannot be opened "
+            "(a different passphrase) is counted and left alone. The last-synced line under the group says when and "
+            "which way."
         ),
-        "badge": {"label": "Notes", "tab": "notes"},
+        "badge": {"label": "Import & export", "section": "data"},
     },
     {
         "id": "count-words",
@@ -1729,7 +1733,7 @@ TOPIC_META: dict[str, dict] = {
     "first-steps": {"title": "First steps and the sample notebook", "path": "Dashboard, First steps"},
     "live-captions": {"title": "How do I get live captions", "path": "Library, Recordings, Captions"},
     "audio-overview": {"title": "Make an audio overview of my notes", "path": "Command palette, Make an audio overview"},
-    "folder-sync": {"title": "Sync my notes between computers", "path": "Command palette, Sync between computers"},
+    "folder-sync": {"title": "Sync through a folder", "path": "Settings, Import & export, Sync between computers", "target": "sync-group"},
     "count-words": {"title": "Count words", "path": "Command palette, Count words"},
     "translate-offline": {"title": "Translate this, offline", "path": "Command palette, Translate this"},
     "insert-template": {"title": "Insert a template", "path": "Command palette, insert template"},
@@ -1937,7 +1941,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "equation-numbers", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "code-run",
+        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
@@ -1965,7 +1969,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "search-index", "search-engine-moved", "packages", "package-models", "spelling-packs",
     )),
     ("Privacy and your data", (
-        "privacy", "security", "encryption", "lock", "phone", "address-names", "lan-networks", "two-computers", "delete-data", "storage", "import-export", "import-apps", "usage-ledger", "background-tasks", "activity", "health", "data-folder-check",
+        "privacy", "security", "encryption", "lock", "phone", "lan-networks", "address-names", "two-computers", "delete-data", "storage", "import-export", "import-apps", "usage-ledger", "background-tasks", "activity", "health", "data-folder-check",
     )),
     ("Settings and support", (
         "profile", "general-settings", "desktop-companion", "desktop-companion-moods", "updates", "maintenance", "logs", "troubleshooting", "credits",
@@ -2040,11 +2044,16 @@ MORE_TOPICS.extend([
             "& export shows where). To move to a new computer, save a full backup and "
             "restore it there, or copy the data folder while the app is closed. To use "
             "one notebook from a second computer, open it over your network: Settings, "
-            "Account & security, Other devices. Sync with another computer (Settings, "
-            "Import & export) brings in the notes changed on a paired computer; a note "
-            "changed on both keeps the later change and the other text goes to its "
-            "History. Private notes stay readable only where they were made, and "
-            "attachments, boards and documents do not sync yet."
+            "Account & security, Other devices. To keep two notebooks level, Sync "
+            "between computers (Settings, Import & export) has two ways in with one "
+            "result. Sync over the home network: turn on other devices on the other "
+            "computer, type its address and password here and press Pair, then Allow "
+            "this computer there, and press Sync now. Sync through a folder, for "
+            "computers not on the same network: see Sync through a folder. Notes, "
+            "documents, boards and attached files come over; a change made on both "
+            "keeps the later one and the other words go to History. Pairing while both "
+            "notebooks are unlocked lets each open the other's private notes, which "
+            "stay encrypted on both; private notes never go into a folder."
         ),
         "badge": {"label": "Import & export", "section": "data"},
     },
@@ -2120,8 +2129,8 @@ MORE_TOPICS.append({
     "badge": {"label": "Account & security", "section": "account"},
 })
 TOPIC_META.update({
-    "lan-networks": {"title": "Other devices and networks", "path": "The wifi icon in the status bar, or Settings, Account & security, Other devices"},
     "address-names": {"title": "A name instead of localhost", "path": "Settings, Account & security, Address names"},
+    "lan-networks": {"title": "Other devices and networks", "path": "The wifi icon in the status bar, or Settings, Account & security, Other devices"},
     "phone": {"title": "On your phone", "path": "Settings, Account & security, Other devices"},
     "two-computers": {"title": "Two computers", "path": "Settings, Import & export", "target": "sync-group"},
     "settings-reset": {"title": "Resetting and moving your settings", "path": "Settings, Import & export, Your settings",
@@ -2759,6 +2768,29 @@ MORE_TOPICS.append({
 TOPIC_META["equation-numbers"] = {"title": "Numbering and citing equations", "path": "A document, Live or Read view"}
 
 
+#: DOCUMENTS_PLAN 16: the graph block (documents-graph.js).
+MORE_TOPICS.append({
+    "id": "document-graph",
+    "keywords": (
+        "graph", "graph block", "plot", "plot a function", "y = f(x)", "function graph",
+        "curve", "slider", "desmos", "axes", "```graph",
+    ),
+    "body": (
+        "Type /graph in a document, or write a code block marked graph, to plot a function. "
+        "One line is one curve: y = sin(a x), f(x) = x^2 / 10, or just x^3 - x. Up to six curves. "
+        "A line such as a = 2 [0, 5] makes a slider named a, from 0 to 5, that the curves can use; "
+        "add a third number for the step. x: -5..5 and y: -2 to 2 set the axes, "
+        "title: Waves adds a heading, and a line starting with # is a note to yourself. "
+        "Read and Live draw it as a picture; in Live, move the caret into the block (or press the pencil) "
+        "to edit the text. Hover or touch the plot to read a value, drag to pan, Ctrl and the wheel or the plus and "
+        "minus buttons to zoom, and the third button, or 0, to reset. A line it cannot read is listed under the plot with the reason, "
+        "and the rest still draw. Nothing is run: only numbers, x, the slider names and the usual functions are understood."
+    ),
+    "badge": {"label": "Documents", "tab": "documents"},
+})
+TOPIC_META["document-graph"] = {"title": "Graph a function in a document", "path": "A document, the / menu, Graph"}
+
+
 #: OPEN W18 (s9-1110): the diagram's line shape, spacing and page menu.
 MORE_TOPICS.append({
     "id": "diagram-lines",
@@ -2797,7 +2829,7 @@ MORE_TOPICS.append({
         "The equation editor is the Equation tab of Calculator and equations "
         "(see that topic). It opens from /equation in a note, a document, a "
         "board's text or the Chat box, from a document's Insert menu, or with "
-        "Alt+= there and in the Ask box (the same as Word's Alt+=), each over "
+        "Alt+= there and in the Ask box, or Ctrl+K, Insert equation, each over "
         "the box you were in; Ctrl+K, Calculator and equations opens the same "
         "dialog on Sum, and the shortcuts list has it under Tools. The "
         "equation is drawn as it will read, with "

@@ -1409,6 +1409,9 @@ class Bookmark(Base, WorkspaceMixin):
     # hierarchy: without a second data model. Scalar default so the
     # additive auto-migrator backfills existing rows to "" (ungrouped).
     group_name: Mapped[str] = mapped_column(String(120), default="")
+    #: Tags, comma-joined (`repo/bookmarks.py` `clean_tags` writes it and `tag_list` reads it): a link in many
+    #: places at once, which a single group cannot be. Scalar default so the additive auto-migrator backfills "".
+    tags: Mapped[str] = mapped_column(String(400), default="")
     #: A link you have been through. Set when it is opened from the list or
     #: ticked by hand; an "Unread" filter is the reading list a saved link is
     #: usually for. Scalar default so the additive auto-migrator backfills
