@@ -2432,7 +2432,7 @@ Link to another note with [[its first few words]]."></textarea>
              note asks in passing, found by the night pass, and whether a
              later note answered it. `renderQuestions` in questions.js. -->
         <section class="card hidden" id="questions" aria-labelledby="questions-heading">
-          <div class="dock" data-dock-name="questions" role="toolbar" aria-label="Questions controls">
+          <div class="dock" data-dock-name="questions" data-dock-more="questions-more-menu" role="toolbar" aria-label="Questions controls">
             <div class="dock-identity">
               <h2 id="questions-heading">Questions</h2>
             </div>
@@ -2451,7 +2451,7 @@ Link to another note with [[its first few words]]."></textarea>
             <div class="dock-actions">
               <button id="questions-ask" class="ghost small" type="button"
                 title="Ask about the questions you have not answered yet"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Ask about these</button>
-              <button id="questions-refresh" class="ghost small" type="button"
+              <button id="questions-refresh" class="ghost small" type="button" data-fold-narrow
                 title="Read your notes for questions now"><i class="ph ph-arrow-clockwise ph-lead" aria-hidden="true"></i> Read notes now</button>
               <button type="button" id="questions-help-toggle" class="icon-only ghost small graph-help-toggle"
                 data-help-for="questions-help-body" aria-controls="questions-help-body"

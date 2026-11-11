@@ -7808,3 +7808,43 @@ def test_a_split_chips_touch_overhang_is_never_clipped_or_laid_over_a_neighbour(
     lane = re.search(r"\.entry-meta:has\(> \.chip\.suggested-tag\) \{([^}]*)\}", band)
     assert lane and "padding-block: calc((var(--target-min) - 1.5rem) / 2)" in lane.group(1)
     assert "margin-block: calc((1.5rem - var(--target-min)) / 2)" in lane.group(1)
+
+
+def _docks_html() -> list[tuple[str, str, str]]:
+    """(name, opening tag, whole element) for every `.dock[data-dock-name]`."""
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    out = []
+    for m in re.finditer(r'<div class="dock"[^>]*data-dock-name="([^"]+)"[^>]*>', html):
+        depth = 0
+        for t in re.finditer(r"<(/?)div\b", html[m.start() :]):
+            depth += -1 if t.group(1) else 1
+            if depth == 0:
+                out.append((m.group(1), m.group(0), html[m.start() : m.start() + t.end()]))
+                break
+    return out
+
+
+def test_a_dock_with_an_arrange_zone_has_somewhere_to_fold_it() -> None:
+    """`fitDock` folds the arrange zone into the dock's ⋯ when the row runs out
+    of room; a dock with no ⋯ (or `data-dock-more` to make one) wraps instead.
+    The Questions dock had none and was two lines and 114px at 768."""
+    homeless = [
+        name
+        for name, tag, whole in _docks_html()
+        if 'class="dock-arrange' in whole.replace("dock-group dock-arrange", "dock-arrange")
+        and "data-dock-more=" not in tag
+        and not re.search(r'class="[^"]*\bdock-more\b', whole)
+        and not re.search(r'dock-arrange[\s\S]*class="[^"]*\bdock-menu\b', whole)
+    ]
+    assert not homeless, f"docks whose arrange zone cannot fold: {homeless}"
+    questions = next(whole for name, _, whole in _docks_html() if name == "questions")
+    assert re.search(r'id="questions-refresh"[^>]*data-fold-narrow', questions)
+
+
+def test_the_ask_composer_holds_its_controls_beside_the_field_at_tablet_width() -> None:
+    """At 768 the controls are 391px (two 44px icons under the touch floor)
+    and the field had 214px of a 638px composer, so a 14rem basis dropped the
+    whole group under it. 12rem keeps one line there (measured 59px tall)."""
+    css = (_SHEETS / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    rule = re.search(r"\.ask-composer > #question,\s*\.ask-composer > #question:focus,\s*\.ask-composer > #question:focus-visible \{\s*flex: ([^;]+);", css)
+    assert rule and rule.group(1) == "1 1 12rem"

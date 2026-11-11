@@ -3251,10 +3251,15 @@ dialog::backdrop {
    bare selector here lost to it while typing, the field took its full width
    (flex-basis auto, width 100%), and pressing Ask blurred it and pulled the
    button 65px up between press and release, so the click missed. */
+/* 12rem, not the 14rem other fields take: at 768 the controls are 391px
+   (the touch floor makes the two icons 44px) and the field had 214px of a
+   638px composer, so the whole group dropped under it (wrapzoom sweep). 12rem
+   still holds the placeholder; a phone's composer, narrower still, moves the
+   controls down as a group, as below. */
 .ask-composer > #question,
 .ask-composer > #question:focus,
 .ask-composer > #question:focus-visible {
-  flex: 1 1 14rem;
+  flex: 1 1 12rem;
 }
 /* The controls are one flex item, so a row that cannot hold them beside a
    field worth typing in moves them down as a group. */
