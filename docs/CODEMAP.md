@@ -2001,21 +2001,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `askChartChips` | frontend/js/ask-chart.js:224 |
-| `askChartFollow` | frontend/js/ask-chart.js:346 |
-| `askChartLabel` | frontend/js/ask-chart.js:49 |
-| `askChartPng` | frontend/js/ask-chart.js:178 |
-| `askChartStep` | frontend/js/ask-chart.js:76 |
-| `askChartSvg` | frontend/js/ask-chart.js:91 |
-| `askChartSvgEl` | frontend/js/ask-chart.js:23 |
-| `askChartTable` | frontend/js/ask-chart.js:150 |
-| `askChartTickLabel` | frontend/js/ask-chart.js:45 |
-| `askChartTicks` | frontend/js/ask-chart.js:33 |
-| `askChartTipText` | frontend/js/ask-chart.js:63 |
-| `askChartWidth` | frontend/js/ask-chart.js:86 |
-| `askChartWire` | frontend/js/ask-chart.js:290 |
-| `drawAskChart` | frontend/js/ask-chart.js:258 |
-| `renderAskChart` | frontend/js/ask-chart.js:242 |
+| `askChartChips` | frontend/js/ask-chart.js:225 |
+| `askChartFollow` | frontend/js/ask-chart.js:347 |
+| `askChartLabel` | frontend/js/ask-chart.js:50 |
+| `askChartPng` | frontend/js/ask-chart.js:179 |
+| `askChartStep` | frontend/js/ask-chart.js:77 |
+| `askChartSvg` | frontend/js/ask-chart.js:92 |
+| `askChartSvgEl` | frontend/js/ask-chart.js:24 |
+| `askChartTable` | frontend/js/ask-chart.js:151 |
+| `askChartTickLabel` | frontend/js/ask-chart.js:46 |
+| `askChartTicks` | frontend/js/ask-chart.js:34 |
+| `askChartTipText` | frontend/js/ask-chart.js:64 |
+| `askChartWidth` | frontend/js/ask-chart.js:87 |
+| `askChartWire` | frontend/js/ask-chart.js:291 |
+| `drawAskChart` | frontend/js/ask-chart.js:259 |
+| `renderAskChart` | frontend/js/ask-chart.js:243 |
 
 ### frontend/js/ask-compose.js (34)
 

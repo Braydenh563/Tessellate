@@ -75,7 +75,8 @@ TOP_LEVEL_LETS_CAP = 699
 #: 2026-11-11 W29 carve 9: categories-panel.js wrapped whole, 12 exports. Measured 8,609.
 #: 2026-11-11 W29 carve 10: capture-card-more.js wrapped whole, 4 exports. Measured 8,592.
 #: 2026-11-11 W29 carve 11: captions.js wrapped whole, 4 exports. Measured 8,576.
-GLOBAL_NAMES_CAP = 8576
+#: 2026-11-11 W29 carve 12: ask-chart.js wrapped whole. Measured 8,560.
+GLOBAL_NAMES_CAP = 8560
 
 
 def _code() -> dict[str, str]:
