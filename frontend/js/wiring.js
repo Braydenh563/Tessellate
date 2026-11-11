@@ -232,11 +232,11 @@ initHelpToggles();
 //: The Notes one is said shorter (the question sent is unchanged): the default
 //: label ("Ask Atlas: How does the app decide where a note goes?") took two
 //: lines at 390, 332x46, the shape Chat's offer was given a label to avoid.
-for (const [id, question, label] of [
-  ["empty-message", "How does the app decide where a note goes?", "Ask Atlas where notes go"],
-  ["library-empty", "What can I keep in the Library?", undefined],
+for (const [id, question, label, surface] of [
+  ["empty-message", "How does the app decide where a note goes?", "Ask Atlas where notes go", "notes"],
+  ["library-empty", "What can I keep in the Library?", undefined, "library"],
 ]) {
-  $(id)?.appendChild(atlasSuggestion(question, label));
+  onSurface(surface, () => $(id)?.appendChild(atlasSuggestion(question, label)));
 }
 
 restoreDraftLocally();
@@ -1088,7 +1088,7 @@ function watchFullscreenSurface(name, id, isUp, surface = "") {
 watchFullscreenSurface("graph", "graph-card", (el) => el.classList.contains("graph-fullscreen"), "graph");
 //: The board, a mind map (a board with a tree) and Present frames (which
 //: enters the same full screen first).
-watchFullscreenSurface("whiteboard", "library-view-whiteboard", (el) => el.classList.contains("wb-fullscreen"));
+watchFullscreenSurface("whiteboard", "library-view-whiteboard", (el) => el.classList.contains("wb-fullscreen"), "library");
 //: The document's focus mode, which is also the only caller of the browser's
 //: own `requestFullscreen` (documents.js), so that is covered by it.
 watchFullscreenSurface("documents", "tab-documents", (el) => el.classList.contains("doc-focus"));

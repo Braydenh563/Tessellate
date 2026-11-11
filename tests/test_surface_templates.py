@@ -77,6 +77,12 @@ SURFACES = {
         ("switchTab",),
         ("chat-input", "chat-send", "chat-sidebar", "chat-new", "chat-compress", "chat-fork"),
     ),
+    "library": (
+        "tab-library",
+        ("<boot>",),
+        ("switchTab",),
+        ("library-subtabs", "library-boards-grid", "library-bulk-delete", "library-binbar", "library-activitybar"),
+    ),
     "palette": (
         "command-palette-overlay",
         ("palette.js", "app-palette.js", "editor.js", "field-clear.js", "status.js", "wiring.js", "settings-wiring.js", "lazy-entries.js", "dashboard.js", "navigation.js"),
@@ -106,10 +112,17 @@ def _template(name: str) -> tuple[str, str]:
 
 
 def _ids(markup: str) -> set[str]:
-    return set(re.findall(r'\bid="([^"]+)"', markup))
+    return set(re.findall(r'(?<![-\w])id="([^"]+)"', markup))
+
+
+def _boot_scripts() -> tuple[str, ...]:
+    """The scripts index.html loads at boot; the lazy modules load when a surface is opened, so they may reach it."""
+    return tuple(re.findall(r'<script src="/js/([\w-]+\.js)', INDEX))
 
 
 def _files(globs: tuple[str, ...]) -> list[Path]:
+    if globs == ("<boot>",):
+        globs = _boot_scripts()
     return sorted({p for g in globs for p in JS.glob(g)})
 
 
@@ -233,7 +246,9 @@ def test_load_time_wiring_of_the_surface_waits_for_it(name):
                 continue
             reached = block + "".join(functions.get(f, "") for f in set(re.findall(r"\b(\w+)\(", block)))
             if head.startswith("onSurface("):
-                # Another surface's hook runs later; `document.getElementById` never builds this one, so only `$` is the harm.
+                # Another surface's hook runs later, when a user opens it, and what its handlers call runs later
+                # still: only the hook's own text counts. `document.getElementById` never builds this one, so only `$` is the harm.
+                reached = block
                 reached = re.sub(r"document\.getElementById\(\s*[\"'][\w-]+[\"']\s*\)", "", reached)
             named = _selector_hits(reached, ids, classes)
             if named:

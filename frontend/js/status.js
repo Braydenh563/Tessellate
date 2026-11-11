@@ -1586,8 +1586,8 @@ function pushEntryPutUndo(entryId, label, beforeBody, afterBody) {
 //: **An open board, not the boards list**: the list's own actions (rename,
 //: delete a board) are the app's, and went to an empty board history.
 function boardHistoryActive() {
-  const board = $("library-view-whiteboard");
-  const canvas = $("wb-canvas-view");
+  const board = document.getElementById("library-view-whiteboard");
+  const canvas = document.getElementById("wb-canvas-view");
   //: Showing, not merely un-hidden (INBOX 898, found by the live check): the
   //: board's view keeps no `hidden` class when another main tab covers it, so
   //: Ctrl+Z on Notes walked the last board's history and the app's own steps
