@@ -981,6 +981,12 @@ def _second_sentence(question: str, body: str, said: str) -> str:
     return ""
 
 
+def _place_follows(question: str, steps: tuple) -> bool:
+    """A find question, or a how-to with no steps, ends on its place: the
+    sentence that answers leads (the gold set), the place follows (Q23, E33)."""
+    return bool(_FIND_ASKED.search(question) or (not steps and _HOW_ASKED.match(question)))
+
+
 def _guide_lead(question: str, topics: list[dict]) -> str:
     """The help sentence that best answers `question` (`composer.help_line`).
     Before the composer is loaded (a bare import of this module), the
@@ -1060,7 +1066,7 @@ def composed_answer(question: str, topics: list[dict], led: guide_lead.Led | Non
     lines, where, walk = _guide_opening(question, path, steps, lead)
     more = "" if steps else _second_sentence(question, guide_lead.own_topic(topics, lead, help_sentences)["body"], lead)
     lines += ["\n".join(f"{n}. {step}" for n, step in enumerate(steps, 1))] if steps else [more] if more else []
-    if path and not where and not walk and _FIND_ASKED.search(question):
+    if path and not where and not walk and _place_follows(question, steps):
         lines.append(f"**Where:** {path}")
     related = guide_lead.related_titles(topics, " ".join(lines), topic_title)
     return "\n\n".join(lines + (["**Related:** " + ", ".join(related)] if related else []))

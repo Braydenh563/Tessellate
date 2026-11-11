@@ -224,20 +224,20 @@ Parked until the owner's data or a check on real hardware:
 ~~- C29 One click on the timer chip stops a 25-minute timer with no Undo | 1031-extras Z2~~ **Fixed before s5-1110 (`stopUtilityClock` offers Undo).**
 
 **W22 Chat, Ask and the Guide** (C, Ask and help, Sonnet; not beside W1). Files: `capture-ask.js`, `ask-compose.js`, `ai/help_chat.py`, `ai/help_topics_more.py`. Checks: `tests/test_manual_parity.py`, `tests/test_guide_*`. Done when: each row fixed, help moved with it (order 13).
-- C30 Ask redesign at half width | t20#4, OPEN 22-10 doc
+- C30 Ask redesign at half width | t20#4, OPEN 22-10 doc. **Measured 1111 docs spoke, not changed:** the Ask section at 720 and 960 px wide has 0 elements past the viewport and scrollWidth equal to the width; the row has no spec beyond "half width", so a redesign is an owner call
 - ~~C31 Start SearXNG from a button | t20#6~~ **Stale: built** (ask-compose.js searxng-start offer), s6-1110
 - ~~C32 One-line summary at the top of every Help topic | oa 1607 e, 1612 b~~ **Stale: built** (help_leads.py), s6-1110
 - ~~C33 The Guide's no-model answer prints no "I took that to mean" | t20#13~~ **Stale: built** (offline_answer says "Assuming you meant"), s6-1110
 - ~~C34 Ask history shows glued titles | 1107 D26~~ **Not reproduced: same cause as D5 (fixed)**, s6-1110
-- C35 Citation style (after Q1); path-first Guide answers (after Q23) | 1107 D25, E33
-- C36 "buttons disappeared" after opening Why: not reproduced, one more drive | chatfoot L4
+- C35 Citation style (after Q1); ~~path-first Guide answers (after Q23)~~ | 1107 D25, E33. **E33 built 1111 docs spoke** (spoken lead first, place as its own last line for a how-to with no steps; where-questions and stepped how-tos already led with the place). **D25 left for the composer spoke:** the bracketed title is written by `composer_phrases`, `composer_answer`, `composer_notes` and `composer_openlinks`, so removing it (and then `linkCitedTitles` in ask-compose.js and tests/test_composer_688.py) is one change across files this spoke does not own
+~~C36 "buttons disappeared" after opening Why: not reproduced, one more drive | chatfoot L4~~ **Closed 1111 docs spoke as unverifiable:** O26 already records 0 removals in three drives; a fourth adds nothing without a repro
 
 **W23 Documents daily UX** (C, documents, Sonnet; verify first; not beside W4 or W28). Files: `documents*.js` outside the save path. Checks: `tests/test_doc*`. Done when: rows fixed or struck.
 - ~~C37 Spell and autocorrect split non-ASCII words ("café") | 1028-docs D8~~ **Stale: fixed** (CHANGELOG 1499), s6-1110
 - ~~C38 History previews leak raw markup | audit-1102-docs DX27~~ **Stale: built** (7af47c4), s6-1110
 - ~~C39 Link offers have no Settings switch; "Untitled document N" naming | t20#15, t20#16~~ **Stale: built** (Settings link offers switch; documents.js Untitled document N), s6-1110
 - ~~C40 Equation panel jump row and Inline/Display pill | DOCUMENTS 1566~~ **Stale: built 6c08378**, s6-1110
-- C41 The remaining 1028-docs and 1031-docs open rows | book1 (40 and 7 rows)
+- ~~C41 The remaining 1028-docs and 1031-docs open rows | book1 (40 and 7 rows)~~ **Re-verified 1111 docs spoke, one by one:** built D2, D3 (W4: test_doc_save_serial, test_doc_new_draft_1110), D36 (`docDropIfUntouched` re-adds the row on a failed delete), DC8 (archived PUT is 409; `filetypes.require` refuses an unknown type), DC11 (the template dialog focuses the checked radio, measured; the panel reads "Fix all N" and "N suggestions in view"); stale D29, D34, D40, D41, DC7, DC10; built here D28; won't D25, D23, D45, D46; deferred large (D22, D42, D43, D47, D52, DC13); partial D39 (a status-bar Autocorrect switch is not built, the Editor menu one is); DC1 and DC2 (lock leaves words on the page; AI panel over the lock screen) are lock code, another worker's
 - ~~D28 Text size is three steps, no Ctrl+wheel | 1028-docs D28~~ built e2775e4 (five sizes, Ctrl+wheel, tests/test_doc_text_zoom_1111.py); D29, D40, D41 stale (built); D25 won't do (rules interleave with the shared note toolbar and theme overrides, no measured defect, cascade-order risk in a move)
 
 ### Tier D: performance and CI time
