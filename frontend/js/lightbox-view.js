@@ -1076,6 +1076,14 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     await copyToClipboard(value, b);
   }, topActions);
 
+  //: The picture itself (INBOX 1775); Ctrl+C does the same while a picture is shown.
+  const copyPictureNow = () => {
+    const item = items[index];
+    if (img.classList.contains("hidden") || item.kind) return;
+    attachmentAction("copy-image", { src: img.currentSrc || img.src, name: item.filename });
+  };
+  const copyPictureBtn = actionBtn("ph:image", "Copy image (Ctrl+C)", copyPictureNow, topActions);
+
   // Save the original file. `download` needs a same-origin href to name the
   // file, which `mediaSrc()` gives us: it is this app's own /media route.
   actionBtn("ph:download-simple", "Download this file", async () => {
@@ -1505,6 +1513,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     const menu = kebabMenu(
       [
         ...items,
+        { label: "ph:image Copy image", title: "Put this picture on the clipboard", run: copyPictureNow },
         {
           label: "ph:pencil-simple Rename",
           title: "Rename this image",
@@ -2268,6 +2277,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     syncTitle(item);
     syncFilmstrip();
     openTabBtn.classList.toggle("hidden", Boolean(item.kind));
+    copyPictureBtn.classList.toggle("hidden", Boolean(item.kind));
     for (const b of [dockPrevBtn, dockNextBtn]) b.classList.toggle("hidden", items.length < 2);
   }
   //: The dock goes when nothing in it applies (a text file has no zoom and
@@ -2324,6 +2334,11 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     if (e.key === "Escape") {
       //: Escape in the zoom field puts its number back (value-field.js); it does not close the viewer.
       if (!above && !e.target.closest?.(".value-field")) close();
+      return;
+    }
+    if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && (e.key === "c" || e.key === "C") && !above && !typing(e.target) && !String(window.getSelection?.() || "").trim()) {
+      copyPictureNow();
+      e.preventDefault();
       return;
     }
     if (above || typing(e.target) || e.ctrlKey || e.metaKey || e.altKey) return;

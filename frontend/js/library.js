@@ -10331,6 +10331,8 @@ function filterLibraryImagesGallery() {
       }));
     const rows = menuRows.filter((row) => !row.text);
     rows.splice(menuRows.findIndex((row) => row.text), 0, { label: "ph:text-aa Text and description", items: menuRows.filter((row) => row.text) });
+    //: The picture itself on the clipboard (INBOX 1775); the right-click on the tile opens this menu.
+    if (image._isImage) rows.unshift({ label: "ph:image Copy image", title: `Copy “${image.original_name}” as a picture`, run: () => attachmentAction("copy-image", { url: image.url, name: image.original_name }) });
     const menu = kebabMenu(rows, `More actions for “${image.original_name}”`);
     actions.append(menu);
 
