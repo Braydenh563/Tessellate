@@ -677,6 +677,8 @@ function wbBoardToDrawio(state, { title = "Board", box = null, hidden = null } =
     };
     const joined = (side) => ref(side) || d[`${side}Point`];
     if (!joined("source") || !joined("target")) { skip("loose connectors"); continue; }
+    //: A .drawio edge carries one value here; the second label (`label2`) has no cell of its own to ride, so the notice names it.
+    if (d.label2) skip("second connector labels");
     const capOf = (cap, flag) => (cap && cap !== "none" ? WB_DRAWIO_CAPS_OUT[cap] || "classic" : flag ? "classic" : "none");
     const end = capOf(d.endCap, d.endStyle === "end" || d.endStyle === "both");
     const start = capOf(d.startCap, d.endStyle === "both");

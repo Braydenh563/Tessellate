@@ -127,3 +127,15 @@ def test_a_long_title_is_cut_before_it_is_escaped(at: int) -> None:
     root = ET.fromstring(made["xml"].split("\n", 1)[1])  # raises on a cut entity
     name = root.find("diagram").get("name")
     assert name == title[:120]
+
+
+def test_a_second_connector_label_is_named_as_not_kept() -> None:
+    """A .drawio edge has one value, so `label2` cannot travel; the export says so rather than dropping it silently."""
+    state = json.loads(json.dumps(STATE))
+    link = next(s for s in state["sketches"] if s["id"] == 22)
+    data = json.loads(link["data"])
+    data["label2"] = "end"
+    link["data"] = json.dumps(data)
+    made = _export(state)
+    assert made["skipped"]["second connector labels"] == 1
+    assert "second connector labels" not in _export(STATE)["skipped"]

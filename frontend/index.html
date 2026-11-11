@@ -7005,6 +7005,7 @@ Link to another note with [[its first few words]]."></textarea>
               </div>
               <div class="wb-menu-section" data-wb-submenu="ph:shapes Shapes and icons" data-wb-submenu-title="The shape library, emoji and icons">
                 <button type="button" class="wb-menu-item" data-wb-cmd="open-library"><i class="ph ph-shapes ph-lead" aria-hidden="true"></i><span>Shapes, icons and frames…</span></button>
+                <button type="button" class="wb-menu-item" data-wb-cmd="shape-picker" data-wb-surface="board"><i class="ph ph-magnifying-glass ph-lead" aria-hidden="true"></i><span>Shape picker…</span></button>
                 <button type="button" class="wb-menu-item" data-wb-cmd="insert-sticker"><i class="ph ph-smiley-sticker ph-lead" aria-hidden="true"></i><span>Emoji and icons…</span></button>
               </div>
               <button type="button" class="wb-menu-item" data-wb-insert="image"><i class="ph ph-image ph-lead" aria-hidden="true"></i><span>Image from a file…</span><kbd>I</kbd></button>
@@ -7082,6 +7083,8 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" class="wb-menu-item" data-wb-cmd="same-height"><i class="ph ph-arrows-out-line-vertical ph-lead" aria-hidden="true"></i><span>Same height</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="flip-h"><i class="ph ph-flip-horizontal ph-lead" aria-hidden="true"></i><span>Flip left to right</span><kbd>Shift+H</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="flip-v"><i class="ph ph-flip-vertical ph-lead" aria-hidden="true"></i><span>Flip top to bottom</span><kbd>Shift+V</kbd></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="flip-layout-h"><i class="ph ph-arrows-left-right ph-lead" aria-hidden="true"></i><span>Layout, left to right</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="flip-layout-v"><i class="ph ph-arrows-down-up ph-lead" aria-hidden="true"></i><span>Layout, top to bottom</span></button>
             </div>
             <div class="wb-menu-section" data-wb-submenu="ph:tree-structure Tidy and connect" data-wb-submenu-title="Lay shapes out as a tree, join them or measure">
               <button type="button" class="wb-menu-item" data-wb-cmd="tidy-down"><i class="ph ph-tree-structure ph-lead" aria-hidden="true"></i><span>Top to bottom</span></button>
@@ -7089,6 +7092,7 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" class="wb-menu-item" data-wb-cmd="join-chain"><i class="ph ph-arrow-elbow-down-right ph-lead" aria-hidden="true"></i><span>In a line</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="join-fan"><i class="ph ph-share-network ph-lead" aria-hidden="true"></i><span>All to the first picked</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="measure"><i class="ph ph-ruler ph-lead" aria-hidden="true"></i><span>Measure with a dimension line</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="parallel-edges"><i class="ph ph-equals ph-lead" aria-hidden="true"></i><span>Space parallel connectors</span></button>
             </div>
             <div class="wb-menu-section" data-wb-submenu="ph:link Group and lock" data-wb-submenu-title="Group, ungroup and lock">
               <button type="button" class="wb-menu-item" data-wb-cmd="group" data-wb-either><i class="ph ph-link ph-lead" aria-hidden="true"></i><span>Group</span><kbd>Ctrl+G</kbd></button>
@@ -7979,7 +7983,9 @@ Link to another note with [[its first few words]]."></textarea>
             <button type="button" class="wb-menu-item" data-wb-cmd="format-panel"><i class="ph ph-sliders-horizontal ph-lead" aria-hidden="true"></i><span>Format panel</span><kbd>Ctrl+Shift+P</kbd></button>
             <button type="button" class="wb-menu-item hidden" data-wb-ctx="more-link" data-wb-cmd="item-link"><i class="ph ph-link-simple ph-lead" aria-hidden="true"></i><span>Link…</span></button>
             <button type="button" class="wb-menu-item hidden" data-wb-ctx="more-shape" data-wb-cmd="change-shape"><i class="ph ph-shapes ph-lead" aria-hidden="true"></i><span>Change the shape…</span></button>
+            <button type="button" class="wb-menu-item hidden" data-wb-ctx="more-shape" data-wb-cmd="replace-library"><i class="ph ph-swap ph-lead" aria-hidden="true"></i><span>Replace with a library shape…</span></button>
             <button type="button" class="wb-menu-item hidden" data-wb-ctx="more-shape" data-wb-cmd="edit-ports"><i class="ph ph-crosshair-simple ph-lead" aria-hidden="true"></i><span>Edit connection points</span></button>
+            <button type="button" class="wb-menu-item hidden" data-wb-ctx="more-shape" data-wb-cmd="edit-points"><i class="ph ph-polygon ph-lead" aria-hidden="true"></i><span>Edit shape points</span></button>
             <button type="button" class="wb-menu-item hidden" data-wb-ctx="more-shape" data-wb-cmd="reset-ports"><i class="ph ph-arrow-counter-clockwise ph-lead" aria-hidden="true"></i><span>Reset connection points</span></button>
             <div class="wb-menu-section" data-wb-ctx="more-style">
               <span class="wb-panel-group-label">Style</span>

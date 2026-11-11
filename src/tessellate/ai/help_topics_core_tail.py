@@ -359,7 +359,9 @@ TAIL_TOPICS.extend(
                 "export dialog, which opens on Whole board when nothing is selected (On screen is one press away); Board, Show hints brings the first-steps card back (an empty board keeps a one-line cue meanwhile). "
                 "For diagrams, the UML set has class, interface, enumeration and package boxes with the six "
                 "relations; Entity relationship has entities, attributes and crow's foot lines; Wireframe has "
-                "a window, button, input, checkbox, dropdown, image, navigation bar and card."
+                "a window, button, input, checkbox, dropdown, image, navigation bar and card. "
+                "Insert, Shape picker searches the library at the pointer and Enter places the match there; More, Replace with a library shape "
+                "swaps a selected shape's outline and keeps its words and connectors; dragging a copy arrow to empty space opens the picker there."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -565,6 +567,11 @@ TAIL_TOPICS.extend(
                 "self loop",
                 "loop on a shape",
                 "connector to itself",
+                "parallel connectors",
+                "space the connectors",
+                "two lines between the same shapes",
+                "flip the layout",
+                "mirror a diagram",
             ),
             "body": (
                 "Shift+2 (or View, Zoom to the selection) frames what is selected, "
@@ -582,7 +589,10 @@ TAIL_TOPICS.extend(
                 "Home goes back to the top left of what is drawn at the zoom you have, and Shift+Home resets the view to 100% there. "
                 "Shift+Delete clears the labels of the selected shapes and connectors; one Undo puts them back. "
                 "In the find bar (Ctrl+H), Replace changes the current match and moves on; Replace all changes every one. "
-                "Arrange, Loop on the shape draws a connector from a shape back to itself; Format, Loop side moves it."
+                "Arrange, Loop on the shape draws a connector from a shape back to itself; Format, Loop side moves it. "
+                "Arrange, Space parallel connectors fans the connectors that join the same two shapes so none hides another "
+                "(it leaves a connector with bends of its own alone), and Layout, left to right or top to bottom, "
+                "swaps the selected shapes' places across the middle of the group, with their connectors' bends, and turns no shape itself."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
