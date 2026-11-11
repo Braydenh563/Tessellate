@@ -418,6 +418,8 @@ later; until then search uses keywords. To avoid the download, pull
 | A second grammar checker (LanguageTool) | Grammar and style findings from a local Java program, merged with the built-in checker's; about 252 MB, needs Java already installed |
 | Run Python files (Pyodide) | Runs a `.py` document in a sandbox; a pinned download that works offline |
 | Tool calling without Ollama (needle) | A small built-in model that picks tools when no model server is running; a pinned download that works offline |
+| Speaker labels, engine (sherpa-onnx) | Tells voices apart in a recording so a transcript reads Speaker 1, Speaker 2; the Speakers bundle installs it with its models |
+| Speaker labels, models (pyannote and WeSpeaker) | The two small models it reads, a pinned 34 MB download kept in the data folder; works offline |
 | Translate offline (Bergamot, English to Spanish) | Translate this, in the command palette, with no model; a pinned 27 MB download that works offline |
 
 ## Privacy

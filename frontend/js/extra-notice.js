@@ -24,6 +24,7 @@
     translate: "Translating offline needs the translate package.",
     localllm: "A built-in model needs the local model package.",
     captions: "Live captions need the captions package.",
+    speakers: "Labelling who speaks needs the speaker packages.",
     searxng: "Private web search needs SearXNG, which is not installed.",
   };
   let cache = { at: 0, rows: null };
@@ -55,7 +56,15 @@
       //: No backend (no Docker, no virtualenv) is Settings' to explain, not an install.
       return { missing: Boolean(info && info.backend && info.state === "absent" && !info.installing), row: null };
     }
-    const row = ((await extraRows(fresh)) || []).find((one) => one.id === id);
+    const rows = (await extraRows(fresh)) || [];
+    //: Speaker labels are two packages (the engine and its models) installed as one bundle: missing when either is.
+    if (id === "speakers") {
+      const engine = rows.find((one) => one.id === "speakers");
+      const models = rows.find((one) => one.id === "speakermodels");
+      if (!engine || !models) return { missing: false, row: null };
+      return { missing: !(engine.installed && models.installed), row: { ...engine, label: "Speaker labels", size: "about 40 MB", source: "pypi.org and github.com" } };
+    }
+    const row = rows.find((one) => one.id === id);
     return { missing: Boolean(row && !row.installed), row: row || null };
   }
 
@@ -67,7 +76,8 @@
       return;
     }
     if (!(await confirmDialog(`Install ${row.label}?\n\nAbout ${row.size.replace(/^~/, "")} is downloaded from ${row.source}. It runs on this computer.`))) return;
-    const result = await apiJson(`/extras/${id}/install`, { method: "POST" }).catch((error) => ({ started: false, message: error.message }));
+    const request = id === "speakers" ? ["/extras/bulk", { method: "POST", body: JSON.stringify({ action: "install", bundle: "speakers" }) }] : [`/extras/${id}/install`, { method: "POST" }];
+    const result = await apiJson(...request).catch((error) => ({ started: false, message: error.message }));
     if (!result.started) return toast(result.message || "The install could not start.", "info", { action: ["Open Packages", () => openSettingsModal("extras")] });
     toast(`Installing ${row.label}.`, "info");
     for (let waited = 0; waited < 600; waited += 1) {
