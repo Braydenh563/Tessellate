@@ -1376,7 +1376,7 @@ chatHistoryToSend.settle = (card, event, outcome, extra = {}) => {
   const send = () => {
     const index = msg.turnIndex ?? [...$("chat-messages").querySelectorAll(".msg.assistant")].indexOf(msg);
     if (chatConv.id === null || index < 0 || !Number.isInteger(event.act_slot)) return;
-    return apiJson(`/conversations/${chatConv.id}/turns/${index}/acts/${event.act_slot}`, { method: "PUT", silent: true, body: JSON.stringify({ outcome, consent_id: event.consent_id || event.offer_id || "", label: event.label, ...extra }) }).catch(() => {});
+    return apiJson(`/conversations/${chatConv.id}/turns/${index}/acts/${event.act_slot}`, { method: "PUT", silent: true, body: JSON.stringify({ outcome, consent_id: event.consent_id || event.offer_id || "", label: event.label, ...extra }) }).catch((e) => toast(e.message));
   };
   return msg.saving ? void msg.saving.push(send) : send();
 };

@@ -256,6 +256,34 @@ def _saved_offer(offer: object) -> dict | None:
     return kept
 
 
+def _saved_offer_card(act: dict, card: dict) -> bool:
+    """Fill an offer card from its offer; False when the offer is not one to keep."""
+    offer = _saved_offer(act.get("offer"))
+    if offer is None:
+        return False
+    card["offer"] = offer
+    card["consent_id"] = str((act.get("offer") or {}).get("offer_id") or act.get("consent_id") or "")[:40]
+    card["label"] = offer.get("label", "")
+    return True
+
+
+def _saved_act_extras(kind: str, act: dict, card: dict) -> None:
+    """The per-kind parts of a card: a confirm's arguments, an act's steps, skipped, undo and done."""
+    if kind == "confirm":
+        args = act.get("arguments")
+        if isinstance(args, dict) and len(json.dumps(args)) <= 20_000:
+            card["arguments"] = args
+        else:
+            card["lost"] = True  # too large to keep: it reads as expired, never as something to press
+    if kind != "act":
+        return
+    for key in ("steps", "skipped", "undo"):
+        if isinstance(act.get(key), list) and len(act[key]) <= 60:
+            card[key] = [step for step in act[key] if isinstance(step, dict)]
+    if act.get("done") is True:
+        card["done"] = True
+
+
 def _saved_acts(acts: list[dict]) -> list[dict]:
     """The cards a turn drew (an act's, an agent's tool confirm, a note offer), cut to what a redraw
     needs: words, what the card showed, the undo it offered, whether it had already run. None of it
@@ -266,24 +294,9 @@ def _saved_acts(acts: list[dict]) -> list[dict]:
         if kind not in ("act", "confirm", "offer"):
             continue
         card: dict = {k: str(act[k])[:600] for k in _ACT_KEYS if isinstance(act.get(k), str) and act[k]}
-        if kind == "offer":
-            offer = _saved_offer(act.get("offer"))
-            if offer is None:
-                continue
-            card["offer"] = offer
-            card["consent_id"] = str((act.get("offer") or {}).get("offer_id") or act.get("consent_id") or "")[:40]
-            card["label"] = offer.get("label", "")
-        if kind == "confirm":
-            args = act.get("arguments")
-            if isinstance(args, dict) and len(json.dumps(args)) <= 20_000:
-                card["arguments"] = args
-            else:
-                card["lost"] = True  # too large to keep: it reads as expired, never as something to press
-        for key in ("steps", "skipped", "undo"):
-            if kind == "act" and isinstance(act.get(key), list) and len(act[key]) <= 60:
-                card[key] = [step for step in act[key] if isinstance(step, dict)]
-        if kind == "act" and act.get("done") is True:
-            card["done"] = True
+        if kind == "offer" and not _saved_offer_card(act, card):
+            continue
+        _saved_act_extras(kind, act, card)
         kept.append(card)
     return kept
 
@@ -308,20 +321,30 @@ def _act_state(act: dict) -> str:
     return "pending" if act.get("type") == "offer" and not key else "expired"
 
 
+def _acts_field(turn: TurnBody) -> dict:
+    """`{"acts": [...]}` when the turn drew cards worth keeping, else nothing."""
+    acts = _saved_acts(turn.acts) if turn.acts else []
+    return {"acts": acts} if acts else {}
+
+
+def _hydrate_act(message: dict, slot: int, act: dict) -> None:
+    act["state"] = _act_state(act)
+    act["act_slot"] = slot
+    act["notice"] = {"expired": EXPIRED, "undone": "Undone.", "cancelled": "Cancelled: nothing was changed."}.get(act["state"], act.get("notice", ""))
+    if act.get("type") == "offer" and isinstance(message.get("support"), dict):
+        #: Back in the answer's support, where the page draws the offer from, with its place in `acts`.
+        message["support"] = {**message["support"], "offer": {**act["offer"], "offer_id": act.get("consent_id", ""), "state": act["state"], "notice": act["notice"] if act["state"] != "done" else "", "summary": act.get("summary", ""), "act_slot": slot}}
+    result = consent_store.result_of(act.get("consent_id")) if act["state"] == "done" and not act.get("outcome") else None
+    if result:
+        act["summary"] = str(result.get("summary") or result.get("label") or act.get("label") or "")[:600]
+        act["undo"] = [step for step in (result.get("undo") or []) if isinstance(step, dict)]
+
+
 def _hydrate_acts(messages: list[dict]) -> None:
     """Each saved card gets its state, and a pressed one the summary and Undo the server kept; a note offer goes back into the turn's support."""
     for message in messages:
         for slot, act in enumerate(message.get("acts") or []):
-            act["state"] = _act_state(act)
-            act["act_slot"] = slot
-            act["notice"] = {"expired": EXPIRED, "undone": "Undone.", "cancelled": "Cancelled: nothing was changed."}.get(act["state"], act.get("notice", ""))
-            if act.get("type") == "offer" and isinstance(message.get("support"), dict):
-                #: Back in the answer's support, where the page draws the offer from, with its place in `acts`.
-                message["support"] = {**message["support"], "offer": {**act["offer"], "offer_id": act.get("consent_id", ""), "state": act["state"], "notice": act["notice"] if act["state"] != "done" else "", "summary": act.get("summary", ""), "act_slot": slot}}
-            result = consent_store.result_of(act.get("consent_id")) if act["state"] == "done" and not act.get("outcome") else None
-            if result:
-                act["summary"] = str(result.get("summary") or result.get("label") or act.get("label") or "")[:600]
-                act["undo"] = [step for step in (result.get("undo") or []) if isinstance(step, dict)]
+            _hydrate_act(message, slot, act)
 
 
 def _turn_messages(turn: TurnBody) -> list[dict]:
@@ -364,8 +387,7 @@ def _turn_messages(turn: TurnBody) -> list[dict]:
     persona = (turn.persona or "").strip()
     if persona:
         assistant["persona"] = persona
-    if turn.acts and (acts := _saved_acts(turn.acts)):
-        assistant["acts"] = acts
+    assistant.update(_acts_field(turn))
     if turn.by:
         assistant["by"] = {
             "composed": bool(turn.by.get("composed")),
@@ -1070,6 +1092,20 @@ def _may_become(card: dict, outcome: str) -> bool:
     return state == "done" and not card.get("outcome") and not card.get("done")
 
 
+def _apply_outcome(card: dict, body: ActOutcomeBody) -> None:
+    """The server-side effect of an outcome: spend the offer's id, keep the result and Undo, or decline the parked card."""
+    key = card.get("consent_id") or ""
+    if body.outcome == "done" and card.get("type") == "offer":
+        consent_store.take(key)
+        card["summary"] = body.summary
+    elif body.outcome == "done":
+        result = consent_store.result_of(key) or {}
+        card["summary"] = str(result.get("summary") or result.get("label") or card.get("label") or "")[:600]
+        card["undo"] = [step for step in (result.get("undo") or []) if isinstance(step, dict)]
+    elif body.outcome == "cancelled":
+        consent_store.decline(key)
+
+
 @router.put("/{conversation_id}/turns/{index}/acts/{n}")
 def set_turn_act_outcome(
     conversation_id: int, index: int, n: int, body: ActOutcomeBody, session: Session = Depends(get_session)
@@ -1093,16 +1129,7 @@ def set_turn_act_outcome(
         return {"saved": True, "state": body.outcome}
     if not _may_become(card, body.outcome):
         raise HTTPException(status_code=409, detail="That card was already answered.")
-    key = card.get("consent_id") or ""
-    if body.outcome == "done" and card.get("type") == "offer":
-        consent_store.take(key)
-        card["summary"] = body.summary
-    elif body.outcome == "done":
-        result = consent_store.result_of(key) or {}
-        card["summary"] = str(result.get("summary") or result.get("label") or card.get("label") or "")[:600]
-        card["undo"] = [step for step in (result.get("undo") or []) if isinstance(step, dict)]
-    elif body.outcome == "cancelled":
-        consent_store.decline(key)
+    _apply_outcome(card, body)
     card["outcome"] = body.outcome
     session.execute(
         update(Conversation).where(Conversation.id == conversation.id).values(messages=json.dumps(messages), updated_at=conversation.updated_at)

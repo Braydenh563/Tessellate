@@ -103,7 +103,8 @@ def test_narrow_gutter_and_table_menu_stay_compact():
     css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
     assert "@media (max-width: 819.98px)" in css and ".cm-lineNumbers .cm-gutterElement" in css
     assert ".cm-editor .cm-md-table-menu > button" in css
-    assert "geo.box.bottom + 2" in DOCS_JS
+    # Intent moved (INBOX 1782): the plus sits at geo.box.bottom; CSS margin-top supplies the gap.
+    assert "y: geo.box.bottom, w: band" in DOCS_JS
 
 
 def test_history_dialog_keeps_the_head_to_title_and_close():
