@@ -336,7 +336,9 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   //: reproduced, so whatever path changed the look without a repaint, the
   //: window never opens on a stale one.
   paintUserMarks();
-  $("settings-close").focus();
+  //: A frame on: focusing a button in a window just un-hidden lays the whole window out inside
+  //: the press (60ms style + 12 layout at 4x), and the reads after it laid out a second time.
+  afterFrames(() => $("settings-close").focus(), 1);
   //: The version alone: "46 entries loaded" was a debugging line (the
   //: client's cache size, drafts included) sitting beside the Health
   //: section's own count of the same thing, and the two disagreed.
@@ -1073,6 +1075,18 @@ function renderActiveLogView() {
   if (logView === "terminal") renderLogTerminal();
   else renderLogList();
 }
+//: Live records draw together, at most four times a second, not once each: every request is a
+//: log line, and each draw rebuilt up to 500 rows and laid them out (190ms of forced layout at
+//: 4x across the draws on opening Logs, INBOX 1111). `toBottom` is the browser's own errors.
+renderActiveLogView.soon = (toBottom) => {
+  renderActiveLogView.bottom ||= toBottom;
+  renderActiveLogView.frame ||= setTimeout(() => {
+    renderActiveLogView.frame = 0;
+    renderActiveLogView();
+    if (renderActiveLogView.bottom) scrollLogToBottom();
+    renderActiveLogView.bottom = false;
+  }, 250);
+};
 
 function setLogLive(state, detail) {
   const pill = $("log-live");
@@ -1155,7 +1169,7 @@ async function startLogStream() {
           logRecords.push(serverLogRecord(event.record));
           bumpLogErrorBadge(event.record);
           sortLogRecords();
-          if (logScreenOpen) renderActiveLogView();
+          if (logScreenOpen) renderActiveLogView.soon();
         } else if (event.type === "ping") {
           logStreamCursor = event.cursor || logStreamCursor;
         } else if (event.type === "reconnect") {
@@ -3442,7 +3456,8 @@ function focusSettingsHeading(name) {
   const head = pane?.querySelector(":scope > .settings-pane-title h3, :scope > .help-head h3, h3");
   if (!head) return focusSettingsPane();
   head.tabIndex = -1;
-  head.focus({ preventScroll: true });
+  //: A frame on: the section was just switched, and focusing laid it out inside the press.
+  afterFrames(() => head.focus({ preventScroll: true }), 1);
 }
 
 //: A group heading (INBOX 697) is in the loop too: a press on it opens its
