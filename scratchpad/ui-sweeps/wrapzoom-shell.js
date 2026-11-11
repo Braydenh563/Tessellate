@@ -244,7 +244,10 @@ function detect() {
     const range = document.createRange(); range.selectNodeContents(n);
     for (const r of range.getClientRects()) {
       if (r.width < 1 || r.height < 1) continue;
-      const v = visPart(p, { left: r.left + 1, top: r.top + 1, right: r.right - 1, bottom: r.bottom - 1 });
+      let v = visPart(p, { left: r.left + 1, top: r.top + 1, right: r.right - 1, bottom: r.bottom - 1 });
+      // An ellipsised label's range runs past its own box: its own overflow clips it too.
+      const ps = cs(p);
+      if (v && (ps.overflowX !== 'visible' || ps.overflowY !== 'visible')) { const b = box(p); v = inter(v, { left: ps.overflowX !== 'visible' ? b.left : -1e9, right: ps.overflowX !== 'visible' ? b.right : 1e9, top: ps.overflowY !== 'visible' ? b.top : -1e9, bottom: ps.overflowY !== 'visible' ? b.bottom : 1e9 }); if (empty(v)) v = null; }
       if (v) texts.push({ n, p, v });
     }
   }
@@ -328,6 +331,7 @@ function underBars() {
     const r = e.getBoundingClientRect();
     return visible(e) && r.width > 120 && r.height < innerHeight * 0.3;
   });
+  const nearScroller = (e) => { for (let a = e; a && a !== document.body; a = a.parentElement) { const s = cs(a); if (/auto|scroll/.test(s.overflowY) && a.scrollHeight > a.clientHeight + 2) return a; } return document.scrollingElement; };
   const scrollers = [document.scrollingElement, ...[...document.querySelectorAll('body *')].filter((e) => { const s = cs(e); return /auto|scroll/.test(s.overflowY) && e.scrollHeight > e.clientHeight + 2 && visible(e); })];
   for (const S of scrollers) {
     const keep = S.scrollTop;
@@ -337,6 +341,8 @@ function underBars() {
       const sb = S === document.scrollingElement ? { top: 0, bottom: innerHeight, left: 0, right: innerWidth } : S.getBoundingClientRect();
       for (const B of bars) {
         if (B.contains(S)) continue;
+        // A sticky bar belongs to its own scroller.
+        if (cs(B).position === 'sticky' && nearScroller(B.parentElement) !== S) continue;
         const br = B.getBoundingClientRect();
         // Only a bar that sits over this scroller's own area.
         if (br.bottom <= sb.top || br.top >= sb.bottom || br.right <= sb.left || br.left >= sb.right) continue;
@@ -344,6 +350,8 @@ function underBars() {
         for (let n = tw.nextNode(); n; n = tw.nextNode()) {
           const p = n.parentElement;
           if (!n.textContent.trim() || !p || B.contains(p) || p.contains(B) || !visible(p)) continue;
+          // Only text this scroller moves: a nested scroller's text is that scroller's.
+          if (nearScroller(p) !== S) continue;
           if (p.closest('[role=dialog], dialog, .visually-hidden, .sr-only')) continue;
           const range = document.createRange(); range.selectNodeContents(n);
           for (const r of range.getClientRects()) {
@@ -470,8 +478,8 @@ async function runViewport(spec, rows) {
   await page.evaluate(() => document.getElementById('onboarding-overlay')?.classList.add('hidden')).catch(() => {});
   const ONLY = (process.env.ONLY || '').split(',').filter(Boolean);
   const push = (state, found) => {
-    const seen = new Set();
-    for (const f of found) { const k = f.kind + f.sel + (f.what || '') + (f.over || '') + (f.end || ''); if (seen.has(k)) continue; seen.add(k); rows.push({ vp: spec, theme: THEME, state, ...f }); }
+    const seen = new Map();
+    for (const f of found) { const k = f.kind + f.sel + (f.what || '') + (f.over || '') + (f.end || ''); if (seen.has(k)) { seen.get(k).count++; continue; } const row = { vp: spec, theme: THEME, state, count: 1, ...f }; seen.set(k, row); rows.push(row); }
     rows.push({ vp: spec, theme: THEME, state, kind: 'measured', n: found.length });
   };
   for (const st of STATES) {

@@ -304,6 +304,8 @@ async function run() {
     // Openers inside a scope: menus, help ?s and the first kebab of each kind.
     const openers = (scope) => ev((scope) => {
       const root = document.querySelector(scope); if (!root) return [];
+      // Tags from an earlier state would win querySelector: clear them first.
+      document.querySelectorAll('[data-wz-opener]').forEach((e) => e.removeAttribute('data-wz-opener'));
       const vis = (el) => el.checkVisibility && el.checkVisibility({ opacityProperty: true, visibilityProperty: true }) && el.getClientRects().length;
       const picks = [], kinds = new Set();
       const els = [...root.querySelectorAll('details.dock-menu > summary, details.doc-dock-menu > summary, [data-help-for], .graph-help-toggle, .kebab-opener, button[aria-haspopup="menu"], button[aria-haspopup="true"]')];
@@ -407,7 +409,7 @@ async function run() {
     // ---- Reminders ----
     for (const v of ['list', 'calendar']) {
       const open = async () => { await tab('reminders'); await settle(500); await ev((v) => document.querySelector(`#reminder-view-toggle [data-view="${v}"]`)?.click(), v); await settle(600); };
-      await S(`reminders/${v}`, open, ['#tab-reminders'], '#tab-reminders', open);
+      await S(`reminders/${v}`, open, ['#tab-reminders', '#tab-timeline'], v === 'list' ? '#tab-reminders' : null, open);
     }
     await S('reminders/typed', async () => { await tab('reminders'); await ev(() => document.querySelector('#reminder-view-toggle [data-view="list"]')?.click());
       await page.fill('#reminder-text', 'Ring the garage about the car service and the tyres').catch(() => {}); }, ['#tab-reminders']);
