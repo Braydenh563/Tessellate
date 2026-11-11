@@ -1,4 +1,4 @@
-Counts, re-checked 2026-11-11 at head 5fbaedf23, updated after the decision agents: fixed 20, stale 44 (pointer in the row, details in v1028-1.md to v1028-4.md), open 6 (each names its blocker), unsure 72. Source: audit-1028-ranked.md rows with planned at new (144 rows), first checked 2026-11-02.
+Counts, re-checked 2026-11-11 at head 5fbaedf23, updated after the decision agents: fixed 22, stale 45 (pointer in the row, details in v1028-1.md to v1028-4.md), open 3 (each names its blocker), unsure 72. Source: audit-1028-ranked.md rows with planned at new (144 rows), first checked 2026-11-02.
 
 | id | verdict | evidence | size |
 |---|---|---|---|
@@ -56,10 +56,10 @@ Counts, re-checked 2026-11-11 at head 5fbaedf23, updated after the decision agen
 | D22 | open | agent d2 building the library/boards split (dec-1111-d1.md has the design) | L |
 | B15 | stale 2026-11-11 | closed, won't do: d3 v7 drag has no pointer-event option; the one-line bridge is pinned by tests/test_wb_edge_pan.py, reopen only if d3 is replaced (dec-1111-w1.md) | L |
 | D23 | partial 483b6a6 | docCmTheme is documents-cm-theme.js; docLivePlugin (1,720 lines) still one function, line in DOCUMENTS_PLAN. | L |
-| K24 | open | Re-checked 2026-11-11, still open: True: 9 Python files exceed 3,000 lines (composer_digest.py 6,230, engine.py 4,821, recognise.py 4,027, help_topics_more.py 3,915, routes_entries.py 3,777, help_topics_core.py 3,712, manager.py 3,595, database.py 3,345, __main__.py 3,013). Splits are L, and in progress in k24-1111.md (next: routes_entries connections block, routes_settings logs) (v1028-4.md) | L |
-| K25 | open | Re-checked 2026-11-11, still open: Partly done (18 to 10 functions over 150 lines; `_start_tray`, `_build_graph`, `_optimization_pass`, `_run_skill`, `_dispatch_call`, `_prepare_turn`, `timeline` no longer over). Left: core/overlay/engine.py `__init__` 266, `_run_desktop` 245 (__main__.py:1898), routes_models.py `status` 201, app.py `_register_error_handlers` 194, entry/manager.py `_hard_delete` 181, wb_boards.py `list_boards` 181, facts.py `run` 173, routes_settings.py `_preferences_from` 167, app.py `_add_system_routes` 166, agent_turn.py `build_agent_messages` 160; L, one refactor per function (v1028-1.md) | L |
-| E44 | open | Re-checked 2026-11-11, still open: True: chat-turn.js:11-1203 `chatSendTurn` is 1,193 lines. Over 150 lines and a risky refactor of the send path that needs a design (turn state, handler table, persistence, teardown) and a real-browser sweep per stage. (v1028-2.md) | L |
-| E45 | open | Re-checked 2026-11-11, still open: still separate stream readers: answer-kit.js:1212 (`streamChatEvents`, shared by Ask/Chat), help-chat.js:543, agent-activity.js:568, chat-tasks.js:131. One `AnswerStream` plus one transcript component is a design (Opus rung), L (v1028-3.md) | L |
+| K24 | open | routes_entries split (f4260477c, 3,777 to 3,628); still over 3,000: routes_entries 3,628, recognise 3,999, manager ~3,500, database 3,329, __main__ ~3,013; a rolling refactor, one block per pass (dec-1111-r1.md) | L |
+| K25 | fixed 80c423568..0708b2ccc | ten functions split as pure moves (dec-1111-r1.md) | L |
+| E44 | fixed 6a4162e62..4484ee30d | chatSendTurn 1,193 to 29 lines, stages on `chatSendTurn.stage` (dec-1111-r1.md) | L |
+| E45 | stale 2026-11-11 | closed, no code change: the four stream shapes differ and a shared reader needs a new global at the 9,044 cap (dec-1111-r1.md) | L |
 | D52 | fixed f98f2a9b0 | code-file tabs strip (dec-1111-d1.md) | L |
 | D47 | fixed 875bceefc | fallback exercised by a sweep; the retry bug fixed (dec-1111-d1.md) | L |
 | E19 | unsure | Needs the q1 run; lowercasing path in composer digest not located by grep. | S |

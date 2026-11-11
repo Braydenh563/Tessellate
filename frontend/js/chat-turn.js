@@ -2628,7 +2628,7 @@ function assistantMessageActions({ bubble, text, question, onEdit }) {
     if (names.length < 2) return null;
     return {
       label: "ph:users-three",
-      title: "Regenerate as...",
+      title: "Regenerate as…",
       items: names.map((name) => ({
         label: `ph:user ${name}`,
         title: `Answer this question again as ${name}`,

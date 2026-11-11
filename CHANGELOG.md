@@ -4,6 +4,9 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Refactor (E44): `chatSendTurn` (1,193 lines) is 29 lines; its stages (ask, commit, open, stream, fail, teardown, paint, settle, empty, persist, afterAnswer) live on `chatSendTurn.stage`, a pure move, same DOM and requests on four recorded streams.
+- Refactor (K25): ten functions over 150 lines split into named helpers as pure moves (`build_agent_messages`, `_preferences_from`, `list_boards`, /models/status, `_hard_delete`, `facts.run`, the error handlers, the instance routes, `Engine.__init__`, `_run_desktop`); four complexity seed rows removed, one lowered.
+- Refactor (K24): the Connections block and a note's link routes moved from `routes_entries.py` (3,777 to 3,628 lines) to `routes_entries_links.py`; same paths, same helpers.
 - Documents (D47): the plain-text editor fallback is now exercised by a sweep (`docfallback.js`, in the gate's sweep list); it found a retry after a failed editor bundle (2 requests and 2 warnings to 1 and 1), now fixed.
 - Documents (D52): code files you open stay as tabs above the editor once two are open (up to eight, this browser only): click or arrow keys switch, Close file or a middle-click closes; measured at 1440 and 390, no page overflow.
 - CI time (W24): the Python tests run in two legs per version split by file (`pytest --shard i/2`), the overlay's simulated hours are computed once per session instead of once per worker, the portal and puff, micro-act and forced hang tests are split so workers share them, and the global scope ratchet takes 2 s instead of 62.

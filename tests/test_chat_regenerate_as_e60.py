@@ -18,7 +18,7 @@ def _read(name: str) -> str:
 def test_the_answer_menu_offers_regenerate_as_with_a_row_per_persona():
     turn = _read("chat-turn.js")
     assert "regenerateAsItems(bubble)" in turn
-    assert "Regenerate as..." in turn
+    assert "Regenerate as…" in turn
     assert "regenerateFromBubble(bubble, { persona: name })" in turn
     assert '$("persona-select")?.options' in turn
 
