@@ -5757,7 +5757,7 @@ body .chip.item-label,
    deeper at its heart, with a few stars in it, raised to take the body's
    weight. It is the host's own pseudo-element, so it stays level under the
    body whichever way the figure turns and costs no layer. */
-#nm-buddy:has(.atl-figure):is([data-pose="lie"], [data-pose="lie-2"], [data-pose="curl"])::before {
+#nm-buddy[data-atlas-figure]:is([data-pose="lie"], [data-pose="lie-2"], [data-pose="curl"])::before {
   top: calc(var(--nmb-edge) - 2px);
   height: 18px;
   background:
@@ -5771,7 +5771,7 @@ body .chip.item-label,
 /* Lying flat, the body's underside is lower than the ledge it sat on
    (atlasbed.js, the real companion: the torso spans 69 to 90 of the host's
    92px), so the bed sits under that, not behind the chest. */
-#nm-buddy:has(.atl-figure)[data-pose="lie"]::before { top: calc(var(--nmb-edge) + 6px); }
+#nm-buddy[data-atlas-figure][data-pose="lie"]::before { top: calc(var(--nmb-edge) + 6px); }
 /* The near half of the stream lies under the body as its bed, not over it. */
 #nm-buddy[data-pose="lie"] .atl-layer-neb-front { opacity: 0.35; }
 /* Settling: sitting back with the legs out. */
@@ -5874,8 +5874,8 @@ body .chip.item-label,
    as a whole, and the stream is its cushion, not a pillow. Its chair and
    beanbag are its own drawing's (atlas.js, `atlasCoilProp.seats`), so none of
    the generic props shows on it. */
-#nm-buddy.nmb-act-lie:has(.atl-figure-box) .nm-buddy-char { transform: none; }
-#nm-buddy:has(.atl-figure-box) .nms { opacity: 0; }
+#nm-buddy.nmb-act-lie[data-atlas-figure] .nm-buddy-char { transform: none; }
+#nm-buddy[data-atlas-figure] .nms { opacity: 0; }
 #nm-buddy.nmb-act-beanbag .nm-buddy-char { transform: translateY(12px) scale(1.03, 0.95); }
 #nm-buddy.nmb-act-chair .nm-buddy-char { transform: translateY(6px); }
 #nm-buddy.nmb-act-facepalm .nm-buddy-char { transform: rotate(-3deg) translateY(2px); }
@@ -7630,8 +7630,8 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
        trailing behind him (`atl-lower-trail`, leaning away from the way he
        goes, `--nmb-lean`); hers is a lighter drift with a rock, her skirt
        swinging as before. */
-    &:has(.atl-figure).nmb-walking .nm-buddy-char { animation: atl-glide 0.9s ease-in-out infinite alternate; }
-    &:has(.atl-figure[data-atlas-look="masculine"]).nmb-walking .nm-buddy-char { animation: atl-glide-heavy 1.25s ease-in-out infinite alternate; }
+    &[data-atlas-figure].nmb-walking .nm-buddy-char { animation: atl-glide 0.9s ease-in-out infinite alternate; }
+    &[data-atlas-figure="masculine"].nmb-walking .nm-buddy-char { animation: atl-glide-heavy 1.25s ease-in-out infinite alternate; }
   }
 }
 /* **Limbs in motion** (INBOX 469, the owner: "have the arms and legs be
@@ -7645,12 +7645,12 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
    under Off and Reduce motion. */
 @media all {
   :root:not([data-avatar-motion="off"]):is(:not([data-motion="reduced"]), [data-buddy-motion="full"]) #nm-buddy {
-    &:not(:has(.atl-figure)).nmb-walking:not([data-travel]) .nmb-arm-l { animation: nmb-arm-swing 0.34s ease-in-out -0.34s infinite alternate; }
-    &:not(:has(.atl-figure)).nmb-walking:not([data-travel]) .nmb-arm-r { animation: nmb-arm-swing 0.34s ease-in-out infinite alternate; }
-    &[data-gait="masculine"]:not(:has(.atl-figure)).nmb-walking:not([data-travel]) :is(.nmb-arm-l, .nmb-arm-r) { animation-duration: 0.4s; }
-    &[data-gait="masculine"]:not(:has(.atl-figure)).nmb-walking:not([data-travel]) .nmb-arm-l { animation-delay: -0.4s; }
-    &[data-gait="feminine"]:not(:has(.atl-figure)).nmb-walking:not([data-travel]) :is(.nmb-arm-l, .nmb-arm-r) { animation-duration: 0.3s; }
-    &[data-gait="feminine"]:not(:has(.atl-figure)).nmb-walking:not([data-travel]) .nmb-arm-l { animation-delay: -0.3s; }
+    &:not([data-atlas-figure]).nmb-walking:not([data-travel]) .nmb-arm-l { animation: nmb-arm-swing 0.34s ease-in-out -0.34s infinite alternate; }
+    &:not([data-atlas-figure]).nmb-walking:not([data-travel]) .nmb-arm-r { animation: nmb-arm-swing 0.34s ease-in-out infinite alternate; }
+    &[data-gait="masculine"]:not([data-atlas-figure]).nmb-walking:not([data-travel]) :is(.nmb-arm-l, .nmb-arm-r) { animation-duration: 0.4s; }
+    &[data-gait="masculine"]:not([data-atlas-figure]).nmb-walking:not([data-travel]) .nmb-arm-l { animation-delay: -0.4s; }
+    &[data-gait="feminine"]:not([data-atlas-figure]).nmb-walking:not([data-travel]) :is(.nmb-arm-l, .nmb-arm-r) { animation-duration: 0.3s; }
+    &[data-gait="feminine"]:not([data-atlas-figure]).nmb-walking:not([data-travel]) .nmb-arm-l { animation-delay: -0.3s; }
     &[data-travel="climb"] .nmb-hold { opacity: 1; }
     &[data-travel="climb"] .nmb-arm { opacity: 0; }
     &[data-travel="climb"] .nmb-hold-l { animation: nmb-reach 0.32s ease-in-out infinite alternate; }
@@ -7700,7 +7700,7 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
    because the loops' motion gates out-rank this selector. */
 :where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy:is(.nmb-walking, .nm-buddy-dragging) .nm-live .nm-atlas.atl-layer-lower,
 :where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy.nmb-walking .nm-live .nm-atlas.atl-layer-lower[data-atlas-look="masculine"],
-:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy:has(.atl-figure):is(.nmb-walking, [data-pose="float"]) .nm-buddy-char { animation: none !important; }
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy[data-atlas-figure]:is(.nmb-walking, [data-pose="float"]) .nm-buddy-char { animation: none !important; }
 /* A slow turn and lift about her middle, the compositor's (a box). */
 @keyframes atl-float {
   from { translate: 0 0.5px; }
