@@ -176,9 +176,10 @@ def test_a_note_opening_on_its_own_day_is_dated_once_and_reported():
     """The owner, 2026-10-26: "on september 21 is repeated twice" and "I had
     work not have"."""
     from tessellate.ai import composer_digest
+    from tessellate.ai import composer_digest_sentences
 
     #: A dated line is said only for a question about time (INBOX 1441).
-    composer_digest._set_timing("what did I write on 21 September?")
+    composer_digest_sentences._set_timing("what did I write on 21 September?")
     said, _ = composer_digest._dated_line(
         "on 21 September, you have work. You need to finish your IT assignment, which is due on Friday.",
         "21 September", 1,

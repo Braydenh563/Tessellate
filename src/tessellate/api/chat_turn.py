@@ -18,6 +18,7 @@ from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from tessellate.ai import composer_digest, composer_lists, composer_slots, composer_talk, context, fence, intent, librarian, question_noise, recognise, verdicts, why
+from tessellate.ai import composer_digest_sentences
 from tessellate.ai import composer_dialogue
 from tessellate.ai.answer_trim import trim_assistant_padding
 from tessellate.ai.grounding import SentenceGrounder, composed_support
@@ -296,7 +297,7 @@ def _may_digest(prepared: dict, question: str) -> bool:
     """The digest answers unless this is a "newest notes" turn, which keeps
     the composer's: but "all the dates in my notes" reads as newest-first
     and is a computed answer (`ai/composer_lists.py`)."""
-    return not str(prepared.get("search_mode") or "").endswith("recent") or composer_lists.computed_kind(question) is not None or composer_digest.shows_the_lot(question)
+    return not str(prepared.get("search_mode") or "").endswith("recent") or composer_lists.computed_kind(question) is not None or composer_digest_sentences.shows_the_lot(question)
 
 
 def _cited_scope(req: _StreamRequest, follow) -> list[int]:  # noqa: ANN001

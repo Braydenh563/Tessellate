@@ -114,8 +114,9 @@ def test_the_owners_search_results_are_said_as_english(question):
 
 def test_what_about_a_category_is_an_overview_of_it():
     from tessellate.ai import composer_digest
+    from tessellate.ai import composer_digest_sentences
 
-    assert composer_digest.kind_of("what about social connections") == "overview"
+    assert composer_digest_sentences.kind_of("what about social connections") == "overview"
     text = composer_digest.answer("what about social connections", social.notes(), today=social.TODAY)["text"]
     assert "Complete Social Skills Guide" in text and "stayed with her" in text
 

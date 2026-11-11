@@ -10,6 +10,7 @@ from datetime import datetime
 import pytest
 
 from tessellate.ai import composer_digest
+from tessellate.ai import composer_digest_sentences
 from tessellate.api import routes_chat
 from tessellate.core import config
 from tessellate.entry import manager
@@ -179,12 +180,12 @@ def test_f7_an_answer_leaves_no_state_for_the_next(voice):
     it: the next answer in the same context reads only its own."""
     first = composer_digest.answer("Check my notes about Hobart.", HOBART, today=NOW.date(), voice=voice, turn=7)
     assert first is not None
-    assert composer_digest._VOICE.get() == "natural"
-    assert composer_digest._VIEWS.get() == []
-    assert composer_digest._NAMES.get() == set()
+    assert composer_digest_sentences._VOICE.get() == "natural"
+    assert composer_digest_sentences._VIEWS.get() == []
+    assert composer_digest_sentences._NAMES.get() == set()
     after = composer_digest.answer("Who is Sam?", [], today=NOW.date())
     assert after is None
-    assert composer_digest._VOICE.get() == "natural" and composer_digest._TURN.get() == 0
+    assert composer_digest_sentences._VOICE.get() == "natural" and composer_digest_sentences._TURN.get() == 0
     alone = contextvars.copy_context().run(composer_digest.answer, "Count my notes about Hobart.", HOBART, today=NOW.date())
     then = composer_digest.answer("Count my notes about Hobart.", HOBART, today=NOW.date())
     assert alone["text"] == then["text"]
@@ -192,10 +193,10 @@ def test_f7_an_answer_leaves_no_state_for_the_next(voice):
 
 def test_f7_tell_me_more_says_all_said_in_the_voice_it_was_given():
     natural = composer_digest.all_said("Check my notes about Hobart", HOBART, today=NOW.date())
-    other = next(v for v in composer_digest.VOICES if v != "natural")
+    other = next(v for v in composer_digest_sentences.VOICES if v != "natural")
     voiced = composer_digest.all_said("Check my notes about Hobart", HOBART, today=NOW.date(), voice=other)
     assert natural and voiced
-    assert composer_digest._VOICE.get() == "natural"
+    assert composer_digest_sentences._VOICE.get() == "natural"
 
 
 def test_f8_tell_me_more_does_not_answer_the_earlier_question_again(client, session, monkeypatch):
@@ -283,7 +284,7 @@ def _f14_patterns():
 
     return {
         "compare-than": composer_ask._COMPARE_SIDES[0],
-        "digest-compare": composer_digest._ASKS["compare"],
+        "digest-compare": composer_digest_sentences._ASKS["compare"],
         "done-tail": task_acts._DONE_TAIL,
         "date-stub": review_digest._DATE_STUB,
         "tail-kind": task_acts._TAIL_KIND,

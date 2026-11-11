@@ -71,9 +71,10 @@ def test_only_note_is_said_for_a_topic_never_for_a_request():
 
 
 def test_a_request_answer_has_no_only_note_claim():
-    from tessellate.ai import composer, composer_digest
+    from tessellate.ai import composer
+    from tessellate.ai import composer_digest_sentences
 
     notes = [{"id": 1, "title": "pasta", "content": "# pasta\n\nBoil the pasta for ten minutes with salt.", "tags": [],
               "category": "Food", "created_at": "2026-10-02T10:00:00"}]
     text = composer.compose("I want to edit my pasta note", notes)["text"]
-    assert not any(composer_digest.is_only_claim(line) for line in text.splitlines()), text
+    assert not any(composer_digest_sentences.is_only_claim(line) for line in text.splitlines()), text

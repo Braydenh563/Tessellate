@@ -3,7 +3,7 @@
 how they are referred based on context or percieved user speech patterns or
 emotion etc.").
 
-One rule table (`composer_digest._SAY_WHEN`), each row by several phrasings:
+One rule table (`composer_digest_sentences._SAY_WHEN`), each row by several phrasings:
 the base form leads with how far back (INBOX 1483: "three weeks ago, on 8
 October", never "on 8 October (three weeks ago)"); "when did I" and "what
 date" get the date first ("on 8 October, about three weeks ago"); "how long
@@ -21,23 +21,23 @@ from datetime import date
 
 import pytest
 
-from tessellate.ai import composer_digest
+from tessellate.ai import composer_digest_sentences
 
 TODAY = date(2026, 10, 30)
 
 
 @pytest.fixture(autouse=True)
 def _monday_first(monkeypatch):
-    monkeypatch.setattr(composer_digest, "_week_first", lambda: 0)
+    monkeypatch.setattr(composer_digest_sentences, "_week_first", lambda: 0)
 
 
 def _said(question: str, text: str, written: date) -> str:
     #: In a copy of the context: the timing set here never reaches the
     #: next test in this worker (`test_gold_answers` pins against its own day).
     def run() -> str:
-        composer_digest._TODAY.set(TODAY)
-        composer_digest._set_timing(question)
-        return composer_digest._pin(text, written)
+        composer_digest_sentences._TODAY.set(TODAY)
+        composer_digest_sentences._set_timing(question)
+        return composer_digest_sentences._pin(text, written)
 
     return contextvars.copy_context().run(run)
 

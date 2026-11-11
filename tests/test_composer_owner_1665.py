@@ -126,9 +126,10 @@ def test_c_a_long_note_is_said_briefly_and_never_with_a_spaced_hyphen(answer):
 def test_d_the_answers_weeks_ago_is_the_cards(gap):
     from datetime import date, timedelta
 
-    from tessellate.ai import composer_digest, realise
+    from tessellate.ai import realise
+    from tessellate.ai import composer_digest_sentences
 
-    said = composer_digest._ago(date(2026, 11, 4) - timedelta(days=gap), date(2026, 11, 4))
+    said = composer_digest_sentences._ago(date(2026, 11, 4) - timedelta(days=gap), date(2026, 11, 4))
     card = int(gap / 7 + 0.5)  # Math.round(days / 7), frontend/js/sheets-selects.js relativeTime
     assert said == ("a week ago" if card == 1 else f"{realise.count_word(card)} weeks ago")
 

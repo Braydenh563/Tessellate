@@ -34,7 +34,7 @@ def clock(monkeypatch):
 
 @pytest.mark.parametrize("question", ["undo", "redo", "undo that", "undo the last change"])
 def test_z64_an_app_tool_answer_carries_no_search_footer(client, session, clock, monkeypatch, question):
-    from tessellate.ai import composer_digest
+    from tessellate.ai import composer_digest_sentences
 
     monkeypatch.setattr(routes_chat, "_meaning_off", lambda: True)
     entry = manager.create_entry(session, "# Chess ideas\n\nTry the Sicilian.", category_name="Journal")
@@ -42,8 +42,8 @@ def test_z64_an_app_tool_answer_carries_no_search_footer(client, session, clock,
 
     said = _post(client, question)
     assert said.strip(), question
-    assert composer_digest.PHRASES["meaning_off"] not in said, said
-    assert composer_digest.PHRASES["meaning_loading"] not in said, said
+    assert composer_digest_sentences.PHRASES["meaning_off"] not in said, said
+    assert composer_digest_sentences.PHRASES["meaning_loading"] not in said, said
 
 
 @pytest.mark.parametrize("ask", [False, True])

@@ -8,6 +8,7 @@ from types import SimpleNamespace
 import pytest
 
 from tessellate.ai import composer_digest as digest
+from tessellate.ai import composer_digest_sentences
 
 TODAY = date(2026, 11, 2)
 
@@ -19,11 +20,11 @@ def _views(*days_back: int):
 @pytest.mark.parametrize("seed", [0, 1])
 @pytest.mark.parametrize("days_back", [(0, 0), (0, 3), (0, 15), (0, 8, 16)])
 def test_a_note_written_today_is_today_never_a_day_ago(seed, days_back):
-    token = digest._SEED.set(seed)
+    token = composer_digest_sentences._SEED.set(seed)
     try:
         said = digest._pattern(_views(*days_back), TODAY)
     finally:
-        digest._SEED.reset(token)
+        composer_digest_sentences._SEED.reset(token)
     assert said and "today" in said and "a day ago" not in said and "a day old" not in said, said
 
 

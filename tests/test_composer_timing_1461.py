@@ -28,7 +28,8 @@ from datetime import date
 
 import pytest
 
-from tessellate.ai import composer_digest, composer_frame, insights
+from tessellate.ai import composer_frame, insights
+from tessellate.ai import composer_digest_sentences
 from tessellate.api import routes_chat
 from tessellate.core import config
 from tessellate.entry import manager
@@ -76,9 +77,9 @@ def _pinned(question: str, text: str, written: date) -> str:
     #: In a copy of the context: the timing set here never reaches the
     #: next test in this worker (`test_gold_answers` pins against its own day).
     def run() -> str:
-        composer_digest._TODAY.set(TODAY)
-        composer_digest._set_timing(question)
-        return composer_digest._pin(text, written)
+        composer_digest_sentences._TODAY.set(TODAY)
+        composer_digest_sentences._set_timing(question)
+        return composer_digest_sentences._pin(text, written)
 
     return contextvars.copy_context().run(run)
 
@@ -143,7 +144,7 @@ def test_a_time_gone_by_is_said_in_the_past(question, text, said):
 def test_last_week_counts_from_the_persons_first_day(monkeypatch, first, monday, back):
     """"last week" in a note of Sunday 26 July: the week of 13 July where
     weeks start on Monday, of 19 July where they start on Sunday."""
-    monkeypatch.setattr(composer_digest, "_week_first", lambda: first)
+    monkeypatch.setattr(composer_digest_sentences, "_week_first", lambda: first)
     #: Asked "when", so the week is said by its first day (a plain question
     #: says "back in July" since INBOX 1483, which hides the first day).
     said = _pinned("when did I have three lectures", "I had three lectures last week", date(2026, 7, 26))

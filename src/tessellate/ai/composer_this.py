@@ -6,7 +6,7 @@ attached got the note quoted, then "Oldest first:" with two unrelated notes).
 was written, when it was last changed and how long it is are facts the app
 holds for the note, so they are said from its record before any search: no
 other note is read for them. What it is about and "summarise this" stay the
-digest's (`composer_digest.about_this`), read from the attachment alone.
+digest's (`composer_digest_sentences.about_this`), read from the attachment alone.
 """
 
 from __future__ import annotations

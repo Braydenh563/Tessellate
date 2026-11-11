@@ -25,18 +25,18 @@ WHOLE_KINDS = frozenset({"overview", "compare"})
 def reads_whole(question: str) -> bool:
     """Whether `question` asks about a topic whole (an overview, a
     comparison) rather than for one fact."""
-    from tessellate.ai import composer_digest
+    from tessellate.ai import composer_digest_sentences
 
-    return composer_digest.kind_of(question) in WHOLE_KINDS
+    return composer_digest_sentences.kind_of(question) in WHOLE_KINDS
 
 
 def asks_left(question: str) -> bool:
     """Whether `question` asks what is still open ("what do I need to buy",
     "what's left"): answered from the notes that hold something open, which
     the question's own words rarely name."""
-    from tessellate.ai import composer_digest
+    from tessellate.ai import composer_digest_sentences
 
-    return composer_digest.kind_of(question) == "left"
+    return composer_digest_sentences.kind_of(question) == "left"
 
 
 def pick(seed_ids: list[int], rows: list[tuple[int, list[str]]], limit: int = LIMIT, hub: int = HUB) -> list[int]:

@@ -11,7 +11,7 @@ import json
 
 import pytest
 
-from tessellate.ai import composer_digest
+from tessellate.ai import composer_digest_sentences
 from tessellate.entry import manager
 
 
@@ -77,12 +77,12 @@ def test_the_open_context_never_changes_another_question(client, notebook):
 
 @pytest.mark.parametrize("question", ["Summarise this", "summarise it please", "can you sum up this note?", "what is this about?", "TL;DR", "recap"])
 def test_about_this_reads_the_phrasings(question):
-    assert composer_digest.about_this(question)
+    assert composer_digest_sentences.about_this(question)
 
 
 @pytest.mark.parametrize("question", ["summarise my trip to Lisbon", "what is this week about?", "summarise the gym notes from May"])
 def test_about_this_leaves_a_subject_alone(question):
-    assert not composer_digest.about_this(question)
+    assert not composer_digest_sentences.about_this(question)
 
 
 def test_with_a_model_up_the_model_summarises_the_open_note(ai_client, fake_ollama, session, monkeypatch):

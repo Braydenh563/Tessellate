@@ -277,9 +277,9 @@ def test_a_note_name_no_title_holds_falls_to_the_search(notebook, question):
     ("Snowed all morning.", "it snowed all morning."),
 ])
 def test_a_weather_verb_takes_it_not_you(line, said):
-    from tessellate.ai import composer_digest
+    from tessellate.ai import composer_digest_sentences
 
-    assert composer_digest._second_person(line) == said
+    assert composer_digest_sentences._second_person(line) == said
 
 
 @pytest.mark.parametrize("question", [
@@ -719,9 +719,9 @@ def test_a_day_is_said_once_in_a_when_answer(notebook, question):
 def test_a_fact_that_names_the_day_is_not_given_it_again(text, said):
     from datetime import date
 
-    from tessellate.ai import composer_digest
+    from tessellate.ai import composer_digest_sentences
 
-    assert composer_digest._says_day(text, date(2026, 10, 25), date(2026, 10, 31)) is said
+    assert composer_digest_sentences._says_day(text, date(2026, 10, 25), date(2026, 10, 31)) is said
 
 
 # C20. A derived line is said only of what the question asked about.

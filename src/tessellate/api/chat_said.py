@@ -19,7 +19,8 @@ from datetime import datetime
 from sqlalchemy import func, or_, select, text as sql_text
 from sqlalchemy.orm import Session
 
-from tessellate.ai import capability, composer, composer_aware, composer_digest, composer_lists, composer_open, composer_plan, composer_social, fact_check, filed_name, intent, phrasing, realise
+from tessellate.ai import capability, composer, composer_aware, composer_lists, composer_open, composer_plan, composer_social, fact_check, filed_name, intent, phrasing, realise
+from tessellate.ai import composer_digest_sentences
 from tessellate.ai import acts, composer_dialogue, task_acts
 from tessellate.ai import composer_frame, composer_read
 from tessellate.ai import composer_smalltalk, composer_talk
@@ -591,11 +592,11 @@ def _with_words_only(text: str, prepared: dict, result: dict, session=None) -> s
     if session is not None and manager.count_notes(session) <= 1:
         return text
     parts = text.split("\n\n")
-    if not any(composer_digest.is_only_claim(part) for part in parts):
+    if not any(composer_digest_sentences.is_only_claim(part) for part in parts):
         return text
     #: The claim goes and nothing replaces it: "Only one note has those words; search by meaning
     #: could find others" was a stat line a person would not add (fable-composer-1110 F7.3).
-    return "\n\n".join(part for part in parts if not composer_digest.is_only_claim(part))
+    return "\n\n".join(part for part in parts if not composer_digest_sentences.is_only_claim(part))
 
 
 def _help_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list | None:
@@ -861,7 +862,7 @@ def _search_footer(prepared: dict, result: dict) -> str:
         return ""
     for key in ("meaning_loading", "meaning_off"):
         if prepared.get(key):
-            return "\n\n" + composer_digest.PHRASES[key]
+            return "\n\n" + composer_digest_sentences.PHRASES[key]
     return ""
 
 

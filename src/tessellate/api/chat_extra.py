@@ -12,7 +12,8 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import activity, composer_cancel, composer_digest, composer_extra, composer_suggest, composer_talk, realise
+from tessellate.ai import activity, composer_cancel, composer_extra, composer_suggest, composer_talk, realise
+from tessellate.ai import composer_digest_sentences
 from tessellate.ai.composer_study import Ctx
 from tessellate.ai.tools._common import _visible
 from tessellate.core import deps
@@ -138,8 +139,8 @@ def _summary_goes_elsewhere(session: Session, question: str) -> bool:
     category, which the digest does better than a title match; "summarise my
     week" is the week's recap (`ai/activity`), not a note's summary."""
     return bool(
-        composer_digest.about_this(question)
-        or composer_digest.named_category(question, categories_repo.names(session))
+        composer_digest_sentences.about_this(question)
+        or composer_digest_sentences.named_category(question, categories_repo.names(session))
         or activity.as_recap(question) != question
     )
 

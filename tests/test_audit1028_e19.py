@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pytest
 
-from tessellate.ai import composer_digest as digest
+from tessellate.ai import composer_digest_sentences
 from tessellate.ai import composer_write as write
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
@@ -33,7 +33,7 @@ def test_clauses_with_no_label_still_split_into_bullets():
 
 @pytest.mark.parametrize("citation", ["Hunter 1999", "Clark (2012), The Sleepwalkers", "Gray 2004, The Picture", "Bishop, The Chessmen"])
 def test_an_author_keeps_its_capital_after_other_words(citation):
-    assert digest._fragment(citation, set()) == citation
+    assert composer_digest_sentences._fragment(citation, set()) == citation
 
 
 def test_the_sources_line_of_a_note_is_told_whole_with_its_capitals(client, session):
