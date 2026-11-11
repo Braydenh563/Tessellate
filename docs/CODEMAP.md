@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10178, test files 2495, tests 20562, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10178, test files 2496, tests 20563, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -2021,39 +2021,39 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `announceAskFoot` | frontend/js/ask-compose.js:1468 |
+| `announceAskFoot` | frontend/js/ask-compose.js:1471 |
 | `askAiOffCause` | frontend/js/ask-compose.js:38 |
 | `askAnswerFrom` | frontend/js/ask-compose.js:46 |
-| `askAnswerMenu` | frontend/js/ask-compose.js:669 |
-| `askAsOf` | frontend/js/ask-compose.js:1481 |
-| `askFromNotesFold` | frontend/js/ask-compose.js:893 |
-| `askKeepAsDocument` | frontend/js/ask-compose.js:701 |
-| `askKeepAsMap` | frontend/js/ask-compose.js:723 |
-| `askKeptTitle` | frontend/js/ask-compose.js:696 |
-| `askPreAnswerCard` | frontend/js/ask-compose.js:883 |
-| `askQuestion` | frontend/js/ask-compose.js:937 |
-| `askStatusBusy` | frontend/js/ask-compose.js:1406 |
-| `askStatusText` | frontend/js/ask-compose.js:1493 |
-| `citationVerdictRow` | frontend/js/ask-compose.js:640 |
-| `digestMore` | frontend/js/ask-compose.js:486 |
-| `digestOffer` | frontend/js/ask-compose.js:524 |
-| `digestShape` | frontend/js/ask-compose.js:446 |
-| `drawWhyTrail` | frontend/js/ask-compose.js:804 |
-| `fetchComposedPeek` | frontend/js/ask-compose.js:912 |
+| `askAnswerMenu` | frontend/js/ask-compose.js:672 |
+| `askAsOf` | frontend/js/ask-compose.js:1484 |
+| `askFromNotesFold` | frontend/js/ask-compose.js:896 |
+| `askKeepAsDocument` | frontend/js/ask-compose.js:704 |
+| `askKeepAsMap` | frontend/js/ask-compose.js:726 |
+| `askKeptTitle` | frontend/js/ask-compose.js:699 |
+| `askPreAnswerCard` | frontend/js/ask-compose.js:886 |
+| `askQuestion` | frontend/js/ask-compose.js:940 |
+| `askStatusBusy` | frontend/js/ask-compose.js:1409 |
+| `askStatusText` | frontend/js/ask-compose.js:1496 |
+| `citationVerdictRow` | frontend/js/ask-compose.js:643 |
+| `digestMore` | frontend/js/ask-compose.js:489 |
+| `digestOffer` | frontend/js/ask-compose.js:527 |
+| `digestShape` | frontend/js/ask-compose.js:449 |
+| `drawWhyTrail` | frontend/js/ask-compose.js:807 |
+| `fetchComposedPeek` | frontend/js/ask-compose.js:915 |
 | `linkCitedTitles` | frontend/js/ask-compose.js:109 |
 | `markSaidSentences` | frontend/js/ask-compose.js:171 |
-| `readWebPage` | frontend/js/ask-compose.js:380 |
+| `readWebPage` | frontend/js/ask-compose.js:383 |
 | `renderActCard` | frontend/js/ask-compose.js:201 |
-| `renderAskBoth` | frontend/js/ask-compose.js:872 |
-| `renderAskFollowups` | frontend/js/ask-compose.js:822 |
-| `renderAskHint` | frontend/js/ask-compose.js:1443 |
-| `renderAskInsights` | frontend/js/ask-compose.js:750 |
-| `renderAskTrail` | frontend/js/ask-compose.js:1512 |
+| `renderAskBoth` | frontend/js/ask-compose.js:875 |
+| `renderAskFollowups` | frontend/js/ask-compose.js:825 |
+| `renderAskHint` | frontend/js/ask-compose.js:1446 |
+| `renderAskInsights` | frontend/js/ask-compose.js:753 |
+| `renderAskTrail` | frontend/js/ask-compose.js:1515 |
 | `renderAskUseAi` | frontend/js/ask-compose.js:51 |
-| `renderAskWhy` | frontend/js/ask-compose.js:774 |
-| `renderChatMeta` | frontend/js/ask-compose.js:1310 |
-| `renderWebSources` | frontend/js/ask-compose.js:304 |
-| `setAsking` | frontend/js/ask-compose.js:1502 |
+| `renderAskWhy` | frontend/js/ask-compose.js:777 |
+| `renderChatMeta` | frontend/js/ask-compose.js:1313 |
+| `renderWebSources` | frontend/js/ask-compose.js:307 |
+| `setAsking` | frontend/js/ask-compose.js:1505 |
 | `wireAskUseAi` | frontend/js/ask-compose.js:69 |
 
 ### frontend/js/ask-history.js (10)
@@ -26401,7 +26401,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20562)
+## Tests (20563)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28289,6 +28289,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_reevaluate.py | 4 |
 | tests/test_reevaluate_private.py | 3 |
 | tests/test_refresh_entries.py | 3 |
+| tests/test_regenerate_after_act.py | 1 |
 | tests/test_regenerate_truncates.py | 5 |
 | tests/test_regex_timing_1109.py | 3 |
 | tests/test_regex_whitespace_runs.py | 3 |
@@ -28903,7 +28904,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_zoom_wheel_delta.py | 3 |
 | tests/test_zoom_wrap_1717.py | 21 |
 
-## Plan headings (1003)
+## Plan headings (1004)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -29549,6 +29550,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Looked at and deliberately not taken | docs/roadmap/ANALYSIS.md:713 |
 | Looked at and not recommended | docs/roadmap/ANALYSIS.md:882 |
 | Mind map, against designcraft's canvas and MINDMAP_PLAN's references | docs/roadmap/ANALYSIS.md:3769 |
+| Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4393 |
 | Morning summary | docs/roadmap/HANDOVER.md:57 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:344 |

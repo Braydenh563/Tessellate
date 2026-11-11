@@ -242,6 +242,9 @@ function renderActCard(holder, event) {
   //: as its accessible name, and a run with nothing to undo draws no card.
   const done = (summary, undo, steps, said = false) => {
     delete card.dataset.pendingAct;
+    //: A Confirmed card wrote: Regenerate on this answer asks first (sm-1111 row 16, `confirmRerun`).
+    const answer = card.closest(".msg");
+    if (answer) answer.dataset.wrote = "1";
     const row = document.createElement("div");
     row.className = "row";
     if (undo?.length) {
