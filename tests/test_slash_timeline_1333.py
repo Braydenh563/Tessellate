@@ -15,6 +15,7 @@ from tessellate.api import routes_chat
 from tessellate.core import config
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parents[1]
 NOW = datetime(2026, 10, 30, 9, 0)
@@ -95,7 +96,7 @@ def test_nothing_to_draw_draws_nothing(client, clock, session):
 
 
 def test_the_reply_kit_draws_a_timeline_panel_with_the_stats_spark():
-    kit = (ROOT / "frontend" / "js" / "reply-kit.js").read_text(encoding="utf-8")
+    kit = _js_scope.unwrapped((ROOT / "frontend" / "js" / "reply-kit.js").read_text(encoding="utf-8"))
     assert "timeline: (event) => replyTimelinePanel(event)" in kit
     body = kit.split("function replyTimelinePanel", 1)[1].split("\n}\n", 1)[0]
     assert "replySpark(" in body and "replyPanelShell(" in body and "event.points" in body

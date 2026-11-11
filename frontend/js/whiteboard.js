@@ -16003,6 +16003,7 @@ async function initWhiteboard() {
     try {
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("board", "true");
       const uploaded = await apiJson("/media/upload", {
         method: "POST",
         headers: authHeaders(),
@@ -18923,6 +18924,8 @@ async function initWhiteboard() {
     try {
       const formData = new FormData();
       formData.append("file", file);
+      //: Board-only until Save to Library: not listed, not read, not captioned (K18).
+      formData.append("board", "true");
       const uploaded = await apiJson("/media/upload", {
         method: "POST",
         headers: authHeaders(),
@@ -23198,6 +23201,7 @@ function renderWhiteboard() {
   wbScheduleCardClampSync();
 
   renderWbObjects(canvas);
+  if (typeof wbFmtState !== "undefined") wbFmtState.paintCaptions?.();
 
   // After the nodes, never before: an edge is drawn between two *measured*
   // boxes (`wbMapNodeSize` reads `offsetHeight`, since a map node's height is

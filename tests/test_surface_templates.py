@@ -20,6 +20,8 @@ from pathlib import Path
 
 import pytest
 
+from tests import _js_scope
+
 ROOT = Path(__file__).resolve().parents[1]
 FRONTEND = ROOT / "frontend"
 JS = FRONTEND / "js"
@@ -137,23 +139,10 @@ def _src(name: str) -> str:
     return (JS / name).read_text(encoding="utf-8")
 
 
-#: Files that are one `(() => {` ... `})();` whole (W29 D24): their inner statements are the load-time ones.
-WRAPPED = ("quick-note.js", "field-clear.js", "whiteboard-history.js", "chat-private.js", "attach-to.js", "obj-tray.js", "pick-row.js", "tidy.js", "usage-ledger.js", "web-clip.js", "web-results.js")
-
-
 def _unwrapped(path: Path) -> str:
     """The file with its one outer `(() => {` ... `})();` wrapper taken off and its body dedented, so the
     statements that run at load, and the functions they call, are top-level again for the checks below."""
-    text = path.read_text(encoding="utf-8")
-    if path.name not in WRAPPED:
-        return text
-    lines = text.split("\n")
-    start = next((i for i, line in enumerate(lines) if line == "(() => {"), None)
-    end = max((i for i, line in enumerate(lines) if line == "})();"), default=None)
-    if start is None or end is None or end < start:
-        return text
-    body = [line[2:] if line.startswith("  ") else line for line in lines[start + 1 : end]]
-    return "\n".join(lines[:start] + body + lines[end + 1 :])
+    return _js_scope.unwrapped(path.read_text(encoding="utf-8"))
 
 
 @pytest.mark.parametrize("name", SURFACES)

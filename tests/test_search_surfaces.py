@@ -20,6 +20,7 @@ from __future__ import annotations
 import re
 
 from tests._app_js import JS_DIR
+from tests import _js_scope
 
 
 def _note(client, content: str, **extra) -> int:
@@ -141,7 +142,7 @@ def test_the_palette_does_not_search_content():
     ask limited to `kind=note`. Nothing else is searched, no engine state is
     held, and no documents, reminders, conversations, files or boards are
     listed."""
-    text = _read("app-palette.js")
+    text = _js_scope.unwrapped(_read("app-palette.js"))
     code = re.sub(r"//.*", "", text)
     assert code.count("/search") == 1 and "kind=note&limit=${PALETTE_NOTE_ASK}" in code
     assert "paletteAskEngine" not in text and "paletteEngine" not in text
@@ -156,7 +157,7 @@ def test_the_palette_ends_with_a_row_that_opens_find_anything():
     everything for", which closes the palette and opens Find anything with the
     text in its field (`openFinder` searches at once). With no command matching
     it is the only row, so it is the lit one."""
-    text = _read("app-palette.js")
+    text = _js_scope.unwrapped(_read("app-palette.js"))
     matches = _function(text, "paletteMatches")
     assert r"Search everything for \u201c" in matches
     assert "openFinder(" in matches

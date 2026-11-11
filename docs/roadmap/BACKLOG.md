@@ -4389,3 +4389,12 @@ Owner, verbatim: "its a contact book where you can add contacts with information
 - **Where it lives:** a pop-up workspace like the diagram builder, OCR workspace and quick sketch, or a Library sub-tab (decide at design time).
 - **Build on what exists first** (CLAUDE.md section 1): the entity and people readers the composer already uses ("list my people", "where does Sara live"), the entity page, and the `[[` link picker; a contact should be the stored form of a person the notes already mention, so @ and the composer agree.
 - **Parity both ways** (decision 75): the composer and the AI can read, add and log to contacts, each act with consent.
+
+## Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog")
+
+Owner, verbatim: "make sure that the ai and the composer cna give specialised moring breifings and I want to be able to shedule morning briefings or ones that are written and stored somewhere or on a chat session or smth when I open the app (not every time - based on a timer or schedule and when I last opened the app) and I can change the time and frequency".
+
+- **A briefing on request:** "brief me" or "morning briefing" gives one in Chat from both the composer and the model (parity both ways, decision 75). It covers today's reminders and what is due, notes changed since the last open, open questions, and the day's calendar.
+- **Scheduled:** a Settings choice sets the time and how often (daily, weekdays, weekly, off). On open, the app writes a briefing only when one is due and the last open was before that time, never on every open.
+- **Stored:** each briefing is kept as a chat conversation (or a note; decide at design time) so it can be read again later.
+- **Build on what exists first** (CLAUDE.md section 1): the dashboard greeting, the reminders' due stamp (`GET /reminders/due`), the composer's date readers and digest, and the lean-workflow `brief` view as a model of the shape.

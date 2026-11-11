@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -41,7 +42,7 @@ def test_words_typed_before_the_palette_loaded_still_ask_for_their_notes():
     """E2E shell, 2026-10-27: Ctrl+K takes keys while app-palette.js loads,
     and the input listener that asks /search for matching notes is attached
     by that file, so the typed words got only the Search everything row."""
-    js = (ROOT / "frontend/js/app-palette.js").read_text(encoding="utf-8")
+    js = _js_scope.unwrapped((ROOT / "frontend/js/app-palette.js").read_text(encoding="utf-8"))
     body = js[js.index("async function openPalette()"):]
     body = body[: body.index("\n}\n")]
     assert body.index('paletteAskNotes($("palette-input").value);') > body.index('renderPalette($("palette-input").value);')

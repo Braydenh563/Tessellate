@@ -10,8 +10,9 @@ where it was instead of marking it done, and the Links help line says it exists.
 from __future__ import annotations
 
 from pathlib import Path
+from tests import _js_scope
 
-INBOX = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "suggestions-inbox.js").read_text(encoding="utf-8")
+INBOX = _js_scope.unwrapped((Path(__file__).resolve().parents[1] / "frontend" / "js" / "suggestions-inbox.js").read_text(encoding="utf-8"))
 
 
 def _linkSure() -> str:

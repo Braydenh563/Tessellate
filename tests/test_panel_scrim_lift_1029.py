@@ -15,8 +15,10 @@ to (29,54), scrim 0.45.
 
 from pathlib import Path
 
+from tests import _js_scope
+
 ROOT = Path(__file__).resolve().parents[1]
-JS = (ROOT / "frontend" / "js" / "panel-movable.js").read_text(encoding="utf-8")
+JS = _js_scope.unwrapped_copy(ROOT / "frontend" / "js" / "panel-movable.js").read_text(encoding="utf-8")
 CSS = (ROOT / "frontend" / "css" / "panel-movable-lazy.css").read_text(encoding="utf-8")
 
 
