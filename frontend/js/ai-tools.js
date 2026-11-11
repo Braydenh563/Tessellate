@@ -138,7 +138,7 @@ function renderChatModelPicker(status) {
 // itself isn't backend-specific, so this reads it straight off the poll
 // loop instead of piggybacking on that gated render.
 function renderChatActiveModelBadge() {
-  const badge = $("chat-active-model");
+  const badge = document.getElementById("chat-active-model");
   if (!badge) return;
   //: **The Chat tab's own model, which is not always the app's.** Since the
   //: chat tab is a row in `model_manager.FEATURES` it can be pinned to a
@@ -244,7 +244,7 @@ function placeChatModelPanel() {
 window.addEventListener("resize", placeChatModelPanel);
 window.addEventListener("scroll", placeChatModelPanel, true);
 
-$("chat-active-model")?.addEventListener("click", () => {
+onSurface("chat", () => $("chat-active-model")?.addEventListener("click", () => {
   if ($("chat-active-model").dataset.offline) {
     openSettingsModal("models");
     return;
@@ -255,7 +255,7 @@ $("chat-active-model")?.addEventListener("click", () => {
     return;
   }
   openChatModelPanel();
-});
+}));
 
 function renderUtilityModelPicker(status) {
   const names = status.installed_models.map((m) => m.name);
@@ -429,7 +429,7 @@ const FEATURE_MODEL_SELECTS = [
 
 function syncFeatureModelSelects() {
   for (const [id, key] of FEATURE_MODEL_SELECTS) {
-    const select = $(id);
+    const select = document.getElementById(id);
     if (!select) continue;
     const row = featureModelRow(key);
     //: No rows yet (the first poll has not answered, or the app is locked):
@@ -489,7 +489,7 @@ function syncFeatureModelSelects() {
 
 function wireFeatureModelSelects() {
   for (const [id, key] of FEATURE_MODEL_SELECTS) {
-    const select = $(id);
+    const select = document.getElementById(id);
     if (!select || select.dataset.wired) continue;
     select.dataset.wired = "1";
     select.addEventListener("change", () => {

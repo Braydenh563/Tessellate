@@ -80,4 +80,4 @@ def test_only_navigation_is_reset_not_display_preferences():
 def test_the_reset_runs_before_the_notes_strip_reads_the_key():
     """Order matters: `initNotesSubtabs` calls `activeNotesSection()`, which
     reads the key this clears."""
-    assert JS.index("resetNavigationForNewSession();") < JS.index("initNotesSubtabs();")
+    assert JS.index("resetNavigationForNewSession();") < JS.index('onSurface("notes", initNotesSubtabs);')
