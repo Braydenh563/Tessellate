@@ -439,7 +439,9 @@ async function run() {
       const els = [...root.querySelectorAll('details > summary, [data-help-for], .graph-help-toggle, .kebab-opener, button[aria-haspopup="menu"], button[aria-haspopup="true"], button[aria-haspopup="listbox"], [data-wb-menu-toggle]')];
       for (const el of els) {
         if (!vis(el) || el.closest(EXCL.join(', '))) continue;
-        const kind = (el.id ? '#' + el.id : [...el.classList].join('.') + (el.getAttribute('aria-controls') || '') + (el.getAttribute('aria-label') || '')) + '|' + (el.closest('[id]') || {}).id;
+        // One per kind: a per-row menu ("Shape: Box", "Menu for Hiring") counts once.
+        const lab = (el.getAttribute('aria-label') || '').replace(/[:\s].*$/, '');
+        const kind = (el.id ? '#' + el.id : [...el.classList].join('.') + (el.getAttribute('aria-controls') || '') + lab) + '|' + (el.closest('[id]') || {}).id;
         const k2 = el.matches('.kebab-opener') ? 'kebab|' + (el.closest('li, tr, .card, [id]') || {}).className : kind;
         if (kinds.has(k2)) continue; kinds.add(k2);
         el.setAttribute('data-wz-opener', String(picks.length));
@@ -514,10 +516,10 @@ async function run() {
     await ev(() => { if (document.querySelector('.doc-focus')) document.getElementById('doc-focus-exit')?.click(); });
     await settle(300);
     // Dialogs reached from the dock menu and the status line.
-    const dlg = [['history', () => openDocHistory()], ['stats', () => docRunTextTool('stats')], ['word-goal', () => promptDocWordGoal()],
+    const dlg = [['history', () => document.getElementById('doc-history').click()], ['stats', () => docRunTextTool('stats')], ['word-goal', () => promptDocWordGoal()],
       ['template', () => document.getElementById('doc-new-template')?.click()], ['ai-history', () => openDocAiHistory()]];
     for (const [name, fn] of dlg) {
-      await S(`docs/dialog/${name}`, async () => { await md('live'); await page.evaluate(fn).catch(() => {}); await settle(700); }, ['dialog[open]', '.confirm-overlay'], 'dialog[open]');
+      await S(`docs/dialog/${name}`, async () => { await md('live'); await page.evaluate(fn).catch(() => {}); await settle(1500); }, ['dialog[open]', '.confirm-overlay'], 'dialog[open]');
     }
     // Two documents open: the tab row.
     await S('docs/tabs', async () => { await openDoc(ids.md2, 'live'); await openDoc(ids.md, 'live'); await openDoc(ids.js); await openDoc(ids.mmd); await openDoc(ids.md, 'live'); }, DOC);
