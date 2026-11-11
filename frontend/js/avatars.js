@@ -5690,6 +5690,18 @@ function nameMarkBuddyKeepUp(ms = 1500, wake = true) {
 //: every frame and each read settled the layout that growth dirtied (the lag
 //: log: 302 frame reads in 12s, 643ms of it forced). A move nothing announced
 //: is found within 120ms and eased on foot anyway (`nameMarkBuddyCatchUp`).
+//: **The longer it holds still, the seldomer it looks** (INBOX 1741, the owner's log on a real
+//: dashboard: `nameMarkBuddyKeepUp` 7 calls a second, 20.7ms each, steady). Something announcing a
+//: move now and then (a resize observer, a page's own transition) renews the loop's second and a
+//: half for ever, and a fixed 120ms nap made that 8 looks a second of an idle page. A panel still
+//: for 8 looks is looked at every 350ms, for 16 every 700ms (the slow look's own beat, so no move
+//: is found later than it would be); any move, or a wake, starts it over at 120ms.
+function nameMarkBuddyNapMs(rest, ride) {
+  if (rest < 3) return 0;
+  if (rest >= 16) return 700;
+  if (rest >= 8) return 350;
+  return ride ? 300 : 120;
+}
 function nameMarkBuddyFollowFrame(now) {
   nmbFollow.frame = 0;
   //: **Not while a page is arriving** (INBOX 1575; `uiSettlingUntil`, set by `switchTab` and the
@@ -5714,7 +5726,7 @@ function nameMarkBuddyFollowFrame(now) {
     const [x, y] = [nmb.x, nmb.y];
     nameMarkBuddyFollow();
     nmbFollow.rest = nmb.x === x && nmb.y === y ? nmbFollow.rest + 1 : 0;
-    nmbFollow.nap = nmbFollow.rest >= 3 && !nmbFollow.moving ? now + (nmb.ride ? 300 : 120) : 0;
+    nmbFollow.nap = nmbFollow.rest >= 3 && !nmbFollow.moving ? now + nameMarkBuddyNapMs(nmbFollow.rest, nmb.ride) : 0;
   }
   //: **No frames while it is still** (INBOX 1667, the owner's log: `nameMarkBuddyKeepUp` in rAF at 33
   //: calls a second, 5.7ms each): once it has held still for three looks and nothing it rides is

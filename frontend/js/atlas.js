@@ -4122,8 +4122,12 @@ else atlasDressMarks();
 //: and then one task a job, in call order (INBOX 1657: all seven in one task
 //: were 161ms at 4x CPU, 47ms of it forced layout), so a frame can land
 //: between them.
+//: **Named, and no job inside it** (INBOX 1741, the owner's log: `inline TimerHandler:setTimeout 290ms`
+//: after the dashboard opened; LoAF cannot name an anonymous arrow, and the first job ran inside it: the
+//: chat heads' dressing, 60ms of the 65 at 6x CPU). The task only opens the queue; the first job is the
+//: next task, so the arrival's own timer holds the page for a few lines only.
 function charactersArrived() {
-  setTimeout(() => {
+  setTimeout(function charactersArrivedTask() {
     charactersLoaded = true;
     const jobs = [...characterWaiters].map((fn) => [fn, []]);
     for (const [name, args] of characterBacklog) jobs.push([name, args]);
@@ -4138,7 +4142,7 @@ function charactersArrived() {
       runCharacterJob(typeof job[0] === "string" ? window[job[0]] : job[0], job[1]);
       setTimeout(step, 0);
     };
-    step();
+    setTimeout(step, 0);
   }, 0);
 }
 
