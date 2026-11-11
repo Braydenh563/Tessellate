@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Perf (audit 1029 X15): a Library card's menu rows are built when the menu is first opened (`kebabMenu.rows`, a capture-phase click on the card's menu), not for every card: the rows were 43 of a card's 55 nodes, now 4 (2,451 of 3,135 at 57 cards). Right-click and F2 read the items and are unchanged; the phone sheet, arrow keys and the Copy rows were driven in the app. Page elements added 3.5 s after opening the Library: about 1,840 to about 1,200.
 - Perf (audit 1029 X15): the Library's first chunk is a screen of cards (12), not sixty; the frame pump still fills the grid while the sentinel is within 600px. Page elements added 3.5 s after opening the Library on a 200-note notebook at 4x CPU: 3,927 to about 1,840; longest task 229 and 182 ms to 192 and 125 ms (medians of 3, two rounds each).
 - Documents sidebar (the owner, 2026-11-11): Attach a bookmark spans the sidebar with its words centred, and "Where are my documents kept?" sits at the sidebar's foot, centred, as its footer (measured at 1440: 226px of a 234px section; the link's bottom 4px above the section's).
 - Fixed (code scanning 2180): the desk companion's "overlay started" log builds the motion words from fixed strings in `_motion_label`, never from the value read from preferences.
