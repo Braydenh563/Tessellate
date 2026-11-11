@@ -649,13 +649,15 @@ class Trail:
     def _chain(self, pos: list[float], vel: list[float], kick: float, top: float, h: float, n: int) -> None:
         stiff, damp = self.STIFF, self.DAMP
         kicks = [kick * (1 + i) for i in range(self.LINKS)]  # the same product every pass: once per link
+        links, low = range(self.LINKS), -top
         for _ in range(n):
             prev = 0.0
-            for i in range(self.LINKS):
-                v = vel[i] + (stiff * (prev - pos[i]) - damp * vel[i] - kicks[i]) * h
+            for i in links:
+                pi, vi = pos[i], vel[i]  # read once: the same arithmetic in the same order, so the same floats
+                v = vi + (stiff * (prev - pi) - damp * vi - kicks[i]) * h
                 vel[i] = v
-                p = pos[i] + v * h
-                prev = pos[i] = top if p > top else -top if p < -top else p
+                p = pi + v * h
+                prev = pos[i] = top if p > top else low if p < low else p
 
     def reset(self) -> None:
         self.pos, self.vel, self.last_v = [0.0] * self.LINKS, [0.0] * self.LINKS, 0.0
@@ -901,6 +903,10 @@ class Flow:
         self.pos = [[0.0, 0.0] for _ in range(FLOW_BANDS)]
         self.vel = [[0.0, 0.0] for _ in range(FLOW_BANDS)]
         self.stiff = [FLOW_STIFF[0] + (FLOW_STIFF[1] - FLOW_STIFF[0]) * _frac(i * 0.754 + 0.31) for i in range(FLOW_BANDS)]
+        #: Each strand's (stiffness, damping, share of the throw), the same three numbers every wake: once, here.
+        self.springs = [
+            (k, 2.0 * FLOW_DAMP * math.sqrt(k), 0.7 + 0.6 * _frac(i * 0.43 + 0.1)) for i, k in enumerate(self.stiff)
+        ]
         self.last_v = (0.0, 0.0)
         self.seed = seed
         self.hold = [FLOW_ARR_HOLD[0] + (FLOW_ARR_HOLD[1] - FLOW_ARR_HOLD[0]) * _frac(i * 0.618 + 0.29) for i in range(FLOW_BANDS)]
@@ -945,18 +951,17 @@ class Flow:
             return
         n = max(1, int(math.ceil(dt / 0.02)))
         h = dt / n
-        for i in range(FLOW_BANDS):
-            k = self.stiff[i]
-            c = 2.0 * FLOW_DAMP * math.sqrt(k)
-            gain = 0.7 + 0.6 * _frac(i * 0.43 + 0.1)  # each strand is thrown by its own share
+        hi, lo = FLOW_MAX, -FLOW_MAX
+        steps = range(n)
+        for i, (k, c, gain) in enumerate(self.springs):
             for axis, v, a in ((0, vx, ax), (1, vy, ay)):
                 rest = -v * FLOW_STREAM * gain
                 kick = a * FLOW_KICK * gain  # the same every pass
                 p, q = self.pos[i][axis], self.vel[i][axis]
-                for _ in range(n):
+                for _ in steps:
                     q += (k * (rest - p) - c * q - kick) * h
                     p += q * h
-                    p = FLOW_MAX if p > FLOW_MAX else -FLOW_MAX if p < -FLOW_MAX else p
+                    p = hi if p > hi else lo if p < lo else p
                 self.pos[i][axis], self.vel[i][axis] = p, q
 
     def arrangement(self, i: int, t: float) -> tuple[float, float]:

@@ -20,6 +20,7 @@ from __future__ import annotations
 import re
 from collections import Counter
 from collections.abc import Callable, Iterable
+from contextvars import ContextVar
 
 #: The frames that ask about a subject as a whole. "games notes", "ideas for
 #: projects", "what did I write about uni", "summarise my uni notes", "what do
@@ -73,6 +74,32 @@ _TRAILING_NOTES = re.compile(r"\s+notes?$", re.I)
 #: "what are my notes about sourdough" is about sourdough: the subject was
 #: once "notes about sourdough" ("There are two notes on notes about ...").
 _LEADING_NOTES = re.compile(r"^(?:notes?|entries|entry)\s+(?:about|on|for|of|abt|re|regarding)\s+", re.I)
+
+
+#: (the notes that match, the notes read) for a turn whose overview pool was
+#: cut at `chat_pool.OVERVIEW_LIMIT`. The cap stays; the lead says how many
+#: notes there are, not how many were read (comp1743 leftover).
+_POOL: ContextVar[tuple[int, int]] = ContextVar("overview_pool", default=(0, 0))
+
+
+def set_pool(total: int, read: int) -> None:
+    """Record, for this turn, that `read` of `total` matching notes were read; (0, 0) clears it."""
+    _POOL.set((total, read) if total > read else (0, 0))
+
+
+def read_pool(notes: list[dict] | None) -> None:
+    """Take the pool's size from the notes of this turn (`chat_pool._chat_payload`
+    marks the first), for the context the answer is composed in: a context set
+    while retrieving does not reach it, the stream steps run in separate ones."""
+    mark = next((n["overview_pool"] for n in notes or () if n.get("overview_pool")), (0, 0))
+    set_pool(*mark)
+
+
+def pooled(read: int) -> int:
+    """The honest count for an overview that read `read` notes: the whole
+    topic when `read` is the cut pool, else `read`."""
+    total, size = _POOL.get()
+    return total if size and read == size else read
 
 
 def topic(question: str) -> str | None:

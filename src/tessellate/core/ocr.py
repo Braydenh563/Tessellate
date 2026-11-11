@@ -1015,6 +1015,22 @@ def regions_from_reading(text: str) -> list[dict]:
     return blocks
 
 
+def _mostly_bullets(lines: list[str]) -> bool:
+    """Bullets, numbers, or checkboxes on the majority of lines."""
+    bulleted = sum(
+        bool(re.match(r"^\s*(?:[-*+\u2022]|\d+[.)])\s+", line)) for line in lines
+    )
+    return bool(lines) and bulleted >= max(2, len(lines) - 1)
+
+
+def _is_title_line(lines: list[str], first: str) -> bool:
+    return (
+        len(lines) == 1
+        and len(first) <= READING_HEADING_CHARS
+        and not first.endswith((".", "!", "?", ":", ";", ","))
+    )
+
+
 def _reading_block_kind(body: str) -> str:
     """What a block of a reading is, from its shape alone.
 
@@ -1033,22 +1049,12 @@ def _reading_block_kind(body: str) -> str:
     #: single stray pipe in prose is not.
     if len(lines) >= 2 and sum(line.count("|") >= 2 for line in lines) >= len(lines) - 1:
         return "table"
-    #: Bullets, numbers, or checkboxes on the majority of lines.
-    bulleted = sum(
-        bool(re.match(r"^\s*(?:[-*+\u2022]|\d+[.)])\s+", line)) for line in lines
-    )
-    if lines and bulleted >= max(2, len(lines) - 1):
+    if _mostly_bullets(lines):
         return "list"
     #: A markdown heading says so outright. Otherwise: one short line with no
     #: sentence-ending punctuation is a title, which is how a heading reads on
     #: a scanned page where nothing carries markup at all.
-    if first.startswith("#"):
-        return "heading"
-    if (
-        len(lines) == 1
-        and len(first) <= READING_HEADING_CHARS
-        and not first.endswith((".", "!", "?", ":", ";", ","))
-    ):
+    if first.startswith("#") or _is_title_line(lines, first):
         return "heading"
     return "text"
 

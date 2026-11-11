@@ -45,7 +45,19 @@ function editAndResend(bubble, text) {
   cancel.className = "ghost small";
   cancel.textContent = "Cancel";
   row.append(save, cancel);
-  editor.append(box, hint, row);
+  //: **Keep the earlier version** (audit 1028 E48): a saved chat whose edit would cut more than
+  //: this one answer offers to keep the whole thread as a copy first. A copy, not a branch (the
+  //: fork route says why); a private or unsaved chat has nothing to copy from.
+  let keep = null;
+  if (chatConv.id !== null && !chatConv.private && chatConv.turns.length - Number(bubble.dataset.turn) > 1) {
+    keep = Object.assign(document.createElement("input"), { type: "checkbox", checked: true });
+    const keepRow = document.createElement("label");
+    keepRow.className = "check-row";
+    keepRow.append(keep, Object.assign(document.createElement("span"), { textContent: "Keep the earlier version as a copy" }));
+    editor.append(box, hint, keepRow, row);
+  } else {
+    editor.append(box, hint, row);
+  }
 
   const close = () => {
     editor.remove();
@@ -88,6 +100,11 @@ function editAndResend(bubble, text) {
     let cut = null;
     if (chatConv.id !== null) {
       try {
+        //: The copy is made before the cut, so a failed copy stops the edit (nothing is lost).
+        if (keep?.checked) {
+          await apiJson(`/conversations/${chatConv.id}/fork`, { method: "POST", body: JSON.stringify({ suffix: "before the edit" }) });
+          toast("Kept the earlier version as a copy in your chats.");
+        }
         const result = await apiJson(`/conversations/${chatConv.id}/truncate`, {
           method: "POST",
           body: JSON.stringify({ from_turn: turnIndex }),
@@ -167,7 +184,8 @@ function showCopyFallback(text) {
 }
 
 //: Regenerate from a given answer (chat.js `regenerateFromBubble` loads this file).
-async function regenerateFrom(bubble) {
+//: `opts.persona` answers it once in another persona (audit 1028 E60), the picker unchanged.
+async function regenerateFrom(bubble, opts = {}) {
   if (chatController) return toast("Wait for the current answer to finish.");
   const asked = questionForBubble(bubble);
   if (!asked) return toast("There is no question above this answer to re-ask.");
@@ -194,7 +212,12 @@ async function regenerateFrom(bubble) {
   }
   //: The question stays; everything after it goes, including this answer.
   for (const node of kept.slice(from + 1)) dropChatBubble(node);
-  sendChatMessage(asked.text, { skipUserBubble: true, replaceLast: true });
+  //: How many times this question has been asked again, kept on its bubble:
+  //: the server words the answer anew and, from the first retry, reads more
+  //: notes (audit 1028 E62; `attempt`, as `regenerateLast` sends it).
+  const attempt = (Number(asked.bubble.dataset.attempt) || 0) + 1;
+  asked.bubble.dataset.attempt = String(attempt);
+  sendChatMessage(asked.text, { skipUserBubble: true, replaceLast: true, attempt, ...(opts.persona ? { persona: opts.persona } : {}) });
 }
 
 //: **An answer that changed the notebook is not re-run silently.** A composer

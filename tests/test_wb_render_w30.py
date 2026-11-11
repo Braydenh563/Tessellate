@@ -62,3 +62,14 @@ def test_the_board_bounds_find_cards_and_sketches_in_one_walk_each():
     bounds = WB[start : WB.index("\n}\n", start)]
     assert 'idIndex(".node-card")' in bounds and 'idIndex(".sketch-group")' in bounds
     assert "document.querySelector(`" not in bounds
+
+
+def test_a_sketch_class_is_written_only_when_it_changes():
+    #: d3's `classed` re-sets the class attribute even when the token is right: 1,060 writes for 530 idle sketches.
+    render = WB[WB.index("function renderWhiteboard()") :]
+    helper = render[render.index("const classIfChanged =") :].split("\n  });\n", 1)[0]
+    assert "if (this.classList.contains(name) !== on) this.classList.toggle(name, on);" in helper
+    body = render[: render.index("sketchExit") if "sketchExit" in render else 60000]
+    for name in ("wb-link-sketch", "wb-map-crosslink"):
+        assert f'classIfChanged(sketchUpdate, "{name}"' in body, name
+        assert f'sketchUpdate.classed("{name}"' not in body, name

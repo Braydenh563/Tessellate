@@ -459,6 +459,20 @@
   max-width: min(22rem, 100%);
 }
 
+/* The device row is a grid, not a flex row: the label keeps its width and the select shrinks into what is left, its
+   value ellipsized. As flex items the pair were 14 px wider than the 360 px sheet and Settings scrolled sideways
+   (W20 C21, measured at 360: 234 px row, 83 label + 180 select; 0 after). */
+.mic-controls .setting-row:has(> .select-shell) {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+}
+
+.mic-controls .setting-row > .select-shell {
+  justify-self: end;
+  max-width: 100%;
+}
+
 .mic-test {
   display: flex;
   align-items: center;
