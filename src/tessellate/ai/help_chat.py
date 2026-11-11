@@ -309,33 +309,6 @@ def _keyword_in(keyword: str, lowered: str) -> bool:
     return stem in lowered and _keyword_regex(keyword).search(lowered) is not None
 
 
-def _edit_distance_at_most_one(a: str, b: str) -> bool:
-    """True when `a` becomes `b` by one insertion, deletion, substitution or
-    swap of two neighbours: the typos a person makes in a help box ("remnder",
-    "serach", "chnage")."""
-    if a == b:
-        return True
-    la, lb = len(a), len(b)
-    if abs(la - lb) > 1:
-        return False
-    if la == lb:
-        diff = [k for k in range(la) if a[k] != b[k]]
-        if len(diff) == 1:
-            return True
-        return (
-            len(diff) == 2
-            and diff[1] == diff[0] + 1
-            and a[diff[0]] == b[diff[1]]
-            and a[diff[1]] == b[diff[0]]
-        )
-    if la > lb:
-        a, b = b, a
-    k = 0
-    while k < len(a) and a[k] == b[k]:
-        k += 1
-    return a[k:] == b[k + 1 :]
-
-
 _WORD = re.compile(r"[a-z0-9]+")
 
 #: Single-word keywords long enough to forgive a typo in (a four-letter word
@@ -495,7 +468,7 @@ def _matching_topics(question: str) -> list[dict]:
             elif (
                 " " not in keyword
                 and len(keyword) >= _TYPO_MIN
-                and any(len(w) >= _TYPO_MIN - 1 and _edit_distance_at_most_one(w, keyword) for w in words)
+                and any(len(w) >= _TYPO_MIN - 1 and help_words.one_edit_apart(w, keyword) for w in words)
             ):
                 score += 0.8 * rarity
         if (score := max(score, _WORD_BAND.score(words, lowered, topic["id"]))) > 0:
@@ -982,8 +955,7 @@ def _second_sentence(question: str, body: str, said: str) -> str:
 
 
 def _place_follows(question: str, steps: tuple) -> bool:
-    """A find question, or a how-to with no steps, ends on its place: the
-    sentence that answers leads (the gold set), the place follows (Q23, E33)."""
+    """A find question, or a how-to with no steps, ends on its place, after the answer (Q23, E33)."""
     return bool(_FIND_ASKED.search(question) or (not steps and _HOW_ASKED.match(question)))
 
 

@@ -93,7 +93,7 @@
     install.className = "ghost small";
     const manual = Boolean(row && row.unavailable);
     install.textContent = manual ? "Open Packages" : "Install";
-    install.title = manual ? row.unavailable : `Installs it from Settings, Packages${row ? `: ${row.enables}` : ""}`;
+    install.title = manual ? row.unavailable : `Installs it from Settings, Packages.${row ? ` ${row.enables}` : ""}`;
     install.addEventListener("click", async () => {
       if (manual) return openSettingsModal("extras");
       install.disabled = true;
