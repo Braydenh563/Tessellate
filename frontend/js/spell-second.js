@@ -207,5 +207,33 @@
     ownWords = new Set((words || []).map(foldWord));
   }
 
-  self.spellSecond = { refined, spellAnswers, setOwnWords };
+  //: **Spelling packs for other languages (D30).** A pack is a Hunspell `.aff` and `.dic` the
+  //: person installed from Settings, Packages; the page fetches the two files (a worker's
+  //: own fetch carries no token) and sends them once per language, here, where the build
+  //: (about a second for German or Spanish, four for French) stays off the page's thread.
+  //: Nothing of it is read until a document in that language is open.
+  const packs = new Map();
+
+  async function packLoad(lang, aff, dic) {
+    const { default: nspell } = await import("../vendor/spelling/nspell.js");
+    packs.set(lang, nspell(aff, dic));
+  }
+
+  //: The same answer shape as `spellAnswers`. A language with no pack loaded answers
+  //: nothing, never "unknown": the page then leaves the words alone rather than flagging them.
+  function packAnswers(lang, words) {
+    const checker = packs.get(lang);
+    const out = {};
+    if (!checker) return out;
+    for (const word of words.slice(0, 200)) {
+      //: Hunspell's French and Spanish files spell the apostrophe straight.
+      const plain = String(word).replace(/’/g, "'");
+      const known = ownWords.has(foldWord(word)) || checker.correct(plain);
+      const near = known ? [] : checker.suggest(plain).filter((text) => withinThird(plain, text)).slice(0, 5);
+      out[word] = { known, suggestions: near.map((text) => matchCase(plain, text)) };
+    }
+    return out;
+  }
+
+  self.spellSecond = { refined, spellAnswers, setOwnWords, packLoad, packAnswers };
 })();
