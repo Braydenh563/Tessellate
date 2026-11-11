@@ -121,6 +121,30 @@ def test_a_holiday_without_a_pointer_and_other_windows_carry_no_year():
     assert recognise.with_holiday_year("last Christmas", date(2025, 12, 25)) == "last Christmas (2025)"
 
 
+# --- 3. one day, one head -----------------------------------------------------------------------------
+
+@pytest.mark.parametrize("question", ["what's on Wednesday", "do I have anything on Wednesday", "is there anything on Wednesday", "what is on Wednesday"])
+def test_a_single_day_prints_the_day_once(btask, question):
+    said = btask(question)
+    assert said.count("Wednesday 11 November") == 1 and "**" not in said, said
+    assert "Gym on Monday, Wednesday and Friday at 7am" in said, said
+
+
+@pytest.mark.parametrize(("question", "head"), [
+    ("what's on Thursday", "For Thursday 12 November you have one dated item:"),
+    ("what is on Friday", "For Friday 13 November you have one dated item:"),
+    ("what's on tomorrow", "For tomorrow, Tuesday 10 November you have one dated item:"),
+])
+def test_a_single_day_is_a_head_then_its_items(btask, question, head):
+    lines = btask(question).split("\n")
+    assert lines[0] == head and lines[1] == "" and lines[2].startswith("- "), lines
+
+
+def test_a_week_still_has_a_heading_for_each_day(btask):
+    said = btask("what is on this week")
+    assert "**Tomorrow, Tuesday 10 November**" in said and "**Thursday 12 November**" in said, said
+
+
 # --- 4. getting in touch is one act said five ways ----------------------------------------------------
 
 NOW = dt.datetime(2026, 10, 29, 10, 0, 0)

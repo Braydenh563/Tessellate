@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Composer (W8B 1111, one day, one head): "what's on Wednesday" for a single day prints the day once (one lead, then its items) instead of a lead and a bold day heading that said the same; a window of several days keeps a heading for each day.
 - Composer (W8B 1111, holiday year): "what did I do last Christmas" reads "last", "next" and "this" before a holiday as one day (the latest one gone, the next to come, this year's) and the empty-window answer names its year: "Nothing was made, edited or binned last Christmas (2025)". A holiday with no pointer, and every other window, reads as before.
 - Composer (W8B 1111, appointment verdict): "is my dentist appointment tomorrow" and "... on Thursday" now get a Yes or No on the first line, "No, not tomorrow. Thursday 12 November, 9:30". A weekday ("on Thursday", "this Friday") is a window the event ask reads, the line holding the day leads, and the verdict names the weekday with its capital.
 - Composer (W8B 1111, contact verbs): "when did I phone mum" with the note "Called mum" now answers "On Monday 26 October, you called mum." Call, phone, ring, rang, rung, text and message are one act (`composer_ask.CONTACT_VERBS`, outside `SYNONYM_GROUPS` whose groups never share a word), and "rang" opens a past-tense doing like "called".
