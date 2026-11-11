@@ -217,3 +217,34 @@ def test_a_server_that_ends_an_empty_stream_on_tool_choice_gets_the_round_unforc
         OpenAICompatClient(url, timeout=10).chat_tools_stream(module.MODEL_ID, ASK, TOOLS, tool_choice="required")
     )
     assert [c["name"] for c in final["tool_calls"]] == ["list_tags"]
+
+
+def test_a_server_that_refuses_a_null_content_beside_tool_calls_is_asked_with_an_empty_one():
+    """B70, measured on llama-cpp-python: its schema wants a string `content`
+    on an assistant turn, so every turn after the first tool call was a 500.
+    The refusal is answered once with "" in place of null."""
+    sent = []
+
+    class Reply:
+        def __init__(self, status):
+            self.status_code = status
+
+        def close(self):
+            pass
+
+    client = OpenAICompatClient("http://127.0.0.1:9", timeout=1)
+
+    def fake_send(payload, stream):
+        sent.append([m.get("content") for m in payload["messages"] if m["role"] == "assistant"])
+        return Reply(500 if sent[-1] == [None] else 200)
+
+    client._send = fake_send
+    payload = {"messages": [{"role": "user", "content": "hi"},
+                            {"role": "assistant", "content": None, "tool_calls": [{"id": "call_0"}]}]}
+    assert client._post(payload, stream=True).status_code == 200
+    assert sent == [[None], [""]]
+    # A turn with no null content to fill is not asked twice.
+    sent.clear()
+    client._send = lambda p, s: (sent.append(1), Reply(500))[1]
+    assert client._post({"messages": [{"role": "user", "content": "hi"}]}, stream=True).status_code == 500
+    assert sent == [1]

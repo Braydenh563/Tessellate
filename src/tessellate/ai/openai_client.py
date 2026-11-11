@@ -66,6 +66,17 @@ from tessellate.ai.provider import (
 from tessellate.core import activity
 
 
+def _fill_null_content(payload: dict) -> bool:
+    """Give every assistant turn that carries `tool_calls` and a null `content`
+    an empty string instead. True when anything changed."""
+    changed = False
+    for message in payload.get("messages") or []:
+        if message.get("role") == "assistant" and message.get("tool_calls") and message.get("content") is None:
+            message["content"] = ""
+            changed = True
+    return changed
+
+
 def _looks_like_tools_rejection(status: int, body: str) -> bool:
     """Did the server refuse because the model can't do tools?
 
@@ -694,6 +705,18 @@ class OpenAICompatClient(Provider):
         return payload
 
     def _post(self, payload: dict, stream: bool):
+        response = self._send(payload, stream)
+        if response.status_code >= 400 and _fill_null_content(payload):
+            # A null `content` beside `tool_calls` is the spec, and the first
+            # ask keeps it because some servers 400 on an empty string. The
+            # others (llama-cpp-python's pydantic schema, B70) answer a 500
+            # that names no field and refuse every turn after the first tool
+            # call, so a refusal asks once more with the empty string.
+            response.close()
+            response = self._send(payload, stream)
+        return response
+
+    def _send(self, payload: dict, stream: bool):
         return requests.post(
             f"{self.base_url}/chat/completions",
             json=payload,
