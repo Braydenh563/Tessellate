@@ -13578,14 +13578,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `Act` | src/tessellate/ai/act_registry.py:77 |
-| `_listing` | src/tessellate/ai/act_registry.py:262 |
-| `act_topic` | src/tessellate/ai/act_registry.py:380 |
+| `_listing` | src/tessellate/ai/act_registry.py:266 |
+| `act_topic` | src/tessellate/ai/act_registry.py:384 |
 | `app_verb` | src/tessellate/ai/act_registry.py:194 |
 | `app_verb_line` | src/tessellate/ai/act_registry.py:202 |
 | `ask_line` | src/tessellate/ai/act_registry.py:214 |
 | `capability_line` | src/tessellate/ai/act_registry.py:171 |
-| `guide_topic` | src/tessellate/ai/act_registry.py:229 |
-| `palette_rows` | src/tessellate/ai/act_registry.py:221 |
+| `guide_topic` | src/tessellate/ai/act_registry.py:233 |
+| `palette_rows` | src/tessellate/ai/act_registry.py:225 |
 | `propose` | src/tessellate/ai/act_registry.py:60 |
 | `typed_reader` | src/tessellate/ai/act_registry.py:40 |
 
