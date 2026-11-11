@@ -22,7 +22,7 @@ import pytest
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 NOTE_CARDS = (JS / "note-cards.js").read_text(encoding="utf-8")
-WHITEBOARD = (JS / "whiteboard.js").read_text(encoding="utf-8")
+WHITEBOARD = (JS / "boards-gallery.js").read_text(encoding="utf-8")
 DASHBOARD = (JS / "dashboard.js").read_text(encoding="utf-8")
 DASH_BOARDS = (JS / "dash-boards.js").read_text(encoding="utf-8")
 

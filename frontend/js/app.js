@@ -1639,6 +1639,7 @@ const LAZY_MODULES = {
     "/js/image-layout.js",
     //: Before the editors: it holds the file-type table they read.
     "/js/library.js",
+    "/js/boards-gallery.js", //: The Boards & maps gallery: also its own module (`boardsGallery`), and the board code calls it.
     "/js/documents-code.js",
     "/js/documents-prose.js",
     "/js/documents-spell.js",

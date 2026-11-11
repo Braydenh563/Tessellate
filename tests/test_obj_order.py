@@ -102,7 +102,7 @@ def test_every_sort_with_a_custom_order_offers_it_and_ranks_by_the_stored_order(
     for select in ("note-sort", "library-docs-sort", "library-boards-sort", "library-media-sort"):
         block = re.search(rf'<select id="{select}".*?</select>', html, re.S).group(0)
         assert '<option value="custom">Custom order</option>' in block, select
-    text = "".join((JS / name).read_text(encoding="utf-8") for name in ("library.js", "whiteboard.js", "obj-reorder.js"))
+    text = "".join((JS / name).read_text(encoding="utf-8") for name in ("library.js", "whiteboard.js", "boards-gallery.js", "obj-reorder.js"))
     for scope in ("docs", "boards", "media"):
         assert f'libraryCustomCmp("{scope}"' in text, scope
     assert 'objOrderCmp("notes"' in text

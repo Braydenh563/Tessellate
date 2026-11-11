@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8181, frontend ids 2716, CSS sections 524, backend routes 677, backend modules 10470, test files 2596, tests 21235, plan headings 1012, app scripts 29, boot scripts 38, script files 284.
+Counts: frontend functions 8181, frontend ids 2716, CSS sections 524, backend routes 677, backend modules 10470, test files 2597, tests 21244, plan headings 1012, app scripts 29, boot scripts 38, script files 285.
 
 ## Frontend functions (8181)
 
@@ -47,18 +47,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `clearApiCache` | frontend/js/app.js:556 |
 | `confirmDialog` | frontend/js/app.js:1273 |
 | `confirmVerb` | frontend/js/app.js:1264 |
-| `ensureModule` | frontend/js/app.js:1729 |
+| `ensureModule` | frontend/js/app.js:1730 |
 | `enterWithoutPassword` | frontend/js/app.js:635 |
 | `hide` | frontend/js/app.js:163 |
 | `hideBootSplash` | frontend/js/app.js:843 |
 | `initAuth` | frontend/js/app.js:856 |
-| `installStandIns` | frontend/js/app.js:1900 |
-| `lazyAssetStamp` | frontend/js/app.js:1686 |
-| `lazyScript` | frontend/js/app.js:1708 |
+| `installStandIns` | frontend/js/app.js:1901 |
+| `lazyAssetStamp` | frontend/js/app.js:1687 |
+| `lazyScript` | frontend/js/app.js:1709 |
 | `lockFieldForPin` | frontend/js/app.js:751 |
 | `lockNow` | frontend/js/app.js:815 |
 | `mediaSrc` | frontend/js/app.js:234 |
-| `mountNoteSurfaceNow` | frontend/js/app.js:1753 |
+| `mountNoteSurfaceNow` | frontend/js/app.js:1754 |
 | `promptDialog` | frontend/js/app.js:1371 |
 | `purgeLockedContent` | frontend/js/app.js:794 |
 | `recordBrowserLog` | frontend/js/app.js:23 |
@@ -78,7 +78,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `stagedImageByUrl` | frontend/js/app.js:195 |
 | `startApp` | frontend/js/app.js:905 |
 | `startWithoutPassword` | frontend/js/app.js:620 |
-| `whenScriptsLoaded` | frontend/js/app.js:1667 |
+| `whenScriptsLoaded` | frontend/js/app.js:1668 |
 | `wireBackdropClose` | frontend/js/app.js:1485 |
 
 ### frontend/js/prefs.js (6)
@@ -103,18 +103,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `afterCharacters` | frontend/js/lazy-entries.js:193 |
-| `charactersLost` | frontend/js/lazy-entries.js:202 |
-| `emblemHead` | frontend/js/lazy-entries.js:210 |
-| `installCharacterStandIns` | frontend/js/lazy-entries.js:239 |
-| `lazyLoadFailed` | frontend/js/lazy-entries.js:272 |
-| `loadCharactersIdle` | frontend/js/lazy-entries.js:233 |
-| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:260 |
-| `onDomReady` | frontend/js/lazy-entries.js:283 |
-| `plainHead` | frontend/js/lazy-entries.js:216 |
-| `runCharacterJob` | frontend/js/lazy-entries.js:224 |
-| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:295 |
-| `warmOnFirst` | frontend/js/lazy-entries.js:314 |
+| `afterCharacters` | frontend/js/lazy-entries.js:197 |
+| `charactersLost` | frontend/js/lazy-entries.js:206 |
+| `emblemHead` | frontend/js/lazy-entries.js:214 |
+| `installCharacterStandIns` | frontend/js/lazy-entries.js:243 |
+| `lazyLoadFailed` | frontend/js/lazy-entries.js:276 |
+| `loadCharactersIdle` | frontend/js/lazy-entries.js:237 |
+| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:264 |
+| `onDomReady` | frontend/js/lazy-entries.js:287 |
+| `plainHead` | frontend/js/lazy-entries.js:220 |
+| `runCharacterJob` | frontend/js/lazy-entries.js:228 |
+| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:299 |
+| `warmOnFirst` | frontend/js/lazy-entries.js:318 |
 
 ### frontend/js/att-chip.js (7)
 
@@ -2608,6 +2608,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `bgRandom` | frontend/js/bg-art.js:286 |
 | `bgSprite` | frontend/js/bg-art.js:256 |
 | `bgTurnBack` | frontend/js/bg-art.js:173 |
+
+### frontend/js/boards-gallery.js (7)
+
+| Name | File:line |
+|---|---|
+| `boardItemCount` | frontend/js/boards-gallery.js:33 |
+| `boardSort` | frontend/js/boards-gallery.js:37 |
+| `boardTypeFilter` | frontend/js/boards-gallery.js:91 |
+| `drawLibraryBoardsGallery` | frontend/js/boards-gallery.js:186 |
+| `redrawLibraryBoardsGallery` | frontend/js/boards-gallery.js:149 |
+| `renderBoardTypeFilter` | frontend/js/boards-gallery.js:110 |
+| `renderLibraryBoardsGallery` | frontend/js/boards-gallery.js:154 |
 
 ### frontend/js/captions.js (15)
 
@@ -5762,49 +5774,49 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `activityDetailText` | frontend/js/library.js:1548 |
 | `activitySettingValue` | frontend/js/library.js:1532 |
-| `allBookmarkGroups` | frontend/js/library.js:11572 |
+| `allBookmarkGroups` | frontend/js/library.js:11583 |
 | `analyseMediaRow` | frontend/js/library.js:8623 |
 | `applyLibraryMediaView` | frontend/js/library.js:4032 |
-| `attachBoardTick` | frontend/js/library.js:11222 |
+| `attachBoardTick` | frontend/js/library.js:11233 |
 | `binRoutes` | frontend/js/library.js:1303 |
 | `bookmarkAddress` | frontend/js/library.js:4238 |
-| `bookmarkRow` | frontend/js/library.js:11944 |
-| `bookmarkSiteSection` | frontend/js/library.js:11907 |
-| `bookmarkSort` | frontend/js/library.js:11834 |
+| `bookmarkRow` | frontend/js/library.js:11955 |
+| `bookmarkSiteSection` | frontend/js/library.js:11918 |
+| `bookmarkSort` | frontend/js/library.js:11845 |
 | `buildFileReadingSummary` | frontend/js/library.js:8781 |
-| `bulkDeleteLibraryBoards` | frontend/js/library.js:11261 |
-| `bulkDeleteLibraryLinks` | frontend/js/library.js:11468 |
+| `bulkDeleteLibraryBoards` | frontend/js/library.js:11272 |
+| `bulkDeleteLibraryLinks` | frontend/js/library.js:11479 |
 | `bulkDeleteLibraryMedia` | frontend/js/library.js:8926 |
-| `bulkMoveLibraryLinks` | frontend/js/library.js:11516 |
-| `bulkUpdateLibraryLinks` | frontend/js/library.js:11490 |
-| `clearLibraryBoardsSelection` | frontend/js/library.js:11253 |
-| `clearLibraryLinksSelection` | frontend/js/library.js:11416 |
+| `bulkMoveLibraryLinks` | frontend/js/library.js:11527 |
+| `bulkUpdateLibraryLinks` | frontend/js/library.js:11501 |
+| `clearLibraryBoardsSelection` | frontend/js/library.js:11264 |
+| `clearLibraryLinksSelection` | frontend/js/library.js:11427 |
 | `clearLibraryMediaSelection` | frontend/js/library.js:8920 |
 | `closeBinnedReader` | frontend/js/library.js:1929 |
 | `closeOcrWorkspace` | frontend/js/library.js:6010 |
-| `contentsBuildSection` | frontend/js/library.js:12677 |
-| `contentsDocRow` | frontend/js/library.js:12590 |
-| `contentsGlyph` | frontend/js/library.js:12525 |
-| `contentsGroupMark` | frontend/js/library.js:12661 |
-| `contentsGroups` | frontend/js/library.js:12369 |
-| `contentsMonthKey` | frontend/js/library.js:12362 |
-| `contentsNoteFacts` | frontend/js/library.js:12552 |
-| `contentsNoteMark` | frontend/js/library.js:12532 |
-| `contentsNoteName` | frontend/js/library.js:12465 |
-| `contentsNoteRow` | frontend/js/library.js:12564 |
-| `contentsOpenDocument` | frontend/js/library.js:12483 |
-| `contentsOrderedKeys` | frontend/js/library.js:12438 |
-| `contentsRenameTopic` | frontend/js/library.js:12753 |
-| `contentsRowBody` | frontend/js/library.js:12512 |
-| `contentsSectionLabel` | frontend/js/library.js:12418 |
-| `contentsSetAll` | frontend/js/library.js:12963 |
-| `contentsTopicNames` | frontend/js/library.js:12427 |
-| `contentsTreeItem` | frontend/js/library.js:12498 |
-| `contentsTreeKeys` | frontend/js/library.js:12978 |
-| `contentsWireTopicHeading` | frontend/js/library.js:12727 |
-| `createLibrarySelectbar` | frontend/js/library.js:11157 |
-| `deleteBookmarkGroup` | frontend/js/library.js:11611 |
-| `deleteBookmarksWithUndo` | frontend/js/library.js:11427 |
+| `contentsBuildSection` | frontend/js/library.js:12688 |
+| `contentsDocRow` | frontend/js/library.js:12601 |
+| `contentsGlyph` | frontend/js/library.js:12536 |
+| `contentsGroupMark` | frontend/js/library.js:12672 |
+| `contentsGroups` | frontend/js/library.js:12380 |
+| `contentsMonthKey` | frontend/js/library.js:12373 |
+| `contentsNoteFacts` | frontend/js/library.js:12563 |
+| `contentsNoteMark` | frontend/js/library.js:12543 |
+| `contentsNoteName` | frontend/js/library.js:12476 |
+| `contentsNoteRow` | frontend/js/library.js:12575 |
+| `contentsOpenDocument` | frontend/js/library.js:12494 |
+| `contentsOrderedKeys` | frontend/js/library.js:12449 |
+| `contentsRenameTopic` | frontend/js/library.js:12764 |
+| `contentsRowBody` | frontend/js/library.js:12523 |
+| `contentsSectionLabel` | frontend/js/library.js:12429 |
+| `contentsSetAll` | frontend/js/library.js:12974 |
+| `contentsTopicNames` | frontend/js/library.js:12438 |
+| `contentsTreeItem` | frontend/js/library.js:12509 |
+| `contentsTreeKeys` | frontend/js/library.js:12989 |
+| `contentsWireTopicHeading` | frontend/js/library.js:12738 |
+| `createLibrarySelectbar` | frontend/js/library.js:11168 |
+| `deleteBookmarkGroup` | frontend/js/library.js:11622 |
+| `deleteBookmarksWithUndo` | frontend/js/library.js:11438 |
 | `deleteSkillWithUndo` | frontend/js/library.js:2865 |
 | `docSizeText` | frontend/js/library.js:202 |
 | `docTypeFilter` | frontend/js/library.js:173 |
@@ -5814,11 +5826,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docTypeItems` | frontend/js/library.js:117 |
 | `docTypeMenu` | frontend/js/library.js:191 |
 | `duplicateSkill` | frontend/js/library.js:2837 |
-| `emptyBookmarkGroups` | frontend/js/library.js:11549 |
+| `emptyBookmarkGroups` | frontend/js/library.js:11560 |
 | `ensureLibraryGridStop` | frontend/js/library.js:1791 |
-| `fetchAllBookmarks` | frontend/js/library.js:11374 |
+| `fetchAllBookmarks` | frontend/js/library.js:11385 |
 | `fileMetaLine` | frontend/js/library.js:4219 |
-| `filterBookmarks` | frontend/js/library.js:11849 |
+| `filterBookmarks` | frontend/js/library.js:11860 |
 | `filterLibraryImagesGallery` | frontend/js/library.js:9184 |
 | `flashLibraryItem` | frontend/js/library.js:1975 |
 | `focusLibraryFile` | frontend/js/library.js:4166 |
@@ -5850,7 +5862,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `linkNoteFromLibrary` | frontend/js/library.js:1321 |
 | `loadDocTypeTable` | frontend/js/library.js:100 |
 | `loadLibrary` | frontend/js/library.js:453 |
-| `manageBookmarkGroups` | frontend/js/library.js:11637 |
+| `manageBookmarkGroups` | frontend/js/library.js:11648 |
 | `mediaFileIcon` | frontend/js/library.js:4180 |
 | `mediaFileKind` | frontend/js/library.js:4262 |
 | `mediaHasBeenRead` | frontend/js/library.js:8651 |
@@ -5860,9 +5872,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `mediaRowDeleteEndpoint` | frontend/js/library.js:8892 |
 | `mediaRowKey` | frontend/js/library.js:8885 |
 | `metaLine` | frontend/js/library.js:4202 |
-| `newBookmarkGroup` | frontend/js/library.js:11615 |
-| `noteAnyImage` | frontend/js/library.js:13153 |
-| `noteFirstImage` | frontend/js/library.js:13142 |
+| `newBookmarkGroup` | frontend/js/library.js:11626 |
+| `noteAnyImage` | frontend/js/library.js:13164 |
+| `noteFirstImage` | frontend/js/library.js:13153 |
 | `ocrAllText` | frontend/js/library.js:7929 |
 | `ocrApplyFind` | frontend/js/library.js:7290 |
 | `ocrApplyPageCount` | frontend/js/library.js:5635 |
@@ -5982,15 +5994,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openLibraryItem` | frontend/js/library.js:1814 |
 | `openOcrWorkspace` | frontend/js/library.js:6340 |
 | `openPageReader` | frontend/js/library.js:6056 |
-| `pushBookmarksPutUndo` | frontend/js/library.js:11480 |
+| `pushBookmarksPutUndo` | frontend/js/library.js:11491 |
 | `refreshLibraryPhrase` | frontend/js/library.js:2054 |
 | `refreshLibrarySemantic` | frontend/js/library.js:672 |
 | `refreshLibraryServerSearch` | frontend/js/library.js:2028 |
-| `remindAbout` | frontend/js/library.js:13104 |
-| `renameBookmarkGroup` | frontend/js/library.js:11584 |
-| `renderBookmarkGroupChips` | frontend/js/library.js:11741 |
-| `renderBookmarks` | frontend/js/library.js:11385 |
-| `renderContents` | frontend/js/library.js:12807 |
+| `remindAbout` | frontend/js/library.js:13115 |
+| `renameBookmarkGroup` | frontend/js/library.js:11595 |
+| `renderBookmarkGroupChips` | frontend/js/library.js:11752 |
+| `renderBookmarks` | frontend/js/library.js:11396 |
+| `renderContents` | frontend/js/library.js:12818 |
 | `renderIncrementally` | frontend/js/library.js:243 |
 | `renderLibrary` | frontend/js/library.js:746 |
 | `renderLibraryContextBars` | frontend/js/library.js:1340 |
@@ -6007,24 +6019,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `reopenOcrWorkspace` | frontend/js/library.js:6029 |
 | `runLibrarySearch` | frontend/js/library.js:2067 |
 | `seedLibraryDocsAll` | frontend/js/library.js:3507 |
-| `setEmptyBookmarkGroups` | frontend/js/library.js:11560 |
+| `setEmptyBookmarkGroups` | frontend/js/library.js:11571 |
 | `setLibraryCardStop` | frontend/js/library.js:1787 |
 | `setLibraryMediaKind` | frontend/js/library.js:4104 |
 | `setLibraryMediaView` | frontend/js/library.js:4062 |
-| `showDetailDialog` | frontend/js/library.js:13055 |
-| `shownTicksIn` | frontend/js/library.js:11126 |
+| `showDetailDialog` | frontend/js/library.js:13066 |
+| `shownTicksIn` | frontend/js/library.js:11137 |
 | `skillCard` | frontend/js/library.js:2628 |
 | `skillColumnCount` | frontend/js/library.js:2891 |
 | `skillLastRunIndex` | frontend/js/library.js:2617 |
 | `skillSort` | frontend/js/library.js:2824 |
 | `startLibraryImagesPoll` | frontend/js/library.js:3967 |
 | `stopLibraryImagesPoll` | frontend/js/library.js:3980 |
-| `syncLibraryBoardsTicks` | frontend/js/library.js:11208 |
+| `syncLibraryBoardsTicks` | frontend/js/library.js:11219 |
 | `syncLibraryDocsSelectbar` | frontend/js/library.js:3855 |
 | `syncLibraryFilterButton` | frontend/js/library.js:2104 |
 | `syncLibraryMediaSelectbar` | frontend/js/library.js:8909 |
-| `syncSelectAllLabels` | frontend/js/library.js:11130 |
-| `syncSelectbarCount` | frontend/js/library.js:11103 |
+| `syncSelectAllLabels` | frontend/js/library.js:11141 |
+| `syncSelectbarCount` | frontend/js/library.js:11114 |
 | `toggleLibrarySelection` | frontend/js/library.js:1382 |
 | `trackOcrRead` | frontend/js/library.js:4406 |
 | `updateLibraryCreateButton` | frontend/js/library.js:2566 |
@@ -8873,39 +8885,32 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbThumbSvg` | frontend/js/whiteboard-templates.js:345 |
 | `wbUntitledNames` | frontend/js/whiteboard-templates.js:413 |
 
-### frontend/js/whiteboard.js (685)
+### frontend/js/whiteboard.js (678)
 
 | Name | File:line |
 |---|---|
-| `addBoardToNote` | frontend/js/whiteboard.js:26458 |
-| `boardItemCount` | frontend/js/whiteboard.js:25323 |
-| `boardSort` | frontend/js/whiteboard.js:25327 |
-| `boardTypeFilter` | frontend/js/whiteboard.js:25370 |
+| `addBoardToNote` | frontend/js/whiteboard.js:26085 |
 | `clearWbSelection` | frontend/js/whiteboard.js:7018 |
 | `createNewBoard` | frontend/js/whiteboard.js:19779 |
 | `deleteWbSelection` | frontend/js/whiteboard.js:7764 |
 | `dragEndNode` | frontend/js/whiteboard.js:25041 |
 | `dragStart` | frontend/js/whiteboard.js:24866 |
 | `dragging` | frontend/js/whiteboard.js:24925 |
-| `drawLibraryBoardsGallery` | frontend/js/whiteboard.js:25459 |
 | `fetchWhiteboardState` | frontend/js/whiteboard.js:19494 |
 | `handleWbZoom` | frontend/js/whiteboard.js:619 |
-| `highlighterBlend` | frontend/js/whiteboard.js:26478 |
+| `highlighterBlend` | frontend/js/whiteboard.js:26105 |
 | `initWhiteboard` | frontend/js/whiteboard.js:15109 |
-| `openWhiteboardBoard` | frontend/js/whiteboard.js:25706 |
-| `pickNotesDialog` | frontend/js/whiteboard.js:26370 |
-| `redrawLibraryBoardsGallery` | frontend/js/whiteboard.js:25428 |
+| `openWhiteboardBoard` | frontend/js/whiteboard.js:25333 |
+| `pickNotesDialog` | frontend/js/whiteboard.js:25997 |
 | `refreshBoardList` | frontend/js/whiteboard.js:19533 |
 | `renameCurrentBoard` | frontend/js/whiteboard.js:19642 |
-| `renderBoardTypeFilter` | frontend/js/whiteboard.js:25389 |
-| `renderLibraryBoardsGallery` | frontend/js/whiteboard.js:25433 |
-| `renderWbGestureHints` | frontend/js/whiteboard.js:25795 |
+| `renderWbGestureHints` | frontend/js/whiteboard.js:25422 |
 | `renderWbLibrary` | frontend/js/whiteboard.js:19417 |
 | `renderWbObjects` | frontend/js/whiteboard.js:23816 |
 | `renderWhiteboard` | frontend/js/whiteboard.js:22393 |
 | `renderWhiteboardNow` | frontend/js/whiteboard.js:22278 |
 | `selectWbItem` | frontend/js/whiteboard.js:6841 |
-| `toggleWhiteboardFullscreen` | frontend/js/whiteboard.js:25851 |
+| `toggleWhiteboardFullscreen` | frontend/js/whiteboard.js:25478 |
 | `uploadToLibrary` | frontend/js/whiteboard.js:14544 |
 | `wbAddBoardToNote` | frontend/js/whiteboard.js:13309 |
 | `wbAlignGuideColor` | frontend/js/whiteboard.js:1490 |
@@ -8969,7 +8974,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbBulkMoveElement` | frontend/js/whiteboard.js:8270 |
 | `wbBulkUndoEntries` | frontend/js/whiteboard.js:8619 |
 | `wbBulletTextLines` | frontend/js/whiteboard.js:11034 |
-| `wbCancelBoardTimers` | frontend/js/whiteboard.js:25685 |
+| `wbCancelBoardTimers` | frontend/js/whiteboard.js:25312 |
 | `wbCancelGesture` | frontend/js/whiteboard.js:8359 |
 | `wbCanvasOrigin` | frontend/js/whiteboard.js:529 |
 | `wbCanvasOriginRect` | frontend/js/whiteboard.js:497 |
@@ -9133,7 +9138,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbFrameTurnLive` | frontend/js/whiteboard.js:13102 |
 | `wbFrameTurnOrigin` | frontend/js/whiteboard.js:13065 |
 | `wbFrameTurnRevert` | frontend/js/whiteboard.js:13106 |
-| `wbFramesInOrder` | frontend/js/whiteboard.js:25901 |
+| `wbFramesInOrder` | frontend/js/whiteboard.js:25528 |
 | `wbFreeArea` | frontend/js/whiteboard.js:2955 |
 | `wbFreeCanvasRect` | frontend/js/whiteboard.js:9079 |
 | `wbGapEnd` | frontend/js/whiteboard.js:5285 |
@@ -9187,12 +9192,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbKeepsRatio` | frontend/js/whiteboard.js:12067 |
 | `wbKeyboardEnter` | frontend/js/whiteboard.js:11886 |
 | `wbLabelBand` | frontend/js/whiteboard.js:20558 |
-| `wbLaserLeave` | frontend/js/whiteboard.js:26242 |
-| `wbLaserTrail` | frontend/js/whiteboard.js:26218 |
+| `wbLaserLeave` | frontend/js/whiteboard.js:25869 |
+| `wbLaserTrail` | frontend/js/whiteboard.js:25845 |
 | `wbLayoutCloneGrips` | frontend/js/whiteboard.js:9398 |
 | `wbLayoutLinkLabel` | frontend/js/whiteboard.js:20741 |
 | `wbLayoutShapeLabel` | frontend/js/whiteboard.js:20282 |
-| `wbLeaveFullscreen` | frontend/js/whiteboard.js:25670 |
+| `wbLeaveFullscreen` | frontend/js/whiteboard.js:25297 |
 | `wbLineJumpsD` | frontend/js/whiteboard.js:5074 |
 | `wbLinkAdjacency` | frontend/js/whiteboard.js:6432 |
 | `wbLinkCandidateAt` | frontend/js/whiteboard.js:4673 |
@@ -9315,11 +9320,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbPolylineAt` | frontend/js/whiteboard.js:5231 |
 | `wbPortFractions` | frontend/js/whiteboard.js:4316 |
 | `wbPortsForPath` | frontend/js/whiteboard.js:4336 |
-| `wbPresentCaption` | frontend/js/whiteboard.js:26023 |
-| `wbPresentLaser` | frontend/js/whiteboard.js:26181 |
-| `wbPresentLaserButton` | frontend/js/whiteboard.js:26172 |
-| `wbPresentShow` | frontend/js/whiteboard.js:25967 |
-| `wbPresentSteps` | frontend/js/whiteboard.js:25922 |
+| `wbPresentCaption` | frontend/js/whiteboard.js:25650 |
+| `wbPresentLaser` | frontend/js/whiteboard.js:25808 |
+| `wbPresentLaserButton` | frontend/js/whiteboard.js:25799 |
+| `wbPresentShow` | frontend/js/whiteboard.js:25594 |
+| `wbPresentSteps` | frontend/js/whiteboard.js:25549 |
 | `wbPropsText` | frontend/js/whiteboard.js:3862 |
 | `wbPruneSelection` | frontend/js/whiteboard.js:7038 |
 | `wbPublishInvZoom` | frontend/js/whiteboard.js:920 |
@@ -9439,8 +9444,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbShortenGroupIds` | frontend/js/whiteboard.js:2692 |
 | `wbShowAlignmentGuides` | frontend/js/whiteboard.js:1498 |
 | `wbShowAnchorHints` | frontend/js/whiteboard.js:5315 |
-| `wbShowBoardsLanding` | frontend/js/whiteboard.js:25286 |
-| `wbShowCanvasView` | frontend/js/whiteboard.js:25273 |
+| `wbShowBoardsLanding` | frontend/js/whiteboard.js:25272 |
+| `wbShowCanvasView` | frontend/js/whiteboard.js:25259 |
 | `wbShowCapSizes` | frontend/js/whiteboard.js:2477 |
 | `wbShowSizeReadout` | frontend/js/whiteboard.js:1403 |
 | `wbShowToolSettings` | frontend/js/whiteboard.js:5903 |
@@ -9475,12 +9480,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbStackRanks` | frontend/js/whiteboard.js:7849 |
 | `wbStampMenuRoles` | frontend/js/whiteboard.js:15093 |
 | `wbStartPanShield` | frontend/js/whiteboard.js:581 |
-| `wbStartPresenting` | frontend/js/whiteboard.js:25939 |
+| `wbStartPresenting` | frontend/js/whiteboard.js:25566 |
 | `wbStepSelectionZOrder` | frontend/js/whiteboard.js:8041 |
 | `wbStickerSize` | frontend/js/whiteboard.js:5961 |
 | `wbStickyFolds` | frontend/js/whiteboard.js:11868 |
 | `wbStickyRemind` | frontend/js/whiteboard.js:23801 |
-| `wbStopPresenting` | frontend/js/whiteboard.js:26247 |
+| `wbStopPresenting` | frontend/js/whiteboard.js:25874 |
 | `wbSvgEscape` | frontend/js/whiteboard.js:13414 |
 | `wbSvgRunLines` | frontend/js/whiteboard.js:13459 |
 | `wbSvgText` | frontend/js/whiteboard.js:13445 |
@@ -26917,7 +26922,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21235)
+## Tests (21244)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27135,6 +27140,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_board_view_kept.py | 2 |
 | tests/test_boardfill2_1031.py | 15 |
 | tests/test_boardfill_1031.py | 13 |
+| tests/test_boards_first_open.py | 9 |
 | tests/test_bookmarks_api.py | 15 |
 | tests/test_bookmarks_library.py | 3 |
 | tests/test_bookmarks_said_once.py | 1 |
@@ -29530,7 +29536,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 0. Performance and "not device heavy" (cross-cutting, first) | docs/roadmap/PLAN.md:26 |
 | 0. The diagnosis in one page | docs/roadmap/WORLD_CLASS_PLAN.md:25 |
 | 0. The operating protocol (read every session, it is short) | docs/roadmap/SESSION_BRIEFS.md:17 |
-| 0.6.01 bug-document pass (2026-10-22, branch claude/project-thread-ol5yuv) | docs/roadmap/HANDOVER.md:91 |
+| 0.6.01 bug-document pass (2026-10-22, branch claude/project-thread-ol5yuv) | docs/roadmap/HANDOVER.md:92 |
 | 1. Format panel, Style tab | docs/roadmap/WHITEBOARD_PLAN.md:861 |
 | 1. Live log console (started, not finished) | docs/roadmap/BACKLOG.md:31 |
 | 1. Research read, 2026-10-10, and what each changes here | docs/roadmap/CHAT_PLAN.md:1543 |
@@ -29694,7 +29700,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 20. A model per feature (asked for directly, 2026-09-21) | docs/roadmap/WORLD_CLASS_PLAN.md:2215 |
 | 20. Backend | docs/roadmap/BACKLOG.md:1282 |
 | 20. The 2026-10-05 feature audit: decisions | docs/roadmap/DOCUMENTS_PLAN.md:865 |
-| 2026-09-08, the third night: read this block first, whoever you are | docs/roadmap/HANDOVER.md:103 |
+| 2026-09-08, the third night: read this block first, whoever you are | docs/roadmap/HANDOVER.md:104 |
 | 21. Every failure names its way out (INBOX 272 part 1, 2026-09-21) | docs/roadmap/WORLD_CLASS_PLAN.md:2285 |
 | 21. Skills: rebuilt; what is left | docs/roadmap/BACKLOG.md:1418 |
 | 21. The code editor against VS Code, and writing checks everywhere (INBOX 646) | docs/roadmap/DOCUMENTS_PLAN.md:274 |
@@ -30102,17 +30108,17 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E2 · The complexity of the AI path is where the next bug will be, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:653 |
 | E3 · Model calls are scattered across request handlers, background threads and module singletons, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:666 |
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
-| Earlier morning summary (2026-10-30) | docs/roadmap/HANDOVER.md:80 |
-| Earlier morning summary (2026-11-04) | docs/roadmap/HANDOVER.md:70 |
-| Earlier morning summary (away run 2026-10-18b) | docs/roadmap/HANDOVER.md:99 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:592 |
+| Earlier morning summary (2026-10-30) | docs/roadmap/HANDOVER.md:81 |
+| Earlier morning summary (2026-11-04) | docs/roadmap/HANDOVER.md:71 |
+| Earlier morning summary (away run 2026-10-18b) | docs/roadmap/HANDOVER.md:100 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:593 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4151 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
 | F1 · Boot is ~1 s and tab switches are ~10–50 ms. The app is not slow; it is *heavy*: Medium | docs/roadmap/MODERNISATION_AUDIT.md:687 |
 | F2 · Fourteen requests in sixty idle seconds, from three separate timers, High | docs/roadmap/MODERNISATION_AUDIT.md:708 |
 | F3 · List rendering is solved; list *fetching* is not, Medium | docs/roadmap/MODERNISATION_AUDIT.md:733 |
-| Fable's working notes for Opus (2026-09-09 05:10 UTC) | docs/roadmap/HANDOVER.md:255 |
+| Fable's working notes for Opus (2026-09-09 05:10 UTC) | docs/roadmap/HANDOVER.md:256 |
 | Found by an agent while measuring something else (2026-09-08, graph) | docs/roadmap/CHAT_PLAN.md:595 |
 | G. Mobile and responsive | docs/roadmap/MODERNISATION_AUDIT.md:743 |
 | G. Test-suite gaps | docs/roadmap/AUDIT.md:123 |
@@ -30139,7 +30145,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Harness robustness, 2026-10-04 (INBOX 527) | docs/roadmap/AGENT_SKILLS_REFORM.md:202 |
 | Harper (Automattic) | docs/roadmap/ANALYSIS.md:1783 |
 | Headroom: evaluated, not adopted | docs/roadmap/BACKLOG.md:704 |
-| How far each plan actually is (honest, as of 2026-10-03) | docs/roadmap/HANDOVER.md:391 |
+| How far each plan actually is (honest, as of 2026-10-03) | docs/roadmap/HANDOVER.md:392 |
 | How to proceed after PR 149 (written 2026-09-14; the live order is CLAUDE.md standing order 1 and HANDOVER's Now line) | docs/ROADMAP.md:295 |
 | How to read the evidence in here | docs/roadmap/MODERNISATION_AUDIT.md:23 |
 | How to work on this repo | docs/ROADMAP.md:364 |
@@ -30157,7 +30163,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/CHAT_PLAN.md:879 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3119 |
-| If Opus is the orchestrator (no Fable available) | docs/roadmap/HANDOVER.md:113 |
+| If Opus is the orchestrator (no Fable available) | docs/roadmap/HANDOVER.md:114 |
 | Image notes and the Library, against photocraft and lightcraft | docs/roadmap/ANALYSIS.md:3955 |
 | Is its backend better designed? No: and it says so about itself | docs/roadmap/ANALYSIS.md:810 |
 | KnowNote (MrSibe) | docs/roadmap/ANALYSIS.md:1932 |
@@ -30167,7 +30173,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Looked at and not recommended | docs/roadmap/ANALYSIS.md:882 |
 | Mind map, against designcraft's canvas and MINDMAP_PLAN's references | docs/roadmap/ANALYSIS.md:3769 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4393 |
-| Morning summary | docs/roadmap/HANDOVER.md:60 |
+| Morning summary | docs/roadmap/HANDOVER.md:61 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:344 |
 | Next: weeks 5–8: "a small model can finish a job, and so can the app" | docs/roadmap/MODERNISATION_AUDIT.md:1049 |
@@ -30182,7 +30188,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1362 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4266 |
 | PDF viewer and OCR workspace, against pdfcraft | docs/roadmap/ANALYSIS.md:3922 |
-| PR 144 is done when (the owner's checklist, 2026-09-09 05:30 UTC) | docs/roadmap/HANDOVER.md:152 |
+| PR 144 is done when (the owner's checklist, 2026-09-09 05:30 UTC) | docs/roadmap/HANDOVER.md:153 |
 | Parity matrix, 2026-10-10 | docs/roadmap/ANALYSIS.md:3703 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -30419,9 +30425,9 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Six repositories read for Tessellate, 2026-09-20 | docs/roadmap/ANALYSIS.md:1760 |
 | Sources | docs/roadmap/MINDMAP_PLAN.md:200 |
 | Speech, four projects read by name, and what this app already does | docs/roadmap/ANALYSIS.md:3102 |
-| Standing orders for this session (whoever the model is) | docs/roadmap/HANDOVER.md:327 |
+| Standing orders for this session (whoever the model is) | docs/roadmap/HANDOVER.md:328 |
 | Start of the next PR (the owner, 2026-10-12, "log everything I've mentioned") | docs/roadmap/BACKLOG.md:4191 |
-| State of the branch (`claude/notes-flow-rebuild`, PR #162) | docs/roadmap/HANDOVER.md:411 |
+| State of the branch (`claude/notes-flow-rebuild`, PR #162) | docs/roadmap/HANDOVER.md:412 |
 | Steps | docs/roadmap/UI_MODERNISATION_PLAN.md:766 |
 | Steps | docs/roadmap/WORLD_CLASS_PLAN.md:1526 |
 | Still open | docs/roadmap/WORLD_CLASS_PLAN.md:2262 |
