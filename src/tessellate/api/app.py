@@ -1603,6 +1603,69 @@ def _include_routers(app: FastAPI, locked: list) -> None:
     routes_diag.BUILD["hash"] = lambda: asset_hash(FRONTEND_DIR / "js" / "app.js")
 
 
+def _add_instance_routes(app: FastAPI) -> None:
+    """Which notebook this server is, and the token-guarded focus and shutdown a second launch uses."""
+
+    @app.get("/instance", tags=["system"])
+    def instance() -> dict[str, str]:
+        """Which notebook this server is serving, for a launch deciding
+        whether a Tessellate already on its port is *this* one (WORLD_CLASS 423
+        g). Open like `/health`: the asking process has no session. It carries
+        a hash of the resolved data directory (`instance_lock.data_dir_id`),
+        never the path."""
+        from tessellate.core import instance_lock
+
+        return {
+            "app": "Tessellate",
+            "data_dir_id": instance_lock.data_dir_id(deps.get_config().data_dir),
+        }
+
+    @app.post("/instance/focus", include_in_schema=False)
+    def instance_focus(x_instance_token: str | None = Header(default=None)) -> dict[str, bool]:
+        """A second launch asking this one to bring its window forward.
+
+        Open like `/health` because the asking process has no session, and
+        guarded by something better than one: the token in this server's own
+        `instance.lock` (core/instance_lock.py), which only someone who can
+        read the data directory has. Compared in constant time. `focused` is
+        False on a server started in browser mode, which has no window, and
+        the second launch then opens a window onto this server instead.
+        """
+        from tessellate.core import instance_lock
+
+        expected = instance_lock.current_token()
+        if not expected or not x_instance_token or not hmac.compare_digest(
+            expected.encode(), x_instance_token.encode()
+        ):
+            raise HTTPException(status_code=403, detail="Not this instance's token.")
+        return {"focused": instance_lock.focus()}
+
+    @app.post("/instance/shutdown", include_in_schema=False)
+    def instance_shutdown(
+        request: Request, x_instance_token: str | None = Header(default=None)
+    ) -> dict[str, bool]:
+        """Another copy's Settings, Running copies asking this one to quit
+        (INBOX 1641). Guarded like `/instance/focus` by the token in this
+        copy's `instance.lock` and per-user record (nothing a web page can
+        send or read), and loopback only. The token is the real guard: a
+        DNS-rebound page reaches the loopback port as a same-origin request,
+        but it can never read the token."""
+        from tessellate.api import routes_tasks
+        from tessellate.api.this_computer import is_another_device
+        from tessellate.core import instance_lock
+
+        expected = instance_lock.current_token()
+        if (
+            is_another_device(request)
+            or not expected
+            or not x_instance_token
+            or not hmac.compare_digest(expected.encode(), x_instance_token.encode())
+        ):
+            raise HTTPException(status_code=403, detail="Not this instance's token.")
+        routes_tasks.stop_process_soon()
+        return {"stopping": True}
+
+
 def _add_system_routes(app: FastAPI, locked: list) -> None:
     """The few routes the app answers itself: the schema, the static cache,
     health, the single-instance focus and the changelog. ARCH-22."""
@@ -1671,64 +1734,7 @@ def _add_system_routes(app: FastAPI, locked: list) -> None:
             "this_computer": here,
         }
 
-    @app.get("/instance", tags=["system"])
-    def instance() -> dict[str, str]:
-        """Which notebook this server is serving, for a launch deciding
-        whether a Tessellate already on its port is *this* one (WORLD_CLASS 423
-        g). Open like `/health`: the asking process has no session. It carries
-        a hash of the resolved data directory (`instance_lock.data_dir_id`),
-        never the path."""
-        from tessellate.core import instance_lock
-
-        return {
-            "app": "Tessellate",
-            "data_dir_id": instance_lock.data_dir_id(deps.get_config().data_dir),
-        }
-
-    @app.post("/instance/focus", include_in_schema=False)
-    def instance_focus(x_instance_token: str | None = Header(default=None)) -> dict[str, bool]:
-        """A second launch asking this one to bring its window forward.
-
-        Open like `/health` because the asking process has no session, and
-        guarded by something better than one: the token in this server's own
-        `instance.lock` (core/instance_lock.py), which only someone who can
-        read the data directory has. Compared in constant time. `focused` is
-        False on a server started in browser mode, which has no window, and
-        the second launch then opens a window onto this server instead.
-        """
-        from tessellate.core import instance_lock
-
-        expected = instance_lock.current_token()
-        if not expected or not x_instance_token or not hmac.compare_digest(
-            expected.encode(), x_instance_token.encode()
-        ):
-            raise HTTPException(status_code=403, detail="Not this instance's token.")
-        return {"focused": instance_lock.focus()}
-
-    @app.post("/instance/shutdown", include_in_schema=False)
-    def instance_shutdown(
-        request: Request, x_instance_token: str | None = Header(default=None)
-    ) -> dict[str, bool]:
-        """Another copy's Settings, Running copies asking this one to quit
-        (INBOX 1641). Guarded like `/instance/focus` by the token in this
-        copy's `instance.lock` and per-user record (nothing a web page can
-        send or read), and loopback only. The token is the real guard: a
-        DNS-rebound page reaches the loopback port as a same-origin request,
-        but it can never read the token."""
-        from tessellate.api import routes_tasks
-        from tessellate.api.this_computer import is_another_device
-        from tessellate.core import instance_lock
-
-        expected = instance_lock.current_token()
-        if (
-            is_another_device(request)
-            or not expected
-            or not x_instance_token
-            or not hmac.compare_digest(expected.encode(), x_instance_token.encode())
-        ):
-            raise HTTPException(status_code=403, detail="Not this instance's token.")
-        routes_tasks.stop_process_soon()
-        return {"stopping": True}
+    _add_instance_routes(app)
 
     # GET /update/check, /update/releases, /update/source-status, and
     # POST /update/apply all live in routes_update.py now, this endpoint
