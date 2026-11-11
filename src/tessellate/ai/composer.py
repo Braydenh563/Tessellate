@@ -541,7 +541,7 @@ def _window_gate(out: "_Answer", p, said: str, question: str, shape: str, views_
     if views_list and not any(_in_window(v, p.window) for v in views_list):
         #: A window no note found falls in: said, never answered from notes
         #: written at another time.
-        out.t("recall_none").asked(window_said(_as_typed(p.window_phrase, question))).t("stop")
+        out.t("recall_none").asked(window_said(_as_typed(p.window_phrase, question), p.window)).t("stop")
         return _result(out.parts, shape), views_list
     views_list = [v for v in views_list if _in_window(v, p.window)]
     out.views = {v.id: v for v in views_list}

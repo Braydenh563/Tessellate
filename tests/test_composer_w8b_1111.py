@@ -84,6 +84,43 @@ def test_a_weekday_window_tail_is_linear():
         assert time.perf_counter() - t0 < 0.5, run[:30]
 
 
+# --- 2. a holiday asked by pointer names the year it read -----------------------------------------------
+
+@pytest.mark.parametrize(("phrase", "first"), [
+    ("last christmas", date(2025, 12, 25)), ("last christmas eve", date(2025, 12, 24)), ("this christmas", date(2026, 12, 25)),
+    ("next christmas", date(2026, 12, 25)), ("last new year", date(2026, 1, 1)),
+])
+def test_a_pointed_holiday_is_one_day(phrase, first):
+    found = recognise.span(phrase, date(2026, 11, 11), "past")
+    assert found == (first, first, "day"), found
+
+
+def test_last_christmas_is_the_latest_one_gone_even_just_after_it():
+    assert recognise.span("last christmas", date(2026, 12, 30), "past")[0] == date(2026, 12, 25)
+
+
+@pytest.mark.parametrize("question", [
+    "what did I do last Christmas", "what happened last Christmas", "notes from last Christmas", "what did I write last Christmas",
+])
+def test_the_window_for_last_christmas_carries_its_year(r5, question):
+    said = r5(question)["text"]
+    assert "last Christmas (2025)" in said, said
+
+
+@pytest.mark.parametrize(("question", "named"), [
+    ("what did I do last Christmas Eve", "last Christmas Eve (2025)"), ("what did I write last New Year", "last New Year (2026)"),
+])
+def test_the_year_follows_the_holiday_it_read(r5, question, named):
+    assert named in r5(question)["text"]
+
+
+def test_a_holiday_without_a_pointer_and_other_windows_carry_no_year():
+    assert recognise.with_holiday_year("at Christmas", date(2025, 12, 25)) == "at Christmas"
+    assert recognise.with_holiday_year("last week", date(2026, 11, 2)) == "last week"
+    assert recognise.with_holiday_year("last Christmas", None) == "last Christmas"
+    assert recognise.with_holiday_year("last Christmas", date(2025, 12, 25)) == "last Christmas (2025)"
+
+
 # --- 4. getting in touch is one act said five ways ----------------------------------------------------
 
 NOW = dt.datetime(2026, 10, 29, 10, 0, 0)
