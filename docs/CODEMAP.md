@@ -6035,16 +6035,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `mapPreviewDraw` | frontend/js/map-preview.js:356 |
-| `mapPreviewEdge` | frontend/js/map-preview.js:237 |
-| `mapPreviewFitText` | frontend/js/map-preview.js:139 |
-| `mapPreviewMeasurer` | frontend/js/map-preview.js:95 |
-| `mapPreviewOnColour` | frontend/js/map-preview.js:182 |
-| `mapPreviewOnPaper` | frontend/js/map-preview.js:157 |
-| `mapPreviewOverlaps` | frontend/js/map-preview.js:164 |
-| `mapPreviewSketch` | frontend/js/map-preview.js:276 |
-| `mapPreviewTextWidth` | frontend/js/map-preview.js:119 |
-| `round2` | frontend/js/map-preview.js:217 |
+| `mapPreviewDraw` | frontend/js/map-preview.js:357 |
+| `mapPreviewEdge` | frontend/js/map-preview.js:238 |
+| `mapPreviewFitText` | frontend/js/map-preview.js:140 |
+| `mapPreviewMeasurer` | frontend/js/map-preview.js:96 |
+| `mapPreviewOnColour` | frontend/js/map-preview.js:183 |
+| `mapPreviewOnPaper` | frontend/js/map-preview.js:158 |
+| `mapPreviewOverlaps` | frontend/js/map-preview.js:165 |
+| `mapPreviewSketch` | frontend/js/map-preview.js:277 |
+| `mapPreviewTextWidth` | frontend/js/map-preview.js:120 |
+| `round2` | frontend/js/map-preview.js:218 |
 
 ### frontend/js/margin-reader.js (13)
 
