@@ -39,7 +39,7 @@ def test_every_rule_is_glass_only_while_the_glass_look_and_the_switch_are_on():
         assert selector.startswith(GUARD), selector
     blurred = [body for _s, body in rules if "backdrop-filter" in body]
     assert blurred and all("backdrop-filter: var(--glass-filter-clear);" in b and "-webkit-backdrop-filter: var(--glass-filter-clear);" in b for b in blurred)
-    assert any("color-mix(in srgb, var(--panel) 80%, transparent)" in b for b in blurred)
+    assert any("color-mix(in srgb, var(--card) 80%, transparent)" in b for b in blurred)
 
 
 def test_a_chip_leaves_menu_openers_and_chosen_buttons_alone():

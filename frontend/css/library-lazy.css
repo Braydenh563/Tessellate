@@ -1420,7 +1420,7 @@ body.printing-doc #doc-preview p,
      "Never run" stood 16px over the line and 24px over Run). */
   margin-top: 0;
   padding-top: var(--space-3);
-  border-top: 1px solid var(--border-light);
+  border-top: 1px solid var(--glass-border);
 }
 
 .log-detail {
@@ -4495,7 +4495,6 @@ button.ghost.doc-template-choice.wb-template-choice {
    both themes, as a real note is; its ink is chosen for the paper. */
 #whiteboard-container {
   --wb-sticky-paper: #fff4a3;
-  --wb-sticky-edge: #e8d56a;
   --wb-sticky-shadow: 0 1px 2px rgb(0 0 0 / 0.14), 0 6px 14px -4px rgb(0 0 0 / 0.18);
   /* One sticky's own paper, set on it by the renderer from its `bg`. */
   --wb-paper: var(--wb-sticky-paper);
@@ -4563,7 +4562,7 @@ button.ghost.doc-template-choice.wb-template-choice {
 
 .wb-place-ghost[data-kind="sticky"] {
   background: var(--wb-sticky-paper);
-  border: 1px solid var(--wb-sticky-edge);
+  border: 1px solid #e8d56a;
   box-shadow: var(--wb-sticky-shadow);
 }
 
@@ -7504,7 +7503,7 @@ input[type="color"].wb-mixed {
 }
 .doc-paste-chip button,
 .wb-paste-chip button {
-  background: var(--panel);
+  background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
@@ -7889,7 +7888,7 @@ input[type="color"].wb-mixed {
 }
 /* Glass only while the glass look is on (the owner, 2026-10-27). */
 :root:not([data-glass="off"]) .library-image-tile .library-image-actions > .menu-wrap > button.ghost.icon-only:not(.active):not([aria-pressed="true"]):not([aria-expanded="true"]):not(:hover):not(:focus-visible) {
-  background: color-mix(in srgb, var(--panel) 80%, transparent);
+  background: color-mix(in srgb, var(--card) 80%, transparent);
   backdrop-filter: var(--glass-filter-clear);
   -webkit-backdrop-filter: var(--glass-filter-clear);
 }

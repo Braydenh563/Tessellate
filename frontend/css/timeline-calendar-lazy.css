@@ -275,7 +275,7 @@
 .timeline-cal-cell.timeline-cal-hourcell {
   height: var(--cal-hour);
   background: none;
-  border-top: 1px solid var(--border-light);
+  border-top: 1px solid var(--glass-border);
   border-radius: 0;
 }
 

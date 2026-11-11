@@ -649,22 +649,6 @@ select optgroup {
      plus the last card's own padding, so every page ended in a 40px band of
      nothing above the status bar. One number on all four edges. */
   --page-bottom: var(--page-gutter);
-  /* How tall a sticky sidebar may be: the page, minus the page's own padding.
-     Both ends of it.
-     Three rules used to write this out by hand as
-     `calc(var(--page-viewport) - var(--page-top) - var(--space-4))`, the top
-     padding, and then a gap step standing in for the bottom one. `--space-4`
-     is 9.6px and `--page-bottom` is 32px, so every sticky sidebar in the app
-     was 22px taller than the page it sits in, and each of them ended that far
-     under the status bar. Reported twice on the same day, for the chat
-     sidebar and then the notes sidebar, because it was never one sidebar's
-     bug: it was one expression written three times with the same term
-     missing.
-     Named and derived, so the next sidebar cannot get it wrong and a change to
-     the page's padding reaches all of them. This is the same argument
-     `--page-viewport` itself makes one comment above; the lesson is that a
-     `calc` repeated in three rules is a constant that has not been named yet. */
-  --page-sticky-h: calc(var(--page-viewport) - var(--page-top) - var(--page-bottom));
   /* How tall the status bar is (§36D). Declared here rather than left to the
      bar's own content, because two kinds of thing need to agree with it and
      neither is inside it: the bar itself, and every `position: fixed` control
@@ -784,15 +768,12 @@ select optgroup {
      nothing, borders that drew nothing, shadows that cast nothing. Nothing
      complained, because a stylesheet has no way to say "I meant a token that
      exists", hence the new lint in test_style_scale.
-     Aliased rather than rewritten at all twenty-three sites: the names are
-     reasonable and someone will reach for them again, and pointing them at the
-     real tokens makes them theme-aware for free, in all twelve palettes. */
+     Aliased at first; the token pass of 1111 (OPEN F6, the budget) rewrote
+     the sites of `--panel`, `--card-bg`, `--card-bg-hover` and `--border-light`
+     to the tokens they named (all four are declared on the root only, so the
+     value is the same everywhere); the three left are read by a script too. */
   --bg: var(--page);
   --text: var(--ink);
-  --panel: var(--card);
-  --card-bg: var(--card);
-  --card-bg-hover: var(--inner);
-  --border-light: var(--glass-border);
   --font-sans: var(--ui-font);
   /* **Light's shadows are cast in the app's own ink** (`--ink`, 31 36 48).
      They were `rgba(31, 38, 135, ...)`, the blue-violet that glassmorphism
