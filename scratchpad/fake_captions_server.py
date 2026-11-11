@@ -204,9 +204,27 @@ def main() -> None:
     ap.add_argument("--port", type=int, default=8178)
     ap.add_argument("--delay-ms", type=float, default=float(os.environ.get("FAKE_CAPTIONS_DELAY_MS", "0")))
     ap.add_argument("--fail-every", type=int, default=0)
+    #: The supervisor's child contract (ai/captions_process.py): the port is the
+    #: first stdout line. The other flags are the real helper's, ignored here.
+    ap.add_argument("--print-port", action="store_true")
+    ap.add_argument("--never-answer", action="store_true", help="print a port nothing listens on")
+    ap.add_argument("--exit-after", type=float, default=0.0, help="exit this many seconds after starting")
+    ap.add_argument("--model", default="")
+    ap.add_argument("--threads", default="")
+    ap.add_argument("--exit-on-stdin-close", action="store_true")
     args = ap.parse_args()
-    server = serve(args.port, args.delay_ms, args.fail_every)
-    print(f"fake captions helper on http://127.0.0.1:{server.server_address[1]}", flush=True)
+    #: As the real helper: asked to print its port, it binds any free one.
+    server = serve(0 if args.print_port else args.port, args.delay_ms, args.fail_every)
+    if args.never_answer:
+        server.shutdown()
+        server.server_close()
+    if args.print_port:
+        print(server.server_address[1], flush=True)
+    else:
+        print(f"fake captions helper on http://127.0.0.1:{server.server_address[1]}", flush=True)
+    if args.exit_after:
+        time.sleep(args.exit_after)
+        sys.exit(1)
     threading.Event().wait()
 
 
