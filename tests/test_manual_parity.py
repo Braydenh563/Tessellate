@@ -712,3 +712,17 @@ def test_the_answer_offers_and_the_pool_count_line_are_in_the_guide() -> None:
     body = " ".join(str(t["body"]) for t in HELP_TOPICS if "Save it as a checklist note" in str(t["body"]))
     for phrase in ("Save it as a checklist note", "Start a list of", "typing yes", "no thanks drops it", "That tells five of the twelve"):
         assert phrase in body, phrase
+
+
+def test_the_connector_row_and_the_suggestions_fold_are_in_the_guide_in_the_controls_words() -> None:
+    """INBOX 1771: a connector row's words go to the block it points at and its ... opens the menu; Suggestions turns its arrow
+    and numbers blocks that share a name in one row. Said in the Guide, in the words the pane carries."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    builder_help = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-builder"))
+    ai_help = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-ai"))
+    assert "A connector row's words (or Enter) go to its block; its ... opens the menu." in builder_help
+    assert "opens like a fold (its arrow turns)" in ai_help and "one row numbers them" in ai_help
+    js = FRONTEND / "js"
+    assert "Go to ${to}" in (js / "diagram-builder.js").read_text(encoding="utf-8")
+    assert "blocks say ${group[0].text}." in (js / "diagram-ai.js").read_text(encoding="utf-8")

@@ -2,9 +2,9 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8173, frontend ids 2713, CSS sections 524, backend routes 677, backend modules 10433, test files 2585, tests 21136, plan headings 1013, app scripts 29, boot scripts 38, script files 284.
+Counts: frontend functions 8176, frontend ids 2713, CSS sections 524, backend routes 677, backend modules 10433, test files 2586, tests 21142, plan headings 1013, app scripts 29, boot scripts 38, script files 284.
 
-## Frontend functions (8173)
+## Frontend functions (8176)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3158,12 +3158,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `applyPreview` | frontend/js/diagram-ai.js:343 |
-| `ask` | frontend/js/diagram-ai.js:298 |
-| `build` | frontend/js/diagram-ai.js:253 |
-| `compareThem` | frontend/js/diagram-ai.js:422 |
-| `copyOf` | frontend/js/diagram-ai.js:224 |
-| `counts` | frontend/js/diagram-ai.js:244 |
+| `applyPreview` | frontend/js/diagram-ai.js:357 |
+| `ask` | frontend/js/diagram-ai.js:312 |
+| `build` | frontend/js/diagram-ai.js:262 |
+| `compareThem` | frontend/js/diagram-ai.js:436 |
+| `copyOf` | frontend/js/diagram-ai.js:233 |
+| `counts` | frontend/js/diagram-ai.js:253 |
 | `dgaAdd` | frontend/js/diagram-ai.js:45 |
 | `dgaApply` | frontend/js/diagram-ai.js:93 |
 | `dgaArrow` | frontend/js/diagram-ai.js:31 |
@@ -3178,15 +3178,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dgaText` | frontend/js/diagram-ai.js:18 |
 | `dgaUnused` | frontend/js/diagram-ai.js:35 |
 | `dgaWords` | frontend/js/diagram-ai.js:152 |
-| `discard` | frontend/js/diagram-ai.js:336 |
-| `docOf` | frontend/js/diagram-ai.js:236 |
-| `draw` | frontend/js/diagram-ai.js:238 |
-| `el` | frontend/js/diagram-ai.js:228 |
-| `hues` | frontend/js/diagram-ai.js:225 |
-| `lint` | frontend/js/diagram-ai.js:362 |
-| `show` | frontend/js/diagram-ai.js:317 |
-| `versions` | frontend/js/diagram-ai.js:377 |
-| `wire` | frontend/js/diagram-ai.js:444 |
+| `discard` | frontend/js/diagram-ai.js:350 |
+| `docOf` | frontend/js/diagram-ai.js:245 |
+| `draw` | frontend/js/diagram-ai.js:247 |
+| `el` | frontend/js/diagram-ai.js:237 |
+| `hues` | frontend/js/diagram-ai.js:234 |
+| `lint` | frontend/js/diagram-ai.js:376 |
+| `show` | frontend/js/diagram-ai.js:331 |
+| `versions` | frontend/js/diagram-ai.js:391 |
+| `wire` | frontend/js/diagram-ai.js:458 |
 
 ### frontend/js/diagram-bar.js (9)
 
@@ -3202,51 +3202,52 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `rootKey` | frontend/js/diagram-bar.js:133 |
 | `sync` | frontend/js/diagram-bar.js:26 |
 
-### frontend/js/diagram-builder.js (42)
+### frontend/js/diagram-builder.js (43)
 
 | Name | File:line |
 |---|---|
-| `addBlock` | frontend/js/diagram-builder.js:343 |
-| `beginEdit` | frontend/js/diagram-builder.js:382 |
+| `addBlock` | frontend/js/diagram-builder.js:345 |
+| `beginEdit` | frontend/js/diagram-builder.js:384 |
 | `blockEl` | frontend/js/diagram-builder.js:39 |
-| `blockItems` | frontend/js/diagram-builder.js:302 |
+| `blockItems` | frontend/js/diagram-builder.js:304 |
 | `blockKeys` | frontend/js/diagram-builder.js:141 |
-| `buildBlock` | frontend/js/diagram-builder.js:205 |
-| `buildPalette` | frontend/js/diagram-builder.js:547 |
-| `buildRow` | frontend/js/diagram-builder.js:218 |
+| `buildBlock` | frontend/js/diagram-builder.js:209 |
+| `buildPalette` | frontend/js/diagram-builder.js:549 |
+| `buildRow` | frontend/js/diagram-builder.js:222 |
 | `commit` | frontend/js/diagram-builder.js:44 |
 | `drawPicture` | frontend/js/diagram-builder.js:59 |
 | `el` | frontend/js/diagram-builder.js:23 |
-| `groupGlyph` | frontend/js/diagram-builder.js:278 |
+| `groupGlyph` | frontend/js/diagram-builder.js:280 |
+| `icon` | frontend/js/diagram-builder.js:143 |
 | `joinChip` | frontend/js/diagram-builder.js:285 |
-| `joinPick` | frontend/js/diagram-builder.js:508 |
-| `joins` | frontend/js/diagram-builder.js:504 |
-| `kindOf` | frontend/js/diagram-builder.js:646 |
-| `menuAt` | frontend/js/diagram-builder.js:488 |
-| `more` | frontend/js/diagram-builder.js:525 |
-| `mount` | frontend/js/diagram-builder.js:549 |
+| `joinPick` | frontend/js/diagram-builder.js:510 |
+| `joins` | frontend/js/diagram-builder.js:506 |
+| `kindOf` | frontend/js/diagram-builder.js:648 |
+| `menuAt` | frontend/js/diagram-builder.js:490 |
+| `more` | frontend/js/diagram-builder.js:527 |
+| `mount` | frontend/js/diagram-builder.js:551 |
 | `nameOf` | frontend/js/diagram-builder.js:37 |
-| `nameOnPicture` | frontend/js/diagram-builder.js:364 |
-| `nestBlock` | frontend/js/diagram-builder.js:420 |
-| `onKey` | frontend/js/diagram-builder.js:442 |
+| `nameOnPicture` | frontend/js/diagram-builder.js:366 |
+| `nestBlock` | frontend/js/diagram-builder.js:422 |
+| `onKey` | frontend/js/diagram-builder.js:444 |
 | `reconcile` | frontend/js/diagram-builder.js:133 |
-| `refreshMore` | frontend/js/diagram-builder.js:538 |
-| `relabel` | frontend/js/diagram-builder.js:368 |
-| `removeBlock` | frontend/js/diagram-builder.js:428 |
+| `refreshMore` | frontend/js/diagram-builder.js:540 |
+| `relabel` | frontend/js/diagram-builder.js:370 |
+| `removeBlock` | frontend/js/diagram-builder.js:430 |
 | `render` | frontend/js/diagram-builder.js:93 |
 | `say` | frontend/js/diagram-builder.js:30 |
-| `select` | frontend/js/diagram-builder.js:329 |
-| `shapeButton` | frontend/js/diagram-builder.js:184 |
-| `shapeGlyph` | frontend/js/diagram-builder.js:143 |
-| `shapeItems` | frontend/js/diagram-builder.js:151 |
-| `shapeRow` | frontend/js/diagram-builder.js:164 |
-| `show` | frontend/js/diagram-builder.js:656 |
-| `stepBlock` | frontend/js/diagram-builder.js:418 |
+| `select` | frontend/js/diagram-builder.js:331 |
+| `shapeButton` | frontend/js/diagram-builder.js:188 |
+| `shapeGlyph` | frontend/js/diagram-builder.js:149 |
+| `shapeItems` | frontend/js/diagram-builder.js:157 |
+| `shapeRow` | frontend/js/diagram-builder.js:170 |
+| `show` | frontend/js/diagram-builder.js:658 |
+| `stepBlock` | frontend/js/diagram-builder.js:420 |
 | `stops` | frontend/js/diagram-builder.js:121 |
-| `styleDo` | frontend/js/diagram-builder.js:510 |
-| `suggest` | frontend/js/diagram-builder.js:498 |
-| `suggestMenu` | frontend/js/diagram-builder.js:516 |
-| `sync` | frontend/js/diagram-builder.js:621 |
+| `styleDo` | frontend/js/diagram-builder.js:512 |
+| `suggest` | frontend/js/diagram-builder.js:500 |
+| `suggestMenu` | frontend/js/diagram-builder.js:518 |
+| `sync` | frontend/js/diagram-builder.js:623 |
 | `titleOf` | frontend/js/diagram-builder.js:36 |
 
 ### frontend/js/diagram-canvas.js (7)
@@ -3318,19 +3319,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `withLook` | frontend/js/diagram-embed.js:144 |
 | `withSpacing` | frontend/js/diagram-embed.js:173 |
 
-### frontend/js/diagram-joins.js (9)
+### frontend/js/diagram-joins.js (11)
 
 | Name | File:line |
 |---|---|
-| `ask` | frontend/js/diagram-joins.js:121 |
+| `ask` | frontend/js/diagram-joins.js:169 |
+| `beside` | frontend/js/diagram-joins.js:92 |
+| `go` | frontend/js/diagram-joins.js:79 |
 | `isKind` | frontend/js/diagram-joins.js:24 |
 | `items` | frontend/js/diagram-joins.js:32 |
 | `lastTarget` | frontend/js/diagram-joins.js:11 |
-| `menu` | frontend/js/diagram-joins.js:77 |
+| `menu` | frontend/js/diagram-joins.js:122 |
 | `nameOf` | frontend/js/diagram-joins.js:30 |
-| `pick` | frontend/js/diagram-joins.js:129 |
+| `pick` | frontend/js/diagram-joins.js:177 |
 | `titleOf` | frontend/js/diagram-joins.js:29 |
-| `words` | frontend/js/diagram-joins.js:110 |
+| `words` | frontend/js/diagram-joins.js:158 |
 
 ### frontend/js/diagram-kindbar.js (11)
 
@@ -12868,7 +12871,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 233 |
-| frontend/css/diagram-lazy.css | 2624 |
+| frontend/css/diagram-lazy.css | 2684 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -26859,7 +26862,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21136)
+## Tests (21142)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27663,6 +27666,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_kinds.py | 33 |
 | tests/test_diagram_let_go_1696.py | 3 |
 | tests/test_diagram_library_1594.py | 8 |
+| tests/test_diagram_links_1771.py | 5 |
 | tests/test_diagram_minimap_1110.py | 7 |
 | tests/test_diagram_model.py | 15 |
 | tests/test_diagram_multi_r5.py | 19 |
@@ -28318,7 +28322,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_make_plan.py | 21 |
 | tests/test_manage_lists_504.py | 5 |
 | tests/test_manual_entry_points.py | 3 |
-| tests/test_manual_parity.py | 33 |
+| tests/test_manual_parity.py | 34 |
 | tests/test_map_actions_clear_of_label.py | 1 |
 | tests/test_map_add_speed.py | 6 |
 | tests/test_map_audio.py | 4 |
@@ -30153,7 +30157,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1217 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:154 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:153 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4057 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3130 |

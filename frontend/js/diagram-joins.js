@@ -68,17 +68,65 @@
         },
         group: "edit",
       },
+      { label: `ph:arrow-elbow-down-right Go to ${to}`, title: "Pick this connector and the block it points at", run: () => go(S, { edge, end: "to" }, h), group: "go" },
+      { label: `ph:arrow-elbow-up-left Go to ${titleOf(h, S, edge.from)}`, title: "Pick this connector and the block it leaves", run: () => go(S, { edge, end: "from" }, h), group: "go" },
       { label: "ph:trash Remove connector", danger: true, run: () => (h.ops.unjoin(S.m, edge), h.commit(S, `Removed the connector to ${to}.`)), group: "edit" },
     ];
+  }
+
+  //: A connector row's press: picks the arrow in the picture and puts the list on the block at one end ("to", or "from" for the source). The
+  //: block row is the list's own selection, so the picture's box and the row agree; the focus stays on the row that was pressed.
+  function go(S, { edge, end = "to" }, h) {
+    const id = edge[end];
+    const key = h.ops.node(S.m, id) ? h.ops.key("n", id) : h.ops.key("g", id);
+    S.pickEdge?.(edge);
+    h.select(S, key);
+    h.blockEl(S, key)?.scrollIntoView({ block: "nearest" });
+    h.say(S, `Went to ${titleOf(h, S, id)}, where the connector ${end === "to" ? `from ${titleOf(h, S, edge.from)} ends` : `to ${titleOf(h, S, edge.to)} starts`}.`);
+  }
+
+  //: The menu off the row that opened it (INBOX 1771, the owner: "appears on top of it and not next to it"). `openMenuAtPoint` hangs a menu
+  //: from a one-pixel point, so a menu taller than the room below flipped up from that point and lay across the row (measured at 1440x900:
+  //: the row at 475 to 499, the menu 101 to 505). Placed here against the row's whole box instead: below, above, then to the right or the left,
+  //: the first that fits the window; none fitting, the larger of below and above with the menu scrolling inside it.
+  function beside(menu, row, opener) {
+    if (!menu) return;
+    const [margin, gap] = [8, 4];
+    escapeMenuToBody(menu, opener);
+    menu.style.visibility = "hidden";
+    menu.style.maxHeight = "";
+    menu.style.left = "0px";
+    menu.style.top = "0px";
+    const [vw, vh] = [window.innerWidth, window.innerHeight];
+    const box = menu.getBoundingClientRect();
+    const clamp = (n, size, room) => Math.max(margin, Math.min(n, room - margin - size));
+    const fits = (top) => top >= margin && top + box.height <= vh - margin;
+    let [left, top] = [clamp(row.right - box.width, box.width, vw), 0];
+    if (fits(row.bottom + gap)) top = row.bottom + gap;
+    else if (fits(row.top - gap - box.height)) top = row.top - gap - box.height;
+    else if (row.right + gap + box.width <= vw - margin) [left, top] = [row.right + gap, clamp(row.top, box.height, vh)];
+    else if (row.left - gap - box.width >= margin) [left, top] = [row.left - gap - box.width, clamp(row.top, box.height, vh)];
+    else {
+      const room = [vh - margin - (row.bottom + gap), row.top - gap - margin];
+      const below = room[0] >= room[1];
+      menu.style.maxHeight = `${Math.max(120, Math.floor(room[below ? 0 : 1]))}px`;
+      top = below ? row.bottom + gap : Math.max(margin, row.top - gap - menu.getBoundingClientRect().height);
+    }
+    menu.style.left = `${Math.round(left)}px`;
+    menu.style.top = `${Math.round(top)}px`;
+    menu.style.visibility = "";
   }
 
   //: The connector row's menu (R6.4). It hangs from the row's right edge, as every menu does, so it opens under its row and
   //: not at the window's left; the six line kinds are drawn (`dgm-link`), where one arrow icon stood for four of them.
   function menu(S, { edge, chip }, h) {
-    const r = chip.getBoundingClientRect();
+    //: The whole row, not its ⋯: the menu stays off the words it belongs to.
+    const line = chip.closest(".dgm-joinline") || chip;
+    let r = line.getBoundingClientRect();
     const rows = items(S, edge, h);
-    openMenuAtPoint(rows, "This connector", r.right, r.bottom, chip);
-    const open = document.querySelector(".action-menu:not(.hidden):not(.submenu)");
+    const open = openMenuAtPoint(rows, "This connector", r.right, r.bottom, chip);
+    r = line.getBoundingClientRect();
+    beside(open, r, chip);
     open?.querySelectorAll(":scope > .menu-item").forEach((row, i) => {
       if (i >= LINKS.length) return;
       const [style, arrow, name, both] = LINKS[i];
@@ -175,5 +223,5 @@
     }
   }
 
-  diagramModel.joins = { items, menu, pick, ask };
+  diagramModel.joins = { items, menu, pick, ask, go };
 })();

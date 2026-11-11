@@ -2241,7 +2241,7 @@ MORE_TOPICS.extend([
             "drag a block on the picture to move it, and drag on empty space to pick the blocks you touch (Shift adds, Shift+click toggles, Space and drag pans). "
             "Drop onto a group's box to add or move into it. Pick or point at a block and its four round handles show: drag the round handle on any side to another block "
             "or a group to connect them, or to empty space for a new connected block; a click on one adds a joined block (Enter, then click, connects; Escape cancels). "
-            "Double-click a block, an arrow or a group's border or title to rename it in place; click a group's border or title to pick it. Right-click any of them (long press on a phone) for a menu; a picked arrow takes Enter to change its words and Delete, and a dot at either end drags to another block. From the keyboard, Enter on a connector row opens the same menu."
+            "Double-click a block, an arrow or a group's border or title to rename it in place; click a group's border or title to pick it. Right-click any of them (long press on a phone) for a menu; a picked arrow takes Enter to change its words and Delete, and a dot at either end drags to another block. A connector row's words (or Enter) go to its block; its ... opens the menu."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },
@@ -2262,8 +2262,8 @@ MORE_TOPICS.extend([
             "arrow: pick a block, or type a new name to make it; a decision's arrows ask for yes or no. Drag a block: "
             "another's top or bottom puts it before or after, its middle joins "
             "them, a group's body takes it inside. Under a block, "
-            "a connector reads Start to Next and its label. The shape swatch "
-            "picks it. A divider sizes the blocks and the picture (drag or "
+            "a connector reads Start to Next and its label. "
+            "The shape swatch picks it. A divider sizes the blocks and the picture (drag or "
             "arrows; Shift for more). Direction (a menu) turns the flow. An empty one lists "
             "three steps: Add a shape, Name it, Connect it. "
             "The corner bar zooms (Zoom in, Zoom out, Fit), as do Ctrl+wheel and a pinch; "
@@ -2378,8 +2378,8 @@ MORE_TOPICS.extend([
             "With no model a rule reads it; with a model on, the model writes the same kind of change. "
             "It shows first: what it does, and a picture of both with added in green, removed in red and dotted, "
             "and changed in amber. Apply makes it (Ctrl+Z undoes it in one step); Discard leaves the diagram as it was. "
-            "Suggestions, under Ask, lists what looks wrong: an arrow out of a decision with no words, a decision with "
-            "one way out, a block with no way out or joined to nothing, two blocks with the same words, a group "
+            "Suggestions, under Ask, opens like a fold (its arrow turns) and lists what looks wrong: an arrow out of a decision with no words, a decision with "
+            "one way out, a block with no way out or joined to nothing, blocks with the same words (one row numbers them), a group "
             "holding one block. Each row's button shows its fix the same way. On a diagram document every Apply is "
             "a named version (AI: added Refund). Versions..., in the ... menu, lists them: tick two to Compare, or "
             "one to compare it with now, and Restore puts one back."
