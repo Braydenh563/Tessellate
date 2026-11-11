@@ -360,6 +360,7 @@ below). Versioning is `0.x` while the app stabilises.
 - Fix (voice notes, w6-1110, audit 1031 Z12): a Discard whose finish fails now says so with a toast and keeps the recording in Library; audit rows A32 to A36 (1029 X1 to X3, 1031 Z12, 1028 B8, B40) were already fixed on head and are struck.
 ## [Unreleased]
 - Mind map: "Fold every branch" beside "Open every folded branch" in the Board menu, the This map panel, the map's right-click menu and the command palette; it is the Alt+1 fold (one Undo step), is off when every branch is already folded (and Open is off when nothing is), and says how many it folded (INBOX 1773).
+- Performance (D28, composer): a chat turn that already holds four answerable follow-up chips stops composing the rest (`chat_chips.continue_chips`); chips 25.5 to 19.0 ms a request on 500 notes. The topical digest request measures 0.08 to 0.17 s whole (30 to 37 ms for the digest) against the audit's 0.45 to 0.78 s, so the row is closed; B26 Q5 and Q6 were already built (17d5d14).
 - Atlas rig (merge of the lag work with the hub head): the first look seeds the running-animation set before it reads, as the 1741 fix had it in the frame; the global-name cap is 8,504.
 - Global scope (OPEN W29): `icon-picker.js` is wrapped whole; the global-name cap is 8503 (was 8,519).
 - Global scope (OPEN W29): `math-field.js` is wrapped whole; the global-name cap is 8519 (was 8,538).
