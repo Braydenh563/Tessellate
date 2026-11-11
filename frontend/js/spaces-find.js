@@ -472,6 +472,9 @@ function updateCaptureSpaceLabel() {
     active === SPACE_ALL
       ? `Filing into ${name} (pick a space above to file there instead).`
       : `Filing into ${name}.`;
+  //: The row keeps one line beside a window's width and the hint takes the
+  //: ellipsis (07-whiteboard-misc.css), so the whole sentence is its title.
+  label.title = label.textContent;
 }
 
 onSurface("notes", updateCaptureSpaceLabel);

@@ -7848,3 +7848,22 @@ def test_the_ask_composer_holds_its_controls_beside_the_field_at_tablet_width() 
     css = (_SHEETS / "07-whiteboard-misc.css").read_text(encoding="utf-8")
     rule = re.search(r"\.ask-composer > #question,\s*\.ask-composer > #question:focus,\s*\.ask-composer > #question:focus-visible \{\s*flex: ([^;]+);", css)
     assert rule and rule.group(1) == "1 1 12rem"
+
+
+def test_a_sticky_commit_foot_holds_one_line_and_never_hides_the_focus() -> None:
+    """Quick capture's commit row was two lines at 768 (78px) and 960 at 200%
+    (86px), Save dropped onto the Tags label, and at 1280 by 720 the stuck foot
+    hid the category, the space picker and the document button (32px each)
+    from a reader who focused them. Beside a window's width the row is one
+    line, its hint taking the ellipsis with the sentence on its title; every
+    control above the foot stops the foot's height short of the page's edge."""
+    css = (_SHEETS / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    wide = css[css.index("@media (min-width: 600px) {\n  .capture-commit-row {") :]
+    wide = wide[: wide.index("\n}\n")]
+    assert "flex-wrap: nowrap" in wide and "text-overflow: ellipsis" in wide and "min-width: 0" in wide
+    js = (ROOT / "frontend" / "js" / "spaces-find.js").read_text(encoding="utf-8")
+    fn = js[js.index("function updateCaptureSpaceLabel") :]
+    assert "label.title = label.textContent" in fn[: fn.index("\n}\n")]
+    lazy = (_SHEETS / "library-lazy.css").read_text(encoding="utf-8")
+    foot = re.search(r"#capture > :not\(\.capture-commit-row\) :is\([^)]*\) \{([^}]*)\}", lazy)
+    assert foot and "scroll-margin-bottom: calc(var(--control-h) + 2 * var(--space-2))" in foot.group(1)

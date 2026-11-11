@@ -633,6 +633,14 @@ textarea.has-gutter {
   z-index: 2;
   padding-block: var(--space-2);
 }
+/* **The foot never hides what has the focus** (the wrapzoom sweep, 1280 by
+   720: the form is 685px in a 608px page, so at rest the stuck foot lay over
+   the filing row's space picker and document button). A control above it,
+   reached by Tab or scrolled to, stops the foot's height short of the
+   page's bottom edge. */
+#capture > :not(.capture-commit-row) :is(button, input, select, textarea, summary, [tabindex], [contenteditable]) {
+  scroll-margin-bottom: calc(var(--control-h) + 2 * var(--space-2));
+}
 
 @media print {
 /* **The last of the chrome.** 05-sidebars-themes.css hides the tab bar, the
