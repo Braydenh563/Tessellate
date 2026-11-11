@@ -14,10 +14,12 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from tests import _js_scope
+
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "frontend" / "js" / "panel-movable.js"
+SRC = _js_scope.unwrapped_copy(ROOT / "frontend" / "js" / "panel-movable.js")
 
 node = pytest.mark.skipif(shutil.which("node") is None, reason="node is not available")
 
@@ -475,7 +477,7 @@ def test_a_focus_brought_by_a_press_adopts_after_the_press_ends():
     """The Guide E2E flake: adopting adds the grip's row, so a bottom-anchored
     sheet rose 20px between pointerdown and pointerup and the send click landed
     on the card (reproduced 6 of 6 at a 6x CPU throttle)."""
-    text = (ROOT / "frontend" / "js" / "panel-movable.js").read_text(encoding="utf-8")
+    text = SRC.read_text(encoding="utf-8")
     focus = text.split('document.addEventListener("focusin"', 1)[1].split("}, true);", 1)[0]
     assert "if (p && press.down) press.wait.add(p);" in focus
     assert 'window.addEventListener("pointerup", adoptWaiting, true);' in text
@@ -485,7 +487,7 @@ def test_a_focus_brought_by_a_press_adopts_after_the_press_ends():
 def test_a_dock_zone_keeps_clear_of_both_bars_whatever_the_panel_draws_above():
     # INBOX 1648: a modal panel docked left filled over the top and status bars
     # (measured 8 to 892 against bars at 44 and 863; now 52 to 855).
-    src = (Path(__file__).resolve().parents[1] / "frontend/js/panel-movable.js").read_text(encoding="utf-8")
+    src = SRC.read_text(encoding="utf-8")
     assert 'function panelSafe(vw, vh, except, ignore = "", bars = false)' in src
     assert 'const bar = bars ? barBox("top-bar") : seen("top-bar");' in src
     assert 'const foot = bars ? barBox("status-bar") : seen("status-bar");' in src

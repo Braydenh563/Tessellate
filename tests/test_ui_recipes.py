@@ -1449,7 +1449,7 @@ def test_a_suggested_link_is_two_names_a_facts_line_and_one_action_cell() -> Non
     names are cut to one line rather than wrapping chips; its actions are one
     cell. Measured: 75 to 107px a row at 1440 went to 61, 210 to 228px at 390
     went to 131, rows in view 3 to 6 and 1 to 2."""
-    inbox = (ROOT / "frontend" / "js" / "suggestions-inbox.js").read_text(encoding="utf-8")
+    inbox = _js_scope.unwrapped((ROOT / "frontend" / "js" / "suggestions-inbox.js").read_text(encoding="utf-8"))
     css = (ROOT / "frontend" / "css" / "inbox-lazy.css").read_text(encoding="utf-8")
     pane = inbox.split("function inboxLinksPane(", 1)[1].split("\nfunction ", 1)[0]
     assert "kebabMenu([suggestReasons, backfill]" in pane
@@ -1725,7 +1725,7 @@ def test_the_rendered_blocks_carry_the_line_they_came_from() -> None:
 
 # --- the guided tour (DESIGN.md, "A guided tour of the interface") ------------
 
-TOUR_JS = ROOT / "frontend" / "js" / "tour.js"
+TOUR_JS = _js_scope.unwrapped_copy(ROOT / "frontend" / "js" / "tour.js")
 TOUR_TABLE = re.compile(r"const TOUR_SECTIONS = \[(.*?)\n\];", re.S)
 TOUR_STEP = re.compile(r"\{\s*target: \"([^\"]+)\",\s*side: \"([a-z]+)\",(.*?)\n      \}", re.S)
 
@@ -3049,7 +3049,7 @@ def test_the_suggestions_inbox_kinds_are_a_list_with_counts() -> None:
     `.seg` well (the shape INBOX 665 took away from Questions). One select,
     `#inbox-kind`, its rows "Links (3)"; the arrows of the list replace the
     tabs' own, and the panes follow the value."""
-    js = (ROOT / "frontend" / "js" / "suggestions-inbox.js").read_text(encoding="utf-8")
+    js = _js_scope.unwrapped((ROOT / "frontend" / "js" / "suggestions-inbox.js").read_text(encoding="utf-8"))
     assert 'document.createElement("select")' in js and 'kind.id = "inbox-kind"' in js
     assert "inbox-seg" not in js and 'className = "seg' not in js and '"tablist"' not in js
     assert 'kind.addEventListener("change"' in js and "inboxShow(kind.value)" in js
@@ -5590,7 +5590,7 @@ def test_one_calendar_grid_of_dom_cells() -> None:
     "+n" in a month cell, and its keys and drags on one delegated listener
     each on the view's box, never one per cell. The reminders tab opens it
     rather than drawing a month of its own."""
-    cal = (ROOT / "frontend" / "js" / "timeline-calendar.js").read_text(encoding="utf-8")
+    cal = _js_scope.unwrapped((ROOT / "frontend" / "js" / "timeline-calendar.js").read_text(encoding="utf-8"))
     assert "const TIMELINE_CAL_ROWS = 3;" in cal
     #: A press on a day opens it, and the written notes are chips with titles
     #: wherever the cell has the room (the owner, 2026-10-11): fitted by
@@ -5772,7 +5772,7 @@ def test_a_set_to_start_is_rows_with_their_descriptions_not_a_wall() -> None:
     """DESIGN.md, "A set of things to start" (INBOX 804): Help's fourteen tour
     buttons became one row each, the section's name over its one-line blurb,
     under the pane's one filled button (Start the tour) and a quiet second."""
-    tour = _function_body((ROOT / "frontend" / "js" / "tour.js").read_text(encoding="utf-8"), "renderTourReplay")
+    tour = _function_body(_js_scope.unwrapped((ROOT / "frontend" / "js" / "tour.js").read_text(encoding="utf-8")), "renderTourReplay")
     assert '"ghost small tour-row"' in tour and "tour-row-blurb" in tour and "section.blurb" in tour
     assert 'createElement("li")' in tour
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
@@ -6765,7 +6765,7 @@ def test_close_is_the_last_control_of_every_popup_head() -> None:
         assert not mins or mins[-1] == closers[-1] - 1, f"minimise is not just before Close: {buttons}"
     assert checked >= 20, "the head parser found too few heads to mean anything"
 
-    js = (ROOT / "frontend" / "js" / "panel-movable.js").read_text(encoding="utf-8")
+    js = _js_scope.unwrapped((ROOT / "frontend" / "js" / "panel-movable.js").read_text(encoding="utf-8"))
     settle = js[js.index("function panelHeadSettle") : js.index("function panelCloseBtn")]
     assert "tail.insertBefore(st.min, closeBtn)" in settle, "minimise goes directly before Close"
     assert '"[data-help-for], .menu-wrap, .atlas-menu"' in settle, "reset and push go before the head's help and more"
@@ -6981,7 +6981,7 @@ def _rule_exact(css: str, selector: str) -> str:
 
 
 def _js_function(name: str, fn: str) -> str:
-    text = frontend_text(name)
+    text = _js_scope.unwrapped(frontend_text(name))
     start = text.index(f"function {fn}(")
     return text[start : text.index("\n}\n", start)]
 
@@ -7034,7 +7034,7 @@ def test_a_row_has_at_most_one_bordered_ghost_and_only_beside_a_filled_button() 
         found, has_filled = _bordered_ghosts(_js_function(name, fn))
         assert len(found) <= 1, f"{fn}: a toolbar's secondary actions are `ghost quiet`, not {found}"
         assert not found or has_filled, f"{fn}: a bordered ghost {found} with no filled button beside it"
-    foot = frontend_text("reply-kit.js")
+    foot = _js_scope.unwrapped(frontend_text("reply-kit.js"))
     assert 'asEquation.classList.add("quiet", "calc-as-equation")' in foot
     assert "row.append(asEquation, copy, insert)" in foot, "the one filled Insert is last"
     css = (ROOT / "frontend" / "css" / "reply-kit-lazy.css").read_text(encoding="utf-8")
@@ -7097,7 +7097,7 @@ def test_a_dialog_foot_has_one_bordered_secondary_and_its_third_action_is_quiet(
         assert re.search(rf'class="ghost quiet small" id="{ident}"', html), ident
     css = "\n".join(path.read_text(encoding="utf-8") for path in CSS)
     assert "margin-inline-end: auto" in _rule_exact(css, ".space-dialog-actions > .quiet:first-child")
-    kit = frontend_text("reply-kit.js")
+    kit = _js_scope.unwrapped(frontend_text("reply-kit.js"))
     for want in ('"ghost small disclosure-row calc-log-toggle"', '"ghost quiet small calc-again"', 'clear.classList.add("quiet")', 'change.classList.add("quiet")'):
         assert want in kit, want
     assert kit.count('"ghost quiet small reply-panel-open"') == 2
@@ -7237,7 +7237,7 @@ def test_a_cards_one_action_sits_left_with_an_icon_and_a_dialogs_primary_stays_f
     assert "align-self: flex-start" in _rule_exact(forms, ".dash-body>button")
     dash = (ROOT / "frontend" / "js" / "dashboard.js").read_text(encoding="utf-8")
     assert dash.count('smallButton("ph:sparkle Generate this week\'s digest"') == 2
-    kit = (ROOT / "frontend" / "js" / "reply-kit.js").read_text(encoding="utf-8")
+    kit = _js_scope.unwrapped((ROOT / "frontend" / "js" / "reply-kit.js").read_text(encoding="utf-8"))
     assert 'smallButton("ph:function Insert as equation"' in kit
     assert 'insert.classList.add("primary")' in kit and "false);\n  insert.classList.add" in kit
 

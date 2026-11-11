@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -30,7 +31,7 @@ def test_a_tool_is_handed_its_box_never_a_remembered_one() -> None:
 
 
 def test_the_palette_caught_box_is_live_only_while_the_palette_runs_a_row() -> None:
-    palette = _read("app-palette.js")
+    palette = _js_scope.unwrapped(_read("app-palette.js"))
     run = palette.split("function paletteRun(", 1)[1].split("\n}\n", 1)[0]
     assert "paletteCaught.live = true" in run and "paletteCaught.live = false" in run
     assert "finally" in run, "a row that throws must not leave the caught box live"

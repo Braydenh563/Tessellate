@@ -25,9 +25,10 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests import _js_scope
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
-PALETTE = (JS / "app-palette.js").read_text(encoding="utf-8")
+PALETTE = _js_scope.unwrapped((JS / "app-palette.js").read_text(encoding="utf-8"))
 
 FEATURES = (
     "ocr workspace", "whiteboard", "calculator", "timer", "statistics", "graph", "backups",
