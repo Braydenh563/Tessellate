@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from fakes_http import FakeResponse, sse
+from tests.fakes_http import FakeResponse, sse
 
 from tessellate.ai.ollama_client import _ThinkTagSplitter, split_thinking
 from tests import _js_scope

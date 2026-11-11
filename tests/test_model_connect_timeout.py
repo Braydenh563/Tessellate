@@ -10,7 +10,7 @@ one.
 
 from __future__ import annotations
 
-from fakes_http import FakeResponse
+from tests.fakes_http import FakeResponse
 
 from tessellate.ai import ollama_client
 from tessellate.ai import openai_client as openai_module

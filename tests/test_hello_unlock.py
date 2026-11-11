@@ -15,7 +15,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from tests._fake_authenticator import FakeAuthenticator, b64url, unb64url
-from test_pin_unlock import FakeStore
+from tests.test_pin_unlock import FakeStore
 from tessellate.api import routes_auth
 from tessellate.core import deps, hellostore, pinstore, spacelock, vault, webauthn
 

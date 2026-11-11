@@ -186,7 +186,7 @@ def test_ai14_escape_gives_the_keyboard_back():
 
 def test_hr20_confirms_queue_so_each_one_takes_focus():
     """Two confirms asked together show one at a time (HR20)."""
-    from _app_js import app_js_text
+    from tests._app_js import app_js_text
 
     js = app_js_text()
     body = js[js.index("// One confirm at a time") : js.index("// `confirmDialog`'s missing sibling")]

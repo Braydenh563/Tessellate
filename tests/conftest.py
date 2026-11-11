@@ -349,7 +349,7 @@ def ai_client(app_state, fake_ollama, fake_embeddings):
 @pytest.fixture
 def capture_post(monkeypatch):
     """Swap `requests.post` inside the OpenAI client and record the payloads."""
-    from fakes_http import FakeResponse
+    from tests.fakes_http import FakeResponse
 
     sent: list[dict] = []
     queued: list = []

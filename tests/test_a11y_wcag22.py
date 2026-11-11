@@ -307,7 +307,7 @@ def test_a_solid_map_topic_keeps_its_progress_count_legible():
 
 
 def test_a_disabled_task_box_on_a_note_card_says_why():
-    from _app_js import app_js_text
+    from tests._app_js import app_js_text
 
     js = app_js_text()
     at = js.index('item.className = "entry-task"')

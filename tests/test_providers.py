@@ -28,7 +28,7 @@ from pathlib import Path
 import pytest
 import requests
 
-from fakes_http import FakeResponse, sse
+from tests.fakes_http import FakeResponse, sse
 
 from tessellate.ai import provider as provider_module
 from tessellate.ai.ollama_client import (
@@ -190,7 +190,7 @@ def test_a_backend_that_answers_with_no_models_is_running_and_empty(monkeypatch)
     """The other half of 283: a server that answers (here a 404 from LM
     Studio's extra endpoint and an empty list from `/models`) is up with no
     models installed, which is not an error."""
-    from fakes_http import FakeResponse
+    from tests.fakes_http import FakeResponse
 
     c = OpenAICompatClient(base_url="http://127.0.0.1:8999/v1")
 
@@ -207,7 +207,7 @@ def test_llama_server_props_beats_the_name_guess(monkeypatch):
     """ROADMAP.md item A.2: `llama-server`'s own `/props` reports the `-c`
     it was actually started with, which beats this app's guess-from-name
     table the same way LM Studio's `loaded_context_length` does."""
-    from fakes_http import FakeResponse
+    from tests.fakes_http import FakeResponse
 
     c = OpenAICompatClient(base_url="http://localhost:8080/v1")
     c._catalog = [{"id": "qwen3"}]  # plain llama.cpp: an id, nothing else
@@ -222,7 +222,7 @@ def test_llama_server_props_beats_the_name_guess(monkeypatch):
 
 
 def test_a_server_with_no_props_is_not_mistaken_for_llama_cpp(monkeypatch):
-    from fakes_http import FakeResponse
+    from tests.fakes_http import FakeResponse
 
     c = OpenAICompatClient(base_url="http://localhost:1234/v1")
     c._catalog = [{"id": "qwen3"}]

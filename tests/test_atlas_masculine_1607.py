@@ -24,7 +24,7 @@ from pathlib import Path
 
 import pytest
 
-from test_atlas_masc_1607 import _arms, _inside, _look, _path, _sample, _width_at
+from tests.test_atlas_masc_1607 import _arms, _inside, _look, _path, _sample, _width_at
 
 ROOT = Path(__file__).resolve().parent.parent
 ATLAS = (ROOT / "frontend" / "js" / "atlas.js").read_text(encoding="utf-8")

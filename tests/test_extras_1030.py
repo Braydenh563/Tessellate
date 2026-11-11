@@ -17,7 +17,7 @@ from fastapi import HTTPException
 
 from tests import _js_scope
 
-from test_forgot_password import (  # noqa: F401  # the fixtures are autouse there
+from tests.test_forgot_password import (  # noqa: F401  # the fixtures are autouse there
     _clean,
     _devices_already_allowed,
     _known_code,

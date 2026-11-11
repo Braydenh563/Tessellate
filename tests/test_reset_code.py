@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import logging
 
-from test_forgot_password import (  # noqa: F401  # the fixtures are autouse there
+from tests.test_forgot_password import (  # noqa: F401  # the fixtures are autouse there
     CODE,
     _clean,
     _devices_already_allowed,

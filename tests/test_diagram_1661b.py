@@ -4,7 +4,7 @@ import json
 import re
 from pathlib import Path
 
-from test_diagram_model import _run
+from tests.test_diagram_model import _run
 
 ROOT = Path(__file__).resolve().parent.parent
 JS = ROOT / "frontend" / "js"
