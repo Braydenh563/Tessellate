@@ -128,12 +128,14 @@ def test_the_atlas_rig_reads_style_once_before_it_writes_any() -> None:
     # probe and then wrote its transform, so the next arm's read (and the
     # head's) forced another restyle, on top of the flight's own writes.
     motion = (ROOT / "frontend" / "js" / "atlas-motion.js").read_text(encoding="utf-8")
-    start = motion.index("function atlasRigFrame(")
-    body = motion[start : motion.index("\n}\n", start)]
-    first_write = min(i for i in (body.find("setProperty("), body.find("setAttribute("), body.find(".style.rotate =")) if i >= 0)
+    # (Since INBOX 1766 the reads are the look's, a task after a drawn frame; the frame reads nothing.)
+    start = motion.index("atlasRigWake.look = function atlasRigLook(")
+    body = motion[start : motion.index("\n};\n", start)]
+    first_write = min((i for i in (body.find("setProperty("), body.find("setAttribute("), body.find(".style.rotate =")) if i >= 0), default=-1)
     for read in ("atlasRigRead(", "getComputedStyle("):
         assert body.count(read) == 1, f"{read} is read once"
-        assert body.index(read) < first_write, f"{read} comes after a write"
+        if first_write >= 0:
+            assert body.index(read) < first_write, f"{read} comes after a write"
     # Moved by audit 1031 HR1: the probe's animation state is kept by its
     # animation events (`atlasProbeWatch`), so the frame scans no list at all
     # (it was one getAnimations() per arm per frame, 25 to 190 ms in a turn);
