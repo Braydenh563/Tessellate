@@ -378,14 +378,6 @@ async function binNoteWithUndo(entry) {
 
 let notesSpanMemo = { list: null, many: false };
 
-function notesSpanSpaces() {
-  if (notesSpanMemo.list !== allEntries) {
-    const first = allEntries[0]?.workspace_id;
-    notesSpanMemo = { list: allEntries, many: allEntries.some((e) => e.workspace_id && e.workspace_id !== first) };
-  }
-  return notesSpanMemo.many;
-}
-
 //: **A note's details line is one line** (INBOX 455 (1), the owner: "note
 //: metadata wraps now and needs a better redesign"). Measured at 1100 before:
 //: six of ten seeded cards wrapped, and the time sat on a line of its own on

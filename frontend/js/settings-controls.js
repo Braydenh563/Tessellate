@@ -5103,3 +5103,97 @@ async function applyEmbeddingBackend() {
     toast(error.message, true);
   }
 }
+
+//: Moved here from the boot files (W27): only this file calls them.
+function applyHarmony() {
+  const base = $("harmony-base").value;
+  const kind = $("harmony-kind").value;
+  const scheme = harmonyScheme(base, kind, resolvedTheme() === "dark");
+  const note = $("harmony-note");
+  if (!scheme) {
+    note.textContent = "That colour didn't parse: try picking it again.";
+    return;
+  }
+  prefs.set("accent-custom", scheme.accent);
+  // A scheme's background is worked out *for a mode*, the same accent wants a
+  // near-white page in light and a near-black one in dark. Storing only the one
+  // for whichever mode happened to be on is what made the light/dark toggle
+  // "stop working on the background": the stored value is written inline on
+  // <html>, and an inline custom property outranks every `[data-mode="dark"]`
+  // rule in the stylesheet, so the page stayed put while the rest of the UI
+  // changed around it. Both are computed and stored; `currentPageBackground`
+  // picks the right one whenever the mode changes.
+  const dark = harmonyScheme(base, kind, true);
+  const light = harmonyScheme(base, kind, false);
+  prefs.set("page-bg", light ? light.page : scheme.page);
+  prefs.set("page-bg-dark", dark ? dark.page : scheme.page);
+  applyCustomAccent(scheme.accent);
+  applyPageBackground(currentPageBackground());
+  renderAppearance();
+  note.textContent =
+    `Accent ${scheme.accent}, background ${scheme.page}. ` +
+    "Both have their own Clear buttons above if you'd rather start again.";
+}
+
+async function copyLogs() {
+  const shown = logRecords.filter(logMatchesFilters);
+  if (!shown.length) {
+    toast("Nothing to copy: the filters above are hiding every record.", "info");
+    return;
+  }
+  const text = shown.map(logRecordText).join("\n");
+  if (await copyToClipboard(text)) {
+    toast(`Copied ${nounCount(shown.length, "record")}.`);
+  }
+}
+
+// Drop the manual layer, keeping the chosen theme, the counterpart to
+// "reset the theme" below.
+function clearManualOverrides() {
+  for (const key of manualOverrides()) prefs.remove(key);
+  applyCustomAccent(null);
+  applyPageBackground(null);
+  applyThemePreset(activeThemePreset());
+  renderAppearance();
+  toast("Your manual changes are cleared, the theme is showing on its own.");
+}
+
+function applyContrast(on) {
+  if (on) document.documentElement.dataset.contrast = "on";
+  else delete document.documentElement.dataset.contrast;
+  prefs.set("contrast", on ? "on" : "off");
+}
+
+// Drop the theme, keeping every manual change, so "reset the theme to
+// default because I want my own colours instead" does exactly that, rather
+// than wiping the colours too (user request).
+function resetThemeOnly() {
+  prefs.remove("themePreset");
+  applyThemePreset("");
+  renderAppearance();
+  toast("Theme reset to the app default. Your own changes are still applied.");
+}
+
+function nearLogBottom() {
+  const list = activeLogContainer();
+  // 40px of slack: "close enough to the bottom that you meant to be there".
+  return list.scrollHeight - list.scrollTop - list.clientHeight < 40;
+}
+
+// Let the status poll own the radios again. Called once a choice is applied,
+// and when the user backs out of applying it, otherwise a cancelled switch
+// would leave the radio showing a backend that was never saved, which is the
+// same lie in the opposite direction.
+function clearEmbeddingBackendLatch() {
+  delete $("embedding-model-select").dataset.userChosen;
+  for (const radio of document.querySelectorAll('input[name="emb-backend"]')) {
+    delete radio.dataset.userChosen;
+  }
+}
+
+// Heuristic: does this Ollama model look like it can produce embeddings?
+// Chat/generation models can't, Ollama answers /api/embed with 501, and
+// picking one by mistake is the #1 way people break the search engine.
+function looksLikeEmbeddingModel(name) {
+  return /embed|minilm|bge|gte|e5|arctic/i.test(name || "");
+}

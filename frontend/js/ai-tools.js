@@ -681,24 +681,6 @@ let improveCustomInstruction = "";
 
 
 
-// Heuristic: does this Ollama model look like it can produce embeddings?
-// Chat/generation models can't, Ollama answers /api/embed with 501, and
-// picking one by mistake is the #1 way people break the search engine.
-function looksLikeEmbeddingModel(name) {
-  return /embed|minilm|bge|gte|e5|arctic/i.test(name || "");
-}
-
-// Let the status poll own the radios again. Called once a choice is applied,
-// and when the user backs out of applying it, otherwise a cancelled switch
-// would leave the radio showing a backend that was never saved, which is the
-// same lie in the opposite direction.
-function clearEmbeddingBackendLatch() {
-  delete $("embedding-model-select").dataset.userChosen;
-  for (const radio of document.querySelectorAll('input[name="emb-backend"]')) {
-    delete radio.dataset.userChosen;
-  }
-}
-
 // --- keeping the look across restarts (§35E) --------------------------------
 //
 // Reported as two bugs: *"the theme resets to default on every start"* and
