@@ -183,7 +183,6 @@
   }
 
   $("doc-minimap")?.addEventListener("change", (event) => docIdeToggleMinimap(event.target.checked));
-  if ($("doc-minimap")) $("doc-minimap").checked = docToolPref("codeMinimap", false);
 
   // --- INBOX 736: the output panel's height ------------------------------------------
   //
