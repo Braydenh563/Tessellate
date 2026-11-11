@@ -19,7 +19,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from tessellate.api import routes_auth
+from tessellate.api import routes_auth, routes_debug
 from tessellate.core import backup, backup_bundle, deps, diskspace, extras, jobruns, jobs, selfcheck
 from tessellate.core.deps import get_session
 from tessellate.entry import manager
@@ -58,7 +58,8 @@ def storage_location() -> dict:
     return {
         "data_dir": str(Path(config.data_dir).resolve()),
         "database": str(db_path.resolve()),
-        "database_bytes": db_path.stat().st_size if db_path.exists() else 0,
+        #: The file with its write-ahead log (audit 1029 X17), as About health counts it.
+        "database_bytes": routes_debug.db_footprint(db_path)["size_bytes"],
         "backups_dir": str(backup.backups_dir(config.data_dir).resolve()),
         #: What the folders beside the database weigh (a cached walk,
         #: `diskspace.dir_bytes`): attached files, pictures and the backups

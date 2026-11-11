@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10179, test files 2496, tests 20564, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10179, test files 2496, tests 20567, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -1675,7 +1675,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `clearLogs` | frontend/js/settings.js:1254 |
 | `closeLogs` | frontend/js/settings.js:1223 |
 | `closeSettingsModal` | frontend/js/settings.js:728 |
-| `collapseLongSettingHints` | frontend/js/settings.js:3631 |
+| `collapseLongSettingHints` | frontend/js/settings.js:3633 |
 | `contrastOn` | frontend/js/settings.js:1498 |
 | `cssVarNow` | frontend/js/settings.js:2321 |
 | `currentAccentHex` | frontend/js/settings.js:1428 |
@@ -1687,18 +1687,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `effectiveTheme` | frontend/js/settings.js:2644 |
 | `ensureSettingsPaneTitle` | frontend/js/settings.js:74 |
 | `filterSettings` | frontend/js/settings.js:668 |
-| `focusSettingsHeading` | frontend/js/settings.js:3440 |
-| `focusSettingsPane` | frontend/js/settings.js:3432 |
+| `focusSettingsHeading` | frontend/js/settings.js:3442 |
+| `focusSettingsPane` | frontend/js/settings.js:3434 |
 | `harmonyScheme` | frontend/js/settings.js:1906 |
 | `hexRatio` | frontend/js/settings.js:2349 |
 | `hexToHsl` | frontend/js/settings.js:1858 |
 | `hexToRgbParts` | frontend/js/settings.js:2326 |
 | `hslToHex` | frontend/js/settings.js:1879 |
-| `jobDurationWords` | frontend/js/settings.js:3898 |
-| `jobRunLine` | frontend/js/settings.js:3909 |
+| `jobDurationWords` | frontend/js/settings.js:3900 |
+| `jobRunLine` | frontend/js/settings.js:3911 |
 | `lessTransparencyWanted` | frontend/js/settings.js:2477 |
 | `loadChangelog` | frontend/js/settings.js:523 |
-| `loadSamplingSettings` | frontend/js/settings.js:3597 |
+| `loadSamplingSettings` | frontend/js/settings.js:3599 |
 | `logLevelRank` | frontend/js/settings.js:786 |
 | `logMatchesFilters` | frontend/js/settings.js:834 |
 | `logRecordText` | frontend/js/settings.js:927 |
@@ -1708,14 +1708,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `logTerminalTraceRow` | frontend/js/settings.js:1050 |
 | `manualOverrides` | frontend/js/settings.js:1841 |
 | `measureLabelOptics` | frontend/js/settings.js:2537 |
-| `noticePerfMode` | frontend/js/settings.js:3558 |
+| `noticePerfMode` | frontend/js/settings.js:3560 |
 | `openSettingsModal` | frontend/js/settings.js:307 |
 | `paintIntegrity` | frontend/js/settings.js:572 |
-| `paintJobLine` | frontend/js/settings.js:3941 |
+| `paintJobLine` | frontend/js/settings.js:3943 |
 | `perfModeOn` | frontend/js/settings.js:2483 |
 | `perfModeReason` | frontend/js/settings.js:2492 |
-| `placeFoldHelp` | frontend/js/settings.js:3840 |
-| `refreshJobRuns` | frontend/js/settings.js:3957 |
+| `placeFoldHelp` | frontend/js/settings.js:3842 |
+| `refreshJobRuns` | frontend/js/settings.js:3959 |
 | `renderActiveLogView` | frontend/js/settings.js:1072 |
 | `renderAppearance` | frontend/js/settings.js:2838 |
 | `renderBgMotionHint` | frontend/js/settings.js:2993 |
@@ -1724,7 +1724,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderCopyLogsLabel` | frontend/js/settings.js:1235 |
 | `renderCustomThemes` | frontend/js/settings.js:2230 |
 | `renderGlassRows` | frontend/js/settings.js:2825 |
-| `renderJobOverview` | frontend/js/settings.js:3987 |
+| `renderJobOverview` | frontend/js/settings.js:3989 |
 | `renderLogErrorBadge` | frontend/js/settings.js:1091 |
 | `renderLogGap` | frontend/js/settings.js:796 |
 | `renderLogList` | frontend/js/settings.js:979 |
@@ -1746,7 +1746,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `serverLogRecord` | frontend/js/settings.js:821 |
 | `setLogLive` | frontend/js/settings.js:1077 |
 | `setSettingsPeek` | frontend/js/settings.js:279 |
-| `settingsFoldState` | frontend/js/settings.js:3788 |
+| `settingsFoldState` | frontend/js/settings.js:3790 |
 | `settingsPeekIsOn` | frontend/js/settings.js:291 |
 | `settingsScroller` | frontend/js/settings.js:103 |
 | `settingsSectionText` | frontend/js/settings.js:626 |
@@ -1757,15 +1757,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `startLogStream` | frontend/js/settings.js:1121 |
 | `stopBgArt` | frontend/js/settings.js:3208 |
 | `stopLogStream` | frontend/js/settings.js:1180 |
-| `taskLogButton` | frontend/js/settings.js:3537 |
+| `taskLogButton` | frontend/js/settings.js:3539 |
 | `themeDefaultAccent` | frontend/js/settings.js:2801 |
 | `themeSwatch` | frontend/js/settings.js:1752 |
 | `themeValue` | frontend/js/settings.js:1777 |
 | `toggleBgArt` | frontend/js/settings.js:3390 |
 | `toggleTheme` | frontend/js/settings.js:1350 |
 | `updatePeekAvailability` | frontend/js/settings.js:295 |
-| `wireFoldHelps` | frontend/js/settings.js:3853 |
-| `wireSettingsFolds` | frontend/js/settings.js:3797 |
+| `wireFoldHelps` | frontend/js/settings.js:3855 |
+| `wireSettingsFolds` | frontend/js/settings.js:3799 |
 
 ### frontend/js/account-recovery.js (20)
 
@@ -12905,15 +12905,15 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/audit/export.csv` | GET | `audit_export_csv` | src/tessellate/api/routes_settings.py:1892 |
 | `/auto` | PUT | `tidy_auto` | src/tessellate/api/routes_tidy.py:60 |
 | `/auto-session` | POST | `auto_session` | src/tessellate/api/routes_auth.py:1153 |
-| `/backups` | GET | `list_backups` | src/tessellate/api/routes_backups.py:123 |
-| `/backups` | POST | `backup_now` | src/tessellate/api/routes_backups.py:132 |
-| `/backups/bundle` | POST | `export_bundle` | src/tessellate/api/routes_backups.py:278 |
-| `/backups/bundle/restore` | POST | `restore_bundle` | src/tessellate/api/routes_backups.py:319 |
-| `/backups/integrity` | GET | `integrity_at_start` | src/tessellate/api/routes_backups.py:100 |
-| `/backups/restore` | POST | `restore_backup` | src/tessellate/api/routes_backups.py:214 |
-| `/backups/retention` | PUT | `set_retention` | src/tessellate/api/routes_backups.py:154 |
-| `/backups/summary` | GET | `backup_summary` | src/tessellate/api/routes_backups.py:112 |
-| `/backups/{name:path}` | DELETE | `delete_backup` | src/tessellate/api/routes_backups.py:249 |
+| `/backups` | GET | `list_backups` | src/tessellate/api/routes_backups.py:124 |
+| `/backups` | POST | `backup_now` | src/tessellate/api/routes_backups.py:133 |
+| `/backups/bundle` | POST | `export_bundle` | src/tessellate/api/routes_backups.py:279 |
+| `/backups/bundle/restore` | POST | `restore_bundle` | src/tessellate/api/routes_backups.py:320 |
+| `/backups/integrity` | GET | `integrity_at_start` | src/tessellate/api/routes_backups.py:101 |
+| `/backups/restore` | POST | `restore_backup` | src/tessellate/api/routes_backups.py:215 |
+| `/backups/retention` | PUT | `set_retention` | src/tessellate/api/routes_backups.py:155 |
+| `/backups/summary` | GET | `backup_summary` | src/tessellate/api/routes_backups.py:113 |
+| `/backups/{name:path}` | DELETE | `delete_backup` | src/tessellate/api/routes_backups.py:250 |
 | `/begin` | POST | `begin` | src/tessellate/api/routes_hello.py:216 |
 | `/bin/{kind}/{item_id}/restore` | POST | `restore_from_bin` | src/tessellate/api/routes_library.py:1099 |
 | `/board-library` | GET | `list_library` | src/tessellate/api/routes_board_library.py:539 |
@@ -20595,22 +20595,22 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `BundleBody` | src/tessellate/api/routes_backups.py:266 |
-| `RestoreBody` | src/tessellate/api/routes_backups.py:210 |
+| `BundleBody` | src/tessellate/api/routes_backups.py:267 |
+| `RestoreBody` | src/tessellate/api/routes_backups.py:211 |
 | `RetentionBody` | src/tessellate/api/routes_backups.py:42 |
-| `_jobs_held` | src/tessellate/api/routes_backups.py:173 |
-| `_recheck_data_folder` | src/tessellate/api/routes_backups.py:197 |
+| `_jobs_held` | src/tessellate/api/routes_backups.py:174 |
+| `_recheck_data_folder` | src/tessellate/api/routes_backups.py:198 |
 | `_retention` | src/tessellate/api/routes_backups.py:38 |
-| `_unlink_quietly` | src/tessellate/api/routes_backups.py:270 |
-| `backup_now` | src/tessellate/api/routes_backups.py:133 |
-| `backup_summary` | src/tessellate/api/routes_backups.py:113 |
-| `delete_backup` | src/tessellate/api/routes_backups.py:250 |
-| `export_bundle` | src/tessellate/api/routes_backups.py:279 |
-| `integrity_at_start` | src/tessellate/api/routes_backups.py:101 |
-| `list_backups` | src/tessellate/api/routes_backups.py:124 |
-| `restore_backup` | src/tessellate/api/routes_backups.py:215 |
-| `restore_bundle` | src/tessellate/api/routes_backups.py:320 |
-| `set_retention` | src/tessellate/api/routes_backups.py:155 |
+| `_unlink_quietly` | src/tessellate/api/routes_backups.py:271 |
+| `backup_now` | src/tessellate/api/routes_backups.py:134 |
+| `backup_summary` | src/tessellate/api/routes_backups.py:114 |
+| `delete_backup` | src/tessellate/api/routes_backups.py:251 |
+| `export_bundle` | src/tessellate/api/routes_backups.py:280 |
+| `integrity_at_start` | src/tessellate/api/routes_backups.py:102 |
+| `list_backups` | src/tessellate/api/routes_backups.py:125 |
+| `restore_backup` | src/tessellate/api/routes_backups.py:216 |
+| `restore_bundle` | src/tessellate/api/routes_backups.py:321 |
+| `set_retention` | src/tessellate/api/routes_backups.py:156 |
 | `storage_location` | src/tessellate/api/routes_backups.py:47 |
 
 ### src/tessellate/api/routes_bench.py (13)
@@ -26402,7 +26402,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20564)
+## Tests (20567)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28138,7 +28138,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_x11.py | 38 |
 | tests/test_overview_counts_1524.py | 3 |
 | tests/test_owner_typos.py | 21 |
-| tests/test_p5_only_with_art_1530.py | 5 |
+| tests/test_p5_only_with_art_1530.py | 6 |
 | tests/test_package_check_steps.py | 6 |
 | tests/test_package_notice_action.py | 4 |
 | tests/test_packaging_launchers.py | 3 |
@@ -28530,7 +28530,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_status_bar_grammar.py | 5 |
 | tests/test_stop_discards_write.py | 5 |
 | tests/test_stop_reaches_the_model.py | 3 |
-| tests/test_storage_footprint.py | 5 |
+| tests/test_storage_footprint.py | 7 |
 | tests/test_store_module.py | 4 |
 | tests/test_stray_paste_720.py | 3 |
 | tests/test_stream_turn_helpers.py | 4 |
