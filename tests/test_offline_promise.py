@@ -83,6 +83,8 @@ COPY = [
     ROOT / "src" / "tessellate" / "api" / "routes_websearch.py",
     ROOT / "src" / "tessellate" / "api" / "routes_settings.py",
     ROOT / "src" / "tessellate" / "api" / "routes_settings_transfer.py",
+    ROOT / "src" / "tessellate" / "api" / "routes_settings_extras.py",
+    ROOT / "src" / "tessellate" / "api" / "routes_settings_logs.py",
     #: The two a person reads *before* installing, which is when the promise
     #: does most of its work. `PRIVACY.md` is the worse place to be wrong: its
     #: own heading says it exists to be precise "since it's the whole promise",

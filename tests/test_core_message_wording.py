@@ -80,6 +80,7 @@ SOURCES: tuple[Source, ...] = (
     Source("core/docview.py", returns=("editability",), keywords=("message",)),
     Source("ai/voice.py", raises=("RuntimeError",), consts=("INSTALL_HINT",), returns=("remove_model",)),
     Source("ai/diarize.py", consts=("INSTALL_HINT",)),
+    Source("ai/captions_process.py", raises=("HelperError",)),
     Source("ai/captions.py", raises=("CaptionsError",), consts=("NO_HELPER_HINT", "NOT_LOCAL_HINT")),
     Source("entry/importer.py", raises=("RuntimeError",), consts=("INSTALL_HINT",)),
     Source("entry/manager.py", raises=("ValueError",), functions=("rename_category", "delete_category")),

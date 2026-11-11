@@ -22,6 +22,15 @@ waits in Uncategorised; the hint and the saved status offer the closest two or
 three. Leave one out on the 120 notes: 4 of the 11 wrong filings sit under 70,
 beside about 20 right ones (`tests/test_ask_when_unsure.py`).
 
+## Moved from the plans, 2026-11-11 (WORLD_CLASS B6, sync first slice, events-sync)
+
+**Built** (the open text of B6's first slice, moved here; the decisions stay in the plan). Sync as log shipping between two data folders, pull over a transport, through a segment export and apply.
+
+- `core/sync_state.py` (`sync-state.json`, 0600: device id, per-peer cursor and last result), `entry/sync_segments.py` (`export_segment`, `check`, `apply_segment`: whole-note states after a cursor, SHA-256 digest, at most 200 notes and `more`, no echo of the receiver's own changes, later `updated_at` wins with the losing text kept in History, private notes as ciphertext, the bin mark shipped), `entry/sync_pull.py` (Sync now: pull until drained, cursor moved only after a whole segment, one failure sentence), `api/routes_sync.py` (`GET /sync/status`, `GET /sync/segment`, `POST /sync/now`, behind the unlock gate).
+- Settings, Import & export, Sync with another computer: Sync now, the last sync and the failure sentence (`#sync-group`, wired in settings-rows.js); the Guide's `two-computers` topic says the same and points at it.
+- **Measured:** `tests/test_sync_segments.py`, 11 tests, two data folders against each other on a fake transport through JSON: an edit on A, an edit on B, edits on both (the later wins on both sides, the other text in History on both), a binned note, a private note (no plaintext in the segment; unreadable under the other notebook's key), a segment cut off after one note (applied again, no duplicates), a damaged segment (refused whole), the other computer offline, a long log in three turns.
+- **Not verified:** no real pair of computers; the LAN fetch (A signing in to B as an allowed device and keeping that sign-in) is not built, so Sync now answers "No other computer is paired for sync yet." in the running app. Driven once at 1440 on a fresh notebook (Playwright, light): the line reads that sentence before and after Sync now, `#sync-group` 728 by 185 px, its help opens at 229 px, 0 console errors; dark, 390 and keyboard order not checked.
+
 ## Moved from the plans, 2026-11-11 (WORLD_CLASS 28.5 row 9, one-click captions, INBOX 1777)
 
 **Built** (the open text of the row, moved here). Settings, Packages, Install on Live captions fetches the engine and the model in one click; the first caption starts the helper; a computer with no build says so.
