@@ -700,8 +700,12 @@ function gcLineGrid(s, curved) {
     let py = a.y;
     if (curved) {
       const c = gcBowPoint(a, b);
-      for (let i = 1; i <= 8; i++) {
-        const u = i / 8;
+      //: Chords by length, not eight a link (W26: the build was 18 to 31 ms on
+      //: 3,796 links, a long task by itself): a chord of a cell's length
+      //: strays under a unit from the bow (sag <= 24 units, / n squared).
+      const n = Math.min(8, Math.max(2, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / GC_LINE_CELL)));
+      for (let i = 1; i <= n; i++) {
+        const u = i / n;
         const x = (1 - u) * (1 - u) * a.x + 2 * (1 - u) * u * c.x + u * u * b.x;
         const y = (1 - u) * (1 - u) * a.y + 2 * (1 - u) * u * c.y + u * u * b.y;
         file(px, py, x, y);
@@ -2831,7 +2835,12 @@ const GC_LIGHT_LINE_PX = 120000;
 let gcLightLens = new Float32Array(0);
 function gcLightFrame(s) {
   if (!s.layoutRunning || s.size !== "full" || s.tree || s.dragNode || s.hoveredId != null || s.paintMode) return false;
-  if (s.fitCheck > 0 || s.revealAfterFit || s.nodes.length + s.edges.length < GC_LIGHT_ITEMS || !gcTickSnaps(s)) return false;
+  //: The fit's balance needs the names a whole frame places, and the map is
+  //: hidden until it has it (`gcRevealAfterBalance`). Once shown, a later
+  //: balance (a second pass, a refit as the cloud grows) waits for the frame
+  //: at rest, which keeps `fitCheck` and does it: W26, four whole frames of
+  //: 22 to 67 ms each in the middle of a 2,000-note settle.
+  if ((s.fitCheck > 0 && !s.shown) || s.revealAfterFit || s.nodes.length + s.edges.length < GC_LIGHT_ITEMS || !gcTickSnaps(s)) return false;
   const box = gcEl("graph-search");
   return !(graphTrace || graphHighlightIds || (box && box.value.trim()));
 }

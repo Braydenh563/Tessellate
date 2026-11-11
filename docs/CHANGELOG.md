@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Graph at scale (W26, 2,000 notes, 3,796 links, 1x, long tasks over 50 ms in a cold open 10 to 5, settle 3.7 to 3.3 s): the minimap makes its missing dots and lines in one parse instead of 1,300 `createElementNS` calls (first paint 47 to 24 ms); once the map is shown, the fit's later balance passes wait for the frame at rest instead of drawing whole frames mid-settle (22 to 67 ms each); the link grid files a curved link in chords of about a cell, not always eight (build 18 to 31 ms down to 8 to 13).
 - Notes (INBOX 1747): a note in the recycle bin can no longer be archived or unarchived from a stale card (409 "in the bin, restore it first"), so Restore never brings it back hidden in the Archive.
 - Settings and other lazy panes (INBOX 1747): one wiring hook that throws while a pane is first built no longer drops every hook after it (their buttons stayed dead) or makes the lookup that opened the pane throw.
 - Chat (INBOX 1747): pressing Confirm on a card a typed yes had already run (a second tab, a reloaded chat) is refused with "That card was already answered" instead of running the act a second time (`consent_store.was_spent`).
