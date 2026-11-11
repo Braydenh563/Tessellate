@@ -5812,7 +5812,13 @@ select {
   font-size: var(--text-sm);
   font-weight: 500;
   text-align: left;
-  white-space: normal;
+  /* One line, as the other links are (wrapzoom 2026-11-11: "Use these tools
+     from another app" ran to two in its 212px, at every viewport). The words
+     end in an ellipsis and the link's title says them whole. */
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 #settings-nav .settings-nav-group:hover,
 #settings-nav .settings-nav-group:is(:focus-visible, :has(:focus-visible)) {
