@@ -241,6 +241,7 @@ class OverlayRunner:
         self.last_command: tuple[str, bool] | None = None
         self._scan_failed = False
         self._last_scan_line = ""
+        self._last_skip_line = ""
         #: Screen events the figure answers (a window opening, the app changing, the hour, the battery, a download).
         self._watch = screenwatch.ScreenWatch(
             foreground=(lambda: self.k.foreground(self.w)) if hasattr(self.k, "foreground") else None,
@@ -570,6 +571,7 @@ class OverlayRunner:
         hangs = perches.hang_spots(wins, room)
         engine.set_windows(edges, now, hangs, perches.tuck_spots(wins, room))
         self._log_scan(len(wins), len(edges), len(engine._candidates(drops)), tally, len(edges) + len(hangs), drops)
+        self._log_skips(tally)
         self._log_notes()
 
     def _screen_events(self, now: float) -> None:
@@ -647,6 +649,20 @@ class OverlayRunner:
             line += "; edges dropped: " + ", ".join(f"{n} {why}" for why, n in sorted(drops.items(), key=lambda kv: (-kv[1], kv[0])))
         if line != self._last_scan_line:
             self._last_scan_line = line
+            logger.info(line)
+
+    def _log_skips(self, tally: Counter) -> None:
+        """One INFO line with the count of windows skipped for each reason, every reason always present (zeros too), so a
+        scan that finds no place to stand reads off the log. Counts only, from the window walk, never a title or a
+        preference (INBOX 1778 e: 535 windows listed by EnumWindows are mostly hidden helpers)."""
+        invisible = sum(n for why, n in tally.items() if why.startswith("invisible"))
+        line = (
+            "overlay: window scan skipped: invisible %d (of those with a title bar %d), cloaked %d, minimised %d, tool window %d, too small %d, own window %d, off-screen %d"
+            % (invisible, tally["invisible, with a title bar"] + tally["invisible, yet foreground"], tally["cloaked"], tally["minimised"],
+               tally["tool window"], tally["too small"], tally["own overlay"] + tally["own process"], tally["off-screen"])
+        )
+        if line != self._last_skip_line:
+            self._last_skip_line = line
             logger.info(line)
 
     def _scan_wake(self, wake: int | None) -> int | None:
@@ -796,7 +812,7 @@ class OverlayRunner:
         # a thrown figure's true angle is part of the picture (INBOX 1683): every tick of a spin is a new one
         turn = None if out.angle is None else round(math.degrees(out.angle) / sprites.SPIN_QUANT) % round(360.0 / sprites.SPIN_QUANT)
         handle = self._handle_shown(out, now)
-        key = (out.frame, self._fdpi(), out.flip, out.clip, out.pose, out.fx, out.alpha, turn, out.flow, out.prop, out.face, out.tail, handle)
+        key = (out.frame, self._fdpi(), out.flip, out.clip, out.pose, out.fx, out.alpha, turn, out.flow, out.prop, out.face, out.tail, out.squash, handle)
         blending = False
         if key != self._last_key:
             blending = self._new_picture(out, key)
@@ -854,7 +870,7 @@ class OverlayRunner:
         if out.tail and out.angle is None:
             posed = spr.tailed(posed, out.frame, self._fdpi(), out.flip, out.tail)  # the tail's layer, over the body frame (C1)
         posed = self._decorated(posed, out, key)
-        frame = sprites.effect(sprites.clipped(posed, out.clip), out.fx, out.alpha)
+        frame = sprites.effect(sprites.clipped(sprites.squashed(posed, out.squash), out.clip), out.fx, out.alpha)
         self._hit = None
         if key[-1]:
             hanging = out.frame.startswith("hang")

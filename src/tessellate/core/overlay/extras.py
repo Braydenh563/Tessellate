@@ -18,7 +18,7 @@ from collections import deque
 from typing import Any, NamedTuple
 
 from . import behaviour as bh
-from . import faces, props
+from . import faces, gaze, props, windspirit
 
 #: In-place acts while it stands: one every this many seconds, in the mind's own weighing (`mind.pick`).
 LIFE_EVERY = (50.0, 130.0)
@@ -434,7 +434,9 @@ class Extras:
         self.e = engine
         self.rng = random.Random(engine.life_rng.getstate()[1][1])
         self.micro = faces.Micro(random.Random(engine.life_rng.getstate()[1][2]), 0.0)
+        self.saccade = gaze.Saccade(random.Random(engine.life_rng.getstate()[1][3]))  # its own stream: no other draw moves
         self.pointer_state = Pointer()
+        self.wind = windspirit.Wind()
         #: When the next in-place act may start; `inf` stops them (tests that want a still stand).
         self.seen_at = 0.0
         self.act_ready: float | None = None  # set on the first stand it sees: the engine's clock starts when it is first updated
@@ -453,8 +455,11 @@ class Extras:
     def view(self, now: float) -> tuple[tuple[str, int, int] | None, tuple[str, int] | None]:
         """`(prop, face)` to draw now (the engine's `Output.prop` and `Output.face`)."""
         e = self.e
-        if e.reduced or e.state not in FACE_STATES:
+        if e.reduced:
             return None, None
+        wind = self.wind.view(e, now)  # E5: a floater's ride (windspirit.py); an act's own prop wins where both are due
+        if e.state not in FACE_STATES:
+            return wind, None
         prop = None
         face = self._override(now)
         if e.state == "act" and e.act:
@@ -467,7 +472,14 @@ class Extras:
         if face is None and e.state in ("stand", "sit"):
             self.micro.tick(now, e.mind.mood(now, e.hour), self._free_for_micro())
             face = self.micro.view(now)
-        return prop, face
+        return prop or wind, gaze.worn(face, self.saccade.tick(now, self._attending()))
+
+    def _attending(self) -> bool:
+        """Holding its eyes on something: a look between two blinks, or an act drawn on the look frame (`gaze.ATTEND_ACTS`)."""
+        e = self.e
+        if not self._free_for_micro():
+            return False
+        return e.state == "act" and e.act in gaze.ATTEND_ACTS or e.state == "stand" and bool(e.flash) and e.flash[0] == "look"
 
     def _free_for_micro(self) -> bool:
         e = self.e
@@ -507,6 +519,9 @@ class Extras:
             return None
         soon = self._marks(now)
         ms = None if not soon else max(MIN_WAKE_MS, int(math.ceil((min(soon) - now) * 1000)) + 1)
+        swirl = self.wind.next_step(now)  # an eddy or a spiral still turning
+        if swirl is not None:
+            ms = max(MIN_WAKE_MS, int(math.ceil(swirl * 1000)) + 1) if ms is None else min(ms, max(MIN_WAKE_MS, int(math.ceil(swirl * 1000)) + 1))
         if self.near and now - self.moved_at < WATCH_FOR:
             ms = WATCH_MS if ms is None else min(ms, WATCH_MS)
         return ms

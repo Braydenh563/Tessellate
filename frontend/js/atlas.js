@@ -2171,6 +2171,33 @@ atlasHandProps.desk = function (armR, armL, look) {
   const spanner = atlasHandProps.deskHand(armR, right, "spanner");
   atlasMake("path", { class: "atl-ds-spanner", d: "M-0.4 1.4L5.6 -7.6" }, spanner);
   atlasMake("circle", { class: "atl-ds-spanner-jaw", cx: 6.4, cy: -8.8, r: 1.9 }, spanner);
+  //: E5, the desk's `eat_dinner`, `blow_bubbles` and `knit_starlight` (`core/overlay/props.py`): a bowl with steam in the
+  //: left hand and a spoon in the right; a wand whose ring lets go of three bubbles; two needles with a strand of
+  //: starlight that grows between them. Same paint as the cup, the rod and the pencil.
+  const bowl = atlasHandProps.deskHand(armL, left, "bowl");
+  atlasMake("path", { class: "atl-ds-cup", d: "M-4.2 -1.4H4.2Q3.8 3.8 0 4.2Q-3.8 3.8 -4.2 -1.4Z" }, bowl);
+  atlasMake("ellipse", { class: "atl-ds-metal", cx: 0, cy: -1.4, rx: 4.2, ry: 0.9 }, bowl);
+  const broth = atlasGroup(bowl, "atl-ds-steam");
+  atlasMake("path", { class: "atl-thread", d: "M-1.2 -2.4Q-2.4 -3.8 -1.2 -5.2Q0 -6.6 -1.2 -8" }, broth);
+  atlasMake("path", { class: "atl-thread atl-ds-steam-b", d: "M1.6 -2.4Q0.4 -3.8 1.6 -5.2Q2.8 -6.6 1.6 -8" }, broth);
+  const spoon = atlasHandProps.deskHand(armR, right, "spoon");
+  atlasMake("path", { class: "atl-ds-spoon", d: "M0.4 1.6L7.4 -9.4" }, spoon);
+  atlasMake("ellipse", { class: "atl-ds-metal", cx: 8.4, cy: -10.8, rx: 1.7, ry: 1.2, transform: "rotate(33 8.4 -10.8)" }, spoon);
+  const wand = atlasHandProps.deskHand(armR, right, "wand");
+  atlasMake("path", { class: "atl-ds-spoon", d: "M0.4 1.6L6.6 -8.6" }, wand);
+  atlasMake("circle", { class: "atl-ds-ring", cx: 7.8, cy: -10.6, r: 2.3 }, wand);
+  const suds = atlasGroup(wand, "atl-ds-bubbles");
+  [[0, 1.5], [1, 1.1], [2, 0.8]].forEach(([k, r]) => atlasMake("circle", { class: ["atl-ds-bubble", `atl-ds-bubble-${k}`].join(" "), cx: 7.8, cy: -10.6, r }, suds));
+  for (const [arm, at, side, x] of [[armR, right, "r", 1], [armL, left, "l", -1]]) {
+    const needle = atlasHandProps.deskHand(arm, at, `needles nmp-needles-${side}`);
+    atlasMake("path", { class: "atl-ds-rod", d: `M${0.4 * x} 1.6L${7.6 * x} -9.2` }, needle);
+    atlasMake("circle", { class: "atl-ds-chip", cx: 7.8 * x, cy: -9.6, r: 0.8 }, needle);
+    if (side === "r") {
+      const strand = atlasGroup(needle, "atl-ds-strand");
+      atlasMake("path", { class: "atl-ds-yarn", d: "M7.4 -9.4Q1 -3.4 -3.4 -1.2Q-7.6 1 -9.4 4.6Q-10.6 7.4 -8.4 9.4" }, strand);
+      atlasSpark(strand, -8.4, 9.4, 1.4, "atl-sparkle");
+    }
+  }
 };
 //: **The rest of the desk's doings, drawn in front of the body** (a diary at
 //: the belly with a stroke that writes itself, a sky of stars and a
@@ -2189,11 +2216,19 @@ atlasHandProps.front = function (layer) {
   const shoot = atlasGroup(sky, "atl-ds-shoot");
   atlasMake("path", { class: "atl-ds-trail", d: "M64 -2L52 6" }, shoot);
   atlasSpark(shoot, 52, 6, 1.8, "atl-ds-twinkle");
+  //: **The nap's blanket drapes** (INBOX 1770, the owner: "idk what Im looking at": it was a flat box over the torso with
+  //: rows of dashes and a gold diamond): its top edge climbs each shoulder and dips at the neck, a turned-down cuff runs
+  //: along it with the shadow it throws, soft creases fall from the shoulders to the hem, and the hem scallops over the
+  //: feet. The pillow under the head is in the back layer (`atlasHandProps.pillow`).
   const blanket = atlasGroup(layer, "nmp nmp-blanket");
-  atlasMake("path", { class: "atl-ds-blanket", d: "M3 64Q14 56 31 58.5Q48 56 59 64Q62 76 58 86H4Q0 76 3 64Z" }, blanket);
-  atlasMake("path", { class: "atl-ds-fold", d: "M3 64Q14 56 31 58.5Q48 56 59 64" }, blanket);
-  atlasMake("path", { class: "atl-ds-stitch", d: "M9 72H14M19 75H24M29 72H34M39 75H44M49 72H54M12 81H17M26 81H31M40 81H45" }, blanket);
-  atlasSpark(blanket, 48, 78, 2, "atl-ds-twinkle atl-ds-twinkle-1");
+  atlasMake("path", { class: "atl-ds-blanket", d: "M8 68C8 57 14 50 24 47.6Q28 46.6 32 47.4Q36 46.6 40 47.6C50 50 56 57 56 68C58 74 59 80 57 85.4Q50 88.6 44 86.6Q37 89.4 31 87.2Q25 89.4 18 86.6Q12 88.6 5 85.4C3 80 4 74 8 68Z" }, blanket);
+  atlasMake("path", { class: "atl-ds-cuff", d: "M8.4 64.4C9 56.8 14.6 51 24 48.6Q28 47.6 32 48.4Q36 47.6 40 48.6C49.4 51 55 56.8 55.6 64.4Q49 60.4 42 59.2Q36 58.2 32 58.8Q28 58.2 22 59.2Q15 60.4 8.4 64.4Z" }, blanket);
+  atlasMake("path", { class: "atl-ds-fold", d: "M8.4 64.4Q15 60.4 22 59.2Q28 58.2 32 58.8Q36 58.2 42 59.2Q49 60.4 55.6 64.4" }, blanket);
+  atlasMake("path", { class: "atl-ds-crease", d: "M15 66Q13 76 10.6 84M24 63Q22.6 75 21 86M40 63Q41.4 75 43 86M49 66Q51 76 53.4 84" }, blanket);
+  //: Two small z's over the sleeper's head, drifting up one after the other (atlas-lazy.css, `atl-nap-z`).
+  const napz = atlasGroup(layer, "nmp nmp-napz");
+  atlasMake("path", { class: "atl-nap-z atl-nap-z-0", d: "M45 11H50.4L45 17.4H50.4" }, napz);
+  atlasMake("path", { class: "atl-nap-z atl-nap-z-1", d: "M52 4.4H56.6L52 9.8H56.6" }, napz);
   const plant = atlasGroup(layer, "nmp nmp-plant");
   atlasMake("path", { class: "atl-ds-pot", d: "M3 78H15L14 87H4Z" }, plant);
   atlasMake("path", { class: "atl-ds-pot-rim", d: "M2 76.6H16V78.6H2Z" }, plant);
@@ -2237,6 +2272,14 @@ atlasHandProps.mat = function (layer) {
   atlasMake("rect", { class: "atl-ds-mat", x: 0, y: 83, width: 62, height: 5, rx: 2.5 }, mat);
   atlasMake("path", { class: "atl-ds-mat-line", d: "M6 85.5H56" }, mat);
   return mat;
+};
+//: The nap's pillow, behind the head and the shoulders (INBOX 1770): a plump rounded cushion the head sinks into, with a
+//: pinched seam at each end; the blanket's cuff (`atlasHandProps.front`) lies over its lower edge.
+atlasHandProps.pillow = function (layer) {
+  const pillow = atlasGroup(layer, "nmp nmp-pillow");
+  atlasMake("path", { class: "atl-ds-pillow", d: "M12 36Q10.6 27.6 19 26.2Q32 24 45 26.2Q53.4 27.6 52 36Q53 44.4 45 45.4Q32 47.2 19 45.4Q11 44.4 12 36Z" }, pillow);
+  atlasMake("path", { class: "atl-ds-pillow-seam", d: "M14.6 30.4Q17 34 14.6 41.2M49.4 30.4Q47 34 49.4 41.2" }, pillow);
+  return pillow;
 };
 
 //: The head: mane, ears, wisps and skin in the edge layer; the mane's
@@ -2457,6 +2500,7 @@ function atlasBody(parent, id, props, look, route = null) {
       atlasCoilProp(back.fill);
       atlasCoilProp.seats(back.fill);
       atlasHandProps.mat(back.fill);
+      atlasHandProps.pillow(back.fill);
     }
     //: The mermaid lower body (the feminine look): one ribbon from the
     //: hips sweeping down to the left and curling, in the tail's paint,

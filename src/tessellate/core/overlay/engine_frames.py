@@ -6,8 +6,7 @@ only `engine_consts` and the sibling behaviour modules; the time-keeping that re
 from __future__ import annotations
 
 import math
-from . import behaviour as bh, wisps
-from .sprites import EXTRA_FALLBACK
+from . import behaviour as bh, standing, wisps
 from .engine_consts import (
     BLINK_PHASES,
     CARD_SWAP,
@@ -48,9 +47,7 @@ class FramesMixin:
         #: state, an act that waves, a dance.
         if name == "wave" and self.wave_frames:
             return f"wave{int(now * WAVE_FPS + 1e-6) % self.wave_frames}"
-        if name in EXTRA_FALLBACK and name not in self.extra_frames:
-            return EXTRA_FALLBACK[name]  # a look without the picture of the act draws the pose it is a variation of
-        return name
+        return self._extra_name(name, now)
 
     def _state_frame(self, now: float) -> str:
         s = self.state
@@ -62,8 +59,6 @@ class FramesMixin:
             return "land"
         if s == "warp" and self.warp is not None and self.warp["kind"] == "edge":
             return self._edge_warp_frame(now)
-        if s == "hang" and now < self.hang_one_until:
-            return "hang_one"
         if s in FRAME_OF:
             return self._fixed_frame(s)
         if s == "fly":
@@ -169,7 +164,7 @@ class FramesMixin:
         t = max(0.0, now - self.idle_start)
         nominal = max(1, self.idle_frames) / self._idle_fps()
         while self._edges[-1] <= t:
-            self._edges.append(self._edges[-1] + nominal / (1.0 + self.idle_rng.uniform(-IDLE_SLOWEST, IDLE_SPREAD)))
+            self._edges.append(self._edges[-1] + nominal * standing.scale(self.mind.mood(self.idle_start + self._edges[-1], self.hour), self.idle_start + self._edges[-1] - self.exerted_at) / (1.0 + self.idle_rng.uniform(-IDLE_SLOWEST, IDLE_SPREAD)))
         k = next(i for i in range(len(self._edges) - 1, 0, -1) if self._edges[i - 1] <= t)
         return self.idle_start + self._edges[k - 1], self._edges[k] - self._edges[k - 1]
 

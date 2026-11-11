@@ -300,6 +300,9 @@ BASE_WEIGHT = {
 
 #: The acts `_from_catalogue` set from the table (props and extras register more later, with lengths of their own).
 CATALOGUED: set[str] = set()
+#: Acts that register later (the props', `props.register`) and still take the catalogue's mood, energy and day weights, so
+#: tea is for the morning and supper for the evening on the desk as it is in the app (E5 c, INBOX 1692 d).
+FACTORED: set[str] = set()
 
 
 def _from_catalogue() -> None:
@@ -338,7 +341,7 @@ def phase_of(hour: int) -> str:
 def catalogue_factor(name: str, mood: str, hour: int) -> float:
     """A5: what the catalogue's mood, energy and day weights make of an act now (1 for an act it does not list, and for the props' own). Energy
     is the part of the day's, none when sleepy and one more when happy or startled."""
-    e = catalogue.by_desk_name().get(name) if name in CATALOGUED else None
+    e = catalogue.by_desk_name().get(name) if name in CATALOGUED or name in FACTORED else None
     if e is None:
         return 1.0
     try:
@@ -730,7 +733,7 @@ FLOW_ARR_EASE = 2.4
 #: What a pose does to the streams: [reach, speed] by the start of the frame's name (the first match). Asleep they
 #: are small and slow, glad or thrown they are wide and quick; both move on the way to the next pose over
 #: `FLOW_POSE_EASE` seconds, so a change of pose is never a step.
-FLOW_POSE = (("sleep", 0.5, 0.6), ("sit", 0.8, 0.85), ("hang", 0.95, 1.1), ("wave", 1.0, 1.3), ("walk", 1.0, 1.35), ("hop", 1.0, 1.6), ("fall", 1.0, 1.6), ("land", 1.0, 1.2), ("idle", 0.9, 0.95))
+FLOW_POSE = (("sleep", 0.5, 0.6), ("sit", 0.8, 0.85), ("hang", 0.95, 1.1), ("dangle", 0.95, 1.1), ("kick", 1.0, 1.7), ("meditate", 0.5, 0.55), ("wave", 1.0, 1.3), ("walk", 1.0, 1.35), ("hop", 1.0, 1.6), ("fall", 1.0, 1.6), ("land", 1.0, 1.2), ("idle", 0.9, 0.95))
 FLOW_POSE_EASE = 0.8
 #: What the figure is doing, over its frame (atlascat-1108 C4, the in-app `lower:*` states; INBOX 1696 z: "the lower body
 #: doesnt change at all"): [reach, speed, tip lean px, rise px] by name, the engine's `_lower_state` picking it. A

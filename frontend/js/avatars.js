@@ -3255,6 +3255,10 @@ Object.assign(NAME_MARK_BUDDY_ACTS, {
   starpile: { ms: 6000, w: 1, cool: 240000, poses: ["stand", "sit"], atlas: true, desk: true },
   cardnap: { ms: 9000, w: 0.8, cool: 300000, poses: ["sit"], atlas: true, desk: true },
   wavepointer: { ms: 2400, w: 1.2, cool: 150000, poses: ["stand"], atlas: true, desk: true },
+  //: E5 (OPEN.md Tier E): the desk's dinner, bubbles and knitting; the hour weights come from the catalogue (`day`).
+  dinner: { ms: 25000, w: 3, cool: 420000, poses: ["stand", "sit"], atlas: true, desk: true },
+  bubbles: { ms: 9500, w: 1.2, cool: 180000, poses: ["stand"], atlas: true, desk: true },
+  knit: { ms: 45000, w: 1, cool: 420000, poses: ["stand", "sit"], atlas: true, desk: true },
   //: Batch D4: the desk's small projects: a daydream (a thought bubble), pacing, making up a game (sparks), tinkering
   //: (a gear and a spanner) and dusting off (motes). The daydream is quiet and long; the game is loud.
   daydream: { ms: 35000, w: 1.5, cool: 300000, poses: ["stand", "sit"], atlas: true, desk: true },
@@ -3288,7 +3292,7 @@ Object.assign(NAME_MARK_BUDDY_ACTS, {
 //: stances, Fewer (the default) makes the unprompted gestures a third as
 //: likely, Normal as they were. What you start (a poke, a cheer at a
 //: streak, a reaction) is never reduced: those have no weight here.
-const NMB_QUIET_ACTS = ["blink", "look", "glance", "turn", "yawn", "nap", "dangle", "shift", "tilt", "lounge", "rest", "drift", "journal", "stars", "blanket", "cardnap", "daydream", ...Object.keys(NMB_STANCES)];
+const NMB_QUIET_ACTS = ["blink", "look", "glance", "turn", "yawn", "nap", "dangle", "shift", "tilt", "lounge", "rest", "drift", "journal", "stars", "blanket", "cardnap", "daydream", "knit", ...Object.keys(NMB_STANCES)];
 //: **Each of its doings can be turned off** (the owner, 2026-09-27: "Every
 //: companion feature must be togglable in Settings"). Appearance >
 //: Companion > What it does (`mountBuddyActivities`): one switch a row, kept
@@ -3307,7 +3311,7 @@ const NMB_ACTIVITIES = [
   ["poses", "Settle into other poses (crouch, lounge, rest, drift)", ["crouch", "lounge", "rest", "drift"]],
   ["glide", "Glide through the air and climb while hanging", ["glide", "climb"]],
   ["atlas", "Atlas juggles stars, reads its map and meditates", [...Object.keys(NMB_ATLAS_ACTS), "toss"]],
-  ["desk", "Atlas does the desk companion's routines: workouts, tea, fishing, a journal, a nap, a plant, a puzzle, small gestures and projects", Object.keys(NAME_MARK_BUDDY_ACTS).filter((act) => NAME_MARK_BUDDY_ACTS[act].desk)],
+  ["desk", "Atlas does the desk companion's routines: workouts, tea, dinner, fishing, a journal, knitting, bubbles, a nap, a plant, a puzzle, small gestures and projects", Object.keys(NAME_MARK_BUDDY_ACTS).filter((act) => NAME_MARK_BUDDY_ACTS[act].desk)],
   ["think", "Stop to think, or sigh", ["ponder", "sigh"]],
   ["lie", "Lie down for a nap", ["lie"]],
   ["read", "Read a book", ["read"]],
@@ -10438,6 +10442,9 @@ const NMB_PROP_WORDS = [
   ["nmb-act-starpile", "counting a pile of stars"],
   ["nmb-act-cardnap", "napping on a note card"],
   ["nmb-act-wavepointer", "waving at the pointer"],
+  ["nmb-act-dinner", "eating dinner from a bowl"],
+  ["nmb-act-bubbles", "blowing bubbles from a wand"],
+  ["nmb-act-knit", "knitting a strand of starlight"],
   ["nmb-act-daydream", "daydreaming"],
   ["nmb-act-pace", "pacing"],
   ["nmb-act-game", "making up a game"],
