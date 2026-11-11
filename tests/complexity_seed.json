@@ -41,7 +41,6 @@
  "src/tessellate/ai/taxonomy.py::extract_entities": 25,
  "src/tessellate/ai/tools/tool_read.py::_count_notes": 20,
  "src/tessellate/ai/tools/tool_read.py::_list_notes": 25,
- "src/tessellate/ai/tools/tool_skills.py::_search_chat_history": 18,
  "src/tessellate/ai/tools/tool_write.py::_tag_note": 18,
  "src/tessellate/ai/tools/tool_run.py::execute_tool": 21,
  "src/tessellate/ai/tools/tool_handoff.py::validate_run_skill": 24,
