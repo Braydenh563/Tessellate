@@ -53,7 +53,7 @@
     const focusKey = document.activeElement?.dataset?.packagesFocus || "";
 
     packagesRenderBundles(body);
-    list.replaceChildren(...body.extras.map((extra) => packagesRow(extra, body)));
+    packagesPaintRows(list, body);
     packagesSyncBar();
 
     if (focusKey) document.querySelector(`[data-packages-focus="${CSS.escape(focusKey)}"]`)?.focus();
@@ -172,6 +172,39 @@
       }
       voiceModelsPaint();
     });
+  }
+
+  //: Redraw the rows in place (INBOX 1776, the owner: "while installing a
+  //: package, the scroll jumps up and down or bumps a little"). Every poll used
+  //: to rebuild every row, and the OCR row's language picker fetches its
+  //: content after it is mounted, so each rebuild collapsed that row and
+  //: regrew it (228px, 234px, 228px: scrollHeight moved by 6px every tick,
+  //: measured). A row whose state is unchanged is kept as it is; the one
+  //: installing only has its step text swapped; a changed row replaces itself.
+  function packagesRowKey(extra, body) {
+    const { step, ...rest } = extra;
+    const item = packagesUi.bulkSeen && !body.bulk?.running ? (body.bulk?.items || []).find((row) => row.id === extra.id) : null;
+    return JSON.stringify([rest, Boolean(body.running), item]);
+  }
+
+  function packagesPaintRows(list, body) {
+    const old = new Map([...list.children].map((li) => [li.id, li]));
+    const rows = body.extras.map((extra) => {
+      const key = packagesRowKey(extra, body);
+      const kept = old.get(`extra-row-${extra.id}`);
+      if (kept && kept._packagesKey === key) {
+        if (extra.installing) kept.querySelector(".extras-install-progress-text").textContent = extra.step || "Installing…";
+        const pick = kept.querySelector(".extras-pick");
+        if (pick) pick.checked = packagesUi.selected.has(extra.id);
+        return kept;
+      }
+      const fresh = packagesRow(extra, body);
+      fresh._packagesKey = key;
+      return fresh;
+    });
+    const same = rows.length === list.children.length && rows.every((li, i) => list.children[i] === li || list.children[i].id === li.id);
+    if (same) rows.forEach((li, i) => { if (list.children[i] !== li) list.children[i].replaceWith(li); });
+    else list.replaceChildren(...rows);
   }
 
   //: The line under the list: a bulk action's place in its list and the

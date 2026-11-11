@@ -12104,3 +12104,4 @@ condensed record of what each one delivered.
   starts, rather than a line and a half of clipped grey text.
 - Media and lock (INBOX 1747, OPEN Q18): a sealed attachment read while the vault is locked now answers 409 "Unlock first." instead of 403, the same as every other locked read.
 - Reminders, boards and chat (INBOX 1747 rows 5, 10, 19): a notification's Snooze no longer reopens a reminder you already ticked off, a whiteboard no longer draws a card for a note in the bin (its links stay), and locking stops a running answer and forgets the open conversation's turns.
+- Fix (INBOX 1776, scroll bumps while a package installs): the packages list is painted in place, a row whose state is unchanged kept and the installing row only getting its new step text, instead of every row rebuilt each 1.5 s poll (the OCR row regrew its language picker each time, moving the scroll height 6px twenty times in 15 s, now 0); the step line uses tabular numbers.

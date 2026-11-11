@@ -1833,6 +1833,7 @@ button.scroll-row-arrow[hidden] {
 .extras-install-progress-text {
   font-size: var(--text-base);
   max-width: 15rem;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
