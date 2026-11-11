@@ -29,3 +29,9 @@ Hub follow-up (2026-11-11, tried and not kept):
 - W13 traced at 4x: handlers over 50 ms are `(program)` style and layout; the only big JS forced layout in the Settings open is `nameMarkRasterise` (avatars.js:1305, 86 ms, companion, out of scope). Settings tools, Library, Dashboard: script self time 18 ms or less per function. Nothing left in `settings*.js`, `dashboard.js`, `library*.js`.
 - W27: boot gzip 250,954 to 250,434. Moved: applyHarmony, applyContrast, resetThemeOnly, copyLogs, clearManualOverrides, nearLogBottom, clearEmbeddingBackendLatch, looksLikeEmbeddingModel (settings-controls.js); inlineActionIs, translateNoteInDesk (entry-menu.js); searchHighlightTerms, notesSpanSpaces (entry-card.js).
 - Tried and kept at boot (a test names them or a lazy-to-lazy call breaks): resetAppearance, saveCurrentLook, clearLogs, evidenceSwitchReset, entryOverflowMenu, dailyNotePair, publishDraft, focusFirstIn, zoomWheelDelta, taskLogButton, paletteCaughtNow, wirePrefsDirtyMarks (calls nameMark), askAtlasAboutNote (noteNamePlain test). Each needs its test's source path updated: next batch if the cap needs it.
+
+## W25 (this branch)
+
+- Palette keystroke, 2,000-note fixture, 51 keystrokes over 7 queries (probe in scratch only): 1x JS p50 6, p90 8, max 17 ms, frame p90 25; 4x JS p50 27, p90 41, max 49 ms, frame (input to next paint) p50 69, p90 98, max 133 ms. Under the 150 ms target, so no code change (the memo, the ranking window and the setting rows from W25 D6 and D10 already did it).
+- Tab open at 4x: see W13 (native style and layout). Settings open stays a design pass (s7-1110.md D8: one 267 KB template).
+- Found, not fixed: a page error on a cold load, `docCmSyncLanguage is not defined` (documents.js:1090 calls it at load, defined in documents-view.js:715); documents files are out of this spoke's scope.
