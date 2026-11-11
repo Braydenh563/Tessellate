@@ -21,7 +21,7 @@ from tessellate.ai import address, backend_hint, greeting_compose, librarian
 from tessellate.ai.answer_trim import trim_assistant_padding
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.api import paging
-from tessellate.core import deps, jobs
+from tessellate.core import companion_events, deps, jobs
 from tessellate.core.config import days_from_today, user_now
 from tessellate.core.database import Entry, utcnow
 from tessellate.core.deps import get_session
@@ -478,6 +478,8 @@ def remarks(session: Session = Depends(get_session)) -> dict:
     notes = voice.as_notes(session, [*recent, *(e for e in voice.this_day_before(session, today) if e.id not in ids)])
     reminders = reminder_repo.due_by(session, today)
     found = composer_voice.remarks(notes, today=today, reminders=reminders)[:6]
+    if found:
+        companion_events.record("remark")  # something to say: a kind and a time, never the line (W31)
     return {"remarks": [{"text": r["text"].replace("**", ""), "key": r["key"], "kind": r["kind"], "sources": r["sources"]} for r in found]}
 
 

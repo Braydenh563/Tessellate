@@ -368,6 +368,10 @@ class ReminderNotifier:
         return max(0.25, min(MAX_SLEEP_S, (upcoming - now).total_seconds() + 0.25))
 
     def _tell_due(self, due: list[Due]) -> None:
+        if due:
+            from tessellate.core import companion_events
+
+            companion_events.record("reminder_bell")  # a kind and a time for the desk companion, whatever the hook (W31)
         if not due or self.on_due is None:
             return
         try:

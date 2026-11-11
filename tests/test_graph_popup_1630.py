@@ -104,7 +104,7 @@ def test_a_self_requested_frame_has_an_end():
 def test_the_floor_is_the_lower_foot_of_the_top_bar_and_the_graph_dock():
     """The owner, 2026-11-08: "the top of popup cards can be cut off by the top bar
     in the graph on hover"; the bar was the graph's dock, over the map's top (a card
-    25px under it at 1440, 65px at 390, scratchpad/ui-sweeps/graphcard1697.js)."""
+    25px under it at 1440, 65px at 390, measured by a throwaway sweep)."""
     room = _fn(frontend_text("js/graph.js"), "graphPanelRoom")
     assert 'document.querySelector(\'.dock[data-dock-name="graph"]\')' in room
     assert "floor = Math.max(floor, at.bottom - box.top)" in room

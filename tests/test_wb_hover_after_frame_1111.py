@@ -3,7 +3,7 @@
 `portHover` asks `wbLinkCandidateAt`, which reads the box of every item on the
 board. Run inside the animation frame it was the first reader after whatever
 else wrote that frame: on a 400-card board at 4x the probe
-(`scratchpad/ui-sweeps/boardlag.js`) logged 92 to 108 long frames with up to
+(a throwaway board-lag sweep) logged 92 to 108 long frames with up to
 139 ms of forced layout; after the frame, 2 to 12 and 33 ms at most. Measured in
 docs/roadmap/agent-remaining/w34-def1-1111.md.
 """

@@ -21,6 +21,7 @@ from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
+from tessellate.core import companion_events
 from tessellate.core.deps import get_session
 from tessellate.search import engine
 from tessellate.search import index as search_index
@@ -133,6 +134,8 @@ def search(
     hits = engine.search(session, q, ctx=ctx or None, limit=want, hybrid=hybrid, kinds=kinds or None)
     hits, corrected = _with_typo_fix(session, q, hits, ctx, want, hybrid, kinds)
     notices = _notices_for(q, hits)
+    if page == 1 and q.strip():
+        companion_events.searched(bool(hits))  # a kind and a time for the desk companion: not the query, not a hit (W31)
     return {
         "query": q,
         #: Said beside the results: a filter nothing answers, and a `title:`

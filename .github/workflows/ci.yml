@@ -82,10 +82,10 @@ jobs:
   test-result:
     # The "Protect Main Branch" ruleset requires "Tests (Python 3.11)", "3.12" and "3.13", the names from before the
     # suite split into two legs (W24). One small job per version carries the old name and passes only when every leg
-    # passed (a matrix `needs` waits on all six), so the ruleset needs no edit (the owner, 2026-11-11).
+    # passed (a matrix `needs` waits on all six; a cancelled run skips it rather than failing), so the ruleset needs no edit (the owner, 2026-11-11).
     name: Tests (Python ${{ matrix.python-version }})
     needs: test
-    if: always()
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     timeout-minutes: 2
     strategy:

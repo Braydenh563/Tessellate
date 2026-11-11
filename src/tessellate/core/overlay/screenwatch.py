@@ -66,8 +66,13 @@ class ScreenWatch:
     def __init__(
         self, foreground: Callable[[], int | None] | None = None, battery: Callable[[], tuple[int, bool] | None] | None = None,
         downloads: Callable[[], int | None] = downloads_count, run: Callable[[Callable[[], None]], Any] | None = None,
+        feed: Callable[[int], list[dict]] | None = None,
     ) -> None:
         self.foreground, self.battery, self.downloads = foreground, battery, downloads
+        #: What the app's server noted since an id (`core.companion_events.since`): kinds and times, read on this poll
+        #: only (W31). `_fed` is the newest id read; None until the first read, which is only remembered (history).
+        self.feed = feed
+        self._fed: int | None = None
         #: Where the folder is counted: the runner hands it to a worker (a sleeping or synced folder must not stall a
         #: frame, the 1678 review); none runs it in the poll.
         self.run = run or (lambda fn: fn())
@@ -162,6 +167,7 @@ class ScreenWatch:
         """After a stall (a suspend, a full-screen app): what changed while away is not news, so the next
         reads are only remembered."""
         self.fg, self.windows, self.frames, self.files, self._counted = None, None, None, None, _UNSET
+        self._fed = None
 
     def poll(self, now: float, hour: int, minute: int = 0, screen: bool = True, day: int | None = None) -> list[str]:
         """The events of this tick (empty before `EVERY` has passed). `screen` False (the person turned
@@ -183,7 +189,24 @@ class ScreenWatch:
         out += self._battery()
         if screen:
             out += self._downloads(now)
-        return out
+        return out + self._fed_events()
+
+    def _fed_events(self) -> list[str]:
+        """The notebook's own events since the last poll (a note binned, a search that found nothing...); the first read after
+        a start or a `forget` is only remembered, and an unreadable feed is no event."""
+        if self.feed is None:
+            return []
+        try:
+            rows = self.feed(self._fed or 0)
+        except Exception:  # noqa: BLE001 - the feed is a courtesy
+            logger.debug("overlay: the app's event feed is unreadable", exc_info=True)
+            return []
+        first = self._fed is None
+        if rows:
+            self._fed = max(r["id"] for r in rows)
+        elif first:
+            self._fed = 0
+        return [] if first else [r["kind"] for r in rows]
 
     def _foreground(self) -> list[str]:
         if self.foreground is None:

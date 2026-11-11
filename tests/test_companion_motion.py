@@ -201,10 +201,10 @@ def test_it_rides_its_panels_scroll_and_leaves_with_it() -> None:
     ride = _fn("nameMarkBuddyRide")
     assert "new ScrollTimeline({ source: want" in ride
     assert 'rangeEnd: `${NMB_RIDE_PX}px`' in ride and 'rangeStart: "0px"' in ride
-    # It stays in the body, in its own band: the app's scroll boxes are
-    # never given a child.
+    # It stays out of the app's scroll boxes, in its own band under <html>
+    # (INBOX 1726: a node under <body> re-asks every :has() subject).
     build = _fn("nameMarkBuddyBuild")
-    assert 'band.id = "nm-buddy-band"' in build and "document.body.appendChild(band)" in build
+    assert 'band.id = "nm-buddy-band"' in build and "document.documentElement.appendChild(band)" in build
     assert "#nm-buddy-band.nmb-riding {\n  overflow: clip;" in CSS08
     # A scroll of the area it rides reads no box and moves nothing.
     listener = AV[AV.index('document.addEventListener("scroll", (event) => {\n  //: Any scroll') :]

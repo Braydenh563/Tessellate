@@ -1059,7 +1059,7 @@ async function chatSendTurn(preset, opts = {}) {
   assistantMessageActions({ bubble, text: answerRaw, question });
 
   // Regenerate replaces the last turn; a normal send appends a new one.
-  chatHeldOffer = groundingSupport?.offer?.offer_id || "";
+  chatHistoryToSend.heldOffer = groundingSupport?.offer?.offer_id || "";
   const turnRecord = { question, answer: answerRaw, objects: chatTurnObjects(turnSources), ...(turnFrame ? { frame: turnFrame } : {}) };
   if (opts.replaceLast && convRef.turns.length) convRef.turns[convRef.turns.length - 1] = turnRecord;
   else convRef.turns.push(turnRecord);
