@@ -238,6 +238,7 @@ Parked until the owner's data or a check on real hardware:
 - ~~C39 Link offers have no Settings switch; "Untitled document N" naming | t20#15, t20#16~~ **Stale: built** (Settings link offers switch; documents.js Untitled document N), s6-1110
 - ~~C40 Equation panel jump row and Inline/Display pill | DOCUMENTS 1566~~ **Stale: built 6c08378**, s6-1110
 - C41 The remaining 1028-docs and 1031-docs open rows | book1 (40 and 7 rows)
+- ~~D28 Text size is three steps, no Ctrl+wheel | 1028-docs D28~~ built e2775e4 (five sizes, Ctrl+wheel, tests/test_doc_text_zoom_1111.py); D29, D40, D41 stale (built); D25 open
 
 ### Tier D: performance and CI time
 
