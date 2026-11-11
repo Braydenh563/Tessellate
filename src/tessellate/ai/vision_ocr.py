@@ -310,7 +310,7 @@ def vision_ocr_and_store(upload_id: int, image_path: Path, force: bool = False) 
         if upload.vision_ocr_text is not None and not force:
             #: "" is a finished read that found no text, not an unread file.
             return upload.vision_ocr_text
-        original = upload.original_name
+        original, before = upload.original_name, upload.vision_ocr_text
     model = deps.get_model_manager().resolve_vision_model(deps.get_ollama())
     if not model:
         return None
@@ -323,6 +323,10 @@ def vision_ocr_and_store(upload_id: int, image_path: Path, force: bool = False) 
         upload = session.get(MediaUpload, upload_id)
         if upload is None:
             return None  # deleted while it was being read
+        if upload.vision_ocr_text != before:
+            #: Typed by hand (or read again) while this read ran: that text
+            #: stands, a late read never overwrites it (sm-1111 row 9).
+            return upload.vision_ocr_text
         if text is None:
             # The attempt itself failed (unreachable backend, request
             # error): the genuine failure case, distinct from "asked the
@@ -378,7 +382,7 @@ def pdf_vision_ocr_and_store(upload_id: int, pdf_path: Path, force: bool = False
             return None  # deleted before this ran
         if upload.vision_ocr_text is not None and not force:
             return upload.vision_ocr_text or None
-        original = upload.original_name
+        original, before = upload.original_name, upload.vision_ocr_text
 
     # Outside the session: both of these are slow (a converter, then a model
     # per page), and holding a session open across them is how a background
@@ -410,6 +414,8 @@ def pdf_vision_ocr_and_store(upload_id: int, pdf_path: Path, force: bool = False
         upload = session.get(MediaUpload, upload_id)
         if upload is None:
             return None
+        if upload.vision_ocr_text != before:
+            return upload.vision_ocr_text or None  # written while this ran: it stands (sm-1111 row 9)
         #: "" (not NULL) records a scan the model read and found blank, so
         #: filing the note again does not read it again (INBOX 1484).
         upload.vision_ocr_text = text
