@@ -24,16 +24,7 @@ function recordBrowserLog(level, parts) {
   const record = {
     time: new Date().toISOString(),
     level,
-    message: parts
-      .map((p) => {
-        if (typeof p === "string") return p;
-        try {
-          return JSON.stringify(p);
-        } catch {
-          return String(p);
-        }
-      })
-      .join(" "),
+    message: parts.map(recordBrowserLog.text).join(" "),
   };
   browserLogs.push(record);
   if (browserLogs.length > MAX_BROWSER_LOGS) browserLogs.shift();
@@ -48,15 +39,23 @@ function recordBrowserLog(level, parts) {
     logRecords.push({ ...record, source: "browser", logger: "browser", key: `b-live-${Math.random()}` });
     //: The four are settings.js's, beside `logRecords`.
     sortLogRecords();
-    if (logScreenOpen) {
-      renderActiveLogView();
-      // Scroll to bottom so the new error is visible without manual scroll.
-      scrollLogToBottom();
-    }
+    if (logScreenOpen) renderActiveLogView.soon(true);
     // Bump the error badge in the Logs button so the user knows to check.
     bumpLogErrorBadge(record);
   }
 }
+
+//: A log part as text. An Error, DOMException or ErrorEvent stringifies to "{}"
+//: (INBOX 1111): its name, message and stack go in, never a bare "{}". A
+//: property, not a global (the lag watcher reads it too).
+recordBrowserLog.text = (p) => {
+  try {
+    const j = JSON.stringify(p);
+    return typeof p === "string" ? p : j === "{}" ? p.stack || String(p) : j;
+  } catch {
+    return String(p);
+  }
+};
 
 for (const level of ["log", "info", "warn", "error"]) {
   const original = console[level].bind(console);
@@ -79,13 +78,13 @@ window.addEventListener("error", (e) =>
   // hunting for a null-dereference with no line number to start from.
   recordBrowserLog("ERROR", [
     `${e.message} (${e.filename}:${e.lineno}:${e.colno})`,
-    e.error?.stack || "",
+    e.error || "",
   ])
 );
 window.addEventListener("unhandledrejection", (e) =>
   e.reason?.isStale || recordBrowserLog("ERROR", [
     "Unhandled promise rejection:",
-    e.reason?.stack || String(e.reason),
+    e.reason,
   ])
 );
 

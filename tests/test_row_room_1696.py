@@ -99,7 +99,8 @@ def test_every_sidebar_pick_goes_through_the_one_helper():
     for name, site in sites.items():
         assert site in (JS / name).read_text(encoding="utf-8"), name
     #: The Settings nav, and the notes sidebar: its pick redraws it inside the row's click, so the list's own listener reads the redrawn row.
-    assert 'nearestScrollParent.reveal(document.querySelector(`#settings-nav button[data-section="${name}"]`));' in SETTINGS
+    #: A frame after the switch (INBOX 1111): the walk's style reads laid the window out inside the press.
+    assert 'afterFrames(() => nearestScrollParent.reveal(document.querySelector(`#settings-nav button[data-section="${name}"]`)), 1);' in SETTINGS
     assert """$("category-list")?.addEventListener("click", (event) => nearestScrollParent.reveal(event.currentTarget.querySelector('li[aria-current="true"]')));""" in SETTINGS
     #: The helper and the sidebar's wiring stay out of the eager scripts' gzip budget (notes-list.js and menus.js).
     for name in ("notes-list.js", "menus.js"):

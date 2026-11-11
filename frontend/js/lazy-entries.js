@@ -271,7 +271,7 @@ function onDomReady(fn) {
 function warmLibraryAfterInput() {
   if (navigator.connection?.saveData || (navigator.hardwareConcurrency || 2) < 4) return;
   let calmAt = 0;
-  const files = [...LAZY_MODULES.graph, ...LAZY_MODULES.library];
+  const files = [...LAZY_MODULES.graph, ...LAZY_MODULES.library].filter((f) => f[1] > "c");
   const warmNext = () =>
     Date.now() < calmAt ? setTimeout(warmNext, 600) : files[0] && lazyScript(files.shift()).then(() => setTimeout(warmNext, 600));
   const warm = (event) => {

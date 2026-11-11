@@ -2971,9 +2971,10 @@ function clearSkeletons(container) {
   container.removeAttribute("aria-busy");
   const held = container.querySelectorAll(":scope > .skeleton");
   for (const el of held) el.remove();
-  //: The caller draws its rows right after this in the same task, so a
-  //: microtask sees them (K1; no observer or frame loop, test_frontend_wake_sources).
-  if (held.length && container.id) queueMicrotask(() => skeletonRemember(container));
+  //: The caller draws its rows right after this in the same task; a timer past the next frame sees them and reads
+  //: a clean page (K1; no observer or frame loop, test_frontend_wake_sources). The microtask this was read the
+  //: rows' layout inside the press: 96ms style and 55 layout at 4x on opening Logs, 677 elements (INBOX 1111).
+  if (held.length && container.id) setTimeout(skeletonRemember, 80, container);
   //: **What replaces them settles in** (the motion pass, 2026-10-05): the
   //: first rows fade up a step, staggered (`.ui-settle`, 08-consistency.css),
   //: instead of popping in where the skeletons were. Only on this first
