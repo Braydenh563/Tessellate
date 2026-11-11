@@ -9848,9 +9848,10 @@ function nameMarkBuddyBlend(buddy, change, ms = NMB_BLEND_MS) {
   //: eases are skipped in the second.
   const eases = [];
   const eased = new Map();
+  let alive;
   change();
   for (const { anim, el, from } of held) {
-    if (el.getAnimations().includes(anim)) continue;
+    if ((alive ||= new Set(document.getAnimations())).has(anim)) continue;
     //: Only what moved (the body's note below says why).
     const style = getComputedStyle(el);
     const done = eased.get(el) || new Set();
