@@ -9,12 +9,13 @@ browser run that measured them is recorded in CHANGELOG (graph K6 to K10).
 
 import re
 from pathlib import Path
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parent.parent
 JS = ROOT / "frontend" / "js"
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 GRAPH = (JS / "graph.js").read_text(encoding="utf-8")
-CANVAS = (JS / "graph-canvas.js").read_text(encoding="utf-8")
+CANVAS = unwrapped((JS / "graph-canvas.js").read_text(encoding="utf-8"))
 
 
 def _body(source: str, name: str) -> str:

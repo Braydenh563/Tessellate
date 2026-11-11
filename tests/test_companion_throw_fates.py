@@ -23,10 +23,11 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 #: The companion's code: avatars.js and the lazy files its settings and throw moved to (audit AI23).
-AV = "\n".join((ROOT / "frontend" / "js" / n).read_text(encoding="utf-8") for n in ("avatars.js", "companion-throw.js"))
+AV = "\n".join(unwrapped((ROOT / "frontend" / "js" / n).read_text(encoding="utf-8")) for n in ("avatars.js", "companion-throw.js"))
 THROW = (ROOT / "frontend" / "js" / "companion-throw.js").read_text(encoding="utf-8")
 CSS = (ROOT / "frontend" / "css" / "companion-throw-lazy.css").read_text(encoding="utf-8")
 APP = (ROOT / "frontend" / "js" / "app.js").read_text(encoding="utf-8")
@@ -204,7 +205,7 @@ def test_each_landing_settles_into_a_posture_its_pose_allows() -> None:
 def test_the_throw_is_lazy_and_boot_only_opens_the_door() -> None:
     assert 'companionThrow: ["/css/companion-throw-lazy.css", "/js/companion-throw.js"]' in APP
     assert "companion-throw" not in INDEX
-    avatars = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+    avatars = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
     assert "function nameMarkBuddyThrow(" not in avatars and "function nameMarkBuddyThrow(" in THROW
     assert 'ensureModule("companionThrow");' in AV
     assert 'typeof nameMarkBuddyThrow === "function"' in AV, "a let-go before the file arrives is a drop"

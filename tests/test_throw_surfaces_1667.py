@@ -9,12 +9,13 @@ spots were identical."""
 from __future__ import annotations
 
 from pathlib import Path
+from tests._js_scope import unwrapped
 
 JS = Path(__file__).resolve().parent.parent / "frontend" / "js"
 
 
 def app_js_text() -> str:
-    return (JS / "avatars.js").read_text(encoding="utf-8") + (JS / "phone-shell.js").read_text(encoding="utf-8")
+    return unwrapped((JS / "avatars.js").read_text(encoding="utf-8")) + (JS / "phone-shell.js").read_text(encoding="utf-8")
 
 
 def frontend_text(name: str) -> str:

@@ -30,11 +30,12 @@ from pathlib import Path
 
 import pytest
 from tests._app_js import app_js_text, frontend_text, with_pieces
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 #: avatars.js and its lazy half, companion-menu.js (the menu and the enlarged
 #: view), read as one.
-AV = "\n".join((ROOT / "frontend" / "js" / name).read_text(encoding="utf-8") for name in ("avatars.js", "companion-menu.js", "companion-settings.js", "companion-throw.js"))
+AV = "\n".join(unwrapped((ROOT / "frontend" / "js" / name).read_text(encoding="utf-8")) for name in ("avatars.js", "companion-menu.js", "companion-settings.js", "companion-throw.js"))
 APP = app_js_text()
 SETTINGS = with_pieces("settings.js")  # the body listeners are in settings-controls.js since INBOX 1501
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
@@ -1829,7 +1830,7 @@ def test_the_companion_steps_off_a_dock_more_menu():
     companion still covers some parts of the ui and doesnt move out of the
     way". A dock's "more" menu is an open `<details>`, which the popup list
     missed (measured: the figure now ends clear of the open menu's box)."""
-    js = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+    js = unwrapped((Path(__file__).resolve().parent.parent / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
     # Found by tag and role since INBOX 1465 (one selector over the whole document cost 15 to 50ms a look).
     popups = js[js.index("function nameMarkBuddyPopupEls("):].split("\n}\n", 1)[0]
     assert 'getElementsByTagName("details")' in popups and "d.open && /menu/.test(d.className)" in popups and 'c.tagName !== "SUMMARY"' in popups
@@ -1844,7 +1845,7 @@ def test_the_companions_words_check_counts_only_drawn_text():
     # INBOX 812: the walk's 400-node cap was spent on text nobody can see (the
     # Ask card's closed history list sits ahead of the answer), so the words
     # under Atlas read as 0 over the "You asked:" line.
-    js = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+    js = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
     body = js[js.index("function nameMarkBuddyWordsUnder("):].split("\nconst NMB_WORDS_PX", 1)[0]
     body += js[js.index("  rootWords(root) {") : js.index("\n  },", js.index("  rootWords(root) {"))]  # the walk moved to nmb.rootWords (INBOX 1575)
     assert "checkVisibility()" in body and "FILTER_REJECT" in body

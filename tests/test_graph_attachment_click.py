@@ -12,9 +12,10 @@ now open what they stand for, and the node's menu offers the same.
 """
 
 from pathlib import Path
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = (ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8")
+SOURCE = unwrapped((ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8"))
 
 
 def _function(name: str) -> str:

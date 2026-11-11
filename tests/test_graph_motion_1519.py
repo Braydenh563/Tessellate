@@ -16,6 +16,7 @@ import subprocess
 
 import pytest
 from tests._app_js import JS_DIR, frontend_text
+from tests._js_scope import unwrapped
 
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
@@ -31,7 +32,7 @@ def _node(script: str) -> dict:
 
 @needs_node
 def test_a_hot_layout_that_moved_nothing_visible_is_not_drawn_and_a_hand_always_is():
-    source = (JS_DIR / "graph-canvas.js").read_text(encoding="utf-8")
+    source = unwrapped((JS_DIR / "graph-canvas.js").read_text(encoding="utf-8"))
     consts = "".join(re.findall(r"^const GC_COOL_\w+ = [\d.]+;\n", source, re.M))
     funcs = "".join(_fn(source, n) for n in ("gcDrawTick", "gcCoolGap", "gcTickDraw", "gcDrawHeld"))
     out = _node(
@@ -59,7 +60,7 @@ console.log(JSON.stringify(out));
 
 @needs_node
 def test_a_camera_within_half_a_pixel_of_the_last_frame_is_still():
-    source = (JS_DIR / "graph-canvas.js").read_text(encoding="utf-8")
+    source = unwrapped((JS_DIR / "graph-canvas.js").read_text(encoding="utf-8"))
     consts = "".join(re.findall(r"^const GC_COOL_MOVE_PX = [\d.]+;\n", source, re.M))
     out = _node(
         consts

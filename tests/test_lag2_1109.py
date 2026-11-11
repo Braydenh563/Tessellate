@@ -8,6 +8,7 @@ the reading list, and the dock fit measured three times where one fits a wide ro
 from __future__ import annotations
 
 from pathlib import Path
+from tests._js_scope import unwrapped
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 
@@ -32,6 +33,6 @@ def test_a_wide_dock_is_measured_once() -> None:
 
 
 def test_the_perch_look_does_not_repeat_on_an_unchanged_page() -> None:
-    look = _body((JS / "avatars.js").read_text(encoding="utf-8"), "function nameMarkBuddyCheck(")
+    look = _body(unwrapped((JS / "avatars.js").read_text(encoding="utf-8")), "function nameMarkBuddyCheck(")
     assert "nmb.lastClear" in look
     assert "nmb.pageAt <= clear.at && nmbFollow.scrollAt <= clear.at" in look

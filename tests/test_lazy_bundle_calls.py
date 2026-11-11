@@ -37,6 +37,7 @@ from __future__ import annotations
 import re
 import sys
 from pathlib import Path
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 FRONTEND = ROOT / "frontend"
@@ -531,14 +532,12 @@ LAZY_REACHED_AFTER_LOAD: dict[str, str] = {
     "settings-data.js:helpChatNewChat": "restoreGuideTurns' one caller awaits ensureModule(\"helpChat\") first (the undo handler, `kept.kind === \"guide\"`)",
     "settings-data.js:renderHelpChatMessage": "restoreGuideTurns' one caller awaits ensureModule(\"helpChat\") first (the undo handler, `kept.kind === \"guide\"`)",
     "settings-data.js:renderLanAddresses": "typeof-guarded, else the row is hidden; renderPrivacy runs in a Settings window that awaited settingsControls",
-    "space-swap.js:gcTopicSummaries": "behind `typeof graphStructure` (graph.js): graph-canvas.js is the next file of the same graph bundle",
     "space-swap.js:showNoDocument": "behind `typeof currentDoc`/`typeof wbFlushNudge` guards: with documents.js or the board never loaded there is nothing open to put away",
     "space-swap.js:wbFlushNudge": "behind `typeof currentDoc`/`typeof wbFlushNudge` guards: with documents.js or the board never loaded there is nothing open to put away",
     "statistics.js:overlayClosed": "typeof-guarded back-stack note: router-overlays.js is in the quickNote bundle, preloaded three seconds after boot, and without it no overlay entry was pushed to pop",
     "whiteboard-commands.js:renderPalette": "behind `!$(\"palette-overlay\").classList.contains(\"hidden\")`: only openPalette shows it, and its stand-in loads app-palette.js",
     "whiteboard-interchange.js:mermaidKnown": "typeof-guarded with a designed fallback (no picture, the plain placeholder) until mermaid-draw.js is in",
     "whiteboard.js:nameMarkBuddyCanvasZoom": "typeof-guarded sync of the companion's zoom: with no companion loaded there is nothing to scale",
-    "whiteboard.js:nmb": "behind `!charactersLoaded ||`, set only once the characters bundle (avatars.js) is in (lazy-entries.js)",
 }
 
 GUARD = re.compile(r'typeof\s+(\w+)\s*===?\s*["\']function["\']')
@@ -736,7 +735,7 @@ def test_the_graph_canvas_is_not_desynchronized():
     until a menu over it forced ordinary compositing."""
     from pathlib import Path
 
-    source = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8")
+    source = unwrapped((Path(__file__).resolve().parent.parent / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8"))
     code = "\n".join(line for line in source.splitlines() if not line.lstrip().startswith("//"))
     assert "desynchronized" not in code
 

@@ -3646,8 +3646,7 @@ function atlasClassicMark(size = 20, mood = atlasMoodNow) {
   const light = mix(accent, "#ffffff", 0.5);
   const deep = mix(accent, "#000000", 0.35);
   mood = ATLAS_CLASSIC_MOODS[mood] || "calm";
-  nameMarkSerial += 1;
-  const id = `nm-atlas-${nameMarkSerial.toString(36)}`;
+  const id = `nm-atlas-${nameMarkNextSerial().toString(36)}`;
   const moodClass = { calm: "nm-calm", thinking: "nm-confused", happy: "nm-happy", surprised: "nm-surprised", sleepy: "nm-sleepy" }[mood] || "nm-calm";
   const svg = make("svg", { viewBox: "0 0 36 36", width: size, height: size, class: `name-mark nm-atlas atl-classic ${moodClass}`, "aria-hidden": "true" });
   svg.dataset.nmSeed = "Atlas";

@@ -10,6 +10,7 @@ import subprocess
 
 import pytest
 from tests._app_js import JS_DIR, frontend_text
+from tests._js_scope import unwrapped
 
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
@@ -35,7 +36,7 @@ console.log(JSON.stringify(out));
 
 
 def _cool(probes: str) -> dict:
-    source = (JS_DIR / "graph-canvas.js").read_text(encoding="utf-8")
+    source = unwrapped((JS_DIR / "graph-canvas.js").read_text(encoding="utf-8"))
     consts = re.findall(r"^const GC_COOL_\w+ = [\d.]+;\n", source, re.M)
     funcs = [re.search(rf"^function {name}\(.*?^\}}\n", source, re.S | re.M).group(0) for name in ("gcDrawTick", "gcCoolGap", "gcTickDraw", "gcDrawHeld")]
     funcs.append("const gcCooling = (s) => s.alpha < GC_COOL_ALPHA && !s.dragNode;\n")

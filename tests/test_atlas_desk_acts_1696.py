@@ -20,10 +20,11 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-AVATARS = (JS / "avatars.js").read_text(encoding="utf-8")
+AVATARS = unwrapped((JS / "avatars.js").read_text(encoding="utf-8"))
 ATLAS = (JS / "atlas.js").read_text(encoding="utf-8")
 LAZY = (ROOT / "frontend" / "css" / "atlas-lazy.css").read_text(encoding="utf-8")
 CATALOGUE = json.loads((ROOT / "frontend" / "companion-catalogue.json").read_text(encoding="utf-8"))

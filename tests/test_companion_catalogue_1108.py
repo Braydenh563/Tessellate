@@ -15,6 +15,8 @@ import re
 from functools import lru_cache
 from pathlib import Path
 
+from tests._js_scope import unwrapped
+
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -86,7 +88,7 @@ def test_built_claims_point_at_real_code():
         for s in SIDES:
             if built(e, s):
                 path, _, needle = e[s]["at"].partition("#")
-                text = (ROOT / path).read_text(encoding="utf-8")
+                text = unwrapped((ROOT / path).read_text(encoding="utf-8"))
                 assert needle and needle in text, f"{e['id']} {s}: {needle!r} not in {path}"
 
 
@@ -99,7 +101,7 @@ def _block(text: str, name: str) -> str:
 @lru_cache(maxsize=1)
 def app_rows() -> frozenset[str]:
     """Every row of the in-app tables, as `table:key`."""
-    text = "".join((ROOT / "frontend" / "js" / f).read_text(encoding="utf-8") for f in APP_FILES)
+    text = "".join(unwrapped((ROOT / "frontend" / "js" / f).read_text(encoding="utf-8")) for f in APP_FILES)
     rows = {f"acts:{k}" for k in re.findall(r"^  ([a-z]+): \{ ms: \d+, w: ", text, re.M)}
     for table, name in (("tail", "ATLAS_TAIL_ACTS"), ("mood", "ATLAS_MOODS"), ("lower", "ATLAS_LOWER_STATES"), ("react", "NMB_REACTIONS")):
         rows |= {f"{table}:{k}" for k in re.findall(r"^  ([a-z0-9_]+):", _block(text, name), re.M)}

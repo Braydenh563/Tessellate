@@ -9,13 +9,14 @@ away from coming back, and nothing else in the suite draws Atlas.
 
 import re
 from pathlib import Path
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parent.parent
 #: atlas.js and its lazy halves, atlas-motion.js (the blink clock and the arm
 #: rig) and atlas-life.js (the living tail and the rings' loops), read as one.
 ATLAS = "\n".join((ROOT / "frontend" / "js" / name).read_text(encoding="utf-8") for name in ("atlas.js", "atlas-motion.js", "atlas-life.js"))
 CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
-AVATARS = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+AVATARS = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
 #: The large view's visit and home moved to companion-menu.js (boot budget).
 MENU = (ROOT / "frontend" / "js" / "companion-menu.js").read_text(encoding="utf-8")
 

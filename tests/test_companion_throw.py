@@ -20,13 +20,15 @@ import subprocess
 
 from pathlib import Path
 
+from tests._js_scope import unwrapped
+
 import pytest
 
 from tests.test_companion_landing_1683k import landing_js
 
 ROOT = Path(__file__).resolve().parents[1]
 #: The companion's code: the throw itself moved to the lazy companion-throw.js (INBOX 1301 D6).
-AV = "\n".join((ROOT / "frontend" / "js" / n).read_text(encoding="utf-8") for n in ("avatars.js", "companion-throw.js"))
+AV = "\n".join(unwrapped((ROOT / "frontend" / "js" / n).read_text(encoding="utf-8")) for n in ("avatars.js", "companion-throw.js"))
 HELP = help_more_text()
 
 

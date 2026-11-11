@@ -4871,8 +4871,8 @@ for (const prefix of ["focus", "pane"]) {
       prefs.set(box.id, box.type === "checkbox" ? (box.checked ? "1" : "0") : box.value);
       if (prefix === "focus") {
         if (graphFocusModeId) renderGraph();
-      } else if (typeof renderGraphPane === "function" && graphPaneShownId != null) {
-        renderGraphPane(graphPaneShownId);
+      } else if (typeof graphPaneRerender === "function") {
+        graphPaneRerender();
       }
     });
   }

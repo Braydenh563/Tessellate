@@ -16,6 +16,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 MOTION = (ROOT / "frontend" / "js" / "atlas-motion.js").read_text(encoding="utf-8")
@@ -55,7 +56,7 @@ console.log(JSON.stringify({
         assert el < 0 and 140 <= raise_ - el <= 176, (raise_, el)
 
 
-AV = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+AV = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
 
 
 def test_the_large_view_opens_on_its_resting_limbs() -> None:
@@ -69,7 +70,7 @@ def test_the_large_view_opens_on_its_resting_limbs() -> None:
     assert "box.atlasRig.fresh = true;" in cut and "atlasRigWake(box);" in cut
 
 
-AV = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+AV = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
 
 
 def test_a_walk_starts_and_stops_from_where_the_body_is() -> None:
@@ -222,7 +223,7 @@ def test_it_comes_in_three_ways_or_more_wherever_it_stands() -> None:
     `scratchpad/ui-sweeps/entries.js`: every way settles within 1px of the
     perch, no way twice running, both kinds). No squash on landing: DESIGN.md,
     "an entrance never squashes or grows it" (e9ee04b4a)."""
-    src = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+    src = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
     enter = _fn(src, "nameMarkBuddyEnter")
     lists = re.findall(r"ways = \[([^\]]*)\]", enter)
     assert len(lists) == 5

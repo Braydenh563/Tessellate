@@ -29,10 +29,11 @@ from tests.test_atlas_micro import HARNESS as MICRO_HARNESS
 from tests.test_atlas_micro import MICRO
 from tests.test_companion_mind import HARNESS as MIND_HARNESS
 from tests.test_companion_mind import MIND
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-AV = (JS / "avatars.js").read_text(encoding="utf-8")
+AV = unwrapped((JS / "avatars.js").read_text(encoding="utf-8"))
 ATLAS = (JS / "atlas.js").read_text(encoding="utf-8")
 MOTION = (JS / "atlas-motion.js").read_text(encoding="utf-8")
 MENU = (JS / "companion-menu.js").read_text(encoding="utf-8")

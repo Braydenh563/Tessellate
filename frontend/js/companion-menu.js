@@ -630,7 +630,7 @@ function nameMarkBuddyApplyPreset(preset) {
     if (preset.values?.[key] !== undefined) prefs.set(key, preset.values[key]);
     else prefs.remove(key);
   }
-  nameMarkBuddyCustomCache = null;
+  nameMarkBuddyCustomReset();
   const acts = document.getElementById("avatar-buddy-activities");
   if (acts) acts.replaceChildren();
   if (typeof applyAppearance === "function") applyAppearance();

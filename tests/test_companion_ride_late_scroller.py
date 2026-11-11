@@ -13,9 +13,10 @@ adopts the area that scrolls under a panel it is not riding yet.
 """
 
 from pathlib import Path
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+SOURCE = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
 
 
 def _listener() -> str:

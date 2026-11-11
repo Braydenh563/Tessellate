@@ -7,9 +7,10 @@ Atlas on): the look for popups walked the whole document and a hidden page keeps
 from __future__ import annotations
 
 from pathlib import Path
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
-AV = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+AV = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
 
 
 def _fn(name: str) -> str:

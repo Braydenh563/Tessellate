@@ -13,9 +13,10 @@ drag. The browser half is the sweep; this pins the two guards.
 """
 
 from pathlib import Path
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = (ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8")
+SOURCE = unwrapped((ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8"))
 
 
 def _wiring() -> str:

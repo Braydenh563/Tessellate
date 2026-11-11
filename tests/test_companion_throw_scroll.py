@@ -13,8 +13,10 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from tests._js_scope import unwrapped
+
 ROOT = Path(__file__).resolve().parents[1]
-AV = (ROOT / "frontend" / "js" / "avatars.js").read_text()
+AV = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text())
 DRAG_EDGE = (ROOT / "frontend" / "js" / "drag-edge.js").read_text()
 
 

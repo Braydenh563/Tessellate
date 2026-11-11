@@ -21,11 +21,12 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 MOTION = (JS / "atlas-motion.js").read_text(encoding="utf-8")
-AV = (JS / "avatars.js").read_text(encoding="utf-8")
+AV = unwrapped((JS / "avatars.js").read_text(encoding="utf-8"))
 MENU = (JS / "companion-menu.js").read_text(encoding="utf-8")
 
 #: Everything that makes the browser bring style or layout up to date.
