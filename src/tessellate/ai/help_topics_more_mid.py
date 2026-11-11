@@ -1011,6 +1011,7 @@ MID_TOPICS.extend(
             "keywords": (
                 "study the map", "study mode", "revise", "revision", "recall",
                 "flashcards", "quiz me on my map", "test myself", "memorise",
+                "build up branch by branch", "reveal a map step by step", "present a map from the centre",
             ),
             "body": (
                 "On a mind map, the board menu's Study the map "
@@ -1020,7 +1021,8 @@ MID_TOPICS.extend(
                 "them are asked, and then each topic that has a note: its note is the "
                 "answer, read out in the bar when you press Show. Nothing on the map changes. Your marks are kept "
                 "for that map on this device, a branch you missed says so next "
-                "time, and the end says how many you recalled. Esc stops."
+                "time, and the end says how many you recalled. Esc stops. "
+                "Build up branch by branch shows the centre, then each branch a level at a time; Previous takes the last part away, End shows the whole map to take it apart; the map is not changed."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
