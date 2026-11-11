@@ -441,6 +441,7 @@ class PreferencesBody(BaseModel):
     # `tests/test_offline_promise.py`, which fails if a third appears and the
     # copy still says two.
     web_search_enabled: bool | None = None
+    web_store_enabled: bool | None = None
     # The other opt-in network call (Settings -> About): see core.config.
     update_check_enabled: bool | None = None
     # Separate switch: "notify me" vs. "download and run the installer
@@ -865,6 +866,7 @@ def _preferences_from(config) -> dict:
             "run_budget_seconds", run_budget.DEFAULT_SECONDS
         ),
         "web_search_enabled": config.get_preference("web_search_enabled", False),
+        "web_store_enabled": config.get_preference("web_store_enabled", True),
         "update_check_enabled": config.get_preference("update_check_enabled", False),
         "auto_update_enabled": config.get_preference("auto_update_enabled", False),
         "show_update_bar": config.get_preference("show_update_bar", True),

@@ -2096,6 +2096,34 @@ function toolChip(label, ok = true, event = null) {
     ensureModule("webClip").then(() => searxngDownRow()).then((row) => wrap.append(row));
     return markToolStep(wrap, chip.toolStep);
   }
+  //: A failed web step that is not SearXNG being down gets its own Try again:
+  //: a search runs again in the web panel (the panel's own retry), a page is
+  //: fetched again and kept (`/websearch/stored/refetch`).
+  const webTool = event?.tool === "web_search" ? "query" : event?.tool === "read_url" ? "url" : "";
+  if (!ok && webTool && event.reason !== "searxng_down" && !event.retryDrawn && event.arguments?.[webTool]) {
+    const chip = toolChip(label, ok, { ...event, retryDrawn: true });
+    const wrap = document.createElement("div");
+    wrap.className = "tool-chip-wrap";
+    const again = smallButton("ph:arrow-clockwise Try again", "Try this web step again", async () => {
+      const value = String(event.arguments[webTool]);
+      if (webTool === "query") {
+        await ensureModule("webClip");
+        $("web-query").value = value;
+        toggleWebPanel(true);
+        return runWebSearch();
+      }
+      again.disabled = true;
+      try {
+        await apiJson("/websearch/stored/refetch", { method: "POST", body: JSON.stringify({ url: value }) });
+        again.replaceWith(Object.assign(document.createElement("span"), { className: "muted", textContent: "Fetched again." }));
+      } catch (error) {
+        again.disabled = false;
+        toast(error.message || "Couldn't fetch that page.", "info");
+      }
+    });
+    wrap.append(chip, again);
+    return markToolStep(wrap, chip.toolStep);
+  }
   const step = {
     kind: "tool",
     label,
@@ -2436,6 +2464,37 @@ function chatSourcesPanel(input) {
   //: Two derivations of "the same" order is how they drift apart, which is
   //: what INBOX 81's second half is about.
   const sources = input.sources || chatSourcesFrom(input);
+  //: **Kept pages** (CHAT_PLAN web-search store): a web source read in a chat is
+  //: kept on this computer for 7 days. One line each under the cards, outside
+  //: them because a card is itself a link: how long ago, and Fetch again.
+  const keptPagesRow = (body, sources) => {
+    const urls = [...new Set(sources.filter((s) => s.kind === "web" && s.url).map((s) => s.url))].slice(0, 50);
+    if (!urls.length) return;
+    apiJson("/websearch/stored/ages", { method: "POST", body: JSON.stringify({ urls }), silent: true })
+      .then(({ ages }) => {
+        for (const url of urls) {
+          if (!ages[url]) continue;
+          const line = document.createElement("p");
+          line.className = "chat-source-kept muted";
+          const when = document.createElement("span");
+          const show = (iso) => (when.textContent = `${sourceHost(url) || url}: fetched ${relativeTime(iso)}`);
+          show(ages[url]);
+          const again = smallButton("ph:arrow-clockwise Fetch again", `Fetch ${url} again`, async () => {
+            again.disabled = true;
+            try {
+              const fresh = await apiJson("/websearch/stored/refetch", { method: "POST", body: JSON.stringify({ url }) });
+              show(fresh.ages[url] || new Date().toISOString());
+            } catch (error) {
+              toast(error.message || "Couldn't fetch that page.", "info");
+            }
+            again.disabled = false;
+          });
+          line.append(when, " ", again);
+          body.appendChild(line);
+        }
+      })
+      .catch(() => {});
+  };
   if (!sources.length) return null;
   //: **The number on a card is the number in the answer**, which stops being
   //: the card's own position the moment this panel is handed a subset (the
@@ -2597,6 +2656,7 @@ function chatSourcesPanel(input) {
     grid.appendChild(card);
   });
   body.appendChild(grid);
+  keptPagesRow(body, sources);
   details.appendChild(body);
   //: **On a phone the sources are a sheet** (UI_MODERNISATION_PLAN Phase 11
   //: item 3). Opened in place, the grid of cards unfolds inside a bubble in

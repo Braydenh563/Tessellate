@@ -62,6 +62,9 @@ DEFAULT_PREFERENCES: dict[str, Any] = {
     # than something inferred from whether a SearXNG address happens to be
     # filled in. See `search/websearch.PROVIDERS`.
     "web_search_enabled": False,
+    # Pages read in a chat are kept here for a week, on this computer only
+    # (search/webstore.py); off keeps nothing new.
+    "web_store_enabled": True,
     # Asked for directly, alongside the Windows installer: since a release
     # only ships when someone remembers to tag one, nothing ever told a
     # person running an installed build that a newer version existed. The

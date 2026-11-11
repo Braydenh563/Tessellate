@@ -269,6 +269,47 @@ def web_analyse(body: AnalyseBody) -> dict:
     return {**found, "sections": [{**s, "n": n} for n, s in enumerate(found["sections"])]}
 
 
+class _StoredAges(BaseModel):
+    urls: list[str] = Field(default_factory=list, max_length=50)
+
+
+class _StoredRefetch(BaseModel):
+    url: str = Field(min_length=1, max_length=2000)
+
+
+@router.post("/websearch/stored/ages")
+def web_stored_ages(body: _StoredAges) -> dict:
+    """When each of these pages was last fetched, for the ones kept (under 7 days)."""
+    from tessellate.search import webstore
+
+    return {"ages": webstore.ages(body.urls)}
+
+
+@router.post("/websearch/stored/refetch")
+def web_stored_refetch(body: _StoredRefetch) -> dict:
+    """Fetch a source page again and keep the new copy; the answer is not changed."""
+    from tessellate.search import webstore
+
+    _require_web_search()
+    parsed = urlparse(body.url)
+    if parsed.scheme not in ("http", "https") or not parsed.hostname:
+        raise HTTPException(status_code=400, detail="Only web addresses that start with http or https are allowed.")
+    try:
+        page = websearch.fetch_readable(body.url)
+    except websearch.WebSearchError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    webstore.remember(body.url, page)
+    return {"ages": webstore.ages([body.url])}
+
+
+@router.delete("/websearch/stored")
+def web_stored_clear() -> dict:
+    """Forget every kept page."""
+    from tessellate.search import webstore
+
+    return {"cleared": webstore.clear()}
+
+
 @router.get("/websearch/read")
 def web_read(url: str, session: Session = Depends(get_session)) -> dict:
     """Fetch a page as plain readable text.

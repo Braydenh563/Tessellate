@@ -68,6 +68,7 @@
     { key: "run_budget_tokens", id: "run-budget-tokens" },
     { key: "run_budget_seconds", id: "run-budget-seconds" },
     { key: "web_search_enabled", id: "pref-web-search" },
+    { key: "web_store_enabled", id: "pref-web-store" },
     { key: "searxng_url", id: "pref-searxng" },
     { key: "searxng_autostart", id: "searxng-autostart" },
     { key: "update_check_enabled", id: "pref-update-check" },
