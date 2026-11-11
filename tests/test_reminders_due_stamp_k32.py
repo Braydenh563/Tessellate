@@ -44,9 +44,10 @@ def test_the_look_is_small(client):
 
 
 def test_the_page_fetches_the_list_only_when_the_stamp_moved():
+    body = STATUS.split("const openReminderList = (() => {", 1)[1].split("\n})();\n", 1)[0]
+    assert body.index('"/reminders/due"') < body.index('"/reminders?include_done=false"')
+    assert "look.stamp === cache.stamp" in body
+    assert "fetched: false" in body and "fetched: true" in body
     poll = STATUS.split("async function checkDueReminders() {", 1)[1].split("\n}\n", 1)[0]
-    assert poll.index('"/reminders/due"') < poll.index('"/reminders?include_done=false"')
-    assert "look.stamp === cache.stamp" in poll
-    assert "const same = " in poll and "if (!same) reminderChannel?.postMessage(all)" in poll
-    # The cache hangs off the function: no new name in the shared scope (ratchet).
-    assert "checkDueReminders.cache" in poll
+    assert "openReminderList()" in poll and 'apiJson("/reminders?include_done=false"' not in poll
+    assert "if (looked.fetched) reminderChannel?.postMessage(all)" in poll
