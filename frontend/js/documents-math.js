@@ -595,8 +595,8 @@
   //: state field for the reason the mermaid fence gives (a replace across line breaks may not come from a plugin). The figure's own
   //: clicks and drags are the figure's: the pencil on its corner puts the caret in the text.
   const FENCES = {
-    graph: { module: "docGraph", cls: "md-graph", edit: "dg-edit", height: 420, fill: (figure, source) => docMathRender.graph.fill(figure, source) },
-    base: { module: "docBase", cls: "md-base", edit: "db-edit", height: 180, fill: (figure, source) => docMathRender.base.fill(figure, source) },
+    graph: { module: "docGraph", cls: "md-graph", wrap: "cm-md-graph-wrap", pending: "md-graph-pending", edit: "dg-edit", height: 420, fill: (figure, source) => docMathRender.graph.fill(figure, source) },
+    base: { module: "docBase", cls: "md-base", wrap: "cm-md-base-wrap", pending: "md-base-pending", edit: "db-edit", height: 180, fill: (figure, source) => docMathRender.base.fill(figure, source) },
   };
   const fenceBlocks = (lang) => (text) =>
     [...text.matchAll(new RegExp("^```[ \\t]*" + lang + "\\b[^\\n]*\\n([\\s\\S]*?)\\n```[ \\t]*$", "gm"))].map((m) => ({ from: m.index, to: m.index + m[0].length, source: m[1] }));
@@ -639,9 +639,9 @@
       }
       toDOM(view) {
         const wrap = document.createElement("div");
-        wrap.className = `cm-${spec.cls}-wrap`;
+        wrap.className = spec.wrap;
         const figure = document.createElement("figure");
-        figure.className = `${spec.cls} cm-${spec.cls} ${spec.cls}-pending`;
+        figure.className = `${spec.cls} cm-${spec.cls} ${spec.pending}`;
         const edit = smallButton("ph:pencil-simple", `Edit the ${lang}'s text`, () => {
           view.dispatch({ selection: { anchor: Math.min(view.posAtDOM(wrap) + 4, view.state.doc.length) } });
           view.focus();
@@ -650,7 +650,7 @@
         wrap.append(figure, edit);
         ensureModule(spec.module).then((ok) => {
           if (!ok) return;
-          figure.classList.remove(`${spec.cls}-pending`);
+          figure.classList.remove(spec.pending);
           spec.fill(figure, this.source);
           view.requestMeasure();
         });

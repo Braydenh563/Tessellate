@@ -97,7 +97,7 @@
     table.append(rows);
     wrap.append(table);
     body.append(wrap);
-    if (data.total > data.rows.length) body.append(el("p", "db-count", `${data.rows.length} of ${data.total} notes.`));
+    if (data.total > data.rows.length) body.append(el("p", "db-count", `${data.rows.length} of ${nounCount(data.total, "note")}.`));
   }
 
   //: **`fill(figure, source)`**: reads the notes and draws the table into `figure`; false (the reasons left in the figure)
