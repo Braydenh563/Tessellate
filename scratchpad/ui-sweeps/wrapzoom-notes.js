@@ -128,9 +128,11 @@ function measure({ roots, passB }) {
             if (r.bottom > box.b + 0.5 && (!scrollY || a.scrollTop >= maxY - 1)) cut.push(['bottom', r.bottom - box.b]);
             // The focus ring (2px outline, 2px offset) cut by a hidden/clip edge.
             const ring = [];
+            // `overflow: clip` paints out to its clip margin (the ring room recipe).
+            const cm = ox === 'clip' && oy === 'clip' ? parseFloat(cs.overflowClipMargin) || 0 : 0;
             if (!cut.length) {
-              if (!scrollX && ox !== 'visible') { if (r.left - box.l < 3.5) ring.push(['left', +(r.left - box.l).toFixed(1)]); if (box.r - r.right < 3.5) ring.push(['right', +(box.r - r.right).toFixed(1)]); }
-              if (!scrollY && oy !== 'visible') { if (r.top - box.t < 3.5) ring.push(['top', +(r.top - box.t).toFixed(1)]); if (box.b - r.bottom < 3.5) ring.push(['bottom', +(box.b - r.bottom).toFixed(1)]); }
+              if (!scrollX && ox !== 'visible') { if (r.left - box.l + cm < 3.5) ring.push(['left', +(r.left - box.l + cm).toFixed(1)]); if (box.r - r.right + cm < 3.5) ring.push(['right', +(box.r - r.right + cm).toFixed(1)]); }
+              if (!scrollY && oy !== 'visible') { if (r.top - box.t + cm < 3.5) ring.push(['top', +(r.top - box.t + cm).toFixed(1)]); if (box.b - r.bottom + cm < 3.5) ring.push(['bottom', +(box.b - r.bottom + cm).toFixed(1)]); }
             }
             if (cut.length) out.push({ defect: 'clip', sel: desc(el), by: desc(a), overflow: ox + '/' + oy, rect: R(r), box: [box.l, box.t, box.r, box.b].map(Math.round), cut: cut.map(([s, v]) => s + ':' + v.toFixed(1)) });
             else if (ring.length && !/^(li|tr|td)$/i.test(el.tagName) && el.matches('button, a[href], summary, select, input, [role=button], [role=tab]')) {

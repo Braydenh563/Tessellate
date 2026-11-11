@@ -1829,6 +1829,9 @@ Link to another note with [[its first few words]]."></textarea>
                  `renderCaptureDocumentAdder` fills this with `labelledMenu`. -->
             <span id="entry-document-adder"></span>
             <span id="entry-document-chips" class="entry-meta"></span>
+            <!-- The owner, 2026-11-11: a small filing options menu (a kebabMenu,
+                 an IIFE in capture-ask.js): ask when unsure, and the way to Settings. -->
+            <span id="capture-filing-options" class="capture-filing-options"></span>
           </div>
           <!-- Commit, and nothing else on the row. The space line used to sit
                between two control rows as a loose paragraph, which is how a
@@ -2138,9 +2141,9 @@ Link to another note with [[its first few words]]."></textarea>
                    widget has one; the desk's primary is Draft, in the dock. -->
               <div class="row draft-controls draft-actions-row">
                 <button id="draft-copy" class="ghost" type="button"
-                  title="Copy the draft to the clipboard"><i class="ph ph-copy ph-lead" aria-hidden="true"></i> Copy</button>
+                  title="Copy the draft to the clipboard"><i class="ph ph-copy ph-lead" aria-hidden="true"></i> <span class="toolbar-word">Copy</span></button>
                 <button id="draft-insert" class="ghost" type="button"
-                  title="Add this draft to the end of a note you already have"><i class="ph ph-arrow-line-down ph-lead" aria-hidden="true"></i> Insert into a note</button>
+                  title="Add this draft to the end of a note you already have"><i class="ph ph-arrow-line-down ph-lead" aria-hidden="true"></i> <span class="toolbar-word">Insert into a note</span></button>
                 <!-- A split button (DESIGN.md): the press files a note; the caret
                      keeps it as a draft instead (owner, 2026-10-17: a note saved
                      here arrived as a draft). Hidden while carrying a note on. -->
@@ -2432,7 +2435,7 @@ Link to another note with [[its first few words]]."></textarea>
              note asks in passing, found by the night pass, and whether a
              later note answered it. `renderQuestions` in questions.js. -->
         <section class="card hidden" id="questions" aria-labelledby="questions-heading">
-          <div class="dock" data-dock-name="questions" role="toolbar" aria-label="Questions controls">
+          <div class="dock" data-dock-name="questions" data-dock-more="questions-more-menu" role="toolbar" aria-label="Questions controls">
             <div class="dock-identity">
               <h2 id="questions-heading">Questions</h2>
             </div>
@@ -2451,8 +2454,8 @@ Link to another note with [[its first few words]]."></textarea>
             <div class="dock-actions">
               <button id="questions-ask" class="ghost small" type="button"
                 title="Ask about the questions you have not answered yet"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Ask about these</button>
-              <button id="questions-refresh" class="ghost small" type="button"
-                title="Read your notes for questions now"><i class="ph ph-arrow-clockwise ph-lead" aria-hidden="true"></i> Read notes now</button>
+              <button id="questions-refresh" class="ghost small" type="button" data-fold-narrow
+                title="Read your notes for questions now"><i class="ph ph-arrow-clockwise ph-lead" aria-hidden="true"></i> <span class="dock-word">Read notes now</span></button>
               <button type="button" id="questions-help-toggle" class="icon-only ghost small graph-help-toggle"
                 data-help-for="questions-help-body" aria-controls="questions-help-body"
                 aria-expanded="false" title="What is this?" aria-label="What is this?">
@@ -3996,8 +3999,8 @@ Link to another note with [[its first few words]]."></textarea>
             </div>
             <!-- Said in words and politely (audit 1029 G11); Enter and Shift+Enter walk the matches, Esc clears. -->
             <span id="graph-search-count" class="graph-search-count muted text-xs" role="status" aria-live="polite"></span>
-            <button id="graph-highlight-clear" class="ghost small hidden" title="Clear the similar-notes highlight"><i class="ph ph-x ph-lead" aria-hidden="true"></i> Clear highlight</button>
-            <button id="graph-focus-clear" class="ghost small hidden" title="Exit focus mode and return to the global map"><i class="ph ph-x ph-lead" aria-hidden="true"></i> Exit focus</button>
+            <button id="graph-highlight-clear" class="ghost small hidden" title="Clear the similar-notes highlight"><i class="ph ph-x ph-lead" aria-hidden="true"></i> <span class="dock-word">Clear highlight</span></button>
+            <button id="graph-focus-clear" class="ghost small hidden" title="Exit focus mode and return to the global map"><i class="ph ph-x ph-lead" aria-hidden="true"></i> <span class="dock-word">Exit focus</span></button>
           </div>
           <!-- No arrange zone: the View menu is the first section of the gear's
                panel now (WORLD_CLASS_PLAN 507, the dock audit: two doors to
@@ -4078,12 +4081,12 @@ Link to another note with [[its first few words]]."></textarea>
              minimap. -->
         <div class="dock graph-selection-dock hidden" id="graph-selection-dock" role="toolbar" aria-label="Selected notes">
           <span class="dock-chip" id="graph-selection-count" role="status">0 selected</span>
-          <button id="graph-selection-pin" class="ghost small" type="button" title="Hold the selected notes where they are (undoable)"><i class="ph ph-push-pin ph-lead" aria-hidden="true"></i> Pin</button>
-          <button id="graph-selection-unpin" class="ghost small" type="button" title="Let the selected notes move freely again (undoable)"><i class="ph ph-push-pin-slash ph-lead" aria-hidden="true"></i> Unpin</button>
-          <button id="graph-selection-tag" class="ghost small" type="button" title="Add one tag to every selected note"><i class="ph ph-tag ph-lead" aria-hidden="true"></i> Tag</button>
-          <button id="graph-selection-link" class="ghost small" type="button" title="Link the selected notes to each other"><i class="ph ph-link ph-lead" aria-hidden="true"></i> Link together</button>
-          <button id="graph-selection-unlink" class="ghost small" type="button" title="Remove every link between the selected notes (undoable)"><i class="ph ph-link-break ph-lead" aria-hidden="true"></i> Unlink</button>
-          <button id="graph-selection-map" class="ghost small" type="button" title="Make a mind map of these notes, shaped by their links"><i class="ph ph-tree-structure ph-lead" aria-hidden="true"></i> Mind map</button>
+          <button id="graph-selection-pin" class="ghost small" type="button" title="Hold the selected notes where they are (undoable)"><i class="ph ph-push-pin ph-lead" aria-hidden="true"></i> <span class="dock-word">Pin</span></button>
+          <button id="graph-selection-unpin" class="ghost small" type="button" title="Let the selected notes move freely again (undoable)"><i class="ph ph-push-pin-slash ph-lead" aria-hidden="true"></i> <span class="dock-word">Unpin</span></button>
+          <button id="graph-selection-tag" class="ghost small" type="button" title="Add one tag to every selected note"><i class="ph ph-tag ph-lead" aria-hidden="true"></i> <span class="dock-word">Tag</span></button>
+          <button id="graph-selection-link" class="ghost small" type="button" title="Link the selected notes to each other"><i class="ph ph-link ph-lead" aria-hidden="true"></i> <span class="dock-word">Link together</span></button>
+          <button id="graph-selection-unlink" class="ghost small" type="button" title="Remove every link between the selected notes (undoable)"><i class="ph ph-link-break ph-lead" aria-hidden="true"></i> <span class="dock-word">Unlink</span></button>
+          <button id="graph-selection-map" class="ghost small" type="button" title="Make a mind map of these notes, shaped by their links"><i class="ph ph-tree-structure ph-lead" aria-hidden="true"></i> <span class="dock-word">Mind map</span></button>
           <button id="graph-selection-clear" class="ghost small icon-only" type="button" title="Clear the selection" aria-label="Clear the selection"><i class="ph ph-x" aria-hidden="true"></i></button>
         </div>
         <div id="graph-help-panel" class="help-body hidden" role="dialog" aria-label="How to use this map">
@@ -5199,7 +5202,7 @@ Link to another note with [[its first few words]]."></textarea>
                  and this one line says what it needs and goes there
                  (DOCUMENTS_PLAN 25 row 2, docRunSyncAvailability). -->
             <button id="doc-code-run-why" class="linklike small hidden" type="button"
-              title="Open Settings, Packages, at Run Python files">Install Python in Settings, Packages</button>
+              title="Install Python in Settings, Packages, to run Python files">Install Python in Settings, Packages</button>
             <!-- The code panel's ways in (INBOX 788): the Assistant is a code
                  file's (`.doc-code-only`, hidden for prose by library-lazy.css);
                  Snippets is for every document, and reads Sections beside
@@ -6095,7 +6098,7 @@ Link to another note with [[its first few words]]."></textarea>
           <!-- `data-fold-narrow`: below 600 it is a row of the ⋯ (`foldDockActions`);
                shown, it left the title 79px of its 117 at 390 (Brief 85). -->
           <button id="reminder-clear-done" class="ghost small" data-fold-narrow
-            title="Delete every completed reminder"><i class="ph ph-broom ph-lead" aria-hidden="true"></i> Clear done</button>
+            title="Delete every completed reminder"><i class="ph ph-broom ph-lead" aria-hidden="true"></i> <span class="dock-word">Clear done</span></button>
           <!-- The '?' every other tab's dock ends with (WORLD_CLASS_PLAN A8):
                the `data-help-for` recipe, after the actions and before the menu. -->
           <button type="button" id="reminders-help-toggle" class="icon-only ghost small graph-help-toggle"
@@ -8570,11 +8573,11 @@ Link to another note with [[its first few words]]."></textarea>
               </span>
             </div>
             <div class="wb-fmt-row" data-fmt="replace"><span class="wb-fmt-label">Picture</span>
-              <button type="button" id="wb-fmt-replace" class="ghost small" aria-label="Replace the picture with another file" title="Swap in another picture; its place, size, crop and style stay"><i class="ph ph-image-square ph-lead" aria-hidden="true"></i>Replace picture</button>
+              <button type="button" id="wb-fmt-replace" class="ghost small" aria-label="Replace picture with another file" title="Swap in another picture; its place, size, crop and style stay"><i class="ph ph-image-square ph-lead" aria-hidden="true"></i>Replace picture</button>
               <input type="file" id="wb-fmt-replace-file" accept="image/*" class="hidden" aria-label="Choose the replacement picture" tabindex="-1">
             </div>
             <div class="wb-fmt-row" data-fmt="replace"><span class="wb-fmt-label">Library</span>
-              <button type="button" id="wb-fmt-tolibrary" class="ghost small" aria-label="Save the picture to the Library" title="A picture on a board stays on the board. Saving files it in the Library, where it is searched and captioned"><i class="ph ph-books ph-lead" aria-hidden="true"></i>Save to Library</button>
+              <button type="button" id="wb-fmt-tolibrary" class="ghost small" aria-label="Save to Library: files the picture there" title="A picture on a board stays on the board. Saving files it in the Library, where it is searched and captioned"><i class="ph ph-books ph-lead" aria-hidden="true"></i>Save to Library</button>
             </div>
             <div class="wb-fmt-row" data-fmt="replace"><span class="wb-fmt-label">Captions</span>
               <button type="button" id="wb-fmt-showcaption" class="ghost small" aria-pressed="false" aria-label="Show captions under pictures" title="Draw a saved picture's caption under it, on every board"><i class="ph ph-text-align-center ph-lead" aria-hidden="true"></i>Show</button>
@@ -8792,7 +8795,7 @@ Link to another note with [[its first few words]]."></textarea>
               <label class="wb-fmt-label" for="wb-fmt-raw">Style as text</label>
               <textarea id="wb-fmt-raw" class="wb-fmt-raw" rows="8" spellcheck="false" autocomplete="off" aria-describedby="wb-fmt-raw-status" title="This item's style as JSON. Apply checks it and writes it in one Undo step."></textarea>
               <p id="wb-fmt-raw-status" class="status" role="status"></p>
-              <button type="button" id="wb-fmt-raw-apply" class="ghost small" aria-label="Apply the style text"><i class="ph ph-check ph-lead" aria-hidden="true"></i>Apply style</button>
+              <button type="button" id="wb-fmt-raw-apply" class="ghost small" aria-label="Apply style text"><i class="ph ph-check ph-lead" aria-hidden="true"></i>Apply style</button>
             </div>
           </div>
         </section>
@@ -9103,13 +9106,14 @@ Link to another note with [[its first few words]]."></textarea>
             title="About recordings" aria-label="About recordings"><i class="ph ph-question" aria-hidden="true"></i></button>
           <div class="help-body hidden" id="recordings-help" role="dialog" aria-label="About recordings">
             <p>Everything recorded in the app: meetings, lectures and voice notes. Captions, beside this, writes what the microphone hears as it is said; it is shown once a captions helper is set up (Settings, Packages). Search finds a recording by its name or by what was said in it; a hit shows the line, and pressing it plays from there. The audio is saved every 10 seconds while it records, so closing the tab keeps all but the last few seconds, and the next start says "Recording recovered".</p>
-            <p>Play at 0.5 to 2x; press or drag the waveform to jump, the line on it and the time beside it say where you are. Press M or the pin to mark the playhead with an optional comment (M or Marker while recording marks the moment too); each mark under the player plays from its time and opens the transcript at that line. Download audio in the ⋯ saves the file. Trim keeps a part as a new recording; the original stays until you empty the bin. Delete puts a recording in the bin. Transcribe in the ⋯ runs in the background: the card shows how far it is with a Stop, and a notification says when it is done. Once transcribed, Transcript lists its lines with their times: press one to play from that moment, and the ⋯ menu downloads them as subtitles (SRT or VTT). With the local AI on, each turn is labelled with who spoke, read from what was said (Name the speakers does it again). Kept as the browser recorded it (webm or ogg), or wav after a trim.</p>
+            <p>Play at 0.5 to 2x; press or drag the waveform to jump, the line on it and the time beside it say where you are. Press M or the pin to mark the playhead with an optional comment (M or Marker while recording marks the moment too); each mark under the player plays from its time and opens the transcript at that line. Download audio in the ⋯ saves the file. Trim keeps a part as a new recording; the original stays until you empty the bin. Delete puts a recording in the bin. Transcribe in the ⋯ runs in the background: the card shows how far it is with a Stop, and a notification says when it is done. Once transcribed, Transcript lists its lines with their times: press one to play from that moment, and the ⋯ menu downloads them as subtitles (SRT or VTT). With the Speakers bundle installed (Settings, Packages), the transcript labels who speaks, by voice, as Speaker 1, Speaker 2 and so on, all on this computer; Label speakers by voice does it for a transcript you already have, and Rename a speaker gives a label a name that stays for that recording. Without it, and with the local AI on, each turn is labelled with who spoke, read from what was said (Name the speakers does it again). Kept as the browser recorded it (webm or ogg), or wav after a trim.</p>
           </div>
           <button id="recordings-record" class="small" type="button" title="Open the recorder for a voice note">
             <i class="ph ph-microphone ph-lead" aria-hidden="true"></i> Open recorder</button>
         </div>
       </div>
       <p class="muted library-lede">Meetings, lectures and voice notes, kept as audio.</p>
+      <div id="xn-speakers"></div>
       <ul id="recordings-list" class="recordings-list" aria-label="Recordings"></ul>
     </section>
   </div>
@@ -13456,7 +13460,9 @@ Link to another note with [[its first few words]]."></textarea>
                   squat (Fitness), like the 9 notes in Gym"). A note about
                   health, money, family, the law or identity is offered as a
                   choice instead, unless "File health, money and family notes
-                  by their words too" is on.
+                  by their words too" is on. With "Ask me when filing is not
+                  sure" on, a filing under 70% waits the same way, and Capture's
+                  Filing options menu turns it on and off.
                 </p>
               </div>
               <label class="check-row">
@@ -13517,6 +13523,13 @@ Link to another note with [[its first few words]]."></textarea>
               <label class="check-row">
                 <input type="checkbox" id="pref-auto-file-sensitive">
                 <span>File health, money and family notes by their words too (off: they wait for you to choose)</span>
+              </label>
+              <!-- The owner, 2026-11-11: off by default. A filing under the
+                   confidence line is not applied; the capture offers the top
+                   choices. Also in the capture tab's filing options menu. -->
+              <label class="check-row">
+                <input type="checkbox" id="pref-ask-when-unsure">
+                <span>Ask me when filing is not sure (a filing under 70% waits for you to choose)</span>
               </label>
               <!-- On by default. With this off, Save blocks until the model
                    has decided a category, which is what the setting above

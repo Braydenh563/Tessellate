@@ -2107,6 +2107,18 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   cursor: pointer;
 }
 
+/* **A number in a setting row is a number's width** (wrapzoom 2026-11-11).
+   The base field rule gives every `input[type=number]` the full width, so
+   the run budget's two fields took the 694px pane and dropped under their
+   labels at every viewport (rows 121px tall, the field 59px below its
+   name). Wide enough for a six-digit token count and its spinner. Side by
+   side only: the phone width stacks the row and the field takes it. */
+@media (min-width: 600px) {
+  .setting-row > input[type="number"].setting-control {
+    width: 8rem;
+  }
+}
+
 .slider-value {
   font-size: var(--text-base);
   color: var(--muted);
@@ -3423,6 +3435,8 @@ span > .chip {
 }
 
 .draft-column {
+  /* The actions row's words leave by this column's width (below). */
+  container: draft-column / inline-size;
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
@@ -3501,6 +3515,31 @@ span > .chip {
    right read as two. */
 .draft-actions-row {
   justify-content: flex-end;
+  /* **One line at every width** (wrapzoom sweep: at 1280 the column is 472px
+     and the three need 476, so "Insert into a note" went onto a second line
+     under the split button). Below 30rem of column Copy and Insert keep their
+     icon and clip their word (the `.toolbar-word` recipe, DESIGN.md): still
+     their accessible name, their title names them for a pointer. */
+  flex-wrap: nowrap;
+}
+@container draft-column (max-width: 30rem) {
+  .draft-actions-row > button .toolbar-word {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .draft-actions-row > button:has(> .toolbar-word) {
+    width: var(--control-h);
+    padding-inline: 0;
+    justify-content: center;
+  }
+  .draft-actions-row > button > .ph-lead:has(~ .toolbar-word) {
+    margin-inline-end: 0;
+    translate: none;
+  }
 }
 
 /* The tags row's label is inside the surface, the way `.ask-composer-icon` is

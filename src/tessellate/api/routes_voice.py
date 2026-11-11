@@ -11,7 +11,7 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
-from tessellate.ai import captions, voice
+from tessellate.ai import captions, diarize, voice
 from tessellate.core import activity, deps
 from tessellate.api.this_computer import this_computer_only
 from tessellate.core.deps import get_session
@@ -38,6 +38,9 @@ def status() -> dict:
         #: The translator's row waits for this (WORLD_CLASS_PLAN 28.5 row 10,
         #: Brief 83): shown only once true, so no control does nothing.
         "translate": False,
+        #: Speaker labels by voice are ready (the Speakers bundle is installed):
+        #: the recordings menu runs them, or points to Settings, Packages.
+        "speakers_by_voice": diarize.available(),
     }
 
 

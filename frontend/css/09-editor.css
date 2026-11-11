@@ -224,11 +224,21 @@
 #doc-preview .md-table-block .md-table:has(thead th:nth-child(3)) {
   width: 100%;
 }
+/* **The bar has its own strip under the table** (wrapzoom 2026-11-11). Half
+   over the table's bottom edge, it covered the last row's last cell ("2,100"
+   at 1440) whenever the table filled the measure, and took its clicks. The
+   block keeps the bar's 2.5rem below the table on a screen that hovers, so
+   the bar shows in room of its own and nothing moves when it does. */
+@media (hover: hover) {
+  #doc-preview .md-table-block {
+    margin-block-end: var(--space-3);
+    padding-block-end: 2.5rem;
+  }
+}
 #doc-preview .md-table-block > .code-bar {
   position: absolute;
   inset-block-end: 0;
   inset-inline-end: 0;
-  transform: translateY(50%);
   z-index: 2;
   padding: 0;
   border: 0;

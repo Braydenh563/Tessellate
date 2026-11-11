@@ -571,6 +571,7 @@ function settingsIndexBuild(name) {
     link.type = "button";
     link.className = "settings-nav-group";
     link.textContent = label;
+    link.title = label; // one line; a long name ends in an ellipsis
     link._head = el;
     link.addEventListener("click", () => settingsIndexGo(name, link._head));
     list.appendChild(link);

@@ -135,9 +135,11 @@
     border: 0;
     overflow: visible;
   }
+  /* `--ring-room` down from the top: flush with the pane's scrolling edge,
+     the buttons' rings lost their top 4px to it (wrapzoom at 768). */
   #settings-modal .settings-section > .dock:has(> .dock-identity > h3.jump-echo:only-child) > .dock-actions {
     position: absolute;
-    inset-block-start: 0;
+    inset-block-start: var(--ring-room);
     inset-inline-end: 0;
   }
   #settings-modal .settings-section > .dock:has(> .dock-identity > h3.jump-echo:only-child):has(> .dock-actions) + p {
@@ -246,6 +248,14 @@
 
 :root:not([data-contrast="on"]) :is(#settings-modal, #appearance-panel) :is(.settings-section, .settings-group, .settings-pane-title, .dialog-head) button.ghost:not(.icon-only, .icon-button, .danger, .linklike, .quiet, .edged, .split-button-main):is(:hover, :focus-visible, :has(:focus-visible)) {
   background: var(--ghost-btn-bg);
+}
+/* The outdent is for a button in a group's well. Two places have no room for it (wrapzoom
+   2026-11-11): a row straight under the section (Reset appearance to defaults, Read it again)
+   stands on the pane's scrolling edge, whose 4px of ring room the -8px outdent overran, so the
+   tint and ring lost 4px; and a button inside a sentence (Clear kept pages, the Logs'
+   filtered-out count) pulled its tint 4px over the word before it. Both keep their own box. */
+:root:not([data-contrast="on"]) :is(#settings-modal, #appearance-panel) :is(.settings-section > .row, p) > button.ghost:not(.icon-only, .icon-button, .danger, .linklike, .quiet, .edged, .split-button-main) {
+  margin-inline-start: 0;
 }
 
 /* A collapsed hint keeps no gap under the title (1610: controls sat 6px low). */

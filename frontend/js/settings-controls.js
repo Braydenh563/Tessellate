@@ -711,6 +711,10 @@ $("pref-auto-file-sensitive").addEventListener("change", (e) =>
   setPreference("auto_file_sensitive", e.target.checked)
 );
 
+$("pref-ask-when-unsure").addEventListener("change", (e) =>
+  setPreference("ask_when_unsure", e.target.checked)
+);
+
 //: INBOX 1695 (Q30): a new note is sealed from its first write; off by default.
 $("pref-new-notes-private").addEventListener("change", (e) =>
   setPreference("new_notes_private", e.target.checked).then(() => {

@@ -31,12 +31,11 @@ def test_a_send_mid_answer_queues_and_the_end_of_a_turn_sends_the_next():
     assert "input.disabled = true" not in turn
 
 
-def test_chat_stop_lets_the_queue_go_on_and_the_list_has_edit_and_remove():
-    #: The owner (next-queue-1102): a Stop that landed before the turn's finally left `held` set
-    #: until the next send, so a queued message was stuck. Stop clears it, in both handlers
-    #: (the button and Escape), and the stopped turn's end sends the next.
+def test_chat_stop_holds_the_queue_and_the_list_has_edit_and_remove():
+    #: Owner decision 2026-11-11 (tests/test_chat_stop_keeps_queue.py drives it): Stop ends the
+    #: answer and KEEPS the queue; nothing auto-sends. Both handlers (the button and Escape) hold.
     wiring = _read("wiring.js")
-    assert wiring.count("chatQueue.held = true") == 0 and wiring.count("chatQueue.held = false;\n    chatController") == 2
+    assert wiring.count("chatQueue.held = true;\n    chatController") == 2 and "chatQueue.held = false;\n    chatController" not in wiring
     kit = _read("reply-kit.js")
     paint = kit[kit.index("composerQueue.paint = (q) => {"):]
     assert "Edit: back into the box" in paint and "Remove from the queue" in paint

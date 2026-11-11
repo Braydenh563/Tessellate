@@ -70,7 +70,7 @@ GitHub and the docs site draw these fences; any mermaid viewer does too.
 ```mermaid
 flowchart TB
   subgraph Browser["Browser: frontend/, vanilla JS, no build step"]
-    Shell["28 classic scripts, one global scope<br/>index.html order: app, status, library, chat ..."]
+    Shell["29 classic scripts, one global scope<br/>index.html order: app, status, library, chat ..."]
     Lazy["Lazy modules<br/>LAZY_MODULES + ensureModule:<br/>board, graph, docs, code, meetings, mermaid"]
     SW["sw.js: offline cache, hash-stamped assets"]
     Shell -- "first use" --> Lazy
@@ -439,7 +439,7 @@ Tessellate/
 │   ├── theme-boot.js · boot-guard.js # before first paint: theme, perf mode,
 │   │                        #   and the guard that reports a boot failure
 │   ├── app.js … agent-activity.js # the shell, notes, chat and settings
-│   │                        #   glue: 28 classic scripts, one file until
+│   │                        #   glue: 29 classic scripts, one file until
 │   │                        #   2026-09-26, in index.html's order (app.js
 │   │                        #   first: api, auth, the lazy loader;
 │   │                        #   agent-activity.js, Agent Activity's list of
@@ -1333,10 +1333,10 @@ fetched by `ensureP5` the first time something draws: the dashboard's art asks f
 is ever loaded from a CDN, consistent with the offline-first rule. The
 JavaScript is split by surface (`dashboard.js`, `timeline.js`,
 `library.js`, `documents.js`, `graph.js`, `whiteboard.js`, `settings.js`); `app.js`
-and the 27 files after it hold the shell and everything shared, cut on
+and the 28 files after it hold the shell and everything shared, cut on
 2026-09-26 from one 50,000-line file into contiguous ranges kept in the old
 order, so a file may call into the ones above it while the page loads and
-never into one below (`tests/test_frontend_load_order.py`; tests read the 28
+never into one below (`tests/test_frontend_load_order.py`; tests read the 29
 as one text through `tests/_app_js.py`). The two biggest lazy surfaces are split
 further by concern: `documents-code.js` and `documents-prose.js` hold the
 document editor's code and prose tools, and `whiteboard-map.js` the mind map
@@ -1405,7 +1405,7 @@ top-level read of a later file's constant, and on a lazy name read at load
 with no stand-in; `tests/test_lazy_bundle_calls.py` covers the lazy bundles.
 `scratchpad/appjs-map.js --check FROM TO [AFTER]` answers the same question
 for a range of lines before it moves. The app's own code was one 50,000-line
-`app.js` until 0.3.3; it was cut into the 28 files above as contiguous
+`app.js` until 0.3.3; it was cut into the 29 files above as contiguous
 ranges in their old order, so every reference that was backward stayed
 backward (`docs/roadmap/archive/agent-remaining/appjs-split.md`). A test
 that means "the app's code" reads all of them as one text through

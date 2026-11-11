@@ -62,6 +62,25 @@ RING_ROOM: list[tuple[str, str, str]] = [
     # The 2026-10-11 sweep (focus ring probe, 1440 and 390).
     ("a page that scrolls, a stop flush with its bottom edge", ".tab-page", "room"),
     ("Settings, Background jobs: Run now fills its row on a phone", ".job-run-now", "inset"),
+    # The 2026-11-11 shell zoom sweep (wrapzoom-shell.js, nine viewports).
+    ("the Widgets dialog's list, its first Reset on the top edge", ".dash-widgets-list", "room"),
+    ("a movable panel's resize grip, sticky in the corner", ".panel-grip", "inset"),
+    # The 2026-11-11 wrapzoom sweep (every width and zoom).
+    ("a sidebar heading holding the Notes fold caret", ".sidebar-head h2", "room"),
+    ("the Timeline's scroller, the calendar head's first button on its edge", ".timeline-scroll", "room"),
+    ("the week's day heads on the top of their row", ".timeline-cal-weektop", "room"),
+    ("calendar items filling their cell", ".timeline-cal-cell .timeline-cal-item", "inset"),
+    ("a calendar cell's More row", ".timeline-cal-cell .timeline-cal-more", "inset"),
+    # The 2026-11-11 zoom sweep (wrapzoom-docs.js, 768 to 2560, 100 to 200 %).
+    ("the diagram list column's head", ".dgm-panehead button", "inset"),
+    ("a whiteboard side panel's section, which scrolls", ".wb-side-section", "room"),
+    ("the diagram list column's rows", ".dgm-listcol :is(.dgm-join, .dgm-menu > button, .dgm-swatch)", "inset"),
+    # The 2026-11-11 wrap/zoom sweep (wrapzoom-chat.js, ten viewports).
+    ("the graph note panel's scrolling body", ".graph-popup-body", "room"),
+    # The 2026-11-11 map wrap sweep.
+    ("the board sidebar's Library, layers and Outline lists", ".wb-outline-tree", "room"),
+    # The 2026-11-11 wrap/zoom sweep (wrapzoom-settings.js, ten viewports).
+    ("Tools and features rows fill their list", ".feature-row", "inset"),
 ]
 
 #: A pill track with an edge: its segments fill its inside, never the
@@ -182,3 +201,12 @@ def test_the_2026_10_19_audit_containers_keep_their_ring_room():
     rules = _rules(_section())
     assert any(sel == ".modal-nav" and "scroll-padding-block: var(--ring-room)" in body for sel, body in rules)
     assert any(".phone-tab-more" in sel and "outline-offset: -2px" in body for sel, body in rules)
+
+
+def test_board_sidebar_lists_keep_all_four_sides_of_the_ring():
+    """Map sweep 2026-11-11: the sidebar's lists scroll, so they clip across
+    and down; room is padding on every side with the same negative margin."""
+    rules = _rules(_section())
+    body = next(b for s, b in rules if ".wb-lib-list" in s and ".wb-outline-tree" in s and ".wb-layers-tree" in s)
+    assert re.search(r"(?<!-)padding:\s*var\(--ring-room\)", body)
+    assert "margin: calc(-1 * var(--ring-room))" in body

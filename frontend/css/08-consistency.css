@@ -3616,6 +3616,27 @@ body .chip.item-label,
   .suggested-tag-dismiss:is(:hover, :focus-visible)::before {
     background: color-mix(in srgb, var(--error) 14%, transparent);
   }
+  /* The wrapzoom sweep (768): the 44px box hung 20px past a chip that clips
+     (a row's chips are `overflow: hidden` for their ellipsis), so only the
+     chip's own 24px took a press, and in cards the overhang lay over the
+     next chip. The chip keeps the overhang's width after it, as wrapped
+     pills keep the floor apart (DESIGN.md "One overhang rule"), its words
+     clip in the take half, and a row's lane keeps the overhang's height as
+     padding with the same negative margin, so no row grows. */
+  .entry-meta > .chip.suggested-tag {
+    margin-inline-end: calc(var(--target-min) - 1.5rem);
+  }
+  .entry-list .entry-meta > .chip.suggested-tag.suggested-tag {
+    overflow: visible;
+  }
+  .entry-meta > .chip.suggested-tag > .suggested-tag-take {
+    min-width: 0;
+    overflow: clip;
+  }
+  #entry-list.is-rows > li:not(:has(textarea)) > .entry-meta:has(> .chip.suggested-tag) {
+    padding-block: calc((var(--target-min) - 1.5rem) / 2);
+    margin-block: calc((1.5rem - var(--target-min)) / 2);
+  }
 }
 .entry-meta > .chip.filing-sure {
   gap: var(--space-1);
@@ -4487,10 +4508,26 @@ body .chip.item-label,
   #reminder-groups li .entry-meta > .entry-actions > .menu-wrap {
     pointer-events: auto;
   }
+  /* `--target-min`, not the 28px it is at a desktop width: under 820 the ⋯
+     is 44px and a fixed 1.75rem left it 10px over the time (wrapzoom, 768). */
   #reminder-groups li .entry-meta > .entry-date {
-    margin-inline-end: calc(1.75rem + var(--space-2));
+    margin-inline-end: calc(var(--target-min) + var(--space-2));
+  }
+  /* **On hover the strip takes the time's place, not a slice of it**
+     (wrapzoom, every width: the strip is 222px and the time 250, so the
+     first 29px of "Wed," showed beside "+1h"; with a short time the strip
+     ran over the words instead). The time leaves the row and the strip
+     joins it, so the words end where the strip starts and ellipsise there.
+     The negative block margin keeps the row's height: the worded snoozes
+     are 4px taller than the line they sit in. */
+  #reminder-groups li:is(:hover, :focus-within) .entry-meta > .entry-date {
+    display: none;
   }
   #reminder-groups li:is(:hover, :focus-within) .entry-meta > .entry-actions {
+    position: static;
+    transform: none;
+    flex: 0 0 auto;
+    margin-block: calc(var(--space-1) * -1);
     /* Opaque, so the time under it does not show through: the row's own
        tint over the card it sits on. */
     background: linear-gradient(var(--surface-2), var(--surface-2)), var(--card);
@@ -8508,6 +8545,25 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
        beside the ⋯). The corner box already sits `--space-4` in. */
     right: var(--space-1);
   }
+  /* **The strip takes the time's place and the lane makes room for it**
+     (wrapzoom sweep, every width: the 131px strip lay over the 56px time
+     and the chips before it, "Linked by 1 note" half shown under the star).
+     While the row is pointed at, focused or its menu is open, the time
+     leaves and the lane's end keeps the strip's width, so the lane grows
+     into the preview's column (which ellipsises) or, at its 26rem cap,
+     folds its tags into "+N" (`fitNoteMetas` refits on the resize). */
+  #entry-list.is-rows > li:not(:has(textarea)):is(:hover, :focus-within) > .entry-meta,
+  #entry-list.is-rows > li:not(:has(textarea)) > .entry-meta:has(> .entry-meta-end > .entry-actions.menu-open) {
+    padding-inline-end: calc(4 * var(--target-min) + 3 * 0.4rem + var(--space-2));
+  }
+  #entry-list.is-rows > li.has-wide-strip:not(:has(textarea)):is(:hover, :focus-within) > .entry-meta,
+  #entry-list.is-rows > li.has-wide-strip:not(:has(textarea)) > .entry-meta:has(> .entry-meta-end > .entry-actions.menu-open) {
+    padding-inline-end: calc(5 * var(--target-min) + 4 * 0.4rem + var(--space-2));
+  }
+  #entry-list.is-rows > li:not(:has(textarea)):is(:hover, :focus-within) > .entry-meta > .entry-date,
+  #entry-list.is-rows > li:not(:has(textarea)) > .entry-meta:has(> .entry-meta-end > .entry-actions.menu-open) > .entry-date {
+    display: none;
+  }
 }
 /* A row with no title starts its text where a title would, not one column
    gap to the right of an empty column (measured 375 against 365px). */
@@ -8518,11 +8574,24 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
   font-variant-numeric: tabular-nums;
   transition: opacity var(--ui-fast) var(--ease-out);
 }
+/* **The strip's own width, kept clear** (wrapzoom sweep: a fixed 6.5rem,
+   104px, against a 131px strip of four 28px targets left the strip over the
+   text's line end, 11x6 at 1280, and it was 1em tall against a 28px strip,
+   so the second line ran under it too). The width is the strip's: four
+   targets at `--target-min` and the strip's three 0.4rem gaps, five and four
+   on a draft (`.has-wide-strip`, written by `entryItem`), and a gap. The
+   height is the strip's below the text's top: one target, less the
+   `--space-1` the strip rises into the card's padding (below, "Into the
+   padding"), so a one-line note grows 1px at 28px targets, and at 44px ones
+   the date line steps clear of the strip it ran under (768: 62x5). */
 #entry-list > li > .entry-content::before {
   content: "";
   float: right;
-  width: 6.5rem;
-  height: 1em;
+  width: calc(4 * var(--target-min) + 3 * 0.4rem + var(--space-2));
+  height: calc(var(--target-min) - var(--space-1));
+}
+#entry-list > li.has-wide-strip > .entry-content::before {
+  width: calc(5 * var(--target-min) + 4 * 0.4rem + var(--space-2));
 }
 /* The time ends the details line, at the right, and stays when the card is
    pointed at (INBOX 446); the corner above is the actions' alone. */
@@ -10251,7 +10320,10 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
    hides what leaves it, a list of rows fills the list. The ring is drawn
    inside the control (one outline, 2px, offset -2px); a chosen segment is an
    accent fill, so its ring is `--on-accent` there, or it would vanish into
-   the fill it sits on. */
+   the fill it sits on. A movable panel's grip sits in the clipping card's
+   corner (#wb-help-card: 0px of room right, 0.4 below), and the diagram list
+   column clips its head and rows (wrapzoom 2026-11-11: 3px over a head button
+   at 960@2, 0.5 under a join at 768). */
 :is(
   .tabs-line > button,
   .doc-crumbs .doc-crumb,
@@ -10268,10 +10340,17 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   .graph-zoom-btn,
   .chat-dock-controls .seg > button,
   .job-run-now,
-  .phone-tab-more
+  .phone-tab-more,
+  .timeline-cal-cell .timeline-cal-item,
+  .timeline-cal-cell .timeline-cal-more,
+  .dgm-panehead button,
+  .dgm-listcol :is(.dgm-join, .dgm-menu > button, .dgm-swatch),
+  .feature-row
 ):focus-visible {
   outline-offset: -2px;
 }
+/* `.feature-row` fills the Tools and features list and lost 4px of ring to
+   its clip at every viewport (wrapzoom 2026-11-11); the grip is below. */
 :is(.graph-zoom-btn, .chat-dock-controls .seg > button):is(.active, [aria-pressed="true"], [aria-checked="true"], [aria-selected="true"]):focus-visible {
   outline-color: var(--on-accent);
 }
@@ -10286,13 +10365,31 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   .doc-sidebar-section,
   .doc-sidebar .doc-outline-wrap,
   .library-view-section,
-  .doc-list
+  .doc-list,
+  .wb-side-section
 ) {
   padding-inline: var(--ring-room);
   margin-inline: calc(-1 * var(--ring-room));
 }
 :is(.doc-sidebar-section, .library-view-section, .doc-list) {
   padding-block: var(--ring-room);
+}
+/* A whiteboard side panel's section scrolls (07-whiteboard-misc.css), and its
+   actions are full-width buttons against both edges. */
+.wb-side-section {
+  padding: var(--ring-room);
+  margin: calc(-1 * var(--ring-room));
+}
+/* The board sidebar's three lists (Library templates, This map's layers,
+   Outline) scroll down and so clip across too: the template tiles lost
+   3.6 to 4px of their ring on the left and right, the group head and the
+   Outline's first Rename button 4px on top (map sweep, 1280 and 360). Room
+   on all four sides, the layout unmoved; the section above holds the same
+   room across, so the list's negative margin lands in the section's padding
+   and not past its edge (the sweep read that as an overflow). */
+:is(.wb-lib-list, .wb-side-section .wb-library-list, .wb-layers-tree, .wb-outline-tree) {
+  padding: var(--ring-room);
+  margin: calc(-1 * var(--ring-room));
 }
 /* A rows-view note's meta line scrolls across and clips down, so its chips'
    rings (a category, a tag, a count) were cut at the line's edges (INBOX
@@ -10311,6 +10408,15 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 .library-view-section {
   scroll-padding-block: var(--ring-room);
 }
+/* The graph note panel's body scrolls between its head and its dock, and its
+   fields fill it edge to edge: the tags field lost 4px of its ring on both
+   sides, Add properties 4.4px on the right and the topic chip 2.2px on the
+   left (wrap/zoom sweep, 2026-11-11, every viewport). */
+.graph-popup-body {
+  padding-inline: var(--ring-room);
+  margin-inline: calc(-1 * var(--ring-room));
+  scroll-padding-block: var(--ring-room);
+}
 /* The Settings nav scrolls on its own and its last section button stood on
    the bottom edge (2px of padding for a 4px ring). */
 .modal-nav {
@@ -10322,6 +10428,24 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 .modal-content {
   padding-inline-start: var(--ring-room);
   scroll-padding-block: var(--ring-room);
+}
+/* The Widgets dialog's list scrolls, and its first row's Reset stood on the
+   top edge: 4px of its ring cut at scrollTop 0, every viewport (2026-11-11
+   zoom sweep). Room down, and at the start across (the end already has the
+   scrollbar's `--space-2`). */
+.dash-widgets-list {
+  padding-block: var(--ring-room);
+  padding-inline-start: var(--ring-room);
+  margin-block: calc(-1 * var(--ring-room));
+  margin-inline-start: calc(-1 * var(--ring-room));
+  scroll-padding-block: var(--ring-room);
+}
+/* A movable panel's resize grip is sticky in its bottom-right corner, flush
+   with both clipping edges (the Guide sheet, the graph panels, the Widgets
+   dialog, the notifications panel: 3 to 4.4px of the ring cut on the right
+   and the underside), so its ring is drawn inside it, the Inset recipe. */
+.panel-movable-on > button.panel-grip:focus-visible {
+  outline-offset: -2px;
 }
 /* Beside the nav the pane's extra room comes out of the grid gap; under 820
    the pane fills the body, which hides what leaves it, so it stays padding. */
@@ -10335,6 +10459,28 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 #doc-bookmarks-wrap:has(> .doc-outline:empty) {
   padding-block: var(--ring-room);
   margin-top: calc(var(--space-3) - var(--ring-room));
+}
+/* The wrapzoom sweep (2026-11-11, every width and zoom), each ring cut 4px:
+   - a sidebar's heading clips for its ellipsis, and the Notes sidebar builds
+     its fold caret inside it, flush on three sides (`SIDEBAR_FOLDS`,
+     categories-panel.js): `clip` with a clip margin, the words still end at
+     the box;
+   - the Timeline's scroller hides across and the calendar head's first
+     button stood on its left edge: room as padding with the same negative
+     margin, so nothing moves;
+   - the week's day heads stood on the top of their row, which hides down to
+     keep its scrollbar gutter: the same room at its top. */
+.sidebar-head h2 {
+  overflow: clip;
+  overflow-clip-margin: var(--ring-room);
+}
+.timeline-scroll {
+  padding-inline: var(--ring-room);
+  margin-inline: calc(-1 * var(--ring-room));
+}
+.timeline-cal-week.timeline-cal-weektop {
+  padding-top: var(--ring-room);
+  margin-top: calc(-1 * var(--ring-room));
 }
 /* A pill track and its segments (INBOX 694: "the bottom of these pills gets
    cut off", the dock's Ask | Agent and the skills panel's Pace: Auto | Manual).
@@ -10499,6 +10645,14 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 :is(#library-boards-filter, #reminder-filter) {
   margin-bottom: calc(var(--space-6) - var(--ring-room));
 }
+/* Three chips, "All 4", "Maps 1" and "Boards 3", ran 3px past the strip at
+   360 (311 of 308), so a row that has nothing to scroll to scrolled. A
+   tighter gap on a phone gives it 5px back; a longer row still scrolls. */
+@media (max-width: 599.98px) {
+  #library-boards-filter {
+    gap: var(--space-1);
+  }
+}
 /* The chat's suggestions fill the page's width (`max-width: 100%`), so the
    room is padding inside it. */
 #chat-suggest {
@@ -10603,9 +10757,14 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 #entry-list > li > .entry-content:empty::before {
   display: none;
 }
+/* **Into the padding** (wrapzoom sweep): the 28px strip from the corner's
+   top reached 6px into the text's second line (1280: strip 242 to 270, the
+   second line's text from 264). It rises by `--space-1` into the card's top
+   padding, so it ends about where the first line does, and the float above
+   keeps what is left clear. */
 @media (hover: hover) {
   #entry-list:not(.is-rows) > li .entry-meta-end > .entry-actions {
-    top: 0;
+    top: calc(var(--space-1) * -1);
   }
 }
 /* --- One ⋯ opener, styled once (INBOX 722) ---
@@ -10753,8 +10912,10 @@ html[data-other-device] [data-this-computer="hide"] {
    controls, so a control's top is 3.5px from the window's edge, and the
    2px ring at the 2px offset reached 0.5px past it (measured at 1440: ring
    top -0.5 on the six right-hand buttons). A 1px offset puts the ring top at
-   +0.5. The tab strip keeps its own ring inside its well. */
-header#top-bar :is(.header-cluster, .notif-wrap, .header-controls) button:focus-visible,
+   +0.5. The tab strip keeps its own ring inside its well, and the
+   notifications panel's resize grip, a panel control and not a bar one,
+   keeps the panel's inset ring (Ring room). */
+header#top-bar :is(.header-cluster, .notif-wrap, .header-controls) button:not(.panel-grip):focus-visible,
 header#top-bar button.space-switcher-btn:focus-visible {
   outline-offset: 1px;
 }

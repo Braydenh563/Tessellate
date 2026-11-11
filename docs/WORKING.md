@@ -265,7 +265,7 @@ here is new" is a fact rather than a guess.
 - `node --check frontend/js/<file>.js` after any JS edit; there is no
   bundler. Scripts live in `frontend/js/`; only `frontend/sw.js` stays at
   the root, because a service worker controls only pages under its path.
-- **The app's code is 28 classic scripts**, `app.js` through
+- **The app's code is 29 classic scripts**, `app.js` through
   `agent-activity.js` in index.html's order, sharing one global scope; a
   file calls only upwards at load. A test that means "the app's code" reads
   `app_js_text()` from `tests/_app_js.py`, never `frontend/js/app.js`

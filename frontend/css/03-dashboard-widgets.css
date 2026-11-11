@@ -1744,10 +1744,13 @@ header#top-bar select,
 }
 
 /* The menu sits inside the tile's right edge, where the hand already is, and
-   the tile keeps room for it so no hint runs under the glyph. */
+   the tile keeps room for it so no hint runs under the glyph. The room is the
+   button's own size (`--target-min`, 44px under touch) plus its inset and a
+   gap: a fixed `--space-9` (32px) left 17px of "Ask your notes" under the
+   44px button at 768 (2026-11-11 zoom sweep). */
 .quick-edit-tile > .quick-link {
   flex: 1 1 auto;
-  padding-right: var(--space-9);
+  padding-right: calc(var(--target-min) + 2 * var(--space-2));
   pointer-events: none;
 }
 
@@ -3902,9 +3905,12 @@ button.answer-figure-open {
 
 /* The label half never shrinks below its words; the control half is the
    elastic one. A row whose name is squeezed to fit a slider is the failure
-   `.graph-temporal` was fixed for once already, one axis over. */
+   `.graph-temporal` was fixed for once already, one axis over.
+   `:not(.select-shell)`: a picker's shell is a span too, and this clip on it
+   cut its opener's whole focus ring (the shell's box is the opener's, so the
+   4px ring had nowhere to be painted: wrap/zoom sweep, every viewport). */
 .graph-option-row > label,
-.graph-option-row > span {
+.graph-option-row > span:not(.select-shell) {
   flex: 0 1 auto;
   min-width: 0;
   overflow: hidden;

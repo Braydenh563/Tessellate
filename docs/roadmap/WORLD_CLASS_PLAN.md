@@ -1516,8 +1516,8 @@ FlashText; superseded by the pack below).
 8. **Measurement first.** `tests/fixtures/filing/` grows to 120 hand-labelled
    notes (varied kinds and lengths, pasted text, jokes, captions, several
    sensitive); top-1 accuracy with and without the embedder, before and after
-   every step, recorded here. Below 0.8 top-1 without a model the step is not
-   done.
+   every step, recorded here. Below 0.6 top-1 without a model the step is not
+   done (owner, 2026-11-11; 0.625 measured; the model path keeps 0.8).
 9. **Contextual rules** (the pack's 30 seed rules and 50 acceptance fixtures)
    are the phase after: a small interpreter for positive and competing context
    patterns within the sentence, measured on those fixtures, only once steps 1

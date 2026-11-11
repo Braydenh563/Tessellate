@@ -137,10 +137,14 @@ def settled_state(method: str) -> str:
 
 
 def _unless_held(content: str, found: tuple[str, int, str] | None) -> tuple[str, int, str] | None:
-    """A filer's answer, or None when decision 6 holds it: a sensitive note
-    is suggested by the words path below, never filed, until Settings lets
-    it (`lexical_filing.holds_sensitive`, INBOX 770)."""
+    """A filer's answer, or None when it is held for the person: a sensitive
+    note (decision 6) is suggested by the words path below, never filed, until
+    Settings lets it (`lexical_filing.holds_sensitive`, INBOX 770); and, with
+    "ask when unsure" on, so is a pick under `lexical_filing.UNSURE_LINE`."""
     if found is None:
+        return None
+    if lexical_filing.is_unsure(found[1]):
+        logger.info("janitor: '%s' by %s at %d%% waits for the person (ask when unsure)", safe_value(found[0], 60), found[2], found[1])
         return None
     topic = lexical_filing.holds_sensitive(content, found[0])
     if topic is None:

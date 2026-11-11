@@ -963,7 +963,29 @@
 }
 
 /* A phone's one row is wider than the page (8 controls of 44 px in 296: Redo and the menu lay beyond the screen's edge, out of
-   reach, dgpolish-1109), so it scrolls sideways and a focused control scrolls into view. */
+   reach, dgpolish-1109), so it scrolls sideways and a focused control scrolls into view. The pane decides, not the window
+   (wrapzoom 2026-11-11): Split at 1280 gave the builder 428 px, the window's 1280 gave it `nowrap` and no scroll, and the
+   menu sat 22 px past the pane's edge. The kind keeps its picture and loses its word there too, as on a phone. */
+@container (max-width: 599.98px) {
+  .dgm-kindword {
+    display: none;
+  }
+
+  /* A scroller's automatic minimum height is 0, so in the pane's column it was squeezed to 27 px round 28 px buttons. */
+  .dgm-dock:has(> .dgm-addsplit) {
+    flex-shrink: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+
+  .dgm-dock > .dgm-addsplit,
+  .dgm-dock > .dgm-addsplit ~ *,
+  .dgm-dock > :has(~ .dgm-addsplit) {
+    flex: none;
+  }
+}
+
 @media (max-width: 599.98px) {
   .dgm-dock:has(> .dgm-addsplit) {
     overflow-x: auto;

@@ -8,6 +8,7 @@ calls run (plan §4).
 from __future__ import annotations
 
 import contextlib
+import dataclasses
 import functools
 import json
 import logging
@@ -477,6 +478,8 @@ class _LateFiling:
         if lexical_filing.holds_sensitive(self._content, category):
             return  # decision 6: the model's late answer is held like an early one
         confidence = self._calibrated(category, confidence)
+        if lexical_filing.is_unsure(confidence):
+            return  # ask when unsure: a late pick under the line waits like an early one
         with self._lock:
             if self._stand_in is None:
                 self._early = (category, confidence)
@@ -1283,6 +1286,20 @@ def _filing_similar(session: Session, entry) -> dict | None:  # noqa: ANN001
     return {"id": other.id, "preview": _connection_label(other, 60)}
 
 
+def _choices_filled(session: Session, content: str, entry_id: int, category: str, choices: list[tuple[str, str]]) -> list[tuple[str, str]]:
+    """The filing call's choices, then recent categories by the words, up to three, never the current one."""
+    from tessellate.ai import lexical_filing
+
+    explained = [(name, reason) for name, reason in choices if name != category]
+    if len(explained) < 3:
+        taken = {name for name, _ in explained} | {category}
+        for name, reason in lexical_filing.suggest_categories_explained(session, content, exclude_entry_id=entry_id, limit=4):
+            if name not in taken:
+                explained.append((name, reason))
+                taken.add(name)
+    return explained
+
+
 def _offered_categories(session: Session, entry, category: str) -> tuple[list[str], dict[str, str], dict | None, dict | None, str]:  # noqa: ANN001
     """`(suggestions, reasons, proposal, held, why)`: up to three categories to offer as
     one-tap choices (INBOX 434), each one's line, a new category the pack proposes
@@ -1299,13 +1316,12 @@ def _offered_categories(session: Session, entry, category: str) -> tuple[list[st
     try:
         content = manager.readable_content(entry) or ""
         call = lexical_filing.filing_call(session, content, exclude_entry_id=entry.id)
-        explained = [(name, reason) for name, reason in call.choices if name != category]
-        if len(explained) < 3:
-            taken = {name for name, _ in explained} | {category}
-            for name, reason in lexical_filing.suggest_categories_explained(session, content, exclude_entry_id=entry.id, limit=4):
-                if name not in taken:
-                    explained.append((name, reason))
-                    taken.add(name)
+        explained = _choices_filled(session, content, entry.id, category, call.choices)
+        #: A pick the person asked to be asked about (a model's, or by
+        #: meaning) is first among the choices, with the words' reason.
+        if call.category and call.category != category and lexical_filing.ask_when_unsure():
+            explained = [(call.category, call.why)] + [row for row in explained if row[0] != call.category]
+            call = dataclasses.replace(call, why=lexical_filing.ASK_WHY)
         explained = explained[:3]
         if call.proposal is not None:
             proposal = {"name": call.proposal.name, "why": call.proposal.why}

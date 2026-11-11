@@ -204,11 +204,18 @@ def test_the_dock_lays_itself_out_by_its_own_width():
     `test_breakpoints.py` does not count as a page band."""
     css = _all_css()
     assert ".chat-dock {\n  container: chat-dock / inline-size;\n}" in css
-    for query in ("@container chat-dock (width < 47rem)", "@container chat-dock (width < 27rem)", "@container chat-dock (width < 24rem)"):
+    for query in (
+        "@container chat-dock (width < 47rem)",
+        "@container chat-dock (width < 35rem)",
+        "@container chat-dock (width < 27rem)",
+        "@container chat-dock (width < 24rem)",
+    ):
         assert query in css, query
     # The icon-only toggles keep their words (the accessible names): `font-size: 0`
     # keeps text in the accessibility tree, `display: none` would drop it.
-    narrow = css[css.index("@container chat-dock (width < 24rem)"):]
+    # They go icon-only under 35rem (was 24rem) so the mode group keeps their
+    # line with the web panel open (wrap/zoom sweep, 2026-11-11).
+    narrow = css[css.index("@container chat-dock (width < 35rem)"):]
     assert "font-size: 0;" in narrow[: narrow.index("\n}\n")]
     # The old window-width rule is not back.
     old = "@media (max-width: 819.98px) {\n  /* One line, because five controls"

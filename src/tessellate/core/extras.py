@@ -382,6 +382,57 @@ class Extra:
     short_label: str = ""
 
 
+#: **Spelling packs (D30, owner decision 2026-11-11).** A Hunspell word list for another
+#: language, fetched on an Install click and never vendored: these lists are MPL, LGPL or GPL,
+#: and the repo takes AGPL or MIT code only. Each is the npm tarball of the `dictionary-<lang>`
+#: package (wooorm/dictionaries, a version never re-published, so the hash cannot move); only
+#: the two Hunspell files and the licence text are kept, as `<lang>.aff`, `<lang>.dic` and
+#: `LICENSE.txt`. The page loads one lazily, in the Harper worker, when a document's `lang`
+#: matches (`frontend/js/documents-spell.js`). **To add a language:** take its package's
+#: tarball URL and `dist.size` from registry.npmjs.org, write its `sha256sum`, and name the
+#: language in `core/spellpacks.py`. Rows: (lang, name, package version, licence, sha256, bytes).
+_SPELL_PACKS = (
+    ("fr", "French", "3.0.0", "MPL-2.0", "b20ab69249881bc36b1dcdfbfd2df226660a7cecc95f2cf122714008b491c78e", 342850),
+    ("de", "German", "3.0.0", "GPL-2.0 OR GPL-3.0", "50b5640b33c276a49cc15f426f2d31ee5faf397f4a27e92b1678e77f43f8d14a", 341743),
+    ("es", "Spanish", "4.0.0", "GPL-3.0 OR LGPL-3.0 OR MPL-1.1", "b46986527b23ff1a578d601db7f1e6dc80cc36b728fdcb6044b5212e12e202d5", 236981),
+)
+
+
+def _spell_pack_extras() -> tuple[Extra, ...]:
+    return tuple(
+        Extra(
+            id=f"spell-{lang}",
+            label=f"{name} spelling (Hunspell)",
+            short_label=f"{name} spelling",
+            enables=f"Spelling checks for documents written in {name} (a document whose language "
+            "is set to it), from a Hunspell dictionary kept and read on this computer. "
+            "Nothing you write leaves it.",
+            packages=(f"dictionary-{lang} {version}",),
+            module="",
+            size=f"~{round(size / 1000)} KB",
+            caveat="Checks spelling only; grammar checks stay English."
+            + (" A long compound word the list lacks is flagged: add it to your dictionary." if lang == "de" else ""),
+            kind="download",
+            version=version,
+            licence=licence,
+            downloads=(
+                Download(
+                    url=f"https://registry.npmjs.org/dictionary-{lang}/-/dictionary-{lang}-{version}.tgz",
+                    sha256=sha,
+                    size=size,
+                    unpack="tar",
+                    members=(
+                        ("package/index.aff", f"{lang}.aff"),
+                        ("package/index.dic", f"{lang}.dic"),
+                        ("package/license", "LICENSE.txt"),
+                    ),
+                ),
+            ),
+        )
+        for lang, name, version, licence, sha, size in _SPELL_PACKS
+    )
+
+
 #: The allowlist. Adding an entry here is the only way to make something
 #: installable, which is the point.
 EXTRAS: tuple[Extra, ...] = (
@@ -586,6 +637,7 @@ EXTRAS: tuple[Extra, ...] = (
             ),
         ),
     ),
+    *_spell_pack_extras(),
     #: **needle (INBOX 302).** The owner, 2026-09-24: "Yes, as an extra"
     #: (opt-in, telemetry forced off). A 121M-parameter tool-calling model
     #: from Cactus Compute: `ai/needle_provider.py` drives its engine through
@@ -775,6 +827,68 @@ EXTRAS: tuple[Extra, ...] = (
         "owning model load/unload, for a capability llama-server already "
         "gives you today.",
     ),
+    #: **Speaker labels by voice (BACKLOG 102 item 8, gap 12; the owner,
+    #: 2026-11-11).** Two entries, one bundle: the engine (sherpa-onnx, which
+    #: carries onnxruntime; no torch) and the two pinned model files it reads.
+    #: `ai/diarize.py` is the only caller. Licences, read 2026-11-11: sherpa-onnx
+    #: Apache-2.0; the pyannote segmentation 3.0 model MIT (the licence file
+    #: ships in the archive and is kept); the WeSpeaker ResNet34 embedding
+    #: model Apache-2.0 (its Hugging Face card).
+    #:
+    #: Measured 2026-11-11 on Linux x86_64, Python 3.13: the sherpa-onnx 2.0.1
+    #: wheel is 4.3 MB with its core library; the models are 7.0 MB and 26.5 MB.
+    Extra(
+        id="speakers",
+        label="Speaker labels, engine (sherpa-onnx)",
+        enables="Tells voices apart in a recording, on this computer, so a "
+        "transcript reads Speaker 1, Speaker 2 and so on. Needs the speaker "
+        "models below as well; the Speakers bundle installs both.",
+        packages=("sherpa-onnx",),
+        module="sherpa_onnx",
+        size="~5 MB: ONNX Runtime, no PyTorch",
+    ),
+    #: **To bump:** the segmentation archive is on
+    #: github.com/k2-fsa/sherpa-onnx/releases/tag/speaker-segmentation-models, the
+    #: embedding file on `.../speaker-recongition-models` (sic); `sha256sum`
+    #: each and write its size here. The marker records the version.
+    Extra(
+        id="speakermodels",
+        label="Speaker labels, models (pyannote and WeSpeaker)",
+        short_label="Speaker models",
+        enables="The two small models that tell voices apart. They are read "
+        "from this computer's data folder; nothing is sent anywhere after the "
+        "download.",
+        packages=("pyannote-segmentation 3.0", "wespeaker-resnet34 en"),
+        module="",
+        size="~34 MB download",
+        caveat="Good for a few people taking turns in clear audio; overlapping "
+        "talk and similar voices can be merged or split wrongly. Rename a label "
+        "once and it stays for that recording.",
+        kind="download",
+        version="seg3.0-wespeaker-en-1",
+        licence="MIT and Apache-2.0",
+        downloads=(
+            Download(
+                url="https://github.com/k2-fsa/sherpa-onnx/releases/download/"
+                "speaker-segmentation-models/sherpa-onnx-pyannote-segmentation-3-0.tar.bz2",
+                sha256="24615ee884c897d9d2ba09bb4d30da6bb1b15e685065962db5b02e76e4996488",
+                size=6958444,
+                unpack="tar",
+                members=(
+                    ("sherpa-onnx-pyannote-segmentation-3-0/model.onnx", "segmentation.onnx"),
+                    ("sherpa-onnx-pyannote-segmentation-3-0/LICENSE", "LICENSE-segmentation"),
+                ),
+            ),
+            Download(
+                url="https://github.com/k2-fsa/sherpa-onnx/releases/download/"
+                "speaker-recongition-models/wespeaker_en_voxceleb_resnet34.onnx",
+                sha256="5ef208a9da1453335308a6b6f4e6dfbd7e183a38b604de0a57664f45d257fe94",
+                size=26534365,
+                unpack="file",
+                members=(("", "embedding.onnx"),),
+            ),
+        ),
+    ),
     #: **Live captions (WORLD_CLASS_PLAN 28.5 row 9, Brief 82).** whisper.cpp's
     #: `whisper-server` (MIT), a separate executable, never a Python import.
     #: The captions code in `ai/captions.py` already speaks to it through
@@ -873,6 +987,12 @@ BUNDLES: tuple[Bundle, ...] = (
         extras=("voice",),
     ),
     Bundle(
+        id="speakers",
+        label="Speakers",
+        about="Label who speaks in a transcript by their voice, on this computer.",
+        extras=("speakers", "speakermodels"),
+    ),
+    Bundle(
         id="captions",
         label="Live captions",
         about="Captions over any screen as you speak, written on this computer.",
@@ -887,8 +1007,8 @@ BUNDLES: tuple[Bundle, ...] = (
     Bundle(
         id="languages",
         label="Languages",
-        about="Translate a passage into Spanish, and check grammar a second way, on this computer.",
-        extras=("translate", "languagetool"),
+        about="Translate a passage into Spanish, check grammar a second way, and spell-check French, German and Spanish, on this computer.",
+        extras=("translate", "languagetool", "spell-fr", "spell-de", "spell-es"),
     ),
     Bundle(
         id="code",
@@ -1218,6 +1338,13 @@ def cancel(_name: str = "") -> tuple[bool, str]:
         _state.cancelled = True
         _state.step = "Stopping…"
         return True, "Stopping the download."
+    if _state.running and process is None:
+        #: Pip is not launched yet (the command is being built): the flag alone
+        #: is the stop, and `_run_install` ends pip the moment it starts. The
+        #: notice's Undo is pressable in this window.
+        _state.cancelled = True
+        _state.step = "Stopping…"
+        return True, "Stopping the install."
     if not _state.running or process is None:
         if _bulk.running:
             return True, "Stopping before the next package."
@@ -1503,7 +1630,9 @@ def _install_ocr_binary(extra: Extra) -> None:
 
 
 def _install_cleanup(extra: Extra, pip_tmp: Path, before, constraints_copy: Path | None) -> None:  # noqa: ANN001
-    _state.running = False
+    #: `running` stays true until `_run_install`'s finally: a client that waits for
+    #: idle (the notice's Undo) must not see a stopped install's files before the
+    #: roll-back has taken them out.
     _state.process = None
     if _state.cancelled:
         # Terminating pip mid-download makes it exit non-zero, which the
@@ -1514,6 +1643,7 @@ def _install_cleanup(extra: Extra, pip_tmp: Path, before, constraints_copy: Path
         _state.outcome = "cancelled"
         _state.step = "Stopped before it finished."
         _roll_back(before)
+        importlib.invalidate_caches()
     shutil.rmtree(pip_tmp, ignore_errors=True)
     # See the module docstring's numbered note above `_logger`: this call
     # was missing entirely until now, which is the actual reason a failed
@@ -1593,6 +1723,9 @@ def _run_install(extra: Extra, reinstall: bool = False) -> None:
             env={**os.environ, "TMPDIR": str(pip_tmp), "TEMP": str(pip_tmp), "TMP": str(pip_tmp)},
         )
         _state.process = process
+        if _state.cancelled:
+            #: Stopped while pip was being launched (`cancel`'s no-process branch).
+            process.terminate()
         for line in process.stdout or []:
             line = line.rstrip()
             if not line:

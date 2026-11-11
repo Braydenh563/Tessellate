@@ -1870,8 +1870,14 @@ header#top-bar[data-scrolled="1"],
   }
 }
 .reminder-compose-card > #reminder-compose {
-  margin: 0;
-  padding: 0;
+  /* It scrolls (`overflow-y: auto` below, so `overflow-x` clips too): the
+     fields' 2px ring and its 2px gap need the ring-room doctrine's room, or
+     the first and last column lose 4px of ring (measured at 768: Reminder
+     text cut 4px each side, the Add button 4px on the left). The room is
+     padding, pulled back out by the same negative margin, so the form does
+     not move. */
+  margin: calc(-1 * var(--ring-room));
+  padding: var(--ring-room);
   border: 0;
   background: none;
   box-shadow: none;
@@ -2595,14 +2601,15 @@ header#top-bar[data-scrolled="1"],
    the dock can hold:
    - 47rem and over: the strip is one line, toggles left, model, mode and
      gear right, the free space between (the spacer), as it was at 1440.
-   - under 47rem: two lines, always the same two. Line one is the toggles
-     (Skills, Web, Plan); line two is the mode group, the model picker taking
-     whatever the Ask|Agent switch and the gear leave, ellipsised, never a
-     third line.
-   - under 24rem: the toggles are icon-only squares. Their words stay as
-     the accessible names (`font-size: 0` keeps the text in the tree, unlike
-     `display: none`) and the titles are untouched; Ask and Agent give up
-     their icons to the model picker.
+   - under 47rem: the spacer goes and the mode group shares the toggles'
+     line on a 16rem basis, the model picker taking whatever the Ask|Agent
+     switch and the gear leave, ellipsised. Where even the squares below
+     leave it less, it is the line under them, never a third line.
+   - under 35rem: the toggles are icon-only squares, so the mode group
+     keeps their line. Their words stay as the accessible names (`font-size:
+     0` keeps the text in the tree, unlike `display: none`) and the titles
+     are untouched.
+   - under 24rem: Ask and Agent give up their icons to the model picker.
    - the composer: one line (box grows, the icon buttons are fixed, Send
      last) while the box keeps 12rem or more; under 27rem it is the box on a
      line of its own and the attach buttons left with the mic and Send right
@@ -2666,7 +2673,12 @@ header#top-bar[data-scrolled="1"],
     margin-inline-start: auto;
   }
 }
-@container chat-dock (width < 24rem) {
+/* The toggles go icon-only while the mode group still fits beside them
+   (wrap/zoom sweep, 2026-11-11). With the web panel open at 1280 the strip
+   is 522px: Skills, Web and Plan with their words (270px) and the mode
+   group's 16rem basis are 550px, so the mode group took a second line (72px
+   of strip for 32px of controls). Squares take 130px, and the line holds. */
+@container chat-dock (width < 35rem) {
   .chat-dock-controls > .chat-tool-group:not(.chat-tool-group-mode, .chat-tool-group-attach) > button,
   .chat-dock-controls #chat-skills-btn {
     width: var(--control-h);
@@ -2684,6 +2696,8 @@ header#top-bar[data-scrolled="1"],
   .chat-dock-controls .chat-tool-group + .chat-tool-group:not(.chat-tool-group-mode)::before {
     margin-inline: var(--space-1);
   }
+}
+@container chat-dock (width < 24rem) {
   /* Ask and Agent keep their words and give up their icons, so the model
      picker beside them reads more than its first six letters. */
   .chat-dock-controls > .chat-tool-group-mode > .select-shell ~ .seg .ph-lead {
@@ -2932,5 +2946,103 @@ header#top-bar[data-scrolled="1"],
   #doc-panes #doc-preview,
   #doc-panes.reading > #doc-preview {
     padding-right: calc(var(--target-min) + 2 * var(--space-1) + 2px + var(--space-2));
+  }
+}
+
+/* --- Wrap and zoom sweep of the mind map and the Dashboard (owner, 2026-11-11) ---
+   Measured in the running app at 360, 390 (touch), 768, 1280, 1920, 2560 and
+   the 125, 150 and 200 % windows, both themes (every control's rect against
+   every clipping ancestor, every one-line row's items, every short label's
+   line rects; the sweep is `wrapzoom-shell.js`'s detector driven over the map
+   and Dashboard states). What it found is fixed here, by cause. */
+/* 1. **The Widgets dialog's rows give the controls a line of their own when
+       they do not fit.** At 360 the row's title column was 31px wide (the
+       Wide toggle, three icon buttons and two 1rem gaps took the rest of the
+       272px), so "Notebook constellation" ran 37px under the Wide button and
+       the description was one letter and an ellipsis. The text keeps 10rem or
+       more; the controls drop under it, at the row's end. */
+.dash-widget-row {
+  flex-wrap: wrap;
+  row-gap: var(--space-2);
+}
+.dash-widget-row-main {
+  flex: 1 1 10rem;
+}
+.dash-widget-row-controls {
+  margin-inline-start: auto;
+}
+/* 2. **A quick link's arrange menu has its own room in edit mode.** The tile
+       kept `--space-9` (32px) for it, and on a touch screen the menu button is
+       the 44px target: it sat 7.7px over "New note" and 10.5px over its hint. */
+.quick-edit-tile > .quick-link {
+  padding-right: max(var(--space-9), calc(var(--target-min) + var(--space-3)));
+}
+/* 3. **A glance tile's label is at most two lines on a phone.** The band above
+       lets the label wrap rather than clip ("1 meeting to..."), but the
+       newest note's own first line is the label of one tile and ran to twelve
+       lines at 360, pushing the page a screen down. */
+@media (max-width: 599.98px) {
+  .dash-glance .quick-link-label {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+}
+/* 4. **The board sidebar's "This map" tab scrolls inside the sheet.** Its
+       facts, three actions and the templates line are taller than the phone
+       sheet (360x740: the last row, "Where are the templates?", stood 39.8px
+       under the board's edge, over the tool strip, and could not be reached).
+       Room above and below for the last button's ring. */
+.wb-side-section[data-side-panel="map"] {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-block: var(--ring-room);
+}
+/* 5. **The boards list's count title is two lines on a phone, not an
+       ellipsis.** "13 boards and maps" is 170px and the actions beside it
+       (help, menu, New) leave 148px at 360, so the title read "13 board...".
+       Two lines of the heading are the 44px the buttons beside them already
+       take, so the dock does not grow; the title still ends in an ellipsis
+       past two lines. */
+@media (max-width: 599.98px) {
+  .dock[data-dock-name="library-boards"] .dock-identity > h2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    white-space: normal;
+  }
+}
+/* 6. **The last reminder can be scrolled clear of "New reminder".** The
+       floating button (`.dock-fab`, 07-whiteboard-misc.css) kept 8px of
+       page foot, a button is 44px and stands 20px above the tab bar, so at
+       the end of the list (360x740, scrolled to the bottom) it covered the
+       bottom 10px of the last card and its date. The foot is the button's
+       height and its offset, the same figure `scroll-padding-bottom` uses
+       there for a focused row. */
+@media (max-width: 599.98px) {
+  #tab-reminders:has(> .dock-fab) {
+    padding-bottom: calc(var(--target-min) + var(--space-5) + var(--space-3));
+  }
+}
+/* 7. **The map's tool dock shares the bottom edge with the zoom pill, so it
+       gives up only as much of the pill's side as it needs.** Both sides were
+       kept clear (07-whiteboard-misc.css: `100% - 2 * (zoom + 1.5rem)`,
+       "symmetric so centring can never put the dock under it"), which needs
+       1284px for the dock's one 834px row: at 1280 it was 27px short and
+       wrapped to two rows (86px), at 960 (a 1920 window at 200 %) to three
+       (114px of a 270px canvas). The `right` inset is how far the centre has to
+       slide left for a row of 53rem (the dock's natural width, 834px, and a
+       little over) to clear the pill: nothing from 1284 up, the whole
+       reserve at 1059 and below, a straight line between, so the dock never
+       jumps as the window is resized. The `max-width` is the old cap plus
+       what it slid, so a longer row (a translation) still wraps rather than
+       going under the pill. Below 820 it is the edge-to-edge strip. */
+@media (min-width: 820px) {
+  .whiteboard-floating-panel.bottom-center:not([data-dock="side"]) {
+    right: clamp(0px, calc(2 * (var(--wb-w-zoom) + 1.5rem) + 53rem - 100%), calc(var(--wb-w-zoom) + 1.5rem));
+    max-width: calc(
+      100% + clamp(0px, calc(2 * (var(--wb-w-zoom) + 1.5rem) + 53rem - 100%), calc(var(--wb-w-zoom) + 1.5rem)) -
+        2 * (var(--wb-w-zoom) + 1.5rem)
+    );
   }
 }

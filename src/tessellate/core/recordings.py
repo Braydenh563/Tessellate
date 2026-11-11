@@ -114,12 +114,16 @@ def transcription_of(recording_id: int) -> dict | None:
         return dict(run) if run else None
 
 
-def begin_transcription(recording_id: int, job_id: str) -> bool:
-    """False when one is already running for this recording."""
+def begin_transcription(recording_id: int, job_id: str, task: str = "transcript") -> bool:
+    """False when one is already running for this recording. `task` is
+    "transcript" or "voices" (telling the speakers apart, `ai/diarize.py`),
+    so the page words the run for what it is."""
     with _runs_lock:
         if (_runs.get(recording_id) or {}).get("state") == "running":
             return False
-        _runs[recording_id] = {"state": "running", "progress": 0.0, "job_id": job_id, "error": "", "words": 0}
+        _runs[recording_id] = {
+            "state": "running", "progress": 0.0, "job_id": job_id, "error": "", "words": 0, "speakers": 0, "task": task,
+        }
         _done[recording_id] = threading.Event()
         return True
 
@@ -130,10 +134,13 @@ def note_progress(recording_id: int, progress: float | None) -> None:
             _runs[recording_id]["progress"] = round(max(0.0, min(1.0, progress)), 3)
 
 
-def end_transcription(recording_id: int, state: str, error: str = "", words: int = 0) -> None:
+def end_transcription(recording_id: int, state: str, error: str = "", words: int = 0, speakers: int = 0) -> None:
     with _runs_lock:
-        run = _runs.setdefault(recording_id, {"job_id": ""})
-        run.update(state=state, error=error, words=words, progress=1.0 if state == "done" else run.get("progress"))
+        run = _runs.setdefault(recording_id, {"job_id": "", "task": "transcript"})
+        run.update(
+            state=state, error=error, words=words, speakers=speakers,
+            progress=1.0 if state == "done" else run.get("progress"),
+        )
         event = _done.pop(recording_id, None)
     if event is not None:
         event.set()

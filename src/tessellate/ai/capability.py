@@ -35,6 +35,27 @@ _OVERVIEW = re.compile(
     r"|^how can you help(?: me)?$|^what do you do$",
     re.I,
 )
+_TOPIC_WORDS = frozenset({"subjects", "topics", "things", "thing", "information", "questions", "commands", "stuff"})
+_SKILL_WORDS = frozenset({"ask", "know", "help", "familiar", "aware", "versed", "allowed", "answer", "able", "commands", "do"})
+_OVERVIEW_OPENERS = ("what", "what's", "which", "tell", "are", "r", "list", "name", "how", "i")
+
+
+def _overview_in_other_words(text: str) -> bool:
+    """"what subjects are you familiar with", "what questions am I allowed to ask", "tell me the
+    subjects you're aware of": the overview put as which subjects, kinds of things or questions
+    the assistant takes (CLINC150 phrasings, `tests/fixtures/composer/phrasing_1111.json`). Read
+    by its words, not a pattern: a notes question names a note or says "my" (the list of commands is the exception)."""
+    words = re.findall(r"[a-z']+", text.lower())
+    if not 3 <= len(words) <= 13 or words[0] not in _OVERVIEW_OPENERS:
+        return False
+    named = set(words)
+    if named & {"did", "wrote", "write", "have", "had", "was", "were", "has"} or ("my" in named and "commands" not in named):
+        return False
+    if "get" in named and "you" in named and "help" in named:
+        return True
+    to_you = bool(named & {"you", "u", "you're"}) or ("ask" in named and "i" in named) or "commands" in named
+    return to_you and (bool(named & _TOPIC_WORDS) or {"able", "help"} <= named) and bool(named & _SKILL_WORDS)
+
 #: What turns a capability question into a request: an object of its own.
 _REQUEST = re.compile(
     r"\b(?:for|about|abt|regarding|mentioned|wrote|written|called|named|that says|me to|this note|these|those)\b|\bthe (?:\w+ )?note\b"
@@ -266,7 +287,7 @@ _PRIVACY = re.compile(
 def asks(question: str) -> bool:
     """Whether `question` asks what Atlas can do rather than asking it to."""
     text = _clean(question)
-    if _OVERVIEW.match(text) or _PRIVACY.match(text):
+    if _OVERVIEW.match(text) or _PRIVACY.match(text) or _overview_in_other_words(text):
         return True
     m = _LEAD.match(text)
     if not m:

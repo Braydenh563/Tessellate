@@ -974,8 +974,20 @@ async function sendChatMessage(preset, opts = {}) {
     }
     return;
   }
+  //: After Stop the queue is held, not sent (owner, 2026-11-11): Send from the box runs the waiting
+  //: messages oldest first, what is typed going last. No turn of its own: the `finally` drains the queue.
+  const resume = preset == null && chatQueue.held && chatQueue.items.length > 0;
+  if (resume) {
+    const typed = chatTidyTyped(input.value.trim());
+    if (typed) {
+      chatQueue.items.push(typed);
+      input.value = "";
+      input.dispatchEvent(new Event("input"));
+    }
+  }
   chatQueue.held = false;
   try {
+    if (resume) return;
     //: The turn itself is lazy (chat-turn.js, warmed when the box takes focus).
     if (!(await ensureModule("chatTurn"))) return lazyLoadFailed();
     return await chatSendTurn(preset, opts);

@@ -66,9 +66,11 @@ def test_every_kind_has_a_sample_and_an_about_line_short_enough_for_one_row():
 
 
 def test_below_600_the_word_hides_and_the_button_is_44_px():
-    block = CSS[CSS.index(".dgm-kindword {") - 40 :][:260]
-    assert "@media (max-width: 599.98px)" in block and "display: none" in block
-    assert "min-block-size: 2.75rem" in CSS[CSS.index(".dgm-kindword {") :][:200]
+    # The window rule; a narrow pane hides the word too (the @container block above it, wrapzoom 2026-11-11).
+    at = CSS.index("@media (max-width: 599.98px) {\n  .dgm-kindword {")
+    block = CSS[at:][:260]
+    assert "display: none" in block and "min-block-size: 2.75rem" in block
+    assert "@container (max-width: 599.98px) {\n  .dgm-kindword {\n    display: none;" in CSS
 
 
 def test_a_source_the_blocks_cannot_draw_offers_no_kind_even_from_the_title_row():

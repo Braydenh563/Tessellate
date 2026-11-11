@@ -12,6 +12,8 @@ import re
 
 from dataclasses import dataclass
 
+from tessellate.ai import composer_calendar
+
 #: The act runner's `propose` (acts.py), set when acts.py is imported: the
 #: agent's `propose_act` tool (ai/tools) calls it through this leaf rather
 #: than importing the runner, which imports commands, which imports tools
@@ -196,11 +198,16 @@ def app_verb(text: str) -> str | None:
     None. A question about the verb ("how do I archive a note?") does not open
     with it."""
     found = _APP_VERB.match(" ".join(str(text or "").split()))
-    return found.group("verb").lower() if found else None
+    if found:
+        return found.group("verb").lower()
+    #: Emptying a whole calendar or list is not an act here (composer_calendar).
+    return "clear" if composer_calendar.bulk(text) else None
 
 
 def app_verb_line(verb: str) -> str:
     """Where an app verb is done, in one line."""
+    if verb == "clear":
+        return composer_calendar.CLEAR_LINE
     where = {
         "archive": "open the note and use Archive in its menu",
         "unarchive": "open the Archive and use Restore on the note",

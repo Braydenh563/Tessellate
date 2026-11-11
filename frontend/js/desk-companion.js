@@ -562,7 +562,17 @@
     event.preventDefault();
     rows[(to + rows.length) % rows.length].focus();
   });
-  for (const button of document.querySelectorAll("[data-desk-close]")) button.addEventListener("click", rest);
+  //: The note's head X is the card's Close too: the card's own is folded away here (the 296px
+  //: foot had no room for it beside Note | To-do, the picture and Save, so Save wrapped to a
+  //: second line; wrapzoom 2026-11-11). It closes the card the card's way (the draft kept, a
+  //: held picture dropped), and the capture listener below rests the window.
+  for (const button of document.querySelectorAll("[data-desk-close]")) {
+    button.addEventListener("click", () => {
+      const cardClose = button.closest("#desk-note") && $("desk-capture").querySelector('#capture-card:not([hidden]) [data-cc="close"]');
+      if (cardClose) cardClose.click();
+      else rest();
+    });
+  }
 
   //: The card closes itself (Close, Escape); the panel goes with it. Capture phase: the card
   //: stops the Escape it handles, and keeps its draft either way.

@@ -2759,9 +2759,12 @@ dialog::backdrop {
 /* Picking an icon from a grid rather than typing "ph-briefcase" into a text
    box, which is what the first version asked for and which nobody outside
    this repo could possibly know how to fill in. */
+/* The track is never narrower than a button's touch floor: at 768 the floor
+   is 44px and the 2.25rem tracks were 39.8px, so the square buttons ran 4px
+   out of the picker (wrapzoom 2026-11-11). */
 .space-icon-picker {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(2.25rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(max(2.25rem, var(--target-min)), 1fr));
   gap: var(--space-2);
   margin-top: var(--space-2);
 }
@@ -3251,10 +3254,15 @@ dialog::backdrop {
    bare selector here lost to it while typing, the field took its full width
    (flex-basis auto, width 100%), and pressing Ask blurred it and pulled the
    button 65px up between press and release, so the click missed. */
+/* 12rem, not the 14rem other fields take: at 768 the controls are 391px
+   (the touch floor makes the two icons 44px) and the field had 214px of a
+   638px composer, so the whole group dropped under it (wrapzoom sweep). 12rem
+   still holds the placeholder; a phone's composer, narrower still, moves the
+   controls down as a group, as below. */
 .ask-composer > #question,
 .ask-composer > #question:focus,
 .ask-composer > #question:focus-visible {
-  flex: 1 1 14rem;
+  flex: 1 1 12rem;
 }
 /* The controls are one flex item, so a row that cannot hold them beside a
    field worth typing in moves them down as a group. */
@@ -4981,6 +4989,49 @@ rect.board-minimap-card,
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
+}
+/* **One line beside a window's width** (the wrapzoom sweep: 78px and two
+   lines at 768, 86px at 960 at 200%, Save dropped onto the Tags label under
+   the sticky foot). The hint gives way first: it ends in an ellipsis with
+   the whole sentence on its title (`updateCaptureSpaceLabel`), and the
+   commit controls keep their words. A phone's row is narrower than the
+   controls alone, so there the hint keeps its own line. */
+@media (min-width: 600px) {
+  .capture-commit-row {
+    flex-wrap: nowrap;
+  }
+  .capture-commit-row > .capture-space-hint {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .capture-commit-row > :not(.capture-space-hint) {
+    flex: 0 0 auto;
+  }
+}
+/* On a phone the hint is a line of its own and the three controls the
+   next; Private keeps its lock and its pressed state, its word clipped
+   (`.toolbar-word`'s recipe), so the three share that line at 390 (Save
+   was a third line, 121px of row). */
+@media (max-width: 599.98px) {
+  .capture-commit-row > .capture-space-hint {
+    flex-basis: 100%;
+  }
+  .capture-commit-row > #entry-private .lock-toggle-label {
+    position: absolute;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .capture-commit-row > #entry-private {
+    width: var(--control-h);
+    padding-inline: 0;
+    justify-content: center;
+  }
+  .capture-commit-row > #entry-private > .ph-lead {
+    margin-inline-end: 0;
+    translate: none;
+  }
 }
 /* The mic was the one control in the panel with an icon and no label, in a
    row where every other button had both, so it read as a decoration rather
@@ -11673,6 +11724,11 @@ button.finder-row:is(:focus-visible, :has(:focus-visible)) {
   padding: var(--space-1);
   max-width: calc(100% - 1rem);
   max-height: none;
+  /* A short window (640x400, a laptop at 200%) leaves nothing between the
+     top bar's and the tool rail's clearances: the panel was 8px tall with
+     its menu running off the screen. A floor keeps it a panel; the rail may
+     overlap its foot there, which is the lesser fault. */
+  min-height: min(14rem, 60%);
 }
 /* **Beside a side dock, not over it** (INBOX 596: the dock "clashes with
    the side panel"). Docked at the side, the tools are a column at the left
@@ -11754,12 +11810,18 @@ button.finder-row:is(:focus-visible, :has(:focus-visible)) {
   min-width: 0;
   margin: 0;
 }
+/* A section scrolls when its rows outrun the panel (wrapzoom 2026-11-11: at
+   960x540 and 200 % the map tab's facts and actions were 263px tall in 197,
+   so they ran out of the panel, over the tool shelf, and were cut by the
+   board's edge). A list inside keeps its own scroller: it shrinks first. */
 .wb-side-section {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 .wb-side-section[hidden] {
   display: none;
@@ -11810,6 +11872,37 @@ button.finder-row:is(:focus-visible, :has(:focus-visible)) {
     width: 100%;
     border-left: none;
     padding: 0 var(--space-1);
+  }
+}
+/* **A short window at tablet width** (640x400: a laptop at 200 percent, a
+   phone on its side). The top bar and the tool rail take every pixel the
+   sidebar's column of four 44px tabs needs, so its last two were clipped by
+   the board. The tabs go in a row over the panel, as the phone sheet has
+   them, and the foot is the board's, not the rail's (the rail may overlap
+   it: a floating panel opened on purpose is the one to see). */
+@media (min-width: 600px) and (max-height: 520px) {
+  .wb-sidebar {
+    bottom: var(--space-2);
+    flex-direction: column;
+  }
+  .wb-sidebar .wb-sidebar-rail {
+    flex-direction: row;
+  }
+  .wb-sidebar .wb-sidebar-panel {
+    border-left: none;
+    padding: 0 var(--space-1);
+    /* The panel is a few rows tall here: it scrolls as one, its lists no
+       longer each keeping a share of room that is not there. */
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .wb-sidebar .wb-side-section,
+  .wb-sidebar .wb-lib-list,
+  .wb-sidebar .wb-side-section .wb-library-list,
+  .wb-sidebar .wb-layers-tree,
+  .wb-sidebar .wb-outline-tree {
+    flex: none;
+    overflow-y: visible;
   }
 }
 /* The rows' own list gap, the list-row recipe's other half (`--row-gap`). */

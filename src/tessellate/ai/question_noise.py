@@ -37,7 +37,7 @@ import re
 from tessellate.core.lazyre import lazy_compile
 from collections import Counter
 
-from tessellate.ai import act_registry, repair_turn, spelling, typo_context
+from tessellate.ai import act_registry, composer_aboutme, repair_turn, spelling, typo_context
 from tessellate.ai.spelling import distance  # noqa: F401 - re-exported: the speller owns it, so the two modules do not import each other
 
 # --- 1. slang and text-speak ----------------------------------------------------
@@ -2191,7 +2191,9 @@ def _spoken_to_kind(message: str) -> str | None:
     what I asked" (INBOX 1668 b), whatever else the message could be."""
     if asks_identity(message):
         return "who"
-    return "repair" if repair_turn.is_repair(message) else addressed_kind(message)
+    if repair_turn.is_repair(message):
+        return "repair"
+    return addressed_kind(message) or composer_aboutme.kind(message)
 
 
 def social_kind(message: str) -> str | None:

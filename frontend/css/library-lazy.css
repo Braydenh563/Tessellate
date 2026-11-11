@@ -633,6 +633,14 @@ textarea.has-gutter {
   z-index: 2;
   padding-block: var(--space-2);
 }
+/* **The foot never hides what has the focus** (the wrapzoom sweep, 1280 by
+   720: the form is 685px in a 608px page, so at rest the stuck foot lay over
+   the filing row's space picker and document button). A control above it,
+   reached by Tab or scrolled to, stops the foot's height short of the
+   page's bottom edge. */
+#capture > :not(.capture-commit-row) :is(button, input, select, textarea, summary, [tabindex], [contenteditable]) {
+  scroll-margin-bottom: calc(var(--control-h) + 2 * var(--space-2));
+}
 
 @media print {
 /* **The last of the chrome.** 05-sidebars-themes.css hides the tab bar, the
@@ -3044,7 +3052,11 @@ body.printing-doc #doc-preview p,
 #wb-outline-tree .wb-outline-text {
   display: block;
   width: 100%;
-  min-height: 0;
+  /* A row is as tall as the pencil over its end (`--target-min`: 28px, 44px on
+     a touch screen or below 820). It was 0, with 44px on a coarse pointer
+     only, so at 360 and 768 with a mouse the 44px pencil stood 7px over the
+     first row and the tree's scroll box cut 4px of it. */
+  min-height: var(--target-min);
   margin: 0;
   box-sizing: border-box;
   border: 1px solid transparent;
@@ -3112,12 +3124,6 @@ body.printing-doc #doc-preview p,
   }
 }
 
-/* A finger's row: the 44px target floor on a touch screen. */
-@media (pointer: coarse) {
-  #wb-outline-tree .wb-outline-text {
-    min-height: 44px;
-  }
-}
 
 /* A topic's markers (MINDMAP_PLAN decision 34): a row before the label, in
    the branch's ink, each mark one em square so the row lines up with the
@@ -6249,10 +6255,16 @@ button.ghost.doc-template-choice.wb-template-choice {
   align-items: start;
 }
 
-#doc-assist-model-line > .ghost,
-#doc-ai-offline > .ghost {
+/* The action is the split button once offline-split.js has wrapped it (INBOX
+   904 B05), not a bare `.ghost`: matched only as `.ghost`, the 237px split took
+   the auto column and the words were squeezed into 42px, one per line (348px
+   tall, wrapzoom 2026-11-11). Its own sheet's `margin-inline-start: auto`
+   would push it to the far edge of the grid cell. */
+#doc-assist-model-line > :is(.ghost, .ai-offline-split),
+#doc-ai-offline > :is(.ghost, .ai-offline-split) {
   grid-column: 2;
   justify-self: start;
+  margin-inline-start: 0;
 }
 
 @media (pointer: coarse) {
@@ -7112,6 +7124,65 @@ input[type="color"].wb-mixed {
   }
   #tab-documents .doc-dock > .doc-dock-identity {
     flex-basis: 8rem;
+  }
+}
+/* **The dock stays one row at every zoom (wrapzoom 2026-11-11).** A code file's
+   actions measured 808px (1062 with "Install Python in Settings, Packages")
+   in a 931px dock at 1280, so the name sat on a line of its own and the
+   actions broke in two, Snippets and the menu on a third line; a markdown
+   document's 733 did the same beside the title's 22rem. Below 75rem of dock
+   the lesser buttons are their icons (title and aria-label name them; Run,
+   the bar's one filled action, keeps its word), the name asks for 12rem, and
+   the Python line is cut with an ellipsis (its title says it whole). Prose
+   keeps its words down to 60rem: its actions are 733px with them. Under 820
+   the Python line leaves the row: the card's install notice says the same. */
+@container docdock (max-width: 74.99rem) {
+  #tab-documents .doc-dock > .doc-dock-identity {
+    flex-basis: 12rem;
+    min-width: 0;
+  }
+  #tab-documents.doc-is-code .doc-ai-label,
+  #doc-code-format > .toolbar-word {
+    display: none;
+  }
+  #tab-documents.doc-is-code :is(#doc-code-snippets-open, #doc-code-assist-open),
+  #doc-code-format {
+    flex: 0 0 var(--target-min);
+    justify-content: center;
+    padding-inline: 0;
+  }
+  :is(#doc-code-snippets-open, #doc-code-assist-open, #doc-code-format) > .ph-lead {
+    margin: 0;
+  }
+  #tab-documents.doc-is-code .doc-view-cluster .seg > button {
+    padding-inline: var(--space-2);
+  }
+  #doc-code-run-why {
+    display: inline-block;
+    max-width: 9rem;
+    line-height: var(--control-h);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+@container docdock (max-width: 59.99rem) {
+  .doc-ai-label,
+  #doc-format-show > span {
+    display: none;
+  }
+  :is(#doc-ai, #doc-format-show, #doc-code-snippets-open, #doc-code-assist-open) {
+    flex: 0 0 var(--target-min);
+    justify-content: center;
+    padding-inline: 0;
+  }
+  :is(#doc-ai, #doc-format-show, #doc-code-snippets-open, #doc-code-assist-open) > .ph-lead {
+    margin: 0;
+  }
+}
+@container docdock (max-width: 819.98px) {
+  #doc-code-run-why {
+    display: none;
   }
 }
 
@@ -8139,6 +8210,25 @@ input[type="color"].wb-mixed {
 .wb-format.hidden {
   display: none;
 }
+/* **Beside the selection bar and above the zoom cluster, not over them**
+   (wrapzoom 2026-11-11, 768x1024). Under 820 the zoom cluster stands on the
+   shelf at the right, where the panel reached down to the shelf too: Zoom out
+   and the level were under the panel's head. And the selection bar, 624px of
+   controls, was centred on the object whatever the panel left it, so its
+   Duplicate, Delete and menu were under the panel. The bar may be as wide as
+   the board less the panel and the rail (it wraps, its own recipe), and the
+   panel's foot clears the cluster. */
+@media (min-width: 600px) {
+  #wb-canvas-view:has(> #wb-format:not(.hidden)) > #wb-context {
+    max-width: max(12rem, calc(100% - 18.5rem - 5rem));
+  }
+}
+@media (min-width: 600px) and (max-width: 819.98px) {
+  .wb-format {
+    /* The cluster's height is one target, its padding and its border. */
+    bottom: calc(0.5rem + var(--wb-h-tools) + var(--space-3) + var(--target-min) + 2 * var(--space-1) + 2px + var(--space-3));
+  }
+}
 .wb-format-body {
   flex: 1 1 auto;
   min-height: 0;
@@ -8230,6 +8320,7 @@ input[type="color"].wb-mixed {
 .wb-fmt-row input[type="range"] {
   width: 100%;
   min-width: 0;
+  margin: 0;
 }
 /* One height for every field in the panel: a number field drew taller than
    the select beside it. */
@@ -8248,6 +8339,13 @@ input[type="color"].wb-mixed {
 }
 .wb-format input[type="number"]:is(:hover, :focus-visible) {
   -moz-appearance: auto;
+}
+/* **A paired cell holds four digits** (width sweep 1111): the global field's
+   --space-5 side padding left a 26px content box in a 62px cell, so "812"
+   read "8(". The cell trades that padding for a hair and centres its value. */
+.wb-format .wb-fmt-cell input[type="number"] {
+  padding-inline: var(--space-1);
+  text-align: center;
 }
 .wb-fmt-out {
   min-width: 3ch;
@@ -8339,6 +8437,20 @@ input[type="color"].wb-mixed {
 }
 .wb-fmt-commands .wb-fmt-buttons {
   flex-wrap: nowrap;
+}
+/* **Under the finger the arrange rows put their buttons under the name**
+   (wrapzoom 2026-11-11, 768x1024). Four 44px targets and their gaps are 188px
+   against the field track's 179 (11rem, 160 on Small text), so Send to back
+   and Same height stood past the panel's edge, under its scroll clip. The
+   name takes its own line and the buttons the panel's width, still one row. */
+@media (max-width: 819.98px), (pointer: coarse) {
+  .wb-fmt-commands > .wb-fmt-row {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--space-1);
+  }
+  .wb-fmt-commands > .wb-fmt-row > :nth-child(2) {
+    grid-column: 1;
+  }
 }
 /* A pressed toggle (bold, italic, an alignment) on the selection's soft
    ground, the sidebar tab's own state. */
@@ -8939,7 +9051,7 @@ input[type="color"].wb-mixed {
   flex: 0 0 auto;
   min-width: 0;
 }
-.doc-tabs-row > .tabs-line {
+.doc-tabs-row > #doc-tabs {
   flex: 1 1 auto;
   min-width: 0;
   overflow-x: auto;
@@ -8952,4 +9064,13 @@ input[type="color"].wb-mixed {
 }
 .doc-tabs-row > #doc-tab-end {
   flex: 0 0 auto;
+}
+/* At 600 to 819.98 Skill logs is a rail on the left (07-whiteboard-misc.css)
+   and its opener rode over the "All" sub-tab at 768 (x 7 to 51 against
+   x 9): the strip above the split keeps the same rail clear as the column
+   beside it, only while the Skills view is the one showing. */
+@media (min-width: 600px) and (max-width: 819.98px) {
+  #tab-library:has(> #library-view-skills:not(.hidden)) > #library-subtabs {
+    padding-left: calc(max(var(--sidebar-toggle-size), var(--target-min)) + 2 * var(--sidebar-toggle-inset));
+  }
 }

@@ -26,8 +26,11 @@ of "redundant" rules fails here and not in the next screenshot.
 from __future__ import annotations
 
 import re
+from pathlib import Path
 
 from tests._css_paths import css_text
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def _css() -> str:
@@ -36,7 +39,7 @@ def _css() -> str:
 
 def _block(css: str, selector: str) -> str:
     """The declarations of the first rule whose selector is exactly `selector`."""
-    match = re.search(re.escape(selector) + r"\s*\{([^}]*)\}", css)
+    match = re.search(re.escape(selector) + r"\s*(?:,[^{}]*)?\{([^}]*)\}", css)
     assert match, selector
     return match.group(1)
 
@@ -92,4 +95,30 @@ def test_an_empty_body_leaves_no_float_to_narrow_the_meta_line():
 def test_the_card_strip_sits_in_the_corner_not_a_second_offset_below_it():
     css = _css()
     block = _block(css, "#entry-list:not(.is-rows) > li .entry-meta-end > .entry-actions")
-    assert "top: 0" in block
+    # Not a second offset below the corner; since the wrapzoom sweep it rises
+    # by `--space-1` into the card's padding so it ends with the first line.
+    assert "top: calc(var(--space-1) * -1)" in block
+
+
+def test_the_cards_float_keeps_the_strips_own_width_clear():
+    """wrapzoom sweep: a 6.5rem (104px) float against a 131px strip left the
+    strip over the first line's end, 11x6 at 1280. The float is the strip's
+    width in targets and gaps, a draft's five as well as four."""
+    css = _css()
+    four = _block(css, "#entry-list > li > .entry-content::before")
+    assert "width: calc(4 * var(--target-min) + 3 * 0.4rem + var(--space-2))" in four
+    assert "6.5rem" not in four
+    five = _block(css, "#entry-list > li.has-wide-strip > .entry-content::before")
+    assert "5 * var(--target-min)" in five
+    card = (ROOT / "frontend" / "js" / "entry-card.js").read_text(encoding="utf-8")
+    assert 'li.classList.toggle("has-wide-strip", actions.childElementCount > 4)' in card
+
+
+def test_a_pointed_at_row_makes_room_for_its_strip_in_the_lane():
+    """wrapzoom sweep, every width: the 131px strip lay over the time and the
+    chips before it ("Linked by 1 note" half shown). On hover the time leaves
+    and the lane's end keeps the strip's width."""
+    css = _css()
+    hover = "#entry-list.is-rows > li:not(:has(textarea)):is(:hover, :focus-within) > .entry-meta"
+    assert "padding-inline-end: calc(4 * var(--target-min) + 3 * 0.4rem + var(--space-2))" in _block(css, hover)
+    assert "display: none" in _block(css, hover + " > .entry-date")
