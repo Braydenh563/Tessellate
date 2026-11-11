@@ -43,3 +43,22 @@ def test_the_companion_notes_foot_keeps_one_row():
     js = (CSS_DIR.parent / "js" / "desk-companion.js").read_text(encoding="utf-8")
     hand = js[js.index('querySelectorAll("[data-desk-close]")'):][:400]
     assert '[data-cc="close"]' in hand and "cardClose.click()" in hand, "the head X closes the card the card's way"
+
+
+def test_a_quiet_settings_button_outdents_only_where_there_is_room():
+    """Clip and overlap: the -8px outdent ran Reset appearance to defaults and
+    Read it again 4px past the pane's ring room, and pulled Clear kept pages'
+    tint over the word before it. A row straight under a section and a button
+    inside a sentence keep their own box, in the Settings window and the
+    generated Appearance panel alike."""
+    want = re.compile(r":is\(\.settings-section > \.row, p\) > button\.ghost[^{]*\{\s*margin-inline-start: 0;")
+    assert want.search(_css("settings-controls-lazy.css"))
+    assert want.search(_css("appearance-panel-lazy.css")), "run scripts/appearance_panel_css.py"
+
+
+def test_a_settings_panes_lone_actions_stand_a_ring_below_the_top():
+    """Clip: at 768 the pane dock gives its row up and its actions sit at the
+    pane's top, flush with the scroller's edge, so their rings lost 4px."""
+    css = _css("settings-controls-lazy.css")
+    block = css[css.index("h3.jump-echo:only-child) > .dock-actions {"):].split("}", 1)[0]
+    assert "inset-block-start: var(--ring-room);" in block
