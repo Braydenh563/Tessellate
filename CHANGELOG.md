@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Fixed (code scanning 2180): the desk companion's "overlay started" log builds the motion words from fixed strings in `_motion_label`, never from the value read from preferences.
 - Fixed (code scanning, desk companion start-up log): the motion reason is now the matching constant from `MOTION_REASONS`, never the value read from preferences, so the log line carries no value that came from a preference read.
 - Audit 1029 extras (X1 to X14, re-checked at head 2026-11-11): all fourteen are stale, already fixed in code (pointers in `audit-1029-extras.md`); measured on the running app: the voice dialog opens on its title and typing "t a m" starts nothing, the space menu walks with ArrowDown and holds no nested control, the panel grip is 28 x 28, a resized panel shows its reset button, toast action contrast is 7.72 light and 8.79 dark, space names are cleaned and duplicates answer 409. One residual for the owner: a toast over the sketch's Save buttons still yields to 0.12 by design.
 - Fixed (code scanning 2151, 2152): the desk companion's start-up log names a look as "a drawn companion" or "an Atlas look" instead of printing the look, whose capture key code scanning read as a secret (`desk_companion._look_label`; tests/test_desk_overlay_wiring.py).
