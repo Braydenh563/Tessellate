@@ -3951,6 +3951,28 @@ html.modal-open body {
 .dash-widget h2 {
   margin: 0;
 }
+/* **Edit layout keeps a widget's head on one line** (owner, 2026-11-11, zoom
+   and resolution). The card head row wraps by design (above), so five edit
+   controls at 293px dropped under the title on 34 of 35 widgets from 1280
+   to 2560 and at every zoom (head 32 -> 66px at 1366, 78 at 768). Now the
+   Remove glyph, the head's ⋯ (Wide, Move earlier, Move later) and the grip
+   (84px at 1366); the actions never shrink and a long title gives way with
+   an ellipsis, whole in its title (1 of 35 at 1366). */
+.dash-widget > .row.space-between:has(> .dash-edit-actions) {
+  flex-wrap: nowrap;
+}
+.dash-widget > .row:has(> .dash-edit-actions) > h2 {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.25;
+}
+.dash-edit-actions {
+  flex: none;
+  align-items: center;
+}
 .dash-body {
   display: flex;
   flex-direction: column;
