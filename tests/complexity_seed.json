@@ -25,7 +25,6 @@
  "src/tessellate/ai/janitor.py::_knn_match": 20,
  "src/tessellate/ai/learning.py::boosts": 19,
  "src/tessellate/ai/lexical_filing.py::_tally": 25,
- "src/tessellate/ai/lexical_filing.py::_with_proposal": 18,
  "src/tessellate/ai/meeting_summary.py::parse_reply": 19,
  "src/tessellate/ai/ollama_client.py::OllamaClient.chat_tools": 22,
  "src/tessellate/ai/ollama_client.py::OllamaClient.chat_tools_stream": 24,
