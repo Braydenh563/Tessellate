@@ -27,7 +27,7 @@ import re
 
 from tessellate.core.lazyre import lazy_compile
 import sys
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import NamedTuple
 
 from tessellate.ai import arithmetic, recognise
@@ -87,7 +87,15 @@ def _patterns(name: str) -> tuple:
 _CLOCK = lazy_compile(r"^(?:what(?:'s| is) the time|what time is it|whats the time|the time|time)(?: now| right now)?$", re.I)
 _TODAY = lazy_compile(
     r"^(?:what(?:'s| is) (?:the )?(?:date|day)(?: today| it)?|what day is it(?: today)?|what(?:'s| is) today(?:'s date)?|"
-    r"today'?s date|what date is it(?: today)?|what(?:'s| is) the date today)$",
+    r"today'?s date|what date is it(?: today)?|what(?:'s| is) the date today|what the date is today|what today'?s date is|what day of the week is it(?: today)?|"
+    r"today'?s date is what(?: exactly)?|today is what day|the date today|the date|what is the date)$",
+    re.I,
+)
+#: "what's the date tomorrow", "tomorrow's date", "what will the date be tomorrow" (CLINC150 phrasings).
+_RELATIVE_DAY = lazy_compile(
+    r"^(?:what(?:'s| is| will| would)?\s+)?(?:the\s+)?(?:date\s+(?:will\s+)?(?:be\s+)?(?:for\s+)?(?P<a>tomorrow|yesterday)|(?P<b>tomorrow|yesterday)'?s?\s+date"
+    r"|(?:(?:what\s+)?(?:will\s+)?the\s+)?date\s+(?:will\s+)?be\s+(?P<c>tomorrow|yesterday)|(?P<d>tomorrow|yesterday),?\s+what\s+(?:will\s+)?the\s+date\s+(?:be|was)"
+    r"|day\s+(?:is\s+it\s+)?(?:gonna\s+be\s+)?(?P<e>tomorrow|yesterday))$",
     re.I,
 )
 _YEAR = lazy_compile(r"^what (?:year|month) is it(?: now)?$", re.I)
@@ -141,7 +149,8 @@ _MONTH_NAMES = ("January", "February", "March", "April", "May", "June", "July", 
 
 def _clean(question: str) -> str:
     text = " ".join(str(question or "").replace("?", " ").split()).strip(" .!")
-    text = re.sub(r"^(?:hey|hi|ok|okay|so|please|can you|could you|tell me|do you know)[, ]+", "", text, flags=re.I)
+    text = re.sub(r"^(?:hey|hi|ok|okay|so|please|can you|could you|tell me|do you know|let me know)[, ]+", "", text, flags=re.I)
+    text = re.sub(r"^i(?:'d| would| wanna| want| need)?(?: like)?(?: to)? know[, ]+", "", text, flags=re.I)
     text = re.sub(r"^(?:can you |could you |please )?(?:tell me |work out |calculate )", "", text, flags=re.I)
     return re.sub(r"(?:,| |, )(?:please|thanks)$", "", text, flags=re.I).strip()
 
@@ -686,7 +695,7 @@ def _hm(moment: datetime, twelve: bool) -> str:
 
 def _is_clock(text: str) -> bool:
     text, _ = _twelve(text)
-    if _CLOCK.match(text) or _TODAY.match(text) or _YEAR.match(text):
+    if _CLOCK.match(text) or _TODAY.match(text) or _YEAR.match(text) or _RELATIVE_DAY.match(text):
         return True
     match = _CLOCK_IN.match(text)
     return bool(match and zone_for(match.group("place")))
@@ -744,6 +753,11 @@ def _clock(text: str, now: datetime) -> list[tuple]:
         return [("computed", f"It is {_hm(now, twelve)} on {_day_words(now.date())}."), _CLOCK_READ]
     if _YEAR.match(text):
         return [("computed", f"It is {_MONTH_NAMES[now.month - 1]} {now.year}."), _CLOCK_READ]
+    relative = _RELATIVE_DAY.match(text)
+    if relative:
+        word = next(g for g in relative.groups() if g).lower()
+        day = now.date() + timedelta(days=1 if word == "tomorrow" else -1)
+        return [("computed", f"{word.capitalize()} is {_day_words(day)}."), _CLOCK_READ]
     return [("computed", f"Today is {_day_words(now.date())}."), _CLOCK_READ]
 
 

@@ -84,7 +84,7 @@ Run 2026-10-30 (owner's line 80% weekly; stopped near it, the usage view stalled
 - Built: everyday verbs weigh below nouns ("how did we meet the plumber" answers from the plumber's note).
 - Built: "whens dentist now no the NEW one", "how much desk all up after that money back thing", "how many grocery items are checked off".
 - CI: complexity split, snooze clock pinned, CodeQL alert fixed (word-by-word readers).
-- Left: money onto `recognise.measures` (one engine), phrasing fixtures (CLINC150, SGD; WildChat needs the owner to accept its HF terms), stress classes: next appointment, PTO dates, note 44 dumps, comparisons, follow-ons, ambiguous names; audit 1030 rows; INBOX 1451.
+- Left: money onto `recognise.measures` (one engine), phrasing fixtures (built 2026-11-11: CLINC150, SGD, WildChat, which is not gated; 26 strict xfails open in CHAT_PLAN), stress classes: next appointment, PTO dates, note 44 dumps, comparisons, follow-ons, ambiguous names; audit 1030 rows; INBOX 1451.
 - Known flake: gold Lisbon shorthand under `-n 4` (pre-existing, leaked context).
 
 ## 0.6.01 bug-document pass (2026-10-22, branch claude/project-thread-ol5yuv)
