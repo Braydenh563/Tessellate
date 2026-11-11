@@ -29,7 +29,7 @@ ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 PICKER = (JS / "icon-picker.js").read_text(encoding="utf-8")
 EDITOR = (JS / "editor.js").read_text(encoding="utf-8")
-DOCS = (JS / "documents.js").read_text(encoding="utf-8")
+DOCS = (JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-view.js").read_text(encoding="utf-8")
 FEATURES = (JS / "app-features.js").read_text(encoding="utf-8")
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 

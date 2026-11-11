@@ -1918,7 +1918,7 @@ docPairInput.refSource = (CM) => (context) => {
   const line = context.state.doc.lineAt(context.pos);
   const typed = docPairInput.refTyped(line.text.slice(0, context.pos - line.from));
   if (typed === null || !docMathRender.labels) return null;
-  const labels = docMathRender.labels.index(context.state.doc.toString());
+  const labels = docMathRender.labels.index(docStr(context.state.doc));
   const options = [...labels]
     .filter(([key]) => !key.startsWith("eq-auto-"))
     .map(([key, number]) => ({ label: key, detail: `(${number})`, type: "variable" }));

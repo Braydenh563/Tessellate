@@ -17,7 +17,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 FRONTEND = ROOT / "frontend"
-DOCS_JS = (FRONTEND / "js" / "documents.js").read_text(encoding="utf-8")
+DOCS_JS = (FRONTEND / "js" / "documents.js").read_text(encoding="utf-8") + (FRONTEND / "js" / "documents-view.js").read_text(encoding="utf-8")
 #: A plain Ctrl+P and the page setup moved to documents-print.js, one closure (DC13 remainder, doc24-1102).
 PRINT_JS = (FRONTEND / "js" / "documents-print.js").read_text(encoding="utf-8")
 CODEKIT_JS = (FRONTEND / "js" / "documents-codekit.js").read_text(encoding="utf-8")

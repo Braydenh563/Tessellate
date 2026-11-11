@@ -238,7 +238,7 @@ Parked until the owner's data or a check on real hardware:
 - ~~C39 Link offers have no Settings switch; "Untitled document N" naming | t20#15, t20#16~~ **Stale: built** (Settings link offers switch; documents.js Untitled document N), s6-1110
 - ~~C40 Equation panel jump row and Inline/Display pill | DOCUMENTS 1566~~ **Stale: built 6c08378**, s6-1110
 - C41 The remaining 1028-docs and 1031-docs open rows | book1 (40 and 7 rows)
-- ~~D28 Text size is three steps, no Ctrl+wheel | 1028-docs D28~~ built e2775e4 (five sizes, Ctrl+wheel, tests/test_doc_text_zoom_1111.py); D29, D40, D41 stale (built); D25 open
+- ~~D28 Text size is three steps, no Ctrl+wheel | 1028-docs D28~~ built e2775e4 (five sizes, Ctrl+wheel, tests/test_doc_text_zoom_1111.py); D29, D40, D41 stale (built); D25 won't do (rules interleave with the shared note toolbar and theme overrides, no measured defect, cascade-order risk in a move)
 
 ### Tier D: performance and CI time
 
@@ -271,7 +271,7 @@ Parked until the owner's data or a check on real hardware:
 **W28 Documents typing and split** (D, documents, Opus; not beside W4 or W23). Files: `documents.js`, `docLivePlugin`. Checks: typing latency at 4x on the DX1 document. Done when: key-to-paint p50 under 16 ms on the long document.
 ~~- D19 Typing in a long rich document cannot keep up; 5 layouts a key | audit-1102-docs DX1, audit-1108-perf P9.~~ **Closed s58left4-1110:** spell marks measured, see HISTORY ("s58left4-1110"); the p50 gate stays unmet with or without marks and no cheap app-side cut is left.
 - ~~D20 `docHistoryPersist` serialises the undo stack every keystroke | 1028-docs D6~~ **Stale: built 9a5227132** (`undoStorePut(key, () => state.toJSON(...))`, serialised at the store's pause)
-- D21 Split `docLivePlugin` and `documents.js` by responsibility | DOCUMENTS D23, fitaudit 22. Not started: `docLivePlugin` is already `documents-cm.js`; the next carve is `documents.js` 16,381 to 17,190 (CodeMirror view glue, 810 lines), which costs a line in `app.js`'s library bundle list against the gzip cap (260,857 of 260,860) and breaks tests that read `documents.js` by name (`test_code_vscode.py`, `test_docs_perf_1030.py`)
+- ~~D21 Split `docLivePlugin` and `documents.js` by responsibility | DOCUMENTS D23, fitaudit 22. Not started: `docLivePlugin` is already `documents-cm.js`; the next carve is `documents.js` 16,381 to 17,190 (CodeMirror view glue, 810 lines), which costs a line in `app.js`'s library bundle list against the gzip cap (260,857 of 260,860) and breaks tests that read `documents.js` by name (`test_code_vscode.py`, `test_docs_perf_1030.py`)~~ built (documents-view.js carved, 867 lines; documents.js 17,190 to 16,500; sha in the commit)
 
 **W29 Structure ratchets** (D, cross-cutting, Opus design then Sonnet). Files: one carve per run, outside the files of the same session's other batches. Checks: `tests/test_global_scope_ratchet.py`, `tests/test_complexity.py`. Done when: each ratchet moves down.
 - D22 IIFE wraps (audit 37a, after iife4) and surfaces (21, 36) | fitaudit 19, 21, 36, 37
