@@ -1206,6 +1206,23 @@ def _onto_current_layer(db: Session, board_id: int | None, made: dict) -> None:
         row.data = json.dumps(_on_current_layer(db, board_id, json.loads(row.data)))
 
 
+def _place_item_rows(db: Session, target: int | None, entry_data: dict, body: PlaceBody, ref: str) -> dict:
+    """The rows of one library item by its kind; a template places its element or branch."""
+    kind = entry_data.get("kind", "element")
+    payload = entry_data.get("payload") or {}
+    if kind in ("element", "shape", "preset"):
+        return _place_element(db, target, payload, body, ref)
+    if kind == "branch":
+        return _place_branch(db, target, payload, body, ref, entry_data.get("name"))
+    if kind == "template":
+        if payload.get("element"):
+            return _place_element(db, target, payload["element"], body, ref)
+        if payload.get("branch"):
+            return _place_branch(db, target, payload["branch"], body, ref, entry_data.get("name"))
+        return {"sketches": [], "objects": []}
+    raise _fail("A style or a palette is applied to what is selected, not placed.")
+
+
 @router.post("/whiteboard/boards/{board_id}/place", status_code=201)
 def place_library_item(board_id: int, body: PlaceBody, db: Session = Depends(get_session)) -> dict:
     """Make a library item's rows on a board, in one transaction: one board
@@ -1223,21 +1240,7 @@ def place_library_item(board_id: int, body: PlaceBody, db: Session = Depends(get
             raise HTTPException(status_code=404, detail="That board could not be found.")
         entry.is_board = True
     entry_data, ref = _resolve(db, body)
-    kind = entry_data.get("kind", "element")
-    payload = entry_data.get("payload") or {}
-    if kind in ("element", "shape", "preset"):
-        made = _place_element(db, target, payload, body, ref)
-    elif kind == "branch":
-        made = _place_branch(db, target, payload, body, ref, entry_data.get("name"))
-    elif kind == "template":
-        if payload.get("element"):
-            made = _place_element(db, target, payload["element"], body, ref)
-        elif payload.get("branch"):
-            made = _place_branch(db, target, payload["branch"], body, ref, entry_data.get("name"))
-        else:
-            made = {"sketches": [], "objects": []}
-    else:
-        raise _fail("A style or a palette is applied to what is selected, not placed.")
+    made = _place_item_rows(db, target, entry_data, body, ref)
     _stack_on_top(db, target, made)
     _onto_current_layer(db, target, made)
     events.record(
@@ -1377,6 +1380,25 @@ class NewBoardBody(BaseModel):
     ink: str | None = Field(default=None, max_length=7)
 
 
+def _place_template_content(db: Session, board_id: int, entry_data: dict, probe: PlaceBody, ref: str, name: str) -> None:
+    """Put a new board's starting content on it: an element at the middle of its box, or a map's branches."""
+    kind = entry_data.get("kind", "element")
+    payload = entry_data.get("payload") or {}
+    if kind in ("element", "shape", "preset"):
+        box = payload.get("box") or {}
+        probe.x, probe.y = float(box.get("w", 0)) / 2, float(box.get("h", 0)) / 2
+        _place_element(db, board_id, payload, probe, ref)
+    elif kind == "branch":
+        #: The central topic is the map's own name, as a blank map's is.
+        _place_branch(db, board_id, payload, probe, ref, name)
+    elif payload.get("element"):
+        box = payload["element"].get("box") or {}
+        probe.x, probe.y = float(box.get("w", 0)) / 2, float(box.get("h", 0)) / 2
+        _place_element(db, board_id, payload["element"], probe, ref)
+    elif payload.get("branch"):
+        _place_branch(db, board_id, payload["branch"], probe, ref, entry_data.get("name"))
+
+
 @router.post("/board-library/new-board", status_code=201)
 @events.writes("board", "created")
 def new_board_from_template(body: NewBoardBody, db: Session = Depends(get_session)) -> dict:
@@ -1404,19 +1426,7 @@ def new_board_from_template(body: NewBoardBody, db: Session = Depends(get_sessio
     db.add(entry)
     db.flush()
     events.record(db, "created", "board", entry.id, name[:80], payload={"after": {"title": name, "type": board_type, "from": ref}})
-    if kind in ("element", "shape", "preset"):
-        box = payload.get("box") or {}
-        probe.x, probe.y = float(box.get("w", 0)) / 2, float(box.get("h", 0)) / 2
-        _place_element(db, entry.id, payload, probe, ref)
-    elif kind == "branch":
-        #: The central topic is the map's own name, as a blank map's is.
-        _place_branch(db, entry.id, payload, probe, ref, name)
-    elif payload.get("element"):
-        box = payload["element"].get("box") or {}
-        probe.x, probe.y = float(box.get("w", 0)) / 2, float(box.get("h", 0)) / 2
-        _place_element(db, entry.id, payload["element"], probe, ref)
-    elif payload.get("branch"):
-        _place_branch(db, entry.id, payload["branch"], probe, ref, entry_data.get("name"))
+    _place_template_content(db, entry.id, entry_data, probe, ref, name)
     db.commit()
     board_type, layout = _board_settings(entry)
     return {"id": entry.id, "title": name, "type": board_type, "layout": layout}
