@@ -456,6 +456,11 @@ def uncovered() -> dict[str, list[int]]:
 
 
 EXEMPT: dict[str, str] = {
+    "settings-controls.js:saveAddressNames": "settings: a setting with its own Reset or the settings history",
+    "studio.js:speakNatural": "read: speaks a note aloud; nothing is written",
+    "studio.js:follow": "job: stops a studio run; deletes no user data",
+    "studio.js:start": "job: starts a studio run that saves a new recording the person can delete; changes no existing note",
+    "sync-folder.js:build": "send: a sync keeps the older text of any note it replaces in that note's History, and a note it binned is in the recycle bin",
     "answer-kit.js:toolChip": "send: Fetch again refreshes the kept copy of a web page from the web; nothing the person wrote changes",
     "answer-kit.js:keptPagesRow": "read: asks how old the kept web pages are; its Fetch again refreshes a kept copy, nothing the person wrote changes",
     "settings-controls.js:(anonymous /websearch/stored)": "send: clears the cache of fetched web pages; each fetches again when next asked, nothing the person wrote is lost",
