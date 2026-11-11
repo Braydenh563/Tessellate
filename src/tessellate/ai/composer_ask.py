@@ -176,7 +176,7 @@ _IF = lazy_compile(r"^(?:if|whether)\s+", re.I)
 #: notes on X": everything on a subject, the broad answer.
 _ANYTHING_ON = lazy_compile(
     r"^(?:(?:is there )?anything (?:about|on)|do i have (?:any )?(?:notes? )?(?:about|on)|have i (?:written|got|noted) (?:anything |down )?(?:about|on)|"
-    r"what(?: is|'s)? the deal with|what is going on with|what's going on with)\b",
+    r"what(?: is|'s)? the deal with|what is going on with|what's going on with|what(?:'s|s| is) new (?:with|on|about))\b",
     re.I,
 )
 
@@ -424,9 +424,16 @@ def _build_synonyms(key=None) -> dict[str, frozenset[str]]:  # noqa: ANN001
     return {k: frozenset(v) for k, v in table.items()}
 
 
+#: The names this question's notes give its subject ("Doug" for sourdough), by subject stem: set for a
+#: "latest on X" ask by `composer_aliases.read` and read as synonyms, so the newer note that only says
+#: "Doug the starter is bubbly again" is the latest on sourdough (W7b B7).
+ALIASES: contextvars.ContextVar[dict] = contextvars.ContextVar("composer_aliases", default={})
+
+
 def _alternatives(stem: str) -> frozenset[str]:
     """The other stems that name what `stem` names."""
-    return _keyed_synonyms().get(stem, frozenset())
+    own = ALIASES.get().get(stem)
+    return _keyed_synonyms().get(stem, frozenset()) | own if own else _keyed_synonyms().get(stem, frozenset())
 
 
 @functools.lru_cache(maxsize=1)
