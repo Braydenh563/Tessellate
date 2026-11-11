@@ -30,7 +30,7 @@ def _node(script: str) -> dict:
 
 @needs_node
 def test_doc_text_is_joined_once_per_version():
-    source = (JS / "documents.js").read_text(encoding="utf-8")
+    source = (JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-view.js").read_text(encoding="utf-8")
     body = "const docStrCache = new WeakMap();\n" + _function(source, "function docStr(")
     got = _node(
         body
@@ -54,7 +54,7 @@ def test_no_editor_state_is_joined_directly_in_the_documents_files():
 
 
 def _facts_script(hidden: bool) -> str:
-    source = (JS / "documents.js").read_text(encoding="utf-8")
+    source = (JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-view.js").read_text(encoding="utf-8")
     body = "\n".join(_function(source, head) for head in ("function runDocFacts(", "function docFactsDelay(", "function scheduleDocFacts("))
     return (
         f"""
@@ -98,7 +98,7 @@ def test_visible_tab_runs_the_facts_pass_once_for_two_pauses():
 
 
 def test_entering_the_tab_runs_a_stale_pass():
-    source = (JS / "documents.js").read_text(encoding="utf-8")
+    source = (JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-view.js").read_text(encoding="utf-8")
     assert "if (docFactsStale && currentDoc) runDocFacts();" in _function(source, "async function loadDocuments(")
 
 
@@ -113,7 +113,7 @@ def test_the_live_view_reads_the_text_through_the_per_version_cache():
 def test_a_long_document_waits_longer_for_its_facts_and_the_prose_window_is_the_view():
     """D20: the wait grows with the text (one pass per burst, not per key), and the
     prose pass reads 14,000 characters around the view, not the 30,000 it once did."""
-    source = (JS / "documents.js").read_text(encoding="utf-8")
+    source = (JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-view.js").read_text(encoding="utf-8")
     assert "return len > 120000 ? 600 : len > 40000 ? 300 : 120;" in _function(source, "function docFactsDelay(")
     window = _function(source, "function docProseWindow(")
     assert "const view = 14000;" in window and "DOC_PROSE_WINDOW_CHARS / 2" not in window
@@ -123,7 +123,7 @@ def test_a_long_document_waits_longer_for_its_facts_and_the_prose_window_is_the_
 def test_the_rule_pass_is_kept_only_for_an_answer_that_changes_nothing():
     """D18 to D20: the grammar and link-offer answers repaint with `again`, and get
     the findings the key's own pass made; any other caller runs the rules afresh."""
-    source = (JS / "documents.js").read_text(encoding="utf-8")
+    source = (JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-view.js").read_text(encoding="utf-8")
     start = source.index("const docProse = {")
     body = source[start : source.index("\n};\n", start) + 4]
     got = _node(
@@ -154,7 +154,7 @@ def test_editor_listeners_are_one_per_type_and_idle_on_another_tab():
     """D21: what only the editor needs registers through `docListen`: one document
     listener per type and phase, nothing run while the Documents tab is hidden, the
     handlers in the order added, one that throws not stopping the rest."""
-    source = (JS / "documents.js").read_text(encoding="utf-8")
+    source = (JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-view.js").read_text(encoding="utf-8")
     got = _node(
         """
 let hidden = false;
@@ -197,7 +197,7 @@ def test_the_editor_only_listeners_go_through_docListen():
 def test_a_watcher_wired_twice_leaves_one_observer():
     """D37: the lock watcher keeps its observer and lets go of the old one before a
     second, so wiring it again cannot stack observers (the live count stays 1)."""
-    source = (JS / "documents.js").read_text(encoding="utf-8")
+    source = (JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-view.js").read_text(encoding="utf-8")
     got = _node(
         """
 const live = new Set(); let made = 0;

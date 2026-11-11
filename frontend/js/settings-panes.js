@@ -362,7 +362,7 @@ function chatDockReleaseRing() {
 // keystroke. A drag is told from a grow by comparing against the height
 // autoGrow last set: anything else was a hand on the corner.
 function initComposerResize() {
-  const box = $("chat-input");
+  const box = document.getElementById("chat-input");
   if (!box || box.dataset.resizeReady) return;
   box.dataset.resizeReady = "1";
 
@@ -704,6 +704,7 @@ function renderAutonomousSettings() {
   $("pref-auto-dedupe").checked = prefsCache.auto_dedupe_enabled ?? true;
   $("pref-auto-stale-review").checked = Boolean(prefsCache.auto_stale_review_enabled);
   $("pref-auto-capture").checked = Boolean(prefsCache.auto_capture_enabled);
+  $("pref-mcp-writes").checked = Boolean(prefsCache.mcp_writes_enabled);
   $("pref-autonomous-interval").value = prefsCache.autonomous_tasks_interval_hours || 6;
   $("pref-autonomous-model").value = prefsCache.autonomous_tasks_model || "";
   $("pref-battery-mode").checked = Boolean(prefsCache.battery_efficient_mode);

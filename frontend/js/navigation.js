@@ -2340,7 +2340,7 @@ function showNotesSection(name, { focus = false } = {}) {
 }
 
 function initNotesSubtabs() {
-  const strip = $("notes-subtabs");
+  const strip = document.getElementById("notes-subtabs");
   if (!strip || strip.dataset.ready) return;
   strip.dataset.ready = "1";
   strip.addEventListener("click", (event) => {

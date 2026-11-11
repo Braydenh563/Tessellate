@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-DOCS = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+DOCS = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents.js").read_text(encoding="utf-8") + (Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents-view.js").read_text(encoding="utf-8")
 
 
 def test_the_editor_tries_the_table_paste_then_the_smart_one_then_the_rich_one():

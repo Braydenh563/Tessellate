@@ -13,7 +13,7 @@ import re
 from tests._app_js import JS_DIR, app_js_text
 
 #: documents-history.js holds the history dialog (docs-1101, DC13): one closure, so its functions are indented.
-APP = app_js_text() + (JS_DIR / "documents.js").read_text(encoding="utf-8") + (JS_DIR / "documents-history.js").read_text(encoding="utf-8")
+APP = app_js_text() + (JS_DIR / "documents.js").read_text(encoding="utf-8") + (JS_DIR / "documents-view.js").read_text(encoding="utf-8") + (JS_DIR / "documents-history.js").read_text(encoding="utf-8")
 
 
 def _body(name: str) -> str:

@@ -294,6 +294,16 @@ def reminder_counts(
     return {"counts": counts}
 
 
+@router.get("/due")
+def reminders_due(session: Session = Depends(get_session)) -> dict:
+    """The page's minute look, small: `open`, `next_due_at` and a `stamp` that
+    changes whenever the open list the page paints from does. The page asks
+    `GET /reminders` only when the stamp moved (audit 1028 K32), so an idle
+    notebook costs about a hundred bytes a minute instead of a page of rows.
+    A static path, declared before `/{reminder_id}`, as `/counts` is."""
+    return reminder_repo.open_stamp(session, REMINDERS_PAGE_SIZE)
+
+
 # --- .ics export (WORLD_CLASS_PLAN section 17, row 7) --------------------------
 #
 # The one way a reminder reaches a phone's calendar without a server in the

@@ -402,13 +402,13 @@ class ConfigManager:
         self._secrets = self._take_secrets_out()
 
     def _take_secrets_out(self) -> dict[str, str]:
-        """Secret settings (`secrets_store.SECRET_SETTINGS`) read from their
+        """Secret settings (`secrets_store.SECRET_FILES`) read from their
         keyring or owner-only file, and moved there from `preferences.json` if
         an older version left one in plain text (audit 1028 K11). The file is
         only blanked after the value is stored, so a failed store loses nothing."""
         held: dict[str, str] = {}
         moved = False
-        for name in secrets_store.SECRET_SETTINGS:
+        for name in secrets_store.SECRET_FILES:
             old = str(self._preferences.get(name) or "")
             if old and secrets_store.write(self.data_dir, name, old):
                 self._preferences[name] = ""
@@ -484,9 +484,10 @@ class ConfigManager:
 
     def unset_preference(self, key: str) -> None:
         """Put a setting back to never set, so its default applies again."""
-        if key in self._secrets:
-            secrets_store.write(self.data_dir, key, "")
-            self._secrets[key] = ""
+        for name in secrets_store.SECRET_FILES:
+            if name == key:  # the loop's own literal reaches the store, never `key`
+                secrets_store.write(self.data_dir, name, "")
+                self._secrets[name] = ""
         if key in self._preferences:
             del self._preferences[key]
             atomic_write_json(self.preferences_path, self._preferences)
@@ -507,7 +508,11 @@ class ConfigManager:
         """`values` with each secret setting stored away and blanked. A secret
         that could not be stored stays in the file: losing it is worse."""
         out = dict(values)
-        for name in secrets_store.SECRET_SETTINGS & out.keys():
+        #: Walks the fixed list and asks `out` for each, rather than taking the
+        #: names from `out`: a key that arrived in a request never reaches a path.
+        for name in secrets_store.SECRET_FILES:
+            if name not in out:
+                continue
             text = str(out[name] or "")
             if secrets_store.write(self.data_dir, name, text):
                 self._secrets[name] = text

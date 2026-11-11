@@ -268,3 +268,77 @@ async function loadSemanticEntries(asked, generation) {
   ensureMapChipsFor(results, generation);
   fillCategoryOptions($("entry-category"), null);
 }
+
+//: The writing room's buttons (moved from wiring.js, gzip budget): wired when the Notes pane is built, which loads this file.
+onSurface("notes", () => {
+  $("draft-compose").addEventListener("click", composeDraft);
+  $("draft-undo").addEventListener("click", undoDraft);
+  $("draft-cancel").addEventListener("click", () => draftController?.abort());
+  $("draft-save").addEventListener("click", () => saveDraftAsNote());
+
+  $("draft-title").addEventListener("click", suggestDraftTitle);
+  // Refine is Draft with an instruction in hand: the same pass, so it runs the
+  // same function rather than a second copy of it that could drift.
+  $("draft-refine").addEventListener("click", () => {
+    if (!$("draft-instruction").value.trim()) {
+      setDraftStatus("Say what to change, then refine.", true);
+      $("draft-instruction").focus();
+      return;
+    }
+    composeDraft();
+  });
+  $("draft-instruction").addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    $("draft-refine").click();
+  });
+  $("draft-copy").addEventListener("click", async (event) => {
+    const text = $("draft-text").value.trim();
+    if (!text) {
+      setDraftStatus("There's no draft to copy yet.", true);
+      return;
+    }
+    if (await copyToClipboard(text, event.currentTarget)) setDraftStatus("Draft copied.");
+  });
+  // `appendSelectionToNote` is the app's one "add this text to a note you
+  // already have" path (the text-selection popup uses it): the same picker, the
+  // same undo entry, the same flash on the note it landed in.
+  $("draft-insert").addEventListener("click", () => {
+    const text = $("draft-text").value.trim();
+    if (!text) {
+      setDraftStatus("There's no draft to insert yet.", true);
+      return;
+    }
+    // The toast says it landed and offers the trip to it; the status line is
+    // not written here because this returns before the picker has been
+    // answered, and a line saying it was added is a lie until it was.
+    appendSelectionToNote(text, { jump: false });
+  });
+  $("draft-add-source").addEventListener("click", async () => {
+    if (draftSources.length >= DRAFT_MAX_SOURCES) {
+      setDraftStatus(`Six notes is the most one draft can be written from.`, true);
+      return;
+    }
+    const entry = await pickEntryDialog("Which note should Atlas write from?");
+    if (!entry) return;
+    addDraftSource(entry);
+  });
+  $("draft-continue-note").addEventListener("click", async () => {
+    const entry = await pickEntryDialog("Which note should Atlas carry on?");
+    if (!entry) return;
+    if ($("draft-text").value.trim()) pushDraftUndo();
+    $("draft-text").value = entry.content || "";
+    draftNoteId = entry.id;
+    draftNoteLabel = clipText(entry.title || notePreviewText(entry.content) || "a note", 40);
+    $("draft-kind").value = "continue";
+    window.markDraftQuickstart?.("continue");
+    renderDraftTarget();
+    // The note as it stands is version one, so the way back to what it said
+    // before Atlas touched it is the same chip row as every other pass.
+    rememberDraftVersion($("draft-text").value);
+    updateDraftCount();
+    saveDraftLocally();
+    setDraftStatus("That note is in the draft. Add a thought, then draft to carry it on.");
+    $("draft-thoughts").focus();
+  });
+});

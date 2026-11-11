@@ -478,8 +478,8 @@ function initResizableSidebars() {
     syncSidebarInert();
   };
   wire();
-  for (const name of ["documents"]) onSurface(name, wire);
-  makeWebPanelResizable($("web-panel"));
+  for (const name of ["documents", "chat"]) onSurface(name, wire);
+  onSurface("chat", () => makeWebPanelResizable($("web-panel")));
   window.matchMedia(SIDEBAR_PHONE).addEventListener("change", syncSidebarInert);
   initSidebarSheetDismissal();
 }

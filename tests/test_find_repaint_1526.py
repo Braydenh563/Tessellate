@@ -65,6 +65,6 @@ def test_a_repaint_that_draws_what_is_drawn_is_not_sent(ran) -> None:
 
 
 def test_the_page_batches_the_answers_only() -> None:
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = (JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-view.js").read_text(encoding="utf-8")
     assert "docCmRepaintFindings(again)" in docs
     assert re.search(r"docProse\.remap\(update\.changes\)", docs)

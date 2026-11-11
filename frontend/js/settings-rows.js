@@ -60,6 +60,7 @@
     { key: "auto_dedupe_enabled", id: "pref-auto-dedupe" },
     { key: "auto_stale_review_enabled", id: "pref-auto-stale-review" },
     { key: "auto_capture_enabled", id: "pref-auto-capture" },
+    { key: "mcp_writes_enabled", id: "pref-mcp-writes" },
     { key: "autonomous_tasks_interval_hours", id: "pref-autonomous-interval" },
     { key: "autonomous_tasks_model", id: "pref-autonomous-model" },
     { key: "battery_efficient_mode", id: "pref-battery-mode" },

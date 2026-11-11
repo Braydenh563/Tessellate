@@ -909,7 +909,7 @@ function startApp() {
   // "check it's running, then refresh" line sat under the capture form for the
   // whole session after one slow start, telling the user the app was broken
   // while it worked perfectly. Screenshotted.
-  const shellStatus = $("save-status");
+  const shellStatus = document.getElementById("save-status");
   if (shellStatus) shellStatus.textContent = "";
   // Warm the filing model, retry stand-ins (routes_models.warm_filing).
   api("/models/warm-filing", { method: "POST", silent: true }).catch(() => {});
@@ -992,13 +992,10 @@ function startApp() {
   });
 
   const entriesReady = step("load entries", loadEntries);
-  step("load recent questions", loadRecentQuestions);
-  step("load ask history badge", loadAskHistoryBadge);
-  step("load suggestions", loadSuggestions);
-  step("load your most-used items", loadMostUsed);
+  onSurface("notes", () => { loadRecentQuestions(); loadAskHistoryBadge(); loadSuggestions(); loadMostUsed(); });
   const templatesReady = step("load templates", loadTemplates);
   templatesReady.then(() =>
-    step("set up chat options", () => {
+    step("set up chat options", () => onSurface("chat", () => {
       personaOptions();
       // Wave G: skills chips + the agent-mode toggle read the
       // same prefsCache that loadTemplates just filled.
@@ -1006,7 +1003,7 @@ function startApp() {
       $("tools-toggle").checked = prefsCache?.tools_enabled !== false;
       renderChatModeSeg();
       renderWebSearchToggle();
-    })
+    }))
   );
   step("load answer-length options", loadResponseModes);
   // Here, not at module level beside initSpaceSwitcher(). The switcher's
@@ -1037,7 +1034,7 @@ function startApp() {
   // not every time they login", the endpoint self-clears after one read,
   // so this only ever fires the run right after a real update landed.
   step("check for an update notice", checkForSourceUpdateNotice);
-  step("load conversations", loadConversationList);
+  step("load conversations", () => onSurface("chat", loadConversationList));
   step("check the model status", refreshModelStatus);
   // Reminders poll on their own timer once running (see startReminderWatch);
   // starting that here, not at module level, is the other half of the fix
@@ -1660,6 +1657,7 @@ const LAZY_MODULES = {
     "/js/documents-tables.js",
     "/js/documents-columns.js",
     "/js/autocorrect.js",
+    "/js/documents-view.js", //: Before documents.js: the editor mount and keymap; its top level only declares, and documents.js calls into it at load.
     "/js/documents.js",
     "/js/documents-callouts.js", //: After documents.js: its top level binds through `docListen`.
     "/js/margin-reader.js",
