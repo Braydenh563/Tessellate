@@ -5734,7 +5734,7 @@ body .chip.item-label,
 #nm-buddy :is(.atl-layer-back, .atl-layer-front) { transform-origin: 31px 31px; transition: rotate calc(var(--motion-slow) * 1.8) var(--ease-in-out); }
 #nm-buddy[data-pose="lie-2"] :is(.atl-layer-back, .atl-layer-front) { rotate: calc(40deg - 80deg * var(--atl-v1)); }
 #nm-buddy[data-pose="lie"] :is(.atl-layer-back, .atl-layer-front) { rotate: calc(84deg - 168deg * var(--atl-v1)); }
-#nm-buddy .atl-figure-box > .atl-orbits { transform-origin: 31px 31px; transition: rotate calc(var(--motion-slow) * 1.8) var(--ease-in-out); }
+#nm-buddy .atl-figure-box > .atl-orbits { transform-origin: 31px 31px; transition: rotate calc(var(--motion-slow) * 1.8) var(--ease-in-out), opacity calc(var(--motion-slow) * 3) var(--ease-out); }
 #nm-buddy[data-pose="lie-2"] .atl-figure-box > .atl-orbits { rotate: calc(40deg - 80deg * var(--atl-v1)); }
 #nm-buddy[data-pose="lie"] .atl-figure-box > .atl-orbits { rotate: calc(84deg - 168deg * var(--atl-v1)); }
 /* The ground shadow and the dark theme's glow follow the body down, to

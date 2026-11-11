@@ -11334,7 +11334,9 @@ Link to another note with [[its first few words]]."></textarea>
             <!-- Adding one by hand. The tool covers "tell it in conversation";
                  this covers "I already know what I want it to always do". -->
             <div class="row memory-add">
-              <input id="memory-new" type="text" maxlength="200" aria-label="Something to always do in answers"
+              <label class="visually-hidden" for="memory-new"
+                data-keys="memory remember standing instructions what it remembers always">Something to always do in answers</label>
+              <input id="memory-new" type="text" maxlength="200"
                 placeholder="e.g. Always answer in British English">
               <button id="memory-add" class="small">Remember this</button>
             </div>
@@ -13807,6 +13809,40 @@ Link to another note with [[its first few words]]."></textarea>
                   aria-hidden="true" tabindex="-1" aria-label="Choose a settings file" title="Choose a settings file">
               </div>
               <p id="settings-file-status" class="status" role="status"></p>
+            </div>
+
+            <!-- WORLD_CLASS_PLAN B6: sync with another computer, pull over the LAN
+                 pairing. Wired by settings-rows.js (lazy, with Settings). -->
+            <div class="settings-group" id="sync-group">
+              <div class="row help-head">
+                <h3>Sync with another computer</h3>
+                <button type="button" class="icon-only ghost small graph-help-toggle"
+                  data-help-for="sync-help" aria-controls="sync-help" aria-expanded="false"
+                  title="About sync" aria-label="About sync">
+                  <i class="ph ph-question" aria-hidden="true"></i>
+                </button>
+              </div>
+              <p class="muted">Brings the notes changed on the paired computer into this notebook.</p>
+              <div class="help-body hidden" id="sync-help" role="dialog" aria-label="About sync">
+                <p>
+                  Sync now brings in the notes changed on the paired computer
+                  since the last sync; press it on both computers to sync both
+                  ways. A note changed on both keeps the later change, and the
+                  other text is kept in that note's History. A note moved to
+                  the bin lands in the other computer's bin.
+                </p>
+                <p>
+                  Private notes travel encrypted and their key stays on the
+                  computer that made them, so they open only there.
+                  Attachments, boards and documents do not sync yet.
+                </p>
+              </div>
+              <div class="row">
+                <button id="sync-now" class="ghost small" type="button">
+                  <i class="ph ph-arrows-clockwise ph-lead" aria-hidden="true"></i> Sync now
+                </button>
+              </div>
+              <p id="sync-status" class="status" role="status"></p>
             </div>
 
             <div class="settings-group">

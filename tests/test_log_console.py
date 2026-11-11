@@ -19,7 +19,7 @@ import zipfile
 
 import pytest
 
-from tessellate.api import routes_settings
+from tessellate.api import routes_settings, routes_settings_logs
 from tessellate.core import deps, logbuffer
 from tests._app_js import app_js_text
 
@@ -114,7 +114,7 @@ def _brief_stream(monkeypatch):
     lets the response finish. The live behaviour that this cannot show was
     driven in a browser instead.
     """
-    monkeypatch.setattr(routes_settings, "LOG_STREAM_SECONDS", 0)
+    monkeypatch.setattr(routes_settings_logs, "LOG_STREAM_SECONDS", 0)
 
 
 def _stream_events(client, url: str = "/logs/stream?after=999999999") -> list[dict]:
@@ -190,8 +190,8 @@ def test_the_stream_hands_back_rather_than_living_forever():
     """A connection held open for a tab left open all week is a resource
     nothing ever reclaims; the client reconnects with its cursor, so the
     handover costs no records."""
-    assert routes_settings.LOG_STREAM_SECONDS <= 30 * 60
-    assert routes_settings.LOG_STREAM_HEARTBEAT < routes_settings.LOG_STREAM_SECONDS
+    assert routes_settings_logs.LOG_STREAM_SECONDS <= 30 * 60
+    assert routes_settings_logs.LOG_STREAM_HEARTBEAT < routes_settings_logs.LOG_STREAM_SECONDS
 
 
 # --- the support bundle -----------------------------------------------------

@@ -1,0 +1,86 @@
+"""What this data folder knows about sync (WORLD_CLASS_PLAN B6, decisions 2 and 8).
+
+One small file, `sync-state.json` (0600, beside `lan-trust.json`): this
+folder's random device id, and per peer the cursor into that peer's event
+log, when the last pull ran and how it ended. Kept out of preferences for
+the reason `lantrust` gives: `PUT /preferences` must not reach it, and a
+file that cannot be read gives safe defaults (a new device id would only
+mean the other computer sees a new peer, and a lost cursor only means the
+next pull starts over, which the idempotent apply makes harmless).
+"""
+
+from __future__ import annotations
+
+import contextlib
+import json
+import os
+import secrets
+import time
+from pathlib import Path
+
+FILE_NAME = "sync-state.json"
+
+
+def _path(data_dir: Path) -> Path:
+    return Path(data_dir) / FILE_NAME
+
+
+def _read(data_dir: Path) -> dict:
+    try:
+        raw = json.loads(_path(data_dir).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return raw if isinstance(raw, dict) else {}
+
+
+def _write(data_dir: Path, state: dict) -> None:
+    path = _path(data_dir)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    partial = path.with_suffix(f".{os.getpid()}.part")
+    fd = os.open(partial, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w", encoding="utf-8") as out:
+        json.dump(state, out, indent=1)
+    os.replace(partial, path)
+    with contextlib.suppress(OSError):
+        os.chmod(path, 0o600)
+
+
+def device_id(data_dir: Path) -> str:
+    """This folder's sync name, made once: 12 hex characters, never shown as a secret."""
+    state = _read(data_dir)
+    found = state.get("device")
+    if isinstance(found, str) and len(found) == 12 and found.isalnum():
+        return found
+    state["device"] = secrets.token_hex(6)
+    _write(data_dir, state)
+    return state["device"]
+
+
+def peer(data_dir: Path, name: str) -> dict:
+    """What is known about one peer; `cursor` 0 when it was never pulled."""
+    found = _read(data_dir).get("peers", {}).get(name)
+    found = found if isinstance(found, dict) else {}
+    cursor = found.get("cursor")
+    return {**found, "cursor": cursor if isinstance(cursor, int) and cursor > 0 else 0}
+
+
+def save_peer(data_dir: Path, name: str, **fields: object) -> dict:
+    """Merge `fields` into the peer's record and stamp the time of the try."""
+    state = _read(data_dir)
+    peers = state.get("peers") if isinstance(state.get("peers"), dict) else {}
+    record = {**peer(data_dir, name), **fields, "tried_at": time.time()}
+    state["peers"] = {**peers, name: record}
+    _write(data_dir, state)
+    return record
+
+
+def last_peer(data_dir: Path) -> tuple[str, dict] | None:
+    """The peer pulled from most recently, for the Settings line."""
+    peers = _read(data_dir).get("peers")
+    if not isinstance(peers, dict) or not peers:
+        return None
+    rows = [(name, row) for name, row in peers.items() if isinstance(row, dict)]
+    if not rows:
+        return None
+    return max(rows, key=lambda pair: pair[1].get("tried_at") or 0)
+
