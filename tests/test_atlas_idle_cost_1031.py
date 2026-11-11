@@ -113,7 +113,9 @@ def test_the_ring_loops_rest_in_the_lite_set() -> None:
 def test_the_arm_probe_is_read_from_events_not_scanned_each_frame() -> None:
     frame = _fn(MOTION, "atlasRigFrame")
     assert "getAnimations" not in frame
-    assert "arm.running.size > 0" in frame
+    # (Read in the look since INBOX 1766, not in the frame.)
+    look = re.search(r"^atlasRigWake\.look = function atlasRigLook\(.*?^\};", MOTION, re.S | re.M).group(0)
+    assert "arm.running.size > 0" in look
     watch = _fn(MOTION, "atlasProbeWatch")
     for event in ("animationstart", "animationend", "animationcancel"):
         assert event in watch

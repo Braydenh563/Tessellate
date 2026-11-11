@@ -76,6 +76,7 @@ def test_the_card_grip_looks_once_a_frame_not_once_a_pointerover() -> None:
 def test_after_clean_can_snap_instead_of_reading_a_page_still_being_written() -> None:
     src = _src("avatars.js")
     assert "afterClean(fn, tries = 6, snap = fn, calm = 0) {" in src
+    assert "afterCalm(fn, rounds = 4) {" in src, "and afterCalm lets a look go rather than read a page that stays dirty (INBOX 1766)"
     assert "(dirty ? snap : fn)()" in src
 
 
@@ -87,8 +88,9 @@ def test_the_card_grip_ignores_a_pointerover_a_scroll_made() -> None:
 
 
 def test_the_atlas_rig_does_not_read_behind_a_dialog() -> None:
-    body = _body(_src("atlas-motion.js"), "function atlasRigFrame(")
-    assert "nameMarkBuddyBehindCover()" in body[: body.index("const look =")]
+    # (Since INBOX 1766 the look is its own task, `atlasRigLook`; the frame reads nothing.)
+    body = _body(_src("atlas-motion.js"), "atlasRigWake.look = function atlasRigLook(")
+    assert "nameMarkBuddyBehindCover()" in body[: body.index("const reads =")]
 
 
 def test_the_first_run_toast_poll_reads_no_layout() -> None:

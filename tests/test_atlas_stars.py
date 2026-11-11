@@ -37,7 +37,8 @@ const reduced = process.argv[2] === "reduced";
 const ctx = {
   console, Math, Number, Object, Set, Map, JSON,
   performance: { now: () => clock },
-  document: { documentElement: { dataset: reduced ? { motion: "reduced" } : {}, hasAttribute: () => false } },
+  setTimeout: (f, ms, ...a) => { frames.push(() => f(...a)); return frames.length; },  // the first look is a task after a paint
+  document: { hidden: false, documentElement: { dataset: reduced ? { motion: "reduced" } : {}, hasAttribute: () => false } },
   matchMedia: () => ({ matches: false }),
   getComputedStyle: () => ({ transform: "none", rotate: "none", opacity: "1" }),
   requestAnimationFrame: (f) => { frames.push(f); return frames.length; },

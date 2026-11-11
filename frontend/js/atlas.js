@@ -3553,7 +3553,12 @@ function atlasHiddenSync() {
   const hidden = document.hidden || Boolean(lock && !lock.classList.contains("hidden") && lock.dataset.mode !== "prompt");
   if (hidden === document.documentElement.hasAttribute("data-atlas-hidden")) return;
   document.documentElement.toggleAttribute("data-atlas-hidden", hidden);
-  if (!hidden) for (const box of document.querySelectorAll(".atl-figure-box")) atlasTailWake(box);
+  if (!hidden) {
+    for (const box of document.querySelectorAll(".atl-figure-box")) {
+      atlasTailWake(box);
+      atlasRigWake(box);
+    }
+  }
 }
 document.addEventListener("visibilitychange", atlasHiddenSync);
 //: `typeof MutationObserver`: tests/test_atlas_shape.py loads this file in a node vm with a bare `document`.

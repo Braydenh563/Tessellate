@@ -33,7 +33,10 @@ def test_the_follow_loop_does_not_read_while_a_page_is_arriving() -> None:
     assert hold < frame.index("nameMarkBuddyFollow();"), "and before the panel's box is read"
     assert "if (!settling && now >= nmbFollow.nap) {" in frame, "the reads are the ones the hold skips"
     assert "if (settling) nmbFollow.until = Math.max(nmbFollow.until," in frame, "and the loop is not ended by the wait"
-    assert frame.count("requestAnimationFrame(") == 1, "one scheduling call: the wake-source ratchet counts them"
+    assert "requestAnimationFrame(" not in frame, "the loop is asked for through nameMarkBuddyFollowFrame.ask (a task after a drawn frame, INBOX 1766)"
+    assert frame.count("nameMarkBuddyFollowFrame.ask()") == 1, "one scheduling call: the wake-source ratchet counts them"
+    ask = _body(AV, "nameMarkBuddyFollowFrame.ask = function nameMarkBuddyFollowAsk(")
+    assert ask.count("requestAnimationFrame(") == 1 and ask.count("setTimeout(") == 1
 
 
 def test_get_animations_is_asked_only_after_something_was_set_going() -> None:
