@@ -7636,28 +7636,28 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `inboxCorrection` | frontend/js/suggestions-inbox.js:199 |
-| `inboxCount` | frontend/js/suggestions-inbox.js:158 |
-| `inboxDone` | frontend/js/suggestions-inbox.js:190 |
-| `inboxEmpty` | frontend/js/suggestions-inbox.js:182 |
-| `inboxHead` | frontend/js/suggestions-inbox.js:112 |
-| `inboxLinkRow` | frontend/js/suggestions-inbox.js:636 |
-| `inboxLinksPane` | frontend/js/suggestions-inbox.js:513 |
-| `inboxLoad` | frontend/js/suggestions-inbox.js:100 |
-| `inboxMergeRow` | frontend/js/suggestions-inbox.js:244 |
-| `inboxRows` | frontend/js/suggestions-inbox.js:172 |
-| `inboxScore` | frontend/js/suggestions-inbox.js:236 |
-| `inboxScoreBar` | frontend/js/suggestions-inbox.js:219 |
-| `inboxShow` | frontend/js/suggestions-inbox.js:146 |
-| `inboxTensionsPane` | frontend/js/suggestions-inbox.js:351 |
-| `inboxTypeRow` | frontend/js/suggestions-inbox.js:283 |
-| `inboxWhy` | frontend/js/suggestions-inbox.js:209 |
-| `jobLineEl` | frontend/js/suggestions-inbox.js:753 |
-| `openSuggestionsInbox` | frontend/js/suggestions-inbox.js:35 |
-| `tensionCard` | frontend/js/suggestions-inbox.js:403 |
-| `tensionGapText` | frontend/js/suggestions-inbox.js:474 |
-| `tensionResolve` | frontend/js/suggestions-inbox.js:462 |
-| `tensionSide` | frontend/js/suggestions-inbox.js:482 |
+| `inboxCorrection` | frontend/js/suggestions-inbox.js:200 |
+| `inboxCount` | frontend/js/suggestions-inbox.js:159 |
+| `inboxDone` | frontend/js/suggestions-inbox.js:191 |
+| `inboxEmpty` | frontend/js/suggestions-inbox.js:183 |
+| `inboxHead` | frontend/js/suggestions-inbox.js:113 |
+| `inboxLinkRow` | frontend/js/suggestions-inbox.js:637 |
+| `inboxLinksPane` | frontend/js/suggestions-inbox.js:514 |
+| `inboxLoad` | frontend/js/suggestions-inbox.js:101 |
+| `inboxMergeRow` | frontend/js/suggestions-inbox.js:245 |
+| `inboxRows` | frontend/js/suggestions-inbox.js:173 |
+| `inboxScore` | frontend/js/suggestions-inbox.js:237 |
+| `inboxScoreBar` | frontend/js/suggestions-inbox.js:220 |
+| `inboxShow` | frontend/js/suggestions-inbox.js:147 |
+| `inboxTensionsPane` | frontend/js/suggestions-inbox.js:352 |
+| `inboxTypeRow` | frontend/js/suggestions-inbox.js:284 |
+| `inboxWhy` | frontend/js/suggestions-inbox.js:210 |
+| `jobLineEl` | frontend/js/suggestions-inbox.js:754 |
+| `openSuggestionsInbox` | frontend/js/suggestions-inbox.js:36 |
+| `tensionCard` | frontend/js/suggestions-inbox.js:404 |
+| `tensionGapText` | frontend/js/suggestions-inbox.js:475 |
+| `tensionResolve` | frontend/js/suggestions-inbox.js:463 |
+| `tensionSide` | frontend/js/suggestions-inbox.js:483 |
 
 ### frontend/js/table-block.js (1)
 

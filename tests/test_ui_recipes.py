@@ -1449,7 +1449,7 @@ def test_a_suggested_link_is_two_names_a_facts_line_and_one_action_cell() -> Non
     names are cut to one line rather than wrapping chips; its actions are one
     cell. Measured: 75 to 107px a row at 1440 went to 61, 210 to 228px at 390
     went to 131, rows in view 3 to 6 and 1 to 2."""
-    inbox = (ROOT / "frontend" / "js" / "suggestions-inbox.js").read_text(encoding="utf-8")
+    inbox = _js_scope.unwrapped((ROOT / "frontend" / "js" / "suggestions-inbox.js").read_text(encoding="utf-8"))
     css = (ROOT / "frontend" / "css" / "inbox-lazy.css").read_text(encoding="utf-8")
     pane = inbox.split("function inboxLinksPane(", 1)[1].split("\nfunction ", 1)[0]
     assert "kebabMenu([suggestReasons, backfill]" in pane
@@ -3049,7 +3049,7 @@ def test_the_suggestions_inbox_kinds_are_a_list_with_counts() -> None:
     `.seg` well (the shape INBOX 665 took away from Questions). One select,
     `#inbox-kind`, its rows "Links (3)"; the arrows of the list replace the
     tabs' own, and the panes follow the value."""
-    js = (ROOT / "frontend" / "js" / "suggestions-inbox.js").read_text(encoding="utf-8")
+    js = _js_scope.unwrapped((ROOT / "frontend" / "js" / "suggestions-inbox.js").read_text(encoding="utf-8"))
     assert 'document.createElement("select")' in js and 'kind.id = "inbox-kind"' in js
     assert "inbox-seg" not in js and 'className = "seg' not in js and '"tablist"' not in js
     assert 'kind.addEventListener("change"' in js and "inboxShow(kind.value)" in js
