@@ -71,6 +71,12 @@ SURFACES = {
         ("switchTab",),
         ("doc-editor", "doc-title", "doc-list", "doc-toolbar", "doc-new"),
     ),
+    "palette": (
+        "command-palette-overlay",
+        ("palette.js", "app-palette.js", "editor.js", "field-clear.js", "status.js", "wiring.js", "settings-wiring.js", "lazy-entries.js", "dashboard.js", "navigation.js"),
+        ("toggleAgentPalette",),
+        ("command-palette-close", "command-palette-input", "command-palette-send", "command-palette-results", "command-palette-status"),
+    ),
     "shortcuts": (
         "shortcuts-overlay",
         ("reveal-targets.js", "settings-wiring.js"),
@@ -212,6 +218,9 @@ def test_load_time_wiring_of_the_surface_waits_for_it(name):
             if head.startswith(f'onSurface("{name}"'):
                 continue
             reached = block + "".join(functions.get(f, "") for f in set(re.findall(r"\b(\w+)\(", block)))
+            if head.startswith("onSurface("):
+                # Another surface's hook runs later; `document.getElementById` never builds this one, so only `$` is the harm.
+                reached = re.sub(r"document\.getElementById\(\s*[\"'][\w-]+[\"']\s*\)", "", reached)
             named = _selector_hits(reached, ids, classes)
             if named:
                 found.append(f"{path.name}:{number} {named[:3]}")
