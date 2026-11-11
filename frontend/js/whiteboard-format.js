@@ -84,7 +84,7 @@ const WB_FMT_FIELDS = {
   link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "linklook", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "jumpsize", "gapstart", "gapend", "tip"],
   text: ["stroke", "fill", "fillalpha", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props", "rawstyle"],
   image: ["alpha", "shadow", "shadowset", "radii", "crop", "trim", "cropbox", "pixels", "replace", "geometry", "angle", "props"],
-  frame: ["geometry", "props"],
+  frame: ["pad", "geometry", "props"],
   table: ["alpha", "shadow", "shadowset", "radii", "geometry", "props"],
   note: ["geometry", "angle"],
   //: A Mermaid diagram object: the fill and the line it draws with (INBOX 1486).

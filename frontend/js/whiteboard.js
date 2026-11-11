@@ -12979,7 +12979,7 @@ function wbFrameContents(frame, { withLocked = false } = {}) {
 //: "w": the edge handle named fits that edge, a corner handle two, and the
 //: frame's menu all four. Each named edge moves to the bound of what the frame
 //: holds (`wbFrameContents`, the rule a drag of the frame uses) plus a margin
-//: of 32 board units. What a frame holds includes the links between two held
+//: of 32 board units (or the frame's own Padding). What a frame holds includes the links between two held
 //: items, by the curve they are drawn on rather than the straight line
 //: between their ends. A frame holding nothing stays where it is. One Undo
 //: step, and the move eases over 150ms (not at all under reduced motion).
@@ -13014,10 +13014,12 @@ async function wbFrameFit(frame, edges = "nesw") {
   const maxY = Math.max(...boxes.map((b) => b.maxY));
   const right = frame.x + frame.width;
   const bottom = frame.y + frame.height;
-  const nextLeft = edges.includes("w") ? Math.round(minX - WB_FRAME_FIT_MARGIN) : frame.x;
-  const nextTop = edges.includes("n") ? Math.round(minY - WB_FRAME_FIT_MARGIN) : frame.y;
-  const nextRight = edges.includes("e") ? Math.round(maxX + WB_FRAME_FIT_MARGIN) : right;
-  const nextBottom = edges.includes("s") ? Math.round(maxY + WB_FRAME_FIT_MARGIN) : bottom;
+  //: The frame's own Padding (Format panel, `data.pad`) replaces the 32 when it is set; 0 is a snug fit.
+  const margin = frame.data?.pad ?? WB_FRAME_FIT_MARGIN;
+  const nextLeft = edges.includes("w") ? Math.round(minX - margin) : frame.x;
+  const nextTop = edges.includes("n") ? Math.round(minY - margin) : frame.y;
+  const nextRight = edges.includes("e") ? Math.round(maxX + margin) : right;
+  const nextBottom = edges.includes("s") ? Math.round(maxY + margin) : bottom;
   if (nextLeft === frame.x && nextTop === frame.y && nextRight === right && nextBottom === bottom) return true;
   const before = WB_KIND_INFO.object.payload(frame);
   frame.x = nextLeft;

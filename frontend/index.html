@@ -8535,7 +8535,7 @@ Link to another note with [[its first few words]]."></textarea>
               <p><b>Replace picture</b>: swaps in another file; the place, size, crop and style stay, and Undo brings the old one back.</p>
               <p><b>Save to Library</b>: a picture on a board stays on the board, unlisted and unread; this files it in the Library, where it is searched and captioned. <b>Captions</b>, in the next row, draws a saved picture's caption under it, on every board and under the pictures in a note's popup in the Graph and its timeline view (the popup's menu has the same switch).</p>
               <p><b>Corner radii</b>: each corner's own rounding in pixels; all empty is the default.</p>
-              <p><b>Padding</b>: space between the box's edge and its words, in pixels.</p>
+              <p><b>Padding</b>: space between the box's edge and its words, or a frame's edge and what it holds when fitted, in pixels.</p>
             </div>
             <label class="wb-fmt-row" data-fmt="crop"><span class="wb-fmt-label">Crop to</span>
               <select id="wb-fmt-crop" aria-label="Crop the picture to a shape" title="Crop the picture to a shape; a square picture cropped to an ellipse is a circle">
@@ -8590,7 +8590,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <label class="wb-fmt-num"><span class="wb-fmt-label">BR</span><input type="number" id="wb-fmt-r2" min="0" max="200" step="1" placeholder="Auto" aria-label="Bottom right corner radius" title="Bottom right corner radius in pixels"></label>
               </span>
             </div>
-            <label class="wb-fmt-row" data-fmt="pad" data-unit="px"><span class="wb-fmt-label">Padding</span><input type="number" id="wb-fmt-pad" min="0" max="80" step="1" placeholder="Auto" aria-label="Padding between the edge and the text, in pixels" title="Space between the box's edge and its text, in pixels; empty is the default"></label>
+            <label class="wb-fmt-row" data-fmt="pad" data-unit="px"><span class="wb-fmt-label">Padding</span><input type="number" id="wb-fmt-pad" min="0" max="80" step="1" placeholder="Auto" aria-label="Padding, in pixels" title="Space between a box's edge and its text, or between a frame's edge and what it holds when you fit it, in pixels; empty is the default"></label>
           </div>
           <div class="wb-fmt-group" data-fmt-group="connector">
             <h4 class="wb-fmt-head"><i class="ph ph-flow-arrow" aria-hidden="true"></i><span>Connector</span><button type="button" class="icon-only ghost small graph-help-toggle" data-help-for="wb-fmt-help-connector" aria-controls="wb-fmt-help-connector" aria-expanded="false" title="About connector" aria-label="About connector"><i class="ph ph-question" aria-hidden="true"></i></button></h4>
