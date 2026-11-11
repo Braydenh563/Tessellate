@@ -3816,6 +3816,15 @@ span > .chip {
 .doc-sidebar .doc-head-more {
   display: none;
 }
+/* The Outline tab's "This document" head (the owner, 2026-11-11: "the ? tooltip isnt aligned to the left or
+   right and is cut off at the top"). The collapse toggle sits in the tab strip above this tab, so the head
+   needs no lane for it: the ? ends the row (it floated 38px short of the right edge), and the head starts a
+   ring's room below the scrolling section's top instead of 4px above it, where the section clipped the ?'s
+   face and ring flat. */
+#doc-sidebar-outline > .sidebar-head {
+  padding-right: 0;
+  margin-top: var(--ring-room);
+}
 @container doc-sidebar (max-width: 16rem) {
   .doc-sidebar .doc-new-split .toolbar-word {
     display: none;
