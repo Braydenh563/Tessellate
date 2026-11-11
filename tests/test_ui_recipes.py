@@ -6765,7 +6765,7 @@ def test_close_is_the_last_control_of_every_popup_head() -> None:
         assert not mins or mins[-1] == closers[-1] - 1, f"minimise is not just before Close: {buttons}"
     assert checked >= 20, "the head parser found too few heads to mean anything"
 
-    js = (ROOT / "frontend" / "js" / "panel-movable.js").read_text(encoding="utf-8")
+    js = _js_scope.unwrapped((ROOT / "frontend" / "js" / "panel-movable.js").read_text(encoding="utf-8"))
     settle = js[js.index("function panelHeadSettle") : js.index("function panelCloseBtn")]
     assert "tail.insertBefore(st.min, closeBtn)" in settle, "minimise goes directly before Close"
     assert '"[data-help-for], .menu-wrap, .atlas-menu"' in settle, "reset and push go before the head's help and more"

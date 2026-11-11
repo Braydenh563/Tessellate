@@ -11,9 +11,10 @@ from __future__ import annotations
 
 import re
 
+from tests import _js_scope
 from tests._app_js import frontend_text
 
-JS = frontend_text("panel-movable.js")
+JS = _js_scope.unwrapped(frontend_text("panel-movable.js"))
 CSS = (__import__("pathlib").Path(__file__).resolve().parents[1] / "frontend/css/panel-movable-lazy.css").read_text()
 
 
