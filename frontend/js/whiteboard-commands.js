@@ -55,6 +55,9 @@ function wbCommandTextTarget() {
 
 const wbCommandNeeds = {
   link: () => wbCommandTextTarget()?.kind === "link",
+  //: One more or one less level changes something (INBOX 1774).
+  moreLevel: () => wbIsMap() && wbMapBuild.ring(wbMapIndex(), wbMapHidden(wbMapIndex()), 1).ids.length > 0,
+  lessLevel: () => wbIsMap() && wbMapBuild.ring(wbMapIndex(), wbMapHidden(wbMapIndex()), -1).ids.length > 0,
   clone: () => Boolean(wbCloneSource()),
   selection: () => wbCommandSelectionCount() > 0,
   tree: () => wbTidyEdges(wbSelectionEntries()).length > 0,
@@ -172,6 +175,9 @@ const WB_COMMANDS = [
   { id: "fold-level-1", group: "View", icon: "ph:list-dashes", label: "Show the trunks only", keys: "Alt+1", surface: "map", run: () => wbMapFoldToLevel(1) },
   { id: "fold-level-2", group: "View", icon: "ph:list-dashes", label: "Show two levels", keys: "Alt+2", surface: "map", run: () => wbMapFoldToLevel(2) },
   { id: "fold-level-3", group: "View", icon: "ph:list-dashes", label: "Show three levels", keys: "Alt+3", surface: "map", run: () => wbMapFoldToLevel(3) },
+  { id: "fold-level-more", group: "View", icon: "ph:plus-circle", label: "Show one more level", keys: "Alt+=", surface: "map", needs: "moreLevel", run: () => wbMapFoldToLevel({ by: 1 }) },
+  { id: "fold-level-less", group: "View", icon: "ph:minus-circle", label: "Show one less level", keys: "Alt+-", surface: "map", needs: "lessLevel", run: () => wbMapFoldToLevel({ by: -1 }) },
+  { id: "present-build", group: "View", icon: "ph:steps", label: "Build up branch by branch", keys: "", surface: "map", run: () => wbMapBuild.start() },
   { id: "insert-parent", group: "Item", icon: "ph:arrow-elbow-left-up", label: "Insert a parent topic", keys: "Ctrl+Enter", surface: "map", needs: "topic", run: () => wbMapInsertParent(wbSelectedMapNode()?.id) },
   { id: "move-under", group: "Item", icon: "ph:arrow-bend-right-down", label: "Move under…", keys: "M", surface: "map", needs: "topic", run: () => wbMapMoveUnder(wbSelectedMapNode()?.id) },
   { id: "sort-az", group: "Item", icon: "ph:sort-ascending", label: "Sort branches A to Z", keys: "", surface: "map", needs: "topic", run: () => wbMapSortChildren(wbSelectedMapNode()?.id, 1) },
@@ -343,6 +349,8 @@ function wbRunCommand(id) {
       drawing: "Select one drawn shape or pen stroke first.",
       styled: "Select one shape, line or text box first.",
       textbox: "Select one sticky or text box first.",
+      moreLevel: "Every level is showing.",
+      lessLevel: "Only the centre is showing.",
     }[command.needs];
     toast(why || "That is not on a mind map.");
     return false;
@@ -657,6 +665,7 @@ const WB_HELP_SECTIONS = [
     { icon: "ph:trash", label: "Delete the topic and its branch", keys: ["Delete"] },
     { icon: "ph:caret-down", label: "Fold or open a branch", keys: ["C"] },
     { icon: "ph:list-dashes", label: "Show that many levels", keys: ["Alt+1 to 9"] },
+    { icon: "ph:plus-circle", label: "Show one more or one less level", keys: ["Alt+=", "Alt+-"] },
     { icon: "ph:crosshair", label: "Focus here, show all again", keys: ["F"] },
     { icon: "ph:dots-three", label: "The topic's whole menu", keys: ["Shift+F10"] },
     { icon: "ph:text-aa", label: "Label a line", keys: ["double-click it"] },

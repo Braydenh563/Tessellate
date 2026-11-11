@@ -712,3 +712,17 @@ def test_the_answer_offers_and_the_pool_count_line_are_in_the_guide() -> None:
     body = " ".join(str(t["body"]) for t in HELP_TOPICS if "Save it as a checklist note" in str(t["body"]))
     for phrase in ("Save it as a checklist note", "Start a list of", "typing yes", "no thanks drops it", "That tells five of the twelve"):
         assert phrase in body, phrase
+
+
+def test_map_build_up_and_level_stepping_are_in_the_keys_sheet_the_menus_and_the_guide() -> None:
+    """INBOX 1774: Alt+= and Alt+- step the levels (the Keys sheet, the palette and
+    the map menus), and Build up branch by branch presents the map from the
+    centre out; the Guide says both in the controls' words."""
+    commands = (FRONTEND / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
+    assert 'keys: ["Alt+=", "Alt+-"]' in commands
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    assert "<span>Build up branch by branch</span>" in html
+    text = help_chat_text() + help_more_text()
+    assert "Alt+= and Alt+- show one more or one less level" in text
+    assert "Build up branch by branch shows the centre, then each branch a level at a time" in text
+    assert "End shows the whole map to take it apart" in text
