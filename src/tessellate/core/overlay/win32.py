@@ -730,6 +730,27 @@ def _clip_to_monitor(rect: tuple[int, int, int, int], monitors_: list[tuple[int,
     return max(rect[0], best[0]), max(rect[1], best[1]), min(rect[2], best[2]), min(rect[3], best[3])
 
 
+def _skip_reasons(w: Any, hwnd: Any, pid: int, own_pid: int, ex: int, rect: Any, zoomed: bool, full: bool, app: bool,
+                  monitors_: list[tuple[int, int, int, int]]) -> tuple[tuple[str, bool], ...]:
+    """Each reason a framed window is no place to stand, in the order the first hit is reported."""
+    return (
+        ("tool window", bool(ex & WS_EX_TOOLWINDOW) and not app), ("own process", pid == own_pid),
+        ("maximised", zoomed), ("fills a monitor", full),
+        ("no title", not w.user32.GetWindowTextLengthW(hwnd)),
+        ("owned popup", not _alt_tab_listed(w, hwnd)),  # T7: not the window Alt-Tab lists, it still hides what is under it
+        ("too small", rect[2] - rect[0] < MIN_WINDOW or rect[3] - rect[1] < MIN_WINDOW),
+        ("off-screen", bool(monitors_) and not any(rect[0] < a[2] and rect[2] > a[0] and rect[1] < a[3] and rect[3] > a[1] for a in monitors_)),
+    )
+
+
+def _hides_nothing(ex: int, full: bool, app: bool) -> bool:
+    """A layered or tool window that fills a monitor (an animated wallpaper, a screen overlay) hides no window's top.
+    INBOX 1697: so does a tool window that is layered, click-through or never activated at any size (Dell's display
+    manager keeps one over most of the screen), which hid every window top under it as "covered by a tool window"."""
+    ghost = bool(ex & WS_EX_TOOLWINDOW) and bool(ex & (WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_NOACTIVATE))
+    return (full and bool(ex & (WS_EX_TOOLWINDOW | WS_EX_LAYERED)) or ghost) and not app
+
+
 def _classify(w: Any, hwnd: Any, own_pid: int, ex: int, rect: Any, monitors_: list[tuple[int, int, int, int]]) -> "tuple[WinInfo, str | None]":
     """A framed window as a WinInfo, and the first reason it is no place to stand (None: it is one)."""
     pid = wintypes.DWORD(0)
@@ -738,24 +759,12 @@ def _classify(w: Any, hwnd: Any, own_pid: int, ex: int, rect: Any, monitors_: li
     rect = _clip_to_monitor(rect, monitors_, zoomed)  # GetWindowRect (no DWM frame) runs 8 px past the screen on each side
     full = any(rect[0] <= a[0] and rect[2] >= a[2] and rect[1] <= a[1] and rect[3] >= a[3] for a in monitors_)
     app = bool(ex & WS_EX_APPWINDOW)  # a tool window that asks for a taskbar button is a real app window (Electron, some browsers)
-    reasons = (
-        ("tool window", bool(ex & WS_EX_TOOLWINDOW) and not app), ("own process", int(pid.value) == own_pid),
-        ("maximised", zoomed), ("fills a monitor", full),
-        ("no title", not w.user32.GetWindowTextLengthW(hwnd)),
-        ("owned popup", not _alt_tab_listed(w, hwnd)),  # T7: not the window Alt-Tab lists, it still hides what is under it
-        ("too small", rect[2] - rect[0] < MIN_WINDOW or rect[3] - rect[1] < MIN_WINDOW),
-        ("off-screen", bool(monitors_) and not any(rect[0] < a[2] and rect[2] > a[0] and rect[1] < a[3] and rect[3] > a[1] for a in monitors_)),
-    )
+    reasons = _skip_reasons(w, hwnd, int(pid.value), own_pid, ex, rect, zoomed, full, app, monitors_)
     why = next((name for name, hit in reasons if hit), None)
     # A maximised window is no place to stand but its title bar is a place to hang from; a tool window, the app's
     # own and one without a title are neither (INBOX 1683 w: with a maximised window up, only the taskbar was left).
     hang = reasons[2][1] and not (reasons[0][1] or reasons[1][1] or reasons[4][1])
-    # A layered or tool window that fills a monitor (an animated wallpaper, a screen overlay) hides no window's top.
-    # INBOX 1697: so does a tool window that is layered, click-through or never activated at any size (Dell's display
-    # manager keeps one over most of the screen), which hid every window top under it as "covered by a tool window".
-    ghost = bool(ex & WS_EX_TOOLWINDOW) and bool(ex & (WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_NOACTIVATE))
-    solid = not ((full and ex & (WS_EX_TOOLWINDOW | WS_EX_LAYERED) or ghost) and not app)
-    return WinInfo(int(hwnd), rect, why is None, hang, solid), why
+    return WinInfo(int(hwnd), rect, why is None, hang, not _hides_nothing(ex, full, app)), why
 
 
 def windows(
