@@ -2968,6 +2968,7 @@ TOPIC_META: dict[str, dict] = {
     "callouts": {"title": "Callouts", "path": "Library tab, Documents"},
     "graph-controls": {"title": "Graph keys and controls", "path": "Graph tab"},
     "graph-display": {"title": "More graph controls", "path": "Graph tab, Options"},
+    "graph-categories": {"title": "Categories on the graph", "path": "Graph tab, Map, Tessellation, Tree, Radial"},
     "graph-options-help": {"title": "What the Options sections do", "path": "Graph tab, Options"},
     "properties": {"title": "Note properties and types", "path": "a note's ⋯, Properties; or the command palette, Note types"},
     "entities": {"title": "People and things", "path": "Graph tab, an entity; or the command palette, People and things"},
@@ -3054,7 +3055,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "files-images", "image-viewer", "ocr-workspace", "ocr-engine", "object-move", "archive", "undo-bin",
     )),
     ("Graph, Timeline, Reminders and Dashboard", (
-        "graph", "graph-controls", "graph-display", "graph-options-help", "entities", "properties", "timeline", "timeline-controls", "reminders",
+        "graph", "graph-controls", "graph-display", "graph-categories", "graph-options-help", "entities", "properties", "timeline", "timeline-controls", "reminders",
         "reminders-controls", "dashboard", "dashboard-controls", "patterns", "notifications", "spaces", "private-spaces", "statistics",
     )),
     ("Small tools", (

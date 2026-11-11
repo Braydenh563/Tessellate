@@ -54,15 +54,26 @@ def read(question: str, notes: list[dict], year: int) -> tuple[str, int | None] 
         return None
     names = [found.group("a").strip(" ,"), found.group("b").strip(" ,")]
     names = [n[:1].upper() + n[1:] if n.islower() else n for n in names]
-    older = found.group("dir").lower() == "older"
     said = [_ages(n, notes, year) for n in names]
     cited = next((s[2] for s in said if s), None)
+    gap = _gap(names, said, cited)
+    if gap:
+        return gap
+    return _compare(names, said, found.group("dir").lower() == "older", cited)
+
+
+def _gap(names: list[str], said: list, cited: int | None) -> tuple[str, int | None] | None:
+    """The reply when the notes do not give both ages, else None."""
     if said[0] is None and said[1] is None:
         return f"Your notes do not say how old {names[0]} or {names[1]} is.", None
     for i in (0, 1):
         if said[i] is None:
             return f"Your notes say {_says(names[1 - i], said[1 - i][1])}, but they do not say how old {names[i]} is.", cited
-    (ya, wa, _), (yb, wb, _) = said[0], said[1]  # type: ignore[misc]
+    return None
+
+
+def _compare(names: list[str], said: list, older: bool, cited: int | None) -> tuple[str, int | None]:
+    (ya, wa, _), (yb, wb, _) = said
     if ya == yb:
         return f"{names[0]} and {names[1]} are the same age going by your notes ({wa}).", cited
     first_older = ya < yb

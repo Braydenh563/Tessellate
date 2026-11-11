@@ -26,7 +26,7 @@ import time
 import urllib.parse
 import urllib.request
 
-from tessellate.core import extras
+from tessellate.core import extras, jobs
 from tessellate.core.languagetool_files import java_path
 from tessellate.core.subproc import NO_WINDOW
 
@@ -42,7 +42,7 @@ START_TIMEOUT = 60.0
 _lock = threading.Lock()
 _proc: subprocess.Popen | None = None
 _port = 0
-_timer: threading.Timer | None = None
+_timer: threading.Event | None = None  # set to cancel the idle countdown
 
 
 def installed_folder():
@@ -108,7 +108,7 @@ def stop() -> None:
     with_lock = _lock.acquire(blocking=False)
     try:
         if _timer is not None:
-            _timer.cancel()
+            _timer.set()
             _timer = None
         if _proc is not None:
             _proc.terminate()
@@ -123,12 +123,18 @@ def stop() -> None:
 
 
 def _arm_idle_stop() -> None:
+    """Stop the checker after IDLE_STOP seconds unused, as a listed thread Job
+    (`jobs.thread`) so the Tasks panel and a shutdown see it; each use re-arms."""
     global _timer
     if _timer is not None:
-        _timer.cancel()
-    _timer = threading.Timer(IDLE_STOP, stop)
-    _timer.daemon = True
-    _timer.start()
+        _timer.set()
+    cancelled = _timer = threading.Event()
+
+    def wait_then_stop() -> None:
+        if not cancelled.wait(IDLE_STOP):
+            stop()
+
+    jobs.thread("languagetool-idle", wait_then_stop, stop=cancelled.set)
 
 
 def _running_port() -> int:

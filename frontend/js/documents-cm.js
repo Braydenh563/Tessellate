@@ -300,14 +300,16 @@ function docLivePlugin(CM) {
 
   //: The corner label of a fenced block: its title, else its language, as a button that lists the languages.
   class DocFenceLabelWidget extends WidgetType {
-    constructor(language, title, at) {
+    //: No stored offset: a patched set keeps the widget while text typed above
+    //: moves its line, so a position kept here pointed at the wrong line. The
+    //: click asks the view where the button is now.
+    constructor(language, title) {
       super();
       this.language = language;
       this.title = title;
-      this.at = at;
     }
     eq(other) {
-      return other.language === this.language && other.title === this.title && other.at === this.at;
+      return other.language === this.language && other.title === this.title;
     }
     ignoreEvent() {
       return true;
@@ -321,7 +323,7 @@ function docLivePlugin(CM) {
       button.setAttribute("aria-label", `${button.textContent}, change language`);
       button.addEventListener("mousedown", (event) => event.preventDefault());
       button.addEventListener("click", () => {
-        const line = view.state.doc.lineAt(this.at);
+        const line = view.state.doc.lineAt(view.posAtDOM(button));
         const m = /^(\s*[`~]{3,}[{.\s]*)([\w+#-]*)/.exec(line.text);
         //: The word goes (Undo restores it) so the list shows every name.
         const from = m ? line.from + m[1].length : line.to;
@@ -1159,7 +1161,7 @@ function docLivePlugin(CM) {
               ranges.push(Decoration.line({ class: `cm-md-fence${edge ? ` ${edge}` : ""}${quiet}` }).range(line.from));
               if (edge === "cm-md-fence-open" && !revealed) {
                 ranges.push(
-                  Decoration.widget({ widget: new DocFenceLabelWidget(language, title, line.from), side: 1 }).range(line.to)
+                  Decoration.widget({ widget: new DocFenceLabelWidget(language, title), side: 1 }).range(line.to)
                 );
               }
               if (line.to >= node.to) break;

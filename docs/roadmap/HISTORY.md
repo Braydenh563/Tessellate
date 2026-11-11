@@ -7,6 +7,35 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-11 (backlog-2: BACKLOG §2, Quick wins)
+
+**Nothing here is open, all six are done**, and the section is kept rather
+than deleted for two reasons: a `§2` in a code comment still has to land
+somewhere, and the *shape* of what happened here is worth keeping. Four of the
+six turned out to be **already built when this list was written**, checked in
+the running app rather than assumed, because by then three sessions had
+independently rebuilt something that already existed. That ratio (four stale
+claims out of six) is the single best argument for the "check before you
+build" rule at the top of CLAUDE.md, and deleting the evidence would make the
+rule look like superstition rather than a measured result.
+
+Already built when claimed as open: the SearXNG install path, the Notes
+sidebar sticky rule, a per-code-block copy button in chat answers, and
+conversation search by content.
+
+Genuinely built afterwards:
+
+- **Empty chats could not be deleted.** A `Delete` button in the chat toolbar
+  now covers both cases, an empty or unsaved pane resets silently, a saved
+  one gets the sidebar's own confirm dialog and then
+  `DELETE /conversations/{id}`.
+- **Document outline / table of contents, word-count goal, reading time**,
+  all three, not just the outline. `renderDocOutline` builds the TOC,
+  `renderDocStats` shows reading time, and `promptDocWordGoal`
+  (`#doc-word-goal`) is a working word-count-goal control. §5 already recorded
+  the outline and reading-time halves as done and called the word-count goal
+  "the one unbuilt part", it was built too.
+
 ## Moved from the plans, 2026-11-11 (s9c-1110 part 6)
 
 - Built: DOCUMENTS_PLAN gap row 12, a table's filter and formulas. `docTableFormula`, `docTableFilterHidden`, `docTableValues`, `docTableCell` (documents-tables.js, pure, tested in node by `tests/test_doc_table_calc.py`); Live draws a formula cell's result as `DocTableResultWidget` unless the caret is in it, hides filtered rows with `.cm-md-row-hidden`, and a `DocTableFilterWidget` chip clears the filter (documents-cm.js); the menu items are `filter`, `filter-clear`, `formula-sum`, `formula-avg`, `formula-count` (documents.js). Read view calls `docTableCell` from navigation.js once the Documents bundle is in. A filter is a view held in `docViewState.tableFilters` by header text (two tables with one header share it; it is gone with the page); Read view has no filter.

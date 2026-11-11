@@ -207,10 +207,15 @@ def lean(typed: str, readings: list[str], before: str, after_raw: str, sentence:
     }
     ranked = sorted(pool, key=lambda w: (-scored[w], pool.index(w)))
     best, other = ranked[0], (ranked[1] if len(ranked) > 1 else None)
-    #: A word hardly ever meant ("lest", "fiend") is not offered back.
-    if other is None or scored[best] - scored[other] >= SURE or (other != low and scored[other] <= 0.0) or (other == low and low in _RARE):
-        return best, None
-    return best, other
+    return best, (other if _worth_offering(scored, best, other, low) else None)
+
+
+def _worth_offering(scored: dict[str, float], best: str, other: str | None, low: str) -> bool:
+    """Whether the runner-up is offered back: its lead is small and it has some support. A word
+    hardly ever meant ("lest", "fiend") is not offered."""
+    if other is None or scored[best] - scored[other] >= SURE:
+        return False
+    return not ((other != low and scored[other] <= 0.0) or (other == low and low in _RARE))
 
 
 def real_slip(tokens: list[str], i: int) -> tuple[str, str | None] | None:

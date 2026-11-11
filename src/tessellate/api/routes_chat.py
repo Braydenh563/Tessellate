@@ -832,6 +832,19 @@ def _notes_answer_due(req: _StreamRequest, tool: str, result: object, notes: lis
     return composer_lists.holds_days(notes or [], user_now(deps.get_config()).date())
 
 
+def _reminder_window_args(tool: str, asked: str, now, drawn):  # noqa: ANN001
+    """`(say args, drawn)` for a read tool: only a question that says
+    "reminders" is cut to its window; "what is due this week" lists what
+    waits, as before (1324 widened it to both)."""
+    say_args: dict = {}
+    if tool == "list_reminders" and "remind" in asked.lower():
+        within = _reminder_window(asked, now)
+        if within:
+            say_args["within"] = within
+            drawn = None
+    return say_args, drawn
+
+
 def _tool_read_events(req: _StreamRequest, notes: list | None = None) -> list[dict]:
     """A read tool run with no model (decision 59, steps 1 and 2): the reading
     names the tool (`reading.tool_of`), Chat runs it with no arguments, and
@@ -856,14 +869,7 @@ def _tool_read_events(req: _StreamRequest, notes: list | None = None) -> list[di
     drawn = realise.tool_answer(got.tool, result, now.date())
     #: Said with its links to what it lists and the place to open
     #: (`tool_say`); a chart, when the counts make one, stands for the table.
-    say_args: dict = {}
-    #: Only a question that says "reminders" is cut to its window; "what is
-    #: due this week" lists what waits, as before (1324 widened it to both).
-    if got.tool == "list_reminders" and "remind" in asked.lower():
-        within = _reminder_window(asked, now)
-        if within:
-            say_args["within"] = within
-            drawn = None
+    say_args, drawn = _reminder_window_args(got.tool, asked, now, drawn)
     said = tool_say.say(got.tool, result, say_args, now.date())
     chart = drawn["chart"] if drawn else None
     #: A window's rows are the count the engine said ("You have 2 reminders

@@ -176,6 +176,7 @@ TOPIC_LEADS: dict[str, str] = {
     # Graph, Timeline, Reminders and Dashboard
     "graph": "See how your notes connect as a map you can search and rearrange.",
     "graph-controls": "Walk, zoom and pin notes on the graph, and link two by dropping one on the other.",
+    "graph-categories": "Click a category band on the graph to select its notes, double-click to frame it.",
     "graph-display": "Show tags, files and unwritten links on the graph, and change how it is drawn.",
     "graph-options-help": "See in a line what each of the graph's options does to the map.",
     "entities": "See every note that names a person, place or project, gathered on one page.",

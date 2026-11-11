@@ -285,6 +285,7 @@ function docListGuides() { return []; }
 function asSurface() { return null; }
 function docSurface() { return null; }
 const LIST_DEPTH_MAX = 6;
+const docViewState = { tableFilter: { of: () => null, letters: () => "A" } };
 const DOC_BLOCK_ID_AT_END = /(?:^|[ \\t])\\^([a-z0-9-]+)[ \\t]*$/;
 """
 
@@ -305,6 +306,10 @@ def test_a_patched_live_set_is_the_set_a_full_rebuild_draws(text):
     (patched where `patchRegion` allows) equals a fresh plugin's on the new state."""
     helpers = "\n".join(_function(DOCS, h) for h in ("function docLiveSpanTouched(", "function docLiveRevealSame("))
     anchor = re.search(r"^docLiveSpanTouched\.anchorIn = .*$", DOCS, re.M).group(0)
+    # The plugin reads the fence's language and title through docPairInput
+    # (documents-prose.js, 5d37fc43e); the harness carries the real parser.
+    fence = "function docPairInput() {}\n" + PROSE[PROSE.index("docPairInput.fenceParts = ") :].split("\n};\n")[0] + "\n};"
+    helpers = fence + "\n" + _function((JS / "markdown.js").read_text(encoding="utf-8"), "function mdMathBlockFrom(") + "\n" + helpers
     got = _node(
         _LOAD
         + 'vm.runInContext(read("js/documents-props.js"), ctx);\n'

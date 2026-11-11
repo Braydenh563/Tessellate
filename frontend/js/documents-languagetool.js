@@ -44,11 +44,14 @@
   }
 
   async function ask(text, language) {
-    const body = await apiJson("/grammar/languagetool", {
-      method: "POST",
-      body: JSON.stringify({ text, language }),
-      silent: true,
-    }).catch(() => null);
+    //: A second opinion while typing, not a person's action: a failed check
+    //: returns null and the caller keeps Harper's lints alone.
+    let body;
+    try {
+      body = await apiJson("/grammar/languagetool", { method: "POST", body: JSON.stringify({ text, language }), silent: true });
+    } catch {
+      return null;
+    }
     if (body && !body.available) state.off = true;
     return body && body.available ? body.matches || [] : null;
   }

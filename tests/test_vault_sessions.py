@@ -156,6 +156,11 @@ def test_the_key_goes_when_the_last_granted_session_expires(app):
     here = local.post("/auth/auto-session").json()["token"]
     long_ago = time.time() - routes_auth._SESSION_MAX_AGE - 10
     routes_auth._active_tokens[phone] = [long_ago, long_ago]
+    #: The per-request sweep runs at most every _SWEEP_EVERY seconds (audit
+    #: 1028 K33); this puts the last one beyond that, which is what the wait
+    #: for the phone's session to expire amounts to. Who holds the key is the
+    #: stated intent and it has not moved.
+    routes_auth._sweep_state["last"] = 0.0
     assert _reads_secret(local, note, here) is False  # the request sweeps
     assert vault.is_open() is False
 
