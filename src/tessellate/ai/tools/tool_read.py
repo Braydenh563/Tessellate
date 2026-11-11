@@ -295,18 +295,8 @@ def _suggested_neighbours(session: Session, entry: Entry, exclude: set[int]) -> 
     return results
 
 
-def _related_notes(session: Session, args: dict) -> dict:
-    """The neighbourhood around one note, as context rather than as a picture.
-
-    Breadth-first so the nearest notes arrive first and the cap cuts the
-    furthest, which is the right thing to lose. Every result says how far away
-    it is and how it got there, so the model can weigh "you linked these" above
-    "these share a tag two hops out" instead of treating a flat list as equally
-    relevant.
-    """
-    entry = _require_note(session, args)
-    depth = max(1, min(MAX_GRAPH_DEPTH, int(args.get("depth") or 1)))
-
+def _walk_neighbourhood(session: Session, entry: Entry, depth: int) -> tuple[list[dict], set[int]]:
+    """Breadth-first out from `entry`, nearest first, stopping at the cap: the summaries and the ids seen."""
     frontier = [entry]
     visited = {entry.id}
     found: list[dict] = []
@@ -339,6 +329,22 @@ def _related_notes(session: Session, args: dict) -> dict:
         frontier = next_frontier
         if not frontier:
             break
+    return found, visited
+
+
+def _related_notes(session: Session, args: dict) -> dict:
+    """The neighbourhood around one note, as context rather than as a picture.
+
+    Breadth-first so the nearest notes arrive first and the cap cuts the
+    furthest, which is the right thing to lose. Every result says how far away
+    it is and how it got there, so the model can weigh "you linked these" above
+    "these share a tag two hops out" instead of treating a flat list as equally
+    relevant.
+    """
+    entry = _require_note(session, args)
+    depth = max(1, min(MAX_GRAPH_DEPTH, int(args.get("depth") or 1)))
+
+    found, visited = _walk_neighbourhood(session, entry, depth)
 
     result = {
         "note_id": entry.id,

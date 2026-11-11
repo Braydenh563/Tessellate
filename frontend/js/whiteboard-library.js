@@ -458,7 +458,14 @@ function wbLibGroup(host, key, title, entries, { open = true, extra = null, coun
   grid.className = "wb-lib-grid";
   grid.setAttribute("role", "group");
   grid.setAttribute("aria-label", title);
-  for (const entry of entries) grid.append(wbLibTile(entry));
+  //: **A closed fold draws its tiles when it is opened** (INBOX 1726, `whiteboard-library.js
+  //: Response.json.then 94ms`; 86.7ms at 4x, 220 tiles with their thumbnails, 196 behind a closed
+  //: fold): the header and its count are all a closed group shows.
+  const fill = () => {
+    for (const entry of entries) grid.append(wbLibTile(entry));
+  };
+  if (details.open) fill();
+  else details.addEventListener("toggle", fill, { once: true });
   details.append(grid);
   if (extra) details.append(extra);
   details.addEventListener("toggle", () => {

@@ -9794,10 +9794,11 @@ input[type="file"] {
 /* --- 1. touch targets, one step, one block -------------------------------
    Below 820 the pointer is a finger. 2.75rem is 44px at the default root
    size: the figure both Apple's and Google's guidance give, and the one
-   `touch.js` asserts against every dock control on Notes, Library and Chat. */
+   `touch.js` asserts against every dock control on Notes, Library and Chat.
+   max() with 44px because Small text (14.5px root) made 2.75rem 39.9px. */
 @media (max-width: 819.98px), (pointer: coarse) {
   :root {
-    --target-min: 2.75rem;
+    --target-min: max(2.75rem, 44px);
     --control-h-dense: var(--control-h-touch);
   }
   /* A dialog's own buttons and a dock menu's rows meet the floor too. Measured

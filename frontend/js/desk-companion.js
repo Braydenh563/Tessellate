@@ -45,12 +45,14 @@
   const token = () => prefs.get("token", "");
 
   //: The window's one kind of request: signed in, in the space open in the app.
-  const call = (path, method = "GET", body = null) =>
-    fetch(path, {
+  const call = (path, method = "GET", body = null) => {
+    const form = body instanceof FormData;  // a file: the browser sets the multipart type itself
+    return fetch(path, {
       method,
-      headers: { "Content-Type": "application/json", "X-Auth-Token": token(), "X-Workspace-ID": prefs.get("spaceId", "") || "all" },
-      ...(body ? { body: JSON.stringify(body) } : {}),
+      headers: { ...(form ? {} : { "Content-Type": "application/json" }), "X-Auth-Token": token(), "X-Workspace-ID": prefs.get("spaceId", "") || "all" },
+      ...(body ? { body: form ? body : JSON.stringify(body) } : {}),
     });
+  };
 
   const host = () => window.pywebview?.api || null;
   const ask = (name, ...args) => {
@@ -102,6 +104,8 @@
 
   // --- the window ----------------------------------------------------------------
   function show(next) {
+    //: Pictures and files staged in the note card go with it when the panel is left (capture-stage.js).
+    if (state === "note" && next !== "note") window.discardCaptureStage?.();
     state = next;
     document.body.dataset.state = next;
     document.body.dataset.size = SIZES[next].join("x");
@@ -364,10 +368,23 @@
     noteStatus("");
     document.querySelector(".desk-actions").replaceChildren();
     if (!(await ensureModule("captureCard"))) return noteStatus("Couldn't open the note card.", true);
+    captureCard.discardOnClose = true;  // this window rests on Close: what the card held back goes with it
     openCaptureCard($("desk-capture"), "focusin");
     focusCaptureCard();
     fit();  // the card is in the DOM now: measuring forces the layout, so no frame wait (and no new wake source)
   }
+
+  //: The two calls capture-stage.js uploads through (the app's, in its window), answered with this
+  //: window's token: a picture to /media/upload, a file to the new note's /files.
+  const deskApiJson = async (path, { method = "GET", body = null } = {}) => {
+    const response = await call(path, method, body);
+    if (!response.ok) {
+      const detail = (await response.json().catch(() => ({}))).detail;
+      throw new Error(typeof detail === "string" ? detail : "That didn't go through.");
+    }
+    return response.json();
+  };
+  Object.assign(window, { apiJson: deskApiJson, authHeaders: () => ({}) });
 
   const createNote = async (body) => {
     const response = await call("/entries", "POST", { defer_filing: true, inline_tags: true, ...body });
@@ -404,6 +421,9 @@
   };
   let searchTimer = 0;
   let searchSeq = 0;
+  //: The fetch is out. Enter pressed meanwhile opens the first match when it lands (`enterAt` is that run).
+  let searching = false;
+  let enterAt = 0;
   const plain = (text) =>
     String(text || "")
       .replace(/<[^>]*>/g, "")
@@ -454,6 +474,7 @@
     const q = $("desk-search-text").value.trim();
     const mine = ++searchSeq;
     const list = $("desk-search-hits");
+    searching = !!q;
     if (!q) {
       list.replaceChildren();
       $("desk-search-status").textContent = "";
@@ -465,6 +486,7 @@
       const response = await call(`/search?q=${encodeURIComponent(deskClip(q))}&limit=6`);
       if (mine !== searchSeq) return;
       if (response.status === 401) {
+        searching = false;
         list.replaceChildren();
         await probe();
         return openMenu("menu");
@@ -474,9 +496,12 @@
       list.replaceChildren(...(body.hits || []).map(hitRow));
       $("desk-search-status").textContent = "";
       searchEmpty(body.hits?.length ? "hits" : "none", q);
+      searching = false;
       if (overlay) fit();
+      if (enterAt === mine) list.querySelector("button")?.click();
     } catch (error) {
       if (mine !== searchSeq) return;
+      searching = false;
       $("desk-search-status").textContent = error.message || "Search is not available right now.";
       if (overlay) fit();
     }
@@ -547,6 +572,7 @@
   //: The card changes its own height (a to-do list, the tags): the window follows.
   document.addEventListener("mm:controls-changed", fit);
   $("desk-search-text").addEventListener("input", () => {
+    enterAt = 0;
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => {
       searchTimer = 0;
@@ -565,7 +591,9 @@
         clearTimeout(searchTimer);
         searchTimer = 0;
         runSearch();
-      } else $("desk-search-hits").querySelector("button")?.click();
+        enterAt = searchSeq;
+      } else if (searching) enterAt = searchSeq;
+      else $("desk-search-hits").querySelector("button")?.click();
     }
   });
   //: The results are walked with the arrows; Up from the first goes back to the field.

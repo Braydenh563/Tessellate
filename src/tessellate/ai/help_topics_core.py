@@ -43,7 +43,7 @@ HELP_TOPICS: list[dict] = [
         ),
         "body": (
             'Notes tab: the "Add a note" line under the filter row (parted from it by a divider) opens a card over the list, so the list does not move '
-            "(title and words, or a to-do list with Note and To-do; the line has a To-do icon that opens it as a list, pictures from the picture icon or a paste, Draw for a sketch of your own, a colour, tags and a reminder bell; Close keeps your draft, Escape closes, Ctrl+Enter saves). "
+            "(title and words, or a to-do list with Note and To-do; the line has a To-do icon that opens it as a list, pictures and files (any the chat takes) from the paperclip or a paste or drop, held as removable chips until you save, Draw for a sketch of your own, a colour, tags and a reminder bell; Close keeps your draft, Escape closes, Ctrl+Enter saves). "
             'Or type into "Capture a thought" and Save. A local AI files '
             "it into a category and suggests tags; you can re-file or edit anytime. "
             "Save as draft keeps it unfiled under Drafts instead, and after either, "
@@ -361,8 +361,11 @@ HELP_TOPICS: list[dict] = [
             "(no Tesseract needed); you can pick the model or leave it automatic. A "
             "picture placed on a board or map is the exception: it stays on the board, "
             "unlisted, unsearched and unread, until you select it and press Save to Library "
-            "in Format (then it is filed and read like any other). Captions in the same "
-            "row draws a saved picture's caption as one muted line under it."
+            "in Format (then it is filed and read like any other). Captions, in the row "
+            "below it, draws a saved picture's caption as one muted line under it: on a "
+            "board, under the pictures in a note's popup in the Graph and its timeline "
+            "view, and the popup's menu has the same Show picture captions switch. A "
+            "file attached to a note says nothing."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },

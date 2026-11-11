@@ -817,7 +817,7 @@ def run_insights() -> list[dict]:
         elif expect and row["rule"] == "streak":
             wanted = composer_tables.INSIGHT_TEMPLATES["streak"].format(subject=row["subject"], weeks=expect["weeks"])
         elif expect and row["rule"] == "drift":
-            wanted = composer_tables.INSIGHT_TEMPLATES["drift"].format(plan=expect["plan"], since=expect["since"])
+            wanted = composer_tables.INSIGHT_TEMPLATES["drift"].format(**insights.shown("drift", {"plan": expect["plan"], "since": expect["since"]}))
         out.append({"id": row["id"], "positive": row["positive"], "said": said, "wanted": wanted, "short": short,
                     "right": (wanted in said or (short is not None and short in said) or (short == "" and not said)) if row["positive"] else not said})
     return out

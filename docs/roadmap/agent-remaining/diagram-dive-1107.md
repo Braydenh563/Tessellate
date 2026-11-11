@@ -130,7 +130,7 @@ Order: learnability and usability first (a new user can build, understand, recov
 | DD-14 | Direct manipulation stops at the layout: Mermaid lays the picture out, so nodes cannot be dragged to a position; the hover handles clone nothing | draw.io hover arrows: click the arrow to clone and connect in that direction | Make the four handles do click-to-clone-and-connect (click) and drag-to-connect (drag), as draw.io does | S | One click on a handle adds a connected box and starts its label edit |
 | DD-15 | Other kinds were only checked empty (class, state, ER, Gantt, pie open as picture plus Source: "Blocks do not draw ... yet") | Excalidraw's converter handles class, ER, state, Gantt, quadrant, timeline | Out of scope for this round; consider a "Source with a live picture and a snippets menu" for the unsupported kinds | L | n/a |
 
-Not ranked, to keep in view: the stray `afterFrames is not defined` boot error (shell-reminders.js:707), a one-line guard or a move of `afterFrames` out of dashboard.js.
+Not ranked, to keep in view: the stray `afterFrames is not defined` boot error (shell-reminders.js:707), a one-line guard or a move of `afterFrames` out of dashboard.js. **Stale (rows15-1111):** shell-reminders.js no longer calls `afterFrames`; it is defined at dashboard.js:1990 and its callers (atlas.js, avatars.js) load later; 0 `pageerror` events in six boots of the running app.
 
 ## 5. What could not be verified
 

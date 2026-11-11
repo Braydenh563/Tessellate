@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import difflib
 import re
+from collections import Counter
 from datetime import date, datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -346,31 +347,13 @@ def _buckets(since: date, until: date, by: str) -> list[str]:
     return out
 
 
-def count_notes(session: Session, by: str, since: date | None, until: date | None) -> list[dict]:
-    """Live notes counted by category, tag or time, in a period."""
-    filters = list(_live_notes())
-    if since:
-        filters.append(Entry.created_at >= datetime(since.year, since.month, since.day, tzinfo=timezone.utc))
-    if until:
-        filters.append(Entry.created_at < datetime(until.year, until.month, until.day, tzinfo=timezone.utc))
-    entries = list(session.scalars(select(Entry).where(*filters)))
-    counts: dict[str, int] = {}
-    if by == "category":
-        names = manager.bulk_category_names(session, entries)
-        for entry in entries:
-            name = names.get(entry.category_id, manager.UNCATEGORISED)
-            counts[name] = counts.get(name, 0) + 1
-        rows = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0].lower()))
-        return [{"label": k, "value": v} for k, v in rows[:20]]
-    if by == "tag":
-        for entry in entries:
-            for tag in manager.entry_tags(entry):
-                counts[tag] = counts.get(tag, 0) + 1
-        rows = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0].lower()))
-        return [{"label": k, "value": v} for k, v in rows[:20]]
-    for entry in entries:
-        key = _bucket(entry.created_at, by)
-        counts[key] = counts.get(key, 0) + 1
+def _top_twenty(counts: Counter) -> list[dict]:
+    rows = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0].lower()))
+    return [{"label": k, "value": v} for k, v in rows[:20]]
+
+
+def _time_counts(entries: list, by: str, since: date | None, until: date | None) -> list[dict]:
+    counts = Counter(_bucket(entry.created_at, by) for entry in entries)
     if since and until:
         keys = _buckets(since, until, by)
     else:
@@ -379,6 +362,22 @@ def count_notes(session: Session, by: str, since: date | None, until: date | Non
             first = date.fromisoformat(keys[0] + ("-01" if by == "month" else ""))
             keys = _buckets(first, utcnow().date() + timedelta(days=1), by)
     return [{"label": k, "value": counts.get(k, 0)} for k in keys]
+
+
+def count_notes(session: Session, by: str, since: date | None, until: date | None) -> list[dict]:
+    """Live notes counted by category, tag or time, in a period."""
+    filters = list(_live_notes())
+    if since:
+        filters.append(Entry.created_at >= datetime(since.year, since.month, since.day, tzinfo=timezone.utc))
+    if until:
+        filters.append(Entry.created_at < datetime(until.year, until.month, until.day, tzinfo=timezone.utc))
+    entries = list(session.scalars(select(Entry).where(*filters)))
+    if by == "category":
+        names = manager.bulk_category_names(session, entries)
+        return _top_twenty(Counter(names.get(entry.category_id, manager.UNCATEGORISED) for entry in entries))
+    if by == "tag":
+        return _top_twenty(Counter(tag for entry in entries for tag in manager.entry_tags(entry)))
+    return _time_counts(entries, by, since, until)
 
 
 class ChartQuestion(BaseModel):

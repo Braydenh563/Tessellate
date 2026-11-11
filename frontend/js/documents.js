@@ -145,6 +145,22 @@ function docTypeMount() {
     opener.title = "New document of another type";
     head.replaceChildren(wrap);
   }
+  //: Under 16rem the head's help, template and diagram buttons fold into this ⋯ (CSS `.doc-head-more`); it presses the real buttons.
+  const tools = document.querySelector("#doc-sidebar-list .doc-head-tools");
+  if (tools && !tools.querySelector(".doc-head-more")) {
+    const press = (selector) => () => document.querySelector(selector)?.click();
+    const more = kebabMenu(
+      [
+        { label: "ph:question About this list", run: press("#doc-sidebar-list .doc-head-tools .graph-help-toggle") },
+        { label: "ph:layout New from a template", run: press("#doc-new-template") },
+        { label: "ph:flow-arrow New diagram", run: press("#doc-new-diagram") },
+      ],
+      "More about the document list",
+    );
+    more.querySelector("button").id = "doc-head-more-button";
+    more.classList.add("doc-head-more");
+    tools.append(more);
+  }
 }
 
 //: The foot's button names the type and its row wears the check. Only when the
@@ -8502,27 +8518,6 @@ function mountEditorToolbarExtras(bar) {
     details.append(summary, body);
     bar.appendChild(details);
   }
-}
-
-//: A toolbar is one Tab stop (dog2 item 21: Tab from the note title walked 16
-//: buttons before the editor). The focused control is the stop; Left and Right
-//: move between the visible ones.
-function wireToolbarRoving(bar) {
-  const all = () => [...bar.querySelectorAll("button, select, summary")];
-  const rove = (to) => all().forEach((el) => { el.tabIndex = el === to ? 0 : -1; });
-  rove(bar.querySelector("button"));
-  bar.addEventListener("focusin", (event) => {
-    if (all().includes(event.target)) rove(event.target);
-  });
-  bar.addEventListener("keydown", (event) => {
-    const step = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
-    if (!step || event.target.tagName === "SELECT") return;
-    const shown = all().filter((el) => !el.disabled && el.getClientRects().length);
-    const next = shown[shown.indexOf(event.target) + step];
-    if (!next) return;
-    event.preventDefault();
-    next.focus();
-  });
 }
 
 //: Wire one formatting strip to its textarea: mount the shared extras

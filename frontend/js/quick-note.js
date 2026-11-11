@@ -85,13 +85,14 @@
 
   //: Save a note, or hold it when the server is gone. Answers `{ saved }` or
   //: `{ queued: true }`; a refusal (a 4xx, a 5xx) is thrown as it would be.
-  async function createNoteSafely(body) {
+  async function createNoteSafely(body, { online = false } = {}) {
     const payload = { defer_filing: true, inline_tags: true, ...body };
     payload.client_key = payload.client_key || newNoteClientKey();
     try {
       return { saved: await apiJson("/entries", { method: "POST", body: JSON.stringify(payload) }) };
     } catch (error) {
-      if (!noteServerGone(error) || !noteOutboxAdd(payload)) throw error;
+      //: `online`: the caller needs the new note's id (files to attach), so it is never held for later.
+      if (online || !noteServerGone(error) || !noteOutboxAdd(payload)) throw error;
       return { queued: true };
     }
   }

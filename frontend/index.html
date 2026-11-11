@@ -2667,7 +2667,7 @@ Link to another note with [[its first few words]]."></textarea>
               <!-- The Note / To-do seg left the row (INBOX 1572): at rest the bar is one quiet line, and
                    To-do is an icon that opens the card in that mode. The card keeps the seg. -->
               <button type="button" id="capture-bar-todo" class="ghost icon-only capture-bar-icon capture-bar-todo" data-mode="todo" title="Write a to-do list" aria-label="Start a to-do list"><i class="ph ph-check-square" aria-hidden="true"></i></button>
-              <button type="button" id="capture-bar-picture" class="ghost icon-only capture-bar-icon capture-bar-picture" title="Add pictures" aria-label="Add pictures to a new note"><i class="ph ph-image" aria-hidden="true"></i></button>
+              <button type="button" id="capture-bar-picture" class="ghost icon-only capture-bar-icon capture-bar-picture" title="Add pictures or files" aria-label="Add pictures or files to a new note"><i class="ph ph-image" aria-hidden="true"></i></button>
             </div>
           </div>
           <ul id="entry-list" class="entry-list"></ul>
@@ -3235,15 +3235,16 @@ Link to another note with [[its first few words]]."></textarea>
                  does not name is refused by the picker instead of by an error
                  after the upload. Kept as an exact mirror of docview.py's
                  VIEWABLE_SUFFIXES (PLAIN_TEXT/MARKDOWN/CODE/CONVERTED): 
+                 The list is `ATTACH_ACCEPT` (att-chip.js), set on this input by
+                 wiring.js and read by the Quick capture card too;
                  test_the_chat_composers_file_picker_matches_what_import_actually_reads
-                 (test_docview.py) pins the two to stay equal. `.cs` was
+                 (test_docview.py) pins it to stay equal. `.cs` was
                  briefly removed from here (it wasn't in CODE_SUFFIXES) and
                  restored once CODE_SUFFIXES gained it, every other
                  mainstream language already here could be attached to a
                  note, viewed and read by the AI; C# alone could only be
                  attached. -->
             <input id="chat-image-input" type="file" class="visually-hidden"
-              accept="image/*,.pdf,.docx,.doc,.pptx,.ppt,.xlsx,.xls,.odt,.rtf,.epub,.txt,.text,.log,.csv,.tsv,.md,.markdown,.html,.htm,.json,.xml,.yaml,.yml,.py,.js,.mjs,.cjs,.ts,.tsx,.jsx,.css,.scss,.java,.c,.h,.cpp,.hpp,.cs,.go,.rs,.rb,.php,.swift,.kt,.r,.sh,.bash,.zsh,.sql,.toml,.ini,.cfg,.diff,.patch,.vb,.vbs,.dockerfile,.mk"
               multiple
               aria-label="Choose an image to attach" tabindex="-1">
             <!-- A textarea, not an input: a three-sentence question used to
@@ -4887,7 +4888,7 @@ Link to another note with [[its first few words]]."></textarea>
         <div id="doc-sidebar-list" class="doc-sidebar-section">
           <div class="row space-between sidebar-head">
             <h2>Recent</h2>
-            <span class="row">
+            <span class="row doc-head-tools">
               <button type="button" class="icon-only ghost small graph-help-toggle"
                 data-help-for="doc-list-help" aria-controls="doc-list-help" aria-expanded="false"
                 title="About this list" aria-label="About this list"><i class="ph ph-question" aria-hidden="true"></i></button>
@@ -4918,7 +4919,7 @@ Link to another note with [[its first few words]]."></textarea>
             <p>New starts an empty document, and the arrow on it starts an empty file of
               another type (Documents, Data or Code). The layout button beside it starts one
               from a template (a meeting, a plan, a lecture and more, or a code
-              file). The flow arrow beside that is the diagram button: it opens the Diagram builder on an empty diagram. All in Library opens every document, where you can search,
+              file). The flow arrow beside that is the diagram button: it opens the Diagram builder on an empty diagram. On a narrow sidebar the help, template and diagram buttons sit in the ⋯ beside New. All in Library opens every document, where you can search,
               sort and manage them.</p>
           </div>
           <ul id="doc-list" data-holds-notebook class="doc-list"></ul>
@@ -7576,13 +7577,13 @@ Link to another note with [[its first few words]]."></textarea>
       <div class="wb-tool-section" data-wb-surface="board" role="group" aria-label="Add">
         <span class="wb-tool-section-label" title="Text and pictures">Add</span>
         <div class="wb-tool-section-row">
-        <button class="ghost icon-button" data-tool="sticky" title="Sticky note (N): click the canvas to place one, or drag to draw it at a size" aria-label="Sticky note (N)">
+        <button class="ghost icon-button" data-tool="sticky" title="Sticky note (N): click the canvas, or press Enter on it, to place one, or drag to draw it at a size" aria-label="Sticky note (N)">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v10l-6 6H4z"></path><path d="M14 20v-6h6"></path></svg>
         </button>
-        <button class="ghost icon-button" data-tool="text" title="Text box (T): click the canvas to place one, or drag to draw it at a size" aria-label="Text box (T)">
+        <button class="ghost icon-button" data-tool="text" title="Text box (T): click the canvas, or press Enter on it, to place one, or drag to draw it at a size" aria-label="Text box (T)">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="12" y1="4" x2="12" y2="20"></line><line x1="9" y1="20" x2="15" y2="20"></line></svg>
         </button>
-        <button class="ghost icon-button" data-tool="frame" title="Frame (F): click the canvas to place one, or drag to draw it around what it should hold" aria-label="Frame (F)">
+        <button class="ghost icon-button" data-tool="frame" title="Frame (F): click the canvas, or press Enter on it, to place one, or drag to draw it around what it should hold" aria-label="Frame (F)">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="3" x2="7" y2="21"></line><line x1="17" y1="3" x2="17" y2="21"></line><line x1="3" y1="7" x2="21" y2="7"></line><line x1="3" y1="17" x2="21" y2="17"></line></svg>
         </button>
         <button id="wb-add-image" class="ghost icon-button" type="button" data-wb-key="i" title="Upload an image onto the board (I)" aria-label="Upload an image onto the board (I)">
@@ -8529,7 +8530,7 @@ Link to another note with [[its first few words]]."></textarea>
               <p><b>Crop on picture</b>: drag the handles of a box over the picture; it writes the same percentages as Trim edges, which stay for exact numbers. Arrow keys on a handle nudge it, Escape ends it.</p>
               <p><b>Edit image</b>: turns a quarter, flips, greyscale, brightness and contrast; the file is untouched, so Undo or the clear button brings it back.</p>
               <p><b>Replace picture</b>: swaps in another file; the place, size, crop and style stay, and Undo brings the old one back.</p>
-              <p><b>Save to Library</b>: a picture on a board stays on the board, unlisted and unread; this files it in the Library, where it is searched and captioned. <b>Captions</b> draws a saved picture's caption under it, on every board.</p>
+              <p><b>Save to Library</b>: a picture on a board stays on the board, unlisted and unread; this files it in the Library, where it is searched and captioned. <b>Captions</b>, in the next row, draws a saved picture's caption under it, on every board and under the pictures in a note's popup in the Graph and its timeline view (the popup's menu has the same switch).</p>
               <p><b>Corner radii</b>: each corner's own rounding in pixels; all empty is the default.</p>
               <p><b>Padding</b>: space between the box's edge and its words, in pixels.</p>
             </div>
@@ -8574,7 +8575,9 @@ Link to another note with [[its first few words]]."></textarea>
             </div>
             <div class="wb-fmt-row" data-fmt="replace"><span class="wb-fmt-label">Library</span>
               <button type="button" id="wb-fmt-tolibrary" class="ghost small" aria-label="Save the picture to the Library" title="A picture on a board stays on the board. Saving files it in the Library, where it is searched and captioned"><i class="ph ph-books ph-lead" aria-hidden="true"></i>Save to Library</button>
-              <button type="button" id="wb-fmt-showcaption" class="ghost small" aria-pressed="false" aria-label="Show captions under pictures" title="Draw a saved picture's caption under it, on every board"><i class="ph ph-text-align-center ph-lead" aria-hidden="true"></i>Captions</button>
+            </div>
+            <div class="wb-fmt-row" data-fmt="replace"><span class="wb-fmt-label">Captions</span>
+              <button type="button" id="wb-fmt-showcaption" class="ghost small" aria-pressed="false" aria-label="Show captions under pictures" title="Draw a saved picture's caption under it, on every board"><i class="ph ph-text-align-center ph-lead" aria-hidden="true"></i>Show</button>
             </div>
             <div class="wb-fmt-row" data-fmt="radii"><span class="wb-fmt-label">Corner radii</span>
               <span class="wb-fmt-quad">
@@ -16149,6 +16152,7 @@ Link to another note with [[its first few words]]."></textarea>
   <script src="/js/prefs.js?v=0.7.0"></script>
   <script src="/js/store.js?v=0.7.0"></script>
   <script src="/js/lazy-entries.js?v=0.7.0"></script>
+  <script src="/js/att-chip.js?v=0.7.0"></script>
   <script src="/js/note-cards.js?v=0.7.0"></script>
   <script src="/js/menus.js?v=0.7.0"></script>
   <script src="/js/lightbox.js?v=0.7.0"></script>

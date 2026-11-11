@@ -377,7 +377,7 @@ def _clause(doing: str, kind: str, said: str) -> str:
 def _window_said(asked: Asked) -> str:
     from tessellate.ai import composer
 
-    return composer.window_said(asked.phrase)
+    return composer.window_said(asked.phrase, (asked.start, asked.end))
 
 
 def _empty(asked: Asked, session: Session, today: date, zone) -> str:  # noqa: ANN001

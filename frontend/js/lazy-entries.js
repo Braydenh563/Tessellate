@@ -3,6 +3,8 @@
 // cap. Loads straight after app.js: later scripts name these functions at
 // load (a widget table's `render`, a listener), so the stand-ins must exist.
 Object.assign(LAZY_MODULES, {
+  //: A non-image file chosen in the chat: imported as a document, or kept in the Library (chat-docs.js).
+  chatDocs: ["/js/chat-docs.js"],
   //: A space switch, in place (space-swap.js).
   spaceSwap: ["/js/space-swap.js"],
   //: Unlocking, editing and leaving a private space (private-spaces.js's header; INBOX 1727).
@@ -302,3 +304,4 @@ warmOnFirst("pointerover", "li[data-id] .menu-wrap", "entryMenu");
 //: A slider fetches the value field on its first hover or focus (a keyboard-only reach too), so its readout becomes typeable (INBOX 1694 c, value-field.js). Range inputs only: a plain number box has no readout to upgrade.
 warmOnFirst("pointerover", "[type=range]", "vf");
 warmOnFirst("focusin", "[type=range]", "vf");
+installStandIns({ chatDocs: ["importChatDocuments", "keepUnreadableChatFile"] });

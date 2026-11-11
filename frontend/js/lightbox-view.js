@@ -671,10 +671,31 @@ function openLightbox(items, startIndex = 0, opts = {}) {
   const pagePrevBtn = actionBtn("ph:caret-up", "Previous page", () => setDocPage(docPage - 1), dockPageZone);
   const pageLabel = document.createElement("span");
   pageLabel.className = "lightbox-page-label";
-  //: `role="status"`, matching the OCR workspace's own page label: the page
-  //: changes without focus moving, so a screen reader is otherwise never told.
-  pageLabel.setAttribute("role", "status");
   dockPageZone.appendChild(pageLabel);
+  //: A typeable page number with a dropdown (INBOX 1694 b). An input's change is not read out, so a status line says the page too.
+  const pageStatus = document.createElement("span");
+  pageStatus.className = "visually-hidden";
+  pageStatus.setAttribute("role", "status");
+  dockPageZone.appendChild(pageStatus);
+  let pageField = null;
+  let pageFieldCount = -1;
+  //: Up to twelve rows: every page, else evenly spaced with the first and last kept.
+  const pagePresets = (n) => {
+    const at = n <= 12 ? Array.from({ length: n }, (_, i) => i + 1) : Array.from({ length: 12 }, (_, i) => 1 + Math.round((i * (n - 1)) / 11));
+    return at.map((v) => ({ value: v, label: `Page ${v}` }));
+  };
+  const drawPageField = () => {
+    pageFieldCount = docPageCount;
+    pageField = valueField(pageLabel, {
+      value: docPage + 1,
+      min: 1,
+      max: () => docPageCount,
+      label: "Page number",
+      format: (v) => `Page ${v} of ${docPageCount}`,
+      presets: pagePresets(docPageCount),
+      onCommit: (n) => setDocPage(n - 1),
+    });
+  };
   const pageNextBtn = actionBtn("ph:caret-down", "Next page", () => setDocPage(docPage + 1), dockPageZone);
   const pageControls = [pagePrevBtn, pageLabel, pageNextBtn];
   const showPageControls = (on) =>
@@ -694,7 +715,9 @@ function openLightbox(items, startIndex = 0, opts = {}) {
       chip.classList.toggle("is-current", Number(chip.dataset.page) === docPage);
       chip.setAttribute("aria-current", Number(chip.dataset.page) === docPage ? "true" : "false");
     }
-    pageLabel.textContent = docPageCount ? `Page ${docPage + 1} of ${docPageCount}` : "";
+    if (docPageCount && pageFieldCount !== docPageCount) drawPageField();
+    pageField?.set(docPage + 1);
+    pageStatus.textContent = docPageCount ? `Page ${docPage + 1} of ${docPageCount}` : "";
     pagePrevBtn.disabled = docPage <= 0;
     pageNextBtn.disabled = docPage >= docPageCount - 1;
     //: The panel below is about *this* page, its reading, its figures, so

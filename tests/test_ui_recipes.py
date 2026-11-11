@@ -2814,10 +2814,12 @@ def test_a_coarse_pointer_gets_the_touch_floor_at_every_width() -> None:
     search boxes, sub-tabs and dock buttons at 36px and the status bar's items
     at 28, because every floor was written for `max-width: 819.98px` and an
     iPad in landscape is 1024. The `:root` token and the dock's own floor are
-    the two a regression would lose first."""
+    the two a regression would lose first. The token is `max(2.75rem, 44px)`
+    since OPEN #347 (Small text made 2.75rem 39.9px); the test still pins that
+    it is declared for a coarse pointer at every width, now with the px floor."""
     touch_query = "@media (max-width: 819.98px), (pointer: coarse)"
     shell = "\n".join((ROOT / "frontend" / "css" / name).read_text(encoding="utf-8") for name in ("07-whiteboard-misc.css", "library-lazy.css"))
-    token = re.search(r"@media[^{\n]*\{\s*:root\s*\{\s*--target-min:\s*2\.75rem;", shell)
+    token = re.search(r"@media[^{\n]*\{\s*:root\s*\{\s*--target-min:\s*max\(2\.75rem, 44px\);", shell)
     assert token and token.group(0).startswith(touch_query), (
         "the 44px --target-min is no longer declared for a coarse pointer at every width"
     )
@@ -3904,7 +3906,7 @@ def test_a_swatch_is_drawn_only_by_the_swatch_picker() -> None:
         if path.name == "categories-panel.js":
             continue
         assert "swatch-option" not in text, f"{path.name} builds a swatch by hand; use swatchPicker"
-    body = _function_body(frontend_text("categories-panel.js"), "swatchPicker")
+    body = _function_body(_js_scope.unwrapped(frontend_text("categories-panel.js")), "swatchPicker")
     assert 'setAttribute("role", "radiogroup")' in body
     assert 'setAttribute("role", "radio")' in body
     assert 'setAttribute("aria-label"' in body, "a swatch with no name says nothing to a screen reader"
@@ -6185,8 +6187,9 @@ def test_one_attachment_chip_serves_chat_and_the_popup_agent() -> None:
     and the popup agent's staged files all call it, and no surface hand-builds
     a second file chip (the old `attachment-chip-image` card is gone)."""
     attach = frontend_text("chat-attach.js")
-    assert attach.count("function attachmentChip(") == 1
-    builder = attach[attach.index("function attachmentChip(") :][:3400]
+    chip = frontend_text("att-chip.js")
+    assert chip.count("function attachmentChip(") == 1
+    builder = chip[chip.index("function attachmentChip(") :][:3400]
     for needle in (
         '"att-chip-stem"',
         '"att-chip-ext"',
@@ -6225,7 +6228,8 @@ def test_a_staged_chip_is_one_quiet_pill() -> None:
     the `.att-chip-pill`, and the selection, OCR and web-page chips that were
     hand-built `.attachment-chip` slabs are built by `attachmentChip` too."""
     attach = frontend_text("chat-attach.js")
-    builder = attach[attach.index("function attachmentChip(") :][:3400]
+    chip = frontend_text("att-chip.js")
+    builder = chip[chip.index("function attachmentChip(") :][:3400]
     assert "const pill = onRemove !== undefined;" in builder
     assert "att-chip-pill" in builder
     selection = attach[attach.index("function renderSelectionAttachment(") :][:1600]

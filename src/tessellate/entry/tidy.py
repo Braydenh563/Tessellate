@@ -586,11 +586,8 @@ def _rows_duplicates(session, _level: str) -> list[dict]:  # noqa: ANN001
     return rows
 
 
-def _rows_short_notes(session, _level: str) -> list[dict]:  # noqa: ANN001
-    entries = [e for e in _live_entries(session) if not e.pinned and is_short(e.content or "")]
-    if not entries:
-        return []
-    ids = [e.id for e in entries]
+def _tied_ids(session, ids: list[int]) -> set[int]:  # noqa: ANN001
+    """Of `ids`, the notes with a link or a reply thread; the ids a link names beside them come too."""
     linked = {
         i for pair in session.execute(
             select(EntryLink.source_entry_id, EntryLink.target_entry_id).where(
@@ -598,11 +595,19 @@ def _rows_short_notes(session, _level: str) -> list[dict]:  # noqa: ANN001
             )
         ) for i in pair
     }
-    threaded = set(session.scalars(select(Entry.parent_id).where(Entry.parent_id.in_(ids))))
+    return linked | set(session.scalars(select(Entry.parent_id).where(Entry.parent_id.in_(ids))))
+
+
+def _rows_short_notes(session, _level: str) -> list[dict]:  # noqa: ANN001
+    entries = [e for e in _live_entries(session) if not e.pinned and is_short(e.content or "")]
+    if not entries:
+        return []
+    ids = [e.id for e in entries]
+    tied = _tied_ids(session, ids)
     files = manager.documents_for_entries_bulk(session, ids)
     rows = []
     for entry in entries:
-        if entry.id in linked or entry.id in threaded or entry.parent_id or files.get(entry.id):
+        if entry.id in tied or entry.parent_id or files.get(entry.id):
             continue
         shown = " ".join((entry.content or "").split())
         rows.append(_row(f"note:{entry.id}", shown or "Empty note", f"{len(shown)} characters, no links or files", "Move to the bin", [entry.id]))

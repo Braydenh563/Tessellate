@@ -238,6 +238,16 @@ function measure({ roots, passB }) {
     }
     return false;
   };
+  // Scrolled-under: one of the pair rides a sticky bar and the other scrolls
+  // beneath it, and the scroller is off its start. That is scrolling.
+  const stickyOf = (el) => { let s = el; while (s && s !== document.body) { if (getComputedStyle(s).position === 'sticky') return s; s = s.parentElement; } return null; };
+  const scrollerOf = (el) => { let s = el && el.parentElement; while (s && s !== document.documentElement) { const o = getComputedStyle(s).overflowY; if (/auto|scroll/.test(o) && s.scrollHeight > s.clientHeight + 1) return s; s = s.parentElement; } return document.scrollingElement; };
+  const scrolledUnder = (a, b) => {
+    const sa = stickyOf(a), sb = stickyOf(b);
+    if (sa === sb) return false;
+    const sc = scrollerOf(sa || sb);
+    return !!(sc && sc.scrollTop > 0);
+  };
   const INTER2 = 'button, a[href], input:not([type=hidden]), select, textarea, summary, [role=button], [role=tab], [role=menuitem]';
   const seen = new Set();
   for (const el of visEls) {
@@ -260,6 +270,7 @@ function measure({ roots, passB }) {
       if (ix <= 1.5 || iy <= 1.5) continue;
       const cx = Math.max(r.left, tr.left) + ix / 2, cy = Math.max(r.top, tr.top) + iy / 2;
       if (pointClipped(t.pe, cx, cy) || pointClipped(el, cx, cy)) continue;
+      if (!passB && scrolledUnder(el, t.pe)) continue;
       const hit = document.elementFromPoint(cx, cy);
       // A label's <input> sits under its own text on purpose (custom checkbox);
       // a control that is the text's own label target is skipped too.
@@ -333,7 +344,9 @@ async function run() {
       }
       return picks.slice(0, 14);
     }, scope);
-    const popRoots = ['dialog[open]', '.action-menu:not(.hidden)', 'details[open] > .dock-menu-list', 'details[open] > .doc-dock-menu-list', '.help-body:not(.hidden)', '[popover]:popover-open', '.toast', '.confirm-overlay'];
+    const popRoots = ['dialog[open]', '.action-menu:not(.hidden)', 'details[open] > .dock-menu-list', 'details[open] > .doc-dock-menu-list',
+      // Some menus are carried out of their <details> to float (Library documents).
+      '.dock-menu-list', '.doc-dock-menu-list', '.help-body:not(.hidden)', '[popover]:popover-open', '.toast', '.confirm-overlay'];
     const sweepOpeners = async (state, scope, reset) => {
       const picks = await openers(scope);
       if (!Array.isArray(picks)) return;
@@ -347,6 +360,8 @@ async function run() {
       }
     };
     const S = async (name, setup, roots, scope, reset) => {
+      //: ONLY=<prefix> runs just the states whose name starts with it.
+      if (process.env.ONLY && !name.startsWith(process.env.ONLY)) return;
       try {
         await closeAll();
         await setup();
@@ -423,9 +438,35 @@ async function run() {
       const open = async () => { await tab('reminders'); await settle(500); await ev((v) => document.querySelector(`#reminder-view-toggle [data-view="${v}"]`)?.click(), v); await settle(600); };
       await S(`reminders/${v}`, open, ['#tab-reminders', '#tab-timeline'], v === 'list' ? '#tab-reminders' : null, open);
     }
+    // A reminder row's hover strip (+1h, Tomorrow, Edit, ⋯) over its time.
+    await S('reminders/hover', async () => { await tab('reminders'); await ev(() => document.querySelector('#reminder-view-toggle [data-view="list"]')?.click()); await settle(500);
+      const li = page.locator('#reminder-groups li').first(); if (await li.count()) await li.hover({ timeout: 3000 }).catch(() => {}); }, ['#tab-reminders']);
     await S('reminders/typed', async () => { await tab('reminders'); await ev(() => document.querySelector('#reminder-view-toggle [data-view="list"]')?.click());
       await page.fill('#reminder-text', 'Ring the garage about the car service and the tyres').catch(() => {}); }, ['#tab-reminders']);
     await page.fill('#reminder-text', '').catch(() => {});
+    // ---- Popups the click-through above can miss (a summary press that an
+    // outside-click closer undoes in the same tick): opened directly here.
+    const direct = [
+      ['notes', 'capture', '#capture-help'], ['notes', 'writing-room', '#draft-help'], ['notes', 'ask', '[data-help-for][aria-label="About AI answers"], #ask [data-help-for]'],
+      ['library', 'library-view-documents', '#library-filter-menu'], ['library', 'library-view-documents', '#library-more-menu'],
+      ['library', 'library-view-contents', '#contents-help'], ['library', 'library-view-skills', '#skills-help'],
+      ['library', 'library-view-whiteboard', '#library-view-whiteboard details.dock-more'],
+    ];
+    for (const [t, sub, sel] of direct) {
+      await S(`popups/${sub}/${sel.split(',')[0]}`, async () => {
+        await tab(t);
+        if (t === 'notes') await notesSec(sub);
+        else await page.waitForFunction((x) => { const b = document.querySelector(`#library-subtabs [data-target="${x}"]`); if (!b) return true; if (!b.classList.contains('active')) { b.click(); return false; } return true; }, sub, { timeout: 8000, polling: 150 }).catch(() => {});
+        await settle(900);
+        const how = await ev((sel) => {
+          const el = document.querySelector(sel); if (!el) return 'missing';
+          if (el.tagName === 'DETAILS') { el.open = true; return 'details'; }
+          el.click(); return 'click';
+        }, sel);
+        if (how === 'missing') emit({ vp, state: `popups/${sub}/${sel}`, error: 'opener missing' });
+      }, popRoots);
+      await closeAll();
+    }
     emit({ vp, state: '__done', secs: Math.round((Date.now() - t0) / 1000) });
     await browser.close();
   }

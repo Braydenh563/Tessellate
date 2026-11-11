@@ -441,7 +441,9 @@ def _days_away(days: int) -> str:
     return base + (" (a week)" if days == 7 else "")
 
 
-def _grouped(found: list[Event], today: date, limit: int = MAX_ITEMS) -> list[str]:
+def _grouped(found: list[Event], today: date, limit: int = MAX_ITEMS, *, headed: bool = True) -> list[str]:
+    """The items under a bold day heading each; `headed=False` for one day the answer's own head already names (W8B
+    1111: "For Wednesday 11 November you have ..." then "**Wednesday 11 November**" said the day twice)."""
     lines: list[str] = []
     shown = 0
     last = None
@@ -449,7 +451,7 @@ def _grouped(found: list[Event], today: date, limit: int = MAX_ITEMS) -> list[st
         if shown >= limit:
             break
         if ev.day != last:
-            lines += ["", f"**{_name(ev.day, today)}**"]
+            lines += ["", f"**{_name(ev.day, today)}**"] if headed else [""]
             last = ev.day
         lines.append(ev.line())
         shown += 1
@@ -503,7 +505,7 @@ def _due(ctx: Ctx, win: tuple[date, date, str]) -> Reply | None:
     head = compose.frame("due", ctx.mood, count=realise.counted(len(found), "dated item"), span=span) if found \
         else compose.frame("due_overdue", ctx.mood, span=span)
     head = compose.sentence_case(head)
-    lines = [head, *_grouped(found, today)]
+    lines = [head, *_grouped(found, today, headed=start != end)]
     if overdue:
         lines += ["", "**Overdue**"] + [e.line(overdue=True) for e in overdue[:5]]
     if (end - start).days >= 3:
