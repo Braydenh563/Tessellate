@@ -60,7 +60,7 @@ def test_a_line_prefix_switches_instead_of_stacking():
 
 
 def test_underline_and_replace_have_their_word_processor_chords():
-    js = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    js = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8") + (ROOT / "frontend" / "js" / "documents-view.js").read_text(encoding="utf-8")
     # CodeMirror's own Mod-u is "undo selection": without this binding Ctrl+U looked dead.
     # docProseChord leaves the key to CodeMirror in a code file (56e59a7).
     assert '{ key: "Mod-u", run: () => docProseChord(() => { applyMarkdown("underline"); }) }' in js
