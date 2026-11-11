@@ -79,6 +79,22 @@ jobs:
         if: always()
         run: python scripts/ci_durations.py junit.xml 40 >> "$GITHUB_STEP_SUMMARY"
 
+  test-result:
+    # The "Protect Main Branch" ruleset requires "Tests (Python 3.11)", "3.12" and "3.13", the names from before the
+    # suite split into two legs (W24). One small job per version carries the old name and passes only when every leg
+    # passed (a matrix `needs` waits on all six), so the ruleset needs no edit (the owner, 2026-11-11).
+    name: Tests (Python ${{ matrix.python-version }})
+    needs: test
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - name: Every leg passed
+        run: test "${{ needs.test.result }}" = "success"
+
   pdf:
     # Fourteen tests need the PDF rasteriser (pypdfium2 plus Pillow), which is
     # an optional extra nobody installs by default, so page images, page
