@@ -1160,7 +1160,9 @@ MORE_TOPICS: list[dict] = [
             "only the text you had selected. Your own browser sends the page, so "
             "nothing is fetched from the web: it works with web search off and on "
             "pages you signed in to see. No browser extension is needed. A clipped "
-            "note keeps its address, Atlas treats its text as someone else's words "
+            "note opens with properties (source, site, author, published and the day "
+            "you clipped it, whichever the page names), so you can find and sort "
+            "clips by them. Atlas treats its text as someone else's words "
             "and never follows instructions in it, and clipping the same page again "
             "points you to the note it made the first time."
         ),

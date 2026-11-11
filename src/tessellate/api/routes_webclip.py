@@ -25,9 +25,10 @@ from sqlalchemy.orm import Session
 from tessellate.api import routes_entries
 from tessellate.api.schemas import EntryCreate, EntryOut
 from tessellate.core import deps, webclip
+from tessellate.core.config import user_now
 from tessellate.core.database import Entry
 from tessellate.core.deps import get_session
-from tessellate.entry import manager
+from tessellate.entry import manager, properties as note_properties
 
 router = APIRouter(prefix="/links", tags=["links"])
 
@@ -35,6 +36,16 @@ WEB_OFF = (
     "Clipping a page needs the web, and the web is turned off. Allow it in "
     "Settings, Web search, then clip the page again."
 )
+
+
+def _note_text(extracted: dict, url: str) -> str:
+    """The clip as a note: a `---` block of properties (source, site, author,
+    published, clipped), then the heading, the source link and the page's text.
+    The block is the same one the properties panel edits, so a clipped note
+    can be found and sorted by who wrote it and when."""
+    clipped = user_now(deps.get_config()).date().isoformat()
+    props = webclip.note_properties(extracted, url, clipped)
+    return note_properties.write(webclip.note_content(extracted, url), props)
 
 
 class ClipIn(BaseModel):
@@ -53,7 +64,7 @@ def clip(body: ClipIn, session: Session = Depends(get_session)) -> EntryOut:
     extracted = webclip.extract(fetched["html"], url)
     note = routes_entries.create_entry(
         EntryCreate(
-            content=webclip.note_content(extracted, url),
+            content=_note_text(extracted, url),
             source_url=url,
             source_title=extracted["title"],
             defer_filing=True,
@@ -118,7 +129,12 @@ def clip_page(body: ClipPageIn, response: Response, session: Session = Depends(g
         return ClipPageOut(entry=routes_entries._to_out(session, already), existing=True)
     selection = body.selection.strip()
     if selection:
-        extracted = {"title": _plain_title(body.title, url), "markdown": selection, "words": len(selection.split())}
+        extracted = {
+            "title": _plain_title(body.title, url),
+            "markdown": selection,
+            "words": len(selection.split()),
+            "facts": webclip.page_facts(body.html) if body.html.strip() else {},
+        }
     elif body.html.strip():
         extracted = webclip.extract(body.html, url)
     else:
@@ -127,7 +143,7 @@ def clip_page(body: ClipPageIn, response: Response, session: Session = Depends(g
         raise HTTPException(status_code=422, detail="This page sent no text to clip. Reload it and clip again.")
     note = routes_entries.create_entry(
         EntryCreate(
-            content=webclip.note_content(extracted, url),
+            content=_note_text(extracted, url),
             source_url=url,
             source_title=extracted["title"],
             defer_filing=True,

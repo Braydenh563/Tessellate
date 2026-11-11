@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8186, frontend ids 2716, CSS sections 524, backend routes 679, backend modules 10476, test files 2591, tests 21194, plan headings 1013, app scripts 29, boot scripts 38, script files 285.
+Counts: frontend functions 8186, frontend ids 2716, CSS sections 524, backend routes 679, backend modules 10479, test files 2591, tests 21198, plan headings 1013, app scripts 29, boot scripts 38, script files 285.
 
 ## Frontend functions (8186)
 
@@ -13053,8 +13053,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/check` | GET | `check_for_update` | src/tessellate/api/routes_update.py:601 |
 | `/check-syntax` | POST | `check_syntax` | src/tessellate/api/routes_documents.py:349 |
 | `/choice` | POST | `update_choice` | src/tessellate/api/routes_update.py:474 |
-| `/clip` | POST | `clip` | src/tessellate/api/routes_webclip.py:44 |
-| `/clip-page` | POST | `clip_page` | src/tessellate/api/routes_webclip.py:110 |
+| `/clip` | POST | `clip` | src/tessellate/api/routes_webclip.py:55 |
+| `/clip-page` | POST | `clip_page` | src/tessellate/api/routes_webclip.py:121 |
 | `/code-snippets` | GET | `list_snippets` | src/tessellate/api/routes_code_snippets.py:64 |
 | `/code-snippets` | POST | `create_snippet` | src/tessellate/api/routes_code_snippets.py:89 |
 | `/code-snippets/{snippet_id}` | PUT | `update_snippet` | src/tessellate/api/routes_code_snippets.py:105 |
@@ -13626,7 +13626,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10476)
+## Backend modules (10479)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -17503,8 +17503,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2468 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2620 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2470 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2622 |
 
 ### src/tessellate/ai/help_words.py (3)
 
@@ -22891,17 +22891,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `status` | src/tessellate/api/routes_voice.py:26 |
 | `transcribe` | src/tessellate/api/routes_voice.py:107 |
 
-### src/tessellate/api/routes_webclip.py (7)
+### src/tessellate/api/routes_webclip.py (8)
 
 | Name | File:line |
 |---|---|
-| `ClipIn` | src/tessellate/api/routes_webclip.py:40 |
-| `ClipPageIn` | src/tessellate/api/routes_webclip.py:84 |
-| `ClipPageOut` | src/tessellate/api/routes_webclip.py:91 |
-| `_page_address` | src/tessellate/api/routes_webclip.py:97 |
-| `_plain_title` | src/tessellate/api/routes_webclip.py:106 |
-| `clip` | src/tessellate/api/routes_webclip.py:45 |
-| `clip_page` | src/tessellate/api/routes_webclip.py:111 |
+| `ClipIn` | src/tessellate/api/routes_webclip.py:51 |
+| `ClipPageIn` | src/tessellate/api/routes_webclip.py:95 |
+| `ClipPageOut` | src/tessellate/api/routes_webclip.py:102 |
+| `_note_text` | src/tessellate/api/routes_webclip.py:41 |
+| `_page_address` | src/tessellate/api/routes_webclip.py:108 |
+| `_plain_title` | src/tessellate/api/routes_webclip.py:117 |
+| `clip` | src/tessellate/api/routes_webclip.py:56 |
+| `clip_page` | src/tessellate/api/routes_webclip.py:122 |
 
 ### src/tessellate/api/routes_websearch.py (17)
 
@@ -25539,31 +25540,33 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `verify_assertion` | src/tessellate/core/webauthn.py:253 |
 | `verify_registration` | src/tessellate/core/webauthn.py:235 |
 
-### src/tessellate/core/webclip.py (21)
+### src/tessellate/core/webclip.py (23)
 
 | Name | File:line |
 |---|---|
 | `ClipRefused` | src/tessellate/core/webclip.py:57 |
-| `_Markdown` | src/tessellate/core/webclip.py:351 |
-| `_Node` | src/tessellate/core/webclip.py:203 |
-| `_Tree` | src/tessellate/core/webclip.py:213 |
+| `_Markdown` | src/tessellate/core/webclip.py:384 |
+| `_Node` | src/tessellate/core/webclip.py:217 |
+| `_Tree` | src/tessellate/core/webclip.py:227 |
 | `_check_clippable` | src/tessellate/core/webclip.py:120 |
 | `_clip_hop` | src/tessellate/core/webclip.py:82 |
-| `_descendants` | src/tessellate/core/webclip.py:453 |
-| `_link_text` | src/tessellate/core/webclip.py:281 |
-| `_main` | src/tessellate/core/webclip.py:303 |
+| `_descendants` | src/tessellate/core/webclip.py:486 |
+| `_link_text` | src/tessellate/core/webclip.py:314 |
+| `_main` | src/tessellate/core/webclip.py:336 |
 | `_new_session` | src/tessellate/core/webclip.py:68 |
-| `_read` | src/tessellate/core/webclip.py:462 |
+| `_read` | src/tessellate/core/webclip.py:495 |
 | `_read_clip_body` | src/tessellate/core/webclip.py:139 |
 | `_redirect_url` | src/tessellate/core/webclip.py:108 |
-| `_safe_href` | src/tessellate/core/webclip.py:332 |
-| `_score` | src/tessellate/core/webclip.py:289 |
-| `_score_deep` | src/tessellate/core/webclip.py:328 |
-| `_text` | src/tessellate/core/webclip.py:275 |
+| `_safe_href` | src/tessellate/core/webclip.py:365 |
+| `_score` | src/tessellate/core/webclip.py:322 |
+| `_score_deep` | src/tessellate/core/webclip.py:361 |
+| `_text` | src/tessellate/core/webclip.py:308 |
 | `clean_url` | src/tessellate/core/webclip.py:78 |
-| `extract` | src/tessellate/core/webclip.py:475 |
+| `extract` | src/tessellate/core/webclip.py:508 |
 | `fetch_page` | src/tessellate/core/webclip.py:153 |
-| `note_content` | src/tessellate/core/webclip.py:502 |
+| `note_content` | src/tessellate/core/webclip.py:564 |
+| `note_properties` | src/tessellate/core/webclip.py:549 |
+| `page_facts` | src/tessellate/core/webclip.py:536 |
 
 ### src/tessellate/core/window_hook.py (4)
 
@@ -26941,7 +26944,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21194)
+## Tests (21198)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29486,7 +29489,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_web_store_1111.py | 8 |
 | tests/test_web_tool_kept_on_small_windows.py | 3 |
 | tests/test_webclip.py | 20 |
-| tests/test_webclip_page.py | 10 |
+| tests/test_webclip_page.py | 14 |
 | tests/test_websearch_api.py | 9 |
 | tests/test_websearch_diagnosis.py | 23 |
 | tests/test_websearch_privacy.py | 24 |
