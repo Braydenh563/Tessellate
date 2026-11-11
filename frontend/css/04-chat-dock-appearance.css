@@ -1191,6 +1191,10 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
 
 /* Run is the action the panel exists for, so it gets the full width and the
    emphasis rather than sitting as a third peer in a row of settings. */
+.chat-skills-note {
+  margin: 0;
+}
+
 .chat-skills-run {
   display: flex;
 }

@@ -376,6 +376,7 @@ function fillSkillSelect(select) {
 
   //: "Edits notes" is a group, not a suffix: a suffix wrapped long names onto two lines.
   const groups = {};
+  let blocked = 0;
   for (const skill of allSkills()) (groups[`${skill.builtin ? "Built-in" : "Yours"}, ${skill.changes ? "edits notes" : "read only"}`] ||= []).push(skill);
   for (const [key, list] of Object.entries(groups).sort()) {
     const group = document.createElement("optgroup");
@@ -390,8 +391,9 @@ function fillSkillSelect(select) {
       //: notes says so and waits; the ones it runs stay open.
       if (aiIsOff() && !skill.composer) {
         option.textContent += "  (needs a model)";
-        option.title = "Needs a model: this skill writes in its own words. Connect one in Settings, Models.";
+        option.title = "Unavailable while no model is connected: this skill writes in its own words. Connect one in Settings, Models.";
         option.disabled = true;
+        blocked += 1;
       } else if (skill.needs_larger_model) {
         option.textContent += "  (needs a larger model)";
         option.title = skill.needs_larger_model;
@@ -414,6 +416,16 @@ function fillSkillSelect(select) {
   select.appendChild(manageGroup);
 
   if ([...select.options].some((option) => option.value === chosen)) select.value = chosen;
+  //: The owner: a pick of a greyed row did nothing and said nothing, and a native list's
+  //: tooltip does not always show, so the menu says it in one line under the list.
+  select.dataset.blocked = String(blocked);
+  paintSkillsNote(select);
+}
+
+//: The `chat-skills-note` line: shown while any skill is greyed for want of a model.
+function paintSkillsNote(select) {
+  const note = select.closest(".chat-skills-panel")?.querySelector(".chat-skills-note");
+  if (note) note.classList.toggle("hidden", !Number(select.dataset.blocked));
 }
 
 //: The Skills menu around the select: built once per `loadChatSkills`.
@@ -448,7 +460,12 @@ function buildSkillsPanel(box, label, select, run, trigger) {
   runRow.className = "chat-skills-run";
   runRow.appendChild(run);
 
-  panel.append(pickRow, paceRow, runRow);
+  const note = document.createElement("p");
+  note.className = "muted small chat-skills-note hidden";
+  note.textContent = "Greyed skills need a model.";
+
+  panel.append(pickRow, note, paceRow, runRow);
+  paintSkillsNote(select);
 
   //: `refocus`: Escape or Run, with the focus inside, hands it back to the
   //: trigger; hidden with the focus in it, it fell to the page (WCAG 2.4.3).
