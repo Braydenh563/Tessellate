@@ -118,8 +118,9 @@ def test_the_built_in_stencils_paint_as_they_did() -> None:
     mixed = 0
     for entry in _builtin_index().values():
         items = (entry.get("payload") or {}).get("items") or []
-        drawings = [i["z"] for i in items if i.get("kind") == "sketch"]
-        cards = [i["z"] for i in items if i.get("kind") != "sketch" and i.get("type") != "frame"]
+        #: A one-drawing icon stencil has no "z" (it reads as 0, as drawings_under_cards does).
+        drawings = [int(i.get("z") or 0) for i in items if i.get("kind") == "sketch"]
+        cards = [int(i.get("z") or 0) for i in items if i.get("kind") != "sketch" and i.get("type") != "frame"]
         if drawings and cards:
             mixed += 1
             assert max(drawings) < min(cards), entry.get("key")

@@ -197,7 +197,7 @@ Parked until the owner's data or a check on real hardware:
 - ~~C8 Default fold (after Q14); both side panels fold to a rail | INBOX 1720, oa 1661 m, S14~~ **Fixed w17-1110** (a blank or starter diagram opens with the list a 32 px rail while no fold was ever chosen, nothing stored; an existing one opens at 224 px; both rails exist and are named)
 - C9 Shelf is mouse only; the diagram tray "Open" row; Done silently creating a file; Tab stops | dgml L14, DOCUMENTS#22.4 R9a, R11 **Shelf: not reproduced w17-1110** (Right arrow roves six tiles and More, Enter adds); the tray row and Done not driven (code toasts the save), see w17-1110.md
 
-**W19 Whiteboard daily UX** (C, boards, Sonnet; verify first). Files: `frontend/js/whiteboard*.js` outside the render path (W30). Checks: `tests/test_wb_*`, `contrast.js` on a board. Done when: ink reads on both themes and every insert works by keyboard.
+~~**W19 Whiteboard daily UX** (C, boards, Sonnet; verify first).~~ **Done wb-1111** (U1, U2, U5, U13 were built; U3 and B33 built here, B10 is the dialog's Print note). Files: `frontend/js/whiteboard*.js` outside the render path (W30). Checks: `tests/test_wb_*`, `contrast.js` on a board. Done when: ink reads on both themes and every insert works by keyboard.
 ~~- C10 Stored black ink does not remap on dark; white ink on a yellow sticky | 1028-ux U1, U2~~ **Fixed before s5-1110 (cc6892028: `wbDefaultInk`).**
 ~~- C11 Insert, Sticky note by keyboard adds nothing and drops focus | 1028-ux U3~~ **Fixed before s5-1110 (cc6892028).**
 ~~- C12 Ring and chevron buttons under 24 px at zoom; Delete 2 px from Undo | 1028-ux U5, U14~~ **Fixed before s5-1110 (cc6892028, CHANGELOG 755).**
@@ -297,7 +297,7 @@ Parked until the owner's data or a check on real hardware:
 ~~- E7 Validation copy leaks field names | 1031-backend BK8~~ **Already built c6cc5767a** (field labels and the limit in the message; tests/test_validation_copy.py). Verified s8-1110.
 - E8 ~~A disabled tool refused with the wrong reason (H11, `_refuse_if_off` 3f0030d41); duplicated loopback lists (K28, one list in core/security)~~; token sweep per request (K33) **not built, s8-1110**: `tests/test_vault_sessions.py::test_the_key_goes_when_the_last_granted_session_expires` pins that every authenticated request sweeps (a token injected into `_active_tokens` with an old stamp must revoke the vault key on the next request). A once-a-minute sweep fails it; needs the owner to move that test's intent, or a sweep keyed on a min-expiry that the test's direct injection also lowers | 1029-harness H11, 1028-backend K28, K33
 - E9 Real Tesseract and PDFium reads never ran | sec L13, OPEN RapidOCR row
-- E10 The other 1028-backend and 1031-backend open rows | book1 (37 and 12 rows)
+- E10 The other 1028-backend and 1031-backend open rows | book1 (37 and 12 rows) [backend-1111: re-verified on head; the rest are built, stale or held (Q22, K38, K32); BK10, K19, K29, E9 left in backend-1111.md]
 
 **W33 Copy and help** (E, copy, Haiku then Sonnet). Files: help topics, copy strings.
 ~~- E11 "Tools and features" omits 60 palette rows | 1031-extras Z3~~ **Already built 073cc0c6b** (`featureCommandRows`; tests/test_xfix_1031.py). Verified s8-1110.
@@ -4743,7 +4743,7 @@ Counts are from `e17-1110.md` "True, by work order batch"; the scout's own cavea
 | X7 | W12 navigation | 11 | open | Sh1 |
 | X8 | W14 in-app companion | 20 | open | Cp1 |
 | X9 | W15 desk companion | 11 | open | Cp2 |
-| X10 | W19 whiteboard daily UX | 76 | open | Wb1 |
+| X10 | W19 whiteboard daily UX | 76 | done (wb-1111) | Wb1 |
 | X11 | W20 shell accessibility | 7 | open | Sh1 |
 | X12 | W21 dashboard, timeline | 15 | open | Da1 |
 | X13 | W22 chat, Ask, Guide | 15 | open | Co3 |
