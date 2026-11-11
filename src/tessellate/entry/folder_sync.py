@@ -94,30 +94,30 @@ def _sync_roots() -> list[str]:
     return [os.path.join(os.path.realpath(root), "") for root in roots]
 
 
+def _root_of(real: str) -> str:
+    """The sync root `real` sits in or is, without its trailing separator; a NUL when it is in none."""
+    for root in _sync_roots():
+        if os.path.join(real, "").startswith(root):
+            return root.rstrip("/\\") or root
+    return "\x00"
+
+
 def _checked(folder: str, passphrase: str, notebook: Path | None = None) -> Path:
     """The folder, resolved with links followed, or a SyncError. Inside home or a removable drive (the route
     takes a path from a request: CodeQL path injection), never the notebook's own folder or one inside it:
     a sync file there would travel with every copy of the notebook."""
     if not folder.strip() or "\x00" in folder:
         raise SyncError("Choose a folder that exists on this computer.")
-    # The receiver of the bare `startswith` is the `realpath` result itself, and the path used from here on is the
-    # one taken inside that branch: the shape CodeQL counts as a guard (core/paths.py). A test inside `any(...)`,
-    # or on a `join` made after the `realpath`, is not seen. The root keeps its separator, so a sibling such as
-    # /home/user2 never passes for /home/user; the root itself is matched apart and kept as the root's own text.
+    # The same shape as core/paths.contained, the one CodeQL counts as a guard: a bare negative `startswith` on the
+    # `realpath` result itself, a raise, and that same value used after it. `_root_of` holds the separator test, so a
+    # sibling such as /home/user2 never passes for /home/user; it returns the root without its separator, so the
+    # root folder itself passes, and a NUL (refused above, so never a prefix) when the folder is in no root.
     real = os.path.realpath(os.path.expanduser(folder))
-    inside = ""
-    for root in _sync_roots():
-        if real.startswith(root):
-            inside = real
-            break
-        if os.path.join(real, "") == root:
-            inside = root
-            break
-    if not inside:
+    if not real.startswith(_root_of(real)):
         raise SyncError("Choose a folder in your home folder or on a removable drive.")
-    if notebook is not None and os.path.join(inside, "").startswith(os.path.join(os.path.realpath(str(notebook)), "")):
+    if notebook is not None and os.path.join(real, "").startswith(os.path.join(os.path.realpath(str(notebook)), "")):
         raise SyncError("Choose a folder outside the notebook's own folder.")
-    path = Path(inside)
+    path = Path(real)
     if not path.is_dir():
         raise SyncError("Choose a folder that exists on this computer.")
     if len(passphrase) < MIN_PASSPHRASE:

@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8222, frontend ids 2756, CSS sections 524, backend routes 695, backend modules 10694, test files 2633, tests 21505, plan headings 1013, app scripts 29, boot scripts 38, script files 290.
+Counts: frontend functions 8222, frontend ids 2756, CSS sections 524, backend routes 695, backend modules 10695, test files 2633, tests 21505, plan headings 1013, app scripts 29, boot scripts 38, script files 290.
 
 ## Frontend functions (8222)
 
@@ -13743,7 +13743,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10694)
+## Backend modules (10695)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -26013,17 +26013,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `snapshot` | src/tessellate/entry/export_folder.py:293 |
 | `write` | src/tessellate/entry/export_folder.py:894 |
 
-### src/tessellate/entry/folder_sync.py (18)
+### src/tessellate/entry/folder_sync.py (19)
 
 | Name | File:line |
 |---|---|
 | `FolderLink` | src/tessellate/entry/folder_sync.py:232 |
 | `SyncError` | src/tessellate/entry/folder_sync.py:56 |
 | `_blob_name` | src/tessellate/entry/folder_sync.py:166 |
-| `_checked` | src/tessellate/entry/folder_sync.py:97 |
+| `_checked` | src/tessellate/entry/folder_sync.py:105 |
 | `_key` | src/tessellate/entry/folder_sync.py:82 |
 | `_own_salt` | src/tessellate/entry/folder_sync.py:200 |
 | `_private` | src/tessellate/entry/folder_sync.py:145 |
+| `_root_of` | src/tessellate/entry/folder_sync.py:97 |
 | `_sealed_sha1` | src/tessellate/entry/folder_sync.py:170 |
 | `_sync_roots` | src/tessellate/entry/folder_sync.py:86 |
 | `_write_blobs` | src/tessellate/entry/folder_sync.py:177 |
