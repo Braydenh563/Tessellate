@@ -272,7 +272,7 @@ def test_type_decisions_reweight_that_type(session):
 
 
 def test_the_migration_adds_the_entity_columns_over_the_auto_migrator(tmp_path):
-    from tessellate.core.database import DatabaseManager, _ensure_alembic_baseline
+    from tessellate.core.database_manager import DatabaseManager, _ensure_alembic_baseline
 
     db_path = tmp_path / "entities.db"
     DatabaseManager(db_path)

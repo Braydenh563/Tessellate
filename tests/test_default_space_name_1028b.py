@@ -72,5 +72,5 @@ def test_downgrade_restores_the_old_name(tmp_path):
 
 
 def test_a_fresh_notebook_seeds_the_new_name():
-    text = (ROOT / "src/tessellate/core/database.py").read_text(encoding="utf-8")
+    text = (ROOT / "src/tessellate/core/database_manager.py").read_text(encoding="utf-8")  # moved out of database.py whole (K24/BK11)
     assert 'name="Default space"' in text and 'name="Default Space"' not in text

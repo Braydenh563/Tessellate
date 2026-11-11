@@ -15,7 +15,8 @@ from sqlalchemy import func, select
 
 from tessellate.api import routes_diag
 from tessellate.core import deps
-from tessellate.core.database import DatabaseManager, Entry, EntryLink
+from tessellate.core.database import Entry, EntryLink
+from tessellate.core.database_manager import DatabaseManager
 
 NOW = datetime(2026, 10, 29, 9, 0, tzinfo=timezone.utc)
 

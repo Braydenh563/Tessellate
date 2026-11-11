@@ -183,7 +183,8 @@ def test_old_database_gains_new_columns_without_data_loss(tmp_path):
     keep the old rows."""
     import sqlite3
 
-    from tessellate.core.database import DatabaseManager, Entry
+    from tessellate.core.database import Entry
+    from tessellate.core.database_manager import DatabaseManager
 
     db_path = tmp_path / "old.db"
     connection = sqlite3.connect(db_path)

@@ -21,7 +21,8 @@ import pytest
 from sqlalchemy import select
 
 from tessellate.core import crypto, sync_state, vault
-from tessellate.core.database import DatabaseManager, Entry, EntryRevision
+from tessellate.core.database import Entry, EntryRevision
+from tessellate.core.database_manager import DatabaseManager
 from tessellate.entry import manager, sync_extras, sync_pull, sync_segments
 from tessellate.entry import manager_text
 from tessellate.entry.manager_private import set_private

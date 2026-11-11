@@ -105,5 +105,7 @@ def test_the_frozen_list_only_shrinks():
 
 def test_the_in_place_path_has_one_ddl_site():
     # The one place a column is added without a revision, so a second never appears quietly.
-    source = (ROOT / "src" / "tessellate" / "core" / "database.py").read_text(encoding="utf-8")
+    # The migrations moved out of database.py whole (K24/BK11): the one site is database_manager.py now, and database.py has none.
+    source = (ROOT / "src" / "tessellate" / "core" / "database_manager.py").read_text(encoding="utf-8")
     assert len(re.findall(r'ADD COLUMN "', source)) == 1
+    assert 'ADD COLUMN "' not in (ROOT / "src" / "tessellate" / "core" / "database.py").read_text(encoding="utf-8")

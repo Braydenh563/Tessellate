@@ -229,7 +229,8 @@ def test_an_existing_database_gains_pinning_without_a_reset(tmp_path):
 
     from sqlalchemy import select
 
-    from tessellate.core.database import Conversation, DatabaseManager
+    from tessellate.core.database import Conversation
+    from tessellate.core.database_manager import DatabaseManager
 
     db_path = tmp_path / "existing.db"
     old = DatabaseManager(db_path).session()

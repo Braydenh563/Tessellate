@@ -15,7 +15,8 @@ from pathlib import Path
 from alembic.config import Config
 from alembic.script import ScriptDirectory
 
-from tessellate.core.database import DatabaseManager, Entry, _ensure_alembic_baseline, _migrations_root
+from tessellate.core.database import Entry
+from tessellate.core.database_manager import DatabaseManager, _ensure_alembic_baseline, _migrations_root
 
 FIXTURE = Path(__file__).parent / "fixtures" / "pre_brief7_schema.sql"
 

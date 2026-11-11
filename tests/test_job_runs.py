@@ -309,7 +309,8 @@ def test_an_unreadable_document_records_a_failed_import(client, monkeypatch, cap
 
 def test_a_job_that_cannot_be_resumed_shows_a_plain_reason_and_logs_the_detail(tmp_path, caplog):
     from tessellate.core import jobstore
-    from tessellate.core.database import DatabaseManager, DurableJob
+    from tessellate.core.database import DurableJob
+    from tessellate.core.database_manager import DatabaseManager
 
     db = DatabaseManager(tmp_path / "jobs.db")
     kind = next(iter(jobstore.HANDLERS))

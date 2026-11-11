@@ -8,7 +8,7 @@ columns without one; this holds the count at zero on a fresh database.
 
 from __future__ import annotations
 
-from tessellate.core.database import DatabaseManager
+from tessellate.core.database_manager import DatabaseManager
 
 
 def _unindexed(connection) -> list[str]:
