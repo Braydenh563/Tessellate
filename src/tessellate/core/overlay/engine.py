@@ -70,7 +70,7 @@ from .engine_consts import (
     FOLLOW_FOR, FOLLOW_GAP, GREET_AFTER, GROUNDED, HANG_DRAG_IN, HANG_ENDS, HANG_FOR, HANG_GLANCE,
     HANG_HANDS, HANG_KICK, HANG_KICK_FOR, HANG_LEAP, HANG_PERIOD, HANG_SWING, HANG_TICK_MS,
     HANG_TRIP_WEIGHT, HOLD_FIXED, HOLD_RANGES, HOME_INSET, HOME_KEEP, HOP_FOR, HOVER, IDLE_FRAMES,
-    KICK_HZ, LAND_FOR, LEAN_MAX, LEAP_BASE, LEAP_SPEED, LIFT_SY, LIVELY, LONELY_AFTER,
+    KICK_HZ, LEAN_MAX, LEAP_BASE, LEAP_SPEED, LIFT_SY, LIVELY, LONELY_AFTER,
     LONG_WALK_GAP, LONG_WALK_WEIGHT, LOOK_FOR, LOOK_SHARE, MAX_DT, MIN_WAKE_MS, Monitor, NAP_FOR,
     NOTICE_NEAR, Output, PACE_GAP, PACE_SLEW, PEEK_BEHIND, PEEK_HEAD, PEEK_OPEN, PEEK_PLAN,
     PEEK_SIDE, PEEK_TOP_PEER, PEEK_TOP_PLAN, PEEK_TOP_SHOWN, PEEK_TUCK, PERCH_MOVED, PLAIN_THENS,
@@ -89,19 +89,21 @@ from .engine_consts import (  # re-exported: tests and `runner` read them as `en
     AWAY_DRIFT, AWAY_FALL, AWAY_FOR, BOUNCE_DAMP, Bar, CEIL_CATCH, CEIL_LEAVE, CEIL_TILT,
     CLIMB_EVERY, CLIMB_SOON, FLING_SPEED, IDLE_FPS, NOTICE_COOLDOWN, PERCH_THROW,
     SLIP_SPEED, SPIN_DRAG, SPIN_OMEGA, TAIL_LAYER_MS, TAIL_TOUCHED_FOR, THROW_MAX, THROW_MIN,
-    TITLE_BAR, WALL_SCRABBLE, WAVE_FOR, perch_room,
+    TITLE_BAR, WALL_SCRABBLE, WAVE_FOR, LAND_FOR, perch_room,
 )
 __all__ = [
     "AWAY_DRIFT", "AWAY_FALL", "AWAY_FOR", "BOUNCE_DAMP", "Bar", "CEIL_CATCH", "CEIL_LEAVE",
     "CEIL_TILT", "CLIMB_EVERY", "CLIMB_SOON", "FLING_SPEED", "IDLE_FPS",
     "NOTICE_COOLDOWN", "PERCH_THROW", "SLIP_SPEED", "SPIN_DRAG", "SPIN_OMEGA", "TAIL_LAYER_MS",
     "TAIL_TOUCHED_FOR", "THROW_MAX", "THROW_MIN", "TITLE_BAR", "WALL_SCRABBLE", "WAVE_FOR",
-    "perch_room", "ld", "wisps",
+    "perch_room", "LAND_FOR", "ld", "wisps",
 ]
+from .engine_deskacts import SIT_REGISTERED, DeskActsMixin
 from .engine_flight import FlightMixin
 from .engine_frames import FramesMixin
 from .engine_input import InputMixin
 from .engine_roam import RoamMixin
+from .engine_touch import TouchMixin
 
 #: Not touched for this long: sits, then sleeps. Ten and twenty minutes (the owner's
 #: open call, taken): it keeps doing small acts while the person is away from the
@@ -110,7 +112,7 @@ IDLE_SIT = 600.0
 IDLE_SLEEP = 1200.0
 
 
-class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin):
+class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, TouchMixin):
     def __init__(
         self,
         size: tuple[int, int],
@@ -125,6 +127,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin):
         idle_frames: int = IDLE_FRAMES,
         walk_frames: int = WALK_FRAMES,
         wave_frames: int = 0,
+        extra_frames: frozenset[str] = frozenset(),
         rng: random.Random | None = None,
         now: float = 0.0,
     ) -> None:
@@ -132,6 +135,8 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin):
         self.idle_frames = max(0, int(idle_frames))
         self.walk_frames = max(1, int(walk_frames))
         self.wave_frames = max(0, int(wave_frames))
+        #: Which of `sprites.EXTRA_FRAMES` the look ships; the others draw their `EXTRA_FALLBACK`.
+        self.extra_frames = frozenset(extra_frames)
         self._init_rng_and_config(monitors, roam, reduced, rng, gait, hang_top)
         self._init_state_and_blink(now)
         self._init_press_and_tumble(now)
@@ -416,8 +421,10 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin):
         """How far a frame is drawn below the window's rest line so its lowest drawn row is on
         the floor: every frame is registered to one box, and the margin below the feet varies by
         pose (INBOX 1670). A hang is held by its hands, not stood on; a tumble keeps a held pose's."""
-        if not self.metrics or frame == "hang":
+        if not self.metrics or frame in ("hang", "hang_one"):
             return 0.0
+        if frame in SIT_REGISTERED:  # a dangle sits on the line with its hem below it; a meditation is the sit
+            frame = "sit"
         if frame.startswith("spin"):
             frame = "held"
         elif frame in STAND_FAMILY or frame.startswith(("idle", "walk")) or frame == "wave":
@@ -777,6 +784,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin):
         self.hang_phase = self.rng.uniform(0.0, 2 * math.pi)
         self.hang_glance_at = now + self.rng.uniform(*HANG_GLANCE)
         self.swing_to, self.releasing = None, False
+        self._hang_one_reset(now)
 
     def _on_rise(self, now: float) -> None:
         self.state_until = now + RISE_FOR
@@ -944,9 +952,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin):
         if s_ == "crouch":
             sy, sx = 1.0 - 0.12 * bh.smooth((now - (self.state_until - CROUCH_FOR)) / CROUCH_FOR), 1.03
         elif s_ == "land":
-            u = 1.0 - max(0.0, self.state_until - now) / LAND_FOR
-            sy = 1.0 - 0.12 * math.sin(min(1.0, u) * math.pi)
-            sx = 1.0 + 0.06 * math.sin(min(1.0, u) * math.pi)
+            sx, sy, lean = self._touch_pose(now)  # E6: how hard it came down sets the depth, the length and a stumble's lean
         elif s_ in ("walk", "drift") and self.turn_to == 0:
             speed = min(1.0, abs(self.vx_px) / (WALK_SPEED * self._scale() * 1.2))
             lean = LEAN_MAX * speed * (1 if self.vx_px > 0 else -1) * (1.6 if self.mode == "dash" else 1.0)
@@ -1415,6 +1421,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin):
         return table
 
     def _perform(self, act: str, now: float) -> None:
+        rested = self._rested_on_perch()  # a floater drops the perch just below, but sits on it for a dangle
         if self.perch is not None and self.gait == "float":
             self.perch = None  # a floater rests on a window, it does not stay on it
         if act in ("hang", "peek"):
@@ -1438,7 +1445,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin):
         elif act == "sleep":
             self._enter("sleep", now)
         else:
-            self._start_act(self.mind.pick(self.rng, now, self.gait, self.hour, "perch" if self.perch else ""), now)
+            self._start_act(self.mind.pick(self.rng, now, self.gait, self.hour, "perch" if rested else ""), now)
 
     # --- asked from the menu (INBOX 1670, row C) ----------------------------------------------
 
@@ -2598,6 +2605,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin):
         if now >= self.hang_glance_at and now < self.state_until - 3.0:
             self._face(-self.facing, now)
             self.hang_glance_at = now + self.rng.uniform(*HANG_GLANCE)
+        self._let_one_go(now)
         if now >= self.state_until:
             if self.swing_to is not None:
                 self._release_swing(now)
@@ -2892,5 +2900,5 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin):
             self.click_now, self.settled_now, clip, self.card_clicked, self._pose(), fx, round(alpha * 16) / 16.0,
             self.angle + self.wob if frame.startswith("spin") and self.state == "fly" else math.pi if self.peek_flip or (self.upside and self.state == "held") else None,
             self._flow_view(now, frame, self._lower_state(now, face)) if fx is None else None, prop, self._blink_face(now, frame, face),
-            self._tail_view(now, frame) if fx is None and self.tail_layer_on else None,
+            self._tail_view(now, frame) if fx is None and self.tail_layer_on else None, self._edge_squash(now),
         )

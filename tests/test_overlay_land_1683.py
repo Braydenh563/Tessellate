@@ -19,6 +19,7 @@ import pytest
 pytest.importorskip("PIL")
 
 from tests.overlay_tumble_1670 import AREA, _release, make  # noqa: E402
+from tessellate.core.overlay import landing as ld  # noqa: E402
 
 DEG = math.pi / 180.0
 #: (name, speed px/s, direction rad, middle of the figure when let go)
@@ -88,7 +89,10 @@ def test_a_thrown_figure_reaches_its_outcome_and_the_stand_within_a_bounded_time
     assert r["touch"] is not None, "never reached the floor"
     lies = r["outcome"] in ("back", "belly")
     assert r["pose_at"] is not None, "never reached its outcome"
-    assert r["pose_at"] - r["touch"] <= (LIE_BY if lies else FEET_BY), (r["outcome"], r["pose_at"], r["touch"])
+    # Intent moved (E6, touches): a landing hard enough to roll (`landing.ROLL_SPEED`) takes its one forward turn
+    # (`landing.ROLL_FOR`, 1.05 s) before it is upright, so its bound is that turn plus a tick of margin, not FEET_BY.
+    rolled = r["e"].touched is not None and r["e"].touched[0] == "roll"
+    assert r["pose_at"] - r["touch"] <= (LIE_BY if lies else ld.ROLL_FOR + 0.1 if rolled else FEET_BY), (r["outcome"], r["pose_at"], r["touch"])
     assert r["state"] == "stand" and r["stand_at"] - r["touch"] <= (STAND_BY_LIE if lies else STAND_BY_FEET), (r["stand_at"], r["touch"])
     # ends standing upright and still
     assert abs(wrapped(r["e"].angle)) < 0.7 * DEG and abs(r["e"].omega) < 0.15 and not r["e"].lying
@@ -126,8 +130,10 @@ def test_the_landing_turn_is_one_move_without_a_reversal_or_a_strobe(gait: str) 
     for kind in KINDS:
         r = fly(gait, kind)
         ang = [wrapped(row[4]) for row in r["rows"] if row[0] >= r["touch"]]
-        assert max(abs(a) for a in ang) <= math.pi + 0.5, kind
-        assert max(abs(b - a) for a, b in zip(ang, ang[1:])) <= 10.0 * DEG * 1.7, kind  # ticks up to 28 ms in the log
+        # Intent moved (E6, touches): a roll is the one deliberate full turn; it is still bounded by the strobe step below.
+        if not (r["e"].touched and r["e"].touched[0] == "roll"):
+            assert max(abs(a) for a in ang) <= math.pi + 0.5, kind
+        assert max(abs(wrapped(b - a)) for a, b in zip(ang, ang[1:])) <= 10.0 * DEG * 1.7, kind  # ticks up to 28 ms in the log
 
 
 def test_the_landing_adds_no_turn() -> None:

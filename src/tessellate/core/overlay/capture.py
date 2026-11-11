@@ -36,7 +36,7 @@ PAD = 4
 KEEP = 6
 #: What the page captures; the rest (`card0`, `card1`) are drawn here, and the lidded sit is derived on load.
 #: The wave swing frames are optional (a captured figure keeps the one `wave`, INBOX 1696 x), so no page renders them.
-CAPTURED = tuple(n for n in sprites.FRAME_NAMES if n not in sprites.CARD_FRAMES and n not in sprites.WAVE_FRAMES)
+CAPTURED = tuple(n for n in sprites.FRAME_NAMES if n not in sprites.CARD_FRAMES and n not in sprites.WAVE_FRAMES and n not in sprites.EXTRA_FRAMES)
 
 #: Where the reminder card sits as a share of the frame (centre x, centre y), its size in 2x pixels and its lift.
 CARD_CENTRE = (0.66, 0.60)

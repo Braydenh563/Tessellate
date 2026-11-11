@@ -188,8 +188,6 @@ REACHED_AFTER_LOAD = {
     "settings.js:nameMarkBuddyMotion": "inside the afterCharacters callback (settings.js, the About motion line)",
     "settings.js:bgArtSeedText": "bgArtRefreshSeed returns early unless bgArtSeedUsed is defined, and that is declared in bg-art.js",
     "settings.js:bgArtHalt": "halts what bgArtRun mounted, and bgArtRun runs only once bg-art.js is in (startBgArt's typeof gate)",
-    "copyWebLink": "the web reader's Copy link listener (wiring.js), which awaits ensureModule('webClip') first",
-    "openWebPageExternally": "the web reader's Open listener (wiring.js), which awaits ensureModule('webClip') first",
     #: INBOX 1301 D6: the release calls it only when `typeof nameMarkBuddyThrow
     #: === "function"`; the carry's first move fetched the bundle, and a let-go
     #: before it arrives is a drop.

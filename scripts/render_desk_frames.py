@@ -2,6 +2,8 @@
 
     PYTHONPATH=src BASE=http://127.0.0.1:8828 .venv/bin/python scripts/render_desk_frames.py
 
+`DESK_ADD=1` captures only the optional extra frames and adds them to the shipped set, registered to its canvas.
+
 Boots nothing itself: `BASE` is a running app (`bash scratchpad/ui-sweeps/serve.sh
 8828 <dir>`). `scripts/render_desk_frames.js` captures every frame of Atlas, both
 looks, with a transparent background at device scale 2; this script zeroes the
@@ -133,14 +135,92 @@ def clip_idle_tails(folder: Path) -> None:
         im.quantize(colors=COLOURS, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE).save(path, optimize=True)
 
 
+def drawn(im: Image.Image) -> tuple[int, int, int, int]:
+    return im.getchannel("A").point(lambda a: 255 if a >= sprites.ALPHA_FLOOR else 0).getbbox()
+
+
+def solid_box(im: Image.Image) -> tuple[int, int, int, int]:
+    """The box of the fully opaque pixels: the body, not the nebula stream (which is at most 85 percent and differs by run)."""
+    return im.getchannel("A").point(lambda a: 255 if a >= 230 else 0).getbbox()
+
+
+def best_offset(captured: Image.Image, shipped: Image.Image, ox: int, oy: int, reach: int = 5) -> tuple[int, int]:
+    """The crop offset near (`ox`, `oy`) that lays the capture's opaque body over the shipped stand's with the fewest pixels
+    differing: the two renders' boxes agree to a few px only (the stream's mass and the tail's tip vary), the body does not."""
+    def mask(im: Image.Image) -> Image.Image:
+        return im.getchannel("A").point(lambda a: 255 if a >= 230 else 0)
+
+    want, have = mask(shipped), mask(captured)
+    best = (10**9, ox, oy)
+    for dy in range(oy - reach, oy + reach + 1):
+        for dx in range(ox - reach, ox + reach + 1):
+            cut = have.crop((dx, dy, dx + want.width, dy + want.height))
+            miss = sum(ImageChops.difference(cut, want).point(lambda a: 1 if a else 0).histogram()[1:])
+            best = min(best, (miss, dx, dy))
+    print(f"registration: offset ({best[1]}, {best[2]}), {best[0]} px differ; start ({ox}, {oy})")
+    return best[1], best[2]
+
+
+def add_extras(raw: str) -> int:
+    """`DESK_ADD=1`: capture only `sprites.EXTRA_FRAMES` (and the stand and the hang, to register them) and write them beside
+    the shipped frames, cropped to the SAME canvas as the shipped `stand` (found by matching the stand's opaque body), so
+    no shipped picture changes. A frame whose drawn pixels reach that canvas's edge is refused: it would be cut.
+    `hang_one` is the shipped `hang` with only what differs from a fresh capture of the hang (the let-go arm) patched in:
+    the rig draws the hem a few px longer than it did when `hang` was shipped, and a hang that changed its hem as one hand
+    let go would pop."""
+    out = ROOT / "frontend" / "img" / "desk"
+    for look in sprites.LOOKS:
+        names = ["stand", "hang", *sprites.EXTRA_FRAMES]
+        captured = {n: Image.open(Path(raw) / look / f"{n}.png").convert("RGBA") for n in names}
+        nebs = {n: Image.open(Path(raw) / look / f"{n}.neb.png").convert("RGBA") for n in names}
+        shipped = Image.open(out / look / "stand.png").convert("RGBA")
+        sb, hb = solid_box(with_stream(captured["stand"], nebs["stand"])), solid_box(shipped)
+        ox, oy = best_offset(with_stream(captured["stand"], nebs["stand"]), shipped, sb[0] - hb[0], sb[1] - hb[1])
+        box = (ox, oy, ox + shipped.width, oy + shipped.height)
+        for n in sprites.EXTRA_FRAMES:
+            if touches_edge(captured[n]):
+                raise SystemExit(f"{look}/{n}: the capture touches the clip edge; widen BOX in render_desk_frames.js")
+            im = with_stream(captured[n], nebs[n]).crop(box)
+            if n == "hang_one":
+                im = patched_hang(look, captured, nebs, out)
+            d = drawn(im)
+            if d[0] <= 0 or d[1] <= 0 or d[2] >= im.width or d[3] >= im.height:
+                raise SystemExit(f"{look}/{n}: drawn pixels {d} reach the shipped canvas {im.size}; the frame would be cut")
+            im.quantize(colors=COLOURS, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE).save(out / look / f"{n}.png", optimize=True)
+            print(f"{look}/{n}: drawn {d} in {im.size}, {(out / look / f'{n}.png').stat().st_size} bytes")
+    return 0
+
+
+def patched_hang(look: str, captured: dict[str, Image.Image], nebs: dict[str, Image.Image], out: Path) -> Image.Image:
+    """The shipped hang with the let-go arm of a fresh capture pasted over the box where the fresh hang and hang_one differ."""
+    shipped = Image.open(out / look / "hang.png").convert("RGBA")
+    fresh, one = with_stream(captured["hang"], nebs["hang"]), with_stream(captured["hang_one"], nebs["hang_one"])
+    sb, hb = solid_box(fresh), solid_box(shipped)
+    ox, oy = best_offset(fresh, shipped, sb[0] - hb[0], sb[1] - hb[1], reach=10)
+    #: Only the upper part of the figure: the arms. The hem below differs a little between two captures (it sways).
+    arms = (0, 0, fresh.width, sb[1] + int(0.55 * (sb[3] - sb[1])))
+    changed = ImageChops.difference(fresh, one).convert("L").point(lambda v: 255 if v > 24 else 0).crop(arms).getbbox()
+    if changed is None:
+        raise SystemExit(f"{look}: hang_one is the same picture as hang")
+    print(f"{look}: hang_one differs from the hang in {changed}")
+    left, top, right, bottom = max(0, changed[0] - 6), max(0, changed[1] - 6), changed[2] + 6, changed[3] + 6
+    result = shipped.copy()
+    result.paste(one.crop((left, top, right, bottom)), (left - ox, top - oy))
+    return result
+
+
 def main() -> int:
     out = ROOT / "frontend" / "img" / "desk"
     with tempfile.TemporaryDirectory() as raw:
         env = {**os.environ, "BASE": os.environ.get("BASE", "http://127.0.0.1:8828"), "SCRATCH": raw}
         env.setdefault("PLAYWRIGHT_BROWSERS_PATH", "/opt/pw-browsers")
+        if os.environ.get("DESK_ADD"):
+            env["ONLY"] = ",".join(["stand", "hang", *sprites.EXTRA_FRAMES])
         if not os.environ.get("DESK_RAW"):  # DESK_RAW: reuse the captures of an earlier run (a folder of <look>/<frame>.png and .neb.png)
             subprocess.run(["node", str(ROOT / "scripts" / "render_desk_frames.js"), raw], check=True, env=env, cwd=ROOT)
         raw = os.environ.get("DESK_RAW") or raw
+        if os.environ.get("DESK_ADD"):
+            return add_extras(raw)
         total = 0
         for look in sprites.LOOKS:
             captured = {name: Image.open(Path(raw) / look / f"{name}.png").convert("RGBA") for name in sprites.FRAME_NAMES if name not in sprites.CARD_FRAMES}

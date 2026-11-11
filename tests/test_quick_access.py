@@ -139,7 +139,7 @@ def test_an_act_row_is_a_tile_only_when_it_opts_in_with_quick():
     """Live captions is a palette act (no tab, no reveal), so it was never a
     tile (libr-1011 row 1220). An act row names itself with `quick`, which is
     its stable `act:` id; an act without it stays out of the picker."""
-    catalogue = _block(DASH, "function quickCatalogue()", "\n}\n")
+    catalogue = _block(DASH, "function quickCatalogue(only = null)", "\n}\n")
     assert "row.quick ? `act:${row.quick}`" in catalogue
     panes = (ROOT / "frontend" / "js" / "settings-panes.js").read_text(encoding="utf-8") + (ROOT / "frontend" / "js" / "app-features.js").read_text(encoding="utf-8")
     row = panes[panes.index('label: "ph:closed-captioning Live captions"') :].split("\n", 1)[0]
@@ -153,13 +153,13 @@ def test_the_row_draws_from_the_command_catalogue_not_a_list_of_its_own():
     """Added tiles come from `paletteCommands` rows that declare a `tab` or a
     `reveal`, with the line the row already says: no second list of what the
     app can do, and no new closures."""
-    catalogue = _block(DASH, "function quickCatalogue()", "\n}\n")
+    catalogue = _block(DASH, "function quickCatalogue(only = null)", "\n}\n")
     assert "paletteCommands()" in catalogue and "paletteRowParts(" in catalogue
     assert "row.tab" in catalogue and "row.reveal" in catalogue and "run: row.run" in catalogue
     assert "=>" not in catalogue.replace("run: row.run", "")
     draw = _block(DASH, "function renderQuickLinks()", "\n}\n")
     assert "quickAccessCurrent()" in draw and "QUICK_START" not in draw
-    assert "quickCatalogue()" in _block(DASH, "function quickAccessCurrent()", "\n}\n")
+    assert "quickCatalogue(new Set(" in _block(DASH, "function quickAccessCurrent()", "\n}\n")
     # And the picker reads the same catalogue.
     assert "quickCatalogue()" in EDIT
 

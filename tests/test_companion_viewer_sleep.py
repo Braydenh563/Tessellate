@@ -64,7 +64,7 @@ def test_the_reduce_hint_stops_atlas_figure_loops_and_keeps_acts() -> None:
     assert "#nm-buddy:has(.atl-figure) .nm-buddy-char,\n" not in CSS, "the 6s slow-down is gone"
     block = CSS[CSS.index("ledger 669") :]
     block = block[: block.index("\n}\n")]
-    assert '#nm-buddy:has(.atl-figure):is(.nmb-walking, [data-pose="float"]) .nm-buddy-char { animation: none !important; }' in block
+    assert '#nm-buddy[data-atlas-figure]:is(.nmb-walking, [data-pose="float"]) .nm-buddy-char { animation: none !important; }' in block
     assert "#nm-buddy:is(.nmb-walking, .nm-buddy-dragging) .nm-live .nm-atlas.atl-layer-lower," in block
     assert "[class*=" not in block, "a class attribute selector up the tree restyles the subtree on every class change"
     assert "nmb-act" not in block.split("*/")[-1], "an act, one gesture, still plays"

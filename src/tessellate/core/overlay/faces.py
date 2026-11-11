@@ -59,6 +59,8 @@ class Look(NamedTuple):
     spiral: float = 0.0
     heart: float = 0.0
     brows: float = 1.0
+    gx: float = 0.0  # the eyes' step aside (shipped px, right positive): a micro-saccade (`gaze`), over whatever else the look draws
+    gy: float = 0.0
 
 
 EXPRESSIONS: dict[str, Look] = {
@@ -84,6 +86,12 @@ EXPRESSIONS: dict[str, Look] = {
     # a blink on its own: lids only, no brow and no mouth (the engine eases it in and out, `engine._blink_level`)
     "blink": Look(lid=SHUT[3], brows=0.0),
 }
+#: The eyes alone (`gaze~3`, a micro-saccade under no other look): nothing but the step, which `draw` fills in from `GAZE`. Not an
+#: expression (it has no brow, mouth or lid to be one), so it is kept out of `EXPRESSIONS`, whose every entry the face tests walk.
+EYES_ONLY = Look(brows=0.0)
+#: A micro-saccade's steps: where the irises sit after one, in shipped px from where the art has them (`gaze.py` picks the next).
+#: A step is about a fifth of an iris, so it reads as an eye that is alive and not as one that looked away.
+GAZE = ((-1.8, 0.0), (1.8, 0.0), (0.0, -1.1), (1.3, 0.8), (-1.3, 0.8), (1.2, -0.8))
 #: The easing of a level over a hold: up, held, down (step indexes into `LEVELS`).
 EASE = (1, 2, 3, 2, 1)
 #: A micro-expression per mood: the unprompted flicker. (kind, seconds the whole of it takes.)
@@ -221,7 +229,10 @@ def draw(
     draw. `plain` is the same frame before the pose, whose box the pose warp is about (`base` when not given)."""
     kind, level = face
     kind, _bar, shut = kind.partition("|")  # `smile|2`: the look with its lids at step 2 of a blink
-    look = EXPRESSIONS.get(kind)
+    kind, _tilde, step = kind.partition("~")  # `smile~3`: the look with its eyes at step 3 of `GAZE` (`gaze~3`: the eyes alone)
+    look = EYES_ONLY if kind == "gaze" else EXPRESSIONS.get(kind)
+    if look is not None and step.isdigit() and int(step) < len(GAZE):
+        look = look._replace(gx=GAZE[int(step)][0], gy=GAZE[int(step)][1])
     at = head_point(spr, name, plain or base, flip, pose)
     if look is None or at is None or not 0 < level < len(LEVELS):
         return base
@@ -251,10 +262,28 @@ def _features(g: Any, patch: Any, at: tuple[float, float], u: float, look: Look,
     ox, oy = at
     skin = _skin(patch, ox, oy)
     ink = (*INK, int(230 * min(1.0, f + 0.2)))
+    if look.gx or look.gy:  # first: the lids, brows and arcs below are drawn over the stepped eye
+        for side in (-1, 1):
+            _step_eye(patch, ox + side * EYE_GAP * u, oy, u, look.gx, look.gy)
     for side in (-1, 1):
         _eye(g, patch, ox + side * EYE_GAP * u, oy, u, side, side * (-1 if flip else 1) > 0, look, f, shut, skin, ink)
     if look.smile or look.open or look.blush:
         _mouth(g, patch, ox, oy + MOUTH_DOWN * u, u, look, f, ink)
+
+
+def _step_eye(patch: Any, ex: float, ey: float, u: float, gx: float, gy: float) -> None:
+    """The eye's own picture moved `gx`, `gy` shipped px: the art's iris and its glints go with it, the rest of the face stays. The
+    copy is the eye's ellipse (a little under the lids' box, so the lash line is not doubled) with a feathered edge."""
+    from PIL import Image, ImageDraw, ImageFilter
+
+    rx, ry, pad = EYE_RX * 0.95 * u, EYE_RY * 0.9 * u, int(2 * u)
+    x0, y0 = max(0, int(ex - rx) - pad), max(0, int(ey - ry) - pad)
+    x1, y1 = min(patch.width, int(ex + rx) + pad), min(patch.height, int(ey + ry) + pad)
+    if x1 <= x0 or y1 <= y0:
+        return
+    mask = Image.new("L", (x1 - x0, y1 - y0), 0)
+    ImageDraw.Draw(mask).ellipse((ex - rx - x0, ey - ry - y0, ex + rx - x0, ey + ry - y0), fill=255)
+    patch.paste(patch.crop((x0, y0, x1, y1)), (x0 + round(gx * u), y0 + round(gy * u)), mask.filter(ImageFilter.GaussianBlur(0.5 * u)))
 
 
 def _eye(g: Any, patch: Any, ex: float, oy: float, u: float, side: int, raised: bool, look: Look, f: float, shut: float, skin: tuple, ink: tuple) -> None:

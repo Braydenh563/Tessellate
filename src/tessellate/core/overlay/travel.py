@@ -167,8 +167,8 @@ def _mode_table(body: str, fast: str, long_leg: bool, edge_ok: bool, run_ok: boo
         return table
     hop = 1.4 if body == "walk" and not long_leg else 0.0  # a ground figure's chain of hops (a floater has its glide and swoop)
     if long_leg:
-        return {body: 4.0, fast: 3.0, "jump": 2.4 if body == "walk" else 0.0, "portal": 1.6, "puff": 0.2, "edge": 1.6 if edge_ok else 0.0, "blink": 1.2, "cloud": 1.6, "bubble": 1.0}
-    return {body: 6.0, "jump": hop if run_ok else 0.0, fast: 2.0 if run_ok else 0.0, "portal": 0.7, "puff": 0.12, "blink": 0.5, "cloud": 0.7, "bubble": 0.5}
+        return {body: 4.0, fast: 3.0, "jump": 2.4 if body == "walk" else 0.0, "portal": 2.2, "puff": 0.2, "edge": 1.6 if edge_ok else 0.0, "blink": 1.2, "cloud": 1.6, "bubble": 1.0}
+    return {body: 6.0, "jump": hop if run_ok else 0.0, fast: 2.0 if run_ok else 0.0, "portal": 0.3, "puff": 0.12, "blink": 0.5, "cloud": 0.7, "bubble": 0.5}
 
 
 def pick_mode(

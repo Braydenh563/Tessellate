@@ -571,8 +571,7 @@ class Output(NamedTuple):
     fx: tuple[str, float, int] | None = None
     #: How much of the figure shows (1 whole, 0 gone): a vanish or a step through a ring.
     alpha: float = 1.0
-    #: The true angle of a thrown figure's tumble, radians (clockwise on screen positive), or None. `frame` is
-    #: then the nearest of the `SPIN_STEPS` pictures (its box, its name); the runner draws `angle` itself.
+    #: The true angle of a thrown figure's tumble, radians (clockwise positive), or None: `frame` is then the nearest of the `SPIN_STEPS` pictures; the runner draws `angle`.
     angle: float | None = None
     #: The wisps' and streams' own motion over the frame (`behaviour.Flow.view`, small integers), or None.
     flow: tuple[int, ...] | None = None
@@ -582,6 +581,7 @@ class Output(NamedTuple):
     face: tuple[str, int] | None = None
     #: The tail layer's view (`behaviour.TailLayer.view`: control points' moves, small integers), or None.
     tail: tuple[int, ...] | None = None
+    squash: tuple[float, int] | None = None  # `(amount 0..1 on a 1/8 grid, wall side)`: pressed against a wall (E6), drawn about that edge
 
 
 def _adjoins(a: Rect, b: Rect, side: str) -> bool:

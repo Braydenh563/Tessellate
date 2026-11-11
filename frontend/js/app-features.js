@@ -577,7 +577,7 @@ function paletteCommands() {
 //: one line it already says about itself, so nothing here is a second list of
 //: what the app can do. A key that no longer names a command is dropped, and a
 //: list that resolves to nothing is the default five.
-function quickCatalogue() {
+function quickCatalogue(only = null) {
   const out = new Map();
   const abouts = paletteAbouts();
   let rows = [];
@@ -590,6 +590,9 @@ function quickCatalogue() {
     //: A row that is an act (no tab, no reveal) is a tile only when it says so
     //: with `quick`, a short stable name: Live captions is one (libr-1011 1220).
     const key = row.keys && !row.quick ? "" : row.tab ? `tab:${row.tab}` : row.reveal ? `reveal:${row.reveal}` : row.quick ? `act:${row.quick}` : "";
+    //: `only`: the ids a caller will look up. The parts of the other ~300 rows are not built (5 to 19 ms at 4x
+    //: on every return to the dashboard, which asked for five tiles; INBOX 1778 d).
+    if (only && !only.has(key)) continue;
     const parts = key && paletteRowParts(row, abouts);
     if (parts && parts.about && !out.has(key)) out.set(key, { id: key, icon: parts.icon.replace(/^(ph:)?/, "ph:"), label: parts.label, hint: parts.about, run: row.run });
   }
@@ -606,7 +609,8 @@ function quickAccessItems(saved, catalogue) {
 }
 
 function quickAccessCurrent() {
-  return quickAccessItems(prefsCache?.dashboard_quick_access, quickCatalogue());
+  const saved = prefsCache?.dashboard_quick_access;
+  return quickAccessItems(saved, quickCatalogue(new Set(Array.isArray(saved) ? saved : [])));
 }
 
 function renderQuickLinks() {

@@ -14,6 +14,9 @@
 .nmb-spark,
 .nmb-cloud,
 .nmb-bubble,
+.nmb-gust,
+.nmb-spiral,
+.nmb-eddy,
 .nmb-portal {
   position: absolute;
   left: 0;
@@ -129,6 +132,72 @@
   border-radius: 50%;
   border: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
   background: radial-gradient(circle at 32% 28%, color-mix(in srgb, white 35%, transparent), color-mix(in srgb, var(--accent) 10%, transparent) 60%);
+}
+
+/* The wind (E5, Atlas's ride; companion-travel.js `wind`): motes and streaks that stream behind it on the side it set
+   off from (`nmb-gust-left` when it went right to left; each a beat apart by an inline `top` and `animation-delay`), a spiral of wind that curls round it and thins as it sets
+   off, and a small eddy that widens and fades under it where it comes down. Transform and opacity only. */
+.nmb-gust i {
+  position: absolute;
+  left: 50%;
+  top: 26%;
+  width: 18px;
+  aspect-ratio: 18 / 2;
+  margin-left: -9px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 70%, transparent), transparent);
+  opacity: 0;
+  animation: nmb-gust 560ms linear infinite;
+}
+.nmb-gust i:nth-child(even) { width: 11px; margin-left: -5px; aspect-ratio: 11 / 2; }
+@keyframes nmb-gust {
+  0% { opacity: 0; transform: translateX(8px); }
+  25% { opacity: 0.85; }
+  100% { opacity: 0; transform: translateX(40px); }
+}
+/* Set off from the left of where it lands, the trail lies the other way (`nmb-gust-left`). */
+.nmb-gust-left i { scale: -1 1; }
+.nmb-spiral::before,
+.nmb-spiral::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  width: 78px;
+  aspect-ratio: 78 / 46;
+  margin: -23px -39px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: color-mix(in srgb, var(--accent) 75%, transparent);
+  border-left-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  opacity: 0;
+  animation: nmb-spiral 880ms var(--ease-out) both;
+}
+.nmb-spiral::after { scale: 0.62; animation-delay: 90ms; animation-direction: reverse; }
+@keyframes nmb-spiral {
+  0% { opacity: 0; transform: rotate(0deg) scale(0.5); }
+  22% { opacity: 1; }
+  100% { opacity: 0; transform: rotate(520deg) scale(1.25); }
+}
+.nmb-eddy::before,
+.nmb-eddy::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 88%;
+  width: 56px;
+  aspect-ratio: 56 / 14;
+  margin: -7px -28px;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  opacity: 0;
+  animation: nmb-eddy 1200ms var(--nmb-burst-delay) var(--ease-out) both;
+}
+.nmb-eddy::after { animation-delay: calc(var(--nmb-burst-delay) + 220ms); border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+@keyframes nmb-eddy {
+  0% { opacity: 0; transform: scale(0.3, 0.3); }
+  25% { opacity: 0.9; }
+  100% { opacity: 0; transform: scale(1.5, 1.3); }
 }
 
 /* Small things a body does, on the whole figure (`.nm-buddy-char`): each is a
