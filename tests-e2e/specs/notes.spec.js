@@ -10,7 +10,7 @@ test("the edit form saves a new title, body and tag, and they survive a reload",
   await openApp(page);
   const id = await captureNote(page, "Draft agenda for the offsite: roadmap in the afternoon");
   const row = await noteRow(page, id);
-  await row.locator('button[aria-label="Edit this entry"]').click();
+  await row.locator('button[aria-label^="Edit this entry"]').click();
   const title = row.locator(".note-edit-title");
   await expect(title).toBeVisible();
   await title.fill("Offsite agenda");
@@ -62,7 +62,7 @@ test("an edit left unsaved in the form survives a reload and can be reopened", a
   await openApp(page);
   const id = await captureNote(page, `Reload check ${Date.now() % 100000}: the bike lock code`);
   const row = await noteRow(page, id);
-  await row.locator('button[aria-label="Edit this entry"]').click();
+  await row.locator('button[aria-label^="Edit this entry"]').click();
   const body = row.locator('.cm-content[aria-label="Note text"]');
   await body.click();
   await page.keyboard.press("Control+End");
@@ -98,7 +98,7 @@ for (const [slow, url] of [["the tags arrive", /\/tags(\?|$)/], ["the list's cod
   await openApp(page);
   const id = await captureNote(page, `Tag race ${Date.now()}: call the plumber about the boiler`);
   const row = await noteRow(page, id);
-  await row.locator('button[aria-label="Edit this entry"]').click();
+  await row.locator('button[aria-label^="Edit this entry"]').click();
   let release;
   const held = new Promise((resolve) => (release = resolve));
   await page.route(url, async (route) => {
@@ -133,7 +133,7 @@ test("a redraw of the list leaves the tags field focused at once and its list sh
   await openApp(page);
   const id = await captureNote(page, `Tag restore ${Date.now()}: ring the plumber about the boiler`);
   const row = await noteRow(page, id);
-  await row.locator('button[aria-label="Edit this entry"]').click();
+  await row.locator('button[aria-label^="Edit this entry"]').click();
   const input = row.locator(".note-edit-tag-input");
   await input.click();
   await expect(page.locator(".tag-suggest:not(.hidden)")).toHaveCount(1);
@@ -163,7 +163,7 @@ test("a press in an empty tags field shows the tags already used", async ({ page
   await openApp(page);
   const id = await captureNote(page, `Tag list ${Date.now()}: the sourdough starter needs feeding`);
   const row = await noteRow(page, id);
-  await row.locator('button[aria-label="Edit this entry"]').click();
+  await row.locator('button[aria-label^="Edit this entry"]').click();
   let release;
   const held = new Promise((resolve) => (release = resolve));
   await page.route(/\/tags(\?|$)/, async (route) => {

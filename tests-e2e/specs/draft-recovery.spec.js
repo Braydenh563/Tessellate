@@ -109,7 +109,7 @@ test("typed drafts in Capture, Quick note and the edit form survive a killed ser
     // The edit form: opened on the note, a line added, not saved.
     await page.evaluate(() => loadEntries());
     const row = await noteRow(page, made.id);
-    await row.locator('button[aria-label="Edit this entry"]').click();
+    await row.locator('button[aria-label^="Edit this entry"]').click();
     const body = row.locator('.cm-content[aria-label="Note text"]');
     await body.click();
     await page.keyboard.press("Control+End");

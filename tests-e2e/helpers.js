@@ -212,7 +212,8 @@ async function menuItem(page, row, label) {
   // A list refresh (filing finishing just after capture) can close the menu
   // between opening it and the click; reopen it rather than wait out the test.
   for (let attempt = 0; attempt < 3; attempt += 1) {
-    await row.locator('button[aria-label="More actions"]').click();
+    // A prefix: the card names its note after the verb ("More actions: Lisbon trip", audit 1029 N17).
+    await row.locator('button[aria-label^="More actions"]').click();
     try {
       await page.locator(".action-menu:not(.hidden)").getByText(label, { exact: true }).click({ timeout: 5000 });
       return;
