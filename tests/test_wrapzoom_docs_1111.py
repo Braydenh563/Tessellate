@@ -38,7 +38,7 @@ def _at_blocks(css: str, prelude: str) -> list[str]:
 
 
 def _rule(block: str, selector_part: str) -> str:
-    for sel, body in re.findall(r"([^{}]+)\{([^{}]*)\}", block):
+    for sel, body in re.findall(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", block):
         if selector_part in sel:
             return body
     return ""

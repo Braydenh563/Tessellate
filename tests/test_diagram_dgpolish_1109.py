@@ -34,8 +34,9 @@ CSS = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8
 
 def test_a_phones_toolbar_scrolls_so_redo_and_the_menu_are_reachable():
     """390 px: 8 controls of 44 px in 296 left Redo and the menu 90 px beyond the screen with overflow visible (out of reach)."""
-    block = CSS[CSS.index("A phone's one row is wider than the page") :][:500]
-    assert "@media (max-width: 599.98px)" in block and "overflow-x: auto" in block and "flex: none" in block
+    block = CSS[CSS.index("A phone's one row is wider than the page") :][:1000]  # the comment grew (wrapzoom 2026-11-11)
+    # The pane decides, not the window (wrapzoom 2026-11-11): a container query, so a narrow Split pane scrolls too.
+    assert "@container (max-width: 599.98px)" in block and "overflow-x: auto" in block and "flex: none" in block
 
 
 def test_the_phone_page_grows_with_the_picture_instead_of_the_picture_lying_over_the_status_line():

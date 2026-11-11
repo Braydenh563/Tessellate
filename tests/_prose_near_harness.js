@@ -74,7 +74,7 @@ const factory = new Function(
   const docDictionary = () => __env.dictionary;
   const docVariantLookup = () => new Map();
   const docSpellingVariant = () => "off";
-  const docSpell = { answer: () => null, want: () => false, ownWordsSend: () => {}, dictionaryRow: () => ({}) };
+  const docSpell = { answer: () => null, want: () => false, ownWordsSend: () => {}, dictionaryRow: () => ({}), packKey: () => "" };
   const docLoadWordlist = () => {};
   const docCheckLinkText = () => false;
   const docProseKey = (f) => f.rule + ":" + f.text.toLowerCase();

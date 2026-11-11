@@ -12,6 +12,7 @@ import math
 import pytest
 
 from tessellate.core.overlay import engine as eng
+from tessellate.core.overlay import engine_consts as consts
 from tessellate.core.overlay.engine import Perch
 from tests.test_overlay_ride_1670 import make
 
@@ -63,8 +64,8 @@ def test_a_hop_chain_on_a_window_top_hops_in_place_of_the_walk_and_stays_on_it(l
     assert {r[0] for r in rows} <= {"crouch", "walk", "stand"}, {r[0] for r in rows}  # wound up, hopped, stood: never a fall
     assert all(r[3] for r in rows)  # the perch kept the whole leg
     assert max(abs(r[2] - got["base_y"]) for r in rows) < 0.01  # the body stays on the window's top: only the drawing lifts
-    assert 0.9 * eng.HOP_RISE * h <= got["peak"] <= eng.HOP_RISE * h + 0.01  # measured 24.3 px of 152 (0.16)
-    span = eng.HOP_SPAN * e.size[0]
+    assert 0.9 * consts.HOP_RISE * h <= got["peak"] <= consts.HOP_RISE * h + 0.01  # measured 24.3 px of 152 (0.16)
+    span = consts.HOP_SPAN * e.size[0]
     assert abs(got["humps"] - got["dist"] / span) <= 1.5, (got["humps"], got["dist"] / span)  # measured 6 hops over 5.2 spans
     assert got["end_lift"] < 0.5  # eased out over the last span: it lands where it stops
     assert abs(e.x - got["goal_x"]) < 1.0 and e.state == "stand" and e.perch is not None

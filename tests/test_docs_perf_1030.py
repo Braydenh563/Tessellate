@@ -130,6 +130,7 @@ def test_the_rule_pass_is_kept_only_for_an_answer_that_changes_nothing():
         """
 const docProseIgnored = new Set(); let docWordlist = new Set(["a"]);
 const docDictionary = () => new Set(), docSpellingVariant = () => "us", docCheckLinkText = () => true;
+const docSpell = { packKey: () => "" };
 let runs = 0;
 const docProseFindings = (t) => { runs += 1; return [{ start: 0, end: t.length }]; };
 """

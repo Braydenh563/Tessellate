@@ -106,6 +106,8 @@ pytest-xdist>=3.8.0,<4.0
 #     pages with no text layer into images a vision/OCR model can read;
 #     without it a scanned PDF is only ever reported as one.
 #   pip install "markitdown[pdf,docx,pptx]"  # import PDF/Word/PowerPoint as notes
+#   pip install sherpa-onnx   # label who speaks in a recording (speaker
+#     labels); its two small voice models are a download in Settings.
 #   Run Python files (Pyodide) and needle are downloads, not pip packages:
 #     Settings → Packages fetches and checks them.
 #
