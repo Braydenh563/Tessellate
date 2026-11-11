@@ -846,6 +846,7 @@ function revealTab(name) {
     $(`tab-${tab}`).classList.toggle("hidden", tab !== name);
   }
   scheduleUndoBar();
+  if (name === "notes") window.initNotesSubtabHeightToken?.();
   if (name === "notes" && $("entry-list").dataset.stale) renderEntries();
   //: The companion finds its perch on the tab it is now on (avatars.js).
   window.nameMarkBuddyTabChanged?.();
