@@ -872,7 +872,7 @@ const PHONE_SIDEBAR_OPENERS = [
 
 function mountPhoneSidebarOpeners() {
   for (const { aside: asideId, dock: dockSel, label } of PHONE_SIDEBAR_OPENERS) {
-    const aside = $(asideId);
+    const aside = document.getElementById(asideId);
     const dock = document.querySelector(dockSel);
     if (!aside || !dock || dock.querySelector(":scope > .dock-nav")) continue;
     const nav = document.createElement("span");
@@ -891,6 +891,7 @@ function mountPhoneSidebarOpeners() {
 }
 
 mountPhoneSidebarOpeners();
+onSurface("documents", mountPhoneSidebarOpeners);
 
 //: Choosing a category on a phone closes the drawer, so the filtered list it
 //: chose is what shows; the row's ⋯ stops its own click before this.

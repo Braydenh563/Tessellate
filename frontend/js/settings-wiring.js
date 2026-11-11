@@ -757,7 +757,7 @@ document.addEventListener("keydown", (e) => {
     closeSettingsModal();
     return;
   }
-  if (e.key === "Escape" && !$("doc-ai-panel").classList.contains("hidden")) {
+  if (e.key === "Escape" && document.getElementById("doc-ai-panel")?.classList.contains("hidden") === false) {
     closeDocAiPanel();
     return;
   }

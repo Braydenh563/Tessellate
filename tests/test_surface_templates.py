@@ -65,6 +65,12 @@ SURFACES = {
         ("switchTab",),
         ("graph-card", "graph-box", "graph-options", "graph-layout", "graph-popup", "graph-refresh"),
     ),
+    "documents": (
+        "tab-documents",
+        ("wiring.js", "navigation.js", "settings-wiring.js", "reveal-targets.js", "phone-shell.js", "dashboard.js", "palette.js", "editor.js", "chat.js", "notes-list.js", "capture-ask.js", "menus.js", "skills.js", "status.js"),
+        ("switchTab",),
+        ("doc-editor", "doc-title", "doc-list", "doc-toolbar", "doc-new"),
+    ),
     "shortcuts": (
         "shortcuts-overlay",
         ("reveal-targets.js", "settings-wiring.js"),
