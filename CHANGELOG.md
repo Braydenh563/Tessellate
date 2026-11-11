@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Documents sidebar (the owner, 2026-11-11): the Recent heading and its tools hold one row at every sidebar width from 220 to 320px (head 32px at 220, 260 and 320, tools level); below 16rem of sidebar the New word drops and the help, template and diagram buttons fold into a ⋯ beside New.
 - Documents sidebar (the owner, 2026-11-11): Attach a bookmark spans the sidebar with its words centred, and "Where are my documents kept?" sits at the sidebar's foot, centred, as its footer (measured at 1440: 226px of a 234px section; the link's bottom 4px above the section's).
 - Fixed (code scanning 2180): the desk companion's "overlay started" log builds the motion words from fixed strings in `_motion_label`, never from the value read from preferences.
 - Fixed (code scanning, desk companion start-up log): the motion reason is now the matching constant from `MOTION_REASONS`, never the value read from preferences, so the log line carries no value that came from a preference read.

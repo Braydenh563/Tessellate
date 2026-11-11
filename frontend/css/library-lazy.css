@@ -8685,19 +8685,17 @@ input[type="color"].wb-mixed {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* The documents list's head holds four controls beside "Recent": on a sidebar too narrow for one line
-   the controls wrap under the word at their own widths, never over each other (the owner, 2026-11-05:
-   "no gap between the templates and new arrow button"; the pill had been squeezed under its caret). */
+/* The documents list's head holds its controls beside "Recent" on ONE row at every sidebar width (the owner,
+   2026-11-11: the tools had wrapped under the word at 260; before that, 2026-11-05, they had to never overlap).
+   Narrower sidebars shed, in order: the New word (under 16rem of sidebar content), then the help, template and
+   diagram buttons into the head's ⋯ (under 14.5rem), so the row never wraps and never overlaps. */
 #doc-sidebar-list > .sidebar-head {
-  flex-wrap: wrap;
-  row-gap: var(--space-2);
+  flex-wrap: nowrap;
 }
 #doc-sidebar-list > .sidebar-head > .row {
-  flex: 0 1 auto;
-  min-width: 0;
-  flex-wrap: wrap;
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
   justify-content: flex-end;
-  row-gap: var(--space-2);
   margin-inline-start: auto;
 }
 
