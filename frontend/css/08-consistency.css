@@ -10343,7 +10343,6 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   .phone-tab-more,
   .timeline-cal-cell .timeline-cal-item,
   .timeline-cal-cell .timeline-cal-more,
-  .panel-movable-on > .panel-grip,
   .dgm-panehead button,
   .dgm-listcol :is(.dgm-join, .dgm-menu > button, .dgm-swatch)
 ):focus-visible {
@@ -10403,9 +10402,6 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   margin-inline: calc(-1 * var(--ring-room));
   scroll-padding-block: var(--ring-room);
 }
-/* A movable panel's grip sits flush in its card's corner (the Guide sheet,
-   the graph note and new-note panels), so the card cut its ring 4px on the
-   right and 4.4px at the foot: the Inset recipe, in the list above. */
 /* The Settings nav scrolls on its own and its last section button stood on
    the bottom edge (2px of padding for a 4px ring). */
 .modal-nav {
@@ -10430,9 +10426,9 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   scroll-padding-block: var(--ring-room);
 }
 /* A movable panel's resize grip is sticky in its bottom-right corner, flush
-   with both clipping edges (the Widgets dialog, the notifications panel:
-   3 to 4px of the ring cut on the right and the underside), so its ring is
-   drawn inside it, the Inset recipe. */
+   with both clipping edges (the Guide sheet, the graph panels, the Widgets
+   dialog, the notifications panel: 3 to 4.4px of the ring cut on the right
+   and the underside), so its ring is drawn inside it, the Inset recipe. */
 .panel-movable-on > button.panel-grip:focus-visible {
   outline-offset: -2px;
 }
