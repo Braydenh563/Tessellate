@@ -2122,6 +2122,17 @@ function graphFitFrame(box, width, height, insets = null, over = null) {
 // Zoom/pan so every node fits with a margin (Wave N).
 function fitGraphToView(svg, zoomBehavior, nodes, width, height, instant = false) {
   if (!nodes.length) return;
+  //: **A computed layout fits the way it first opened** (the owner,
+  //: 2026-11-11, Tessellation: the fit "is too zoomed in and cuts off at the
+  //: edges"). The button, 0 and the menu framed the dots, so a treemap's or a
+  //: tessellation's headers and outer cells fell off the view; the whole map
+  //: goes through `frameTree` and its rectangles. A subset (a group) still
+  //: frames its own dots.
+  const whole = typeof gcTab !== "undefined" && gcTab.svg === svg ? gcTab : null;
+  if (whole?.tree && nodes.length >= whole.nodes.length) {
+    frameTree(svg, zoomBehavior, gcTreeFrameNodes(whole.tree, whole.nodes), width, height, whole.tree.radial, whole.tree.arc, instant);
+    return;
+  }
   // Reported: fit-to-view "zooms out like crazy so you only see the generic
   // cluster blobs". It bounded only the node *centres*, and its scale had no
   // floor (`graphFitFrame` has one). The box is each dot's own extent; a

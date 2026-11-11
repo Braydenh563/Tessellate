@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8105, frontend ids 2684, CSS sections 523, backend routes 662, backend modules 9999, test files 2449, tests 20283, plan headings 1001, app scripts 28, boot scripts 37, script files 277.
+Counts: frontend functions 8105, frontend ids 2684, CSS sections 523, backend routes 662, backend modules 9999, test files 2449, tests 20284, plan headings 1002, app scripts 28, boot scripts 37, script files 277.
 
 ## Frontend functions (8105)
 
@@ -5030,10 +5030,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `gcAdditionHolds` | frontend/js/graph-canvas.js:5599 |
+| `gcAdditionHolds` | frontend/js/graph-canvas.js:5606 |
 | `gcAimNodes` | frontend/js/graph-canvas.js:2285 |
-| `gcArmTouchLasso` | frontend/js/graph-canvas.js:4788 |
-| `gcArriving` | frontend/js/graph-canvas.js:7303 |
+| `gcArmTouchLasso` | frontend/js/graph-canvas.js:4795 |
+| `gcArriving` | frontend/js/graph-canvas.js:7310 |
 | `gcArrows` | frontend/js/graph-canvas.js:873 |
 | `gcAutoFitDone` | frontend/js/graph-canvas.js:192 |
 | `gcAutoFitTurnedOn` | frontend/js/graph-canvas.js:2012 |
@@ -5041,13 +5041,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `gcBornAlpha` | frontend/js/graph-canvas.js:2056 |
 | `gcBowPoint` | frontend/js/graph-canvas.js:887 |
 | `gcBoxLineCount` | frontend/js/graph-canvas.js:744 |
-| `gcBoxPoints` | frontend/js/graph-canvas.js:4805 |
-| `gcCachedPositions` | frontend/js/graph-canvas.js:5931 |
+| `gcBoxPoints` | frontend/js/graph-canvas.js:4812 |
+| `gcCachedPositions` | frontend/js/graph-canvas.js:5938 |
 | `gcCameraStill` | frontend/js/graph-canvas.js:2404 |
 | `gcClampBox` | frontend/js/graph-canvas.js:658 |
-| `gcClickNode` | frontend/js/graph-canvas.js:5423 |
+| `gcClickNode` | frontend/js/graph-canvas.js:5430 |
 | `gcClipEdge` | frontend/js/graph-canvas.js:731 |
-| `gcCloseNodeMenu` | frontend/js/graph-canvas.js:5063 |
+| `gcCloseNodeMenu` | frontend/js/graph-canvas.js:5070 |
 | `gcCoolGap` | frontend/js/graph-canvas.js:2324 |
 | `gcCooling` | frontend/js/graph-canvas.js:2305 |
 | `gcCurvedLinks` | frontend/js/graph-canvas.js:842 |
@@ -5062,14 +5062,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `gcDrawLight` | frontend/js/graph-canvas.js:2751 |
 | `gcDrawNebulae` | frontend/js/graph-canvas.js:1286 |
 | `gcDrawPill` | frontend/js/graph-canvas.js:3908 |
-| `gcDrawSelection` | frontend/js/graph-canvas.js:4844 |
+| `gcDrawSelection` | frontend/js/graph-canvas.js:4851 |
 | `gcDrawTick` | frontend/js/graph-canvas.js:2315 |
 | `gcDrawTopicHulls` | frontend/js/graph-canvas.js:1446 |
 | `gcDrawTrace` | frontend/js/graph-canvas.js:4129 |
 | `gcDrawTreemap` | frontend/js/graph-canvas.js:1335 |
-| `gcDropTargetFor` | frontend/js/graph-canvas.js:5418 |
+| `gcDropTargetFor` | frontend/js/graph-canvas.js:5425 |
 | `gcEaseOut` | frontend/js/graph-canvas.js:2144 |
-| `gcEdgeAtWorld` | frontend/js/graph-canvas.js:4211 |
+| `gcEdgeAtWorld` | frontend/js/graph-canvas.js:4214 |
 | `gcEdgeLook` | frontend/js/graph-canvas.js:910 |
 | `gcEdgeStyle` | frontend/js/graph-canvas.js:945 |
 | `gcEl` | frontend/js/graph-canvas.js:2473 |
@@ -5080,17 +5080,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `gcFillSparks` | frontend/js/graph-canvas.js:3822 |
 | `gcFilterChip` | frontend/js/graph-canvas.js:1541 |
 | `gcFitInsets` | frontend/js/graph-canvas.js:1974 |
-| `gcForcesKey` | frontend/js/graph-canvas.js:5595 |
-| `gcFrameIntro` | frontend/js/graph-canvas.js:5946 |
+| `gcForcesKey` | frontend/js/graph-canvas.js:5602 |
+| `gcFrameIntro` | frontend/js/graph-canvas.js:5953 |
 | `gcGlideFinish` | frontend/js/graph-canvas.js:2373 |
 | `gcGlideStep` | frontend/js/graph-canvas.js:2354 |
 | `gcHexToRgb` | frontend/js/graph-canvas.js:1092 |
 | `gcHideTopic` | frontend/js/graph-canvas.js:1618 |
 | `gcHighlight` | frontend/js/graph-canvas.js:2498 |
-| `gcHoverCardEl` | frontend/js/graph-canvas.js:5225 |
-| `gcHoverCardFacts` | frontend/js/graph-canvas.js:5190 |
-| `gcHoverCardFill` | frontend/js/graph-canvas.js:5248 |
-| `gcHoverCardFrame` | frontend/js/graph-canvas.js:5303 |
+| `gcHoverCardEl` | frontend/js/graph-canvas.js:5232 |
+| `gcHoverCardFacts` | frontend/js/graph-canvas.js:5197 |
+| `gcHoverCardFill` | frontend/js/graph-canvas.js:5255 |
+| `gcHoverCardFrame` | frontend/js/graph-canvas.js:5310 |
 | `gcHoverChanged` | frontend/js/graph-canvas.js:2152 |
 | `gcHoverGrow` | frontend/js/graph-canvas.js:2163 |
 | `gcHoverStep` | frontend/js/graph-canvas.js:2171 |
@@ -5102,8 +5102,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `gcLabelText` | frontend/js/graph-canvas.js:4100 |
 | `gcLabelWidth` | frontend/js/graph-canvas.js:4058 |
 | `gcLabelZoom` | frontend/js/graph-canvas.js:861 |
-| `gcLegendEdgeKey` | frontend/js/graph-canvas.js:6726 |
-| `gcLegendSizeKey` | frontend/js/graph-canvas.js:6772 |
+| `gcLegendEdgeKey` | frontend/js/graph-canvas.js:6733 |
+| `gcLegendSizeKey` | frontend/js/graph-canvas.js:6779 |
 | `gcLightFrame` | frontend/js/graph-canvas.js:2744 |
 | `gcLineGrid` | frontend/js/graph-canvas.js:675 |
 | `gcLinkKindHidden` | frontend/js/graph-canvas.js:1532 |
@@ -5118,68 +5118,68 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `gcNodeAtWorld` | frontend/js/graph-canvas.js:4188 |
 | `gcNodeSprite` | frontend/js/graph-canvas.js:1143 |
 | `gcNoteDrawCost` | frontend/js/graph-canvas.js:2252 |
-| `gcOpenNodeTarget` | frontend/js/graph-canvas.js:5470 |
+| `gcOpenNodeTarget` | frontend/js/graph-canvas.js:5477 |
 | `gcOpenTopic` | frontend/js/graph-canvas.js:1838 |
-| `gcOrphansLabel` | frontend/js/graph-canvas.js:6056 |
+| `gcOrphansLabel` | frontend/js/graph-canvas.js:6063 |
 | `gcOverlayBoxes` | frontend/js/graph-canvas.js:1952 |
 | `gcPaintCore` | frontend/js/graph-canvas.js:1121 |
 | `gcPaintLayer` | frontend/js/graph-canvas.js:2614 |
-| `gcPinSelection` | frontend/js/graph-canvas.js:4899 |
+| `gcPinSelection` | frontend/js/graph-canvas.js:4906 |
 | `gcPlaceLabels` | frontend/js/graph-canvas.js:501 |
 | `gcPlacePill` | frontend/js/graph-canvas.js:791 |
 | `gcPlateAtWorld` | frontend/js/graph-canvas.js:1810 |
 | `gcPlateTitle` | frontend/js/graph-canvas.js:1817 |
-| `gcPointInPolygon` | frontend/js/graph-canvas.js:4767 |
-| `gcPositionsSig` | frontend/js/graph-canvas.js:5916 |
-| `gcPost` | frontend/js/graph-canvas.js:5502 |
+| `gcPointInPolygon` | frontend/js/graph-canvas.js:4774 |
+| `gcPositionsSig` | frontend/js/graph-canvas.js:5923 |
+| `gcPost` | frontend/js/graph-canvas.js:5509 |
 | `gcPruneSimilarity` | frontend/js/graph-canvas.js:444 |
 | `gcQuadAt` | frontend/js/graph-canvas.js:3767 |
 | `gcRadius` | frontend/js/graph-canvas.js:264 |
 | `gcReadTokens` | frontend/js/graph-canvas.js:322 |
 | `gcRefitForPanels` | frontend/js/graph-canvas.js:2004 |
-| `gcRelinkPairs` | frontend/js/graph-canvas.js:7283 |
+| `gcRelinkPairs` | frontend/js/graph-canvas.js:7290 |
 | `gcRenameTopicInline` | frontend/js/graph-canvas.js:1739 |
 | `gcRenderFilterChips` | frontend/js/graph-canvas.js:1570 |
 | `gcRequestDraw` | frontend/js/graph-canvas.js:2425 |
 | `gcRequestMinimapFrame` | frontend/js/graph-canvas.js:2455 |
-| `gcReshuffle` | frontend/js/graph-canvas.js:5557 |
+| `gcReshuffle` | frontend/js/graph-canvas.js:5564 |
 | `gcResize` | frontend/js/graph-canvas.js:958 |
-| `gcReveal` | frontend/js/graph-canvas.js:7328 |
-| `gcRevealAfterBalance` | frontend/js/graph-canvas.js:7316 |
+| `gcReveal` | frontend/js/graph-canvas.js:7335 |
+| `gcRevealAfterBalance` | frontend/js/graph-canvas.js:7323 |
 | `gcRimShare` | frontend/js/graph-canvas.js:1116 |
-| `gcRuleDomain` | frontend/js/graph-canvas.js:6512 |
-| `gcRuleKey` | frontend/js/graph-canvas.js:6494 |
-| `gcRuleScale` | frontend/js/graph-canvas.js:6518 |
-| `gcSavePositions` | frontend/js/graph-canvas.js:5919 |
+| `gcRuleDomain` | frontend/js/graph-canvas.js:6519 |
+| `gcRuleKey` | frontend/js/graph-canvas.js:6501 |
+| `gcRuleScale` | frontend/js/graph-canvas.js:6525 |
+| `gcSavePositions` | frontend/js/graph-canvas.js:5926 |
 | `gcSaveTopicName` | frontend/js/graph-canvas.js:1711 |
 | `gcSearchOver` | frontend/js/graph-canvas.js:2487 |
 | `gcSeatTopicPlates` | frontend/js/graph-canvas.js:1394 |
-| `gcSeedBesideNeighbours` | frontend/js/graph-canvas.js:6090 |
-| `gcSelectedNodes` | frontend/js/graph-canvas.js:4923 |
-| `gcSelectionChanged` | frontend/js/graph-canvas.js:4877 |
+| `gcSeedBesideNeighbours` | frontend/js/graph-canvas.js:6097 |
+| `gcSelectedNodes` | frontend/js/graph-canvas.js:4930 |
+| `gcSelectionChanged` | frontend/js/graph-canvas.js:4884 |
 | `gcSetAutoFitDone` | frontend/js/graph-canvas.js:196 |
 | `gcSetHovered` | frontend/js/graph-canvas.js:208 |
 | `gcSetStroke` | frontend/js/graph-canvas.js:2902 |
-| `gcShape` | frontend/js/graph-canvas.js:5540 |
-| `gcShowEmpty` | frontend/js/graph-canvas.js:6028 |
-| `gcShowEveryNote` | frontend/js/graph-canvas.js:6065 |
-| `gcShowNodeMenu` | frontend/js/graph-canvas.js:5120 |
+| `gcShape` | frontend/js/graph-canvas.js:5547 |
+| `gcShowEmpty` | frontend/js/graph-canvas.js:6035 |
+| `gcShowEveryNote` | frontend/js/graph-canvas.js:6072 |
+| `gcShowNodeMenu` | frontend/js/graph-canvas.js:5127 |
 | `gcShowTopic` | frontend/js/graph-canvas.js:1624 |
 | `gcSimilarityBand` | frontend/js/graph-canvas.js:487 |
 | `gcSimilarityCutoff` | frontend/js/graph-canvas.js:821 |
 | `gcSmooth` | frontend/js/graph-canvas.js:2206 |
-| `gcSpawnWorker` | frontend/js/graph-canvas.js:5611 |
-| `gcStartWorker` | frontend/js/graph-canvas.js:5624 |
+| `gcSpawnWorker` | frontend/js/graph-canvas.js:5618 |
+| `gcStartWorker` | frontend/js/graph-canvas.js:5631 |
 | `gcStill` | frontend/js/graph-canvas.js:353 |
-| `gcStop` | frontend/js/graph-canvas.js:5506 |
+| `gcStop` | frontend/js/graph-canvas.js:5513 |
 | `gcSurface` | frontend/js/graph-canvas.js:43 |
 | `gcTabHidden` | frontend/js/graph-canvas.js:2395 |
 | `gcTickDraw` | frontend/js/graph-canvas.js:2329 |
 | `gcTickSettles` | frontend/js/graph-canvas.js:2312 |
 | `gcTickSnaps` | frontend/js/graph-canvas.js:2255 |
-| `gcTogglePin` | frontend/js/graph-canvas.js:4742 |
-| `gcTooltip` | frontend/js/graph-canvas.js:5369 |
-| `gcTooltipMatches` | frontend/js/graph-canvas.js:5395 |
+| `gcTogglePin` | frontend/js/graph-canvas.js:4749 |
+| `gcTooltip` | frontend/js/graph-canvas.js:5376 |
+| `gcTooltipMatches` | frontend/js/graph-canvas.js:5402 |
 | `gcTopicColour` | frontend/js/graph-canvas.js:1845 |
 | `gcTopicCore` | frontend/js/graph-canvas.js:1832 |
 | `gcTopicMembers` | frontend/js/graph-canvas.js:1825 |
@@ -5187,29 +5187,29 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `gcTreeIndex` | frontend/js/graph-canvas.js:4174 |
 | `gcTweenFromPrior` | frontend/js/graph-canvas.js:2026 |
 | `gcUnframed` | frontend/js/graph-canvas.js:2421 |
-| `gcUnlinkPairs` | frontend/js/graph-canvas.js:7276 |
+| `gcUnlinkPairs` | frontend/js/graph-canvas.js:7283 |
 | `gcVisibleAtTime` | frontend/js/graph-canvas.js:2531 |
-| `gcWireInteraction` | frontend/js/graph-canvas.js:4263 |
-| `gcWireLasso` | frontend/js/graph-canvas.js:4809 |
-| `gcWireNodeMenu` | frontend/js/graph-canvas.js:5067 |
-| `gcWireSelectionDock` | frontend/js/graph-canvas.js:4927 |
-| `gcWorkerParams` | frontend/js/graph-canvas.js:5513 |
-| `gcWorldFor` | frontend/js/graph-canvas.js:5979 |
-| `gcWorldPoint` | frontend/js/graph-canvas.js:4197 |
-| `gcWriteUnresolved` | frontend/js/graph-canvas.js:5485 |
-| `graphLegendRove` | frontend/js/graph-canvas.js:6537 |
-| `graphPaneColour` | frontend/js/graph-canvas.js:7068 |
-| `graphPaneDocumentNote` | frontend/js/graph-canvas.js:7204 |
-| `graphPaneEnsure` | frontend/js/graph-canvas.js:7046 |
-| `graphPaneFollow` | frontend/js/graph-canvas.js:7158 |
-| `graphPaneWire` | frontend/js/graph-canvas.js:7213 |
-| `graphRenderLegend` | frontend/js/graph-canvas.js:6554 |
-| `graphRenderStats` | frontend/js/graph-canvas.js:6796 |
-| `graphSyncLayoutChip` | frontend/js/graph-canvas.js:6846 |
-| `graphSyncTimeSlider` | frontend/js/graph-canvas.js:6873 |
-| `graphWireTimePlay` | frontend/js/graph-canvas.js:6912 |
-| `renderGraphCanvas` | frontend/js/graph-canvas.js:6121 |
-| `renderGraphPane` | frontend/js/graph-canvas.js:7074 |
+| `gcWireInteraction` | frontend/js/graph-canvas.js:4266 |
+| `gcWireLasso` | frontend/js/graph-canvas.js:4816 |
+| `gcWireNodeMenu` | frontend/js/graph-canvas.js:5074 |
+| `gcWireSelectionDock` | frontend/js/graph-canvas.js:4934 |
+| `gcWorkerParams` | frontend/js/graph-canvas.js:5520 |
+| `gcWorldFor` | frontend/js/graph-canvas.js:5986 |
+| `gcWorldPoint` | frontend/js/graph-canvas.js:4200 |
+| `gcWriteUnresolved` | frontend/js/graph-canvas.js:5492 |
+| `graphLegendRove` | frontend/js/graph-canvas.js:6544 |
+| `graphPaneColour` | frontend/js/graph-canvas.js:7075 |
+| `graphPaneDocumentNote` | frontend/js/graph-canvas.js:7211 |
+| `graphPaneEnsure` | frontend/js/graph-canvas.js:7053 |
+| `graphPaneFollow` | frontend/js/graph-canvas.js:7165 |
+| `graphPaneWire` | frontend/js/graph-canvas.js:7220 |
+| `graphRenderLegend` | frontend/js/graph-canvas.js:6561 |
+| `graphRenderStats` | frontend/js/graph-canvas.js:6803 |
+| `graphSyncLayoutChip` | frontend/js/graph-canvas.js:6853 |
+| `graphSyncTimeSlider` | frontend/js/graph-canvas.js:6880 |
+| `graphWireTimePlay` | frontend/js/graph-canvas.js:6919 |
+| `renderGraphCanvas` | frontend/js/graph-canvas.js:6128 |
+| `renderGraphPane` | frontend/js/graph-canvas.js:7081 |
 
 ### frontend/js/graph-tessellate.js (10)
 
@@ -5358,152 +5358,152 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `applyGraphHighlight` | frontend/js/graph.js:2294 |
+| `applyGraphHighlight` | frontend/js/graph.js:2305 |
 | `arcPath` | frontend/js/graph.js:559 |
 | `arcRise` | frontend/js/graph.js:579 |
 | `askLinkDetails` | frontend/js/graph.js:1363 |
-| `clearGraphKeyboardFocus` | frontend/js/graph.js:3641 |
+| `clearGraphKeyboardFocus` | frontend/js/graph.js:3652 |
 | `clearTrace` | frontend/js/graph.js:925 |
-| `closeGraphLinkPeek` | frontend/js/graph.js:2606 |
-| `closeGraphNewNote` | frontend/js/graph.js:3775 |
-| `closeGraphPopup` | frontend/js/graph.js:3622 |
+| `closeGraphLinkPeek` | frontend/js/graph.js:2617 |
+| `closeGraphNewNote` | frontend/js/graph.js:3786 |
+| `closeGraphPopup` | frontend/js/graph.js:3633 |
 | `drawTrace` | frontend/js/graph.js:1290 |
-| `exportGraphPng` | frontend/js/graph.js:3832 |
+| `exportGraphPng` | frontend/js/graph.js:3843 |
 | `fillTracePickers` | frontend/js/graph.js:743 |
 | `fitGraphToView` | frontend/js/graph.js:2123 |
 | `focusGraphNode` | frontend/js/graph.js:1891 |
 | `frameTree` | frontend/js/graph.js:589 |
-| `graphApplySettings` | frontend/js/graph.js:5131 |
-| `graphApplyView` | frontend/js/graph.js:4605 |
-| `graphAutoFitOn` | frontend/js/graph.js:4780 |
+| `graphApplySettings` | frontend/js/graph.js:5142 |
+| `graphApplyView` | frontend/js/graph.js:4616 |
+| `graphAutoFitOn` | frontend/js/graph.js:4791 |
 | `graphCalmScheme` | frontend/js/graph.js:1751 |
-| `graphCaptureSettings` | frontend/js/graph.js:5100 |
-| `graphCaptureView` | frontend/js/graph.js:4551 |
+| `graphCaptureSettings` | frontend/js/graph.js:5111 |
+| `graphCaptureView` | frontend/js/graph.js:4562 |
 | `graphCategoryScale` | frontend/js/graph.js:1761 |
-| `graphCloseOtherMenus` | frontend/js/graph.js:4837 |
+| `graphCloseOtherMenus` | frontend/js/graph.js:4848 |
 | `graphColourMode` | frontend/js/graph.js:1583 |
-| `graphControlsSheetParts` | frontend/js/graph.js:5250 |
+| `graphControlsSheetParts` | frontend/js/graph.js:5261 |
 | `graphEndpoint` | frontend/js/graph.js:1801 |
 | `graphFill` | frontend/js/graph.js:1827 |
 | `graphFitFrame` | frontend/js/graph.js:2100 |
-| `graphGlideMs` | frontend/js/graph.js:4179 |
+| `graphGlideMs` | frontend/js/graph.js:4190 |
 | `graphGroupColour` | frontend/js/graph.js:1614 |
 | `graphGroupNode` | frontend/js/graph.js:253 |
 | `graphGroups` | frontend/js/graph.js:1599 |
 | `graphLayout` | frontend/js/graph.js:171 |
 | `graphLayoutIsComputed` | frontend/js/graph.js:195 |
-| `graphLinkKind` | frontend/js/graph.js:2613 |
+| `graphLinkKind` | frontend/js/graph.js:2624 |
 | `graphLocalQuery` | frontend/js/graph.js:1792 |
-| `graphMinimapCanShow` | frontend/js/graph.js:3968 |
-| `graphMinimapChildren` | frontend/js/graph.js:3997 |
-| `graphMinimapEdgePairs` | frontend/js/graph.js:3909 |
-| `graphMinimapFinite` | frontend/js/graph.js:4190 |
-| `graphMinimapFrame` | frontend/js/graph.js:4204 |
-| `graphMinimapPaint` | frontend/js/graph.js:4023 |
-| `graphMinimapQueuePaint` | frontend/js/graph.js:3975 |
-| `graphMinimapSet` | frontend/js/graph.js:4016 |
-| `graphMinimapShown` | frontend/js/graph.js:3946 |
+| `graphMinimapCanShow` | frontend/js/graph.js:3979 |
+| `graphMinimapChildren` | frontend/js/graph.js:4008 |
+| `graphMinimapEdgePairs` | frontend/js/graph.js:3920 |
+| `graphMinimapFinite` | frontend/js/graph.js:4201 |
+| `graphMinimapFrame` | frontend/js/graph.js:4215 |
+| `graphMinimapPaint` | frontend/js/graph.js:4034 |
+| `graphMinimapQueuePaint` | frontend/js/graph.js:3986 |
+| `graphMinimapSet` | frontend/js/graph.js:4027 |
+| `graphMinimapShown` | frontend/js/graph.js:3957 |
 | `graphNeighbourInDirection` | frontend/js/graph.js:1870 |
 | `graphNodeById` | frontend/js/graph.js:1863 |
-| `graphNodeLabel` | frontend/js/graph.js:2727 |
-| `graphNodeMatches` | frontend/js/graph.js:2251 |
+| `graphNodeLabel` | frontend/js/graph.js:2738 |
+| `graphNodeMatches` | frontend/js/graph.js:2262 |
 | `graphNodeRadius` | frontend/js/graph.js:139 |
 | `graphNodeScreenPoint` | frontend/js/graph.js:1912 |
 | `graphNodeUnder` | frontend/js/graph.js:1324 |
-| `graphPanToNode` | frontend/js/graph.js:2347 |
-| `graphPanelRoom` | frontend/js/graph.js:2971 |
+| `graphPanToNode` | frontend/js/graph.js:2358 |
+| `graphPanelRoom` | frontend/js/graph.js:2982 |
 | `graphPinSave` | frontend/js/graph.js:58 |
 | `graphPinStep` | frontend/js/graph.js:110 |
 | `graphPinnedRows` | frontend/js/graph.js:88 |
-| `graphPopupActionList` | frontend/js/graph.js:3396 |
-| `graphPopupCap` | frontend/js/graph.js:3027 |
-| `graphPopupDragEnd` | frontend/js/graph.js:3156 |
-| `graphPopupDragMove` | frontend/js/graph.js:3143 |
-| `graphPopupDragStart` | frontend/js/graph.js:3133 |
-| `graphPopupFileCard` | frontend/js/graph.js:2907 |
-| `graphPopupFollowSpot` | frontend/js/graph.js:3098 |
-| `graphPopupIsDirty` | frontend/js/graph.js:3662 |
-| `graphPopupMediaRefs` | frontend/js/graph.js:2884 |
-| `graphPopupShows` | frontend/js/graph.js:2460 |
-| `graphPreviewLower` | frontend/js/graph.js:2243 |
-| `graphRailOffset` | frontend/js/graph.js:4323 |
-| `graphReadPhrase` | frontend/js/graph.js:2210 |
-| `graphRemoveLink` | frontend/js/graph.js:2561 |
+| `graphPopupActionList` | frontend/js/graph.js:3407 |
+| `graphPopupCap` | frontend/js/graph.js:3038 |
+| `graphPopupDragEnd` | frontend/js/graph.js:3167 |
+| `graphPopupDragMove` | frontend/js/graph.js:3154 |
+| `graphPopupDragStart` | frontend/js/graph.js:3144 |
+| `graphPopupFileCard` | frontend/js/graph.js:2918 |
+| `graphPopupFollowSpot` | frontend/js/graph.js:3109 |
+| `graphPopupIsDirty` | frontend/js/graph.js:3673 |
+| `graphPopupMediaRefs` | frontend/js/graph.js:2895 |
+| `graphPopupShows` | frontend/js/graph.js:2471 |
+| `graphPreviewLower` | frontend/js/graph.js:2254 |
+| `graphRailOffset` | frontend/js/graph.js:4334 |
+| `graphReadPhrase` | frontend/js/graph.js:2221 |
+| `graphRemoveLink` | frontend/js/graph.js:2572 |
 | `graphRenderGroups` | frontend/js/graph.js:1636 |
-| `graphResetToDefaults` | frontend/js/graph.js:5166 |
+| `graphResetToDefaults` | frontend/js/graph.js:5177 |
 | `graphResolveGroups` | frontend/js/graph.js:1621 |
 | `graphRestorePins` | frontend/js/graph.js:104 |
-| `graphRestoreSwitches` | frontend/js/graph.js:4760 |
-| `graphSaveCurrentView` | frontend/js/graph.js:4595 |
-| `graphSavedViews` | frontend/js/graph.js:4542 |
-| `graphSearchClear` | frontend/js/graph.js:2374 |
-| `graphSearchCountText` | frontend/js/graph.js:2277 |
-| `graphSearchFor` | frontend/js/graph.js:2261 |
-| `graphSearchGo` | frontend/js/graph.js:2356 |
-| `graphSearchKey` | frontend/js/graph.js:2384 |
-| `graphSearchNodes` | frontend/js/graph.js:2272 |
-| `graphSearchRefresh` | frontend/js/graph.js:2283 |
-| `graphSearchStepIndex` | frontend/js/graph.js:2341 |
-| `graphSearchTyped` | frontend/js/graph.js:2320 |
+| `graphRestoreSwitches` | frontend/js/graph.js:4771 |
+| `graphSaveCurrentView` | frontend/js/graph.js:4606 |
+| `graphSavedViews` | frontend/js/graph.js:4553 |
+| `graphSearchClear` | frontend/js/graph.js:2385 |
+| `graphSearchCountText` | frontend/js/graph.js:2288 |
+| `graphSearchFor` | frontend/js/graph.js:2272 |
+| `graphSearchGo` | frontend/js/graph.js:2367 |
+| `graphSearchKey` | frontend/js/graph.js:2395 |
+| `graphSearchNodes` | frontend/js/graph.js:2283 |
+| `graphSearchRefresh` | frontend/js/graph.js:2294 |
+| `graphSearchStepIndex` | frontend/js/graph.js:2352 |
+| `graphSearchTyped` | frontend/js/graph.js:2331 |
 | `graphSetGroups` | frontend/js/graph.js:1608 |
 | `graphSetPin` | frontend/js/graph.js:63 |
-| `graphSettingsEqual` | frontend/js/graph.js:5120 |
-| `graphShowNote` | frontend/js/graph.js:3188 |
+| `graphSettingsEqual` | frontend/js/graph.js:5131 |
+| `graphShowNote` | frontend/js/graph.js:3199 |
 | `graphSizeMode` | frontend/js/graph.js:1546 |
 | `graphSizeRadius` | frontend/js/graph.js:1551 |
 | `graphSyncFocusChip` | frontend/js/graph.js:1708 |
-| `graphSyncSimilarityRow` | frontend/js/graph.js:5001 |
-| `graphTopicFor` | frontend/js/graph.js:3244 |
+| `graphSyncSimilarityRow` | frontend/js/graph.js:5012 |
+| `graphTopicFor` | frontend/js/graph.js:3255 |
 | `graphUnpinAllNow` | frontend/js/graph.js:95 |
-| `graphZoomBy` | frontend/js/graph.js:4851 |
-| `graphZoomRoving` | frontend/js/graph.js:4863 |
+| `graphZoomBy` | frontend/js/graph.js:4862 |
+| `graphZoomRoving` | frontend/js/graph.js:4874 |
 | `hierarchyPath` | frontend/js/graph.js:541 |
-| `initGraphDockHeightToken` | frontend/js/graph.js:4291 |
+| `initGraphDockHeightToken` | frontend/js/graph.js:4302 |
 | `initGraphGroups` | frontend/js/graph.js:1670 |
 | `initGraphKeyboard` | frontend/js/graph.js:1930 |
-| `initGraphMinimap` | frontend/js/graph.js:4371 |
-| `initGraphRailToken` | frontend/js/graph.js:4328 |
-| `initGraphToastClearance` | frontend/js/graph.js:4354 |
-| `initGraphViews` | frontend/js/graph.js:4699 |
-| `keepGraphPopupEdit` | frontend/js/graph.js:3670 |
+| `initGraphMinimap` | frontend/js/graph.js:4382 |
+| `initGraphRailToken` | frontend/js/graph.js:4339 |
+| `initGraphToastClearance` | frontend/js/graph.js:4365 |
+| `initGraphViews` | frontend/js/graph.js:4710 |
+| `keepGraphPopupEdit` | frontend/js/graph.js:3681 |
 | `layoutHierarchy` | frontend/js/graph.js:409 |
 | `layoutTreemap` | frontend/js/graph.js:342 |
 | `linkByDrop` | frontend/js/graph.js:1472 |
-| `openGraphControlsSheet` | frontend/js/graph.js:5266 |
-| `openGraphLinkPanel` | frontend/js/graph.js:2742 |
-| `openGraphLinkPeek` | frontend/js/graph.js:2621 |
-| `openGraphNewNote` | frontend/js/graph.js:3731 |
-| `openGraphPopup` | frontend/js/graph.js:2464 |
+| `openGraphControlsSheet` | frontend/js/graph.js:5277 |
+| `openGraphLinkPanel` | frontend/js/graph.js:2753 |
+| `openGraphLinkPeek` | frontend/js/graph.js:2632 |
+| `openGraphNewNote` | frontend/js/graph.js:3742 |
+| `openGraphPopup` | frontend/js/graph.js:2475 |
 | `pickTraceEnd` | frontend/js/graph.js:819 |
-| `placeGraphNewNote` | frontend/js/graph.js:3757 |
-| `placeGraphPopup` | frontend/js/graph.js:3032 |
+| `placeGraphNewNote` | frontend/js/graph.js:3768 |
+| `placeGraphPopup` | frontend/js/graph.js:3043 |
 | `radialRings` | frontend/js/graph.js:304 |
 | `renderGraph` | frontend/js/graph.js:1769 |
-| `renderGraphPopupActions` | frontend/js/graph.js:3566 |
-| `renderGraphPopupHeader` | frontend/js/graph.js:2423 |
-| `renderGraphPopupInfo` | frontend/js/graph.js:3328 |
-| `renderGraphPopupMedia` | frontend/js/graph.js:2911 |
-| `renderGraphPopupProps` | frontend/js/graph.js:3281 |
-| `renderGraphPopupTopic` | frontend/js/graph.js:3219 |
-| `renderGraphViews` | frontend/js/graph.js:4669 |
+| `renderGraphPopupActions` | frontend/js/graph.js:3577 |
+| `renderGraphPopupHeader` | frontend/js/graph.js:2434 |
+| `renderGraphPopupInfo` | frontend/js/graph.js:3339 |
+| `renderGraphPopupMedia` | frontend/js/graph.js:2922 |
+| `renderGraphPopupProps` | frontend/js/graph.js:3292 |
+| `renderGraphPopupTopic` | frontend/js/graph.js:3230 |
+| `renderGraphViews` | frontend/js/graph.js:4680 |
 | `renderTraceReadout` | frontend/js/graph.js:1121 |
 | `renderTraceState` | frontend/js/graph.js:847 |
 | `replyLoops` | frontend/js/graph.js:324 |
 | `runTrace` | frontend/js/graph.js:951 |
-| `saveGraphNewNote` | frontend/js/graph.js:3784 |
-| `saveGraphPopup` | frontend/js/graph.js:3675 |
+| `saveGraphNewNote` | frontend/js/graph.js:3795 |
+| `saveGraphPopup` | frontend/js/graph.js:3686 |
 | `selectTraceRoute` | frontend/js/graph.js:1020 |
 | `setGraphPhysicsEnabled` | frontend/js/graph.js:203 |
 | `setTraceEnd` | frontend/js/graph.js:904 |
 | `setTracePanelOpen` | frontend/js/graph.js:750 |
-| `showTopicInGraph` | frontend/js/graph.js:3263 |
+| `showTopicInGraph` | frontend/js/graph.js:3274 |
 | `showTraceMessage` | frontend/js/graph.js:917 |
 | `storyPrompt` | frontend/js/graph.js:1108 |
-| `syncGraphPopupSave` | frontend/js/graph.js:2550 |
-| `toggleGraphFullscreen` | frontend/js/graph.js:4889 |
+| `syncGraphPopupSave` | frontend/js/graph.js:2561 |
+| `toggleGraphFullscreen` | frontend/js/graph.js:4900 |
 | `traceLabel` | frontend/js/graph.js:840 |
 | `tracePath` | frontend/js/graph.js:1276 |
-| `watchGraphPopupSize` | frontend/js/graph.js:3004 |
+| `watchGraphPopupSize` | frontend/js/graph.js:3015 |
 
 ### frontend/js/harper-worker.js (3)
 
@@ -26092,7 +26092,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (20283)
+## Tests (20284)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27217,7 +27217,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_graph_slim.py | 3 |
 | tests/test_graph_style_no_relayout.py | 2 |
 | tests/test_graph_tabstops_1518.py | 2 |
-| tests/test_graph_tessellation.py | 9 |
+| tests/test_graph_tessellation.py | 10 |
 | tests/test_graph_tether.py | 2 |
 | tests/test_graph_tick_rate_1029.py | 4 |
 | tests/test_graph_tidy_1529.py | 2 |
@@ -28548,7 +28548,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_zoom_wheel_delta.py | 3 |
 | tests/test_zoom_wrap_1717.py | 21 |
 
-## Plan headings (1001)
+## Plan headings (1002)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -28649,7 +28649,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 12.3 Phase 6c, what only a notebook can do (½ session) | docs/roadmap/MINDMAP_PLAN.md:425 |
 | 12.4 Not built until asked | docs/roadmap/MINDMAP_PLAN.md:453 |
 | 12.5 One place per action (INBOX 200 and 201, the owner, 2026-09-13 night) | docs/roadmap/MINDMAP_PLAN.md:458 |
-| 12z Learnability, 2026-10-10 (INBOX 749) | docs/roadmap/UI_MODERNISATION_PLAN.md:950 |
+| 12z Learnability, 2026-10-10 (INBOX 749) | docs/roadmap/UI_MODERNISATION_PLAN.md:954 |
 | 13. Images, math, links and tooltips | docs/roadmap/WHITEBOARD_PLAN.md:1187 |
 | 13. Open bugs and gaps from the merged agent reports (with owners) | docs/roadmap/WORLD_CLASS_PLAN.md:956 |
 | 13. The map, read against its six complaints: measured 2026-09-21, phases open | docs/roadmap/MINDMAP_PLAN.md:526 |
@@ -28657,12 +28657,12 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 13. Web search effectiveness | docs/roadmap/BACKLOG.md:1017 |
 | 13. What a self-contained HTML export is: decided 2026-09-13 | docs/roadmap/DOCUMENTS_PLAN.md:602 |
 | 13.1 Is it slow? The one claim measured before anything was designed | docs/roadmap/MINDMAP_PLAN.md:554 |
-| 13.1 The principles, each as a rule with a measurement | docs/roadmap/UI_MODERNISATION_PLAN.md:989 |
-| 13.2 Surface by surface | docs/roadmap/UI_MODERNISATION_PLAN.md:1014 |
+| 13.1 The principles, each as a rule with a measurement | docs/roadmap/UI_MODERNISATION_PLAN.md:993 |
+| 13.2 Surface by surface | docs/roadmap/UI_MODERNISATION_PLAN.md:1018 |
 | 13.2 The two kinds of connection | docs/roadmap/MINDMAP_PLAN.md:684 |
-| 13.3 Decisions, 2026-10-10 (do not re-decide; numbered after Phase 12's 8) | docs/roadmap/UI_MODERNISATION_PLAN.md:1036 |
+| 13.3 Decisions, 2026-10-10 (do not re-decide; numbered after Phase 12's 8) | docs/roadmap/UI_MODERNISATION_PLAN.md:1040 |
 | 13.3 What the surface offers, and by how many doors | docs/roadmap/MINDMAP_PLAN.md:728 |
-| 13.4 Phases with gates | docs/roadmap/UI_MODERNISATION_PLAN.md:1078 |
+| 13.4 Phases with gates | docs/roadmap/UI_MODERNISATION_PLAN.md:1082 |
 | 13.4 What can be customised, against what a map tool offers | docs/roadmap/MINDMAP_PLAN.md:765 |
 | 13.5 Clean and professional: the same measurements section 17 took | docs/roadmap/MINDMAP_PLAN.md:789 |
 | 14. Core nodes, levels and the icon library (INBOX 641, 642; mc1, 2026-10-05) | docs/roadmap/MINDMAP_PLAN.md:1571 |
@@ -29022,7 +29022,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Briefs 76 to 84 (from 72a and 72b): built; moved to HISTORY.md ("Moved from the plans, 2026-10-11 (SESSION_BRIEFS triage, briefs-1011)") | docs/roadmap/SESSION_BRIEFS.md:237 |
 | Bugs | docs/roadmap/CHAT_PLAN.md:772 |
 | Bugs | docs/roadmap/DOCUMENTS_PLAN.md:1246 |
-| Bugs | docs/roadmap/UI_MODERNISATION_PLAN.md:901 |
+| Bugs | docs/roadmap/UI_MODERNISATION_PLAN.md:905 |
 | Bugs | docs/roadmap/WORLD_CLASS_PLAN.md:3077 |
 | Build first | docs/roadmap/WHITEBOARD_PLAN.md:1260 |
 | Built, 2026-09-09: one surface per panel, and the Arrange section | docs/roadmap/WHITEBOARD_PLAN.md:481 |
@@ -29108,14 +29108,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Decisions, 2026-10-10 (do not re-decide) | docs/roadmap/UI_MODERNISATION_PLAN.md:715 |
 | Decisions, 2026-10-10 (do not re-decide) | docs/roadmap/WORLD_CLASS_PLAN.md:1476 |
 | Deepened 2026-10-10 (Brief 72a, decision 71) | docs/roadmap/WHITEBOARD_PLAN.md:1385 |
-| Deepened 2026-10-10: statistics (Brief 72b, decision 71) | docs/roadmap/UI_MODERNISATION_PLAN.md:1099 |
+| Deepened 2026-10-10: statistics (Brief 72b, decision 71) | docs/roadmap/UI_MODERNISATION_PLAN.md:1103 |
 | Deepened 2026-10-10: the agent and its harness (Brief 72b, decision 71) | docs/roadmap/AGENT_SKILLS_REFORM.md:438 |
-| Deepened 2026-10-10: the command palette and Find anything (Brief 72b, decision 71) | docs/roadmap/UI_MODERNISATION_PLAN.md:1156 |
-| Deepened 2026-10-10: utilities (Brief 72b, decision 71) | docs/roadmap/UI_MODERNISATION_PLAN.md:1130 |
+| Deepened 2026-10-10: the command palette and Find anything (Brief 72b, decision 71) | docs/roadmap/UI_MODERNISATION_PLAN.md:1160 |
+| Deepened 2026-10-10: utilities (Brief 72b, decision 71) | docs/roadmap/UI_MODERNISATION_PLAN.md:1134 |
 | Deliberately not on this list | docs/roadmap/BACKLOG.md:2504 |
 | Design requests | docs/roadmap/CHAT_PLAN.md:823 |
 | Design requests | docs/roadmap/DOCUMENTS_PLAN.md:1257 |
-| Design requests | docs/roadmap/UI_MODERNISATION_PLAN.md:917 |
+| Design requests | docs/roadmap/UI_MODERNISATION_PLAN.md:921 |
 | Design requests | docs/roadmap/WORLD_CLASS_PLAN.md:3094 |
 | Deta Surf (deta) | docs/roadmap/ANALYSIS.md:1991 |
 | Diagrams: mermaid as the interchange format | docs/roadmap/BACKLOG.md:2559 |
@@ -29214,7 +29214,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
 | Phase 11: the phone, done properly (1 to 2 sessions, next session or later) | docs/roadmap/UI_MODERNISATION_PLAN.md:527 |
 | Phase 12: density, refinement and WCAG 2.2 (the owner, 2026-10-10; Brief 41) | docs/roadmap/UI_MODERNISATION_PLAN.md:688 |
-| Phase 13: the design review, every surface against the principles (Fable, 2026-10-10) | docs/roadmap/UI_MODERNISATION_PLAN.md:967 |
+| Phase 13: the design review, every surface against the principles (Fable, 2026-10-10) | docs/roadmap/UI_MODERNISATION_PLAN.md:971 |
 | Phase 1: grounding and marks (one session; Brief 12) | docs/roadmap/CHAT_PLAN.md:339 |
 | Phase 1: the rail and the keys: BUILT, 2026-09-12 | docs/roadmap/WHITEBOARD_PLAN.md:489 |
 | Phase 1: the row model and the feed: **built 2026-09-13**, see | docs/roadmap/TIMELINE_PLAN.md:116 |
@@ -29248,7 +29248,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1217 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:170 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:171 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4176 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3130 |
@@ -29302,7 +29302,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-05 (OPEN.md triage) | docs/roadmap/AGENT_SKILLS_REFORM.md:339 |
 | Placed from INBOX, 2026-10-05 (OPEN.md triage) | docs/roadmap/CHAT_PLAN.md:640 |
 | Placed from INBOX, 2026-10-05 (OPEN.md triage) | docs/roadmap/DOCUMENTS_PLAN.md:1233 |
-| Placed from INBOX, 2026-10-05 (OPEN.md triage) | docs/roadmap/UI_MODERNISATION_PLAN.md:870 |
+| Placed from INBOX, 2026-10-05 (OPEN.md triage) | docs/roadmap/UI_MODERNISATION_PLAN.md:874 |
 | Placed from INBOX, 2026-10-05 (OPEN.md triage) | docs/roadmap/WHITEBOARD_PLAN.md:777 |
 | Placed from INBOX, 2026-10-05 (OPEN.md triage) | docs/roadmap/WORLD_CLASS_PLAN.md:3040 |
 | Placed from INBOX, 2026-10-05 (boardmap-1005) | docs/roadmap/WHITEBOARD_PLAN.md:785 |
@@ -29314,28 +29314,28 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-10 (the owner on feature depth) | docs/roadmap/MINDMAP_PLAN.md:1753 |
 | Placed from INBOX, 2026-10-10 (the owner on feature depth) | docs/roadmap/WHITEBOARD_PLAN.md:1436 |
 | Placed from INBOX, 2026-10-10 (the owner on the graph, again) | docs/roadmap/GRAPH_PLAN.md:582 |
-| Placed from INBOX, 2026-10-10 (the owner's afternoon reports) | docs/roadmap/UI_MODERNISATION_PLAN.md:1188 |
+| Placed from INBOX, 2026-10-10 (the owner's afternoon reports) | docs/roadmap/UI_MODERNISATION_PLAN.md:1192 |
 | Placed from INBOX, 2026-10-11 (Files, Recordings and Links; libraryup) | docs/roadmap/DOCUMENTS_PLAN.md:1292 |
-| Placed from INBOX, 2026-10-11 (Tidy, undoing a pattern, menu gaps) | docs/roadmap/UI_MODERNISATION_PLAN.md:1229 |
-| Placed from INBOX, 2026-10-11 (bars, notifications and tours; grammar57) | docs/roadmap/UI_MODERNISATION_PLAN.md:1214 |
+| Placed from INBOX, 2026-10-11 (Tidy, undoing a pattern, menu gaps) | docs/roadmap/UI_MODERNISATION_PLAN.md:1233 |
+| Placed from INBOX, 2026-10-11 (bars, notifications and tours; grammar57) | docs/roadmap/UI_MODERNISATION_PLAN.md:1218 |
 | Placed from INBOX, 2026-10-11 (board and map previews) | docs/roadmap/WHITEBOARD_PLAN.md:1519 |
 | Placed from INBOX, 2026-10-11 (ends, edge arrows, guides while drawing; canvasdepth3) | docs/roadmap/WHITEBOARD_PLAN.md:1502 |
 | Placed from INBOX, 2026-10-11 (fit a frame to its contents) | docs/roadmap/WHITEBOARD_PLAN.md:1498 |
 | Placed from INBOX, 2026-10-11 (one export panel for the whole app) | docs/roadmap/WHITEBOARD_PLAN.md:1457 |
-| Placed from INBOX, 2026-10-11 (the owner on buttons, OCR and the constellation) | docs/roadmap/UI_MODERNISATION_PLAN.md:1208 |
+| Placed from INBOX, 2026-10-11 (the owner on buttons, OCR and the constellation) | docs/roadmap/UI_MODERNISATION_PLAN.md:1212 |
 | Placed from INBOX, 2026-10-11 (the owner on dragging the force graph) | docs/roadmap/GRAPH_PLAN.md:587 |
-| Placed from INBOX, 2026-10-11 (the owner's sweep request) | docs/roadmap/UI_MODERNISATION_PLAN.md:1202 |
+| Placed from INBOX, 2026-10-11 (the owner's sweep request) | docs/roadmap/UI_MODERNISATION_PLAN.md:1206 |
 | Placed from INBOX, 2026-10-11 (the owner: Atlas as the app's assistant) | docs/roadmap/CHAT_PLAN.md:1707 |
 | Placed from INBOX, 2026-10-11 (the topic's tools) | docs/roadmap/MINDMAP_PLAN.md:1770 |
-| Placed from INBOX, 2026-10-11 (voice notes, live captions, the focus timer; voiceup) | docs/roadmap/UI_MODERNISATION_PLAN.md:1220 |
+| Placed from INBOX, 2026-10-11 (voice notes, live captions, the focus timer; voiceup) | docs/roadmap/UI_MODERNISATION_PLAN.md:1224 |
 | Placed from INBOX, 2026-10-12 (grammar in digest answers) | docs/roadmap/BACKLOG.md:4296 |
 | Placed from INBOX, 2026-10-19 | docs/roadmap/DOCUMENTS_PLAN.md:1329 |
 | Placed from INBOX, 2026-10-19 (INBOX 1307, 1308: elements, templates, the W/H link; the gap audit) | docs/roadmap/WHITEBOARD_PLAN.md:1530 |
 | Placed from INBOX, 2026-10-19 (INBOX 1308: the gap audit) | docs/roadmap/DOCUMENTS_PLAN.md:1306 |
 | Placed from INBOX, 2026-10-19 (INBOX 1308: the gap audit) | docs/roadmap/MINDMAP_PLAN.md:1788 |
 | Placed from INBOX, 2026-10-19 (edge sides; next PR) | docs/roadmap/MINDMAP_PLAN.md:1808 |
-| Placed from INBOX, 2026-10-19 (mobile1314) | docs/roadmap/UI_MODERNISATION_PLAN.md:1238 |
-| Placed from INBOX, 2026-10-19 (peek sidebar header, split button; next PR) | docs/roadmap/UI_MODERNISATION_PLAN.md:1246 |
+| Placed from INBOX, 2026-10-19 (mobile1314) | docs/roadmap/UI_MODERNISATION_PLAN.md:1242 |
+| Placed from INBOX, 2026-10-19 (peek sidebar header, split button; next PR) | docs/roadmap/UI_MODERNISATION_PLAN.md:1250 |
 | Placed from INBOX, 2026-10-19 (per-board view, Format on a map; next PR) | docs/roadmap/WHITEBOARD_PLAN.md:1544 |
 | Placed from INBOX, 2026-10-19 (wb1327) | docs/roadmap/WHITEBOARD_PLAN.md:1538 |
 | Placed from INBOX, 2026-10-26 | docs/roadmap/WHITEBOARD_PLAN.md:1563 |
@@ -29344,19 +29344,19 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-26b | docs/roadmap/WHITEBOARD_PLAN.md:1576 |
 | Placed from INBOX, 2026-10-26b | docs/roadmap/WORLD_CLASS_PLAN.md:4197 |
 | Placed from INBOX, 2026-10-27 | docs/roadmap/DOCUMENTS_PLAN.md:1335 |
-| Placed from INBOX, 2026-10-27 | docs/roadmap/UI_MODERNISATION_PLAN.md:1248 |
+| Placed from INBOX, 2026-10-27 | docs/roadmap/UI_MODERNISATION_PLAN.md:1252 |
 | Placed from INBOX, 2026-10-27 | docs/roadmap/WHITEBOARD_PLAN.md:1581 |
 | Placed from INBOX, 2026-10-27 (next PR) | docs/roadmap/BACKLOG.md:4424 |
-| Placed from INBOX, 2026-10-27 (speed and smoothness, 1415) | docs/roadmap/UI_MODERNISATION_PLAN.md:1250 |
+| Placed from INBOX, 2026-10-27 (speed and smoothness, 1415) | docs/roadmap/UI_MODERNISATION_PLAN.md:1254 |
 | Placed from INBOX, 2026-10-28 (present bar picker, lag, movable panels, companion) | docs/roadmap/PLAN.md:304 |
-| Placed from INBOX, 2026-10-29 (1435 Appearance panel, 1436 sketch and noise art) | docs/roadmap/UI_MODERNISATION_PLAN.md:1255 |
+| Placed from INBOX, 2026-10-29 (1435 Appearance panel, 1436 sketch and noise art) | docs/roadmap/UI_MODERNISATION_PLAN.md:1259 |
 | Placed from INBOX, 2026-10-30 | docs/roadmap/WHITEBOARD_PLAN.md:1587 |
 | Placed from INBOX, 2026-10-31 | docs/roadmap/GRAPH_PLAN.md:605 |
-| Placed from INBOX, 2026-10-31 | docs/roadmap/UI_MODERNISATION_PLAN.md:1261 |
+| Placed from INBOX, 2026-10-31 | docs/roadmap/UI_MODERNISATION_PLAN.md:1265 |
 | Placed from INBOX, 2026-10-31 | docs/roadmap/WHITEBOARD_PLAN.md:1591 |
 | Placed from INBOX, 2026-11-01 (1510(a), the draw.io Format panel gap list; board-1101) | docs/roadmap/WHITEBOARD_PLAN.md:1595 |
 | Placed from INBOX, 2026-11-02 (the owner: the calculator, equations, insert panels and a diagram builder) | docs/roadmap/DOCUMENTS_PLAN.md:314 |
-| Placed from INBOX, 2026-11-03 | docs/roadmap/UI_MODERNISATION_PLAN.md:1265 |
+| Placed from INBOX, 2026-11-03 | docs/roadmap/UI_MODERNISATION_PLAN.md:1269 |
 | Placed from INBOX, 2026-11-03 (chat; CHAT_PLAN is at its cap) | docs/roadmap/BACKLOG.md:4433 |
 | Placed from INBOX, 2026-11-03b | docs/roadmap/BACKLOG.md:4443 |
 | Placed from INBOX, 2026-11-04 | docs/roadmap/BACKLOG.md:4487 |
@@ -29364,17 +29364,18 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-11-04 | docs/roadmap/MINDMAP_PLAN.md:1823 |
 | Placed from INBOX, 2026-11-04 | docs/roadmap/PLAN.md:318 |
 | Placed from INBOX, 2026-11-04 | docs/roadmap/WHITEBOARD_PLAN.md:1611 |
-| Placed from INBOX, 2026-11-04 (1657, what the two lag rounds left) | docs/roadmap/UI_MODERNISATION_PLAN.md:1268 |
+| Placed from INBOX, 2026-11-04 (1657, what the two lag rounds left) | docs/roadmap/UI_MODERNISATION_PLAN.md:1272 |
 | Placed from INBOX, 2026-11-04 (audit Rank 36, hover decision) | docs/roadmap/GRAPH_PLAN.md:611 |
 | Placed from INBOX, 2026-11-05 (the Ask columns and folds) | docs/roadmap/CHAT_PLAN.md:1864 |
 | Placed from INBOX, 2026-11-07 (room for 1694) | docs/roadmap/CHAT_PLAN.md:1875 |
-| Placed from INBOX, 2026-11-08 | docs/roadmap/UI_MODERNISATION_PLAN.md:1278 |
+| Placed from INBOX, 2026-11-08 | docs/roadmap/UI_MODERNISATION_PLAN.md:1282 |
 | Placed from INBOX, 2026-11-08 (companion catalogue, 1696 dd, v, kk) | docs/roadmap/PLAN.md:322 |
 | Placed from INBOX, 2026-11-09 (the tray at its cap) | docs/roadmap/CHAT_PLAN.md:1879 |
-| Placed from INBOX, 2026-11-09 (the tray at its cap) | docs/roadmap/UI_MODERNISATION_PLAN.md:1282 |
-| Placed from INBOX, 2026-11-09 (what 1698 left) | docs/roadmap/UI_MODERNISATION_PLAN.md:1272 |
+| Placed from INBOX, 2026-11-09 (the tray at its cap) | docs/roadmap/UI_MODERNISATION_PLAN.md:1286 |
+| Placed from INBOX, 2026-11-09 (what 1698 left) | docs/roadmap/UI_MODERNISATION_PLAN.md:1276 |
 | Placed from INBOX, 2026-11-10 (libraries for the composer) | docs/roadmap/CHAT_PLAN.md:576 |
 | Placed from INBOX, 2026-11-10 (selection to a note) | docs/roadmap/DOCUMENTS_PLAN.md:306 |
+| Placed from INBOX, 2026-11-11 (tray at its cap) | docs/roadmap/UI_MODERNISATION_PLAN.md:870 |
 | Placed from INBOX, built (pointers) | docs/roadmap/UI_MODERNISATION_PLAN.md:780 |
 | Placed from INBOX: 107d, the segmented mini bars | docs/roadmap/DOCUMENTS_PLAN.md:355 |
 | Placed from INBOX: the composer everywhere (the owner, 2026-10-06) | docs/roadmap/CHAT_PLAN.md:644 |
@@ -29386,7 +29387,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/GRAPH_PLAN.md:565 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/MINDMAP_PLAN.md:1699 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/TIMELINE_PLAN.md:198 |
-| Placed from the owner's list, 2026-10-10 | docs/roadmap/UI_MODERNISATION_PLAN.md:896 |
+| Placed from the owner's list, 2026-10-10 | docs/roadmap/UI_MODERNISATION_PLAN.md:900 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/WHITEBOARD_PLAN.md:801 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/WORLD_CLASS_PLAN.md:3073 |
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:593 |
@@ -29494,7 +29495,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/GRAPH_PLAN.md:572 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/MINDMAP_PLAN.md:1743 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/TIMELINE_PLAN.md:306 |
-| Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/UI_MODERNISATION_PLAN.md:1091 |
+| Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/UI_MODERNISATION_PLAN.md:1095 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/WHITEBOARD_PLAN.md:1425 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/WORLD_CLASS_PLAN.md:4171 |
 | Verification, every phase | docs/roadmap/UI_MODERNISATION_PLAN.md:220 |

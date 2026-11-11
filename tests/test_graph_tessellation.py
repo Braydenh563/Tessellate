@@ -254,3 +254,16 @@ def test_the_help_names_the_view():
     assert "Tessellation" in text and "Cells" in text and "Hexes" in text
     view_help = HTML[HTML.index('id="graph-view-help"') :][:1500]
     assert "Tessellation" in view_help and "Cells" in view_help and "Hexes" in view_help
+
+
+def test_a_cell_pans_and_only_its_dot_is_a_node_for_a_gesture():
+    """The owner, 2026-11-11: "it's hard to drag pan on the tessellation view".
+    Cells tile the whole view, so a cell that refused the pan left only the
+    borders to drag by. The pan filter and the lasso ask for the dot alone; a
+    hover and a click still take the whole cell."""
+    body = _function(CANVAS, "gcNodeAtWorld")
+    assert "dotOnly = false" in body and "!dotOnly && s.tree && s.tree.tess" in body
+    assert "!gcNodeAtWorld(x, y, s, true) && !(s.layoutKind" in CANVAS
+    assert "if (gcNodeAtWorld(x, y, s, true)) return;" in CANVAS
+    # A wobble under the drag threshold is still a click on the cell.
+    assert ".clickDistance(GC_DRAG_THRESHOLD_PX)" in CANVAS

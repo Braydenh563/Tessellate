@@ -4185,13 +4185,16 @@ function gcTreeIndex(s = gcTab) {
 //: The node under a point given in world coordinates, or null. The search
 //: radius is generous by exactly the slop a pointer needs at the current zoom:
 //: a 4px dot at k=0.3 is a one-pixel target otherwise.
-function gcNodeAtWorld(x, y, s = gcTab) {
+function gcNodeAtWorld(x, y, s = gcTab, dotOnly = false) {
   if (!s.nodes.length) return null;
   const slop = GC_SLOP_PX / ((s.transform && s.transform.k) || 1);
   const found = gcTreeIndex(s).find(x, y, GC_MAX_RADIUS + slop + 8);
   if (found && gcVisibleAtTime(found, s) && Math.hypot(found.x - x, found.y - y) <= found.r + slop) return found;
   //: Q31: in the Tessellation view the whole cell answers, not only its dot.
-  return s.tree && s.tree.tess ? gcTess.nodeAt(x, y, s) : null;
+  //: A gesture asks for the dot alone (`dotOnly`): cells tile the whole view,
+  //: so a cell that refused the pan left only borders to drag by (the owner,
+  //: 2026-11-11: "it's hard to drag pan on the tessellation view").
+  return !dotOnly && s.tree && s.tree.tess ? gcTess.nodeAt(x, y, s) : null;
 }
 
 function gcWorldPoint(event, s = gcTab) {
@@ -4271,6 +4274,10 @@ function gcWireInteraction(s = gcTab) {
     //: The default extent reads `clientWidth` on every gesture's first use: a forced layout (30ms on 2,000 notes).
     .extent(() => [[0, 0], [s.dims.w, s.dims.h]])
     .wheelDelta(zoomWheelDelta)
+    //: A press that wobbles under the drag threshold is still a click: a
+    //: Tessellation cell pans from anywhere now, and d3's default of 0px ate
+    //: the click of any hand that moved a pixel.
+    .clickDistance(GC_DRAG_THRESHOLD_PX)
     // A drag that starts on a node moves the node; anywhere else pans. Without
     // this filter d3-zoom claims the gesture first and a node can never be
     // picked up.
@@ -4288,7 +4295,7 @@ function gcWireInteraction(s = gcTab) {
       if (event.shiftKey) return false;
       const [x, y] = gcWorldPoint(event, s);
       //: Nor a topic's name plate in the force layout: that is its handle.
-      return !gcNodeAtWorld(x, y, s) && !(s.layoutKind === "force" && gcPlateAtWorld(x, y, s));
+      return !gcNodeAtWorld(x, y, s, true) && !(s.layoutKind === "force" && gcPlateAtWorld(x, y, s));
     })
     .on("start", () => {
       s.panning = true;
@@ -4810,7 +4817,7 @@ function gcWireLasso(s = gcTab) {
   s.canvas.addEventListener("pointerdown", (event) => {
     if (!event.shiftKey || event.button) return;
     const [x, y] = gcWorldPoint(event, s);
-    if (gcNodeAtWorld(x, y, s)) return;
+    if (gcNodeAtWorld(x, y, s, true)) return;
     s.lasso = { points: [[x, y]], box: true, from: [x, y] };
     s.canvas.setPointerCapture(event.pointerId);
     event.preventDefault();
