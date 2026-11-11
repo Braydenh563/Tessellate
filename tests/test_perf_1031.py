@@ -1,6 +1,7 @@
 """Audit 1031 perf class rows (ranked 16 to 55): each test names the cost it keeps out."""
 
 from tests._app_js import frontend_text
+from tests import _js_scope
 
 
 def _between(text: str, start: str, end: str) -> str:
@@ -27,7 +28,7 @@ def test_the_rail_spy_ignores_scrollers_that_do_not_hold_the_list():
 def test_the_palette_draws_a_window_and_listens_once():
     # 117 rows with two listeners each on every key and arrow: +1,086 nodes and +458
     # listeners per open, 12 long tasks for ten arrows at 4x.
-    js = frontend_text("app-palette.js")
+    js = _js_scope.unwrapped(frontend_text("app-palette.js"))
     draw = _between(js, "function paletteDrawRows(upTo) {", "function renderPalette(query) {")
     assert "addEventListener" not in draw
     render = _between(js, "function renderPalette(query) {", "$(\"palette-list\").addEventListener(\"click\"")
@@ -39,7 +40,7 @@ def test_the_palette_draws_a_window_and_listens_once():
 
 def test_a_palette_key_is_not_a_match():
     # keydown matched the whole catalogue before the input event matched it again.
-    js = frontend_text("app-palette.js")
+    js = _js_scope.unwrapped(frontend_text("app-palette.js"))
     keys = _between(js, "function paletteKeydown(event) {", "// Reported live")
     assert "paletteMatches(" not in keys
     arrow = _between(js, "function paletteArrow(step) {", "function paletteKeydown")
@@ -52,7 +53,7 @@ def test_the_settings_rows_are_scanned_once_per_palette_open():
     body = _between(find, "function settingRows() {", "function settingRowsScan() {")
     assert "settingRows.stamp !== palette.dataset.opened" in body
     assert "palette.classList.contains(\"hidden\")" in body
-    assert 'dataset.opened = String(performance.now())' in frontend_text("app-palette.js")
+    assert 'dataset.opened = String(performance.now())' in _js_scope.unwrapped(frontend_text("app-palette.js"))
 
 
 def test_a_selection_is_saved_by_one_request_per_gesture():

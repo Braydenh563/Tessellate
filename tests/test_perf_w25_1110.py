@@ -1,6 +1,7 @@
 """W25 (OPEN.md, 2026-11-09 work order): palette ranking kept per word, no layout read on a hidden dashboard."""
 
 from tests._app_js import frontend_text
+from tests import _js_scope
 
 
 def _between(text: str, start: str, end: str) -> str:
@@ -10,7 +11,7 @@ def _between(text: str, start: str, end: str) -> str:
 
 def test_the_palette_keeps_its_ranking_for_the_same_words():
     # The notes arriving 150 ms after a key redrew the palette and ranked ~700 rows again.
-    js = frontend_text("app-palette.js")
+    js = _js_scope.unwrapped(frontend_text("app-palette.js"))
     body = _between(js, "function paletteMatches(query) {", "//: \"timer 10 minutes\"")
     assert "paletteGen.memo.q === lowered" in body
     assert "memo ? [...memo.commands]" in body
@@ -22,7 +23,7 @@ def test_the_palette_keeps_its_ranking_for_the_same_words():
 
 
 def test_the_nearest_word_scan_splits_each_row_once():
-    js = frontend_text("app-palette.js")
+    js = _js_scope.unwrapped(frontend_text("app-palette.js"))
     scan = _between(js, "function paletteNearest(rows, typed) {", "//: Edits between two words")
     assert "paletteGen.words.get(text)" in scan and "paletteGen.words.set(text, words)" in scan
 

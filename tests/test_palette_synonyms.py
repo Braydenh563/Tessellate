@@ -14,12 +14,13 @@ import re
 from pathlib import Path
 
 from tests._app_js import frontend_text
+from tests import _js_scope
 
 _JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 #: The row registry stays in settings-panes.js (boot); the palette's own
 #: window, `paletteMatches` with it, moved to the lazy app-palette.js.
-SOURCE = (_JS / "settings-panes.js").read_text(encoding="utf-8") + (_JS / "app-features.js").read_text(encoding="utf-8") + (_JS / "app-palette.js").read_text(
-    encoding="utf-8"
+SOURCE = (_JS / "settings-panes.js").read_text(encoding="utf-8") + (_JS / "app-features.js").read_text(encoding="utf-8") + _js_scope.unwrapped(
+    (_JS / "app-palette.js").read_text(encoding="utf-8")
 )
 
 
@@ -85,7 +86,7 @@ def _fn(text: str, name: str) -> str:
 
 
 def test_1408_the_palette_learns_prefixes_at_half_weight():
-    js = frontend_text("app-palette.js")
+    js = _js_scope.unwrapped(frontend_text("app-palette.js"))
     assert "const picks = palettePrefixPicks(lowered);" in js
     body = _fn(js, "palettePrefixPicks")
     assert "typed.length < 2" in body and "n / 2" in body

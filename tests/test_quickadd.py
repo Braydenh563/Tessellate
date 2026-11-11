@@ -57,7 +57,7 @@ def test_every_surface_reads_through_the_one_grammar():
     assert "quickAddSlots(quickNoteBox())" in _text("quick-note.js")
     meetings = _text("meetings.js")
     assert 'quickAddAttach(titleInput, "meeting"' in meetings and "quickAddSlots(titleInput)" in meetings
-    palette = _text("app-palette.js")
+    palette = _js_scope.unwrapped(_text("app-palette.js"))
     assert "quickAddPaletteRow(query)" in palette and 'quickAddAttach($("palette-input"), "palette")' in palette
     own = QUICKADD.read_text(encoding="utf-8")
     assert 'quickAddAttach($("reminder-magic"), "reminder"' in own

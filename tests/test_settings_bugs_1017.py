@@ -12,6 +12,7 @@ from pathlib import Path
 
 from tests._css_paths import CSS_FILES
 from tests._app_js import with_pieces
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -219,7 +220,7 @@ def test_b55_the_web_menu_still_offers_to_start_searxng_on_duckduckgo():
 # bookmarklet in the palette now offers a row that opens it. A redesign of the
 # clipper's flow is not done.
 def test_b55_the_palette_finds_the_web_clipper():
-    palette = (ROOT / "frontend" / "js" / "app-palette.js").read_text(encoding="utf-8")
+    palette = _js_scope.unwrapped((ROOT / "frontend" / "js" / "app-palette.js").read_text(encoding="utf-8"))
     assert "Web clipper" in palette and 'openSettingsModal("data", "web-clip-box")' in palette
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert 'id="web-clip-box"' in html
