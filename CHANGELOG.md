@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fix (INBOX 1783, PR 216 review): sync through a folder: a note made private after it was shared is withdrawn from the other computer (its copy, History and logged words deleted; one changed there is kept and says so), and a copied notebook folder (the same sync id) is refused over the folder and the home network with a sentence saying how to fix it.
 - Fix (INBOX 1781): a chat's Confirm and Cancel cards (acts, tool confirms, offers) come back when the chat is reopened, in their current state: waiting, done with Undo, cancelled or expired; an expired one can no longer run.
 - Fix (INBOX 1782): document tables: the row and column move grips keep a gap from the active cell's outline, and the add-row plus sits just under the last row (it was a row's height low).
 - Fix (INBOX 1780): with no model, the skills the composer cannot run are greyed in the Skills menu, their tooltip says they are unavailable while no model is connected, and the menu says "Greyed skills need a model." (a pick of one did nothing and said nothing).

@@ -16,8 +16,9 @@ import pytest
 from sqlalchemy import select
 
 from tessellate.core import crypto, vault
-from tessellate.core.database import Attachment, Document, Entry, EntryRevision
-from tessellate.entry import folder_sync, manager, sync_pull
+from tessellate.core.database import Attachment, AuditLog, Document, Entry, EntryRevision
+from tessellate.entry import folder_sync, manager, sync_pull, sync_segments
+from tessellate.entry.manager_private import set_private
 from tests.test_sync_segments import Link, Notebook
 
 PASS = "correct horse battery"
@@ -173,6 +174,68 @@ def test_private_notes_never_leave_and_are_never_overwritten(two):
     assert "4821" not in raw and "plain note" not in raw  # sealed, and the private one is not in it at all
     sync(b, folder)
     assert texts(b) == ["A plain note"]
+
+
+def _made_private(book: Notebook, entry: Entry, minute: int) -> None:
+    vault.close()
+    vault.create(book.session, "a-vault-passphrase")
+    assert set_private(book.session, entry, True)
+    book.stamp(entry, minute)
+
+
+def _said(book: Notebook) -> str:
+    book.session.expire_all()
+    return json.dumps([[r.detail, r.payload] for r in book.session.scalars(select(AuditLog))], default=str)
+
+
+def test_a_note_made_private_after_it_was_shared_is_withdrawn_from_the_other_computer(two):
+    """PR 216 review: the folder leaves private notes out, so the other computer's plain copy stayed for good.
+    A note shipped plain and then made private goes as a withheld marker, and the other computer's unchanged copy
+    goes with its History and the words its log kept."""
+    a, b, folder = two
+    secret = note(a, "The gate code is 7731", 1)
+    settle(a, b, folder)
+    edit(a, secret, "The gate code is 7731, then hash", 2)
+    settle(a, b, folder)
+    assert "The gate code is 7731" in history(b)
+    _made_private(a, secret, 3)
+    sync(a, folder)
+    raw = "".join(p.read_text("utf-8") for p in folder.glob("*.json"))
+    assert "7731" not in raw
+    got = sync(b, folder)
+    assert got["error"] == "" and texts(b) == []
+    assert not [h for h in history(b) if "7731" in h]
+    assert "7731" not in _said(b)
+    settle(a, b, folder)  # the marker again, and A's own private note untouched by B's file
+    a.session.expire_all()
+    assert a.session.get(Entry, secret.id).is_private and texts(b) == []
+
+
+def test_a_withdrawn_note_edited_on_the_other_computer_is_kept_there_and_says_so(two):
+    a, b, folder = two
+    secret = note(a, "Meet at the north door", 1)
+    settle(a, b, folder)
+    edit(b, find(b, "Meet at the north door"), "Meet at the north door, bring the key", 4)
+    _made_private(a, secret, 5)
+    sync(a, folder)
+    got = sync(b, folder)
+    assert texts(b) == ["Meet at the north door, bring the key"]
+    assert got["conflicts"] == 1
+    assert sync_segments.WITHHELD_KEPT in _said(b)
+    again = sync(b, folder)  # said once, not at every sync
+    assert again["conflicts"] == 0 and _said(b).count(sync_segments.WITHHELD_KEPT) == 1
+
+
+def test_a_note_private_before_it_was_ever_shared_sends_no_marker(two):
+    a, _b, folder = two
+    secret = note(a, "Never shared", 1)
+    _made_private(a, secret, 2)
+    sync(a, folder)
+    (file,) = folder.glob("*.json")
+    sealed = json.loads(file.read_text("utf-8"))
+    key = folder_sync._key(PASS, base64.b64decode(sealed["salt"]))  # noqa: SLF001  # the file's own key
+    body = json.loads(crypto.decrypt(key, sealed["data"]))
+    assert [n for s in body["segments"] for n in s["notes"]] == []
 
 
 def test_the_file_is_encrypted_and_a_wrong_passphrase_reads_nothing(two):
@@ -344,3 +407,35 @@ def test_a_sibling_of_home_is_refused_and_home_itself_is_kept(tmp_path, monkeypa
     with pytest.raises(folder_sync.SyncError, match="home folder or on a removable drive"):
         folder_sync._checked(str(sibling), PASS)  # noqa: SLF001  # the guard alone
     assert folder_sync._checked(str(home), PASS) == home.resolve()  # noqa: SLF001
+
+
+def _copy_of(a: Notebook, b: Notebook) -> None:
+    """B's data folder copied from A's: the same sync-state.json, so the same device id."""
+    (b.dir / "sync-state.json").write_text((a.dir / "sync-state.json").read_text("utf-8"), "utf-8")
+
+
+def test_a_peer_file_with_this_computers_own_device_is_refused_and_nothing_is_deleted(two):
+    """PR 216 review: a data folder copied to a second computer shares its device id; a sync tool's conflict copy
+    of the shared file (`tessellate-sync-<id> (conflicted copy).json`) must not be pulled as a peer."""
+    a, b, folder = two
+    note(a, "Written on the original", 1)
+    sync(a, folder)
+    (own,) = folder.glob("*.json")
+    note(b, "Only on the copy", 2)
+    _copy_of(a, b)
+    (folder / own.name.replace(".json", " (conflicted copy).json")).write_text(own.read_text("utf-8"), "utf-8")
+    own.unlink()
+    got = sync(b, folder)
+    assert got["unreadable"] == 1 and got["applied"] == 0
+    assert got["error"] == sync_segments.SAME_ID
+    assert texts(b) == ["Only on the copy"]
+
+
+def test_a_peer_file_whose_name_is_not_its_device_is_refused(two):
+    a, b, folder = two
+    note(a, "Travels only under its own name", 1)
+    sync(a, folder)
+    (file,) = folder.glob("*.json")
+    file.rename(folder / "tessellate-sync-000000000000.json")
+    got = sync(b, folder)
+    assert got["unreadable"] == 1 and got["peers"] == 0 and texts(b) == []

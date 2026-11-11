@@ -16,7 +16,12 @@ its own cursor and agreed hashes in `sync-state.json` (`device_id` is the same n
 **Private notes never go into the folder.** The passphrase is the folder's only lock and no data key is
 wrapped for a folder peer, so private notes are left out of the segments, and private documents, boards and
 files of private notes are listed with an empty hash, which the reader skips (they stay home, as items a
-private space seals do).
+private space seals do). A note that went into the folder in the clear and was made private since goes as a
+`withheld` marker, its name and time only, so the other computer withdraws its copy (INBOX 1783); the names
+that went out in the clear are kept in `folder_sync_state.json` as `shipped`.
+
+**One notebook, one name.** A notebook folder copied to a second computer carries the same `sync-state.json`;
+a file in the folder whose device is this computer's, or is not the name it is filed under, is refused.
 
 Pure of the web layer; `api/routes_folder_sync.py` is the one caller. The folder and the time of the last run
 are remembered in `folder_sync_state.json` beside the database so the sheet can offer them next time.
@@ -128,13 +133,33 @@ def _checked(folder: str, passphrase: str, notebook: Path | None = None) -> Path
 # --- this computer's file -------------------------------------------------------
 
 
-def segments(session: Session, device: str) -> list[dict[str, Any]]:
-    """Every ordinary note, as the chain of segments a LAN peer pulling from the start would get."""
+def _shipped(data_dir: Path) -> set[str] | None:
+    """The notes this computer has put into the folder in the clear; None when a sync ran before that was kept,
+    so every private note goes as withheld once and is kept from then on."""
+    try:
+        raw = json.loads(state_path(data_dir).read_text("utf-8"))
+    except (OSError, ValueError):
+        return set()
+    found = raw.get("shipped") if isinstance(raw, dict) else None
+    if isinstance(found, list):
+        return {str(sid) for sid in found}
+    return None if isinstance(raw, dict) and raw.get("last") else set()
+
+
+def _for_folder(notes: list[dict], shipped: set[str] | None) -> list[dict]:
+    """A plain note as it is; a private one as withheld when it went out in the clear before, else not at all."""
+    return [n if not n["is_private"] else sync_segments.withheld(n)
+            for n in notes if not n["is_private"] or shipped is None or n["sid"] in shipped]
+
+
+def segments(session: Session, device: str, shipped: set[str] | None = None) -> list[dict[str, Any]]:
+    """Every ordinary note, as the chain of segments a LAN peer pulling from the start would get; a private one
+    only as withheld, when it is in `shipped` (None: every private one)."""
     out: list[dict[str, Any]] = []
     since = 0
     for _ in range(sync_pull.MAX_ROUNDS):
         segment = sync_segments.export_segment(session, device, since, "")
-        notes = [n for n in segment["notes"] if not n["is_private"]]
+        notes = _for_folder(segment["notes"], shipped)
         out.append({**segment, "notes": notes, "digest": sync_segments.digest(notes)})
         if not segment["more"] or segment["upto"] <= since:
             break
@@ -209,21 +234,23 @@ def _own_salt(own: Path, passphrase: str) -> tuple[bytes, bool]:
         return crypto.new_salt(), False
 
 
-def write(session: Session, data_dir: Path, path: Path, passphrase: str) -> int:
-    """This computer's file and its sealed attachments; the number of notes it carries."""
+def write(session: Session, data_dir: Path, path: Path, passphrase: str) -> tuple[int, list[str]]:
+    """This computer's file and its sealed attachments; (the notes it carries in the clear, every name it has sent)."""
     device = sync_state.device_id(data_dir)
     own = path / f"{FILE_PREFIX}{device}{FILE_SUFFIX}"
     salt, kept = _own_salt(own, passphrase)
     key = _key(passphrase, salt)
     manifest, found = extras(session, data_dir, device)
-    body = {"device": device, "written": utcnow().isoformat(), "segments": segments(session, device),
+    shipped = _shipped(data_dir)
+    body = {"device": device, "written": utcnow().isoformat(), "segments": segments(session, device, shipped),
             "manifest": manifest, "items": found}
     _write_blobs(session, data_dir, path / f"{FILE_PREFIX}{device}{FILES_SUFFIX}", found["file"], (key, kept))
     sealed = {"format": FORMAT, "version": VERSION, "device": device,
               "salt": base64.b64encode(salt).decode("ascii"),
               "data": crypto.encrypt(key, json.dumps(body, ensure_ascii=False))}
     atomic_io.atomic_write_json(own, sealed, indent=0)
-    return sum(len(s["notes"]) for s in body["segments"])
+    sent = [n for s in body["segments"] for n in s["notes"]]
+    return sum(not n["is_private"] for n in sent), sorted((shipped or set()) | {n["sid"] for n in sent})
 
 
 # --- reading a peer --------------------------------------------------------------
@@ -265,7 +292,11 @@ class FolderLink:
             return None
 
 
-def open_peer(path: Path, file: Path, passphrase: str) -> FolderLink:
+class SameIdError(SyncError):
+    """The file carries this computer's own sync id: a copied notebook folder (sync_segments.SAME_ID)."""
+
+
+def open_peer(path: Path, file: Path, passphrase: str, me: str) -> FolderLink:
     sealed = json.loads(file.read_text("utf-8"))
     if sealed.get("format") != FORMAT or sealed.get("version") != VERSION:
         raise SyncError("That is not a Tessellate sync file.")
@@ -273,6 +304,10 @@ def open_peer(path: Path, file: Path, passphrase: str) -> FolderLink:
     body = json.loads(crypto.decrypt(key, sealed["data"]))
     device = str(body["device"])
     if len(device) != 12 or not device.isalnum():  # sync_state.device_id's own shape; it names a folder here
+        raise SyncError("That is not a Tessellate sync file.")
+    if device == me:  # a sync tool's conflict copy of the file two copies of one notebook both write
+        raise SameIdError(sync_segments.SAME_ID)
+    if file.name != f"{FILE_PREFIX}{device}{FILE_SUFFIX}":
         raise SyncError("That is not a Tessellate sync file.")
     return FolderLink(body, path / f"{FILE_PREFIX}{body['device']}{FILES_SUFFIX}", key)
 
@@ -286,21 +321,29 @@ def run(session: Session, data_dir: Path, folder: str, passphrase: str) -> dict[
     device = sync_state.device_id(data_dir)
     counts: dict[str, Any] = {"applied": 0, "conflicts": 0, "waiting": 0, "unreadable": 0, "peers": 0, "error": ""}
     for file in sorted(path.glob(f"{FILE_PREFIX}*{FILE_SUFFIX}")):
-        if file.name == f"{FILE_PREFIX}{device}{FILE_SUFFIX}":
-            continue
-        try:
-            link = open_peer(path, file, passphrase)
-        except _OPEN_ERRORS:
-            counts["unreadable"] += 1
-            continue
-        done = sync_pull.pull_from(session, data_dir, link, "folder")
-        counts["peers"] += 1
-        for key in ("applied", "conflicts", "waiting"):
-            counts[key] += int(done.get(key) or 0)
-        counts["error"] = counts["error"] or done["error"]
-    counts["shared"] = write(session, data_dir, path, passphrase)
-    atomic_io.atomic_write_json(state_path(data_dir), {"folder": folder, "last": utcnow().isoformat()})
+        if file.name != f"{FILE_PREFIX}{device}{FILE_SUFFIX}":
+            _read_peer(session, data_dir, (path, file, passphrase), counts)
+    counts["shared"], shipped = write(session, data_dir, path, passphrase)
+    atomic_io.atomic_write_json(state_path(data_dir), {"folder": folder, "last": utcnow().isoformat(),
+                                                       "shipped": shipped})
     return counts
+
+
+def _read_peer(session: Session, data_dir: Path, where: tuple[Path, Path, str], counts: dict[str, Any]) -> None:
+    """One peer's file through the one apply path, its counts added; one that cannot be opened is counted."""
+    path, file, passphrase = where
+    try:
+        link = open_peer(path, file, passphrase, sync_state.device_id(data_dir))
+    except _OPEN_ERRORS as exc:
+        counts["unreadable"] += 1
+        if isinstance(exc, SameIdError):
+            counts["error"] = counts["error"] or sync_segments.SAME_ID
+        return
+    done = sync_pull.pull_from(session, data_dir, link, "folder")
+    counts["peers"] += 1
+    for key in ("applied", "conflicts", "waiting"):
+        counts[key] += int(done.get(key) or 0)
+    counts["error"] = counts["error"] or done["error"]
 
 
 __all__ = ["FolderLink", "SyncError", "last_problem", "load_state", "run", "state_path", "write"]

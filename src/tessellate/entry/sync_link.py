@@ -33,7 +33,7 @@ from urllib.parse import urlencode
 
 from tessellate.core import egress, sync_state
 from tessellate.entry import sync_keys
-from tessellate.entry.sync_segments import SegmentError
+from tessellate.entry.sync_segments import SAME_ID, SegmentError
 
 WRONG_PASSWORD = "That password is wrong for the other computer."
 WAITING = "Choose Allow on the other computer, then press Pair again."
@@ -190,6 +190,8 @@ def pair(data_dir: Path, address: str, password: str) -> dict:
     answer = _json(raw)
     if status != 200 or not answer.get("pass") or not answer.get("device"):
         raise PairError(answer.get("detail") if status == 403 and answer.get("detail") else NOT_SYNCING)
+    if answer["device"] == sync_state.device_id(data_dir):
+        raise PairError(SAME_ID)
     return sync_state.save_link(data_dir, host=host, port=port, cookie=cookie, authority=authority,
                                 fingerprint=fingerprint(authority), pending={}, peer=answer["device"],
                                 sync_pass=answer["pass"], peer_key=sync_keys.wrap_peer_key(answer.get("key")))
