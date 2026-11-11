@@ -102,6 +102,13 @@ class Apply:
         self.names = sync_extras.names_for(session, data_dir, me)
         #: Items changed only on the other computer since the last sync: theirs, whatever the times.
         self.force: set[str] = set()
+        #: Arrival marks held until `flush`: one write of sync-state per page, not per file. A mark lost
+        #: to a crash only means that item is fetched again, and applying is idempotent.
+        self.marks: list[tuple[str, str, int | None, str]] = []
+
+    def flush(self) -> None:
+        marks, self.marks = self.marks, []
+        sync_state.save_arrived_many(self.data_dir, marks)
 
     def _note_id(self, sid: object) -> int | None:
         entry = _find(self.session, self.me, sid) if isinstance(sid, str) and ":" in sid else None
@@ -137,7 +144,7 @@ class Apply:
             self._keep_mine(doc, words)
         self._write_document(doc, item, words)
         if created:
-            sync_state.save_arrived(self.data_dir, "document", item["sid"], doc.id, sync_extras.mark(doc))
+            self.marks.append(("document", item["sid"], doc.id, sync_extras.mark(doc)))
         manager.log_action(self.session, "created" if created else "edited", "document", doc.id, "from the other computer")
         return "applied"
 
@@ -250,7 +257,7 @@ class Apply:
                          mime=str(item.get("mime") or "application/octet-stream")[:100], size=len(data))
         self.session.add(att)
         self.session.flush()
-        sync_state.save_arrived(self.data_dir, "file", item["sid"], att.id, sync_extras.mark(att))
+        self.marks.append(("file", item["sid"], att.id, sync_extras.mark(att)))
         manager.log_action(self.session, "edited", "entry", note, f"a file from the other computer: {name}")
         return "applied"
 
@@ -262,7 +269,7 @@ class Apply:
             self.session.delete(att)
             manager.log_action(self.session, "edited", "entry", att.entry_id, f"a file removed on the other computer: {att.filename}")
         if not sid.startswith(f"{self.me}:"):
-            sync_state.save_arrived(self.data_dir, "file", sid, None)
+            self.marks.append(("file", sid, None, ""))
 
 
 def _key(kind: str, sid: str) -> str:
@@ -316,6 +323,7 @@ def _apply_kind(session: Session, link: Any, apply: Apply, kind: str, sids: list
             session.commit()
             if outcome == "applied":
                 agreed[_key(kind, item["sid"])] = hashes[_key(kind, item["sid"])]
+        apply.flush()
 
 
 def _apply_files(session: Session, link: Any, apply: Apply, sids: list[str], report: dict) -> None:
@@ -325,6 +333,7 @@ def _apply_files(session: Session, link: Any, apply: Apply, sids: list[str], rep
                 known = apply._note_id(item.get("note")) is not None  # noqa: SLF001
                 report[apply.file(item, link.file(item["sid"], apply.me) if known else None)] += 1
                 session.commit()
+        apply.flush()
 
 
 def pull_extras(session: Session, data_dir: Path, link: Any, me: str, both: sync_keys.Keys | None) -> dict[str, int]:
@@ -335,13 +344,16 @@ def pull_extras(session: Session, data_dir: Path, link: Any, me: str, both: sync
     report = {"applied": 0, "same": 0, "conflicts": 0, "waiting": 0}
     wanted, apply.force, agreed = _wanted(session, data_dir, me, peer, lines)
     hashes = {_key(x["kind"], x["sid"]): x["hash"] for x in lines}
-    with events.acting_as(f"sync:{peer}"), impersonate_workspace(session, ""):
-        for kind in ("document", "board"):
-            _apply_kind(session, link, apply, kind, wanted[kind], report, agreed, hashes)
-        _apply_files(session, link, apply, wanted["file"][:MAX_FILES], report)
-        for sid in _gone_files(data_dir, me, peer, lines):
-            apply.remove_file(sid)
-            session.commit()
+    try:
+        with events.acting_as(f"sync:{peer}"), impersonate_workspace(session, ""):
+            for kind in ("document", "board"):
+                _apply_kind(session, link, apply, kind, wanted[kind], report, agreed, hashes)
+            _apply_files(session, link, apply, wanted["file"][:MAX_FILES], report)
+            for sid in _gone_files(data_dir, me, peer, lines):
+                apply.remove_file(sid)
+                session.commit()
+    finally:
+        apply.flush()
     own = sorted(x["sid"] for x in lines if x["kind"] == "file" and x["sid"].startswith(f"{me}:"))
     sync_state.save_peer(data_dir, peer, seen_files=own, synced=agreed)
     return report

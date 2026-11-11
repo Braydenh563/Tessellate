@@ -12,14 +12,33 @@ next pull starts over, which the idempotent apply makes harmless).
 from __future__ import annotations
 
 import contextlib
+import functools
 import hashlib
 import json
 import os
 import secrets
+import threading
 import time
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
+
+from tessellate.core.atomic_io import atomic_write_text
 
 FILE_NAME = "sync-state.json"
+
+#: Held around every read-then-write below: the pair route, a pass being issued and the first
+#: device id all run outside `sync_pull.RUNNING`, so without it two threads lose each other's update.
+_LOCK = threading.RLock()
+
+
+def _locked(fn: Callable[..., Any]) -> Callable[..., Any]:
+    @functools.wraps(fn)
+    def run(*args: Any, **kwargs: Any) -> Any:
+        with _LOCK:
+            return fn(*args, **kwargs)
+
+    return run
 
 
 def _path(data_dir: Path) -> Path:
@@ -37,15 +56,13 @@ def _read(data_dir: Path) -> dict:
 def _write(data_dir: Path, state: dict) -> None:
     path = _path(data_dir)
     path.parent.mkdir(parents=True, exist_ok=True)
-    partial = path.with_suffix(f".{os.getpid()}.part")
-    fd = os.open(partial, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
-    with os.fdopen(fd, "w", encoding="utf-8") as out:
-        json.dump(state, out, indent=1)
-    os.replace(partial, path)
+    # A unique temp file (mkstemp is 0600) so no two writers ever share one.
+    atomic_write_text(path, json.dumps(state, indent=1))
     with contextlib.suppress(OSError):
         os.chmod(path, 0o600)
 
 
+@_locked
 def device_id(data_dir: Path) -> str:
     """This folder's sync name, made once: 12 hex characters, never shown as a secret."""
     state = _read(data_dir)
@@ -65,6 +82,7 @@ def peer(data_dir: Path, name: str) -> dict:
     return {**found, "cursor": cursor if isinstance(cursor, int) and cursor > 0 else 0}
 
 
+@_locked
 def save_peer(data_dir: Path, name: str, **fields: object) -> dict:
     """Merge `fields` into the peer's record and stamp the time of the try."""
     state = _read(data_dir)
@@ -94,6 +112,7 @@ def _pass_hash(raw: str) -> str:
     return hashlib.sha256(raw.encode("utf-8", "replace")).hexdigest()
 
 
+@_locked
 def issue_pass(data_dir: Path, device: str) -> str:
     """A new pass for the allowed device `device` (its `lantrust` hash); only the hash is kept.
 
@@ -125,6 +144,7 @@ def link(data_dir: Path) -> dict:
     return found if isinstance(found, dict) else {}
 
 
+@_locked
 def save_link(data_dir: Path, **fields: object) -> dict:
     state = _read(data_dir)
     state["link"] = {**link(data_dir), **fields}
@@ -132,6 +152,7 @@ def save_link(data_dir: Path, **fields: object) -> dict:
     return state["link"]
 
 
+@_locked
 def forget_link(data_dir: Path) -> None:
     state = _read(data_dir)
     state.pop("link", None)
@@ -159,6 +180,7 @@ def arrived(data_dir: Path) -> dict[str, dict[str, list]]:
             for kind, rows in found.items() if isinstance(rows, dict)}
 
 
+@_locked
 def save_arrived(data_dir: Path, kind: str, sid: str, local_id: int | None, mark: str = "") -> None:
     """Remember (or, with None, forget) where an item from another computer landed here."""
     state = _read(data_dir)
@@ -167,4 +189,20 @@ def save_arrived(data_dir: Path, kind: str, sid: str, local_id: int | None, mark
     if local_id is not None:
         kept[sid] = [local_id, mark]
     state["arrived"] = {**rows, kind: kept}
+    _write(data_dir, state)
+
+
+@_locked
+def save_arrived_many(data_dir: Path, marks: list[tuple[str, str, int | None, str]]) -> None:
+    """`save_arrived` for a batch of (kind, sid, local id or None, mark): one write, not one each."""
+    if not marks:
+        return
+    state = _read(data_dir)
+    rows = arrived(data_dir)
+    for kind, sid, local_id, stamp in marks:
+        kept = {s: i for s, i in rows.get(kind, {}).items() if s != sid}
+        if local_id is not None:
+            kept[sid] = [local_id, stamp]
+        rows = {**rows, kind: kept}
+    state["arrived"] = rows
     _write(data_dir, state)

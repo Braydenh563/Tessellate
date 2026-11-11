@@ -205,9 +205,31 @@ def item_hash(state: dict) -> str:
     return digest({k: v for k, v in state.items() if k not in ("updated_at", "created_at", "size")})
 
 
+#: SHA-1 of an upload by (stored name, size, mtime_ns): a manifest is built for every sync, and the
+#: bytes of an unchanged file do not need reading again. Bounded; the oldest entry goes first.
+_SHA1_CACHE: dict[tuple[str, int, int], str] = {}
+_SHA1_CACHE_MAX = 4096
+
+
+def _file_sha1(path: Path, stored_name: str) -> str:
+    try:
+        stat = path.stat()
+    except OSError:
+        return ""
+    if not path.is_file():
+        return ""
+    key = (stored_name, stat.st_size, stat.st_mtime_ns)
+    found = _SHA1_CACHE.get(key)
+    if found is None:
+        found = hashlib.sha1(path.read_bytes(), usedforsecurity=False).hexdigest()
+        if len(_SHA1_CACHE) >= _SHA1_CACHE_MAX:
+            _SHA1_CACHE.pop(next(iter(_SHA1_CACHE)), None)
+        _SHA1_CACHE[key] = found
+    return found
+
+
 def file_state(att: Attachment, names: Names, uploads: Path) -> dict[str, Any]:
-    path = uploads / att.stored_name
-    sha1 = hashlib.sha1(path.read_bytes(), usedforsecurity=False).hexdigest() if path.is_file() else ""
+    sha1 = _file_sha1(uploads / att.stored_name, att.stored_name)
     return {"kind": "file", "sid": names.of("file", att.id), "note": names.note(att.entry_id),
             "filename": att.filename, "mime": att.mime, "size": att.size, "sha1": sha1,
             "created_at": iso(att.created_at)}
@@ -219,8 +241,9 @@ def _rows(session: Session, names: Names, uploads: Path) -> Iterator[tuple[dict 
         yield (None if doc.sealed_by_space else document_state(session, doc, names)), "document", names.of("document", doc.id)
     for board in session.scalars(select(Entry).where(Entry.is_board.is_(True)).order_by(Entry.id)):
         yield (None if board.sealed_by_space else board_state(session, board, names)), "board", note_sid(board, names.device)
-    for att in session.scalars(select(Attachment).order_by(Attachment.id)):
-        note = session.get(Entry, att.entry_id)
+    # One query for every file and its note; the notes land in the session, so `names.note` finds them there.
+    for att, note in session.execute(select(Attachment, Entry).join(Entry, Entry.id == Attachment.entry_id, isouter=True)
+                                     .order_by(Attachment.id)).all():
         kept = note is None or note.sealed_by_space
         yield (None if kept else file_state(att, names, uploads)), "file", names.of("file", att.id)
 
