@@ -68,16 +68,16 @@ from .engine_consts import (
     EXHALE_AFTER, EXHALE_DIP, EXHALE_FOR, FLING_FACE, FLOAT_BAND, FLOAT_LEG, FLOAT_SPEED,
     FLOAT_TURN, FLOW_CALM_MS, FLOW_SLEEP_MS, FLOW_SPEED_MAX, FLOW_SPELL_MS, FLOW_TICK_MS,
     FOLLOW_FOR, FOLLOW_GAP, GREET_AFTER, GROUNDED, HANG_DRAG_IN, HANG_ENDS, HANG_FOR, HANG_GLANCE,
-    HANG_HANDS, HANG_KICK, HANG_KICK_FOR, HANG_LEAP, HANG_ONE_EVERY, HANG_PERIOD, HANG_SWING, HANG_TICK_MS,
+    HANG_HANDS, HANG_KICK, HANG_KICK_FOR, HANG_LEAP, HANG_PERIOD, HANG_SWING, HANG_TICK_MS,
     HANG_TRIP_WEIGHT, HOLD_FIXED, HOLD_RANGES, HOME_INSET, HOME_KEEP, HOP_FOR, HOVER, IDLE_FRAMES,
-    KICK_HZ, LAND_FOR, LEAN_MAX, LEAP_BASE, LEAP_SPEED, LIFT_SY, LIVELY, LONELY_AFTER,
+    KICK_HZ, LEAN_MAX, LEAP_BASE, LEAP_SPEED, LIFT_SY, LIVELY, LONELY_AFTER,
     LONG_WALK_GAP, LONG_WALK_WEIGHT, LOOK_FOR, LOOK_SHARE, MAX_DT, MIN_WAKE_MS, Monitor, NAP_FOR,
     NOTICE_NEAR, Output, PACE_GAP, PACE_SLEW, PEEK_BEHIND, PEEK_HEAD, PEEK_OPEN, PEEK_PLAN,
     PEEK_SIDE, PEEK_TOP_PEER, PEEK_TOP_PLAN, PEEK_TOP_SHOWN, PEEK_TUCK, PERCH_MOVED, PLAIN_THENS,
     POLL_QUIET_MS, POSE_DT_MAX, POSE_DT_WAKE, POSE_DYN, POSE_GAP_FREE, POSE_LOOK_STEP, POSE_OFF,
     POSE_RATE, Perch, QUIET_RECHECK, Q_BREATH, REACHED, REACT_FOR, RELOCATE_AFTER, REST_DRAW_MS,
     REST_FOR, REST_LIFE, RESUMED_THENS, RISE_FOR, RUN_MIN, Rect, SCRABBLE_DRAG, SCRABBLE_HZ,
-    SHIFT_FOR, SHIFT_LEAN, SIGH_FOR, SIT_REGISTERED, SLEEP_AFTER, SPELL_MOVE, SPELL_QUIET, SPELL_ROOM, SPELL_SETTLE,
+    SHIFT_FOR, SHIFT_LEAN, SIGH_FOR, SLEEP_AFTER, SPELL_MOVE, SPELL_QUIET, SPELL_ROOM, SPELL_SETTLE,
     SPIN_FRAMES_ENGINE, SPIN_STEPS, SQUASH, SQUASH_FOR, STAND_FAMILY, STAND_LEAN, STAND_LEAN_S,
     STEP_K, STEP_UNDER, STRIDE, STROLL, SWING_BOOST, SWING_FOR, SWING_REACH, TAIL_LAG, TAIL_TICK_MS,
     TAIL_WANDER, TAIL_WANDER_S, TICK_FALL_MS, TICK_WALK_MS, TRIP_EVERY, TRIP_FIRST,
@@ -89,19 +89,21 @@ from .engine_consts import (  # re-exported: tests and `runner` read them as `en
     AWAY_DRIFT, AWAY_FALL, AWAY_FOR, BOUNCE_DAMP, Bar, CEIL_CATCH, CEIL_LEAVE, CEIL_TILT,
     CLIMB_EVERY, CLIMB_SOON, FLING_SPEED, IDLE_FPS, NOTICE_COOLDOWN, PERCH_THROW,
     SLIP_SPEED, SPIN_DRAG, SPIN_OMEGA, TAIL_LAYER_MS, TAIL_TOUCHED_FOR, THROW_MAX, THROW_MIN,
-    TITLE_BAR, WALL_SCRABBLE, WAVE_FOR, perch_room,
+    TITLE_BAR, WALL_SCRABBLE, WAVE_FOR, LAND_FOR, perch_room,
 )
 __all__ = [
     "AWAY_DRIFT", "AWAY_FALL", "AWAY_FOR", "BOUNCE_DAMP", "Bar", "CEIL_CATCH", "CEIL_LEAVE",
     "CEIL_TILT", "CLIMB_EVERY", "CLIMB_SOON", "FLING_SPEED", "IDLE_FPS",
     "NOTICE_COOLDOWN", "PERCH_THROW", "SLIP_SPEED", "SPIN_DRAG", "SPIN_OMEGA", "TAIL_LAYER_MS",
     "TAIL_TOUCHED_FOR", "THROW_MAX", "THROW_MIN", "TITLE_BAR", "WALL_SCRABBLE", "WAVE_FOR",
-    "perch_room", "ld", "wisps",
+    "perch_room", "LAND_FOR", "ld", "wisps",
 ]
+from .engine_deskacts import SIT_REGISTERED, DeskActsMixin
 from .engine_flight import FlightMixin
 from .engine_frames import FramesMixin
 from .engine_input import InputMixin
 from .engine_roam import RoamMixin
+from .engine_touch import TouchMixin
 
 #: Not touched for this long: sits, then sleeps. Ten and twenty minutes (the owner's
 #: open call, taken): it keeps doing small acts while the person is away from the
@@ -110,7 +112,7 @@ IDLE_SIT = 600.0
 IDLE_SLEEP = 1200.0
 
 
-class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin):
+class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, TouchMixin):
     def __init__(
         self,
         size: tuple[int, int],
@@ -782,8 +784,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin):
         self.hang_phase = self.rng.uniform(0.0, 2 * math.pi)
         self.hang_glance_at = now + self.rng.uniform(*HANG_GLANCE)
         self.swing_to, self.releasing = None, False
-        self.hang_one_until = 0.0  # W31 E2: the hand let go (`hang_one_hand`), now and then, in a long hang
-        self.hang_one_at = now + self.var_rng.uniform(*HANG_ONE_EVERY) if "hang_one" in self.extra_frames and not self.reduced else math.inf
+        self._hang_one_reset(now)
 
     def _on_rise(self, now: float) -> None:
         self.state_until = now + RISE_FOR
@@ -951,9 +952,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin):
         if s_ == "crouch":
             sy, sx = 1.0 - 0.12 * bh.smooth((now - (self.state_until - CROUCH_FOR)) / CROUCH_FOR), 1.03
         elif s_ == "land":
-            u = 1.0 - max(0.0, self.state_until - now) / LAND_FOR
-            sy = 1.0 - 0.12 * math.sin(min(1.0, u) * math.pi)
-            sx = 1.0 + 0.06 * math.sin(min(1.0, u) * math.pi)
+            sx, sy, lean = self._touch_pose(now)  # E6: how hard it came down sets the depth, the length and a stumble's lean
         elif s_ in ("walk", "drift") and self.turn_to == 0:
             speed = min(1.0, abs(self.vx_px) / (WALK_SPEED * self._scale() * 1.2))
             lean = LEAN_MAX * speed * (1 if self.vx_px > 0 else -1) * (1.6 if self.mode == "dash" else 1.0)
@@ -1422,7 +1421,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin):
         return table
 
     def _perform(self, act: str, now: float) -> None:
-        rested = self.perch is not None  # on a window top when the act was chosen: a floater drops the perch just below, but sits on it for a dangle
+        rested = self._rested_on_perch()  # a floater drops the perch just below, but sits on it for a dangle
         if self.perch is not None and self.gait == "float":
             self.perch = None  # a floater rests on a window, it does not stay on it
         if act in ("hang", "peek"):
@@ -2606,8 +2605,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin):
         if now >= self.hang_glance_at and now < self.state_until - 3.0:
             self._face(-self.facing, now)
             self.hang_glance_at = now + self.rng.uniform(*HANG_GLANCE)
-        if now >= self.hang_one_at:
-            self._let_one_go(now)
+        self._let_one_go(now)
         if now >= self.state_until:
             if self.swing_to is not None:
                 self._release_swing(now)
@@ -2616,18 +2614,6 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin):
                 self._let_go()
             else:
                 self._end_hang(now)
-
-    def _let_one_go(self, now: float) -> None:
-        """W31 E2, the app's `onehand`: one hand lets go of the edge for a few seconds and the other holds, then it takes hold
-        again. Only while the hang is calm: not on a slip, a pull up, a swing, a release or a turn, and never in the last
-        seconds of the rest (the hands are both on the edge when it ends)."""
-        if self.pulling is not None or self.swing_to is not None or self.releasing or self.turn_to or self.reduced or now >= self.state_until - 9.0:
-            self.hang_one_at = now + 2.0 if now < self.state_until - 9.0 else math.inf
-            return
-        lo, hi = bh.ACTIVITIES["hang_one_hand"].seconds
-        self.hang_one_until = now + self.var_rng.uniform(lo, hi)
-        self.hang_one_at = self.hang_one_until + self.var_rng.uniform(*HANG_ONE_EVERY)
-        self.mind.did("hang_one_hand", now)
 
     def _end_hang(self, now: float) -> None:
         """The rest is up: pull up onto the edge it holds, swing and drop to a window top, or (a window's edge only) let
@@ -2914,5 +2900,5 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin):
             self.click_now, self.settled_now, clip, self.card_clicked, self._pose(), fx, round(alpha * 16) / 16.0,
             self.angle + self.wob if frame.startswith("spin") and self.state == "fly" else math.pi if self.peek_flip or (self.upside and self.state == "held") else None,
             self._flow_view(now, frame, self._lower_state(now, face)) if fx is None else None, prop, self._blink_face(now, frame, face),
-            self._tail_view(now, frame) if fx is None and self.tail_layer_on else None,
+            self._tail_view(now, frame) if fx is None and self.tail_layer_on else None, self._edge_squash(now),
         )

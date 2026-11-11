@@ -18,7 +18,9 @@ ONE = [Monitor(AREA, 96)]
 LOOKS = ("masculine", "feminine")
 WIN = Perch(11, 500, 300, 1100)
 #: Frames a figure shows while it stands, sits, sleeps, waves, lands, walks or holds a card.
-RESTING = tuple(n for n in FRAME_NAMES if n not in ("hang", "tumble", "fall", "hop", "held"))
+#: Intent moved (W31 E2): the legs-over-the-edge pictures (`dangle`, `kick0`, `kick1`) and the one-handed hang hang below their line on purpose: a
+#: dangle is seated on the window's top with its hem under it, so its lowest row is not the floor (tests/test_overlay_desk_acts_1710.py pins the seat).
+RESTING = tuple(n for n in FRAME_NAMES if n not in ("hang", "hang_one", "tumble", "fall", "hop", "held", "dangle", "kick0", "kick1"))
 
 
 _METRICS: dict[tuple[str, str], dict] = {}

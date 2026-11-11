@@ -116,3 +116,54 @@ def test_two_placements_in_flight_do_not_flip_the_quick_panel(monkeypatch: pytes
     assert state["box"] == second and sets == []
     dc._log_placed(7, second, 0, again=True)
     assert sets == []
+
+
+# --- INBOX 1778 e: Explorer (style 04cf0000) counted invisible, 535 windows scanned ----------------------------
+
+
+def test_the_style_of_a_hidden_explorer_has_no_visible_bit_and_a_title_bar_so_it_is_counted_apart() -> None:
+    """0x04cf0000 is WS_CLIPSIBLINGS plus a caption, sysmenu, frame and min/max boxes: no WS_VISIBLE (0x10000000), so
+    IsWindowVisible and the style agree it is hidden. It is counted as a hidden window with a title bar, not lost in
+    the hundreds of title-less helpers EnumWindows returns; one whose style says shown (14cf0000) is a place to stand."""
+    assert 0x04CF0000 & k.WS_VISIBLE == 0 and 0x04CF0000 & k.WS_CAPTION == k.WS_CAPTION
+    wins, tally = scan({
+        1: {"rect": (400, 244, 2434, 1400), "title": "Docs", "cls": "CabinetWClass", "visible": False, "style": 0x04CF0000},
+        2: {"rect": (400, 244, 2434, 1400), "title": "Docs", "cls": "CabinetWClass", "style": 0x14CF0000, "visible": False},
+        3: {"rect": (0, 0, 1, 1), "title": "", "cls": "MSCTFIME UI", "visible": False, "style": 0x80000000},
+    })
+    assert tally["invisible, with a title bar"] == 1 and tally["invisible"] == 1
+    assert [w.key for w in wins] == [2] and [p.key for p in perches.top_edges(wins, 200)] == [2]
+
+
+def test_a_style_with_the_high_bit_set_is_read_unsigned() -> None:
+    """GetWindowLongW returns a signed 32-bit number: a style with bit 31 set (WS_POPUP) comes back negative, and the
+    visible bit is still found after the mask."""
+    fake = FakeWin32()
+    fake.window_list = {8: {"rect": (400, 244, 2434, 1400), "title": "Pop", "visible": False, "style": -0x6FFF0000}}
+    assert k._style(fake, 8) == 0x90010000 and k._shown(fake, 8) == (True, 0x90010000)
+
+
+def test_off_screen_and_tiny_windows_are_counted_and_are_no_place_to_stand() -> None:
+    wins, tally = scan({
+        1: {"rect": (-32000, -32000, -31000, -31000), "title": "Parked"},
+        2: {"rect": (100, 100, 120, 110), "title": "Sliver"},
+        3: {"rect": (400, 244, 2434, 1400), "title": "Docs"},
+    })
+    assert tally["off-screen"] == 1 and tally["too small"] == 1 and tally["perch"] == 1
+    assert [p.key for p in perches.top_edges(wins, 200)] == [3]
+
+
+def test_the_scan_logs_one_fixed_line_of_skips_per_reason(caplog: pytest.LogCaptureFixture) -> None:
+    import logging
+
+    from tessellate.core.overlay import runner
+
+    tally = Counter({"invisible": 500, "invisible, with a title bar": 3, "invisible, yet foreground": 1, "cloaked": 19, "minimised": 9,
+                     "tool window": 11, "own overlay": 1, "own process": 2, "off-screen": 4, "too small": 5})
+    bare = runner.OverlayRunner.__new__(runner.OverlayRunner)
+    bare._last_skip_line = ""
+    with caplog.at_level(logging.INFO, logger=runner.logger.name):
+        bare._log_skips(tally)
+        bare._log_skips(tally)  # unchanged: said once
+    lines = [m for m in caplog.messages if m.startswith("overlay: window scan skipped")]
+    assert lines == ["overlay: window scan skipped: invisible 504 (of those with a title bar 4), cloaked 19, minimised 9, tool window 11, too small 5, own window 3, off-screen 4"]

@@ -548,6 +548,16 @@ function atlasTailFrame(tail, now) {
   atlasBreathFrame.rate(box.atlasBreath, box.closest("#nm-buddy"), box.dataset.atlasMood, now);
   //: The held loops stay held at rest (`atlasTailCalm.rest.sync` plays them again on input).
   //: Read when `loops` flips or once a second, not every beat (B55: 120 style reads a second through an agent turn).
+  //: **A nap slows the rings** (INBOX 1770): a third of the pace, by the animations' playback rate, which keeps every
+  //: planet where it is (a longer `animation-duration` jumped them up to 50 degrees). Looked at once a second, only
+  //: while napping and for the second after; new loops (the calm hold lifting) are caught by the next look.
+  const pace = box.closest("#nm-buddy")?.classList.contains("nmb-act-blanket") ? 1 / 3 : 1;
+  if ((pace !== 1 || box.atlasPace) && now - (box.atlasPaceAt || 0) > 1000) {
+    box.atlasPaceAt = now;
+    for (const anim of box.getAnimations({ subtree: true })) if (anim.effect?.target?.closest?.(".atl-orbits")) anim.updatePlaybackRate(pace);
+    for (const anim of box.atlasLoops || []) anim.updatePlaybackRate(pace);
+    box.atlasPace = pace !== 1;
+  }
   if (!atlasTailCalm.resting(box, tail.state) && (box.atlasLoopsOn !== loops || now - (box.atlasLoopsAt || 0) > 1000)) {
     box.atlasLoopsOn = loops;
     box.atlasLoopsAt = now;
@@ -1004,6 +1014,15 @@ const ATLAS_LOWER_STATES = {
   glide: { ms: 800, ease: "cubic-bezier(0.3, 0.9, 0.5, 1)", v: [[-3.5, 0.9, 1.14, 8, -34], [-2, 0.88, 1.18, 6, -42], [-3.8, 0.92, 1.12, 10, -28]] },
   drift: { ms: 1400, ease: "cubic-bezier(0.45, 0, 0.35, 1)", v: [[2, 1.02, 1.04, -4, 18], [-3, 1.08, 0.88, 3, -24], [3.8, 1, 1.08, -6, 32]] },
   hang: { ms: 700, ease: "cubic-bezier(0.34, 1.2, 0.6, 1)", v: [[1.5, 0.96, 1.08, -2, 10], [-2, 0.95, 1.1, 3, -14], [2.5, 0.97, 1.06, -3, 18]] },
+  //: E6 (companion-asks B1, B3: "the lower body follows the pose"): leaning on a wall or edge (the weight on one
+  //: hip, the hem pulled to the other side), legs over an edge (the hem let straight down, long, a slow swing), a
+  //: kick of them (quick, the hem thrown out), a swing from a bar (the hem a pendulum, wide turns of the tail) and a
+  //: sloth hang (limp and long, barely moving). The act or pose names the row; the turn stays inside the 4 degrees.
+  lean: { ms: 650, ease: "cubic-bezier(0.4, 1.1, 0.6, 1)", v: [[3, 1.02, 0.96, 7, 14], [-3, 1.02, 0.95, -7, -12], [2, 1.03, 0.97, 5, 18]] },
+  dangle: { ms: 900, ease: "cubic-bezier(0.45, 0.1, 0.4, 1)", v: [[1.5, 1.04, 1.08, -3, 12], [-2, 1.05, 1.12, 4, -10], [2.5, 1.03, 1.1, -2, 16]] },
+  kick: { ms: 320, ease: "cubic-bezier(0.2, 1.9, 0.4, 1)", v: [[-3.5, 1.02, 1.05, 9, -22], [3, 1.03, 1.03, -9, 24], [-2, 1.02, 1.06, 7, -18]] },
+  swing: { ms: 520, ease: "cubic-bezier(0.34, 1.3, 0.6, 1)", v: [[3, 0.96, 1.1, 8, 24], [-3, 0.95, 1.12, -8, -26], [2, 0.97, 1.09, 6, 20]] },
+  sloth: { ms: 1500, ease: "cubic-bezier(0.5, 0, 0.6, 1)", v: [[1, 1.02, 1.14, -1, 26], [-1.5, 1.03, 1.16, 1, -22], [1.5, 1.02, 1.12, -2, 30]] },
   //: atlascat-1108 C5 (`atlasRigLower.spell` says when): a gust lifts the hem on a fast glide, the legs tucked under
   //: cross-legged, a slow ripple root to hem in a calm spell, a quick flutter when excited, spread flat after a
   //: long sit, a playful kick of the hem when glad, a spiral that unwinds after a twirl, and heavy when tired.
@@ -1024,7 +1043,7 @@ const ATLAS_LOWER_STATES = {
 //: "both atlas avatars have a tail as well, same with the hair, and the
 //: nebular stream ... dynamically animated and changed"), a variant each
 //: as the lower body's; a walk's turn takes the way it goes.
-const ATLAS_HAIR_STATES = { idle: [0, 1.6, -1.4, 0.8], walk: [-5, -4, -6], sit: [2, 1, 3], lie: [4, 5, 3], gesture: [-3, -2, -4], think: [2.5, 1.5, 3.5], happy: [-3.5, -2.5, -4], sad: [4, 5, 6], startle: [-6, -7, -5], curl: [6, 8, 7], crouch: [3, 1, 4], lounge: [4, 2, 5], glide: [-7, -9, -6], drift: [3, 5, 2], hang: [2, -2, 3], billow: [-8, -10, -7], coil: [2, 1, 3], ripple_calm: [2, -2, 3], flutter: [-3, 3, -2], pool: [4, 3, 5], hem_kick: [-4, 3, -3], spiral: [6, -6, 5], heavy: [3, 4, 5], fall: [-9, -11, -8] };
+const ATLAS_HAIR_STATES = { idle: [0, 1.6, -1.4, 0.8], walk: [-5, -4, -6], sit: [2, 1, 3], lie: [4, 5, 3], gesture: [-3, -2, -4], think: [2.5, 1.5, 3.5], happy: [-3.5, -2.5, -4], sad: [4, 5, 6], startle: [-6, -7, -5], curl: [6, 8, 7], crouch: [3, 1, 4], lounge: [4, 2, 5], glide: [-7, -9, -6], drift: [3, 5, 2], hang: [2, -2, 3], billow: [-8, -10, -7], coil: [2, 1, 3], ripple_calm: [2, -2, 3], flutter: [-3, 3, -2], pool: [4, 3, 5], hem_kick: [-4, 3, -3], spiral: [6, -6, 5], heavy: [3, 4, 5], fall: [-9, -11, -8], lean: [3, 4, 2], dangle: [2, 3, 1], kick: [-4, 4, -3], swing: [4, -4, 5], sloth: [3, 4, 5] };
 const ATLAS_NEB_STATES = {
   idle: [[0, 1, 1], [2, 1.02, 0.98], [-2, 0.98, 1.02], [1, 1.01, 1]],
   walk: [[-4, 1.05, 0.95], [-3, 1.06, 0.94], [-5, 1.04, 0.96]],
@@ -1050,6 +1069,11 @@ const ATLAS_NEB_STATES = {
   hem_kick: [[-3, 1.03, 1.03], [3, 1.04, 1.02], [-2, 1.02, 1.04]],
   spiral: [[7, 1.02, 1.02], [-7, 1.03, 1.01], [5, 1.01, 1.03]],
   heavy: [[1, 0.98, 0.95], [-1, 0.97, 0.96], [2, 0.99, 0.94]],
+  lean: [[3, 1.03, 0.96], [-3, 1.04, 0.95], [2, 1.02, 0.97]],
+  dangle: [[2, 1.02, 1.04], [-2, 1.03, 1.05], [3, 1.01, 1.03]],
+  kick: [[-3, 1.04, 1.02], [3, 1.03, 1.03], [-2, 1.05, 1.01]],
+  swing: [[4, 1.02, 1.04], [-4, 1.03, 1.05], [3, 1.01, 1.03]],
+  sloth: [[1, 0.98, 1.05], [-1, 0.97, 1.06], [2, 0.99, 1.04]],
 };
 //: **More arrangements than the tables hold** (INBOX 1683 B1 and B3, the owner: "they dont even ahve
 //: different variations or change based on body position"): the authored rows above are the corners; the
@@ -1080,7 +1104,7 @@ atlasRigLower.blend.of = (rows) => {
 //: [reach, rate], so asleep it is small and slow, walking and glad it is wide and quick. A new path starts
 //: from where the old one is, so a change of pose is never a step.
 atlasRigLower.flowKeys = 7;
-atlasRigLower.flowByState = { idle: [1, 1], walk: [1.5, 0.7], sit: [0.8, 1.15], lie: [0.6, 1.4], curl: [0.45, 1.7], gesture: [1.25, 0.8], think: [0.9, 1.1], happy: [1.45, 0.65], sad: [0.6, 1.5], startle: [1.6, 0.55], crouch: [0.8, 1.2], lounge: [0.9, 1.3], glide: [1.4, 0.75], drift: [1.3, 1.2], hang: [1.1, 0.9], billow: [1.5, 0.7], coil: [0.7, 1.2], ripple_calm: [0.9, 1.4], flutter: [1.4, 0.6], pool: [0.55, 1.5], hem_kick: [1.4, 0.7], spiral: [1.5, 0.65], heavy: [0.5, 1.6], fall: [1.7, 0.5] };
+atlasRigLower.flowByState = { idle: [1, 1], walk: [1.5, 0.7], sit: [0.8, 1.15], lie: [0.6, 1.4], curl: [0.45, 1.7], gesture: [1.25, 0.8], think: [0.9, 1.1], happy: [1.45, 0.65], sad: [0.6, 1.5], startle: [1.6, 0.55], crouch: [0.8, 1.2], lounge: [0.9, 1.3], glide: [1.4, 0.75], drift: [1.3, 1.2], hang: [1.1, 0.9], billow: [1.5, 0.7], coil: [0.7, 1.2], ripple_calm: [0.9, 1.4], flutter: [1.4, 0.6], pool: [0.55, 1.5], hem_kick: [1.4, 0.7], spiral: [1.5, 0.65], heavy: [0.5, 1.6], fall: [1.7, 0.5], lean: [0.9, 1.1], dangle: [1.1, 1.0], kick: [1.5, 0.6], swing: [1.4, 0.8], sloth: [0.5, 1.6] };
 //: Per part: [x px, y px] at a reach of 1. The lower body's own box barely moves (its join with the torso
 //: must hold: INBOX 615); the wisps, the stream and the hair move most.
 atlasRigLower.flowParts = { boxes: [0.3, 0.45], wisps: [1.5, 1.1], tails: [0.9, 0.8], hair: [0.9, 0.7], neb: [1.3, 1] };

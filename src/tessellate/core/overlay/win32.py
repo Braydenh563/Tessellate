@@ -87,6 +87,9 @@ GWL_EXSTYLE = -20
 GWL_STYLE = -16
 WS_VISIBLE = 0x10000000
 WS_CHILD = 0x40000000
+WS_CAPTION = 0x00C00000
+#: A window narrower or shorter than this (physical px) is a helper or a sliver, never a place to stand (INBOX 1778 e).
+MIN_WINDOW = 48
 WS_EX_TRANSPARENT = 0x00000020
 #: MonitorFromPoint: the nearest monitor when the point is on none.
 MONITOR_DEFAULTTONEAREST = 2
@@ -653,13 +656,20 @@ def _alt_tab_listed(w: Any, hwnd: Any) -> bool:
     return True
 
 
-def _shown(w: Any, hwnd: Any) -> bool:
-    """Visible by IsWindowVisible, or by the window's own WS_VISIBLE style read directly (a top-level window is shown
-    exactly when that bit is set, so the second read keeps one odd answer from the first from hiding a real window)."""
+def _style(w: Any, hwnd: Any, index: int = GWL_STYLE) -> int:
+    """GWL_STYLE or GWL_EXSTYLE as the unsigned 32-bit value it is (GetWindowLongW is right for both; only the
+    pointer-sized slots need the Ptr form), so a high bit never reads as a negative number."""
+    return int(w.user32.GetWindowLongW(hwnd, index)) & 0xFFFFFFFF
+
+
+def _shown(w: Any, hwnd: Any) -> tuple[bool, int]:
+    """(shown, style): visible by IsWindowVisible, or by the window's own WS_VISIBLE style read directly (a top-level
+    window is shown exactly when that bit is set, so the second read keeps one odd answer from the first from hiding a
+    real window). The style is 0 when IsWindowVisible said yes and it was not read."""
     if w.user32.IsWindowVisible(hwnd):
-        return True
-    style = int(w.user32.GetWindowLongW(hwnd, GWL_STYLE)) & 0xFFFFFFFF
-    return bool(style & WS_VISIBLE) and not style & WS_CHILD
+        return True, 0
+    style = _style(w, hwnd)
+    return bool(style & WS_VISIBLE) and not style & WS_CHILD, style
 
 
 def _unlisted(w: Any, hwnd: Any, ignore: Any) -> str | None:
@@ -667,9 +677,15 @@ def _unlisted(w: Any, hwnd: Any, ignore: Any) -> str | None:
     our own overlay; None when it is listed."""
     if hwnd == ignore:
         return "own overlay"
-    if not _shown(w, hwnd):
+    shown, style = _shown(w, hwnd)
+    if not shown:
         # A hidden window the user is typing in cannot be hidden: say so in the log rather than hide the doubt (INBOX 1716).
-        return "invisible, yet foreground" if int(w.user32.GetForegroundWindow() or 0) == int(hwnd) else "invisible"
+        if int(w.user32.GetForegroundWindow() or 0) == int(hwnd):
+            return "invisible, yet foreground"
+        # EnumWindows lists every top-level window on the desktop, hundreds of them hidden message and IME helpers with
+        # no title bar; one that has a title bar and is hidden is a window an app keeps (or one wrongly read) and is
+        # counted apart, so the 500 helpers do not bury it (INBOX 1778 e: Explorer, style 04cf0000, no WS_VISIBLE bit).
+        return "invisible, with a title bar" if style & WS_CAPTION == WS_CAPTION else "invisible"
     if w.user32.IsIconic(hwnd):
         return "minimised"
     if _cloaked(w, hwnd):
@@ -693,7 +709,7 @@ def _read_window_why(w: Any, hwnd: Any, own_pid: int, ignore: Any, monitors_: li
     why = _unlisted(w, hwnd, ignore)
     if why is not None:
         return None, why, None
-    ex = int(w.user32.GetWindowLongW(hwnd, GWL_EXSTYLE))
+    ex = _style(w, hwnd, GWL_EXSTYLE)
     rect, why = _framed(w, hwnd, ex)
     if rect is None:
         return None, why, None
@@ -727,6 +743,8 @@ def _classify(w: Any, hwnd: Any, own_pid: int, ex: int, rect: Any, monitors_: li
         ("maximised", zoomed), ("fills a monitor", full),
         ("no title", not w.user32.GetWindowTextLengthW(hwnd)),
         ("owned popup", not _alt_tab_listed(w, hwnd)),  # T7: not the window Alt-Tab lists, it still hides what is under it
+        ("too small", rect[2] - rect[0] < MIN_WINDOW or rect[3] - rect[1] < MIN_WINDOW),
+        ("off-screen", bool(monitors_) and not any(rect[0] < a[2] and rect[2] > a[0] and rect[1] < a[3] and rect[3] > a[1] for a in monitors_)),
     )
     why = next((name for name, hit in reasons if hit), None)
     # A maximised window is no place to stand but its title bar is a place to hang from; a tool window, the app's
@@ -784,7 +802,7 @@ def _note_near(w: Any, hwnd: Any, rect: Any, why: str, near: tuple[int, int, int
     if rect[0] <= x < rect[2] and abs(rect[1] - y) <= reach:
         if why.startswith("invisible"):  # a hidden helper (Explorer and Chrome keep many) has no title; a real window has (INBOX 1716)
             titled = bool(w.user32.GetWindowTextLengthW(hwnd))
-            why += f" ({'titled' if titled else 'no title'}, style {int(w.user32.GetWindowLongW(hwnd, GWL_STYLE)) & 0xFFFFFFFF:08x})"
+            why += f" ({'titled' if titled else 'no title'}, style {_style(w, hwnd):08x})"
         seen.append((_class_name(w, hwnd), tuple(rect), why))
 
 
