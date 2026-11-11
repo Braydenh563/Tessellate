@@ -867,6 +867,10 @@ inside a 4,000px section.
     falls back to: HISTORY.md, "Moved from the plans, 2026-10-05 (444
     decision 10: the installed models as model cards)".)
 
+## Placed from INBOX, 2026-11-11 (tray at its cap)
+
+- **Partly built (compalive-1109, 1 commit each).** In-app: hour chime, idle return, battery low, window maximised and restored; desk: eleven acts; desk-only left: window opened, closed, dragged (no browser meaning); app-only left 35 (see agent-remaining/compalive-1109.md). **Owner, 2026-11-09:** "also does the in-app companion have the same life and complex mechanics and actions and things it can do as the desktop companion?? they need to be just as good as each other". Measured (tests/test_companion_catalogue_1108.py): 8 entries are desk-only (battery low, hour chime, idle return, five window events) and 49 are app-only (juggle, meditate, lounge, hangs, sloth, the note and search reactions and their transitions); acts an hour, app 39.1 against desk 35.7 (test_companion_weights). **desklane-1109:** (a) desk reactions window_opened, window_closed and window_dragged built 9c989e9 (tests/test_overlay_react_1700.py); (b) the in-app-only acts that need frames before the desk can draw them, none rendered: dangle, kick_legs (legs-over frames on a window top), hang_one_hand, hang_by_feet, sloth (arm and inverted hang frames), chair (a chair prop), the positions lean, lounge, cross_legged, edge_dangle, back_float (a frame each) and lower.drift, move.afield; the note and search reactions (graph_laid, long_note, note_binned, private_note, remark, reminder_bell, search_found, search_nothing) need an events feed from the app's server to the overlay, not frames. Window events stay desk-only (no browser meaning).
+
 ## Placed from INBOX, 2026-10-05 (OPEN.md triage)
 
 460. **The owner, 2026-10-03 night, verbatim.** "I keep experiencing scroll
