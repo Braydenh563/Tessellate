@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Documents (audit 1028 D28): text size in a prose document is five steps (small to huge, was three) and Ctrl+wheel over the page moves one step, stopping at either end; one step per 150 ms so a trackpad flick is not a leap (`docZoomStep`, `tests/test_doc_text_zoom_1111.py`). Measured at 1440x900: medium 14.72px, then 18.4, 20.8, 24 and back to 12.8px; a plain wheel changes nothing.
 - Notes (INBOX 1747): a note in the recycle bin can no longer be archived or unarchived from a stale card (409 "in the bin, restore it first"), so Restore never brings it back hidden in the Archive.
 - Settings and other lazy panes (INBOX 1747): one wiring hook that throws while a pane is first built no longer drops every hook after it (their buttons stayed dead) or makes the lookup that opened the pane throw.
 - Chat (INBOX 1747): pressing Confirm on a card a typed yes had already run (a second tab, a reloaded chat) is refused with "That card was already answered" instead of running the act a second time (`consent_store.was_spent`).

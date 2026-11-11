@@ -3068,7 +3068,7 @@ HELP_TOPICS.extend(
                 "duplicates, numbers the headings (1, 1.1) or takes the numbers "
                 "off, inserts today's date or the time, and copies the page or the "
                 "selection as formatted text to paste into Word or an email. "
-                "Text size and line spacing are rows in the document menu. The document's menus hold History "
+                "Text size (Ctrl+wheel too) and spacing: document menu. The document's menus hold History "
                 "(every version, and a way back to any), Connections, Extract "
                 "notes, AI edit, a word goal, typewriter scrolling, dim all but "
                 "this paragraph, serif for reading and full width. With no model "
