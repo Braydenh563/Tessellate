@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8107, frontend ids 2686, CSS sections 523, backend routes 664, backend modules 10011, test files 2453, tests 20312, plan headings 1002, app scripts 28, boot scripts 37, script files 277.
+Counts: frontend functions 8107, frontend ids 2686, CSS sections 523, backend routes 664, backend modules 10011, test files 2454, tests 20314, plan headings 1002, app scripts 28, boot scripts 37, script files 277.
 
 ## Frontend functions (8107)
 
@@ -4940,11 +4940,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `entryItem` | frontend/js/entry-card.js:198 |
-| `favouriteButton` | frontend/js/entry-card.js:1279 |
+| `favouriteButton` | frontend/js/entry-card.js:1289 |
 | `meetingGlance` | frontend/js/entry-card.js:34 |
-| `noteMetaMore` | frontend/js/entry-card.js:1341 |
-| `noteReviewActions` | frontend/js/entry-card.js:1245 |
-| `renderAttachmentCards` | frontend/js/entry-card.js:1315 |
+| `noteMetaMore` | frontend/js/entry-card.js:1351 |
+| `noteReviewActions` | frontend/js/entry-card.js:1255 |
+| `renderAttachmentCards` | frontend/js/entry-card.js:1325 |
 | `renderInlineAction` | frontend/js/entry-card.js:82 |
 | `tagAddChipKind` | frontend/js/entry-card.js:16 |
 
@@ -26110,7 +26110,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (20312)
+## Tests (20314)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26345,6 +26345,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_capture_draft_blank.py | 3 |
 | tests/test_capture_private_early.py | 1 |
 | tests/test_capture_strip_first_paint.py | 4 |
+| tests/test_card_button_names_n17.py | 2 |
 | tests/test_casual_acts_1507.py | 7 |
 | tests/test_catalogue_reveal.py | 7 |
 | tests/test_catalogue_sliced_1108.py | 5 |
