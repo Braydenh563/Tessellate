@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8131, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10193, test files 2500, tests 20584, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8131, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10194, test files 2501, tests 20585, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8131)
 
@@ -13528,7 +13528,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10193)
+## Backend modules (10194)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -17281,58 +17281,59 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `merge_candidates` | src/tessellate/ai/inbox.py:200 |
 | `type_candidates` | src/tessellate/ai/inbox.py:251 |
 
-### src/tessellate/ai/insights.py (48)
+### src/tessellate/ai/insights.py (49)
 
 | Name | File:line |
 |---|---|
 | `Insight` | src/tessellate/ai/insights.py:71 |
-| `Memory` | src/tessellate/ai/insights.py:416 |
+| `Memory` | src/tessellate/ai/insights.py:428 |
 | `_capital` | src/tessellate/ai/insights.py:92 |
-| `_confirmed_on` | src/tessellate/ai/insights.py:651 |
-| `_confirmed_rows` | src/tessellate/ai/insights.py:455 |
+| `_confirmed_on` | src/tessellate/ai/insights.py:663 |
+| `_confirmed_rows` | src/tessellate/ai/insights.py:467 |
 | `_count_word` | src/tessellate/ai/insights.py:87 |
 | `_day` | src/tessellate/ai/insights.py:81 |
-| `_fill` | src/tessellate/ai/insights.py:126 |
-| `_from_payload` | src/tessellate/ai/insights.py:477 |
+| `_fill` | src/tessellate/ai/insights.py:138 |
+| `_from_payload` | src/tessellate/ai/insights.py:489 |
 | `_holds` | src/tessellate/ai/insights.py:105 |
-| `_keys` | src/tessellate/ai/insights.py:450 |
-| `_leisure` | src/tessellate/ai/insights.py:152 |
-| `_notes_behind` | src/tessellate/ai/insights.py:659 |
-| `_own_plan` | src/tessellate/ai/insights.py:204 |
-| `_payload` | src/tessellate/ai/insights.py:600 |
-| `_retire` | src/tessellate/ai/insights.py:525 |
-| `_said` | src/tessellate/ai/insights.py:380 |
-| `_said_now` | src/tessellate/ai/insights.py:408 |
-| `_shown` | src/tessellate/ai/insights.py:116 |
-| `_stems` | src/tessellate/ai/insights.py:364 |
+| `_keys` | src/tessellate/ai/insights.py:462 |
+| `_leisure` | src/tessellate/ai/insights.py:164 |
+| `_notes_behind` | src/tessellate/ai/insights.py:671 |
+| `_own_plan` | src/tessellate/ai/insights.py:216 |
+| `_payload` | src/tessellate/ai/insights.py:612 |
+| `_plan_phrase` | src/tessellate/ai/insights.py:120 |
+| `_retire` | src/tessellate/ai/insights.py:537 |
+| `_said` | src/tessellate/ai/insights.py:392 |
+| `_said_now` | src/tessellate/ai/insights.py:420 |
+| `_shown` | src/tessellate/ai/insights.py:127 |
+| `_stems` | src/tessellate/ai/insights.py:376 |
 | `_week` | src/tessellate/ai/insights.py:111 |
 | `_written` | src/tessellate/ai/insights.py:97 |
-| `after_lead` | src/tessellate/ai/insights.py:319 |
-| `as_row` | src/tessellate/ai/insights.py:576 |
-| `confirm` | src/tessellate/ai/insights.py:481 |
-| `confirmed_json` | src/tessellate/ai/insights.py:635 |
-| `confirmed_line` | src/tessellate/ai/insights.py:397 |
-| `contrast` | src/tessellate/ai/insights.py:239 |
-| `dismiss` | src/tessellate/ai/insights.py:513 |
-| `dismiss_confirmed` | src/tessellate/ai/insights.py:703 |
-| `done` | src/tessellate/ai/insights.py:545 |
-| `drift` | src/tessellate/ai/insights.py:212 |
-| `edit_confirmed` | src/tessellate/ai/insights.py:674 |
-| `for_subject` | src/tessellate/ai/insights.py:290 |
-| `from_session` | src/tessellate/ai/insights.py:337 |
-| `key` | src/tessellate/ai/insights.py:369 |
-| `listed` | src/tessellate/ai/insights.py:135 |
-| `load` | src/tessellate/ai/insights.py:264 |
-| `memory` | src/tessellate/ai/insights.py:431 |
-| `notebook` | src/tessellate/ai/insights.py:717 |
-| `recurrence` | src/tessellate/ai/insights.py:159 |
-| `removed_confirmed` | src/tessellate/ai/insights.py:614 |
-| `restore_confirmed` | src/tessellate/ai/insights.py:620 |
-| `retire_followed` | src/tessellate/ai/insights.py:560 |
-| `short` | src/tessellate/ai/insights.py:305 |
-| `shown` | src/tessellate/ai/insights.py:130 |
-| `shown_confirmed` | src/tessellate/ai/insights.py:609 |
-| `streak` | src/tessellate/ai/insights.py:177 |
+| `after_lead` | src/tessellate/ai/insights.py:331 |
+| `as_row` | src/tessellate/ai/insights.py:588 |
+| `confirm` | src/tessellate/ai/insights.py:493 |
+| `confirmed_json` | src/tessellate/ai/insights.py:647 |
+| `confirmed_line` | src/tessellate/ai/insights.py:409 |
+| `contrast` | src/tessellate/ai/insights.py:251 |
+| `dismiss` | src/tessellate/ai/insights.py:525 |
+| `dismiss_confirmed` | src/tessellate/ai/insights.py:715 |
+| `done` | src/tessellate/ai/insights.py:557 |
+| `drift` | src/tessellate/ai/insights.py:224 |
+| `edit_confirmed` | src/tessellate/ai/insights.py:686 |
+| `for_subject` | src/tessellate/ai/insights.py:302 |
+| `from_session` | src/tessellate/ai/insights.py:349 |
+| `key` | src/tessellate/ai/insights.py:381 |
+| `listed` | src/tessellate/ai/insights.py:147 |
+| `load` | src/tessellate/ai/insights.py:276 |
+| `memory` | src/tessellate/ai/insights.py:443 |
+| `notebook` | src/tessellate/ai/insights.py:729 |
+| `recurrence` | src/tessellate/ai/insights.py:171 |
+| `removed_confirmed` | src/tessellate/ai/insights.py:626 |
+| `restore_confirmed` | src/tessellate/ai/insights.py:632 |
+| `retire_followed` | src/tessellate/ai/insights.py:572 |
+| `short` | src/tessellate/ai/insights.py:317 |
+| `shown` | src/tessellate/ai/insights.py:142 |
+| `shown_confirmed` | src/tessellate/ai/insights.py:621 |
+| `streak` | src/tessellate/ai/insights.py:189 |
 
 ### src/tessellate/ai/intent.py (14)
 
@@ -26415,7 +26416,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20584)
+## Tests (20585)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26830,6 +26831,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_audit2_g11.py | 9 |
 | tests/test_composer_audit2_g12_g14.py | 15 |
 | tests/test_composer_audit_1030.py | 9 |
+| tests/test_composer_audit_rows_1111.py | 1 |
 | tests/test_composer_aware_1025.py | 18 |
 | tests/test_composer_bare_call_1110.py | 3 |
 | tests/test_composer_bare_title.py | 2 |
