@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Whiteboard (sm-1111 row 27): switching tool, a cancelled touch or a release outside the board mid-stroke drops the stroke instead of leaving a stuck line that follows the pointer.
 - Chat (sm-1111 row 25): a message sent in the moment between the end of an answer and its save is queued and sent after, instead of starting a second conversation.
 - Sheets (sm-1111 row 24): the Guide and Clock panels, opened wide and then shrunk to a phone, get their scrim and modal behaviour back instead of staying see-through.
 - Notes (sm-1111 row 6): Save in the edit form sends tags and category only when you changed them, so tags filed while the form was open are kept.
