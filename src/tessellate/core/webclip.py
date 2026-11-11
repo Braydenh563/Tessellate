@@ -79,6 +79,76 @@ def clean_url(url: str) -> str:
     return strip_tracking((url or "").strip())
 
 
+def _clip_hop(session, url: str):  # noqa: ANN001
+    """One request of the walk: the address checked, the connection pinned to it."""
+    try:
+        addresses = public_addresses(url)
+    except UnsafeUrl as exc:
+        # `UnsafeUrl` is a sentence written for a person (core/security.py).
+        raise ClipRefused(str(exc)) from exc
+    pinned, host_header = pin_url(url, addresses[0])
+    parsed = urlparse(pinned)
+    if parsed.scheme == "https":
+        session.mount(f"https://{parsed.netloc}", PinnedAdapter(urlparse(url).hostname))
+    # CodeQL reads this as SSRF, as it does the web reader's: fetching
+    # the page the person asked to clip is the feature. The address
+    # was checked on this hop and the connection is pinned to it.
+    try:
+        return session.get(
+            pinned,
+            headers={"Host": host_header},
+            timeout=CLIP_SOCKET_TIMEOUT,
+            stream=True,
+            allow_redirects=False,
+        )
+    except requests.RequestException as exc:
+        raise ClipRefused(f"Couldn't reach {urlparse(url).hostname}.", 502) from exc
+
+
+def _redirect_url(response, url: str, deadline: float) -> str:  # noqa: ANN001
+    """Where a redirect points, checked and made absolute."""
+    location = response.headers.get("location", "")
+    response.close()
+    if not location:
+        raise ClipRefused("That page redirected to nowhere.", 502)
+    url = clean_url(urljoin(url, location))
+    if time.monotonic() > deadline:
+        raise ClipRefused("That page took too long to answer.", 502)
+    return url
+
+
+def _check_clippable(response, url: str) -> None:  # noqa: ANN001
+    """Refuse an error status, a non-page or a page declared too large."""
+    try:
+        response.raise_for_status()
+    except requests.HTTPError as exc:
+        raise ClipRefused(
+            f"{urlparse(url).hostname} answered {response.status_code}, so there was nothing to clip.",
+            502,
+        ) from exc
+    content_type = response.headers.get("content-type", "").lower()
+    if "html" not in content_type and "text/plain" not in content_type:
+        response.close()
+        raise ClipRefused("That link isn't a web page, so it can't be clipped as text.")
+    declared = response.headers.get("content-length", "")
+    if declared.isdigit() and int(declared) > CLIP_MAX_BYTES:
+        response.close()
+        raise ClipRefused("That page is too large to clip.")
+
+
+def _read_clip_body(response, deadline: float) -> bytes:  # noqa: ANN001
+    body = bytearray()
+    for chunk in response.iter_content(65536):
+        body.extend(chunk)
+        if len(body) > CLIP_MAX_BYTES:
+            response.close()
+            raise ClipRefused("That page is too large to clip.")
+        if time.monotonic() > deadline:
+            response.close()
+            raise ClipRefused("That page took too long to arrive.", 502)
+    return bytes(body)
+
+
 @egress.labelled(lambda url, *a, **k: f"Clipping a page: {egress.short(url, 80)}")
 def fetch_page(url: str) -> dict:
     """GET one public page, checking every hop. Returns
@@ -88,63 +158,14 @@ def fetch_page(url: str) -> dict:
     session = _new_session()
     try:
         for _ in range(CLIP_MAX_REDIRECTS + 1):
-            try:
-                addresses = public_addresses(url)
-            except UnsafeUrl as exc:
-                # `UnsafeUrl` is a sentence written for a person (core/security.py).
-                raise ClipRefused(str(exc)) from exc
-            pinned, host_header = pin_url(url, addresses[0])
-            parsed = urlparse(pinned)
-            if parsed.scheme == "https":
-                session.mount(f"https://{parsed.netloc}", PinnedAdapter(urlparse(url).hostname))
-            # CodeQL reads this as SSRF, as it does the web reader's: fetching
-            # the page the person asked to clip is the feature. The address
-            # was checked on this hop and the connection is pinned to it.
-            try:
-                response = session.get(
-                    pinned,
-                    headers={"Host": host_header},
-                    timeout=CLIP_SOCKET_TIMEOUT,
-                    stream=True,
-                    allow_redirects=False,
-                )
-            except requests.RequestException as exc:
-                raise ClipRefused(f"Couldn't reach {urlparse(url).hostname}.", 502) from exc
+            response = _clip_hop(session, url)
             if response.is_redirect or getattr(response, "is_permanent_redirect", False):
-                location = response.headers.get("location", "")
-                response.close()
-                if not location:
-                    raise ClipRefused("That page redirected to nowhere.", 502)
-                url = clean_url(urljoin(url, location))
-                if time.monotonic() > deadline:
-                    raise ClipRefused("That page took too long to answer.", 502)
+                url = _redirect_url(response, url, deadline)
                 continue
-            try:
-                response.raise_for_status()
-            except requests.HTTPError as exc:
-                raise ClipRefused(
-                    f"{urlparse(url).hostname} answered {response.status_code}, so there was nothing to clip.",
-                    502,
-                ) from exc
-            content_type = response.headers.get("content-type", "").lower()
-            if "html" not in content_type and "text/plain" not in content_type:
-                response.close()
-                raise ClipRefused("That link isn't a web page, so it can't be clipped as text.")
-            declared = response.headers.get("content-length", "")
-            if declared.isdigit() and int(declared) > CLIP_MAX_BYTES:
-                response.close()
-                raise ClipRefused("That page is too large to clip.")
-            body = bytearray()
-            for chunk in response.iter_content(65536):
-                body.extend(chunk)
-                if len(body) > CLIP_MAX_BYTES:
-                    response.close()
-                    raise ClipRefused("That page is too large to clip.")
-                if time.monotonic() > deadline:
-                    response.close()
-                    raise ClipRefused("That page took too long to arrive.", 502)
+            _check_clippable(response, url)
+            body = _read_clip_body(response, deadline)
             encoding = response.encoding or "utf-8"
-            return {"url": url, "html": bytes(body).decode(encoding, errors="replace")}
+            return {"url": url, "html": body.decode(encoding, errors="replace")}
         raise ClipRefused("That page redirected too many times.", 502)
     finally:
         session.close()

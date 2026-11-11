@@ -38,10 +38,10 @@ const reduced = process.argv[2] === "reduced";
 const ctx = {
   console, Math, Number, Object, Set, Map, JSON,
   performance: { now: () => clock },
-  document: { documentElement: { dataset: reduced ? { motion: "reduced" } : {}, hasAttribute: () => false } },
+  document: { hidden: false, documentElement: { dataset: reduced ? { motion: "reduced" } : {}, hasAttribute: () => false } },
   matchMedia: () => ({ matches: false }),
   getComputedStyle: () => ({ transform: "none", rotate: "none", opacity: "1" }),
-  setTimeout: (f) => { timers.push(f); return timers.length; },
+  setTimeout: (f, ms, ...a) => { timers.push(() => f(...a)); return timers.length; },
   requestAnimationFrame: (f) => { frames.push(f); return frames.length; },
   setTimeout: (f) => { frames.push(() => f()); return frames.length; },  // the first look runs in a timer after the frame (`atlasRigWake.afterPaint`)
   atlasTailWake() {}, atlasFix: (n) => +n.toFixed(2), atlasArmPath: () => "M0 0", atlasArmHand: () => "", atlasState: {},

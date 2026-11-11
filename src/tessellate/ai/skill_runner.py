@@ -247,6 +247,21 @@ def _reading(session: Session, block: dict) -> tuple[int | None, str]:
     return None, f"{name} returned no number to check ({', '.join(str(k) for k in keys)})"
 
 
+def _where(block: dict) -> str:
+    """The tool call a postcondition reads, as the line the user sees it."""
+    #: The scope goes in the line the user reads, because "count_notes came
+    #: back 12" and "count_notes(untagged) came back 12" are different claims
+    #: and only one of them is what this skill promised.
+    scope = ", ".join(
+        name if value is True else f"{name}={value}"
+        for name, value in (block.get("args") or {}).items()
+    )
+    return (
+        f"{block['tool']}{f'({scope})' if scope else ''}"
+        f"{'.' + block['field'] if block.get('field') else ''}"
+    )
+
+
 def verify(
     session: Session,
     skill: dict,
@@ -276,17 +291,7 @@ def verify(
         for name, want in block["expect"].items()
         if not PREDICATES[name](got, want, before)
     ]
-    #: The scope goes in the line the user reads, because "count_notes came
-    #: back 12" and "count_notes(untagged) came back 12" are different claims
-    #: and only one of them is what this skill promised.
-    scope = ", ".join(
-        name if value is True else f"{name}={value}"
-        for name, value in (block.get("args") or {}).items()
-    )
-    where = (
-        f"{block['tool']}{f'({scope})' if scope else ''}"
-        f"{'.' + block['field'] if block.get('field') else ''}"
-    )
+    where = _where(block)
     if failures:
         wanted = ", ".join(f"{name} {block['expect'][name]}" for name in failures)
         return Verification(

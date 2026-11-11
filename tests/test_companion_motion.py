@@ -544,7 +544,7 @@ def test_it_keeps_out_of_the_tours_ring() -> None:
     # character in a field, audit 1101.)
     # Looked after a frame has drawn the press (INBOX 1534): the timer wraps `look` (since INBOX
     # 1587 through `nmb.afterClean`, a frame and a timer, tests/test_atlas_cover_1587.py).
-    assert "nmbDodgeLate = setTimeout(afterPaint, 700);" in AV and "const afterPaint = () => nmb.afterClean(look);" in AV
+    assert "nmbDodgeLate = setTimeout(afterPaint, 700);" in AV and "const afterPaint = () => nmb.afterCalm(look);" in AV
     assert "const look = nameMarkBuddyTypingKey(e) ? nameMarkBuddyDodgeTyping : nameMarkBuddyDodge;" in AV
     assert 'buddy.querySelector(".nm-figure")' in _fn("nameMarkBuddyDodge")
 

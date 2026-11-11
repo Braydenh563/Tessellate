@@ -75,7 +75,21 @@ def attach(payload: dict) -> dict:
     return _attach_card(payload)
 
 
+def _attach_offer(payload: dict) -> dict:
+    """A composed answer's note offer (Gather them, Track your lifts) keeps the note it would make on the
+    server under `offer_id`: the next turn holds only the answer's words, which no longer have the
+    notes' text, so a typed yes is taken up from here (`composer_talk.held_offer`), never from the page."""
+    support = payload.get("support")
+    offer = support.get("offer") if isinstance(support, dict) else None
+    if not isinstance(offer, dict) or offer.get("kind") != "note" or not offer.get("text"):
+        return payload
+    key = consent_store.park({"label": offer.get("label") or "", "offer": {"line": offer.get("line") or offer.get("label") or "", "text": str(offer["text"])}})
+    return {**payload, "support": {**support, "offer": {**offer, "offer_id": key}}}
+
+
 def _attach_card(payload: dict) -> dict:
+    if payload.get("type") == "grounding":
+        return _attach_offer(payload)
     if "_say" not in payload and payload.get("type") not in ("act", "confirm"):
         return payload
     out = dict(payload)

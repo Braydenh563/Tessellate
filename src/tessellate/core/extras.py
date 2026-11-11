@@ -1475,6 +1475,71 @@ def _roll_back(before: set[str]) -> None:
         _logger.warning("Couldn't remove a stopped install's packages", exc_info=True)
 
 
+def _install_ocr_binary(extra: Extra) -> None:
+    # The one extra with a system-binary half pip can't touch: 
+    # asked for directly ("automate it if possible"). Best-effort:
+    # a failed *binary* install never flips this extra's own
+    # outcome to "failed", the pip packages are genuinely
+    # installed and useful (ocr.py degrades cleanly without the
+    # binary), so the honest outcome is still "completed", just
+    # with the binary attempt's own result folded into the message.
+    _state.step = "Installing the Tesseract program…"
+    #: The wrapper was installed by a child process a moment ago; the
+    #: import system caches directory listings, so without this the
+    #: next `find_spec` can still say it is missing.
+    importlib.invalidate_caches()
+    installed, binary_message = ocr.attempt_binary_install()
+    ocr.clear_language_cache()
+    _state.log.append(binary_message)
+    #: Said as it is (INBOX 443 (3)): this used to say "installed:
+    #: restart Tessellate to use it" even when the program was missing
+    #: and a restart would change nothing. The reader imports lazily,
+    #: so a ready engine needs no restart.
+    _state.step = (
+        f"{extra.label} is ready. {binary_message}"
+        if installed
+        else f"The Python part is installed, but the Tesseract program is not. {binary_message}"
+    )
+
+
+def _install_cleanup(extra: Extra, pip_tmp: Path, before, constraints_copy: Path | None) -> None:  # noqa: ANN001
+    _state.running = False
+    _state.process = None
+    if _state.cancelled:
+        # Terminating pip mid-download makes it exit non-zero, which the
+        # branches above have already written up as a failure. It wasn't
+        # one, someone pressed Quit, and a task history full of
+        # "Installing X failed" for things nobody wanted is how a history
+        # stops being read.
+        _state.outcome = "cancelled"
+        _state.step = "Stopped before it finished."
+        _roll_back(before)
+    shutil.rmtree(pip_tmp, ignore_errors=True)
+    # See the module docstring's numbered note above `_logger`: this call
+    # was missing entirely until now, which is the actual reason a failed
+    # *install* never reached Settings, Logs, `_run_uninstall` had it,
+    # this function did not.
+    if _state.outcome == "failed":
+        _logger.error(
+            "Installing %s failed: %s\n%s",
+            extra.label,
+            _state.step,
+            "\n".join(_state.log[-40:]),
+        )
+    else:
+        _logger.info("Installed %s.", extra.label)
+    from tessellate.core import taskhistory
+    taskhistory.record(
+        "extra",
+        f"Installing {extra.label}",
+        _state.outcome,
+        _state.step,
+        duration_ms=(time.time() - _state.started) * 1000 if _state.started else None,
+    )
+    if constraints_copy is not None:
+        constraints_copy.unlink(missing_ok=True)
+
+
 def _run_install(extra: Extra, reinstall: bool = False) -> None:
     """pip, in a worker thread, with its output kept for the panel."""
     constraints_copy: Path | None = None
@@ -1540,30 +1605,7 @@ def _run_install(extra: Extra, reinstall: bool = False) -> None:
         if code != 0:
             _state.step = _pip_reason(_state.log, f"pip exited with code {code}")
         elif extra.id == "ocr":
-            # The one extra with a system-binary half pip can't touch: 
-            # asked for directly ("automate it if possible"). Best-effort:
-            # a failed *binary* install never flips this extra's own
-            # outcome to "failed", the pip packages are genuinely
-            # installed and useful (ocr.py degrades cleanly without the
-            # binary), so the honest outcome is still "completed", just
-            # with the binary attempt's own result folded into the message.
-            _state.step = "Installing the Tesseract program…"
-            #: The wrapper was installed by a child process a moment ago; the
-            #: import system caches directory listings, so without this the
-            #: next `find_spec` can still say it is missing.
-            importlib.invalidate_caches()
-            installed, binary_message = ocr.attempt_binary_install()
-            ocr.clear_language_cache()
-            _state.log.append(binary_message)
-            #: Said as it is (INBOX 443 (3)): this used to say "installed:
-            #: restart Tessellate to use it" even when the program was missing
-            #: and a restart would change nothing. The reader imports lazily,
-            #: so a ready engine needs no restart.
-            _state.step = (
-                f"{extra.label} is ready. {binary_message}"
-                if installed
-                else f"The Python part is installed, but the Tesseract program is not. {binary_message}"
-            )
+            _install_ocr_binary(extra)
         else:
             _state.step = f"{extra.label} installed: restart Tessellate to use it."
         if code == 0:
@@ -1576,41 +1618,7 @@ def _run_install(extra: Extra, reinstall: bool = False) -> None:
         _state.outcome = "failed"
         _state.step = "Couldn't run pip: see Settings, Logs for why."
     finally:
-        _state.running = False
-        _state.process = None
-        if _state.cancelled:
-            # Terminating pip mid-download makes it exit non-zero, which the
-            # branches above have already written up as a failure. It wasn't
-            # one, someone pressed Quit, and a task history full of
-            # "Installing X failed" for things nobody wanted is how a history
-            # stops being read.
-            _state.outcome = "cancelled"
-            _state.step = "Stopped before it finished."
-            _roll_back(before)
-        shutil.rmtree(pip_tmp, ignore_errors=True)
-        # See the module docstring's numbered note above `_logger`: this call
-        # was missing entirely until now, which is the actual reason a failed
-        # *install* never reached Settings, Logs, `_run_uninstall` had it,
-        # this function did not.
-        if _state.outcome == "failed":
-            _logger.error(
-                "Installing %s failed: %s\n%s",
-                extra.label,
-                _state.step,
-                "\n".join(_state.log[-40:]),
-            )
-        else:
-            _logger.info("Installed %s.", extra.label)
-        from tessellate.core import taskhistory
-        taskhistory.record(
-            "extra",
-            f"Installing {extra.label}",
-            _state.outcome,
-            _state.step,
-            duration_ms=(time.time() - _state.started) * 1000 if _state.started else None,
-        )
-        if constraints_copy is not None:
-            constraints_copy.unlink(missing_ok=True)
+        _install_cleanup(extra, pip_tmp, before, constraints_copy)
         # Last, after the history row: a reader that waits for "not running"
         # (the Packages poll, a test) must find the row already written.
         _state.running = False
@@ -1911,33 +1919,40 @@ def _uninstall_skip(extra, installed: bool) -> str:  # noqa: ANN001
     return removal_locked(extra) or ""
 
 
-def _run_bulk_item(item: dict) -> None:
-    """One package of a bulk action, with the guards its own button has."""
-    extra = EXTRAS_BY_ID[item["id"]]
-    action = _bulk.action
-    installed = is_installed(extra)
-    reinstall = action == "reinstall" and installed
+def _bulk_refusal(item: dict, extra: Extra, action: str, installed: bool, reinstall: bool) -> bool:
+    """Write the outcome of an item that is skipped or refused; True when it was."""
     if action == "uninstall":
         skipped = _uninstall_skip(extra, installed)
         if skipped:
             item["outcome"], item["message"] = "skipped", skipped
-            return
+            return True
         refused = _loaded_in_process_reason(extra)
     else:
         if action == "install" and installed:
             item["outcome"] = "skipped"
             item["message"] = "Already installed."
-            return
+            return True
         refused = _install_refusal(extra, reinstall)
         if refused and (extra.unavailable or unavailable_reason(extra)):
             #: Not a failure: the row says this before anyone presses
             #: anything, and a bundle that names it is still worth the rest.
             item["outcome"] = "skipped"
             item["message"] = refused
-            return
+            return True
     if refused:
         item["outcome"] = "failed"
         item["message"] = refused
+        return True
+    return False
+
+
+def _run_bulk_item(item: dict) -> None:
+    """One package of a bulk action, with the guards its own button has."""
+    extra = EXTRAS_BY_ID[item["id"]]
+    action = _bulk.action
+    installed = is_installed(extra)
+    reinstall = action == "reinstall" and installed
+    if _bulk_refusal(item, extra, action, installed, reinstall):
         return
     removing = action == "uninstall"
     with _lock:

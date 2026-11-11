@@ -87,7 +87,9 @@ def test_today_is_not_the_mood_note(notebook):
 
 def test_f13a_who_am_i_going_with_is_not_the_profile_question(notebook):
     assert "none of them says anything about you" not in notebook("who am I going with")
-    assert "none of them says anything about you" in notebook("who am i")
+    #: "who am i" is the name question now (address.py): it is answered from the
+    #: profile, here with none saved, and not by the notes' profile reader.
+    assert "Settings, Profile" in notebook("who am i")
 
 
 def test_f13b_nothing_found_is_said_and_stops(notebook):

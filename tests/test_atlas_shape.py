@@ -517,7 +517,10 @@ def test_the_masculine_look_is_a_star_being_not_an_animatronic():
     masculine = _look("masculine")
     assert "legs: false," in masculine and "lowers: [" in masculine
     # INBOX 614 ("the masculine atlas kinda looks fat"): slimmer arms.
-    assert "armWidth: [3.8, 1.6]," in masculine and "handScale: 0.9," in masculine
+    # Intent moved (INBOX 1607 c): the root is 4.4 so its corners sit on the
+    # shoulder's 2.2 ball (tests/test_atlas_masculine_1607.py); it tapers to
+    # the same 1.6 wrist, so the arm stays slim below the shoulder.
+    assert "armWidth: [4.4, 1.6]," in masculine and "handScale: 0.9," in masculine
     arms = re.search(r"    arm: \[(\[[^\]]+\]), (\[[^\]]+\])\],", masculine)
     assert arms, "the arm bends: two segments"
     # Intent moved (INBOX 1607 d): the smaller eye was for round 9's stare, which INBOX 1301's lid fix

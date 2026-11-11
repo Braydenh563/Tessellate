@@ -5183,7 +5183,7 @@ def test_a_popup_chooses_a_kind_with_a_tab_strip() -> None:
     assert built <= set(SEG_BUILT_IN_SCRIPT), sorted(built - set(SEG_BUILT_IN_SCRIPT))
     # The two the owner named are tab strips.
     assert re.search(r'class="tabs-line popup-kinds[^"]*" id="wb-template-kind" role="tablist"', html)
-    picker = (ROOT / "frontend" / "js" / "icon-picker.js").read_text(encoding="utf-8")
+    picker = _js_scope.unwrapped((ROOT / "frontend" / "js" / "icon-picker.js").read_text(encoding="utf-8"))
     assert 'tabs.className = "tabs-line popup-kinds icon-picker-modes"' in picker
     assert 'b.setAttribute("role", "tab")' in picker and '"aria-selected"' in picker
     guide = (ROOT / "frontend" / "js" / "help-chat.js").read_text(encoding="utf-8")
@@ -6588,7 +6588,7 @@ def test_an_equation_field_has_one_door() -> None:
         assert 'createElement("math-field")' not in text, f"{path.name} builds a math field of its own"
     design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
     assert "mathFieldPane" in design and "openMathInPlace" in design
-    field = (ROOT / "frontend" / "js" / "math-field.js").read_text(encoding="utf-8")
+    field = _js_scope.unwrapped((ROOT / "frontend" / "js" / "math-field.js").read_text(encoding="utf-8"))
     assert 'setAttribute("style"' not in field and ".style.cssText" in field
 
 

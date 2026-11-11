@@ -490,25 +490,16 @@ def _image_size(image_path: Path, lines: list[tuple[list, str, float]]) -> tuple
         return max(xs), max(ys)
 
 
-def _rapidocr_regions(image_path: Path) -> dict | None:
-    """`extract_regions`' shape from RapidOCR's lines. RapidOCR finds lines,
-    not blocks, so lines are joined into a block while each starts within
-    about half a line's height of the last one's foot and overlaps it
-    sideways: a paragraph comes back as one region, a new column or a gap as
-    another, which is what Tesseract's block numbering gives."""
-    lines = _rapidocr_lines(image_path)
-    if lines is None:
-        return None
-    width, height = _image_size(image_path, lines)
-    if not width or not height:
-        return None
+def _line_boxes(lines) -> list[dict]:  # noqa: ANN001
     boxes = []
     for corners, text, score in lines:
         xs = [x for x, _ in corners]
         ys = [y for _, y in corners]
         boxes.append({"x0": min(xs), "y0": min(ys), "x1": max(xs), "y1": max(ys), "text": text, "score": score})
-    heights = sorted(b["y1"] - b["y0"] for b in boxes)
-    median_height = heights[len(heights) // 2] if heights else 0.0
+    return boxes
+
+
+def _join_line_blocks(boxes: list[dict], width, height) -> list[dict]:  # noqa: ANN001
     blocks: list[dict] = []
     for b in boxes:
         last = blocks[-1] if blocks else None
@@ -532,6 +523,10 @@ def _rapidocr_regions(image_path: Path) -> dict | None:
                 **b, "lines": [b["text"]], "scores": [b["score"]], "heights": [line_h], "line_h": line_h,
                 "words": _line_words(b["text"], b["x0"], b["y0"], b["x1"], b["y1"], width, height),
             })
+    return blocks
+
+
+def _block_regions(blocks: list[dict], median_height, width, height) -> list[dict]:  # noqa: ANN001
     regions = []
     for block in blocks:
         block_heights = sorted(block["heights"])
@@ -552,6 +547,26 @@ def _rapidocr_regions(image_path: Path) -> dict | None:
                 "words": block["words"],
             }
         )
+    return regions
+
+
+def _rapidocr_regions(image_path: Path) -> dict | None:
+    """`extract_regions`' shape from RapidOCR's lines. RapidOCR finds lines,
+    not blocks, so lines are joined into a block while each starts within
+    about half a line's height of the last one's foot and overlaps it
+    sideways: a paragraph comes back as one region, a new column or a gap as
+    another, which is what Tesseract's block numbering gives."""
+    lines = _rapidocr_lines(image_path)
+    if lines is None:
+        return None
+    width, height = _image_size(image_path, lines)
+    if not width or not height:
+        return None
+    boxes = _line_boxes(lines)
+    heights = sorted(b["y1"] - b["y0"] for b in boxes)
+    median_height = heights[len(heights) // 2] if heights else 0.0
+    blocks = _join_line_blocks(boxes, width, height)
+    regions = _block_regions(blocks, median_height, width, height)
     return {
         "width": int(width),
         "height": int(height),
@@ -1155,6 +1170,31 @@ _BINARY_INSTALL_COMMANDS: dict[str, list[tuple[str, list[str]]]] = {
 BINARY_INSTALL_TIMEOUT = 90
 
 
+def _binary_install_attempt(attempt: list[str], timeout: int, manager_name: str) -> tuple[bool, str]:
+    """One try at the install command: (installed, the error to remember or "")."""
+    try:
+        result = subprocess.run(  # noqa: S603  # fixed args from the table above, no shell
+            attempt,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            creationflags=NO_WINDOW,
+        )
+    except FileNotFoundError:
+        return False, ""  # `sudo` itself isn't installed: fall through to the bare command
+    except subprocess.TimeoutExpired:
+        return False, f"{attempt[0]} timed out after {timeout}s"
+    # The install just changed the filesystem the probe cached an answer
+    # about, and on Windows the installer it ran is exactly the one that
+    # may not touch PATH, so the confirmation below has to be allowed to
+    # look again rather than repeat a stale "not there".
+    _probe_windows_tesseract.cache_clear()
+    if result.returncode == 0 and tesseract_available():
+        return True, ""
+    tail = (result.stderr or result.stdout or "").strip().splitlines()
+    return False, tail[-1] if tail else f"{manager_name} exited with code {result.returncode}"
+
+
 def attempt_binary_install(timeout: int = BINARY_INSTALL_TIMEOUT) -> tuple[bool, str]:
     """Best-effort, non-interactive install of the `tesseract` system binary
     itself: the one part `pip install pytesseract` can never do, since it
@@ -1197,28 +1237,10 @@ def attempt_binary_install(timeout: int = BINARY_INSTALL_TIMEOUT) -> tuple[bool,
 
     last_error = ""
     for attempt in attempts:
-        try:
-            result = subprocess.run(  # noqa: S603  # fixed args from the table above, no shell
-                attempt,
-                capture_output=True,
-                text=True,
-                timeout=timeout,
-                creationflags=NO_WINDOW,
-            )
-        except FileNotFoundError:
-            continue  # `sudo` itself isn't installed: fall through to the bare command
-        except subprocess.TimeoutExpired:
-            last_error = f"{attempt[0]} timed out after {timeout}s"
-            continue
-        # The install just changed the filesystem the probe cached an answer
-        # about, and on Windows the installer it ran is exactly the one that
-        # may not touch PATH, so the confirmation below has to be allowed to
-        # look again rather than repeat a stale "not there".
-        _probe_windows_tesseract.cache_clear()
-        if result.returncode == 0 and tesseract_available():
+        done, error = _binary_install_attempt(attempt, timeout, manager_name)
+        if done:
             return True, "Tesseract installed."
-        tail = (result.stderr or result.stdout or "").strip().splitlines()
-        last_error = tail[-1] if tail else f"{manager_name} exited with code {result.returncode}"
+        last_error = error or last_error
 
     return False, (
         f"Couldn't install Tesseract automatically ({last_error or 'unknown error'}) "

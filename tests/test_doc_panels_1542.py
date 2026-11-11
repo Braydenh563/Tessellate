@@ -28,7 +28,7 @@ from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parents[1] / "frontend"
 PANEL = _js_scope.unwrapped_copy(ROOT / "js" / "panel-movable.js").read_text(encoding="utf-8")
-PICKER = (ROOT / "js" / "icon-picker.js").read_text(encoding="utf-8")
+PICKER = _js_scope.unwrapped((ROOT / "js" / "icon-picker.js").read_text(encoding="utf-8"))
 EDITOR = (ROOT / "js" / "editor.js").read_text(encoding="utf-8")
 CSS = (ROOT / "css" / "icon-picker.css").read_text(encoding="utf-8")
 

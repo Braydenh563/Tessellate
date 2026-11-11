@@ -92,3 +92,12 @@ def inline_tags(text: str | None) -> list[str]:
         if tag and not _HEX_COLOUR.match(tag):
             found.append(tag)
     return normalise_tags(found)
+
+
+def retagged(tags: list[str], add: Iterable[object], remove_folded: set[str]) -> list[str]:
+    """`tags` less the removed ones (already case-folded), plus the added ones not there yet (compared case-folded)."""
+    kept = [t for t in tags if t.casefold() not in remove_folded]
+    for tag in add:
+        if str(tag).casefold() not in {t.casefold() for t in kept}:
+            kept.append(str(tag))
+    return kept

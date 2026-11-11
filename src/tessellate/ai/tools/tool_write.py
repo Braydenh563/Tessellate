@@ -14,7 +14,7 @@ from tessellate.core.database import Entry, Reminder
 from sqlalchemy.orm import Session
 from tessellate.core import deps
 from sqlalchemy import func, select
-from tessellate.entry import manager, private_space
+from tessellate.entry import manager, private_space, tagnames
 from tessellate.repo import relation_types
 from tessellate.repo import tags as tags_repo
 from tessellate.ai.tools.reminder_rules import held_reminder, reminder_time
@@ -173,11 +173,7 @@ def _tag_note(session: Session, args: dict) -> dict:
             continue
 
         undos.append(_undo_edit(session, entry))
-        tags = manager.entry_tags(entry)
-        tags = [t for t in tags if t.casefold() not in remove_tags]
-        for tag in add_tags:
-            if str(tag).casefold() not in {t.casefold() for t in tags}:
-                tags.append(str(tag))
+        tags = tagnames.retagged(manager.entry_tags(entry), add_tags, remove_tags)
         manager.update_entry(session, entry, tags=tags)
 
         tagged.append(entry.id)

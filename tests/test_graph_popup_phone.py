@@ -36,8 +36,9 @@ def test_the_compact_row_is_two_worded_buttons_and_a_kebab() -> None:
 def test_every_action_has_a_word_and_a_title_in_one_list() -> None:
     body = _body("graphPopupActionList")
     keys = re.findall(r'key: "(\w+)"', body)
-    assert keys == ["open", "similar", "trace", "grow", "focus", "pin", "link", "remind", "favourite", "bin"]
-    assert len(re.findall(r"\bword:", body)) == 10 and len(re.findall(r"\btitle:", body)) == 10
+    #: "captions" is added after "trace" only for a note with a saved picture (d4e103578).
+    assert keys == ["open", "similar", "trace", "grow", "focus", "pin", "link", "remind", "favourite", "bin", "captions"]
+    assert len(re.findall(r"\bword:", body)) == 11 and len(re.findall(r"\btitle:", body)) == 11
     assert "danger: true" in body, "the bin stays the red row"
 
 
