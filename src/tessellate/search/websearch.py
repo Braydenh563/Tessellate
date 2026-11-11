@@ -820,8 +820,13 @@ def fetch_readable_cached(url: str) -> dict:
     """`fetch_readable`, or the page `prefetch_readable` just fetched."""
     hit = _PREFETCHED.pop(strip_tracking(url), None)
     if hit and time.time() - hit[0] <= PREFETCH_TTL_SECONDS:
-        return hit[1]
-    return fetch_readable(url)
+        page = hit[1]
+    else:
+        page = fetch_readable(url)
+    from tessellate.search import webstore
+
+    webstore.remember(url, page)  # kept a week on this computer, never sent
+    return page
 
 
 @egress.labelled(lambda url, *a, **k: f"Reading a web page: {egress.short(url, 80)}")

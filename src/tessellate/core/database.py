@@ -435,6 +435,22 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 
+class WebPage(Base):
+    """A page fetched in a chat, kept on this computer for a week (CHAT_PLAN,
+    the web-search store). Never sent anywhere; `search/webstore.py` owns it."""
+
+    __tablename__ = "web_pages"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    url_key: Mapped[str] = mapped_column(String(2000), unique=True, index=True)
+    url: Mapped[str] = mapped_column(String(2000))
+    title: Mapped[str] = mapped_column(String(500), default="")
+    domain: Mapped[str] = mapped_column(String(255), default="")
+    text: Mapped[str] = mapped_column(Text, default="")
+    links: Mapped[list | None] = mapped_column(JSON, default=None)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, index=True)
+
+
 class Vault(Base):
     """The wrapped data key for private notes (one row).
 

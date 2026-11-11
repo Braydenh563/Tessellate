@@ -709,6 +709,7 @@ function renderAutonomousSettings() {
 async function renderWebSearch() {
   prefsCache = await apiJson("/preferences");
   $("pref-web-search").checked = Boolean(prefsCache.web_search_enabled);
+  $("pref-web-store").checked = prefsCache.web_store_enabled !== false;
   $("pref-searxng").value = prefsCache.searxng_url || "";
   renderAutonomousSettings();
   $("searxng-autostart").checked = Boolean(prefsCache.searxng_autostart);

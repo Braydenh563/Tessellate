@@ -429,6 +429,13 @@ $("pref-web-search").addEventListener("change", saveWebSearchSettings);
 
 $("pref-searxng").addEventListener("change", saveWebSearchSettings);
 
+$("pref-web-store").addEventListener("change", (e) => setPreference("web_store_enabled", e.target.checked));
+$("web-store-clear").addEventListener("click", async () => {
+  const done = await apiJson("/websearch/stored", { method: "DELETE" }).catch(() => null);
+  if (!done) return toast("Couldn't clear the kept pages.", "info");
+  toast(`Cleared ${done.cleared} kept page${done.cleared === 1 ? "" : "s"}.`, "info");
+});
+
 $("pref-update-check").addEventListener("change", (e) =>
   setPreference("update_check_enabled", e.target.checked)
 );
