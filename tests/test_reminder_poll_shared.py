@@ -65,7 +65,7 @@ const checkDueReminders = async () => { prefs.set("reminderPolledAt", Date.now()
 
 def test_the_poll_stamps_before_it_asks_and_the_others_only_paint():
     body = re.search(r"(?ms)^async function checkDueReminders\(\).*?\n\}", STATUS).group(0)
-    assert body.index("reminderPolledAt") < body.index('"/reminders/due"')  # K32: the small look and the list both come after the stamp
+    assert body.index("reminderPolledAt") < body.index("openReminderList(")  # K32: the small look and the list both come after the stamp
     assert "postMessage(all)" in body
     told = STATUS[STATUS.index("reminderChannel.onmessage = ") :].split("\n", 1)[0]
     assert "paintReminderList(" in told and "announce" not in told.lower()
