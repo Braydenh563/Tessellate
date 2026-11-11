@@ -10,7 +10,7 @@ from tests._cat_node import run
 
 
 def test_the_loader_returns_every_entry() -> None:
-    assert len(catalogue.entries()) == 309
+    assert len(catalogue.entries()) == 312
     assert catalogue.load()["moods"]
 
 

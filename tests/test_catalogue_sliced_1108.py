@@ -15,7 +15,7 @@ def test_the_sliced_parse_gives_the_same_document_as_one_parse() -> None:
         + "const doc = await new Promise((done, fail) => nmb.cat.slice(text, done, fail));"
         "console.log(JSON.stringify({same: JSON.stringify(doc) === JSON.stringify(JSON.parse(text)), n: doc.entries.length}));"
     )
-    assert out == {"same": True, "n": 309}
+    assert out == {"same": True, "n": 312}
 
 
 def test_the_parse_is_cut_into_slices_of_forty_entries() -> None:
@@ -25,7 +25,7 @@ def test_the_parse_is_cut_into_slices_of_forty_entries() -> None:
         "const doc = await new Promise((done, fail) => nmb.cat.slice(text, done, fail));"
         "console.log(JSON.stringify({ticks, n: doc.entries.length}));"
     )
-    assert out == {"ticks": 7, "n": 309}
+    assert out == {"ticks": 7, "n": 312}
 
 
 def test_a_text_that_is_not_cut_by_lines_is_parsed_whole() -> None:
