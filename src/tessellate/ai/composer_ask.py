@@ -408,10 +408,16 @@ SYNONYM_GROUPS = (
 ) + composer_tables.EXTRA_SYNONYM_GROUPS
 
 
+#: One act said five ways ("when did I phone mum" with the note "Called mum"; W8B 1111): the verbs of getting in touch,
+#: the irregular past of "ring" included, which no suffix rule folds to its stem. Not a row of `SYNONYM_GROUPS`, whose
+#: groups never share a word: "call" is also a meeting, "phone" and "text" also a device and a message.
+CONTACT_VERBS = ("call", "phone", "ring", "rang", "rung", "text", "message")
+
+
 def _build_synonyms(key=None) -> dict[str, frozenset[str]]:  # noqa: ANN001
     key = key or _stem_plain
     table: dict[str, set[str]] = {}
-    for group in SYNONYM_GROUPS:
+    for group in (*SYNONYM_GROUPS, CONTACT_VERBS):
         stems = {key(w) for w in group}
         for stem in stems:
             table.setdefault(stem, set()).update(stems - {stem})

@@ -1307,7 +1307,7 @@ _DATE_PHRASE_SOURCE = (
             r"(?:the )?end of (?:the )?(?:day|week|month|year)|eod",
             r"(?:in|during|from|by) " + _MONTH_RE + _NOT_A_DAY + r"(?: (?:\d{4}|" + _YEAR_WORD + r"))?",
             r"(?:in|during) (?:19|20)\d{2}(?![\d:.-])",
-            r"christmas(?: day| eve)?|new year'?s? (?:day|eve)|new year",
+            r"(?:(?:last|next|this) )?(?:christmas(?: day| eve)?|new year'?s? (?:day|eve)|new year)",
             r"later today|today|tonight|yesterday|tomorrow",
             _WEEKDAY_RE,
         )
@@ -1882,6 +1882,14 @@ def _span_month(text: str, a: date, tense: str | None) -> Any:
 
 
 def _span_holiday(text: str, a: date, tense: str | None) -> Any:
+    #: "last Christmas" is the latest one gone, "next Christmas" the next to come, "this Christmas" the one of this
+    #: year (W8B 1111: it read as no date, so its window carried no year).
+    pointer, _, bare = text.partition(" ")
+    if pointer in ("last", "next", "this") and bare in _HOLIDAYS:
+        text, tense = bare, {"last": "past", "next": "future", "this": tense}[pointer]
+        if pointer == "this":
+            month, day_n = _HOLIDAYS[text]
+            return _one_day(date(a.year, month, day_n))
     if text not in _HOLIDAYS:
         return _MISS
     month, day_n = _HOLIDAYS[text]
@@ -2262,6 +2270,15 @@ def _holiday_said(low: str) -> str:
     return _HOLIDAY_PREP.get(low.removeprefix("on ").removeprefix("at ").removeprefix("for ").strip(), "")
 
 
+_POINTED_HOLIDAY = lazy_compile(r"(?:last|next|this) (?:christmas(?: day| eve)?|new year'?s? (?:day|eve)|new year)", re.I)
+
+
+def with_holiday_year(phrase: str, day: date | None) -> str:
+    """"last Christmas" as "last Christmas (2025)": a holiday asked by pointer names its year, so the answer says which one
+    it read (W8B 1111). Any other phrase, or no day, is left as it is."""
+    return f"{phrase} ({day.year})" if day is not None and _POINTED_HOLIDAY.fullmatch(" ".join(phrase.split())) else phrase
+
+
 def adverbial(phrase: str) -> str:
     """A time phrase as it follows a verb or a count, carrying the
     preposition it needs (audit 1029 C10): "20 October" is "on 20 October",
@@ -2272,6 +2289,8 @@ def adverbial(phrase: str) -> str:
     low = text.lower()
     if text and (said := _holiday_said(low)):
         return said
+    if _POINTED_HOLIDAY.fullmatch(low):
+        return text
     if not text or _ADVERB_LEAD.match(low):
         return text
     if said := _rolling_said(text):
@@ -3973,10 +3992,12 @@ def measures(text: str) -> list[Measure]:
 
 # --- round 9 readers (c11): the event window at the end of a question, and a distance --------------------------------
 
-_EVENT_WINDOW_WORDS = r"this week|next week|this weekend|next weekend|this month|next month|today|tomorrow|tonight"
+_WINDOW_DAYS = frozenset({"monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"})
+_WEEKDAY_WINDOW = r"(?:(?:on|this) )?(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)"
+_EVENT_WINDOW_WORDS = rf"this week|next week|this weekend|next weekend|this month|next month|today|tomorrow|tonight|{_WEEKDAY_WINDOW}"
 #: Both read text whose whitespace is already one space each (the callers join `split()`), so every gap is a single
 #: literal space: no quantified whitespace for a long run to backtrack through (CodeQL polynomial regex).
-_EVENT_TAIL = re.compile(r" (?:this|next) (?:week|month|weekend) ?[?.!]*$| (?:today|tomorrow|tonight) ?[?.!]*$", re.I)
+_EVENT_TAIL = re.compile(rf" (?:this|next) (?:week|month|weekend) ?[?.!]*$| (?:today|tomorrow|tonight|{_WEEKDAY_WINDOW}) ?[?.!]*$", re.I)
 _EVENT_ASK = re.compile(rf"^\W*(?:is|are|will) (?:the|my|our|a)\b.*? (?P<window>{_EVENT_WINDOW_WORDS}) ?[?.!]*$", re.I)
 _DISTANCE = re.compile(r"(?<![\d.,])(\d[\d.,]{0,15})\s{0,3}(km|kilometres|kilometers|miles|mi)\b", re.I)
 
@@ -3992,7 +4013,12 @@ def event_window_asked(question: str) -> str:
     """The window ("next week", "today") a yes/no question about a thing ends with, or ""."""
     text = " ".join((question or "").split())
     found = _EVENT_ASK.match(text) if text and len(text) < 300 else None
-    return found.group("window").lower() if found else ""
+    if not found:
+        return ""
+    window = found.group("window").lower()
+    #: A weekday keeps its capital in the verdict ("No, not on Wednesday"), as it does everywhere else in an answer.
+    *lead, last = window.split()
+    return " ".join([*lead, last.title()]) if last in _WINDOW_DAYS else window
 
 
 def distances(text: str) -> list[tuple[int, int, str, str]]:

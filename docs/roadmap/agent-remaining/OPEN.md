@@ -4720,7 +4720,7 @@ Columns: id | item | sources (file:line) | status | batch
 | P27 | Name use rules 5 and 4 across a restart; Guide "profile" topic; 20-turn eval | g69-1110.md | open | Co3 |
 | P28 | E54 identity copy "Atlas's assistant" (CHAT_PLAN decision 36): composer_lines.py:497, composer_smalltalk.py:147, composer_tables.py:1157 | s12b-1110.md:5 | open | Co3 |
 | P29 | E69 as-typed echo after autocorrect (design call); E59 to E62, E44, E45, E48 chat design | s13-1110.md:5, s11-1110.md:9 | owner call: where the "as typed" line shows | none |
-| P30 | W8 found-not-fixed: "is my dentist appointment tomorrow" no verdict, "last Christmas" no year, single-day head printed twice, "phone mum" synonym | w8-1110.md | open | Co2 |
+| P30 | W8 found-not-fixed: "is my dentist appointment tomorrow" no verdict, "last Christmas" no year, single-day head printed twice, "phone mum" synonym | w8-1110.md | built 2026-11-11 (composer spoke; 112986860, ce70ddac9, b817900c7, d79ea5b01, merged c0a3bc8db; w8b-1111.md, tests/test_composer_w8b_1111.py); left: source_check can flag a date's own figures, "are we meeting on Tuesday" not read as a window ask, "Rung mum" has no you form | Co2 |
 | P31 | Web-search store of recent pages; Try again on a failed non-SearXNG web chip | wc3-1110.md:5,7 | owner call: store fetched pages with a re-fetch control? | none |
 | P32 | Tour at 390 reports a 455 px spill on one step; Memory and Logs panes hide h3 on a phone | wc3-1110.md:9, wc-1110.md:7 | open | Sh1 |
 | P33 | Spell hold in documents editor and Add to dictionary row not driven; LanguageTool install not proven (jar never started) | spell-1110.md:5, lag1726-1110.md:4 | unverifiable (running a downloaded jar was refused here) | none |
