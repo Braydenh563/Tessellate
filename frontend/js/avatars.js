@@ -5277,6 +5277,7 @@ function nameMarkBuddyRideFrames(s0, up, down, upSpan = up, downSpan = down) {
   const shut = (u) => (u < at ? -down * Math.min(1, (at - u) / spanDown) : up * Math.min(1, (u - at) / spanUp));
   const us = [...new Set([0, Math.max(0, at - spanDown), at, at + spanUp, R])].sort((a, b) => a - b);
   return {
+    shut,
     shutter: us.map((u) => ({ offset: u / R, transform: `translateY(${shut(u)}px)` })),
     rider: us.map((u) => ({ offset: u / R, transform: `translateY(${-(u + shut(u))}px)` })),
   };
@@ -7562,7 +7563,17 @@ function nameMarkBuddyCheck() {
   }
   //: Near its shape first (`nameMarkBuddyNear`): the whole tab's controls
   //: only once one is under it, to find the nearest clear place.
-  const yours = (boxes) => (nmb.perch === "yours" ? nameMarkBuddyYoursObstacles(boxes, nmb.spot) : boxes);
+  //: **A head the shutter has cut is not over what is under the cut** (INBOX 1598, the owner: "I scrolled down and up
+  //: on the ask subtab and the companion got carried to be cut off and floating at the top of the screen"; reproduced
+  //: at 1366x768 by a pixel diff of the top bar with it hidden and shown). Riding a perch scrolled back into view
+  //: from under the bars, its head is behind the bars and the sub-tab strip, and the look that finds a control
+  //: under the figure counted the top bar's tabs under that head, stepped aside, and the move set it down again
+  //: whole, its head drawn over the bar (44px of it). Controls wholly above the clip line, the band's top as the
+  //: shutter has brought it down by this scroll, are not covered by what is drawn.
+  const ride = nmb.ride;
+  const cut = ride?.height ? ride.top + Math.max(0, nameMarkBuddyRideFrames(ride.s0, ride.up, ride.down, ride.upSpan, ride.downSpan).shut(ride.el.scrollTop)) : -Infinity;
+  const seen = (boxes) => (cut > -Infinity ? boxes.filter((box) => box.bottom + 4 > cut) : boxes);
+  const yours = (boxes) => seen(nmb.perch === "yours" ? nameMarkBuddyYoursObstacles(boxes, nmb.spot) : boxes);
   //: **Clear a moment ago, and nothing has been written since** (the lag log: this look ran twice a
   //: tab press, 33 then 9ms at 4x on 320 notes, the second reading the same boxes): same place, same
   //: window, same body children, no write to a tab page and no scroll since it found nothing under it.
