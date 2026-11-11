@@ -62,7 +62,7 @@ TOPIC_LEADS: dict[str, str] = {
     "voice": "Dictate notes, record meetings and lectures, and hear answers read aloud.",
     "live-captions": "See what the microphone hears written out live, on this computer only.",
     "audio-overview": "Have your notes, or a brief before a meeting, read aloud and saved as a recording.",
-    "folder-sync": "Keep notes level between computers through a folder, encrypted, with no server.",
+    "folder-sync": "Keep two computers level through an encrypted folder, off the home network.",
     "meetings": "Set up a meeting note with an agenda, decisions and actions, and record into it.",
     # Filing, tags and categories
     "tags-categories": "How notes get a category and tags, and how to change them yourself.",
@@ -242,7 +242,7 @@ TOPIC_LEADS: dict[str, str] = {
     "lock": "Set when the app asks for a password and which other devices may sign in.",
     "phone": "Open this computer's notebook on your phone over your own network.",
     "lan-networks": "Control which networks let other devices open the app, from the status bar.",
-    "two-computers": "Move your notebook to a new computer, or use it from a second one.",
+    "two-computers": "Move your notebook to a new computer, use it from a second one, or keep two level.",
     "delete-data": "How to erase your notebook for good, and get back what you deleted by mistake.",
     "storage": "Find your data folder on disk and export your notes in the form you need.",
     "import-export": "Back up the whole notebook, restore it, or export your notes as files.",
