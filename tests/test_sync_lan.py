@@ -309,7 +309,8 @@ def test_the_other_computer_waits_for_allow_and_remove_ends_its_pass(notebook, m
 
     segment = other.get("/sync/segment", params={"since": 0, "peer": "abcdefabcdef"}, headers={"X-Sync-Pass": issued["pass"]})
     assert segment.status_code == 200 and segment.json()["device"] == issued["device"]
-    assert other.get("/sync/segment", params={"peer": "x"}, headers={"X-Sync-Pass": "a forged pass"}).status_code == 401
+    forged = other.get("/sync/segment", params={"peer": "x"}, headers={"X-Sync-Pass": "a forged pass"})
+    assert forged.status_code == 401
 
     assert notebook.delete(f"/auth/lan-devices/{device}").status_code == 200
     gone = other.get("/sync/segment", params={"since": 0, "peer": "abcdefabcdef"}, headers={"X-Sync-Pass": issued["pass"]})
@@ -337,5 +338,6 @@ def test_pairing_is_for_this_computer_only(notebook):
     other = _other_computer(notebook)
     lantrust.set_flag(deps.get_config().data_dir, "ask_new_devices", False)
     other.headers["X-Auth-Token"] = other.post("/auth/unlock", json={"password": PASSWORD}).json()["token"]
-    assert other.post("/sync/pair", json={"address": "192.168.0.9:8443", "password": "x"}).status_code == 403
-    assert other.delete("/sync/pair").status_code == 403
+    paired = other.post("/sync/pair", json={"address": "192.168.0.9:8443", "password": "x"})
+    unpaired = other.delete("/sync/pair")
+    assert paired.status_code == 403 and unpaired.status_code == 403

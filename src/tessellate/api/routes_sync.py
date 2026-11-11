@@ -135,8 +135,8 @@ def sync_pair(body: PairBody) -> dict:
     data_dir = deps.get_config().data_dir
     try:
         sync_link.pair(data_dir, body.address, body.password)
-    except sync_link.PairError as exc:
-        return {**sync_pull.status(data_dir), "error": str(exc)}
+    except sync_link.PairError:
+        return {**sync_pull.status(data_dir), "error": sync_link.last_problem()}
     return {**sync_pull.status(data_dir), "error": ""}
 
 

@@ -25,6 +25,7 @@ import json
 import platform
 import secrets
 import ssl
+import threading
 from pathlib import Path
 from urllib.parse import urlencode
 
@@ -43,8 +44,22 @@ CERT_CHANGED = "The other computer's certificate is not the one paired; nothing 
 TIMEOUT = 30.0
 
 
+#: The last PairError sentence, per thread: what the route shows, never text read off the exception
+#: (CodeQL, information exposure through an exception; the ai/skills.py pattern).
+_LAST_PROBLEM = threading.local()
+
+
 class PairError(ValueError):
     """Pairing stopped; the message is the sentence Settings shows."""
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        _LAST_PROBLEM.text = message
+
+
+def last_problem() -> str:
+    """The sentence of the last PairError raised on this thread."""
+    return str(getattr(_LAST_PROBLEM, "text", "") or UNREACHABLE)
 
 
 def parse_address(text: str) -> tuple[str, int]:

@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8222, frontend ids 2756, CSS sections 524, backend routes 695, backend modules 10685, test files 2633, tests 21497, plan headings 1013, app scripts 29, boot scripts 38, script files 290.
+Counts: frontend functions 8222, frontend ids 2756, CSS sections 524, backend routes 695, backend modules 10687, test files 2633, tests 21497, plan headings 1013, app scripts 29, boot scripts 38, script files 290.
 
 ## Frontend functions (8222)
 
@@ -13743,7 +13743,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10685)
+## Backend modules (10687)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -26004,27 +26004,28 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `snapshot` | src/tessellate/entry/export_folder.py:293 |
 | `write` | src/tessellate/entry/export_folder.py:894 |
 
-### src/tessellate/entry/folder_sync.py (17)
+### src/tessellate/entry/folder_sync.py (18)
 
 | Name | File:line |
 |---|---|
-| `FolderLink` | src/tessellate/entry/folder_sync.py:203 |
-| `SyncError` | src/tessellate/entry/folder_sync.py:50 |
-| `_blob_name` | src/tessellate/entry/folder_sync.py:140 |
-| `_checked` | src/tessellate/entry/folder_sync.py:82 |
-| `_key` | src/tessellate/entry/folder_sync.py:67 |
-| `_own_salt` | src/tessellate/entry/folder_sync.py:171 |
-| `_private` | src/tessellate/entry/folder_sync.py:119 |
-| `_sealed_sha1` | src/tessellate/entry/folder_sync.py:144 |
-| `_sync_roots` | src/tessellate/entry/folder_sync.py:71 |
-| `_write_blobs` | src/tessellate/entry/folder_sync.py:151 |
-| `extras` | src/tessellate/entry/folder_sync.py:126 |
-| `load_state` | src/tessellate/entry/folder_sync.py:58 |
-| `open_peer` | src/tessellate/entry/folder_sync.py:239 |
-| `run` | src/tessellate/entry/folder_sync.py:251 |
-| `segments` | src/tessellate/entry/folder_sync.py:105 |
-| `state_path` | src/tessellate/entry/folder_sync.py:54 |
-| `write` | src/tessellate/entry/folder_sync.py:183 |
+| `FolderLink` | src/tessellate/entry/folder_sync.py:224 |
+| `SyncError` | src/tessellate/entry/folder_sync.py:56 |
+| `_blob_name` | src/tessellate/entry/folder_sync.py:161 |
+| `_checked` | src/tessellate/entry/folder_sync.py:97 |
+| `_key` | src/tessellate/entry/folder_sync.py:82 |
+| `_own_salt` | src/tessellate/entry/folder_sync.py:192 |
+| `_private` | src/tessellate/entry/folder_sync.py:140 |
+| `_sealed_sha1` | src/tessellate/entry/folder_sync.py:165 |
+| `_sync_roots` | src/tessellate/entry/folder_sync.py:86 |
+| `_write_blobs` | src/tessellate/entry/folder_sync.py:172 |
+| `extras` | src/tessellate/entry/folder_sync.py:147 |
+| `last_problem` | src/tessellate/entry/folder_sync.py:64 |
+| `load_state` | src/tessellate/entry/folder_sync.py:73 |
+| `open_peer` | src/tessellate/entry/folder_sync.py:260 |
+| `run` | src/tessellate/entry/folder_sync.py:272 |
+| `segments` | src/tessellate/entry/folder_sync.py:126 |
+| `state_path` | src/tessellate/entry/folder_sync.py:69 |
+| `write` | src/tessellate/entry/folder_sync.py:204 |
 
 ### src/tessellate/entry/highlights.py (2)
 
@@ -26494,33 +26495,34 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `own_key_for_peer` | src/tessellate/entry/sync_keys.py:41 |
 | `wrap_peer_key` | src/tessellate/entry/sync_keys.py:29 |
 
-### src/tessellate/entry/sync_link.py (10)
+### src/tessellate/entry/sync_link.py (11)
 
 | Name | File:line |
 |---|---|
-| `LanLink` | src/tessellate/entry/sync_link.py:153 |
-| `PairError` | src/tessellate/entry/sync_link.py:46 |
-| `_Wire` | src/tessellate/entry/sync_link.py:67 |
-| `_authority` | src/tessellate/entry/sync_link.py:103 |
-| `_json` | src/tessellate/entry/sync_link.py:95 |
-| `_sign_in` | src/tessellate/entry/sync_link.py:114 |
-| `fingerprint` | src/tessellate/entry/sync_link.py:60 |
-| `load` | src/tessellate/entry/sync_link.py:188 |
-| `pair` | src/tessellate/entry/sync_link.py:124 |
-| `parse_address` | src/tessellate/entry/sync_link.py:50 |
+| `LanLink` | src/tessellate/entry/sync_link.py:168 |
+| `PairError` | src/tessellate/entry/sync_link.py:52 |
+| `_Wire` | src/tessellate/entry/sync_link.py:82 |
+| `_authority` | src/tessellate/entry/sync_link.py:118 |
+| `_json` | src/tessellate/entry/sync_link.py:110 |
+| `_sign_in` | src/tessellate/entry/sync_link.py:129 |
+| `fingerprint` | src/tessellate/entry/sync_link.py:75 |
+| `last_problem` | src/tessellate/entry/sync_link.py:60 |
+| `load` | src/tessellate/entry/sync_link.py:203 |
+| `pair` | src/tessellate/entry/sync_link.py:139 |
+| `parse_address` | src/tessellate/entry/sync_link.py:65 |
 
 ### src/tessellate/entry/sync_pull.py (8)
 
 | Name | File:line |
 |---|---|
 | `Transport` | src/tessellate/entry/sync_pull.py:47 |
-| `_drain` | src/tessellate/entry/sync_pull.py:87 |
-| `_round` | src/tessellate/entry/sync_pull.py:75 |
-| `pull` | src/tessellate/entry/sync_pull.py:108 |
-| `pull_from` | src/tessellate/entry/sync_pull.py:117 |
-| `status` | src/tessellate/entry/sync_pull.py:130 |
-| `transport` | src/tessellate/entry/sync_pull.py:70 |
-| `use_transport` | src/tessellate/entry/sync_pull.py:64 |
+| `_drain` | src/tessellate/entry/sync_pull.py:90 |
+| `_round` | src/tessellate/entry/sync_pull.py:78 |
+| `pull` | src/tessellate/entry/sync_pull.py:111 |
+| `pull_from` | src/tessellate/entry/sync_pull.py:120 |
+| `status` | src/tessellate/entry/sync_pull.py:133 |
+| `transport` | src/tessellate/entry/sync_pull.py:73 |
+| `use_transport` | src/tessellate/entry/sync_pull.py:67 |
 
 ### src/tessellate/entry/sync_segments.py (23)
 

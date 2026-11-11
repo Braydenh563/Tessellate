@@ -326,7 +326,7 @@ REVIEWED_COMPUTED: dict[tuple[str, str], str] = {
     ("routes_studio.py", "natural_voice.INSTALL_HINT"): "ai/natural_voice.py INSTALL_HINT",
     ("routes_voice.py", "natural_voice.INSTALL_HINT"): "ai/natural_voice.py INSTALL_HINT",
     ("routes_voice.py", "str(error)"): "ValueError from ai/natural_voice.py speak, one fixed sentence",
-    ("routes_folder_sync.py", "str(exc)"): "SyncError from entry/folder_sync.py, sentences written for a person",
+    ("routes_folder_sync.py", "folder_sync.last_problem()"): "SyncError from entry/folder_sync.py, sentences written for a person",
     ("routes_folder_sync.py", "sync_pull.BUSY"): "a constant in entry/sync_pull.py (one sync at a time, B6 decision 14), checked in SOURCES",
     ("routes_sync.py", "NO_DEVICE"): "a constant in routes_sync.py, checked below",
     ("routes_chat.py", "str(exc)"): "ToolError from validate_make_plan and summarise_turns",

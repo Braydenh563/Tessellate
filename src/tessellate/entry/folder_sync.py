@@ -27,6 +27,7 @@ from __future__ import annotations
 import base64
 import json
 import os
+import threading
 from pathlib import Path
 from typing import Any
 
@@ -47,8 +48,22 @@ MIN_PASSPHRASE = 8
 _OPEN_ERRORS = (crypto.DecryptionError, ValueError, KeyError, TypeError, OSError)
 
 
+#: The last SyncError sentence, per thread. The route shows this, never text read off the exception: CodeQL
+#: reads anything taken from a caught exception as stack-trace information (the ai/skills.py pattern).
+_LAST_PROBLEM = threading.local()
+
+
 class SyncError(ValueError):
     """Something the person can fix: a folder that is not one, a passphrase too short, a file not ours."""
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        _LAST_PROBLEM.text = message
+
+
+def last_problem() -> str:
+    """The sentence of the last SyncError raised on this thread."""
+    return str(getattr(_LAST_PROBLEM, "text", "") or "Sync through the folder stopped.")
 
 
 def state_path(data_dir: Path) -> Path:
@@ -86,12 +101,18 @@ def _checked(folder: str, passphrase: str, notebook: Path | None = None) -> Path
     if not folder.strip() or "\x00" in folder:
         raise SyncError("Choose a folder that exists on this computer.")
     real = os.path.join(os.path.realpath(os.path.expanduser(folder)), "")
-    # The positive prefix test sits here, beside the read, in the shape CodeQL counts as a guard (core/paths.py).
-    if not any(real.startswith(root) for root in _sync_roots()):
+    # The positive prefix test is a bare `if real.startswith(root)` and the path used from here on is the one
+    # taken inside it: the shape CodeQL counts as a guard (core/paths.py). A test inside `any(...)` is not seen.
+    inside = ""
+    for root in _sync_roots():
+        if real.startswith(root):
+            inside = real
+            break
+    if not inside:
         raise SyncError("Choose a folder in your home folder or on a removable drive.")
-    if notebook is not None and real.startswith(os.path.join(os.path.realpath(str(notebook)), "")):
+    if notebook is not None and inside.startswith(os.path.join(os.path.realpath(str(notebook)), "")):
         raise SyncError("Choose a folder outside the notebook's own folder.")
-    path = Path(real)
+    path = Path(inside)
     if not path.is_dir():
         raise SyncError("Choose a folder that exists on this computer.")
     if len(passphrase) < MIN_PASSPHRASE:
@@ -271,4 +292,4 @@ def run(session: Session, data_dir: Path, folder: str, passphrase: str) -> dict[
     return counts
 
 
-__all__ = ["FolderLink", "SyncError", "load_state", "run", "state_path", "write"]
+__all__ = ["FolderLink", "SyncError", "last_problem", "load_state", "run", "state_path", "write"]

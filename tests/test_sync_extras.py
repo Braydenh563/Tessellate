@@ -120,7 +120,8 @@ def _canvas(book: Notebook) -> tuple[Entry, list, list, list]:
     [board] = book.session.scalars(select(Entry).where(Entry.is_board.is_(True))).all()
     rows = [list(book.session.scalars(select(m).where(m.board_id == board.id).order_by(m.id)))
             for _, m in sync_extras.CANVAS]
-    return board, *rows
+    # Spelled out so a reader (and CodeQL) sees the four-way unpack the tests do (one row list per CANVAS kind).
+    return board, rows[0], rows[1], rows[2]
 
 
 def test_a_board_comes_over_with_its_cards_shapes_and_connector_joined_to_the_new_rows(pair):

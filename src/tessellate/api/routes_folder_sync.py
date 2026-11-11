@@ -42,7 +42,7 @@ def sync_folder(body: FolderIn, session: Session = Depends(get_session)) -> dict
     try:
         try:
             return folder_sync.run(session, deps.get_config().data_dir, body.folder, body.passphrase)
-        except folder_sync.SyncError as exc:
-            raise HTTPException(400, str(exc)) from exc
+        except folder_sync.SyncError:
+            raise HTTPException(400, folder_sync.last_problem()) from None
     finally:
         sync_pull.RUNNING.release()

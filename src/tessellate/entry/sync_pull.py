@@ -50,11 +50,14 @@ class Transport(Protocol):
     def fetch(self, since: int, me: str) -> dict:
         """The segment after `since`, for the computer `me`; raises OSError when unanswered."""
 
-    def manifest(self, me: str) -> dict: ...
+    def manifest(self, me: str) -> dict:
+        """The documents, boards and files manifest, as `sync_extras.manifest` builds it."""
 
-    def items(self, kind: str, sids: list[str], me: str) -> list: ...
+    def items(self, kind: str, sids: list[str], me: str) -> list:
+        """The state of each named item of one kind."""
 
-    def file(self, sid: str, me: str) -> bytes | None: ...
+    def file(self, sid: str, me: str) -> bytes | None:
+        """An attached file's bytes, or None when it is not there yet."""
 
 
 #: Another way to reach the paired computer, tried before the stored LAN link (the tests' fake).
