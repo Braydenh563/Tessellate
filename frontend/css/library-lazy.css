@@ -8204,6 +8204,25 @@ input[type="color"].wb-mixed {
 .wb-format.hidden {
   display: none;
 }
+/* **Beside the selection bar and above the zoom cluster, not over them**
+   (wrapzoom 2026-11-11, 768x1024). Under 820 the zoom cluster stands on the
+   shelf at the right, where the panel reached down to the shelf too: Zoom out
+   and the level were under the panel's head. And the selection bar, 624px of
+   controls, was centred on the object whatever the panel left it, so its
+   Duplicate, Delete and menu were under the panel. The bar may be as wide as
+   the board less the panel and the rail (it wraps, its own recipe), and the
+   panel's foot clears the cluster. */
+@media (min-width: 600px) {
+  #wb-canvas-view:has(> #wb-format:not(.hidden)) > #wb-context {
+    max-width: max(12rem, calc(100% - 18.5rem - 5rem));
+  }
+}
+@media (min-width: 600px) and (max-width: 819.98px) {
+  .wb-format {
+    /* The cluster's height is one target, its padding and its border. */
+    bottom: calc(0.5rem + var(--wb-h-tools) + var(--space-3) + var(--target-min) + 2 * var(--space-1) + 2px + var(--space-3));
+  }
+}
 .wb-format-body {
   flex: 1 1 auto;
   min-height: 0;

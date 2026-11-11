@@ -158,3 +158,22 @@ def test_a_menu_left_in_place_is_capped_to_what_clips_it():
     assert "menu._escapedHome ? null : menuClippingAncestor(menu)" in body
     assert "Math.min(window.innerHeight, clipper.getBoundingClientRect().bottom)" in body
     assert "floor - top - margin" in body
+
+
+# ---- a side panel that covers the controls beside or under it ---------------
+
+
+def test_the_format_panel_leaves_the_selection_bar_and_the_zoom_cluster_clear():
+    """At 768 the Format panel reached down over the zoom cluster on the shelf
+    and the selection bar's Duplicate and Delete stood under it: the bar gets
+    the board less the panel, its fold reruns when the panel opens or shuts,
+    and under 820 the panel's foot clears the cluster."""
+    css = _css("library-lazy.css")
+    wide = "".join(_at_blocks(css, "@media (min-width: 600px)"))
+    assert "calc(100% - 18.5rem - 5rem)" in _rule(wide, "#wb-format:not(.hidden)) > #wb-context")
+    mid = "".join(_at_blocks(css, "@media (min-width: 600px) and (max-width: 819.98px)"))
+    assert "var(--target-min) + 2 * var(--space-1)" in _rule(mid, ".wb-format")
+    js = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    sig = next(line for line in js.splitlines() if "const foldSig =" in line)
+    assert "fmtOpen" in sig
+

@@ -7553,8 +7553,12 @@ function wbUpdateSelectionBar(panning = false) {
   //: laggy"). A one-item drag places the bar every frame and refolded it
   //: each time: at 390 the fold and the reads after it were 945 ms of a 30-move
   //: drag, every frame a long task. The bar's groups change only when
-  //: `wbFillContextBar` runs (it clears `sig`) or the host's width does.
-  const foldSig = !held && active.id === "wb-context" ? `${panSig}:${Math.round(hostRect.width)}` : null;
+  //: `wbFillContextBar` runs (it clears `sig`) or the host's width does,
+  //: or the Format panel opens or shuts: the bar's room is the board less
+  //: the panel (its CSS max-width), and a fold cached for the whole board
+  //: left it three rows tall beside the panel at 768.
+  const fmtOpen = document.getElementById("wb-format")?.classList.contains("hidden") === false;
+  const foldSig = !held && active.id === "wb-context" ? `${panSig}:${Math.round(hostRect.width)}:${fmtOpen ? 1 : 0}` : null;
   const folded = foldSig && WB_CTX_FOLD.sig === foldSig ? WB_CTX_FOLD.size : null;
   if (foldSig && !folded) {
     active.classList.remove("wb-context-wrapped");
