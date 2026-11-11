@@ -358,7 +358,11 @@ HELP_TOPICS: list[dict] = [
             "of what it shows, a vision-model transcription of any text in it, "
             "and Tesseract OCR (or RapidOCR) if that's installed: all editable and searchable. "
             "A scanned PDF is rasterised page-by-page and read by an OCR model "
-            "(no Tesseract needed); you can pick the model or leave it automatic."
+            "(no Tesseract needed); you can pick the model or leave it automatic. A "
+            "picture placed on a board or map is the exception: it stays on the board, "
+            "unlisted, unsearched and unread, until you select it and press Save to Library "
+            "in Format (then it is filed and read like any other). Captions in the same "
+            "row draws a saved picture's caption as one muted line under it."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },

@@ -49,7 +49,7 @@ def test_the_ai_dot_says_how_the_last_answer_went():
 
 
 def test_a_suggested_link_is_two_chips_a_bar_and_a_reason_on_request():
-    inbox = (JS / "suggestions-inbox.js").read_text(encoding="utf-8")
+    inbox = _js_scope.unwrapped((JS / "suggestions-inbox.js").read_text(encoding="utf-8"))
     row = _body(inbox, "inboxLinkRow")
     assert "link-suggestion-note" in row and "ph-arrows-left-right" in row
     assert "Add a reason" in row and 'reason.classList.add("hidden")' in row

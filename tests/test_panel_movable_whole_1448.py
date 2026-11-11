@@ -16,10 +16,12 @@ import subprocess
 from html.parser import HTMLParser
 from pathlib import Path
 
+from tests import _js_scope
+
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-JS = (ROOT / "frontend" / "js" / "panel-movable.js").read_text(encoding="utf-8")
+JS = _js_scope.unwrapped_copy(ROOT / "frontend" / "js" / "panel-movable.js").read_text(encoding="utf-8")
 VOID = {"meta", "link", "input", "img", "br", "hr", "source", "path", "use"}
 
 

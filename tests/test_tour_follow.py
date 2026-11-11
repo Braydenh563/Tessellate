@@ -14,9 +14,10 @@ says so.
 from __future__ import annotations
 
 from pathlib import Path
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parent.parent
-TOUR = (ROOT / "frontend" / "js" / "tour.js").read_text(encoding="utf-8")
+TOUR = _js_scope.unwrapped((ROOT / "frontend" / "js" / "tour.js").read_text(encoding="utf-8"))
 
 
 def _body(name: str) -> str:

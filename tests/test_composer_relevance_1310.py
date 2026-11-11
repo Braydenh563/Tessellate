@@ -15,6 +15,7 @@ from datetime import date, datetime
 from tessellate.ai import composer_digest, composer_frame
 from tessellate.entry import manager
 from tests._app_js import with_pieces
+from tests import _js_scope
 
 TODAY = date(2026, 10, 19)
 
@@ -169,7 +170,7 @@ def test_the_records_card_draws_the_reason_on_the_why_this_result_line():
     from pathlib import Path
 
     js = Path(__file__).resolve().parents[1] / "frontend" / "js"
-    kit = (js / "reply-kit.js").read_text(encoding="utf-8")
+    kit = _js_scope.unwrapped((js / "reply-kit.js").read_text(encoding="utf-8"))
     assert "if (opts.match_info) replyRecordCards($(\"raw-results\"), null, opts.match_info);" in kit
     body = kit.split("function replyRecordCards(", 1)[1].split("\n}\n", 1)[0]
     #: INBOX 1735 moved the intent: the reason is one plain secondary line
