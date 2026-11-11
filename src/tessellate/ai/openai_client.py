@@ -840,6 +840,30 @@ class OpenAICompatClient(Provider):
             return response
         raise ProviderError(f"Tool chat with '{model}' failed: retries exhausted")
 
+    @staticmethod
+    def _stream_delta(payload: dict) -> dict:
+        """The first choice's delta of one streamed frame; empty when it has none."""
+        choices = payload.get("choices") or []
+        return ((choices[0] or {}).get("delta") if choices else None) or {}
+
+    def _settle_calls(self, buckets: dict[int, dict], content: str, tools: list[dict]) -> tuple[list[dict], list[dict], str]:
+        """(calls, raw calls, text left over) once the stream ends."""
+        raw_calls = self._buckets_to_raw_calls(buckets)
+        calls = normalise_tool_calls(raw_calls)
+        clean = content
+        if not calls:
+            # Nothing structured: the text may itself be the call. Anything
+            # still gated was never shown, so removing it costs the user
+            # nothing.
+            recovered, clean = extract_text_tool_calls(content, offered_tool_names(tools))
+            if recovered:
+                calls = recovered
+                raw_calls = [
+                    {"function": {"name": c["name"], "arguments": c["arguments"]}}
+                    for c in recovered
+                ]
+        return calls, raw_calls, clean
+
     def chat_tools_stream(
         self,
         model: str,
@@ -886,8 +910,7 @@ class OpenAICompatClient(Provider):
 
                 for payload in self._sse_payloads(response):
                     last = payload
-                    choices = payload.get("choices") or []
-                    delta = ((choices[0] or {}).get("delta") if choices else None) or {}
+                    delta = self._stream_delta(payload)
                     text, reasoning = self._delta_text(delta)
                     if reasoning:
                         thinking += reasoning
@@ -903,20 +926,7 @@ class OpenAICompatClient(Provider):
         except (requests.RequestException, KeyError, IndexError, TypeError, ValueError) as exc:
             raise ProviderError(f"Tool chat with '{model}' failed: {exc}") from exc
 
-        raw_calls = self._buckets_to_raw_calls(buckets)
-        calls = normalise_tool_calls(raw_calls)
-        clean = content
-        if not calls:
-            # Nothing structured: the text may itself be the call. Anything
-            # still gated was never shown, so removing it costs the user
-            # nothing.
-            recovered, clean = extract_text_tool_calls(content, offered_tool_names(tools))
-            if recovered:
-                calls = recovered
-                raw_calls = [
-                    {"function": {"name": c["name"], "arguments": c["arguments"]}}
-                    for c in recovered
-                ]
+        calls, raw_calls, clean = self._settle_calls(buckets, content, tools)
         held = gate.flush()
         if held and not calls:
             # Gated text that turned out to be ordinary prose (a short answer
