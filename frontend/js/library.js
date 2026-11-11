@@ -8881,6 +8881,8 @@ function syncLibraryMediaSelectbar() {
   if (!bar || !count) return;
   const n = libraryMediaSelection.size;
   bar.classList.toggle("hidden", n === 0);
+  //: Not `body:has(#library-media-selectbar)`: it restyled every tile on any page change (INBOX 1716).
+  document.body.classList.toggle("library-media-selecting", n > 0);
   count.textContent = `${n} selected`;
 }
 
