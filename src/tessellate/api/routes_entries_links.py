@@ -1,7 +1,7 @@
 """The Connections block and a note's link routes (create, remove, retype, reason, generate a reason).
 
 Split out of routes_entries.py (K24); mounted in app.py beside that module's router. The helpers the
-Connections block reads (`_stored_connections`, `_reference_rows`, `_connected_files`, ...) stay in
+Connections block reads (`_stored_connections`, `_connected_files`, ...) stay in
 routes_entries, which routes_documents and the tests reach them through.
 """
 
@@ -24,10 +24,11 @@ from tessellate.api.routes_entries import (
     _connected_files,
     _existing_entry,
     _refuse_while_sealed,
-    _reference_rows,
+
     _stored_connections,
     _to_out,
 )
+from tessellate.api.routes_entries_refs import _reference_rows
 from tessellate.api.schemas import EntryOut
 from tessellate.core import deps
 from tessellate.core.database import Entry

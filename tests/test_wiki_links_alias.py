@@ -67,10 +67,10 @@ def test_a_note_reference_row_says_links_to_it_for_an_aliased_link(client):
 
 
 def test_links_to_reads_the_target_only():
-    from tessellate.api import routes_entries
+    from tessellate.api import routes_entries_refs
 
-    assert routes_entries._links_to("x [[The roof quote|the builder]]", "the roof quote")
-    assert not routes_entries._links_to("x [[The roof quote and more|y]]", "the roof quote")
+    assert routes_entries_refs._links_to("x [[The roof quote|the builder]]", "the roof quote")
+    assert not routes_entries_refs._links_to("x [[The roof quote and more|y]]", "the roof quote")
 
 
 def test_the_shown_part_is_what_a_label_reads():
