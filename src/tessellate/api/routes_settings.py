@@ -797,7 +797,8 @@ class _FreshConfig:
         return self._prefs.get(key, default)
 
 
-def _preferences_from(config) -> dict:
+def _prefs_notebook(config) -> dict:
+    """Filing, search, writing, dates and the account's display settings."""
     return {
         "recycle_bin_days": config.get_preference("recycle_bin_days", 30),
         "ai_first_filing": config.get_preference("ai_first_filing", True),
@@ -846,6 +847,12 @@ def _preferences_from(config) -> dict:
         # was actually in effect, which reads as "my setting didn't save."
         "session_idle_ttl_minutes": config.get_preference("session_idle_ttl_minutes", 720),
         "private_space_idle_minutes": config.get_preference("private_space_idle_minutes", 10),
+    }
+
+
+def _prefs_profile_and_ai(config) -> dict:
+    """The profile, personas, dashboard, tools and run budget."""
+    return {
         "user_profile": config.get_preference("user_profile", ""),
         "profile_enabled": config.get_preference("profile_enabled", False),
         "custom_templates": config.get_preference("custom_templates", []),
@@ -869,6 +876,12 @@ def _preferences_from(config) -> dict:
         "run_budget_seconds": config.get_preference(
             "run_budget_seconds", run_budget.DEFAULT_SECONDS
         ),
+    }
+
+
+def _prefs_web_updates_voice(config) -> dict:
+    """Web search, updates, semantic search, voice and saved searches."""
+    return {
         "web_search_enabled": config.get_preference("web_search_enabled", False),
         "web_store_enabled": config.get_preference("web_store_enabled", True),
         "update_check_enabled": config.get_preference("update_check_enabled", False),
@@ -897,6 +910,12 @@ def _preferences_from(config) -> dict:
         "voice_vocabulary": config.get_preference("voice_vocabulary", ""),
         "saved_searches": config.get_preference("saved_searches", []),
         "saved_finds": config.get_preference("saved_finds", []),
+    }
+
+
+def _prefs_interface_and_desktop(config) -> dict:
+    """What the interface keeps, the autonomous loop and the desktop shell."""
+    return {
         # Echoed back so the browser can tell whether the zone it just
         # detected is already the stored one, and skip a pointless write on
         # every startup.
@@ -963,6 +982,15 @@ def _preferences_from(config) -> dict:
         "avatar_style": _clean_avatar_style(config.get_preference("avatar_style", {})),
         "status_bar_hidden": config.get_preference("status_bar_hidden", []),
         "status_bar_clock": config.get_preference("status_bar_clock", False),
+    }
+
+
+def _preferences_from(config) -> dict:
+    return {
+        **_prefs_notebook(config),
+        **_prefs_profile_and_ai(config),
+        **_prefs_web_updates_voice(config),
+        **_prefs_interface_and_desktop(config),
     }
 
 
