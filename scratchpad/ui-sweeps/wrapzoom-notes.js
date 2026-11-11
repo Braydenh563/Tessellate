@@ -171,7 +171,15 @@ function measure({ roots, passB }) {
           if (kr.right > r.left + el.clientLeft + el.clientWidth + 1 || kr.left < r.left - 1) { flow = true; break; }
         }
         // Text that runs past its own box (no element child does it).
-        if (!flow && [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) flow = true;
+        // (A ::before/::after mark poking out is decoration: only the text's own rects count.)
+        if (!flow) {
+          const right = r.left + el.clientLeft + el.clientWidth;
+          for (const n of el.childNodes) {
+            if (n.nodeType !== 3 || !n.textContent.trim()) continue;
+            const rg = document.createRange(); rg.selectNodeContents(n);
+            if ([...rg.getClientRects()].some((q) => q.right > right + 1 || q.left < r.left - 1)) { flow = true; break; }
+          }
+        }
         if (flow) out.push({ defect: 'overflow', sel: desc(el), scrollW: el.scrollWidth, clientW: el.clientWidth, ox: cs.overflowX, ws: cs.whiteSpace });
       }
     }
