@@ -555,16 +555,17 @@ def _derive_note(  # noqa: ANN001
     proposed: list[Candidate],
     known: set[str],
     *,
-    spent: int,
+    spent_box: list[int],
     budget: int,
     provider,
     model: str,
     counts: dict[str, int],
     models_used: set[str],
-) -> tuple[int, int]:
+) -> int:
     """Pass 3 for one note: drop what is already known, let the model narrow the rest, store it.
 
-    Returns the tokens spent so far and how many facts were added.
+    Returns how many facts were added. The tokens spent so far are `spent_box[0]`, a box so the caller still
+    holds the charge when the model call raises (`run` records it in its `finally`).
     """
     # `known` grows as this note's candidates are taken, not only from what
     # was already stored: a note that says the same sentence twice has two
@@ -580,12 +581,12 @@ def _derive_note(  # noqa: ANN001
         kept.append(item)
     proposed = kept
     if not proposed:
-        return spent, 0
+        return 0
 
     decided_by = "local"
     cost = int(len(content) * TOKENS_PER_CHAR)
-    if provider is not None and model and spent + cost <= budget:
-        spent += cost
+    if provider is not None and model and spent_box[0] + cost <= budget:
+        spent_box[0] += cost
         _release(session)
         model_gate.yield_to_interactive()
         kept = _narrow(provider, model, content, proposed)
@@ -611,7 +612,7 @@ def _derive_note(  # noqa: ANN001
         added += 1
         counts[item.kind] = counts.get(item.kind, 0) + 1
         models_used.add(decided_by)
-    return spent, added
+    return added
 
 
 def run(
@@ -700,12 +701,15 @@ def run(
                 continue
 
             known = known_by_entry.setdefault(entry.id, set())
-            spent, added = _derive_note(
-                session, night, entry, content, proposed, known,
-                spent=spent, budget=budget, provider=provider, model=model,
-                counts=counts, models_used=models_used,
-            )
-            derived += added
+            spent_box = [spent]
+            try:
+                derived += _derive_note(
+                    session, night, entry, content, proposed, known,
+                    spent_box=spent_box, budget=budget, provider=provider, model=model,
+                    counts=counts, models_used=models_used,
+                )
+            finally:
+                spent = spent_box[0]
         if stopped == "done":
             progress.say(f"Read {scanned} note{'' if scanned == 1 else 's'}, found {derived} fact{'' if derived == 1 else 's'}.")
             # Passes 4 and 5 read the rows pass 3 just added, by id.
