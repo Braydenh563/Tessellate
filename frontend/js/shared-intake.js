@@ -15,36 +15,39 @@
 // The query is then cleared from the address bar, or a reload would share
 // it again. Files (an image shared from the camera roll) need the POST form
 // and a service worker and are not taken here.
-const SHARE_PARAMS = ["share_title", "share_text", "share_url"];
+(() => {
+  const SHARE_PARAMS = ["share_title", "share_text", "share_url"];
 
-function sharedCaptureText(params) {
-  const title = (params.get("share_title") || "").trim();
-  const text = (params.get("share_text") || "").trim();
-  const url = (params.get("share_url") || "").trim();
-  const lines = [];
-  if (title && title !== text) lines.push(`# ${title}`);
-  if (text) lines.push(text);
-  if (url && !text.includes(url)) lines.push(url);
-  return lines.join("\n\n");
-}
+  function sharedCaptureText(params) {
+    const title = (params.get("share_title") || "").trim();
+    const text = (params.get("share_text") || "").trim();
+    const url = (params.get("share_url") || "").trim();
+    const lines = [];
+    if (title && title !== text) lines.push(`# ${title}`);
+    if (text) lines.push(text);
+    if (url && !text.includes(url)) lines.push(url);
+    return lines.join("\n\n");
+  }
 
-function takeSharedIntake() {
-  const params = new URLSearchParams(window.location.search);
-  if (!SHARE_PARAMS.some((key) => params.has(key))) return;
-  const content = sharedCaptureText(params);
-  for (const key of SHARE_PARAMS) params.delete(key);
-  const rest = params.toString();
-  history.replaceState(null, "", `${location.pathname}${rest ? `?${rest}` : ""}${location.hash}`);
-  if (!content) return;
-  const box = $("entry-content");
-  if (!box) return;
-  switchTab("notes");
-  showNotesSection("capture");
-  box.value = box.value ? `${box.value}\n\n${content}` : content;
-  box.dispatchEvent(new Event("input", { bubbles: true }));
-  box.focus();
-  //: app.js's door fetches the library bundle first; a bare mountNoteSurface is documents.js's, which may not be in yet.
-  mountNoteSurfaceNow(box).then((surface) => surface?.focus()).catch(() => {});
-  toast("Shared to your notebook. Save it when it reads right.");
-}
+  function takeSharedIntake() {
+    const params = new URLSearchParams(window.location.search);
+    if (!SHARE_PARAMS.some((key) => params.has(key))) return;
+    const content = sharedCaptureText(params);
+    for (const key of SHARE_PARAMS) params.delete(key);
+    const rest = params.toString();
+    history.replaceState(null, "", `${location.pathname}${rest ? `?${rest}` : ""}${location.hash}`);
+    if (!content) return;
+    const box = $("entry-content");
+    if (!box) return;
+    switchTab("notes");
+    showNotesSection("capture");
+    box.value = box.value ? `${box.value}\n\n${content}` : content;
+    box.dispatchEvent(new Event("input", { bubbles: true }));
+    box.focus();
+    //: app.js's door fetches the library bundle first; a bare mountNoteSurface is documents.js's, which may not be in yet.
+    mountNoteSurfaceNow(box).then((surface) => surface?.focus()).catch(() => {});
+    toast("Shared to your notebook. Save it when it reads right.");
+  }
 
+  Object.assign(window, { takeSharedIntake });
+})();

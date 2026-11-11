@@ -7398,8 +7398,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `sharedCaptureText` | frontend/js/shared-intake.js:20 |
-| `takeSharedIntake` | frontend/js/shared-intake.js:31 |
+| `sharedCaptureText` | frontend/js/shared-intake.js:21 |
+| `takeSharedIntake` | frontend/js/shared-intake.js:32 |
 
 ### frontend/js/sketch-pad.js (143)
 
