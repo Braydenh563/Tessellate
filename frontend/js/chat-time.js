@@ -34,7 +34,7 @@ function chatTimeLabel(iso, now = new Date()) {
 //: the reopen pass and the live observer may both reach the same bubble.
 function paintChatTime(bubble, iso) {
   const label = iso ? chatTimeLabel(iso) : null;
-  let stamp = bubble.querySelector(":scope > .msg-meta > .msg-meta-when, :scope > .msg-meta-when");
+  let stamp = bubble.querySelector(":scope > .msg-meta > .msg-meta-when, :scope > .answer-foot-bar > .msg-meta > .msg-meta-when, :scope > .msg-meta-when");
   if (!label) {
     const row = stamp?.parentElement;
     stamp?.remove();
@@ -51,8 +51,13 @@ function paintChatTime(bubble, iso) {
   placeChatTime(bubble, stamp);
 }
 
+//: The cost row may already sit in the answer's foot bar (it moves there the
+//: moment it lands), so a reopened chat, whose time arrives after the lazy
+//: script, must look there too: with only direct children counted it found
+//: no row, made a solo one, and the foot bar kept that and dropped the cost
+//: line (INBOX 1693 b: "reloaded, only the text and the time").
 function placeChatTime(bubble, stamp) {
-  const rows = bubble.querySelectorAll(":scope > .msg-meta:not(.msg-meta-solo)");
+  const rows = bubble.querySelectorAll(":scope > .msg-meta:not(.msg-meta-solo), :scope > .answer-foot-bar > .msg-meta:not(.msg-meta-solo)");
   const row = rows[rows.length - 1];
   const solo = bubble.querySelector(":scope > .msg-meta-solo");
   if (row) {

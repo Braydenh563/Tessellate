@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8181, frontend ids 2720, CSS sections 524, backend routes 680, backend modules 10509, test files 2598, tests 21250, plan headings 1012, app scripts 29, boot scripts 38, script files 285.
+Counts: frontend functions 8181, frontend ids 2720, CSS sections 524, backend routes 680, backend modules 10509, test files 2598, tests 21251, plan headings 1012, app scripts 29, boot scripts 38, script files 285.
 
 ## Frontend functions (8181)
 
@@ -2809,11 +2809,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `adoptChatBubble` | frontend/js/chat-time.js:108 |
+| `adoptChatBubble` | frontend/js/chat-time.js:113 |
 | `chatTimeLabel` | frontend/js/chat-time.js:12 |
 | `paintChatTime` | frontend/js/chat-time.js:35 |
-| `placeChatTime` | frontend/js/chat-time.js:54 |
-| `stampChatTimes` | frontend/js/chat-time.js:78 |
+| `placeChatTime` | frontend/js/chat-time.js:59 |
+| `stampChatTimes` | frontend/js/chat-time.js:83 |
 
 ### frontend/js/chat-turn.js (26)
 
@@ -26998,7 +26998,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21250)
+## Tests (21251)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27313,7 +27313,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_chat_stop_keeps_queue.py | 3 |
 | tests/test_chat_stray_keys.py | 2 |
 | tests/test_chat_tab_has_ai9.py | 2 |
-| tests/test_chat_times.py | 8 |
+| tests/test_chat_times.py | 9 |
 | tests/test_chat_transcript.py | 28 |
 | tests/test_chat_ui_a28u.py | 6 |
 | tests/test_chat_user_bubble_width.py | 1 |
@@ -30305,7 +30305,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1217 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:149 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:148 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4057 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3129 |
