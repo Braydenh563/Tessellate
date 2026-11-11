@@ -456,6 +456,8 @@ def uncovered() -> dict[str, list[int]]:
 
 
 EXEMPT: dict[str, str] = {
+    "settings-rows.js:syncPair": "job: pairs with another computer; Unpair undoes it and no note is changed",
+    "settings-rows.js:syncUnpair": "job: forgets the pairing; Pair again restores it and no note is changed",
     "settings-controls.js:saveAddressNames": "settings: a setting with its own Reset or the settings history",
     "studio.js:speakNatural": "read: speaks a note aloud; nothing is written",
     "studio.js:follow": "job: stops a studio run; deletes no user data",
