@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10189, test files 2495, tests 20562, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10190, test files 2495, tests 20562, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -13529,7 +13529,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10189)
+## Backend modules (10190)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -25724,20 +25724,21 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_written_date` | src/tessellate/entry/timewords.py:107 |
 | `find` | src/tessellate/entry/timewords.py:308 |
 
-### src/tessellate/entry/topics.py (10)
+### src/tessellate/entry/topics.py (11)
 
 | Name | File:line |
 |---|---|
-| `_display` | src/tessellate/entry/topics.py:78 |
-| `_fallback_name` | src/tessellate/entry/topics.py:150 |
-| `_score_terms` | src/tessellate/entry/topics.py:82 |
-| `apply_names` | src/tessellate/entry/topics.py:216 |
-| `build` | src/tessellate/entry/topics.py:103 |
-| `detect` | src/tessellate/entry/topics.py:48 |
-| `extractive_sentence` | src/tessellate/entry/topics.py:176 |
-| `overlap` | src/tessellate/entry/topics.py:212 |
-| `store_name` | src/tessellate/entry/topics.py:239 |
-| `terms_sentence` | src/tessellate/entry/topics.py:166 |
+| `_display` | src/tessellate/entry/topics.py:83 |
+| `_fallback_name` | src/tessellate/entry/topics.py:155 |
+| `_score_terms` | src/tessellate/entry/topics.py:87 |
+| `_weights` | src/tessellate/entry/topics.py:48 |
+| `apply_names` | src/tessellate/entry/topics.py:221 |
+| `build` | src/tessellate/entry/topics.py:108 |
+| `detect` | src/tessellate/entry/topics.py:60 |
+| `extractive_sentence` | src/tessellate/entry/topics.py:181 |
+| `overlap` | src/tessellate/entry/topics.py:217 |
+| `store_name` | src/tessellate/entry/topics.py:244 |
+| `terms_sentence` | src/tessellate/entry/topics.py:171 |
 
 ### src/tessellate/mcp_server.py (27)
 
