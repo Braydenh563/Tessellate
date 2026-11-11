@@ -475,4 +475,6 @@ def test_a_hash_tag_is_completed_only_where_a_word_opens_with_one() -> None:
 
 def test_markdown_wires_the_tag_source_and_plain_text_stays_inert() -> None:
     code = (ROOT / "frontend" / "js" / "documents-code.js").read_text(encoding="utf-8")
-    assert 'override: type.ext === "md" ? [docPairInput.tagSource(CM)] : [], activateOnTyping: type.ext === "md"' in code
+    # The md list also carries the reference and fence sources (added later);
+    # the intent is that the tag source is in it and plain text gets none.
+    assert 'override: type.ext === "md" ? [docPairInput.tagSource(CM), docPairInput.refSource(CM), docPairInput.fenceSource(CM)] : [], activateOnTyping: type.ext === "md"' in code
