@@ -41,5 +41,5 @@ const api = (path, opts) => {{
 {block()}
 (async () => {{ {body} }})();
 """
-    out = subprocess.run(["node", "-e", script], capture_output=True, text=True, timeout=60, check=True)
+    out = subprocess.run(["node", "-"], input=script, capture_output=True, text=True, timeout=60, check=True)
     return json.loads(out.stdout.strip().splitlines()[-1])

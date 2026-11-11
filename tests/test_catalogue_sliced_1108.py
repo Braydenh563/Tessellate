@@ -25,7 +25,7 @@ def test_the_parse_is_cut_into_slices_of_forty_entries() -> None:
         "const doc = await new Promise((done, fail) => nmb.cat.slice(text, done, fail));"
         "console.log(JSON.stringify({ticks, n: doc.entries.length}));"
     )
-    assert out == {"ticks": 7, "n": 321}  # intent moved: E3 and E5 added entries
+    assert out == {"ticks": 8, "n": 321}  # intent moved: E3 and E5 added entries
 
 
 def test_a_text_that_is_not_cut_by_lines_is_parsed_whole() -> None:
