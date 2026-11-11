@@ -43,3 +43,8 @@ def test_a_cat_riding_its_area_keeps_its_slower_early_beat() -> None:
 def test_the_frame_uses_it_and_a_move_still_starts_over() -> None:
     assert "now + nameMarkBuddyNapMs(nmbFollow.rest, nmb.ride)" in AV
     assert "nmbFollow.rest = nmb.x === x && nmb.y === y ? nmbFollow.rest + 1 : 0;" in AV
+
+
+def test_a_resize_report_of_an_unchanged_size_renews_nothing() -> None:
+    assert "nmbFollow.sizes.get(e.target) !== key" in AV
+    assert "if (moved) nmb.glue ? nameMarkBuddyKeepUp(1500, false) : queueNameMarkBuddyCheck();" in AV

@@ -5673,7 +5673,7 @@ function nameMarkBuddyCatchUp(buddy, dx, dy, eased, riding) {
 //: (one box read every 700ms; it was two seconds, in the air all that time,
 //: INBOX 521) catches only what changes with nothing announcing it
 //: (content arriving above the panel), eased rather than jumped.
-const nmbFollow = { animAt: 0, movingAt: 0, pm: { el: null, at: -1e9, val: false }, moving: false, frame: 0, until: 0, poll: 0, observer: null, scrollAt: 0, recheck: 0, support: 0, nap: 0, rest: 0, timer: 0 };
+const nmbFollow = { animAt: 0, movingAt: 0, pm: { el: null, at: -1e9, val: false }, moving: false, frame: 0, until: 0, poll: 0, observer: null, scrollAt: 0, recheck: 0, support: 0, nap: 0, rest: 0, timer: 0, sizes: new WeakMap() };
 function nameMarkBuddyKeepUp(ms = 1500, wake = true) {
   if (!nmb.glue) return;
   if (wake) {
@@ -6066,7 +6066,21 @@ function nameMarkBuddyWatch() {
     //: which holds nothing to follow, its going (hidden, emptied, folded away,
     //: with no scroll, resize or class change to say so) is a look at the
     //: perch now. A resize observer costs nothing while it rests.
-    if (!nmbFollow.observer) nmbFollow.observer = new ResizeObserver(() => (nmb.glue ? nameMarkBuddyKeepUp(1500, false) : queueNameMarkBuddyCheck()));
+    //: **An unchanged size renews nothing** (INBOX 1741): the first report of each box and a
+    //: report of the size it already had (an observer re-armed by `nameMarkBuddyWatch`, a box
+    //: resized to the same pixels) are not a move, and each kept the loop up another second and a half.
+    if (!nmbFollow.observer) {
+      nmbFollow.observer = new ResizeObserver((entries) => {
+        let moved = !nmb.glue;
+        for (const e of entries) {
+          const r = e.contentRect;
+          const key = `${r.width}x${r.height}`;
+          if (nmbFollow.sizes.get(e.target) !== key) moved = true;
+          nmbFollow.sizes.set(e.target, key);
+        }
+        if (moved) nmb.glue ? nameMarkBuddyKeepUp(1500, false) : queueNameMarkBuddyCheck();
+      });
+    }
     nmbFollow.observer.disconnect();
     const bar = !g && ["bar", "hang"].includes(nmb.spot?.edge?.kind) ? nmb.spot.edge.el : null;
     if (bar) nmbFollow.observer.observe(bar);
