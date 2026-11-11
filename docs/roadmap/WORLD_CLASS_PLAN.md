@@ -636,8 +636,7 @@ an undo button.
 
 ### B6 Local-first sync (L; events-sync)
 
-Sync is log shipping over the event log (B1): one computer pulls the other's
-changes since a cursor and applies them. No server, no account, no CRDT.
+Sync is log shipping over the event log (B1): one computer pulls the other's changes since a cursor and applies them. No server, no account, no CRDT.
 
 **Decisions made, 2026-11-11 (owner's go, OPEN Q34; recommendations taken, do not remake).**
 1. **What ships.** A segment is every note with an event after the receiver's cursor in the sender's audit log, each as its whole current state (text, tags, category name, space, private flag, bin and archive marks, `updated_at`), never the event values, so a compacted run ships as the snapshot it already is. The cursor is the sender's audit-log id; a segment holds at most 200 notes, says `more` until the log is drained, and carries a SHA-256 digest of its notes. Events the receiver itself caused (actor `sync:<its device>`) are not echoed back. Boards, documents, notes in a private space and the per-event history do not ship in this slice.
@@ -649,16 +648,15 @@ changes since a cursor and applies them. No server, no account, no CRDT.
 7. **Deletes and the bin.** A binned note ships its bin mark and lands in the other computer's bin, recoverable there; a restore ships the same way. A purge does not ship: each bin empties on its own schedule.
 8. **Failures.** Offline or no answer: nothing changes, the cursor stays, Settings says so in one sentence. A damaged or cut-off segment (digest mismatch, missing fields) is refused whole before any write. A half-applied segment (a crash part way) is applied again from the same cursor: each note's apply is idempotent (same state is a no-op, a create is keyed by `client_key`) and the cursor moves only after the last note. Clock skew: times are compared as each computer recorded them, so a skewed clock can pick the wrong winner, but the loser is always in History.
 9. **Shape.** Sync now pulls the other computer's changes into this one; pressing it on both is two-way. The transport is one function (`fetch(since, me)` returns a segment), so the LAN fetch, the tests' fake and a later shared-folder transport share one apply.
+10. **Pairing is the LAN sign-in, made by this computer's server** (built 2026-11-11). Settings, Sync takes the other computer's address and password; this computer's server signs in there with `POST /auth/unlock` and a device cookie it made, so the other computer's "Ask before a new device signs in" holds it until Allow there and lists it in Other devices ("Paired notebook, ..."). TLS as the LAN mode does it: the first contact fetches that computer's certificate authority (`/auth/lan-certificate.pem`, the file a phone installs) and every later connection is verified against it alone, address against the certificate's names; Settings shows its fingerprint to compare with Other devices there. A certificate other than the paired one is refused in one sentence. Pairing and Unpair are this computer's only (`this_computer_only`: it makes the server connect somewhere).
+11. **The kept sign-in is a sync pass, not the session** (built 2026-11-11). A LAN session ends after the idle timeout, at the 7-day cap and at a restart, so keeping it would mean keeping the password; instead the signed-in pairing asks `POST /sync/pass` once for a random pass (only its hash is stored there, beside the device it names) that `GET /sync/segment` takes in place of a session and that reads nothing else. Remove in Other devices ends it (the pass is refused once its device is unlisted); a device that did not have to wait (asking off, or loopback) is listed at that moment so Remove always works. The password is never stored; the pass, the cookie and the authority are kept in `sync-state.json` (0600).
+12. **Private notes open on both** (built 2026-11-11; decision 5's later step). The pass answer also carries the other computer's data key, to a session its password opened (whoever holds the password can unwrap that key already, so this grants nothing new); this computer keeps it sealed with its own data key. On apply, a private note from there is opened with its key and sealed again with this one's, so every reader here works on it; comparisons are on the plain text. Without both keys (paired while locked) it lands as ciphertext and Settings says the paired computer's private notes stay unreadable here until pairing again unlocked. A key once handed over is not taken back by Remove; changing the data key there (rotate) needs pairing again.
 
-**First slice built 2026-11-11:** HISTORY.md, "Moved from the plans, 2026-11-11 (WORLD_CLASS B6, sync first slice)". **Open:** the LAN fetch itself (A signing in to B as an allowed device and keeping that sign-in; until then Sync now says no computer is paired); private notes readable on both (decision 5); attachments (6); boards and documents.
+**Built 2026-11-11:** HISTORY.md, "Moved from the plans, 2026-11-11 (WORLD_CLASS B6, sync first slice)" and "(WORLD_CLASS B6, LAN pairing)". **Open:** attachments (6); boards and documents.
 
 ### B7 The API contract
 
-One error shape (exists, B3 in PLAN.md), cursor pagination on every list
-(finish D4 in the audit), ETags on entries, `If-Match` on writes (so the
-editor cannot clobber a background AI edit), an OpenAPI schema behind the
-auth gate, and a `/capabilities` endpoint the UI reads once so features
-appear only when their backend is there (OCR, embeddings, TTS).
+One error shape (exists, B3 in PLAN.md), cursor pagination on every list (finish D4 in the audit), ETags on entries, `If-Match` on writes (so the editor cannot clobber a background AI edit), an OpenAPI schema behind the auth gate, and a `/capabilities` endpoint the UI reads once so features appear only when their backend is there (OCR, embeddings, TTS).
 
 **State 2026-10-05:** built (cursors on every paged list, ETags and `If-Match` on entries, `/capabilities`); moved to HISTORY.md, "Moved from the plans, 2026-10-05 (B7)". Left: the page's own lists following `X-Next-Cursor` on scroll, and the page reading `/capabilities` once to hide a control whose backend is not installed. S.
 
@@ -666,11 +664,7 @@ appear only when their backend is there (OCR, embeddings, TTS).
 
 ### B8 Extensions
 
-The MCP server exists. Move: the same tool registry that serves MCP serves
-a `/tools` HTTP API and a "user skills" folder of Markdown skills (already
-the skill format). That is the plugin API: a skill is a Markdown file with
-tool calls; a tool is a Python function registered with a contract. Gate:
-a skill dropped into the folder appears in the picker without a restart.
+The MCP server exists. Move: the same tool registry that serves MCP serves a `/tools` HTTP API and a "user skills" folder of Markdown skills (already the skill format). That is the plugin API: a skill is a Markdown file with tool calls; a tool is a Python function registered with a contract. Gate: a skill dropped into the folder appears in the picker without a restart.
 
 **State 2026-10-05:** built (the user skills folder, read per request); moved to HISTORY.md, "Moved from the plans, 2026-10-05 (B8, H4)". Left: a tool registered from the folder (a Python function with a contract) is not built, by design for now: a skill is Markdown, and code from a folder would need the trust model BACKLOG §29 names.
 

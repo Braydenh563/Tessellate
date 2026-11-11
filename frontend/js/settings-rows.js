@@ -431,6 +431,8 @@
       });
       wireSettingsFile();
       $("sync-now")?.addEventListener("click", syncNow);
+      $("sync-pair")?.addEventListener("click", syncPair);
+      $("sync-unpair")?.addEventListener("click", syncUnpair);
     }
     if (name === "data") paintSync(() => apiJson("/sync/status"));
     settingDefaults().then(() => scheduleSettingRowsPaint(name, [0, 400, 1200]));
@@ -547,13 +549,27 @@
     return `Last synced ${when}, ${nounCount(s.applied, "note")} brought in.${both}`;
   }
 
+  //: The paired computer, or the form to pair one (WORLD_CLASS_PLAN B6, decision 10).
+  //: The fingerprint is the one Settings, Other devices shows on that computer.
+  function paintPaired(s) {
+    $("sync-pair-row")?.classList.toggle("hidden", !!s.address);
+    $("sync-paired-row")?.classList.toggle("hidden", !s.address);
+    $("sync-now").disabled = !s.paired;
+    if (!s.address) return;
+    const unreadable = s.private_readable ? "" : " Its private notes stay unreadable here until you pair again with both notebooks unlocked.";
+    $("sync-paired").textContent = `Paired with ${s.address}, certificate ${s.fingerprint}.${unreadable}`;
+  }
+
   async function paintSync(request) {
     const line = $("sync-status");
     if (!line) return;
     try {
-      line.textContent = syncLine(await request());
+      const s = await request();
+      paintPaired(s);
+      line.textContent = syncLine(s);
     } catch (error) {
       line.textContent = error.message;
+      $("sync-now").disabled = false;
     }
   }
 
@@ -561,7 +577,23 @@
     const button = $("sync-now");
     button.disabled = true;
     await paintSync(() => apiJson("/sync/now", { method: "POST" }));
+  }
+
+  async function syncPair() {
+    const button = $("sync-pair");
+    const password = $("sync-password");
+    button.disabled = true;
+    $("sync-status").textContent = "Pairing; the other computer may ask before letting this one in.";
+    await paintSync(() => apiJson("/sync/pair", {
+      method: "POST",
+      body: JSON.stringify({ address: $("sync-address").value, password: password.value }),
+    }));
+    password.value = "";
     button.disabled = false;
+  }
+
+  async function syncUnpair() {
+    await paintSync(() => apiJson("/sync/pair", { method: "DELETE" }));
   }
 
   // --- Reveal replies ---------------------------------------------------------------

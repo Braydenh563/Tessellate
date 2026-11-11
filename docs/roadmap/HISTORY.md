@@ -22,6 +22,16 @@ waits in Uncategorised; the hint and the saved status offer the closest two or
 three. Leave one out on the 120 notes: 4 of the 11 wrong filings sit under 70,
 beside about 20 right ones (`tests/test_ask_when_unsure.py`).
 
+## Moved from the plans, 2026-11-11 (WORLD_CLASS B6, LAN pairing, events-sync)
+
+**Built** (B6 decisions 10 to 12). Two computers pair over the LAN port and sync each other's notes, private notes included.
+
+- `entry/sync_link.py` (`pair`: the authority fetched on first contact, then `POST /auth/unlock` with a device cookie this computer made and `POST /sync/pass`, every call verified against that authority; `LanLink.fetch`, the transport `sync_pull` reads from disk), `entry/sync_keys.py` (the other computer's data key sealed with this one's; a private note opened and sealed again on apply, compared on plain text), `core/sync_state.py` (the pass hash per device, the stored link), `core/lantrust.remember_device`, `api/routes_sync.py` (`POST /sync/pass`, `POST` and `DELETE /sync/pair` from this computer only, `GET /sync/segment` on its own gate: a session or a pass whose device is still listed).
+- Settings, Sync with another computer: the address and password fields and Pair, then "Paired with ..., certificate ..." and Unpair (the private sentence when the key could not be kept); help and the Guide's `two-computers` topic say how.
+- **Measured:** `tests/test_sync_lan.py`, 13 tests. Two real servers (uvicorn, two data folders, each serving HTTPS with its own `lancert` authority) pair with each other through `POST /sync/pair` and sync a note each way, then a private note A to B (readable on B) and B's edit back (readable on A), with no plaintext in either database and a third Sync now applying nothing; a wrong password, the pass refused everywhere but the segment, and another authority's certificate refused in a sentence. In process with a network address: the sign-in held until Allow, Remove ends the pass, a never-allowed device gets no pass, asking off still lists the paired computer, pairing refused from another device.
+- **Measured, Settings at 1440, 720 at 200%, 390 and 360, dark:** document and group overflow 0 at every width (`scrollWidth - clientWidth`), no child past the group's edge; the address and password boxes capped at 288 px (the password box had run 649 px wide on its own line at 1440 until a two-id rule out-ranked the Settings row's); paired at 360 the fingerprint line wraps inside the group (234 by 199 px); Tab order help, address, password, Pair (unpaired) and help, Unpair, Sync now (paired); 0 console errors.
+- **Not verified:** two physical computers on a real network (both servers ran on one machine's loopback, where a sign-in never waits; the wait was driven in process).
+
 ## Moved from the plans, 2026-11-11 (WORLD_CLASS B6, sync first slice, events-sync)
 
 **Built** (the open text of B6's first slice, moved here; the decisions stay in the plan). Sync as log shipping between two data folders, pull over a transport, through a segment export and apply.

@@ -1983,10 +1983,12 @@ MORE_TOPICS.extend([
             "restore it there, or copy the data folder while the app is closed. To use "
             "one notebook from a second computer, open it over your network: Settings, "
             "Account & security, Other devices. Sync with another computer (Settings, "
-            "Import & export) brings in the notes changed on a paired computer; a note "
-            "changed on both keeps the later change and the other text goes to its "
-            "History. Private notes stay readable only where they were made, and "
-            "attachments, boards and documents do not sync yet."
+            "Import & export) brings in the notes changed on a paired computer: turn on "
+            "other devices there, type its address and password here and press Pair, "
+            "then Allow this computer there. A note changed on both keeps the later "
+            "change and the other text goes to its History. Pairing while both "
+            "notebooks are unlocked lets each open the other's private notes, which "
+            "stay encrypted on both; attachments, boards and documents do not sync yet."
         ),
         "badge": {"label": "Import & export", "section": "data"},
     },

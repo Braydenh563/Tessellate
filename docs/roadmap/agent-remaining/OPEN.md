@@ -2933,7 +2933,7 @@ Code editor (Brief 69, I1 built):
   Next step: decide what "open" means on that surface, per the app's own focus
   model. [brief11-retrieval-engine.md]
   *Needs: what "open" means on the card view is a decision.* (checked 2026-11-09) [verified 2026-11-10: true, graph signal needs an open note; search-open-note id present]
-- **Sync (B6) as log shipping.** `id: events-sync`. **Decided and first slice built 2026-11-11** (WORLD_CLASS_PLAN B6 decisions 1 to 9; HISTORY, "WORLD_CLASS B6, sync first slice"). Open: the LAN fetch (A signing in to B as an allowed device), private notes readable on both, attachments, boards and documents. [brief7-event-log.md]
+- **Sync (B6) as log shipping.** `id: events-sync`. **Decided and first slice built 2026-11-11** (WORLD_CLASS_PLAN B6 decisions 1 to 12; HISTORY, "WORLD_CLASS B6, sync first slice" and "LAN pairing"). Open: attachments, boards and documents. [brief7-event-log.md]
   *Needs: a large unstarted feature.* (checked 2026-11-09) [verified 2026-11-10: true, sync log shipping unstarted; events-sync id]
 - **I1's later passes**: duplicates, entities and dates as kinds in the same
   table (tensions are built: pass 4 of the night run, `ai/facts.py`

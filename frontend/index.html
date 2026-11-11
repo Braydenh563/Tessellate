@@ -13826,10 +13826,29 @@ Link to another note with [[its first few words]]."></textarea>
                   the bin lands in the other computer's bin.
                 </p>
                 <p>
-                  Private notes travel encrypted and their key stays on the
-                  computer that made them, so they open only there.
+                  To pair, turn on other devices on the other computer and type
+                  the address and password it shows there; it asks there before
+                  letting this one in, and lists it in its Other devices.
+                  Removing it there ends the pairing. The password is not kept.
+                </p>
+                <p>
+                  Private notes travel encrypted. Pairing while both notebooks
+                  are unlocked lets each open the other's private notes, which
+                  stay encrypted on both.
                   Attachments, boards and documents do not sync yet.
                 </p>
+              </div>
+              <div class="row wrap settings-row-spaced" id="sync-pair-row">
+                <label for="sync-address" class="muted">Other computer's address</label>
+                <input id="sync-address" type="text" inputmode="url" autocomplete="off" spellcheck="false"
+                  maxlength="200" placeholder="192.168.1.20:8443">
+                <label for="sync-password" class="muted">Its password</label>
+                <input id="sync-password" type="password" autocomplete="off" maxlength="1024">
+                <button id="sync-pair" class="ghost small" type="button">Pair</button>
+              </div>
+              <div class="row wrap hidden" id="sync-paired-row">
+                <p id="sync-paired" class="muted sync-paired"></p>
+                <button id="sync-unpair" class="ghost small" type="button">Unpair</button>
               </div>
               <div class="row">
                 <button id="sync-now" class="ghost small" type="button">

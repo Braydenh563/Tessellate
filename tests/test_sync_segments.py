@@ -2,9 +2,10 @@
 
 Two notebooks, each its own data folder and SQLite file, pull from each other
 through `sync_pull.pull` over a fake transport: the segment goes through JSON
-as it would over the wire, and nothing else is shared. What a real pair of
-computers adds (the LAN fetch, the sign-in it carries) is not built; see the
-plan's decision 4 and the module docstring of `entry/sync_pull.py`.
+as it would over the wire, and nothing else is shared. The real pair of
+computers (the LAN sign-in, the pass, private notes with both keys) is
+`tests/test_sync_lan.py`; here no keys are shared, so a private note stays
+ciphertext on the other side.
 
 Times are fixed: every note's `updated_at` is stamped by the test, never read
 off the clock, because the later stamp is what decides a conflict.
