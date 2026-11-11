@@ -300,6 +300,9 @@ BASE_WEIGHT = {
 
 #: The acts `_from_catalogue` set from the table (props and extras register more later, with lengths of their own).
 CATALOGUED: set[str] = set()
+#: Acts that register later (the props', `props.register`) and still take the catalogue's mood, energy and day weights, so
+#: tea is for the morning and supper for the evening on the desk as it is in the app (E5 c, INBOX 1692 d).
+FACTORED: set[str] = set()
 
 
 def _from_catalogue() -> None:
@@ -338,7 +341,7 @@ def phase_of(hour: int) -> str:
 def catalogue_factor(name: str, mood: str, hour: int) -> float:
     """A5: what the catalogue's mood, energy and day weights make of an act now (1 for an act it does not list, and for the props' own). Energy
     is the part of the day's, none when sleepy and one more when happy or startled."""
-    e = catalogue.by_desk_name().get(name) if name in CATALOGUED else None
+    e = catalogue.by_desk_name().get(name) if name in CATALOGUED or name in FACTORED else None
     if e is None:
         return 1.0
     try:

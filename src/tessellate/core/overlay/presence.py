@@ -2,7 +2,7 @@
 like companions but not in the way"). Technique only, never anyone's art or look.
 
 A spell is a few minutes of one quiet thing the companion does in place, by the hour and its mood: tea in the morning,
-reading or a journal by day, fishing or the stars in the evening, a nap under a blanket at night, and a plant at any
+reading or a journal by day, fishing, knitting a strand of starlight or the stars in the evening, a nap under a blanket at night, and a plant at any
 hour. Pure data and one pure pick (`pick_spell`): no clock, no randomness of its own; the engine passes its seeded
 `rng`. The engine starts it as one long prop act (`Engine._start_spell`), and between two spells it travels by a seen
 move (`travel.VISIBLE`), never a long walk.
@@ -38,6 +38,7 @@ SPELLS: dict[str, Spell] = {
     "fish": Spell("go_fishing", _span(16, 22), (180.0, 480.0), 2.5, ("sleepy", "bored")),
     "stars": Spell("watch_stars", _span(19, 4), (150.0, 420.0), 3.0, ("curious", "sleepy")),
     "doze": Spell("blanket_nap", _span(21, 6), (180.0, 480.0), 3.5, ("sleepy",)),
+    "knit": Spell("knit_starlight", _span(17, 22), (120.0, 300.0), 2.0, ("content", "curious")),
     "plant": Spell("water_plant", _span(0, 24), (100.0, 220.0), 1.0, ("happy", "proud")),
 }
 

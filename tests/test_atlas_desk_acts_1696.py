@@ -62,6 +62,10 @@ ACTS = {
     "starpile": ("act.count_stars", [], 6),
     "cardnap": ("act.card_nap", [], 9),
     "wavepointer": ("act.wave_pointer", [], 2.4),
+    #: E5 (OPEN.md Tier E; INBOX 1692 e and 1711): a bowl of dinner, a bubble wand, two needles and a strand of starlight.
+    "dinner": ("act.dinner", ["nmp-bowl", "nmp-spoon"], 8),
+    "bubbles": ("act.blow_bubbles", ["nmp-wand"], 5),
+    "knit": ("act.knit_starlight", ["nmp-needles"], 6),
 }
 
 

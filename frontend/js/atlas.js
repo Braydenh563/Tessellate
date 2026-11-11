@@ -2171,6 +2171,33 @@ atlasHandProps.desk = function (armR, armL, look) {
   const spanner = atlasHandProps.deskHand(armR, right, "spanner");
   atlasMake("path", { class: "atl-ds-spanner", d: "M-0.4 1.4L5.6 -7.6" }, spanner);
   atlasMake("circle", { class: "atl-ds-spanner-jaw", cx: 6.4, cy: -8.8, r: 1.9 }, spanner);
+  //: E5, the desk's `eat_dinner`, `blow_bubbles` and `knit_starlight` (`core/overlay/props.py`): a bowl with steam in the
+  //: left hand and a spoon in the right; a wand whose ring lets go of three bubbles; two needles with a strand of
+  //: starlight that grows between them. Same paint as the cup, the rod and the pencil.
+  const bowl = atlasHandProps.deskHand(armL, left, "bowl");
+  atlasMake("path", { class: "atl-ds-cup", d: "M-4.2 -1.4H4.2Q3.8 3.8 0 4.2Q-3.8 3.8 -4.2 -1.4Z" }, bowl);
+  atlasMake("ellipse", { class: "atl-ds-metal", cx: 0, cy: -1.4, rx: 4.2, ry: 0.9 }, bowl);
+  const broth = atlasGroup(bowl, "atl-ds-steam");
+  atlasMake("path", { class: "atl-thread", d: "M-1.2 -2.4Q-2.4 -3.8 -1.2 -5.2Q0 -6.6 -1.2 -8" }, broth);
+  atlasMake("path", { class: "atl-thread atl-ds-steam-b", d: "M1.6 -2.4Q0.4 -3.8 1.6 -5.2Q2.8 -6.6 1.6 -8" }, broth);
+  const spoon = atlasHandProps.deskHand(armR, right, "spoon");
+  atlasMake("path", { class: "atl-ds-spoon", d: "M0.4 1.6L7.4 -9.4" }, spoon);
+  atlasMake("ellipse", { class: "atl-ds-metal", cx: 8.4, cy: -10.8, rx: 1.7, ry: 1.2, transform: "rotate(33 8.4 -10.8)" }, spoon);
+  const wand = atlasHandProps.deskHand(armR, right, "wand");
+  atlasMake("path", { class: "atl-ds-spoon", d: "M0.4 1.6L6.6 -8.6" }, wand);
+  atlasMake("circle", { class: "atl-ds-ring", cx: 7.8, cy: -10.6, r: 2.3 }, wand);
+  const suds = atlasGroup(wand, "atl-ds-bubbles");
+  [[0, 1.5], [1, 1.1], [2, 0.8]].forEach(([k, r]) => atlasMake("circle", { class: ["atl-ds-bubble", `atl-ds-bubble-${k}`].join(" "), cx: 7.8, cy: -10.6, r }, suds));
+  for (const [arm, at, side, x] of [[armR, right, "r", 1], [armL, left, "l", -1]]) {
+    const needle = atlasHandProps.deskHand(arm, at, `needles nmp-needles-${side}`);
+    atlasMake("path", { class: "atl-ds-rod", d: `M${0.4 * x} 1.6L${7.6 * x} -9.2` }, needle);
+    atlasMake("circle", { class: "atl-ds-chip", cx: 7.8 * x, cy: -9.6, r: 0.8 }, needle);
+    if (side === "r") {
+      const strand = atlasGroup(needle, "atl-ds-strand");
+      atlasMake("path", { class: "atl-ds-yarn", d: "M7.4 -9.4Q1 -3.4 -3.4 -1.2Q-7.6 1 -9.4 4.6Q-10.6 7.4 -8.4 9.4" }, strand);
+      atlasSpark(strand, -8.4, 9.4, 1.4, "atl-sparkle");
+    }
+  }
 };
 //: **The rest of the desk's doings, drawn in front of the body** (a diary at
 //: the belly with a stroke that writes itself, a sky of stars and a
