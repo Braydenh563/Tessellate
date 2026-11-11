@@ -8762,13 +8762,6 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
   border-color: transparent;
   box-shadow: none;
 }
-/* The Ask column's facts ("No tags yet", "In 1 document", "Default Space")
-   are icon-and-word items with no ground of their own, so the 4px the
-   column's chips use read as none (the owner, 2026-09-24). Words get a
-   word's gap across; the rows stay close. */
-#raw-results .entry-meta {
-  column-gap: var(--space-3);
-}
 /* **Toasts at the bottom on a phone** (the owner's decision, 2026-09-24): at
    the top a due-reminder toast sat over the Notes sub-tabs for its whole
    life. Above the bottom tab bar instead, full width. The one exception is
@@ -10079,13 +10072,6 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 #raw-results > li[data-id] {
   padding-left: calc(var(--space-7) + var(--space-2));
 }
-#raw-results > li[data-id] > .entry-meta.entry-meta {
-  margin-top: var(--space-4);
-}
-#raw-results .entry-meta.note-meta > .chip.category {
-  color: var(--muted);
-  font-weight: 400;
-}
 /* The list's pill: the edge on the connection, the chip inside it bare, so
    the pill's edge is the card's text edge (the chip's own 1.8px hover bleed
    had it 2px in). */
@@ -10121,21 +10107,6 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 #raw-results .chip-interactive.link:hover,
 #raw-results .chip-interactive.link:focus-within {
   color: var(--ink);
-}
-#raw-results .entry-meta > .result-reason-chip {
-  background: none;
-  border: none;
-  box-shadow: none;
-  padding-inline: 0;
-  margin: 0;
-  color: var(--muted);
-  font-weight: 400;
-}
-#raw-results .entry-meta > .result-reason-chip > .ph {
-  color: var(--ok);
-}
-#raw-results .entry-meta > :is(.result-reason-connected, .result-reason-connected_2hop) > .ph {
-  color: var(--accent-text);
 }
 #raw-results li > .record-index {
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 34%, transparent);

@@ -58,7 +58,7 @@ def test_the_reason_is_one_plain_secondary_line():
 
 
 def test_padding_is_even_and_nothing_that_fits_is_clipped():
-    rule = re.search(r"#raw-results > li\.record-card\[data-id\],\s*#raw-results > li\.record-card\.is-numbered\[data-id\] \{([^}]*)\}", LAZY_CSS)
+    rule = re.search(r":is\(#raw-results, \.records-cards\) > li\.record-card\[data-id\],\s*:is\(#raw-results, \.records-cards\) > li\.record-card\.is-numbered\[data-id\] \{([^}]*)\}", LAZY_CSS)
     assert rule and "padding-inline: var(--space-5);" in rule.group(1)
     meta = re.search(r"\.record-meta \{([^}]*)\}", LAZY_CSS).group(1)
     assert "flex-wrap: wrap;" in meta and "overflow: hidden" not in meta
