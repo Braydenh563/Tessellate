@@ -22,6 +22,7 @@ below). Versioning is `0.x` while the app stabilises.
 - Documents sidebar (the owner, 2026-11-11): Attach a bookmark spans the sidebar with its words centred, and "Where are my documents kept?" sits at the sidebar's foot, centred, as its footer (measured at 1440: 226px of a 234px section; the link's bottom 4px above the section's).
 - Fixed (code scanning 2180): the desk companion's "overlay started" log builds the motion words from fixed strings in `_motion_label`, never from the value read from preferences.
 - Chat (owner bug, catch-up): "hey what's been happening?", "what have I been up to", "catch me up", "what did I miss" and "hey what's new" answer with the past week's activity recap, no model or with one, instead of "Nothing is dated for the next two weeks"; a greeting that leads a request is no longer answered as a bare hello.
+- Added: Quick capture, in the app and in the desktop companion's Quick note, takes every file the chat takes (one list, `ATTACH_ACCEPT`), not just pictures: pictures keep thumbnails, other files show as the chat's removable chips, all staged in the browser until Save (nothing is uploaded or filed before it), then attached through the note's own files path; paste and drop stage too, closing the desk note drops them, and a failed save keeps them with a Try again. The note attachment list now takes every type the chat picker offers (`.epub`, `.toml`, `.log` and others it used to refuse).
 - Fixed (code scanning, desk companion start-up log): the motion reason is now the matching constant from `MOTION_REASONS`, never the value read from preferences, so the log line carries no value that came from a preference read.
 - Audit 1029 extras (X1 to X14, re-checked at head 2026-11-11): all fourteen are stale, already fixed in code (pointers in `audit-1029-extras.md`); measured on the running app: the voice dialog opens on its title and typing "t a m" starts nothing, the space menu walks with ArrowDown and holds no nested control, the panel grip is 28 x 28, a resized panel shows its reset button, toast action contrast is 7.72 light and 8.79 dark, space names are cleaned and duplicates answer 409. One residual for the owner: a toast over the sketch's Save buttons still yields to 0.12 by design.
 - Chat (sm-1111 row 16): Confirming an act card marks its answer as one that changed your notes, so Try again asks "Run again" first instead of proposing the same note or reminder a second time.
@@ -225,6 +226,22 @@ below). Versioning is `0.x` while the app stabilises.
 - Fix (composer, w8-1110, rows B3 and B11 to B20): a title-less note is named by its first line cut at about six words in quotes (owner 2026-11-10); a fact with its own date no longer carries the day it was written; footers no longer name frame words (new, brief, valid, schedule); an unfound answer carries no source rows; a habit is placed on its days and "anything on Wednesday" lists them; "what happened on 25 October" leads with the notes' own sentences; today's date is backed by the prompt's clock; "last week" is Monday to Sunday of the week before, one head per list; a bare "3/4" follows the request's locale; month names are not synonyms of each other; a verdict writes the day long ("Thursday 12 November, 9:30").
 - Fix (voice notes, w6-1110, audit 1031 Z12): a Discard whose finish fails now says so with a toast and keeps the recording in Library; audit rows A32 to A36 (1029 X1 to X3, 1031 Z12, 1028 B8, B40) were already fixed on head and are struck.
 ## [Unreleased]
+- Global scope (OPEN W29): `ask-chart.js` is wrapped whole; the global-name cap is 8560 (was 8,576).
+- Global scope (OPEN W29): `captions.js` is wrapped whole and exports 4 names; the global-name cap is 8576 (was 8,592).
+- Global scope (OPEN W29): `capture-card-more.js` is wrapped whole and exports 4 names; the global-name cap is 8,592 (was 8,609).
+- Global scope (OPEN W29): `categories-panel.js` is wrapped whole and exports 12 names; the global-name cap is 8,609 (was 8,629).
+- Complexity (OPEN W29): `import_library` in api/routes_board_library.py (16) cleans each item in `_import_item`; its seed row is gone.
+- Complexity (OPEN W29): `_similar_pairs_dense` in entry/duplicates.py (17) builds its vocabulary and word matrix in `_vocabulary` and `_word_matrix`; its seed row is gone.
+- Complexity (OPEN W29): `count_notes` in api/routes_vision.py (17) counts with `Counter` through `_top_twenty` and `_time_counts`; its seed row is gone.
+- Complexity (OPEN W29): `compute_scores` in ai/resurface.py (17) takes its link counts from `_link_counts`; its seed row is gone.
+- Complexity (OPEN W29): `embedding_text` in ai/embeddings.py (17) takes its filing line and attachment text from `_filed_under` and `_attachment_parts`; its seed row is gone.
+- Complexity (OPEN W29): `_media_readings` in api/chat_attach.py (16) builds each picture's line in `_reading_line`; its seed row is gone.
+- Complexity (OPEN W29): `_one_step_spec` in ai/skills.py (16) takes its tool checks from `_step_tools`; its seed row is gone.
+- Complexity (OPEN W29): `_slim` in api/routes_graph.py (16) hands each note to `_slim_note`; its seed row is gone.
+- Complexity (OPEN W29): `_related_notes` in ai/tools/tool_read.py (16) takes its breadth-first walk from `_walk_neighbourhood`; its seed row is gone.
+- Complexity (OPEN W29): `check_arguments` in ai/tools/tool_run.py (16) reads values through `_coerce_in_place`; its seed row is gone.
+- Complexity (OPEN W29): `listing` in ai/questions.py (16) takes its notes from `_notes_for`; its seed row is gone.
+- Complexity (OPEN W29): `_rows_short_notes` in entry/tidy.py (16) asks `_tied_ids` for the linked and threaded notes; its seed row is gone.
 - Complexity (OPEN W29): `_top_subjects` in ai/notebook_stats.py (16) is `_tag_subjects` then `_word_subjects`; its seed row is gone.
 - Complexity (OPEN W29): `_Markdown.inline` in core/webclip.py (16) reads its bold, italic and code marks from a table and hands links to `_link`; its seed row is gone.
 - Global scope (OPEN W29): `documents-codekit.js` is wrapped whole and exports four names; the global-name cap is 8,629 (was 8,679).

@@ -15,10 +15,11 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests import _js_scope
 
 JS = Path(__file__).resolve().parent.parent / "frontend" / "js"
 TAGS = (JS / "tag-manager.js").read_text(encoding="utf-8")
-CATS = (JS / "categories-panel.js").read_text(encoding="utf-8")
+CATS = _js_scope.unwrapped((JS / "categories-panel.js").read_text(encoding="utf-8"))
 
 
 def _body(text: str, signature: str) -> str:

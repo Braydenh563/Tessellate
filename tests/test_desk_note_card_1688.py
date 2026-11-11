@@ -24,8 +24,8 @@ def test_the_panel_hosts_the_capture_card_not_a_textarea_of_its_own():
 
 
 def test_the_card_is_fetched_as_the_app_fetches_it_and_runs_on_its_core():
-    assert '{ captureCard: ["/css/capture-card-lazy.css", "/js/capture-card.js"] }[name]' in ENV
-    # the pickers, menus and uploads of its second file are the app's: not here
+    assert '{ captureCard: ["/css/capture-card-lazy.css", "/js/att-chip.js", "/js/capture-card.js"] }[name]' in ENV
+    # the pickers and menus of its second file are the app's: not here (its staging file is)
     assert 'file === "/js/capture-card-more.js" ? Promise.resolve(false) : load(file)' in ENV
     assert "/js/capture-card" not in HTML, "the card is lazy here too"
 

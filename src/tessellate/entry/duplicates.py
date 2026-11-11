@@ -166,6 +166,25 @@ def _prefix_work(prepared: list[tuple[str, frozenset[str]]], threshold: float) -
     return work, len(document_frequency)
 
 
+def _vocabulary(prepared: list[tuple[str, frozenset[str]]]) -> dict[str, int]:
+    vocabulary: dict[str, int] = {}
+    for _norm, words in prepared:
+        for word in words:
+            vocabulary.setdefault(word, len(vocabulary))
+    return vocabulary
+
+
+def _word_matrix(prepared: list[tuple[str, frozenset[str]]], vocabulary: dict[str, int]):  # noqa: ANN202
+    """One row a note, a 1.0 in the column of each word it holds."""
+    import numpy as np
+
+    matrix = np.zeros((len(prepared), len(vocabulary)), dtype=np.float32)
+    for i, (_norm, words) in enumerate(prepared):
+        if words:
+            matrix[i, [vocabulary[word] for word in words]] = 1.0
+    return matrix
+
+
 def _similar_pairs_dense(
     prepared: list[tuple[str, frozenset[str]]], threshold: float
 ) -> Iterator[tuple[int, int, float]]:
@@ -180,10 +199,7 @@ def _similar_pairs_dense(
     """
     import numpy as np
 
-    vocabulary: dict[str, int] = {}
-    for _norm, words in prepared:
-        for word in words:
-            vocabulary.setdefault(word, len(vocabulary))
+    vocabulary = _vocabulary(prepared)
     n = len(prepared)
     first_with_text: dict[str, int] = {}
     for i, (norm, _words) in enumerate(prepared):
@@ -193,10 +209,7 @@ def _similar_pairs_dense(
             first_with_text[norm] = i
     if not vocabulary or n < 2:
         return
-    matrix = np.zeros((n, len(vocabulary)), dtype=np.float32)
-    for i, (_norm, words) in enumerate(prepared):
-        if words:
-            matrix[i, [vocabulary[word] for word in words]] = 1.0
+    matrix = _word_matrix(prepared, vocabulary)
     sizes = [len(words) for _norm, words in prepared]
     sizes32 = np.array(sizes, dtype=np.float32)
     norms = [norm for norm, _words in prepared]
