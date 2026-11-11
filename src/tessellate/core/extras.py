@@ -330,6 +330,19 @@ NO_PYTHON_FOUND_MESSAGE = (
 )
 
 
+#: Where `pywhispercpp` 1.5.1 has a wheel (checked per platform, 2026-11-11):
+#: no macOS x86_64, Windows arm64 or musl Linux.
+_CAPTIONS_PLATFORMS = ("windows-x86_64", "linux-x86_64", "linux-aarch64", "macos-arm64")
+CAPTIONS_MODEL_FILE = "ggml-tiny.en-q5_1.bin"
+CAPTIONS_MODEL_VERSION = "hf-5359861-tiny.en-q5_1"
+_CAPTIONS_NO_BUILD = (
+    "No whisper.cpp build for this computer yet. Captions use the Voice notes "
+    "engine when it is installed."
+)
+#: The sentence for an `Extra.platforms` miss, by extra id.
+NO_BUILD_REASON = {"captions": _CAPTIONS_NO_BUILD, "captionmodel": _CAPTIONS_NO_BUILD}
+
+
 @dataclass(frozen=True)
 class Extra:
     """One optional dependency, and the honest description of what it buys."""
@@ -380,6 +393,10 @@ class Extra:
     licence: str = ""
     #: The name in a progress line ("Downloading Pyodide: 3.1 of 6.8 MB").
     short_label: str = ""
+    #: `extra_downloads.platform_key()` values this can be installed on; empty
+    #: means anywhere. A row with no build for this computer is greyed with
+    #: `NO_BUILD_REASON` and refused by `start()`, like `unavailable`.
+    platforms: tuple[str, ...] = ()
 
 
 #: **Spelling packs (D30, owner decision 2026-11-11).** A Hunspell word list for another
@@ -889,30 +906,59 @@ EXTRAS: tuple[Extra, ...] = (
             ),
         ),
     ),
-    #: **Live captions (WORLD_CLASS_PLAN 28.5 row 9, Brief 82).** whisper.cpp's
-    #: `whisper-server` (MIT), a separate executable, never a Python import.
-    #: The captions code in `ai/captions.py` already speaks to it through
-    #: `TESSELLATE_CAPTIONS_URL`; what is missing is the pinned download. A
-    #: `Download` needs a URL, a sha256 and a byte size read from a release
-    #: asset, and the release page was not readable when this was written
-    #: (caption82-1010.md), so a guessed pin would be a fabricated checksum.
-    #: Listed so Settings, Packages names the feature and says what is left.
-    #: Not `kind="download"` until then: a download row is a pinned version
-    #: and files (test_extras_download.py), and this one has neither.
+    #: **Live captions (WORLD_CLASS_PLAN 28.5 row 9, Brief 82b; INBOX 1777)**,
+    #: two rows in the speaker-labels shape. The engine is `pywhispercpp`
+    #: (whisper.cpp 1.8.5 compiled in, MIT), whose wheels bundle their own C++
+    #: runtimes; the app never imports it, `ai/captions_helper.py` does, as a
+    #: child process (`ai/captions_process.py`). **Wheels exist for** Windows
+    #: x86_64, Linux x86_64 and aarch64 (glibc) and macOS arm64, hence
+    #: `platforms`; elsewhere the row says so and captions use the Voice notes
+    #: engine. **To bump:** `pip download pywhispercpp==X --no-deps` per
+    #: platform to check a wheel exists, bump the pin here.
     Extra(
         id="captions",
-        label="Live captions (whisper.cpp)",
-        short_label="Live captions",
-        enables="Live captions over any screen: what the microphone hears, "
-        "written as you speak and saved as a note, on this computer.",
-        packages=("whisper.cpp server",),
-        module="",
-        size="~35 MB for the helper and the tiny.en model",
+        label="Live captions, engine (whisper.cpp)",
+        short_label="Live captions engine",
+        enables="Turns what the microphone hears into text as you speak, on "
+        "this computer. Needs the caption model below as well; the Live "
+        "captions bundle installs both.",
+        packages=("pywhispercpp==1.5.1",),
+        module="pywhispercpp",
+        size="~5 MB, plus NumPy if it is not here yet",
         licence="MIT",
-        unavailable="The helper isn't packaged for one-click install yet. To "
-        "try captions now, run whisper.cpp's whisper-server on this computer "
-        "and start Tessellate with TESSELLATE_CAPTIONS_URL set to its address "
-        "(for example http://127.0.0.1:8080).",
+        platforms=_CAPTIONS_PLATFORMS,
+    ),
+    #: **To bump the model:** a Hugging Face `resolve/<commit>/` URL (a commit,
+    #: never `main`, so the bytes cannot move), `sha256sum` and the byte size
+    #: of the file, written here; the marker records the version. Full-precision
+    #: tiny.en is 77,704,715 bytes (sha256 921e4cf8…0b1f), the q5_1 file is
+    #: smaller and was chosen for the download.
+    Extra(
+        id="captionmodel",
+        label="Live captions, model (tiny.en)",
+        short_label="Live captions model",
+        enables="The small English speech model the caption engine reads. It "
+        "is read from this computer's data folder; nothing is sent anywhere "
+        "after the download.",
+        packages=("whisper.cpp tiny.en q5_1",),
+        module="",
+        size="~32 MB download",
+        caveat="English only, and quick rather than exact: names and rare "
+        "words can come out wrong.",
+        kind="download",
+        version=CAPTIONS_MODEL_VERSION,
+        licence="MIT",
+        platforms=_CAPTIONS_PLATFORMS,
+        downloads=(
+            Download(
+                url="https://huggingface.co/ggerganov/whisper.cpp/resolve/"
+                "5359861c739e955e79d9a303bcbc70fb988958b1/ggml-tiny.en-q5_1.bin",
+                sha256="c77c5766f1cef09b6b7d47f21b546cbddd4157886b3b5d6d4f709e91e66c7c2b",
+                size=32166155,
+                unpack="file",
+                members=(("", CAPTIONS_MODEL_FILE),),
+            ),
+        ),
     ),
 )
 
@@ -996,7 +1042,7 @@ BUNDLES: tuple[Bundle, ...] = (
         id="captions",
         label="Live captions",
         about="Captions over any screen as you speak, written on this computer.",
-        extras=("captions",),
+        extras=("captions", "captionmodel"),
     ),
     Bundle(
         id="desktop",
@@ -1292,6 +1338,8 @@ def unavailable_reason(extra: Extra) -> str:
     computer (`extra_downloads.platform_reason`)."""
     if extra.unavailable:
         return extra.unavailable
+    if extra.platforms and extra_downloads.platform_key() not in extra.platforms:
+        return NO_BUILD_REASON.get(extra.id, "There is no build of this for your computer yet.")
     if extra.id == "languagetool":
         from tessellate.core import languagetool_files
 
