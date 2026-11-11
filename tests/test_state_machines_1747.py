@@ -27,7 +27,8 @@ def test_a_binned_note_cannot_be_archived_or_unarchived(client):
     tab) made it binned and archived, so Restore brought it back into the Archive, out of sight."""
     nid = client.post("/entries", json={"content": "alpha body"}).json()["id"]
     client.delete(f"/entries/{nid}")
-    assert client.post(f"/entries/{nid}/archive").status_code == 409
-    assert client.post(f"/entries/{nid}/unarchive").status_code == 409
+    archived = client.post(f"/entries/{nid}/archive")
+    unarchived = client.post(f"/entries/{nid}/unarchive")
+    assert (archived.status_code, unarchived.status_code) == (409, 409)
     restored = client.post(f"/entries/{nid}/restore").json()
     assert not restored["archived_at"]
