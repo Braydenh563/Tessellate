@@ -186,7 +186,7 @@ async function diagCollect() {
       sampler: snapshot.sampler,
     },
     lag: server.lag,
-    errors: [...LAG.errors.values()],
+    errors: Array.from(LAG.errors.values()),
     server,
     snapshot,
   });

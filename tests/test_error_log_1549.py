@@ -12,9 +12,10 @@ import json
 import subprocess
 
 from tests._app_js import APP_JS, frontend_text
+from tests._js_scope import unwrapped
 
 APP = APP_JS.read_text(encoding="utf-8")
-LAG = frontend_text("lag-watch.js")
+LAG = unwrapped(frontend_text("lag-watch.js"))
 
 
 def _texts(cases: str) -> list[str]:

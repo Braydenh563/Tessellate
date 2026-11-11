@@ -82,7 +82,8 @@ TOP_LEVEL_LETS_CAP = 699
 #: 2026-11-11 W29 carve 14: math-field.js wrapped whole. Measured 8,519.
 #: 2026-11-11 W29 carve 15: icon-picker.js wrapped whole. Measured 8,503.
 #: 2026-11-11 W29 merge with the hub head: one name added by the hub's atlas lag work (nameMarkBuddyFollowFrame / afterCalm area), cap to measured. Measured 8,504.
-GLOBAL_NAMES_CAP = 8504
+#: 2026-11-11 scope-wrap-1111: lag-watch.js (five exports) and agent-activity.js (eleven) wrapped whole; math-field.js, ask-chart.js and capture-card-more.js were already wrapped. Measured 8,454.
+GLOBAL_NAMES_CAP = 8454
 
 
 @functools.lru_cache(maxsize=None)

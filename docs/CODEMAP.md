@@ -1266,23 +1266,23 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addAgentRun` | frontend/js/agent-activity.js:161 |
-| `agentRunAddStep` | frontend/js/agent-activity.js:252 |
-| `agentRunPaintStep` | frontend/js/agent-activity.js:273 |
-| `agentRunWantsPanel` | frontend/js/agent-activity.js:324 |
-| `appendAgentLog` | frontend/js/agent-activity.js:518 |
-| `endAgentRun` | frontend/js/agent-activity.js:281 |
-| `nudgeAgentMonitorIdle` | frontend/js/agent-activity.js:448 |
-| `openActivity` | frontend/js/agent-activity.js:407 |
-| `openPanelForRun` | frontend/js/agent-activity.js:332 |
-| `renderActivityStatusItem` | frontend/js/agent-activity.js:344 |
-| `renderAgentRunSummary` | frontend/js/agent-activity.js:105 |
-| `runStateLabel` | frontend/js/agent-activity.js:96 |
-| `setAgentMonitorLogVisible` | frontend/js/agent-activity.js:362 |
-| `setAgentMonitorVisible` | frontend/js/agent-activity.js:420 |
-| `showActivityTab` | frontend/js/agent-activity.js:402 |
-| `stepStateWords` | frontend/js/agent-activity.js:59 |
-| `streamAgentLogs` | frontend/js/agent-activity.js:558 |
+| `addAgentRun` | frontend/js/agent-activity.js:162 |
+| `agentRunAddStep` | frontend/js/agent-activity.js:253 |
+| `agentRunPaintStep` | frontend/js/agent-activity.js:274 |
+| `agentRunWantsPanel` | frontend/js/agent-activity.js:325 |
+| `appendAgentLog` | frontend/js/agent-activity.js:519 |
+| `endAgentRun` | frontend/js/agent-activity.js:282 |
+| `nudgeAgentMonitorIdle` | frontend/js/agent-activity.js:449 |
+| `openActivity` | frontend/js/agent-activity.js:408 |
+| `openPanelForRun` | frontend/js/agent-activity.js:333 |
+| `renderActivityStatusItem` | frontend/js/agent-activity.js:345 |
+| `renderAgentRunSummary` | frontend/js/agent-activity.js:106 |
+| `runStateLabel` | frontend/js/agent-activity.js:97 |
+| `setAgentMonitorLogVisible` | frontend/js/agent-activity.js:363 |
+| `setAgentMonitorVisible` | frontend/js/agent-activity.js:421 |
+| `showActivityTab` | frontend/js/agent-activity.js:403 |
+| `stepStateWords` | frontend/js/agent-activity.js:60 |
+| `streamAgentLogs` | frontend/js/agent-activity.js:559 |
 
 ### frontend/js/rich-picker.js (8)
 
@@ -5685,29 +5685,29 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `lagApi` | frontend/js/lag-watch.js:100 |
-| `lagApiWho` | frontend/js/lag-watch.js:111 |
-| `lagErrorsStart` | frontend/js/lag-watch.js:361 |
-| `lagFile` | frontend/js/lag-watch.js:67 |
-| `lagFlush` | frontend/js/lag-watch.js:175 |
-| `lagFrame` | frontend/js/lag-watch.js:182 |
-| `lagFrameWhy` | frontend/js/lag-watch.js:192 |
-| `lagInput` | frontend/js/lag-watch.js:216 |
-| `lagNote` | frontend/js/lag-watch.js:117 |
-| `lagNoteError` | frontend/js/lag-watch.js:348 |
-| `lagObserve` | frontend/js/lag-watch.js:233 |
-| `lagRafClose` | frontend/js/lag-watch.js:294 |
-| `lagRafInstall` | frontend/js/lag-watch.js:313 |
-| `lagRafOwner` | frontend/js/lag-watch.js:254 |
-| `lagRafTop` | frontend/js/lag-watch.js:287 |
-| `lagRequest` | frontend/js/lag-watch.js:225 |
-| `lagScriptCause` | frontend/js/lag-watch.js:73 |
-| `lagSnapshot` | frontend/js/lag-watch.js:379 |
-| `lagStackOwner` | frontend/js/lag-watch.js:240 |
-| `lagStart` | frontend/js/lag-watch.js:414 |
-| `lagTarget` | frontend/js/lag-watch.js:59 |
-| `lagView` | frontend/js/lag-watch.js:52 |
-| `lagWireSettings` | frontend/js/lag-watch.js:401 |
+| `lagApi` | frontend/js/lag-watch.js:101 |
+| `lagApiWho` | frontend/js/lag-watch.js:112 |
+| `lagErrorsStart` | frontend/js/lag-watch.js:362 |
+| `lagFile` | frontend/js/lag-watch.js:68 |
+| `lagFlush` | frontend/js/lag-watch.js:176 |
+| `lagFrame` | frontend/js/lag-watch.js:183 |
+| `lagFrameWhy` | frontend/js/lag-watch.js:193 |
+| `lagInput` | frontend/js/lag-watch.js:217 |
+| `lagNote` | frontend/js/lag-watch.js:118 |
+| `lagNoteError` | frontend/js/lag-watch.js:349 |
+| `lagObserve` | frontend/js/lag-watch.js:234 |
+| `lagRafClose` | frontend/js/lag-watch.js:295 |
+| `lagRafInstall` | frontend/js/lag-watch.js:314 |
+| `lagRafOwner` | frontend/js/lag-watch.js:255 |
+| `lagRafTop` | frontend/js/lag-watch.js:288 |
+| `lagRequest` | frontend/js/lag-watch.js:226 |
+| `lagScriptCause` | frontend/js/lag-watch.js:74 |
+| `lagSnapshot` | frontend/js/lag-watch.js:380 |
+| `lagStackOwner` | frontend/js/lag-watch.js:241 |
+| `lagStart` | frontend/js/lag-watch.js:415 |
+| `lagTarget` | frontend/js/lag-watch.js:60 |
+| `lagView` | frontend/js/lag-watch.js:53 |
+| `lagWireSettings` | frontend/js/lag-watch.js:402 |
 
 ### frontend/js/lan-watch.js (19)
 
