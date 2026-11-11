@@ -968,6 +968,16 @@ function entryItem(entry, options = {}) {
       actions.appendChild(smallButton("ph:check-circle", "Publish this draft as a proper note", () => publishDraft(entry)));
     }
     actions.appendChild(entryOverflowMenu(entry));
+    //: **The icon buttons say which note they act on** (audit 1029 N17): a list
+    //: of buttons read "Edit this entry" once per card. The note's name after
+    //: the verb tells them apart; `title` stays (notes-list.js finds Edit by it).
+    const cardName = (entry.title || noteNamePlain(entry.content || "", 60) || "").trim();
+    if (cardName) {
+      for (const button of actions.querySelectorAll("button")) {
+        const verb = (button.getAttribute("aria-label") || button.title || "").trim();
+        if (verb) button.setAttribute("aria-label", `${verb}: ${cardName}`);
+      }
+    }
     metaEnd.appendChild(actions);
   }
   if (entry.is_private) {
