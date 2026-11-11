@@ -62,6 +62,12 @@ RING_ROOM: list[tuple[str, str, str]] = [
     # The 2026-10-11 sweep (focus ring probe, 1440 and 390).
     ("a page that scrolls, a stop flush with its bottom edge", ".tab-page", "room"),
     ("Settings, Background jobs: Run now fills its row on a phone", ".job-run-now", "inset"),
+    # The 2026-11-11 wrapzoom sweep (every width and zoom).
+    ("a sidebar heading holding the Notes fold caret", ".sidebar-head h2", "room"),
+    ("the Timeline's scroller, the calendar head's first button on its edge", ".timeline-scroll", "room"),
+    ("the week's day heads on the top of their row", ".timeline-cal-weektop", "room"),
+    ("calendar items filling their cell", ".timeline-cal-cell .timeline-cal-item", "inset"),
+    ("a calendar cell's More row", ".timeline-cal-cell .timeline-cal-more", "inset"),
 ]
 
 #: A pill track with an edge: its segments fill its inside, never the
