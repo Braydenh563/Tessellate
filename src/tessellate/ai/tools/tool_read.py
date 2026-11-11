@@ -17,6 +17,7 @@ from tessellate.ai import note_rank
 from tessellate.search import search_manager
 from tessellate.entry.properties import strip as strip_properties
 from datetime import timedelta
+from tessellate.ai.tools.tool_list_page import describe_filters, page_of_notes, unknown_category_hint
 
 # --- handlers (session, args) -> result dict -----------------------------------
 # Results always include a human "label" on success; the UI shows it
@@ -565,45 +566,8 @@ def _list_notes(session: Session, args: dict) -> dict:
     since_days = _since_days(args.get("since"))
     filters.extend(_scope_filters(args))
 
-    query = select(Entry).where(*_visible(*filters))
-    rows = list(
-        session.scalars(
-            query.order_by(Entry.created_at.desc(), Entry.id.desc())
-            # Over-fetch when a tag filter is on, because the exact tag match
-            # below can only remove rows, never add them.
-            .offset(offset).limit(limit + 1 if not tag else (limit + 1) * 4)
-        )
-    )
-    if tag:
-        wanted = tag.lower()
-        rows = [e for e in rows if wanted in {t.lower() for t in manager.entry_tags(e)}]
-
-    has_more = len(rows) > limit
-    rows = rows[:limit]
-
-    if tag:
-        # An exact count needs the same per-row check, so it can't be a
-        # SQL count(). Cheap enough: tags, not content.
-        total = sum(
-            1
-            for e in session.scalars(select(Entry).where(*_visible(*filters)))
-            if tag.lower() in {t.lower() for t in manager.entry_tags(e)}
-        )
-        has_more = offset + len(rows) < total
-    else:
-        total = session.scalar(
-            select(func.count(Entry.id)).where(*_visible(*filters))
-        ) or 0
-
-    described = ", ".join(
-        part
-        for part in (
-            category or "",
-            f"#{tag}" if tag else "",
-            f"last {since_days} days" if since_days is not None else "",
-        )
-        if part
-    )
+    rows, total, has_more = page_of_notes(session, filters, tag, offset, limit)
+    described = describe_filters(category, tag, since_days)
     dates_by_id = manager.entry_dates_bulk(session, [e.id for e in rows])
     result = {
         "notes": [_note_summary(session, e, dates=dates_by_id.get(e.id, [])) for e in rows],
@@ -622,25 +586,9 @@ def _list_notes(session: Session, args: dict) -> dict:
             f"offset={offset + len(rows)} for the next page, do not assume "
             "these are all the notes."
         )
-    elif category and not total and not _category_exists(session, category):
-        # A name that is not a category matches nothing, on purpose; a model
-        # that guessed "notes" needs to be told that, and shown the real ones.
-        known = ", ".join(f"“{c['name']}”" for c in manager.all_categories(session)[:12])
-        result["note_to_model"] = (
-            f"There is no category called “{category}”, so nothing matched. "
-            + (f"The categories that exist are {known}. " if known else "")
-            + "Call list_notes without `category` to see every note."
-        )
+    elif category and not total and (hint := unknown_category_hint(session, category)):
+        result["note_to_model"] = hint
     return result
-
-
-def _category_exists(session: Session, name: str) -> bool:
-    """Is `name` a category (any case) or the uncategorised bucket?"""
-    from tessellate.core.database import Category
-
-    if name == manager.UNCATEGORISED:
-        return True
-    return session.scalar(select(Category.id).where(func.lower(Category.name) == name.lower())) is not None
 
 
 def _count_notes(session: Session, args: dict) -> dict:
