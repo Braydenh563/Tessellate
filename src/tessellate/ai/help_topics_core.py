@@ -1401,6 +1401,8 @@ HELP_TOPICS.extend(
                 "my pin",
                 "quick unlock",
                 "windows hello",
+                "where you left off",
+                "unsaved words after lock",
             ),
             "body": (
                 "Settings, Account & security: set a password and the notebook "
@@ -1410,6 +1412,9 @@ HELP_TOPICS.extend(
                 "Unlock counts it down. "
                 "While it is locked, an open dialog or popover is put away, and "
                 "it comes back as it was after you unlock, and the lock screen takes focus. "
+                "Words you typed and had not saved are sealed with your password when it locks, "
+                "emptied from the page, and put back after you unlock; Where you left off, in the "
+                "toast that follows and in the Ctrl+K palette, lists each box that holds them and jumps to it. "
                 "To make a note private, open its ... menu and press Make private; Make readable undoes it. "
                 "Private notes are encrypted with that password and are never sent "
                 "to the AI, so a private note's menu has no Tag and file, Improve writing or title acts. Forgot it? "

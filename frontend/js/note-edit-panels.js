@@ -243,7 +243,11 @@ function renderEditForm(li, entry) {
   titleInput.setAttribute("aria-label", "Title: becomes the note's leading heading");
   titleInput.value = draft ? draft.title : parts.title;
   titleInput.addEventListener("input", () => { noteFormDirty = true; });
+  //: A private note's text sits in these two while the form is open: the lock empties them
+  //: wherever the form is drawn (`purgeLockedContent`, INBOX 1747 row 26).
+  titleInput.dataset.holdsNotebook = "";
   const textarea = document.createElement("textarea");
+  textarea.dataset.holdsNotebook = "";
   textarea.rows = 3;
   textarea.setAttribute("aria-label", "Note text"); // its editor takes this name (noteSurfaceName)
   textarea.value = draft ? draft.content : parts.body;

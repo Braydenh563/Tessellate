@@ -781,6 +781,8 @@ const LOCK_PURGE_IDS = [
   "graph-svg", // node labels are note titles
   "palette-list", // whatever was last searched for
   "palette-preview", // and the note it was showing
+  "dash-glance", // the dashboard's recent note titles
+  "dash-more", // and its More menu, whose Continue row names the last note
 ];
 
 //: Empty everything the lock screen is covering.
@@ -804,6 +806,8 @@ function purgeLockedContent() {
 }
 
 async function lockNow() {
+  //: The typed words are sealed and emptied before the key goes (INBOX 1747, row 22).
+  await typedWords("keep").catch(() => false);
   try {
     await api("/auth/lock", { method: "POST" });
   } catch {
@@ -1849,7 +1853,7 @@ const LAZY_ENTRY_POINTS = {
   updates: ["checkForUpdate", "applyUpdateNow", "showSourceUpdatedDialog", "askUpdateChoiceOnce"],
   appPalette: ["openPalette"],
   notePanels: ["beginOrCompleteLink", "toggleRelated", "toggleReferences", "toggleFaded", "toggleNoteReminders", "renderEditForm", "richPickerNote"],
-  vault: ["unlockPrivateNotes", "ensureVaultOpen"],
+  vault: ["unlockPrivateNotes", "ensureVaultOpen", "typedWords"],
   accountRecovery: ["openForgotPassword", "offerRecoveryKey", "showRecoveryKey", "makeRecoveryKey", "recoveryAccountRow"],
   attachTo: ["renderAttachToBoard", "renderAttachToDocument", "renderNotePickerList"],
   noteTemplates: ["openNoteTemplateDialog", "useNoteTemplate", "templateCatalogue"],

@@ -64,3 +64,60 @@ def test_a_second_complete_of_the_same_occurrence_does_not_skip_one(client):
     # No expected time sent: the old unconditional roll stays for callers that do not know it.
     again = client.post(f"/reminders/{made['id']}/complete")
     assert again.status_code == 200
+
+
+def test_typed_words_are_kept_sealed_across_a_lock_and_handed_back(client):
+    """Lock screen and the unsaved words: the fields are sealed with the vault key (never plain on
+    disk), unreadable once the key is gone, and handed back after the next unlock."""
+    from tessellate.core import crypto, deps, vault
+
+    config = deps.get_config()
+    vault.set_key(crypto.new_dek())
+    try:
+        sent = {"entry-content": "my half written secret", "entry-title": "", "question": "who is?"}
+        kept = client.put("/kept-words", json={"fields": sent}).json()
+        assert kept == {"kept": 2}
+        assert b"half written" not in (config.data_dir / "kept-words.enc").read_bytes()
+        got = client.get("/kept-words").json()
+        assert got["fields"] == {"entry-content": "my half written secret", "question": "who is?"}
+        key = vault.key()
+        vault.close()
+        refused = client.put("/kept-words", json={"fields": sent})
+        sealed = client.get("/kept-words").json()
+        assert (refused.status_code, sealed["fields"]) == (409, {})
+        vault.set_key(key)
+        back = client.get("/kept-words").json()
+        assert back["fields"]["question"] == "who is?"
+        gone = client.delete("/kept-words")
+        assert gone.status_code == 204
+        after = client.get("/kept-words").json()
+        assert after["fields"] == {}
+    finally:
+        vault.close()
+
+
+def test_lock_seals_the_typed_fields_before_it_locks_and_every_listed_id_exists():
+    """The lock keeps the typed words first (`keepTypedWords`), then locks; each id the list names
+    is a real field (a renamed id would quietly keep nothing), and the stand-in knows the names."""
+    import re
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1] / "frontend"
+    unlock = (root / "js" / "vault-unlock.js").read_text(encoding="utf-8")
+    ids = re.findall(r'"([a-z][a-z-]+)"', re.search(r"const TYPED_IDS = \[(.*?)\];", unlock, re.S).group(1))
+    ids += re.findall(r'"([a-z][a-z-]+)"', re.search(r"const SEARCH_ONLY_IDS = \[(.*?)\];", unlock, re.S).group(1))
+    everything = (root / "index.html").read_text(encoding="utf-8") + "".join(
+        p.read_text(encoding="utf-8") for p in (root / "js").glob("*.js")
+    )
+    missing = [i for i in ids if f'id="{i}"' not in everything and f'"{i}"' not in everything.replace(unlock, "")]
+    assert len(ids) > 40 and not missing, missing
+    app = (root / "js" / "app.js").read_text(encoding="utf-8")
+    lock = app[app.index("async function lockNow()"):]
+    assert lock.index('typedWords("keep")') < lock.index('"/auth/lock"')
+    assert '"ensureVaultOpen", "typedWords"' in app
+    # Row 26: the edit form's two fields are marked so the lock empties them wherever the form is
+    # drawn, the dashboard's note titles are purged, and the kept edit leaves this browser.
+    panels = (root / "js" / "note-edit-panels.js").read_text(encoding="utf-8")
+    assert panels.count('.dataset.holdsNotebook = ""') == 2
+    assert '"dash-glance"' in app and '"dash-more"' in app
+    assert 'prefs.remove(EDIT_DRAFT)' in unlock
