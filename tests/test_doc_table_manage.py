@@ -130,3 +130,24 @@ def test_the_add_buttons_draw_their_plus_instead_of_typing_it() -> None:
     css = (root / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
     assert 'addCol.textContent = "+"' not in js and 'addRow.textContent = "+"' not in js
     assert ".doc-table-add::before" in css and ".doc-table-add::after" in css
+
+
+def test_grips_clear_the_cell_ring_and_the_add_row_plus_sits_under_the_table() -> None:
+    """Owner report: the row grip bar touched the active cell's accent ring and
+    the add-row plus sat a band low. The bars are inset by a spacing token from
+    the table edge, and `.doc-table-add` keeps the shared `absolute` (a later
+    `position: relative` pushed it down the layer's flow, measured 17.9px under
+    the last row; now 3.9px)."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    css = (root / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    js = (root / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    row = css.split(".doc-table-grip-row::before {", 1)[1].split("}", 1)[0]
+    col = css.split(".doc-table-grip-col::before {", 1)[1].split("}", 1)[0]
+    assert "right: var(--space-3)" in row
+    assert "bottom: var(--space-3)" in col
+    add = css.split(".doc-table-add {", 1)[1].split("}", 1)[0]
+    assert "position: relative" not in add
+    assert "margin-top: var(--space-1)" in css.split(".doc-table-add-row {", 1)[1].split("}", 1)[0]
+    assert "y: geo.box.bottom, w: band" in js

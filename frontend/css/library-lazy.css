@@ -6901,19 +6901,19 @@ input[type="color"].wb-mixed {
 }
 
 .doc-table-grip-col::before {
-  top: 50%;
   right: var(--space-1);
+  bottom: var(--space-3);
   left: var(--space-1);
   height: var(--space-2);
-  margin-top: calc(var(--space-2) / -2);
 }
 
+/* The bars sit a token gap (--space-3) clear of the table edge, so the active
+   cell's accent ring (drawn inside the cell) never touches them. */
 .doc-table-grip-row::before {
   top: var(--space-1);
+  right: var(--space-3);
   bottom: var(--space-1);
-  left: 50%;
   width: var(--space-2);
-  margin-left: calc(var(--space-2) / -2);
 }
 
 .doc-table-grip:hover::before,
@@ -6927,7 +6927,8 @@ input[type="color"].wb-mixed {
 }
 
 .doc-table-add {
-  position: relative;
+  /* Absolute, from the shared rule above: `relative` here left the button in
+     the layer's flow, so the add-row plus landed a band's height low. */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -6939,6 +6940,10 @@ input[type="color"].wb-mixed {
   font-size: var(--text-sm);
   line-height: 1;
   cursor: pointer;
+}
+
+.doc-table-add-row {
+  margin-top: var(--space-1);
 }
 
 /* The plus is drawn, not typed: a "+" glyph sits on the font's baseline and
