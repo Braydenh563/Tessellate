@@ -182,50 +182,48 @@
     return spots;
   }
 
-  //: A category's name fitted to its header, never cut. `measure(text, size)` is
-  //: a string's width in px at that font size; `maxW` and `maxH` the room in px.
-  //: Tried at 12px first, then down to 9: the name and count on one line, the
-  //: name alone, the name wrapped over as many lines as fit (a word wider than
-  //: the room is broken between letters, not shortened). Null when not even 9px
-  //: fits: the label is left out, the title tooltip and the legend name it.
+  //: A category's name fitted to its header, never split inside a word (INBOX
+  //: 1744: "Literatur / e"). `measure(text, size)` is a string's width in px at
+  //: that font size; `maxW` and `maxH` the room in px. In order, at 12px: the
+  //: name and count on one line; the name alone; the name wrapped at spaces
+  //: over two lines at most; then the same one size down, to 9px; last, the
+  //: name's leading whole words and an ellipsis. Null when even the first word
+  //: is wider than the room or no line fits: the label is left out, the title
+  //: tooltip and the legend name it.
   function fitHeaderLabel(measure, name, count, maxW, maxH) {
     const label = name || "Unfiled";
+    const words = label.split(/\s+/).filter(Boolean);
     for (let size = 12; size >= 9; size--) {
-      const lineH = size + 3;
-      const rows = Math.floor(maxH / lineH);
+      const rows = Math.min(2, Math.floor(maxH / (size + 3)));
       if (rows < 1) continue;
       const full = `${label} (${count})`;
       if (measure(full, size) <= maxW) return { size, lines: [full] };
       if (measure(label, size) <= maxW) return { size, lines: [label] };
-      const lines = tessWrap(measure, label, size, maxW);
-      if (lines.length <= rows) return { size, lines };
+      const lines = rows > 1 ? tessWrap(measure, words, size, maxW) : null;
+      if (lines && lines.length <= rows) return { size, lines };
+    }
+    const size = 9;
+    const rows = Math.min(2, Math.floor(maxH / (size + 3)));
+    if (rows < 1) return null;
+    for (let n = words.length - 1; n >= 1; n--) {
+      const lines = tessWrap(measure, [...words.slice(0, n - 1), `${words[n - 1]}\u2026`], size, maxW);
+      if (lines && lines.length <= rows) return { size, lines };
     }
     return null;
   }
 
-  function tessWrap(measure, text, size, maxW) {
+  //: Greedy wrap at spaces only; null when a single word is wider than the room.
+  function tessWrap(measure, words, size, maxW) {
     const lines = [];
     let line = "";
-    const put = (word) => {
+    for (const word of words) {
+      if (measure(word, size) > maxW) return null;
       const joined = line ? `${line} ${word}` : word;
-      if (measure(joined, size) <= maxW) {
-        line = joined;
-        return true;
+      if (measure(joined, size) <= maxW) line = joined;
+      else {
+        lines.push(line);
+        line = word;
       }
-      return false;
-    };
-    for (const word of text.split(/\s+/).filter(Boolean)) {
-      if (put(word)) continue;
-      if (line) lines.push(line);
-      line = "";
-      let rest = word;
-      while (measure(rest, size) > maxW && rest.length > 1) {
-        let n = rest.length - 1;
-        while (n > 1 && measure(rest.slice(0, n), size) > maxW) n--;
-        lines.push(rest.slice(0, n));
-        rest = rest.slice(n);
-      }
-      line = rest;
     }
     if (line) lines.push(line);
     return lines;

@@ -186,34 +186,51 @@ console.log(JSON.stringify({ flat: flat.treemap.map((c) => c.count), counts, err
 
 
 @needs_node
-def test_a_category_name_is_never_cut():
+def test_a_category_name_is_never_split_inside_a_word():
+    """INBOX 1744 ("Literatur / e", "Eve / nts"): wrap at spaces only, two lines
+    at most; the last resort is whole words and an ellipsis (Q31 said never an
+    ellipsis; the owner's later words moved the means, the intent, no cut
+    glyph, stands)."""
     r = _run(
         """
 const measure = (t, size) => t.length * size * 0.56;
-const names = ["Thoughts", "Thoughts and ideas worth keeping", "Extraordinarily-long-unbroken-category-name", "A"];
+const names = ["Thoughts", "Literature", "Events", "Communication & Connection", "Thoughts and ideas worth keeping", "Extraordinarily-long-unbroken-category-name", "A"];
 const rows = [];
-for (const name of names) for (const w of [40, 70, 110, 220, 600]) for (const h of [14, 21, 36, 60]) {
+for (const name of names) for (const w of [20, 40, 55, 70, 110, 220, 600]) for (const h of [14, 21, 30, 36, 60]) {
   const fit = fitHeaderLabel(measure, name, 7, w, h);
   if (!fit) { rows.push({ name, w, h, dropped: true }); continue; }
-  const text = fit.lines.join("");
+  const shown = fit.lines.join(" ").replace(/ \\(7\\)$/, "");
+  const tail = shown.replace(/\\u2026$/, "");
   const widest = Math.max(...fit.lines.map((l) => measure(l, fit.size)));
   rows.push({
     name, w, h, size: fit.size, lines: fit.lines.length,
-    whole: text.replace(/\\s+/g, "").includes(name.replace(/\\s+/g, "")),
-    ellipsis: /[…]|\\.\\.\\./.test(text),
+    whole: shown === name || (shown.endsWith("\\u2026") && name.startsWith(tail) && name[tail.length] === " "),
     wide: widest <= w + 1e-6,
     tall: fit.lines.length * (fit.size + 3) <= h + 1e-6,
   });
 }
-console.log(JSON.stringify({ rows, roomy: fitHeaderLabel(measure, "Thoughts", 2, 400, 20).lines, short: fitHeaderLabel(measure, "Thoughts", 2, 60, 20).lines }));
+const f = (n, c, w, h) => { const x = fitHeaderLabel(measure, n, c, w, h); return x && x.lines; };
+console.log(JSON.stringify({
+  rows,
+  roomy: f("Thoughts", 2, 400, 20),
+  noCount: f("Literature", 4, 70, 15),
+  wraps: f("Communication & Connection", 3, 120, 30),
+  shrunkSize: fitHeaderLabel(measure, "Literature", 4, 62, 15).size,
+  ellipsis: f("Thoughts and ideas worth keeping", 2, 90, 30),
+  narrowWord: f("Literature", 4, 30, 30),
+}));
 """
     )
     shown = [row for row in r["rows"] if not row.get("dropped")]
-    assert len(shown) > 40
+    assert len(shown) > 60
     for row in shown:
-        assert row["whole"] and not row["ellipsis"] and row["wide"] and row["tall"], row
+        assert row["whole"] and row["wide"] and row["tall"] and row["lines"] <= 2, row
     assert r["roomy"] == ["Thoughts (2)"]  # room: name and count on one line
-    assert r["short"][-1] != "Thoughts (2)" and "".join(r["short"]).replace(" ", "").startswith("Thoughts")
+    assert r["noCount"] == ["Literature"]  # no room for the count: dropped
+    assert r["wraps"] == ["Communication &", "Connection"]
+    assert r["shrunkSize"] < 12  # one step down before an ellipsis
+    assert r["ellipsis"][-1].endswith("…") and r["ellipsis"][0].startswith("Thoughts")
+    assert r["narrowWord"] is None  # a word wider than the room: left out, never split
 
 
 def test_the_view_is_a_lazy_layout_beside_the_others():

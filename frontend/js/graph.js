@@ -357,15 +357,14 @@ function layoutTreemap(nodes, width, height, info) {
     })
     .sum((d) => (d.note ? weightOf(d.note) : 0))
     .sort((a, b) => b.value - a.value);
-  //: A category header is as tall as its name needs at the rectangle's width
-  //: (one line is 18, each wrapped line 14 more, three at most), so a narrow
-  //: category wraps its name instead of cutting it (Q31: "Thoug... (2)").
-  //: The width of a character is a guess at 12px semibold; `fitHeaderLabel`
-  //: measures for real when it draws.
+  //: A category header is one line (18) when the name fits the rectangle's
+  //: width and two (32) when it must wrap at a space or end on a whole word and
+  //: an ellipsis; a name is never split inside a word (INBOX 1744). The width
+  //: of a character is a guess at 12px semibold; `fitHeaderLabel` measures for
+  //: real when it draws.
   function treemapHeaderH(name, count, width) {
     const room = Math.max(24, width - 12);
-    const lines = Math.min(3, Math.max(1, Math.ceil((`${name || "Unfiled"} (${count})`.length * 7) / room)));
-    return 18 + 14 * (lines - 1);
+    return (name || "Unfiled").length * 7 <= room ? 18 : 32;
   }
   const heads = new Map();
   d3
