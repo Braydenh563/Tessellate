@@ -168,50 +168,62 @@ def _to_out(
         created_at=entry.created_at,
         deleted_at=entry.deleted_at if entry.is_deleted else None,
         archived_at=entry.archived_at,
-        dates=[
-            EntryDateOut(
-                phrase=d.phrase,
-                at=d.at.date(),
-                precision=d.precision,
-                time=d.at.strftime("%H:%M") if d.precision == "minute" else None,
-            )
-            for d in resolved_dates
-        ],
+        dates=_date_outs(resolved_dates),
         documents=[
             DocumentRefOut(id=doc.id, title=doc.title) for doc in resolved_documents
         ],
-        links=[
-            LinkOut(
-                link_id=link.id,
-                entry_id=other.id,
-                preview=_connection_label(other, 60),
-                reason=link.reason,
-                reason_confidence=link.reason_confidence,
-                # The one fact the merged list could never carry. See
-                # `LinkOut.direction`.
-                direction="out" if link.source_entry_id == entry.id else "in",
-                link_type=link.link_type,
-                link_label=manager.relation_label(
-                    relation_types.kinds(session), link.link_type, link.source_entry_id == entry.id
-                ),
-                props=link.props,
-            )
-            for link, other in resolved_links
-        ],
-        attachments=[
-            AttachmentOut(
-                id=a.id,
-                filename=a.filename,
-                size=a.size,
-                is_image=a.mime.startswith("image/"),
-                created_at=a.created_at.isoformat() if a.created_at else "",
-            )
-            for a in resolved_attachments
-        ],
+        links=_link_outs(session, entry, resolved_links),
+        attachments=_attachment_outs(resolved_attachments),
         filed_by=filed_by,
         filing_state=getattr(entry, "filing_state", "done") or "done",
         similar=similar,
     )
+
+
+def _date_outs(dates: list) -> list[EntryDateOut]:
+    return [
+        EntryDateOut(
+            phrase=d.phrase,
+            at=d.at.date(),
+            precision=d.precision,
+            time=d.at.strftime("%H:%M") if d.precision == "minute" else None,
+        )
+        for d in dates
+    ]
+
+
+def _link_outs(session: Session, entry, links: list) -> list[LinkOut]:  # noqa: ANN001
+    return [
+        LinkOut(
+            link_id=link.id,
+            entry_id=other.id,
+            preview=_connection_label(other, 60),
+            reason=link.reason,
+            reason_confidence=link.reason_confidence,
+            # The one fact the merged list could never carry. See
+            # `LinkOut.direction`.
+            direction="out" if link.source_entry_id == entry.id else "in",
+            link_type=link.link_type,
+            link_label=manager.relation_label(
+                relation_types.kinds(session), link.link_type, link.source_entry_id == entry.id
+            ),
+            props=link.props,
+        )
+        for link, other in links
+    ]
+
+
+def _attachment_outs(attachments: list) -> list[AttachmentOut]:
+    return [
+        AttachmentOut(
+            id=a.id,
+            filename=a.filename,
+            size=a.size,
+            is_image=a.mime.startswith("image/"),
+            created_at=a.created_at.isoformat() if a.created_at else "",
+        )
+        for a in attachments
+    ]
 
 
 def _json_tags(raw: str | None) -> list[str]:
@@ -1604,7 +1616,25 @@ def reevaluate_entry(entry_id: int, session: Session = Depends(get_session)) -> 
             status_code=400, detail="Make this note readable first: Atlas doesn't read private notes."
         )
 
-    # 1. Re-file: refresh confidence, and the category if the AI owns it.
+    filed_by, recategorised_to = _reevaluate_refile(session, entry)
+
+    # 2. Suggest tags (best effort: never blocks the re-evaluation).
+    suggested_tags = _reevaluate_tags(session, entry)
+
+    suggested_links = _reevaluate_links(session, entry)
+
+    return {
+        "entry": _to_out(session, entry, filed_by=filed_by).model_dump(),
+        "recategorised_to": recategorised_to,
+        "suggested_categories": _other_categories(session, entry),
+        "suggested_tags": suggested_tags,
+        "suggested_tag_reasons": {} if getattr(entry, "is_private", False) else _tag_reasons(entry.content or "", suggested_tags),
+        "suggested_links": suggested_links,
+    }
+
+
+def _reevaluate_refile(session: Session, entry) -> tuple[str | None, str | None]:  # noqa: ANN001
+    """Step 1: refresh confidence, and the category if the AI owns it."""
     filed_by = None
     recategorised_to = None
     # The last "filing" run (INBOX 438). This step swallows its own errors so a
@@ -1653,11 +1683,11 @@ def reevaluate_entry(entry_id: int, session: Session = Depends(get_session)) -> 
     finally:
         #: Every way out, a cancel included: nothing stays "running" (B77).
         refiling.finish()
+    return filed_by, recategorised_to
 
-    # 2. Suggest tags (best effort: never blocks the re-evaluation).
-    suggested_tags = _reevaluate_tags(session, entry)
 
-    # 3. Suggest links: semantic neighbours that aren't connected yet.
+def _reevaluate_links(session: Session, entry) -> list[dict]:  # noqa: ANN001
+    """Step 3: semantic neighbours that aren't connected yet."""
     suggested_links: list[dict] = []
     try:
         already = _linked_entry_ids(session, entry)
@@ -1675,15 +1705,7 @@ def reevaluate_entry(entry_id: int, session: Session = Depends(get_session)) -> 
     except Exception:
         logger.warning("re-evaluation's link step failed", exc_info=True)
         suggested_links = []
-
-    return {
-        "entry": _to_out(session, entry, filed_by=filed_by).model_dump(),
-        "recategorised_to": recategorised_to,
-        "suggested_categories": _other_categories(session, entry),
-        "suggested_tags": suggested_tags,
-        "suggested_tag_reasons": {} if getattr(entry, "is_private", False) else _tag_reasons(entry.content or "", suggested_tags),
-        "suggested_links": suggested_links,
-    }
+    return suggested_links
 
 
 def _other_categories(session: Session, entry) -> list[dict]:  # noqa: ANN001
