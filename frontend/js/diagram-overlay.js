@@ -137,9 +137,11 @@
       const img = fig.querySelector(".md-mermaid-img");
       //: A note or the empty hint replaced the figure's children: the layer comes back with the next picture.
       if (layer.parentElement !== fig) fig.append(layer);
-      const found = img && S.hit ? math.place(S.hit, img.getBoundingClientRect(), layer.getBoundingClientRect()) : [];
+      //: Two boxes read once, before the first write (it read the picture's twice and the layer's twice).
       const rect = img && S.hit ? img.getBoundingClientRect() : null;
-      sync(rect ? math.place(S.hit, rect, layer.getBoundingClientRect(), S.hit.clusters) : [], groups, "group", " dgm-cluster");
+      const lay = rect ? layer.getBoundingClientRect() : null;
+      const found = rect ? math.place(S.hit, rect, lay) : [];
+      sync(rect ? math.place(S.hit, rect, lay, S.hit.clusters) : [], groups, "group", " dgm-cluster");
       const born = [];
       sync(found, boxes, "node", "", born);
       mark();
@@ -159,13 +161,25 @@
     //: A pick changes on a press, a key or a focus move inside the pane (the list, its bar); any other change comes with a redraw.
     for (const type of ["click", "keyup", "focusin"]) S.root.addEventListener(type, mark);
     //: Hover outlines the box under the pointer; a touch has no hover.
+    //: **The box under the pointer is found in the task after a drawn frame** (INBOX 1766, the owner's lag log: forced
+    //: layout in `diagram-overlay.js`). A move read the picture's box in the event, after whatever had been written since
+    //: the last draw (a keystroke's redraw, a pan), and so laid the page out for each of them. The event keeps the
+    //: pointer and asks once per frame; the read finds layout settled, and the outline follows a frame late.
+    let at = null;
+    let looking = 0;
+    const look = () => {
+      looking = 0;
+      const img = fig.querySelector(".md-mermaid-img");
+      const id = img && at ? math.at(S.hit, img.getBoundingClientRect(), at[0], at[1]) : "";
+      if (at && id !== hover) hover = id, mark();
+    };
     fig.addEventListener("pointermove", (event) => {
       if (event.pointerType === "touch" || event.buttons) return;
-      const img = fig.querySelector(".md-mermaid-img");
-      const id = img ? math.at(S.hit, img.getBoundingClientRect(), event.clientX, event.clientY) : "";
-      if (id !== hover) hover = id, mark();
+      at = [event.clientX, event.clientY];
+      if (!looking) looking = 1, afterFrames(() => setTimeout(look), 1);
     });
     fig.addEventListener("pointerleave", () => {
+      at = null;
       if (hover) hover = "", mark();
     });
     draw();
