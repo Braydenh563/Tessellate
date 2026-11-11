@@ -56,7 +56,7 @@ def test_a_consented_hand_over_is_not_parked_again():
 
 def test_the_page_marks_the_handoff_card_open_and_starts_on_a_typed_yes():
     text = Path("frontend/js/chat-turn.js").read_text(encoding="utf-8")
-    block = text[text.index("if (handoff) {"):][:2600]
+    block = text[text.index("if (t.handoff) {"):][:2600]
     assert "consented" in block and "ask_label" in block, block
     kit = Path("frontend/js/answer-kit.js").read_text(encoding="utf-8")
     card = kit[kit.index("function planProposalCard"):][:1800]
