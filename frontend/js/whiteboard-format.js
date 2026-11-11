@@ -2031,7 +2031,13 @@ function wbTableReshape(d, axis, at, remove) {
     widths = grown.map((n) => Math.round((n / mean) * 1000) / 1000);
   }
   const word = axis === "row" ? "Row" : "Column";
-  return wbSetTable(d, next, size, `${word} ${remove ? "removed" : "added"}.`, widths);
+  //: A connector joined to a row stays on that row (whiteboard-shape-more.js), in the same Undo step.
+  const carry = axis === "row" ? wbFmtState.shapeMore?.carryRowPorts(d, at, remove, rows) : null;
+  if (!carry) return wbSetTable(d, next, size, `${word} ${remove ? "removed" : "added"}.`, widths);
+  return wbRecordGesture(async () => {
+    await wbSetTable(d, next, size, `${word} ${remove ? "removed" : "added"}.`, widths);
+    await carry();
+  });
 }
 
 //: The column-width rows of the item menu: a quarter wider or narrower at the

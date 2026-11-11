@@ -1950,7 +1950,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     ("Boards and maps", (
         "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-laser", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-diagram-tools", "board-workshop", "board-paste", "make-a-diagram", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
         "board-comments", "sticky-notes",
-        "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-keyboard-create", "board-hand-drawn", "board-tables", "board-mermaid", "board-edit-data", "board-colours",
+        "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-keyboard-create", "board-hand-drawn", "board-tables", "board-shape-points", "board-mermaid", "board-edit-data", "board-colours",
     )),
     ("Library and files", (
         "library", "library-controls", "bookmarks", "web-clipper-bookmark", "contents", "library-skills",
@@ -2267,6 +2267,7 @@ MORE_TOPICS.extend([
         "keywords": (
             "table", "tables", "add a table", "table on a board", "rows and columns",
             "add a row", "add a column", "delete a row", "delete a column", "grid of cells",
+            "connect to a table row", "table row connection point",
         ),
         "body": (
             "A table on a board, as in draw.io: Insert, Table places three rows of "
@@ -2276,7 +2277,24 @@ MORE_TOPICS.extend([
             "above, Add a column to the right or left, Widen or Narrow this column, "
             "Equal column widths, Delete this row or column (at the cell you "
             "pressed last) and First row as a header. Resize it by its handles; "
-            "columns share the width equally until you widen or narrow one."
+            "columns share the width equally until you widen or narrow one. "
+            "Pointing at a table while you drag a connector's end shows a connection point at each side of every row, so "
+            "a connector can join one row; add or delete a row and the connectors on the rows below it stay on the same row."
+        ),
+        "badge": {"label": "Library", "tab": "library"},
+    },
+    {
+        "id": "board-shape-points",
+        "keywords": (
+            "edit shape points", "edit polygon points", "move a corner of a shape", "add a corner to a shape",
+            "take a corner out", "reshape a polygon", "change the corners of a shape", "edit points",
+        ),
+        "body": (
+            "Edit shape points, in a straight-sided shape's More, the right-click Arrange and Ctrl+K, shows a square "
+            "handle on each corner. Drag a handle to move that corner (it snaps to the grid when the grid is on), "
+            "press the outline to add a corner there and drag it, press a corner without moving to take it out "
+            "(three stay). The connectors on the shape follow. Each change is one Undo, Escape during a drag puts the corner "
+            "back, and Escape otherwise finishes. A shape with curves, an open line or two outlines has no corners to edit."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },
@@ -2526,6 +2544,7 @@ TOPIC_META.update({
     "board-edit-data": {"title": "Edit data on a board item", "path": "A board's Format panel, Data"},
     "board-colours": {"title": "Fill, border and recent colours on a board", "path": "A shape's bar, Fill or Border"},
     "board-tables": {"title": "Tables on a board", "path": "A board's Insert menu, Table"},
+    "board-shape-points": {"title": "Edit the corners of a shape", "path": "A board, a shape's More, Edit shape points"},
     "board-mermaid": {"title": "Live Mermaid diagrams on a board", "path": "A board's Insert menu, Diagram, Diagram builder..."},
     "diagram-builder": {"title": "The Diagram builder", "path": "Ctrl+K, Diagram builder; Insert in a note, a document or a board; Library, Create, New diagram"},
     "diagram-blocks": {"title": "Editing a diagram as blocks", "path": "A diagram document, Blocks"},

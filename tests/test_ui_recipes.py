@@ -6407,6 +6407,7 @@ PANEL_FIXED_JS = {
     "editor.js": "the formatting bar and an anchored overlay",
     "graph.js": "anchored node popups",
     "icon-picker.js": "an anchored picker",
+    "whiteboard-library-more.js": "an anchored picker at the pointer, closed by a pick or Escape",
     "lightbox-actions.js": "the image viewer's overlays",
     "lightbox-view.js": "the image viewer",
     "settings-controls.js": "an anchored control overlay",
