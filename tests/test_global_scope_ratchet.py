@@ -69,7 +69,8 @@ TOP_LEVEL_LETS_CAP = 699
 #: W29 carve 3: tour.js wrapped whole, exporting `TOUR_ENABLED`, `openTour` and `renderTourReplay`. Measured 8,883.
 #: W29 carve 4: timeline-calendar.js wrapped whole, exporting ten names the timeline and its tests call. Measured 8,830.
 #: W29 carve 5: quickadd.js wrapped whole, exporting eight names. Measured 8,782.
-GLOBAL_NAMES_CAP = 8782
+#: W29 carve 6: reply-kit.js wrapped whole, exporting five names. Measured 8,733.
+GLOBAL_NAMES_CAP = 8733
 
 
 def _code() -> dict[str, str]:

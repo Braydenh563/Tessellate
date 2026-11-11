@@ -6981,7 +6981,7 @@ def _rule_exact(css: str, selector: str) -> str:
 
 
 def _js_function(name: str, fn: str) -> str:
-    text = frontend_text(name)
+    text = _js_scope.unwrapped(frontend_text(name))
     start = text.index(f"function {fn}(")
     return text[start : text.index("\n}\n", start)]
 
@@ -7034,7 +7034,7 @@ def test_a_row_has_at_most_one_bordered_ghost_and_only_beside_a_filled_button() 
         found, has_filled = _bordered_ghosts(_js_function(name, fn))
         assert len(found) <= 1, f"{fn}: a toolbar's secondary actions are `ghost quiet`, not {found}"
         assert not found or has_filled, f"{fn}: a bordered ghost {found} with no filled button beside it"
-    foot = frontend_text("reply-kit.js")
+    foot = _js_scope.unwrapped(frontend_text("reply-kit.js"))
     assert 'asEquation.classList.add("quiet", "calc-as-equation")' in foot
     assert "row.append(asEquation, copy, insert)" in foot, "the one filled Insert is last"
     css = (ROOT / "frontend" / "css" / "reply-kit-lazy.css").read_text(encoding="utf-8")
@@ -7097,7 +7097,7 @@ def test_a_dialog_foot_has_one_bordered_secondary_and_its_third_action_is_quiet(
         assert re.search(rf'class="ghost quiet small" id="{ident}"', html), ident
     css = "\n".join(path.read_text(encoding="utf-8") for path in CSS)
     assert "margin-inline-end: auto" in _rule_exact(css, ".space-dialog-actions > .quiet:first-child")
-    kit = frontend_text("reply-kit.js")
+    kit = _js_scope.unwrapped(frontend_text("reply-kit.js"))
     for want in ('"ghost small disclosure-row calc-log-toggle"', '"ghost quiet small calc-again"', 'clear.classList.add("quiet")', 'change.classList.add("quiet")'):
         assert want in kit, want
     assert kit.count('"ghost quiet small reply-panel-open"') == 2
@@ -7237,7 +7237,7 @@ def test_a_cards_one_action_sits_left_with_an_icon_and_a_dialogs_primary_stays_f
     assert "align-self: flex-start" in _rule_exact(forms, ".dash-body>button")
     dash = (ROOT / "frontend" / "js" / "dashboard.js").read_text(encoding="utf-8")
     assert dash.count('smallButton("ph:sparkle Generate this week\'s digest"') == 2
-    kit = (ROOT / "frontend" / "js" / "reply-kit.js").read_text(encoding="utf-8")
+    kit = _js_scope.unwrapped((ROOT / "frontend" / "js" / "reply-kit.js").read_text(encoding="utf-8"))
     assert 'smallButton("ph:function Insert as equation"' in kit
     assert 'insert.classList.add("primary")' in kit and "false);\n  insert.classList.add" in kit
 

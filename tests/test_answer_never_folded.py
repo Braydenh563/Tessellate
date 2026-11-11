@@ -16,6 +16,7 @@ from pathlib import Path
 from fakes_http import FakeResponse, sse
 
 from tessellate.ai.ollama_client import _ThinkTagSplitter, split_thinking
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parent.parent
 JS = ROOT / "frontend" / "js"
@@ -106,7 +107,7 @@ def test_a_model_written_answer_is_never_folded():
     own long paragraph into a collapsed card. It runs on a composed reply
     only; every surface passes `composed` (Chat, Ask, the popup agent, the
     Guide)."""
-    kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
+    kit = _js_scope.unwrapped((JS / "reply-kit.js").read_text(encoding="utf-8"))
     assert "if (opts.composed) for (const answer of list) replyFoldLong(answer);" in kit
     for name in ("ask-compose.js", "chat-turn.js", "palette.js", "help-chat.js"):
         source = (JS / name).read_text(encoding="utf-8")
