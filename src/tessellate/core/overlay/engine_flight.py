@@ -193,6 +193,7 @@ class FlightMixin:
             return
         self.x = edge
         self.bonk_until = now + BONK_FOR
+        self._edge_touch(side, abs(self.vx), now)
         if verdict == "slide":
             self.wall, self.vx, self.vy, self.outcome = side, 0.0, self.vy * 0.4, "slide"
             self.wob_kind, self.wob_t0 = "scrabble", now
@@ -270,9 +271,9 @@ class FlightMixin:
             if self.lie_goal is not None:  # the thump of a body going down; a landing on the feet adds no turn (INBOX 1683 v)
                 self._spin_contact(1.0 if self.vx >= 0 else -1.0)
             else:
-                self._feet_begin()  # a wall bounce's unpaid kick is dropped there: the floor turns it upright, not further
+                self._touch_down(now)  # reads the speed it meets the floor at, before the floor takes it
         self.vy = 0.0
-        self.vx *= math.exp(-(ld.STUMBLE_K if self.lie_goal is None else ld.SKID_K) * dt)
+        self.vx *= math.exp(-self._floor_friction() * dt)
         self.x = min(max(self.x, m.area[0]), m.area[2] - self.size[0])
         self.y = self._pose_floor(m, floor)
         if self.lie_goal is not None:
@@ -283,6 +284,7 @@ class FlightMixin:
             self.settled_now = True
             if self.outcome == "feet":
                 self._enter("land", now)
+                self._touch_hold(now)
             else:
                 self._start_act("shake_off", now)  # it picks itself up and shakes it off, miffed
 
@@ -303,9 +305,11 @@ class FlightMixin:
         self.x = min(max(self.x, m.area[0]), m.area[2] - self.size[0])
         floor = self.floor_y(m)
         if self.y >= floor:
+            speed = abs(self.vy)
             self.y, self.vy, self.vx = floor, 0.0, 0.0
             self.settled_now = True
             self._enter("land", now)
+            self._fall_touch(now, speed)
 
     def _do_walk(self, now: float, dt: float) -> None:
         if self._turning(now):
@@ -396,6 +400,8 @@ class FlightMixin:
         to the nearest upright."""
         if self.feet_from is not None:
             self._feet_step(dt)
+        elif self.roll is not None:
+            self._roll_step(dt)
         else:
             self.omega *= math.exp(-SPIN_DRAG * dt)
             self._pay_kick(dt)
@@ -405,21 +411,6 @@ class FlightMixin:
         # one, so waiting out the dwell drew the feet off the line and then stepped them down (INBOX 1683 v)
         if (self.slow_for >= FLY_REST_DWELL or self.grounded or self._floored()) and self._righted():
             self.laid = True  # laid down for good until the next throw: the held pose never swaps back to the tumble
-
-    def _feet_begin(self) -> None:
-        """The first floor contact of a body that comes down on its feet: from here its turn is one eased move (a cubic
-        Hermite from the angle and rate now to upright and still, `landing.FEET_FOR` s). A spring stiff enough to be upright
-        in that time changed the rate by up to 3 rad/s a tick; the move changes it by 0.14 (INBOX 1683 v)."""
-        if self.feet_from is None:
-            self.feet_from, self.feet_s = (ld.wrap(self.angle), self.omega + self.kick), 0.0
-            self.kick = 0.0
-
-    def _feet_step(self, dt: float) -> None:
-        a0, w0 = self.feet_from or (0.0, 0.0)
-        self.feet_s += dt
-        self.angle, self.omega = ld.hermite(a0, w0, self.feet_s)
-        if self.feet_s >= ld.FEET_FOR:
-            self.angle = self.omega = 0.0
 
     def _pay_kick(self, dt: float) -> None:
         """A contact's change of rate is paid out over a few ticks, not taken in one."""
@@ -465,7 +456,7 @@ class FlightMixin:
 
     def _righted(self) -> bool:
         """Upright and still turning no more than a drift: safe to lay down."""
-        if self.lie_goal is not None:
+        if self.lie_goal is not None or self.roll is not None:
             return False
         err = ld.wrap(self.angle)
         return abs(err) < 0.012 and abs(self.omega) < 0.15  # 0.7 degrees: the snap to the upright stand is under one (review of 1683)
@@ -481,7 +472,7 @@ class FlightMixin:
         self.slow_for = self.right_t = 0.0
         self.grounded = self.laid = self.lying = False
         self.feet_from, self.feet_s = None, 0.0
-        self.outcome = self.lie_goal = self.wob_kind = None
+        self.outcome = self.lie_goal = self.wob_kind = self.touched = self.roll = None
         self.wall, self.wob, self.air_t0 = 0, 0.0, self.now
         self.y += self._dy(self._frame(self.now)) - self._dy("spin0")  # drawn where it was
         self.angle, self.omega, self.kick = 0.0, self._launch_spin(vx, vy, swirl), 0.0

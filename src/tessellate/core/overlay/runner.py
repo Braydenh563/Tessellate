@@ -796,7 +796,7 @@ class OverlayRunner:
         # a thrown figure's true angle is part of the picture (INBOX 1683): every tick of a spin is a new one
         turn = None if out.angle is None else round(math.degrees(out.angle) / sprites.SPIN_QUANT) % round(360.0 / sprites.SPIN_QUANT)
         handle = self._handle_shown(out, now)
-        key = (out.frame, self._fdpi(), out.flip, out.clip, out.pose, out.fx, out.alpha, turn, out.flow, out.prop, out.face, out.tail, handle)
+        key = (out.frame, self._fdpi(), out.flip, out.clip, out.pose, out.fx, out.alpha, turn, out.flow, out.prop, out.face, out.tail, out.squash, handle)
         blending = False
         if key != self._last_key:
             blending = self._new_picture(out, key)
@@ -854,7 +854,7 @@ class OverlayRunner:
         if out.tail and out.angle is None:
             posed = spr.tailed(posed, out.frame, self._fdpi(), out.flip, out.tail)  # the tail's layer, over the body frame (C1)
         posed = self._decorated(posed, out, key)
-        frame = sprites.effect(sprites.clipped(posed, out.clip), out.fx, out.alpha)
+        frame = sprites.effect(sprites.clipped(sprites.squashed(posed, out.squash), out.clip), out.fx, out.alpha)
         self._hit = None
         if key[-1]:
             hanging = out.frame.startswith("hang")

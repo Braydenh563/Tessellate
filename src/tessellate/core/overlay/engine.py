@@ -70,7 +70,7 @@ from .engine_consts import (
     FOLLOW_FOR, FOLLOW_GAP, GREET_AFTER, GROUNDED, HANG_DRAG_IN, HANG_ENDS, HANG_FOR, HANG_GLANCE,
     HANG_HANDS, HANG_KICK, HANG_KICK_FOR, HANG_LEAP, HANG_ONE_EVERY, HANG_PERIOD, HANG_SWING, HANG_TICK_MS,
     HANG_TRIP_WEIGHT, HOLD_FIXED, HOLD_RANGES, HOME_INSET, HOME_KEEP, HOP_FOR, HOVER, IDLE_FRAMES,
-    KICK_HZ, LAND_FOR, LEAN_MAX, LEAP_BASE, LEAP_SPEED, LIFT_SY, LIVELY, LONELY_AFTER,
+    KICK_HZ, LEAN_MAX, LEAP_BASE, LEAP_SPEED, LIFT_SY, LIVELY, LONELY_AFTER,
     LONG_WALK_GAP, LONG_WALK_WEIGHT, LOOK_FOR, LOOK_SHARE, MAX_DT, MIN_WAKE_MS, Monitor, NAP_FOR,
     NOTICE_NEAR, Output, PACE_GAP, PACE_SLEW, PEEK_BEHIND, PEEK_HEAD, PEEK_OPEN, PEEK_PLAN,
     PEEK_SIDE, PEEK_TOP_PEER, PEEK_TOP_PLAN, PEEK_TOP_SHOWN, PEEK_TUCK, PERCH_MOVED, PLAIN_THENS,
@@ -89,19 +89,20 @@ from .engine_consts import (  # re-exported: tests and `runner` read them as `en
     AWAY_DRIFT, AWAY_FALL, AWAY_FOR, BOUNCE_DAMP, Bar, CEIL_CATCH, CEIL_LEAVE, CEIL_TILT,
     CLIMB_EVERY, CLIMB_SOON, FLING_SPEED, IDLE_FPS, NOTICE_COOLDOWN, PERCH_THROW,
     SLIP_SPEED, SPIN_DRAG, SPIN_OMEGA, TAIL_LAYER_MS, TAIL_TOUCHED_FOR, THROW_MAX, THROW_MIN,
-    TITLE_BAR, WALL_SCRABBLE, WAVE_FOR, perch_room,
+    TITLE_BAR, WALL_SCRABBLE, WAVE_FOR, LAND_FOR, perch_room,
 )
 __all__ = [
     "AWAY_DRIFT", "AWAY_FALL", "AWAY_FOR", "BOUNCE_DAMP", "Bar", "CEIL_CATCH", "CEIL_LEAVE",
     "CEIL_TILT", "CLIMB_EVERY", "CLIMB_SOON", "FLING_SPEED", "IDLE_FPS",
     "NOTICE_COOLDOWN", "PERCH_THROW", "SLIP_SPEED", "SPIN_DRAG", "SPIN_OMEGA", "TAIL_LAYER_MS",
     "TAIL_TOUCHED_FOR", "THROW_MAX", "THROW_MIN", "TITLE_BAR", "WALL_SCRABBLE", "WAVE_FOR",
-    "perch_room", "ld", "wisps",
+    "perch_room", "LAND_FOR", "ld", "wisps",
 ]
 from .engine_flight import FlightMixin
 from .engine_frames import FramesMixin
 from .engine_input import InputMixin
 from .engine_roam import RoamMixin
+from .engine_touch import TouchMixin
 
 #: Not touched for this long: sits, then sleeps. Ten and twenty minutes (the owner's
 #: open call, taken): it keeps doing small acts while the person is away from the
@@ -110,7 +111,7 @@ IDLE_SIT = 600.0
 IDLE_SLEEP = 1200.0
 
 
-class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin):
+class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, TouchMixin):
     def __init__(
         self,
         size: tuple[int, int],
@@ -951,9 +952,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin):
         if s_ == "crouch":
             sy, sx = 1.0 - 0.12 * bh.smooth((now - (self.state_until - CROUCH_FOR)) / CROUCH_FOR), 1.03
         elif s_ == "land":
-            u = 1.0 - max(0.0, self.state_until - now) / LAND_FOR
-            sy = 1.0 - 0.12 * math.sin(min(1.0, u) * math.pi)
-            sx = 1.0 + 0.06 * math.sin(min(1.0, u) * math.pi)
+            sx, sy, lean = self._touch_pose(now)  # E6: how hard it came down sets the depth, the length and a stumble's lean
         elif s_ in ("walk", "drift") and self.turn_to == 0:
             speed = min(1.0, abs(self.vx_px) / (WALK_SPEED * self._scale() * 1.2))
             lean = LEAN_MAX * speed * (1 if self.vx_px > 0 else -1) * (1.6 if self.mode == "dash" else 1.0)
@@ -2914,5 +2913,5 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin):
             self.click_now, self.settled_now, clip, self.card_clicked, self._pose(), fx, round(alpha * 16) / 16.0,
             self.angle + self.wob if frame.startswith("spin") and self.state == "fly" else math.pi if self.peek_flip or (self.upside and self.state == "held") else None,
             self._flow_view(now, frame, self._lower_state(now, face)) if fx is None else None, prop, self._blink_face(now, frame, face),
-            self._tail_view(now, frame) if fx is None and self.tail_layer_on else None,
+            self._tail_view(now, frame) if fx is None and self.tail_layer_on else None, self._edge_squash(now),
         )
