@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8166, frontend ids 2713, CSS sections 524, backend routes 677, backend modules 10433, test files 2584, tests 21123, plan headings 1013, app scripts 29, boot scripts 38, script files 284.
+Counts: frontend functions 8166, frontend ids 2713, CSS sections 524, backend routes 677, backend modules 10433, test files 2584, tests 21124, plan headings 1013, app scripts 29, boot scripts 38, script files 284.
 
 ## Frontend functions (8166)
 
@@ -1909,10 +1909,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `featureCommandRows` | frontend/js/app-features.js:223 |
 | `paletteCommands` | frontend/js/app-features.js:296 |
 | `popupToolMaths` | frontend/js/app-features.js:254 |
-| `quickAccessCurrent` | frontend/js/app-features.js:602 |
-| `quickAccessItems` | frontend/js/app-features.js:593 |
+| `quickAccessCurrent` | frontend/js/app-features.js:605 |
+| `quickAccessItems` | frontend/js/app-features.js:596 |
 | `quickCatalogue` | frontend/js/app-features.js:574 |
-| `renderQuickLinks` | frontend/js/app-features.js:606 |
+| `renderQuickLinks` | frontend/js/app-features.js:610 |
 | `renderToolShortcutList` | frontend/js/app-features.js:270 |
 
 ### frontend/js/app-import.js (6)
@@ -26852,7 +26852,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21123)
+## Tests (21124)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28191,7 +28191,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_lag_act_restyle_once_1111.py | 3 |
 | tests/test_lag_attribution_1031.py | 6 |
 | tests/test_lag_choose_1575.py | 5 |
-| tests/test_lag_companion_1778.py | 5 |
+| tests/test_lag_companion_1778.py | 6 |
 | tests/test_lag_companion_forced_1110.py | 4 |
 | tests/test_lag_dash_spans_1741.py | 3 |
 | tests/test_lag_diagram_reads_1766.py | 9 |

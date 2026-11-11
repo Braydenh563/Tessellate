@@ -70,3 +70,18 @@ def test_the_marker_is_set_and_cleared_where_the_figure_is_mounted() -> None:
     assert "delete buddy.dataset.atlasFigure" in block
     # One mount point: a second place that swaps the companion's figure would need the marker too.
     assert js.count("char.prepend(characterFor(seed).figure())") == 1
+
+
+def test_quick_access_builds_only_the_tiles_it_draws() -> None:
+    """The dashboard's return drew five tiles and built the parts of all ~300 palette rows: 5 to 19 ms at 4x each time.
+
+    `quickCatalogue(only)` skips every row whose key is not asked for; `quickAccessCurrent` asks for the saved ids.
+    The picker (`quickAccessEdit`) still reads the whole catalogue with no argument.
+    """
+    js = (JS / "app-features.js").read_text(encoding="utf-8")
+    fn = _fn(js, "function quickCatalogue(")
+    assert "if (only && !only.has(key)) continue;" in fn
+    assert fn.index("if (only && !only.has(key)) continue;") < fn.index("paletteRowParts(row, abouts)"), "the filter must come before the work it saves"
+    current = _fn(js, "function quickAccessCurrent(")
+    assert "quickCatalogue(new Set(" in current
+    assert "quickCatalogue()" in (JS / "quick-access.js").read_text(encoding="utf-8"), "the picker lists every row"
