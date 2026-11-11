@@ -75,7 +75,7 @@ def _tail(total: int):
     from datetime import date
     from types import SimpleNamespace as NS
 
-    from tessellate.ai import composer_digest as digest
+    from tessellate.ai import composer_digest_lines
     from tessellate.ai import composer_digest_sentences
 
     def view(i):
@@ -84,7 +84,7 @@ def _tail(total: int):
 
     out = composer_digest_sentences._Out()
     out.rows.append({"note_id": 1})
-    digest._overview_tail(out, "overview", [view(i) for i in range(1, total + 1)], date(2026, 1, 1), False, 1)
+    composer_digest_lines._overview_tail(out, "overview", [view(i) for i in range(1, total + 1)], date(2026, 1, 1), False, 1)
     return out
 
 

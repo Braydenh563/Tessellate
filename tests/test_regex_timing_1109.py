@@ -11,7 +11,8 @@ import time
 
 import pytest
 
-from tessellate.ai import composer_digest, composer_money
+from tessellate.ai import composer_money
+from tessellate.ai import composer_digest_lines
 
 LIMIT = 0.2
 
@@ -28,10 +29,10 @@ def test_a_long_clause_after_an_amount_is_read_in_linear_time(size):
 def test_a_long_planned_line_is_read_in_linear_time(size):
     body = "a planned for " * (size // 14) + "\nx"
     started = time.perf_counter()
-    composer_digest._day_clause(body)
+    composer_digest_lines._day_clause(body)
     assert time.perf_counter() - started < LIMIT
 
 
 def test_ordinary_clauses_still_read():
     assert composer_money._after_what(" for groceries this week").group("what")
-    assert composer_digest._day_clause("Lisbon trip planned for May")
+    assert composer_digest_lines._day_clause("Lisbon trip planned for May")

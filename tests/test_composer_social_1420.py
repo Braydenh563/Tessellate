@@ -183,12 +183,12 @@ def test_a_bold_line_heading_is_a_name_and_its_marks_never_show():
 def test_the_also_line_joins_sentences_as_sentences():
     """"That's fascinating; What drew you to it?; you've always ...": a run of
     sentences joined by semicolons, a capital after each."""
-    from tessellate.ai import composer_digest
+    from tessellate.ai import composer_digest_lines
 
-    assert composer_digest._join(["That's fascinating", "What drew you to it?", "you've always liked it"]) == (
+    assert composer_digest_lines._join(["That's fascinating", "What drew you to it?", "you've always liked it"]) == (
         "That's fascinating. What drew you to it? You've always liked it"
     )
-    assert composer_digest._join(["rows", "pull-ups"]) == "rows; pull-ups"
+    assert composer_digest_lines._join(["rows", "pull-ups"]) == "rows; pull-ups"
 
 
 @pytest.mark.parametrize("question", ["what have I written about uni", "tell me about my university notes"])

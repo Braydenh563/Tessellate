@@ -9,7 +9,7 @@ from __future__ import annotations
 import pytest
 
 import tests._seed_1031c as seed_c
-from tessellate.ai import commands, composer_ask, composer_digest
+from tessellate.ai import commands, composer_ask, composer_digest_lines
 from tessellate.entry import manager
 
 NOW = seed_c.NOW
@@ -136,6 +136,6 @@ def test_a_loose_group_without_a_word_of_the_question_is_left_out(homework):
 
 def test_the_floor_is_what_keeps_it_out(homework, monkeypatch):
     """Without the rule the padding is in the answer, so the test above is not vacuous."""
-    monkeypatch.setattr(composer_digest, "_below_the_floor", lambda *a, **k: False)
+    monkeypatch.setattr(composer_digest_lines, "_below_the_floor", lambda *a, **k: False)
     text, _ = homework(HOMEWORK)
     assert "scarecrow" in text or "Meeting" in text, text

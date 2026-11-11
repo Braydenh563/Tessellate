@@ -21,6 +21,7 @@ from datetime import date
 import pytest
 
 from tessellate.ai import composer_compose, composer_digest, realise
+from tessellate.ai import composer_digest_lines
 from tessellate.ai import composer_digest_sentences
 from tessellate.ai import recognise as rec
 
@@ -80,10 +81,10 @@ def test_an_offer_only_comes_from_a_note_the_answer_cites():
 
     facts = [Fact(views[1]), Fact(views[2])]
     out.rows.append({"note_id": 2})
-    kept = composer_digest._answered(out, facts)
+    kept = composer_digest_lines._answered(out, facts)
     assert [f.view.id for f in kept] == [2]
     out.rows.clear()
-    assert composer_digest._answered(out, facts) == facts
+    assert composer_digest_lines._answered(out, facts) == facts
 
 
 @pytest.mark.parametrize("question", [

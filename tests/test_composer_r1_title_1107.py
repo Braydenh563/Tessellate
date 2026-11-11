@@ -71,9 +71,9 @@ def test_d1_compare_names_both_sides(go):
 @pytest.mark.parametrize(("question", "names"), [("what is Project Atlas", True), ("what's the budget", True), ("who is Sara", True),
                                                  ("how much is rent", False), ("when is the beta", False), ("when did I last see the dentist", False)])
 def test_review1_only_a_what_or_who_ask_ranks_a_titled_note_first(question, names):
-    from tessellate.ai import composer_digest
+    from tessellate.ai import composer_digest_lines
 
-    assert bool(composer_digest._NAMES_A_THING.match(question)) is names  # noqa: SLF001
+    assert bool(composer_digest_lines._NAMES_A_THING.match(question)) is names  # noqa: SLF001
 
 
 @pytest.mark.parametrize("question", ["how much is rent", "what is the budget"])

@@ -12,7 +12,8 @@ import time
 
 import pytest
 
-from tessellate.ai import composer_digest, composer_money, personal, question_noise
+from tessellate.ai import composer_money, personal, question_noise
+from tessellate.ai import composer_digest_lines
 
 N = 50_000
 BOUND_S = 2.0
@@ -57,21 +58,21 @@ def test_filler_goes_and_words_stay():
 
 
 def test_a_fragment_rides_on_the_sentence_before():
-    assert composer_digest._is_fragment("slicing everything but it was fun")
-    assert composer_digest._is_fragment("straighter this time")
-    assert not composer_digest._is_fragment("you did it again")
-    assert not composer_digest._is_fragment("one two three four")
+    assert composer_digest_lines._is_fragment("slicing everything but it was fun")
+    assert composer_digest_lines._is_fragment("straighter this time")
+    assert not composer_digest_lines._is_fragment("you did it again")
+    assert not composer_digest_lines._is_fragment("one two three four")
 
 
 def test_the_rival_price_reader_is_linear_on_a_long_run():
     for text in ("A" * N, "A " * (N // 2) + "is $5 and", "A is $5 and the " + "B" * N):
         started = time.perf_counter()
-        composer_digest._price_gap(text)  # noqa: SLF001
+        composer_digest_lines._price_gap(text)  # noqa: SLF001
         assert time.perf_counter() - started < BOUND_S
 
 
 def test_two_priced_rivals_have_a_gap_and_a_budget_still_does():
-    gap = composer_digest._price_gap  # noqa: SLF001
+    gap = composer_digest_lines._price_gap  # noqa: SLF001
     assert "$30" in gap("The Logitech G Pro X is about $230 and the Razer Viper V3 is $200.")
     assert gap("Rent is $1,200 a month and groceries are $80 a week.") == ""
     assert gap("Rent is $1,200 and food is $80.") == ""

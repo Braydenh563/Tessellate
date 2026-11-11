@@ -175,12 +175,12 @@ def test_own_doings_need_a_time_word_or_the_question_shape():
 def test_a_note_opening_on_its_own_day_is_dated_once_and_reported():
     """The owner, 2026-10-26: "on september 21 is repeated twice" and "I had
     work not have"."""
-    from tessellate.ai import composer_digest
+    from tessellate.ai import composer_digest_lines
     from tessellate.ai import composer_digest_sentences
 
     #: A dated line is said only for a question about time (INBOX 1441).
     composer_digest_sentences._set_timing("what did I write on 21 September?")
-    said, _ = composer_digest._dated_line(
+    said, _ = composer_digest_lines._dated_line(
         "on 21 September, you have work. You need to finish your IT assignment, which is due on Friday.",
         "21 September", 1,
         dt.date(2026, 10, 26), dt.date(2026, 9, 21), dt.date(2026, 9, 5),

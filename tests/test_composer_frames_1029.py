@@ -24,7 +24,7 @@ import re
 
 import pytest
 
-from tessellate.ai import composer_digest
+from tessellate.ai import composer_digest_lines
 from tessellate.ai import composer_digest_sentences
 from tessellate.api import routes_chat
 from tessellate.core import config
@@ -239,7 +239,7 @@ def test_one_reporting_verb_and_none_the_note_did_not_make(key):
 
 @pytest.mark.parametrize("body", ["pay cut", "book club on Friday", "passport", "Tom to draft the spec"])
 def test_a_noun_is_never_put_after_planned_to(body):
-    assert "planned to" not in composer_digest._clause(body, "noted", 0, True)
+    assert "planned to" not in composer_digest_lines._clause(body, "noted", 0, True)
 
 
 def test_no_phrase_invents_a_speech_act_the_note_did_not_make():

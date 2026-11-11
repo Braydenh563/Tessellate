@@ -8,7 +8,7 @@ import json
 
 import pytest
 
-from tessellate.ai import composer_digest
+from tessellate.ai import composer_digest_lines
 from tessellate.entry import manager
 
 #: Fixed clock for any date a test names; no test here reads the real one.
@@ -45,9 +45,9 @@ def test_undo_of_a_space_delete_keeps_its_name_as_it_was(client):
 
 @pytest.mark.parametrize("body", ["Remember to call mum", "Try to sleep earlier"])
 def test_a_note_to_self_is_not_retold_as_a_fact(body):
-    clause = composer_digest._clause(body, "noted", 0, True)
+    clause = composer_digest_lines._clause(body, "noted", 0, True)
     assert not clause.lower().startswith("you " + body.split()[0].lower()), clause
 
 
 def test_a_need_is_still_its_own_clause():
-    assert composer_digest._clause("Need to cut eating out", "noted", 0, True) == "you need to cut eating out"
+    assert composer_digest_lines._clause("Need to cut eating out", "noted", 0, True) == "you need to cut eating out"

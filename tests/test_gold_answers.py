@@ -18,6 +18,7 @@ import pytest
 
 from tests import _gold
 from tessellate.ai import composer, composer_digest
+from tessellate.ai import composer_digest_lines
 
 FIXTURE = _gold.load()
 TODAY = date.fromisoformat(FIXTURE["today"])
@@ -189,7 +190,7 @@ def test_a_relative_time_is_pinned_to_the_day_it_meant(text, said):
     its Monday, as the Mentions chip's resolver (`when.span`) has it; "before
     next week" is before that Monday, a day (the owner, 2026-10-11)."""
 
-    assert composer_digest._tidy(text, date(2026, 7, 17)) == said
+    assert composer_digest_lines._tidy(text, date(2026, 7, 17)) == said
 
 
 @pytest.mark.parametrize(("question", "kind", "label", "text"), [
@@ -326,7 +327,7 @@ def test_a_when_question_says_the_day_then_what_happened_without_the_asides(ques
 
 
 def test_just_meaning_only_stays():
-    assert composer_digest._unfilled("just two tickets left haha") == "just two tickets left"
+    assert composer_digest_lines._unfilled("just two tickets left haha") == "just two tickets left"
 
 
 # A note told as what happened (the owner, 2026-10-11): its relative time
@@ -360,7 +361,7 @@ def test_the_note_is_told_from_today(variant):
     (date(2026, 7, 29), "the week of 20 July", False),
 ])
 def test_next_week_is_said_from_today(today, said, ahead):
-    assert composer_digest._when_now("next week", date(2026, 7, 17), today) == (said, ahead)
+    assert composer_digest_lines._when_now("next week", date(2026, 7, 17), today) == (said, ahead)
 
 
 def test_in_the_whole_notebook_the_note_is_one_flowing_line():
@@ -413,7 +414,7 @@ def test_the_open_plan_is_said_once_in_prose():
     ("tram 28, pasteis de Belem", None),
 ])
 def test_a_days_shorthand_is_said_as_the_persons_own_clause(body, said):
-    assert composer_digest._day_clause(body) == said
+    assert composer_digest_lines._day_clause(body) == said
 
 
 def test_a_day_line_is_prose_not_a_date_label():
