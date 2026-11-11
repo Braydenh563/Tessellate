@@ -15,6 +15,7 @@ against the pane its button opens.
 
 from __future__ import annotations
 
+from tests._help_text import help_more_text
 import html
 import re
 from pathlib import Path
@@ -46,7 +47,7 @@ def test_a_first_step_names_the_pane_its_button_opens() -> None:
 
 
 def test_every_help_topic_path_into_settings_names_a_real_pane() -> None:
-    text = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    text = help_more_text()
     paths = re.findall(r'"path": "(Settings, [^"]+)"', text)
     assert len(paths) > 40
     for path in paths:

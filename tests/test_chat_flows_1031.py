@@ -57,7 +57,7 @@ def _sentences(path: Path):
 def test_no_sentence_a_person_reads_writes_a_path_as_an_arrow():
     arrow = re.compile("→| -> ")
     offenders = []
-    for name in ("ai/help_chat.py", "ai/help_topics_core.py", "ai/help_topics_core_tail.py", "ai/help_topics_more.py", "api/routes_update.py", "__main__.py"):
+    for name in ("ai/help_chat.py", "ai/help_topics_core.py", "ai/help_topics_core_tail.py", "ai/help_topics_more.py", "ai/help_topics_more_mid.py", "api/routes_update.py", "__main__.py"):
         for line, text in _sentences(SRC / name):
             if arrow.search(text):
                 offenders.append(f"{name}:{line}")

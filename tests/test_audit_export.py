@@ -6,7 +6,7 @@ title, and `limit`/`offset`/`X-Total-Count` follow the list endpoints."""
 
 from __future__ import annotations
 
-from tests._help_text import help_chat_text
+from tests._help_text import help_chat_text, help_more_text
 
 import csv
 import io
@@ -151,6 +151,6 @@ def test_the_activity_menu_offers_export_activity_and_the_help_says_so():
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     button = html.split('id="library-activity-export"', 1)[1].split("</button>", 1)[0]
     assert "Export activity" in button
-    help_text = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    help_text = help_more_text()
     help_chat = help_chat_text()
     assert "Export activity" in help_text + help_chat

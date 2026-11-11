@@ -5,6 +5,7 @@ and seeded rng; the coordinator and the page on fakes (nothing here runs on Wind
 # ruff: noqa: F811  (pytest fixtures are used by name)
 from __future__ import annotations
 
+from tests._help_text import help_more_text
 import random
 from pathlib import Path
 
@@ -82,5 +83,5 @@ def test_the_menu_has_one_row_that_steps_through_the_levels_and_the_help_names_t
     for label in ('"Calm"', '"Usual"', '"Lively"'):
         assert label in js
     assert 'ask("set_lively"' in js
-    help_text = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    help_text = help_more_text()
     assert "Activity (Calm, Usual or Lively;" in help_text

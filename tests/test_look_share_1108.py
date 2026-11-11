@@ -8,6 +8,7 @@ names what it skipped; a seeded pick is repeatable and stays inside the sets.
 
 from __future__ import annotations
 
+from tests._help_text import help_more_text
 import json
 import shutil
 import subprocess
@@ -140,6 +141,6 @@ def test_the_controls_exist_are_wired_and_documented():
         assert f'"{ident}"' in CONTROLS
     assert "exportNow" in CONTROLS[CONTROLS.index('$("look-export")') :][:200]
     assert "downloadJson(" in SETTINGS[SETTINGS.index("function exportLook") :][:300]
-    more = (ROOT / "src/tessellate/ai/help_topics_more.py").read_text(encoding="utf-8")
+    more = help_more_text()
     themes = more[more.index('"id": "themes"') :][:4000]
     assert "Export look" in themes and "Import look" in themes

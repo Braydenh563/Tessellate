@@ -6,6 +6,7 @@ the button, its Undo and its help are read from the source.
 
 from __future__ import annotations
 
+from tests._help_text import help_more_text
 from tests.test_look_share_1108 import CONTROLS, INDEX, ROOT, SETTINGS, _run
 
 
@@ -37,7 +38,7 @@ def test_the_button_is_wired_applies_through_a_saved_look_and_can_be_undone():
     body = SETTINGS[SETTINGS.index("function surpriseNow") :][:1200]
     assert "applySavedTheme(" in body and "changeLookWithUndo(" in body
     assert "density" in body
-    more = (ROOT / "src/tessellate/ai/help_topics_more.py").read_text(encoding="utf-8")
+    more = help_more_text()
     guide = more[more.index('"id": "themes"') :][:3500]
     assert "Mix palette, accent and density" in guide and "Random theme" in guide
     assert "Surprise" not in guide

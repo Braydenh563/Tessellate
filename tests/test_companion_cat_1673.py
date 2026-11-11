@@ -12,6 +12,7 @@ in a node vm with a fixed clock; the wiring is checked in the source.
 
 from __future__ import annotations
 
+from tests._help_text import help_more_text
 import json
 import re
 import shutil
@@ -211,7 +212,7 @@ def test_the_two_switches_and_the_guide_say_what_the_cat_does() -> None:
     """Help moves with the UI (standing order 13): the switches exist and the topic no longer says it finds a spot on each page."""
     assert '["come", "Come over to you after a few minutes apart", ["come"]]' in AV
     assert '["afield", "Go out for a while now and then", ["afield"]]' in AV
-    topics = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    topics = help_more_text()
     assert "finds a free spot on each page" not in topics and "Stay here on every page" in topics
     assert "goes out for a while" in topics and "Reduce actions on Normal" in topics
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")

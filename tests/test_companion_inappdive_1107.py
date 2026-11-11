@@ -5,6 +5,7 @@ here); the measured numbers are in docs/roadmap/agent-remaining/inappdive-1107.m
 
 from __future__ import annotations
 
+from tests._help_text import help_more_text
 import re
 from pathlib import Path
 
@@ -37,7 +38,7 @@ def test_a_bar_or_hang_that_changes_tab_looks_again_for_a_clear_perch() -> None:
 
 
 JS = ROOT / "frontend" / "js"
-HELP = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+HELP = help_more_text()
 
 
 def _body(text: str, head: str) -> str:

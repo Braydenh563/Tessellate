@@ -22,3 +22,8 @@ def agent_text() -> str:
     layers moved out of it and the hub (`agent_policy.py`, `agent_turn.py`, AI23)."""
     names = ("agent_policy.py", "agent_turn.py", "agent.py")
     return "\n".join((AI / name).read_text(encoding="utf-8") for name in names)
+
+
+def help_more_text() -> str:
+    """`help_topics_more.py` and the middle block moved out of it whole (K24)."""
+    return "\n".join((AI / name).read_text(encoding="utf-8") for name in ("help_topics_more.py", "help_topics_more_mid.py"))

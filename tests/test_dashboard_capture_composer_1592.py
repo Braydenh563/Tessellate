@@ -12,6 +12,7 @@ tests-e2e/specs/capture-filing.spec.js.
 
 from __future__ import annotations
 
+from tests._help_text import help_more_text
 import re
 from pathlib import Path
 
@@ -103,7 +104,7 @@ def test_atlas_is_asked_to_step_aside_when_the_card_changes_its_box():
 
 
 def test_the_guide_and_the_widget_list_say_what_the_card_is_now():
-    guide = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    guide = help_more_text()
     assert "same take-a-note bar as the top of" in guide
     assert "take-a-note bar" in _js("dashboard.js")
 

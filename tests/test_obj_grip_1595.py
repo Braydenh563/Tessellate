@@ -13,6 +13,7 @@ The real mouse drags are measured in `scratchpad/ui-sweeps/objgrip.js`."""
 
 from __future__ import annotations
 
+from tests._help_text import help_more_text
 import re
 from pathlib import Path
 
@@ -91,7 +92,7 @@ def test_the_grip_is_one_floating_element_drawn_from_tokens() -> None:
 
 
 def test_help_and_design_say_where_the_grip_is() -> None:
-    help_text = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    help_text = help_more_text()
     assert "grip" in help_text.split('"id": "object-move"', 1)[1].split('"badge"', 1)[0]
     design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
     assert "A drag grip on a card" in design

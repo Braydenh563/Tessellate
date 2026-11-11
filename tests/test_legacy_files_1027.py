@@ -10,6 +10,7 @@ dir; nothing reaches a network.
 
 from __future__ import annotations
 
+from tests._help_text import help_more_text
 from pathlib import Path
 
 import pytest
@@ -237,7 +238,7 @@ def test_the_settings_list_is_drawn_by_the_lazy_file_with_the_row_recipe():
 
 
 def test_the_guide_and_the_settings_help_name_the_list():
-    topics = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    topics = help_more_text()
     assert "Old search files" in topics and "search-engine-moved" in topics
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert "Old search files lists what the old engine" in html

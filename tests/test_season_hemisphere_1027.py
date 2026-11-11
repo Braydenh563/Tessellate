@@ -12,7 +12,7 @@ The clock is Wednesday 21 October 2026, 10:00. No model runs."""
 
 from __future__ import annotations
 
-from tests._help_text import help_chat_text
+from tests._help_text import help_chat_text, help_more_text
 
 import datetime as dt
 import re
@@ -208,5 +208,5 @@ def test_the_settings_row_the_report_and_the_help():
     assert '"season_hemisphere"' in rows
     panes = (root / "frontend" / "js" / "settings-panes.js").read_text(encoding="utf-8")
     assert "season_locale" in panes
-    guide = (root / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8") + help_chat_text()
+    guide = help_more_text() + help_chat_text()
     assert "Seasons" in guide and "hemisphere" in guide

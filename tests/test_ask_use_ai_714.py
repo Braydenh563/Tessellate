@@ -15,7 +15,7 @@ These are the source halves; the heights and the centre line are the sweep's
 
 from __future__ import annotations
 
-from tests._help_text import help_chat_text
+from tests._help_text import help_chat_text, help_more_text
 
 import re
 from pathlib import Path
@@ -90,7 +90,7 @@ def test_the_switch_wears_the_pill_switch_recipe_and_the_chip_rules_are_gone():
 
 
 def test_every_help_surface_names_the_switch():
-    source = Path(help_topics_more.__file__).read_text(encoding="utf-8")
+    source = help_more_text()
     chat = help_chat_text()
     assert "Ask on the Notes tab has an AI switch beside its answer-length picker" in source
     assert "Notes tab, Ask, the AI switch" in source

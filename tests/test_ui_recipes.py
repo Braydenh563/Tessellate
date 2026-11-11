@@ -19,7 +19,7 @@ a fix removes an entry, a new offender fails the build.
 
 from __future__ import annotations
 
-from tests._help_text import help_chat_text
+from tests._help_text import help_chat_text, help_more_text
 
 import re
 from html.parser import HTMLParser
@@ -6479,7 +6479,7 @@ def test_every_popup_panel_opts_in_to_panel_movable_or_says_why_not() -> None:
 def test_the_panel_movable_recipe_is_in_the_index_and_the_guide() -> None:
     design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
     assert "`panelMovable`" in design and "panel-movable.js" in design
-    topics = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    topics = help_more_text()
     assert "drag its head" in topics
 
 
@@ -6492,7 +6492,7 @@ def test_the_appearance_panel_recipe_is_in_the_index_and_the_guide() -> None:
     strip = css[css.index(".appearance-strip {") : css.index("}", css.index(".appearance-strip {"))]
     assert "flex: none" in strip and "overflow-x: auto" in strip, "the strip is outside the scroller and never wraps"
     assert "position: sticky" not in css, "the strip is outside the scroller, not stuck inside it"
-    topics = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    topics = help_more_text()
     assert '"id": "appearance-panel"' in topics and "Pop out" in topics
 
 

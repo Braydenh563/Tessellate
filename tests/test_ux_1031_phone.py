@@ -71,7 +71,7 @@ def test_a_tool_group_turns_all_off_or_all_on_in_one_save():
 
 
 def test_the_guide_says_a_group_has_its_own_switch():
-    more = _text("src", "tessellate", "ai", "help_topics_more.py")
+    more = _text("src", "tessellate", "ai", "help_topics_more.py") + _text("src", "tessellate", "ai", "help_topics_more_mid.py")
     body = more.split('"id": "tools-setting"', 1)[1].split('"badge"', 1)[0]
     assert "Turn all off" in body
     text = "".join(re.findall(r'"((?:[^"\\]|\\.)*)"', body.split('"body": (', 1)[1]))
