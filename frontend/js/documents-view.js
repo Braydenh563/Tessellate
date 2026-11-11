@@ -1,7 +1,9 @@
 // The document editor's CodeMirror view glue, carved out of documents.js (OPEN W28 D21):
 // the key chords and keymap, the extension list, the findings plugin, the editor mount,
-// the code-draw and language syncs, the gutter and the line clipboard. Loaded right after
-// documents.js; it reads that file's globals at run time and nothing there reads this at load.
+// the code-draw and language syncs, the gutter and the line clipboard. Loaded right before
+// documents.js (app.js): its top level only declares, and documents.js calls into it at load
+// (setDocView -> docCmSyncLanguage, the toolbar -> docCmSyncGutter); it reads documents.js's
+// globals only inside functions.
 
 //: **Ctrl+Shift+Z is redo, whatever the key reports.** Shift+Z arrives as
 //: `key: "z"` with Caps Lock on, and the keymap then matched Mod-z (undo):
@@ -669,8 +671,6 @@ function docToggleCodeDraw(name, on) {
 
 $("doc-code-wrap")?.addEventListener("change", (event) => docToggleCodeDraw("codeWrap", event.target.checked));
 $("doc-whitespace")?.addEventListener("change", (event) => docToggleCodeDraw("whitespace", event.target.checked));
-if ($("doc-code-wrap")) $("doc-code-wrap").checked = docToolPref("codeWrap", false);
-if ($("doc-whitespace")) $("doc-whitespace").checked = docToolPref("whitespace", false);
 
 //: The file type changed while the document was open: the language and the
 //: wrapping follow it. Reconfigured rather than rebuilt, so the caret, the
