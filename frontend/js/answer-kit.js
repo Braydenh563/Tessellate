@@ -241,14 +241,11 @@ function addInlineCitations(answerEl, sentences, rawResults, orderedSources = nu
     for (const g of rows) parent.insertBefore(citationMarker(g, byId, numberFor), before);
   }
   collapseCitationRuns(targets);
-  //: A composed answer's "[**Dentist**]" opens its note (ask-compose.js,
-  //: lazy: the boot scripts are at their gzip cap).
-  //: …and its quoted sentences take the quote style (`markSaidSentences`).
-  if (sentences.some((g) => g.title || g.said)) {
-    ensureModule("askCompose").then(() => {
-      linkCitedTitles(targets, sentences, byId, numberFor);
-      markSaidSentences(targets, sentences);
-    });
+  //: A composed answer's quoted sentences take the quote style (`markSaidSentences`,
+  //: ask-compose.js, lazy: the boot scripts are at their gzip cap). Citations are
+  //: numbered marks only (Q1, D25): the bracketed title link is gone.
+  if (sentences.some((g) => g.said)) {
+    ensureModule("askCompose").then(() => markSaidSentences(targets, sentences));
   }
 }
 

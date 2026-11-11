@@ -481,14 +481,15 @@ def test_a_grounding_row_carries_the_title_the_answer_cites() -> None:
     assert all(row["title"] == "" for row in untitled["grounding"])
 
 
-def test_a_cited_name_opens_its_note_and_never_the_sources_panel() -> None:
+def test_citations_are_numbered_marks_and_no_bracketed_title_is_written_or_linked() -> None:
+    """Q1 (the owner, 2026-11-10; built by D25): the mark is the citation. The
+    bracketed "[**Title**]" is no longer written and `linkCitedTitles`, which
+    only ever matched it, is gone; a quoted sentence still takes its style."""
     from pathlib import Path
 
-    js = Path("frontend/js/ask-compose.js").read_text(encoding="utf-8")
-    body = js[js.index("function linkCitedTitles") :]
-    body = body[: body.index("\n}\n")]
-    assert "flashEntry(g.note_id)" in body and "scheduleCitationPeek(" in body
-    assert "source" not in body.lower().replace("citationsource", "")
+    assert "linkCitedTitles" not in Path("frontend/js/ask-compose.js").read_text(encoding="utf-8")
     caller = with_pieces("capture-ask.js")
-    assert "linkCitedTitles(targets, sentences, byId, numberFor);" in caller
-    assert caller.index('ensureModule("askCompose").then(() => {') < caller.index("linkCitedTitles(targets, sentences, byId, numberFor);")
+    assert "linkCitedTitles" not in caller
+    assert "markSaidSentences(targets, sentences)" in caller
+    answer = ask("What about the dentist?", [_note(1, "Dentist on Friday at nine, bring the form.", 2)])
+    assert "[**" not in answer["text"], answer["text"]
