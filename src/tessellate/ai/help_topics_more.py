@@ -1939,7 +1939,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "code-run",
+        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-synced", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
@@ -2873,3 +2873,26 @@ MORE_TOPICS.append({
     "badge": {"label": "Library", "tab": "library"},
 })
 TOPIC_META["equation-editor"] = {"title": "Equation editor", "path": "Calculator and equations, Equation tab; type /equation, or Alt+=, in a note, a document, a board's text or Chat"}
+
+
+#: DOCUMENTS_PLAN 26 (decision 82): a block shown in two documents, edited in either (documents-synced.js).
+MORE_TOPICS.append({
+    "id": "document-synced",
+    "keywords": (
+        "synced block", "synced blocks", "transclusion", "transclude", "embed a paragraph", "block embed",
+        "link to this block", "edit an embedded block", "same paragraph in two documents", "![[",
+    ),
+    "body": (
+        "A paragraph can live in one document and be shown in others. In its own document, put the caret in it and "
+        "choose Link to this block in the / menu: it gets a short id at the end of its last line. In another document "
+        "write ![[Document title#^the-id]] and the paragraph appears there, quoted, with a line naming where it comes "
+        "from (press it to open that document). Hover the quote and press the pencil to change the paragraph where "
+        "you are: Save writes it into the document it lives in, so there is only ever one copy, every other place that "
+        "shows it follows, and that document's History has the change. If that document was changed somewhere else "
+        "in the meantime, Save is refused and nothing is overwritten. A paragraph is one block: a blank line in it is "
+        "not allowed, and an empty one cannot be saved. In the document the paragraph lives in, the pencil is not "
+        "shown: there the text is simply the text."
+    ),
+    "badge": {"label": "Documents", "tab": "documents"},
+})
+TOPIC_META["document-synced"] = {"title": "A paragraph shown in two documents", "path": "A document, the / menu, Link to this block"}

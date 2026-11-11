@@ -100,6 +100,12 @@
       source.title = "Open the document at this block";
       source.addEventListener("click", () => docOpenResolvedWikiTarget(target, name));
       box.append(body, source);
+      //: A synced block (documents-synced.js): edited here, written into the document it lives in.
+      if (found && currentDoc?.id !== target.doc.id) {
+        const edit = smallButton("ph:pencil-simple", "Edit this block here", () => ensureModule("docSynced").then(() => box.dispatchEvent(new CustomEvent("synced-edit", { bubbles: true, detail: { text: found.text, target, draw: () => docEmbedNode(target, name), cache: docBlockTextCache } }))));
+        edit.classList.add("icon-only", "doc-embed-block-edit");
+        box.append(edit);
+      }
       return box;
     }
     if (target.kind === "note") {

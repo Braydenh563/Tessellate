@@ -27,6 +27,7 @@ DOCUMENTS_JS = ROOT / "frontend" / "js" / "documents.js"
 
 BEGIN = "// DOC-BLOCKREF-BEGIN"
 END = "// DOC-BLOCKREF-END"
+SYNCED_JS = ROOT / "frontend" / "js" / "documents-synced.js"
 
 
 def blockref_source() -> str:
@@ -36,6 +37,13 @@ def blockref_source() -> str:
     assert start != -1, f"{BEGIN} marker is missing from documents.js"
     assert stop > start, f"{END} marker is missing or before {BEGIN}"
     return text[start + len(BEGIN) : stop]
+
+
+def synced_source() -> str:
+    """The synced-block model (documents-synced.js), which reads the block-reference helpers above it."""
+    text = SYNCED_JS.read_text(encoding="utf-8")
+    start = text.index("// DOC-SYNCED-BEGIN")
+    return text[start : text.index("// DOC-SYNCED-END")]
 
 
 DRIVER = r"""
@@ -196,6 +204,22 @@ const fixed = () => {
   check('strip/empty text is empty', docBlockStripIds(null) === '', JSON.stringify(docBlockStripIds(null)));
 }
 
+// --- a synced block: rewriting the block an id names (DOCUMENTS_PLAN 26) ----
+{
+  const text = 'Intro.\n\nFirst line.\nSecond line. ^abc123\n\nTail ^other';
+  const next = replace(text, 'abc123', 'Rewritten.');
+  check('replace/the block is swapped and keeps its id', next === 'Intro.\n\nRewritten. ^abc123\n\nTail ^other', JSON.stringify(next));
+  const two = replace(text, 'abc123', 'New one.\nNew two.  \n');
+  check('replace/lines stay lines, the trailing space goes', two === 'Intro.\n\nNew one.\nNew two. ^abc123\n\nTail ^other', JSON.stringify(two));
+  check('replace/an id nothing carries refuses', replace(text, 'zzzzzz', 'x') === null, '');
+  check('replace/an empty block refuses', replace(text, 'abc123', '  \n') === null, '');
+  check('replace/a blank line would make two blocks, so it refuses', replace(text, 'abc123', 'One.\n\nTwo.') === null, '');
+  check('replace/the same text changes nothing', replace(text, 'abc123', 'First line.\nSecond line.') === text, '');
+  const code = '```\nlet a ^abc123\n```\n\nReal ^abc123';
+  const fenced = replace(code, 'abc123', 'Changed.');
+  check('replace/an id in a fence is an example, not the block', fenced === '```\nlet a ^abc123\n```\n\nChanged. ^abc123', JSON.stringify(fenced));
+}
+
 process.stdout.write(JSON.stringify(results));
 """
 
@@ -206,7 +230,7 @@ def blockref_checks(tmp_path_factory) -> list[dict]:
     if not node:  # pragma: no cover - node is in the sandbox and in CI
         pytest.skip("node is not available")
     script = tmp_path_factory.mktemp("docblockrefs") / "run.js"
-    script.write_text(blockref_source() + DRIVER, encoding="utf-8")
+    script.write_text(blockref_source() + "\nvar window = { docBlockFind };\n" + synced_source() + DRIVER, encoding="utf-8")
     out = subprocess.run(
         [node, str(script)], capture_output=True, text=True, timeout=60, check=False
     )
@@ -221,3 +245,29 @@ def test_the_model_runs_without_a_browser(blockref_checks: list[dict]) -> None:
 def test_block_references_parse_and_write_as_decided(blockref_checks: list[dict]) -> None:
     failed = [c for c in blockref_checks if not c["ok"]]
     assert not failed, "\n".join(f"{c['name']}: {c['detail']}" for c in failed[:20])
+
+
+def test_a_synced_block_is_edited_through_a_lazy_module_the_embed_asks_for() -> None:
+    embeds = (ROOT / "frontend" / "js" / "documents-embeds.js").read_text(encoding="utf-8")
+    cm = (ROOT / "frontend" / "js" / "documents-cm.js").read_text(encoding="utf-8")
+    synced = SYNCED_JS.read_text(encoding="utf-8")
+    # The pencil is on a block from another document only; its press loads the module, which is not a boot script.
+    assert 'ensureModule("docSynced")' in embeds and "currentDoc?.id !== target.doc.id" in embeds
+    assert 'docSynced: ["/js/documents-synced.js"]' in (ROOT / "frontend" / "js" / "lazy-entries.js").read_text(encoding="utf-8")
+    # Save goes through the document's own guarded save, so it has history and refuses a stale write.
+    assert 'method: "PUT"' in synced and "base_hash: source.content_hash" in synced
+    # The redraw after Save or Cancel is handed in by the embed (docEmbedNode is private to its file, so a reference to it threw).
+    assert "draw: () => docEmbedNode(target, name)" in embeds and "docEmbedNode" not in synced.replace("`docEmbedNode`", "")
+    # A block changed elsewhere since the box opened is refused, not overwritten.
+    assert ".text !== text" in synced
+    # A click in the box must not fall through to the Live widget's "open the document".
+    assert '"button, a, input, textarea"' in cm
+
+
+def test_the_guide_has_a_topic_and_a_lead_for_a_synced_block() -> None:
+    from tessellate.ai import help_chat, help_leads
+
+    topics = {t["id"]: t for t in help_chat.HELP_TOPICS}
+    assert "document-synced" in topics and len(topics["document-synced"]["body"]) < 1900
+    assert "document-synced" in help_leads.TOPIC_LEADS
+    assert "pencil" in topics["document-synced"]["body"]

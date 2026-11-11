@@ -111,9 +111,11 @@ Object.assign(LAZY_MODULES, {
   companionSettings: ["/js/companion-settings.js"],
   //: What a click, a hover or a focus brings onto the screen fades in, and out where it floats (INBOX 1565): ui-reveal-lazy.css.
   uiReveal: ["/css/ui-reveal-lazy.css"],
-  //: The ```graph and ```base blocks in a document (documents-graph.js, documents-base.js; documents-math.js asks by name).
+  //: The ```graph and ```base blocks in a document (documents-graph.js, documents-base.js; documents-math.js asks by name),
+  //: and a synced block's edit box (documents-synced.js; documents-embeds.js asks on the pencil).
   docGraph: ["/css/doc-graph-lazy.css", "/js/documents-graph.js"],
   docBase: ["/css/doc-base-lazy.css", "/js/documents-base.js"],
+  docSynced: ["/js/documents-synced.js"],
 });
 setTimeout(() => ["loadFailed", "modelMenu", "entryCard", "uiReveal"].forEach(ensureModule), 3000);
 installStandIns({

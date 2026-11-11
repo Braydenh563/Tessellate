@@ -525,6 +525,41 @@ textarea.has-gutter {
   margin-bottom: 0;
 }
 
+/* A synced block (documents-embeds.js `docEmbedBlockEdit`): the pencil on the quote's corner, and the box that replaces the text. */
+.doc-embed-block {
+  position: relative;
+}
+
+.doc-embed-block-edit {
+  position: absolute;
+  inset-block-start: var(--space-1);
+  inset-inline-end: var(--space-1);
+  opacity: 0;
+}
+
+.doc-embed-block:is(:hover, :focus-within) .doc-embed-block-edit {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .doc-embed-block-edit {
+    opacity: 1;
+  }
+}
+
+.doc-embed-block-input {
+  inline-size: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  font: inherit;
+}
+
+.doc-embed-block-actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-block-start: var(--space-2);
+}
+
 /* A recording embedded in a document (documents-embeds.js, gap row 1): the take's name over the browser's own audio controls. */
 .doc-embed-recording {
   display: flex;
