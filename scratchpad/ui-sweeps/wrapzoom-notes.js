@@ -358,6 +358,8 @@ async function run() {
       }
     };
     const S = async (name, setup, roots, scope, reset) => {
+      //: ONLY=<prefix> runs just the states whose name starts with it.
+      if (process.env.ONLY && !name.startsWith(process.env.ONLY)) return;
       try {
         await closeAll();
         await setup();
@@ -434,9 +436,35 @@ async function run() {
       const open = async () => { await tab('reminders'); await settle(500); await ev((v) => document.querySelector(`#reminder-view-toggle [data-view="${v}"]`)?.click(), v); await settle(600); };
       await S(`reminders/${v}`, open, ['#tab-reminders', '#tab-timeline'], v === 'list' ? '#tab-reminders' : null, open);
     }
+    // A reminder row's hover strip (+1h, Tomorrow, Edit, ⋯) over its time.
+    await S('reminders/hover', async () => { await tab('reminders'); await ev(() => document.querySelector('#reminder-view-toggle [data-view="list"]')?.click()); await settle(500);
+      const li = page.locator('#reminder-groups li').first(); if (await li.count()) await li.hover({ timeout: 3000 }).catch(() => {}); }, ['#tab-reminders']);
     await S('reminders/typed', async () => { await tab('reminders'); await ev(() => document.querySelector('#reminder-view-toggle [data-view="list"]')?.click());
       await page.fill('#reminder-text', 'Ring the garage about the car service and the tyres').catch(() => {}); }, ['#tab-reminders']);
     await page.fill('#reminder-text', '').catch(() => {});
+    // ---- Popups the click-through above can miss (a summary press that an
+    // outside-click closer undoes in the same tick): opened directly here.
+    const direct = [
+      ['notes', 'capture', '#capture-help'], ['notes', 'writing-room', '#draft-help'], ['notes', 'ask', '[data-help-for][aria-label="About AI answers"], #ask [data-help-for]'],
+      ['library', 'library-view-documents', '#library-filter-menu'], ['library', 'library-view-documents', '#library-more-menu'],
+      ['library', 'library-view-contents', '#contents-help'], ['library', 'library-view-skills', '#skills-help'],
+      ['library', 'library-view-whiteboard', '#library-view-whiteboard details.dock-more'],
+    ];
+    for (const [t, sub, sel] of direct) {
+      await S(`popups/${sub}/${sel.split(',')[0]}`, async () => {
+        await tab(t);
+        if (t === 'notes') await notesSec(sub);
+        else await page.waitForFunction((x) => { const b = document.querySelector(`#library-subtabs [data-target="${x}"]`); if (!b) return true; if (!b.classList.contains('active')) { b.click(); return false; } return true; }, sub, { timeout: 8000, polling: 150 }).catch(() => {});
+        await settle(900);
+        const how = await ev((sel) => {
+          const el = document.querySelector(sel); if (!el) return 'missing';
+          if (el.tagName === 'DETAILS') { el.open = true; return 'details'; }
+          el.click(); return 'click';
+        }, sel);
+        if (how === 'missing') emit({ vp, state: `popups/${sub}/${sel}`, error: 'opener missing' });
+      }, popRoots);
+      await closeAll();
+    }
     emit({ vp, state: '__done', secs: Math.round((Date.now() - t0) / 1000) });
     await browser.close();
   }
