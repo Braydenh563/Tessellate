@@ -8,6 +8,7 @@ whole category rather than what a keyword search finds.
 from __future__ import annotations
 
 import json
+import re
 
 import pytest
 
@@ -39,16 +40,19 @@ def notebook(session):
 def test_summarise_this_sums_up_the_open_note_point_by_point(client, notebook):
     text = _turn(client, "Summarise this", open_note_id=notebook["trip"], open_category="Travel")
     #: INBOX 1441 moved the day out: "Summarise this" does not ask about
-    #: time, so the note is named by its label and says no "of <date>".
-    assert text.startswith("Your trip planning note, in Travel, in three points:"), text
+    #: time, so the note says no "of <date>". The name is the note's one name
+    #: (owner 2026-11-10: first line, six words, quoted), not a label.
+    assert text.startswith("“Trip planning: flights to Lisbon on…”, in Travel, in three points:"), text
     assert "- Flights to Lisbon on 3 May, 240 pounds.\n- Hotel near Alfama" in text
     assert "Packing" not in text and "squats" not in text
 
 
 def test_a_one_point_note_is_one_sentence(client, notebook):
     text = _turn(client, "tl;dr", open_note_id=notebook["gym"])
-    #: No "of <date>" for an untimed question (INBOX 1441).
-    assert text.startswith("Your gym note, in Health, says one thing: squats at 80 kg."), text
+    #: One sentence, one fact. The name would only repeat the fact's own first
+    #: clause (“Gym: squats at 80 kg”), so the note is told by its day instead
+    #: (`composer_digest._this_note`, the owner's one-name rule 2026-11-10).
+    assert re.fullmatch(r"Your note of \d{1,2} [A-Z][a-z]+, in Health, says: Squats at 80 kg\.", text), text
 
 
 def test_with_no_note_open_the_open_category_is_summed_up(client, notebook):
@@ -120,7 +124,7 @@ def test_summarise_this_reads_the_open_document(client, notebook):
 
 def test_a_document_that_is_gone_falls_back_to_the_open_note(client, notebook):
     text = _turn(client, "Summarise this", open_document_id=99999, open_note_id=notebook["gym"])
-    assert "squats at 80 kg" in text, text
+    assert "squats at 80 kg" in text.lower(), text
 
 
 def test_a_question_that_is_not_about_this_ignores_the_open_document(client, notebook):

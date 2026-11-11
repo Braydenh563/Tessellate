@@ -21,7 +21,7 @@ def _ask_composer(question, notes):
 def test_a_board_is_cited_as_a_board_and_its_row_says_so():
     notes = [{"id": 8, "content": "# Harbor board\n\nHarbor risks: offline mode is hard to find.", "created_at": "2026-09-28", "kind": "board"}]
     result = _ask_composer("what are the Harbor risks", notes)
-    assert "[board **Harbor board**]" in result["text"]
+    assert "(board Harbor board)" in result["text"]  # D25: the kind in a plain parenthesis
     assert result["grounding"][0]["kind"] == "board"
 
 
@@ -29,7 +29,7 @@ def test_a_document_the_route_attaches_is_a_document_by_its_category():
     notes = [{"id": 3, "content": "Pricing memo\n\nThe price stays at nine dollars a month for the first year.", "category": "Document"}]
     result = _ask_composer("what is the price", notes)
     assert result["grounding"][0]["kind"] == "document"
-    assert "[document **Pricing memo**]" in result["text"]
+    assert "(document Pricing memo)" in result["text"]  # D25
 
 
 def test_a_note_and_a_document_with_one_id_are_both_cited_by_their_own_ids():
