@@ -209,12 +209,17 @@
     }));
     bar.appendChild(smallButton("ph:trash", "Delete this block", () => docBlockDelete(span)));
     bar.classList.remove("hidden");
+    //: **In the gutter, never on the text** (the owner, 2026-11-11: "that popup edit copy and delete
+    //: stuff kinda covers the content in the top corner of that row"). The bar used to be centred on
+    //: the block's top edge, so half of it lay over the last line of the block above and the first
+    //: words of this one. It now stands in a column up the block's right side, in the room the
+    //: preview keeps for it (its `padding-right`, hover devices only), level with the block's top.
     const rect = block.getBoundingClientRect();
     const host = $("doc-preview").getBoundingClientRect();
     const width = bar.offsetWidth;
-    const left = Math.min(rect.right, host.right) - width;
-    const top = Math.max(host.top, rect.top) - bar.offsetHeight / 2;
-    docPlaceFixed(bar, Math.max(host.left, left), Math.max(4, top));
+    const left = Math.min(rect.right + 4, host.right - width - 2);
+    const top = Math.min(Math.max(host.top + 2, rect.top), Math.max(host.top + 2, host.bottom - bar.offsetHeight - 2));
+    docPlaceFixed(bar, Math.max(host.left, left), top);
   }
 
   function docBlockEdit(span) {

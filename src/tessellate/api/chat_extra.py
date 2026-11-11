@@ -207,8 +207,11 @@ def casual_greeting(question: str, voice: str, recent: list[str], seed: str, his
     """A tapped hello ("heyy", "yo") answered in a line in the person's own
     register, with no status report, card or link (INBOX 1749); "" for a
     written hello, which keeps the welcome."""
-    from tessellate.ai import address, composer_remark, composer_smalltalk, question_noise
+    from tessellate.ai import address, composer_remark, composer_smalltalk, intent, question_noise
 
+    #: A greeting that leads a request ("hey what's been happening?") is the request's, not a hello.
+    if intent.classify(question) != intent.SMALLTALK:
+        return ""
     if composer_smalltalk.social_kind(question) not in ("greeting", "morning") or composer_remark.register(question) != "casual" or not composer_remark.bare_hello(question):
         return ""
     line = composer_remark.casual_hello(question, voice, recent, seed, asked_how=question_noise.asks_how(question))

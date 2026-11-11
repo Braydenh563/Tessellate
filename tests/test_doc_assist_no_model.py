@@ -14,9 +14,10 @@ import re
 
 from tests._app_js import INDEX_HTML, JS_DIR
 from tests.test_code_documents import _fn, _node
+from tests import _js_scope
 
 HTML = INDEX_HTML.read_text(encoding="utf-8")
-KIT = (JS_DIR / "documents-codekit.js").read_text(encoding="utf-8")
+KIT = _js_scope.unwrapped((JS_DIR / "documents-codekit.js").read_text(encoding="utf-8"))
 EDITOR = (JS_DIR / "editor.js").read_text(encoding="utf-8")
 STATUS = (JS_DIR / "status.js").read_text(encoding="utf-8")
 

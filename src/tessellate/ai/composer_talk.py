@@ -464,7 +464,7 @@ def social_turn(question: str, history: list[dict] | None = None) -> bool:
     has no subject, so no statistics chips sit under it (INBOX 1749). Here, not in `composer_remark`,
     because `intent` asks `composer_remark` whether a turn is a remark: asking `intent` from there was an import
     cycle (code scanning 2175, 2176)."""
-    from tessellate.ai import composer_chat, intent, personal, question_noise  # lazy: the composer loads these on first use
+    from tessellate.ai import composer_chat, personal, question_noise  # lazy: the composer loads these on first use
 
     return (
         intent.classify(question) == intent.SMALLTALK
