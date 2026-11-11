@@ -821,9 +821,7 @@ function enhanceSelect(select) {
   opener.setAttribute("aria-label", label);
   opener.title = select.title || label;
 
-  //: The picture an option names (`data-icon`, a Phosphor name; audit 1028 U27),
-  //: drawn before its name in the list row and on the opener's face. Decorative:
-  //: the name beside it is the label.
+  //: An option's `data-icon` picture (U27), decorative.
   const optionGlyph = (option) => {
     const name = option?.dataset.icon;
     if (!name) return null;

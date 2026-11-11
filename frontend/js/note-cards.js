@@ -356,12 +356,7 @@ function noteIsMeeting(entry) {
 // carry a second copy of it. Instant + one-click Undo, soft delete
 // underneath (Wave J). Also on the global undo stack (status bar / Ctrl+Z),
 // so it survives past the toast's own timeout.
-//: **A binned note leaves the keyboard user somewhere** (sweep 1028b W8): the
-//: menu's Move to bin removed the row the focus sat in, so it fell to `body`
-//: and the next Tab began at the top of the page. The neighbour is taken
-//: before the delete; once the list is redrawn it gets the focus only if the
-//: focus was lost (a click elsewhere in the meantime wins), and a list that
-//: emptied hands it to the capture field. The Delete key had this already.
+//: Move to bin keeps keyboard focus (W8): the neighbour is taken before the delete and focused only if focus was lost.
 async function binNoteWithUndo(entry) {
   const list = document.getElementById("entry-list");
   const rows = list ? entryListItems(list) : [];

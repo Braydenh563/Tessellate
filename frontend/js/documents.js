@@ -145,10 +145,7 @@ function docTypeMount() {
     opener.title = "New document of another type";
     head.replaceChildren(wrap);
   }
-  //: **The Recent head holds one row at every width the sidebar takes (220 to 320px).** Under 16rem of
-  //: sidebar the help, template and diagram buttons give way to this ⋯ (built here, not in index.html: the
-  //: boot document is element-capped), and the CSS (`.doc-head-more`) shows it only then. The rows press the
-  //: real buttons, so each has one handler and one id.
+  //: Under 16rem the head's help, template and diagram buttons fold into this ⋯ (CSS `.doc-head-more`); it presses the real buttons.
   const tools = document.querySelector("#doc-sidebar-list .doc-head-tools");
   if (tools && !tools.querySelector(".doc-head-more")) {
     const press = (selector) => () => document.querySelector(selector)?.click();
