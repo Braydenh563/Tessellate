@@ -27,7 +27,7 @@ from datetime import date, datetime, time, timedelta
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import composer_chips, composer_remark, follow_items, realise, recognise, slash, slash_more
+from tessellate.ai import composer_chips, composer_remark, follow_items, intent, realise, recognise, slash, slash_more
 
 #: The charts the app can already draw from the notes, in the order offered.
 CHARTS = ("time", "tag", "category", "weekday")
@@ -322,7 +322,11 @@ def cited_question(question: str, history: list[dict] | None, now: datetime) -> 
     from tessellate.ai import reading
 
     turns = [{"text": str(t.get("question") or ""), "objects": t.get("objects") or []} for t in (history or [])[-reading.FOLLOW_TURNS:]]
-    return reading.cited_follow(question, turns, now) if history else None
+    if not history:
+        return None
+    #: "and the other one?" is the question before about the other note it cited (B21), which `cited_follow` leaves to acts.
+    other = reading.follow(question, turns, now)
+    return reading.cited_follow(question, turns, now) or (other[0] if other and other[1] == "other" else None)
 
 
 # --- what to offer next ---------------------------------------------------------
@@ -435,7 +439,7 @@ class Closing:
         if not self.asked and composer_chips.asks_time(answer):
             return [{"type": "offer", "offer": {"kind": "ask", "label": "", "asks": composer_chips.TIME_CHIPS}}]
         #: A social turn ("heyy", "its been hot") has no subject: no statistics chips under it (INBOX 1749).
-        social = composer_remark.social(self.question, self.history)
+        social = social_turn(self.question, self.history)
         asks = [] if self.chipped or not answer.strip() or social else self.asks(answer)
         if not asks and not self.offered and answer.strip() and not self.framed and social:
             #: "thanks" has no subject of its own: it offers the last answer's chips (F5).
@@ -453,3 +457,19 @@ def stumped_asks(session: Session, history: list[dict], today: date) -> list[str
     """The previous subject's acts for the stumped line's chips (INBOX 1729 c); empty with no turn before."""
     prev = from_history(history, today)
     return acts_for(session, prev, today) if history else []
+
+def social_turn(question: str, history: list[dict] | None = None) -> bool:
+    """Whether the turn is conversation, not a question about the notes: small
+    talk, a remark, a feeling, thanks or a question about Atlas. Such a turn
+    has no subject, so no statistics chips sit under it (INBOX 1749). Here, not in `composer_remark`,
+    because `intent` asks `composer_remark` whether a turn is a remark: asking `intent` from there was an import
+    cycle (code scanning 2175, 2176)."""
+    from tessellate.ai import composer_chat, personal, question_noise  # lazy: the composer loads these on first use
+
+    return (
+        intent.classify(question) == intent.SMALLTALK
+        or composer_remark.is_remark(question)
+        or question_noise.social_kind(question) is not None
+        or composer_chat.reply(question, history or [], "") is not None
+        or bool(personal.about_me(question))
+    )

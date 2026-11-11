@@ -1297,6 +1297,7 @@ function showNoDocument() {
   renderDocOutline();
   renderDocProperties();
   renderDocComments();
+  document.dispatchEvent(new CustomEvent("doc-shown", { detail: null }));
   //: **A new empty page opens to write in** (audit 1028 U8). A phone's default
   //: is Rendered, where the first tap on a blank page did nothing. Not stored:
   //: the next document still opens the way the person last chose.
@@ -1397,6 +1398,7 @@ async function openDocument(id) {
     renderDocComments();
   });
   renderDocList();
+  document.dispatchEvent(new CustomEvent("doc-shown", { detail: doc }));
   //: Before the place is restored, which stays last (tests/test_doc_long.py).
   offerKeptDocEdit(doc);
   docRestorePosition(doc.id);
@@ -15997,6 +15999,7 @@ let docCmBroken = false;
 
 function loadCodeMirror() {
   if (window.CM6) return Promise.resolve(window.CM6);
+  if (docCmBroken) return Promise.resolve(null);
   if (docCmLoad) return docCmLoad;
   docCmLoad = new Promise((resolve, reject) => {
     const script = document.createElement("script");

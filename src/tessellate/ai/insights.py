@@ -113,13 +113,25 @@ def _week(day: date) -> tuple[int, int]:
     return iso[0], iso[1]
 
 
+#: "want to see Kyoto and Nara" is a verb phrase; "no later note picks up want to see ..." reads broken (audit 1030 Z7).
+_PLAN_LEAD = re.compile(r"^(?:(?:i|we)(?:'m|'re| am| are)?\s+)?(?:(?:want|wants|wanted|plan|plans|planned|hope|hopes|hoped|intend|intends)\s+to|(?:am |are |is )?going to)\s+(?=\S)", re.I)
+
+
+def _plan_phrase(plan: str, shown: str) -> str:
+    """The plan as a noun phrase ("your plan to see Kyoto and Nara"); anything else, or words quoted as
+    typed, keeps its words after "this plan:"."""
+    lead = _PLAN_LEAD.match(plan)
+    return f"your plan to {plan[lead.end():]}" if lead and shown == plan else f"this plan: {shown}"
+
+
 def _shown(rule: str, slots: dict) -> dict:
     """The slots as the sentence says them: a recurrence's subject with its capital and its count in
     words (G12), the slot values themselves staying typed for the lint and Confirm."""
     if rule != "recurrence":
         from tessellate.ai import composer_story
 
-        return {k: composer_story.quoted_if_slang(v) if composer_tables.INSIGHT_SLOTS.get(k) == "span" else v for k, v in slots.items()}
+        shown = {k: composer_story.quoted_if_slang(v) if composer_tables.INSIGHT_SLOTS.get(k) == "span" else v for k, v in slots.items()}
+        return {**shown, "plan": _plan_phrase(str(slots["plan"]), str(shown["plan"]))} if rule == "drift" else shown
     return {**slots, "subject": _capital(slots["subject"]), "count": _count_word(int(slots["count"]))}
 
 

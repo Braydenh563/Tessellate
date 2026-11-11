@@ -40,10 +40,15 @@ function routerCloseTopOverlay() {
     "extract-panel": "extract-close",
     "ocr-workspace": "ocr-close",
     "doc-ai-panel": "doc-ai-close",
+    "features-overlay": "features-close",
   };
   const sheets = document.querySelectorAll(".sheet-overlay:not(.sheet-leaving):not(.hidden)");
   if (sheets.length) {
-    sheets[sheets.length - 1].querySelector(".sheet-close")?.click();
+    //: A dialog the phone shows as a sheet (PHONE_SHEET_DIALOGS, the OCR reader) keeps its own X and has no `.sheet-close`: Back pressed nothing and kept the step (W12 at 390, 8 of 9).
+    const top = sheets[sheets.length - 1];
+    const own = document.getElementById(OVERLAY_CLOSE_BUTTONS[top.id]);
+    (top.querySelector(".sheet-close") || own)?.click();
+    if (own && !top.classList.contains("hidden") && !top.querySelector(".sheet-close")) top.classList.add("hidden");
     return true;
   }
   const dialog = document.querySelector("dialog[open]");

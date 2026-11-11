@@ -114,7 +114,11 @@ class _Answer:
         usable = [i for i, key in enumerate(leads) if not self.opened_lately(PHRASES[key])] or list(range(len(leads)))
         #: No template twice in a conversation (decision 25): a variant an
         #: earlier answer used is left while another is unused.
-        fresh = [i for i in usable if PHRASES[mine[i]] not in self.used]
+        #: Nor twice in one answer: two keys may share a wording ("separately"
+        #: and "elsewhere" both say "In another place"), and `used` only learns
+        #: an answer when its turn ends. A pair's second half follows its first.
+        said = {p[1] for p in self.parts if p[0] == "template"} if lead == name else set()
+        fresh = [i for i in usable if PHRASES[mine[i]] not in self.used and PHRASES[mine[i]] not in said]
         usable = fresh or usable
         session = _SESSION.get()
         digest = hashlib.sha1(f"voice:{lead}:{self.question.strip().lower()}{':' + session if session else ''}".encode()).digest()

@@ -213,7 +213,8 @@ async function chatSendTurn(preset, opts = {}) {
   //: and the bubble's face, the request and the saved turn must all name the
   //: persona that actually answered (the owner: "the avatars need to persist
   //: for what persona was used").
-  const sentPersona = $("persona-select").value || aiNameNow();
+  //: A regenerate in another persona names it (`opts.persona`, E60): this answer only, the picker is left as it was.
+  const sentPersona = opts.persona || $("persona-select").value || aiNameNow();
   const { bubble, stepsHolder, recordsHolder, groundingHolder, timeline, paintHooks } = addAssistantBubble(sentPersona);
   // The live counter rides in the bubble it is timing, and leaves with it.
   mountChatTimer(bubble);
@@ -2497,6 +2498,52 @@ function addBubble(role, text, attachments = null) {
 //: row stays under its bubble.
 function assistantMessageActions({ bubble, text, question, onEdit }) {
   const off = aiIsOff();
+  //: Both are local here, not top-level: the shared scope has a name cap (test_global_scope_ratchet).
+  //: **Not right on an answer** (audit 1028 E59): one correction per note it cited, against
+  //: the question; the next question like it reads those notes last (and leaves them out
+  //: after a second mark), composed and model answers alike, since the search is shared.
+  //: The undo is the corrections' own Delete; the redo marks again.
+  async function markAnswerNotRight(bubble, question) {
+    const ids = [...new Set([...bubble.querySelectorAll(".chat-source-card[data-note-id]")].map((card) => Number(card.dataset.noteId)).filter(Number.isInteger))].slice(0, 12);
+    if (!ids.length) return;
+    const post = () => apiJson("/learned/answer-verdict", { method: "POST", body: JSON.stringify({ question, entry_ids: ids }) });
+    try {
+      let made = await post();
+      bubble.dataset.notRight = "1";
+      offerUndo(
+        "Marked an answer not right",
+        "Marked not right. Those notes come last for a question like this.",
+        async () => {
+          await Promise.all(made.ids.map((id) => api(`/learned/corrections/${id}`, { method: "DELETE" })));
+          delete bubble.dataset.notRight;
+        },
+        async () => {
+          made = await post();
+          bubble.dataset.notRight = "1";
+        }
+      );
+    } catch (error) {
+      toast(error.message, true);
+    }
+  }
+
+  //: The "Regenerate as..." submenu: one row per persona the picker offers. With no
+  //: model the composer answers in the persona's voice too, so it works there as well;
+  //: a running turn is refused by `regenerateFrom`.
+  function regenerateAsItems(bubble) {
+    const names = [...($("persona-select")?.options || [])].map((option) => option.value).filter(Boolean);
+    if (names.length < 2) return null;
+    return {
+      label: "ph:users-three",
+      title: "Regenerate as...",
+      items: names.map((name) => ({
+        label: `ph:user ${name}`,
+        title: `Answer this question again as ${name}`,
+        run: () => regenerateFromBubble(bubble, { persona: name }),
+      })),
+    };
+  }
+
   const row = chatMessageActions([
     {
       label: "ph:copy",
@@ -2535,6 +2582,8 @@ function assistantMessageActions({ bubble, text, question, onEdit }) {
       title: "Fork the conversation from here",
       onClick: () => forkFromBubble(bubble),
     },
+    //: **Regenerate in another persona** (audit 1028 E60): once, for this answer; the picker stays where it was.
+    regenerateAsItems(bubble),
     {
       label: "ph:speaker-high",
       title: "Read aloud",
@@ -2562,6 +2611,10 @@ function assistantMessageActions({ bubble, text, question, onEdit }) {
     //: Under a sentence there is no outline to draw (the server says 422).
     String(text || "").trim().split(/\s+/).length < 4 ? null : { label: "ph:tree-structure", title: "Mind map this", onClick: () => chatKeep("map", text) },
     { label: "ph:alarm", title: "Set a reminder from this answer", onClick: () => reminderFromChatAnswer(text) },
+    //: **This answer is wrong, on the whole answer** (audit 1028 E59; not worded "Not right", that pair is status.js's): only where it cites a note, and never in a private chat (nothing is learned there).
+    !chatConv?.private && question && bubble.querySelector(".chat-source-card[data-note-id]")
+      ? { label: "ph:thumbs-down", title: "This answer is wrong", onClick: () => markAnswerNotRight(bubble, question) }
+      : null,
     ...(onEdit ? [{ label: "ph:pencil-simple", title: "Edit this answer", onClick: onEdit }] : []),
     {
       label: "ph:trash",

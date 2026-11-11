@@ -94,63 +94,6 @@ function wireAskUseAi() {
 
 onSurface("notes", wireAskUseAi);
 
-//: **The name in "[**Dentist**]" opens the note** (the 2026-10-10 triage,
-//: decision 5). An answer written without a model cites each note by its
-//: title in square brackets (`composer.PHRASES["cite_open"]`), and the
-//: grounding row carries that title (`title`), so the match is exact rather
-//: than a guess from opening words. Hover or focus shows the citation peek
-//: (capture-ask.js), the passage the sentence came from, as a numbered mark
-//: does; a press or Enter goes to the note itself, never to the Sources
-//: disclosure. The bold name itself is the control (a link role, focusable),
-//: so the sentence reads and wraps as before and no stylesheet rule is
-//: needed: the global `:focus-visible` ring and the peek are its states.
-//: Called by `addInlineCitations` after every paint; a name already wired
-//: carries `data-note-id` and is skipped.
-function linkCitedTitles(targets, sentences, byId, numberFor) {
-  const byTitle = new Map();
-  for (const g of sentences || []) if (g.title && !byTitle.has(g.title)) byTitle.set(g.title, g);
-  for (const target of targets) {
-    for (const name of target.querySelectorAll("strong:not([data-note-id])")) {
-      const g = byTitle.get(name.textContent.trim());
-      //: "[**Dentist**]", or "[board **Harbor board**]" for a board, a map,
-      //: a document or a file (CHAT_PLAN decision 37: the citation says its kind).
-      const bracketed = /\[(?:board |map |document |file |page )?$/.test(name.previousSibling?.textContent || "") && /^\]/.test(name.nextSibling?.textContent || "");
-      if (!g || !bracketed) continue;
-      name.dataset.noteId = String(g.note_id);
-      name.tabIndex = 0;
-      name.setAttribute("role", "link");
-      const kind = g.kind && g.kind !== "note" ? g.kind : "note";
-      name.setAttribute("aria-label", `Open the ${kind === "map" ? "mind map" : kind} ${g.title}`);
-      name.style.cursor = "pointer";
-      const describe = () => ({
-        noteId: g.note_id, number: numberFor.get(citeKey(g.kind, g.note_id)), entry: g.kind === "document" ? undefined : byId.get(g.note_id), label: g.label,
-        start: g.start, end: g.end, signals: g.signals, verdict: g.verdict, terms: g.terms,
-      });
-      name.addEventListener("mouseenter", () => scheduleCitationPeek(name, describe));
-      name.addEventListener("mouseleave", () => scheduleCitationPeekClose());
-      name.addEventListener("focus", () => {
-        if (!citationPeekState.restoring) openCitationPeek(name, describe(), { pinned: false });
-      });
-      name.addEventListener("blur", (event) => {
-        if (!citationPeekState.panel?.contains(event.relatedTarget)) scheduleCitationPeekClose();
-      });
-      //: Each kind opens in its own place (INBOX 744): a document in the
-      //: editor, a map or a board on its canvas, a file in the Library.
-      const open = (event) => {
-        event.stopPropagation();
-        closeCitationPeek();
-        if (kind === "document") openDocumentFromNote(g.note_id);
-        else if (kind === "map" || kind === "board") openWhiteboardBoard(g.note_id);
-        else if (kind === "file") focusLibraryFile(g.title, `/files/${g.note_id}`);
-        else if (kind === "web" && /^https?:\/\//.test(g.url || "")) window.open(g.url, "_blank", "noopener");
-        else flashEntry(g.note_id);
-      };
-      name.addEventListener("click", open);
-      name.addEventListener("keydown", (event) => event.key === "Enter" && open(event));
-    }
-  }
-}
-
 //: **A sentence said from a note is drawn as one** (CHAT_PLAN decision 33):
 //: an answer composed from the notes marks each of its rows `said`, "quoted"
 //: (the note's words as written) or "shifted" (said back to the person who

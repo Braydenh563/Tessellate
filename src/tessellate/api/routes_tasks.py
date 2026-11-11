@@ -938,6 +938,10 @@ def running_copies_shutdown(pid: int) -> dict:
         raise HTTPException(status_code=409, detail="That is this copy. Use Quit to close it.")
     if result == "unknown":
         raise HTTPException(status_code=404, detail="No such copy is running.")
+    if result == "gone":
+        # The record outlived its copy (a crash or a closed window skips the
+        # exit hook): it is removed, which is what the person wanted.
+        return {"stopping": False, "removed": True, "message": "That copy had already stopped; removed it from the list."}
     if result == "failed":
         raise HTTPException(status_code=502, detail="That copy did not answer, so it was left running.")
     return {"stopping": True}

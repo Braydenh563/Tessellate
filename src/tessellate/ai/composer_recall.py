@@ -265,7 +265,7 @@ def _overview_answer(
     _overview_lead(out, question, subject, found, themes, filed)
     shown = _overview_groups(out, found, themes, stems)
     _overview_links(out, found, themes, stems, views)
-    _overview_rest(out, len(found) - shown)
+    _overview_rest(out, _overview().pooled(len(found)) - shown)
     result = _result(out.parts, "overview", out.rows, _overview_next(question, subject, found, themes))
     result["broad"] = True
     return result
@@ -349,7 +349,7 @@ def _overview_lead(out: _Answer, question: str, subject: str, found: list[NoteVi
         _span_of(out, found)
         out.t("stop")
         return
-    out.t("ov_lead_a").m(out.count(len(found))).t("ov_lead_b").asked(said)
+    out.t("ov_lead_a").m(out.count(_overview().pooled(len(found)))).t("ov_lead_b").asked(said)
     _span_of(out, found)
     if filed:
         out.t("semicolon").m(out.count(filed)).t("ov_filed" if filed > 1 else "ov_filed_one")

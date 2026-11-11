@@ -207,14 +207,70 @@ def _opener():
 APP_NAMES = ("Tessellate", "MemoryMap AI")  # brand: keep
 
 
-def answers(port: int, host: str = "127.0.0.1", timeout: float = 1.5) -> bool:
-    """Whether Tessellate answers `/health` on this port."""
+def instance_id(token: str) -> str:
+    """A name for one running copy that is safe to say aloud: a hash of its
+    private token, so `/health` can tell a caller *which* copy answered
+    without ever handing out the token that `/instance/shutdown` takes."""
+    import hashlib
+
+    return hashlib.sha256(b"instance:" + token.encode("utf-8", "replace")).hexdigest()[:16]
+
+
+def served_instance(port: int, host: str = "127.0.0.1", timeout: float = 1.5) -> str | None:
+    """What answers `/health` on this port: None when nothing Tessellate does,
+    "" when a copy does but names no instance (a build from before the id),
+    otherwise the instance id it reports."""
     try:
         with _opener().open(f"http://{host}:{port}/health", timeout=timeout) as response:
             body = json.loads(response.read(4096).decode("utf-8", "replace"))
     except (OSError, ValueError):
-        return False
-    return isinstance(body, dict) and body.get("app") in APP_NAMES
+        return None
+    if not isinstance(body, dict) or body.get("app") not in APP_NAMES:
+        return None
+    named = body.get("instance")
+    return named if isinstance(named, str) else ""
+
+
+def answers(port: int, host: str = "127.0.0.1", timeout: float = 1.5) -> bool:
+    """Whether Tessellate answers `/health` on this port."""
+    return served_instance(port, host, timeout) is not None
+
+
+def process_started(pid: int) -> float | None:
+    """When the process `pid` began (epoch seconds), or None when it is gone or
+    this platform will not say. Windows reuses a dead copy's pid for the next
+    program that starts, so "a process with this pid exists" does not mean the
+    copy that wrote the record is still there: its start time does."""
+    if pid <= 0:
+        return None
+    try:
+        if sys.platform == "win32":
+            import ctypes
+            import ctypes.wintypes
+
+            kernel32 = ctypes.windll.kernel32
+            handle = kernel32.OpenProcess(0x1000, False, pid)  # QUERY_LIMITED_INFORMATION
+            if not handle:
+                return None
+            try:
+                created, ended, kernel, user = (ctypes.wintypes.FILETIME() for _ in range(4))
+                if not kernel32.GetProcessTimes(handle, *(ctypes.byref(t) for t in (created, ended, kernel, user))):
+                    return None
+                ticks = (created.dwHighDateTime << 32) | created.dwLowDateTime  # 100 ns since 1601
+                return ticks / 10_000_000 - 11_644_473_600
+            finally:
+                kernel32.CloseHandle(handle)
+        if sys.platform.startswith("linux"):
+            stat = Path(f"/proc/{int(pid)}/stat").read_text(encoding="utf-8", errors="replace")
+            after_name = stat[stat.rindex(")") + 2 :].split()
+            ticks = int(after_name[19])  # field 22, starttime, in clock ticks since boot
+            boot = next(
+                int(line.split()[1]) for line in Path("/proc/stat").read_text().splitlines() if line.startswith("btime ")
+            )
+            return boot + ticks / os.sysconf("SC_CLK_TCK")
+    except Exception:  # noqa: BLE001 - a probe that cannot tell reads as "unknown", never as "gone"
+        return None
+    return None
 
 
 def find_running(
@@ -350,6 +406,11 @@ def release() -> None:
 
 def current_token() -> str | None:
     return _claimed[1].token if _claimed is not None else None
+
+
+def current_instance_id() -> str:
+    """This process's `instance_id`, or "" before it has claimed a lock."""
+    return instance_id(_claimed[1].token) if _claimed is not None else ""
 
 
 def set_focus_handler(handler: Callable[[], None] | None) -> None:

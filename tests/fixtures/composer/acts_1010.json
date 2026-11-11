@@ -5,31 +5,31 @@
    "phrase": "remind me to call the plumber on Friday",
    "verb": "remind",
    "object": "call the plumber",
-   "confirm": false
+   "confirm": true
   },
   {
    "phrase": "remind me to renew the passport tomorrow",
    "verb": "remind",
    "object": "renew the passport",
-   "confirm": false
+   "confirm": true
   },
   {
    "phrase": "set a reminder to water the plants tonight",
    "verb": "remind",
    "object": "water the plants",
-   "confirm": false
+   "confirm": true
   },
   {
    "phrase": "remind me in 2 hours to check the oven",
    "verb": "remind",
    "object": "check the oven",
-   "confirm": false
+   "confirm": true
   },
   {
    "phrase": "please remind me to email Priya next Monday",
    "verb": "remind",
    "object": "email Priya",
-   "confirm": false
+   "confirm": true
   },
   {
    "phrase": "delete the boiler note",
@@ -41,7 +41,7 @@
    "phrase": "remind me about the dentist tomorrow",
    "verb": "remind",
    "object": "the dentist",
-   "confirm": false
+   "confirm": true
   },
   {
    "phrase": "move the sourdough note to Cooking",
@@ -71,13 +71,13 @@
    "phrase": "pin the dentist note",
    "verb": "pin",
    "object": "dentist",
-   "confirm": false
+   "confirm": true
   },
   {
    "phrase": "unpin the dentist note",
    "verb": "unpin",
    "object": "dentist",
-   "confirm": false
+   "confirm": true
   },
   {
    "phrase": "tag my notes about Lisbon with travel",
@@ -143,25 +143,25 @@
    "phrase": "note: buy milk and eggs",
    "verb": "create",
    "object": "Buy milk and eggs",
-   "confirm": false
+   "confirm": true
   },
   {
    "phrase": "make a note that the boiler code is 4471",
    "verb": "create",
    "object": "The boiler code is 4471",
-   "confirm": false
+   "confirm": true
   },
   {
    "phrase": "jot down call the bank about the card",
    "verb": "create",
    "object": "Call the bank about the card",
-   "confirm": false
+   "confirm": true
   },
   {
    "phrase": "start a meeting about the budget",
    "verb": "create",
    "object": "Budget",
-   "confirm": false
+   "confirm": true
   },
   {
    "phrase": "find my note about the passport",

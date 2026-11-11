@@ -2917,3 +2917,15 @@ header#top-bar[data-scrolled="1"],
 .timeline-daystrip-label.ghost.small {
   white-space: nowrap;
 }
+
+/* **The block bar's gutter** (the owner, 2026-11-11: the hover toolbar "covers the content in the top
+   corner of that row"). The rendered view keeps the room the bar stands in, one button wide, on the
+   right of its blocks (`docBlockBarShow`, documents-callouts.js), on a device that can hover (the bar
+   is hover-only). Last in the cascade so Read view's own padding (`#doc-panes.reading > #doc-preview`)
+   does not take it back. */
+@media (hover: hover) {
+  #doc-panes #doc-preview,
+  #doc-panes.reading > #doc-preview {
+    padding-right: calc(var(--target-min) + 2 * var(--space-1) + 2px + var(--space-2));
+  }
+}

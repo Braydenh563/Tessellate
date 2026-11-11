@@ -241,14 +241,11 @@ function addInlineCitations(answerEl, sentences, rawResults, orderedSources = nu
     for (const g of rows) parent.insertBefore(citationMarker(g, byId, numberFor), before);
   }
   collapseCitationRuns(targets);
-  //: A composed answer's "[**Dentist**]" opens its note (ask-compose.js,
-  //: lazy: the boot scripts are at their gzip cap).
-  //: …and its quoted sentences take the quote style (`markSaidSentences`).
-  if (sentences.some((g) => g.title || g.said)) {
-    ensureModule("askCompose").then(() => {
-      linkCitedTitles(targets, sentences, byId, numberFor);
-      markSaidSentences(targets, sentences);
-    });
+  //: A composed answer's quoted sentences take the quote style (`markSaidSentences`,
+  //: ask-compose.js, lazy: the boot scripts are at their gzip cap). Citations are
+  //: numbered marks only (Q1, D25): the bracketed title link is gone.
+  if (sentences.some((g) => g.said)) {
+    ensureModule("askCompose").then(() => markSaidSentences(targets, sentences));
   }
 }
 
@@ -1396,20 +1393,27 @@ function chatMessageActions(actions) {
   //: Ten buttons over a two-line answer is not a control row, it is a toolbar
   //: that happens to be under a message, so the rest go behind the same ⋯ the
   //: app uses everywhere else for "more actions on this object".
-  for (const action of actions.slice(0, MSG_ACTIONS_VISIBLE)) row.appendChild(make(action));
-  const overflow = actions.slice(MSG_ACTIONS_VISIBLE);
+  //: An action with `items` is a submenu ("Regenerate as...", E60): it has no button of its own, so it always sits in the ⋯.
+  const flat = actions.filter((action) => !action.items);
+  const shown = flat.slice(0, MSG_ACTIONS_VISIBLE);
+  for (const action of shown) row.appendChild(make(action));
+  const overflow = actions.filter((action) => !shown.includes(action));
   if (overflow.length) {
     const more = kebabMenu(
-      overflow.map((action) => ({
-        label: `${action.label} ${action.title}`,
-        title: action.title,
-        danger: action.danger,
-        run: () => action.onClick({ currentTarget: null }),
-      })),
+      overflow.map((action) =>
+        action.items
+          ? { label: `${action.label} ${action.title}`, title: action.title, items: action.items }
+          : {
+              label: `${action.label} ${action.title}`,
+              title: action.title,
+              danger: action.danger,
+              run: () => action.onClick({ currentTarget: null }),
+            }
+      ),
       "More actions for this message"
     );
     const spoken = overflow.findIndex((action) => action.speak);
-    if (spoken >= 0) more.querySelectorAll(".action-menu .menu-item")[spoken].dataset.speak = "1";
+    if (spoken >= 0) more.querySelectorAll(":scope > .action-menu > .menu-item, :scope > .action-menu > .menu-group > .menu-item")[spoken].dataset.speak = "1";
     row.appendChild(more);
   }
   return row;

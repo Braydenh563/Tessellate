@@ -127,7 +127,7 @@ SENSES: dict[str, Cues] = {
         _c("daily dear"), _c("entry entries note notes page pages"), _c("wrote write entry entries dear journal")),
     "dairy": Cues(
         _c("no free"), _c("free milk cheese products product aisle"), _c("milk cheese butter yoghurt yogurt cream cow cows farm allergy")),
-    "note": Cues(_c("a the my this that new one last add make write create save pin delete open"), _c("about called named on for to"), _c("add make write create save show find open delete pin")),
+    "note": Cues(_c("a the my this that new one last add make write create save pin delete open"), _c("about called named on for to in into"), _c("add make write create save show find open delete pin put move send throw chuck trash bin")),
     "not": Cues(
         _c("is are was were do does did can could will would should have has had am it that"),
         _c("sure working going enough yet just only the a an to there on in at"), _c("never no nothing")),
