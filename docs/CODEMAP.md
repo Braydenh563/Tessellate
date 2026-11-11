@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10204, test files 2495, tests 20562, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10206, test files 2495, tests 20562, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -13529,7 +13529,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10204)
+## Backend modules (10206)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -25167,18 +25167,20 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `name_key` | src/tessellate/entry/cleantext.py:45 |
 | `strip_invisible` | src/tessellate/entry/cleantext.py:33 |
 
-### src/tessellate/entry/duplicates.py (10)
+### src/tessellate/entry/duplicates.py (12)
 
 | Name | File:line |
 |---|---|
 | `_prefix_work` | src/tessellate/entry/duplicates.py:150 |
 | `_prepare` | src/tessellate/entry/duplicates.py:52 |
-| `_scan` | src/tessellate/entry/duplicates.py:224 |
+| `_scan` | src/tessellate/entry/duplicates.py:237 |
 | `_score` | src/tessellate/entry/duplicates.py:64 |
 | `_similar_pairs` | src/tessellate/entry/duplicates.py:82 |
-| `_similar_pairs_dense` | src/tessellate/entry/duplicates.py:169 |
+| `_similar_pairs_dense` | src/tessellate/entry/duplicates.py:188 |
+| `_vocabulary` | src/tessellate/entry/duplicates.py:169 |
+| `_word_matrix` | src/tessellate/entry/duplicates.py:177 |
 | `_word_set` | src/tessellate/entry/duplicates.py:48 |
-| `find_duplicates` | src/tessellate/entry/duplicates.py:245 |
+| `find_duplicates` | src/tessellate/entry/duplicates.py:258 |
 | `normalise` | src/tessellate/entry/duplicates.py:43 |
 | `similarity` | src/tessellate/entry/duplicates.py:73 |
 
