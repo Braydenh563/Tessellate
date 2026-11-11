@@ -653,7 +653,7 @@
     const build = (state) => {
       let blocks = blocksOf.get(state.doc);
       if (!blocks) {
-        const text = state.doc.toString();
+        const text = docStr(state.doc);
         blocks = /```[ \t]*graph/.test(text) ? docMathRender.graphBlocks(text) : [];
         blocksOf.set(state.doc, blocks);
       }
