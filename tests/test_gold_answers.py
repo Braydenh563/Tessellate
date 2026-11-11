@@ -367,7 +367,7 @@ def test_next_week_is_said_from_today(today, said, ahead):
 def test_in_the_whole_notebook_the_note_is_one_flowing_line():
     text = composer_digest.answer(NARRATE_FIXTURE["question"], NOTES, today=TODAY)["text"]
     assert "You went back to uni the week of 20 July, and you" in text
-    assert "**This semester:**" not in text and "**Your week:** classes" not in text
+    assert "**This semester:**" not in text and "**Your week:** classes" not in text and "**Your schedule:** classes" not in text
 
 
 NARRATE_ALL = composer_digest.answer(NARRATE_FIXTURE["question"], NOTES, today=TODAY)

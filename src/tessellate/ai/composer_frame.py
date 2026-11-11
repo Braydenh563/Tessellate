@@ -550,6 +550,8 @@ def _link_said(group: Group, by_id: dict[int, dict], lower, i: int = 0) -> str: 
     a, b = group.links[0]
     reason = (by_id[a].get("link_reasons") or {}).get(b) or (by_id[b].get("link_reasons") or {}).get(a)
     back = len(group.ids) == 2 and {a, b} == set(group.ids)
+    #: A reason the two notes' own words already say is not said again (INBOX 1767 c).
+    reason = "" if composer_threads.restated(reason or "", by_id[a], by_id[b]) else reason
     return composer_threads.link_said(short_name(by_id[a], lower), short_name(by_id[b], lower), reason or "", i, back)
 
 

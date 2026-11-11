@@ -36,7 +36,7 @@ from starlette.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
 
 from tessellate.ai import address, capability, fact_check, composer, composer_social, composer_unplaced, note_language, composer_aware, composer_compose, composer_digest, composer_digest_sentences, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, note_rank, note_recency, personal, verdicts, vocative
-from tessellate.ai import ask_chips, composer_dialogue, composer_empty, composer_intent, composer_smalltalk, composer_talk
+from tessellate.ai import ask_chips, composer_dialogue, composer_empty, composer_intent, composer_links, composer_smalltalk, composer_talk
 from tessellate.ai import consent, consent_store, recognise
 from tessellate.ai import (
     acts,
@@ -444,6 +444,8 @@ def _retrieve_ranked(session: Session, question: str, found: "_Found", attached:
     #: names, then the one that defines it, then the rest as retrieved.
     if as_of is None and found.mode != "recent":
         found.entries = note_rank.lead(found.entries, question)
+    stray = composed and composer_links.strays(question, found.entries, found.connected_ids)
+    found.entries = [e for e in found.entries if e.id not in stray] if stray else found.entries
     #: A chat opened inside an open private space reads its sealed notes too (INBOX 1727).
     if intent.needs_retrieval(found.detected) and found.stats is None:
         found.entries += private_space.chat_notes(session, question, have={e.id for e in found.entries})
