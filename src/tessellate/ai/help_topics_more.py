@@ -3199,7 +3199,8 @@ MORE_TOPICS.extend([
     {
         "id": "share-note",
         "keywords": ("share a note", "share this note", "send a note", "share", "sharing", "give someone a note",
-                     "email a note"),
+                     "email a note", "export one note", "export a note", "export this note", "export a single note",
+                     "download a note", "download this note", "download .md", "save a note as markdown"),
         "body": (
             "Three ways, none through a server: the note's menu, Download .md, "
             "saves it as a Markdown file to send; copy its "

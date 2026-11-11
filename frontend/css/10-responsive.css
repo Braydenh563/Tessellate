@@ -546,6 +546,11 @@ header#top-bar[data-scrolled="1"],
   #tab-documents #doc-view-seg > button {
     min-height: calc(2.75rem - 0.5rem);
   }
+  /* The title field is the one control in the dock still at the desktop 32px
+     beside the 44px well and buttons (W19, sweep-1028b: 85x32 at 390). */
+  #tab-documents .doc-dock-identity {
+    --identity-h: var(--target-min);
+  }
 }
 /* --- band 4: an icon-only chip is still a target (Phase 11) ---------------
    `touch.js` at 390x844, the one failure on the whole sweep before this: the
