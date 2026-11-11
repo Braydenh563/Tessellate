@@ -713,14 +713,17 @@ async function runDesk(rows) {
           push(`desk:${tag}:${state}`, await measure(page, null));
         };
         if (!mode) await go('rest');
-        await page.evaluate(() => document.getElementById('desk-pet')?.click()); await wait(page, 450);
+        // A trusted press: the pet tells a click from a drag by its pointer events.
+        if (await page.isVisible('#desk-pet').catch(() => false)) await page.click('#desk-pet').catch(() => {}); else await page.evaluate(() => document.getElementById('desk-pet')?.click());
+        await wait(page, 450);
         await go('menu');
         const items = await page.$$eval('#desk-menu button', (b) => b.map((x) => x.textContent.trim()));
         if (tok && items.some((t) => /Quick note/.test(t))) {
           await page.evaluate(() => [...document.querySelectorAll('#desk-menu button')].find((b) => /Quick note/.test(b.textContent))?.click()); await wait(page, 600);
           await go('note');
           await page.keyboard.press('Escape'); await wait(page, 300);
-          await page.evaluate(() => document.getElementById('desk-pet')?.click()); await wait(page, 400);
+          if (await page.isVisible('#desk-pet').catch(() => false)) await page.click('#desk-pet').catch(() => {}); else await page.evaluate(() => document.getElementById('desk-pet')?.click());
+          await wait(page, 400);
           await page.evaluate(() => [...document.querySelectorAll('#desk-menu button')].find((b) => /Quick search/.test(b.textContent))?.click()); await wait(page, 600);
           await page.fill('#desk-search-text', 'planning').catch(() => {}); await wait(page, 1400);
           await go('search');
