@@ -76,6 +76,7 @@ def test_a_slow_tick_is_logged_with_the_reads_in_it_and_only_every_few_seconds(c
     caplog.set_level("INFO", logger="tessellate.core.overlay.runner")
     r, clock = runner_at(0.0)
     e = r.engine
+    r.host.on_event = None  # the overlay thread's own ticks (the pace after the first frame) would share the counter below
     e.x, e.y = 1200.0, 300.0
     r._on_event("tick", 0, 0)
     caplog.clear()
