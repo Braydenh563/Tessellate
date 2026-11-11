@@ -8519,6 +8519,25 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
        beside the ⋯). The corner box already sits `--space-4` in. */
     right: var(--space-1);
   }
+  /* **The strip takes the time's place and the lane makes room for it**
+     (wrapzoom sweep, every width: the 131px strip lay over the 56px time
+     and the chips before it, "Linked by 1 note" half shown under the star).
+     While the row is pointed at, focused or its menu is open, the time
+     leaves and the lane's end keeps the strip's width, so the lane grows
+     into the preview's column (which ellipsises) or, at its 26rem cap,
+     folds its tags into "+N" (`fitNoteMetas` refits on the resize). */
+  #entry-list.is-rows > li:not(:has(textarea)):is(:hover, :focus-within) > .entry-meta,
+  #entry-list.is-rows > li:not(:has(textarea)) > .entry-meta:has(> .entry-meta-end > .entry-actions.menu-open) {
+    padding-inline-end: calc(4 * var(--target-min) + 3 * 0.4rem + var(--space-2));
+  }
+  #entry-list.is-rows > li.has-wide-strip:not(:has(textarea)):is(:hover, :focus-within) > .entry-meta,
+  #entry-list.is-rows > li.has-wide-strip:not(:has(textarea)) > .entry-meta:has(> .entry-meta-end > .entry-actions.menu-open) {
+    padding-inline-end: calc(5 * var(--target-min) + 4 * 0.4rem + var(--space-2));
+  }
+  #entry-list.is-rows > li:not(:has(textarea)):is(:hover, :focus-within) > .entry-meta > .entry-date,
+  #entry-list.is-rows > li:not(:has(textarea)) > .entry-meta:has(> .entry-meta-end > .entry-actions.menu-open) > .entry-date {
+    display: none;
+  }
 }
 /* A row with no title starts its text where a title would, not one column
    gap to the right of an empty column (measured 375 against 365px). */
@@ -8529,11 +8548,24 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
   font-variant-numeric: tabular-nums;
   transition: opacity var(--ui-fast) var(--ease-out);
 }
+/* **The strip's own width, kept clear** (wrapzoom sweep: a fixed 6.5rem,
+   104px, against a 131px strip of four 28px targets left the strip over the
+   text's line end, 11x6 at 1280, and it was 1em tall against a 28px strip,
+   so the second line ran under it too). The width is the strip's: four
+   targets at `--target-min` and the strip's three 0.4rem gaps, five and four
+   on a draft (`.has-wide-strip`, written by `entryItem`), and a gap. The
+   height is the strip's below the text's top: one target, less the
+   `--space-1` the strip rises into the card's padding (below, "Into the
+   padding"), so a one-line note grows 1px at 28px targets, and at 44px ones
+   the date line steps clear of the strip it ran under (768: 62x5). */
 #entry-list > li > .entry-content::before {
   content: "";
   float: right;
-  width: 6.5rem;
-  height: 1em;
+  width: calc(4 * var(--target-min) + 3 * 0.4rem + var(--space-2));
+  height: calc(var(--target-min) - var(--space-1));
+}
+#entry-list > li.has-wide-strip > .entry-content::before {
+  width: calc(5 * var(--target-min) + 4 * 0.4rem + var(--space-2));
 }
 /* The time ends the details line, at the right, and stays when the card is
    pointed at (INBOX 446); the corner above is the actions' alone. */
@@ -10614,9 +10646,14 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 #entry-list > li > .entry-content:empty::before {
   display: none;
 }
+/* **Into the padding** (wrapzoom sweep): the 28px strip from the corner's
+   top reached 6px into the text's second line (1280: strip 242 to 270, the
+   second line's text from 264). It rises by `--space-1` into the card's top
+   padding, so it ends about where the first line does, and the float above
+   keeps what is left clear. */
 @media (hover: hover) {
   #entry-list:not(.is-rows) > li .entry-meta-end > .entry-actions {
-    top: 0;
+    top: calc(var(--space-1) * -1);
   }
 }
 /* --- One ⋯ opener, styled once (INBOX 722) ---
