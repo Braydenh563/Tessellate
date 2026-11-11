@@ -1535,6 +1535,8 @@ const LAZY_MODULES = {
   attachments: ["/js/attachment-actions.js"],
   //: Tesseract's status line (INBOX 443 (3)): see ocr-engine.js.
   ocrEngine: ["/js/ocr-engine.js"],
+  //: The "needs an optional package" notice (INBOX 1748): extra-notice.js.
+  extraNotice: ["/js/extra-notice.js"],
   //: Quick note and the note outbox (INBOX 434): see quick-note.js. router-overlays.js rides with the quick note: Back closes an open overlay first, and Settings' close settles the address. Both preloaded below; boot code is at its cap.
   quickNote: ["/js/quick-note.js", "/js/router-overlays.js"],
   fieldClear: ["/js/field-clear.js"],
@@ -1864,6 +1866,7 @@ const LAZY_ENTRY_POINTS = {
   chipMenus: ["openCategoryChipMenu", "openTagChipMenu"],
   attachments: ["attachmentAction"],
   ocrEngine: ["ocrEngineMount"],
+  extraNotice: ["extraNoticeMount"],
   quickAccess: ["quickAccessEdit"],
   inbox: ["openSuggestionsInbox", "openEntityPage", "openEntitiesSheet", "openLinkTypeSheet", "openRelationTypesSheet", "openNotePropertiesSheet", "openNoteTypesSheet", "openQueryTable", "showQueryOnGraph"],
   assistantAvatar: ["assistantEmblemInto"],

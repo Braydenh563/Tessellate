@@ -6954,6 +6954,14 @@ async function ocrLoadReadersNow() {
       : "Install RapidOCR in Settings, Packages.";
   }
   $("ocr-rapidocr-missing")?.classList.toggle("hidden", rapidReady || !ocrReaders.engine);
+  //: Nothing can read text yet (no Tesseract, no RapidOCR): the one optional-package
+  //: notice (extra-notice.js), shown until RapidOCR is installed, closable.
+  const ocrHead = $("ocr-workspace")?.querySelector(".ocr-head");
+  if (ocrHead && ocrReaders.engine && !ocrCan("tesseract") && !rapidReady) {
+    extraNoticeMount(ocrHead, "rapidocr", { fresh: true });
+  } else {
+    ocrHead?.querySelector(":scope > .extra-notice")?.remove();
+  }
   //: The engine's own line (ocr-engine.js, lazy): ready or not, which
   //: language, and the one Install. Handed the answer just fetched, so opening
   //: the window is one request, and told to reload this picker when it changes

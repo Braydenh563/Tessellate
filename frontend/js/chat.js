@@ -466,6 +466,8 @@ function toggleWebPanel(force) {
     //: The "..." is drawn with the head, from what was last known; the
     //: status call below (seconds while Docker answers) only updates it.
     renderWebPanelMenu(webEngineInfo);
+    //: Private web search needs SearXNG: the optional-package notice (extra-notice.js).
+    if (prefsCache && prefsCache.web_search_enabled && prefsCache.search_provider !== "duckduckgo") extraNoticeMount(panel, "searxng");
     refreshWebSearxngStrip();
     renderWebSearchHistory();
     //: The page you were reading is still there when the panel comes back.
