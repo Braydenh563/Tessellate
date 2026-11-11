@@ -96,3 +96,17 @@ def test_the_diagram_dock_answers_to_its_pane_not_the_window():
     assert "display: none" in _rule(narrow, ".dgm-kindword")
     dock = _rule(narrow, ".dgm-dock:has(> .dgm-addsplit)")
     assert "overflow-x: auto" in dock and "flex-shrink: 0" in dock
+
+
+# ---- a hover bar over the content it acts on --------------------------------------
+
+
+def test_the_rendered_tables_bar_has_its_own_strip_under_the_table():
+    """The bar sat half over the table's bottom edge (translateY(50%)) and
+    covered the last row's last cell. It now sits in a strip the block keeps
+    below the table on a screen that hovers."""
+    css = _css("09-editor.css")
+    bar = _rule(css, "#doc-preview .md-table-block > .code-bar")
+    assert "translateY" not in bar and "inset-block-end: 0" in bar
+    hover = "".join(_at_blocks(css, "@media (hover: hover)"))
+    assert "padding-block-end: 2.5rem" in _rule(hover, "#doc-preview .md-table-block")
