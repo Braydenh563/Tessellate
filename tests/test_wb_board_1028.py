@@ -152,8 +152,11 @@ def test_default_ink_is_remapped_at_render_for_strokes_and_text():
 def test_insert_sticky_from_the_keyboard_places_one_in_view():
     start = WB.index('document.getElementById("wb-insert-menu")?.addEventListener("click"')
     body = WB[start : start + 900]
-    assert 'what === "sticky" && e.detail === 0' in body
-    assert "wbCreateSticky(...wbViewCentre())" in body
+    #: W19: the text box and the frame take the same path, so every Add item
+    #: works from the keyboard (Enter is detail 0, no pointer to click the board).
+    assert "e.detail === 0" in body
+    assert "{ sticky: wbCreateSticky, text: wbCreateTextBox, frame: wbCreateFrame }[what]" in body
+    assert "byKey(...wbViewCentre())" in body
 
 
 # U5 -------------------------------------------------------------------------
@@ -187,3 +190,15 @@ def test_far_out_the_fold_chevron_waits_for_the_zoom_or_the_selection():
     """INBOX 1450, the owner: "buttons get oversized at zoom". Below half zoom a
     24px chevron is wider than its topic, so only a selected topic keeps it."""
     assert "#whiteboard-container[data-wb-zoom-far] .wb-map-node:not(.wb-selected) .wb-map-collapse {\n  display: none;" in LAZY
+
+
+# B33 -------------------------------------------------------------------------
+
+
+def test_lengths_read_from_css_strings_go_through_wbnum():
+    helper = WB[WB.index("function wbNum(") :].split("\n}\n", 1)[0]
+    assert "Number.isFinite(n) ? n : fallback" in helper
+    fold = WB[WB.index("function wbFoldPlan(") :][:700]
+    assert "parseFloat" not in fold and fold.count("wbNum(") == 5
+    assert "wbNum(getComputedStyle(content).fontSize, 16)" in WB
+    assert "clamp(wbNum(panel.style.left), wbNum(panel.style.top))" in WB

@@ -25,12 +25,21 @@ import re
 from dataclasses import dataclass
 from datetime import date
 
-#: Fewer notes read better as the lines they were; more are not woven (a
-#: paragraph a dozen sentences long is the column again).
-MIN_NOTES = 5
+#: Two notes are a pair, said in the question's own shape; from three a stretch
+#: is written as one. Up to MAX_NOTES the paragraphs are cut at the biggest
+#: gaps; past it a paragraph holds at most PARAGRAPH_NOTES, a sentence at most
+#: SENTENCE_NOTES (notes of one theme told together), and WOVEN_LIMIT notes
+#: are the most told (past that the old list answers, never a half story).
+MIN_NOTES = 3
 MAX_NOTES = 14
 MAX_PARAGRAPHS = 3
-_NUMBERS = {4: "four", 5: "five", 6: "six", 7: "seven", 8: "eight", 9: "nine", 10: "ten", 11: "eleven", 12: "twelve", 13: "thirteen", 14: "fourteen"}
+PARAGRAPH_NOTES = 8
+#: Under this many, the woven answer is for notes a frame would group (the digest decides).
+PLAIN_NOTES = 5
+SENTENCE_NOTES = 3
+WOVEN_LIMIT = 40
+_MIN_RUN = 3
+_NUMBERS = {2: "two", 3: "three", 4: "four", 5: "five", 6: "six", 7: "seven", 8: "eight", 9: "nine", 10: "ten", 11: "eleven", 12: "twelve", 13: "thirteen", 14: "fourteen"}
 _MONTHS = ("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
 
 #: Words that say a stretch was hard, or that something was finished.
@@ -67,9 +76,12 @@ def _gap(a: date, b: date) -> int:
 
 def _chunks(days: list[date]) -> list[list[int]]:
     """Cut the oldest-first days into at most MAX_PARAGRAPHS runs, at the
-    biggest gaps, keeping the runs about even (a run of one note is a line)."""
+    biggest gaps, keeping the runs about even (a run of one note is a line).
+    Past MAX_NOTES a paragraph holds PARAGRAPH_NOTES at most (`_capped`)."""
     n = len(days)
-    if n < 2 * MIN_NOTES // 2:
+    if n > MAX_NOTES:
+        return _capped(days)
+    if n < 5:
         return [list(range(n))]
     best: tuple[float, tuple[int, ...]] | None = None
     for k in range(1, min(MAX_PARAGRAPHS, n // 2)):
@@ -87,6 +99,24 @@ def _chunks(days: list[date]) -> list[list[int]]:
     return [list(range(a, b)) for a, b in itertools.pairwise(edges)]
 
 
+def _capped(days: list[date]) -> list[list[int]]:
+    """Many notes: cuts at the biggest gaps first (each run keeping _MIN_RUN),
+    then any run still over PARAGRAPH_NOTES halved at its biggest inner gap."""
+    n = len(days)
+    cuts: list[int] = []
+    for c in sorted(range(_MIN_RUN, n - _MIN_RUN + 1), key=lambda c: -_gap(days[c - 1], days[c])):
+        if len(cuts) + 1 >= -(-n // PARAGRAPH_NOTES):
+            break
+        if all(abs(c - o) >= _MIN_RUN for o in cuts):
+            cuts.append(c)
+    runs = [[a, b] for a, b in itertools.pairwise([0, *sorted(cuts), n])]
+    while (long := next((r for r in runs if r[1] - r[0] > PARAGRAPH_NOTES), None)) is not None:
+        inner = range(long[0] + _MIN_RUN, long[1] - _MIN_RUN + 1)
+        at = max(inner, key=lambda c: (_gap(days[c - 1], days[c]), -abs(c - (long[0] + long[1]) // 2)))
+        runs[runs.index(long): runs.index(long) + 1] = [[long[0], at], [at, long[1]]]
+    return [list(range(a, b)) for a, b in runs]
+
+
 def _arc(days: list[date], texts: list[str]) -> str:
     months = (days[-1].year - days[0].year) * 12 + days[-1].month - days[0].month
     if any(_SEMESTER.search(t) for t in texts) and 2 <= months <= 6:
@@ -97,7 +127,7 @@ def _arc(days: list[date], texts: list[str]) -> str:
 def plan(days: list[date], texts: list[str]) -> Plan | None:
     """The plan for notes written on `days` (oldest first), or None when there
     are too few or too many to weave."""
-    if not (MIN_NOTES <= len(days) <= MAX_NOTES):
+    if not (MIN_NOTES <= len(days) <= WOVEN_LIMIT):
         return None
     return Plan(days[0], days[-1], _chunks(days), _arc(days, texts))
 
@@ -113,7 +143,7 @@ def _part(d: date) -> str:
 def span_words(first: date, last: date) -> str:
     """"July to early November": the months, with a part of the last one."""
     if (first.year, first.month) == (last.year, last.month):
-        return f"{_part(first).strip()} {_month(first)}".strip() if _part(first) != _part(last) else f"{_part(first)}{_month(first)}"
+        return _month(first) if _part(first) != _part(last) else f"{_part(first)}{_month(first)}"
     year = f" {last.year}" if first.year != last.year else ""
     return f"{_month(first)} to {_part(last)}{_month(last)}{year}"
 
@@ -125,10 +155,23 @@ def _lower(clause: str) -> str:
     return clause if re.match(r"I\b|[A-Z]{2,}", clause) else clause[:1].lower() + clause[1:]
 
 
+def _clipped(quote: str) -> str:
+    """A long quote cut to its first six words and an ellipsis, so a quoted line stays a clause."""
+    words = quote.split()
+    return quote if len(words) <= 12 else " ".join(words[:6]).rstrip(",;:") + "…"
+
+
 def _clean_quote(text: str) -> str:
     """A note's words for a quote: no emoji, no trailing marks."""
     text = re.sub(r"(?:^|\s)[:;]-?[dDpP)(]+(?=\s|$)", "", _EMOJI.sub("", text))
     return re.sub(r"\s+", " ", text).strip().rstrip("!.?:").strip()
+
+
+def quoted_if_slang(text: str) -> str:
+    """`text` as the person typed it, in quotes, when it is slang or an apostrophe-less contraction
+    (a volunteered insight says it as the story does, never as the app's own voice)."""
+    quote = _clean_quote(text)
+    return f"“{quote}”" if _said_raw(text, quote) else text
 
 
 def _caps_days(text: str) -> str:
@@ -165,7 +208,7 @@ def _clause(line: str, title: str, quote: str) -> str:
     body = re.split(r"(?<=[a-z0-9])\.\s+(?=[A-Z])", body, maxsplit=1)[0]
     if re.match(r"(?:you|your)\b", body, re.I):
         return _caps_days(_lower(body))
-    said = _clean_quote(title) if title and len(title.split()) <= 6 else quote
+    said = _clean_quote(title) if title and len(title.split()) <= 6 else _clipped(quote)
     return f"you wrote “{said}”"
 
 
@@ -191,7 +234,7 @@ def clause_of(view, line: str, row: dict | None) -> Unit | None:  # noqa: ANN001
     if defined := _defined(view, first, title):
         return defined
     if _said_raw(first.text, quote):
-        return Unit(view, f"you wrote “{quote}”", first)
+        return Unit(view, f"you wrote “{_clipped(quote)}”", first)
     source = next((s for s in view.sentences if row and s.start == row.get("start")), first)
     return Unit(view, _clause(line, title, quote), source, row) if line else None
 
@@ -244,26 +287,65 @@ def _pace(units: list[Unit], first_days: list[date]) -> tuple[str, Unit] | None:
     return text, units[last]
 
 
-def story(out, count: str, units: list[Unit], days: list[date], topic: str, p: Plan) -> None:  # noqa: ANN001
+def _beats(run: list[int], themes: list[list[int]]) -> list[list[int]]:
+    """A paragraph's notes as sentences: notes of one theme (a shared tag or a link) told together,
+    at most SENTENCE_NOTES to a sentence, the rest in time order. A theme the paragraph holds one
+    of is no theme here."""
+    seat = {i: t for t, held in enumerate(themes) for i in held}
+    beats: list[list[int]] = []
+    for i in run:
+        together = i in seat and sum(1 for j in run if seat.get(j) == seat[i]) > 1
+        placed = next((b for b in beats if together and seat.get(b[0]) == seat[i] and len(b) < SENTENCE_NOTES), None)
+        if placed is not None:
+            placed.append(i)
+        else:
+            beats.append([i])
+    return beats
+
+
+def _later(clause: str, before: str) -> str:
+    """A clause after another in one sentence drops its "you" when the one before also began with it."""
+    return re.sub(r"^you ", "", clause) if before.startswith("you ") else clause
+
+
+def _joined(units: list[Unit]) -> str:
+    """Several clauses in one sentence."""
+    parts = [units[0].clause]
+    for u in units[1:]:
+        parts.append(_later(u.clause, units[len(parts) - 1].clause))
+    return parts[0] if len(parts) == 1 else f"{', '.join(parts[:-1])} and {parts[-1]}"
+
+
+def _beat(out, group: list[Unit], opener: str) -> str:  # noqa: ANN001
+    """One sentence for one theme's notes (or one note), each cited by its own clause."""
+    body = _joined(group)
+    text = f"{opener}, {body}." if opener else f"{body[:1].upper()}{body[1:]}."
+    if len(group) == 1:
+        out.rows.append(_row(group[0], text))
+        return text
+    for k, unit in enumerate(group):
+        out.rows.append(_row(unit, unit.clause if k == 0 else _later(unit.clause, group[k - 1].clause)))
+    return text
+
+
+def story(out, count: str, units: list[Unit], days: list[date], topic: str, p: Plan, themes: list[list[int]] | None = None) -> None:  # noqa: ANN001
     """Fill `out.lines` and `out.rows` from the units, oldest first; the pace
     insight waits in `out.spare` for `_finish`, which says it only when no
-    other rule found an insight."""
+    other rule found an insight. `themes` are the unit indexes that go together."""
     said: list[str] = []
     lead_unit = next((u for u in units if _SEMESTER.search(u.source.text)), units[0])
     span = span_words(p.first, p.last)
-    lead = f"You have {count} about {topic}, and they follow {p.arc}, {span}." if p.arc == "one semester" else f"You have {count} about {topic}, written from {span}."
+    lead = f"You have {count} about {topic}, and they follow {p.arc}, {span}." if p.arc == "one semester" else (
+        f"You have {count} about {topic}, written from {span}." if " to " in span else f"You have {count} about {topic}, all written in {span}.")
     out.lines.append(lead)
     out.rows.append(_row(lead_unit, lead))
     for n, run in enumerate(p.chunks):
         sentences, prev = [], None
-        for k, i in enumerate(run):
-            unit = units[i]
-            opener = _when(prev, days[i], said, k == 0)
+        for k, beat in enumerate(_beats(run, themes or [])):
+            opener = _when(prev, days[beat[0]], said, k == 0)
             said.append(opener)
-            text = sentence(unit, opener)
-            sentences.append(text)
-            out.rows.append(_row(unit, text))
-            prev = days[i]
+            sentences.append(_beat(out, [units[i] for i in beat], opener))
+            prev = days[beat[-1]]
         hard = _hard_run([units[i] for i in run])
         if len(hard) >= 2:
             note = "That reads like a hard stretch."

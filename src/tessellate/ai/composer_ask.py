@@ -676,6 +676,16 @@ def _numbered_sides(sides: list[str]) -> list[str]:
     return out
 
 
+#: The category names of the notes a digest answer reads, "and" written "&": "what do I know about
+#: courses and study" names one category, not two sides to compare (INBOX 1743).
+NOTE_CATEGORIES: contextvars.ContextVar[frozenset] = contextvars.ContextVar("composer_note_categories", default=frozenset())
+
+
+def _one_category(sides: tuple[str, ...] | None) -> bool:
+    """Whether `sides` joined are all of one category's name."""
+    return bool(sides) and re.sub(r"\s+", " ", re.sub(r"\band\b", "&", " and ".join(sides).lower())) in NOTE_CATEGORIES.get()
+
+
 def compare_sides(question: str) -> tuple[str, ...] | None:
     """The things a comparison names, as typed: ("Lisbon", "Porto"), or three
     to six of them for "which is soonest, the dentist, the Lisbon trip or the
@@ -693,8 +703,9 @@ def compare_sides(question: str) -> tuple[str, ...] | None:
         sides = [_bare_side(side, shared_noun=shared) for side in raw]
         sides = [side for side in sides if subject_terms(side)]
         if len(sides) >= composer_sides.MIN_SIDES:
-            return tuple(sides[: composer_sides.MAX_SIDES])
-    return _lower_pair(text)
+            return None if _one_category(tuple(sides)) else tuple(sides[: composer_sides.MAX_SIDES])
+    pair = _lower_pair(text)
+    return None if _one_category(pair) else pair
 
 
 #: The words of the notes a digest answer reads, for `_lower_pair` only: `_KNOWN` also steers the speller.

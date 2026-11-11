@@ -197,7 +197,7 @@ Parked until the owner's data or a check on real hardware:
 - ~~C8 Default fold (after Q14); both side panels fold to a rail | INBOX 1720, oa 1661 m, S14~~ **Fixed w17-1110** (a blank or starter diagram opens with the list a 32 px rail while no fold was ever chosen, nothing stored; an existing one opens at 224 px; both rails exist and are named)
 - C9 Shelf is mouse only; the diagram tray "Open" row; Done silently creating a file; Tab stops | dgml L14, DOCUMENTS#22.4 R9a, R11 **Shelf: not reproduced w17-1110** (Right arrow roves six tiles and More, Enter adds); the tray row and Done not driven (code toasts the save), see w17-1110.md
 
-**W19 Whiteboard daily UX** (C, boards, Sonnet; verify first). Files: `frontend/js/whiteboard*.js` outside the render path (W30). Checks: `tests/test_wb_*`, `contrast.js` on a board. Done when: ink reads on both themes and every insert works by keyboard.
+~~**W19 Whiteboard daily UX** (C, boards, Sonnet; verify first).~~ **Done wb-1111** (U1, U2, U5, U13 were built; U3 and B33 built here, B10 is the dialog's Print note). Files: `frontend/js/whiteboard*.js` outside the render path (W30). Checks: `tests/test_wb_*`, `contrast.js` on a board. Done when: ink reads on both themes and every insert works by keyboard.
 ~~- C10 Stored black ink does not remap on dark; white ink on a yellow sticky | 1028-ux U1, U2~~ **Fixed before s5-1110 (cc6892028: `wbDefaultInk`).**
 ~~- C11 Insert, Sticky note by keyboard adds nothing and drops focus | 1028-ux U3~~ **Fixed before s5-1110 (cc6892028).**
 ~~- C12 Ring and chevron buttons under 24 px at zoom; Delete 2 px from Undo | 1028-ux U5, U14~~ **Fixed before s5-1110 (cc6892028, CHANGELOG 755).**
@@ -255,7 +255,7 @@ Parked until the owner's data or a check on real hardware:
 ~~- D9 A composed chat answer mounts 500 to 860 nodes | audit-1108-perf P8~~ **Built s58left3-1110** (older replies' corner head is an svg/use of one hidden copy: 167 to 8 nodes a reply, pixels within 2 of 255; the answer body itself, about 100 nodes, is untouched)
 - ~~D10 `?preview=300` (after Q9) | fitaudit 42~~ **Stale: built** (CHANGELOG, INBOX 1525: list pages, the by-id refresh and the Semantic list carry `?preview=300`; `tests/test_entry_writers_whole_1525.py`)
 
-**W26 Graph at scale** (D, graph, Opus). Files: `graph*.js`, `graph-worker.js`. Checks: the 500 and 2,000 note fixtures at 1x and 4x. Done when: a 2,000-note settle is under 5 s with no task over 50 ms.
+**W26 Graph at scale** (D, graph, Opus). Files: `graph*.js`, `graph-worker.js`. Checks: the 500 and 2,000 note fixtures at 1x and 4x. Done when: a 2,000-note settle is under 5 s with no task over 50 ms. Part done 2026-11-11 (settle 3.3 s; tasks over 50 ms 10 to 5 at 1x; minimap one parse, balance waits for rest, link grid chords); rest in `graph-1111.md`.
 - D11 2,000 notes: layout 28 s and main-thread long tasks | 1029-graph G3, 1028-shell S2, GRAPH row 19
 - D12 500 notes at 4x: hover p50 83 ms, wheel 133 ms | 1029-graph G5, GRAPH Rank 36
 - D13 Hover and wheel at rest redraw whole layers; the crossing count is output-bound | graph19 L4, L5
@@ -4743,7 +4743,7 @@ Counts are from `e17-1110.md` "True, by work order batch"; the scout's own cavea
 | X7 | W12 navigation | 11 | open | Sh1 |
 | X8 | W14 in-app companion | 20 | open | Cp1 |
 | X9 | W15 desk companion | 11 | open | Cp2 |
-| X10 | W19 whiteboard daily UX | 76 | open | Wb1 |
+| X10 | W19 whiteboard daily UX | 76 | done (wb-1111) | Wb1 |
 | X11 | W20 shell accessibility | 7 | open | Sh1 |
 | X12 | W21 dashboard, timeline | 15 | open | Da1 |
 | X13 | W22 chat, Ask, Guide | 15 | open | Co3 |
