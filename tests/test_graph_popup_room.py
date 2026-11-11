@@ -42,11 +42,10 @@ def test_both_are_placed_from_their_size_not_their_growing_box():
     """Both open with `ui-grow` (scale 0.94 to 1): a rect read mid-grow was
     6% short and nothing placed them again, so New note hung 11px past the
     map at 1280x720 (wrap/zoom sweep, 2026-11-11)."""
-    assert "panel.offsetWidth" in _fn("graphPanelSize") and "panel.offsetHeight" in _fn("graphPanelSize")
     for name in ("placeGraphPopup", "placeGraphNewNote"):
         body = _fn(name)
-        assert "const size = graphPanelSize(popup);" in body, name
-        assert "getBoundingClientRect" not in body.split("const size")[1].split(";")[0], name
+        assert "const size = { width: popup.offsetWidth, height: popup.offsetHeight };" in body, name
+        assert "const size = popup.getBoundingClientRect()" not in body, name
 
 
 def test_the_dock_is_pinned_at_the_foot_of_a_scrolling_popup():
