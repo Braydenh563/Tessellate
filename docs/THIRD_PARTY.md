@@ -50,7 +50,16 @@ made. Not in the table above because no page script calls them.
 
 Never in the repository: each is fetched on an Install press from the pinned
 address in `src/tessellate/core/extras.py`, checked against its sha256, and
-unpacked into `<data dir>/extras/<id>/` with its licence beside it.
+unpacked into `<data dir>/extras/<id>/` with its licence beside it. The
+spelling dictionaries stay downloads because their licences (MPL, GPL, LGPL)
+are not ones the repository takes in.
+
+Two engines in the same list are pip packages rather than pinned files, each
+with its licence in its own package metadata: the Live captions engine
+`pywhispercpp` 1.5.1 (MIT, with whisper.cpp 1.8.5, MIT, compiled in), which
+only `ai/captions_helper.py` imports, as a child process; and the speaker
+labels engine `sherpa-onnx` (Apache-2.0, on ONNX Runtime, MIT), read by
+`ai/diarize.py`.
 
 | Library | Files | Version | Licence | Source | Used by |
 | --- | --- | --- | --- | --- | --- |
@@ -58,6 +67,13 @@ unpacked into `<data dir>/extras/<id>/` with its licence beside it.
 | Firefox Translations model, English to Spanish | `extras/translate/model.enes.intgemm.alphas.bin`, `lex.50.50.enes.s2t.bin`, `vocab.enes.spm` | `retrain_hr_fix_names` export, 2026 registry | MPL-2.0 (the `mozilla/translations` README) | https://github.com/mozilla/translations | the same |
 | pyannote segmentation 3.0 (sherpa-onnx export) | `extras/speakermodels/segmentation.onnx`, `LICENSE-segmentation` | `sherpa-onnx-pyannote-segmentation-3-0` release asset | MIT (`LICENSE-segmentation`, downloaded with it) | https://github.com/k2-fsa/sherpa-onnx/releases/tag/speaker-segmentation-models | Speaker labels by voice (`ai/diarize.py`) |
 | WeSpeaker ResNet34 (English, VoxCeleb), sherpa-onnx export | `extras/speakermodels/embedding.onnx` | `wespeaker_en_voxceleb_resnet34.onnx` release asset | Apache-2.0 (the Hugging Face card of `Wespeaker/wespeaker-voxceleb-resnet34`) | https://github.com/k2-fsa/sherpa-onnx/releases/tag/speaker-recongition-models | Speaker labels by voice (`ai/diarize.py`) |
+| Live captions model, whisper.cpp tiny.en (q5_1) | `extras/captionmodel/ggml-tiny.en-q5_1.bin` | commit 5359861 of the model repo | MIT (the whisper.cpp model card) | https://huggingface.co/ggerganov/whisper.cpp | Live captions, read by the captions helper (`ai/captions_helper.py`) |
+| LanguageTool | `extras/languagetool/` (`languagetool.jar`, `languagetool-server.jar`, the jars under `libs/`, `COPYING.txt`) | 6.6 | LGPL-2.1 (`COPYING.txt`, downloaded with it) | https://languagetool.org | A second grammar checker, run as its own Java program on 127.0.0.1, never linked (`core/languagetool.py`) |
+| French Hunspell dictionary | `extras/spell-fr/fr.aff`, `fr.dic`, `LICENSE.txt` | npm `dictionary-fr` 3.0.0 | MPL-2.0 (`LICENSE.txt`, downloaded with it) | https://github.com/wooorm/dictionaries | French spelling in documents, read in the grammar worker (`documents-spell.js`) |
+| German Hunspell dictionary | `extras/spell-de/de.aff`, `de.dic`, `LICENSE.txt` | npm `dictionary-de` 3.0.0 | GPL-2.0 or GPL-3.0 (`LICENSE.txt`, downloaded with it) | https://github.com/wooorm/dictionaries | German spelling, the same |
+| Spanish Hunspell dictionary | `extras/spell-es/es.aff`, `es.dic`, `LICENSE.txt` | npm `dictionary-es` 4.0.0 | GPL-3.0, LGPL-3.0 or MPL-1.1 (`LICENSE.txt`, downloaded with it) | https://github.com/wooorm/dictionaries | Spanish spelling, the same |
+| Pyodide (core) | `extras/pyodide/` (`pyodide.mjs`, `pyodide.asm.mjs`, `pyodide.asm.wasm`, `python_stdlib.zip`, `pyodide-lock.json`, `package.json`) | 314.0.7 | MPL-2.0, CPython's standard library under the PSF licence | https://github.com/pyodide/pyodide | Run on a .py document, in the run sandbox (`api/run_sandbox.py`) |
+| needle | `extras/needle/` (`libneedle3`, `needle3.cact`, `LICENSE`) | engine 3.0.1, files pinned to commit b274efc | Apache-2.0 (`LICENSE`, downloaded with it) | https://huggingface.co/Cactus-Compute/needle3 | Tool calling without Ollama (`ai/needle_provider.py`) |
 | marian-nmt (inside the Bergamot WASM) | compiled into the `.wasm` | browsermt fork, as pinned by bergamot-translator v0.4.5 | MIT | https://github.com/browsermt/marian-dev | the translation engine |
 | intgemm (inside the Bergamot WASM) | compiled into the `.wasm` | as pinned by marian-dev | MIT | https://github.com/kpu/intgemm | its 8-bit matrix routines |
 | SentencePiece (inside the Bergamot WASM) | compiled into the `.wasm` | as pinned by marian-dev | Apache-2.0 | https://github.com/google/sentencepiece | splitting text into the model's word pieces |
@@ -69,7 +85,7 @@ unpacked into `<data dir>/extras/<id>/` with its licence beside it.
 | Library | Files | Version | Licence | Source | Used by |
 | --- | --- | --- | --- | --- | --- |
 | draw.io stencils | `drawio/` | converted by `scripts/build_board_library.py` | Apache-2.0 (`drawio/LICENSE`, `drawio/NOTICE.txt`) | https://github.com/jgraph/drawio | the whiteboard's shape library (basic, flowchart, arrows, BPMN, networks) |
-| Phosphor Icons | `icons.json` | glyphs converted to paths by `scripts/build_board_library.py` | MIT (`../vendor/phosphor/LICENSE`) | https://phosphoricons.com | the whiteboard's icon shapes |
+| Phosphor Icons | `icons.json`, `cloud-network.json`, `devices-people.json` | glyphs converted to paths by `scripts/build_board_library.py` | MIT (`../vendor/phosphor/LICENSE`) | https://phosphoricons.com | the whiteboard's icon shapes, and its Cloud and network and Devices and people sections |
 
 ## Data
 
