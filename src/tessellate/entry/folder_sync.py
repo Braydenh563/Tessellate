@@ -41,11 +41,13 @@ import threading
 from pathlib import Path
 from typing import Any
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.core import atomic_io, crypto, paths, sync_state
-from tessellate.core.database import utcnow
-from tessellate.entry import sync_extras, sync_pull, sync_segments
+from tessellate.core import events
+from tessellate.core.database import Entry, impersonate_workspace, utcnow
+from tessellate.entry import manager, sync_extras, sync_pull, sync_segments
 
 FORMAT = "tessellate-sync"
 VERSION = 2
@@ -139,16 +141,29 @@ def _checked(folder: str, passphrase: str, notebook: Path | None = None) -> Path
 
 
 def _shipped(data_dir: Path) -> set[str] | None:
-    """The notes this computer has put into the folder in the clear; None when a sync ran before that was kept,
-    so every private note goes as withheld once and is kept from then on."""
+    """The notes this computer has put into the folder in the clear; None when a sync ran before that was kept
+    or the record cannot be read, so every private note goes as withheld once and is kept from then on."""
     try:
         raw = json.loads(state_path(data_dir).read_text("utf-8"))
-    except (OSError, ValueError):
+    except FileNotFoundError:
         return set()
-    found = raw.get("shipped") if isinstance(raw, dict) else None
+    except (OSError, ValueError):
+        return None
+    if not isinstance(raw, dict):
+        return None
+    found = raw.get("shipped")
     if isinstance(found, list):
         return {str(sid) for sid in found}
-    return None if isinstance(raw, dict) and raw.get("last") else set()
+    return None if raw.get("last") else set()
+
+
+def _announce_withdrawals(session: Session) -> None:
+    """The first run after the record was lost: each private note gets one new change in this notebook's log, so the
+    marker sits above every cursor (a computer that pulled the note in the clear already read past its last change)."""
+    with events.acting_as("system:folder-sync"), impersonate_workspace(session, ""):
+        for entry in session.scalars(select(Entry).where(Entry.is_private.is_(True), Entry.is_board.is_(False))):
+            manager.log_action(session, "dated", "entry", entry.id)
+        session.commit()
 
 
 def _for_folder(notes: list[dict], shipped: set[str] | None) -> list[dict]:
@@ -263,17 +278,22 @@ def write(session: Session, data_dir: Path, path: Path, passphrase: str, token: 
     salt, kept = _own_salt(own, passphrase)
     key = _key(passphrase, salt)
     shipped = _shipped(data_dir)
+    if shipped is None:
+        _announce_withdrawals(session)
     manifest, found = extras(session, data_dir, device, shipped)
     body = {"device": device, "written": utcnow().isoformat(), "token": token,
             "segments": segments(session, device, shipped), "manifest": manifest, "items": found}
+    sent = [n for s in body["segments"] for n in s["notes"]]
+    sent_extras = {f"{kind}|{sid}" for kind in ("document", "board") for sid in found[kind]}
+    names = sorted((shipped or set()) | {n["sid"] for n in sent} | sent_extras)
+    #: Before the file is written: a write cut short must not forget what may already have gone out.
+    save_state(data_dir, shipped=names, token=token, prev=_raw_state(data_dir).get("token") or "")
     _write_blobs(session, data_dir, path / f"{FILE_PREFIX}{device}{FILES_SUFFIX}", found["file"], (key, kept))
     sealed = {"format": FORMAT, "version": VERSION, "device": device,
               "salt": base64.b64encode(salt).decode("ascii"),
               "data": crypto.encrypt(key, json.dumps(body, ensure_ascii=False))}
     atomic_io.atomic_write_json(own, sealed, indent=0)
-    sent = [n for s in body["segments"] for n in s["notes"]]
-    sent_extras = {f"{kind}|{sid}" for kind in ("document", "board") for sid in found[kind]}
-    return sum(not n["is_private"] for n in sent), sorted((shipped or set()) | {n["sid"] for n in sent} | sent_extras)
+    return sum(not n["is_private"] for n in sent), names
 
 
 # --- reading a peer --------------------------------------------------------------
@@ -281,6 +301,9 @@ def write(session: Session, data_dir: Path, path: Path, passphrase: str, token: 
 
 class FolderLink:
     """A peer's file as the sync transport (`sync_pull.Transport`): what the LAN routes would answer."""
+
+    #: The folder carries no key, so it alone sends a private note as a withheld marker (`sync_segments.check`).
+    withdraws = True
 
     def __init__(self, body: dict, blobs: Path, key: bytes) -> None:
         self.name = str(body["device"])
@@ -346,6 +369,11 @@ def _raw_state(data_dir: Path) -> dict:
     return raw if isinstance(raw, dict) else {}
 
 
+def save_state(data_dir: Path, **fields: Any) -> None:
+    """Merge `fields` into `folder_sync_state.json`."""
+    atomic_io.atomic_write_json(state_path(data_dir), {**_raw_state(data_dir), **fields})
+
+
 def _written_by_a_copy(data_dir: Path, own: Path, passphrase: str) -> bool:
     """This computer's own file holds a write token this computer did not write: the notebook folder was copied
     and the other copy writes the file too. A file with no token (older) or one that cannot be opened is not."""
@@ -355,7 +383,8 @@ def _written_by_a_copy(data_dir: Path, own: Path, passphrase: str) -> bool:
     except _OPEN_ERRORS:
         return False
     found = body.get("token") if isinstance(body, dict) else None
-    return isinstance(found, str) and bool(found) and found != _raw_state(data_dir).get("token")
+    mine = _raw_state(data_dir)  # `prev` too: a write cut short after its token was kept leaves the one before
+    return isinstance(found, str) and bool(found) and found not in (mine.get("token"), mine.get("prev"))
 
 
 def run(session: Session, data_dir: Path, folder: str, passphrase: str) -> dict[str, Any]:
@@ -371,9 +400,8 @@ def run(session: Session, data_dir: Path, folder: str, passphrase: str) -> dict[
         if file.name != f"{FILE_PREFIX}{device}{FILE_SUFFIX}":
             _read_peer(session, data_dir, (path, file, passphrase), counts)
     token = secrets.token_hex(8)
-    counts["shared"], shipped = write(session, data_dir, path, passphrase, token)
-    atomic_io.atomic_write_json(state_path(data_dir), {"folder": folder, "last": utcnow().isoformat(),
-                                                       "shipped": shipped, "token": token})
+    counts["shared"], _ = write(session, data_dir, path, passphrase, token)
+    save_state(data_dir, folder=folder, last=utcnow().isoformat())
     return counts
 
 

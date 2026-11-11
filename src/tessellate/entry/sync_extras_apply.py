@@ -146,6 +146,8 @@ class Apply:
 
     def document(self, item: dict) -> str:
         if item.get("withheld") is True:
+            if item["sid"].partition(":")[0] != self.peer:  # only the author withdraws its own
+                return "same"
             return self._withdraw_document(item)
         words = self._words(item)
         if words is None:
@@ -215,6 +217,8 @@ class Apply:
 
     def board(self, item: dict) -> str:
         if item.get("withheld") is True:
+            if item["sid"].partition(":")[0] != self.peer:
+                return "same"
             return withdraw(self.session, self.me, item, self.data_dir / "uploads")
         opened = self._board_words(item)
         if opened is None:

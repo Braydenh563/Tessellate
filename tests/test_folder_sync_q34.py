@@ -578,3 +578,115 @@ def test_a_file_from_before_tokens_existed_is_ours_and_is_rewritten(two):
     own.write_text(json.dumps(sealed), "utf-8")
     (a.dir / folder_sync.STATE_FILE).unlink()
     assert sync(a, folder)["error"] == ""
+
+
+# --- the independent review of the folder sync fixes -----------------------------------------------------------
+
+
+def test_only_the_author_of_a_note_can_withdraw_it(two, tmp_path):
+    """Three computers on one folder: C relays A's note and then makes its copy private; B must keep A's note."""
+    a, b, folder = two
+    c = Notebook(tmp_path, "c")
+    note(a, "Written on A, relayed by C", 1)
+    for book in (a, b, c):
+        sync(book, folder)
+    _made_private(c, find(c, "Written on A, relayed by C"), 3)
+    sync(c, folder)
+    got = sync(b, folder)
+    assert texts(b) == ["Written on A, relayed by C"] and got["applied"] == 0
+    c.session.close()
+
+
+def test_a_withheld_marker_is_refused_over_the_home_network():
+    segment = {"format": 1, "device": "abcdefabcdef", "since": 0, "upto": 1, "more": False,
+               "notes": [sync_segments.withheld({"sid": "abcdefabcdef:1", "updated_at": "2026-11-01T12:00:00+00:00"})]}
+    segment["digest"] = sync_segments.digest(segment["notes"])
+    with pytest.raises(sync_segments.SegmentError):
+        sync_segments.check(segment, "000000000000")
+    assert sync_segments.check(segment, "000000000000", folder=True) == segment["notes"]
+
+
+def _forget_shipped(book: Notebook) -> None:
+    state = json.loads((book.dir / folder_sync.STATE_FILE).read_text("utf-8"))
+    state.pop("shipped")
+    (book.dir / folder_sync.STATE_FILE).write_text(json.dumps(state), "utf-8")
+
+
+def test_an_upgrade_reaches_a_computer_that_already_pulled_the_note_in_the_clear(two):
+    """A shared the note, B pulled it, A made it private and an older version left it out of the file; B's cursor
+    is past that change, so the marker must travel as a new change."""
+    a, b, folder = two
+    secret = note(a, "The old plain copy 6643", 1)
+    settle(a, b, folder)
+    _made_private(a, secret, 3)
+    state = json.loads((a.dir / folder_sync.STATE_FILE).read_text("utf-8"))
+    state["shipped"] = []  # what the older version did: the private note is simply not in the file
+    (a.dir / folder_sync.STATE_FILE).write_text(json.dumps(state), "utf-8")
+    sync(a, folder)
+    sync(b, folder)
+    assert texts(b) == ["The old plain copy 6643"]
+    _forget_shipped(a)  # the upgrade: no list of what went out in the clear
+    sync(a, folder)
+    sync(b, folder)
+    assert texts(b) == [] and not [h for h in history(b) if "6643" in h]
+
+
+def test_a_state_file_that_cannot_be_read_withholds_every_private_note(two):
+    a, _b, folder = two
+    assert folder_sync._shipped(a.dir) == set()  # noqa: SLF001  # never synced
+    sync(a, folder)
+    path = folder_sync.state_path(a.dir)
+    for broken in ("{not json", "[1, 2]"):
+        path.write_text(broken, "utf-8")
+        assert folder_sync._shipped(a.dir) is None  # noqa: SLF001
+
+
+def test_what_is_about_to_be_sent_is_remembered_before_the_file_is_written(two, monkeypatch):
+    a, _b, folder = two
+    shared = note(a, "Goes out", 1)
+    real = folder_sync.atomic_io.atomic_write_json
+
+    def fail_on_own_file(target, *args, **kwargs):
+        if str(target).endswith(f"{a.device}.json"):
+            raise OSError("disk full")
+        return real(target, *args, **kwargs)
+
+    monkeypatch.setattr(folder_sync.atomic_io, "atomic_write_json", fail_on_own_file)
+    with pytest.raises(OSError):
+        sync(a, folder)
+    monkeypatch.undo()
+    assert sync_segments.note_sid(shared, a.device) in folder_sync._shipped(a.dir)  # noqa: SLF001
+
+
+def test_a_withdrawn_note_a_local_note_links_to_is_kept_and_says_so(two):
+    from tessellate.core.database import EntryLink
+
+    a, b, folder = two
+    secret = note(a, "Linked from a local note", 1)
+    settle(a, b, folder)
+    mine = note(b, "A local note of B", 2)
+    theirs = find(b, "Linked from a local note")
+    b.session.add(EntryLink(source_entry_id=mine.id, target_entry_id=theirs.id))
+    b.session.commit()
+    _made_private(a, secret, 4)
+    sync(a, folder)
+    got = sync(b, folder)
+    assert "Linked from a local note" in texts(b) and got["conflicts"] == 1
+    assert _said(b).count(sync_segments.WITHHELD_KEPT) == 1
+
+
+def test_a_withdrawn_note_placed_on_a_local_board_is_kept(two):
+    from tessellate.core.database import WhiteboardNode
+
+    a, b, folder = two
+    secret = note(a, "Placed on a board", 1)
+    settle(a, b, folder)
+    board = Entry(content="B board", is_board=True, updated_at=_at(2))
+    b.session.add(board)
+    b.session.commit()
+    b.session.add(WhiteboardNode(board_id=board.id, entry_id=find(b, "Placed on a board").id))
+    b.session.commit()
+    _made_private(a, secret, 4)
+    sync(a, folder)
+    sync(b, folder)
+    assert "Placed on a board" in texts(b)
