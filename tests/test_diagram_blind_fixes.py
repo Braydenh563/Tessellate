@@ -13,8 +13,9 @@ INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 
 
 def test_modified_click_on_the_picture_adds_to_the_pick():
-    assert "S.pickAt = (key, shift)" in MULTI
-    assert "S.pickAt(key, event.shiftKey" in BUILDER
+    # 1740: Shift+click on the picture toggles like Ctrl (the whiteboard's way); the list keeps Shift for a range.
+    assert "S.pickAt = (key) => toggle(key)" in MULTI
+    assert "S.pickAt(key)" in BUILDER
 
 
 def test_drag_hint_says_the_picture_lays_itself_out():

@@ -1909,6 +1909,11 @@
   outline-offset: -2px;
 }
 
+.dgm-hand,
+.dgm-hand * {
+  cursor: grab;
+}
+
 .dgm-marquee {
   position: absolute;
   box-sizing: border-box;

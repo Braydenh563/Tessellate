@@ -4,7 +4,9 @@
 //  - a palette tile or a node dropped on the picture (`over`, called by diagram-pointer.js's drop mode, which draws the
 //    target on the overlay box and applies the drop to the model once);
 //  - a press on a node starts that mode's drag (`node`), as a press on a block's grip does;
-//  - Shift and drag on empty space is the marquee (`wire`): it picks the nodes it touches through the multi pane.
+//  - A mouse drag on empty space is the marquee (`wire`, as the whiteboard's box select): it picks the nodes it touches through
+//    the multi pane, Shift or Ctrl adds to the pick, Escape clears. The picture pans on Space and drag, the middle button, the wheel
+//    and the arrows; a finger keeps its one-finger pan. Ctrl and an arrow extend the pick to the next box.
 // The picture is redrawn once, after the drop, by the builder's commit.
 (() => {
   const overlay = () => diagramModel.overlay.math;
@@ -33,6 +35,10 @@
         .filter((n) => n.x < r && n.x + n.w > l && n.y < b && n.y + n.h > t)
         .map((n) => n.id);
     },
+    //: The new pick: the keys a marquee touched, or those added to `base` (in order, no repeats) when the press held Shift or Ctrl.
+    merge: (base, hits, add) => (add ? [...base, ...hits.filter((k) => !base.includes(k))] : hits),
+    //: A press is a drag, not a click, once it has moved 4 px.
+    dragged: (x0, y0, x1, y1) => Math.hypot(x1 - x0, y1 - y0) >= 4,
   };
 
   const imageOf = (S) => S.fig.querySelector(".md-mermaid-img");
@@ -99,7 +105,7 @@
     let sweptAt = -1e3;
 
     const end = () => {
-      sweep?.rect.remove();
+      sweep?.rect?.remove();
       for (const b of layer.querySelectorAll(".dgm-box.swept")) b.classList.remove("swept");
       sweep = null;
     };
@@ -107,21 +113,37 @@
       const img = imageOf(S);
       return img && S.hit ? math.sweep(S.hit, img.getBoundingClientRect(), { left: sweep.x, top: sweep.y, right: event.clientX, bottom: event.clientY }) : [];
     };
-    //: In the capture phase and ahead of the zoom's pan (diagram-view.js): the press on empty space is not a pan.
+    //: Space held is the hand: the zoom's pan takes the press (diagram-view.js), as the whiteboard's does.
+    S.hand = false;
+    const hand = (on) => ((S.hand = on), fig.classList.toggle("dgm-hand", on));
+    const typing = (t) => t.isContentEditable || t.closest?.("input, textarea, select, button, .menu-wrap");
+    window.addEventListener("keydown", (event) => {
+      if (event.key !== " " || event.repeat || typing(event.target) || !(fig.matches(":hover") || event.target === fig)) return;
+      hand(true);
+      if (event.target === fig) event.preventDefault();
+    });
+    window.addEventListener("keyup", (event) => event.key === " " && hand(false));
+    window.addEventListener("blur", () => hand(false));
+    //: In the capture phase and ahead of the zoom's pan (diagram-view.js): a mouse press on empty space is not a pan. The box
+    //: shows once the pointer has moved 4 px, so a plain click on empty space still lets go of the pick.
     fig.addEventListener("pointerdown", (event) => {
       const img = imageOf(S);
-      if (event.button || !event.shiftKey || !img || !S.hit || event.target.closest(".dock, .dgm-overlay > *")) return;
+      if (event.button !== 0 || event.pointerType === "touch" || S.hand || event.altKey || !img || !S.hit || event.target.closest(".dock, .dgm-overlay > *, .dgm-zoom")) return;
       if (math.nodeAt(S.hit, img.getBoundingClientRect(), event.clientX, event.clientY)) return;
       event.stopImmediatePropagation();
       event.preventDefault();
+      fig.focus({ preventScroll: true });
       fig.setPointerCapture?.(event.pointerId);
-      const rect = document.createElement("span");
-      rect.className = "dgm-marquee";
-      layer.append(rect);
-      sweep = { id: event.pointerId, x: event.clientX, y: event.clientY, rect };
+      sweep = { id: event.pointerId, x: event.clientX, y: event.clientY, rect: null, add: event.shiftKey || event.ctrlKey || event.metaKey };
     }, true);
     fig.addEventListener("pointermove", (event) => {
       if (!sweep || event.pointerId !== sweep.id) return;
+      if (!sweep.rect) {
+        if (!math.dragged(sweep.x, sweep.y, event.clientX, event.clientY)) return;
+        sweep.rect = document.createElement("span");
+        sweep.rect.className = "dgm-marquee";
+        layer.append(sweep.rect);
+      }
       const home = layer.getBoundingClientRect();
       const [l, r] = [sweep.x, event.clientX].sort((a, b) => a - b);
       const [t, b] = [sweep.y, event.clientY].sort((a, b) => a - b);
@@ -131,10 +153,16 @@
     });
     fig.addEventListener("pointerup", (event) => {
       if (!sweep || event.pointerId !== sweep.id) return;
-      sweptAt = event.timeStamp;
-      const keys = touched(event).map((id) => h.ops.key("n", id));
+      const { rect, add } = sweep;
+      if (rect) sweptAt = event.timeStamp;
+      const hits = rect ? touched(event).map((id) => h.ops.key("n", id)) : null;
       end();
-      if (keys.length) S.pick?.(keys, keys[0]);
+      //: Not dragged: the click that follows decides (it clears the pick on empty space).
+      if (!hits) return;
+      const base = add ? (S.picked?.size ? [...S.picked] : S.sel ? [S.sel] : []) : [];
+      const keys = math.merge(base, hits, add);
+      if (keys.length) S.pick?.(keys, hits[0] || keys[0]);
+      else S.clear();
     });
     fig.addEventListener("pointercancel", end);
     window.addEventListener("keydown", (event) => {
@@ -161,6 +189,18 @@
       S.clear();
     });
     S.pane.addEventListener("click", (event) => event.target.closest(".dgm-block, button, a, input, label") || S.clear());
+    //: Ctrl or Cmd and an arrow on the picture adds the box in that direction to the pick (the arrows alone move the pick).
+    fig.addEventListener("keydown", (event) => {
+      const dir = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[event.key];
+      if (!dir || event.target !== fig || !(event.ctrlKey || event.metaKey) || event.altKey || event.shiftKey || !S.hit?.boxes?.length || !S.pick) return;
+      const from = S.sel?.startsWith("n:") ? S.sel.slice(2) : "";
+      const to = diagramModel.view.math.reach(S.hit.boxes, from, ...dir);
+      event.preventDefault();
+      if (!to || !h.ops.node(S.m, to.id)) return;
+      const base = S.picked?.size ? [...S.picked] : S.sel ? [S.sel] : [];
+      S.pick(math.merge(base, [h.ops.key("n", to.id)], true), h.ops.key("n", to.id));
+      S.mark?.();
+    });
     S.root.addEventListener("keydown", (event) => {
       if (event.key !== "Escape" || event.defaultPrevented || event.target.closest?.("input, textarea, [contenteditable]") || document.querySelector(".action-menu:not(.hidden), .help-popover:not(.hidden)")) return;
       if (S.clear()) event.preventDefault(), event.stopPropagation();

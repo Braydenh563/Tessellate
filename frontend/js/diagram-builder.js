@@ -604,7 +604,7 @@
       const id = diagramModel.picture.pick(S, event);
       if (!id || !diagramOps.node(S.m, id)) return;
       const key = diagramOps.key("n", id);
-      if ((event.shiftKey || event.ctrlKey || event.metaKey) && S.pickAt) return S.pickAt(key, event.shiftKey && !(event.ctrlKey || event.metaKey));
+      if ((event.shiftKey || event.ctrlKey || event.metaKey) && S.pickAt) return S.pickAt(key);
       select(S, key, true);
     });
     S.pane.addEventListener("keydown", (event) => {
