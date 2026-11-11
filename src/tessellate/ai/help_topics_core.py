@@ -1873,6 +1873,29 @@ HELP_TOPICS.extend(
             "badge": {"label": "Library", "tab": "library"},
         },
         {
+            "id": "code-tabs",
+            "keywords": (
+                "code tabs",
+                "file tabs",
+                "open files",
+                "open code files",
+                "close file",
+                "switch file",
+                "several files",
+                "more than one file",
+            ),
+            #: Written from `documents-tabs.js` (audit 1028 D52).
+            "body": (
+                "Code files you open stay as tabs above the editor once two are open "
+                "(up to eight, kept in this browser only). Click a tab, or use the "
+                "left and right arrows on one, to switch; the file you leave is saved "
+                "first and reopens where you were. Close file ends the open tab and "
+                "shows its neighbour, and a middle-click closes any tab. A prose "
+                "document never shows the strip."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
             "id": "code-completions",
             "keywords": (
                 "completion",
