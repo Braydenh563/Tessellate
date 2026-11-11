@@ -334,6 +334,9 @@ NO_PYTHON_FOUND_MESSAGE = (
 #: no macOS x86_64, Windows arm64 or musl Linux.
 _CAPTIONS_PLATFORMS = ("windows-x86_64", "linux-x86_64", "linux-aarch64", "macos-arm64")
 CAPTIONS_MODEL_FILE = "ggml-tiny.en-q5_1.bin"
+#: The two rows the captions helper reads; changing either stops the helper
+#: first (`_release_captions_helper`).
+CAPTIONS_IDS = ("captions", "captionmodel")
 CAPTIONS_MODEL_VERSION = "hf-5359861-tiny.en-q5_1"
 _CAPTIONS_NO_BUILD = (
     "No whisper.cpp build for this computer yet. Captions use the Voice notes "
@@ -1204,6 +1207,9 @@ def _status_row(extra: Extra) -> dict:
         #: can read, it is noise under a green "Installed".
         "caveat": "" if extra.id == "ocr" and is_installed(extra) else extra.caveat,
         "unavailable": unavailable_reason(extra),
+        #: No build for this computer, which waiting will not change (the
+        #: chip says "Not for this computer", not "Not ready yet").
+        "no_build": _no_build(extra),
         #: Whether Settings may offer Remove: a packaged build is its own
         #: desktop window, so that one is kept (INBOX 904 B27).
         "removable": not removal_locked(extra),
@@ -1332,13 +1338,17 @@ def removal_locked(extra: Extra) -> str:
     return ""
 
 
+def _no_build(extra: Extra) -> bool:
+    return bool(extra.platforms) and extra_downloads.platform_key() not in extra.platforms
+
+
 def unavailable_reason(extra: Extra) -> str:
     """Why this cannot be installed here, or "": the entry's own reason, or
     for a download extra with per-platform files, none built for this
     computer (`extra_downloads.platform_reason`)."""
     if extra.unavailable:
         return extra.unavailable
-    if extra.platforms and extra_downloads.platform_key() not in extra.platforms:
+    if _no_build(extra):
         return NO_BUILD_REASON.get(extra.id, "There is no build of this for your computer yet.")
     if extra.id == "languagetool":
         from tessellate.core import languagetool_files
@@ -1923,6 +1933,7 @@ def start(extra_id: str, reinstall: bool = False, auto: bool = False) -> tuple[b
     refused = _install_refusal(extra, reinstall)
     if refused:
         return False, refused
+    _release_captions_helper(extra)
     with _lock:
         if _busy():
             return False, "Another install is already running."
@@ -1933,6 +1944,15 @@ def start(extra_id: str, reinstall: bool = False, auto: bool = False) -> tuple[b
     worker = _run_download_install if extra.kind == "download" else _run_install
     _dispatch(_run_single, worker, extra, reinstall, name=extra.label)
     return True, f"{'Reinstalling' if reinstall else 'Installing'} {extra.label}."
+
+
+def _release_captions_helper(extra: Extra) -> None:
+    """Stop the captions helper before its engine or model is replaced or
+    removed (it holds the model file open). It starts again on the next use."""
+    if extra.id in CAPTIONS_IDS:
+        from tessellate.ai import captions_process
+
+        captions_process.stop()
 
 
 def _install_refusal(extra: Extra, reinstall: bool) -> str:
@@ -1961,6 +1981,7 @@ def remove(extra_id: str) -> tuple[bool, str]:
     blocked = removal_locked(extra) or _loaded_in_process_reason(extra)
     if blocked:
         return False, blocked
+    _release_captions_helper(extra)
     with _lock:
         if _busy():
             return False, "Another install is already running."
@@ -2217,6 +2238,12 @@ def _loaded_in_process_reason(extra: Extra) -> str:
                 "is in use: a restart releases it."
             )
         return ""
+    if extra.id in CAPTIONS_IDS:
+        # The helper is a child process of ours, not a mapped library, but a
+        # run in progress is using both files.
+        from tessellate.ai import captions
+
+        return "Stop live captions first. They are using it." if captions.running() else ""
     if extra.id != "voice":
         return ""
     from tessellate.ai import voice

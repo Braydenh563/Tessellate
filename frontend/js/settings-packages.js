@@ -26,7 +26,7 @@
 //: the last one's outcomes are shown to the person who asked for them and
 //: not, stale, to someone opening Settings a day later.
 (() => {
-  const packagesUi = { poll: null, selected: new Set(), bulkSeen: false, body: null };
+  const packagesUi = { poll: null, selected: new Set(), bulkSeen: false, body: null, status: null };
 
   async function renderExtras() {
     const list = $("extras-list");
@@ -58,10 +58,7 @@
 
     if (focusKey) document.querySelector(`[data-packages-focus="${CSS.escape(focusKey)}"]`)?.focus();
 
-    $("extras-status").textContent = packagesStatusLine(body);
-    const logWrap = $("extras-log-wrap");
-    logWrap.classList.toggle("hidden", !body.log.length);
-    $("extras-log").textContent = body.log.join("\n");
+    packagesShowStatus(list, body);
 
     // Poll only while something is running, and only while the panel is open.
     clearTimeout(packagesUi.poll);
@@ -205,6 +202,39 @@
     const same = rows.length === list.children.length && rows.every((li, i) => list.children[i] === li || list.children[i].id === li.id);
     if (same) rows.forEach((li, i) => { if (list.children[i] !== li) list.children[i].replaceWith(li); });
     else list.replaceChildren(...rows);
+  }
+
+  //: Which package the status line and pip's log are about: the one a bulk
+  //: action has in hand, the last of a finished bulk action, else the single
+  //: install's (`installing`, or `last` once it has ended).
+  function packagesStatusRow(body) {
+    const bulk = body.bulk || {};
+    const items = bulk.items || [];
+    if (bulk.running) return items.find((item) => item.outcome === "running")?.id || "";
+    if (packagesUi.bulkSeen && bulk.message) return items[items.length - 1]?.id || "";
+    return body.installing || body.last || "";
+  }
+
+  //: The status line and the log say how the install in hand went, so they sit
+  //: **under that package's row** (INBOX 1777, the owner's screenshot: the
+  //: Speaker labels "installed" line and "What pip is doing" under the Live
+  //: captions row, the last one, which they were not about). With nothing to
+  //: say, or no row to say it under, they go back after the list. A repaint
+  //: that replaces a row takes them with it; they are held in `packagesUi`
+  //: because `$()` cannot find a detached node.
+  function packagesShowStatus(list, body) {
+    const ui = packagesUi;
+    ui.status ||= { line: $("extras-status"), wrap: $("extras-log-wrap"), log: $("extras-log") };
+    const { line, wrap, log } = ui.status;
+    line.textContent = packagesStatusLine(body);
+    wrap.classList.toggle("hidden", !body.log.length);
+    log.textContent = body.log.join("\n");
+    const row = line.textContent || body.log.length ? document.getElementById(`extra-row-${packagesStatusRow(body)}`) : null;
+    const host = row && list.contains(row) ? row : null;
+    const parent = host || list.parentElement;
+    if (line.parentElement === parent && wrap.parentElement === parent) return;
+    if (host) host.append(line, wrap);
+    else list.after(line, wrap);
   }
 
   //: The line under the list: a bulk action's place in its list and the
@@ -366,6 +396,27 @@
 
   // --- one row per package -----------------------------------------------------
 
+  //: A row's tick, or null. **No tick on a row that cannot be installed**
+  //: (INBOX 1777, the owner's screenshot: an empty square on "Live captions"
+  //: beside a greyed Install): a tick offers the selection bar's actions on
+  //: the row, and there are none.
+  function packagesPick(extra) {
+    if (extra.unavailable && !extra.installed) return null;
+    const pick = document.createElement("input");
+    pick.type = "checkbox";
+    pick.className = "extras-pick select-check";
+    pick.checked = packagesUi.selected.has(extra.id);
+    pick.disabled = Boolean(extra.installing || extra.queued);
+    pick.setAttribute("aria-label", `Select ${extra.label}`);
+    pick.dataset.packagesFocus = `pick-${extra.id}`;
+    pick.addEventListener("change", () => {
+      if (pick.checked) packagesUi.selected.add(extra.id);
+      else packagesUi.selected.delete(extra.id);
+      packagesSyncBar();
+    });
+    return pick;
+  }
+
   function packagesRow(extra, body) {
     const li = document.createElement("li");
     li.className = "extras-row";
@@ -384,23 +435,13 @@
     //: column the row's layout would have to fit; the two are one group
     //: (`.extras-name`) so the name wraps beside its tick rather than under it
     //: (measured at 390 without it: the tick alone on a line, the name below).
-    const pick = document.createElement("input");
-    pick.type = "checkbox";
-    pick.className = "extras-pick select-check";
-    pick.checked = packagesUi.selected.has(extra.id);
-    pick.disabled = Boolean(extra.installing || extra.queued || (extra.unavailable && !extra.installed));
-    pick.setAttribute("aria-label", `Select ${extra.label}`);
-    pick.dataset.packagesFocus = `pick-${extra.id}`;
-    pick.addEventListener("change", () => {
-      if (pick.checked) packagesUi.selected.add(extra.id);
-      else packagesUi.selected.delete(extra.id);
-      packagesSyncBar();
-    });
     const name = document.createElement("strong");
     name.textContent = extra.label;
     const named = document.createElement("span");
     named.className = "extras-name";
-    named.append(pick, name);
+    const pick = packagesPick(extra);
+    if (pick) named.append(pick);
+    named.append(name);
     title.append(named);
     head.appendChild(title);
 
@@ -431,7 +472,8 @@
       const blocked = smallButton("ph:download-simple Install", extra.unavailable, () => {});
       blocked.disabled = true;
       actions.appendChild(blocked);
-      title.appendChild(chip("ph:hourglass Not ready yet", "item-label extras-soon"));
+      //: A computer the engine has no build for will not get one by waiting.
+      title.appendChild(chip(extra.no_build ? "ph:prohibit Not for this computer" : "ph:hourglass Not ready yet", "item-label extras-soon"));
     } else {
       const install = smallButton("ph:download-simple Install", `Install ${extra.label}`, () => packagesInstallOne(extra));
       install.disabled = Boolean(body.running);

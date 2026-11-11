@@ -213,7 +213,8 @@ def main() -> None:
     ap.add_argument("--threads", default="")
     ap.add_argument("--exit-on-stdin-close", action="store_true")
     args = ap.parse_args()
-    server = serve(args.port, args.delay_ms, args.fail_every)
+    #: As the real helper: asked to print its port, it binds any free one.
+    server = serve(0 if args.print_port else args.port, args.delay_ms, args.fail_every)
     if args.never_answer:
         server.shutdown()
         server.server_close()

@@ -9,8 +9,8 @@ the pinned model file) put the pieces on disk; this module starts
 `captions.begin()` calls `ensure_started()`, which spawns the child, reads the
 port it printed as its first stdout line (it binds port 0, so there is no
 race), then polls `GET /` every 100 ms for up to `START_TIMEOUT` seconds (the
-model loads in about 0.1 s for tiny.en, caption82-1010.md). Meanwhile the dock
-says "Starting captions…".
+model loads in about 0.1 s for tiny.en, caption82-1010.md). Meanwhile the page
+says "Starting captions…" (`starts_on_first_use` in the status).
 
 **Crashes.** A child found dead is restarted on the next `ensure_started()`,
 at most `MAX_RESTARTS` times in `RESTART_WINDOW` seconds; after that
@@ -37,6 +37,7 @@ from pathlib import Path
 
 import requests
 
+from tessellate.core import egress
 from tessellate.core.subproc import NO_WINDOW
 
 logger = logging.getLogger("tessellate.captions")
@@ -51,7 +52,6 @@ MAX_RESTARTS = 3
 ENGINE_ID = "captions"
 MODEL_ID = "captionmodel"
 
-STARTING_HINT = "Starting captions…"
 STOPPED_HINT = "The captions helper stopped. Reinstall Live captions in Settings, Packages."
 NOT_STARTED_HINT = "The captions helper didn't start. Reinstall Live captions in Settings, Packages."
 
@@ -96,22 +96,24 @@ def _alive() -> bool:
 
 
 def url() -> str:
-    """The running helper's address, or "". Never starts anything."""
-    with _lock:
-        return f"http://127.0.0.1:{_port}" if _alive() and _port else ""
-
-
-def _recent_crashes() -> list[float]:
-    now = clock()
-    _crashes[:] = [t for t in _crashes if now - t < RESTART_WINDOW]
-    return _crashes
+    """The running helper's address, or "". Never starts anything, and never
+    waits for `_lock`: a start holds it for seconds, and the status poll that
+    asks this must still answer while the dock says "Starting captions"."""
+    proc, port = _proc, _port
+    return f"http://127.0.0.1:{port}" if proc is not None and proc.poll() is None and port else ""
 
 
 def gave_up() -> bool:
     """Too many crashes in the window: stop trying until it passes or the
-    person reinstalls."""
-    with _lock:
-        return len(_recent_crashes()) > MAX_RESTARTS
+    person reinstalls. Lock-free for the same reason as `url`."""
+    now = clock()
+    return sum(1 for t in list(_crashes) if now - t < RESTART_WINDOW) > MAX_RESTARTS
+
+
+def _note_crash() -> None:
+    """Record a crash, forgetting the ones that aged out of the window."""
+    now = clock()
+    _crashes[:] = [t for t in _crashes if now - t < RESTART_WINDOW] + [now]
 
 
 def _command(model: Path) -> list[str]:
@@ -178,6 +180,7 @@ def _read_port(proc: subprocess.Popen, deadline: float) -> int:
     return port if 0 < port < 65536 else 0
 
 
+@egress.labelled("Waiting for the live captions helper on this computer to start")
 def _healthy(port: int) -> bool:
     session = requests.Session()
     session.trust_env = False  # never through a proxy: this is loopback
@@ -261,7 +264,7 @@ def ensure_started() -> str:
         if model is None or not installed():
             raise HelperError("Install Live captions in Settings, Packages.")
         if _proc is not None:  # it was running and is not now: a crash
-            _crashes.append(clock())
+            _note_crash()
             _kill()
             if gave_up():
                 raise HelperError(STOPPED_HINT)
@@ -270,7 +273,7 @@ def ensure_started() -> str:
             try:
                 _spawn(model)
             except HelperError:
-                _crashes.append(clock())
+                _note_crash()
                 raise
         finally:
             starting = False

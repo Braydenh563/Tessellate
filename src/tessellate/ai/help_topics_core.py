@@ -804,7 +804,7 @@ HELP_TOPICS: list[dict] = [
             "input, noise suppression, echo cancellation and automatic gain, "
             "with a three-second test; Enhance on save there cuts rumble and "
             "evens the loudness, keeping the original until the transcript is "
-            "saved. With the captions helper the words appear as you speak. "
+            "saved. With Live captions installed the words appear as you speak. "
             "With the Voice notes add-on it transcribes in the background (a "
             "notification says when it is done; Stop ends it) and the "
             "transcript is offered to save; saved, the recorder shows its "

@@ -47,8 +47,12 @@ INVENTORY = {
         "GET /models/bench/budgets?live=true, the interaction budgets timed on the person's notebook",
     ),
     "ai/captions.py": (
-        "the whisper.cpp captions helper at TESSELLATE_CAPTIONS_URL, refused unless it is this computer (loopback)",
+        "the captions helper (the app's own child process, or TESSELLATE_CAPTIONS_URL), refused unless it is this computer (loopback)",
         "Live captions started from the palette, and a status probe while the captions dock is open",
+    ),
+    "ai/captions_process.py": (
+        "this computer only: the app's own captions helper child process on 127.0.0.1 (a health probe, no proxy)",
+        "the first Live captions start once the Live captions engine and model are installed",
     ),
     "ai/provider_http.py": (
         "the person's model server: Ollama at localhost:11434 or an OpenAI-compatible one at localhost:1234 unless they typed another address",

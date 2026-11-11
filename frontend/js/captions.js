@@ -216,6 +216,9 @@
         return false;
       }
     }
+    //: The installed helper starts on this first use and the start answers when
+    //: it does (a second or two; up to 15 s on a slow disk), so say so.
+    if (info.starts_on_first_use && !opts.quiet) toast("Starting captions…", "info");
     let started;
     try {
       //: The audio is kept only when asked for (Settings, General, Microphone) and only for a run of

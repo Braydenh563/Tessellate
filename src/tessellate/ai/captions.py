@@ -339,7 +339,7 @@ class Session:
 
 def infer(pcm: bytes, audio_ctx: int = 0) -> str:
     """One WAV window to the helper's `/inference`; its text, cleaned."""
-    url = helper_url()
+    url = helper_url() or _own_helper()
     if not url:
         raise CaptionsError(NO_HELPER_HINT)
     if not _is_local(url):
@@ -349,7 +349,7 @@ def infer(pcm: bytes, audio_ctx: int = 0) -> str:
     except requests.ConnectionError as exc:
         if _env_url():
             raise CaptionsError("The captions helper didn't answer.") from exc
-        # Our own helper died under this window: the next window restarts it
+        # Our own helper died under this window: the next one restarts it
         # (a bounded number of times, captions_process.MAX_RESTARTS).
         try:
             return _post(captions_process.ensure_started(), pcm, audio_ctx)
@@ -357,6 +357,17 @@ def infer(pcm: bytes, audio_ctx: int = 0) -> str:
             raise CaptionsError("The captions helper didn't answer.") from again
     except (requests.RequestException, ValueError) as exc:
         raise CaptionsError("The captions helper didn't answer.") from exc
+
+
+def _own_helper() -> str:
+    """The app's own helper, started if it has died since `begin()`; "" when
+    the variable names one (that one is never ours to start)."""
+    if _env_url():
+        return ""
+    try:
+        return captions_process.ensure_started()
+    except captions_process.HelperError as exc:
+        raise CaptionsError(str(exc)) from exc
 
 
 def _post(url: str, pcm: bytes, audio_ctx: int) -> str:
@@ -403,11 +414,7 @@ def begin(keep_audio: bool = False) -> Session:
     info = status()
     if not info["available"]:
         raise CaptionsError(info["hint"] or NO_HELPER_HINT)
-    if not _env_url() and not captions_process.url():
-        try:
-            captions_process.ensure_started()  # the first use starts it
-        except captions_process.HelperError as exc:
-            raise CaptionsError(str(exc)) from exc
+    _own_helper()  # the first use starts the app's own helper
     session = Session(keep_audio=keep_audio)
     if keep_audio:
         from tessellate.core import recordings
@@ -426,6 +433,12 @@ def begin(keep_audio: bool = False) -> Session:
         lease=IDLE_SECONDS,
     )
     return session
+
+
+def running() -> bool:
+    """Is a caption run in progress (the Packages rows wait for it to stop)."""
+    with _registry_lock:
+        return bool(_sessions)
 
 
 def get(session_id: str) -> Session | None:
