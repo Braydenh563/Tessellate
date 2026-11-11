@@ -82,8 +82,6 @@
  "src/tessellate/api/routes_entries.py::_board_reference_rows_batch": 19,
  "src/tessellate/api/routes_entries.py::list_entries": 26,
  "src/tessellate/api/routes_files.py::caption_media": 23,
- "src/tessellate/api/routes_files_readings.py::vision_ocr_media": 18,
- "src/tessellate/api/routes_graph.py::_add_map_edges": 18,
  "src/tessellate/api/routes_graph.py::_hop_reasons": 19,
  "src/tessellate/api/routes_graph.py::graph_local": 23,
  "src/tessellate/api/routes_graph.py::graph_path": 26,
