@@ -61,6 +61,38 @@ def _keep(comment: str) -> bool:
     )
 
 
+def _drop_span(text: str, start: int, end: int, cursor: int, joiner: str, out: list[str]) -> int:
+    """Emit the text before one comment span and what replaces it; the new cursor."""
+    n = len(text)
+    line_start = max(text.rfind("\n", 0, start), text.rfind("\r", 0, start)) + 1
+    line_end = end
+    while line_end < n and text[line_end] in " \t":
+        line_end += 1
+    alone_before = line_start >= cursor and not text[line_start:start].strip(" \t")
+    alone_after = line_end >= n or text[line_end] in "\r\n"
+    body = text[start:end]
+    if alone_before and alone_after:
+        out.append(text[cursor:line_start])
+        out.append("\n" * body.count("\n"))
+        return line_end  # the line's own newline stays, as text
+    before = text[cursor:start]
+    if alone_after:
+        # A trailing comment: drop it and the spaces before it.
+        out.append(before.rstrip(" \t"))
+        out.append("\n" * body.count("\n"))
+        return end
+    out.append(before)
+    if joiner and "\n" in body:
+        out.append("\n" * body.count("\n"))
+    elif not (before[-1:].isspace() or text[end : end + 1].isspace()):
+        out.append(joiner)
+    elif before[-1:] in (" ", "\t"):
+        # `a /* c */ + b` reads `a + b`, not `a  + b`.
+        while end < n and text[end] in " \t":
+            end += 1
+    return end
+
+
 def _rebuild(text: str, spans: list[tuple[int, int]], joiner: str = " ") -> str:
     """The text with each comment span removed, **every line number kept**.
 
@@ -74,39 +106,10 @@ def _rebuild(text: str, spans: list[tuple[int, int]], joiner: str = " ") -> str:
     with it."""
     out: list[str] = []
     cursor = 0
-    n = len(text)
     for start, end in spans:
         if start < cursor:
             continue
-        line_start = max(text.rfind("\n", 0, start), text.rfind("\r", 0, start)) + 1
-        line_end = end
-        while line_end < n and text[line_end] in " \t":
-            line_end += 1
-        alone_before = line_start >= cursor and not text[line_start:start].strip(" \t")
-        alone_after = line_end >= n or text[line_end] in "\r\n"
-        body = text[start:end]
-        if alone_before and alone_after:
-            out.append(text[cursor:line_start])
-            out.append("\n" * body.count("\n"))
-            cursor = line_end  # the line's own newline stays, as text
-            continue
-        before = text[cursor:start]
-        if alone_after:
-            # A trailing comment: drop it and the spaces before it.
-            out.append(before.rstrip(" \t"))
-            out.append("\n" * body.count("\n"))
-            cursor = end
-            continue
-        out.append(before)
-        if joiner and "\n" in body:
-            out.append("\n" * body.count("\n"))
-        elif not (before[-1:].isspace() or text[end : end + 1].isspace()):
-            out.append(joiner)
-        elif before[-1:] in (" ", "\t"):
-            # `a /* c */ + b` reads `a + b`, not `a  + b`.
-            while end < n and text[end] in " \t":
-                end += 1
-        cursor = end
+        cursor = _drop_span(text, start, end, cursor, joiner, out)
     out.append(text[cursor:])
     return "".join(out)
 

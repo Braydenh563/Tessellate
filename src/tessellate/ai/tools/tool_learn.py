@@ -10,7 +10,6 @@ from __future__ import annotations
 from sqlalchemy.orm import Session
 from tessellate.ai.tools._common import ToolError
 from tessellate.core import deps, private_turn
-from tessellate.entry import manager
 from tessellate.ai import memory
 from sqlalchemy import select
 
@@ -157,8 +156,7 @@ def _find_contradictions(session: Session, args: dict) -> dict:
     `override_ai(...)` fake reaches this tool the same way.
     """
     from tessellate.ai import tensions
-    from tessellate.ai.embeddings import bytes_to_vector, similar_pairs
-    from tessellate.core.database import EmbeddingRecord, EntryLink
+    from tessellate.ai.embeddings import similar_pairs
 
     ollama = deps.get_ollama()
     if not ollama.is_running():
@@ -171,19 +169,7 @@ def _find_contradictions(session: Session, args: dict) -> dict:
         }
 
     limit = max(1, min(int(args.get("limit", 5)), 10))
-    entries = manager.list_entries(session)
-    by_id = {e.id: e for e in entries if not e.is_private and not e.is_board}
-    records = session.execute(
-        select(EmbeddingRecord.entry_id, EmbeddingRecord.embedding).where(
-            EmbeddingRecord.model_version == embeddings.backend_id()
-        )
-    ).all()
-    vectors = {eid: bytes_to_vector(blob) for eid, blob in records if eid in by_id}
-
-    already = {
-        frozenset((link.source_entry_id, link.target_entry_id))
-        for link in session.scalars(select(EntryLink).where(EntryLink.link_type == "contradicts"))
-    }
+    by_id, vectors, already = tensions.comparable_notes(session, embeddings)
 
     models = deps.get_model_manager()
     found: list[dict] = []
@@ -200,16 +186,7 @@ def _find_contradictions(session: Session, args: dict) -> dict:
         tension = tensions.compare_pair(ordered[0], ordered[1], models, ollama)
         if tension is None:
             continue
-        found.append(
-            {
-                "earlier_note_id": tension.earlier_id,
-                "later_note_id": tension.later_id,
-                "what_they_disagree_about": tension.explanation,
-                "earlier": tension.earlier_excerpt,
-                "later": tension.later_excerpt,
-                "written_apart_days": tension.gap_days,
-            }
-        )
+        found.append(tensions.agent_row(tension))
     if not found:
         return {
             "tensions": [],

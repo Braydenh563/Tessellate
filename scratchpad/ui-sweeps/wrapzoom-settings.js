@@ -54,7 +54,10 @@ function detect(rootSel) {
     if (!e || e === document.documentElement) return false;
     if (goneMemo.has(e)) return goneMemo.get(e);
     const s = cs(e);
-    const g = s.display === 'none' || +s.opacity < 0.05 || (e.tagName === 'DIALOG' && !e.open) || gone(e.parentElement);
+    // A shut <details> keeps laying out its content (it still has rects) but
+    // paints none of it: everything but its summary is gone.
+    const shut = e.parentElement && e.parentElement.tagName === 'DETAILS' && !e.parentElement.open && e.tagName !== 'SUMMARY';
+    const g = shut || s.display === 'none' || +s.opacity < 0.05 || (e.tagName === 'DIALOG' && !e.open) || gone(e.parentElement);
     goneMemo.set(e, g); return g;
   };
   // The ancestors that can clip `el`, honouring absolute/fixed escape.
@@ -330,7 +333,7 @@ function underBars(rootSel) {
   const out = [];
   const cs = (e) => getComputedStyle(e);
   const sig = (el) => { const parts = []; for (let e = el, n = 0; e && e !== document.body && n < 4; e = e.parentElement, n++) { let s = e.tagName.toLowerCase(); if (e.id) { parts.unshift(s + '#' + e.id); break; } const c = typeof e.className === 'string' ? e.className.trim().split(/\s+/).slice(0, 2).join('.') : ''; parts.unshift(s + (c ? '.' + c : '')); } return parts.join(' > '); };
-  const visible = (e) => { const r = e.getBoundingClientRect(); if (r.width < 2 || r.height < 2) return false; for (let a = e; a && a !== document.documentElement; a = a.parentElement) { const s = cs(a); if (s.display === 'none' || s.visibility === 'hidden' || +s.opacity < 0.05) return false; } return true; };
+  const visible = (e) => { const r = e.getBoundingClientRect(); if (r.width < 2 || r.height < 2) return false; for (let a = e; a && a !== document.documentElement; a = a.parentElement) { const s = cs(a); if (s.display === 'none' || s.visibility === 'hidden' || +s.opacity < 0.05) return false; if (a.parentElement && a.parentElement.tagName === 'DETAILS' && !a.parentElement.open && a.tagName !== 'SUMMARY') return false; } return true; };
   const BAR = /(^|[\s_-])(bar|foot|footer|head|header|dock|toolbar|editbar|actions)($|[\s_-])/i;
   const NOT = /(overlay|dialog|menu|toast|help|popup|popover|tooltip|suggest|tray|panel|modal|splash)/i;
   let bars = [...document.querySelectorAll('body *')].filter((e) => {
@@ -636,8 +639,8 @@ const DIALOGS = [
   // Not awaited: showRecoveryKey resolves only when its dialog is closed.
   ['recovery-key', `() => { showRecoveryKey('K7QX-3MPR-9WZT-HB2D-LC4N-8VYE-FJ6S-A5UG'); }`, '#recovery-key-dialog'],
   ['binned-note', `async () => { const e = await (await api('/entries', { method: 'POST', body: JSON.stringify({ content: 'A binned note about the quarterly planning review, long enough to wrap onto a second line', tags: ['planning'] }) })).json(); await api('/entries/' + e.id, { method: 'DELETE' }); await openBinnedNote(e.id); }`, '#binned-overlay'],
-  ['note-history', `async () => { const e = (await (await api('/entries?limit=1')).json()); const x = (e.entries || e)[0]; await openEntryHistory(x); }`, '#history-overlay'],
-  ['connections', `async () => { const e = (await (await api('/entries?limit=1')).json()); const x = (e.entries || e)[0]; await openConnections('entries', x.id, 'A note about planning'); }`, '#connections-overlay'],
+  ['note-history', `async () => { const e = await apiJson('/entries?limit=5'); const x = (Array.isArray(e) ? e : (e.entries || e.items || []))[0]; await ensureModule('noteHistory').catch(() => {}); if (typeof openEntryHistory !== 'function') await lazyScript('/js/note-history.js'); await openEntryHistory(x); }`, '#history-overlay'],
+  ['connections', `async () => { const e = await apiJson('/entries?limit=5'); const x = (Array.isArray(e) ? e : (e.entries || e.items || []))[0]; await lazyScript('/js/connections.js'); await openConnections('entries', x.id, 'A note about planning'); }`, '#connections-overlay'],
 ];
 async function shellDialogs(page, push) {
   const ONLY = (process.env.ONLY || '').split(',').filter(Boolean);

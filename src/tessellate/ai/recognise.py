@@ -3179,6 +3179,24 @@ def _reads_month_first(locale: str | None) -> bool:
     return (locale or _CALL_LOCALE.get() or _HEMISPHERE["reported"] or "").lower() in _MONTH_FIRST
 
 
+def _numeric_readings(a: int, b: int, year: int | None, month_first: bool, today: date, tense: str | None) -> list:
+    """The dates "a/b" can be, the locale's order first; a pair that is no date drops out."""
+    readings: list = []
+    day_first, other = (b, a, "day first"), (a, b, "month first")
+    orders = (other, day_first) if month_first else (day_first, other)
+    for month, day_n, said in orders:
+        try:
+            if year:
+                day = date(year, month, day_n)
+            else:
+                day = _nearest([date(today.year + k, month, day_n) for k in (-1, 0, 1)], today, tense or "future")
+        except ValueError:
+            continue
+        if all(day != r[0] for r in readings):
+            readings.append((day, said))
+    return readings
+
+
 def _numeric_dates(low: str, today: date, locale: str | None, tense: str | None) -> list[tuple[int, int, list]]:
     """"2/11", "25/12/2026", "3.11.2026": (start, end, [(day, read_as), ...])
     with the locale's reading first and the other second when both are
@@ -3191,19 +3209,7 @@ def _numeric_dates(low: str, today: date, locale: str | None, tense: str | None)
         if not year_s and after and re.match(_unit_names(), after) and after.split(" ")[0].strip(".,") in UNITS:
             continue
         year = None if not year_s else int(year_s) + (2000 if len(year_s) == 2 else 0)
-        readings = []
-        day_first, other = (int(b), int(a), "day first"), (int(a), int(b), "month first")
-        orders = (other, day_first) if month_first else (day_first, other)
-        for month, day_n, said in orders:
-            try:
-                if year:
-                    day = date(year, month, day_n)
-                else:
-                    day = _nearest([date(today.year + k, month, day_n) for k in (-1, 0, 1)], today, tense or "future")
-            except ValueError:
-                continue
-            if all(day != r[0] for r in readings):
-                readings.append((day, said))
+        readings = _numeric_readings(int(a), int(b), year, month_first, today, tense)
         if readings:
             out.append((found.start(), found.end(), readings))
     return out
@@ -3873,6 +3879,23 @@ def recognise(
         return _recognise(text, now=now, locale=locale, tense=tense, known=known, bare_hours=bare_hours)
 
 
+def _settle_overlaps(cands: list[tuple]) -> tuple[list[tuple], list[tuple]]:
+    """Candidates longest first: those that clash with none taken are kept (a rank-0 reading), and a ranked reading of a taken phrase's exact span is an alternative."""
+    taken: list[tuple] = []
+    alts: list[tuple] = []
+    for cand in cands:
+        start, end = cand[0], cand[1]
+        clash = [t for t in taken if start < t[1] and t[0] < end]
+        if not clash:
+            if cand[5] == 0:
+                taken.append(cand)
+            continue
+        same = clash[0]
+        if len(clash) == 1 and (same[0], same[1]) == (start, end) and cand[5] > 0 and (cand[2], cand[3]) != (same[2], same[3]):
+            alts.append(cand)
+    return taken, alts
+
+
 def _recognise(
     text: str, *, now: datetime, locale: str | None = None, tense: str | None = None, known: dict | None = None,
     bare_hours: bool = False,
@@ -3902,18 +3925,7 @@ def _recognise(
         for found in re.finditer(r"(?<!\w)" + re.escape(str(phrase).lower()) + r"(?!\w)", low):
             cands.append((found.start(), found.end(), "date", day, "", 0))
     cands.sort(key=lambda c: (-(c[1] - c[0]), c[5], _PRIORITY_OF[c[2]], c[0]))
-    taken: list[tuple] = []
-    alts: list[tuple] = []
-    for cand in cands:
-        start, end = cand[0], cand[1]
-        clash = [t for t in taken if start < t[1] and t[0] < end]
-        if not clash:
-            if cand[5] == 0:
-                taken.append(cand)
-            continue
-        same = clash[0]
-        if len(clash) == 1 and (same[0], same[1]) == (start, end) and cand[5] > 0 and (cand[2], cand[3]) != (same[2], same[3]):
-            alts.append(cand)
+    taken, alts = _settle_overlaps(cands)
     spans = [
         Span(c[2], raw[c[0]:c[1]], c[0], c[1], c[3], _read_as(c[2], c[3], c[4]), c[5]) for c in taken + alts
     ]

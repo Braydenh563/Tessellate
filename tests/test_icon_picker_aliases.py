@@ -13,8 +13,9 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests import _js_scope
 
-JS = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "icon-picker.js").read_text(encoding="utf-8")
+JS = _js_scope.unwrapped((Path(__file__).resolve().parents[1] / "frontend" / "js" / "icon-picker.js").read_text(encoding="utf-8"))
 
 pytestmark = pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
 

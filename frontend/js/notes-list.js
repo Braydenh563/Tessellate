@@ -2298,15 +2298,14 @@ function resetNoteList(list) {
 //: The filter words outlive a reload in this tab (audit 1031 N44), read here at load
 //: because the first render runs before the later wiring files and would forget them.
 try {
-  noteEngine.remembered = sessionStorage.getItem("note-filter") || "";
-  if (noteEngine.remembered) {
-    $("note-search").value = noteEngine.remembered;
-    noteSearch = noteEngine.remembered;
-    $("save-search").classList.remove("hidden");
-  }
+  noteSearch = noteEngine.remembered = sessionStorage.getItem("note-filter") || "";
 } catch {
   /* storage blocked: an empty box, as before */
 }
+onSurface("notes", () => {
+  $("note-search").value = noteSearch;
+  $("save-search").classList.toggle("hidden", !noteSearch);
+});
 function rememberNoteFilter(words) {
   if (words === noteEngine.remembered) return;
   noteEngine.remembered = words;

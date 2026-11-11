@@ -146,7 +146,7 @@ def test_one_landing_measures_the_obstacles_once() -> None:
 def test_the_popup_check_waits_until_it_is_down() -> None:
     dodge = _fn(AV, "nameMarkBuddyDodge")
     wait = dodge.index('if (nmb.flight || buddy.classList.contains("nm-buddy-dragging")) {')
-    assert wait < dodge.index("getBoundingClientRect") and "setTimeout(nameMarkBuddyDodge, 400)" in dodge[wait:]
+    assert wait < dodge.index("nameMarkBuddyDodge.box(") and "setTimeout(nameMarkBuddyDodge, 400)" in dodge[wait:]
 
 
 def test_the_landing_is_worked_out_after_the_first_frame_or_before_it_when_the_flight_is_one_frame() -> None:

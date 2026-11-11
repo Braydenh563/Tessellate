@@ -1848,7 +1848,7 @@ const LAZY_ENTRY_POINTS = {
   helpChat: ["openHelpChat", "toggleHelpChat", "askAtlas", "renderAtlasStarters"],
   batchSpace: ["batchMoveToSpace", "rmSpace", "moveNotesToSpace"],
   notifications: ["openNotifications"],
-  webClip: ["runWebSearch", "renderWebSearchHistory"],
+  webClip: ["runWebSearch", "renderWebSearchHistory", "startSearxng"],
   sharedIntake: ["takeSharedIntake"],
   undoKit: ["pushEntryCreateUndo", "pushLinkCreateUndo", "pushRequestUndo", "pushEntriesPutUndo", "pushBinPairUndo", "pushRoutePairUndo", "pushTensionLinkUndo", "pushTokenUndo", "pushUploadUndo", "pushCorrectionUndo", "pushMadeUndo", "pushTextUndo", "pushWikiRenameUndo"],
   tidy: ["openTidySheet"],

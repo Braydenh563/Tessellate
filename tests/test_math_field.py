@@ -21,10 +21,11 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-FIELD = (JS / "math-field.js").read_text(encoding="utf-8")
+FIELD = _js_scope.unwrapped((JS / "math-field.js").read_text(encoding="utf-8"))
 VENDOR = ROOT / "frontend" / "vendor" / "mathlive"
 
 DRIVER = r"""

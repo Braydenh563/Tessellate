@@ -167,7 +167,11 @@ def _clean_quote(text: str) -> str:
     """A note's words for a quote: no emoji, no hashtags, no trailing marks."""
     text = re.sub(r"(?:^|\s)[:;]-?[dDpP)(]+(?=\s|$)", "", _EMOJI.sub("", text))
     #: A hashtag is filing, not something the person said (the plain lines drop it the same way).
-    text = re.sub(r"(?:\s*#[A-Za-z][\w-]*)+\s*$", "", text)
+    #: Word by word, not one trailing-run regex (CodeQL 2192: `(\s*#tag)+\s*$` is polynomial on tabs).
+    words = text.split()
+    while words and re.fullmatch(r"#[A-Za-z][\w-]*", words[-1]):
+        words.pop()
+    text = " ".join(words)
     text = re.sub(r"(?<![\w&/])#([A-Za-z][\w-]*)", r"\1", text)
     return re.sub(r"\s+", " ", text).strip().rstrip("!.?:").strip()
 

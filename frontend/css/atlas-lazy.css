@@ -85,6 +85,10 @@
 #nm-buddy:is(.nmb-act-map, .nmb-act-read) .nm-atlas .atl-pupil { --atl-px: 0px; --atl-py: 1.8px; }
 #nm-buddy.nmb-act-juggle .nm-atlas { --atl-brow-y: -1px; }
 #nm-buddy.nmb-act-juggle .nm-atlas .atl-pupil { --atl-px: 0px; --atl-py: -1.6px; }
+/* His up-look stops short of the lid (INBOX 1607 a, "the eyes look creepy
+   especially when juggling"): at -1.6 the ink's top (cy - 4.5) met the
+   white's top (cy - 4.25), a roll to the whites; -0.7 leaves 0.65 clear. */
+#nm-buddy.nmb-act-juggle .nm-atlas[data-atlas-look="masculine"] .atl-pupil { --atl-py: -0.7px; }
 #nm-buddy:is(.nmb-act-bell, .nmb-act-lantern) .nm-atlas { --atl-tilt: 4deg; }
 #nm-buddy:is(.nmb-act-bell, .nmb-act-lantern) .nm-atlas .atl-pupil { --atl-px: 1.6px; --atl-py: 0.6px; }
 /* Its seats (atlas.js, `atlasCoilProp.seats`, INBOX 1589): behind the body,

@@ -38,27 +38,8 @@ from tessellate.ai.model_manager import ModelManager
 from tessellate.ai.ollama_client import OllamaClient
 
 
-def build_agent_messages(
-    question: str,
-    notes: list[dict],
-    style: str = "friendly",
-    profile: str = "",
-    history: list[dict] | None = None,
-    persona_prompt: str | None = None,
-    budget: "context.ContextBudget | None" = None,
-    mode: str | None = None,
-    images: list[str] | None = None,
-) -> list[dict]:
-    """Like librarian.build_messages, but the system prompt allows
-    acting, and each note shows its id so tools can target it.
-
-    `budget` trims the notes and the history to what the model can actually
-    hold. Optional so every existing caller keeps working untrimmed, the
-    agent loop passes one, having measured the window first.
-    """
-    style_hint = librarian.STYLE_HINTS.get(style, librarian.STYLE_HINTS["friendly"])
-    profile_hint = f" About the user: {profile.strip()}" if profile.strip() else ""
-    persona = (persona_prompt or librarian.DEFAULT_PERSONA).strip()
+def _clock_hint() -> str:
+    """The sentence that gives the model the weekday, the week ahead and the minute-precise clock."""
     # The model needs "now" to turn "in 10 minutes" into a real time.
     # The user's wall clock. This line is what "remind me in 10 minutes"
     # is computed from, so resolving it against the server's zone instead
@@ -114,6 +95,31 @@ def build_agent_messages(
         f" The current date and time is {local.replace(second=0, microsecond=0).isoformat()}"
         f" ({local.tzname() or 'local time'})."
     )
+    return now_hint
+
+
+def build_agent_messages(
+    question: str,
+    notes: list[dict],
+    style: str = "friendly",
+    profile: str = "",
+    history: list[dict] | None = None,
+    persona_prompt: str | None = None,
+    budget: "context.ContextBudget | None" = None,
+    mode: str | None = None,
+    images: list[str] | None = None,
+) -> list[dict]:
+    """Like librarian.build_messages, but the system prompt allows
+    acting, and each note shows its id so tools can target it.
+
+    `budget` trims the notes and the history to what the model can actually
+    hold. Optional so every existing caller keeps working untrimmed, the
+    agent loop passes one, having measured the window first.
+    """
+    style_hint = librarian.STYLE_HINTS.get(style, librarian.STYLE_HINTS["friendly"])
+    profile_hint = f" About the user: {profile.strip()}" if profile.strip() else ""
+    persona = (persona_prompt or librarian.DEFAULT_PERSONA).strip()
+    now_hint = _clock_hint()
     # **The clock goes last, and that ordering is the whole point.** A
     # prefix cache (Ollama's, llama.cpp's, every backend that has one) keeps
     # the tokens *before the first difference* and re-reads everything after
@@ -802,6 +808,21 @@ def _clip_strings(value, limit: int):
     return value
 
 
+def _shortened(result: dict, lists: list[str], limit: int, keep: int | None) -> dict:
+    """`result` with long text clipped to `limit` and each list in `lists` kept to its first `keep` items, and a note saying what was cut."""
+    shorter = _clip_strings(result, limit)
+    dropped = 0
+    if keep is not None:
+        for key in lists:
+            dropped += max(0, len(shorter[key]) - keep)
+            shorter[key] = shorter[key][:keep]
+    what = f"long text clipped to {limit} characters"
+    if dropped:
+        what += f", {dropped} item{'s' if dropped != 1 else ''} left out"
+    shorter["shortened"] = SHORTENED_NOTE.format(what=what)
+    return shorter
+
+
 def _fit_result(result: dict, name: str, room: int) -> str | None:
     """The result as the model will read it, shortened to `room` characters
     if it must be, or None when no honest shortening fits (INBOX 527).
@@ -823,17 +844,7 @@ def _fit_result(result: dict, name: str, room: int) -> str | None:
         for keep in (None, 10, 5, 3, 1):
             if keep is not None and not lists:
                 break
-            shorter = _clip_strings(result, limit)
-            dropped = 0
-            if keep is not None:
-                for key in lists:
-                    dropped += max(0, len(shorter[key]) - keep)
-                    shorter[key] = shorter[key][:keep]
-            what = f"long text clipped to {limit} characters"
-            if dropped:
-                what += f", {dropped} item{'s' if dropped != 1 else ''} left out"
-            shorter["shortened"] = SHORTENED_NOTE.format(what=what)
-            payload = json.dumps(fence.fence_result(shorter, name))
+            payload = json.dumps(fence.fence_result(_shortened(result, lists, limit, keep), name))
             if len(payload) <= room:
                 return payload
     return None
@@ -939,6 +950,23 @@ def _names_an_existing_category(session: Session, question: str) -> bool:
     )
 
 
+def _forced_round_keep(question: str, session: Session | None) -> set[str]:
+    """The tool names a forced first round keeps: the writes and the finders, less what the request makes wrong."""
+    keep = _WRITE_TOOLS | _LOCATING_TOOLS
+    #: "Put 'buy stamps' in my shopping note" names a note that exists:
+    #: forced, the 3B made a new one instead (2 of 2). The edit and the
+    #: finders stay; a new note is not what was asked.
+    if tools.adds_to_a_named_note(question):
+        keep = keep - {"create_note"}
+    #: Filing under a category that exists is an edit of the note: leave
+    #: out every tool that reshapes the category tree. The 3B picked
+    #: `create_category` once, and on 2026-10-05 `rename_category {"old":
+    #: "note 2", "new": "Health"}` (scratchpad/harness_probe.py).
+    if session is not None and _names_an_existing_category(session, question):
+        keep = keep - _CATEGORY_TREE_TOOLS
+    return keep
+
+
 def _first_round_tools(
     question: str,
     plan: "_TurnPlan",
@@ -967,18 +995,7 @@ def _first_round_tools(
     if not plan.tier.narrow_toolbox or plan.permitted is not None:
         return offered
     if required:
-        keep = _WRITE_TOOLS | _LOCATING_TOOLS
-        #: "Put 'buy stamps' in my shopping note" names a note that exists:
-        #: forced, the 3B made a new one instead (2 of 2). The edit and the
-        #: finders stay; a new note is not what was asked.
-        if tools.adds_to_a_named_note(question):
-            keep = keep - {"create_note"}
-        #: Filing under a category that exists is an edit of the note: leave
-        #: out every tool that reshapes the category tree. The 3B picked
-        #: `create_category` once, and on 2026-10-05 `rename_category {"old":
-        #: "note 2", "new": "Health"}` (scratchpad/harness_probe.py).
-        if session is not None and _names_an_existing_category(session, question):
-            keep = keep - _CATEGORY_TREE_TOOLS
+        keep = _forced_round_keep(question, session)
         narrowed = [t for t in offered if t["function"]["name"] in keep]
     elif _INFORMATION_QUESTION.match(question or ""):
         narrowed = [t for t in offered if t["function"]["name"] not in _WRITE_TOOLS]

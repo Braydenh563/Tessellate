@@ -469,9 +469,10 @@ def _facts_turn(req: _StreamRequest, prepared: dict, t: _Turn) -> bool:
     your notes (`_composed`). Not a skill run, which reads its own way.
 
     Not "nothing matched" (`_no_notes_events`): the check on the model's words
-    (`fact_check.keeps`) reads figures, and that answer has none, so a model
-    saying "here is what I found" over it could not be caught. With tools (the
-    popup agent, Chat's Agent mode) the agent has that turn and can search."""
+    (`fact_check.keeps`) reads figures, and that answer has none. That turn has
+    its own check, which reads the negative (`fact_check.says_nothing_found`,
+    `chat_said._miss_events`). With tools (the popup agent, Chat's Agent
+    mode) the agent has that turn and can search."""
     if not t.ollama_running or t.composed or req.skill:
         return False
     if _asks_change(req.question or "") or (prepared["intent"] == intent.ACT and not prepared.get("tool_read")):

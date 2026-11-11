@@ -295,6 +295,18 @@ def answer(message: str, session: Session) -> StatAnswer | None:
     for ask, reader in _COUNT_RULES:
         if ask(text):
             return reader(session)
+    totalled = _total_or_window_count(text, session)
+    if totalled is not None:
+        return totalled
+    for ask, reader in _LATER_RULES:
+        if ask(text):
+            return reader(session)
+    return _whole_notebook(text, session)
+
+
+def _total_or_window_count(text: str, session: Session) -> StatAnswer | None:
+    """The notebook's note count, or the count over a window, when no subject
+    follows the count; None otherwise."""
     #: "How many notes are about Harbor" counts the notes on a subject, which
     #: retrieval finds and the composer counts ("At least four of your notes
     #: mention Harbor"); answering it "You have 77 notes" dropped the subject
@@ -308,10 +320,7 @@ def answer(message: str, session: Session) -> StatAnswer | None:
         return _recent_count(session, window)
     if _asks(text, _COUNT, r"\bnotes?\b") and not _SUBJECT_AFTER.search(text):
         return _note_count(session)
-    for ask, reader in _LATER_RULES:
-        if ask(text):
-            return reader(session)
-    return _whole_notebook(text, session)
+    return None
 
 
 def _counted(text: str, message: str, session: Session) -> StatAnswer | None:
