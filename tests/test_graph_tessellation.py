@@ -87,7 +87,7 @@ const rects = new Map(out.treemap.map((c) => [c.category, c]));
 const sums = {};
 for (const c of cells) sums[c.category] = (sums[c.category] || 0) + area(c.poly);
 const gaps = out.treemap.map((c) => {
-  const box = (c.x1 - c.x0 - 4) * (c.y1 - c.y0 - c.head - 2);
+  const box = (c.x1 - c.x0 - 10) * (c.y1 - c.y0 - c.head - 5);
   return Math.abs(sums[c.category] - box) / box;
 });
 const inside = cells.every((c) => {
@@ -218,6 +218,7 @@ console.log(JSON.stringify({
   shrunkSize: fitHeaderLabel(measure, "Literature", 4, 62, 15).size,
   ellipsis: f("Thoughts and ideas worth keeping", 2, 90, 30),
   narrowWord: f("Literature", 4, 30, 30),
+  amp: f("Academics & Tech Notes", 4, 76, 15),
 }));
 """
     )
@@ -230,6 +231,7 @@ console.log(JSON.stringify({
     assert r["wraps"] == ["Communication &", "Connection"]
     assert r["shrunkSize"] < 12  # one step down before an ellipsis
     assert r["ellipsis"][-1].endswith("…") and r["ellipsis"][0].startswith("Thoughts")
+    assert r["amp"] is None or not r["amp"][-1].endswith("&\u2026")  # never ends on a bare ampersand
     assert r["narrowWord"] is None  # a word wider than the room: left out, never split
 
 
@@ -341,4 +343,33 @@ def test_the_guide_has_a_graph_categories_topic():
 
     body = next(t["body"] for t in HELP_TOPICS if t["id"] == "graph-categories")
     assert len(body) < 1900 and "Shift" in body and "Esc" in body
+
+
+@needs_node
+def test_cells_are_pulled_in_to_tiles_and_regions_keep_a_gap():
+    """INBOX 1744 (mock A): `inset` pulls a convex cell in by d on every side;
+    the cells keep `TESS_PAD` off their rectangle, so regions are apart."""
+    r = _run(
+        """
+const sq = [[0, 0], [10, 0], [10, 10], [0, 10]];
+const cw = [[0, 0], [0, 10], [10, 10], [10, 0]];
+const small = window.gcTess.inset([[0, 0], [2, 0], [2, 2], [0, 2]], 1.5);
+const L = layoutTessellation(build(5).nodes, 1400, 800, build(5).info, "cells");
+const cats = new Map();
+for (const c of L.tess.cells) {
+  if (!cats.has(c.category)) cats.set(c.category, [1e9, 1e9, -1e9, -1e9]);
+  const b = cats.get(c.category);
+  for (const [x, y] of c.poly) { b[0] = Math.min(b[0], x); b[1] = Math.min(b[1], y); b[2] = Math.max(b[2], x); b[3] = Math.max(b[3], y); }
+}
+let slack = 1e9;
+for (const q of L.treemap) { const b = cats.get(q.category); slack = Math.min(slack, b[0] - q.x0, q.x1 - b[2], q.y1 - b[3]); }
+console.log(JSON.stringify({
+  area: d3.polygonArea(window.gcTess.inset(sq, 1)), areaCw: d3.polygonArea(window.gcTess.inset(cw, 1)),
+  gone: small.length, slack,
+}));
+"""
+    )
+    assert abs(abs(r["area"]) - 64) < 1e-6 and abs(abs(r["areaCw"]) - 64) < 1e-6  # 10x10 pulled in 1 each side
+    assert r["gone"] == 0  # a cell thinner than the gap vanishes rather than inverts
+    assert r["slack"] >= 5 - 1e-6  # every region's cells keep clear of its rectangle
 

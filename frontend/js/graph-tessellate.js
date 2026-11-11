@@ -16,6 +16,49 @@
   //: What the layouts read of the notebook's links: each note's link count and
   //: its neighbours. Built from the edges the map draws, so a hidden kind or a
   //: pruned similarity line weighs nothing here either.
+  //: **A visible gap between categories** (INBOX 1744, the owner's liked mock A):
+  //: the frame is drawn 2px inside its rectangle (`gcDrawTreemap`), and the
+  //: cells keep 5px clear of the rectangle, so two regions are 4px of frame
+  //: apart and each holds its cells 3px off its own frame.
+  const TESS_PAD = 5;
+  //: Half the space between two cells, and the radius their corners are softened to.
+  const TESS_HALF_GAP = 1.5;
+  const TESS_RADIUS = 3;
+
+  //: A convex polygon pulled in by `d` on every side (each edge moved inward,
+  //: then the polygon clipped to it), so neighbouring cells read as tiles with
+  //: a gap between them. Empty when `d` swallows the polygon.
+  function tessInset(poly, d) {
+    const area = d3.polygonArea(poly);
+    if (!area || poly.length < 3) return poly;
+    const sign = area > 0 ? -1 : 1;
+    let out = poly.map((p) => [p[0], p[1]]);
+    for (let i = 0; i < poly.length && out.length; i++) {
+      const [ax, ay] = poly[i];
+      const [bx, by] = poly[(i + 1) % poly.length];
+      const len = Math.hypot(bx - ax, by - ay);
+      if (!len) continue;
+      //: Inward normal (the winding decides which side that is).
+      const nx = (-(by - ay) / len) * sign;
+      const ny = ((bx - ax) / len) * sign;
+      const inside = (p) => (p[0] - ax) * nx + (p[1] - ay) * ny - d;
+      const next = [];
+      for (let j = 0; j < out.length; j++) {
+        const p = out[j];
+        const q = out[(j + 1) % out.length];
+        const dp = inside(p);
+        const dq = inside(q);
+        if (dp >= 0) next.push(p);
+        if ((dp >= 0) !== (dq >= 0)) {
+          const f = dp / (dp - dq);
+          next.push([p[0] + (q[0] - p[0]) * f, p[1] + (q[1] - p[1]) * f]);
+        }
+      }
+      out = next;
+    }
+    return out.length >= 3 ? out : [];
+  }
+
   function gcTessInfo(edges) {
     const degree = new Map();
     const near = new Map();
@@ -78,10 +121,10 @@
     const boxes = done.treemap.map((rect) => ({
       rect,
       notes: tessOrder(members.get(rect.category) || [], info),
-      x0: rect.x0 + 2,
+      x0: rect.x0 + TESS_PAD,
       y0: rect.y0 + rect.head,
-      x1: rect.x1 - 2,
-      y1: rect.y1 - 2,
+      x1: rect.x1 - TESS_PAD,
+      y1: rect.y1 - TESS_PAD,
     }));
     const seat = (note, poly, w, h) => {
       const [x, y] = d3.polygonCentroid(poly);
@@ -206,6 +249,8 @@
     const rows = Math.min(2, Math.floor(maxH / (size + 3)));
     if (rows < 1) return null;
     for (let n = words.length - 1; n >= 1; n--) {
+      //: Never stranded on an ampersand or a dash: "Academics &…" says nothing.
+      if (/^[^\p{L}\p{N}]+$/u.test(words[n - 1])) continue;
       const lines = tessWrap(measure, [...words.slice(0, n - 1), `${words[n - 1]}\u2026`], size, maxW);
       if (lines && lines.length <= rows) return { size, lines };
     }
@@ -237,11 +282,27 @@
     if (!tess) return;
     ctx.save();
     ctx.lineJoin = "round";
+    //: The tile: the cell pulled in by half the gap, its corners rounded with
+    //: arcs (one path, so a translucent fill never doubles where a stroke
+    //: would overlap it).
     const cellPath = (cell) => {
       if (!cell._path) {
-        cell._path = new Path2D();
-        cell.poly.forEach(([x, y], i) => (i ? cell._path.lineTo(x, y) : cell._path.moveTo(x, y)));
-        cell._path.closePath();
+        const path = new Path2D();
+        const tile = tessInset(cell.poly, TESS_HALF_GAP);
+        const n = tile.length;
+        if (n) {
+          const mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+          const start = mid(tile[0], tile[1 % n]);
+          path.moveTo(start[0], start[1]);
+          for (let i = 1; i <= n; i++) {
+            const corner = tile[i % n];
+            const to = mid(corner, tile[(i + 1) % n]);
+            const reach = Math.min(Math.hypot(corner[0] - start[0], corner[1] - start[1]), Math.hypot(to[0] - corner[0], to[1] - corner[1]));
+            path.arcTo(corner[0], corner[1], to[0], to[1], Math.min(TESS_RADIUS, reach));
+          }
+          path.closePath();
+        }
+        cell._path = path;
       }
       return cell._path;
     };
@@ -255,7 +316,7 @@
       ctx.globalAlpha = lit.has(cell.id) ? 0.38 : 0.14;
       ctx.fillStyle = (node && node.colour) || s.colourOf({ isGroup: true, category: cell.category });
       ctx.fill(path);
-      ctx.globalAlpha = 0.22;
+      ctx.globalAlpha = 0.16;
       ctx.stroke(path);
     }
     ctx.lineWidth = 2.2 / k;
@@ -305,6 +366,7 @@
       info: gcTessInfo,
       layout: layoutTessellation,
       fit: fitHeaderLabel,
+      inset: tessInset,
       paint: gcDrawTessellation,
       nodeAt: gcTessNodeAt,
       titleAt: gcCategoryTitleAt,

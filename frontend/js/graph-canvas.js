@@ -1335,9 +1335,9 @@ function gcTreeFrameNodes(tree, nodes) {
 function gcDrawTreemap(ctx, s, k) {
   const rects = s.tree && s.tree.treemap;
   if (!rects || !rects.length) return;
-  //: The Tessellation view draws its cells itself; its category frames are
-  //: the heavier border between regions.
-  const heavy = Boolean(s.tree.tess);
+  //: The Tessellation view draws its cells itself, and now leaves a gap
+  //: between regions (`TESS_PAD`), so its frames are the Map's: one header
+  //: grammar, one border, one wash (INBOX 1744).
   ctx.save();
   ctx.lineJoin = "round";
   ctx.textAlign = "left";
@@ -1351,12 +1351,12 @@ function gcDrawTreemap(ctx, s, k) {
     const h = rect.y1 - rect.y0 - 2 * inset;
     if (w <= 0 || h <= 0) continue;
     const colour = s.colourOf({ isGroup: true, category: rect.category });
-    ctx.globalAlpha = heavy ? 0.04 : 0.07;
+    ctx.globalAlpha = 0.07;
     ctx.fillStyle = colour;
     ctx.fillRect(x, y, w, h);
-    ctx.globalAlpha = heavy ? 0.9 : 0.5;
+    ctx.globalAlpha = 0.5;
     ctx.strokeStyle = colour;
-    ctx.lineWidth = (heavy ? 3 : 1.5) / k;
+    ctx.lineWidth = 1.5 / k;
     ctx.strokeRect(x, y, w, h);
     //: A header that is a target (INBOX 1744): the pointer's or the keyboard's
     //: category gets its band lit and a full-strength rim.
@@ -3663,7 +3663,10 @@ function gcDraw(s = gcTab) {
       right: (s.dims.w - t.x) / k - inset,
       bottom: (s.dims.h - t.y) / k - inset,
     };
-    const blocked = [...(s.topicPlates || []), ...gcOverlayBoxes(s, t)];
+    //: The card is placed first so the names are seated around where it is
+    //: (INBOX 1744: dot names ran under the hover card).
+    gcHoverCardFrame(s);
+    const blocked = [...(s.topicPlates || []), ...gcOverlayBoxes(s, t), ...gcHoverCardBoxes(s, t)];
     const placed = gcPlaceLabels(items, discs, lines ? (box, limit) => gcBoxLineCount(lines, box, limit) : null, blocked, frame);
     placedLabels = placed;
     book.labelBoxes = placed;
@@ -5404,6 +5407,13 @@ function gcHoverCardFill(card, node, s) {
 //: else the keyboard's, and where it stands, beside the dot and inside the
 //: map. Hidden while a drag or a pan moves the map, while the note's popup
 //: is open, and on a pane (which keeps the native tooltip).
+//: The shown hover card as a box in world units, for the names to keep off.
+function gcHoverCardBoxes(s, t) {
+  const card = s._hoverCard;
+  if (!card || card.hidden || card._ax == null) return [];
+  return [{ left: (card._ax - t.x) / t.k, right: (card._ax + (card._w || 0) - t.x) / t.k, top: (card._ay - t.y) / t.k, bottom: (card._ay + (card._h || 0) - t.y) / t.k }];
+}
+
 function gcHoverCardFrame(s) {
   if (s.size !== "full") return;
   const id = s.hoveredId != null ? s.hoveredId : gcKeyboardId(s);
@@ -5462,6 +5472,8 @@ function gcHoverCardFrame(s) {
   }
   left = Math.max(gap, Math.min(left, s.dims.w - w - gap));
   top = Math.max(floor, Math.min(top, s.dims.h - h - gap));
+  card._ax = left;
+  card._ay = top;
   const at = `${Math.round(left)},${Math.round(top)}`;
   if (card._at === at) return;
   card._at = at;
