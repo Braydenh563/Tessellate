@@ -503,7 +503,8 @@ block. What stays here is the standing decisions and what is still open.
 ### Still open after KG1 to KG9
 
 - A real local model's `name|kind` entity extraction and a topic's sentence
-  were never run here (no model in the sandbox); both fall back cleanly.
+  were run once, on a 1.5B (2026-11-11): recall 17 of 22, 4 junk names, topic
+  sentence usable 4 of 4, HTML entities in the output; a 3B is not measured.
 - `/graph` at 5,000 notes: the map's read is slim (`slim=1`, 1,767 KB from
   3,145; built, HISTORY.md "Moved from the plans, 2026-10-05 (op3-1005)").
   The generic encoder is skipped and the PageRank's links are read as
