@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Documents: the Cite row opens a note picker (the app's picker recipe) instead of a bare prompt; a note picked is cited as `[[title]]`, which Read draws as a link to the note, and an address or words typed in the same box stay as typed. Driven at 1440 and 390 in dark: the card fits (342 of 390 wide), the source line reads `[[Tiling notes]]`, Read shows a note link in the footnote; Guide text updated.
 - Tests: CI leg 1 back to green after the wrapzoom and settings merges (hop constants read from `engine_consts`, the speaker-labels extra listed in requirements.txt, the `docSpell.packKey` stub in the docs harnesses, the dgpolish block window widened, the wrapzoom docs rule regex anchored).
 - Copy: the draft's save button reads "Save to note" when carrying a note on (was "Save to that note"); the chip beside it names the note, and the shorter word keeps the draft's actions on one row on a phone.
 - Fix (one row at a tablet and a phone): the Documents dock at 768x1024 was two rows (94px, the name on a line of its own) and is one 44px row, the save state leaving the row below 820 of dock; the writing room's draft actions at 360 were two rows (96px) and are one 44px row.

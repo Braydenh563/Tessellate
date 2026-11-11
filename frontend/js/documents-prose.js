@@ -1903,7 +1903,57 @@ docPairInput.citeInsert = (value, start, end, source) => {
   }
   return { value: next, caret: start + mark.length };
 };
+
+//: A note cited by its title: `[[title]]`, which Read draws as a link to the note. Brackets, the alias bar and line
+//: breaks cannot sit inside the pair, so they go; nothing left means nothing to cite.
+docPairInput.citeNote = (title) => {
+  const name = String(title || "").replace(/[[\]|]/g, "").replace(/\s+/g, " ").trim();
+  return name ? `[[${name}]]` : "";
+};
+
+//: What the picker lists for the typed words: the notes (not drafts, deleted or private ones) whose name holds them,
+//: each as its `[[title]]` source, then what was typed as it stands (an address, or words for a book). `nameOf` is the
+//: note's name where the app has one (`noteNamePlain`); the title, else the first line, is the fallback.
+docPairInput.citeChoices = (entries, term, nameOf = null) => {
+  const typed = String(term || "").trim();
+  const needle = typed.toLowerCase();
+  const name = (entry) =>
+    String(entry.title || (nameOf ? nameOf(entry.content) : String(entry.content || "").split("\n").find((l) => l.trim()) || ""))
+      .replace(/^[#>\s]+/, "")
+      .trim();
+  const picks = [];
+  for (const entry of entries || []) {
+    if (entry.is_draft || entry.is_deleted || entry.is_private || entry.is_board) continue;
+    const label = name(entry);
+    const source = docPairInput.citeNote(label);
+    if (!source || (needle && !label.toLowerCase().includes(needle))) continue;
+    picks.push({ label, source, entry });
+    if (picks.length === 40) break;
+  }
+  return typed ? [...picks, { label: typed, source: typed, entry: null }] : picks;
+};
 // DOC-CITE-END
+
+//: The Cite row's picker, on the app's picker recipe (`pickerDialog`): the notes whose name holds the words, then the
+//: words themselves as the source, so an address or a book is one Enter away. Resolves with the source text, or null.
+docPairInput.citePick = () =>
+  new Promise((resolve) => {
+    const shell = pickerDialog({ title: "Cite a source", placeholder: "Search your notes, or type an address…", searchLabel: "Cite a note, an address or a title" });
+    const box = pickerListbox(shell, "Sources");
+    const paint = () => {
+      const term = shell.search.value.trim();
+      const items = docPairInput.citeChoices(allEntries, term, noteNamePlain).map((choice) => ({
+        icon: choice.entry ? "ph:note" : /^https?:\/\//i.test(choice.source) ? "ph:link" : "ph:quotes",
+        label: choice.label,
+        about: choice.entry ? pickerNoteAbout(choice.entry) : "Cite as typed",
+        value: choice.source,
+      }));
+      box.fill(items, term, pickerEmpty("notes", term, "ph:note", "Type an address or a title to cite it."));
+    };
+    shell.search.addEventListener("input", paint);
+    paint();
+    shell.open(resolve);
+  });
 
 //: **`\ref{` and `\eqref{` completion**: the labels of the page's equations,
 //: with the number each one takes (`docMathRender.labels.index`, the same map
