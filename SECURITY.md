@@ -26,6 +26,10 @@ ones your operating system already provides:
   encryption covers the same threat more simply. What the app encrypts on its own
   is **private notes**: AES-GCM under a key derived from your password with
   scrypt.
+- **Secrets.** A model API key and the MCP tool server's token are kept in
+  the operating system's protected store (Windows DPAPI, the macOS Keychain,
+  the Linux Secret Service), or where there is none in owner-only files under
+  `secrets/` in the data folder; never in `preferences.json` or a backup.
 - **Backups.** The app takes a daily local snapshot into your data folder, and
   Settings can write a full backup, which you can seal with a password. A
   snapshot or an unsealed backup is as sensitive as the database, so keep it
@@ -129,5 +133,7 @@ is its key, not the space it sits in. The areas most worth scrutiny are:
   address checks, and text from outside reaching the agent;
 - anything that could let the agent's tools act without the required
   confirmation;
+- the MCP tool server (`docs/MCP.md`): its per-notebook token, and the switch
+  that lets an outside client change notes (off by default);
 - the installers for optional packages and the update path, which download and run
   code.

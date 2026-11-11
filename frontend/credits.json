@@ -129,6 +129,41 @@
      "source": "https://github.com/k2-fsa/sherpa-onnx/releases/tag/speaker-recongition-models"
     },
     {
+     "name": "Live captions model, whisper.cpp tiny.en (q5_1)",
+     "licence": "MIT",
+     "source": "https://huggingface.co/ggerganov/whisper.cpp"
+    },
+    {
+     "name": "LanguageTool",
+     "licence": "LGPL-2.1",
+     "source": "https://languagetool.org"
+    },
+    {
+     "name": "French Hunspell dictionary",
+     "licence": "MPL-2.0",
+     "source": "https://github.com/wooorm/dictionaries"
+    },
+    {
+     "name": "German Hunspell dictionary",
+     "licence": "GPL-2.0 or GPL-3.0",
+     "source": "https://github.com/wooorm/dictionaries"
+    },
+    {
+     "name": "Spanish Hunspell dictionary",
+     "licence": "GPL-3.0, LGPL-3.0 or MPL-1.1",
+     "source": "https://github.com/wooorm/dictionaries"
+    },
+    {
+     "name": "Pyodide (core)",
+     "licence": "MPL-2.0, CPython's standard library under the PSF licence",
+     "source": "https://github.com/pyodide/pyodide"
+    },
+    {
+     "name": "needle",
+     "licence": "Apache-2.0",
+     "source": "https://huggingface.co/Cactus-Compute/needle3"
+    },
+    {
      "name": "marian-nmt (inside the Bergamot WASM)",
      "licence": "MIT",
      "source": "https://github.com/browsermt/marian-dev"

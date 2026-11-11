@@ -12,7 +12,7 @@ Three things, all over standard input and output:
 - **Resources:** each note as `memorymap://note/<id>` (markdown). Private notes are never served.
 - **Prompts:** your saved skills, filled in the way a skill run fills them. A prompt is text for the client's model; it runs nothing.
 
-With default settings the server offers **54 tools** (of 72 in the registry). Each carries `readOnlyHint`, so a client can auto-approve the reads.
+With default settings the server offers **28 tools**, all of them reads (of 73 in the registry). The write tools in the table below are offered only once you tick **Let that app add and change notes** (Settings, Tools it can use, Use these tools from another app; off by default), which makes it 55. Each tool carries `readOnlyHint`, so a client can auto-approve the reads.
 
 ### Tool list
 
@@ -85,7 +85,9 @@ You do not normally start it by hand: the client launches it. It speaks stdio, o
 | Source checkout | `python -m tessellate.mcp_server` (with `PYTHONPATH=src` from the repo root, or the venv that has the app's packages) |
 | Packaged app | `Tessellate --mcp` |
 
-The app need not be running. Settings, Tools it can use shows the exact config for your install, with this interpreter and your data folder filled in. Copy that rather than the examples below if they differ.
+The app need not be running. Settings, Tools it can use shows the exact config for your install, with this interpreter, your data folder and this notebook's token filled in. Copy that rather than the examples below if they differ.
+
+**The token.** The server answers only a client that passes this notebook's token as `TESSELLATE_MCP_TOKEN` (only `ping` works without it). The token is made the first time Settings shows the snippet and is kept as a secret setting (the operating system's protected store, or an owner-only file under `secrets/` in the data folder). A client without it, or with a wrong one, is told to copy the snippet from Settings, Tools it can use.
 
 ## Client configuration
 
@@ -99,6 +101,7 @@ All three take the same `command`, `args` and `env` shape. Source checkout, with
       "args": ["-m", "tessellate.mcp_server"],
       "env": {
         "TESSELLATE_DATA_DIR": "/path/to/your/data",
+        "TESSELLATE_MCP_TOKEN": "the token from the Settings snippet",
         "PYTHONPATH": "/path/to/MemoryMap-AI/src"
       }
     }
@@ -106,7 +109,7 @@ All three take the same `command`, `args` and `env` shape. Source checkout, with
 }
 ```
 
-`PYTHONPATH` is needed only when the app is not installed into that Python. The in-app snippet uses the interpreter that is running the app and sets `TESSELLATE_DATA_DIR`.
+`PYTHONPATH` is needed only when the app is not installed into that Python. The in-app snippet uses the interpreter that is running the app and sets `TESSELLATE_DATA_DIR` and `TESSELLATE_MCP_TOKEN`.
 
 Packaged app (the in-app snippet fills in the real executable path):
 
@@ -116,22 +119,25 @@ Packaged app (the in-app snippet fills in the real executable path):
     "tessellate": {
       "command": "/path/to/Tessellate",
       "args": ["--mcp"],
-      "env": { "TESSELLATE_DATA_DIR": "/path/to/your/data" }
+      "env": {
+        "TESSELLATE_DATA_DIR": "/path/to/your/data",
+        "TESSELLATE_MCP_TOKEN": "the token from the Settings snippet"
+      }
     }
   }
 }
 ```
 
 - **Claude Desktop:** Settings, Developer, Edit config opens `claude_desktop_config.json`; merge the `mcpServers` entry in and restart Claude Desktop.
-- **Claude Code:** `claude mcp add tessellate -e TESSELLATE_DATA_DIR=/path/to/your/data -- /path/to/python -m tessellate.mcp_server`, or put the same entry in a project `.mcp.json`.
+- **Claude Code:** `claude mcp add tessellate -e TESSELLATE_DATA_DIR=/path/to/your/data -e TESSELLATE_MCP_TOKEN=<token> -- /path/to/python -m tessellate.mcp_server`, or put the same entry in a project `.mcp.json`.
 - **Other clients:** any client that can launch a stdio server takes the same command, arguments and environment. The server speaks MCP protocol versions 2025-06-18, 2025-03-26 and 2024-11-05.
 
 ## Security model
 
-- **Local only.** There is no network listener, no port and no token. The client starts the process, and the process talks over the pipe the client holds. Nothing else can connect.
-- **No separate login.** The trust boundary is your operating system account: anyone who can run a process as you can already open the notebook's database file. The server does not ask for the app password, so do not add it to a client you do not trust.
+- **Local only.** There is no network listener and no port. The client starts the process, and the process talks over the pipe the client holds. Nothing else can connect.
+- **A token, not the password.** The server refuses every request (except `ping`) from a process that does not pass this notebook's token as `TESSELLATE_MCP_TOKEN`, so being able to start a program as you is no longer enough to read notes through it. The server does not ask for the app password. The trust boundary is still your operating system account, since anyone who can run a process as you can open the notebook's database file, so do not add the snippet to a client you do not trust.
 - **Not through Docker or the LAN.** The server is not part of the web app, so LAN mode and a container's published port do not expose it. A client in another place cannot reach it unless you run the command there (for example over SSH, which is your own choice).
-- **What a client can do:** read and search notes, documents, files, boards and reminders; and make the non-destructive writes in the table above (create and edit notes, tags, links, reminders, boards, skills). Writes are recorded in Library, Activity under the client's own name (for example "Claude Desktop").
+- **What a client can do:** read and search notes, documents, files, boards and reminders. Only after you tick **Let that app add and change notes** can it make the non-destructive writes in the table above (create and edit notes, tags, links, reminders, boards, skills); with it off a client cannot change anything, even if a note's text tells its model to. Writes are recorded in Library, Activity under the client's own name (for example "Claude Desktop").
 - **What it cannot do:** delete anything (no `delete_*` tool, no `merge_categories`), read private notes, run a skill, or reach the internet unless you switched `web_search` or `read_url` on. A tool you disable in Settings, Tools disappears from the client on its next start.
 - **Notes are data.** A note's text goes to the client's model. If the client is a hosted service, that is the one place your notes leave the machine, and it is your choice of client, not Tessellate's. See [PRIVACY.md](PRIVACY.md).
 
@@ -140,8 +146,9 @@ Packaged app (the in-app snippet fills in the real executable path):
 - **The client says the server failed to start:** run the same command in a terminal. It should wait silently for input; press Ctrl+C to exit. An import error means the `python` in the config lacks the app's packages: use the app's venv or set `PYTHONPATH`.
 - **Notes are missing or it shows an empty notebook:** `TESSELLATE_DATA_DIR` is not the folder the app uses. Settings, Tools it can use shows the right one.
 - **`Tessellate --mcp` says it needs standard input and output:** it was run by hand in a window. A client has to launch it.
-- **A tool you expect is absent:** it is destructive, interactive or chat-only, or switched off in Settings, Tools. Restart the client after changing it.
+- **The client says the server needs `TESSELLATE_MCP_TOKEN`, or has no token yet:** copy the snippet again from Settings, Tools it can use (opening it makes the token), and restart the client.
+- **A tool you expect is absent:** it is destructive, interactive or chat-only, switched off in Settings, Tools, or a write tool while Let that app add and change notes is off. Restart the client after changing it.
 - **Changes in the app do not show up:** the server opens a fresh database session per call, so reloading the client's tool list is enough; restart it if a switch changed.
-- **Quick check:** `printf '{"jsonrpc":"2.0","id":1,"method":"tools/list"}\n' | python -m tessellate.mcp_server` prints the tool list as one JSON line.
+- **Quick check:** `printf '{"jsonrpc":"2.0","id":1,"method":"tools/list"}\n' | TESSELLATE_MCP_TOKEN=<token> python -m tessellate.mcp_server` prints the tool list as one JSON line.
 
 Related: [INSTALL.md](INSTALL.md#running-it) lists the launcher commands, [DOCKER.md](DOCKER.md) the container setup.
