@@ -184,6 +184,7 @@ below). Versioning is `0.x` while the app stabilises.
 - Fix (composer, w8-1110, rows B3 and B11 to B20): a title-less note is named by its first line cut at about six words in quotes (owner 2026-11-10); a fact with its own date no longer carries the day it was written; footers no longer name frame words (new, brief, valid, schedule); an unfound answer carries no source rows; a habit is placed on its days and "anything on Wednesday" lists them; "what happened on 25 October" leads with the notes' own sentences; today's date is backed by the prompt's clock; "last week" is Monday to Sunday of the week before, one head per list; a bare "3/4" follows the request's locale; month names are not synonyms of each other; a verdict writes the day long ("Thursday 12 November, 9:30").
 - Fix (voice notes, w6-1110, audit 1031 Z12): a Discard whose finish fails now says so with a toast and keeps the recording in Library; audit rows A32 to A36 (1029 X1 to X3, 1031 Z12, 1028 B8, B40) were already fixed on head and are struck.
 ## [Unreleased]
+- Complexity (OPEN W29): `_media_readings` in api/chat_attach.py (16) builds each picture's line in `_reading_line`; its seed row is gone.
 - Complexity (OPEN W29): `_one_step_spec` in ai/skills.py (16) takes its tool checks from `_step_tools`; its seed row is gone.
 - Complexity (OPEN W29): `_slim` in api/routes_graph.py (16) hands each note to `_slim_note`; its seed row is gone.
 - Complexity (OPEN W29): `_related_notes` in ai/tools/tool_read.py (16) takes its breadth-first walk from `_walk_neighbourhood`; its seed row is gone.

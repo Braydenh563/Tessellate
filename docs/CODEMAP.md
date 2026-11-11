@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10198, test files 2495, tests 20562, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10199, test files 2495, tests 20562, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -13529,7 +13529,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10198)
+## Backend modules (10199)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -20146,7 +20146,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `consent_events` | src/tessellate/api/chat_agent.py:197 |
 | `run_card_events` | src/tessellate/api/chat_agent.py:169 |
 
-### src/tessellate/api/chat_attach.py (19)
+### src/tessellate/api/chat_attach.py (20)
 
 | Name | File:line |
 |---|---|
@@ -20155,10 +20155,10 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_attached_files` | src/tessellate/api/chat_attach.py:164 |
 | `_attached_media_files` | src/tessellate/api/chat_attach.py:222 |
 | `_attached_notes` | src/tessellate/api/chat_attach.py:72 |
-| `_attachment_readings` | src/tessellate/api/chat_attach.py:553 |
-| `_files_on` | src/tessellate/api/chat_attach.py:531 |
+| `_attachment_readings` | src/tessellate/api/chat_attach.py:559 |
+| `_files_on` | src/tessellate/api/chat_attach.py:537 |
 | `_grounding_candidates` | src/tessellate/api/chat_attach.py:35 |
-| `_media_readings` | src/tessellate/api/chat_attach.py:467 |
+| `_media_readings` | src/tessellate/api/chat_attach.py:485 |
 | `_mostly_pictures` | src/tessellate/api/chat_attach.py:417 |
 | `_named_sources` | src/tessellate/api/chat_attach.py:135 |
 | `_note_dates` | src/tessellate/api/chat_attach.py:425 |
@@ -20166,6 +20166,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_outline_into` | src/tessellate/api/chat_attach.py:323 |
 | `_picture_alts` | src/tessellate/api/chat_attach.py:373 |
 | `_picture_sizes` | src/tessellate/api/chat_attach.py:400 |
+| `_reading_line` | src/tessellate/api/chat_attach.py:467 |
 | `_time_words` | src/tessellate/api/chat_attach.py:445 |
 | `_title_words` | src/tessellate/api/chat_attach.py:131 |
 | `_upload_is_sealed` | src/tessellate/api/chat_attach.py:210 |
