@@ -96,7 +96,7 @@
  "src/tessellate/api/routes_entries.py::list_entries": 26,
  "src/tessellate/api/routes_entries.py::reevaluate_entry": 17,
  "src/tessellate/api/routes_files.py::caption_media": 23,
- "src/tessellate/api/routes_files.py::vision_ocr_media": 18,
+ "src/tessellate/api/routes_files_readings.py::vision_ocr_media": 18,
  "src/tessellate/api/routes_graph.py::_add_map_edges": 18,
  "src/tessellate/api/routes_graph.py::_hop_reasons": 19,
  "src/tessellate/api/routes_graph.py::_slim": 16,

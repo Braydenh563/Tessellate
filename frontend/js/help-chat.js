@@ -625,22 +625,24 @@ function helpChatReveal(row, content, signal = null) {
   });
 }
 
-$("help-chat-form")?.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const input = $("help-chat-input");
-  const text = (input?.value || "").trim();
-  const queue = composerQueue("guide");
-  if (text && queue.take(text)) {
-    input.value = "";
-    return;
-  }
-  queue.held = false;
-  submitHelpChatQuestion(text);
-});
-$("help-chat-send")?.addEventListener("click", (event) => {
-  if (!helpChatBusy) return; // a plain send is the form's submit
-  event.preventDefault();
-  helpChatStop();
+onSurface("atlasChat", () => {
+  $("help-chat-form")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const input = $("help-chat-input");
+    const text = (input?.value || "").trim();
+    const queue = composerQueue("guide");
+    if (text && queue.take(text)) {
+      input.value = "";
+      return;
+    }
+    queue.held = false;
+    submitHelpChatQuestion(text);
+  });
+  $("help-chat-send")?.addEventListener("click", (event) => {
+    if (!helpChatBusy) return; // a plain send is the form's submit
+    event.preventDefault();
+    helpChatStop();
+  });
 });
 
 //: New chat, which was a labelled button in the head row and is a menu row
@@ -826,6 +828,7 @@ function toggleHelpChat() {
 }
 
 function openHelpChat() {
+  surfaceBuild("atlasChat");
   const group = $("help-chat-group");
   if (!group) return null;
   //: Already open: nothing to do. Opening never closes; the status button

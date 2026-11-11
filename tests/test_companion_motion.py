@@ -1897,6 +1897,17 @@ def test_marks_hold_still_after_two_minutes_without_input_unless_busy() -> None:
     assert "NMB_IDLE_MARK_MS = 120000" in AV and 'classList.remove("is-idle")' in AV
 
 
+def test_atlas_loops_hold_still_after_twenty_seconds_without_input_ux3() -> None:
+    # UX3: 77 endless animations ran on an untouched page; the rings, hair, tail and nebula now pause.
+    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    rule = css[css.index(":root.is-calm") :]
+    rule = rule[: rule.index("{")]
+    assert ".atl-orbits *" in rule and ".atl-lw-tail" in rule and ".atl-layer-neb" in rule
+    assert "animation-play-state: paused" in css[css.index(":root.is-calm") :]
+    assert "setTimeout(nmbClock.setCalm, 20000, true)" in AV and 'toggle("is-calm", on)' in AV
+    assert '"pointermove"' in AV
+
+
 def test_the_feminine_atlas_casts_her_stars_instead_of_wearing_them_1576() -> None:
     """INBOX 1576, the owner: "those stars permanently stuck to the end of the
     feminine atlas are a little awkward being permanently there, I think they

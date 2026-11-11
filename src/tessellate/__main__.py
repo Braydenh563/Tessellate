@@ -2013,33 +2013,7 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
     # never reaches a main thread inside the window's event loop.
     from tessellate.core import quit_hook
 
-    def _quit_from_app() -> None:
-        # The window goes first (the owner: "the quit application button is
-        # a little slow"). Stopping the background work can wait up to 5s
-        # for the autonomous scheduler to finish a write; that wait now
-        # happens behind a window that is already gone, not in front of one
-        # that looks frozen.
-        # The companion is closed BEFORE the main window is hidden: hiding the main
-        # window is what makes the companion due, and it then made its quick panel
-        # (a new WebView2) in the middle of the quit, which was destroyed while
-        # starting: "WebView2 initialization failed ... E_ABORT" (INBOX 1666).
-        from tessellate.core import desk_companion
-
-        desk_companion.shutdown()
-        hide = getattr(window, "hide", None)
-        if callable(hide):
-            try:
-                hide()
-            except Exception:  # noqa: BLE001 - cosmetic; the exit below still runs
-                logger.debug("window.hide failed during quit", exc_info=True)
-        _stop_background_work()
-        try:
-            window.destroy()
-        except Exception:  # noqa: BLE001 - the exit below is the guarantee
-            logger.debug("window.destroy failed during quit", exc_info=True)
-        os._exit(0)
-
-    quit_hook.set_quit_handler(_quit_from_app)
+    quit_hook.set_quit_handler(lambda: _quit_from_app(window))
     # The documents focus mode's "Fill the whole screen": a web view's own
     # full screen fills the web view, not the window (INBOX 426 z), so the
     # page asks the window through `POST /desktop/fullscreen`.
@@ -2124,36 +2098,10 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
         #    explained. Once per install, keyed on a preference: an app that
         #    tells you the same thing every time you close it is worse than
         #    one that never tells you.
-        _told_about_tray = {"done": False}
+        told_about_tray = {"done": False}
 
         def _on_closing() -> bool:
-            try:
-                from tessellate.core import deps
-
-                config = deps.get_config()
-                if not config.get_preference("close_to_tray", True):
-                    # A real quit, so the same teardown the tray's own Quit
-                    # does: this path skips the lifespan handler too.
-                    _stop_background_work()
-                    return True
-                if not _told_about_tray["done"] and not config.get_preference(
-                    "tray_hide_explained", False
-                ):
-                    _told_about_tray["done"] = True
-                    config.set_preference("tray_hide_explained", True)
-                    try:
-                        tray_icon.notify(
-                            "Still running here. Click the icon to bring the "
-                            "window back, or right-click it and choose Quit to close it "
-                            "properly.",
-                            "Tessellate",
-                        )
-                    except Exception as exc:  # noqa: BLE001  # balloons are optional
-                        logger.debug("couldn't show the tray balloon: %s", exc)
-            except Exception as exc:  # noqa: BLE001  # never block a close
-                logger.warning("close-to-tray check failed: %s", exc)
-            window.hide()
-            return False  # cancels the real close, pywebview just hides it
+            return _close_to_tray(window, tray_icon, told_about_tray)
 
         window.events.closing += _on_closing
 
@@ -2192,6 +2140,63 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
         stop_notifier()
         instance_lock.set_focus_handler(None)
         instance_lock.release()
+
+
+def _quit_from_app(window) -> None:  # noqa: ANN001
+    # The window goes first (the owner: "the quit application button is
+    # a little slow"). Stopping the background work can wait up to 5s
+    # for the autonomous scheduler to finish a write; that wait now
+    # happens behind a window that is already gone, not in front of one
+    # that looks frozen.
+    # The companion is closed BEFORE the main window is hidden: hiding the main
+    # window is what makes the companion due, and it then made its quick panel
+    # (a new WebView2) in the middle of the quit, which was destroyed while
+    # starting: "WebView2 initialization failed ... E_ABORT" (INBOX 1666).
+    from tessellate.core import desk_companion
+
+    desk_companion.shutdown()
+    hide = getattr(window, "hide", None)
+    if callable(hide):
+        try:
+            hide()
+        except Exception:  # noqa: BLE001 - cosmetic; the exit below still runs
+            logger.debug("window.hide failed during quit", exc_info=True)
+    _stop_background_work()
+    try:
+        window.destroy()
+    except Exception:  # noqa: BLE001 - the exit below is the guarantee
+        logger.debug("window.destroy failed during quit", exc_info=True)
+    os._exit(0)
+
+
+def _close_to_tray(window, tray_icon, told_about_tray: dict) -> bool:  # noqa: ANN001
+    try:
+        from tessellate.core import deps
+
+        config = deps.get_config()
+        if not config.get_preference("close_to_tray", True):
+            # A real quit, so the same teardown the tray's own Quit
+            # does: this path skips the lifespan handler too.
+            _stop_background_work()
+            return True
+        if not told_about_tray["done"] and not config.get_preference(
+            "tray_hide_explained", False
+        ):
+            told_about_tray["done"] = True
+            config.set_preference("tray_hide_explained", True)
+            try:
+                tray_icon.notify(
+                    "Still running here. Click the icon to bring the "
+                    "window back, or right-click it and choose Quit to close it "
+                    "properly.",
+                    "Tessellate",
+                )
+            except Exception as exc:  # noqa: BLE001  # balloons are optional
+                logger.debug("couldn't show the tray balloon: %s", exc)
+    except Exception as exc:  # noqa: BLE001  # never block a close
+        logger.warning("close-to-tray check failed: %s", exc)
+    window.hide()
+    return False  # cancels the real close, pywebview just hides it
 
 
 def _app_icon_path() -> Path:
@@ -2315,6 +2320,225 @@ def _start_reminder_notifier(window, icon_path: Path, data_dir: Path):  # noqa: 
     return notifier.stop if notifier is not None else (lambda: None)
 
 
+def _tray_image(Image, icon_path: Path):  # noqa: ANN001, ANN202
+    """The tray icon bitmap: the .ico decoded now, or a flat brand square."""
+    image = None
+    if icon_path.is_file():
+        try:
+            # Pillow's ICO decoder warns "Image was not the expected size"
+            # for any .ico whose largest frame doesn't match the size in its
+            # directory header: true of frontend/icon.ico, and harmless here
+            # since we only ever want the largest frame. Scoped to this one
+            # call so a genuine UserWarning from elsewhere still surfaces.
+            with warnings.catch_warnings():
+                warnings.filterwarnings(
+                    "ignore",
+                    message="Image was not the expected size",
+                    category=UserWarning,
+                )
+                image = Image.open(icon_path).convert("RGBA")  # decode now, not inside the tray thread
+        except Exception as exc:  # noqa: BLE001  # Pillow raises ValueError/SyntaxError on a bad .ico too
+            logger.warning("couldn't load %s for the tray icon: %s", icon_path, exc)
+            image = None
+    if image is None:
+        # A flat brand-blue square rather than no icon at all, pystray
+        # requires a real image, and a missing tray icon reads as "the app
+        # crashed", not "cosmetic fallback".
+        image = Image.new("RGBA", (64, 64), (74, 108, 247, 255))
+    return image
+
+
+def _tray_open(window) -> None:
+    # `show()` un-minimises but does not raise or focus, so clicking Open
+    # while the window was merely *behind* something did nothing visible, 
+    # which reads as the menu item being broken. `_focus_window` is the
+    # same helper the loading-window handoff already uses for this.
+    window.show()
+    _focus_window(window)
+
+def _tray_toggle_console(window, icon, console_hwnd, console_targets, console_state) -> None:
+    if console_hwnd is None:
+        return
+    going_hidden = not console_state["hidden"]
+
+    # Best-effort, same as the startup path's own fallback: works for
+    # legacy conhost, a no-op under Windows Terminal's ConPTY (see
+    # _maybe_relaunch_hidden's docstring): which the restart below is
+    # what actually guarantees, at the cost of a brief relaunch instead
+    # of an instant toggle.
+    _apply_console_visibility(console_targets or {console_hwnd: _window_class_name(console_hwnd)}, hidden=going_hidden)
+    console_state["hidden"] = going_hidden
+
+    try:
+        from tessellate.core import deps
+
+        deps.get_config().set_preference("show_console_on_startup", not going_hidden)
+    except Exception as exc:
+        # Remembering the choice is a nicety on top of the live toggle,
+        # which has already happened above, never let a failure here
+        # make the menu item look like it did nothing.
+        logger.warning("couldn't save the console visibility preference: %s", exc, exc_info=True)
+
+    # The reliable half: relaunch into the correct mode from scratch
+    # rather than trust the ShowWindow attempt just above actually
+    # worked: same _spawn_desktop the startup path and the
+    # Settings-triggered restart both use, so all three take identical
+    # action for the same mode switch.
+    process = _spawn_desktop(hidden=going_hidden)
+    if process is None:
+        return  # nothing to relaunch into; the ShowWindow attempt above is all there is
+
+    _stop_background_work()
+    icon.stop()
+    window.destroy()
+    os._exit(0)
+
+def _tray_go(window, js: str):
+    """A tray item that brings the window forward and *lands somewhere*.
+
+    Reported directly: "the options and buttons in the system tray dont
+    fully navigate to the propper features, just the tabs or settings
+    modal." Two items existed and each hand-rolled the same three steps, 
+    show, focus, evaluate a string of JS, so adding a third meant copying
+    them again, which is why there was never a third.
+
+    Every generated item carries the same lock guard, and that is the
+    reason this is a factory rather than a list of one-liners: a tray menu
+    must never reach past the lock screen, and a guard that has to be
+    remembered per item is a guard that will be forgotten. Locked, the
+    window still comes forward, the person asked for the app, and the
+    honest answer is the lock screen, not nothing happening.
+
+    **Also closes Settings first, if it's open.** Reported directly, on
+    "Reminders" specifically but asked to apply to "the others" too: a
+    tray item that calls `switchTab(...)` switches the tab *underneath*
+    an open Settings modal, which is a full-screen overlay, the tab
+    changes, nothing about it is visible, and clicking Reminders reads as
+    broken. `switchTab()` itself has no opinion on a modal sitting on top
+    of it; closing that modal first is this factory's job, applied once
+    here rather than repeated (or, as happened once already, forgotten)
+    per item.
+    """
+    close_settings_first = (
+        "if (typeof settingsModalOpen === 'function' && settingsModalOpen()"
+        " && typeof closeSettingsModal === 'function') { closeSettingsModal(); }"
+    )
+
+    def run(icon, item) -> None:
+        window.show()
+        _focus_window(window)
+        try:
+            window.evaluate_js(
+                "if (document.getElementById('lock-overlay')"
+                "?.classList.contains('hidden')) {"
+                + close_settings_first
+                + js
+                + "}"
+            )
+        except Exception as exc:  # noqa: BLE001  # a menu item is not worth a crash
+            logger.warning("tray navigation failed: %s", exc)
+
+    return run
+
+def _tray_view_logs(window) -> None:
+    # Reported directly, twice: this used to open Settings unconditionally
+    # (reaching straight past the lock screen, fixed once already, see
+    # the lock-overlay guard below) and, separately, never actually landed
+    # on the Logs section, it called `openSettingsModal()` with no
+    # argument and then `showSettingsSection('logs')`, a function that
+    # does not exist anywhere in the frontend (grepped, not assumed) and
+    # so silently did nothing past opening Settings on whatever section it
+    # last had open. `openSettingsModal(section)` already takes the
+    # section directly: every other settings-bound tray item below
+    # already calls it this way (`openSettingsModal('tasks')`,
+    # `openSettingsModal('models')`); this was the one holdout.
+    window.show()
+    _focus_window(window)
+    window.evaluate_js(
+        "if (document.getElementById('lock-overlay')?.classList.contains('hidden')"
+        " && typeof openSettingsModal === 'function') {"
+        " openSettingsModal('logs'); }"
+    )
+
+def _tray_restart(window, icon) -> None:
+    # Re-execs this same process rather than spawning a second one, no
+    # window during the gap, and never two copies of the app arguing
+    # over the same SQLite file if something goes wrong mid-relaunch.
+    #
+    # The argv has to be built differently for the two install types, and
+    # getting it wrong broke Restart in exactly the build where it is
+    # hardest to notice. `[sys.executable, *sys.argv]` is right from
+    # source, where `sys.executable` is python.exe and `sys.argv[0]` is the
+    # script: but in a PyInstaller build **both are the .exe**, so that
+    # form passes the executable's own path as a positional argument.
+    # `parse_args` has no positionals, so it exits(2) on "unrecognized
+    # arguments", and the packaged app has no console to print that to:
+    # the user clicks Restart, the window closes, and nothing comes back.
+    argv = list(sys.argv) if getattr(sys, "frozen", False) else [sys.executable, *sys.argv]
+    # A Restart is not a repair: launched from the Start Menu's "Repair
+    # Tessellate", the argv carries --reinstall, and restarting with it
+    # cleared the window's saved sign-in and theme a second time.
+    argv = [argv[0], *(arg for arg in argv[1:] if arg != "--reinstall")]
+    argv = [*argv, "--restart-after", str(os.getpid())]
+    _stop_background_work()
+    icon.stop()
+    window.destroy()
+    _replace_process(argv)
+
+def _tray_quit(window, icon) -> None:
+    # **Before the hard exit below, not after it, there is no after.**
+    # Reported directly: "make sure that if the app is quit, all ai tasks
+    # and bg tasks stop as well." `os._exit(0)` skips every shutdown hook
+    # this process has, including the lifespan handler that calls exactly
+    # this function, so quitting from the tray was the one exit path that
+    # left a pip install and a SearXNG server running with nothing left to
+    # own them.
+    _stop_background_work()
+    icon.stop()
+    window.destroy()
+    # window.destroy() runs on this thread (pystray's own), not the main
+    # thread blocked inside webview.start(), reported directly: Quit
+    # closed the window but left the process (and the uvicorn server
+    # thread behind it) running, because a cross-thread destroy call
+    # isn't guaranteed to actually unblock that main-thread wait. A hard
+    # exit is the same shape _restart already trusts (os.execv, no
+    # graceful winddown either) and guarantees the process, and the
+    # terminal it's running in: actually ends.
+    os._exit(0)
+
+def _tray_new_note(window) -> None:
+    """Straight to an empty note, focused and ready to type.
+
+    The reason a tray icon earns its place in a notebook app: the whole
+    point of "capture it before you lose it" is not having to find the
+    window, pick a tab and click into a box first. Everything else on this
+    menu is app management; this is the only item that does the app's
+    actual job.
+
+    Guarded by the lock overlay exactly as View Logs is, a tray item must
+    never reach past the lock screen, and by `typeof`, because the menu
+    can be clicked while the page is still loading. Kept as its own named
+    function rather than folded into the `_go` factory below (which would
+    remove some duplication) because test_tray.py locates this function's
+    body by splitting this file's source text on its own signature, the
+    safer fix for "close Settings first" was adding the same guard `_go`
+    now carries, not restructuring around a test with no other reason to
+    change today. (This paragraph deliberately avoids spelling that
+    signature out verbatim, for the same reason, that string appearing
+    twice is exactly what broke the split the first time this was tried.)
+    """
+    window.show()
+    _focus_window(window)
+    window.evaluate_js(
+        "if (!document.getElementById('lock-overlay')?.classList.contains('hidden')) {}"
+        " else if (typeof switchTab === 'function') {"
+        " if (typeof settingsModalOpen === 'function' && settingsModalOpen()"
+        " && typeof closeSettingsModal === 'function') { closeSettingsModal(); }"
+        " switchTab('notes');"
+        " document.getElementById('entry-content')?.focus(); }"
+    )
+
+
 def _start_tray(
     window,
     icon_path: Path,
@@ -2360,272 +2584,56 @@ def _start_tray(
 
     from tessellate.core import desk_companion
 
-    image = None
-    if icon_path.is_file():
-        try:
-            # Pillow's ICO decoder warns "Image was not the expected size"
-            # for any .ico whose largest frame doesn't match the size in its
-            # directory header: true of frontend/icon.ico, and harmless here
-            # since we only ever want the largest frame. Scoped to this one
-            # call so a genuine UserWarning from elsewhere still surfaces.
-            with warnings.catch_warnings():
-                warnings.filterwarnings(
-                    "ignore",
-                    message="Image was not the expected size",
-                    category=UserWarning,
-                )
-                image = Image.open(icon_path).convert("RGBA")  # decode now, not inside the tray thread
-        except Exception as exc:  # noqa: BLE001  # Pillow raises ValueError/SyntaxError on a bad .ico too
-            logger.warning("couldn't load %s for the tray icon: %s", icon_path, exc)
-            image = None
-    if image is None:
-        # A flat brand-blue square rather than no icon at all, pystray
-        # requires a real image, and a missing tray icon reads as "the app
-        # crashed", not "cosmetic fallback".
-        image = Image.new("RGBA", (64, 64), (74, 108, 247, 255))
-
-    def _open(icon, item) -> None:
-        # `show()` un-minimises but does not raise or focus, so clicking Open
-        # while the window was merely *behind* something did nothing visible, 
-        # which reads as the menu item being broken. `_focus_window` is the
-        # same helper the loading-window handoff already uses for this.
-        window.show()
-        _focus_window(window)
+    image = _tray_image(Image, icon_path)
 
     # Running from start.bat/start-desktop.bat rather than the packaged
     # installer (whose PyInstaller build sets console=False, so there is no
-    # window to find) leaves a cmd.exe console sitting behind the app, 
-    # asked for directly: a way to get rid of it without losing the ability
-    # to bring it back for a stray print/traceback. `console_hwnd` and its
-    # initial `console_hidden` state come from the caller, which already
-    # applied the show_console_on_startup preference before the window even
-    # opened: this menu item is the *live* control, and toggling it also
-    # writes the preference back, so "hide it" or "show it" from here is
-    # remembered for the next launch too, not just this one.
+    # window to find) leaves a cmd.exe console sitting behind the app. This
+    # menu item is the *live* control for it; `console_hwnd` and its initial
+    # `console_hidden` state come from the caller, which already applied the
+    # show_console_on_startup preference before the window opened.
     console_state = {"hidden": console_hidden}
 
     def _console_hidden(item) -> bool:
         return console_state["hidden"]
 
-    def _toggle_console(icon, item) -> None:
-        if console_hwnd is None:
-            return
-        going_hidden = not console_state["hidden"]
-
-        # Best-effort, same as the startup path's own fallback: works for
-        # legacy conhost, a no-op under Windows Terminal's ConPTY (see
-        # _maybe_relaunch_hidden's docstring): which the restart below is
-        # what actually guarantees, at the cost of a brief relaunch instead
-        # of an instant toggle.
-        _apply_console_visibility(console_targets or {console_hwnd: _window_class_name(console_hwnd)}, hidden=going_hidden)
-        console_state["hidden"] = going_hidden
-
-        try:
-            from tessellate.core import deps
-
-            deps.get_config().set_preference("show_console_on_startup", not going_hidden)
-        except Exception as exc:
-            # Remembering the choice is a nicety on top of the live toggle,
-            # which has already happened above, never let a failure here
-            # make the menu item look like it did nothing.
-            logger.warning("couldn't save the console visibility preference: %s", exc, exc_info=True)
-
-        # The reliable half: relaunch into the correct mode from scratch
-        # rather than trust the ShowWindow attempt just above actually
-        # worked: same _spawn_desktop the startup path and the
-        # Settings-triggered restart both use, so all three take identical
-        # action for the same mode switch.
-        process = _spawn_desktop(hidden=going_hidden)
-        if process is None:
-            return  # nothing to relaunch into; the ShowWindow attempt above is all there is
-
-        _stop_background_work()
-        icon.stop()
-        window.destroy()
-        os._exit(0)
-
-    def _go(js: str):
-        """A tray item that brings the window forward and *lands somewhere*.
-
-        Reported directly: "the options and buttons in the system tray dont
-        fully navigate to the propper features, just the tabs or settings
-        modal." Two items existed and each hand-rolled the same three steps, 
-        show, focus, evaluate a string of JS, so adding a third meant copying
-        them again, which is why there was never a third.
-
-        Every generated item carries the same lock guard, and that is the
-        reason this is a factory rather than a list of one-liners: a tray menu
-        must never reach past the lock screen, and a guard that has to be
-        remembered per item is a guard that will be forgotten. Locked, the
-        window still comes forward, the person asked for the app, and the
-        honest answer is the lock screen, not nothing happening.
-
-        **Also closes Settings first, if it's open.** Reported directly, on
-        "Reminders" specifically but asked to apply to "the others" too: a
-        tray item that calls `switchTab(...)` switches the tab *underneath*
-        an open Settings modal, which is a full-screen overlay, the tab
-        changes, nothing about it is visible, and clicking Reminders reads as
-        broken. `switchTab()` itself has no opinion on a modal sitting on top
-        of it; closing that modal first is this factory's job, applied once
-        here rather than repeated (or, as happened once already, forgotten)
-        per item.
-        """
-        close_settings_first = (
-            "if (typeof settingsModalOpen === 'function' && settingsModalOpen()"
-            " && typeof closeSettingsModal === 'function') { closeSettingsModal(); }"
-        )
-
-        def run(icon, item) -> None:
-            window.show()
-            _focus_window(window)
-            try:
-                window.evaluate_js(
-                    "if (document.getElementById('lock-overlay')"
-                    "?.classList.contains('hidden')) {"
-                    + close_settings_first
-                    + js
-                    + "}"
-                )
-            except Exception as exc:  # noqa: BLE001  # a menu item is not worth a crash
-                logger.warning("tray navigation failed: %s", exc)
-
-        return run
-
-    def _view_logs(icon, item) -> None:
-        # Reported directly, twice: this used to open Settings unconditionally
-        # (reaching straight past the lock screen, fixed once already, see
-        # the lock-overlay guard below) and, separately, never actually landed
-        # on the Logs section, it called `openSettingsModal()` with no
-        # argument and then `showSettingsSection('logs')`, a function that
-        # does not exist anywhere in the frontend (grepped, not assumed) and
-        # so silently did nothing past opening Settings on whatever section it
-        # last had open. `openSettingsModal(section)` already takes the
-        # section directly: every other settings-bound tray item below
-        # already calls it this way (`openSettingsModal('tasks')`,
-        # `openSettingsModal('models')`); this was the one holdout.
-        window.show()
-        _focus_window(window)
-        window.evaluate_js(
-            "if (document.getElementById('lock-overlay')?.classList.contains('hidden')"
-            " && typeof openSettingsModal === 'function') {"
-            " openSettingsModal('logs'); }"
-        )
-
-    def _restart(icon, item) -> None:
-        # Re-execs this same process rather than spawning a second one, no
-        # window during the gap, and never two copies of the app arguing
-        # over the same SQLite file if something goes wrong mid-relaunch.
-        #
-        # The argv has to be built differently for the two install types, and
-        # getting it wrong broke Restart in exactly the build where it is
-        # hardest to notice. `[sys.executable, *sys.argv]` is right from
-        # source, where `sys.executable` is python.exe and `sys.argv[0]` is the
-        # script: but in a PyInstaller build **both are the .exe**, so that
-        # form passes the executable's own path as a positional argument.
-        # `parse_args` has no positionals, so it exits(2) on "unrecognized
-        # arguments", and the packaged app has no console to print that to:
-        # the user clicks Restart, the window closes, and nothing comes back.
-        argv = list(sys.argv) if getattr(sys, "frozen", False) else [sys.executable, *sys.argv]
-        # A Restart is not a repair: launched from the Start Menu's "Repair
-        # Tessellate", the argv carries --reinstall, and restarting with it
-        # cleared the window's saved sign-in and theme a second time.
-        argv = [argv[0], *(arg for arg in argv[1:] if arg != "--reinstall")]
-        argv = [*argv, "--restart-after", str(os.getpid())]
-        _stop_background_work()
-        icon.stop()
-        window.destroy()
-        _replace_process(argv)
-
-    def _quit(icon, item) -> None:
-        # **Before the hard exit below, not after it, there is no after.**
-        # Reported directly: "make sure that if the app is quit, all ai tasks
-        # and bg tasks stop as well." `os._exit(0)` skips every shutdown hook
-        # this process has, including the lifespan handler that calls exactly
-        # this function, so quitting from the tray was the one exit path that
-        # left a pip install and a SearXNG server running with nothing left to
-        # own them.
-        _stop_background_work()
-        icon.stop()
-        window.destroy()
-        # window.destroy() runs on this thread (pystray's own), not the main
-        # thread blocked inside webview.start(), reported directly: Quit
-        # closed the window but left the process (and the uvicorn server
-        # thread behind it) running, because a cross-thread destroy call
-        # isn't guaranteed to actually unblock that main-thread wait. A hard
-        # exit is the same shape _restart already trusts (os.execv, no
-        # graceful winddown either) and guarantees the process, and the
-        # terminal it's running in: actually ends.
-        os._exit(0)
-
-    def _new_note(icon, item) -> None:
-        """Straight to an empty note, focused and ready to type.
-
-        The reason a tray icon earns its place in a notebook app: the whole
-        point of "capture it before you lose it" is not having to find the
-        window, pick a tab and click into a box first. Everything else on this
-        menu is app management; this is the only item that does the app's
-        actual job.
-
-        Guarded by the lock overlay exactly as View Logs is, a tray item must
-        never reach past the lock screen, and by `typeof`, because the menu
-        can be clicked while the page is still loading. Kept as its own named
-        function rather than folded into the `_go` factory below (which would
-        remove some duplication) because test_tray.py locates this function's
-        body by splitting this file's source text on its own signature, the
-        safer fix for "close Settings first" was adding the same guard `_go`
-        now carries, not restructuring around a test with no other reason to
-        change today. (This paragraph deliberately avoids spelling that
-        signature out verbatim, for the same reason, that string appearing
-        twice is exactly what broke the split the first time this was tried.)
-        """
-        window.show()
-        _focus_window(window)
-        window.evaluate_js(
-            "if (!document.getElementById('lock-overlay')?.classList.contains('hidden')) {}"
-            " else if (typeof switchTab === 'function') {"
-            " if (typeof settingsModalOpen === 'function' && settingsModalOpen()"
-            " && typeof closeSettingsModal === 'function') { closeSettingsModal(); }"
-            " switchTab('notes');"
-            " document.getElementById('entry-content')?.focus(); }"
-        )
-
     # Everything a tray icon is for: capture something, ask something, check
     # on the app, get to the settings that matter. Each item lands on the
-    # feature rather than on the tab that contains it, see `_go`.
+    # feature rather than on the tab that contains it, see `_tray_go`.
     menu_items = [
-        pystray.MenuItem("Open Tessellate", _open, default=True),
-        pystray.MenuItem("New note", _new_note),
+        pystray.MenuItem("Open Tessellate", lambda icon, item: _tray_open(window), default=True),
+        pystray.MenuItem("New note", lambda icon, item: _tray_new_note(window)),
         pystray.MenuItem(
             "Ask a question",
-            _go("if (typeof switchTab === 'function') { switchTab('chat');"
+            _tray_go(window, "if (typeof switchTab === 'function') { switchTab('chat');"
                 " document.getElementById('chat-input')?.focus(); }"),
         ),
         pystray.MenuItem(
             "Search everything",
-            _go("if (typeof openPalette === 'function') openPalette();"
+            _tray_go(window, "if (typeof openPalette === 'function') openPalette();"
                 " else if (typeof switchTab === 'function') switchTab('library');"),
         ),
         pystray.MenuItem(
             "Record a meeting",
-            _go("if (typeof openMeetingRecorder === 'function') openMeetingRecorder();"),
+            _tray_go(window, "if (typeof openMeetingRecorder === 'function') openMeetingRecorder();"),
         ),
         pystray.MenuItem(
             "Reminders",
-            _go("if (typeof switchTab === 'function') switchTab('reminders');"),
+            _tray_go(window, "if (typeof switchTab === 'function') switchTab('reminders');"),
         ),
         pystray.MenuItem(
             "Whiteboard",
-            _go("if (typeof switchTab === 'function') switchTab('whiteboard');"),
+            _tray_go(window, "if (typeof switchTab === 'function') switchTab('whiteboard');"),
         ),
         pystray.MenuItem(
             "Background tasks",
-            _go("if (typeof openSettingsModal === 'function') openSettingsModal('tasks');"),
+            _tray_go(window, "if (typeof openSettingsModal === 'function') openSettingsModal('tasks');"),
         ),
         pystray.MenuItem(
             "Settings",
-            _go("if (typeof openSettingsModal === 'function') openSettingsModal('models');"),
+            _tray_go(window, "if (typeof openSettingsModal === 'function') openSettingsModal('models');"),
         ),
-        pystray.MenuItem("View Logs", _view_logs),
+        pystray.MenuItem("View Logs", lambda icon, item: _tray_view_logs(window)),
         pystray.Menu.SEPARATOR,
         # The other half of "there is a difference between minimising the app
         # and quitting the app", the same hide the window's own close button
@@ -2638,11 +2646,17 @@ def _start_tray(
     ]
     if console_hwnd is not None:
         menu_items.append(
-            pystray.MenuItem("Hide console window", _toggle_console, checked=_console_hidden)
+            pystray.MenuItem(
+                "Hide console window",
+                lambda icon, item: _tray_toggle_console(
+                    window, icon, console_hwnd, console_targets, console_state
+                ),
+                checked=_console_hidden,
+            )
         )
     menu_items += [
-        pystray.MenuItem("Restart", _restart),
-        pystray.MenuItem("Quit", _quit),
+        pystray.MenuItem("Restart", lambda icon, item: _tray_restart(window, icon)),
+        pystray.MenuItem("Quit", lambda icon, item: _tray_quit(window, icon)),
     ]
     icon = pystray.Icon(
         "memorymap",
@@ -2650,22 +2664,22 @@ def _start_tray(
         "Tessellate",
         pystray.Menu(*menu_items),
     )
-
-    def _run_tray() -> None:
-        # A daemon thread swallows its own exceptions, so a tray that failed
-        # to appear (bad backend, icon error) left no trace in the log and
-        # the window then hid on close with nothing to bring it back.
-        def _ready(icon_) -> None:
-            icon_.visible = True
-            logger.info("system tray icon shown")
-
-        try:
-            icon.run(setup=_ready)
-        except Exception:  # noqa: BLE001
-            logger.exception("system tray icon failed to start")
-
-    threading.Thread(target=_run_tray, daemon=True).start()
+    threading.Thread(target=_run_tray_loop, args=(icon,), daemon=True).start()
     return icon
+
+
+def _run_tray_loop(icon) -> None:  # noqa: ANN001
+    # A daemon thread swallows its own exceptions, so a tray that failed
+    # to appear (bad backend, icon error) left no trace in the log and
+    # the window then hid on close with nothing to bring it back.
+    def _ready(icon_) -> None:
+        icon_.visible = True
+        logger.info("system tray icon shown")
+
+    try:
+        icon.run(setup=_ready)
+    except Exception:  # noqa: BLE001
+        logger.exception("system tray icon failed to start")
 
 
 def _run_mcp() -> int:

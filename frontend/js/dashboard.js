@@ -1252,7 +1252,7 @@ const DASH_MARK_CHOICES = [
 ];
 
 function dashMarkMenu(x, y) {
-  const now = typeof appearancePref === "function" ? appearancePref("dash-mark", "logo") : "logo";
+  const now = appearancePref("dash-mark", "logo");
   const items = DASH_MARK_CHOICES.map(([value, label]) => ({
     label: `${now === value ? "ph:check" : "ph:dot-outline"} ${label}`,
     title: `Show ${label.toLowerCase()} here`,

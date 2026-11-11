@@ -1314,7 +1314,7 @@ function runShortcut(id) {
     //: one. It answers false when nothing editable has focus, and then this
     //: does nothing rather than inserting a slash into whatever is there.
     editorMenu: () => {
-      if (typeof editorOpenMenuByShortcut === "function") editorOpenMenuByShortcut();
+      editorOpenMenuByShortcut();
     },
     palette: () => {
       if ($("palette-overlay").classList.contains("hidden")) openPalette();

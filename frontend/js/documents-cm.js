@@ -298,6 +298,42 @@ function docLivePlugin(CM) {
     }
   }
 
+  //: The corner label of a fenced block: its title, else its language, as a button that lists the languages.
+  class DocFenceLabelWidget extends WidgetType {
+    constructor(language, title, at) {
+      super();
+      this.language = language;
+      this.title = title;
+      this.at = at;
+    }
+    eq(other) {
+      return other.language === this.language && other.title === this.title && other.at === this.at;
+    }
+    ignoreEvent() {
+      return true;
+    }
+    toDOM(view) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "cm-md-fence-label";
+      button.textContent = this.title || this.language || "Language";
+      button.title = this.language ? `Language: ${this.language}` : "Choose a language";
+      button.setAttribute("aria-label", `${button.textContent}, change language`);
+      button.addEventListener("mousedown", (event) => event.preventDefault());
+      button.addEventListener("click", () => {
+        const line = view.state.doc.lineAt(this.at);
+        const m = /^(\s*[`~]{3,}[{.\s]*)([\w+#-]*)/.exec(line.text);
+        //: The word goes (Undo restores it) so the list shows every name.
+        const from = m ? line.from + m[1].length : line.to;
+        const to = m ? from + m[2].length : line.to;
+        view.focus();
+        view.dispatch({ changes: { from, to, insert: "" }, selection: { anchor: from } });
+        CM.autocomplete.startCompletion(view);
+      });
+      return button;
+    }
+  }
+
   //: **A table cell that is empty still has to hold its column open.** The
   //: rendered table is a CSS grid over the line, and its columns are its
   //: children: a cell with no characters in it contributes no child, so the
@@ -471,15 +507,17 @@ function docLivePlugin(CM) {
   //: is off its line, which is the rule every other marker here follows: the
   //: way to edit a formula is to put the caret in it and see the TeX again.
   class DocMathWidget extends WidgetType {
-    constructor(tex, display) {
+    constructor(tex, display, spans = false) {
       super();
       this.tex = tex;
       this.display = display;
+      //: True for a block written over several lines: a press shows its source rather than editing in place.
+      this.spans = spans;
     }
     //: A formula that names or cites an equation (`\label`, `\eqref`) shows a number that depends on the rest of the document, so it is
     //: drawn again whenever the editor asks, never reused (OPEN F1).
     eq(other) {
-      return other.tex === this.tex && other.display === this.display && !/\\(?:label|eqref|ref)\{/.test(this.tex);
+      return other.tex === this.tex && other.display === this.display && other.spans === this.spans && !/\\(?:label|eqref|ref)\{/.test(this.tex);
     }
     ignoreEvent() {
       return false;
@@ -507,6 +545,11 @@ function docLivePlugin(CM) {
         if (event.button !== 0) return;
         event.preventDefault();
         event.stopPropagation();
+        if (this.spans) {
+          view.focus();
+          view.dispatch({ selection: { anchor: Math.min(view.posAtDOM(host) + 1, view.state.doc.length) } });
+          return;
+        }
         const delim = this.display ? "$$" : "$";
         const from = view.posAtDOM(host);
         const to = from + delim.length * 2 + this.tex.length;
@@ -1082,7 +1125,7 @@ function docLivePlugin(CM) {
             const first = doc.lineAt(node.from);
             const last = doc.lineAt(node.to);
             const info = node.node.getChild("CodeInfo");
-            const language = info ? doc.sliceString(info.from, info.to).trim() : "";
+            const { language, title } = docPairInput.fenceParts(info ? doc.sliceString(info.from, info.to) : "");
             //: With the caret inside the block the real `” ```python ”` is back
             //: on screen (the `CodeMark`/`CodeInfo` branch above stops hiding
             //: it), so both of the things below have to stand down with it: a
@@ -1113,15 +1156,12 @@ function docLivePlugin(CM) {
               //: the two disagree the gutter wins and the fence keeps its
               //: row.
               const quiet = edge && !revealed && !gutterOn ? " cm-md-fence-quiet" : "";
-              ranges.push(
-                Decoration.line({
-                  class: `cm-md-fence${edge ? ` ${edge}` : ""}${quiet}`,
-                  attributes:
-                    edge === "cm-md-fence-open" && language && !revealed
-                      ? { "data-lang": language }
-                      : undefined,
-                }).range(line.from)
-              );
+              ranges.push(Decoration.line({ class: `cm-md-fence${edge ? ` ${edge}` : ""}${quiet}` }).range(line.from));
+              if (edge === "cm-md-fence-open" && !revealed) {
+                ranges.push(
+                  Decoration.widget({ widget: new DocFenceLabelWidget(language, title, line.from), side: 1 }).range(line.to)
+                );
+              }
               if (line.to >= node.to) break;
               at = line.to + 1;
             }
@@ -1244,6 +1284,32 @@ function docLivePlugin(CM) {
           Decoration.replace({ widget: new DocMathWidget(match[1], true) }).range(from, to)
         );
       });
+      //: A display block over several lines: a replace may not hold a line break, so the formula covers the first line and the rest fold.
+      const blockMath = (from, to, tex) => {
+        mathTaken.push([from, to]);
+        if (widgetRevealed(from, to)) return;
+        const first = doc.lineAt(from);
+        ranges.push(
+          Decoration.replace({ widget: new DocMathWidget(tex, true, true) }).range(first.from, first.to)
+        );
+        for (let at = first.to + 1; at <= to; ) {
+          const line = doc.lineAt(at);
+          ranges.push(Decoration.line({ class: "cm-md-math-fold" }).range(line.from));
+          at = line.to + 1;
+        }
+      };
+      let blockLines = null;
+      let blockSkip = -1;
+      scan(/^[ \t]*(?:\$\$[ \t]*|\\begin\{equation\*?\}.*)$/gm, (match, from) => {
+        if (from < blockSkip) return;
+        const at = doc.lineAt(from).number - 1;
+        blockLines = blockLines || docStr(doc).split("\n");
+        const found = mdMathBlockFrom(blockLines, at);
+        if (!found || found.end - 1 <= at || !found.tex || found.end - at > 60) return;
+        const to = doc.line(found.end).to;
+        blockSkip = to;
+        blockMath(from, to, found.tex);
+      });
       scan(/\$([^$\n]{1,300})\$/g, (match, from, to) => {
         if (mathTaken.some(([start, end]) => from >= start && to <= end)) return;
         if (!docMathLooksLikeMath(match[1])) return;
@@ -1272,7 +1338,11 @@ function docLivePlugin(CM) {
       //: Scanned rather than taken from the tree because the lezer markdown
       //: grammar here has no footnote extension: `[^1]` parses as ordinary
       //: text, which is also why nothing was drawing it before this.
-      scan(/\[\^([^\][\s]{1,40})\](:?)/g, (match, from, to) => {
+      //: A citation `[@key]` is the same shape, drawn as its key when the document defines it (`docPairInput.citeKeys`).
+      let citeKeys = null;
+      scan(/\[([\^@])([^\][\s]{1,40})\](:?)/g, (match, from, to) => {
+        if (match[1] === "@" && !(citeKeys ||= docPairInput.citeKeys(docStr(doc))).includes(match[2])) return;
+        match = [match[0], match[2], match[3]];
         const line = doc.lineAt(from);
         const definition = match[2] === ":" && line.from === from;
         const idFrom = from + 2;

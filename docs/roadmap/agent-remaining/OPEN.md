@@ -4407,12 +4407,12 @@ Format: id | file:line | one line | status.
 
 **BK1 (companion, 24 rows)**
 
-- X15 | audit-1029-extras:121 | Dashboard has about 13,250 DOM nodes with six notes, 16.6k to 19.9k after opening settings and dialogs | open
+- X15 | audit-1029-extras:121 | Dashboard has about 13,250 DOM nodes with six notes, 16.6k to 19.9k after opening settings and dialogs | partial: Guide chat is a template (6,831 to 6,437 nodes on a fresh folder); hidden tab panes (3,400 nodes) and the palette (438) still parse at boot, each wired by id at load
 - ~~A36 | audit-1030-ai:67 | Esc on a companion menu returns focus to an anonymous kebab-opener.pointer-menu-anchor, not the companion | partial~~ fixed 6254337 (checked 2026-11-11)
 - A37 | audit-1030-ai:68 | The companion fades to opacity 0 behind the Settings dialog; on phone it sits at about (314,728) over the | open
 - ~~Z18 | audit-1031-extras:121 | Background art, when on, costs 0.203 s of script per 5 s (about 4 percent of one core) at 20 fps on this | open~~ fixed 405fbdcaf (12 fps after 30 s without a pointer; checked 2026-11-11)
 - ~~HR23 | audit-1031-harness:39 | Pane opens with long tasks at 390 | open~~ fixed (Logs row grid 62,573 to 5,090 px; Memory poof not reproduced; audit-1031-harness.md:98; checked 2026-11-11)
-- UX3 | audit-1031-ux:17 | 70 animations run while nothing happens | open
+- ~~UX3 | audit-1031-ux:17 | 70 animations run while nothing happens | open~~ fixed 0519dd52a (loops pause after 20 s without input; 77 to 37 endless, task about 4.3 to 3.8 s per 10 s, noisy; checked 2026-11-11)
 - P8 | audit-1108-perf:45 | chat answer render path as cited; not re-measured | open
 - 1607b | owner-asks-audit-1108:13 | Masculine Atlas head size and shape against the feminine reference | open
 - B16 | owner-asks-audit-1108:16 | Masculine Atlas design pass (head, eyes, shoulder join, expressions) | open
@@ -4492,33 +4492,33 @@ Format: id | file:line | one line | status.
 
 **BD1 (documents, 27 rows)**
 
-- D22 | audit-1028-docs:26 | 1.1 MB unminified documents.js (24k lines, 648 functions, 7.5k comment lines) plus 852 KB CodeMirror bund | open
-- D23 | audit-1028-docs:27 | Hot-spot functions: docLivePlugin 1,559 lines, docCmTheme 1,076, renderDocOutline 298, docTableGripsPlugi | open
-- D28 | audit-1028-docs:32 | No continuous zoom (Ctrl+wheel / zoom % control) | open
-- D29 | audit-1028-docs:33 | Replace-in-all dialog has regex + case but no whole-word, no multiline/dotall flags, no per-document or p | open
-- D34 | audit-1028-docs:38 | Autosave state is one tiny text ("Unsaved…", "Saved", "Not saved") in the status bar; failure sets .error | open
-- D39 | audit-1028-docs:43 | Typo auto-correction rewrites words silently in any language and in prose-like code comments; undo toast | open
-- D40 | audit-1028-docs:44 | Text-size only small/medium/large and word goal as separate controls; status bar has counts but selection | open
-- D41 | audit-1028-docs:45 | Word count present (status bar), goal, reading time | open
-- D42 | audit-1028-docs:46 | No spreadsheet view for CSV docs (SQL run reads them, but editing is raw text) | open
-- D43 | audit-1028-docs:47 | No real-time collaboration or presence; conflict handling is hash-based 409 only | open
-- D45 | audit-1028-docs:49 | Wordlist (871 KB) is fetched on first non-empty text and the dictionary is rebuilt as Set/variants in the | open
-- D46 | audit-1028-docs:50 | Comment-to-code ratio ~32% in documents.js (7,570 of 23,963 lines); historical narration ("used to be", o | open
-- D47 | audit-1028-docs:51 | Fallback <textarea> surface duplicated through aliases (value, selectionStart) so two code paths for ever | open
-- D52 | audit-1028-docs:56 | Code editor: no multi-file workspace/tabs/split panes, no command palette inside the editor (only app pal | open
-- CE9 | audit-1031-code:21 | documents-code.js 6,289 lines, 30 addEventListener to 1 removeEventListener, docCodeScan 427 lines, docRu | open
-- DC7 | audit-1031-docs:19 | Opening the Documents tab loads the last document and then the one asked for | open
-- DC10 | audit-1031-docs:22 | The fallback find bar (#doc-find-bar, #doc-find-input, #doc-find-count, #doc-replace-one, #doc-replace-al | partial
-- DC13 | audit-1031-docs:25 | Sizes: documents.js 24,437 lines, 673 functions, 232 addEventListener against 7 removeEventListener, docL | open
-- Z11 | audit-1031-extras:114 | Still open (Y5, X15): opening a surface pays for the hidden DOM | open
-- N42 | audit-1031-notes:88 | The autocorrect typo table lives twice and has drifted | open
-- PF6 | audit-1031-perf:40 | The page is heavy and some of it does not come back | open
-- DX1 | audit-1102-docs:30 | partial: the 4x gate is not met (row status); a29i-1102.md holds the rest | open
-- DX21 | audit-1102-docs:50 | At 390, #doc-counts is 0 px wide, still visible and in the tab order (tabindex 0) | partial
-- P9 | audit-1108-perf:46 | menus.js:59 closeActionMenusOnScroll still present | open
-- D1.1 | diagram-fable-1679:11 | The page is a text document's page | partial
-- FIT22 | fitaudit-1109:8 | Rank 22 (PF6, DC7, CE9, DC13): mechanical splits of documents.js (17,163 lines now) and run_sandbox behin | open
-- 1667j | owner-asks-audit-1108:82 | Documents lag (atlas-motion loop, documents.js timer, /documents/7, tab-switch style) | open
+- D22 | audit-1028-docs:26 | 1.1 MB unminified documents.js (24k lines, 648 functions, 7.5k comment lines) plus 852 KB CodeMirror bund | deferred: L split of documents.js into lazy chunks needs an Opus design step; documents.js is 17,322 lines now (audit-1028-docs:26)
+- D23 | audit-1028-docs:27 | Hot-spot functions: docLivePlugin 1,559 lines, docCmTheme 1,076, renderDocOutline 298, docTableGripsPlugi | deferred: L split by concern, docLivePlugin sits in documents-cm.js (audit-1028-docs:27)
+- D28 | audit-1028-docs:32 | No continuous zoom (Ctrl+wheel / zoom % control) | deferred: text size is a three-step stepper (documents.js:9575 DOC_TEXT_SIZES, library-lazy.css:7354); a continuous zoom is an owner call (stepper or slider) (audit-1028-docs:32)
+- D29 | audit-1028-docs:33 | Replace-in-all dialog has regex + case but no whole-word, no multiline/dotall flags, no per-document or p | stale (2026-11-11): documents-replace.js has whole word, per-match skip and a context snippet (audit-1028-docs:33)
+- D34 | audit-1028-docs:38 | Autosave state is one tiny text ("Unsaved…", "Saved", "Not saved") in the status bar; failure sets .error | stale (2026-11-11): a save failure toasts once per run with Try again (documents.js:2736-2741 `docSaveFailedSaid`) (audit-1028-docs:38)
+- D39 | audit-1028-docs:43 | Typo auto-correction rewrites words silently in any language and in prose-like code comments; undo toast | partial (2026-11-11): the Autocorrect switch is in the Editor menu (index.html:5407 `#doc-autocorrect`); a status-bar switch is not built (audit-1028-docs:43)
+- D40 | audit-1028-docs:44 | Text-size only small/medium/large and word goal as separate controls; status bar has counts but selection | stale (2026-11-11): selection word count built (documents.js:10818) (audit-1028-docs:44)
+- D41 | audit-1028-docs:45 | Word count present (status bar), goal, reading time | stale (2026-11-11): selection word count built (documents.js:10818) (audit-1028-docs:45)
+- D42 | audit-1028-docs:46 | No spreadsheet view for CSV docs (SQL run reads them, but editing is raw text) | deferred: L grid view for csv/tsv (audit-1028-docs:46)
+- D43 | audit-1028-docs:47 | No real-time collaboration or presence; conflict handling is hash-based 409 only | deferred: out of scope for an offline notebook, hash-based 409 stays (audit-1028-docs:47)
+- D45 | audit-1028-docs:49 | Wordlist (871 KB) is fetched on first non-empty text and the dictionary is rebuilt as Set/variants in the | deferred: M, wordlist build in a worker (documents.js:11233) (audit-1028-docs:49)
+- D46 | audit-1028-docs:50 | Comment-to-code ratio ~32% in documents.js (7,570 of 23,963 lines); historical narration ("used to be", o | won't (2026-11-11): comments that say why are the house rule (CLAUDE.md section 7); 5,717 of 17,334 lines in documents.js are comments, no historical-narration lint exists (audit-1028-docs:50)
+- D47 | audit-1028-docs:51 | Fallback <textarea> surface duplicated through aliases (value, selectionStart) so two code paths for ever | deferred: L, drop the textarea fallback (documents.js:231) (audit-1028-docs:51)
+- D52 | audit-1028-docs:56 | Code editor: no multi-file workspace/tabs/split panes, no command palette inside the editor (only app pal | deferred: L, tabs and split panes in the code editor (audit-1028-docs:56)
+- CE9 | audit-1031-code:21 | documents-code.js 6,289 lines, 30 addEventListener to 1 removeEventListener, docCodeScan 427 lines, docRu | deferred: L/M splits of documents-code.js and run_sandbox.py (audit-1031-code:21)
+- DC7 | audit-1031-docs:19 | Opening the Documents tab loads the last document and then the one asked for | stale (2026-11-11): driven on :8909 from the dashboard to #/docs/10, requests were GET /documents then GET /documents/10, one open (documents.js:1119-1140 `asked` guard); the list refetch on return not re-measured (audit-1031-docs:19)
+- DC10 | audit-1031-docs:22 | The fallback find bar (#doc-find-bar, #doc-find-input, #doc-find-count, #doc-replace-one, #doc-replace-al | fixed board1518-1101 (2026-11-11: `doc-find-bar` is in no frontend file) (audit-1031-docs:22)
+- DC13 | audit-1031-docs:25 | Sizes: documents.js 24,437 lines, 673 functions, 232 addEventListener against 7 removeEventListener, docL | deferred: L, same split as D22/D23 (audit-1031-docs:25)
+- Z11 | audit-1031-extras:114 | Still open (Y5, X15): opening a surface pays for the hidden DOM | deferred: perf across Settings/Writing room panes, not documents (audit-1031-extras:114)
+- N42 | audit-1031-notes:88 | The autocorrect typo table lives twice and has drifted | stale (2026-11-11): one table, `DOC_AUTOCORRECT = AUTOCORRECT_TYPOS` (documents.js:11347) (audit-1031-notes:88)
+- PF6 | audit-1031-perf:40 | The page is heavy and some of it does not come back | deferred: listener growth on timeline/dashboard redraws, not documents (audit-1031-perf:40)
+- DX1 | audit-1102-docs:30 | partial: the 4x gate is not met (row status); a29i-1102.md holds the rest | partial: the 4x typing gate stays open, a29i-1102.md holds the rest (audit-1102-docs:30)
+- DX21 | audit-1102-docs:50 | At 390, #doc-counts is 0 px wide, still visible and in the tab order (tabindex 0) | partial (2026-11-11, 390 touch on :8909): `#doc-counts` tabindex -1 at width 0 and the footnote reference is 30x29 live and 45x47 read, fixed ee5f5a033; the task box is still 18x18, found not fixed (audit-1102-docs:50)
+- P9 | audit-1108-perf:46 | menus.js:59 closeActionMenusOnScroll still present | stale (2026-11-11): the row only noted the handler exists; it is guarded (menus.js:59-75, 200 ms after a menu opens), no defect (audit-1108-perf:46)
+- D1.1 | diagram-fable-1679:11 | The page is a text document's page | fixed 29d4ad4e5 (diagram-fable-1679:11)
+- FIT22 | fitaudit-1109:8 | Rank 22 (PF6, DC7, CE9, DC13): mechanical splits of documents.js (17,163 lines now) and run_sandbox behin | deferred: mechanical splits of documents.js and run_sandbox.py, L, Opus design (fitaudit-1109:8)
+- 1667j | owner-asks-audit-1108:82 | Documents lag (atlas-motion loop, documents.js timer, /documents/7, tab-switch style) | deferred: atlas-motion loop and tab-switch style are outside documents; not re-driven (owner-asks-audit-1108:82)
 
 **BH1 (chat, 21 rows)**
 
@@ -4650,7 +4650,7 @@ Columns: id | item | sources (file:line) | status | batch
 | H2 | Fable named for a read-only composer audit and a whole-app deep dive "next session" | HANDOVER:11,12 | owner call: is Fable named for the close-out? (nothing may start it otherwise, order 4) | none |
 | H3 | Q20: `complexity.yml` still `--exit-zero`; CI definition edits guarded in away mode, `tests/test_complexity.py` holds the zero baseline | HANDOVER:412, OPEN:40 (Q20) | owner call: edit the workflow (guarded)? | none |
 | H4 | Held: K38 single-use media links (breaks range playback), K32 due-count endpoint (poll redesign), E43/K11/K13/K26 key storage and MCP auth (Q22) | HANDOVER:410, s11-1110.md:8,9 | owner call: Q22 (keyring or 0600 file, one token per MCP server) and K38 (accept a 120 s reusable link?) | none |
-| H5 | `test_repo_boundaries::test_orm_calls_in_the_routers_only_go_down` red: 690 ORM calls under api/, cap 687 | g69-1110.md:11 (said 691); run 2026-11-11 | open | Bk2 |
+| H5 | `test_repo_boundaries::test_orm_calls_in_the_routers_only_go_down` red: 690 ORM calls under api/, cap 687 | g69-1110.md:11 (said 691); run 2026-11-11 | green at f06fd0e09 (re-run, nothing to fix) | Bk2 |
 | H6 | Test reds named in older notes: `test_boot_diet3` (3573 vs 3569), `test_lazy_bundle_calls` (dashboard.js:3833,3889), `test_atlas_access` fixture, `test_static_compression` | s9b-1110.md:12, s14-1110.md:6, s58left3-1110.md:10, s12b-1110.md:7; the four pass on 2026-11-11 | fixed (run; only the boundaries test fails) | none |
 
 **Work-order rows (OPEN.md) still open, merged with their remaining files**
@@ -4719,7 +4719,7 @@ Columns: id | item | sources (file:line) | status | batch
 | --- | --- | --- | --- | --- |
 | P1 | "You asked: ..." line above the Ask answer stays removed (Q19) | OPEN:381, OPEN:54 | fixed by decision (HANDOVER:12; a test pins it) | none |
 | P2 | Start SearXNG from a button | OPEN:379 | open | Bk1 |
-| P3 | `_start_tray` over complexity 20 (now 23): split menu build from start-up; test on Windows | OPEN:389 | open; Windows part unverifiable | Bk2 |
+| P3 | `_start_tray` over complexity 20 (now 23): split menu build from start-up; test on Windows | OPEN:389 | built deb7ab83d (callbacks module-level, 130 lines); Windows part unverifiable | Bk2 |
 | P4 | Reminder edit form: time field about 0.2 rem high | OPEN:390 | open | Sh1 |
 | P5 | Brief 27 phone bottom bar | SESSION_BRIEFS:132 | fixed (phone-shell.js:673, shell-reminders.js:588; E19 stale) | none |
 | P6 | Brief 34 second part: one snap in ten minutes; reaction rows | SESSION_BRIEFS:154 | open | Cp1 |

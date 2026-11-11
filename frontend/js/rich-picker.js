@@ -47,7 +47,7 @@ function richPickerFillLabel(el, label, query) {
     const at = text.toLowerCase().indexOf(needle);
     hits = at >= 0
       ? Array.from({ length: needle.length }, (_, i) => at + i)
-      : (typeof editorFuzzyMatch === "function" && editorFuzzyMatch(text, needle)) || [];
+      : editorFuzzyMatch(text, needle) || [];
   }
   if (!hits.length) {
     el.textContent = text;
