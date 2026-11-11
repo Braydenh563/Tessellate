@@ -703,3 +703,13 @@ def test_the_viewer_page_number_is_a_typeable_field_in_the_guide() -> None:
     view = (FRONTEND / "js" / "lightbox-view.js").read_text(encoding="utf-8")
     for label in ('label: "Page number"', "Page ${v} of ${docPageCount}", "setDocPage(n - 1)"):
         assert label in view, label
+
+
+def test_the_answer_offers_and_the_pool_count_line_are_in_the_guide() -> None:
+    """Standing order 13 (composer batch 2): the offer link at the end of an answer, a typed yes taking
+    it up in Chat, and the story's "That tells N of the M" line are named in the Ask and Chat topic."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = " ".join(str(t["body"]) for t in HELP_TOPICS if "Save it as a checklist note" in str(t["body"]))
+    for phrase in ("Save it as a checklist note", "Start a list of", "typing yes", "no thanks drops it", "That tells five of the twelve"):
+        assert phrase in body, phrase

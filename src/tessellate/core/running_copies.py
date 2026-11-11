@@ -176,7 +176,8 @@ def prune_in_background() -> None:
     lock: a crash or a closed window skips `release`, so this is where the
     records of copies that died are dropped."""
     import logging
-    import threading
+
+    from tessellate.core import jobs  # here, not at the top: this module keeps light imports
 
     def run() -> None:
         try:
@@ -184,7 +185,7 @@ def prune_in_background() -> None:
         except Exception:  # noqa: BLE001 - a tidy-up, never a reason to fail
             logging.getLogger(__name__).debug("running copies: start-up prune failed", exc_info=True)
 
-    threading.Thread(target=run, name="running-copies-prune", daemon=True).start()
+    jobs.thread("running-copies-prune", run)
 
 
 def ask_to_stop(port: int, token: str) -> bool:

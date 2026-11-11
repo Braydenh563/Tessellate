@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import json
 import re
+from datetime import date
 
 from tessellate.ai import recognise
 
@@ -38,6 +39,7 @@ _NOT_NAMES = frozenset(
         *_MONTHS,
         *(m[:3] for m in _MONTHS),
         "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
+        "mon", "tue", "tues", "wed", "thu", "thur", "thurs", "fri", "sat", "sun",
         "today", "tomorrow", "yesterday", "i", "i'm", "i've", "i'll", "i'd", "ok", "okay",
         "ai", "atlas", "memorymap", "notes", "note", "chat", "graph", "library",
         "settings", "timeline", "whiteboard", "documents", "document", "reminders",
@@ -69,6 +71,10 @@ _SENTENCE_START = re.compile(r"(?:^|[.!?:;]\s+|\n\s*(?:[-*+]|\d+[.)])?\s*|\(\s*|
 _FIGURES = re.compile(r"^[\d:/\-.,]+(?:st|nd|rd|th)?$")
 
 
+_CLOCK_DAY = re.compile(r"the current date and time is (\d{4}-\d\d-\d\d)")
+_ISO_DAY = re.compile(r"(?<!\d)(\d{4}-\d\d-\d\d)(?!\d)")
+
+
 def _number_key(whole: str, fraction: str | None) -> str:
     whole = whole.replace(",", "").lstrip("0") or "0"
     fraction = (fraction or "").rstrip("0")
@@ -92,6 +98,24 @@ class Sources:
                 self.numbers.add(str(month))
         for text in texts:
             self._list_lengths(text)
+        self._day_gaps()
+
+    def _day_gaps(self) -> None:
+        """"in 5 days" and "2 weeks ago" are the date's own figures: the days between the clock's today and a
+        date the sources hold are said, so they are not unbacked (W8 found-not-fixed)."""
+        clock = _CLOCK_DAY.search(self.text)
+        if not clock:
+            return
+        try:
+            today = date.fromisoformat(clock.group(1))
+            days = {date.fromisoformat(d) for d in _ISO_DAY.findall(self.text)}
+        except ValueError:
+            return
+        for day in days:
+            gap = abs((day - today).days)
+            self.numbers.add(str(gap))
+            if gap and gap % 7 == 0:
+                self.numbers.add(str(gap // 7))
 
     def _list_lengths(self, text: str) -> None:
         try:

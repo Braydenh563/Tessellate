@@ -3012,7 +3012,7 @@ function graphPanelRoom() {
   //: it (INBOX 1630, "the graph popup gets covered by the top bar").
   //: The graph's own dock lies over the map's top too (the owner, 2026-11-08: "the top of popup
   //: cards can be cut off by the top bar in the graph on hover"): a hover card 25px under it at
-  //: 1440 and 65px at 390 (graphcard1697.js), so the floor is the lower of the two bars' feet.
+  //: 1440 and 65px at 390, so the floor is the lower of the two bars' feet.
   let floor = 0;
   for (const bar of [document.getElementById("top-bar"), document.querySelector('.dock[data-dock-name="graph"]')]) {
     const at = bar && bar.offsetParent !== null ? bar.getBoundingClientRect() : null;

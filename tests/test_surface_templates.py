@@ -187,13 +187,17 @@ def _load_time_blocks(text: str):
     i = 0
     while i < len(lines):
         line = lines[i]
-        if line.startswith(("onDomReady(", "document.getElementById(", "$(", "onSurface(", "(function", "(() =>")):
-            # The statement ends at the first unindented line closing it.
+        if line.startswith(("onDomReady(", "document.getElementById(", "$(", "onSurface(", "(function", "(() =>", "try {")):
+            # The statement ends at the first unindented line closing it (a `try`, at its closing brace).
             j = i
-            while j < len(lines) - 1 and not (
-                re.search(r"\);\s*$", lines[j]) and (j == i or not lines[j].startswith((" ", "\t")))
-            ):
-                j += 1
+            if line.startswith("try {"):
+                while j < len(lines) - 1 and not (lines[j] == "}" and j > i):
+                    j += 1
+            else:
+                while j < len(lines) - 1 and not (
+                    re.search(r"\);\s*$", lines[j]) and (j == i or not lines[j].startswith((" ", "\t")))
+                ):
+                    j += 1
             yield i + 1, line, "\n".join(lines[i : j + 1])
             i = j + 1
         else:

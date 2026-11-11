@@ -283,10 +283,13 @@ const expandedNotes = new Set();
 //: that is (shown, scrolled into a `content-visibility` window, a chunk
 //: landing) and again when the width changes, and a removed card leaves it.
 const noteClampFit = new ResizeObserver((seen) => {
+  //: Every read first, then the writes: an unclip between two cards' reads made each next read a forced layout.
+  const fits = [];
   for (const { target } of seen) {
     if (!target.isConnected) noteClampFit.unobserve(target);
-    else if (target.clientHeight && target.classList.contains("entry-clamped") && target.scrollHeight <= target.clientHeight + 2) target.unclip();
+    else if (target.clientHeight && target.classList.contains("entry-clamped") && target.scrollHeight <= target.clientHeight + 2) fits.push(target);
   }
+  for (const target of fits) target.unclip();
 });
 
 

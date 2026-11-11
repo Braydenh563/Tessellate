@@ -3418,10 +3418,48 @@ function* untangleLayoutSteps() {
       node.y = bestAt ? bestAt[1] : y0;
       if (bestAt) gained += before - best;
     }
+    for (let i = 0; i < nodes.length && workNow() < until; i++) {
+      if (!still(nodes[i]) && untangle.incident[i].length > UNTANGLE_MOVE_LINKS) gained += yield* untangleFanSteps(i, still, until);
+    }
     untangle.gain += gained;
     if (!gained) break;
   }
   return untangleGlide(startX, startY);
+}
+
+//: **A hub's neighbours trade places** (graph-1030:35: the rings move the hub, nothing moved the order its lines
+//: leave in). Two of a hub's neighbours, of any category, swap spots when that lowers the crossings on their lines
+//: and both stay in their category's reach and clear of the rest. Measured on the 36-note seed, mean of 18
+//: layouts: 54.9 crossings to 52.0, 44.0 to 41.7 of them on the hubs' lines. Spreading them at even angles in the
+//: order their other lines lead, and turning the order round the hub, gained nothing (0 of 17 hubs tried).
+function* untangleFanSteps(i, still, until = Infinity) {
+  const around = [];
+  for (const line of untangle.incident[i]) {
+    const j = untangle.ea[line] === i ? untangle.eb[line] : untangle.ea[line];
+    if (!still(nodes[j]) && !around.includes(j)) around.push(j);
+  }
+  let gained = 0;
+  for (let p = 0; p < around.length; p++) {
+    for (let q = p + 1; q < around.length; q++) {
+      if (workNow() >= until) return gained;
+      if (sliceOver()) yield;
+      const u = nodes[around[p]];
+      const v = nodes[around[q]];
+      const both = [...new Set([...untangle.incident[around[p]], ...untangle.incident[around[q]]])];
+      const before = crossingsOn(both);
+      if (!before) continue;
+      [u.x, v.x] = [v.x, u.x];
+      [u.y, v.y] = [v.y, u.y];
+      const after = crossingsOn(both);
+      if (after < before && untangleInside(u) && untangleInside(v) && untangleFree(u, u.x, u.y, COLLIDE_PAD) && untangleFree(v, v.x, v.y, COLLIDE_PAD)) {
+        gained += before - after;
+        continue;
+      }
+      [u.x, v.x] = [v.x, u.x];
+      [u.y, v.y] = [v.y, u.y];
+    }
+  }
+  return gained;
 }
 
 // The move is shown, not jumped: back to the start, then a glide (`shuffleStep`).

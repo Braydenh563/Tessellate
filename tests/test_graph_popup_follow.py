@@ -22,7 +22,7 @@ def _fn(name: str) -> str:
 
 
 def test_the_popup_is_placed_again_by_the_canvas_frame_not_a_second_loop():
-    assert "placeGraphPopup();" in CANVAS[CANVAS.index("gcHoverCardFrame(s);\n") :][:300]
+    assert "placeGraphPopup();" in CANVAS[CANVAS.rindex("  gcHoverCardFrame(s);\n") :][:300]
     assert "requestAnimationFrame" not in _fn("graphPopupFollowSpot")
 
 

@@ -24,7 +24,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from typing import Annotated, Literal
 
-from tessellate.ai import captioning, composer_digest, consent, composer_frame, composer_open, librarian, memory, presets, questions, skills, tools, vocative
+from tessellate.ai import captioning, composer_digest, composer_talk, consent, composer_frame, composer_open, librarian, memory, presets, questions, skills, tools, vocative
 from tessellate.api import bounds
 from tessellate.api.chat_attach import _attached_boards, _attached_documents, _attached_notes
 from tessellate.api.schemas import EntryOut
@@ -101,6 +101,9 @@ class ChatTurn(BaseModel):
     #: The id the server parked that card under (`ai/consent_store.py`), sent with it so a typed
     #: yes runs what was proposed. The page never sends back steps or arguments.
     pending_id: str | None = Field(default=None, max_length=40)
+    #: The id the server parked the answer's note offer under (Gather them, Track your lifts; `consent.py`),
+    #: sent on the last turn while the offer stands, so a typed yes makes that note.
+    offer_id: str | None = Field(default=None, max_length=40)
 
     @model_validator(mode="after")
     def _objects_from_links(self):  # noqa: ANN202
@@ -449,6 +452,25 @@ def _bind_cited(session: Session, body: ChatRequest, sentence: str) -> str:
     return sentence
 
 
+def take_up_offer(req: _StreamRequest) -> bool:
+    """A bare "yes" takes up the offer the answer before ended with (B23); "open it" names the note the
+    answer cited. True when the yes made the note the server held (Gather them, Track your lifts), which
+    needs no reading of the question: its text is `req.offer_note`, made on this yes with Undo."""
+    from tessellate.core import config
+
+    held = composer_talk.held_offer(req.question, req.history)
+    if held is not None:
+        req.offer_note, req.offer_yes, req.question = held, True, f"make a note: {held}"
+        return True
+    now = config.user_now(deps.get_config())
+    offered = composer_talk.accepted_offer(req.question, req.history, now)
+    req.offer_yes = offered is not None and consent.says(req.question) == "yes"
+    cited = offered or composer_talk.cited_question(req.question, req.history, now)
+    if cited is not None:
+        req.question = _bind_cited(req.session, req.body, cited)
+    return False
+
+
 def _titled_note(session: Session, body: ChatRequest, name: str) -> bool:
     """Bind the one note titled `name`."""
     if not name or name.lower() in _NOT_A_NAME:
@@ -791,6 +813,8 @@ class _StreamRequest:
     #: A bare yes took up an offer ("Shall I remind you ...?"): the offer was the proposal and the
     #: yes is the consent, so its act runs with no second card (`_follow_up`).
     offer_yes: bool = False
+    #: The note a held offer makes (`composer_talk.held_offer`); the yes is its consent.
+    offer_note: str = ""
 
     def tip_events(self) -> list[dict]:
         return [{"type": "tip", "text": self.tip}] if self.tip else []

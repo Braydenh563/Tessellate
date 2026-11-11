@@ -638,7 +638,7 @@ const ATLAS_LOOKS = {
     //: on a circle of 2.2 (T1 23.68 39.93 to T2 23.54 41.77, mirrored), and
     //: the arm starts on the pivot 4.4 across, so its root corners sit on
     //: that circle at every turn and its sides leave it on the tangent: no
-    //: step at any angle the acts use (atlasm1111.js, 0 to 130 degrees).
+    //: step at any angle the acts use (measured 0 to 130 degrees, CHANGELOG 1607).
     torso: "M26.2 35.4C25.3 36.4 24.46 38.53 23.68 39.93C23.36 40.49 23.31 41.17 23.54 41.77C25.09 45.89 26.8 55.4 26 61C28 63.4 34 63.4 36 61C35.2 55.4 36.91 45.89 38.46 41.77C38.69 41.17 38.64 40.49 38.32 39.93C37.54 38.53 36.7 36.4 35.8 35.4Z",
     //: **Arms that hang** (INBOX 564, 567, 568, the owner: "the arms still
     //: look separate and they stick straight out of the body and dont hang

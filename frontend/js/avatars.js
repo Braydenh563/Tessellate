@@ -4009,6 +4009,14 @@ function nameMarkBuddyControlBoxes(tab) {
   nmb.covers = { tab, boxes, at: performance.now() };
   return boxes;
 }
+//: **Read while it is carried, not at the release** (lag-1109: the release read was the first read after the drag,
+//: 49 to 119 ms at 4x). Once the frame that drew the pick-up is done the page is clean and the 142 boxes are cheap;
+//: the release then finds them kept (`nmb.covers`) and only the figure's own box is read.
+nmb.warmCovers = () => {
+  afterFrames(() => setTimeout(() => {
+    if (document.getElementById("nm-buddy")?.classList.contains("nm-buddy-dragging")) nameMarkBuddyControlBoxes(nameMarkBuddyTab());
+  }), 1);
+};
 function nameMarkBuddyControlsIn(root, boxes) {
   if (!root) return;
   const found = root.matches(NAME_MARK_BUDDY_NEVER_COVER) ? [root] : [];
@@ -9907,9 +9915,10 @@ function nameMarkBuddyBlend(buddy, change, ms = NMB_BLEND_MS) {
   //: eases are skipped in the second.
   const eases = [];
   const eased = new Map();
+  let alive;
   change();
   for (const { anim, el, from } of held) {
-    if (el.getAnimations().includes(anim)) continue;
+    if ((alive ||= new Set(document.getAnimations())).has(anim)) continue;
     //: Only what moved (the body's note below says why).
     const style = getComputedStyle(el);
     const done = eased.get(el) || new Set();
@@ -10807,9 +10816,10 @@ function nameMarkBuddyBuild() {
   //: **A band and a rider** (INBOX 426 x, `nameMarkBuddyRide`): the band
   //: is the window, or the visible box of the panel's scroll area it rides
   //: in, and clips it there; the rider inside it is moved by the browser
-  //: with that scroll. It stays in the body: the app's own scroll boxes
-  //: (the dashboard's flex page, the notes list) are never given a child
-  //: they did not make. Between them the shutter, which closes the band
+  //: with that scroll. It sits under `<html>`, not in the body (INBOX 1726):
+  //: a node added under `<body>` re-asks every `:has()` subject (124 to 213ms
+  //: on the Library Images tab at 4x), under `<html>` it is 1 to 9ms; the text
+  //: it took from body is restated in 08-consistency.css. Between them the shutter, which closes the band
   //: down to the bar its perch has gone under (`nameMarkBuddyRideFrames`).
   const band = document.createElement("div");
   band.id = "nm-buddy-band";
@@ -10820,7 +10830,7 @@ function nameMarkBuddyBuild() {
   rider.appendChild(buddy);
   shutter.appendChild(rider);
   band.appendChild(shutter);
-  document.body.appendChild(band);
+  document.documentElement.appendChild(band);
   nameMarkBuddyLockSync();
   nameMarkBuddySetSize(nameMarkBuddyScaleSaved(), false);
   nameMarkBuddyToggles(buddy);
@@ -10918,6 +10928,8 @@ function nameMarkBuddyBuild() {
       nmb.mood.energy = Math.min(1, nmb.mood.energy + 0.15);
       nmb.mood.sociability = Math.max(0, nmb.mood.sociability - 0.05);
       buddy.classList.add("nm-buddy-dragging");
+      drag.pickedAt = performance.now();
+      nmb.warmCovers();
     }
     //: Shaken up and down while carried, it turns over (`nameMarkBuddyFlip`).
     (drag.shake ||= []).push([event.clientX, event.clientY, t]);
@@ -10946,7 +10958,12 @@ function nameMarkBuddyBuild() {
       //: Reads first, then writes: one restyle of the rig, not three (Atlas at 4x).
       const v = nameMarkBuddyReleaseVelocity(drag.samples || [], event?.timeStamp ?? performance.now());
       const thrown = !!v && Math.hypot(v[0], v[1]) > NMB_TOSS_SPEED && typeof nameMarkBuddyThrow === "function";
-      if (thrown) nameMarkBuddyIndexReset();
+      if (thrown) {
+        //: The tab's control boxes read since the pick-up (`nmb.warmCovers`) are kept: the observers drop them on any change.
+        const kept = nmb.covers?.at >= drag.pickedAt ? nmb.covers : null;
+        nameMarkBuddyIndexReset();
+        nmb.covers = kept;
+      }
       const world = thrown && nameMarkBuddyWorld(nameMarkBuddyTab());
       //: The whole flight and where it comes down, before any write (companion-throw.js).
       const plan = thrown && companionThrowPlan(Math.round(box.left), Math.round(box.top), v[0], v[1], world);

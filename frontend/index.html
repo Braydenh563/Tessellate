@@ -556,7 +556,7 @@
        sheet is built and thrown away on every open; `openHelpChat()` moves
        this one copy in and puts it back on close. -->
   <div id="atlas-host" hidden>
-  <template data-surface="atlasChat">
+  <script type="text/x-surface" data-surface="atlasChat">
     <div class="settings-group help-chat-group atlas-chat" id="help-chat-group">
       <div class="atlas-intro">
         <span class="atlas-mark" data-atlas-avatar="32" aria-hidden="true"><i class="ph ph-compass" aria-hidden="true"></i></span>
@@ -628,12 +628,12 @@
         </p>
       </div>
     </div>
-  </template>
+  </script>
   </div>
 
   <div id="command-palette-overlay" class="lock-overlay command-palette-overlay hidden"
     role="dialog" aria-modal="true" aria-label="Agent command palette">
-  <template data-surface="palette">
+  <script type="text/x-surface" data-surface="palette">
     <div class="card glass command-palette-card">
       <!-- **A dialog in this app says what it is and how to leave it.**
            INBOX 126, the owner: "I want the popup agent better redesigned with
@@ -783,7 +783,7 @@
           title="Stop the answer being written"><i class="ph ph-stop ph-lead" aria-hidden="true"></i> Stop</button>
       </div>
     </div>
-  </template>
+  </script>
   </div>
 
 
@@ -1182,7 +1182,7 @@
        leaving it. Alt+N or the palette; the head is the dialog-head recipe. -->
   <dialog id="quick-note" class="card space-dialog quick-note-dialog" aria-labelledby="quick-note-title">
     <!-- Built when the dialog first opens (`surfaceBuild("quickNote")`, settings-body.js; the boot page is at its element cap). -->
-    <template data-surface="quickNote">
+    <script type="text/x-surface" data-surface="quickNote">
     <div class="dialog-head">
       <h2 id="quick-note-title" class="dialog-head-title"><i class="ph ph-lightning pop-glyph" aria-hidden="true"></i> Quick note</h2>
       <button type="button" class="icon-only ghost small graph-help-toggle dialog-head-btn"
@@ -1220,7 +1220,7 @@
       <button type="button" class="ghost small" id="quick-note-more">Open in Capture</button>
       <button type="button" class="accent small" id="quick-note-save">Save note</button>
     </div>
-    </template>
+    </script>
   </dialog>
   <!-- **These two live here, beside the other dialogs, and not inside
        `#tab-documents` where they were written.** A modal `<dialog>` is drawn
@@ -1486,7 +1486,7 @@
 
   <!-- ======================= NOTES TAB (the current app) ================== -->
   <div class="tab-page hidden" id="tab-notes" role="tabpanel" aria-labelledby="tab-btn-notes" tabindex="-1">
-  <template data-surface="notes">
+  <script type="text/x-surface" data-surface="notes">
     <div class="layout">
       <!-- Category sidebar: built from the loaded entries, click to filter -->
       <aside class="card sidebar-panel" id="sidebar">
@@ -2735,12 +2735,12 @@ Link to another note with [[its first few words]]."></textarea>
         <div class="notes-rail-body" id="notes-rail-body" aria-live="polite"></div>
       </aside>
     </div>
-  </template>
+  </script>
   </div>
 
   <!-- ======================= CHAT TAB ====================================== -->
   <div class="tab-page hidden" id="tab-chat" role="tabpanel" aria-labelledby="tab-btn-chat" tabindex="-1">
-  <template data-surface="chat">
+  <script type="text/x-surface" data-surface="chat">
     <div class="layout">
       <!-- **Recent chats, not every chat (§36F).** Browsing what you have ever
            asked is the Library's job now, and two lists of the same thing is
@@ -3588,7 +3588,7 @@ Link to another note with [[its first few words]]."></textarea>
         </aside>
       </div><!-- .tab-main -->
     </div>
-  </template>
+  </script>
   </div>
 
   <!-- ======================= GRAPH TAB ===================================== -->
@@ -3597,7 +3597,7 @@ Link to another note with [[its first few words]]."></textarea>
        sorted list. -->
   <div class="tab-page hidden" id="tab-timeline" role="tabpanel"
     aria-labelledby="tab-btn-timeline" tabindex="-1">
-  <template data-surface="timeline">
+  <script type="text/x-surface" data-surface="timeline">
     <section class="card">
       <!-- Same split as the graph toolbar (§37F/DESIGN.md's control-strip
            rule): what you touch while reading, the view mode and the
@@ -3919,11 +3919,11 @@ Link to another note with [[its first few words]]."></textarea>
         <button class="ghost small" type="button" id="timeline-clear-search"><i class="ph ph-x ph-lead" aria-hidden="true"></i> Clear the search</button>
       </div>
     </section>
-  </template>
+  </script>
   </div>
 
   <div class="tab-page hidden" id="tab-graph" role="tabpanel" aria-labelledby="tab-btn-graph" tabindex="-1">
-  <template data-surface="graph">
+  <script type="text/x-surface" data-surface="graph">
     <section class="card" id="graph-card">
       <!-- Two rows, split by *how often you touch them*, reported as "the ui
            elements above the graph are messy and a lot to take in", and it was
@@ -4815,7 +4815,7 @@ Link to another note with [[its first few words]]."></textarea>
         </div>
       </div>
     </section>
-  </template>
+  </script>
   </div>
 
   <!-- ======================= DOCUMENTS TAB ======================= -->
@@ -4824,7 +4824,7 @@ Link to another note with [[its first few words]]."></textarea>
        write, and mixing them would put every half-finished draft into search
        results and the graph. -->
   <div class="tab-page hidden" id="tab-documents" role="tabpanel" aria-label="Documents" tabindex="-1">
-  <template data-surface="documents">
+  <script type="text/x-surface" data-surface="documents">
     <!-- **Focus mode's own dock** (INBOX 425 i). Everything else on the
          page is gone while the mode is on, so this is what is left of it:
          which document this is, whether it is saved, full screen when the
@@ -5609,7 +5609,7 @@ Link to another note with [[its first few words]]."></textarea>
              only, beside the one button that closes the open file. Shown for a
              code document with another one open; empty and hidden otherwise. -->
         <div id="doc-tabs-row" class="doc-tabs-row hidden">
-          <div id="doc-tabs" class="tabs-line" role="tablist" aria-label="Open code files"></div>
+          <div id="doc-tabs" class="tabs-line edge-fade" role="tablist" aria-label="Open code files"></div>
           <button type="button" id="doc-tab-end" class="ghost small" title="Close this file's tab (middle-click a tab does the same)">Close file</button>
         </div>
         <nav id="doc-crumbs" class="doc-crumbs edge-fade hidden" aria-label="Breadcrumb">
@@ -5944,12 +5944,12 @@ Link to another note with [[its first few words]]."></textarea>
          distinct from the app's own session-only global undo stack, which
          also fires on every accept for an immediate Ctrl+Z but forgets
          everything on reload. -->
-  </template>
+  </script>
   </div>
 
   <!-- ======================= REMINDERS TAB ================================= -->
   <div class="tab-page hidden" id="tab-reminders" role="tabpanel" aria-labelledby="tab-btn-reminders" tabindex="-1">
-  <template data-surface="reminders">
+  <script type="text/x-surface" data-surface="reminders">
     <!-- Compose: the two ways to add a reminder, kept apart from the list -->
     <section class="card reminders-card" id="reminder-compose">
       <div class="row space-between reminders-head">
@@ -6176,7 +6176,7 @@ Link to another note with [[its first few words]]."></textarea>
         <p class="muted">Add one above, or hit Remind on any note.</p>
       </div>
     </section>
-  </template>
+  </script>
   </div>
 
   <!-- ======================= LIBRARY TAB (§4, §36F) =======================
@@ -6191,7 +6191,7 @@ Link to another note with [[its first few words]]."></textarea>
        same length it was. A library that duplicated two lists that already
        existed would be a third place to look. -->
   <div class="tab-page hidden" id="tab-library" role="tabpanel" aria-labelledby="tab-btn-library" tabindex="-1">
-  <template data-surface="library">
+  <script type="text/x-surface" data-surface="library" data-nests="board">
     <div class="library-subtabs tabs-line edge-fade" id="library-subtabs" role="tablist">
       <!-- Reordered, and the first one renamed. It was called "Documents"
            while actually showing everything you have ever made, notes,
@@ -9196,7 +9196,7 @@ Link to another note with [[its first few words]]."></textarea>
        view above rendered as a direct child of <body>, outside the flex
        column and its padding, which is why it had no margins and didn't
        sit at the top. Keep this as the LAST thing inside #tab-library. -->
-  </template>
+  </script>
   </div>
   </main>
 
@@ -9524,7 +9524,7 @@ Link to another note with [[its first few words]]."></textarea>
   <div id="ocr-workspace" class="modal-overlay ocr-workspace hidden" role="dialog" data-panel-layout="2"
     aria-modal="true" aria-label="OCR workspace: read text from images and documents">
     <!-- Built when the workspace first opens (`surfaceBuild("ocr")`, settings-body.js; audit 1031 row 21). -->
-    <template data-surface="ocr">
+    <script type="text/x-surface" data-surface="ocr">
     <div class="card modal-card ocr-card">
       <!-- **Two rows: the dialog head, then one row of tools** (INBOX 717).
            The head says what you are reading and where you are in it; the
@@ -9875,7 +9875,7 @@ Link to another note with [[its first few words]]."></textarea>
         </div>
       </div>
     </div>
-    </template>
+    </script>
   </div>
 
   <!-- **Managing the dictionary**, asked for by name: "adding to dictionary (a
@@ -10192,7 +10192,7 @@ Link to another note with [[its first few words]]."></textarea>
         <div class="modal-content" tabindex="-1">
           <!-- Built on the first open, or the first lookup of one of its ids (`settingsBodyBuild`,
                settings-body.js; INBOX 1501): 2,700 nodes that cost every boot and none of its views. -->
-          <template id="settings-body-template" data-surface="settings">
+          <script type="text/x-surface" id="settings-body-template" data-surface="settings">
 
           <!-- Models -->
           <section class="settings-section" id="settings-models">
@@ -15486,7 +15486,7 @@ Link to another note with [[its first few words]]."></textarea>
             </div>
           </section>
 
-          </template>
+          </script>
         </div>
       </div>
     </div>
@@ -15664,7 +15664,7 @@ Link to another note with [[its first few words]]."></textarea>
   <div id="shortcuts-overlay" class="modal-overlay hidden" role="dialog"
     aria-modal="true" aria-label="Keyboard shortcuts">
     <!-- Built when the sheet first opens (`surfaceBuild("shortcuts")`, settings-body.js; audit 1031 row 21). -->
-    <template data-surface="shortcuts">
+    <script type="text/x-surface" data-surface="shortcuts">
     <div class="card modal-card" id="shortcuts-card">
       <div class="dialog-head">
         <h2 class="dialog-head-title"><i class="ph ph-keyboard pop-glyph" aria-hidden="true"></i> Keyboard shortcuts</h2>
@@ -15734,7 +15734,7 @@ Link to another note with [[its first few words]]."></textarea>
       </p>
       <p class="muted">Tip: most actions also live in the command palette.</p>
     </div>
-    </template>
+    </script>
   </div>
 
   <!-- **The board's help and shortcut sheet** (INBOX 566, the owner: "the

@@ -2869,7 +2869,7 @@ async function renderQuickCaptureWidget(body) {
   bar.className = "capture-bar";
   bar.setAttribute("role", "group");
   bar.setAttribute("aria-label", "Add a note");
-  const row = (document.getElementById("capture-bar-row") || SURFACES.get("notes")?.tpl?.content.getElementById("capture-bar-row")).cloneNode(true);
+  const row = SURFACES.peek("notes", "capture-bar-row").cloneNode(true);
   //: No ids on the copy (two bars on one page): the card finds a bar by class.
   for (const el of [row, ...row.querySelectorAll("[id]")]) el.removeAttribute("id");
   bar.append(row);

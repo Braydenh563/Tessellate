@@ -433,8 +433,11 @@ class OriginCheckMiddleware:
 # `\s*` in both places closes them. It is still not an HTML parser and is not
 # trying to be; it is a deliberately narrow reader of one known file.
 _HTML_COMMENT = re.compile(rb"<!--.*?-->", re.DOTALL)
+#: Not a `<script type="text/x-surface">`: a data block (a surface's markup kept as raw
+#: text, settings-body.js) that no browser runs and `script-src` does not judge.
 _INLINE_SCRIPT = re.compile(
-    rb"<script(?![^>]*\ssrc\s*=)[^>]*>(.*?)</script(?:\s+[^>]*)?>", re.DOTALL | re.IGNORECASE
+    rb"<script(?![^>]*\ssrc\s*=)(?!\s+type=\"text/x-surface\"[\s>])[^>]*>(.*?)</script(?:\s+[^>]*)?>",
+    re.DOTALL | re.IGNORECASE,
 )
 
 

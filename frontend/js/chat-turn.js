@@ -1059,6 +1059,7 @@ async function chatSendTurn(preset, opts = {}) {
   assistantMessageActions({ bubble, text: answerRaw, question });
 
   // Regenerate replaces the last turn; a normal send appends a new one.
+  chatHistoryToSend.heldOffer = groundingSupport?.offer?.offer_id || "";
   const turnRecord = { question, answer: answerRaw, objects: chatTurnObjects(turnSources), ...(turnFrame ? { frame: turnFrame } : {}) };
   if (opts.replaceLast && convRef.turns.length) convRef.turns[convRef.turns.length - 1] = turnRecord;
   else convRef.turns.push(turnRecord);
@@ -2527,7 +2528,7 @@ function assistantMessageActions({ bubble, text, question, onEdit }) {
     }
   }
 
-  //: The "Regenerate as..." submenu: one row per persona the picker offers. With no
+  //: The "Regenerate as…" submenu: one row per persona the picker offers. With no
   //: model the composer answers in the persona's voice too, so it works there as well;
   //: a running turn is refused by `regenerateFrom`.
   function regenerateAsItems(bubble) {
@@ -2535,7 +2536,7 @@ function assistantMessageActions({ bubble, text, question, onEdit }) {
     if (names.length < 2) return null;
     return {
       label: "ph:users-three",
-      title: "Regenerate as...",
+      title: "Regenerate as…",
       items: names.map((name) => ({
         label: `ph:user ${name}`,
         title: `Answer this question again as ${name}`,

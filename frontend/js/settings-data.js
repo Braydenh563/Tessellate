@@ -275,7 +275,7 @@ function backupScheduleWords(run, newest) {
 async function renderBackupSchedule(backups) {
   const line = $("backup-schedule");
   if (!line) return;
-  const runs = await apiJson("/jobs/last-runs", { silent: true }).catch(() => null);
+  const runs = await apiJson("/jobs/last-runs", { silent: true, cacheMs: 1000 }).catch(() => null);
   const run = runs?.jobs?.find((job) => job.kind === "backup");
   line.textContent = backupScheduleWords(run, backups[0]);
 }

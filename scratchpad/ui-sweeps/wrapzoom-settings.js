@@ -54,7 +54,10 @@ function detect(rootSel) {
     if (!e || e === document.documentElement) return false;
     if (goneMemo.has(e)) return goneMemo.get(e);
     const s = cs(e);
-    const g = s.display === 'none' || +s.opacity < 0.05 || (e.tagName === 'DIALOG' && !e.open) || gone(e.parentElement);
+    // A shut <details> keeps laying out its content (it still has rects) but
+    // paints none of it: everything but its summary is gone.
+    const shut = e.parentElement && e.parentElement.tagName === 'DETAILS' && !e.parentElement.open && e.tagName !== 'SUMMARY';
+    const g = shut || s.display === 'none' || +s.opacity < 0.05 || (e.tagName === 'DIALOG' && !e.open) || gone(e.parentElement);
     goneMemo.set(e, g); return g;
   };
   // The ancestors that can clip `el`, honouring absolute/fixed escape.
@@ -330,7 +333,7 @@ function underBars(rootSel) {
   const out = [];
   const cs = (e) => getComputedStyle(e);
   const sig = (el) => { const parts = []; for (let e = el, n = 0; e && e !== document.body && n < 4; e = e.parentElement, n++) { let s = e.tagName.toLowerCase(); if (e.id) { parts.unshift(s + '#' + e.id); break; } const c = typeof e.className === 'string' ? e.className.trim().split(/\s+/).slice(0, 2).join('.') : ''; parts.unshift(s + (c ? '.' + c : '')); } return parts.join(' > '); };
-  const visible = (e) => { const r = e.getBoundingClientRect(); if (r.width < 2 || r.height < 2) return false; for (let a = e; a && a !== document.documentElement; a = a.parentElement) { const s = cs(a); if (s.display === 'none' || s.visibility === 'hidden' || +s.opacity < 0.05) return false; } return true; };
+  const visible = (e) => { const r = e.getBoundingClientRect(); if (r.width < 2 || r.height < 2) return false; for (let a = e; a && a !== document.documentElement; a = a.parentElement) { const s = cs(a); if (s.display === 'none' || s.visibility === 'hidden' || +s.opacity < 0.05) return false; if (a.parentElement && a.parentElement.tagName === 'DETAILS' && !a.parentElement.open && a.tagName !== 'SUMMARY') return false; } return true; };
   const BAR = /(^|[\s_-])(bar|foot|footer|head|header|dock|toolbar|editbar|actions)($|[\s_-])/i;
   const NOT = /(overlay|dialog|menu|toast|help|popup|popover|tooltip|suggest|tray|panel|modal|splash)/i;
   let bars = [...document.querySelectorAll('body *')].filter((e) => {
@@ -411,6 +414,32 @@ async function measure(page, rootSel, { bars = true } = {}) {
   const b = bars ? await page.evaluate(underBars, rootSel).catch((e) => [{ kind: 'error', sel: 'underBars', text: String(e.message).slice(0, 80) }]) : [];
   return [...a, ...b];
 }
+// `detect` measures only what is painted, so a long pane is measured a
+// screen at a time: its scroller (the given one, else the tallest scroller in
+// the root) is stepped by 85% of its height from the top to the bottom, and
+// each step's findings are pushed as `<state>@<step>`. Put back at the top.
+async function measureSteps(page, rootSel, state, push, scrollerSel = null) {
+  const steps = await page.evaluate(({ rootSel, scrollerSel }) => {
+    const root = document.querySelector(rootSel) || document.body;
+    let sc = scrollerSel ? document.querySelector(scrollerSel) : null;
+    if (!sc) sc = [root, ...root.querySelectorAll('*')].filter((e) => /auto|scroll/.test(getComputedStyle(e).overflowY) && e.scrollHeight > e.clientHeight + 2 && e.getClientRects().length).sort((a, b) => b.scrollHeight - a.scrollHeight)[0];
+    if (!sc) return 1;
+    document.querySelectorAll('[data-wz-scroller]').forEach((e) => e.removeAttribute('data-wz-scroller'));
+    sc.setAttribute('data-wz-scroller', '1');
+    sc.scrollTop = 0;
+    return Math.min(14, 1 + Math.ceil((sc.scrollHeight - sc.clientHeight) / (sc.clientHeight * 0.85)));
+  }, { rootSel, scrollerSel });
+  for (let i = 0; i < steps; i++) {
+    if (i) {
+      await page.evaluate((i) => { const sc = document.querySelector('[data-wz-scroller]'); if (sc) sc.scrollTop = Math.round(i * sc.clientHeight * 0.85); }, i);
+      await wait(page, 250);
+    }
+    push(steps > 1 ? `${state}@${i}` : state, await measure(page, rootSel, { bars: i === 0 }));
+  }
+  await page.evaluate(() => { const sc = document.querySelector('[data-wz-scroller]'); if (sc) sc.scrollTop = 0; });
+  await wait(page, 150);
+}
+
 // Mark the element a state measures, so detect can be scoped to it.
 const markRoot = (page, sel) => page.evaluate(({ sel, attr }) => {
   document.querySelectorAll(`[${attr}]`).forEach((e) => e.removeAttribute(attr));
@@ -439,7 +468,12 @@ const closeAll = async (page) => {
 // opened (scoped), check it is on screen, close it.
 async function helpPopovers(page, scopeSel, state, push) {
   const ids = await page.evaluate((s) => [...document.querySelectorAll(`${s} [data-help-for]`)]
-    .filter((t) => t.getClientRects().length && t.offsetParent !== null).map((t) => t.dataset.helpFor), scopeSel);
+    .filter((t) => {
+      if (!t.getClientRects().length || t.offsetParent === null) return false;
+      // Inside a shut fold (and not on its summary) a ? still has a rect but is not shown.
+      for (let d = t.closest('details'); d; d = d.parentElement && d.parentElement.closest('details')) if (!d.open && !d.querySelector(':scope > summary')?.contains(t)) return false;
+      return true;
+    }).map((t) => t.dataset.helpFor), scopeSel);
   for (const id of [...new Set(ids)]) {
     const opened = await page.evaluate(({ s, id }) => {
       const t = document.querySelector(`${s} [data-help-for="${id}"]`);
@@ -523,7 +557,7 @@ async function settingsSections(page, push) {
       await page.evaluate((n) => { if (document.getElementById('settings-modal').classList.contains('hidden')) return openSettingsModal(n); showSettingsSection(n); }, name);
       await wait(page, 1400);
       await page.evaluate((n) => { const p = document.getElementById('settings-' + n); p && (p.scrollTop = 0); const c = document.querySelector('#settings-modal .modal-content'); if (c) c.scrollTop = 0; }, name);
-      if (want(st)) push(st, await measure(page, '#settings-modal'));
+      if (want(st)) await measureSteps(page, '#settings-modal', st, push, '#settings-modal .modal-content');
       // Expand all (the pane bar's own button where it has one).
       const how = await page.evaluate((n) => {
         const pane = document.getElementById('settings-' + n);
@@ -535,7 +569,7 @@ async function settingsSections(page, push) {
       }, name);
       if (how !== 'none') {
         await wait(page, 900);
-        if (want(st + ':expanded')) push(st + ':expanded', await measure(page, '#settings-modal'));
+        if (want(st + ':expanded')) await measureSteps(page, '#settings-modal', st + ':expanded', push, '#settings-modal .modal-content');
       }
       if (want(st + '?')) await helpPopovers(page, `#settings-${name}`, st, push);
       if (want(st + ':')) await menus(page, `#settings-${name}`, st, push);
@@ -602,10 +636,11 @@ const DIALOGS = [
   ['space-edit', `() => privateSpaces('edit', (spacesCache.find((s) => s.id !== 'default') || spacesCache[0]).id)`, '#space-edit-dialog'],
   ['space-delete', `() => rmSpace((spacesCache.find((s) => s.id !== 'default') || spacesCache[0]).id)`, '#space-delete-dialog'],
   ['quick-note', `() => openQuickNote()`, '#quick-note'],
-  ['recovery-key', `() => showRecoveryKey('K7QX-3MPR-9WZT-HB2D-LC4N-8VYE-FJ6S-A5UG')`, '#recovery-key-dialog'],
+  // Not awaited: showRecoveryKey resolves only when its dialog is closed.
+  ['recovery-key', `() => { showRecoveryKey('K7QX-3MPR-9WZT-HB2D-LC4N-8VYE-FJ6S-A5UG'); }`, '#recovery-key-dialog'],
   ['binned-note', `async () => { const e = await (await api('/entries', { method: 'POST', body: JSON.stringify({ content: 'A binned note about the quarterly planning review, long enough to wrap onto a second line', tags: ['planning'] }) })).json(); await api('/entries/' + e.id, { method: 'DELETE' }); await openBinnedNote(e.id); }`, '#binned-overlay'],
-  ['note-history', `async () => { const e = (await (await api('/entries?limit=1')).json()); const x = (e.entries || e)[0]; await openEntryHistory(x); }`, '#history-overlay'],
-  ['connections', `async () => { const e = (await (await api('/entries?limit=1')).json()); const x = (e.entries || e)[0]; await openConnections('entries', x.id, 'A note about planning'); }`, '#connections-overlay'],
+  ['note-history', `async () => { const e = await apiJson('/entries?limit=5'); const x = (Array.isArray(e) ? e : (e.entries || e.items || []))[0]; await ensureModule('noteHistory').catch(() => {}); if (typeof openEntryHistory !== 'function') await lazyScript('/js/note-history.js'); await openEntryHistory(x); }`, '#history-overlay'],
+  ['connections', `async () => { const e = await apiJson('/entries?limit=5'); const x = (Array.isArray(e) ? e : (e.entries || e.items || []))[0]; await lazyScript('/js/connections.js'); await openConnections('entries', x.id, 'A note about planning'); }`, '#connections-overlay'],
 ];
 async function shellDialogs(page, push) {
   const ONLY = (process.env.ONLY || '').split(',').filter(Boolean);
@@ -614,7 +649,8 @@ async function shellDialogs(page, push) {
     if (ONLY.length && !ONLY.some((o) => st.startsWith(o))) continue;
     try {
       await closeAll(page);
-      await page.evaluate(`(${open})()`);
+      // An opener that waits for its dialog to close must not hang the sweep.
+      await Promise.race([page.evaluate(`(${open})()`), new Promise((r) => setTimeout(r, 8000))]);
       await wait(page, 1300);
       // The card itself: the first match that is on screen.
       const root = await page.evaluate(({ sel, attr }) => {
@@ -627,7 +663,8 @@ async function shellDialogs(page, push) {
         return el.tagName + (el.id ? '#' + el.id : '.' + el.className);
       }, { sel, attr: ROOT_ATTR });
       if (!root) { push(st, [{ kind: 'error', sel: `${sel} not open` }]); continue; }
-      push(st, [...await measure(page, ROOT_SEL), ...await page.evaluate(offscreen, '[data-wz-card]')]);
+      push(st + ':card', await page.evaluate(offscreen, '[data-wz-card]'));
+      await measureSteps(page, ROOT_SEL, st, push);
       const scope = await page.evaluate((s) => { const el = document.querySelector(s); el.setAttribute('data-wz-scope', '1'); return true; }, ROOT_SEL);
       if (scope) { await helpPopovers(page, '[data-wz-scope]', st, push); await menus(page, '[data-wz-scope]', st, push, 2); }
       await page.evaluate(() => document.querySelectorAll('[data-wz-scope],[data-wz-card]').forEach((e) => { e.removeAttribute('data-wz-scope'); e.removeAttribute('data-wz-card'); }));
@@ -660,6 +697,7 @@ async function seed(page) {
 // ---------------------------------------------------------------- the driver
 function pusher(spec, rows) {
   return (state, found) => {
+    if (process.env.PROGRESS) process.stderr.write(`${new Date().toISOString().slice(11, 19)} ${spec} ${state} ${found.length}\n`);
     const seen = new Map();
     for (const f of found) { const k = f.kind + f.sel + (f.what || '') + (f.over || '') + (f.end || ''); if (seen.has(k)) { seen.get(k).count++; continue; } const row = { vp: spec, theme: THEME, state, count: 1, ...f }; seen.set(k, row); rows.push(row); }
     rows.push({ vp: spec, theme: THEME, state, kind: 'measured', n: found.length });
@@ -713,14 +751,17 @@ async function runDesk(rows) {
           push(`desk:${tag}:${state}`, await measure(page, null));
         };
         if (!mode) await go('rest');
-        await page.evaluate(() => document.getElementById('desk-pet')?.click()); await wait(page, 450);
+        // A trusted press: the pet tells a click from a drag by its pointer events.
+        if (await page.isVisible('#desk-pet').catch(() => false)) await page.click('#desk-pet').catch(() => {}); else await page.evaluate(() => document.getElementById('desk-pet')?.click());
+        await wait(page, 450);
         await go('menu');
         const items = await page.$$eval('#desk-menu button', (b) => b.map((x) => x.textContent.trim()));
         if (tok && items.some((t) => /Quick note/.test(t))) {
           await page.evaluate(() => [...document.querySelectorAll('#desk-menu button')].find((b) => /Quick note/.test(b.textContent))?.click()); await wait(page, 600);
           await go('note');
           await page.keyboard.press('Escape'); await wait(page, 300);
-          await page.evaluate(() => document.getElementById('desk-pet')?.click()); await wait(page, 400);
+          if (await page.isVisible('#desk-pet').catch(() => false)) await page.click('#desk-pet').catch(() => {}); else await page.evaluate(() => document.getElementById('desk-pet')?.click());
+          await wait(page, 400);
           await page.evaluate(() => [...document.querySelectorAll('#desk-menu button')].find((b) => /Quick search/.test(b.textContent))?.click()); await wait(page, 600);
           await page.fill('#desk-search-text', 'planning').catch(() => {}); await wait(page, 1400);
           await go('search');
