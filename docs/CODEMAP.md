@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8166, frontend ids 2713, CSS sections 524, backend routes 677, backend modules 10448, test files 2590, tests 21187, plan headings 1013, app scripts 29, boot scripts 38, script files 284.
+Counts: frontend functions 8166, frontend ids 2713, CSS sections 524, backend routes 677, backend modules 10452, test files 2592, tests 21204, plan headings 1013, app scripts 29, boot scripts 38, script files 284.
 
 ## Frontend functions (8166)
 
@@ -2080,24 +2080,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `atlasBreathFrame` | frontend/js/atlas-life.js:907 |
-| `atlasFrameBudget` | frontend/js/atlas-life.js:476 |
-| `atlasPropLoops` | frontend/js/atlas-life.js:813 |
-| `atlasPropsFrame` | frontend/js/atlas-life.js:841 |
-| `atlasRigLower` | frontend/js/atlas-life.js:1452 |
-| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1427 |
+| `atlasBreathFrame` | frontend/js/atlas-life.js:924 |
+| `atlasFrameBudget` | frontend/js/atlas-life.js:493 |
+| `atlasPropLoops` | frontend/js/atlas-life.js:830 |
+| `atlasPropsFrame` | frontend/js/atlas-life.js:858 |
+| `atlasRigLower` | frontend/js/atlas-life.js:1469 |
+| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1444 |
 | `atlasRingLoops` | frontend/js/atlas-life.js:20 |
-| `atlasTailAttach` | frontend/js/atlas-life.js:365 |
+| `atlasTailAttach` | frontend/js/atlas-life.js:382 |
 | `atlasTailBend` | frontend/js/atlas-life.js:133 |
-| `atlasTailCalm` | frontend/js/atlas-life.js:621 |
-| `atlasTailDraw` | frontend/js/atlas-life.js:740 |
+| `atlasTailCalm` | frontend/js/atlas-life.js:638 |
+| `atlasTailDraw` | frontend/js/atlas-life.js:757 |
 | `atlasTailFollow` | frontend/js/atlas-life.js:144 |
-| `atlasTailFrame` | frontend/js/atlas-life.js:502 |
-| `atlasTailKit` | frontend/js/atlas-life.js:238 |
-| `atlasTailPick` | frontend/js/atlas-life.js:439 |
-| `atlasTailRest` | frontend/js/atlas-life.js:703 |
-| `atlasTailShape` | frontend/js/atlas-life.js:205 |
-| `atlasTailUnrest` | frontend/js/atlas-life.js:718 |
+| `atlasTailFrame` | frontend/js/atlas-life.js:519 |
+| `atlasTailKit` | frontend/js/atlas-life.js:255 |
+| `atlasTailPick` | frontend/js/atlas-life.js:456 |
+| `atlasTailRest` | frontend/js/atlas-life.js:720 |
+| `atlasTailShape` | frontend/js/atlas-life.js:222 |
+| `atlasTailUnrest` | frontend/js/atlas-life.js:735 |
 
 ### frontend/js/atlas-micro.js (8)
 
@@ -13595,7 +13595,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10448)
+## Backend modules (10452)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -24692,28 +24692,36 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `register` | src/tessellate/core/overlay/extras.py:185 |
 | `shake_flips` | src/tessellate/core/overlay/extras.py:393 |
 
-### src/tessellate/core/overlay/faces.py (18)
+### src/tessellate/core/overlay/faces.py (19)
 
 | Name | File:line |
 |---|---|
 | `Look` | src/tessellate/core/overlay/faces.py:44 |
-| `Micro` | src/tessellate/core/overlay/faces.py:117 |
-| `_brow` | src/tessellate/core/overlay/faces.py:273 |
-| `_cover` | src/tessellate/core/overlay/faces.py:293 |
-| `_erase_mouth` | src/tessellate/core/overlay/faces.py:352 |
-| `_eye` | src/tessellate/core/overlay/faces.py:260 |
-| `_features` | src/tessellate/core/overlay/faces.py:247 |
-| `_heart` | src/tessellate/core/overlay/faces.py:312 |
-| `_lid` | src/tessellate/core/overlay/faces.py:333 |
-| `_match` | src/tessellate/core/overlay/faces.py:171 |
-| `_mouth` | src/tessellate/core/overlay/faces.py:374 |
-| `_skin` | src/tessellate/core/overlay/faces.py:210 |
-| `_spiral` | src/tessellate/core/overlay/faces.py:321 |
-| `_splice` | src/tessellate/core/overlay/faces.py:284 |
-| `draw` | src/tessellate/core/overlay/faces.py:216 |
-| `eye_anchor` | src/tessellate/core/overlay/faces.py:157 |
-| `head_point` | src/tessellate/core/overlay/faces.py:189 |
-| `level_at` | src/tessellate/core/overlay/faces.py:110 |
+| `Micro` | src/tessellate/core/overlay/faces.py:125 |
+| `_brow` | src/tessellate/core/overlay/faces.py:302 |
+| `_cover` | src/tessellate/core/overlay/faces.py:322 |
+| `_erase_mouth` | src/tessellate/core/overlay/faces.py:381 |
+| `_eye` | src/tessellate/core/overlay/faces.py:289 |
+| `_features` | src/tessellate/core/overlay/faces.py:258 |
+| `_heart` | src/tessellate/core/overlay/faces.py:341 |
+| `_lid` | src/tessellate/core/overlay/faces.py:362 |
+| `_match` | src/tessellate/core/overlay/faces.py:179 |
+| `_mouth` | src/tessellate/core/overlay/faces.py:403 |
+| `_skin` | src/tessellate/core/overlay/faces.py:218 |
+| `_spiral` | src/tessellate/core/overlay/faces.py:350 |
+| `_splice` | src/tessellate/core/overlay/faces.py:313 |
+| `_step_eye` | src/tessellate/core/overlay/faces.py:274 |
+| `draw` | src/tessellate/core/overlay/faces.py:224 |
+| `eye_anchor` | src/tessellate/core/overlay/faces.py:165 |
+| `head_point` | src/tessellate/core/overlay/faces.py:197 |
+| `level_at` | src/tessellate/core/overlay/faces.py:118 |
+
+### src/tessellate/core/overlay/gaze.py (2)
+
+| Name | File:line |
+|---|---|
+| `Saccade` | src/tessellate/core/overlay/gaze.py:27 |
+| `worn` | src/tessellate/core/overlay/gaze.py:49 |
 
 ### src/tessellate/core/overlay/host.py (3)
 
@@ -24855,6 +24863,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `squashed` | src/tessellate/core/overlay/sprites.py:985 |
 | `tail_source` | src/tessellate/core/overlay/sprites.py:865 |
 | `tapered` | src/tessellate/core/overlay/sprites.py:161 |
+
+### src/tessellate/core/overlay/standing.py (1)
+
+| Name | File:line |
+|---|---|
+| `scale` | src/tessellate/core/overlay/standing.py:12 |
 
 ### src/tessellate/core/overlay/travel.py (16)
 
@@ -26882,7 +26896,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21187)
+## Tests (21204)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26983,6 +26997,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_crest_1696.py | 2 |
 | tests/test_atlas_daylife_1719.py | 2 |
 | tests/test_atlas_desk_acts_1696.py | 14 |
+| tests/test_atlas_e3_1111.py | 3 |
 | tests/test_atlas_face_inherit_1591.py | 4 |
 | tests/test_atlas_fade_1107.py | 5 |
 | tests/test_atlas_fem_1696.py | 4 |
@@ -28617,6 +28632,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_deskframes_1696.py | 3 |
 | tests/test_overlay_dest_1683.py | 10 |
 | tests/test_overlay_doing_1718.py | 4 |
+| tests/test_overlay_e3_1111.py | 14 |
 | tests/test_overlay_edge_squash_1111.py | 5 |
 | tests/test_overlay_edges_1107.py | 20 |
 | tests/test_overlay_engine.py | 30 |

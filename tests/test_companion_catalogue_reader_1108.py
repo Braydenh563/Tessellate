@@ -22,7 +22,7 @@ def test_it_fetches_once() -> None:
         f"nmb.cat.load(); nmb.cat.load(); {WAIT}"
         "console.log(JSON.stringify({n: calls.length, path: calls[0][0], silent: calls[0][1].silent, entries: nmb.cat.state.doc.entries.length}));"
     )
-    assert out == {"n": 1, "path": "/companion-catalogue.json", "silent": True, "entries": 311}  # intent moved: E5, two entries
+    assert out == {"n": 1, "path": "/companion-catalogue.json", "silent": True, "entries": 321}  # intent moved: E3 and E5 added entries
 
 
 @pytest.mark.parametrize("answer", ["http", "bad", "down"])
@@ -39,4 +39,4 @@ def test_the_catalogue_is_served_by_the_local_server(client) -> None:
     # review of atlascat-1108: the reader fetches it from the server, so it is a static file there; the service worker does not precache it
     # because the shell is never cached either (an app without its server shows the offline page), and a failed fetch keeps the built-in tables
     r = client.get("/companion-catalogue.json")
-    assert r.status_code == 200 and len(r.json()["entries"]) == 311  # intent moved: E5, two entries
+    assert r.status_code == 200 and len(r.json()["entries"]) == 321  # intent moved: E3 and E5 added entries

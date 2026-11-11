@@ -171,7 +171,7 @@ atlasTailFollow.chain = (pos, vel, accel, kick, max, h, n) => {
   }
 };
 //: On the function, not the shared scope (test_global_scope_ratchet): only it reads them.
-atlasTailFollow.springs = { links: 3, stiff: 90, damp: 9, kick: 0.8, max: 26, bend: 0.55, liftKick: 40, liftMax: 12, liftBend: 0.2 };
+atlasTailFollow.springs = { links: 3, stiff: 90, damp: 9, kick: 0.8, max: 26, bend: 0.55, liftKick: 40, liftMax: 12, liftBend: 0.2, earSide: 40, earLift: 3, earMax: 9 };
 //: **The streams follow the body** (INBOX 1683 c): the tail's three-link chain (`atlasTailFollow`) also
 //: carries the lower body and the wisps a little way, each on its own link and gain, so they lag a start,
 //: swing past a stop and settle a beat apart (the nebula's halves have the lean's spring). It is the
@@ -195,6 +195,23 @@ atlasTailFollow.strands = (box, tail) => {
   };
   put(low.boxes, 0, 0.04);
   put(low.wisps, 1, 0.07);
+  atlasTailFollow.ears(box, tail.follow);
+};
+//: **The ears follow through** (INBOX 1719 b, E3): the chain's last link also tips the ears, a beat behind the tail's own bend, so they
+//: stream back at a start, swing on past a stop and settle after the body has stopped. The ear's `rotate` property is its own (the crest's
+//: `transform` and the flick's keyframes are another), written only when it moves a tenth of a degree and cleared at rest; the ears are
+//: found once and kept on the box, and nothing here reads layout.
+atlasTailFollow.ears = (box, f) => {
+  const A = atlasTailFollow.springs;
+  const ears = (box.atlasEars ||= [...box.querySelectorAll(".atl-ear")]);
+  //: The sideways chain here is gentle (its push is scaled by 0.01: a throw of 4000 px/s2 moves the last link about 0.12 px), so the ears take it in degrees per px, not as a share of its 26 px range.
+  const raw = f.pos[A.links - 1] * A.earSide + (f.lift[A.links - 1] / A.liftMax) * A.earLift;
+  const deg = Math.round(Math.max(-A.earMax, Math.min(A.earMax, raw)) * 10) / 10;
+  for (const el of ears) {
+    if ((el.atlasTurned ?? 0) === deg) continue;
+    el.atlasTurned = deg;
+    el.style.rotate = deg ? `${deg}deg` : "";
+  }
 };
 //: The tail's centreline bent as `bend(s)` says, as a run of cubics
 //: through the bent points (Catmull-Rom), each an equal share of the
