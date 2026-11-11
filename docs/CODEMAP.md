@@ -5604,16 +5604,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `closeIconPicker` | frontend/js/icon-picker.js:484 |
-| `iconPickerEmojiGroups` | frontend/js/icon-picker.js:374 |
-| `iconPickerGlyph` | frontend/js/icon-picker.js:468 |
-| `iconPickerHay` | frontend/js/icon-picker.js:369 |
-| `iconPickerIconGroups` | frontend/js/icon-picker.js:427 |
-| `iconPickerPhosphorNames` | frontend/js/icon-picker.js:409 |
-| `iconPickerRecent` | frontend/js/icon-picker.js:444 |
-| `iconPickerRemember` | frontend/js/icon-picker.js:449 |
-| `iconPickerText` | frontend/js/icon-picker.js:463 |
-| `openIconPicker` | frontend/js/icon-picker.js:493 |
+| `closeIconPicker` | frontend/js/icon-picker.js:485 |
+| `iconPickerEmojiGroups` | frontend/js/icon-picker.js:375 |
+| `iconPickerGlyph` | frontend/js/icon-picker.js:469 |
+| `iconPickerHay` | frontend/js/icon-picker.js:370 |
+| `iconPickerIconGroups` | frontend/js/icon-picker.js:428 |
+| `iconPickerPhosphorNames` | frontend/js/icon-picker.js:410 |
+| `iconPickerRecent` | frontend/js/icon-picker.js:445 |
+| `iconPickerRemember` | frontend/js/icon-picker.js:450 |
+| `iconPickerText` | frontend/js/icon-picker.js:464 |
+| `openIconPicker` | frontend/js/icon-picker.js:494 |
 
 ### frontend/js/image-layout.js (14)
 

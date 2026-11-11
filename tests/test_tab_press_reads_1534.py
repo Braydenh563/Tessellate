@@ -10,6 +10,7 @@ reports after layout, or reads nothing."""
 from __future__ import annotations
 
 from tests._app_js import frontend_text
+from tests import _js_scope
 
 
 def _body(text: str, head: str) -> str:
@@ -104,7 +105,7 @@ def test_the_companion_looks_for_a_popup_after_a_frame_has_drawn_the_press():
 def test_the_icon_picker_and_the_equation_pane_lay_out_after_the_frame_that_opened_them():
     """Placing the picker and focusing its search forced the layout of every tile inside the
     press (874ms at 4x); the Equation pane's first focus did the same (245ms)."""
-    src = frontend_text("icon-picker.js")
+    src = _js_scope.unwrapped(frontend_text("icon-picker.js"))
     open_at = src.index("  draw();\n  document.body.appendChild(panel);")
     block = src[open_at - 200:open_at + 900]
     # Intent moved (INBOX 1716, the owner's log: "icon-picker.js BUTTON.onclick 196ms (forced layout 189ms)"): a read
@@ -123,4 +124,4 @@ def test_the_companions_tempo_does_not_flush_style_while_a_popup_is_arriving():
     src = frontend_text("avatars.js")
     body = _body(src, "function nameMarkBuddyTempo(")
     assert "now - nmbTempo.seen > 1000 && now >= (window.uiSettlingUntil || 0)" in body
-    assert "window.uiSettlingUntil = performance.now() + 400;" in frontend_text("icon-picker.js")
+    assert "window.uiSettlingUntil = performance.now() + 400;" in _js_scope.unwrapped(frontend_text("icon-picker.js"))

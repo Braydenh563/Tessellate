@@ -24,10 +24,11 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-PICKER = (JS / "icon-picker.js").read_text(encoding="utf-8")
+PICKER = _js_scope.unwrapped((JS / "icon-picker.js").read_text(encoding="utf-8"))
 EDITOR = (JS / "editor.js").read_text(encoding="utf-8")
 DOCS = (JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-view.js").read_text(encoding="utf-8")
 FEATURES = (JS / "app-features.js").read_text(encoding="utf-8")
@@ -63,7 +64,7 @@ console.log(JSON.stringify({
 
 def _run() -> dict:
     done = subprocess.run(
-        ["node", "-e", HARNESS, str(JS / "icon-picker.js")], capture_output=True, text=True, check=True
+        ["node", "-e", HARNESS, str(_js_scope.unwrapped_copy(JS / "icon-picker.js"))], capture_output=True, text=True, check=True
     )
     return json.loads(done.stdout)
 
