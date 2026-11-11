@@ -59,7 +59,7 @@ from . import extras
 from . import presence as pr
 from . import travel as tv
 from . import vitals
-from . import landing as ld, wisps  # noqa: F401  (tests patch `eng.ld.smack` and `eng.wisps.phase`)
+from . import landing as ld, wisps  # tests patch `eng.ld.smack` and `eng.wisps.phase`
 from .engine_consts import (
     ACTS, AMBIENT_EVERY, AMBIENT_SKEW, AWAY, AWAY_STAND_FOR, BIG_EVERY, BIG_FIRST, BLINK_FOR,
     CARD_FOR, CARD_STAND, CARD_SWAP, CARRY_STAGES, CLIMB_FIRST, COME_FOR, COME_GAP, COME_MOVED,
@@ -85,33 +85,19 @@ from .engine_consts import (
     VX_SMOOTH_S, WALK_FOR, WALK_FRAMES, WALK_SPEED, WANDER_MIN, WARP_MIN, WAVE_GAP, WAVE_IDLE,
     WAVE_NEAR, YIELD_BRAKE_S, YIELD_MAX, YIELD_NEAR, _adjoins, _same_screens, stand_x,
 )
-from .engine_consts import (
-    AWAY_DRIFT,  # noqa: F401
-    AWAY_FALL,  # noqa: F401
-    AWAY_FOR,  # noqa: F401
-    BOUNCE_DAMP,  # noqa: F401
-    Bar,  # noqa: F401
-    CEIL_CATCH,  # noqa: F401
-    CEIL_LEAVE,  # noqa: F401
-    CEIL_TILT,  # noqa: F401
-    CLIMB_EVERY,  # noqa: F401
-    CLIMB_SOON,  # noqa: F401
-    FLING_SPEED,  # noqa: F401
-    IDLE_FPS,  # noqa: F401
-    NOTICE_COOLDOWN,  # noqa: F401
-    PERCH_THROW,  # noqa: F401
-    SLIP_SPEED,  # noqa: F401
-    SPIN_DRAG,  # noqa: F401
-    SPIN_OMEGA,  # noqa: F401
-    TAIL_LAYER_MS,  # noqa: F401
-    TAIL_TOUCHED_FOR,  # noqa: F401
-    THROW_MAX,  # noqa: F401
-    THROW_MIN,  # noqa: F401
-    TITLE_BAR,  # noqa: F401
-    WALL_SCRABBLE,  # noqa: F401
-    WAVE_FOR,  # noqa: F401
-    perch_room,  # noqa: F401
+from .engine_consts import (  # re-exported: tests and `runner` read them as `eng.NAME`
+    AWAY_DRIFT, AWAY_FALL, AWAY_FOR, BOUNCE_DAMP, Bar, CEIL_CATCH, CEIL_LEAVE, CEIL_TILT,
+    CLIMB_EVERY, CLIMB_SOON, FLING_SPEED, HOP_RISE, HOP_SPAN, IDLE_FPS, NOTICE_COOLDOWN, PERCH_THROW,
+    SLIP_SPEED, SPIN_DRAG, SPIN_OMEGA, TAIL_LAYER_MS, TAIL_TOUCHED_FOR, THROW_MAX, THROW_MIN,
+    TITLE_BAR, WALL_SCRABBLE, WAVE_FOR, perch_room,
 )
+__all__ = [
+    "AWAY_DRIFT", "AWAY_FALL", "AWAY_FOR", "BOUNCE_DAMP", "Bar", "CEIL_CATCH", "CEIL_LEAVE",
+    "CEIL_TILT", "CLIMB_EVERY", "CLIMB_SOON", "FLING_SPEED", "HOP_RISE", "HOP_SPAN", "IDLE_FPS",
+    "NOTICE_COOLDOWN", "PERCH_THROW", "SLIP_SPEED", "SPIN_DRAG", "SPIN_OMEGA", "TAIL_LAYER_MS",
+    "TAIL_TOUCHED_FOR", "THROW_MAX", "THROW_MIN", "TITLE_BAR", "WALL_SCRABBLE", "WAVE_FOR",
+    "perch_room", "ld", "wisps",
+]
 from .engine_flight import FlightMixin
 from .engine_frames import FramesMixin
 from .engine_input import InputMixin

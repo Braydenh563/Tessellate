@@ -1332,3 +1332,15 @@ def window(phrase: str, now: datetime) -> tuple[datetime, datetime] | None:
     start = datetime.combine(first, time(0), now.tzinfo)
     end = min(datetime.combine(last, time(23, 59, 59), now.tzinfo), now)
     return (start, end) if start < end else None
+
+
+#: Read by `recognise` (imported there); listed so the split's one-way use is explicit.
+__all__ = [
+    "_PARTS",
+    "_ANCHORED",
+    "_CLOCK",
+    "_DAY_MONTH",
+    "_MONTH_DAY",
+    "_WEEKDAY",
+    "_COMPUTED",
+]

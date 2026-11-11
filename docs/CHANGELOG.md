@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Fix (CodeQL, PR 216): the names the file splits left re-exported or imported across the halves (`recognise`, `composer_digest_lines`/`_sentences`, `recognise_windows`, overlay `engine`, `launcher_loading`, `__main__`) are listed in each module's `__all__`, so the 41 "unused global variable / import" notices go; no behaviour change.
 - Fix: the speaker models and the French, German and Spanish spelling packs each have their one-line install notice; the code editor's minimap box is set only once the documents bundle has defined its pref reader.
 - Fix (one reader of date words): "what will the date be tomorrow" and the other CLINC150 neighbour-day phrasings are read by `recognise.neighbour_day`, not a second pattern in `ai/utilities.py`, so the composer's clock answers take them too; `composer_aboutme.py`'s note, age and goodbye patterns recorded as masks.
 - Fix: the code editor's minimap box is set after the documents bundle loads, so a cold open no longer logs "docToolPref is not defined".
