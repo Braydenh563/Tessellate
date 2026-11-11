@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Documents (D22): opening a document no longer downloads the whiteboard code and d3 (10 fewer scripts, about 1.5 MB less response body on a first cold open); the board code loads when a board, mind map or the Boards tab is first opened.
 - Refactor (E44): `chatSendTurn` (1,193 lines) is 29 lines; its stages (ask, commit, open, stream, fail, teardown, paint, settle, empty, persist, afterAnswer) live on `chatSendTurn.stage`, a pure move, same DOM and requests on four recorded streams.
 - Refactor (K25): ten functions over 150 lines split into named helpers as pure moves (`build_agent_messages`, `_preferences_from`, `list_boards`, /models/status, `_hard_delete`, `facts.run`, the error handlers, the instance routes, `Engine.__init__`, `_run_desktop`); four complexity seed rows removed, one lowered.
 - Refactor (K24): the Connections block and a note's link routes moved from `routes_entries.py` (3,777 to 3,628 lines) to `routes_entries_links.py`; same paths, same helpers.

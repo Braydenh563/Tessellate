@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8141, frontend ids 2708, CSS sections 523, backend routes 672, backend modules 10179, test files 2501, tests 20576, plan headings 1003, app scripts 28, boot scripts 37, script files 280.
+Counts: frontend functions 8141, frontend ids 2708, CSS sections 523, backend routes 672, backend modules 10179, test files 2502, tests 20582, plan headings 1003, app scripts 28, boot scripts 37, script files 280.
 
 ## Frontend functions (8141)
 
@@ -47,18 +47,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `clearApiCache` | frontend/js/app.js:557 |
 | `confirmDialog` | frontend/js/app.js:1274 |
 | `confirmVerb` | frontend/js/app.js:1265 |
-| `ensureModule` | frontend/js/app.js:1741 |
+| `ensureModule` | frontend/js/app.js:1730 |
 | `enterWithoutPassword` | frontend/js/app.js:636 |
 | `hide` | frontend/js/app.js:164 |
 | `hideBootSplash` | frontend/js/app.js:844 |
 | `initAuth` | frontend/js/app.js:857 |
-| `installStandIns` | frontend/js/app.js:1912 |
-| `lazyAssetStamp` | frontend/js/app.js:1698 |
-| `lazyScript` | frontend/js/app.js:1720 |
+| `installStandIns` | frontend/js/app.js:1901 |
+| `lazyAssetStamp` | frontend/js/app.js:1687 |
+| `lazyScript` | frontend/js/app.js:1709 |
 | `lockFieldForPin` | frontend/js/app.js:752 |
 | `lockNow` | frontend/js/app.js:816 |
 | `mediaSrc` | frontend/js/app.js:235 |
-| `mountNoteSurfaceNow` | frontend/js/app.js:1765 |
+| `mountNoteSurfaceNow` | frontend/js/app.js:1754 |
 | `promptDialog` | frontend/js/app.js:1372 |
 | `purgeLockedContent` | frontend/js/app.js:795 |
 | `recordBrowserLog` | frontend/js/app.js:23 |
@@ -78,7 +78,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `stagedImageByUrl` | frontend/js/app.js:196 |
 | `startApp` | frontend/js/app.js:906 |
 | `startWithoutPassword` | frontend/js/app.js:621 |
-| `whenScriptsLoaded` | frontend/js/app.js:1679 |
+| `whenScriptsLoaded` | frontend/js/app.js:1668 |
 | `wireBackdropClose` | frontend/js/app.js:1486 |
 
 ### frontend/js/prefs.js (6)
@@ -103,18 +103,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `afterCharacters` | frontend/js/lazy-entries.js:167 |
-| `charactersLost` | frontend/js/lazy-entries.js:176 |
-| `emblemHead` | frontend/js/lazy-entries.js:184 |
-| `installCharacterStandIns` | frontend/js/lazy-entries.js:213 |
-| `lazyLoadFailed` | frontend/js/lazy-entries.js:246 |
-| `loadCharactersIdle` | frontend/js/lazy-entries.js:207 |
-| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:234 |
-| `onDomReady` | frontend/js/lazy-entries.js:257 |
-| `plainHead` | frontend/js/lazy-entries.js:190 |
-| `runCharacterJob` | frontend/js/lazy-entries.js:198 |
-| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:269 |
-| `warmOnFirst` | frontend/js/lazy-entries.js:288 |
+| `afterCharacters` | frontend/js/lazy-entries.js:191 |
+| `charactersLost` | frontend/js/lazy-entries.js:200 |
+| `emblemHead` | frontend/js/lazy-entries.js:208 |
+| `installCharacterStandIns` | frontend/js/lazy-entries.js:237 |
+| `lazyLoadFailed` | frontend/js/lazy-entries.js:270 |
+| `loadCharactersIdle` | frontend/js/lazy-entries.js:231 |
+| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:258 |
+| `onDomReady` | frontend/js/lazy-entries.js:281 |
+| `plainHead` | frontend/js/lazy-entries.js:214 |
+| `runCharacterJob` | frontend/js/lazy-entries.js:222 |
+| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:293 |
+| `warmOnFirst` | frontend/js/lazy-entries.js:312 |
 
 ### frontend/js/note-cards.js (22)
 
@@ -26417,7 +26417,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20576)
+## Tests (20582)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27730,6 +27730,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_launcher_port_stuck_1637.py | 8 |
 | tests/test_launcher_scripts.py | 97 |
 | tests/test_launcher_update_settings.py | 27 |
+| tests/test_lazy_boards_split.py | 6 |
 | tests/test_lazy_bundle_calls.py | 8 |
 | tests/test_lazy_css.py | 3 |
 | tests/test_lazy_heavy_imports.py | 4 |

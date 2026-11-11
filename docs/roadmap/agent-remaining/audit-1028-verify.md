@@ -1,4 +1,4 @@
-Counts, re-checked 2026-11-11 at head 5fbaedf23, updated after the decision agents: fixed 22, stale 45 (pointer in the row, details in v1028-1.md to v1028-4.md), open 3 (each names its blocker), unsure 72. Source: audit-1028-ranked.md rows with planned at new (144 rows), first checked 2026-11-02.
+Counts, re-checked 2026-11-11 at head 5fbaedf23, updated after the decision agents: fixed 23, stale 45 (pointer in the row, details in v1028-1.md to v1028-4.md), open 2 (each names its blocker), unsure 72. Source: audit-1028-ranked.md rows with planned at new (144 rows), first checked 2026-11-02.
 
 | id | verdict | evidence | size |
 |---|---|---|---|
@@ -53,7 +53,7 @@ Counts, re-checked 2026-11-11 at head 5fbaedf23, updated after the decision agen
 | D26 | fixed (65c01c4, e3aae86) | Threads: author, time, replies, Show resolved and Reopen in the Comments rows (a30h-1102). | L |
 | D30 | open | blocked on an owner licence decision: may MPL-2.0 / LGPL / GPL Hunspell word lists come into this AGPL repo (CLAUDE.md section 3 takes AGPL or MIT only); English-only checker note is built (dec-1111-d1.md) | L |
 | E48 | fixed 29a145e35 | branch pager closed as won't (migration, reverses fork-copies); "Keep the earlier version as a copy" built (dec-1111-c1.md) | L |
-| D22 | open | agent d2 building the library/boards split (dec-1111-d1.md has the design) | L |
+| D22 | fixed 6c3a88f4e | library/boards bundle split; first document open 47 to 37 scripts, 10 to 0 board files (dec-1111-d2.md) | L |
 | B15 | stale 2026-11-11 | closed, won't do: d3 v7 drag has no pointer-event option; the one-line bridge is pinned by tests/test_wb_edge_pan.py, reopen only if d3 is replaced (dec-1111-w1.md) | L |
 | D23 | partial 483b6a6 | docCmTheme is documents-cm-theme.js; docLivePlugin (1,720 lines) still one function, line in DOCUMENTS_PLAN. | L |
 | K24 | open | routes_entries split (f4260477c, 3,777 to 3,628); still over 3,000: routes_entries 3,628, recognise 3,999, manager ~3,500, database 3,329, __main__ ~3,013; a rolling refactor, one block per pass (dec-1111-r1.md) | L |
