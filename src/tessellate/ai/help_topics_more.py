@@ -2263,6 +2263,7 @@ MORE_TOPICS.extend([
         "keywords": (
             "table", "tables", "add a table", "table on a board", "rows and columns",
             "add a row", "add a column", "delete a row", "delete a column", "grid of cells",
+            "connect to a table row", "table row connection point",
         ),
         "body": (
             "A table on a board, as in draw.io: Insert, Table places three rows of "
@@ -2272,7 +2273,9 @@ MORE_TOPICS.extend([
             "above, Add a column to the right or left, Widen or Narrow this column, "
             "Equal column widths, Delete this row or column (at the cell you "
             "pressed last) and First row as a header. Resize it by its handles; "
-            "columns share the width equally until you widen or narrow one."
+            "columns share the width equally until you widen or narrow one. "
+            "Pointing at a table while you drag a connector's end shows a connection point at each side of every row, so "
+            "a connector can join one row; add or delete a row and the connectors on the rows below it stay on the same row."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },

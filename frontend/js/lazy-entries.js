@@ -22,6 +22,7 @@ Object.assign(LAZY_MODULES, {
     "/js/whiteboard-layers-more.js",
     "/js/whiteboard-draw-more.js",
     "/js/whiteboard-arrange-more.js", //: After whiteboard-draw-more.js: it reads that file's loop sides at run time.
+    "/js/whiteboard-shape-more.js", //: A table's row ports and the shape's points; names whiteboard.js and whiteboard-format.js at run time only.
     "/js/whiteboard-interchange.js",
     "/js/whiteboard-history.js",
   ],

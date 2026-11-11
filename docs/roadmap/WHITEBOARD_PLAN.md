@@ -973,7 +973,6 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Show ports while dragging a connector end | yes (`wb-port-preview`, whiteboard.js 13437) | `mxConstraintHandler` (blue crosses) | done | none |
 | Connection arrows and points as View toggles | yes, 2026-11-11 (f2-1111; HISTORY) | `connectionArrows`, `connectionPoints` actions (Actions.js 1389, 1396) | two View toggles (hide grips, hide ports) | S |
 | Snap to connection (orthogonal ends) | no | `snapToConnection` and `snapToPoint` (Graph.js 22012, 23241) | with the obstacle router, snap the end so the last leg is square | M |
-| Port constraint on a table row (east-west only) | no | `portConstraint=eastwest` (Graph.js 18454) | with tables | S |
 
 ### 6. Layers and pages
 

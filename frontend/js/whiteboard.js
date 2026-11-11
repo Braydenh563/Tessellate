@@ -4348,6 +4348,8 @@ function wbItemEdgeDir(kind, item, pt) {
 const wbPortCache = new Map();
 
 function wbPortFractions(kind, item) {
+  //: A table's points are the two ends of each row (draw.io's east-west port on a table row), see whiteboard-shape-more.js.
+  if (kind === "object" && item.kind === "table" && wbFmtState.shapeMore) return wbFmtState.shapeMore.tableRowPorts(wbTableCells(item).length);
   if (kind !== "sketch") return WB_FIXED_ANCHORS;
   const parsed = wbSketchParsedData(item);
   if (!parsed || typeof parsed.d !== "string") return WB_FIXED_ANCHORS;
