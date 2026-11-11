@@ -2607,21 +2607,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `captionDecimate` | frontend/js/captions.js:104 |
-| `captionOfferTranslate` | frontend/js/captions.js:260 |
-| `captionPaint` | frontend/js/captions.js:123 |
-| `captionRelease` | frontend/js/captions.js:266 |
-| `captionRunMerge` | frontend/js/captions.js:189 |
-| `captionSendNext` | frontend/js/captions.js:137 |
-| `captionToggleTranslate` | frontend/js/captions.js:76 |
-| `captionTranslatePump` | frontend/js/captions.js:58 |
-| `captionTranslatedText` | frontend/js/captions.js:54 |
-| `captionsText` | frontend/js/captions.js:96 |
-| `holdLiveCaptions` | frontend/js/captions.js:311 |
-| `startLiveCaptions` | frontend/js/captions.js:199 |
-| `stopLiveCaptions` | frontend/js/captions.js:274 |
-| `stopRecorderWords` | frontend/js/captions.js:307 |
-| `toggleLiveCaptions` | frontend/js/captions.js:315 |
+| `captionDecimate` | frontend/js/captions.js:105 |
+| `captionOfferTranslate` | frontend/js/captions.js:261 |
+| `captionPaint` | frontend/js/captions.js:124 |
+| `captionRelease` | frontend/js/captions.js:267 |
+| `captionRunMerge` | frontend/js/captions.js:190 |
+| `captionSendNext` | frontend/js/captions.js:138 |
+| `captionToggleTranslate` | frontend/js/captions.js:77 |
+| `captionTranslatePump` | frontend/js/captions.js:59 |
+| `captionTranslatedText` | frontend/js/captions.js:55 |
+| `captionsText` | frontend/js/captions.js:97 |
+| `holdLiveCaptions` | frontend/js/captions.js:312 |
+| `startLiveCaptions` | frontend/js/captions.js:200 |
+| `stopLiveCaptions` | frontend/js/captions.js:275 |
+| `stopRecorderWords` | frontend/js/captions.js:308 |
+| `toggleLiveCaptions` | frontend/js/captions.js:316 |
 
 ### frontend/js/capture-card-more.js (18)
 
