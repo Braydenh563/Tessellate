@@ -13916,7 +13916,7 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       parts.push(
         `<image href="${wbSvgEscape(mediaSrc(obj.data.url))}" width="${pix.w}" height="${pix.h}" ` +
           `preserveAspectRatio="xMidYMid slice"${clip ? ` clip-path="url(#${clip})"` : ""}` +
-          `${turn ? ` transform="${turn}"` : ""}${filter ? ` style="filter: ${filter}"` : ""} />`
+          `${turn ? ` transform="${turn}"` : ""}${filter ? ` filter="${filter}"` : ""} />`
       );
     } else if (obj.kind === "diagram") {
       //: What the board shows, already drawn (`wbDiagramDataUrl`); an edge
