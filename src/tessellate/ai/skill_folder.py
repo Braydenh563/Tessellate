@@ -88,6 +88,30 @@ def folder(config) -> Path | None:
     return path
 
 
+def _front_matter(match: re.Match) -> dict:
+    """The `key: value` lines of the front matter, keys lower-cased with `_`."""
+    raw: dict = {}
+    for line in match.group(1).splitlines():
+        if not line.strip() or line.lstrip().startswith("#") or ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        raw[key.strip().lower().replace("-", "_")] = value.strip()
+    return raw
+
+
+def _steps(rest: str) -> list[str]:
+    """The numbered or bulleted steps under the steps heading."""
+    steps: list[str] = []
+    for line in rest.splitlines():
+        item = _LIST_ITEM.match(line)
+        if item:
+            steps.append(item.group(1))
+        elif line.strip() and steps:
+            # A wrapped line belongs to the step above it.
+            steps[-1] = f"{steps[-1]} {line.strip()}"
+    return steps
+
+
 def parse(text: str, fallback_name: str) -> dict:
     """One file's text as the raw dict `skills.normalise` takes."""
     raw: dict = {}
@@ -95,11 +119,7 @@ def parse(text: str, fallback_name: str) -> dict:
     match = _FRONT.match(text)
     if match:
         body = text[match.end():]
-        for line in match.group(1).splitlines():
-            if not line.strip() or line.lstrip().startswith("#") or ":" not in line:
-                continue
-            key, value = line.split(":", 1)
-            raw[key.strip().lower().replace("-", "_")] = value.strip()
+        raw = _front_matter(match)
     out: dict = {
         "name": raw.get("name") or fallback_name,
         "description": raw.get("description", ""),
@@ -111,15 +131,7 @@ def parse(text: str, fallback_name: str) -> dict:
     heading = _STEPS_HEADING.search(body)
     if heading:
         prompt, rest = body[: heading.start()], body[heading.end():]
-        steps = []
-        for line in rest.splitlines():
-            item = _LIST_ITEM.match(line)
-            if item:
-                steps.append(item.group(1))
-            elif line.strip() and steps:
-                # A wrapped line belongs to the step above it.
-                steps[-1] = f"{steps[-1]} {line.strip()}"
-        out["steps"] = steps
+        out["steps"] = _steps(rest)
     else:
         prompt = body
     out["prompt"] = prompt.strip()
