@@ -289,3 +289,28 @@ def test_a_picture_deleted_while_it_is_being_read_is_skipped_quietly(
     assert vision_ocr.vision_ocr_and_store(second_id, image_path) is None
     with deps.get_db().session() as check:
         assert check.get(MediaUpload, first) is None and check.get(MediaUpload, second_id) is None
+
+
+def test_a_caption_edited_while_the_model_runs_is_kept(app_state, session, fake_ollama, tmp_path, monkeypatch):
+    """sm-1111 row 9: a hand edit landing during a slow caption call is not overwritten by it."""
+    row = MediaUpload(filename="a.png", original_name="a.png")
+    session.add(row)
+    session.commit()
+    upload_id = row.id
+    session.close()
+    image_path = tmp_path / "a.png"
+    image_path.write_bytes(b"\x89PNG\r\n\x1a\n")
+    fake_ollama.capabilities_declared = ["vision"]
+    deps.override_ai(ollama=fake_ollama)
+
+    def slow_caption(*_args, **_kwargs):
+        with deps.get_db().session() as write:
+            upload = write.get(MediaUpload, upload_id)
+            upload.caption, upload.caption_edited = "my own words", True
+            write.commit()
+        return "a late model caption"
+
+    monkeypatch.setattr(captioning, "caption_text", slow_caption)
+    assert captioning.caption_and_store(upload_id, image_path, force=True) == "my own words"
+    with deps.get_db().session() as check:
+        assert check.get(MediaUpload, upload_id).caption == "my own words"

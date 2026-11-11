@@ -571,6 +571,26 @@ function paintReminderList(all) {
   return due;
 }
 
+//: **Ask small first** (audit 1028 K32). `/reminders/due` answers a stamp over
+//: the open list in about a hundred bytes; the list itself is fetched only when
+//: the stamp moved, so an idle notebook no longer pulls a page of rows a minute.
+//: What time does to a cached list (a reminder coming due) is worked out here
+//: from `due_at`, as it always was. A stamp that cannot be had falls back to
+//: asking for the list.
+const openReminderList = (() => {
+  let cache = { stamp: "", all: null };
+  return async () => {
+    const look = await apiJson("/reminders/due", { silent: true }).catch(() => null);
+    if (look?.stamp && cache.all && look.stamp === cache.stamp) return { all: cache.all, fetched: false };
+    const all = await apiJson("/reminders?include_done=false", { silent: true }).catch(() => null);
+    if (!all) return null;
+    //: The stamp was read first, so a change in between leaves the cache looking
+    //: older than the list, and the next look fetches again: the safe side.
+    cache = { stamp: look?.stamp || "", all };
+    return { all, fetched: true };
+  };
+})();
+
 async function checkDueReminders() {
   // Before the unlock there is no token, and asking anyway is a guaranteed 401
   // on every load: visible in the browser's network log, and in the server's
@@ -584,11 +604,13 @@ async function checkDueReminders() {
   //: never heard about the one due now. Without the done rows the page is
   //: the soonest open reminders, which is exactly what "is anything due"
   //: asks, and it is smaller.
-  const all = await apiJson("/reminders?include_done=false", { silent: true }).catch(() => null);
-  if (!all) return; // server asleep or locked, say nothing rather than guess
+  const looked = await openReminderList();
+  if (!looked) return; // server asleep or locked, say nothing rather than guess
+  const all = looked.all;
   const due = paintReminderList(all);
-  //: Painting only: announcing stays with the tab that asked.
-  reminderChannel?.postMessage(all);
+  //: Painting only: announcing stays with the tab that asked. An unchanged
+  //: list was already sent when it was fetched.
+  if (looked.fetched) reminderChannel?.postMessage(all);
   const now = Date.now();
   const already = announcedReminders();
   //: An early alert (TIMELINE_PLAN 11 row 8) is announced once, under its
@@ -1586,8 +1608,8 @@ function pushEntryPutUndo(entryId, label, beforeBody, afterBody) {
 //: **An open board, not the boards list**: the list's own actions (rename,
 //: delete a board) are the app's, and went to an empty board history.
 function boardHistoryActive() {
-  const board = $("library-view-whiteboard");
-  const canvas = $("wb-canvas-view");
+  const board = document.getElementById("library-view-whiteboard");
+  const canvas = document.getElementById("wb-canvas-view");
   //: Showing, not merely un-hidden (INBOX 898, found by the live check): the
   //: board's view keeps no `hidden` class when another main tab covers it, so
   //: Ctrl+Z on Notes walked the last board's history and the app's own steps
@@ -1773,7 +1795,8 @@ document.addEventListener("mousedown", (event) => {
 // --- quick access: recent questions + most-used entries (Phase 5) -------------------
 
 async function loadRecentQuestions() {
-  const box = $("recent-questions");
+  const box = document.getElementById("recent-questions");
+  if (!box) return;
   //: Shared with the dashboard's Recent questions widget (`cacheMs`), which
   //: asks for the same list in the same second at boot. Any write clears it.
   const questions = await apiJson("/chat/recent", { cacheMs: 30000 }).catch(() => []);
@@ -1800,8 +1823,9 @@ async function loadRecentQuestions() {
 }
 
 async function loadMostUsed() {
-  const box = $("most-used-box");
-  const list = $("most-used");
+  const box = document.getElementById("most-used-box");
+  const list = document.getElementById("most-used");
+  if (!box || !list) return;
   const entries = await apiJson("/entries/most-accessed", { cacheMs: 30000 }).catch(() => []);
   list.replaceChildren();
   box.classList.toggle("hidden", entries.length === 0);
@@ -2145,6 +2169,8 @@ document.addEventListener(
 
 //: The body's own controls are gated when it is built (settings-body.js), not before.
 onSurface("settings", () => syncModelGatedControls());
+onSurface("chat", () => { syncModelGatedControls(); renderChatActiveModelBadge(); syncFeatureModelSelects(); wireFeatureModelSelects(); });
+onSurface("notes", syncModelGatedControls);
 onSurface("palette", () => { syncModelGatedControls(); syncAgentPaletteAvailability(); });
 function syncModelGatedControls(status = modelStatus) {
   const off = status ? status.ollama_running === false : false;
@@ -2194,7 +2220,7 @@ function syncModelGatedControls(status = modelStatus) {
   //: nothing but AI: Ask keeps working (it falls back to the search results
   //: beside it) and says so, the popup agent cannot and says that.
   renderAiOfflineNotice(
-    $("ask-offline"),
+    document.getElementById("ask-offline"),
     "No model connected. Ask shows the matching records below.",
     { dismissible: true, detail: "Ask answers from your notes alone until one is connected." }
   );
@@ -2211,7 +2237,7 @@ function syncModelGatedControls(status = modelStatus) {
   //: answered from the notes by the composer, so the box stays open and the
   //: line says what a model would add rather than that nothing answers.
   renderAiOfflineNotice(
-    $("chat-offline"),
+    document.getElementById("chat-offline"),
     "No model connected. Chat answers from your notes. Plan and Agent need a model.",
     { dismissible: true, detail: "Chat quotes your notes until one is connected. A model adds AI answers, Plan and Agent mode." }
   );
@@ -2219,7 +2245,7 @@ function syncModelGatedControls(status = modelStatus) {
   //: Atlas: with no model it cannot draft at all, and before this the only
   //: thing that said so was a title on a button that could not be pressed.
   renderAiOfflineNotice(
-    $("draft-offline"),
+    document.getElementById("draft-offline"),
     "No model connected. Carry on and Translate are off; the rest writes by rule."
   );
   //: UX-12: any other AI-only widget names its own line.
@@ -2845,7 +2871,7 @@ function renderChatModeSeg() {
         : agentButton.dataset.enabledTitle;
   }
   renderWebSearchToggle();
-  const agent = $("tools-toggle").checked && !gated;
+  const agent = document.getElementById("tools-toggle")?.checked && !gated;
   if (!(agent && modelStatus?.model_ready !== true)) showAgentNoModelHint(false);
   // Two `addEventListener` calls for Quit and Clear-history used to sit here,
   // spliced into the middle of this function by an editing accident. It parsed,
@@ -2864,7 +2890,7 @@ function renderChatModeSeg() {
 //: Agent with no model (INBOX 840, CHAT_PLAN 22a): the first choice of it says
 //: so under the composer; the segment's title always does.
 function showAgentNoModelHint(on) {
-  const line = $("chat-agent-hint");
+  const line = document.getElementById("chat-agent-hint");
   if (line) line.classList.toggle("hidden", !on);
 }
 
@@ -2933,6 +2959,16 @@ function renderSettings() {
     ? `${backend} is running`
     : status.unreachable_hint || `${backend} isn't running`;
   ollamaLine.className = `status ${status.ollama_running ? "ok" : status.ollama_busy ? "is-checking" : "off"}`;
+  //: With no model server running, the two optional ways to run a model here
+  //: (extra-notice.js). Drawn when the answer changes, not on every poll.
+  const noServer = !status.ollama_running && !status.ollama_busy;
+  if (ollamaLine.dataset.noServer !== String(noServer)) {
+    ollamaLine.dataset.noServer = String(noServer);
+    for (const id of ["needle", "localllm"]) {
+      if (noServer) extraNoticeMount($(`xn-${id}`), id);
+      else $(`xn-${id}`)?.replaceChildren();
+    }
+  }
   //: A slow poll keeps the last answer on screen (see refreshModelStatus), so
   //: the line says so instead of presenting a stale answer as fresh.
   if (modelStatusProblem === "slow") {

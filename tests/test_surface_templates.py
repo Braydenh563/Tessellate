@@ -71,6 +71,24 @@ SURFACES = {
         ("switchTab",),
         ("doc-editor", "doc-title", "doc-list", "doc-toolbar", "doc-new"),
     ),
+    "chat": (
+        "tab-chat",
+        ("*.js",),
+        ("switchTab",),
+        ("chat-input", "chat-send", "chat-sidebar", "chat-new", "chat-compress", "chat-fork"),
+    ),
+    "library": (
+        "tab-library",
+        ("<boot>",),
+        ("switchTab",),
+        ("library-subtabs", "library-boards-grid", "library-bulk-delete", "library-binbar", "library-activitybar"),
+    ),
+    "notes": (
+        "tab-notes",
+        ("<boot>",),
+        ("switchTab",),
+        ("entry-content", "entry-list", "sidebar", "category-list", "note-sort"),
+    ),
     "palette": (
         "command-palette-overlay",
         ("palette.js", "app-palette.js", "editor.js", "field-clear.js", "status.js", "wiring.js", "settings-wiring.js", "lazy-entries.js", "dashboard.js", "navigation.js"),
@@ -86,6 +104,13 @@ SURFACES = {
 }
 
 
+#: (file, surface) of a partial IIFE the lint reads whole but whose chat-pane ids sit only inside
+#: functions that run later (atlas.js `retireOlder` reads the bubbles when a face rests, never at load)
+#: or inside `onSurface("chat", ...)` (answer-kit.js watches the message list once the pane is built).
+#: vault-unlock.js reads TYPED_IDS (chat, library, notes fields) only at lock time, inside functions.
+INSIDE_FUNCTIONS = {("atlas.js", "chat"), ("answer-kit.js", "chat"), ("vault-unlock.js", "chat")}
+
+
 def _template(name: str) -> tuple[str, str]:
     """(the markup just before the template, the template's body)."""
     m = re.search(rf'<template data-surface="{name}"[^>]*>(.*?)</template>', INDEX, re.S)
@@ -94,10 +119,17 @@ def _template(name: str) -> tuple[str, str]:
 
 
 def _ids(markup: str) -> set[str]:
-    return set(re.findall(r'\bid="([^"]+)"', markup))
+    return set(re.findall(r'(?<![-\w])id="([^"]+)"', markup))
+
+
+def _boot_scripts() -> tuple[str, ...]:
+    """The scripts index.html loads at boot; the lazy modules load when a surface is opened, so they may reach it."""
+    return tuple(re.findall(r'<script src="/js/([\w-]+\.js)', INDEX))
 
 
 def _files(globs: tuple[str, ...]) -> list[Path]:
+    if globs == ("<boot>",):
+        globs = _boot_scripts()
     return sorted({p for g in globs for p in JS.glob(g)})
 
 
@@ -106,7 +138,7 @@ def _src(name: str) -> str:
 
 
 #: Files that are one `(() => {` ... `})();` whole (W29 D24): their inner statements are the load-time ones.
-WRAPPED = ("quick-note.js", "field-clear.js", "whiteboard-history.js")
+WRAPPED = ("quick-note.js", "field-clear.js", "whiteboard-history.js", "chat-private.js", "attach-to.js", "obj-tray.js", "pick-row.js", "tidy.js", "usage-ledger.js", "web-clip.js", "web-results.js")
 
 
 def _unwrapped(path: Path) -> str:
@@ -217,9 +249,13 @@ def test_load_time_wiring_of_the_surface_waits_for_it(name):
         for number, head, block in _load_time_blocks(text):
             if head.startswith(f'onSurface("{name}"'):
                 continue
+            if (path.name, name) in INSIDE_FUNCTIONS:
+                continue
             reached = block + "".join(functions.get(f, "") for f in set(re.findall(r"\b(\w+)\(", block)))
             if head.startswith("onSurface("):
-                # Another surface's hook runs later; `document.getElementById` never builds this one, so only `$` is the harm.
+                # Another surface's hook runs later, when a user opens it, and what its handlers call runs later
+                # still: only the hook's own text counts. `document.getElementById` never builds this one, so only `$` is the harm.
+                reached = block
                 reached = re.sub(r"document\.getElementById\(\s*[\"'][\w-]+[\"']\s*\)", "", reached)
             named = _selector_hits(reached, ids, classes)
             if named:

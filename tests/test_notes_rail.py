@@ -105,7 +105,7 @@ def test_opening_a_cards_menu_does_not_open_the_rail_under_it():
     been: at 1440x600, 118px between the menu and its opener, the menu over
     the rail. A menu is acting on a note, not choosing one to read: only focus
     on the row itself, or a control that is not a menu's, selects it."""
-    wire = LIST_JS[LIST_JS.index("(function wireNotesRail() {") :]
+    wire = LIST_JS[LIST_JS.index('const rail = $("notes-rail");') :]
     focus = wire[wire.index('list.addEventListener("focusin"') :]
     focus = focus[: focus.index("\n  });\n")]
     assert ".menu-wrap" in focus and ".action-menu" in focus, "a card's menu opening still selects the note for the rail"

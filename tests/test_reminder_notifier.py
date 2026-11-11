@@ -283,3 +283,12 @@ def test_a_failing_hook_never_stops_the_notifier(client, tmp_path, monkeypatch):
     due = FIXED_NOW + timedelta(minutes=1)
     client.post("/reminders", json={"text": "Stretch", "due_at": due.isoformat()})
     notifier.tick(due.replace(tzinfo=None) + timedelta(seconds=1))  # no exception
+
+
+def test_done_from_a_notification_completes_without_the_route_query_default(client):
+    """`complete_reminder` is called as a function, where its `Query` default is a
+    truthy object; the occurrence check once refused every Done from a system
+    notification (done stayed False). Direct, no thread and no clock."""
+    made = client.post("/reminders", json={"text": "ring", "due_at": "2099-01-01T09:00:00"}).json()
+    rn.apply_action(made["id"], "done")
+    assert client.get("/reminders").json()[0]["done"] is True

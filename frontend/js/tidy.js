@@ -45,8 +45,8 @@
     const body = await apiJson("/tidy", { silent: true }).catch(() => null);
     if (!body) return;
     if (TIDY.state) tidyCounts(body);
-    const count = $("notes-tidy-count");
-    const button = $("notes-tidy");
+    const count = document.getElementById("notes-tidy-count");
+    const button = document.getElementById("notes-tidy");
     if (!count || !button) return;
     count.textContent = body.total > 99 ? "99+" : body.total ? String(body.total) : "";
     count.hidden = !body.total;
@@ -58,7 +58,7 @@
   }
 
   function tidyWatchList() {
-    const list = $("entry-list");
+    const list = document.getElementById("entry-list");
     if (!list || list.dataset.tidyWatched) return;
     list.dataset.tidyWatched = "1";
     new MutationObserver(() => {
@@ -678,8 +678,7 @@
     state.history.append(head, list);
   }
 
-  tidyWatchList();
-  tidyBadge(true);
+  onSurface("notes", () => { tidyWatchList(); tidyBadge(true); });
 
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
   Object.assign(window, { openTidySheet });

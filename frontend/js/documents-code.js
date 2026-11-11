@@ -2942,6 +2942,10 @@ async function docRunSyncAvailability(type) {
   //: Another document opened while that was asked: its own call decides.
   if (docFileType().ext !== type.ext) return;
   if (python && ready) docPyWarm();
+  //: The one optional-package notice (extra-notice.js), on the document card.
+  const card = document.querySelector(".doc-main");
+  if (python && !ready) extraNoticeMount(card, "pyodide", { fresh: true });
+  else card?.querySelector(':scope > .extra-notice[data-extra="pyodide"]')?.remove();
   run.disabled = !ready;
   run.title = ready ? (type.ext === "csv" ? "Show this file as a table (Ctrl+Shift+Enter)" : "Run this file in a sandbox and show its output (Ctrl+Shift+Enter)") : "Running Python needs the Python package: install it in Settings, Packages";
   why.classList.toggle("hidden", ready || !docRunnable(type));

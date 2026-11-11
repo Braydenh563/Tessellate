@@ -2379,6 +2379,23 @@ label.setting-check,
   display: none;
 }
 
+/* The preferences card: a label and its select per row; a row wraps, the select under its label, where it does not fit beside it. */
+.onboarding-prefs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  text-align: left;
+}
+
+.onboarding-pref {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-4);
+}
+
 /* --- help guide accordion ------------------------------------------------------ */
 .help-accordion details {
   border: 1px solid var(--border);

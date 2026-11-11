@@ -380,3 +380,23 @@ def test_a_looped_caption_is_cut_too(tmp_path, fake_ollama):
     image_path.write_bytes(b"\x89PNG\r\n\x1a\n")
     cut = captioning.caption_text(image_path, "llava", fake_ollama)
     assert cut.startswith("A whiteboard with") and _once(cut, "arrows and boxes")
+
+
+def test_a_hand_edit_made_while_the_read_runs_is_not_overwritten(app_state, session, fake_ollama, tmp_path, monkeypatch):
+    """sm-1111 row 9: a slow read that finishes after the text was typed by hand keeps the hand text."""
+    upload_id = _upload(session)
+    image_path = tmp_path / "a.png"
+    image_path.write_bytes(b"\x89PNG\r\n\x1a\n")
+    fake_ollama.capabilities_declared = ["vision"]
+    deps.override_ai(ollama=fake_ollama)
+
+    def slow_read(*_args, **_kwargs):
+        with deps.get_db().session() as write:
+            write.get(MediaUpload, upload_id).vision_ocr_text = "typed by hand"
+            write.commit()
+        return "late model read"
+
+    monkeypatch.setattr(vision_ocr, "vision_ocr_text", slow_read)
+    assert vision_ocr.vision_ocr_and_store(upload_id, image_path, force=True) == "typed by hand"
+    with deps.get_db().session() as check:
+        assert check.get(MediaUpload, upload_id).vision_ocr_text == "typed by hand"

@@ -3083,7 +3083,7 @@ function agentRunTool(run, node) {
   //: Its own sheet, so every bundle that brings an answer brings the row's
   //: look, and the boot scripts' gzip budget carries no path for it.
   lazyScript("/css/answer-foot-lazy.css");
-  answerFootWatch($("ai-answer")?.parentElement);
-  answerFootWatch($("chat-messages"), ".msg.assistant");
+  onSurface("notes", () => answerFootWatch($("ai-answer")?.parentElement));
+  onSurface("chat", () => answerFootWatch($("chat-messages"), ".msg.assistant"));
   onSurface("palette", () => answerFootWatch($("command-palette-results"), ".msg.assistant"));
 })();

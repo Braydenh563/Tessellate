@@ -134,6 +134,7 @@ async function openNoteEditor(id, { focusTags = false } = {}) {
 
 // Category <select> shared by capture (guided mode) and the edit form.
 function fillCategoryOptions(select, selected) {
+  if (!select) return;
   select.replaceChildren();
   //: Every category, empty ones included, in the sidebar's order (INBOX 432).
   const names = [...new Set([...categoryMeta.keys(), ...allEntries.map((e) => e.category)])]
@@ -1802,13 +1803,6 @@ function highlightInto(element, text, terms) {
   }
 }
 
-// The words worth highlighting in a result, operators aren't text to find.
-function searchHighlightTerms() {
-  if (!noteSearch) return [];
-  const query = parseNoteQuery(noteSearch);
-  return [...query.phrases, ...query.words].filter((t) => t.length > 1);
-}
-
 // "Why this result", in words rather than a number, from the three scores the
 // engine returns with every hit (`search/engine.py`). Asked for by Brief 11
 // directly: the list says *matched the title*, *similar meaning*, *linked to
@@ -2237,9 +2231,11 @@ function setNotesViewMode(mode) {
 //: coming back to a tidy one.
 const expandedRows = new Set();
 
-$("notes-expand-all")?.addEventListener("click", toggleExpandAllRows);
-$("notes-view-rows")?.addEventListener("click", () => setNotesViewMode("rows"));
-$("notes-view-cards")?.addEventListener("click", () => setNotesViewMode("cards"));
+onSurface("notes", () => {
+  $("notes-expand-all")?.addEventListener("click", toggleExpandAllRows);
+  $("notes-view-rows")?.addEventListener("click", () => setNotesViewMode("rows"));
+  $("notes-view-cards")?.addEventListener("click", () => setNotesViewMode("cards"));
+});
 //: The capture bar's card is the lazy capture-card.js (INBOX 1479), fetched on the first focus or click.
 //: Offline the file is not there (and the failed fetch is forgotten, app.js `lazyScript`), so the bar says
 //: so once and points at the Capture section, whose box is in the page already.
@@ -2264,7 +2260,7 @@ function captureBar(bar) {
   if (typeof captureCard !== "undefined") captureCard.adopt(bar);
   return bar;
 }
-if ($("capture-bar")) captureBar($("capture-bar"));
+onSurface("notes", () => { if ($("capture-bar")) captureBar($("capture-bar")); });
 
 //: **A map's topics live on their map** (audit 2026-10-05, UX-06). Each
 //: topic a concept map's Tab or Enter makes is a note (`map_topic`), and a
@@ -2685,7 +2681,8 @@ function renderSidebar() {
   //: calls at 6x CPU, behind the page on screen). It is owed instead, with the list's own debt
   //: (`data-stale`), and drawn when the tab is shown (`renderEntries` pays it).
   if ($("tab-notes").classList.contains("hidden")) {
-    $("entry-list").dataset.stale = "1";
+    const list = document.getElementById("entry-list");
+    if (list) list.dataset.stale = "1";
     return;
   }
   // Categories + counts are derived from the loaded entries, the
@@ -2967,8 +2964,8 @@ function wireCategoryDropTarget(li, category) {
 // Loading skeletons (Wave I): shimmer placeholders instead of a blank
 // list on the very first load, so a slow disk never looks broken.
 function showEntrySkeletons() {
-  const list = $("entry-list");
-  if (list.children.length > 0) return; // only ever on a truly empty list
+  const list = document.getElementById("entry-list");
+  if (!list || list.children.length > 0) return; // only ever on a truly empty list
   for (let i = 0; i < 3; i++) {
     const li = document.createElement("li");
     li.className = "skeleton";
@@ -3079,9 +3076,12 @@ function paintEntriesProgress(list = true) {
 //: the map index answering): drawn now if the tab is up, once on reveal if not.
 //: The debt is `data-stale` on the list itself, so it is no module state.
 function renderEntriesWhenShown(appendOnly = false) {
-  if ($("tab-notes").classList.contains("hidden")) $("entry-list").dataset.stale = "1";
-  else renderEntries(appendOnly);
+  if ($("tab-notes").classList.contains("hidden")) {
+    const list = document.getElementById("entry-list");
+    if (list) list.dataset.stale = "1";
+  } else renderEntries(appendOnly);
 }
+onSurface("notes", () => { $("entry-list").dataset.stale = "1"; fillCategoryOptions($("entry-category"), null); });
 
 //: **Past this many rows a page that is not the last repaints the count, not
 //: the list** (perf-1031 item 3). `renderEntries` rebuilds every row, so a
@@ -3103,7 +3103,7 @@ async function loadEntries() {
   //: on screen: "Your notebook is empty" is a claim about the person's own
   //: notes that a failed GET is no basis for. See `surfaceFailed`.
   const held = heldNoteControl();
-  const result = await loadSurface($("empty-message"), "your notes", _loadEntries);
+  const result = await loadSurface(document.getElementById("empty-message"), "your notes", _loadEntries);
   restoreNoteControl(held);
   return result;
 }
@@ -3117,7 +3117,7 @@ async function _loadEntries() {
   noteEngine.body.q = noteEngine.body.pending = "";
   showEntrySkeletons();
 
-  const isSemantic = $("semantic-search-toggle")?.checked;
+  const isSemantic = document.getElementById("semantic-search-toggle")?.checked;
   //: The Semantic toggle asks the engine, in notes-lazy.js (`loadSemanticEntries`).
   if (isSemantic && noteSearch) return loadSemanticEntries(noteSearch, generation);
 
@@ -3182,7 +3182,7 @@ async function _loadEntries() {
       // Deliberately not awaited: the list renders now and the controls
       // light up a moment later.
       loadCategories();
-      fillCategoryOptions($("entry-category"), null);
+      fillCategoryOptions(document.getElementById("entry-category"), null);
     }
     first = false;
     if (page.length === 0) break; // safety: never loop forever on a stale total
@@ -3264,7 +3264,7 @@ async function refreshEntries(ids) {
   restoreNoteControl(held);
   //: Categories the AI filed into since the last read need their ids.
   loadCategories();
-  fillCategoryOptions($("entry-category"), null);
+  fillCategoryOptions(document.getElementById("entry-category"), null);
 }
 
 //: **A change made on another device shows here** (INBOX 881, the owner
@@ -3718,72 +3718,72 @@ function setNotesRailHidden(hidden) {
   renderNotesRail();
 }
 
-(function wireNotesRail() {
-  const rail = $("notes-rail");
-  const list = $("entry-list");
-  if (!rail || !list) return;
-  //: Selecting a row is focusing it: a click on a card's body focuses its
-  //: `<li>` (the list's roving tabindex), and so does every arrow key.
-  list.addEventListener("focusin", (event) => {
-    const li = event.target.closest?.("li[data-id]");
-    if (!li || li.parentElement !== list) return;
-    //: **Not a card's menu.** Its ⋯ is a button inside the row, so pressing it
-    //: is focus in the row, and the rail opened 120ms later: the column takes
-    //: 318px from the list and its dock wraps to two lines, so the row moved
-    //: 318px left and 44px down under a menu already placed beside where the
-    //: ⋯ had been (the review, 2026-09-27, `anchorsmotion.js`: 118px from its
-    //: opener at 1440x600, over the rail). A menu acts on a note; it does not
-    //: choose one to read.
-    if (event.target.closest?.(".menu-wrap, .action-menu")) return;
-    //: INBOX 571: a card chosen by hand is the subject (it is pinned in
-    //: notes-rail-spy.js); the rail is already drawn, so nothing moves.
-    const id = Number(li.dataset.id);
-    if (!Number.isFinite(id) || id === notesRailId) return;
-    notesRailId = id;
-    scheduleNotesRail();
-  });
-  $("notes-rail-close")?.addEventListener("click", () => {
-    notesRailFocusSubject();
-    setNotesRailHidden(true);
-    toast("Connections hidden. The notes list's More menu brings them back.");
-  });
-  $("notes-rail-toggle")?.addEventListener("click", () => {
-    setNotesRailHidden(!notesRailHiddenByChoice());
-    $("notes-more-menu")?.removeAttribute("open");
-  });
-  //: The keys every list here keeps (WORLD_CLASS_PLAN 1.6): arrows walk the
-  //: rows, Enter opens one (they are buttons), Escape goes back to the list.
-  rail.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      event.stopPropagation();
-      notesRailFocusSubject();
-      return;
-    }
-    if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
-    const rows = [...rail.querySelectorAll("button.connection-row")];
-    const at = rows.indexOf(document.activeElement);
-    if (at < 0) return;
-    event.preventDefault();
-    const next = rows[Math.min(rows.length - 1, Math.max(0, at + (event.key === "ArrowDown" ? 1 : -1)))];
-    next?.focus();
-  });
-  notesRailWide.addEventListener("change", renderNotesRail);
-  //: A sidebar dragged wider or narrower, or collapsed, changes the room the
-  //: list has, which is what decides whether the rail fits. Observed on the
-  //: sidebar itself rather than on the window, because the window does not
-  //: change when the sidebar is dragged.
-  if (typeof ResizeObserver === "function" && $("sidebar")) {
-    let last = 0;
-    new ResizeObserver((entries) => {
-      const w = Math.round(entries[0].contentRect.width);
-      if (w === last) return;
-      last = w;
+onSurface("notes", () => {
+    const rail = $("notes-rail");
+    const list = $("entry-list");
+    if (!rail || !list) return;
+    //: Selecting a row is focusing it: a click on a card's body focuses its
+    //: `<li>` (the list's roving tabindex), and so does every arrow key.
+    list.addEventListener("focusin", (event) => {
+      const li = event.target.closest?.("li[data-id]");
+      if (!li || li.parentElement !== list) return;
+      //: **Not a card's menu.** Its ⋯ is a button inside the row, so pressing it
+      //: is focus in the row, and the rail opened 120ms later: the column takes
+      //: 318px from the list and its dock wraps to two lines, so the row moved
+      //: 318px left and 44px down under a menu already placed beside where the
+      //: ⋯ had been (the review, 2026-09-27, `anchorsmotion.js`: 118px from its
+      //: opener at 1440x600, over the rail). A menu acts on a note; it does not
+      //: choose one to read.
+      if (event.target.closest?.(".menu-wrap, .action-menu")) return;
+      //: INBOX 571: a card chosen by hand is the subject (it is pinned in
+      //: notes-rail-spy.js); the rail is already drawn, so nothing moves.
+      const id = Number(li.dataset.id);
+      if (!Number.isFinite(id) || id === notesRailId) return;
+      notesRailId = id;
       scheduleNotesRail();
-    }).observe($("sidebar"));
-  }
-  syncNotesRailToggle();
-})();
+    });
+    $("notes-rail-close")?.addEventListener("click", () => {
+      notesRailFocusSubject();
+      setNotesRailHidden(true);
+      toast("Connections hidden. The notes list's More menu brings them back.");
+    });
+    $("notes-rail-toggle")?.addEventListener("click", () => {
+      setNotesRailHidden(!notesRailHiddenByChoice());
+      $("notes-more-menu")?.removeAttribute("open");
+    });
+    //: The keys every list here keeps (WORLD_CLASS_PLAN 1.6): arrows walk the
+    //: rows, Enter opens one (they are buttons), Escape goes back to the list.
+    rail.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        notesRailFocusSubject();
+        return;
+      }
+      if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+      const rows = [...rail.querySelectorAll("button.connection-row")];
+      const at = rows.indexOf(document.activeElement);
+      if (at < 0) return;
+      event.preventDefault();
+      const next = rows[Math.min(rows.length - 1, Math.max(0, at + (event.key === "ArrowDown" ? 1 : -1)))];
+      next?.focus();
+    });
+    notesRailWide.addEventListener("change", renderNotesRail);
+    //: A sidebar dragged wider or narrower, or collapsed, changes the room the
+    //: list has, which is what decides whether the rail fits. Observed on the
+    //: sidebar itself rather than on the window, because the window does not
+    //: change when the sidebar is dragged.
+    if (typeof ResizeObserver === "function" && $("sidebar")) {
+      let last = 0;
+      new ResizeObserver((entries) => {
+        const w = Math.round(entries[0].contentRect.width);
+        if (w === last) return;
+        last = w;
+        scheduleNotesRail();
+      }).observe($("sidebar"));
+    }
+    syncNotesRailToggle();
+});
 
 //: GRAPH_PLAN 518: a save that renamed a note while other notes still write
 //: its old [[name]] offers to rewrite them as the new one.

@@ -67,7 +67,7 @@ function renderAskUseAi() {
 }
 
 function wireAskUseAi() {
-  const box = $("ask-use-ai");
+  const box = document.getElementById("ask-use-ai");
   if (!box || box.dataset.wired) return;
   box.dataset.wired = "1";
   box.addEventListener("change", () => {
@@ -92,7 +92,7 @@ function wireAskUseAi() {
   renderAskUseAi();
 }
 
-wireAskUseAi();
+onSurface("notes", wireAskUseAi);
 
 //: **The name in "[**Dentist**]" opens the note** (the 2026-10-10 triage,
 //: decision 5). An answer written without a model cites each note by its

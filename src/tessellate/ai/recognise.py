@@ -1984,6 +1984,15 @@ def configure_hemisphere(setting: str | None, reported_locale: str | None) -> No
     _HEMISPHERE["reported"] = str(reported_locale) if reported_locale else None
 
 
+#: "3/4" in a search or a question: the person's own choice (Settings, General,
+#: Calendar, Date order) over the browser's language and region. "auto" follows them.
+_DATE_ORDER = {"setting": "auto"}
+
+
+def configure_date_order(setting: str | None) -> None:
+    _DATE_ORDER["setting"] = setting if setting in ("day", "month") else "auto"
+
+
 def note_locale(locale: str | None) -> None:
     """The locale a request carried is the freshest report of the person's
     place (kept in memory only; Settings holds the saved one)."""
@@ -3141,6 +3150,8 @@ def _bare_hour(clock: re.Match, low: str, end: int) -> bool:
 def _reads_month_first(locale: str | None) -> bool:
     """A reader that takes no locale (a plan's window, a day list) follows the one the request reported
     (`note_locale`): Chat and Ask carry it, so "3/4" is 4 March in en-US wherever it is read (W8 B18)."""
+    if _DATE_ORDER["setting"] != "auto":
+        return _DATE_ORDER["setting"] == "month"
     return (locale or _CALL_LOCALE.get() or _HEMISPHERE["reported"] or "").lower() in _MONTH_FIRST
 
 

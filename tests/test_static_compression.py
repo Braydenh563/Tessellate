@@ -155,7 +155,12 @@ PIECE_CAP = 32_000
 #: button, attachment cards and meta menu moved into the lazy entry-card.js, the
 #: embedding apply into settings-controls.js and the history actor label into
 #: note-history.js (each had no caller at boot); measured 252,137 to 250,466.
-TOTAL_CAP = 250_766
+#: 2026-11-11, W27, -520 (250,954 to 250,434): nine settings helpers (applyHarmony,
+#: applyContrast, resetThemeOnly, copyLogs, clearManualOverrides, nearLogBottom, the embedding
+#: latch and model check) into settings-controls.js, inlineActionIs and translateNoteInDesk
+#: into entry-menu.js, searchHighlightTerms and notesSpanSpaces into entry-card.js: each has
+#: one caller, in the lazy file it moved to.
+TOTAL_CAP = 250_450
 
 
 def _served_gzip_size(client, name: str) -> int:

@@ -1929,6 +1929,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
         loadDocPageReads(attachmentId, name, item).catch(() => {});
         return;
       }
+      if (info && info.available === false) extraNoticeMount(doc, "pdfpages");
       // pdfpages isn't installed, or this particular file can't be opened: 
       // `info.message` already says which. Fall through to the AI-text path
       // below, which gives the same honest message (docview.py's own

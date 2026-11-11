@@ -62,6 +62,7 @@ from tessellate.api import (
     routes_inbox,
     routes_entities,
     routes_relations,
+    routes_kept_words,
     routes_properties,
     routes_bench,
     routes_editor,
@@ -1324,6 +1325,10 @@ def _start_services() -> Path:
         deps.get_config().get_preference("season_hemisphere", "auto"),
         deps.get_config().get_preference("season_locale", ""),
     )
+    from tessellate.search import query as search_query
+
+    recognise.configure_date_order(deps.get_config().get_preference("date_order", "auto"))
+    search_query.configure_before(deps.get_config().get_preference("before_includes_day", False))
     if deps.get_config().get_preference("warm_search_model_at_launch", True):
         afterunlock.defer("search-warmup", _warm_search_at_launch)
     # The filing model's warm-up and the retry of stand-ins are *not* started
@@ -1483,6 +1488,7 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     (routes_inbox.router, LOCKED),
     (routes_entities.router, LOCKED),
     (routes_relations.router, LOCKED),
+    (routes_kept_words.router, LOCKED),
     (routes_properties.router, LOCKED),
     (routes_chat.router, LOCKED),
     (routes_ask_history.router, LOCKED),

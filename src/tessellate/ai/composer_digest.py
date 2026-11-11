@@ -3678,19 +3678,36 @@ def _storied(out: _Out, question: str, members, facts, today: date) -> bool:  # 
     False, with `out` untouched, when the notes do not fit that shape."""
     dated = sorted((v for v in members if v.written), key=lambda v: (v.written, v.id))
     plan = composer_story.plan([v.written for v in dated], [v.note.get("content") or "" for v in dated]) if len(dated) == len(members) else None
-    if plan is None:
+    #: Under five notes the plain lines have no filler to lose; they are woven only when a frame would have
+    #: told some of them as "More loosely related" or "More from X" (INBOX 1743 follow-up).
+    if plan is None or (len(dated) < composer_story.PLAIN_NOTES and not _would_fill(dated)):
         return False
     gisted = _gists(members, facts)
     units = [_story_unit(v, gisted, today) for v in dated]
     if None in units:
         return False
     out.framed = True
-    composer_story.story(out, _count(len(dated)), units, [v.written for v in dated], _topic(question, members), plan)
+    composer_story.story(out, _count(len(dated)), units, [v.written for v in dated], _topic(question, members), plan, _themed(dated))
     return True
 
 
+def _would_fill(dated) -> bool:  # noqa: ANN001
+    """Whether the frame would tell any of these notes as "more loosely related": the filler a story replaces."""
+    return any(g.band == "loose" for g in composer_frame.groups([v.note for v in dated]))
+
+
+def _themed(dated) -> list[list[int]]:  # noqa: ANN001
+    """The positions (oldest first) of the notes that go together, by a tag they share or a link, one list a theme."""
+    place = {v.id: i for i, v in enumerate(dated)}
+    return [sorted(place[i] for i in g.ids) for g in composer_frame.themes([v.note for v in dated]) if len(g.ids) > 1]
+
+
+#: A question that asks for the figure ("count my notes about Hobart", "how many notes on Sara"): the count, not a story.
+_COUNT_ASKED = re.compile(r"^\W*(?:please\s+)?(?:how many|(?:the )?number of|count|tally|check|total)\b", re.I)
+
+
 def _overview(out: _Out, question: str, members, facts, today: date, kind: str) -> None:  # noqa: ANN001
-    if kind == "overview" and not _GOING.search(question) and _storied(out, question, _chosen_members(question, members, kind), facts, today):
+    if kind == "overview" and not _GOING.search(question) and not _COUNT_ASKED.search(question) and _storied(out, question, _chosen_members(question, members, kind), facts, today):
         return
     groups, counted = _counted_groups(question, members, kind)
     moved, facts = _overview_opening(out, question, members, facts, today, kind, counted)
@@ -5306,10 +5323,12 @@ def answer(question: str, notes: list[dict], **kwargs) -> dict | None:  # noqa: 
     owned = composer_ask.NOTE_WORDS.set(composer._note_words(notes))  # noqa: SLF001
     texts = composer_ask.NOTE_TEXTS.set(tuple(f"{n.get('title') or ''} {n.get('content') or ''}" for n in notes or ()))
     as_asked = _ASKED_AS.set(question)
+    named = composer_ask.NOTE_CATEGORIES.set(frozenset(re.sub(r"\s+", " ", re.sub(r"\band\b", "&", str(n.get("category") or "").lower())) for n in notes or () if n.get("category")))
     try:
         return composer_event_verdict.apply(question, _answer(question, notes, **kwargs), kwargs.get("today") or composer.user_today())
     finally:
         _ASKED_AS.reset(as_asked)
+        composer_ask.NOTE_CATEGORIES.reset(named)
         composer_ask.NOTE_TEXTS.reset(texts)
         composer_ask.NOTE_WORDS.reset(owned)
 

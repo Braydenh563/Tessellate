@@ -243,7 +243,11 @@ function renderEditForm(li, entry) {
   titleInput.setAttribute("aria-label", "Title: becomes the note's leading heading");
   titleInput.value = draft ? draft.title : parts.title;
   titleInput.addEventListener("input", () => { noteFormDirty = true; });
+  //: A private note's text sits in these two while the form is open: the lock empties them
+  //: wherever the form is drawn (`purgeLockedContent`, INBOX 1747 row 26).
+  titleInput.dataset.holdsNotebook = "";
   const textarea = document.createElement("textarea");
+  textarea.dataset.holdsNotebook = "";
   textarea.rows = 3;
   textarea.setAttribute("aria-label", "Note text"); // its editor takes this name (noteSurfaceName)
   textarea.value = draft ? draft.content : parts.body;
@@ -425,12 +429,14 @@ function renderEditForm(li, entry) {
           toast("A note needs some text. To remove it, use Move to bin in its menu.", "info");
           return;
         }
-        const before = { content: entry.content, category: entry.category, tags: entry.tags };
-        const after = {
-          content: written,
-          category,
-          tags: tagsInput.value.split(",").map((t) => t.trim()).filter(Boolean),
-        };
+        const before = { content: entry.content };
+        const after = { content: written };
+        //: Only what this form changed is sent: tags or a category filed by
+        //: the AI (or another tab) while it was open stay, where the form's
+        //: unchanged copy had put the old ones back (sm-1111 row 6).
+        const tags = tagsInput.value.split(",").map((t) => t.trim()).filter(Boolean);
+        if (category !== entry.category) [before.category, after.category] = [entry.category, category];
+        if (tags.join("\n") !== (entry.tags || []).join("\n")) [before.tags, after.tags] = [entry.tags, tags];
         //: `base_hash`: the text this form opened on, so a save over a
         //: newer text from another window is refused rather than silently
         //: replacing it (WORLD_CLASS_PLAN 22.1 item 5); the prompt then

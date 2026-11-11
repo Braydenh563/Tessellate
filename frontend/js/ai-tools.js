@@ -138,7 +138,7 @@ function renderChatModelPicker(status) {
 // itself isn't backend-specific, so this reads it straight off the poll
 // loop instead of piggybacking on that gated render.
 function renderChatActiveModelBadge() {
-  const badge = $("chat-active-model");
+  const badge = document.getElementById("chat-active-model");
   if (!badge) return;
   //: **The Chat tab's own model, which is not always the app's.** Since the
   //: chat tab is a row in `model_manager.FEATURES` it can be pinned to a
@@ -244,7 +244,7 @@ function placeChatModelPanel() {
 window.addEventListener("resize", placeChatModelPanel);
 window.addEventListener("scroll", placeChatModelPanel, true);
 
-$("chat-active-model")?.addEventListener("click", () => {
+onSurface("chat", () => $("chat-active-model")?.addEventListener("click", () => {
   if ($("chat-active-model").dataset.offline) {
     openSettingsModal("models");
     return;
@@ -255,7 +255,7 @@ $("chat-active-model")?.addEventListener("click", () => {
     return;
   }
   openChatModelPanel();
-});
+}));
 
 function renderUtilityModelPicker(status) {
   const names = status.installed_models.map((m) => m.name);
@@ -429,7 +429,7 @@ const FEATURE_MODEL_SELECTS = [
 
 function syncFeatureModelSelects() {
   for (const [id, key] of FEATURE_MODEL_SELECTS) {
-    const select = $(id);
+    const select = document.getElementById(id);
     if (!select) continue;
     const row = featureModelRow(key);
     //: No rows yet (the first poll has not answered, or the app is locked):
@@ -489,7 +489,7 @@ function syncFeatureModelSelects() {
 
 function wireFeatureModelSelects() {
   for (const [id, key] of FEATURE_MODEL_SELECTS) {
-    const select = $(id);
+    const select = document.getElementById(id);
     if (!select || select.dataset.wired) continue;
     select.dataset.wired = "1";
     select.addEventListener("change", () => {
@@ -680,24 +680,6 @@ let improveCustomInstruction = "";
 
 
 
-
-// Heuristic: does this Ollama model look like it can produce embeddings?
-// Chat/generation models can't, Ollama answers /api/embed with 501, and
-// picking one by mistake is the #1 way people break the search engine.
-function looksLikeEmbeddingModel(name) {
-  return /embed|minilm|bge|gte|e5|arctic/i.test(name || "");
-}
-
-// Let the status poll own the radios again. Called once a choice is applied,
-// and when the user backs out of applying it, otherwise a cancelled switch
-// would leave the radio showing a backend that was never saved, which is the
-// same lie in the opposite direction.
-function clearEmbeddingBackendLatch() {
-  delete $("embedding-model-select").dataset.userChosen;
-  for (const radio of document.querySelectorAll('input[name="emb-backend"]')) {
-    delete radio.dataset.userChosen;
-  }
-}
 
 // --- keeping the look across restarts (§35E) --------------------------------
 //

@@ -14,11 +14,11 @@ How to read it:
 ### Owner answers, 2026-11-11 (one sitting)
 
 The recommendation was taken for Q1 to Q9, Q12, Q14, Q18 to Q24, Q26 and Q28. Q13 was not asked; its recommendation stands. Rows waiting "after Qn" can start. The answers that differ from the recommendation, quoted in INBOX 1748:
-- Q10 Atlas's rAF loops keep running by default ("I still want it to feel biological and have life"). An Advanced setting stops them after 2 s with no input. | W14
+- ~~Q10~~ **Stale: built** (Appearance, Motion at rest, "Still when idle"; tests/test_companion_rest_w14.py). Atlas's rAF loops keep running by default ("I still want it to feel biological and have life"). An Advanced setting stops them after 2 s with no input. | W14
 - Q11 The Ollama probe is cached for 30 s, dropped on a failure, and also dropped the moment Ollama is seen coming online (the model status poll or the start event), so the composer never answers in that window. | W16
-- Q25 `before:` is a Settings choice, excluding by default. The owner also wants a first-run calibration of preferences like this (INBOX 1748). | W11
-- Q27 RapidOCR is bundled if small, otherwise an optional extra. Every feature that needs an optional package (RapidOCR, SearXNG, the PDF viewer and the rest) shows a dismissable notice with a one-click Install when it is used. The notice comes back if the package is uninstalled, on the no-model notice recipe (INBOX 1748). | F5
-- Q30 Private notes by default is a Settings switch, off by default, and follows the space: a note made in a private space is private. | F6
+- ~~Q25~~ **Built settings-1111** (Settings, General, Search; date order; welcome preferences card). `before:` is a Settings choice, excluding by default. The owner also wants a first-run calibration of preferences like this (INBOX 1748). | W11
+- ~~Q27~~ **Built pr216-settings** (mounts in pkg-1111.md). Q27 RapidOCR is bundled if small, otherwise an optional extra. Every feature that needs an optional package (RapidOCR, SearXNG, the PDF viewer and the rest) shows a dismissable notice with a one-click Install when it is used. The notice comes back if the package is uninstalled, on the no-model notice recipe (INBOX 1748). | F5
+- ~~Q30~~ **Stale: built** (tests/test_private_by_default_1695.py). Private notes by default is a Settings switch, off by default, and follows the space: a note made in a private space is private. | F6
 - Q31 and Q32: the owner says these are already done; they are closed here.
 - Q33 is parked: the owner will check whether the stutter returns.
 - Q34 Go on all of them: sync (B6), offline studio and audio, the desktop pet outside the window, the custom domain and the blind panel. Fable stays off. | F8
@@ -59,7 +59,7 @@ Parked until the owner's data or a check on real hardware:
 - ~~A13 With the vault open, a private note is never searchable | 1031-notes N3~~ stale: /search and /entries/query never return a private note, open or locked (tests/test_vault_w3_1110.py)
 - ~~A14 Lock screen: focus not on the field, no dialog semantics, no throttle hint, focus dropped after errors | 1028-shell S4, S25, 1029-extras X23~~ stale: Playwright 2026-11-10 shows focus on #lock-password, role dialog, aria-modal, aria-describedby, aria-invalid, focus kept after 5 wrong tries, 429 countdown on the button
 - ~~A15 Sign-in off never driven (persistent profile, second LAN device, restored preferences) | t20#17~~ driven w3-1110: persistent, relaunched and fresh browsers open with no prompt, vault stays locked; second LAN device and a real restore not driven (no second host); backups exclude the switch
-- A16 `/media` 403 and 409 unified (after Q18) | sec L14
+- ~~A16 `/media` 403 and 409 unified (after Q18)~~ (built sm-1111: 409 "Unlock first.", tests/test_vault_attachments.py) | sec L14
 
 **W4 Documents that lose words** (A, documents, Sonnet; verify first). Files: `frontend/js/documents.js` save and lock paths. Checks: `tests/test_doc*`, a slow-PUT Playwright run. Done when: no typing during a save is lost, an offline first save says "Not saved" and keeps a draft, locking clears every word from the page.
 - ~~A17 Autosave has no in-flight guard; a slow PUT plus typing sends a stale hash~~ (stale: built, tests/test_doc_save_serial.py) | 1028-docs D1
@@ -78,7 +78,7 @@ Parked until the owner's data or a check on real hardware:
 - ~~A28 `safeHref` lets `java\tscript:` through | 1028-docs D14~~ fixed (notes-list.js:858, test_link_schemes_controls)
 - ~~A29 No pre-Brief-7 database was ever upgraded for real | t20#18~~ done w5-1110: tests/test_upgrade_pre_brief7_db.py upgrades a real pre-Brief-7 dump; no bug found
 - ~~A30 Deleting a space still purges in one path | 1029-extras X5, 1031-extras Z20~~ fixed (purge needs ?purge=1, name typed; test_space_delete_confirm_1031)
-- A31 Key storage and MCP auth (after Q22) | a30i-1102 B40, B33, B24, D46, K26, K11, K13, E43
+~~- A31 Key storage and MCP auth (after Q22) | a30i-1102 B40, B33, B24, D46, K26, K11, K13, E43~~ done backend-1111 b155304 (K11), 6ff76a7 (K13), 0389648 (E43); K26 closed by design; B40/B33/B24/D46 belong to other batches (W19, composer)
 
 **W6 Recordings and swallowed deletes** (A, voice notes, Sonnet; verify first). Files: `frontend/js/meetings.js`, `media.js`, the board delete handlers. Checks: `tests/test_meeting*`, a Playwright record and reload run. Done when: no audio is dropped on pause, close warns while recording, typing a title never starts the mic.
 - ~~A32 The voice dialog opens on Record: a typed space starts the mic, other keys fire shortcuts | 1029-extras X1~~ [struck 2026-11-10 w6-1110: verified fixed on head, tests in test_recording_is_unsaved_work_1029.py, test_xfix_1031.py, test_wb_board_1028.py]
@@ -141,13 +141,13 @@ Parked until the owner's data or a check on real hardware:
 - ~~B41 The server accepts whitespace-only notes | 1029-notes N6~~ **Stale** (w11-1110: `POST /entries` with "   " and a blank line is 422 "That note is blank"; `EntryCreate` validator `not_blank`)
 - ~~B42 `before:` excludes its day (after Q25) | OPEN 456~~ **Built w11-1110** (`before:` was already exclusive for ISO dates; Q25 made `before:tuesday`, `yesterday`, `march` and `"last week"` read through `recognise.span`; `tests/test_search_engine.py::test_a_named_day_is_a_date_for_the_operators`)
 
-**W12 Navigation and overlays** (B, shell, Sonnet). Files: `frontend/js/navigation.js`, `settings.js`, notices. Checks: `tests/test_navigation*`, a Playwright Back and Forward run. Done when: Back closes an open overlay first and the hash matches what shows.
+**W12 Navigation and overlays** (B, shell, Sonnet). **Done wb-1111** (Back closes the history, connections, bin, skill-run, board-help, meeting, extract, OCR and document-AI overlays; see wb-1111.md). Files: `frontend/js/navigation.js`, `settings.js`, notices. Checks: `tests/test_navigation*`, a Playwright Back and Forward run. Done when: Back closes an open overlay first and the hash matches what shows.
 - ~~B43 Browser Back with an overlay open steps the tab history and leaves it open | t20#2~~ **Stale for the overlays** (w12-1110, Chromium: shortcuts, palette, finder, features, agent palette, notifications, dialog, lightbox, sketch all close on Back with the stack unchanged); the real gap was the manual and Statistics address, fixed
 - ~~B44 Escape on Settings rewrites the hash to the tab beneath | t20#3~~ **Stale** (w12-1110: Escape on Settings from #/library gives #/library idx 2, Forward gives #/settings/models, Back #/library)
 - ~~B45 A notice's `go: {settings, focus}` does not scroll the phone Settings sheet | t20#7~~ **Stale** (w12-1110, 390x700: 4 of 4 targets inside the sheet scroller, also with Settings already open)
 - ~~B46 The navigation and undo audit table, then its fixes | WORLD_CLASS#8 row 32~~ **Built w12-1110**: audit table in WORLD_CLASS_PLAN row 32; fix: overlay addresses; left rows are listed under the table
 
-**W13 Page lag outside the companion** (B, settings, dashboard, library, Sonnet high; trace first). Files: `settings*.js`, `dashboard.js`, `library*.js`, `api/routes_models.py`. Checks: the lag-1109 probes (`lagprobe.js`, `lagset.js`, `lagboot.js`) at 4x, before and after numbers. Done when: each named handler is under 50 ms at 4x or traced to the browser.
+**W13 Page lag outside the companion** (B, settings, dashboard, library, Sonnet high; trace first). Files: `settings*.js`, `dashboard.js`, `library*.js`, `api/routes_models.py`. Checks: the lag-1109 probes (`lagprobe.js`, `lagset.js`, `lagboot.js`) at 4x, before and after numbers. Done when: each named handler is under 50 ms at 4x or traced to the browser. *Traced (claude/pr216-graph): over-50 ms handlers at 4x are native style and layout; the one JS-attributed forced layout is the companion's nameMarkRasterise (avatars.js:1305, 86 ms), out of scope; Settings tools, Library and Dashboard script self time is 18 ms or less per function. Left to the browser.*
 - ~~B47 Settings open: `/health` continuation 204 ms forced layout; backdrop click 880 ms~~ **Part fixed 774640ed9, rest browser** (w13-1110, 4x): the Settings head redraw 61 to 18 ms on the first open and 0 after; the open's `focus` (80 ms) and the backdrop close's `getClientRects` (60 to 70 ms) are the modal's own show and hide (a bare classList toggle and one read cost 105 ms in a page script; CPU profile JS self time under 10 ms); the `/health` continuation 11 to 34 ms | lag L7, L8, oa 1620 lag
 - ~~B48 Dashboard card pointerout 312 to 1072 ms; boot first-reader rAF 55 to 121 ms~~ **Browser** (w13-1110, 4x): card hover or leave costs 0.3 to 3.4 ms of style and 0 layouts on a settled dashboard (dashboard.js has no pointerout handler); the long pointerout is an input waiting behind the page's own work; the boot `toEnd` is the heat cells' first layout (23 to 33 ms), a width-keyed skip made the first-visit scroll flaky, not kept | lag L6, L11, oa 1620 lag
 - ~~B49 Windows lag log lines: icon-picker, settings-wiring keydown, OCR request, web-search start, quick panel flip~~ **Part fixed 774640ed9** (w13-1110, 4x): the document keydown read every modal's layout on each Ctrl chord (26 `getClientRects` to 0, the 179 ms line); icon picker first open: the script's onload is parse only (CPU profile 0 ms of JS), `focus` 53 to 80 ms is the first layout of 429 emoji tiles (`content-visibility` on the groups did not move it, reverted); web-search start is a request that waits for SearXNG, not a lag; OCR and the quick panel flip not re-driven (need a real PDF and a Windows desktop) | INBOX 1716
@@ -181,7 +181,7 @@ Parked until the owner's data or a check on real hardware:
 - B70 SKILLS Phase D never ran on a model | t20#19
 - B71 Entity extraction and topic sentence on a local model | GRAPH#KG1-KG9
 - B72 BACKGROUND_MODE (think off) for utility jobs, measured | CHAT 1691, oa 1691
-- B73 The probe cache (after Q11) | deskperf L4, audit-1108-perf P7
+- ~~B73 The probe cache (after Q11) | deskperf L4, audit-1108-perf P7~~ **Fixed 94cff43** (30 s up window, dropped on a failure and on seeing Ollama online; tests/test_ollama_probe_30s.py)
 - B74 Tool contracts on Ollama, model bench gates | WORLD_CLASS#8 rows 5, 6, 19, 21
 
 ### Tier C: UX and accessibility on daily surfaces
@@ -195,7 +195,7 @@ Parked until the owner's data or a check on real hardware:
 - ~~C6 A press on empty canvas and Escape clear the selection; arrow-added nodes never overlap | oa 1661 h, g~~ **Not reproduced w17-1110** (empty press: 1 box and 4 handles to 0 at 1440 and 390; Escape clears at 390; 14 handle-added blocks, 0 overlapping pairs)
 - ~~C7 Name Canvas and Blocks for what they are; kind picker as a labelled Kind menu | oa 1661 i, k, S11~~ **Already built, verified w17-1110** (the seg reads Picture, List, Source; the Kind button shows its sample and word, 140 px; the dialog's title row has the Kind label)
 - ~~C8 Default fold (after Q14); both side panels fold to a rail | INBOX 1720, oa 1661 m, S14~~ **Fixed w17-1110** (a blank or starter diagram opens with the list a 32 px rail while no fold was ever chosen, nothing stored; an existing one opens at 224 px; both rails exist and are named)
-- C9 Shelf is mouse only; the diagram tray "Open" row; Done silently creating a file; Tab stops | dgml L14, DOCUMENTS#22.4 R9a, R11 **Shelf: not reproduced w17-1110** (Right arrow roves six tiles and More, Enter adds); the tray row and Done not driven (code toasts the save), see w17-1110.md
+- C9 Shelf is mouse only; the diagram tray "Open" row; Done silently creating a file; Tab stops | dgml L14, DOCUMENTS#22.4 R9a, R11 **Shelf: not reproduced w17-1110** (Right arrow roves six tiles and More, Enter adds); the tray row and Done not driven (code toasts the save), see w17-1110.md. **1111 docs spoke:** read diagram-embed.js `save()`: Done makes the file with a named toast ("Saved “title” to the Library."), an Undo step and, from a fence, a Link the fence button, so it is not silent; no tray "Open" row exists in diagram-*.js (grep); W17 closed
 
 ~~**W19 Whiteboard daily UX** (C, boards, Sonnet; verify first).~~ **Done wb-1111** (U1, U2, U5, U13 were built; U3 and B33 built here, B10 is the dialog's Print note). Files: `frontend/js/whiteboard*.js` outside the render path (W30). Checks: `tests/test_wb_*`, `contrast.js` on a board. Done when: ink reads on both themes and every insert works by keyboard.
 ~~- C10 Stored black ink does not remap on dark; white ink on a yellow sticky | 1028-ux U1, U2~~ **Fixed before s5-1110 (cc6892028: `wbDefaultInk`).**
@@ -209,13 +209,13 @@ Parked until the owner's data or a check on real hardware:
 **W20 Shell accessibility and narrow widths** (C, shell and CSS, Sonnet). Files: `frontend/css/10-responsive.css`, `palette.js` (accessibility only), `index.html`. Checks: `tests/test_zoom_wrap_1717.py`, `scratchpad/ui-sweeps/zoom1717.js` at 600, 480 and 390, axe. Done when: 0 overflows at 390 and axe clean on the palette and the space menu.
 ~~- C17 The palette is not a combobox: no `aria-activedescendant`, results not announced | 1028-shell S5~~ **Fixed before s5-1110 (CHANGELOG 1503).**
 ~~- C18 The space menu fails axe (aria-required-children, nested-interactive) | 1029-extras X4~~ **Fixed before s5-1110 (CHANGELOG 1517).**
-- C19 Ask button clipped at 390; quiet chips 28.6 px on a phone; selection ticks 44 px | 1028-shell S6, chatfoot L5, UI#11 item 12
-- C20 Notes dock wraps from 1280 to 1500 with the rail open; capture row wrap at 1024; tab bar 600 to 819 | t20#10, WORLD_CLASS#13
-- C21 Settings scrolls sideways at 768; Recent head clipped under 1200 | UI#11 item 12, zoom4
-- C22 1920 by 1080 at 125 to 200 % not driven | zoom4
-- C23 "?" after a Dashboard click hands focus to CodeMirror | row21 L47
+- ~~C19 Ask button clipped at 390; quiet chips 28.6 px on a phone; selection ticks 44 px | 1028-shell S6, chatfoot L5, UI#11 item 12~~ **Built earlier (HISTORY, W20 C17 to C19).**
+- ~~C20 Notes dock wraps from 1280 to 1500 with the rail open; capture row wrap at 1024; tab bar 600 to 819 | t20#10, WORLD_CLASS#13~~ **Not reproduced pr216-settings 2026-11-11** (Chromium on :8791, rail open, 1280, 1366, 1440 and 1500: no flex-wrap bar on two lines).
+- ~~C21 Settings scrolls sideways at 768; Recent head clipped under 1200 | UI#11 item 12, zoom4~~ **Not reproduced pr216-settings** (Settings General, Models, Packages, Data at 768 to 1500: 0 sideways scroll, 0 elements past the viewport; the Recent title is hidden under 1200 on purpose, `10-responsive.css` rule 9, and from 1200 it sits above its four buttons on its own line, nothing clipped).
+- ~~C22 1920 by 1080 at 125 to 200 % not driven | zoom4~~ **Driven before (HISTORY, W20 C22).**
+- ~~C23 "?" after a Dashboard click hands focus to CodeMirror | row21 L47~~ **Not reproduced before (HISTORY); not retried.**
 
-**W21 Dashboard, timeline and counts** (C, dashboard, Sonnet; verify first). Files: `dashboard.js`, `timeline*.js`, the import toast, the appearance settings. Checks: `tests/test_dashboard_*`, `tests/test_timeline_*`. Done when: every count is the true total.
+**W21 Dashboard, timeline and counts** (C, dashboard, Sonnet; verify first). Files: `dashboard.js`, `timeline*.js`, the import toast, the appearance settings. Checks: `tests/test_dashboard_*`, `tests/test_timeline_*`. Done when: every count is the true total. Verified 2026-11-11 (graph-1111.md): no count short of the true total found; the Timeline's "N+" became a true total (`/timeline` first page `total`, tests/test_timeline.py).
 ~~- C24 Dashboard insight counts capped by a fixed limit | 1028-shell S8~~ **Fixed before s5-1110 (count in SQL).**
 ~~- C25 Timeline header count and "days" plural wrong for 1 and for paged data | 1028-shell S7~~ **Fixed before s5-1110 (CHANGELOG 1562).**
 ~~- C26 Import toast gives no skipped or duplicate breakdown | 1028-shell S9~~ **Fixed before s5-1110 (import toast).**
@@ -224,20 +224,21 @@ Parked until the owner's data or a check on real hardware:
 ~~- C29 One click on the timer chip stops a 25-minute timer with no Undo | 1031-extras Z2~~ **Fixed before s5-1110 (`stopUtilityClock` offers Undo).**
 
 **W22 Chat, Ask and the Guide** (C, Ask and help, Sonnet; not beside W1). Files: `capture-ask.js`, `ask-compose.js`, `ai/help_chat.py`, `ai/help_topics_more.py`. Checks: `tests/test_manual_parity.py`, `tests/test_guide_*`. Done when: each row fixed, help moved with it (order 13).
-- C30 Ask redesign at half width | t20#4, OPEN 22-10 doc
+- C30 Ask redesign at half width | t20#4, OPEN 22-10 doc. **Measured 1111 docs spoke, not changed:** the Ask section at 720 and 960 px wide has 0 elements past the viewport and scrollWidth equal to the width; the row has no spec beyond "half width", so a redesign is an owner call
 - ~~C31 Start SearXNG from a button | t20#6~~ **Stale: built** (ask-compose.js searxng-start offer), s6-1110
 - ~~C32 One-line summary at the top of every Help topic | oa 1607 e, 1612 b~~ **Stale: built** (help_leads.py), s6-1110
 - ~~C33 The Guide's no-model answer prints no "I took that to mean" | t20#13~~ **Stale: built** (offline_answer says "Assuming you meant"), s6-1110
 - ~~C34 Ask history shows glued titles | 1107 D26~~ **Not reproduced: same cause as D5 (fixed)**, s6-1110
-- C35 Citation style (after Q1); path-first Guide answers (after Q23) | 1107 D25, E33
-- C36 "buttons disappeared" after opening Why: not reproduced, one more drive | chatfoot L4
+- C35 Citation style (after Q1); ~~path-first Guide answers (after Q23)~~ | 1107 D25, E33. **E33 built 1111 docs spoke** (spoken lead first, place as its own last line for a how-to with no steps; where-questions and stepped how-tos already led with the place). **D25 left for the composer spoke:** the bracketed title is written by `composer_phrases`, `composer_answer`, `composer_notes` and `composer_openlinks`, so removing it (and then `linkCitedTitles` in ask-compose.js and tests/test_composer_688.py) is one change across files this spoke does not own
+~~C36 "buttons disappeared" after opening Why: not reproduced, one more drive | chatfoot L4~~ **Closed 1111 docs spoke as unverifiable:** O26 already records 0 removals in three drives; a fourth adds nothing without a repro
 
 **W23 Documents daily UX** (C, documents, Sonnet; verify first; not beside W4 or W28). Files: `documents*.js` outside the save path. Checks: `tests/test_doc*`. Done when: rows fixed or struck.
 - ~~C37 Spell and autocorrect split non-ASCII words ("café") | 1028-docs D8~~ **Stale: fixed** (CHANGELOG 1499), s6-1110
 - ~~C38 History previews leak raw markup | audit-1102-docs DX27~~ **Stale: built** (7af47c4), s6-1110
 - ~~C39 Link offers have no Settings switch; "Untitled document N" naming | t20#15, t20#16~~ **Stale: built** (Settings link offers switch; documents.js Untitled document N), s6-1110
 - ~~C40 Equation panel jump row and Inline/Display pill | DOCUMENTS 1566~~ **Stale: built 6c08378**, s6-1110
-- C41 The remaining 1028-docs and 1031-docs open rows | book1 (40 and 7 rows)
+- ~~C41 The remaining 1028-docs and 1031-docs open rows | book1 (40 and 7 rows)~~ **Re-verified 1111 docs spoke, one by one:** built D2, D3 (W4: test_doc_save_serial, test_doc_new_draft_1110), D36 (`docDropIfUntouched` re-adds the row on a failed delete), DC8 (archived PUT is 409; `filetypes.require` refuses an unknown type), DC11 (the template dialog focuses the checked radio, measured; the panel reads "Fix all N" and "N suggestions in view"); stale D29, D34, D40, D41, DC7, DC10; built here D28; won't D25, D23, D45, D46; deferred large (D22, D42, D43, D47, D52, DC13); partial D39 (a status-bar Autocorrect switch is not built, the Editor menu one is); DC1 and DC2 (lock leaves words on the page; AI panel over the lock screen) are lock code, another worker's
+- ~~D28 Text size is three steps, no Ctrl+wheel | 1028-docs D28~~ built e2775e4 (five sizes, Ctrl+wheel, tests/test_doc_text_zoom_1111.py); D29, D40, D41 stale (built); D25 won't do (rules interleave with the shared note toolbar and theme overrides, no measured defect, cascade-order risk in a move)
 
 ### Tier D: performance and CI time
 
@@ -248,20 +249,20 @@ Parked until the owner's data or a check on real hardware:
 - D4 Find the unexplained tail: `--durations=0` on one CI run | HANDOVER 09b
 - ~~D5 `test_complexity.py` over 15 and two lazy import cycles; complexity.yml baseline (after Q20) | fablecomp, OPEN lint debt~~ **Partly done** (PERF baseline zero and failing, Q20); the seed functions and two lazy cycles remain, s6-1110
 
-**W25 Palette and tab open** (D, shell, Sonnet high; not beside W11 or W20). Files: `palette.js`, `notes-list.js`, `settings*.js`. Checks: long tasks at 4x before and after. Done when: the palette is under 150 ms a keystroke at 4x.
+**W25 Palette and tab open** (D, shell, Sonnet high; not beside W11 or W20). Files: `palette.js`, `notes-list.js`, `settings*.js`. Checks: long tasks at 4x before and after. Done when: the palette is under 150 ms a keystroke at 4x. *Measured (claude/pr216-graph): palette keystroke at 4x p90 41 ms JS, 98 ms to paint, max 133; target met. Settings open remains the design pass (D8).*
 - ~~D6 The palette blocks on open and on every letter (5.6 s at 4x) | 1031-shell SH1, 1031-perf PF3, UI Palette row 2~~ **Done s7-1110** (PF3 had drawn a 24-row window; now the ranking is kept 2 s for the same words so the notes arriving redraw nothing new, and the nearest-word scan splits each row once: 500 notes, 4x, key to second frame p50 68 to 67 ms, p90 191 to 123/127/183 ms over three runs on a loaded host, 43 keys; under 150 ms at p50)
 - ~~D7 Opening a tab blocks for seconds at 4x; the notes list at 4x; a phone renders every note | 1031-perf PF5, 1031-notes N4, 1031-shell SH7~~ **Done s7-1110** (a tab opens in 150 to 400 ms wall at 4x with 500 notes, no task over 340 ms; the dashboard sizer's `checkVisibility` forced a 129 ms style pass as the tab went hidden, now the class is read first; the list is `content-visibility` rows, 1,098 nodes for 500 cards on desktop and 899 on a phone)
 - D8 Settings panes block on open; the pane-by-pane build | 1031-shell SH12, audit-1108-perf P4. **Measured s7-1110, not built:** open at 4x is 2.0 s wall with one 655 ms task (89 nodes before, 3,000 after: the whole `settings` surface template is put in at once; UpdateLayoutTree 126 ms for 969 elements); a pane click is 23 to 33 ms except Models and Appearance (250 ms) and Help (7 tasks, 289 ms). A pane-by-pane build needs one template per pane and `settingRows`, the Settings index and the palette's `settingsIndex` scan to ask for every pane: left for a design pass
 ~~- D9 A composed chat answer mounts 500 to 860 nodes | audit-1108-perf P8~~ **Built s58left3-1110** (older replies' corner head is an svg/use of one hidden copy: 167 to 8 nodes a reply, pixels within 2 of 255; the answer body itself, about 100 nodes, is untouched)
 - ~~D10 `?preview=300` (after Q9) | fitaudit 42~~ **Stale: built** (CHANGELOG, INBOX 1525: list pages, the by-id refresh and the Semantic list carry `?preview=300`; `tests/test_entry_writers_whole_1525.py`)
 
-**W26 Graph at scale** (D, graph, Opus). Files: `graph*.js`, `graph-worker.js`. Checks: the 500 and 2,000 note fixtures at 1x and 4x. Done when: a 2,000-note settle is under 5 s with no task over 50 ms.
+**W26 Graph at scale** (D, graph, Opus). Files: `graph*.js`, `graph-worker.js`. Checks: the 500 and 2,000 note fixtures at 1x and 4x. Done when: a 2,000-note settle is under 5 s with no task over 50 ms. Part done 2026-11-11 (settle 3.3 s; tasks over 50 ms 10 to 5 at 1x; minimap one parse, balance waits for rest, link grid chords); rest in `graph-1111.md`.
 - D11 2,000 notes: layout 28 s and main-thread long tasks | 1029-graph G3, 1028-shell S2, GRAPH row 19
 - D12 500 notes at 4x: hover p50 83 ms, wheel 133 ms | 1029-graph G5, GRAPH Rank 36
 - D13 Hover and wheel at rest redraw whole layers; the crossing count is output-bound | graph19 L4, L5
 - D14 Redraw only while something moves; crossings and hub spokes at 40 nodes | UI 1643, oa 1643 a, GRAPH 1306
 
-**W27 Boot weight** (D, boot, Sonnet). Files: `index.html`, `meetings.js` (after W6), `prefs.js`, the boot caps. Checks: `tests/test_static_compression.py`, the boot caps. Done when: each surface is lazy, with its number.
+**W27 Boot weight** (D, boot, Sonnet). Files: `index.html`, `meetings.js` (after W6), `prefs.js`, the boot caps. Checks: `tests/test_static_compression.py`, the boot caps. Done when: each surface is lazy, with its number. *Partly built (claude/pr216-graph): 12 single-caller helpers moved lazy, boot gzip 250,954 to 250,434; the rest of the candidates are read by tests or lazy-to-lazy calls (list in graph-1111.md).*
 - ~~D15 index.html 1.1 MB with comment blocks and companion code in the boot path | 1028-shell S3~~ **Stale, s7-1110:** `served_index_html` strips comments; served it is 811,185 bytes (156,226 gzip) of the 1,172,267 on disk; 434 KB of that is the five `<template data-surface>` blocks (settings 267 KB, board 149 KB). Inline SVG is 11 KB, inline scripts 2 KB
 - D16 Meeting recorder card, graph options panel and boot CSS lazy | row21 L43, L44, L45. **Measured s7-1110, not built:** `#graph-options` is 26,261 bytes served (5,207 gzip) with 79 ids, read by wiring.js, prefs.js, navigation.js and reveal-targets.js at boot through `document.getElementById` as well as `$`, so a template would return null there; `#meeting-overlay` is 6,815 bytes (2,089 gzip). Together under 3 percent of the gzipped page; the risk is the null reads
 - ~~D17 Boards list lazy until visible (500-board fixture) | oa 1667 c~~ **Measured fine, s7-1110:** with 500 boards the Boards & maps sub-tab adds 215 nodes and three tasks (63, 81, 75 ms) at 4x
@@ -270,7 +271,7 @@ Parked until the owner's data or a check on real hardware:
 **W28 Documents typing and split** (D, documents, Opus; not beside W4 or W23). Files: `documents.js`, `docLivePlugin`. Checks: typing latency at 4x on the DX1 document. Done when: key-to-paint p50 under 16 ms on the long document.
 ~~- D19 Typing in a long rich document cannot keep up; 5 layouts a key | audit-1102-docs DX1, audit-1108-perf P9.~~ **Closed s58left4-1110:** spell marks measured, see HISTORY ("s58left4-1110"); the p50 gate stays unmet with or without marks and no cheap app-side cut is left.
 - ~~D20 `docHistoryPersist` serialises the undo stack every keystroke | 1028-docs D6~~ **Stale: built 9a5227132** (`undoStorePut(key, () => state.toJSON(...))`, serialised at the store's pause)
-- D21 Split `docLivePlugin` and `documents.js` by responsibility | DOCUMENTS D23, fitaudit 22. Not started: `docLivePlugin` is already `documents-cm.js`; the next carve is `documents.js` 16,381 to 17,190 (CodeMirror view glue, 810 lines), which costs a line in `app.js`'s library bundle list against the gzip cap (260,857 of 260,860) and breaks tests that read `documents.js` by name (`test_code_vscode.py`, `test_docs_perf_1030.py`)
+- ~~D21 Split `docLivePlugin` and `documents.js` by responsibility | DOCUMENTS D23, fitaudit 22. Not started: `docLivePlugin` is already `documents-cm.js`; the next carve is `documents.js` 16,381 to 17,190 (CodeMirror view glue, 810 lines), which costs a line in `app.js`'s library bundle list against the gzip cap (260,857 of 260,860) and breaks tests that read `documents.js` by name (`test_code_vscode.py`, `test_docs_perf_1030.py`)~~ built (documents-view.js carved, 867 lines; documents.js 17,190 to 16,500; sha in the commit)
 
 **W29 Structure ratchets** (D, cross-cutting, Opus design then Sonnet). Files: one carve per run, outside the files of the same session's other batches. Checks: `tests/test_global_scope_ratchet.py`, `tests/test_complexity.py`. Done when: each ratchet moves down.
 - D22 IIFE wraps (audit 37a, after iife4) and surfaces (21, 36) | fitaudit 19, 21, 36, 37
@@ -278,7 +279,7 @@ Parked until the owner's data or a check on real hardware:
 - D24 One global scope of 10,000 names | 1031-architecture AR2. **Part done s58-1110:** 9,096 to 9,044 names (settings-packages.js, appearance-panel.js, whiteboard-history.js wrapped whole); not wrapped, too many tests read them privately: math-field.js, ask-chart.js, lag-watch.js, capture-card-more.js; agent-activity.js has a multi-line template (wrap by hand)
 - D25 Split `run_agent`; data tables out of code | SESSION_BRIEFS 62, 63
 
-**W30 Whiteboard render cost** (D, boards render, Opus). Files: `whiteboard.js` render path, `whiteboard-map.js`. Checks: frame time on a 500-object board. Done when: one edit re-renders only what changed.
+**W30 Whiteboard render cost** (D, boards render, Opus). **Done wb-1111** (B39, the connector batch, the colour memo, B4 shape and connector paint key, B23 export index; see wb-1111.md). Files: `whiteboard.js` render path, `whiteboard-map.js`. Checks: frame time on a 500-object board. Done when: one edit re-renders only what changed.
 - ~~D26 Every render rebuilds all map nodes; no dirty set | 1028-board B3, B4~~ **Done s7-1110** (topics and pen strokes were keyed, dec005f44; the cost left was the links: a 500-topic map with 300 cross-links at 4x CPU, median render: nothing changed 1,361 to 342 ms, one topic moved 1,501 to 309 ms, every topic moved 2,678 to 1,072 ms. One `querySelectorAll` of the topic boxes before the link pass instead of 600 `querySelector` walks, and each link's look found once a pass instead of three times, keyed on both ends' place and box. Link paths identical to a fresh computation after a move, a resize, two moves in one task)
 - D27 Split `whiteboard.js` (26,103 lines) and `whiteboard-map.js` by carve | 1028-board B1, B2, WHITEBOARD#Placed 2026-11-04. Not started in s7-1110 (the files are 26,164 and 11,050 lines)
 - D28 The composer's topical digests take 0.45 to 0.78 s on 500 notes (W10's files, Session 7) | audit-1108-perf P6. **Part done s7-1110:** every question moved `updated_at` on the 24 notes it surfaced (`onupdate` on `access_count`), which dropped the abbreviation glossary's cache key and re-read all notes; now one UPDATE that names `updated_at` (a profiled `/chat` request on 1,003 entries: 1,072k to 873k calls for three requests, 1.20 to 0.92 s; edit times no longer move on a read). Left: capping `raw_results` (12 front-end sites read it, a UI contract), the second `compose` for the chips (about 65 ms), `_subject_facts`
@@ -296,14 +297,14 @@ Parked until the owner's data or a check on real hardware:
 **W32 Backend tidy** (E, backend, Haiku verify then Sonnet). Files: small fixes in `api/`. Checks: targeted route tests.
 ~~- E7 Validation copy leaks field names | 1031-backend BK8~~ **Already built c6cc5767a** (field labels and the limit in the message; tests/test_validation_copy.py). Verified s8-1110.
 - E8 ~~A disabled tool refused with the wrong reason (H11, `_refuse_if_off` 3f0030d41); duplicated loopback lists (K28, one list in core/security)~~; token sweep per request (K33) **not built, s8-1110**: `tests/test_vault_sessions.py::test_the_key_goes_when_the_last_granted_session_expires` pins that every authenticated request sweeps (a token injected into `_active_tokens` with an old stamp must revoke the vault key on the next request). A once-a-minute sweep fails it; needs the owner to move that test's intent, or a sweep keyed on a min-expiry that the test's direct injection also lowers | 1029-harness H11, 1028-backend K28, K33
-- E9 Real Tesseract and PDFium reads never ran | sec L13, OPEN RapidOCR row
+- E9 Real Tesseract and PDFium reads never ran | sec L13, OPEN RapidOCR row [unverifiable here: no tesseract or pypdfium2; needs a machine with both]
 - E10 The other 1028-backend and 1031-backend open rows | book1 (37 and 12 rows) [backend-1111: re-verified on head; the rest are built, stale or held (Q22, K38, K32); BK10, K19, K29, E9 left in backend-1111.md]
 
 **W33 Copy and help** (E, copy, Haiku then Sonnet). Files: help topics, copy strings.
 ~~- E11 "Tools and features" omits 60 palette rows | 1031-extras Z3~~ **Already built 073cc0c6b** (`featureCommandRows`; tests/test_xfix_1031.py). Verified s8-1110.
-- E12 The tool describes itself in the answer ("Read as the days from today") | 1030-composer Z49
-- E13 "¦" written for "&" in a category; a "conversation" topic on a gym note | oa 1620 categories b, topics c
-- E14 Manual pictures as WebP made by the sweeps | oa 1612 c
+- ~~E12 The tool describes itself in the answer ("Read as the days from today") | 1030-composer Z49~~ **Waits on the owner** (49 assertions pin the "Read as" lines, the 1108 ask; decision 54; s8-1110.md).
+- ~~E13 "¦" written for "&" in a category; a "conversation" topic on a gym note | oa 1620 categories b, topics c~~ **No repro** (no writer of the character in src or frontend; s8-1110.md; needs the owner's data).
+- ~~E14 Manual pictures as WebP made by the sweeps | oa 1612 c~~ **Deliberately empty** (s8-1110.md; the owner has not asked for a sweep-made image).
 
 **W34 Verify sweeps** (E, docs only, Haiku, stackable outside the four). Each scout marks rows true, fixed or stale in its source and hands true rows to the batch of their surface.
 - E15 book1 audits 1028 (agent, backend, board, docs, shell, ux; 303 rows) | book1
@@ -4386,7 +4387,7 @@ Format: id | file:line | one line | status.
 - ~~Z18 | audit-1031-extras:121 | Background art, when on, costs 0.203 s of script per 5 s (about 4 percent of one core) at 20 fps on this | open~~ fixed 405fbdcaf (12 fps after 30 s without a pointer; checked 2026-11-11)
 - ~~HR23 | audit-1031-harness:39 | Pane opens with long tasks at 390 | open~~ fixed (Logs row grid 62,573 to 5,090 px; Memory poof not reproduced; audit-1031-harness.md:98; checked 2026-11-11)
 - ~~UX3 | audit-1031-ux:17 | 70 animations run while nothing happens | open~~ fixed 0519dd52a (loops pause after 20 s without input; 77 to 37 endless, task about 4.3 to 3.8 s per 10 s, noisy; checked 2026-11-11)
-- P8 | audit-1108-perf:45 | chat answer render path as cited; not re-measured | open
+- P8 | audit-1108-perf:45 | chat answer render path as cited; not re-measured | closed 2026-11-11 (stale: D9 built s58left3-1110)
 - 1607b | owner-asks-audit-1108:13 | Masculine Atlas head size and shape against the feminine reference | open
 - B16 | owner-asks-audit-1108:16 | Masculine Atlas design pass (head, eyes, shoulder join, expressions) | open
 - 1634c | owner-asks-audit-1108:17 | nameMarkBuddyBlend reads transformOrigin before and after its writes | open
@@ -4466,7 +4467,7 @@ Format: id | file:line | one line | status.
 **BD1 (documents, 27 rows)**
 
 - D22 | audit-1028-docs:26 | 1.1 MB unminified documents.js (24k lines, 648 functions, 7.5k comment lines) plus 852 KB CodeMirror bund | deferred: L split of documents.js into lazy chunks needs an Opus design step; documents.js is 17,322 lines now (audit-1028-docs:26)
-- D23 | audit-1028-docs:27 | Hot-spot functions: docLivePlugin 1,559 lines, docCmTheme 1,076, renderDocOutline 298, docTableGripsPlugi | deferred: L split by concern, docLivePlugin sits in documents-cm.js (audit-1028-docs:27)
+- D23 | audit-1028-docs:27 | Hot-spot functions: docLivePlugin 1,559 lines, docCmTheme 1,076, renderDocOutline 298, docTableGripsPlugi | deferred: L split by concern, docLivePlugin sits in documents-cm.js (audit-1028-docs:27). 1111 docs spoke: won't do beyond D21 (the view glue is carved; a 1,559-line plugin split by concern has no measured defect and risks the typing path)
 - D28 | audit-1028-docs:32 | No continuous zoom (Ctrl+wheel / zoom % control) | deferred: text size is a three-step stepper (documents.js:9575 DOC_TEXT_SIZES, library-lazy.css:7354); a continuous zoom is an owner call (stepper or slider) (audit-1028-docs:32)
 - D29 | audit-1028-docs:33 | Replace-in-all dialog has regex + case but no whole-word, no multiline/dotall flags, no per-document or p | stale (2026-11-11): documents-replace.js has whole word, per-match skip and a context snippet (audit-1028-docs:33)
 - D34 | audit-1028-docs:38 | Autosave state is one tiny text ("Unsaved…", "Saved", "Not saved") in the status bar; failure sets .error | stale (2026-11-11): a save failure toasts once per run with Try again (documents.js:2736-2741 `docSaveFailedSaid`) (audit-1028-docs:38)
@@ -4475,7 +4476,7 @@ Format: id | file:line | one line | status.
 - D41 | audit-1028-docs:45 | Word count present (status bar), goal, reading time | stale (2026-11-11): selection word count built (documents.js:10818) (audit-1028-docs:45)
 - D42 | audit-1028-docs:46 | No spreadsheet view for CSV docs (SQL run reads them, but editing is raw text) | deferred: L grid view for csv/tsv (audit-1028-docs:46)
 - D43 | audit-1028-docs:47 | No real-time collaboration or presence; conflict handling is hash-based 409 only | deferred: out of scope for an offline notebook, hash-based 409 stays (audit-1028-docs:47)
-- D45 | audit-1028-docs:49 | Wordlist (871 KB) is fetched on first non-empty text and the dictionary is rebuilt as Set/variants in the | deferred: M, wordlist build in a worker (documents.js:11233) (audit-1028-docs:49)
+- D45 | audit-1028-docs:49 | Wordlist (871 KB) is fetched on first non-empty text and the dictionary is rebuilt as Set/variants in the | deferred: M, wordlist build in a worker (documents.js:11233) (audit-1028-docs:49). 1111 docs spoke: measured in node, split+trim+Set of 92,972 words is 30 to 36 ms once per session, under the 50 ms long-task line; a worker would add a message path for no measured gain; won't do
 - D46 | audit-1028-docs:50 | Comment-to-code ratio ~32% in documents.js (7,570 of 23,963 lines); historical narration ("used to be", o | won't (2026-11-11): comments that say why are the house rule (CLAUDE.md section 7); 5,717 of 17,334 lines in documents.js are comments, no historical-narration lint exists (audit-1028-docs:50)
 - D47 | audit-1028-docs:51 | Fallback <textarea> surface duplicated through aliases (value, selectionStart) so two code paths for ever | deferred: L, drop the textarea fallback (documents.js:231) (audit-1028-docs:51)
 - D52 | audit-1028-docs:56 | Code editor: no multi-file workspace/tabs/split panes, no command palette inside the editor (only app pal | deferred: L, tabs and split panes in the code editor (audit-1028-docs:56)
@@ -4622,7 +4623,7 @@ Columns: id | item | sources (file:line) | status | batch
 | H1 | Windows Hello on a real origin; WebView2 WebAuthn PRF; localhost fallback | HANDOVER:10, hello-1110.md:8, localhost-1110.md:8,16 | unverifiable (real Windows) | none |
 | H2 | Fable named for a read-only composer audit and a whole-app deep dive "next session" | HANDOVER:11,12 | owner call: is Fable named for the close-out? (nothing may start it otherwise, order 4) | none |
 | H3 | Q20: `complexity.yml` still `--exit-zero`; CI definition edits guarded in away mode, `tests/test_complexity.py` holds the zero baseline | HANDOVER:412, OPEN:40 (Q20) | owner call: edit the workflow (guarded)? | none |
-| H4 | Held: K38 single-use media links (breaks range playback), K32 due-count endpoint (poll redesign), E43/K11/K13/K26 key storage and MCP auth (Q22) | HANDOVER:410, s11-1110.md:8,9 | owner call: Q22 (keyring or 0600 file, one token per MCP server) and K38 (accept a 120 s reusable link?) | none |
+| H4 | ~~Held: K38 single-use media links (breaks range playback), K32 due-count endpoint (poll redesign), E43/K11/K13/K26 key storage and MCP auth (Q22)~~ decided and built backend-1111 (K38 kept at 120 s; K32 62af9c7; Q22 rows b155304, 6ff76a7, 0389648) | HANDOVER:410, s11-1110.md:8,9 | owner call: Q22 (keyring or 0600 file, one token per MCP server) and K38 (accept a 120 s reusable link?) | none |
 | H5 | `test_repo_boundaries::test_orm_calls_in_the_routers_only_go_down` red: 690 ORM calls under api/, cap 687 | g69-1110.md:11 (said 691); run 2026-11-11 | green at f06fd0e09 (re-run, nothing to fix) | Bk2 |
 | H6 | Test reds named in older notes: `test_boot_diet3` (3573 vs 3569), `test_lazy_bundle_calls` (dashboard.js:3833,3889), `test_atlas_access` fixture, `test_static_compression` | s9b-1110.md:12, s14-1110.md:6, s58left3-1110.md:10, s12b-1110.md:7; the four pass on 2026-11-11 | fixed (run; only the boundaries test fails) | none |
 
@@ -4740,7 +4741,7 @@ Counts are from `e17-1110.md` "True, by work order batch"; the scout's own cavea
 | X4 | W9 composer follow-ons | 10 | open | Co1 |
 | X5 | W10 composer compare and lists | 14 | open | Co2 |
 | X6 | W11 notes core | 36 | open | Sh1 |
-| X7 | W12 navigation | 11 | open | Sh1 |
+| X7 | W12 navigation | 11 | done wb-1111 (Back and overlays) | Sh1 |
 | X8 | W14 in-app companion | 20 | open | Cp1 |
 | X9 | W15 desk companion | 11 | open | Cp2 |
 | X10 | W19 whiteboard daily UX | 76 | done (wb-1111) | Wb1 |
@@ -4750,7 +4751,7 @@ Counts are from `e17-1110.md` "True, by work order batch"; the scout's own cavea
 | X14 | W23 documents daily UX | 223 | open | Do1, then a later Do batch |
 | X15 | W24, W25, W26, W28, W29 (3, 3, 5, 4, 4) | 19 | open | Ci1, Sh1, Gr1, Do2, Bk2 |
 | X16 | W27 boot weight | 15 | open | Sh2 |
-| X17 | W30 whiteboard render | 19 | open | Wb2 |
+| X17 | W30 whiteboard render | 19 | done (wb-1111: B39, B4, B23 and two costs) | Wb2 |
 | X18 | W31 companion life | 29 | open | Cp1, Cp2 |
 | X19 | W33 copy and help | 4 | open | Ui1 |
 | X20 | W34 verify | 41 | open | Ev1 |

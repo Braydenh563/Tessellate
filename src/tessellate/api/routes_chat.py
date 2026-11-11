@@ -2452,7 +2452,8 @@ def execute_confirmed_tool(
     if body.name not in tools.TOOLS:
         raise HTTPException(status_code=404, detail=f"There is no tool called '{body.name}'.")
     _refuse_if_off([body.name])
-    consent_store.take(body.consent_id)  # pressed: a yes typed after this finds nothing to run
+    if why := consent_store.refusal_for_press(body.consent_id, body.name, body.arguments):  # a press spends the card
+        raise HTTPException(status_code=409, detail=why)
     result = tools.execute_tool(session, body.name, body.arguments)
     if "error" in result:
         _refuse_failed(body.name, result)

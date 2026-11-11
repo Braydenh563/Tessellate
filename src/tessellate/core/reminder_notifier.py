@@ -292,7 +292,11 @@ def apply_action(reminder_id: int, action: str) -> None:
     session = db.session()
     try:
         if action == "done":
-            rr.complete_reminder(reminder_id, tz_offset_minutes=local_offset_minutes(), session=session)
+            # `expected_due_at` is a Query default, truthy when the route is called as a
+            # function; None says no occurrence was named (b9f90aa made it a 409 otherwise).
+            rr.complete_reminder(
+                reminder_id, tz_offset_minutes=local_offset_minutes(), expected_due_at=None, session=session
+            )
         elif action == "snooze":
             when = datetime.now(timezone.utc) + SNOOZE
             rr.update_reminder(reminder_id, rr.ReminderUpdate(due_at=when, done=False), session=session)

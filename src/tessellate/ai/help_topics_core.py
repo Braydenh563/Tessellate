@@ -1401,6 +1401,8 @@ HELP_TOPICS.extend(
                 "my pin",
                 "quick unlock",
                 "windows hello",
+                "where you left off",
+                "unsaved words after lock",
             ),
             "body": (
                 "Settings, Account & security: set a password and the notebook "
@@ -1410,6 +1412,9 @@ HELP_TOPICS.extend(
                 "Unlock counts it down. "
                 "While it is locked, an open dialog or popover is put away, and "
                 "it comes back as it was after you unlock, and the lock screen takes focus. "
+                "Words you typed and had not saved are sealed with your password when it locks, "
+                "emptied from the page, and put back after you unlock; Where you left off, in the "
+                "toast that follows and in the Ctrl+K palette, lists each box that holds them and jumps to it. "
                 "To make a note private, open its ... menu and press Make private; Make readable undoes it. "
                 "Private notes are encrypted with that password and are never sent "
                 "to the AI, so a private note's menu has no Tag and file, Improve writing or title acts. Forgot it? "
@@ -3068,7 +3073,7 @@ HELP_TOPICS.extend(
                 "duplicates, numbers the headings (1, 1.1) or takes the numbers "
                 "off, inserts today's date or the time, and copies the page or the "
                 "selection as formatted text to paste into Word or an email. "
-                "Text size and line spacing are rows in the document menu. The document's menus hold History "
+                "Text size (Ctrl+wheel too) and spacing: document menu. The document's menus hold History "
                 "(every version, and a way back to any), Connections, Extract "
                 "notes, AI edit, a word goal, typewriter scrolling, dim all but "
                 "this paragraph, serif for reading and full width. With no model "
@@ -3487,7 +3492,8 @@ HELP_TOPICS.extend(
                 "meeting. In the list, Up and Down move note to note and Tab walks "
                 "that note's buttons. The filter box understands, with no AI: two words (both, "
                 'in any order), "a quoted phrase", tag:work, cat:recipes, '
-                "#tag, title:, in:, before: and after: (a date such as 2026-09), "
+                "#tag, title:, in:, before: and after: (a date such as 2026-09; before: leaves "
+                "its own day out unless Settings, General, Search counts it), "
                 "is:favourite, is:pinned, is:private, is:linked, is:untagged, "
                 "is:draft, tags:<2 (also <=, > and >=), has:link (also file, image or "
                 "reminder), space:work and kind:note (asked of the search engine), and -word to leave a word "

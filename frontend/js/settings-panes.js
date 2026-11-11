@@ -362,7 +362,7 @@ function chatDockReleaseRing() {
 // keystroke. A drag is told from a grow by comparing against the height
 // autoGrow last set: anything else was a hand on the corner.
 function initComposerResize() {
-  const box = $("chat-input");
+  const box = document.getElementById("chat-input");
   if (!box || box.dataset.resizeReady) return;
   box.dataset.resizeReady = "1";
 
@@ -613,6 +613,9 @@ function loadPreferences({ refresh = false } = {}) {
 }
 
 async function renderPrefs() {
+  //: The optional-package notices for what this pane's switches use (extra-notice.js).
+  extraNoticeMount($("xn-documents"), "documents", { fresh: true });
+  extraNoticeMount($("xn-semantic"), "semantic");
   //: **A change still waiting for its quiet save is written first.** Profile
   //: and General save 700 ms after the last change (`markPrefsDirty`); opening
   //: either, or Search and index or Personas, lands here, and the GET below
@@ -638,6 +641,8 @@ async function renderPrefs() {
   $("pref-voice").value = prefsCache.composer_voice;
   $("pref-week-start").value = prefsCache.week_start || "auto";
   $("pref-season-hemisphere").value = prefsCache.season_hemisphere || "auto";
+  $("pref-date-order").value = prefsCache.date_order || "auto";
+  $("pref-before-includes-day").checked = prefsCache.before_includes_day === true;
   $("pref-insight").value = prefsCache.insight_level || "one";
   $("pref-profile").value = prefsCache.user_profile;
   $("pref-profile-enabled").checked = prefsCache.profile_enabled;
@@ -699,6 +704,7 @@ function renderAutonomousSettings() {
   $("pref-auto-dedupe").checked = prefsCache.auto_dedupe_enabled ?? true;
   $("pref-auto-stale-review").checked = Boolean(prefsCache.auto_stale_review_enabled);
   $("pref-auto-capture").checked = Boolean(prefsCache.auto_capture_enabled);
+  $("pref-mcp-writes").checked = Boolean(prefsCache.mcp_writes_enabled);
   $("pref-autonomous-interval").value = prefsCache.autonomous_tasks_interval_hours || 6;
   $("pref-autonomous-model").value = prefsCache.autonomous_tasks_model || "";
   $("pref-battery-mode").checked = Boolean(prefsCache.battery_efficient_mode);
@@ -707,6 +713,7 @@ function renderAutonomousSettings() {
 }
 
 async function renderWebSearch() {
+  extraNoticeMount($("searxng-host-state")?.closest(".searxng-host"), "searxng", { fresh: true });
   prefsCache = await apiJson("/preferences");
   $("pref-web-search").checked = Boolean(prefsCache.web_search_enabled);
   $("pref-web-store").checked = prefsCache.web_store_enabled !== false;

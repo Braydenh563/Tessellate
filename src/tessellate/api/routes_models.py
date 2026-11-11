@@ -517,6 +517,9 @@ def status(session: Session = Depends(get_session)) -> dict:
     known, checking = _installed_state(ollama)
     installed = known if known is not None else []
     running = known is not None
+    if running:
+        #: Seen online: drop the refused and silent marks now (Q11).
+        ollama_client.note_online(ollama.base_url)
     pulls = jobs.pull_statuses()
     if running:
         installed = _installed_after_pulls(ollama, installed, pulls)

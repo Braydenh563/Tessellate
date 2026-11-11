@@ -29,6 +29,18 @@ function routerCloseTopOverlay() {
   const call = (name) => {
     if (typeof window[name] === "function") window[name]();
   };
+  //: Each modal overlay and the button that closes it (W12: Back stepped the tab and left these open).
+  const OVERLAY_CLOSE_BUTTONS = {
+    "history-overlay": "history-close",
+    "connections-overlay": "connections-close",
+    "binned-overlay": "binned-close",
+    "skill-run-overlay": "skill-run-cancel",
+    "wb-help-overlay": "wb-help-close",
+    "meeting-overlay": "meeting-close",
+    "extract-panel": "extract-close",
+    "ocr-workspace": "ocr-close",
+    "doc-ai-panel": "doc-ai-close",
+  };
   const sheets = document.querySelectorAll(".sheet-overlay:not(.sheet-leaving):not(.hidden)");
   if (sheets.length) {
     sheets[sheets.length - 1].querySelector(".sheet-close")?.click();
@@ -59,6 +71,15 @@ function routerCloseTopOverlay() {
   for (const [id, name] of closers) {
     if (!shown(id)) continue;
     call(name);
+    return true;
+  }
+  //: The other modal overlays close on their own X (a closer that also puts focus back).
+  for (const [overlay, button] of Object.entries(OVERLAY_CLOSE_BUTTONS)) {
+    if (!shown(overlay)) continue;
+    document.getElementById(button)?.click();
+    //: A closer not wired yet (its lazy bundle not loaded) must not leave it open under a Back that was spent on it.
+    const el = document.getElementById(overlay);
+    if (!el.classList.contains("hidden")) el.classList.add("hidden");
     return true;
   }
   //: The agent's palette has no closer of its own: hiding it is what its Escape does.

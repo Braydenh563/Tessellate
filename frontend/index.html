@@ -1486,6 +1486,7 @@
 
   <!-- ======================= NOTES TAB (the current app) ================== -->
   <div class="tab-page hidden" id="tab-notes" role="tabpanel" aria-labelledby="tab-btn-notes" tabindex="-1">
+  <template data-surface="notes">
     <div class="layout">
       <!-- Category sidebar: built from the loaded entries, click to filter -->
       <aside class="card sidebar-panel" id="sidebar">
@@ -1769,6 +1770,7 @@ Link to another note with [[its first few words]]."></textarea>
                the label described a fifth of its own row. The picker moved
                down to the filing row, where it belongs with the category,
                and the label now names what is actually here. -->
+          <div id="xn-voice"></div>
           <div class="row capture-field-row capture-tools-row">
             <span class="muted capture-field-label">Add to this note</span>
             <!-- Moved up from the "File under" row below (reported live: that
@@ -2733,10 +2735,12 @@ Link to another note with [[its first few words]]."></textarea>
         <div class="notes-rail-body" id="notes-rail-body" aria-live="polite"></div>
       </aside>
     </div>
+  </template>
   </div>
 
   <!-- ======================= CHAT TAB ====================================== -->
   <div class="tab-page hidden" id="tab-chat" role="tabpanel" aria-labelledby="tab-btn-chat" tabindex="-1">
+  <template data-surface="chat">
     <div class="layout">
       <!-- **Recent chats, not every chat (§36F).** Browsing what you have ever
            asked is the Library's job now, and two lists of the same thing is
@@ -3583,6 +3587,7 @@ Link to another note with [[its first few words]]."></textarea>
         </aside>
       </div><!-- .tab-main -->
     </div>
+  </template>
   </div>
 
   <!-- ======================= GRAPH TAB ===================================== -->
@@ -4090,23 +4095,22 @@ Link to another note with [[its first few words]]."></textarea>
           </p>
           <ul class="muted">
             <li><strong>Hover a note</strong> to see its dates, links and tags;
-              click it to edit it here.</li>
+              click it to edit.</li>
             <li><strong>Hold Alt and drop one note onto another</strong> to link them.
-              Double-click empty space to add a note there; its Private button seals just that note.</li>
+              Double-click empty space to add a note there; its Private button seals it.</li>
             <li><strong>Trace</strong> shows how any two notes connect.</li>
-            <li>Solid lines are links you made, dashed lines are trains of
-              thought, dotted lines are notes that mean similar things.</li>
-            <li>A bigger dot has more links; Size in the options changes that,
-              and the legend says which. Click a legend colour to hide that
-              category.</li>
-            <li>A Tree, Radial, Arc, Treemap or Tessellation layout stays still; click its
-              name in the toolbar to change it. Treemap sizes categories by links;
+            <li>Solid lines are links you made, dashed are trains of
+              thought, dotted are notes that mean similar things.</li>
+            <li>A bigger dot has more links (Size in the options changes that).
+              Click a legend colour to hide it.</li>
+            <li>Tree, Radial, Arc, Treemap and Tessellation layouts stay still; change
+              them in the toolbar. Treemap sizes categories by links;
               Tessellation gives each note a cell.</li>
             <li>In Treemap and Tessellation, click a category's name bar to
-              select its notes, double-click to zoom to it, right-click for its
-              menu; C steps through them from the keyboard.</li>
-            <li>This map is built from your notes. To draw one yourself, open
-              the <strong>mind map</strong> button in the toolbar.</li>
+              select its notes, double-click to zoom, right-click for its
+              menu; C steps through them.</li>
+            <li>To draw a map yourself, open the <strong>mind map</strong>
+              button in the toolbar.</li>
           </ul>
         </div>
         <!-- The display options, on the dock-menu recipe (INBOX 41: "the
@@ -5354,7 +5358,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <button id="doc-paste-special" class="menu-item doc-dock-menu-item" type="button"
                   title="Paste what is on the clipboard as plain text, Markdown source, code, a quote, a table, a link or a checklist"><i class="ph ph-clipboard-text ph-lead" aria-hidden="true"></i> <span>Paste special</span></button>
                 <button id="doc-text-size" class="menu-item doc-dock-menu-item" type="button"
-                  title="Make the text of a prose document smaller or larger"><i class="ph ph-text-aa ph-lead" aria-hidden="true"></i> <span id="doc-text-size-label">Text size: medium</span></button>
+                  title="Make the text of a prose document smaller or larger (Ctrl and the mouse wheel over the page does the same)"><i class="ph ph-text-aa ph-lead" aria-hidden="true"></i> <span id="doc-text-size-label">Text size: medium</span></button>
                 <button id="doc-line-spacing" class="menu-item doc-dock-menu-item" type="button"
                   title="Tighten or loosen the space between lines of a prose document"><i class="ph ph-arrows-vertical ph-lead" aria-hidden="true"></i> <span id="doc-line-spacing-label">Line spacing: comfortable</span></button>
                 <button id="doc-toolbar-mode" class="menu-item doc-dock-menu-item" type="button"
@@ -6179,6 +6183,7 @@ Link to another note with [[its first few words]]."></textarea>
        same length it was. A library that duplicated two lists that already
        existed would be a third place to look. -->
   <div class="tab-page hidden" id="tab-library" role="tabpanel" aria-labelledby="tab-btn-library" tabindex="-1">
+  <template data-surface="library">
     <div class="library-subtabs tabs-line edge-fade" id="library-subtabs" role="tablist">
       <!-- Reordered, and the first one renamed. It was called "Documents"
            while actually showing everything you have ever made, notes,
@@ -9176,6 +9181,7 @@ Link to another note with [[its first few words]]."></textarea>
        view above rendered as a direct child of <body>, outside the flex
        column and its padding, which is why it had no margins and didn't
        sit at the top. Keep this as the LAST thing inside #tab-library. -->
+  </template>
   </div>
   </main>
 
@@ -9958,6 +9964,7 @@ Link to another note with [[its first few words]]."></textarea>
     <ul id="doc-dictionary-list" class="doc-dictionary-list" aria-label="Words in your dictionary"></ul>
     <input id="doc-dictionary-file" type="file" accept=".txt,text/plain" hidden>
     <h3 class="doc-dictionary-section">Checks</h3>
+    <div id="xn-languagetool"></div>
     <div class="doc-dictionary-setting">
       <span class="doc-dictionary-setting-text">
         <label for="doc-spelling-variant">Spelling</label>
@@ -10177,6 +10184,8 @@ Link to another note with [[its first few words]]."></textarea>
             <p id="ollama-status" class="status is-checking">Checking the models…</p>
             <!-- The shape of what is coming while the first status is on its
                  way (`renderSettings`: showSkeletons / clearSkeletons). -->
+            <div id="xn-needle"></div>
+            <div id="xn-localllm"></div>
             <div id="models-skeleton" class="models-skeleton"></div>
             <!-- One line, and the rest of what used to be here is in the
                  Model backend "?" below. Asked for directly: "areas with
@@ -10645,6 +10654,7 @@ Link to another note with [[its first few words]]."></textarea>
             <p id="search-engine-health" class="status"></p>
             <!-- WORLD_CLASS_PLAN section 21 rows 1 and 2: DESIGN.md's notice
                  recipe (an icon, one line, the warn tone), not an error line. -->
+            <div id="xn-semantic"></div>
             <p id="embedding-error" class="notice notice-warn hidden" role="status"></p>
             <!-- The text above already told people the fix ("switch to an
                  Ollama embedding model, download nomic-embed-text"), this
@@ -11609,7 +11619,7 @@ Link to another note with [[its first few words]]."></textarea>
                   <i class="ph ph-question" aria-hidden="true"></i>
                 </button>
               </div>
-              <p class="muted">Paste this into an MCP client's settings to let it read and write this notebook.</p>
+              <p class="muted">Paste this into an MCP client's settings to let it read this notebook. The snippet carries a token the tool server checks.</p>
               <div class="help-body hidden" id="mcp-config-help" role="dialog" aria-label="What is MCP">
                 <p>
                   MCP is a standard way for an app such as Claude Desktop to use
@@ -11624,6 +11634,11 @@ Link to another note with [[its first few words]]."></textarea>
                   app starts the same server with its --mcp option.
                 </p>
               </div>
+              <label class="check-row">
+                <input type="checkbox" id="pref-mcp-writes">
+                <span>Let that app add and change notes
+                  <small class="muted">Off by default: it can only read. Deletes are never offered.</small></span>
+              </label>
               <pre id="mcp-config-snippet" class="code-block"></pre>
               <p id="mcp-config-note" class="muted hidden"></p>
               <div class="row">
@@ -12932,6 +12947,14 @@ Link to another note with [[its first few words]]."></textarea>
                 </select>
               </div>
               <div class="row">
+                <label for="pref-date-order" class="muted">Dates like 3/4 mean</label>
+                <select id="pref-date-order" title="How a date written with slashes is read in searches and questions">
+                  <option value="auto">From my language and region (default)</option>
+                  <option value="day">Day first (3 April)</option>
+                  <option value="month">Month first (4 March)</option>
+                </select>
+              </div>
+              <div class="row">
                 <label for="pref-season-hemisphere" class="muted">Seasons</label>
                 <select id="pref-season-hemisphere" title="Which half of the year summer and winter mean">
                   <option value="auto">From my language and region (default)</option>
@@ -12939,6 +12962,12 @@ Link to another note with [[its first few words]]."></textarea>
                   <option value="south">Southern hemisphere</option>
                 </select>
               </div>
+              <h3>Search</h3>
+              <label class="check-row">
+                <input type="checkbox" id="pref-before-includes-day">
+                <span>Count the day itself in before: searches</span>
+              </label>
+              <p class="muted">Off: before:2026-03-10 stops at the 9th. On: it includes the 10th. until: always includes its day.</p>
               <h3>Chat history</h3>
               <div class="row">
                 <label for="pref-chat-retention" class="muted">Delete saved chats after</label>
@@ -13854,6 +13883,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <h3 class="inline-h3">Import a document</h3>
                 <span class="fold-help-slot" aria-hidden="true"></span>
               </div></summary>
+              <div id="xn-documents"></div>
               <div class="row">
                 <input id="import-document-file" aria-label="Choose a document to import" title="Choose a document to import" type="file" accept=".pdf,.docx,.doc,.pptx,.ppt,.xlsx,.xls,.html,.htm" class="hidden">
                 <button id="import-document" class="ghost small" type="button"><i class="ph ph-file-arrow-up ph-lead" aria-hidden="true"></i> Import a document</button>

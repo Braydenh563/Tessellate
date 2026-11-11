@@ -493,6 +493,11 @@ def timeline(
         # whatever bucket it is drawing: the scale is the reader's choice and
         # can change without asking again.
         "density": density,
+        #: **How many rows the whole range holds**, so a header can say
+        #: "40 of 1,200" and not "40+". Every row is one tick in `density`
+        #: (a note, document or reminder on its day), so the sum is the total;
+        #: only the first page has the strip, and a later page leaves it out.
+        "total": None if cursor else sum(density.values()),
         "next_cursor": next_cursor,
         "has_more": has_more,
     }
