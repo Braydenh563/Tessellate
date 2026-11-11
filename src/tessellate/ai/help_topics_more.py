@@ -1829,14 +1829,32 @@ MORE_TOPICS.extend(
                 "where it is and File it myself, and Stop in Settings, Background "
                 "tasks files every waiting note by meaning. A note you file "
                 "yourself is never moved by a late answer, and moving notes by "
-                "hand teaches the filing where things go. In Settings, Background tasks, Load "
-                "the search model when the app starts chooses when filing by "
-                "meaning gets ready: at launch, or on the first note, which then "
-                "waits a few seconds. Let the search model go after an idle hour "
-                "frees its memory when nothing has been searched or filed for an "
-                "hour; the next search loads it again. Filing style (Settings, Background tasks) files by topic, "
-                "by project or by time. Filings Atlas was unsure of wait in "
-                "is:review, with Accept the filing on the note's menu."
+                "hand teaches the filing where things go. Filings Atlas was "
+                "unsure of wait in is:review, with Accept the filing on the "
+                "note's menu. More switches: Filing settings."
+            ),
+            "badge": {"label": "Notes", "tab": "notes"},
+        },
+        {
+            "id": "filing-settings",
+            "keywords": (
+                "ask when unsure", "ask me when filing is not sure", "filing options",
+                "filing options menu", "unsure filing", "wait for me to choose",
+                "load the search model", "search model at launch", "filing style",
+                "filing settings",
+            ),
+            "body": (
+                "Filing's switches, in Settings, Background tasks. Ask me when "
+                "filing is not sure (off by default; also the Filing options "
+                "menu beside Filing on the Capture tab) keeps a filing under 70% "
+                "from being applied: the note waits in Uncategorised and offers "
+                "the closest two or three to pick from, in the Capture hint and "
+                "on the saved note. Load the search model when the app starts "
+                "chooses when filing by meaning gets ready: at launch, or on "
+                "the first note, which then waits a few seconds. Let the search "
+                "model go after an idle hour frees its memory when nothing has "
+                "been searched or filed for an hour; the next search loads it "
+                "again. Filing style files by topic, by project or by time."
             ),
             "badge": {"label": "Notes", "tab": "notes"},
         },
@@ -3027,6 +3045,7 @@ TOPIC_META: dict[str, dict] = {
     "chat-list": {"title": "Finding and sorting your saved chats", "path": "Chat tab, the Chats list"},
     "queued-messages": {"title": "Messages that wait their turn", "path": "Chat, the popup agent or the Guide, the box while a reply is written"},
     "filing": {"title": "How a note is filed", "path": "A note's card, beside its category"},
+    "filing-settings": {"title": "Filing switches, and asking when unsure", "path": "Settings, Background tasks; Capture, the Filing options menu"},
     "suggested-tags": {"title": "Suggested tags", "path": "A note's card"},
     "tag-manager": {"title": "Managing tags", "path": "Notes tab, the ... menu, Manage tags"},
     "tidy": {"title": "Tidy: reviews with no AI", "path": "Notes tab, the broom in the dock"},
@@ -3071,7 +3090,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "write-with-atlas", "translate", "translate-offline", "extract-notes", "voice", "live-captions", "meetings",
     )),
     ("Filing, tags and categories", (
-        "tags-categories", "filing", "suggested-tags", "tag-manager", "manage-categories", "tidy",
+        "tags-categories", "filing", "filing-settings", "suggested-tags", "tag-manager", "manage-categories", "tidy",
     )),
     ("Asking Atlas", (
         "ask-chat", "chat-typos", "answers-from-notes", "chat-controls", "chat-context", "context-window", "chat-private", "chat-attach-cards", "chat-model-picker", "chat-list", "queued-messages", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-menu", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
