@@ -1700,11 +1700,22 @@ function replyRecordCards(list, entries, info, scored) {
       if (category) fact("record-cat", category, `Filed under ${category}`);
       const date = old.querySelector(".entry-date");
       if (date) fact("record-date", date.textContent.trim(), date.title);
-      const score = info?.[li.dataset.id]?.score;
-      if (scored && typeof score === "number") {
-        const pct = Math.round(score * 100);
-        fact("record-score", `${pct}% match`, `Matched by meaning: ${pct}% similar to your question.`);
-      }
+      //: Dates the note mentions ("Mentions 15 Nov"), a fact the old row had.
+      const mention = old.querySelector(".chip.when");
+      if (mention) fact("record-mention", mention.textContent.trim(), mention.title);
+      //: The one stat slot: a percentage, or in words how a link-only note got here.
+      const got = info?.[li.dataset.id];
+      const score = got?.score;
+      const pct = Math.round(score * 100);
+      const said =
+        scored && typeof score === "number"
+          ? [`${pct}% match`, `Matched by meaning: ${pct}% similar to your question.`]
+          : got?.type === "connected"
+            ? ["Linked", "Here because it is linked to a note that matched."]
+            : got?.type === "connected_2hop"
+              ? ["Two steps away", "Here because it is linked to a note that is linked to a match."]
+              : null;
+      if (said) fact("record-score", said[0], said[1]);
       old.replaceWith(line);
       li.querySelector(":scope > .entry-why")?.remove();
       excerpt(li);

@@ -1138,7 +1138,7 @@ const MATCH_REASON_LABEL = {
   // ROADMAP.md item 33: an opt-in second hop, linked to something linked
   // to a match, not to the match itself. Real evidence, weaker evidence;
   // its own badge text says so rather than reading identically to a direct
-  // connection, and `.result-connected-2hop` (style.css) renders it dimmer.
+  // connection; both look as bright as a match.
   connected_2hop: (info) => ({
     text: info.reason ? `ph:link Two steps away (${info.reason})` : "ph:link Two steps from a match",
     title: info.reason

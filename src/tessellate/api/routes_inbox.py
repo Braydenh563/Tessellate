@@ -288,14 +288,167 @@ def restore_dismissed_suggestions(body: DismissedRestore, session: Session = Dep
     for raw_id, tags in body.note_tags.items():
         if not raw_id.isdigit() or not tags:
             continue
-        done = session.execute(
-            text("UPDATE entries SET discarded_tags = :tags WHERE id = :id AND is_deleted = 0 AND discarded_tags IN ('', '[]')"),
-            {"tags": json.dumps([str(tag) for tag in tags][-200:]), "id": int(raw_id)},
-        )
-        restored += len(tags) if done.rowcount else 0
+        # Put back beside any tags still turned down (one Restore leaves the rest).
+        row = session.execute(text("SELECT discarded_tags FROM entries WHERE id = :id AND is_deleted = 0"), {"id": int(raw_id)}).first()
+        if row is None:
+            continue
+        try:
+            have = [str(tag) for tag in json.loads(row[0] or "[]") if tag]
+        except (TypeError, ValueError):
+            have = []
+        fresh = [str(tag) for tag in tags if str(tag) not in have]
+        if fresh:
+            session.execute(
+                text("UPDATE entries SET discarded_tags = :tags WHERE id = :id"),
+                {"tags": json.dumps((have + fresh)[-200:]), "id": int(raw_id)},
+            )
+            restored += len(fresh)
     session.commit()
     if body.tensions:
         have = _tension_keys()
         merged = have + [key for key in body.tensions if key not in have]
         deps.get_config().set_preference(TENSION_DISMISSED_KEY, merged)
     return {"restored": restored + len(body.tensions)}
+
+
+# --- the same list, one row each, with Restore on every row -------------------
+#
+# Settings, Data: "Dismissed suggestions". A row's key says which store it
+# lives in: `c:<id>` a correction, `t:<low>:<high>` a contradiction pair (its
+# preference key and its correction are one thing to the person), `n:<note>:<tag>`
+# a tag turned down on one note. Restore answers in the shape `/dismissed/clear`
+# does, so the toast's Undo is the `/dismissed/restore` route above.
+
+DISMISSED_LIST_MAX = 200
+
+_KIND_LABEL = {
+    "dismiss_merge": "Name merge",
+    "dismiss_link_type": "Link type",
+    "dismiss_link": "Link",
+    "dismiss_tension": "Contradiction",
+    "dismiss_resurface": "Old note",
+    "dismiss_insight": "Insight",
+}
+
+
+class DismissedItem(BaseModel):
+    key: str = Field(default="", max_length=400)
+
+
+def _note_name(session: Session, entry_id: object) -> str:
+    try:
+        content = session.scalar(select(Entry.content).where(Entry.id == int(entry_id)))  # type: ignore[call-overload]
+    except (TypeError, ValueError):
+        return ""
+    if not content:
+        return ""
+    name = plain_label(content, 200)
+    return name if len(name) <= 36 else name[:35].rstrip() + "…"
+
+
+def _entity_name(session: Session, entity_id: object) -> str:
+    try:
+        return session.scalar(select(Entity.name).where(Entity.id == int(entity_id))) or ""  # type: ignore[call-overload]
+    except (TypeError, ValueError):
+        return ""
+
+
+def _pair_key(a: object, b: object) -> str | None:
+    try:
+        low, high = sorted((int(a), int(b)))  # type: ignore[call-overload]
+    except (TypeError, ValueError):
+        return None
+    return f"{low}:{high}"
+
+
+def _subject(payload: dict) -> dict:
+    found = payload.get("subject")
+    return found if isinstance(found, dict) else {}
+
+
+def _dismissal_label(session: Session, kind: str, payload: dict) -> str:
+    subject = _subject(payload)
+    if kind == "dismiss_merge":
+        names = [_entity_name(session, subject.get(k)) for k in ("a", "b")]
+        if all(names):
+            return " and ".join(names)
+    elif kind == "dismiss_tension":
+        names = [_note_name(session, subject.get(k)) for k in ("a", "b")]
+        if all(names):
+            return " and ".join(names)
+    elif kind == "dismiss_link_type":
+        return f"Link type “{subject.get('link_type')}”" if subject.get("link_type") else "A link type"
+    else:
+        for field in ("entry_id", "source_id", "target_id", "a"):
+            name = _note_name(session, subject.get(field))
+            if name:
+                return name
+    said = str(payload.get("from") or payload.get("excerpt") or "").strip()
+    return said[:80] or _KIND_LABEL.get(kind, "A suggestion")
+
+
+@router.get("/dismissed/items")
+def dismissed_items(session: Session = Depends(get_session)) -> dict:
+    """Each suggestion said no to, newest first, `DISMISSED_LIST_MAX` at most."""
+    keys = set(_tension_keys())
+    rows: list[tuple[int, dict]] = []
+    for row_id, kind, payload in learning.live_dismissals(session):
+        subject = _subject(payload)
+        if kind == "dismiss_tension" and _pair_key(subject.get("a"), subject.get("b")) in keys:
+            continue  # listed once, through its pair key below
+        rows.append((row_id, {"key": f"c:{row_id}", "kind": kind, "kind_label": _KIND_LABEL.get(kind, kind), "label": _dismissal_label(session, kind, payload)}))
+    for pair in sorted(keys):
+        a, _, b = pair.partition(":")
+        names = [_note_name(session, a), _note_name(session, b)]
+        rows.append((0, {"key": f"t:{pair}", "kind": "dismiss_tension", "kind_label": _KIND_LABEL["dismiss_tension"], "label": " and ".join(names) if all(names) else "A pair of notes"}))
+    for entry_id, tags in _turned_down_on_notes(session).items():
+        name = _note_name(session, entry_id) or "A note"
+        rows.extend((0, {"key": f"n:{entry_id}:{tag}", "kind": "note_tag", "kind_label": f"Tag turned down on {name}", "label": tag}) for tag in tags)
+    rows.sort(key=lambda row: -row[0])
+    return {"items": [item for _, item in rows[:DISMISSED_LIST_MAX]], "more": max(0, len(rows) - DISMISSED_LIST_MAX)}
+
+
+def _restore_pair(session: Session, pair: str) -> tuple[list[int], list[str]]:
+    from tessellate.api.routes_entries import TENSION_DISMISSED_KEY
+    from tessellate.core import deps
+
+    keys = _tension_keys()
+    gone = [pair] if pair in keys else []
+    if gone:
+        deps.get_config().set_preference(TENSION_DISMISSED_KEY, [key for key in keys if key != pair])
+    mine = {
+        row_id
+        for row_id, row_kind, payload in learning.live_dismissals(session)
+        if row_kind == "dismiss_tension" and _pair_key(_subject(payload).get("a"), _subject(payload).get("b")) == pair
+    }
+    return (learning.revive_dismissals(session, mine) if mine else []), gone
+
+
+def _restore_note_tag(session: Session, rest: str) -> dict:
+    import json
+
+    from sqlalchemy import text
+
+    raw_id, _, tag = rest.partition(":")
+    have = _turned_down_on_notes(session).get(int(raw_id), []) if raw_id.isdigit() else []
+    if tag not in have:
+        return {}
+    session.execute(text("UPDATE entries SET discarded_tags = :tags WHERE id = :id"), {"tags": json.dumps([t for t in have if t != tag]), "id": int(raw_id)})
+    return {raw_id: [tag]}
+
+
+@router.post("/dismissed/item/restore")
+def restore_one_dismissed(body: DismissedItem, session: Session = Depends(get_session)) -> dict:
+    """Offer one dismissed suggestion again. A key that is gone changes nothing."""
+    ids: list[int] = []
+    tensions: list[str] = []
+    note_tags: dict = {}
+    kind, _, rest = body.key.partition(":")
+    if kind == "c" and rest.isdigit():
+        ids = learning.revive_dismissals(session, {int(rest)})
+    elif kind == "t":
+        ids, tensions = _restore_pair(session, rest)
+    elif kind == "n":
+        note_tags = _restore_note_tag(session, rest)
+    session.commit()
+    return {"restored": 1 if (ids or tensions or note_tags) else 0, "ids": ids, "tensions": tensions, "note_tags": note_tags}

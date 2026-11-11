@@ -502,6 +502,7 @@ EXEMPT: dict[str, str] = {
     "settings-controls.js:(anonymous /models/sampling)": "settings: a setting with its own Reset or the settings history",
     "settings-controls.js:(anonymous /debug/health/integrity)": "telemetry: telemetry or a background warm-up; no user data",
     "settings-data.js:(anonymous /suggestions/dismissed/clear)": "settings: clears the dismissed-suggestions list, a preference",
+    "settings-data.js:dismissedRestore": "settings: restores one dismissed suggestion, a preference; its Undo is settingsClearDone's (offerUndo and Recent changes)",
     "settings-controls.js:(anonymous /websearch/searxng/stop)": "job: starts or stops work or a model; deletes no user data",
     "settings-controls.js:(anonymous /websearch/searxng/reinstall)": "job: starts or stops work or a model; deletes no user data",
     "settings-controls.js:(anonymous /websearch/detect-searxng${query})": "job: starts or stops work or a model; deletes no user data",

@@ -634,17 +634,18 @@ button.reply-by {
    (`category · date · score`, each present only when it has something to
    say, the dot drawn by the next fact so no slot is ever empty), the reason
    (INBOX 1310) as one plain secondary line and the links behind one "N links"
-   row. Built by `replyRecordCards` (reply-kit.js). Even padding on both
+   row. Built by `replyRecordCards` (reply-kit.js) for Ask (`#raw-results`) and
+   Chat (`.records-cards`). Even padding on both
    sides: the citation number sits in the padding's top corner and only the
    title steps clear of it. Nothing is clipped that fits: the facts and the
    reason wrap, never ellipsise. */
-#raw-results > li.record-card[data-id],
-#raw-results > li.record-card.is-numbered[data-id] {
+:is(#raw-results, .records-cards) > li.record-card[data-id],
+:is(#raw-results, .records-cards) > li.record-card.is-numbered[data-id] {
   padding-inline: var(--space-5);
   --note-preview-lines: 2;
 }
 
-#raw-results > li.record-card > .record-index {
+:is(#raw-results, .records-cards) > li.record-card > .record-index {
   right: var(--space-5);
 }
 
@@ -676,35 +677,39 @@ button.reply-by {
   overflow-wrap: anywhere;
 }
 
-#raw-results > li.record-card > .record-links-toggle {
+:is(#raw-results, .records-cards) > li.record-card.is-numbered > .entry-content {
+  padding-inline-end: calc(1.25rem + var(--space-2));
+}
+
+:is(#raw-results, .records-cards) > li.record-card > .record-links-toggle {
   min-height: 0;
   margin-top: var(--space-1);
-  padding: var(--space-1) 0;
+  padding: var(--space-1) var(--space-2);
   justify-content: flex-start;
   color: var(--muted);
   font-size: var(--text-sm);
 }
 
-#raw-results > li.record-card > .entry-more {
+:is(#raw-results, .records-cards) > li.record-card > .entry-more {
   display: block;
   margin: 0;
   font-size: var(--text-sm);
 }
 
-#raw-results > li.record-card > .entry-links {
+:is(#raw-results, .records-cards) > li.record-card > .entry-links {
   margin-top: var(--space-2);
 }
 
-#raw-results > li.record-card .link-connection {
+:is(#raw-results, .records-cards) > li.record-card .link-connection {
   max-width: 100%;
 }
 
-#raw-results > li.record-card .link-connection > .chip.link {
+:is(#raw-results, .records-cards) > li.record-card .link-connection > .chip.link {
   white-space: normal;
   overflow-wrap: anywhere;
 }
 
-#raw-results > li.record-card .link-connection > .chip.link > span:last-child {
+:is(#raw-results, .records-cards) > li.record-card .link-connection > .chip.link > span:last-child {
   overflow: visible;
   text-overflow: clip;
 }

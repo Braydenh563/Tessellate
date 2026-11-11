@@ -2595,7 +2595,9 @@ function renderRecordsDetails(holder, meta) {
   // other "how it answers" settings) instead of message metadata.
   details.appendChild(summary);
   const list = document.createElement("ul");
-  list.className = "entry-list";
+  //: The Ask tab's Matching records card (`replyRecordCards`), one card for
+  //: both tabs; `.records-cards` lets its CSS reach this list too.
+  list.className = "entry-list records-cards";
   // Same provenance badges as the Ask tab (matchReasonBadge / renderRawResults
   // above): the backend's "meta" SSE event already carries match_info and
   // connected_ids for a chat turn, same shape as an Ask turn's; this just
@@ -2616,6 +2618,7 @@ function renderRecordsDetails(holder, meta) {
   }
   details.appendChild(list);
   holder.appendChild(details);
+  ensureModule("replyKit").then(() => replyRecordCards(list, meta.raw_results, matchInfo, scored)).catch(() => {});
 }
 
 // Delete one Q&A exchange: its assistant bubble AND the user bubble just

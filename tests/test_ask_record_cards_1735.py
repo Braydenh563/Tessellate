@@ -58,7 +58,7 @@ def test_the_reason_is_one_plain_secondary_line():
 
 
 def test_padding_is_even_and_nothing_that_fits_is_clipped():
-    rule = re.search(r"#raw-results > li\.record-card\[data-id\],\s*#raw-results > li\.record-card\.is-numbered\[data-id\] \{([^}]*)\}", LAZY_CSS)
+    rule = re.search(r":is\(#raw-results, \.records-cards\) > li\.record-card\[data-id\],\s*:is\(#raw-results, \.records-cards\) > li\.record-card\.is-numbered\[data-id\] \{([^}]*)\}", LAZY_CSS)
     assert rule and "padding-inline: var(--space-5);" in rule.group(1)
     meta = re.search(r"\.record-meta \{([^}]*)\}", LAZY_CSS).group(1)
     assert "flex-wrap: wrap;" in meta and "overflow: hidden" not in meta
@@ -68,3 +68,38 @@ def test_padding_is_even_and_nothing_that_fits_is_clipped():
 def test_both_ask_paths_draw_the_cards():
     assert "replyRecordCards(rawList, meta.raw_results, matchInfo, scored)" in with_pieces("ask-compose.js")
     assert "replyRecordCards(rawList, turn.raw_results, matchInfo, scored)" in with_pieces("ask-history.js")
+
+
+# Owner findings on the cards (mr2-1110), measured at 390 with a seeded
+# "courses and study" notebook (`scratchpad/mr2-1110/own.js`): a link-only card
+# at opacity 0.85 (0.65 two steps away), the title running 9 to 21px under the
+# number badge on 4 of 6 cards, the "N links" row at 0px left padding, a
+# link-only card with no stat at all, and no "Mentions" date on any card.
+def test_every_card_has_one_brightness():
+    boot = (ROOT / "frontend" / "css" / "03-dashboard-widgets.css").read_text(encoding="utf-8")
+    assert not re.search(r"\.result-connected(-2hop)? \{[^}]*opacity", boot)
+
+
+def test_a_title_stays_clear_of_the_number_badge_and_the_links_row_is_padded():
+    badge = re.search(r"\) > li\.record-card\.is-numbered > \.entry-content \{([^}]*)\}", LAZY_CSS)
+    assert badge and "padding-inline-end: calc(1.25rem + var(--space-2));" in badge.group(1)
+    toggle = re.search(r"> \.record-links-toggle \{([^}]*)\}", LAZY_CSS).group(1)
+    assert "padding: var(--space-1) var(--space-2);" in toggle
+
+
+def test_a_link_only_card_and_a_dated_note_still_say_their_stat():
+    body = _body("replyRecordCards")
+    assert '"Linked"' in body and '"Two steps away"' in body, "a link-only card has a word where the percentage goes"
+    assert 'old.querySelector(".chip.when")' in body and '"record-mention"' in body
+    assert body.count('"record-score"') == 1
+
+
+def test_a_link_only_note_never_sits_above_a_direct_match():
+    from types import SimpleNamespace
+
+    from tessellate.search.search_manager import direct_before_linked
+
+    notes = [SimpleNamespace(id=i) for i in (12, 13, 14, 15, 16)]
+    info = {13: {"type": "connected_2hop"}, 12: {"type": "connected"}, 14: {"type": "connected"}}
+    out = direct_before_linked(notes, {12, 13, 14}, info)
+    assert [n.id for n in out] == [15, 16, 12, 14, 13], "direct first, one step before two, each keeps its order"
