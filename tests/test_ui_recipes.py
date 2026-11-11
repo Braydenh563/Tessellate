@@ -7776,3 +7776,18 @@ def test_a_footer_row_of_worded_buttons_clips_its_words_rather_than_wrapping() -
     row_html = html[html.index('class="row draft-controls draft-actions-row"') :]
     row_html = row_html[: row_html.index('id="draft-save-split"')]
     assert row_html.count('<span class="toolbar-word">') == 2
+
+
+def test_a_rail_opener_never_rides_over_the_strip_above_its_split() -> None:
+    """At 768 Skill logs is a rail on the left and its opener (x 7 to 51) sat
+    on the Library's "All" sub-tab (x 9). The strip keeps the rail clear while
+    the Skills view shows, as the column beside the sidebar does. And the
+    sidebar is wired when the Library surface is built: straight to Library
+    after unlock, it had no opener at all."""
+    css = (_SHEETS / "library-lazy.css").read_text(encoding="utf-8")
+    band = css[css.index("@media (min-width: 600px) and (max-width: 819.98px)") :]
+    rule = re.search(r"#tab-library:has\(> #library-view-skills:not\(\.hidden\)\) > #library-subtabs\s*\{([^}]*)\}", band)
+    assert rule and "padding-left: calc(max(var(--sidebar-toggle-size), var(--target-min)) + 2 * var(--sidebar-toggle-inset))" in rule.group(1)
+    js = (ROOT / "frontend" / "js" / "sheets-selects.js").read_text(encoding="utf-8")
+    wired = re.search(r"for \(const name of \[([^\]]*)\]\) onSurface\(name, wire\)", js)
+    assert wired and '"library"' in wired.group(1)

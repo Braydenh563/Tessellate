@@ -478,7 +478,7 @@ function initResizableSidebars() {
     syncSidebarInert();
   };
   wire();
-  for (const name of ["documents", "chat"]) onSurface(name, wire);
+  for (const name of ["documents", "chat", "library"]) onSurface(name, wire);
   onSurface("chat", () => makeWebPanelResizable($("web-panel")));
   window.matchMedia(SIDEBAR_PHONE).addEventListener("change", syncSidebarInert);
   initSidebarSheetDismissal();
