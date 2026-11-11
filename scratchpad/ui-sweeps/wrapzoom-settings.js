@@ -456,7 +456,11 @@ async function helpPopovers(page, scopeSel, state, push) {
     const ok = await page.evaluate((id) => { const p = document.getElementById(id); if (!p) return false; const r = p.getBoundingClientRect(); return !p.classList.contains('hidden') && r.width > 0 && r.height > 0; }, id);
     if (!ok) { push(`${state}?${id}`, [{ kind: 'error', sel: `help ${id} did not open` }]); continue; }
     await markRoot(page, `#${CSS_ESCAPE(id)}`);
-    const found = [...await measure(page, ROOT_SEL, { bars: false }), ...await page.evaluate(offscreen, ROOT_SEL)];
+    const off = await page.evaluate(offscreen, ROOT_SEL);
+    // Where its ? was when it opened: a popover off screen beside a ? that is
+    // itself off screen is the scroll, not the popover.
+    if (off.length) off[0].trigger = await page.evaluate(({ s, id }) => { const t = document.querySelector(`${s} [data-help-for="${id}"]`); const r = t.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map(Math.round); }, { s: scopeSel, id });
+    const found = [...await measure(page, ROOT_SEL, { bars: false }), ...off];
     push(`${state}?${id}`, found);
     await closeFloating(page); await wait(page, 120);
   }
@@ -468,6 +472,7 @@ async function menus(page, scopeSel, state, push, max = 3) {
   for (const kind of ['kebab', 'select']) {
     const n = await page.evaluate(({ s, kind }) => {
       const q = kind === 'kebab' ? `${s} .menu-wrap > button` : `${s} .select-shell > .select-opener`;
+      document.querySelectorAll('[data-wz-opener]').forEach((b) => b.removeAttribute('data-wz-opener'));
       const list = [...document.querySelectorAll(q)].filter((b) => b.getClientRects().length && b.offsetParent !== null && !b.disabled);
       list.forEach((b, i) => b.setAttribute('data-wz-opener', kind + i));
       return list.length;
@@ -491,7 +496,9 @@ async function menus(page, scopeSel, state, push, max = 3) {
         return true;
       }, ROOT_ATTR);
       if (!has) { push(`${state}:${kind}${i}`, [{ kind: 'error', sel: `${kind} "${label}" opened no menu` }]); continue; }
-      const found = [...await measure(page, ROOT_SEL, { bars: false }), ...await page.evaluate(offscreen, ROOT_SEL)];
+      const off = await page.evaluate(offscreen, ROOT_SEL);
+      if (off.length) off[0].trigger = await page.evaluate((k) => { const r = document.querySelector(`[data-wz-opener="${k}"]`).getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map(Math.round); }, kind + i);
+      const found = [...await measure(page, ROOT_SEL, { bars: false }), ...off];
       push(`${state}:${kind}${i}:${label}`, found);
       await closeFloating(page); await wait(page, 150);
     }
