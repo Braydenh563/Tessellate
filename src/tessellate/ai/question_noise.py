@@ -480,6 +480,22 @@ def strip_strays(text: str) -> str:
     return _RUN_OF_SPACES.sub(" ", text).strip()
 
 
+_RATING_SLASH = re.compile(r"(?<![\w/])(\d{1,3}) ?/ ?(5|10|20|100)\b(?! ?/)")
+_DATE_CUES = frozenset("on by due before until till from since at for of".split())
+
+
+def _rating_words(text: str) -> str:
+    """"is Piranesi 9/10" is a rating ("9 out of 10", which the readers already take), not 9 October; after "on",
+    "by", "due" and the like it stays a date (audit 1030 Z17)."""
+    def say(m: re.Match) -> str:
+        before = text[: m.start()].split()
+        if int(m.group(1)) > int(m.group(2)) or (before and before[-1].lower() in _DATE_CUES):
+            return m.group(0)
+        return f"{m.group(1)} out of {m.group(2)}"
+
+    return _RATING_SLASH.sub(say, text) if "/" in text else text
+
+
 def tidy(text: str) -> str:
     """A question as it was meant before anything reads it (INBOX 801): stray
     keys off its edges, runs of spaces made one (line breaks kept, a pasted
@@ -487,7 +503,7 @@ def tidy(text: str) -> str:
     ("NOTEBOOK STATS") put in lower case. One capitalised word ("NASA") is a
     name and stays. Words are never changed here: `repair` does that, for
     the readers that want it."""
-    text = strip_strays(text)
+    text = _rating_words(strip_strays(text))
     words = re.findall(r"[A-Za-z]{2,}", text)
     if len(words) >= 2 and len(text) <= 200 and not re.search(r"[a-z]", text):
         text = text.lower()

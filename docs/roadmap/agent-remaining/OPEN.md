@@ -4072,49 +4072,49 @@ Format: id | file:line | one line | status.
 
 **BC2 (composer, 20 rows)**
 
-- Z17 | audit-1030-composer:110 | Notebook asks (themes, summarise) read the whole notebook (partial | partial
-- Z20 | audit-1030-composer:113 | A feeling question prefers the line holding a feeling (partial) | partial
-- Z21 | audit-1030-composer:119 | A "when" prefers a sentence with a calendar day to a window ("this week"); partial | partial
-- Z22 | audit-1030-composer:120 | How long since answers from the last dated line (partial | partial
-- Z23 | audit-1030-composer:121 | How-often and how-many for an activity count notes, not events, and fall back to the first sentence | open
-- Z24 | audit-1030-composer:122 | A where answer leads with the place, or says there is none | partial
-- Z25 | audit-1030-composer:123 | Temperature asks (how hot, what temp, what oven setting) read; partial | partial
-- Z26 | audit-1030-composer:124 | Dates: past-tense or past-dated lines are listed as upcoming | open
-- Z27 | audit-1030-composer:125 | Windows and sets disagree: "what's due soon" says Three dates fall in the next two weeks, 4 November to 1 | open
-- Z28 | audit-1030-composer:126 | A one-day "what did I do on X" says what the notes hold (title and first sentence), not that they were ma | partial
-- Z29 | audit-1030-composer:132 | "Sum of rent and groceries", "what is the total of my budget", "total cost of the Lisbon trip" add the am | partial
-- Z32 | audit-1030-composer:135 | A name that is a note's title or category adds every amount in that note (partial | partial
-- Z33 | audit-1030-composer:141 | Open checklist left/done questions answered from the open note (partial) | partial
-- Z36 | audit-1030-composer:144 | Untitled notes are counted and duplicate notes are answered from the notebook (partial | partial
-- Z37 | audit-1030-composer:145 | "Untick" says it cannot yet and "mark X as packed" reads as the tick act (partial | partial
-- Z39 | audit-1030-composer:152 | Citation tags switch style in one answer | open
-- Z40 | audit-1030-composer:153 | The sources column is not in citation order | open
-- Z45 | audit-1030-composer:158 | "Here is your newest note" for one, and a capitalised month (partial | partial
-- Z46 | audit-1030-composer:159 | A frame word ("goes", "ingredients", "contents") is no longer named as a missing topic (partial | partial
-- Z49 | audit-1030-composer:167 | The tool describes itself in the answer | open
+- Z17 | audit-1030-composer:110 | Notebook asks (themes, summarise) read the whole notebook (partial | fixed: 13df2e9 and 79652a7db (a rating fraction after a title is a rating; tests/test_composer_bc1_1111.py). Residual: 'did I give X 9/10' still answers 'I found nothing'
+- Z20 | audit-1030-composer:113 | A feeling question prefers the line holding a feeling (partial) | fixed: 13df2e9; residual: 'how am I feeling' quotes the Meditation note
+- Z21 | audit-1030-composer:119 | A "when" prefers a sentence with a calendar day to a window ("this week"); partial | fixed: b2bccba (rechecked 2026-11-11)
+- Z22 | audit-1030-composer:120 | How long since answers from the last dated line (partial | fixed: 13df2e9; 'how long since I called Sara' year and 'how old is the starter' sit in the date files (deferred)
+- Z23 | audit-1030-composer:121 | How-often and how-many for an activity count notes, not events, and fall back to the first sentence | deferred: date/count code (composer_slots.py) is held by another agent
+- Z24 | audit-1030-composer:122 | A where answer leads with the place, or says there is none | fixed: 13df2e9; residual: 'where does Sara live' quotes Gift ideas
+- Z25 | audit-1030-composer:123 | Temperature asks (how hot, what temp, what oven setting) read; partial | fixed: b2bccba and 55e2c26f7: temperature asks answer by a figure and drop the footer
+- Z26 | audit-1030-composer:124 | Dates: past-tense or past-dated lines are listed as upcoming | deferred: date lists (composer_ahead.py) are held by another agent
+- Z27 | audit-1030-composer:125 | Windows and sets disagree: "what's due soon" says Three dates fall in the next two weeks, 4 November to 1 | deferred: date windows (composer_ahead.py) are held by another agent
+- Z28 | audit-1030-composer:126 | A one-day "what did I do on X" says what the notes hold (title and first sentence), not that they were ma | fixed: 07d7194
+- Z29 | audit-1030-composer:132 | "Sum of rent and groceries", "what is the total of my budget", "total cost of the Lisbon trip" add the am | fixed: 07d7194; residual: 'how much did I spend on clothes/shopping' finds nothing (category to notes mapping)
+- Z32 | audit-1030-composer:135 | A name that is a note's title or category adds every amount in that note (partial | fixed: 07d7194
+- Z33 | audit-1030-composer:141 | Open checklist left/done questions answered from the open note (partial) | fixed: b2bccba
+- Z36 | audit-1030-composer:144 | Untitled notes are counted and duplicate notes are answered from the notebook (partial | fixed: 07d7194
+- Z37 | audit-1030-composer:145 | "Untick" says it cannot yet and "mark X as packed" reads as the tick act (partial | fixed: 07d7194
+- Z39 | audit-1030-composer:152 | Citation tags switch style in one answer | deferred: citation tags are drawn by the front end's answer renderer; no composer-side cause found, needs a rendered sweep
+- Z40 | audit-1030-composer:153 | The sources column is not in citation order | stale: a number sort exists and the sources column follows citation order on this head
+- Z45 | audit-1030-composer:158 | "Here is your newest note" for one, and a capitalised month (partial | fixed: 07d7194
+- Z46 | audit-1030-composer:159 | A frame word ("goes", "ingredients", "contents") is no longer named as a missing topic (partial | fixed: c2de394
+- Z49 | audit-1030-composer:167 | The tool describes itself in the answer | blocked: decision 54 says a computed sentence always says 'Read as ...'; recommendation: keep the line, shorten it, and decide with the owner
 
 **BC3 (composer, 20 rows)**
 
-- Z50 | audit-1030-composer:168 | A bare note word ("Atlas", "Sara") is a notes ask and "call Sara" with a note about her is the lookup (pa | partial
-- Z53 | audit-1030-composer:176 | Follow-ons keep the cited note (partial | partial
-- Z56 | audit-1030-composer:179 | One checklist-state reader: "is the passport packed" is yes or no with the item, "is everything packed" | partial
-- Z57 | audit-1030-composer:180 | The plan-the-week answer puts everything on one day | open
-- Z58 | audit-1030-composer:181 | Compare answers use the wrong notes or a missing relation | open
-- Z59 | audit-1030-composer:182 | "What do I want to learn" gives From your notes | open
-- Z61 | audit-1030-composer:189 | The confirmation for the same kind of act is worded five ways | open
-- Z62 | audit-1030-composer:190 | Reminder confirmations are fragments with three time formats | open
-- Z63 | audit-1030-composer:191 | An act that creates a note turns the whole sentence into the title, and the title-only notes then rank ab | open
-- Z67 | audit-1030-composer:200 | Not reproduced on the fix branch (the base answers from the Sara notes only) | open
-- Z68 | audit-1030-composer:208 | With a model up, date and days-until questions in Ask are answered I couldn't find any saved notes matchi | open
-- AR3 | audit-1031-architecture:29 | The composer is a second application | open
-- C2 | audit-1031-composer:45 | The supersede rule treats two facts with the same name key as old and new values of one thing, and report | partial
-- C3 | audit-1031-composer:46 | A holiday or month word in a topic question is read as a date window, so the notes that hold the word are | open
-- C4 | audit-1031-composer:47 | Term frequency beats the defining note once the notebook has noise | open
-- C5 | audit-1031-composer:48 | Several notes are glued into one sentence with commas and ellipses once the overview runs past its line b | open
-- C6 | audit-1031-composer:49 | The count sentence counts the largest theme, not the notes the answer then says, so counts disagree with | open
-- C7 | audit-1031-composer:50 | A question naming a titled note ("the X note", "what is in the X note") is not resolved to that note; the | open
-- C9 | audit-1031-composer:52 | A sentence's own date word is read as the event's day, resolved to the past because the ask is past tense | open
-- C10 | audit-1031-composer:53 | A one-line note in a script without spaces or Latin stops is read as a title-only note | open
+- Z50 | audit-1030-composer:168 | A bare note word ("Atlas", "Sara") is a notes ask and "call Sara" with a note about her is the lookup (pa | fixed: 07d7194; rechecked 2026-11-11: 'what is Atlas' answers from the Atlas notes and 'what's your name' says Atlas's assistant (decision 76)
+- Z53 | audit-1030-composer:176 | Follow-ons keep the cited note (partial | fixed: b2bccba; 'how much does it cost' with no prior turn still picks the passport (the Ask tab holds no turns)
+- Z56 | audit-1030-composer:179 | One checklist-state reader: "is the passport packed" is yes or no with the item, "is everything packed" | fixed: c2de394; 'what have I finished' reads the Books note, residual
+- Z57 | audit-1030-composer:180 | The plan-the-week answer puts everything on one day | stale: rechecked 2026-11-11: the week answer groups by day with 'Free weekdays: Monday, Tuesday, Thursday, Friday'
+- Z58 | audit-1030-composer:181 | Compare answers use the wrong notes or a missing relation | stale: rechecked 2026-11-11: 'which trip is sooner' compares Lisbon with Tokyo by date and 'Lisbon vs Tokyo' uses the trip notes
+- Z59 | audit-1030-composer:182 | "What do I want to learn" gives From your notes | stale: rechecked 2026-11-11: 'what do I want to learn' and 'what am I learning' both say Spanish; the streak is labelled 'writing streak'
+- Z61 | audit-1030-composer:189 | The confirmation for the same kind of act is worded five ways | deferred: the eight openers are a deliberate design (composer_replies.CONFIRM, B24) and all name Confirm and Cancel; unify only on an owner decision
+- Z62 | audit-1030-composer:190 | Reminder confirmations are fragments with three time formats | deferred: reminder time wording is built in when.py / acts.py with the date files held by another agent
+- Z63 | audit-1030-composer:191 | An act that creates a note turns the whole sentence into the title, and the title-only notes then rank ab | open: not reproduced from the Ask tab (acts redirect to Chat); needs a Chat-tab sweep of the note title built from a sentence
+- Z67 | audit-1030-composer:200 | Not reproduced on the fix branch (the base answers from the Sara notes only) | stale: rechecked 2026-11-11: 'what does Sara want for her birthday' answers from the Sara note only
+- Z68 | audit-1030-composer:208 | With a model up, date and days-until questions in Ask are answered I couldn't find any saved notes matchi | open: needs a model up to reproduce; not verifiable on the fake transport
+- AR3 | audit-1031-architecture:29 | The composer is a second application | open: architectural, no cheap fix; recorded as design work
+- C2 | audit-1031-composer:45 | The supersede rule treats two facts with the same name key as old and new values of one thing, and report | stale: rechecked 2026-11-11: 'what have I written about Sara' and 'what is in the Sara note' answer from the Sara note without a supersede line
+- C3 | audit-1031-composer:46 | A holiday or month word in a topic question is read as a date window, so the notes that hold the word are | stale: rechecked 2026-11-11: 'what do I know about Christmas' and 'who is coming for Christmas' answer from the mum note
+- C4 | audit-1031-composer:47 | Term frequency beats the defining note once the notebook has noise | open: reproduces at 207 notes: 'what do I know about reading' leads with filler notes after the Books note
+- C5 | audit-1031-composer:48 | Several notes are glued into one sentence with commas and ellipses once the overview runs past its line b | open: reproduces at 207 notes: filler notes are quoted in full, glued with ellipses
+- C6 | audit-1031-composer:49 | The count sentence counts the largest theme, not the notes the answer then says, so counts disagree with | partial: rechecked 2026-11-11: 'what have I written about uni' now counts eight and says eight; the 207-note count sentence still disagrees
+- C7 | audit-1031-composer:50 | A question naming a titled note ("the X note", "what is in the X note") is not resolved to that note; the | stale: rechecked 2026-11-11: 'what is Tom's note about' and 'what is in the Sara note' answer from the titled note
+- C9 | audit-1031-composer:52 | A sentence's own date word is read as the event's day, resolved to the past because the ask is past tense | stale: rechecked 2026-11-11: 'when did I call mum' answers 'On Monday 26 October'
+- C10 | audit-1031-composer:53 | A one-line note in a script without spaces or Latin stops is read as a title-only note | open: not probed (needs a CJK note in the seed); recorded in bc-1111.md
 
 **BC4 (composer, 20 rows)**
 

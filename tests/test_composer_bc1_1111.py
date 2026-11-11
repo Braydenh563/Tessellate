@@ -60,3 +60,25 @@ def test_a_temperature_quoted_leaves_no_missing_footer(client, session, monkeypa
     text = text[0] if isinstance(text, tuple) else text
     assert "175" in text
     assert "do not mention" not in text and "None of these" not in text and "say anything about" not in text
+
+
+# Z17: "9/10" after a title is a rating, not 9 October; "on 9/10" still is a date.
+@pytest.mark.parametrize("question", ["is Piranesi 9/10", "is the Piranesi note 9/10", "was Piranesi a 9/10"])
+def test_a_rating_fraction_is_not_a_date_window(client, session, monkeypatch, question):
+    import tests._seed_1030 as seed
+
+    seed.seed(session)
+    text = seed.asker(client, monkeypatch, chat=True)(question)
+    text = text[0] if isinstance(text, tuple) else text
+    assert "9/10" in text and "Piranesi" in text and "did not" not in text.lower()
+    assert "None of your notes" not in text and "I found nothing" not in text
+
+
+@pytest.mark.parametrize("question, said", [
+    ("what is on 9/10", "what is on 9/10"), ("due by 9/10", "due by 9/10"), ("is Piranesi 9/10", "is Piranesi 9 out of 10"),
+    ("it is 11/10", "it is 11/10"), ("3/10 was it", "3 out of 10 was it"),
+])
+def test_a_rating_fraction_is_said_as_a_rating_and_a_date_stays(question, said):
+    from tessellate.ai import question_noise
+
+    assert question_noise.tidy(question) == said
