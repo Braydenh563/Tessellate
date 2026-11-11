@@ -4141,26 +4141,26 @@ Format: id | file:line | one line | status.
 
 **BC5 (composer, 20 rows)**
 
-- C32 | audit-1031-composer:75 | Reporting frames wrap things that are not speech | open
-- C33 | audit-1031-composer:76 | Four footers say the same thing in four wordings, and the thing they say is a dangling promise | open
-- C34 | audit-1031-composer:77 | Openers and closers claim a process or pad the answer | open
-- C35 | audit-1031-composer:78 | A month is lower-cased by .capitalize(), and other words lose or gain capitals | open
-- C37 | audit-1031-composer:80 | A one-line title-less note's whole line becomes a run-on with "and | open
-- C38 | audit-1031-composer:81 | Japanese punctuation gets a Latin stop added | open
-- C39 | audit-1031-composer:82 | The courses-and-study answer groups by a name that is not a course and includes a note with no visible bo | open
-- C40 | audit-1031-composer:83 | Mixed citation styles in one answer and bare brackets after fragments | open
-- C41 | audit-1031-composer:84 | Act confirmations: five wordings, an act that runs without confirm beside one that asks, "pin" answered a | open
-- C42 | audit-1031-composer:85 | Chat has no per-answer follow-on chips; Ask has them | open
-- C43 | audit-1031-composer:86 | Due lists and left-item lists put a blank line between bullets; a reminder on a note hides the note's own | open
-- C44 | audit-1031-composer:87 | "What is my longest note" promises a list that is not in the text | open
-- C46 | audit-1031-composer:89 | "I'm a better finder than a comedian" for "tell me a joke" while a jokes note exists | open
-- C47 | audit-1031-composer:90 | The chips the composer offers under an answer are questions it then cannot answer | open
-- C48 | audit-1031-composer:91 | "What's new with X" and "the latest on X" answer with the oldest note or a checklist item | open
-- C49 | audit-1031-composer:92 | A link's reason is never said: the group line says "You linked A to B" and a question about the link gets | open
-- E4 | audit-1107-composer-r2:24 | after "what do I know about José" | partial
-- E5 | audit-1107-composer-r2:25 | chain: "tell me about the Tokyo trip" / "where is it" / "what should I pack" / "when does it start" | partial
-- E9 | audit-1107-composer-r2:29 | "which is cheaper, Lisbon or Tokyo", "Lisbon or Tokyo, which costs more", "who is older, Anna or Tom" | open
-- E10 | audit-1107-composer-r2:30 | "what do I know about Tom and Sara", "what do I know about Anna and José", "anna and josé", "what do I kn | partial
+- C32 | audit-1031-composer:75 | Reporting frames wrap things that are not speech | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py test_c32 passes on this head
+- C33 | audit-1031-composer:76 | Four footers say the same thing in four wordings, and the thing they say is a dangling promise | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py test_c33 passes on this head
+- C34 | audit-1031-composer:77 | Openers and closers claim a process or pad the answer | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py test_c34 passes on this head
+- C35 | audit-1031-composer:78 | A month is lower-cased by .capitalize(), and other words lose or gain capitals | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py test_c35 passes on this head
+- C37 | audit-1031-composer:80 | A one-line title-less note's whole line becomes a run-on with "and | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py test_c37 passes on this head
+- C38 | audit-1031-composer:81 | Japanese punctuation gets a Latin stop added | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py test_c38 passes on this head
+- C39 | audit-1031-composer:82 | The courses-and-study answer groups by a name that is not a course and includes a note with no visible bo | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py test_c39 passes on this head
+- C40 | audit-1031-composer:83 | Mixed citation styles in one answer and bare brackets after fragments | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py test_c40 passes on this head
+- C41 | audit-1031-composer:84 | Act confirmations: five wordings, an act that runs without confirm beside one that asks, "pin" answered a | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py test_c41 passes on this head
+- C42 | audit-1031-composer:85 | Chat has no per-answer follow-on chips; Ask has them | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py test_c42 passes on this head
+- C43 | audit-1031-composer:86 | Due lists and left-item lists put a blank line between bullets; a reminder on a note hides the note's own | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py test_c43 passes on this head
+- C44 | audit-1031-composer:87 | "What is my longest note" promises a list that is not in the text | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py test_c44 passes on this head
+- C46 | audit-1031-composer:89 | "I'm a better finder than a comedian" for "tell me a joke" while a jokes note exists | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py test_c46 passes on this head
+- C47 | audit-1031-composer:90 | The chips the composer offers under an answer are questions it then cannot answer | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py C17 and C47 passes on this head
+- C48 | audit-1031-composer:91 | "What's new with X" and "the latest on X" answer with the oldest note or a checklist item | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py C48 (test_c48 headings) passes on this head
+- C49 | audit-1031-composer:92 | A link's reason is never said: the group line says "You linked A to B" and a question about the link gets | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py test_c49 passes on this head
+- E4 | audit-1107-composer-r2:24 | after "what do I know about José" | stale: fixed, tests/test_composer_r2_1107.py passes on this head (audit row says Fixed)
+- E5 | audit-1107-composer-r2:25 | chain: "tell me about the Tokyo trip" / "where is it" / "what should I pack" / "when does it start" | stale: fixed, tests/test_composer_r2_1107.py and test_composer_r5_follow_1108.py passes on this head (audit row says Fixed)
+- E9 | audit-1107-composer-r2:29 | "which is cheaper, Lisbon or Tokyo", "Lisbon or Tokyo, which costs more", "who is older, Anna or Tom" | partial: rechecked 2026-11-11: 'which is cheaper' and 'costs more' compare the figures; 'who is older, Anna or Tom' still answers a gift line (no age comparison exists; needs a birth-year reader in composer_amounts)
+- E10 | audit-1107-composer-r2:30 | "what do I know about Tom and Sara", "what do I know about Anna and José", "anna and josé", "what do I kn | stale: fixed, tests/test_composer_w7_1110.py and test_composer_each_subject_1109.py passes on this head (audit row says Fixed)
 
 **BC6 (composer, 20 rows)**
 
