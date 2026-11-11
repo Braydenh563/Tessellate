@@ -3520,7 +3520,7 @@ const nmb = {
   afterClean(fn, tries = 6, snap = fn, calm = 0) {
     afterFrames(() => {
       const frame = performance.now();
-      setTimeout(() => {
+      setTimeout(function nameMarkBuddyAfterCleanTask() {
         const dirty = nmb.pageAt > frame || performance.now() < (window.uiSettlingUntil || 0);
         const moving = calm > 0 && Date.now() - nmb.lastInput < calm;
         if ((dirty || moving) && tries > 1) nmb.afterClean(fn, tries - 1, snap, calm);
@@ -5735,10 +5735,21 @@ function nameMarkBuddyFollowFrame(now) {
   //: area's scroll is carried by the browser and looked at every 300ms, not 120.
   if (nmb.glue && (now < nmbFollow.until || nmbFollow.moving)) {
     if (nmbFollow.nap > now && !nmbFollow.moving) {
-      nmbFollow.timer = setTimeout(() => {
-        nmbFollow.timer = 0;
-        nameMarkBuddyKeepUp(0, false);
-      }, Math.max(16, nmbFollow.nap - performance.now()));
+      //: **The look after a nap is taken in a task that follows a drawn frame** (INBOX 1741, the 20ms look: it
+      //: ran in a frame callback, before the frame's style pass, and the figure's own 20Hz tempo writes
+      //: since the last draw made its first box read settle them). `nmb.afterClean` waits for a page left
+      //: clean and, writes still going after six tries, looks anyway. A wake (`nameMarkBuddyKeepUp` with
+      //: `wake`) zeroes `timer`, which cancels the pending look.
+      const own = (nmbFollow.timer = setTimeout(function nameMarkBuddyNapTask() {
+        nmb.afterClean(function nameMarkBuddyNapLook() {
+          if (nmbFollow.timer !== own || !nmb.glue) return;
+          nmbFollow.timer = 0;
+          nameMarkBuddyKeepUp(0, false);
+          if (!nmbFollow.frame) return;
+          cancelAnimationFrame(nmbFollow.frame);
+          nameMarkBuddyFollowFrame(performance.now());
+        }, 3);
+      }, Math.max(16, nmbFollow.nap - performance.now())));
     } else nmbFollow.frame = requestAnimationFrame(nameMarkBuddyFollowFrame);
   }
   //: Its panel came to rest somewhere new: a floating button may be over it

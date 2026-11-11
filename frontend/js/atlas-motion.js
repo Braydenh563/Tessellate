@@ -336,10 +336,20 @@ function atlasRigWake(host) {
     for (const el of new Set([rig.host, box, rig.body])) rig.observer.observe(el, attributes);
   }
   rig.still = 0;
-  if (!rig.raf) rig.raf = atlasRigWake.after((now) => atlasRigFrame(rig, now), 2);
+  //: **The first look is taken after a frame has drawn** (INBOX 1741, the owner's log: `atlas-motion.js after
+  //: 13ms`, a 227ms frame; 96ms with 92 forced at 4x): with nothing read yet (`rig.reads`) the frame
+  //: callback reads every arm's box before the frame's own style pass, and the figure's first
+  //: paint had left that to this read. A timer after the frame finds the page clean.
+  if (!rig.raf) rig.raf = (rig.reads ? atlasRigWake.after : atlasRigWake.afterPaint)((now) => atlasRigFrame(rig, now), 2);
 }
 //: The only place a skipped or settled frame is asked for: `callback` after `frames` frames (2: after the one that draws the page).
 atlasRigWake.after = (callback, frames) => requestAnimationFrame((t) => (frames > 1 ? atlasRigWake.after(callback, frames - 1) : callback(t)));
+//: `callback` in the task after the `frames`th frame has drawn: its reads find the style settled.
+//: Returns 1, a truthy token like a frame id (`rig.raf` is only ever tested and zeroed).
+atlasRigWake.afterPaint = (callback, frames) => {
+  atlasRigWake.after(() => setTimeout(function atlasRigWakeFirstLook() { callback(performance.now()); }, 0), frames);
+  return 1;
+};
 //: **Throwing stars** (B88b, the owner, 2026-10-17: "the throwing stars
 //: action for atlas isnt animated"). The juggle turned each star on a CSS
 //: circle about one point over the head while both arms held still. The rig

@@ -2033,7 +2033,7 @@ function dashFillingSkeleton(grid, count) {
   //: filling in had left the layout dirty, and each read laid the page out.
   const follow = () => {
     if (!outline.isConnected) return;
-    afterFrames(() => setTimeout(() => {
+    afterFrames(() => setTimeout(function dashSkeletonFollowTask() {
       if (!outline.isConnected) return;
       outline.style.translate = `0 ${grid.offsetTop - top0}px`;
       setTimeout(follow, 80);
@@ -2996,10 +2996,23 @@ async function renderHeatmapWidget(body) {
   function toEnd() {
     const last = grid.lastElementChild;
     if (!atEnd || !last) return;
-    grid.scrollLeft += last.getBoundingClientRect().right - grid.getBoundingClientRect().right;
+    //: **Written only when it is off the end** (INBOX 1741 lag rest: at 4x the refit inside
+    //: `sizeDashWidgets` read the last cell, 155ms of cell layout, and the `scroll` event its
+    //: unconditional write fired read `scrollWidth` for another 132ms). Already there, nothing is
+    //: written and no scroll event follows.
+    const off = last.getBoundingClientRect().right - grid.getBoundingClientRect().right;
+    if (Math.abs(off) >= 1) grid.scrollLeft += off;
   }
+  //: Read two frames on, not in the event (the event lands before the frame's layout, and
+  //: `scrollWidth` paid for the cells the page had dirtied: 132 to 187ms at 4x in the lag log).
+  let atEndAsked = false;
   grid.addEventListener("scroll", () => {
-    atEnd = grid.scrollWidth - grid.clientWidth - grid.scrollLeft < 2;
+    if (atEndAsked) return;
+    atEndAsked = true;
+    afterFrames(() => {
+      atEndAsked = false;
+      atEnd = grid.scrollWidth - grid.clientWidth - grid.scrollLeft < 2;
+    });
   }, { passive: true });
   grid.addEventListener("contentvisibilityautostatechange", toEnd);
   //: The dashboard's own card observer tells it (`sizeDashWidgets`), so no

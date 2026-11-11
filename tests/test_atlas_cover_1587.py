@@ -114,7 +114,7 @@ def test_a_look_waits_for_a_frame_that_left_the_page_clean() -> None:
     # wait-a-frame-more, six-at-most intent is unchanged.
     start = AV.index("  afterClean(fn, tries = 6, snap = fn, calm = 0) {")
     clean = AV[start : AV.index("\n};\n", start)]
-    assert "afterFrames(() => {" in clean and "setTimeout(() => {" in clean, "a timer past a frame"
+    assert "afterFrames(() => {" in clean and "setTimeout(function nameMarkBuddyAfterCleanTask() {" in clean, "a named timer past a frame (INBOX 1741: an anonymous handler reads as inline in the lag log)"
     assert "nmb.pageAt > frame" in clean and "window.uiSettlingUntil" in clean
     assert "if ((dirty || moving) && tries > 1) nmb.afterClean(fn, tries - 1, snap, calm);" in clean and "else (dirty ? snap : fn)();" in clean
     assert "requestAnimationFrame(" not in clean, "the file's one frame helper (the wake-source ratchet)"

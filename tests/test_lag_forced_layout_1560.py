@@ -61,7 +61,8 @@ def test_the_periodic_animation_look_waits_for_an_idle_moment() -> None:
 def test_a_wake_reads_a_frame_after_the_one_that_settled_the_page() -> None:
     assert "atlasRigWake.after = (callback, frames) => requestAnimationFrame(" in MOTION
     wake = _fn(MOTION, "atlasRigWake")
-    assert "atlasRigWake.after((now) => atlasRigFrame(rig, now), 2)" in wake and "requestAnimationFrame(" not in wake
+    # INBOX 1741: the first look (nothing read yet) goes one task further, after the second frame has drawn.
+    assert "(rig.reads ? atlasRigWake.after : atlasRigWake.afterPaint)((now) => atlasRigFrame(rig, now), 2)" in wake and "requestAnimationFrame(" not in wake
     tail = _fn(LIFE_BOOT, "atlasTailWake")
     assert "atlasRigWake.after((now) => atlasTailFrame(tail, now), 2)" in tail
 
