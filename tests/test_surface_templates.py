@@ -108,7 +108,7 @@ SURFACES = {
 #: functions that run later (atlas.js `retireOlder` reads the bubbles when a face rests, never at load)
 #: or inside `onSurface("chat", ...)` (answer-kit.js watches the message list once the pane is built).
 #: vault-unlock.js reads TYPED_IDS (chat, library, notes fields) only at lock time, inside functions.
-INSIDE_FUNCTIONS = {("atlas.js", "chat"), ("answer-kit.js", "chat"), ("vault-unlock.js", "chat"), ("vault-unlock.js", "library"), ("vault-unlock.js", "notes")}
+INSIDE_FUNCTIONS = {("atlas.js", "chat"), ("answer-kit.js", "chat"), ("vault-unlock.js", "chat")}
 
 
 def _template(name: str) -> tuple[str, str]:
