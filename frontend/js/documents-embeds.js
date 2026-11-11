@@ -58,6 +58,7 @@
   //: The Library's recordings, fetched once when an embed names something that
   //: does not resolve yet, the way the file index is.
   const docRecordings = { rows: null, pending: null, at: 0 };
+  const docBoardAsked = new Set();
   //: A list older than half a minute is asked for again (a take made since still embeds); a failed ask counts as an answer.
   const docRecordingsStale = () => Date.now() - docRecordings.at > 30000;
   function docRecordingsLoad() {
@@ -72,6 +73,25 @@
       });
     return docRecordings.pending;
   }
+
+  //: **A board embedded in a document is edited where it is** (documents-board.js): "Edit here" opens the board in a panel over
+  //: the document, and `redraw` runs when the panel closes. Live draws the card here; Read's card is markdown.js's, so
+  //: `docEmbedFill.editButtons` (called from `renderDocPreview`) puts the same button after each of those.
+  function boardEditButton(id, titleOf, redraw) {
+    const edit = smallButton("ph:pencil-simple Edit here", "Edit this board in a panel over the document", () => ensureModule("docBoard").then(() => {
+      document.addEventListener("board-edited", redraw, { once: true });
+      edit.dispatchEvent(new CustomEvent("board-edit", { bubbles: true, detail: { id, title: titleOf() } }));
+    }));
+    edit.classList.add("doc-embed-board-edit");
+    return edit;
+  }
+  docEmbedFill.editButtons = (root) => {
+    for (const card of root.querySelectorAll(".board-embed[data-board-ref]")) {
+      if (card.nextElementSibling?.classList.contains("doc-embed-board-edit")) continue;
+      const title = () => card.querySelector(".board-embed-title")?.textContent || "";
+      card.after(boardEditButton(Number(card.dataset.boardRef), title, renderDocPreview));
+    }
+  };
 
   //: The card for a target, from whichever renderer already owns that kind.
   //: Returns null for a kind with no card of its own, which the caller draws as
@@ -127,6 +147,11 @@
       box.className = "doc-embed-map";
       box.appendChild(mapChip(target.entry, { interactive: false }));
       box.appendChild(mapPreview(target.entry, { size: "card" }));
+      box.appendChild(boardEditButton(target.entry.id, () => target.entry.title, () => {
+        //: Looked up again: the board index the panel refreshed holds a new row, and the old one still says the old count.
+        const fresh = box.isConnected ? docEmbedNode(docEmbedTarget(name), name) : null;
+        if (fresh) box.replaceWith(fresh);
+      }));
       return box;
     }
     if (target.kind === "recording") {
@@ -263,6 +288,13 @@
     const loadFiles = window.editorLoadFiles;
     if (loadFiles && !(typeof editorFileCache !== "undefined" && editorFileCache)) loads.push(loadFiles());
     if (docRecordingsStale()) loads.push(docRecordingsLoad());
+    //: A `![[board:12]]` resolves from the board index, which a document has usually never asked for. Once per board id, so a
+    //: dead reference costs one walk, not one per redraw (markdown.js `boardEmbedForced` does the same for Read's card).
+    const board = boardEmbedRef(name);
+    if (board && !docBoardAsked.has(board.id)) {
+      docBoardAsked.add(board.id);
+      loads.push(loadMapBoardIndex(true));
+    }
     if (!loads.length) return;
     Promise.all(loads.map((load) => Promise.resolve(load).catch(() => {}))).then(() => {
       if (!host.isConnected) return;

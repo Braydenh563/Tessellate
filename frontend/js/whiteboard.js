@@ -25259,6 +25259,8 @@ function wbShowCanvasView() {
 }
 
 function wbShowBoardsLanding() {
+  //: A document's board panel (documents-board.js) answers this by closing itself: the board list is not what that page wants.
+  if (!document.dispatchEvent(new CustomEvent("wb-leave", { cancelable: true }))) return;
   wbRememberBoardView();
   // First, because the boards list lives inside the element full screen
   // pins to the viewport, see `wbLeaveFullscreen` for what that looked
@@ -25319,11 +25321,13 @@ function wbCancelBoardTimers() {
 }
 
 // Jump to the real whiteboard canvas with a specific board loaded.
-async function openWhiteboardBoard(boardId) {
+async function openWhiteboardBoard(boardId, opts = null) {
   wbRememberBoardView();
-  switchTab("library");
-  const wbSubtab = document.querySelector('#library-subtabs button[data-target="library-view-whiteboard"]');
-  wbSubtab?.click();
+  //: `stay`: the caller has put `#library-view-whiteboard` where the board is wanted (a document's board panel, documents-board.js).
+  if (!opts?.stay) {
+    switchTab("library");
+    document.querySelector('#library-subtabs button[data-target="library-view-whiteboard"]')?.click();
+  }
   wbShowCanvasView();
   const nudgeSaved = wbCancelBoardTimers();
   wbLinkParseCache.clear(); // the next board's sketches are other ids

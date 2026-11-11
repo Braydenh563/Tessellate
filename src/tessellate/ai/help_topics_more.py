@@ -1939,7 +1939,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-synced", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "code-run",
+        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-synced", "document-board", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
@@ -2888,11 +2888,30 @@ MORE_TOPICS.append({
         "write ![[Document title#^the-id]] and the paragraph appears there, quoted, with a line naming where it comes "
         "from (press it to open that document). Hover the quote and press the pencil to change the paragraph where "
         "you are: Save writes it into the document it lives in, so there is only ever one copy, every other place that "
-        "shows it follows, and that document's History has the change. If that document was changed somewhere else "
-        "in the meantime, Save is refused and nothing is overwritten. A paragraph is one block: a blank line in it is "
+        "shows it follows, and that document's History has the change. Other edits to that document in the meantime "
+        "stay; if the paragraph itself was changed somewhere else, Save is refused and your text stays in the box. A paragraph is one block: a blank line in it is "
         "not allowed, and an empty one cannot be saved. In the document the paragraph lives in, the pencil is not "
         "shown: there the text is simply the text."
     ),
     "badge": {"label": "Documents", "tab": "documents"},
 })
 TOPIC_META["document-synced"] = {"title": "A paragraph shown in two documents", "path": "A document, the / menu, Link to this block"}
+
+#: DOCUMENTS_PLAN 26, gap row 10: a board shown in a document is edited from it (documents-board.js).
+MORE_TOPICS.append({
+    "id": "document-board",
+    "keywords": (
+        "board in a document", "embed a board", "edit a board here", "whiteboard in a document", "mind map in a document",
+        "![[board", "![[map", "edit here", "canvas block",
+    ),
+    "body": (
+        "A whiteboard or a mind map can sit in a document as a card: choose Board or mind map in the / menu, or write "
+        "![[board:12]] with the board's number. Press the card to open the board in the Library, or press Edit "
+        "here under it to change the board without leaving the document. The board opens in a dialog over the document "
+        "with its own toolbar, and its changes are saved as you make them, as on the Library page. Press the X to close "
+        "the panel: the card shows the board as it now is. The Library keeps one board window, so while the panel is "
+        "open the board is in it and not in the Library, and closing leaves the Library on its list of boards."
+    ),
+    "badge": {"label": "Documents", "tab": "documents"},
+})
+TOPIC_META["document-board"] = {"title": "A board shown in a document", "path": "A document, a board card, Edit here"}

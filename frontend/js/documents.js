@@ -4300,6 +4300,7 @@ function renderDocPreview() {
   docRenderMermaidIn(preview);
   docMathRender.graphIn(preview);
   docMathRender.baseIn(preview);
+  docEmbedFill.editButtons(preview);
   docWireReadTasks(preview, text);
 }
 

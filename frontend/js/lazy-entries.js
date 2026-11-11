@@ -116,6 +116,7 @@ Object.assign(LAZY_MODULES, {
   docGraph: ["/css/doc-graph-lazy.css", "/js/documents-graph.js"],
   docBase: ["/css/doc-base-lazy.css", "/js/documents-base.js"],
   docSynced: ["/js/documents-synced.js"],
+  docBoard: ["/js/documents-board.js"],
 });
 setTimeout(() => ["loadFailed", "modelMenu", "entryCard", "uiReveal"].forEach(ensureModule), 3000);
 installStandIns({
