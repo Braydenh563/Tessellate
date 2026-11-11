@@ -5137,6 +5137,11 @@ body .chip.item-label,
    1010, so with a modal open it is seen dimmed behind the scrim, as the
    modal rule has it for every other thing on the page. */
 #nm-buddy-band {
+  /* Under <html>, not <body> (avatars.js, `nameMarkBuddyBuild`), so it says what it took from body. */
+  font-family: var(--ui-font, system-ui, -apple-system, "Segoe UI", sans-serif);
+  color: var(--ink);
+  font-size: var(--text-lg);
+  line-height: 1.5;
   position: fixed;
   left: 0;
   top: 0;

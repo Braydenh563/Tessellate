@@ -269,6 +269,7 @@
      long document printed as one blank page. The main is kept and its other
      children go. */
   body.printing-doc>*:not(#tab-documents):not(#app-main),
+  body.printing-doc ~ #nm-buddy-band,
   body.printing-doc #app-main>*:not(#tab-documents),
   body.printing-doc #tab-bar,
   body.printing-doc .doc-sidebar,
