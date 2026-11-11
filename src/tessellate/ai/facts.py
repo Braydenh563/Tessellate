@@ -547,6 +547,73 @@ def _entries_to_read(session: Session, force: bool) -> list[Entry]:
     return fresh
 
 
+def _derive_note(  # noqa: ANN001
+    session: Session,
+    night,
+    entry: Entry,
+    content: str,
+    proposed: list[Candidate],
+    known: set[str],
+    *,
+    spent: int,
+    budget: int,
+    provider,
+    model: str,
+    counts: dict[str, int],
+    models_used: set[str],
+) -> tuple[int, int]:
+    """Pass 3 for one note: drop what is already known, let the model narrow the rest, store it.
+
+    Returns the tokens spent so far and how many facts were added.
+    """
+    # `known` grows as this note's candidates are taken, not only from what
+    # was already stored: a note that says the same sentence twice has two
+    # spans and one fact, and without this it would get a row per
+    # occurrence on the first run and none on any run after (the stored
+    # row would then match both).
+    kept: list[Candidate] = []
+    for item in proposed:
+        mark = _fingerprint(item.kind, item.text)
+        if mark in known:
+            continue
+        known.add(mark)
+        kept.append(item)
+    proposed = kept
+    if not proposed:
+        return spent, 0
+
+    decided_by = "local"
+    cost = int(len(content) * TOKENS_PER_CHAR)
+    if provider is not None and model and spent + cost <= budget:
+        spent += cost
+        _release(session)
+        model_gate.yield_to_interactive()
+        kept = _narrow(provider, model, content, proposed)
+        if kept is not None:
+            proposed = [item for i, item in enumerate(proposed) if i in kept]
+            decided_by = model
+
+    added = 0
+    for item in proposed:
+        session.add(
+            DerivedFact(
+                entry_id=entry.id,
+                kind=item.kind,
+                text=item.text,
+                span_start=item.start,
+                span_end=item.end,
+                model=decided_by,
+                confidence=item.confidence,
+                computed_at=utcnow(),
+                run_id=night.id,
+            )
+        )
+        added += 1
+        counts[item.kind] = counts.get(item.kind, 0) + 1
+        models_used.add(decided_by)
+    return spent, added
+
+
 def run(
     session: Session,
     *,
@@ -633,50 +700,12 @@ def run(
                 continue
 
             known = known_by_entry.setdefault(entry.id, set())
-            # `known` grows as this note's candidates are taken, not only from what
-            # was already stored: a note that says the same sentence twice has two
-            # spans and one fact, and without this it would get a row per
-            # occurrence on the first run and none on any run after (the stored
-            # row would then match both).
-            kept: list[Candidate] = []
-            for item in proposed:
-                mark = _fingerprint(item.kind, item.text)
-                if mark in known:
-                    continue
-                known.add(mark)
-                kept.append(item)
-            proposed = kept
-            if not proposed:
-                continue
-
-            decided_by = "local"
-            cost = int(len(content) * TOKENS_PER_CHAR)
-            if provider is not None and model and spent + cost <= budget:
-                spent += cost
-                _release(session)
-                model_gate.yield_to_interactive()
-                kept = _narrow(provider, model, content, proposed)
-                if kept is not None:
-                    proposed = [item for i, item in enumerate(proposed) if i in kept]
-                    decided_by = model
-
-            for item in proposed:
-                session.add(
-                    DerivedFact(
-                        entry_id=entry.id,
-                        kind=item.kind,
-                        text=item.text,
-                        span_start=item.start,
-                        span_end=item.end,
-                        model=decided_by,
-                        confidence=item.confidence,
-                        computed_at=utcnow(),
-                        run_id=night.id,
-                    )
-                )
-                derived += 1
-                counts[item.kind] = counts.get(item.kind, 0) + 1
-                models_used.add(decided_by)
+            spent, added = _derive_note(
+                session, night, entry, content, proposed, known,
+                spent=spent, budget=budget, provider=provider, model=model,
+                counts=counts, models_used=models_used,
+            )
+            derived += added
         if stopped == "done":
             progress.say(f"Read {scanned} note{'' if scanned == 1 else 's'}, found {derived} fact{'' if derived == 1 else 's'}.")
             # Passes 4 and 5 read the rows pass 3 just added, by id.
