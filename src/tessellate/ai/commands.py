@@ -37,6 +37,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import address, find_topic, note_recency, object_acts, parity_acts, reminder_parser, task_acts, when
 from tessellate.ai import act_registry, act_steps
+from tessellate.ai import composer_calendar
 from tessellate.ai.composer_frame import note_title
 from tessellate.ai.act_registry import CONFIRM_INTENTS
 from tessellate.ai.filed_name import filed_listing
@@ -1245,8 +1246,9 @@ def read(text: str, now: datetime, locale: str | None = None) -> dict | None:
     """The command `text` is, as {"intent", ...arguments}, or None. `locale`
     orders a numeric date in a reminder ("3/4"); none reads day first."""
     command, question, polite, urgent = _fold_urgent(text)
-    if not command:
+    if not command or composer_calendar.bulk(command):
         return None
+    command = composer_calendar.restate(command)
     #: "move the lentil soup note to the bin" says delete in other words.
     binned = _TO_THE_BIN.match(" ".join(command.split()))
     if binned:
