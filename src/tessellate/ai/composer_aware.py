@@ -94,7 +94,9 @@ def tab_name(tab: object) -> str:
 def build(*, tab: object = None, open_title: str = "", actions: object = None, topic: str = "") -> Awareness:
     """Awareness from what the request carried; every part is optional."""
     title = " ".join(str(open_title or "").split())[:60]
-    return Awareness(tab=tab_name(tab), open_title=title, actions=clean_actions(actions), topic=" ".join(str(topic or "").split())[:40])
+    said = " ".join(str(topic or "").split())[:40]
+    #: A bare month or weekday is a window word, not what the talk was about.
+    return Awareness(tab=tab_name(tab), open_title=title, actions=clean_actions(actions), topic="" if is_date_word(said) else said)
 
 
 def _pick(options: tuple[str, ...], seed: str, salt: str) -> str:
@@ -152,8 +154,32 @@ _PICK_UP_OPEN = (
 )
 _TOPIC = (
     "You were talking about {topic}; ask me “what did I write about {topic}” if you want to go on.",
-    "We were on {topic}. I can pull the notes on it up again.",
+    "We were on the subject of {topic}. I can pull up the notes on it again.",
 )
+#: A topic that is a day or a span ("3 November", "last week") is said as one
+#: (INBOX 1739: "We were on November. I can pull the notes on it up again.").
+_DAY_TOPIC = (
+    "You were asking about {topic}; ask me “what did I write around {topic}” to see the days either side.",
+    "We were looking at {topic}. I can pull up the notes from around then.",
+)
+_DATE_WORDS = frozenset(
+    "january february march april may june july august september october november december "
+    "monday tuesday wednesday thursday friday saturday sunday today yesterday tomorrow week weekend month year "
+    "fortnight morning evening night".split()
+)
+
+
+def is_date_word(word: str) -> bool:
+    """A month, a weekday or a span noun: a window, never a subject."""
+    return word.strip().lower() in _DATE_WORDS
+
+
+def is_day_topic(topic: str) -> bool:
+    """Whether the topic is a time phrase as a whole ("3 November", "last week")."""
+    from tessellate.ai import when as when_words
+
+    found = when_words.find(topic or "")
+    return bool(found) and not (topic.replace(found[0][2], "").strip(" ,"))
 _HOWTO = (
     "If it helps, ask me “{howto}” and I will show you.",
     "A good next question here: “{howto}”.",
@@ -235,7 +261,7 @@ def _closing_line(aw: Awareness, salted: str, open_said: bool, howto: str, topic
     if open_said:
         lines.append(_pick(_PICK_UP_OPEN, salted, "title").format(title=aw.open_title))
     elif aw.topic and topic_said:
-        lines.append(_pick(_TOPIC, salted, "topic").format(topic=aw.topic))
+        lines.append(_pick(_DAY_TOPIC if is_day_topic(aw.topic) else _TOPIC, salted, "topic").format(topic=aw.topic))
     if howto and not aw.open_title:
         lines.append(_pick(_HOWTO, salted, "howto").format(howto=howto))
     return " ".join(lines)

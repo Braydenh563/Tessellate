@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, timedelta
 
 from tessellate.ai import composer_numbers, question_noise, recognise as rec, utilities, when as when_words
 from tessellate.ai.composer_ask import _ASKING_WORDS, _holds, _stem, _words, classify, rephrase, subject_terms, user_today
@@ -91,6 +91,23 @@ class Plan:
     source_kind: str | None = None
     length: str = ""
     utility: str | None = None
+    #: "around 3 November": the day the window is centred on, three days either
+    #: side (INBOX 1739); `others` leaves that day itself out ("what else ...").
+    around: date | None = None
+    others: bool = False
+
+
+#: The days either side of an "around <day>" question.
+AROUND_DAYS = 3
+_OTHERS = re.compile(r"\b(?:else|other|others|more|besides|another)\b", re.I)
+
+
+def _around(question: str, phrase: str, span: tuple | None, kind: str) -> date | None:
+    """The day an "around <day>" recall is centred on: "what did I write around
+    3 November" is the notes near it, nearest first, not the one day."""
+    if kind != "recall" or not span or not phrase or span[0] != span[1]:
+        return None
+    return span[0] if re.search(rf"\b(?:around|near|close to)\s+(?:the\s+)?{re.escape(phrase)}", question or "", re.I) else None
 
 
 def _time_phrase(question: str) -> str:
@@ -248,10 +265,15 @@ def plan(question: str, today: date | None = None, *, recent: bool = False, embe
     phrase = _plan_phrase(question, terms)
     span, terms = _plan_window(question, terms, phrase, today)
     kind = _plan_kind(question, utility, shape, bool(span), bool(terms))
+    around = _around(question, phrase, span, kind)
+    if around:
+        span = (around - timedelta(days=AROUND_DAYS), around + timedelta(days=AROUND_DAYS), span[2])
     return Plan(
         kind=kind,
         shape=shape,
         terms=terms,
+        around=around,
+        others=bool(around and _OTHERS.search(question)),
         window=(span[0], min(span[1], today)) if span else None,
         grain=span[2] if span else None,
         window_phrase=phrase if span else "",

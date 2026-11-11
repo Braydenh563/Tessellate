@@ -308,7 +308,17 @@ def follow_on(question: str, history: list[dict] | None) -> FollowOn | None:
     #: all" and "where did you get that" are about the talk, not a subject (fable-composer-1110 F1).
     if not turns or repair_turn.is_repair(question) or _ABOUT_THE_TALK.search(question or ""):
         return None
-    return _follow_one(question, _standing(turns))
+    standing = _standing(turns)
+    return _follow_one(question, standing) or _follow_one_repaired(question, standing)
+
+
+def _follow_one_repaired(question: str, standing: list[dict]) -> FollowOn | None:
+    """A follow-on typed with a slip ("any othjer notes around that time") is
+    read as the words the speller puts it right to, as the answer itself is
+    (INBOX 1739); a question needing no repair is not read twice."""
+    tidy = question_noise.tidy(" ".join((question or "").split()))
+    repaired = question_noise.repair(tidy)
+    return _follow_one(repaired, standing) if repaired and repaired != tidy else None
 
 
 #: Follow-on kinds whose reading is a question in its own right ("and last

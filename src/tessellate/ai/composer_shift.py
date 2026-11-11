@@ -25,6 +25,14 @@ _SHIFT = re.compile(
 )
 _STEP = re.compile(_LEAD + r"(?:the\s+)?(?P<dir>previous|next|following|preceding)\s+(?P<unit>day|week|month)\s*[?.!]*$", re.I)
 _THAT = re.compile(_LEAD + r"what else (?:is|was|'s) (?:on|happening|going on) (?:that|the same) (?P<unit>day|week)\s*[?.!]*$", re.I)
+#: "any other notes around that time", "what else around then", "near then" (INBOX 1739):
+#: the notes a few days either side of the day the turn before named.
+_NEAR = re.compile(
+    _LEAD + r"(?:(?:are there |is there |do i have |did i write |what )?(?:any|anything|something)?\s*(?:(?:other|more|else)\s+)*(?:notes?|stuff|things?|entries)?\s*)"
+    r"(?:and\s+)?(?:(?:what about|how about)\s+)?(?:(?:around|near|nearby|close to|within a few days of|about)\s+)"
+    r"(?:that\s+(?:time|day|date|week)|then|the same (?:time|day|week))\s*[?.!]*$",
+    re.I,
+)
 _BACK = {"before", "earlier", "prior", "previous", "preceding"}
 
 
@@ -61,6 +69,16 @@ def _shifted(text: str, previous: str, today: date) -> str | None:
     return f"{base} on {_said(first, today)}?" if first == last else f"{base} from {_said(first, today)} to {_said(last, today)}?"
 
 
+def _around(text: str, previous: str, today: date) -> str | None:
+    if not _NEAR.match(text):
+        return None
+    window = rec.question_day(previous, today)
+    if window is None:
+        return None
+    first, last = window[0], window[1]
+    return f"what else did I write around {_said(first + (last - first) / 2, today)}?"
+
+
 def _that_week(text: str, last: dict, today: date) -> str | None:
     found = _THAT.match(text)
     days = [d for d in ((last or {}).get("frame") or {}).get("dates") or [] if isinstance(d, str)]
@@ -78,4 +96,4 @@ def _that_week(text: str, last: dict, today: date) -> str | None:
 
 def follow(text: str, previous: str, last: dict, today: date) -> str | None:
     """The plain question `text` stands for after `previous`, or None."""
-    return _shifted(text, previous, today) or _that_week(text, last, today)
+    return _shifted(text, previous, today) or _that_week(text, last, today) or _around(text, previous, today)

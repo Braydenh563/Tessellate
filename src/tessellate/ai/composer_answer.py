@@ -311,6 +311,34 @@ class _Answer:
             self.t("open_paren").m(self.day(view.written)).t("close_paren")
         return self
 
+    def placed_day(self, view: NoteView) -> date | None:
+        """The day the timeline files the note under when it is not the day it
+        was written: the first day its text names, to the day (INBOX 1739)."""
+        placed = view.note.get("placed") or {}
+        if not (placed.get("on") and view.written and placed.get("precision") in ("day", "minute")):
+            return None
+        try:
+            on = date.fromisoformat(placed["on"])
+        except ValueError:
+            return None
+        return on if on != view.written else None
+
+    def dated_both(self, view: NoteView) -> _Answer:
+        """" (3 March)", or, for a note the timeline files elsewhere, " (written
+        3 March, about Friday 28 February)": the answer and the timeline agree on
+        the note's day, or say both (INBOX 1739)."""
+        about = self.placed_day(view)
+        if about is None:
+            return self.dated(view)
+        return self.written_about(view, about).t("close_paren")
+
+    def written_about(self, view: NoteView, about: date, top: bool = False) -> _Answer:
+        """" (written 3 March, about Friday 28 February" (the bracket is closed by the caller),
+        or, opening a line, "Written 3 March, about Friday 28 February"."""
+        named = self.day(about)
+        weekday = f"{about:%A} {named}" if named[:1].isdigit() else named
+        return self.t("written_top" if top else "written_a").m(self.day(view.written)).t("about_a").m(weekday)
+
     @property
     def text(self) -> str:
         return realise.mend_stops("".join(part[1] for part in self.parts))

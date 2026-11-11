@@ -729,20 +729,39 @@ def _open_title(session: Session, body: ChatRequest) -> str:
     return ""
 
 
-def _chat_topic(history: list[dict]) -> str:
-    """What the last question in this chat was about: its first search term of
-    four letters or more that the answer to it also used, or "". A word the
-    answer never touched ("left", "write", "week") is the question's frame,
-    not its subject (blind test round 2, finding 2)."""
+def _topic_word(asked: str, answer: str) -> str:
+    """The first search term of `asked` of four letters or more that `answer`
+    also used, as typed (a name keeps its capital: "We were on Sara"), or ""."""
+    from tessellate.ai import when as when_words
     from tessellate.search import query as query_understanding
 
+    dates = {w.lower() for _s, _e, phrase in when_words.find(asked) for w in re.findall(r"[A-Za-z]+", phrase)}
+    for term in query_understanding.search_terms(asked):
+        if term.lower() in dates or composer_aware.is_date_word(term):
+            continue
+        if len(term) >= 4 and term.isalpha() and query_understanding.is_topic_word(term) and term.lower() in answer:
+            typed = re.search(rf"\b{re.escape(term)}\b", asked, re.I)
+            return typed.group(0) if typed else term
+    return ""
+
+
+def _chat_topic(history: list[dict]) -> str:
+    """What the last question in this chat was about: a word of it the answer
+    also used, or "". A word the answer never touched ("left", "write",
+    "week") is the question's frame, not its subject (blind test round 2,
+    finding 2). A date word ("November", "Friday") is the question's window,
+    never a subject: a question about nothing but a day is about that day,
+    said as typed ("3 November", INBOX 1739)."""
+    from tessellate.ai import when as when_words
+
     for turn in reversed(history or []):
-        answer = str(turn.get("answer") or "").lower()
-        for term in query_understanding.search_terms(str(turn.get("question") or "")[:200]):
-            if len(term) >= 4 and term.isalpha() and query_understanding.is_topic_word(term) and term.lower() in answer:
-                #: As it was typed, so a name keeps its capital ("We were on Sara").
-                typed = re.search(rf"\b{re.escape(term)}\b", str(turn.get("question") or ""), re.I)
-                return typed.group(0) if typed else term
+        answer, asked = str(turn.get("answer") or "").lower(), str(turn.get("question") or "")[:200]
+        word = _topic_word(asked, answer)
+        if word:
+            return word
+        day = when_words.find(asked)
+        if day and answer:
+            return day[0][2]
     return ""
 
 
