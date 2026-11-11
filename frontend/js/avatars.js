@@ -10748,9 +10748,10 @@ function nameMarkBuddyBuild() {
   //: **A band and a rider** (INBOX 426 x, `nameMarkBuddyRide`): the band
   //: is the window, or the visible box of the panel's scroll area it rides
   //: in, and clips it there; the rider inside it is moved by the browser
-  //: with that scroll. It stays in the body: the app's own scroll boxes
-  //: (the dashboard's flex page, the notes list) are never given a child
-  //: they did not make. Between them the shutter, which closes the band
+  //: with that scroll. It sits under `<html>`, not in the body (INBOX 1726):
+  //: a node added under `<body>` re-asks every `:has()` subject (124 to 213ms
+  //: on the Library Images tab at 4x), under `<html>` it is 1 to 9ms; the text
+  //: it took from body is restated in 08-consistency.css. Between them the shutter, which closes the band
   //: down to the bar its perch has gone under (`nameMarkBuddyRideFrames`).
   const band = document.createElement("div");
   band.id = "nm-buddy-band";
@@ -10761,7 +10762,7 @@ function nameMarkBuddyBuild() {
   rider.appendChild(buddy);
   shutter.appendChild(rider);
   band.appendChild(shutter);
-  document.body.appendChild(band);
+  document.documentElement.appendChild(band);
   nameMarkBuddyLockSync();
   nameMarkBuddySetSize(nameMarkBuddyScaleSaved(), false);
   nameMarkBuddyToggles(buddy);
