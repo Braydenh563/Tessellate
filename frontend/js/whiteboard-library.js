@@ -1581,7 +1581,8 @@ onSurface("board", () => {
       if (!menu) return;
       const got = menu.getBoundingClientRect();
       menu.style.left = `${parseFloat(menu.style.left) + r.right - got.right}px`;
-      menu.style.top = `${parseFloat(menu.style.top) + r.bottom + 4 - got.top}px`;
+      //: A menu that `place()` opened upward (no room below) is hung 4px over the button, not under it: forcing it back down ran it off a short window.
+      menu.style.top = `${parseFloat(menu.style.top) + (got.top < r.top ? r.top - 4 - got.bottom : r.bottom + 4 - got.top)}px`;
     });
   });
   document.getElementById("wb-side-map-look")?.addEventListener("click", () => wbMapThemeDialog());
