@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Settings (Q25): Settings, General has "Count the day itself in before: searches" (off: `before:2026-03-10` stops at the 9th) and "Dates like 3/4 mean" (auto, day first, month first); the welcome's last card offers these and the first day of the week once, skippable. Q10 and Q30 were already built (Motion at rest, New notes start private).
 - Models (Q11): a liveness probe Ollama answered is believed for 30 s (was 2 s) and any failed request drops it; the model status poll seeing Ollama answer drops the refused and silent marks at once (`ollama_client.note_online`), so the composer never answers as if the model were off in the seconds after a start.
 - Notes (INBOX 1747): a note in the recycle bin can no longer be archived or unarchived from a stale card (409 "in the bin, restore it first"), so Restore never brings it back hidden in the Archive.
 - Settings and other lazy panes (INBOX 1747): one wiring hook that throws while a pane is first built no longer drops every hook after it (their buttons stayed dead) or makes the lookup that opened the pane throw.

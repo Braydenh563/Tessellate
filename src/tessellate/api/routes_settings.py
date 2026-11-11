@@ -326,6 +326,10 @@ class PreferencesBody(BaseModel):
     #: a Python weekday, 0 Monday to 6 Sunday).
     week_start: Literal["auto", "monday", "saturday", "sunday"] | None = None
     week_start_locale: int | None = Field(default=None, ge=0, le=6)
+    #: Whether `before:` in a search counts its own day (Q25); off by default.
+    before_includes_day: bool | None = None
+    #: The order a numeric date such as 3/4 is read in; "auto" follows the browser's region.
+    date_order: Literal["auto", "day", "month"] | None = None
     #: Which half of the year "summer" and "last winter" mean: the person's
     #: pick, or "auto" to follow the locale the browser reports (`season_locale`).
     season_hemisphere: Literal["auto", "north", "south"] | None = None
@@ -812,6 +816,8 @@ def _preferences_from(config) -> dict:
         "composer_voice": config.get_preference("composer_voice", "natural"),
         "week_start": config.get_preference("week_start", "auto"),
         "week_start_locale": config.get_preference("week_start_locale", 0),
+        "before_includes_day": config.get_preference("before_includes_day", False),
+        "date_order": config.get_preference("date_order", "auto"),
         "season_hemisphere": config.get_preference("season_hemisphere", "auto"),
         "season_locale": config.get_preference("season_locale", ""),
         "embedder_idle_unload_minutes": config.get_preference("embedder_idle_unload_minutes", 60),
@@ -1148,6 +1154,14 @@ def _apply_preference(config, session: Session, key: str, value) -> None:
         recognise.configure_hemisphere(
             config.get_preference("season_hemisphere", "auto"), config.get_preference("season_locale", "")
         )
+    if key == "date_order":
+        from tessellate.ai import recognise
+
+        recognise.configure_date_order(str(value))
+    if key == "before_includes_day":
+        from tessellate.search import query as search_query
+
+        search_query.configure_before(bool(value))
     if key == "semantic_auto_install":
         # Either answer settles the ask-once question (frontend/js/semantic-notice.js).
         config.set_preference("semantic_choice_made", True)

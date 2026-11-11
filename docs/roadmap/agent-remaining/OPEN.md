@@ -14,11 +14,11 @@ How to read it:
 ### Owner answers, 2026-11-11 (one sitting)
 
 The recommendation was taken for Q1 to Q9, Q12, Q14, Q18 to Q24, Q26 and Q28. Q13 was not asked; its recommendation stands. Rows waiting "after Qn" can start. The answers that differ from the recommendation, quoted in INBOX 1748:
-- Q10 Atlas's rAF loops keep running by default ("I still want it to feel biological and have life"). An Advanced setting stops them after 2 s with no input. | W14
+- ~~Q10~~ **Stale: built** (Appearance, Motion at rest, "Still when idle"; tests/test_companion_rest_w14.py). Atlas's rAF loops keep running by default ("I still want it to feel biological and have life"). An Advanced setting stops them after 2 s with no input. | W14
 - Q11 The Ollama probe is cached for 30 s, dropped on a failure, and also dropped the moment Ollama is seen coming online (the model status poll or the start event), so the composer never answers in that window. | W16
-- Q25 `before:` is a Settings choice, excluding by default. The owner also wants a first-run calibration of preferences like this (INBOX 1748). | W11
+- ~~Q25~~ **Built settings-1111** (Settings, General, Search; date order; welcome preferences card). `before:` is a Settings choice, excluding by default. The owner also wants a first-run calibration of preferences like this (INBOX 1748). | W11
 - Q27 RapidOCR is bundled if small, otherwise an optional extra. Every feature that needs an optional package (RapidOCR, SearXNG, the PDF viewer and the rest) shows a dismissable notice with a one-click Install when it is used. The notice comes back if the package is uninstalled, on the no-model notice recipe (INBOX 1748). | F5
-- Q30 Private notes by default is a Settings switch, off by default, and follows the space: a note made in a private space is private. | F6
+- ~~Q30~~ **Stale: built** (tests/test_private_by_default_1695.py). Private notes by default is a Settings switch, off by default, and follows the space: a note made in a private space is private. | F6
 - Q31 and Q32: the owner says these are already done; they are closed here.
 - Q33 is parked: the owner will check whether the stutter returns.
 - Q34 Go on all of them: sync (B6), offline studio and audio, the desktop pet outside the window, the custom domain and the blind panel. Fable stays off. | F8
@@ -181,7 +181,7 @@ Parked until the owner's data or a check on real hardware:
 - B70 SKILLS Phase D never ran on a model | t20#19
 - B71 Entity extraction and topic sentence on a local model | GRAPH#KG1-KG9
 - B72 BACKGROUND_MODE (think off) for utility jobs, measured | CHAT 1691, oa 1691
-- B73 The probe cache (after Q11) | deskperf L4, audit-1108-perf P7
+- ~~B73 The probe cache (after Q11) | deskperf L4, audit-1108-perf P7~~ **Fixed 94cff43** (30 s up window, dropped on a failure and on seeing Ollama online; tests/test_ollama_probe_30s.py)
 - B74 Tool contracts on Ollama, model bench gates | WORLD_CLASS#8 rows 5, 6, 19, 21
 
 ### Tier C: UX and accessibility on daily surfaces

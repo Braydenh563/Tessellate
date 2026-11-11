@@ -12932,6 +12932,14 @@ Link to another note with [[its first few words]]."></textarea>
                 </select>
               </div>
               <div class="row">
+                <label for="pref-date-order" class="muted">Dates like 3/4 mean</label>
+                <select id="pref-date-order" title="How a date written with slashes is read in searches and questions">
+                  <option value="auto">From my language and region (default)</option>
+                  <option value="day">Day first (3 April)</option>
+                  <option value="month">Month first (4 March)</option>
+                </select>
+              </div>
+              <div class="row">
                 <label for="pref-season-hemisphere" class="muted">Seasons</label>
                 <select id="pref-season-hemisphere" title="Which half of the year summer and winter mean">
                   <option value="auto">From my language and region (default)</option>
@@ -12939,6 +12947,12 @@ Link to another note with [[its first few words]]."></textarea>
                   <option value="south">Southern hemisphere</option>
                 </select>
               </div>
+              <h3>Search</h3>
+              <label class="check-row">
+                <input type="checkbox" id="pref-before-includes-day">
+                <span>Count the day itself in before: searches</span>
+              </label>
+              <p class="muted">Off: before:2026-03-10 stops at the 9th. On: it includes the 10th. until: always includes its day.</p>
               <h3>Chat history</h3>
               <div class="row">
                 <label for="pref-chat-retention" class="muted">Delete saved chats after</label>

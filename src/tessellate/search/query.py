@@ -307,6 +307,14 @@ _UNKNOWN_OPERATOR = re.compile(r'(?<!\S)([A-Za-z][A-Za-z-]{1,24}):(?=[A-Za-z0-9"
 
 #: `before:` and `after:` are dates rather than filters: see `Understood.filters`.
 _DATE_OPERATORS = ("before", "after", "since", "until")
+#: Whether `before:` counts its own day (Q25: Settings, General, Search; off by
+#: default). Kept here, set from Settings and at start (`configure_before`),
+#: because `understand` is called from a dozen places with no config in hand.
+_BEFORE = {"includes_day": False}
+
+
+def configure_before(includes_day: bool) -> None:
+    _BEFORE["includes_day"] = bool(includes_day)
 
 # `name:value`, where the value may be quoted so `tag:"two words"` works, and
 # where the name must start the token so a bare URL ("http://example.com") is
@@ -449,9 +457,9 @@ def _parse_operators(
                 # Exclusive, the way every search box that has these treats
                 # them: "before 2026-01-01" does not mean "including new
                 # year's day", and `before:tuesday` leaves Tuesday out (Q25,
-                # as mail search does). `until:` is the inclusive spelling
-                # for anyone who wants the other reading.
-                until = first - timedelta(days=1) if name == "before" else last
+                # as mail search does). `until:` is the inclusive spelling,
+                # and Settings can make `before:` count its day too.
+                until = last if name == "until" or _BEFORE["includes_day"] else first - timedelta(days=1)
             else:
                 since = last + timedelta(days=1) if name == "after" else first
             return " "
