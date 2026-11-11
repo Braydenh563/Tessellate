@@ -72,6 +72,14 @@ def test_a_press_on_the_landing_before_the_board_code_ran_fetches_it_and_presses
     assert 'ensureModule("boards").then(() => button.click())' in source
 
 
+def test_a_file_dropped_before_the_board_code_ran_is_held_and_dropped_again() -> None:
+    source = _text("boards-gallery.js")
+    drop = source[source.index("A file dragged over the landing starts the board code loading") :][:1500]
+    assert 'landing?.addEventListener("dragover"' in drop and "ensureModule(\"boards\");" in drop
+    assert "e.preventDefault();" in drop and "e.stopImmediatePropagation();" in drop
+    assert 'new DragEvent("drop"' in drop and "held.items.add(file)" in drop
+
+
 def test_the_hover_fetches_the_small_files_not_the_board_code() -> None:
     source = _text("lazy-entries.js")
     assert '["boardsGallery", "mapPreview"]' in source

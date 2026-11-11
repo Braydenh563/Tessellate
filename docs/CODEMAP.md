@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8163, frontend ids 2716, CSS sections 524, backend routes 677, backend modules 10433, test files 2586, tests 21149, plan headings 1012, app scripts 29, boot scripts 38, script files 285.
+Counts: frontend functions 8163, frontend ids 2716, CSS sections 524, backend routes 677, backend modules 10433, test files 2586, tests 21150, plan headings 1012, app scripts 29, boot scripts 38, script files 285.
 
 ## Frontend functions (8163)
 
@@ -26857,7 +26857,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21149)
+## Tests (21150)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27075,7 +27075,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_board_view_kept.py | 2 |
 | tests/test_boardfill2_1031.py | 15 |
 | tests/test_boardfill_1031.py | 13 |
-| tests/test_boards_first_open.py | 8 |
+| tests/test_boards_first_open.py | 9 |
 | tests/test_bookmarks_api.py | 15 |
 | tests/test_bookmarks_library.py | 3 |
 | tests/test_bookmarks_said_once.py | 1 |

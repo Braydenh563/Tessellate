@@ -393,6 +393,26 @@ onDomReady(() => {
     event.preventDefault();
     ensureModule("boards").then(() => button.click());
   }, true);
+  //: A file dragged over the landing starts the board code loading, and one let go before it has run is
+  //: held, then dropped again once it has (an unhandled drop would make the browser open the file).
+  const landing = $("wb-boards-landing");
+  const carriesFile = (e) => [...(e.dataTransfer?.items || [])].some((i) => i.kind === "file");
+  landing?.addEventListener("dragover", (e) => {
+    if (window.initWhiteboard || !carriesFile(e)) return;
+    e.preventDefault();
+    ensureModule("boards");
+  }, true);
+  landing?.addEventListener("drop", (e) => {
+    const file = e.dataTransfer?.files?.[0];
+    if (window.initWhiteboard || !file) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    ensureModule("boards").then(() => {
+      const held = new DataTransfer();
+      held.items.add(file);
+      landing.dispatchEvent(new DragEvent("drop", { dataTransfer: held, bubbles: true, cancelable: true }));
+    });
+  }, true);
   $("library-boards-search")?.addEventListener("input", redrawLibraryBoardsGallery);
   // The Reload button beside "+ New board", now named after what it reloads.
   // It was `library-media-refresh`, a copy-paste leftover from the Media
