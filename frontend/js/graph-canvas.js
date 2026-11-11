@@ -1877,7 +1877,13 @@ const gcCat = (() => {
     if (meta && category !== "Uncategorised") items.push(...categoryMenuItems(meta));
     openMenuAtPoint(items, `Actions for ${category || "Unfiled"}`, clientX, clientY);
   }
-  return { at, of, select, frame, menu };
+  //: The shown hover card as a box in world units, for the names to keep off.
+  function cardBoxes(s, t) {
+    const card = s._hoverCard;
+    if (!card || card.hidden || card._ax == null) return [];
+    return [{ left: (card._ax - t.x) / t.k, right: (card._ax + (card._w || 0) - t.x) / t.k, top: (card._ay - t.y) / t.k, bottom: (card._ay + (card._h || 0) - t.y) / t.k }];
+  }
+  return { at, of, select, frame, menu, cardBoxes };
 })();
 
 function gcPlateTitle(topic, s = gcTab) {
@@ -3683,7 +3689,7 @@ function gcDraw(s = gcTab) {
     //: The card is placed first so the names are seated around where it is
     //: (INBOX 1744: dot names ran under the hover card).
     gcHoverCardFrame(s);
-    const blocked = [...(s.topicPlates || []), ...gcOverlayBoxes(s, t), ...gcHoverCardBoxes(s, t)];
+    const blocked = [...(s.topicPlates || []), ...gcOverlayBoxes(s, t), ...gcCat.cardBoxes(s, t)];
     const placed = gcPlaceLabels(items, discs, lines ? (box, limit) => gcBoxLineCount(lines, box, limit) : null, blocked, frame);
     placedLabels = placed;
     book.labelBoxes = placed;
@@ -5424,13 +5430,6 @@ function gcHoverCardFill(card, node, s) {
 //: else the keyboard's, and where it stands, beside the dot and inside the
 //: map. Hidden while a drag or a pan moves the map, while the note's popup
 //: is open, and on a pane (which keeps the native tooltip).
-//: The shown hover card as a box in world units, for the names to keep off.
-function gcHoverCardBoxes(s, t) {
-  const card = s._hoverCard;
-  if (!card || card.hidden || card._ax == null) return [];
-  return [{ left: (card._ax - t.x) / t.k, right: (card._ax + (card._w || 0) - t.x) / t.k, top: (card._ay - t.y) / t.k, bottom: (card._ay + (card._h || 0) - t.y) / t.k }];
-}
-
 function gcHoverCardFrame(s) {
   if (s.size !== "full") return;
   const id = s.hoveredId != null ? s.hoveredId : gcKeyboardId(s);
