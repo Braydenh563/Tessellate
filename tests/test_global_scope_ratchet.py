@@ -168,3 +168,28 @@ def test_a_wrapped_file_exports_only_what_it_defines_and_others_call():
             elif not (named.get(export, set()) - {name}):
                 wrong.append(f"{name} exports {export}, which no other file names")
     assert not wrong, "; ".join(wrong)
+
+
+#: Browser globals reached as `self.x?.()` where a browser may lack them.
+_BROWSER_OPTIONAL = {"getComputedStyle", "getSelection", "matchMedia", "requestIdleCallback", "cancelIdleCallback",
+                     "queueMicrotask", "structuredClone", "showOpenFilePicker", "showSaveFilePicker", "scheduler"}
+_OPTIONAL_GLOBAL_CALL = re.compile(r"\b(?:self|window|globalThis)\.([A-Za-z_$][\w$]*)\?\.\(")
+
+
+def test_an_optional_global_call_names_a_real_global():
+    """`self.nameMarkBuddyShaken?.(...)` found nothing once companion-throw.js was wrapped in a closure, and
+    the optional call hid it: a carried panel silently stopped shaking the companion off (PR 216). A name
+    reached this way must be a top-level name of an unwrapped file or one a wrapped file exports."""
+    sources = {path.name: strip_js_comments(path.read_text(encoding="utf-8")) for path in sorted(JS.glob("*.js"))}
+    top = re.compile(r"(?m)^(?:async\s+)?(?:function\*?\s+|const\s+|let\s+|var\s+|class\s+)([A-Za-z_$][\w$]*)")
+    exported = re.compile(r"Object\.assign\(\s*(?:window|self|globalThis)\s*,\s*\{([^}]*)\}")
+    assigned = re.compile(r"\b(?:window|self|globalThis)\.([A-Za-z_$][\w$]*)\s*=[^=]")
+    reachable = set(_BROWSER_OPTIONAL)
+    for text in sources.values():
+        reachable.update(top.findall(text))
+        reachable.update(assigned.findall(text))
+        for block in exported.findall(text):
+            reachable.update(re.findall(r"[A-Za-z_$][\w$]*", block))
+    lost = sorted(f"{name}: {called}" for name, text in sources.items() for called in _OPTIONAL_GLOBAL_CALL.findall(text)
+                  if called not in reachable)
+    assert not lost, "optional calls to names no file makes global:\n  " + "\n  ".join(lost)
