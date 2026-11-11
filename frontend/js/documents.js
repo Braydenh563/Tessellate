@@ -9610,31 +9610,34 @@ function docStepTypography(which) {
   applyDocTypography(size, spacing);
 }
 
-//: **Zoom** (OPEN W23 D28): one size along the list, stopping at either end. The
-//: menu row cycles and wraps; a wheel that wrapped from the largest to the
-//: smallest would be a jolt, so this clamps.
-function docZoomStep(current, delta) {
-  const at = DOC_TEXT_SIZES.indexOf(current);
-  const next = Math.min(DOC_TEXT_SIZES.length - 1, Math.max(0, (at < 0 ? 1 : at) + delta));
-  return DOC_TEXT_SIZES[next];
-}
+(() => {
+  //: **Zoom** (OPEN W23 D28): one size along the list, stopping at either end. The
+  //: menu row cycles and wraps; a wheel that wrapped from the largest to the
+  //: smallest would be a jolt, so this clamps.
+  let lastAt = 0;
+  function docZoomStep(current, delta) {
+    const at = DOC_TEXT_SIZES.indexOf(current);
+    const next = Math.min(DOC_TEXT_SIZES.length - 1, Math.max(0, (at < 0 ? 1 : at) + delta));
+    return DOC_TEXT_SIZES[next];
+  }
 
-//: Ctrl+wheel over a prose document steps the text size. A code file keeps its
-//: own metrics (the gutter is measured from the font), and the browser's page
-//: zoom is untouched everywhere else. Not passive: it has to stop the page zoom.
-$("tab-documents")?.addEventListener("wheel", (event) => {
-  if (!event.ctrlKey || !event.deltaY || docIsCodeFile()) return;
-  if (!event.target.closest?.(".doc-source-wrap, #doc-preview")) return;
-  event.preventDefault();
-  //: A trackpad sends dozens of events in one flick; one step per 150 ms keeps it a step, not a leap to the end.
-  if (event.timeStamp - (docZoomStep.lastAt || 0) < 150) return;
-  const now = docTypographyNow();
-  const size = docZoomStep(now.size, event.deltaY < 0 ? 1 : -1);
-  if (size === now.size) return;
-  docZoomStep.lastAt = event.timeStamp;
-  prefs.set("doc-text-size", size);
-  applyDocTypography(size, now.spacing);
-}, { passive: false });
+  //: Ctrl+wheel over a prose document steps the text size. A code file keeps its
+  //: own metrics (the gutter is measured from the font), and the browser's page
+  //: zoom is untouched everywhere else. Not passive: it has to stop the page zoom.
+  $("tab-documents")?.addEventListener("wheel", (event) => {
+    if (!event.ctrlKey || !event.deltaY || docIsCodeFile()) return;
+    if (!event.target.closest?.(".doc-source-wrap, #doc-preview")) return;
+    event.preventDefault();
+    //: A trackpad sends dozens of events in one flick; one step per 150 ms keeps it a step, not a leap to the end.
+    if (event.timeStamp - lastAt < 150) return;
+    const now = docTypographyNow();
+    const size = docZoomStep(now.size, event.deltaY < 0 ? 1 : -1);
+    if (size === now.size) return;
+    lastAt = event.timeStamp;
+    prefs.set("doc-text-size", size);
+    applyDocTypography(size, now.spacing);
+  }, { passive: false });
+})();
 
 $("doc-text-size")?.addEventListener("click", () => docStepTypography("size"));
 $("doc-paste-special")?.addEventListener("click", () => docPasteSpecialMenu());

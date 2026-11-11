@@ -25,9 +25,11 @@ pytestmark = pytest.mark.skipif(shutil.which("node") is None, reason="node is no
 
 def _step(current: str, delta: int) -> str:
     sizes = re.search(r"^const DOC_TEXT_SIZES = .*?;$", DOCUMENTS, re.M).group(0)
-    fn = re.search(r"^function docZoomStep\(.*?^\}", DOCUMENTS, re.S | re.M).group(0)
+    fn = re.search(r"^ +function docZoomStep\(.*?^  \}", DOCUMENTS, re.S | re.M).group(0)
     script = f"{sizes}\n{fn}\nprocess.stdout.write(JSON.stringify(docZoomStep({json.dumps(current)}, {delta})));"
-    return json.loads(subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True).stdout)
+    return json.loads(
+        subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True).stdout
+    )
 
 
 def test_there_are_five_sizes_in_order():
@@ -46,14 +48,19 @@ def test_a_step_moves_one_size_and_stops_at_each_end():
 def test_each_larger_size_has_a_rule_on_a_token_for_the_editor_and_the_reader():
     for name, token in (("xlarge", "--text-h2"), ("xxlarge", "--text-h1")):
         rule = re.search(
-            rf"#tab-documents\.doc-size-{name} \.doc-source-wrap [^{{]*\{{\s*font-size: var\({token}\);", CSS
+            rf"#tab-documents\.doc-size-{name} \.doc-source-wrap [^{{]*\{{\s*font-size: var\({token}\);",
+            CSS,
         )
         assert rule, name
         assert f"#tab-documents.doc-size-{name} #doc-preview" in CSS
 
 
 def test_ctrl_wheel_over_the_editor_steps_the_size_and_other_wheels_scroll():
-    wire = re.search(r'\$\("tab-documents"\)\?\.addEventListener\("wheel".*?\n\}, \{ passive: false \}\);', DOCUMENTS, re.S)
+    wire = re.search(
+        r'\$\("tab-documents"\)\?\.addEventListener\("wheel".*?\{ passive: false \}\);',
+        DOCUMENTS,
+        re.S,
+    )
     assert wire, "no Ctrl+wheel handler on the documents tab"
     body = wire.group(0)
     assert "ctrlKey" in body and "preventDefault" in body and "docIsCodeFile()" in body
