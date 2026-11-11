@@ -27,7 +27,7 @@ class _Ollama:
     def is_running(self):
         return True
 
-    def chat(self, model, messages):
+    def chat(self, model, messages, mode=None):
         return {"content": "A handout about agents and tools."}
 
 
@@ -40,7 +40,7 @@ class _NoOllama:
     def is_running(self):
         return False
 
-    def chat(self, model, messages):  # pragma: no cover, must never be reached
+    def chat(self, model, messages, mode=None):  # pragma: no cover, must never be reached
         raise AssertionError("the describer ran with no model available")
 
 

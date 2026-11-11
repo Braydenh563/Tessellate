@@ -18,6 +18,7 @@ import logging
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from tessellate.ai import presets
 from tessellate.ai.model_manager import ModelManager
 from tessellate.ai.ollama_client import OllamaClient
 from tessellate.core import model_gate
@@ -85,6 +86,7 @@ def suggest_entities_with_kinds(
             {"role": "system", "content": system},
             {"role": "user", "content": text},
         ],
+        mode=presets.BACKGROUND_MODE,
     )
     raw = reply["content"].strip()
     if not raw or raw.upper().startswith("NONE"):

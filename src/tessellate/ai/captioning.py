@@ -26,6 +26,7 @@ import threading
 import time
 from pathlib import Path
 
+from tessellate.ai import presets
 from tessellate.ai.unreachable import server_unreachable
 from tessellate.ai.vision_ocr import cut_reading_loops
 from tessellate.core import jobs
@@ -146,6 +147,7 @@ def describe_document(text: str, model_manager, ollama) -> str:
             {"role": "system", "content": DOCUMENT_PROMPT},
             {"role": "user", "content": body[:DOCUMENT_PROMPT_CHARS]},
         ],
+        mode=presets.BACKGROUND_MODE,
     )
     return (reply.get("content") or "").strip()
 

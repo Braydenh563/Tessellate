@@ -136,6 +136,14 @@ DEFAULT_MODE = "normal"
 #: they are simply not on the picker.
 GUIDE_MODE = "guide"
 
+#: **Short background jobs of the utility model** (CHAT_PLAN 1691, B72):
+#: entity names, a title, a caption, a reminder's JSON, speaker names, a
+#: tension check, a re-planned step. Nobody reads their reasoning. Measured on
+#: Qwen3-0.6B (2026-11-11, seed 7): four such jobs spent 925 tokens thinking
+#: and 56 with it off. Normal's cap and temperature, no length hint (the
+#: prompts carry their own); only `think` differs.
+BACKGROUND_MODE = "background"
+
 INTERNAL_MODES: dict[str, ResponseMode] = {
     #: The Guide panel (`ai/help_chat.py`): Quick's shape, because a "how do I
     #: save a note" answer is two or three sentences and the low temperature
@@ -173,6 +181,15 @@ INTERNAL_MODES: dict[str, ResponseMode] = {
         temperature=MODES["quick"].temperature,
         think=None,
         length_hint=MODES["quick"].length_hint,
+    ),
+    BACKGROUND_MODE: ResponseMode(
+        id=BACKGROUND_MODE,
+        label="Background",
+        description="The app's own short jobs: thinking off, Normal's cap.",
+        max_output_tokens=MODES["normal"].max_output_tokens,
+        temperature=None,
+        think=False,
+        length_hint="",
     ),
 }
 

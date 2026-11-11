@@ -204,3 +204,16 @@ def test_stopping_a_slow_stream_midway_stops_reading_at_once(openai_server, monk
     monkeypatch.setattr(module, "STREAM_DELAY_MS", 0)
     again = list(OpenAICompatClient(url, timeout=10).chat_stream(module.MODEL_ID, ASK))
     assert any(p.get("content_delta") for p in again)
+
+
+def test_a_server_that_ends_an_empty_stream_on_tool_choice_gets_the_round_unforced(openai_server, monkeypatch):
+    """B69, measured on llama-cpp-python: its function-calling handler cannot
+    take `tool_choice="required"`, answers 200 and ends with no frame, and
+    the turn used to finish with no words. The round is asked again without
+    the field, like a 4xx refusal."""
+    module, url = openai_server
+    monkeypatch.setattr(module, "BREAK_TOOL_CHOICE", True)
+    final = _final(
+        OpenAICompatClient(url, timeout=10).chat_tools_stream(module.MODEL_ID, ASK, TOOLS, tool_choice="required")
+    )
+    assert [c["name"] for c in final["tool_calls"]] == ["list_tags"]

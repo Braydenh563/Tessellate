@@ -891,6 +891,7 @@ class OpenAICompatClient(Provider):
         buckets: dict[int, dict] = {}
         started = time.monotonic()
         last: dict = {}
+        frames = 0
         try:
             with self._open_tools_stream(model, messages, tools, mode, tool_choice) as response:
 
@@ -909,6 +910,7 @@ class OpenAICompatClient(Provider):
                         yield {"content_delta": visible}
 
                 for payload in self._sse_payloads(response):
+                    frames += 1
                     last = payload
                     delta = self._stream_delta(payload)
                     text, reasoning = self._delta_text(delta)
@@ -925,6 +927,14 @@ class OpenAICompatClient(Provider):
             raise
         except (requests.RequestException, KeyError, IndexError, TypeError, ValueError) as exc:
             raise ProviderError(f"Tool chat with '{model}' failed: {exc}") from exc
+
+        if tool_choice and tools and not frames:
+            # A server that opens the stream and ends it with no frame at all
+            # (llama-cpp-python's function-calling handler, which cannot take
+            # `tool_choice="required"`, B69) refused the field the quiet way:
+            # the turn ended with no words. Asked again as an ordinary round.
+            yield from self.chat_tools_stream(model, messages, tools, mode)
+            return
 
         calls, raw_calls, clean = self._settle_calls(buckets, content, tools)
         held = gate.flush()

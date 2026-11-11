@@ -16,6 +16,7 @@ from __future__ import annotations
 import re
 from collections.abc import Iterator
 
+from tessellate.ai import presets
 from tessellate.ai import librarian, offline
 from tessellate.ai.model_manager import ModelManager
 from tessellate.ai.ollama_client import OllamaClient, OllamaError
@@ -533,6 +534,7 @@ def suggest_title(draft: str, model_manager: ModelManager, ollama: OllamaClient)
                 {"role": "system", "content": TITLE_PROMPT},
                 {"role": "user", "content": draft.strip()[:2000]},
             ],
+            mode=presets.BACKGROUND_MODE,
         )
     except OllamaError:
         return ""

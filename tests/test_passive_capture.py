@@ -53,7 +53,7 @@ class _Ollama:
         self.reply = reply
         self.calls = 0
 
-    def chat(self, model, messages):
+    def chat(self, model, messages, mode=None):
         self.calls += 1
         self.prompt = messages[-1]["content"]
         return {"content": self.reply}
@@ -141,7 +141,7 @@ def test_a_backend_failure_skips_rather_than_raising(session, chat_with, app_sta
     chat_with([{"role": "user", "content": "Something worth keeping."}])
 
     class _Down:
-        def chat(self, model, messages):
+        def chat(self, model, messages, mode=None):
             raise RuntimeError("connection refused")
 
     assert passive_capture.capture_pass(session, _Model(), _Down(), deps.get_config()) == 0
