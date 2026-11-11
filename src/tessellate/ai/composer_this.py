@@ -12,7 +12,7 @@ digest's (`composer_digest.about_this`), read from the attachment alone.
 from __future__ import annotations
 
 import re
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 
 from tessellate.ai import composer_frame, realise, study
 
@@ -64,6 +64,17 @@ def _which(content: str) -> str:
 
 def _words(content: str) -> int:
     return len(re.findall(r"[\w'’-]+", study.clean(content)))
+
+
+def local(now: datetime, *whens: datetime | None) -> list[datetime | None]:
+    """Stored UTC times said in the person's time."""
+    def one(when):  # noqa: ANN001, ANN202
+        if when is None:
+            return None
+        aware = when if when.tzinfo else when.replace(tzinfo=timezone.utc)
+        return aware.astimezone(now.tzinfo).replace(tzinfo=None) if now.tzinfo else aware.replace(tzinfo=None)
+
+    return [one(w) for w in whens]
 
 
 def answer(question: str, content: str, created: datetime | None, edited: datetime | None, today: date) -> str | None:
