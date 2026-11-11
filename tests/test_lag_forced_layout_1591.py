@@ -32,8 +32,8 @@ def test_sizing_reads_everything_then_writes_everything() -> None:
     body = _body(DASH, "function sizeDashWidgets(")
     # No release of the spans to measure: the grid is `align-items: start`, so a card's height does not depend on its span.
     assert 'gridRowEnd = "span 1"' not in body
-    last_read = max(body.index("getBoundingClientRect"), body.index('dispatchEvent(new Event("dash-refit"))'))
-    assert last_read < body.index("style.gridRowEnd = sizeDashWidgetSpan("), "the heatmap refit reads, so it goes before the first write"
+    #: The heatmap's refit read is gone (its end is CSS only, INBOX 1741); the intent, every read before the first write, stands.
+    assert body.index("getBoundingClientRect") < body.index("style.gridRowEnd = sizeDashWidgetSpan("), "the reads go before the first write"
 
 
 def test_the_grid_stays_start_aligned_so_the_reset_is_not_needed() -> None:
