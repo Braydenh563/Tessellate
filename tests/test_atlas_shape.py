@@ -822,7 +822,7 @@ def test_atlas_moves_by_its_own_look_and_its_rules_out_rank_the_generic_ones():
     # wave set only animation-name, at lower specificity).
     for glide in ("atl-glide ", "atl-glide-heavy "):
         assert f"@keyframes {glide.strip()} {{" in CSS
-    assert '&:has(.atl-figure[data-atlas-look="masculine"]).nmb-walking .nm-buddy-char { animation: atl-glide-heavy' in CSS
+    assert '&[data-atlas-figure="masculine"].nmb-walking .nm-buddy-char { animation: atl-glide-heavy' in CSS
     assert "&.nmb-walking .nm-live .nm-atlas.atl-layer-lower {" in CSS
     assert '&.nmb-walking .nm-live .nm-atlas.atl-layer-lower[data-atlas-look="masculine"] { animation: atl-lower-trail' in CSS
     assert "&.nmb-act-wave .atl-figure .nmb-arm-r { animation: atl-buddy-wave 1.5s" in CSS

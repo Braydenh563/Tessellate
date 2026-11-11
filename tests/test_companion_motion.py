@@ -1292,7 +1292,7 @@ def test_the_atlas_hooks_are_wired() -> None:
     assert 'if (act === "lie") nameMarkBuddyLieDown(buddy, lieSide);' in _fn("nameMarkBuddyAct")
     assert "nameMarkBuddyCurlUp(buddy)" in _fn("nameMarkBuddyTick") and "nameMarkBuddyGetUp(buddy)" in _fn("nameMarkBuddyWake")
     assert "if (/^(lie|curl)/.test(buddy.dataset.pose || \"\")) buddy.dataset.pose = nmb.pose;" in _fn("nameMarkBuddyHalt")
-    assert "#nm-buddy.nmb-act-lie:has(.atl-figure-box) .nm-buddy-char { transform: none; }" in CSS08
+    assert "#nm-buddy.nmb-act-lie[data-atlas-figure] .nm-buddy-char { transform: none; }" in CSS08
 
 
 def test_a_woken_atlas_companion_wakes_atlas_too() -> None:

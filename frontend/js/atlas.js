@@ -3826,10 +3826,12 @@ const atlasState = { blinkTimer: 0, rigTrace: null, easeTimer: 0 };
 const atlasDriftState = { timer: 0, searchTimer: 0, recent: [], changedAt: 0 };
 
 
-//: `easeMs` turns a mood change into a slow cross-fade (`.atl-easing`, the
-//: face's custom properties transitioning over `--atl-ease`) rather than the
-//: quick step every other change takes: waking and dozing are the two that
-//: should never snap.
+//: `easeMs` turns a mood change into a slow cross-fade (`.atl-easing`, whose fade the CSS gives a fixed
+//: length) rather than the quick step every other change takes: waking and dozing are the two that
+//: should never snap. **No length is written** (INBOX 1778 d): a `--atl-ease` custom property was set on
+//: every Atlas svg here, and nothing in any stylesheet read it; an unregistered custom property restyles
+//: the whole drawing, so each eased mood paid it for nothing (about 20 svgs and 790 elements: median 169ms
+//: of forced style at 4x CPU, against 21ms for the class alone).
 //: `backEaseMs` eases the return to the resting mood when `forMs` runs out,
 //: for a mood that should settle rather than snap (a poke's reaction).
 function setAtlasMood(mood, forMs = 0, { quiet = false, easeMs = 0, backEaseMs = 0 } = {}) {
@@ -3848,10 +3850,7 @@ function setAtlasMood(mood, forMs = 0, { quiet = false, easeMs = 0, backEaseMs =
   //: 4x CPU: two restyles of 160 to 210ms in one timer, INBOX 1534).
   const apply = () => {
     for (const svg of marks) {
-      if (easeMs) {
-        svg.style.setProperty("--atl-ease", `${easeMs}ms`);
-        svg.classList.add("atl-easing");
-      } else svg.classList.remove("atl-easing");
+      svg.classList.toggle("atl-easing", !!easeMs);
     }
     if (easeMs) {
       atlasState.easeTimer = setTimeout(() => {

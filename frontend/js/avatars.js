@@ -11350,6 +11350,12 @@ function syncNameMarkBuddy() {
     dropAnimations(old);
     old?.remove();
     char.prepend(characterFor(seed).figure());
+    //: The companion's CSS asks "is this the layered Atlas figure, and which look" of this one
+    //: attribute, not of `:has(.atl-figure)`: a :has() on #nm-buddy re-matched its 790 elements on
+    //: every insert or remove under it (18 ms a time at 4x; INBOX 1778 d).
+    const figureLook = char.querySelector(".atl-figure-box")?.dataset.atlasLook;
+    if (figureLook) buddy.dataset.atlasFigure = figureLook;
+    else delete buddy.dataset.atlasFigure;
     //: A new face starts from its own look.
     nmb.expr = "";
     nmb.exprHold = "";

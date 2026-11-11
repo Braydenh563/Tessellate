@@ -216,7 +216,7 @@ def test_the_held_props_are_in_front_at_the_hands_and_the_seats_behind_at_the_hi
     for act in ("chair", "beanbag"):
         assert any(_names(sel, act) and f".nmp-{act}" in sel and "opacity: 1" in d for _, sel, d in lazy), act
     # Atlas's own seats stand in for the companion's generic scene.
-    assert "#nm-buddy:has(.atl-figure-box) .nms { opacity: 0; }" in CSS08
+    assert "#nm-buddy[data-atlas-figure] .nms { opacity: 0; }" in CSS08
 
 
 def test_the_eyes_and_the_head_go_to_the_prop() -> None:
