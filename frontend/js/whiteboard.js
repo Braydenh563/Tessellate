@@ -10416,17 +10416,20 @@ function wbDeleteFailed(entry, redoBefore, e, retry) {
 //: only paints (audit B5): the browser fires these faster than it paints, and
 //: a hit test per event is work nobody sees. Not for a handler that collects
 //: every point (the pen, the lasso).
-function wbOnFrame(fn) {
+//: `after` runs it once that frame has drawn (a timer after the frame): the hover hit test reads every item's box,
+//: and run inside the frame it was the first reader after whatever else wrote (101 ms at 4x on 400 items).
+function wbOnFrame(fn, after = false) {
   let latest = null;
+  const run = () => {
+    const ev = latest;
+    latest = null;
+    fn(ev);
+  };
   return (e) => {
     const idle = latest === null;
     latest = e;
     if (!idle) return;
-    requestAnimationFrame(() => {
-      const ev = latest;
-      latest = null;
-      fn(ev);
-    });
+    requestAnimationFrame(after ? () => setTimeout(run) : run);
   };
 }
 
@@ -18510,7 +18513,7 @@ async function initWhiteboard() {
     const hit = wbLinkCandidateAt(x, y);
     if (hit) wbShowAnchorHints(hit[0], hit[1], wbNearestAnchor(hit[0], hit[1], x, y));
     else wbClearAnchorHints();
-  }), { passive: true });
+  }, true), { passive: true });
 
   // --- Connection points with Select (wb-phase2 step 5; draw.io's ports) ---
   //

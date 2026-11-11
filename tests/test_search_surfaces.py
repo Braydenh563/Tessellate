@@ -230,6 +230,22 @@ def test_the_filter_words_survive_a_reload_in_the_tab():
     assert text.index('sessionStorage.getItem("note-filter")') < text.index("function renderEntries(")
 
 
+def test_the_sort_survives_a_reload_with_words_in_the_filter_box():
+    """Audit 1031 N44, the sort half: a reload with words in the box lost the saved sort and logged
+    five ReferenceErrors, because the load-time restore called `$("note-search")`, which built the
+    Notes surface mid-load and ran hooks queued for files not yet loaded (settings-wiring.js then
+    stopped before it read `notes-sort`). Both restores now read storage only; the boxes are
+    filled under `onSurface`. (Measured in the app: sort az + filter harbor came back az + harbor.)"""
+    lists = (JS_DIR / "notes-list.js").read_text(encoding="utf-8")
+    restore = lists[lists.index('sessionStorage.getItem("note-filter")') : lists.index("function rememberNoteFilter")]
+    assert '$("note-search")' in restore and 'onSurface("notes"' in restore
+    assert restore.index('onSurface("notes"') < restore.index('$("note-search")')
+    wiring = (JS_DIR / "settings-wiring.js").read_text(encoding="utf-8")
+    load = wiring[wiring.index('prefs.get("notes-sort")') - 40 : wiring.index('onSurface("notes"', wiring.index('prefs.get("notes-sort")'))]
+    assert "$(" not in load, "the saved sort is read without touching the Notes surface"
+    assert "noteSort = prefs.get(" in load
+
+
 def test_tag_counts_and_negated_categories_in_the_finder(client):
     def note(content, category, tags):
         reply = client.post("/entries", json={"content": content, "category": category, "tags": tags})

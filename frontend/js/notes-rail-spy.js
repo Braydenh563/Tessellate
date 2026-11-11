@@ -82,7 +82,8 @@ function notesSpyPick() {
 
 function notesSpySchedule() {
   clearTimeout(notesSpy.timer);
-  notesSpy.timer = setTimeout(notesSpyPick, NOTES_SPY_SETTLE_MS);
+  //: Read after the frame that draws what changed: its layout is then done, and the pick's reads are free.
+  notesSpy.timer = setTimeout(() => afterFrames(() => (notesSpy.timer = setTimeout(notesSpyPick)), 1), NOTES_SPY_SETTLE_MS);
 }
 
 //: Called by `renderNotesRail` with the note it is drawing (or null): the
