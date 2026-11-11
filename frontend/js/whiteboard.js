@@ -3294,10 +3294,17 @@ function wbViewHoldsBox(view, box, free) {
 }
 
 /** Put a board's remembered view back, or frame it when it has none to give. */
-function wbRestoreOrFrameBoard(boardId) {
+function wbRestoreOrFrameBoard(boardId, restore = false) {
   const container = document.getElementById("whiteboard-container");
   if (!container) return;
   const saved = boardId == null ? null : wbBoardViews.get(boardId) || wbRememberBoardView.stored(boardId);
+  //: `restore`: the caller is putting a board back (a document's board panel closing, documents-board.js), so the camera it had is
+  //: kept as it was whatever the room to measure it by.
+  if (saved && restore) {
+    wbFit.on = false;
+    d3.select(container).call(wbZoom.transform, d3.zoomIdentity.translate(saved.x, saved.y).scale(saved.k));
+    return;
+  }
   const bounds = wbContentBounds();
   const free = wbFreeArea(container);
   //: **A map's remembered view must show its centre topic clear of the
@@ -25345,6 +25352,16 @@ function wbShowBoardsLanding() {
   if (typeof scheduleUndoBar === "function") scheduleUndoBar();
 }
 
+//: Whether the board still has a use for an Escape (a selection, a tool, a menu, a find bar, a gesture, presenting): a document's
+//: board panel (documents-board.js) closes only on the Escape the board did not need.
+wbShowBoardsLanding.wantsEscape = () => {
+  if (wbSelectedItem || wbMultiSelection.size > 0 || wbPresent) return true;
+  if (window.currentTool && window.currentTool !== "select") return true;
+  if (wbCtxMenuEl && !wbCtxMenuEl.classList.contains("hidden")) return true;
+  if (document.getElementById("wb-search-bar")?.classList.contains("hidden") === false) return true;
+  return Boolean(document.querySelector(".wb-marquee, .wb-lasso"));
+};
+
 //: Leaving the canvas has to leave full screen with it.
 //:
 //: Reported: "if i am still in whiteboard fullscreen and press the back to
@@ -25437,7 +25454,7 @@ async function openWhiteboardBoard(boardId, opts = null) {
   //: measures the nodes it is about to fit (a map node is `height: auto`, so
   //: its real size only exists once it is in the document).
   if (wbIsMap()) renderWhiteboardNow();
-  wbRestoreOrFrameBoard(boardId ?? null);
+  wbRestoreOrFrameBoard(boardId ?? null, Boolean(opts?.restore));
   //: **A board is a place, so opening one is a navigation.** Asked as part of
   //: "is everythign wired to the nav history and universal undo/redo": it was
   //: not. `switchTab("library")` above records "library", and then opening
@@ -25446,7 +25463,7 @@ async function openWhiteboardBoard(boardId, opts = null) {
   //: third. Documents, graph focus and chat conversations all already record
   //: their own identity this way (`doc:{id}`, `focus:{id}`, `conv:{id}`); this
   //: is the same key for the same reason.
-  if (typeof recordTabVisit === "function") {
+  if (typeof recordTabVisit === "function" && !opts?.stay) {
     //: `mapBoardById` (note-cards.js) is the one board index every surface shares.
     const boardTitle = boardId ? mapBoardById(boardId)?.title : "";
     recordTabVisit("library", boardId ? `board:${boardId}` : "library-view-whiteboard", boardTitle || "");
@@ -25572,7 +25589,8 @@ document.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") return;
   const host = document.getElementById("library-view-whiteboard");
   if (!host || !host.classList.contains("wb-fullscreen")) return;
-  if (document.querySelector(".modal-overlay:not(.hidden), .lightbox")) return;
+  //: A document's board panel is the board's own window, so its overlay is not a dialog over the board.
+  if (document.querySelector(".modal-overlay:not(.hidden):not(.doc-board-overlay), .lightbox")) return;
   toggleWhiteboardFullscreen(false);
 });
 
