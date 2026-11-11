@@ -1610,13 +1610,14 @@ async function loadForgottenOrder() {
 
 //: Remembered like the page size beside it (INBOX 432: it reset on reload).
 try {
-  const kept = prefs.get("notes-sort", null);
-  if (kept && [...$("note-sort").options].some((o) => o.value === kept)) noteSort = kept;
+  noteSort = prefs.get("notes-sort") || noteSort;
 } catch {
   /* storage blocked: newest, as before */
 }
 onSurface("notes", () => {
-  $("note-sort").value = noteSort;
+  const select = $("note-sort");
+  select.value = noteSort;
+  select.value ||= noteSort = "newest";
 });
 if (noteSort === "forgotten") loadForgottenOrder().then(() => renderEntries());
 onSurface("notes", () => {
