@@ -2080,12 +2080,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `atlasBreathFrame` | frontend/js/atlas-life.js:879 |
+| `atlasBreathFrame` | frontend/js/atlas-life.js:897 |
 | `atlasFrameBudget` | frontend/js/atlas-life.js:476 |
 | `atlasPropLoops` | frontend/js/atlas-life.js:803 |
 | `atlasPropsFrame` | frontend/js/atlas-life.js:831 |
-| `atlasRigLower` | frontend/js/atlas-life.js:1410 |
-| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1385 |
+| `atlasRigLower` | frontend/js/atlas-life.js:1428 |
+| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1403 |
 | `atlasRingLoops` | frontend/js/atlas-life.js:20 |
 | `atlasTailAttach` | frontend/js/atlas-life.js:365 |
 | `atlasTailBend` | frontend/js/atlas-life.js:133 |

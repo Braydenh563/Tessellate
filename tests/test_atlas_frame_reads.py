@@ -166,19 +166,25 @@ def test_the_props_check_what_shows_only_after_a_wake() -> None:
         + r"""
 let cs = 0;
 let clock = 0;
+let inFrame = 0;
+let tasks = [];
 const performance = { now: () => clock };
-const getComputedStyle = () => { cs += 1; return { opacity: "1" }; };
+const document = { hidden: false };
+// The look is a task after a drawn frame (INBOX 1766): `afterPaint` queues it, a flush runs it as that task.
+const atlasRigWake = { afterPaint: (cb) => { tasks.push(cb); return 1; } };
+const getComputedStyle = () => { cs += 1; if (inFrame) throw new Error("a style read inside the frame callback"); return { opacity: "1" }; };
 const anim = { play() {}, cancel() {}, currentTime: 0 };
-const box = { atlasPropLoops: [{ anim, el: {}, root: {}, lag: 0, on: false }], atlasDirtyAt: 0 };
-for (let tick = 1; tick <= 400; tick += 1) { clock += 16.7; atlasPropsFrame(box, true, tick); }
+const box = { isConnected: true, atlasPropLoops: [{ anim, el: {}, root: {}, lag: 0, on: false }], atlasDirtyAt: 0 };
+const frame = (tick, live = true) => { inFrame = 1; atlasPropsFrame(box, live, tick); inFrame = 0; const run = tasks; tasks = []; run.forEach((cb) => cb()); };
+for (let tick = 1; tick <= 400; tick += 1) { clock += 16.7; frame(tick); }
 const quiet = cs;
 box.atlasDirtyAt = clock;
-for (let tick = 401; tick <= 480; tick += 1) { clock += 16.7; atlasPropsFrame(box, true, tick); }
+for (let tick = 401; tick <= 480; tick += 1) { clock += 16.7; frame(tick); }
 const woken = cs - quiet;
 // Hidden, then back: it looks again, so a prop cancelled while hidden plays.
-atlasPropsFrame(box, false, 481);
+frame(481, false);
 const before = cs;
-atlasPropsFrame(box, true, 488);
+frame(488);
 process.stdout.write(JSON.stringify({ quiet, woken, back: cs - before, on: box.atlasPropLoops[0].on }));
 """,
     )
