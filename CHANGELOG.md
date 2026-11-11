@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Notes and reminders (INBOX 1747): a live note can no longer be linked to a binned one (the link route and Accept tension answer 409, so no edge to an invisible note), and Complete on a repeating reminder carries `expected_due_at` so a double-click or second tab answers 409 instead of skipping an occurrence.
 - Notes (INBOX 1747): a note in the recycle bin can no longer be archived or unarchived from a stale card (409 "in the bin, restore it first"), so Restore never brings it back hidden in the Archive.
 - Settings and other lazy panes (INBOX 1747): one wiring hook that throws while a pane is first built no longer drops every hook after it (their buttons stayed dead) or makes the lookup that opened the pane throw.
 - Chat (INBOX 1747): pressing Confirm on a card a typed yes had already run (a second tab, a reloaded chat) is refused with "That card was already answered" instead of running the act a second time (`consent_store.was_spent`).
