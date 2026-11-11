@@ -11,46 +11,19 @@ How to read it:
 - "Verify first": a Haiku scout re-reads the code or drives the app and marks each row true, fixed (sha) or stale before the Sonnet builds; a fixed row is struck here at merge.
 - Every batch: tests first, `bash scripts/gate.sh --staged`, the targeted tests named, `node --check` on JS, a five-line report, its rows struck here and the source file marked.
 
-### Answer these in one sitting
+### Owner answers, 2026-11-11 (one sitting)
 
-Each has the recommendation already written (standing order 3); a "yes" takes it. Rows a decision blocks wait for it inside their batch, marked "after Qn".
-
-| # | Question | Recommendation | Blocks |
-| --- | --- | --- | --- |
-| Q1 | D25: citations double up (a numbered mark and the "[**Title**]" link) | One style: numbered marks in the text matching Sources (INBOX 299); the title link only in the Sources row | W22 |
-| Q2 | B10: the composer says it is the assistant (tests edited, "owner may revert") | Keep the Atlas-voiced composer as built in composer-r7 | none |
-| Q3 | R9-15: an imperative one-line note ("Call plumber") named plain or in quotes | Plain, as every other title | W10 |
-| Q4 | "Remind you to ..." versus "Shall I remind you ..." | Prose asks "Shall I remind you to X?"; the offer button keeps the pinned label | W9 |
-| Q5 | "new note called Christmas with mum, dad and Sara": title or body | The whole phrase after "called" is the title; the body starts only after "saying", "that says" or a colon | W9 |
-| Q6 | One confirm rule for list adds (Shopping asks, Todo adds) | Every list adds at once with Undo (the Todo rule) | W9 |
-| Q7 | c13: two pinned tests now follow the contiguous-quote rule | Keep the contiguous-quote rule | none |
-| Q8 | "is the dentist tomorrow?" verdict wording | Keep "No, not tomorrow." and write the date long ("Thursday 12 November, 9:30") | W8 |
-| Q9 | 42: `?preview=300` adoption waits on server-side note search | Build server-side note search first, then switch the list | W25 |
-| Q10 | 55: stop Atlas's rAF loops after 2 s with no input | Stop them only while the companion is not walking; lag-watch sampler on a 1 s timer | W14 |
-| Q11 | P7: the Ollama probe adds 2.1 s to composed answers | Keep decision 75's probe; cache its result 30 s, dropped on a failure | W16 |
-| Q12 | test_companion_weights tolerance (2.0, 2.5, 3.6) | Freeze at 3.6, never raise; ratchet down as desk parity lands | W31 |
-| Q13 | "Enter vs Tab" and "Wide note measure" (named in 09d, no text found) | Keep current behaviour; the W34 scout finds the source line, then a row or a close | none |
-| Q14 | 1720: diagram blocks list folded on first open | Fold on New diagram only; existing diagrams keep their fold | W17 |
-| Q15 | 1712: window width and surface where Chat Sources rows run wide | Owner supplies them | P1 |
-| Q16 | 1598: companion over the top bar | Owner supplies the window size or a short recording | P2 |
-| Q17 | 1719 (c): examples of the remaining composer "response issues" | Owner supplies them; then one deep-audit round | P3 |
-| Q18 | sec: `/media/{id}` bytes route answers 403, the new routes 409 | Unify on 409 "Unlock first." | W3 |
-| Q19 | The "You asked: ..." line above the Ask answer | Keep it removed (INBOX 1301, pinned by test_composer_form_1301) | W22 |
-| Q20 | complexity.yml runs ruff with `--exit-zero` | Drop `--exit-zero` behind a baseline that only ratchets down | W24 |
-| Q21 | U41: the map-created toast is three lines and pinned | One line (order 6); change test_wb_dog1_fixb with that reason | W19 |
-| Q22 | Key storage, MCP auth, tool signing (B40, B33, B24, D46, K26, K11, K13, E43) | OS keyring when present, a 0600 file otherwise; one token per MCP server; tool signing to BACKLOG | W5 |
-| Q23 | E33: Guide answers lead with the path | Yes: the path first, then one sentence | W22 |
-| Q24 | "last week": seven days (search) or Monday to Sunday (recognise) | Monday to Sunday of the previous week everywhere; "past week" and "last 7 days" are the rolling window | W8 |
-| Q25 | `before:tuesday`: which side of the day | Excludes Tuesday, as mail search does | W11 |
-| Q26 | R7: diagram page head | Hide the file chrome; Export in the head | W18 |
-| Q27 | 1233: RapidOCR as an optional extra against "fully local, vendored" | Optional extra, off by default, installed from Settings, Packages; runs offline once installed | F5 |
-| Q28 | 1255: speaker labels on transcripts | Only once diarisation exists; to BACKLOG | none |
-| Q29 | Filing top-1 without a model against the 0.8 bar | Taken 2026-11-11: a held sensitive note counts by its suggested category (0.625 to 0.800); related-topic table (0.825); 60-note frozen fixture gate; no second vocabulary (+0.008) | F5 |
-| Q30 | 1695: private-by-default notes | A Settings switch, off by default | F6 |
-| Q31 | GRAPH tessellation view | Mock three variants; the owner picks one | F7 |
-| Q32 | Owner's look: TIMELINE 561 day strip, decision 13 spans, UI 11 item 11 screenshot set | Keep parked until the owner looks | F7 |
-| Q33 | CHAT 413 chat stutter | Close unless it returns on the owner's next run | none |
-| Q34 | Owner go: sync (B6), offline studio, audio, desktop pet outside the window, custom domain, blind panel (decision 40), Fable on the diagram (1679) | Hold until the owner says go; Fable only when named for that task | F8 |
+The recommendation was taken for Q1 to Q9, Q12, Q14, Q18 to Q24, Q26 and Q28. Q13 was not asked; its recommendation stands. Rows waiting "after Qn" can start. The answers that differ from the recommendation, quoted in INBOX 1748:
+- Q10 Atlas's rAF loops keep running by default ("I still want it to feel biological and have life"). An Advanced setting stops them after 2 s with no input. | W14
+- Q11 The Ollama probe is cached for 30 s, dropped on a failure, and also dropped the moment Ollama is seen coming online (the model status poll or the start event), so the composer never answers in that window. | W16
+- Q25 `before:` is a Settings choice, excluding by default. The owner also wants a first-run calibration of preferences like this (INBOX 1748). | W11
+- Q27 RapidOCR is bundled if small, otherwise an optional extra. Every feature that needs an optional package (RapidOCR, SearXNG, the PDF viewer and the rest) shows a dismissable notice with a one-click Install when it is used. The notice comes back if the package is uninstalled, on the no-model notice recipe (INBOX 1748). | F5
+- Q30 Private notes by default is a Settings switch, off by default, and follows the space: a note made in a private space is private. | F6
+- Q31 and Q32: the owner says these are already done; they are closed here.
+- Q33 is parked: the owner will check whether the stutter returns.
+- Q34 Go on all of them: sync (B6), offline studio and audio, the desktop pet outside the window, the custom domain and the blind panel. Fable stays off. | F8
+- sm-1111 row 22: on lock, typed fields move into the encrypted draft store and are cleared, then restored on unlock. Add an easy way to pick them back up, a "where you left off" or recent drafts list. | sm row 22
+- Q15 to Q17 stay parked (P1 to P3) until the owner sends examples.
 
 Not a question: the CI test timeout is not raised (HANDOVER 09d, "never raise the cap"); the jobs get faster instead (W24).
 
