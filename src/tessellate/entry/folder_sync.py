@@ -157,25 +157,35 @@ def _open(passphrase: str, sealed: dict) -> dict:
     return json.loads(crypto.decrypt(key, sealed["data"]))
 
 
+def _sync_roots() -> list[str]:
+    """Where a sync folder may live, as real paths with a trailing separator: home (Syncthing and a cloud
+    drive's local copy sit there) and the places a USB stick mounts. On Windows a stick is its own drive,
+    so every drive but the system one."""
+    roots = [os.path.expanduser("~"), "/media", "/run/media", "/mnt", "/Volumes"]
+    if os.name == "nt":
+        system = os.environ.get("SystemDrive", "C:").upper().rstrip("\\")
+        roots += [f"{letter}:\\" for letter in "DEFGHIJKLMNOPQRSTUVWXYZ" if f"{letter}:" != system]
+    return [os.path.join(os.path.realpath(root), "") for root in roots]
+
+
 def _checked(folder: str, passphrase: str, notebook: Path | None = None) -> Path:
-    """The folder, resolved with links followed, or a SyncError. Never the notebook's own folder or one
-    inside it: a sync file there would travel with every copy of the notebook."""
-    if not folder.strip():
+    """The folder, resolved with links followed, or a SyncError. Inside home or a removable drive (the route
+    takes a path from a request: CodeQL path injection), never the notebook's own folder or one inside it:
+    a sync file there would travel with every copy of the notebook."""
+    if not folder.strip() or "\x00" in folder:
         raise SyncError("Choose a folder that exists on this computer.")
-    real = os.path.realpath(os.path.expanduser(folder))
-    if notebook is not None:
-        own = os.path.join(os.path.realpath(str(notebook)), "")
-        if real.startswith(own) or real == own.rstrip(os.sep):
-            raise SyncError("Choose a folder outside the notebook's own folder.")
+    real = os.path.join(os.path.realpath(os.path.expanduser(folder)), "")
+    # The positive prefix test sits here, beside the read, in the shape CodeQL counts as a guard (core/paths.py).
+    if not any(real.startswith(root) for root in _sync_roots()):
+        raise SyncError("Choose a folder in your home folder or on a removable drive.")
+    if notebook is not None and real.startswith(os.path.join(os.path.realpath(str(notebook)), "")):
+        raise SyncError("Choose a folder outside the notebook's own folder.")
     path = Path(real)
     if not path.is_dir():
         raise SyncError("Choose a folder that exists on this computer.")
     if len(passphrase) < MIN_PASSPHRASE:
         raise SyncError(f"Use a sync passphrase of at least {MIN_PASSPHRASE} characters, the same on every computer.")
     return path
-
-
-# --- reading a peer ------------------------------------------------------------
 
 
 def _apply(session: Session, entry: Entry, note: dict) -> None:

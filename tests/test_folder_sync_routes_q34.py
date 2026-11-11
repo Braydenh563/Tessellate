@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 
-def test_a_first_run_writes_this_computers_file_and_remembers_the_folder(client, tmp_path):
+def test_a_first_run_writes_this_computers_file_and_remembers_the_folder(client, tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
     folder = tmp_path / "shared"
     folder.mkdir()
     client.post("/entries", json={"content": "A note to share"})
@@ -20,7 +21,8 @@ def test_a_first_run_writes_this_computers_file_and_remembers_the_folder(client,
     assert "correct horse" not in (deps.get_config().data_dir / "folder_sync_state.json").read_text("utf-8")
 
 
-def test_a_missing_folder_and_a_short_passphrase_are_said_plainly(client, tmp_path):
+def test_a_missing_folder_and_a_short_passphrase_are_said_plainly(client, tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
     folder = tmp_path / "shared"
     folder.mkdir()
     missing = client.post("/sync/folder", json={"folder": str(tmp_path / "nope"), "passphrase": "correct horse battery"})

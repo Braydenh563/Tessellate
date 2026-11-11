@@ -20,8 +20,10 @@ PASS = "correct horse battery"
 
 
 @pytest.fixture()
-def two(session, tmp_path):
-    """(session A, state A, session B, state B, folder)."""
+def two(session, tmp_path, monkeypatch):
+    """(session A, state A, session B, state B, folder). Home is the test's folder: a sync folder lives in home or on a removable drive."""
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("USERPROFILE", str(tmp_path))
     other = database.DatabaseManager(tmp_path / "b.db")
     b = other.session()
     folder = tmp_path / "shared"
@@ -202,3 +204,15 @@ def test_the_notebooks_own_folder_is_refused(two, tmp_path):
     for chosen in (tmp_path / "notebook", inside):
         with pytest.raises(folder_sync.SyncError, match="outside the notebook"):
             folder_sync.run(a, sa, str(chosen), "correct horse battery", notebook=tmp_path / "notebook")
+
+
+def test_a_folder_outside_home_and_removable_drives_is_refused(two, tmp_path, monkeypatch):
+    """The route takes a path from a request (CodeQL path injection): home and the removable-drive mounts only, judged after links."""
+    a, sa, _b, _sb, folder = two
+    monkeypatch.setenv("HOME", str(tmp_path / "elsewhere"))
+    (tmp_path / "elsewhere").mkdir()
+    with pytest.raises(folder_sync.SyncError, match="home folder or on a removable drive"):
+        sync(a, sa, folder)
+    (tmp_path / "elsewhere" / "link").symlink_to(folder)
+    with pytest.raises(folder_sync.SyncError, match="home folder or on a removable drive"):
+        sync(a, sa, tmp_path / "elsewhere" / "link")

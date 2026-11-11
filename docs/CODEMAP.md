@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8205, frontend ids 2744, CSS sections 524, backend routes 687, backend modules 10583, test files 2613, tests 21352, plan headings 1013, app scripts 29, boot scripts 38, script files 289.
+Counts: frontend functions 8205, frontend ids 2744, CSS sections 524, backend routes 687, backend modules 10584, test files 2613, tests 21353, plan headings 1013, app scripts 29, boot scripts 38, script files 289.
 
 ## Frontend functions (8205)
 
@@ -128,22 +128,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `formatFileSize` | frontend/js/att-chip.js:58 |
 | `isImageFile` | frontend/js/att-chip.js:162 |
 
-### frontend/js/note-cards.js (21)
+### frontend/js/note-cards.js (20)
 
 | Name | File:line |
 |---|---|
 | `answerTags` | frontend/js/note-cards.js:30 |
-| `askAtlasAboutNote` | frontend/js/note-cards.js:485 |
-| `askAtlasAboutThing` | frontend/js/note-cards.js:492 |
+| `askAtlasAboutNote` | frontend/js/note-cards.js:473 |
+| `askAtlasAboutThing` | frontend/js/note-cards.js:480 |
 | `binNoteWithUndo` | frontend/js/note-cards.js:338 |
-| `deducedStrength` | frontend/js/note-cards.js:552 |
-| `entryCardControls` | frontend/js/note-cards.js:505 |
-| `entryListFocusStop` | frontend/js/note-cards.js:518 |
-| `entryListSetStop` | frontend/js/note-cards.js:523 |
+| `deducedStrength` | frontend/js/note-cards.js:540 |
+| `entryCardControls` | frontend/js/note-cards.js:493 |
+| `entryListFocusStop` | frontend/js/note-cards.js:506 |
+| `entryListSetStop` | frontend/js/note-cards.js:511 |
 | `fitNoteMetas` | frontend/js/note-cards.js:381 |
 | `libraryListsBoard` | frontend/js/note-cards.js:228 |
 | `loadMapBoardIndex` | frontend/js/note-cards.js:163 |
-| `makeUnlinkAccessible` | frontend/js/note-cards.js:536 |
+| `makeUnlinkAccessible` | frontend/js/note-cards.js:524 |
 | `mapBoardById` | frontend/js/note-cards.js:191 |
 | `mapBoardRows` | frontend/js/note-cards.js:217 |
 | `mapBoardTitled` | frontend/js/note-cards.js:203 |
@@ -151,8 +151,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `mapCountLabel` | frontend/js/note-cards.js:52 |
 | `mapPreview` | frontend/js/note-cards.js:38 |
 | `noteIsMeeting` | frontend/js/note-cards.js:324 |
-| `publishDraft` | frontend/js/note-cards.js:460 |
-| `showNoteInGraph` | frontend/js/note-cards.js:477 |
+| `showNoteInGraph` | frontend/js/note-cards.js:465 |
 
 ### frontend/js/menus.js (29)
 
@@ -5003,7 +5002,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openEntityPage` | frontend/js/entity-page.js:62 |
 | `toastEntityMerge` | frontend/js/entity-page.js:34 |
 
-### frontend/js/entry-card.js (11)
+### frontend/js/entry-card.js (12)
 
 | Name | File:line |
 |---|---|
@@ -5014,6 +5013,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `noteMetaMore` | frontend/js/entry-card.js:1355 |
 | `noteReviewActions` | frontend/js/entry-card.js:1259 |
 | `notesSpanSpaces` | frontend/js/entry-card.js:1373 |
+| `publishDraft` | frontend/js/entry-card.js:1443 |
 | `renderAttachmentCards` | frontend/js/entry-card.js:1329 |
 | `renderInlineAction` | frontend/js/entry-card.js:82 |
 | `searchHighlightTerms` | frontend/js/entry-card.js:1382 |
@@ -13361,7 +13361,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/merges/dismiss` | POST | `dismiss_merge` | src/tessellate/api/routes_inbox.py:155 |
 | `/merges/{undo_id}/undo` | POST | `undo_merge_route` | src/tessellate/api/routes_entities.py:228 |
 | `/mermaid-frame` | GET | `mermaid_frame` | src/tessellate/api/app.py:1707 |
-| `/models/{size}` | DELETE | `remove_model` | src/tessellate/api/routes_voice.py:67 |
+| `/models/{size}` | DELETE | `remove_model` | src/tessellate/api/routes_voice.py:68 |
 | `/modes` | GET | `list_modes` | src/tessellate/api/routes_chat.py:2377 |
 | `/most-accessed` | GET | `most_accessed` | src/tessellate/api/routes_entries.py:1927 |
 | `/most-opened` | GET | `most_opened` | src/tessellate/api/routes_vision.py:114 |
@@ -13486,7 +13486,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/spaces/{space_id}/counts` | GET | `space_counts` | src/tessellate/api/routes_spaces.py:84 |
 | `/spaces/{space_id}/move-notes` | POST | `move_notes_to_space` | src/tessellate/api/routes_spaces.py:549 |
 | `/spaces/{space_id}/private` | PUT | `set_space_private` | src/tessellate/api/routes_private_spaces.py:141 |
-| `/speak` | POST | `speak` | src/tessellate/api/routes_voice.py:55 |
+| `/speak` | POST | `speak` | src/tessellate/api/routes_voice.py:56 |
 | `/spec` | GET | `model_spec` | src/tessellate/api/routes_models.py:776 |
 | `/spelling/own-words` | GET | `get_own_words` | src/tessellate/api/routes_spelling.py:30 |
 | `/spellpacks` | GET | `get_spell_packs` | src/tessellate/api/routes_spelling.py:56 |
@@ -13500,7 +13500,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/status` | GET | `status` | src/tessellate/api/routes_auth.py:833 |
 | `/status` | GET | `status` | src/tessellate/api/routes_models.py:670 |
 | `/status` | GET | `status` | src/tessellate/api/routes_translate.py:22 |
-| `/status` | GET | `status` | src/tessellate/api/routes_voice.py:26 |
+| `/status` | GET | `status` | src/tessellate/api/routes_voice.py:27 |
 | `/stop` | POST | `stop` | src/tessellate/api/routes_bench.py:250 |
 | `/storage` | GET | `storage_location` | src/tessellate/api/routes_backups.py:46 |
 | `/stream` | POST | `chat_stream` | src/tessellate/api/routes_chat.py:2221 |
@@ -13547,7 +13547,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/tools` | GET | `list_tools` | src/tessellate/api/routes_chat.py:2398 |
 | `/tools/execute` | POST | `execute_confirmed_tool` | src/tessellate/api/routes_chat.py:2431 |
 | `/topics` | GET | `topics` | src/tessellate/api/routes_help.py:61 |
-| `/transcribe` | POST | `transcribe` | src/tessellate/api/routes_voice.py:126 |
+| `/transcribe` | POST | `transcribe` | src/tessellate/api/routes_voice.py:129 |
 | `/turned-down` | GET | `list_turned_down` | src/tessellate/api/routes_tags.py:126 |
 | `/turned-down/offer-again` | POST | `offer_tag_again` | src/tessellate/api/routes_tags.py:149 |
 | `/types/accept` | POST | `accept_type` | src/tessellate/api/routes_inbox.py:167 |
@@ -13700,7 +13700,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10583)
+## Backend modules (10584)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14221,7 +14221,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `_flag` | src/tessellate/ai/captions_helper.py:84 |
 | `_form` | src/tessellate/ai/captions_helper.py:50 |
-| `_say` | src/tessellate/ai/captions_helper.py:79 |
+| `_log` | src/tessellate/ai/captions_helper.py:79 |
 | `_watch_stdin` | src/tessellate/ai/captions_helper.py:161 |
 | `engine_transcriber` | src/tessellate/ai/captions_helper.py:139 |
 | `main` | src/tessellate/ai/captions_helper.py:171 |
@@ -18022,22 +18022,22 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Stopped` | src/tessellate/ai/natural_voice.py:56 |
-| `_clause_cut` | src/tessellate/ai/natural_voice.py:119 |
-| `_extras` | src/tessellate/ai/natural_voice.py:60 |
-| `_load` | src/tessellate/ai/natural_voice.py:128 |
-| `_pcm` | src/tessellate/ai/natural_voice.py:142 |
-| `_wav` | src/tessellate/ai/natural_voice.py:172 |
-| `available` | src/tessellate/ai/natural_voice.py:83 |
-| `engine_installed` | src/tessellate/ai/natural_voice.py:79 |
-| `model_path` | src/tessellate/ai/natural_voice.py:71 |
-| `plain` | src/tessellate/ai/natural_voice.py:99 |
-| `release` | src/tessellate/ai/natural_voice.py:190 |
-| `render` | src/tessellate/ai/natural_voice.py:147 |
-| `sentences` | src/tessellate/ai/natural_voice.py:105 |
-| `speak` | src/tessellate/ai/natural_voice.py:182 |
-| `status` | src/tessellate/ai/natural_voice.py:87 |
-| `voice_dir` | src/tessellate/ai/natural_voice.py:66 |
+| `Stopped` | src/tessellate/ai/natural_voice.py:58 |
+| `_clause_cut` | src/tessellate/ai/natural_voice.py:121 |
+| `_extras` | src/tessellate/ai/natural_voice.py:62 |
+| `_load` | src/tessellate/ai/natural_voice.py:130 |
+| `_pcm` | src/tessellate/ai/natural_voice.py:144 |
+| `_wav` | src/tessellate/ai/natural_voice.py:174 |
+| `available` | src/tessellate/ai/natural_voice.py:85 |
+| `engine_installed` | src/tessellate/ai/natural_voice.py:81 |
+| `model_path` | src/tessellate/ai/natural_voice.py:73 |
+| `plain` | src/tessellate/ai/natural_voice.py:101 |
+| `release` | src/tessellate/ai/natural_voice.py:192 |
+| `render` | src/tessellate/ai/natural_voice.py:149 |
+| `sentences` | src/tessellate/ai/natural_voice.py:107 |
+| `speak` | src/tessellate/ai/natural_voice.py:184 |
+| `status` | src/tessellate/ai/natural_voice.py:89 |
+| `voice_dir` | src/tessellate/ai/natural_voice.py:68 |
 
 ### src/tessellate/ai/needle_control.py (10)
 
@@ -23035,12 +23035,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `SpeakIn` | src/tessellate/api/routes_voice.py:51 |
-| `_transcribe_upload` | src/tessellate/api/routes_voice.py:78 |
-| `remove_model` | src/tessellate/api/routes_voice.py:68 |
-| `speak` | src/tessellate/api/routes_voice.py:56 |
-| `status` | src/tessellate/api/routes_voice.py:27 |
-| `transcribe` | src/tessellate/api/routes_voice.py:127 |
+| `SpeakIn` | src/tessellate/api/routes_voice.py:52 |
+| `_transcribe_upload` | src/tessellate/api/routes_voice.py:79 |
+| `remove_model` | src/tessellate/api/routes_voice.py:69 |
+| `speak` | src/tessellate/api/routes_voice.py:57 |
+| `status` | src/tessellate/api/routes_voice.py:28 |
+| `transcribe` | src/tessellate/api/routes_voice.py:130 |
 
 ### src/tessellate/api/routes_webclip.py (7)
 
@@ -24642,44 +24642,44 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_any_address` | src/tessellate/core/netbind.py:572 |
-| `_interface_addresses` | src/tessellate/core/netbind.py:427 |
-| `_own_names` | src/tessellate/core/netbind.py:285 |
-| `_proc_v6_addresses` | src/tessellate/core/netbind.py:400 |
-| `_resolved_addresses` | src/tessellate/core/netbind.py:418 |
-| `_shown_addresses` | src/tessellate/core/netbind.py:508 |
-| `_usable_v6` | src/tessellate/core/netbind.py:382 |
-| `apply_address_prefs` | src/tessellate/core/netbind.py:325 |
-| `arrived_on_loopback` | src/tessellate/core/netbind.py:249 |
-| `arrived_on_socket` | src/tessellate/core/netbind.py:272 |
-| `bind_host` | src/tessellate/core/netbind.py:200 |
-| `clean_label` | src/tessellate/core/netbind.py:307 |
-| `current` | src/tessellate/core/netbind.py:241 |
-| `describe` | src/tessellate/core/netbind.py:521 |
-| `dual_stack` | src/tessellate/core/netbind.py:190 |
-| `env_allowed_hosts` | src/tessellate/core/netbind.py:159 |
+| `_any_address` | src/tessellate/core/netbind.py:573 |
+| `_interface_addresses` | src/tessellate/core/netbind.py:428 |
+| `_own_names` | src/tessellate/core/netbind.py:286 |
+| `_proc_v6_addresses` | src/tessellate/core/netbind.py:401 |
+| `_resolved_addresses` | src/tessellate/core/netbind.py:419 |
+| `_shown_addresses` | src/tessellate/core/netbind.py:509 |
+| `_usable_v6` | src/tessellate/core/netbind.py:383 |
+| `apply_address_prefs` | src/tessellate/core/netbind.py:326 |
+| `arrived_on_loopback` | src/tessellate/core/netbind.py:250 |
+| `arrived_on_socket` | src/tessellate/core/netbind.py:273 |
+| `bind_host` | src/tessellate/core/netbind.py:201 |
+| `clean_label` | src/tessellate/core/netbind.py:308 |
+| `current` | src/tessellate/core/netbind.py:242 |
+| `describe` | src/tessellate/core/netbind.py:522 |
+| `dual_stack` | src/tessellate/core/netbind.py:191 |
+| `env_allowed_hosts` | src/tessellate/core/netbind.py:160 |
 | `env_bind` | src/tessellate/core/netbind.py:100 |
-| `env_local_label` | src/tessellate/core/netbind.py:313 |
-| `explicit_bind` | src/tessellate/core/netbind.py:175 |
-| `extra_allowed_hosts` | src/tessellate/core/netbind.py:164 |
-| `firewall_hint` | src/tessellate/core/netbind.py:489 |
-| `host_allowed` | src/tessellate/core/netbind.py:359 |
-| `is_loopback_bind` | src/tessellate/core/netbind.py:245 |
-| `lan_addresses` | src/tessellate/core/netbind.py:445 |
-| `lan_enabled` | src/tessellate/core/netbind.py:183 |
+| `env_local_label` | src/tessellate/core/netbind.py:314 |
+| `explicit_bind` | src/tessellate/core/netbind.py:176 |
+| `extra_allowed_hosts` | src/tessellate/core/netbind.py:165 |
+| `firewall_hint` | src/tessellate/core/netbind.py:490 |
+| `host_allowed` | src/tessellate/core/netbind.py:360 |
+| `is_loopback_bind` | src/tessellate/core/netbind.py:246 |
+| `lan_addresses` | src/tessellate/core/netbind.py:446 |
+| `lan_enabled` | src/tessellate/core/netbind.py:184 |
 | `lan_port` | src/tessellate/core/netbind.py:61 |
 | `lan_port_candidates` | src/tessellate/core/netbind.py:75 |
-| `listening_socket` | src/tessellate/core/netbind.py:211 |
-| `load_address_prefs_file` | src/tessellate/core/netbind.py:332 |
-| `local_name` | src/tessellate/core/netbind.py:318 |
-| `order_addresses` | src/tessellate/core/netbind.py:558 |
-| `parse_host` | src/tessellate/core/netbind.py:135 |
-| `parse_hosts` | src/tessellate/core/netbind.py:147 |
-| `saved_address_names` | src/tessellate/core/netbind.py:349 |
-| `set_current` | src/tessellate/core/netbind.py:235 |
-| `set_explicit_bind` | src/tessellate/core/netbind.py:169 |
+| `listening_socket` | src/tessellate/core/netbind.py:212 |
+| `load_address_prefs_file` | src/tessellate/core/netbind.py:333 |
+| `local_name` | src/tessellate/core/netbind.py:319 |
+| `order_addresses` | src/tessellate/core/netbind.py:559 |
+| `parse_host` | src/tessellate/core/netbind.py:136 |
+| `parse_hosts` | src/tessellate/core/netbind.py:148 |
+| `saved_address_names` | src/tessellate/core/netbind.py:350 |
+| `set_current` | src/tessellate/core/netbind.py:236 |
+| `set_explicit_bind` | src/tessellate/core/netbind.py:170 |
 | `set_lan_port` | src/tessellate/core/netbind.py:83 |
-| `url_host` | src/tessellate/core/netbind.py:230 |
+| `url_host` | src/tessellate/core/netbind.py:231 |
 
 ### src/tessellate/core/netid.py (20)
 
@@ -25893,27 +25893,28 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `snapshot` | src/tessellate/entry/export_folder.py:293 |
 | `write` | src/tessellate/entry/export_folder.py:894 |
 
-### src/tessellate/entry/folder_sync.py (19)
+### src/tessellate/entry/folder_sync.py (20)
 
 | Name | File:line |
 |---|---|
 | `State` | src/tessellate/entry/folder_sync.py:63 |
 | `SyncError` | src/tessellate/entry/folder_sync.py:58 |
-| `_apply` | src/tessellate/entry/folder_sync.py:181 |
-| `_bring_in` | src/tessellate/entry/folder_sync.py:226 |
-| `_checked` | src/tessellate/entry/folder_sync.py:160 |
+| `_apply` | src/tessellate/entry/folder_sync.py:191 |
+| `_bring_in` | src/tessellate/entry/folder_sync.py:236 |
+| `_checked` | src/tessellate/entry/folder_sync.py:171 |
 | `_fields` | src/tessellate/entry/folder_sync.py:104 |
 | `_hash` | src/tessellate/entry/folder_sync.py:118 |
-| `_keep_text` | src/tessellate/entry/folder_sync.py:197 |
+| `_keep_text` | src/tessellate/entry/folder_sync.py:207 |
 | `_open` | src/tessellate/entry/folder_sync.py:153 |
 | `_ours` | src/tessellate/entry/folder_sync.py:122 |
 | `_seal` | src/tessellate/entry/folder_sync.py:141 |
-| `_settle` | src/tessellate/entry/folder_sync.py:203 |
+| `_settle` | src/tessellate/entry/folder_sync.py:213 |
 | `_stamp` | src/tessellate/entry/folder_sync.py:100 |
+| `_sync_roots` | src/tessellate/entry/folder_sync.py:160 |
 | `_when` | src/tessellate/entry/folder_sync.py:92 |
 | `load_state` | src/tessellate/entry/folder_sync.py:77 |
-| `read_peer` | src/tessellate/entry/folder_sync.py:238 |
-| `run` | src/tessellate/entry/folder_sync.py:261 |
+| `read_peer` | src/tessellate/entry/folder_sync.py:248 |
+| `run` | src/tessellate/entry/folder_sync.py:271 |
 | `save_state` | src/tessellate/entry/folder_sync.py:85 |
 | `snapshot` | src/tessellate/entry/folder_sync.py:126 |
 
@@ -27177,7 +27178,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21352)
+## Tests (21353)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28278,7 +28279,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_focus_feedback_1029.py | 8 |
 | tests/test_focus_timer.py | 7 |
 | tests/test_folder_roundtrip.py | 8 |
-| tests/test_folder_sync_q34.py | 11 |
+| tests/test_folder_sync_q34.py | 12 |
 | tests/test_folder_sync_routes_q34.py | 2 |
 | tests/test_follow_items_1110.py | 15 |
 | tests/test_followup_ordinal_e14.py | 9 |

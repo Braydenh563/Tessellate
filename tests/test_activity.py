@@ -147,6 +147,7 @@ THREAD_SITES = {
     "core/embedmodels.py": "collect: embedding-model",
     "core/security.py": "infrastructure: a DNS probe of two seconds",
     "core/lanserve.py": "infrastructure: the one select thread that waits for a LAN connection first byte",
+    "ai/captions_helper.py": "infrastructure: the captions helper is its own child process; its one thread watches stdin so it exits with the app (the app lists the helper itself: captions_process)",
 }
 
 
