@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2697, CSS sections 523, backend routes 671, backend modules 10146, test files 2484, tests 20493, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2697, CSS sections 523, backend routes 671, backend modules 10146, test files 2484, tests 20494, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -22910,12 +22910,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_adopt_old_db` | src/tessellate/core/config.py:241 |
 | `_default_data_dir` | src/tessellate/core/config.py:266 |
 | `_owner_only` | src/tessellate/core/config.py:322 |
-| `days_from_today` | src/tessellate/core/config.py:514 |
+| `days_from_today` | src/tessellate/core/config.py:519 |
 | `default_preferences` | src/tessellate/core/config.py:339 |
-| `loaded_user_now` | src/tessellate/core/config.py:546 |
+| `loaded_user_now` | src/tessellate/core/config.py:551 |
 | `resolved_data_dir` | src/tessellate/core/config.py:303 |
-| `user_now` | src/tessellate/core/config.py:555 |
-| `week_first_day` | src/tessellate/core/config.py:530 |
+| `user_now` | src/tessellate/core/config.py:560 |
+| `week_first_day` | src/tessellate/core/config.py:535 |
 
 ### src/tessellate/core/crypto.py (11)
 
@@ -24806,12 +24806,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_account` | src/tessellate/core/secrets_store.py:29 |
-| `_file` | src/tessellate/core/secrets_store.py:33 |
-| `_keyring` | src/tessellate/core/secrets_store.py:37 |
-| `_write_file` | src/tessellate/core/secrets_store.py:57 |
-| `read` | src/tessellate/core/secrets_store.py:41 |
-| `write` | src/tessellate/core/secrets_store.py:71 |
+| `_account` | src/tessellate/core/secrets_store.py:32 |
+| `_file` | src/tessellate/core/secrets_store.py:38 |
+| `_keyring` | src/tessellate/core/secrets_store.py:44 |
+| `_write_file` | src/tessellate/core/secrets_store.py:64 |
+| `read` | src/tessellate/core/secrets_store.py:48 |
+| `write` | src/tessellate/core/secrets_store.py:78 |
 
 ### src/tessellate/core/security.py (25)
 
@@ -26353,7 +26353,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20493)
+## Tests (20494)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28343,7 +28343,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_searxng_install.py | 44 |
 | tests/test_searxng_recovery.py | 33 |
 | tests/test_season_hemisphere_1027.py | 14 |
-| tests/test_secret_settings_q22.py | 6 |
+| tests/test_secret_settings_q22.py | 7 |
 | tests/test_security_boundaries.py | 61 |
 | tests/test_security_hardening.py | 13 |
 | tests/test_security_log_and_origin.py | 2 |
