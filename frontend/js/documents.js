@@ -15978,6 +15978,7 @@ let docCmBroken = false;
 
 function loadCodeMirror() {
   if (window.CM6) return Promise.resolve(window.CM6);
+  if (docCmBroken) return Promise.resolve(null);
   if (docCmLoad) return docCmLoad;
   docCmLoad = new Promise((resolve, reject) => {
     const script = document.createElement("script");
