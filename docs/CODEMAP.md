@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8140, frontend ids 2710, CSS sections 523, backend routes 673, backend modules 10216, test files 2518, tests 20684, plan headings 1004, app scripts 28, boot scripts 37, script files 280.
+Counts: frontend functions 8140, frontend ids 2710, CSS sections 523, backend routes 673, backend modules 10216, test files 2519, tests 20687, plan headings 1004, app scripts 28, boot scripts 37, script files 280.
 
 ## Frontend functions (8140)
 
@@ -2370,7 +2370,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyHalt` | frontend/js/avatars.js:8748 |
 | `nameMarkBuddyHasAtlas` | frontend/js/avatars.js:8697 |
 | `nameMarkBuddyHeadAt` | frontend/js/avatars.js:10057 |
-| `nameMarkBuddyHint` | frontend/js/avatars.js:11310 |
+| `nameMarkBuddyHint` | frontend/js/avatars.js:11306 |
 | `nameMarkBuddyHits` | frontend/js/avatars.js:4353 |
 | `nameMarkBuddyHold` | frontend/js/avatars.js:9226 |
 | `nameMarkBuddyHover` | frontend/js/avatars.js:6934 |
@@ -2407,7 +2407,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyNoteOpen` | frontend/js/avatars.js:9395 |
 | `nameMarkBuddyNoteOpened` | frontend/js/avatars.js:9388 |
 | `nameMarkBuddyNotice` | frontend/js/avatars.js:10088 |
-| `nameMarkBuddyNudge` | frontend/js/avatars.js:11197 |
+| `nameMarkBuddyNudge` | frontend/js/avatars.js:11193 |
 | `nameMarkBuddyObstacles` | frontend/js/avatars.js:3949 |
 | `nameMarkBuddyOnBoard` | frontend/js/avatars.js:6234 |
 | `nameMarkBuddyOrigin` | frontend/js/avatars.js:4309 |
@@ -2545,7 +2545,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `queueNameMarkBuddyCheck` | frontend/js/avatars.js:7588 |
 | `registerCharacter` | frontend/js/avatars.js:1209 |
 | `setOwnNameMarkStyle` | frontend/js/avatars.js:294 |
-| `syncNameMarkBuddy` | frontend/js/avatars.js:11208 |
+| `syncNameMarkBuddy` | frontend/js/avatars.js:11204 |
 | `watchNameMark` | frontend/js/avatars.js:1096 |
 
 ### frontend/js/batch-space.js (7)
@@ -6485,28 +6485,28 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `objDragArm` | frontend/js/obj-drag.js:92 |
-| `objDragBegin` | frontend/js/obj-drag.js:173 |
-| `objDragCue` | frontend/js/obj-drag.js:105 |
-| `objDragFinish` | frontend/js/obj-drag.js:267 |
-| `objDragFrame` | frontend/js/obj-drag.js:191 |
-| `objDragKey` | frontend/js/obj-drag.js:244 |
-| `objDragLifted` | frontend/js/obj-drag.js:260 |
-| `objDragListen` | frontend/js/obj-drag.js:113 |
-| `objDragMove` | frontend/js/obj-drag.js:153 |
-| `objDragNoMenu` | frontend/js/obj-drag.js:132 |
-| `objDragNoNative` | frontend/js/obj-drag.js:138 |
-| `objDragNoScroll` | frontend/js/obj-drag.js:127 |
-| `objDragRoute` | frontend/js/obj-drag.js:199 |
-| `objDragSchedule` | frontend/js/obj-drag.js:187 |
-| `objDragSeed` | frontend/js/obj-drag.js:65 |
-| `objDragSwallowClick` | frontend/js/obj-drag.js:253 |
-| `objDragTick` | frontend/js/obj-drag.js:213 |
-| `objDragUp` | frontend/js/obj-drag.js:240 |
-| `objDragVerdict` | frontend/js/obj-drag.js:145 |
-| `objGhostMake` | frontend/js/obj-drag.js:36 |
-| `objPressInSelection` | frontend/js/obj-drag.js:56 |
-| `objPressOnGrip` | frontend/js/obj-drag.js:50 |
+| `objDragArm` | frontend/js/obj-drag.js:94 |
+| `objDragBegin` | frontend/js/obj-drag.js:175 |
+| `objDragCue` | frontend/js/obj-drag.js:107 |
+| `objDragFinish` | frontend/js/obj-drag.js:269 |
+| `objDragFrame` | frontend/js/obj-drag.js:193 |
+| `objDragKey` | frontend/js/obj-drag.js:246 |
+| `objDragLifted` | frontend/js/obj-drag.js:262 |
+| `objDragListen` | frontend/js/obj-drag.js:115 |
+| `objDragMove` | frontend/js/obj-drag.js:155 |
+| `objDragNoMenu` | frontend/js/obj-drag.js:134 |
+| `objDragNoNative` | frontend/js/obj-drag.js:140 |
+| `objDragNoScroll` | frontend/js/obj-drag.js:129 |
+| `objDragRoute` | frontend/js/obj-drag.js:201 |
+| `objDragSchedule` | frontend/js/obj-drag.js:189 |
+| `objDragSeed` | frontend/js/obj-drag.js:67 |
+| `objDragSwallowClick` | frontend/js/obj-drag.js:255 |
+| `objDragTick` | frontend/js/obj-drag.js:215 |
+| `objDragUp` | frontend/js/obj-drag.js:242 |
+| `objDragVerdict` | frontend/js/obj-drag.js:147 |
+| `objGhostMake` | frontend/js/obj-drag.js:38 |
+| `objPressInSelection` | frontend/js/obj-drag.js:58 |
+| `objPressOnGrip` | frontend/js/obj-drag.js:52 |
 
 ### frontend/js/obj-order.js (10)
 
@@ -26456,7 +26456,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20684)
+## Tests (20687)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28077,6 +28077,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_obj_clip.py | 5 |
 | tests/test_obj_drag_hold.py | 3 |
 | tests/test_obj_grip_1595.py | 5 |
+| tests/test_obj_grip_rest_1111.py | 3 |
 | tests/test_obj_order.py | 9 |
 | tests/test_obj_ref.py | 6 |
 | tests/test_obj_review_1031.py | 24 |
