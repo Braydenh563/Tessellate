@@ -833,7 +833,7 @@ _SURFACES = {
 
 _CLOCK_UNIT = r"(?:hours?|hrs?|h|minutes?|mins?|m|seconds?|secs?|s)"
 _CLOCK = re.compile(
-    r"^(?:please )?(?:(?:set|start|begin|run|make|open|show)(?: me| up)?(?: a| an| the| my)?|(?=countdown|timer))"
+    r"^(?:please )?(?:(?P<verb>set|start|begin|run|make|open|show)(?: me| up)?(?: a| an| the| my)?|(?=countdown|timer))"
     rf"(?: (?P<n1>\d+(?:\.\d+)?) ?(?P<u1>{_CLOCK_UNIT}))? ?(?P<kind>timer|countdown|pomodoro|stopwatch|clock)"
     rf"(?:(?: for| of)? (?P<n2>\d+(?:\.\d+)?) ?(?P<u2>{_CLOCK_UNIT}))?$")
 
@@ -845,6 +845,8 @@ def _clock_ask(text: str) -> dict | None:
     if not found:
         return None
     kind = found.group("kind")
+    if not found.group("verb") and not (found.group("n1") or found.group("n2")):
+        return None  # a bare "timer" or "countdown" is a word to look up (1334, 1357 class B), not the Clock
     n, unit = (found.group("n1"), found.group("u1")) if found.group("n1") else (found.group("n2"), found.group("u2"))
     minutes = None
     if n is not None:
@@ -1212,8 +1214,14 @@ def read_typed(text: str, now: datetime, locale: str | None = None) -> dict | No
     tidy, takes = question_noise.tidy(text), lambda t: read(t, now, locale) is not None
     #: A slip that lands on another word ("remiders" is "re" and "mid" and "ers", "skull") is read as the
     #: command word only when the commands then take the sentence.
-    guided = question_noise.guided(tidy, takes) or question_noise.guided(tidy, takes, real_to=parity_acts.words())
-    return read(guided, now, locale) if guided else None
+    guided = question_noise.guided(tidy, takes)
+    if guided:
+        return read(guided, now, locale)
+    #: A real word swapped for another ("oven" for "open", "last" for "list") is kept only when it makes one of the
+    #: parity acts' own sentences; "oven timer" and "my last three notes" are questions, not the Clock or a list.
+    real = question_noise.guided(tidy, takes, real_to=parity_acts.words())
+    parsed = read(real, now, locale) if real else None
+    return parsed if parsed and parsed.get("intent") in parity_acts.INTENTS | {"untag"} else None
 
 
 #: Intent reads the typed commands through the leaf (act_registry.py says why).
