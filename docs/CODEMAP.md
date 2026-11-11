@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8106, frontend ids 2684, CSS sections 523, backend routes 662, backend modules 9999, test files 2449, tests 20284, plan headings 1001, app scripts 28, boot scripts 37, script files 277.
+Counts: frontend functions 8106, frontend ids 2684, CSS sections 523, backend routes 662, backend modules 9999, test files 2450, tests 20288, plan headings 1001, app scripts 28, boot scripts 37, script files 277.
 
 ## Frontend functions (8106)
 
@@ -224,12 +224,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `_loadEntries` | frontend/js/notes-list.js:3102 |
+| `_loadEntries` | frontend/js/notes-list.js:3111 |
 | `appendInline` | frontend/js/notes-list.js:1247 |
 | `appendInlineRun` | frontend/js/notes-list.js:1001 |
 | `appendPictureBox` | frontend/js/notes-list.js:931 |
 | `appendPlainText` | frontend/js/notes-list.js:1723 |
-| `applyEntryListTabOrder` | frontend/js/notes-list.js:2550 |
+| `applyEntryListTabOrder` | frontend/js/notes-list.js:2551 |
 | `applyNotesViewMode` | frontend/js/notes-list.js:2162 |
 | `attachmentCard` | frontend/js/notes-list.js:673 |
 | `attachmentExt` | frontend/js/notes-list.js:625 |
@@ -240,20 +240,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `boardEmbedTarget` | frontend/js/notes-list.js:1347 |
 | `bodyWithoutTitleLine` | frontend/js/notes-list.js:1264 |
 | `captureBar` | frontend/js/notes-list.js:2252 |
-| `categoryAutoDot` | frontend/js/notes-list.js:2645 |
-| `categoryColour` | frontend/js/notes-list.js:2640 |
-| `categoryColoursChanged` | frontend/js/notes-list.js:2657 |
-| `categoryDotColour` | frontend/js/notes-list.js:2650 |
-| `categoryMenuItems` | frontend/js/notes-list.js:2923 |
-| `clearSkeletons` | frontend/js/notes-list.js:3024 |
-| `compareCategoryNames` | frontend/js/notes-list.js:2861 |
-| `dockConnectionsInRail` | frontend/js/notes-list.js:3697 |
+| `categoryAutoDot` | frontend/js/notes-list.js:2646 |
+| `categoryColour` | frontend/js/notes-list.js:2641 |
+| `categoryColoursChanged` | frontend/js/notes-list.js:2658 |
+| `categoryDotColour` | frontend/js/notes-list.js:2651 |
+| `categoryMenuItems` | frontend/js/notes-list.js:2932 |
+| `clearSkeletons` | frontend/js/notes-list.js:3033 |
+| `compareCategoryNames` | frontend/js/notes-list.js:2870 |
+| `dockConnectionsInRail` | frontend/js/notes-list.js:3706 |
 | `engineQueryIds` | frontend/js/notes-list.js:244 |
-| `ensureCardCounts` | frontend/js/notes-list.js:3499 |
-| `ensureMapChipsFor` | frontend/js/notes-list.js:3545 |
-| `ensureOneCardCount` | frontend/js/notes-list.js:3503 |
-| `entryListItems` | frontend/js/notes-list.js:2532 |
-| `entryListOrder` | frontend/js/notes-list.js:3203 |
+| `ensureCardCounts` | frontend/js/notes-list.js:3508 |
+| `ensureMapChipsFor` | frontend/js/notes-list.js:3554 |
+| `ensureOneCardCount` | frontend/js/notes-list.js:3512 |
+| `entryListItems` | frontend/js/notes-list.js:2533 |
+| `entryListOrder` | frontend/js/notes-list.js:3212 |
 | `entryNeedsReview` | frontend/js/notes-list.js:267 |
 | `expandAngleAutolinks` | frontend/js/notes-list.js:880 |
 | `fileCard` | frontend/js/notes-list.js:746 |
@@ -264,21 +264,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `filterNotesByTag` | frontend/js/notes-list.js:2288 |
 | `focusNoteRow` | frontend/js/notes-list.js:62 |
 | `foldNoteToolbarForFirstPaint` | frontend/js/notes-list.js:17 |
-| `followNoteChanges` | frontend/js/notes-list.js:3273 |
+| `followNoteChanges` | frontend/js/notes-list.js:3282 |
 | `heldNoteControl` | frontend/js/notes-list.js:94 |
 | `highlightIconsInto` | frontend/js/notes-list.js:1744 |
 | `highlightInto` | frontend/js/notes-list.js:1771 |
-| `initEntryListKeyboardNav` | frontend/js/notes-list.js:2560 |
+| `initEntryListKeyboardNav` | frontend/js/notes-list.js:2561 |
 | `isRemoteImage` | frontend/js/notes-list.js:937 |
 | `isRenderableUrl` | frontend/js/notes-list.js:522 |
 | `libraryVisibleRows` | frontend/js/notes-list.js:2315 |
 | `linkAppAddresses` | frontend/js/notes-list.js:891 |
 | `listedNoteIds` | frontend/js/notes-list.js:2181 |
 | `liveQueryIds` | frontend/js/notes-list.js:197 |
-| `loadCategories` | frontend/js/notes-list.js:2666 |
+| `loadCategories` | frontend/js/notes-list.js:2667 |
 | `loadEmbedDocuments` | frontend/js/notes-list.js:1460 |
-| `loadEntries` | frontend/js/notes-list.js:3091 |
-| `markSidebarRowCurrent` | frontend/js/notes-list.js:2865 |
+| `loadEntries` | frontend/js/notes-list.js:3100 |
+| `markSidebarRowCurrent` | frontend/js/notes-list.js:2874 |
 | `matchesSearch` | frontend/js/notes-list.js:404 |
 | `matchesTagCount` | frontend/js/notes-list.js:383 |
 | `meaningEngineMissing` | frontend/js/notes-list.js:291 |
@@ -291,34 +291,34 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `noteRowStays` | frontend/js/notes-list.js:2018 |
 | `noteSemanticLoaded` | frontend/js/notes-list.js:400 |
 | `noteSortName` | frontend/js/notes-list.js:1837 |
-| `noteTopicChip` | frontend/js/notes-list.js:3426 |
-| `notesRailFocusSubject` | frontend/js/notes-list.js:3690 |
-| `notesRailHiddenByChoice` | frontend/js/notes-list.js:3597 |
-| `notesRailSync` | frontend/js/notes-list.js:3608 |
-| `notesRailWanted` | frontend/js/notes-list.js:3625 |
+| `noteTopicChip` | frontend/js/notes-list.js:3435 |
+| `notesRailFocusSubject` | frontend/js/notes-list.js:3699 |
+| `notesRailHiddenByChoice` | frontend/js/notes-list.js:3606 |
+| `notesRailSync` | frontend/js/notes-list.js:3617 |
+| `notesRailWanted` | frontend/js/notes-list.js:3634 |
 | `notesScroller` | frontend/js/notes-list.js:2008 |
-| `offerWikiRename` | frontend/js/notes-list.js:3781 |
+| `offerWikiRename` | frontend/js/notes-list.js:3790 |
 | `openNoteEditor` | frontend/js/notes-list.js:112 |
 | `orderedNotesForCurrentView` | frontend/js/notes-list.js:2104 |
 | `paginateNotesForDisplay` | frontend/js/notes-list.js:2070 |
-| `paintCategoryDot` | frontend/js/notes-list.js:2653 |
-| `paintEntriesProgress` | frontend/js/notes-list.js:3059 |
+| `paintCategoryDot` | frontend/js/notes-list.js:2654 |
+| `paintEntriesProgress` | frontend/js/notes-list.js:3068 |
 | `parseNoteQuery` | frontend/js/notes-list.js:301 |
 | `propQuery` | frontend/js/notes-list.js:2295 |
 | `readableUrl` | frontend/js/notes-list.js:907 |
-| `referenceCountChip` | frontend/js/notes-list.js:3355 |
-| `referenceCountText` | frontend/js/notes-list.js:3343 |
-| `refreshEntries` | frontend/js/notes-list.js:3211 |
+| `referenceCountChip` | frontend/js/notes-list.js:3364 |
+| `referenceCountText` | frontend/js/notes-list.js:3352 |
+| `refreshEntries` | frontend/js/notes-list.js:3220 |
 | `rememberNoteFilter` | frontend/js/notes-list.js:2385 |
-| `reminderCountChip` | frontend/js/notes-list.js:3398 |
+| `reminderCountChip` | frontend/js/notes-list.js:3407 |
 | `remoteImageNote` | frontend/js/notes-list.js:941 |
 | `renderEntries` | frontend/js/notes-list.js:2397 |
-| `renderEntriesWhenShown` | frontend/js/notes-list.js:3072 |
+| `renderEntriesWhenShown` | frontend/js/notes-list.js:3081 |
 | `renderInlineMarkdown` | frontend/js/notes-list.js:957 |
 | `renderNoteInline` | frontend/js/notes-list.js:1636 |
 | `renderNoteText` | frontend/js/notes-list.js:1475 |
-| `renderNotesRail` | frontend/js/notes-list.js:3644 |
-| `renderSidebar` | frontend/js/notes-list.js:2681 |
+| `renderNotesRail` | frontend/js/notes-list.js:3653 |
+| `renderSidebar` | frontend/js/notes-list.js:2682 |
 | `renderWindowed` | frontend/js/notes-list.js:2021 |
 | `resetNoteList` | frontend/js/notes-list.js:2357 |
 | `resolveCategoryChoice` | frontend/js/notes-list.js:163 |
@@ -327,29 +327,29 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `restoreFocusTo` | frontend/js/notes-list.js:78 |
 | `restoreNoteControl` | frontend/js/notes-list.js:100 |
 | `safeHref` | frontend/js/notes-list.js:855 |
-| `scheduleEntriesProgress` | frontend/js/notes-list.js:3084 |
-| `scheduleNotesRail` | frontend/js/notes-list.js:3620 |
+| `scheduleEntriesProgress` | frontend/js/notes-list.js:3093 |
+| `scheduleNotesRail` | frontend/js/notes-list.js:3629 |
 | `searchHighlightTerms` | frontend/js/notes-list.js:1806 |
-| `selectNoteRange` | frontend/js/notes-list.js:2535 |
-| `setNotesRailHidden` | frontend/js/notes-list.js:3703 |
+| `selectNoteRange` | frontend/js/notes-list.js:2536 |
+| `setNotesRailHidden` | frontend/js/notes-list.js:3712 |
 | `setNotesViewMode` | frontend/js/notes-list.js:2218 |
-| `showEntrySkeletons` | frontend/js/notes-list.js:2960 |
+| `showEntrySkeletons` | frontend/js/notes-list.js:2969 |
 | `showNotesFilter` | frontend/js/notes-list.js:278 |
-| `showSkeletons` | frontend/js/notes-list.js:2981 |
-| `sidebarRovingRows` | frontend/js/notes-list.js:2845 |
-| `skeletonRemember` | frontend/js/notes-list.js:3003 |
+| `showSkeletons` | frontend/js/notes-list.js:2990 |
+| `sidebarRovingRows` | frontend/js/notes-list.js:2854 |
+| `skeletonRemember` | frontend/js/notes-list.js:3012 |
 | `sortEntries` | frontend/js/notes-list.js:1841 |
-| `syncNotesRailToggle` | frontend/js/notes-list.js:3633 |
+| `syncNotesRailToggle` | frontend/js/notes-list.js:3642 |
 | `toggleExpandAllRows` | frontend/js/notes-list.js:2207 |
-| `topicRepeatsTag` | frontend/js/notes-list.js:3420 |
+| `topicRepeatsTag` | frontend/js/notes-list.js:3429 |
 | `unlatex` | frontend/js/notes-list.js:790 |
 | `updateExpandAllButton` | frontend/js/notes-list.js:2187 |
 | `whyThisResultChip` | frontend/js/notes-list.js:1818 |
 | `wikiForms` | frontend/js/notes-list.js:1293 |
 | `wikiStem` | frontend/js/notes-list.js:1311 |
 | `windowRows` | frontend/js/notes-list.js:1894 |
-| `wireCategoryDropTarget` | frontend/js/notes-list.js:2942 |
-| `wireSidebarRowKeys` | frontend/js/notes-list.js:2874 |
+| `wireCategoryDropTarget` | frontend/js/notes-list.js:2951 |
+| `wireSidebarRowKeys` | frontend/js/notes-list.js:2883 |
 
 ### frontend/js/capture-ask.js (44)
 
@@ -2246,7 +2246,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasWake` | frontend/js/atlas.js:4032 |
 | `atlasWatchFigure` | frontend/js/atlas.js:3538 |
 | `atlasWhenShown` | frontend/js/atlas.js:3483 |
-| `charactersArrived` | frontend/js/atlas.js:4125 |
+| `charactersArrived` | frontend/js/atlas.js:4129 |
 | `setAtlasMood` | frontend/js/atlas.js:3822 |
 
 ### frontend/js/attach-to.js (4)
@@ -26093,7 +26093,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (20284)
+## Tests (20288)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27363,6 +27363,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_lag_log.py | 6 |
 | tests/test_lag_models_status_1662.py | 5 |
 | tests/test_lag_panel_moving_1591.py | 4 |
+| tests/test_lag_timer_named_1741.py | 4 |
 | tests/test_lan.py | 126 |
 | tests/test_languagetool_1731.py | 9 |
 | tests/test_launch_splash.py | 25 |
