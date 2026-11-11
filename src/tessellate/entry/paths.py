@@ -194,6 +194,54 @@ def build_light(
     return _connect(session, rows, extra_edges)
 
 
+def _link_phrase(reason: str | None, reason_confidence: float | None) -> str:
+    if not reason:
+        return "linked to"
+    phrase = f"linked to ({reason}"
+    if reason_confidence is not None:
+        phrase += f", {round(reason_confidence * 100)}% confidence, deduced"
+    return phrase + ")"
+
+
+def _add_link_edges(index: Connections, rows, known) -> None:  # noqa: ANN001
+    for link in rows:
+        if link.source_entry_id in known and link.target_entry_id in known:
+            # A link's own reason, when someone gave one, is a better answer
+            # to "how are these connected?" than the generic "linked to", 
+            # same phrase either direction, since "why" doesn't have one.
+            # `reason_confidence` only exists on a reason nobody actually
+            # said: "deduced" keeps Trace and the story prompt from reading
+            # a guess as a fact the way a person's or the AI's own words are.
+            phrase = _link_phrase(link.reason, link.reason_confidence)
+            # §87.5's first slice: a typed link, or one whose reason came
+            # from a confident deduction, costs less than a bare one, see
+            # `link_strength`'s own docstring for why this is a divisor.
+            index._add(
+                link.source_entry_id,
+                link.target_entry_id,
+                "link",
+                phrase,
+                phrase,
+                LINK_WEIGHT / link_strength(link.link_type, link.reason_confidence),
+            )
+
+
+def _add_tag_edges(index: Connections, entries: list) -> None:
+    by_tag: dict[str, list[int]] = defaultdict(list)
+    for entry in entries:
+        for tag in _entry_tags(entry):
+            by_tag[tag.lower()].append(entry.id)
+    for tag, ids in by_tag.items():
+        if len(ids) > HUB_TAG_NOTES:
+            index.hub_tags.append(tag)
+            continue
+        phrase = f"shares #{tag} with"
+        for position, first in enumerate(ids):
+            for second in ids[position + 1 :]:
+                index._add(first, second, "tag", phrase, phrase, TAG_WEIGHT)
+    index.hub_tags.sort()
+
+
 def _connect(session: Session, entries: list, extra_edges: list[dict] | None) -> Connections:
     """The indexing both builders share. `entries` need only carry `id`,
     `parent_id` and `tags`, which an `Entry` and a column row both do."""
@@ -213,31 +261,7 @@ def _connect(session: Session, entries: list, extra_edges: list[dict] | None) ->
         EntryLink.reason_confidence,
         EntryLink.link_type,
     )
-    for link in session.execute(links):
-        if link.source_entry_id in known and link.target_entry_id in known:
-            # A link's own reason, when someone gave one, is a better answer
-            # to "how are these connected?" than the generic "linked to", 
-            # same phrase either direction, since "why" doesn't have one.
-            # `reason_confidence` only exists on a reason nobody actually
-            # said: "deduced" keeps Trace and the story prompt from reading
-            # a guess as a fact the way a person's or the AI's own words are.
-            phrase = "linked to"
-            if link.reason:
-                phrase = f"linked to ({link.reason}"
-                if link.reason_confidence is not None:
-                    phrase += f", {round(link.reason_confidence * 100)}% confidence, deduced"
-                phrase += ")"
-            # §87.5's first slice: a typed link, or one whose reason came
-            # from a confident deduction, costs less than a bare one, see
-            # `link_strength`'s own docstring for why this is a divisor.
-            index._add(
-                link.source_entry_id,
-                link.target_entry_id,
-                "link",
-                phrase,
-                phrase,
-                LINK_WEIGHT / link_strength(link.link_type, link.reason_confidence),
-            )
+    _add_link_edges(index, session.execute(links), known)
 
     for entry in entries:
         if entry.parent_id in known and entry.parent_id != entry.id:
@@ -250,19 +274,7 @@ def _connect(session: Session, entries: list, extra_edges: list[dict] | None) ->
                 THREAD_WEIGHT,
             )
 
-    by_tag: dict[str, list[int]] = defaultdict(list)
-    for entry in entries:
-        for tag in _entry_tags(entry):
-            by_tag[tag.lower()].append(entry.id)
-    for tag, ids in by_tag.items():
-        if len(ids) > HUB_TAG_NOTES:
-            index.hub_tags.append(tag)
-            continue
-        phrase = f"shares #{tag} with"
-        for position, first in enumerate(ids):
-            for second in ids[position + 1 :]:
-                index._add(first, second, "tag", phrase, phrase, TAG_WEIGHT)
-    index.hub_tags.sort()
+    _add_tag_edges(index, entries)
 
     if extra_edges:
         for edge in extra_edges:
