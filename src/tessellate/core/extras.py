@@ -490,7 +490,9 @@ EXTRAS: tuple[Extra, ...] = (
         "Tesseract stays the reader whenever it is.",
         packages=("rapidocr_onnxruntime",),
         module="rapidocr_onnxruntime",
-        size="~60 MB",
+        #: Measured 2026-11-11 (`pip download rapidocr_onnxruntime`, cp313):
+        #: 138 MB downloaded, about 113 MB of it new beside what the app ships.
+        size="~140 MB, about 113 MB new",
         caveat="Its models read English and Chinese; the language chosen for "
         "Tesseract doesn't apply to it.",
     ),

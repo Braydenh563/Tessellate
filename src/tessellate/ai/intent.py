@@ -278,6 +278,13 @@ def _classify(message: str) -> str:
     if is_mash(message) or is_test(message):
         return SMALLTALK
 
+    #: "Its been really hot today", "ugh work": a remark to talk back to,
+    #: never a search (INBOX 1749).
+    from tessellate.ai import composer_remark
+
+    if composer_remark.is_remark(message):
+        return SMALLTALK
+
     # "hey, what did I write about pasta" is a question wearing a greeting.
     if _NOTE_WORDS.search(text):
         return NOTES

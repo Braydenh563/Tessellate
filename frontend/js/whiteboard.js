@@ -16456,6 +16456,7 @@ async function initWhiteboard() {
   // The one place a tool switch happens, so the toolbar click and the
   // keyboard shortcuts below can never drift out of sync with each other.
   function selectWbTool(tool) {
+    wbAbandonStroke();
     window.currentTool = tool;
     //: A link tool's anchor dots belong to that tool (INBOX 573).
     if (!String(tool).startsWith("link-") && !wbLinkDragActive) wbClearAnchorHints();
@@ -19137,6 +19138,19 @@ async function initWhiteboard() {
     }
   });
   
+  //: A stroke whose gesture is taken away (a tool switch, the browser's pointercancel, a release
+  //: outside the board, which the container's own pointerup never hears) is dropped, not left
+  //: as a live path with `isDrawing` still true (sm-1111 row 27).
+  function wbAbandonStroke() {
+    if (!isDrawing) return;
+    isDrawing = false;
+    currentDrawPath?.remove();
+    currentDrawPath = null;
+    currentDrawData = [];
+    wbClearAlignmentGuides();
+  }
+  window.addEventListener("pointercancel", wbAbandonStroke);
+  window.addEventListener("pointerup", wbAbandonStroke);
   containerEl.addEventListener("pointerup", async (e) => {
     if (!isDrawing || !WB_BRUSH_TOOLS.has(window.currentTool)) return;
     e.stopPropagation();

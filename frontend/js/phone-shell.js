@@ -1411,9 +1411,18 @@ function openSheet({ label, sub = "", name, build, variant = "", modal = true, r
   //: "Open the Reminders tab" and a dimmed app cannot be read against it.
   //: Escape still closes it, from inside it only. Below 600 the sheet is the
   //: window, so it stays modal there.
-  const modeless = modal === false && matchMedia("(min-width: 600px)").matches;
-  if (modeless) overlay.classList.add("sheet-modeless");
-  else overlay.setAttribute("aria-modal", "true");
+  //: Re-read when the window crosses 600 while it is open (sm-1111 row 24):
+  //: opened wide and shrunk, it kept no scrim at phone width.
+  const wide = matchMedia("(min-width: 600px)");
+  let modeless = false;
+  const applyModeless = () => {
+    modeless = modal === false && wide.matches;
+    overlay.classList.toggle("sheet-modeless", modeless);
+    if (modeless) overlay.removeAttribute("aria-modal");
+    else overlay.setAttribute("aria-modal", "true");
+  };
+  applyModeless();
+  if (modal === false) wide.addEventListener("change", applyModeless);
   //: **Above whatever it was opened from.** A sheet is a `.modal-overlay`
   //: (1010), and a surface drawn higher than that opened its sheet behind
   //: itself: the lightbox (1020) on a phone, whose ⋯ "does nothing (no
@@ -1465,6 +1474,7 @@ function openSheet({ label, sub = "", name, build, variant = "", modal = true, r
     if (settled) return;
     settled = true;
     document.removeEventListener("keydown", onKey, true);
+    wide.removeEventListener("change", applyModeless);
     onClose?.();
     returnFocus?.focus?.();
     //: **The way out** (OPEN.md, after the menus got theirs): a sheet used to

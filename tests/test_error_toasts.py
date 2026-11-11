@@ -135,6 +135,7 @@ EXPECTED = {
         '"Reading is paused in Settings, What it learned."',
     ],
     'settings-controls.js': [
+        '"Nothing to copy: the filters above are hiding every record."',
         '"Pick an embedding model first, e.g. nomic-embed-text."',
         '"No skills found in that file."',
         '"No personas found in that file."',
@@ -157,7 +158,6 @@ EXPECTED = {
         '"There is no text on the clipboard to save."',
     ],
     'settings.js': [
-        '"Nothing to copy: the filters above are hiding every record."',
         '"Give the look a name first."',
         '`You can keep ${MAX_CUSTOM_THEMES} saved looks: delete one first.`',
     ],

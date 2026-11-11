@@ -1770,6 +1770,7 @@ Link to another note with [[its first few words]]."></textarea>
                the label described a fifth of its own row. The picker moved
                down to the filing row, where it belongs with the category,
                and the label now names what is actually here. -->
+          <div id="xn-voice"></div>
           <div class="row capture-field-row capture-tools-row">
             <span class="muted capture-field-label">Add to this note</span>
             <!-- Moved up from the "File under" row below (reported live: that
@@ -9963,6 +9964,7 @@ Link to another note with [[its first few words]]."></textarea>
     <ul id="doc-dictionary-list" class="doc-dictionary-list" aria-label="Words in your dictionary"></ul>
     <input id="doc-dictionary-file" type="file" accept=".txt,text/plain" hidden>
     <h3 class="doc-dictionary-section">Checks</h3>
+    <div id="xn-languagetool"></div>
     <div class="doc-dictionary-setting">
       <span class="doc-dictionary-setting-text">
         <label for="doc-spelling-variant">Spelling</label>
@@ -10182,6 +10184,8 @@ Link to another note with [[its first few words]]."></textarea>
             <p id="ollama-status" class="status is-checking">Checking the models…</p>
             <!-- The shape of what is coming while the first status is on its
                  way (`renderSettings`: showSkeletons / clearSkeletons). -->
+            <div id="xn-needle"></div>
+            <div id="xn-localllm"></div>
             <div id="models-skeleton" class="models-skeleton"></div>
             <!-- One line, and the rest of what used to be here is in the
                  Model backend "?" below. Asked for directly: "areas with
@@ -10650,6 +10654,7 @@ Link to another note with [[its first few words]]."></textarea>
             <p id="search-engine-health" class="status"></p>
             <!-- WORLD_CLASS_PLAN section 21 rows 1 and 2: DESIGN.md's notice
                  recipe (an icon, one line, the warn tone), not an error line. -->
+            <div id="xn-semantic"></div>
             <p id="embedding-error" class="notice notice-warn hidden" role="status"></p>
             <!-- The text above already told people the fix ("switch to an
                  Ollama embedding model, download nomic-embed-text"), this
@@ -12942,6 +12947,14 @@ Link to another note with [[its first few words]]."></textarea>
                 </select>
               </div>
               <div class="row">
+                <label for="pref-date-order" class="muted">Dates like 3/4 mean</label>
+                <select id="pref-date-order" title="How a date written with slashes is read in searches and questions">
+                  <option value="auto">From my language and region (default)</option>
+                  <option value="day">Day first (3 April)</option>
+                  <option value="month">Month first (4 March)</option>
+                </select>
+              </div>
+              <div class="row">
                 <label for="pref-season-hemisphere" class="muted">Seasons</label>
                 <select id="pref-season-hemisphere" title="Which half of the year summer and winter mean">
                   <option value="auto">From my language and region (default)</option>
@@ -12949,6 +12962,12 @@ Link to another note with [[its first few words]]."></textarea>
                   <option value="south">Southern hemisphere</option>
                 </select>
               </div>
+              <h3>Search</h3>
+              <label class="check-row">
+                <input type="checkbox" id="pref-before-includes-day">
+                <span>Count the day itself in before: searches</span>
+              </label>
+              <p class="muted">Off: before:2026-03-10 stops at the 9th. On: it includes the 10th. until: always includes its day.</p>
               <h3>Chat history</h3>
               <div class="row">
                 <label for="pref-chat-retention" class="muted">Delete saved chats after</label>
@@ -13864,6 +13883,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <h3 class="inline-h3">Import a document</h3>
                 <span class="fold-help-slot" aria-hidden="true"></span>
               </div></summary>
+              <div id="xn-documents"></div>
               <div class="row">
                 <input id="import-document-file" aria-label="Choose a document to import" title="Choose a document to import" type="file" accept=".pdf,.docx,.doc,.pptx,.ppt,.xlsx,.xls,.html,.htm" class="hidden">
                 <button id="import-document" class="ghost small" type="button"><i class="ph ph-file-arrow-up ph-lead" aria-hidden="true"></i> Import a document</button>

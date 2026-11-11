@@ -192,6 +192,12 @@ def _score(hits: set[tuple[str, str]], word: str, ctx: Context | None) -> float:
     return total
 
 
+def speaks_for(readings) -> bool:  # noqa: ANN001
+    """Whether context can choose among a misspelling's readings: only when it has cues for each. One-sided cues
+    would outvote the speller ("i need ot to be": "not" has cues, "it" none), so the speller's order stands."""
+    return all(r in SENSES for r in readings)
+
+
 def lean(typed: str, readings: list[str], before: str, after_raw: str, sentence: Iterable[str], real: bool) -> tuple[str, str | None]:
     """`(chosen, alternative)` for `typed` among `readings`, the typed word itself being one when `real` (it is a
     word, and starts ahead). The likeliest by context is chosen; when its lead is small the runner-up is

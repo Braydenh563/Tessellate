@@ -91,7 +91,8 @@ def test_closing_the_graph_popup_keeps_the_keyboard_on_the_map():
     assert "returnFocus" in close
     assert '$("graph-box")?.focus(' in close
     wiring = frontend_text("settings-wiring.js")
-    esc = wiring[wiring.index('!$("graph-popup").classList.contains("hidden")'):][:120]
+    # The graph pane is built on first open (X15), so the popup is looked up, not `$`-required.
+    esc = wiring[wiring.index('document.getElementById("graph-popup")?.classList.contains("hidden") === false'):][:140]
     assert "closeGraphPopup(true)" in esc
     assert 'addEventListener("click", closeGraphPopup)' not in frontend_text("wiring.js"), (
         "a click handler would pass the event as the argument"
