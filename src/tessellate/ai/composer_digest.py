@@ -3662,25 +3662,28 @@ def _fold_past_budget(out: _Out, kind: str) -> None:
         del out.lines[keep:]
 
 
+def _story_unit(v, gisted: list[Fact], today: date):  # noqa: ANN001, ANN202
+    """One note as a clause of the story: its own told line (an event, else its facts), cut down by `composer_story`."""
+    scratch = _Out()
+    held = [f for f in gisted if f.view.id == v.id]
+    _narrate(scratch, v, held, today)
+    if not scratch.lines:
+        _lines(scratch, held, 1, by_day=today, weave=True)
+    return composer_story.clause_of(v, scratch.lines[0] if scratch.lines else "", scratch.rows[0] if scratch.rows else None)
+
+
 def _storied(out: _Out, question: str, members, facts, today: date) -> bool:  # noqa: ANN001
     """An overview of several dated notes written as paragraphs (INBOX 1743):
     the lead, a paragraph a stretch, the read of how it went, one insight.
     False, with `out` untouched, when the notes do not fit that shape."""
     dated = sorted((v for v in members if v.written), key=lambda v: (v.written, v.id))
-    if len(dated) != len(members) or (plan := composer_story.plan([v.written for v in dated], [v.note.get("content") or "" for v in dated])) is None:
+    plan = composer_story.plan([v.written for v in dated], [v.note.get("content") or "" for v in dated]) if len(dated) == len(members) else None
+    if plan is None:
         return False
     gisted = _gists(members, facts)
-    units = []
-    for v in dated:
-        scratch = _Out()
-        held = [f for f in gisted if f.view.id == v.id]
-        _narrate(scratch, v, held, today)
-        if not scratch.lines:
-            _lines(scratch, held, 1, by_day=today, weave=True)
-        unit = composer_story.clause_of(v, scratch.lines[0] if scratch.lines else "", scratch.rows[0] if scratch.rows else None, sys.modules[__name__])
-        if unit is None:
-            return False
-        units.append(unit)
+    units = [_story_unit(v, gisted, today) for v in dated]
+    if None in units:
+        return False
     out.framed = True
     composer_story.story(out, _count(len(dated)), units, [v.written for v in dated], _topic(question, members), plan)
     return True

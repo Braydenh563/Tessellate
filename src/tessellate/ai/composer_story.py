@@ -48,7 +48,7 @@ _REPORT = re.compile(r"^you (?:mentioned|said|noted|recorded|put down|jotted dow
 #: Typed without its apostrophe: said back flat ("You didnt lock in") it reads as the app's typo, so it is quoted.
 _RAW = re.compile(r"\b(?:didnt|dont|cant|wont|couldnt|wouldnt|isnt|im|ive)\b", re.I)
 _DEFINES = re.compile(r"^(?P<term>[^.]{2,60}?) (?:is|are|means|refers to) (?P<what>(?:the|a|an|when|how|any)\b.+)$", re.I | re.S)
-_ASIDE = re.compile(r"\s*[–—-]\s[^–—]*?\s[–—-]\s*")
+_ASIDE = re.compile(r"\s*[\u2013\u2014-]\s[^\u2013\u2014]*?\s[\u2013\u2014-]\s*")
 
 
 @dataclass
@@ -145,22 +145,17 @@ class Unit:
     row: dict | None = None
 
 
-def clause_of(view, line: str, row: dict | None, dg) -> Unit | None:  # noqa: ANN001
-    """The note as a clause: a definition says it defines, slang is quoted,
-    an ordinary line loses its time lead and its "you mentioned that"."""
-    prose = [s for s in view.sentences if s.kind == "prose"]
-    first = prose[0] if prose else (view.sentences[0] if view.sentences else None)
-    if first is None:
+def _defined(view, first, title: str) -> Unit | None:  # noqa: ANN001
+    """A note that says what its title is: "your X note defines the term as ..."."""
+    said = _DEFINES.match(_ASIDE.sub(" ", first.text).strip().rstrip("."))
+    if not (title and said) or re.match(r"(?:i|my|you|we)\b", first.text, re.I) or title.lower().split()[0] not in said.group("term").lower():
         return None
-    title = (view.title or "").strip().rstrip("…").strip() if view.titled else ""
-    defined = _DEFINES.match(_ASIDE.sub(" ", first.text).strip().rstrip("."))
-    if title and defined and not re.match(r"(?:i|my|you|we)\b", first.text, re.I) and title.lower().split()[0] in defined.group("term").lower():
-        return Unit(view, f"your {title} note defines the term as {_lower(defined.group('what')).strip()}", first)
-    quote = _clean_quote(first.text)
-    if (_SLANG.search(first.text) or _RAW.search(first.text)) and 0 < len(quote.split()) <= 14:
-        return Unit(view, f"you wrote “{quote}”", first)
-    if not line:
-        return None
+    return Unit(view, f"your {title} note defines the term as {_lower(said.group('what')).strip()}", first)
+
+
+def _clause(line: str, title: str, quote: str) -> str:
+    """The told line as a clause beginning "you" or "your", with no time lead and
+    one sentence; a line with no such start (or "that uni is done") is quoted."""
     body = _LEAD.sub("", line.strip()).rstrip(".")
     reported = _REPORT.match(body)
     if reported:
@@ -168,11 +163,37 @@ def clause_of(view, line: str, row: dict | None, dg) -> Unit | None:  # noqa: AN
         body = body[reported.end():] if re.match(r"you\b", body[reported.end():], re.I) else "-"
     #: One sentence a unit: the claim is the first, and a second would be uncited.
     body = re.split(r"(?<=[a-z0-9])\.\s+(?=[A-Z])", body, maxsplit=1)[0]
-    if not re.match(r"(?:you|your)\b", body, re.I):
-        said = _clean_quote(title) if title and len(title.split()) <= 6 else quote
-        body = f"you wrote “{said}”"
+    if re.match(r"(?:you|your)\b", body, re.I):
+        return _caps_days(_lower(body))
+    said = _clean_quote(title) if title and len(title.split()) <= 6 else quote
+    return f"you wrote “{said}”"
+
+
+def _first(view):  # noqa: ANN001, ANN202
+    """The sentence a note opens on: its first prose, else its first unit."""
+    prose = [s for s in view.sentences if s.kind == "prose"]
+    return (prose or view.sentences or [None])[0]
+
+
+def _said_raw(text: str, quote: str) -> bool:
+    """Slang or an apostrophe-less contraction in a short sentence: quoted, never re-voiced."""
+    return bool(_SLANG.search(text) or _RAW.search(text)) and 0 < len(quote.split()) <= 14
+
+
+def clause_of(view, line: str, row: dict | None) -> Unit | None:  # noqa: ANN001
+    """The note as a clause: a definition says it defines, slang is quoted,
+    an ordinary line loses its time lead and its "you mentioned that"."""
+    first = _first(view)
+    if first is None:
+        return None
+    title = (view.title or "").strip().rstrip("…").strip() if view.titled else ""
+    quote = _clean_quote(first.text)
+    if defined := _defined(view, first, title):
+        return defined
+    if _said_raw(first.text, quote):
+        return Unit(view, f"you wrote “{quote}”", first)
     source = next((s for s in view.sentences if row and s.start == row.get("start")), first)
-    return Unit(view, _caps_days(_lower(body)), source, row)
+    return Unit(view, _clause(line, title, quote), source, row) if line else None
 
 
 def _when(prev: date | None, d: date, said: list[str], first: bool) -> str:
