@@ -106,3 +106,15 @@ def test_a_reopened_reply_that_wrote_asks_before_regenerate():
     js = app_js_text()
     assert "wrote: bubble.dataset.wrote," in js
     assert 'if (message.wrote) handles.bubble.dataset.wrote = "1";' in js
+
+
+def test_a_stopped_plain_answer_offers_continue_and_the_guide_says_so():
+    """E60: Stop kept the words and offered nothing; a plain stopped answer
+    now has a Continue button (a press, never automatic), and the Guide says so."""
+    js = app_js_text()
+    assert "stopped && (spec.skill || spec.hasTools || spec.cutWords)" in js
+    assert "cutWords: Boolean(answerRaw)" in js
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = next(t["body"] for t in HELP_TOPICS if t["id"] == "chat-controls")
+    assert "stays, with a Continue button" in body

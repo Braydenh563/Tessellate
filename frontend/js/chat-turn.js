@@ -979,23 +979,11 @@ async function chatSendTurn(preset, opts = {}) {
       action: { tab: "chat" },
     });
   }
-  //: **A run you stopped can be picked up again.** Reported: "cant continue
-  //: canceled skills??", and it was exactly that, every resume control below
-  //: was guarded by `!stopped`. The guard belongs on the *notification* above
-  //: (nobody wants to be told ten minutes later about a stop they chose) and
-  //: never belonged on the button: pressing Stop means "not right now", not
-  //: "throw away the six steps that already ran". Resuming a stopped run is
-  //: the same call as resuming one that hit the round limit, and the step it
-  //: reached was already being tracked for the other case.
-  //: **Phase D's third third.** Resuming carries on from the step that stopped
-  //: the run; this changes that step first. A run that stalled on step 4
-  //: because the step was written for a bigger model is fixed by rewriting
-  //: step 4, and without this the only way to find out whether the rewrite
-  //: works is to run the whole skill again, every earlier step of which writes
-  //: to the notebook. It runs that step and stops, so the rest of the skill is
-  //: still there to resume afterwards.
-  //: Built from this turn's own state and, on a reopened conversation, from
-  //: the copy of it saved with the turn. See `appendRunResumeControls`.
+  //: **A run you stopped can be picked up again** ("cant continue canceled
+  //: skills??"): the `!stopped` guard belongs on the notification above, not on
+  //: the resume button; Stop means "not right now". A rewrite of the step that
+  //: stalled (Phase D) runs that step alone, so the rest can still resume.
+  //: Built from this turn's state or, on reopen, the copy saved with the turn.
   const resumeState = {
     skill: opts.skill || null,
     skillInputs: opts.skillInputs || {},
@@ -1004,6 +992,8 @@ async function chatSendTurn(preset, opts = {}) {
     pausedForManual,
     ranOutOfRounds,
     hasTools: toolEvents.length,
+    cutWords: Boolean(answerRaw), // a plain stopped answer offers Continue (E60)
+    useTools: effectiveUseTools,
   };
   appendRunResumeControls(bubble, { ...resumeState, timeline });
   chatScrollToEnd();
@@ -2340,20 +2330,20 @@ function appendRunResumeControls(bubble, spec) {
           }),
       })
     );
-  } else if (stopped && (spec.skill || spec.hasTools)) {
+  } else if (stopped && (spec.skill || spec.hasTools || spec.cutWords)) {
     //: A stopped run with no step to name, a plain agent turn, or a skill
     //: stopped before its first step finished. It still did work worth not
     //: repeating, so the offer is the same one the round limit gets.
     bubble.appendChild(
       continueRunControls({
-        label: "ph:play Resume",
+        label: spec.skill || spec.hasTools ? "ph:play Resume" : "ph:arrow-right Continue",
         hint: "Picks up from what it had already done.",
         onClick: () =>
           sendChatMessage(
             "Continue from where you stopped. Don't redo what you have " +
               "already done: carry on with what is left, and say when it is " +
               "all finished.",
-            { useTools: true }
+            { useTools: Boolean(spec.skill || spec.hasTools || spec.useTools) }
           ),
       })
     );

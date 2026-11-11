@@ -4522,27 +4522,27 @@ Format: id | file:line | one line | status.
 
 **BH1 (chat, 21 rows)**
 
-- E43 | audit-1028-agent:55 | /chat/tools/execute runs any registry tool with client-supplied arguments after "Confirm", with nothing t | open
-- E44 | audit-1028-agent:56 | chatSendTurn is a single 1,164-line function holding the stream handlers, checkpointing, timeline wiring | open
-- E45 | audit-1028-agent:57 | Five AI surfaces with separate stream consumers and renderers | open
-- E48 | audit-1028-agent:60 | Edit and resend destroys the later replies (undoable) instead of keeping versions | open
-- E51 | audit-1028-agent:63 | Citation superscript lands mid-sentence | open
-- E58 | audit-1028-agent:70 | Prompt size is modest (agent turn on a 4,096 window | open
-- E59 | audit-1028-agent:71 | No per-answer feedback (thumbs, "that was wrong") that feeds the app's own learning; only insight lines h | open
-- E60 | audit-1028-agent:72 | Not found: regenerate with a different model or persona from the answer's menu; "continue" after Stop (on | open
-- E62 | audit-1028-agent:74 | Regenerate for composer answers re-words an act confirmation ("attempt" changes the phrasing) but not the | open
-- E70 | audit-1028-agent:82 | Edit-and-resend and regenerate re-run web search and tool calls in agent mode as well (same call path as | open
-- S93 | audit-1028-shell:99 | Test coverage for the flashEntry not-in-DOM path absent | open
-- Z70 | audit-1030-composer:210 | The model's context text for each note starts with the [Uncategorised] label and the (written Sunday 18 O | open
-- AI23 | audit-1031-ai:41 | Files in this scope over the 800-line bar | open
-- AR1 | audit-1031-architecture:27 | Routes are the data layer. 359 ORM queries (session.query( or select() sit in api/routes_.py against 185 | open
-- BK11 | audit-1031-backend:23 | God modules remain (1028 K24, K25 partly) | open
-- C12 | audit-1031-composer:55 | A follow-on loses its subject: in Ask every time (the Ask client sends no objects), in Chat for every for | open
-- C36 | audit-1031-composer:79 | Grammar slips in fixed frames | open
-- P7 | audit-1108-perf:44 | routes_chat.py:575 _composed_chat still present; the 8 s probe not re-run | open
-- 1612b | owner-asks-audit-1108:23 | no summary lead lint in tests/test_manual_parity.py (grep, checked 2026-11-09) | open
-- 1693b2 | owner-asks-audit-1108:131 | Note card, badge, Why trail and timing survive a session switch | open
-- PAR2 | parity-1110:41 | Parity: model chips carry only the cited note chips, not the composer next chips (chat_turn.py model_chip | open
+- E43 | audit-1028-agent:55 | /chat/tools/execute runs any registry tool with client-supplied arguments after "Confirm", with nothing t | deferred (2026-11-11): /chat/tools/execute (routes_chat.py:2429) is also the path of the composer act cards (answer-kit.js:2238), Undo and chat-agent.js; signing the parked call needs composer_*.py to sign what it parks
+- E44 | audit-1028-agent:56 | chatSendTurn is a single 1,164-line function holding the stream handlers, checkpointing, timeline wiring | deferred (2026-11-11): refactor of chat-turn.js chatSendTurn (about 1,190 lines), no row-sized slice
+- E45 | audit-1028-agent:57 | Five AI surfaces with separate stream consumers and renderers | deferred (2026-11-11): five stream consumers, one-AnswerStream refactor
+- E48 | audit-1028-agent:60 | Edit and resend destroys the later replies (undoable) instead of keeping versions | deferred (2026-11-11): conversation branches need a stored shape and a pager, an owner design call
+- E51 | audit-1028-agent:63 | Citation superscript lands mid-sentence | deferred (2026-11-11): the lead phrase table is composer_*.py, another agent's file
+- E58 | audit-1028-agent:70 | Prompt size is modest (agent turn on a 4,096 window | partial (2026-11-11): the saved-chat list does not flash (showSkeletons returns when rows exist, notes-list.js:2991); the refetch per checkpoint stays (sheets-selects.js:1833)
+- E59 | audit-1028-agent:71 | No per-answer feedback (thumbs, "that was wrong") that feeds the app's own learning; only insight lines h | deferred (2026-11-11): a thumbs or Not right store that feeds learning is an owner call (what it teaches, and consent)
+- E60 | audit-1028-agent:72 | Not found: regenerate with a different model or persona from the answer's menu; "continue" after Stop (on | fixed 61cc1d8e7 (chat-turn.js: a stopped plain answer offers Continue; tool and skill runs had Resume). Regenerate with another model stays open
+- E62 | audit-1028-agent:74 | Regenerate for composer answers re-words an act confirmation ("attempt" changes the phrasing) but not the | deferred (2026-11-11): composer retrieval widening, composer_*.py
+- E70 | audit-1028-agent:82 | Edit-and-resend and regenerate re-run web search and tool calls in agent mode as well (same call path as | stale (2026-11-11): Regenerate and Edit ask first when the answer wrote (chat-edit.js:205 confirmRerun, dataset.wrote from chat-turn.js:644); web search is a read
+- S93 | audit-1028-shell:99 | Test coverage for the flashEntry not-in-DOM path absent | fixed 0d5270bdd (tests/test_flash_entry_missing_s93.py)
+- Z70 | audit-1030-composer:210 | The model's context text for each note starts with the [Uncategorised] label and the (written Sunday 18 O | fixed e77ad4072 (no Uncategorised label) and 61cc1d8e7 (a linked, unmatched note is a 240-character line; librarian.py)
+- AI23 | audit-1031-ai:41 | Files in this scope over the 800-line bar | deferred (2026-11-11): file splits (avatars.js, routes_chat.py and others), refactors
+- AR1 | audit-1031-architecture:27 | Routes are the data layer. 359 ORM queries (session.query( or select() sit in api/routes_.py against 185 | deferred (2026-11-11): repository layer over 359 route queries, a design pass
+- BK11 | audit-1031-backend:23 | God modules remain (1028 K24, K25 partly) | deferred (2026-11-11): god-module splits; _start_tray and _run_desktop are Windows paths
+- C12 | audit-1031-composer:55 | A follow-on loses its subject: in Ask every time (the Ask client sends no objects), in Chat for every for | deferred (2026-11-11): Ask follow-on subject, composer_*.py and the Ask client
+- C36 | audit-1031-composer:79 | Grammar slips in fixed frames | deferred (2026-11-11): the routes_chat.py sentence is gone; the remaining frames are composer_tables.py, another agent's file
+- P7 | audit-1108-perf:44 | routes_chat.py:575 _composed_chat still present; the 8 s probe not re-run | deferred (2026-11-11): the first question after a silent model pays the probe once (ollama_client.is_running, then cached quiet); skipping it for exact classes is a stream-flow change to test against a real slow model
+- 1612b | owner-asks-audit-1108:23 | no summary lead lint in tests/test_manual_parity.py (grep, checked 2026-11-09) | fixed 8e051339a (test_manual_parity.py::test_every_listed_topic_has_a_one_sentence_lead)
+- 1693b2 | owner-asks-audit-1108:131 | Note card, badge, Why trail and timing survive a session switch | fixed 741dc1f7a (tests/test_chat_reload_by_1693.py)
+- PAR2 | parity-1110:41 | Parity: model chips carry only the cited note chips, not the composer next chips (chat_turn.py model_chip | deferred (2026-11-11): the composer's next chips need its result frame (chat_chips.continue_chips, composer_chips); a model turn has none
 
 **BG1 (diagram, 15 rows)**
 
@@ -4564,22 +4564,22 @@ Format: id | file:line | one line | status.
 
 **BR1 (graph, 16 rows)**
 
-- K25 | audit-1028-backend:31 | 18 functions over 150 lines: _start_tray 346, _build_graph 324, _run_desktop 324, _optimization_pass 323 | open
-- S52 | audit-1028-shell:58 | Graph has no search-to-focus node field on the main bar | open
-- G3 | audit-1029-graph:27 | 2,000 notes: cold layout takes about 28 s to the worker's end message at both 1x and 4x | open
-- G5 | audit-1029-graph:29 | 500 notes at 4x CPU (a mid phone or old laptop) | open
-- G7 | audit-1029-graph:31 | At 500 notes there are zero labels at fit, and the 81-link hub is unnamed, which contradicts the 2026-09- | open
-- G8 | audit-1029-graph:32 | At 36 notes, 4x CPU: wheel zoom p50 33 ms with 14 of 59 frames over 50 ms; hover shows 12 long tasks of 5 | open
-- G28 | audit-1029-graph:52 | /graph payload is 1.45 MB at 2,000 notes (slim 830 KB), 0.34 s, gzip on | open
-- BK10 | audit-1031-backend:22 | /library?limit=50 answers 235 KB and /graph 289 KB at 530 notes (22 KB gzipped for graph); /entries?limit | open
-- GR2 | audit-1031-graph:16 | Interaction at 4x: 506 notes hover sweep p50 52 ms (28 of 54 frames over 50 ms, tasks to 409 ms), wheel p | open
-- GR3 | audit-1031-graph:17 | Search at 2,000 notes and 4x: typing 14 characters costs 34 long tasks summing 4.6 s, one of 1,228 ms; at | open
-- GR5 | audit-1031-graph:19 | Adding one note from the map re-runs the whole layout | open
-- GR9 | audit-1031-graph:23 | gcDraw 809 lines, gcWireInteraction 467, renderGraphCanvas 366, gcStartWorker 290; graph.js 71 addEventLi | open
-- PF10 | audit-1031-perf:44 | The graph draw loop while settling | partial
-- 1620topicsb | owner-asks-audit-1108:98 | Manage topics like tags (rename, merge, remove a note) | open
-- Z3 | audit-1031-extras:106 | "Tools and features" says "212 things Tessellate can do" and omits about 60 of the palette's own rows | open
-- G6 | fable-composer2-1110:124 | Dashboard greets once and quotes titles (greeting_compose._NEEDS); count bits in dashboard.js:526-532 aft | open
+- K25 | audit-1028-backend:31 | 18 functions over 150 lines: _start_tray 346, _build_graph 324, _run_desktop 324, _optimization_pass 323 | deferred (2026-11-11): _build_graph and _optimization_pass are now under 150 lines; _start_tray 350 and _run_desktop 296 in __main__.py are the Windows tray and desktop launch, unverifiable here
+- S52 | audit-1028-shell:58 | Graph has no search-to-focus node field on the main bar | stale (2026-11-11): #graph-search is the find box (index.html, graph.js:2317)
+- G3 | audit-1029-graph:27 | 2,000 notes: cold layout takes about 28 s to the worker's end message at both 1x and 4x | fixed 2026-10-30 (graph-1030: plain frames while a big map moves; 25 to 9-10 s); not re-measured at 2,000 notes on this loaded machine
+- G5 | audit-1029-graph:29 | 500 notes at 4x CPU (a mid phone or old laptop) | fixed ca46ad4e5 (graph-canvas.js: camera and hover frames composed from cached layers)
+- G7 | audit-1029-graph:31 | At 500 notes there are zero labels at fit, and the 81-link hub is unnamed, which contradicts the 2026-09- | owner call (2026-11-11): measured 0 of 12 wanted at the fit and 4 of 183 at 3x on a 500-note random fixture (graphlabels.js); INBOX 693 ended the landmark waiver (gcPlaceLabels, graph-canvas.js:640): a name never sits on a dot or line, so a hub with no free place is unnamed until zoom. Guaranteeing hub names needs that rule relaxed
+- G8 | audit-1029-graph:32 | At 36 notes, 4x CPU: wheel zoom p50 33 ms with 14 of 59 frames over 50 ms; hover shows 12 long tasks of 5 | fixed ca46ad4e5 (graph-canvas.js, cached layers)
+- G28 | audit-1029-graph:52 | /graph payload is 1.45 MB at 2,000 notes (slim 830 KB), 0.34 s, gzip on | stale (2026-11-11): the map asks /graph?slim=1 (graph.js:1815); at 500 notes slim 199 KB against 348 KB full
+- BK10 | audit-1031-backend:22 | /library?limit=50 answers 235 KB and /graph 289 KB at 530 notes (22 KB gzipped for graph); /entries?limit | stale (2026-11-11): /library rows carry a 160-character preview (routes_library.py _clip, 128 KB at 500 notes); /entries sends content on purpose, it is the feed
+- GR2 | audit-1031-graph:16 | Interaction at 4x: 506 notes hover sweep p50 52 ms (28 of 54 frames over 50 ms, tasks to 409 ms), wheel p | fixed 4dca18a15, ca46ad4e5 (graph-canvas.js: hairlines while moving, cached layers)
+- GR3 | audit-1031-graph:17 | Search at 2,000 notes and 4x: typing 14 characters costs 34 long tasks summing 4.6 s, one of 1,228 ms; at | fixed (graph.js:2353 GRAPH_SEARCH_GAP_MS, query-only cheap draw)
+- GR5 | audit-1031-graph:19 | Adding one note from the map re-runs the whole layout | fixed c7b7fb47a (graph-canvas.js:5720 GC_ADD_ALPHA, new notes seeded beside links)
+- GR9 | audit-1031-graph:23 | gcDraw 809 lines, gcWireInteraction 467, renderGraphCanvas 366, gcStartWorker 290; graph.js 71 addEventLi | deferred (2026-11-11): splitting gcDraw/gcWireInteraction/gcStartWorker is a multi-day refactor of one hot file, not a row-sized change
+- PF10 | audit-1031-perf:44 | The graph draw loop while settling | partial: fixed 20ed22a (label fades); a dirty rectangle per worker tick stays open (graph-canvas.js gcRequestDraw)
+- 1620topicsb | owner-asks-audit-1108:98 | Manage topics like tags (rename, merge, remove a note) | owner call (2026-11-11): topics are derived from structure; a rename is stored (PUT /graph/topics/name, routes_graph.py:1472) but merge and remove-a-note have no stored meaning until the owner says what a manual topic is
+- Z3 | audit-1031-extras:106 | "Tools and features" says "212 things Tessellate can do" and omits about 60 of the palette's own rows | stale (2026-11-11): featureCatalog draws from paletteCommands (app-features.js:235)
+- G6 | fable-composer2-1110:124 | Dashboard greets once and quotes titles (greeting_compose._NEEDS); count bits in dashboard.js:526-532 aft | stale (2026-11-11): built, tests/test_dashboard_greeting_g6_1110.py, greeting_compose._NEEDS
 
 **BA1 (agent, 15 rows)**
 

@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8112, frontend ids 2696, CSS sections 523, backend routes 667, backend modules 10050, test files 2465, tests 20385, plan headings 1002, app scripts 28, boot scripts 37, script files 277.
+Counts: frontend functions 8112, frontend ids 2696, CSS sections 523, backend routes 667, backend modules 10050, test files 2465, tests 20387, plan headings 1002, app scripts 28, boot scripts 37, script files 277.
 
 ## Frontend functions (8112)
 
@@ -2793,32 +2793,32 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addBubble` | frontend/js/chat-turn.js:2406 |
-| `agentTimeline` | frontend/js/chat-turn.js:1229 |
-| `appendRunResumeControls` | frontend/js/chat-turn.js:2300 |
-| `assistantMessageActions` | frontend/js/chat-turn.js:2505 |
-| `chatAttachmentStrip` | frontend/js/chat-turn.js:2175 |
+| `addBubble` | frontend/js/chat-turn.js:2396 |
+| `agentTimeline` | frontend/js/chat-turn.js:1219 |
+| `appendRunResumeControls` | frontend/js/chat-turn.js:2290 |
+| `assistantMessageActions` | frontend/js/chat-turn.js:2495 |
+| `chatAttachmentStrip` | frontend/js/chat-turn.js:2165 |
 | `chatSendTurn` | frontend/js/chat-turn.js:11 |
-| `commitStagedImages` | frontend/js/chat-turn.js:2078 |
-| `continueRunControls` | frontend/js/chat-turn.js:2678 |
-| `deleteChatTurn` | frontend/js/chat-turn.js:2626 |
-| `forkFromBubble` | frontend/js/chat-turn.js:2723 |
-| `manualPauseControls` | frontend/js/chat-turn.js:2752 |
-| `markFollowup` | frontend/js/chat-turn.js:2778 |
-| `mountChatTimer` | frontend/js/chat-turn.js:2127 |
-| `offerFollowups` | frontend/js/chat-turn.js:2013 |
-| `offerReminder` | frontend/js/chat-turn.js:1952 |
-| `paintChatTimer` | frontend/js/chat-turn.js:2114 |
-| `removeChatBubble` | frontend/js/chat-turn.js:2802 |
-| `renderAgentQuestion` | frontend/js/chat-turn.js:1740 |
-| `renderMemoryProposal` | frontend/js/chat-turn.js:1824 |
-| `renderRecordsDetails` | frontend/js/chat-turn.js:2583 |
-| `revalidateSelection` | frontend/js/chat-turn.js:1896 |
-| `saveFollowups` | frontend/js/chat-turn.js:2099 |
-| `selectionContextBlock` | frontend/js/chat-turn.js:2051 |
-| `settlePendingAgentQuestion` | frontend/js/chat-turn.js:2159 |
-| `startChatTimer` | frontend/js/chat-turn.js:2140 |
-| `stopChatTimer` | frontend/js/chat-turn.js:2149 |
+| `commitStagedImages` | frontend/js/chat-turn.js:2068 |
+| `continueRunControls` | frontend/js/chat-turn.js:2668 |
+| `deleteChatTurn` | frontend/js/chat-turn.js:2616 |
+| `forkFromBubble` | frontend/js/chat-turn.js:2713 |
+| `manualPauseControls` | frontend/js/chat-turn.js:2742 |
+| `markFollowup` | frontend/js/chat-turn.js:2768 |
+| `mountChatTimer` | frontend/js/chat-turn.js:2117 |
+| `offerFollowups` | frontend/js/chat-turn.js:2003 |
+| `offerReminder` | frontend/js/chat-turn.js:1942 |
+| `paintChatTimer` | frontend/js/chat-turn.js:2104 |
+| `removeChatBubble` | frontend/js/chat-turn.js:2792 |
+| `renderAgentQuestion` | frontend/js/chat-turn.js:1730 |
+| `renderMemoryProposal` | frontend/js/chat-turn.js:1814 |
+| `renderRecordsDetails` | frontend/js/chat-turn.js:2573 |
+| `revalidateSelection` | frontend/js/chat-turn.js:1886 |
+| `saveFollowups` | frontend/js/chat-turn.js:2089 |
+| `selectionContextBlock` | frontend/js/chat-turn.js:2041 |
+| `settlePendingAgentQuestion` | frontend/js/chat-turn.js:2149 |
+| `startChatTimer` | frontend/js/chat-turn.js:2130 |
+| `stopChatTimer` | frontend/js/chat-turn.js:2139 |
 
 ### frontend/js/chat-undo.js (10)
 
@@ -17366,44 +17366,44 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_app_help` | src/tessellate/ai/librarian.py:696 |
-| `_dates_hint` | src/tessellate/ai/librarian.py:567 |
-| `_match_info_hint` | src/tessellate/ai/librarian.py:596 |
-| `_pictures_hint` | src/tessellate/ai/librarian.py:555 |
-| `_tags_files_hint` | src/tessellate/ai/librarian.py:534 |
-| `_words_candidates` | src/tessellate/ai/librarian.py:1501 |
-| `_written_hint` | src/tessellate/ai/librarian.py:517 |
-| `answer` | src/tessellate/ai/librarian.py:823 |
-| `build_conversational_messages` | src/tessellate/ai/librarian.py:421 |
-| `build_facts_messages` | src/tessellate/ai/librarian.py:480 |
-| `build_messages` | src/tessellate/ai/librarian.py:705 |
-| `category_hint` | src/tessellate/ai/librarian.py:511 |
-| `clock_hint` | src/tessellate/ai/librarian.py:647 |
-| `converse` | src/tessellate/ai/librarian.py:923 |
-| `corrections_note` | src/tessellate/ai/librarian.py:1418 |
-| `draft_template` | src/tessellate/ai/librarian.py:1183 |
-| `evidence_note` | src/tessellate/ai/librarian.py:1467 |
-| `filing_corrections` | src/tessellate/ai/librarian.py:1377 |
-| `filing_prompt` | src/tessellate/ai/librarian.py:1514 |
-| `filing_style_note` | src/tessellate/ai/librarian.py:1455 |
+| `_app_help` | src/tessellate/ai/librarian.py:703 |
+| `_dates_hint` | src/tessellate/ai/librarian.py:574 |
+| `_match_info_hint` | src/tessellate/ai/librarian.py:603 |
+| `_pictures_hint` | src/tessellate/ai/librarian.py:562 |
+| `_tags_files_hint` | src/tessellate/ai/librarian.py:541 |
+| `_words_candidates` | src/tessellate/ai/librarian.py:1508 |
+| `_written_hint` | src/tessellate/ai/librarian.py:524 |
+| `answer` | src/tessellate/ai/librarian.py:830 |
+| `build_conversational_messages` | src/tessellate/ai/librarian.py:428 |
+| `build_facts_messages` | src/tessellate/ai/librarian.py:487 |
+| `build_messages` | src/tessellate/ai/librarian.py:712 |
+| `category_hint` | src/tessellate/ai/librarian.py:518 |
+| `clock_hint` | src/tessellate/ai/librarian.py:654 |
+| `converse` | src/tessellate/ai/librarian.py:930 |
+| `corrections_note` | src/tessellate/ai/librarian.py:1425 |
+| `draft_template` | src/tessellate/ai/librarian.py:1190 |
+| `evidence_note` | src/tessellate/ai/librarian.py:1474 |
+| `filing_corrections` | src/tessellate/ai/librarian.py:1384 |
+| `filing_prompt` | src/tessellate/ai/librarian.py:1521 |
+| `filing_style_note` | src/tessellate/ai/librarian.py:1462 |
 | `fill_ai_name` | src/tessellate/ai/librarian.py:211 |
-| `generate_link_reason` | src/tessellate/ai/librarian.py:1063 |
-| `generate_title` | src/tessellate/ai/librarian.py:1036 |
+| `generate_link_reason` | src/tessellate/ai/librarian.py:1070 |
+| `generate_title` | src/tessellate/ai/librarian.py:1043 |
 | `history_dropped` | src/tessellate/ai/librarian.py:312 |
 | `history_messages` | src/tessellate/ai/librarian.py:324 |
-| `improve_writing` | src/tessellate/ai/librarian.py:989 |
+| `improve_writing` | src/tessellate/ai/librarian.py:996 |
 | `length_hint` | src/tessellate/ai/librarian.py:282 |
 | `model_error_message` | src/tessellate/ai/librarian.py:47 |
-| `note_for_prompt` | src/tessellate/ai/librarian.py:384 |
+| `note_for_prompt` | src/tessellate/ai/librarian.py:389 |
 | `offline_message` | src/tessellate/ai/librarian.py:37 |
-| `plan_budget` | src/tessellate/ai/librarian.py:669 |
+| `plan_budget` | src/tessellate/ai/librarian.py:676 |
 | `profile_context` | src/tessellate/ai/librarian.py:246 |
 | `profile_from_config` | src/tessellate/ai/librarian.py:267 |
-| `propose_map_outline` | src/tessellate/ai/librarian.py:1294 |
+| `propose_map_outline` | src/tessellate/ai/librarian.py:1301 |
 | `resolve_persona_prompt` | src/tessellate/ai/librarian.py:181 |
-| `suggest_tags` | src/tessellate/ai/librarian.py:1120 |
-| `suggest_thinking_words` | src/tessellate/ai/librarian.py:1227 |
-| `system_content` | src/tessellate/ai/librarian.py:620 |
+| `suggest_tags` | src/tessellate/ai/librarian.py:1127 |
+| `suggest_thinking_words` | src/tessellate/ai/librarian.py:1234 |
+| `system_content` | src/tessellate/ai/librarian.py:627 |
 
 ### src/tessellate/ai/links.py (3)
 
@@ -26172,7 +26172,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20385)
+## Tests (20387)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26460,7 +26460,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_chat_resume_controls.py | 6 |
 | tests/test_chat_scroll_534.py | 4 |
 | tests/test_chat_slash_order.py | 2 |
-| tests/test_chat_stop_done_w1.py | 8 |
+| tests/test_chat_stop_done_w1.py | 9 |
 | tests/test_chat_stray_keys.py | 2 |
 | tests/test_chat_tab_has_ai9.py | 2 |
 | tests/test_chat_times.py | 8 |
@@ -27643,7 +27643,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_mindmap_fill.py | 3 |
 | tests/test_model_cards.py | 24 |
 | tests/test_model_connect_timeout.py | 2 |
-| tests/test_model_context_z70.py | 2 |
+| tests/test_model_context_z70.py | 3 |
 | tests/test_model_deadline_1029.py | 10 |
 | tests/test_model_delete.py | 3 |
 | tests/test_model_gate.py | 4 |

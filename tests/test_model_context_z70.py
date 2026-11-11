@@ -35,3 +35,16 @@ def test_no_category_is_no_label(build, category):
 @pytest.mark.parametrize("category", ["Health", "Courses & study", "Work"])
 def test_a_named_category_keeps_its_label(build, category):
     assert f"[{category}]" in _prompt(build, category)
+
+
+LINKED = {"id": 8, "category": "Travel", "connected": True, "tags": [], "content": "Lisbon trip. " + "Flights and hotels, " * 60}
+
+
+@BUILDS
+def test_a_linked_note_that_did_not_match_goes_in_as_a_short_line(build):
+    """Z70, the last half: a note that only arrived by a link retold in full
+    what the question did not ask about. It keeps one short line."""
+    messages = build("what is on my packing list", [_note("Travel"), LINKED])
+    said = "\n".join(str(m.get("content")) for m in messages)
+    assert "Lisbon trip." in said
+    assert said.count("Flights and hotels") <= 14, said.count("Flights and hotels")

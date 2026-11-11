@@ -381,6 +381,11 @@ UNTOOLED_NOTE_CHARS = 2_400
 BRIEF_HEADER = "(Each note is cut to the parts on my question, in its own words; … marks text left out.)"
 
 
+#: A note that only arrived by a link did not match the question, so it goes in
+#: as a line, not retold (audit 1030 Z70).
+LINKED_NOTE_CHARS = 240
+
+
 def note_for_prompt(note: dict, limit: int = MAX_NOTE_CHARS, can_fetch: bool = True) -> str:
     """A note's text, short enough to sit beside nine others.
 
@@ -393,6 +398,8 @@ def note_for_prompt(note: dict, limit: int = MAX_NOTE_CHARS, can_fetch: bool = T
     from tessellate.ai.fence import fence
 
     content = str(note.get("content", ""))
+    if note.get("connected") and not note.get("attached"):
+        limit = min(limit, LINKED_NOTE_CHARS)
     #: A note clipped from a page or brought in by an import says so in its
     #: fence (row 24): the model is told what the text is, not just that it
     #: is quoted, and `from_outside` is the same flag the agent's guard reads.
