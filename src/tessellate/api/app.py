@@ -78,6 +78,7 @@ from tessellate.api import (
     routes_vision,
     routes_resurface,
     routes_entries,
+    routes_entries_links,
     routes_entries_relations,
     routes_files,
     routes_files_ocr,
@@ -1493,6 +1494,7 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     # Before routes_entries: its static paths (`/tensions`, `/link-suggestions`) must be tried ahead
     # of `GET /{entry_id}`, which they used to precede inside that one router (K24).
     (routes_entries_relations.router, LOCKED),
+    (routes_entries_links.router, LOCKED),
     (routes_entries.router, LOCKED),
     (routes_mentions.router, LOCKED),
     (routes_meetings.router, LOCKED),
