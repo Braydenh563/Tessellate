@@ -23,13 +23,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
 from tessellate.core import crypto, events, sync_state
-from tessellate.core.database import Attachment, Document, DocumentLink, DocumentRevision, Entry, Space, impersonate_workspace
+from tessellate.core.database import Attachment, AuditLog, Document, DocumentLink, DocumentRevision, Entry, Space, impersonate_workspace
 from tessellate.entry import export_folder, manager, sync_extras, sync_keys
-from tessellate.entry.sync_segments import DAMAGED, KEY_PREFIX, SegmentError, _find
+from tessellate.entry.bin import purge_document
+from tessellate.entry.sync_segments import DAMAGED, KEY_PREFIX, SegmentError, _find, withdraw, withdraw_verdict
 
 #: How many files one pull fetches at most; the rest come at the next.
 MAX_FILES = 200
@@ -127,7 +128,25 @@ class Apply:
         words = {k: _opened(v, self.both) for k, v in words.items()}
         return None if any(v is None for v in words.values()) else words
 
+    def _withdraw_document(self, item: dict) -> str:
+        """A document made private on the other computer after it came here in the clear (INBOX 1783): gone with
+        its History and the words in its log, unless it was written or changed here, which stays and says so once."""
+        local = self.names.local("document", item["sid"])
+        doc = self.session.get(Document, local) if local is not None else None
+        if doc is None or doc.is_private:
+            return "same"
+        verdict = withdraw_verdict(self.session, self.me, item["sid"], ("document", doc.id))
+        if verdict != "purge":
+            return verdict
+        self.session.execute(update(AuditLog).where(AuditLog.entity_type == "document", AuditLog.entity_id == doc.id)
+                             .values(detail=None, payload={"private": True}))
+        purge_document(self.session, doc)
+        self.marks.append(("document", item["sid"], None, ""))
+        return "applied"
+
     def document(self, item: dict) -> str:
+        if item.get("withheld") is True:
+            return self._withdraw_document(item)
         words = self._words(item)
         if words is None:
             return "waiting"
@@ -195,6 +214,8 @@ class Apply:
         return None if canvas is None or content is None else (canvas, content)
 
     def board(self, item: dict) -> str:
+        if item.get("withheld") is True:
+            return withdraw(self.session, self.me, item, self.data_dir / "uploads")
         opened = self._board_words(item)
         if opened is None:
             return "waiting"

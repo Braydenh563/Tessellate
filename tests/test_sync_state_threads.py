@@ -82,3 +82,18 @@ def test_rows_load_the_notes_in_one_query(app_state, tmp_path):
     rows = list(sync_extras._rows(session, names, uploads))  # noqa: SLF001
     assert len([r for r in rows if r[1] == "file"]) == 6
     assert len([s for s in seen if "FROM entries" in s]) <= 1, seen
+
+
+def test_reset_device_makes_a_new_id_and_drops_what_was_tied_to_the_old_one(tmp_path):
+    old = sync_state.device_id(tmp_path)
+    sync_state.save_peer(tmp_path, "peerpeerpeer", cursor=7, synced={"document|x:1": "h"})
+    sync_state.issue_pass(tmp_path, "dev1")
+    sync_state.save_link(tmp_path, address="192.168.1.20:8443")
+    sync_state.save_arrived(tmp_path, "document", "peerpeerpeer:3", 9, "stamp")
+    new = sync_state.reset_device(tmp_path)
+    assert new != old and sync_state.device_id(tmp_path) == new and len(new) == 12
+    assert sync_state.peer(tmp_path, "peerpeerpeer")["cursor"] == 0
+    assert sync_state.link(tmp_path) == {}
+    assert sync_state._read(tmp_path).get("passes") in (None, {})  # noqa: SLF001
+    # where items from other computers landed here is kept: dropping it would fetch them all a second time
+    assert sync_state.arrived(tmp_path)["document"]["peerpeerpeer:3"] == [9, "stamp"]

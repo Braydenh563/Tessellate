@@ -439,3 +439,142 @@ def test_a_peer_file_whose_name_is_not_its_device_is_refused(two):
     file.rename(folder / "tessellate-sync-000000000000.json")
     got = sync(b, folder)
     assert got["unreadable"] == 1 and got["peers"] == 0 and texts(b) == []
+
+
+# --- documents and boards made private after sharing (INBOX 1783, PR 216 review) --------------------------------
+
+
+def _shared_doc_and_board(a: Notebook, b: Notebook, folder) -> tuple[Document, Entry]:
+    doc = Document(title="Boiler", content="Service code 5520.", updated_at=_at(1))
+    board = Entry(content="Garden plan 5520", is_board=True, updated_at=_at(1))
+    a.session.add_all([doc, board])
+    a.session.commit()
+    settle(a, b, folder)
+    return doc, board
+
+
+def _documents(book: Notebook) -> list[str]:
+    book.session.expire_all()
+    return [d.title for d in book.session.scalars(select(Document))]
+
+
+def _boards(book: Notebook) -> list[str]:
+    return [e.content for e in book.notes() if e.is_board]
+
+
+def _make_private(book: Notebook, doc: Document, board: Entry, minute: int) -> None:
+    vault.close()
+    vault.create(book.session, "a-vault-passphrase")
+    doc.is_private, doc.updated_at = True, _at(minute)
+    assert set_private(book.session, board, True)
+    book.stamp(board, minute)
+    book.session.commit()
+
+
+def test_a_document_and_a_board_made_private_after_sharing_are_withdrawn_from_the_other_computer(two):
+    a, b, folder = two
+    doc, board = _shared_doc_and_board(a, b, folder)
+    assert _documents(b) == ["Boiler"] and _boards(b) == ["Garden plan 5520"]
+    _make_private(a, doc, board, 3)
+    sync(a, folder)
+    raw = "".join(p.read_text("utf-8") for p in folder.glob("*.json"))
+    assert "5520" not in raw
+    body = _body(folder, a)
+    assert body["items"]["document"][f"{a.device}:{doc.id}"]["withheld"] is True
+    got = sync(b, folder)
+    assert got["error"] == "" and _documents(b) == [] and _boards(b) == []
+    assert "5520" not in _said(b)
+    again = sync(b, folder)  # the marker is read again and does nothing more
+    assert again["applied"] == again["conflicts"] == 0
+    a.session.expire_all()
+    assert a.session.get(Document, doc.id).is_private and a.session.get(Entry, board.id).is_private
+
+
+def test_a_withdrawn_document_changed_on_the_other_computer_is_kept_there_and_says_so(two):
+    a, b, folder = two
+    doc, board = _shared_doc_and_board(a, b, folder)
+    b.session.expire_all()
+    mine = b.session.scalars(select(Document)).one()
+    manager.log_action(b.session, "edited", "document", mine.id, "edited by hand")
+    mine.content, mine.updated_at = "Service code 5520, plus my notes", _at(4)
+    b.session.commit()
+    _make_private(a, doc, board, 5)
+    sync(a, folder)
+    got = sync(b, folder)
+    assert _documents(b) == ["Boiler"] and _boards(b) == []
+    assert got["conflicts"] == 1
+    assert _said(b).count(sync_segments.WITHHELD_KEPT) == 1
+    again = sync(b, folder)
+    assert again["conflicts"] == 0 and _said(b).count(sync_segments.WITHHELD_KEPT) == 1
+
+
+def test_a_document_private_before_it_was_ever_shared_sends_no_marker(two):
+    a, _b, folder = two
+    vault.close()
+    vault.set_key(crypto.new_dek())
+    a.session.add(Document(title="Safe", content="The code is 4412", is_private=True, updated_at=_at(1)))
+    a.session.commit()
+    sync(a, folder)
+    sync(a, folder)
+    assert _body(folder, a)["items"]["document"] == {}
+
+
+# --- two copies of one notebook writing the one same-named file (INBOX 1783) --------------------------------------
+
+
+def _body(folder, book: Notebook) -> dict:
+    sealed = json.loads((folder / f"tessellate-sync-{book.device}.json").read_text("utf-8"))
+    return json.loads(crypto.decrypt(folder_sync._key(PASS, base64.b64decode(sealed["salt"])), sealed["data"]))  # noqa: SLF001
+
+
+def _copy_state(a: Notebook, b: Notebook) -> None:
+    """B's data folder copied from A's, folder_sync_state.json included."""
+    _copy_of(a, b)
+    (b.dir / folder_sync.STATE_FILE).write_text((a.dir / folder_sync.STATE_FILE).read_text("utf-8"), "utf-8")
+
+
+def test_one_computer_syncing_again_and_again_never_trips_the_check(two):
+    a, _b, folder = two
+    note(a, "Alone", 1)
+    for _ in range(3):
+        assert sync(a, folder)["error"] == ""
+
+
+def test_a_second_copy_writing_the_same_named_file_is_found_and_nothing_is_changed(two):
+    a, b, folder = two
+    note(a, "Written on the original", 1)
+    sync(a, folder)
+    _copy_state(a, b)  # the folder was copied to a second computer after the first sync
+    note(a, "Later on the original", 2)
+    sync(a, folder)  # the original writes the file again, with a token the copy did not write
+    own = folder / f"tessellate-sync-{a.device}.json"
+    before = own.read_bytes()
+    note(b, "Only on the copy", 3)
+    blobs = {p.name for p in folder.rglob("*")}
+    got = sync(b, folder)
+    assert got["error"] == sync_segments.SAME_ID and got["applied"] == got["conflicts"] == got["shared"] == 0
+    assert own.read_bytes() == before and {p.name for p in folder.rglob("*")} == blobs
+    assert texts(b) == ["Only on the copy"]
+    assert sync(b, folder)["error"] == sync_segments.SAME_ID  # and the next press says it again
+
+
+def test_a_copy_made_before_any_sync_is_found_too(two):
+    a, b, folder = two
+    _copy_of(a, b)
+    note(a, "Original", 1)
+    sync(a, folder)
+    assert sync(b, folder)["error"] == sync_segments.SAME_ID
+
+
+def test_a_file_from_before_tokens_existed_is_ours_and_is_rewritten(two):
+    a, _b, folder = two
+    sync(a, folder)
+    own = folder / f"tessellate-sync-{a.device}.json"
+    sealed = json.loads(own.read_text("utf-8"))
+    key = folder_sync._key(PASS, base64.b64decode(sealed["salt"]))  # noqa: SLF001
+    old = json.loads(crypto.decrypt(key, sealed["data"]))
+    old.pop("token", None)
+    sealed["data"] = crypto.encrypt(key, json.dumps(old))
+    own.write_text(json.dumps(sealed), "utf-8")
+    (a.dir / folder_sync.STATE_FILE).unlink()
+    assert sync(a, folder)["error"] == ""

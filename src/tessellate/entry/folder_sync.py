@@ -18,10 +18,14 @@ wrapped for a folder peer, so private notes are left out of the segments, and pr
 files of private notes are listed with an empty hash, which the reader skips (they stay home, as items a
 private space seals do). A note that went into the folder in the clear and was made private since goes as a
 `withheld` marker, its name and time only, so the other computer withdraws its copy (INBOX 1783); the names
-that went out in the clear are kept in `folder_sync_state.json` as `shipped`.
+that went out in the clear are kept in `folder_sync_state.json` as `shipped`. A document or board made private
+since goes the same way (`sync_extras.withheld`, listed as `document|<sid>` in `shipped`).
 
 **One notebook, one name.** A notebook folder copied to a second computer carries the same `sync-state.json`;
 a file in the folder whose device is this computer's, or is not the name it is filed under, is refused.
+Two copies that both write the one file are found by a random token in the file's body, new at every write and
+remembered here as `token` in `folder_sync_state.json`: our own file holding a token we did not write means
+another copy writes it too, and the run stops before it reads, writes or deletes anything.
 
 Pure of the web layer; `api/routes_folder_sync.py` is the one caller. The folder and the time of the last run
 are remembered in `folder_sync_state.json` beside the database so the sheet can offer them next time.
@@ -32,6 +36,7 @@ from __future__ import annotations
 import base64
 import json
 import os
+import secrets
 import threading
 from pathlib import Path
 from typing import Any
@@ -174,8 +179,15 @@ def _private(session: Session, device: str, item: dict) -> bool:
     return note is None or bool(note.is_private)
 
 
-def extras(session: Session, data_dir: Path, device: str) -> tuple[dict, dict]:
-    """(manifest, {kind: {sid: state}}) for the folder: private ones listed with an empty hash, no state."""
+def _withdrawn(item: dict, shipped: set[str] | None) -> bool:
+    """A private document or board that went out in the clear before (None: any, once)."""
+    return (item["kind"] in ("document", "board") and bool(item.get("is_private"))
+            and (shipped is None or f"{item['kind']}|{item['sid']}" in shipped))
+
+
+def extras(session: Session, data_dir: Path, device: str, shipped: set[str] | None = None) -> tuple[dict, dict]:
+    """(manifest, {kind: {sid: state}}) for the folder: private ones listed with an empty hash, no state, except
+    a document or board shipped in the clear before, which goes as a withheld marker."""
     whole = sync_extras.manifest(session, data_dir, device)
     found: dict[str, dict[str, dict]] = {kind: {} for kind in sync_extras.KINDS}
     for kind in sync_extras.KINDS:
@@ -184,8 +196,17 @@ def extras(session: Session, data_dir: Path, device: str) -> tuple[dict, dict]:
             for item in sync_extras.items(session, data_dir, device, kind, sids[start:start + sync_extras.MAX_ITEMS]):
                 if not _private(session, device, item):
                     found[kind][item["sid"]] = item
-    lines = [{**x, "hash": x["hash"] if x["sid"] in found[x["kind"]] else ""} for x in whole["items"]]
+                elif _withdrawn(item, shipped):
+                    found[kind][item["sid"]] = sync_extras.withheld(item)
+    lines = [{**x, "hash": _listed(x, found[x["kind"]])} for x in whole["items"]]
     return {**whole, "items": lines, "digest": sync_extras.digest(lines)}, found
+
+
+def _listed(line: dict, found: dict[str, dict]) -> str:
+    state = found.get(line["sid"])
+    if state is None:
+        return ""
+    return sync_extras.WITHHELD if state.get("withheld") else line["hash"]
 
 
 def _blob_name(sid: str) -> str:
@@ -234,23 +255,25 @@ def _own_salt(own: Path, passphrase: str) -> tuple[bytes, bool]:
         return crypto.new_salt(), False
 
 
-def write(session: Session, data_dir: Path, path: Path, passphrase: str) -> tuple[int, list[str]]:
-    """This computer's file and its sealed attachments; (the notes it carries in the clear, every name it has sent)."""
+def write(session: Session, data_dir: Path, path: Path, passphrase: str, token: str = "") -> tuple[int, list[str]]:
+    """This computer's file and its sealed attachments; (the notes it carries in the clear, every name it has sent).
+    `token` is this write's own, left in the file for the next run to find (see `_written_by_a_copy`)."""
     device = sync_state.device_id(data_dir)
     own = path / f"{FILE_PREFIX}{device}{FILE_SUFFIX}"
     salt, kept = _own_salt(own, passphrase)
     key = _key(passphrase, salt)
-    manifest, found = extras(session, data_dir, device)
     shipped = _shipped(data_dir)
-    body = {"device": device, "written": utcnow().isoformat(), "segments": segments(session, device, shipped),
-            "manifest": manifest, "items": found}
+    manifest, found = extras(session, data_dir, device, shipped)
+    body = {"device": device, "written": utcnow().isoformat(), "token": token,
+            "segments": segments(session, device, shipped), "manifest": manifest, "items": found}
     _write_blobs(session, data_dir, path / f"{FILE_PREFIX}{device}{FILES_SUFFIX}", found["file"], (key, kept))
     sealed = {"format": FORMAT, "version": VERSION, "device": device,
               "salt": base64.b64encode(salt).decode("ascii"),
               "data": crypto.encrypt(key, json.dumps(body, ensure_ascii=False))}
     atomic_io.atomic_write_json(own, sealed, indent=0)
     sent = [n for s in body["segments"] for n in s["notes"]]
-    return sum(not n["is_private"] for n in sent), sorted((shipped or set()) | {n["sid"] for n in sent})
+    sent_extras = {f"{kind}|{sid}" for kind in ("document", "board") for sid in found[kind]}
+    return sum(not n["is_private"] for n in sent), sorted((shipped or set()) | {n["sid"] for n in sent} | sent_extras)
 
 
 # --- reading a peer --------------------------------------------------------------
@@ -315,17 +338,42 @@ def open_peer(path: Path, file: Path, passphrase: str, me: str) -> FolderLink:
 # --- one sync ----------------------------------------------------------------
 
 
+def _raw_state(data_dir: Path) -> dict:
+    try:
+        raw = json.loads(state_path(data_dir).read_text("utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return raw if isinstance(raw, dict) else {}
+
+
+def _written_by_a_copy(data_dir: Path, own: Path, passphrase: str) -> bool:
+    """This computer's own file holds a write token this computer did not write: the notebook folder was copied
+    and the other copy writes the file too. A file with no token (older) or one that cannot be opened is not."""
+    try:
+        sealed = json.loads(own.read_text("utf-8"))
+        body = json.loads(crypto.decrypt(_key(passphrase, base64.b64decode(sealed["salt"])), sealed["data"]))
+    except _OPEN_ERRORS:
+        return False
+    found = body.get("token") if isinstance(body, dict) else None
+    return isinstance(found, str) and bool(found) and found != _raw_state(data_dir).get("token")
+
+
 def run(session: Session, data_dir: Path, folder: str, passphrase: str) -> dict[str, Any]:
     """Read every peer's file through the one apply path, then write this computer's. Returns what changed."""
     path = _checked(folder, passphrase, data_dir)
     device = sync_state.device_id(data_dir)
-    counts: dict[str, Any] = {"applied": 0, "conflicts": 0, "waiting": 0, "unreadable": 0, "peers": 0, "error": ""}
+    counts: dict[str, Any] = {"applied": 0, "conflicts": 0, "waiting": 0, "unreadable": 0, "peers": 0, "error": "",
+                              "shared": 0}
+    if _written_by_a_copy(data_dir, path / f"{FILE_PREFIX}{device}{FILE_SUFFIX}", passphrase):
+        counts["error"] = sync_segments.SAME_ID  # nothing is read, written or deleted while two copies share the name
+        return counts
     for file in sorted(path.glob(f"{FILE_PREFIX}*{FILE_SUFFIX}")):
         if file.name != f"{FILE_PREFIX}{device}{FILE_SUFFIX}":
             _read_peer(session, data_dir, (path, file, passphrase), counts)
-    counts["shared"], shipped = write(session, data_dir, path, passphrase)
+    token = secrets.token_hex(8)
+    counts["shared"], shipped = write(session, data_dir, path, passphrase, token)
     atomic_io.atomic_write_json(state_path(data_dir), {"folder": folder, "last": utcnow().isoformat(),
-                                                       "shipped": shipped})
+                                                       "shipped": shipped, "token": token})
     return counts
 
 

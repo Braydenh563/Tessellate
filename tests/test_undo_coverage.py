@@ -459,6 +459,7 @@ EXEMPT: dict[str, str] = {
     "answer-kit.js:send": "job: remembers how a card was answered (Confirm, Cancel, Undo); the card has its own Undo and no note is changed",
     "settings-rows.js:syncPair": "job: pairs with another computer; Unpair undoes it and no note is changed",
     "settings-rows.js:syncUnpair": "job: forgets the pairing; Pair again restores it and no note is changed",
+    "settings-rows.js:syncReset": "job: a new sync id for this notebook, after a confirm; the other computers pair again and no note is changed",
     "settings-controls.js:saveAddressNames": "settings: a setting with its own Reset or the settings history",
     "studio.js:speakNatural": "read: speaks a note aloud; nothing is written",
     "studio.js:follow": "job: stops a studio run; deletes no user data",

@@ -57,3 +57,15 @@ def test_the_guide_tells_one_story_in_two_topics():
         assert "Sync between computers (Settings, Import & export" in body and "two ways in with one result" in body.lower()
     assert "see Sync through a folder" in home and "Sync over the home network (Two computers)" in folder
     assert TOPIC_META["folder-sync"]["target"] == TOPIC_META["two-computers"]["target"] == "sync-group"
+
+
+def test_the_group_has_a_button_for_a_new_sync_id_and_every_sentence_that_names_it_agrees():
+    from tessellate.entry import sync_segments
+
+    group = _group()
+    assert group.index('id="sync-now"') < group.index('id="sync-reset"') < group.index('<h4 class="setting-subhead">Sync through a folder</h4>')
+    help_text = group.split('id="sync-help"', 1)[1].split("</div>", 1)[0]
+    assert "Make a new sync id" in help_text and "Make a new sync id" in sync_segments.SAME_ID
+    rows = (FRONTEND / "js" / "settings-rows.js").read_text(encoding="utf-8")
+    assert '$("sync-reset")?.addEventListener("click", syncReset);' in rows and "/sync/reset" in rows
+    assert "Make a new sync id" in {t["id"]: t["body"] for t in help_chat.HELP_TOPICS}["folder-sync"]

@@ -433,6 +433,7 @@
       $("sync-now")?.addEventListener("click", syncNow);
       $("sync-pair")?.addEventListener("click", syncPair);
       $("sync-unpair")?.addEventListener("click", syncUnpair);
+      $("sync-reset")?.addEventListener("click", syncReset);
       $("sync-folder-open")?.addEventListener("click", () => openFolderSync());
       // The folder's sheet says when it has run: the one last-synced line follows (decision 14).
       document.addEventListener("sync-folder-done", () => paintSync(() => apiJson("/sync/status")));
@@ -599,6 +600,16 @@
 
   async function syncUnpair() {
     await paintSync(() => apiJson("/sync/pair", { method: "DELETE" }));
+  }
+
+  //: For a notebook folder copied to a second computer (both have the one sync id): a new id here, and the
+  //: other computers pair again. Notes already shared may reach them once more, as copies.
+  async function syncReset() {
+    const ok = await confirmDialog(
+      "Make a new sync id for this notebook? Computers paired with it will need to pair again, and notes already shared may reach them a second time.",
+      { confirmLabel: "Make a new id" },
+    );
+    if (ok) await paintSync(() => apiJson("/sync/reset", { method: "POST" }));
   }
 
   // --- Reveal replies ---------------------------------------------------------------

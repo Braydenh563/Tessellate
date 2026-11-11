@@ -40,7 +40,8 @@ MAX_NOTES = 200
 KEY_PREFIX = "sync:"
 DAMAGED = "A sync segment arrived damaged or cut off; nothing from it was applied."
 SAME_ID = ("This computer and the other one have the same sync id, so one notebook folder was copied from the other; "
-           "nothing was synced. On one of them, delete the file named sync-state in its data folder, then sync again.")
+           "nothing was synced. On one of them, press Make a new sync id in Settings, Import & export, "
+           "Sync between computers, then sync again.")
 WITHHELD_KEPT = ("Made private on the other computer; kept here because it was written or changed on this computer, "
                  "so it is still readable here.")
 _FIELDS = {"sid": str, "content": str, "tags": list, "category": str, "space": str,
@@ -234,28 +235,38 @@ def _keep_theirs_as_version(session: Session, entry: Entry, item: dict) -> None:
     manager.log_action(session, "revised", "entry", entry.id, "the other computer's version")
 
 
-def _changed_here(session: Session, entry_id: int) -> tuple[bool, bool]:
-    """(a person or Atlas here ever changed the note, the keep was already said): only a sync or a system job did not."""
+def _changed_here(session: Session, entity_type: str, entity_id: int) -> tuple[bool, bool]:
+    """(a person or Atlas here ever changed the item, the keep was already said): only a sync or a system job did not."""
     rows = session.execute(select(AuditLog.actor, AuditLog.action, AuditLog.detail).where(
-        AuditLog.entity_type == "entry", AuditLog.entity_id == entry_id)).all()
+        AuditLog.entity_type == entity_type, AuditLog.entity_id == entity_id)).all()
     said = any(detail == WITHHELD_KEPT for _, _, detail in rows)
     here = any(not (actor or "").startswith(("sync:", "system:")) and action not in events.QUIET_ACTIONS
                for actor, action, _ in rows)
     return here, said
 
 
-def _withdraw(session: Session, me: str, item: dict, uploads: Path | None) -> str:
-    """A note made private on the other computer after it came here in the clear (INBOX 1783): the copy, its
-    History and its words in the log go, unless it was written or changed here, which stays and says so once."""
+def withdraw_verdict(session: Session, me: str, sid: str, entity: tuple[str, int]) -> str:
+    """What a withheld marker does to the item (a note, document or board) it names, entity = (log type, id):
+    'same' when the keep was said already, 'conflicts' when it was written or changed here (kept, said now),
+    else 'purge'."""
+    here, said = _changed_here(session, *entity)
+    if said:
+        return "same"
+    if here or sid.partition(":")[0] == me:
+        manager.log_action(session, "kept", entity[0], entity[1], WITHHELD_KEPT)
+        return "conflicts"
+    return "purge"
+
+
+def withdraw(session: Session, me: str, item: dict, uploads: Path | None) -> str:
+    """A note or board made private on the other computer after it came here in the clear (INBOX 1783): the copy,
+    its History and its words in the log go, unless it was written or changed here, which stays and says so once."""
     entry = _find(session, me, item["sid"])
     if entry is None or entry.is_private:
         return "same"
-    here, said = _changed_here(session, entry.id)
-    if said:
-        return "same"
-    if here or item["sid"].partition(":")[0] == me:
-        manager.log_action(session, "kept", "entry", entry.id, WITHHELD_KEPT)
-        return "conflicts"
+    verdict = withdraw_verdict(session, me, item["sid"], ("entry", entry.id))
+    if verdict != "purge":
+        return verdict
     manager_purge.seal_private_events(session, [entry.id])
     manager_purge.purge_entries(session, [entry], uploads_dir=uploads)
     return "applied"
@@ -297,7 +308,7 @@ def apply_segment(session: Session, me: str, segment: dict, both: sync_keys.Keys
     with events.acting_as(sync_actor(peer)), impersonate_workspace(session, ""):
         for item in notes:
             if item.get("withheld") is True:
-                report[_withdraw(session, me, item, uploads)] += 1
+                report[withdraw(session, me, item, uploads)] += 1
             else:
                 report[_apply_one(session, me, peer, sync_keys.opened(item, both), both)] += 1
             session.commit()
