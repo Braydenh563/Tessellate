@@ -227,23 +227,12 @@
     const panel = $("lan-popover");
     if (!button || !panel || button.dataset.lanWired) return;
     button.dataset.lanWired = "1";
-    //: Captured, so it runs before the popover's own listener: a button with
-    //: no box (below 600 the bar is not on screen and `PHONE_STATUS_ROWS`
-    //: presses it; or its slot is switched off) opens the sheet instead.
-    button.addEventListener(
-      "click",
-      (event) => {
-        if (button.getBoundingClientRect().width) return;
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        lanOpenSheet();
-      },
-      true
-    );
+    //: A button with no box (below 600 the bar is not on screen and `PHONE_STATUS_ROWS` presses it; or its slot is
+    //: switched off) opens the sheet instead. Hooks, not listeners on the button: wireHelpPopover's one capture listener
+    //: on the document stops the press before any listener here runs (INBOX 1742).
+    panel._instead = () => !button.getBoundingClientRect().width && (lanOpenSheet(), true);
+    panel._afterOpen = () => lanFillPanel(panel, () => placeHelpPopover(panel, button));
     wireHelpPopover(button, panel);
-    button.addEventListener("click", () => {
-      if (button.getAttribute("aria-expanded") === "true") lanFillPanel(panel, () => placeHelpPopover(panel, button));
-    });
   }
 
   function lanOpenSheet() {

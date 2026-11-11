@@ -230,21 +230,12 @@
       const el = event.target;
       if (!el.closest?.("#obj-tray, .obj-tray, #status-tray") && objDestinationAt(el)) objTrayFrom = el;
     });
-    //: Captured, ahead of the popover's own listener: a button with no box (below
-    //: 600 the bar is not on screen and the header's menu presses it) opens the sheet.
-    button.addEventListener("click", (event) => {
-      if (button.getBoundingClientRect().width) return;
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      objTraySheet();
-    }, true);
+    //: A button with no box (below 600 the bar is not on screen and the header's menu presses it) opens the sheet.
+    //: Hooks, not listeners on the button: wireHelpPopover's capture listener on the document stops the press first (INBOX 1742).
+    panel._instead = () => !button.getBoundingClientRect().width && (objTraySheet(), true);
+    //: Into the panel once open: it is last in the page, seven Tab stops from the button.
+    panel._afterOpen = () => (panel.querySelector(".obj-tray-use") || panel.querySelector("button:not(:disabled)"))?.focus();
     wireHelpPopover(button, panel);
-    button.addEventListener("click", () => {
-      if (button.getAttribute("aria-expanded") !== "true") return;
-      placeHelpPopover(panel, button);
-      //: Into the panel: it is last in the page, seven Tab stops from the button.
-      (panel.querySelector(".obj-tray-use") || panel.querySelector("button:not(:disabled)"))?.focus();
-    });
     panel.addEventListener("keydown", (event) => {
       if (event.key === "Escape") button.focus();
     });

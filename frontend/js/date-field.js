@@ -126,8 +126,9 @@
       return wrap;
     };
     wireHelpPopover(opener, panel);
-    opener.addEventListener("click", () => {
-      if (opener.getAttribute("aria-expanded") === "true") return;
+    //: Filled as it opens, from wireHelpPopover's `_beforeOpen` (INBOX 1742): a click listener on the opener never ran
+    //: once every popover trigger's press was read by one capture listener on the document (perf audit 1108 P4).
+    panel._beforeOpen = () => {
       if (isTime) renderTimes();
       else render(`${(input.value || dateFieldKey(new Date())).slice(0, 7)}-01`, null);
       setTimeout(() => {
@@ -135,7 +136,7 @@
         if (at) { at.focus({ preventScroll: true }); at.scrollIntoView?.({ block: "nearest" }); }
         else panel.querySelector(".timeline-monthday")?.focus({ preventScroll: true });
       }, 0);
-    }, true);
+    };
     panel.addEventListener("keydown", (event) => {
       if (event.key === "Escape") { opener.focus(); return; }
       const current = document.activeElement?.closest?.(".timeline-monthday");

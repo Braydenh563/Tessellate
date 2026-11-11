@@ -475,7 +475,9 @@ def test_the_watch_paints_the_icon_and_keeps_going_while_lan_mode_is_off():
     assert "lanNoticeSwitchedOff(state.switched_off)" in once
     # The recipes: the help popover on a desktop, the sheet without a box.
     assert "wireHelpPopover(button, panel)" in watch and "openSheet({" in watch
-    assert "stopImmediatePropagation()" in watch and "getBoundingClientRect().width" in watch
+    # A boxless button opens the sheet: now a `_instead` hook the shared popover listener calls (INBOX 1742), since a
+    # capture listener on the button never ran once that listener stopped the press first.
+    assert "panel._instead = () => !button.getBoundingClientRect().width && (lanOpenSheet(), true)" in watch
     # One switch and one set of network rows, shared with Settings.
     assert "lanSwitch(!state.allow_lan)" in watch and "lanNetworkRows(state, paint)" in watch
     assert 'shortcutTitle(`Other devices. ${look.words}`, "lanPanel")' in watch

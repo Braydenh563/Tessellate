@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8105, frontend ids 2684, CSS sections 523, backend routes 662, backend modules 9999, test files 2448, tests 20281, plan headings 1001, app scripts 28, boot scripts 37, script files 277.
+Counts: frontend functions 8105, frontend ids 2684, CSS sections 523, backend routes 662, backend modules 9999, test files 2449, tests 20283, plan headings 1001, app scripts 28, boot scripts 37, script files 277.
 
 ## Frontend functions (8105)
 
@@ -148,37 +148,37 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `afterMenuExit` | frontend/js/menus.js:781 |
-| `buildMenuGroupButton` | frontend/js/menus.js:1348 |
-| `buildMenuItemButton` | frontend/js/menus.js:1315 |
-| `cardOpener` | frontend/js/menus.js:462 |
+| `afterMenuExit` | frontend/js/menus.js:788 |
+| `buildMenuGroupButton` | frontend/js/menus.js:1355 |
+| `buildMenuItemButton` | frontend/js/menus.js:1322 |
+| `cardOpener` | frontend/js/menus.js:469 |
 | `closeActionMenus` | frontend/js/menus.js:105 |
 | `closeActionMenusOnScroll` | frontend/js/menus.js:59 |
 | `closeHelpPopovers` | frontend/js/menus.js:284 |
-| `docBacklinkContext` | frontend/js/menus.js:1196 |
+| `docBacklinkContext` | frontend/js/menus.js:1203 |
 | `dragFlag` | frontend/js/menus.js:37 |
-| `entryOverflowMenu` | frontend/js/menus.js:1509 |
-| `escapeAndCapMenu` | frontend/js/menus.js:830 |
-| `escapeMenuIfClipped` | frontend/js/menus.js:729 |
-| `escapeMenuToBody` | frontend/js/menus.js:751 |
-| `fitActionMenuInWindow` | frontend/js/menus.js:509 |
-| `focusMenuItem` | frontend/js/menus.js:642 |
-| `historyActorLabel` | frontend/js/menus.js:1584 |
+| `entryOverflowMenu` | frontend/js/menus.js:1516 |
+| `escapeAndCapMenu` | frontend/js/menus.js:837 |
+| `escapeMenuIfClipped` | frontend/js/menus.js:736 |
+| `escapeMenuToBody` | frontend/js/menus.js:758 |
+| `fitActionMenuInWindow` | frontend/js/menus.js:516 |
+| `focusMenuItem` | frontend/js/menus.js:649 |
+| `historyActorLabel` | frontend/js/menus.js:1591 |
 | `inlineActionIs` | frontend/js/menus.js:8 |
-| `isEditConflict` | frontend/js/menus.js:1579 |
-| `menuClippingAncestor` | frontend/js/menus.js:656 |
-| `menuExitMs` | frontend/js/menus.js:788 |
-| `menuSidePlan` | frontend/js/menus.js:487 |
+| `isEditConflict` | frontend/js/menus.js:1586 |
+| `menuClippingAncestor` | frontend/js/menus.js:663 |
+| `menuExitMs` | frontend/js/menus.js:795 |
+| `menuSidePlan` | frontend/js/menus.js:494 |
 | `nearestScrollParent` | frontend/js/menus.js:161 |
-| `openActionMenu` | frontend/js/menus.js:529 |
-| `placeEscapedMenu` | frontend/js/menus.js:696 |
+| `openActionMenu` | frontend/js/menus.js:536 |
+| `placeEscapedMenu` | frontend/js/menus.js:703 |
 | `placeHelpPopover` | frontend/js/menus.js:192 |
-| `restoreEscapedMenu` | frontend/js/menus.js:795 |
-| `restoreEscapedMenuAfterExit` | frontend/js/menus.js:776 |
-| `wireEscapedActionMenu` | frontend/js/menus.js:899 |
-| `wireEscapedMenuResize` | frontend/js/menus.js:1179 |
+| `restoreEscapedMenu` | frontend/js/menus.js:802 |
+| `restoreEscapedMenuAfterExit` | frontend/js/menus.js:783 |
+| `wireEscapedActionMenu` | frontend/js/menus.js:906 |
+| `wireEscapedMenuResize` | frontend/js/menus.js:1186 |
 | `wireHelpPopover` | frontend/js/menus.js:347 |
-| `wireMenuKeyboard` | frontend/js/menus.js:1254 |
+| `wireMenuKeyboard` | frontend/js/menus.js:1261 |
 
 ### frontend/js/lightbox.js (2)
 
@@ -5645,20 +5645,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `lanAnswerDevice` | frontend/js/lan-watch.js:74 |
 | `lanDismissSwitchedOff` | frontend/js/lan-watch.js:151 |
-| `lanDrawPanel` | frontend/js/lan-watch.js:323 |
-| `lanFillPanel` | frontend/js/lan-watch.js:283 |
+| `lanDrawPanel` | frontend/js/lan-watch.js:312 |
+| `lanFillPanel` | frontend/js/lan-watch.js:272 |
 | `lanLook` | frontend/js/lan-watch.js:169 |
 | `lanLookFromState` | frontend/js/lan-watch.js:199 |
 | `lanLookFromWatch` | frontend/js/lan-watch.js:187 |
 | `lanNoticeDevice` | frontend/js/lan-watch.js:84 |
 | `lanNoticeHeld` | frontend/js/lan-watch.js:113 |
 | `lanNoticeSwitchedOff` | frontend/js/lan-watch.js:133 |
-| `lanOpenPanel` | frontend/js/lan-watch.js:264 |
-| `lanOpenSheet` | frontend/js/lan-watch.js:249 |
+| `lanOpenPanel` | frontend/js/lan-watch.js:253 |
+| `lanOpenSheet` | frontend/js/lan-watch.js:238 |
 | `lanPaintIcon` | frontend/js/lan-watch.js:210 |
-| `lanPanelHeading` | frontend/js/lan-watch.js:316 |
-| `lanPanelLine` | frontend/js/lan-watch.js:309 |
-| `lanRefreshOpenPanel` | frontend/js/lan-watch.js:275 |
+| `lanPanelHeading` | frontend/js/lan-watch.js:305 |
+| `lanPanelLine` | frontend/js/lan-watch.js:298 |
+| `lanRefreshOpenPanel` | frontend/js/lan-watch.js:264 |
 | `lanWatch` | frontend/js/lan-watch.js:51 |
 | `lanWatchOnce` | frontend/js/lan-watch.js:23 |
 | `lanWirePanel` | frontend/js/lan-watch.js:225 |
@@ -26092,7 +26092,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (20281)
+## Tests (20283)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27262,6 +27262,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_help_controls.py | 19 |
 | tests/test_help_coverage.py | 6 |
 | tests/test_help_emphasis.py | 5 |
+| tests/test_help_popover_hooks_1742.py | 2 |
 | tests/test_help_popover_in_dialogs.py | 5 |
 | tests/test_help_retrieval.py | 8 |
 | tests/test_help_search.py | 3 |
@@ -29247,7 +29248,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1217 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:168 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:170 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4176 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3130 |

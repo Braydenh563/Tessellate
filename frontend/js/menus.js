@@ -414,12 +414,17 @@ function wireHelpPopover(trigger, panel) {
     panel.classList.add("help-popover");
     trigger.setAttribute("aria-expanded", "true");
     openHelpPopovers.add(entry);
+    //: A panel that fills itself when it opens (date-field.js): the shared capture listener below stops the press before
+    //: any listener on the trigger runs, so a trigger's own click handler never sees it (INBOX 1742: empty date pickers).
+    panel._beforeOpen?.();
     //: The panel's own stop is added at its first open: a '?' never opened (most of Settings' hundred) costs no listener.
     if (!panel._helpStop) {
       panel._helpStop = true;
       panel.addEventListener("click", (event) => event.stopPropagation());
     }
     placeHelpPopover(panel, trigger);
+    //: After it is placed: a panel that fills or focuses into itself once open (lan-watch.js, obj-tray.js).
+    panel._afterOpen?.();
   };
   entry.toggle = () => {
     if (openHelpPopovers.has(entry)) entry.close();
@@ -439,7 +444,9 @@ document.addEventListener("click", (event) => {
     if (!entry) continue;
     event.preventDefault();
     event.stopPropagation();
-    entry.toggle();
+    //: `_instead`: a trigger that opens something else this time (a sheet when the status bar is off screen) says so
+    //: here; a capture listener on the trigger itself never runs, this one stops the press first (INBOX 1742).
+    if (!entry.panel._instead?.()) entry.toggle();
     return;
   }
 }, true);
