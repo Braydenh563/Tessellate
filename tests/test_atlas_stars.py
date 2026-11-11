@@ -43,7 +43,6 @@ const ctx = {
   getComputedStyle: () => ({ transform: "none", rotate: "none", opacity: "1" }),
   setTimeout: (f, ms, ...a) => { timers.push(() => f(...a)); return timers.length; },
   requestAnimationFrame: (f) => { frames.push(f); return frames.length; },
-  setTimeout: (f) => { frames.push(() => f()); return frames.length; },  // the first look runs in a timer after the frame (`atlasRigWake.afterPaint`)
   atlasTailWake() {}, atlasFix: (n) => +n.toFixed(2), atlasArmPath: () => "M0 0", atlasArmHand: () => "", atlasState: {},
   ATLAS_LOOKS: {},
   nmb: { flight: null },
