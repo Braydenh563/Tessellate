@@ -224,13 +224,13 @@ Parked until the owner's data or a check on real hardware:
 ~~- C29 One click on the timer chip stops a 25-minute timer with no Undo | 1031-extras Z2~~ **Fixed before s5-1110 (`stopUtilityClock` offers Undo).**
 
 **W22 Chat, Ask and the Guide** (C, Ask and help, Sonnet; not beside W1). Files: `capture-ask.js`, `ask-compose.js`, `ai/help_chat.py`, `ai/help_topics_more.py`. Checks: `tests/test_manual_parity.py`, `tests/test_guide_*`. Done when: each row fixed, help moved with it (order 13).
-- C30 Ask redesign at half width | t20#4, OPEN 22-10 doc
+- C30 Ask redesign at half width | t20#4, OPEN 22-10 doc. **Measured 1111 docs spoke, not changed:** the Ask section at 720 and 960 px wide has 0 elements past the viewport and scrollWidth equal to the width; the row has no spec beyond "half width", so a redesign is an owner call
 - ~~C31 Start SearXNG from a button | t20#6~~ **Stale: built** (ask-compose.js searxng-start offer), s6-1110
 - ~~C32 One-line summary at the top of every Help topic | oa 1607 e, 1612 b~~ **Stale: built** (help_leads.py), s6-1110
 - ~~C33 The Guide's no-model answer prints no "I took that to mean" | t20#13~~ **Stale: built** (offline_answer says "Assuming you meant"), s6-1110
 - ~~C34 Ask history shows glued titles | 1107 D26~~ **Not reproduced: same cause as D5 (fixed)**, s6-1110
-- C35 Citation style (after Q1); path-first Guide answers (after Q23) | 1107 D25, E33
-- C36 "buttons disappeared" after opening Why: not reproduced, one more drive | chatfoot L4
+- C35 Citation style (after Q1); ~~path-first Guide answers (after Q23)~~ | 1107 D25, E33. **E33 built 1111 docs spoke** (spoken lead first, place as its own last line for a how-to with no steps; where-questions and stepped how-tos already led with the place). **D25 left for the composer spoke:** the bracketed title is written by `composer_phrases`, `composer_answer`, `composer_notes` and `composer_openlinks`, so removing it (and then `linkCitedTitles` in ask-compose.js and tests/test_composer_688.py) is one change across files this spoke does not own
+~~C36 "buttons disappeared" after opening Why: not reproduced, one more drive | chatfoot L4~~ **Closed 1111 docs spoke as unverifiable:** O26 already records 0 removals in three drives; a fourth adds nothing without a repro
 
 **W23 Documents daily UX** (C, documents, Sonnet; verify first; not beside W4 or W28). Files: `documents*.js` outside the save path. Checks: `tests/test_doc*`. Done when: rows fixed or struck.
 - ~~C37 Spell and autocorrect split non-ASCII words ("café") | 1028-docs D8~~ **Stale: fixed** (CHANGELOG 1499), s6-1110
