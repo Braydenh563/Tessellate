@@ -5,6 +5,7 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 - Timeline header is a true total (W21): the first `/timeline` page carries `total`, the rows in the whole range, so the line reads "300 of 2000 items" and not "300+ items" while more pages wait; the plus stays only if the server does not say.
+- Media (sm-1111 row 9): a picture read or caption that finishes after a hand edit keeps the edit (`vision_ocr_and_store`, `caption_and_store`).
 - Security (audit 1028 E43): Confirm on a card runs what the card proposed and spends it; a press naming a different action, or a card already answered or expired, answers 409 and runs nothing (`consent_store.refusal_for_press`; tests/test_confirm_binds_to_card_e43.py). Undo and redo carry no card and are unchanged.
 - Reminders (audit 1028 K32, 1031 BK12): the page's minute look asks `GET /reminders/due` (open count, soonest, a stamp; about 100 bytes) and fetches the list only when the stamp moved.
 - Settings (audit 1028 K13): "Let that app add and change notes" under Use these tools from another app turns on MCP writes (off by default); the graph help panel is 1000 characters or fewer again.
