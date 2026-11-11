@@ -1103,7 +1103,7 @@ async function goToTabHistory(next, { fromBrowser = false } = {}) {
   tabSwitchDeclined = false;
   const scroll = entry.scroll;
   try {
-    await openHistoryEntry(entry);
+    await openHistoryEntry(entry, { from: tabHistory.stack[from] });
     if (entry.tab === "settings" && scroll) restoreSettingsScroll(entry.section, scroll);
   } finally {
     // Cleared in a finally so a throw inside a tab's own setup cannot strand
@@ -1151,7 +1151,7 @@ function restoreSettingsScroll(section, top) {
 //: thing open in it. Shared by the history walk above and the router's fresh
 //: visits (a reload, a pasted link: `routerOpen`, router.js), which are the
 //: same question asked from an address instead of from the stack.
-async function openHistoryEntry(entry) {
+async function openHistoryEntry(entry, { from = null } = {}) {
   if (await window.overlayGo?.(entry)) return;
   // Settings is a modal overlay, not one of the tab-pages switchTab knows
   // about: asked for directly: "the back and forward buttons should cover
@@ -1166,6 +1166,8 @@ async function openHistoryEntry(entry) {
     return;
   }
   if (settingsModalOpen()) closeSettingsModal();
+  //: Settings closed onto the tab it was under: that page never left, so no switchTab (580ms at 4x).
+  if (from?.tab === "settings" && entry.tab === prefs.get("activeTab", null)) return;
   //: Awaited: every branch below reaches straight into the tab's own file
   //: (`openWhiteboardBoard`, `openDocument`, `graphFocusModeId`), and two of
   //: those are lazily loaded now (A1). `graphFocusModeId` in particular is a
