@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2705, CSS sections 523, backend routes 671, backend modules 10154, test files 2493, tests 20535, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2705, CSS sections 523, backend routes 671, backend modules 10154, test files 2495, tests 20541, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -3647,20 +3647,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docBlockBarEl` | frontend/js/documents-callouts.js:132 |
 | `docBlockBarShow` | frontend/js/documents-callouts.js:180 |
 | `docBlockBarSoon` | frontend/js/documents-callouts.js:146 |
-| `docBlockDelete` | frontend/js/documents-callouts.js:233 |
-| `docBlockEdit` | frontend/js/documents-callouts.js:220 |
+| `docBlockDelete` | frontend/js/documents-callouts.js:238 |
+| `docBlockEdit` | frontend/js/documents-callouts.js:225 |
 | `docBlockLines` | frontend/js/documents-callouts.js:159 |
 | `docCalloutFold` | frontend/js/documents-callouts.js:47 |
 | `docCalloutFoldRange` | frontend/js/documents-callouts.js:36 |
 | `docCalloutFolded` | frontend/js/documents-callouts.js:57 |
-| `docCalloutKindMenu` | frontend/js/documents-callouts.js:276 |
-| `docFoldMarkedCallouts` | frontend/js/documents-callouts.js:312 |
-| `docGoToFootnote` | frontend/js/documents-callouts.js:329 |
-| `docHeadingFold` | frontend/js/documents-callouts.js:346 |
+| `docCalloutKindMenu` | frontend/js/documents-callouts.js:281 |
+| `docFoldMarkedCallouts` | frontend/js/documents-callouts.js:317 |
+| `docGoToFootnote` | frontend/js/documents-callouts.js:334 |
+| `docHeadingFold` | frontend/js/documents-callouts.js:351 |
 | `docLineOffset` | frontend/js/documents-callouts.js:174 |
 | `docSetCalloutHead` | frontend/js/documents-callouts.js:101 |
 | `docTocJump` | frontend/js/documents-callouts.js:76 |
-| `docToggleCalloutFold` | frontend/js/documents-callouts.js:291 |
+| `docToggleCalloutFold` | frontend/js/documents-callouts.js:296 |
 
 ### frontend/js/documents-cm-theme.js (1)
 
@@ -8808,35 +8808,35 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addBoardToNote` | frontend/js/whiteboard.js:26345 |
-| `boardItemCount` | frontend/js/whiteboard.js:25215 |
-| `boardSort` | frontend/js/whiteboard.js:25219 |
-| `boardTypeFilter` | frontend/js/whiteboard.js:25262 |
+| `addBoardToNote` | frontend/js/whiteboard.js:26351 |
+| `boardItemCount` | frontend/js/whiteboard.js:25221 |
+| `boardSort` | frontend/js/whiteboard.js:25225 |
+| `boardTypeFilter` | frontend/js/whiteboard.js:25268 |
 | `clearWbSelection` | frontend/js/whiteboard.js:7005 |
 | `createNewBoard` | frontend/js/whiteboard.js:19710 |
 | `deleteWbSelection` | frontend/js/whiteboard.js:7747 |
-| `dragEndNode` | frontend/js/whiteboard.js:24941 |
-| `dragStart` | frontend/js/whiteboard.js:24766 |
-| `dragging` | frontend/js/whiteboard.js:24825 |
-| `drawLibraryBoardsGallery` | frontend/js/whiteboard.js:25351 |
+| `dragEndNode` | frontend/js/whiteboard.js:24947 |
+| `dragStart` | frontend/js/whiteboard.js:24772 |
+| `dragging` | frontend/js/whiteboard.js:24831 |
+| `drawLibraryBoardsGallery` | frontend/js/whiteboard.js:25357 |
 | `fetchWhiteboardState` | frontend/js/whiteboard.js:19425 |
 | `handleWbZoom` | frontend/js/whiteboard.js:619 |
-| `highlighterBlend` | frontend/js/whiteboard.js:26365 |
+| `highlighterBlend` | frontend/js/whiteboard.js:26371 |
 | `initWhiteboard` | frontend/js/whiteboard.js:15089 |
-| `openWhiteboardBoard` | frontend/js/whiteboard.js:25598 |
-| `pickNotesDialog` | frontend/js/whiteboard.js:26257 |
-| `redrawLibraryBoardsGallery` | frontend/js/whiteboard.js:25320 |
+| `openWhiteboardBoard` | frontend/js/whiteboard.js:25604 |
+| `pickNotesDialog` | frontend/js/whiteboard.js:26263 |
+| `redrawLibraryBoardsGallery` | frontend/js/whiteboard.js:25326 |
 | `refreshBoardList` | frontend/js/whiteboard.js:19464 |
 | `renameCurrentBoard` | frontend/js/whiteboard.js:19573 |
-| `renderBoardTypeFilter` | frontend/js/whiteboard.js:25281 |
-| `renderLibraryBoardsGallery` | frontend/js/whiteboard.js:25325 |
-| `renderWbGestureHints` | frontend/js/whiteboard.js:25687 |
+| `renderBoardTypeFilter` | frontend/js/whiteboard.js:25287 |
+| `renderLibraryBoardsGallery` | frontend/js/whiteboard.js:25331 |
+| `renderWbGestureHints` | frontend/js/whiteboard.js:25693 |
 | `renderWbLibrary` | frontend/js/whiteboard.js:19348 |
-| `renderWbObjects` | frontend/js/whiteboard.js:23730 |
-| `renderWhiteboard` | frontend/js/whiteboard.js:22325 |
+| `renderWbObjects` | frontend/js/whiteboard.js:23736 |
+| `renderWhiteboard` | frontend/js/whiteboard.js:22324 |
 | `renderWhiteboardNow` | frontend/js/whiteboard.js:22209 |
 | `selectWbItem` | frontend/js/whiteboard.js:6828 |
-| `toggleWhiteboardFullscreen` | frontend/js/whiteboard.js:25743 |
+| `toggleWhiteboardFullscreen` | frontend/js/whiteboard.js:25749 |
 | `uploadToLibrary` | frontend/js/whiteboard.js:14524 |
 | `wbAddBoardToNote` | frontend/js/whiteboard.js:13289 |
 | `wbAlignGuideColor` | frontend/js/whiteboard.js:1490 |
@@ -8857,7 +8857,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbApplyGrid` | frontend/js/whiteboard.js:1562 |
 | `wbApplyHistoryEntry` | frontend/js/whiteboard.js:11499 |
 | `wbApplyLineJumps` | frontend/js/whiteboard.js:5161 |
-| `wbApplyMoveRun` | frontend/js/whiteboard.js:23626 |
+| `wbApplyMoveRun` | frontend/js/whiteboard.js:23632 |
 | `wbApplySearchHighlight` | frontend/js/whiteboard.js:4022 |
 | `wbApplySelectionHighlight` | frontend/js/whiteboard.js:6773 |
 | `wbApplyZoomTransform` | frontend/js/whiteboard.js:466 |
@@ -8900,7 +8900,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbBulkMoveElement` | frontend/js/whiteboard.js:8253 |
 | `wbBulkUndoEntries` | frontend/js/whiteboard.js:8602 |
 | `wbBulletTextLines` | frontend/js/whiteboard.js:11014 |
-| `wbCancelBoardTimers` | frontend/js/whiteboard.js:25577 |
+| `wbCancelBoardTimers` | frontend/js/whiteboard.js:25583 |
 | `wbCancelGesture` | frontend/js/whiteboard.js:8342 |
 | `wbCanvasOrigin` | frontend/js/whiteboard.js:529 |
 | `wbCanvasOriginRect` | frontend/js/whiteboard.js:497 |
@@ -8909,7 +8909,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbCapScale` | frontend/js/whiteboard.js:2337 |
 | `wbCapSizeFields` | frontend/js/whiteboard.js:2342 |
 | `wbCaptureBulkMoveOrigin` | frontend/js/whiteboard.js:8103 |
-| `wbCardFitHeight` | frontend/js/whiteboard.js:23322 |
+| `wbCardFitHeight` | frontend/js/whiteboard.js:23328 |
 | `wbCardMoreNeeded` | frontend/js/whiteboard.js:371 |
 | `wbCarryWaypoints` | frontend/js/whiteboard.js:8746 |
 | `wbCellsText` | frontend/js/whiteboard.js:3843 |
@@ -9041,9 +9041,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbFilledTriangle` | frontend/js/whiteboard.js:2494 |
 | `wbFindItem` | frontend/js/whiteboard.js:12250 |
 | `wbFinishDrag` | frontend/js/whiteboard.js:8729 |
-| `wbFitImage` | frontend/js/whiteboard.js:23372 |
+| `wbFitImage` | frontend/js/whiteboard.js:23378 |
 | `wbFitShapeLabel` | frontend/js/whiteboard.js:20259 |
-| `wbFitToText` | frontend/js/whiteboard.js:23390 |
+| `wbFitToText` | frontend/js/whiteboard.js:23396 |
 | `wbFlushNudge` | frontend/js/whiteboard.js:5817 |
 | `wbFlushZoomFrame` | frontend/js/whiteboard.js:701 |
 | `wbFoldContextBar` | frontend/js/whiteboard.js:7324 |
@@ -9064,7 +9064,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbFrameTurnLive` | frontend/js/whiteboard.js:13082 |
 | `wbFrameTurnOrigin` | frontend/js/whiteboard.js:13045 |
 | `wbFrameTurnRevert` | frontend/js/whiteboard.js:13086 |
-| `wbFramesInOrder` | frontend/js/whiteboard.js:25793 |
+| `wbFramesInOrder` | frontend/js/whiteboard.js:25799 |
 | `wbFreeArea` | frontend/js/whiteboard.js:2955 |
 | `wbFreeCanvasRect` | frontend/js/whiteboard.js:9062 |
 | `wbGapEnd` | frontend/js/whiteboard.js:5276 |
@@ -9089,7 +9089,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbHistoryFromRows` | frontend/js/whiteboard.js:10559 |
 | `wbHistoryRestore` | frontend/js/whiteboard.js:10331 |
 | `wbHollowInset` | frontend/js/whiteboard.js:2364 |
-| `wbImageFitHeight` | frontend/js/whiteboard.js:23365 |
+| `wbImageFitHeight` | frontend/js/whiteboard.js:23371 |
 | `wbImportOutlineFile` | frontend/js/whiteboard.js:14370 |
 | `wbIndentEditableLines` | frontend/js/whiteboard.js:11342 |
 | `wbInlineSvgImages` | frontend/js/whiteboard.js:14097 |
@@ -9118,12 +9118,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbKeepsRatio` | frontend/js/whiteboard.js:12047 |
 | `wbKeyboardEnter` | frontend/js/whiteboard.js:11866 |
 | `wbLabelBand` | frontend/js/whiteboard.js:20489 |
-| `wbLaserLeave` | frontend/js/whiteboard.js:26131 |
-| `wbLaserTrail` | frontend/js/whiteboard.js:26107 |
+| `wbLaserLeave` | frontend/js/whiteboard.js:26137 |
+| `wbLaserTrail` | frontend/js/whiteboard.js:26113 |
 | `wbLayoutCloneGrips` | frontend/js/whiteboard.js:9381 |
 | `wbLayoutLinkLabel` | frontend/js/whiteboard.js:20672 |
 | `wbLayoutShapeLabel` | frontend/js/whiteboard.js:20213 |
-| `wbLeaveFullscreen` | frontend/js/whiteboard.js:25562 |
+| `wbLeaveFullscreen` | frontend/js/whiteboard.js:25568 |
 | `wbLineJumpsD` | frontend/js/whiteboard.js:5074 |
 | `wbLinkAdjacency` | frontend/js/whiteboard.js:6423 |
 | `wbLinkCandidateAt` | frontend/js/whiteboard.js:4673 |
@@ -9143,10 +9143,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbLinkRouteName` | frontend/js/whiteboard.js:5241 |
 | `wbLinkSelectionBox` | frontend/js/whiteboard.js:7252 |
 | `wbLinkShape` | frontend/js/whiteboard.js:5249 |
-| `wbLinkSketchIndex` | frontend/js/whiteboard.js:24655 |
+| `wbLinkSketchIndex` | frontend/js/whiteboard.js:24661 |
 | `wbLinkTakesLabel` | frontend/js/whiteboard.js:20629 |
 | `wbLinkWaypoints` | frontend/js/whiteboard.js:21270 |
-| `wbLinkedSketchesFor` | frontend/js/whiteboard.js:24701 |
+| `wbLinkedSketchesFor` | frontend/js/whiteboard.js:24707 |
 | `wbLinksTouching` | frontend/js/whiteboard.js:10618 |
 | `wbLockPressWanted` | frontend/js/whiteboard.js:12211 |
 | `wbLockSelection` | frontend/js/whiteboard.js:12065 |
@@ -9154,7 +9154,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbLockedItems` | frontend/js/whiteboard.js:12004 |
 | `wbMapFrameScales` | frontend/js/whiteboard.js:3179 |
 | `wbMapNodeScreenBox` | frontend/js/whiteboard.js:9971 |
-| `wbMapNodeTakeBack` | frontend/js/whiteboard.js:23655 |
+| `wbMapNodeTakeBack` | frontend/js/whiteboard.js:23661 |
 | `wbMapOpenTarget` | frontend/js/whiteboard.js:3229 |
 | `wbMapStripClearOfHandle` | frontend/js/whiteboard.js:7218 |
 | `wbMapStripMenuOffTopic` | frontend/js/whiteboard.js:7115 |
@@ -9191,12 +9191,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbNavigatorUpdateViewport` | frontend/js/whiteboard.js:3620 |
 | `wbNearestAnchor` | frontend/js/whiteboard.js:4394 |
 | `wbNewGroupId` | frontend/js/whiteboard.js:2660 |
-| `wbNewMenuMount` | frontend/js/whiteboard.js:25068 |
+| `wbNewMenuMount` | frontend/js/whiteboard.js:25074 |
 | `wbNewUntitledBoard` | frontend/js/whiteboard.js:19642 |
 | `wbNudgeSelection` | frontend/js/whiteboard.js:5825 |
 | `wbNudgeShapeLabel` | frontend/js/whiteboard.js:20286 |
 | `wbNum` | frontend/js/whiteboard.js:9098 |
-| `wbObjectPaintKey` | frontend/js/whiteboard.js:24612 |
+| `wbObjectPaintKey` | frontend/js/whiteboard.js:24618 |
 | `wbObjectStyleReset` | frontend/js/whiteboard.js:6053 |
 | `wbOnBoardCopy` | frontend/js/whiteboard.js:9039 |
 | `wbOnFrame` | frontend/js/whiteboard.js:10405 |
@@ -9220,13 +9220,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbPaintLockBadges` | frontend/js/whiteboard.js:12160 |
 | `wbPaintLocks` | frontend/js/whiteboard.js:12135 |
 | `wbPaintShapeLabel` | frontend/js/whiteboard.js:20494 |
-| `wbPaintStickyDates` | frontend/js/whiteboard.js:23682 |
+| `wbPaintStickyDates` | frontend/js/whiteboard.js:23688 |
 | `wbPaintTextContent` | frontend/js/whiteboard.js:10784 |
 | `wbPaintTextDir` | frontend/js/whiteboard.js:20478 |
 | `wbPaintVotes` | frontend/js/whiteboard.js:1958 |
 | `wbPaperPaint` | frontend/js/whiteboard.js:13672 |
 | `wbParkContextOnRail` | frontend/js/whiteboard.js:6210 |
-| `wbParsedLink` | frontend/js/whiteboard.js:24680 |
+| `wbParsedLink` | frontend/js/whiteboard.js:24686 |
 | `wbPasteClipboard` | frontend/js/whiteboard.js:8997 |
 | `wbPasteCopiedStyle` | frontend/js/whiteboard.js:5980 |
 | `wbPathBBox` | frontend/js/whiteboard.js:19974 |
@@ -9246,11 +9246,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbPolylineAt` | frontend/js/whiteboard.js:5222 |
 | `wbPortFractions` | frontend/js/whiteboard.js:4316 |
 | `wbPortsForPath` | frontend/js/whiteboard.js:4336 |
-| `wbPresentCaption` | frontend/js/whiteboard.js:25912 |
-| `wbPresentLaser` | frontend/js/whiteboard.js:26070 |
-| `wbPresentLaserButton` | frontend/js/whiteboard.js:26061 |
-| `wbPresentShow` | frontend/js/whiteboard.js:25858 |
-| `wbPresentSteps` | frontend/js/whiteboard.js:25814 |
+| `wbPresentCaption` | frontend/js/whiteboard.js:25918 |
+| `wbPresentLaser` | frontend/js/whiteboard.js:26076 |
+| `wbPresentLaserButton` | frontend/js/whiteboard.js:26067 |
+| `wbPresentShow` | frontend/js/whiteboard.js:25864 |
+| `wbPresentSteps` | frontend/js/whiteboard.js:25820 |
 | `wbPropsText` | frontend/js/whiteboard.js:3862 |
 | `wbPruneSelection` | frontend/js/whiteboard.js:7025 |
 | `wbPublishInvZoom` | frontend/js/whiteboard.js:920 |
@@ -9283,11 +9283,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbReplaceInProps` | frontend/js/whiteboard.js:3916 |
 | `wbReplaceText` | frontend/js/whiteboard.js:3898 |
 | `wbReplaceWrite` | frontend/js/whiteboard.js:3929 |
-| `wbResetRotation` | frontend/js/whiteboard.js:23270 |
+| `wbResetRotation` | frontend/js/whiteboard.js:23276 |
 | `wbResetSelectedStyle` | frontend/js/whiteboard.js:6061 |
 | `wbResizeBox` | frontend/js/whiteboard.js:20046 |
 | `wbResizeGuides` | frontend/js/whiteboard.js:1343 |
-| `wbResizeHandleTitle` | frontend/js/whiteboard.js:23358 |
+| `wbResizeHandleTitle` | frontend/js/whiteboard.js:23364 |
 | `wbResizeSelectionBy` | frontend/js/whiteboard.js:5715 |
 | `wbResolveLinkEndpoints` | frontend/js/whiteboard.js:4712 |
 | `wbRestoreBox` | frontend/js/whiteboard.js:8579 |
@@ -9307,20 +9307,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbSameView` | frontend/js/whiteboard.js:2987 |
 | `wbSaveBulkMove` | frontend/js/whiteboard.js:8824 |
 | `wbSaveExpandedNodes` | frontend/js/whiteboard.js:319 |
-| `wbSaveMany` | frontend/js/whiteboard.js:23548 |
-| `wbSaveManyBatch` | frontend/js/whiteboard.js:23575 |
+| `wbSaveMany` | frontend/js/whiteboard.js:23554 |
+| `wbSaveManyBatch` | frontend/js/whiteboard.js:23581 |
 | `wbSaveMapBulkMove` | frontend/js/whiteboard.js:8798 |
 | `wbSaveMultiSnapshot` | frontend/js/whiteboard.js:21515 |
-| `wbSaveNode` | frontend/js/whiteboard.js:23487 |
-| `wbSaveObject` | frontend/js/whiteboard.js:23510 |
-| `wbSaveRow` | frontend/js/whiteboard.js:23589 |
+| `wbSaveNode` | frontend/js/whiteboard.js:23493 |
+| `wbSaveObject` | frontend/js/whiteboard.js:23516 |
+| `wbSaveRow` | frontend/js/whiteboard.js:23595 |
 | `wbSaveSketchD` | frontend/js/whiteboard.js:20838 |
 | `wbSaveSketchProps` | frontend/js/whiteboard.js:20809 |
 | `wbSaveToLibrary` | frontend/js/whiteboard.js:14602 |
 | `wbScheduleCardClampSync` | frontend/js/whiteboard.js:381 |
 | `wbScheduleCull` | frontend/js/whiteboard.js:740 |
 | `wbScheduleRender` | frontend/js/whiteboard.js:22171 |
-| `wbScheduleStickyDates` | frontend/js/whiteboard.js:23677 |
+| `wbScheduleStickyDates` | frontend/js/whiteboard.js:23683 |
 | `wbScreenToBoard` | frontend/js/whiteboard.js:520 |
 | `wbSearchItem` | frontend/js/whiteboard.js:4018 |
 | `wbSearchPattern` | frontend/js/whiteboard.js:3873 |
@@ -9370,8 +9370,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbShortenGroupIds` | frontend/js/whiteboard.js:2692 |
 | `wbShowAlignmentGuides` | frontend/js/whiteboard.js:1498 |
 | `wbShowAnchorHints` | frontend/js/whiteboard.js:5306 |
-| `wbShowBoardsLanding` | frontend/js/whiteboard.js:25178 |
-| `wbShowCanvasView` | frontend/js/whiteboard.js:25165 |
+| `wbShowBoardsLanding` | frontend/js/whiteboard.js:25184 |
+| `wbShowCanvasView` | frontend/js/whiteboard.js:25171 |
 | `wbShowCapSizes` | frontend/js/whiteboard.js:2477 |
 | `wbShowSizeReadout` | frontend/js/whiteboard.js:1403 |
 | `wbShowToolSettings` | frontend/js/whiteboard.js:5894 |
@@ -9388,8 +9388,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbSketchLiveEls` | frontend/js/whiteboard.js:11456 |
 | `wbSketchParsedData` | frontend/js/whiteboard.js:20790 |
 | `wbSketchResizeTransform` | frontend/js/whiteboard.js:20063 |
-| `wbSketchSetD` | frontend/js/whiteboard.js:23595 |
-| `wbSketchSetProps` | frontend/js/whiteboard.js:23604 |
+| `wbSketchSetD` | frontend/js/whiteboard.js:23601 |
+| `wbSketchSetProps` | frontend/js/whiteboard.js:23610 |
 | `wbSketchStyleReset` | frontend/js/whiteboard.js:6039 |
 | `wbSketchTakesCaps` | frontend/js/whiteboard.js:20875 |
 | `wbSnap` | frontend/js/whiteboard.js:959 |
@@ -9406,12 +9406,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbStackRanks` | frontend/js/whiteboard.js:7832 |
 | `wbStampMenuRoles` | frontend/js/whiteboard.js:15073 |
 | `wbStartPanShield` | frontend/js/whiteboard.js:581 |
-| `wbStartPresenting` | frontend/js/whiteboard.js:25830 |
+| `wbStartPresenting` | frontend/js/whiteboard.js:25836 |
 | `wbStepSelectionZOrder` | frontend/js/whiteboard.js:8024 |
 | `wbStickerSize` | frontend/js/whiteboard.js:5952 |
 | `wbStickyFolds` | frontend/js/whiteboard.js:11848 |
-| `wbStickyRemind` | frontend/js/whiteboard.js:23715 |
-| `wbStopPresenting` | frontend/js/whiteboard.js:26136 |
+| `wbStickyRemind` | frontend/js/whiteboard.js:23721 |
+| `wbStopPresenting` | frontend/js/whiteboard.js:26142 |
 | `wbSvgEscape` | frontend/js/whiteboard.js:13394 |
 | `wbSvgRunLines` | frontend/js/whiteboard.js:13439 |
 | `wbSvgText` | frontend/js/whiteboard.js:13425 |
@@ -9425,7 +9425,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbSyncGridToTransform` | frontend/js/whiteboard.js:836 |
 | `wbSyncGroupButtons` | frontend/js/whiteboard.js:2746 |
 | `wbSyncSketchTip` | frontend/js/whiteboard.js:20448 |
-| `wbTakeMoveRun` | frontend/js/whiteboard.js:23620 |
+| `wbTakeMoveRun` | frontend/js/whiteboard.js:23626 |
 | `wbTakesComments` | frontend/js/whiteboard.js:12239 |
 | `wbTakesLink` | frontend/js/whiteboard.js:12277 |
 | `wbTextFitHeight` | frontend/js/whiteboard.js:11400 |
@@ -9458,7 +9458,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbUngroupSelection` | frontend/js/whiteboard.js:2754 |
 | `wbUnlockAll` | frontend/js/whiteboard.js:12082 |
 | `wbUpdateContextBar` | frontend/js/whiteboard.js:6241 |
-| `wbUpdateLinkedSketches` | frontend/js/whiteboard.js:24732 |
+| `wbUpdateLinkedSketches` | frontend/js/whiteboard.js:24738 |
 | `wbUpdateSearchCount` | frontend/js/whiteboard.js:4039 |
 | `wbUpdateSelectionBar` | frontend/js/whiteboard.js:7394 |
 | `wbUpdateUndoRedoButtons` | frontend/js/whiteboard.js:10345 |
@@ -12780,8 +12780,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/06-timeline-dialogs.css | 3700 |
 | frontend/css/07-whiteboard-misc.css | 11924 |
 | frontend/css/08-consistency.css | 10903 |
-| frontend/css/09-editor.css | 1128 |
-| frontend/css/10-responsive.css | 2919 |
+| frontend/css/09-editor.css | 1133 |
+| frontend/css/10-responsive.css | 2931 |
 | frontend/css/answer-foot-lazy.css | 161 |
 | frontend/css/appearance-panel-lazy.css | 330 |
 | frontend/css/appearance-panel-own-lazy.css | 86 |
@@ -12815,7 +12815,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/manual-lazy.css | 168 |
 | frontend/css/math-editor-lazy.css | 169 |
 | frontend/css/math-field-lazy.css | 72 |
-| frontend/css/meetings-lazy.css | 566 |
+| frontend/css/meetings-lazy.css | 580 |
 | frontend/css/mermaid-lazy.css | 134 |
 | frontend/css/model-menu-lazy.css | 96 |
 | frontend/css/motion-still.css | 75 |
@@ -14303,10 +14303,10 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `_Answer` | src/tessellate/ai/composer_answer.py:32 |
-| `_count_word` | src/tessellate/ai/composer_answer.py:366 |
-| `_due` | src/tessellate/ai/composer_answer.py:352 |
-| `asks_now` | src/tessellate/ai/composer_answer.py:387 |
-| `figures_of` | src/tessellate/ai/composer_answer.py:377 |
+| `_count_word` | src/tessellate/ai/composer_answer.py:370 |
+| `_due` | src/tessellate/ai/composer_answer.py:356 |
+| `asks_now` | src/tessellate/ai/composer_answer.py:391 |
+| `figures_of` | src/tessellate/ai/composer_answer.py:381 |
 
 ### src/tessellate/ai/composer_ask.py (40)
 
@@ -24173,16 +24173,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `Activity` | src/tessellate/core/overlay/behaviour.py:179 |
 | `Chain` | src/tessellate/core/overlay/behaviour.py:404 |
-| `Flow` | src/tessellate/core/overlay/behaviour.py:880 |
+| `Flow` | src/tessellate/core/overlay/behaviour.py:882 |
 | `Mind` | src/tessellate/core/overlay/behaviour.py:450 |
 | `Pose` | src/tessellate/core/overlay/behaviour.py:53 |
 | `SecondOrder` | src/tessellate/core/overlay/behaviour.py:64 |
-| `TailLayer` | src/tessellate/core/overlay/behaviour.py:811 |
+| `TailLayer` | src/tessellate/core/overlay/behaviour.py:813 |
 | `Trail` | src/tessellate/core/overlay/behaviour.py:602 |
 | `Variation` | src/tessellate/core/overlay/behaviour.py:134 |
-| `_amplitude` | src/tessellate/core/overlay/behaviour.py:665 |
-| `_arr_pick` | src/tessellate/core/overlay/behaviour.py:873 |
-| `_frac` | src/tessellate/core/overlay/behaviour.py:867 |
+| `_amplitude` | src/tessellate/core/overlay/behaviour.py:667 |
+| `_arr_pick` | src/tessellate/core/overlay/behaviour.py:875 |
+| `_frac` | src/tessellate/core/overlay/behaviour.py:869 |
 | `_from_catalogue` | src/tessellate/core/overlay/behaviour.py:292 |
 | `_k` | src/tessellate/core/overlay/behaviour.py:196 |
 | `activity_frame` | src/tessellate/core/overlay/behaviour.py:589 |
@@ -24201,8 +24201,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `sine_ease` | src/tessellate/core/overlay/behaviour.py:124 |
 | `smooth` | src/tessellate/core/overlay/behaviour.py:114 |
 | `smoother` | src/tessellate/core/overlay/behaviour.py:119 |
-| `tail_bend` | src/tessellate/core/overlay/behaviour.py:790 |
-| `tail_points` | src/tessellate/core/overlay/behaviour.py:798 |
+| `tail_bend` | src/tessellate/core/overlay/behaviour.py:792 |
+| `tail_points` | src/tessellate/core/overlay/behaviour.py:800 |
 | `tier_factor` | src/tessellate/core/overlay/behaviour.py:395 |
 | `utility` | src/tessellate/core/overlay/behaviour.py:439 |
 | `vary` | src/tessellate/core/overlay/behaviour.py:142 |
@@ -26369,7 +26369,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20535)
+## Tests (20541)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26548,6 +26548,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_bin_guard_1031.py | 8 |
 | tests/test_birthday_next_1110.py | 5 |
 | tests/test_blindux_1031.py | 12 |
+| tests/test_block_bar_gutter_1111.py | 3 |
 | tests/test_board2_1028.py | 9 |
 | tests/test_board_acts.py | 6 |
 | tests/test_board_background.py | 8 |
@@ -27851,6 +27852,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_menu_window_fit.py | 3 |
 | tests/test_menus_close_others.py | 3 |
 | tests/test_mermaid_frame.py | 8 |
+| tests/test_mic_row_fits_c21.py | 2 |
 | tests/test_middleware_disconnect.py | 3 |
 | tests/test_middleware_table_1031.py | 5 |
 | tests/test_mindmap.py | 117 |
@@ -28790,7 +28792,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_present_picker_open.py | 2 |
 | tests/test_wb_prune_selection.py | 4 |
 | tests/test_wb_rail_kind.py | 1 |
-| tests/test_wb_render_w30.py | 6 |
+| tests/test_wb_render_w30.py | 7 |
 | tests/test_wb_resize_follow.py | 3 |
 | tests/test_wb_resize_from_centre.py | 5 |
 | tests/test_wb_resize_guides.py | 16 |
