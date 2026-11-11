@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Diagram builder: once a flowchart has arrows, the list's foot says what the bare arrow on a block does ("The arrow on a block, or Connect, draws an arrow from it"), since a list under 19rem hides the words of Connect to…; Help says the same.
 - Undo of a category delete or merge puts the description back and files its binned notes back too (they stay in the bin; `move_notes` takes `include_binned` and `description` from an Undo only).
 - Composer: "change Bluegum-5G to 6G in the wifi note" (or "replace X with Y in the wifi note") changes only that text; the card shows the line as Was and Now, Confirm applies it to every place it stands, Undo puts the whole note back (`parity_acts._find_replace`; the model has `edit_note` for the same).
 - Refactor (s11 K25, in part): `_run_desktop` lost the icon-path and Windows taskbar-id blocks to `_app_icon_path` and `_set_windows_app_id` (complexity 20 to 16, seed lowered); behaviour unchanged. `timeline`, `_build_graph`, `_optimization_pass`, `_run_skill`, `_dispatch_call`, `_prepare_turn` were already split since the audit.

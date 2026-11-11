@@ -46,7 +46,7 @@
   //: The line under the list: what to do next with the blocks there are.
   function next(S) {
     const [two, how] = touch() ? ["Double-tap", ""] : ["Double-click", ", or press Enter,"];
-    if (S.m.edges.length) return `Drag a grip to move or nest a block (the picture lays itself out). ${two} a name to rename it.`;
+    if (S.m.edges.length) return `Drag a grip to move or nest a block (the picture lays itself out). The arrow on a block, or Connect, draws an arrow from it. ${two} a name to rename it.`;
     return `${two} a name${how} to rename it. ${S.m.nodes.length < 2 ? "Add a second block, then press Connect to… on one." : "Press Connect to… on a block, or drag its grip onto another block, to draw an arrow."}`;
   }
 
