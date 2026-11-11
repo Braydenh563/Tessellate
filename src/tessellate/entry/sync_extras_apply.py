@@ -102,8 +102,10 @@ class Apply:
         self.names = sync_extras.names_for(session, data_dir, me)
         #: Items changed only on the other computer since the last sync: theirs, whatever the times.
         self.force: set[str] = set()
-        #: Arrival marks held until `flush`: one write of sync-state per page, not per file. A mark lost
-        #: to a crash only means that item is fetched again, and applying is idempotent.
+        #: Removal marks held until `flush`: one write of sync-state per page. A removal mark lost to a
+        #: crash is safe (the file is already gone and is removed again). A mark for a created row is NOT
+        #: batched: it is written before the commit, because a committed row with no mark is published
+        #: as this computer's own and fetched back as a duplicate.
         self.marks: list[tuple[str, str, int | None, str]] = []
 
     def flush(self) -> None:
@@ -144,7 +146,7 @@ class Apply:
             self._keep_mine(doc, words)
         self._write_document(doc, item, words)
         if created:
-            self.marks.append(("document", item["sid"], doc.id, sync_extras.mark(doc)))
+            sync_state.save_arrived(self.data_dir, "document", item["sid"], doc.id, sync_extras.mark(doc))
         manager.log_action(self.session, "created" if created else "edited", "document", doc.id, "from the other computer")
         return "applied"
 
@@ -257,7 +259,7 @@ class Apply:
                          mime=str(item.get("mime") or "application/octet-stream")[:100], size=len(data))
         self.session.add(att)
         self.session.flush()
-        self.marks.append(("file", item["sid"], att.id, sync_extras.mark(att)))
+        sync_state.save_arrived(self.data_dir, "file", item["sid"], att.id, sync_extras.mark(att))
         manager.log_action(self.session, "edited", "entry", note, f"a file from the other computer: {name}")
         return "applied"
 

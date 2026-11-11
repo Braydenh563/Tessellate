@@ -20,6 +20,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import threading
+from collections import OrderedDict
 from pathlib import Path
 from typing import Any, Iterator
 
@@ -207,7 +209,9 @@ def item_hash(state: dict) -> str:
 
 #: SHA-1 of an upload by (stored name, size, mtime_ns): a manifest is built for every sync, and the
 #: bytes of an unchanged file do not need reading again. Bounded; the oldest entry goes first.
-_SHA1_CACHE: dict[tuple[str, int, int], str] = {}
+_SHA1_CACHE: OrderedDict[tuple[str, int, int], str] = OrderedDict()
+#: Manifests are built on the request threadpool and on the sync thread at once.
+_SHA1_LOCK = threading.Lock()
 _SHA1_CACHE_MAX = 4096
 
 
@@ -219,12 +223,14 @@ def _file_sha1(path: Path, stored_name: str) -> str:
     if not path.is_file():
         return ""
     key = (stored_name, stat.st_size, stat.st_mtime_ns)
-    found = _SHA1_CACHE.get(key)
+    with _SHA1_LOCK:
+        found = _SHA1_CACHE.get(key)
     if found is None:
         found = hashlib.sha1(path.read_bytes(), usedforsecurity=False).hexdigest()
-        if len(_SHA1_CACHE) >= _SHA1_CACHE_MAX:
-            _SHA1_CACHE.pop(next(iter(_SHA1_CACHE)), None)
-        _SHA1_CACHE[key] = found
+        with _SHA1_LOCK:
+            _SHA1_CACHE[key] = found
+            while len(_SHA1_CACHE) > _SHA1_CACHE_MAX:
+                _SHA1_CACHE.popitem(last=False)
     return found
 
 

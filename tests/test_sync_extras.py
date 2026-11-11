@@ -262,3 +262,47 @@ def test_the_routes_serve_a_manifest_items_and_a_file(client, app_state):
     assert (item["title"], item["content"]) == ("Doc", "Body") and entry["id"]
     missing = client.get("/sync/file", params={"sid": "nothing:1", "peer": "abcdefabcdef"})
     assert missing.status_code == 404
+
+
+def test_a_kill_between_a_commit_and_the_page_flush_leaves_no_duplicates(pair, monkeypatch):
+    from tessellate.entry import sync_extras_apply
+
+    a, b, pull = pair
+    note = a.write("Receipt", 1)
+    _document(a, "Boiler", "service", 2)
+    _attach(a, note, "receipt.png", b"bytes")
+    monkeypatch.setattr(sync_extras_apply.Apply, "flush", lambda self: None)  # killed before the page-end write
+    for _ in range(2):
+        pull(b)
+        pull(a)
+    for book in (a, b):
+        book.session.expire_all()
+        assert len(_documents(book)) == 1, book.dir.name
+        assert len(book.session.scalars(select(Attachment)).all()) == 1, book.dir.name
+
+
+def test_the_upload_hash_cache_survives_threads_hammering_a_full_cache(tmp_path, monkeypatch):
+    import threading
+
+    monkeypatch.setattr(sync_extras, "_SHA1_CACHE_MAX", 8)
+    files = []
+    for n in range(40):
+        path = tmp_path / f"f{n}"
+        path.write_bytes(bytes([n]))
+        files.append(path)
+    errors: list[Exception] = []
+
+    def hammer() -> None:
+        try:
+            for _ in range(200):
+                for path in files:
+                    sync_extras._file_sha1(path, path.name)  # noqa: SLF001
+        except (RuntimeError, KeyError, StopIteration) as exc:
+            errors.append(exc)
+
+    threads = [threading.Thread(target=hammer) for _ in range(6)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    assert errors == [] and len(sync_extras._SHA1_CACHE) <= 8  # noqa: SLF001
