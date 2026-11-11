@@ -15,8 +15,10 @@ from pathlib import Path
 
 import pytest
 
+from tests._js_scope import unwrapped, unwrapped_copy
+
 ROOT = Path(__file__).resolve().parents[1]
-SRC = (ROOT / "frontend" / "js" / "lag-watch.js").read_text(encoding="utf-8")
+SRC = unwrapped((ROOT / "frontend" / "js" / "lag-watch.js").read_text(encoding="utf-8"))
 
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
@@ -47,7 +49,7 @@ ctx.el = el; ctx.root = root;
 
 
 def _node(body: str):
-    run = subprocess.run(["node", "-e", HARNESS + body, str(ROOT / "frontend/js/lag-watch.js")], capture_output=True, text=True)
+    run = subprocess.run(["node", "-e", HARNESS + body, str(unwrapped_copy(ROOT / "frontend/js/lag-watch.js"))], capture_output=True, text=True)
     assert run.returncode == 0, run.stderr[-2000:]
     return json.loads(run.stdout)
 

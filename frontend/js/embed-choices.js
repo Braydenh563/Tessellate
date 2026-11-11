@@ -30,7 +30,7 @@
     clearSkeletons(list);
     if (!body) return;
     const now = Date.now() / 1000;
-    list.replaceChildren(...body.choices.map((choice) => embedChoiceRow(choice, body, now)));
+    embedPaintRows(list, body, now);
     const found = body.found || [];
     $("embed-found").replaceChildren(...found.map((row) => embedFoundRow(row, body)));
     $("embed-found-empty").classList.toggle("hidden", found.length > 0);
@@ -45,6 +45,51 @@
     if (done.running && settingsModalOpen() && currentSettingsSection === "searchindex") {
       embedChoicesUi.poll = setTimeout(renderEmbedChoices, 2000);
     }
+  }
+
+  //: The rows are painted in place (INBOX 1776, as the Packages list): the poll
+  //: that follows a switch every 2 s used to rebuild every row (measured: 15 of
+  //: 15 rows replaced per tick, the scroll height steady at 3256px). A row whose
+  //: state is unchanged is kept; the switching one only has its bar and line
+  //: updated.
+  function embedRowKey(choice, body) {
+    const { done, started, ...rest } = body.switch || {};
+    const moving = rest.running && rest.backend === choice.backend && rest.model === choice.model;
+    return JSON.stringify([choice, body.current, Boolean(rest.running), moving ? rest : null]);
+  }
+
+  function embedPaintRows(list, body, now) {
+    const old = new Map([...list.children].map((li) => [li.dataset.choice, li]));
+    const rows = body.choices.map((choice) => {
+      const key = embedRowKey(choice, body);
+      const kept = old.get(choice.id);
+      if (kept && kept._embedKey === key) {
+        const bar = kept.querySelector("progress");
+        if (bar) embedPaintProgress(bar, kept.querySelector(".task-detail"), body.switch, now);
+        return kept;
+      }
+      const fresh = embedChoiceRow(choice, body, now);
+      fresh._embedKey = key;
+      return fresh;
+    });
+    const same = rows.length === list.children.length && rows.every((li, i) => list.children[i] === li);
+    if (!same) list.replaceChildren(...rows);
+  }
+
+  function embedPaintProgress(bar, line, switching, now) {
+    if (switching.phase === "stage" && switching.total) {
+      bar.max = switching.total;
+      bar.value = switching.done;
+    } else {
+      bar.removeAttribute("value");
+    }
+    const stage = {
+      prepare: "Getting the model ready; the first time it is downloaded.",
+      stage: `${switching.done} of ${nounCount(switching.total, "note")} read. Search uses the current model until then.`,
+      swap: "Swapping the new vectors in.",
+      paragraphs: "Reading long notes paragraph by paragraph.",
+    }[switching.phase] || "Starting.";
+    line.textContent = switching.started ? `${stage} ${taskElapsed(now - switching.started)}.` : stage;
   }
 
   function embedChoiceRow(choice, body, now) {
@@ -152,20 +197,10 @@
     if (moving) {
       const bar = document.createElement("progress");
       bar.className = "task-progress";
-      if (switching.phase === "stage" && switching.total) {
-        bar.max = switching.total;
-        bar.value = switching.done;
-      }
       bar.setAttribute("aria-label", `Switching to ${choice.label}`);
       const line = document.createElement("p");
       line.className = "muted task-detail";
-      const stage = {
-        prepare: "Getting the model ready; the first time it is downloaded.",
-        stage: `${switching.done} of ${nounCount(switching.total, "note")} read. Search uses the current model until then.`,
-        swap: "Swapping the new vectors in.",
-        paragraphs: "Reading long notes paragraph by paragraph.",
-      }[switching.phase] || "Starting.";
-      line.textContent = switching.started ? `${stage} ${taskElapsed(now - switching.started)}.` : stage;
+      embedPaintProgress(bar, line, switching, now);
       li.append(bar, line);
     }
     return li;

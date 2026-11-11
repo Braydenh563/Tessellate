@@ -11,17 +11,14 @@ from __future__ import annotations
 import re
 from datetime import date
 
+from tessellate.ai.recognise import AT_THE_TIME_WORD as _AT_THE_TIME
+from tessellate.ai.recognise import DROPPED_NOW_WORD as _DROPPED
+from tessellate.ai.recognise import STALE_TIME_WORD as _STALE
+from tessellate.ai.recognise import THAT_TIME_WORD as _THAT_WORDS
 from tessellate.core.lazyre import lazy_compile
 
-#: A time word that was true of the day the note was written.
-_STALE = lazy_compile(
-    r"\b(?:now|today|tonight|right now|at the moment|currently|these days|"
-    r"this (?:morning|afternoon|evening|weekend|week|month))\b", re.I)
 _THAT = {"tonight": "that night", "this morning": "that morning", "this afternoon": "that afternoon",
          "this evening": "that evening", "this weekend": "that weekend", "this week": "that week", "this month": "that month"}
-_THAT_WORDS = lazy_compile(r"\b(?:tonight|this (?:morning|afternoon|evening|weekend|week|month))\b", re.I)
-_AT_THE_TIME = lazy_compile(r"\b(?:right now|at the moment|these days)\b", re.I)
-_DROPPED = lazy_compile(r"^(?:now|today)\b,?\s+|\s+\b(?:today|currently)\b(?=\W|$)|^currently\s+", re.I)
 _NT = lazy_compile(r"\b(have|has|had|do|does|did|was|were|is|are|would|could|should|ca|wo)nt\b|\b(cant|wont)\b", re.I)
 _QUOTED = lazy_compile(r"“[^”]*”")
 _FOR_GYM = lazy_compile(r"(\b(?:done|did|do|doing|trained)\b[^“”]*?) for (?:the )?gym(?=\.?$)", re.I)

@@ -756,7 +756,9 @@ MORE_TOPICS: list[dict] = [
             "that package's row. An installed package's ⋮ has Reinstall "
             "(for a feature that is on but not working) and Remove (the "
             "packaged app keeps its Desktop window, so that row has Reinstall "
-            "only), and its row shows its version and size on disk. Dictation and "
+            "only), and its row shows its version and size on disk. How an install went "
+            "(and pip's log) is shown under the package it was about. A package with "
+            "no build for your computer says Not for this computer and has no tick. Dictation and "
             "embedding models, and LanguageTool, have their own topic (Models in Packages)."
         ),
         "badge": {"label": "Packages", "section": "extras"},
@@ -1485,9 +1487,12 @@ MORE_TOPICS: list[dict] = [
             "save the audio too, in Library, Recordings, with the lines as its transcript. "
             "While a voice note records, the same "
             "captions write its words into the dialog as you speak, and the "
-            "full transcript replaces them after. Captions need a local speech "
-            "helper; its row in Settings, Packages says what is missing, and "
-            "without one the buttons are not shown and nothing is recorded."
+            "full transcript replaces them after. Captions need the Live captions "
+            "bundle: Settings, Packages, Install on Live captions fetches the speech "
+            "engine and a 32 MB English model in one click, and the first caption "
+            "starts it on this computer (it stops when you have finished with it). "
+            "On a computer with no build for it (an Intel Mac, Windows on Arm) the "
+            "row says so. Without it the buttons are not shown and nothing is recorded."
         ),
         "badge": {"label": "Notes", "tab": "notes"},
     },

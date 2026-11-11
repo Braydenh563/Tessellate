@@ -2154,6 +2154,9 @@ def list_extras() -> dict:
         #: `state` is idle for a moment: the screen keeps polling through it.
         "running": state.running or bulk["running"],
         "installing": state.extra_id if state.running else "",
+        #: The package the step, outcome and log are about once it has ended,
+        #: so Settings can show them under that row (INBOX 1777).
+        "last": state.extra_id,
         "step": state.step,
         "outcome": state.outcome,
         "log": list(state.log),

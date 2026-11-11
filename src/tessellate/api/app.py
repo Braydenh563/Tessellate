@@ -1831,6 +1831,11 @@ def create_app() -> FastAPI:
         from tessellate.core import reminder_notifier
 
         reminder_notifier.stop_running()
+        # The captions helper is a child process of ours (INBOX 1777); it also
+        # exits when its stdin closes, so this is the tidy path, not the only one.
+        from tessellate.ai import captions_process
+
+        captions_process.stop()
         # The bounded pool (core/jobs.py) is the other half: `stop_all`
         # handles the jobs that own something interruptible, and this one
         # drops the queue of captions and OCR passes behind it. A deadline

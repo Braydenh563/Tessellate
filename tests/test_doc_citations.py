@@ -64,6 +64,39 @@ def test_citing_writes_the_mark_at_the_caret_and_the_source_at_the_foot() -> Non
     assert second["value"].endswith("[@x]: one\n[@two-2021]: Two, 2021\n")
 
 
+@node
+def test_a_note_cited_by_title_is_written_as_a_wikilink_and_keeps_its_key() -> None:
+    assert _run("docPairInput.citeNote('Tiling notes')") == "[[Tiling notes]]"
+    #: Brackets, the alias bar and line breaks cannot sit inside `[[ ]]`.
+    assert _run("docPairInput.citeNote('A [b] | c\\nd')") == "[[A b c d]]"
+    assert _run("docPairInput.citeNote('  ')") == ""
+    got = _run("docPairInput.citeInsert('One two.\\n', 3, 3, docPairInput.citeNote('Tiling notes'))")
+    assert got["value"] == "One[@tiling-notes] two.\n\n[@tiling-notes]: [[Tiling notes]]\n"
+    again = _run(
+        "docPairInput.citeInsert('A.\\n\\n[@tiling-notes]: [[Tiling notes]]\\n', 1, 1, '[[Tiling notes]]')"
+    )
+    assert again["value"].count("[@tiling-notes]:") == 1
+
+
+@node
+def test_the_picker_offers_notes_and_what_was_typed() -> None:
+    items = _run(
+        "docPairInput.citeChoices([{id: 1, title: 'Tiling notes', content: 'x'}, {id: 2, title: '', content: '# Penrose\\nbody'},"
+        " {id: 3, title: 'Other', content: 'y', is_draft: true}], 'til')"
+    )
+    assert [i["source"] for i in items] == ["[[Tiling notes]]", "til"]
+    assert [bool(i["entry"]) for i in items] == [True, False]
+    assert _run("docPairInput.citeChoices([{id: 2, title: '', content: '# Penrose\\nbody'}], '')")[0]["source"] == "[[Penrose]]"
+    url = _run("docPairInput.citeChoices([], 'https://example.com/p')")
+    assert [i["source"] for i in url] == ["https://example.com/p"]
+
+
+def test_the_cite_row_opens_the_picker_not_a_bare_prompt() -> None:
+    docs = _read("documents.js")
+    cite = docs[docs.index('action.custom === "cite"') :][:900]
+    assert "docPairInput.citePick(" in cite and "promptDialog" not in cite
+
+
 def test_the_wiring_is_in_place() -> None:
     docs = _read("documents.js")
     assert 'cite: { custom: "cite" }' in docs and "docPairInput.citeInsert(" in docs
