@@ -122,7 +122,6 @@ EXEMPT = {
     "helpTopicsLoad": "a promise for static text",
     "modelCatalogNames": "the model catalogue",
     "modelCustom": "the model catalogue",
-    "responseModesBody": "the answer-length presets the server lists, the same in every notebook",
     "prefsCache": "the notebook's settings",
     "prefsInflight": "a request guard",
     "prefsSaveInFlight": "a request guard",

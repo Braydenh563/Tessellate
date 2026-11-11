@@ -321,8 +321,9 @@ def test_the_four_lists_help_and_the_shortcut_sheet_name_the_drag_the_copy_and_t
 
 
 def test_the_notes_card_menu_gets_the_card_rows_and_a_links_own_menu_does_not() -> None:
-    menus = (JS / "menus.js").read_text(encoding="utf-8")
-    assert "window.objKebabRows?.(menu);" in menus
+    # entryOverflowMenu (the note card menu) moved from menus.js to entry-card.js in a7257154e.
+    card = (JS / "entry-card.js").read_text(encoding="utf-8")
+    assert "window.objKebabRows?.(menu);" in card
     clip = (JS / "obj-clip.js").read_text(encoding="utf-8")
     assert '.link-connection' in clip
 
