@@ -1254,7 +1254,10 @@ def test_an_act_lets_its_face_go_slowly() -> None:
     # (companionactease.js, Atlas, a cheer): its happy eyes went back in
     # 104ms when the act ended, now over 1307ms.
     act = _fn("nameMarkBuddyAct")
-    assert "if (was && was !== act && !NMB_FACELESS_ACTS.includes(was)) nameMarkBuddyEase(buddy, 1800);" in act
+    # Written first thing inside `leave` (the hand-over's change), so the ease is on before the act's class goes;
+    # not ahead of the hand-over's reads, where it cost a restyle of its own (test_lag_act_restyle_once_1111.py).
+    assert "const easeOut = !!was && was !== act && !NMB_FACELESS_ACTS.includes(was);" in act
+    assert "if (easeOut) nameMarkBuddyEase(buddy, 1800);" in act
     assert act.index("nameMarkBuddyEase(buddy, 1800)") < act.index("buddy.classList.remove(`nmb-act-${was}`)")
     # A shorter ease never cuts a longer one (a wake's 7s) short.
     assert "if (until <= (nmb.easeUntil || 0) && buddy.classList.contains(\"nmb-easing\")) return;" in _fn("nameMarkBuddyEase")
@@ -1569,7 +1572,7 @@ def test_an_act_or_a_walk_is_let_go_not_dropped():
     # (INBOX 1589: the hand-over also takes `nmb-arms` off with the last act that moves the arms.)
     # (INBOX 1634: the leave is written inside the enter's change, one hand-over for both.)
     act_fn = _fn("nameMarkBuddyAct")
-    assert "const leave = () => {\n    buddy.classList.remove(`nmb-act-${was}`);" in act_fn
+    assert "const leave = () => {\n    if (easeOut) nameMarkBuddyEase(buddy, 1800);\n    buddy.classList.remove(`nmb-act-${was}`);" in act_fn
     assert "joined ? () => (leave(), into()) : into" in act_fn and "nameMarkBuddyBlend(buddy, leave)" in act_fn
     assert 'nameMarkBuddyBlend(buddy, () => buddy.classList.remove("nmb-walking"));' in AV
     assert 'a.id !== "nmb-blend"' in _fn("nameMarkBuddyTempo")
