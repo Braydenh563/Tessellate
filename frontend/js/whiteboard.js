@@ -955,7 +955,9 @@ function wbSnapOn() {
 //: releases the grid lock, the same convention Figma/Illustrator use) skips
 //: the rounding for just this one call, without needing the snap toggle
 //: itself touched.
+//: Not a finite number is 0 (B33): NaN is invalid where used, not where set.
 function wbSnap(value, bypass) {
+  if (!Number.isFinite(value)) return 0;
   return wbSnapOn() && !bypass ? Math.round(value / WB_GRID_SPACING) * WB_GRID_SPACING : value;
 }
 

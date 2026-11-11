@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Board list (audit 1028 K36): each board's thumbnail fingerprint was five aggregate queries per board; they are grouped across the page, so `GET /whiteboard/boards` runs 31 statements for 3 boards and 31 for 12 (67 for 12 before). Whiteboard (audit B33): a coordinate that is not a finite number snaps to 0 instead of reaching a transform as NaN.
 - Composer: "set a timer for 25 minutes", "start a pomodoro", "start a stopwatch" and "open the clock" open the Clock window with the length ready (Start stays the person's press) instead of a reminder or a note search; a temperature, oven or hot question answered by a quoted figure (175C) no longer ends with a "do not mention" footer (BC1 E56, Z16).
 - Security (audit 1028 K33, K38): the per-request token check sweeps every token at most every 30 s (the asked-about token is still judged on its own entry at once), and uvicorn's access log shows a media link's `?once=` ticket as `once=...`.
 - Diagram builder: once a flowchart has arrows, the list's foot says what the bare arrow on a block does ("The arrow on a block, or Connect, draws an arrow from it"), since a list under 19rem hides the words of Connect to…; Help says the same.
