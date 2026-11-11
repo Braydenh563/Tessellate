@@ -373,3 +373,12 @@ console.log(JSON.stringify({
     assert r["gone"] == 0  # a cell thinner than the gap vanishes rather than inverts
     assert r["slack"] >= 5 - 1e-6  # every region's cells keep clear of its rectangle
 
+
+
+def test_a_saved_view_keeps_the_tessellation_look():
+    """INBOX 1744 (q31-1110): the view captures the Look and puts it back before
+    the layout's change event re-lays the cells out."""
+    capture = _function(GRAPH, "graphCaptureView")
+    assert 'tessLook: prefs.get("graph-tess-look", null) === "hexes" ? "hexes" : "cells"' in capture
+    apply = _function(GRAPH, "graphApplyView")
+    assert apply.index('prefs.set("graph-tess-look", view.tessLook)') < apply.index('prefs.set("graph-layout", view.layout)')

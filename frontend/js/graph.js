@@ -4586,6 +4586,8 @@ function graphCaptureView() {
   const transform = graphSvg ? d3.zoomTransform(graphSvg.node()) : null;
   return {
     layout: prefs.get("graph-layout", null) || "force",
+    //: The Tessellation's Look rides with the layout it belongs to (INBOX 1744).
+    tessLook: prefs.get("graph-tess-look", null) === "hexes" ? "hexes" : "cells",
     colour: prefs.get("graph-colour", null) || "",
     hiddenCategories: [...graphHiddenCategories],
     hiddenKeys: [...graphHiddenKeys],
@@ -4655,6 +4657,12 @@ function graphApplyView(view) {
   // without this function needing to know which `set()` call that will be.
   graphPendingViewPositions =
     view.positions && Object.keys(view.positions).length ? view.positions : null;
+  //: Before the layout's change event, which lays the cells out with it.
+  if (view.tessLook === "cells" || view.tessLook === "hexes") {
+    prefs.set("graph-tess-look", view.tessLook);
+    const look = $("graph-tess-look");
+    if (look) look.value = view.tessLook;
+  }
   prefs.set("graph-layout", view.layout);
   if (view.colour) prefs.set("graph-colour", view.colour);
   //: The layout is a list (INBOX 670; it was a radio group, which `set()` on

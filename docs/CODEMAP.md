@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8108, frontend ids 2684, CSS sections 523, backend routes 662, backend modules 9999, test files 2450, tests 20296, plan headings 1002, app scripts 28, boot scripts 37, script files 277.
+Counts: frontend functions 8108, frontend ids 2684, CSS sections 523, backend routes 662, backend modules 9999, test files 2450, tests 20297, plan headings 1002, app scripts 28, boot scripts 37, script files 277.
 
 ## Frontend functions (8108)
 
@@ -5376,16 +5376,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `fitGraphToView` | frontend/js/graph.js:2146 |
 | `focusGraphNode` | frontend/js/graph.js:1890 |
 | `frameTree` | frontend/js/graph.js:588 |
-| `graphApplySettings` | frontend/js/graph.js:5165 |
-| `graphApplyView` | frontend/js/graph.js:4639 |
-| `graphAutoFitOn` | frontend/js/graph.js:4814 |
+| `graphApplySettings` | frontend/js/graph.js:5173 |
+| `graphApplyView` | frontend/js/graph.js:4641 |
+| `graphAutoFitOn` | frontend/js/graph.js:4822 |
 | `graphCalmScheme` | frontend/js/graph.js:1750 |
-| `graphCaptureSettings` | frontend/js/graph.js:5134 |
+| `graphCaptureSettings` | frontend/js/graph.js:5142 |
 | `graphCaptureView` | frontend/js/graph.js:4585 |
 | `graphCategoryScale` | frontend/js/graph.js:1760 |
-| `graphCloseOtherMenus` | frontend/js/graph.js:4871 |
+| `graphCloseOtherMenus` | frontend/js/graph.js:4879 |
 | `graphColourMode` | frontend/js/graph.js:1582 |
-| `graphControlsSheetParts` | frontend/js/graph.js:5284 |
+| `graphControlsSheetParts` | frontend/js/graph.js:5292 |
 | `graphEndpoint` | frontend/js/graph.js:1800 |
 | `graphFill` | frontend/js/graph.js:1826 |
 | `graphFitFrame` | frontend/js/graph.js:2123 |
@@ -5433,11 +5433,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `graphReadPhrase` | frontend/js/graph.js:2244 |
 | `graphRemoveLink` | frontend/js/graph.js:2595 |
 | `graphRenderGroups` | frontend/js/graph.js:1635 |
-| `graphResetToDefaults` | frontend/js/graph.js:5200 |
+| `graphResetToDefaults` | frontend/js/graph.js:5208 |
 | `graphResolveGroups` | frontend/js/graph.js:1620 |
 | `graphRestorePins` | frontend/js/graph.js:104 |
-| `graphRestoreSwitches` | frontend/js/graph.js:4794 |
-| `graphSaveCurrentView` | frontend/js/graph.js:4629 |
+| `graphRestoreSwitches` | frontend/js/graph.js:4802 |
+| `graphSaveCurrentView` | frontend/js/graph.js:4631 |
 | `graphSavedViews` | frontend/js/graph.js:4576 |
 | `graphSearchClear` | frontend/js/graph.js:2408 |
 | `graphSearchCountText` | frontend/js/graph.js:2311 |
@@ -5450,16 +5450,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `graphSearchTyped` | frontend/js/graph.js:2354 |
 | `graphSetGroups` | frontend/js/graph.js:1607 |
 | `graphSetPin` | frontend/js/graph.js:63 |
-| `graphSettingsEqual` | frontend/js/graph.js:5154 |
+| `graphSettingsEqual` | frontend/js/graph.js:5162 |
 | `graphShowNote` | frontend/js/graph.js:3222 |
 | `graphSizeMode` | frontend/js/graph.js:1545 |
 | `graphSizeRadius` | frontend/js/graph.js:1550 |
 | `graphSyncFocusChip` | frontend/js/graph.js:1707 |
-| `graphSyncSimilarityRow` | frontend/js/graph.js:5035 |
+| `graphSyncSimilarityRow` | frontend/js/graph.js:5043 |
 | `graphTopicFor` | frontend/js/graph.js:3278 |
 | `graphUnpinAllNow` | frontend/js/graph.js:95 |
-| `graphZoomBy` | frontend/js/graph.js:4885 |
-| `graphZoomRoving` | frontend/js/graph.js:4897 |
+| `graphZoomBy` | frontend/js/graph.js:4893 |
+| `graphZoomRoving` | frontend/js/graph.js:4905 |
 | `hierarchyPath` | frontend/js/graph.js:540 |
 | `initGraphDockHeightToken` | frontend/js/graph.js:4325 |
 | `initGraphGroups` | frontend/js/graph.js:1669 |
@@ -5467,12 +5467,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `initGraphMinimap` | frontend/js/graph.js:4405 |
 | `initGraphRailToken` | frontend/js/graph.js:4362 |
 | `initGraphToastClearance` | frontend/js/graph.js:4388 |
-| `initGraphViews` | frontend/js/graph.js:4733 |
+| `initGraphViews` | frontend/js/graph.js:4741 |
 | `keepGraphPopupEdit` | frontend/js/graph.js:3704 |
 | `layoutHierarchy` | frontend/js/graph.js:408 |
 | `layoutTreemap` | frontend/js/graph.js:342 |
 | `linkByDrop` | frontend/js/graph.js:1471 |
-| `openGraphControlsSheet` | frontend/js/graph.js:5300 |
+| `openGraphControlsSheet` | frontend/js/graph.js:5308 |
 | `openGraphLinkPanel` | frontend/js/graph.js:2776 |
 | `openGraphLinkPeek` | frontend/js/graph.js:2655 |
 | `openGraphNewNote` | frontend/js/graph.js:3765 |
@@ -5488,7 +5488,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderGraphPopupMedia` | frontend/js/graph.js:2945 |
 | `renderGraphPopupProps` | frontend/js/graph.js:3315 |
 | `renderGraphPopupTopic` | frontend/js/graph.js:3253 |
-| `renderGraphViews` | frontend/js/graph.js:4703 |
+| `renderGraphViews` | frontend/js/graph.js:4711 |
 | `renderTraceReadout` | frontend/js/graph.js:1120 |
 | `renderTraceState` | frontend/js/graph.js:846 |
 | `replyLoops` | frontend/js/graph.js:324 |
@@ -5503,7 +5503,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `showTraceMessage` | frontend/js/graph.js:916 |
 | `storyPrompt` | frontend/js/graph.js:1107 |
 | `syncGraphPopupSave` | frontend/js/graph.js:2584 |
-| `toggleGraphFullscreen` | frontend/js/graph.js:4923 |
+| `toggleGraphFullscreen` | frontend/js/graph.js:4931 |
 | `traceLabel` | frontend/js/graph.js:839 |
 | `tracePath` | frontend/js/graph.js:1275 |
 | `watchGraphPopupSize` | frontend/js/graph.js:3038 |
@@ -26095,7 +26095,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (20296)
+## Tests (20297)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27221,7 +27221,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_graph_slim.py | 3 |
 | tests/test_graph_style_no_relayout.py | 2 |
 | tests/test_graph_tabstops_1518.py | 2 |
-| tests/test_graph_tessellation.py | 14 |
+| tests/test_graph_tessellation.py | 15 |
 | tests/test_graph_tether.py | 2 |
 | tests/test_graph_tick_rate_1029.py | 4 |
 | tests/test_graph_tidy_1529.py | 2 |
