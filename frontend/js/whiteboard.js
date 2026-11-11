@@ -6803,9 +6803,8 @@ function wbApplySelectionHighlight() {
   }
   //: One that left the page (a render's exit) is not wanted either, so it is dropped here too.
   for (const el of marked) {
-    if (wanted.has(el)) continue;
-    el.classList.remove("wb-selected", "wb-in-group");
-    marked.delete(el);
+    if (!wanted.has(el)) el.classList.remove("wb-selected", "wb-in-group");
+    if (!wanted.has(el)) marked.delete(el);
   }
   // A sketch's resize handles have nowhere else to live between renders
   // (unlike a card/object, which always has 8 handle children of its own), 
@@ -23996,7 +23995,7 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
       delete d._unsaved;
       if (moveBefore) Object.assign(d, { x: moveBefore.x, y: moveBefore.y });
       wbScheduleRender();
-      toast("Could not save that move, so it went back.", true, { action: ["Reload the board", () => fetchWhiteboardState().then(wbScheduleRender)] });
+      toast(voiceLine("failed", { what: "save the move", why: "the item went back where it was" }), true, { action: ["Reload the board", () => fetchWhiteboardState().then(wbScheduleRender)] });
       return;
     }
     const primary = moveBefore && reallyMoved
@@ -25124,7 +25123,7 @@ async function dragEndNode(event, d) {
       delete d._unsaved;
       if (moveBefore) Object.assign(d, { x: moveBefore.x, y: moveBefore.y });
       wbScheduleRender();
-      toast("Could not save that move, so it went back.", true, { action: ["Reload the board", () => fetchWhiteboardState().then(wbScheduleRender)] });
+      toast(voiceLine("failed", { what: "save the move", why: "the item went back where it was" }), true, { action: ["Reload the board", () => fetchWhiteboardState().then(wbScheduleRender)] });
       return;
     }
     //: The whole drag is one undo step now, carried members and Alt copies
