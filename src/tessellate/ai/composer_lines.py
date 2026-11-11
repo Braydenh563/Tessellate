@@ -67,8 +67,8 @@ CLOSERS: tuple[Cand, ...] = (
 )
 
 BRIDGES: tuple[Cand, ...] = (
-    c("Also,", "w"), c("On top of that,", "w"), c("And", "w"), c("Plus,", "p"), c("Oh, and", "p"), c("Then there is this:", "p"),
-    c("Also:", "t"), c("And:", "t"), c("Additionally,", "f"), c("Furthermore,", "f"), c("In addition,", "f"),
+    c("Also,", "w"), c("On top of that,", "w"), c("Plus,", "p"), c("Oh, and", "p"), c("Then there is this:", "p"),
+    c("Also:", "t"), c("Additionally,", "f"), c("Furthermore,", "f"), c("In addition,", "f"),
 )
 
 ABILITY_OPENERS: dict[str, tuple[Cand, ...]] = {

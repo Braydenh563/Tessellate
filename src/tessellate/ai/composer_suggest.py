@@ -304,6 +304,13 @@ _DETAIL = {
 }
 #: A bare "new note" offers both readings: making one, or the newest ones (INBOX 1532).
 _DETAIL_ASKS = {"new": ("Show my newest notes",)}
+_FEELS = re.compile(r"\b(?:bored|stuck|lost|unsure)\b", re.I)
+_FEELING_TEXT = (
+    "Bored, then. Here are a few things worth trying, or tell me what you are after.",
+    "Let us fix that. A few ideas below, or say what you feel like.",
+    "Slow day? Here are some things to try, or tell me what you are in the mood for.",
+    "I can help with that. Pick something below, or say what you have in mind.",
+)
 _VAGUE_TEXT = (
     "I can do a few useful things without a model. What are you in the mood for? Pick one, or say what you have in mind.",
     "Cool how? Here are some things worth trying, or tell me what you are after.",
@@ -312,22 +319,27 @@ _VAGUE_TEXT = (
 )
 
 
+def _which_reply(kind: str, question: str, shown: list[str], seed: str) -> dict:
+    """The question for a request that names its verb but not which note ("open it")."""
+    if not shown and kind in ("open", "delete", "pin", "unpin", "summarise"):
+        return {"text": "You have no notes yet, so there is nothing to " + kind + ". Make one with “note:” and your words, or ask me what I can do.",
+                "asks": ["Make a new note", "What can you do?"]}
+    text = _pick(list(_WHICH[kind]), question, seed)
+    if kind == "find":
+        return {"text": text, "asks": [f"Open the note about {t}" for t in shown] or ["What have I saved recently?"]}
+    verb = _VERB_FOR[kind]
+    if kind == "summarise":
+        return {"text": text, "asks": ["Summarise my newest notes"] + [f"Summarise the note about {t}" for t in shown[:3]]}
+    return {"text": text, "asks": [f"{verb} the note about {t}" for t in shown]}
+
+
 def reply(question: str, titles: list[str], *, seed: str = "") -> dict:
     """The clarifying question and its choices for an open-ended request:
     `{"text", "asks"}`. `titles` are the newest notes' names, newest first."""
     kind = open_ended(question)
     shown = [t for t in titles if t][:4]
     if kind in _WHICH:
-        if not shown and kind in ("open", "delete", "pin", "unpin", "summarise"):
-            return {"text": "You have no notes yet, so there is nothing to " + kind + ". Make one with “note:” and your words, or ask me what I can do.",
-                    "asks": ["Make a new note", "What can you do?"]}
-        text = _pick(list(_WHICH[kind]), question, seed)
-        if kind == "find":
-            return {"text": text, "asks": [f"Open the note about {t}" for t in shown] or ["What have I saved recently?"]}
-        verb = _VERB_FOR[kind]
-        if kind == "summarise":
-            return {"text": text, "asks": ["Summarise my newest notes"] + [f"Summarise the note about {t}" for t in shown[:3]]}
-        return {"text": text, "asks": [f"{verb} the note about {t}" for t in shown]}
+        return _which_reply(kind, question, shown, seed)
     if kind in _DETAIL:
         #: A bare "new note" offers both readings: making one, or the newest ones.
         return {"text": _DETAIL[kind], "asks": list(_DETAIL_ASKS.get(kind, ()))}
@@ -337,7 +349,9 @@ def reply(question: str, titles: list[str], *, seed: str = "") -> dict:
     asks = [ideas[(start + i * 2) % len(ideas)] for i in range(3)]
     if shown:
         asks.append(f"Open the note about {shown[int(hashlib.sha1(seed.encode()).hexdigest(), 16) % len(shown)]}")
-    return {"text": _pick(list(_VAGUE_TEXT), question, seed), "asks": list(dict.fromkeys(asks))}
+    #: A feeling is answered as one first ("I'm bored" is not "Cool how?", INBOX 1749).
+    feeling = _FEELING_TEXT if _FEELS.search(question or "") else _VAGUE_TEXT
+    return {"text": _pick(list(feeling), question, seed), "asks": list(dict.fromkeys(asks))}
 
 
 #: The doing words of a request, which every help sentence shares; the

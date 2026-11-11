@@ -477,7 +477,7 @@ def test_the_greeting_names_a_japanese_note_by_a_short_form(client, session, mon
 
     session.add(Entry(content="考え：仕事を済ませてから、練習としてゴルフを数球打った（笑）", created_at=seed_c.NOW))
     session.commit()
-    said = seed_c.asker(client, monkeypatch)("hey")[0]
+    said = seed_c.asker(client, monkeypatch)("hello")[0]
     assert "考え：仕事を済ませてから…" in said and "ゴルフ" not in said, said
 
 
