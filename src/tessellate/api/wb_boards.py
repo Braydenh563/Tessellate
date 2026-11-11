@@ -38,6 +38,93 @@ BOARDS_PAGE_SIZE = 200
 BOARDS_PAGE_SIZE_MAX = 1000
 
 
+def _board_stats(db: Session) -> tuple[dict, dict, dict, dict, dict[int | None, datetime]]:
+    """Per-board counts of cards, sketches, objects and link sketches, and each board's last write."""
+    node_counts = dict(
+        db.execute(
+            select(WhiteboardNode.board_id, func.count())
+            .where(WhiteboardNode.board_id.is_not(None))
+            .group_by(WhiteboardNode.board_id)
+        ).all()
+    )
+    sketch_counts = dict(
+        db.execute(
+            select(WhiteboardSketch.board_id, func.count())
+            .where(WhiteboardSketch.board_id.is_not(None))
+            .group_by(WhiteboardSketch.board_id)
+        ).all()
+    )
+    object_counts = dict(
+        db.execute(
+            select(WhiteboardObject.board_id, func.count())
+            .where(WhiteboardObject.board_id.is_not(None))
+            .group_by(WhiteboardObject.board_id)
+        ).all()
+    )
+    link_counts = dict(
+        db.execute(
+            select(WhiteboardSketch.board_id, func.count())
+            .where(WhiteboardSketch.board_id.is_not(None), _is_link_sketch())
+            .group_by(WhiteboardSketch.board_id)
+        ).all()
+    )
+    #: The last write to anything on each board, keyed like the counts
+    #: above (None is the default board). One grouped query per table rather
+    #: than one per board, for the same reason the counts are.
+    touched: dict[int | None, datetime] = {}
+    for table in (WhiteboardNode, WhiteboardSketch, WhiteboardObject):
+        for board_id, last in db.execute(
+            select(table.board_id, func.max(table.updated_at)).group_by(table.board_id)
+        ).all():
+            if last is not None and (board_id not in touched or last > touched[board_id]):
+                touched[board_id] = last
+    return node_counts, sketch_counts, object_counts, link_counts, touched
+
+
+def _boards_for_page(
+    db: Session, type: str | None, node_counts: dict, sketch_counts: dict, object_counts: dict
+) -> tuple[list[Entry | None], dict[int, tuple[str, str]]]:
+    """The boards the list covers (None is the default board) and each one's type and layout."""
+    # The default scratch board has no note behind it, so it has nowhere to
+    # store settings and is always an ordinary board, which is why it is
+    # excluded by `?type=map` rather than being special-cased into it.
+    # The page is decided before any preview is built: `None` stands for the
+    # default board, and every other row is an `Entry` that passed the type
+    # filter. Building `BoardOut`s first and slicing afterwards would pay for
+    # a preview query per board in the notebook to answer a request for
+    # twenty of them.
+    page_rows: list[Entry | None] = [None] if type in (None, DEFAULT_BOARD_TYPE) else []
+    # `is_board` entries are included even at zero counts, see its own
+    # comment on the model and on `_require_board` above: a board that is
+    # currently empty (just created, or cleared back to empty) is still a
+    # board, and used to vanish from this list the moment its count hit
+    # zero, which read as the board having deleted itself.
+    board_ids = set(node_counts) | set(sketch_counts) | set(object_counts)
+    board_ids |= set(
+        db.scalars(
+            select(Entry.id).where(Entry.is_board.is_(True), Entry.is_deleted.is_(False))
+        ).all()
+    )
+    settings: dict[int, tuple[str, str]] = {}
+    if board_ids:
+        entries = db.scalars(
+            select(Entry)
+            .where(Entry.id.in_(board_ids), Entry.is_deleted.is_(False))
+            .order_by(Entry.id)
+        ).all()
+        for entry in entries:
+            board_type, layout = _board_settings(entry)
+            # The type lives inside a JSON settings blob, so this filter is
+            # Python either way (the docstring above says why); doing it here
+            # rather than inside the page loop is what makes `total` the size
+            # of the selection rather than of the table.
+            if type is not None and board_type != type:
+                continue
+            settings[entry.id] = (board_type, layout)
+            page_rows.append(entry)
+    return page_rows, settings
+
+
 @router.get("/boards", response_model=list[BoardOut])
 def list_boards(
     response: Response,
@@ -87,44 +174,7 @@ def list_boards(
             status_code=422,
             detail="Pick one of these board types: " + ", ".join(sorted(BOARD_TYPES)) + ".",
         )
-    node_counts = dict(
-        db.execute(
-            select(WhiteboardNode.board_id, func.count())
-            .where(WhiteboardNode.board_id.is_not(None))
-            .group_by(WhiteboardNode.board_id)
-        ).all()
-    )
-    sketch_counts = dict(
-        db.execute(
-            select(WhiteboardSketch.board_id, func.count())
-            .where(WhiteboardSketch.board_id.is_not(None))
-            .group_by(WhiteboardSketch.board_id)
-        ).all()
-    )
-    object_counts = dict(
-        db.execute(
-            select(WhiteboardObject.board_id, func.count())
-            .where(WhiteboardObject.board_id.is_not(None))
-            .group_by(WhiteboardObject.board_id)
-        ).all()
-    )
-    link_counts = dict(
-        db.execute(
-            select(WhiteboardSketch.board_id, func.count())
-            .where(WhiteboardSketch.board_id.is_not(None), _is_link_sketch())
-            .group_by(WhiteboardSketch.board_id)
-        ).all()
-    )
-    #: The last write to anything on each board, keyed like the counts
-    #: above (None is the default board). One grouped query per table rather
-    #: than one per board, for the same reason the counts are.
-    touched: dict[int | None, datetime] = {}
-    for table in (WhiteboardNode, WhiteboardSketch, WhiteboardObject):
-        for board_id, last in db.execute(
-            select(table.board_id, func.max(table.updated_at)).group_by(table.board_id)
-        ).all():
-            if last is not None and (board_id not in touched or last > touched[board_id]):
-                touched[board_id] = last
+    node_counts, sketch_counts, object_counts, link_counts, touched = _board_stats(db)
     default_nodes = db.scalar(
         select(func.count()).select_from(WhiteboardNode).where(WhiteboardNode.board_id.is_(None))
     )
@@ -134,43 +184,7 @@ def list_boards(
     default_objects = db.scalar(
         select(func.count()).select_from(WhiteboardObject).where(WhiteboardObject.board_id.is_(None))
     )
-    # The default scratch board has no note behind it, so it has nowhere to
-    # store settings and is always an ordinary board, which is why it is
-    # excluded by `?type=map` rather than being special-cased into it.
-    # The page is decided before any preview is built: `None` stands for the
-    # default board, and every other row is an `Entry` that passed the type
-    # filter. Building `BoardOut`s first and slicing afterwards would pay for
-    # a preview query per board in the notebook to answer a request for
-    # twenty of them.
-    page_rows: list[Entry | None] = [None] if type in (None, DEFAULT_BOARD_TYPE) else []
-    # `is_board` entries are included even at zero counts, see its own
-    # comment on the model and on `_require_board` above: a board that is
-    # currently empty (just created, or cleared back to empty) is still a
-    # board, and used to vanish from this list the moment its count hit
-    # zero, which read as the board having deleted itself.
-    board_ids = set(node_counts) | set(sketch_counts) | set(object_counts)
-    board_ids |= set(
-        db.scalars(
-            select(Entry.id).where(Entry.is_board.is_(True), Entry.is_deleted.is_(False))
-        ).all()
-    )
-    settings: dict[int, tuple[str, str]] = {}
-    if board_ids:
-        entries = db.scalars(
-            select(Entry)
-            .where(Entry.id.in_(board_ids), Entry.is_deleted.is_(False))
-            .order_by(Entry.id)
-        ).all()
-        for entry in entries:
-            board_type, layout = _board_settings(entry)
-            # The type lives inside a JSON settings blob, so this filter is
-            # Python either way (the docstring above says why); doing it here
-            # rather than inside the page loop is what makes `total` the size
-            # of the selection rather than of the table.
-            if type is not None and board_type != type:
-                continue
-            settings[entry.id] = (board_type, layout)
-            page_rows.append(entry)
+    page_rows, settings = _boards_for_page(db, type, node_counts, sketch_counts, object_counts)
     response.headers["X-Total-Count"] = str(len(page_rows))
     paging.finish(response, offset, limit, len(page_rows))
     boards = []
