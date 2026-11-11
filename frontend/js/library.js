@@ -10849,7 +10849,9 @@ onDomReady(() => {
               list: apiPagedList("/whiteboard/boards", 200, { silent: true }).catch(() => null),
             };
             ensureModule("mapPreview");
-            wbShowBoardsLanding();
+            //: The cards are drawn by the small gallery file, not by the board code, so they
+            //: do not wait for 2.3 MB to be fetched and run (INBOX 1772); `show` says the rest.
+            ensureModule("boardsGallery").then((ok) => ok ? renderLibraryBoardsGallery.show() : lazyLoadFailed());
           } else if (targetId === "library-view-docs") {
             renderLibraryDocuments();
           } else if (targetId === "library-view-skills") {

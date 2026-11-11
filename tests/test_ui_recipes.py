@@ -4470,7 +4470,7 @@ def test_sub_views_whose_read_failed_say_so_instead_of_claiming_empty() -> None:
     gzip ratchet (OPEN.md)."""
     js = "\n".join(
         (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8")
-        for name in ("library.js", "whiteboard.js", "meetings.js")
+        for name in ("library.js", "whiteboard.js", "boards-gallery.js", "meetings.js")
     )
 
     def body(start: str, length: int = 5200) -> str:
