@@ -14,6 +14,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
+from tessellate.api.this_computer import this_computer_only
 from tessellate.core import deps
 from tessellate.core.deps import get_session
 from tessellate.entry import folder_sync
@@ -37,14 +38,16 @@ def folder_status() -> dict:
     return {"folder": state.folder, "last": state.last, "device": state.device, "min_passphrase": folder_sync.MIN_PASSPHRASE}
 
 
-@router.post("/folder")
+#: This computer only: the folder is a path on the server's own disk, so only the person at this
+#: computer, who can already reach every folder on it, may choose one (a phone on the LAN may not).
+@router.post("/folder", dependencies=[Depends(this_computer_only)])
 def sync_folder(body: FolderIn, session: Session = Depends(get_session)) -> dict:
     if not _busy.acquire(blocking=False):
         raise HTTPException(409, "A sync is already running.")
     try:
         state = folder_sync.load_state(_state_path())
         try:
-            counts = folder_sync.run(session, state, body.folder, body.passphrase)
+            counts = folder_sync.run(session, state, body.folder, body.passphrase, notebook=deps.get_config().data_dir)
         except folder_sync.SyncError as exc:
             raise HTTPException(400, str(exc)) from exc
         folder_sync.save_state(_state_path(), state)

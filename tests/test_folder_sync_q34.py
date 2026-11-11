@@ -192,3 +192,13 @@ def test_state_survives_a_restart(two, tmp_path):
     again = folder_sync.load_state(path)
     assert again.device == "aaaa" and again.uids == sa.uids and again.base == sa.base
     assert folder_sync.load_state(tmp_path / "missing.json").device != "aaaa"
+
+
+def test_the_notebooks_own_folder_is_refused(two, tmp_path):
+    """A sync file inside the notebook's folder would travel with every copy of it (CodeQL path injection review)."""
+    a, sa, _b, _sb, _folder = two
+    inside = tmp_path / "notebook" / "sub"
+    inside.mkdir(parents=True)
+    for chosen in (tmp_path / "notebook", inside):
+        with pytest.raises(folder_sync.SyncError, match="outside the notebook"):
+            folder_sync.run(a, sa, str(chosen), "correct horse battery", notebook=tmp_path / "notebook")

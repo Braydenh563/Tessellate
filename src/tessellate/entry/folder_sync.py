@@ -34,6 +34,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import os
 import secrets
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -156,9 +157,18 @@ def _open(passphrase: str, sealed: dict) -> dict:
     return json.loads(crypto.decrypt(key, sealed["data"]))
 
 
-def _checked(folder: str, passphrase: str) -> Path:
-    path = Path(folder).expanduser() if folder.strip() else None
-    if path is None or not path.is_dir():
+def _checked(folder: str, passphrase: str, notebook: Path | None = None) -> Path:
+    """The folder, resolved with links followed, or a SyncError. Never the notebook's own folder or one
+    inside it: a sync file there would travel with every copy of the notebook."""
+    if not folder.strip():
+        raise SyncError("Choose a folder that exists on this computer.")
+    real = os.path.realpath(os.path.expanduser(folder))
+    if notebook is not None:
+        own = os.path.join(os.path.realpath(str(notebook)), "")
+        if real.startswith(own) or real == own.rstrip(os.sep):
+            raise SyncError("Choose a folder outside the notebook's own folder.")
+    path = Path(real)
+    if not path.is_dir():
         raise SyncError("Choose a folder that exists on this computer.")
     if len(passphrase) < MIN_PASSPHRASE:
         raise SyncError(f"Use a sync passphrase of at least {MIN_PASSPHRASE} characters, the same on every computer.")
@@ -248,9 +258,9 @@ def read_peer(session: Session, body: dict, state: State, counts: dict) -> None:
 # --- one sync ----------------------------------------------------------------
 
 
-def run(session: Session, state: State, folder: str, passphrase: str) -> dict:
+def run(session: Session, state: State, folder: str, passphrase: str, notebook: Path | None = None) -> dict:
     """Read every peer's file, then write this install's. Commits. Returns what changed."""
-    path = _checked(folder, passphrase)
+    path = _checked(folder, passphrase, notebook)
     counts = {"added": 0, "updated": 0, "conflicts": 0, "unreadable": 0, "peers": 0}
     for file in sorted(path.glob(f"{FILE_PREFIX}*{FILE_SUFFIX}")):
         if file.name == f"{FILE_PREFIX}{state.device}{FILE_SUFFIX}":

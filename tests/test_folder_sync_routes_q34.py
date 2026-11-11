@@ -27,3 +27,4 @@ def test_a_missing_folder_and_a_short_passphrase_are_said_plainly(client, tmp_pa
     assert missing.status_code == 400 and "folder" in missing.json()["detail"]
     short = client.post("/sync/folder", json={"folder": str(folder), "passphrase": "short"})
     assert short.status_code == 400 and "passphrase" in short.json()["detail"]
+

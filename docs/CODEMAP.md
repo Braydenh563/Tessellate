@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8205, frontend ids 2744, CSS sections 524, backend routes 687, backend modules 10583, test files 2613, tests 21351, plan headings 1013, app scripts 29, boot scripts 38, script files 289.
+Counts: frontend functions 8205, frontend ids 2744, CSS sections 524, backend routes 687, backend modules 10583, test files 2613, tests 21352, plan headings 1013, app scripts 29, boot scripts 38, script files 289.
 
 ## Frontend functions (8205)
 
@@ -13233,8 +13233,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/files/{attachment_id}/text` | PUT | `save_attached_file_text` | src/tessellate/api/routes_files.py:747 |
 | `/files/{name}` | GET | `translate_file` | src/tessellate/api/routes_translate.py:27 |
 | `/flags` | GET | `flags` | src/tessellate/api/routes_learned_audit.py:42 |
-| `/folder` | GET | `folder_status` | src/tessellate/api/routes_folder_sync.py:34 |
-| `/folder` | POST | `sync_folder` | src/tessellate/api/routes_folder_sync.py:40 |
+| `/folder` | GET | `folder_status` | src/tessellate/api/routes_folder_sync.py:35 |
+| `/folder` | POST | `sync_folder` | src/tessellate/api/routes_folder_sync.py:43 |
 | `/followups` | POST | `chat_followups` | src/tessellate/api/routes_chat.py:150 |
 | `/forget` | POST | `forget` | src/tessellate/api/routes_hello.py:200 |
 | `/grammar/languagetool` | POST | `post_languagetool` | src/tessellate/api/routes_spelling.py:40 |
@@ -21940,10 +21940,10 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `FolderIn` | src/tessellate/api/routes_folder_sync.py:25 |
-| `_state_path` | src/tessellate/api/routes_folder_sync.py:30 |
-| `folder_status` | src/tessellate/api/routes_folder_sync.py:35 |
-| `sync_folder` | src/tessellate/api/routes_folder_sync.py:41 |
+| `FolderIn` | src/tessellate/api/routes_folder_sync.py:26 |
+| `_state_path` | src/tessellate/api/routes_folder_sync.py:31 |
+| `folder_status` | src/tessellate/api/routes_folder_sync.py:36 |
+| `sync_folder` | src/tessellate/api/routes_folder_sync.py:44 |
 
 ### src/tessellate/api/routes_graph.py (63)
 
@@ -25897,25 +25897,25 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `State` | src/tessellate/entry/folder_sync.py:62 |
-| `SyncError` | src/tessellate/entry/folder_sync.py:57 |
-| `_apply` | src/tessellate/entry/folder_sync.py:171 |
-| `_bring_in` | src/tessellate/entry/folder_sync.py:216 |
-| `_checked` | src/tessellate/entry/folder_sync.py:159 |
-| `_fields` | src/tessellate/entry/folder_sync.py:103 |
-| `_hash` | src/tessellate/entry/folder_sync.py:117 |
-| `_keep_text` | src/tessellate/entry/folder_sync.py:187 |
-| `_open` | src/tessellate/entry/folder_sync.py:152 |
-| `_ours` | src/tessellate/entry/folder_sync.py:121 |
-| `_seal` | src/tessellate/entry/folder_sync.py:140 |
-| `_settle` | src/tessellate/entry/folder_sync.py:193 |
-| `_stamp` | src/tessellate/entry/folder_sync.py:99 |
-| `_when` | src/tessellate/entry/folder_sync.py:91 |
-| `load_state` | src/tessellate/entry/folder_sync.py:76 |
-| `read_peer` | src/tessellate/entry/folder_sync.py:228 |
-| `run` | src/tessellate/entry/folder_sync.py:251 |
-| `save_state` | src/tessellate/entry/folder_sync.py:84 |
-| `snapshot` | src/tessellate/entry/folder_sync.py:125 |
+| `State` | src/tessellate/entry/folder_sync.py:63 |
+| `SyncError` | src/tessellate/entry/folder_sync.py:58 |
+| `_apply` | src/tessellate/entry/folder_sync.py:181 |
+| `_bring_in` | src/tessellate/entry/folder_sync.py:226 |
+| `_checked` | src/tessellate/entry/folder_sync.py:160 |
+| `_fields` | src/tessellate/entry/folder_sync.py:104 |
+| `_hash` | src/tessellate/entry/folder_sync.py:118 |
+| `_keep_text` | src/tessellate/entry/folder_sync.py:197 |
+| `_open` | src/tessellate/entry/folder_sync.py:153 |
+| `_ours` | src/tessellate/entry/folder_sync.py:122 |
+| `_seal` | src/tessellate/entry/folder_sync.py:141 |
+| `_settle` | src/tessellate/entry/folder_sync.py:203 |
+| `_stamp` | src/tessellate/entry/folder_sync.py:100 |
+| `_when` | src/tessellate/entry/folder_sync.py:92 |
+| `load_state` | src/tessellate/entry/folder_sync.py:77 |
+| `read_peer` | src/tessellate/entry/folder_sync.py:238 |
+| `run` | src/tessellate/entry/folder_sync.py:261 |
+| `save_state` | src/tessellate/entry/folder_sync.py:85 |
+| `snapshot` | src/tessellate/entry/folder_sync.py:126 |
 
 ### src/tessellate/entry/highlights.py (2)
 
@@ -27177,7 +27177,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21351)
+## Tests (21352)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28278,7 +28278,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_focus_feedback_1029.py | 8 |
 | tests/test_focus_timer.py | 7 |
 | tests/test_folder_roundtrip.py | 8 |
-| tests/test_folder_sync_q34.py | 10 |
+| tests/test_folder_sync_q34.py | 11 |
 | tests/test_folder_sync_routes_q34.py | 2 |
 | tests/test_follow_items_1110.py | 15 |
 | tests/test_followup_ordinal_e14.py | 9 |
