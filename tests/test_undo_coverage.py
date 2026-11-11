@@ -597,6 +597,7 @@ EXEMPT: dict[str, str] = {
     "chat-attach.js:openExtractPreview": "read: reads or asks the model; shows a result, writes nothing",
     "chat-turn.js:saveFollowups": "telemetry: stores suggested follow-up chips",
     "chat-turn.js:writeCheckpoint": "send: a chat message, kept by the chat's own turn history",
+    "chat-turn.js:chatSendTurn": "send: a chat message, kept by the chat's own turn history (its Undo word case went to `ask` in the E44 split)",
     "chat.js:setResponseMode": "settings: a setting with its own Reset or the settings history",
     "web-results.js:setWebSearxngRunning": "job: starts or stops work or a model; deletes no user data",
     "web-results.js:startSearxng": "job: starts or stops work or a model; deletes no user data",

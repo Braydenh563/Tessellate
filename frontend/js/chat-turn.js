@@ -11,188 +11,13 @@
 async function chatSendTurn(preset, opts = {}) {
   const input = $("chat-input");
   const status = $("chat-status");
-  const typed = chatTidyTyped((preset ?? input.value).trim());
-  if (!typed) {
-    //: Pressing Send on an empty box did nothing at all (dog3-1026 row 12).
-    if (preset == null) {
-      toast("Type a message first.");
-      input.focus();
-    }
-    return;
-  }
-  if (preset == null && CHAT_UNDO_WORDS.test(typed)) {
-    input.value = "";
-    return chatWriteRecord("chatHistoryTyped", /^undo/i.test(typed));
-  }
-
-  // Plan mode is applied here, on the way out, rather than by whatever control
-  // was pressed: so Send, Enter and a suggestion chip all get planned when the
-  // mode is on. `opts.plan` means this message IS a plan already (the plan
-  // runner re-sends through here), so it must not be planned again.
-  //
-  // The user's own words go in the bubble; the planning instruction is appended
-  // for the model only. `displayText` already exists for exactly this.
-  const planned = opts.plan || opts.skipPlanMode ? null : applyPlanMode(typed);
-  let question = planned || typed;
-  if (planned && !opts.displayText) opts = { ...opts, displayText: typed };
-  //: **The selection joins the question here, and only for the model.** It is
-  //: appended after Plan mode's own rewrite for the same reason that rewrite
-  //: exists at all: `displayText` is what the user said, and showing them a
-  //: block of their own note quoted back at them under their question would
-  //: read as the app putting words in their mouth. The chip above the box is
-  //: what tells them it is going.
-  //:
-  //: Re-validated at this moment rather than reused from when it was attached
-  //:, see `revalidateSelection` for what changes in between and why sending
-  //: stale offsets is the worst of the three outcomes.
-  const sentSelection = attachedSelection ? revalidateSelection(attachedSelection) : null;
-  if (sentSelection) {
-    if (!opts.displayText) opts = { ...opts, displayText: typed };
-    question = `${question}\n\n${selectionContextBlock(sentSelection)}`;
-  }
-  //: A cited web page joins the same way and for the same reason: the model
-  //: reads it, the bubble shows only what the user typed, and the chip above
-  //: the box is what said it was going.
-  if (attachedWebPage) {
-    if (!opts.displayText) opts = { ...opts, displayText: typed };
-    question = `${question}\n\n${webPageContextBlock(attachedWebPage)}`;
-  } else if (chatWeb.lastUrl && (await ensureModule("webClip"))) {
-    const page = await webFollowUp(typed, chatWeb.lastUrl);
-    if (page) {
-      if (!opts.displayText) opts = { ...opts, displayText: typed };
-      question = `${question}\n\n${webPageContextBlock(page)}`;
-    }
-  }
-  // Over the server's limit: say so, keep the draft (audit 1028 E8).
-  if (question.length > 2e4) return lazyScript("/js/chat-edit.js").then(() => chatTooLong(typed, !preset));
-  lastChatQuestion = question;
-  if (!opts.replaceLast) regenerateLastAnswer.retries = 0; // a new question is a first ask
-
-  // Consumed once: this send, button click or free-typed reply alike, is
-  // the answer to whatever question was pending, and the next one after it
-  // is an ordinary message again.
-  const answeringAgent = opts.answeringAgent ?? chatAwaitingAgentAnswer;
-  chatAwaitingAgentAnswer = false;
-  // Whatever is sent while a question card waits is its answer (INBOX 171):
-  // the card folds into its chip and cannot send a second one.
-  settlePendingAgentQuestion(opts.displayText ?? typed);
-
-  // **Staged images become real uploads here**, at the moment the message is
-  // actually committed: see `attachImageFiles` for why nothing was uploaded
-  // when they were attached.
-  //
-  // Before the snapshot below, because that snapshot reads `img.id` and a
-  // staged image has none until this runs. A failure stops the send and says
-  // so: a message arriving without the picture it was written about is worse
-  // than one that refuses and explains.
-  if (!opts.imageMediaIds) {
-    try {
-      await commitStagedImages();
-    } catch (error) {
-      toast(error.message || "Couldn't upload the attached image.", true);
-      return;
-    }
-  }
-
-  // Snapshot the attachments for this message. A regenerate re-uses the same
-  // ones; a fresh send clears them, so they don't silently ride along on
-  // every later question.
-  const sentAttachments = opts.noteIds || attachedNoteIds.slice();
-  const sentImages = opts.imageMediaIds || attachedImages.map((img) => img.id);
-  const sentDocuments = opts.documentIds || attachedDocuments.map((d) => d.id);
-  const sentFiles = opts.fileIds || attachedFiles.filter((f) => typeof f.id === "number").map((f) => f.id);
-  const sentMediaFiles = opts.mediaFileIds || attachedFiles.filter((f) => typeof f.id === "string").map((f) => Number(f.id.slice(1)));
-  const sentBoards = opts.boardIds || attachedBoards.map((b) => b.id);
-  // What the bubble will draw. Built here, while the composer still knows the
-  // names and urls: after the clear below there is nothing left to build it
-  // from, and a round trip to re-fetch what we already had would show the
-  // message without its pictures for as long as that took.
-  const sentAttachmentCards = opts.attachmentCards || [
-    ...attachedImages.map((img) => ({
-      kind: "image",
-      id: img.id,
-      url: img.url,
-      name: img.name || "Attached image",
-      // A just-uploaded image has no caption yet, captioning runs in the
-      // background once the message commits it. Reopening the chat picks the
-      // caption up from `GET /conversations/{id}`, which is where it lands.
-      caption: "",
-      text: "",
-    })),
-    ...attachedDocuments.map((d) => ({ kind: d.kind || "document", id: d.id, name: d.name })),
-    // Library files: the same card list as the other kinds, so the bubble
-    // shows every reference the question was given rather than three of four.
-    ...attachedFiles.map((f) => ({ kind: "file", id: f.id, name: f.name })),
-    // A mind map, same card list again, the bubble has to show every
-    // reference the question was given, and a map is the one whose absence
-    // would be least obvious (its outline is invisible in the transcript).
-    ...attachedBoards.map((b) => ({ kind: "map", id: b.id, name: b.name })),
-    // The paperclip's own attachments. Same card list as the other two kinds
-    // so the bubble shows every reference this question was given, not two of
-    // the three.
-    ...attachedNotes().map((entry) => ({
-      kind: "note",
-      id: entry.id,
-      name: noteLabel(entry, 60),
-    })),
-  ];
-  if (!opts.replaceLast) {
-    // Remembered so a regenerate re-runs with the same references, by then
-    // the picker has been cleared.
-    lastChatAttachments = sentAttachments;
-    lastChatImageAttachments = attachedImages.slice();
-    lastChatDocumentAttachments = attachedDocuments.slice();
-    lastChatFileAttachments = attachedFiles.slice();
-    lastChatBoardAttachments = attachedBoards.slice();
-    // The staged bytes are on the server now, so the local Blob references
-    // are dead weight: an object URL lives as long as the document unless it
-    // is revoked, and a chat session sending several images would hold every
-    // one of them in memory for the life of the tab. The upload's real url is
-    // what the sent bubble draws from, so nothing on screen depends on these.
-    for (const image of attachedImages) {
-      if (image.objectUrl) URL.revokeObjectURL(image.objectUrl);
-      image.objectUrl = null;
-    }
-    attachedNoteIds = [];
-    attachedImages = [];
-    attachedDocuments = [];
-    attachedFiles = [];
-    attachedBoards = [];
-    //: Cleared with the rest, and for the same stated reason: a selection that
-    //: rode along on every later question would be the app answering about a
-    //: paragraph the user stopped talking about three messages ago.
-    attachedSelection = null;
-    attachedWebPage = null;
-    renderAttachments();
-    renderImageAttachments();
-    renderDocumentAttachments();
-    renderFileAttachments();
-    renderBoardAttachments();
-    renderSelectionAttachment();
-    renderWebPageAttachment();
-    closeNotePicker();
-  }
-
-  //: Same loan as in `openConversation`: `chatEmptyState` can have moved this
-  //: element inside `#chat-messages`, and a caller that cleared the pane first
-  //: would find it gone.
-  $("chat-suggest")?.classList.add("hidden");
-  //: A queued send (`keepBox`) leaves the box to what is being typed now.
-  if (!opts.keepBox) {
-    input.value = "";
-    autoGrow(input); // a cleared box must not keep the height of what was in it
-    // The draft is gone, so the suggestions about it are too, including the
-    // ones that were dismissed, which belonged to that draft and not to the
-    // next one.
-    resetChatNudge();
-  }
-  //: The box stays open while the answer streams, so the next message can
-  //: be written and queued (INBOX 1321); Escape still stops the answer.
-  hide("chat-send");
-  show("chat-stop");
-  status.classList.remove("error");
-  status.textContent = "Searching your notes…";
-  startChatTimer();
+  const prep = await chatSendTurn.stage.ask(preset, opts, input);
+  if (prep.done) return prep.value;
+  const { question, answeringAgent } = prep;
+  opts = prep.opts;
+  const committed = await chatSendTurn.stage.commit(opts, question, input, status);
+  if (committed.done) return;
+  const { sentAttachments, sentImages, sentDocuments, sentFiles, sentMediaFiles, sentBoards, sentAttachmentCards } = committed;
 
   // Regenerate re-runs the same question without adding a duplicate "you".
   //
@@ -1205,6 +1030,201 @@ async function chatSendTurn(preset, opts = {}) {
     offerReminder(bubble, question);
   });
 }
+
+// The turn's stages, pulled out of `chatSendTurn` in the order it ran them (audit 1028 E44).
+// One object on the function rather than top-level names: the shared scope is capped.
+chatSendTurn.stage = {
+  // What was typed, joined with the selection and cited page, for the model only.
+  async ask(preset, opts, input) {
+    const typed = chatTidyTyped((preset ?? input.value).trim());
+    if (!typed) {
+      //: Pressing Send on an empty box did nothing at all (dog3-1026 row 12).
+      if (preset == null) {
+        toast("Type a message first.");
+        input.focus();
+      }
+      return { done: true };
+    }
+    if (preset == null && CHAT_UNDO_WORDS.test(typed)) {
+      input.value = "";
+      return { done: true, value: chatWriteRecord("chatHistoryTyped", /^undo/i.test(typed)) };
+    }
+
+    // Plan mode is applied here, on the way out, rather than by whatever control
+    // was pressed: so Send, Enter and a suggestion chip all get planned when the
+    // mode is on. `opts.plan` means this message IS a plan already (the plan
+    // runner re-sends through here), so it must not be planned again.
+    //
+    // The user's own words go in the bubble; the planning instruction is appended
+    // for the model only. `displayText` already exists for exactly this.
+    const planned = opts.plan || opts.skipPlanMode ? null : applyPlanMode(typed);
+    let question = planned || typed;
+    if (planned && !opts.displayText) opts = { ...opts, displayText: typed };
+    //: **The selection joins the question here, and only for the model.** It is
+    //: appended after Plan mode's own rewrite for the same reason that rewrite
+    //: exists at all: `displayText` is what the user said, and showing them a
+    //: block of their own note quoted back at them under their question would
+    //: read as the app putting words in their mouth. The chip above the box is
+    //: what tells them it is going.
+    //:
+    //: Re-validated at this moment rather than reused from when it was attached
+    //:, see `revalidateSelection` for what changes in between and why sending
+    //: stale offsets is the worst of the three outcomes.
+    const sentSelection = attachedSelection ? revalidateSelection(attachedSelection) : null;
+    if (sentSelection) {
+      if (!opts.displayText) opts = { ...opts, displayText: typed };
+      question = `${question}\n\n${selectionContextBlock(sentSelection)}`;
+    }
+    //: A cited web page joins the same way and for the same reason: the model
+    //: reads it, the bubble shows only what the user typed, and the chip above
+    //: the box is what said it was going.
+    if (attachedWebPage) {
+      if (!opts.displayText) opts = { ...opts, displayText: typed };
+      question = `${question}\n\n${webPageContextBlock(attachedWebPage)}`;
+    } else if (chatWeb.lastUrl && (await ensureModule("webClip"))) {
+      const page = await webFollowUp(typed, chatWeb.lastUrl);
+      if (page) {
+        if (!opts.displayText) opts = { ...opts, displayText: typed };
+        question = `${question}\n\n${webPageContextBlock(page)}`;
+      }
+    }
+    // Over the server's limit: say so, keep the draft (audit 1028 E8).
+    if (question.length > 2e4) return { done: true, value: lazyScript("/js/chat-edit.js").then(() => chatTooLong(typed, !preset)) };
+    lastChatQuestion = question;
+    if (!opts.replaceLast) regenerateLastAnswer.retries = 0; // a new question is a first ask
+
+    // Consumed once: this send, button click or free-typed reply alike, is
+    // the answer to whatever question was pending, and the next one after it
+    // is an ordinary message again.
+    const answeringAgent = opts.answeringAgent ?? chatAwaitingAgentAnswer;
+    chatAwaitingAgentAnswer = false;
+    // Whatever is sent while a question card waits is its answer (INBOX 171):
+    // the card folds into its chip and cannot send a second one.
+    settlePendingAgentQuestion(opts.displayText ?? typed);
+    return { typed, question, opts, answeringAgent };
+  },
+
+  // The send is committed: staged pictures uploaded, attachments snapshotted, the composer cleared.
+  async commit(opts, question, input, status) {
+    // **Staged images become real uploads here**, at the moment the message is
+    // actually committed: see `attachImageFiles` for why nothing was uploaded
+    // when they were attached.
+    //
+    // Before the snapshot below, because that snapshot reads `img.id` and a
+    // staged image has none until this runs. A failure stops the send and says
+    // so: a message arriving without the picture it was written about is worse
+    // than one that refuses and explains.
+    if (!opts.imageMediaIds) {
+      try {
+        await commitStagedImages();
+      } catch (error) {
+        toast(error.message || "Couldn't upload the attached image.", true);
+        return { done: true };
+      }
+    }
+
+    // Snapshot the attachments for this message. A regenerate re-uses the same
+    // ones; a fresh send clears them, so they don't silently ride along on
+    // every later question.
+    const sentAttachments = opts.noteIds || attachedNoteIds.slice();
+    const sentImages = opts.imageMediaIds || attachedImages.map((img) => img.id);
+    const sentDocuments = opts.documentIds || attachedDocuments.map((d) => d.id);
+    const sentFiles = opts.fileIds || attachedFiles.filter((f) => typeof f.id === "number").map((f) => f.id);
+    const sentMediaFiles = opts.mediaFileIds || attachedFiles.filter((f) => typeof f.id === "string").map((f) => Number(f.id.slice(1)));
+    const sentBoards = opts.boardIds || attachedBoards.map((b) => b.id);
+    // What the bubble will draw. Built here, while the composer still knows the
+    // names and urls: after the clear below there is nothing left to build it
+    // from, and a round trip to re-fetch what we already had would show the
+    // message without its pictures for as long as that took.
+    const sentAttachmentCards = opts.attachmentCards || [
+      ...attachedImages.map((img) => ({
+        kind: "image",
+        id: img.id,
+        url: img.url,
+        name: img.name || "Attached image",
+        // A just-uploaded image has no caption yet, captioning runs in the
+        // background once the message commits it. Reopening the chat picks the
+        // caption up from `GET /conversations/{id}`, which is where it lands.
+        caption: "",
+        text: "",
+      })),
+      ...attachedDocuments.map((d) => ({ kind: d.kind || "document", id: d.id, name: d.name })),
+      // Library files: the same card list as the other kinds, so the bubble
+      // shows every reference the question was given rather than three of four.
+      ...attachedFiles.map((f) => ({ kind: "file", id: f.id, name: f.name })),
+      // A mind map, same card list again, the bubble has to show every
+      // reference the question was given, and a map is the one whose absence
+      // would be least obvious (its outline is invisible in the transcript).
+      ...attachedBoards.map((b) => ({ kind: "map", id: b.id, name: b.name })),
+      // The paperclip's own attachments. Same card list as the other two kinds
+      // so the bubble shows every reference this question was given, not two of
+      // the three.
+      ...attachedNotes().map((entry) => ({
+        kind: "note",
+        id: entry.id,
+        name: noteLabel(entry, 60),
+      })),
+    ];
+    if (!opts.replaceLast) {
+      // Remembered so a regenerate re-runs with the same references, by then
+      // the picker has been cleared.
+      lastChatAttachments = sentAttachments;
+      lastChatImageAttachments = attachedImages.slice();
+      lastChatDocumentAttachments = attachedDocuments.slice();
+      lastChatFileAttachments = attachedFiles.slice();
+      lastChatBoardAttachments = attachedBoards.slice();
+      // The staged bytes are on the server now, so the local Blob references
+      // are dead weight: an object URL lives as long as the document unless it
+      // is revoked, and a chat session sending several images would hold every
+      // one of them in memory for the life of the tab. The upload's real url is
+      // what the sent bubble draws from, so nothing on screen depends on these.
+      for (const image of attachedImages) {
+        if (image.objectUrl) URL.revokeObjectURL(image.objectUrl);
+        image.objectUrl = null;
+      }
+      attachedNoteIds = [];
+      attachedImages = [];
+      attachedDocuments = [];
+      attachedFiles = [];
+      attachedBoards = [];
+      //: Cleared with the rest, and for the same stated reason: a selection that
+      //: rode along on every later question would be the app answering about a
+      //: paragraph the user stopped talking about three messages ago.
+      attachedSelection = null;
+      attachedWebPage = null;
+      renderAttachments();
+      renderImageAttachments();
+      renderDocumentAttachments();
+      renderFileAttachments();
+      renderBoardAttachments();
+      renderSelectionAttachment();
+      renderWebPageAttachment();
+      closeNotePicker();
+    }
+
+    //: Same loan as in `openConversation`: `chatEmptyState` can have moved this
+    //: element inside `#chat-messages`, and a caller that cleared the pane first
+    //: would find it gone.
+    $("chat-suggest")?.classList.add("hidden");
+    //: A queued send (`keepBox`) leaves the box to what is being typed now.
+    if (!opts.keepBox) {
+      input.value = "";
+      autoGrow(input); // a cleared box must not keep the height of what was in it
+      // The draft is gone, so the suggestions about it are too, including the
+      // ones that were dismissed, which belonged to that draft and not to the
+      // next one.
+      resetChatNudge();
+    }
+    //: The box stays open while the answer streams, so the next message can
+    //: be written and queued (INBOX 1321); Escape still stops the answer.
+    hide("chat-send");
+    show("chat-stop");
+    status.classList.remove("error");
+    status.textContent = "Searching your notes…";
+    startChatTimer();
+    return { sentAttachments, sentImages, sentDocuments, sentFiles, sentMediaFiles, sentBoards, sentAttachmentCards };
+  },
+};
 
 // --- the agent's run, as an ordered timeline --------------------------------------
 // A turn used to render into three fixed slots, thinking, then every tool chip,
