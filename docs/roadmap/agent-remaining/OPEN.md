@@ -15,25 +15,25 @@ How to read it:
 
 The recommendation was taken for Q1 to Q9, Q12, Q14, Q18 to Q24, Q26 and Q28. Q13 was not asked; its recommendation stands. Rows waiting "after Qn" can start. The answers that differ from the recommendation, quoted in INBOX 1748:
 - ~~Q10~~ **Stale: built** (Appearance, Motion at rest, "Still when idle"; tests/test_companion_rest_w14.py). Atlas's rAF loops keep running by default ("I still want it to feel biological and have life"). An Advanced setting stops them after 2 s with no input. | W14
-- Q11 The Ollama probe is cached for 30 s, dropped on a failure, and also dropped the moment Ollama is seen coming online (the model status poll or the start event), so the composer never answers in that window. | W16
+- ~~Q11 The Ollama probe is cached for 30 s, dropped on a failure, and also dropped the moment Ollama is seen coming online (the model status poll or the start event), so the composer never answers in that window. | W16~~ **W34: fixed 94cff43** (w34-fix1-1111.md)
 - ~~Q25~~ **Built settings-1111** (Settings, General, Search; date order; welcome preferences card). `before:` is a Settings choice, excluding by default. The owner also wants a first-run calibration of preferences like this (INBOX 1748). | W11
 - ~~Q27~~ **Built pr216-settings** (mounts in pkg-1111.md). Q27 RapidOCR is bundled if small, otherwise an optional extra. Every feature that needs an optional package (RapidOCR, SearXNG, the PDF viewer and the rest) shows a dismissable notice with a one-click Install when it is used. The notice comes back if the package is uninstalled, on the no-model notice recipe (INBOX 1748). | F5
 - ~~Q30~~ **Stale: built** (tests/test_private_by_default_1695.py). Private notes by default is a Settings switch, off by default, and follows the space: a note made in a private space is private. | F6
 - Q31 and Q32: the owner says these are already done; they are closed here.
-- Q33 is parked: the owner will check whether the stutter returns.
-- Q34 Go on all of them: sync (B6), offline studio and audio, the desktop pet outside the window, the custom domain and the blind panel. Fable stays off. | F8
-- sm-1111 row 22: on lock, typed fields move into the encrypted draft store and are cleared, then restored on unlock. Add an easy way to pick them back up, a "where you left off" or recent drafts list. | sm row 22
-- Q15 to Q17 stay parked (P1 to P3) until the owner sends examples.
+- Q33 is parked: the owner will check whether the stutter returns. W34: owner-call (parked), w34-L1-1111.md.
+- Q34 Go on all of them: sync (B6), offline studio and audio, the desktop pet outside the window, the custom domain and the blind panel. Fable stays off. | F8 W34: owner-call, w34-L1-1111.md.
+- ~~sm-1111 row 22: on lock, typed fields move into the encrypted draft store and are cleared, then restored on unlock. Add an easy way to pick them back up, a "where you left off" or recent drafts list. | sm row 22~~ **W34: fixed** (w34-L1-1111.md)
+- Q15 to Q17 stay parked (P1 to P3) until the owner sends examples. W34: owner-call (parked), w34-L1-1111.md.
 
 Not a question: the CI test timeout is not raised (HANDOVER 09d, "never raise the cap"); the jobs get faster instead (W24).
 
 Parked until the owner's data or a check on real hardware:
-- P1 Chat Sources rows extend to the right | INBOX 1712, uifix L3
-- P2 Companion carried over the top bar by Ask scroll | INBOX 1598, oa 1598
-- P3 Composer "response issues" round | INBOX 1719 (c)
-- P4 Win+arrow snap resets the window; tray icon after X; companion over Wallpaper Engine | INBOX 1671, oa 1620 tray
-- P5 The 15 s /chat/followups log; graph `gcRequestDraw` 55 calls a second | oa 1691 b, lag L12
-- P6 Desk overlay O5 on Windows; every desk motion unverified on real Windows | INBOX 1645, 1683, travel L6
+- P1 Chat Sources rows extend to the right | INBOX 1712, uifix L3 W34: owner-call (parked), w34-L1-1111.md.
+- P2 Companion carried over the top bar by Ask scroll | INBOX 1598, oa 1598 W34: owner-call (parked), w34-L1-1111.md.
+- P3 Composer "response issues" round | INBOX 1719 (c) W34: owner-call (parked), w34-L1-1111.md.
+- P4 Win+arrow snap resets the window; tray icon after X; companion over Wallpaper Engine | INBOX 1671, oa 1620 tray W34: owner-call (parked), w34-L1-1111.md.
+- P5 The 15 s /chat/followups log; graph `gcRequestDraw` 55 calls a second | oa 1691 b, lag L12 W34: owner-call (parked), w34-L1-1111.md.
+- P6 Desk overlay O5 on Windows; every desk motion unverified on real Windows | INBOX 1645, 1683, travel L6 W34: owner-call (parked), w34-L1-1111.md.
 
 ### Tier A: security and data loss
 
@@ -114,7 +114,7 @@ Parked until the owner's data or a check on real hardware:
 ~~- B20 Verdict date written long (after Q8) | c13 owner question~~ **Fixed w8-1110** (Q8: `composer_ahead.long_form`; the verdict writes "No, not tomorrow. Thursday 12 November, 9:30" and keeps "at 8am" where the note said it).
 
 **W9 Composer: follow-ons, chips and acts** (B, composer, Sonnet high). Files: `ai/composer_follow.py`, `composer_dialogue.py`, `commands.py`, the chips builder. Checks: as W7. Done when: as W7.
-- B21 (built 2026-11-11: Ask and Chat both send `objects` now; "tell me more about it" is scoped to the cited note (`chat_request._bind_cited`), "and the other one?" asks about the other cited note (`composer_talk.cited_question`), pinned by tests/test_composer_w9b_1111.py; "who wrote it" answers honestly that the note does not say; "and the dentist" / "what about him" ask what is meant, kept) A follow-on loses its subject ("and the other one?", "who wrote it", "and the dentist"; Ask sends no objects) | R9-9, c13#7, E25, 1107 D6, 1031-composer C12, 1029-composer C44
+- B21 (built 2026-11-11: Ask and Chat both send `objects` now; "tell me more about it" is scoped to the cited note (`chat_request._bind_cited`), "and the other one?" asks about the other cited note (`composer_talk.cited_question`), pinned by tests/test_composer_w9b_1111.py; "who wrote it" answers honestly that the note does not say; "and the dentist" / "what about him" ask what is meant, kept) A follow-on loses its subject ("and the other one?", "who wrote it", "and the dentist"; Ask sends no objects) | R9-9, c13#7, E25, 1107 D6, 1031-composer C12, 1029-composer C44 W34: skipped (composer spoke), w34-fix1-1111.md.
 ~~- B22 Chips built from leftover words ("about the sara?", "about project?") | 1107 D19, R3-36, 1031-composer C47, bt#17, c13#15-18~~ **Fixed w9b-1110, in part** ("the Sara" is "Sara": `composer_chip_subject._owned`; the audit's other chips were re-driven on the 1031 seed and no longer appear; tag chips such as "about project" are the person's own tags, left).
 ~~- B23 Offers nothing answers ("yes" after an offer) | 1107 D10~~ **Fixed w9b-1110, for reminders** (`composer_talk.accepted_offer`: "yes" after "Shall I remind you to X?" sets it; the checklist, list and table offers have no act behind a bare "yes" yet).
 ~~- B24 Four confirm wordings; typed "undo" alone gives the keys | 1107 D23, E7~~ **Fixed w9b-1110** (every `CONFIRM` wording names Confirm and Cancel, eight openers kept for test_reply_variety; a tag or move names the note by title; "undo" after a pin or unpin takes it back; "undo" with no act before it still gives the keys, by design).
@@ -122,14 +122,14 @@ Parked until the owner's data or a check on real hardware:
 - B26 Remind wording, "called X with Y", one list-add rule (after Q4, Q5, Q6) | c12 L13, L14, L15 **Built in part w9b-1110: Q4 only** (prose "Shall I remind you to X?", button label pinned, `offer.line`). Q5 and Q6 not built: both would rewrite pinned tests (test_new_note_called_1102 has "called Shopping with milk, eggs and bread" as title and body) and wait for the owner's yes.
 ~~- B27 Agent mode with no model answers the whole sentence ("find notes simlar to my dentist one yk") | t20#14~~ **Fixed w9b-1110** (`find_topic.topic` in `commands._found_object`: the likeness words, "one" and the filler come off; searches "dentist").
 ~~- B28 "show the note about golf" answers the tag chart | 1031-notes N32~~ **Stale** (conv-1110, route probe, model off: "show the note about golf" lists the two golf notes with links, no chart)
-- B29 No tasks: "add a task to read chapter 5 tomorrow" and the "tick off" forms | 1028-agent E10 (conv-1110: the add form now answers "Got it, I will add a task due tomorrow at 9am (the default): read chapter 5"; the tick-off forms re-checked 2026-11-11: tick off, mark as done, complete, cross off, check off each give a confirm card, pinned by tests/test_composer_w9b_1111.py; the loose "I finished X" without a kind word stays a question by the audit 1030 A15 guard)
+- ~~B29 No tasks: "add a task to read chapter 5 tomorrow" and the "tick off" forms | 1028-agent E10 (conv-1110: the add form now answers "Got it, I will add a task due tomorrow at 9am (the default): read chapter 5"; the tick-off forms re-checked 2026-11-11: tick off, mark as done, complete, cross off, check off each give a confirm card, pinned by tests/test_composer_w9b_1111.py; the loose "I finished X" without a kind word stays a question by the audit 1030 A15 guard)~~ **W34: fixed** (w34-L1-1111.md)
 
 **W10 Composer: compare, summary and lists** (B, composer, Sonnet high; not beside W7). Files: `ai/composer_digest.py`, `composer_lists.py`, `composer_each.py`. Checks: as W7. Done when: as W7.
 ~~- B30 Compare and summary shapes ("one mentions X and one mentions Y"; recipe summary is the ingredients only; summary drops "Work starts 16 November") | 1107 D20, E9, bt#14, R9-17~~ **Fixed s5-1110 (`study._worth`: a dated sentence outranks a phone number, a recipe keeps its method, a name said again with a label leads nothing; the composer's own "one mentions X and one mentions Y" lead said back is a comparison; "boil down" and "condense" summarise).**
 ~~- B31 Dead ends where the notebook can answer (checklists, favourites, tables, done items) | 1107 D22, E19, E21~~ **Fixed s5-1110, in part ("show my done items" is the ticked list; "my favourites" is the pinned list; "which notes are linked" counts [[links]]; checklists, tables and ticked items were built before; a note with no word for it still says so).**
 ~~- B32 List rows end "· Uncategorised" in the answer text | E24~~ **Fixed s5-1110 (`tool_say._note_row` drops the default filing).**
-- B33 A proper noun lowercased in a quoted line ("orchard"); first-letter capitals lost | c13#13, 1029-composer C1
-- B34 The joke note leads by its quote, not its name | composer-r7 L7, composer-r8 L16
+- B33 A proper noun lowercased in a quoted line ("orchard"); first-letter capitals lost | c13#13, 1029-composer C1 W34: skipped (composer spoke), w34-unv1-1111.md.
+- B34 The joke note leads by its quote, not its name | composer-r7 L7, composer-r8 L16 W34: skipped (composer spoke), w34-fix1-1111.md.
 ~~- B35 Key-value notes ("Rent 650.") dropped as fragments | 1028-agent E5~~ **Fixed before s5-1110 (`composer_read._short_fact`, CHANGELOG 1501; verified).**
 ~~- B36 One-liner naming (after Q3) | c12 L16~~ **Fixed s5-1110 (Q3: `composer_frame._order_title` names a short capitalised order plain).**
 
@@ -168,21 +168,21 @@ Parked until the owner's data or a check on real hardware:
 
 **W15 The desk companion** (B, overlay, Sonnet; real Windows unverified). Files: `src/tessellate/core/overlay/*`, desk windows. Checks: `tests/test_overlay_*` (serially), the 1696 lists. Done when: each list row is built or has a reason.
 - ~~B62 Cut off on the ride, sits 20 px above the taskbar, flicker, nebula flicker | oa 1670 a, f, l~~ **Fixed on the engine** (ed1f878e7, e40711a2b, 70ef502; re-measured 2026-11-10 on the simulation: foot gap 0 to 1 px masculine and -3 to 0 feminine, nebula wash worst frame step 4.2 and 7.5 percent, feet travel at rest 0.14 to 0.18 px a minute; tests/test_overlay_ride_1670.py, test_overlay_bob_1670.py, test_overlay_rest_1670.py pass). Not verified on real Windows: if the owner still sees a gap, log the taskbar rect and rcWork next to the feet line
-- B63 Companion does not show: root cause | oa 1638 b
-- B64 The 1696 lists, the falling stutter (a) | INBOX 1696, atlasf1696-1108c, ui1696c-1108c **Engine side measured graph-1111** (seeded fall, both looks, Pillow installed in the venv: the engine's wake in a fall was 31.25 ms on `SetTimer`, now 16.67 ms on the pacing grid, 16 to 31 ticks; step per tick mean 18.4 to 9.9 px, max 34.1 to 19.0 px). The owner's 8 frames a second is not on the engine; a layered-window draw cost on real Windows is unverified, so (a) stays open until a Windows trace
-- B65 The 1683 travel mix | INBOX 1683, travel L9, L10
+- B63 Companion does not show: root cause | oa 1638 b W34: hardware-only, w34-unv1-1111.md.
+- B64 The 1696 lists, the falling stutter (a) | INBOX 1696, atlasf1696-1108c, ui1696c-1108c **Engine side measured graph-1111** (seeded fall, both looks, Pillow installed in the venv: the engine's wake in a fall was 31.25 ms on `SetTimer`, now 16.67 ms on the pacing grid, 16 to 31 ticks; step per tick mean 18.4 to 9.9 px, max 34.1 to 19.0 px). The owner's 8 frames a second is not on the engine; a layered-window draw cost on real Windows is unverified, so (a) stays open until a Windows trace W34: hardware-only (sim half STALE), w34-unv1-1111.md.
+- ~~B65 The 1683 travel mix | INBOX 1683, travel L9, L10~~ **W34: stale** (w34-unv1-1111.md)
 - ~~B66 Owner 2026-11-10, verbatim: "the desktop companion doesnt hang from the top of my screen for long before it falls down. it always falls down". Recommendation, taken: a hang from the screen top lasts its full rest (no fall roll while hanging), and ends only by a chosen drop or a drag | owner 2026-11-10~~ **Fixed** (w15-1110: a top hang holds its full rest, 60 to 300 s, then a swing onto a window or a calm drop to its feet; a drag or request ends it any time)
-- B66 Desk window scan counts Explorer and Chrome as invisible; perch filter finds almost nothing | INBOX 1716, oa 1667 n **In part** (w15-1110: tests from the owner classes and rects pass, the classifier is right; the let-go log now says titled or not and the style for a hidden window; the Windows cause needs one more log, see w15-1110.md)
+- B66 Desk window scan counts Explorer and Chrome as invisible; perch filter finds almost nothing | INBOX 1716, oa 1667 n **In part** (w15-1110: tests from the owner classes and rects pass, the classifier is right; the let-go log now says titled or not and the style for a hidden window; the Windows cause needs one more log, see w15-1110.md) W34: unverifiable, w34-fix1-1111.md.
 - ~~B67 Display-paced timer 16.7 ms plus or minus 3; runs properly on Linux | oa 1670 r, u~~ **Fixed** (e2c1c20d6: pacing.py grid, Windows waitable timer in host.py, `select` timeout in x11.py; re-measured on the simulation: tick interval 16.67 ms exactly for walk, float and throw, was 31.25 on SetTimer; step at walk speed 3.0 px, was 5.0). Real Windows and a real Linux display not run here
 
 **W16 Real-model check** (B, chat with a model, Sonnet; needs `scratchpad/llama-dev.sh serve`). Files: tests first, then fixes where they fall. Checks: `pytest -m evals`. Done when: each row reports a measured number or a fixed failure.
-- B68 Model-on parity: composer text as context, not the answer (decision 75) | 1107 D28, P1, fable-fix F6
-- B69 Evals gate: 8 of 8 loose ends, 80 % of skills with no invalid call on a 3B | CHAT#5 Phase 4
-- B70 SKILLS Phase D never ran on a model | t20#19
-- B71 Entity extraction and topic sentence on a local model | GRAPH#KG1-KG9
-- B72 BACKGROUND_MODE (think off) for utility jobs, measured | CHAT 1691, oa 1691
+- B68 Model-on parity: composer text as context, not the answer (decision 75) | 1107 D28, P1, fable-fix F6 W34: owner-call (tracked in the plans), w34-L1-1111.md.
+- B69 Evals gate: 8 of 8 loose ends, 80 % of skills with no invalid call on a 3B | CHAT#5 Phase 4 W34: hardware-only (3B model), w34-unv1-1111.md.
+- B70 SKILLS Phase D never ran on a model | t20#19 W34: hardware-only (3B model), w34-unv1-1111.md.
+- B71 Entity extraction and topic sentence on a local model | GRAPH#KG1-KG9 W34: hardware-only (model), w34-unv1-1111.md.
+- B72 BACKGROUND_MODE (think off) for utility jobs, measured | CHAT 1691, oa 1691 W34: hardware-only (needs a model with a think switch), w34-unv1-1111.md.
 - ~~B73 The probe cache (after Q11) | deskperf L4, audit-1108-perf P7~~ **Fixed 94cff43** (30 s up window, dropped on a failure and on seeing Ollama online; tests/test_ollama_probe_30s.py)
-- B74 Tool contracts on Ollama, model bench gates | WORLD_CLASS#8 rows 5, 6, 19, 21
+- B74 Tool contracts on Ollama, model bench gates | WORLD_CLASS#8 rows 5, 6, 19, 21 W34: hardware-only (Ollama), w34-unv1-1111.md.
 
 ### Tier C: UX and accessibility on daily surfaces
 
@@ -244,9 +244,9 @@ Parked until the owner's data or a check on real hardware:
 
 **W24 CI time** (D, overlay engine and tests, Sonnet high). Files: `core/overlay/behaviour.py`, `engine.py`, `tests/test_overlay_*`, `.github/workflows/`. Checks: seeded output hashes identical before and after (the cispeed method), `--durations=0` on CI. Done when: the 3.11 and 3.12 jobs finish under 45 minutes. **Built 2026-11-11 (5b2dc80bd, 3b29229d6):** CI runs in two legs per version (`pytest --shard i/2`, `tests/_shard.py`), shared overlay hours, split portal/puff and life tests, scope ratchet 62 s to 2 s, durations summary per file. **Left, needs CI:** read the first "Test time by file" summary and tune `WEIGHTS` in `tests/_shard.py`; confirm each leg is under 45 minutes; a branch-protection rule naming `Tests (Python 3.11)` must be changed to the six leg names (owner setting).
 - ~~D1 `FlowField.step` closed-form rest for a settled flow; `_next_act_pose_change` 30 samples a wake | cispeed L5~~ **Done** (Flow.step rest; `_next_act_pose_change` left), s6-1110
-- D2 The longest overlay tests (rest 81 s, life 69 s) | cispeed L4
-- D3 Slow tests outside the overlay (launcher 20 s, resurface 18 s, search spec 15 s, backup 13 s) | cispeed L6
-- D4 Find the unexplained tail: `--durations=0` on one CI run | HANDOVER 09b
+- ~~D2 The longest overlay tests (rest 81 s, life 69 s) | cispeed L4~~ **W34: fixed 7d9cfbbc7** (w34-unv1-1111.md)
+- D3 Slow tests outside the overlay (launcher 20 s, resurface 18 s, search spec 15 s, backup 13 s) | cispeed L6 W34: true-deferred, w34-fix1-1111.md.
+- D4 Find the unexplained tail: `--durations=0` on one CI run | HANDOVER 09b W34: hardware-only (CI), w34-unv1-1111.md.
 - ~~D5 `test_complexity.py` over 15 and two lazy import cycles; complexity.yml baseline (after Q20) | fablecomp, OPEN lint debt~~ **Partly done** (PERF baseline zero and failing, Q20); the seed functions and two lazy cycles remain, s6-1110
 
 **W25 Palette and tab open** (D, shell, Sonnet high; not beside W11 or W20). Files: `palette.js`, `notes-list.js`, `settings*.js`. Checks: long tasks at 4x before and after. Done when: the palette is under 150 ms a keystroke at 4x. *Measured (claude/pr216-graph): palette keystroke at 4x p90 41 ms JS, 98 ms to paint, max 133; target met. Settings open remains the design pass (D8).*
@@ -257,16 +257,16 @@ Parked until the owner's data or a check on real hardware:
 - ~~D10 `?preview=300` (after Q9) | fitaudit 42~~ **Stale: built** (CHANGELOG, INBOX 1525: list pages, the by-id refresh and the Semantic list carry `?preview=300`; `tests/test_entry_writers_whole_1525.py`)
 
 **W26 Graph at scale** (D, graph, Opus). Files: `graph*.js`, `graph-worker.js`. Checks: the 500 and 2,000 note fixtures at 1x and 4x. Done when: a 2,000-note settle is under 5 s with no task over 50 ms. Part done 2026-11-11 (settle 3.3 s; tasks over 50 ms 10 to 5 at 1x; minimap one parse, balance waits for rest, link grid chords); rest in `graph-1111.md`.
-- D11 2,000 notes: layout 28 s and main-thread long tasks | 1029-graph G3, 1028-shell S2, GRAPH row 19
-- D12 500 notes at 4x: hover p50 83 ms, wheel 133 ms | 1029-graph G5, GRAPH Rank 36
-- D13 Hover and wheel at rest redraw whole layers; the crossing count is output-bound | graph19 L4, L5
-- D14 Redraw only while something moves; crossings and hub spokes at 40 nodes | UI 1643, oa 1643 a, GRAPH 1306
+- ~~D11 2,000 notes: layout 28 s and main-thread long tasks | 1029-graph G3, 1028-shell S2, GRAPH row 19~~ **W34: fixed** (w34-L1-1111.md)
+- D12 500 notes at 4x: hover p50 83 ms, wheel 133 ms | 1029-graph G5, GRAPH Rank 36 W34: owner-call, w34-L1-1111.md.
+- ~~D13 Hover and wheel at rest redraw whole layers; the crossing count is output-bound | graph19 L4, L5~~ **W34: fixed** (w34-L1-1111.md)
+- D14 Redraw only while something moves; crossings and hub spokes at 40 nodes | UI 1643, oa 1643 a, GRAPH 1306 W34: owner-call (tracked in the plans), w34-L1-1111.md.
 
 **W27 Boot weight** (D, boot, Sonnet). Files: `index.html`, `meetings.js` (after W6), `prefs.js`, the boot caps. Checks: `tests/test_static_compression.py`, the boot caps. Done when: each surface is lazy, with its number. *Partly built (claude/pr216-graph): 12 single-caller helpers moved lazy, boot gzip 250,954 to 250,434; the rest of the candidates are read by tests or lazy-to-lazy calls (list in graph-1111.md).*
 - ~~D15 index.html 1.1 MB with comment blocks and companion code in the boot path | 1028-shell S3~~ **Stale, s7-1110:** `served_index_html` strips comments; served it is 811,185 bytes (156,226 gzip) of the 1,172,267 on disk; 434 KB of that is the five `<template data-surface>` blocks (settings 267 KB, board 149 KB). Inline SVG is 11 KB, inline scripts 2 KB
 - D16 Meeting recorder card, graph options panel and boot CSS lazy | row21 L43, L44, L45. **Measured s7-1110, not built:** `#graph-options` is 26,261 bytes served (5,207 gzip) with 79 ids, read by wiring.js, prefs.js, navigation.js and reveal-targets.js at boot through `document.getElementById` as well as `$`, so a template would return null there; `#meeting-overlay` is 6,815 bytes (2,089 gzip). Together under 3 percent of the gzipped page; the risk is the null reads
 - ~~D17 Boards list lazy until visible (500-board fixture) | oa 1667 c~~ **Measured fine, s7-1110:** with 500 boards the Boards & maps sub-tab adds 215 nodes and three tasks (63, 81, 75 ms) at 4x
-- D18 Recordings: trim decodes the whole file (700 MB an hour); notes cannot embed a recording | t20#11. Not started: a server-side cut needs a container writer (a design call)
+- D18 Recordings: trim decodes the whole file (700 MB an hour); notes cannot embed a recording | t20#11. Not started: a server-side cut needs a container writer (a design call) W34: owner-call, w34-L1-1111.md.
 
 **W28 Documents typing and split** (D, documents, Opus; not beside W4 or W23). Files: `documents.js`, `docLivePlugin`. Checks: typing latency at 4x on the DX1 document. Done when: key-to-paint p50 under 16 ms on the long document.
 ~~- D19 Typing in a long rich document cannot keep up; 5 layouts a key | audit-1102-docs DX1, audit-1108-perf P9.~~ **Closed s58left4-1110:** spell marks measured, see HISTORY ("s58left4-1110"); the p50 gate stays unmet with or without marks and no cheap app-side cut is left.
@@ -274,46 +274,46 @@ Parked until the owner's data or a check on real hardware:
 - ~~D21 Split `docLivePlugin` and `documents.js` by responsibility | DOCUMENTS D23, fitaudit 22. Not started: `docLivePlugin` is already `documents-cm.js`; the next carve is `documents.js` 16,381 to 17,190 (CodeMirror view glue, 810 lines), which costs a line in `app.js`'s library bundle list against the gzip cap (260,857 of 260,860) and breaks tests that read `documents.js` by name (`test_code_vscode.py`, `test_docs_perf_1030.py`)~~ built (documents-view.js carved, 867 lines; documents.js 17,190 to 16,500; sha in the commit)
 
 **W29 Structure ratchets** (D, cross-cutting, Opus design then Sonnet). Files: one carve per run, outside the files of the same session's other batches. Checks: `tests/test_global_scope_ratchet.py`, `tests/test_complexity.py`. Done when: each ratchet moves down.
-- D22 IIFE wraps (audit 37a, after iife4) and surfaces (21, 36) | fitaudit 19, 21, 36, 37
-- D23 Routes are the data layer (359 ORM queries in routes) | 1031-architecture AR1
+- ~~D22 IIFE wraps (audit 37a, after iife4) and surfaces (21, 36) | fitaudit 19, 21, 36, 37~~ **W34: fixed** (w34-L1-1111.md)
+- D23 Routes are the data layer (359 ORM queries in routes) | 1031-architecture AR1 W34: owner-call (tracked in the plans), w34-L1-1111.md.
 - D24 One global scope of 10,000 names | 1031-architecture AR2. **Part done s58-1110:** 9,096 to 9,044 names (settings-packages.js, appearance-panel.js, whiteboard-history.js wrapped whole); not wrapped, too many tests read them privately: math-field.js, ask-chart.js, lag-watch.js, capture-card-more.js; agent-activity.js has a multi-line template (wrap by hand)
-- D25 Split `run_agent`; data tables out of code | SESSION_BRIEFS 62, 63
+- ~~D25 Split `run_agent`; data tables out of code | SESSION_BRIEFS 62, 63~~ **W34: fixed** (w34-L1-1111.md)
 
 **W30 Whiteboard render cost** (D, boards render, Opus). **Done wb-1111** (B39, the connector batch, the colour memo, B4 shape and connector paint key, B23 export index; see wb-1111.md). Files: `whiteboard.js` render path, `whiteboard-map.js`. Checks: frame time on a 500-object board. Done when: one edit re-renders only what changed.
 - ~~D26 Every render rebuilds all map nodes; no dirty set | 1028-board B3, B4~~ **Done s7-1110** (topics and pen strokes were keyed, dec005f44; the cost left was the links: a 500-topic map with 300 cross-links at 4x CPU, median render: nothing changed 1,361 to 342 ms, one topic moved 1,501 to 309 ms, every topic moved 2,678 to 1,072 ms. One `querySelectorAll` of the topic boxes before the link pass instead of 600 `querySelector` walks, and each link's look found once a pass instead of three times, keyed on both ends' place and box. Link paths identical to a fresh computation after a move, a resize, two moves in one task)
-- D27 Split `whiteboard.js` (26,103 lines) and `whiteboard-map.js` by carve | 1028-board B1, B2, WHITEBOARD#Placed 2026-11-04. Not started in s7-1110 (the files are 26,164 and 11,050 lines)
+- D27 Split `whiteboard.js` (26,103 lines) and `whiteboard-map.js` by carve | 1028-board B1, B2, WHITEBOARD#Placed 2026-11-04. Not started in s7-1110 (the files are 26,164 and 11,050 lines) W34: true-deferred, w34-fix1-1111.md.
 - D28 The composer's topical digests take 0.45 to 0.78 s on 500 notes (W10's files, Session 7) | audit-1108-perf P6. **Part done s7-1110:** every question moved `updated_at` on the 24 notes it surfaced (`onupdate` on `access_count`), which dropped the abbreviation glossary's cache key and re-read all notes; now one UPDATE that names `updated_at` (a profiled `/chat` request on 1,003 entries: 1,072k to 873k calls for three requests, 1.20 to 0.92 s; edit times no longer move on a read). Left: capping `raw_results` (12 front-end sites read it, a UI contract), the second `compose` for the chips (about 65 ms), `_subject_facts`
 
 ### Tier E: polish
 
 **W31 Companion life** (E, overlay and in-app acts, Opus for the masculine design, Sonnet for acts; not beside W15 or W24). Files: `core/overlay/*`, `atlas*.js`, frames. Checks: `tests/test_companion_catalogue_1108.py`, the weights test (after Q12). Done when: each act is drawn on both sides or listed with a reason.
-- E1 Acts to the desk: meditate, lounge, rest_head; in-app firefly, star pile | compalive, INBOX 1711
-- E2 In-app-only acts that need desk frames (dangle, kick_legs, hang_one_hand) | INBOX 1710
-- E3 The life-1109 ranked list (follow-through, startle settle, micro-saccades, stand-loop drift) | INBOX 1719 (b), life-1109
-- E4 Masculine Atlas: head, eyes, shoulder join, expressions | oa 1607 b, c, d, B16
-- E5 Own activities with props; wind-spirit travel; ambient acts by hour | oa 1692 e, n, d
-- E6 Lower body and nebula follow the pose; landing outcomes; edge squash; portal | oa 1692 e/n, B1, B3, T1, N5, N9
+- E1 Acts to the desk: meditate, lounge, rest_head; in-app firefly, star pile | compalive, INBOX 1711 W34: owner-call (tracked in the plans), w34-L1-1111.md.
+- E2 In-app-only acts that need desk frames (dangle, kick_legs, hang_one_hand) | INBOX 1710 W34: owner-call (tracked in the plans), w34-L1-1111.md.
+- E3 The life-1109 ranked list (follow-through, startle settle, micro-saccades, stand-loop drift) | INBOX 1719 (b), life-1109 W34: owner-call (tracked in the plans), w34-L1-1111.md.
+- E4 Masculine Atlas: head, eyes, shoulder join, expressions | oa 1607 b, c, d, B16 W34: owner-call (tracked in the plans), w34-L1-1111.md.
+- E5 Own activities with props; wind-spirit travel; ambient acts by hour | oa 1692 e, n, d W34: owner-call (tracked in the plans), w34-L1-1111.md.
+- E6 Lower body and nebula follow the pose; landing outcomes; edge squash; portal | oa 1692 e/n, B1, B3, T1, N5, N9 W34: owner-call (tracked in the plans), w34-L1-1111.md.
 
 **W32 Backend tidy** (E, backend, Haiku verify then Sonnet). Files: small fixes in `api/`. Checks: targeted route tests.
 ~~- E7 Validation copy leaks field names | 1031-backend BK8~~ **Already built c6cc5767a** (field labels and the limit in the message; tests/test_validation_copy.py). Verified s8-1110.
 - E8 ~~A disabled tool refused with the wrong reason (H11, `_refuse_if_off` 3f0030d41); duplicated loopback lists (K28, one list in core/security)~~; token sweep per request (K33) **not built, s8-1110**: `tests/test_vault_sessions.py::test_the_key_goes_when_the_last_granted_session_expires` pins that every authenticated request sweeps (a token injected into `_active_tokens` with an old stamp must revoke the vault key on the next request). A once-a-minute sweep fails it; needs the owner to move that test's intent, or a sweep keyed on a min-expiry that the test's direct injection also lowers | 1029-harness H11, 1028-backend K28, K33
-- E9 Real Tesseract and PDFium reads never ran | sec L13, OPEN RapidOCR row [unverifiable here: no tesseract or pypdfium2; needs a machine with both]
+- ~~E9 Real Tesseract and PDFium reads never ran | sec L13, OPEN RapidOCR row [unverifiable here: no tesseract or pypdfium2; needs a machine with both]~~ **W34: fixed** (w34-unv1-1111.md)
 - E10 The other 1028-backend and 1031-backend open rows | book1 (37 and 12 rows) [backend-1111: re-verified on head; the rest are built, stale or held (Q22, K38, K32); BK10, K19, K29, E9 left in backend-1111.md]
 
 **W33 Copy and help** (E, copy, Haiku then Sonnet). Files: help topics, copy strings.
 ~~- E11 "Tools and features" omits 60 palette rows | 1031-extras Z3~~ **Already built 073cc0c6b** (`featureCommandRows`; tests/test_xfix_1031.py). Verified s8-1110.
-- ~~E12 The tool describes itself in the answer ("Read as the days from today") | 1030-composer Z49~~ **Waits on the owner** (49 assertions pin the "Read as" lines, the 1108 ask; decision 54; s8-1110.md).
-- ~~E13 "¦" written for "&" in a category; a "conversation" topic on a gym note | oa 1620 categories b, topics c~~ **No repro** (no writer of the character in src or frontend; s8-1110.md; needs the owner's data).
+- ~~E12 The tool describes itself in the answer ("Read as the days from today") | 1030-composer Z49~~ **Waits on the owner** (49 assertions pin the "Read as" lines, the 1108 ask; decision 54; s8-1110.md). W34: skipped (composer spoke), w34-fix1-1111.md.
+- ~~E13 "¦" written for "&" in a category; a "conversation" topic on a gym note | oa 1620 categories b, topics c~~ **No repro** (no writer of the character in src or frontend; s8-1110.md; needs the owner's data). W34: owner-call, w34-unv1-1111.md.
 - ~~E14 Manual pictures as WebP made by the sweeps | oa 1612 c~~ **Deliberately empty** (s8-1110.md; the owner has not asked for a sweep-made image).
 
 **W34 Verify sweeps** (E, docs only, Haiku, stackable outside the four). Each scout marks rows true, fixed or stale in its source and hands true rows to the batch of their surface.
-- E15 book1 audits 1028 (agent, backend, board, docs, shell, ux; 303 rows) | book1
-- E16 book1 audits 1029 to 1031 (362 rows) | book1
-- E17 The OPEN.md ledger, 677 bullets, by section | book3
-- E18 INBOX 904 B01 to B86; the INBOX 1670 and 1694 status lines | book6
-- E19 SESSION_BRIEFS, 21 unmarked (43's duplicate body, 89, 91, 102 first) | book6 section 2
+- E15 book1 audits 1028 (agent, backend, board, docs, shell, ux; 303 rows) | book1 W34: owner-call (tracked in the plans), w34-L1-1111.md.
+- E16 book1 audits 1029 to 1031 (362 rows) | book1 W34: owner-call (tracked in the plans), w34-L1-1111.md.
+- E17 The OPEN.md ledger, 677 bullets, by section | book3 W34: owner-call (tracked in the plans), w34-L1-1111.md.
+- E18 INBOX 904 B01 to B86; the INBOX 1670 and 1694 status lines | book6 W34: owner-call (tracked in the plans), w34-L1-1111.md.
+- E19 SESSION_BRIEFS, 21 unmarked (43's duplicate body, 89, 91, 102 first) | book6 section 2 W34: owner-call (tracked in the plans), w34-L1-1111.md.
 ~~- E20 Plans' mixed multi-part reports, per part (CHAT 2026-10-10, WORLD_CLASS 399, 421 to 430, MINDMAP 431, WHITEBOARD 1352 to 1355, GRAPH 798, 802)~~ | book5. **Done s58left4-1110:** every part marked per part in CHAT_PLAN and WORLD_CLASS_PLAN (driven or CHANGELOG-read, said per part). Left as parts: 423 (b) Word TOC field, shading and columns; 423 (e) (h) (j); 424 (n) (o); 425 (e) to (g), (n); 430's phone, tablet and Settings list; CHAT's Guide gap, SearXNG timing, "show them", citation hover, web retry.
-- E21 The 1692 and 1683 owner-asks partial rows | book2 owner-asks
+- E21 The 1692 and 1683 owner-asks partial rows | book2 owner-asks W34: owner-call (tracked in the plans), w34-L1-1111.md.
 
 ### Tier F: plan horizon (before the BACKLOG)
 
@@ -322,11 +322,11 @@ Rows are book5's plan sections; each batch takes its plan's open rows smallest f
 - **F1 Documents** (Sonnet): live code blocks, the 2026-10-19 gap rows, `\eqref`, the guided equation editor, VC rows, links L6 | DOCUMENTS (book5) | s9-1110: `\eqref` built (HISTORY); s9c-1110: `\eqref` across columns, gap row 14 built; the rest left (agent-remaining/s9c-1110.md)
 - **F2 Whiteboard** (Sonnet): nine Format gaps, save each board's view, colour picker, BPMN and icon sets, draw.io rows | WHITEBOARD (book5) | s9-1110: save each board's view built on this device (HISTORY); the rest left (s9c-1110.md)
 - **F3 Mind map** (Sonnet): ~~outline view, branch palette and font, a note node that edits, render pass 13b, rainbow every level, legend, Replace all on notes~~ built (HISTORY "s9c-1110 part 3"); left: audio notes (needs an owner decision on keeping raw audio: /media/upload takes images and PDFs only), Gantt (topics carry a due day, no start) | MINDMAP (book5) | s9-1110: search inside topic notes built (HISTORY); outline view was already built (MINDMAP_PLAN item 8); the rest left (s9c-1110.md)
-- **F4 Chat** (Opus): composition layer (INBOX 1353), Phase 5 (a) to (g), Foundation F5, "X versus Y" | CHAT (book5)
+- **F4 Chat** (Opus): composition layer (INBOX 1353), Phase 5 (a) to (g), Foundation F5, "X versus Y" | CHAT (book5) W34: owner-call (tracked in the plans), w34-L1-1111.md.
 - **F5 World class** (Sonnet): durable jobs, ~~margin reader~~ (built for notes, s10b-1110), multi-window, torch at launch, F1 prefs, RapidOCR (after Q27), ~~filing vocabulary (Q29 taken: bar, related topics, frozen fixture; no second vocabulary)~~ | WORLD_CLASS (book5)
 - **F6 UI** (Sonnet): Settings panes indexed, token budget and `!important` to 0, dissolve the 08 and 10 stylesheets, statistics and utilities rows, private-by-default (Q30: setting and create flag built s10-1110; Private view and bulk make-all built s10b-1110; left: the new-note lock toggle), voice dialog V1 to V8 built (voiceup); share target was already built | UI_MODERNISATION (book5), SESSION_BRIEFS 58
-- **F7 Graph and timeline** (Sonnet): `?since=` cursor, tessellation view (after Q31), dot density at 5,000, day strip and spans (after Q32) | GRAPH, TIMELINE (book5)
-- **F8 Owner go** (held): sync, offline studio, audio, desktop pet, custom domain, blind panel, Fable diagram dive (after Q34) | WORLD_CLASS rows 35 to 37, OPEN shell
+- **F7 Graph and timeline** (Sonnet): `?since=` cursor, tessellation view (after Q31), dot density at 5,000, day strip and spans (after Q32) | GRAPH, TIMELINE (book5) W34: owner-call (tracked in the plans), w34-L1-1111.md.
+- **F8 Owner go** (held): sync, offline studio, audio, desktop pet, custom domain, blind panel, Fable diagram dive (after Q34) | WORLD_CLASS rows 35 to 37, OPEN shell W34: owner-call (tracked in the plans), w34-L1-1111.md.
 
 ### Session plan
 
@@ -400,7 +400,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 
 | id | item | source | size | owner |
 | --- | --- | --- | --- | --- |
-| 1 | INBOX 899: composer and agents pull from the notes' time words and time references | INBOX 899 (atlas branch) | M | atlas (ended, unassigned) |
+| 1 | INBOX 899: composer and agents pull from the notes' time words and time references | INBOX 899 (atlas branch) | M | atlas (ended, unassigned) W34: true, w34-L2r-1111.md. |
 | 2 | Later rows for the queue: B20 to B27, B40. | agent/atlas-1011:docs/roadmap/archive/agent-remaining/atlas-1011.md:10 | S | atlas (ended, unassigned) |
 | 3 | Not verified: any real model; the non-stream /chat route (routes_chat.py ~1571) does not answer capability questions from the list. | agent/atlas-1011:docs/roadmap/archive/agent-remaining/atlas-1011.md:12 | S | atlas (ended, unassigned) |
 | 4 | Found, not fixed: a chat title keeps a trailing backslash ("what is there about a gaming mouse?\"); a digest answer has no Ask next chips except B9's... | agent/atlas-1011:docs/roadmap/archive/agent-remaining/atlas-1011.md:14 | L | atlas (ended, unassigned) |
@@ -427,37 +427,37 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 25 | INBOX 903: rename the product to Tessellate, formerly MemoryMap AI (step 2: internal identifiers; docs; pages site) **Built 2026-11-01: the src/tessellate package.** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:13 | L | rebrand (ended, unassigned) |
 | 26 | Former name noted: README top, Settings, About, the Guide's "name" topic, the Pages footer, both CHANGELOGs. **Built 2026-11-01: README.md:8 (`Formerly MemoryMap AI`).** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:15 | S | rebrand (ended, unassigned) |
 | 27 | Kept on purpose, with brand: keep beside each: the LAN certificate subject, the bcrypt-input salt (memorymap-bcrypt-input), the stored caption... **Built 2026-11-01: routes_auth.py `MEDIA_COOKIE` and the bcrypt-input salt, kept with brand: keep (tests/test_brand_name.py).** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:17 | M | rebrand (ended, unassigned) |
-| 28 | Shortcuts are renamed; the old ones go on upgrade and on uninstall. | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:22 | S | rebrand (ended, unassigned) |
+| 28 | ~~Shortcuts are renamed; the old ones go on upgrade and on uninstall.~~ **W34: fixed** (w34-L1-1111.md) | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:22 | S | rebrand (ended, unassigned) |
 | 29 | /health says Tessellate; every check accepts both names (instance_lock.APP_NAMES, start/uninstall .sh/.bat). **Built 2026-11-01: core/instance_lock.py:206 `APP_NAMES`.** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:23 | S | rebrand (ended, unassigned) |
 | 30 | Package src/tessellate; src/memorymap is a shim (a meta-path alias to the same module objects, and python -m memorymap). The memorymap console script... **Built 2026-11-01: the src/memorymap shim (`__init__.py`, `__main__.py`).** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:28 | S | rebrand (ended, unassigned) |
 | 31 | TESSELLATE_* settings; core/envnames.py reads MEMORYMAP_* as the fallback; launchers, compose and CI do the same. **Built 2026-11-01: core/envnames.py.** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:31 | S | rebrand (ended, unassigned) |
 | 32 | Data folder: an existing MemoryMap AI folder is used where it is (never moved); a new install gets Tessellate (config._default_data_dir... **Built 2026-11-01: core/config.py `_default_data_dir`; tests/test_upgrade_keeps_data_folder.py.** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:33 | S | rebrand (ended, unassigned) |
 | 33 | Browser: memorymap.ocr.* keys move once when library.js loads, beside their only reader (the app head is at its size ratchet); the undo store... **Built 2026-11-01: library.js `OCR_VIEW_KEY` and `OCR_READER_KEY` are `tessellate.ocr.*`, the old keys copied once and removed (d6deab4); tests/test_brand_name.py.** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:36 | S | rebrand (ended, unassigned) |
 | 34 | Kept, as names on disk or on the wire: memorymap.db, backups memorymap-*.db, the memorymap_media cookie, export and import formats (memorymap-folder... **Built 2026-11-01: routes_auth.py `MEDIA_COOKIE` and the salt kept by name.** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:39 | M | rebrand (ended, unassigned) |
-| 35 | Windows: the installer, an upgrade from a pre-rename release, the .bat fallbacks and the package-check workflow. No Windows here; CI runs them. | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:47 | S | rebrand (ended, unassigned) |
-| 36 | A packaged (PyInstaller) build after the package rename. | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:49 | S | rebrand (ended, unassigned) |
+| 35 | Windows: the installer, an upgrade from a pre-rename release, the .bat fallbacks and the package-check workflow. No Windows here; CI runs them. | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:47 | S | rebrand (ended, unassigned) W34: hardware-only (Windows), w34-unv1-1111.md. |
+| 36 | A packaged (PyInstaller) build after the package rename. | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:49 | S | rebrand (ended, unassigned) W34: hardware-only (Windows), w34-unv1-1111.md. |
 | 37 | The icons' own <title> (favicon.svg, icon-maskable.svg) still say the old name: the owner's logo pass owns them. **Built 2026-11-01: frontend/favicon.svg and icon-maskable.svg line 3 say `<title>Tessellate</title>`.** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:50 | S | rebrand (ended, unassigned) |
 | 38 | Branches cut before the rename: merge, then python scripts/rebrand.py (rewrites memorymap. imports, MEMORYMAP_ names and copy), then git mv any new... **Built 2026-11-01: scripts/rebrand.py rewrites old imports, names and copy.** | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:55 | S | rebrand (ended, unassigned) |
-| 39 | New logo (favicon.svg and icon-maskable.svg titles still carry the old name) | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:30 | M | logo (ended, unassigned) |
+| 39 | ~~New logo (favicon.svg and icon-maskable.svg titles still carry the old name)~~ **W34: fixed** (w34-L1-1111.md) | agent/rebrand-1011:docs/roadmap/archive/agent-remaining/rebrand-1011.md:30 | M | logo (ended, unassigned) |
 | 40 | Not verified in a browser: the Alert menu, Undo the run then Ctrl+Z, the timeline range change (source and node tests only). | agent/data101b-1011:docs/roadmap/archive/agent-remaining/data101b-1011.md:6 | S | data101b (ended, unassigned) |
 | 41 | **Already fixed 2026-11-02 (tests/test_activity.py::test_every_thread_site_is_registered_with_activity passes at head).** tests/test_activity.py::test_every_thread_site_is_registered_with_activity fails on the base: core/lanserve.py starts a thread nothing lists. | agent/data101b-1011:docs/roadmap/archive/agent-remaining/data101b-1011.md:7 | S | data101b (ended, unassigned) |
-| 42 | Stop mid-call covers skill runs and write tools only; a plain Chat agent turn has no budget, so Stop there still lands at the next yield. | agent/data101b-1011:docs/roadmap/archive/agent-remaining/data101b-1011.md:8 | S | data101b (ended, unassigned) |
+| 42 | Stop mid-call covers skill runs and write tools only; a plain Chat agent turn has no budget, so Stop there still lands at the next yield. | agent/data101b-1011:docs/roadmap/archive/agent-remaining/data101b-1011.md:8 | S | data101b (ended, unassigned) W34: true, w34-L2r-1111.md. |
 | 43 | reminder_token.key sits beside the notes in the data folder: check backups and strip_leftovers do not need to leave it out. | agent/data101b-1011:docs/roadmap/archive/agent-remaining/data101b-1011.md:9 | S | data101b (ended, unassigned) |
 | 44 | Brief 101b: data fixes (import bin clock, monthly anchor day, Alert menu, timeline load-more, token key) and its leftovers | docs/roadmap/SESSION_BRIEFS.md:1823 | M | data101b (ended, unassigned) |
 | 45 | Brief 101: the found-not-fixed ledger of 41 unplaced rows (room101 is 101a; data101b running; first101c queued) | docs/roadmap/SESSION_BRIEFS.md:1823 | L | data101b (running), queued: first101c |
 | 46 | INBOX placed log: INBOX 898 undo and redo universal sent to undoall | docs/roadmap/INBOX.md:275 | S | undoall2 |
 | 47 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** whiteboard.js:createNewBoard POST /board-library/new-board | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:100 | S | undoall2 (ended, unassigned) |
 | 48 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** whiteboard.js:finish PUT /whiteboard/boards/${boardId} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:101 | S | undoall2 (ended, unassigned) |
-| 49 | **Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** whiteboard.js:initWhiteboard POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:102 | S | undoall2 (ended, unassigned) |
-| 50 | **Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** whiteboard.js:uploadToLibrary POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:103 | S | undoall2 (ended, unassigned) |
+| 49 | ~~**Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** whiteboard.js:initWhiteboard POST /media/upload~~ **W34: fixed** (w34-L1-1111.md) | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:102 | S | undoall2 (ended, unassigned) |
+| 50 | ~~**Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** whiteboard.js:uploadToLibrary POST /media/upload~~ **W34: fixed** (w34-L1-1111.md) | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:103 | S | undoall2 (ended, unassigned) |
 | 51 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** whiteboard.js:wbClearBoard DELETE ${base}/${item.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:104 | S | undoall2 (ended, unassigned) |
 | 52 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** whiteboard.js:wbCloneConnect POST /whiteboard/sketches | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:105 | S | undoall2 (ended, unassigned) |
 | 53 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** whiteboard.js:wbCreateBlankBoard POST /whiteboard/boards | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:106 | S | undoall2 (ended, unassigned) |
 | 54 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** whiteboard.js:wbImportOutlineFile POST /whiteboard/boards/import | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:107 | S | undoall2 (ended, unassigned) |
 | 55 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** whiteboard.js:wbNewUntitledBoard PUT /whiteboard/boards/${boardId} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:108 | S | undoall2 (ended, unassigned) |
-| 56 | **Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** whiteboard.js:wbPlaceUploadedImage POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:109 | S | undoall2 (ended, unassigned) |
-| 57 | Open design: stand-alone capture.js and clip.js windows have no stack; the board library 'new library' and 'delete library'; board objects the board... | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:11 | S | undoall2 (ended, unassigned) |
-| 58 | **Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** whiteboard.js:wbRestoreLinks POST /whiteboard/sketches | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:110 | S | undoall2 (ended, unassigned) |
+| 56 | ~~**Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** whiteboard.js:wbPlaceUploadedImage POST /media/upload~~ **W34: fixed** (w34-L1-1111.md) | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:109 | S | undoall2 (ended, unassigned) |
+| 57 | Open design: stand-alone capture.js and clip.js windows have no stack; the board library 'new library' and 'delete library'; board objects the board... | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:11 | S | undoall2 (ended, unassigned) W34: owner-call, w34-L1-1111.md. |
+| 58 | ~~**Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** whiteboard.js:wbRestoreLinks POST /whiteboard/sketches~~ **W34: fixed** (w34-L1-1111.md) | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:110 | S | undoall2 (ended, unassigned) |
 | 59 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** ask-history.js:clearAskHistory DELETE /ask-history | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:16 | S | undoall2 (ended, unassigned) |
 | 60 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** ask-history.js:deleteAskHistoryTurn DELETE /ask-history/${id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:17 | S | undoall2 (ended, unassigned) |
 | 61 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** ask-history.js:forgetRecentQuestion DELETE /chat/recent?question=${encodeURIComponent(quest | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:18 | S | undoall2 (ended, unassigned) |
@@ -469,44 +469,44 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 67 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** chat-agent.js:answer POST /memory/${proposal.id}/answer | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:24 | S | undoall2 (ended, unassigned) |
 | 68 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** chat-edit.js:editAndResend POST /conversations/${chatConv.id}/truncate | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:25 | S | undoall2 (ended, unassigned) |
 | 69 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** clip.js:save POST /links/clip-page | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:26 | S | undoall2 (ended, unassigned) |
-| 70 | dashboard.js:nightFactRow POST /entries/tensions/accept | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:27 | S | undoall2 (ended, unassigned) |
+| 70 | ~~dashboard.js:nightFactRow POST /entries/tensions/accept~~ **W34: fixed** (w34-L1-1111.md) | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:27 | S | undoall2 (ended, unassigned) |
 | 71 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** dashboard.js:paintFadedNotes POST /learned/corrections | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:28 | S | undoall2 (ended, unassigned) |
 | 72 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** documents.js:runDocAiEdit POST /documents/${currentDoc.id}/ai-edit | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:29 | S | undoall2 (ended, unassigned) |
 | 73 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: no GAP entry left; INBOX 898 closed).** INBOX 898: undo and redo universal, 89 GAP entries left in tests/test_undo_coverage.py EXEMPT | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:3 | L | undoall2 (ended, unassigned) |
-| 74 | **Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** editor.js:inlineAiSubmit POST /documents/${currentDoc.id}/ai-edit | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:30 | S | undoall2 (ended, unassigned) |
+| 74 | ~~**Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** editor.js:inlineAiSubmit POST /documents/${currentDoc.id}/ai-edit~~ **W34: fixed** (w34-L1-1111.md) | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:30 | S | undoall2 (ended, unassigned) |
 | 75 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** graph-canvas.js:gcDragEnd PUT /graph/pins | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:31 | S | undoall2 (ended, unassigned) |
 | 76 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** graph-canvas.js:gcSaveTopicName PUT /graph/topics/name | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:32 | S | undoall2 (ended, unassigned) |
 | 77 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** graph-canvas.js:gcTogglePin PUT /graph/pin/${node.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:33 | S | undoall2 (ended, unassigned) |
 | 78 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** graph-canvas.js:gcWireSelectionDock PUT /entries/${node.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:34 | S | undoall2 (ended, unassigned) |
-| 79 | graph.js:renderGraphSvg PUT /graph/pin/${d.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:35 | S | undoall2 (ended, unassigned) |
+| 79 | ~~graph.js:renderGraphSvg PUT /graph/pin/${d.id}~~ **W34: fixed** (w34-L1-1111.md) | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:35 | S | undoall2 (ended, unassigned) |
 | 80 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** library.js:bulkDeleteLibraryMedia DELETE endpoint | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:36 | S | undoall2 (ended, unassigned) |
 | 81 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** library.js:filterLibraryImagesGallery DELETE endpoint | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:37 | S | undoall2 (ended, unassigned) |
 | 82 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** library.js:finish PUT /graph/topics/name | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:38 | S | undoall2 (ended, unassigned) |
-| 83 | **Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** library.js:libraryActions PUT /conversations/${item.id}/pin | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:39 | S | undoall2 (ended, unassigned) |
-| 84 | **Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** library.js:noteRead PUT /bookmarks/${bookmark.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:40 | S | undoall2 (ended, unassigned) |
+| 83 | ~~**Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** library.js:libraryActions PUT /conversations/${item.id}/pin~~ **W34: fixed** (w34-L1-1111.md) | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:39 | S | undoall2 (ended, unassigned) |
+| 84 | ~~**Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** library.js:noteRead PUT /bookmarks/${bookmark.id}~~ **W34: fixed** (w34-L1-1111.md) | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:40 | S | undoall2 (ended, unassigned) |
 | 85 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** lightbox-view.js:readingDelete POST /media/${id}/${source === vision ? vision-ocr : | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:41 | S | undoall2 (ended, unassigned) |
 | 86 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** lightbox-view.js:run PUT /media/${item.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:42 | S | undoall2 (ended, unassigned) |
-| 87 | **Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** meetings.js:meetingTakeBegin POST /recordings | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:43 | S | undoall2 (ended, unassigned) |
+| 87 | ~~**Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** meetings.js:meetingTakeBegin POST /recordings~~ **W34: fixed** (w34-L1-1111.md) | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:43 | S | undoall2 (ended, unassigned) |
 | 88 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** meetings.js:meetingTakeDiscard DELETE /recordings/${id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:44 | S | undoall2 (ended, unassigned) |
-| 89 | **Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** meetings.js:meetingTakeFinish POST /recordings/${meetingTake.id}/finish | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:45 | S | undoall2 (ended, unassigned) |
+| 89 | ~~**Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** meetings.js:meetingTakeFinish POST /recordings/${meetingTake.id}/finish~~ **W34: fixed** (w34-L1-1111.md) | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:45 | S | undoall2 (ended, unassigned) |
 | 90 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** note-cards.js:entryItem PUT /entries/${entry.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:46 | S | undoall2 (ended, unassigned) |
 | 91 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** notes-list.js:offerWikiRename POST /entries/${entryId}/wiki-rename | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:47 | S | undoall2 (ended, unassigned) |
 | 92 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** quick-note.js:flushNoteOutbox POST /entries | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:48 | S | undoall2 (ended, unassigned) |
-| 93 | settings.js:learnedBulk POST /learned/bulk | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:49 | S | undoall2 (ended, unassigned) |
-| 94 | settings.js:learnedDelete DELETE /learned/${fact.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:50 | S | undoall2 (ended, unassigned) |
-| 95 | settings.js:learnedForget DELETE /learned | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:51 | S | undoall2 (ended, unassigned) |
-| 96 | **Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** skills.js:saveFile POST /files/save | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:52 | S | undoall2 (ended, unassigned) |
+| 93 | ~~settings.js:learnedBulk POST /learned/bulk~~ **W34: fixed** (w34-L1-1111.md) | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:49 | S | undoall2 (ended, unassigned) |
+| 94 | ~~settings.js:learnedDelete DELETE /learned/${fact.id}~~ **W34: fixed** (w34-L1-1111.md) | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:50 | S | undoall2 (ended, unassigned) |
+| 95 | ~~settings.js:learnedForget DELETE /learned~~ **W34: fixed** (w34-L1-1111.md) | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:51 | S | undoall2 (ended, unassigned) |
+| 96 | ~~**Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** skills.js:saveFile POST /files/save~~ **W34: fixed** (w34-L1-1111.md) | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:52 | S | undoall2 (ended, unassigned) |
 | 97 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** spaces-find.js:initSpaceSwitcher POST /spaces | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:53 | S | undoall2 (ended, unassigned) |
 | 98 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** suggestions-inbox.js:inboxCorrection POST /learned/corrections | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:54 | S | undoall2 (ended, unassigned) |
 | 99 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** suggestions-inbox.js:inboxTypeRow POST /suggestions/types/accept | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:55 | S | undoall2 (ended, unassigned) |
 | 100 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** suggestions-inbox.js:tensionCard POST /entries/tensions/accept | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:56 | S | undoall2 (ended, unassigned) |
 | 101 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** tidy.js:tidyDismiss POST ${path}/dismiss | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:57 | S | undoall2 (ended, unassigned) |
-| 102 | wiring.js:applyPendingChatTitle PUT /conversations/${conversationId} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:58 | S | undoall2 (ended, unassigned) |
+| 102 | ~~wiring.js:applyPendingChatTitle PUT /conversations/${conversationId}~~ **W34: fixed** (w34-L1-1111.md) | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:58 | S | undoall2 (ended, unassigned) |
 | 103 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** chat-attach.js:commitStagedImages POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:62 | S | undoall2 (ended, unassigned) |
-| 104 | **Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** documents-word.js:docWordUploadPicture POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:63 | S | undoall2 (ended, unassigned) |
-| 105 | library.js:(anonymous /media/upload) POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:64 | S | undoall2 (ended, unassigned) |
+| 104 | ~~**Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** documents-word.js:docWordUploadPicture POST /media/upload~~ **W34: fixed** (w34-L1-1111.md) | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:63 | S | undoall2 (ended, unassigned) |
+| 105 | ~~library.js:(anonymous /media/upload) POST /media/upload~~ **W34: fixed** (w34-L1-1111.md) | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:64 | S | undoall2 (ended, unassigned) |
 | 106 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** media.js:saveSketch POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:65 | S | undoall2 (ended, unassigned) |
-| 107 | **Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** settings-wiring.js:commitCaptureImages POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:66 | S | undoall2 (ended, unassigned) |
+| 107 | ~~**Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** settings-wiring.js:commitCaptureImages POST /media/upload~~ **W34: fixed** (w34-L1-1111.md) | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:66 | S | undoall2 (ended, unassigned) |
 | 108 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** settings-wiring.js:handleFileUpload POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:67 | S | undoall2 (ended, unassigned) |
 | 109 | Not verified: nothing here was driven in a browser (Playwright); every helper is checked by node --check and the scanner only. Undo of a board step... | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:7 | S | undoall2 (ended, unassigned) |
 | 110 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** whiteboard-interchange.js:post POST /whiteboard/sketches | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:71 | S | undoall2 (ended, unassigned) |
@@ -520,7 +520,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 118 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** whiteboard-library.js:wbLibNewLibrary POST /board-library/libraries | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:79 | S | undoall2 (ended, unassigned) |
 | 119 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** whiteboard-library.js:wbLibPlace POST /whiteboard/boards/${boardId}/place | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:80 | S | undoall2 (ended, unassigned) |
 | 120 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** whiteboard-library.js:wbLibReplace PUT /board-library/${entry.ref.slice(5)} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:81 | S | undoall2 (ended, unassigned) |
-| 121 | **Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** whiteboard-map.js:wbMapAdoptProvisional POST /whiteboard/boards/${row.board_id}/nodes | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:82 | S | undoall2 (ended, unassigned) |
+| 121 | ~~**Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** whiteboard-map.js:wbMapAdoptProvisional POST /whiteboard/boards/${row.board_id}/nodes~~ **W34: fixed** (w34-L1-1111.md) | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:82 | S | undoall2 (ended, unassigned) |
 | 122 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** whiteboard-map.js:wbMapClearEveryTopic POST /whiteboard/boards/${boardId}/nodes/clear-style | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:83 | S | undoall2 (ended, unassigned) |
 | 123 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** whiteboard-map.js:wbMapClearToOneTopic DELETE /whiteboard/objects/${root.id} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:84 | S | undoall2 (ended, unassigned) |
 | 124 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** whiteboard-map.js:wbMapCrossLinkToBranch DELETE /whiteboard/sketches/${sketchId} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:85 | S | undoall2 (ended, unassigned) |
@@ -528,17 +528,17 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 126 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** whiteboard-map.js:wbMapFromDocument POST /whiteboard/boards/import | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:87 | S | undoall2 (ended, unassigned) |
 | 127 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** whiteboard-map.js:wbMapPasteText POST /whiteboard/boards/${boardId}/nodes/outline | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:88 | S | undoall2 (ended, unassigned) |
 | 128 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** whiteboard-map.js:wbMapRemoveKeepingBranch PUT /whiteboard/boards/${boardId}/nodes/move-many | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:89 | S | undoall2 (ended, unassigned) |
-| 129 | Needs the server (no restore route): media/file deletes and uploads, ask-history delete/clear, learned delete/forget, tidy and tension dismiss... | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:9 | S | undoall2 (ended, unassigned) |
-| 130 | **Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** whiteboard-map.js:wbMapRestoreRows POST /whiteboard/boards/${boardId}/nodes | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:90 | S | undoall2 (ended, unassigned) |
+| 129 | Needs the server (no restore route): media/file deletes and uploads, ask-history delete/clear, learned delete/forget, tidy and tension dismiss... | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:9 | S | undoall2 (ended, unassigned) W34: owner-call (tracked in the plans), w34-L1-1111.md. |
+| 130 | ~~**Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** whiteboard-map.js:wbMapRestoreRows POST /whiteboard/boards/${boardId}/nodes~~ **W34: fixed** (w34-L1-1111.md) | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:90 | S | undoall2 (ended, unassigned) |
 | 131 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** whiteboard-map.js:wbMapReverseCrossLink PUT /whiteboard/sketches/${sketchId} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:91 | S | undoall2 (ended, unassigned) |
 | 132 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** whiteboard-map.js:wbMapReverseEdge PUT /whiteboard/boards/${boardId}/nodes/${id}/move | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:92 | S | undoall2 (ended, unassigned) |
 | 133 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** whiteboard-map.js:wbMapSetLayout PUT /whiteboard/boards/${boardId} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:93 | S | undoall2 (ended, unassigned) |
 | 134 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** whiteboard-map.js:wbMapSetNumbered PUT /whiteboard/boards/${boardId} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:94 | S | undoall2 (ended, unassigned) |
 | 135 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** whiteboard-map.js:wbMapSetTheme PUT /whiteboard/boards/${boardId} | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:95 | S | undoall2 (ended, unassigned) |
 | 136 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** whiteboard-map.js:wbMapSever PUT /whiteboard/boards/${boardId}/nodes/${id}/move | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:96 | S | undoall2 (ended, unassigned) |
-| 137 | **Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** whiteboard-map.js:wbMapTakePicture POST /media/upload | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:97 | S | undoall2 (ended, unassigned) |
+| 137 | ~~**Already met 2026-11-02 (tests/test_undo_coverage.py EXEMPT: reason class given there).** whiteboard-map.js:wbMapTakePicture POST /media/upload~~ **W34: fixed** (w34-L1-1111.md) | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:97 | S | undoall2 (ended, unassigned) |
 | 138 | **Already fixed 2026-11-02 (tests/test_undo_coverage.py: not in EXEMPT, passes at head).** whiteboard-map.js:wbMapWriteDocument POST /documents | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:98 | S | undoall2 (ended, unassigned) |
-| 139 | whiteboard.js:createConceptMap POST /whiteboard/boards | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:99 | S | undoall2 (ended, unassigned) |
+| 139 | ~~whiteboard.js:createConceptMap POST /whiteboard/boards~~ **W34: fixed** (w34-L1-1111.md) | agent/undoall-1011:docs/roadmap/archive/agent-remaining/undoall-1011.md:99 | S | undoall2 (ended, unassigned) |
 | 140 | INBOX placed log: INBOX 871 help search bar below the welcome tour sent to chattime; 872 restart fixed; 873 smooth transition placed | docs/roadmap/INBOX.md:280 | S | mergetrain (chattime) |
 | 141 | INBOX placed log: INBOX 897 sizes per device sent to devsize | docs/roadmap/INBOX.md:276 | S | mergetrain (devsize) |
 | 142 | Merge train: cifix2, chattime, phonegraph, phone2, room101, lansafe, restart, scan, ownerfix3, meaning94, voiceup, tags89, graph100, devsize, wbfix, small, themes95, wbcolour, secscan (19 branches) | git branch --list 'agent/*' | L | mergetrain (ended, unassigned) |
@@ -565,18 +565,18 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 163 | INBOX 892: hotspot, re-issue the certificate when the address set changes | INBOX 896 (docs/roadmap/INBOX.md:252) | M | queued: lanbar |
 | 164 | INBOX 894: each phone connection on the privacy receipt as an incoming row | INBOX 896 (docs/roadmap/INBOX.md:252) | S | queued: lanbar |
 | 165 | INBOX 900: toggle LAN on or off from the status-bar icon, no restart | INBOX 896 (docs/roadmap/INBOX.md:252) | M | queued: lanbar |
-| 166 | A network change takes up to 30 s (lanserve.REFRESH_SECONDS) to close or open the port. | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/lansafe-1011.md:39 | S | queued: lanbar |
-| 167 | MEDIUM: PUT /preferences let a phone set searxng_url (SSRF to any LAN/localhost host, path /search), export_save_dir (where files land), auto-update... | agent/secscan-1011:docs/roadmap/archive/agent-remaining/secscan-1011.md:25 | M | queued: lanbar |
-| 168 | MEDIUM (lansafe's lines, not edited here): POST /auth/lan-options lets a phone with the password turn "Allow on any network" on and "Ask before a new... | agent/secscan-1011:docs/roadmap/archive/agent-remaining/secscan-1011.md:35 | M | queued: lanbar |
-| 169 | MEDIUM: QUT wifi. Base has no allowed-network gate: once LAN mode is on, the https port listens on every network the laptop joins, protected by the... | agent/secscan-1011:docs/roadmap/archive/agent-remaining/secscan-1011.md:36 | M | queued: lanbar |
-| 170 | LOW, not fixable without remaking a decision: semantic auto-install (default on, the owner's choice) can be started by a failed embed that a phone's... | agent/secscan-1011:docs/roadmap/archive/agent-remaining/secscan-1011.md:37 | M | queued: lanbar |
-| 171 | secscan decision 1: a phone-triggered auto-install is refused (semantic auto-install failed embed from a phone save) | agent/secscan-1011:docs/roadmap/archive/agent-remaining/secscan-1011.md:44 | S | queued: lanbar |
+| 166 | ~~A network change takes up to 30 s (lanserve.REFRESH_SECONDS) to close or open the port.~~ **W34: stale** (w34-L1-1111.md) | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/lansafe-1011.md:39 | S | queued: lanbar |
+| 167 | ~~MEDIUM: PUT /preferences let a phone set searxng_url (SSRF to any LAN/localhost host, path /search), export_save_dir (where files land), auto-update...~~ **W34: fixed** (w34-L1-1111.md) | agent/secscan-1011:docs/roadmap/archive/agent-remaining/secscan-1011.md:25 | M | queued: lanbar |
+| 168 | ~~MEDIUM (lansafe's lines, not edited here): POST /auth/lan-options lets a phone with the password turn "Allow on any network" on and "Ask before a new...~~ **W34: fixed** (w34-L1-1111.md) | agent/secscan-1011:docs/roadmap/archive/agent-remaining/secscan-1011.md:35 | M | queued: lanbar |
+| 169 | ~~MEDIUM: QUT wifi. Base has no allowed-network gate: once LAN mode is on, the https port listens on every network the laptop joins, protected by the...~~ **W34: fixed** (w34-L1-1111.md) | agent/secscan-1011:docs/roadmap/archive/agent-remaining/secscan-1011.md:36 | M | queued: lanbar |
+| 170 | ~~LOW, not fixable without remaking a decision: semantic auto-install (default on, the owner's choice) can be started by a failed embed that a phone's...~~ **W34: fixed** (w34-L1-1111.md) | agent/secscan-1011:docs/roadmap/archive/agent-remaining/secscan-1011.md:37 | M | queued: lanbar |
+| 171 | ~~secscan decision 1: a phone-triggered auto-install is refused (semantic auto-install failed embed from a phone save)~~ **W34: fixed** (w34-L1-1111.md) | agent/secscan-1011:docs/roadmap/archive/agent-remaining/secscan-1011.md:44 | S | queued: lanbar |
 | 172 | secscan decision 2: LAN auto-off after 14 days unused | brief assignment (secscan) | M | queued: lanbar |
 | 173 | INBOX placed log: INBOX 892 and 894 placed with 896 (lanbar) | docs/roadmap/INBOX.md:278 | S | queued: lanbar |
 | 174 | Not verified: a real iPhone (profile install, trust steps), Windows' Public/Private category (parsed from fixture JSON only), macOS readers (parsed... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/lansafe-1011.md:34 | S | queued: iPhone sweep |
-| 175 | 887 keyboard: verify on a real iPhone in Safari. Sandbox only stubs visualViewport (scratchpad/ui-sweeps/kbinset.js); the owner's "covers the text... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/phone2-1011.md:6 | S | queued: iPhone sweep |
+| 175 | 887 keyboard: verify on a real iPhone in Safari. Sandbox only stubs visualViewport (scratchpad/ui-sweeps/kbinset.js); the owner's "covers the text... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/phone2-1011.md:6 | S | queued: iPhone sweep W34: unverifiable, w34-L2r-1111.md. |
 | 176 | Not verified: a real iPhone Safari (the select picker opening on script focus is Chromium emulation evidence plus the owner's report); the compact... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/phonegraph-1011.md:7 | S | queued: iPhone sweep |
-| 177 | iPhone sweep: verify the phone fixes on a real iPhone (keyboard 887, pinch 888, select picker 885, LAN profile install) | agent/phone2-1011 and agent/phonegraph-1011 ledgers | M | queued: iPhone sweep |
+| 177 | iPhone sweep: verify the phone fixes on a real iPhone (keyboard 887, pinch 888, select picker 885, LAN profile install) | agent/phone2-1011 and agent/phonegraph-1011 ledgers | M | queued: iPhone sweep W34: unverifiable, w34-L2r-1111.md. |
 | 178 | Not verified: a real phone on a real LAN (iPhone Safari); lansafe merged on top. | agent/secscan-1011:docs/roadmap/archive/agent-remaining/secscan-1011.md:40 | S | queued: iPhone sweep |
 | 179 | Brief 101c: the found-not-fixed ledger, third agent | docs/roadmap/SESSION_BRIEFS.md:1823 | M | queued: first101c |
 | 180 | INBOX 895 part 2: the composer as a smart chatbot after atlas | brief assignment | L | queued: composer |
@@ -633,11 +633,11 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 229 | Not verified: real-model answers through the validators (fake transport and the route test only); dark mode. [f3-1010] | docs/roadmap/agent-remaining/OPEN.md:3592 | S | unassigned |
 | 230 | Not verified: hybrid ranking cost at 5,000 notes with a real embedding model (keyword plus the fake backend only); the saved-search ⋯ menu opened in... | docs/roadmap/agent-remaining/OPEN.md:3600 | S | unassigned |
 | 231 | Not verified: tests elsewhere that relied on blank lines removed from CSS files 00, 01, 02, 05, 06, 07 and 10 to pay for the CSS budget; the picker... | docs/roadmap/agent-remaining/OPEN.md:3673 | S | unassigned |
-| 232 | Not driven with a real model: a live streamed answer getting its time when the meta row lands (driven with addAssistantBubble plus messageMetaLine in... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/chattime-1010.md:5 | S | unassigned |
+| 232 | Not driven with a real model: a live streamed answer getting its time when the meta row lands (driven with addAssistantBubble plus messageMetaLine in... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/chattime-1010.md:5 | S | unassigned W34: unverifiable, w34-L2r-1111.md. |
 | 233 | Not verified: dark theme and phone width for the moved rules (only errors.js at 390: 0 findings); the first press of the bell on a slow link (the... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/room101-1011.md:10 | S | unassigned |
-| 234 | Autocorrect with an IME, on a real phone keyboard (its own suggestions fire insertReplacementText, which this leaves alone), and in the graph's and... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/meaning94-1011.md:12 | S | unassigned |
-| 235 | A real model (Ollama or llama.cpp): every filing, Ask and Chat result above is against a stand-in server or no model. "Filing catches up once a model... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/scan-1011.md:15 | S | unassigned |
-| 236 | Enhancement on a real voice: measured on synthetic tones through Chromium's fake microphone (RMS 0.054 to 0.082, peak 0.158 to 0.254); takes over 30... | agent/voiceup-1011:docs/roadmap/archive/agent-remaining/voiceup-1011.md:15 | M | unassigned |
+| 234 | Autocorrect with an IME, on a real phone keyboard (its own suggestions fire insertReplacementText, which this leaves alone), and in the graph's and... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/meaning94-1011.md:12 | S | unassigned W34: unverifiable, w34-L2r-1111.md. |
+| 235 | A real model (Ollama or llama.cpp): every filing, Ask and Chat result above is against a stand-in server or no model. "Filing catches up once a model... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/scan-1011.md:15 | S | unassigned W34: unverifiable, w34-L2r-1111.md. |
+| 236 | Enhancement on a real voice: measured on synthetic tones through Chromium's fake microphone (RMS 0.054 to 0.082, peak 0.158 to 0.254); takes over 30... | agent/voiceup-1011:docs/roadmap/archive/agent-remaining/voiceup-1011.md:15 | M | unassigned W34: unverifiable, w34-L2r-1111.md. |
 | 237 | Not verified: any real model's behaviour in the handoff (choosing among numbered readings, "reorder, do not add"); the taxonomy pack's size as a... | docs/roadmap/archive/agent-remaining/assistant-1010.md:15 | S | unassigned |
 | 238 | Not verified: Saved views and local/global switches through the view-change sweep (layouts, Refresh and a return to the tab were measured); the... | docs/roadmap/archive/agent-remaining/graphfeel-1010.md:23 | S | unassigned |
 | 239 | Boot gzip budget, what the 2026-10-05 split did not take (792,754 to 758,418 bytes, notes-list.js 63,548 to 57,929; test_static_compression.py has... | docs/roadmap/agent-remaining/OPEN.md:1882 | L | unassigned |
@@ -668,7 +668,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 264 | Boot JS 582,371 to 583,240 bytes gzipped (+869: the digest, the Library and Graph filters, the palette rows, the voice table, textCounts; cap... | docs/roadmap/agent-remaining/OPEN.md:3616 | M | unassigned |
 | 265 | The 68 broad excepts that log nothing and return a fallback (89 minus the 21 seeded) are not ratcheted; decide whether decision 57 means them.... | docs/roadmap/agent-remaining/OPEN.md:3644 | S | unassigned |
 | 266 | Graph at rest (1 to 10 long tasks) and the companion (4 to 6 at rest) are the two surfaces over the zero target (frames.js REST_BUDGET).... | docs/roadmap/agent-remaining/OPEN.md:3648 | S | unassigned |
-| 267 | The constellation fades in; its stars do not glide in from a first position (dashboard.js is a boot script with 11 bytes of gzip headroom). | agent/graph100-1011:docs/roadmap/archive/agent-remaining/graph100-1011.md:23 | S | unassigned |
+| 267 | The constellation fades in; its stars do not glide in from a first position (dashboard.js is a boot script with 11 bytes of gzip headroom). | agent/graph100-1011:docs/roadmap/archive/agent-remaining/graph100-1011.md:23 | S | unassigned W34: true, w34-L2r-1111.md. |
 | 268 | **Already fixed 2026-11-02 (tests/test_complexity.py passes at head).** tests/test_complexity.py fails on spelling.py, utilities.py, activity.py. | agent/graph100-1011:docs/roadmap/archive/agent-remaining/graph100-1011.md:32 | S | unassigned |
 | 269 | Boot CSS 177,905 to 176,370 bytes gzipped (cap 183,300, unchanged): room 5,395 to 6,930. 89 Library-only rules moved to library-lazy.css, ahead of... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/room101-1011.md:3 | S | unassigned |
 | 270 | 381 more Library-only CSS rules could move (633 qualify by selector, 470 pass the file ratchets, 89 moved). The rest tie on specificity with a rule... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/room101-1011.md:6 | M | unassigned |
@@ -679,12 +679,12 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 275 | Internal navigation is one lazy file, settings-find.js (loaded with the first open of Settings, so outside the boot gzip budget, which sits 842 bytes... | docs/roadmap/UI_MODERNISATION_PLAN.md:1162 | L | unassigned |
 | 276 | Generation measured 2.0 to 2.7 s wall at load average 12 to 15 on four cores (2026-10-10); no unloaded figure was taken, and the 3 s lint budget is... | docs/roadmap/archive/agent-remaining/codemap-1010.md:8 | S | unassigned |
 | 277 | found-1010: reader count ratchet (6 files outside the allowed two), five date readers and no unit reader, probe tables (23 when.resolve rows wrong on... | docs/roadmap/archive/agent-remaining/found-1010.md:7 | M | unassigned |
-| 278 | The desktop webview (pywebview) and a slow machine: the 450 ms warm-up budget on a slow CPU records fewer ticks, so the playback is shorter. | docs/roadmap/archive/agent-remaining/graphfeel-1010.md:12 | S | unassigned |
+| 278 | The desktop webview (pywebview) and a slow machine: the 450 ms warm-up budget on a slow CPU records fewer ticks, so the playback is shorter. | docs/roadmap/archive/agent-remaining/graphfeel-1010.md:12 | S | unassigned W34: stale in part, w34-unv1-1111.md. |
 | 279 | **Already fixed 2026-11-02 (tests/test_global_scope_ratchet.py passes at head).** tests/test_global_scope_ratchet.py: 278 typeof x === "function" guards against a cap of 277. | docs/roadmap/archive/agent-remaining/graphfeel-1010.md:17 | S | unassigned |
 | 280 | Every wall time was taken at load average 8 to 10 on 4 cores (other sessions' browsers and servers); re-run measure-interactions.js and... | docs/roadmap/archive/agent-remaining/measure-1010.md:3 | M | unassigned |
-| 281 | Performance budget (import under 0.5 s, compose under 150 ms for 20 notes) and the model-dies-mid-answer route bug (routes_chat.py near 1963). | docs/roadmap/archive/agent-remaining/spec39-1010.md:15 | S | unassigned |
-| 282 | Tool schemas at 32,762 of 32,768 characters for a 32k window (tests/test_prompt_budget.py): the next tool added trims every description. | docs/roadmap/archive/agent-remaining/triage-1010.md:26 | S | unassigned |
-| 283 | Boot CSS 3 bytes under its cap, boot JS about 100 bytes under (tests/test_boot_budget.py, tests/test_static_compression.py): the cited-name code went... | docs/roadmap/archive/agent-remaining/triage-1010.md:27 | S | unassigned |
+| 281 | ~~Performance budget (import under 0.5 s, compose under 150 ms for 20 notes) and the model-dies-mid-answer route bug (routes_chat.py near 1963).~~ **W34: fixed** (w34-L1-1111.md) | docs/roadmap/archive/agent-remaining/spec39-1010.md:15 | S | unassigned |
+| 282 | Tool schemas at 32,762 of 32,768 characters for a 32k window (tests/test_prompt_budget.py): the next tool added trims every description. | docs/roadmap/archive/agent-remaining/triage-1010.md:26 | S | unassigned W34: true (watch item), w34-fix1-1111.md. |
+| 283 | Boot CSS 3 bytes under its cap, boot JS about 100 bytes under (tests/test_boot_budget.py, tests/test_static_compression.py): the cited-name code went... | docs/roadmap/archive/agent-remaining/triage-1010.md:27 | S | unassigned W34: true (watch item), w34-fix1-1111.md. |
 | 284 | The tracks table: track 11 audio, 12 packaging (Docker image, installer optional packages), 14 learnability (docs/ROADMAP.md) | docs/ROADMAP.md:113 | L | unassigned |
 | 285 | The Windows grammar worker failure not reproduced (now names its reason). | docs/roadmap/agent-remaining/OPEN.md:2253 | S | unassigned |
 | 286 | No live sync between two open windows; a change shows in the other after a reload. | docs/roadmap/agent-remaining/OPEN.md:2307 | S | unassigned |
@@ -700,8 +700,8 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 297 | Rule 14: /health stays the launcher's open probe (instance_lock.py, __main__.py read it unauthenticated, and it answers on the LAN); the fields are... | docs/roadmap/agent-remaining/OPEN.md:3524 | M | unassigned |
 | 298 | .diff, .patch, .vb and .vbs are not in docview.CODE_SUFFIXES, so a Library import of one is refused (415); a Dockerfile has no suffix at all... | docs/roadmap/agent-remaining/OPEN.md:3536 | M | unassigned |
 | 299 | Documents: the status bar shows characters, words and reading time; lines (wc -l) are counted by textCounts but shown nowhere. "find with the same... | docs/roadmap/agent-remaining/OPEN.md:3607 | M | unassigned |
-| 300 | 502c138d5: core/netid.py (Linux /proc, macOS route/arp, Windows one PowerShell call with a route print + arp fallback; every command timed; failure... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/lansafe-1011.md:12 | M | unassigned |
-| 301 | cb46444e0: the gate in lanserve and the launcher, the routes, the held unlock, netbind.describe ordering; real-socket and launcher e2e tests. | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/lansafe-1011.md:16 | S | unassigned |
+| 300 | ~~502c138d5: core/netid.py (Linux /proc, macOS route/arp, Windows one PowerShell call with a route print + arp fallback; every command timed; failure...~~ **W34: fixed** (w34-L1-1111.md) | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/lansafe-1011.md:12 | M | unassigned |
+| 301 | ~~cb46444e0: the gate in lanserve and the launcher, the routes, the held unlock, netbind.describe ordering; real-socket and launcher e2e tests.~~ **W34: fixed** (w34-L1-1111.md) | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/lansafe-1011.md:16 | S | unassigned |
 | 302 | Update channels (stable/beta/dev): Next: the installers ship now (release.yml), so this is unblocked; api/routes_update.py... | docs/roadmap/BACKLOG.md:1715 | M | unassigned |
 | 303 | MCP tool support: Pointer: WORLD_CLASS_PLAN B8 "Extensions" and PLAN.md harness row A7 ("MCP in and out"); the consume half waits... | docs/roadmap/BACKLOG.md:1845 | L | unassigned |
 | 304 | Reuse the system Python's packages. Recommendation: offer it, never default it. start.sh line 1070 and start.bat line 602 run... | docs/roadmap/BACKLOG.md:4211 | L | unassigned |
@@ -720,7 +720,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 317 | Docker image not built: docker is on PATH but docker info reports no daemon here. docker/Dockerfile and docker/compose.yaml are unbuilt; the first... | docs/roadmap/archive/agent-remaining/packaging-1010.md:3 | M | unassigned |
 | 318 | Docker behind a reverse proxy: host_allowed answers 421 for a Host that is a name other than the container's own; a proxy forwarding... | docs/roadmap/archive/agent-remaining/packaging-1010.md:4 | M | unassigned |
 | 319 | MCP: no resources (notes) or prompts (skills); startup still loads the embedder (mcp_server.serve, deps.init_app_state); stdio only, so no... | docs/roadmap/archive/agent-remaining/packaging-1010.md:5 | M | unassigned |
-| 320 | MCP Settings row (#mcp-config-group, renderMcpSnippet in frontend/js/skills.js) was not opened in a browser; the lints and API test pass, the layout... | docs/roadmap/archive/agent-remaining/packaging-1010.md:6 | S | unassigned |
+| 320 | ~~MCP Settings row (#mcp-config-group, renderMcpSnippet in frontend/js/skills.js) was not opened in a browser; the lints and API test pass, the layout...~~ **W34: fixed** (w34-L2r-1111.md) | docs/roadmap/archive/agent-remaining/packaging-1010.md:6 | S | unassigned |
 | 321 | System site-packages: shell launcher only (env variable MEMORYMAP_SYSTEM_SITE_PACKAGES=1, not a --flag, because the flag-order lint requires... | docs/roadmap/archive/agent-remaining/packaging-1010.md:7 | S | unassigned |
 | 322 | Section: Phase 11: the phone, done properly (412-line phase; many built marks, status per row unverified) | docs/roadmap/UI_MODERNISATION_PLAN.md:601 | L | unassigned |
 | 323 | Section: Section 12: security review items (each names its file) | docs/roadmap/WORLD_CLASS_PLAN.md:917 | M | unassigned |
@@ -747,18 +747,18 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 344 | The palette is never shown on a phone (toggleAgentPalette goes to Chat), so its 390px notice is unmeasured by design. (from notice-1010.md) | docs/roadmap/agent-remaining/OPEN.md:3480 | S | unassigned |
 | 345 | A notice's go: { settings, focus } scrolls Settings to the control at 1440 (Back up now at y 499 of 900) but not at 390 (y 1527 of 900): the phone... | docs/roadmap/agent-remaining/OPEN.md:3659 | M | unassigned |
 | 346 | 889 OCR workspace: stacked columns, 44px targets and no sideways scroll already held at 390 and 320 before this work (ocrphone.js); only the source... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/phone2-1011.md:8 | M | unassigned |
-| 347 | Text size "Small" puts phone tap targets under 44 px. --target-min: 2.75rem (00-tokens-shell.css:530 and the 820 band) is in rem and the root is 14.5... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/scan-1011.md:8 | L | unassigned |
-| 348 | Other icon-only rows on the phone with no labels (not touched): the whiteboard toolbar and the selection dock; sweep with touch.js for tooltip-only... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/phonegraph-1011.md:9 | S | unassigned |
-| 349 | f940fad8d: LAN port refuses a client not on this network (private, shared, link-local, this computer's own addresses, its global IPv6 /64s). | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/lansafe-1011.md:10 | S | unassigned |
-| 350 | The desktop webview (pywebview), the tour on a phone, voice and recordings, OCR, the web clipper (no network), update checking, backups restore... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/scan-1011.md:16 | M | unassigned |
-| 351 | 1b96f48cf: renderLanAddresses (one renderer, Settings and the receipt), lan-watch.js (Allow/Deny toast and bell), Settings lists and options, the... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/lansafe-1011.md:18 | S | unassigned |
-| 352 | The phone's lock screen does not retry by itself after Allow: the server holds the request 45 s, then says to press Unlock again. | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/lansafe-1011.md:44 | S | unassigned |
-| 353 | HIGH: a notebook with no password answered every device. After /auth/reset (or a restored backup with no password) the LAN listener stays up until... | agent/secscan-1011:docs/roadmap/archive/agent-remaining/secscan-1011.md:23 | M | unassigned |
-| 354 | HIGH: /health said desktop: true to the phone, so the phone wrote exports onto the computer's disk (/files/save, any bytes, any extension) and its... | agent/secscan-1011:docs/roadmap/archive/agent-remaining/secscan-1011.md:24 | M | unassigned |
-| 355 | MEDIUM: model and embedding-model downloads (any Ollama name or Hugging Face repo, GBs to disk) and removal from a phone. Host-only. | agent/secscan-1011:docs/roadmap/archive/agent-remaining/secscan-1011.md:26 | S | unassigned |
-| 356 | MEDIUM: recovery-key save opened a native Save dialog on the computer from a phone; LAN switch on, certificate regenerate, password-on-open off... | agent/secscan-1011:docs/roadmap/archive/agent-remaining/secscan-1011.md:27 | S | unassigned |
+| 347 | ~~Text size "Small" puts phone tap targets under 44 px. --target-min: 2.75rem (00-tokens-shell.css:530 and the 820 band) is in rem and the root is 14.5...~~ **W34: fixed 48655b22d** (w34-L2r-1111.md) | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/scan-1011.md:8 | L | unassigned |
+| 348 | ~~Other icon-only rows on the phone with no labels (not touched): the whiteboard toolbar and the selection dock; sweep with touch.js for tooltip-only...~~ **W34: fixed** (w34-L2r-1111.md) | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/phonegraph-1011.md:9 | S | unassigned |
+| 349 | ~~f940fad8d: LAN port refuses a client not on this network (private, shared, link-local, this computer's own addresses, its global IPv6 /64s).~~ **W34: fixed** (w34-L1-1111.md) | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/lansafe-1011.md:10 | S | unassigned |
+| 350 | The desktop webview (pywebview), the tour on a phone, voice and recordings, OCR, the web clipper (no network), update checking, backups restore... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/scan-1011.md:16 | M | unassigned W34: unverifiable, w34-L2r-1111.md. |
+| 351 | ~~1b96f48cf: renderLanAddresses (one renderer, Settings and the receipt), lan-watch.js (Allow/Deny toast and bell), Settings lists and options, the...~~ **W34: fixed** (w34-L1-1111.md) | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/lansafe-1011.md:18 | S | unassigned |
+| 352 | The phone's lock screen does not retry by itself after Allow: the server holds the request 45 s, then says to press Unlock again. | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/lansafe-1011.md:44 | S | unassigned W34: owner-call, w34-L1-1111.md. |
+| 353 | ~~HIGH: a notebook with no password answered every device. After /auth/reset (or a restored backup with no password) the LAN listener stays up until...~~ **W34: fixed** (w34-L1-1111.md) | agent/secscan-1011:docs/roadmap/archive/agent-remaining/secscan-1011.md:23 | M | unassigned |
+| 354 | ~~HIGH: /health said desktop: true to the phone, so the phone wrote exports onto the computer's disk (/files/save, any bytes, any extension) and its...~~ **W34: fixed** (w34-L1-1111.md) | agent/secscan-1011:docs/roadmap/archive/agent-remaining/secscan-1011.md:24 | M | unassigned |
+| 355 | ~~MEDIUM: model and embedding-model downloads (any Ollama name or Hugging Face repo, GBs to disk) and removal from a phone. Host-only.~~ **W34: fixed** (w34-L1-1111.md) | agent/secscan-1011:docs/roadmap/archive/agent-remaining/secscan-1011.md:26 | S | unassigned |
+| 356 | ~~MEDIUM: recovery-key save opened a native Save dialog on the computer from a phone; LAN switch on, certificate regenerate, password-on-open off...~~ **W34: fixed** (w34-L1-1111.md) | agent/secscan-1011:docs/roadmap/archive/agent-remaining/secscan-1011.md:27 | S | unassigned |
 | 357 | **Already fixed 2026-11-02 (src/tessellate/core/security.py:662 adds Strict-Transport-Security).** LOW: no HSTS on the https port; added (https only, never on loopback). | agent/secscan-1011:docs/roadmap/archive/agent-remaining/secscan-1011.md:28 | S | unassigned |
-| 358 | LOW: phone Quit showed "MemoryMap has stopped" when the server had refused; now toasts the refusal. Phone full screen POSTed to the desktop toggle... | agent/secscan-1011:docs/roadmap/archive/agent-remaining/secscan-1011.md:29 | L | unassigned |
+| 358 | ~~LOW: phone Quit showed "MemoryMap has stopped" when the server had refused; now toasts the refusal. Phone full screen POSTed to the desktop toggle...~~ **W34: fixed** (w34-L1-1111.md) | agent/secscan-1011:docs/roadmap/archive/agent-remaining/secscan-1011.md:29 | L | unassigned |
 | 359 | It works with no network at all. Already true and almost never said. The notebook_stats work in this session is the shape to... | docs/roadmap/BACKLOG.md:3789 | S | unassigned |
 | 360 | Library verdicts to carry into Brief 35's stripping: drop networkx (write the 60 lines notebook_stats.py uses), whoosh, pint... | docs/roadmap/BACKLOG.md:4260 | M | unassigned |
 | 361 | Live refresh across devices (INBOX 881, the owner 2026-10-11: "what if I make a change on my phone?? does it live update??"). A... | docs/roadmap/BACKLOG.md:4293 | M | unassigned |
@@ -867,7 +867,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 465 | Note editor: offers on the Edit form are wired (note-edit-panels.js after li.append(surface, ...)) but measured only on the Capture composer; the... | docs/roadmap/agent-remaining/OPEN.md:3604 | M | unassigned |
 | 466 | Filters: "last week" is the last seven days here (the search's meaning) and the Monday to Sunday week in recognise; F1's owner decision row still... | docs/roadmap/agent-remaining/OPEN.md:3610 | S | unassigned |
 | 467 | Import: people and places are named in the summary only; they are not written as tags or entities (the save's own extraction runs as before).... | docs/roadmap/agent-remaining/OPEN.md:3612 | M | unassigned |
-| 468 | Library boxes (Library filter, graph filter) are not on the meaning layer: they search notes through /read/filter and the search engine, whose... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/meaning94-1011.md:6 | L | unassigned |
+| 468 | Library boxes (Library filter, graph filter) are not on the meaning layer: they search notes through /read/filter and the search engine, whose... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/meaning94-1011.md:6 | L | unassigned W34: true, w34-L2r-1111.md. |
 | 469 | Autocorrect's table takes Brief 90's owner typos by hand (73 pairs read from agent/typos90*-1011's owner_typos.json, 47 kept: the rest are real... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/meaning94-1011.md:8 | S | unassigned |
 | 470 | 856: the owner's exact element ("an Ask question link") was not reproduced. scratchpad/ui-sweeps/hoverradius.js measured 0 square hover grounds... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:14 | M | unassigned |
 | 471 | Re-ranking with a small cross-encoder over the top-20, behind a setting. Next: nothing in src/ re-ranks (checked 2026-10-05); the... | docs/roadmap/BACKLOG.md:866 | L | unassigned |
@@ -931,18 +931,18 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 529 | INBOX 761, mind maps listed as notes. The Ask results show a mind map as an Uncategorised note card; check every reader of notes (Ask, Notes, search... | docs/roadmap/UI_MODERNISATION_PLAN.md:1239 | M | unassigned |
 | 530 | "very messy" Recommendation: the owner has not named the surface; ask for the screen when the next session starts, and meanwhile run the Brief 41... | docs/roadmap/UI_MODERNISATION_PLAN.md:1266 | S | unassigned |
 | 531 | "Also can things still work with all the similarity stuff for the composer and filing and other stuff if sentence-transformers isnt installed??"... | docs/roadmap/WORLD_CLASS_PLAN.md:3096 | M | unassigned |
-| 532 | Section 0 finding 1 is unfixed: Gemini-branch utilities are discarded by if not out.rows in ai/composer.py (~2706 to 2795). Owner: "I want the... | docs/roadmap/archive/agent-remaining/assistant-1010.md:6 | M | unassigned |
-| 533 | Finding 2 unfixed: the translate rule at ai/composer.py:292 ends in to\s+([a-zA-Z]+)\b and swallows "what do I need to buy", "how to cook rice"... | docs/roadmap/archive/agent-remaining/assistant-1010.md:7 | S | unassigned |
-| 534 | Finding 3 unfixed: "summarise my gym notes" raises UnboundLocalError on sides (ai/composer.py ~2795). | docs/roadmap/archive/agent-remaining/assistant-1010.md:8 | S | unassigned |
-| 535 | when.resolve("last friday") returns the next Friday (ai/when.py resolve); recall must use entry/timewords.find, which is right; "since March", "the... | docs/roadmap/archive/agent-remaining/assistant-1010.md:9 | S | unassigned |
-| 536 | None of the 16 eval fixtures in section 4 exist; the five in decision 40 and the eight proposed ones need their rows written (645 rows), and the... | docs/roadmap/archive/agent-remaining/assistant-1010.md:11 | S | unassigned |
-| 537 | Sources whose pages did not state a mechanism, to read from their repositories if the detail matters: Mycroft Adapt's confidence and one_of and... | docs/roadmap/archive/agent-remaining/assistant-1010.md:14 | S | unassigned |
+| 532 | ~~Section 0 finding 1 is unfixed: Gemini-branch utilities are discarded by if not out.rows in ai/composer.py (~2706 to 2795). Owner: "I want the...~~ **W34: fixed** (w34-L1-1111.md) | docs/roadmap/archive/agent-remaining/assistant-1010.md:6 | M | unassigned |
+| 533 | ~~Finding 2 unfixed: the translate rule at ai/composer.py:292 ends in to\s+([a-zA-Z]+)\b and swallows "what do I need to buy", "how to cook rice"...~~ **W34: fixed** (w34-L1-1111.md) | docs/roadmap/archive/agent-remaining/assistant-1010.md:7 | S | unassigned |
+| 534 | ~~Finding 3 unfixed: "summarise my gym notes" raises UnboundLocalError on sides (ai/composer.py ~2795).~~ **W34: fixed** (w34-L1-1111.md) | docs/roadmap/archive/agent-remaining/assistant-1010.md:8 | S | unassigned |
+| 535 | ~~when.resolve("last friday") returns the next Friday (ai/when.py resolve); recall must use entry/timewords.find, which is right; "since March", "the...~~ **W34: fixed** (w34-L1-1111.md) | docs/roadmap/archive/agent-remaining/assistant-1010.md:9 | S | unassigned |
+| 536 | ~~None of the 16 eval fixtures in section 4 exist; the five in decision 40 and the eight proposed ones need their rows written (645 rows), and the...~~ **W34: fixed** (w34-L1-1111.md) | docs/roadmap/archive/agent-remaining/assistant-1010.md:11 | S | unassigned |
+| 537 | Sources whose pages did not state a mechanism, to read from their repositories if the detail matters: Mycroft Adapt's confidence and one_of and... | docs/roadmap/archive/agent-remaining/assistant-1010.md:14 | S | unassigned W34: owner-call (tracked in the plans), w34-L1-1111.md. |
 | 538 | Found, not fixed: ai/tool_summary.py is named by commands.py on origin/wip/composer-acts and does not exist on this branch; entry.query entity: finds... | docs/roadmap/archive/agent-remaining/assistant-1010.md:16 | M | unassigned |
-| 539 | engine-probe-1010: P1 to P16 probe bugs (word-boundary match, empty social answers, route order, count over retrieval); re-run the probe to see which... | docs/roadmap/archive/agent-remaining/engine-probe-1010.md:7 | M | unassigned |
+| 539 | engine-probe-1010: P1 to P16 probe bugs (word-boundary match, empty social answers, route order, count over retrieval); re-run the probe to see which... | docs/roadmap/archive/agent-remaining/engine-probe-1010.md:7 | M | unassigned W34: true (part), w34-L2r-1111.md. |
 | 540 | Search latency of the engine alone (without HTTP and background work) is not isolated; GET /search p50 1.8 to 5.0 s is the loaded figure. A trivial... | docs/roadmap/archive/agent-remaining/measure-1010.md:4 | L | unassigned |
-| 541 | Decision 34: lead_in_repeats and openers_distinct over a 20-turn session need the eval fixtures (decision 40). | docs/roadmap/archive/agent-remaining/spec39-1010.md:7 | S | unassigned |
+| 541 | Decision 34: lead_in_repeats and openers_distinct over a 20-turn session need the eval fixtures (decision 40). | docs/roadmap/archive/agent-remaining/spec39-1010.md:7 | S | unassigned W34: owner-call (tracked in the plans), w34-L1-1111.md. |
 | 542 | **Already fixed 2026-11-02 (tests/test_composer_725.py::test_unrelated_words_do_not_meet; `composer._stem("news")` gives "news", not "new").** _stem turns "news" into "new", which its own comment says it must not (src/memorymap/ai/composer.py:453); found writing the stemmer test, not changed. | docs/roadmap/archive/agent-remaining/triage-1010.md:25 | S | unassigned |
-| 543 | intent.py's _NOTE_WORDS gained "think", "plan", "idea" and more on the Gemini branch (src/memorymap/ai/intent.py:65), so "I think so" routes to the... | docs/roadmap/archive/agent-remaining/triage-1010.md:30 | S | unassigned |
+| 543 | ~~intent.py's _NOTE_WORDS gained "think", "plan", "idea" and more on the Gemini branch (src/memorymap/ai/intent.py:65), so "I think so" routes to the...~~ **W34: fixed** (w34-L1-1111.md) | docs/roadmap/archive/agent-remaining/triage-1010.md:30 | S | unassigned |
 | 544 | Section: Phase D: recovery (Brief 31) | docs/roadmap/AGENT_SKILLS_REFORM.md:104 | M | unassigned |
 | 545 | Section: Does the MCP server work: resources, prompts, ask_user and make_plan to a bare client | docs/roadmap/AGENT_SKILLS_REFORM.md:345 | M | unassigned |
 | 546 | Section: Phase 4: skills that finish (Brief 13) | docs/roadmap/CHAT_PLAN.md:365 | M | unassigned |
@@ -992,17 +992,17 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 590 | Decision 7: only note cards changed (category pill to a dot and a word); chat bubble metadata not measured (no conversation without a model) and... | docs/roadmap/agent-remaining/OPEN.md:3668 | S | unassigned |
 | 591 | One focus ring at 1:1 in Chat (button.active, its outline takes the ground colour, both themes; scratchpad/ui-sweeps/focusring.js). Bug.... | docs/roadmap/agent-remaining/OPEN.md:3672 | S | unassigned |
 | 592 | Messages saved before stamps existed show no time (the owner: "a time stamp on each chat message"): showing the chat's own time on every old line... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/chattime-1010.md:3 | M | unassigned |
-| 593 | The chat list row still reads "3h ago" (relativeTime of the last message), not a clock time: sheets-selects.js loadConversationList; the exact time... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/chattime-1010.md:4 | S | unassigned |
+| 593 | ~~The chat list row still reads "3h ago" (relativeTime of the last message), not a clock time: sheets-selects.js loadConversationList; the exact time...~~ **W34: fixed 9a3770e68** (w34-L2r-1111.md) | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/chattime-1010.md:4 | S | unassigned |
 | 594 | Guide topics: board-library (1,496) with board-library-saving (672) and whiteboard-controls (659) with whiteboard-selection (1,504) were already... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/room101-1011.md:5 | S | unassigned |
 | 595 | Library's chat rows and the Shelved list still show their own updated_at, not last_at. | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/chattime-1010.md:6 | S | unassigned |
 | 596 | The Guide answers an off-topic question with the open tab's help, unlabelled. "what is the weather today" asked from the Library returned "From the... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/scan-1011.md:10 | M | unassigned |
-| 597 | 852: the Contents, Skills, Boards and Documents renderers were not changed; their shifts measured under 0.02 in the flick loop, with a small seeded... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:18 | S | unassigned |
-| 598 | H4. Evals breadth. The same ten cases at 3B and 4B, and the required first call measured over twenty imperatives and ten questions, with a tighter... | docs/roadmap/AGENT_SKILLS_REFORM.md:274 | M | unassigned |
+| 597 | ~~852: the Contents, Skills, Boards and Documents renderers were not changed; their shifts measured under 0.02 in the flick loop, with a small seeded...~~ **W34: stale** (w34-L1-1111.md) | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:18 | S | unassigned |
+| 598 | H4. Evals breadth. The same ten cases at 3B and 4B, and the required first call measured over twenty imperatives and ten questions, with a tighter... | docs/roadmap/AGENT_SKILLS_REFORM.md:274 | M | unassigned W34: unverifiable, w34-L2r-1111.md. |
 | 599 | Tools that mean something only inside the chat UI are offered anyway: ask_user, make_plan, compress_chat, search_chat_history, get_app_navigation... | docs/roadmap/AGENT_SKILLS_REFORM.md:368 | M | unassigned |
 | 600 | Results carry the app's own label with an icon name in front ("ph:folders Listed your categories"); an external client reads "ph:folders" as text.... | docs/roadmap/AGENT_SKILLS_REFORM.md:373 | S | unassigned |
 | 601 | No tool annotations (readOnlyHint, destructiveHint), so a client cannot auto-approve the read tools; the registry already knows which are which. | docs/roadmap/AGENT_SKILLS_REFORM.md:376 | S | unassigned |
 | 602 | protocolVersion is a constant, 2024-11-05, with no negotiation of the client's version; no resources (notes as resources would suit a notebook) and... | docs/roadmap/AGENT_SKILLS_REFORM.md:378 | S | unassigned |
-| 603 | Startup loads the embedder (stderr shows "Loading weights"), 1.6 s warm and longer cold; a client that times out at 5 s on first call would fail. | docs/roadmap/AGENT_SKILLS_REFORM.md:381 | S | unassigned |
+| 603 | ~~Startup loads the embedder (stderr shows "Loading weights"), 1.6 s warm and longer cold; a client that times out at 5 s on first call would fail.~~ **W34: fixed** (w34-L2r-1111.md) | docs/roadmap/AGENT_SKILLS_REFORM.md:381 | S | unassigned |
 | 604 | Only stdio, so only a process on this computer with a Python that can import the app. The packaged app has no Python (/capabilities already says so... | docs/roadmap/AGENT_SKILLS_REFORM.md:383 | M | unassigned |
 | 605 | Settings has no panel for it: nothing shows the client config snippet ({"command": ".../python", "args": ["-m", "memorymap.mcp_server"], "env"... | docs/roadmap/AGENT_SKILLS_REFORM.md:390 | S | unassigned |
 | 606 | The run object carries its budget: steps, tool calls, tokens and wall time against the skill's declared caps; a run that exceeds one stops with a... | docs/roadmap/AGENT_SKILLS_REFORM.md:412 | S | unassigned |
@@ -1055,11 +1055,11 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 653 | A per-feature model is shown on the Chat tab and nowhere else. The chat pill (#chat-active-model) reads the pinned model now, but the writing desk... | docs/roadmap/WORLD_CLASS_PLAN.md:2281 | M | unassigned |
 | 654 | 0.4.0, "laptop perfect": 22.1 items 1 to 6, and the devibecode programme through the shell, Notes, Dashboard, Chat and Settings. | docs/roadmap/WORLD_CLASS_PLAN.md:2433 | L | unassigned |
 | 655 | The Guide's corpus and the Help accordion are kept in step by hand (guide; the synonym column it asked for exists, help_chat.py's keyword table).... | docs/roadmap/WORLD_CLASS_PLAN.md:3050 | S | unassigned |
-| 656 | Reduced motion was checked in source and the harness, not in a browser run. | docs/roadmap/archive/agent-remaining/graphfeel-1010.md:13 | S | unassigned |
-| 657 | Decision 38: the other 13 verbs, confirm card, undo, no-model Agent mode, web search tool. | docs/roadmap/archive/agent-remaining/spec39-1010.md:10 | S | unassigned |
-| 658 | "Gemini might have removed the spell checker??" (the owner): it did not touch the editor's speller (its frontend diff is skills.js, index.html... | docs/roadmap/archive/agent-remaining/triage-1010.md:24 | M | unassigned |
-| 659 | Rail nodes (frontend/css/02-chat-graph.css:732): 0.75rem kept, measured on a synthetic run: thinking and plan rows 0.12px from the first line's... | docs/roadmap/archive/agent-remaining/triage-1010.md:31 | S | unassigned |
-| 660 | search_help found nothing for "what is agent mode" and "how does search work" (2 of 10; help_block_for, src/memorymap/ai/help_chat.py:2467). | docs/roadmap/archive/agent-remaining/triage-1010.md:32 | S | unassigned |
+| 656 | ~~Reduced motion was checked in source and the harness, not in a browser run.~~ **W34: stale** (w34-unv1-1111.md) | docs/roadmap/archive/agent-remaining/graphfeel-1010.md:13 | S | unassigned |
+| 657 | Decision 38: the other 13 verbs, confirm card, undo, no-model Agent mode, web search tool. | docs/roadmap/archive/agent-remaining/spec39-1010.md:10 | S | unassigned W34: owner-call (tracked in the plans), w34-L1-1111.md. |
+| 658 | ~~"Gemini might have removed the spell checker??" (the owner): it did not touch the editor's speller (its frontend diff is skills.js, index.html...~~ **W34: stale** (w34-L1-1111.md) | docs/roadmap/archive/agent-remaining/triage-1010.md:24 | M | unassigned |
+| 659 | ~~Rail nodes (frontend/css/02-chat-graph.css:732): 0.75rem kept, measured on a synthetic run: thinking and plan rows 0.12px from the first line's...~~ **W34: stale** (w34-L1-1111.md) | docs/roadmap/archive/agent-remaining/triage-1010.md:31 | S | unassigned |
+| 660 | ~~search_help found nothing for "what is agent mode" and "how does search work" (2 of 10; help_block_for, src/memorymap/ai/help_chat.py:2467).~~ **W34: fixed** (w34-L1-1111.md) | docs/roadmap/archive/agent-remaining/triage-1010.md:32 | S | unassigned |
 | 661 | Atlas round 5, the owner's asks (INBOX 427 (1); 2026-09-27): hands and feet drawn as part of each limb's outline (a mitten with a thumb on the inner... | docs/roadmap/agent-remaining/OPEN.md:1903 | L | unassigned |
 | 662 | The companion rides with ScrollTimeline (Chromium 115+, so WebView2); WebKitGTK falls back to the script follow. Not driven in either desktop window.... | docs/roadmap/agent-remaining/OPEN.md:1935 | S | unassigned |
 | 663 | Atlas's hide act shows shut eyes and nothing of its hands. The companion's new act (a private note opened) raises both arms over the face; Atlas... | docs/roadmap/agent-remaining/OPEN.md:2150 | L | unassigned |
@@ -1098,7 +1098,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 696 | Brief 34 continues: Atlas and the companion (companion2 landed; OPEN Atlas rows remain) | docs/roadmap/SESSION_BRIEFS.md:1390 | L | unassigned |
 | 697 | Settings that guard something stay beside it. "Keep Atlas on this machine" stays with the backend address it guards; the Privacy pane reports, it... | docs/roadmap/UI_MODERNISATION_PLAN.md:1151 | S | unassigned |
 | 698 | The owner, 2026-09-24 (after the usage reset), with screenshots. Avatars: (a) "the avatar shows even when the app is on the lock screen. it should... | docs/roadmap/WORLD_CLASS_PLAN.md:2886 | L | unassigned |
-| 699 | Decision 36: bubble label "Atlas, from your notes" is a frontend check. | docs/roadmap/archive/agent-remaining/spec39-1010.md:8 | S | unassigned |
+| 699 | Decision 36: bubble label "Atlas, from your notes" is a frontend check. | docs/roadmap/archive/agent-remaining/spec39-1010.md:8 | S | unassigned W34: owner-call (tracked in the plans), w34-L1-1111.md. |
 | 700 | Section: Phases 1 to 5 as first written (built per sections 9 to 11) | docs/roadmap/MINDMAP_PLAN.md:158 | S | unassigned |
 | 701 | Section: 12.3 Phase 6c, what only a notebook can do | docs/roadmap/MINDMAP_PLAN.md:505 | M | unassigned |
 | 702 | Section: Section 13: the six complaints, phases open | docs/roadmap/MINDMAP_PLAN.md:604 | L | unassigned |
@@ -1259,7 +1259,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 857 | **Already fixed 2026-11-02 (HISTORY.md:51617, "Moved from the plans, 2026-10-31 (wbopen-1031)").** Done, see HISTORY.md "Moved from the plans, 2026-10-31 (wbopen-1031)": frames.js notes and documents surfaces. | docs/roadmap/agent-remaining/OPEN.md:3649 | S | wbopen-1031 (built; OPEN 857 in frames.js) |
 | 858 | A hover frame at 2,000 notes is still 22 to 24 ms here (drawImage and clearRect dominate); the 16 ms target is not met at 2,000; 300 notes was not... | agent/graph100-1011:docs/roadmap/archive/agent-remaining/graph100-1011.md:21 | S | wbopen-1031 (left: needs an idle machine; 22 to 24 ms is drawImage and clearRect) |
 | 859 | **Already fixed 2026-11-02 (HISTORY.md:51617, "Moved from the plans, 2026-10-31 (wbopen-1031)").** Done, see HISTORY.md "Moved from the plans, 2026-10-31 (wbopen-1031)": first-ever Graph open warm-up spread. | agent/graph100-1011:docs/roadmap/archive/agent-remaining/graph100-1011.md:22 | S | wbopen-1031 (by design; INBOX 775) |
-| 860 | Frame times on the owner's hardware; the desktop webview (pywebview) for the cache, @starting-style and :has. | agent/graph100-1011:docs/roadmap/archive/agent-remaining/graph100-1011.md:26 | S | wbopen-1031 (left: owner hardware and the desktop webview) |
+| 860 | Frame times on the owner's hardware; the desktop webview (pywebview) for the cache, @starting-style and :has. | agent/graph100-1011:docs/roadmap/archive/agent-remaining/graph100-1011.md:26 | S | wbopen-1031 (left: owner hardware and the desktop webview) W34: unverifiable, w34-L2r-1111.md. |
 | 861 | There is no calendar events table: core/events.py is the change log, and the timeline's kinds are note, board, document and... | docs/roadmap/BACKLOG.md:1089 | M | wbopen-1031 (left: tried and deferred as L in BACKLOG) |
 | 862 | Ink-to-text (handwriting OCR) on sketches. Decided out: scratchpad/audit1005/features.md section 4 row C5 (no on-device ML, the... | docs/roadmap/BACKLOG.md:1883 | S | unassigned |
 | 863 | **Already met 2026-11-02 (src/tessellate/ai/autonomous.py:813 `clean_orphaned_board_cards`).** "Deleting a note leaves whiteboard cards behind, no cascade", already swept: autonomous.clean_orphaned_board_cards()... | docs/roadmap/BACKLOG.md:1958 | S | unassigned |
@@ -1323,10 +1323,10 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 921 | Bare <rect/> ops (2,378 across all libraries, zero area): faithful to stencils.min.js, counted, drawn as nothing; if a shape looks short a stroke is... | docs/roadmap/archive/agent-remaining/drawio-1010.md:44 | S | unassigned |
 | 922 | Not converted: the other 199 libraries (24.1 MB of JSON; run convert_stencils.py --min-js <fork>/src/main/webapp/js/stencils.min.js --out DIR, about... | docs/roadmap/archive/agent-remaining/drawio-1010.md:47 | L | unassigned |
 | 923 | 775 "the cluster fills about a fifth of the canvas; after Fit, about half" and "the bubbles overlap": not reproduced here. Seeded 34 notes, 34 links... | docs/roadmap/archive/agent-remaining/graphfeel-1010.md:6 | M | unassigned |
-| 924 | Open: notes leaving the picture vanish rather than fade out (gcBornAlpha fades new ones in only; graph-canvas.js). | docs/roadmap/archive/agent-remaining/graphfeel-1010.md:21 | S | unassigned |
+| 924 | ~~Open: notes leaving the picture vanish rather than fade out (gcBornAlpha fades new ones in only; graph-canvas.js).~~ **W34: fixed** (w34-L1-1111.md) | docs/roadmap/archive/agent-remaining/graphfeel-1010.md:21 | S | unassigned |
 | 925 | Board open timed from a direct openWhiteboardBoard(id) call, not from a click on the Library tile; document open from openDocument(id), not a click.... | docs/roadmap/archive/agent-remaining/measure-1010.md:6 | M | unassigned |
-| 926 | Test shapes (kwargs turn, salt, dialogue, result keys readings, grounding kind, part kinds computed and help) are proposals; the building session may... | docs/roadmap/archive/agent-remaining/spec39-1010.md:16 | S | unassigned |
-| 927 | Unit conversion (Gemini's pint) and the "what time is it" / "reading time" shapes were dropped, not rebuilt: "convert 5 km to miles" is read as a... | docs/roadmap/archive/agent-remaining/triage-1010.md:28 | S | unassigned |
+| 926 | ~~Test shapes (kwargs turn, salt, dialogue, result keys readings, grounding kind, part kinds computed and help) are proposals; the building session may...~~ **W34: stale** (w34-L1-1111.md) | docs/roadmap/archive/agent-remaining/spec39-1010.md:16 | S | unassigned |
+| 927 | ~~Unit conversion (Gemini's pint) and the "what time is it" / "reading time" shapes were dropped, not rebuilt: "convert 5 km to miles" is read as a...~~ **W34: fixed** (w34-L1-1111.md) | docs/roadmap/archive/agent-remaining/triage-1010.md:28 | S | unassigned |
 | 928 | Section: Phase 6: the node panel redesign (popup agent) remainder | docs/roadmap/GRAPH_PLAN.md:121 | M | unassigned |
 | 929 | Section: Still open after KG1 to KG9 (knowledge graph) | docs/roadmap/GRAPH_PLAN.md:536 | L | unassigned |
 | 930 | INBOX 839, graph: only the drag's heat is changed (graph-worker.js dragHeat). A single-tick 7.1px step still shows in one of two 8px runs (a... | docs/roadmap/agent-remaining/OPEN.md:1869 | M | unassigned |
@@ -1366,8 +1366,8 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 964 | Notes (8) and Graph (9) docks are over the seven-control ceiling. Owner: docks.md; the fix is a second "more" group, not hiding. | docs/roadmap/WORLD_CLASS_PLAN.md:978 | S | unassigned |
 | 965 | The SVG graph path stays behind a flag until the drag gate is met on a quieter machine. Owner: GRAPH_PLAN Phase 2. | docs/roadmap/WORLD_CLASS_PLAN.md:984 | L | unassigned |
 | 966 | 54 paragraphs still outside popovers. Owner: Brief 4. | docs/roadmap/WORLD_CLASS_PLAN.md:987 | S | unassigned |
-| 967 | Three notes at 1440x900 fill 0.80 of the free height (0.798 measured): the fit's zoom clamp (GRAPH_FIT_MAX_ZOOM 2.5, graph.js) stops it; a larger... | docs/roadmap/archive/agent-remaining/graphfeel-1010.md:7 | S | unassigned |
-| 968 | Open: Arc stays a line by design; a person who picks it by mistake sees "a broken graph". Recommendation for INBOX: say the layout's name on the map... | docs/roadmap/archive/agent-remaining/graphfeel-1010.md:22 | S | unassigned |
+| 967 | Three notes at 1440x900 fill 0.80 of the free height (0.798 measured): the fit's zoom clamp (GRAPH_FIT_MAX_ZOOM 2.5, graph.js) stops it; a larger... | docs/roadmap/archive/agent-remaining/graphfeel-1010.md:7 | S | unassigned W34: true-deferred (owner call), w34-fix1-1111.md. |
+| 968 | ~~Open: Arc stays a line by design; a person who picks it by mistake sees "a broken graph". Recommendation for INBOX: say the layout's name on the map...~~ **W34: fixed** (w34-L1-1111.md) | docs/roadmap/archive/agent-remaining/graphfeel-1010.md:22 | S | unassigned |
 | 969 | Section: Phase 5: the calendar as the third view (Brief 55 landed; deepened rows in sections 10 to 12) | docs/roadmap/TIMELINE_PLAN.md:207 | M | unassigned |
 | 970 | Touch drag on a tablet, a day page dropped on another day, and a 1,000-note month are built but not driven. | docs/roadmap/agent-remaining/OPEN.md:2300 | S | unassigned |
 | 971 | The contrast and errors sweeps were not run on the calendar view. | docs/roadmap/agent-remaining/OPEN.md:2301 | S | unassigned |
@@ -1404,14 +1404,14 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 1002 | **Already met 2026-11-02 (frontend/js/documents-ai.js:279-301 `pushDocAiUndo` calls `pushUndo`).** pushDocAiUndo (documents.js:11084) already calls pushUndo; nothing to fold. It has no toast by design (the AI edit log is its second way back).... | docs/roadmap/agent-remaining/OPEN.md:3657 | S | unassigned |
 | 1003 | Step 5b, decision 6 (a primary calendar paired with the reminders): TIMELINE_PLAN section 9 (Phase 5, Brief 55); renderReminderCalendar... | docs/roadmap/agent-remaining/OPEN.md:3666 | L | unassigned |
 | 1004 | App scripts (TOTAL_CAP, the 27 counted) 320,352 to 317,151 (cap 320,600, unchanged): room 248 to 3,449. Moved to lazy files: the bell's panel... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/room101-1011.md:4 | M | unassigned |
-| 1005 | 847 Notification actions on their own row: 0 actions share the close button's row at 1440 and 390. | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:8 | S | unassigned |
+| 1005 | ~~847 Notification actions on their own row: 0 actions share the close button's row at 1440 and 390.~~ **W34: fixed** (w34-L1-1111.md) | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:8 | S | unassigned |
 | 1006 | A server restart under an open page shows the toast "Locked" with "Open the logs" and "Report this" when a setting is changed (the PUT is silent, so... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/scan-1011.md:9 | M | unassigned |
 | 1007 | A reminder needs text and a due time. (shell-reminders.js:1528) is shown when only one of the two is missing; naming the missing one needs... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/scan-1011.md:11 | S | unassigned |
 | 1008 | The notification bell and Activity count: not a defect, but a fresh launch with no model lists "Warming up the filing model" every launch (one row... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/scan-1011.md:12 | M | unassigned |
 | 1009 | 847: toasts built outside status.js (none found by grep) and the notification bell's rows (not changed). | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:21 | S | unassigned |
-| 1010 | Timeline table rows: the hover ground is tr:hover td on a border-collapse: collapse table, so the row ends are square (06-timeline-dialogs.css:459)... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:26 | S | unassigned |
-| 1011 | Found, not mine: a sticky toast sits under an open modal (the first-run "Check for updates automatically?" confirm, z-index 2100), so Allow cannot be... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/lansafe-1011.md:46 | M | unassigned |
-| 1012 | A reload loses the page's watch on a running transcription; the card still reads its state from the server, but no notification fires for a run that... | agent/voiceup-1011:docs/roadmap/archive/agent-remaining/voiceup-1011.md:16 | S | unassigned |
+| 1010 | ~~Timeline table rows: the hover ground is tr:hover td on a border-collapse: collapse table, so the row ends are square (06-timeline-dialogs.css:459)...~~ **W34: fixed** (w34-L1-1111.md) | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:26 | S | unassigned |
+| 1011 | ~~Found, not mine: a sticky toast sits under an open modal (the first-run "Check for updates automatically?" confirm, z-index 2100), so Allow cannot be...~~ **W34: fixed** (w34-L1-1111.md) | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/lansafe-1011.md:46 | M | unassigned |
+| 1012 | A reload loses the page's watch on a running transcription; the card still reads its state from the server, but no notification fires for a run that... | agent/voiceup-1011:docs/roadmap/archive/agent-remaining/voiceup-1011.md:16 | S | unassigned W34: true, w34-L2r-1111.md. |
 | 1013 | Events as bands. Next: no events calendar table exists (the events in core/events.py is the change log, a different thing); it... | docs/roadmap/BACKLOG.md:697 | M | unassigned |
 | 1014 | What the user can already see (the step timeline), so it stops re-narrating | docs/roadmap/BACKLOG.md:971 | S | unassigned |
 | 1015 | Toasts and confirmations that name the thing ("Moved Passport renewal to the bin; it was linked to 3 notes"). | docs/roadmap/CHAT_PLAN.md:733 | S | unassigned |
@@ -1437,7 +1437,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 1035 | Every date and time follows one setting (12 or 24 hour, the locale's order); the status bar clock, the timeline and the reminders do not agree today... | docs/roadmap/WORLD_CLASS_PLAN.md:2369 | S | unassigned |
 | 1036 | Toasts overlap content (the reminder toast covers the dashboard head at 1093x614); they belong in a reserved corner above the status bar. | docs/roadmap/WORLD_CLASS_PLAN.md:2391 | S | unassigned |
 | 1037 | Dashboard widgets were counted for interactive elements in a notebook of plain notes (no reminders, bookmarks, tensions, activity); clicks were not... | docs/roadmap/archive/agent-remaining/measure-1010.md:7 | S | unassigned |
-| 1038 | Decision 32: only the recurrence insight; streak, drift, contrast, load and time-of-day rules, the Tidy and dashboard "Patterns" line, and the slot... | docs/roadmap/archive/agent-remaining/spec39-1010.md:5 | S | unassigned |
+| 1038 | Decision 32: only the recurrence insight; streak, drift, contrast, load and time-of-day rules, the Tidy and dashboard "Patterns" line, and the slot... | docs/roadmap/archive/agent-remaining/spec39-1010.md:5 | S | unassigned W34: owner-call (tracked in the plans), w34-L1-1111.md. |
 | 1039 | Next PR first: INBOX 641 remainder (Illustrator linked symbols, Photoshop layer effects, Miro reactions), 643 OneNote, 644 meeting notes redesign, 646 code editor to VS Code standard | docs/ROADMAP.md:212 | L | unassigned |
 | 1040 | Section: Phase 6: responsive by device (partly built) | docs/roadmap/DOCUMENTS_PLAN.md:314 | M | unassigned |
 | 1041 | Section: Phase 8: one editor everywhere | docs/roadmap/DOCUMENTS_PLAN.md:396 | M | unassigned |
@@ -1509,7 +1509,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 1107 | scratchpad/ui-sweeps/notif1005-sweep.js still reads a .notif-side element that no longer exists (stale before this work); its checks of controls on... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/phonegraph-1011.md:8 | S | unassigned |
 | 1108 | Sweep trap: context.route does not see requests the page's service worker serves (after the first load), so a CSS or JS override in a sweep silently... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/room101-1011.md:9 | M | unassigned |
 | 1109 | Help's topics keep their document order when searching, so the best match by name can sit below others in the same filter (help top-3 38/60 against... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/meaning94-1011.md:15 | S | unassigned |
-| 1110 | 853: a multi-region reading and a PDF with many pages (the seeded reading is one region); Tesseract is not installed here, the text was posted to... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:20 | S | unassigned |
+| 1110 | ~~853: a multi-region reading and a PDF with many pages (the seeded reading is one region); Tesseract is not installed here, the text was posted to...~~ **W34: fixed** (w34-unv1-1111.md) | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:20 | S | unassigned |
 | 1111 | Document outline / table of contents, word-count goal, reading time, all three, not just the outline. renderDocOutline builds the... | docs/roadmap/BACKLOG.md:109 | M | unassigned |
 | 1112 | Sizing (UI zoom #zoom-slider and Text size exist; Next: line-height and measure are two new tokens read by .entry-content and the... | docs/roadmap/BACKLOG.md:1124 | M | unassigned |
 | 1113 | Study / revision: Next: nothing exists (no flashcard or review code in src/ or frontend/js, checked 2026-10-05); the seam is... | docs/roadmap/BACKLOG.md:1201 | M | unassigned |
@@ -1606,11 +1606,11 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 1204 | Ctrl+S, Ctrl+Z and Escape behave the same in every editor and dialog (the key contract, 1.6, has no lint for Escape yet). | docs/roadmap/WORLD_CLASS_PLAN.md:2364 | S | unassigned |
 | 1205 | Search highlights the match inside the note it opens, and remembers the last few queries. | docs/roadmap/WORLD_CLASS_PLAN.md:2366 | S | unassigned |
 | 1206 | Icon consistency. Mixed stroke weights between Phosphor regular and the bold ones on the status bar; one weight app-wide. | docs/roadmap/WORLD_CLASS_PLAN.md:2387 | S | unassigned |
-| 1207 | Frontend ids are every id="..." text in index.html, including any inside HTML comments; not checked for false hits. | docs/roadmap/archive/agent-remaining/codemap-1010.md:6 | S | unassigned |
-| 1208 | tests/test_frontend_wake_sources.py: documents.js raf 14 to 15. | docs/roadmap/archive/agent-remaining/graphfeel-1010.md:16 | S | unassigned |
-| 1209 | Root cause of the line, as reproduced: the Layout preference holds Tree or Arc (mirrored server-side, MIRRORED_UI_EXTRAS in ai-tools.js), both... | docs/roadmap/archive/agent-remaining/graphfeel-1010.md:20 | M | unassigned |
-| 1210 | Decision 37: map, document and web-page sources; scrollable web source list. | docs/roadmap/archive/agent-remaining/spec39-1010.md:9 | S | unassigned |
-| 1211 | The Gemini misspelling table looks drawn from Wikipedia's lists (CC BY-SA); its origin is unrecorded (docs/THIRD_PARTY.md, Data). | docs/roadmap/archive/agent-remaining/triage-1010.md:33 | S | unassigned |
+| 1207 | Frontend ids are every id="..." text in index.html, including any inside HTML comments; not checked for false hits. | docs/roadmap/archive/agent-remaining/codemap-1010.md:6 | S | unassigned W34: true, w34-L2r-1111.md. |
+| 1208 | ~~tests/test_frontend_wake_sources.py: documents.js raf 14 to 15.~~ **W34: fixed** (w34-L1-1111.md) | docs/roadmap/archive/agent-remaining/graphfeel-1010.md:16 | S | unassigned |
+| 1209 | ~~Root cause of the line, as reproduced: the Layout preference holds Tree or Arc (mirrored server-side, MIRRORED_UI_EXTRAS in ai-tools.js), both...~~ **W34: fixed** (w34-L1-1111.md) | docs/roadmap/archive/agent-remaining/graphfeel-1010.md:20 | M | unassigned |
+| 1210 | Decision 37: map, document and web-page sources; scrollable web source list. | docs/roadmap/archive/agent-remaining/spec39-1010.md:9 | S | unassigned W34: owner-call (tracked in the plans), w34-L1-1111.md. |
+| 1211 | ~~The Gemini misspelling table looks drawn from Wikipedia's lists (CC BY-SA); its origin is unrecorded (docs/THIRD_PARTY.md, Data).~~ **W34: fixed** (w34-L1-1111.md) | docs/roadmap/archive/agent-remaining/triage-1010.md:33 | S | unassigned |
 | 1212 | Section: Audio in the notebook: architecture decided, build deferred (partly built by Brief 80, 82, 83, voiceup) | docs/roadmap/WORLD_CLASS_PLAN.md:2135 | L | unassigned |
 | 1213 | Section: 28.4 and 28.5 deepened: OCR workspace and audio set rows (Briefs 79, 80 landed; rest open) | docs/roadmap/WORLD_CLASS_PLAN.md:4106 | L | unassigned |
 | 1214 | The README's OCR shot is the 0.3.2 capture, in dark: seed-ocr.js (removed 2026-10-12, recoverable from git history) needs a Tesseract binary this sandbox does not have, so it was not retaken with the... | docs/roadmap/agent-remaining/OPEN.md:1962 | S | unassigned |
@@ -1638,13 +1638,13 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 1236 | Touch drag from the Library is not tested: HTML5 drag-and-drop does not run on touch. The drag image (its thumbnail and offset) is asserted in source... | docs/roadmap/agent-remaining/OPEN.md:3366 | S | unassigned |
 | 1237 | RapidOCR and Tesseract never ran for real here: "ready" and the RapidOCR path are faked through /ocr-readers and monkeypatched tests. A real install... | docs/roadmap/agent-remaining/OPEN.md:3376 | S | unassigned |
 | 1238 | Meeting cards show their section headings as raw ## Agenda text, as every note card does. A meeting-aware card preview (when, who, open action items)... | docs/roadmap/agent-remaining/OPEN.md:3406 | S | unassigned |
-| 1239 | 852 Library sub-tab flicker: layout shift 0.37 to 0.52 became 0.017 (1440) and 0.016 (390). | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:6 | S | unassigned |
+| 1239 | ~~852 Library sub-tab flicker: layout shift 0.37 to 0.52 became 0.017 (1440) and 0.016 (390).~~ **W34: fixed** (w34-L1-1111.md) | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:6 | S | unassigned |
 | 1240 | Left in the counted scripts, each used by two bundles so it needs a shared home or a stand-in: noteFirstImage (library.js only, move with... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/room101-1011.md:7 | S | unassigned |
-| 1241 | 853 OCR find marks every match, "n of m", Enter and Shift+Enter, prev and next buttons. | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:9 | S | unassigned |
-| 1242 | library-activity rows keep their ground in a box-shadow spine, not a background. | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:27 | S | unassigned |
+| 1241 | ~~853 OCR find marks every match, "n of m", Enter and Shift+Enter, prev and next buttons.~~ **W34: fixed** (w34-L1-1111.md) | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:9 | S | unassigned |
+| 1242 | ~~library-activity rows keep their ground in a box-shadow spine, not a background.~~ **W34: stale** (w34-L1-1111.md) | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:27 | S | unassigned |
 | 1243 | One commit per item was not kept for V1 with V2 and V3 to V7: a staged gate took 12 to 25 minutes under load, so items sharing meetings.js were gated... | agent/voiceup-1011:docs/roadmap/archive/agent-remaining/voiceup-1011.md:10 | S | unassigned |
 | 1244 | The plan's Built blocks for V1 to V8, T1, T2 (UI_MODERNISATION_PLAN "Placed from INBOX, 2026-10-11 (voice notes ...)" and "(Tidy ...)") move to... | agent/voiceup-1011:docs/roadmap/archive/agent-remaining/voiceup-1011.md:11 | S | unassigned |
-| 1245 | Real transcription: faster-whisper is not installed; every run used a stubbed voice.iter_segments (vu/stubserve.py), and live words used... | agent/voiceup-1011:docs/roadmap/archive/agent-remaining/voiceup-1011.md:14 | S | unassigned |
+| 1245 | Real transcription: faster-whisper is not installed; every run used a stubbed voice.iter_segments (vu/stubserve.py), and live words used... | agent/voiceup-1011:docs/roadmap/archive/agent-remaining/voiceup-1011.md:14 | S | unassigned W34: unverifiable, w34-L2r-1111.md. |
 | 1246 | It would compete for the same CPU. The compression path wants ONNX Runtime and a transformer of its own, running immediately... | docs/roadmap/BACKLOG.md:722 | M | unassigned |
 | 1247 | Voice capture beyond dictation. Next: mic-note dictates into the capture box and Save files it (two clicks); a one-tap "record a... | docs/roadmap/BACKLOG.md:2428 | M | unassigned |
 | 1248 | A persona changes *voice* and applies to everything. | docs/roadmap/BACKLOG.md:2515 | S | unassigned |
@@ -1669,7 +1669,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 1267 | "Filing and suggested tags and categories and stuff need a lot of improving. Should we include a library of common possible categories and even ways... | docs/roadmap/WORLD_CLASS_PLAN.md:3119 | L | unassigned |
 | 1268 | "I think meeting notes should be different or at least partially separate from dictation and audio transcribing. Can there be an auto captioning and... | docs/roadmap/WORLD_CLASS_PLAN.md:3123 | M | unassigned |
 | 1269 | "are there any other libraries that could be used that I and u havent found or mentioned??" Recommendation: the candidate-library table in Brief 40... | docs/roadmap/WORLD_CLASS_PLAN.md:3130 | S | unassigned |
-| 1270 | Five proposed decisions (computed values, no archive verb, dated currency table, playful voice waits, model picks among readings) are for the... | docs/roadmap/archive/agent-remaining/assistant-1010.md:12 | M | unassigned |
+| 1270 | ~~Five proposed decisions (computed values, no archive verb, dated currency table, playful voice waits, model picks among readings) are for the...~~ **W34: stale** (w34-L1-1111.md) | docs/roadmap/archive/agent-remaining/assistant-1010.md:12 | M | unassigned |
 | 1271 | "Clear dismissed suggestions" does not reach per-note "Not suggested" tags; changes are noted only while Settings is open (the top-bar theme button... | docs/roadmap/agent-remaining/OPEN.md:2226 | M | unassigned |
 | 1272 | Free lines and arrows (not links) still draw the shaft through hollow ends: their stored path is re-read as the endpoints, so trimming would drift... | docs/roadmap/agent-remaining/OPEN.md:2339 | S | unassigned |
 | 1273 | Suggesting tags from a note's own words for a notebook with no tags yet scored 4 of 12 and was not shipped. | docs/roadmap/agent-remaining/OPEN.md:2373 | S | unassigned |
@@ -1713,9 +1713,9 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 1311 | tests/test_ownerfix_1011.py::test_a_link_row_underlines_its_words_not_its_icon (ValueError: substring not found). | agent/graph100-1011:docs/roadmap/archive/agent-remaining/graph100-1011.md:31 | S | unassigned |
 | 1312 | Filing against a model that never answers is serial and slow (measured, a stand-in server that holds every request): a burst of 20 notes saved the... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/scan-1011.md:6 | L | unassigned |
 | 1313 | A note created without defer_filing holds a database connection for the whole model wait. Twenty such POST /entries at once against the stand-in (the... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/scan-1011.md:7 | L | unassigned |
-| 1314 | 888 pinch: handles (resize, rotate, link ends) still start their own d3-drag on a second finger; they are cancelled by wbCancelGesture but a second... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/phone2-1011.md:9 | S | unassigned |
-| 1315 | 854 Filing style is a span like Categories and Tags; lint on every .setting-label head. | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:10 | S | unassigned |
-| 1316 | Close in meaning against a real embedding model: no torch in the sandbox; the route is tested with a letter-count embedder and the page with... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/meaning94-1011.md:11 | S | unassigned |
+| 1314 | 888 pinch: handles (resize, rotate, link ends) still start their own d3-drag on a second finger; they are cancelled by wbCancelGesture but a second... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/phone2-1011.md:9 | S | unassigned W34: unverifiable, w34-L2r-1111.md. |
+| 1315 | ~~854 Filing style is a span like Categories and Tags; lint on every .setting-label head.~~ **W34: fixed** (w34-L1-1111.md) | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:10 | S | unassigned |
+| 1316 | Close in meaning against a real embedding model: no torch in the sandbox; the route is tested with a letter-count embedder and the page with... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/meaning94-1011.md:11 | S | unassigned W34: unverifiable, w34-L2r-1111.md. |
 | 1317 | Found, not fixed (base, not my files): tests/test_undo_contract.py (settings-data.js:settingsHistoryUndo), tests/test_inbox_435.py (tags field... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/phone2-1011.md:11 | M | unassigned |
 | 1318 | Browse: web search results, reader view, page history | docs/roadmap/BACKLOG.md:188 | S | unassigned |
 | 1319 | Treemap / sunburst: area as weight, so a category with 200 notes looks like one. Best for "where does my writing actually go?"... | docs/roadmap/BACKLOG.md:605 | M | unassigned |
@@ -1749,9 +1749,9 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 1347 | 1024px still wraps the Writing Room controls and the capture attachment row. Owner: consistency.md. | docs/roadmap/WORLD_CLASS_PLAN.md:974 | S | unassigned |
 | 1348 | "Still lots of issues with filing without the ai model running but it should still work right because the embedding model is running??" / "I filed a... | docs/roadmap/WORLD_CLASS_PLAN.md:3094 | M | unassigned |
 | 1349 | "just continue and research categories and tags etc. make it extensive and also dynamic. some categories for example might not just be "gym" or... | docs/roadmap/WORLD_CLASS_PLAN.md:3121 | M | unassigned |
-| 1350 | Decision 30 kinds not asserted: duration, link, plan, polarity, topic, list_item; inherited-date flag; fact cache by entry_edited_at. | docs/roadmap/archive/agent-remaining/spec39-1010.md:3 | S | unassigned |
-| 1351 | Decision 31: only recall, tag and source kind are specified; the other answer kinds (comparison, why, how, status, recommendation) and length wish... | docs/roadmap/archive/agent-remaining/spec39-1010.md:4 | S | unassigned |
-| 1352 | Decision 39: filing and link explanation lines. | docs/roadmap/archive/agent-remaining/spec39-1010.md:11 | S | unassigned |
+| 1350 | Decision 30 kinds not asserted: duration, link, plan, polarity, topic, list_item; inherited-date flag; fact cache by entry_edited_at. | docs/roadmap/archive/agent-remaining/spec39-1010.md:3 | S | unassigned W34: owner-call (tracked in the plans), w34-L1-1111.md. |
+| 1351 | Decision 31: only recall, tag and source kind are specified; the other answer kinds (comparison, why, how, status, recommendation) and length wish... | docs/roadmap/archive/agent-remaining/spec39-1010.md:4 | S | unassigned W34: owner-call (tracked in the plans), w34-L1-1111.md. |
+| 1352 | Decision 39: filing and link explanation lines. | docs/roadmap/archive/agent-remaining/spec39-1010.md:11 | S | unassigned W34: owner-call (tracked in the plans), w34-L1-1111.md. |
 | 1353 | "Study and university tags are suggested on the top note if it has no tags no matter what the note is about" (the owner, 2026-10-10): not reproduced... | docs/roadmap/archive/agent-remaining/triage-1010.md:23 | M | unassigned |
 | 1354 | Section: B2 job runtime (durable, resumable), B6 local-first sync (design now), B7 API contract, B8 extensions | docs/roadmap/WORLD_CLASS_PLAN.md:535 | L | unassigned |
 | 1355 | Measured on synthetic rows and one real destination; the status ring under "auto" motion not measured. | docs/roadmap/agent-remaining/OPEN.md:2244 | S | unassigned |
@@ -1843,10 +1843,10 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 1441 | The plan row names a "Versions" row; the note menu's existing row is "History" (versions plus every other event). Not renamed: a rename moves help in... | docs/roadmap/agent-remaining/OPEN.md:3658 | S | unassigned |
 | 1442 | Decision 1, panel padding 12 and sidebar gutter 8: not measured or moved; the Notes dock wraps to two rows at 1440 (86 px). [density-1010] | docs/roadmap/agent-remaining/OPEN.md:3669 | S | unassigned |
 | 1443 | **Already fixed 2026-11-02 (tests/test_finder_star_790.py passes at head).** Failing on the base commit, not touched: test_finder_star_790 (expects a clip-path star, the CSS draws a mask), test_has_invalidation (22 unkeyed... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/room101-1011.md:8 | M | unassigned |
-| 1444 | 856 Hover-ground lint and sweep (see below); the owner's element was not found. | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:11 | S | unassigned |
-| 1445 | 856: tests/test_hover_grounds_have_a_radius.py is a class-level scan with a reviewed list; it cannot see an element whose corner comes from a parent... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:15 | S | unassigned |
+| 1444 | ~~856 Hover-ground lint and sweep (see below); the owner's element was not found.~~ **W34: fixed** (w34-L1-1111.md) | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:11 | S | unassigned |
+| 1445 | 856: tests/test_hover_grounds_have_a_radius.py is a class-level scan with a reviewed list; it cannot see an element whose corner comes from a parent... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:15 | S | unassigned W34: owner-call, w34-L1-1111.md. |
 | 1446 | Dark mode and 390 px beyond errors.js (0 errors, 0 layout findings at 1440 and 390, light and dark), contrast.js, docks.js, touch.js and chrome.js. | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/scan-1011.md:17 | S | unassigned |
-| 1447 | 851: rows view at 390 (the view toggle is hidden there) and the dark theme for the tick's colours were not measured; cards at 390 dark were. | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:19 | S | unassigned |
+| 1447 | ~~851: rows view at 390 (the view toggle is hidden there) and the dark theme for the tick's colours were not measured; cards at 390 dark were.~~ **W34: stale** (w34-unv1-1111.md) | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:19 | S | unassigned |
 | 1448 | Measured (Playwright at 390, X-Forwarded-For: 192.168.0.50 against :8893): data-other-device=1, 12 note lines, #quit-btn display none, a marked... | agent/secscan-1011:docs/roadmap/archive/agent-remaining/secscan-1011.md:39 | M | unassigned |
 | 1449 | Getting one error OUT of the log (asked for directly after the console landed: "make sure that if there is an error in the log... | docs/roadmap/BACKLOG.md:50 | L | unassigned |
 | 1450 | The JSON it would compress is the JSON that cannot be compressed. This one was worth measuring rather than assuming, and the... | docs/roadmap/BACKLOG.md:727 | M | unassigned |
@@ -1887,9 +1887,9 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 1485 | 25f: the 14 appearance settings kept only in this browser do not follow the person to a second browser. Decision, taken: mirror them all to the... | docs/roadmap/WORLD_CLASS_PLAN.md:4192 | M | unassigned |
 | 1486 | errors.js ran light theme only; THEME=dark and FAULTS=1 not run. | docs/roadmap/archive/agent-remaining/census-1010.md:4 | S | unassigned |
 | 1487 | 24.5 undercounts untested routes (path-param wildcard) and over-reports unused CSS names (string-built classes). | docs/roadmap/archive/agent-remaining/census-1010.md:5 | S | unassigned |
-| 1488 | Not indexed: class methods, nested functions, let/var helpers, and JS functions declared in a form other than function name( or const name = (. | docs/roadmap/archive/agent-remaining/codemap-1010.md:5 | S | unassigned |
+| 1488 | Not indexed: class methods, nested functions, let/var helpers, and JS functions declared in a form other than function name( or const name = (. | docs/roadmap/archive/agent-remaining/codemap-1010.md:5 | S | unassigned W34: true, w34-L2r-1111.md. |
 | 1489 | Settings help mapping is a heuristic (measure-settings-help.py header says the rule); 31 of 72 keys have no Settings control it could find, and some... | docs/roadmap/archive/agent-remaining/measure-1010.md:8 | S | unassigned |
-| 1490 | Decision 43: editable rate table in Settings, never fetched without the web toggle. | docs/roadmap/archive/agent-remaining/spec39-1010.md:13 | S | unassigned |
+| 1490 | Decision 43: editable rate table in Settings, never fetched without the web toggle. | docs/roadmap/archive/agent-remaining/spec39-1010.md:13 | S | unassigned W34: owner-call (tracked in the plans), w34-L1-1111.md. |
 | 1491 | After the bugs: the parity programme, the 'build first' rows of every ANALYSIS parity table (docs/ROADMAP.md) | docs/ROADMAP.md:132 | L | unassigned |
 | 1492 | Section: Assistant catalogue section 5: build first, fifteen capabilities by value over cost | docs/roadmap/CHAT_PLAN.md:1516 | L | unassigned |
 | 1493 | Section: Phase 7: reports from the v0.2.2 round still open (items 2 and 6 and the rest after Built 1, 3, 4, 5) | docs/roadmap/UI_MODERNISATION_PLAN.md:229 | M | unassigned |
@@ -1973,18 +1973,18 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 1571 | Brief 34 second part (INBOX 752): snapping transitions per minute (60 Hz joint sampling), 12 distinct idle motions per ten minutes and reaction... | docs/roadmap/agent-remaining/OPEN.md:3627 | S | unassigned |
 | 1572 | Decision 58's core/background.py registry (name, started, stop) is not built; the lint only counts sites. Brief 63 neighbour.... | docs/roadmap/agent-remaining/OPEN.md:3643 | S | unassigned |
 | 1573 | 49 routes need a test or removal (tests/test_routes_named.py SEED); several are reached by a loop over verbs, check before writing duplicates.... | docs/roadmap/agent-remaining/OPEN.md:3645 | S | unassigned |
-| 1574 | The drag's feel by hand; the open-card ring with a keyboard user. | agent/graph100-1011:docs/roadmap/archive/agent-remaining/graph100-1011.md:27 | S | unassigned |
+| 1574 | The drag's feel by hand; the open-card ring with a keyboard user. | agent/graph100-1011:docs/roadmap/archive/agent-remaining/graph100-1011.md:27 | S | unassigned W34: unverifiable, w34-L2r-1111.md. |
 | 1575 | /tmp filled to 100% once during this session (ENOSPC); outputs moved to /dev/shm. | agent/graph100-1011:docs/roadmap/archive/agent-remaining/graph100-1011.md:33 | S | unassigned |
 | 1576 | INBOX 883, 884, 885 and 874 are not numbered items in this branch's docs/roadmap/INBOX.md (874 appears only in the "Placed" log), so inbox_resolve.py... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/phonegraph-1011.md:6 | M | unassigned |
-| 1577 | 851 Select-mode tick in the gutter: card and row heights unchanged, centre within 1px of the first line. | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:7 | S | unassigned |
+| 1577 | ~~851 Select-mode tick in the gutter: card and row heights unchanged, centre within 1px of the first line.~~ **W34: fixed** (w34-L1-1111.md) | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:7 | S | unassigned |
 | 1578 | 887/888/889 are not in this branch's docs/roadmap/INBOX.md (they live on the orchestrator's); resolve them there with python... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/phone2-1011.md:7 | S | unassigned |
-| 1579 | 19d3155c5: merge of the working branch (next-free-port kept with the gate). | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/lansafe-1011.md:21 | S | unassigned |
-| 1580 | The staged gate ran per commit for 852, 851 and 847; 853, 854 and 856 were gated once together on the final staged tree. | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:22 | S | unassigned |
-| 1581 | Contents sub-tab's outline shifts 0.013 to 0.016 on first paint (contents-outline 266px to 634px). | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:25 | S | unassigned |
-| 1582 | Pending device requests live in memory (lantrust._pending, 10 minutes); a restart forgets them, and a device that asked and went away still shows a... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/lansafe-1011.md:41 | S | unassigned |
-| 1583 | Stray files from this run at the filesystem root: /lansafe-gz.py, /lansafe-tf.txt (removal was refused by the sandbox). | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/lansafe-1011.md:51 | S | unassigned |
+| 1579 | ~~19d3155c5: merge of the working branch (next-free-port kept with the gate).~~ **W34: stale** (w34-L1-1111.md) | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/lansafe-1011.md:21 | S | unassigned |
+| 1580 | ~~The staged gate ran per commit for 852, 851 and 847; 853, 854 and 856 were gated once together on the final staged tree.~~ **W34: stale** (w34-L1-1111.md) | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:22 | S | unassigned |
+| 1581 | ~~Contents sub-tab's outline shifts 0.013 to 0.016 on first paint (contents-outline 266px to 634px).~~ **W34: fixed** (w34-L1-1111.md) | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/ownerfix3-1011.md:25 | S | unassigned |
+| 1582 | Pending device requests live in memory (lantrust._pending, 10 minutes); a restart forgets them, and a device that asked and went away still shows a... | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/lansafe-1011.md:41 | S | unassigned W34: skipped (backend spoke), w34-fix1-1111.md. |
+| 1583 | ~~Stray files from this run at the filesystem root: /lansafe-gz.py, /lansafe-tf.txt (removal was refused by the sandbox).~~ **W34: fixed** (w34-L1-1111.md) | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/lansafe-1011.md:51 | S | unassigned |
 | 1584 | SESSION_BRIEFS Brief 102: the Built block move to HISTORY is the orchestrator's at merge. | agent/mergetrain-1011:docs/roadmap/archive/agent-remaining/lansafe-1011.md:53 | S | unassigned |
-| 1585 | The chime is not heard by a sweep; only that no error is thrown. | agent/voiceup-1011:docs/roadmap/archive/agent-remaining/voiceup-1011.md:17 | S | unassigned |
+| 1585 | The chime is not heard by a sweep; only that no error is thrown. | agent/voiceup-1011:docs/roadmap/archive/agent-remaining/voiceup-1011.md:17 | S | unassigned W34: unverifiable, w34-L2r-1111.md. |
 | 1586 | The Tidy review title was 12px because .card h3 (the eyebrow) outranked .tidy-title; fixed here, but other sheets' h3 titles may carry the same rank... | agent/voiceup-1011:docs/roadmap/archive/agent-remaining/voiceup-1011.md:20 | S | unassigned |
 | 1587 | Agent: tool-calling with its own controls: which tools are allowed this turn, max rounds, visible plan/progress, and a stop that... | docs/roadmap/BACKLOG.md:185 | S | unassigned |
 | 1588 | A dependency-vulnerability sweep (pip-audit / npm audit equivalent for the vendored JS, since nothing currently checks either)... | docs/roadmap/BACKLOG.md:564 | M | unassigned |
@@ -2054,19 +2054,19 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 1652 | "I also want to integrate and use the new vendored repositories and libraries better and also see if there are more complimentary libraries and repos... | docs/roadmap/WORLD_CLASS_PLAN.md:3117 | L | unassigned |
 | 1653 | "did you vendor the other libraries and binaries?? do we need to?? what else is there to do??" Recommendation: answer in ANALYSIS.md: which libraries... | docs/roadmap/WORLD_CLASS_PLAN.md:3132 | M | unassigned |
 | 1654 | "doesnt harper use a binary though?? are there any other repos or libraries that we can vendor??" Recommendation: Harper is a WebAssembly build in... | docs/roadmap/WORLD_CLASS_PLAN.md:3134 | M | unassigned |
-| 1655 | A model that fails mid-answer leaves an error line, not the composed answer (api/routes_chat.py ~1963 to 1976); write tests/test_chat_degrades.py... | docs/roadmap/archive/agent-remaining/assistant-1010.md:10 | S | unassigned |
-| 1656 | Re-run the 37-question probe (section 0 method) on Brief 35's head, since the triage may already change findings 1 to 3. | docs/roadmap/archive/agent-remaining/assistant-1010.md:13 | S | unassigned |
-| 1657 | Routes match only @router.<method> and @app.<method> decorators; another router name is missed. | docs/roadmap/archive/agent-remaining/codemap-1010.md:7 | S | unassigned |
+| 1655 | ~~A model that fails mid-answer leaves an error line, not the composed answer (api/routes_chat.py ~1963 to 1976); write tests/test_chat_degrades.py...~~ **W34: fixed** (w34-L1-1111.md) | docs/roadmap/archive/agent-remaining/assistant-1010.md:10 | S | unassigned |
+| 1656 | ~~Re-run the 37-question probe (section 0 method) on Brief 35's head, since the triage may already change findings 1 to 3.~~ **W34: stale** (w34-L1-1111.md) | docs/roadmap/archive/agent-remaining/assistant-1010.md:13 | S | unassigned |
+| 1657 | Routes match only @router.<method> and @app.<method> decorators; another router name is missed. | docs/roadmap/archive/agent-remaining/codemap-1010.md:7 | S | unassigned W34: true, w34-L2r-1111.md. |
 | 1658 | Not wired into scripts/gate.sh or CI; it runs only as part of the test suite. | docs/roadmap/archive/agent-remaining/codemap-1010.md:10 | S | unassigned |
 | 1659 | Known failures this worktree inherits, none from this work: test_scratchpad_size.py (1,018 tracked files over a cap of 1,003 before this branch; this... | docs/roadmap/archive/agent-remaining/drawio-1010.md:51 | M | unassigned |
-| 1660 | INBOX 775, 792 and 796 stay in INBOX for the orchestrator to resolve at merge. | docs/roadmap/archive/agent-remaining/graphfeel-1010.md:9 | S | unassigned |
+| 1660 | ~~INBOX 775, 792 and 796 stay in INBOX for the orchestrator to resolve at merge.~~ **W34: stale** (w34-L1-1111.md) | docs/roadmap/archive/agent-remaining/graphfeel-1010.md:9 | S | unassigned |
 | 1661 | The first server grew to 8.5 GB resident over 35 minutes of seeding and sweeps; after a restart it sat at 0.74 to 2.1 GB. Not reproduced, cause not... | docs/roadmap/archive/agent-remaining/measure-1010.md:5 | M | unassigned |
 | 1662 | **Fixed 2026-11-02 (a30d-1102; scratchpad/ui-sweeps/measure-static.py key_checks counts toLowerCase, a local alias and each case of switch (e.key); tests/test_measure_keys_1102.py; 748 checks before, 1086 after).** Key checks written as key.toLowerCase() === "x" or switch (e.key) are not counted. | docs/roadmap/archive/agent-remaining/measure-1010.md:9 | S | unassigned |
 | 1663 | The --staged gate took 6 minutes with other gates running; its slowest step is worth measuring. | docs/roadmap/archive/agent-remaining/proofing-1010.md:7 | S | unassigned |
-| 1664 | Decision 33: tense shift for a past-due plan, number agreement, comma capitalisation, word-boundary title cuts, list "and" and Oxford comma, quote... | docs/roadmap/archive/agent-remaining/spec39-1010.md:6 | S | unassigned |
-| 1665 | Decision 41: date arithmetic, word count and reading time, text transforms. | docs/roadmap/archive/agent-remaining/spec39-1010.md:12 | S | unassigned |
-| 1666 | Decision 45: model choosing among readings (needs the evals marker). | docs/roadmap/archive/agent-remaining/spec39-1010.md:14 | S | unassigned |
-| 1667 | Gemini's light rewrites ("I" to "you", CHAT_PLAN decision 23) were dropped because they changed quoted text and broke grounding; a marked rewrite... | docs/roadmap/archive/agent-remaining/triage-1010.md:29 | L | unassigned |
+| 1664 | Decision 33: tense shift for a past-due plan, number agreement, comma capitalisation, word-boundary title cuts, list "and" and Oxford comma, quote... | docs/roadmap/archive/agent-remaining/spec39-1010.md:6 | S | unassigned W34: owner-call (tracked in the plans), w34-L1-1111.md. |
+| 1665 | Decision 41: date arithmetic, word count and reading time, text transforms. | docs/roadmap/archive/agent-remaining/spec39-1010.md:12 | S | unassigned W34: owner-call (tracked in the plans), w34-L1-1111.md. |
+| 1666 | Decision 45: model choosing among readings (needs the evals marker). | docs/roadmap/archive/agent-remaining/spec39-1010.md:14 | S | unassigned W34: owner-call (tracked in the plans), w34-L1-1111.md. |
+| 1667 | Gemini's light rewrites ("I" to "you", CHAT_PLAN decision 23) were dropped because they changed quoted text and broke grounding; a marked rewrite... | docs/roadmap/archive/agent-remaining/triage-1010.md:29 | L | unassigned W34: owner-call (tracked in the plans), w34-L1-1111.md. |
 | 1683b | Desk half of B1, B3, B5, B6 not built: pose-keyed lower-body and nebula variants rendered into the frames (`scripts/render_desk_frames.*`, `sprites.py`), a live Trail on the veil (`behaviour.py`), and the measures (desk nebula changed-pixel flicker 363 feminine and 331 masculine or lower, lower body within 4 degrees of the torso in a browser, under 2 ms a frame at 4x CPU). Built so far: per-strand arrangements in `Flow.view(frame=)`, and the app (1e686a2, 5edaab1). Held back to avoid the engine lane (landing, loops, shared mind) re-rendering frames under it. | companion-asks.md B1 | M | unassigned |
 
 ### Unassigned, proposed batches
@@ -4200,8 +4200,8 @@ Format: id | file:line | one line | status.
 - G14 | fable-composer2-1110:201 | Smaller rows a to d, g, h, j partly; a, e, f not reproduced / chip code, "Something sometime" magic add | open | 1111: left: not examined this pass
 - FX1 | fable-fix-1030:10 | Three pre-existing red composer tests at the 1030 base (test_composer_owner_1017 hello, test_composer_own | open | 1111: left: not examined this pass
 - FX2 | fable-fix-1030:11 | Z59 (streak line pinned by test_composer_streak_1029), Z57, Z58, Z68, Z70, Z46 recast, Z23, Z26, Z27 (com | open | 1111: left: not examined this pass
-- FC2 | fablecomp-1031:19 | tests/test_complexity.py failed as merged (composer_digest, composer_lists, composer_study, agent.run_age | open | 1111: left: not examined this pass
-- 1693b3 | owner-asks-audit-1108:132 | "whatcha doing" gets a companion line | open | 1111: left: not examined this pass
+- ~~FC2 | fablecomp-1031:19 | tests/test_complexity.py failed as merged (composer_digest, composer_lists, composer_study, agent.run_age | open | 1111: left: not examined this pass~~ **W34: stale** (w34-L3-1111.md)
+- ~~1693b3 | owner-asks-audit-1108:132 | "whatcha doing" gets a companion line | open | 1111: left: not examined this pass~~ **W34: stale** (w34-unv2-1111.md)
 - PAR1 | parity-1110:40 | Parity: contradictions with no model (supersede.current/older_dates; composer_suggest.py:361 _IMPERATIVE | open | 1111: left: not examined this pass
 
 **BS1 (shell, 19 rows)**
@@ -4307,7 +4307,7 @@ Format: id | file:line | one line | status.
 - SH12 | audit-1031-shell:23 | Settings panes block on open: Shortcuts 234 ms (275 nodes, 42 controls), Appearance 150, Templates 141, D | partial: 1111 probe on a loaded box (load 10): first open 964 ms (+3,203 nodes), Shortcuts 56, Appearance 195, Data 148, Templates 45, General 74, Models 238; the Shortcuts case is fixed, the rest need a quiet-machine trace
 - D25 | audit-1107-composer:60 | Citations double up in the Ask and Chat text | owner call
 - P4 | audit-1108-perf:41 | PARTLY FIXED (perfset-1108: listeners 921 to 588, Guide nodes 2,574 to 1,540; the pane-by-pane body build | partial: same 1111 numbers as SH12; first open still around 1 s here, the pane-by-pane build remains
-- A68 | audit68-1101:9 | Learned-audit leftovers: per-flag Keep it action (settings-controls.js learnedCheckMark), a Settings swit | open
+- A68 | audit68-1101:9 | Learned-audit leftovers: per-flag Keep it action (settings-controls.js learnedCheckMark), a Settings swit | open W34: true (part), w34-L2r-1111.md.
 - F7 | fable-composer-1110:159 | Voice: stat lines deleted, cite style, openers rewritten (tests/test_voice_1110.py); F7.3 "Read as" lines | owner call
 - F12 | fable-composer-1110:212 | Offer accept/decline gate built (tests/test_composer_offers_1110.py); B26 Q5 and Q6 wait on the owner yes | owner call
 - F14 | fable-composer-1110:234 | Model-on parity: closed rows in parity-1110.md; what a real model writes is unverified (fake transport on | owner call
@@ -4321,42 +4321,42 @@ Format: id | file:line | one line | status.
 - FIT55 | fitaudit-1109:6 | Rank 55 (PF2 idle): stop atlas rAF loops after 2 s of no input only while the companion is not walking, l | owner call
 - FIT42 | fitaudit-1109:7 | Rank 42 (BK10, BK12, PF7): ?preview=300 adoption waits on server-side note search (Q9) | owner call
 - FIT19 | fitaudit-1109:9 | Ranks 19, 21, 36, 37: worker layout and labels layer; surfaces as templates; JS files into IIFEs and rout | open
-- 1607d | owner-asks-audit-1108:14 | Masculine facial expressions redrawn | open
-- 1607e | owner-asks-audit-1108:15 | One-line summary at the top of every Help topic | open
-- 1667f | owner-asks-audit-1108:20 | Library d3 mousemove forced layout (757 ms) | open
-- 1667i | owner-asks-audit-1108:21 | Boot setTimeout forced layout, 560 ms canvas pointerout, 101 ms most-accessed render, 1207 ms unattribute | open
-- 1667m | owner-asks-audit-1108:22 | Frames with no script (337, 214, 240 ms) and codemirror requestMeasure | open
-- 1612c | owner-asks-audit-1108:24 | Manual pictures only where needed, as WebP made by the sweeps | open
-- S14 | owner-asks-audit-1108:27 | Diagram side panels collapsible; no need for the left panel | open
-- 1643b | owner-asks-audit-1108:30 | Notes tab-switch pointerup 312 ms; dashboard 266 ms timer and 172 ms load frame | open
-- 1620categoriesb | owner-asks-audit-1108:32 | Find what wrote "¦" for "&" ("Courses ¦ Study") | deferred: no writer of the broken bar in src or frontend (grep 1111); the source is model output or an import, needs the owner's data
+- 1607d | owner-asks-audit-1108:14 | Masculine facial expressions redrawn | open W34: owner-call (design), w34-unv1-1111.md.
+- ~~1607e | owner-asks-audit-1108:15 | One-line summary at the top of every Help topic | open~~ **W34: stale** (w34-unv1-1111.md)
+- 1667f | owner-asks-audit-1108:20 | Library d3 mousemove forced layout (757 ms) | open W34: true-deferred, w34-fix2-1111.md.
+- 1667i | owner-asks-audit-1108:21 | Boot setTimeout forced layout, 560 ms canvas pointerout, 101 ms most-accessed render, 1207 ms unattribute | open W34: unverifiable, w34-fix2-1111.md.
+- 1667m | owner-asks-audit-1108:22 | Frames with no script (337, 214, 240 ms) and codemirror requestMeasure | open W34: true-deferred, w34-fix2-1111.md.
+- 1612c | owner-asks-audit-1108:24 | Manual pictures only where needed, as WebP made by the sweeps | open W34: owner-call, w34-fix2-1111.md.
+- ~~S14 | owner-asks-audit-1108:27 | Diagram side panels collapsible; no need for the left panel | open~~ **W34: fixed** (w34-fix2-1111.md)
+- 1643b | owner-asks-audit-1108:30 | Notes tab-switch pointerup 312 ms; dashboard 266 ms timer and 172 ms load frame | open W34: true-deferred, w34-fix2-1111.md.
+- 1620categoriesb | owner-asks-audit-1108:32 | Find what wrote "¦" for "&" ("Courses ¦ Study") | deferred: no writer of the broken bar in src or frontend (grep 1111); the source is model output or an import, needs the owner's data W34: owner-call, w34-unv1-1111.md.
 - 1620topicsc | owner-asks-audit-1108:33 | How "conversation" was derived for a gym note | open
-- 1620lag:backdropandpointerout | owner-asks-audit-1108:34 | Settings backdrop click 880 ms; dashboard card pointerout 312 to 344 ms | open
-- 1692e/N15 | owner-asks-audit-1108:47 | Own activities with props (fishing, reading, beanbag, dinner, chasing sprites) | open
+- 1620lag:backdropandpointerout | owner-asks-audit-1108:34 | Settings backdrop click 880 ms; dashboard card pointerout 312 to 344 ms | open W34: true-deferred, w34-fix2-1111.md.
+- 1692e/N15 | owner-asks-audit-1108:47 | Own activities with props (fishing, reading, beanbag, dinner, chasing sprites) | open W34: true, w34-unv2-1111.md.
 - 1692n/S15 | owner-asks-audit-1108:49 | Wind-spirit travel: lean, trailing wisp, spiral on turn, motes, settle eddy; no ferocious blinking | open
-- 1683i-climb/T5 | owner-asks-audit-1108:54 | Climb up the side of windows and of the screen | open
+- 1683i-climb/T5 | owner-asks-audit-1108:54 | Climb up the side of windows and of the screen | open W34: true, w34-unv2-1111.md.
 
 **BS7 (shell, 19 rows)**
 
-- 1683i-inspect/T8 | owner-asks-audit-1108:55 | Inspect things (window corner, clock, cursor, new window) | open
-- 1683deeper/B19 | owner-asks-audit-1108:59 | Deeper behaviour tree, many detailed actions; every-limb transitions | open
+- 1683i-inspect/T8 | owner-asks-audit-1108:55 | Inspect things (window corner, clock, cursor, new window) | open W34: true, w34-unv2-1111.md.
+- 1683deeper/B19 | owner-asks-audit-1108:59 | Deeper behaviour tree, many detailed actions; every-limb transitions | open W34: true, w34-unv2-1111.md.
 - 1683s/U16 | owner-asks-audit-1108:61 | Load-dependent X11 test race fixed | open
 - 1683y-ledger | owner-asks-audit-1108:63 | Coverage ledger first; the dive closes only when every row is built or has a reason | open
-- 1670a | owner-asks-audit-1108:67 | Cut off on the ride; sits 20 px above the taskbar | open
-- 1670d | owner-asks-audit-1108:68 | Drag to hang anywhere on the top edge | open
-- 1670f | owner-asks-audit-1108:70 | No flicker or jolt; sits cleanly | open
-- 1670j | owner-asks-audit-1108:72 | Body and head turn to face the travel direction | open
-- 1670r | owner-asks-audit-1108:74 | Display-paced timer, 16.7 ms plus or minus 3 | open
+- ~~1670a | owner-asks-audit-1108:67 | Cut off on the ride; sits 20 px above the taskbar | open~~ **W34: stale** (w34-unv2-1111.md)
+- ~~1670d | owner-asks-audit-1108:68 | Drag to hang anywhere on the top edge | open~~ **W34: stale** (w34-unv2-1111.md)
+- 1670f | owner-asks-audit-1108:70 | No flicker or jolt; sits cleanly | open W34: hardware-only, w34-unv2-1111.md.
+- ~~1670j | owner-asks-audit-1108:72 | Body and head turn to face the travel direction | open~~ **W34: stale** (w34-unv2-1111.md)
+- ~~1670r | owner-asks-audit-1108:74 | Display-paced timer, 16.7 ms plus or minus 3 | open~~ **W34: fixed** (w34-unv2-1111.md)
 - 1607c | owner-asks-audit-1108:76 | Smoother masculine shoulder-to-arm join | open
 - 1667/1634a | owner-asks-audit-1108:77 | The throw must not scroll the page; Playwright test by mouse, touch, keyboard reading scrollY | open
-- 1667b | owner-asks-audit-1108:78 | Throw frame step does no layout reads; under 4 ms a frame at 4x | open
-- 1667d | owner-asks-audit-1108:80 | Keep-up reads layout once a frame, stops while still | open
-- 1667o | owner-asks-audit-1108:85 | /chat/followups deadline; 5120 token context budget line | open
+- 1667b | owner-asks-audit-1108:78 | Throw frame step does no layout reads; under 4 ms a frame at 4x | open W34: true, w34-unv2-1111.md.
+- 1667d | owner-asks-audit-1108:80 | Keep-up reads layout once a frame, stops while still | open W34: true, w34-unv2-1111.md.
+- ~~1667o | owner-asks-audit-1108:85 | /chat/followups deadline; 5120 token context budget line | open~~ **W34: stale** (w34-fix2-1111.md)
 - 1661j/S10 | owner-asks-audit-1108:92 | A further deep-dive round for features and look | open
 - 1693a | owner-asks-audit-1108:94 | Autouse clock.today pin in conftest plus a lint | fixed: conftest.py _fixed_day autouse pins clock.today (the lint half not built)
-- 1691 | owner-asks-audit-1108:95 | no BACKGROUND_MODE anywhere under src/ (grep, checked 2026-11-09) | deferred: no BACKGROUND_MODE in src (grep 1111); needs pytest -m evals with a real model
+- 1691 | owner-asks-audit-1108:95 | no BACKGROUND_MODE anywhere under src/ (grep, checked 2026-11-09) | deferred: no BACKGROUND_MODE in src (grep 1111); needs pytest -m evals with a real model W34: unverifiable, w34-fix2-1111.md.
 - 1643a | owner-asks-audit-1108:96 | Graph redraws only while something moves | open
-- 1620tag+ | owner-asks-audit-1108:97 | Add tags popover opens under the card's + Tag | open
+- ~~1620tag+ | owner-asks-audit-1108:97 | Add tags popover opens under the card's + Tag | open~~ **W34: fixed** (w34-fix2-1111.md)
 
 **BS8 (shell, 18 rows)**
 
@@ -4364,19 +4364,19 @@ Format: id | file:line | one line | status.
 - 904 | owner-asks-audit-1108:101 | The 86-item OneNote bug list | open
 - N5 | owner-asks-audit-1108:103 | Edge hit squashes and slides, or wraps | open
 - N9 | owner-asks-audit-1108:104 | Portal as travel and escape; share measured | open
-- S16 | owner-asks-audit-1108:106 | Lower body and nebula change little per pose | open
-- 1692composer | owner-asks-audit-1108:124 | Composer continuous improvement | open
-- 1683y-dynamic | owner-asks-audit-1108:125 | "Make it really dynamic ... also portalling" | open
-- S18 | owner-asks-audit-1108:133 | Chat spasm; card, badge and Why stick after reload | open
+- S16 | owner-asks-audit-1108:106 | Lower body and nebula change little per pose | open W34: owner-call, w34-unv2-1111.md.
+- 1692composer | owner-asks-audit-1108:124 | Composer continuous improvement | open W34: skipped (composer spoke), w34-unv2-1111.md.
+- ~~1683y-dynamic | owner-asks-audit-1108:125 | "Make it really dynamic ... also portalling" | open~~ **W34: stale** (w34-unv2-1111.md)
+- ~~S18 | owner-asks-audit-1108:133 | Chat spasm; card, badge and Why stick after reload | open~~ **W34: stale** (w34-unv2-1111.md)
 - 1606 | owner-asks-audit-1108:139 | Patting over Atlas's head must not lift it 30 px | owner call
 - 1598 | owner-asks-audit-1108:140 | Scrolling Ask must not carry Atlas over the top bar | owner call
-- 1671 | owner-asks-audit-1108:141 | Win+arrow snap resets to the unmaximised window | owner call
-- 1691b | owner-asks-audit-1108:142 | Paste the 15 s /chat/followups log if it returns | owner call
-- 1620tray | owner-asks-audit-1108:143 | Closing with X leaves a tray icon; companion shows over Wallpaper Engine | owner call
-- T11 | owner-asks-audit-1108:144 | No 90 degree turn after landing | owner call
+- 1671 | owner-asks-audit-1108:141 | Win+arrow snap resets to the unmaximised window | owner call W34: hardware-only, w34-unv2-1111.md.
+- 1691b | owner-asks-audit-1108:142 | Paste the 15 s /chat/followups log if it returns | owner call W34: unverifiable, w34-fix2-1111.md.
+- 1620tray | owner-asks-audit-1108:143 | Closing with X leaves a tray icon; companion shows over Wallpaper Engine | owner call W34: hardware-only, w34-unv2-1111.md.
+- ~~T11 | owner-asks-audit-1108:144 | No 90 degree turn after landing | owner call~~ **W34: stale** (w34-unv2-1111.md)
 - M8 | owner-asks-audit-1108:145 | Desk very lightweight | owner call
-- N20 | owner-asks-audit-1108:146 | Desk look repaints at once | owner call
-- N22 | owner-asks-audit-1108:147 | Overlay wins over the card; twenty toggles | owner call
+- N20 | owner-asks-audit-1108:146 | Desk look repaints at once | owner call W34: hardware-only, w34-unv2-1111.md.
+- N22 | owner-asks-audit-1108:147 | Overlay wins over the card; twenty toggles | owner call W34: hardware-only, w34-unv2-1111.md.
 - PAR3 | parity-1110:44 | Parity not driven: boards and maps tools, rename_tag/delete_tag by sentence, save_user_preference, check_ | open
 
 **BK1 (companion, 24 rows)**
@@ -4388,50 +4388,50 @@ Format: id | file:line | one line | status.
 - ~~HR23 | audit-1031-harness:39 | Pane opens with long tasks at 390 | open~~ fixed (Logs row grid 62,573 to 5,090 px; Memory poof not reproduced; audit-1031-harness.md:98; checked 2026-11-11)
 - ~~UX3 | audit-1031-ux:17 | 70 animations run while nothing happens | open~~ fixed 0519dd52a (loops pause after 20 s without input; 77 to 37 endless, task about 4.3 to 3.8 s per 10 s, noisy; checked 2026-11-11)
 - P8 | audit-1108-perf:45 | chat answer render path as cited; not re-measured | closed 2026-11-11 (stale: D9 built s58left3-1110)
-- 1607b | owner-asks-audit-1108:13 | Masculine Atlas head size and shape against the feminine reference | open
-- B16 | owner-asks-audit-1108:16 | Masculine Atlas design pass (head, eyes, shoulder join, expressions) | open
-- 1634c | owner-asks-audit-1108:17 | nameMarkBuddyBlend reads transformOrigin before and after its writes | open
+- 1607b | owner-asks-audit-1108:13 | Masculine Atlas head size and shape against the feminine reference | open W34: owner-call (design), w34-unv1-1111.md.
+- B16 | owner-asks-audit-1108:16 | Masculine Atlas design pass (head, eyes, shoulder join, expressions) | open W34: owner-call (design), w34-unv1-1111.md.
+- ~~1634c | owner-asks-audit-1108:17 | nameMarkBuddyBlend reads transformOrigin before and after its writes | open~~ **W34: stale** (w34-unv1-1111.md)
 - ~~1634d | owner-asks-audit-1108:18 | No throw read in the first second after visibilitychange (5.6 s cold-window spotNow) | open~~ fixed cc0ca315d (a throw on a window just shown waits two frames; checked 2026-11-11)
 - 1693b1 | owner-asks-audit-1108:29 | The chat area spasms up and down (Agent greeting, 1920x1270, scrollbars, companion on) | open
-- 1643c | owner-asks-audit-1108:31 | Chat send keydown 712 ms, frame 589 ms in nameMarkBuddyTempo | open
+- ~~1643c | owner-asks-audit-1108:31 | Chat send keydown 712 ms, frame 589 ms in nameMarkBuddyTempo | open~~ **W34: stale** (w34-fix2-1111.md)
 - N14 | owner-asks-audit-1108:35 | Live desk drawing only inside the CPU budget (idle under 1%, moving under 3%) | open
 - ~~169200:35/S3 | owner-asks-audit-1108:41 | Built, partial and missing count for the owner; is everything built | open~~ done: counts line at the top of companion-asks.md (checked 2026-11-11)
-- 1692c/g/N17 | owner-asks-audit-1108:43 | Two tracks: Atlas more detailed, generated companions own behaviour set | open
-- 1692g/N18 | owner-asks-audit-1108:44 | Every motion drawn every frame; in-app p95 under 8 ms at 4x CPU | open
-- 1692m/n/1683g/N11 | owner-asks-audit-1108:45 | The companion should sit on windows | open
-- 1692p-budget | owner-asks-audit-1108:46 | Live desk drawing within a CPU budget | open
-- 1692e/n/B1/B3/N16 | owner-asks-audit-1108:48 | Lower body and nebula follow the pose, distinct silhouettes per pose, desk and in-app | open
-- 1692d(presence) | owner-asks-audit-1108:50 | Ambient activities by hour and mood on both companions (doodling, blanket nap, leg swing included) | open
-- 1683a | owner-asks-audit-1108:51 | Even desk frame pacing; real Windows frame interval logged | open
-- 1683c | owner-asks-audit-1108:52 | Wisps and nebula move all the time, layered noise | open
+- 1692c/g/N17 | owner-asks-audit-1108:43 | Two tracks: Atlas more detailed, generated companions own behaviour set | open W34: true (design), w34-unv1-1111.md.
+- 1692g/N18 | owner-asks-audit-1108:44 | Every motion drawn every frame; in-app p95 under 8 ms at 4x CPU | open W34: hardware-only, w34-unv1-1111.md.
+- 1692m/n/1683g/N11 | owner-asks-audit-1108:45 | The companion should sit on windows | open W34: true, w34-unv1-1111.md.
+- 1692p-budget | owner-asks-audit-1108:46 | Live desk drawing within a CPU budget | open W34: hardware-only, w34-unv1-1111.md.
+- 1692e/n/B1/B3/N16 | owner-asks-audit-1108:48 | Lower body and nebula follow the pose, distinct silhouettes per pose, desk and in-app | open W34: owner-call, w34-unv2-1111.md.
+- 1692d(presence) | owner-asks-audit-1108:50 | Ambient activities by hour and mood on both companions (doodling, blanket nap, leg swing included) | open W34: true, w34-unv2-1111.md.
+- ~~1683a | owner-asks-audit-1108:51 | Even desk frame pacing; real Windows frame interval logged | open~~ **W34: fixed** (w34-unv2-1111.md)
+- 1683c | owner-asks-audit-1108:52 | Wisps and nebula move all the time, layered noise | open W34: owner-call, w34-unv2-1111.md.
 - 1683lower-inapp | owner-asks-audit-1108:53 | In-app wisps measured at 1440; lower body by position; in-app parity | open
 
 **BK2 (companion, 24 rows)**
 
-- 1683x5/N10 | owner-asks-audit-1108:56 | In-app scrabble, pull-up, fling, miffed face | open
+- 1683x5/N10 | owner-asks-audit-1108:56 | In-app scrabble, pull-up, fling, miffed face | open W34: true, w34-unv2-1111.md.
 - N2 | owner-asks-audit-1108:57 | Flail airborne, scrabble on a wall slide | open
-- 1683l | owner-asks-audit-1108:58 | One shared mind for both companions | open
+- 1683l | owner-asks-audit-1108:58 | One shared mind for both companions | open W34: owner-call, w34-unv2-1111.md.
 - ~~1683p | owner-asks-audit-1108:60 | One ledger of every companion ask | open~~ done: companion-asks.md re-graded with a counts line (checked 2026-11-11)
 - ~~1683t | owner-asks-audit-1108:62 | Come here row on the in-app menu too | open~~ closed by decision: the in-app menu opens on the companion itself, so "come here" has no pointer to come to; "Call back and reset its place" (companion-menu.js:285) is the analogue (checked 2026-11-11)
 - 1645 | owner-asks-audit-1108:64 | Polished goose-style overlay, default on Windows | open
-- 1645scope | owner-asks-audit-1108:65 | Nothing that touches other windows | open
-- 1638b | owner-asks-audit-1108:66 | Companion does not show; root out why | open
-- 1670e | owner-asks-audit-1108:69 | Desk Quick search, Quick note and close button popups cleaned up | open
-- 1670i | owner-asks-audit-1108:71 | Slow idle; non-Atlas walks, runs, climbs, crouches, sits, lies | open
-- 1670l | owner-asks-audit-1108:73 | Nebula stops flickering (desk) | open
-- 1670u | owner-asks-audit-1108:75 | Runs properly on Linux | open
-- 1560a | owner-asks-audit-1108:79 | Forced layout in nameMarkBuddyBeat; the #dash-grid pointerout handler | open
-- 1667e | owner-asks-audit-1108:81 | Under 16 ms forced layout per press (tab, Settings, pointerenter, atlas.js step) | open
+- ~~1645scope | owner-asks-audit-1108:65 | Nothing that touches other windows | open~~ **W34: stale** (w34-unv2-1111.md)
+- 1638b | owner-asks-audit-1108:66 | Companion does not show; root out why | open W34: hardware-only, w34-unv2-1111.md.
+- ~~1670e | owner-asks-audit-1108:69 | Desk Quick search, Quick note and close button popups cleaned up | open~~ **W34: stale** (w34-unv2-1111.md)
+- 1670i | owner-asks-audit-1108:71 | Slow idle; non-Atlas walks, runs, climbs, crouches, sits, lies | open W34: true, w34-unv2-1111.md.
+- 1670l | owner-asks-audit-1108:73 | Nebula stops flickering (desk) | open W34: hardware-only, w34-unv2-1111.md.
+- ~~1670u | owner-asks-audit-1108:75 | Runs properly on Linux | open~~ **W34: fixed** (w34-unv2-1111.md)
+- ~~1560a | owner-asks-audit-1108:79 | Forced layout in nameMarkBuddyBeat; the #dash-grid pointerout handler | open~~ **W34: stale** (w34-fix2-1111.md)
+- 1667e | owner-asks-audit-1108:81 | Under 16 ms forced layout per press (tab, Settings, pointerenter, atlas.js step) | open W34: true, w34-unv2-1111.md.
 - 1667l | owner-asks-audit-1108:83 | 4.5 s avatars.js timer after opening a note from a dashboard list | open
-- 1667n | owner-asks-audit-1108:84 | Desk perch filter finds almost nothing | open
+- ~~1667n | owner-asks-audit-1108:84 | Desk perch filter finds almost nothing | open~~ **W34: stale** (w34-unv2-1111.md)
 - 1620lag:Atlas | owner-asks-audit-1108:99 | avatars.js 2249 ms dashboard timer; nameMarkBuddyKeepUp 114 to 337 ms | open
 - T1 | owner-asks-audit-1108:102 | Landing outcomes on both, prop tip-over included | open
 - S1 | owner-asks-audit-1108:105 | Deep dives done; bugs, security and per-frame cost; plans after this PR | open
-- S20 | owner-asks-audit-1108:107 | Owner's logs: no desk travel targets; chat keydown 712 ms; tempo 589 ms; tab 312 ms; dashboard 266 ms | open
-- 1692p-log | owner-asks-audit-1108:121 | Trips to places with no window (taskbar edge, free corner, cursor's last rest); stop hiding when the app | open
+- ~~S20 | owner-asks-audit-1108:107 | Owner's logs: no desk travel targets; chat keydown 712 ms; tempo 589 ms; tab 312 ms; dashboard 266 ms | open~~ **W34: stale** (w34-unv2-1111.md)
+- 1692p-log | owner-asks-audit-1108:121 | Trips to places with no window (taskbar edge, free corner, cursor's last rest); stop hiding when the app | open W34: true, w34-unv2-1111.md.
 - 1692otrips/S6 | owner-asks-audit-1108:122 | Trips several times an hour in visible modes (portal, sparkle blink, cloud, bubble); legs per hour measur | open
-- 1692f/S5 | owner-asks-audit-1108:123 | In-app wrap gets an exit and entry (squish with wisps), never an instant swap; in-app ambient acts | open
-- N25 | owner-asks-audit-1108:126 | Layered multi-round deep dives per surface | open
+- ~~1692f/S5 | owner-asks-audit-1108:123 | In-app wrap gets an exit and entry (squish with wisps), never an instant swap; in-app ambient acts | open~~ **W34: stale** (w34-unv2-1111.md)
+- N25 | owner-asks-audit-1108:126 | Layered multi-round deep dives per surface | open W34: owner-call, w34-unv2-1111.md.
 
 **BW1 (whiteboard, 28 rows)**
 
@@ -4461,7 +4461,7 @@ Format: id | file:line | one line | status.
 - BD7 | audit-1031-board:20 | Sizes: whiteboard.js 25,569 lines, 553 functions, initWhiteboard 4,090 lines; whiteboard-map.js 10,929 li | open
 - ~~Z10 | audit-1031-extras:113 | sketch-pad.js is one 1,805-line closure ((() => {~~ stale (2026-11-11): map half fixed (tests/test_codemap_closure_z10.py, CODEMAP sketch-pad.js (143)); no JS ratchet exists; bg-art split left by default
 - PF4 | audit-1031-perf:38 | Every boot parses the whole app | open
-- 1667c | owner-asks-audit-1108:19 | notes-list.js:3559 still calls loadMapBoardIndex() at load (checked 2026-11-09) | stale: notes-list.js:3554 only walks the index when a page has a [[link]] (ensureMapChipsFor) and dash-boards.js when the widget draws; bw-1111 probe: 0 /whiteboard/boards requests in the first 3 s
+- ~~1667c | owner-asks-audit-1108:19 | notes-list.js:3559 still calls loadMapBoardIndex() at load (checked 2026-11-09) | stale: notes-list.js:3554 only walks the index when a page has a [[link]] (ensureMapChipsFor) and dash-boards.js when the widget draws; bw-1111 probe: 0 /whiteboard/boards requests in the first 3 s~~ **W34: stale** (w34-fix2-1111.md)
 - 1694b2 | owner-asks-audit-1108:86 | Typed value field on diagram, whiteboard and mind map zoom | stale: map boards share the board's #wb-zoom-level valueField; bw-1111 probe on a new map board: input present, 100% shown, 150 typed + Enter reads 150%
 
 **BD1 (documents, 27 rows)**
@@ -4514,8 +4514,8 @@ Format: id | file:line | one line | status.
 - C12 | audit-1031-composer:55 | A follow-on loses its subject: in Ask every time (the Ask client sends no objects), in Chat for every for | deferred (2026-11-11): Ask follow-on subject, composer_*.py and the Ask client
 - C36 | audit-1031-composer:79 | Grammar slips in fixed frames | deferred (2026-11-11): the routes_chat.py sentence is gone; the remaining frames are composer_tables.py, another agent's file
 - P7 | audit-1108-perf:44 | routes_chat.py:575 _composed_chat still present; the 8 s probe not re-run | deferred (2026-11-11): the first question after a silent model pays the probe once (ollama_client.is_running, then cached quiet); skipping it for exact classes is a stream-flow change to test against a real slow model
-- 1612b | owner-asks-audit-1108:23 | no summary lead lint in tests/test_manual_parity.py (grep, checked 2026-11-09) | fixed 8e051339a (test_manual_parity.py::test_every_listed_topic_has_a_one_sentence_lead)
-- 1693b2 | owner-asks-audit-1108:131 | Note card, badge, Why trail and timing survive a session switch | fixed 741dc1f7a (tests/test_chat_reload_by_1693.py)
+- ~~1612b | owner-asks-audit-1108:23 | no summary lead lint in tests/test_manual_parity.py (grep, checked 2026-11-09) | fixed 8e051339a (test_manual_parity.py::test_every_listed_topic_has_a_one_sentence_lead)~~ **W34: fixed** (w34-fix2-1111.md)
+- ~~1693b2 | owner-asks-audit-1108:131 | Note card, badge, Why trail and timing survive a session switch | fixed 741dc1f7a (tests/test_chat_reload_by_1693.py)~~ **W34: stale** (w34-unv2-1111.md)
 - PAR2 | parity-1110:41 | Parity: model chips carry only the cited note chips, not the composer next chips (chat_turn.py model_chip | deferred (2026-11-11): the composer's next chips need its result frame (chat_chips.continue_chips, composer_chips); a model turn has none
 
 **BG1 (diagram, 15 rows)**
@@ -4526,7 +4526,7 @@ Format: id | file:line | one line | status.
 - D2.1 | diagram-fable-1679:30 | handles, pick and reconnect landed; reverse and connector delete bar not confirmed | deferred
 - 1661m | owner-asks-audit-1108:25 | Both diagram side panels fold to a rail with a labelled toggle and key, kept per user; blind test | fixed ff33cd1fe
 - S11 | owner-asks-audit-1108:28 | Diagram kind picker alone on its row | fixed 262c70da3
-- 1692b | owner-asks-audit-1108:42 | Deep dives (desk, in-app, diagram) each with a coverage table and ranked list | deferred
+- 1692b | owner-asks-audit-1108:42 | Deep dives (desk, in-app, diagram) each with a coverage table and ranked list | deferred W34: skipped (docs deliverable), w34-unv1-1111.md.
 - 1661a | owner-asks-audit-1108:88 | Builder picture-first; the blocks list an outline that hides | stale (2026-11-11)
 - 1661c | owner-asks-audit-1108:89 | Templates, styles, align and distribute, find, copy as picture, shortcuts | deferred
 - 1661e | owner-asks-audit-1108:90 | Each connection once under its source as "to Y" with an editable label | stale (2026-11-11)
@@ -4603,7 +4603,7 @@ Columns: id | item | sources (file:line) | status | batch
 | I12 | Desk companion: more activities (variety) and visible lower-body and ribbon motion; Opus design pass | INBOX:43 (1721 d, e), INBOX:59, INBOX:64, OPEN:318 (E3), life-1109.md (ranked list) | open | Cp2 |
 | I13 | Diagram builder first open slow (3.5 to 3.9 s at 8x, 1.7 to 2.3 s the Library bundle): a `diagramDoor` bundle, `diagramModel` out of documents-mermaid.js | INBOX:44 (1722); `diagramDoor` is not in frontend/js | open | Dg1 |
 | I14 | Feminine desk Atlas too purple or pink against the in-app look: pixel-hue parity in `core/overlay` | INBOX:45 (1724) | open | Cp2 |
-| I15 | Lag log 1726 residue: chat typing keydown 285 ms, avatars timers 516 ms, graph `gcRequestDraw` 35 to 53 calls/s, notes-subtabs 400 ms, tab clicks, Settings pane clicks 250 ms | INBOX:46, lag-1110.md:7 (not reproduced), lag1726-1110.md:6, s7-1110.md:19 | unverifiable (needs the owner's Windows trace or a 22,800-node chat) | none |
+| I15 | Lag log 1726 residue: chat typing keydown 285 ms, avatars timers 516 ms, graph `gcRequestDraw` 35 to 53 calls/s, notes-subtabs 400 ms, tab clicks, Settings pane clicks 250 ms | INBOX:46, lag-1110.md:7 (not reproduced), lag1726-1110.md:6, s7-1110.md:19 | unverifiable (needs the owner's Windows trace or a 22,800-node chat) | none W34: unverifiable, w34-fix2-1111.md. |
 | I16 | Throw hard enough leaves through the top and falls back by throw speed | INBOX:47 (1719 a); CHANGELOG:192 (1.0 to 8.0 s seeded); engine.py:3652 | fixed (desk Windows unverifiable) | none |
 | I17 | More life and biological design on both companions (follow-through, startle settle, micro-saccades, stand drift, floater breath, media) | INBOX:47 (1719 b), life-1109.md Remaining 1 to 5 | open | Cp1 (in-app), Cp2 (desk) |
 | I18 | Composer "response issues": the owner to give examples, then a deep-audit round | INBOX:47 (1719 c), OPEN:57 (P3, Q17) | owner call: which answers read badly? | none |
@@ -4644,7 +4644,7 @@ Columns: id | item | sources (file:line) | status | batch
 | O11 | B34 joke note leads by quote not name (1705 b) | OPEN:159, composer-r8-1109.md Left | open | Co2 |
 | O12 | Composer small asks: "call anna" lower case, "make a checklist for my trip", "tom and sara" pair, "put it in my journal" | composer-r8-1109.md Left (4 rows) | open (left as written; no later commit) | Co1 |
 | O13 | B56/B58 (not reproduced at 4x): 4.5 s avatars timer after opening a note; phone resize covers Send | OPEN:189,191, w14-1110.md | unverifiable (not reproduced) | none |
-| O14 | w14 next: B55 pacer reads during an agent turn; B57 throw scrolls the page; B59 `ring-held` removed on every keydown (settings-panes.js:350, 36 writes for 37 keys); B60 Reset appearance leaves motion prefs (appearance-panel.js) | w14-1110.md:4 to 9 | open | Cp1 (B55, B57), Sh1 (B59, B60) |
+| O14 | ~~w14 next: B55 pacer reads during an agent turn; B57 throw scrolls the page; B59 `ring-held` removed on every keydown (settings-panes.js:350, 36 writes for 37 keys); B60 Reset appearance leaves motion prefs (appearance-panel.js)~~ **W34: stale** (w34-fix3-1111.md) | w14-1110.md:4 to 9 | open | Cp1 (B55, B57), Sh1 (B59, B60) |
 | O15 | B63 companion does not show: root cause; B62 to B67 list | OPEN:198, b62-1110.md | open; unverifiable (Windows) | Cp2 |
 | O16 | B65 the 1683 travel mix | OPEN:200, travel-1109.md | open | Cp2 |
 | O17 | W16 real-model: B68 model-on parity, B69 evals gate, B70 SKILLS Phase D, B71 entity extraction, B72 BACKGROUND_MODE, B74 tool contracts on Ollama | OPEN:206 to 212 | unverifiable (needs `scratchpad/llama-dev.sh serve`) | Mo |
@@ -4670,20 +4670,20 @@ Columns: id | item | sources (file:line) | status | batch
 | O37 | E1 to E6 companion life: acts to desk, in-app-only acts need frames, life list, masculine Atlas, props, lower body follow-through | OPEN:316 to 321 | open | Cp1, Cp2 |
 | O38 | E8 K33 token sweep per request (pinned by `test_vault_sessions`) | OPEN:325, s8-1110.md:5 | owner call: may that test's intent move (Q22 area)? | none |
 | O39 | E10 backend rows true: BK6 update signature, BK10 list payloads, BK11 god modules, BK12 reminders poll, K36 N+1 in `list_boards`, K20, K24, K25, K27 kept routes | OPEN:327, s8-1110.md, s14-1110.md:6, e15-1110.md | open | Bk1 (BK6, BK10, K36, K20), Bk2 (BK11, K24, K25) |
-| O40 | E12 "Read as ..." lines under computed answers (49 assertions in about 18 test files) | OPEN:331, fc7-1110.md:14, s8-1110.md | owner call: drop the lines that only restate the sum? (moves a stated intent) | none |
+| O40 | E12 "Read as ..." lines under computed answers (49 assertions in about 18 test files) | OPEN:331, fc7-1110.md:14, s8-1110.md | owner call: drop the lines that only restate the sum? (moves a stated intent) | none W34: skipped (composer spoke), w34-fix1-1111.md. |
 | O41 | E13 "¦" for "&" in a category; "conversation" topic on a gym note | OPEN:332, s8-1110.md | open; needs a repro from the owner's data | none |
 | O42 | E14 manual pictures as WebP from sweeps | OPEN:333 | owner call: want one sweep-made image? | none |
 | O43 | E15 verify 1028 audits | OPEN:336, e15-1110.md (303 rows: 62 true, 155 fixed, 20 stale, 52 not reached, 14 skipped) | fixed (62 true rows moved to batches; the 52 not reached stay open for a scout) | Ev1 |
 | O44 | E16 verify 1029 to 1031 audits (362 rows) | OPEN:337; no e16 file exists | open (belongs to the audit inventory; listed so it is not lost) | Ev1 |
 | O45 | E17, E18, E19, E20 verify sweeps | e17-1110.md, e18-1110.md, e19-1110.md, s58left4-1110.md:5 | fixed | none |
 | O46 | E21 the 1692 and 1683 owner-asks partial rows | OPEN:342, book2-1109.md | open | Ev1 |
-| O47 | F1 documents: live code blocks done; open gap rows 1, 2, 5, 6, 9, 10, 12, guided equation editor items, Live multi-line `$$`, label completion, VC rows, links L6, Guide topic for slides, `{{cursor}}` caret | OPEN:348, s9c-1110.md:5,6,9 | open | Do1 |
-| O48 | F2 whiteboard Format gaps: Edit image, draggable crop, BPMN and icon sets, draw.io rows, board view per device only, cross-link default on a map | OPEN:349, s9c-1110.md:8, s9-1110.md:12 | open | Wb1 |
-| O49 | F3 mind map: Replace all does not rewrite notes (`wbBoardReplaceAll`), render pass 13b, row 2 citations | OPEN:350, s9-1110.md:13, s9c-1110.md:10 | open | Wb1 |
-| O50 | F4 chat: composition layer (INBOX 1353), Phase 5 a to g, Foundation F5, "X versus Y" | OPEN:351, s10-1110.md:7, compleft-1110.md | open | Co3 |
-| O51 | F5 world class: durable jobs, multi-window, torch at launch, F1 prefs, RapidOCR (Q27), web-search store, Try again on a failed web tool chip | OPEN:352, s10-1110.md:6, wc3-1110.md | open | Ui1 |
-| O52 | F6 UI: Settings panes indexed, token budget, `!important` to 0 (117 left), dissolve 08 and 10 stylesheets, new-note lock toggle | OPEN:353, s10-1110.md:4, s10b-1110.md:9 | open | Ui1 |
-| O53 | F7 graph and timeline: `?since=` cursor (deferred, no caller), dot density at 5,000, day strip and spans (Q32 parked) | OPEN:354, s10-1110.md:5 | open (`?since=` deferred by design); owner call (Q32) for the day strip | Gr2 |
+| O47 | F1 documents: live code blocks done; open gap rows 1, 2, 5, 6, 9, 10, 12, guided equation editor items, Live multi-line `$$`, label completion, VC rows, links L6, Guide topic for slides, `{{cursor}}` caret | OPEN:348, s9c-1110.md:5,6,9 | open | Do1 W34: true (hub surface), w34-L3-1111.md. |
+| O48 | F2 whiteboard Format gaps: Edit image, draggable crop, BPMN and icon sets, draw.io rows, board view per device only, cross-link default on a map | OPEN:349, s9c-1110.md:8, s9-1110.md:12 | open | Wb1 W34: true-deferred, w34-fix3-1111.md. |
+| O49 | ~~F3 mind map: Replace all does not rewrite notes (`wbBoardReplaceAll`), render pass 13b, row 2 citations~~ **W34: stale** (w34-fix3-1111.md) | OPEN:350, s9-1110.md:13, s9c-1110.md:10 | open | Wb1 |
+| O50 | F4 chat: composition layer (INBOX 1353), Phase 5 a to g, Foundation F5, "X versus Y" | OPEN:351, s10-1110.md:7, compleft-1110.md | open | Co3 W34: owner-call (tracked in the plans), w34-L3-1111.md. |
+| O51 | F5 world class: durable jobs, multi-window, torch at launch, F1 prefs, RapidOCR (Q27), web-search store, Try again on a failed web tool chip | OPEN:352, s10-1110.md:6, wc3-1110.md | open | Ui1 W34: owner-call (tracked in the plans), w34-L3-1111.md. |
+| O52 | F6 UI: Settings panes indexed, token budget, `!important` to 0 (117 left), dissolve 08 and 10 stylesheets, new-note lock toggle | OPEN:353, s10-1110.md:4, s10b-1110.md:9 | open | Ui1 W34: owner-call (tracked in the plans), w34-L3-1111.md. |
+| O53 | F7 graph and timeline: `?since=` cursor (deferred, no caller), dot density at 5,000, day strip and spans (Q32 parked) | OPEN:354, s10-1110.md:5 | open (`?since=` deferred by design); owner call (Q32) for the day strip | Gr2 W34: owner-call (tracked in the plans), w34-L3-1111.md. |
 | O54 | F8 owner go: sync, offline studio, audio, desktop pet, custom domain, blind panel, Fable diagram dive | OPEN:355, OPEN:55 (Q34) | owner call: say go | none |
 | O55 | The 84 struck rows of the work order (W1 to W34) | OPEN:69 to 340 (`~~`) | fixed (each row carries its sha or "Fixed before s5-1110") | none |
 
@@ -4707,7 +4707,7 @@ Columns: id | item | sources (file:line) | status | batch
 | P14 | Brief 104 typos read in context (no notebook word-pair scoring) | SESSION_BRIEFS:359, spelling.py:456 | open | Co1 |
 | P15 | Briefs 95, 97, 98, 102 | SESSION_BRIEFS:304,313,323,346 | open, unstamped (no E19 mark and no HISTORY pointer found) | Ev1 |
 | P16 | Notes filter box reads only ISO dates for `before:`/`after:`; `before:tuesday` is a word there | w11-1110.md:7, notes-list.js:353 | open | Sh1 |
-| P17 | Pasted `#/Manual` / `#/Statistics` ignored at load; manual opened in first 3 s writes `#/dashboard` | w12-1110.md:4, router.js | open | Sh1 |
+| P17 | Pasted `#/Manual` / `#/Statistics` ignored at load; manual opened in first 3 s writes `#/dashboard` | w12-1110.md:4, router.js | open | Sh1 W34: owner-call (tracked in the plans), w34-L3-1111.md. |
 | P18 | Early press on Capture's Private button does nothing in the first 3 s (quick-note.js preloaded late) | s14-1110.md:5, s9c-1110.md (says built) | open (verify) | Sh2 |
 | P19 | Agent tool writes on a confirmed "Run again": no idempotency by turn id (E70) | w1-1110.md:14 | open | Bk1 |
 | P20 | Private spaces: recordings, bookmarks and files not sealed; deleting a locked space offers no unlock prompt | pspace-1110.md Left | open | Bk1 |
@@ -4719,7 +4719,7 @@ Columns: id | item | sources (file:line) | status | batch
 | P26 | Composer G-rows left: G1 ("when did I last see the dentist", "how far did I run", "has the launch date changed"), G3 stats wording, G5 guide leads, G6 today line and year gaps, G8 poke lines table (avatars.js:2731) and dated things in the notes, G9 week_review, G11, G12, G14 a, e, f, i | g13-1110.md:4,5, g45-1110.md:6, g69-1110.md, g1014-1110.md | open (G14 a, f not reproduced) | Co2 (composer files), Da1 (dashboard.js:526,633,3018,4229, statistics.js:121), Co3 (voice) |
 | P27 | Name use rules 5 and 4 across a restart; Guide "profile" topic; 20-turn eval | g69-1110.md | open | Co3 |
 | P28 | E54 identity copy "Atlas's assistant" (CHAT_PLAN decision 36): composer_lines.py:497, composer_smalltalk.py:147, composer_tables.py:1157 | s12b-1110.md:5 | open | Co3 |
-| P29 | E69 as-typed echo after autocorrect (design call); E59 to E62, E44, E45, E48 chat design | s13-1110.md:5, s11-1110.md:9 | owner call: where the "as typed" line shows | none |
+| P29 | ~~E69 as-typed echo after autocorrect (design call); E59 to E62, E44, E45, E48 chat design~~ **W34: stale** (w34-L3-1111.md) | s13-1110.md:5, s11-1110.md:9 | owner call: where the "as typed" line shows | none |
 | P30 | W8 found-not-fixed: "is my dentist appointment tomorrow" no verdict, "last Christmas" no year, single-day head printed twice, "phone mum" synonym | w8-1110.md | built 2026-11-11 (composer spoke; 112986860, ce70ddac9, b817900c7, d79ea5b01, merged c0a3bc8db; w8b-1111.md, tests/test_composer_w8b_1111.py); left: source_check can flag a date's own figures, "are we meeting on Tuesday" not read as a window ask, "Rung mum" has no you form | Co2 |
 | P31 | Web-search store of recent pages; Try again on a failed non-SearXNG web chip | wc3-1110.md:5,7 | owner call: store fetched pages with a re-fetch control? | none |
 | P32 | Tour at 390 reports a 455 px spill on one step; Memory and Logs panes hide h3 on a phone | wc3-1110.md:9, wc-1110.md:7 | open | Sh1 |
