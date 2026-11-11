@@ -219,6 +219,25 @@ def _anchor(note: dict) -> date | None:
     return max(written, later) if written and later else written
 
 
+def _line_units(content: str, line: str, start: int, body_end: int) -> list[tuple[int, int, str, bool | None]]:
+    """The claims of one body line: a list or check item is one unit, prose is
+    split into sentences."""
+    item = _ITEM.match(line)
+    if item:
+        box = item.group(3)
+        kind = "check_item" if box is not None else "list_item"
+        return [(start + item.end(), body_end, kind, None if box is None else box.lower() == "x")]
+    out: list[tuple[int, int, str, bool | None]] = []
+    lead = len(line) - len(line.lstrip(" >"))
+    cursor = start + lead
+    for match in _SPLIT.finditer(content, cursor, body_end):
+        out.append((cursor, match.end(1), "prose", None))
+        cursor = match.end()
+    if cursor < body_end:
+        out.append((cursor, body_end, "prose", None))
+    return out
+
+
 def _units(content: str) -> list[tuple[int, int, str, bool | None]]:
     """(start, end, kind, done) for every sentence and list line of the body:
     the heading line is the note's name, not a claim; code is skipped; a
@@ -240,19 +259,7 @@ def _units(content: str) -> list[tuple[int, int, str, bool | None]]:
             continue
         if in_fence or not stripped or _HEADING.match(line) or stripped.startswith((_PICTURES_HEAD, "|", "![")):
             continue
-        item = _ITEM.match(line)
-        if item:
-            box = item.group(3)
-            kind = "check_item" if box is not None else "list_item"
-            out.append((start + item.end(), body_end, kind, None if box is None else box.lower() == "x"))
-            continue
-        lead = len(line) - len(line.lstrip(" >"))
-        cursor = start + lead
-        for match in _SPLIT.finditer(content, cursor, body_end):
-            out.append((cursor, match.end(1), "prose", None))
-            cursor = match.end()
-        if cursor < body_end:
-            out.append((cursor, body_end, "prose", None))
+        out.extend(_line_units(content, line, start, body_end))
     return [(s, e, k, d) for s, e, k, d in out if content[s:e].strip()]
 
 

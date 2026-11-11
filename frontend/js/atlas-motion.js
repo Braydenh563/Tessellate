@@ -346,6 +346,11 @@ function atlasRigWake(host) {
   //: callback reads every arm's box before the frame's own style pass, and the figure's first
   //: paint had left that to this read. A timer after the frame finds the page clean.
   if (!rig.raf) rig.raf = (rig.reads ? atlasRigWake.after : atlasRigWake.afterPaint)((now) => atlasRigFrame(rig, now), 2);
+  //: The look follows the frame that settled the page (`atlasRigLook`), never in the wake's own task.
+  if (!rig.looking && rig.reads) {
+    rig.looking = true;
+    atlasRigWake.afterPaint(() => atlasRigWake.look(rig), 2);
+  }
 }
 //: The only place a skipped or settled frame is asked for: `callback` after `frames` frames (2: after the one that draws the page).
 atlasRigWake.after = (callback, frames) => requestAnimationFrame((t) => (frames > 1 ? atlasRigWake.after(callback, frames - 1) : callback(t)));
@@ -484,12 +489,64 @@ function atlasStarsFade(rig, on) {
   const stars = rig.tossEls?.stars || [...rig.box.querySelectorAll(".atl-layer .nmp-stars > .atl-juggle")];
   rig.fades = stars.map((star, k) => star.animate?.([{ opacity: 1 }, { opacity: 0.35 }, { opacity: 1 }], { duration: 1500, delay: -k * 500, iterations: Infinity, easing: "ease-in-out" })).filter(Boolean);
 }
+//: **Where the CSS has the figure, read in a task after a drawn frame** (INBOX 1766; it was the top of
+//: `atlasRigFrame`). Every read of the probes and the pose is taken here, all before any write, and
+//: only when it may have changed: what they show changes with a class, a pose or a mood, which wakes
+//: the rig (`rig.dirty`), or while an animation runs on an arm; once both arms and the turn have held
+//: a quarter second with none running, the rig works from what it read until the next wake (B87a: a
+//: carried Atlas at 4x CPU was 254 forced restyles and layouts in 1.3 s). The task runs on a clean
+//: page, so a read is a lookup, and it asks for the next look itself (33ms) while the rig is dirty.
+//: **Not the first to read a page that has just flipped** (INBOX 1560, a30v): inside `uiSettlingUntil`
+//: (a tab, a dialog arriving) a read paid the whole arriving page's restyle, 71 to 262ms at 4x. It
+//: works from what it read until the page has settled. Nor behind a dialog (INBOX 1667): the corner
+//: figure is drawn at opacity 0 under it, and its read paid for the open dialog's restyles. Nor hidden
+//: or off screen: the wake that brings it back reads again.
+atlasRigWake.look = function atlasRigLook(rig, inFrame = false) {
+  rig.looking = false;
+  const { box } = rig;
+  if (!box.isConnected || document.hidden || box.classList.contains("atl-off")) return;
+  const now = performance.now();
+  const buddy = rig.host && rig.host.id === "nm-buddy" ? rig.host : null;
+  if (rig.reads && (now < (globalThis.uiSettlingUntil || 0) || (!!buddy && nameMarkBuddyBehindCover()))) {
+    if (rig.dirty) atlasRigWake.look.soon(rig, 100);
+    return;
+  }
+  const live = atlasMotionOK(box);
+  if (!rig.reads) for (const arm of rig.arms) atlasProbeWatch.seed(arm);
+  const reads = rig.arms.map((arm) => ({ ...atlasRigRead(arm), anim: live && arm.running.size > 0 }));
+  const turnMatrix = rig.pose && rig.heads.length ? /matrix\(([^)]+)\)/.exec(getComputedStyle(rig.pose).transform) : null;
+  const was = rig.reads;
+  const held = !!was && (turnMatrix?.[1] || "") === (rig.turnMatrix?.[1] || "") && reads.every((r, i) => !r.anim && Math.abs(r.ang - was[i].ang) < 0.01 && Math.abs(r.sy - was[i].sy) < 0.001);
+  rig.heldAt = held ? rig.heldAt || now : 0;
+  if (held && now - rig.heldAt >= 250) rig.dirty = false;
+  rig.reads = reads;
+  rig.turnMatrix = turnMatrix;
+  //: Something to draw: the frame loop is asleep or waiting, and starts again.
+  if (!held && !inFrame) {
+    rig.still = 0;
+    if (!rig.raf && live) rig.raf = atlasRigWake.after((t) => atlasRigFrame(rig, t), 1);
+  }
+  if (rig.dirty) atlasRigWake.look.soon(rig, 33);
+};
+//: The next look in `ms`, one at a time.
+atlasRigWake.look.soon = (rig, ms) => {
+  if (rig.looking) return;
+  rig.looking = true;
+  setTimeout(atlasRigWake.look, ms, rig);
+};
 function atlasRigFrame(rig, now) {
   rig.raf = 0;
   const { box } = rig;
   if (!box.isConnected) {
     rig.observer?.disconnect();
     rig.observer = null;
+    return;
+  }
+  //: **Nothing runs in a hidden window** (INBOX 1766): the loop stops where it stands, `dirty` for the look
+  //: the return takes (`atlasHiddenSync` wakes the figure).
+  if (document.hidden) {
+    rig.at = 0;
+    rig.dirty = true;
     return;
   }
   const live = atlasMotionOK(box) && !box.classList.contains("atl-off") && !rig.fresh;
@@ -510,39 +567,14 @@ function atlasRigFrame(rig, now) {
   rig.at = now;
   const walking = live && !!buddy && buddy.classList.contains("nmb-walking");
   let busy = walking;
-  //: **Every read before any write.** Each arm used to read its probe, then
-  //: write its transform, so the next arm's read (and the head's) forced the
-  //: page to restyle again, three or four times a frame on top of the
-  //: flight's own writes (a thrown Atlas at 4x CPU: 5 frames a second, 0.9 s
-  //: of 5 s in `atlasRigRead` alone). Read once, up front, from one clean
-  //: style; the writes follow and the browser restyles once.
-  //: **And only when it may have changed** (B87a: a carried Atlas at 4x CPU
-  //: was 30 fps, 254 forced restyles and layouts in 1.3 s, 137 of them here,
-  //: each read landing after the carry's or the flight's own writes). What
-  //: the probe and the pose show changes with a class, a pose or a mood,
-  //: which wakes the rig (`rig.dirty`), or while an animation runs on the
-  //: arm; once both arms and the turn have held a quarter second with none
-  //: running, the rig works from what it read until the next wake.
-  //: **Not the first to read a page that has just flipped** (INBOX 1560's
-  //: found list, a30v): inside `uiSettlingUntil` (a tab, a dialog arriving)
-  //: a read here paid the whole arriving page's restyle, 71 to 262ms at 4x.
-  //: It works from what it read until the page has settled, and stays awake
-  //: until it has read again.
-  //: Nor behind a dialog (INBOX 1667: 30 reads, 858ms forced across six Settings presses at 4x): the
-  //: corner figure is drawn at opacity 0 under it, and its read paid for the open dialog's restyles.
-  const settling = !!rig.reads && (now < (globalThis.uiSettlingUntil || 0) || (!!buddy && nameMarkBuddyBehindCover()));
-  const look = (rig.dirty || !rig.reads) && !settling;
-  if (!rig.reads) for (const arm of rig.arms) atlasProbeWatch.seed(arm);
-  const reads = look ? rig.arms.map((arm) => ({ ...atlasRigRead(arm), anim: live && arm.running.size > 0 })) : rig.reads;
-  const turnMatrix = !look ? rig.turnMatrix : rig.pose && rig.heads.length ? /matrix\(([^)]+)\)/.exec(getComputedStyle(rig.pose).transform) : null;
-  if (look) {
-    const was = rig.reads;
-    const held = !!was && (turnMatrix?.[1] || "") === (rig.turnMatrix?.[1] || "") && reads.every((r, i) => !r.anim && Math.abs(r.ang - was[i].ang) < 0.01 && Math.abs(r.sy - was[i].sy) < 0.001);
-    rig.heldAt = held ? rig.heldAt || now : 0;
-    if (held && now - rig.heldAt >= 250) rig.dirty = false;
-    rig.reads = reads;
-    rig.turnMatrix = turnMatrix;
-  }
+  //: **The frame reads nothing** (INBOX 1766, the owner's lag log on a documents page with a diagram open:
+  //: `atlasRigFrame 138-205ms (forced layout 136-203ms)`, 6 to 27 calls a second, 23ms growing to 130ms). A style
+  //: read here landed in a frame callback, after every writer that had run since the last draw, and paid for
+  //: all of it: the read of a `transform` resolves against layout. The reads live in `atlasRigLook`, a task
+  //: that follows a drawn frame (clean style, so a read is a lookup); the frame works from what it took.
+  //: Only the very first look, at attach, is taken here, and the wake has already put that after a paint.
+  if (!rig.reads) atlasRigWake.look(rig, true);
+  const { reads, turnMatrix } = rig;
   const toss = atlasTossState(rig, now, live, buddy);
   for (const [i, arm] of rig.arms.entries()) {
     const got = { ...reads[i] };
@@ -643,7 +675,7 @@ function atlasRigFrame(rig, now) {
   }
   box.toggleAttribute("data-atl-moving", busy);
   //: Six quiet frames in a row and it sleeps until the next change.
-  rig.still = busy || (settling && rig.dirty) ? 0 : rig.still + 1;
+  rig.still = busy ? 0 : rig.still + 1;
   if (live && rig.still < 6) rig.raf = requestAnimationFrame((t) => atlasRigFrame(rig, t));
   else rig.at = 0;
 }

@@ -154,11 +154,8 @@ _PROMPT_CLOCK = re.compile(r"The current date and time is \d{4}-\d\d-\d\d")
 _APP_LINK = re.compile(r"\[[^\]\n]{1,120}\]\(#/[^)\s]*\)")
 
 
-def unbacked_claims(answer: str, sources: Sources) -> list[str]:
-    """Numbers and names in `answer` that `sources` does not contain, in order."""
-    #: An app link ("[Open your notes](#/notes)") is the app's own offer, not
-    #: a claim: "Open" was flagged as an unbacked name (owner, 2026-10-12).
-    text = _IGNORED.sub(" ", _APP_LINK.sub(" ", answer).replace("**", "").replace("__", ""))
+def _unbacked_numbers(text: str, sources: Sources) -> list[str]:
+    """The compound figures ("10:15", "3/3", "2026-10-06") with a part the sources lack."""
     found: list[str] = []
     # "10:15", "3/3" and "2026-10-06" are one claim of several numbers: said
     # as written, flagged when any part is not in the sources.
@@ -166,6 +163,12 @@ def unbacked_claims(answer: str, sources: Sources) -> list[str]:
         parts = [_number_key(w, f) for w, f in _NUMBER.findall(match.group(0))]
         if any(key not in ("0", "1") and key not in sources.numbers for key in parts):
             found.append(match.group(0))
+    return found
+
+
+def _unbacked_names(text: str, sources: Sources) -> list[str]:
+    """The runs of capitalised words (a name) with a word the sources lack."""
+    found: list[str] = []
     run: list[str] = []
     prev_end = -1
 
@@ -192,6 +195,15 @@ def unbacked_claims(answer: str, sources: Sources) -> list[str]:
         run.append(word)
     if run:
         close()
+    return found
+
+
+def unbacked_claims(answer: str, sources: Sources) -> list[str]:
+    """Numbers and names in `answer` that `sources` does not contain, in order."""
+    #: An app link ("[Open your notes](#/notes)") is the app's own offer, not
+    #: a claim: "Open" was flagged as an unbacked name (owner, 2026-10-12).
+    text = _IGNORED.sub(" ", _APP_LINK.sub(" ", answer).replace("**", "").replace("__", ""))
+    found = _unbacked_numbers(text, sources) + _unbacked_names(text, sources)
     return _without_computed(list(dict.fromkeys(found)), sources)
 
 

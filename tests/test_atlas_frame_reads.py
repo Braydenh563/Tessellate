@@ -33,6 +33,13 @@ LIFE = (JS / "atlas-life.js").read_text(encoding="utf-8")
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
 
+def _look() -> str:
+    """The rig's look (`atlasRigWake.look`, a task after a drawn frame since INBOX 1766)."""
+    match = re.search(r"^atlasRigWake\.look = function atlasRigLook\(.*?^\};", MOTION, re.S | re.M)
+    assert match
+    return match.group(0)
+
+
 def _fn(src: str, name: str) -> str:
     match = re.search(rf"^function {name}\(.*?^\}}", src, re.S | re.M)
     assert match, name
@@ -48,19 +55,21 @@ def _node(script: str, *args: str):
 #: A rig as `atlasRigAttach` makes one, on fakes that count every style read.
 RIG = r"""
 const vm = require("vm");
-const reads = { cs: 0, anim: 0 };
+const reads = { cs: 0, anim: 0, inFrame: 0 };
 let frames = [];
+let tasks = [];
+let phase = "task";
 let probeAnims = [];
 let ang = 0;
 const el = () => ({ style: { setProperty() {}, rotate: "" }, setAttribute() {}, closest: () => null });
 const ctx = {
   console, Math, Number, Object, Set, Map, JSON,
   performance: { now: () => clock },
-  document: { documentElement: { dataset: {}, hasAttribute: () => false } },
+  document: { hidden: false, documentElement: { dataset: {}, hasAttribute: () => false } },
+  setTimeout: (f, ms, ...a) => { tasks.push(() => f(...a)); return tasks.length; },
   matchMedia: () => ({ matches: false }),
-  getComputedStyle: () => { reads.cs += 1; return { transform: `matrix(${Math.cos(ang)}, ${Math.sin(ang)}, ${-Math.sin(ang)}, ${Math.cos(ang)}, 0, 0)`, rotate: "none", opacity: "1" }; },
+  getComputedStyle: () => { reads.cs += 1; if (phase === "frame") reads.inFrame += 1; return { transform: `matrix(${Math.cos(ang)}, ${Math.sin(ang)}, ${-Math.sin(ang)}, ${Math.cos(ang)}, 0, 0)`, rotate: "none", opacity: "1" }; },
   requestAnimationFrame: (f) => { frames.push(f); return frames.length; },
-  setTimeout: (f) => { frames.push(() => f()); return frames.length; },  // the first look runs in a timer after the frame (`atlasRigWake.afterPaint`)
   atlasTailWake() {}, atlasFix: (n) => +n.toFixed(2), atlasArmPath: () => "M0 0", atlasArmHand: () => "", atlasState: {},
   ATLAS_LOOKS: {}, nameMarkBuddyBehindCover: () => false,  // 1667: the rig holds its reads behind a dialog
 };
@@ -73,8 +82,9 @@ const box = { isConnected: true, dataset: { atlasMood: "calm" }, classList: { co
 const arm = (side) => ({ side, sgn: side === "r" ? 1 : -1, probe: { getAnimations: () => [] }, running: { get size() { return probeAnims.length; } }, hold: null, groups: [el()], paths: [el()], hand: el(), geo: {}, j: { sh: { x: 0, v: 0, w: 14, t: null }, el: { x: 0, v: 0, w: 14, t: null }, wr: { x: 0, v: 0, w: 14, t: null }, sy: { x: 1, v: 0, w: 14, t: null } }, hist: [], drawn: [0, 0], shown: "", antic: null });
 const rig = { box, body: {}, look: "masculine", arms: [arm("l"), arm("r")], raf: 0, at: 0, still: 0, host: buddy, observer: {}, pose: el(), heads: [el()], lag: { x: 0, v: 0, w: 9, t: null }, fresh: false };
 box.atlasRig = rig;
-const run = (n) => { for (let i = 0; i < n; i += 1) { clock += 16.7; const f = frames; frames = []; for (const g of f) g(clock); } };
-const take = () => { const r = { ...reads }; reads.cs = 0; reads.anim = 0; return r; };
+// A drawn frame runs its callbacks, then the tasks queued behind it (a timer set in a frame runs after the paint).
+const run = (n) => { for (let i = 0; i < n; i += 1) { clock += 16.7; const f = frames; frames = []; phase = "frame"; for (const g of f) g(clock); phase = "task"; const t = tasks; tasks = []; for (const g of t) g(); } };
+const take = () => { const r = { ...reads }; reads.cs = 0; reads.anim = 0; reads.inFrame = 0; return r; };
 """
 
 
@@ -103,6 +113,10 @@ process.stdout.write(JSON.stringify(res));
 """,
         MOTION,
     )
+    # **The rig's frame itself reads nothing** (INBOX 1766, the owner's lag log: `atlasRigFrame` 138 to 205 ms, forced
+    # layout 136 to 203 ms): the one look it takes in a frame is the first, at attach; every later look is a task
+    # after the paint (`atlasRigLook`).
+    assert out["walk"]["inFrame"] <= 3 and out["woken"]["inFrame"] == 0 and out["anim"]["inFrame"] == 0 and out["after"]["inFrame"] == 0, out
     # Two probes and the pose: 3 reads a frame while it looks.
     assert out["walk"]["cs"] <= 3 * 20, f"60 walking frames read style {out['walk']['cs']} times; it reads only until the arms hold still"
     assert out["walk"]["cs"] >= 3, "it reads at least once after a wake"
@@ -117,7 +131,9 @@ def test_the_wake_marks_the_figure_for_a_fresh_read() -> None:
     assert "rig.dirty = true" in wake
     assert "box.atlasDirtyAt = performance.now()" in wake
     frame = _fn(MOTION, "atlasRigFrame")
-    assert "rig.dirty" in frame and frame.index("rig.dirty") < frame.index("atlasRigRead(")
+    look = _look()
+    assert "rig.dirty" in look and look.index("rig.dirty") < look.index("atlasRigRead(")
+    assert "atlasRigRead(" not in frame
 
 
 @needs_node
