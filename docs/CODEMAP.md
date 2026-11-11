@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2705, CSS sections 523, backend routes 671, backend modules 10177, test files 2494, tests 20551, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2705, CSS sections 523, backend routes 671, backend modules 10178, test files 2494, tests 20551, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -13526,7 +13526,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10177)
+## Backend modules (10178)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -25691,23 +25691,24 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `undismiss` | src/tessellate/entry/tidy.py:709 |
 | `undo` | src/tessellate/entry/tidy.py:1081 |
 
-### src/tessellate/entry/timewords.py (13)
+### src/tessellate/entry/timewords.py (14)
 
 | Name | File:line |
 |---|---|
 | `Mention` | src/tessellate/entry/timewords.py:62 |
 | `_add_months` | src/tessellate/entry/timewords.py:77 |
-| `_clock` | src/tessellate/entry/timewords.py:258 |
+| `_clock` | src/tessellate/entry/timewords.py:271 |
 | `_count` | src/tessellate/entry/timewords.py:88 |
 | `_day_of_month` | src/tessellate/entry/timewords.py:119 |
 | `_happened` | src/tessellate/entry/timewords.py:213 |
+| `_hour24` | src/tessellate/entry/timewords.py:258 |
 | `_monday` | src/tessellate/entry/timewords.py:73 |
 | `_offset` | src/tessellate/entry/timewords.py:187 |
 | `_weekday` | src/tessellate/entry/timewords.py:220 |
 | `_weekday_late` | src/tessellate/entry/timewords.py:125 |
-| `_with_clock` | src/tessellate/entry/timewords.py:283 |
+| `_with_clock` | src/tessellate/entry/timewords.py:287 |
 | `_written_date` | src/tessellate/entry/timewords.py:107 |
-| `find` | src/tessellate/entry/timewords.py:304 |
+| `find` | src/tessellate/entry/timewords.py:308 |
 
 ### src/tessellate/entry/topics.py (10)
 
