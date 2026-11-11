@@ -16,8 +16,10 @@ import re
 import subprocess
 from pathlib import Path
 
+from tests._js_scope import unwrapped, unwrapped_copy
+
 ROOT = Path(__file__).resolve().parents[1]
-LAG = (ROOT / "frontend" / "js" / "lag-watch.js").read_text(encoding="utf-8")
+LAG = unwrapped((ROOT / "frontend" / "js" / "lag-watch.js").read_text(encoding="utf-8"))
 
 HARNESS = r"""
 const vm = require("vm");
@@ -34,7 +36,7 @@ console.log(JSON.stringify(vm.runInContext(input.expr, ctx)));
 
 def _run(expr: str):
     result = subprocess.run(
-        ["node", "-e", HARNESS, str(ROOT / "frontend" / "js" / "diag-report.js"), str(ROOT / "frontend" / "js" / "lag-watch.js")],
+        ["node", "-e", HARNESS, str(ROOT / "frontend" / "js" / "diag-report.js"), str(unwrapped_copy(ROOT / "frontend" / "js" / "lag-watch.js"))],
         input=json.dumps({"expr": expr}),
         capture_output=True,
         text=True,

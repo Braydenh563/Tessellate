@@ -579,10 +579,22 @@
 .sidebar-collapsed .sidebar-collapse-toggle .icon-collapsed {
   display: block;
 }
+/* **The rail's width and overflow win by the id, not by `!important`.** The
+   four resizable sidebars carry id rules for their open shape (the phone
+   sheet's `width: min(20rem, 84vw)` and its `overflow-y`, `#tab-notes
+   #sidebar`'s scroll), and an id outranks a class. `:is()` takes its most
+   specific argument, so the rail rule reads at (1,1,0), above each of those
+   and below the focus-mode panel's (1,3,0). Only these two properties are
+   raised: the rest of the rail (shadow, border, transition) still yields to
+   the sidebar's own id rules, as it always did. */
+.sidebar-collapsed,
+:is(#sidebar, #chat-sidebar, #doc-sidebar, #skills-sidebar).sidebar-collapsed,
+#tab-notes #sidebar.sidebar-collapsed {
+  width: 48px;
+  overflow: hidden;
+}
 .sidebar-collapsed {
-  width: 48px !important;
   white-space: nowrap;
-  overflow: hidden !important;
   /* No width transition: the grid track the sidebar sits in is set
      instantly by applySidebarWidth, so animating the aside's own width
      only made it lag its track. Opacity and transform are the only
@@ -613,13 +625,17 @@
 /* Hover-peek */
 .layout-sidebar-collapsed>.sidebar-collapsed:hover,
 .layout-sidebar-collapsed>.sidebar-collapsed:is(:focus-visible, :has(:focus-visible)) {
-  width: var(--saved-width) !important;
   box-shadow: var(--glass-shadow);
   z-index: 100;
   position: absolute;
   /* absolute on hover so it pops over */
   height: calc(100% - var(--space-6));
   /* keep it within the layout */
+}
+/* The peeked width, above the rail's (1,1,0) by the same id list. */
+.layout-sidebar-collapsed>:is(#sidebar, #chat-sidebar, #doc-sidebar, #skills-sidebar, .sidebar-collapsed).sidebar-collapsed:hover,
+.layout-sidebar-collapsed>:is(#sidebar, #chat-sidebar, #doc-sidebar, #skills-sidebar, .sidebar-collapsed).sidebar-collapsed:is(:focus-visible, :has(:focus-visible)) {
+  width: var(--saved-width);
 }
 /* `right: 1rem`, the pinned-open position, not the 1.25rem it had: the head's
    reserve (--sidebar-toggle-lane) is measured from the pinned spot, and the
@@ -3477,15 +3493,9 @@ dialog::backdrop {
    control-height section is about: "the segmented control brought its own
    padding and stood four pixels taller than the selects beside it… the row
    reads as assembled rather than designed."
-   `.whiteboard-floating-panel input[type="color"].wb-color-picker` already
-   declares 2.25rem and loses to something later at equal weight, so this
-   states it once more at a weight nothing in the panel can outrank. Same
-   value, not a new one, the point is that it wins, not that it changes. */
-.whiteboard-floating-panel input[type="color"].wb-color-picker,
-.whiteboard-floating-panel input.wb-color-picker[type="color"] {
-  height: 2.25rem !important;
-  width: 2.25rem !important;
-}
+   The colour input is the rail's ink swatch, `#wb-rail-ink`, which says
+   `--control-h-body` (2.25rem) itself (below, with its ring): a panel rule restating it with
+   `!important` was only there to outrank that id rule. */
 /* The slider is the documented exception to matching the strip, DESIGN.md
    says so for `.graph-options`: "forcing a slider thumb to a button's
    hit-box height would misrepresent it as clickable chrome rather than a
@@ -6403,8 +6413,8 @@ button.connection-row:is(:hover, :focus-visible) {
    column, held to 40vw so the page keeps the larger share; the sidebar's own
    grip and fold toggle mean nothing in a panel that opens and closes from the
    dock, so neither is offered, and a sidebar folded to its rail on the page
-   still opens whole here (the `!important` is the one the rail's own rule
-   carries). On a phone it is the window's width less its gutters, over the
+   still opens whole here (this chain reads (1,3,0), above the rail's
+   (1,1,0)). On a phone it is the window's width less its gutters, over the
    page. */
 #tab-documents.doc-focus {
   --doc-focus-sidebar-w: min(20rem, 40vw);
@@ -6416,7 +6426,7 @@ button.connection-row:is(:hover, :focus-visible) {
   left: var(--space-4);
   bottom: var(--space-4);
   z-index: 2;
-  width: var(--doc-focus-sidebar-w) !important;
+  width: var(--doc-focus-sidebar-w);
   height: auto;
   max-height: none;
   margin: 0;
@@ -6449,7 +6459,7 @@ button.connection-row:is(:hover, :focus-visible) {
 @media (max-width: 819.98px) {
   #tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar {
     right: var(--space-4);
-    width: auto !important;
+    width: auto;
   }
 }
 @media (min-width: 820px) {
@@ -10839,8 +10849,8 @@ header#top-bar {
      a second surface inside the rail and nothing but a UA default. The sweep
      counts painted backgrounds in the rail for exactly that reason. */
   background: transparent;
-  width: var(--target-min);
-  height: var(--target-min);
+  width: var(--control-h-body);
+  height: var(--control-h-body);
   min-width: var(--target-min);
   min-height: var(--target-min);
   padding: 0;

@@ -17,6 +17,8 @@ from pathlib import Path
 
 import pytest
 
+from tests._js_scope import unwrapped
+
 JS = Path(__file__).resolve().parent.parent / "frontend" / "js"
 DOCS = (JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-view.js").read_text(encoding="utf-8")
 PROSE = (JS / "documents-prose.js").read_text(encoding="utf-8")
@@ -367,7 +369,7 @@ def test_a_widget_moved_by_a_key_reads_its_place_when_pressed():
 
 @needs_node
 def test_a_fresh_frame_closure_is_known_by_its_source():
-    lag = (JS / "lag-watch.js").read_text(encoding="utf-8")
+    lag = unwrapped((JS / "lag-watch.js").read_text(encoding="utf-8"))
     fns = "\n".join(_function(lag, h) for h in ("function lagStackOwner(", "function lagRafOwner("))
     const = re.search(r"^const LAG_RAF = .*$", lag, re.M).group(0)
     got = _node(

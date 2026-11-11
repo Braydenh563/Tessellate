@@ -1011,16 +1011,19 @@
    to 32% opacity, eased (22% and 8% read slightly too see-through, the owner
    2026-10-11); the head keeps its full strength, because Peek, the
    title and the way out live there and must stay findable. */
-.modal-overlay.peeking {
-  background: transparent !important;
+/* Won by the id, not by `!important`: `#settings-modal > .modal-card` gives
+   the card its opaque ground at (1,1,0), and the one overlay that peeks is
+   the settings modal (`setSettingsPeek`), so these name it. */
+#settings-modal.peeking {
+  background: transparent;
 }
-.modal-overlay.peeking .modal-card {
-  opacity: 1 !important;
-  background: color-mix(in srgb, var(--panel) 14%, transparent) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  box-shadow: none !important;
+#settings-modal.peeking .modal-card {
+  opacity: 1;
+  background: color-mix(in srgb, var(--panel) 14%, transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: none;
 }
 #settings-modal .modal-card > .modal-body {
   transition: opacity var(--ui-base) var(--ease-out);
