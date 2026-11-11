@@ -2,7 +2,7 @@
 // as a window onto it; the pencil in the window's corner opens the block's text in a box, and Save writes it into the
 // document the block lives in, through the document's own save (its history, its conflict guard). The block exists once.
 // Lazy: `LAZY_MODULES.docSynced`; documents-embeds.js draws the pencil and asks for this file on the first press. It uses
-// the boot scripts' `window.docBlockFind`, `smallButton`, `apiJson` and `toast`, and adds no global name.
+// the boot scripts' `window.docBlockFind`, `window.offerUndo`, `smallButton`, `apiJson` and `toast`, and adds no global name.
 (() => {
   // DOC-SYNCED-BEGIN (tests/test_doc_blockrefs.py runs this region in node, after the block-reference region)
   //: The document with the block carrying `id` rewritten to `replacement` (SYNCED BLOCKS, DOCUMENTS_PLAN 26): its `^id` stays on
@@ -19,6 +19,25 @@
     return again && again.text === clean ? next : null;
   }
   // DOC-SYNCED-END
+
+  //: One write of the source document, guarded by the hash of the text the caller last saw (a change elsewhere is a conflict apiJson names).
+  const writeSource = (id, hash, content, cache) =>
+    apiJson(`/documents/${id}`, { method: "PUT", body: JSON.stringify({ content, base_hash: hash }) }).then((saved) => {
+      cache.set(id, saved.content ?? content);
+      return saved;
+    });
+
+  //: Undo and Redo for a saved block (the undo contract): each is a write of the whole document back, chained on the hash the last one returned.
+  function offerSavedUndo(target, before, after, hash, cache) {
+    let at = hash;
+    const move = (content) => writeSource(target.doc.id, at, content, cache).then((saved) => void (at = saved.content_hash));
+    window.offerUndo(
+      "Edit synced block",
+      `Saved in ${target.doc.title || "the document"}.`,
+      () => move(before),
+      () => move(after)
+    );
+  }
 
   //: **Edit a synced block where it is shown.** A box of its text and Save, Cancel; Save reads the source document afresh,
   //: rewrites that one block (`replace`, which keeps its `^id`) and saves it with the document's own conflict guard,
@@ -50,8 +69,8 @@
           return;
         }
         if (next !== source.content) {
-          const saved = await apiJson(`/documents/${target.doc.id}`, { method: "PUT", body: JSON.stringify({ content: next, base_hash: source.content_hash }) });
-          cache.set(target.doc.id, saved.content ?? next);
+          const saved = await writeSource(target.doc.id, source.content_hash, next, cache);
+          offerSavedUndo(target, source.content || "", next, saved.content_hash, cache);
         }
         back();
       } catch {

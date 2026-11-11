@@ -31,6 +31,7 @@ let opened = null;
 const ctx = {
   document: doc, diagramModel: {}, console, window: {}, matchMedia: () => ({ matches: false }),
   openMenuAtPoint: (items) => { opened = items; return null; },
+  kebabMenu: () => null, // diagram-library.js hangs `kebabMenu.beside` on it as it loads
   prefs: { get: (_k, d) => d, set: () => {} }, closeActionMenus: () => {}, wireToolbarRoving: () => {},
 };
 ctx.window = ctx;

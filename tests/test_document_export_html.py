@@ -152,12 +152,12 @@ def test_a_graph_and_a_table_of_notes_export_as_figures_not_as_screen_controls()
     block was saved as its "Reading the notes" line, and its row names (buttons) were removed with the other controls."""
     docs = DOCUMENTS_JS.read_text(encoding="utf-8")
     export = EXPORT_JS.read_text(encoding="utf-8")
-    chrome = re.search(r'const DOC_EXPORT_FIGURE_CHROME = "([^"]+)"', docs)
-    assert chrome and all(name in chrome.group(1) for name in (".dg-tools", ".dg-params", ".dg-edit", ".db-edit")), chrome
-    assert "docExportFigures(root)" in docs[docs.index("function docExportClean") :][:400]
+    figures = docs[docs.index("docExportClean.figures = ") :][:1400]
+    assert all(name in figures for name in (".dg-tools", ".dg-params", ".dg-edit", ".db-edit", ".db-bar button", ".dg-swatch")), figures
+    assert "docExportClean.figures(root)" in docs[docs.index("function docExportClean") :][:400]
     assert 'node.matches(".wiki-link, .db-open")' in docs, "a note's name in a base table must survive as text"
     css = export[export.index("const DOC_EXPORT_CSS") :][:4500]
     for rule in (".dg-svg", ".dg-line", ".dg-axis", ".dg-curve", ".dg-key", ".db-scroll"):
         assert rule in css, rule
     run = export[export.index("async function docExportHtmlRun") :][:1500]
-    assert run.index("docExportBaseSettled") < run.index("cloneNode(true)"), "the rows are waited for before the preview is copied"
+    assert run.index("docExportHtmlRun.settled(") < run.index("cloneNode(true)"), "the rows are waited for before the preview is copied"

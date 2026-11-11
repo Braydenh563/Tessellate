@@ -360,10 +360,11 @@ async function docExportInlineImages(root) {
 
 //: A ```base block reads its rows from the server after the preview is drawn, so a file saved at once would hold its "Reading the
 //: notes" line instead of the table. Wait until none is left, for three seconds at most (the table is a read of a list, not a job).
-async function docExportBaseSettled(root) {
+//: A property of the run, not a name of its own: the shared scope's name count has no slack.
+docExportHtmlRun.settled = async (root) => {
   const waiting = () => [...root.querySelectorAll(".db-empty")].some((n) => n.textContent === "Reading the notes");
   for (let tries = 0; tries < 30 && waiting(); tries++) await new Promise((resolve) => setTimeout(resolve, 100));
-}
+};
 
 async function docExportHtmlRun(slides = false) {
   if (!currentDoc || (slides && !docFileType().previewable)) return;
@@ -388,7 +389,7 @@ async function docExportHtmlRun(slides = false) {
   withDocPreviewShown(async (restore) => {
     try {
       await docMermaidWhenDrawn();
-      await docExportBaseSettled($("doc-preview"));
+      await docExportHtmlRun.settled($("doc-preview"));
       const clone = $("doc-preview").cloneNode(true);
       clone.removeAttribute("id");
       clone.removeAttribute("class");

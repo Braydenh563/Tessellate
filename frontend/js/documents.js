@@ -7757,9 +7757,14 @@ function docExportPromoteHeadings(root) {
 
 //: A plotted graph and a table of notes carry controls for the screen (zoom, sliders, refresh, the edit pencil). A file has none of
 //: them; the key's swatch is a coloured box whose colour is a style, which the clean-up below drops, so it becomes a drawn bar first.
-const DOC_EXPORT_FIGURE_CHROME = ".dg-tools, .dg-params, .dg-edit, .db-edit, .db-bar button";
+//: A property of `docExportClean`, not a name of its own: the shared scope's name count has no slack.
+function docExportClean(root) {
+  for (const node of root.querySelectorAll(DOC_EXPORT_STRIP)) node.remove();
+  docExportClean.figures(root);
+  return docExportClean.rest(root);
+}
 
-function docExportFigures(root) {
+docExportClean.figures = (root) => {
   for (const swatch of [...root.querySelectorAll(".dg-swatch")]) {
     const bar = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     bar.setAttribute("class", "dg-swatch");
@@ -7772,12 +7777,10 @@ function docExportFigures(root) {
     bar.append(fill);
     swatch.replaceWith(bar);
   }
-  for (const node of root.querySelectorAll(DOC_EXPORT_FIGURE_CHROME)) node.remove();
-}
+  for (const node of root.querySelectorAll(".dg-tools, .dg-params, .dg-edit, .db-edit, .db-bar button")) node.remove();
+};
 
-function docExportClean(root) {
-  for (const node of root.querySelectorAll(DOC_EXPORT_STRIP)) node.remove();
-  docExportFigures(root);
+docExportClean.rest = (root) => {
   docExportUnwrapControls(root);
   docExportPromoteHeadings(root);
   for (const box of root.querySelectorAll('input:not([type="checkbox"])')) box.remove();
@@ -7810,7 +7813,7 @@ function docExportClean(root) {
     }
   }
   return root;
-}
+};
 
 //: The HTML and PDF exports live in documents-export.js, fetched on the first
 //: press of either (audit 1031 DC13).

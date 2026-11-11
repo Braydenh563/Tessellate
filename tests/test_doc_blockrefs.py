@@ -255,7 +255,10 @@ def test_a_synced_block_is_edited_through_a_lazy_module_the_embed_asks_for() -> 
     assert 'ensureModule("docSynced")' in embeds and "currentDoc?.id !== target.doc.id" in embeds
     assert 'docSynced: ["/js/documents-synced.js"]' in (ROOT / "frontend" / "js" / "lazy-entries.js").read_text(encoding="utf-8")
     # Save goes through the document's own guarded save, so it has history and refuses a stale write.
-    assert 'method: "PUT"' in synced and "base_hash: source.content_hash" in synced
+    assert 'method: "PUT"' in synced and "base_hash: hash" in synced
+    assert "writeSource(target.doc.id, source.content_hash, next, cache)" in synced, "the write carries the hash of the text the box opened on"
+    # The save is one step on the undo stack, with a redo, each a guarded write of the whole document (the undo contract).
+    assert "window.offerUndo(" in synced and "() => move(before)" in synced and "() => move(after)" in synced
     # The redraw after Save or Cancel is handed in by the embed (docEmbedNode is private to its file, so a reference to it threw).
     assert "draw: () => docEmbedNode(target, name)" in embeds and "docEmbedNode" not in synced.replace("`docEmbedNode`", "")
     # A block changed elsewhere since the box opened is refused, not overwritten.

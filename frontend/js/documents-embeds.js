@@ -290,10 +290,10 @@
     if (docRecordingsStale()) loads.push(docRecordingsLoad());
     //: A `![[board:12]]` resolves from the board index, which a document has usually never asked for. Once per board id, so a
     //: dead reference costs one walk, not one per redraw (markdown.js `boardEmbedForced` does the same for Read's card).
-    const board = boardEmbedRef(name);
+    const board = window.boardEmbedRef?.(name);
     if (board && !docBoardAsked.has(board.id)) {
       docBoardAsked.add(board.id);
-      loads.push(loadMapBoardIndex(true));
+      loads.push(window.loadMapBoardIndex?.(true));
     }
     if (!loads.length) return;
     Promise.all(loads.map((load) => Promise.resolve(load).catch(() => {}))).then(() => {
