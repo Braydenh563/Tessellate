@@ -117,7 +117,6 @@ SOURCES: tuple[Source, ...] = (
 
 #: (file, text with `{}` for each placeholder) -> why it may break a rule.
 ALLOWLIST: dict[tuple[str, str], str] = {
-    ("ai/captions.py", "{}"): "re-wraps a HelperError from ai/captions_process.py, whose messages are fixed sentences",
     ("ai/tools/categories.py", "{}"): (
         "re-wraps a ValueError from entry/manager.py rename_category and "
         "delete_category, whose messages are checked above"
