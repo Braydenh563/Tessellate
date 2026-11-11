@@ -17,6 +17,7 @@ Settings line says private items stay unreadable.
 from __future__ import annotations
 
 import hashlib
+import re
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -43,6 +44,11 @@ def _when(text: object) -> datetime | None:
     return found.astimezone(timezone.utc).replace(tzinfo=None) if found and found.tzinfo else found
 
 
+#: `<device>:<local id>` (sync_extras.Names.of): letters, digits, `_` and `-` only. A sid becomes a file name in a
+#: sync folder (folder_sync._blob_name), so a peer's sid with a separator or `..` is refused with its manifest.
+_SID = re.compile(r"[A-Za-z0-9]{1,64}:[A-Za-z0-9_-]{1,64}")
+
+
 def checked(answer: object, peer: str) -> list[dict]:
     """The manifest's lines, or SegmentError before anything is fetched."""
     if not isinstance(answer, dict) or answer.get("format") != sync_extras.FORMAT or answer.get("device") != peer:
@@ -51,7 +57,7 @@ def checked(answer: object, peer: str) -> list[dict]:
     if not isinstance(lines, list) or answer.get("digest") != sync_extras.digest(lines):
         raise SegmentError(DAMAGED)
     if not all(isinstance(x, dict) and x.get("kind") in sync_extras.KINDS and isinstance(x.get("sid"), str)
-               and ":" in x["sid"] and isinstance(x.get("hash"), str) for x in lines):
+               and _SID.fullmatch(x["sid"]) and isinstance(x.get("hash"), str) for x in lines):
         raise SegmentError(DAMAGED)
     return lines
 

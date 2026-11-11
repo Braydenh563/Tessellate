@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8222, frontend ids 2756, CSS sections 524, backend routes 695, backend modules 10687, test files 2633, tests 21497, plan headings 1013, app scripts 29, boot scripts 38, script files 290.
+Counts: frontend functions 8222, frontend ids 2756, CSS sections 524, backend routes 695, backend modules 10688, test files 2633, tests 21501, plan headings 1013, app scripts 29, boot scripts 38, script files 290.
 
 ## Frontend functions (8222)
 
@@ -4033,18 +4033,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `autoY` | frontend/js/documents-graph.js:258 |
+| `autoY` | frontend/js/documents-graph.js:262 |
 | `compile` | frontend/js/documents-graph.js:30 |
-| `fill` | frontend/js/documents-graph.js:286 |
-| `hue` | frontend/js/documents-graph.js:282 |
+| `fill` | frontend/js/documents-graph.js:290 |
+| `hue` | frontend/js/documents-graph.js:286 |
 | `niceStep` | frontend/js/documents-graph.js:149 |
 | `parse` | frontend/js/documents-graph.js:156 |
 | `plain` | frontend/js/documents-graph.js:22 |
-| `runs` | frontend/js/documents-graph.js:226 |
+| `runs` | frontend/js/documents-graph.js:230 |
 | `span` | frontend/js/documents-graph.js:145 |
-| `svgEl` | frontend/js/documents-graph.js:276 |
-| `tickText` | frontend/js/documents-graph.js:218 |
-| `ticks` | frontend/js/documents-graph.js:212 |
+| `svgEl` | frontend/js/documents-graph.js:280 |
+| `tickText` | frontend/js/documents-graph.js:222 |
+| `ticks` | frontend/js/documents-graph.js:216 |
 
 ### frontend/js/documents-history.js (21)
 
@@ -13743,7 +13743,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10687)
+## Backend modules (10688)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -26008,12 +26008,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `FolderLink` | src/tessellate/entry/folder_sync.py:224 |
+| `FolderLink` | src/tessellate/entry/folder_sync.py:227 |
 | `SyncError` | src/tessellate/entry/folder_sync.py:56 |
 | `_blob_name` | src/tessellate/entry/folder_sync.py:161 |
 | `_checked` | src/tessellate/entry/folder_sync.py:97 |
 | `_key` | src/tessellate/entry/folder_sync.py:82 |
-| `_own_salt` | src/tessellate/entry/folder_sync.py:192 |
+| `_own_salt` | src/tessellate/entry/folder_sync.py:195 |
 | `_private` | src/tessellate/entry/folder_sync.py:140 |
 | `_sealed_sha1` | src/tessellate/entry/folder_sync.py:165 |
 | `_sync_roots` | src/tessellate/entry/folder_sync.py:86 |
@@ -26021,11 +26021,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `extras` | src/tessellate/entry/folder_sync.py:147 |
 | `last_problem` | src/tessellate/entry/folder_sync.py:64 |
 | `load_state` | src/tessellate/entry/folder_sync.py:73 |
-| `open_peer` | src/tessellate/entry/folder_sync.py:260 |
-| `run` | src/tessellate/entry/folder_sync.py:272 |
+| `open_peer` | src/tessellate/entry/folder_sync.py:263 |
+| `run` | src/tessellate/entry/folder_sync.py:278 |
 | `segments` | src/tessellate/entry/folder_sync.py:126 |
 | `state_path` | src/tessellate/entry/folder_sync.py:69 |
-| `write` | src/tessellate/entry/folder_sync.py:204 |
+| `write` | src/tessellate/entry/folder_sync.py:207 |
 
 ### src/tessellate/entry/highlights.py (2)
 
@@ -26471,19 +26471,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Apply` | src/tessellate/entry/sync_extras_apply.py:91 |
-| `_apply_files` | src/tessellate/entry/sync_extras_apply.py:315 |
-| `_apply_kind` | src/tessellate/entry/sync_extras_apply.py:302 |
-| `_gone_files` | src/tessellate/entry/sync_extras_apply.py:294 |
-| `_key` | src/tessellate/entry/sync_extras_apply.py:262 |
-| `_opened` | src/tessellate/entry/sync_extras_apply.py:68 |
-| `_plain` | src/tessellate/entry/sync_extras_apply.py:80 |
-| `_space` | src/tessellate/entry/sync_extras_apply.py:87 |
-| `_theirs_win` | src/tessellate/entry/sync_extras_apply.py:59 |
-| `_wanted` | src/tessellate/entry/sync_extras_apply.py:266 |
-| `_when` | src/tessellate/entry/sync_extras_apply.py:37 |
-| `checked` | src/tessellate/entry/sync_extras_apply.py:46 |
-| `pull_extras` | src/tessellate/entry/sync_extras_apply.py:324 |
+| `Apply` | src/tessellate/entry/sync_extras_apply.py:97 |
+| `_apply_files` | src/tessellate/entry/sync_extras_apply.py:321 |
+| `_apply_kind` | src/tessellate/entry/sync_extras_apply.py:308 |
+| `_gone_files` | src/tessellate/entry/sync_extras_apply.py:300 |
+| `_key` | src/tessellate/entry/sync_extras_apply.py:268 |
+| `_opened` | src/tessellate/entry/sync_extras_apply.py:74 |
+| `_plain` | src/tessellate/entry/sync_extras_apply.py:86 |
+| `_space` | src/tessellate/entry/sync_extras_apply.py:93 |
+| `_theirs_win` | src/tessellate/entry/sync_extras_apply.py:65 |
+| `_wanted` | src/tessellate/entry/sync_extras_apply.py:272 |
+| `_when` | src/tessellate/entry/sync_extras_apply.py:38 |
+| `checked` | src/tessellate/entry/sync_extras_apply.py:52 |
+| `pull_extras` | src/tessellate/entry/sync_extras_apply.py:330 |
 
 ### src/tessellate/entry/sync_keys.py (5)
 
@@ -26524,33 +26524,34 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `transport` | src/tessellate/entry/sync_pull.py:73 |
 | `use_transport` | src/tessellate/entry/sync_pull.py:67 |
 
-### src/tessellate/entry/sync_segments.py (23)
+### src/tessellate/entry/sync_segments.py (24)
 
 | Name | File:line |
 |---|---|
-| `SegmentError` | src/tessellate/entry/sync_segments.py:41 |
-| `_apply_one` | src/tessellate/entry/sync_segments.py:208 |
-| `_changed` | src/tessellate/entry/sync_segments.py:93 |
-| `_comparable` | src/tessellate/entry/sync_segments.py:191 |
-| `_create` | src/tessellate/entry/sync_segments.py:176 |
-| `_find` | src/tessellate/entry/sync_segments.py:143 |
-| `_iso` | src/tessellate/entry/sync_segments.py:56 |
-| `_keep_theirs_as_version` | src/tessellate/entry/sync_segments.py:202 |
-| `_set_state` | src/tessellate/entry/sync_segments.py:155 |
-| `_shipped` | src/tessellate/entry/sync_segments.py:105 |
-| `_space` | src/tessellate/entry/sync_segments.py:150 |
-| `_theirs_win` | src/tessellate/entry/sync_segments.py:196 |
-| `_utc` | src/tessellate/entry/sync_segments.py:60 |
-| `_valid_note` | src/tessellate/entry/sync_segments.py:123 |
-| `_when` | src/tessellate/entry/sync_segments.py:64 |
-| `_words` | src/tessellate/entry/sync_segments.py:186 |
-| `apply_segment` | src/tessellate/entry/sync_segments.py:232 |
-| `check` | src/tessellate/entry/sync_segments.py:129 |
-| `digest` | src/tessellate/entry/sync_segments.py:89 |
-| `export_segment` | src/tessellate/entry/sync_segments.py:110 |
-| `note_sid` | src/tessellate/entry/sync_segments.py:50 |
-| `note_state` | src/tessellate/entry/sync_segments.py:71 |
-| `sync_actor` | src/tessellate/entry/sync_segments.py:45 |
+| `SegmentError` | src/tessellate/entry/sync_segments.py:47 |
+| `_apply_one` | src/tessellate/entry/sync_segments.py:223 |
+| `_changed` | src/tessellate/entry/sync_segments.py:108 |
+| `_comparable` | src/tessellate/entry/sync_segments.py:206 |
+| `_create` | src/tessellate/entry/sync_segments.py:191 |
+| `_find` | src/tessellate/entry/sync_segments.py:158 |
+| `_iso` | src/tessellate/entry/sync_segments.py:71 |
+| `_keep_theirs_as_version` | src/tessellate/entry/sync_segments.py:217 |
+| `_set_state` | src/tessellate/entry/sync_segments.py:170 |
+| `_shipped` | src/tessellate/entry/sync_segments.py:120 |
+| `_space` | src/tessellate/entry/sync_segments.py:165 |
+| `_theirs_win` | src/tessellate/entry/sync_segments.py:211 |
+| `_utc` | src/tessellate/entry/sync_segments.py:75 |
+| `_valid_note` | src/tessellate/entry/sync_segments.py:138 |
+| `_when` | src/tessellate/entry/sync_segments.py:79 |
+| `_words` | src/tessellate/entry/sync_segments.py:201 |
+| `apply_segment` | src/tessellate/entry/sync_segments.py:247 |
+| `check` | src/tessellate/entry/sync_segments.py:144 |
+| `digest` | src/tessellate/entry/sync_segments.py:104 |
+| `export_segment` | src/tessellate/entry/sync_segments.py:125 |
+| `last_problem` | src/tessellate/entry/sync_segments.py:55 |
+| `note_sid` | src/tessellate/entry/sync_segments.py:65 |
+| `note_state` | src/tessellate/entry/sync_segments.py:86 |
+| `sync_actor` | src/tessellate/entry/sync_segments.py:60 |
 
 ### src/tessellate/entry/tagnames.py (3)
 
@@ -27374,7 +27375,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21497)
+## Tests (21501)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28250,7 +28251,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_doc_focus_sidebar.py | 4 |
 | tests/test_doc_format_back.py | 4 |
 | tests/test_doc_frontmatter.py | 2 |
-| tests/test_doc_graph.py | 8 |
+| tests/test_doc_graph.py | 9 |
 | tests/test_doc_head_one_row_1111.py | 6 |
 | tests/test_doc_icons_1545.py | 6 |
 | tests/test_doc_image_options.py | 1 |
@@ -28484,7 +28485,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_focus_feedback_1029.py | 8 |
 | tests/test_focus_timer.py | 7 |
 | tests/test_folder_roundtrip.py | 8 |
-| tests/test_folder_sync_q34.py | 15 |
+| tests/test_folder_sync_q34.py | 18 |
 | tests/test_folder_sync_routes_q34.py | 3 |
 | tests/test_follow_items_1110.py | 15 |
 | tests/test_followup_ordinal_e14.py | 9 |

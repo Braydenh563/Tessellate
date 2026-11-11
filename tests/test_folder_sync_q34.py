@@ -8,13 +8,14 @@ the test, never read off the clock.
 
 from __future__ import annotations
 
+import base64
 import json
 from datetime import datetime
 
 import pytest
 from sqlalchemy import select
 
-from tessellate.core import vault
+from tessellate.core import crypto, vault
 from tessellate.core.database import Attachment, Document, Entry, EntryRevision
 from tessellate.entry import folder_sync, manager, sync_pull
 from tests.test_sync_segments import Link, Notebook
@@ -283,3 +284,52 @@ def test_a_folder_outside_home_and_removable_drives_is_refused(two, tmp_path, mo
     (tmp_path / "elsewhere" / "link").symlink_to(folder)
     with pytest.raises(folder_sync.SyncError, match="home folder or on a removable drive"):
         sync(a, tmp_path / "elsewhere" / "link")
+
+
+def _reseal(file, change) -> None:
+    """Rewrite a peer's file as someone who holds the passphrase could: decrypt, change the body, seal again."""
+    sealed = json.loads(file.read_text("utf-8"))
+    key = folder_sync._key(PASS, base64.b64decode(sealed["salt"]))  # noqa: SLF001  # the file's own key
+    body = json.loads(crypto.decrypt(key, sealed["data"]))
+    change(body)
+    sealed["data"] = crypto.encrypt(key, json.dumps(body))
+    file.write_text(json.dumps(sealed), "utf-8")
+
+
+def test_a_peer_file_whose_device_names_another_folder_is_unreadable(two):
+    """A device name becomes a folder name here (`tessellate-sync-<device>-files`): one that is not the 12
+    letters and digits sync_state makes is refused, so `../x` never walks out of the sync folder."""
+    a, b, folder = two
+    note(a, "Travels only under its own name", 1)
+    sync(a, folder)
+    (file,) = folder.glob("*.json")
+    _reseal(file, lambda body: body.update(device="../../escape"))
+    got = sync(b, folder)
+    assert got["unreadable"] == 1 and texts(b) == []
+
+
+def test_a_manifest_sid_with_a_separator_is_refused_before_anything_is_fetched():
+    """A sid becomes a file name in a sync folder (folder_sync._blob_name): only `<letters/digits>:<id>` passes."""
+    from tessellate.entry import sync_extras, sync_extras_apply
+    from tessellate.entry.sync_segments import SegmentError
+
+    def answer(sid: str) -> dict:
+        lines = [{"kind": "file", "sid": sid, "hash": "h"}]
+        return {"format": sync_extras.FORMAT, "device": "abcdefabcdef", "items": lines, "digest": sync_extras.digest(lines)}
+
+    assert sync_extras_apply.checked(answer("abcdefabcdef:12"), "abcdefabcdef")
+    for bad in ("x:/../../../tmp/y", "../x:1", "x:a/b", "x:..\\y", "nocolon"):
+        with pytest.raises(SegmentError):
+            sync_extras_apply.checked(answer(bad), "abcdefabcdef")
+
+
+def test_a_blob_name_outside_the_files_folder_is_neither_read_nor_written(tmp_path):
+    blobs = tmp_path / "shared" / "tessellate-sync-abcdefabcdef-files"
+    blobs.mkdir(parents=True)
+    (blobs / "x-").mkdir()  # the folder a crafted sid walks through, planted by whoever writes the shared folder
+    key = b"k" * 32
+    sealed = {"sha1": "", "data": crypto.encrypt(key, base64.b64encode(b"outside").decode("ascii"))}
+    (tmp_path / "shared" / "outside.bin").write_text(json.dumps(sealed), "utf-8")
+    link = folder_sync.FolderLink({"device": "abcdefabcdef", "segments": [{"upto": 0}], "manifest": {}, "items": {}},
+                                  blobs, key)
+    assert link.file("x:/../../outside", "me") is None

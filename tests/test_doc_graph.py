@@ -129,3 +129,19 @@ def test_the_guide_has_a_topic_and_a_lead_for_the_graph_block() -> None:
     topics = {t["id"]: t for t in help_chat.HELP_TOPICS}
     assert "document-graph" in topics and len(topics["document-graph"]["body"]) < 1900
     assert "document-graph" in help_leads.TOPIC_LEADS
+
+
+@node
+def test_a_long_run_of_digits_or_spaces_is_refused_quickly() -> None:
+    """CodeQL js/polynomial-redos: each number had two ways to split a run of digits (`\\d*\\.?\\d+`) and the comment
+    strip was `\\s+#.*$`, so a 40,000-character line froze the tab for seconds. Each must read in well under one."""
+    got = _run(
+        "const long = (s) => { const t = Date.now(); g.parse(s); return Date.now() - t; };"
+        "console.log(JSON.stringify([long('a = ' + '1'.repeat(40000) + 'x'), long('x: ' + '1'.repeat(40000) + 'x'),"
+        " long('a = 1 [1, ' + '1'.repeat(40000) + 'x'), long('a' + ' '.repeat(40000) + 'x'),"
+        " g.parse('x: -5..5\\ny: -2 to 2\\na = .5 [0, 2.5, 0.5]\\ny = a x  # a comment')]));"
+    )
+    assert all(took < 1000 for took in got[:4]), got[:4]
+    fence = got[4]
+    assert fence["x"] == [-5, 5] and fence["y"] == [-2, 2] and not fence["errors"]
+    assert fence["params"][0]["value"] == 0.5 and fence["curves"][0]["text"] == "a x"

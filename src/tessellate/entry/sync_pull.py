@@ -29,7 +29,7 @@ from sqlalchemy.orm import Session
 from tessellate.core import sync_state
 from tessellate.entry import sync_keys, sync_link
 from tessellate.entry.sync_extras_apply import pull_extras
-from tessellate.entry.sync_segments import DAMAGED, SegmentError, apply_segment
+from tessellate.entry.sync_segments import DAMAGED, SegmentError, apply_segment, last_problem
 
 logger = logging.getLogger("tessellate.sync")
 
@@ -98,8 +98,8 @@ def _drain(session: Session, data_dir: Path, link: Transport, totals: dict) -> s
         for key, count in pull_extras(session, data_dir, link, me, sync_keys.keys(data_dir)).items():
             totals[key] = totals.get(key, 0) + count
         return ""
-    except SegmentError as exc:
-        return str(exc)
+    except SegmentError:
+        return last_problem()
     except OSError:
         return OFFLINE
     except Exception:  # noqa: BLE001  # logged; the sentence is the person's answer, the cursor stays

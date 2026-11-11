@@ -155,13 +155,17 @@
   //: **`parse(source)`**: the fence's lines as `{title, curves: [{label, text, fn, error}], params, x, y, errors}`.
   function parse(source) {
     const out = { title: "", curves: [], params: [], x: null, y: null, errors: [] };
-    const num = "(-?\\d*\\.?\\d+)";
-    const paramRe = new RegExp(`^([A-Za-z]{1,8})\\s*=\\s*${num}\\s*(?:\\[\\s*${num}\\s*[,;]\\s*${num}\\s*(?:[,;]\\s*(\\d*\\.?\\d+)\\s*)?\\])?$`);
+    // One way to split each number (digits with an optional fraction, or a bare fraction), so a long run of
+    // digits that fails to match is linear, not quadratic (CodeQL js/polynomial-redos; a note's text is the input).
+    const N = "(?:\\d+(?:\\.\\d+)?|\\.\\d+)";
+    const num = `(-?${N})`;
+    const paramRe = new RegExp(`^([A-Za-z]{1,8})\\s*=\\s*${num}\\s*(?:\\[\\s*${num}\\s*[,;]\\s*${num}\\s*(?:[,;]\\s*(${N})\\s*)?\\])?$`);
     const viewRe = new RegExp(`^([xy])\\s*:\\s*${num}\\s*(?:\\.\\.|,|\\bto\\b)\\s*${num}$`);
     const curveRe = /^(?:y|[A-Za-z]\(x\))\s*=\s*(.+)$/;
     const rest = [];
     for (const raw of String(source).split("\n")) {
-      const line = raw.replace(/\s+#.*$/, "").trim();
+      const cut = raw.search(/\s#/);  // linear; a `\s+#.*$` replace is quadratic on a long run of spaces
+      const line = (cut >= 0 ? raw.slice(0, cut) : raw).trim();
       if (!line || line.startsWith("#")) continue;
       const title = /^title\s*:\s*(.+)$/i.exec(line);
       const view = viewRe.exec(line);

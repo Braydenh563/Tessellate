@@ -33,7 +33,7 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
-from tessellate.core import atomic_io, crypto, sync_state
+from tessellate.core import atomic_io, crypto, paths, sync_state
 from tessellate.core.database import utcnow
 from tessellate.entry import sync_extras, sync_pull, sync_segments
 
@@ -177,7 +177,10 @@ def _write_blobs(session: Session, data_dir: Path, blobs: Path, files: dict, sea
     for sid, item in files.items():
         name = _blob_name(sid)
         keep.add(name)
-        target = blobs / name
+        try:  # a sid is checked where its manifest arrives; contained() also stops a planted link
+            target = paths.contained(blobs, name)
+        except paths.OutsideFolder:
+            continue
         if kept and _sealed_sha1(target) == item["sha1"]:
             continue
         found = sync_extras.file_bytes(session, data_dir, sync_state.device_id(data_dir), sid)
@@ -251,7 +254,7 @@ class FolderLink:
     def file(self, sid: str, me: str) -> bytes | None:
         """The bytes, or None while the folder has not got them yet (a sync tool still copying)."""
         try:
-            sealed = json.loads((self._blobs / _blob_name(sid)).read_text("utf-8"))
+            sealed = json.loads(paths.contained(self._blobs, _blob_name(sid)).read_text("utf-8"))
             return base64.b64decode(crypto.decrypt(self._key, sealed["data"]))
         except _OPEN_ERRORS:
             return None
@@ -263,6 +266,9 @@ def open_peer(path: Path, file: Path, passphrase: str) -> FolderLink:
         raise SyncError("That is not a Tessellate sync file.")
     key = _key(passphrase, base64.b64decode(sealed["salt"]))
     body = json.loads(crypto.decrypt(key, sealed["data"]))
+    device = str(body["device"])
+    if len(device) != 12 or not device.isalnum():  # sync_state.device_id's own shape; it names a folder here
+        raise SyncError("That is not a Tessellate sync file.")
     return FolderLink(body, path / f"{FILE_PREFIX}{body['device']}{FILES_SUFFIX}", key)
 
 

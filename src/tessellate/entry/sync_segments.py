@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import threading
 from datetime import datetime, timezone
 from typing import Any
 
@@ -38,8 +39,22 @@ _FIELDS = {"sid": str, "content": str, "tags": list, "category": str, "space": s
            "is_private": bool, "is_deleted": bool, "updated_at": str}
 
 
+#: The last SegmentError sentence, per thread: what a pull reports, never text read off the exception
+#: (CodeQL, information exposure through an exception; the ai/skills.py pattern).
+_LAST_PROBLEM = threading.local()
+
+
 class SegmentError(ValueError):
     """A segment refused whole, before any write; the message is the Settings sentence."""
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        _LAST_PROBLEM.text = message
+
+
+def last_problem() -> str:
+    """The sentence of the last SegmentError raised on this thread."""
+    return str(getattr(_LAST_PROBLEM, "text", "") or DAMAGED)
 
 
 def sync_actor(device: str) -> str:
