@@ -10619,7 +10619,8 @@ function applyDocToolbarLayoutButtons(only = null) {
 //: `lefts` (measured: three of 94 widths folded one tool too many without it), so the start is one item
 //: short of what the positions say, and the caller folds one at a time from there to exactly the old row.
 //: `lefts.length` means nothing folds.
-function docToolbarFoldFrom(lefts, toolsLeft, toolsRight, edge) {
+//: A property of `fitDocToolbarRow`, its only caller (one global name fewer).
+fitDocToolbarRow.foldFrom = function (lefts, toolsLeft, toolsRight, edge) {
   if (toolsRight <= edge + 0.5) return lefts.length;
   let next = null;
   for (let i = lefts.length - 1; i >= 0; i--) {
@@ -10627,7 +10628,7 @@ function docToolbarFoldFrom(lefts, toolsLeft, toolsRight, edge) {
     if (next !== null && toolsRight - (toolsLeft - next) <= edge + 0.5) return Math.min(i + 1, lefts.length);
   }
   return 0;
-}
+};
 
 function fitDocToolbarRow(bar) {
   const tools = bar.querySelector(":scope > .doc-toolbar-tools");
@@ -10678,7 +10679,7 @@ function fitDocToolbarRow(bar) {
       };
       const lefts = items.map((el) => (el.getClientRects().length ? el.getBoundingClientRect().left : null));
       const row = tools.getBoundingClientRect();
-      const from = docToolbarFoldFrom(lefts, row.left, row.right, edge);
+      const from = fitDocToolbarRow.foldFrom(lefts, row.left, row.right, edge);
       for (let i = items.length - 1; i >= from; i--) fold(items[i]);
       for (let i = from - 1; i >= 0 && !fits(); i--) fold(items[i]);
       const shown = items.filter((el) => !el.classList.contains("doc-toolbar-over"));

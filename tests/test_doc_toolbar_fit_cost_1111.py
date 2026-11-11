@@ -38,7 +38,7 @@ def test_a_mode_change_fits_each_strip_once() -> None:
 
 def test_the_fold_is_one_batch_then_a_check() -> None:
     fit = _fn("fitDocToolbarRow")
-    assert "docToolbarFoldFrom(lefts, row.left, row.right, edge)" in fit
+    assert "fitDocToolbarRow.foldFrom(lefts, row.left, row.right, edge)" in fit
     batch = fit.index("for (let i = items.length - 1; i >= from; i--) fold(items[i]);")
     rest = fit.index("for (let i = from - 1; i >= 0 && !fit")
     assert fit.index("const lefts = ") < batch < rest, "positions read once, folded together, then any still over one by one"
@@ -47,7 +47,7 @@ def test_the_fold_is_one_batch_then_a_check() -> None:
 
 HARNESS = r"""
 const src = require("fs").readFileSync(0, "utf8");
-const fn = new Function(src + "; return docToolbarFoldFrom;")();
+const fn = new Function(src + "; return foldFrom;")();
 // The row the way the browser lays it out: items in a nowrap flex with a gap, the group after the last one.
 // `old` is the loop it replaces: fold from the end, one at a time, until the group's right edge is inside.
 let bad = 0, cases = 0, over = 0;
@@ -88,9 +88,9 @@ def test_the_batch_never_folds_more_than_the_one_by_one_loop() -> None:
     import re
     import subprocess
 
-    src = re.search(r"function docToolbarFoldFrom\(.*?\n}\n", DOCS, re.S)
-    assert src, "docToolbarFoldFrom is missing"
-    done = subprocess.run(["node", "-e", HARNESS], input=src.group(0), capture_output=True, text=True, check=True, timeout=60)
+    src = re.search(r"fitDocToolbarRow\.foldFrom = (function \(.*?\n};)\n", DOCS, re.S)
+    assert src, "fitDocToolbarRow.foldFrom is missing"
+    done = subprocess.run(["node", "-e", HARNESS], input=f"const foldFrom = {src.group(1)}", capture_output=True, text=True, check=True, timeout=60)
     out = json.loads(done.stdout)
     assert out["cases"] > 1000, out
     assert out["bad"] == 0, f"the batch folded a tool the loop would have left: {out}"
