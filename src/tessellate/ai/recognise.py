@@ -37,7 +37,7 @@ from tessellate.core.lazyre import lazy_compile
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 
-from tessellate.ai.recognise_units import _GLUED_ONLY, _NOT_IN_TEXT, _SPACED_CAPITALS, CURRENCY_NAMES, UNITS
+from tessellate.ai.recognise_units import GLUED_ONLY, NOT_IN_TEXT, SPACED_CAPITALS, CURRENCY_NAMES, UNITS
 from tessellate.ai.recognise_windows import (
     _ANCHORED,
     _CALL_LOCALE,
@@ -1284,7 +1284,7 @@ def _clock_value(low: str, found: re.Match) -> time | None:
         return _hour_from(int(found.group(5)), 0, found.group(6).replace(".", ""))
     after = low[found.end():found.end() + 14].lstrip()
     word = after.split(" ")[0].strip(".,") if after else ""
-    if after[:1] in ("%", "°") or (word in UNITS and word not in _GLUED_ONLY):
+    if after[:1] in ("%", "°") or (word in UNITS and word not in GLUED_ONLY):
         return None
     return _hour_from(int(found.group(7)), 0, None)
 
@@ -1482,7 +1482,7 @@ def _measure_cands(raw: str, low: str, locale: str | None) -> list[tuple]:
     for found in _rx("quantity").finditer(low):
         name, glued = found.group(3), not found.group(2)
         written = raw[found.start(3):found.end(3)]
-        if name in _NOT_IN_TEXT or (name in _GLUED_ONLY and not glued and written not in _SPACED_CAPITALS):
+        if name in NOT_IN_TEXT or (name in GLUED_ONLY and not glued and written not in SPACED_CAPITALS):
             continue
         dimension, _size, said = UNITS[name]
         amount = _figure(found.group(1))
@@ -1853,7 +1853,7 @@ def measures(text: str) -> list[Measure]:
     found = [Measure("money", float(m.group(2).replace(",", "")) * (1000 if m.group(3) else 1), m.group(1), m.start(), m.end()) for m in _AMOUNT.finditer(raw)]
     for m in _rx("quantity").finditer(raw.lower()):
         name, glued, written = m.group(3), not m.group(2), raw[m.start(3):m.end(3)]
-        if name in _NOT_IN_TEXT or name in CURRENCY_NAMES or (name in _GLUED_ONLY and not glued and written not in _SPACED_CAPITALS):
+        if name in NOT_IN_TEXT or name in CURRENCY_NAMES or (name in GLUED_ONLY and not glued and written not in SPACED_CAPITALS):
             continue
         dimension, size, _said = UNITS[name]
         if dimension != "temperature" and raw[m.start() - 1:m.start()] not in ("$", "£", "€", "¥"):

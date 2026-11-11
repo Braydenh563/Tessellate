@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8278, frontend ids 2760, CSS sections 524, backend routes 696, backend modules 10702, test files 2644, tests 21590, plan headings 1014, app scripts 29, boot scripts 38, script files 296.
+Counts: frontend functions 8278, frontend ids 2760, CSS sections 524, backend routes 696, backend modules 10702, test files 2644, tests 21591, plan headings 1014, app scripts 29, boot scripts 38, script files 296.
 
 ## Frontend functions (8278)
 
@@ -27531,7 +27531,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21590)
+## Tests (21591)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28682,7 +28682,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_generative_asks_1102.py | 5 |
 | tests/test_get_started_1301.py | 8 |
 | tests/test_glass_controls_1027.py | 5 |
-| tests/test_global_scope_ratchet.py | 5 |
+| tests/test_global_scope_ratchet.py | 6 |
 | tests/test_glossary_b7.py | 7 |
 | tests/test_gold_answers.py | 33 |
 | tests/test_grammar_classes_1026.py | 14 |

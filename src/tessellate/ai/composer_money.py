@@ -1073,7 +1073,7 @@ def _unit_named(body: str) -> tuple[str, str] | None:
     "m" are units only glued to a number."""
     for word in re.findall(r"[a-zµ]+", body.lower()):
         dimension, named = _dimension_of(word)
-        if named and dimension and word not in _CALENDAR and word not in recognise_units._GLUED_ONLY:  # noqa: SLF001
+        if named and dimension and word not in _CALENDAR and word not in recognise_units.GLUED_ONLY:
             return dimension, word
     return None
 

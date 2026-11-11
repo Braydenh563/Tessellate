@@ -15,7 +15,7 @@ from __future__ import annotations
 #: byte, joule, watt, pascal, degree of arc, hertz, newton, volt, ampere, ohm,
 #: ampere hour, percent, bit per second, lumen, lux. Temperature converts by
 #: formula, not by size. Single letters and words that are also words ("in",
-#: "st") are read only glued to a number ("5in", "10k"): see `_GLUED_ONLY`.
+#: "st") are read only glued to a number ("5in", "10k"): see `GLUED_ONLY`.
 UNITS: dict[str, tuple[str, float, str]] = {}
 
 
@@ -191,12 +191,12 @@ for _args in (
 
 #: Names read only when glued to their number: "10k" is ten kilometres, "10 k"
 #: is nothing; "5in" is five inches, "5 in the morning" is not.
-_GLUED_ONLY = frozenset(n for n in UNITS if len(n) == 1) | {"in", "st", "ac", "kn", "kt", "gr", "pc", "mo", "ma", "ah", "lm", "ct", "rad", "turn", "turns", "grad", "gon"}
+GLUED_ONLY = frozenset(n for n in UNITS if len(n) == 1) | {"in", "st", "ac", "kn", "kt", "gr", "pc", "mo", "ma", "ah", "lm", "ct", "rad", "turn", "turns", "grad", "gon"}
 #: Names the converter reads that a sentence does not: "1990s" is a decade,
 #: not 1,990 seconds.
-_NOT_IN_TEXT = frozenset({"s", '"'})
+NOT_IN_TEXT = frozenset({"s", '"'})
 #: Symbols a person writes spaced and in capitals: "a 60 W bulb", "12 V".
-_SPACED_CAPITALS = frozenset({"W", "V", "J", "K"})
+SPACED_CAPITALS = frozenset({"W", "V", "J", "K"})
 
 #: Currency names to ISO codes. Rates are not here: `utilities.RATES` holds
 #: them with the date they were set (decision 43).
