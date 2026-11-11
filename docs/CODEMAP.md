@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10194, test files 2495, tests 20562, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10194, test files 2496, tests 20567, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -18293,22 +18293,21 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `tidy` | src/tessellate/ai/question_noise.py:505 |
 | `topic_of` | src/tessellate/ai/question_noise.py:536 |
 
-### src/tessellate/ai/questions.py (12)
+### src/tessellate/ai/questions.py (11)
 
 | Name | File:line |
 |---|---|
 | `_answers_by_question` | src/tessellate/ai/questions.py:56 |
 | `_as_json` | src/tessellate/ai/questions.py:88 |
-| `_notes_for` | src/tessellate/ai/questions.py:149 |
 | `_payload` | src/tessellate/ai/questions.py:48 |
 | `_plain` | src/tessellate/ai/questions.py:80 |
-| `listing` | src/tessellate/ai/questions.py:162 |
+| `listing` | src/tessellate/ai/questions.py:149 |
 | `open_counts` | src/tessellate/ai/questions.py:131 |
-| `open_note_ids` | src/tessellate/ai/questions.py:272 |
-| `set_state` | src/tessellate/ai/questions.py:213 |
+| `open_note_ids` | src/tessellate/ai/questions.py:267 |
+| `set_state` | src/tessellate/ai/questions.py:208 |
 | `state_of` | src/tessellate/ai/questions.py:71 |
-| `summary` | src/tessellate/ai/questions.py:200 |
-| `visible_question` | src/tessellate/ai/questions.py:208 |
+| `summary` | src/tessellate/ai/questions.py:195 |
+| `visible_question` | src/tessellate/ai/questions.py:203 |
 
 ### src/tessellate/ai/reading.py (32)
 
@@ -24401,13 +24400,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `spec_of` | src/tessellate/core/overlay/props.py:156 |
 | `view` | src/tessellate/core/overlay/props.py:166 |
 
-### src/tessellate/core/overlay/runner.py (3)
+### src/tessellate/core/overlay/runner.py (4)
 
 | Name | File:line |
 |---|---|
-| `OverlayRunner` | src/tessellate/core/overlay/runner.py:107 |
-| `default_backend` | src/tessellate/core/overlay/runner.py:88 |
-| `read_layout` | src/tessellate/core/overlay/runner.py:98 |
+| `OverlayRunner` | src/tessellate/core/overlay/runner.py:128 |
+| `default_backend` | src/tessellate/core/overlay/runner.py:109 |
+| `read_layout` | src/tessellate/core/overlay/runner.py:119 |
+| `timed` | src/tessellate/core/overlay/runner.py:96 |
 
 ### src/tessellate/core/overlay/screenwatch.py (3)
 
@@ -26417,7 +26417,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20562)
+## Tests (20567)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28070,6 +28070,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_outbound_inventory.py | 4 |
 | tests/test_output_forms.py | 7 |
 | tests/test_outside_text_taints_chat.py | 3 |
+| tests/test_overlay_air_reads_1696a.py | 5 |
 | tests/test_overlay_alive_1670.py | 12 |
 | tests/test_overlay_bob_1670.py | 3 |
 | tests/test_overlay_capture_pixels.py | 2 |

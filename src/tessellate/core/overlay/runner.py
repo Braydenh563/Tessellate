@@ -63,6 +63,14 @@ BLEND_STEPS = 7
 BLEND_TICK_MS = 16
 BLENDED = ("stand", "walk", "idle", "look", "sit", "sleep", "wave", "land", "hang")
 BUSY_EVERY = 2.0
+#: A flight or a fall holds the periodic reads back this long at most (s): longer than any throw is in the air, so it is a
+#: bound, not a pace (`OverlayRunner._aloft`).
+AIR_DEFER = 8.0
+#: A tick of the overlay thread longer than this (ms) is logged with the reads that ran in it and the state, at most once per
+#: `SLOW_TICK_EVERY` s: the next log from Windows says which read, if any, stops a fall (INBOX 1696 a; the frame cost of the
+#: layered-window draw itself is `draw` in the same line).
+SLOW_TICK_MS = 30.0
+SLOW_TICK_EVERY = 5.0
 #: Input this recent means the person is typing or working: no acts, only standing.
 TYPING_AGE = 2.5
 #: A welcome back not yet answered (the figure busy or mid-reaction) is tried again for this long (s).
@@ -83,6 +91,19 @@ TASKBAR_EVERY = 5.0
 SCAN_SLACK = 1.0
 #: Room past the figure's width a top edge needs to be stood on (logical px, at 96 dpi).
 PERCH_ROOM = 20
+
+
+def timed(owner: Any, name: str, call: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
+    """`call(...)`, its milliseconds kept on the runner for the tick's slow-tick line (`OverlayRunner._note_tick`); an owner
+    with no tick under way (a test's stand-in, a read made between ticks) keeps nothing."""
+    perf, reads = getattr(owner, "_perf", None), getattr(owner, "_tick_reads", None)
+    if perf is None or reads is None:
+        return call(*args, **kwargs)
+    began = perf()
+    try:
+        return call(*args, **kwargs)
+    finally:
+        reads.append((name, (perf() - began) * 1000.0))
 
 
 def default_backend(w: Any = None) -> Any:
@@ -201,6 +222,10 @@ class OverlayRunner:
         self._blend_step = -1
         self._blend_s = BLEND_S
         self._next_busy_check = 0.0
+        self._air_since: float | None = None  # when the flight or fall in progress began (`_aloft`)
+        self._perf: Callable[[], float] = time.perf_counter
+        self._tick_reads: list[tuple[str, float]] = []  # (what, ms) of each timed read in the tick under way
+        self._slow_logged = -1e9
         #: The foreground window's text band, kept per window: (hwnd, read at, band).
         self._zone: tuple[int, float, tuple[int, int, int, int] | None] | None = None
         self._next_scan = 0.0
@@ -359,7 +384,20 @@ class OverlayRunner:
             out = self.engine.update(now, (x, y), (kind, x, y))
             self._log_notes()
             return self._apply(out)
-        return self._system(kind, now, (x, y))
+        if kind != "tick":
+            return self._system(kind, now, (x, y))
+        began, self._tick_reads = self._perf(), []
+        wake = self._system(kind, now, (x, y))
+        self._note_tick((self._perf() - began) * 1000.0, now)
+        return wake
+
+    def _note_tick(self, ms: float, now: float) -> None:
+        engine = self.engine
+        if ms < SLOW_TICK_MS or engine is None or now - self._slow_logged < SLOW_TICK_EVERY:
+            return
+        self._slow_logged = now
+        reads = ", ".join(f"{name} {took:.0f} ms" for name, took in self._tick_reads if took >= 1.0) or "none"
+        logger.info("overlay: a slow tick, %.0f ms in state %s (timed reads: %s; the rest is the engine and the draw)", ms, engine.state, reads)
 
     def _system(self, kind: str, now: float, pointer: tuple[int, int]) -> int | None:
         engine = self.engine
@@ -385,17 +423,35 @@ class OverlayRunner:
             if self._resume:
                 self._resume = False
                 self._resume_engine(engine, now)
-            hold = self._busy_gate(now, pointer)
+            aloft = self._aloft(engine, now)
+            hold = None if aloft else self._busy_gate(now, pointer)
             if hold is not None:
                 return hold
             while self._cards:
                 engine.bring_card(self._cards.popleft(), now)
             self._run_commands(engine, now)
-            self._scan(now)
-            self._screen_events(now)
+            if not aloft:  # the periodic reads wait for the landing (INBOX 1696 a)
+                self._scan(now)
+                self._screen_events(now)
         if kind not in ("tick", "display", "taskbar"):
             return None
         return self._apply(engine.update(now, pointer))
+
+    def _aloft(self, engine: eng.Engine, now: float) -> bool:
+        """In a fall or a throw's flight, for at most `AIR_DEFER` s: the window list (EnumWindows and a query on each of the
+        ~590 windows of the owner's desktop), the foreground, the downloads folder, the layout and the typing reads all land
+        on this thread between two frames, so a flight caught one of each every 2 s (measured 3 reads in a 3.2 s flight, in
+        40 of 40 phases of the timers): a tick of its own, which is a stop in the downward arc (INBOX 1696 a). They are
+        read on the first tick on the ground instead; none is urgent to a quarter of a second."""
+        if engine.state not in ("fly", "fall"):
+            if self._air_since is not None:  # landed: the held-back reads come one tick each, not all on the landing's
+                self._air_since = None
+                self._watch.next_at = max(self._watch.next_at, now + 0.25)
+                self._events_read = max(self._events_read, now - screenwatch.EVERY + 0.5)
+            return False
+        if self._air_since is None:
+            self._air_since = now
+        return now - self._air_since < AIR_DEFER
 
     def _run_commands(self, engine: eng.Engine, now: float) -> None:
         """The menu's requests, in order. "Sit on a window" reads the window list first, since
@@ -429,7 +485,7 @@ class OverlayRunner:
         if near is not None and self._nears:
             extra.update(near=near, seen=seen)
         try:
-            return self.k.windows(self.w, os.getpid(), self.host.hwnd if self.host else None, [m.area for m in self.monitors], **extra)
+            return timed(self, "windows", self.k.windows, self.w, os.getpid(), self.host.hwnd if self.host else None, [m.area for m in self.monitors], **extra)
         except Exception:  # noqa: BLE001
             if not self._scan_failed:
                 logger.warning("overlay: the windows could not be listed", exc_info=True)
@@ -442,7 +498,7 @@ class OverlayRunner:
             return
         self._next_taskbar = now + TASKBAR_EVERY
         try:
-            read = read_layout(self.k, self.w)
+            read = timed(self, "layout", read_layout, self.k, self.w)
         except OSError:
             return
         # The play areas move the figure's floor; the bars (shown or not, which edge) move where it can tuck (INBOX 1683 y).
@@ -512,7 +568,7 @@ class OverlayRunner:
             return
         local = time.localtime()
         hour = local.tm_hour if self.clock_hour is None else self.clock_hour
-        kinds = self._watch.poll(now, hour, local.tm_min, screen=self.roam_windows, day=local.tm_yday)
+        kinds = timed(self, "poll", self._watch.poll, now, hour, local.tm_min, screen=self.roam_windows, day=local.tm_yday)
         if self.roam_windows and not engine.quiet and now - self._events_read >= screenwatch.EVERY:
             kinds += self._window_events(self._list_windows(Counter()), now)  # a window opening, closing or dragged is news with no climb near
         self._answer(kinds, now)
@@ -637,8 +693,8 @@ class OverlayRunner:
             if self._busy_ptr is not None and pointer != self._busy_ptr:
                 self._ptr_moved_at = now
             self._busy_ptr = pointer
-        self._read_typing(now)
-        state = self.k.notification_state(self.w)
+        timed(self, "typing", self._read_typing, now)
+        state = timed(self, "notify", self.k.notification_state, self.w)
         away = state in self.k.QUNS_HIDE
         if away and not self.busy:
             logger.info("overlay: hidden while something fullscreen or busy is up (state %s)", state)
