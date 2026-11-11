@@ -755,7 +755,32 @@ _PREVIEW_CACHE: "OrderedDict[tuple, tuple[list[dict], list[dict], float]]" = Ord
 PREVIEW_CACHE_STATS = {"hits": 0, "misses": 0}
 
 
-def _preview_fingerprint(db: Session, board_id: int | None) -> tuple:
+def _preview_stamps_bulk(db: Session, entries: list) -> dict[int | None, list]:
+    """`_preview_fingerprint`'s four (count, newest) pairs for a page of boards
+    (`Entry` rows, `None` for the default board) at once: one grouped query per table instead of four per board (audit K36).
+    A board with nothing on a table gets the same `(0, "None")` the
+    per-board query would have returned, so both paths build equal keys."""
+    wanted = {None if entry is None else entry.id for entry in entries}
+    empty = (0, "None")
+    out: dict[int | None, list] = {b: [empty, empty, empty, empty] for b in wanted}
+    queries = [
+        (i, select(model.board_id, func.count(), func.max(model.updated_at)).group_by(model.board_id))
+        for i, model in enumerate((WhiteboardNode, WhiteboardSketch, WhiteboardObject))
+    ]
+    queries.append((3, (
+        select(WhiteboardNode.board_id, func.count(), func.max(Entry.updated_at))
+        .select_from(WhiteboardNode)
+        .join(Entry, Entry.id == WhiteboardNode.entry_id)
+        .group_by(WhiteboardNode.board_id)
+    )))
+    for slot, query in queries:
+        for board, count, newest in db.execute(query).all():
+            if board in wanted:
+                out[board][slot] = (count, str(newest))
+    return out
+
+
+def _preview_fingerprint(db: Session, board_id: int | None, stamps: list | None = None) -> tuple:
     """Everything a board's thumbnail depends on, as a cheap tuple.
 
     Three counts and three high-water marks, one per table, plus the same
@@ -774,19 +799,20 @@ def _preview_fingerprint(db: Session, board_id: int | None) -> tuple:
     def on(model):
         return model.board_id.is_(None) if board_id is None else model.board_id == board_id
 
-    stamps: list = []
-    for model in (WhiteboardNode, WhiteboardSketch, WhiteboardObject):
-        row = db.execute(
-            select(func.count(), func.max(model.updated_at)).where(on(model))
+    if stamps is None:
+        stamps = []
+        for model in (WhiteboardNode, WhiteboardSketch, WhiteboardObject):
+            row = db.execute(
+                select(func.count(), func.max(model.updated_at)).where(on(model))
+            ).one()
+            stamps.append((row[0], str(row[1])))
+        cards = db.execute(
+            select(func.count(), func.max(Entry.updated_at))
+            .select_from(WhiteboardNode)
+            .join(Entry, Entry.id == WhiteboardNode.entry_id)
+            .where(on(WhiteboardNode))
         ).one()
-        stamps.append((row[0], str(row[1])))
-    cards = db.execute(
-        select(func.count(), func.max(Entry.updated_at))
-        .select_from(WhiteboardNode)
-        .join(Entry, Entry.id == WhiteboardNode.entry_id)
-        .where(on(WhiteboardNode))
-    ).one()
-    stamps.append((cards[0], str(cards[1])))
+        stamps.append((cards[0], str(cards[1])))
     bind = db.get_bind()
     return (
         str(getattr(bind, "url", bind)),
@@ -796,7 +822,7 @@ def _preview_fingerprint(db: Session, board_id: int | None) -> tuple:
     )
 
 
-def _preview_fields(db: Session, board_id: int | None) -> dict:
+def _preview_fields(db: Session, board_id: int | None, stamps: list | None = None) -> dict:
     """A board's three preview fields, ready to splat into `BoardOut`, from
     the cache when the board has not moved since it was last drawn.
 
@@ -811,7 +837,7 @@ def _preview_fields(db: Session, board_id: int | None) -> dict:
     theme = _board_theme(db.get(Entry, board_id)) if board_id else {}
     palette_name = theme.get("palette") or "classic"
     rainbow = bool(theme.get("rainbow"))
-    key = (*_preview_fingerprint(db, board_id), palette_name, rainbow)
+    key = (*_preview_fingerprint(db, board_id, stamps), palette_name, rainbow)
     cached = _PREVIEW_CACHE.get(key)
     if cached is not None:
         PREVIEW_CACHE_STATS["hits"] += 1
