@@ -16458,6 +16458,7 @@ async function initWhiteboard() {
   // keyboard shortcuts below can never drift out of sync with each other.
   function selectWbTool(tool) {
     wbAbandonStroke();
+    wbDropLostGesture();
     window.currentTool = tool;
     //: A link tool's anchor dots belong to that tool (INBOX 573).
     if (!String(tool).startsWith("link-") && !wbLinkDragActive) wbClearAnchorHints();
@@ -19152,6 +19153,22 @@ async function initWhiteboard() {
     currentDrawData = [];
     wbClearAlignmentGuides();
   }
+  //: **A drag whose pointer is taken away is put back and let go** (sm-1111 row 27; this is the
+  //: card, object, shape and link drags' half of `wbAbandonStroke`). A pointercancel, a window
+  //: blur, a tool switch or a mouse move with no button held (the `mouseup` went to a native drag,
+  //: another window or the OS) all mean the hand is gone. Measured before in Chromium, a card and a
+  //: text box with a lost `mouseup`: the gesture stayed live, the item followed a buttonless hover
+  //: and the delete target stayed up. d3-drag lets go of its window listeners only on `mouseup`,
+  //: so one is sent after the cancel; the cancelled gesture's own handlers then save nothing.
+  function wbDropLostGesture() {
+    if (!wbCancelGesture()) return;
+    window.dispatchEvent(new MouseEvent("mouseup", { view: window }));
+  }
+  window.addEventListener("pointercancel", wbDropLostGesture, true);
+  window.addEventListener("blur", wbDropLostGesture);
+  window.addEventListener("pointermove", (e) => {
+    if (wbGesture && e.pointerType === "mouse" && e.buttons === 0) wbDropLostGesture();
+  }, true);
   window.addEventListener("pointercancel", wbAbandonStroke);
   window.addEventListener("pointerup", wbAbandonStroke);
   containerEl.addEventListener("pointerup", async (e) => {
@@ -23489,6 +23506,7 @@ async function wbFitToText(el) {
 }
 
 async function wbSaveNode(node) {
+  delete node._unsaved;
   try {
     const saved = await apiJson(`/whiteboard/nodes/${node.id}`, {
       method: "PUT",
@@ -23508,6 +23526,7 @@ async function wbSaveNode(node) {
     recordBrowserLog("WARN", [`[Whiteboard] card ${node.id} is stale: reloading the board`]);
     await fetchWhiteboardState();
     wbScheduleRender();
+    node._unsaved = true;
   }
 }
 
@@ -23515,6 +23534,7 @@ async function wbSaveObject(d) {
   //: A topic still on its way to the server (`wbMapAddChild`'s optimistic
   //: add) is saved once it has its real id.
   if (d._creating) return d._creating.then((ok) => (ok ? wbSaveObject(d) : undefined));
+  delete d._unsaved;
   const body = {
     kind: d.kind, data: d.data, board_id: d.board_id,
     x: d.x, y: d.y, z: d.z, width: d.width, height: d.height,
@@ -23541,6 +23561,7 @@ async function wbSaveObject(d) {
     recordBrowserLog("WARN", [`[Whiteboard] object ${d.id} is stale: reloading the board`]);
     await fetchWhiteboardState();
     wbScheduleRender();
+    d._unsaved = true;
   }
 }
 
@@ -23943,6 +23964,16 @@ function renderWbObjects(canvas) {
     //: hoisted above the save so it governs both.
     const reallyMoved = !moveBefore || moveBefore.x !== d.x || moveBefore.y !== d.y;
     if (reallyMoved) await wbSaveObject(d);
+    if (d._unsaved) {
+      //: A drop that could not be saved (offline, or the item is gone) goes back where it was taken
+      //: from, with a word, rather than staying where the server does not have it (`_unsaved`, set by
+      //: the save's catch).
+      delete d._unsaved;
+      if (moveBefore) Object.assign(d, { x: moveBefore.x, y: moveBefore.y });
+      wbScheduleRender();
+      toast("Could not save that move, so it went back.", true, { action: ["Reload the board", () => fetchWhiteboardState().then(wbScheduleRender)] });
+      return;
+    }
     const primary = moveBefore && reallyMoved
       ? { action: "move", kind: "object", id: d.id, before: moveBefore }
       : null;
@@ -25058,6 +25089,14 @@ async function dragEndNode(event, d) {
     //: really moved is saved.
     const moved = moveBefore && (moveBefore.x !== d.x || moveBefore.y !== d.y);
     if (moved || !moveBefore) await wbSaveNode(d);
+    if (d._unsaved) {
+      //: Not saved: back where it was taken from (see objDragEnd's twin).
+      delete d._unsaved;
+      if (moveBefore) Object.assign(d, { x: moveBefore.x, y: moveBefore.y });
+      wbScheduleRender();
+      toast("Could not save that move, so it went back.", true, { action: ["Reload the board", () => fetchWhiteboardState().then(wbScheduleRender)] });
+      return;
+    }
     //: The whole drag is one undo step now, carried members and Alt copies
     //: included (`wbFinishDrag`); this used to undo only the card grabbed.
     await wbFinishDrag(moved ? { action: "move", kind: "node", id: d.id, before: moveBefore } : null, bulkOrigin, altCopy);

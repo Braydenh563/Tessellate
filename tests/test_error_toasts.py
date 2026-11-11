@@ -303,6 +303,7 @@ FAULTS = {
         'text.textContent || "Couldn\'t apply the update."': "the update step failed; the text is the step's own error",
     },
     'whiteboard.js': {
+        '"Could not save that move, so it went back."': "the move's save request failed (offline or the item is gone); it offers Reload the board",
         'voiceLine("failed", { what: "undo that" })': 'undo threw an exception',
         'voiceLine("failed", { what: "redo that" })': 'redo threw an exception',
         'voiceLine("failed", { what: "delete that" })': 'the delete request failed (it offers Try again)',
