@@ -208,7 +208,7 @@ function mdMathBlockFrom(lines, start) {
 function mdCalloutHead(line) {
   const match = /^\s*\[!([\w-]+)\]([-+])?\s*(.*)$/.exec(String(line || ""));
   if (!match) return null;
-  const known = typeof calloutKindOf === "function" ? calloutKindOf(match[1]) : null;
+  const known = calloutKindOf(match[1]);
   return { kind: known || "note", raw: match[1], fold: match[2] || "", title: match[3].trim() };
 }
 // MD-BLOCKS-END
@@ -246,7 +246,7 @@ function mdCalloutElement(quoted, depth) {
   //: A toggle is a fold by definition: written without a flag it starts
   //: closed, the way Notion's does.
   const fold = callout.fold || (kind === "toggle" ? "-" : "");
-  const meta = (typeof CALLOUT_KINDS !== "undefined" && CALLOUT_KINDS[kind]) || null;
+  const meta = CALLOUT_KINDS[kind] || null;
   // `<details>`/`<summary>` rather than a div and a click handler: the
   // browser gives the open/close, the keyboard operation and the ARIA for
   // free, which is the same reason every other disclosure in this app is one.

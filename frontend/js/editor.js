@@ -604,7 +604,7 @@ async function editorInsertBookmarkLink(textarea) {
 }
 
 async function editorInsertBoardObject(textarea) {
-  if (typeof pickLibraryItemDialog !== "function" || typeof boardEmbedMarkdown !== "function") return;
+  if (typeof pickLibraryItemDialog !== "function") return;
   const chosen = await pickLibraryItemDialog("Which board or map?", { sources: ["board"] });
   if (!chosen) return;
   editorInsertBlock(textarea, boardEmbedMarkdown(chosen.row || { id: chosen.id, title: chosen.label }));
@@ -675,7 +675,6 @@ function chatCommands() {
   //: and Web rows open popovers with the same click-away, so `press` waits
   //: too.
   const pick = (source) => afterPress(() => {
-    if (typeof openNotePicker !== "function") return;
     requestAnimationFrame(() => {
       openNotePicker();
       //: And the source tab a frame after that: the picker renders its own
@@ -1068,7 +1067,7 @@ function editorCommands(context) {
   // The user's own templates first, then the built-ins, the same "yours
   // before ours" ordering loadTemplates() already uses for the dropdown.
   const custom = (typeof prefsCache !== "undefined" && prefsCache?.custom_templates) || [];
-  const builtin = typeof BUILTIN_TEMPLATES !== "undefined" ? BUILTIN_TEMPLATES : [];
+  const builtin = BUILTIN_TEMPLATES;
   for (const template of [...custom, ...(context === "document" && typeof DOC_TEMPLATES !== "undefined" ? [] : builtin)]) {
     if (!template?.name || !template?.content) continue;
     commands.push({
@@ -1381,11 +1380,8 @@ function editorLinkMatches(needle) {
   //: can do is ask for the list and let the *next* keystroke show it. The
   //: request itself is cached for 8s inside `loadMapBoardIndex`, so a burst
   //: of typing costs one call.
-  if (typeof mapBoardRows === "function" && !mapBoardRows().length
-      && typeof loadMapBoardIndex === "function") {
-    loadMapBoardIndex();
-  }
-  const boards = (typeof mapBoardRows === "function" ? mapBoardRows() : [])
+  if (!mapBoardRows().length) loadMapBoardIndex();
+  const boards = mapBoardRows()
     .filter((b) => b.id != null)
     .filter((b) => !query || String(b.title || "").toLowerCase().includes(query))
     .slice(0, 3)

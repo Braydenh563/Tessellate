@@ -1090,5 +1090,5 @@ function applyPalette(id, remember = true) {
   // call site (the theme toggle, the accent/theme pickers, the OS
   // dark-mode listener) fires only from user interaction, well after every
   // script has loaded.
-  if (typeof refreshArtForTheme === "function") refreshArtForTheme();
+  refreshArtForTheme();
 }
