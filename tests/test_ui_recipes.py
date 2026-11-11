@@ -7791,3 +7791,20 @@ def test_a_rail_opener_never_rides_over_the_strip_above_its_split() -> None:
     js = (ROOT / "frontend" / "js" / "sheets-selects.js").read_text(encoding="utf-8")
     wired = re.search(r"for \(const name of \[([^\]]*)\]\) onSurface\(name, wire\)", js)
     assert wired and '"library"' in wired.group(1)
+
+
+def test_a_split_chips_touch_overhang_is_never_clipped_or_laid_over_a_neighbour() -> None:
+    """At 768 the suggested tag's 44px dismiss hung 20px past a chip that
+    clips (a row's chips are `overflow: hidden`), so only the chip's own 24px
+    took a press, and in cards the overhang lay over the next chip. Under a
+    finger the chip keeps the overhang's width after it, never clips it, and a
+    row's lane keeps the overhang's height as padding with the same negative
+    margin (measured: every edge of the box hits the dismiss in rows)."""
+    css = (_SHEETS / "08-consistency.css").read_text(encoding="utf-8")
+    band = css[css.index(".suggested-tag > .suggested-tag-dismiss::before,") :]
+    band = band[: band.index(".entry-meta > .chip.filing-sure")]
+    assert re.search(r"\.entry-meta > \.chip\.suggested-tag \{\s*margin-inline-end: calc\(var\(--target-min\) - 1\.5rem\);", band)
+    assert re.search(r"\.entry-list \.entry-meta > \.chip\.suggested-tag\.suggested-tag \{\s*overflow: visible;", band)
+    lane = re.search(r"\.entry-meta:has\(> \.chip\.suggested-tag\) \{([^}]*)\}", band)
+    assert lane and "padding-block: calc((var(--target-min) - 1.5rem) / 2)" in lane.group(1)
+    assert "margin-block: calc((1.5rem - var(--target-min)) / 2)" in lane.group(1)

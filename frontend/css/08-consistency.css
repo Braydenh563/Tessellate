@@ -3616,6 +3616,27 @@ body .chip.item-label,
   .suggested-tag-dismiss:is(:hover, :focus-visible)::before {
     background: color-mix(in srgb, var(--error) 14%, transparent);
   }
+  /* The wrapzoom sweep (768): the 44px box hung 20px past a chip that clips
+     (a row's chips are `overflow: hidden` for their ellipsis), so only the
+     chip's own 24px took a press, and in cards the overhang lay over the
+     next chip. The chip keeps the overhang's width after it, as wrapped
+     pills keep the floor apart (DESIGN.md "One overhang rule"), its words
+     clip in the take half, and a row's lane keeps the overhang's height as
+     padding with the same negative margin, so no row grows. */
+  .entry-meta > .chip.suggested-tag {
+    margin-inline-end: calc(var(--target-min) - 1.5rem);
+  }
+  .entry-list .entry-meta > .chip.suggested-tag.suggested-tag {
+    overflow: visible;
+  }
+  .entry-meta > .chip.suggested-tag > .suggested-tag-take {
+    min-width: 0;
+    overflow: clip;
+  }
+  #entry-list.is-rows > li:not(:has(textarea)) > .entry-meta:has(> .chip.suggested-tag) {
+    padding-block: calc((var(--target-min) - 1.5rem) / 2);
+    margin-block: calc((1.5rem - var(--target-min)) / 2);
+  }
 }
 .entry-meta > .chip.filing-sure {
   gap: var(--space-1);
