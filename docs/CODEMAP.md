@@ -15897,7 +15897,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `resolved` | src/tessellate/ai/composer_refer.py:14 |
 
-### src/tessellate/ai/composer_remark.py (19)
+### src/tessellate/ai/composer_remark.py (18)
 
 | Name | File:line |
 |---|---|
@@ -15917,7 +15917,6 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `is_remark` | src/tessellate/ai/composer_remark.py:329 |
 | `register` | src/tessellate/ai/composer_remark.py:65 |
 | `reply` | src/tessellate/ai/composer_remark.py:304 |
-| `social` | src/tessellate/ai/composer_remark.py:384 |
 | `topic_pattern` | src/tessellate/ai/composer_remark.py:350 |
 | `with_link` | src/tessellate/ai/composer_remark.py:356 |
 
@@ -16307,7 +16306,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_build` | src/tessellate/ai/composer_tables.py:749 |
 | `voice_of` | src/tessellate/ai/composer_tables.py:35 |
 
-### src/tessellate/ai/composer_talk.py (33)
+### src/tessellate/ai/composer_talk.py (34)
 
 | Name | File:line |
 |---|---|
@@ -16343,6 +16342,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `from_history` | src/tessellate/ai/composer_talk.py:263 |
 | `previous` | src/tessellate/ai/composer_talk.py:96 |
 | `reply` | src/tessellate/ai/composer_talk.py:273 |
+| `social_turn` | src/tessellate/ai/composer_talk.py:457 |
 | `stumped_asks` | src/tessellate/ai/composer_talk.py:452 |
 
 ### src/tessellate/ai/composer_tally.py (15)

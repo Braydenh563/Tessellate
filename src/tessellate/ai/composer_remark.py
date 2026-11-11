@@ -380,18 +380,3 @@ def facts(question: str, finder: Callable[[str], tuple[int, str] | None]) -> str
         line += f" A note that bears on it, which you may link once: [{found[1]}](#/notes/{found[0]})."
     return line
 
-
-def social(question: str, history: list[dict] | None = None) -> bool:
-    """Whether the turn is conversation, not a question about the notes: a
-    remark, a feeling, thanks or a question about Atlas. Such a turn has no
-    subject, so no statistics chips sit under it (INBOX 1749). The caller adds
-    `intent.classify(...) == SMALLTALK`: this module is read by `intent`, so it
-    cannot read it back."""
-    from tessellate.ai import composer_chat, personal, question_noise
-
-    return (
-        is_remark(question)
-        or question_noise.social_kind(question) is not None
-        or composer_chat.reply(question, history or [], "") is not None
-        or bool(personal.about_me(question))
-    )
