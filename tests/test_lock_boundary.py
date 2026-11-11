@@ -219,5 +219,12 @@ def test_no_second_password_form():
     )
     for path in sorted(APP_JS.parent.glob("*.js")):
         source = path.read_text(encoding="utf-8")
+        if path.name == "sync-folder.js":
+            #: The one named script exception (sync through a folder): its sheet builds the folder's
+            #: passphrase, a secret shared with the other computers and not this account's password,
+            #: so no lock card can be its recipe. Exactly one, and no markup-string form.
+            assert source.count('type = "password"') == 1, path.name
+            assert "type=\"password\"" not in source, path.name
+            continue
         assert 'type = "password"' not in source, path.name
         assert "type=\"password\"" not in source, path.name
