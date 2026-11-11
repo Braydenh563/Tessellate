@@ -109,5 +109,5 @@ def test_an_arrow_takes_a_colour_from_the_swatch_picker_and_both_ways_is_a_seven
     assert "function edge(S, h, link)" in STYLE and "diagramModel.style = { colour, edge, shortcuts }" in STYLE
     assert "swatchPicker(" in STYLE[STYLE.index("function edge(") : STYLE.index("function shortcuts")]
     assert 'label: "ph:palette Colour…"' in joins and "diagramModel.style.edge(S, h, edge)" in joins
-    assert '["solid", true, "Both ways", true]' in joins and "diagramModel.joins = { items, menu, pick, ask }" in joins
+    assert '["solid", true, "Both ways", true]' in joins and "diagramModel.joins = { items, pick, ask, go }" in joins
     assert '.dgm-link[data-arrow="both"]::before' in css

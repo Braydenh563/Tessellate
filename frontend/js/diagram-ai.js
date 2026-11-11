@@ -198,18 +198,27 @@
         out.push({ key: `n:${n.id}`, text: `${n.text} is not joined to anything.`, act: `Join it from ${near.text}`, ops: [{ op: "join", from: near.id, to: n.id, label: "" }] });
       }
     });
-    const seen = new Map();
+    //: One row for a name used again, with one action that numbers them all (INBOX 1771: four identical "Two blocks say Step." rows).
+    //: The numbers skip a name another block already has, so the rename never makes a new pair.
+    const same = new Map();
     for (const n of m.nodes) {
       const f = dgaFold(n.text);
-      if (!f || ending(n)) continue;
-      if (!seen.has(f)) {
-        seen.set(f, 1);
-        continue;
-      }
-      let k = seen.get(f) + 1;
-      while (m.nodes.some((x) => dgaFold(x.text) === dgaFold(`${n.text} ${k}`))) k++;
-      seen.set(f, k);
-      out.push({ key: `n:${n.id}`, text: `Two blocks say ${n.text}.`, act: `Rename this one ${n.text} ${k}`, ops: [{ op: "rename", target: n.id, text: `${n.text} ${k}` }] });
+      if (f && !ending(n)) same.set(f, [...(same.get(f) || []), n]);
+    }
+    const WORDS = ["", "", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
+    for (const group of same.values()) {
+      if (group.length < 2) continue;
+      const mine = new Set(group);
+      const taken = new Set(m.nodes.filter((x) => !mine.has(x)).map((x) => dgaFold(x.text)));
+      let k = 0;
+      const ops = group.slice(0, DGA_MAX_OPS).map((n) => {
+        let name;
+        do name = `${group[0].text} ${++k}`;
+        while (taken.has(dgaFold(name)));
+        return { op: "rename", target: n.id, text: name };
+      });
+      const count = WORDS[group.length] || String(group.length);
+      out.push({ key: `n:${group[0].id}`, text: `${count} blocks say ${group[0].text}.`, act: `Number them ${group[0].text} 1 to ${k}`, ops });
     }
     for (const g of m.subgraphs) {
       const held = m.nodes.filter((n) => n.group === g.id).length + m.subgraphs.filter((x) => x.parent === g.id).length;
@@ -279,6 +288,11 @@
     A.preview.append(A.said, A.list, A.fig, foot);
     A.toggle = el("button", "ghost disclosure-row dgm-ai-lints-head");
     A.toggle.type = "button";
+    //: The disclosure recipe (DESIGN.md): the caret is `.contents-caret` and turns with `aria-expanded`, as Recent runs and History do.
+    A.words = el("span", "dgm-ai-lints-words", "Suggestions");
+    const caret = el("i", "ph ph-caret-down contents-caret");
+    caret.setAttribute("aria-hidden", "true");
+    A.toggle.append(caret, A.words);
     A.toggle.setAttribute("aria-expanded", "false");
     A.lints = el("ul", "dgm-ai-lints hidden");
     A.lints.id = `dgm-ai-lints-${Math.random().toString(36).slice(2, 8)}`;
@@ -364,7 +378,7 @@
     if (!S.m || S.plain) return A.toggle.classList.add("hidden");
     const found = diagramAiPure.lint(S.m, A.h.ops);
     A.toggle.classList.toggle("hidden", !found.length);
-    setLabel(A.toggle, `ph:caret-right Suggestions (${found.length})`);
+    A.words.textContent = `Suggestions (${found.length})`;
     A.lints.replaceChildren(...found.map((f) => {
       const li = el("li", "dgm-ai-lint");
       const words = el("span", "dgm-ai-lint-text", f.text);

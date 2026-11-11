@@ -113,11 +113,13 @@
       const edge = id && edgeOf(id);
       if (edge) h.say(S, `Connector from ${nameOf(edge.from)} to ${nameOf(edge.to)} picked. Enter changes its words, Delete removes it.`);
     };
+    //: The list's connector rows pick an arrow by its model edge (diagram-joins.js `go`).
+    S.pickEdge = (edge) => pick(edge ? edgeId(S.m, edge) : "");
     (fig.onpaint ||= []).push(draw);
     (fig.onzoom ||= []).push(draw);
     fig.addEventListener("load", draw, true);
     //: A click anywhere in the pane but on the picture lets go (the list, its bar).
-    S.root.addEventListener("click", (event) => picked && !fig.contains(event.target) && !event.target.closest?.(".dgm-end") && pick(""));
+    S.root.addEventListener("click", (event) => picked && !fig.contains(event.target) && !event.target.closest?.(".dgm-end, .dgm-join") && pick(""));
 
     fig.addEventListener("click", (event) => {
       if (!S.hit || !rect() || event.target.closest(".dock, .dgm-overlay > *")) return;
