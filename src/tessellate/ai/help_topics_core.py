@@ -2247,7 +2247,7 @@ HELP_TOPICS.extend(
                 "holding the selection; its eye and lock act on all of it. Tinted rows are selected on the board "
                 "(the head counts them; Clear drops them), and a frame lists what it holds under its row. A locked item shows a lock when the pointer "
                 "is on it; right-click it to unlock it. The Library holds "
-                "built-in sets (General shapes, Callouts and notes, Flowchart, UML, Entity relationship, Wireframe, C4, Arrows, Frames (a frame, a timeline lane and swimlanes in rows or columns) "
+                "built-in sets (General shapes, Callouts and notes, Flowchart, UML, Entity relationship, Wireframe, BPMN, C4, Arrows, Frames (a frame, a timeline lane and swimlanes in rows or columns), Cloud and network and Devices and people icons "
                 "and 1,530 icons), five draw.io sets (196 shapes "
                 "with their own connection points), then Favourites, Recent and your own "
                 "libraries; the search field finds any of them by name or tag. Click a tile or press Enter "
@@ -2820,15 +2820,14 @@ HELP_TOPICS.extend(
                 "Tab and Shift+Tab "
                 "indent and outdent, Ctrl+/ comments the selection (Enter ends the remark), Alt+Up / "
                 "Alt+Down moves the block at the caret, and typing / opens "
-                "the blocks menu. Ctrl+F finds and Ctrl+H (Mac: Cmd+Option+F) replaces (F3 next, "
+                "the blocks menu (Citation lists a source at the foot). Ctrl+F finds and Ctrl+H (Mac: Cmd+Option+F) replaces (F3 next, "
                 "Shift+Enter previous), Ctrl+Alt+G goes to a line, and Ctrl+Shift+F finds in every "
                 "document. Views: Edit, where Live renders as you write, Source "
                 "is the markdown and Split puts a preview beside it, or Read. The "
                 "sidebar's Outline lists the headings, and they fold. Focus mode (the corners button on "
-                "the dock, the ⋯ menu on a phone, or F11) hides everything but the page, with a "
-                "bar for the title, save state, a Sidebar button and Exit; drag a panel's edge "
-                "to resize. The formatting "
-                "toolbar hides: the Formatting "
+                "the dock, the ⋯ menu on a phone, or F11) hides all but the page, with a "
+                "bar for the title, save state, a Sidebar button and Exit. "
+                "The formatting toolbar hides: the Formatting "
                 "button in the document's bar, Ctrl+Shift+X or the bar's More "
                 "menu, Show formatting toolbar, brings it back. In a Live table "
                 "the arrows keep the column, Enter goes down, Ctrl+Enter leaves "
@@ -2940,7 +2939,9 @@ HELP_TOPICS.extend(
                 "names a language (python, js, html, css, sql and more) is coloured "
                 "as that language while you edit it, indents and closes brackets "
                 "as it does, and suggests its words as you type; typing the name "
-                "after the opening fence lists the languages."
+                "after the opening fence lists the languages. The block's corner "
+                "shows its title (title=\"fit.py\" on the fence) or language; press it "
+                "to pick another language."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -3402,7 +3403,7 @@ HELP_TOPICS.extend(
             ),
             "body": (
                 "Enter sends, Shift+Enter starts a new "
-                "line; Escape or Ctrl+. stops the answer, Ctrl+Shift+O starts a new chat, "
+                "line; Escape or Ctrl+. stops the answer (what was written stays, with a Continue button), Ctrl+Shift+O starts a new chat, "
                 "and one sent mid-answer queues above the box (Edit, Remove). "
                 "Ctrl+Shift+G turns agent mode on or off, Ctrl+Shift+P clips a note "
                 "to your next question, and Ctrl+Shift+A opens the same agent over "
@@ -3430,8 +3431,8 @@ HELP_TOPICS.extend(
                 "none backs. When an agent "
                 "answer takes more than one step, a checklist above it ticks off "
                 "each round, what it searched or read, then the answer. A number "
-                "or a name in an answer that nothing it read contains gets a "
-                "heads-up under the answer, so check it before relying on it."
+                "or name in an answer that nothing it read contains gets a "
+                "heads-up under it, so check it first."
             ),
             "badge": {"label": "Chat", "tab": "chat"},
         },

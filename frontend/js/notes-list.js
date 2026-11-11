@@ -1348,7 +1348,7 @@ function boardEmbedTarget(ref) {
   if (!ref || !ref.id) return null;
   const byId = mapBoardById(ref.id);
   if (byId) return byId;
-  if (!ref.title || typeof mapBoardTitled !== "function") return null;
+  if (!ref.title) return null;
   return mapBoardTitled(ref.title.toLowerCase());
 }
 

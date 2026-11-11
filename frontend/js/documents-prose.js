@@ -1846,6 +1846,85 @@ docPairInput.tagSource = (CM) => {
   };
 };
 
+// DOC-CITE-BEGIN (tests/test_doc_citations.py runs this region in node)
+//: **Citations** (DOCUMENTS_PLAN row 2): `[@key]` in the prose and `[@key]: the source` at the foot, the footnote
+//: model with another sigil. Read view turns them into footnotes (`citeFootnotes`), so the numbers follow the order
+//: of first use and the list at the end renumbers itself when a paragraph moves. Properties of `docPairInput`, not
+//: globals (the scope ratchet).
+docPairInput.citeKey = (source, taken) => {
+  const text = String(source || "").trim();
+  const url = /^https?:\/\/(?:www\.)?([^/\s?#]+)/i.exec(text);
+  const base =
+    (url ? url[1].split(".")[0] : text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim().split(" ").slice(0, 2).join("-"))
+      .replace(/[^\p{L}\p{N}-]/gu, "")
+      .slice(0, 24) || "source";
+  let key = base;
+  for (let n = 2; taken.includes(key); n += 1) key = `${base}${n}`;
+  return key;
+};
+
+//: The text a citation of this source carries: an address in angle brackets, else what was typed.
+docPairInput.citeText = (source) => {
+  const text = String(source || "").trim();
+  return /^https?:\/\/\S+$/i.test(text) ? `<${text}>` : text;
+};
+
+//: The keys defined in a text (`[@key]: ...` at the start of a line), in order.
+docPairInput.citeKeys = (text) => [...String(text || "").matchAll(/^\[@([^\]\s]{1,40})\]:/gm)].map((m) => m[1]);
+
+//: The text with each defined citation written as a footnote, which the renderer already numbers and lists.
+//: A key with no definition stays as typed, and fenced code is left alone.
+docPairInput.citeFootnotes = (text) => {
+  const keys = docPairInput.citeKeys(text);
+  if (!keys.length) return text;
+  let fenced = false;
+  return String(text)
+    .split("\n")
+    .map((line) => {
+      if (/^\s*(```|~~~)/.test(line)) fenced = !fenced;
+      if (fenced) return line;
+      return line.replace(/\[@([^\]\s]{1,40})\]/g, (whole, key) => (keys.includes(key) ? `[^${key}]` : whole));
+    })
+    .join("\n");
+};
+
+//: What the box holds once a source is cited at the caret: the reference there, the definition at the foot (a
+//: source cited before keeps its key). Returns the new value and where the caret goes.
+docPairInput.citeInsert = (value, start, end, source) => {
+  const wanted = docPairInput.citeText(source);
+  const keys = docPairInput.citeKeys(value);
+  const known = keys.find((key) => value.split("\n").includes(`[@${key}]: ${wanted}`));
+  const key = known || docPairInput.citeKey(source, keys);
+  const mark = `[@${key}]`;
+  let next = value.slice(0, start) + mark + value.slice(end);
+  if (!known) {
+    const gap = keys.length ? "\n" : "\n\n";
+    next = `${next.replace(/\s+$/, "")}${gap}${mark}: ${wanted}\n`;
+  }
+  return { value: next, caret: start + mark.length };
+};
+// DOC-CITE-END
+
+//: **`\ref{` and `\eqref{` completion**: the labels of the page's equations,
+//: with the number each one takes (`docMathRender.labels.index`, the same map
+//: the rendered number reads). `docPairInput.refTyped` is the typed key after
+//: the open brace, or null.
+docPairInput.refTyped = (before) => {
+  const m = /\\(?:eqref|ref)\{([\w:.-]*)$/.exec(before);
+  return m ? m[1] : null;
+};
+
+docPairInput.refSource = (CM) => (context) => {
+  const line = context.state.doc.lineAt(context.pos);
+  const typed = docPairInput.refTyped(line.text.slice(0, context.pos - line.from));
+  if (typed === null || !docMathRender.labels) return null;
+  const labels = docMathRender.labels.index(context.state.doc.toString());
+  const options = [...labels]
+    .filter(([key]) => !key.startsWith("eq-auto-"))
+    .map(([key, number]) => ({ label: key, detail: `(${number})`, type: "variable" }));
+  return options.length ? { from: context.pos - typed.length, options, validFor: /^[\w:.-]*$/ } : null;
+};
+
 // DOC-FENCE-BEGIN (tests/test_live_code_blocks.py runs this region in node)
 //: **Live code blocks** (the owner, 2026-10-07 and 2026-10-26). A fenced block
 //: that names a language is not a second editor: the Markdown parser mounts
@@ -1870,6 +1949,14 @@ docPairInput.fenceNames = {
 docPairInput.fenceExt = (info) => {
   const word = /^[{.\s]*([A-Za-z+#][\w+#-]*)/.exec(String(info || ""));
   return word ? docPairInput.fenceNames[word[1].toLowerCase()] || null : null;
+};
+
+//: An info string as the language word and the `title="fit.py"` beside it.
+docPairInput.fenceParts = (info) => {
+  const text = String(info || "");
+  const title = /\btitle=(?:"([^"]*)"|'([^']*)')/.exec(text);
+  const word = /^[{.\s]*([A-Za-z+#][\w+#-]*)/.exec(text.replace(/\btitle=(?:"[^"]*"|'[^']*')/, ""));
+  return { language: word ? word[1] : "", title: title ? title[1] ?? title[2] : "" };
 };
 
 docPairInput.fenceCache = new Map();

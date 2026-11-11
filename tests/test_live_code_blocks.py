@@ -105,3 +105,26 @@ def test_nothing_is_added_to_the_boot_scripts() -> None:
     index = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert "fenceLanguage" not in index
     assert "documents-fence" not in index
+
+
+@node
+def test_the_info_string_splits_into_language_and_title() -> None:
+    got = _run(
+        "['python title=\"fit.py\"', \"js title='a b.js'\", 'python', '', '{.sh}', 'title=\"x\"']"
+        ".map(docPairInput.fenceParts)"
+    )
+    assert got == [
+        {"language": "python", "title": "fit.py"},
+        {"language": "js", "title": "a b.js"},
+        {"language": "python", "title": ""},
+        {"language": "", "title": ""},
+        {"language": "sh", "title": ""},
+        {"language": "", "title": "x"},
+    ]
+
+
+def test_live_draws_the_title_and_a_language_button() -> None:
+    cm = _read("documents-cm.js")
+    assert "docPairInput.fenceParts(" in cm
+    assert "DocFenceLabelWidget" in cm
+    assert "data-lang]::after" not in _read("documents-cm-theme.js")

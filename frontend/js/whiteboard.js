@@ -955,7 +955,9 @@ function wbSnapOn() {
 //: releases the grid lock, the same convention Figma/Illustrator use) skips
 //: the rounding for just this one call, without needing the snap toggle
 //: itself touched.
+//: Not a finite number is 0 (B33): NaN is invalid where used, not where set.
 function wbSnap(value, bypass) {
+  if (!Number.isFinite(value)) return 0;
   return wbSnapOn() && !bypass ? Math.round(value / WB_GRID_SPACING) * WB_GRID_SPACING : value;
 }
 
@@ -1865,6 +1867,31 @@ function wbCropClip(crop, trim, size) {
 
 function wbCropPath(crop, w, h, trim) {
   return wbCropClip(crop, trim, [w, h]);
+}
+
+//: **Edit image** (WHITEBOARD_PLAN section 1): a picture's quarter turn, flips
+//: and filters live in `data` (`turn`, `flip_x`, `flip_y`, `grey`, `bright`,
+//: `contrast`) and are drawn over the untouched file, so Undo and "Reset" are
+//: exact. The crop, trim and corner clips sit on the picture's own (turned)
+//: frame, so they turn with it; a quarter turn swaps that frame's width and height.
+//: One function (the shared scope has a name cap): `filter` is the CSS filter, `w`/`h` the picture's own frame,
+//: `transform` the CSS one and `svg` the export's.
+function wbPixel(data, w, h) {
+  const level = (v) => (Number.isInteger(v) && v >= 20 && v <= 200 && v !== 100 ? v / 100 : 0);
+  const filter = [data?.grey === true ? "grayscale(1)" : "", level(data?.bright) ? `brightness(${level(data.bright)})` : "",
+    level(data?.contrast) ? `contrast(${level(data.contrast)})` : ""].filter(Boolean).join(" ");
+  const turn = [90, 180, 270].includes(data?.turn) ? data.turn : 0;
+  const quarter = turn === 90 || turn === 270;
+  const fx = data?.flip_x === true ? -1 : 1;
+  const fy = data?.flip_y === true ? -1 : 1;
+  const parts = [];
+  if (quarter) parts.push("translate(-50%, -50%)");
+  if (fx < 0 || fy < 0) parts.push(`scale(${fx}, ${fy})`);
+  if (turn) parts.push(`rotate(${turn}deg)`);
+  const [lw, lh] = quarter ? [h, w] : [w, h];
+  const plain = !turn && fx > 0 && fy > 0;
+  return { w: lw, h: lh, turn, filter, transform: parts.join(" "),
+    svg: plain ? "" : `translate(${w / 2} ${h / 2}) scale(${fx} ${fy}) rotate(${turn}) translate(${-lw / 2} ${-lh / 2})` };
 }
 
 //: **Voting dots** (Miro's; INBOX 1313 row 14): `data.votes`, how many dots a
@@ -13880,12 +13907,16 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       //: same path the board draws, read off the drawn element as a box's is.
       const radii = wbSvgBoxRadii(document.querySelector(`#wb-html-layer .wb-object[data-id="${obj.id}"]`), obj.data, obj.width, obj.height);
       //: A crop to a shape wins over rounded corners, as it does on the board.
-      const cropPath = wbCropPath(obj.data.crop, obj.width, obj.height, obj.data.trim);
+      const pix = wbPixel(obj.data, obj.width, obj.height);
+      const cropPath = wbCropPath(obj.data.crop, pix.w, pix.h, obj.data.trim);
       const clip = cropPath || radii.some((r) => r > 0) ? `wb-export-clip-${obj.id}` : "";
-      if (clip) parts.push(`<clipPath id="${clip}"><path d="${cropPath || wbSvgRoundedPath(obj.width, obj.height, radii)}" /></clipPath>`);
+      if (clip) parts.push(`<clipPath id="${clip}"><path d="${cropPath || wbSvgRoundedPath(pix.w, pix.h, radii)}" /></clipPath>`);
+      const turn = pix.svg;
+      const filter = pix.filter;
       parts.push(
-        `<image href="${wbSvgEscape(mediaSrc(obj.data.url))}" width="${obj.width}" height="${obj.height}" ` +
-          `preserveAspectRatio="xMidYMid slice"${clip ? ` clip-path="url(#${clip})"` : ""} />`
+        `<image href="${wbSvgEscape(mediaSrc(obj.data.url))}" width="${pix.w}" height="${pix.h}" ` +
+          `preserveAspectRatio="xMidYMid slice"${clip ? ` clip-path="url(#${clip})"` : ""}` +
+          `${turn ? ` transform="${turn}"` : ""}${filter ? ` style="filter: ${filter}"` : ""} />`
       );
     } else if (obj.kind === "diagram") {
       //: What the board shows, already drawn (`wbDiagramDataUrl`); an edge
@@ -24374,8 +24405,13 @@ function renderWbObjects(canvas) {
       wbPaintVotes(this, d);
     }
     if (d.kind === "image") {
+      const pix = wbPixel(d.data, d.width, d.height);
+      const turned = pix.turn === 90 || pix.turn === 270;
       el.select("img").attr("src", mediaSrc(d.data.url) || "").style("border-radius", d.data.radii ? "inherit" : null)
-        .style("clip-path", wbCropClip(d.data.crop, d.data.trim) || null);
+        .style("clip-path", wbCropClip(d.data.crop, d.data.trim) || null)
+        .style("transform", pix.transform || null).style("filter", pix.filter || null)
+        .style("position", turned ? "absolute" : null).style("left", turned ? "50%" : null).style("top", turned ? "50%" : null)
+        .style("width", turned ? `${pix.w}px` : null).style("height", turned ? `${pix.h}px` : null);
     } else if (WB_MAP_KINDS.has(d.kind)) {
       wbPaintMapNode(el, d, mapIndex, mapColors, mapFills);
     } else if (d.kind === "frame") {
@@ -24528,14 +24564,9 @@ function wbObjectPaintKey(d, ctx) {
     `|${ctx.fills?.get(d.id) ?? ""}|${wbMapLevelOf(d) ?? ""}` +
     //: The tasks under it (MINDMAP_PLAN.md decision 15): a child ticked
     //: changes this topic's "1/2" without changing anything of its own.
-    `|${wbMapTaskTallyKey(index, d.id)}` +
+    `|${(() => { const t = index ? wbMapTaskTally(index).get(d.id) : null; return t ? `${t.done}/${t.total}` : ""; })()}` +
     //: Its number (decision 17): a sibling added above it renumbers it.
     `|${wbMapNumberOf(index, d.id)}`;
-}
-
-function wbMapTaskTallyKey(index, id) {
-  const tally = index ? wbMapTaskTally(index).get(id) : null;
-  return tally ? `${tally.done}/${tally.total}` : "";
 }
 
 //: **Every link sketch on the board, parsed once and filed under both of its

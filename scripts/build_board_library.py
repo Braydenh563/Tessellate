@@ -612,18 +612,105 @@ def icons():
     }
 
 
+# --- BPMN ----------------------------------------------------------------------
+# Drawn fresh here (the draw.io BPMN stencils are a separate, converted set).
+
+def _bpmn_item(key, name, tags, d, w, h, *, width=2, area=None, fill_opacity=0.12):
+    item = shape_item(d, w, h, fill_opacity=fill_opacity, label_area=area)
+    item["data"]["width"] = width
+    return element(key, name, tags, [item], w, h)
+
+
+def bpmn():
+    circle = ellipse_d(24, 24, 24, 24)
+    inner = ellipse_d(24, 24, 19, 19)
+    diamond = poly([(30, 0), (60, 30), (30, 60), (0, 30)])
+    cross = path("M", 18, 18, "L", 42, 42, "M", 42, 18, "L", 18, 42)
+    plus = path("M", 30, 14, "L", 30, 46, "M", 14, 30, "L", 46, 30)
+    envelope = path("M", 12, 16, "L", 36, 16, "L", 36, 32, "L", 12, 32, "Z", "M", 12, 16, "L", 24, 26, "L", 36, 16)
+    clock = path(ellipse_d(24, 24, 11, 11), "M", 24, 24, "L", 24, 16, "M", 24, 24, "L", 30, 28)
+    task = rounded_rect(120, 80, 10)
+    subprocess = path(rounded_rect(120, 80, 10), "M", 52, 62, "L", 68, 62, "L", 68, 74, "L", 52, 74, "Z", "M", 60, 65, "L", 60, 71, "M", 57, 68, "L", 63, 68)
+    data_object = path("M", 0, 0, "L", 30, 0, "L", 40, 10, "L", 40, 52, "L", 0, 52, "Z", "M", 30, 0, "L", 30, 10, "L", 40, 10)
+    data_store = path("M", 0, 8, "A", 25, 8, 0, 0, 1, 50, 8, "L", 50, 44, "A", 25, 8, 0, 0, 1, 0, 44, "Z", "M", 0, 8, "A", 25, 8, 0, 0, 0, 50, 8)
+    annotation = path("M", 20, 0, "L", 0, 0, "L", 0, 60, "L", 20, 60)
+    pool = path("M", 0, 0, "L", 400, 0, "L", 400, 160, "L", 0, 160, "Z", "M", 32, 0, "L", 32, 160)
+    lanes = path("M", 0, 0, "L", 400, 0, "L", 400, 240, "L", 0, 240, "Z", "M", 32, 0, "L", 32, 240, "M", 32, 120, "L", 400, 120)
+    items = [
+        _bpmn_item("start-event", "Start event", ["bpmn", "begin", "event", "circle"], circle, 48, 48, area={"x": 0.2, "y": 0.2, "w": 0.6, "h": 0.6}),
+        _bpmn_item("intermediate-event", "Intermediate event", ["bpmn", "event", "catch", "double circle"], path(circle, inner), 48, 48),
+        _bpmn_item("end-event", "End event", ["bpmn", "finish", "event", "terminate"], circle, 48, 48, width=5),
+        _bpmn_item("message-start", "Message start event", ["bpmn", "event", "envelope", "receive"], path(circle, envelope), 48, 48),
+        _bpmn_item("timer-event", "Timer intermediate event", ["bpmn", "event", "clock", "wait"], path(circle, inner, clock), 48, 48),
+        _bpmn_item("task", "Task", ["bpmn", "activity", "step", "work"], task, 120, 80, area={"x": 0.05, "y": 0.1, "w": 0.9, "h": 0.8}),
+        _bpmn_item("sub-process", "Sub-process", ["bpmn", "activity", "collapsed", "group"], subprocess, 120, 80, area={"x": 0.05, "y": 0.05, "w": 0.9, "h": 0.6}),
+        _bpmn_item("gateway-exclusive", "Gateway, exclusive (XOR)", ["bpmn", "decision", "xor", "diamond"], path(diamond, cross), 60, 60),
+        _bpmn_item("gateway-parallel", "Gateway, parallel (AND)", ["bpmn", "fork", "join", "and"], path(diamond, plus), 60, 60),
+        _bpmn_item("gateway-inclusive", "Gateway, inclusive (OR)", ["bpmn", "or", "diamond"], path(diamond, ellipse_d(30, 30, 14, 14)), 60, 60),
+        _bpmn_item("data-object", "Data object", ["bpmn", "document", "artifact"], data_object, 40, 52),
+        _bpmn_item("data-store", "Data store", ["bpmn", "database", "artifact"], data_store, 50, 52),
+        _bpmn_item("text-annotation", "Text annotation", ["bpmn", "note", "comment"], annotation, 80, 60, area={"x": 0.1, "y": 0, "w": 0.9, "h": 1}, fill_opacity=0),
+        _bpmn_item("pool", "Pool", ["bpmn", "participant", "swimlane"], pool, 400, 160, area={"x": 0.09, "y": 0, "w": 0.91, "h": 1}),
+        _bpmn_item("pool-two-lanes", "Pool with two lanes", ["bpmn", "lane", "swimlane", "participant"], lanes, 400, 240, area={"x": 0.09, "y": 0, "w": 0.91, "h": 0.5}),
+    ]
+    return {"key": "bpmn", "name": "BPMN", "items": items}
+
+
+# --- Icon sets, picked from the Phosphor glyphs ----------------------------------
+
+ICON_SETS = {
+    "cloud-network": ("Cloud and network", (
+        "cloud cloud-arrow-up cloud-arrow-down cloud-check cloud-lightning database hard-drives hard-drive globe "
+        "globe-hemisphere-west wifi-high wifi-slash network lock-key shield-check cpu stack queue plugs-connected "
+        "terminal-window git-branch package cube gear").split()),
+    "devices-people": ("Devices and people", (
+        "desktop desktop-tower laptop monitor device-mobile device-tablet printer robot user user-circle users "
+        "users-three envelope-simple chat-circle bug code").split()),
+}
+
+
+def icon_sets(glyphs):
+    out = []
+    for key, (name, wanted) in ICON_SETS.items():
+        items = []
+        for icon in wanted:
+            if icon not in glyphs:
+                raise SystemExit(f"icon set {key}: no glyph {icon}")
+            data = {"d": glyphs[icon], "fill": "ink", "noStroke": True, "icon": icon}
+            items.append(element(icon, icon.replace("-", " ").capitalize(), ["icon", key.split("-")[0]],
+                                 [{"key": "i", "kind": "sketch", "data": data}], 96, 96))
+        out.append({"key": key, "name": name, "items": items})
+    return out
+
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
-    sets = [templates(), map_templates(), general(), flowchart(), arrows(), frames()]
-    index = []
+    data = icons()
+    # UML, ERD, wireframe and C4 were written by earlier runs and are kept: the index is read, then updated by key.
+    # Only the sets this file still owns outright are rewritten; the others (templates, flowchart, frames, UML, ...)
+    # were edited in the committed JSON since, and writing them again here would undo that.
+    sets = [bpmn(), *icon_sets(data["icons"])]
+    index_path = OUT / "index.json"
+    index = json.loads(index_path.read_text(encoding="utf-8"))["sets"] if index_path.exists() else []
     for s in sets:
         (OUT / f"{s['key']}.json").write_text(json.dumps({"format": "memorymap-library-set", "version": 1, **s}, indent=1) + "\n", encoding="utf-8")
-        index.append({"key": s["key"], "name": s["name"], "count": len(s["items"])})
-    data = icons()
-    (OUT / "icons.json").write_text(json.dumps(data, separators=(",", ":")) + "\n", encoding="utf-8")
-    index.append({"key": "icons", "name": "Icons", "count": len(data["icons"])})
-    (OUT / "index.json").write_text(json.dumps({"format": "memorymap-library-index", "version": 1, "sets": index}, indent=1) + "\n", encoding="utf-8")
-    print(", ".join(f"{s['name']} {s['count']}" for s in index))
+        entry = {"key": s["key"], "name": s["name"], "count": len(s["items"])}
+        at = next((i for i, e in enumerate(index) if e["key"] == s["key"]), None)
+        if at is None:
+            after = next((i for i, e in enumerate(index) if e["key"] == "wireframe"), None) if s["key"] == "bpmn" else None
+            before_icons = next((i for i, e in enumerate(index) if e["key"] == "icons"), len(index))
+            index.insert(after + 1 if after is not None else before_icons, entry)
+        else:
+            index[at] = entry
+    count = next((i for i, e in enumerate(index) if e["key"] == "icons"), None)
+    entry = {"key": "icons", "name": "Icons", "count": len(data["icons"])}
+    if count is None:
+        index.append(entry)
+    else:
+        index[count] = entry
+    index_path.write_text(json.dumps({"format": "memorymap-library-index", "version": 1, "sets": index}, indent=1) + "\n", encoding="utf-8")
+    print(", ".join(f"{e['name']} {e['count']}" for e in index))
 
 
 if __name__ == "__main__":

@@ -4370,7 +4370,7 @@ function docRenderBody(container, raw) {
   //: Footnotes over the whole document, before it is cut into pieces (audit
   //: FEAT-03): a note defined at the foot is cited from every piece above it,
   //: and each piece's own `renderMarkdown` would see only its half.
-  const footnotes = mdFootnotePrepare(String(raw ?? "").split("\n"));
+  const footnotes = mdFootnotePrepare(docPairInput.citeFootnotes(String(raw ?? "")).split("\n"));
   const text = footnotes.lines.join("\n");
   const pieces = () => {
     const blocks = docColumnsBlocks(text);
@@ -7111,6 +7111,7 @@ const MD_ACTIONS = {
   //: offer the link that resolves inside it, not only the markdown one.
   wikilink: { pre: "[[", post: "]]", placeholder: "note name" },
   footnote: { custom: "footnote" },
+  cite: { custom: "cite" },
   indent: { custom: "indent" },
   outdent: { custom: "outdent" },
   undo: { custom: "undo" },
@@ -7360,6 +7361,17 @@ function applyMarkdown(kind, boxId = "doc-content") {
   }
   if (action.custom === "annotate") {
     docAnnotateSelection(box, boxId);
+    return;
+  }
+  if (action.custom === "cite") {
+    //: A citation: the reference at the caret and the source at the foot (`docPairInput.citeInsert`).
+    promptDialog("Cite a source: an address, or its title", "", { confirmLabel: "Cite" }).then((source) => {
+      if (!source || !source.trim()) return;
+      const done = docPairInput.citeInsert(box.value, end, end, source);
+      box.value = done.value;
+      box.setSelectionRange(done.caret, done.caret);
+      finishMarkdownEdit(box, boxId);
+    });
     return;
   }
   if (action.custom === "footnote") {

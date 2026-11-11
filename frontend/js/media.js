@@ -78,7 +78,7 @@ function sketchHost() {
     highlighter: HIGHLIGHTER_STYLE,
     menu: (items, label) => kebabMenu(items, label),
     wireHelp: (button, panel) => wireHelpPopover(button, panel),
-    singleKeys: () => (typeof singleKeysOn === "function" ? singleKeysOn() : true),
+    singleKeys: () => singleKeysOn(),
     close: hideSketchOverlay,
   };
   return sketchHostObject;

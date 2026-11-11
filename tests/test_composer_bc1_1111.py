@@ -60,3 +60,47 @@ def test_a_temperature_quoted_leaves_no_missing_footer(client, session, monkeypa
     text = text[0] if isinstance(text, tuple) else text
     assert "175" in text
     assert "do not mention" not in text and "None of these" not in text and "say anything about" not in text
+
+
+# Z17: "9/10" after a title is a rating, not 9 October; "on 9/10" still is a date.
+@pytest.mark.parametrize("question", ["is Piranesi 9/10", "is the Piranesi note 9/10", "was Piranesi a 9/10"])
+def test_a_rating_fraction_is_not_a_date_window(client, session, monkeypatch, question):
+    import tests._seed_1030 as seed
+
+    seed.seed(session)
+    text = seed.asker(client, monkeypatch, chat=True)(question)
+    text = text[0] if isinstance(text, tuple) else text
+    assert "9/10" in text and "Piranesi" in text and "did not" not in text.lower()
+    assert "None of your notes" not in text and "I found nothing" not in text
+
+
+@pytest.mark.parametrize("question, said", [
+    ("what is on 9/10", "what is on 9/10"), ("due by 9/10", "due by 9/10"), ("is Piranesi 9/10", "is Piranesi 9 out of 10"),
+    ("it is 11/10", "it is 11/10"), ("3/10 was it", "3 out of 10 was it"),
+])
+def test_a_rating_fraction_is_said_as_a_rating_and_a_date_stays(question, said):
+    from tessellate.ai import question_noise
+
+    assert question_noise.tidy(question) == said
+
+
+@pytest.mark.parametrize("question", [
+    "what did I write around 9/10 of this year", "what did I do around 9/10", "what happened 9/10",
+    "notes from the week of 9/10", "anything near 9/10", "what did I do around 11/09/2025", "show me 9/10",
+    "what is around 9/10", "what was I doing about 9/10",
+])
+def test_a_slash_date_with_no_rating_word_stays_a_date(question):
+    """Owner, 2026-11-11: "9/10 could be a date based on context". Only a rating word (is, was, gave, rated,
+    score, stars) makes it a rating; a time word or no cue at all keeps it a date."""
+    from tessellate.ai import question_noise
+
+    assert "out of" not in question_noise.tidy(question)
+
+
+@pytest.mark.parametrize("question", ["did I give Piranesi 9/10", "I rated it 8/10", "what scored 7/10",
+                                      "i went and saw the minecraft movie and I reckon int was around a 9/10",
+                                      "the movie I called a 9/10"])
+def test_a_rating_word_still_reads_the_fraction_as_a_rating(question):
+    from tessellate.ai import question_noise
+
+    assert "out of 10" in question_noise.tidy(question)

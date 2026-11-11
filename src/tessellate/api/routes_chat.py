@@ -27,7 +27,7 @@ import re
 import time
 from collections.abc import Iterator
 from dataclasses import replace as with_changes
-from datetime import date, timezone
+from datetime import date
 from itertools import chain
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -1693,16 +1693,8 @@ def _this_note_said(req: _StreamRequest) -> str | None:
     found = _attached_notes(req.session, ids)
     if not found:
         return None
-    now = user_now(deps.get_config())
-
-    def mine(when):  # noqa: ANN001, ANN202  # stored in UTC, said in the person's time
-        if when is None:
-            return None
-        aware = when if when.tzinfo else when.replace(tzinfo=timezone.utc)
-        return aware.astimezone(now.tzinfo).replace(tzinfo=None) if now.tzinfo else aware.replace(tzinfo=None)
-
-    entry = found[0]
-    return composer_this.answer(req.question, entry.content or "", mine(entry.created_at), mine(entry.edited_at), now.date())
+    now, entry = user_now(deps.get_config()), found[0]
+    return composer_this.answer(req.question, entry.content or "", *composer_this.local(now, entry.created_at, entry.edited_at), now.date())
 
 
 def _extra_events(req: _StreamRequest, follow) -> list[dict] | None:  # noqa: ANN001

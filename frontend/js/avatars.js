@@ -7401,27 +7401,29 @@ function nameMarkBuddyCoverWatch(records) {
 if (typeof MutationObserver === "function" && document.getElementById("lock-overlay")) {
   new MutationObserver(nameMarkBuddyLockSync).observe(document.getElementById("lock-overlay"), { attributes: true, attributeFilter: ["class", "data-mode"] });
 }
-//: **The perch check runs when something could have changed** (Brief 34
-//: decision 7). It used to look every 1.5s whatever happened: each look
-//: walks the tab's controls (`nameMarkBuddyObstacles`), so a page nobody
-//: touched paid for forty of them a minute (companionperf.js IDLE=1: 737ms
-//: of script a minute with the generated companion on, against 32 off,
-//: most of it here), and it went on under the lock screen. Now it looks
-//: within 1.5s of input, a resize or a toast, and otherwise once in 10s in
-//: case the page changed by itself; never in a hidden window or under the
-//: lock.
+//: **The perch check runs when something could have changed** (Brief 34 decision 7): within 1.5s of
+//: input, a resize or a toast, else once in 10s; never hidden or locked (it walked the controls 40 times a minute).
 const NMB_CHECK_IDLE_MS = 10000;
 //: Armed, not polled (battery, INBOX 1351): one timer that sleeps the full
 //: idle span and shortens only for input or a toast; none in a hidden window.
 const NMB_IDLE_MARK_MS = 120000;
 const nmbClock = { timer: 0, inputAt: Date.now() };
+//: UX3: 20 s without input and Atlas's endless loops hold still (`.is-calm`, 08-consistency.css).
+nmbClock.setCalm = (on) => {
+  clearTimeout(nmbClock.calm);
+  document.documentElement.classList.toggle("is-calm", on);
+  if (!on) nmbClock.calm = setTimeout(nmbClock.setCalm, 20000, true);
+};
+nmbClock.setCalm(false);
 function nmbTickArm(ms) {
   clearTimeout(nmbClock.timer);
   nmbClock.timer = document.hidden ? 0 : setTimeout(nmbTick, ms);
 }
-for (const type of ["pointerdown", "keydown", "wheel", "resize"]) {
+for (const type of ["pointerdown", "pointermove", "keydown", "wheel", "resize"]) {
   (type === "resize" ? window : document).addEventListener(type, () => {
+    if (type === "pointermove") return nmbClock.setCalm(false);
     if (type !== "resize") {
+      nmbClock.setCalm(false);
       nmbClock.inputAt = Date.now();
       //: Only when it is on (DX1): `remove` writes the attribute even when the
       //: class is absent, so every key woke each observer of `<html>` (the

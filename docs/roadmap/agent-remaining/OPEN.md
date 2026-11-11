@@ -4072,95 +4072,95 @@ Format: id | file:line | one line | status.
 
 **BC2 (composer, 20 rows)**
 
-- Z17 | audit-1030-composer:110 | Notebook asks (themes, summarise) read the whole notebook (partial | partial
-- Z20 | audit-1030-composer:113 | A feeling question prefers the line holding a feeling (partial) | partial
-- Z21 | audit-1030-composer:119 | A "when" prefers a sentence with a calendar day to a window ("this week"); partial | partial
-- Z22 | audit-1030-composer:120 | How long since answers from the last dated line (partial | partial
-- Z23 | audit-1030-composer:121 | How-often and how-many for an activity count notes, not events, and fall back to the first sentence | open
-- Z24 | audit-1030-composer:122 | A where answer leads with the place, or says there is none | partial
-- Z25 | audit-1030-composer:123 | Temperature asks (how hot, what temp, what oven setting) read; partial | partial
-- Z26 | audit-1030-composer:124 | Dates: past-tense or past-dated lines are listed as upcoming | open
-- Z27 | audit-1030-composer:125 | Windows and sets disagree: "what's due soon" says Three dates fall in the next two weeks, 4 November to 1 | open
-- Z28 | audit-1030-composer:126 | A one-day "what did I do on X" says what the notes hold (title and first sentence), not that they were ma | partial
-- Z29 | audit-1030-composer:132 | "Sum of rent and groceries", "what is the total of my budget", "total cost of the Lisbon trip" add the am | partial
-- Z32 | audit-1030-composer:135 | A name that is a note's title or category adds every amount in that note (partial | partial
-- Z33 | audit-1030-composer:141 | Open checklist left/done questions answered from the open note (partial) | partial
-- Z36 | audit-1030-composer:144 | Untitled notes are counted and duplicate notes are answered from the notebook (partial | partial
-- Z37 | audit-1030-composer:145 | "Untick" says it cannot yet and "mark X as packed" reads as the tick act (partial | partial
-- Z39 | audit-1030-composer:152 | Citation tags switch style in one answer | open
-- Z40 | audit-1030-composer:153 | The sources column is not in citation order | open
-- Z45 | audit-1030-composer:158 | "Here is your newest note" for one, and a capitalised month (partial | partial
-- Z46 | audit-1030-composer:159 | A frame word ("goes", "ingredients", "contents") is no longer named as a missing topic (partial | partial
-- Z49 | audit-1030-composer:167 | The tool describes itself in the answer | open
+- Z17 | audit-1030-composer:110 | Notebook asks (themes, summarise) read the whole notebook (partial | fixed: 13df2e9 and 79652a7db (a rating fraction after a title is a rating; tests/test_composer_bc1_1111.py). Residual: 'did I give X 9/10' still answers 'I found nothing'
+- Z20 | audit-1030-composer:113 | A feeling question prefers the line holding a feeling (partial) | fixed: 13df2e9; residual: 'how am I feeling' quotes the Meditation note
+- Z21 | audit-1030-composer:119 | A "when" prefers a sentence with a calendar day to a window ("this week"); partial | fixed: b2bccba (rechecked 2026-11-11)
+- Z22 | audit-1030-composer:120 | How long since answers from the last dated line (partial | fixed: 13df2e9; 'how long since I called Sara' year and 'how old is the starter' sit in the date files (deferred)
+- Z23 | audit-1030-composer:121 | How-often and how-many for an activity count notes, not events, and fall back to the first sentence | deferred: date/count code (composer_slots.py) is held by another agent
+- Z24 | audit-1030-composer:122 | A where answer leads with the place, or says there is none | fixed: 13df2e9; residual: 'where does Sara live' quotes Gift ideas
+- Z25 | audit-1030-composer:123 | Temperature asks (how hot, what temp, what oven setting) read; partial | fixed: b2bccba and 55e2c26f7: temperature asks answer by a figure and drop the footer
+- Z26 | audit-1030-composer:124 | Dates: past-tense or past-dated lines are listed as upcoming | deferred: date lists (composer_ahead.py) are held by another agent
+- Z27 | audit-1030-composer:125 | Windows and sets disagree: "what's due soon" says Three dates fall in the next two weeks, 4 November to 1 | deferred: date windows (composer_ahead.py) are held by another agent
+- Z28 | audit-1030-composer:126 | A one-day "what did I do on X" says what the notes hold (title and first sentence), not that they were ma | fixed: 07d7194
+- Z29 | audit-1030-composer:132 | "Sum of rent and groceries", "what is the total of my budget", "total cost of the Lisbon trip" add the am | fixed: 07d7194; residual: 'how much did I spend on clothes/shopping' finds nothing (category to notes mapping)
+- Z32 | audit-1030-composer:135 | A name that is a note's title or category adds every amount in that note (partial | fixed: 07d7194
+- Z33 | audit-1030-composer:141 | Open checklist left/done questions answered from the open note (partial) | fixed: b2bccba
+- Z36 | audit-1030-composer:144 | Untitled notes are counted and duplicate notes are answered from the notebook (partial | fixed: 07d7194
+- Z37 | audit-1030-composer:145 | "Untick" says it cannot yet and "mark X as packed" reads as the tick act (partial | fixed: 07d7194
+- Z39 | audit-1030-composer:152 | Citation tags switch style in one answer | deferred: citation tags are drawn by the front end's answer renderer; no composer-side cause found, needs a rendered sweep
+- Z40 | audit-1030-composer:153 | The sources column is not in citation order | stale: a number sort exists and the sources column follows citation order on this head
+- Z45 | audit-1030-composer:158 | "Here is your newest note" for one, and a capitalised month (partial | fixed: 07d7194
+- Z46 | audit-1030-composer:159 | A frame word ("goes", "ingredients", "contents") is no longer named as a missing topic (partial | fixed: c2de394
+- Z49 | audit-1030-composer:167 | The tool describes itself in the answer | blocked: decision 54 says a computed sentence always says 'Read as ...'; recommendation: keep the line, shorten it, and decide with the owner
 
 **BC3 (composer, 20 rows)**
 
-- Z50 | audit-1030-composer:168 | A bare note word ("Atlas", "Sara") is a notes ask and "call Sara" with a note about her is the lookup (pa | partial
-- Z53 | audit-1030-composer:176 | Follow-ons keep the cited note (partial | partial
-- Z56 | audit-1030-composer:179 | One checklist-state reader: "is the passport packed" is yes or no with the item, "is everything packed" | partial
-- Z57 | audit-1030-composer:180 | The plan-the-week answer puts everything on one day | open
-- Z58 | audit-1030-composer:181 | Compare answers use the wrong notes or a missing relation | open
-- Z59 | audit-1030-composer:182 | "What do I want to learn" gives From your notes | open
-- Z61 | audit-1030-composer:189 | The confirmation for the same kind of act is worded five ways | open
-- Z62 | audit-1030-composer:190 | Reminder confirmations are fragments with three time formats | open
-- Z63 | audit-1030-composer:191 | An act that creates a note turns the whole sentence into the title, and the title-only notes then rank ab | open
-- Z67 | audit-1030-composer:200 | Not reproduced on the fix branch (the base answers from the Sara notes only) | open
-- Z68 | audit-1030-composer:208 | With a model up, date and days-until questions in Ask are answered I couldn't find any saved notes matchi | open
-- AR3 | audit-1031-architecture:29 | The composer is a second application | open
-- C2 | audit-1031-composer:45 | The supersede rule treats two facts with the same name key as old and new values of one thing, and report | partial
-- C3 | audit-1031-composer:46 | A holiday or month word in a topic question is read as a date window, so the notes that hold the word are | open
-- C4 | audit-1031-composer:47 | Term frequency beats the defining note once the notebook has noise | open
-- C5 | audit-1031-composer:48 | Several notes are glued into one sentence with commas and ellipses once the overview runs past its line b | open
-- C6 | audit-1031-composer:49 | The count sentence counts the largest theme, not the notes the answer then says, so counts disagree with | open
-- C7 | audit-1031-composer:50 | A question naming a titled note ("the X note", "what is in the X note") is not resolved to that note; the | open
-- C9 | audit-1031-composer:52 | A sentence's own date word is read as the event's day, resolved to the past because the ask is past tense | open
-- C10 | audit-1031-composer:53 | A one-line note in a script without spaces or Latin stops is read as a title-only note | open
+- Z50 | audit-1030-composer:168 | A bare note word ("Atlas", "Sara") is a notes ask and "call Sara" with a note about her is the lookup (pa | fixed: 07d7194; rechecked 2026-11-11: 'what is Atlas' answers from the Atlas notes and 'what's your name' says Atlas's assistant (decision 76)
+- Z53 | audit-1030-composer:176 | Follow-ons keep the cited note (partial | fixed: b2bccba; 'how much does it cost' with no prior turn still picks the passport (the Ask tab holds no turns)
+- Z56 | audit-1030-composer:179 | One checklist-state reader: "is the passport packed" is yes or no with the item, "is everything packed" | fixed: c2de394; 'what have I finished' reads the Books note, residual
+- Z57 | audit-1030-composer:180 | The plan-the-week answer puts everything on one day | stale: rechecked 2026-11-11: the week answer groups by day with 'Free weekdays: Monday, Tuesday, Thursday, Friday'
+- Z58 | audit-1030-composer:181 | Compare answers use the wrong notes or a missing relation | stale: rechecked 2026-11-11: 'which trip is sooner' compares Lisbon with Tokyo by date and 'Lisbon vs Tokyo' uses the trip notes
+- Z59 | audit-1030-composer:182 | "What do I want to learn" gives From your notes | stale: rechecked 2026-11-11: 'what do I want to learn' and 'what am I learning' both say Spanish; the streak is labelled 'writing streak'
+- Z61 | audit-1030-composer:189 | The confirmation for the same kind of act is worded five ways | deferred: the eight openers are a deliberate design (composer_replies.CONFIRM, B24) and all name Confirm and Cancel; unify only on an owner decision
+- Z62 | audit-1030-composer:190 | Reminder confirmations are fragments with three time formats | deferred: reminder time wording is built in when.py / acts.py with the date files held by another agent
+- Z63 | audit-1030-composer:191 | An act that creates a note turns the whole sentence into the title, and the title-only notes then rank ab | open: not reproduced from the Ask tab (acts redirect to Chat); needs a Chat-tab sweep of the note title built from a sentence
+- Z67 | audit-1030-composer:200 | Not reproduced on the fix branch (the base answers from the Sara notes only) | stale: rechecked 2026-11-11: 'what does Sara want for her birthday' answers from the Sara note only
+- Z68 | audit-1030-composer:208 | With a model up, date and days-until questions in Ask are answered I couldn't find any saved notes matchi | open: needs a model up to reproduce; not verifiable on the fake transport
+- AR3 | audit-1031-architecture:29 | The composer is a second application | open: architectural, no cheap fix; recorded as design work
+- C2 | audit-1031-composer:45 | The supersede rule treats two facts with the same name key as old and new values of one thing, and report | stale: rechecked 2026-11-11: 'what have I written about Sara' and 'what is in the Sara note' answer from the Sara note without a supersede line
+- C3 | audit-1031-composer:46 | A holiday or month word in a topic question is read as a date window, so the notes that hold the word are | stale: rechecked 2026-11-11: 'what do I know about Christmas' and 'who is coming for Christmas' answer from the mum note
+- C4 | audit-1031-composer:47 | Term frequency beats the defining note once the notebook has noise | open: reproduces at 207 notes: 'what do I know about reading' leads with filler notes after the Books note
+- C5 | audit-1031-composer:48 | Several notes are glued into one sentence with commas and ellipses once the overview runs past its line b | open: reproduces at 207 notes: filler notes are quoted in full, glued with ellipses
+- C6 | audit-1031-composer:49 | The count sentence counts the largest theme, not the notes the answer then says, so counts disagree with | partial: rechecked 2026-11-11: 'what have I written about uni' now counts eight and says eight; the 207-note count sentence still disagrees
+- C7 | audit-1031-composer:50 | A question naming a titled note ("the X note", "what is in the X note") is not resolved to that note; the | stale: rechecked 2026-11-11: 'what is Tom's note about' and 'what is in the Sara note' answer from the titled note
+- C9 | audit-1031-composer:52 | A sentence's own date word is read as the event's day, resolved to the past because the ask is past tense | stale: rechecked 2026-11-11: 'when did I call mum' answers 'On Monday 26 October'
+- C10 | audit-1031-composer:53 | A one-line note in a script without spaces or Latin stops is read as a title-only note | open: not probed (needs a CJK note in the seed); recorded in bc-1111.md
 
 **BC4 (composer, 20 rows)**
 
-- C11 | audit-1031-composer:54 | With a note open, "what dates are in this" and every other open-note question outside made, edited and le | open
-- C13 | audit-1031-composer:56 | A verb-first diary line gets "you" as its subject whatever the verb, and a "Diary | open
-- C14 | audit-1031-composer:57 | A group sentence says every member shares a tag that only some carry | open
-- C15 | audit-1031-composer:58 | The event count for an activity counts the newest dated sentence only | open
-- C16 | audit-1031-composer:59 | The answer to a "when did I" or "how long do I" is the top note's first sentence; the asked property sits | open
-- C17 | audit-1031-composer:60 | "The short version of X" and "give me the short version" are not read as summarise, so an unrelated note | open
-- C18 | audit-1031-composer:61 | "What am I reading" matches a question inside a note before the Books note | open
-- C19 | audit-1031-composer:62 | "Notes mentioning X" asked as a question is a one-note fact in Ask and a three-note find in Chat | open
-- C20 | audit-1031-composer:63 | Derived "nothing yet" and offer lines ride on answers they do not belong to | open
-- C21 | audit-1031-composer:64 | "Do you like me", "what do you think" and "ur mum" are answered from the nearest note, and a quoted picku | open
-- C22 | audit-1031-composer:65 | A passing-mention note contributes its opening sentence, not the sentence that matched, so an overview en | open
-- C23 | audit-1031-composer:66 | Summaries show raw note emphasis and summarise one note for a plural ask | open
-- C24 | audit-1031-composer:67 | Four compare openers claim a process, side headings switch case, and a side's lines are dropped silently | open
-- C25 | audit-1031-composer:68 | The attempt-based rewording changes the facts, not only the words | open
-- C26 | audit-1031-composer:69 | "Nothing matched" fallbacks list the newest notes for a question that named a note property | open
-- C27 | audit-1031-composer:70 | The day-plan and recap shapes say what was made, not what was done, for "what did I do" (audit 1030 Z28 p | open
-- C28 | audit-1031-composer:71 | A quote is altered: a day is written into it, and "today" is replaced inside quotation marks | open
-- C29 | audit-1031-composer:72 | A checklist's state is lost or misread in the open-note shapes | open
-- C30 | audit-1031-composer:73 | "What do I spend on X", "what's the total" and "total spend" do not read the budget note's amounts | open
-- C31 | audit-1031-composer:74 | A title-less note is named four ways across the list shapes and the chips | open
+- C11 | audit-1031-composer:54 | With a note open, "what dates are in this" and every other open-note question outside made, edited and le | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py C10 and C11; probe: 'what dates are in this' on the open Packing note says it has no date
+- C13 | audit-1031-composer:56 | A verb-first diary line gets "you" as its subject whatever the verb, and a "Diary | stale: rechecked 2026-11-11: cfix C13; probe: 'what do I know about Arrival' gives 'it rained all day, and you baked banana bread and watched Arrival'
+- C14 | audit-1031-composer:57 | A group sentence says every member shares a tag that only some carry | stale: rechecked 2026-11-11: cfix C14; probe: the meeting group sentence names no non-holder
+- C15 | audit-1031-composer:58 | The event count for an activity counts the newest dated sentence only | stale: rechecked 2026-11-11: cfix C15 (since skips a note-level 'ran twice'); probe: 'how many times did I run' counts four runs
+- C16 | audit-1031-composer:59 | The answer to a "when did I" or "how long do I" is the top note's first sentence; the asked property sits | stale: rechecked 2026-11-11: cfix C16; probe: 'when did I bake banana bread' and 'how long do I bake' lead with the asked slot
+- C17 | audit-1031-composer:60 | "The short version of X" and "give me the short version" are not read as summarise, so an unrelated note | stale: rechecked 2026-11-11: cfix C17 and C47; probe: 'short version of X' summarises X
+- C18 | audit-1031-composer:61 | "What am I reading" matches a question inside a note before the Books note | stale: rechecked 2026-11-11: cfix C18; probe: 'what am I reading' leads with the Books note
+- C19 | audit-1031-composer:62 | "Notes mentioning X" asked as a question is a one-note fact in Ask and a three-note find in Chat | stale: rechecked 2026-11-11: cfix C19; probe: 'what do My notes mentioning test saY??' lists two notes in Ask
+- C20 | audit-1031-composer:63 | Derived "nothing yet" and offer lines ride on answers they do not belong to | stale: rechecked 2026-11-11: cfix C20 (the overview's own filler lines belong to INBOX 1743: owned by 1743); probe: no offer line on the flights answer
+- C21 | audit-1031-composer:64 | "Do you like me", "what do you think" and "ur mum" are answered from the nearest note, and a quoted picku | stale: rechecked 2026-11-11: cfix C21; probe: 'do you like me' and 'what do you think' get the companion reply, 'ur mum' asks what is meant
+- C22 | audit-1031-composer:65 | A passing-mention note contributes its opening sentence, not the sentence that matched, so an overview en | stale: rechecked 2026-11-11: cfix C22; probe: the sourdough overview says the matching sentence (overview prose owned by 1743)
+- C23 | audit-1031-composer:66 | Summaries show raw note emphasis and summarise one note for a plural ask | stale: rechecked 2026-11-11: cfix C23; probe: a summary shows no ** marks
+- C24 | audit-1031-composer:67 | Four compare openers claim a process, side headings switch case, and a side's lines are dropped silently | stale: rechecked 2026-11-11: cfix C24 and test_composer_compare_1029.py; probe: compare headings start with a capital, no process opener
+- C25 | audit-1031-composer:68 | The attempt-based rewording changes the facts, not only the words | stale: rechecked 2026-11-11: cfix C25; probe: a retry changes frames only
+- C26 | audit-1031-composer:69 | "Nothing matched" fallbacks list the newest notes for a question that named a note property | stale: rechecked 2026-11-11: cfix C26; composer_dialogue._defining_ask answers 'which is the main note' after an overview
+- C27 | audit-1031-composer:70 | The day-plan and recap shapes say what was made, not what was done, for "what did I do" (audit 1030 Z28 p | stale: rechecked 2026-11-11: cfix C27; probe: 'what did I do last weekend' says what the notes hold. Residual: a title-less diary note is linked by its whole line
+- C28 | audit-1031-composer:71 | A quote is altered: a day is written into it, and "today" is replaced inside quotation marks | stale: rechecked 2026-11-11: cfix C28; probe: 'the Saturday being 24 October' sits outside the quotation marks
+- C29 | audit-1031-composer:72 | A checklist's state is lost or misread in the open-note shapes | stale: rechecked 2026-11-11: cfix C29; probe: 'summarise this' on Packing says 'five items, two ticked'
+- C30 | audit-1031-composer:73 | "What do I spend on X", "what's the total" and "total spend" do not read the budget note's amounts | fixed 2026-11-11: total spend names the regular amounts beside a single price (tests/test_composer_bc4_1111.py); the rest by cfix C30
+- C31 | audit-1031-composer:74 | A title-less note is named four ways across the list shapes and the chips | stale: rechecked 2026-11-11: cfix C31; probe: week and month lists name the title-less note by its words
 
 **BC5 (composer, 20 rows)**
 
-- C32 | audit-1031-composer:75 | Reporting frames wrap things that are not speech | open
-- C33 | audit-1031-composer:76 | Four footers say the same thing in four wordings, and the thing they say is a dangling promise | open
-- C34 | audit-1031-composer:77 | Openers and closers claim a process or pad the answer | open
-- C35 | audit-1031-composer:78 | A month is lower-cased by .capitalize(), and other words lose or gain capitals | open
-- C37 | audit-1031-composer:80 | A one-line title-less note's whole line becomes a run-on with "and | open
-- C38 | audit-1031-composer:81 | Japanese punctuation gets a Latin stop added | open
-- C39 | audit-1031-composer:82 | The courses-and-study answer groups by a name that is not a course and includes a note with no visible bo | open
-- C40 | audit-1031-composer:83 | Mixed citation styles in one answer and bare brackets after fragments | open
-- C41 | audit-1031-composer:84 | Act confirmations: five wordings, an act that runs without confirm beside one that asks, "pin" answered a | open
-- C42 | audit-1031-composer:85 | Chat has no per-answer follow-on chips; Ask has them | open
-- C43 | audit-1031-composer:86 | Due lists and left-item lists put a blank line between bullets; a reminder on a note hides the note's own | open
-- C44 | audit-1031-composer:87 | "What is my longest note" promises a list that is not in the text | open
-- C46 | audit-1031-composer:89 | "I'm a better finder than a comedian" for "tell me a joke" while a jokes note exists | open
-- C47 | audit-1031-composer:90 | The chips the composer offers under an answer are questions it then cannot answer | open
-- C48 | audit-1031-composer:91 | "What's new with X" and "the latest on X" answer with the oldest note or a checklist item | open
-- C49 | audit-1031-composer:92 | A link's reason is never said: the group line says "You linked A to B" and a question about the link gets | open
-- E4 | audit-1107-composer-r2:24 | after "what do I know about José" | partial
-- E5 | audit-1107-composer-r2:25 | chain: "tell me about the Tokyo trip" / "where is it" / "what should I pack" / "when does it start" | partial
-- E9 | audit-1107-composer-r2:29 | "which is cheaper, Lisbon or Tokyo", "Lisbon or Tokyo, which costs more", "who is older, Anna or Tom" | open
-- E10 | audit-1107-composer-r2:30 | "what do I know about Tom and Sara", "what do I know about Anna and José", "anna and josé", "what do I kn | partial
+- C32 | audit-1031-composer:75 | Reporting frames wrap things that are not speech | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py test_c32 passes on this head
+- C33 | audit-1031-composer:76 | Four footers say the same thing in four wordings, and the thing they say is a dangling promise | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py test_c33 passes on this head
+- C34 | audit-1031-composer:77 | Openers and closers claim a process or pad the answer | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py test_c34 passes on this head
+- C35 | audit-1031-composer:78 | A month is lower-cased by .capitalize(), and other words lose or gain capitals | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py test_c35 passes on this head
+- C37 | audit-1031-composer:80 | A one-line title-less note's whole line becomes a run-on with "and | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py test_c37 passes on this head
+- C38 | audit-1031-composer:81 | Japanese punctuation gets a Latin stop added | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py test_c38 passes on this head
+- C39 | audit-1031-composer:82 | The courses-and-study answer groups by a name that is not a course and includes a note with no visible bo | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py test_c39 passes on this head
+- C40 | audit-1031-composer:83 | Mixed citation styles in one answer and bare brackets after fragments | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py test_c40 passes on this head
+- C41 | audit-1031-composer:84 | Act confirmations: five wordings, an act that runs without confirm beside one that asks, "pin" answered a | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py test_c41 passes on this head
+- C42 | audit-1031-composer:85 | Chat has no per-answer follow-on chips; Ask has them | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py test_c42 passes on this head
+- C43 | audit-1031-composer:86 | Due lists and left-item lists put a blank line between bullets; a reminder on a note hides the note's own | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py test_c43 passes on this head
+- C44 | audit-1031-composer:87 | "What is my longest note" promises a list that is not in the text | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py test_c44 passes on this head
+- C46 | audit-1031-composer:89 | "I'm a better finder than a comedian" for "tell me a joke" while a jokes note exists | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py test_c46 passes on this head
+- C47 | audit-1031-composer:90 | The chips the composer offers under an answer are questions it then cannot answer | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py C17 and C47 passes on this head
+- C48 | audit-1031-composer:91 | "What's new with X" and "the latest on X" answer with the oldest note or a checklist item | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py C48 (test_c48 headings) passes on this head
+- C49 | audit-1031-composer:92 | A link's reason is never said: the group line says "You linked A to B" and a question about the link gets | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py test_c49 passes on this head
+- E4 | audit-1107-composer-r2:24 | after "what do I know about José" | stale: fixed, tests/test_composer_r2_1107.py passes on this head (audit row says Fixed)
+- E5 | audit-1107-composer-r2:25 | chain: "tell me about the Tokyo trip" / "where is it" / "what should I pack" / "when does it start" | stale: fixed, tests/test_composer_r2_1107.py and test_composer_r5_follow_1108.py passes on this head (audit row says Fixed)
+- E9 | audit-1107-composer-r2:29 | "which is cheaper, Lisbon or Tokyo", "Lisbon or Tokyo, which costs more", "who is older, Anna or Tom" | partial: rechecked 2026-11-11: 'which is cheaper' and 'costs more' compare the figures; 'who is older, Anna or Tom' still answers a gift line (no age comparison exists; needs a birth-year reader in composer_amounts)
+- E10 | audit-1107-composer-r2:30 | "what do I know about Tom and Sara", "what do I know about Anna and José", "anna and josé", "what do I kn | stale: fixed, tests/test_composer_w7_1110.py and test_composer_each_subject_1109.py passes on this head (audit row says Fixed)
 
 **BC6 (composer, 20 rows)**
 
@@ -4407,12 +4407,12 @@ Format: id | file:line | one line | status.
 
 **BK1 (companion, 24 rows)**
 
-- X15 | audit-1029-extras:121 | Dashboard has about 13,250 DOM nodes with six notes, 16.6k to 19.9k after opening settings and dialogs | open
+- X15 | audit-1029-extras:121 | Dashboard has about 13,250 DOM nodes with six notes, 16.6k to 19.9k after opening settings and dialogs | partial: Guide chat is a template (6,831 to 6,437 nodes on a fresh folder); hidden tab panes (3,400 nodes) and the palette (438) still parse at boot, each wired by id at load
 - ~~A36 | audit-1030-ai:67 | Esc on a companion menu returns focus to an anonymous kebab-opener.pointer-menu-anchor, not the companion | partial~~ fixed 6254337 (checked 2026-11-11)
 - A37 | audit-1030-ai:68 | The companion fades to opacity 0 behind the Settings dialog; on phone it sits at about (314,728) over the | open
 - ~~Z18 | audit-1031-extras:121 | Background art, when on, costs 0.203 s of script per 5 s (about 4 percent of one core) at 20 fps on this | open~~ fixed 405fbdcaf (12 fps after 30 s without a pointer; checked 2026-11-11)
 - ~~HR23 | audit-1031-harness:39 | Pane opens with long tasks at 390 | open~~ fixed (Logs row grid 62,573 to 5,090 px; Memory poof not reproduced; audit-1031-harness.md:98; checked 2026-11-11)
-- UX3 | audit-1031-ux:17 | 70 animations run while nothing happens | open
+- ~~UX3 | audit-1031-ux:17 | 70 animations run while nothing happens | open~~ fixed 0519dd52a (loops pause after 20 s without input; 77 to 37 endless, task about 4.3 to 3.8 s per 10 s, noisy; checked 2026-11-11)
 - P8 | audit-1108-perf:45 | chat answer render path as cited; not re-measured | open
 - 1607b | owner-asks-audit-1108:13 | Masculine Atlas head size and shape against the feminine reference | open
 - B16 | owner-asks-audit-1108:16 | Masculine Atlas design pass (head, eyes, shoulder join, expressions) | open
@@ -4462,87 +4462,87 @@ Format: id | file:line | one line | status.
 **BW1 (whiteboard, 28 rows)**
 
 - K24 | audit-1028-backend:30 | God modules: whiteboard 6,123 lines, composer 5,221, tools 5,159, chat 5,023, entries 4,172, files 4,151 | open
-- K36 | audit-1028-backend:42 | list_boards and list_images: per-board loops with queries; timeline pulls all dates for the scrubber | open
+- K36 | audit-1028-backend:42 | list_boards and list_images: per-board loops with queries; timeline pulls all dates for the scrubber | fixed: wb_preview._preview_stamps_bulk groups the fingerprint across the page (tests/test_board_list_queries_k36.py: 31 statements for 3 and for 12 boards, 67 before); list_images was already batched and the timeline scrubber reads date-only rows
 - B1 | audit-1028-board:5 | whiteboard.js is 25,012 lines; initWhiteboard alone is 4,064 lines (one closure holding most handlers), u | open
 - B2 | audit-1028-board:6 | whiteboard-map.js is 10,810 lines, 350 functions; wbBuildMapNode is 369 lines | open
 - B10 | audit-1028-board:14 | Native PDF export absent: PDF is browser Print > Save as PDF (by design comment), so no page size, no mul | open
 - B15 | audit-1028-board:19 | Four overlapping drag/capture mechanisms (pointer capture, window pointermove, mousedown/mousemove/mouseu | open
 - B23 | audit-1028-board:27 | wbBuildExportSvg is 342 lines and builds the SVG from live DOM (getComputedStyle per element via wbExport | open
-- B24 | audit-1028-board:28 | Dead/duplicate markers: comments reference "decision 43", "INBOX 537", "MINDMAP_PLAN.md section 13a" inli | open
-- B25 | audit-1028-board:29 | Minimap present (navigator) but its stale flag redraws all items on any render, so it lags on big boards | open
-- B29 | audit-1028-board:33 | Text formatting: whiteboard-format.js exists (2,208 lines) but not audited for inline rich text in map to | open
-- B30 | audit-1028-board:34 | whiteboard-library.js (2,530 lines) and interchange (1,249) have no size-based lazy loading; all 27 class | open
-- B33 | audit-1028-board:37 | 24 isFinite/NaN guards in whiteboard.js suggest NaN has leaked before; paths without guards (zoom, snap) | open
-- B39 | audit-1028-board:43 | Three module-level mutable singletons (wbDeleteSketchRef, wbRenderQueued, wbRenderFrame, wbNavState) with | open
-- S71 | audit-1028-shell:77 | md and .txt dropped on the Notes tab become notes, with Undo (file-drop.js) | open
-- U1 | audit-1028-ux:7 | Board dark | open
-- U2 | audit-1028-ux:8 | Board dark | open
-- U3 | audit-1028-ux:9 | Board | open
-- U5 | audit-1028-ux:11 | Mind map | open
-- U13 | audit-1028-ux:19 | Board | open
-- U15 | audit-1028-ux:21 | Board | open
-- U17 | audit-1028-ux:23 | Board dark | open
-- U18 | audit-1028-ux:24 | Board | open
+- B24 | audit-1028-board:28 | Dead/duplicate markers: comments reference "decision 43", "INBOX 537", "MINDMAP_PLAN.md section 13a" inli | wontfix: the INBOX and decision numbers are the repo's cited-from-comments convention (CLAUDE.md); the MINDMAP_PLAN section 13a comment no longer exists
+- B25 | audit-1028-board:29 | Minimap present (navigator) but its stale flag redraws all items on any render, so it lags on big boards | stale: a pan or zoom frame moves the rectangle and one transform (wbNavigatorUpdateViewport); items redraw only after a board render, which is when they move (whiteboard.js:3405-3420)
+- B29 | audit-1028-board:33 | Text formatting: whiteboard-format.js exists (2,208 lines) but not audited for inline rich text in map to | partial: bold, italic and code render in topics (wbMapInlineText); an inline [text](url) does not (the Link door is the way); left
+- B30 | audit-1028-board:34 | whiteboard-library.js (2,530 lines) and interchange (1,249) have no size-based lazy loading; all 27 class | stale: the library, templates and interchange scripts are in the lazy loader's list (app.js:1653-1660), not boot
+- B33 | audit-1028-board:37 | 24 isFinite/NaN guards in whiteboard.js suggest NaN has leaked before; paths without guards (zoom, snap) | fixed: wbSnap returns 0 for a non-finite number (the typed zoom is clamped by its field) (tests/test_wb_nan_guards_b33.py)
+- B39 | audit-1028-board:43 | Three module-level mutable singletons (wbDeleteSketchRef, wbRenderQueued, wbRenderFrame, wbNavState) with | stale: wbCancelBoardTimers (B31) resets wbRenderFrame and wbRenderQueued on a board switch; wbDeleteSketchRef no longer exists; wbNavState is marked stale by every render and its drag ends when the overview closes
+- S71 | audit-1028-shell:77 | md and .txt dropped on the Notes tab become notes, with Undo (file-drop.js) | stale: built (file-drop.js onNotes: .md and .txt become notes with Undo)
+- U1 | audit-1028-ux:7 | Board dark | stale: wbDefaultInk re-picks stored black or white at 4.5:1 (whiteboard.js:10337, tests/test_wb_board_1028.py)
+- U2 | audit-1028-ux:8 | Board dark | stale: wbCoreInkFor picks the ink from the fill; stickies are created with ink #2a2a1f
+- U3 | audit-1028-ux:9 | Board | stale: Enter on Sticky note places it at the view centre (CHANGELOG 1639)
+- U5 | audit-1028-ux:11 | Mind map | stale: library-lazy.css counter-scales .wb-map-collapse and .wb-map-count to a 24px floor (CHANGELOG 1639)
+- U13 | audit-1028-ux:19 | Board | stale: the button reads Sidebar (index.html:7258)
+- U15 | audit-1028-ux:21 | Board | stale: Arrange is five submenu rows (tests/test_wb_arrange_submenus_u15.py, CHANGELOG 784)
+- U17 | audit-1028-ux:23 | Board dark | stale: scratchpad/ui-sweeps/wbgripink.js dark 1440x900 on a sticky, a text box and a dark box: 7.96:1 (need 3:1)
+- U18 | audit-1028-ux:24 | Board | stale: bw-1111 probe, 41 boards and 30 stickies at 1440x900 on a loaded machine: undo 33 ms to paint, board list open 32 ms, no long task
 - Y5 | audit-1030-extras:120 | Still open (X15, partly fixed) | open
 - BD7 | audit-1031-board:20 | Sizes: whiteboard.js 25,569 lines, 553 functions, initWhiteboard 4,090 lines; whiteboard-map.js 10,929 li | open
 - Z10 | audit-1031-extras:113 | sketch-pad.js is one 1,805-line closure ((() => { | open
 - PF4 | audit-1031-perf:38 | Every boot parses the whole app | open
-- 1667c | owner-asks-audit-1108:19 | notes-list.js:3559 still calls loadMapBoardIndex() at load (checked 2026-11-09) | open
-- 1694b2 | owner-asks-audit-1108:86 | Typed value field on diagram, whiteboard and mind map zoom | open
+- 1667c | owner-asks-audit-1108:19 | notes-list.js:3559 still calls loadMapBoardIndex() at load (checked 2026-11-09) | stale: notes-list.js:3554 only walks the index when a page has a [[link]] (ensureMapChipsFor) and dash-boards.js when the widget draws; bw-1111 probe: 0 /whiteboard/boards requests in the first 3 s
+- 1694b2 | owner-asks-audit-1108:86 | Typed value field on diagram, whiteboard and mind map zoom | stale: map boards share the board's #wb-zoom-level valueField; bw-1111 probe on a new map board: input present, 100% shown, 150 typed + Enter reads 150%
 
 **BD1 (documents, 27 rows)**
 
-- D22 | audit-1028-docs:26 | 1.1 MB unminified documents.js (24k lines, 648 functions, 7.5k comment lines) plus 852 KB CodeMirror bund | open
-- D23 | audit-1028-docs:27 | Hot-spot functions: docLivePlugin 1,559 lines, docCmTheme 1,076, renderDocOutline 298, docTableGripsPlugi | open
-- D28 | audit-1028-docs:32 | No continuous zoom (Ctrl+wheel / zoom % control) | open
-- D29 | audit-1028-docs:33 | Replace-in-all dialog has regex + case but no whole-word, no multiline/dotall flags, no per-document or p | open
-- D34 | audit-1028-docs:38 | Autosave state is one tiny text ("Unsaved…", "Saved", "Not saved") in the status bar; failure sets .error | open
-- D39 | audit-1028-docs:43 | Typo auto-correction rewrites words silently in any language and in prose-like code comments; undo toast | open
-- D40 | audit-1028-docs:44 | Text-size only small/medium/large and word goal as separate controls; status bar has counts but selection | open
-- D41 | audit-1028-docs:45 | Word count present (status bar), goal, reading time | open
-- D42 | audit-1028-docs:46 | No spreadsheet view for CSV docs (SQL run reads them, but editing is raw text) | open
-- D43 | audit-1028-docs:47 | No real-time collaboration or presence; conflict handling is hash-based 409 only | open
-- D45 | audit-1028-docs:49 | Wordlist (871 KB) is fetched on first non-empty text and the dictionary is rebuilt as Set/variants in the | open
-- D46 | audit-1028-docs:50 | Comment-to-code ratio ~32% in documents.js (7,570 of 23,963 lines); historical narration ("used to be", o | open
-- D47 | audit-1028-docs:51 | Fallback <textarea> surface duplicated through aliases (value, selectionStart) so two code paths for ever | open
-- D52 | audit-1028-docs:56 | Code editor: no multi-file workspace/tabs/split panes, no command palette inside the editor (only app pal | open
-- CE9 | audit-1031-code:21 | documents-code.js 6,289 lines, 30 addEventListener to 1 removeEventListener, docCodeScan 427 lines, docRu | open
-- DC7 | audit-1031-docs:19 | Opening the Documents tab loads the last document and then the one asked for | open
-- DC10 | audit-1031-docs:22 | The fallback find bar (#doc-find-bar, #doc-find-input, #doc-find-count, #doc-replace-one, #doc-replace-al | partial
-- DC13 | audit-1031-docs:25 | Sizes: documents.js 24,437 lines, 673 functions, 232 addEventListener against 7 removeEventListener, docL | open
-- Z11 | audit-1031-extras:114 | Still open (Y5, X15): opening a surface pays for the hidden DOM | open
-- N42 | audit-1031-notes:88 | The autocorrect typo table lives twice and has drifted | open
-- PF6 | audit-1031-perf:40 | The page is heavy and some of it does not come back | open
-- DX1 | audit-1102-docs:30 | partial: the 4x gate is not met (row status); a29i-1102.md holds the rest | open
-- DX21 | audit-1102-docs:50 | At 390, #doc-counts is 0 px wide, still visible and in the tab order (tabindex 0) | partial
-- P9 | audit-1108-perf:46 | menus.js:59 closeActionMenusOnScroll still present | open
-- D1.1 | diagram-fable-1679:11 | The page is a text document's page | partial
-- FIT22 | fitaudit-1109:8 | Rank 22 (PF6, DC7, CE9, DC13): mechanical splits of documents.js (17,163 lines now) and run_sandbox behin | open
-- 1667j | owner-asks-audit-1108:82 | Documents lag (atlas-motion loop, documents.js timer, /documents/7, tab-switch style) | open
+- D22 | audit-1028-docs:26 | 1.1 MB unminified documents.js (24k lines, 648 functions, 7.5k comment lines) plus 852 KB CodeMirror bund | deferred: L split of documents.js into lazy chunks needs an Opus design step; documents.js is 17,322 lines now (audit-1028-docs:26)
+- D23 | audit-1028-docs:27 | Hot-spot functions: docLivePlugin 1,559 lines, docCmTheme 1,076, renderDocOutline 298, docTableGripsPlugi | deferred: L split by concern, docLivePlugin sits in documents-cm.js (audit-1028-docs:27)
+- D28 | audit-1028-docs:32 | No continuous zoom (Ctrl+wheel / zoom % control) | deferred: text size is a three-step stepper (documents.js:9575 DOC_TEXT_SIZES, library-lazy.css:7354); a continuous zoom is an owner call (stepper or slider) (audit-1028-docs:32)
+- D29 | audit-1028-docs:33 | Replace-in-all dialog has regex + case but no whole-word, no multiline/dotall flags, no per-document or p | stale (2026-11-11): documents-replace.js has whole word, per-match skip and a context snippet (audit-1028-docs:33)
+- D34 | audit-1028-docs:38 | Autosave state is one tiny text ("Unsaved…", "Saved", "Not saved") in the status bar; failure sets .error | stale (2026-11-11): a save failure toasts once per run with Try again (documents.js:2736-2741 `docSaveFailedSaid`) (audit-1028-docs:38)
+- D39 | audit-1028-docs:43 | Typo auto-correction rewrites words silently in any language and in prose-like code comments; undo toast | partial (2026-11-11): the Autocorrect switch is in the Editor menu (index.html:5407 `#doc-autocorrect`); a status-bar switch is not built (audit-1028-docs:43)
+- D40 | audit-1028-docs:44 | Text-size only small/medium/large and word goal as separate controls; status bar has counts but selection | stale (2026-11-11): selection word count built (documents.js:10818) (audit-1028-docs:44)
+- D41 | audit-1028-docs:45 | Word count present (status bar), goal, reading time | stale (2026-11-11): selection word count built (documents.js:10818) (audit-1028-docs:45)
+- D42 | audit-1028-docs:46 | No spreadsheet view for CSV docs (SQL run reads them, but editing is raw text) | deferred: L grid view for csv/tsv (audit-1028-docs:46)
+- D43 | audit-1028-docs:47 | No real-time collaboration or presence; conflict handling is hash-based 409 only | deferred: out of scope for an offline notebook, hash-based 409 stays (audit-1028-docs:47)
+- D45 | audit-1028-docs:49 | Wordlist (871 KB) is fetched on first non-empty text and the dictionary is rebuilt as Set/variants in the | deferred: M, wordlist build in a worker (documents.js:11233) (audit-1028-docs:49)
+- D46 | audit-1028-docs:50 | Comment-to-code ratio ~32% in documents.js (7,570 of 23,963 lines); historical narration ("used to be", o | won't (2026-11-11): comments that say why are the house rule (CLAUDE.md section 7); 5,717 of 17,334 lines in documents.js are comments, no historical-narration lint exists (audit-1028-docs:50)
+- D47 | audit-1028-docs:51 | Fallback <textarea> surface duplicated through aliases (value, selectionStart) so two code paths for ever | deferred: L, drop the textarea fallback (documents.js:231) (audit-1028-docs:51)
+- D52 | audit-1028-docs:56 | Code editor: no multi-file workspace/tabs/split panes, no command palette inside the editor (only app pal | deferred: L, tabs and split panes in the code editor (audit-1028-docs:56)
+- CE9 | audit-1031-code:21 | documents-code.js 6,289 lines, 30 addEventListener to 1 removeEventListener, docCodeScan 427 lines, docRu | deferred: L/M splits of documents-code.js and run_sandbox.py (audit-1031-code:21)
+- DC7 | audit-1031-docs:19 | Opening the Documents tab loads the last document and then the one asked for | stale (2026-11-11): driven on :8909 from the dashboard to #/docs/10, requests were GET /documents then GET /documents/10, one open (documents.js:1119-1140 `asked` guard); the list refetch on return not re-measured (audit-1031-docs:19)
+- DC10 | audit-1031-docs:22 | The fallback find bar (#doc-find-bar, #doc-find-input, #doc-find-count, #doc-replace-one, #doc-replace-al | fixed board1518-1101 (2026-11-11: `doc-find-bar` is in no frontend file) (audit-1031-docs:22)
+- DC13 | audit-1031-docs:25 | Sizes: documents.js 24,437 lines, 673 functions, 232 addEventListener against 7 removeEventListener, docL | deferred: L, same split as D22/D23 (audit-1031-docs:25)
+- Z11 | audit-1031-extras:114 | Still open (Y5, X15): opening a surface pays for the hidden DOM | deferred: perf across Settings/Writing room panes, not documents (audit-1031-extras:114)
+- N42 | audit-1031-notes:88 | The autocorrect typo table lives twice and has drifted | stale (2026-11-11): one table, `DOC_AUTOCORRECT = AUTOCORRECT_TYPOS` (documents.js:11347) (audit-1031-notes:88)
+- PF6 | audit-1031-perf:40 | The page is heavy and some of it does not come back | deferred: listener growth on timeline/dashboard redraws, not documents (audit-1031-perf:40)
+- DX1 | audit-1102-docs:30 | partial: the 4x gate is not met (row status); a29i-1102.md holds the rest | partial: the 4x typing gate stays open, a29i-1102.md holds the rest (audit-1102-docs:30)
+- DX21 | audit-1102-docs:50 | At 390, #doc-counts is 0 px wide, still visible and in the tab order (tabindex 0) | partial (2026-11-11, 390 touch on :8909): `#doc-counts` tabindex -1 at width 0 and the footnote reference is 30x29 live and 45x47 read, fixed ee5f5a033; the task box is still 18x18, found not fixed (audit-1102-docs:50)
+- P9 | audit-1108-perf:46 | menus.js:59 closeActionMenusOnScroll still present | stale (2026-11-11): the row only noted the handler exists; it is guarded (menus.js:59-75, 200 ms after a menu opens), no defect (audit-1108-perf:46)
+- D1.1 | diagram-fable-1679:11 | The page is a text document's page | fixed 29d4ad4e5 (diagram-fable-1679:11)
+- FIT22 | fitaudit-1109:8 | Rank 22 (PF6, DC7, CE9, DC13): mechanical splits of documents.js (17,163 lines now) and run_sandbox behin | deferred: mechanical splits of documents.js and run_sandbox.py, L, Opus design (fitaudit-1109:8)
+- 1667j | owner-asks-audit-1108:82 | Documents lag (atlas-motion loop, documents.js timer, /documents/7, tab-switch style) | deferred: atlas-motion loop and tab-switch style are outside documents; not re-driven (owner-asks-audit-1108:82)
 
 **BH1 (chat, 21 rows)**
 
-- E43 | audit-1028-agent:55 | /chat/tools/execute runs any registry tool with client-supplied arguments after "Confirm", with nothing t | open
-- E44 | audit-1028-agent:56 | chatSendTurn is a single 1,164-line function holding the stream handlers, checkpointing, timeline wiring | open
-- E45 | audit-1028-agent:57 | Five AI surfaces with separate stream consumers and renderers | open
-- E48 | audit-1028-agent:60 | Edit and resend destroys the later replies (undoable) instead of keeping versions | open
-- E51 | audit-1028-agent:63 | Citation superscript lands mid-sentence | open
-- E58 | audit-1028-agent:70 | Prompt size is modest (agent turn on a 4,096 window | open
-- E59 | audit-1028-agent:71 | No per-answer feedback (thumbs, "that was wrong") that feeds the app's own learning; only insight lines h | open
-- E60 | audit-1028-agent:72 | Not found: regenerate with a different model or persona from the answer's menu; "continue" after Stop (on | open
-- E62 | audit-1028-agent:74 | Regenerate for composer answers re-words an act confirmation ("attempt" changes the phrasing) but not the | open
-- E70 | audit-1028-agent:82 | Edit-and-resend and regenerate re-run web search and tool calls in agent mode as well (same call path as | open
-- S93 | audit-1028-shell:99 | Test coverage for the flashEntry not-in-DOM path absent | open
-- Z70 | audit-1030-composer:210 | The model's context text for each note starts with the [Uncategorised] label and the (written Sunday 18 O | open
-- AI23 | audit-1031-ai:41 | Files in this scope over the 800-line bar | open
-- AR1 | audit-1031-architecture:27 | Routes are the data layer. 359 ORM queries (session.query( or select() sit in api/routes_.py against 185 | open
-- BK11 | audit-1031-backend:23 | God modules remain (1028 K24, K25 partly) | open
-- C12 | audit-1031-composer:55 | A follow-on loses its subject: in Ask every time (the Ask client sends no objects), in Chat for every for | open
-- C36 | audit-1031-composer:79 | Grammar slips in fixed frames | open
-- P7 | audit-1108-perf:44 | routes_chat.py:575 _composed_chat still present; the 8 s probe not re-run | open
-- 1612b | owner-asks-audit-1108:23 | no summary lead lint in tests/test_manual_parity.py (grep, checked 2026-11-09) | open
-- 1693b2 | owner-asks-audit-1108:131 | Note card, badge, Why trail and timing survive a session switch | open
-- PAR2 | parity-1110:41 | Parity: model chips carry only the cited note chips, not the composer next chips (chat_turn.py model_chip | open
+- E43 | audit-1028-agent:55 | /chat/tools/execute runs any registry tool with client-supplied arguments after "Confirm", with nothing t | deferred (2026-11-11): /chat/tools/execute (routes_chat.py:2429) is also the path of the composer act cards (answer-kit.js:2238), Undo and chat-agent.js; signing the parked call needs composer_*.py to sign what it parks
+- E44 | audit-1028-agent:56 | chatSendTurn is a single 1,164-line function holding the stream handlers, checkpointing, timeline wiring | deferred (2026-11-11): refactor of chat-turn.js chatSendTurn (about 1,190 lines), no row-sized slice
+- E45 | audit-1028-agent:57 | Five AI surfaces with separate stream consumers and renderers | deferred (2026-11-11): five stream consumers, one-AnswerStream refactor
+- E48 | audit-1028-agent:60 | Edit and resend destroys the later replies (undoable) instead of keeping versions | deferred (2026-11-11): conversation branches need a stored shape and a pager, an owner design call
+- E51 | audit-1028-agent:63 | Citation superscript lands mid-sentence | deferred (2026-11-11): the lead phrase table is composer_*.py, another agent's file
+- E58 | audit-1028-agent:70 | Prompt size is modest (agent turn on a 4,096 window | partial (2026-11-11): the saved-chat list does not flash (showSkeletons returns when rows exist, notes-list.js:2991); the refetch per checkpoint stays (sheets-selects.js:1833)
+- E59 | audit-1028-agent:71 | No per-answer feedback (thumbs, "that was wrong") that feeds the app's own learning; only insight lines h | deferred (2026-11-11): a thumbs or Not right store that feeds learning is an owner call (what it teaches, and consent)
+- E60 | audit-1028-agent:72 | Not found: regenerate with a different model or persona from the answer's menu; "continue" after Stop (on | fixed 61cc1d8e7 (chat-turn.js: a stopped plain answer offers Continue; tool and skill runs had Resume). Regenerate with another model stays open
+- E62 | audit-1028-agent:74 | Regenerate for composer answers re-words an act confirmation ("attempt" changes the phrasing) but not the | deferred (2026-11-11): composer retrieval widening, composer_*.py
+- E70 | audit-1028-agent:82 | Edit-and-resend and regenerate re-run web search and tool calls in agent mode as well (same call path as | stale (2026-11-11): Regenerate and Edit ask first when the answer wrote (chat-edit.js:205 confirmRerun, dataset.wrote from chat-turn.js:644); web search is a read
+- S93 | audit-1028-shell:99 | Test coverage for the flashEntry not-in-DOM path absent | fixed 0d5270bdd (tests/test_flash_entry_missing_s93.py)
+- Z70 | audit-1030-composer:210 | The model's context text for each note starts with the [Uncategorised] label and the (written Sunday 18 O | fixed e77ad4072 (no Uncategorised label) and 61cc1d8e7 (a linked, unmatched note is a 240-character line; librarian.py)
+- AI23 | audit-1031-ai:41 | Files in this scope over the 800-line bar | deferred (2026-11-11): file splits (avatars.js, routes_chat.py and others), refactors
+- AR1 | audit-1031-architecture:27 | Routes are the data layer. 359 ORM queries (session.query( or select() sit in api/routes_.py against 185 | deferred (2026-11-11): repository layer over 359 route queries, a design pass
+- BK11 | audit-1031-backend:23 | God modules remain (1028 K24, K25 partly) | deferred (2026-11-11): god-module splits; _start_tray and _run_desktop are Windows paths
+- C12 | audit-1031-composer:55 | A follow-on loses its subject: in Ask every time (the Ask client sends no objects), in Chat for every for | deferred (2026-11-11): Ask follow-on subject, composer_*.py and the Ask client
+- C36 | audit-1031-composer:79 | Grammar slips in fixed frames | deferred (2026-11-11): the routes_chat.py sentence is gone; the remaining frames are composer_tables.py, another agent's file
+- P7 | audit-1108-perf:44 | routes_chat.py:575 _composed_chat still present; the 8 s probe not re-run | deferred (2026-11-11): the first question after a silent model pays the probe once (ollama_client.is_running, then cached quiet); skipping it for exact classes is a stream-flow change to test against a real slow model
+- 1612b | owner-asks-audit-1108:23 | no summary lead lint in tests/test_manual_parity.py (grep, checked 2026-11-09) | fixed 8e051339a (test_manual_parity.py::test_every_listed_topic_has_a_one_sentence_lead)
+- 1693b2 | owner-asks-audit-1108:131 | Note card, badge, Why trail and timing survive a session switch | fixed 741dc1f7a (tests/test_chat_reload_by_1693.py)
+- PAR2 | parity-1110:41 | Parity: model chips carry only the cited note chips, not the composer next chips (chat_turn.py model_chip | deferred (2026-11-11): the composer's next chips need its result frame (chat_chips.continue_chips, composer_chips); a model turn has none
 
 **BG1 (diagram, 15 rows)**
 
@@ -4564,22 +4564,22 @@ Format: id | file:line | one line | status.
 
 **BR1 (graph, 16 rows)**
 
-- K25 | audit-1028-backend:31 | 18 functions over 150 lines: _start_tray 346, _build_graph 324, _run_desktop 324, _optimization_pass 323 | open
-- S52 | audit-1028-shell:58 | Graph has no search-to-focus node field on the main bar | open
-- G3 | audit-1029-graph:27 | 2,000 notes: cold layout takes about 28 s to the worker's end message at both 1x and 4x | open
-- G5 | audit-1029-graph:29 | 500 notes at 4x CPU (a mid phone or old laptop) | open
-- G7 | audit-1029-graph:31 | At 500 notes there are zero labels at fit, and the 81-link hub is unnamed, which contradicts the 2026-09- | open
-- G8 | audit-1029-graph:32 | At 36 notes, 4x CPU: wheel zoom p50 33 ms with 14 of 59 frames over 50 ms; hover shows 12 long tasks of 5 | open
-- G28 | audit-1029-graph:52 | /graph payload is 1.45 MB at 2,000 notes (slim 830 KB), 0.34 s, gzip on | open
-- BK10 | audit-1031-backend:22 | /library?limit=50 answers 235 KB and /graph 289 KB at 530 notes (22 KB gzipped for graph); /entries?limit | open
-- GR2 | audit-1031-graph:16 | Interaction at 4x: 506 notes hover sweep p50 52 ms (28 of 54 frames over 50 ms, tasks to 409 ms), wheel p | open
-- GR3 | audit-1031-graph:17 | Search at 2,000 notes and 4x: typing 14 characters costs 34 long tasks summing 4.6 s, one of 1,228 ms; at | open
-- GR5 | audit-1031-graph:19 | Adding one note from the map re-runs the whole layout | open
-- GR9 | audit-1031-graph:23 | gcDraw 809 lines, gcWireInteraction 467, renderGraphCanvas 366, gcStartWorker 290; graph.js 71 addEventLi | open
-- PF10 | audit-1031-perf:44 | The graph draw loop while settling | partial
-- 1620topicsb | owner-asks-audit-1108:98 | Manage topics like tags (rename, merge, remove a note) | open
-- Z3 | audit-1031-extras:106 | "Tools and features" says "212 things Tessellate can do" and omits about 60 of the palette's own rows | open
-- G6 | fable-composer2-1110:124 | Dashboard greets once and quotes titles (greeting_compose._NEEDS); count bits in dashboard.js:526-532 aft | open
+- K25 | audit-1028-backend:31 | 18 functions over 150 lines: _start_tray 346, _build_graph 324, _run_desktop 324, _optimization_pass 323 | deferred (2026-11-11): _build_graph and _optimization_pass are now under 150 lines; _start_tray 350 and _run_desktop 296 in __main__.py are the Windows tray and desktop launch, unverifiable here
+- S52 | audit-1028-shell:58 | Graph has no search-to-focus node field on the main bar | stale (2026-11-11): #graph-search is the find box (index.html, graph.js:2317)
+- G3 | audit-1029-graph:27 | 2,000 notes: cold layout takes about 28 s to the worker's end message at both 1x and 4x | fixed 2026-10-30 (graph-1030: plain frames while a big map moves; 25 to 9-10 s); not re-measured at 2,000 notes on this loaded machine
+- G5 | audit-1029-graph:29 | 500 notes at 4x CPU (a mid phone or old laptop) | fixed ca46ad4e5 (graph-canvas.js: camera and hover frames composed from cached layers)
+- G7 | audit-1029-graph:31 | At 500 notes there are zero labels at fit, and the 81-link hub is unnamed, which contradicts the 2026-09- | owner call (2026-11-11): measured 0 of 12 wanted at the fit and 4 of 183 at 3x on a 500-note random fixture (graphlabels.js); INBOX 693 ended the landmark waiver (gcPlaceLabels, graph-canvas.js:640): a name never sits on a dot or line, so a hub with no free place is unnamed until zoom. Guaranteeing hub names needs that rule relaxed
+- G8 | audit-1029-graph:32 | At 36 notes, 4x CPU: wheel zoom p50 33 ms with 14 of 59 frames over 50 ms; hover shows 12 long tasks of 5 | fixed ca46ad4e5 (graph-canvas.js, cached layers)
+- G28 | audit-1029-graph:52 | /graph payload is 1.45 MB at 2,000 notes (slim 830 KB), 0.34 s, gzip on | stale (2026-11-11): the map asks /graph?slim=1 (graph.js:1815); at 500 notes slim 199 KB against 348 KB full
+- BK10 | audit-1031-backend:22 | /library?limit=50 answers 235 KB and /graph 289 KB at 530 notes (22 KB gzipped for graph); /entries?limit | stale (2026-11-11): /library rows carry a 160-character preview (routes_library.py _clip, 128 KB at 500 notes); /entries sends content on purpose, it is the feed
+- GR2 | audit-1031-graph:16 | Interaction at 4x: 506 notes hover sweep p50 52 ms (28 of 54 frames over 50 ms, tasks to 409 ms), wheel p | fixed 4dca18a15, ca46ad4e5 (graph-canvas.js: hairlines while moving, cached layers)
+- GR3 | audit-1031-graph:17 | Search at 2,000 notes and 4x: typing 14 characters costs 34 long tasks summing 4.6 s, one of 1,228 ms; at | fixed (graph.js:2353 GRAPH_SEARCH_GAP_MS, query-only cheap draw)
+- GR5 | audit-1031-graph:19 | Adding one note from the map re-runs the whole layout | fixed c7b7fb47a (graph-canvas.js:5720 GC_ADD_ALPHA, new notes seeded beside links)
+- GR9 | audit-1031-graph:23 | gcDraw 809 lines, gcWireInteraction 467, renderGraphCanvas 366, gcStartWorker 290; graph.js 71 addEventLi | deferred (2026-11-11): splitting gcDraw/gcWireInteraction/gcStartWorker is a multi-day refactor of one hot file, not a row-sized change
+- PF10 | audit-1031-perf:44 | The graph draw loop while settling | partial: fixed 20ed22a (label fades); a dirty rectangle per worker tick stays open (graph-canvas.js gcRequestDraw)
+- 1620topicsb | owner-asks-audit-1108:98 | Manage topics like tags (rename, merge, remove a note) | owner call (2026-11-11): topics are derived from structure; a rename is stored (PUT /graph/topics/name, routes_graph.py:1472) but merge and remove-a-note have no stored meaning until the owner says what a manual topic is
+- Z3 | audit-1031-extras:106 | "Tools and features" says "212 things Tessellate can do" and omits about 60 of the palette's own rows | stale (2026-11-11): featureCatalog draws from paletteCommands (app-features.js:235)
+- G6 | fable-composer2-1110:124 | Dashboard greets once and quotes titles (greeting_compose._NEEDS); count bits in dashboard.js:526-532 aft | stale (2026-11-11): built, tests/test_dashboard_greeting_g6_1110.py, greeting_compose._NEEDS
 
 **BA1 (agent, 15 rows)**
 
@@ -4650,7 +4650,7 @@ Columns: id | item | sources (file:line) | status | batch
 | H2 | Fable named for a read-only composer audit and a whole-app deep dive "next session" | HANDOVER:11,12 | owner call: is Fable named for the close-out? (nothing may start it otherwise, order 4) | none |
 | H3 | Q20: `complexity.yml` still `--exit-zero`; CI definition edits guarded in away mode, `tests/test_complexity.py` holds the zero baseline | HANDOVER:412, OPEN:40 (Q20) | owner call: edit the workflow (guarded)? | none |
 | H4 | Held: K38 single-use media links (breaks range playback), K32 due-count endpoint (poll redesign), E43/K11/K13/K26 key storage and MCP auth (Q22) | HANDOVER:410, s11-1110.md:8,9 | owner call: Q22 (keyring or 0600 file, one token per MCP server) and K38 (accept a 120 s reusable link?) | none |
-| H5 | `test_repo_boundaries::test_orm_calls_in_the_routers_only_go_down` red: 690 ORM calls under api/, cap 687 | g69-1110.md:11 (said 691); run 2026-11-11 | open | Bk2 |
+| H5 | `test_repo_boundaries::test_orm_calls_in_the_routers_only_go_down` red: 690 ORM calls under api/, cap 687 | g69-1110.md:11 (said 691); run 2026-11-11 | green at f06fd0e09 (re-run, nothing to fix) | Bk2 |
 | H6 | Test reds named in older notes: `test_boot_diet3` (3573 vs 3569), `test_lazy_bundle_calls` (dashboard.js:3833,3889), `test_atlas_access` fixture, `test_static_compression` | s9b-1110.md:12, s14-1110.md:6, s58left3-1110.md:10, s12b-1110.md:7; the four pass on 2026-11-11 | fixed (run; only the boundaries test fails) | none |
 
 **Work-order rows (OPEN.md) still open, merged with their remaining files**
@@ -4719,7 +4719,7 @@ Columns: id | item | sources (file:line) | status | batch
 | --- | --- | --- | --- | --- |
 | P1 | "You asked: ..." line above the Ask answer stays removed (Q19) | OPEN:381, OPEN:54 | fixed by decision (HANDOVER:12; a test pins it) | none |
 | P2 | Start SearXNG from a button | OPEN:379 | open | Bk1 |
-| P3 | `_start_tray` over complexity 20 (now 23): split menu build from start-up; test on Windows | OPEN:389 | open; Windows part unverifiable | Bk2 |
+| P3 | `_start_tray` over complexity 20 (now 23): split menu build from start-up; test on Windows | OPEN:389 | built deb7ab83d (callbacks module-level, 130 lines); Windows part unverifiable | Bk2 |
 | P4 | Reminder edit form: time field about 0.2 rem high | OPEN:390 | open | Sh1 |
 | P5 | Brief 27 phone bottom bar | SESSION_BRIEFS:132 | fixed (phone-shell.js:673, shell-reminders.js:588; E19 stale) | none |
 | P6 | Brief 34 second part: one snap in ten minutes; reaction rows | SESSION_BRIEFS:154 | open | Cp1 |

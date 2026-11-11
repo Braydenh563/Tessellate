@@ -10,6 +10,9 @@ that answers "has this been done?" before anyone starts.
 ## Moved from the plans, 2026-11-11 (s9c-1110 part 6)
 
 - Built: DOCUMENTS_PLAN gap row 12, a table's filter and formulas. `docTableFormula`, `docTableFilterHidden`, `docTableValues`, `docTableCell` (documents-tables.js, pure, tested in node by `tests/test_doc_table_calc.py`); Live draws a formula cell's result as `DocTableResultWidget` unless the caret is in it, hides filtered rows with `.cm-md-row-hidden`, and a `DocTableFilterWidget` chip clears the filter (documents-cm.js); the menu items are `filter`, `filter-clear`, `formula-sum`, `formula-avg`, `formula-count` (documents.js). Read view calls `docTableCell` from navigation.js once the Documents bundle is in. A filter is a view held in `docViewState.tableFilters` by header text (two tables with one header share it; it is gone with the page); Read view has no filter.
+## Moved from the plans, 2026-11-11 (s9c-1110 F2: WHITEBOARD_PLAN gap rows 9 and 11)
+
+- BPMN set (events, task, sub-process, gateways, data object and store, annotation, pool, lanes; 15 items) and two icon sets from the vendored Phosphor glyphs (Cloud and network 24, Devices and people 16), built by `scripts/build_board_library.py`, listed in `frontend/board-library/index.json`. Built the same run: Edit image and Crop on picture (WHITEBOARD_PLAN section 1, Edit image row).
 
 ## Moved from the plans, 2026-11-10 (q31-1110: the Tessellation view, GRAPH_PLAN Q31)
 

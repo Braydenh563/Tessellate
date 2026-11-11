@@ -604,7 +604,7 @@ async function editorInsertBookmarkLink(textarea) {
 }
 
 async function editorInsertBoardObject(textarea) {
-  if (typeof pickLibraryItemDialog !== "function" || typeof boardEmbedMarkdown !== "function") return;
+  if (typeof pickLibraryItemDialog !== "function") return;
   const chosen = await pickLibraryItemDialog("Which board or map?", { sources: ["board"] });
   if (!chosen) return;
   editorInsertBlock(textarea, boardEmbedMarkdown(chosen.row || { id: chosen.id, title: chosen.label }));
@@ -675,7 +675,6 @@ function chatCommands() {
   //: and Web rows open popovers with the same click-away, so `press` waits
   //: too.
   const pick = (source) => afterPress(() => {
-    if (typeof openNotePicker !== "function") return;
     requestAnimationFrame(() => {
       openNotePicker();
       //: And the source tab a frame after that: the picker renders its own
@@ -983,7 +982,8 @@ function editorBlockRows(context) {
   }
 
   // --- Advanced --------------------------------------------------------------
-  add({ id: "footnote", group: "Advanced", icon: "ph:push-pin", label: "Footnote", about: "A reference here, its text at the foot", keys: "[^1]", keywords: ["footnote", "reference", "cite", "aside", "note"], run: (t) => editorApplyNamed(t, "footnote") });
+  add({ id: "footnote", group: "Advanced", icon: "ph:push-pin", label: "Footnote", about: "A reference here, its text at the foot", keys: "[^1]", keywords: ["footnote", "reference", "aside", "note"], run: (t) => editorApplyNamed(t, "footnote") });
+  if (inDocument) add({ id: "cite", group: "Advanced", icon: "ph:quotes", label: "Citation", about: "A source, listed at the foot", keys: "[@]", keywords: ["cite", "source"], run: (t) => editorApplyNamed(t, "cite") });
   add({ id: "comment", group: "Advanced", icon: "ph:eye-slash", label: "Private comment", about: "Kept in the file, never shown", keys: "%% %%", keywords: ["comment", "private", "hidden", "note to self"], run: (t) => editorApplyNamed(t, "comment") });
   if (inDocument) {
     add({ id: "remind", group: "Advanced", icon: "ph:bell", label: "Remind me about this", about: "Opens this document when due", keys: "", keywords: ["remind", "reminder", "follow up"], run: () => (currentDoc?.id ? ensureModule("library").then((ok) => ok && remindAbout({ title: currentDoc.title || "this document", documentId: currentDoc.id })) : toast("Save the document first.", "info")) });
@@ -1068,7 +1068,7 @@ function editorCommands(context) {
   // The user's own templates first, then the built-ins, the same "yours
   // before ours" ordering loadTemplates() already uses for the dropdown.
   const custom = (typeof prefsCache !== "undefined" && prefsCache?.custom_templates) || [];
-  const builtin = typeof BUILTIN_TEMPLATES !== "undefined" ? BUILTIN_TEMPLATES : [];
+  const builtin = BUILTIN_TEMPLATES;
   for (const template of [...custom, ...(context === "document" && typeof DOC_TEMPLATES !== "undefined" ? [] : builtin)]) {
     if (!template?.name || !template?.content) continue;
     commands.push({
@@ -1381,11 +1381,8 @@ function editorLinkMatches(needle) {
   //: can do is ask for the list and let the *next* keystroke show it. The
   //: request itself is cached for 8s inside `loadMapBoardIndex`, so a burst
   //: of typing costs one call.
-  if (typeof mapBoardRows === "function" && !mapBoardRows().length
-      && typeof loadMapBoardIndex === "function") {
-    loadMapBoardIndex();
-  }
-  const boards = (typeof mapBoardRows === "function" ? mapBoardRows() : [])
+  if (!mapBoardRows().length) loadMapBoardIndex();
+  const boards = mapBoardRows()
     .filter((b) => b.id != null)
     .filter((b) => !query || String(b.title || "").toLowerCase().includes(query))
     .slice(0, 3)

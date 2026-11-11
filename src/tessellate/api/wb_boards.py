@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 
+from tessellate.repo import whiteboard as whiteboard_repo
 from tessellate.repo.content import BOARDS
 from pydantic import BaseModel, Field
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
@@ -173,7 +174,9 @@ def list_boards(
     response.headers["X-Total-Count"] = str(len(page_rows))
     paging.finish(response, offset, limit, len(page_rows))
     boards = []
-    for entry in page_rows[offset:offset + limit]:
+    page = page_rows[offset:offset + limit]
+    stamps = whiteboard_repo.preview_stamps(db, page)
+    for entry in page:
         if entry is None:
             # The default scratch board has no note behind it, so it has
             # nowhere to store settings and is always an ordinary board, which
@@ -191,7 +194,7 @@ def list_boards(
                     ) or 0,
                     object_count=default_objects,
                     updated_at=touched.get(None),
-                    **_preview_fields(db, None),
+                    **_preview_fields(db, None, stamps[None]),
                 )
             )
             continue
@@ -213,7 +216,7 @@ def list_boards(
                 layout=layout,
                 background=_board_background(entry),
                 layers=_board_layers(entry),
-                **_preview_fields(db, entry.id),
+                **_preview_fields(db, entry.id, stamps[entry.id]),
             )
         )
     return boards
