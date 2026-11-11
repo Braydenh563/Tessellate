@@ -62,6 +62,10 @@ RING_ROOM: list[tuple[str, str, str]] = [
     # The 2026-10-11 sweep (focus ring probe, 1440 and 390).
     ("a page that scrolls, a stop flush with its bottom edge", ".tab-page", "room"),
     ("Settings, Background jobs: Run now fills its row on a phone", ".job-run-now", "inset"),
+    # The 2026-11-11 map and dashboard wrap sweep.
+    ("the board sidebar's Library, layers and Outline lists", ".wb-outline-tree", "room"),
+    ("the Widgets dialog's list", ".dash-widgets-list", "room"),
+    ("the corner move grip of a movable panel", ".panel-grip", "inset"),
 ]
 
 #: A pill track with an edge: its segments fill its inside, never the
@@ -182,3 +186,12 @@ def test_the_2026_10_19_audit_containers_keep_their_ring_room():
     rules = _rules(_section())
     assert any(sel == ".modal-nav" and "scroll-padding-block: var(--ring-room)" in body for sel, body in rules)
     assert any(".phone-tab-more" in sel and "outline-offset: -2px" in body for sel, body in rules)
+
+
+def test_board_sidebar_lists_keep_all_four_sides_of_the_ring():
+    """Map sweep 2026-11-11: the sidebar's lists scroll, so they clip across
+    and down; room is padding on every side with the same negative margin."""
+    rules = _rules(_section())
+    body = next(b for s, b in rules if ".wb-lib-list" in s and ".wb-outline-tree" in s and ".wb-layers-tree" in s)
+    assert re.search(r"(?<!-)padding:\s*var\(--ring-room\)", body)
+    assert "margin: calc(-1 * var(--ring-room))" in body

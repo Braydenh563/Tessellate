@@ -2934,3 +2934,53 @@ header#top-bar[data-scrolled="1"],
     padding-right: calc(var(--target-min) + 2 * var(--space-1) + 2px + var(--space-2));
   }
 }
+
+/* --- Wrap and zoom sweep of the mind map and the Dashboard (owner, 2026-11-11) ---
+   Measured in the running app at 360, 390 (touch), 768, 1280, 1920, 2560 and
+   the 125, 150 and 200 % windows, both themes (every control's rect against
+   every clipping ancestor, every one-line row's items, every short label's
+   line rects; the sweep is `wrapzoom-shell.js`'s detector driven over the map
+   and Dashboard states). What it found is fixed here, by cause. */
+/* 1. **The Widgets dialog's rows give the controls a line of their own when
+       they do not fit.** At 360 the row's title column was 31px wide (the
+       Wide toggle, three icon buttons and two 1rem gaps took the rest of the
+       272px), so "Notebook constellation" ran 37px under the Wide button and
+       the description was one letter and an ellipsis. The text keeps 10rem or
+       more; the controls drop under it, at the row's end. */
+.dash-widget-row {
+  flex-wrap: wrap;
+  row-gap: var(--space-2);
+}
+.dash-widget-row-main {
+  flex: 1 1 10rem;
+}
+.dash-widget-row-controls {
+  margin-inline-start: auto;
+}
+/* 2. **A quick link's arrange menu has its own room in edit mode.** The tile
+       kept `--space-9` (32px) for it, and on a touch screen the menu button is
+       the 44px target: it sat 7.7px over "New note" and 10.5px over its hint. */
+.quick-edit-tile > .quick-link {
+  padding-right: max(var(--space-9), calc(var(--target-min) + var(--space-3)));
+}
+/* 3. **A glance tile's label is at most two lines on a phone.** The band above
+       lets the label wrap rather than clip ("1 meeting to..."), but the
+       newest note's own first line is the label of one tile and ran to twelve
+       lines at 360, pushing the page a screen down. */
+@media (max-width: 599.98px) {
+  .dash-glance .quick-link-label {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+}
+/* 4. **The board sidebar's "This map" tab scrolls inside the sheet.** Its
+       facts, three actions and the templates line are taller than the phone
+       sheet (360x740: the last row, "Where are the templates?", stood 39.8px
+       under the board's edge, over the tool strip, and could not be reached).
+       Room above and below for the last button's ring. */
+.wb-side-section[data-side-panel="map"] {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-block: var(--ring-room);
+}
