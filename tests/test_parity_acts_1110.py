@@ -246,3 +246,28 @@ def test_a_note_titled_todo_is_found_by_that_word(client, session, sentence):
     card = card_of(stream(client, sentence))
     assert "Todo" in json.dumps(card)
     assert "2 reminders" in json.dumps(card) or "reminder" in json.dumps(card)
+
+
+# --- in-place find and replace (compleft-1110 left item 3) -------------------------------
+
+
+@pytest.mark.parametrize("sentence", ["change Bluegum-5G to Bluegum-6G in the wifi note", "replace Bluegum-5G with Bluegum-6G in the wifi note", "in the wifi note, change Bluegum-5G to Bluegum-6G"])
+def test_find_and_replace_changes_only_that_text_with_was_now_and_undo(client, notebook, sentence):
+    card = card_of(stream(client, sentence))
+    assert any(i.startswith("Was: ") and "Bluegum-5G" in i for i in card["items"]), card["items"]
+    assert any(i.startswith("Now: ") and "Bluegum-6G" in i for i in card["items"]), card["items"]
+    wifi = next(e for e in notebook.scalars(select(Entry)) if e.content.startswith("# Wifi"))
+    before = wifi.content
+    done = confirm(client, card)
+    notebook.expire_all()
+    assert wifi.content == before.replace("Bluegum-5G", "Bluegum-6G"), wifi.content
+    assert "hallway cupboard" in wifi.content
+    undo(client, done)
+    notebook.expire_all()
+    assert wifi.content == before
+
+
+def test_find_and_replace_of_text_that_is_not_there_is_said_not_planned(client, notebook):
+    out = stream(client, "change Orange-9G to Orange-10G in the wifi note")
+    assert not [e for e in out.get("act", []) if not e.get("cancel")]
+    assert "Orange-9G" in out["text"]

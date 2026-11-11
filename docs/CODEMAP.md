@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8106, frontend ids 2684, CSS sections 523, backend routes 662, backend modules 9999, test files 2452, tests 20299, plan headings 1002, app scripts 28, boot scripts 37, script files 277.
+Counts: frontend functions 8106, frontend ids 2684, CSS sections 523, backend routes 662, backend modules 10001, test files 2452, tests 20301, plan headings 1002, app scripts 28, boot scripts 37, script files 277.
 
 ## Frontend functions (8106)
 
@@ -13460,7 +13460,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9999)
+## Backend modules (10001)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -17842,25 +17842,27 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_terms` | src/tessellate/ai/page_analysis.py:108 |
 | `analyse` | src/tessellate/ai/page_analysis.py:101 |
 
-### src/tessellate/ai/parity_acts.py (15)
+### src/tessellate/ai/parity_acts.py (17)
 
 | Name | File:line |
 |---|---|
-| `_clean` | src/tessellate/ai/parity_acts.py:48 |
-| `_delete_category` | src/tessellate/ai/parity_acts.py:108 |
-| `_delete_tag` | src/tessellate/ai/parity_acts.py:143 |
-| `_edit_text` | src/tessellate/ai/parity_acts.py:166 |
-| `_merge` | src/tessellate/ai/parity_acts.py:124 |
-| `_read_category_and_tag` | src/tessellate/ai/parity_acts.py:52 |
-| `_read_edit` | src/tessellate/ai/parity_acts.py:65 |
-| `_read_reminders` | src/tessellate/ai/parity_acts.py:81 |
-| `_read_skill` | src/tessellate/ai/parity_acts.py:93 |
-| `_run_skill` | src/tessellate/ai/parity_acts.py:226 |
-| `_source_note` | src/tessellate/ai/parity_acts.py:188 |
-| `_to_reminders` | src/tessellate/ai/parity_acts.py:206 |
-| `plan` | src/tessellate/ai/parity_acts.py:241 |
-| `read` | src/tessellate/ai/parity_acts.py:100 |
-| `replaced` | src/tessellate/ai/parity_acts.py:157 |
+| `_clean` | src/tessellate/ai/parity_acts.py:54 |
+| `_delete_category` | src/tessellate/ai/parity_acts.py:126 |
+| `_delete_tag` | src/tessellate/ai/parity_acts.py:161 |
+| `_edit_text` | src/tessellate/ai/parity_acts.py:184 |
+| `_find_replace` | src/tessellate/ai/parity_acts.py:208 |
+| `_merge` | src/tessellate/ai/parity_acts.py:142 |
+| `_read_category_and_tag` | src/tessellate/ai/parity_acts.py:58 |
+| `_read_edit` | src/tessellate/ai/parity_acts.py:71 |
+| `_read_find` | src/tessellate/ai/parity_acts.py:90 |
+| `_read_reminders` | src/tessellate/ai/parity_acts.py:99 |
+| `_read_skill` | src/tessellate/ai/parity_acts.py:111 |
+| `_run_skill` | src/tessellate/ai/parity_acts.py:269 |
+| `_source_note` | src/tessellate/ai/parity_acts.py:231 |
+| `_to_reminders` | src/tessellate/ai/parity_acts.py:249 |
+| `plan` | src/tessellate/ai/parity_acts.py:284 |
+| `read` | src/tessellate/ai/parity_acts.py:118 |
+| `replaced` | src/tessellate/ai/parity_acts.py:175 |
 
 ### src/tessellate/ai/parity_reads.py (10)
 
@@ -26093,7 +26095,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (20299)
+## Tests (20301)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27817,7 +27819,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_panel_rim_1536.py | 3 |
 | tests/test_panel_scrim_lift_1029.py | 3 |
 | tests/test_parity_1110.py | 34 |
-| tests/test_parity_acts_1110.py | 18 |
+| tests/test_parity_acts_1110.py | 20 |
 | tests/test_passes.py | 7 |
 | tests/test_passive_capture.py | 9 |
 | tests/test_password_floor.py | 6 |
@@ -29252,7 +29254,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1217 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:172 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:171 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4176 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3130 |

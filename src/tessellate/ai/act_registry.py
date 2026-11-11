@@ -145,7 +145,7 @@ _ACTS = (
         "merge category Work into Job", ("from", "into"), "move_notes", stem="Merge the category "),
     Act("delete_tag", "delete", "delete a tag", "Names the tag; it comes off every note after you confirm, and Undo puts it back on the same notes.",
         "delete the tag harbor", ("name",), "tag_note", stem="Remove the tag "),
-    Act("edit_text", "rename", "replace a note's text", "Names the note and the new words; the card shows the old and the new, and Undo puts the old text back.",
+    Act("edit_text", "rename", "replace a note's text", "Names the note and the new words, or one phrase to swap (change Bluegum-5G to 6G in the wifi note); the card shows the old and the new, and Undo puts the old text back.",
         "edit the wifi note: use channel 6", ("content",), "edit_note", stem="Replace the text of "),
     Act("to_reminders", "remind", "make reminders from a list", "Names the note's list and a time; one reminder per open checklist line, after you confirm, and Undo bins them.",
         "turn the action items into reminders for Friday", ("due_at",), "bin_reminder", stem="Set reminders from "),
