@@ -9,8 +9,8 @@ def test_hr2_a_failed_turn_names_its_cause_and_offers_retry_and_settings():
     "The model wrote nothing", with Try again and Settings, Models beside it."""
 
     src = with_pieces("chat-attach.js")
-    start = src.index("if (!stopped && !handoff && !asked) {")
+    start = src.index("if (!t.stopped && !t.handoff && !t.asked) {")
     branch = src[start : src.index("chatScrollToEnd();", start)]
-    assert "failure ||" in branch, "the note says why the turn failed"
+    assert "t.failure ||" in branch, "the note says why the turn failed"
     assert 'openSettingsModal("models")' in branch and "regenerateLastAnswer()" in branch
-    assert "failure = said" in src
+    assert "t.failure = said" in src
