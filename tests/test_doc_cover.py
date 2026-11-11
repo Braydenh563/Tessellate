@@ -79,3 +79,10 @@ def test_the_panel_draws_the_cover_and_offers_icon_and_cover_in_the_one_picker()
     assert "var(--swatch)" in CSS.split(".doc-cover {", 1)[1].split("}", 1)[0]
     topics = (ROOT / "src" / "tessellate" / "ai" / "help_topics_core.py").read_text(encoding="utf-8")
     assert "Add icon and Add cover" in topics
+
+
+def test_the_band_keeps_room_for_the_icon_that_hangs_below_it():
+    # Measured at 390: the icon's foot lay 6 px over the Add property row until the band reserved the overhang.
+    hang = CSS.split(".doc-cover:not(.doc-cover-none) .doc-cover-icon {", 1)[1].split("}", 1)[0]
+    keep = CSS.split(".doc-cover:not(.doc-cover-none):has(> .doc-cover-icon) {", 1)[1].split("}", 1)[0]
+    assert "bottom: calc(var(--space-4) * -1)" in hang and "margin-block-end: var(--space-4)" in keep

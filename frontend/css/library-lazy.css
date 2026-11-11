@@ -8886,6 +8886,10 @@ input[type="color"].wb-mixed {
   font-size: calc(var(--text-lg) * 2);
   line-height: 1.1;
 }
+/* The icon hangs one space-4 below the band; the band keeps that room, or the icon lay over the next row (Add property: 6 px at 390). */
+.doc-cover:not(.doc-cover-none):has(> .doc-cover-icon) {
+  margin-block-end: var(--space-4);
+}
 .doc-cover:not(.doc-cover-none) .doc-cover-icon {
   position: absolute;
   left: var(--space-3);
