@@ -70,7 +70,6 @@ _port = 0
 _crashes: list[float] = []
 _idle_since: float | None = None
 _timer: threading.Timer | None = None
-_atexit_registered = False
 #: True while a start is in progress, so the status can say "starting".
 starting = False
 
@@ -165,7 +164,7 @@ def _read_port(proc: subprocess.Popen, deadline: float) -> int:
             for line in proc.stdout:  # type: ignore[union-attr]
                 lines.put(line)
         except (OSError, ValueError):
-            pass
+            pass  # the pipe closed under us (child died or was stopped); the reader times out
         lines.put("")
 
     threading.Thread(target=pump, daemon=True, name="captions-helper-stdout").start()
@@ -235,7 +234,7 @@ def _kill() -> None:
             if pipe:
                 pipe.close()
         except OSError:
-            pass
+            pass  # already closed by a dead child; nothing left to release
     if proc.poll() is None:
         proc.terminate()
         try:
@@ -247,13 +246,13 @@ def _kill() -> None:
         if proc.stdout:
             proc.stdout.close()
     except OSError:
-        pass
+        pass  # already closed by a dead child; nothing left to release
 
 
 def ensure_started() -> str:
     """The helper's address, starting it if it is not running. Raises
     `HelperError` with a sentence. Called from `captions.begin()` only."""
-    global starting, _atexit_registered
+    global starting
     with _lock:
         if _alive() and _port:
             cancel_idle()
@@ -277,9 +276,9 @@ def ensure_started() -> str:
                 raise
         finally:
             starting = False
-        if not _atexit_registered:
-            atexit.register(stop)
-            _atexit_registered = True
+        # Unregister first so repeated starts leave one exit hook, not one per start.
+        atexit.unregister(stop)
+        atexit.register(stop)
         cancel_idle()
         return url()
 

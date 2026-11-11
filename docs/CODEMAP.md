@@ -14143,26 +14143,26 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `HelperError` | src/tessellate/ai/captions_process.py:62 |
-| `_alive` | src/tessellate/ai/captions_process.py:94 |
-| `_command` | src/tessellate/ai/captions_process.py:119 |
-| `_env` | src/tessellate/ai/captions_process.py:141 |
-| `_healthy` | src/tessellate/ai/captions_process.py:184 |
-| `_kill` | src/tessellate/ai/captions_process.py:228 |
-| `_log_path` | src/tessellate/ai/captions_process.py:152 |
-| `_note_crash` | src/tessellate/ai/captions_process.py:113 |
-| `_python` | src/tessellate/ai/captions_process.py:133 |
-| `_read_port` | src/tessellate/ai/captions_process.py:158 |
-| `_spawn` | src/tessellate/ai/captions_process.py:193 |
-| `cancel_idle` | src/tessellate/ai/captions_process.py:301 |
-| `ensure_started` | src/tessellate/ai/captions_process.py:253 |
-| `gave_up` | src/tessellate/ai/captions_process.py:106 |
-| `idle_check` | src/tessellate/ai/captions_process.py:310 |
-| `installed` | src/tessellate/ai/captions_process.py:86 |
-| `model_path` | src/tessellate/ai/captions_process.py:78 |
-| `reset_for_tests` | src/tessellate/ai/captions_process.py:328 |
-| `session_ended` | src/tessellate/ai/captions_process.py:287 |
-| `stop` | src/tessellate/ai/captions_process.py:320 |
-| `url` | src/tessellate/ai/captions_process.py:98 |
+| `_alive` | src/tessellate/ai/captions_process.py:93 |
+| `_command` | src/tessellate/ai/captions_process.py:118 |
+| `_env` | src/tessellate/ai/captions_process.py:140 |
+| `_healthy` | src/tessellate/ai/captions_process.py:183 |
+| `_kill` | src/tessellate/ai/captions_process.py:227 |
+| `_log_path` | src/tessellate/ai/captions_process.py:151 |
+| `_note_crash` | src/tessellate/ai/captions_process.py:112 |
+| `_python` | src/tessellate/ai/captions_process.py:132 |
+| `_read_port` | src/tessellate/ai/captions_process.py:157 |
+| `_spawn` | src/tessellate/ai/captions_process.py:192 |
+| `cancel_idle` | src/tessellate/ai/captions_process.py:300 |
+| `ensure_started` | src/tessellate/ai/captions_process.py:252 |
+| `gave_up` | src/tessellate/ai/captions_process.py:105 |
+| `idle_check` | src/tessellate/ai/captions_process.py:309 |
+| `installed` | src/tessellate/ai/captions_process.py:85 |
+| `model_path` | src/tessellate/ai/captions_process.py:77 |
+| `reset_for_tests` | src/tessellate/ai/captions_process.py:327 |
+| `session_ended` | src/tessellate/ai/captions_process.py:286 |
+| `stop` | src/tessellate/ai/captions_process.py:319 |
+| `url` | src/tessellate/ai/captions_process.py:97 |
 
 ### src/tessellate/ai/cards.py (16)
 

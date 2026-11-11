@@ -5,7 +5,6 @@ changed topics), reached from the same four places as its twin."""
 from pathlib import Path
 
 _REPO = Path(__file__).resolve().parent.parent
-_JS = _REPO / "frontend" / "js"
 
 
 def _read(*parts):

@@ -194,7 +194,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        pass
+        pass  # Ctrl+C in a terminal run: a normal stop, not an error to print
     return 0
 
 
