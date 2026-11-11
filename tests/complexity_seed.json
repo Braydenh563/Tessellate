@@ -53,7 +53,6 @@
  "src/tessellate/ai/tools/tool_skills.py::_search_chat_history": 18,
  "src/tessellate/ai/tools/tool_write.py::_tag_note": 18,
  "src/tessellate/ai/tools/tool_run.py::execute_tool": 21,
- "src/tessellate/ai/tools/tool_focus.py::focus_detail": 17,
  "src/tessellate/ai/tools/tool_handoff.py::validate_run_skill": 24,
  "src/tessellate/ai/tools/board_edit.py::_edit_board_item": 24,
  "src/tessellate/ai/tools/board_edit.py::_place_library_item": 16,
