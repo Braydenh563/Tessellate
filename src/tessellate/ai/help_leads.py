@@ -61,6 +61,7 @@ TOPIC_LEADS: dict[str, str] = {
     # Filing, tags and categories
     "tags-categories": "How notes get a category and tags, and how to change them yourself.",
     "filing": "What the percentage beside a note's category means, and who filed it.",
+    "filing-settings": "Ask me when filing is not sure, the search model at launch and the filing style.",
     "suggested-tags": "Add or turn down the tags Atlas suggested when it filed a note.",
     "tag-manager": "Rename, merge or remove tags across all your notes at once.",
     "manage-categories": "Make, rename, merge, split or delete categories without losing notes.",

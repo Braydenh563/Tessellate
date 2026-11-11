@@ -1829,6 +1829,9 @@ Link to another note with [[its first few words]]."></textarea>
                  `renderCaptureDocumentAdder` fills this with `labelledMenu`. -->
             <span id="entry-document-adder"></span>
             <span id="entry-document-chips" class="entry-meta"></span>
+            <!-- The owner, 2026-11-11: a small filing options menu (a kebabMenu,
+                 an IIFE in capture-ask.js): ask when unsure, and the way to Settings. -->
+            <span id="capture-filing-options" class="capture-filing-options"></span>
           </div>
           <!-- Commit, and nothing else on the row. The space line used to sit
                between two control rows as a loose paragraph, which is how a
@@ -13457,7 +13460,9 @@ Link to another note with [[its first few words]]."></textarea>
                   squat (Fitness), like the 9 notes in Gym"). A note about
                   health, money, family, the law or identity is offered as a
                   choice instead, unless "File health, money and family notes
-                  by their words too" is on.
+                  by their words too" is on. With "Ask me when filing is not
+                  sure" on, a filing under 70% waits the same way, and Capture's
+                  Filing options menu turns it on and off.
                 </p>
               </div>
               <label class="check-row">
@@ -13518,6 +13523,13 @@ Link to another note with [[its first few words]]."></textarea>
               <label class="check-row">
                 <input type="checkbox" id="pref-auto-file-sensitive">
                 <span>File health, money and family notes by their words too (off: they wait for you to choose)</span>
+              </label>
+              <!-- The owner, 2026-11-11: off by default. A filing under the
+                   confidence line is not applied; the capture offers the top
+                   choices. Also in the capture tab's filing options menu. -->
+              <label class="check-row">
+                <input type="checkbox" id="pref-ask-when-unsure">
+                <span>Ask me when filing is not sure (a filing under 70% waits for you to choose)</span>
               </label>
               <!-- On by default. With this off, Save blocks until the model
                    has decided a category, which is what the setting above
