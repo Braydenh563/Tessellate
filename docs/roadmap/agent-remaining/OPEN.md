@@ -4494,6 +4494,7 @@ Format: id | file:line | one line | status.
 - D1.1 | diagram-fable-1679:11 | The page is a text document's page | fixed 29d4ad4e5 (diagram-fable-1679:11)
 - FIT22 | fitaudit-1109:8 | Rank 22 (PF6, DC7, CE9, DC13): mechanical splits of documents.js (17,163 lines now) and run_sandbox behin | deferred: mechanical splits of documents.js and run_sandbox.py, L, Opus design (fitaudit-1109:8)
 - 1667j | owner-asks-audit-1108:82 | Documents lag (atlas-motion loop, documents.js timer, /documents/7, tab-switch style) | deferred: atlas-motion loop and tab-switch style are outside documents; not re-driven (owner-asks-audit-1108:82)
+- ~~F1 Citations: the Cite row is a free-text prompt, so a note title is stored as plain text, not `[[title]]` | bd-1111.md~~ **Fixed doc-citation-picker-1111** (a note picker; `[[title]]` source line, a link in Read; driven at 1440 and 390 in dark)
 
 **BH1 (chat, 21 rows)**
 

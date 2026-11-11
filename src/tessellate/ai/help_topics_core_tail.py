@@ -878,7 +878,7 @@ TAIL_TOPICS.extend(
                 "Tab and Shift+Tab "
                 "indent and outdent, Ctrl+/ comments the selection (Enter ends the remark), Alt+Up / "
                 "Alt+Down moves the block at the caret, and typing / opens "
-                "the blocks menu (Citation lists a source at the foot). Ctrl+F finds and Ctrl+H (Mac: Cmd+Option+F) replaces (F3 next, "
+                "the blocks menu (Citation picks a note or an address). Ctrl+F finds and Ctrl+H (Mac: Cmd+Option+F) replaces (F3 next, "
                 "Shift+Enter previous), Ctrl+Alt+G goes to a line, and Ctrl+Shift+F finds in every "
                 "document. Views: Edit, where Live renders as you write, Source "
                 "is the markdown and Split puts a preview beside it, or Read. The "
