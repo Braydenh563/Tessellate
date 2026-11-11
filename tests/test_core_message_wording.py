@@ -86,7 +86,8 @@ SOURCES: tuple[Source, ...] = (
     Source("entry/sync_pull.py", consts=("BUSY",)),
     Source("ai/captions.py", raises=("CaptionsError",), consts=("NO_HELPER_HINT", "NOT_LOCAL_HINT")),
     Source("entry/importer.py", raises=("RuntimeError",), consts=("INSTALL_HINT",)),
-    Source("entry/manager.py", raises=("ValueError",), functions=("rename_category", "delete_category")),
+    #: The category functions moved out of manager.py whole (K24/BK11): same messages, new file.
+    Source("entry/manager_categories.py", raises=("ValueError",), functions=("rename_category", "delete_category")),
     #: The attachment functions moved out of manager.py whole (K24): same messages, new file.
     Source(
         "entry/manager_purge.py",

@@ -19,7 +19,8 @@ from tessellate.core.database import (
     WhiteboardObject,
     like_escape,
 )
-from tessellate.entry import manager, manager_purge
+from tessellate.entry import manager_purge
+from tessellate.entry import manager_text
 from tessellate.entry.mentions import MENTION_MIN_TITLE_CHARS, names_label
 from tessellate.repo import documents as documents_repo
 
@@ -59,7 +60,7 @@ def _board_reference_rows_batch(session: Session, entry_ids: list[int]) -> dict[
     reads happened to return them in, and which makes the order a fact
     rather than the planner's choice.
     """
-    from tessellate.entry.manager import plain_label
+    from tessellate.entry.manager_text import plain_label
 
     wanted = set(entry_ids)
     seen_boards: dict[int, set[int]] = {i: set() for i in wanted}
@@ -152,7 +153,7 @@ def _reference_rows_batch(session: Session, entries: list[Entry]) -> dict[int, l
     order are the old ones: documents newest-updated first, notes newest
     first, `REFERENCE_SOURCES_MAX` each, the note itself never its own source.
     """
-    from tessellate.entry.manager import plain_label
+    from tessellate.entry.manager_text import plain_label
 
     result = _board_reference_rows_batch(session, [entry.id for entry in entries])
     label_of: dict[int, str] = {}
@@ -253,7 +254,7 @@ def _scan_note_group(session: Session, group: list[str], narrowed: dict, hits: d
 
 def _mention_rows(entry_id: int, label: str, document_hits: list, note_hits: list) -> list[dict]:
     """The document and note rows that point at one note, links before mentions."""
-    from tessellate.entry.manager import plain_label
+    from tessellate.entry.manager_text import plain_label
 
     wanted = label.casefold()
     candidates: list[tuple[str, int, str, str]] = []
@@ -323,8 +324,8 @@ def _interior_phrase(label: str) -> str | None:
 def _links_to(content: str | None, wanted: str) -> bool:
     """Whether some text has a `[[wiki link]]` whose target is `wanted` (casefolded)."""
     return any(
-        manager.wiki_target(match.group(1)).casefold() == wanted
-        for match in manager.WIKI_LINK.finditer(content or "")
+        manager_text.wiki_target(match.group(1)).casefold() == wanted
+        for match in manager_text.WIKI_LINK.finditer(content or "")
     )
 
 

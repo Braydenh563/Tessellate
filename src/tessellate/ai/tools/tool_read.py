@@ -12,7 +12,7 @@ from tessellate.ai.tools._common import DEFAULT_CONTEXT_TOKENS, DEFAULT_LIST_LIM
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, func, or_, select
 from tessellate.core import deps
-from tessellate.entry import link_wording, manager, paths
+from tessellate.entry import link_wording, manager, manager_links, paths
 from tessellate.ai import note_rank
 from tessellate.search import search_manager
 from tessellate.entry.properties import strip as strip_properties
@@ -84,7 +84,7 @@ def _get_note_tool(session: Session, args: dict) -> dict:
     entry = _require_note(session, args)
     result = _note_summary(session, entry, chars=FULL_NOTE_CHARS)
     result["links"] = [
-        other.id for _link, other in manager.links_for_entry(session, entry)
+        other.id for _link, other in manager_links.links_for_entry(session, entry)
     ]
     result["label"] = f"ph:file-text Read {_named(entry)} in full"
     return result
@@ -170,7 +170,7 @@ def _graph_neighbours(session: Session, entry: Entry) -> list[tuple[Entry, str]]
         seen[other.id] = how
         out.append((other, how))
 
-    for link, other in manager.links_for_entry(session, entry):
+    for link, other in manager_links.links_for_entry(session, entry):
         # A link's own reason, when someone gave one, "a note about uni and
         # gym might still be related if they're both about scheduling"
         # (user-reported) is exactly the kind of connection that reads as

@@ -24,8 +24,8 @@ from tessellate.core.database import LINK_TYPES, Entity, EntityMention, Entry
 from tessellate.core.deps import get_session
 from tessellate.repo import relations as relations_repo
 from tessellate.repo import tags as tag_repo
-from tessellate.entry import manager
-from tessellate.entry.manager import WIKI_LINK, plain_label
+from tessellate.entry import manager_links
+from tessellate.entry.manager_text import WIKI_LINK, plain_label
 from tessellate.entry.mentions import MENTION_MIN_TITLE_CHARS, backlink_spans, sentence_around
 
 router = APIRouter(prefix="/suggestions", tags=["suggestions"])
@@ -177,7 +177,7 @@ def accept_type(body: TypeDecision, session: Session = Depends(get_session)) -> 
         kind="accept_link_type",
         subject={"link_id": link.id, "link_type": body.link_type, "signals": [body.link_type]},
     )
-    manager.set_link_type(session, link, body.link_type)
+    manager_links.set_link_type(session, link, body.link_type)
     return {"link_id": link.id, "link_type": link.link_type, "correction_id": made.id}
 
 

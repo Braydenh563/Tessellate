@@ -49,6 +49,8 @@ from tessellate.ai.links import _clean_reason, _is_vague_reason
 from tessellate.ai.model_manager import ModelManager
 from tessellate.ai.ollama_client import OllamaClient, OllamaError
 from tessellate.entry import manager
+from tessellate.entry import manager_links
+from tessellate.entry import manager_text
 from tessellate.entry.properties import strip as strip_properties
 from tessellate.search import search_manager
 
@@ -81,7 +83,7 @@ RELATED_PER_NOTE = 2
 # The same bar `link-suggestions` ranks by and `_deduce_reason` requires
 # before a link earns even the generic guess, reused rather than inventing
 # a second "related enough to surface here" threshold.
-RELATED_THRESHOLD = manager.AUTO_REASON_THRESHOLD
+RELATED_THRESHOLD = manager_links.AUTO_REASON_THRESHOLD
 
 SPLIT_SYSTEM_PROMPT = (
     "You are splitting a piece of free writing into one or more focused "
@@ -211,7 +213,7 @@ def merge_near_duplicates(
 
 
 def _short_preview(text: str, length: int = 120) -> str:
-    plain = manager.wiki_plain(strip_properties(text).lstrip())
+    plain = manager_text.wiki_plain(strip_properties(text).lstrip())
     return plain if len(plain) <= length else plain[: length - 1] + "…"
 
 

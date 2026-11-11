@@ -1084,7 +1084,7 @@ def generate_link_reason(source_text: str, target_text: str, model_manager: Mode
 
     This exists to fix a reported complaint: the reason shown for almost
     every link was the literal string "similar in meaning"
-    (`entry.manager.AUTO_REASON_TEXT`), true of any two notes an embedding
+    (`entry.manager_links.AUTO_REASON_TEXT`), true of any two notes an embedding
     thought were close, and useless for telling *which* two. The system
     prompt below asks for the concrete thing the two notes share, not a
     restatement that they're related; the caller (`ai.links.audit_vague_links`)

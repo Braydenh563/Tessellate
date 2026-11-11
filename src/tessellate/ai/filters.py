@@ -144,7 +144,7 @@ def _midnight(day: str) -> datetime:
 
 def _where_links(session: Session, query, item: dict):  # noqa: ANN001
     from tessellate.core.database import LIKE_ESCAPE, Entry, EntryLink, like_escape
-    from tessellate.entry.manager import find_by_wiki_name
+    from tessellate.entry.manager_wiki import find_by_wiki_name
 
     links = session.execute(select(EntryLink.source_entry_id, EntryLink.target_entry_id)).all()
     if item["kind"] == "orphan":

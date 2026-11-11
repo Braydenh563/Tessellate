@@ -184,7 +184,7 @@ def _names(session: Session, text: str, spans: list[recognise.Span]) -> list[tup
 
 
 def _links(session: Session, text: str, spans: list[recognise.Span], quoted: list, entry_id: int | None) -> list[dict]:
-    from tessellate.entry.manager import find_by_wiki_name
+    from tessellate.entry.manager_wiki import find_by_wiki_name
 
     linked = [(m.start(), m.end()) for m in _LINKED.finditer(text)]
     out = []

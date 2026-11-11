@@ -11,7 +11,7 @@ from __future__ import annotations
 import re
 from functools import lru_cache
 
-from tessellate.entry.manager import WIKI_LINK, wiki_target
+from tessellate.entry.manager_text import WIKI_LINK, wiki_target
 
 #: How far either side of a hit the context may reach before it gives up
 #: looking for a sentence boundary. A backlink row is two lines in a 280px

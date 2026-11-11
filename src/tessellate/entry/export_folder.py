@@ -130,11 +130,11 @@ def _readable(entry) -> tuple[str, bool]:  # noqa: ANN001
     with it locked its sealed text is carried as is, so nothing is lost and
     nothing is opened."""
     from tessellate.core import crypto, vault
-    from tessellate.entry import manager
+    from tessellate.entry import manager_text
 
     if crypto.is_encrypted(entry.content) and vault.key() is None:
         return entry.content, True
-    return manager.readable_content(entry), False
+    return manager_text.readable_content(entry), False
 
 
 def _attachment_names(attachments: list) -> list[str]:

@@ -17,7 +17,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate.core.database import LIKE_ESCAPE, Category, Entry
-from tessellate.entry import manager
+from tessellate.entry import manager_categories
 from tessellate.entry.manager import entry_tags
 
 SAMPLE_TAG = "sample-notebook"
@@ -123,6 +123,6 @@ def drop_emptied_categories(session: Session, ids: list[int]) -> int:
             select(func.count(Entry.id)).where(Entry.category_id == category_id, Entry.is_deleted == False)  # noqa: E712
         )
         if not live:
-            manager.delete_category(session, category_id)
+            manager_categories.delete_category(session, category_id)
             dropped += 1
     return dropped

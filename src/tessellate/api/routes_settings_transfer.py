@@ -27,6 +27,8 @@ from tessellate.core import backup_bundle, deps, jobruns, jobs, logbuffer, paths
 from tessellate.core.database import Entry, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry import importer, manager
+from tessellate.entry import manager_wiki
+from tessellate.entry import manager_text
 from tessellate.repo import categories as categories_repo
 from tessellate.repo import relation_types, relations
 from tessellate.repo.content import walk as content_walk
@@ -94,7 +96,7 @@ def export_json(session: Session = Depends(get_session)) -> Response:
             # not your notes. (The app's own backups keep private notes
             # encrypted, and since SEC-03 carry none of their words in the
             # search index either: `backup.strip_leftovers`.)
-            "content": manager.readable_content(e),
+            "content": manager_text.readable_content(e),
             "category": category_names.get(e.category_id, manager.UNCATEGORISED),
             "tags": manager.shown_tags(e),
             "ai_confidence": e.ai_confidence,
@@ -182,7 +184,7 @@ def build_markdown_export(session: Session, ids: list[int] | None = None) -> byt
                 front.append(f"tags: [{', '.join(tags)}]")
             if entry.pinned:
                 front.append("pinned: true")
-            readable = manager.readable_content(entry)
+            readable = manager_text.readable_content(entry)
             #: KG4: the note's own properties join the app's in one block.
             from tessellate.entry import properties as note_properties
 
@@ -589,8 +591,8 @@ def _link_imported(session: Session, entries: list) -> None:
     ones. Before this, an imported vault had no links at all until each note
     was saved again (tests/test_import_markdown_links.py)."""
     for entry in entries:
-        manager.sync_wiki_links(session, entry)
-        manager.resolve_links_to(session, entry)
+        manager_wiki.sync_wiki_links(session, entry)
+        manager_wiki.resolve_links_to(session, entry)
     session.commit()
 
 
@@ -777,7 +779,7 @@ def export_csv(session: Session = Depends(get_session)) -> Response:
         writer.writerow(
             [
                 e.id,
-                manager.readable_content(e),
+                manager_text.readable_content(e),
                 category_names.get(e.category_id, manager.UNCATEGORISED),
                 "|".join(manager.shown_tags(e)),
                 e.ai_confidence,

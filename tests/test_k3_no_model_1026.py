@@ -24,6 +24,7 @@ import pytest
 
 from tessellate.ai import extractor, no_model_text
 from tessellate.entry import manager
+from tessellate.entry import manager_links
 
 ROOT = Path(__file__).resolve().parents[1]
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
@@ -221,7 +222,7 @@ def test_the_preview_links_the_parts_and_their_source_without_a_model(client, se
     ).json()
     kinds = sorted(link["kind"] for link in body["links"])
     assert kinds == ["sibling", "source", "source"]
-    assert all(link["reason"] and link["reason"] != manager.AUTO_REASON_TEXT for link in body["links"])
+    assert all(link["reason"] and link["reason"] != manager_links.AUTO_REASON_TEXT for link in body["links"])
 
 
 def test_a_failed_model_split_falls_back_to_the_same_plain_split(ai_client, fake_ollama):

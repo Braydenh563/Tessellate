@@ -6,6 +6,7 @@ from __future__ import annotations
 import dataclasses
 
 from tessellate.ai import tools
+from tessellate.entry import manager_categories
 from tessellate.ai.tools import contracts
 
 
@@ -38,7 +39,7 @@ def test_a_misspelt_category_is_refused_naming_the_real_one(ai_client, session):
     a = _note(session, "dentist on friday", category="Health")
     out = tools.execute_tool(session, "edit_note", {"note_id": a["id"], "category": "Heath"})
     assert "error" in out and "“Health”" in out["error"]
-    names = [c["name"] for c in tools.manager.all_categories(session)]
+    names = [c["name"] for c in manager_categories.all_categories(session)]
     assert "Heath" not in names
 
 
@@ -47,7 +48,7 @@ def test_a_category_in_another_case_files_under_the_existing_one(ai_client, sess
     b = _note(session, "physio tuesday", category="Inbox")
     out = tools.execute_tool(session, "edit_note", {"note_id": b["id"], "category": "health"})
     assert out["category"] == "Health"
-    names = [c["name"] for c in tools.manager.all_categories(session)]
+    names = [c["name"] for c in manager_categories.all_categories(session)]
     assert names.count("Health") == 1 and "health" not in names
     assert a["category"] == "Health"
 

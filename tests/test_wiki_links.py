@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from tessellate.entry import manager
+from tessellate.entry import manager_wiki
 
 
 def _make(client, content):
@@ -10,13 +10,13 @@ def _make(client, content):
 
 
 def test_parsing_finds_names_once_each():
-    found = manager.wiki_link_targets("see [[bread]] and [[Kayaking]] and [[bread]]")
+    found = manager_wiki.wiki_link_targets("see [[bread]] and [[Kayaking]] and [[bread]]")
     assert found == ["bread", "Kayaking"]
 
 
 def test_parsing_ignores_empty_brackets():
-    assert manager.wiki_link_targets("[[]] and [[   ]]") == []
-    assert manager.wiki_link_targets("no links at all") == []
+    assert manager_wiki.wiki_link_targets("[[]] and [[   ]]") == []
+    assert manager_wiki.wiki_link_targets("no links at all") == []
 
 
 def test_a_wiki_link_creates_a_real_link(client):
@@ -96,12 +96,12 @@ def test_nested_brackets_resolve_to_the_inner_name():
     before inserting it as a link name, otherwise picking a note that itself
     contains a link would silently point somewhere else entirely.
     """
-    assert manager.wiki_link_targets("[[outer [[inner]] text]]") == ["inner"]
+    assert manager_wiki.wiki_link_targets("[[outer [[inner]] text]]") == ["inner"]
 
 
 def test_a_name_is_capped_so_a_whole_note_cannot_become_one():
     long_name = "x" * 200
-    assert manager.wiki_link_targets(f"[[{long_name}]]") == []
+    assert manager_wiki.wiki_link_targets(f"[[{long_name}]]") == []
 
 
 def test_link_previews_do_not_show_the_bracket_syntax(client):

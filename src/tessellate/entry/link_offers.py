@@ -41,7 +41,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.core import filetypes
 from tessellate.core.database import Document, Entry
-from tessellate.entry.manager import WIKI_LINK, wiki_target
+from tessellate.entry.manager_text import WIKI_LINK, wiki_target
 from tessellate.entry.properties import strip as strip_properties
 from tessellate.vendor.flashtext import KeywordProcessor
 

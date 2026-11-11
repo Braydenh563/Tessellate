@@ -152,6 +152,6 @@ def test_the_export_draws_runs_as_tspans_with_their_own_attributes():
 
 
 def test_a_previews_words_have_no_run_marks_on_the_server_side_either():
-    from tessellate.entry.manager import strip_inline_markdown
+    from tessellate.entry.manager_text import strip_inline_markdown
 
     assert strip_inline_markdown("a {{size=24 ink=red|big}} **b**") == "a big b"

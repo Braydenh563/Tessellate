@@ -19,6 +19,7 @@ from tessellate.core.database import AuditLog, Entry
 from sqlalchemy import select
 
 from tessellate.entry import manager
+from tessellate.entry import manager_wiki
 
 
 @pytest.fixture(autouse=True)
@@ -60,7 +61,7 @@ def test_a_wiki_link_resolves_to_the_file_it_names(tmp_path, session):
     """The whole point. `[[Roadmap]]` is a *filename*, and the note's own text
     starts with the heading rather than the name."""
     routes_settings_transfer._run_directory_import(str(_vault(tmp_path)))
-    found = manager.find_by_wiki_name(session, "Roadmap")
+    found = manager_wiki.find_by_wiki_name(session, "Roadmap")
     assert found is not None
     assert found.source_path == "Projects/Roadmap.md"
 
@@ -75,7 +76,7 @@ def test_a_vault_name_beats_a_note_that_merely_starts_with_it(tmp_path, session)
     root.mkdir()
     (root / "Index.md").write_text("The real index file.", encoding="utf-8")
     routes_settings_transfer._run_directory_import(str(root))
-    assert manager.find_by_wiki_name(session, "Index").source_path == "Index.md"
+    assert manager_wiki.find_by_wiki_name(session, "Index").source_path == "Index.md"
 
 
 def test_a_note_written_here_has_no_path(session):

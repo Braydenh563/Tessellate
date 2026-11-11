@@ -30,6 +30,8 @@ from tessellate.core.database import (
 )
 from tessellate.core.deps import get_session
 from tessellate.entry import duplicates, link_facts, manager
+from tessellate.entry import manager_links
+from tessellate.entry import manager_text
 from tessellate.repo import bookmarks as bookmark_repo
 from tessellate.repo import relations as relations_repo
 from tessellate.repo.content import NOTES
@@ -68,7 +70,7 @@ class _LazyNoteFacts:
     @property
     def label(self) -> str:
         if self._label is None:
-            self._label = manager.plain_label(self._content, 40) or "Untitled note"
+            self._label = manager_text.plain_label(self._content, 40) or "Untitled note"
         return self._label
 
 
@@ -398,12 +400,12 @@ def known_tensions(
                 "earlier_id": row.earlier_id,
                 "later_id": row.later_id,
                 "explanation": row.reason,
-                "earlier_excerpt": tensions_module._excerpt(manager.readable_content(earlier))[:280],
-                "later_excerpt": tensions_module._excerpt(manager.readable_content(later))[:280],
-                "earlier_title": manager.extract_title(manager.readable_content(earlier))
-                or manager.plain_label(manager.readable_content(earlier), 60),
-                "later_title": manager.extract_title(manager.readable_content(later))
-                or manager.plain_label(manager.readable_content(later), 60),
+                "earlier_excerpt": tensions_module._excerpt(manager_text.readable_content(earlier))[:280],
+                "later_excerpt": tensions_module._excerpt(manager_text.readable_content(later))[:280],
+                "earlier_title": manager_text.extract_title(manager_text.readable_content(earlier))
+                or manager_text.plain_label(manager_text.readable_content(earlier), 60),
+                "later_title": manager_text.extract_title(manager_text.readable_content(later))
+                or manager_text.plain_label(manager_text.readable_content(later), 60),
                 "earlier_at": tensions_module._stamp(earlier.created_at),
                 "later_at": tensions_module._stamp(later.created_at),
                 "gap_days": abs((later.created_at - earlier.created_at).days)
@@ -435,7 +437,7 @@ def accept_tension(body: TensionPair, session: Session = Depends(get_session)) -
     """
     earlier = NOTES.writable(session, body.earlier_id)
     later = NOTES.writable(session, body.later_id)
-    link = manager.create_link(
+    link = manager_links.create_link(
         session,
         earlier,
         later,
@@ -492,7 +494,7 @@ def reopen_tension(body: TensionReopen, session: Session = Depends(get_session))
     if body.remove_link:
         for link in relations_repo.with_type(session, "contradicts"):
             if {link.source_entry_id, link.target_entry_id} == pair:
-                manager.delete_link(session, link)
+                manager_links.delete_link(session, link)
                 removed_link = True
     for kind in ("accept_tension", "dismiss_tension"):
         for item in reversed(learning.corrections(session, kind=kind)):
@@ -537,8 +539,8 @@ def link_suggestion_reasons(
             continue
         try:
             reason = librarian.generate_link_reason(
-                manager.readable_content(source),
-                manager.readable_content(target),
+                manager_text.readable_content(source),
+                manager_text.readable_content(target),
                 deps.get_model_manager(),
                 deps.get_ollama(),
             )
@@ -601,7 +603,7 @@ def backfill_link_reasons(
 
 
 def _backfill_reasons(session: Session, options: "BackfillReasonsBody") -> dict:
-    result = manager.backfill_link_reasons(session)
+    result = manager_links.backfill_link_reasons(session)
 
     result["rewritten"] = 0
     if not options.ai:

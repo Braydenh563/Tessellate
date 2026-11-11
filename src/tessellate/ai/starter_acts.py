@@ -219,9 +219,9 @@ def _open_links(session: Session, *, note_ids: list[int], **_: object) -> tuple[
     entry = session.get(Entry, note_ids[0]) if note_ids else None
     if entry is None or entry.is_deleted or entry.is_private:
         return "Nothing is open. Open a note and tick “Use the open note”.", None
-    from tessellate.entry import manager
+    from tessellate.entry import manager_links
 
-    others = [other for _link, other in manager.links_for_entry(session, entry)
+    others = [other for _link, other in manager_links.links_for_entry(session, entry)
               if not other.is_deleted and not other.is_private]
     title = note_title(entry.content, size=48)
     if not others:

@@ -27,6 +27,7 @@ from datetime import timedelta
 from sqlalchemy.orm import Session
 
 from tessellate.entry import manager
+from tessellate.entry import manager_links
 
 
 @dataclass
@@ -97,7 +98,7 @@ def build(session: Session) -> Notebook:
         book.notes[key] = entry.id
 
     for left, right in LINKS:
-        manager.create_link(
+        manager_links.create_link(
             session,
             manager.get_entry(session, book.notes[left]),
             manager.get_entry(session, book.notes[right]),

@@ -19,13 +19,14 @@ def test_an_old_unlinked_unopened_note_outranks_a_linked_recent_one(session):
 
     from tessellate.ai import resurface
     from tessellate.entry import manager
+    from tessellate.entry import manager_links
 
     old = manager.create_entry(session, "interview prep notes from the spring", tags=[])
     old.created_at = datetime.now() - timedelta(days=120)
     fresh = manager.create_entry(session, "notes from today's standup", tags=[])
     other = manager.create_entry(session, "a note linked to today's", tags=[])
     # `create_link` is what this is called; the spec guessed a name.
-    manager.create_link(session, fresh, other)
+    manager_links.create_link(session, fresh, other)
     fresh.access_count = 5
     session.commit()
     resurface.compute_scores(session)

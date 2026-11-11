@@ -294,9 +294,9 @@ def _tag_refusal(session: Session, old: str, new: str) -> str | None:
 
 
 def _category_refusal(session: Session, old: str, new: str) -> str | None:
-    from tessellate.entry import manager
+    from tessellate.entry import manager_categories
 
-    names = [row["name"] for row in manager.all_categories(session)]
+    names = [row["name"] for row in manager_categories.all_categories(session)]
     if new.casefold() != old.casefold() and _exact(new, names) is not None:
         return f"There is already a category called “{new}”. Renaming onto it would merge the two, which Undo cannot split, so I leave that to Manage categories."
     return None
@@ -349,8 +349,9 @@ def _plan_rename_tag(session: Session, parsed: dict, c) -> dict:  # noqa: ANN001
 
 def _plan_rename_category(session: Session, parsed: dict, c) -> dict:  # noqa: ANN001
     from tessellate.entry import manager
+    from tessellate.entry import manager_categories
 
-    rows = manager.all_categories(session)
+    rows = manager_categories.all_categories(session)
     names = [row["name"] for row in rows]
     parsed = _reading(parsed, names)
     old = _find(parsed["old"], names)

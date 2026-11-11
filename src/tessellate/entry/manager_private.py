@@ -26,15 +26,9 @@ from tessellate.core.database import (
     EntryRevision,
 )
 from tessellate.core import events
-from tessellate.entry.manager import (
-    _redact_link_audit,
-    _set_stored_props,
-    _set_stored_reason,
-    flag_private_media,
-    log_action,
-    record_dates,
-    reindex_properties,
-)
+from tessellate.entry.manager import log_action, record_dates, reindex_properties
+from tessellate.entry.manager_links import _redact_link_audit, _set_stored_props, _set_stored_reason
+from tessellate.entry.manager_text import flag_private_media
 
 
 def _encrypt_history(session: Session, entry: Entry, key: bytes) -> None:

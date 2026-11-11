@@ -617,6 +617,7 @@ def filing_evidence(
     nearest neighbour.
     """
     from tessellate.entry import manager
+    from tessellate.entry import manager_text
 
     wanted = _words(text)
     out: list[dict] = []
@@ -650,7 +651,7 @@ def filing_evidence(
     ).all()
     scored: list[tuple[int, Entry]] = []
     for entry in rows:
-        overlap = len(_words(manager.readable_content(entry)) & wanted)
+        overlap = len(_words(manager_text.readable_content(entry)) & wanted)
         if overlap:
             scored.append((overlap, entry))
     scored.sort(key=lambda pair: (-pair[0], -pair[1].id))
@@ -660,7 +661,7 @@ def filing_evidence(
                 "kind": "neighbour",
                 "entry_id": entry.id,
                 "category": manager.category_name_for(session, entry),
-                "excerpt": " ".join(manager.readable_content(entry).split()),
+                "excerpt": " ".join(manager_text.readable_content(entry).split()),
             }
         )
     return out

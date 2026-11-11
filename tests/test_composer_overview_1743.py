@@ -18,6 +18,7 @@ from tessellate.ai import composer_story, librarian
 from tessellate.api import routes_chat
 from tessellate.core import config
 from tessellate.entry import manager
+from tessellate.entry import manager_links
 from tests import _courses_1665 as fx
 
 NOW = datetime(2026, 11, 11, 10, 30)
@@ -43,7 +44,7 @@ def notebook(session, monkeypatch):
     session.commit()
     for (_c, _cat, _t, _w, links), entry in zip(fx.NOTES, made, strict=True):
         for i, reason in links.items():
-            manager.create_link(session, entry, made[i], reason=reason)
+            manager_links.create_link(session, entry, made[i], reason=reason)
     session.commit()
     return made
 

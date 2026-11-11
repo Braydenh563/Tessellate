@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.core.database import Category, Entry
 from tessellate.entry import manager
+from tessellate.entry import manager_categories
 
 from ._common import ToolError
 
@@ -48,7 +49,7 @@ def _find_category(session: Session, name: str) -> Category:
             select(Category).where(func.lower(Category.name) == wanted.lower())
         )
     if found is None:
-        existing = [c["name"] for c in manager.all_categories(session)]
+        existing = [c["name"] for c in manager_categories.all_categories(session)]
         known = ", ".join(f"“{n}”" for n in existing[:12])
         raise ToolError(
             f"There is no category called “{wanted}”. "
@@ -103,7 +104,7 @@ def _rename_category(session: Session, args: dict) -> dict:
         raise ToolError("A category needs a name.")
     old_name = category.name
     try:
-        result = manager.rename_category(session, category.id, new_name)
+        result = manager_categories.rename_category(session, category.id, new_name)
     except ValueError as exc:
         raise ToolError(str(exc)) from exc
 
@@ -156,7 +157,7 @@ def _merge_categories(session: Session, args: dict) -> dict:
     ids = _live_ids(session, source.id)
     description = source.description or ""
     try:
-        result = manager.rename_category(session, source.id, target_name)
+        result = manager_categories.rename_category(session, source.id, target_name)
     except ValueError as exc:
         raise ToolError(str(exc)) from exc
     return {
@@ -204,7 +205,7 @@ def _delete_category(session: Session, args: dict) -> dict:
     ids = _live_ids(session, category.id)
     description = category.description or ""
     try:
-        result = manager.delete_category(session, category.id)
+        result = manager_categories.delete_category(session, category.id)
     except ValueError as exc:
         raise ToolError(str(exc)) from exc
     return {

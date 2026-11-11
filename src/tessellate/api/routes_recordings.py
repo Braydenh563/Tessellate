@@ -31,7 +31,7 @@ from tessellate.core import activity, deps, jobs, recordings, transcript
 from tessellate.core.database import LIKE_ESCAPE, Entry, Recording, like_escape, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry import bin as other_bin
-from tessellate.entry import manager
+from tessellate.entry import manager_text
 from tessellate.entry import meetings as meeting_shape
 from tessellate.entry.manager import log_action
 from tessellate.repo import content as content_repo
@@ -427,7 +427,7 @@ def _people_at(session: Session, row: Recording) -> list[str]:
     """The attendees of the meeting it was recorded into: names the model
     may use, read from the note, never guessed."""
     entry = session.get(Entry, row.entry_id) if row.entry_id else None
-    return meeting_shape.attendees(manager.readable_content(entry)) if entry else []
+    return meeting_shape.attendees(manager_text.readable_content(entry)) if entry else []
 
 
 def _named(session: Session, row: Recording, segments: list[dict]) -> list[dict]:

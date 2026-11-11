@@ -47,6 +47,7 @@ from tessellate.core.database import Attachment, Entry, MediaUpload
 from tessellate.core.deps import get_session
 from tessellate.core.subproc import NO_WINDOW
 from tessellate.entry import manager
+from tessellate.entry import manager_text
 from tessellate.entry import manager_purge
 from tessellate.repo import uploads as uploads_repo
 from tessellate.repo.content import FILES
@@ -353,7 +354,7 @@ def list_attachment_gallery(
             original_name=attachment.filename,
             mime=attachment.mime or "application/octet-stream",
             created_at=attachment.created_at.isoformat(),
-            used_by=[{"kind": "note", "id": entry.id, "label": manager.plain_label(entry.content)}],
+            used_by=[{"kind": "note", "id": entry.id, "label": manager_text.plain_label(entry.content)}],
             caption=attachment.caption or "",
             caption_model=attachment.caption_model or "",
             caption_edited=bool(attachment.caption_edited),
@@ -435,7 +436,7 @@ def _attachment_out(session: Session, attachment: Attachment) -> AttachmentGalle
         mime=attachment.mime or "application/octet-stream",
         created_at=attachment.created_at.isoformat(),
         used_by=(
-            [{"kind": "note", "id": entry.id, "label": manager.plain_label(entry.content)}]
+            [{"kind": "note", "id": entry.id, "label": manager_text.plain_label(entry.content)}]
             if entry is not None
             else []
         ),

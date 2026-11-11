@@ -10,6 +10,7 @@ from __future__ import annotations
 import pytest
 
 from tessellate.entry import manager, properties
+from tessellate.entry import manager_text
 
 
 @pytest.mark.parametrize(
@@ -37,7 +38,7 @@ def test_lift_title(text, lifted):
 
 def test_a_saved_note_is_titled_by_its_frontmatter(session):
     entry = manager.create_entry(session, "---\ntitle: Front matter note\n---\nBody text.\n")
-    assert manager.extract_title(entry.content) == "Front matter note"
+    assert manager_text.extract_title(entry.content) == "Front matter note"
     assert "title:" not in entry.content
 
 
@@ -45,4 +46,4 @@ def test_an_edit_lifts_it_too(session):
     entry = manager.create_entry(session, "First")
     manager.update_entry(session, entry, content="---\ntitle: Renamed\n---\nBody\n")
     session.refresh(entry)
-    assert manager.extract_title(entry.content) == "Renamed"
+    assert manager_text.extract_title(entry.content) == "Renamed"

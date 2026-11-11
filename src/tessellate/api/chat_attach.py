@@ -25,6 +25,7 @@ from tessellate.repo import uploads as uploads_repo
 from tessellate.repo.documents import Document
 from tessellate.core.imagesize import image_size
 from tessellate.entry import manager
+from tessellate.entry import manager_text
 
 
 #: `/media/<filename>` as it appears inside note and document content, 
@@ -156,7 +157,7 @@ def _named_sources(session: Session, question: str) -> tuple[list, list[int]]:
         e.id for e in session.scalars(
             select(Entry).where(Entry.is_board == True, Entry.is_deleted == False, Entry.is_private == False)  # noqa: E712
             .order_by(Entry.created_at.desc()).limit(400)
-        ) if named(manager.extract_title(e.content) or "")
+        ) if named(manager_text.extract_title(e.content) or "")
     ][:3]
     return documents, boards
 
@@ -279,7 +280,7 @@ def _attached_boards(session: Session, board_ids: list[int]) -> list[dict]:
     reaching the model by a different door would make that guard decorative.
     """
     from tessellate.api.routes_whiteboard import _board_settings, _build_tree, _map_objects
-    from tessellate.entry import manager as entry_manager
+    from tessellate.entry import manager_text
 
     found: list[dict] = []
     for board_id in dict.fromkeys(board_ids):
@@ -287,7 +288,7 @@ def _attached_boards(session: Session, board_ids: list[int]) -> list[dict]:
         if entry is None or entry.is_deleted or entry.is_private:
             continue
         board_type, _layout = _board_settings(entry)
-        title = entry_manager.extract_title(entry.content) or f"Board {board_id}"
+        title = manager_text.extract_title(entry.content) or f"Board {board_id}"
         objects = _map_objects(session, board_id)
         lines: list[str] = []
         _outline_into(_build_tree(session, objects), 0, lines)

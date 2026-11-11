@@ -41,7 +41,8 @@ from tessellate.core.database import (
 from tessellate.core import events, reading_bin, recordings
 from tessellate.core.deps import get_session
 from tessellate.entry import highlights as note_highlights
-from tessellate.entry.manager import extract_title, join_blocks, readable_embeds, remove_title, shown_tags, strip_inline_markdown
+from tessellate.entry.manager import shown_tags
+from tessellate.entry.manager_text import extract_title, join_blocks, readable_embeds, remove_title, strip_inline_markdown
 from tessellate.entry.properties import strip as strip_properties
 from tessellate.repo import content as content_repo
 from tessellate.repo import documents as documents_repo

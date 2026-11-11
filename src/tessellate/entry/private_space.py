@@ -250,7 +250,7 @@ def chat_notes(session: Session, question: str, have: set[int] = frozenset()) ->
     space = session.info.get("workspace_id")
     if not session.info.get(private_turn.IN_PRIVATE_SPACE) or vault.key() is None or not space:
         return []
-    from tessellate.entry import manager
+    from tessellate.entry import manager_text
 
     rows = session.scalars(
         select(Entry)
@@ -263,7 +263,7 @@ def chat_notes(session: Session, question: str, have: set[int] = frozenset()) ->
     for entry in rows:
         if entry.id in have:
             continue
-        text = manager.readable_content(entry).lower()
+        text = manager_text.readable_content(entry).lower()
         score = sum(term in text for term in terms)
         if score:
             scored.append((score, entry))

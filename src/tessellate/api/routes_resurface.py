@@ -17,7 +17,7 @@ from tessellate.ai import resurface
 from tessellate.core import jobruns
 from tessellate.core.database import NoteScore
 from tessellate.core.deps import get_session
-from tessellate.entry import manager
+from tessellate.entry import manager_text
 
 router = APIRouter(prefix="/resurface", tags=["resurface"])
 
@@ -29,7 +29,7 @@ def _card(session: Session, entry) -> dict:  # noqa: ANN001
     chose something is a panel people learn to distrust: "120 days old, no
     links, never opened" is checkable, "0.82" is not.
     """
-    content = manager.readable_content(entry)
+    content = manager_text.readable_content(entry)
     row = session.get(NoteScore, entry.id)
     return {
         "id": entry.id,
@@ -43,7 +43,7 @@ def _card(session: Session, entry) -> dict:  # noqa: ANN001
         # about subj", which is a title and its body run together with the
         # break that separated them removed. A person's own first line is the
         # closest thing to a title a note without one has.
-        "title": _name(manager.plain_label(content)) or "Untitled note",
+        "title": _name(manager_text.plain_label(content)) or "Untitled note",
         "preview": " ".join(content.split())[:200],
         "created_at": entry.created_at,
         # The three facts the score is made of, in the card, because a panel

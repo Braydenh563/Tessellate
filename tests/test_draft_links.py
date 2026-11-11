@@ -13,6 +13,7 @@ note grew an edge to something a reader cannot reach from anywhere else.
 from __future__ import annotations
 
 from tessellate.entry import manager
+from tessellate.entry import manager_links
 
 
 def _draft(session, text):
@@ -27,7 +28,7 @@ def test_a_draft_cannot_be_linked_to_a_saved_note(session):
     note = manager.create_entry(session, "the beans need netting next week")
     session.commit()
 
-    assert manager.create_link(session, draft, note) is None
+    assert manager_links.create_link(session, draft, note) is None
 
 
 def test_the_refusal_holds_in_both_directions(session):
@@ -36,7 +37,7 @@ def test_the_refusal_holds_in_both_directions(session):
     note = manager.create_entry(session, "the beans need netting next week")
     session.commit()
 
-    assert manager.create_link(session, note, draft) is None
+    assert manager_links.create_link(session, note, draft) is None
 
 
 def test_two_drafts_can_still_be_linked(session):
@@ -46,7 +47,7 @@ def test_two_drafts_can_still_be_linked(session):
     first = _draft(session, "half an idea about beans")
     second = _draft(session, "the other half of the bean idea")
 
-    assert manager.create_link(session, first, second) is not None
+    assert manager_links.create_link(session, first, second) is not None
 
 
 def test_two_saved_notes_are_unaffected(session):
@@ -54,7 +55,7 @@ def test_two_saved_notes_are_unaffected(session):
     two = manager.create_entry(session, "netting arrived today")
     session.commit()
 
-    assert manager.create_link(session, one, two) is not None
+    assert manager_links.create_link(session, one, two) is not None
 
 
 def test_saving_the_draft_makes_the_link_allowed(session):
@@ -63,11 +64,11 @@ def test_saving_the_draft_makes_the_link_allowed(session):
     draft = _draft(session, "half an idea about beans")
     note = manager.create_entry(session, "the beans need netting next week")
     session.commit()
-    assert manager.create_link(session, draft, note) is None
+    assert manager_links.create_link(session, draft, note) is None
 
     draft.is_draft = False
     session.commit()
-    assert manager.create_link(session, draft, note) is not None
+    assert manager_links.create_link(session, draft, note) is not None
 
 
 def test_the_api_says_which_refusal_it_was(ai_client, session):

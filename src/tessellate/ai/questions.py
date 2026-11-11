@@ -246,9 +246,9 @@ def set_state(session: Session, question: DerivedFact, state: str, entry_id: int
         payload["answered_at"] = utcnow().isoformat()
         asked_in = session.get(Entry, question.entry_id)
         if asked_in is not None:
-            from tessellate.entry import manager
+            from tessellate.entry import manager_links
 
-            manager.create_link(
+            manager_links.create_link(
                 session,
                 answering,
                 asked_in,

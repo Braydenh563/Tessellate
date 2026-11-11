@@ -18,6 +18,7 @@ import pytest
 from tessellate.api import routes_chat
 from tessellate.core import config
 from tessellate.entry import manager
+from tessellate.entry import manager_links
 from tests import _social_1420 as social
 
 NOW = datetime(2026, 10, 27, 12, 0)
@@ -45,7 +46,7 @@ def notebook(session, monkeypatch):
     session.commit()
     for (_c, _cat, _t, _w, links), entry in zip(social.NOTES, made, strict=True):
         for i in links:
-            manager.create_link(session, entry, made[i], reason="Both offer conversation starters")
+            manager_links.create_link(session, entry, made[i], reason="Both offer conversation starters")
     session.commit()
     return made
 
