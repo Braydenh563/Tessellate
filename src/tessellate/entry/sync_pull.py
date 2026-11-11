@@ -39,7 +39,8 @@ MAX_ROUNDS = 500
 class Transport(Protocol):
     name: str
 
-    def fetch(self, since: int, me: str) -> dict: ...
+    def fetch(self, since: int, me: str) -> dict:
+        """The segment after `since`, for the computer `me`; raises OSError when unanswered."""
 
 
 _transport: Callable[[], Transport | None] = lambda: None  # noqa: E731  # the LAN fetch is not built yet
