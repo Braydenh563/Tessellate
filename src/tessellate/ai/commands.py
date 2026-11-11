@@ -1207,7 +1207,10 @@ def read_typed(text: str, now: datetime, locale: str | None = None) -> dict | No
         return found
     #: One word a slip from a word the commands read ("pin the dentist noe",
     #: "unlnk the gym note"), read so when that makes it a command (O3).
-    guided = question_noise.guided(question_noise.tidy(text), lambda t: read(t, now, locale) is not None)
+    tidy, takes = question_noise.tidy(text), lambda t: read(t, now, locale) is not None
+    #: A slip that lands on another word ("remiders" is "re" and "mid" and "ers", "skull") is read as the
+    #: command word only when the commands then take the sentence.
+    guided = question_noise.guided(tidy, takes) or question_noise.guided(tidy, takes, real_to=parity_acts.words())
     return read(guided, now, locale) if guided else None
 
 

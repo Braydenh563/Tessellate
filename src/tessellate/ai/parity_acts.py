@@ -51,6 +51,13 @@ _OPEN_ITEM = re.compile(r"^\s*[-*+]\s+\[ \]\s+(.+?)\s*$", re.M)
 _MAX_REMINDERS = 12
 
 
+def words() -> frozenset[str]:
+    """The words of these acts' own phrases ("reminders", "skill"): a real word one slip from one is read as it."""
+    from tessellate.ai import act_registry
+
+    return frozenset(w for a in act_registry.ACTS.values() if a.intent in INTENTS for w in re.findall(r"[a-z]{4,}", f"{a.verb} {a.label} {a.example}".lower()))
+
+
 def _clean(text: str) -> str:
     return object_acts._name(" ".join(text.split()).rstrip(" .!"))  # noqa: SLF001
 
@@ -59,7 +66,7 @@ def _read_category_and_tag(text: str) -> dict | None:
     for pattern in _DELETE_CATEGORY:
         if (found := pattern.match(text)) and (name := _clean(found.group("name"))) and not name.lower().startswith(("a ", "all ", "every ")):
             return {"intent": "delete_category", "name": name}
-    if (found := _DELETE_TAG.match(text)) and " from " not in found.group("name").lower() and (name := _clean(found.group("name"))):
+    if (found := _DELETE_TAG.match(text)) and not re.search(r" (?:from|form)\b|\bnotes?$", found.group("name"), re.I) and (name := _clean(found.group("name"))):
         return {"intent": "delete_tag", "name": name}
     if re.search(_CATEGORY, text, re.I) and (found := _MERGE.match(text)):
         first, second = _clean(found.group("a")), _clean(found.group("b"))

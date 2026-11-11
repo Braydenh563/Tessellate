@@ -11,6 +11,7 @@ import json
 import re
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
+from tessellate.repo import whiteboard as whiteboard_repo
 from tessellate.repo.content import BOARDS
 from tessellate.core.database import Entry, WhiteboardNode, WhiteboardObject, WhiteboardSketch
 from collections import OrderedDict
@@ -755,29 +756,7 @@ _PREVIEW_CACHE: "OrderedDict[tuple, tuple[list[dict], list[dict], float]]" = Ord
 PREVIEW_CACHE_STATS = {"hits": 0, "misses": 0}
 
 
-def _preview_stamps_bulk(db: Session, entries: list) -> dict[int | None, list]:
-    """`_preview_fingerprint`'s four (count, newest) pairs for a page of boards
-    (`Entry` rows, `None` for the default board) at once: one grouped query per table instead of four per board (audit K36).
-    A board with nothing on a table gets the same `(0, "None")` the
-    per-board query would have returned, so both paths build equal keys."""
-    wanted = {None if entry is None else entry.id for entry in entries}
-    empty = (0, "None")
-    out: dict[int | None, list] = {b: [empty, empty, empty, empty] for b in wanted}
-    queries = [
-        (i, select(model.board_id, func.count(), func.max(model.updated_at)).group_by(model.board_id))
-        for i, model in enumerate((WhiteboardNode, WhiteboardSketch, WhiteboardObject))
-    ]
-    queries.append((3, (
-        select(WhiteboardNode.board_id, func.count(), func.max(Entry.updated_at))
-        .select_from(WhiteboardNode)
-        .join(Entry, Entry.id == WhiteboardNode.entry_id)
-        .group_by(WhiteboardNode.board_id)
-    )))
-    for slot, query in queries:
-        for board, count, newest in db.execute(query).all():
-            if board in wanted:
-                out[board][slot] = (count, str(newest))
-    return out
+_preview_stamps_bulk = whiteboard_repo.preview_stamps
 
 
 def _preview_fingerprint(db: Session, board_id: int | None, stamps: list | None = None) -> tuple:

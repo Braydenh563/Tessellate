@@ -1131,7 +1131,7 @@ async function goToTabHistory(next, { fromBrowser = false } = {}) {
 document.addEventListener("scroll", (event) => {
   if (tabHistory.navigating) return;
   const current = tabHistory.stack[tabHistory.index];
-  if (current?.tab !== "settings" || typeof settingsScroller !== "function") return;
+  if (current?.tab !== "settings") return;
   if (event.target === settingsScroller(current.section)) current.scroll = event.target.scrollTop;
 }, { passive: true, capture: true });
 
