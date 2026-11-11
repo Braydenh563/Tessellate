@@ -16,6 +16,7 @@ import re
 from pathlib import Path
 
 from tests._app_js import frontend_text
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parents[1]
 CSS = ROOT / "frontend" / "css"
@@ -165,7 +166,7 @@ def test_the_snippets_bar_is_one_height_and_its_label_one_line():
     assert 'aria-label="Save the selected code as a snippet"' in button
     # Every help surface that named the old label now names the button.
     assert "press Save to keep it" in html
-    assert "press Save selection" not in (ROOT / "frontend" / "js" / "documents-codekit.js").read_text(encoding="utf-8")
+    assert "press Save selection" not in _js_scope.unwrapped((ROOT / "frontend" / "js" / "documents-codekit.js").read_text(encoding="utf-8"))
 
 
 # Small one-line fixes from the settings and UI system rows (OPEN ledger 1387 to 1490).

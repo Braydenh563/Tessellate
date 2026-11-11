@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10189, test files 2499, tests 20579, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10196, test files 2498, tests 20577, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -3863,53 +3863,53 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `docAssistAnswerArea` | frontend/js/documents-codekit.js:766 |
-| `docAssistApply` | frontend/js/documents-codekit.js:918 |
-| `docAssistAsk` | frontend/js/documents-codekit.js:826 |
-| `docAssistCaretTo` | frontend/js/documents-codekit.js:962 |
-| `docAssistClearHint` | frontend/js/documents-codekit.js:786 |
-| `docAssistDiagnostic` | frontend/js/documents-codekit.js:752 |
-| `docAssistEmptyAsk` | frontend/js/documents-codekit.js:778 |
-| `docAssistModelOff` | frontend/js/documents-codekit.js:727 |
-| `docAssistPropose` | frontend/js/documents-codekit.js:886 |
-| `docAssistRouteTool` | frontend/js/documents-codekit.js:815 |
-| `docAssistSay` | frontend/js/documents-codekit.js:793 |
-| `docAssistShow` | frontend/js/documents-codekit.js:862 |
-| `docAssistSyncScope` | frontend/js/documents-codekit.js:740 |
-| `docAssistTarget` | frontend/js/documents-codekit.js:731 |
-| `docAssistTool` | frontend/js/documents-codekit.js:942 |
-| `docCodeSideClose` | frontend/js/documents-codekit.js:82 |
-| `docCodeSideKey` | frontend/js/documents-codekit.js:22 |
-| `docCodeSideOpen` | frontend/js/documents-codekit.js:29 |
-| `docCodeSideSheet` | frontend/js/documents-codekit.js:59 |
-| `docCodeSideToggle` | frontend/js/documents-codekit.js:94 |
-| `docKitBin` | frontend/js/documents-codekit.js:659 |
-| `docKitBuiltins` | frontend/js/documents-codekit.js:257 |
-| `docKitCurrent` | frontend/js/documents-codekit.js:285 |
-| `docKitEntries` | frontend/js/documents-codekit.js:330 |
-| `docKitFetch` | frontend/js/documents-codekit.js:345 |
-| `docKitLanguageName` | frontend/js/documents-codekit.js:251 |
-| `docKitMatches` | frontend/js/documents-codekit.js:340 |
-| `docKitNoun` | frontend/js/documents-codekit.js:290 |
-| `docKitSplitName` | frontend/js/documents-codekit.js:617 |
-| `docKitSyncLabels` | frontend/js/documents-codekit.js:294 |
-| `docNeedsDocument` | frontend/js/documents-codekit.js:456 |
-| `docSectionFill` | frontend/js/documents-codekit.js:326 |
-| `docSectionPad` | frontend/js/documents-codekit.js:319 |
-| `docSnippetDelete` | frontend/js/documents-codekit.js:665 |
-| `docSnippetDragEnd` | frontend/js/documents-codekit.js:539 |
-| `docSnippetDragFrame` | frontend/js/documents-codekit.js:549 |
-| `docSnippetDragStart` | frontend/js/documents-codekit.js:529 |
-| `docSnippetInsert` | frontend/js/documents-codekit.js:464 |
-| `docSnippetKeys` | frontend/js/documents-codekit.js:691 |
-| `docSnippetMoreRow` | frontend/js/documents-codekit.js:403 |
-| `docSnippetPlain` | frontend/js/documents-codekit.js:525 |
-| `docSnippetRename` | frontend/js/documents-codekit.js:675 |
-| `docSnippetRow` | frontend/js/documents-codekit.js:418 |
-| `docSnippetSave` | frontend/js/documents-codekit.js:629 |
-| `docSnippetScrollSpeed` | frontend/js/documents-codekit.js:517 |
-| `docSnippetsRender` | frontend/js/documents-codekit.js:362 |
-| `docSnippetsShow` | frontend/js/documents-codekit.js:357 |
+| `docAssistAnswerArea` | frontend/js/documents-codekit.js:767 |
+| `docAssistApply` | frontend/js/documents-codekit.js:919 |
+| `docAssistAsk` | frontend/js/documents-codekit.js:827 |
+| `docAssistCaretTo` | frontend/js/documents-codekit.js:963 |
+| `docAssistClearHint` | frontend/js/documents-codekit.js:787 |
+| `docAssistDiagnostic` | frontend/js/documents-codekit.js:753 |
+| `docAssistEmptyAsk` | frontend/js/documents-codekit.js:779 |
+| `docAssistModelOff` | frontend/js/documents-codekit.js:728 |
+| `docAssistPropose` | frontend/js/documents-codekit.js:887 |
+| `docAssistRouteTool` | frontend/js/documents-codekit.js:816 |
+| `docAssistSay` | frontend/js/documents-codekit.js:794 |
+| `docAssistShow` | frontend/js/documents-codekit.js:863 |
+| `docAssistSyncScope` | frontend/js/documents-codekit.js:741 |
+| `docAssistTarget` | frontend/js/documents-codekit.js:732 |
+| `docAssistTool` | frontend/js/documents-codekit.js:943 |
+| `docCodeSideClose` | frontend/js/documents-codekit.js:83 |
+| `docCodeSideKey` | frontend/js/documents-codekit.js:23 |
+| `docCodeSideOpen` | frontend/js/documents-codekit.js:30 |
+| `docCodeSideSheet` | frontend/js/documents-codekit.js:60 |
+| `docCodeSideToggle` | frontend/js/documents-codekit.js:95 |
+| `docKitBin` | frontend/js/documents-codekit.js:660 |
+| `docKitBuiltins` | frontend/js/documents-codekit.js:258 |
+| `docKitCurrent` | frontend/js/documents-codekit.js:286 |
+| `docKitEntries` | frontend/js/documents-codekit.js:331 |
+| `docKitFetch` | frontend/js/documents-codekit.js:346 |
+| `docKitLanguageName` | frontend/js/documents-codekit.js:252 |
+| `docKitMatches` | frontend/js/documents-codekit.js:341 |
+| `docKitNoun` | frontend/js/documents-codekit.js:291 |
+| `docKitSplitName` | frontend/js/documents-codekit.js:618 |
+| `docKitSyncLabels` | frontend/js/documents-codekit.js:295 |
+| `docNeedsDocument` | frontend/js/documents-codekit.js:457 |
+| `docSectionFill` | frontend/js/documents-codekit.js:327 |
+| `docSectionPad` | frontend/js/documents-codekit.js:320 |
+| `docSnippetDelete` | frontend/js/documents-codekit.js:666 |
+| `docSnippetDragEnd` | frontend/js/documents-codekit.js:540 |
+| `docSnippetDragFrame` | frontend/js/documents-codekit.js:550 |
+| `docSnippetDragStart` | frontend/js/documents-codekit.js:530 |
+| `docSnippetInsert` | frontend/js/documents-codekit.js:465 |
+| `docSnippetKeys` | frontend/js/documents-codekit.js:692 |
+| `docSnippetMoreRow` | frontend/js/documents-codekit.js:404 |
+| `docSnippetPlain` | frontend/js/documents-codekit.js:526 |
+| `docSnippetRename` | frontend/js/documents-codekit.js:676 |
+| `docSnippetRow` | frontend/js/documents-codekit.js:419 |
+| `docSnippetSave` | frontend/js/documents-codekit.js:630 |
+| `docSnippetScrollSpeed` | frontend/js/documents-codekit.js:518 |
+| `docSnippetsRender` | frontend/js/documents-codekit.js:363 |
+| `docSnippetsShow` | frontend/js/documents-codekit.js:358 |
 
 ### frontend/js/documents-columns.js (4)
 
@@ -13529,7 +13529,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10189)
+## Backend modules (10196)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -17841,79 +17841,81 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `count` | src/tessellate/ai/notebook_filters.py:177 |
 | `read` | src/tessellate/ai/notebook_filters.py:83 |
 
-### src/tessellate/ai/notebook_stats.py (69)
+### src/tessellate/ai/notebook_stats.py (71)
 
 | Name | File:line |
 |---|---|
 | `StatAnswer` | src/tessellate/ai/notebook_stats.py:56 |
 | `_asks` | src/tessellate/ai/notebook_stats.py:227 |
-| `_board_count` | src/tessellate/ai/notebook_stats.py:583 |
-| `_busiest` | src/tessellate/ai/notebook_stats.py:664 |
-| `_category_count` | src/tessellate/ai/notebook_stats.py:459 |
-| `_common_words` | src/tessellate/ai/notebook_stats.py:985 |
+| `_board_count` | src/tessellate/ai/notebook_stats.py:591 |
+| `_busiest` | src/tessellate/ai/notebook_stats.py:672 |
+| `_category_count` | src/tessellate/ai/notebook_stats.py:467 |
+| `_common_words` | src/tessellate/ai/notebook_stats.py:993 |
 | `_counted` | src/tessellate/ai/notebook_stats.py:317 |
-| `_coverage` | src/tessellate/ai/notebook_stats.py:1006 |
+| `_coverage` | src/tessellate/ai/notebook_stats.py:1014 |
 | `_coverage_as_of` | src/tessellate/ai/notebook_stats.py:269 |
-| `_coverage_parts` | src/tessellate/ai/notebook_stats.py:993 |
+| `_coverage_parts` | src/tessellate/ai/notebook_stats.py:1001 |
 | `_despell` | src/tessellate/ai/notebook_stats.py:178 |
-| `_document_count` | src/tessellate/ai/notebook_stats.py:597 |
-| `_duplicates` | src/tessellate/ai/notebook_stats.py:813 |
-| `_empty` | src/tessellate/ai/notebook_stats.py:799 |
-| `_general_stats` | src/tessellate/ai/notebook_stats.py:1037 |
-| `_growth_keys` | src/tessellate/ai/notebook_stats.py:1128 |
-| `_has_title` | src/tessellate/ai/notebook_stats.py:772 |
-| `_held_word` | src/tessellate/ai/notebook_stats.py:552 |
-| `_left_out` | src/tessellate/ai/notebook_stats.py:1139 |
-| `_longest_notes` | src/tessellate/ai/notebook_stats.py:828 |
-| `_mention_count` | src/tessellate/ai/notebook_stats.py:522 |
-| `_mention_of` | src/tessellate/ai/notebook_stats.py:566 |
-| `_month_keys` | src/tessellate/ai/notebook_stats.py:1113 |
-| `_most_linked` | src/tessellate/ai/notebook_stats.py:606 |
-| `_named_count` | src/tessellate/ai/notebook_stats.py:486 |
-| `_names_a_thing` | src/tessellate/ai/notebook_stats.py:1401 |
+| `_document_count` | src/tessellate/ai/notebook_stats.py:605 |
+| `_duplicates` | src/tessellate/ai/notebook_stats.py:821 |
+| `_empty` | src/tessellate/ai/notebook_stats.py:807 |
+| `_general_stats` | src/tessellate/ai/notebook_stats.py:1045 |
+| `_growth_keys` | src/tessellate/ai/notebook_stats.py:1136 |
+| `_has_title` | src/tessellate/ai/notebook_stats.py:780 |
+| `_held_word` | src/tessellate/ai/notebook_stats.py:560 |
+| `_left_out` | src/tessellate/ai/notebook_stats.py:1147 |
+| `_longest_notes` | src/tessellate/ai/notebook_stats.py:836 |
+| `_mention_count` | src/tessellate/ai/notebook_stats.py:530 |
+| `_mention_of` | src/tessellate/ai/notebook_stats.py:574 |
+| `_month_keys` | src/tessellate/ai/notebook_stats.py:1121 |
+| `_most_linked` | src/tessellate/ai/notebook_stats.py:614 |
+| `_named_count` | src/tessellate/ai/notebook_stats.py:494 |
+| `_names_a_thing` | src/tessellate/ai/notebook_stats.py:1409 |
 | `_narrowed_count` | src/tessellate/ai/notebook_stats.py:336 |
 | `_no_repeats` | src/tessellate/ai/notebook_stats.py:370 |
-| `_note_count` | src/tessellate/ai/notebook_stats.py:574 |
-| `_note_pass` | src/tessellate/ai/notebook_stats.py:1178 |
-| `_notebook_block` | src/tessellate/ai/notebook_stats.py:1199 |
-| `_notes_fingerprint` | src/tessellate/ai/notebook_stats.py:1162 |
-| `_notes_per_category` | src/tessellate/ai/notebook_stats.py:468 |
-| `_orphans` | src/tessellate/ai/notebook_stats.py:640 |
+| `_note_count` | src/tessellate/ai/notebook_stats.py:582 |
+| `_note_pass` | src/tessellate/ai/notebook_stats.py:1186 |
+| `_notebook_block` | src/tessellate/ai/notebook_stats.py:1207 |
+| `_notes_fingerprint` | src/tessellate/ai/notebook_stats.py:1170 |
+| `_notes_per_category` | src/tessellate/ai/notebook_stats.py:476 |
+| `_orphans` | src/tessellate/ai/notebook_stats.py:648 |
 | `_plural` | src/tessellate/ai/notebook_stats.py:95 |
-| `_recent_count` | src/tessellate/ai/notebook_stats.py:721 |
-| `_reminder_block` | src/tessellate/ai/notebook_stats.py:1237 |
-| `_same_text` | src/tessellate/ai/notebook_stats.py:809 |
-| `_shortest_notes` | src/tessellate/ai/notebook_stats.py:860 |
-| `_span_words` | src/tessellate/ai/notebook_stats.py:1087 |
-| `_stale_notes` | src/tessellate/ai/notebook_stats.py:892 |
-| `_tag_count` | src/tessellate/ai/notebook_stats.py:449 |
-| `_tag_pairs` | src/tessellate/ai/notebook_stats.py:932 |
+| `_recent_count` | src/tessellate/ai/notebook_stats.py:729 |
+| `_reminder_block` | src/tessellate/ai/notebook_stats.py:1245 |
+| `_same_text` | src/tessellate/ai/notebook_stats.py:817 |
+| `_shortest_notes` | src/tessellate/ai/notebook_stats.py:868 |
+| `_span_words` | src/tessellate/ai/notebook_stats.py:1095 |
+| `_stale_notes` | src/tessellate/ai/notebook_stats.py:900 |
+| `_tag_count` | src/tessellate/ai/notebook_stats.py:457 |
+| `_tag_pairs` | src/tessellate/ai/notebook_stats.py:940 |
+| `_tag_subjects` | src/tessellate/ai/notebook_stats.py:377 |
 | `_tags_of` | src/tessellate/ai/notebook_stats.py:87 |
-| `_title_only` | src/tessellate/ai/notebook_stats.py:793 |
-| `_top_categories` | src/tessellate/ai/notebook_stats.py:415 |
-| `_top_subjects` | src/tessellate/ai/notebook_stats.py:377 |
-| `_top_tags` | src/tessellate/ai/notebook_stats.py:400 |
+| `_title_only` | src/tessellate/ai/notebook_stats.py:801 |
+| `_top_categories` | src/tessellate/ai/notebook_stats.py:423 |
+| `_top_subjects` | src/tessellate/ai/notebook_stats.py:397 |
+| `_top_tags` | src/tessellate/ai/notebook_stats.py:408 |
 | `_transposition_of` | src/tessellate/ai/notebook_stats.py:160 |
-| `_untagged` | src/tessellate/ai/notebook_stats.py:433 |
-| `_untitled` | src/tessellate/ai/notebook_stats.py:782 |
+| `_untagged` | src/tessellate/ai/notebook_stats.py:441 |
+| `_untitled` | src/tessellate/ai/notebook_stats.py:790 |
 | `_visible` | src/tessellate/ai/notebook_stats.py:72 |
-| `_week_counts` | src/tessellate/ai/notebook_stats.py:1297 |
-| `_week_daily` | src/tessellate/ai/notebook_stats.py:1315 |
+| `_week_counts` | src/tessellate/ai/notebook_stats.py:1305 |
+| `_week_daily` | src/tessellate/ai/notebook_stats.py:1323 |
 | `_whole_notebook` | src/tessellate/ai/notebook_stats.py:347 |
-| `_window` | src/tessellate/ai/notebook_stats.py:702 |
-| `_window_words` | src/tessellate/ai/notebook_stats.py:684 |
-| `_word_count` | src/tessellate/ai/notebook_stats.py:750 |
-| `_words` | src/tessellate/ai/notebook_stats.py:1109 |
-| `_words_added_by_edits` | src/tessellate/ai/notebook_stats.py:1259 |
+| `_window` | src/tessellate/ai/notebook_stats.py:710 |
+| `_window_words` | src/tessellate/ai/notebook_stats.py:692 |
+| `_word_count` | src/tessellate/ai/notebook_stats.py:758 |
+| `_word_subjects` | src/tessellate/ai/notebook_stats.py:386 |
+| `_words` | src/tessellate/ai/notebook_stats.py:1117 |
+| `_words_added_by_edits` | src/tessellate/ai/notebook_stats.py:1267 |
 | `answer` | src/tessellate/ai/notebook_stats.py:281 |
 | `answer_chat` | src/tessellate/ai/notebook_stats.py:261 |
 | `by_order` | src/tessellate/ai/notebook_stats.py:252 |
-| `categories_in_use` | src/tessellate/ai/notebook_stats.py:1032 |
+| `categories_in_use` | src/tessellate/ai/notebook_stats.py:1040 |
 | `looks_like_a_question_about_the_notebook` | src/tessellate/ai/notebook_stats.py:231 |
-| `page` | src/tessellate/ai/notebook_stats.py:1355 |
+| `page` | src/tessellate/ai/notebook_stats.py:1363 |
 | `stats_is_subject` | src/tessellate/ai/notebook_stats.py:223 |
-| `week_review` | src/tessellate/ai/notebook_stats.py:1341 |
-| `week_start` | src/tessellate/ai/notebook_stats.py:1252 |
+| `week_review` | src/tessellate/ai/notebook_stats.py:1349 |
+| `week_start` | src/tessellate/ai/notebook_stats.py:1260 |
 
 ### src/tessellate/ai/notebook_tasks.py (6)
 
@@ -23660,11 +23662,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_when` | src/tessellate/core/ics_import.py:93 |
 | `read` | src/tessellate/core/ics_import.py:179 |
 
-### src/tessellate/core/imagesize.py (2)
+### src/tessellate/core/imagesize.py (4)
 
 | Name | File:line |
 |---|---|
-| `_size` | src/tessellate/core/imagesize.py:30 |
+| `_jpeg_size` | src/tessellate/core/imagesize.py:43 |
+| `_size` | src/tessellate/core/imagesize.py:60 |
+| `_webp_size` | src/tessellate/core/imagesize.py:30 |
 | `image_size` | src/tessellate/core/imagesize.py:17 |
 
 ### src/tessellate/core/instance_lock.py (22)
@@ -24127,17 +24131,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `read_macos` | src/tessellate/core/netid.py:234 |
 | `read_windows` | src/tessellate/core/netid.py:323 |
 
-### src/tessellate/core/ocr.py (42)
+### src/tessellate/core/ocr.py (44)
 
 | Name | File:line |
 |---|---|
 | `_adopt_tesseract` | src/tessellate/core/ocr.py:136 |
 | `_extra_size` | src/tessellate/core/ocr.py:623 |
 | `_image_size` | src/tessellate/core/ocr.py:470 |
+| `_is_title_line` | src/tessellate/core/ocr.py:1026 |
 | `_language_kwargs` | src/tessellate/core/ocr.py:327 |
 | `_line_words` | src/tessellate/core/ocr.py:947 |
 | `_log_binary_missing` | src/tessellate/core/ocr.py:659 |
 | `_log_package_missing` | src/tessellate/core/ocr.py:673 |
+| `_mostly_bullets` | src/tessellate/core/ocr.py:1018 |
 | `_one_thread_for_tesseract` | src/tessellate/core/ocr.py:644 |
 | `_prepared` | src/tessellate/core/ocr.py:729 |
 | `_probe_windows_tesseract` | src/tessellate/core/ocr.py:107 |
@@ -24147,19 +24153,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_rapidocr_text` | src/tessellate/core/ocr.py:465 |
 | `_read_string` | src/tessellate/core/ocr.py:739 |
 | `_read_with_fallbacks` | src/tessellate/core/ocr.py:747 |
-| `_reading_block_kind` | src/tessellate/core/ocr.py:1018 |
+| `_reading_block_kind` | src/tessellate/core/ocr.py:1034 |
 | `_region_data` | src/tessellate/core/ocr.py:799 |
 | `_registry_tesseract_dir` | src/tessellate/core/ocr.py:75 |
 | `_word_box` | src/tessellate/core/ocr.py:934 |
-| `attempt_binary_install` | src/tessellate/core/ocr.py:1152 |
+| `attempt_binary_install` | src/tessellate/core/ocr.py:1158 |
 | `clear_language_cache` | src/tessellate/core/ocr.py:251 |
 | `effective_language` | src/tessellate/core/ocr.py:314 |
 | `engine` | src/tessellate/core/ocr.py:381 |
 | `engine_name` | src/tessellate/core/ocr.py:399 |
 | `engine_status` | src/tessellate/core/ocr.py:564 |
 | `extra_size` | src/tessellate/core/ocr.py:615 |
-| `extract_and_store` | src/tessellate/core/ocr.py:1056 |
-| `extract_in_background` | src/tessellate/core/ocr.py:1110 |
+| `extract_and_store` | src/tessellate/core/ocr.py:1062 |
+| `extract_in_background` | src/tessellate/core/ocr.py:1116 |
 | `extract_region_text` | src/tessellate/core/ocr.py:761 |
 | `extract_regions` | src/tessellate/core/ocr.py:816 |
 | `extract_text` | src/tessellate/core/ocr.py:682 |
@@ -25072,22 +25078,22 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `ClipRefused` | src/tessellate/core/webclip.py:57 |
-| `_Markdown` | src/tessellate/core/webclip.py:326 |
+| `_Markdown` | src/tessellate/core/webclip.py:330 |
 | `_Node` | src/tessellate/core/webclip.py:182 |
 | `_Tree` | src/tessellate/core/webclip.py:192 |
-| `_descendants` | src/tessellate/core/webclip.py:429 |
+| `_descendants` | src/tessellate/core/webclip.py:432 |
 | `_link_text` | src/tessellate/core/webclip.py:260 |
 | `_main` | src/tessellate/core/webclip.py:282 |
 | `_new_session` | src/tessellate/core/webclip.py:68 |
-| `_read` | src/tessellate/core/webclip.py:438 |
+| `_read` | src/tessellate/core/webclip.py:441 |
 | `_safe_href` | src/tessellate/core/webclip.py:311 |
 | `_score` | src/tessellate/core/webclip.py:268 |
 | `_score_deep` | src/tessellate/core/webclip.py:307 |
 | `_text` | src/tessellate/core/webclip.py:254 |
 | `clean_url` | src/tessellate/core/webclip.py:78 |
-| `extract` | src/tessellate/core/webclip.py:451 |
+| `extract` | src/tessellate/core/webclip.py:454 |
 | `fetch_page` | src/tessellate/core/webclip.py:83 |
-| `note_content` | src/tessellate/core/webclip.py:478 |
+| `note_content` | src/tessellate/core/webclip.py:481 |
 
 ### src/tessellate/core/window_hook.py (4)
 
@@ -25724,20 +25730,21 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_written_date` | src/tessellate/entry/timewords.py:107 |
 | `find` | src/tessellate/entry/timewords.py:308 |
 
-### src/tessellate/entry/topics.py (10)
+### src/tessellate/entry/topics.py (11)
 
 | Name | File:line |
 |---|---|
-| `_display` | src/tessellate/entry/topics.py:78 |
-| `_fallback_name` | src/tessellate/entry/topics.py:150 |
-| `_score_terms` | src/tessellate/entry/topics.py:82 |
-| `apply_names` | src/tessellate/entry/topics.py:216 |
-| `build` | src/tessellate/entry/topics.py:103 |
-| `detect` | src/tessellate/entry/topics.py:48 |
-| `extractive_sentence` | src/tessellate/entry/topics.py:176 |
-| `overlap` | src/tessellate/entry/topics.py:212 |
-| `store_name` | src/tessellate/entry/topics.py:239 |
-| `terms_sentence` | src/tessellate/entry/topics.py:166 |
+| `_display` | src/tessellate/entry/topics.py:83 |
+| `_fallback_name` | src/tessellate/entry/topics.py:155 |
+| `_score_terms` | src/tessellate/entry/topics.py:87 |
+| `_weights` | src/tessellate/entry/topics.py:48 |
+| `apply_names` | src/tessellate/entry/topics.py:221 |
+| `build` | src/tessellate/entry/topics.py:108 |
+| `detect` | src/tessellate/entry/topics.py:60 |
+| `extractive_sentence` | src/tessellate/entry/topics.py:181 |
+| `overlap` | src/tessellate/entry/topics.py:217 |
+| `store_name` | src/tessellate/entry/topics.py:244 |
+| `terms_sentence` | src/tessellate/entry/topics.py:171 |
 
 ### src/tessellate/mcp_server.py (27)
 
@@ -26412,7 +26419,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20579)
+## Tests (20577)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26934,7 +26941,6 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_plan_e20.py | 4 |
 | tests/test_composer_plan_spread_z57.py | 2 |
 | tests/test_composer_polish.py | 8 |
-| tests/test_composer_pool_count_1111.py | 2 |
 | tests/test_composer_praise_1561.py | 3 |
 | tests/test_composer_quantity_1030.py | 18 |
 | tests/test_composer_queue_b3.py | 5 |
