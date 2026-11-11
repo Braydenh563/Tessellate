@@ -527,7 +527,7 @@ function docLivePlugin(CM) {
     toDOM(view) {
       const host = document.createElement("span");
       host.className = this.display ? "cm-md-math cm-md-math-block" : "cm-md-math";
-      if (/\\(?:label|eqref|ref)\{/.test(this.tex)) docMathRender.labels.use(docMathRender.labels.index(view.state.doc.toString()));
+      if (/\\(?:label|eqref|ref)\{/.test(this.tex)) docMathRender.labels.use(docMathRender.labels.index(docStr(view.state.doc)));
       try {
         //: An empty `{}` is a box left to fill (the field's dotted box), so
         //: it is drawn as one here: a fraction with nothing under it is a

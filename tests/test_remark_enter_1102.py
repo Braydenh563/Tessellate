@@ -18,7 +18,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 COMMENTS = (ROOT / "frontend" / "js" / "documents-comments.js").read_text(encoding="utf-8")
-DOCUMENTS = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+DOCUMENTS = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8") + (ROOT / "frontend" / "js" / "documents-view.js").read_text(encoding="utf-8")
 
 pytestmark = pytest.mark.skipif(shutil.which("node") is None, reason="node is not available")
 
