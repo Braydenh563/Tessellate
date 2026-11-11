@@ -330,8 +330,10 @@
     const surface = docSurface();
     if (!surface) return;
     const text = surface.text;
-    const marker = `\n[^${id}]:`;
-    let at = text.startsWith(`[^${id}]:`) ? 0 : text.indexOf(marker);
+    //: A citation's definition (`[@id]:`) is found the same way.
+    const sigil = text.includes(`[^${id}]:`) ? "^" : "@";
+    const marker = `\n[${sigil}${id}]:`;
+    let at = text.startsWith(`[${sigil}${id}]:`) ? 0 : text.indexOf(marker);
     if (at > 0) at += 1;
     if (at < 0) {
       toast(`Footnote ${id} has no text yet`);

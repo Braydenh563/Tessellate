@@ -761,6 +761,7 @@
           height: "0.5em",
         },
         ".cm-md-fence-open": {
+          position: "relative",
           borderTopLeftRadius: "var(--radius-sm, 6px)",
           borderTopRightRadius: "var(--radius-sm, 6px)",
         },
@@ -768,23 +769,27 @@
           borderBottomLeftRadius: "var(--radius-sm, 6px)",
           borderBottomRightRadius: "var(--radius-sm, 6px)",
         },
-        //: The block's language, in the corner rather than on a line of its
-        //: own: it is a label for the block, the same relationship
-        //: `.cm-md-callout-label` has to a callout, and the whole point of this
-        //: change is that the block stops spending rows on things that are not
-        //: code. `user-select: none` and `pointer-events: none` so a drag
-        //: across the block selects the code and not the word "python".
-        ".cm-md-fence-open[data-lang]::after": {
-          content: "attr(data-lang)",
+        //: The block's title or language, in the corner rather than on a line
+        //: of its own: a label for the block, the same relationship
+        //: `.cm-md-callout-label` has to a callout, and the block stops
+        //: spending rows on things that are not code. A button (a widget
+        //: `DocFenceLabelWidget`) that lists the language names; absolute, so
+        //: it takes no row.
+        ".cm-md-fence-label": {
           position: "absolute",
           right: "0.6em",
           top: "0",
           fontSize: "0.7em",
           lineHeight: "1.6",
           color: "var(--muted)",
+          background: "none",
+          border: "none",
+          padding: "0 0.4em",
+          minHeight: "0",
+          cursor: "pointer",
           userSelect: "none",
-          pointerEvents: "none",
         },
+        ".cm-md-fence-label:hover, .cm-md-fence-label:focus-visible": { color: "var(--ink)" },
         //: A rule whose own `---` is hidden is an empty line, and an empty line
         //: with a bottom border is a hairline sitting on the baseline of nothing.
         //: The height is what makes it read as a divider between two blocks
@@ -874,6 +879,8 @@
         ".cm-md-embed .doc-embed-map": { display: "block", width: "min(320px, 100%)" },
         ".cm-md-embed .att-card": { width: "min(360px, 100%)" },
         ".cm-md-math": { cursor: "text" },
+        //: The lines under a multi-line formula's drawn first line.
+        ".cm-md-math-fold": { display: "none" },
         ".cm-md-math-block": { display: "block", textAlign: "center", margin: "0.2em 0" },
         ".cm-md-footnote": {
           verticalAlign: "super",
