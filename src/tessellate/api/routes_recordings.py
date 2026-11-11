@@ -367,17 +367,26 @@ def _transcribe_in_background(
             else:
                 _keep_segments(recording_id, kept, workspace)
     except RuntimeError as exc:
+        logger.warning("background transcription failed: %s", exc)
         state, error = "failed", str(exc)
     except Exception:  # noqa: BLE001  # a bad clip is a row that says so, never a dead thread
         logger.warning("background transcription failed", exc_info=True)
         state, error = "failed", "Couldn't transcribe that recording. Try recording it again."
     finally:
         words = sum(len(seg["text"].split()) for seg in kept) if state == "done" else 0
-        if job.run is not None and state == "failed":
-            job.run.fail(error)
+        _record_failure(job, state, error)
         job.result = {"done": f"{words} words", "stopped": "stopped", "failed": error}[state]
         activity.finish(job)
         recordings.end_transcription(recording_id, state, error, words)
+
+
+def _record_failure(job: activity.Job, state: str, error: str) -> None:
+    """The run's last-run line for a background job that ended "failed".
+    `error` is always one of this module's own sentences (a RuntimeError
+    raised here, or a fixed line for anything else, whose exception is logged
+    where it is caught), never an exception's text."""
+    if job.run is not None and state == "failed":
+        job.run.fail(error)
 
 
 def _voice_labelled(kept: list[dict], path: Path, job: activity.Job) -> list[dict]:
@@ -508,13 +517,13 @@ def _label_in_background(recording_id: int, path: Path, workspace: str | None, j
         finally:
             session.close()
     except RuntimeError as exc:
+        logger.warning("telling the voices apart failed: %s", exc)
         state, error = "failed", str(exc)
     except Exception:  # noqa: BLE001  # a bad clip or a model that will not load is a row that says so
         logger.warning("telling the voices apart failed", exc_info=True)
         state, error = "failed", "Couldn't tell the voices apart. See Settings, Logs for why."
     finally:
-        if job.run is not None and state == "failed":
-            job.run.fail(error)
+        _record_failure(job, state, error)
         job.result = {"done": f"{count} speakers", "failed": error}[state]
         activity.finish(job)
         recordings.end_transcription(recording_id, state, error, speakers=count)

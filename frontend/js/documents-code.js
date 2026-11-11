@@ -2948,7 +2948,10 @@ async function docRunSyncAvailability(type) {
   else card?.querySelector(':scope > .extra-notice[data-extra="pyodide"]')?.remove();
   run.disabled = !ready;
   run.title = ready ? (type.ext === "csv" ? "Show this file as a table (Ctrl+Shift+Enter)" : "Run this file in a sandbox and show its output (Ctrl+Shift+Enter)") : "Running Python needs the Python package: install it in Settings, Packages";
-  why.classList.toggle("hidden", ready || !docRunnable(type));
+  const showWhy = !ready && docRunnable(type);
+  why.classList.toggle("hidden", !showWhy);
+  //: A class the dock wears while the line shows, so its CSS needs no `:has()`.
+  why.closest(".doc-dock")?.classList.toggle("doc-run-why", showWhy);
 }
 
 //: Settings, Packages, with the Python row in view and its button focused.
