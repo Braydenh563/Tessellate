@@ -53,7 +53,8 @@ def test_a_move_lifts_the_ride_clip_and_landing_puts_it_back():
 def test_every_move_and_every_entrance_is_drawn_aloft():
     move = _body("nameMarkBuddyMoveTo")
     go = move.index("nameMarkBuddyGo(buddy, dx, dy, spot, poseChanged, was, underway);")
-    assert "nameMarkBuddyAloft()" in move[go:], "a move re-glues to the destination's band before it plays"
+    # INBOX 1111: the call now says whether the bars cut it (`nameMarkBuddyAloft(cut)`); every move is still drawn aloft.
+    assert "nameMarkBuddyAloft(" in move[go:], "a move re-glues to the destination's band before it plays"
     # `nameMarkBuddyArrive` became `nameMarkBuddyAppear` (INBOX 1673): the boot way or its own mind's walk-in, both drawn aloft.
     arrive = _body("nameMarkBuddyAppear")
     assert re.search(r"nmb\.enteredBy = walk \? nameMarkBuddyWalkEnter\(buddy, spot\) : nameMarkBuddyEnter\(buddy, spot\);\s*nameMarkBuddyAloft\(\);", arrive)
