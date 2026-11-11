@@ -289,6 +289,12 @@ def _figure_unsettled(data: dict[str, Any] | None) -> bool:
     return figure.get("atlas") is True and data.get("who") != "persona"
 
 
+def _look_label(look: Any) -> str:
+    """What a look is called in the log: a drawn companion is named by its capture key (a stored identifier, and
+    code scanning reads a value called a key as a secret), so the log says which kind it is, never the key."""
+    return "a drawn companion" if capture.is_key(look) else "an Atlas look"
+
+
 def _look_in_force(data: dict[str, Any], look: str) -> tuple[str, tuple[bool, str] | None]:
     """The look and motion an answer stands for. A locked app window has not
     read its prefs and answers the default look (INBOX 1670), so the last
@@ -1175,7 +1181,7 @@ class DeskCompanion:
         if data is not None and isinstance(data.get("size"), (int, float)) and not isinstance(data.get("size"), bool) and self._size_unsent is None and self._now() >= self._size_held:
             self.size_pref = sizing.clamp(data["size"])
         if data is None:
-            logger.info("desk companion: the app window gave no look, keeping %s", self.look)
+            logger.info("desk companion: the app window gave no look, keeping %s", _look_label(self.look))
         else:
             look, motion = _look_in_force(data, look)
             self._explain_figure(data)
@@ -1324,7 +1330,7 @@ class DeskCompanion:
         self.runner = runner
         logger.info(
             "desk companion: overlay started, look=%s, motion=%s (%s)",
-            look, "unknown, the system flag decides" if motion is None else "still" if motion[0] else "moving", motion[1] if motion else "",
+            _look_label(look), "unknown, the system flag decides" if motion is None else "still" if motion[0] else "moving", motion[1] if motion else "",
         )
         return True
 
