@@ -1870,8 +1870,14 @@ header#top-bar[data-scrolled="1"],
   }
 }
 .reminder-compose-card > #reminder-compose {
-  margin: 0;
-  padding: 0;
+  /* It scrolls (`overflow-y: auto` below, so `overflow-x` clips too): the
+     fields' 2px ring and its 2px gap need the ring-room doctrine's room, or
+     the first and last column lose 4px of ring (measured at 768: Reminder
+     text cut 4px each side, the Add button 4px on the left). The room is
+     padding, pulled back out by the same negative margin, so the form does
+     not move. */
+  margin: calc(-1 * var(--ring-room));
+  padding: var(--ring-room);
   border: 0;
   background: none;
   box-shadow: none;
@@ -2983,4 +2989,30 @@ header#top-bar[data-scrolled="1"],
   overflow-y: auto;
   overscroll-behavior: contain;
   padding-block: var(--ring-room);
+}
+/* 5. **The boards list's count title is two lines on a phone, not an
+       ellipsis.** "13 boards and maps" is 170px and the actions beside it
+       (help, menu, New) leave 148px at 360, so the title read "13 board...".
+       Two lines of the heading are the 44px the buttons beside them already
+       take, so the dock does not grow; the title still ends in an ellipsis
+       past two lines. */
+@media (max-width: 599.98px) {
+  .dock[data-dock-name="library-boards"] .dock-identity > h2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    white-space: normal;
+  }
+}
+/* 6. **The last reminder can be scrolled clear of "New reminder".** The
+       floating button (`.dock-fab`, 07-whiteboard-misc.css) kept 8px of
+       page foot, a button is 44px and stands 20px above the tab bar, so at
+       the end of the list (360x740, scrolled to the bottom) it covered the
+       bottom 10px of the last card and its date. The foot is the button's
+       height and its offset, the same figure `scroll-padding-bottom` uses
+       there for a focused row. */
+@media (max-width: 599.98px) {
+  #tab-reminders:has(> .dock-fab) {
+    padding-bottom: calc(var(--target-min) + var(--space-5) + var(--space-3));
+  }
 }

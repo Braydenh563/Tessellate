@@ -44,3 +44,36 @@ def test_map_tab_of_the_board_sidebar_scrolls_inside_the_sheet():
     rule = body('.wb-side-section[data-side-panel="map"]')
     assert "overflow-y: auto" in rule
     assert "padding-block: var(--ring-room)" in rule
+
+
+def test_boards_list_count_title_gets_two_lines_on_a_phone():
+    phone = re.search(
+        r"@media \(max-width: 599\.98px\)\s*\{\s*\.dock\[data-dock-name=\"library-boards\"\] \.dock-identity > h2\s*\{([^}]*)\}",
+        CLEAN,
+    )
+    assert phone, "the boards list title rule is not in the phone media query"
+    assert "-webkit-line-clamp: 2" in phone.group(1) and "white-space: normal" in phone.group(1)
+
+
+def test_reminder_sheet_form_keeps_ring_room_inside_its_scroll_box():
+    whole = re.sub(r"/\*.*?\*/", "", CSS, flags=re.S)
+    rule = body(".reminder-compose-card > #reminder-compose", whole)
+    assert "padding: var(--ring-room)" in rule
+    assert "margin: calc(-1 * var(--ring-room))" in rule
+
+
+def test_outline_row_is_as_tall_as_its_pencil_in_every_band():
+    lazy = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    lazy = re.sub(r"/\*.*?\*/", "", lazy, flags=re.S)
+    rule = body("#wb-outline-tree .wb-outline-text", lazy)
+    assert "min-height: var(--target-min)" in rule
+    assert "min-height: 44px" not in lazy[lazy.index("#wb-outline-tree .wb-outline-edit") :]
+
+
+def test_last_reminder_scrolls_clear_of_the_floating_new_button():
+    rule = re.search(
+        r"@media \(max-width: 599\.98px\)\s*\{\s*#tab-reminders:has\(> \.dock-fab\)\s*\{([^}]*)\}",
+        CLEAN,
+    )
+    assert rule, "the Reminders page foot rule is not in the phone media query"
+    assert "padding-bottom: calc(var(--target-min) + var(--space-5) + var(--space-3))" in rule.group(1)
