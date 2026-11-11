@@ -4487,10 +4487,26 @@ body .chip.item-label,
   #reminder-groups li .entry-meta > .entry-actions > .menu-wrap {
     pointer-events: auto;
   }
+  /* `--target-min`, not the 28px it is at a desktop width: under 820 the ⋯
+     is 44px and a fixed 1.75rem left it 10px over the time (wrapzoom, 768). */
   #reminder-groups li .entry-meta > .entry-date {
-    margin-inline-end: calc(1.75rem + var(--space-2));
+    margin-inline-end: calc(var(--target-min) + var(--space-2));
+  }
+  /* **On hover the strip takes the time's place, not a slice of it**
+     (wrapzoom, every width: the strip is 222px and the time 250, so the
+     first 29px of "Wed," showed beside "+1h"; with a short time the strip
+     ran over the words instead). The time leaves the row and the strip
+     joins it, so the words end where the strip starts and ellipsise there.
+     The negative block margin keeps the row's height: the worded snoozes
+     are 4px taller than the line they sit in. */
+  #reminder-groups li:is(:hover, :focus-within) .entry-meta > .entry-date {
+    display: none;
   }
   #reminder-groups li:is(:hover, :focus-within) .entry-meta > .entry-actions {
+    position: static;
+    transform: none;
+    flex: 0 0 auto;
+    margin-block: calc(var(--space-1) * -1);
     /* Opaque, so the time under it does not show through: the row's own
        tint over the card it sits on. */
     background: linear-gradient(var(--surface-2), var(--surface-2)), var(--card);
