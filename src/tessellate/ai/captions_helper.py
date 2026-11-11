@@ -164,7 +164,7 @@ def _watch_stdin() -> None:
         while sys.stdin.read(4096):
             pass
     except (OSError, ValueError):
-        pass
+        pass  # a broken or closed stdin means the parent is gone: exit the same way
     os._exit(0)
 
 
