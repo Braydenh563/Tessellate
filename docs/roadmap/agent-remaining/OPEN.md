@@ -4412,7 +4412,7 @@ Format: id | file:line | one line | status.
 - A37 | audit-1030-ai:68 | The companion fades to opacity 0 behind the Settings dialog; on phone it sits at about (314,728) over the | open
 - ~~Z18 | audit-1031-extras:121 | Background art, when on, costs 0.203 s of script per 5 s (about 4 percent of one core) at 20 fps on this | open~~ fixed 405fbdcaf (12 fps after 30 s without a pointer; checked 2026-11-11)
 - ~~HR23 | audit-1031-harness:39 | Pane opens with long tasks at 390 | open~~ fixed (Logs row grid 62,573 to 5,090 px; Memory poof not reproduced; audit-1031-harness.md:98; checked 2026-11-11)
-- UX3 | audit-1031-ux:17 | 70 animations run while nothing happens | open
+- ~~UX3 | audit-1031-ux:17 | 70 animations run while nothing happens | open~~ fixed UX3HASH (loops pause after 20 s without input; 77 to 37 endless, task about 4.3 to 3.8 s per 10 s, noisy; checked 2026-11-11)
 - P8 | audit-1108-perf:45 | chat answer render path as cited; not re-measured | open
 - 1607b | owner-asks-audit-1108:13 | Masculine Atlas head size and shape against the feminine reference | open
 - B16 | owner-asks-audit-1108:16 | Masculine Atlas design pass (head, eyes, shoulder join, expressions) | open
