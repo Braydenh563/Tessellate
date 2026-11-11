@@ -35,6 +35,8 @@ from tessellate.core.database import Entry
 from tessellate.core import deps
 from tessellate.core.deps import get_session
 from tessellate.entry import manager, moving
+from tessellate.entry import manager_categories
+from tessellate.entry import manager_text
 from tessellate.repo import categories as categories_repo
 
 router = APIRouter(prefix="/categories", tags=["categories"])
@@ -144,7 +146,7 @@ def list_categories(
     session: Session = Depends(get_session),
 ) -> list[dict]:
     """Every category with its live note count, biggest first."""
-    rows = manager.all_categories(session)
+    rows = manager_categories.all_categories(session)
     response.headers["X-Total-Count"] = str(len(rows))
     return rows[:limit]
 
@@ -227,7 +229,7 @@ def _ai_groups(source, entries: list) -> list[dict] | None:
         return None
     shown = entries[:SPLIT_MAX_NOTES]
     lines = "\n".join(
-        f"{e.id}: {' '.join((manager.readable_content(e) or '').split())[:SPLIT_NOTE_CHARS]}" for e in shown
+        f"{e.id}: {' '.join((manager_text.readable_content(e) or '').split())[:SPLIT_NOTE_CHARS]}" for e in shown
     )
     try:
         reply = ollama.chat(
@@ -328,7 +330,7 @@ def rename_category(
 ) -> dict:
     """Rename a category. Renaming onto an existing one merges them."""
     try:
-        return manager.rename_category(session, category_id, body.name)
+        return manager_categories.rename_category(session, category_id, body.name)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -349,12 +351,12 @@ def delete_category(
             raise HTTPException(status_code=400, detail="A category cannot be moved into itself.")
         _same_space(category, target)
         try:
-            manager.rename_category(session, category.id, target.name)
+            manager_categories.rename_category(session, category.id, target.name)
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         return {"deleted": True, "name": name, "into": target.name, "moved": len(moved_ids), "moved_ids": moved_ids}
     try:
-        result = manager.delete_category(session, category_id)
+        result = manager_categories.delete_category(session, category_id)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     return {**result, "name": name, "into": None, "moved_ids": moved_ids}

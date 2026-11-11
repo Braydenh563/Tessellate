@@ -75,7 +75,7 @@ def test_a_list_over_the_total_cap_is_refused_with_a_clear_422(client):
 def test_a_fresh_database_lets_an_older_build_insert_a_document_without_threads(tmp_path):
     import sqlite3
 
-    from tessellate.core.database import DatabaseManager
+    from tessellate.core.database_manager import DatabaseManager
 
     path = tmp_path / "fresh.db"
     DatabaseManager(path).engine.dispose()

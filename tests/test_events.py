@@ -20,7 +20,7 @@ from datetime import timedelta
 
 from tessellate.core.database import AuditLog
 from tessellate.entry import manager
-from tessellate.entry import manager_purge
+from tessellate.entry import manager_categories, manager_links, manager_purge, manager_wiki
 
 WRITE_PREFIXES = (
     "create_", "update_", "soft_delete_", "restore_", "archive_", "unarchive_",
@@ -29,9 +29,9 @@ WRITE_PREFIXES = (
 
 
 def _manager_writes():
-    #: `manager_purge` holds the purge writes, moved out of manager.py whole (K24).
+    #: `manager_purge`, `manager_links`, `manager_wiki` and `manager_categories` hold writes moved out of manager.py whole (K24/BK11).
     return sorted(
-        name for module in (manager, manager_purge) for name, fn in inspect.getmembers(module, inspect.isfunction)
+        name for module in (manager, manager_purge, manager_links, manager_wiki, manager_categories) for name, fn in inspect.getmembers(module, inspect.isfunction)
         if name.startswith(WRITE_PREFIXES) and fn.__module__ == module.__name__
     )
 

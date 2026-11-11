@@ -133,7 +133,7 @@ def test_the_markdown_export_writes_one_block(client):
 
 
 def test_the_migration_adds_the_two_tables(tmp_path):
-    from tessellate.core.database import DatabaseManager, _ensure_alembic_baseline
+    from tessellate.core.database_manager import DatabaseManager, _ensure_alembic_baseline
 
     db_path = tmp_path / "kg4.db"
     DatabaseManager(db_path)

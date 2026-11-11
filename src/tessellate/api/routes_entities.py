@@ -24,7 +24,7 @@ from sqlalchemy.orm import Session
 from tessellate.ai.entities import MergeUndoError, merge_with_undo, undo_merge
 from tessellate.core.database import ENTITY_KINDS, Entity, EntityMention, Entry, EntryDate
 from tessellate.core.deps import get_session
-from tessellate.entry.manager import plain_label
+from tessellate.entry.manager_text import plain_label
 from tessellate.entry.mentions import sentence_around
 
 router = APIRouter(prefix="/entities", tags=["entities"])

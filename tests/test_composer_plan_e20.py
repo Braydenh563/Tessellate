@@ -12,7 +12,8 @@ from datetime import datetime
 
 import pytest
 
-from tessellate.ai import composer_plan, recognise
+from tessellate.ai import composer_plan
+from tessellate.ai import recognise_questions
 
 NOW = datetime(2026, 11, 2, 12, 0)
 
@@ -30,7 +31,7 @@ NOW = datetime(2026, 11, 2, 12, 0)
     ],
 )
 def test_a_measured_or_logged_weekday_is_a_day_gone(sentence, title):
-    assert recognise.logged_day(sentence, title), (sentence, title)
+    assert recognise_questions.logged_day(sentence, title), (sentence, title)
 
 
 @pytest.mark.parametrize(
@@ -48,7 +49,7 @@ def test_a_measured_or_logged_weekday_is_a_day_gone(sentence, title):
     ],
 )
 def test_a_planned_or_deadlined_weekday_stays_a_day_ahead(sentence, title):
-    assert not recognise.logged_day(sentence, title), (sentence, title)
+    assert not recognise_questions.logged_day(sentence, title), (sentence, title)
 
 
 def _days(content: str) -> list[str]:

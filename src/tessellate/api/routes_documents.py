@@ -47,16 +47,8 @@ from tessellate.entry.mentions import (
     backlink_rows as _backlink_rows,
     backlink_spans as _backlink_spans,
 )
-from tessellate.entry.manager import (
-    entries_for_document,
-    join_blocks,
-    readable_embeds,
-    strip_inline_markdown,
-    get_entry,
-    link_document,
-    log_action,
-    unlink_document,
-)
+from tessellate.entry.manager import entries_for_document, get_entry, link_document, log_action, unlink_document
+from tessellate.entry.manager_text import join_blocks, readable_embeds, strip_inline_markdown
 from tessellate.entry.properties import strip as strip_properties
 
 logger = logging.getLogger(__name__)
@@ -257,7 +249,7 @@ def _linked_notes(session: Session, document_id: int) -> list[dict]:
     usually about the same thing, asked for directly: "the documents and
     notes sections and features need to be more integrated together".
     """
-    from tessellate.entry.manager import readable_content
+    from tessellate.entry.manager_text import readable_content
 
     return [
         {
@@ -900,7 +892,7 @@ def detach_note(
 
 
 def _backlinks(session: Session, document: Document) -> dict:
-    from tessellate.entry.manager import plain_label
+    from tessellate.entry.manager_text import plain_label
 
     title = (document.title or "").strip()
     if not title:

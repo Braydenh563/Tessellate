@@ -15,6 +15,8 @@ from pathlib import Path
 import pytest
 
 from tessellate.ai import recognise as rec
+from tessellate.ai import recognise_units
+from tessellate.ai import recognise_reminders
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = json.loads((ROOT / "tests/fixtures/composer/recognise_1010.json").read_text(encoding="utf-8"))
@@ -120,14 +122,19 @@ def test_no_network_and_no_app_imports():
     # to the standard library with no I/O, so nothing reaches past the computer still.
     names = imported("src/tessellate/ai/recognise.py")
     # tessellate.ai.recognise_windows (2026-11-11, K24): the span-of-days half moved out whole; it follows the same rule.
-    assert names <= {"__future__", "re", "dataclasses", "datetime", "typing", "contextlib", "contextvars", "tessellate.core.lazyre", "tessellate.ai.recognise_windows"}, names
+    # The units, reminders and questions halves (2026-11-11, K24/BK11) moved out whole under the same rule: standard library, lazyre and the recogniser's own layers.
+    layers = {"tessellate.ai.recognise_windows", "tessellate.ai.recognise_units"}
+    assert names <= {"__future__", "re", "dataclasses", "datetime", "typing", "contextlib", "contextvars", "tessellate.core.lazyre"} | layers, names
+    for upper in ("recognise_units", "recognise_reminders", "recognise_questions"):
+        got = imported(f"src/tessellate/ai/{upper}.py")
+        assert got <= {"__future__", "re", "datetime", "tessellate.core.lazyre", "tessellate.ai.recognise", "tessellate.ai.recognise_windows"}, (upper, got)
     windows = imported("src/tessellate/ai/recognise_windows.py")
     assert windows <= {"__future__", "re", "datetime", "typing", "contextlib", "contextvars", "tessellate.core.lazyre"}, windows
     assert imported("src/tessellate/core/lazyre.py") <= {"__future__", "re", "threading"}
 
 
 def test_the_unit_table_has_150_units():
-    assert len({said for _dim, _size, said in rec.UNITS.values()}) >= 150
+    assert len({said for _dim, _size, said in recognise_units.UNITS.values()}) >= 150
 
 
 def test_the_json_form_is_plain():
@@ -152,8 +159,8 @@ def test_a_monthly_repeat_from_the_31st_keeps_its_day(client):
     the 28th. The day it was set for is kept (BYMONTHDAY) from the first
     roll on, so March is the 31st again; a day the store collapsed to
     "monthly" keeps its rule when the month may not hold it."""
-    assert rec.stored_repeat("FREQ=MONTHLY;BYMONTHDAY=31") == "FREQ=MONTHLY;BYMONTHDAY=31"
-    assert rec.stored_repeat("FREQ=MONTHLY;BYMONTHDAY=5") == "monthly"
+    assert recognise_reminders.stored_repeat("FREQ=MONTHLY;BYMONTHDAY=31") == "FREQ=MONTHLY;BYMONTHDAY=31"
+    assert recognise_reminders.stored_repeat("FREQ=MONTHLY;BYMONTHDAY=5") == "monthly"
     made = client.post("/reminders", json={"text": "Pay rent", "due_at": "2030-01-31T09:00:00Z", "recurring": "monthly"}).json()
     february = client.post(f"/reminders/{made['id']}/complete").json()
     assert february["due_at"].startswith("2030-02-28T09:00"), february
@@ -177,7 +184,7 @@ RECURRENCE_NOW = datetime.fromisoformat(RECURRENCE_FIXTURE["now"])
 
 
 def _got(text: str) -> dict:
-    parsed = rec.parse_reminder_text(text, RECURRENCE_NOW)
+    parsed = recognise_reminders.parse_reminder_text(text, RECURRENCE_NOW)
     assert parsed is not None, text
     return {
         "title": parsed["text"],
@@ -221,7 +228,7 @@ def test_last_friday_alone_is_a_day_gone_not_a_repeat():
     ],
 )
 def test_next_occurrence(rule, after, expected):
-    assert rec.next_occurrence(rule, datetime.fromisoformat(after)).isoformat(timespec="minutes") == expected
+    assert recognise_reminders.next_occurrence(rule, datetime.fromisoformat(after)).isoformat(timespec="minutes") == expected
 
 
 def test_alert_words_say_the_alert_back():

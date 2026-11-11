@@ -28,7 +28,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-ALLOWED = {"src/tessellate/ai/recognise.py", "src/tessellate/ai/recognise_windows.py", "src/tessellate/entry/timewords.py"}
+ALLOWED = {"src/tessellate/ai/recognise.py", "src/tessellate/ai/recognise_windows.py", "src/tessellate/ai/recognise_units.py", "src/tessellate/ai/recognise_reminders.py", "src/tessellate/ai/recognise_questions.py", "src/tessellate/entry/timewords.py"}
 
 # Hand verdicts, 2026-10-10 (Brief 64), for the files the scan finds. A new file
 # in the scan with no verdict prints "unjudged": judge it, then add it here.

@@ -26,7 +26,8 @@ import pytest
 from sqlalchemy import select
 
 from tessellate.core import deps, jobs, jobstore
-from tessellate.core.database import DatabaseManager, DurableJob
+from tessellate.core.database import DurableJob
+from tessellate.core.database_manager import DatabaseManager
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -305,7 +306,7 @@ _CHILD = textwrap.dedent(
 
     sys.path.insert(0, {src!r})
     from tessellate.core import jobruns, jobs, jobstore
-    from tessellate.core.database import DatabaseManager
+    from tessellate.core.database_manager import DatabaseManager
 
     db_path, marks, mode = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3]
     db = DatabaseManager(db_path)

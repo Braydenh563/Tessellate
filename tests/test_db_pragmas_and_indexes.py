@@ -23,17 +23,8 @@ from __future__ import annotations
 import pytest
 from sqlalchemy import select, text
 
-from tessellate.core.database import (
-    Attachment,
-    AuditLog,
-    Category,
-    DatabaseManager,
-    Document,
-    Entry,
-    EntryLink,
-    MediaUpload,
-    WhiteboardObject,
-)
+from tessellate.core.database import Attachment, AuditLog, Category, Document, Entry, EntryLink, MediaUpload, WhiteboardObject
+from tessellate.core.database_manager import DatabaseManager
 
 
 @pytest.fixture

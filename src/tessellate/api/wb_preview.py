@@ -456,15 +456,15 @@ PREVIEW_ASPECT_RANGE = (0.5, 3.0)
 
 def _card_label(entry: Entry | None) -> str:
     """What is written on a card in a thumbnail: its note's title."""
-    from tessellate.entry import manager
+    from tessellate.entry import manager_text
 
     if entry is None or entry.is_private:
         return ""
     # A card *is* a note, so its own title (or first words) is what is written
     # on it. A private note contributes its position and nothing else: the
     # same rule the Connections block and the Library's file-usage chips follow.
-    text = manager.readable_content(entry)
-    return (manager.extract_title(text) or text.strip().split("\n")[0])[:PREVIEW_LABEL_CHARS]
+    text = manager_text.readable_content(entry)
+    return (manager_text.extract_title(text) or text.strip().split("\n")[0])[:PREVIEW_LABEL_CHARS]
 
 
 def _card_preview_rows(db: Session, on) -> list[tuple]:  # noqa: ANN001

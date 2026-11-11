@@ -16,7 +16,7 @@ import re
 from datetime import date, timedelta
 from typing import NamedTuple
 
-from tessellate.ai import composer, composer_frame, composer_lists, recognise
+from tessellate.ai import composer, composer_frame, composer_lists, recognise, recognise_units
 
 #: "How much money have I recorded I've spent" and "what have I spent so far"
 #: are the same total: the ask can say where the figures are kept.
@@ -740,7 +740,7 @@ def _one_day(rest: str) -> bool:
 
 def _dimension_of(word: str) -> tuple[str | None, bool]:
     """"far" is a length and "km" one by the unit table; "pounds" is money's."""
-    named = recognise.UNITS.get(word) if word not in recognise.CURRENCY_NAMES and len(word) > 1 else None
+    named = recognise_units.UNITS.get(word) if word not in recognise_units.CURRENCY_NAMES and len(word) > 1 else None
     return _DIMENSION_WORDS.get(word) or (named[0] if named and named[0] != "temperature" else None), bool(named)
 
 
@@ -812,12 +812,12 @@ def _done(verb: str) -> str:
 
 
 def _figure(value: float, unit: str) -> str:
-    size = recognise.UNITS[unit][1]
+    size = recognise_units.UNITS[unit][1]
     shown = f"{value / size:,.2f}".rstrip("0").rstrip(".")
     #: "10k" is said "10 km"; another glued letter by its name ("800m", 800 metres).
-    name = unit if len(unit) > 1 else "km" if unit == "k" else recognise.UNITS[unit][2]
+    name = unit if len(unit) > 1 else "km" if unit == "k" else recognise_units.UNITS[unit][2]
     #: "40 hour goal" is said "40 hours".
-    name = recognise.UNITS[unit][2] if len(unit) > 1 and recognise.UNITS[unit][2] == unit + "s" else name
+    name = recognise_units.UNITS[unit][2] if len(unit) > 1 and recognise_units.UNITS[unit][2] == unit + "s" else name
     return f"{shown} {name[:-1] if shown == '1' and name.endswith('s') and len(name) > 3 else name}"
 
 
@@ -1073,7 +1073,7 @@ def _unit_named(body: str) -> tuple[str, str] | None:
     "m" are units only glued to a number."""
     for word in re.findall(r"[a-zµ]+", body.lower()):
         dimension, named = _dimension_of(word)
-        if named and dimension and word not in _CALENDAR and word not in recognise._GLUED_ONLY:  # noqa: SLF001
+        if named and dimension and word not in _CALENDAR and word not in recognise_units._GLUED_ONLY:  # noqa: SLF001
             return dimension, word
     return None
 

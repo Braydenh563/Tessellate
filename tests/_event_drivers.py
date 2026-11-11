@@ -43,8 +43,8 @@ def _drive_create_entry(session: Session, entry: Entry) -> None:
 
 
 def _drive_create_link(session: Session, entry: Entry) -> None:
-    manager = importlib.import_module("tessellate.entry.manager")
-    manager.create_link(session, entry, _scratch_entry(session, "link target"))
+    manager_links = importlib.import_module("tessellate.entry.manager_links")
+    manager_links.create_link(session, entry, _scratch_entry(session, "link target"))
 
 
 def _document_for(session: Session):

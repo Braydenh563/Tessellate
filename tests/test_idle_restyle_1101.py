@@ -15,11 +15,13 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from tests._js_scope import unwrapped
+
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-AVATARS = "\n".join((JS / n).read_text(encoding="utf-8") for n in ("avatars.js", "companion-settings.js"))
+AVATARS = "\n".join(unwrapped((JS / n).read_text(encoding="utf-8")) for n in ("avatars.js", "companion-settings.js"))
 ATLAS = (JS / "atlas.js").read_text(encoding="utf-8")
 
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")

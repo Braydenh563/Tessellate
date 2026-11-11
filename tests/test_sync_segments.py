@@ -21,8 +21,10 @@ import pytest
 from sqlalchemy import select
 
 from tessellate.core import crypto, sync_state, vault
-from tessellate.core.database import DatabaseManager, Entry, EntryRevision
+from tessellate.core.database import Entry, EntryRevision
+from tessellate.core.database_manager import DatabaseManager
 from tessellate.entry import manager, sync_extras, sync_pull, sync_segments
+from tessellate.entry import manager_text
 from tessellate.entry.manager_private import set_private
 
 
@@ -169,7 +171,7 @@ def test_a_private_note_ships_as_ciphertext_and_the_key_stays_home(pair):
     [copy] = b.notes()
     assert copy.is_private and copy.content == note.content and crypto.is_encrypted(copy.content)
     vault.set_key(crypto.new_dek())  # B's own key: a different notebook's data key
-    assert manager.readable_content(copy) == "This private note couldn't be decrypted."
+    assert manager_text.readable_content(copy) == "This private note couldn't be decrypted."
 
 
 def test_a_segment_cut_off_part_way_is_applied_again_without_duplicates(pair, monkeypatch):

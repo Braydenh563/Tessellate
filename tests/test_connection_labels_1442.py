@@ -6,7 +6,7 @@ from __future__ import annotations
 import pytest
 
 from tessellate.api import routes_entries
-from tessellate.entry import manager
+from tessellate.entry import manager_text
 
 CASES = [
     ("**Gym Routine Overview** Frequency: 4 days", "Gym Routine Overview Frequency: 4 days"),
@@ -23,7 +23,7 @@ def test_a_connection_label_is_plain_words(content, label):
 
     entry = E()
     entry.content, entry.is_private = content, False
-    assert manager.plain_label(content) == label
+    assert manager_text.plain_label(content) == label
     assert "*" not in routes_entries._preview(content, 80) and "`" not in routes_entries._preview(content, 80)
 
 

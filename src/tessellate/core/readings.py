@@ -11,7 +11,7 @@ workspace, could not be found by its words.
 
 **One `readings` table, as a view.** `readings(source, source_id, kind, page,
 text, model, ts)` is a SQLite view over those five places, created at startup
-(`database.DatabaseManager`) and replaced whenever its definition changes. A
+(`database_manager.DatabaseManager`) and replaced whenever its definition changes. A
 view rather than a table the writers move onto: the four extractors, the
 caption editor and the page reader keep writing where they write, and a
 derived table cannot drift from them, which a second copy kept in step by

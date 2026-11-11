@@ -27,7 +27,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.core import reading_bin
 from tessellate.core.database import BoardLibraryItem, Conversation, Document, Entry, MediaUpload, WhiteboardObject
-from tessellate.entry import manager
+from tessellate.entry import manager_text
 
 # Same shape routes_whiteboard.py's own MEDIA_URL_RE validates on the way in, 
 # kept independent (not imported) since this only ever reads, never resolves
@@ -105,7 +105,7 @@ def _referenced_filenames(session: Session) -> tuple[set[str], bool]:
         if entry.is_private and crypto.is_encrypted(entry.content) and vault.key() is None:
             skipped_private = True
             continue
-        referenced.update(referenced_names(manager.readable_content(entry)))
+        referenced.update(referenced_names(manager_text.readable_content(entry)))
 
     return referenced, skipped_private
 
@@ -168,7 +168,7 @@ def _note_uses(session: Session, note) -> bool:  # noqa: ANN001
         if entry.is_private and crypto.is_encrypted(entry.content) and vault.key() is None:
             skipped_private = True
             continue
-        content = manager.readable_content(entry)
+        content = manager_text.readable_content(entry)
         for name in referenced_names(content):
             # **A private note contributes the link but never its words.**
             # The label is rendered in the Library's file gallery, and the
@@ -184,12 +184,12 @@ def _note_uses(session: Session, note) -> bool:  # noqa: ANN001
                 note(name, "note", entry.id, "Private note")
                 # Notes made private before the flag existed are marked the
                 # first time they are read here with the vault open.
-                manager.flag_private_media(session, content)
+                manager_text.flag_private_media(session, content)
                 continue
             # `plain_label`, not the raw first line: a chip cannot render
             # markdown, and one that tries shows `# Title ![alt](/media/…)`
             # verbatim: reported exactly that way.
-            note(name, "note", entry.id, manager.plain_label(content))
+            note(name, "note", entry.id, manager_text.plain_label(content))
     return skipped_private
 
 

@@ -33,7 +33,8 @@ from tessellate.api.schemas import EntryOut
 from tessellate.core import deps
 from tessellate.core.database import Entry
 from tessellate.core.deps import get_session
-from tessellate.entry import manager
+from tessellate.entry import manager_links
+from tessellate.entry import manager_text
 from tessellate.repo import relations as relations_repo
 from tessellate.repo.content import NOTES
 
@@ -66,7 +67,7 @@ def entry_connections(entry_id: int, session: Session = Depends(get_session)) ->
     _add_referenced(session, references, documents, incoming)
     _add_wiki_outgoing(session, entry, outgoing)
     boards = _boards_of(session, entry, references)
-    files = _connected_files(session, manager.readable_content(entry))
+    files = _connected_files(session, manager_text.readable_content(entry))
 
     return {
         "outgoing": outgoing,
@@ -89,7 +90,7 @@ def create_link(
     # the reverse), so while the vault is locked either end refuses it (W3 A11).
     _refuse_while_sealed(source)
     _refuse_while_sealed(target)
-    link = manager.create_link(
+    link = manager_links.create_link(
         session, source, target, reason=body.reason, link_type=body.link_type,
         reason_confidence=body.reason_confidence, props=body.props,
     )
@@ -114,7 +115,7 @@ def delete_link(
 ) -> EntryOut:
     entry = NOTES.writable(session, entry_id)
     link = relations_repo.get_for_note(session, entry.id, link_id)
-    manager.delete_link(session, link)
+    manager_links.delete_link(session, link)
     return _to_out(session, entry)
 
 
@@ -128,13 +129,13 @@ def patch_link(
     link = relations_repo.get_for_note(session, entry.id, link_id)
     sent = body.model_fields_set
     if "link_type" in sent:
-        if body.link_type is not None and not manager.is_link_type(session, body.link_type):
+        if body.link_type is not None and not manager_links.is_link_type(session, body.link_type):
             raise HTTPException(status_code=422, detail="That isn't a kind of link this notebook knows.")
-        manager.set_link_type(session, link, body.link_type)
+        manager_links.set_link_type(session, link, body.link_type)
     if "props" in sent:
-        manager.set_link_props(session, link, body.props)
+        manager_links.set_link_props(session, link, body.props)
     if "two_way" in sent:
-        manager.set_link_two_way(session, link, body.two_way)
+        manager_links.set_link_two_way(session, link, body.two_way)
     return _to_out(session, entry)
 
 
@@ -148,7 +149,7 @@ def update_link_reason(
     entry = NOTES.writable(session, entry_id)
     link = relations_repo.get_for_note(session, entry.id, link_id)
     try:
-        manager.set_link_reason(session, link, body.reason)
+        manager_links.set_link_reason(session, link, body.reason)
         return _to_out(session, entry)
     except Exception:
         # The exception text can carry paths or content; only the log gets it
@@ -180,8 +181,8 @@ def generate_link_reason_endpoint(
 
     try:
         reason = librarian.generate_link_reason(
-            manager.readable_content(source),
-            manager.readable_content(target),
+            manager_text.readable_content(source),
+            manager_text.readable_content(target),
             deps.get_model_manager(),
             deps.get_ollama(),
         )

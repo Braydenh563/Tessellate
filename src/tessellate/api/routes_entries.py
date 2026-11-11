@@ -67,6 +67,9 @@ from tessellate.core.deps import get_session
 from tessellate.core.events import ACTOR_USER_AND_AI
 from tessellate.core.validation_copy import Said
 from tessellate.entry import manager, private_space
+from tessellate.entry import manager_wiki
+from tessellate.entry import manager_links
+from tessellate.entry import manager_text
 from tessellate.entry import manager_purge
 from tessellate.entry import manager_private
 from tessellate.entry import meetings as meeting_shape
@@ -93,7 +96,7 @@ def _preview(text: str, length: int = 60) -> str:
     """
     from tessellate.entry.properties import strip as strip_properties
 
-    plain = manager.strip_inline_markdown(manager.wiki_plain(strip_properties(text or "").lstrip()))
+    plain = manager_text.strip_inline_markdown(manager_text.wiki_plain(strip_properties(text or "").lstrip()))
     return plain if len(plain) <= length else plain[: length - 1] + "…"
 
 
@@ -118,12 +121,12 @@ def _to_out(
     # item 1: `GET /entries` was doing exactly that). Single-entry callers
     # (create/update/get) pass none of them and keep the original per-entry
     # queries below, unchanged.
-    content = manager.readable_content(entry)
+    content = manager_text.readable_content(entry)
     resolved_dates = manager.entry_dates(session, entry) if dates is None else dates
     resolved_documents = (
         manager.documents_for_entry(session, entry) if documents is None else documents
     )
-    resolved_links = manager.links_for_entry(session, entry) if links is None else links
+    resolved_links = manager_links.links_for_entry(session, entry) if links is None else links
     resolved_attachments = (
         manager_purge.attachments_for(session, entry) if attachments is None else attachments
     )
@@ -131,7 +134,7 @@ def _to_out(
         id=entry.id,
         content=content,
         content_hash=content_hash(content),
-        title=manager.extract_title(content),
+        title=manager_text.extract_title(content),
         #: KG4: what the note's `---` block says, and its type.
         properties=(props := note_properties.split(content)[0]),
         note_type=note_properties.note_type(props),
@@ -203,7 +206,7 @@ def _link_outs(session: Session, entry, links: list) -> list[LinkOut]:  # noqa: 
             # `LinkOut.direction`.
             direction="out" if link.source_entry_id == entry.id else "in",
             link_type=link.link_type,
-            link_label=manager.relation_label(
+            link_label=manager_links.relation_label(
                 relation_types.kinds(session), link.link_type, link.source_entry_id == entry.id
             ),
             props=link.props,
@@ -309,7 +312,7 @@ def _keep_suggestions(session: Session, entry, filed_by: str | None) -> None:  #
             )
         except Exception:
             logger.info("tag suggestions from the model failed; using the notebook's own", exc_info=True)
-    content = manager.readable_content(entry)
+    content = manager_text.readable_content(entry)
     keep = [tag for tag in _engine_tags(session, content, have, suggested, entry.id) if tag.casefold() not in discarded]
     from tessellate.ai import tagging
 
@@ -461,7 +464,7 @@ class _LateFiling:
                     entry = session.get(Entry, self.entry_id)
                     if entry is not None:
                         return filing_certainty.calibrated(
-                            session, manager.readable_content(entry), category, raw, "llm",
+                            session, manager_text.readable_content(entry), category, raw, "llm",
                             exclude_entry_id=entry.id,
                         )
         except Exception:
@@ -631,10 +634,10 @@ def _file_entry_in_background(entry_id: int, workspace_id: str) -> None:
                 # finished: a settled note is never filed twice.
                 if (getattr(entry, "filing_state", "") or "") != "pending":
                     return
-                late = _LateFiling(entry_id, workspace_id, manager.readable_content(entry))
+                late = _LateFiling(entry_id, workspace_id, manager_text.readable_content(entry))
                 category, confidence, filed_by = _file_entry_now(
                     session,
-                    manager.readable_content(entry),
+                    manager_text.readable_content(entry),
                     on_late_llm=late,
                     model_deadline=janitor.filing_deadline(),
                 )
@@ -690,7 +693,7 @@ def retry_stand_ins() -> int:
                     if entry is None or entry.filing_state != manager.STAND_IN:
                         continue
                     stand_in = manager.category_name_for(session, entry)
-                    content = manager.readable_content(entry)
+                    content = manager_text.readable_content(entry)
                     category, confidence, method = janitor._ask_llm(
                         session,
                         content,
@@ -890,8 +893,8 @@ def _finish_new_entry(session: Session, entry, body: EntryCreate, defer: bool) -
     # [[wiki links]] become real links. Best effort for the same reason: a
     # link that can't be resolved must never cost someone their note.
     try:
-        manager.sync_wiki_links(session, entry)
-        manager.resolve_links_to(session, entry)
+        manager_wiki.sync_wiki_links(session, entry)
+        manager_wiki.resolve_links_to(session, entry)
         session.commit()
     except Exception:
         session.rollback()
@@ -1184,7 +1187,7 @@ def stop_filing(session: Session, entry, action: str) -> str:  # noqa: ANN001
     if action == "fallback":
         match = janitor._semantic_category(
             session,
-            manager.readable_content(entry),
+            manager_text.readable_content(entry),
             deps.get_embeddings(),
             exclude_entry_id=entry.id,
         )
@@ -1312,7 +1315,7 @@ def _offered_categories(session: Session, entry, category: str) -> tuple[list[st
     held = None
     why = ""
     try:
-        content = manager.readable_content(entry) or ""
+        content = manager_text.readable_content(entry) or ""
         call = lexical_filing.filing_call(session, content, exclude_entry_id=entry.id)
         explained = _choices_filled(session, content, entry.id, category, call.choices)
         #: A pick the person asked to be asked about (a model's, or by
@@ -1339,7 +1342,7 @@ def _filing_why(session: Session, entry, category: str) -> str:  # noqa: ANN001
 
     try:
         decision = lexical_filing.decide(
-            session, manager.readable_content(entry) or "", exclude_entry_id=entry.id
+            session, manager_text.readable_content(entry) or "", exclude_entry_id=entry.id
         )
         return next((c.why for c in decision.ranked if c.name == category), "")
     except Exception:  # noqa: BLE001 - a hint never fails the status
@@ -1686,13 +1689,13 @@ def query_entries(q: str = "", session: Session = Depends(get_session)) -> dict:
     entries = {e.id: e for e in session.scalars(select(Entry).where(Entry.id.in_(shown)))} if shown else {}
     for entry_id in shown:
         entry = entries[entry_id]
-        content = manager.readable_content(entry)
+        content = manager_text.readable_content(entry)
         found = {} if entry.is_private else note_properties.split(content)[0]
         for key in found:
             counts[key] = counts.get(key, 0) + 1
         rows.append({
             "id": entry_id,
-            "title": manager.extract_title(content) or manager.plain_label(content, 60) or "Untitled note",
+            "title": manager_text.extract_title(content) or manager_text.plain_label(content, 60) or "Untitled note",
             "properties": found,
         })
     columns = sorted(counts, key=lambda k: (k != "type", -counts[k], k))[:QUERY_COLUMNS_MAX]
@@ -2001,7 +2004,7 @@ def seed_example_entries(session: Session = Depends(get_session)) -> dict:
     """The onboarding tour's "add example notes" offer (ROADMAP.md's
     onboarding item). Refuses on any notebook that already has a note, 
     see `manager.seed_example_notes`'s own guard."""
-    created = manager.seed_example_notes(session)
+    created = manager_wiki.seed_example_notes(session)
     return {"created": created}
 
 
@@ -2166,9 +2169,9 @@ def export_entry(entry_id: int, session: Session = Depends(get_session)) -> Resp
     if entry.is_deleted:
         raise HTTPException(status_code=404, detail="That note could not be found.")
     _refuse_while_sealed(entry)
-    content = manager.readable_content(entry)
-    title = manager.extract_title(content) or content.strip()[:60] or "Untitled note"
-    body = content if manager.extract_title(content) else f"# {title}\n\n{content}"
+    content = manager_text.readable_content(entry)
+    title = manager_text.extract_title(content) or content.strip()[:60] or "Untitled note"
+    body = content if manager_text.extract_title(content) else f"# {title}\n\n{content}"
     return Response(
         content=body,
         media_type="text/markdown; charset=utf-8",
@@ -2185,7 +2188,7 @@ def _content_change(entry, body: EntryUpdate) -> tuple[bool, str | None]:  # noq
         #: was written plain, with the note still flagged private, and sat in
         #: `entries.content` and the full-text index in the clear (found
         #: 2026-10-04 by scanning a data dir for a private note's words).
-        content_changed = body.content != manager.readable_content(entry)
+        content_changed = body.content != manager_text.readable_content(entry)
         new_content = _stored_form(entry, body.content) if content_changed else None
     else:
         content_changed = body.content is not None and body.content != entry.content
@@ -2214,8 +2217,8 @@ def _after_content_edit(session: Session, entry, body: EntryUpdate) -> None:  # 
         _queue_embedding(entry)
     # Editing a note can introduce new [[links]]; resolve those too.
     try:
-        manager.sync_wiki_links(session, entry)
-        manager.resolve_links_to(session, entry)
+        manager_wiki.sync_wiki_links(session, entry)
+        manager_wiki.resolve_links_to(session, entry)
         session.commit()
     except Exception:
         session.rollback()
@@ -2229,12 +2232,12 @@ def _after_content_edit(session: Session, entry, body: EntryUpdate) -> None:  # 
 
 def _wiki_rename(session: Session, entry, old_name: str) -> dict | None:  # noqa: ANN001
     """Set when the opening line changed and other notes link to the old name."""
-    if not old_name or manager.wiki_opening(entry.content) == old_name:
+    if not old_name or manager_wiki.wiki_opening(entry.content) == old_name:
         return None
     # Spelt as the holders wrote it, the opening line as the note does.
     first = (entry.content or "").strip().split("\n", 1)[0]
     new_name = re.sub(r"^\s{0,3}#{1,6}\s+", "", first).strip()
-    holders = manager.wiki_holders(session, entry, old_name)
+    holders = manager_wiki.wiki_holders(session, entry, old_name)
     if not holders or not new_name:
         return None
     spelt = re.search(r"\[\[\s*(" + re.escape(old_name) + r")", holders[0].content, re.IGNORECASE)
@@ -2259,7 +2262,7 @@ def update_entry(
     entry = NOTES.writable(session, entry_id)
     refuse_unless_match(
         if_match,
-        current_hash=content_hash(manager.readable_content(entry)),
+        current_hash=content_hash(manager_text.readable_content(entry)),
         current=lambda: _to_out(session, entry),
         noun="note",
     )
@@ -2270,7 +2273,7 @@ def update_entry(
     if body.base_hash and body.content is not None:
         refuse_if_stale(
             base_hash=body.base_hash,
-            current_text=manager.readable_content(entry),
+            current_text=manager_text.readable_content(entry),
             new_text=body.content,
             current=lambda: _to_out(session, entry),
             noun="note",
@@ -2279,7 +2282,7 @@ def update_entry(
     tags_changed = body.tags is not None and body.tags != manager.entry_tags(entry)
     #: The note's [[name]] before the edit (a private note is never a target).
     old_name = (
-        manager.wiki_opening(entry.content) if content_changed and not entry.is_private else ""
+        manager_wiki.wiki_opening(entry.content) if content_changed and not entry.is_private else ""
     )
     #: A save that carries an applied Atlas suggestion is both of theirs.
     with events.acting_as(ACTOR_USER_AND_AI) if body.ai_assisted else contextlib.nullcontext():
@@ -2318,12 +2321,12 @@ def wiki_rename(entry_id: int, body: WikiRenameIn, session: Session = Depends(ge
     """Rewrite `[[old]]` as this note's current name in every note that still
     writes the old one (GRAPH_PLAN 518; offered by the edit that renamed it)."""
     entry = NOTES.writable(session, entry_id)
-    first = (manager.readable_content(entry) or "").strip().split("\n", 1)[0]
+    first = (manager_text.readable_content(entry) or "").strip().split("\n", 1)[0]
     new_name = re.sub(r"^\s{0,3}#{1,6}\s+", "", first).strip()
     if not new_name or len(new_name) > 120 or "]" in new_name or "[" in new_name:
         raise HTTPException(status_code=422, detail="This note's first line can't be a [[name]].")
     notes: list[dict] = []
-    rewritten = manager.rewrite_wiki_name(session, entry, body.old, new_name, notes)
+    rewritten = manager_wiki.rewrite_wiki_name(session, entry, body.old, new_name, notes)
     return {"rewritten": rewritten, "notes": notes}
 
 
@@ -2338,7 +2341,7 @@ def delete_entry(
     entry = _existing_entry(session, entry_id)
     refuse_unless_match(
         if_match,
-        current_hash=content_hash(manager.readable_content(entry)),
+        current_hash=content_hash(manager_text.readable_content(entry)),
         current=lambda: _to_out(session, entry),
         noun="note",
     )
@@ -2479,11 +2482,11 @@ def _stored_form(entry, text: str, session: Session | None = None) -> str:  # no
 
     A private note's restored text marks the pictures it embeds, as an edit
     does (SEC-A2): a picture only an older version used was served locked."""
-    stored = manager.content_for_entry(entry, text or "")
+    stored = manager_text.content_for_entry(entry, text or "")
     if stored is None:
         raise HTTPException(status_code=409, detail="Unlock the app first: this version needs the encryption key.")
     if session is not None and entry.is_private:
-        manager.flag_private_media(session, _readable(stored))
+        manager_text.flag_private_media(session, _readable(stored))
     return stored
 
 
@@ -2493,7 +2496,7 @@ def _readable(content: str) -> str:
     `manager.readable_content` reads one attribute, so an event's stored
     content can borrow it without a row to hang it on.
     """
-    return manager.readable_content(SimpleNamespace(content=content or ""))
+    return manager_text.readable_content(SimpleNamespace(content=content or ""))
 
 
 class MakeAllPrivateBody(BaseModel):
@@ -2566,7 +2569,7 @@ def generate_entry_title(
         raise HTTPException(
             status_code=400, detail="Make this note readable first: private notes can't be re-titled here."
         )
-    content = manager.readable_content(entry)
+    content = manager_text.readable_content(entry)
     if not content.strip():
         raise HTTPException(status_code=400, detail="There's no text to title yet.")
     if not deps.get_ollama().is_running():
@@ -2580,7 +2583,7 @@ def generate_entry_title(
         raise HTTPException(status_code=502, detail="The AI didn't return a usable title.")
 
     manager.record_revision(session, entry)
-    entry.content = manager.apply_title(content, title)
+    entry.content = manager_text.apply_title(content, title)
     manager.mark_edited(entry)
     manager.log_action(session, "edited", "entry", entry.id, f"generated title: {title}")
     session.commit()
@@ -2595,11 +2598,11 @@ def _composed_title(session: Session, entry, content: str) -> EntryOut:  # noqa:
     hold. The client says it was taken, not written."""
     from tessellate.ai import composer_voice
 
-    title = composer_voice.title_for(manager.remove_title(content) or content)
+    title = composer_voice.title_for(manager_text.remove_title(content) or content)
     if not title:
         raise HTTPException(status_code=422, detail="There's no sentence here to take a title from yet.")
     manager.record_revision(session, entry)
-    entry.content = manager.apply_title(content, title)
+    entry.content = manager_text.apply_title(content, title)
     manager.mark_edited(entry)
     manager.log_action(session, "edited", "entry", entry.id, f"title from its own words: {title}")
     session.commit()
@@ -2620,8 +2623,8 @@ def remove_entry_title(entry_id: int, session: Session = Depends(get_session)) -
         raise HTTPException(
             status_code=400, detail="Make this note readable first: private notes can't be edited here."
         )
-    content = manager.readable_content(entry)
-    stripped = manager.remove_title(content)
+    content = manager_text.readable_content(entry)
+    stripped = manager_text.remove_title(content)
     if stripped != content:
         manager.record_revision(session, entry)
         entry.content = stripped
@@ -2649,7 +2652,7 @@ def _stored_connections(session: Session, entry: Entry) -> tuple[list[dict], lis
     """`(outgoing, incoming)` from the stored links, direction kept."""
     outgoing: list[dict] = []
     incoming: list[dict] = []
-    for link, other in manager.links_for_entry(session, entry):
+    for link, other in manager_links.links_for_entry(session, entry):
         if other.is_deleted:
             continue
         row = {
@@ -2667,7 +2670,7 @@ def _stored_connections(session: Session, entry: Entry) -> tuple[list[dict], lis
             "reason_confidence": link.reason_confidence,
             #: KG3: the kind, named from this end, and the link's properties.
             "link_type": link.link_type,
-            "link_label": manager.relation_label(
+            "link_label": manager_links.relation_label(
                 relation_types.kinds(session), link.link_type, link.source_entry_id == entry.id
             ),
             "props": link.props,
@@ -2780,11 +2783,11 @@ def _wiki_link_targets_of(session: Session, entry: Entry) -> list[Entry]:
     when the text holds `[[label]]`): without that second reading a note
     named by its heading was incoming on the target and absent here.
     """
-    from tessellate.entry.manager import plain_label
+    from tessellate.entry.manager_text import plain_label
 
     found: list[Entry] = []
-    for name in manager.wiki_link_targets(manager.readable_content(entry)):
-        target = manager.find_by_wiki_name(session, name)
+    for name in manager_wiki.wiki_link_targets(manager_text.readable_content(entry)):
+        target = manager_wiki.find_by_wiki_name(session, name)
         if target is None:
             wanted = name.strip().casefold()
             pattern = "%" + like_escape(name.strip()) + "%"
@@ -2822,7 +2825,7 @@ def _connection_label(entry, length: int = 80) -> str:  # noqa: ANN001
         return manager.PRIVATE_SPACE_NOTE
     if entry.is_private:
         return manager.PRIVATE_LABEL
-    return manager.plain_label(manager.readable_content(entry), length)
+    return manager_text.plain_label(manager_text.readable_content(entry), length)
 
 
 def _connected_files(session: Session, text: str) -> list[dict]:
@@ -2968,7 +2971,7 @@ def extract_commit(body: ExtractCommitBody, session: Session = Depends(get_sessi
             target = by_ref.get(link.target_ref)
             if target is None:
                 continue
-        if manager.create_link(session, source, target, reason=link.reason) is not None:
+        if manager_links.create_link(session, source, target, reason=link.reason) is not None:
             links_created += 1
 
     return {

@@ -6,8 +6,9 @@ from __future__ import annotations
 import json
 import subprocess
 from pathlib import Path
+from tests._js_scope import unwrapped
 
-GRAPH = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8")
+GRAPH = unwrapped((Path(__file__).resolve().parents[1] / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8"))
 
 
 def _rim(node, toward, k=1):

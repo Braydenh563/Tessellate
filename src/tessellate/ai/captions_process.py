@@ -37,7 +37,7 @@ from pathlib import Path
 
 import requests
 
-from tessellate.core import egress, jobs
+from tessellate.core import egress, extras, jobs
 from tessellate.core.subproc import NO_WINDOW
 
 logger = logging.getLogger("tessellate.captions")
@@ -76,16 +76,12 @@ starting = False
 
 def model_path() -> Path | None:
     """The installed model file, or None."""
-    from tessellate.core import extras
-
     folder = extras.download_ready(MODEL_ID)
     return folder / extras.CAPTIONS_MODEL_FILE if folder else None
 
 
 def installed() -> bool:
     """Both rows are there: the engine importable, the model on disk."""
-    from tessellate.core import extras
-
     engine = extras.EXTRAS_BY_ID[ENGINE_ID]
     return extras.is_installed(engine) and model_path() is not None
 
@@ -132,16 +128,12 @@ def _command(model: Path) -> list[str]:
 def _python() -> str:
     if not getattr(sys, "frozen", False):
         return sys.executable
-    from tessellate.core import extras
-
     return extras.find_system_python() or sys.executable
 
 
 def _env() -> dict[str, str]:
     env = dict(os.environ)
     # A frozen app's extras live in a folder the child must see.
-    from tessellate.core import extras
-
     frozen = extras.frozen_extras_dir()
     if frozen is not None:
         env["PYTHONPATH"] = os.pathsep.join(filter(None, [str(frozen), env.get("PYTHONPATH", "")]))
@@ -328,3 +320,7 @@ def reset_for_tests() -> None:
     global starting
     stop()
     starting = False
+
+
+#: A reinstall or removal of the engine or the model replaces a file this helper holds open.
+extras.on_release(extras.CAPTIONS_IDS, stop)

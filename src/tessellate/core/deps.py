@@ -29,7 +29,8 @@ from tessellate.ai.provider import Provider
 from tessellate.core import embedmodels, jobruns, spacelock
 from tessellate.core.config import ConfigManager
 from tessellate.core import board_thumbs
-from tessellate.core.database import DatabaseManager, Entry
+from tessellate.core.database import Entry
+from tessellate.core.database_manager import DatabaseManager
 
 _ModelT = TypeVar("_ModelT")
 

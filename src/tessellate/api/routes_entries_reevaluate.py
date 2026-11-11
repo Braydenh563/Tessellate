@@ -26,6 +26,8 @@ from tessellate.core import deps, jobruns
 from tessellate.core.database import Entry
 from tessellate.core.deps import get_session
 from tessellate.entry import manager
+from tessellate.entry import manager_links
+from tessellate.entry import manager_text
 from tessellate.search import search_manager
 
 logger = logging.getLogger("tessellate.api.entries")
@@ -36,7 +38,7 @@ router = APIRouter(tags=["entries"], prefix="/entries")
 def _linked_entry_ids(session: Session, entry) -> set[int]:  # noqa: ANN001
     """Ids this note is already connected to, explicit links plus its
     thread parent/children: so re-evaluate never re-suggests them."""
-    linked = {other.id for _link, other in manager.links_for_entry(session, entry)}
+    linked = {other.id for _link, other in manager_links.links_for_entry(session, entry)}
     if entry.parent_id is not None:
         linked.add(entry.parent_id)
     # Was `for child in manager.list_entries(session)`, loading and
@@ -169,7 +171,7 @@ def _other_categories(session: Session, entry) -> list[dict]:  # noqa: ANN001
 
         here = manager.category_name_for(session, entry)
         found = lexical_filing.suggest_categories_explained(
-            session, manager.readable_content(entry) or "", exclude_entry_id=entry.id, limit=4,
+            session, manager_text.readable_content(entry) or "", exclude_entry_id=entry.id, limit=4,
         )
         return [{"name": name, "why": why} for name, why in found if name not in (here, manager.UNCATEGORISED)][:3]
     except Exception:

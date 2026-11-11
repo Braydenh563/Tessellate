@@ -102,7 +102,7 @@
         topic.focus();
 
         const follow = async (id) => {
-          stop.onclick = () => api(`/studio/runs/${id}/stop`, { method: "POST" }).catch((error) => { status.textContent = `Couldn't stop it: ${error.message}`; });
+          stop.onclick = () => api(`/studio/runs/${id}/stop`, { method: "POST" }).catch(() => { status.textContent = "Couldn't stop it. Try again."; });
           for (;;) {
             await new Promise((resolve) => setTimeout(resolve, POLL_MS));
             const run = await apiJson(`/studio/runs/${id}`);

@@ -8,11 +8,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests._js_scope import unwrapped
+
 JS = Path(__file__).resolve().parent.parent / "frontend" / "js"
 
 
 def _src(name: str) -> str:
-    return (JS / name).read_text(encoding="utf-8")
+    return unwrapped((JS / name).read_text(encoding="utf-8"))
 
 
 def _body(js: str, head: str) -> str:

@@ -28,6 +28,7 @@ from datetime import date, datetime, time
 from pathlib import Path
 
 from tessellate.ai import arithmetic, recognise, study, utilities
+from tessellate.ai import recognise_questions
 from tessellate.core import cjk
 from tessellate.ai import composer_compose as compose
 from tessellate.ai.composer_study import Ctx, Reply, topic_notes
@@ -183,7 +184,7 @@ def _day_question(text: str, today: date) -> Reply | None:
     if not found:
         return None
     rest = found["rest"].strip()
-    moved = recognise.day_offset(rest, today)
+    moved = recognise_questions.day_offset(rest, today)
     if moved:
         return _offset_reply(moved, today)
     if rest.lower() in ("it", "today", "now", "this"):
@@ -219,7 +220,7 @@ def _gap_words(low: date, high: date, unit: str) -> str:
         return f"{days / 7:.1f} weeks ({days} days)"
     if unit == "months":
         months = (high.year - low.year) * 12 + high.month - low.month - (1 if high.day < low.day else 0)
-        return f"{months} month{'s' if months != 1 else ''} and {(high - recognise.shift_day(low, months, 'month', 1)).days} days ({days} days)"
+        return f"{months} month{'s' if months != 1 else ''} and {(high - recognise_questions.shift_day(low, months, 'month', 1)).days} days ({days} days)"
     tail = f" ({weeks} week{'s' if weeks != 1 else ''}" + (f" and {rest} day{'s' if rest != 1 else ''}" if rest else "") + ")" if days >= 14 else ""
     return f"{days} day{'s' if days != 1 else ''}{tail}"
 
@@ -247,11 +248,11 @@ def _countdown(text: str, today: date, mood: compose.Mood) -> Reply | None:
 
 
 def _since(text: str, today: date, mood: compose.Mood) -> Reply | None:
-    asked = recognise.since_question(text)
+    asked = recognise_questions.since_question(text)
     if not asked:
         return None
     unit, phrase = asked
-    ago = recognise.days_since(phrase, datetime.combine(today, time(10)))
+    ago = recognise_questions.days_since(phrase, datetime.combine(today, time(10)))
     if ago is None:
         return None
     target = date.fromordinal(today.toordinal() - ago)
@@ -263,7 +264,7 @@ def _since(text: str, today: date, mood: compose.Mood) -> Reply | None:
 def _offset_question(text: str, today: date) -> Reply | None:
     """"What is 3 weeks before 12 dec": the recogniser's offset, no "day" word needed."""
     found = _OFFSET_Q.match(text)
-    moved = recognise.day_offset(found["rest"].strip(), today) if found else None
+    moved = recognise_questions.day_offset(found["rest"].strip(), today) if found else None
     return _offset_reply(moved, today) if moved else None
 
 

@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 
 from tessellate.ai import extractor
-from tessellate.entry import manager
+from tessellate.entry import manager_links
 
 
 def _save(client, content, **extra):
@@ -136,7 +136,7 @@ def test_preview_splits_into_several_notes_with_sibling_links(ai_client, fake_ol
     sibling_links = [link for link in body["links"] if link["kind"] == "sibling"]
     assert len(sibling_links) == 1
     assert sibling_links[0]["reason"] == "both jotted down during the same call"
-    assert sibling_links[0]["reason"] != manager.AUTO_REASON_TEXT
+    assert sibling_links[0]["reason"] != manager_links.AUTO_REASON_TEXT
 
 
 def test_a_single_topic_is_not_split(ai_client, fake_ollama):
@@ -160,7 +160,7 @@ def test_preview_finds_related_existing_notes_with_a_real_reason(ai_client, fake
     related = [link for link in body["links"] if link["kind"] == "related"]
     assert len(related) == 1
     assert related[0]["reason"] == "both are jokes about wordplay"
-    assert related[0]["reason"] != manager.AUTO_REASON_TEXT
+    assert related[0]["reason"] != manager_links.AUTO_REASON_TEXT
     assert related[0]["target_ref"].startswith("existing:")
 
 
@@ -243,7 +243,7 @@ def test_commit_creates_notes_and_links_with_the_reasons_it_was_given(ai_client)
     linked = next(e for e in all_entries if e["content"] == "a funny scarecrow joke")
     assert len(linked["links"]) == 1
     assert linked["links"][0]["reason"] == "written in the same sitting"
-    assert linked["links"][0]["reason"] != manager.AUTO_REASON_TEXT
+    assert linked["links"][0]["reason"] != manager_links.AUTO_REASON_TEXT
 
 
 def test_commit_links_to_an_existing_note_by_ref(ai_client):

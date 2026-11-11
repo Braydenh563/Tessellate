@@ -54,9 +54,9 @@ def _day(moment: datetime | None, today: date) -> str:
 def _which(content: str) -> str:
     """The note named the way the person would know it: its heading, or the
     words it starts with."""
-    from tessellate.entry import manager
+    from tessellate.entry import manager_text
 
-    heading = manager.extract_title(content)
+    heading = manager_text.extract_title(content)
     if heading:
         return f"“{realise.cut_title(heading, 60)}”"
     return composer_frame.name_of({"content": content})

@@ -19,11 +19,13 @@ from typing import Annotated, Literal
 from urllib.parse import quote, urlencode
 
 from tessellate.ai import recognise as rec
+from tessellate.ai import recognise_reminders
 from tessellate.core import deps, ics_import, reminder_token
 from tessellate.core.database import PRIVATE_SPACES, Entry, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry import private_space
-from tessellate.entry.manager import extract_title, log_action, plain_label, readable_content
+from tessellate.entry.manager import log_action
+from tessellate.entry.manager_text import extract_title, plain_label, readable_content
 from tessellate.entry.properties import strip as strip_properties
 from tessellate.repo import content as content_repo
 from tessellate.repo import documents as documents_repo
@@ -44,7 +46,7 @@ Priority = Literal["low", "normal", "high"]
 #: every 2 weeks, the last Friday of the month: TIMELINE_PLAN 11 row 8).
 Recurring = Annotated[
     str,
-    Field(max_length=80, pattern=r"^(?:none|daily|weekly|monthly|" + rec.STORED_RULE.pattern + r")$"),
+    Field(max_length=80, pattern=r"^(?:none|daily|weekly|monthly|" + recognise_reminders.STORED_RULE.pattern + r")$"),
 ]
 #: Up to thirty days ahead, in minutes.
 AlertMinutes = Annotated[int, Field(ge=1, le=43200)]

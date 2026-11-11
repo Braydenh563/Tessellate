@@ -24,6 +24,7 @@ from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import meaning, recognise
+from tessellate.ai import recognise_questions
 
 #: `read` folds whitespace to one space before these run, so they say " " and never
 #: `\s+` (a lazy group before `\s+` is polynomial on a run of tabs; CodeQL).
@@ -53,7 +54,7 @@ def _past_day(phrase: str, now: datetime) -> date | None:
     found = recognise.span(phrase, today, "past")
     if found is not None:
         return found[0]
-    days = recognise.days_since(f"{phrase} ago", now)
+    days = recognise_questions.days_since(f"{phrase} ago", now)
     return today - timedelta(days=days) if days is not None else None
 
 
@@ -143,7 +144,7 @@ def _midnight(day: str) -> datetime:
 
 def _where_links(session: Session, query, item: dict):  # noqa: ANN001
     from tessellate.core.database import LIKE_ESCAPE, Entry, EntryLink, like_escape
-    from tessellate.entry.manager import find_by_wiki_name
+    from tessellate.entry.manager_wiki import find_by_wiki_name
 
     links = session.execute(select(EntryLink.source_entry_id, EntryLink.target_entry_id)).all()
     if item["kind"] == "orphan":

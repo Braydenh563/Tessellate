@@ -10,6 +10,7 @@ import pytest
 from tessellate.api import routes_chat
 from tessellate.core import config
 from tessellate.entry import manager
+from tessellate.entry import manager_links
 from tests import _gym_1767 as fx
 
 NOW = datetime.fromisoformat(fx.NOW)
@@ -29,7 +30,7 @@ def notebook(session, monkeypatch):
     session.commit()
     for (*_rest, links), entry in zip(fx.NOTES, made, strict=True):
         for i, reason in links.items():
-            manager.create_link(session, entry, made[i], reason=reason)
+            manager_links.create_link(session, entry, made[i], reason=reason)
     session.commit()
     return made
 

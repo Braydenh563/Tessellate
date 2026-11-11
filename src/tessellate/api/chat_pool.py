@@ -26,6 +26,7 @@ from tessellate.repo import documents as documents_repo
 from tessellate.repo import relations as relations_repo
 from tessellate.repo import tags as tags_repo
 from tessellate.entry import manager
+from tessellate.entry import manager_text
 from tessellate.search import engine, search_manager
 
 
@@ -424,7 +425,7 @@ def _holds_read_text(content: str) -> bool:
 
 def _note_content(ctx: _NoteCtx, entry) -> str:  # noqa: ANN001
     session, found = ctx.session, ctx.found
-    content = found.as_of_then[entry.id].text if entry.id in found.as_of_then else manager.readable_content(entry)
+    content = found.as_of_then[entry.id].text if entry.id in found.as_of_then else manager_text.readable_content(entry)
     if entry.id in ctx.attached_ids:
         # Only for notes the user picked by hand. A retrieved note is a
         # candidate; an attached one is the subject of the question, and that is

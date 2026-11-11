@@ -23,6 +23,8 @@ import re
 from functools import lru_cache
 from pathlib import Path
 
+from tests._js_scope import unwrapped
+
 FRONTEND_DIR = Path(__file__).resolve().parents[1] / "frontend"
 #: The scripts live in `frontend/js/` (2026-10-03); `sw.js` alone stays at the
 #: frontend root, because a service worker only controls pages under its own path.
@@ -53,7 +55,7 @@ LAZY_PIECES = ("panel-movable.js", "notes-lazy.js", "lightbox-view.js", "edit-co
 @lru_cache(maxsize=1)
 def _joined() -> str:
     paths = [*app_js_files(), *(JS_DIR / name for name in LAZY_PIECES)]
-    return "\n".join(path.read_text(encoding="utf-8") for path in paths)
+    return "\n".join(unwrapped(path.read_text(encoding="utf-8")) for path in paths)
 
 
 def app_js_text() -> str:
@@ -90,8 +92,8 @@ MOVED_OUT = {
 
 def with_pieces(name: str) -> str:
     """A boot script's text plus the lazy files its code moved into."""
-    parts = [(JS_DIR / name).read_text(encoding="utf-8")]
-    parts += [(JS_DIR / piece).read_text(encoding="utf-8") for piece in MOVED_OUT.get(name, ())]
+    parts = [unwrapped((JS_DIR / name).read_text(encoding="utf-8"))]
+    parts += [unwrapped((JS_DIR / piece).read_text(encoding="utf-8")) for piece in MOVED_OUT.get(name, ())]
     return "\n".join(parts)
 
 
@@ -105,7 +107,7 @@ def frontend_text(name: str) -> str:
     path = JS_DIR / name
     if not path.exists():  # sw.js, the one script that stays at the root
         path = FRONTEND_DIR / name
-    return path.read_text(encoding="utf-8")
+    return unwrapped(path.read_text(encoding="utf-8"))
 
 
 def app_js_family(path: Path) -> bool:

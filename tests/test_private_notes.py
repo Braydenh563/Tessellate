@@ -244,7 +244,8 @@ def test_an_existing_notebook_upgrades_without_a_reset(tmp_path):
     but no vault row and no is_private column.
     """
     import bcrypt
-    from tessellate.core.database import DatabaseManager, Entry, User, Vault
+    from tessellate.core.database import Entry, User, Vault
+    from tessellate.core.database_manager import DatabaseManager
 
     db_path = tmp_path / "existing.db"
     manager = DatabaseManager(db_path)

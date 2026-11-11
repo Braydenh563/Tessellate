@@ -19,6 +19,7 @@ from tessellate.core import activity, recordings
 
 from tests.test_captions import CHUNK, fake
 from tests import _js_scope
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -134,7 +135,7 @@ def test_a_day_old_spool_is_swept_when_a_run_starts(client, helper):
 
 def test_the_switch_is_a_device_setting_off_by_default_and_the_page_sends_it():
     root = ROOT / "frontend"
-    meetings = (root / "js/meetings.js").read_text(encoding="utf-8")
+    meetings = unwrapped((root / "js/meetings.js").read_text(encoding="utf-8"))
     captions_js = _js_scope.unwrapped((root / "js/captions.js").read_text(encoding="utf-8"))
     assert '"captionsKeepAudio", "Keep the audio of live captions"' in meetings and ", false],\n];" in meetings
     assert "prefs.bool(key, fallback)" in meetings

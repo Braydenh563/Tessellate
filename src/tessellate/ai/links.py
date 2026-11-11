@@ -1,6 +1,6 @@
 """The link-reason audit: rewrites vague link reasons into specific ones.
 
-`entry.manager.create_link` only ever gives a fresh link the generic
+`entry.manager_links.create_link` only ever gives a fresh link the generic
 `AUTO_REASON_TEXT` ("similar in meaning"), deliberately, so creating a link
 never stalls on a chat round-trip (see `manager._deduce_reason`). This module
 is the other half: a background pass, run from `ai.autonomous` and offered as
@@ -18,6 +18,7 @@ from sqlalchemy import select
 from tessellate.ai import librarian, model_manager, ollama_client
 from tessellate.core.database import Entry, EntryLink, plain_reason
 from tessellate.entry import manager
+from tessellate.entry import manager_links
 
 logger = logging.getLogger("tessellate.ai.links")
 
@@ -117,7 +118,7 @@ def audit_vague_links(
     stmt = (
         select(EntryLink)
         .where(
-            (EntryLink.reason == manager.AUTO_REASON_TEXT)
+            (EntryLink.reason == manager_links.AUTO_REASON_TEXT)
             | (EntryLink.reason_confidence.is_not(None))
         )
         .limit(limit)
@@ -168,7 +169,7 @@ def audit_vague_links(
             )
             continue
 
-        manager.apply_audited_reason(link, reason)
+        manager_links.apply_audited_reason(link, reason)
         updated_count += 1
         # A link that got a usable reason no longer matches the WHERE clause
         # above (its reason_confidence is cleared and its reason is no

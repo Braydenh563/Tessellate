@@ -8,10 +8,11 @@ Reproduced at 4x CPU (Playwright, a quiet notebook, so the figures are a floor):
 from __future__ import annotations
 
 from pathlib import Path
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-MENU = (JS / "companion-menu.js").read_text(encoding="utf-8")
+MENU = unwrapped((JS / "companion-menu.js").read_text(encoding="utf-8"))
 AVATARS = (JS / "avatars.js").read_text(encoding="utf-8")
 PANEL = (JS / "panel-movable.js").read_text(encoding="utf-8")
 

@@ -29,7 +29,7 @@ def test_reminder_rows_show_the_day_and_the_relative_time():
 def test_a_title_ending_in_due_keeps_its_day_word():
     from datetime import datetime
 
-    from tessellate.ai.recognise import parse_reminder_text
+    from tessellate.ai.recognise_reminders import parse_reminder_text
 
     now = datetime(2026, 10, 25, 12, 0)
     assert parse_reminder_text("Essay due friday 5pm", now)["text"] == "Essay due Friday"

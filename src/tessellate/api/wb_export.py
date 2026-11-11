@@ -12,7 +12,7 @@ import re
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from tessellate.entry.manager import extract_title
+from tessellate.entry.manager_text import extract_title
 from tessellate.core.deps import get_session
 from tessellate.api.wb_model import MAP_TOPIC_KIND
 from tessellate.api.wb_tree import MAX_MAP_DEPTH, _build_tree, _cross_links, _map_objects

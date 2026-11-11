@@ -19,6 +19,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 
 from tessellate.ai import composer_done, composer_event_verdict, composer_frame, question_noise, realise, recognise, study
+from tessellate.ai import recognise_questions
 from tessellate.ai import when as when_words
 from tessellate.ai import composer_compose as compose
 from tessellate.ai import note_rank, reminder_parser
@@ -332,10 +333,10 @@ def _clauses(sentence: str) -> list[str]:
 
 def _dated_lines(content: str):  # noqa: ANN202
     for line in content.splitlines():
-        if line.strip() and not _DONE.match(line) and recognise.dated_sentence(line) and not line.lstrip().startswith(("```", ">")):
+        if line.strip() and not _DONE.match(line) and recognise_questions.dated_sentence(line) and not line.lstrip().startswith(("```", ">")):
             for sentence in _SENTENCE.split(line):
-                if recognise.dated_sentence(sentence):
-                    yield from (c for c in _clauses(sentence) if recognise.dated_sentence(c) and not _MOOD.match(c))
+                if recognise_questions.dated_sentence(sentence):
+                    yield from (c for c in _clauses(sentence) if recognise_questions.dated_sentence(c) and not _MOOD.match(c))
 
 
 #: Reading a note's dates costs the recogniser; the same note is asked about
@@ -349,7 +350,7 @@ _CACHE_MAX = 1200
 def _not_due(sentence: str, title: str) -> bool:
     """A day gone ("Wednesday bench 60kg." in a gym log, E20) or a habit ("Gym on Monday, Wednesday and Friday",
     bt-compcomp-1109 item 8): neither is a day that falls due."""
-    return bool(recognise.logged_day(sentence, title) or recognise.recurring_schedule(sentence))
+    return bool(recognise_questions.logged_day(sentence, title) or recognise.recurring_schedule(sentence))
 
 
 def _sentence_case(text: str) -> str:
@@ -370,7 +371,7 @@ def _note_days(note: dict, now: datetime) -> tuple[tuple[date, str], ...]:
     for sentence in _dated_lines(content):
         if _not_due(sentence, title):
             continue
-        if recognise.told_as_past(sentence) and not re.search(r"\d{4}", sentence):
+        if recognise_questions.told_as_past(sentence) and not re.search(r"\d{4}", sentence):
             #: "Slept badly on Tuesday." happened; its day is never ahead (Z26).
             continue
         day = _sentence_day(sentence, anchor)
@@ -397,7 +398,7 @@ def note_events(ctx: Ctx, start: date, end: date) -> list[Event]:
     """The dated sentences of the notes that fall in [start, end]."""
     out: list[Event] = []
     for note in ctx.notes[:400]:
-        if recognise.dated_sentence(str(note.get("content") or "")):
+        if recognise_questions.dated_sentence(str(note.get("content") or "")):
             out += _note_events_of(note, ctx.now, start, end)
     return out
 
@@ -478,11 +479,11 @@ def _habit_events(ctx: Ctx, day: date) -> list[Event]:
     out: list[Event] = []
     for note in ctx.notes[:400]:
         content = str(note.get("content") or "")
-        if not recognise.dated_sentence(content):
+        if not recognise_questions.dated_sentence(content):
             continue
         title = study.title_of(content)
         for sentence in _dated_lines(content):
-            if recognise.recurring_schedule(sentence) and not recognise.logged_day(sentence, title) and name.search(sentence):
+            if recognise.recurring_schedule(sentence) and not recognise_questions.logged_day(sentence, title) and name.search(sentence):
                 text = _plain(sentence)
                 if 3 <= len(text) <= 160:
                     out.append(Event(day, text, "note", note.get("id"), title))
@@ -577,7 +578,7 @@ def _tasks(ctx: Ctx, start: date, end: date) -> list[tuple[str, dict, bool]]:
     out: list[tuple[str, dict, bool]] = []
     for note in ctx.notes[:OPEN_LIMIT]:
         for task in study.open_tasks(str(note.get("content") or "")):
-            day = _sentence_day(task, _anchor(note, ctx.now)) if recognise.dated_sentence(task) else None
+            day = _sentence_day(task, _anchor(note, ctx.now)) if recognise_questions.dated_sentence(task) else None
             if day is not None and start <= day <= end:
                 continue
             out.append((task, note, day is not None))
@@ -953,7 +954,7 @@ def _answer_text(ctx: Ctx, text: str) -> Reply | None:
     if _OVERDUE.match(text):
         return _overdue(ctx)
     until = _UNTIL.match(text)
-    if until and not recognise.is_duration_of_doing(text):
+    if until and not recognise_questions.is_duration_of_doing(text):
         return _until(ctx, until.group("t"))
     if (reply := _when_reply(ctx, text)) is not None:
         return reply

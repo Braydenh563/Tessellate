@@ -3200,8 +3200,8 @@ function resetAppearance() {
 // changed.
 function bgArtRefreshSeed() {
   //: bg-art.js not fetched: nothing has been drawn from a seed.
-  if (typeof bgArtSeedUsed === "undefined" || bgArtSeedUsed === null || !bgArtOn()) return;
-  if (bgArtSeedUsed !== bgArtSeedText()) startBgArt();
+  if (!window.bgArtSeedStale?.() || !bgArtOn()) return;
+  startBgArt();
 }
 
 function bgArtOn() {

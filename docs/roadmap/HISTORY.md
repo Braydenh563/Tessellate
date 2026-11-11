@@ -7,6 +7,16 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-11 (K24, K25, BK11: god-module carves, k24-1111)
+
+**Built** (Bk2 structure ratchets). Whole moves, no behaviour change; callers and the tests that read the old files follow the new homes.
+
+- `ai/recognise.py` 2,869 to 1,869: `recognise_units.py` 212, `recognise_reminders.py` 266, `recognise_questions.py` 549. The date core and the recogniser stay together (mutually dependent).
+- `entry/manager.py` 2,714 to 1,341: `manager_text.py` 378 (below the base), `manager_links.py` 572, `manager_wiki.py` 288, `manager_categories.py` 159 (above it).
+- `core/database.py` 2,996 to 2,468: `database_manager.py` 539 (`DatabaseManager` and the migration helpers). The ORM models and session hooks stay together (cyclic through the sealed-column constants).
+- K25: a scan of `src/` finds no function over 150 lines (`list_entries` is exactly 150; `_start_tray` 127, `_run_desktop` 99), so the Windows-only blocker was stale.
+- **Not done:** `__main__.py` (2,702 lines) was not carved. `tests/test_import_module_cycles.py` was already red at the base (a group of 19 against a cap of 15) and stays red at 18; the cap was not raised. `tests/test_jobruns_no_raw_exceptions.py` fails on `api/routes_studio.py` at the base too.
+
 ## Built 2026-11-11: decision 8's bar at 0.6, and "ask when unsure" (OPEN row 260)
 
 The owner moved the no-model filing bar to 0.6 top-1 (HANDOVER decision 6; the
@@ -21,6 +31,10 @@ Filing options menu; `ask_when_unsure`, off by default): a filing under
 waits in Uncategorised; the hint and the saved status offer the closest two or
 three. Leave one out on the 120 notes: 4 of the 11 wrong filings sit under 70,
 beside about 20 right ones (`tests/test_ask_when_unsure.py`).
+
+## Built, 2026-11-11 (OPEN D24, scope-wrap-1111b)
+
+- Ten more frontend files wrapped whole (`avatars.js`, `graph-canvas.js`, `meetings.js`, `bg-art.js`, `settings-controls.js`, `settings-find.js`, `settings-models.js`, `atlas-life.js`, `companion-menu.js`, `companion-throw.js`): 8,457 to 7,406 names in the shared scope (cap in `tests/test_global_scope_ratchet.py`). Module `let`s other files touched became accessors; tests read through `_js_scope.unwrapped`. Not wrapped: whiteboard, documents, sync, settings-rows, studio (other sessions), and graph.js, atlas.js, library.js and the boot files (too many cross-file calls for one pass).
 
 ## Moved from the plans, 2026-11-11 (WORLD_CLASS design requests, "customise the domain name", OPEN Q34/F8)
 
@@ -87,6 +101,7 @@ beside about 20 right ones (`tests/test_ask_when_unsure.py`).
 - Measured in Chromium (Live and Read, light and dark, 320, 360, 390, 720, 1440, 2560 wide): 0 overlapping tick labels, 0 horizontal overflow, 0 console errors; slider and drag change the path. Guide topic `document-graph`; tests `tests/test_doc_graph.py`.
 - **Not verified:** a real touch or phone gesture; the plot in print and the HTML export (a slider is not exported as a control); dark theme in Live was driven at one width only.
 - F1 run 2 (2026-11-11): gap row 10 as an Edit here dialog on a board card (DOCUMENTS_PLAN 26): `documents-board.js` lends the whiteboard's one view to the dialog; driven at 1440 and 390, Read and Live, dark: a text added in the dialog saved (card 1 item to 2 items after close), the view returned to `#tab-library`, hidden, the Library whiteboard on its list, no overflow, no console errors. Found on the way: a `![[board:N]]` in Live stayed "Nothing called" until the board index was loaded (now asked once per board id).
+- F1 run 2 (2026-11-11), board embed Edit here, three gaps closed (`documents-board.js`, `whiteboard.js` `wbShowBoardsLanding.wantsEscape`, `library-lazy.css`, `doc-graph-lazy.css`, `doc-base-lazy.css`; `tests/test_doc_board_embed.py`): Escape closes the dialog only after the board used its own (menu, selection, tool, find bar, typing, full screen) and focus returns to the same Edit here button (was: no close, focus on body); the full-screen view was 1440 wide at x=36 in a 1382 card, now the card is [0,0,W,H]; closing leaves the Library as it was (board 14 camera [37,23,0.8] before and after, was the board list). Print: the Edit here button printed (now hidden), plot and base table took screen inks (contrast on paper 1.2 to 2.1, now 5.5 to 21), the table ran 56 px (A4) and 276 px (360 sheet) past its box (now inside). Driven in Chromium at 360, 820, 1440 and 720 (200% zoom of 1440), light and dark. **Not verified:** a real print dialog (print emulation plus a Letter/A4 `page.pdf` only); 200% zoom is a halved viewport width; at 360 the full-screen button is in a menu and was driven by `toggleWhiteboardFullscreen(true)`; real touch.
 - F1 run 2 (2026-11-11): gap row 5 as synced blocks (DOCUMENTS_PLAN 26, decision 82): the block lives in its source document and a `![[Doc#^id]]` window edits it (`documents-synced.js`, pencil in `docEmbedNode`); driven at 1440 and 390, Read and Live, dark: save writes the source (1 revision), a changed block is refused with the text kept, Escape cancels, no pencil in the source document, no overflow, no console errors. Found on the way: `docEmbedNode` is private to its file, so a lazy file must be handed the redraw.
 - F1 run 2 (2026-11-11): gap row 6 as a read-only table: the ```base block (`documents-base.js`, `GET /property-table`, `repo/properties.py` `table`; `tests/test_property_table.py`, `tests/test_doc_base.py`; driven at 1440 and 390 dark, no overflow). The graph and base fences share `fenceBlocks`, `fenceIn` and `fenceField` in `documents-math.js`.
 - F1 run 2 (2026-11-11): the graph and base blocks in the HTML export, driven on :8796: the plot had no line styles, the key swatch was a style attribute the clean-up drops (now a drawn bar), a base block was saved as its "Reading the notes" line (the export waits up to 3 s for the rows), and each row's note name was a button removed with the other controls (now text). Pinned in `tests/test_document_export_html.py`.

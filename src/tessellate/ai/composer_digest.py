@@ -43,7 +43,7 @@ from tessellate.ai import composer_aliases, composer_chip_subject, composer_over
 from tessellate.ai import composer_select
 from tessellate.ai import composer_credit, composer_each, composer_label, composer_refer, composer_tally
 from tessellate.ai.composer_lists import clean
-from tessellate.ai import recognise as recogniser
+from tessellate.ai import recognise as recogniser, recognise_questions
 from tessellate.search import query as query_understanding
 from tessellate.ai.composer_digest_sentences import (
     CONTEXT_TAGS, Fact, LINES, PHRASES, VOICES, _ASKED_AS, _ASKS, _ASKS_WORDS, _BAD, _CUES,
@@ -217,7 +217,7 @@ def _event_lead(out: _Out, lead: Fact, today: date) -> bool:
     if lead.view.written is None:
         return False
     text = _unfilled(lead.sentence.text.strip().rstrip(".!"))
-    if recogniser.set_for_later(text):
+    if recognise_questions.set_for_later(text):
         #: "Booked for 14 November" is a day set, not a thing done: said as
         #: the day itself, never read back a year ("Back in November 2025").
         return False
@@ -530,7 +530,7 @@ def _single_cue(kind: str, asked: str) -> re.Pattern | None:
         return _DURATION
     if kind in _SINGLE_CUES:
         return _SINGLE_CUES[kind]
-    if recogniser.event_window_asked(asked):
+    if recognise_questions.event_window_asked(asked):
         #: "is my dentist appointment tomorrow": the line that holds the day leads, not the one that names the
         #: appointment (W8B 1111); its verdict reads the first line.
         return _SINGLE_CUES["when"]

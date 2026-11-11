@@ -20,7 +20,7 @@ from sqlalchemy import select
 
 from tessellate.core import deps
 from tessellate.core.database import Category, EmbeddingRecord, Entry
-from tessellate.entry import manager
+from tessellate.entry import manager_categories
 
 
 def _vector_count(session, entry_ids) -> int:
@@ -41,7 +41,7 @@ def test_renaming_a_category_drops_its_notes_vectors(ai_client, fake_embeddings)
         assert len(ids) == 2
         assert _vector_count(session, ids) == 2, "the notes start out embedded"
 
-        manager.rename_category(session, games.id, "Hobbies")
+        manager_categories.rename_category(session, games.id, "Hobbies")
 
         assert _vector_count(session, ids) == 0, "stale vectors must not survive the rename"
     finally:
@@ -58,7 +58,7 @@ def test_merging_two_categories_drops_the_merged_notes_vectors(ai_client, fake_e
         moved_ids = [e.id for e in session.scalars(select(Entry).where(Entry.category_id == games.id))]
         stayed_ids = [e.id for e in session.scalars(select(Entry).where(Entry.category_id == hobbies.id))]
 
-        result = manager.rename_category(session, games.id, "Hobbies")
+        result = manager_categories.rename_category(session, games.id, "Hobbies")
         assert result["merged"] is True
 
         # Everything now under "Hobbies" is stale: the notes that moved changed
@@ -80,7 +80,7 @@ def test_a_no_op_rename_leaves_the_vectors_alone(ai_client, fake_embeddings):
         before = _vector_count(session, ids)
         assert before == 1
 
-        assert manager.rename_category(session, games.id, "Games")["renamed"] is False
+        assert manager_categories.rename_category(session, games.id, "Games")["renamed"] is False
         assert _vector_count(session, ids) == before
     finally:
         session.close()
@@ -95,7 +95,7 @@ def test_notes_in_other_categories_keep_their_vectors(ai_client, fake_embeddings
         uni = session.scalar(select(Category).where(Category.name == "Uni"))
         uni_ids = [e.id for e in session.scalars(select(Entry).where(Entry.category_id == uni.id))]
 
-        manager.rename_category(session, games.id, "Hobbies")
+        manager_categories.rename_category(session, games.id, "Hobbies")
 
         assert _vector_count(session, uni_ids) == len(uni_ids)
     finally:

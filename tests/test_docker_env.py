@@ -24,7 +24,8 @@ def test_first_password_is_taken_once_and_blank_is_none(monkeypatch):
 
 
 def test_seed_only_when_no_password_and_never_logs_it(tmp_path, monkeypatch, caplog):
-    from tessellate.core.database import DatabaseManager, User
+    from tessellate.core.database import User
+    from tessellate.core.database_manager import DatabaseManager
 
     db = DatabaseManager(tmp_path / "m.db")
     secret = "correct horse battery"

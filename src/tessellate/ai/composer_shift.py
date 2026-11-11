@@ -14,7 +14,7 @@ import calendar
 import re
 from datetime import date, timedelta
 
-from tessellate.ai import recognise as rec
+from tessellate.ai import recognise_questions
 
 _NUMBERS = {"a": 1, "one": 1, "two": 2, "three": 3, "four": 4}
 _LEAD = r"^\s*(?:(?:and|but|so|ok)[, ]+)*(?:what about\s+)?"
@@ -57,7 +57,7 @@ def _moved(first: date, last: date, unit: str, count: int) -> tuple[date, date]:
 
 def _shifted(text: str, previous: str, today: date) -> str | None:
     found = _SHIFT.match(text) or _STEP.match(text)
-    window = rec.question_day(previous, today) if found else None
+    window = recognise_questions.question_day(previous, today) if found else None
     if not found or window is None:
         return None
     first, last, _phrase, start, end = window
@@ -72,7 +72,7 @@ def _shifted(text: str, previous: str, today: date) -> str | None:
 def _around(text: str, previous: str, today: date) -> str | None:
     if not _NEAR.match(text):
         return None
-    window = rec.question_day(previous, today)
+    window = recognise_questions.question_day(previous, today)
     if window is None:
         return None
     first, last = window[0], window[1]

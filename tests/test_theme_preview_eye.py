@@ -14,8 +14,9 @@ import re
 
 from tests._css_paths import CSS_DIR
 from tests._app_js import APP_JS, JS_DIR
+from tests._js_scope import unwrapped
 
-CONTROLS = (JS_DIR / "settings-controls.js").read_text(encoding="utf-8")
+CONTROLS = unwrapped((JS_DIR / "settings-controls.js").read_text(encoding="utf-8"))
 
 
 def test_no_hover_preview_where_eyes_exist():

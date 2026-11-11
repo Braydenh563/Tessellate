@@ -30,11 +30,13 @@ of the pane, once per scroll event from the back/forward history
 import re
 from pathlib import Path
 
+from tests._js_scope import unwrapped
+
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 
 
 def _body(name: str, head: str) -> str:
-    src = (JS / name).read_text(encoding="utf-8")
+    src = unwrapped((JS / name).read_text(encoding="utf-8"))
     start = src.index(head)
     end = src.index("\n}\n", start)
     return src[start:end]

@@ -572,7 +572,7 @@ def _entry_cards(session: Session, note_ids: set, board_ids: set) -> tuple[dict,
     in a conversation would put it back on screen in the one place the
     private-notebook rule cannot reach. A map is held to the same."""
     from tessellate.core.database import Entry
-    from tessellate.entry import manager as entry_manager
+    from tessellate.entry import manager_text
     from tessellate.entry.properties import strip as strip_properties
 
     notes: dict = {}
@@ -590,7 +590,7 @@ def _entry_cards(session: Session, note_ids: set, board_ids: set) -> tuple[dict,
             lines = [ln.strip() for ln in strip_properties(entry.content or "").splitlines() if ln.strip()]
             notes[entry.id] = {"id": entry.id, "kind": "note", "name": lines[0][:400] if lines else ""}
         if entry.id in board_ids:
-            maps[entry.id] = {"id": entry.id, "kind": "map", "name": entry_manager.extract_title(entry.content) or "Mind map"}
+            maps[entry.id] = {"id": entry.id, "kind": "map", "name": manager_text.extract_title(entry.content) or "Mind map"}
     return notes, maps
 
 

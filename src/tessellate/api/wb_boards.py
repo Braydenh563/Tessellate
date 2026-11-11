@@ -15,7 +15,8 @@ from pydantic import BaseModel, Field
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from tessellate.core.database import Entry, WhiteboardNode, WhiteboardObject, WhiteboardSketch
 from sqlalchemy.orm import Session
-from tessellate.entry.manager import apply_title, extract_title, update_entry
+from tessellate.entry.manager import update_entry
+from tessellate.entry.manager_text import apply_title, extract_title
 from datetime import datetime
 from tessellate.core import deps, events
 from sqlalchemy import func, select

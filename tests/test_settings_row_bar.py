@@ -3,6 +3,7 @@ inside its topic's fold (INBOX 1610, 1612). Measured in a browser by the sweep
 the commit names; this keeps the rules that make the numbers from drifting."""
 from tests._help_text import help_more_text
 from pathlib import Path
+from tests._js_scope import unwrapped
 
 CSS = Path(__file__).resolve().parent.parent / "frontend" / "css"
 
@@ -86,7 +87,7 @@ def test_the_log_view_shows_what_a_filter_hid_and_loads_older_records_on_scroll(
     """INBOX 1608: the owner's Errors-only filter hid the rest and read as deleted."""
     root = CSS.parent
     settings = (root / "js" / "settings.js").read_text(encoding="utf-8")
-    controls = (root / "js" / "settings-controls.js").read_text(encoding="utf-8")
+    controls = unwrapped((root / "js" / "settings-controls.js").read_text(encoding="utf-8"))
     assert '"Show them", "Clear the filters"' in settings
     assert "hidden by the filters above, not deleted" in settings
     assert 'id="logs-refresh"' in (root / "index.html").read_text(encoding="utf-8")

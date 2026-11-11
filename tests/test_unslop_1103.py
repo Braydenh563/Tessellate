@@ -8,6 +8,8 @@ it. The measured numbers live in the commit bodies.
 import re
 from pathlib import Path
 
+from tests._js_scope import unwrapped
+
 ROOT = Path(__file__).resolve().parent.parent
 CSS_DIR = ROOT / "frontend" / "css"
 
@@ -133,7 +135,7 @@ def test_12_reminder_when_row_takes_the_fields_height_and_corner():
 
 
 def _js(name: str) -> str:
-    return (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8")
+    return unwrapped((ROOT / "frontend" / "js" / name).read_text(encoding="utf-8"))
 
 
 def test_13_reminder_facts_are_one_line_of_equal_chips():

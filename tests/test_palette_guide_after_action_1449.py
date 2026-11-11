@@ -26,6 +26,7 @@ from pathlib import Path
 
 import pytest
 from tests import _js_scope
+from tests._js_scope import unwrapped
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 PALETTE = _js_scope.unwrapped((JS / "app-palette.js").read_text(encoding="utf-8"))
@@ -94,5 +95,5 @@ def test_settings_help_rows_are_marked_as_guide_topics() -> None:
     body = _function("paletteSettingRows")
     assert 'group: settingRowIsTopic(row) ? "Guide" : "Settings"' in body
     assert "help: settingRowIsTopic(row)" in body
-    settings_find = (JS / "settings-find.js").read_text(encoding="utf-8")
+    settings_find = unwrapped((JS / "settings-find.js").read_text(encoding="utf-8"))
     assert 'row.section === "help"' in settings_find[settings_find.index("function settingRowIsTopic(") :][:200]

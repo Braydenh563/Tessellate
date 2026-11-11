@@ -24,6 +24,7 @@ from tessellate.core import deps
 from tessellate.core.config import days_from_today, user_now
 from tessellate.core.database import EmbeddingRecord, Entry
 from tessellate.entry import manager
+from tessellate.entry import manager_text
 
 __all__ = [
     "ToolError",
@@ -257,7 +258,7 @@ def _readable(entry: Entry) -> str:
     one place a note's origin is noticed for the injection guard (SEC-02)."""
     if manager.came_from_outside(entry):
         mark_outside()
-    return manager.readable_content(entry)
+    return manager_text.readable_content(entry)
 
 
 def _note_summary(

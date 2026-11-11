@@ -9,7 +9,7 @@
 // companion-menu.js: the tests that read the companion's code read it as one.
 
 function nameMarkBuddyKeepCustom(custom) {
-  nameMarkBuddyCustomCache = null;
+  nameMarkBuddyCustomReset();
   try {
     prefs.set("avatar-buddy-custom", JSON.stringify({ name: custom.name, style: custom.style }));
   } catch (e) {

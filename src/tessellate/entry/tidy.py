@@ -47,6 +47,8 @@ from sqlalchemy import func, or_, select
 from tessellate.core import events
 from tessellate.core.database import AuditLog, Entry, EntryLink, Reminder, plain_reason, utcnow
 from tessellate.entry import link_facts, link_wording, manager
+from tessellate.entry import manager_categories
+from tessellate.entry import manager_links
 from tessellate.repo import tags as tags_repo
 
 logger = logging.getLogger("tessellate.tidy")
@@ -860,7 +862,7 @@ def _apply_merge_categories(session, chosen: list[dict]) -> tuple[int, dict]:  #
             for topic in taxonomy.name_topics(fold.name):
                 correction = learning.record(session, kind="alias", subject={"topic": topic}, from_value=fold.name, to_value=keep.name)
                 aliases.append(correction.id)
-            manager.rename_category(session, fold.id, keep.name)
+            manager_categories.rename_category(session, fold.id, keep.name)
         merged += 1
     return merged, {"moved": moved, "aliases": aliases}
 
@@ -876,7 +878,7 @@ def _apply_rename_categories(session, chosen: list[dict]) -> tuple[int, dict]:  
         new = row["change"][len("Rename to "):]
         entries = [e.id for e in session.scalars(select(Entry).where(Entry.category_id == category.id))]
         renamed.append({"id": category.id, "from": category.name, "to": new, "entries": entries})
-        manager.rename_category(session, category.id, new)
+        manager_categories.rename_category(session, category.id, new)
     return len(renamed), {"renamed": renamed}
 
 
@@ -1006,7 +1008,7 @@ def _undo_unlinked(session, undo: dict) -> int:  # noqa: ANN001
         source, target = session.get(Entry, item["source"]), session.get(Entry, item["target"])
         if source is None or target is None:
             continue
-        made = manager.create_link(
+        made = manager_links.create_link(
             session, source, target, reason=item["reason"], link_type=item["link_type"],
             origin=item["origin"], reason_confidence=item["reason_confidence"],
         )
@@ -1066,7 +1068,7 @@ def _undo_renamed(session, undo: dict) -> int:  # noqa: ANN001
     for item in undo.get("renamed", []):
         category = session.get(Category, item["id"])
         if category is not None and category.name == item["to"]:
-            manager.rename_category(session, category.id, item["from"])
+            manager_categories.rename_category(session, category.id, item["from"])
             restored += 1
     return restored
 

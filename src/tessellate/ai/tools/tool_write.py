@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from tessellate.core import deps
 from sqlalchemy import func, select
 from tessellate.entry import manager, private_space, tagnames
+from tessellate.entry import manager_links
 from tessellate.repo import relation_types
 from tessellate.repo import tags as tags_repo
 from tessellate.ai.tools.reminder_rules import held_reminder, reminder_time
@@ -295,7 +296,7 @@ def _link_notes(session: Session, args: dict) -> dict:
         target = _require_note(session, {"note_id": target_id})
         if target.is_deleted:
             continue
-        link = manager.create_link(session, source, target, reason=reason, link_type=link_type)
+        link = manager_links.create_link(session, source, target, reason=reason, link_type=link_type)
         if link is not None:
             linked.append(target.id)
 
@@ -344,7 +345,7 @@ def _unlink_notes(session: Session, args: dict) -> dict:
     target = _require_note(session, {"note_id": int(args["other_note_id"])})
     if target.is_deleted:
         raise ToolError(f"No note with id {args.get('other_note_id')}")
-    removed = manager.remove_link(session, source, target)
+    removed = manager_links.remove_link(session, source, target)
     if not removed:
         raise ToolError(f"Notes #{source.id} and #{target.id} aren't linked")
     return {

@@ -48,7 +48,7 @@ _LABEL_PUMPS = {
 
 @pytest.mark.parametrize("text", _LABEL_PUMPS.values(), ids=_LABEL_PUMPS.keys())
 def test_plain_label_is_linear_on_unclosed_markup(text):
-    from tessellate.entry.manager import plain_label
+    from tessellate.entry.manager_text import plain_label
 
     assert _timed(lambda: plain_label(text, 80)) < BUDGET
 
@@ -59,7 +59,7 @@ def _old_label_links(first: str) -> str:
 
 
 def test_label_links_match_the_old_patterns():
-    from tessellate.entry.manager import _md_links
+    from tessellate.entry.manager_text import _md_links
 
     def _label_links(text):
         return _md_links(_md_links(text, True), False)

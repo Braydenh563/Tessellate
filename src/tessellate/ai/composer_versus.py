@@ -167,13 +167,13 @@ def fact_day(fact, today: date, tense: str) -> date:  # noqa: ANN001  # a factgr
 def dates_of(view, today: date) -> list[tuple[date, str, int]]:  # noqa: ANN001
     """The days a note names that are still to come, each with how it is said
     ("14 November", "April 2027"); a day told as past is not one."""
-    from tessellate.ai import recognise
+    from tessellate.ai import recognise_questions
 
     note, facts = _facts(view)
     content = str(note.get("content") or "")
     days = []
     for fact in facts:
-        if fact.kind != "date" or not fact.when or recognise.told_as_past(_sentence(content, fact.start)):
+        if fact.kind != "date" or not fact.when or recognise_questions.told_as_past(_sentence(content, fact.start)):
             continue
         grain = fact.when[2]
         day = fact_day(fact, today, "future") if grain == "day" else fact.when[0]

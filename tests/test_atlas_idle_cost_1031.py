@@ -22,11 +22,12 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 MOTION = (JS / "atlas-motion.js").read_text(encoding="utf-8")
-LIFE = (JS / "atlas-life.js").read_text(encoding="utf-8")
+LIFE = unwrapped((JS / "atlas-life.js").read_text(encoding="utf-8"))
 LAZY = (ROOT / "frontend" / "css" / "atlas-lazy.css").read_text(encoding="utf-8")
 
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")

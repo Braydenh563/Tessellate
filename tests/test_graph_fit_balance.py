@@ -24,10 +24,11 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parent.parent
 JS = ROOT / "frontend" / "js"
-CANVAS = (JS / "graph-canvas.js").read_text(encoding="utf-8")
+CANVAS = unwrapped((JS / "graph-canvas.js").read_text(encoding="utf-8"))
 GRAPH = (JS / "graph.js").read_text(encoding="utf-8")
 
 

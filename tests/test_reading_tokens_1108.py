@@ -13,6 +13,7 @@ from __future__ import annotations
 from tests._help_text import help_more_text
 import re
 from pathlib import Path
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 CSS = ROOT / "frontend" / "css"
@@ -20,7 +21,7 @@ JS = ROOT / "frontend" / "js"
 TOKENS = (CSS / "00-tokens-shell.css").read_text(encoding="utf-8")
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 SETTINGS = (JS / "settings.js").read_text(encoding="utf-8")
-CONTROLS = (JS / "settings-controls.js").read_text(encoding="utf-8")
+CONTROLS = unwrapped((JS / "settings-controls.js").read_text(encoding="utf-8"))
 ROWS = (JS / "settings-rows.js").read_text(encoding="utf-8")
 AI_TOOLS = (JS / "ai-tools.js").read_text(encoding="utf-8")
 

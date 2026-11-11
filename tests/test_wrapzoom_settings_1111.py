@@ -13,6 +13,7 @@ from __future__ import annotations
 import re
 
 from tests._css_paths import CSS_DIR
+from tests._js_scope import unwrapped
 
 
 def _css(name: str) -> str:
@@ -77,7 +78,7 @@ def test_a_settings_nav_group_link_keeps_one_line():
     block = _block("01-forms-settings.css", "#settings-nav .settings-nav-group")
     for line in ("white-space: nowrap;", "text-overflow: ellipsis;", "overflow: hidden;"):
         assert line in block
-    js = (CSS_DIR.parent / "js" / "settings-find.js").read_text(encoding="utf-8")
+    js = unwrapped((CSS_DIR.parent / "js" / "settings-find.js").read_text(encoding="utf-8"))
     assert "link.title = label;" in js
 
 

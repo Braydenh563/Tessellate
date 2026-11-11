@@ -32,6 +32,9 @@ from tessellate.core import deps
 from tessellate.core.database import Attachment, EmbeddingRecord, Entry, NoteType
 from tessellate.core.deps import get_session
 from tessellate.entry import manager, paths
+from tessellate.entry import manager_wiki
+from tessellate.entry import manager_links
+from tessellate.entry import manager_text
 from tessellate.repo import documents as documents_repo
 from tessellate.repo import properties as properties_repo
 from tessellate.repo import categories as categories_repo
@@ -168,14 +171,14 @@ def _label(entry: Entry, length: int = 40) -> str:
     map, its words do not (INBOX 1437)."""
     if manager.note_is_sealed(entry.is_private):
         return SEALED_LABEL
-    return _preview(manager.readable_content(entry), length)
+    return _preview(manager_text.readable_content(entry), length)
 
 
 def _words(entry: Entry) -> int:
     """A node's length in words; nothing to count while the note is sealed."""
     if manager.note_is_sealed(entry.is_private):
         return 0
-    return _word_count(manager.readable_content(entry))
+    return _word_count(manager_text.readable_content(entry))
 
 
 def _note_texts(entries: list) -> dict[int, tuple[str, int]]:
@@ -194,7 +197,7 @@ def _note_texts(entries: list) -> dict[int, tuple[str, int]]:
             if manager.note_is_sealed(e.is_private):
                 out[e.id] = (SEALED_LABEL, 0)
             else:  # one read for both numbers
-                text = manager.readable_content(e)
+                text = manager_text.readable_content(e)
                 out[e.id] = (_preview(text), _word_count(text))
             if not e.is_private:
                 fresh[key] = (e.updated_at, out[e.id])
@@ -244,7 +247,7 @@ def _preview(text: str, length: int = 40) -> str:
     from tessellate.entry.properties import strip as strip_properties
 
     #: KG4: a note's properties block is never its label.
-    for line in manager.strip_bidi(strip_properties(text)).splitlines():
+    for line in manager_text.strip_bidi(strip_properties(text)).splitlines():
         words = _preview_line(line)
         if words:
             return words if len(words) <= length else words[: length - 1] + "…"
@@ -255,8 +258,8 @@ def _preview_line(line: str) -> str:
     """One line as plain words: the marker stripping `_preview` applies."""
     line = _HEADING_MD.sub("", line)
     line = _CALLOUT_MD.sub("", line)
-    line = _WIKI_LINK.sub(lambda m: manager.wiki_shown(m.group(1)), line)
-    line = manager.strip_inline_markdown(line)
+    line = _WIKI_LINK.sub(lambda m: manager_text.wiki_shown(m.group(1)), line)
+    line = manager_text.strip_inline_markdown(line)
     return " ".join(line.split())
 
 
@@ -624,7 +627,7 @@ def _add_unresolved_nodes(
             Entry.is_deleted == False, Entry.is_private == False  # noqa: E712
         )
     ).all()
-    openings = sorted(manager.wiki_opening(content) for content, _ in live)
+    openings = sorted(manager_wiki.wiki_opening(content) for content, _ in live)
     stems = {
         (path or "").rsplit("/", 1)[-1].lower().removesuffix(".md").removesuffix(".markdown")
         for _, path in live
@@ -632,7 +635,7 @@ def _add_unresolved_nodes(
     }
     ghosts: dict[str, dict] = {}
     for entry in entries:
-        for name in manager.wiki_link_targets(manager.readable_content(entry)):
+        for name in manager_wiki.wiki_link_targets(manager_text.readable_content(entry)):
             wanted = name.strip().lower()
             at = bisect_left(openings, wanted)
             if wanted in stems or (at < len(openings) and openings[at].startswith(wanted)):
@@ -995,7 +998,7 @@ def _link_edges(session: Session, node_ids: set[int], taken: set[frozenset[int]]
                         "link_type": link.link_type,
                         # INBOX 693: no arrow on a link that runs both ways
                         # (its own choice, else its type's direction).
-                        "two_way": manager.is_two_way_link(link.two_way, link.link_type, types),
+                        "two_way": manager_links.is_two_way_link(link.two_way, link.link_type, types),
                     }
                 )
                 #: KG3: a typed link carries its name and inverse, for the
@@ -1535,7 +1538,7 @@ def _extractive_summary(session: Session, rows: list, readable: list, terms: lis
     if readable:
         index = paths.build_light(session)
         ranked = sorted(readable, key=lambda e: (-paths.degree(index, e.id), e.id))
-        leads = [manager.plain_label(e.content, 60) for e in ranked[:2]]
+        leads = [manager_text.plain_label(e.content, 60) for e in ranked[:2]]
     return topic_finder.extractive_sentence(
         len(rows), terms, min(stamps) if stamps else None, max(stamps) if stamps else None, leads
     )
@@ -1569,7 +1572,7 @@ def topic_summary(body: TopicSummaryBody, session: Session = Depends(get_session
         return {"summary": _extractive_summary(session, rows, readable, body.terms), "source": "terms", "cached": False}
     lines = []
     for entry in readable[: topic_finder.SUMMARY_NOTES]:
-        text = " ".join(manager.readable_content(entry).split())
+        text = " ".join(manager_text.readable_content(entry).split())
         lines.append(f"- {text[: topic_finder.SUMMARY_CHARS]}")
     hint = f"They share: {', '.join(body.terms[:5])}.\n" if body.terms else ""
     try:
@@ -1611,7 +1614,7 @@ def _build_topics(session: Session) -> dict:
         if entry.is_private:
             continue
         terms = {("tag", tag.lower()) for tag in _tags_of(entry)}
-        titles[entry.id] = manager.plain_label(entry.content, 80)
+        titles[entry.id] = manager_text.plain_label(entry.content, 80)
         for word in _TITLE_WORD.findall(titles[entry.id].lower()):
             if word not in STOPWORDS:
                 terms.add(("word", word))
@@ -1837,7 +1840,7 @@ def _hop_reasons(session: Session, index: paths.Connections, pairs: list[tuple[i
         return {}
     notes = {
         node: relations.NoteFacts(
-            label=manager.plain_label(entry.content, 40) or "Untitled note",
+            label=manager_text.plain_label(entry.content, 40) or "Untitled note",
             tags=frozenset(tag.lower() for tag in _tags_of(entry)),
         )
         for node, entry in readable.items()

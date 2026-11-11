@@ -1752,7 +1752,7 @@ function chatMidStream() {
 //: audio is only kept as far as it was sent). Not in `hasUnsavedWork`: a tab
 //: switch leaves it running in the dock. `typeof`: meetings.js loads lazily.
 function recordingLive() {
-  return typeof meetingRecorder !== "undefined" && !!meetingRecorder && meetingRecorder.state !== "inactive";
+  return window.meetingRecordingLive?.() === true;
 }
 
 window.addEventListener("beforeunload", (event) => {

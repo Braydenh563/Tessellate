@@ -23,6 +23,7 @@ from tessellate.ai import (
     recognise as recogniser,
     when as when_words,
 )
+from tessellate.ai import recognise_questions
 from tessellate.ai.composer_lists import clean
 
 
@@ -1202,7 +1203,7 @@ def _pin_weekdays(text: str, written: date, today: date, gone: list[str]) -> str
     #: every week's, never one week's days.
     if written == today or len(re.findall(r"\b(?:mon|tues|wednes|thurs|fri|satur|sun)days?\b", text, re.I)) > 1:
         return text
-    tense = "past" if recogniser.told_as_past(text) else None
+    tense = "past" if recognise_questions.told_as_past(text) else None
     for found in reversed(_spans(text, written, tense)):
         alone = _WEEKDAY_ALONE.match(found.text) if found.kind == "date" else None
         #: "Thursday next week", "Friday 11 September": its week or date is said already.

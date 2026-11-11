@@ -27,6 +27,8 @@ import wave
 from collections.abc import Callable
 from pathlib import Path
 
+from tessellate.core import extras
+
 logger = logging.getLogger("tessellate.natural_voice")
 
 ENGINE_ID = "naturalvoice"
@@ -59,15 +61,9 @@ class Stopped(RuntimeError):
     """Raised inside `render` when the caller asked it to stop."""
 
 
-def _extras():
-    from tessellate.core import extras
-
-    return extras
-
-
 def voice_dir() -> Path | None:
     """The folder holding the installed voice, or None. A look at the disk."""
-    return _extras().download_ready(VOICE_ID)
+    return extras.download_ready(VOICE_ID)
 
 
 def model_path() -> Path | None:
@@ -197,3 +193,7 @@ def release() -> None:
 
 
 reset_for_tests = release
+
+
+#: A reinstall or removal of the voice replaces a file the loaded voice holds open (Windows cannot).
+extras.on_release(extras.VOICE_IDS, release)

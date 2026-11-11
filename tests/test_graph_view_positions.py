@@ -25,12 +25,14 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from tests._js_scope import unwrapped
+
 GRAPH = Path(__file__).resolve().parents[1] / "frontend" / "js" / "graph.js"
 GRAPH_CANVAS = Path(__file__).resolve().parents[1] / "frontend" / "js" / "graph-canvas.js"
 
 
 def _text(path: Path) -> str:
-    return path.read_text(encoding="utf-8")
+    return unwrapped(path.read_text(encoding="utf-8"))
 
 
 def test_a_saved_view_captures_node_positions():

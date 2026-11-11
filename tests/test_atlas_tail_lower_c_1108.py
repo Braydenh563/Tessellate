@@ -9,16 +9,17 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped, unwrapped_copy
 
 ROOT = Path(__file__).resolve().parent.parent
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
-LIFE = (ROOT / "frontend" / "js" / "atlas-life.js").read_text(encoding="utf-8")
+LIFE = unwrapped((ROOT / "frontend" / "js" / "atlas-life.js").read_text(encoding="utf-8"))
 TAILS = ("hook", "coil_hold", "thump", "shiver", "tuck", "loop8", "tip_twitch", "balance", "pillow")
 LOWERS = ("billow", "coil", "ripple_calm", "flutter", "pool", "hem_kick", "spiral", "heavy")
 
 SCRIPT = r"""
 const fs = require("fs"), vm = require("vm");
-const src = fs.readFileSync("frontend/js/atlas-life.js", "utf8");
+const src = fs.readFileSync(process.argv[1], "utf8");
 let clock = 0;
 const ctx = { atlasFix: (v) => v, console, Math, Map, Set, Object, Array, Number, document: {}, window: {}, setTimeout, clearTimeout,
   performance: { now: () => clock },
@@ -57,7 +58,7 @@ console.log(JSON.stringify(out));
 
 @pytest.fixture(scope="module")
 def got() -> dict:
-    out = subprocess.run(["node", "-e", SCRIPT], capture_output=True, text=True, timeout=30, check=True, cwd=ROOT)
+    out = subprocess.run(["node", "-e", SCRIPT, str(unwrapped_copy(ROOT / "frontend" / "js" / "atlas-life.js"))], capture_output=True, text=True, timeout=30, check=True, cwd=ROOT)
     return json.loads(out.stdout)
 
 

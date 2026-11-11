@@ -7,7 +7,8 @@ from __future__ import annotations
 import functools
 from datetime import datetime, time
 
-from tessellate.ai import composer, recognise
+from tessellate.ai import composer
+from tessellate.ai import recognise_questions
 from tessellate.core import deps
 from tessellate.core.config import user_now
 from tessellate.entry import manager
@@ -75,7 +76,7 @@ def test_try_again_on_the_route_rewords_and_keeps_the_lead(client, session):
 def test_a_correction_on_the_route_answers_from_the_note_it_names(client, session):
     # "on Saturday" is the last Saturday, so the notes are dated then: seeded
     # "now" they are found only when the suite happens to run on that day.
-    saturday = recognise.question_day("on Saturday", user_now(deps.get_config()).date())[0]
+    saturday = recognise_questions.question_day("on Saturday", user_now(deps.get_config()).date())[0]
     _seed(session, on_day=saturday)
     first = _ask(client, "what did I do on Saturday", **ASK)
     history = [{"question": "what did I do on Saturday", "answer": first["text"]}]

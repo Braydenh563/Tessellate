@@ -36,14 +36,9 @@ callers that use them, and reads nothing itself (`tests/test_one_reader.py`).
 
 from __future__ import annotations
 
-from tessellate.ai.recognise import (
-    days_since,
-    find,
-    parse_reminder_text,
-    resolve,
-    span,
-    window,
-)
+from tessellate.ai.recognise import find, resolve, span, window
+from tessellate.ai.recognise_questions import days_since
+from tessellate.ai.recognise_reminders import parse_reminder_text
 
 #: The names callers import from here; the re-export is deliberate (CodeQL reads an
 #: unlisted re-export as an unused import).

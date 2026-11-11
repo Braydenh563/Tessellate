@@ -10,12 +10,13 @@ before; 31/9 at best after, where what remains is the figure swap's and the blen
 from __future__ import annotations
 
 from pathlib import Path
+from tests._js_scope import unwrapped
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 
 
 def _src() -> str:
-    return (JS / "avatars.js").read_text(encoding="utf-8")
+    return unwrapped((JS / "avatars.js").read_text(encoding="utf-8"))
 
 
 def _body(src: str, head: str) -> str:

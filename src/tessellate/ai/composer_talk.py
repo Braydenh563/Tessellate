@@ -27,7 +27,8 @@ from datetime import date, datetime, time, timedelta
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import consent_store, composer_chips, composer_remark, follow_items, intent, realise, recognise, slash, slash_more
+from tessellate.ai import consent_store, composer_chips, composer_remark, follow_items, intent, realise, slash, slash_more
+from tessellate.ai import recognise_questions
 
 #: The charts the app can already draw from the notes, in the order offered.
 CHARTS = ("time", "tag", "category", "weekday")
@@ -69,7 +70,7 @@ def _window(question: str, today: date) -> tuple[date, date] | None:
     if typed:
         got = slash._window(typed[0] if typed[0] in ("today", "yesterday") else typed[1], today) if typed[0] in ("today", "yesterday", "made") else None  # noqa: SLF001
         return (got[0], got[1]) if got else None
-    got = recognise.question_day(question, today)
+    got = recognise_questions.question_day(question, today)
     return (got[0], got[1]) if got else None
 
 

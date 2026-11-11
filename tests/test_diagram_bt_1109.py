@@ -124,7 +124,7 @@ def test_a_document_that_embeds_a_diagram_previews_a_readable_label_not_the_embe
     """Blind test: the Library read "!Diagram 2026-11-09 19:11" (the `!` of `![[...]]` left behind), and the Documents list the raw brackets."""
     from tessellate.api.routes_documents import _preview
     from tessellate.api.routes_library import _clip
-    from tessellate.entry.manager import readable_embeds
+    from tessellate.entry.manager_text import readable_embeds
 
     assert readable_embeds("a ![[Trip map]] b") == "a Diagram: Trip map b"
     # A title that already says Diagram is not said twice; an image embed and a plain link are left to their own readers.

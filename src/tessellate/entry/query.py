@@ -130,9 +130,9 @@ def _prop_ids(session: Session, term: Term) -> set[int]:
 
 
 def _links_ids(session: Session, term: Term, _everyone: dict[int, Entry]) -> set[int]:
-    from tessellate.entry import manager
+    from tessellate.entry import manager_wiki
 
-    target = manager.find_by_wiki_name(session, term.value.lower())
+    target = manager_wiki.find_by_wiki_name(session, term.value.lower())
     if target is None:
         return set()
     rows = session.execute(

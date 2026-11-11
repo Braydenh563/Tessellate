@@ -21,7 +21,7 @@ from tessellate.api.schemas import EntryOut, EntryUpdate
 from tessellate.core.database import NOTE_FIELD_KINDS, NoteType
 from tessellate.core import deps
 from tessellate.core.deps import get_session
-from tessellate.entry import manager
+from tessellate.entry import manager_text
 from tessellate.entry import properties as note_properties
 
 router = APIRouter(tags=["properties"])
@@ -46,7 +46,7 @@ def _type_row(row: NoteType) -> dict:
 def entry_properties(entry_id: int, session: Session = Depends(get_session)) -> dict:
     """The note's properties, its type, and that type's fields in order."""
     entry = routes_entries._existing_entry(session, entry_id)
-    found, _ = note_properties.split(manager.readable_content(entry))
+    found, _ = note_properties.split(manager_text.readable_content(entry))
     kind = note_properties.note_type(found)
     row = note_properties.find_type(session, kind)
     return {"properties": found, "type": kind, "fields": list(row.fields or []) if row else []}
@@ -77,7 +77,7 @@ def put_properties(
         else:
             clean[name] = value
     entry = routes_entries._existing_entry(session, entry_id)
-    text = note_properties.write(manager.readable_content(entry), clean)
+    text = note_properties.write(manager_text.readable_content(entry), clean)
     #: By keyword, and with the response passed through: B7 put `response`
     #: and `If-Match` into `update_entry`'s signature, and a positional
     #: `session` landed in `response` while `session` stayed the bare

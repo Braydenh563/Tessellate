@@ -23,7 +23,7 @@ from tessellate.ai import (
     composer_verbuse,
     factgraph,
     realise,
-    recognise as recogniser,
+    recognise as recogniser, recognise_questions,
     verdicts,
     when as when_words,
 )
@@ -2190,7 +2190,7 @@ def _one_activity(lines: list[str]) -> bool:
 
 
 def _is_event(line: str) -> bool:
-    return recogniser.told_as_past(line) and not _NOT_AN_EVENT.search(line)
+    return recognise_questions.told_as_past(line) and not _NOT_AN_EVENT.search(line)
 
 
 def _event_lines(out: _Out, members) -> list[tuple[int, object]]:  # noqa: ANN001

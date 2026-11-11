@@ -20,6 +20,7 @@ import pytest
 from tessellate.api import routes_chat
 from tessellate.core import config
 from tessellate.entry import manager
+from tessellate.entry import manager_links
 from tests import _hobbies_1512 as hobbies
 from tests._framed_path import framed_path  # noqa: F401
 
@@ -41,7 +42,7 @@ def notebook(session, monkeypatch):
     session.commit()
     for (_c, _t, _w, links), entry in zip(hobbies.NOTES, made, strict=True):
         for i, reason in links.items():
-            manager.create_link(session, entry, made[i], reason=reason)
+            manager_links.create_link(session, entry, made[i], reason=reason)
     session.commit()
     return made
 

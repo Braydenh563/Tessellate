@@ -28,6 +28,7 @@ from tessellate.core import deps, events
 from tessellate.core.database import AuditLog, EntryRevision
 from tessellate.core.deps import get_session
 from tessellate.entry import manager
+from tessellate.entry import manager_text
 from tessellate.repo.content import NOTES
 
 router = APIRouter(tags=["entries"], prefix="/entries")
@@ -153,7 +154,7 @@ def entry_history(
         "revisions": [
             {
                 "id": revision.id,
-                "content": manager.readable_content(revision),
+                "content": manager_text.readable_content(revision),
                 "tags": json.loads(revision.tags or "[]"),
                 "created_at": revision.created_at.isoformat(),
             }

@@ -40,6 +40,7 @@ import tempfile
 import threading
 import time
 from dataclasses import dataclass, field
+from collections.abc import Callable
 from pathlib import Path
 
 from tessellate.core import extra_downloads, jobs, languagetool_files, ocr
@@ -2013,20 +2014,26 @@ def start(extra_id: str, reinstall: bool = False, auto: bool = False) -> tuple[b
     return True, f"{'Reinstalling' if reinstall else 'Installing'} {extra.label}."
 
 
+#: What to stop before an extra's files are replaced, by extra id. The modules that
+#: hold the files open register themselves (`on_release`) when they load, so this
+#: module never imports them (a statement or an `importlib` call here is a cycle,
+#: tests/test_no_import_cycles.py and tests/test_import_module_cycles.py); a
+#: module that was never loaded holds nothing.
+_RELEASE_HOOKS: dict[str, list[Callable[[], None]]] = {}
+
+
+def on_release(ids: tuple[str, ...], hook: Callable[[], None]) -> None:
+    """Run `hook` before any of the extras `ids` is installed over."""
+    for extra_id in ids:
+        _RELEASE_HOOKS.setdefault(extra_id, []).append(hook)
+
+
 def _release_captions_helper(extra: Extra) -> None:
-    """Stop the captions helper before its engine or model is replaced or
-    removed (it holds the model file open). It starts again on the next use."""
-    # Asked through `sys.modules`, as the needle check below: both modules read
-    # this one, so importing them here is a cycle, and one never loaded holds
-    # nothing open.
-    if extra.id in CAPTIONS_IDS:
-        module = sys.modules.get("tessellate.ai.captions_process")
-        if module is not None:
-            module.stop()
-    elif extra.id in VOICE_IDS:
-        module = sys.modules.get("tessellate.ai.natural_voice")
-        if module is not None:
-            module.release()  # it holds the voice file open (Windows cannot replace it)
+    """Stop what holds the extra's files open (the captions helper holds the
+    model, the natural voice holds the voice file, which Windows cannot replace)
+    before they are replaced or removed. It starts again on the next use."""
+    for hook in _RELEASE_HOOKS.get(extra.id, ()):
+        hook()
 
 
 def _install_refusal(extra: Extra, reinstall: bool) -> str:
@@ -2315,8 +2322,9 @@ def _loaded_in_process_reason(extra: Extra) -> str:
     if extra.id in CAPTIONS_IDS:
         # The helper is a child process of ours, not a mapped library, but a
         # run in progress is using both files.
-        # `sys.modules` for the same reason: ai.captions reaches this module
-        # through captions_process and core.deps, and one never loaded is not running.
+        # Asked through `sys.modules`, like the needle engine above: captions that
+        # were never imported are not running, and an import here is a cycle
+        # (ai.captions reaches this module through captions_process and core.deps).
         captions = sys.modules.get("tessellate.ai.captions")
         return "Stop live captions first. They are using it." if captions is not None and captions.running() else ""
     if extra.id != "voice":

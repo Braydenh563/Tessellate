@@ -83,6 +83,7 @@
       edit.dispatchEvent(new CustomEvent("board-edit", { bubbles: true, detail: { id, title: titleOf() } }));
     }));
     edit.classList.add("doc-embed-board-edit");
+    edit.dataset.boardId = String(id);
     return edit;
   }
   docEmbedFill.editButtons = (root) => {

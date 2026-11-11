@@ -132,8 +132,9 @@ def read(text: str, one_target, resolve) -> dict | None:  # noqa: ANN001
 
 def _delete_category(session: Session, parsed: dict, c) -> dict:  # noqa: ANN001
     from tessellate.entry import manager
+    from tessellate.entry import manager_categories
 
-    rows = manager.all_categories(session)
+    rows = manager_categories.all_categories(session)
     names = [row["name"] for row in rows]
     name = object_acts._find(parsed["name"], names)  # noqa: SLF001
     if name is None:
@@ -148,8 +149,9 @@ def _delete_category(session: Session, parsed: dict, c) -> dict:  # noqa: ANN001
 
 def _merge(session: Session, parsed: dict, c) -> dict:  # noqa: ANN001
     from tessellate.entry import manager
+    from tessellate.entry import manager_categories
 
-    rows = manager.all_categories(session)
+    rows = manager_categories.all_categories(session)
     names = [row["name"] for row in rows]
     found = {key: object_acts._find(parsed[key], names) for key in ("from", "into")}  # noqa: SLF001
     for key in ("from", "into"):
