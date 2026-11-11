@@ -377,3 +377,23 @@ def test_the_first_press_sends_no_password_and_the_second_uses_the_checked_certi
     with pytest.raises(sync_link.PairError):
         sync_link.pair(here, "192.168.1.21:8443", "the password")  # a new address is a new first press
     assert fetched == ["192.168.1.20", "192.168.1.21"] and len(signed) == 1
+
+
+def test_a_first_press_at_another_address_leaves_the_working_pairing_alone(tmp_path, monkeypatch):
+    """A stranger answering a mistyped address, or a press never repeated, must not undo a pairing that syncs."""
+    pems = []
+    for name in ("there", "stranger"):
+        (tmp_path / name).mkdir()
+        lancert.ensure(tmp_path / name, ["127.0.0.1"])
+        pems.append(lancert.authority_pem(tmp_path / name).decode())
+    here = tmp_path / "here"
+    here.mkdir()
+    sync_state.save_link(here, host="192.168.1.20", port=8443, cookie="c", authority=pems[0], fingerprint="fp",
+                         peer="abc123def456", sync_pass="the pass")
+    monkeypatch.setattr(sync_link, "_authority", lambda host, port: pems[1])
+    with pytest.raises(sync_link.PairError):
+        sync_link.pair(here, "192.168.1.99:8443", "the password")
+    kept = sync_state.link(here)
+    assert (kept["host"], kept["peer"], kept["sync_pass"], kept["authority"]) == (
+        "192.168.1.20", "abc123def456", "the pass", pems[0])
+    assert sync_link.load(here) is not None

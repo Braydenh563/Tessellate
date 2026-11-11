@@ -147,33 +147,44 @@ def pair(data_dir: Path, address: str, password: str) -> dict:
     host, port = parse_address(address)
     before = sync_state.link(data_dir)
     same_place = before.get("host") == host and before.get("port") == port
-    cookie = before.get("cookie") if same_place and before.get("cookie") else secrets.token_urlsafe(32)
-    known = bool(same_place and before.get("authority"))
-    authority = before["authority"] if known else _authority(host, port)
-    # The cookie and authority are kept before the sign-in, so a press after Allow
-    # is the same device to the other computer and checks the same certificate.
-    # A new address starts a new pairing; a wrong password for the same one keeps the old pass.
-    fresh = {} if same_place else {"peer": "", "sync_pass": ""}
-    sync_state.save_link(data_dir, host=host, port=port, cookie=cookie, authority=authority,
-                         fingerprint=fingerprint(authority), **fresh)
-    if not known:
-        # Trust on first use, made a choice: a new certificate is shown, not used, so the password goes
-        # only to the computer the person checked (someone else on the network could answer the first call).
-        raise PairError(confirm_sentence(fingerprint(authority)))
+    waiting = before.get("pending") or {}
+    if not same_place:
+        # A new address is held apart until its second press works, so a first press (or a stranger
+        # answering it) never undoes a working pairing.
+        if waiting.get("host") != host or waiting.get("port") != port or not waiting.get("authority"):
+            authority = _authority(host, port)
+            sync_state.save_link(data_dir, pending={"host": host, "port": port, "authority": authority,
+                                                    "cookie": secrets.token_urlsafe(32)})
+            # Trust on first use, made a choice: a new certificate is shown, not used, so the password goes
+            # only to the computer the person checked (someone else on the network could answer the first call).
+            raise PairError(confirm_sentence(fingerprint(authority)))
+        cookie, authority = waiting["cookie"], waiting["authority"]
+    else:
+        # The cookie and authority are kept, so a press after Allow is the same device to the other
+        # computer and checks the same certificate; a wrong password keeps the old pass.
+        cookie = before.get("cookie") or secrets.token_urlsafe(32)
+        if not before.get("authority"):
+            authority = _authority(host, port)
+            sync_state.save_link(data_dir, cookie=cookie, authority=authority, fingerprint=fingerprint(authority))
+            raise PairError(confirm_sentence(fingerprint(authority)))
+        authority = before["authority"]
     wire = _Wire(host, port, authority)
     try:
         token = _sign_in(wire, password, cookie)
         status, raw = wire.call("POST", "/sync/pass", body={"peer": sync_state.device_id(data_dir)},
                                 headers={"X-Auth-Token": token, "Cookie": f"mm_device={cookie}"})
     except ssl.SSLCertVerificationError as exc:
+        if not same_place:
+            sync_state.save_link(data_dir, pending={})  # the next press shows the new certificate
         raise PairError(CERT_CHANGED) from exc
     except OSError as exc:
         raise PairError(UNREACHABLE) from exc
     answer = _json(raw)
     if status != 200 or not answer.get("pass") or not answer.get("device"):
         raise PairError(answer.get("detail") if status == 403 and answer.get("detail") else NOT_SYNCING)
-    return sync_state.save_link(data_dir, peer=answer["device"], sync_pass=answer["pass"],
-                                peer_key=sync_keys.wrap_peer_key(answer.get("key")))
+    return sync_state.save_link(data_dir, host=host, port=port, cookie=cookie, authority=authority,
+                                fingerprint=fingerprint(authority), pending={}, peer=answer["device"],
+                                sync_pass=answer["pass"], peer_key=sync_keys.wrap_peer_key(answer.get("key")))
 
 
 class LanLink:

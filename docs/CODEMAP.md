@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8222, frontend ids 2756, CSS sections 524, backend routes 695, backend modules 10689, test files 2633, tests 21502, plan headings 1013, app scripts 29, boot scripts 38, script files 290.
+Counts: frontend functions 8222, frontend ids 2756, CSS sections 524, backend routes 695, backend modules 10689, test files 2633, tests 21503, plan headings 1013, app scripts 29, boot scripts 38, script files 290.
 
 ## Frontend functions (8222)
 
@@ -26499,7 +26499,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `LanLink` | src/tessellate/entry/sync_link.py:179 |
+| `LanLink` | src/tessellate/entry/sync_link.py:190 |
 | `PairError` | src/tessellate/entry/sync_link.py:58 |
 | `_Wire` | src/tessellate/entry/sync_link.py:88 |
 | `_authority` | src/tessellate/entry/sync_link.py:124 |
@@ -26508,7 +26508,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `confirm_sentence` | src/tessellate/entry/sync_link.py:47 |
 | `fingerprint` | src/tessellate/entry/sync_link.py:81 |
 | `last_problem` | src/tessellate/entry/sync_link.py:66 |
-| `load` | src/tessellate/entry/sync_link.py:214 |
+| `load` | src/tessellate/entry/sync_link.py:225 |
 | `pair` | src/tessellate/entry/sync_link.py:145 |
 | `parse_address` | src/tessellate/entry/sync_link.py:71 |
 
@@ -27376,7 +27376,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21502)
+## Tests (21503)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29648,7 +29648,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_sweep_1004_log_scrub_speed.py | 2 |
 | tests/test_sweep_1004_private_entities.py | 1 |
 | tests/test_sync_extras.py | 9 |
-| tests/test_sync_lan.py | 8 |
+| tests/test_sync_lan.py | 9 |
 | tests/test_sync_segments.py | 11 |
 | tests/test_sync_settings_group.py | 4 |
 | tests/test_syntax_check.py | 18 |
