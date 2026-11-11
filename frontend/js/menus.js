@@ -1509,59 +1509,6 @@ function buildMenuGroupButton(label, subItems) {
   return groupWrap;
 }
 
-function entryOverflowMenu(entry) {
-  const wrap = document.createElement("span");
-  wrap.className = "menu-wrap";
-
-  const menu = document.createElement("div");
-  menu.className = "action-menu hidden";
-  menu.setAttribute("role", "menu");
-
-  //: Same square-kebab rule as `kebabMenu` below: this is the *other* ⋯
-  //: builder (note cards, built lazily on first open), and a rule applied to
-  //: one of two implementations of the same control is how they drift.
-  //:
-  //: **And they had.** Reported: "the ellipse kebab icons in the notes on the
-  //: your notes tab are not centred." `kebabMenu` draws `ph:dots-three`; this
-  //: one drew the literal character `⋯` (U+22EF), and a text glyph is placed
-  //: on the *font's* baseline inside a 19.2px line box centred in a 28px
-  //: button: U+22EF sits at the em box's midline, which is above the line
-  //: box's optical centre, so the dots rode high. No amount of flex centring
-  //: fixes that: the box is centred correctly and the glyph is not centred
-  //: within the box. The icon font's own glyph is drawn to fill its box, so
-  //: using the same icon as the other builder fixes the centring and the
-  //: drift in one go.
-  const opener = smallButton("ph:dots-three", "More actions", async () => {
-    //: Built now, and given the card rows (Copy, Move, Add to tray) as `kebabMenu` gives them.
-    filled ||= ensureModule("entryMenu").then((ok) => ok && (fillEntryMenu(menu, entry), true));
-    if (!(await filled)) return ((filled = null), lazyLoadFailed());
-    window.objKebabRows?.(menu);
-    // The phone's action sheet, as `kebabMenu` opens (`openKebabSheet`).
-    if (window.matchMedia(PHONE_ACTION_SHEET).matches) {
-      openKebabSheet(menu, opener, "Note actions");
-      return;
-    }
-    if (menu.classList.contains("hidden")) openActionMenu(menu, opener);
-    else closeActionMenus();
-  });
-  opener.classList.add("icon-only");
-  opener.setAttribute("aria-haspopup", "menu");
-  opener.setAttribute("aria-expanded", "false");
-
-  // **Built on first open, not on render: a scale fix.** This menu is about 50
-  // nodes and `entryItem()` builds one per note card, on every renderEntries()
-  // (every search keystroke, sort, filter and save); a 2,500-note notebook built
-  // over a hundred thousand hidden nodes nobody opens. The opener renders eagerly
-  // (it carries the aria state and a tab stop); the rows are `fillEntryMenu`
-  // (entry-menu.js, lazy), awaited by the opener so `openActionMenu` finds a first item.
-  let filled = null;
-
-  wireMenuKeyboard(menu, opener);
-
-  wrap.append(opener, menu);
-  return wrap;
-}
-
 //: Moved from app.js (its gzip ratchet): called only at save time, never at
 //: load, so any boot piece may hold it.
 //: **Two windows, one note** (WORLD_CLASS_PLAN 22.1 item 5). A save the
