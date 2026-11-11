@@ -6249,10 +6249,16 @@ button.ghost.doc-template-choice.wb-template-choice {
   align-items: start;
 }
 
-#doc-assist-model-line > .ghost,
-#doc-ai-offline > .ghost {
+/* The action is the split button once offline-split.js has wrapped it (INBOX
+   904 B05), not a bare `.ghost`: matched only as `.ghost`, the 237px split took
+   the auto column and the words were squeezed into 42px, one per line (348px
+   tall, wrapzoom 2026-11-11). Its own sheet's `margin-inline-start: auto`
+   would push it to the far edge of the grid cell. */
+#doc-assist-model-line > :is(.ghost, .ai-offline-split),
+#doc-ai-offline > :is(.ghost, .ai-offline-split) {
   grid-column: 2;
   justify-self: start;
+  margin-inline-start: 0;
 }
 
 @media (pointer: coarse) {

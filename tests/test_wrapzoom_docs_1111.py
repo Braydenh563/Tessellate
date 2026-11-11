@@ -66,3 +66,18 @@ def test_a_code_documents_dock_folds_its_words_before_it_wraps():
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     # The cut line's tooltip says it whole.
     assert 'title="Install Python in Settings, Packages, to run Python files">Install Python in Settings, Packages</button>' in html
+
+
+# ---- a split button breaking apart ---------------------------------------------
+
+
+def test_the_side_panes_no_model_line_places_the_split_button_under_the_words():
+    """offline-split.js swaps the notice's `.ghost` action for
+    `.split-button.ai-offline-split`; the grid that put the action under the
+    words matched only `.ghost`, so the split took column 1 and the words
+    stood in 42px, one per line."""
+    css = _css("library-lazy.css")
+    body = _rule(css, "#doc-assist-model-line > :is(.ghost, .ai-offline-split)")
+    assert "grid-column: 2" in body and "margin-inline-start: 0" in body
+    js = (ROOT / "frontend" / "js" / "offline-split.js").read_text(encoding="utf-8")
+    assert 'split.className = "split-button ai-offline-split"' in js
