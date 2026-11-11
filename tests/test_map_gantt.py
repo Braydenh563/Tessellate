@@ -9,6 +9,8 @@ from pathlib import Path
 
 import pytest
 
+from tests._help_text import help_core_text
+
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 MAP = (JS / "whiteboard-map.js").read_text(encoding="utf-8")
@@ -81,5 +83,5 @@ def test_the_view_is_one_undo_step_a_menu_row_a_lazy_file_and_in_the_guide():
     app = (JS / "lazy-entries.js").read_text(encoding="utf-8")
     assert '"/js/whiteboard-map-more.js"' in app
     assert app.index("whiteboard-map-more.js") > app.index('"/js/whiteboard-map.js"')
-    topics = (ROOT / "src" / "tessellate" / "ai" / "help_topics_core.py").read_text(encoding="utf-8")
+    topics = help_core_text()
     assert "Gantt" in topics
