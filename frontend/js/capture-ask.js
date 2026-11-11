@@ -392,8 +392,10 @@ function renderCaptureDocumentAdder() {
 }
 
 //: Filing options (owner, 2026-11-11, decision 6): a kebabMenu by the Filing row for
-//: `ask_when_unsure`, the key Settings writes. A block of its own adds no shared name.
-(() => {
+//: `ask_when_unsure`, the key Settings writes. A block of its own adds no shared name; wired
+//: once the Notes surface is built, so a document made elsewhere (documents.js calls
+//: `loadCaptureDocuments`) cannot build the Notes template just to fill this slot.
+onSurface("notes", () => {
   async function render(on) {
     const slot = $("capture-filing-options");
     if (!slot) return;
@@ -424,7 +426,7 @@ function renderCaptureDocumentAdder() {
   document.addEventListener("change", (e) => {
     if (e.target?.id === "pref-ask-when-unsure") render(e.target.checked);
   });
-})();
+});
 
 //: **Template variables** (WORLD_CLASS_PLAN 5 item 4). `{date}` was the one
 //: a note template had; `{{date}}` and `{{time}}` read the same way (one or
