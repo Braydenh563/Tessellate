@@ -8,10 +8,11 @@ import logging
 import tempfile
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, Response, UploadFile
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from tessellate.ai import captions, diarize, voice
+from tessellate.ai import captions, diarize, natural_voice, voice
 from tessellate.core import activity, deps
 from tessellate.api.this_computer import this_computer_only
 from tessellate.core.deps import get_session
@@ -41,7 +42,26 @@ def status() -> dict:
         #: Speaker labels by voice are ready (the Speakers bundle is installed):
         #: the recordings menu runs them, or points to Settings, Packages.
         "speakers_by_voice": diarize.available(),
+        #: The natural voice (Piper, Settings, Packages): `available` is true only with the
+        #: engine and the voice both on disk; the page falls back to the browser's voices.
+        "speak": natural_voice.status(),
     }
+
+
+class SpeakIn(BaseModel):
+    text: str = Field(max_length=natural_voice.MAX_CHARS * 4)
+
+
+@router.post("/speak")
+def speak(body: SpeakIn) -> Response:
+    """Read `body.text` aloud in the natural voice: a wav, made on this computer, kept nowhere."""
+    if not natural_voice.available():
+        raise HTTPException(status_code=503, detail=natural_voice.INSTALL_HINT)
+    try:
+        wav = natural_voice.speak(body.text)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    return Response(wav, media_type="audio/wav", headers={"Cache-Control": "no-store"})
 
 
 @router.delete("/models/{size}", dependencies=[Depends(this_computer_only)])

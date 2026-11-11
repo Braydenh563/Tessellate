@@ -34,3 +34,8 @@ def holding(session: Session, words: str, *, limit: int, besides: Iterable[int] 
 def by_ids(session: Session, ids: Iterable[int]) -> list:
     """(id, content) of the visible notes among `ids`: client input, so read again."""
     return session.execute(select(Entry.id, Entry.content).where(Entry.id.in_(list(ids)), *_visible())).all()
+
+
+def recent(session: Session, *, limit: int) -> list:
+    """(id, content) of the newest visible notes: what an overview with no topic tells."""
+    return session.execute(select(Entry.id, Entry.content).where(*_visible()).order_by(Entry.id.desc()).limit(limit)).all()

@@ -23,7 +23,6 @@ ALLOWED = {
     # The visually-hidden pattern for a word kept for screen readers.
     (".toolbar-word", "height", "1px"),
     (".dock-word", "height", "1px"),
-    (".dock-native-hidden", "height", "1px !important"),
     # A hairline between toolbar groups, not a control.
     (".doc-toolbar-sep", "height", "1.1rem"),
     # A menu's own scroll cap, in viewport units.

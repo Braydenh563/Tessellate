@@ -11330,7 +11330,9 @@ Link to another note with [[its first few words]]."></textarea>
             <!-- Adding one by hand. The tool covers "tell it in conversation";
                  this covers "I already know what I want it to always do". -->
             <div class="row memory-add">
-              <input id="memory-new" type="text" maxlength="200" aria-label="Something to always do in answers"
+              <label class="visually-hidden" for="memory-new"
+                data-keys="memory remember standing instructions what it remembers always">Something to always do in answers</label>
+              <input id="memory-new" type="text" maxlength="200"
                 placeholder="e.g. Always answer in British English">
               <button id="memory-add" class="small">Remember this</button>
             </div>
@@ -13110,6 +13112,13 @@ Link to another note with [[its first few words]]."></textarea>
                 </button>
               </div>
               <div class="row space-between setting-row">
+                <label for="pref-read-aloud-voice">Voice</label>
+                <select id="pref-read-aloud-voice" class="small-select">
+                  <option value="browser">This browser's voices</option>
+                  <option value="natural">Natural voice (Settings, Packages)</option>
+                </select>
+              </div>
+              <div class="row space-between setting-row">
                 <label for="pref-read-aloud-rate">Speaking speed</label>
                 <select id="pref-read-aloud-rate" class="small-select">
                   <option value="0.75">Slower (0.75x)</option>
@@ -13122,7 +13131,9 @@ Link to another note with [[its first few words]]."></textarea>
                 <p>
                   A message's Read aloud plays it in this computer's own voice. Press
                   it again, now Stop reading, to stop. The speed is remembered on this
-                  device.
+                  device. The natural voice is a package you install in Settings,
+                  Packages: it reads on this computer, a sentence or two behind the
+                  press, and the speed above applies to the browser's voices only.
                 </p>
               </div>
             </div>
