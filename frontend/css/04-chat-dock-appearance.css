@@ -3423,6 +3423,8 @@ span > .chip {
 }
 
 .draft-column {
+  /* The actions row's words leave by this column's width (below). */
+  container: draft-column / inline-size;
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
@@ -3501,6 +3503,31 @@ span > .chip {
    right read as two. */
 .draft-actions-row {
   justify-content: flex-end;
+  /* **One line at every width** (wrapzoom sweep: at 1280 the column is 472px
+     and the three need 476, so "Insert into a note" went onto a second line
+     under the split button). Below 30rem of column Copy and Insert keep their
+     icon and clip their word (the `.toolbar-word` recipe, DESIGN.md): still
+     their accessible name, their title names them for a pointer. */
+  flex-wrap: nowrap;
+}
+@container draft-column (max-width: 30rem) {
+  .draft-actions-row > button .toolbar-word {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .draft-actions-row > button:has(> .toolbar-word) {
+    width: var(--control-h);
+    padding-inline: 0;
+    justify-content: center;
+  }
+  .draft-actions-row > button > .ph-lead:has(~ .toolbar-word) {
+    margin-inline-end: 0;
+    translate: none;
+  }
 }
 
 /* The tags row's label is inside the surface, the way `.ask-composer-icon` is

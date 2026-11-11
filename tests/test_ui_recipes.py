@@ -7754,3 +7754,116 @@ def test_a_missing_optional_package_notice_has_one_builder() -> None:
     assert not stray, f"an optional-package notice built outside {own}: {stray}"
     assert "notice extra-notice hidden" in (ROOT / "frontend" / "js" / own).read_text(encoding="utf-8")
     assert "A notice for a missing optional package" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+
+
+# ---- The wrapzoom sweep (the owner, 2026-11-11: "make sure the wrapping and
+# ui issues arent an issue anywhere else from zoom or resolution"). Measured by
+# `scratchpad/ui-sweeps/wrapzoom-notes.js` across the zoom and resolution
+# matrix; each test pins the cause of one defect class on the Notes, Library,
+# Timeline and Reminders surfaces.
+
+
+def test_a_footer_row_of_worded_buttons_clips_its_words_rather_than_wrapping() -> None:
+    """The Writing room's Copy, Insert into a note and Save as note needed 476px
+    in a 472px column at 1280, so Insert went onto a second line. The row never
+    wraps; under 30rem of column the two ghosts keep their icon (`.toolbar-word`)."""
+    row = _sheet_rule("04-chat-dock-appearance.css", ".draft-actions-row")
+    assert "flex-wrap: nowrap" in row
+    assert "container: draft-column / inline-size" in _sheet_rule("04-chat-dock-appearance.css", ".draft-column")
+    css = (_SHEETS / "04-chat-dock-appearance.css").read_text(encoding="utf-8")
+    assert "@container draft-column (max-width: 30rem)" in css
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    row_html = html[html.index('class="row draft-controls draft-actions-row"') :]
+    row_html = row_html[: row_html.index('id="draft-save-split"')]
+    assert row_html.count('<span class="toolbar-word">') == 2
+
+
+def test_a_rail_opener_never_rides_over_the_strip_above_its_split() -> None:
+    """At 768 Skill logs is a rail on the left and its opener (x 7 to 51) sat
+    on the Library's "All" sub-tab (x 9). The strip keeps the rail clear while
+    the Skills view shows, as the column beside the sidebar does. And the
+    sidebar is wired when the Library surface is built: straight to Library
+    after unlock, it had no opener at all."""
+    css = (_SHEETS / "library-lazy.css").read_text(encoding="utf-8")
+    band = css[css.index("@media (min-width: 600px) and (max-width: 819.98px)") :]
+    rule = re.search(r"#tab-library:has\(> #library-view-skills:not\(\.hidden\)\) > #library-subtabs\s*\{([^}]*)\}", band)
+    assert rule and "padding-left: calc(max(var(--sidebar-toggle-size), var(--target-min)) + 2 * var(--sidebar-toggle-inset))" in rule.group(1)
+    js = (ROOT / "frontend" / "js" / "sheets-selects.js").read_text(encoding="utf-8")
+    wired = re.search(r"for \(const name of \[([^\]]*)\]\) onSurface\(name, wire\)", js)
+    assert wired and '"library"' in wired.group(1)
+
+
+def test_a_split_chips_touch_overhang_is_never_clipped_or_laid_over_a_neighbour() -> None:
+    """At 768 the suggested tag's 44px dismiss hung 20px past a chip that
+    clips (a row's chips are `overflow: hidden`), so only the chip's own 24px
+    took a press, and in cards the overhang lay over the next chip. Under a
+    finger the chip keeps the overhang's width after it, never clips it, and a
+    row's lane keeps the overhang's height as padding with the same negative
+    margin (measured: every edge of the box hits the dismiss in rows)."""
+    css = (_SHEETS / "08-consistency.css").read_text(encoding="utf-8")
+    band = css[css.index(".suggested-tag > .suggested-tag-dismiss::before,") :]
+    band = band[: band.index(".entry-meta > .chip.filing-sure")]
+    assert re.search(r"\.entry-meta > \.chip\.suggested-tag \{\s*margin-inline-end: calc\(var\(--target-min\) - 1\.5rem\);", band)
+    assert re.search(r"\.entry-list \.entry-meta > \.chip\.suggested-tag\.suggested-tag \{\s*overflow: visible;", band)
+    lane = re.search(r"\.entry-meta:has\(> \.chip\.suggested-tag\) \{([^}]*)\}", band)
+    assert lane and "padding-block: calc((var(--target-min) - 1.5rem) / 2)" in lane.group(1)
+    assert "margin-block: calc((1.5rem - var(--target-min)) / 2)" in lane.group(1)
+
+
+def _docks_html() -> list[tuple[str, str, str]]:
+    """(name, opening tag, whole element) for every `.dock[data-dock-name]`."""
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    out = []
+    for m in re.finditer(r'<div class="dock"[^>]*data-dock-name="([^"]+)"[^>]*>', html):
+        depth = 0
+        for t in re.finditer(r"<(/?)div\b", html[m.start() :]):
+            depth += -1 if t.group(1) else 1
+            if depth == 0:
+                out.append((m.group(1), m.group(0), html[m.start() : m.start() + t.end()]))
+                break
+    return out
+
+
+def test_a_dock_with_an_arrange_zone_has_somewhere_to_fold_it() -> None:
+    """`fitDock` folds the arrange zone into the dock's ⋯ when the row runs out
+    of room; a dock with no ⋯ (or `data-dock-more` to make one) wraps instead.
+    The Questions dock had none and was two lines and 114px at 768."""
+    homeless = [
+        name
+        for name, tag, whole in _docks_html()
+        if 'class="dock-arrange' in whole.replace("dock-group dock-arrange", "dock-arrange")
+        and "data-dock-more=" not in tag
+        and not re.search(r'class="[^"]*\bdock-more\b', whole)
+        and not re.search(r'dock-arrange[\s\S]*class="[^"]*\bdock-menu\b', whole)
+    ]
+    assert not homeless, f"docks whose arrange zone cannot fold: {homeless}"
+    questions = next(whole for name, _, whole in _docks_html() if name == "questions")
+    assert re.search(r'id="questions-refresh"[^>]*data-fold-narrow', questions)
+
+
+def test_the_ask_composer_holds_its_controls_beside_the_field_at_tablet_width() -> None:
+    """At 768 the controls are 391px (two 44px icons under the touch floor)
+    and the field had 214px of a 638px composer, so a 14rem basis dropped the
+    whole group under it. 12rem keeps one line there (measured 59px tall)."""
+    css = (_SHEETS / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    rule = re.search(r"\.ask-composer > #question,\s*\.ask-composer > #question:focus,\s*\.ask-composer > #question:focus-visible \{\s*flex: ([^;]+);", css)
+    assert rule and rule.group(1) == "1 1 12rem"
+
+
+def test_a_sticky_commit_foot_holds_one_line_and_never_hides_the_focus() -> None:
+    """Quick capture's commit row was two lines at 768 (78px) and 960 at 200%
+    (86px), Save dropped onto the Tags label, and at 1280 by 720 the stuck foot
+    hid the category, the space picker and the document button (32px each)
+    from a reader who focused them. Beside a window's width the row is one
+    line, its hint taking the ellipsis with the sentence on its title; every
+    control above the foot stops the foot's height short of the page's edge."""
+    css = (_SHEETS / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    wide = css[css.index("@media (min-width: 600px) {\n  .capture-commit-row {") :]
+    wide = wide[: wide.index("\n}\n")]
+    assert "flex-wrap: nowrap" in wide and "text-overflow: ellipsis" in wide and "min-width: 0" in wide
+    js = (ROOT / "frontend" / "js" / "spaces-find.js").read_text(encoding="utf-8")
+    fn = js[js.index("function updateCaptureSpaceLabel") :]
+    assert "label.title = label.textContent" in fn[: fn.index("\n}\n")]
+    lazy = (_SHEETS / "library-lazy.css").read_text(encoding="utf-8")
+    foot = re.search(r"#capture > :not\(\.capture-commit-row\) :is\([^)]*\) \{([^}]*)\}", lazy)
+    assert foot and "scroll-margin-bottom: calc(var(--control-h) + 2 * var(--space-2))" in foot.group(1)

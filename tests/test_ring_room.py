@@ -65,6 +65,12 @@ RING_ROOM: list[tuple[str, str, str]] = [
     # The 2026-11-11 shell zoom sweep (wrapzoom-shell.js, nine viewports).
     ("the Widgets dialog's list, its first Reset on the top edge", ".dash-widgets-list", "room"),
     ("a movable panel's resize grip, sticky in the corner", ".panel-grip", "inset"),
+    # The 2026-11-11 wrapzoom sweep (every width and zoom).
+    ("a sidebar heading holding the Notes fold caret", ".sidebar-head h2", "room"),
+    ("the Timeline's scroller, the calendar head's first button on its edge", ".timeline-scroll", "room"),
+    ("the week's day heads on the top of their row", ".timeline-cal-weektop", "room"),
+    ("calendar items filling their cell", ".timeline-cal-cell .timeline-cal-item", "inset"),
+    ("a calendar cell's More row", ".timeline-cal-cell .timeline-cal-more", "inset"),
 ]
 
 #: A pill track with an edge: its segments fill its inside, never the

@@ -3251,10 +3251,15 @@ dialog::backdrop {
    bare selector here lost to it while typing, the field took its full width
    (flex-basis auto, width 100%), and pressing Ask blurred it and pulled the
    button 65px up between press and release, so the click missed. */
+/* 12rem, not the 14rem other fields take: at 768 the controls are 391px
+   (the touch floor makes the two icons 44px) and the field had 214px of a
+   638px composer, so the whole group dropped under it (wrapzoom sweep). 12rem
+   still holds the placeholder; a phone's composer, narrower still, moves the
+   controls down as a group, as below. */
 .ask-composer > #question,
 .ask-composer > #question:focus,
 .ask-composer > #question:focus-visible {
-  flex: 1 1 14rem;
+  flex: 1 1 12rem;
 }
 /* The controls are one flex item, so a row that cannot hold them beside a
    field worth typing in moves them down as a group. */
@@ -4981,6 +4986,49 @@ rect.board-minimap-card,
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
+}
+/* **One line beside a window's width** (the wrapzoom sweep: 78px and two
+   lines at 768, 86px at 960 at 200%, Save dropped onto the Tags label under
+   the sticky foot). The hint gives way first: it ends in an ellipsis with
+   the whole sentence on its title (`updateCaptureSpaceLabel`), and the
+   commit controls keep their words. A phone's row is narrower than the
+   controls alone, so there the hint keeps its own line. */
+@media (min-width: 600px) {
+  .capture-commit-row {
+    flex-wrap: nowrap;
+  }
+  .capture-commit-row > .capture-space-hint {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .capture-commit-row > :not(.capture-space-hint) {
+    flex: 0 0 auto;
+  }
+}
+/* On a phone the hint is a line of its own and the three controls the
+   next; Private keeps its lock and its pressed state, its word clipped
+   (`.toolbar-word`'s recipe), so the three share that line at 390 (Save
+   was a third line, 121px of row). */
+@media (max-width: 599.98px) {
+  .capture-commit-row > .capture-space-hint {
+    flex-basis: 100%;
+  }
+  .capture-commit-row > #entry-private .lock-toggle-label {
+    position: absolute;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .capture-commit-row > #entry-private {
+    width: var(--control-h);
+    padding-inline: 0;
+    justify-content: center;
+  }
+  .capture-commit-row > #entry-private > .ph-lead {
+    margin-inline-end: 0;
+    translate: none;
+  }
 }
 /* The mic was the one control in the panel with an icon and no label, in a
    row where every other button had both, so it read as a decoration rather

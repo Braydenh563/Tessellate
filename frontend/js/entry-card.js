@@ -979,6 +979,10 @@ function entryItem(entry, options = {}) {
       }
     }
     metaEnd.appendChild(actions);
+    //: A draft's strip holds a fifth target (Publish): the card's first
+    //: lines and the row's lane keep that much more clear for it
+    //: (08-consistency.css, "The strip's own width, kept clear").
+    li.classList.toggle("has-wide-strip", actions.childElementCount > 4);
   }
   if (entry.is_private) {
     // With the vault known to be locked (sign-in off, INBOX 426 aa), the
