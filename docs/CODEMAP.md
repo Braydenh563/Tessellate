@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10178, test files 2495, tests 20562, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10178, test files 2495, tests 20563, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -6952,11 +6952,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `overlayClosed` | frontend/js/router-overlays.js:162 |
-| `overlayGo` | frontend/js/router-overlays.js:170 |
-| `routerBackHook` | frontend/js/router-overlays.js:97 |
+| `overlayClosed` | frontend/js/router-overlays.js:167 |
+| `overlayGo` | frontend/js/router-overlays.js:175 |
+| `routerBackHook` | frontend/js/router-overlays.js:102 |
 | `routerCloseTopOverlay` | frontend/js/router-overlays.js:24 |
-| `routerSettle` | frontend/js/router-overlays.js:125 |
+| `routerSettle` | frontend/js/router-overlays.js:130 |
 
 ### frontend/js/run-core.js (10)
 
@@ -26401,7 +26401,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20562)
+## Tests (20563)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28352,7 +28352,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_ring_room.py | 8 |
 | tests/test_round2_sweep_fixes.py | 3 |
 | tests/test_router.py | 14 |
-| tests/test_router_overlays.py | 8 |
+| tests/test_router_overlays.py | 9 |
 | tests/test_routes_batch.py | 25 |
 | tests/test_routes_named.py | 2 |
 | tests/test_row_enter.py | 3 |
