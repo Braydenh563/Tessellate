@@ -111,6 +111,16 @@ def _recall_name(out: _Answer, view: NoteView) -> None:
 
 #: A short note about oneself is quoted as written, not retold (INBOX 1739).
 QUOTE_WHOLE_CHARS = 240
+_TRIVIA = re.compile(r"^\s*(?:who|where|which|how (?:tall|far|big|old|long|fast|deep))", re.I)
+_NOTE_WORD = re.compile(r"\b(?:notes?|wrote|written|saved|entry|entries|reminders?|diary|journal)\b", re.I)
+
+
+def trivia(question: str) -> bool:
+    """A general-knowledge question that carries a year ("who won the cup in 1966"):
+    it asks about the world, so a window no note falls in is not the answer."""
+    return bool(_TRIVIA.match(question) and re.search(r"\b(?:1\d|20)\d\d\b", question)) and not _PERSONAL.search(question) and not _NOTE_WORD.search(question)
+
+
 _PERSONAL = re.compile(r"\b(?:i|i'm|i've|i'd|i'll|my|me|mine|myself|we|our)\b", re.I)
 
 

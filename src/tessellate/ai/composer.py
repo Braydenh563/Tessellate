@@ -97,7 +97,7 @@ from tessellate.ai.composer_dialogue import Dialogue, _next_questions, follow_on
 from tessellate.ai.composer_intent import _ACT_VERBS, _lead_act_verb, plan, tag_gap
 from tessellate.ai.composer_help import _feature_instead, cannot_answer, _help_answer, _in_window, _result, _utility, help_line, offered
 from tessellate.ai.composer_empty import _absent, _as_phrase, _as_typed, _bare_title, _did_you_mean, _filtered, _nothing, _REGISTER, window_said
-from tessellate.ai.composer_recall import _BROAD, _overview_answer, _recall, _recall_next, window_as_topic
+from tessellate.ai.composer_recall import _BROAD, _overview_answer, _recall, _recall_next, trivia, window_as_topic
 
 
 # --- a question in two parts, and one that could mean two things -------------
@@ -533,7 +533,7 @@ def _meaning_maker(shape: str, views_list: list, embed):  # noqa: ANN001, ANN202
 def _window_gate(out: "_Answer", p, said: str, question: str, shape: str, views_list: list) -> tuple:  # noqa: ANN001
     """A result when the question's window decides the answer, else the views
     narrowed to the window."""
-    if said or not p.window or window_as_topic(p, views_list):
+    if said or not p.window or window_as_topic(p, views_list) or trivia(question):
         return None, views_list
     if p.kind == "recall":
         _recall(out, p, views_list, question)

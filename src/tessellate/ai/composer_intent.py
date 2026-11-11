@@ -208,10 +208,12 @@ def holds_any(stems: list[str], text: str) -> bool:
     return any(_holds(st, words) or any(w.startswith(st) for w in words) for st in stems)
 
 
-#: A present or future yes/no ("is the plumber coming this week"): its window dates the event, not the note.
-_PRESENT_ASK = re.compile(r"^\W*(?:is|are|will)\s+(?:the|my|our|a)\b", re.I)
 
 
+
+
+#: A present or future yes/no ("is the plumber coming this week", "are we meeting on Tuesday"): its window dates the event, not the note.
+_PRESENT_ASK = re.compile(rf"^\W*{rec.EVENT_LEAD}", re.I)
 
 
 def without_event_window(question: str) -> str:
