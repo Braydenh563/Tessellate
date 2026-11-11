@@ -62,6 +62,9 @@ RING_ROOM: list[tuple[str, str, str]] = [
     # The 2026-10-11 sweep (focus ring probe, 1440 and 390).
     ("a page that scrolls, a stop flush with its bottom edge", ".tab-page", "room"),
     ("Settings, Background jobs: Run now fills its row on a phone", ".job-run-now", "inset"),
+    # The 2026-11-11 shell zoom sweep (wrapzoom-shell.js, nine viewports).
+    ("the Widgets dialog's list, its first Reset on the top edge", ".dash-widgets-list", "room"),
+    ("a movable panel's resize grip, sticky in the corner", ".panel-grip", "inset"),
 ]
 
 #: A pill track with an edge: its segments fill its inside, never the

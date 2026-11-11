@@ -10323,6 +10323,24 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   padding-inline-start: var(--ring-room);
   scroll-padding-block: var(--ring-room);
 }
+/* The Widgets dialog's list scrolls, and its first row's Reset stood on the
+   top edge: 4px of its ring cut at scrollTop 0, every viewport (2026-11-11
+   zoom sweep). Room down, and at the start across (the end already has the
+   scrollbar's `--space-2`). */
+.dash-widgets-list {
+  padding-block: var(--ring-room);
+  padding-inline-start: var(--ring-room);
+  margin-block: calc(-1 * var(--ring-room));
+  margin-inline-start: calc(-1 * var(--ring-room));
+  scroll-padding-block: var(--ring-room);
+}
+/* A movable panel's resize grip is sticky in its bottom-right corner, flush
+   with both clipping edges (the Widgets dialog, the notifications panel:
+   3 to 4px of the ring cut on the right and the underside), so its ring is
+   drawn inside it, the Inset recipe. */
+.panel-movable-on > button.panel-grip:focus-visible {
+  outline-offset: -2px;
+}
 /* Beside the nav the pane's extra room comes out of the grid gap; under 820
    the pane fills the body, which hides what leaves it, so it stays padding. */
 @media (min-width: 820px) {
@@ -10753,8 +10771,10 @@ html[data-other-device] [data-this-computer="hide"] {
    controls, so a control's top is 3.5px from the window's edge, and the
    2px ring at the 2px offset reached 0.5px past it (measured at 1440: ring
    top -0.5 on the six right-hand buttons). A 1px offset puts the ring top at
-   +0.5. The tab strip keeps its own ring inside its well. */
-header#top-bar :is(.header-cluster, .notif-wrap, .header-controls) button:focus-visible,
+   +0.5. The tab strip keeps its own ring inside its well, and the
+   notifications panel's resize grip, a panel control and not a bar one,
+   keeps the panel's inset ring (Ring room). */
+header#top-bar :is(.header-cluster, .notif-wrap, .header-controls) button:not(.panel-grip):focus-visible,
 header#top-bar button.space-switcher-btn:focus-visible {
   outline-offset: 1px;
 }
