@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8174, frontend ids 2713, CSS sections 524, backend routes 677, backend modules 10468, test files 2588, tests 21178, plan headings 1013, app scripts 29, boot scripts 38, script files 284.
+Counts: frontend functions 8174, frontend ids 2713, CSS sections 524, backend routes 677, backend modules 10468, test files 2589, tests 21179, plan headings 1013, app scripts 29, boot scripts 38, script files 284.
 
 ## Frontend functions (8174)
 
@@ -26905,7 +26905,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21178)
+## Tests (21179)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27189,6 +27189,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_chat_ask_support_w1.py | 2 |
 | tests/test_chat_attachments.py | 26 |
 | tests/test_chat_checkpoint_race.py | 2 |
+| tests/test_chat_chips_cost_d28_1111.py | 1 |
 | tests/test_chat_dock.py | 12 |
 | tests/test_chat_failed_step.py | 1 |
 | tests/test_chat_flows_1031.py | 4 |
