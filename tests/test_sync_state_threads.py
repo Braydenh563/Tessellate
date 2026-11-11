@@ -14,7 +14,7 @@ from tessellate.entry import manager, sync_extras
 
 
 def test_concurrent_writers_lose_no_update_and_raise_nothing(tmp_path):
-    errors: list[BaseException] = []
+    errors: list[Exception] = []
 
     def work(n: int) -> None:
         try:
@@ -23,7 +23,7 @@ def test_concurrent_writers_lose_no_update_and_raise_nothing(tmp_path):
                 sync_state.issue_pass(tmp_path, f"dev{n}-{i}")
                 sync_state.save_link(tmp_path, **{f"k{n}_{i}": i})
                 sync_state.device_id(tmp_path)
-        except BaseException as exc:  # noqa: BLE001
+        except Exception as exc:  # noqa: BLE001
             errors.append(exc)
 
     threads = [threading.Thread(target=work, args=(n,)) for n in range(8)]
