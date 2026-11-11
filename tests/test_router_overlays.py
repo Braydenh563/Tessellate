@@ -37,7 +37,9 @@ def test_every_closer_the_hook_calls_is_a_global_function():
     assert len(names) >= 6
     everything = "\n".join(p.read_text(encoding="utf-8") for p in JS.glob("*.js"))
     for name in names:
-        assert re.search(rf"^(?:async )?function {name}\(", everything, re.M), name
+        #: A wrapped file (W29 carve) defines it inside and exports it on window.
+        exported = re.search(rf"Object\.assign\(window, \{{[^}}]*\b{name}\b", everything)
+        assert re.search(rf"^(?:async )?function {name}\(", everything, re.M) or exported, name
 
 
 def test_the_agent_palette_records_its_opener():
