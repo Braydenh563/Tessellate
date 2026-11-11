@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Documents sidebar (the owner, 2026-11-11): Attach a bookmark spans the sidebar with its words centred, and "Where are my documents kept?" sits at the sidebar's foot, centred, as its footer (measured at 1440: 226px of a 234px section; the link's bottom 4px above the section's).
 - Fixed (code scanning 2180): the desk companion's "overlay started" log builds the motion words from fixed strings in `_motion_label`, never from the value read from preferences.
 - Fixed (code scanning, desk companion start-up log): the motion reason is now the matching constant from `MOTION_REASONS`, never the value read from preferences, so the log line carries no value that came from a preference read.
 - Audit 1029 extras (X1 to X14, re-checked at head 2026-11-11): all fourteen are stale, already fixed in code (pointers in `audit-1029-extras.md`); measured on the running app: the voice dialog opens on its title and typing "t a m" starts nothing, the space menu walks with ArrowDown and holds no nested control, the panel grip is 28 x 28, a resized panel shows its reset button, toast action contrast is 7.72 light and 8.79 dark, space names are cleaned and duplicates answer 409. One residual for the owner: a toast over the sketch's Save buttons still yields to 0.12 by design.
