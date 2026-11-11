@@ -6,7 +6,7 @@ only `engine_consts` and the sibling behaviour modules; the time-keeping that re
 from __future__ import annotations
 
 import math
-from . import behaviour as bh, wisps
+from . import behaviour as bh, standing, wisps
 from .sprites import EXTRA_FALLBACK
 from .engine_consts import (
     BLINK_PHASES,
@@ -169,7 +169,7 @@ class FramesMixin:
         t = max(0.0, now - self.idle_start)
         nominal = max(1, self.idle_frames) / self._idle_fps()
         while self._edges[-1] <= t:
-            self._edges.append(self._edges[-1] + nominal / (1.0 + self.idle_rng.uniform(-IDLE_SLOWEST, IDLE_SPREAD)))
+            self._edges.append(self._edges[-1] + nominal * standing.scale(self.mind.mood(self.idle_start + self._edges[-1], self.hour), self.idle_start + self._edges[-1] - self.exerted_at) / (1.0 + self.idle_rng.uniform(-IDLE_SLOWEST, IDLE_SPREAD)))
         k = next(i for i in range(len(self._edges) - 1, 0, -1) if self._edges[i - 1] <= t)
         return self.idle_start + self._edges[k - 1], self._edges[k] - self._edges[k - 1]
 

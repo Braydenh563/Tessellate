@@ -18,7 +18,7 @@ from collections import deque
 from typing import Any, NamedTuple
 
 from . import behaviour as bh
-from . import faces, props
+from . import faces, gaze, props
 
 #: In-place acts while it stands: one every this many seconds, in the mind's own weighing (`mind.pick`).
 LIFE_EVERY = (50.0, 130.0)
@@ -434,6 +434,7 @@ class Extras:
         self.e = engine
         self.rng = random.Random(engine.life_rng.getstate()[1][1])
         self.micro = faces.Micro(random.Random(engine.life_rng.getstate()[1][2]), 0.0)
+        self.saccade = gaze.Saccade(random.Random(engine.life_rng.getstate()[1][3]))  # its own stream: no other draw moves
         self.pointer_state = Pointer()
         #: When the next in-place act may start; `inf` stops them (tests that want a still stand).
         self.seen_at = 0.0
@@ -467,7 +468,14 @@ class Extras:
         if face is None and e.state in ("stand", "sit"):
             self.micro.tick(now, e.mind.mood(now, e.hour), self._free_for_micro())
             face = self.micro.view(now)
-        return prop, face
+        return prop, gaze.worn(face, self.saccade.tick(now, self._attending()))
+
+    def _attending(self) -> bool:
+        """Holding its eyes on something: a look between two blinks, or an act drawn on the look frame (`gaze.ATTEND_ACTS`)."""
+        e = self.e
+        if not self._free_for_micro():
+            return False
+        return e.state == "act" and e.act in gaze.ATTEND_ACTS or e.state == "stand" and bool(e.flash) and e.flash[0] == "look"
 
     def _free_for_micro(self) -> bool:
         e = self.e
