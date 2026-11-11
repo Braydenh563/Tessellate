@@ -346,10 +346,6 @@ REACT_FOR = 0.6
 HANG_ENDS = {"pull": 5.0, "swing": 4.0, "react": 2.0}
 HANG_PERIOD = 5.6
 HANG_GLANCE = (11.0, 26.0)
-#: W31 E2: how long a long hang holds on with both hands between the times it lets one go (`bh.ACTIVITIES["hang_one_hand"]`).
-HANG_ONE_EVERY = (20.0, 55.0)
-#: The pictures placed as the sit is: its seat on the rest line, whatever hangs below it (a dangle's hem, a kick's) is drawn under it.
-SIT_REGISTERED = ("dangle", "kick0", "kick1", "meditate")
 #: What a hang takes hold of (INBOX 1660: "it thinks its hanging but its just ... hanging in
 #: mid air"): the top of the work area, or the bottom edge of a window's title bar
 #: (`TITLE_BAR` logical px under its top). The hands are `hang_top` of the frame's height

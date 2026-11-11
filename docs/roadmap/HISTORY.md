@@ -22,6 +22,10 @@ waits in Uncategorised; the hint and the saved status offer the closest two or
 three. Leave one out on the 120 notes: 4 of the 11 wrong filings sit under 70,
 beside about 20 right ones (`tests/test_ask_when_unsure.py`).
 
+## Moved from the plans, 2026-11-11 (W31 E1, E2: desk frames for dangle, kick_legs, hang_one_hand, meditate)
+
+- Built (compalive-1109 "frames the desk still lacks", INBOX 1710 b, 1711): `dangle`, `kick0`, `kick1`, `hang_one` and `meditate` in `frontend/img/desk/<look>/` (`sprites.EXTRA_FRAMES`, optional, `EXTRA_FALLBACK` to the sit or the hang). `dangle` and `kick_legs` are `where="perch"` acts (`PERCH_ACT_BOOST`, `Engine._hem_room`); `hang_one_hand` is played by `Engine._let_one_go` inside a hang. Measured on the shipped frames at 2x: seat of dangle, kick and meditate within 1 logical px of the sit's; hand rows of `hang_one` within 1 px of `hang`'s. Pinned by tests/test_overlay_desk_acts_1710.py. Not drawn, by decision: `pos.lounge` (the act is the keyed sit; a second sit picture is not worth its bytes).
+
 ## Moved from the plans, 2026-11-11 (backlog-2: BACKLOG §2, Quick wins)
 
 **Nothing here is open, all six are done**, and the section is kept rather
