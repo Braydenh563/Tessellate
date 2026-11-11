@@ -121,9 +121,11 @@
   //: not at the window's left; the six line kinds are drawn (`dgm-link`), where one arrow icon stood for four of them.
   function menu(S, { edge, chip }, h) {
     //: The whole row, not its ⋯: the menu stays off the words it belongs to.
-    const r = (chip.closest(".dgm-joinline") || chip).getBoundingClientRect();
+    const line = chip.closest(".dgm-joinline") || chip;
+    let r = line.getBoundingClientRect();
     const rows = items(S, edge, h);
     const open = openMenuAtPoint(rows, "This connector", r.right, r.bottom, chip);
+    r = line.getBoundingClientRect();
     beside(open, r, chip);
     open?.querySelectorAll(":scope > .menu-item").forEach((row, i) => {
       if (i >= LINKS.length) return;

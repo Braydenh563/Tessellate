@@ -30,6 +30,9 @@ def test_the_connector_menu_is_placed_off_its_row_not_over_it():
     joins = _read("diagram-joins.js")
     menu = _body(joins, "function menu(S, { edge, chip }, h) {")
     assert "beside(open, r, chip)" in menu
+    # Opening the menu focuses its first item, which scrolls the pane (the row moved 28px at 820x900, 676 to 648, under a menu placed
+    # for the 676): the row is measured again once the menu is open, and that box is the one the menu is placed against.
+    assert menu.index("openMenuAtPoint(") < menu.rindex("r = line.getBoundingClientRect()") < menu.index("beside(open, r, chip)")
     place = _body(joins, "function beside(menu, row, opener) {")
     # below, then above, then to a side: never across the row; a menu taller than the room scrolls instead.
     assert place.index("row.bottom + gap") < place.index("row.top - gap") < place.index("row.right + gap") < place.index("row.left - gap")
@@ -83,3 +86,13 @@ def test_the_suggestions_row_turns_its_caret_and_its_rows_start_at_its_words():
     assert 'aria-expanded", "false"' in ai
     assert ".dgm-ai-lints-head[aria-expanded=\"false\"] .contents-caret" in CSS
     assert re.search(r"\.dgm-ai-lints \{[^}]*padding-inline", CSS)
+
+
+def test_the_list_hugs_its_content_when_stacked_and_the_rows_start_where_the_words_do():
+    # Measured at 820x900 (the list under the picture in a narrow pane): the outline had 21 px of its 364 closed and 13 open, because the
+    # list column's `max-block-size: 100%` had no row to resolve against and fell to its 12rem floor. Now 364 of 364, both ways.
+    assert re.search(r"@container \(max-width: 599\.98px\) \{\s*\.dgm-listcol,\s*\.dgm-listcol > \.dgm-pane \{\s*max-block-size: none;", CSS)
+    # The suggestion rows start where "Suggestions" does: 375.3 and 375.3 at 1440 (372.1 before: the caret is 1.15em, the button has a border).
+    assert re.search(r"\.dgm-ai-lints \{[^}]*calc\(1px \+ var\(--space-2\) \+ 1\.15em \+ var\(--space-1\)\)", CSS)
+    # A connector row keeps no padding at its end: "Can you reproduce it?" clipped 12 px at 1440, now 1.
+    assert re.search(r"\.dgm-join \{[^}]*padding: 0 0 0 var\(--space-1\);", CSS)

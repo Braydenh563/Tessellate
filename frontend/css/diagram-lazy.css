@@ -730,10 +730,11 @@
 .dgm-join {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-1);
   max-inline-size: 100%;
   min-height: var(--control-h-dense);
-  padding: 0 var(--space-2);
+  /* No padding at its end: the menu button beside it has its own, and 6 px more is what the longest name loses at 1440 (INBOX 1771). */
+  padding: 0 0 0 var(--space-1);
   border: 0;
   border-inline-start: 2px solid var(--accent);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
@@ -2254,6 +2255,15 @@
   }
 }
 
+/* Stacked in a narrow pane (the container query above, where the list sits under the picture) the list column has no row to be
+   100% of, so it fell to its 12rem floor: the outline got 21 px of 364 (13 open) at 820x900. It hugs its content; the page scrolls. */
+@container (max-width: 599.98px) {
+  .dgm-listcol,
+  .dgm-listcol > .dgm-pane {
+    max-block-size: none;
+  }
+}
+
 .dgm-stage > .dgm-fold {
   position: absolute;
   inset-block-start: var(--space-2);
@@ -2609,8 +2619,9 @@ button.ghost.disclosure-row.dgm-ai-lints-head {
   transition: none;
 }
 
+/* The head's border, its padding, the caret (1.15em) and its gap: measured at 1440, the words start 27.3 px in and the rows 25.1 (3 px left of them). */
 .dgm-ai-lints {
-  padding-inline: calc(var(--space-2) + 1em + var(--space-1)) var(--space-2);
+  padding-inline: calc(1px + var(--space-2) + 1.15em + var(--space-1)) var(--space-2);
   padding-block-end: var(--space-2);
 }
 

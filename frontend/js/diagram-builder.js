@@ -140,6 +140,12 @@
 
   const blockKeys = (items) => items.flatMap((x) => (x.type === "k" ? [] : [diagramOps.key(x.type, x.id), ...blockKeys(x.kids || [])]));
 
+  const icon = (cls) => {
+    const i = el("i", `ph ${cls}`);
+    i.setAttribute("aria-hidden", "true");
+    return i;
+  };
+
   function shapeGlyph(shape) {
     const glyph = el("span", "dgm-shape");
     glyph.dataset.shape = shape;
@@ -168,9 +174,7 @@
     if (on) row.setAttribute("aria-current", "true");
     row.append(shapeGlyph(shape), el("span", "menu-item-words", SHAPE_LABEL[shape]));
     if (on) {
-      const check = el("i", "ph ph-check dgm-shape-check");
-      check.setAttribute("aria-hidden", "true");
-      row.append(check);
+      row.append(icon("ph-check dgm-shape-check"));
     }
     row.addEventListener("click", (event) => {
       event.stopPropagation();
@@ -224,8 +228,7 @@
       block.setAttribute("aria-level", String(level));
       block.setAttribute("aria-label", `Kept line: ${item.line}`);
       block.title = "Blocks cannot edit this line. It stays in the source where it is.";
-      const lock = el("i", "ph ph-lock-simple dgm-kept-icon");
-      lock.setAttribute("aria-hidden", "true");
+      const lock = icon("ph-lock-simple dgm-kept-icon");
       block.append(el("div", "dgm-card"));
       block.firstChild.append(lock, el("code", "dgm-label", item.line));
       return block;
@@ -248,9 +251,7 @@
     const grip = el("span", "dgm-grip");
     grip.dataset.objGrip = "";
     grip.title = "Drag to move it, or onto another block to connect it";
-    const dots = el("i", "ph ph-dots-six-vertical");
-    dots.setAttribute("aria-hidden", "true");
-    grip.append(dots);
+    grip.append(icon("ph-dots-six-vertical"));
     const label = el("span", "dgm-label", text);
     label.title = text;
     card.append(grip, isGroup ? groupGlyph() : shapeButton(S, key, data.shape, text), label);
@@ -277,9 +278,7 @@
   }
 
   function groupGlyph() {
-    const icon = el("i", "ph ph-stack dgm-group-icon");
-    icon.setAttribute("aria-hidden", "true");
-    return icon;
+    return icon("ph-stack dgm-group-icon");
   }
 
   //: A connector row: the words go to the block it points at (diagram-joins.js `go`, 1771); its own ⋯ opens the menu.
@@ -287,16 +286,15 @@
     const line = el("div", "dgm-joinline");
     const chip = el("button", "dgm-join");
     chip.type = "button";
-    const to = titleOf(S, edge.to);
-    const arrow = el("i", `ph ${edge.arrow ? "ph-arrow-right" : "ph-minus"}`);
-    arrow.setAttribute("aria-hidden", "true");
-    chip.dataset.style = edge.style;
-    chip.append(arrow, el("span", "dgm-join-to", to));
+    const [from, to] = [titleOf(S, edge.from), titleOf(S, edge.to)];
+        chip.dataset.style = edge.style;
+    chip.append(icon(edge.arrow ? "ph-arrow-right" : "ph-minus"), el("span", "dgm-join-to", to));
     if (edge.label) chip.append(el("span", "dgm-join-label muted", edge.label));
-    chip.title = chip.ariaLabel = `Go to ${to}`;
+    chip.title = `Go to ${to}`;
+    chip.setAttribute("aria-label", `Go to ${to}. Connector from ${from} to ${to}${edge.label ? `, labelled ${edge.label}` : ""}.`);
     chip.addEventListener("click", () => joins(S, "go", { edge: S.m.edges[index] || edge, end: "to" }));
     const more = el("span", "menu-wrap dgm-join-more");
-    const dots = smallButton("ph:dots-three", `Menu: ${to}`, () => joins(S, "menu", { edge: S.m.edges[index] || edge, chip: dots }));
+    const dots = smallButton("ph:dots-three", "Change this connector", () => joins(S, "menu", { edge: S.m.edges[index] || edge, chip: dots }));
     line.append(chip, more);
     more.append(dots);
     return line;

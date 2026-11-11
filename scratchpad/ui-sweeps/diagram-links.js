@@ -26,19 +26,44 @@ const SIZES = process.env.W ? ALL.filter((s) => String(s[0]) === process.env.W) 
       const labels = [...document.querySelectorAll(".dgm-card .dgm-label")].map((l) => ({ t: l.textContent, h: Math.round(l.getBoundingClientRect().height), sw: l.scrollWidth, cw: l.clientWidth }));
       return { cardTop: Math.round(c.top), bar, labels };
     });
+    const clip = await page.evaluate(() => [...document.querySelectorAll(".dgm-label, .dgm-join-to, .dgm-join-label")].filter((e) => e.scrollWidth > e.clientWidth).map((e) => ({ cls: e.className.slice(0, 20), t: e.textContent.slice(0, 24), over: e.scrollWidth - e.clientWidth, cw: e.clientWidth })));
+    // e/c: the Suggestions disclosure, closed then open: caret turn, row inset against the summary text, last outline row against the open list.
+    const sug = await page.evaluate(async () => {
+      const head = document.querySelector(".dgm-ai-lints-head");
+      if (!head) return null;
+      const turn = () => { const c = getComputedStyle(head.querySelector(".contents-caret")); return { rotate: c.rotate, expanded: head.getAttribute("aria-expanded") }; };
+      const closed = turn();
+      head.click();
+      await new Promise((r) => setTimeout(r, 400));
+      const open = turn();
+      const words = head.querySelector(".dgm-ai-lints-words").getBoundingClientRect();
+      const li = document.querySelector(".dgm-ai-lints li");
+      const text = li && (li.querySelector(".dgm-ai-lint-text") || li);
+      const list = document.querySelector(".dgm-ai-lints").getBoundingClientRect();
+      const rows = [...document.querySelectorAll(".dgm-block")].filter((b) => b.getBoundingClientRect().height > 0);
+      const last = rows[rows.length - 1].getBoundingClientRect();
+      const box = head.closest(".dgm-ai");
+      const sc = (() => { for (let e = head; e; e = e.parentElement) if (e.scrollHeight > e.clientHeight + 1 && /auto|scroll/.test(getComputedStyle(e).overflowY)) return e; return null; })();
+      return { closed, open, wordsLeft: Math.round(words.left), textLeft: text ? Math.round(text.getBoundingClientRect().left) : null, listTop: Math.round(list.top), listBottom: Math.round(list.bottom), lastRowTop: Math.round(last.top), lastRowBottom: Math.round(last.bottom), lastBelowListTop: Math.round(last.bottom) > Math.round(list.top) && Math.round(last.top) < Math.round(list.bottom), boxPos: box && getComputedStyle(box).position, scroller: sc && { cls: String(sc.className).slice(0, 30), sh: sc.scrollHeight, ch: sc.clientHeight } };
+    });
+    await page.evaluate(() => document.querySelector(".dgm-ai-lints-head")?.click());
     await page.evaluate(() => document.querySelectorAll(".dgm-join")[1].scrollIntoView({ block: "center" }));
     const go = page.locator(".dgm-join:visible").nth(1);
     await go.click();
     await page.waitForTimeout(300);
     const went = await page.evaluate(() => ({ selected: document.querySelector('.dgm-block[aria-selected="true"]')?.getAttribute("aria-label"), arrow: document.querySelector(".dgm-edge-on")?.getAttribute("d")?.length || 0, focusOnRow: document.activeElement?.classList.contains("dgm-join") }));
-    const chip = page.locator(".dgm-join-dots:visible").nth(1);
-    const rb = await page.locator(".dgm-joinline:visible").nth(1).boundingBox();
-    const row = rb;
-    await chip.click();
+    const chip = page.locator(".dgm-join-more button:visible").nth(1);
+    // A real press at the button's centre: locator.click() scrolls the pane first, and the pane settles back 28px later at 820.
+    await chip.evaluate((b) => b.scrollIntoView({ block: "center" }));
+    await page.waitForTimeout(200);
+    const at = await chip.boundingBox();
+    await page.mouse.click(at.x + at.width / 2, at.y + at.height / 2);
     await page.waitForTimeout(400);
+    // The row is the pressed button's own line, measured after the press (a nth() of the visible lines can be another one).
+    const row = await chip.evaluate((b) => { const r = b.closest(".dgm-joinline").getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; });
     const menu = await page.evaluate(() => { const m = document.querySelector(".action-menu:not(.hidden):not(.submenu)"); if (!m) return null; const r = m.getBoundingClientRect(); return { x: Math.round(r.x), y: Math.round(r.y), r: Math.round(r.right), b: Math.round(r.bottom) }; });
     const overlap = menu && !(menu.r <= row.x || menu.x >= row.x + row.width || menu.b <= row.y || menu.y >= row.y + row.height);
-    out.push({ w, went, row: [row.x, row.y, row.width, row.height].map(Math.round), menu, overlap, first });
+    out.push({ w, clip, sug, went, row: [row.x, row.y, row.width, row.height].map(Math.round), menu, overlap, first });
     await browser.close();
   }
   console.log(JSON.stringify(out, null, 1));
