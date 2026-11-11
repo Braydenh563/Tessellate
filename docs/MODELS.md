@@ -271,6 +271,24 @@ memory while the app is open; with Ollama it lives in Ollama instead.
 An embedding model is not a chat model, and changing one does not change
 the other. A bigger instruct model will not improve search.
 
+## Speech models
+
+Speech runs inside Tessellate too, from optional packages in **Settings,
+Packages**; none of these is an Ollama model, and nothing you say leaves the
+computer.
+
+- **Voice notes** (faster-whisper) fetch their Whisper model on first use:
+  tiny (about 75 MB), base (about 145 MB, the default), small (about 485 MB)
+  or medium (about 1.5 GB).
+- **Live captions** read a pinned 32 MB `tiny.en` whisper.cpp model,
+  installed with the engine by the Live captions bundle. English only, and
+  quick rather than exact: names and rare words can come out wrong.
+- **Speaker labels** tell voices apart with two pinned models, a pyannote
+  segmentation model (7.0 MB) and a WeSpeaker embedding model (26.5 MB),
+  installed with the sherpa-onnx engine by the Speakers bundle. Good for a
+  few people taking turns in clear audio; overlapping talk and similar voices
+  can be merged or split wrongly.
+
 ## If you want a path rather than a table
 
 1. `ollama pull llama3.2`, and see whether it is already enough.

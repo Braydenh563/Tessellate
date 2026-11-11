@@ -9,6 +9,7 @@
 - [The AI status says the AI is off](#the-ai-status-says-the-ai-is-off)
 - [Web search returns nothing, or says DuckDuckGo is rate-limiting](#web-search-returns-nothing-or-says-duckduckgo-is-rate-limiting)
 - [SearXNG will not start, or starts and never answers](#searxng-will-not-start-or-starts-and-never-answers)
+- [Live captions or the second grammar checker do not start](#live-captions-or-the-second-grammar-checker-do-not-start)
 - [I forgot my password](#i-forgot-my-password)
 - [Something looks wrong and I want to see what happened](#something-looks-wrong-and-i-want-to-see-what-happened)
 
@@ -147,6 +148,25 @@ Everything you need is in **Settings, Web search**:
   Python it was built against has since been upgraded: it looks installed and
   dies on start. Your `settings.yml` is kept, because it holds the instance's
   secret key and any edits you made, and it is not what breaks.
+
+## Live captions or the second grammar checker do not start
+
+Both are optional packages in **Settings, Packages**, and both run as a separate
+program on this computer that the app starts on first use, never at launch.
+
+- **Live captions** needs both rows of its bundle: the engine and the `tiny.en`
+  model. The first caption starts the helper (about 0.3 s, measured on Linux
+  x86_64); a helper that crashes is restarted up to 3 times in 10 minutes, and
+  after that the message says to reinstall Live captions in Settings, Packages,
+  which is the fix. Its own output is in `logs/captions-helper.log` in
+  your data folder. A row that says "Not for this computer" has no engine build
+  for your system yet (there are builds for Windows x86_64, Linux x86_64 and
+  aarch64, and macOS on Apple silicon); captions then use the Voice notes engine
+  if it is installed.
+- **A second grammar checker (LanguageTool)** needs Java 17 or newer already
+  installed (`java` on the path, or `JAVA_HOME`). Without it Settings, Packages
+  refuses the install and says why. Once installed it starts with the first
+  grammar check and stops after 10 quiet minutes.
 
 ## I forgot my password
 
