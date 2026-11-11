@@ -85,32 +85,7 @@ support bundle** (an allowlist zip of the log buffer, scrubbed
 
 Small, self-contained, each removing a visible annoyance.
 
-**Nothing here is open, all six are done**, and the section is kept rather
-than deleted for two reasons: a `§2` in a code comment still has to land
-somewhere, and the *shape* of what happened here is worth keeping. Four of the
-six turned out to be **already built when this list was written**, checked in
-the running app rather than assumed, because by then three sessions had
-independently rebuilt something that already existed. That ratio (four stale
-claims out of six) is the single best argument for the "check before you
-build" rule at the top of CLAUDE.md, and deleting the evidence would make the
-rule look like superstition rather than a measured result.
-
-Already built when claimed as open: the SearXNG install path, the Notes
-sidebar sticky rule, a per-code-block copy button in chat answers, and
-conversation search by content.
-
-Genuinely built afterwards:
-
-- **Empty chats could not be deleted.** A `Delete` button in the chat toolbar
-  now covers both cases, an empty or unsaved pane resets silently, a saved
-  one gets the sidebar's own confirm dialog and then
-  `DELETE /conversations/{id}`.
-- **Document outline / table of contents, word-count goal, reading time**,
-  all three, not just the outline. `renderDocOutline` builds the TOC,
-  `renderDocStats` shows reading time, and `promptDocWordGoal`
-  (`#doc-word-goal`) is a working word-count-goal control. §5 already recorded
-  the outline and reading-time halves as done and called the word-count goal
-  "the one unbuilt part", it was built too.
+Moved to HISTORY.md ("Moved from the plans, 2026-11-11 (backlog-2: BACKLOG §2, Quick wins)"): all six quick wins are done; the section stays so a `§2` in a code comment lands.
 
 ---
 
