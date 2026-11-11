@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8150, frontend ids 2710, CSS sections 523, backend routes 674, backend modules 10353, test files 2551, tests 20887, plan headings 1010, app scripts 29, boot scripts 38, script files 284.
+Counts: frontend functions 8150, frontend ids 2710, CSS sections 523, backend routes 674, backend modules 10355, test files 2552, tests 20899, plan headings 1010, app scripts 29, boot scripts 38, script files 284.
 
 ## Frontend functions (8150)
 
@@ -27,9 +27,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `onSurface` | frontend/js/settings-body.js:63 |
-| `surfaceBuild` | frontend/js/settings-body.js:36 |
-| `surfaceFind` | frontend/js/settings-body.js:55 |
+| `onSurface` | frontend/js/settings-body.js:133 |
+| `surfaceBuild` | frontend/js/settings-body.js:97 |
+| `surfaceFind` | frontend/js/settings-body.js:121 |
 
 ### frontend/js/app.js (45)
 
@@ -1725,7 +1725,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderCopyLogsLabel` | frontend/js/settings.js:1238 |
 | `renderCustomThemes` | frontend/js/settings.js:2233 |
 | `renderGlassRows` | frontend/js/settings.js:2828 |
-| `renderJobOverview` | frontend/js/settings.js:3993 |
+| `renderJobOverview` | frontend/js/settings.js:3994 |
 | `renderLogErrorBadge` | frontend/js/settings.js:1094 |
 | `renderLogGap` | frontend/js/settings.js:800 |
 | `renderLogList` | frontend/js/settings.js:983 |
@@ -5003,11 +5003,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dismiss` | frontend/js/extra-notice.js:38 |
 | `dismissed` | frontend/js/extra-notice.js:37 |
 | `dismissedList` | frontend/js/extra-notice.js:32 |
-| `extraNoticeCheck` | frontend/js/extra-notice.js:80 |
-| `extraNoticeInstall` | frontend/js/extra-notice.js:60 |
-| `extraNoticeMount` | frontend/js/extra-notice.js:121 |
-| `extraNoticeState` | frontend/js/extra-notice.js:50 |
-| `extraRows` | frontend/js/extra-notice.js:42 |
+| `extraNoticeCheck` | frontend/js/extra-notice.js:82 |
+| `extraNoticeInstall` | frontend/js/extra-notice.js:62 |
+| `extraNoticeMount` | frontend/js/extra-notice.js:123 |
+| `extraNoticeState` | frontend/js/extra-notice.js:52 |
+| `extraRows` | frontend/js/extra-notice.js:44 |
 | `forget` | frontend/js/extra-notice.js:39 |
 | `saveDismissed` | frontend/js/extra-notice.js:36 |
 
@@ -13572,7 +13572,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10353)
+## Backend modules (10355)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -20230,7 +20230,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `served_index_html` | src/tessellate/api/app.py:296 |
 | `served_offline_html` | src/tessellate/api/app.py:280 |
 
-### src/tessellate/api/asset_strip.py (22)
+### src/tessellate/api/asset_strip.py (24)
 
 | Name | File:line |
 |---|---|
@@ -20238,22 +20238,24 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_drop_indent` | src/tessellate/api/asset_strip.py:120 |
 | `_drop_span` | src/tessellate/api/asset_strip.py:64 |
 | `_first_doubt` | src/tessellate/api/asset_strip.py:187 |
-| `_html_tag_end` | src/tessellate/api/asset_strip.py:453 |
+| `_html_tag_end` | src/tessellate/api/asset_strip.py:456 |
 | `_js_regex_allowed` | src/tessellate/api/asset_strip.py:166 |
 | `_js_scan` | src/tessellate/api/asset_strip.py:274 |
 | `_js_slash_doubtful` | src/tessellate/api/asset_strip.py:197 |
 | `_keep` | src/tessellate/api/asset_strip.py:58 |
 | `_keep_after` | src/tessellate/api/asset_strip.py:260 |
+| `_opaque_end` | src/tessellate/api/asset_strip.py:479 |
+| `_opens_opaque` | src/tessellate/api/asset_strip.py:472 |
 | `_prev_code` | src/tessellate/api/asset_strip.py:145 |
 | `_rebuild` | src/tessellate/api/asset_strip.py:96 |
 | `_skip_regex` | src/tessellate/api/asset_strip.py:234 |
 | `_skip_string` | src/tessellate/api/asset_strip.py:217 |
 | `css_comment_spans` | src/tessellate/api/asset_strip.py:383 |
-| `html_comment_spans` | src/tessellate/api/asset_strip.py:469 |
+| `html_comment_spans` | src/tessellate/api/asset_strip.py:497 |
 | `js_comment_spans` | src/tessellate/api/asset_strip.py:269 |
 | `strip_css` | src/tessellate/api/asset_strip.py:431 |
-| `strip_for_path` | src/tessellate/api/asset_strip.py:516 |
-| `strip_html` | src/tessellate/api/asset_strip.py:512 |
+| `strip_for_path` | src/tessellate/api/asset_strip.py:528 |
+| `strip_html` | src/tessellate/api/asset_strip.py:524 |
 | `strip_js` | src/tessellate/api/asset_strip.py:373 |
 | `strip_js_comments` | src/tessellate/api/asset_strip.py:367 |
 
@@ -25071,28 +25073,28 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `BodyCapMiddleware` | src/tessellate/core/security.py:211 |
-| `CspForPage` | src/tessellate/core/security.py:564 |
+| `CspForPage` | src/tessellate/core/security.py:567 |
 | `HostCheckMiddleware` | src/tessellate/core/security.py:102 |
 | `OriginCheckMiddleware` | src/tessellate/core/security.py:331 |
-| `SecurityHeadersMiddleware` | src/tessellate/core/security.py:612 |
-| `UnsafeUrl` | src/tessellate/core/security.py:915 |
+| `SecurityHeadersMiddleware` | src/tessellate/core/security.py:615 |
+| `UnsafeUrl` | src/tessellate/core/security.py:918 |
 | `_BodyTooLarge` | src/tessellate/core/security.py:202 |
-| `_backend_addresses` | src/tessellate/core/security.py:729 |
+| `_backend_addresses` | src/tessellate/core/security.py:732 |
 | `_body_limit` | src/tessellate/core/security.py:281 |
 | `_is_same_site` | src/tessellate/core/security.py:59 |
 | `_notebook_has_password` | src/tessellate/core/security.py:319 |
 | `_origin_of` | src/tessellate/core/security.py:44 |
-| `_refuses` | src/tessellate/core/security.py:793 |
-| `_resolve` | src/tessellate/core/security.py:721 |
+| `_refuses` | src/tessellate/core/security.py:796 |
+| `_resolve` | src/tessellate/core/security.py:724 |
 | `_session_is_live` | src/tessellate/core/security.py:314 |
 | `_signed_in_limit` | src/tessellate/core/security.py:293 |
 | `_too_large` | src/tessellate/core/security.py:273 |
-| `assert_public_url` | src/tessellate/core/security.py:976 |
-| `build_csp` | src/tessellate/core/security.py:465 |
-| `check_backend_url` | src/tessellate/core/security.py:823 |
-| `inline_script_hashes` | src/tessellate/core/security.py:441 |
-| `is_internal_address` | src/tessellate/core/security.py:919 |
-| `public_addresses` | src/tessellate/core/security.py:943 |
+| `assert_public_url` | src/tessellate/core/security.py:979 |
+| `build_csp` | src/tessellate/core/security.py:468 |
+| `check_backend_url` | src/tessellate/core/security.py:826 |
+| `inline_script_hashes` | src/tessellate/core/security.py:444 |
+| `is_internal_address` | src/tessellate/core/security.py:922 |
+| `public_addresses` | src/tessellate/core/security.py:946 |
 | `register_auth` | src/tessellate/core/security.py:309 |
 | `without_userinfo` | src/tessellate/core/security.py:89 |
 
@@ -26639,7 +26641,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20887)
+## Tests (20899)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28834,6 +28836,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_suggestions_inbox_kg9.py | 20 |
 | tests/test_suggestions_reads_ids.py | 1 |
 | tests/test_support_email.py | 5 |
+| tests/test_surface_scripts.py | 12 |
 | tests/test_surface_templates.py | 9 |
 | tests/test_svg_paint_attributes.py | 2 |
 | tests/test_sweep_1004_deep_json.py | 3 |
