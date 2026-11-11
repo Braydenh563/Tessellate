@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Chat (owner bug, catch-up): "hey what's been happening?", "what have I been up to", "catch me up", "what did I miss" and "hey what's new" answer with the past week's activity recap, no model or with one, instead of "Nothing is dated for the next two weeks"; a greeting that leads a request is no longer answered as a bare hello.
 - Fixed (code scanning, desk companion start-up log): the motion reason is now the matching constant from `MOTION_REASONS`, never the value read from preferences, so the log line carries no value that came from a preference read.
 - Chat (sm-1111 row 16): Confirming an act card marks its answer as one that changed your notes, so Try again asks "Run again" first instead of proposing the same note or reminder a second time.
 - Fixed (code scanning 2151, 2152): the desk companion's start-up log names a look as "a drawn companion" or "an Atlas look" instead of printing the look, whose capture key code scanning read as a secret (`desk_companion._look_label`; tests/test_desk_overlay_wiring.py).
