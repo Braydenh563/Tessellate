@@ -4049,26 +4049,26 @@ Format: id | file:line | one line | status.
 
 **BC1 (composer, 20 rows)**
 
-- E54 | audit-1028-agent:66 | Identity is muddled: "I'm the assistant that comes with Tessellate and works for Atlas | open
-- E56 | audit-1028-agent:68 | remind me ... about the group meeting an hour before, set a timer for 25 minutes, start a pomodoro, show | open
-- E69 | audit-1028-agent:81 | Chat input autocorrect (data-autocorrect) runs on a notebook full of names, codes and course IDs; combine | open
-- C15 | audit-1029-composer:59 | Command and filler words stay in the subject, so the digest is about the wrong thing | open
-- C16 | audit-1029-composer:60 | A name matches inside another word | open
-- C17 | audit-1029-composer:61 | A question about a person is answered as an attendee list | open
-- C18 | audit-1029-composer:62 | A definition request gets the digest | open
-- C19 | audit-1029-composer:68 | The defining note does not lead, in lists, answers and summaries | open
-- C20 | audit-1029-composer:69 | Ask and Chat order the same list differently, and "open X" differs | open
-- C21 | audit-1029-composer:70 | A question's slot is ignored; the first sentence of the top note is returned | open
-- C22 | audit-1029-composer:71 | Yes/no questions about ticked items are answered with the wrong item and no yes or no | open
-- C23 | audit-1029-composer:72 | Time-since, how-often and how-old questions get a wrong or invented answer | open
-- C31 | audit-1029-composer:85 | Subject ignored in "latest" questions | open
-- C33 | audit-1029-composer:92 | A "what is left" question gets the wrong list | open
-- C34 | audit-1029-composer:93 | "open checklist items" -> "Your note The Complete Social Skills Guide lists one | open
-- C36 | audit-1029-composer:95 | Compare answers one side or garbage | open
-- C37 | audit-1029-composer:96 | Instruction words are reported as missing evidence (E22, still open, 25+ occurrences) | open
-- C47 | audit-1029-composer:111 | Act confirmations use five openers and expose ids (E27, partly fixed) | open
-- Z7 | audit-1030-composer:90 | The stale-plan line is word-order broken and wrong in mood | open
-- Z16 | audit-1030-composer:109 | A verb or instruction word becomes a required term, and the footer tells the person the notes "do not men | partial
+- E54 | audit-1028-agent:66 | Identity is muddled: "I'm the assistant that comes with Tessellate and works for Atlas | stale: decided: CHAT_PLAN decision 76 (owner, 2026-10-17) says the engine is Atlas's assistant and Atlas is the model; composer_lines.py:497
+- E56 | audit-1028-agent:68 | remind me ... about the group meeting an hour before, set a timer for 25 minutes, start a pomodoro, show | partial: d1c5a1265: set a timer, start a pomodoro or stopwatch, open the clock now open the Clock with the length ready (tests/test_composer_bc1_1111.py); export, backup, calendar, create and rename category and count-by-tag already answered on this head. Deferred: 'remind me ... an hour before' (when.py) and 'switch to dark mode' (no theme act)
+- E69 | audit-1028-agent:81 | Chat input autocorrect (data-autocorrect) runs on a notebook full of names, codes and course IDs; combine | stale: the correction is underlined, a click offers Keep, Put back and Edit, Ctrl+Z or the toast Undo restores it (autocorrect.js:225-245), and the server says 'I read that as' (composer_ack.py)
+- C15 | audit-1029-composer:59 | Command and filler words stay in the subject, so the digest is about the wrong thing | stale: fixed 20a9c39e2 (tests/test_composer_subject_1029.py)
+- C16 | audit-1029-composer:60 | A name matches inside another word | stale: fixed 20a9c39e2 (tests/test_composer_subject_1029.py)
+- C17 | audit-1029-composer:61 | A question about a person is answered as an attendee list | stale: fixed 20a9c39e2 (tests/test_composer_subject_1029.py)
+- C18 | audit-1029-composer:62 | A definition request gets the digest | stale: fixed 20a9c39e2 (tests/test_composer_subject_1029.py)
+- C19 | audit-1029-composer:68 | The defining note does not lead, in lists, answers and summaries | stale: fixed bb1938c26 (tests/test_composer_ranker_1029.py)
+- C20 | audit-1029-composer:69 | Ask and Chat order the same list differently, and "open X" differs | stale: fixed bb1938c26 (tests/test_composer_ranker_1029.py)
+- C21 | audit-1029-composer:70 | A question's slot is ignored; the first sentence of the top note is returned | stale: fixed 48ba6b3ac (tests/test_composer_slots_1029b.py)
+- C22 | audit-1029-composer:71 | Yes/no questions about ticked items are answered with the wrong item and no yes or no | stale: fixed 26b79257c (tests/test_composer_slots_1029.py)
+- C23 | audit-1029-composer:72 | Time-since, how-often and how-old questions get a wrong or invented answer | stale: fixed 26b79257c and 48ba6b3ac (tests/test_composer_slots_1029.py, _1029b.py)
+- C31 | audit-1029-composer:85 | Subject ignored in "latest" questions | stale: fixed bb1938c26 (tests/test_composer_ranker_1029.py)
+- C33 | audit-1029-composer:92 | A "what is left" question gets the wrong list | stale: fixed 26b79257c (tests/test_composer_slots_1029.py)
+- C34 | audit-1029-composer:93 | "open checklist items" -> "Your note The Complete Social Skills Guide lists one | stale: fixed 48ba6b3ac (tests/test_composer_slots_1029b.py)
+- C36 | audit-1029-composer:95 | Compare answers one side or garbage | stale: fixed a0b747f50 (tests/test_composer_compare_1029.py)
+- C37 | audit-1029-composer:96 | Instruction words are reported as missing evidence (E22, still open, 25+ occurrences) | stale: fixed 20a9c39e2 (instruction stems); the temperature case that still showed it is fixed d1c5a1265
+- C47 | audit-1029-composer:111 | Act confirmations use five openers and expose ids (E27, partly fixed) | partial: ids and '1 note' are gone (cards name the note by title, Confirm first); the five openers remain and are Z61 in BC3
+- Z7 | audit-1030-composer:90 | The stale-plan line is word-order broken and wrong in mood | deferred: the 'may still be open' wording is fixed (composer_tables.py drift); the quoted plan fragment is built in composer_digest.py, which another agent holds
+- Z16 | audit-1030-composer:109 | A verb or instruction word becomes a required term, and the footer tells the person the notes "do not men | partial: d1c5a1265: temperature, oven, hot and degrees questions answered by a quoted figure leave no footer; frame-word list was already in place (composer_unfound.py)
 
 **BC2 (composer, 20 rows)**
 
