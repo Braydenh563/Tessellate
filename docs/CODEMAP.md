@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8166, frontend ids 2713, CSS sections 524, backend routes 677, backend modules 10433, test files 2583, tests 21118, plan headings 1013, app scripts 29, boot scripts 38, script files 284.
+Counts: frontend functions 8166, frontend ids 2713, CSS sections 524, backend routes 677, backend modules 10435, test files 2584, tests 21123, plan headings 1013, app scripts 29, boot scripts 38, script files 284.
 
 ## Frontend functions (8166)
 
@@ -13595,7 +13595,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10433)
+## Backend modules (10435)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -19679,26 +19679,28 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `stem` | src/tessellate/ai/toolrank.py:66 |
 | `words` | src/tessellate/ai/toolrank.py:81 |
 
-### src/tessellate/ai/tools/_common.py (16)
+### src/tessellate/ai/tools/_common.py (18)
 
 | Name | File:line |
 |---|---|
-| `ToolError` | src/tessellate/ai/tools/_common.py:77 |
-| `ToolSpec` | src/tessellate/ai/tools/_common.py:105 |
-| `_category_clause` | src/tessellate/ai/tools/_common.py:377 |
-| `_clip` | src/tessellate/ai/tools/_common.py:146 |
-| `_keyword_context` | src/tessellate/ai/tools/_common.py:165 |
-| `_limit_arg` | src/tessellate/ai/tools/_common.py:367 |
-| `_note_summary` | src/tessellate/ai/tools/_common.py:261 |
-| `_readable` | src/tessellate/ai/tools/_common.py:252 |
-| `_refresh_embedding` | src/tessellate/ai/tools/_common.py:423 |
-| `_require_note` | src/tessellate/ai/tools/_common.py:327 |
-| `_since_days` | src/tessellate/ai/tools/_common.py:395 |
-| `_undo_edit` | src/tessellate/ai/tools/_common.py:306 |
-| `_visible` | src/tessellate/ai/tools/_common.py:233 |
-| `board_top_z` | src/tessellate/ai/tools/_common.py:350 |
-| `mark_outside` | src/tessellate/ai/tools/_common.py:66 |
-| `outside_seen` | src/tessellate/ai/tools/_common.py:72 |
+| `ToolError` | src/tessellate/ai/tools/_common.py:79 |
+| `ToolSpec` | src/tessellate/ai/tools/_common.py:107 |
+| `_category_clause` | src/tessellate/ai/tools/_common.py:379 |
+| `_clip` | src/tessellate/ai/tools/_common.py:148 |
+| `_keyword_context` | src/tessellate/ai/tools/_common.py:167 |
+| `_limit_arg` | src/tessellate/ai/tools/_common.py:369 |
+| `_note_summary` | src/tessellate/ai/tools/_common.py:263 |
+| `_readable` | src/tessellate/ai/tools/_common.py:254 |
+| `_refresh_embedding` | src/tessellate/ai/tools/_common.py:464 |
+| `_require_note` | src/tessellate/ai/tools/_common.py:329 |
+| `_since_clause` | src/tessellate/ai/tools/_common.py:425 |
+| `_since_days` | src/tessellate/ai/tools/_common.py:397 |
+| `_span_not_category` | src/tessellate/ai/tools/_common.py:449 |
+| `_undo_edit` | src/tessellate/ai/tools/_common.py:308 |
+| `_visible` | src/tessellate/ai/tools/_common.py:235 |
+| `board_top_z` | src/tessellate/ai/tools/_common.py:352 |
+| `mark_outside` | src/tessellate/ai/tools/_common.py:68 |
+| `outside_seen` | src/tessellate/ai/tools/_common.py:74 |
 
 ### src/tessellate/ai/tools/board_edit.py (19)
 
@@ -19861,14 +19863,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `_calculate` | src/tessellate/ai/tools/tool_read.py:856 |
 | `_check_answer` | src/tessellate/ai/tools/tool_read.py:888 |
-| `_count_notes` | src/tessellate/ai/tools/tool_read.py:629 |
+| `_count_notes` | src/tessellate/ai/tools/tool_read.py:628 |
 | `_find_similar_notes` | src/tessellate/ai/tools/tool_read.py:391 |
 | `_get_current_time` | src/tessellate/ai/tools/tool_read.py:812 |
 | `_get_note_tool` | src/tessellate/ai/tools/tool_read.py:81 |
 | `_graph_neighbours` | src/tessellate/ai/tools/tool_read.py:141 |
 | `_graph_summary` | src/tessellate/ai/tools/tool_read.py:108 |
 | `_list_categories` | src/tessellate/ai/tools/tool_read.py:723 |
-| `_list_notes` | src/tessellate/ai/tools/tool_read.py:547 |
+| `_list_notes` | src/tessellate/ai/tools/tool_read.py:545 |
 | `_list_tags` | src/tessellate/ai/tools/tool_read.py:749 |
 | `_named` | src/tessellate/ai/tools/tool_read.py:26 |
 | `_notebook_overview` | src/tessellate/ai/tools/tool_read.py:771 |
@@ -19877,7 +19879,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_read_text` | src/tessellate/ai/tools/tool_read.py:876 |
 | `_related_notes` | src/tessellate/ai/tools/tool_read.py:335 |
 | `_scope_filters` | src/tessellate/ai/tools/tool_read.py:498 |
-| `_scope_label` | src/tessellate/ai/tools/tool_read.py:535 |
+| `_scope_label` | src/tessellate/ai/tools/tool_read.py:533 |
 | `_search_help` | src/tessellate/ai/tools/tool_read.py:794 |
 | `_search_notes` | src/tessellate/ai/tools/tool_read.py:32 |
 | `_suggested_neighbours` | src/tessellate/ai/tools/tool_read.py:234 |
@@ -26852,7 +26854,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21118)
+## Tests (21123)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29121,6 +29123,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_thinking_words.py | 10 |
 | tests/test_thinking_words_rotation.py | 27 |
 | tests/test_this_computer_only.py | 4 |
+| tests/test_this_week_1778.py | 5 |
 | tests/test_throw_surfaces_1667.py | 5 |
 | tests/test_tidy.py | 28 |
 | tests/test_tidy_categories.py | 5 |
@@ -30027,7 +30030,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Earlier morning summary (2026-10-30) | docs/roadmap/HANDOVER.md:80 |
 | Earlier morning summary (2026-11-04) | docs/roadmap/HANDOVER.md:70 |
 | Earlier morning summary (away run 2026-10-18b) | docs/roadmap/HANDOVER.md:99 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:590 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:592 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4151 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
@@ -30144,7 +30147,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1217 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:156 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:157 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4057 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3130 |

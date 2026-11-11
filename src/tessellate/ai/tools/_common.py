@@ -13,11 +13,11 @@ from __future__ import annotations
 import contextvars
 import logging
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, time, timedelta, timezone
 from typing import Callable
 
 
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
 from tessellate.core import deps
@@ -46,6 +46,8 @@ __all__ = [
     "_limit_arg",
     "_category_clause",
     "_since_days",
+    "_since_clause",
+    "_span_not_category",
     "_refresh_embedding",
     "_keyword_context",
     "mark_outside",
@@ -418,6 +420,45 @@ def _since_days(value) -> int | None:
         return when_words.days_since(str(value), now_for(deps.get_config()))
     days = (datetime.now(tz=when.tzinfo) - when).days
     return max(0, days)
+
+
+def _since_clause(value):
+    """The date filter for a `since` value, or None: made or edited inside the
+    window, on the user's calendar (a "this week" note from Monday morning is in
+    when it is Wednesday afternoon). A closed phrase ("last week") also stops at
+    its end; "since ..." and a bare number run to now (INBOX 1778 b)."""
+    days = _since_days(value)
+    if days is None:
+        return None
+    from tessellate.ai import when as when_words
+    from tessellate.core import config as cfg
+
+    now = cfg.user_now(deps.get_config())
+    text = str(value).strip().lower()
+    closed = None if text[:1].isdigit() or text.startswith(("since", "from", "after")) else when_words.window(str(value), now)
+    ends = [closed[1]] if closed and closed[1] < now - timedelta(minutes=1) else []
+    first = datetime.combine(now.date() - timedelta(days=days), time.min, now.tzinfo)
+
+    def stored(at: datetime) -> datetime:
+        return at.astimezone(timezone.utc).replace(tzinfo=None) if at.tzinfo else at
+
+    low, high = stored(first), (stored(ends[0]) if ends else None)
+    return or_(*(and_(col >= low, col <= high) if high else col >= low for col in (Entry.created_at, Entry.updated_at)))
+
+
+def _span_not_category(session: Session, args: dict) -> dict:
+    """A model that puts a date phrase in `category` ("this week") meant
+    `since`: with no such category the filter would match nothing and the
+    answer would be "no notes". Moves the phrase over; a real category, or a
+    name that is no span, is left alone."""
+    from tessellate.core.database import Category
+
+    name = str(args.get("category") or "").strip()
+    if not name or args.get("since") or name == manager.UNCATEGORISED:
+        return args
+    if session.scalar(select(Category.id).where(func.lower(Category.name) == name.lower())) is not None:
+        return args
+    return {**args, "category": "", "since": name} if _since_days(name) is not None else args
 
 
 def _refresh_embedding(session: Session, entry: Entry) -> None:
