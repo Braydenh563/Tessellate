@@ -565,6 +565,11 @@ textarea.has-gutter {
 .doc-embed-board-edit {
   margin-block-start: var(--space-2);
 }
+@media print {
+  .doc-embed-board-edit {
+    display: none;
+  }
+}
 .doc-board-card {
   width: min(90rem, 96vw);
   height: min(54rem, 92dvh);
@@ -579,6 +584,30 @@ textarea.has-gutter {
 }
 .doc-board-card #wb-back-to-boards {
   display: none;
+}
+/* Full screen in the panel is the panel filling the window: the view's own fixed, window-sized box would sit in the card (its
+   transform makes the card the containing block) and run past it. The head stays, so the X is in reach. */
+.doc-board-card #library-view-whiteboard.wb-fullscreen {
+  position: relative;
+  inset: auto;
+  z-index: auto;
+  width: auto;
+  height: auto;
+}
+.doc-board-overlay:has(.wb-fullscreen) {
+  padding: 0;
+}
+.doc-board-overlay:has(.wb-fullscreen) .doc-board-card {
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  max-height: 100dvh;
+  margin: 0;
+  border-radius: 0;
+}
+/* The Library's board is loaded again behind the closing panel: laid out, not seen. */
+.doc-board-closing {
+  visibility: hidden;
 }
 
 /* A recording embedded in a document (documents-embeds.js, gap row 1): the take's name over the browser's own audio controls. */

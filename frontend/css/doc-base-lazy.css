@@ -103,7 +103,39 @@
     display: none;
   }
 
+  .md-base {
+    --ink: black;
+    --muted: dimgray;
+    --border: silver;
+    --card: white;
+    color: black;
+  }
+
   .db-scroll {
     overflow: visible;
+  }
+
+  /* On paper nothing scrolls, so the table has to fit the box: a cell wraps, a header too, and an unbroken value breaks
+     (measured at 642px wide: the table ran 56px past its own border, and would run off the sheet with more columns). */
+  .db-table th,
+  .db-table td {
+    overflow-wrap: break-word;
+  }
+
+  .db-table th {
+    white-space: normal;
+  }
+}
+
+/* A small sheet (a half-page or a phone-sized PDF): the columns share the width and long words break anywhere, so the
+   table ends at the sheet's edge (measured at 360px: 533px wide, 275px past the box, and the page 563px wide). */
+@media print and (max-width: 599.98px) {
+  .db-table {
+    table-layout: fixed;
+  }
+
+  .db-table th,
+  .db-table td {
+    overflow-wrap: anywhere;
   }
 }

@@ -2917,9 +2917,11 @@ MORE_TOPICS.append({
         "A whiteboard or a mind map can sit in a document as a card: choose Board or mind map in the / menu, or write "
         "![[board:12]] with the board's number. Press the card to open the board in the Library, or press Edit "
         "here under it to change the board without leaving the document. The board opens in a dialog over the document "
-        "with its own toolbar, and its changes are saved as you make them, as on the Library page. Press the X to close "
-        "the panel: the card shows the board as it now is. The Library keeps one board window, so while the panel is "
-        "open the board is in it and not in the Library, and closing leaves the Library on its list of boards."
+        "with its own toolbar, and its changes are saved as you make them, as on the Library page. Press the X, or "
+        "Escape when the board has nothing of its own to cancel (a menu, a selection, full screen), to close the panel: "
+        "the card shows the board as it now is and the Edit here button has the focus again. The Library keeps one board "
+        "window, so while the panel is open the board is in it and not in the Library; closing puts the Library back as it "
+        "was, on the board it had open or on its list of boards."
     ),
     "badge": {"label": "Documents", "tab": "documents"},
 })

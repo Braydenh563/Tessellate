@@ -193,6 +193,16 @@
     display: none;
   }
 
+  /* Paper is white whatever the app's theme: the plot's ink, grid and ground are the light values, so a dark theme's pale text
+     and grey lines are not printed on it (measured: key text 1.2:1 against the sheet in Dark). */
+  .md-graph {
+    --ink: black;
+    --muted: dimgray;
+    --border: silver;
+    --card: white;
+    color: black;
+  }
+
   .md-graph {
     break-inside: avoid;
   }
