@@ -10,14 +10,17 @@ from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 from tessellate.ai import (
     composer,
+    composer_aliases,
     composer_ask,
     composer_brief,
     composer_frame,
     composer_likeness,
+    composer_overview,
     composer_read,
     composer_slots,
     composer_story,
     composer_threads,
+    composer_verbuse,
     factgraph,
     realise,
     recognise as recogniser,
@@ -27,6 +30,7 @@ from tessellate.ai import (
 from tessellate.ai.composer_lists import clean
 from typing import NamedTuple
 from tessellate.ai.composer_digest_sentences import (
+    _FUNCTION_WORDS, _a_name, _as_you, _starts_a_title,
     CONTEXT_TAGS, FACETS, Fact, LINES, PHRASES, VOICES, _ACTION, _ASKING, _ASKS_WORDS, _BASE,
     _CALENDAR_WORD, _CUES, _CURRENT, _Capitals, _DAYS_PLURAL, _DAY_NAMES, _FRAME_WORDS, _GAPS,
     _KNOWN, _LEAD_VERBS, _NAMES, _NOUN_AFTER, _Out, _PREFIX, _REGISTER, _RELATIVE, _SEED, _STILL_TO,
@@ -283,7 +287,7 @@ def _facts(view: composer.NoteView, names: set[str], subject: set[str] | None = 
     says (a day of the week, a price, a verdict). A sentence that only
     names the topic ("Looking at a new gaming mouse") is the note's frame,
     not a fact, and the answer's opening already says it."""
-    if _context_note(view):
+    if _context_note(view) or _joke_shaped(view):
         return _context_facts(view)
     picture = _picture_of(view)
     out: list[Fact] = []
@@ -427,6 +431,7 @@ def _members(question: str, views: list[composer.NoteView]) -> list[composer.Not
     scored = _scored_members(stems, views)
     aside = composer_likeness.set_aside([v for _, v in scored], question)
     scored = [(h, v) for h, v in scored if v.id not in aside] or scored
+    scored = composer_verbuse.drop(list(composer.subject_terms(clean(question))), scored, lambda v: str(v.note.get("content") or ""))
     if not scored or _unanswerable(stems, views):
         return []
     best = max(h for h, _ in scored)
@@ -726,7 +731,7 @@ def _wrote(body: str, i: int) -> str:
     if _WE.match(body):
         return _REPORTS[i % len(_REPORTS)] + body[:1].lower() + body[1:]
     if first and (_did(first) or _past_verb(first)):
-        return "you " + body[:1].lower() + body[1:]
+        return _as_you(body)
     if _CALENDAR_WORD.match(first.capitalize()) or (first.lower() in _IMPERATIVES and not (len(body.split()) >= 2 and body.split()[1].lower() in _NOUN_AFTER)):
         #: Quoted as written, capital and all: it is the note's sentence.
         said = _DAY_NAME.sub(lambda m: m.group(0).capitalize(), body[:1].upper() + body[1:].rstrip("."))
@@ -821,12 +826,27 @@ _PRONOUN_START = re.compile(r"(she|he|her|his)\b(?P<rest>.*)", re.I | re.S)
 _PERSON_TITLE = re.compile(r"[A-Z][a-z]+(?: [A-Z][a-z]+)?")
 
 
+def _kind_of_note(title: str, view) -> bool:  # noqa: ANN001
+    """A note named for what it holds ("Jokes", "Recipes"), not for a person: its "he" is a character in a joke,
+    never the title (W7b B34: "Jokes was outstanding in his field")."""
+    low = title.lower()
+    known = _dictionary()
+    return _context_note(view) or _joke_shaped(view) or bool(known and low.endswith("s") and low in known and not _a_name(low, known))
+
+
+def _joke_shaped(view) -> bool:  # noqa: ANN001
+    """A note that opens on a question and answers it in its next sentence ("Why did the scarecrow win an award?
+    He was outstanding in his field.") is one piece, the way a tagged joke is (decision 67), tagged or not."""
+    sentences = view.sentences
+    return len(sentences) == 2 and sentences[0].text.strip().endswith("?") and not sentences[1].text.strip().endswith("?")
+
+
 def _named_pronoun(body: str, view) -> str:  # noqa: ANN001
     """"She likes gardening" lifted out of the note titled "Mum" says nothing on its own: the pronoun is the
     note's name ("Mum likes gardening", "Mum's birthday is 4 July"; R3-25). Only a one- or two-word name."""
     title = (view.title or "").strip() if getattr(view, "titled", False) else ""
     found = _PRONOUN_START.match(body or "")
-    if not found or not _PERSON_TITLE.fullmatch(title):
+    if not found or not _PERSON_TITLE.fullmatch(title) or _kind_of_note(title, view):
         return body
     return title + ("'s" if found.group(1).lower() in ("her", "his") else "") + found.group("rest")
 
@@ -979,6 +999,20 @@ def _capitalised_items(said: str) -> str:
     return "; ".join(c[:1].upper() + c[1:] for c in said.split("; "))
 
 
+def _as_the_note_began(said: str, held: list[Fact]) -> str:
+    """A noun phrase said after its own "**Agenda:**" label keeps the capital the note wrote it with:
+    "Orchard project budget" is a name, and nothing joins it to a verb frame (W7b B33)."""
+    first = re.match(r"[a-z][\w'-]*", said or "")
+    if not first or len(held) != 1:
+        return said
+    word = first.group(0)
+    body = _unlinked(held[0].body or "")
+    if not body.startswith(word[:1].upper() + word[1:]) or _verb_led(body) or _did(word) or word in _FUNCTION_WORDS or _starts_a_title(body, False):
+        return said
+    #: Only a noun phrase (a capital word, then a small one) is restored; a clause is left as lowered.
+    return body[:1] + said[1:] if re.match(r"[A-Za-z][\w'-]*\s+[a-z]", body) else said
+
+
 def _lines(out: _Out, facts: list[Fact], limit: int, skip: set[tuple] | None = None, by_day: date | None = None, more: bool = False, weave: bool = False) -> int:
     """Facts grouped under their labels, oldest note first, one line a label;
     the line carries its first note for its one citation mark."""
@@ -1003,7 +1037,7 @@ def _lines(out: _Out, facts: list[Fact], limit: int, skip: set[tuple] | None = N
             continue
         listed = _clause_list(said)
         (out.lines if i < limit else out.more).append(
-            (f"**{label}:**\n{listed}" if listed and not heading else listed or (f"{said}." if heading else f"**{label}:** {said}.")))
+            (f"**{label}:**\n{listed}" if listed and not heading else listed or (f"{said}." if heading else f"**{label}:** {_as_the_note_began(said, held)}.")))
         out.rows.append(_line_row(line_body, held))
         shown += 1
     return shown
@@ -1808,7 +1842,7 @@ def _opening_line(members, facts: list[Fact], today: date, topic: str) -> tuple[
     """The opening of an overview, and the facts still to say. It answers in
     the person's terms (INBOX 870): where they have got to, or how much is
     still open, not only how many notes."""
-    opening = PHRASES["overview"].format(count=_count(len(members)), topic=topic, span=_span(members, today))
+    opening = PHRASES["overview"].format(count=_count(composer_overview.pooled(len(members))), topic=topic, span=_span(members, today))
     landed = next((f for f in facts if f.label == "Where you landed"), None)
     left = [f for f in facts if f.label == "Still to do"]
     if landed:
@@ -2348,7 +2382,7 @@ def _overview_tail(out: _Out, kind: str, members, today: date, moved, shown: int
             out.rows.append({"sentence": name, "note_id": v.note.get("source_id", v.id), "source": name, "score": 1.0, "digest": True,
                              "kind": getattr(v, "kind", "note")})
     else:
-        out.lines.append(PHRASES["more_right"].format(count=_count(len(hidden)).capitalize()))
+        out.lines.append(PHRASES["more_right"].format(count=_count(len(hidden) + composer_overview.pooled(len(members)) - len(members)).capitalize()))
 
 
 #: A name a summary line can carry: a title or a short noun phrase, never a
@@ -2411,7 +2445,10 @@ def _storied(out: _Out, question: str, members, facts, today: date) -> bool:  # 
     if None in units:
         return False
     out.framed = True
-    composer_story.story(out, _count(len(dated)), units, [v.written for v in dated], _topic(question, members), plan, _themed(dated))
+    composer_story.story(out, _count(composer_overview.pooled(len(dated))), units, [v.written for v in dated], _topic(question, members), plan, _themed(dated))
+    if (whole := composer_overview.pooled(len(dated))) > len(dated):
+        #: The lead counts every note; the story tells the pool it read, and says so.
+        out.lines.append(f"That tells {realise.count_word(len(dated))} of the {whole}; ask for a month or a tag to see the rest.")
     return True
 
 
@@ -2530,10 +2567,8 @@ def _gone_quiet(members: list[composer.NoteView]) -> str:
 
 
 #: "What's the latest on uni", "the most recent thing about X", "when did I
-#: last ...": the newest note that fits, not the first the search ranked.
-_LATEST_ASK = re.compile(
-    r"\b(?:latest|newest|most recent|recently|lately)\b|\bwhen did i last\b|\bwhat(?:'s|s| is)\s+new\s+(?:with|on|about)\b"
-    r"|\bnews\s+(?:on|about|with)\b|\bwhere am i (?:at )?with\b", re.I)
+#: last ...": the newest note that fits, not the first the search ranked. Defined in composer_aliases (below the digest).
+_LATEST_ASK = composer_aliases.LATEST_ASK
 
 
 _PRONOUN_OPENERS = frozenset({"he", "she", "they", "his", "her", "their", "hes", "shes"})

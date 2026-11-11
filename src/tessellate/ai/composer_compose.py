@@ -392,7 +392,10 @@ def welcome(mood: Mood, *, hour: int = 9, due: int | None = None, overdue: int =
         clauses.append(("streak", frame("w_streak", mood, streak=f"{streak} days")))
     clauses.sort(key=lambda kv: _stable(mood.seed, "order", kv[0]))
     keep = len(clauses) if mood.voice != "terse" else min(len(clauses), 2)
-    for n, (_name, text) in enumerate(clauses[:keep]):
-        lead = bridge(mood, n) if n and mood.voice != "terse" and _stable(mood.seed, "bridge", n) < 0.6 else ""
+    for n, (name, text) in enumerate(clauses[:keep]):
+        #: "On top of that, no reminders are due" and "Also, most recently you wrote" read wrong:
+        #: the quiet line and the last note take no connective (INBOX 1749).
+        bare_clause = name == "last" or (name == "due" and not due and not overdue)
+        lead = bridge(mood, n) if n and mood.voice != "terse" and _stable(mood.seed, "bridge", n) < 0.6 and not bare_clause else ""
         parts.append(_clause(lead, text))
     return " ".join(parts)

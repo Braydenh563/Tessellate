@@ -163,6 +163,10 @@ REACHED_AFTER_LOAD = {
     "wiring.js:wbOpenBoardSearch": "behind `wb-canvas-view` showing, which only a board that is open shows, so the boards bundle is in (D22, 2026-11-11)",
     "editor.js:docTemplateFill": "inside `typeof DOC_TEMPLATES !== \"undefined\"` in editorCommands; DOC_TEMPLATES is defined in documents.js, the same library bundle, so the call runs only once it is in (audit 1102 DX30)",
     "settings-wiring.js:docFileDropBox": "inside `el?.closest?.(\"#doc-editor\")` in fileDropBox: the element exists only while the Documents page, and so the library bundle, is mounted (audit 161 D24)",
+    "chat-attach.js:importChatDocuments": "stand-in installed by lazy-entries.js (installStandIns) for the chatDocs bundle; the call is awaited",
+    "chat-attach.js:keepUnreadableChatFile": "stand-in installed by lazy-entries.js (installStandIns) for the chatDocs bundle; the call is awaited",
+    "palette.js:importChatDocuments": "stand-in installed by lazy-entries.js (installStandIns) for the chatDocs bundle; the call is awaited",
+    "palette.js:keepUnreadableChatFile": "stand-in installed by lazy-entries.js (installStandIns) for the chatDocs bundle; the call is awaited",
     "chat-agent.js:atlasAvatar": "assistantAvatar runs only from paintAssistantAvatar's afterCharacters (chat-agent.js)",
     "chat-agent.js:atlasDraw": "assistantAvatar runs only from paintAssistantAvatar's afterCharacters (chat-agent.js)",
     "chat-agent.js:atlasLook": "chatHeadKey is a cache key; its typeof guard only trims the key, and it is asked for a face only after afterCharacters",
@@ -314,10 +318,8 @@ REACHED_AFTER_LOAD = {
     #: `#meeting-overlay` is showing, and meetings.js is what shows it.
     "closeMeetingRecorder": "meetings, the Escape handler in settings-wiring.js runs it only while #meeting-overlay is open, which only meetings.js opens",
     "renderAskChart": "askHistory, called from ensureModule('askHistory').then in askQuestion",
-    #: The 2026-10-10 triage: a composed answer's cited names are linked
-    #: once ask-compose.js is in (`addInlineCitations`, capture-ask.js).
-    "linkCitedTitles": "askCompose, called from ensureModule('askCompose').then in addInlineCitations",
-    "markSaidSentences": "askCompose, called beside linkCitedTitles in the same ensureModule('askCompose').then",
+    #: A composed answer's quoted sentences take the quote style once ask-compose.js is in (`addInlineCitations`, capture-ask.js).
+    "markSaidSentences": "askCompose, called from ensureModule('askCompose').then in addInlineCitations",
     "renderActCard": "askCompose, called from ensureModule('askCompose').then in renderToolConfirm (chat-agent.js)",
     "renderWebSources": "askCompose, called from ensureModule('askCompose').then in chat-attach's onWebSources",
     #: The Escape handler (settings-wiring.js) closes the welcome card only
@@ -456,9 +458,11 @@ LAZY_REACHED_AFTER_LOAD: dict[str, str] = {
     "atlas.js:atlasTailFrame": "reached only through a tail atlasTailAttach (atlas-life.js) made, as the line above says",
     "avatars.js:companionPathPlan": "typeof-guarded (INBOX 1305): a far move walks until the companion's mind has fetched companion-menu.js",
     "captions.js:translateAsk": "captionTranslate.on is set only after `await ensureModule(\"translate\")` in captionToggleTranslate",
-    "capture-card.js:renderCaptureThumbs": "behind `captureCard.root.dataset.extras`, which only mountCaptureExtras (capture-card-more.js) sets",
+    "capture-card.js:discardCaptureStage": "behind `captureCard.root.dataset.stage`, which only mountCaptureStage (capture-stage.js) sets",
+    "capture-card.js:attachCaptureFiles": "behind `captureCard.files.length`: a file is staged only by capture-stage.js",
+    "capture-card.js:mountCaptureStage": "the .then of lazyScript(\"/js/capture-stage.js\"), which has loaded it",
     "capture-card.js:syncCaptureExtras": "behind `captureCard.root.dataset.extras`, which only mountCaptureExtras (capture-card-more.js) sets",
-    "capture-card.js:uploadCapturePictures": "behind `captureCard.pictures.length`: a picture is added only by capture-card-more.js",
+    "capture-card.js:uploadCapturePictures": "behind `captureCard.pictures.length`: a picture is added only by capture-stage.js",
     "categories-panel.js:manageCountButton": "the panel's opener awaits ensureModule(\"tagManager\") (line 29) before it renders a row",
     "categories-panel.js:manageRecent": "the panel's opener awaits ensureModule(\"tagManager\") (line 29) before it renders a row",
     "categories-panel.js:manageSorted": "the panel's opener awaits ensureModule(\"tagManager\") (line 29) before it renders a row",
@@ -468,6 +472,10 @@ LAZY_REACHED_AFTER_LOAD: dict[str, str] = {
     "documents-codekit.js:docRenderDiff": "in docAssistPropose, reached only from docAssistShow after `await lazyScript(\"/js/documents-history.js\")` (docAssistAsk)",
     "documents-export.js:mermaidInlineForExport": "after `await lazyModuleLoads.get(\"mermaid\")`: undefined (never asked for) skips it, a pending load is awaited",
     "documents-mermaid.js:mermaidSettled": "after `await lazyModuleLoads.get(\"mermaid\")`: undefined (never asked for) skips it, a pending load is awaited",
+    "documents-mermaid.js:currentDoc": "the Live figure and the fence renderer run inside the document editor (docRenderMermaidIn, docMermaidField's widgets), which exists only once documents.js is in; the diagramDoor module (INBOX 1722) loads this file without the editor and never calls them",
+    "documents-mermaid.js:docPhase2State": "the Live figure and the fence renderer run inside the document editor (docRenderMermaidIn, docMermaidField's widgets), which exists only once documents.js is in; the diagramDoor module (INBOX 1722) loads this file without the editor and never calls them",
+    "documents-mermaid.js:docStr": "the Live figure and the fence renderer run inside the document editor (docRenderMermaidIn, docMermaidField's widgets), which exists only once documents.js is in; the diagramDoor module (INBOX 1722) loads this file without the editor and never calls them",
+    "documents-mermaid.js:wbEditDiagram": "behind `window.wbCommandsLive?.()` in diagramDoor (true only once the board's files are in); the Diagram builder door (INBOX 1722) loads this file alone, with no board",
     "graph-canvas.js:refreshBoardList": "typeof-guarded refresh of a list that exists only once the library bundle is on screen (lazy-entries.js rule 2)",
     "graph-canvas.js:wbMapTidyFresh": "after `await openWhiteboardBoard(...)`, a stand-in that loads the library bundle (whiteboard-map.js) first",
     "graph.js:fillSearchSuggest": "inside `typeof searchSuggestHold === \"function\" && searchSuggestHold(box)`: the list is open only when search-suggest.js is in",
@@ -742,12 +750,319 @@ def _defined_any_form(path: Path) -> set[str]:
     return names
 
 
+# --- Block scope for the reads (lzc-1101, w34-def1-1111) ------------------------------------------------------
+#: A read is the bare name of a lazy file's function or constant. With no scope, a local `const h1 = ...` or a
+#: parameter named like another file's top-level const read as that const: about 30 false reads when
+#: `_top_level_bindings` was widened to destructured and `const a = 1, b = 2` bindings (tried 2026-11-02). A
+#: `_ShadowIndex` knows what each block, function body and arrow declares, so `shadowed(name, offset)` says whether a
+#: read is of a local. It never hides a name that no enclosing block declares, and a file's own top level is not a
+#: scope (those names are the globals this lint is about).
+_JS_REGEX_AFTER = {"return", "typeof", "case", "in", "of", "delete", "void", "throw", "new", "else", "do", "instanceof", "yield", "await"}
+_JS_IDENT = re.compile(r"[A-Za-z_$][\w$]*")
+_JS_NUMBER = re.compile(r"\d[\w.]*")
+_OPEN = {"(": ")", "[": "]", "{": "}"}
+Token = tuple[str, str, int]
+
+
+def _js_tokens(source: str, spans: list[tuple[int, int]] | None = None) -> list[Token]:
+    """`(kind, text, offset)`: identifiers (`id`), numbers, punctuation (with `=>` and `...`), and one `str` token for a
+    string, template text or regex, so a brace or a name inside one is neither a block nor a read. Comments are dropped.
+    `spans` collects where the literal text is (a template's `${...}` code is not text)."""
+    out: list[Token] = []
+    braces: list[str] = []  # "{" or "${" for each open brace
+    i, n = 0, len(source)
+
+    def template(i: int) -> int:
+        """Inside a template literal from `i`: to just past the closing backtick, or past a `${` (its code is tokens)."""
+        start = i
+        while i < n:
+            c = source[i]
+            if c == "\\":
+                i += 2
+            elif c == "`":
+                if spans is not None:
+                    spans.append((start, i))
+                return i + 1
+            elif c == "$" and source[i + 1 : i + 2] == "{":
+                if spans is not None:
+                    spans.append((start, i))
+                braces.append("${")
+                out.append(("punct", "{", i + 1))
+                return i + 2
+            else:
+                i += 1
+        return i
+
+    while i < n:
+        c = source[i]
+        if c in " \t\r\n":
+            i += 1
+        elif source.startswith("//", i):
+            j = source.find("\n", i)
+            i = n if j < 0 else j
+        elif source.startswith("/*", i):
+            j = source.find("*/", i + 2)
+            i = n if j < 0 else j + 2
+        elif c in "\"'":
+            j = i + 1
+            while j < n and source[j] != c and source[j] != "\n":
+                j += 2 if source[j] == "\\" else 1
+            out.append(("str", c, i))
+            if spans is not None:
+                spans.append((i, j))
+            i = j + 1
+        elif c == "`":
+            out.append(("str", "`", i))
+            i = template(i + 1)
+        elif c == "/" and (not out or (out[-1][0] == "punct" and out[-1][1] not in ")]}") or (out[-1][0] == "id" and out[-1][1] in _JS_REGEX_AFTER)):
+            j, in_class = i + 1, False
+            while j < n and source[j] != "\n":
+                if source[j] == "\\":
+                    j += 2
+                    continue
+                if source[j] == "[":
+                    in_class = True
+                elif source[j] == "]":
+                    in_class = False
+                elif source[j] == "/" and not in_class:
+                    break
+                j += 1
+            out.append(("str", "/", i))
+            if spans is not None:
+                spans.append((i, j))
+            i = j + 1
+        elif _JS_IDENT.match(source, i):
+            m = _JS_IDENT.match(source, i)
+            out.append(("id", m.group(0), i))
+            i = m.end()
+        elif c.isdigit():
+            m = _JS_NUMBER.match(source, i)
+            out.append(("num", m.group(0), i))
+            i = m.end()
+        elif c == "{":
+            braces.append("{")
+            out.append(("punct", "{", i))
+            i += 1
+        elif c == "}":
+            was = braces.pop() if braces else "{"
+            out.append(("punct", "}", i))
+            i += 1
+            if was == "${":
+                i = template(i)
+        elif source.startswith("=>", i) or source.startswith("...", i):
+            op = "=>" if source.startswith("=>", i) else "..."
+            out.append(("punct", op, i))
+            i += len(op)
+        else:
+            out.append(("punct", c, i))
+            i += 1
+    return out
+
+
+def _is(token: Token, text: str) -> bool:
+    return token[0] == "punct" and token[1] == text
+
+
+def _closer(tokens: list[Token], i: int) -> int:
+    """Index of the bracket that closes the one at `i` (the last token if it never does)."""
+    depth = 0
+    for j in range(i, len(tokens)):
+        if tokens[j][0] != "punct":
+            continue
+        if tokens[j][1] in _OPEN:
+            depth += 1
+        elif tokens[j][1] in ")]}":
+            depth -= 1
+            if depth == 0:
+                return j
+    return len(tokens) - 1
+
+
+def _opener(tokens: list[Token], i: int) -> int:
+    """Index of the bracket that opens the one closed at `i` (0 if it never does)."""
+    depth = 0
+    for j in range(i, -1, -1):
+        if tokens[j][0] != "punct":
+            continue
+        if tokens[j][1] in ")]}":
+            depth += 1
+        elif tokens[j][1] in _OPEN:
+            depth -= 1
+            if depth == 0:
+                return j
+    return 0
+
+
+def _binding_names(tokens: list[Token], i: int, in_for: bool = False) -> set[str]:
+    """The names a `const`/`let`/`var` list or a parameter list binds, read from `i`: plain names, `{ a, b: c = 1, ...d }`,
+    `[a, , b]` and `a = 1, b = 2` chains; defaults and initialisers are skipped. Ends at `;`, a closer that is not ours,
+    or (in a for head) `of`/`in`."""
+    names: set[str] = set()
+    n = len(tokens)
+
+    def skip_default(j: int, end: int) -> int:
+        if j < end and _is(tokens[j], "="):
+            while j < end and not _is(tokens[j], ","):
+                j = _closer(tokens, j) + 1 if tokens[j][0] == "punct" and tokens[j][1] in _OPEN else j + 1
+        return j
+
+    def pattern(j: int) -> int:
+        if j >= n:
+            return j
+        if _is(tokens[j], "..."):
+            return pattern(j + 1)
+        if tokens[j][0] == "id":
+            names.add(tokens[j][1])
+            return j + 1
+        if tokens[j][0] == "punct" and tokens[j][1] in "[{":
+            close = _closer(tokens, j)
+            braced = tokens[j][1] == "{"
+            k = j + 1
+            while k < close:
+                if _is(tokens[k], ","):
+                    k += 1
+                    continue
+                if _is(tokens[k], "..."):
+                    k += 1
+                if braced:
+                    # `key`, `key = d`, `key: pattern`, `[computed]: pattern`.
+                    key_end = _closer(tokens, k) + 1 if _is(tokens[k], "[") else k + 1
+                    if key_end < close and _is(tokens[key_end], ":"):
+                        k = pattern(key_end + 1)
+                    else:
+                        if tokens[k][0] == "id":
+                            names.add(tokens[k][1])
+                        k = key_end
+                else:
+                    k = pattern(k)
+                k = skip_default(k, close)
+            return close + 1
+        return j + 1
+
+    while i < n:
+        i = pattern(i)
+        if i < n and _is(tokens[i], "="):
+            # The initialiser, up to the next comma of this list.
+            while i < n:
+                kind, text, _ = tokens[i]
+                if kind == "punct" and text in _OPEN:
+                    i = _closer(tokens, i) + 1
+                elif kind == "punct" and text in ",;)]}" or (in_for and kind == "id" and text in ("of", "in")):
+                    break
+                else:
+                    i += 1
+        if i < n and _is(tokens[i], ","):
+            i += 1
+            continue
+        break
+    return names
+
+
+class _ShadowIndex:
+    """What each block, function body and arrow of one file declares, as `(start, end, names)` offsets, and where the
+    literal text is (a name inside a string, a template's text or a regex is not a read). A parameter list belongs to the
+    scope it opens, from its own bracket, so the parameter's declaration is not a read of an outer name either."""
+
+    def __init__(self, source: str) -> None:
+        self.text: list[tuple[int, int]] = []
+        tokens = _js_tokens(source, self.text)
+        self.scopes: list[tuple[int, int, frozenset[str]]] = []
+        end_of_file = len(source) + 1
+        open_blocks: list[tuple[int, set[str]]] = []
+        pending: set[str] = set()  # names for the next `{`: parameters, a for head's declarations
+        pending_from = [len(source)]  # where those names start to count: the bracket of the list that declared them
+
+        def hold(names: set[str], at: int) -> None:
+            pending.update(names)
+            pending_from[0] = min(pending_from[0], at)
+
+        for i, (kind, text, at) in enumerate(tokens):
+            if kind == "punct" and text == "{":
+                open_blocks.append((min(at, pending_from[0]), set(pending)))
+                pending.clear()
+                pending_from[0] = len(source)
+            elif kind == "punct" and text == "}":
+                if open_blocks:
+                    start, names = open_blocks.pop()
+                    self.scopes.append((start, at, frozenset(names)))
+            elif kind == "id" and text in ("const", "let", "var"):
+                names = _binding_names(tokens, i + 1, in_for=True)
+                head = i >= 2 and _is(tokens[i - 1], "(") and tokens[i - 2][1] in ("for", "await")
+                if head:
+                    hold(names, tokens[i - 1][2])
+                elif open_blocks:
+                    open_blocks[-1][1].update(names)
+            elif kind == "id" and text in ("function", "class") and i + 1 < len(tokens) and open_blocks:
+                named = tokens[i + 2] if text == "function" and _is(tokens[i + 1], "*") and i + 2 < len(tokens) else tokens[i + 1]
+                if named[0] == "id":
+                    open_blocks[-1][1].add(named[1])
+            elif kind == "punct" and text == ")":
+                opened = _opener(tokens, i)
+                head = tokens[opened - 1][1] if opened else ""
+                after_brace = i + 1 < len(tokens) and _is(tokens[i + 1], "{")
+                if head == "for" and not after_brace:
+                    pending.clear()  # a loop body with no braces: its names do not reach the next block
+                    pending_from[0] = len(source)
+                elif after_brace and head not in ("if", "while", "switch", "with", "for"):
+                    hold(_binding_names(tokens, opened + 1), tokens[opened][2])  # `function f(a, b) {`, a method, `catch (e) {`
+            elif kind == "punct" and text == "=>":
+                prev = tokens[i - 1] if i else ("", "", 0)
+                opened = _opener(tokens, i - 1) if _is(prev, ")") else i - 1
+                params = _binding_names(tokens, opened + 1) if _is(prev, ")") else ({prev[1]} if prev[0] == "id" else set())
+                if i + 1 < len(tokens) and _is(tokens[i + 1], "{"):
+                    hold(params, tokens[opened][2])
+                elif params:
+                    # An expression body runs to the `,` `;` or closing bracket that ends it.
+                    depth, j = 0, i + 1
+                    while j < len(tokens):
+                        k, t, _ = tokens[j]
+                        if k == "punct" and t in _OPEN:
+                            depth += 1
+                        elif k == "punct" and t in ")]}":
+                            if depth == 0:
+                                break
+                            depth -= 1
+                        elif k == "punct" and t in ",;" and depth == 0:
+                            break
+                        j += 1
+                    self.scopes.append((tokens[opened][2], tokens[j][2] if j < len(tokens) else end_of_file, frozenset(params)))
+        self.scopes += [(start, end_of_file, frozenset(names)) for start, names in open_blocks]
+
+    def shadowed(self, name: str, offset: int) -> bool:
+        """Is `name` at `offset` a local, or inside literal text?"""
+        return any(start <= offset <= end for start, end in self.text) or any(start <= offset < end and name in names for start, end, names in self.scopes)
+
+
+def _globals_of(path: Path) -> set[str]:
+    """What loading a file puts in the page's global scope: its top-level functions and consts, and its window exports.
+    A name bound inside a function or block is not carried to the files loaded with it."""
+    return set().union(*_top_level_bindings(path))
+
+
+def _top_level_data(source: str) -> set[str]:
+    """Names a file's top level binds with const/let/class: `const a = 1, b = 2` chains and destructuring included."""
+    tokens = _js_tokens(source)
+    names: set[str] = set()
+    depth = 0
+    for i, (kind, text, _) in enumerate(tokens):
+        if kind == "punct" and text in _OPEN:
+            depth += 1
+        elif kind == "punct" and text in ")]}":
+            depth -= 1
+        elif depth == 0 and kind == "id" and text in ("const", "let"):
+            names |= _binding_names(tokens, i + 1)
+        elif depth == 0 and kind == "id" and text == "class" and i + 1 < len(tokens) and tokens[i + 1][0] == "id":
+            names.add(tokens[i + 1][1])
+    return names
+
+
 def _top_level_bindings(path: Path) -> tuple[set[str], set[str]]:
-    """Column-zero functions, and column-zero const/let/class names (`const a = 1, b`
-    chains and destructuring are not read: a name a lint cannot see is one it cannot flag)."""
+    """Column-zero functions, and the top level's const/let/class names, destructured and chained ones included
+    (the reads are scoped by `_ShadowIndex`, so a local of the same name is not mistaken for them)."""
     source = path.read_text(encoding="utf-8")
     funcs = set(re.findall(r"^(?:async )?function\*? ([A-Za-z_$][\w$]*)", source, re.M)) | _window_exports(source)
-    data = set(re.findall(r"^(?:const|let|class) ([A-Za-z_$][\w$]*)", source, re.M))
+    # The column-zero scan stays as well: it also counts a file's IIFE-wrapped top level, which the bracket depth does not.
+    data = set(re.findall(r"^(?:const|let|class) ([A-Za-z_$][\w$]*)", source, re.M)) | _top_level_data(source)
     return funcs, data
 
 
@@ -812,10 +1127,10 @@ def lazy_to_lazy_gaps(used: set[str] | None = None) -> list[str]:
     bundled = {f for files in lazy.values() for f in files if f.endswith(".js")}
     universe = sorted(bundled | {f for _, files in chains for f in files} | set(direct))
     universe = [f for f in universe if f not in boot and (FRONTEND / "js" / f).exists()]
-    names_of = {f: _defined_any_form(FRONTEND / "js" / f) for f in universe + sorted(boot)}
+    names_of = {f: _globals_of(FRONTEND / "js" / f) for f in universe + sorted(boot)}
     for _, files in chains:
         for f in files:
-            names_of.setdefault(f, _defined_any_form(FRONTEND / "js" / f))
+            names_of.setdefault(f, _globals_of(FRONTEND / "js" / f))
     funcs_in: dict[str, set[str]] = {}
     data_in: dict[str, set[str]] = {}
     for file_name in universe:
@@ -836,14 +1151,14 @@ def lazy_to_lazy_gaps(used: set[str] | None = None) -> list[str]:
         out: list[set[str]] = []
         for bundle, files in lazy.items():
             if file_name in files:
-                out.append(set().union(*(names_of.get(f) or _defined_any_form(FRONTEND / "js" / f) for f in files if f.endswith(".js") and (FRONTEND / "js" / f).exists())))
+                out.append(set().union(*(names_of.get(f) or _globals_of(FRONTEND / "js" / f) for f in files if f.endswith(".js") and (FRONTEND / "js" / f).exists())))
         for host, files in chains:
             if file_name in files and file_name != host:
                 before = set().union(*(names_of[f] for f in files[: files.index(file_name) + 1]))
                 out += [before | names_of.get(host, set()) | r for r in (host_routes(host, seen) or [set()])]
         for host, awaited, with_it in direct.get(file_name, ()):
-            loaded = set().union(set(), *(set().union(*(names_of.get(f) or _defined_any_form(FRONTEND / "js" / f) for f in lazy[b] if f.endswith(".js"))) for b in awaited if b in lazy))
-            loaded |= set().union(set(), *(names_of.get(f) or _defined_any_form(FRONTEND / "js" / f) for f in with_it))
+            loaded = set().union(set(), *(set().union(*(names_of.get(f) or _globals_of(FRONTEND / "js" / f) for f in lazy[b] if f.endswith(".js"))) for b in awaited if b in lazy))
+            loaded |= set().union(set(), *(names_of.get(f) or _globals_of(FRONTEND / "js" / f) for f in with_it))
             out += [names_of.get(file_name, set()) | names_of.get(host, set()) | loaded | r for r in (host_routes(host, seen) or [set()])]
         routes_memo[file_name] = out
         return out
@@ -870,14 +1185,21 @@ def lazy_to_lazy_gaps(used: set[str] | None = None) -> list[str]:
     gaps: list[str] = []
     for file_name in universe:
         route_sets = routes(file_name)
-        own = _defined_any_form(FRONTEND / "js" / file_name)
-        lines = (FRONTEND / "js" / file_name).read_text(encoding="utf-8").split("\n")
+        text = (FRONTEND / "js" / file_name).read_text(encoding="utf-8")
+        # A file's own globals; a local of the same name is the shadow index's business, not "any binding anywhere".
+        own = _globals_of(FRONTEND / "js" / file_name)
+        lines = text.split("\n")
+        shadow = _ShadowIndex(text)
+        line_at = 0
         for number, line in enumerate(lines, 1):
+            line_at += len(lines[number - 2]) + 1 if number > 1 else 0
             if line.lstrip().startswith(("//", "*", "/*")):
                 continue
             code = STRING_LITERAL.sub(lambda m: m.group(0) if "${" in m.group(0) else m.group(0)[0] + " " * (len(m.group(0)) - 2) + m.group(0)[0], line)
             for symbol, offset in reads(code):
                 if symbol in own or all(symbol in c for c in route_sets):
+                    continue
+                if shadow.shadowed(symbol, line_at + offset):
                     continue
                 if f"{file_name}:{symbol}" in LAZY_REACHED_AFTER_LOAD:
                     if used is not None:
@@ -909,18 +1231,34 @@ def test_no_lazy_file_calls_a_name_only_another_bundle_defines():
     assert used == set(LAZY_REACHED_AFTER_LOAD), f"no longer needed, take out: {sorted(set(LAZY_REACHED_AFTER_LOAD) - used)}"
 
 
-def _probe_gaps(tmp_path, monkeypatch, defined_in: str) -> list[str]:
-    """A copy of the frontend where obj-reorder.js reads a const that `defined_in` holds."""
+def _probe_cases(tmp_path, monkeypatch, defined_in: str, cases: dict[str, tuple[str, str]]) -> dict[str, list[str]]:
+    """One copy of the frontend (a run of the lint is slow) where obj-reorder.js has a function per case that reads
+    `OBJ_PROBE_CONST` as the case's `reader` says, and `defined_in` holds the case's `defined`. Each case's gaps, if any."""
     import shutil
 
-    shutil.copytree(FRONTEND / "js", tmp_path / "js")
-    shutil.copy(FRONTEND / "index.html", tmp_path / "index.html")
+    real = Path(__file__).resolve().parent.parent / "frontend"  # not FRONTEND: an earlier probe in this test has repointed it
+    shutil.copytree(real / "js", tmp_path / "js")
+    shutil.copy(real / "index.html", tmp_path / "index.html")
+
+    def own(n: int, text: str) -> str:
+        """Case `n`'s own names, so the cases do not see each other."""
+        return re.sub(r"\bobjProbe(?=[A-Z])", f"objProbe{n}", text.replace("OBJ_PROBE_CONSTANT", f"OBJ_PROBE_{n}X").replace("OBJ_PROBE_CONST", f"OBJ_PROBE_{n}"))
+
     with (tmp_path / "js" / defined_in).open("a", encoding="utf-8") as handle:
-        handle.write("\nconst OBJ_PROBE_CONST = 1;\n")
+        for n, (defined, _) in enumerate(cases.values()):
+            handle.write(f"\n{own(n, defined)}\n")
     with (tmp_path / "js" / "obj-reorder.js").open("a", encoding="utf-8") as handle:
-        handle.write("\nfunction objProbeRead() {\n  return OBJ_PROBE_CONST;\n}\n")
+        for n, (_, reader) in enumerate(cases.values()):
+            handle.write(f"\nfunction objProbeRead{n}(objProbeArg) {{\n  {own(n, reader)}\n}}\n")
     monkeypatch.setattr(sys.modules[__name__], "FRONTEND", tmp_path)
-    return [gap for gap in lazy_to_lazy_gaps() if "OBJ_PROBE_CONST" in gap]
+    found = lazy_to_lazy_gaps()
+    gaps = {kind: [gap for gap in found if re.search(rf"OBJ_PROBE_{n}\b", gap)] for n, kind in enumerate(cases)}
+    return {kind: lines for kind, lines in gaps.items() if lines}
+
+
+def _probe_gaps(tmp_path, monkeypatch, defined_in: str) -> list[str]:
+    """A copy of the frontend where obj-reorder.js reads a const that `defined_in` holds."""
+    return _probe_cases(tmp_path, monkeypatch, defined_in, {"gap": ("const OBJ_PROBE_CONST = 1;", "return OBJ_PROBE_CONST;")}).get("gap", [])
 
 
 def test_a_const_read_from_a_file_later_in_the_chain_is_a_gap(tmp_path, monkeypatch):
@@ -931,6 +1269,73 @@ def test_a_const_read_from_a_file_later_in_the_chain_is_a_gap(tmp_path, monkeypa
     assert late and late[0].startswith("obj-reorder.js:"), late
     assert not _probe_gaps(tmp_path / "early", monkeypatch, "obj-ref.js")
     assert not _probe_gaps(tmp_path / "earlier", monkeypatch, "obj-drag.js")
+
+
+#: Reads the probe must NOT report: the name is a local there, whatever form the local takes.
+_PROBE_LOCALS = {
+    "const": "const OBJ_PROBE_CONST = 2; return OBJ_PROBE_CONST;",
+    "chain": "const a = 1, OBJ_PROBE_CONST = 2; return a + OBJ_PROBE_CONST;",
+    "destructured": "const { x: [, OBJ_PROBE_CONST], ...rest } = objProbeArg; return OBJ_PROBE_CONST;",
+    "default": "const { y = 3, z: OBJ_PROBE_CONST = y } = objProbeArg; return OBJ_PROBE_CONST;",
+    "catch": "try { go(); } catch (OBJ_PROBE_CONST) { return OBJ_PROBE_CONST; }",
+    "for-of": "for (const OBJ_PROBE_CONST of objProbeArg) { use(OBJ_PROBE_CONST); }",
+    "for-let": "for (let OBJ_PROBE_CONST = 0; OBJ_PROBE_CONST < 3; OBJ_PROBE_CONST++) { use(OBJ_PROBE_CONST); }",
+    "arrow": "return objProbeArg.map((OBJ_PROBE_CONST) => OBJ_PROBE_CONST + 1);",
+    "arrow-bare": "return objProbeArg.map(OBJ_PROBE_CONST => OBJ_PROBE_CONST + 1);",
+    "arrow-destructured": "return objProbeArg.map(({ OBJ_PROBE_CONST }) => OBJ_PROBE_CONST);",
+    "arrow-block": "return objProbeArg.map((OBJ_PROBE_CONST) => { return OBJ_PROBE_CONST; });",
+    "inner-function": "function inner(a, OBJ_PROBE_CONST = 1) { return OBJ_PROBE_CONST; } return inner;",
+    "nested-block": "if (go()) { let OBJ_PROBE_CONST = 1; if (go()) { return OBJ_PROBE_CONST; } }",
+    "template": "const OBJ_PROBE_CONST = 1; return `${OBJ_PROBE_CONST} and ${ `${OBJ_PROBE_CONST}` }`;",
+}
+
+#: Reads it must still report: a binding that does not reach the read.
+_PROBE_REAL = {
+    "no-local": "return OBJ_PROBE_CONST;",
+    "sibling-block": "if (go()) { const OBJ_PROBE_CONST = 1; use(OBJ_PROBE_CONST); }\n  return OBJ_PROBE_CONST;",
+    "sibling-function": "const f = function (OBJ_PROBE_CONST) { return 1; };\n  return OBJ_PROBE_CONST;",
+    "sibling-arrow": "const f = (OBJ_PROBE_CONST) => 1;\n  return OBJ_PROBE_CONST;",
+    "sibling-arrow-expression": "const f = objProbeArg.map((OBJ_PROBE_CONST) => OBJ_PROBE_CONST), g = OBJ_PROBE_CONST;\n  return [f, g];",
+    "after-for": "for (const OBJ_PROBE_CONST of objProbeArg) { use(OBJ_PROBE_CONST); }\n  return OBJ_PROBE_CONST;",
+    "after-catch": "try { go(); } catch (OBJ_PROBE_CONST) { use(1); }\n  return OBJ_PROBE_CONST;",
+    "key-and-string": "return { a: '${OBJ_PROBE_CONST}', b: OBJ_PROBE_CONST };",
+    "other-name": "const OBJ_PROBE_CONSTANT = 2; return OBJ_PROBE_CONST;",
+}
+
+
+def test_a_local_of_the_same_name_is_not_a_read_of_the_other_files_const(tmp_path, monkeypatch):
+    """lzc-1101: widening the top-level scan to `const a = 1, b = 2` and destructured names gave about 30 false reads, because
+    a local `const h1`, a parameter or a catch binding reads like the other file's const. The reads are block scoped now."""
+    cases = {kind: ("const OBJ_PROBE_CONST = 1;", reader) for kind, reader in _PROBE_LOCALS.items()}
+    assert not _probe_cases(tmp_path, monkeypatch, "obj-clip.js", cases)
+
+
+def test_the_scope_does_not_hide_a_read_no_enclosing_block_binds(tmp_path, monkeypatch):
+    """The other half: a binding in a sibling block, an earlier function, a finished loop or catch, or a longer name does not
+    cover the read, so it is still a gap (the lint caught these before the scope and must still)."""
+    cases = {kind: ("const OBJ_PROBE_CONST = 1;", reader) for kind, reader in _PROBE_REAL.items()}
+    assert set(_probe_cases(tmp_path, monkeypatch, "obj-clip.js", cases)) == set(cases)
+
+
+def test_a_chained_or_destructured_top_level_const_is_a_const_to_read(tmp_path, monkeypatch):
+    """The widened scan: these were invisible, so a read of them from an earlier file went unseen."""
+    cases = {
+        "chain": ("const objProbeA = 1, OBJ_PROBE_CONST = 2;", "return OBJ_PROBE_CONST;"),
+        "object": ("const { objProbeB, c: OBJ_PROBE_CONST = 3 } = window;", "return OBJ_PROBE_CONST;"),
+        "array": ("const [objProbeD, , OBJ_PROBE_CONST] = window.objProbeList;", "return OBJ_PROBE_CONST;"),
+        "let-chain": ("let objProbeE = 1,\n  OBJ_PROBE_CONST = (1, 2), objProbeF;", "return OBJ_PROBE_CONST;"),
+    }
+    assert set(_probe_cases(tmp_path / "late", monkeypatch, "obj-clip.js", cases)) == set(cases)
+    assert not _probe_cases(tmp_path / "early", monkeypatch, "obj-ref.js", cases)
+
+
+def test_the_binding_scan_reads_patterns():
+    tokens = _js_tokens("const { a, b: [c, ...d], e = f(1, 2), ...g } = h(), i = { j: 1 }, [k] = l; var m;")
+    assert _binding_names(tokens, 1) == {"a", "c", "d", "e", "g", "i", "k"}
+    assert _top_level_data("const a = 1, b = { c: 1 }, d;\nfunction f() { const inner = 1; }\nclass K {}\nlet [x, y] = z;") == {"a", "b", "d", "K", "x", "y"}
+    # A brace in a string, a regex or a template is not a block.
+    index = _ShadowIndex("function f(p) { const s = '}{'; const r = /[}]/; const t = `}${p}{`; return 1; }\nconst top = 1;")
+    assert index.shadowed("p", 30) and not index.shadowed("p", 90) and not index.shadowed("top", 95)
 
 
 def test_the_object_move_chain_is_read_in_load_order():

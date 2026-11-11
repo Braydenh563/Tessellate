@@ -34,6 +34,9 @@ from tessellate.api import routes_chat
 from tessellate.core import config
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
+from tests._framed_path import framed_path  # noqa: F401
+
+pytestmark = pytest.mark.usefixtures("framed_path")
 
 NOW = dt.datetime(2026, 10, 30, 10, 0, 0)
 TODAY = NOW.date()

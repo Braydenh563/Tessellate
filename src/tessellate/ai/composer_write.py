@@ -471,7 +471,16 @@ def _write_up_name(note: dict) -> str:
     """A note's name for the write-up: its first sentence when that is short
     ("Dentist visit"), so the rest of the note is points under it and not
     part of its name."""
+    #: The one name quotes a title-less note's words (“Standup…”); a write-up is the person's own
+    #: document, so it takes the words without the quotes and, for "Budget review: we have 2000
+    #: left", the label before the colon.
     name = note_name(note)
+    if name.startswith("\u201c") and name.endswith("\u201d"):
+        name = name[1:-1].rstrip("\u2026 ").strip()
+        label = re.match(r"^([^:]{3,40}?):\s", name + " ")
+        if label and len(label.group(1).split()) <= 4:
+            name = label.group(1)
+        name = name[:1].upper() + name[1:]
     first = sentences(name)[0] if sentences(name) else name
     return first.rstrip(".") if len(first.split()) <= 8 and first != name else name
 

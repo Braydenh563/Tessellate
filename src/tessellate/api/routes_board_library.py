@@ -348,7 +348,7 @@ def _clean_tags(tags: Any) -> list[str]:
 #: Names are the panel's words, not the converter's `mxgraph.*` source name.
 SHAPE_SET_NAMES = {
     "drawio-basic": "Basic shapes", "drawio-flowchart": "Flowchart, more",
-    "drawio-arrows": "Arrows, more", "drawio-bpmn": "BPMN", "drawio-networks": "Network and cloud",
+    "drawio-arrows": "Arrows, more", "drawio-bpmn": "BPMN, more", "drawio-networks": "Cloud and network, more",
 }
 
 
@@ -817,6 +817,21 @@ class ImportBody(BaseModel):
     items: list[dict] = []
 
 
+def _import_item(raw: dict, have: set[str]) -> tuple[dict | None, str | None, int]:
+    """(the cleaned payload or None when the item is skipped, its kind, pictures dropped)."""
+    kind = raw.get("kind")
+    payload = raw.get("payload")
+    if not isinstance(payload, dict) or kind not in ITEM_KINDS:
+        return None, kind, 0
+    missing = [u for u in _media_urls(payload) if u not in have]
+    if missing:
+        payload = _drop_media(payload, set(missing))
+    try:
+        return _clean_payload(kind, payload), kind, len(missing)
+    except HTTPException:
+        return None, kind, len(missing)
+
+
 @router.post("/board-library/import", status_code=201)
 @events.writes("library_item", "imported")
 def import_library(body: ImportBody, db: Session = Depends(get_session)) -> dict:
@@ -834,18 +849,9 @@ def import_library(body: ImportBody, db: Session = Depends(get_session)) -> dict
     db.flush()
     made, skipped, dropped_media = 0, 0, 0
     for raw in body.items:
-        kind = raw.get("kind")
-        payload = raw.get("payload")
-        if not isinstance(payload, dict) or kind not in ITEM_KINDS:
-            skipped += 1
-            continue
-        missing = [u for u in _media_urls(payload) if u not in have]
-        if missing:
-            dropped_media += len(missing)
-            payload = _drop_media(payload, set(missing))
-        try:
-            clean = _clean_payload(kind, payload)
-        except HTTPException:
+        clean, kind, lost = _import_item(raw, have)
+        dropped_media += lost
+        if clean is None:
             skipped += 1
             continue
         db.add(BoardLibraryItem(

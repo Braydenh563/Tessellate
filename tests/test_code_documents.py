@@ -191,14 +191,14 @@ def test_the_code_panel_is_lazy_and_its_ways_in_load_it():
     assert "#tab-documents:not(.doc-is-code) .doc-code-only" in css
     assert ".doc-code-side)" not in css.split("#tab-documents:not(.doc-is-code)")[1].split("{")[0]
     #: On a phone the panel is the recipe's sheet, never a hand-built one.
-    kit = (JS / "documents-codekit.js").read_text(encoding="utf-8")
+    kit = _js_scope.unwrapped((JS / "documents-codekit.js").read_text(encoding="utf-8"))
     assert "openSheet({" in kit and "sidebar-sheet-open" not in kit
 
 
 def test_every_built_in_library_snippet_is_well_formed():
     if not Path(NODE).exists():
         pytest.skip("node is not installed")
-    source = (JS / "documents-codekit.js").read_text(encoding="utf-8")
+    source = _js_scope.unwrapped((JS / "documents-codekit.js").read_text(encoding="utf-8"))
     start = source.index("const DOC_KIT_LIBRARY = {")
     end = source.index("\n};\n", start) + 4
     out = subprocess.run(
@@ -305,7 +305,7 @@ def test_the_asks_that_need_a_model_say_so_and_fix_and_the_tools_do_not():
     #: Every tool the panel offers needle is one the browser can run.
     from tessellate.ai import code_assist
 
-    kit = (JS / "documents-codekit.js").read_text(encoding="utf-8")
+    kit = _js_scope.unwrapped((JS / "documents-codekit.js").read_text(encoding="utf-8"))
     for name in code_assist.TOOL_NAMES:
         assert f"    {name}: () =>" in kit, name
 
@@ -386,7 +386,7 @@ def test_the_answer_names_the_place_as_read():
 
 
 # Row 1056: the Statistics charts' axis, unchecked at a 0 to 1,240 range.
-ASK_CHART = (JS / "ask-chart.js").read_text(encoding="utf-8")
+ASK_CHART = _js_scope.unwrapped((JS / "ask-chart.js").read_text(encoding="utf-8"))
 
 
 def test_chart_ticks_are_round_and_cover_the_top():

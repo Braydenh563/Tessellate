@@ -192,7 +192,9 @@ function showSettingsSection(name) {
   //: open of Settings).
   if (typeof settingsIndexWatchSection === "function") settingsIndexWatchSection(name);
   //: The chosen pane's row keeps a row of room in the sidebar (INBOX 1696 e), after its "On this page" list is drawn.
-  nearestScrollParent.reveal(document.querySelector(`#settings-nav button[data-section="${name}"]`));
+  //: A frame on: the section was just switched, and this walk's style reads (`nearestScrollParent`) plus two
+  //: rects laid the window out inside the press (54ms style and 14 layout at 4x, INBOX 1111).
+  afterFrames(() => nearestScrollParent.reveal(document.querySelector(`#settings-nav button[data-section="${name}"]`)), 1);
   updatePeekAvailability(name);
   // The log stream is the only section that holds a connection open, so it is
   // the only one that has to be told it is no longer being looked at.
@@ -336,7 +338,9 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   //: reproduced, so whatever path changed the look without a repaint, the
   //: window never opens on a stale one.
   paintUserMarks();
-  $("settings-close").focus();
+  //: A frame on: focusing a button in a window just un-hidden lays the whole window out inside
+  //: the press (60ms style + 12 layout at 4x), and the reads after it laid out a second time.
+  afterFrames(() => $("settings-close").focus(), 1);
   //: The version alone: "46 entries loaded" was a debugging line (the
   //: client's cache size, drafts included) sitting beside the Health
   //: section's own count of the same thing, and the two disagreed.
@@ -1073,7 +1077,6 @@ function renderActiveLogView() {
   if (logView === "terminal") renderLogTerminal();
   else renderLogList();
 }
-
 function setLogLive(state, detail) {
   const pill = $("log-live");
   setLabel(pill, detail);
@@ -1155,7 +1158,7 @@ async function startLogStream() {
           logRecords.push(serverLogRecord(event.record));
           bumpLogErrorBadge(event.record);
           sortLogRecords();
-          if (logScreenOpen) renderActiveLogView();
+          if (logScreenOpen) renderActiveLogView.soon();
         } else if (event.type === "ping") {
           logStreamCursor = event.cursor || logStreamCursor;
         } else if (event.type === "reconnect") {
@@ -3389,9 +3392,11 @@ function startBgArt() {
 
 function toggleBgArt(on) {
   prefs.set("bgArt", on ? "on" : "off");
-  applyAppearance(); // updates data-bg-art so the cards adjust with it
-  if (on) startBgArt();
-  else stopBgArt();
+  //: Updates data-bg-art so the cards adjust with it, and, with the art on,
+  //: restarts it: `applyPalette` rebuilds the art from the accent (audit 1029
+  //: X15). A second `startBgArt` here mounted it twice per switch.
+  applyAppearance();
+  if (!on) stopBgArt();
   //: The constellation moves only with it on (INBOX 1530 d).
   refreshArtForTheme();
 }
@@ -3442,7 +3447,8 @@ function focusSettingsHeading(name) {
   const head = pane?.querySelector(":scope > .settings-pane-title h3, :scope > .help-head h3, h3");
   if (!head) return focusSettingsPane();
   head.tabIndex = -1;
-  head.focus({ preventScroll: true });
+  //: A frame on: the section was just switched, and focusing laid it out inside the press.
+  afterFrames(() => head.focus({ preventScroll: true }), 1);
 }
 
 //: A group heading (INBOX 697) is in the loop too: a press on it opens its

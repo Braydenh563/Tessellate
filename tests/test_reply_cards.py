@@ -16,6 +16,7 @@ from pathlib import Path
 from tessellate.ai import tools
 from tests._app_js import app_js_text
 from tests._app_js import with_pieces
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -75,7 +76,7 @@ def test_every_answer_surface_draws_the_panel_with_one_renderer():
     code = app_js_text()
     assert 'event.type === "panel" && onPanel' in code
     assert re.search(r'replyKit: \["/css/key-grid-lazy\.css", "/css/reply-kit-lazy\.css", "/js/citation-peek\.js", "/js/documents-math\.js", "/js/reply-kit\.js"\]', code)
-    kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
+    kit = _js_scope.unwrapped((JS / "reply-kit.js").read_text(encoding="utf-8"))
     assert "function renderReplyPanel(holder, event)" in kit
     assert "onPanel:" in with_pieces("chat-attach.js")
     #: Ask and the popup agent draw theirs once the answer is final, through one drawer.
@@ -113,7 +114,7 @@ def test_the_calculator_is_one_sheet_reached_three_ways():
     """INBOX 1300 C06: "an interactive calculator popup that is accessible
     and also link it to the /calc command as well as other unit
     conversions"."""
-    kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
+    kit = _js_scope.unwrapped((JS / "reply-kit.js").read_text(encoding="utf-8"))
     assert "calculator: (event) => replyCalcPanel(event)" in kit
     assert 'function openCalculator(input = "", mode = "work", { target = null } = {})' in kit and 'name: "calculator"' in kit and "openSheet({" in kit
     #: Accessible: a live result, a keypad that is one Tab stop walked by the
@@ -147,7 +148,7 @@ def test_a_note_a_reply_gives_is_previewed_on_every_surface():
     }
     for name, call in calls.items():
         assert call in with_pieces(name), name
-    kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
+    kit = _js_scope.unwrapped((JS / "reply-kit.js").read_text(encoding="utf-8"))
     #: The citation peek for every note link, and up to three cards in the
     #: document embed's recipe; a longer list keeps the peek only.
     assert "openCitationPeek(link, { noteId: id" in kit and "const REPLY_NOTE_CARDS = 3;" in kit
@@ -160,7 +161,7 @@ def test_a_wall_of_text_in_a_reply_folds_to_its_gist():
     """INBOX 1300 C08: "if it outputs a mass block of text like from the ocr
     of one of my note's images, maybe it could be in a collapsible subtle
     panel or smth or abrieviated/summarised by the composer somehow??"."""
-    kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
+    kit = _js_scope.unwrapped((JS / "reply-kit.js").read_text(encoding="utf-8"))
     #: The composer's text only: B1 (2026-11-05) found a model's own answer
     #: folded, and the fold was asked for the composer's output.
     assert "if (opts.composed) for (const answer of list) replyFoldLong(answer);" in kit
@@ -175,7 +176,7 @@ def test_a_composed_reply_takes_one_reveal_on_every_surface(ai_client, fake_olla
     """INBOX 1300 C28: one reveal for a reply no model wrote, on Chat, Ask,
     the popup agent and the Guide, with a switch under Interface animations
     and a quick fade under Reduce motion."""
-    kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
+    kit = _js_scope.unwrapped((JS / "reply-kit.js").read_text(encoding="utf-8"))
     assert "if (opts.composed) replyReveal(list);" in kit
     body = kit[kit.index("function replyReveal(answers)") :].split("\n}\n", 1)[0]
     assert "still ? [{ opacity: 0 }, {}]" in body and "delay: still ? 0" in body
@@ -200,7 +201,7 @@ def test_who_wrote_a_reply_is_one_badge_on_every_surface():
     """INBOX 1300 C14: "Should 'composer' and the model should be a badge or
     smnth similar". One `chip item-label` beside the name on Chat, the popup
     agent and the Guide; Ask's `#answered-by` is the same chip."""
-    kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
+    kit = _js_scope.unwrapped((JS / "reply-kit.js").read_text(encoding="utf-8"))
     assert 'chip.className = "chip item-label answer-model reply-by";' in kit
     assert "if (opts.head && list.some((answer) => answer.textContent.trim())) replyByline(opts.head, opts);" in kit
     facts = kit[kit.index("function replyBylineFacts(") :].split("\n}\n", 1)[0]
@@ -222,7 +223,7 @@ def test_the_no_model_badge_opens_a_help_popover_1344():
     `data-help-for` recipe with its own `.help-body`; a model's name stays a
     plain chip. Hover opens it where hover exists; click, Enter and Space
     always do."""
-    kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
+    kit = _js_scope.unwrapped((JS / "reply-kit.js").read_text(encoding="utf-8"))
     assert 'chip.setAttribute("data-help-for", panel.id);' in kit
     assert "wireHelpPopover(chip, panel);" in kit
     assert "function replyByHelpPanel(" in kit and "written without an AI model" in kit
@@ -249,7 +250,7 @@ def test_the_slash_menu_clears_the_agent_popup_overlay_1333a():
 def test_the_badge_panel_waits_inside_the_head_not_between_the_bubbles_blocks():
     #: Measured 2026-10-27: the hidden panel after the head broke
     #: `.msg-role:has(+ .agent-steps)` and the bubble grew 2.4px on hover.
-    kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
+    kit = _js_scope.unwrapped((JS / "reply-kit.js").read_text(encoding="utf-8"))
     body = kit[kit.index("function replyByline(") :].split("\n}\n", 1)[0]
     assert "head.appendChild(panel);" in body
     assert "head.after(panel)" not in body

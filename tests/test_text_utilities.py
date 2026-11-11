@@ -99,10 +99,13 @@ def test_a_window_in_the_documents_search_is_a_window(client, session):
     token = client.post("/auth/setup", json={"password": "first-pass"}).json()["token"]
     headers = {"X-Auth-Token": token}
     now = datetime.now(timezone.utc).replace(tzinfo=None)
+    #: Q24 (the owner): "last week" is the previous Monday to Sunday, so the two recent documents sit inside that week
+    #: whatever day the suite runs on.
+    last_monday = datetime.combine((now - timedelta(days=now.weekday() + 7)).date(), datetime.min.time()).replace(hour=12)
     session.add_all([
-        Document(title="Harbor roof", content="the harbor roof", updated_at=now - timedelta(days=2)),
+        Document(title="Harbor roof", content="the harbor roof", updated_at=last_monday + timedelta(days=1)),
         Document(title="Harbor crane", content="the harbor crane", updated_at=now - timedelta(days=60)),
-        Document(title="Garden", content="beds", updated_at=now - timedelta(days=1)),
+        Document(title="Garden", content="beds", updated_at=last_monday + timedelta(days=2)),
     ])
     session.commit()
     titles = lambda q: sorted(d["title"] for d in client.get("/documents", params={"q": q}, headers=headers).json())  # noqa: E731

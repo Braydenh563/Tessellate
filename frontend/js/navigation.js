@@ -1103,7 +1103,7 @@ async function goToTabHistory(next, { fromBrowser = false } = {}) {
   tabSwitchDeclined = false;
   const scroll = entry.scroll;
   try {
-    await openHistoryEntry(entry);
+    await openHistoryEntry(entry, { from: tabHistory.stack[from] });
     if (entry.tab === "settings" && scroll) restoreSettingsScroll(entry.section, scroll);
   } finally {
     // Cleared in a finally so a throw inside a tab's own setup cannot strand
@@ -1151,7 +1151,7 @@ function restoreSettingsScroll(section, top) {
 //: thing open in it. Shared by the history walk above and the router's fresh
 //: visits (a reload, a pasted link: `routerOpen`, router.js), which are the
 //: same question asked from an address instead of from the stack.
-async function openHistoryEntry(entry) {
+async function openHistoryEntry(entry, { from = null } = {}) {
   if (await window.overlayGo?.(entry)) return;
   // Settings is a modal overlay, not one of the tab-pages switchTab knows
   // about: asked for directly: "the back and forward buttons should cover
@@ -1166,6 +1166,8 @@ async function openHistoryEntry(entry) {
     return;
   }
   if (settingsModalOpen()) closeSettingsModal();
+  //: Settings closed onto the tab it was under: that page never left, so no switchTab (580ms at 4x).
+  if (from?.tab === "settings" && entry.tab === prefs.get("activeTab", null)) return;
   //: Awaited: every branch below reaches straight into the tab's own file
   //: (`openWhiteboardBoard`, `openDocument`, `graphFocusModeId`), and two of
   //: those are lazily loaded now (A1). `graphFocusModeId` in particular is a
@@ -1858,8 +1860,8 @@ document.addEventListener("input", (event) => {
 });
 
 async function switchTab(name) {
-  surfaceBuild(name);
   if (!(await confirmLeavingUnsavedWork(name))) return;
+  surfaceBuild(name);
   usageCount(`tab:${name}`);
   // Profiled directly: leaving the Graph tab left `graphSimulation` running
   //, it is only ever `.stop()`-ed "before every rebuild" (graph.js), never
@@ -2271,7 +2273,8 @@ function resetNavigationToDefaults() {
   if (allTab && !allTab.classList.contains("active")) allTab.click();
   // If the Notes strip is already built, put it back on its front page now;
   // on a cold load it has not been built yet and will read the cleared key.
-  if ($("notes-subtabs")?.dataset.ready) {
+  //: `getElementById`, not `$`: `$` would build the unbuilt Notes pane on every unlock (audit 1030 Y5).
+  if (document.getElementById("notes-subtabs")?.dataset.ready) {
     showNotesSection("browse");
   }
 }

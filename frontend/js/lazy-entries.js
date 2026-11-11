@@ -23,6 +23,8 @@ Object.assign(LAZY_MODULES, {
     "/js/whiteboard-interchange.js",
     "/js/whiteboard-history.js",
   ],
+  //: A non-image file chosen in the chat: imported as a document, or kept in the Library (chat-docs.js).
+  chatDocs: ["/js/chat-docs.js"],
   //: A space switch, in place (space-swap.js).
   spaceSwap: ["/js/space-swap.js"],
   //: Unlocking, editing and leaving a private space (private-spaces.js's header; INBOX 1727).
@@ -293,7 +295,7 @@ function onDomReady(fn) {
 function warmLibraryAfterInput() {
   if (navigator.connection?.saveData || (navigator.hardwareConcurrency || 2) < 4) return;
   let calmAt = 0;
-  const files = [...LAZY_MODULES.graph, ...LAZY_MODULES.library];
+  const files = [...LAZY_MODULES.graph, ...LAZY_MODULES.library].filter((f) => f[1] > "c");
   const warmNext = () =>
     Date.now() < calmAt ? setTimeout(warmNext, 600) : files[0] && lazyScript(files.shift()).then(() => setTimeout(warmNext, 600));
   const warm = (event) => {
@@ -326,3 +328,4 @@ warmOnFirst("pointerover", "li[data-id] .menu-wrap", "entryMenu");
 //: A slider fetches the value field on its first hover or focus (a keyboard-only reach too), so its readout becomes typeable (INBOX 1694 c, value-field.js). Range inputs only: a plain number box has no readout to upgrade.
 warmOnFirst("pointerover", "[type=range]", "vf");
 warmOnFirst("focusin", "[type=range]", "vf");
+installStandIns({ chatDocs: ["importChatDocuments", "keepUnreadableChatFile"] });

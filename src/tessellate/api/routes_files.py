@@ -93,6 +93,11 @@ ATTACHMENT_SUFFIXES = frozenset(
         # Archives
         ".zip",
     }
+    #: Everything the chat's file picker offers (`docview.VIEWABLE_SUFFIXES`),
+    #: so the Quick capture card, which takes the same files and attaches them
+    #: here on Save, never meets a 415 for a type its picker let through. All
+    #: are downloaded, not rendered inline, the reason this list is the wider one.
+    | frozenset(docview.VIEWABLE_SUFFIXES)
 )
 
 
@@ -1279,6 +1284,7 @@ MEDIA_SUFFIXES = frozenset(
 def upload_media(
     file: UploadFile,
     direct: bool = Form(False),
+    board: bool = Form(False),
     session: Session = Depends(get_session),
 ) -> dict:
     """General file/image upload for drag-and-drop in markdown (documents &
@@ -1331,8 +1337,10 @@ def upload_media(
     # `size` was already counted above while streaming the upload to disk, 
     # storing it here means `GET /media` never has to `stat()` this file to
     # answer "how big is it" (PLAN.md §0 P6).
+    #: `board`: a picture placed on a board or map. It is not listed in the
+    #: Library and nothing reads it until Save to Library (K18).
     upload = MediaUpload(
-        filename=stored_name, original_name=original_name, size_bytes=size
+        filename=stored_name, original_name=original_name, size_bytes=size, board_only=board and not direct
     )
     session.add(upload)
     session.commit()
@@ -1388,6 +1396,9 @@ class MediaUploadOut(BaseModel):
     #: render extra installed), the same field and meaning as the attachment
     #: gallery's: the tile asks for a first page only then.
     has_pages: bool = False
+    #: True while the picture lives only on a board or map (K18); Save to
+    #: Library (`POST /media/{id}/library`) clears it.
+    board_only: bool = False
     #: Bytes on disk, filled by `media_meta` only (one `stat` for the one file
     #: asked about, which the listing above declines to pay per row). The
     #: attachment card states it beside the kind (INBOX 440 (2)); 0 means
@@ -1462,9 +1473,10 @@ def list_media(
     the same second cannot swap places between pages and hide a row.
     """
     offset = paging.start(cursor, offset)
-    total = session.scalar(select(func.count(MediaUpload.id))) or 0
+    total = session.scalar(select(func.count(MediaUpload.id)).where(MediaUpload.board_only.is_(False))) or 0
     uploads = (
         session.query(MediaUpload)
+        .filter(MediaUpload.board_only.is_(False))
         .order_by(MediaUpload.created_at.desc(), MediaUpload.id.desc())
         .limit(limit)
         .offset(offset)
@@ -1638,6 +1650,7 @@ def media_meta(filename: str, session: Session = Depends(get_session)) -> MediaU
         vision_ocr_model=upload.vision_ocr_model or "",
         created_at=upload.created_at.isoformat() if upload.created_at else "",
         size=_media_size(upload.filename),
+        board_only=bool(upload.board_only),
     )
 
 
@@ -1969,6 +1982,29 @@ class CaptionBody(BaseModel):
 #: A stored sentinel, not copy: captions written before the rename to
 #: Tessellate carry it, so it stays; the lightbox shows the current name.
 APP_CAPTION_AUTHOR = "MemoryMap"  # brand: keep
+
+
+@router.post("/media/{upload_id}/library", response_model=MediaUploadOut)
+def save_media_to_library(upload_id: int, session: Session = Depends(get_session)) -> MediaUploadOut:
+    """Save a board-only picture to the Library: it is listed from now on and
+    its readers (text, caption) start, as for a direct upload (K18)."""
+    upload = _existing_upload(session, upload_id)
+    if upload.board_only:
+        upload.board_only = False
+        session.commit()
+        session.refresh(upload)
+        media_process.process_committed_upload(upload, deps.get_config().data_dir / "media")
+    return MediaUploadOut(
+        id=upload.id,
+        url=f"/media/{upload.filename}",
+        original_name=upload.original_name,
+        ocr_text=upload.ocr_text or "",
+        caption=upload.caption or "",
+        caption_model=upload.caption_model or "",
+        caption_edited=upload.caption_edited,
+        created_at=upload.created_at.isoformat() if upload.created_at else "",
+        board_only=False,
+    )
 
 
 @router.post("/media/{upload_id}/caption", response_model=MediaUploadOut)

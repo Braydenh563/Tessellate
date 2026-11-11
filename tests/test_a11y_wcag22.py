@@ -15,6 +15,7 @@ from pathlib import Path
 
 from tests._app_js import with_pieces
 from tests._css_paths import css_text
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parent.parent
 FRONTEND = ROOT / "frontend"
@@ -120,7 +121,7 @@ def test_the_keyboard_lands_somewhere_after_every_note_step():
     assert "restoreFocusTo(" in row and "row.tabIndex = 0;" in row
     contract = _function(notes, "restoreFocusTo")
     assert "here !== document.body" in contract and "el.focus(" in contract
-    assert "if (!many) focusNoteRow(noteIds[0]);" in _read("categories-panel.js")
+    assert "if (!many) focusNoteRow(noteIds[0]);" in _js_scope.unwrapped(_read("categories-panel.js"))
     sheet = _function(_read("phone-shell.js"), "openSheet")
     assert "'.sheet-row[aria-current=\"true\"]'" in sheet
     assert "ArrowDown: 1, ArrowUp: -1" in sheet
@@ -532,3 +533,9 @@ def test_every_labelledby_and_describedby_names_an_element_that_exists():
         if ref not in ids
     ]
     assert missing == []
+
+
+def test_the_document_editor_describes_its_way_out():
+    """W26 (sweep-1028b): Escape then Tab leaves the editor and nothing said so."""
+    docs = _read("documents.js")
+    assert '"aria-description": "Tab indents. To leave the editor, press Escape, then Tab."' in docs

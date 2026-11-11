@@ -129,6 +129,8 @@ function docLivePlugin(CM) {
       frame.appendChild(img);
       if (this.options.width) frame.dataset.sized = "1";
       docImageLive(view, frame, this.options);
+      //: Show captions reaches a note's body in a graph popup (K18); a document keeps its own text.
+      if (!this.options.caption && view.dom.closest?.("#graph-popup")) imageLayout.caption(frame, this.src);
       return imageApplyOptions(frame, this.options);
     }
   }

@@ -323,6 +323,10 @@ def _safe_href(href: str, base: str) -> str:
 _CONTAINERS = {"ul", "ol", "table", "tr", "div", "section", "article", "main", "figure", "dl", "tbody", "thead", "html", "body"}
 
 
+#: The inline tags that wrap their text in a markdown mark.
+_INLINE_MARKS = {"strong": "**", "b": "**", "em": "*", "i": "*", "code": "`"}
+
+
 class _Markdown:
     def __init__(self, base: str):
         self.base = base
@@ -333,31 +337,79 @@ class _Markdown:
             return re.sub(r"\s+", " ", node)
         inner = "".join(self.inline(child) for child in node.children)
         tag = node.tag
-        if tag in ("strong", "b") and inner.strip():
-            return f"**{inner.strip()}**"
-        if tag in ("em", "i") and inner.strip():
-            return f"*{inner.strip()}*"
-        if tag == "code" and inner.strip():
-            return f"`{inner.strip()}`"
+        mark = _INLINE_MARKS.get(tag)
+        if mark and inner.strip():
+            return f"{mark}{inner.strip()}{mark}"
         if tag == "br":
             return "\n"
         if tag == "a":
-            href = _safe_href(node.attrs.get("href", ""), self.base)
-            label = inner.strip()
-            # A link to a place on the same page means nothing in a note.
-            same_page = "#" in href and href.split("#", 1)[0] == self.base.split("#", 1)[0]
-            if href and label and not same_page:
-                return f"[{label}]({href})"
-            return label
+            return self._link(node, inner.strip())
         if tag == "img":
             return ""
         return inner
+
+    def _link(self, node, label: str) -> str:
+        href = _safe_href(node.attrs.get("href", ""), self.base)
+        # A link to a place on the same page means nothing in a note.
+        same_page = "#" in href and href.split("#", 1)[0] == self.base.split("#", 1)[0]
+        if href and label and not same_page:
+            return f"[{label}]({href})"
+        return label
 
     def flush_inline(self, parts: list[str]) -> None:
         text = re.sub(r"[ \t]+", " ", "".join(parts)).strip()
         if text:
             self.blocks.append(text)
         parts.clear()
+
+    def _heading(self, child: _Node) -> str:
+        text = self.inline(child).strip()
+        return f"{'#' * int(child.tag[1])} {text}" if text else ""
+
+    def _quote(self, child: _Node) -> str:
+        text = " ".join(self.inline(child).split())
+        return f"> {text}" if text else ""
+
+    def _pre(self, child: _Node) -> str:
+        code = _text(child).strip("\n")
+        return f"```\n{code}\n```" if code.strip() else ""
+
+    def _list(self, child: _Node, depth: int) -> str:
+        items = [c for c in child.children if isinstance(c, _Node) and c.tag == "li"]
+        lines = []
+        for n, item in enumerate(items, 1):
+            text = " ".join(self.inline(item).split())
+            if text:
+                marker = f"{n}." if child.tag == "ol" else "-"
+                lines.append(f"{'  ' * depth}{marker} {text}")
+        return "\n".join(lines)
+
+    def _table(self, child: _Node) -> str:
+        rows = []
+        for tr in _descendants(child, "tr"):
+            cells = [" ".join(self.inline(c).split()) for c in tr.children if isinstance(c, _Node) and c.tag in ("td", "th")]
+            if any(cells):
+                rows.append("| " + " | ".join(cells) + " |")
+        if not rows:
+            return ""
+        rows.insert(1, "|" + " --- |" * (rows[0].count("|") - 1))
+        return "\n".join(rows)
+
+    def _own_block(self, child: _Node, depth: int) -> str | None:
+        """The markdown block a heading, quote, code, list or table makes ("" when it
+        is empty); None for any other tag."""
+        tag = child.tag
+        if tag in ("h1", "h2", "h3", "h4", "h5", "h6"):
+            return self._heading(child)
+        if tag == "blockquote":
+            return self._quote(child)
+        if tag == "pre":
+            return self._pre(child)
+        if tag in ("ul", "ol"):
+            return self._list(child, depth)
+        if tag == "table":
+            return self._table(child)
+        return None
 
     def block(self, node: _Node, depth: int = 0) -> None:
         loose: list[str] = []
@@ -366,42 +418,11 @@ class _Markdown:
                 loose.append(self.inline(child))
                 continue
             self.flush_inline(loose)
-            tag = child.tag
-            if tag in ("h1", "h2", "h3", "h4", "h5", "h6"):
-                text = self.inline(child).strip()
-                if text:
-                    self.blocks.append(f"{'#' * int(tag[1])} {text}")
-            elif tag == "p" or tag in ("dt", "dd", "figcaption"):
-                self.flush_inline([self.inline(child)])
-            elif tag == "blockquote":
-                text = " ".join(self.inline(child).split())
-                if text:
-                    self.blocks.append(f"> {text}")
-            elif tag == "pre":
-                code = _text(child).strip("\n")
-                if code.strip():
-                    self.blocks.append(f"```\n{code}\n```")
-            elif tag in ("ul", "ol"):
-                items = [c for c in child.children if isinstance(c, _Node) and c.tag == "li"]
-                lines = []
-                for n, item in enumerate(items, 1):
-                    text = " ".join(self.inline(item).split())
-                    if text:
-                        marker = f"{n}." if tag == "ol" else "-"
-                        lines.append(f"{'  ' * depth}{marker} {text}")
-                if lines:
-                    self.blocks.append("\n".join(lines))
-            elif tag == "table":
-                rows = []
-                for tr in _descendants(child, "tr"):
-                    cells = [" ".join(self.inline(c).split()) for c in tr.children if isinstance(c, _Node) and c.tag in ("td", "th")]
-                    if any(cells):
-                        rows.append("| " + " | ".join(cells) + " |")
-                if rows:
-                    width = rows[0].count("|") - 1
-                    rows.insert(1, "|" + " --- |" * width)
-                    self.blocks.append("\n".join(rows))
-            elif tag in ("li", "td", "th"):
+            made = self._own_block(child, depth)
+            if made is not None:
+                if made:
+                    self.blocks.append(made)
+            elif child.tag in ("p", "dt", "dd", "figcaption", "li", "td", "th"):
                 self.flush_inline([self.inline(child)])
             else:
                 self.block(child, depth)

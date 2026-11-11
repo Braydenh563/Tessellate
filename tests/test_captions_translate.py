@@ -16,9 +16,10 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parents[1]
-JS = (ROOT / "frontend" / "js" / "captions.js").read_text(encoding="utf-8")
+JS = _js_scope.unwrapped((ROOT / "frontend" / "js" / "captions.js").read_text(encoding="utf-8"))
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 
 

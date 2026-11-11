@@ -183,6 +183,7 @@ onSurface("chat", () => {
   });
 
   // --- image attachment wiring (vision-capable models) ---
+  lazyScript("/js/attach-accept.js").then(() => { $("chat-image-input").accept = ATTACH_ACCEPT; });
   $("attach-image").addEventListener("click", () => $("chat-image-input").click());
   $("chat-image-input").addEventListener("change", async (e) => {
     if (e.target.files.length) await attachChatFiles(e.target.files);
@@ -264,8 +265,11 @@ onSurface("chat", () => {
     closeChatDockMore();
     $("chat-dock-more-btn").focus();
   });
+  //: Stop clears the hold rather than setting it: a Stop that landed before the turn's `finally` left
+  //: `held` set until the next send, so a queued message was stuck (next-queue-1102). The stopped
+  //: reply's end sends the next one.
   $("chat-stop").addEventListener("click", () => {
-    chatQueue.held = true;
+    chatQueue.held = false;
     chatController?.abort();
   });
   //: **Escape stops the answer being written** (CHAT_PLAN section 6, the
@@ -288,7 +292,7 @@ onSurface("chat", () => {
     if ($("chat-stop").classList.contains("hidden")) return;
     if (document.querySelector(".modal-overlay:not(.hidden), .sheet-overlay:not(.hidden)")) return;
     event.preventDefault();
-    chatQueue.held = true;
+    chatQueue.held = false;
     chatController.abort();
   });
   $("chat-new").addEventListener("click", newChatConversation);

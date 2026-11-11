@@ -149,3 +149,22 @@ def unwrapped(source: str) -> str:
         line for line in body if not re.match(r"Object\.assign\(window, \{ [\w$, ]+ \}\);$", line)
     ]
     return "\n".join([*lines[:first], *body, *lines[last + 1 :]])
+
+
+_COPIES: dict = {}
+
+
+def unwrapped_copy(path):
+    """The path of a copy of a script as `unwrapped` gives it, for a test that
+    hands a node harness the file's path or reads it with `Path.read_text`.
+    The copy lives in a temp directory made once per run."""
+    import tempfile
+    from pathlib import Path
+
+    path = Path(path)
+    if path not in _COPIES:
+        folder = _COPIES.setdefault("dir", Path(tempfile.mkdtemp(prefix="unwrapped-")))
+        copy = folder / path.name
+        copy.write_text(unwrapped(path.read_text(encoding="utf-8")), encoding="utf-8")
+        _COPIES[path] = copy
+    return _COPIES[path]

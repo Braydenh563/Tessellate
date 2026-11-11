@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests import _js_scope
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 
@@ -41,7 +42,7 @@ def test_a_timeline_day_name_ends_in_a_space_so_it_reads_apart_from_the_number()
 
 
 def test_a_category_or_tag_row_name_is_read_apart_from_its_count() -> None:
-    assert "name.textContent = `${meta.name} `;" in _read("categories-panel.js")
+    assert "name.textContent = `${meta.name} `;" in _js_scope.unwrapped(_read("categories-panel.js"))
     assert "label.textContent = `${name} `;" in _read("tag-manager.js")
 
 
@@ -53,7 +54,7 @@ def test_the_reminders_badge_and_the_more_badge_are_read_apart_from_the_word() -
 
 
 def test_the_tidy_button_names_the_count_it_draws() -> None:
-    text = _body(_read("tidy.js"), "const count = $(\"notes-tidy-count\");")
+    text = _body(_read("tidy.js"), "const count = document.getElementById(\"notes-tidy-count\");")
     assert "`Tidy, ${count.textContent} ${body.total === 1 ? \"thing\" : \"things\"} to look at`" in text, "99+ is drawn, so 99+ is said"
     assert "${body.total} to look at" not in text.split("button.title", 1)[0]
 

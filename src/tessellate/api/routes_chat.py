@@ -76,12 +76,12 @@ from tessellate.search import chunks as search_chunks
 from tessellate.search import search_manager
 from sqlalchemy import func
 from tessellate.api.chat_attach import _MEDIA_REF, _attached_boards, _attached_documents, _attached_files, _attached_media_files, _attached_notes, _files_on, _grounding_candidates, _note_dates, _time_words
-from tessellate.api.chat_request import ChatRequest, ChatResponse, CommandRunBody, CompressBody, FollowupBody, RememberBody, ToolExecuteBody, _StreamRequest, _Turn, _apply_open, _apply_scope, _chat_model_sees_images, _check_refs, _composed, _event, _image_caption_context, _in_full, _meta_event, _nothing_open, _resolve_chat_images, _resolve_mode, _resolve_persona, _resolve_skill
+from tessellate.api.chat_request import ChatRequest, ChatResponse, CommandRunBody, CompressBody, FollowupBody, RememberBody, ToolExecuteBody, _StreamRequest, _Turn, _apply_open, _apply_scope, _bind_cited, _chat_model_sees_images, _check_refs, _composed, _event, _image_caption_context, _in_full, _meta_event, _nothing_open, _resolve_chat_images, _resolve_mode, _resolve_persona, _resolve_skill
 from tessellate.api.chat_pool import _Found, _NoteCtx, _chat_payload, _composer_reads, _document_row, _frame_matches, _glossary, _holds_read_text, _in_window, _keep_window, _note_content, _or_empty_notebook, _records_beside, _slips_put_right, _whole_pool, _widened, _with_each_side, _with_holders, _with_neighbours, _with_records, _window_documents, _with_sources
 from tessellate.api.chat_recent import AGENT_SURFACE, ASK_SURFACE, STARTER_SUGGESTIONS, _about, _asked_key, _feature_for, _fill, _recent_questions
 from tessellate.api.chat_web import WEB_PAGES, _can_start_searxng, _torn_events, _home_place, _link_events, _offer_events, _search_service, _unmatched_recents, _web_allowed, _web_chip, _web_first, _web_page_row, _web_pref_on
 from tessellate.api.chat_agent import _agent_events, consent_events, run_card_events, _close_quietly, _first_agent_event, _refuse_failed, _refuse_if_off, _starter_read
-from tessellate.api.chat_said import MODEL_STOPPED_NOTE, acts_on_listed_task, _says_cannot, _ROWS_KEPT, _app_answers, _asked_before, _asks_capability, _asks_only_a_time, _awareness, _chart_line, _cited_titles, _composed_lines, _current_notes, _older_dates, _diagram_events, _engine_counts, _engine_stands, _filed_or_counted_events, _first_cited_has_list, _held_reply, _help_events, _in_notes, _late_panel, _linked_notes, _listed_below, _model_said, _name_documents, _newest_titles, _newest_word, _open_note_answer, _ping_offer, _related_elsewhere, _related_sentence, _remember_rows, _reminder_window, _reply_seed, _row_source, _rows_key, _run_title, _said_events, _save_ask_turn, _saved_joke_reply, _search_footer, _sees, _slash_chart, _stats_chart, _stats_listed, _suggest_events, _with_words_only, reply_panel
+from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _miss_events, acts_on_listed_task, _says_cannot, _ROWS_KEPT, _app_answers, _asked_before, _asks_capability, _asks_only_a_time, _awareness, _chart_line, _cited_titles, _composed_lines, _current_notes, _older_dates, _diagram_events, _engine_counts, _engine_stands, _filed_or_counted_events, _first_cited_has_list, _held_reply, _help_events, _in_notes, _late_panel, _linked_notes, _listed_below, _model_said, _name_documents, _newest_titles, _newest_word, _open_note_answer, _ping_offer, _related_elsewhere, _related_sentence, _remember_rows, _reminder_window, _reply_seed, _row_source, _rows_key, _run_title, _said_events, _save_ask_turn, _saved_joke_reply, _search_footer, _sees, _slash_chart, _stats_chart, _stats_listed, _suggest_events, _with_words_only, reply_panel
 from tessellate.api import chat_chips
 from tessellate.api.chat_turn import _composed_support, _frame_events, _not_again, _with_frame, _asks_change, _chat_reply, _checks_grounding, _cited_scope, _composes_offline, _detect_intent, _engine_answers, _facts_turn, _insight_level, _insight_memory, _is_composing, _log_question, _may_digest, _meaning_loading, model_chips, _model_stream_events, _note_with_hint, _notes_first, _notes_messages, _relay_events, _searched_question, _social_line, _trim_answer, _uncut, _verdicts, _why, _will_answer
 
@@ -973,7 +973,7 @@ def _app_said(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list
     ("do you have feelings", the owner, 2026-10-11), a capability, a call, a
     place ("where is the bin?", `ai/find_it.py`, with a link that opens it),
     or that nothing is open."""
-    itself = chat_extra.talk_events(req.session, req.body.question or "", req.history or [], _reply_seed(req)[1], req.question or "")
+    itself = chat_extra.talk_events(req.session, req.body.question or "", req.history or [], _reply_seed(req)[1], req.question or "", _composer_voice())
     if itself:
         return itself
     if _asks_capability(req, prepared):
@@ -1172,7 +1172,7 @@ def _conversational_messages(req: _StreamRequest, prepared: dict, ollama_running
             part
             for part in (
                 _capability_answer(req, ollama_running) if _asks_capability(req, prepared) else "",
-                composer_aware.model_context(_awareness(req)) if req.body.screen else "",
+                composer_aware.model_context(_awareness(req)) if req.body.screen else "", chat_extra.remark_facts(req.session, req.question or ""),  # remark parity, INBOX 1749
             )
             if part
         ),
@@ -1200,7 +1200,7 @@ def _unplaced_events(req: _StreamRequest) -> list[dict]:
     return [{"type": "answer", "delta": said}, {"type": "offer", "offer": {"kind": "ask", "label": "", "asks": asks}}]
 
 
-def _no_notes_events(req: _StreamRequest, ollama_running: bool) -> list:
+def _no_notes_events(req: _StreamRequest, ollama_running: bool, prepared: dict) -> list:
     # An attached image and "no matching notes" are unrelated: retrieval never
     # sees the image, so an empty search result must not stand in for "there's
     # nothing to look at" (same fix as `librarian.answer`'s own guard).
@@ -1214,12 +1214,12 @@ def _no_notes_events(req: _StreamRequest, ollama_running: bool) -> list:
         return [{"type": "answer", "delta": own}]
     if not ollama_running and not req.images_raw and composer_unplaced.unplaced(req.question or ""):
         return _unplaced_events(req)
-    return _no_notes_answer(req, ollama_running) + _web_chip(req)
+    return _no_notes_answer(req, ollama_running, prepared) + _web_chip(req)
 
 
-def _no_notes_answer(req: _StreamRequest, ollama_running: bool) -> list:
+def _no_notes_answer(req: _StreamRequest, ollama_running: bool, prepared: dict) -> list:
     """The line for a question no note answers, and what else the notebook holds on it."""
-    events: list = [{"type": "answer", "delta": _or_empty_notebook(req.session, _no_notes_line(req, ollama_running))}]
+    events: list = _miss_events(req, ollama_running, prepared, _or_empty_notebook(req.session, _no_notes_line(req, ollama_running)))
     #: A day with nothing in it graphs where the notes run (INBOX 1333 b).
     if _asks_only_a_time(req.question) and not (ollama_running and not _composed(req, ollama_running)):
         from tessellate.ai import slash_more
@@ -1539,7 +1539,7 @@ def _no_model_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
     if (early := _early_events(req, prepared, ollama_running)) is not None:
         return early
     if not prepared["notes"] and not req.images_raw:
-        return _no_notes_events(req, ollama_running)
+        return _no_notes_events(req, ollama_running, prepared)
     if _composed(req, ollama_running) or not ollama_running:
         return _composed_events(req, prepared, ollama_running)
     return None
@@ -1812,7 +1812,7 @@ def _exact_note_events(req: _StreamRequest, notes: list) -> list[dict]:
     current, _older = _current_notes(req, notes) if notes else (notes, [])
     result = composer_digest.exact(req.question or "", current, today=user_now(deps.get_config()).date()) if notes else None
     if not result:
-        return chat_extra.facts_events(req.session, req.question or "", now=user_now(deps.get_config()).replace(tzinfo=None), chat=not req.body.notes_only) or []
+        return chat_extra.facts_events(req.session, req.question or "", now=user_now(deps.get_config()).replace(tzinfo=None), chat=not req.body.notes_only, voice=_composer_voice()) or []
     return [{"type": "answer", "delta": result["text"]}, _composed_grounding_event(req, result)]
 
 
@@ -1859,7 +1859,7 @@ def _follow_up(req: _StreamRequest):
     req.offer_yes = offered is not None and consent.says(req.question) == "yes"
     cited = offered or composer_talk.cited_question(req.question, req.history, user_now(deps.get_config()))
     if cited is not None:
-        req.question = cited
+        req.question = _bind_cited(req.session, req.body, cited)
     spoken = _spoken_act(req) if req.history and not req.ollama.is_running() else None
     if spoken is not None:
         req.question = spoken

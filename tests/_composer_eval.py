@@ -215,6 +215,11 @@ def trace_failures(result: dict, question: str, notes: list[dict], on: date, ask
             again = [t for k, t in (utilities.answer(question, salt=result.get("salt", "")) or []) if k == "computed"]
             if text not in again and not text.startswith(("It is ", "Today is ")):
                 failures.append(f"not computed from the question: {text!r}")
+        elif kind == "corrected":
+            #: "Did you mean X?" offers a word the notes hold, never one it made up (typo repair).
+            held = {w.lower() for n in notes for w in re.findall(r"[\w'-]+", str(n.get("content") or ""))}
+            if text.lower() not in held:
+                failures.append(f"a corrected word no note holds: {text!r}")
         else:
             failures.append(f"unknown part kind {kind!r}")
     for row in result["grounding"]:
@@ -812,7 +817,7 @@ def run_insights() -> list[dict]:
         elif expect and row["rule"] == "streak":
             wanted = composer_tables.INSIGHT_TEMPLATES["streak"].format(subject=row["subject"], weeks=expect["weeks"])
         elif expect and row["rule"] == "drift":
-            wanted = composer_tables.INSIGHT_TEMPLATES["drift"].format(plan=expect["plan"], since=expect["since"])
+            wanted = composer_tables.INSIGHT_TEMPLATES["drift"].format(**insights.shown("drift", {"plan": expect["plan"], "since": expect["since"]}))
         out.append({"id": row["id"], "positive": row["positive"], "said": said, "wanted": wanted, "short": short,
                     "right": (wanted in said or (short is not None and short in said) or (short == "" and not said)) if row["positive"] else not said})
     return out

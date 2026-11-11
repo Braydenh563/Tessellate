@@ -16,6 +16,22 @@
 /* A picture fills its box and keeps its aspect (K16/K19): without this it drew
    at its natural size, so a pasted image shrunk to the view overflowed a
    smaller selection box and a resize changed the box but not the picture. */
+/* K18: a saved picture's caption, one muted line under it (Show captions). */
+.wb-object-caption {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  line-height: 1.3;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.75;
+  pointer-events: none;
+}
 .wb-object-image > img {
   display: block;
   width: 100%;
@@ -5137,7 +5153,7 @@ rect.board-minimap-card,
 .library-image-tile:has(> .library-image-frame):hover > .library-tile-tick,
 .library-image-tile:has(> .library-image-frame):focus-within > .library-tile-tick,
 .library-image-tile:has(> .library-image-frame) > .library-tile-tick:checked,
-body:has(#library-media-selectbar:not(.hidden))
+body.library-media-selecting
   .library-image-tile:has(> .library-image-frame) > .library-tile-tick {
   opacity: 1;
 }
@@ -9778,10 +9794,11 @@ input[type="file"] {
 /* --- 1. touch targets, one step, one block -------------------------------
    Below 820 the pointer is a finger. 2.75rem is 44px at the default root
    size: the figure both Apple's and Google's guidance give, and the one
-   `touch.js` asserts against every dock control on Notes, Library and Chat. */
+   `touch.js` asserts against every dock control on Notes, Library and Chat.
+   max() with 44px because Small text (14.5px root) made 2.75rem 39.9px. */
 @media (max-width: 819.98px), (pointer: coarse) {
   :root {
-    --target-min: 2.75rem;
+    --target-min: max(2.75rem, 44px);
     --control-h-dense: var(--control-h-touch);
   }
   /* A dialog's own buttons and a dock menu's rows meet the floor too. Measured

@@ -860,7 +860,8 @@ def _attachment_row(att) -> Row | None:  # noqa: ANN001
 
 
 def _media_row(media) -> Row | None:  # noqa: ANN001
-    if media is None:
+    #: A picture only a board uses is not searchable until Save to Library (K18).
+    if media is None or getattr(media, "board_only", False):
         return None
     from tessellate.core import readings
 

@@ -1034,20 +1034,6 @@ function updateDraftUndoButton() {
     : "Nothing to undo yet";
 }
 
-function undoDraft() {
-  const previous = draftUndoStack.pop();
-  if (!previous) return;
-  //: The same entry the status bar holds, run from the pane's own button, so
-  //: its redo knows what the pass had written.
-  if (previous.action) {
-    settleUndoFromToast(previous.action);
-    previous.action.undo();
-  } else putDraftBack(previous);
-  $("draft-status").classList.remove("error");
-  $("draft-status").textContent = "Went back to the previous version.";
-  announce("Restored the draft from before the last AI pass.");
-}
-
 // One-shot AI calls (drafting, document edits) had no way out: press the
 // button by mistake or watch it stall, and the only options were waiting or
 // reloading the page. Each now runs against an AbortController so it can be

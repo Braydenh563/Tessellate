@@ -16,6 +16,7 @@ import pytest
 from tessellate.ai import realise, tools
 from tests._app_js import app_js_text
 from tests._app_js import with_pieces
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = json.loads((Path(__file__).parent / "fixtures" / "composer" / "forms_1010.json").read_text(encoding="utf-8"))
@@ -91,11 +92,27 @@ def test_chat_with_no_model_runs_the_read_and_sends_the_chart(ai_client, fake_ol
     charts = [e["chart"] for e in events if e["type"] == "chart"]
     assert charts and charts[0]["by"] == "tag" and charts[0]["total"] == 4
     table = "".join(e.get("delta", "") for e in _stream(ai_client, "what reminders do I have") if e["type"] == "answer")
-    assert "| Reminder | When |" in table and "call mum" in table
+    #: The reminders question is the reminders reader's since audit 2 G3 (parity, decision 75): the
+    #: same sentence with a model up or not. The table form of the read tool is checked above.
+    assert table.startswith("Nothing is due today.") and "call mum" in table
+
+
+def test_no_model_reminders_name_every_open_one_or_the_next_few_and_a_count(ai_client, fake_ollama, session):
+    fake_ollama.running = False
+    _seed(session)
+    for i in range(5):
+        tools.execute_tool(session, "set_reminder", {"text": f"extra {i}", "when": f"in {5 + i} days at 10am"})
+    session.commit()
+    said = "".join(e.get("delta", "") for e in _stream(ai_client, "what reminders do I have") if e["type"] == "answer")
+    assert said.startswith("Nothing is due today. You have 7 open reminders"), said
+    assert said.count("\n- ") == 5 and "call mum" in said and "pay rent" in said and said.rstrip().endswith("and 2 more."), said
+    #: Parity: the model's tool lists the same open reminders, soonest first.
+    listed = tools.execute_tool(session, "list_reminders", {})
+    assert all(t in str(listed) for t in ("call mum", "pay rent", "extra 4")), listed
 
 
 def test_the_chat_draws_a_chart_event_with_the_ask_chart_drawer():
     code = app_js_text()
     assert 'event.type === "chart" && onChart' in code
-    assert "function drawAskChart(host, chart)" in (ROOT / "frontend" / "js" / "ask-chart.js").read_text(encoding="utf-8")
+    assert "function drawAskChart(host, chart)" in _js_scope.unwrapped((ROOT / "frontend" / "js" / "ask-chart.js").read_text(encoding="utf-8"))
     assert "onChart:" in with_pieces("chat-attach.js")

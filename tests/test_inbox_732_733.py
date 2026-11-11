@@ -189,10 +189,12 @@ def _notice() -> str:
 def test_chat_ask_and_agent_banners_are_dismissible_and_the_others_are_not():
     """The agent joined Ask and Chat when it learned to run with no model
     (AGENT_SKILLS_REFORM "Deepened 2026-10-10" row 1)."""
-    block = STATUS[STATUS.index("  renderAiOfflineNotice(\n    $(\"ask-offline\")") : STATUS.index("  syncAgentPaletteAvailability();")]
-    asks = re.search(r'\$\("ask-offline"\),.*?\{ dismissible: true[,}][^)]*\)', block, re.S)
-    chat = re.search(r'\$\("chat-offline"\),.*?\{ dismissible: true[,}][^)]*\)', block, re.S)
-    agent = re.search(r'\$\("command-palette-offline"\),.*?\{ dismissible: true[,}][^)]*\)', block, re.S)
+    #: The lookups are `document.getElementById(...)` (the code moved off
+    #: the `$` shorthand; the three dismissible banners are unchanged).
+    block = STATUS[STATUS.index('  renderAiOfflineNotice(\n    document.getElementById("ask-offline")') : STATUS.index("  syncAgentPaletteAvailability();")]
+    asks = re.search(r'getElementById\("ask-offline"\),.*?\{ dismissible: true[,}][^)]*\)', block, re.S)
+    chat = re.search(r'getElementById\("chat-offline"\),.*?\{ dismissible: true[,}][^)]*\)', block, re.S)
+    agent = re.search(r'getElementById\("command-palette-offline"\),.*?\{ dismissible: true[,}][^)]*\)', block, re.S)
     assert asks and chat and agent, block
     assert block.count("dismissible: true") == 3, block
 

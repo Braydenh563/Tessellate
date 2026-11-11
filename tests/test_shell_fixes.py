@@ -12,6 +12,7 @@ from pathlib import Path
 import pytest
 
 from tests._app_js import app_js_text
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -133,5 +134,5 @@ def test_palette_is_a_combobox_with_a_live_count():
     for attr in ('role="combobox"', 'aria-expanded="true"', 'aria-haspopup="listbox"', 'aria-controls="palette-list"'):
         assert attr in field
     assert 'id="palette-count" class="visually-hidden" role="status" aria-live="polite"' in html
-    js = (ROOT / "frontend" / "js" / "app-palette.js").read_text(encoding="utf-8")
+    js = _js_scope.unwrapped((ROOT / "frontend" / "js" / "app-palette.js").read_text(encoding="utf-8"))
     assert 'aria-activedescendant' in js and "if (count.textContent !== said)" in js

@@ -562,6 +562,32 @@ def _held_reply(req: _StreamRequest, messages: list) -> dict:
     return held
 
 
+def _miss_events(req: _StreamRequest, ollama_running: bool, prepared: dict, line: str) -> list[dict]:
+    """**The plain miss, in the model's words** (model-facts-1027 row 6): the answer to a question no note answers.
+    With a model up and a notebook that holds something (`line` is still the engine's plain miss; an empty notebook has its
+    first steps, which are true as they are), the miss goes to the model as its facts, and the reply stands only if it
+    says just that (`fact_check.says_nothing_found`). Held whole until checked, like `_fact_events`; a model that fails or
+    claims a find leaves the engine's line, with the reply's cost and no model named. Else the line, as it was."""
+    from tessellate.ai import librarian
+    from tessellate.ai.answer_trim import trim_assistant_padding
+    from tessellate.api.chat_request import _in_full
+
+    if line != librarian.NO_RESULTS_MESSAGE or not ollama_running or _composed(req, ollama_running):
+        return [{"type": "answer", "delta": line}]
+    messages = librarian.build_facts_messages(
+        _in_full(req), line, style=prepared["style"], profile=prepared["profile"], history=req.history,
+        persona_prompt=req.persona_prompt, mode=req.mode,
+    )
+    held = _held_reply(req, messages)
+    prose = trim_assistant_padding(held["prose"]).strip()
+    if fact_check.says_nothing_found(prose, req.question or ""):
+        return [{"type": "answer", "delta": prose}, *([held["stats"]] if held["stats"] else [])]
+    if held["prose"]:
+        logging.getLogger("tessellate.chat").warning("chat: the model's words did not keep to the app's miss, which stands")
+    cost = {k: v for k, v in held["stats"].items() if k != "model"} if held["stats"] else None
+    return [{"type": "answer", "delta": line}, *([cost] if cost else [])]
+
+
 def _current_notes(req: _StreamRequest, notes: list[dict]) -> tuple[list[dict], list]:
     """The notes with any a newer note on the asked subject supersedes left
     out, and those left out (O11, `ai/supersede.py`)."""

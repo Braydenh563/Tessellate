@@ -65,7 +65,19 @@ TOP_LEVEL_LETS_CAP = 699
 #: documents-mermaid.js exports `diagramModel`; measured 9,706. 2026-11-08 (after merges took it to 9,711): task-steps.js
 #: (three exports) and obj-order.js (eight) wrapped whole; measured 9,701.  iife-1109: screen-context, load-failed, feature-model-sheet, phone-more,
 #: extract-preview, timeline-detail, scroll-row, assistant-avatar and confirmed-patterns wrapped whole, one export each; measured 9,688. Then date-field, link-types, vault-unlock, offline-split and pick-row wrapped whole; measured 9,678. iife2-1109: twenty lazy files wrapped whole (see CHANGELOG); measured 9,598. iife3-1109: tidy, lan-watch, documents-ai and model-menu wrapped whole (six exports in all); measured 9,513. Then ocr-engine and note-properties wrapped whole; measured 9,490. iife4-1109: twenty-one files that tests reached privately wrapped whole (the tests read them through `_js_scope.unwrapped`, or run the vm with `window` as the context); measured 9,096. s58-1110 (W29 D24): settings-packages.js, appearance-panel.js and whiteboard-history.js wrapped whole; measured 9,044.
-GLOBAL_NAMES_CAP = 9044
+#: 2026-11-11, W29 carve 1: panel-movable.js wrapped whole, one export (panelId). Measured 8,966.
+#: W29 carve 2: suggestions-inbox.js wrapped whole, one export (openSuggestionsInbox). Measured 8,940.
+#: W29 carve 3: tour.js wrapped whole, exporting `TOUR_ENABLED`, `openTour` and `renderTourReplay`. Measured 8,883.
+#: W29 carve 4: timeline-calendar.js wrapped whole, exporting ten names the timeline and its tests call. Measured 8,830.
+#: W29 carve 5: quickadd.js wrapped whole, exporting eight names. Measured 8,782.
+#: W29 carve 6: reply-kit.js wrapped whole, exporting five names. Measured 8,733.
+#: W29 carve 7: app-palette.js wrapped whole, exporting six names. Measured 8,679.
+#: 2026-11-11 W29 carve 8: documents-codekit.js wrapped whole, four exports. Measured 8,629.
+#: 2026-11-11 W29 carve 9: categories-panel.js wrapped whole, 12 exports. Measured 8,609.
+#: 2026-11-11 W29 carve 10: capture-card-more.js wrapped whole, 4 exports. Measured 8,592.
+#: 2026-11-11 W29 carve 11: captions.js wrapped whole, 4 exports. Measured 8,576.
+#: 2026-11-11 W29 carve 12: ask-chart.js wrapped whole. Measured 8,560.
+GLOBAL_NAMES_CAP = 8560
 
 
 @functools.lru_cache(maxsize=None)

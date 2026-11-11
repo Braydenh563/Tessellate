@@ -2620,7 +2620,7 @@ function assistantMessageActions({ bubble, text, question, onEdit }) {
     }
   }
 
-  //: The "Regenerate as..." submenu: one row per persona the picker offers. With no
+  //: The "Regenerate as…" submenu: one row per persona the picker offers. With no
   //: model the composer answers in the persona's voice too, so it works there as well;
   //: a running turn is refused by `regenerateFrom`.
   function regenerateAsItems(bubble) {

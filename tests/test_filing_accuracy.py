@@ -21,6 +21,7 @@ Measured (`scratchpad/filing-tools/measure.py`, leave one out, through
 | step 3, the decision (decision 2), sensitive held | 0.417 (15 wrong; 0.533 with sensitive filing on) | 0.808 (20 wrong) |
 | step 6, the everyday vocabulary (`tests/test_everyday_vocabulary.py`) | 0.617 (11 wrong; 0.792 with sensitive filing on); 48 held-out notes 0.458 to 0.667 | not re-measured |
 | Q29, a held sensitive note counts by its suggested category (owner, 2026-11-11) | 0.800 on the bar (0.625 filed outright, 10 wrong); 48 notes 0.833 | not re-measured |
+| Q29 re-measure, `janitor.categorise` filed outright, a held note counts as not filed (fastembed bge-small run here, 2026-11-11; the lost `measure.py` was rewritten, see `agent-remaining/gap5-1111.md`) | 120 notes 0.650 (10 wrong, 32 not filed); 48 notes 0.562; 60 notes (C) 0.567 | 120 notes 0.742 (11 wrong, 20 not filed); 48 notes 0.646; 60 notes (C) 0.633 |
 """
 
 from __future__ import annotations

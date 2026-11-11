@@ -374,11 +374,11 @@ def test_the_chat_composers_file_picker_matches_what_import_actually_reads():
     `.swift`...) that import would have happily read. This pins the two
     lists to agree, the same drift-guard shape as test_frontend_ids.py for
     ids Python cannot otherwise see the browser check."""
-    html = (Path(__file__).resolve().parents[1] / "frontend" / "index.html").read_text(
+    js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "attach-accept.js").read_text(
         encoding="utf-8"
     )
-    match = re.search(r'id="chat-image-input"[^>]*\baccept="([^"]+)"', html)
-    assert match, "chat-image-input's accept attribute has moved or been removed"
+    match = re.search(r'const ATTACH_ACCEPT = "([^"]+)"', js)
+    assert match, "ATTACH_ACCEPT (attach-accept.js) has moved or been removed"
     accepted = {
         token for token in match.group(1).split(",") if token.startswith(".")
     }

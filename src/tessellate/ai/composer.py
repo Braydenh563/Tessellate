@@ -84,7 +84,7 @@ from __future__ import annotations
 import re
 from datetime import date, datetime
 
-from tessellate.ai import act_registry, composer_ack, composer_brief, composer_links, composer_names, composer_numbers, composer_small, composer_open, composer_tables, composer_versus, grounding, phrasing, question_noise, spelling, typo_context, utilities
+from tessellate.ai import act_registry, composer_ack, composer_brief, composer_links, composer_names, composer_numbers, composer_overview, composer_small, composer_open, composer_tables, composer_versus, grounding, phrasing, question_noise, spelling, typo_context, utilities
 from tessellate.ai import recognise as rec
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_ask import _ASKS_FIRST, _KNOWN, _SHAPE_RULES, _guessing_recent, _holds, _stem, _still_recent, _words, asks_written_when, classify, compare_sides, rephrase, subject_terms, user_now, user_today, when_terms
@@ -97,7 +97,7 @@ from tessellate.ai.composer_dialogue import Dialogue, _next_questions, follow_on
 from tessellate.ai.composer_intent import _ACT_VERBS, _lead_act_verb, plan, tag_gap
 from tessellate.ai.composer_help import _feature_instead, cannot_answer, _help_answer, _in_window, _result, _utility, help_line, offered
 from tessellate.ai.composer_empty import _absent, _as_phrase, _as_typed, _bare_title, _did_you_mean, _filtered, _nothing, _REGISTER, window_said
-from tessellate.ai.composer_recall import _BROAD, _overview_answer, _recall, _recall_next, window_as_topic
+from tessellate.ai.composer_recall import _BROAD, _overview_answer, _recall, _recall_next, trivia, window_as_topic
 
 
 # --- a question in two parts, and one that could mean two things -------------
@@ -313,13 +313,13 @@ def compose(
     this turn (`resolved`: the caller already read the follow-on); `prefer`
     is a correction's words ("no, the gym one"), whose notes come first.
     """
+    composer_overview.read_pool(notes)
     if voice == "help":
         helped = _help_result(question, salt=salt, turn=turn, dialogue=dialogue, previous=previous)
         if helped:
             return helped
         voice = composer_tables.DEFAULT_VOICE
-    #: In a conversation (decision 34, 35): the turn and the chat's salt
-    #: choose the wording, and a terse turn is read against the ones before.
+    #: In a conversation (decisions 34, 35): turn and salt choose the wording; a terse turn is read against the ones before.
     names = composer_names.names_of(notes)
     asked, question = question, composer_names.respell(composer_numbers.normalise(question), names)
     if dialogue is not None:
@@ -533,7 +533,7 @@ def _meaning_maker(shape: str, views_list: list, embed):  # noqa: ANN001, ANN202
 def _window_gate(out: "_Answer", p, said: str, question: str, shape: str, views_list: list) -> tuple:  # noqa: ANN001
     """A result when the question's window decides the answer, else the views
     narrowed to the window."""
-    if said or not p.window or window_as_topic(p, views_list):
+    if said or not p.window or window_as_topic(p, views_list) or trivia(question):
         return None, views_list
     if p.kind == "recall":
         _recall(out, p, views_list, question)
@@ -541,7 +541,7 @@ def _window_gate(out: "_Answer", p, said: str, question: str, shape: str, views_
     if views_list and not any(_in_window(v, p.window) for v in views_list):
         #: A window no note found falls in: said, never answered from notes
         #: written at another time.
-        out.t("recall_none").asked(window_said(_as_typed(p.window_phrase, question))).t("stop")
+        out.t("recall_none").asked(window_said(_as_typed(p.window_phrase, question), p.window)).t("stop")
         return _result(out.parts, shape), views_list
     views_list = [v for v in views_list if _in_window(v, p.window)]
     out.views = {v.id: v for v in views_list}

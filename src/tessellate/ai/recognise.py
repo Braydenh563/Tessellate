@@ -1318,7 +1318,9 @@ _QUESTION_RANGES: list[tuple[str, object]] = [
         r"eleven|twelve|few|couple of)\s+(day|week|fortnight|month|year)s?",
         "back",
     ),
-    (r"(?:in|over|during)?\s*(?:the\s+)?(?:last|past)\s+(week)\b", "back"),
+    #: "last week" is the week before this one, Monday to Sunday, as everywhere else (the owner's Q24); "past week" rolls.
+    (r"(?:in|over|during)?\s*(?:the\s+)?last\s+week\b", "last_week"),
+    (r"(?:in|over|during)?\s*(?:the\s+)?past\s+(week)\b", "back"),
     (r"(?:in|over|during)?\s*(?:the\s+)?(?:last|past)\s+(month)\b", "back"),
     (r"(?:in|over|during)?\s*(?:the\s+)?(?:last|past)\s+(year)\b", "back"),
     (r"\btoday\b", "today"),
@@ -1364,6 +1366,9 @@ def _range_for(kind: str, match: re.Match, today: date) -> tuple[date, date]:
         return today - timedelta(days=1), today - timedelta(days=1)
     if kind == "this_week":
         return today - timedelta(days=today.weekday()), today
+    if kind == "last_week":
+        monday = today - timedelta(days=today.weekday() + 7)
+        return monday, monday + timedelta(days=6)
     if kind == "this_month":
         return today.replace(day=1), today
     if kind == "this_year":
@@ -2735,11 +2740,16 @@ def measures(text: str) -> list[Measure]:
 
 # --- round 9 readers (c11): the event window at the end of a question, and a distance --------------------------------
 
-_EVENT_WINDOW_WORDS = r"this week|next week|this weekend|next weekend|this month|next month|today|tomorrow|tonight"
+_WINDOW_DAYS = frozenset({"monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"})
+_WEEKDAY_WINDOW = r"(?:(?:on|this) )?(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)"
+_EVENT_WINDOW_WORDS = rf"this week|next week|this weekend|next weekend|this month|next month|today|tomorrow|tonight|{_WEEKDAY_WINDOW}"
 #: Both read text whose whitespace is already one space each (the callers join `split()`), so every gap is a single
 #: literal space: no quantified whitespace for a long run to backtrack through (CodeQL polynomial regex).
-_EVENT_TAIL = re.compile(r" (?:this|next) (?:week|month|weekend) ?[?.!]*$| (?:today|tomorrow|tonight) ?[?.!]*$", re.I)
-_EVENT_ASK = re.compile(rf"^\W*(?:is|are|will) (?:the|my|our|a)\b.*? (?P<window>{_EVENT_WINDOW_WORDS}) ?[?.!]*$", re.I)
+_EVENT_TAIL = re.compile(rf" (?:this|next) (?:week|month|weekend) ?[?.!]*$| (?:today|tomorrow|tonight|{_WEEKDAY_WINDOW}) ?[?.!]*$", re.I)
+#: "are we meeting on Tuesday", "is there a team sync on Wednesday": a meeting word stands where "the plumber" does.
+EVENT_LEAD = (r"(?:(?:is|are|will) (?:the|my|our|a)\b|(?:are we|am i|will we|will i|do we have|do i have|is there|will there be) (?:an? |the |any )?"
+               r"(?:[a-z]+ ){0,2}(?:meeting|meet\w*|call|sync|lunch|dinner|appointment|session|class|visit|interview|catch-?up)\b)")
+_EVENT_ASK = re.compile(rf"^\W*{EVENT_LEAD}.*? (?P<window>{_EVENT_WINDOW_WORDS}) ?[?.!]*$", re.I)
 _DISTANCE = re.compile(r"(?<![\d.,])(\d[\d.,]{0,15})\s{0,3}(km|kilometres|kilometers|miles|mi)\b", re.I)
 
 
@@ -2754,7 +2764,12 @@ def event_window_asked(question: str) -> str:
     """The window ("next week", "today") a yes/no question about a thing ends with, or ""."""
     text = " ".join((question or "").split())
     found = _EVENT_ASK.match(text) if text and len(text) < 300 else None
-    return found.group("window").lower() if found else ""
+    if not found:
+        return ""
+    said = found.group("window").lower()
+    #: A weekday keeps its capital in the verdict ("No, not on Wednesday"), as it does everywhere else in an answer.
+    *lead, last = said.split()
+    return " ".join([*lead, last.title()]) if last in _WINDOW_DAYS else said
 
 
 def distances(text: str) -> list[tuple[int, int, str, str]]:

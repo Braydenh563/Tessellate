@@ -1,6 +1,6 @@
 """Regenerate in another persona, and every regenerate sends `attempt` (audit 1028 E60, E62).
 
-The answer's ⋯ menu offers "Regenerate as..." with one row per persona the
+The answer's ⋯ menu offers "Regenerate as…" with one row per persona the
 picker lists. It rides the same path as "Regenerate from here": the question
 stays, the answer is replaced, and the persona is this turn's only
 (`opts.persona`), so the picker is left where the person put it.

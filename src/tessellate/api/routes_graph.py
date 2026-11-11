@@ -1194,19 +1194,22 @@ _NOTE_DEFAULTS = {
 _LINK_DEFAULTS = ("reason", "reason_confidence", "link_type")
 
 
+def _slim_note(node: dict) -> None:
+    for key, default in _NOTE_DEFAULTS.items():
+        if key in node and node[key] == default and type(node[key]) is type(default):
+            del node[key]
+    for key in ("created_at", "updated_at", "edited_at"):
+        if isinstance(node.get(key), str) and "." in node[key]:
+            head, _, tail = node[key].partition(".")
+            node[key] = head + tail.lstrip("0123456789")
+    if isinstance(node.get("centrality"), float):
+        node["centrality"] = float(f"{node['centrality']:.6g}")
+
+
 def _slim(nodes: list[dict], edges: list[dict]) -> None:
     for node in nodes:
-        if node.get("kind") != "note":
-            continue
-        for key, default in _NOTE_DEFAULTS.items():
-            if key in node and node[key] == default and type(node[key]) is type(default):
-                del node[key]
-        for key in ("created_at", "updated_at", "edited_at"):
-            if isinstance(node.get(key), str) and "." in node[key]:
-                head, _, tail = node[key].partition(".")
-                node[key] = head + tail.lstrip("0123456789")
-        if isinstance(node.get("centrality"), float):
-            node["centrality"] = float(f"{node['centrality']:.6g}")
+        if node.get("kind") == "note":
+            _slim_note(node)
     for edge in edges:
         if edge.get("kind") == "link":
             for key in _LINK_DEFAULTS:
@@ -1267,30 +1270,30 @@ def _local_topology(session: Session, similarity: bool) -> tuple[paths.Connectio
     return _cached(f"local_topology_{use_similarity}", key, build)
 
 
-@router.get("/graph/local/{entry_id}")
-def graph_local(
-    entry_id: int,
-    # Unbounded before this: `?depth=999999999` ran the BFS loop below that
-    # many times on a bare Python range(), no per-note work once the
-    # frontier empties, but the loop itself still costs real wall-clock time
-    # per iteration, and this server is single-worker (deps.py), so it stalls
-    # every other request for however long that takes. 6 hops covers any
-    # notebook a "local neighbourhood" view is meant for; Focus Mode never
-    # asks for more than 2-3 today.
-    depth: int = Query(default=2, ge=1, le=6),
-    similarity: bool = False,
-    # GRAPH_PLAN 514 (1), Obsidian's local graph switches: follow links into
-    # the note, out of it, and draw the lines between notes at one distance.
-    incoming: bool = True,
-    outgoing: bool = True,
-    neighbours: bool = True,
-    session: Session = Depends(get_session)
-) -> dict:
-    """Focus Mode API: Gets the local neighborhood up to N degrees."""
-    index, directed, _with_similarity = _local_topology(session, similarity)
+def _ring_edges(index: paths.Connections, oriented, distance: dict[int, int], taken: set) -> list[dict]:
+    """The lines between notes at one distance that the walk never crossed (two notes on the outer ring),
+    whichever way they run."""
+    found = []
+    for n in set(distance):
+        for neighbor, step in index.neighbours(n).items():
+            pair = frozenset((n, neighbor))
+            if neighbor in distance and pair not in taken and distance[n] == distance[neighbor]:
+                taken.add(pair)
+                ends = oriented(n, neighbor, step.kind)
+                found.append({"source": ends[0], "target": ends[1], "kind": step.kind})
+    return found
 
-    if entry_id not in index.entries:
-        raise HTTPException(status_code=404, detail="No such note.")
+
+def _local_walk(
+    index: paths.Connections,
+    directed: dict,
+    entry_id: int,
+    depth: int,
+    incoming: bool,
+    outgoing: bool,
+    neighbours: bool,
+) -> tuple[dict[int, int], list[dict]]:
+    """The local graph's walk: each reachable note's distance from `entry_id`, and the edges drawn."""
 
     def oriented(a: int, b: int, kind: str) -> tuple[int, int]:
         if kind not in ("link", "thread"):
@@ -1326,19 +1329,40 @@ def graph_local(
         if not queue:
             break  # nothing left to expand, further iterations would be no-ops
 
-    visited = set(distance)
     if neighbours:
-        # The lines between notes at one distance that the walk never crossed
-        # (two notes on the outer ring), whichever way they run.
-        for n in visited:
-            for neighbor, step in index.neighbours(n).items():
-                pair = frozenset((n, neighbor))
-                if neighbor in visited and pair not in taken and distance[n] == distance[neighbor]:
-                    taken.add(pair)
-                    ends = oriented(n, neighbor, step.kind)
-                    edges.append({"source": ends[0], "target": ends[1], "kind": step.kind})
+        edges += _ring_edges(index, oriented, distance, taken)
     else:
         edges = [e for e in edges if distance[e["source"]] != distance[e["target"]]]
+    return distance, edges
+
+
+@router.get("/graph/local/{entry_id}")
+def graph_local(
+    entry_id: int,
+    # Unbounded before this: `?depth=999999999` ran the BFS loop below that
+    # many times on a bare Python range(), no per-note work once the
+    # frontier empties, but the loop itself still costs real wall-clock time
+    # per iteration, and this server is single-worker (deps.py), so it stalls
+    # every other request for however long that takes. 6 hops covers any
+    # notebook a "local neighbourhood" view is meant for; Focus Mode never
+    # asks for more than 2-3 today.
+    depth: int = Query(default=2, ge=1, le=6),
+    similarity: bool = False,
+    # GRAPH_PLAN 514 (1), Obsidian's local graph switches: follow links into
+    # the note, out of it, and draw the lines between notes at one distance.
+    incoming: bool = True,
+    outgoing: bool = True,
+    neighbours: bool = True,
+    session: Session = Depends(get_session)
+) -> dict:
+    """Focus Mode API: Gets the local neighborhood up to N degrees."""
+    index, directed, _with_similarity = _local_topology(session, similarity)
+
+    if entry_id not in index.entries:
+        raise HTTPException(status_code=404, detail="No such note.")
+
+    distance, edges = _local_walk(index, directed, entry_id, depth, incoming, outgoing, neighbours)
+    visited = set(distance)
 
     # The only notes read in full: the ones drawn (the index holds columns,
     # not text).
@@ -1671,27 +1695,9 @@ def graph_path(
         extra_edges = _similarity_edges(session, node_ids, set())
 
     index = paths.build(session, extra_edges=extra_edges)
-    missing = [
-        note_id for note_id in (source, target) if note_id not in index.entries
-    ]
-    if missing:
-        return {
-            "found": False,
-            "source": source,
-            "target": target,
-            "reason": (
-                "That note isn't in the map, it may have been deleted."
-                if len(missing) == 1
-                else "Neither note is in the map."
-            ),
-        }
-    if source == target:
-        return {
-            "found": False,
-            "source": source,
-            "target": target,
-            "reason": "Those are the same note.",
-        }
+    refused = _path_refusal(index, source, target)
+    if refused:
+        return {"found": False, "source": source, "target": target, "reason": refused}
 
     #: Asked for directly: "allow for multiple paths to be displayed if they
     #: exist." `find_many`'s first entry *is* `find`'s answer: they share one
@@ -1702,34 +1708,11 @@ def graph_path(
     chains = paths.find_many(index, source, target, limit=wanted)
     chain = chains[0] if chains else None
     if chain is None:
-        ends = [
-            (note_id, paths.degree(index, note_id)) for note_id in (source, target)
-        ]
-        lonely = [note_id for note_id, count in ends if count == 0]
-        if lonely:
-            reason = (
-                "Neither note is connected to anything yet."
-                if len(lonely) == 2
-                else "One of these notes isn't connected to anything yet."
-            )
-        else:
-            reason = (
-                "They're both connected to other notes, but there's no route "
-                f"between them within {paths.MAX_PATH_HOPS} steps."
-            )
-        if index.hub_tags:
-            # Said plainly, because otherwise this reads as a wrong answer: the
-            # two notes may well share a tag and still get "no path" back.
-            listed = ", ".join("#" + tag for tag in index.hub_tags[:3])
-            reason += (
-                f" Tags on more than {paths.HUB_TAG_NOTES} notes ({listed}) are "
-                "treated as filing rather than as a connection."
-            )
         return {
             "found": False,
             "source": source,
             "target": target,
-            "reason": reason,
+            "reason": _no_route_reason(index, source, target),
         }
 
     #: Every note on *any* of the routes, named once. `bulk_category_names` is
@@ -1782,6 +1765,43 @@ def graph_path(
         #: `found` is true, so the UI has one shape to render rather than two.
         "routes": routes_out,
     }
+
+
+def _path_refusal(index: paths.Connections, source: int, target: int) -> str | None:
+    """Why a path is not even asked for: an end is not in the map, or both ends are one note."""
+    missing = [note_id for note_id in (source, target) if note_id not in index.entries]
+    if missing:
+        return (
+            "That note isn't in the map, it may have been deleted."
+            if len(missing) == 1
+            else "Neither note is in the map."
+        )
+    return "Those are the same note." if source == target else None
+
+
+def _no_route_reason(index: paths.Connections, source: int, target: int) -> str:
+    """Why two notes in the map have no route between them, so "no" says what to do about it."""
+    lonely = [note_id for note_id in (source, target) if paths.degree(index, note_id) == 0]
+    if lonely:
+        reason = (
+            "Neither note is connected to anything yet."
+            if len(lonely) == 2
+            else "One of these notes isn't connected to anything yet."
+        )
+    else:
+        reason = (
+            "They're both connected to other notes, but there's no route "
+            f"between them within {paths.MAX_PATH_HOPS} steps."
+        )
+    if index.hub_tags:
+        # Said plainly, because otherwise this reads as a wrong answer: the
+        # two notes may well share a tag and still get "no path" back.
+        listed = ", ".join("#" + tag for tag in index.hub_tags[:3])
+        reason += (
+            f" Tags on more than {paths.HUB_TAG_NOTES} notes ({listed}) are "
+            "treated as filing rather than as a connection."
+        )
+    return reason
 
 
 def _hop_reasons(session: Session, index: paths.Connections, pairs: list[tuple[int, int]]) -> dict:

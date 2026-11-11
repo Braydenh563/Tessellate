@@ -574,7 +574,7 @@ _ACTION = re.compile(r"(?:^|,\s*|;\s*|\band\s+)((?:ask|call|email|text|book|buy|
 _STILL_TO = re.compile(r"\b([a-z]+(?: [a-z]+)?) (?:are |is )?still to (book|buy|pay|do|send|order|sort)\b", re.I)
 _PAST_START = re.compile(
     r"^(went|hit|got|saw|had|did|made|tried|watched|closed|opened|finished|started|played|bought|ate|met|"
-    r"wrote|ran|walked|visited|spent|called|booked|fixed|cooked|cleaned|learnt|took)\b",
+    r"wrote|ran|walked|visited|spent|called|rang|rung|booked|fixed|cooked|cleaned|learnt|took)\b",
     re.I,
 )
 _RATING = re.compile(r"\b(\d+(?:\.\d+)?)\s*(?:out of|/)\s*(10|5|100)\b", re.I)
@@ -642,7 +642,7 @@ _ASKS = {
     "count": re.compile(r"^\s*how (?:much|many)\b(?! (?:of my )?(?:notes|entries)\b)", re.I),
     "likes": re.compile(r"^\s*(?:do|did) i (?:like|enjoy|love|play|do)\b|^\s*am i (?:into|a fan of)\b", re.I),
     "opinion": re.compile(r"\bwhat did i (?:think|make) of\b|\bhow did i (?:find|like)\b|\bmy (?:review|opinion|thoughts) (?:of|on)\b", re.I),
-    "left": re.compile(r"\bwhat do i (?:still )?(?:need|have) to\b|\bwhat(?:'s| is) (?:left|outstanding|still to do)\b|\bto buy\b", re.I),
+    "left": re.compile(r"\bwhat do i (?:still )?(?:need|have|want|plan|hope) to\b|\bwhat would i like to\b|\bwhat(?:'s| is) (?:left|outstanding|still to do)\b|\bto buy\b", re.I),
     "overview": re.compile(
         r"\bwhat (?:have|did) i (?:saved|save|written|write|noted|got|kept)\b|\bwhat(?:'s| is) there\b|\bwhat do i have\b|"
         r"\bwhat \w+(?: \w+)? (?:have|did) i (?:saved|save|written|write|kept|got|noted)\b|\bwhat (?:do|does|did) (?:my|the) (?:notes|entries) (?:say|tell me|have|mention|know|cover)\b|\btell me about\b|\beverything (?:about|on)\b|\bsummari[sz]e\b|\bwhat(?:'s| is) the plan\b|"
@@ -658,7 +658,8 @@ _ASKS = {
 
 #: A question that opens with none of these is a topic ("games notes"):
 #: an overview.
-_ASKED = re.compile(r"^(?:what|what's|whats|when|who|whom|whose|how|how's|do|does|did|is|are|was|were|where|why|which|can|could|should|will|have|has|had|tell|show|list|give|any)\b", re.I)
+_ASKED = re.compile(r"^(?:what|what's|whats|when|who|whom|whose|how|how's|do|does|did|is|are|was|were|where|why|which|can|could|should|will|have|has|had|tell|show|list|give|any)\b"
+                    r"|^(?:the )?(?:latest|newest|most recent|news|updates?) (?:on|about|with)\b", re.I)
 
 
 #: "Summarise this", "what's this about", "tl;dr" (B10): a question about
@@ -1056,6 +1057,12 @@ married engaged injured hooked obsessed sorted done prepared organised organized
 """.split())
 
 
+def _as_you(text: str) -> str:
+    """A note's own past-tense start said as "you ...": "Rung mum" is "you rang mum" (the participle is the
+    British note-taker's short form, never the you-form)."""
+    return "you " + re.sub(r"^rung\b", "rang", text[:1].lower() + text[1:])
+
+
 def _did(word: str) -> bool:
     """A word that says what the writer did ("Baked", "Repotted"): a listed
     past verb, or an "-ed" dictionary word that is not a feeling."""
@@ -1095,7 +1102,7 @@ def _second_person(text: str, written: date | None = None) -> str:
         rest = rest.strip()
         text = "it " + head[0].lower() + head[1:] + (f", and you {rest[0].lower() + rest[1:]}" if comma and rest and not rest.lower().startswith(("and ", "but ")) else (", " + rest if rest else ""))
     elif first and _did(first.group(0)):
-        text = "you " + text[0].lower() + text[1:]
+        text = _as_you(text)
     return text
 
 

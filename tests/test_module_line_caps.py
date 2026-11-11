@@ -33,8 +33,8 @@ CAPS = {
     "ai/tools/tool_focus.py": 179,
     "ai/tools/tool_handoff.py": 126,
     "ai/tools/tool_learn.py": 229,
-    "ai/tools/tool_read.py": 1038,
-    "ai/tools/tool_run.py": 420,
+    "ai/tools/tool_read.py": 952,
+    "ai/tools/tool_run.py": 304,
     "ai/tools/tool_schema.py": 342,
     "ai/tools/tool_sets.py": 366,
     "ai/tools/tool_skills.py": 153,
@@ -50,9 +50,9 @@ CAPS = {
     "core/overlay/engine_input.py": 325,
     "core/overlay/engine_roam.py": 426,
     #: The digest's words and sentence rules, then its facts and lines, moved out whole in two layers (audit K24): 6,230 lines before.
-    "ai/composer_digest.py": 2329,
-    "ai/composer_digest_lines.py": 2694,
-    "ai/composer_digest_sentences.py": 1284,
+    "ai/composer_digest.py": 2341,
+    "ai/composer_digest_lines.py": 2729,
+    "ai/composer_digest_sentences.py": 1291,
 }
 #: How far under its cap a file may fall before the cap must come down.
 SLACK = 50

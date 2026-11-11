@@ -25,7 +25,7 @@ from datetime import date, datetime, time, timedelta, timezone
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import notebook_stats, realise
+from tessellate.ai import notebook_stats, question_noise, realise
 from tessellate.ai import composer_plan
 from tessellate.ai import when as when_words
 
@@ -148,6 +148,14 @@ def as_recap(text: str) -> str:
 
 
 def read(question: str, today: date) -> Asked | None:
+    """The window, the doing and the kinds of an own-activity question, or a
+    window-less catch-up ("what's been happening": the past week, every kind)."""
+    if question_noise.catching_up(question):
+        return Asked(today - timedelta(days=6), today, "last 7 days", "all", frozenset())
+    return _read_windowed(question, today)
+
+
+def _read_windowed(question: str, today: date) -> Asked | None:
     """The window, the doing and the kinds of an own-activity question, or
     None when it is not one (no window, no doing, or a subject named)."""
     text = as_recap((question or "").strip())
@@ -369,7 +377,7 @@ def _clause(doing: str, kind: str, said: str) -> str:
 def _window_said(asked: Asked) -> str:
     from tessellate.ai import composer
 
-    return composer.window_said(asked.phrase)
+    return composer.window_said(asked.phrase, (asked.start, asked.end))
 
 
 def _empty(asked: Asked, session: Session, today: date, zone) -> str:  # noqa: ANN001

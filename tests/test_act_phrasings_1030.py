@@ -51,7 +51,8 @@ TABLE = [
     ("tack a line on to my mood diary: felt great", "append", {"content": "Felt great"}),
     ("write down that the hotel is booked at the end of the lisbon trip note", "append", {"about": "lisbon trip"}),
     # new note
-    ("start a new note about the kitchen renovation", "new_note", {"content": "The kitchen renovation"}),
+    #: Moved with G2 (consent-1110): "a note about X" names a subject and no words, so it asks what to write.
+    ("start a new note about the kitchen renovation", "new_note", {"content": "", "no_subject": True}),
     ("remember that sara's birthday is 3 december", "new_note", {"content": "Sara's birthday is 3 december"}),
     ("capture this: idea for a podcast", "new_note", {"content": "Idea for a podcast"}),
     # summarise

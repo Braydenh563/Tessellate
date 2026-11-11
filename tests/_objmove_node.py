@@ -28,7 +28,7 @@ const ctx = {
   console, Math, Number, Object, Set, Map, JSON, Date, Array, String, RegExp, Promise, Boolean,
   log, setTimeout: () => 0, clearTimeout: () => {}, dragHold: () => {}, dragRelease: () => {},
   document: {
-    execCommand: () => true, activeElement: null, querySelector: () => null, querySelectorAll: () => [], documentElement: { dataset: {} },
+    execCommand: () => true, activeElement: null, querySelector: () => null, getElementById: () => null, querySelectorAll: () => [], documentElement: { dataset: {} },
     addEventListener: (type, fn) => { (handlers[type] = handlers[type] || []).push(fn); }, removeEventListener: () => {},
   },
   allEntries: [{ id: 5, title: "", content: "# Five\n\nbody" }],
@@ -38,7 +38,7 @@ const ctx = {
   attachDocumentToChat: (id, name) => { log.push(["doc", id, name]); return true; },
   attachBoardToChat: (id, name) => { log.push(["board", id, name]); return true; },
   attachLibraryFile: (id, name) => { log.push(["file", id, name]); return true; },
-  $: () => null, lazyScript: (file) => log.push(["lazy", file]),
+  onSurface: () => {}, $: () => null, lazyScript: (file) => log.push(["lazy", file]),
 };
 ctx.window = ctx;
 vm.createContext(ctx);

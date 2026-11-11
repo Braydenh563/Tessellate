@@ -437,6 +437,19 @@ def _named_note(session: Session, body: ChatRequest) -> bool:
     return False
 
 
+def _bind_cited(session: Session, body: ChatRequest, sentence: str) -> str:
+    """`sentence`, a follow-on already given its referent ("tell me more about the Plumber note"
+    for "tell me more about it"), bound to that note as if it had been typed: the binding above
+    reads the words the page sent, which name no note. Returns the sentence."""
+    if not body.note_ids:
+        typed, body.question = body.question, sentence
+        try:
+            _named_note(session, body)
+        finally:
+            body.question = typed
+    return sentence
+
+
 def _titled_note(session: Session, body: ChatRequest, name: str) -> bool:
     """Bind the one note titled `name`."""
     if not name or name.lower() in _NOT_A_NAME:

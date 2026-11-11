@@ -48,7 +48,7 @@ def test_a_note_from_the_tray_is_a_note_it_writes_from_not_a_link_in_the_box() -
 
 
 def test_the_adder_button_and_the_tray_share_one_function_loaded_with_the_desk() -> None:
-    wiring = (ROOT / "frontend" / "js" / "wiring.js").read_text(encoding="utf-8")
+    wiring = (ROOT / "frontend" / "js" / "notes-lazy.js").read_text(encoding="utf-8")
     assert "addDraftSource(entry);" in wiring and "draftSources.push" not in wiring
     app = (ROOT / "frontend" / "js" / "app.js").read_text(encoding="utf-8")
     assert 'writingDesk: ["addDraftSource", ' in app

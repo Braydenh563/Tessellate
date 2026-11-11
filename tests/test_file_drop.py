@@ -112,7 +112,7 @@ def test_a_notice_about_a_pdf_opens_library_files_not_images():
     assert 'lands.add(/\\.pdf$/i.test(file.name) ? "files" : "images")' in DROP
     bell = (ROOT / "frontend/js/notifications.js").read_text(encoding="utf-8")
     assert 'data-media-kind="${action.media}"' in bell
-    kept = (ROOT / "frontend/js/chat-attach.js").read_text(encoding="utf-8")
+    kept = (ROOT / "frontend/js/chat-docs.js").read_text(encoding="utf-8")
     assert '{ go: { tab: "library", media: "files" } }' in kept
 
 

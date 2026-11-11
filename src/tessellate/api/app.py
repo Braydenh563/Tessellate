@@ -1716,7 +1716,7 @@ def _add_system_routes(app: FastAPI, locked: list) -> None:
 
     @app.get("/health", tags=["system"])
     async def health(request: Request) -> dict[str, str | bool]:
-        from tessellate.core import reminder_notifier
+        from tessellate.core import instance_lock, reminder_notifier
 
         #: The desktop shell and its notifier belong to this computer. A phone
         #: that read `desktop: true` saved its exports onto this disk and
@@ -1738,6 +1738,10 @@ def _add_system_routes(app: FastAPI, locked: list) -> None:
             "os_notify": here and reminder_notifier.active(),
             #: Whether controls that act on this computer apply to this page.
             "this_computer": here,
+            #: Which running copy this is (a hash of its private token, never
+            #: the token): Settings, Running copies tells a copy that really
+            #: holds its port from a leftover record of one that is gone.
+            "instance": instance_lock.current_instance_id(),
         }
 
     _add_instance_routes(app)

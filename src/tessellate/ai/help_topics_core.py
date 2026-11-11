@@ -44,7 +44,7 @@ HELP_TOPICS: list[dict] = [
         ),
         "body": (
             'Notes tab: the "Add a note" line under the filter row (parted from it by a divider) opens a card over the list, so the list does not move '
-            "(title and words, or a to-do list with Note and To-do; the line has a To-do icon that opens it as a list, pictures from the picture icon or a paste, Draw for a sketch of your own, a colour, tags and a reminder bell; Close keeps your draft, Escape closes, Ctrl+Enter saves). "
+            "(title and words, or a to-do list with Note and To-do; the line has a To-do icon that opens it as a list, pictures and files (any the chat takes) from the paperclip or a paste or drop, held as removable chips until you save, Draw for a sketch of your own, a colour, tags and a reminder bell; Close keeps your draft, Escape closes, Ctrl+Enter saves). "
             'Or type into "Capture a thought" and Save. A local AI files '
             "it into a category and suggests tags; you can re-file or edit anytime. "
             "Save as draft keeps it unfiled under Drafts instead, and after either, "
@@ -93,6 +93,11 @@ HELP_TOPICS: list[dict] = [
             "why?, shorter, no, the gym one) read against the question before; "
             "a cited board, map or document opens in its own place. With no "
             "model, Chat also acts (remind me to..., pin or delete the X note), with Undo. "
+            "An answer from your notes can end with one offer as a link: Remind you to..., Save it as a checklist note, "
+            "Start a list of films to watch next, Note the first as your pick, Gather them into one note, Track your "
+            "lifts in a table. Press it and it is done, with Undo; in Chat, typing yes does the same for a reminder, a checklist, a list or a pick "
+            "(Gather and the table are the link's), and no thanks drops it. "
+            "A story over many notes tells the ones it read and says so at the end (That tells five of the twelve; ask for a month or a tag to see the rest). "
             "A counting "
             "question in Ask (how many notes per category this month) also gets "
             "a chart from your notes, with its numbers and Save as PNG. A note's "
@@ -279,7 +284,7 @@ HELP_TOPICS: list[dict] = [
         "body": (
             "The document editor (opened from Library, Documents) has four "
             "views: Live (renders as you write), Source, Split and Read. Enter "
-            "in the title moves to the body. Code "
+            "in the title moves to the body. The Library list's ... menu has Suggest a name. Code "
             "files get line numbers, Tab/Shift+Tab indenting and Ctrl+/ "
             "commenting, in a monospace face. Insert opens the / menu (Image opens a "
             'file picker). Unsaved words are kept per document for two weeks. "Check with AI" reviews a document for wording issues '
@@ -287,7 +292,7 @@ HELP_TOPICS: list[dict] = [
             'headings into a new mind map. A mermaid code block (the "/" menu\'s '
             "Flowchart, or any Mermaid diagram: sequence, class, state, entity relationship, Gantt, pie, "
             "mind map, timeline and the rest) draws as a picture in Read and Live, in chat and Ask replies, "
-            "in a print and in the HTML export, in the app's colours and redrawn when the theme changes; press "
+            "in a print and in the HTML export; press "
             "it in Live to edit its text, and a block Mermaid cannot read stays as code with the reason under it. Print or "
             "save as PDF first asks for the page size, orientation, margins and "
             "page numbers, and a plain Ctrl+P uses the last choice; a code file prints "
@@ -359,7 +364,14 @@ HELP_TOPICS: list[dict] = [
             "of what it shows, a vision-model transcription of any text in it, "
             "and Tesseract OCR (or RapidOCR) if that's installed: all editable and searchable. "
             "A scanned PDF is rasterised page-by-page and read by an OCR model "
-            "(no Tesseract needed); you can pick the model or leave it automatic."
+            "(no Tesseract needed); you can pick the model or leave it automatic. A "
+            "picture placed on a board or map is the exception: it stays on the board, "
+            "unlisted, unsearched and unread, until you select it and press Save to Library "
+            "in Format (then it is filed and read like any other). Captions, in the row "
+            "below it, draws a saved picture's caption as one muted line under it: on a "
+            "board, under the pictures in a note's popup in the Graph and its timeline "
+            "view, and the popup's menu has the same Show picture captions switch. A "
+            "file attached to a note says nothing."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },

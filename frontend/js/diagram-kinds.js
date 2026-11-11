@@ -1059,7 +1059,7 @@
       b.setAttribute("aria-label", label);
       actions.append(b);
     }
-    actions.append(kit.more(S));
+    actions.append(...[diagramModel.kindbar?.expand(S)].filter(Boolean), kit.more(S));
     bar.append(tiles, kit.el("div", "dock-group"), actions, tiles.hint);
     return bar;
   }

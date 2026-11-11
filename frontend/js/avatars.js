@@ -1307,7 +1307,10 @@ function nameMarkRasterise(svg, parts, pad) {
     nameMarkMeasureHost = document.createElement("div");
     nameMarkMeasureHost.className = "nm-measure";
     nameMarkMeasureHost.setAttribute("aria-hidden", "true");
-    document.body.appendChild(nameMarkMeasureHost);
+    //: Under <html>, not <body>: a node added inside body makes the browser re-check every :has() subject
+    //: in it, and on the Library Images tab (240 tiles) a cold face's draw cost a median 140ms there against
+    //: 65ms here (4x CPU, INBOX 1716). The host is fixed and hidden, so where it sits changes no layout.
+    document.documentElement.appendChild(nameMarkMeasureHost);
   }
   nameMarkMeasureHost.appendChild(svg);
   const [vx, vy, vw, vh] = (svg.getAttribute("viewBox") || "0 0 36 36").split(/[\s,]+/).map(Number);
@@ -2759,8 +2762,12 @@ function nameMarkLive(seed, size) {
 //: A poke: a hop and a spin. The class comes off when the animation ends.
 function nameMarkReact(svg) {
   if (!svg) return;
-  svg.classList.remove("nm-react");
-  void svg.getBoundingClientRect();
+  //: The class is taken off and a layout forced only to restart a hop that is still playing (a second poke
+  //: inside 800ms); on a face at rest it is one class add with no read (INBOX 1716: a poke's forced layout).
+  if (svg.classList.contains("nm-react")) {
+    svg.classList.remove("nm-react");
+    void svg.getBoundingClientRect();
+  }
   svg.classList.add("nm-react");
   setTimeout(() => svg.classList.remove("nm-react"), 800);
 }
@@ -2775,10 +2782,15 @@ function nameMarkSay(anchor, text, ms = 2600) {
   bubble.textContent = text;
   anchor.appendChild(bubble);
   //: Kept inside the window: a face at the edge (the companion at the
-  //: right) used to say half its line off screen.
-  const box = bubble.getBoundingClientRect();
-  const shift = Math.max(0, box.right - (innerWidth - 8)) || -Math.max(0, 8 - box.left);
-  if (shift) bubble.style.left = `calc(50% - ${Math.ceil(shift)}px)`;
+  //: right) used to say half its line off screen. Measured at the next frame's start, before it is drawn
+  //: (the bubble is never painted unshifted), not here: a rect read in the poke's own task billed the
+  //: page's whole pending restyle to it (INBOX 1716: release 239ms, 106 of them layout).
+  afterFrames(() => {
+    if (!bubble.isConnected) return;
+    const box = bubble.getBoundingClientRect();
+    const shift = Math.max(0, box.right - (innerWidth - 8)) || -Math.max(0, 8 - box.left);
+    if (shift) bubble.style.left = `calc(50% - ${Math.ceil(shift)}px)`;
+  }, 1);
   setTimeout(() => bubble.remove(), ms);
 }
 
@@ -3985,6 +3997,14 @@ function nameMarkBuddyControlBoxes(tab) {
   nmb.covers = { tab, boxes, at: performance.now() };
   return boxes;
 }
+//: **Read while it is carried, not at the release** (lag-1109: the release read was the first read after the drag,
+//: 49 to 119 ms at 4x). Once the frame that drew the pick-up is done the page is clean and the 142 boxes are cheap;
+//: the release then finds them kept (`nmb.covers`) and only the figure's own box is read.
+nmb.warmCovers = () => {
+  afterFrames(() => setTimeout(() => {
+    if (document.getElementById("nm-buddy")?.classList.contains("nm-buddy-dragging")) nameMarkBuddyControlBoxes(nameMarkBuddyTab());
+  }), 1);
+};
 function nameMarkBuddyControlsIn(root, boxes) {
   if (!root) return;
   const found = root.matches(NAME_MARK_BUDDY_NEVER_COVER) ? [root] : [];
@@ -9836,9 +9856,10 @@ function nameMarkBuddyBlend(buddy, change, ms = NMB_BLEND_MS) {
   //: eases are skipped in the second.
   const eases = [];
   const eased = new Map();
+  let alive;
   change();
   for (const { anim, el, from } of held) {
-    if (el.getAnimations().includes(anim)) continue;
+    if ((alive ||= new Set(document.getAnimations())).has(anim)) continue;
     //: Only what moved (the body's note below says why).
     const style = getComputedStyle(el);
     const done = eased.get(el) || new Set();
@@ -10847,6 +10868,8 @@ function nameMarkBuddyBuild() {
       nmb.mood.energy = Math.min(1, nmb.mood.energy + 0.15);
       nmb.mood.sociability = Math.max(0, nmb.mood.sociability - 0.05);
       buddy.classList.add("nm-buddy-dragging");
+      drag.pickedAt = performance.now();
+      nmb.warmCovers();
     }
     //: Shaken up and down while carried, it turns over (`nameMarkBuddyFlip`).
     (drag.shake ||= []).push([event.clientX, event.clientY, t]);
@@ -10875,7 +10898,12 @@ function nameMarkBuddyBuild() {
       //: Reads first, then writes: one restyle of the rig, not three (Atlas at 4x).
       const v = nameMarkBuddyReleaseVelocity(drag.samples || [], event?.timeStamp ?? performance.now());
       const thrown = !!v && Math.hypot(v[0], v[1]) > NMB_TOSS_SPEED && typeof nameMarkBuddyThrow === "function";
-      if (thrown) nameMarkBuddyIndexReset();
+      if (thrown) {
+        //: The tab's control boxes read since the pick-up (`nmb.warmCovers`) are kept: the observers drop them on any change.
+        const kept = nmb.covers?.at >= drag.pickedAt ? nmb.covers : null;
+        nameMarkBuddyIndexReset();
+        nmb.covers = kept;
+      }
       const world = thrown && nameMarkBuddyWorld(nameMarkBuddyTab());
       //: The whole flight and where it comes down, before any write (companion-throw.js).
       const plan = thrown && companionThrowPlan(Math.round(box.left), Math.round(box.top), v[0], v[1], world);

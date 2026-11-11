@@ -880,6 +880,10 @@ function renderLibrary(options) {
       columns[i % columns.length].appendChild(card);
       return document.createDocumentFragment();
     }, {
+      //: The first chunk is one screen's cards, not sixty (audit 1029 X15): sixty cards were 3,300 nodes built in one
+      //: task (170 to 240ms at 4x CPU) when a 1440px window shows about a dozen; the frame pump below carries on
+      //: for as long as the sentinel is within 600px, so the grid still fills before it is scrolled to.
+      initial: 12,
       budgetMs: 6,
       afterChunk: () => {
         renderLibraryContextBars();
@@ -1726,7 +1730,12 @@ function libraryCard(item) {
 
   const actions = withLibraryCopyActions(libraryActions(item), item.kind, item.title, item.id);
   if (actions.length) {
-    const menu = kebabMenu(actions, `Actions for ${item.title}`);
+    //: The rows are built on the first open, in the capture phase so before `objKebabRows` counts them (audit 1029
+    //: X15: 43 of a card's 55 nodes). `rowMenu` keeps the items for a right-click and F2.
+    const label = `Actions for ${item.title}`;
+    const menu = kebabMenu([], label);
+    menu.rowMenu = { items: actions, ariaLabel: label };
+    menu.addEventListener("click", () => kebabMenu.rows(menu.lastChild, actions), { capture: true, once: true });
     menu.classList.add("library-card-menu");
   // The menu is inside the card and the card is a click target, so every click
   // in the menu would also open the thing. Stopped here rather than on each
@@ -8881,6 +8890,8 @@ function syncLibraryMediaSelectbar() {
   if (!bar || !count) return;
   const n = libraryMediaSelection.size;
   bar.classList.toggle("hidden", n === 0);
+  //: Not `body:has(#library-media-selectbar)`: it restyled every tile on any page change (INBOX 1716).
+  document.body.classList.toggle("library-media-selecting", n > 0);
   count.textContent = `${n} selected`;
 }
 

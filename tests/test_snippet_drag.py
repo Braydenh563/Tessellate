@@ -18,9 +18,10 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parents[1]
-KIT = (ROOT / "frontend" / "js" / "documents-codekit.js").read_text(encoding="utf-8")
+KIT = _js_scope.unwrapped((ROOT / "frontend" / "js" / "documents-codekit.js").read_text(encoding="utf-8"))
 CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
 
 

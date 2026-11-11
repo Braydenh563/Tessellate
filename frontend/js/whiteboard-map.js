@@ -3407,9 +3407,29 @@ function wbClearMapNodeSizeCache() {
 //: First element wins, matching what `wbMapNodeSize`'s own `querySelector`
 //: would have returned had two layers ever carried the same id. Only real
 //: measurements are kept, for the reason `wbMapNodeSize` gives.
-function wbIndexMapNodeElements() {
+//:
+//: `linkEndsOnly` measures just the objects a connector ends on, through the item index with no walk
+//: of the page: a board's connectors need their ends' boxes and nothing else (W30).
+function wbIndexMapNodeElements(linkEndsOnly = false) {
   const byId = new Map();
   if (!wbMapNodeSizeCache) wbMapNodeSizeCache = new Map();
+  if (linkEndsOnly) {
+    const ends = new Set();
+    for (const sketch of wbState.sketches || []) {
+      if (typeof sketch.data !== "string" || !sketch.data.includes("link-")) continue;
+      try {
+        const parsed = JSON.parse(sketch.data);
+        if (parsed.sourceKind === "object") ends.add(Number(parsed.sourceId));
+        if (parsed.targetKind === "object") ends.add(Number(parsed.targetId));
+      } catch { /* not a link */ }
+    }
+    for (const id of ends) {
+      const el = wbItemElement("object", id);
+      if (!el || wbMapNodeSizeCache.has(id) || !el.offsetHeight) continue;
+      wbMapNodeSizeCache.set(id, { w: el.offsetWidth, h: el.offsetHeight });
+    }
+    return byId;
+  }
   for (const el of document.querySelectorAll(".wb-object[data-id]")) {
     const id = Number(el.dataset.id);
     if (byId.has(id)) continue;
@@ -7831,6 +7851,7 @@ async function wbMapTakePicture(file) {
   try {
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("board", "true");
     // The same request `wbPlaceUploadedImage` makes, header and all: the
     // token goes in `X-Auth-Token` because the body is a FormData and
     // `apiJson` leaves the content type to the browser for one.

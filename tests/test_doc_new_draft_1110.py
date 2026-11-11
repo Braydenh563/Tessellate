@@ -71,7 +71,7 @@ const tick = () => new Promise((r) => setTimeout(r, 0));
         + body
         + "\n(async () => {\n"
         + steps
-        + "\nconsole.log(JSON.stringify({ posts, status: els['doc-saved'].textContent, kept: store[DOC_EDIT_KEPT] ? JSON.parse(store[DOC_EDIT_KEPT]) : null, offers }));\nclearTimeout(docSaveQueue.newRetry);\n})();\n"
+        + "\nconsole.log(JSON.stringify({ posts, status: els['doc-saved'].textContent, detail: els['doc-status'].textContent, kept: store[DOC_EDIT_KEPT] ? JSON.parse(store[DOC_EDIT_KEPT]) : null, offers }));\nclearTimeout(docSaveQueue.newRetry);\n})();\n"
     )
     out = subprocess.run(["node", "-e", script], capture_output=True, text=True, timeout=30, check=True)
     return json.loads(out.stdout)
@@ -83,6 +83,13 @@ def test_a_failed_first_save_says_not_saved_and_keeps_a_draft():
     assert got["status"] == "Not saved"
     assert got["kept"]["new"]["content"] == "My trip"
     assert got["kept"]["new"]["title"] == "Trip"
+
+
+@needs_node
+def test_the_status_line_says_the_save_will_be_tried_again():
+    """gap5-1111 (w4-1110): the 8 s retry was silent; the line now says so."""
+    got = _run('text = "My trip"; markDocDirty(); await tick(); await tick();')
+    assert got["detail"] == "Failed to fetch. It will try again in 8 seconds."
 
 
 @needs_node

@@ -22,6 +22,9 @@ PROBE = [
     ("is my data encrypted", "encryption"),
     ("how do I delete my data", "delete-data"),
     ("how do I share a note", "share-note"),
+    #: W21 (sweep-1028b): the note menu's Download .md answers "export one note".
+    ("how do I export one note?", "share-note"),
+    ("export a single note", "share-note"),
     ("what is filing", "filing"),
 ]
 

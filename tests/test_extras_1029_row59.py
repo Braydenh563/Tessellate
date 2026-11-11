@@ -67,7 +67,7 @@ def _chips_offered(off: bool) -> list[str]:
         const made = [];
         const host = {{ replaceChildren() {{ made.length = 0; }}, appendChild(c) {{ made.push(c.label); }}, children: [] }};
         const $ = () => host;
-        globalThis.document = {{ createElement: () => ({{ dataset: {{}}, addEventListener() {{}} }}) }};
+        globalThis.document = {{ getElementById: () => host, createElement: () => ({{ dataset: {{}}, addEventListener() {{}} }}) }};
         const setLabel = (chip, text) => {{ chip.label = text.replace(/^ph:\\S+ /, ""); }};
         const aiIsOff = () => {str(off).lower()};
         const markDraftQuickstart = () => {{}};

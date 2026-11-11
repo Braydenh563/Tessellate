@@ -821,9 +821,22 @@ function enhanceSelect(select) {
   opener.setAttribute("aria-label", label);
   opener.title = select.title || label;
 
+  //: An option's `data-icon` picture (U27), decorative.
+  const optionGlyph = (option) => {
+    const name = option?.dataset.icon;
+    if (!name) return null;
+    const glyph = document.createElement("i");
+    glyph.className = `ph ph-${name} ph-lead`;
+    glyph.setAttribute("aria-hidden", "true");
+    return glyph;
+  };
+  let faceGlyph = null; // the chosen option's picture, if it names one
   const syncValue = () => {
     const chosen = select.options[select.selectedIndex];
     valueText.textContent = chosen ? selectFaceText(chosen, syncValue) : "";
+    faceGlyph?.remove();
+    faceGlyph = optionGlyph(chosen);
+    if (faceGlyph) opener.insertBefore(faceGlyph, valueText);
     //: A face cut down for a phone keeps the whole row in the tooltip.
     opener.title = chosen?.dataset.faceNarrow && NARROW_FACE.matches
       ? chosen.textContent.trim()
@@ -868,12 +881,8 @@ function enhanceSelect(select) {
     //: **A picture before the name** (`data-icon`, a Phosphor name; audit 1028
     //: U27: the Layout list was ten lines of text for ten shapes). Decorative:
     //: the name beside it is the label.
-    if (option.dataset.icon) {
-      const glyph = document.createElement("i");
-      glyph.className = `ph ph-${option.dataset.icon} ph-lead`;
-      glyph.setAttribute("aria-hidden", "true");
-      row.prepend(glyph);
-    }
+    const glyph = optionGlyph(option);
+    if (glyph) row.prepend(glyph);
     //: **An option that wants its row drawn its own way** names a class in
     //: `data-menu-class` (Settings' Font list sets each row in its own face,
     //: INBOX 670). The menu is lifted to <body>, so no selector can reach a
@@ -1371,43 +1380,6 @@ function menuRowFits(row, hint) {
   row.addEventListener("focus", check);
 }
 
-function kebabMenu(items, ariaLabel, { vertical = false } = {}) {
-  const wrap = document.createElement("span");
-  wrap.className = "menu-wrap";
-
-  const menu = document.createElement("div");
-  menu.className = "action-menu hidden";
-  menu.setAttribute("role", "menu");
-
-  const opener = smallButton(vertical ? "ph:dots-three-vertical" : "ph:dots-three", ariaLabel, () => {
-    window.objKebabRows?.(menu);
-    if (window.matchMedia(PHONE_ACTION_SHEET).matches) {
-      openKebabSheet(menu, opener, ariaLabel);
-      return;
-    }
-    const willOpen = menu.classList.contains("hidden");
-    if (willOpen) openActionMenu(menu, opener);
-    else closeActionMenus();
-  });
-  //: **A kebab is one glyph, so it is square.** Reported: "all the chat header
-  //: buttons [should] be square, there should be no rectangle single icon
-  //: buttons as that is not consistent with the rest of the application."
-  //: Measured in that header: Fork and Compress 28×28, this opener 43×28, it
-  //: took `.small`'s text padding because the class that squares an icon
-  //: button has to be remembered per button (see the rule's own comment in
-  //: 00-tokens-shell.css) and nobody remembered it here. Set at the source, so
-  //: every ⋯ in the app is square rather than one more thing to remember.
-  //: **One class for every ⋯** (INBOX 722, the owner: "meatball buttons have a
-  //: visible outline, is that consistent with the rest of the app??"). The
-  //: Library's cards and lines drew a resting `--shadow-sm` on a button whose
-  //: fill and edge another rule had already cleared, so the ⋯ read as an
-  //: outlined square there and as a plain glyph everywhere else. The class is
-  //: the one place a surface cannot override: the ghost recipe is written once,
-  //: in 08-consistency.css, DESIGN.md's "A ⋯ or ⋮ that opens a menu" row.
-  opener.classList.add("icon-only", "kebab-opener");
-  opener.setAttribute("aria-haspopup", "menu");
-  opener.setAttribute("aria-expanded", "false");
-
   //: **Groups, drawn from the items rather than from separator objects**
   //: (DOCUMENTS_PLAN section 16). The table cell's menu was the case that
   //: asked for this: ten items covering rows, columns, alignment and the
@@ -1424,6 +1396,8 @@ function kebabMenu(items, ariaLabel, { vertical = false } = {}) {
   //: the divider, not the label. `role="separator"` so the grouping is in the
   //: accessibility tree too, and `wireMenuKeyboard` walks `.menu-item`, so a
   //: divider is never a stop on the way down.
+//: Its own function so a menu can build its rows on first open instead of at once: the Library's cards (audit 1029 X15), where the rows were 43 of a card's 55 nodes.
+kebabMenu.rows = (menu, items) => {
   let lastGroup = null;
   for (const item of items) {
     if (lastGroup !== null && item.group && item.group !== lastGroup) {
@@ -1476,6 +1450,46 @@ function kebabMenu(items, ariaLabel, { vertical = false } = {}) {
     });
     menu.appendChild(button);
   }
+};
+
+function kebabMenu(items, ariaLabel, { vertical = false } = {}) {
+  const wrap = document.createElement("span");
+  wrap.className = "menu-wrap";
+
+  const menu = document.createElement("div");
+  menu.className = "action-menu hidden";
+  menu.setAttribute("role", "menu");
+
+  const opener = smallButton(vertical ? "ph:dots-three-vertical" : "ph:dots-three", ariaLabel, () => {
+    window.objKebabRows?.(menu);
+    if (window.matchMedia(PHONE_ACTION_SHEET).matches) {
+      openKebabSheet(menu, opener, ariaLabel);
+      return;
+    }
+    const willOpen = menu.classList.contains("hidden");
+    if (willOpen) openActionMenu(menu, opener);
+    else closeActionMenus();
+  });
+  //: **A kebab is one glyph, so it is square.** Reported: "all the chat header
+  //: buttons [should] be square, there should be no rectangle single icon
+  //: buttons as that is not consistent with the rest of the application."
+  //: Measured in that header: Fork and Compress 28×28, this opener 43×28, it
+  //: took `.small`'s text padding because the class that squares an icon
+  //: button has to be remembered per button (see the rule's own comment in
+  //: 00-tokens-shell.css) and nobody remembered it here. Set at the source, so
+  //: every ⋯ in the app is square rather than one more thing to remember.
+  //: **One class for every ⋯** (INBOX 722, the owner: "meatball buttons have a
+  //: visible outline, is that consistent with the rest of the app??"). The
+  //: Library's cards and lines drew a resting `--shadow-sm` on a button whose
+  //: fill and edge another rule had already cleared, so the ⋯ read as an
+  //: outlined square there and as a plain glyph everywhere else. The class is
+  //: the one place a surface cannot override: the ghost recipe is written once,
+  //: in 08-consistency.css, DESIGN.md's "A ⋯ or ⋮ that opens a menu" row.
+  opener.classList.add("icon-only", "kebab-opener");
+  opener.setAttribute("aria-haspopup", "menu");
+  opener.setAttribute("aria-expanded", "false");
+
+  kebabMenu.rows(menu, items);
   wireMenuKeyboard(menu, opener);
   wrap.append(opener, menu);
   //: What a right-click on the row this menu belongs to opens at the pointer
@@ -1937,7 +1951,8 @@ async function loadConversationList() {
     // into an ellipsis at the default sidebar width.
     if (conversation.tokens) bits.push(`${formatTokens(conversation.tokens)} tok`);
     meta.textContent = bits.join(" · ");
-    meta.title = bits.join(" · "); // in full, if the row still has to clip
+    //: The hover holds the exact time (OPEN #593); the row reads relative.
+    meta.title = [parseServerTime(conversation.last_at)?.toLocaleString(undefined, { dateStyle: "full", timeStyle: "short" }), ...bits.slice(1)].filter(Boolean).join(" · ");
     title.append(name, meta);
     // The title often isn't the subject: show what was actually asked.
     if (conversation.preview && conversation.preview !== conversation.title) {

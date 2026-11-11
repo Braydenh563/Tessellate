@@ -18,7 +18,7 @@ import re
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 
-from tessellate.ai import composer_done, composer_frame, realise, recognise, study
+from tessellate.ai import composer_done, composer_event_verdict, composer_frame, question_noise, realise, recognise, study
 from tessellate.ai import when as when_words
 from tessellate.ai import composer_compose as compose
 from tessellate.ai import note_rank, reminder_parser
@@ -441,7 +441,9 @@ def _days_away(days: int) -> str:
     return base + (" (a week)" if days == 7 else "")
 
 
-def _grouped(found: list[Event], today: date, limit: int = MAX_ITEMS) -> list[str]:
+def _grouped(found: list[Event], today: date, limit: int = MAX_ITEMS, *, headed: bool = True) -> list[str]:
+    """The items under a bold day heading each; `headed=False` for one day the answer's own head already names (W8B
+    1111: "For Wednesday 11 November you have ..." then "**Wednesday 11 November**" said the day twice)."""
     lines: list[str] = []
     shown = 0
     last = None
@@ -449,7 +451,7 @@ def _grouped(found: list[Event], today: date, limit: int = MAX_ITEMS) -> list[st
         if shown >= limit:
             break
         if ev.day != last:
-            lines += ["", f"**{_name(ev.day, today)}**"]
+            lines += ["", f"**{_name(ev.day, today)}**"] if headed else [""]
             last = ev.day
         lines.append(ev.line())
         shown += 1
@@ -503,7 +505,7 @@ def _due(ctx: Ctx, win: tuple[date, date, str]) -> Reply | None:
     head = compose.frame("due", ctx.mood, count=realise.counted(len(found), "dated item"), span=span) if found \
         else compose.frame("due_overdue", ctx.mood, span=span)
     head = compose.sentence_case(head)
-    lines = [head, *_grouped(found, today)]
+    lines = [head, *_grouped(found, today, headed=start != end)]
     if overdue:
         lines += ["", "**Overdue**"] + [e.line(overdue=True) for e in overdue[:5]]
     if (end - start).days >= 3:
@@ -928,6 +930,13 @@ def answer(ctx: Ctx) -> Reply | None:
     text = " ".join((ctx.question or "").split())
     if not text or len(text) > 200 or _IN_TODO.match(text):
         return None
+    #: "what's been happening" looks back: the activity recap's, not "nothing dated ahead".
+    if question_noise.catching_up(text):
+        return None
+    if day := composer_event_verdict.day_question(text):
+        #: "are we meeting on Tuesday" asks of the day: its list, led by Yes or by what is missing.
+        reply = _answer_text(ctx, day)
+        return reply and Reply(f"{composer_event_verdict.lead(text, reply.text)} {reply.text}", reply.offer, reply.asks)
     #: As typed first; then with the casual wrapper and text-speak off ("whats on tmrw", R9-8, R9-14).
     return _answer_text(ctx, text) or (_answer_text(ctx, spelled) if (spelled := rephrase(text)) and spelled != text else None)
 

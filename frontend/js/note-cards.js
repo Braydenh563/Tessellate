@@ -283,38 +283,16 @@ const expandedNotes = new Set();
 //: that is (shown, scrolled into a `content-visibility` window, a chunk
 //: landing) and again when the width changes, and a removed card leaves it.
 const noteClampFit = new ResizeObserver((seen) => {
+  //: Every read first, then the writes: an unclip between two cards' reads made each next read a forced layout.
+  const fits = [];
   for (const { target } of seen) {
     if (!target.isConnected) noteClampFit.unobserve(target);
-    else if (target.clientHeight && target.classList.contains("entry-clamped") && target.scrollHeight <= target.clientHeight + 2) target.unclip();
+    else if (target.clientHeight && target.classList.contains("entry-clamped") && target.scrollHeight <= target.clientHeight + 2) fits.push(target);
   }
+  for (const target of fits) target.unclip();
 });
 
 
-//: **The facts about a file, as facts.** Asked for directly with the Files
-//: sub-tab redesign: "the card format is difficult with files as they can be
-//: quite long and large, a single image or ocr caption doesnt fit them. there
-//: should be details on the name, a generated description that cna happen,
-//: file details such as the type, size, topic/category, linked notes and
-//: other features."
-//:
-//: A tile could show a thumbnail, a name and a caption; everything else a
-//: person actually brings to a file list, how big is it, how many pages,
-//: when did it arrive, has it been read, was either absent or buried. These
-//: are the ones the row can state in one line.
-function formatFileSize(bytes) {
-  const size = Number(bytes) || 0;
-  if (size <= 0) return ""; // unknown, or the file is gone, say nothing
-  if (size < 1024) return `${size} B`;
-  const units = ["KB", "MB", "GB"];
-  let value = size / 1024;
-  let unit = 0;
-  while (value >= 1024 && unit < units.length - 1) {
-    value /= 1024;
-    unit += 1;
-  }
-  // One decimal below 10 (2.4 MB reads better than 2 MB), none above it.
-  return `${value < 10 ? value.toFixed(1) : Math.round(value)} ${units[unit]}`;
-}
 
 
 //: The page size each of those lists is asked for, matching the server's own
@@ -356,9 +334,19 @@ function noteIsMeeting(entry) {
 // carry a second copy of it. Instant + one-click Undo, soft delete
 // underneath (Wave J). Also on the global undo stack (status bar / Ctrl+Z),
 // so it survives past the toast's own timeout.
+//: Move to bin keeps keyboard focus (W8): the neighbour is taken before the delete and focused only if focus was lost.
 async function binNoteWithUndo(entry) {
+  const list = document.getElementById("entry-list");
+  const rows = list ? entryListItems(list) : [];
+  const at = rows.findIndex((row) => row.dataset.id === String(entry.id));
+  const heirId = (rows[at + 1] || rows[at - 1])?.dataset.id;
   await api(`/entries/${entry.id}`, { method: "DELETE" });
   await refreshEntries([entry.id]);
+  const held = document.activeElement;
+  if (at >= 0 && (!held || held === document.body || !held.isConnected)) {
+    const heir = heirId && list.querySelector(`:scope > li[data-id="${heirId}"]`);
+    (heir || document.getElementById("capture-bar-input"))?.focus();
+  }
   const restoreIt = async () => {
     await api(`/entries/${entry.id}/restore`, { method: "POST" });
     await refreshEntries([entry.id]);

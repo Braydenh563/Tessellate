@@ -39,7 +39,7 @@ from datetime import date, datetime, timedelta
 from tessellate.ai import composer, composer_doings, composer_done, composer_frame, composer_threads, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, glossary, question_noise, realise
 from tessellate.ai import composer_ages, composer_answer, composer_nth, composer_oneword, composer_property, composer_small
 from tessellate.ai import composer_ahead, composer_ask, composer_clean, composer_event_verdict, factgraph
-from tessellate.ai import composer_chip_subject
+from tessellate.ai import composer_aliases, composer_chip_subject, composer_overview
 from tessellate.ai import composer_select
 from tessellate.ai import composer_credit, composer_each, composer_label, composer_refer, composer_tally
 from tessellate.ai.composer_lists import clean
@@ -55,7 +55,7 @@ from tessellate.ai.composer_digest_sentences import (
     _your_note, about_this, kind_of, named_category,
 )
 from tessellate.ai.composer_digest_lines import (
-    MORE_LINES, _AM_DOING, _CJK_ENDS, _CJK_STOP, _DAY_NAME, _DID, _GOING, _HEARD, _LAST_ONE,
+    MORE_LINES, _kind_of_note, _AM_DOING, _CJK_ENDS, _CJK_STOP, _DAY_NAME, _DID, _GOING, _HEARD, _LAST_ONE,
     _LATEST_ASK, _NAMES_A_THING, _PLANNED, _WEEKDAYS, _WEEKDAY_WORDS, _WHEN_DID, _WHEN_LAST,
     _WHEN_NOW, _ahead_if, _answered, _ask_stems, _behind_if, _context_note, _count, _fact_words,
     _facts, _label_names, _lines, _measures, _members, _missing, _names_it, _narrate, _offer,
@@ -172,7 +172,7 @@ def _with_its_name(lead: Fact) -> str:
     that opens on a pronoun has lost its referent when it leads the answer (R9-6)."""
     body, title = lead.body, str(lead.view.title or "").strip()
     found = _PRONOUN_SAID.match(body)
-    if found and lead.view.titled and 0 < len(title.split()) <= 3 and not title.endswith("…"):
+    if found and lead.view.titled and 0 < len(title.split()) <= 3 and not title.endswith("…") and not _kind_of_note(title, lead.view):
         return f"{title} {body[found.end():]}"
     return body
 
@@ -530,6 +530,10 @@ def _single_cue(kind: str, asked: str) -> re.Pattern | None:
         return _DURATION
     if kind in _SINGLE_CUES:
         return _SINGLE_CUES[kind]
+    if recogniser.event_window_asked(asked):
+        #: "is my dentist appointment tomorrow": the line that holds the day leads, not the one that names the
+        #: appointment (W8B 1111); its verdict reads the first line.
+        return _SINGLE_CUES["when"]
     if _ROLE_ASK.match(asked):
         return _ROLE_CUE
     return _PlaceCue() if _WHERE_ASK.match(asked) else None
@@ -1432,14 +1436,17 @@ def answer(question: str, notes: list[dict], **kwargs) -> dict | None:  # noqa: 
     command, nothing found): the caller then asks `composer.compose`. Read with
     the notes' words set, as `compose` does: "tom and sara" is two subjects
     only when the notes hold both words."""
+    composer_overview.read_pool(notes)
     owned = composer_ask.NOTE_WORDS.set(composer._note_words(notes))  # noqa: SLF001
     texts = composer_ask.NOTE_TEXTS.set(tuple(f"{n.get('title') or ''} {n.get('content') or ''}" for n in notes or ()))
     as_asked = _ASKED_AS.set(question)
+    called = composer_aliases.enter(question, notes)
     named = composer_ask.NOTE_CATEGORIES.set(frozenset(re.sub(r"\s+", " ", re.sub(r"\band\b", "&", str(n.get("category") or "").lower())) for n in notes or () if n.get("category")))
     try:
-        return composer_event_verdict.apply(question, _answer(question, notes, **kwargs), kwargs.get("today") or composer.user_today())
+        return composer_event_verdict.answer(question, lambda q: _answer(q, notes, **kwargs), kwargs.get("today") or composer.user_today())
     finally:
         _ASKED_AS.reset(as_asked)
+        composer_ask.ALIASES.reset(called)
         composer_ask.NOTE_CATEGORIES.reset(named)
         composer_ask.NOTE_TEXTS.reset(texts)
         composer_ask.NOTE_WORDS.reset(owned)
@@ -1541,7 +1548,9 @@ def _scored_insights(found: list, ids: set, members, said: str, learned) -> list
         if insights.key(item) in dismissed or not item.note_ids:
             continue
         #: The person's word on a sentence beats an inference that quotes it.
-        if known and known.quoted_in(item.text):
+        #: (The plan a drift rests on is the line's own words, which the
+        #: insight's text only paraphrases.)
+        if known and (known.quoted_in(item.text) or known.quoted_in(str(item.slots.get("plan") or ""))):
             continue
         if _old_news(item, members, said):
             continue
@@ -1873,6 +1882,9 @@ def _open_lists(question: str, views) -> list:  # noqa: ANN001
     """The notes' lists of three or more things as (view, sentence, heading
     match); for "what do I need to buy", only the shopping ones."""
     buying = re.search(r"\b(buy|shop|get)\b", question, re.I)
+    #: "what do I want to read": the list headed "to read", not any list of three (W7b B7b); "do" and "get" name nothing.
+    verb = re.search(r"\b(?:need|have|want|plan|hope|like) to ([a-z]{3,})", question, re.I)
+    verb = verb.group(1).lower()[:4] if verb and verb.group(1).lower() not in {"buy", "get", "shop", "do", "bring", "pack", "take"} else ""
     lists = []
     for v in views:
         for s in v.sentences:
@@ -1880,7 +1892,7 @@ def _open_lists(question: str, views) -> list:  # noqa: ANN001
             if not (head and len(head.group(2).split(",")) >= 3):
                 continue
             shop = re.search(r"\b(grocer|shopping|buy|list)", head.group(1) + " " + " ".join(v.note.get("tags") or []) + " " + str(v.note.get("category") or ""), re.I)
-            if shop or not buying:
+            if (shop or not buying) and (not verb or verb in head.group(1).lower()):
                 lists.append((v, s, head))
     return lists
 

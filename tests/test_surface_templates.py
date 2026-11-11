@@ -20,6 +20,8 @@ from pathlib import Path
 
 import pytest
 
+from tests import _js_scope
+
 ROOT = Path(__file__).resolve().parents[1]
 FRONTEND = ROOT / "frontend"
 JS = FRONTEND / "js"
@@ -137,23 +139,10 @@ def _src(name: str) -> str:
     return (JS / name).read_text(encoding="utf-8")
 
 
-#: Files that are one `(() => {` ... `})();` whole (W29 D24): their inner statements are the load-time ones.
-WRAPPED = ("quick-note.js", "field-clear.js", "whiteboard-history.js", "chat-private.js", "attach-to.js", "obj-tray.js", "pick-row.js", "tidy.js", "usage-ledger.js", "web-clip.js", "web-results.js")
-
-
 def _unwrapped(path: Path) -> str:
     """The file with its one outer `(() => {` ... `})();` wrapper taken off and its body dedented, so the
     statements that run at load, and the functions they call, are top-level again for the checks below."""
-    text = path.read_text(encoding="utf-8")
-    if path.name not in WRAPPED:
-        return text
-    lines = text.split("\n")
-    start = next((i for i, line in enumerate(lines) if line == "(() => {"), None)
-    end = max((i for i, line in enumerate(lines) if line == "})();"), default=None)
-    if start is None or end is None or end < start:
-        return text
-    body = [line[2:] if line.startswith("  ") else line for line in lines[start + 1 : end]]
-    return "\n".join(lines[:start] + body + lines[end + 1 :])
+    return _js_scope.unwrapped(path.read_text(encoding="utf-8"))
 
 
 @pytest.mark.parametrize("name", SURFACES)
@@ -198,13 +187,17 @@ def _load_time_blocks(text: str):
     i = 0
     while i < len(lines):
         line = lines[i]
-        if line.startswith(("onDomReady(", "document.getElementById(", "$(", "onSurface(", "(function", "(() =>")):
-            # The statement ends at the first unindented line closing it.
+        if line.startswith(("onDomReady(", "document.getElementById(", "$(", "onSurface(", "(function", "(() =>", "try {")):
+            # The statement ends at the first unindented line closing it (a `try`, at its closing brace).
             j = i
-            while j < len(lines) - 1 and not (
-                re.search(r"\);\s*$", lines[j]) and (j == i or not lines[j].startswith((" ", "\t")))
-            ):
-                j += 1
+            if line.startswith("try {"):
+                while j < len(lines) - 1 and not (lines[j] == "}" and j > i):
+                    j += 1
+            else:
+                while j < len(lines) - 1 and not (
+                    re.search(r"\);\s*$", lines[j]) and (j == i or not lines[j].startswith((" ", "\t")))
+                ):
+                    j += 1
             yield i + 1, line, "\n".join(lines[i : j + 1])
             i = j + 1
         else:
@@ -338,3 +331,13 @@ def test_a_resize_before_the_first_board_open_does_not_read_the_unbuilt_canvas()
     body = js[js.index("function wbCanvasOriginRect() {") :][:500]
     assert 'getElementById("whiteboard-container")?.getBoundingClientRect() ?? null' in body
     assert "if (rect) wbCullNow(undefined, { width: rect.width, height: rect.height });" in js
+
+
+def test_unlocking_does_not_build_the_notes_pane_to_look_at_its_strip():
+    """audit 1030 Y5: `resetNavigationToDefaults` runs from `lockOpened` and asked `$("notes-subtabs")`, which builds
+    the Notes template (about 1,000 nodes) on every unlock. A strip that is not in the page is not built, so there
+    is nothing to put back on its front page: the question is `getElementById`, which builds nothing."""
+    nav = _src("navigation.js")
+    body = nav[nav.index("function resetNavigationToDefaults() {") :][:1400]
+    assert 'document.getElementById("notes-subtabs")?.dataset.ready' in body
+    assert '$("notes-subtabs")' not in body

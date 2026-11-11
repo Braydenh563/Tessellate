@@ -1529,7 +1529,10 @@ MORE_TOPICS: list[dict] = [
             "Shut down asks that copy to quit the way its own Quit does. This "
             "copy is marked and has no Shut down; use Quit for it. When the "
             "launcher finds its usual port taken it uses the next free one, "
-            "so a copy left running in the background is found here."
+            "so a copy left running in the background is found here. Only "
+            "copies that are really running are listed: a leftover from a "
+            "copy that crashed is removed when the list opens, and Shut down "
+            "on one just clears it."
         ),
         "badge": {"label": "Running copies", "section": "about", "target": "running-copies-group"},
     },
@@ -1565,17 +1568,17 @@ MORE_TOPICS: list[dict] = [
             "In the desktop app on Windows and Linux (X11) the companion lives on your desktop while the window is "
             "minimised or in the tray, and goes when it opens. Atlas floats like a wind spirit (others walk the bottom), sleeps "
             "when you are away, can be picked up and thrown (it tumbles and lands; a hard throw up catches the top, a harder one flies out of sight), "
-            "hangs from the top, and peeks up from behind the taskbar, a screen edge or a smaller window (a drag throws it off). It keeps to a home spot by an "
+            "hangs from the top, and peeks up from behind the taskbar, a screen edge or a smaller window. It keeps to a home spot by an "
             "edge for minutes, alive in place, and makes a few trips an hour: walking, running, "
             "out at one edge and in at the other, or through a portal. Let go gently near a title bar and it hangs, "
             "then pulls itself up, swings down or lets go with a start. Sometimes it climbs onto the top of a window, rides it when you move it and hops off "
             "if you close it (Roam over windows turns that off), and"
             " when a reminder falls due it brings you a card to click. It steps aside for full screen and follows Companion movement "
             "in Appearance (still when Fades only or Windows animation effects are off). Turn it on, on the computer"
-            " Tessellate runs on: Settings, Appearance, Show the companion on the desktop, or the tray icon's menu. It works while the desktop app runs. Click it for Quick note, "
-            "Quick search, New reminder, Open today, Open Tessellate, Wave, Come here, Go somewhere else, Take a nap, Sit on a window"
-            " or Hide for 10 minutes. Come here follows your pointer. Right-click it for Companion (Atlas masculine or feminine, your own or a saved one, summoned once),"
-            " Stay here or Roam, Activity (Calm, Usual or Lively; calm takes fewer trips), Settings or Turn off; settings keep it open; its first menu line says what it does. Drag it. Menu: Small, Medium, Large; or pull its corner handle (bottom right while it hangs), double-click to reset. Locked, it "
+            " Tessellate runs on: Settings, Appearance, Show the companion on the desktop, or the tray icon's menu. It works while the desktop app runs. Click it for Quick note (pictures and files wait as removable chips until Save), "
+            "Quick search, New reminder, Open today, Open Tessellate, Come here, Take a nap, Sit on a window"
+            " or Hide for 10 minutes. Right-click it for Companion (Atlas masculine or feminine, your own or a saved one, summoned once),"
+            " Stay here or Roam, Activity (Calm, Usual or Lively; calm takes fewer trips), Settings or Turn off; settings keep it open. Drag it. Menu: Small, Medium, Large; or pull its corner handle (bottom right while it hangs), double-click to reset. Locked, it "
             "shows only Open Tessellate. On Wayland it stays in the app."
         ),
         "badge": {"label": "Desktop companion", "section": "appearance", "target": "desktop-companion-row"},
@@ -1960,7 +1963,8 @@ MORE_TOPICS.extend([
     {
         "id": "share-note",
         "keywords": ("share a note", "share this note", "send a note", "share", "sharing", "give someone a note",
-                     "email a note"),
+                     "email a note", "export one note", "export a note", "export this note", "export a single note",
+                     "download a note", "download this note", "download .md", "save a note as markdown"),
         "body": (
             "Three ways, none through a server: the note's menu, Download .md, "
             "saves it as a Markdown file to send; copy its "
@@ -2643,6 +2647,7 @@ MORE_TOPICS.append({
     "keywords": (
         "curved arrows", "straight arrows", "stepped arrows", "arrow lines", "line shape",
         "diagram spacing", "compact spacing", "roomy spacing", "diagram page menu", "diagram minimap", "diagram overview",
+        "expand a diagram", "full screen diagram",
     ),
     "body": (
         "A flowchart's ... menu sets how arrows are drawn (Straight lines, Curved lines, "
@@ -2653,7 +2658,8 @@ MORE_TOPICS.append({
         "writing switches, Read aloud and Extract notes. Export, beside Picture, List and "
         "Source, saves it as a PNG or an SVG, or copies it as a picture, as Mermaid or as SVG. "
         "A picture larger than its pane (zoomed in, or a big diagram at Fit) shows a small overview in "
-        "its lower left corner: press or drag it to move the picture. A phone pans by finger instead."
+        "its lower left corner: press or drag it to move the picture. A phone pans by finger instead. "
+        "Expand, at the end of the toolbar of a diagram in a document, opens it full screen with the same saving; Collapse or Escape returns to the document where you left it."
     ),
     "badge": {"label": "Documents", "tab": "documents"},
 })

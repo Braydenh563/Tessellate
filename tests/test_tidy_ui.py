@@ -9,6 +9,7 @@ import re
 from pathlib import Path
 
 from tessellate.ai import help_chat
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -42,7 +43,7 @@ def test_it_is_lazy_and_reached_from_the_dock():
 
 
 def test_it_is_in_the_palette_tools_and_features_and_the_guide():
-    assert "openTidySheet()" in _read("app-palette.js")
+    assert "openTidySheet()" in _js_scope.unwrapped(_read("app-palette.js"))
     catalogue = _read("app-features.js")  # featureCatalog moved here with the boot diet (Brief 80)
     for reveal in ("tidy", "tidy-links", "tidy-duplicates", "tag-manager", "notes-review"):
         assert f'reveal: "{reveal}"' in catalogue

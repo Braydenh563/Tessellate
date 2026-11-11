@@ -108,6 +108,7 @@ SOURCES: tuple[Source, ...] = (
     Source("search/searxng_install.py", raises=("SearxngError",), calls=("_reason",)),
     Source("search/searxng_process.py", raises=("SearxngError",)),
     Source("search/searxng_docker.py", raises=("SearxngError",), calls=("_reason",)),
+    Source("ai/consent_store.py", returns=("refusal_for_press",)),
 )
 
 #: (file, text with `{}` for each placeholder) -> why it may break a rule.
@@ -347,6 +348,7 @@ REVIEWED_COMPUTED: dict[tuple[str, str], str] = {
     ("routes_webclip.py", "WEB_OFF"): "a constant in routes_webclip.py, checked below",
     ("routes_webclip.py", "str(exc)"): "ClipRefused from core/webclip.py",
     ("routes_maintenance.py", "refusal"): "core/maintenance.py SHORTCUT_REFUSALS, fixed sentences keyed by reason",
+    ("routes_chat.py", "why"): "ai/consent_store.py refusal_for_press, fixed sentences checked in SOURCES",
     ("routes_websearch.py", "str(exc)"): "WebSearchError (search/websearch.py) and SearxngError (search/searxng_*.py)",
     # INBOX 1556: the same sentence, now beside its reason code so the panel can offer to start SearXNG.
     ("routes_websearch.py", "detail"): "str(exc) of WebSearchError (search/websearch.py) and SearxngError (search/searxng_*.py), with exc.reason as `code`",

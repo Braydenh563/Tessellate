@@ -512,7 +512,8 @@
   //: The `.mmd` rows, in the app's one picker (1679 slice 9): a row opens its page, the same as the Documents list does.
   async function pickExistingDiagram() {
     //: A list that failed to load says so; it is never shown as "No diagrams yet" (test_load_failed_1028b).
-    let all = Array.isArray(docs) && docs.length ? docs : null;
+    //: The Library's list when it is in, else the server's.
+    let all = typeof docs !== "undefined" && Array.isArray(docs) && docs.length ? docs : null;
     if (!all) {
       try {
         all = await apiPagedList("/documents", 200);
@@ -544,7 +545,8 @@
   }
 
   async function diagramDoor({ target = null, doc = false } = {}) {
-    const onBoard = !doc && typeof wbCommandsLive === "function" && wbCommandsLive() && (!target || Boolean(target.closest?.("#library-view-whiteboard")));
+    //: `window.`: no Library bundle means no board; `typeof` because the boards bundle may not have loaded.
+    const onBoard = !doc && Boolean(window.wbCommandsLive?.()) && (!target || Boolean(target.closest?.("#library-view-whiteboard")));
     if (onBoard && typeof wbEditDiagram === "function") return wbEditDiagram();
     //: The text box as a surface (the adapter `editorBlock` writes through), whether it was handed a surface, a textarea or an editable inside one.
     const box = !doc && target && target.isConnected !== false && (target.id === "question" || target.id in EDITOR_SURFACES || editorSurfaceKind(target)) ? editorSurfaceFor(target) : null;
@@ -560,11 +562,12 @@
         title: "Diagram builder",
         named: true,
         draft: "new",
-        existing: { pick: pickExistingDiagram, open: async (row) => (switchTab("documents"), loadDocuments(row.id)) },
+        existing: { pick: pickExistingDiagram, open: async (row) => (await ensureModule("library"), switchTab("documents"), loadDocuments(row.id)) },
         //: The window's title names the document and the exports; blank is dated, so two Done presses are two names (DD-12, 1107).
         onDone: async (next, _changed, name) => {
           const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title: name || `Diagram ${new Date().toISOString().slice(0, 16).replace("T", " ")}`, content: next, file_type: "mmd" }) }).catch(() => (toast("The diagram was not saved. Try Done again.", "info"), null));
           if (!made) return;
+          if (!(await ensureModule("library"))) return toast("The diagram was saved. Open the Library to see it.", "info");
           switchTab("documents");
           await loadDocuments(made.id);
           offerCreateUndo(made);
@@ -591,14 +594,33 @@
   }
   //: What a new diagram opens on, so the blocks and the picture show at once (the board's Insert used the same lines).
   diagramModel.starter = "flowchart TD\n  A[Start] --> B{Ready?}\n  B -->|yes| C[Ship it]";
-  //: Exported on `diagramModel`, not as a global name of its own: the callers are in other files and ask for the library bundle first.
+  //: Exported on `diagramModel`, not as a global name of its own: callers ask for the library bundle first, or this file alone.
   diagramModel.door = diagramDoor;
   diagramModel.madeKnown = diagramMadeKnown;
 
+  //: A toolbar is one Tab stop; Left and Right move between its visible controls. Here because the builder opens without the Library bundle.
+  function wireToolbarRoving(bar) {
+    const all = () => [...bar.querySelectorAll("button, select, summary")];
+    const rove = (to) => all().forEach((el) => { el.tabIndex = el === to ? 0 : -1; });
+    rove(bar.querySelector("button"));
+    bar.addEventListener("focusin", (event) => {
+      if (all().includes(event.target)) rove(event.target);
+    });
+    bar.addEventListener("keydown", (event) => {
+      const step = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
+      if (!step || event.target.tagName === "SELECT") return;
+      const shown = all().filter((el) => !el.disabled && el.getClientRects().length);
+      const next = shown[shown.indexOf(event.target) + step];
+      if (!next) return;
+      event.preventDefault();
+      next.focus();
+    });
+  }
+
   //: The file's whole surface: what documents.js and documents-export.js call.
-  Object.assign(window, { docRenderMermaidIn, docMermaidWhenDrawn, docMermaidField, diagramModel, openDiagramBuilder });
+  Object.assign(window, { wireToolbarRoving, docRenderMermaidIn, docMermaidWhenDrawn, docMermaidField, diagramModel, openDiagramBuilder });
   //: The block pane (1546 P2) is a bundle of its own, fetched when a diagram is first shown (the kinds, 1546 P4, when a mind map, timeline or sequence diagram is):
   //: every caller is in this bundle or opens a document first, so no stand-in is needed, and
   //: neither app.js nor lazy-entries.js (both at their caps) carries the row.
-  Object.assign(LAZY_MODULES, { diagramBuilder: ["/css/diagram-lazy.css", "/js/diagram-builder.js"], diagramEmbed: ["/js/diagram-embed.js"], diagramTouch: ["/js/diagram-touch.js"], diagramView: ["/js/diagram-view.js"], diagramOverlay: ["/js/diagram-overlay.js"], diagramCanvas: ["/js/diagram-canvas.js"], diagramEdges: ["/js/diagram-edges.js"], diagramEdgePick: ["/js/diagram-edge-pick.js"], diagramSplit: ["/js/diagram-split.js"], diagramLetGo: ["/js/diagram-letgo.js"], diagramComplete: ["/js/diagram-complete.js"], diagramMulti: ["/js/diagram-multi.js"], diagramBar: ["/js/diagram-bar.js"], diagramKindbar: ["/js/diagram-kindbar.js"], diagramSteps: ["/js/diagram-steps.js"], diagramOutline: ["/js/diagram-outline.js"], diagramSuggest: ["/js/diagram-suggest.js"], diagramKinds: ["/js/diagram-kinds.js"], diagramJoins: ["/js/diagram-joins.js"], diagramStyle: ["/js/diagram-style.js"], diagramAi: ["/js/diagram-ai.js"] });
+  Object.assign(LAZY_MODULES, { diagramBuilder: ["/css/diagram-lazy.css", "/js/diagram-builder.js"], diagramEmbed: ["/js/diagram-embed.js"], diagramTouch: ["/js/diagram-touch.js"], diagramView: ["/css/value-field.css", "/js/value-field.js", "/js/diagram-view.js"], diagramOverlay: ["/js/diagram-overlay.js"], diagramCanvas: ["/js/diagram-canvas.js"], diagramEdges: ["/js/diagram-edges.js"], diagramEdgePick: ["/js/diagram-edge-pick.js"], diagramSplit: ["/js/diagram-split.js"], diagramLetGo: ["/js/diagram-letgo.js"], diagramComplete: ["/js/diagram-complete.js"], diagramMulti: ["/js/diagram-multi.js"], diagramBar: ["/js/diagram-bar.js"], diagramKindbar: ["/js/diagram-kindbar.js"], diagramSteps: ["/js/diagram-steps.js"], diagramOutline: ["/js/diagram-outline.js"], diagramSuggest: ["/js/diagram-suggest.js"], diagramKinds: ["/js/diagram-kinds.js"], diagramJoins: ["/js/diagram-joins.js"], diagramStyle: ["/js/diagram-style.js"], diagramAi: ["/js/diagram-ai.js"] });
 })();

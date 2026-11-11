@@ -21,6 +21,9 @@ from tessellate.api import routes_chat
 from tessellate.core import config
 from tessellate.entry import manager
 from tests import _hobbies_1512 as hobbies
+from tests._framed_path import framed_path  # noqa: F401
+
+pytestmark = pytest.mark.usefixtures("framed_path")
 
 NOW = datetime(2026, 11, 1, 12, 0)
 QUESTION = "Summarise my notes in Hobbies."

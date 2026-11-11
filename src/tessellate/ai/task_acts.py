@@ -114,7 +114,8 @@ _CHECKLIST_NOTE = re.compile(
 
 def _checklist_items(said: str) -> list[str]:
     """The items of "milk, eggs and bread", capitalised and without repeats."""
-    parts = [re.sub(r"^(?:and|&)\s+", "", part.strip(), flags=re.IGNORECASE) for part in re.split(r",|;|\band\b|&", said)]
+    #: A quoted item ("Salt and pepper") keeps its own "and" and commas.
+    parts = [re.sub(r"^(?:and|&)\s+", "", part.strip(), flags=re.IGNORECASE) for part in re.split(r'(?:,|;|\band\b|&)(?=(?:[^"]*"[^"]*")*[^"]*$)', said)]
     parts = [_unquote(p) for p in parts if p.strip()]
     return list(dict.fromkeys(p[:1].upper() + p[1:] for p in parts if p))
 

@@ -27,7 +27,7 @@ from datetime import date, datetime, time, timedelta
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import composer_chips, follow_items, intent, realise, recognise, slash, slash_more
+from tessellate.ai import composer_chips, composer_remark, follow_items, intent, realise, recognise, slash, slash_more
 
 #: The charts the app can already draw from the notes, in the order offered.
 CHARTS = ("time", "tag", "category", "weekday")
@@ -311,9 +311,39 @@ def accepted_offer(question: str, history: list[dict] | None, now: datetime | No
     lines = [ln.strip(" *_") for ln in str(history[-1].get("answer") or "").splitlines() if ln.strip()]
     found = _REMIND_OFFER.match(lines[-1]) if lines else None
     if not found:
-        return None
+        return _note_offer_sentence(lines)
     action = re.sub(r"\byour\b", "my", found.group("action").strip().rstrip("?."), flags=re.I) if found.group("every") else found.group("action").strip().rstrip("?.")
     return f"remind me to {action}" + (f" {found.group('every').replace('each', 'every')}" if found.group("every") else "")
+
+
+#: The offers that save a note, said as the button's label says them (`composer_digest.PHRASES`).
+_CHECKLIST_OFFER = re.compile(r"^save it as a checklist note\??$", re.I)
+_PICK_OFFER = re.compile(r"^note the (?P<side>.+?) as your pick\??$", re.I)
+_LIST_OFFER = re.compile(r"^start a list of (?P<what>.+?) to (?P<verb>[\w ]+?) next\??$", re.I)
+_OPENING_COUNT = re.compile(r"^(?:\w+) (?P<what>.+?), from ", re.I)
+
+
+def _note_offer_sentence(lines: list[str]) -> str | None:
+    """The sentence for a note offer taken up (B23): "Save it as a checklist note?" is the
+    list lines above it, "Note the first as your pick?" the pick, "Start a list of films to
+    watch next?" an empty list. Rebuilt from the answer's own text, since a turn sent back
+    holds no more; the yes is the consent, as for a reminder. Gathering and a table carry
+    notes' words the text no longer holds, so they stay the button's."""
+    last = lines[-1] if lines else ""
+    if _CHECKLIST_OFFER.match(last):
+        items = [m.group(1).strip() for ln in lines if (m := re.match(r"^-\s*\[ \]\s+(.+)$", ln))]
+        if not items:
+            return None
+        what = _OPENING_COUNT.match(lines[0])
+        title = (what.group("what") if what else "").strip()
+        called = f" called {title[:1].upper() + title[1:]}" if title and not re.search(r"\b(?:of|for|with|containing|including)\b", title, re.I) else ""
+        quoted = ", ".join(f'"{i}"' if re.search(r"\band\b|[,;&]", i) else i for i in items)
+        return f"make a checklist note{called} of {quoted}"
+    if pick := _PICK_OFFER.match(last):
+        return f"make a note: My pick: the {pick.group('side').strip()}"
+    if start := _LIST_OFFER.match(last):
+        return f"make a checklist for {start.group('what')} to {start.group('verb')} next"
+    return None
 
 
 def cited_question(question: str, history: list[dict] | None, now: datetime) -> str | None:
@@ -322,7 +352,15 @@ def cited_question(question: str, history: list[dict] | None, now: datetime) -> 
     from tessellate.ai import reading
 
     turns = [{"text": str(t.get("question") or ""), "objects": t.get("objects") or []} for t in (history or [])[-reading.FOLLOW_TURNS:]]
-    return reading.cited_follow(question, turns, now) if history else None
+    if not history:
+        return None
+    from tessellate.ai import composer_dialogue
+
+    if composer_dialogue.other_in_frames(question, history):
+        return None  # the frames bind "and the other" to the next note of the list the pick came from
+    #: "and the other one?" is the question before about the other note it cited (B21), which `cited_follow` leaves to acts.
+    other = reading.follow(question, turns, now)
+    return reading.cited_follow(question, turns, now) or (other[0] if other and other[1] == "other" else None)
 
 
 # --- what to offer next ---------------------------------------------------------
@@ -434,8 +472,10 @@ class Closing:
         asked "when?" offers the times its sentence lists (F5)."""
         if not self.asked and composer_chips.asks_time(answer):
             return [{"type": "offer", "offer": {"kind": "ask", "label": "", "asks": composer_chips.TIME_CHIPS}}]
-        asks = [] if self.chipped or not answer.strip() else self.asks(answer)
-        if not asks and not self.offered and answer.strip() and not self.framed and intent.classify(self.question) == intent.SMALLTALK:
+        #: A social turn ("heyy", "its been hot") has no subject: no statistics chips under it (INBOX 1749).
+        social = social_turn(self.question, self.history)
+        asks = [] if self.chipped or not answer.strip() or social else self.asks(answer)
+        if not asks and not self.offered and answer.strip() and not self.framed and social:
             #: "thanks" has no subject of its own: it offers the last answer's chips (F5).
             asks = composer_chips.resume_chips(self.session, self.history, self.today.isoformat(), self.question)
         return [{"type": "offer", "offer": {"kind": "ask", "label": "", "asks": asks}}] if asks else []
@@ -451,3 +491,19 @@ def stumped_asks(session: Session, history: list[dict], today: date) -> list[str
     """The previous subject's acts for the stumped line's chips (INBOX 1729 c); empty with no turn before."""
     prev = from_history(history, today)
     return acts_for(session, prev, today) if history else []
+
+def social_turn(question: str, history: list[dict] | None = None) -> bool:
+    """Whether the turn is conversation, not a question about the notes: small
+    talk, a remark, a feeling, thanks or a question about Atlas. Such a turn
+    has no subject, so no statistics chips sit under it (INBOX 1749). Here, not in `composer_remark`,
+    because `intent` asks `composer_remark` whether a turn is a remark: asking `intent` from there was an import
+    cycle (code scanning 2175, 2176)."""
+    from tessellate.ai import composer_chat, personal, question_noise  # lazy: the composer loads these on first use
+
+    return (
+        intent.classify(question) == intent.SMALLTALK
+        or composer_remark.is_remark(question)
+        or question_noise.social_kind(question) is not None
+        or composer_chat.reply(question, history or [], "") is not None
+        or bool(personal.about_me(question))
+    )

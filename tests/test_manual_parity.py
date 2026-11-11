@@ -369,6 +369,13 @@ def test_the_diagram_blocks_keys_menu_and_views_are_in_the_guide() -> None:
         assert words in body, words
     assert "diagram-blocks" in TOPIC_META
     assert "diagram-blocks" in dict(HELP_GROUPS)["Documents and code"]
+    # The toolbar's Expand and Collapse (the owner, 2026-11-11), said in the controls' words in the Guide and the dock's popover.
+    from tessellate.ai.help_chat import HELP_TOPICS as TOPICS
+
+    builder = str(next(t["body"] for t in TOPICS if t["id"] == "diagram-lines"))
+    assert "Expand, at the end of the toolbar of a diagram in a document" in builder and "Collapse or Escape returns to the document" in builder
+    index = (Path(__file__).resolve().parents[1] / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert "Expand, at the end of the diagram's toolbar" in index and "Collapse or Escape returns to the document" in index
     builder = (FRONTEND / "js" / "diagram-builder.js").read_text(encoding="utf-8")
     for key in ("Insert", "Delete", "Backspace", "ContextMenu"):
         assert key in builder, key
@@ -682,3 +689,26 @@ def test_the_diagram_ask_suggestions_and_versions_are_in_the_guide_in_the_contro
         assert words in body and control in ai, words
     assert "no model a rule" in body and "Ctrl+Z" in body and len(body) < 1900
     assert "diagram-ai" in TOPIC_META and "diagram-ai" in dict(HELP_GROUPS)["Documents and code"]
+
+
+def test_the_viewer_page_number_is_a_typeable_field_in_the_guide() -> None:
+    """INBOX 1694 (b): the lightbox's 'Page 3 of 12' is a value field; the `image-viewer` topic says so in the words the
+    control carries (its name, its text, the jump)."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "image-viewer"))
+    for words in ("'Page 3 of 12' is a field too", "type 7 and Enter", "pinch to zoom"):
+        assert words in body, words
+    view = (FRONTEND / "js" / "lightbox-view.js").read_text(encoding="utf-8")
+    for label in ('label: "Page number"', "Page ${v} of ${docPageCount}", "setDocPage(n - 1)"):
+        assert label in view, label
+
+
+def test_the_answer_offers_and_the_pool_count_line_are_in_the_guide() -> None:
+    """Standing order 13 (composer batch 2): the offer link at the end of an answer, a typed yes taking
+    it up in Chat, and the story's "That tells N of the M" line are named in the Ask and Chat topic."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = " ".join(str(t["body"]) for t in HELP_TOPICS if "Save it as a checklist note" in str(t["body"]))
+    for phrase in ("Save it as a checklist note", "Start a list of", "typing yes", "no thanks drops it", "That tells five of the twelve"):
+        assert phrase in body, phrase

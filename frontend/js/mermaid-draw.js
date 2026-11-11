@@ -371,7 +371,8 @@
     const text = (lines[at] || "").replace(/;\s*$/, "").trim();
     const where = `Line ${at + 1}: `;
     const count = (open, close) => text.split(open).length - text.split(close).length;
-    if (/(-->|---|==>|===|-\.->|--[ox>]|<-->)$/.test(text)) return `${where}an arrow needs a box after it.`;
+    // Plain string ends, not one regex: this checks a diagram line, it filters no HTML.
+    if (["-->", "---", "==>", "===", "-.->", "<-->"].some((arrow) => text.endsWith(arrow)) || /--[ox>]$/.test(text)) return `${where}an arrow needs a box after it.`;
     if (text.split('"').length % 2 === 0) return `${where}a quote is not closed.`;
     if (count("[", "]") || count("(", ")") || count("{", "}")) return `${where}a bracket is not closed.`;
     return `${where}this line is not valid here. Check its arrows and brackets.`;

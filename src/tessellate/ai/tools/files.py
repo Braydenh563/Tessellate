@@ -125,7 +125,7 @@ def _search_files(session: Session, args: dict) -> dict:
     limit = _limit_arg(args, default=DEFAULT_LIST_LIMIT)
     rows: list[dict] = []
 
-    for upload in session.scalars(select(MediaUpload).order_by(MediaUpload.id.desc())):
+    for upload in session.scalars(select(MediaUpload).where(MediaUpload.board_only.is_(False)).order_by(MediaUpload.id.desc())):
         if _matches(upload, needle):
             rows.append(_media_row(upload, needle))
         if len(rows) >= limit:

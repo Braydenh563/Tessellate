@@ -2315,6 +2315,10 @@ class MediaUpload(Base, WorkspaceMixin):
     #: its readings. Only ever set, never cleared: a stale True costs a
     #: readable-note-less file staying sealed until unlock, never a leak.
     in_private_note: Mapped[bool] = mapped_column(Boolean, default=False)
+    #: A picture placed on a board or map stays there (owner-1026b K18): no
+    #: Library row, no search hit, no caption or reading job, until the person
+    #: chooses Save to Library (`POST /media/{id}/library`), which clears this.
+    board_only: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
 class JobRun(Base):

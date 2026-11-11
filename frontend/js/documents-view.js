@@ -328,7 +328,8 @@ function docCmExtensions(CM) {
     docCmParts.spell.of(docCmSpellcheck(CM)),
     //: Named (WCAG 4.1.2, INBOX 433: axe, aria-input-field-name): the
     //: editable had a role of textbox and no name at all.
-    CM.view.EditorView.contentAttributes.of({ "aria-label": "Document text" }),
+    //: And described (W26): Tab indents here, so the way out is said where a screen reader finds it.
+    CM.view.EditorView.contentAttributes.of({ "aria-label": "Document text", "aria-description": "Tab indents. To leave the editor, press Escape, then Tab." }),
   ];
 }
 
