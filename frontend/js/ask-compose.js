@@ -428,7 +428,7 @@ function digestShape(answerEl, shape, figureText) {
 //: short answer arrive cited and are folded here behind one plain-tier
 //: "Show five more", found by the bold label each opens with (the server's
 //: `support.more.labels`), so the marks inside them keep their numbers.
-//: Pressed, they show and the first of them takes focus.
+//: Pressed, they show and the button stays (focus with it), reading "Show fewer".
 function digestMore(answerEl, more) {
   if (!answerEl || !more) return;
   const wanted = new Set((more.labels || []).map((l) => `${l}:`));
@@ -449,11 +449,13 @@ function digestMore(answerEl, more) {
   button.setAttribute("aria-expanded", "false");
   for (const p of folded) p.hidden = true;
   folded[0].before(button);
+  //: The button stays and toggles (INBOX 1767 a): it kept focus, so no folded
+  //: line (the "More loosely related" label, say) takes a ring it never had.
   button.addEventListener("click", () => {
-    for (const p of folded) p.hidden = false;
-    button.remove();
-    folded[0].tabIndex = -1;
-    folded[0].focus({ preventScroll: true });
+    const open = button.getAttribute("aria-expanded") !== "true";
+    for (const p of folded) p.hidden = !open;
+    button.setAttribute("aria-expanded", String(open));
+    setLabel(button, open ? "ph:caret-up Show fewer" : `ph:caret-down ${more.label}`);
   });
 }
 

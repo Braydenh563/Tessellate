@@ -296,6 +296,18 @@ def group_said(theme: str, names: str, tail: str, i: int) -> str:
     return GROUP_FRAMES[i % len(GROUP_FRAMES)].format(theme=more_theme(theme, i), names=names, tail=tail)
 
 
+_REASON_STOP = frozenset("shared share both same about with the and are is these those notes note related similar also together linked link".split())
+
+
+def restated(reason: str, first: dict, second: dict) -> bool:
+    """Whether every word of a link's `reason` is already in the two notes
+    ("Shared Tuesday 9pm legs training" over a note that says "tuesday for legs"
+    and one that says "Training"): the link line then says no more than they do."""
+    words = [w for w in re.findall(r"[a-z0-9]+", reason.lower()) if w not in _REASON_STOP]
+    held = re.findall(r"[a-z0-9]+", f"{first.get('content')} {second.get('content')}".lower())
+    return bool(words) and all(any(h.startswith(w[:4]) for h in held) for w in words)
+
+
 def link_said(a: str, b: str, reason: str, i: int, back: bool) -> str:
     """The link line: back to "them" when the group is just the pair."""
     said = reason_said(reason)
