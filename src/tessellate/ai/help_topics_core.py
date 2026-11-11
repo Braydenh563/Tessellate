@@ -791,6 +791,9 @@ HELP_TOPICS: list[dict] = [
             "transcribe",
             "recording",
             "recordings",
+            "speaker",
+            "speakers",
+            "who spoke",
             "trim",
             "marker",
             "read aloud",
@@ -818,7 +821,8 @@ HELP_TOPICS: list[dict] = [
             "play from it; a line's copy button copies it, Shift-click picks a run of "
             "lines, and the transcript's more menu copies the picked lines or all of "
             "them, with or without times) and downloads them as SRT or VTT subtitles; with "
-            "the AI on, each turn is labelled with who spoke, and a recording's menu has Rename a speaker to correct a name everywhere. "
+            "the Speakers bundle (Settings, Packages) a transcript labels who speaks by voice, as Speaker 1, 2 and so on (Label speakers by voice in the menu does an old one); "
+            "with only the AI on, turns are labelled from what is said. Rename a speaker names a label for good. "
             "Read aloud plays an answer back to you; its item turns to Stop "
             "reading while it speaks, and Settings, General, Read aloud sets the speed (0.75x to 1.5x)."
         ),

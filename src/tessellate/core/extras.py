@@ -827,6 +827,68 @@ EXTRAS: tuple[Extra, ...] = (
         "owning model load/unload, for a capability llama-server already "
         "gives you today.",
     ),
+    #: **Speaker labels by voice (BACKLOG 102 item 8, gap 12; the owner,
+    #: 2026-11-11).** Two entries, one bundle: the engine (sherpa-onnx, which
+    #: carries onnxruntime; no torch) and the two pinned model files it reads.
+    #: `ai/diarize.py` is the only caller. Licences, read 2026-11-11: sherpa-onnx
+    #: Apache-2.0; the pyannote segmentation 3.0 model MIT (the licence file
+    #: ships in the archive and is kept); the WeSpeaker ResNet34 embedding
+    #: model Apache-2.0 (its Hugging Face card).
+    #:
+    #: Measured 2026-11-11 on Linux x86_64, Python 3.13: the sherpa-onnx 2.0.1
+    #: wheel is 4.3 MB with its core library; the models are 7.0 MB and 26.5 MB.
+    Extra(
+        id="speakers",
+        label="Speaker labels, engine (sherpa-onnx)",
+        enables="Tells voices apart in a recording, on this computer, so a "
+        "transcript reads Speaker 1, Speaker 2 and so on. Needs the speaker "
+        "models below as well; the Speakers bundle installs both.",
+        packages=("sherpa-onnx",),
+        module="sherpa_onnx",
+        size="~5 MB: ONNX Runtime, no PyTorch",
+    ),
+    #: **To bump:** the segmentation archive is on
+    #: github.com/k2-fsa/sherpa-onnx/releases/tag/speaker-segmentation-models, the
+    #: embedding file on `.../speaker-recongition-models` (sic); `sha256sum`
+    #: each and write its size here. The marker records the version.
+    Extra(
+        id="speakermodels",
+        label="Speaker labels, models (pyannote and WeSpeaker)",
+        short_label="Speaker models",
+        enables="The two small models that tell voices apart. They are read "
+        "from this computer's data folder; nothing is sent anywhere after the "
+        "download.",
+        packages=("pyannote-segmentation 3.0", "wespeaker-resnet34 en"),
+        module="",
+        size="~34 MB download",
+        caveat="Good for a few people taking turns in clear audio; overlapping "
+        "talk and similar voices can be merged or split wrongly. Rename a label "
+        "once and it stays for that recording.",
+        kind="download",
+        version="seg3.0-wespeaker-en-1",
+        licence="MIT and Apache-2.0",
+        downloads=(
+            Download(
+                url="https://github.com/k2-fsa/sherpa-onnx/releases/download/"
+                "speaker-segmentation-models/sherpa-onnx-pyannote-segmentation-3-0.tar.bz2",
+                sha256="24615ee884c897d9d2ba09bb4d30da6bb1b15e685065962db5b02e76e4996488",
+                size=6958444,
+                unpack="tar",
+                members=(
+                    ("sherpa-onnx-pyannote-segmentation-3-0/model.onnx", "segmentation.onnx"),
+                    ("sherpa-onnx-pyannote-segmentation-3-0/LICENSE", "LICENSE-segmentation"),
+                ),
+            ),
+            Download(
+                url="https://github.com/k2-fsa/sherpa-onnx/releases/download/"
+                "speaker-recongition-models/wespeaker_en_voxceleb_resnet34.onnx",
+                sha256="5ef208a9da1453335308a6b6f4e6dfbd7e183a38b604de0a57664f45d257fe94",
+                size=26534365,
+                unpack="file",
+                members=(("", "embedding.onnx"),),
+            ),
+        ),
+    ),
     #: **Live captions (WORLD_CLASS_PLAN 28.5 row 9, Brief 82).** whisper.cpp's
     #: `whisper-server` (MIT), a separate executable, never a Python import.
     #: The captions code in `ai/captions.py` already speaks to it through
@@ -923,6 +985,12 @@ BUNDLES: tuple[Bundle, ...] = (
         label="Voice",
         about="Dictate notes and questions, transcribed on this computer.",
         extras=("voice",),
+    ),
+    Bundle(
+        id="speakers",
+        label="Speakers",
+        about="Label who speaks in a transcript by their voice, on this computer.",
+        extras=("speakers", "speakermodels"),
     ),
     Bundle(
         id="captions",
