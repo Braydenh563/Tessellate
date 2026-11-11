@@ -28,6 +28,7 @@ from tessellate.ai import facts, learning
 from tessellate.core import deps, undo_bin
 from tessellate.core.database import utcnow
 from tessellate.core.deps import get_session
+from tessellate.repo import visible_notes
 
 router = APIRouter(prefix="/learned", tags=["learned"])
 
@@ -115,12 +116,10 @@ def mark_answer_wrong(body: AnswerVerdictBody, session: Session = Depends(get_se
     """Not right on an answer: one `wrong_answer` correction per cited note
     (`search_manager._learned_down` reads them). `ids` are the corrections, whose
     Delete (`DELETE /learned/corrections/{id}`) is the undo."""
-    from tessellate.core.database import Entry
-
     ids: list[int] = []
+    visible = {row.id for row in visible_notes.by_ids(session, body.entry_ids)}
     for note_id in dict.fromkeys(body.entry_ids):
-        entry = session.get(Entry, note_id)
-        if entry is None or entry.is_deleted or entry.is_private:
+        if note_id not in visible:
             continue
         item = learning.record(
             session, kind="wrong_answer", subject={"question": " ".join(body.question.split())[:300], "entry_id": note_id}, excerpt=body.line

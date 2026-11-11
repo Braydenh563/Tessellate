@@ -12874,7 +12874,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |  | DELETE | `clear` | src/tessellate/api/routes_usage.py:40 |
 |  | DELETE | `clear_ask_history` | src/tessellate/api/routes_ask_history.py:200 |
 |  | DELETE | `forget` | src/tessellate/api/routes_kept_words.py:79 |
-|  | DELETE | `forget_everything` | src/tessellate/api/routes_learned.py:269 |
+|  | DELETE | `forget_everything` | src/tessellate/api/routes_learned.py:268 |
 |  | GET | `list_ask_history` | src/tessellate/api/routes_ask_history.py:48 |
 |  | GET | `list_bookmarks` | src/tessellate/api/routes_bookmarks.py:66 |
 |  | GET | `list_categories` | src/tessellate/api/routes_categories.py:140 |
@@ -12883,7 +12883,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |  | GET | `list_duplicates` | src/tessellate/api/routes_duplicates.py:78 |
 |  | GET | `list_entities` | src/tessellate/api/routes_entities.py:68 |
 |  | GET | `list_entries` | src/tessellate/api/routes_entries.py:1898 |
-|  | GET | `list_facts` | src/tessellate/api/routes_learned.py:189 |
+|  | GET | `list_facts` | src/tessellate/api/routes_learned.py:188 |
 |  | GET | `list_questions` | src/tessellate/api/routes_questions.py:26 |
 |  | GET | `list_reminders` | src/tessellate/api/routes_reminders.py:515 |
 |  | GET | `list_tags` | src/tessellate/api/routes_tags.py:40 |
@@ -12911,7 +12911,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/activity` | GET | `list_activity` | src/tessellate/api/routes_tasks.py:1014 |
 | `/activity/{job_id:path}/stop` | POST | `stop_activity` | src/tessellate/api/routes_tasks.py:1095 |
 | `/all` | GET | `ranked` | src/tessellate/api/routes_resurface.py:129 |
-| `/answer-verdict` | POST | `mark_answer_wrong` | src/tessellate/api/routes_learned.py:113 |
+| `/answer-verdict` | POST | `mark_answer_wrong` | src/tessellate/api/routes_learned.py:114 |
 | `/apply` | POST | `apply_update` | src/tessellate/api/routes_update.py:758 |
 | `/apply/status` | GET | `apply_status` | src/tessellate/api/routes_update.py:849 |
 | `/ask` | POST | `ask` | src/tessellate/api/routes_help.py:68 |
@@ -12967,7 +12967,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/boards/{board_id}/thumbnail/state` | GET | `thumbnail_state` | src/tessellate/api/wb_preview.py:902 |
 | `/boards/{board_id}/tree` | GET | `board_tree` | src/tessellate/api/wb_map.py:31 |
 | `/budgets` | GET | `budgets` | src/tessellate/api/routes_bench.py:125 |
-| `/bulk` | POST | `bulk_action` | src/tessellate/api/routes_learned.py:313 |
+| `/bulk` | POST | `bulk_action` | src/tessellate/api/routes_learned.py:312 |
 | `/bulk` | POST | `bulk_edit_tags` | src/tessellate/api/routes_tags.py:106 |
 | `/capabilities` | GET | `capabilities` | src/tessellate/api/routes_capabilities.py:79 |
 | `/change-password` | POST | `change_password` | src/tessellate/api/routes_auth.py:1718 |
@@ -12998,9 +12998,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/confirmed/{fact_id}/restore` | POST | `restore_confirmed` | src/tessellate/api/routes_insights.py:645 |
 | `/contents` | GET | `read_contents` | src/tessellate/api/routes_documents.py:547 |
 | `/contents` | POST | `write_contents` | src/tessellate/api/routes_documents.py:571 |
-| `/corrections` | GET | `list_corrections` | src/tessellate/api/routes_learned.py:135 |
-| `/corrections` | POST | `add_correction` | src/tessellate/api/routes_learned.py:53 |
-| `/corrections/{correction_id}` | DELETE | `remove_correction` | src/tessellate/api/routes_learned.py:457 |
+| `/corrections` | GET | `list_corrections` | src/tessellate/api/routes_learned.py:134 |
+| `/corrections` | POST | `add_correction` | src/tessellate/api/routes_learned.py:54 |
+| `/corrections/{correction_id}` | DELETE | `remove_correction` | src/tessellate/api/routes_learned.py:456 |
 | `/count` | GET | `count_entries` | src/tessellate/api/routes_entries.py:2064 |
 | `/counts` | GET | `counts` | src/tessellate/api/routes_questions.py:45 |
 | `/counts` | GET | `reminder_counts` | src/tessellate/api/routes_reminders.py:255 |
@@ -13049,7 +13049,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/entries/{entry_id}/properties` | PUT | `put_properties` | src/tessellate/api/routes_properties.py:61 |
 | `/events` | GET | `event_feed` | src/tessellate/api/routes_settings.py:2047 |
 | `/events/undo` | POST | `undo_actor` | src/tessellate/api/routes_settings.py:2018 |
-| `/export` | GET | `export_learned` | src/tessellate/api/routes_learned.py:207 |
+| `/export` | GET | `export_learned` | src/tessellate/api/routes_learned.py:206 |
 | `/export.ics` | GET | `export_ics` | src/tessellate/api/routes_reminders.py:412 |
 | `/export/backup` | GET | `export_backup` | src/tessellate/api/routes_settings_transfer.py:50 |
 | `/export/csv` | GET | `export_csv` | src/tessellate/api/routes_settings_transfer.py:765 |
@@ -13356,12 +13356,12 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/suggest-tags` | POST | `suggest_tags_for_draft` | src/tessellate/api/routes_entries.py:1418 |
 | `/suggested` | GET | `suggested` | src/tessellate/api/routes_models.py:878 |
 | `/suggestions` | GET | `suggestions` | src/tessellate/api/routes_chat.py:121 |
-| `/summary` | GET | `learned_summary` | src/tessellate/api/routes_learned.py:246 |
+| `/summary` | GET | `learned_summary` | src/tessellate/api/routes_learned.py:245 |
 | `/summary` | GET | `summary` | src/tessellate/api/routes_questions.py:53 |
 | `/summary` | POST | `summary` | src/tessellate/api/routes_usage.py:35 |
 | `/support-bundle` | GET | `support_bundle` | src/tessellate/api/routes_settings.py:2665 |
-| `/switches` | GET | `get_switches` | src/tessellate/api/routes_learned.py:254 |
-| `/switches` | PUT | `put_switches` | src/tessellate/api/routes_learned.py:260 |
+| `/switches` | GET | `get_switches` | src/tessellate/api/routes_learned.py:253 |
+| `/switches` | PUT | `put_switches` | src/tessellate/api/routes_learned.py:259 |
 | `/system/clear-static-cache` | POST | `system_clear_static_cache` | src/tessellate/api/app.py:1685 |
 | `/system/console-mode` | POST | `set_console_mode` | src/tessellate/api/routes_settings.py:1398 |
 | `/system/desktop-shortcut` | POST | `desktop_shortcut` | src/tessellate/api/routes_maintenance.py:85 |
@@ -13399,7 +13399,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/types/dismiss` | POST | `dismiss_type` | src/tessellate/api/routes_inbox.py:184 |
 | `/undo` | POST | `undo` | src/tessellate/api/routes_learned_audit.py:52 |
 | `/undo/{undo_id}` | POST | `tidy_undo` | src/tessellate/api/routes_tidy.py:70 |
-| `/unforget` | POST | `unforget_everything` | src/tessellate/api/routes_learned.py:295 |
+| `/unforget` | POST | `unforget_everything` | src/tessellate/api/routes_learned.py:294 |
 | `/unlock` | POST | `unlock` | src/tessellate/api/routes_auth.py:1036 |
 | `/unlock` | POST | `unlock` | src/tessellate/api/routes_hello.py:285 |
 | `/unlock-vault` | POST | `unlock_vault` | src/tessellate/api/routes_auth.py:1192 |
@@ -13407,7 +13407,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/utilities/work` | GET | `work` | src/tessellate/api/routes_utilities.py:22 |
 | `/utility-model` | POST | `set_utility_model` | src/tessellate/api/routes_models.py:1078 |
 | `/verdict` | GET | `verdict` | src/tessellate/api/routes_privacy.py:95 |
-| `/verdict` | POST | `mark_verdict` | src/tessellate/api/routes_learned.py:90 |
+| `/verdict` | POST | `mark_verdict` | src/tessellate/api/routes_learned.py:91 |
 | `/vision-model` | POST | `set_vision_model` | src/tessellate/api/routes_models.py:1096 |
 | `/warm` | POST | `warm` | src/tessellate/api/routes_search.py:36 |
 | `/warm-filing` | POST | `warm_filing` | src/tessellate/api/routes_models.py:384 |
@@ -13516,12 +13516,12 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{entry_id}/then-and-now` | POST | `then_and_now_of_text` | src/tessellate/api/routes_entries.py:2964 |
 | `/{entry_id}/unarchive` | POST | `unarchive_entry` | src/tessellate/api/routes_entries.py:2487 |
 | `/{entry_id}/wiki-rename` | POST | `wiki_rename` | src/tessellate/api/routes_entries.py:2435 |
-| `/{fact_id}` | DELETE | `delete_fact` | src/tessellate/api/routes_learned.py:422 |
-| `/{fact_id}` | GET | `get_fact` | src/tessellate/api/routes_learned.py:384 |
-| `/{fact_id}` | PATCH | `patch_fact` | src/tessellate/api/routes_learned.py:392 |
+| `/{fact_id}` | DELETE | `delete_fact` | src/tessellate/api/routes_learned.py:421 |
+| `/{fact_id}` | GET | `get_fact` | src/tessellate/api/routes_learned.py:383 |
+| `/{fact_id}` | PATCH | `patch_fact` | src/tessellate/api/routes_learned.py:391 |
 | `/{fact_id}` | POST | `set_state` | src/tessellate/api/routes_questions.py:65 |
-| `/{fact_id}/reset` | POST | `reset_fact` | src/tessellate/api/routes_learned.py:411 |
-| `/{fact_id}/restore` | POST | `restore_fact` | src/tessellate/api/routes_learned.py:445 |
+| `/{fact_id}/reset` | POST | `reset_fact` | src/tessellate/api/routes_learned.py:410 |
+| `/{fact_id}/restore` | POST | `restore_fact` | src/tessellate/api/routes_learned.py:444 |
 | `/{key}` | DELETE | `delete_type` | src/tessellate/api/routes_relations.py:77 |
 | `/{key}` | GET | `tidy_rows` | src/tessellate/api/routes_tidy.py:88 |
 | `/{key}` | PATCH | `patch_type` | src/tessellate/api/routes_relations.py:70 |
@@ -21679,33 +21679,33 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `AnswerVerdictBody` | src/tessellate/api/routes_learned.py:104 |
-| `BulkBody` | src/tessellate/api/routes_learned.py:306 |
-| `CorrectionBody` | src/tessellate/api/routes_learned.py:35 |
-| `FactPatch` | src/tessellate/api/routes_learned.py:170 |
-| `ForgetBody` | src/tessellate/api/routes_learned.py:185 |
-| `SwitchBody` | src/tessellate/api/routes_learned.py:178 |
-| `UnforgetBody` | src/tessellate/api/routes_learned.py:291 |
-| `VerdictBody` | src/tessellate/api/routes_learned.py:78 |
-| `_unlearn_deletion` | src/tessellate/api/routes_learned.py:362 |
-| `add_correction` | src/tessellate/api/routes_learned.py:54 |
-| `bulk_action` | src/tessellate/api/routes_learned.py:314 |
-| `delete_fact` | src/tessellate/api/routes_learned.py:423 |
-| `export_learned` | src/tessellate/api/routes_learned.py:208 |
-| `forget_everything` | src/tessellate/api/routes_learned.py:270 |
-| `get_fact` | src/tessellate/api/routes_learned.py:385 |
-| `get_switches` | src/tessellate/api/routes_learned.py:255 |
-| `learned_summary` | src/tessellate/api/routes_learned.py:247 |
-| `list_corrections` | src/tessellate/api/routes_learned.py:136 |
-| `list_facts` | src/tessellate/api/routes_learned.py:190 |
-| `mark_answer_wrong` | src/tessellate/api/routes_learned.py:114 |
-| `mark_verdict` | src/tessellate/api/routes_learned.py:91 |
-| `patch_fact` | src/tessellate/api/routes_learned.py:393 |
-| `put_switches` | src/tessellate/api/routes_learned.py:261 |
-| `remove_correction` | src/tessellate/api/routes_learned.py:458 |
-| `reset_fact` | src/tessellate/api/routes_learned.py:412 |
-| `restore_fact` | src/tessellate/api/routes_learned.py:446 |
-| `unforget_everything` | src/tessellate/api/routes_learned.py:296 |
+| `AnswerVerdictBody` | src/tessellate/api/routes_learned.py:105 |
+| `BulkBody` | src/tessellate/api/routes_learned.py:305 |
+| `CorrectionBody` | src/tessellate/api/routes_learned.py:36 |
+| `FactPatch` | src/tessellate/api/routes_learned.py:169 |
+| `ForgetBody` | src/tessellate/api/routes_learned.py:184 |
+| `SwitchBody` | src/tessellate/api/routes_learned.py:177 |
+| `UnforgetBody` | src/tessellate/api/routes_learned.py:290 |
+| `VerdictBody` | src/tessellate/api/routes_learned.py:79 |
+| `_unlearn_deletion` | src/tessellate/api/routes_learned.py:361 |
+| `add_correction` | src/tessellate/api/routes_learned.py:55 |
+| `bulk_action` | src/tessellate/api/routes_learned.py:313 |
+| `delete_fact` | src/tessellate/api/routes_learned.py:422 |
+| `export_learned` | src/tessellate/api/routes_learned.py:207 |
+| `forget_everything` | src/tessellate/api/routes_learned.py:269 |
+| `get_fact` | src/tessellate/api/routes_learned.py:384 |
+| `get_switches` | src/tessellate/api/routes_learned.py:254 |
+| `learned_summary` | src/tessellate/api/routes_learned.py:246 |
+| `list_corrections` | src/tessellate/api/routes_learned.py:135 |
+| `list_facts` | src/tessellate/api/routes_learned.py:189 |
+| `mark_answer_wrong` | src/tessellate/api/routes_learned.py:115 |
+| `mark_verdict` | src/tessellate/api/routes_learned.py:92 |
+| `patch_fact` | src/tessellate/api/routes_learned.py:392 |
+| `put_switches` | src/tessellate/api/routes_learned.py:260 |
+| `remove_correction` | src/tessellate/api/routes_learned.py:457 |
+| `reset_fact` | src/tessellate/api/routes_learned.py:411 |
+| `restore_fact` | src/tessellate/api/routes_learned.py:445 |
+| `unforget_everything` | src/tessellate/api/routes_learned.py:295 |
 
 ### src/tessellate/api/routes_learned_audit.py (6)
 
