@@ -571,6 +571,26 @@ function paintReminderList(all) {
   return due;
 }
 
+//: **Ask small first** (audit 1028 K32). `/reminders/due` answers a stamp over
+//: the open list in about a hundred bytes; the list itself is fetched only when
+//: the stamp moved, so an idle notebook no longer pulls a page of rows a minute.
+//: What time does to a cached list (a reminder coming due) is worked out here
+//: from `due_at`, as it always was. A stamp that cannot be had falls back to
+//: asking for the list.
+let reminderListCache = { stamp: "", all: null };
+async function openReminderList() {
+  const look = await apiJson("/reminders/due", { silent: true }).catch(() => null);
+  if (look?.stamp && reminderListCache.all && look.stamp === reminderListCache.stamp) {
+    return { all: reminderListCache.all, fetched: false };
+  }
+  const all = await apiJson("/reminders?include_done=false", { silent: true }).catch(() => null);
+  if (!all) return null;
+  //: The stamp was read first, so a change in between leaves the cache looking
+  //: older than the list, and the next look fetches again: the safe side.
+  reminderListCache = { stamp: look?.stamp || "", all };
+  return { all, fetched: true };
+}
+
 async function checkDueReminders() {
   // Before the unlock there is no token, and asking anyway is a guaranteed 401
   // on every load: visible in the browser's network log, and in the server's
@@ -584,11 +604,13 @@ async function checkDueReminders() {
   //: never heard about the one due now. Without the done rows the page is
   //: the soonest open reminders, which is exactly what "is anything due"
   //: asks, and it is smaller.
-  const all = await apiJson("/reminders?include_done=false", { silent: true }).catch(() => null);
-  if (!all) return; // server asleep or locked, say nothing rather than guess
+  const looked = await openReminderList();
+  if (!looked) return; // server asleep or locked, say nothing rather than guess
+  const all = looked.all;
   const due = paintReminderList(all);
-  //: Painting only: announcing stays with the tab that asked.
-  reminderChannel?.postMessage(all);
+  //: Painting only: announcing stays with the tab that asked. An unchanged
+  //: list was already sent when it was fetched.
+  if (looked.fetched) reminderChannel?.postMessage(all);
   const now = Date.now();
   const already = announcedReminders();
   //: An early alert (TIMELINE_PLAN 11 row 8) is announced once, under its
