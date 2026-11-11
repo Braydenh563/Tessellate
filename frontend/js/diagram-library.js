@@ -176,6 +176,25 @@
     paint();
   }
 
+  //: `anchor` (INBOX 1771; here, not in sheets-selects.js, as only these menus pass one): the menu keeps off a whole row, not a point. Below, else above, the first that fits the window; neither, the larger of the two, scrolling.
+  kebabMenu.beside = (menu, row, opener) => {
+    const [margin, gap] = [8, 4];
+    escapeMenuToBody(menu, opener);
+    menu.style.visibility = "hidden";
+    menu.style.maxHeight = "";
+    menu.style.left = menu.style.top = "0px";
+    const box = menu.getBoundingClientRect();
+    const [down, up] = [innerHeight - margin - row.bottom - gap, row.top - gap - margin];
+    const below = box.height <= down || (box.height > up && down >= up);
+    menu.style.maxHeight = `${Math.max(120, Math.floor(below ? down : up))}px`;
+    const left = Math.max(margin, Math.min(row.right - box.width, innerWidth - margin - box.width));
+    const top = below ? row.bottom + gap : Math.max(margin, row.top - gap - menu.getBoundingClientRect().height);
+    menu.style.left = `${Math.round(left)}px`;
+    menu.style.top = `${Math.round(top)}px`;
+    menu.style.visibility = "";
+    menu.querySelector(".menu-item")?.focus({ preventScroll: true });
+  };
+
   //: A row's ⋯ before it is pressed: an empty `kebabMenu` (1108 P2). The press is caught on the way down, and the
   //: real menu, with its rows and the shape submenu, is built then and swapped in; 41 blocks no longer carry 41
   //: full menus nobody opened. `items` is called on that press (it may be async, a connector's rows come from a lazy file; null opens

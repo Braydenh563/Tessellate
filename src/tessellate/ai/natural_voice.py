@@ -45,9 +45,11 @@ INSTALL_HINT = (
     "Until then your browser's own voices read aloud."
 )
 
-_SENTENCE_END = re.compile(r"(?<=[.!?])[\"')\]]*\s+(?=[\"'(\[]*[A-Z0-9])")
-_CLAUSE = re.compile(r"(?<=[,;:])\s+")
-_MARKUP = re.compile(r"[`*_#>|~]+|\[\[|\]\]|!?\[([^\]]*)\]\([^)]*\)")
+# Bounded runs and brackets excluded from their own insides, so each match is linear (CodeQL polynomial
+# regex: a pasted note can be a long run of "[" or tabs). `plain` folds spaces first, so one space is a break.
+_SENTENCE_END = re.compile(r"(?<=[.!?])[\"')\]]{0,3} (?=[\"'(\[]{0,3}[A-Z0-9])")
+_CLAUSE = re.compile(r"(?<=[,;:]) ")
+_MARKUP = re.compile(r"[`*_#>|~]+|\[\[|\]\]|!?\[([^\[\]\n]{0,500})\]\([^()\s]{0,2000}\)")
 
 _lock = threading.Lock()
 _loaded: tuple[Path, object] | None = None

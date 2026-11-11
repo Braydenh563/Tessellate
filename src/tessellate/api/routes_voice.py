@@ -5,6 +5,7 @@ transcribes with local Whisper, nothing is sent anywhere.
 from __future__ import annotations
 
 import logging
+import re
 import tempfile
 from pathlib import Path
 
@@ -87,7 +88,9 @@ def _transcribe_upload(
     if not data:
         raise HTTPException(status_code=400, detail="The recording is empty.")
 
-    suffix = Path(file.filename or "clip.webm").suffix[:8] or ".webm"
+    # Only a plain extension of the upload's name reaches the temp file's name (CodeQL path injection).
+    suffix = Path(file.filename or "").suffix.lower()
+    suffix = suffix if re.fullmatch(r"\.[a-z0-9]{1,7}", suffix) else ".webm"
     # delete=True keeps the file open under this handle for the `with` block's
     # whole lifetime: harmless on POSIX, where a second handle can still open
     # the same path, but Windows locks a file exclusively while any handle on

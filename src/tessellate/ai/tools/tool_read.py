@@ -8,7 +8,7 @@ down the layer list in `__init__.py`'s docstring, never back to `__init__`.
 from __future__ import annotations
 
 from tessellate.core.database import Category, Entry, LIKE_ESCAPE, like_escape
-from tessellate.ai.tools._common import DEFAULT_CONTEXT_TOKENS, DEFAULT_LIST_LIMIT, FULL_NOTE_CHARS, MAX_LIST_LIMIT, PREVIEW_CHARS, SEARCH_CONTEXT_SHARE, SUMMARY_NOTE_LIMIT, _READ_MORE, _category_clause, _clip, _limit_arg, _missing_category_note, _note_summary, _readable, _require_note, _since_clause, _since_days, _span_not_category, _visible
+from tessellate.ai.tools._common import DEFAULT_CONTEXT_TOKENS, DEFAULT_LIST_LIMIT, FULL_NOTE_CHARS, MAX_LIST_LIMIT, PREVIEW_CHARS, SEARCH_CONTEXT_SHARE, SUMMARY_NOTE_LIMIT, _READ_MORE, _category_clause, _clip, _limit_arg, _note_summary, _readable, _require_note, _since_clause, _since_days, _span_not_category, _visible
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, func, or_, select
 from tessellate.core import deps
@@ -17,6 +17,7 @@ from tessellate.ai import note_rank
 from tessellate.search import search_manager
 from tessellate.entry.properties import strip as strip_properties
 from datetime import timedelta
+from tessellate.ai.tools.tool_list_page import describe_filters, page_of_notes, unknown_category_hint
 
 # --- handlers (session, args) -> result dict -----------------------------------
 # Results always include a human "label" on success; the UI shows it
@@ -565,45 +566,8 @@ def _list_notes(session: Session, args: dict) -> dict:
     since_days = _since_days(args.get("since"))
     filters.extend(_scope_filters(args))
 
-    query = select(Entry).where(*_visible(*filters))
-    rows = list(
-        session.scalars(
-            query.order_by(Entry.created_at.desc(), Entry.id.desc())
-            # Over-fetch when a tag filter is on, because the exact tag match
-            # below can only remove rows, never add them.
-            .offset(offset).limit(limit + 1 if not tag else (limit + 1) * 4)
-        )
-    )
-    if tag:
-        wanted = tag.lower()
-        rows = [e for e in rows if wanted in {t.lower() for t in manager.entry_tags(e)}]
-
-    has_more = len(rows) > limit
-    rows = rows[:limit]
-
-    if tag:
-        # An exact count needs the same per-row check, so it can't be a
-        # SQL count(). Cheap enough: tags, not content.
-        total = sum(
-            1
-            for e in session.scalars(select(Entry).where(*_visible(*filters)))
-            if tag.lower() in {t.lower() for t in manager.entry_tags(e)}
-        )
-        has_more = offset + len(rows) < total
-    else:
-        total = session.scalar(
-            select(func.count(Entry.id)).where(*_visible(*filters))
-        ) or 0
-
-    described = ", ".join(
-        part
-        for part in (
-            category or "",
-            f"#{tag}" if tag else "",
-            f"last {since_days} days" if since_days is not None else "",
-        )
-        if part
-    )
+    rows, total, has_more = page_of_notes(session, filters, tag, offset, limit)
+    described = describe_filters(category, tag, since_days)
     dates_by_id = manager.entry_dates_bulk(session, [e.id for e in rows])
     result = {
         "notes": [_note_summary(session, e, dates=dates_by_id.get(e.id, [])) for e in rows],
@@ -622,7 +586,9 @@ def _list_notes(session: Session, args: dict) -> dict:
             f"offset={offset + len(rows)} for the next page, do not assume "
             "these are all the notes."
         )
-    return {**result, **_missing_category_note(session, category, total)}
+    elif category and not total and (hint := unknown_category_hint(session, category)):
+        result["note_to_model"] = hint
+    return result
 
 
 def _count_notes(session: Session, args: dict) -> dict:

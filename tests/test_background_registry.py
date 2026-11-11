@@ -95,7 +95,6 @@ core/deadline.py::guard::task::1
     #: the app.
     """
 ai/captions_helper.py::main::thread::1
-ai/captions_process.py::_read_port::thread::1
 ai/captions_process.py::session_ended::timer::1
 """.strip().splitlines()
 )

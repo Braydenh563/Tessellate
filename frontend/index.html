@@ -9057,7 +9057,7 @@ Link to another note with [[its first few words]]."></textarea>
             data-help-for="bookmark-help" aria-controls="bookmark-help" aria-expanded="false"
             title="About bookmarks" aria-label="About bookmarks"><i class="ph ph-question" aria-hidden="true"></i></button>
           <div class="help-body hidden" id="bookmark-help" role="dialog" aria-label="About bookmarks">
-            <p>Links to websites you visit often, kept in the notebook instead of the browser. Add one, sort the shelf, and put bookmarks in groups: New group and Manage groups are in the more menu.</p>
+            <p>Links to websites you visit often, kept in the notebook instead of the browser. Add one, sort the shelf, and put bookmarks in groups and tag them (commas, then press a tag to filter): New group and Manage groups are in the more menu, with Import bookmarks file (from your browser's export) and Export bookmarks.</p>
           </div>
           <details class="doc-dock-menu dock-menu dock-more" id="bookmark-more-menu">
             <summary class="ghost small icon-only doc-dock-menu-btn" title="More" aria-label="More"><i class="ph ph-dots-three" aria-hidden="true"></i></summary>
@@ -9070,6 +9070,11 @@ Link to another note with [[its first few words]]."></textarea>
                 <i class="ph ph-folder-plus ph-lead" aria-hidden="true"></i> New group</button>
               <button type="button" id="bookmark-group-manage" class="doc-dock-menu-item">
                 <i class="ph ph-folders ph-lead" aria-hidden="true"></i> Manage groups</button>
+              <button type="button" id="bookmark-import" class="doc-dock-menu-item" title="Add the links from a bookmarks file your browser exported">
+                <i class="ph ph-upload-simple ph-lead" aria-hidden="true"></i> Import bookmarks file</button>
+              <button type="button" id="bookmark-export" class="doc-dock-menu-item" title="Save every bookmark as a file your browser can import">
+                <i class="ph ph-download-simple ph-lead" aria-hidden="true"></i> Export bookmarks</button>
+              <input type="file" id="bookmark-import-file" accept=".html,.htm,text/html" class="hidden" aria-label="Bookmarks file to import">
             </div>
           </details>
           <button id="bookmark-add" class="small" type="button"
@@ -9091,6 +9096,8 @@ Link to another note with [[its first few words]]."></textarea>
         <input id="bookmark-group-input" type="text" list="bookmark-group-options"
           placeholder="Group (optional, e.g. Work/Reading)" aria-label="Bookmark group">
         <datalist id="bookmark-group-options"></datalist>
+        <input id="bookmark-tags-input" type="text"
+          placeholder="Tags (optional, commas)" aria-label="Bookmark tags" maxlength="400">
         <input id="bookmark-note-input" type="text"
           placeholder="Note (optional)" aria-label="Bookmark note" maxlength="2000">
         <button type="submit" class="small"><i class="ph ph-plus ph-lead" aria-hidden="true"></i> Add</button>
@@ -12406,7 +12413,7 @@ Link to another note with [[its first few words]]."></textarea>
                   the window is open. On Windows and Linux Atlas floats like a wind spirit across the screen (other
                   companions walk the bottom edge); it sits and sleeps when you are away, can be picked up and
                   thrown (it bounces off the screen edges), hangs from the top now and then, and peeks up from
-                  behind the taskbar or a screen edge (the taskbar on any side), or tucks behind a smaller window. Drag a window from under it and it is thrown off with a flail, then looks worried or miffed; a slipping hold may scrabble and pull up. Let go gently near the top or a title bar and it hangs, then pulls itself up, swings down or lets go with a start; it also hangs from a maximised title bar or a window's bottom edge (Roam over windows turns that off). It stays where it is for minutes, alive in place (it breathes, blinks, also sitting, and sways its tail, and the window never bobs), and spends minutes at a time on one quiet thing for the hour (tea, a book, a journal, fishing, the stars, a nap under a blanket, a plant), moving between them by sparkles, a small cloud, a bubble or a portal. A thrown one tumbles smoothly and rights itself as it settles. Only a hard throw up catches the top; any other throw bounces off it, and the hardest leaves through the top and falls back in, later the harder you threw. A longer trip is walking, running (gliding or swooping when it floats), with a jump between window tops, out at one edge and in at the other, through a portal, now and then a puff of smoke, and it steps out of the way of the text you are typing in, or off the bottom of the window you are typing in when the app shows no caret. A spot you drop it in the middle of the screen is moved to an edge after a couple of minutes. Now and then it climbs onto the top of a window and walks along it (never
+                  behind the taskbar or a screen edge (the taskbar on any side), or tucks behind a smaller window. Drag a window from under it and it is thrown off with a flail, then looks worried or miffed; a slipping hold may scrabble and pull up. Let go gently near the top or a title bar and it hangs, then pulls itself up, swings down or lets go with a start; it also hangs from a maximised title bar or a window's bottom edge (Roam over windows turns that off). It stays where it is for minutes, alive in place (it breathes, blinks, also sitting, and sways its tail, and the window never bobs), and spends minutes at a time on one quiet thing for the hour (tea, a book, a journal, dinner, knitting, fishing, the stars, a nap under a blanket, a plant), moving between them by sparkles, a small cloud, a bubble or a portal. A thrown one tumbles smoothly and rights itself as it settles. Only a hard throw up catches the top; any other throw bounces off it, and the hardest leaves through the top and falls back in, later the harder you threw. A longer trip is walking, running (gliding or swooping when it floats), with a jump between window tops, out at one edge and in at the other, through a portal, now and then a puff of smoke, and it steps out of the way of the text you are typing in, or off the bottom of the window you are typing in when the app shows no caret. A spot you drop it in the middle of the screen is moved to an edge after a couple of minutes. Now and then it climbs onto the top of a window and walks along it (never
                   moving the window; Roam over windows in its right-click menu turns that off), and it brings
                   you a card when a reminder falls due. It follows Companion movement
                   in Appearance, and stands still when that is Fades only or Windows animation effects
@@ -12415,7 +12422,7 @@ Link to another note with [[its first few words]]."></textarea>
                   right-click for Companion (Atlas masculine or feminine, your own or a saved one, summoned once), Stay here or Roam, Activity, Settings or Turn off; a setting keeps the menu open with its new tick. The panel closes when you click
                   elsewhere, and follows it if you move it.
                   While Tessellate is locked it shows the companion and Open only.
-                  On Linux (X11) it is the same figure in a see-through window; on Wayland, which cannot place a window above others, it stays in the app. It also lounges, answers a pat and glances at new windows, never while you type.
+                  On Linux (X11) it is the same figure in a see-through window; on Wayland, which cannot place a window above others, it stays in the app. It also lounges, meditates with its eyes shut, sits on a window top with its legs over the edge, lets one hand go in a long hang, answers a pat and glances at new windows, never while you type.
                 </p>
               </div>
               <!-- Each thing it does on its own, one switch a row (the owner,
@@ -13857,35 +13864,72 @@ Link to another note with [[its first few words]]."></textarea>
               <p id="settings-file-status" class="status" role="status"></p>
             </div>
 
-            <!-- WORLD_CLASS_PLAN B6: sync with another computer, pull over the LAN
-                 pairing. Wired by settings-rows.js (lazy, with Settings). -->
+            <!-- WORLD_CLASS_PLAN B6: sync between computers, two ways in and one apply
+                 path (decision 14). Wired by settings-rows.js (lazy, with Settings);
+                 the folder's sheet is sync-folder.js. -->
             <div class="settings-group" id="sync-group">
               <div class="row help-head">
-                <h3>Sync with another computer</h3>
+                <h3>Sync between computers</h3>
                 <button type="button" class="icon-only ghost small graph-help-toggle"
                   data-help-for="sync-help" aria-controls="sync-help" aria-expanded="false"
                   title="About sync" aria-label="About sync">
                   <i class="ph ph-question" aria-hidden="true"></i>
                 </button>
               </div>
-              <p class="muted">Brings the notes changed on the paired computer into this notebook.</p>
+              <p class="muted">Brings the notes, documents, boards and files changed on another computer into this notebook.</p>
               <div class="help-body hidden" id="sync-help" role="dialog" aria-label="About sync">
                 <p>
-                  Sync now brings in the notes changed on the paired computer
-                  since the last sync; press it on both computers to sync both
-                  ways. A note changed on both keeps the later change, and the
-                  other text is kept in that note's History. A note moved to
-                  the bin lands in the other computer's bin.
+                  Two ways, one result. Over the home network when both
+                  computers are on the same network; through a folder (a USB
+                  stick or a folder a sync tool keeps level) when they are not.
+                  Press Sync on each computer to bring both level.
                 </p>
                 <p>
-                  Private notes travel encrypted and their key stays on the
-                  computer that made them, so they open only there.
-                  Attachments, boards and documents do not sync yet.
+                  A note, document or board changed on both keeps the later
+                  change, and the other words are kept in its History. A note
+                  moved to the bin lands in the other computer's bin, and a
+                  file removed on one is removed on the other.
                 </p>
+                <p>
+                  To pair over the network, turn on other devices on the other
+                  computer and type the address and password it shows there;
+                  the first Pair names that computer's certificate, to check
+                  against Other devices there, and the password goes only on
+                  the second. It asks there before letting this one in. Removing it there
+                  ends the pairing. The password is not kept. Pairing while
+                  both notebooks are unlocked lets each open the other's
+                  private notes, which stay encrypted on both.
+                </p>
+                <p>
+                  Through a folder, each computer writes one encrypted file
+                  there, locked with a passphrase you type each time (the same
+                  on every computer; it is never kept). Private notes never go
+                  into the folder.
+                </p>
+              </div>
+              <h4 class="setting-subhead">Sync over the home network</h4>
+              <div class="row wrap settings-row-spaced" id="sync-pair-row">
+                <label for="sync-address" class="muted">Other computer's address</label>
+                <input id="sync-address" type="text" inputmode="url" autocomplete="off" spellcheck="false"
+                  maxlength="200" placeholder="192.168.1.20:8443">
+                <label for="sync-password" class="muted">Its password</label>
+                <input id="sync-password" type="password" autocomplete="off" maxlength="1024">
+                <button id="sync-pair" class="ghost small" type="button">Pair</button>
+              </div>
+              <div class="row wrap hidden" id="sync-paired-row">
+                <p id="sync-paired" class="muted sync-paired"></p>
+                <button id="sync-unpair" class="ghost small" type="button">Unpair</button>
               </div>
               <div class="row">
                 <button id="sync-now" class="ghost small" type="button">
                   <i class="ph ph-arrows-clockwise ph-lead" aria-hidden="true"></i> Sync now
+                </button>
+              </div>
+              <h4 class="setting-subhead">Sync through a folder</h4>
+              <p class="muted">For computers that are not on the same network: an encrypted file in a folder you choose.</p>
+              <div class="row">
+                <button id="sync-folder-open" class="ghost small" type="button">
+                  <i class="ph ph-folder-simple ph-lead" aria-hidden="true"></i> Sync through a folder
                 </button>
               </div>
               <p id="sync-status" class="status" role="status"></p>

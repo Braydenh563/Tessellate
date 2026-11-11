@@ -29,6 +29,7 @@ from pathlib import Path
 import pytest
 
 from tessellate.core import security, webclip
+from tessellate.entry import properties as note_properties
 
 FIXTURES = Path(__file__).parent / "fixtures" / "clip"
 
@@ -300,7 +301,9 @@ def test_a_clip_becomes_a_note_with_its_source(client, app_state, net):
     response = client.post("/links/clip", json={"url": "https://bread.example/2026/sourdough?utm_source=x"})
     assert response.status_code == 201, response.text
     note = response.json()
-    assert note["content"].startswith("# Why sourdough needs time")
+    # The note opens with its properties block (row 9), then the heading.
+    assert note["content"].startswith("---\nsource: https://bread.example/2026/sourdough\n")
+    assert note_properties.strip(note["content"]).startswith("# Why sourdough needs time")
     assert note["source_url"] == "https://bread.example/2026/sourdough"
     stored = client.get(f"/entries/{note['id']}").json()
     assert "slow fermentation" in stored["content"]

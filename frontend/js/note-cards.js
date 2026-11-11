@@ -457,18 +457,6 @@ function fitNoteMetas(metas) {
   }
 }
 
-async function publishDraft(entry) {
-  try {
-    await apiJson(`/entries/${entry.id}`, { method: "PUT", body: JSON.stringify({ is_draft: false }) });
-    entry.is_draft = false;
-    pushEntryPutUndo(entry.id, "Published a draft", { is_draft: true }, { is_draft: false });
-    await refreshEntries([entry.id]);
-    toast("Published.");
-  } catch (error) {
-    toast(error.message || "Couldn't publish that draft.", true);
-  }
-}
-
 //: A document is a node of its own (`document:<id>`, routes_graph.py) that the
 //: map draws only while its Documents switch is on, so asking for one turns
 //: that switch on first, the way the map's own Show switches would.

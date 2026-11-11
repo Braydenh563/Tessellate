@@ -217,3 +217,5 @@ def _delete_category(session: Session, args: dict) -> dict:
         #: The notes it held are named before they move, so Undo files them back, with the description.
         "undo": _filed_back(name, ids, description),
     }
+
+

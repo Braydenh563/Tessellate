@@ -3255,6 +3255,10 @@ Object.assign(NAME_MARK_BUDDY_ACTS, {
   starpile: { ms: 6000, w: 1, cool: 240000, poses: ["stand", "sit"], atlas: true, desk: true },
   cardnap: { ms: 9000, w: 0.8, cool: 300000, poses: ["sit"], atlas: true, desk: true },
   wavepointer: { ms: 2400, w: 1.2, cool: 150000, poses: ["stand"], atlas: true, desk: true },
+  //: E5 (OPEN.md Tier E): the desk's dinner, bubbles and knitting; the hour weights come from the catalogue (`day`).
+  dinner: { ms: 25000, w: 3, cool: 420000, poses: ["stand", "sit"], atlas: true, desk: true },
+  bubbles: { ms: 9500, w: 1.2, cool: 180000, poses: ["stand"], atlas: true, desk: true },
+  knit: { ms: 45000, w: 1, cool: 420000, poses: ["stand", "sit"], atlas: true, desk: true },
   //: Batch D4: the desk's small projects: a daydream (a thought bubble), pacing, making up a game (sparks), tinkering
   //: (a gear and a spanner) and dusting off (motes). The daydream is quiet and long; the game is loud.
   daydream: { ms: 35000, w: 1.5, cool: 300000, poses: ["stand", "sit"], atlas: true, desk: true },
@@ -3288,7 +3292,7 @@ Object.assign(NAME_MARK_BUDDY_ACTS, {
 //: stances, Fewer (the default) makes the unprompted gestures a third as
 //: likely, Normal as they were. What you start (a poke, a cheer at a
 //: streak, a reaction) is never reduced: those have no weight here.
-const NMB_QUIET_ACTS = ["blink", "look", "glance", "turn", "yawn", "nap", "dangle", "shift", "tilt", "lounge", "rest", "drift", "journal", "stars", "blanket", "cardnap", "daydream", ...Object.keys(NMB_STANCES)];
+const NMB_QUIET_ACTS = ["blink", "look", "glance", "turn", "yawn", "nap", "dangle", "shift", "tilt", "lounge", "rest", "drift", "journal", "stars", "blanket", "cardnap", "daydream", "knit", ...Object.keys(NMB_STANCES)];
 //: **Each of its doings can be turned off** (the owner, 2026-09-27: "Every
 //: companion feature must be togglable in Settings"). Appearance >
 //: Companion > What it does (`mountBuddyActivities`): one switch a row, kept
@@ -3307,7 +3311,7 @@ const NMB_ACTIVITIES = [
   ["poses", "Settle into other poses (crouch, lounge, rest, drift)", ["crouch", "lounge", "rest", "drift"]],
   ["glide", "Glide through the air and climb while hanging", ["glide", "climb"]],
   ["atlas", "Atlas juggles stars, reads its map and meditates", [...Object.keys(NMB_ATLAS_ACTS), "toss"]],
-  ["desk", "Atlas does the desk companion's routines: workouts, tea, fishing, a journal, a nap, a plant, a puzzle, small gestures and projects", Object.keys(NAME_MARK_BUDDY_ACTS).filter((act) => NAME_MARK_BUDDY_ACTS[act].desk)],
+  ["desk", "Atlas does the desk companion's routines: workouts, tea, dinner, fishing, a journal, knitting, bubbles, a nap, a plant, a puzzle, small gestures and projects", Object.keys(NAME_MARK_BUDDY_ACTS).filter((act) => NAME_MARK_BUDDY_ACTS[act].desk)],
   ["think", "Stop to think, or sigh", ["ponder", "sigh"]],
   ["lie", "Lie down for a nap", ["lie"]],
   ["read", "Read a book", ["read"]],
@@ -3442,7 +3446,11 @@ const nmb = {
   anim: null, hopAnim: null, glue: null, placeTimer: 0, appearTimer: 0, movedAt: 0, pinned: false, menu: null, settle: [], checkFrame: 0,
   //: **A placement's budget** (INBOX 1575, `nameMarkBuddyChoose`): hit tests and milliseconds it may spend, what is
   //: left of them, and the walk's own limits (`rootWords`).
-  budget: { ms: 250, hits: 360, fitMs: 120, fitHits: 160, until: 0, left: 0, coverStop: 3, wordsEl: 1500, noWords: /^(img|picture|canvas|video|audio|iframe|style|script|template|noscript)$/ },
+  //: **Halved** (INBOX 1778 d, the lag log: `nameMarkBuddyAfterCleanTask` 143 to 303ms, which is this budget spent):
+  //: a Notes page of 200 notes took a median 302ms (max 397) at 4x CPU to place, 435 hit tests, and settled on the
+  //: window's bar every time; at 100/180/50/80 the same pages settle on the same perch in a median 148ms (max 186),
+  //: Library 119 to 75ms, the Graph 52 to 36ms.
+  budget: { ms: 100, hits: 180, fitMs: 50, fitHits: 80, until: 0, left: 0, coverStop: 3, wordsEl: 1500, noWords: /^(img|picture|canvas|video|audio|iframe|style|script|template|noscript)$/ },
   wordsCache: null,
   //: **The topmost thing under a point that is not the companion** (INBOX 1575). `elementsFromPoint`
   //: builds the whole stack at the point and was most of a placement: 1,010 to 1,412 calls a Library
@@ -4823,8 +4831,8 @@ function nameMarkBuddyPerches(tab, focus = null, visit = false) {
 //: **A placement has a budget** (INBOX 1575): 36 perches (120 on a tab change) at up to twenty hit
 //: tests each took 2 to 7 s of a Library, Timeline or Dashboard switch at 4x CPU, in the lag log
 //: `avatars.js go 540ms` and `setTimeout 749ms`. Perches come in the tab's own order of preference,
-//: so the search stops at the budget with the best found so far: 360 hit tests (the same on any
-//: machine, so the choice does not change with the load) or, for a machine where each is slow, 250ms.
+//: so the search stops at the budget with the best found so far: 180 hit tests (the same on any
+//: machine, so the choice does not change with the load) or, for a machine where each is slow, 100ms.
 //: The retry at the smaller size gets its own, smaller, budget.
 //: (`nmb.budget`: the numbers, and what is left of them.)
 function nameMarkBuddyChoose(tab, obstacles, near = null, per = 12, visit = false) {
@@ -10434,6 +10442,9 @@ const NMB_PROP_WORDS = [
   ["nmb-act-starpile", "counting a pile of stars"],
   ["nmb-act-cardnap", "napping on a note card"],
   ["nmb-act-wavepointer", "waving at the pointer"],
+  ["nmb-act-dinner", "eating dinner from a bowl"],
+  ["nmb-act-bubbles", "blowing bubbles from a wand"],
+  ["nmb-act-knit", "knitting a strand of starlight"],
   ["nmb-act-daydream", "daydreaming"],
   ["nmb-act-pace", "pacing"],
   ["nmb-act-game", "making up a game"],
@@ -11350,6 +11361,12 @@ function syncNameMarkBuddy() {
     dropAnimations(old);
     old?.remove();
     char.prepend(characterFor(seed).figure());
+    //: The companion's CSS asks "is this the layered Atlas figure, and which look" of this one
+    //: attribute, not of `:has(.atl-figure)`: a :has() on #nm-buddy re-matched its 790 elements on
+    //: every insert or remove under it (18 ms a time at 4x; INBOX 1778 d).
+    const figureLook = char.querySelector(".atl-figure-box")?.dataset.atlasLook;
+    if (figureLook) buddy.dataset.atlasFigure = figureLook;
+    else delete buddy.dataset.atlasFigure;
     //: A new face starts from its own look.
     nmb.expr = "";
     nmb.exprHold = "";

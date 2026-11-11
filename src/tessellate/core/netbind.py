@@ -119,7 +119,8 @@ def env_bind(raw: str | None = None) -> str:
 #: only: `*` is ignored (it would switch the guard off) and a URL is read for
 #: its host.
 ALLOWED_HOSTS_ENV = "TESSELLATE_ALLOWED_HOSTS"
-_HOST_NAME = re.compile(r"[a-z0-9]([a-z0-9.-]*[a-z0-9])?")
+#: A DNS name is at most 253 characters; the bound keeps the match linear on a long typed run (CodeQL polynomial regex).
+_HOST_NAME = re.compile(r"[a-z0-9](?:[a-z0-9.-]{0,251}[a-z0-9])?")
 
 
 ALLOWED_HOSTS_PREF = "allowed_hosts"

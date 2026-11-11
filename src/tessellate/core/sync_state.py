@@ -12,6 +12,7 @@ next pull starts over, which the idempotent apply makes harmless).
 from __future__ import annotations
 
 import contextlib
+import hashlib
 import json
 import os
 import secrets
@@ -84,3 +85,86 @@ def last_peer(data_dir: Path) -> tuple[str, dict] | None:
         return None
     return max(rows, key=lambda pair: pair[1].get("tried_at") or 0)
 
+
+
+# --- the sync pass (decision 11): this computer's side ---------------------------
+
+
+def _pass_hash(raw: str) -> str:
+    return hashlib.sha256(raw.encode("utf-8", "replace")).hexdigest()
+
+
+def issue_pass(data_dir: Path, device: str) -> str:
+    """A new pass for the allowed device `device` (its `lantrust` hash); only the hash is kept.
+
+    One pass per device: pairing again replaces the old one."""
+    raw = secrets.token_urlsafe(32)
+    state = _read(data_dir)
+    passes = state.get("passes") if isinstance(state.get("passes"), dict) else {}
+    kept = {h: d for h, d in passes.items() if d != device}
+    state["passes"] = {**kept, _pass_hash(raw): device}
+    _write(data_dir, state)
+    return raw
+
+
+def pass_device(data_dir: Path, raw: str | None) -> str:
+    """The device a pass was issued to, or '' for no such pass."""
+    if not raw or len(raw) > 100:
+        return ""
+    passes = _read(data_dir).get("passes")
+    found = passes.get(_pass_hash(raw)) if isinstance(passes, dict) else None
+    return found if isinstance(found, str) else ""
+
+
+# --- the paired computer (decision 10): the other side's address and pass -------
+
+
+def link(data_dir: Path) -> dict:
+    """The paired computer as stored, or {} when none is paired."""
+    found = _read(data_dir).get("link")
+    return found if isinstance(found, dict) else {}
+
+
+def save_link(data_dir: Path, **fields: object) -> dict:
+    state = _read(data_dir)
+    state["link"] = {**link(data_dir), **fields}
+    _write(data_dir, state)
+    return state["link"]
+
+
+def forget_link(data_dir: Path) -> None:
+    state = _read(data_dir)
+    state.pop("link", None)
+    _write(data_dir, state)
+
+
+# --- documents and files from another computer (decision 13) -----------------------
+
+
+def _landed(value: object) -> list | None:
+    if isinstance(value, int):
+        return [value, ""]
+    ok = isinstance(value, list) and len(value) == 2 and isinstance(value[0], int) and isinstance(value[1], str)
+    return value if ok else None
+
+
+def arrived(data_dir: Path) -> dict[str, dict[str, list]]:
+    """{kind: {sid: [local id, mark]}} for each document and file that came from another computer.
+
+    The mark (`sync_extras.mark`) tells the row that landed from a later one that took its freed id."""
+    found = _read(data_dir).get("arrived")
+    if not isinstance(found, dict):
+        return {}
+    return {kind: {s: _landed(i) for s, i in rows.items() if _landed(i)}
+            for kind, rows in found.items() if isinstance(rows, dict)}
+
+
+def save_arrived(data_dir: Path, kind: str, sid: str, local_id: int | None, mark: str = "") -> None:
+    """Remember (or, with None, forget) where an item from another computer landed here."""
+    state = _read(data_dir)
+    rows = arrived(data_dir)
+    kept = {s: i for s, i in rows.get(kind, {}).items() if s != sid}
+    if local_id is not None:
+        kept[sid] = [local_id, mark]
+    state["arrived"] = {**rows, kind: kept}
+    _write(data_dir, state)

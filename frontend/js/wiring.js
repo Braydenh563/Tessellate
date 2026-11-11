@@ -1332,17 +1332,28 @@ onSurface("chat", () => {
   $("web-reader-cite").addEventListener("click", () => {
     if (webReaderPage) citeWebPage(webReaderPage);
   });
-  $("web-reader-copy").addEventListener("click", async (e) => {
-    const button = e.currentTarget;
-    await ensureModule("webClip");
-    if (webReaderPage) copyWebLink(webReaderPage.url, button);
+  $("web-reader-copy").addEventListener("click", (e) => {
+    if (webReaderPage) copyWebLink(webReaderPage.url, e.currentTarget);
   });
-  $("web-reader-open").addEventListener("click", async () => {
-    await ensureModule("webClip");
+  $("web-reader-open").addEventListener("click", () => {
     if (webReaderPage) openWebPageExternally(webReaderPage.url);
   });
   $("web-reader-find").addEventListener("click", () => openGlobalFind({ scope: "web-reader" }));
 });
+
+//: `window.open` with `noopener`: in the desktop window pywebview hands a new-window request to the system
+//: browser, and in a browser tab it is a new tab. `safeHref` because the URL came from a third party.
+//: **Here, not in the web bundle** (INBOX 1716, the owner's log: `wiring.js BUTTON#web-reader-open.onclick 324ms`):
+//: the reader's Open press waited for `web-clip.js` and `web-results.js` to arrive and parse (151 to 206 ms from the
+//: press to the new tab at 4x CPU) to run one line. The bundle's result rows call it too, from the same scope.
+function openWebPageExternally(url) {
+  window.open(safeHref(url), "_blank", "noopener,noreferrer");
+}
+
+//: The reader's Copy link, here for the same reason: one clipboard write and a line for a screen reader.
+async function copyWebLink(url, button) {
+  if (await copyToClipboard(url, button)) announce("Link copied.");
+}
 
 //: Enter adds it; Escape clears the box, and on an empty one leaves it (a phone sheet's own Escape wins).
 // **What a phone comes to Reminders for is the list** (INBOX 392,

@@ -18,6 +18,8 @@ Counts are drawn variants a viewer can see (an act's `NMB_VARIANTS` row, or Atla
 
 Totals: acts in `NAME_MARK_BUDDY_ACTS` 49 to 55; acts with three or more drawn variants 3 to 10 (`wave`, `hop`, `nap` before); Atlas lower body states 10 to 15, every one with three or more rows and a turn within 4 degrees of the torso.
 
+E6 (2026-11-11) added lower states `lean`, `dangle`, `kick`, `swing` and `sloth` (each with three rows, six or more blended, a turn within 4 degrees) and desk pose rows for the `dangle`, `kick` and `meditate` frames; tests/test_lower_pose_1111.py.
+
 Mechanism: new rows in the existing table, the existing variant pick (`nameMarkBuddyPickVariant`, never the last), the existing 8 to 14 s lower-body re-roll for `hang`. No new timer or frame loop.
 
 Left for 1678 (the deeper mind): choosing among them by mood and context beyond the weights here.

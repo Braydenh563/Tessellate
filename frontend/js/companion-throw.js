@@ -203,7 +203,7 @@ function companionThrowWrapOn(n, world, dt) {
 //: Flat against a side: held, then sliding down at no more than
 //: `COMPANION_THROW_SLIDE` until the first ledge under it or the floor.
 function companionThrowSlide(s, dt, world, k) {
-  const n = { ...s, t: s.t + dt, hit: 0 };
+  const n = { ...s, t: s.t + dt, hit: 0, bump: 0 };
   if (n.splat.hold > 0) return { ...n, splat: { ...n.splat, hold: n.splat.hold - dt } };
   const py = n.y;
   n.vy = Math.min(COMPANION_THROW_SLIDE, Math.max(0, n.vy) + k.g * 0.3 * dt);
@@ -449,6 +449,50 @@ const companionThrowLand = {
     const cap = companionThrowLand.slew * Math.max(1, dt);
     return Math.abs(d) <= cap ? to : from + Math.sign(d) * cap;
   },
+  //: E6, the touch on the feet by how hard it came down (`came`, px/ms; the desk's lines in `landing.py`, here at this
+  //: world's gravity: about a 190 px and a 450 px drop): soft, a stumble (a lean forward and a shuffle on) or a roll
+  //: (one forward turn in `rollMs`: 360 degrees over 800 ms peaks near 0.79 deg/ms, under `slew`).
+  touch: { soft: 1.1, roll: 1.7, rollMs: 800, lean: 5, leanMs: 260, shuffle: 0.4, carry: 0.2 },
+  //: E6, a soft touch of a side (a bounce, not a stick): pressed flat for `ms`, no more than `max` of its width, narrower and a
+  //: little taller about the wall's own edge (`transformOrigin`), by how fast it came (`full` px/ms is the whole of it).
+  edge: { max: 0.16, full: 0.7, ms: 180 },
+  edgeFrames(side, v) {
+    const E = companionThrowLand.edge;
+    const a = E.max * Math.min(1, Math.abs(v) / E.full);
+    const transformOrigin = side < 0 ? "0% 50%" : "100% 50%";
+    return {
+      frames: [{ scale: "1 1", transformOrigin }, { scale: `${(1 - a).toFixed(3)} ${(1 + a / 2).toFixed(3)}`, transformOrigin, offset: 0.35 }, { scale: "1 1", transformOrigin }],
+      ms: E.ms,
+    };
+  },
+  touchOf(came) {
+    const T = companionThrowLand.touch;
+    return came < T.soft ? "soft" : came < T.roll ? "stumble" : "roll";
+  },
+  //: One step on the feet after the first contact: upright by an exponential turn, the touch's own move on top.
+  touchDown(n, dt, k) {
+    const L = companionThrowLand;
+    const T = L.touch;
+    if (n.touch === undefined) {
+      n.touch = L.touchOf(n.came || 0);
+      if (n.touch === "roll") {
+        n.roll = { a0: n.rot, raw: n.rot, t: 0 };
+        n.vx = n.dir * Math.max(Math.abs(n.vx), T.carry);
+      }
+    }
+    if (n.roll) {
+      n.roll.t += dt;
+      const u = Math.min(1, n.roll.t / T.rollMs);
+      const h = u * u * (3 - 2 * u);
+      n.roll.raw = n.roll.a0 + (n.dir * 360 - n.roll.a0) * h;
+      n.rot = L.turn(n.roll.raw);
+      if (u >= 1) n.roll = null;
+      return;
+    }
+    const lean = n.touch === "stumble" ? n.dir * T.lean * Math.max(0, 1 - n.lieT / T.leanMs) : 0;
+    n.rot += (lean - n.rot) * Math.min(1, dt / 110);
+    if (n.touch === "stumble" && n.lieT < T.leanMs) n.vx *= Math.exp(k.ground * T.shuffle * dt);
+  },
   lie(n, k) {
     const r = companionThrowLand.turn(n.rot);
     if (Math.abs(r) <= companionThrowLand.feet) return 0;
@@ -467,7 +511,7 @@ const companionThrowLand = {
     n.lieT += dt;
     n.rot = L.turn(n.rot);
     if (!n.lie) {
-      n.rot -= n.rot * Math.min(1, dt / 110);
+      L.touchDown(n, dt, k);
       return;
     }
     const down = n.lieT < (k.lieMs ?? 600) + 90;
@@ -561,9 +605,11 @@ function nameMarkBuddyThrow(buddy, vx, vy, world, plan = companionThrowPlan(nmb.
     then = now;
     //: The hardest landing among the 16ms steps this frame passed.
     let hit = 0;
+    let bump = 0;
     while (step + 1 < path.length && path[step + 1].t <= flown) {
       step += 1;
       hit = Math.max(hit, path[step].hit || 0);
+      if (Math.abs(path[step].bump || 0) > Math.abs(bump)) bump = path[step].bump;
     }
     const s = flown >= end.t ? end : companionThrowAtTime(path, flown);
     nameMarkBuddyPut(buddy, Math.round(s.x), Math.round(s.y + (s.sink || 0)));
@@ -575,6 +621,11 @@ function nameMarkBuddyThrow(buddy, vx, vy, world, plan = companionThrowPlan(nmb.
       //: Squashed by how hard it came down.
       const a = Math.min(0.22, hit * 0.09);
       char.animate([{ scale: "1 1" }, { scale: `${1 + a} ${1 - a}` }, { scale: "1 1" }], { duration: 220, easing: "ease-out" });
+    }
+    if (bump && !s.splat && char && typeof char.animate === "function") {
+      //: A soft touch of a side presses it flat against that side for a moment (a stick has its own, `.nmb-splat`).
+      const e = companionThrowLand.edgeFrames(bump, bump);
+      char.animate(e.frames, { duration: e.ms, easing: "ease-out" });
     }
     companionThrowFlat(buddy, char, s);
     if (s.bonk && !flight.bonked) nmb.throwBonk(buddy, char, flight);
@@ -701,7 +752,7 @@ function nameMarkBuddyThrowFeel(roll, speed, k = NMB_THROW) {
 //: down on ({left, right, y}, for its corner). `hit` is the speed of a
 //: landing this step, for the squash.
 function nameMarkBuddyFlightStep(s, dt, world, k = NMB_THROW) {
-  const n = { ...s, t: s.t + dt, hit: 0 };
+  const n = { ...s, t: s.t + dt, hit: 0, bump: 0 };
   if (n.rest) return n;
   const ease = Math.min(1, dt / 90);
   if (n.on) {
@@ -733,6 +784,7 @@ function nameMarkBuddyFlightStep(s, dt, world, k = NMB_THROW) {
     const left = n.x < world.left;
     const back = Math.min(Math.abs(n.vx) * k.bounce, k.wall);
     n.x = left ? world.left : world.right;
+    n.bump = left ? -Math.abs(n.vx) : Math.abs(n.vx);
     n.vx = left ? back : -back;
   }
   if (n.y < world.top) {
@@ -749,6 +801,7 @@ function nameMarkBuddyFlightStep(s, dt, world, k = NMB_THROW) {
     if (land || n.y >= world.floor) {
       n.y = land ? land.y : world.floor;
       n.hit = n.vy;
+      n.came = Math.max(n.came || 0, n.vy);
       if (n.vy > k.stick) {
         n.vy = -n.vy * k.bounce;
         n.vx *= 0.85;
@@ -759,7 +812,7 @@ function nameMarkBuddyFlightStep(s, dt, world, k = NMB_THROW) {
     }
   }
   //: A body lying down is let get up first: the clock's end is later by its rest.
-  if ((n.on && Math.abs(n.vx) < 0.02 && Math.abs(n.rot) < 1) || n.t >= k.ms + (n.lie ? 2500 : 0)) n.rest = true;
+  if ((n.on && !n.roll && Math.abs(n.vx) < 0.02 && Math.abs(n.rot) < 1) || n.t >= k.ms + (n.lie || n.roll ? 2500 : 0)) n.rest = true;
   return n;
 }
 

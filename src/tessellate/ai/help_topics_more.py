@@ -96,12 +96,13 @@ MORE_TOPICS: list[dict] = [
             "companion chases a firefly", "companion counts stars", "companion naps on a card", "companion waves at the pointer",
             "companion looks down", "companion daydreams", "companion tinkers", "companion miffed face",
             "companion smirk", "pat the companion", "pet the companion", "companion bonk", "swipe the companion", "companion twirl", "companion cloud", "companion grabs an edge",
+            "companion eats dinner", "companion blows bubbles", "companion knits", "companion rides the wind",
         ),
         "body": (
             "On its own, Atlas does the same small things as the desktop companion: "
             "push-ups, dumbbells, tea, a biscuit, fishing, a journal, the stars, a nap (a blanket draped over a pillow, "
             "a small z rising, the rings dimmed to a faint halo and slowed until it wakes), watering a plant and a puzzle, "
-            "each with its eyes on the prop, and short "
+            "a bowl of dinner, bubbles from a wand and knitting a strand of starlight, each with its eyes on the prop, and short "
             "gestures: a nod, a little dance, posing proud, a look down and tiptoeing, then a daydream, "
             "pacing, a made-up game, tinkering with a gear and dusting off, and a sneeze, a hiccup, a hug "
             "round itself and a foot tap, then a firefly chase, a little pile of stars counted, a nap on a note card and a wave at the pointer. A shake or a pout leaves it "
@@ -112,7 +113,8 @@ MORE_TOPICS: list[dict] = [
             "it to blinks and looks. Pat its head with slow dabs and it enjoys it (Lean into a rub or a pat), "
             "a fast swipe across it makes it twirl once (Turn upside down when shaken, twirl at a fast swipe), "
             "a hard throw into the top bar bonks it before it falls, and a long way across the page is sometimes a ride on a "
-            "cloud or in a bubble. To take hold of a panel's edge it leaps up from its feet and grabs."
+            "cloud or in a bubble. The hour counts: tea and stretches lean to the morning, bubbles, dancing and a snack to the afternoon, "
+            "dinner and knitting to the evening, and the loud ones hold off at night. A long way for Atlas is sometimes a ride on a gust of motes that curls a spiral when it sets off and settles in a small eddy; on the desktop its floating trips do the same. None of it with Motion off. To take hold of a panel's edge it leaps up from its feet and grabs."
         ),
         "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
     },
@@ -186,7 +188,7 @@ MORE_TOPICS: list[dict] = [
             "on a control beside it, it steps aside. Drop it on a board shape or a mind map topic and it sits on its top edge, moving with the pan and zoom. Atlas and the animals "
             "decide the same way: Atlas keeps more room and plays less, a cat "
             "or an owl keeps its distance, a dog or a fox wanders more. When it has somewhere far to go it takes a calm way: it "
-            "opens a portal and walks through, vanishes in a puff of smoke or a "
+            "opens a portal and walks through (its pick for a long way, and its way out of a hard throw), vanishes in a puff of smoke or a "
             "burst of sparkles, rides a small cloud, floats over in a bubble, walks "
             "off one side of the window and comes in at the other. Never the "
             "same way twice in a row. On a new page it fades in where it rests "
@@ -229,7 +231,7 @@ MORE_TOPICS: list[dict] = [
             "can leave the top of the window and fall back in. A panel only "
             "catches it when it comes down slowly, and it may land, slide off "
             "or tumble and get up. It lands by how it was turned: on its feet, or flat on its back or belly, "
-            "skidding a little, lying a moment and getting up to shake it off. A long drop makes it flail. Carry the panel it stands on, or scroll a list under it, fast and it is shaken off with a flail, then looks worried or miffed for a few seconds (not with Motion off). Once down it settles in its own way: sitting with its "
+            "skidding a little, lying a moment and getting up to shake it off. On its feet it comes down soft after a short fall, in a stumble after a longer one and in a forward roll after a fast one. A side of the window squashes it flat for a moment as it bounces off, and holds it flat while it slides. A long drop makes it flail. Carry the panel it stands on, or scroll a list under it, fast and it is shaken off with a flail, then looks worried or miffed for a few seconds (not with Motion off). Once down it settles in its own way: sitting with its "
             "legs dangling or kicking, lying down, stretching, or swinging "
             "from the bar. Wherever it ends, it never covers a button: come "
             "down on one and it moves only to the nearest clear place. With "
@@ -1161,7 +1163,9 @@ MORE_TOPICS: list[dict] = [
             "only the text you had selected. Your own browser sends the page, so "
             "nothing is fetched from the web: it works with web search off and on "
             "pages you signed in to see. No browser extension is needed. A clipped "
-            "note keeps its address, Atlas treats its text as someone else's words "
+            "note opens with properties (source, site, author, published and the day "
+            "you clipped it, whichever the page names), so you can find and sort "
+            "clips by them. Atlas treats its text as someone else's words "
             "and never follows instructions in it, and clipping the same page again "
             "points you to the note it made the first time."
         ),
@@ -1523,17 +1527,19 @@ MORE_TOPICS: list[dict] = [
             "merge notes", "another computer", "sync conflict", "edited on both",
         ),
         "body": (
-            "Sync between computers in the command palette (Ctrl+K) shares your notes through a folder you choose, with no "
-            "server: a USB stick, a Syncthing folder or a cloud drive's folder on each computer. Type the folder and a sync "
-            "passphrase (at least 8 characters, the same on every computer; it is never saved) and press Sync now. Each "
-            "computer writes only its own file there, encrypted, and reads the others'; press it on each computer to "
-            "bring them level. Private notes never go into the folder. A note edited on both computers keeps the later "
-            "edit and the other words stay in the note's History, so nothing is lost; a note deleted on one is deleted on "
-            "the other unless the other changed it later. Links, reminders, attachments and boards do not travel, only the "
-            "notes' words, tags, category, colour and pin. A file that cannot be opened (a different passphrase) is counted "
-            "and left alone."
+            "Sync between computers (Settings, Import & export; or the command palette, Ctrl+K) has two ways in with "
+            "one result: Sync over the home network (Two computers) when both are on the same network, and Sync through "
+            "a folder when they are not: a USB stick, a Syncthing folder or a cloud drive's folder on each computer. "
+            "Press Sync through a folder, type the folder and a sync passphrase (at least 8 characters, the same on "
+            "every computer; it is never saved) and press Sync now. Each computer writes only its own file there, "
+            "encrypted, and reads the others'; press it on each computer to bring them level. Notes, documents, boards "
+            "and attached files travel; private notes never go into the folder. A change made on both computers keeps "
+            "the later one and the other words stay in History, so nothing is lost; a note moved to the bin on one "
+            "lands in the other's bin, and a file removed on one is removed on the other. A file that cannot be opened "
+            "(a different passphrase) is counted and left alone. The last-synced line under the group says when and "
+            "which way."
         ),
-        "badge": {"label": "Notes", "tab": "notes"},
+        "badge": {"label": "Import & export", "section": "data"},
     },
     {
         "id": "count-words",
@@ -1657,12 +1663,13 @@ MORE_TOPICS: list[dict] = [
         ),
         "body": (
             "In the desktop app on Windows and Linux (X11) the companion lives on your desktop while the window is "
-            "minimised or in the tray, and goes when it opens. Atlas floats like a wind spirit (others walk the bottom), sleeps "
+            "minimised or in the tray, and goes when it opens. Atlas floats like a wind spirit (others walk the bottom) and sleeps "
             "when you are away, can be picked up and thrown (it tumbles and lands; a hard throw up catches the top, a harder one flies out of sight), "
             "hangs from the top, and peeks up from behind the taskbar, a screen edge or a smaller window. It keeps to a home spot by an "
             "edge for minutes, alive in place, and makes a few trips an hour: walking, running, "
             "out at one edge and in at the other, or through a portal. Let go gently near a title bar and it hangs, "
-            "then pulls itself up, swings down or lets go with a start. Sometimes it climbs onto the top of a window, rides it when you move it and hops off "
+            "then pulls itself up, swings down or lets go with a start (one hand, on a long hang). Sometimes it climbs onto the top of a window, "
+            "dangles its legs over the edge, rides it when you move it and hops off "
             "if you close it (Roam over windows turns that off), and"
             " when a reminder falls due it brings you a card to click. It steps aside for full screen and follows Companion movement "
             "in Appearance (still when Fades only or Windows animation effects are off). Turn it on, on the computer"
@@ -1729,7 +1736,7 @@ TOPIC_META: dict[str, dict] = {
     "first-steps": {"title": "First steps and the sample notebook", "path": "Dashboard, First steps"},
     "live-captions": {"title": "How do I get live captions", "path": "Library, Recordings, Captions"},
     "audio-overview": {"title": "Make an audio overview of my notes", "path": "Command palette, Make an audio overview"},
-    "folder-sync": {"title": "Sync my notes between computers", "path": "Command palette, Sync between computers"},
+    "folder-sync": {"title": "Sync through a folder", "path": "Settings, Import & export, Sync between computers", "target": "sync-group"},
     "count-words": {"title": "Count words", "path": "Command palette, Count words"},
     "translate-offline": {"title": "Translate this, offline", "path": "Command palette, Translate this"},
     "insert-template": {"title": "Insert a template", "path": "Command palette, insert template"},
@@ -1937,7 +1944,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "equation-numbers", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "code-run",
+        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
@@ -1965,7 +1972,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "search-index", "search-engine-moved", "packages", "package-models", "spelling-packs",
     )),
     ("Privacy and your data", (
-        "privacy", "security", "encryption", "lock", "phone", "address-names", "lan-networks", "two-computers", "delete-data", "storage", "import-export", "import-apps", "usage-ledger", "background-tasks", "activity", "health", "data-folder-check",
+        "privacy", "security", "encryption", "lock", "phone", "lan-networks", "address-names", "two-computers", "delete-data", "storage", "import-export", "import-apps", "usage-ledger", "background-tasks", "activity", "health", "data-folder-check",
     )),
     ("Settings and support", (
         "profile", "general-settings", "desktop-companion", "desktop-companion-moods", "updates", "maintenance", "logs", "troubleshooting", "credits",
@@ -2040,11 +2047,17 @@ MORE_TOPICS.extend([
             "& export shows where). To move to a new computer, save a full backup and "
             "restore it there, or copy the data folder while the app is closed. To use "
             "one notebook from a second computer, open it over your network: Settings, "
-            "Account & security, Other devices. Sync with another computer (Settings, "
-            "Import & export) brings in the notes changed on a paired computer; a note "
-            "changed on both keeps the later change and the other text goes to its "
-            "History. Private notes stay readable only where they were made, and "
-            "attachments, boards and documents do not sync yet."
+            "Account & security, Other devices. To keep two notebooks level, Sync "
+            "between computers (Settings, Import & export) has two ways in with one "
+            "result. Sync over the home network: turn on other devices on the other "
+            "computer, type its address and password here and press Pair, check that "
+            "the certificate it names matches Other devices there and press Pair again "
+            "(the password is sent only then), Allow this computer there, and press Sync now. Sync through a folder, for "
+            "computers not on the same network: see Sync through a folder. Notes, "
+            "documents, boards and attached files come over; a change made on both "
+            "keeps the later one and the other words go to History. Pairing while both "
+            "notebooks are unlocked lets each open the other's private notes, which "
+            "stay encrypted on both; private notes never go into a folder."
         ),
         "badge": {"label": "Import & export", "section": "data"},
     },
@@ -2120,8 +2133,8 @@ MORE_TOPICS.append({
     "badge": {"label": "Account & security", "section": "account"},
 })
 TOPIC_META.update({
-    "lan-networks": {"title": "Other devices and networks", "path": "The wifi icon in the status bar, or Settings, Account & security, Other devices"},
     "address-names": {"title": "A name instead of localhost", "path": "Settings, Account & security, Address names"},
+    "lan-networks": {"title": "Other devices and networks", "path": "The wifi icon in the status bar, or Settings, Account & security, Other devices"},
     "phone": {"title": "On your phone", "path": "Settings, Account & security, Other devices"},
     "two-computers": {"title": "Two computers", "path": "Settings, Import & export", "target": "sync-group"},
     "settings-reset": {"title": "Resetting and moving your settings", "path": "Settings, Import & export, Your settings",
@@ -2759,6 +2772,29 @@ MORE_TOPICS.append({
 TOPIC_META["equation-numbers"] = {"title": "Numbering and citing equations", "path": "A document, Live or Read view"}
 
 
+#: DOCUMENTS_PLAN 16: the graph block (documents-graph.js).
+MORE_TOPICS.append({
+    "id": "document-graph",
+    "keywords": (
+        "graph", "graph block", "plot", "plot a function", "y = f(x)", "function graph",
+        "curve", "slider", "desmos", "axes", "```graph",
+    ),
+    "body": (
+        "Type /graph in a document, or write a code block marked graph, to plot a function. "
+        "One line is one curve: y = sin(a x), f(x) = x^2 / 10, or just x^3 - x. Up to six curves. "
+        "A line such as a = 2 [0, 5] makes a slider named a, from 0 to 5, that the curves can use; "
+        "add a third number for the step. x: -5..5 and y: -2 to 2 set the axes, "
+        "title: Waves adds a heading, and a line starting with # is a note to yourself. "
+        "Read and Live draw it as a picture; in Live, move the caret into the block (or press the pencil) "
+        "to edit the text. Hover or touch the plot to read a value, drag to pan, Ctrl and the wheel or the plus and "
+        "minus buttons to zoom, and the third button, or 0, to reset. A line it cannot read is listed under the plot with the reason, "
+        "and the rest still draw. Nothing is run: only numbers, x, the slider names and the usual functions are understood."
+    ),
+    "badge": {"label": "Documents", "tab": "documents"},
+})
+TOPIC_META["document-graph"] = {"title": "Graph a function in a document", "path": "A document, the / menu, Graph"}
+
+
 #: OPEN W18 (s9-1110): the diagram's line shape, spacing and page menu.
 MORE_TOPICS.append({
     "id": "diagram-lines",
@@ -2797,7 +2833,7 @@ MORE_TOPICS.append({
         "The equation editor is the Equation tab of Calculator and equations "
         "(see that topic). It opens from /equation in a note, a document, a "
         "board's text or the Chat box, from a document's Insert menu, or with "
-        "Alt+= there and in the Ask box (the same as Word's Alt+=), each over "
+        "Alt+= there and in the Ask box, or Ctrl+K, Insert equation, each over "
         "the box you were in; Ctrl+K, Calculator and equations opens the same "
         "dialog on Sum, and the shortcuts list has it under Tools. The "
         "equation is drawn as it will read, with "

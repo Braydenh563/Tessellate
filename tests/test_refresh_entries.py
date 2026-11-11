@@ -46,7 +46,7 @@ def test_the_named_paths_patch_rather_than_re_read():
         ("capture-ask.js", "saveEntryAsDraft"),
         ("capture-ask.js", "watchFiling"),
         ("note-cards.js", "binNoteWithUndo"),
-        ("note-cards.js", "publishDraft"),
+        ("entry-card.js", "publishDraft"),  # moved with its only callers (boot gzip budget)
         ("status.js", "pushEntryPutUndo"),
         ("selection.js", "appendSelectionToNote"),
     ):

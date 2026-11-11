@@ -1438,3 +1438,16 @@ function entryOverflowMenu(entry) {
   wrap.append(opener, menu);
   return wrap;
 }
+
+//: The draft's Publish button and menu row are this file's only callers (moved from note-cards.js for the boot gzip budget, 2026-11-11).
+async function publishDraft(entry) {
+  try {
+    await apiJson(`/entries/${entry.id}`, { method: "PUT", body: JSON.stringify({ is_draft: false }) });
+    entry.is_draft = false;
+    pushEntryPutUndo(entry.id, "Published a draft", { is_draft: true }, { is_draft: false });
+    await refreshEntries([entry.id]);
+    toast("Published.");
+  } catch (error) {
+    toast(error.message || "Couldn't publish that draft.", true);
+  }
+}

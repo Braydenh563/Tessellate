@@ -188,8 +188,6 @@ REACHED_AFTER_LOAD = {
     "settings.js:nameMarkBuddyMotion": "inside the afterCharacters callback (settings.js, the About motion line)",
     "settings.js:bgArtSeedText": "bgArtRefreshSeed returns early unless bgArtSeedUsed is defined, and that is declared in bg-art.js",
     "settings.js:bgArtHalt": "halts what bgArtRun mounted, and bgArtRun runs only once bg-art.js is in (startBgArt's typeof gate)",
-    "copyWebLink": "the web reader's Copy link listener (wiring.js), which awaits ensureModule('webClip') first",
-    "openWebPageExternally": "the web reader's Open listener (wiring.js), which awaits ensureModule('webClip') first",
     #: INBOX 1301 D6: the release calls it only when `typeof nameMarkBuddyThrow
     #: === "function"`; the carry's first move fetched the bundle, and a let-go
     #: before it arrives is a drop.
@@ -441,6 +439,7 @@ REACHED_AFTER_LOAD = {
 #: bundle defines. `file:name` keys, each with the line that proves the call is
 #: reached only after the file that defines the name is in.
 LAZY_REACHED_AFTER_LOAD: dict[str, str] = {
+    "documents-math.js:docStr": "inside docMathRender.graphField, whose only caller is documents.js:6649 (the documents editor's extensions), so documents.js, which defines docStr, is in; the replyKit load of documents-math.js never builds it (2026-11-11)",
     "reveal-targets.js:wbToggleNavigator": "the `board-overview` target runs it after `await revealBoard()`, which awaits ensureModule(\"boards\") first (D22)",
     "reveal-targets.js:wbOpenBoardSearch": "the `board-find` target runs it after `await revealBoard()`, which awaits ensureModule(\"boards\") first (D22)",
     "whiteboard-format.js:swatchPicker": "wbColourPalettes fills its rows in the .then of ensureModule('categories'), which carries categories-panel.js",

@@ -39,9 +39,17 @@ const FRAMES = [
   { name: "hop", pose: "stand", classes: ["nmb-act-hop"], at: 0.3 },
   //: The rig's own hanging pose: both arms raised to an edge above it.
   { name: "hang", pose: "hang", classes: [] },
-  //: A throw's mid-spin: the startled pose turned about its middle (the rig has
-  //: no tumble of its own, so this one is a transform of an existing pose).
-  { name: "tumble", pose: "stand", classes: ["nmb-act-startle"], at: 0.25, spin: 115 },
+  //: INBOX 1710 (W31 E2), the app's three acts the desk had no picture of: the lower wisp let down over an
+  //: edge and swung (`act.dangle`, `kick0` and `kick1` for `act.kick_legs`: the hem thrown forward and back,
+  //: the app's `atl-lower-flick`), and the hang with one hand let go (`act.hang_one_hand`, `nmb-act-onehand`:
+  //: the far arm released and waving). `lower` is [skewX deg, scaleY, scaleX] about the hips.
+  { name: "dangle", pose: "sit", classes: ["nmb-act-dangle"], at: 0.75, lower: [-8, 1.3, 0.9] },
+  { name: "kick0", pose: "sit", classes: ["nmb-act-dangle"], at: 0.75, lower: [-18, 1.15, 0.88] },
+  { name: "kick1", pose: "sit", classes: ["nmb-act-dangle"], at: 0.75, lower: [16, 1.15, 0.88] },
+  { name: "hang_one", pose: "hang", classes: ["nmb-act-onehand"], at: 0.35, upright: true },
+  //: W31 E1: the long sit with the eyes shut and the hands on the knees (`nmb-act-meditate`). Lounge and rest head
+  //: stay the keyed `sit` (the rig draws them as a 2 to 7 degree lean of it: no picture of their own is worth its bytes).
+  { name: "meditate", pose: "sit", classes: ["nmb-act-meditate"], at: 1.0 },
 ];
 //: The idle cycle (`idle0` to `idle23`, engine.IDLE_FRAMES): the rig's own standing
 //: motion sampled at fixed times, one full beat of the tail (`atlasTailBend` with
@@ -86,7 +94,7 @@ async function steadyShot(page, file, clip) {
 (async () => {
   const out = process.argv[2];
   if (!out) throw new Error("usage: node render_desk_frames.js <out dir>");
-  const { browser, page } = await boot({ viewport: { width: 700, height: 500 }, scale: 2 });
+  const { browser, page } = await boot({ viewport: { width: Number(process.env.VW) || 700, height: Number(process.env.VH) || 500 }, scale: 2 });
   const report = {};
   for (const look of LOOKS) {
     await page.evaluate((l) => {
@@ -222,6 +230,9 @@ async function steadyShot(page, file, clip) {
         const put = (el, t, origin) => { el.style.setProperty("transform", t, "important"); if (origin) el.style.setProperty("transform-origin", origin, "important"); };
         const char = b.querySelector(".nm-buddy-char");
         if (frame.spin) put(char, `rotate(${frame.spin}deg)`, "50% 45%");
+        //: The desk's own hang pendulum swings the picture (`engine._hang_drag`): the rig's swing of the char is left out.
+        if (frame.upright) char.style.setProperty("rotate", "0deg", "important");
+        else char.style.removeProperty("rotate");
         if (frame.wave !== undefined) b.style.setProperty("--desk-wave", `${frame.wave}deg`);
         else b.style.removeProperty("--desk-wave");
         //: Every frame's tail sits at one moment (the loop's start for a non-idle frame): the live
@@ -253,6 +264,10 @@ async function steadyShot(page, file, clip) {
           for (const low of b.querySelectorAll(lower)) put(low, `skewX(${(3 * Math.sin(w - 1.5)).toFixed(2)}deg)`, "50% 55%");
           }
           }
+        }
+        if (frame.lower) {
+          const lower = b.querySelectorAll(".nm-atlas.atl-layer-lower").length ? ".nm-atlas.atl-layer-lower" : ".atl-lw-lower";
+          for (const low of b.querySelectorAll(lower)) put(low, `skewX(${frame.lower[0]}deg) scale(${frame.lower[2]}, ${frame.lower[1]})`, "50% 20%");
         }
         if (frame.float !== undefined) {
           const w = frame.float * 2 * Math.PI;

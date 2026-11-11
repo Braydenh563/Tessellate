@@ -63,6 +63,7 @@ INVENTORY = {
         "huggingface.co (an allowlisted model, or the metadata and files of a repo typed into Pull a model by name)",
         "an Install, Reinstall or Pull click in Settings, or a yes to the one-time question about search by meaning",
     ),
+    "entry/sync_link.py": ("another computer the person paired by typing its address, over its own HTTPS port, certificate pinned on first contact", "the person presses Pair or Sync now in Settings, after pairing; nothing runs in the background"),
     "core/languagetool.py": ("this computer only: the installed LanguageTool child process on 127.0.0.1", "a grammar check once the LanguageTool extra is installed"),
     "core/extra_downloads.py": ("the pinned URL of an allowlisted extra, sha256 checked", "an Install click in Settings, Extras"),
     "core/privacy_http.py": ("whatever its caller names; records each destination on the privacy receipt", "its callers' triggers"),

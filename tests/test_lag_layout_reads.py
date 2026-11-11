@@ -140,7 +140,8 @@ def test_atlas_mood_writes_its_ease_after_the_hand_over_has_read():
     start = js.index("function setAtlasMood(")
     body = js[start : js.index("\n}\n", start)]
     apply = body.index("const apply = () => {")
-    for needle in ('classList.add("atl-easing")', 'classList.remove("atl-easing")', "atlasState.easeTimer = setTimeout"):
+    #: The ease class is a `toggle` now (it also clears a stale one when no ease is asked); same write, same place.
+    for needle in ('classList.toggle("atl-easing"', 'classList.remove("atl-easing")', "atlasState.easeTimer = setTimeout"):
         assert body.index(needle) > apply, needle
     # INBOX 1667: the hand-over runs `latest` (apply, only for the newest call), defined after `apply`.
     assert body.index("nameMarkBuddyBlend(boxes, latest") > body.index("const latest = ") > apply

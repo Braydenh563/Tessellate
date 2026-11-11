@@ -76,7 +76,7 @@ def pcm_of(wav_bytes: bytes) -> bytes:
         raise ValueError("not a WAV file") from exc
 
 
-def _say(stream: TextIO, line: str) -> None:
+def _log(stream: TextIO, line: str) -> None:
     stream.write(line + "\n")
     stream.flush()
 
@@ -127,7 +127,7 @@ def make_server(transcribe: Transcribe, port: int = 0) -> ThreadingHTTPServer:
                 with lock:
                     text = transcribe(pcm, max(0, audio_ctx), options)
             except Exception as exc:  # noqa: BLE001  # the engine's failure is a 500, not a dead helper
-                _say(sys.stderr, f"inference failed: {type(exc).__name__}")
+                _log(sys.stderr, f"inference failed: {type(exc).__name__}")
                 self._send(500, json.dumps({"error": "inference failed"}).encode())
                 return
             self._send(200, json.dumps({"text": text}).encode())
@@ -180,15 +180,15 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     model = Path(args.model)
     if not model.is_absolute() or not model.is_file():
-        _say(sys.stderr, "the model must be an absolute path to a file that exists")
+        _log(sys.stderr, "the model must be an absolute path to a file that exists")
         return 2
     try:
         transcribe = engine_transcriber(str(model), max(1, args.threads))
     except ImportError:
-        _say(sys.stderr, "pywhispercpp is not installed")
+        _log(sys.stderr, "pywhispercpp is not installed")
         return 3
     server = make_server(transcribe, 0)
-    _say(sys.stdout, str(server.server_address[1]))  # the parent reads this line
+    _log(sys.stdout, str(server.server_address[1]))  # the parent reads this line
     if args.exit_on_stdin_close:
         threading.Thread(target=_watch_stdin, daemon=True).start()
     try:

@@ -35,7 +35,6 @@
  "src/tessellate/ai/tools/documents.py::_get_document": 19,
  "src/tessellate/ai/tools/tool_handoff.py::validate_run_skill": 24,
  "src/tessellate/ai/tools/tool_read.py::_count_notes": 20,
- "src/tessellate/ai/tools/tool_read.py::_list_notes": 25,
  "src/tessellate/ai/tools/tool_run.py::execute_tool": 21,
  "src/tessellate/ai/tools/whiteboard.py::_add_map_node": 19,
  "src/tessellate/api/app.py::RevalidatedStatic._precompressed": 21,

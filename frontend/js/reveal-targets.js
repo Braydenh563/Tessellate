@@ -458,8 +458,8 @@ const REVEAL_TARGETS = {
   "note-types": { open: () => openNoteTypesSheet(), sel: '[data-sheet="note-types"] .sheet-card', built: "openNoteTypesSheet", flash: false },
   //: New meeting (INBOX 644): its sheet, the title field first.
   //: The offline studio (studio.js): an audio overview of the notes, read in the natural voice.
-  //: Sync between computers through a folder (sync-folder.js).
-  "sync-folder": { open: () => openFolderSync(), sel: '[data-sheet="sync-folder"] .sheet-card', built: "openFolderSync", flash: false },
+  //: Sync between computers: the one Settings group, both ways in (WORLD_CLASS_PLAN B6 decision 14).
+  "sync-group": { settings: "data", el: "sync-group" },
   studio: { open: () => openStudio(), sel: '[data-sheet="studio"] .sheet-card', built: "openStudio", flash: false },
   "meeting-new": { open: () => openNewMeeting(), sel: '[data-sheet="new-meeting"] .sheet-card', built: "openNewMeeting", flash: false },
   //: KG3: the kinds of link, the built-ins and a person's own.

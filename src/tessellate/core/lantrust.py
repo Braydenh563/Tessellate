@@ -589,6 +589,24 @@ def touch_device(data_dir: Path, raw: str | None, address: str) -> None:
                 return
 
 
+def remember_device(data_dir: Path, raw: str, name: str, address: str) -> str:
+    """List a device that signed in without being held (this computer, or
+    asking switched off), so Remove in Other devices can end what it holds;
+    its hash. A device already listed keeps its row."""
+    found = device_hash(raw)
+    with _lock:
+        state = load(data_dir)
+        if found and not any(d["id"] == found for d in state["devices"]):
+            now = _now_text()
+            state["devices"].append(
+                {"id": found, "name": name, "address": plain_address(address), "added": now, "last_seen": now}
+            )
+            del state["devices"][:-MAX_DEVICES]
+            save(data_dir, state)
+            _bump()
+    return found
+
+
 def device_name(user_agent: str | None) -> str:
     """"iPhone, Safari": enough to tell which device is asking."""
     ua = user_agent or ""
