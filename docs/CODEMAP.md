@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8186, frontend ids 2713, CSS sections 524, backend routes 677, backend modules 10468, test files 2589, tests 21186, plan headings 1013, app scripts 29, boot scripts 38, script files 285.
+Counts: frontend functions 8186, frontend ids 2713, CSS sections 524, backend routes 677, backend modules 10468, test files 2590, tests 21188, plan headings 1013, app scripts 29, boot scripts 38, script files 285.
 
 ## Frontend functions (8186)
 
@@ -1909,10 +1909,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `featureCommandRows` | frontend/js/app-features.js:223 |
 | `paletteCommands` | frontend/js/app-features.js:296 |
 | `popupToolMaths` | frontend/js/app-features.js:254 |
-| `quickAccessCurrent` | frontend/js/app-features.js:602 |
-| `quickAccessItems` | frontend/js/app-features.js:593 |
-| `quickCatalogue` | frontend/js/app-features.js:574 |
-| `renderQuickLinks` | frontend/js/app-features.js:606 |
+| `quickAccessCurrent` | frontend/js/app-features.js:604 |
+| `quickAccessItems` | frontend/js/app-features.js:595 |
+| `quickCatalogue` | frontend/js/app-features.js:576 |
+| `renderQuickLinks` | frontend/js/app-features.js:608 |
 | `renderToolShortcutList` | frontend/js/app-features.js:270 |
 
 ### frontend/js/app-import.js (6)
@@ -26923,7 +26923,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21186)
+## Tests (21188)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27938,6 +27938,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_entry_list_keys_in_fields.py | 2 |
 | tests/test_entry_references.py | 32 |
 | tests/test_entry_writers_whole_1525.py | 4 |
+| tests/test_equation_palette_row.py | 2 |
 | tests/test_error_contract.py | 4 |
 | tests/test_error_log_1549.py | 5 |
 | tests/test_error_toasts.py | 8 |

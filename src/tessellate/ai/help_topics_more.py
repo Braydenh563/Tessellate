@@ -2758,7 +2758,7 @@ MORE_TOPICS.append({
         "The equation editor is the Equation tab of Calculator and equations "
         "(see that topic). It opens from /equation in a note, a document, a "
         "board's text or the Chat box, from a document's Insert menu, or with "
-        "Alt+= there and in the Ask box (the same as Word's Alt+=), each over "
+        "Alt+= there and in the Ask box, or Ctrl+K, Insert equation, each over "
         "the box you were in; Ctrl+K, Calculator and equations opens the same "
         "dialog on Sum, and the shortcuts list has it under Tools. The "
         "equation is drawn as it will read, with "
