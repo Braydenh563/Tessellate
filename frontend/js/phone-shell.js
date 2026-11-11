@@ -1010,8 +1010,10 @@ initRowSwipe($("entry-list"), {
 //: Reminders (Phase 11 item 8, "reminders as rows with swipe done"): right
 //: presses the row's own Done checkbox, which toggles and saves as a tap on
 //: it would; there is no left.
-initRowSwipe($("reminder-groups"), {
-  right: (li) => li.querySelector('input[type="checkbox"]')?.click(),
+onSurface("reminders", () => {
+  initRowSwipe($("reminder-groups"), {
+    right: (li) => li.querySelector('input[type="checkbox"]')?.click(),
+  });
 });
 
 // --- the note page: a note opened on a phone is a page, not a longer card ----
@@ -1879,7 +1881,7 @@ const FAB_IDS = [
 
 function floatPrimaryActions(floating) {
   for (const id of FAB_IDS) {
-    const button = $(id);
+    const button = document.getElementById(id);
     if (!button) continue;
     const page = button.closest(".tab-page");
     if (!page) continue;
@@ -1907,6 +1909,7 @@ function initPrimaryFab() {
   const query = window.matchMedia(PHONE_FAB);
   floatPrimaryActions(query.matches);
   query.addEventListener("change", (event) => floatPrimaryActions(event.matches));
+  onSurface("reminders", () => floatPrimaryActions(query.matches));
 }
 
 initPrimaryFab();

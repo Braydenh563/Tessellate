@@ -1857,6 +1857,7 @@ document.addEventListener("input", (event) => {
 });
 
 async function switchTab(name) {
+  surfaceBuild(name);
   if (!(await confirmLeavingUnsavedWork(name))) return;
   usageCount(`tab:${name}`);
   // Profiled directly: leaving the Graph tab left `graphSimulation` running

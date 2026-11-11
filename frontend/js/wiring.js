@@ -1538,40 +1538,10 @@ $("web-reader-open").addEventListener("click", async () => {
 });
 $("web-reader-find").addEventListener("click", () => openGlobalFind({ scope: "web-reader" }));
 
-// Reminders (Wave D). The dashboard's own wiring (dash-edit,
-// dash-widgets-open/search) moved to dashboard.js along with the code it
-// drives; this comment used to cover both.
-//: Enter adds it, the way a one-line "add" field works everywhere; a
-//: reminder had to be clicked in with the mouse after typing it. Skipped
-//: while an input method is composing, where Enter picks a candidate.
-//: Escape in the sentence box clears what was typed, and on an empty box leaves
-//: it, the way a search field behaves (WORLD_CLASS row 32: it did nothing). On a
-//: phone the form is a sheet whose own Escape closes it, so a press the sheet
-//: has taken is left alone.
-$("reminder-text")?.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && !event.defaultPrevented && !event.isComposing) {
-    const box = event.currentTarget;
-    if (box.value) {
-      event.preventDefault();
-      event.stopPropagation();
-      box.value = "";
-    } else if (!document.querySelector(".sheet-overlay:not(.hidden)")) {
-      box.blur();
-    }
-    return;
-  }
-  if (event.key !== "Enter" || event.shiftKey || event.isComposing) return;
-  event.preventDefault();
-  $("reminder-add").click();
-});
-$("reminder-add").addEventListener("click", reminderComposeAdd); // quickadd.js
-
+//: Enter adds it; Escape clears the box, and on an empty one leaves it (a phone sheet's own Escape wins).
 // **What a phone comes to Reminders for is the list** (INBOX 392,
 // UI_MODERNISATION_PLAN Phase 11 item 12): what is due, and ticking it off.
-// Measured at 390 before: the add form (the sentence box, the text, date,
-// time, priority and repeat fields, the quick-set strip and a note) filled
-// the whole first screen and the list began at y=836 of 844; at 768x1024 the
-// form wrapped to 690px and the list began at y=752. Below 1100 (the width at
+// Measured at 390: the form filled the first screen. Below 1100 (the width at
 // which the rest of the app goes to one column) the form leaves the page and
 // the dock's "New reminder", floated as the + by `FAB_IDS` below 600, opens
 // it as a sheet: the form itself, moved in and put back on close, so its
@@ -1608,78 +1578,19 @@ function openReminderCompose() {
   field()?.focus();
 }
 
-$("reminders-new")?.addEventListener("click", openReminderCompose);
-$("reminder-clear-done").addEventListener("click", clearDoneReminders);
-$("reminders-page-size").value = remindersPageSize;
-$("reminders-page-size").addEventListener("change", (e) => {
-  remindersPageSize = e.target.value;
-  prefs.set("reminders-page-size", remindersPageSize);
-  remindersDonePage = 1;
-  loadReminders();
-});
-$("reminders-done-page-prev").addEventListener("click", () => {
-  if (remindersDonePage <= 1) return;
-  remindersDonePage -= 1;
-  loadReminders();
-});
-$("reminders-done-page-next").addEventListener("click", () => {
-  remindersDonePage += 1; // clamped back down inside paginateDoneReminders if this overshoots
-  loadReminders();
-});
-for (const button of document.querySelectorAll("#reminder-filter button")) {
-  button.addEventListener("click", () => {
-    reminderFilter = button.dataset.filter;
-    for (const b of document.querySelectorAll("#reminder-filter button")) {
-      setActiveChoice(b, b === button);
-    }
-    remindersDonePage = 1; // a filter switch can change what's even in Done
-    loadReminders();
-  });
-}
-//: **One calendar** (TIMELINE_PLAN decision 19, INBOX 768): Calendar opens
-//: the Timeline's calendar showing only reminders, where a reminder drags to
-//: another day; the month grid this tab drew beside its list went.
-$("reminder-view-calendar").addEventListener("click", () => {
-  switchTab("timeline");
-  timelineCalendarCall("timelineCalendarReminders");
-});
-$("reminder-magic-add").addEventListener("click", magicAddReminder);
-$("reminder-magic").addEventListener("keydown", (e) => {
-  // Now a textarea, so Enter has to be claimed explicitly to keep the
-  // one-line-and-go path. Shift+Enter is the escape hatch for a real newline.
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
-    magicAddReminder();
-  }
-});
-for (const button of document.querySelectorAll("#reminder-presets button")) {
-  button.addEventListener("click", () => {
-    setDue(toLocalInputValue(presetDate(button.dataset.preset).toISOString()));
-    if (!$("reminder-text").value.trim()) $("reminder-text").focus();
-  });
-}
 // Nudges: adjusting an existing time is far quicker than retyping one.
 //: Each nudge fades the readout in (`.stepper-fresh`), so the change is seen
 //: where it lands. Arrow keys on a focused stepper nudge too (DESIGN.md
 //: "Stepper"): up or right later, down or left earlier, by 15 minutes, and
 //: by a day with Shift.
-//: **Undo the nudges** (the owner at release: "is it possible to cancel or
-//: reset any adjustments made with the buttons in this reminders bar?").
-//: The steppers keep a running total; a Reset button beside them appears
-//: once it is non-zero and moves the time back by exactly that much. Typing
-//: a date or time, or saving, starts the total again.
+//: Nudges keep a running total; Reset (shown once it is non-zero) undoes exactly that. Typing or saving restarts it.
 let dueNudgeNet = 0;
 const dueNudgeReset = document.createElement("button");
 dueNudgeReset.type = "button";
 dueNudgeReset.className = "ghost small stepper-reset hidden";
 dueNudgeReset.title = "Put the time back to where it was before the steppers";
 setLabel(dueNudgeReset, "ph:arrow-counter-clockwise Reset");
-dueNudgeReset.addEventListener("click", () => {
-  if (dueNudgeNet) nudgeDue(-dueNudgeNet);
-  dueNudgeNet = 0;
-  dueNudgeReset.classList.add("hidden");
-});
-document.querySelector("#reminder-due-row .stepper-pair")?.after(dueNudgeReset);
+
 function clearDueNudges() {
   dueNudgeNet = 0;
   dueNudgeReset.classList.add("hidden");
@@ -1693,24 +1604,99 @@ function nudgeDueShown(minutes) {
   void readout.offsetWidth;
   readout.classList.add("stepper-fresh");
 }
-$("reminder-due-nudge-down").addEventListener("click", () => nudgeDueShown(-15));
-$("reminder-due-nudge-up").addEventListener("click", () => nudgeDueShown(15));
-$("reminder-due-day-down").addEventListener("click", () => nudgeDueShown(-60 * 24));
-$("reminder-due-day-up").addEventListener("click", () => nudgeDueShown(60 * 24));
-for (const stepper of document.querySelectorAll("#reminder-due-row .stepper")) {
-  stepper.addEventListener("keydown", (event) => {
-    const sign = { ArrowUp: 1, ArrowRight: 1, ArrowDown: -1, ArrowLeft: -1 }[event.key];
-    if (!sign || event.altKey || event.ctrlKey || event.metaKey) return;
+onSurface("reminders", () => {
+  $("reminder-text")?.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !event.defaultPrevented && !event.isComposing) {
+      const box = event.currentTarget;
+      if (box.value) {
+        event.preventDefault();
+        event.stopPropagation();
+        box.value = "";
+      } else if (!document.querySelector(".sheet-overlay:not(.hidden)")) {
+        box.blur();
+      }
+      return;
+    }
+    if (event.key !== "Enter" || event.shiftKey || event.isComposing) return;
     event.preventDefault();
-    nudgeDueShown(sign * (event.shiftKey ? 60 * 24 : 15));
+    $("reminder-add").click();
   });
-}
-// The two visible fields drive the hidden value.
-$("reminder-date").addEventListener("input", () => { clearDueNudges(); syncDueFromParts(); });
-$("reminder-time").addEventListener("input", () => { clearDueNudges(); syncDueFromParts(); });
-//: Adding the reminder ends the nudging (delegated: #reminder-add has its own handler).
-$("reminder-add").parentElement.addEventListener("click", (event) => {
-  if (event.target.closest("#reminder-add")) clearDueNudges();
+  $("reminder-add").addEventListener("click", reminderComposeAdd); // quickadd.js
+  $("reminders-new")?.addEventListener("click", openReminderCompose);
+  $("reminder-clear-done").addEventListener("click", clearDoneReminders);
+  $("reminders-page-size").value = remindersPageSize;
+  $("reminders-page-size").addEventListener("change", (e) => {
+    remindersPageSize = e.target.value;
+    prefs.set("reminders-page-size", remindersPageSize);
+    remindersDonePage = 1;
+    loadReminders();
+  });
+  $("reminders-done-page-prev").addEventListener("click", () => {
+    if (remindersDonePage <= 1) return;
+    remindersDonePage -= 1;
+    loadReminders();
+  });
+  $("reminders-done-page-next").addEventListener("click", () => {
+    remindersDonePage += 1; // clamped back down inside paginateDoneReminders if this overshoots
+    loadReminders();
+  });
+  for (const button of document.querySelectorAll("#reminder-filter button")) {
+    button.addEventListener("click", () => {
+      reminderFilter = button.dataset.filter;
+      for (const b of document.querySelectorAll("#reminder-filter button")) {
+        setActiveChoice(b, b === button);
+      }
+      remindersDonePage = 1; // a filter switch can change what's even in Done
+      loadReminders();
+    });
+  }
+  //: **One calendar** (TIMELINE_PLAN decision 19, INBOX 768): Calendar opens
+  //: the Timeline's calendar showing only reminders, where a reminder drags to
+  //: another day; the month grid this tab drew beside its list went.
+  $("reminder-view-calendar").addEventListener("click", () => {
+    switchTab("timeline");
+    timelineCalendarCall("timelineCalendarReminders");
+  });
+  $("reminder-magic-add").addEventListener("click", magicAddReminder);
+  $("reminder-magic").addEventListener("keydown", (e) => {
+    // Now a textarea, so Enter has to be claimed explicitly to keep the
+    // one-line-and-go path. Shift+Enter is the escape hatch for a real newline.
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      magicAddReminder();
+    }
+  });
+  for (const button of document.querySelectorAll("#reminder-presets button")) {
+    button.addEventListener("click", () => {
+      setDue(toLocalInputValue(presetDate(button.dataset.preset).toISOString()));
+      if (!$("reminder-text").value.trim()) $("reminder-text").focus();
+    });
+  }
+  dueNudgeReset.addEventListener("click", () => {
+    if (dueNudgeNet) nudgeDue(-dueNudgeNet);
+    dueNudgeNet = 0;
+    dueNudgeReset.classList.add("hidden");
+  });
+  document.querySelector("#reminder-due-row .stepper-pair")?.after(dueNudgeReset);
+  $("reminder-due-nudge-down").addEventListener("click", () => nudgeDueShown(-15));
+  $("reminder-due-nudge-up").addEventListener("click", () => nudgeDueShown(15));
+  $("reminder-due-day-down").addEventListener("click", () => nudgeDueShown(-60 * 24));
+  $("reminder-due-day-up").addEventListener("click", () => nudgeDueShown(60 * 24));
+  for (const stepper of document.querySelectorAll("#reminder-due-row .stepper")) {
+    stepper.addEventListener("keydown", (event) => {
+      const sign = { ArrowUp: 1, ArrowRight: 1, ArrowDown: -1, ArrowLeft: -1 }[event.key];
+      if (!sign || event.altKey || event.ctrlKey || event.metaKey) return;
+      event.preventDefault();
+      nudgeDueShown(sign * (event.shiftKey ? 60 * 24 : 15));
+    });
+  }
+  // The two visible fields drive the hidden value.
+  $("reminder-date").addEventListener("input", () => { clearDueNudges(); syncDueFromParts(); });
+  $("reminder-time").addEventListener("input", () => { clearDueNudges(); syncDueFromParts(); });
+  //: Adding the reminder ends the nudging (delegated: #reminder-add has its own handler).
+  $("reminder-add").parentElement.addEventListener("click", (event) => {
+    if (event.target.closest("#reminder-add")) clearDueNudges();
+  });
 });
 // --- duplicate tidy-up -----------------------------------------------------------
 // Finding is arithmetic and always available. Merging offers the AI when it's
