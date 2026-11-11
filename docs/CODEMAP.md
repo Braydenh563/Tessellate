@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2705, CSS sections 523, backend routes 671, backend modules 10178, test files 2494, tests 20551, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2705, CSS sections 523, backend routes 671, backend modules 10182, test files 2494, tests 20551, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -13526,7 +13526,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10178)
+## Backend modules (10182)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -25472,15 +25472,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `section_text` | src/tessellate/entry/meetings.py:249 |
 | `strip_cite` | src/tessellate/entry/meetings.py:171 |
 
-### src/tessellate/entry/mentions.py (5)
+### src/tessellate/entry/mentions.py (9)
 
 | Name | File:line |
 |---|---|
-| `backlink_rows` | src/tessellate/entry/mentions.py:146 |
-| `backlink_spans` | src/tessellate/entry/mentions.py:119 |
-| `mention_pattern` | src/tessellate/entry/mentions.py:103 |
-| `names_label` | src/tessellate/entry/mentions.py:112 |
-| `sentence_around` | src/tessellate/entry/mentions.py:40 |
+| `_ends_sentence` | src/tessellate/entry/mentions.py:40 |
+| `_left_edge` | src/tessellate/entry/mentions.py:44 |
+| `_right_edge` | src/tessellate/entry/mentions.py:52 |
+| `_tidied` | src/tessellate/entry/mentions.py:62 |
+| `backlink_rows` | src/tessellate/entry/mentions.py:147 |
+| `backlink_spans` | src/tessellate/entry/mentions.py:120 |
+| `mention_pattern` | src/tessellate/entry/mentions.py:104 |
+| `names_label` | src/tessellate/entry/mentions.py:113 |
+| `sentence_around` | src/tessellate/entry/mentions.py:78 |
 
 ### src/tessellate/entry/moving.py (4)
 

@@ -183,6 +183,7 @@ below). Versioning is `0.x` while the app stabilises.
 - Fix (composer, w8-1110, rows B3 and B11 to B20): a title-less note is named by its first line cut at about six words in quotes (owner 2026-11-10); a fact with its own date no longer carries the day it was written; footers no longer name frame words (new, brief, valid, schedule); an unfound answer carries no source rows; a habit is placed on its days and "anything on Wednesday" lists them; "what happened on 25 October" leads with the notes' own sentences; today's date is backed by the prompt's clock; "last week" is Monday to Sunday of the week before, one head per list; a bare "3/4" follows the request's locale; month names are not synonyms of each other; a verdict writes the day long ("Thursday 12 November, 9:30").
 - Fix (voice notes, w6-1110, audit 1031 Z12): a Discard whose finish fails now says so with a toast and keeps the recording in Library; audit rows A32 to A36 (1029 X1 to X3, 1031 Z12, 1028 B8, B40) were already fixed on head and are struck.
 ## [Unreleased]
+- Complexity (OPEN W29): `sentence_around` in entry/mentions.py (18) is two edge finders and a tidy step; its seed row is gone.
 - Complexity (OPEN W29): `_clock` in timewords.py (20) hands the am, pm and evening hour rule to `_hour24`; its seed row is gone.
 - Complexity (OPEN W29): the page clipper's markdown block walk (`_Markdown.block`, 28) is five small readers and one dispatch; its seed row is gone.
 - Shared scope (OPEN W29): app-palette.js is one closure, exporting six names; the global-names cap goes 8733 to 8679.
