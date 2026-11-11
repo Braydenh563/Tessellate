@@ -65,7 +65,9 @@ def test_the_library_draws_its_view_switch_and_board_placeholders_before_data():
     src = (JS / "library.js").read_text(encoding="utf-8")
     load = src[src.index("async function loadLibrary()") :]
     assert load.index("renderLibraryView();") < load.index('apiJson("/library")')
-    assert 'showSkeletons($("library-boards-grid"), 4);\n            wbShowBoardsLanding();' in src
+    # Drawn before the gallery's bundle is asked for (the gallery split out, INBOX 1772).
+    tab = src[src.index('if (targetId === "library-view-whiteboard")') :]
+    assert tab.index('showSkeletons($("library-boards-grid"), 4);') < tab.index('ensureModule("boardsGallery")')
 
 
 def test_the_notes_find_zone_is_never_narrower_than_its_controls():

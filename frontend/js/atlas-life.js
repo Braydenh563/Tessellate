@@ -531,6 +531,16 @@ function atlasTailFrame(tail, now) {
   atlasBreathFrame.rate(box.atlasBreath, box.closest("#nm-buddy"), box.dataset.atlasMood, now);
   //: The held loops stay held at rest (`atlasTailCalm.rest.sync` plays them again on input).
   //: Read when `loops` flips or once a second, not every beat (B55: 120 style reads a second through an agent turn).
+  //: **A nap slows the rings** (INBOX 1770): a third of the pace, by the animations' playback rate, which keeps every
+  //: planet where it is (a longer `animation-duration` jumped them up to 50 degrees). Looked at once a second, only
+  //: while napping and for the second after; new loops (the calm hold lifting) are caught by the next look.
+  const pace = box.closest("#nm-buddy")?.classList.contains("nmb-act-blanket") ? 1 / 3 : 1;
+  if ((pace !== 1 || box.atlasPace) && now - (box.atlasPaceAt || 0) > 1000) {
+    box.atlasPaceAt = now;
+    for (const anim of box.getAnimations({ subtree: true })) if (anim.effect?.target?.closest?.(".atl-orbits")) anim.updatePlaybackRate(pace);
+    for (const anim of box.atlasLoops || []) anim.updatePlaybackRate(pace);
+    box.atlasPace = pace !== 1;
+  }
   if (!atlasTailCalm.resting(box, tail.state) && (box.atlasLoopsOn !== loops || now - (box.atlasLoopsAt || 0) > 1000)) {
     box.atlasLoopsOn = loops;
     box.atlasLoopsAt = now;

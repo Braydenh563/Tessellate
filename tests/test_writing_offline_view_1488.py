@@ -56,7 +56,8 @@ def test_the_gate_runs_at_load_and_on_every_change_of_model():
     app = (ROOT / "frontend" / "js" / "app.js").read_text(encoding="utf-8")
     # The desk is fetched with the boot's early modules (the library bundle left
     # that list in perf 1031 row 21), so its gate runs without a first click.
-    assert '"saveDraftAsNote", "draftSaveMenuInit"]' in app and '"writingDesk"].forEach(ensureModule)' in app
+    early = next(line for line in app.splitlines() if line.endswith("].forEach(ensureModule), 3000);"))
+    assert '"saveDraftAsNote", "draftSaveMenuInit"]' in app and '"writingDesk"' in early
 
 
 def test_a_note_menu_offers_translate_only_with_a_model():

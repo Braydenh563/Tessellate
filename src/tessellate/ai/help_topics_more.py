@@ -99,8 +99,9 @@ MORE_TOPICS: list[dict] = [
         ),
         "body": (
             "On its own, Atlas does the same small things as the desktop companion: "
-            "push-ups, dumbbells, tea, a biscuit, fishing, a journal, the stars, a nap under a "
-            "blanket, watering a plant and a puzzle, each with its eyes on the prop, and short "
+            "push-ups, dumbbells, tea, a biscuit, fishing, a journal, the stars, a nap (a blanket draped over a pillow, "
+            "a small z rising, the rings dimmed to a faint halo and slowed until it wakes), watering a plant and a puzzle, "
+            "each with its eyes on the prop, and short "
             "gestures: a nod, a little dance, posing proud, a look down and tiptoeing, then a daydream, "
             "pacing, a made-up game, tinkering with a gear and dusting off, and a sneeze, a hiccup, a hug "
             "round itself and a foot tap, then a firefly chase, a little pile of stars counted, a nap on a note card and a wave at the pointer. A shake or a pout leaves it "

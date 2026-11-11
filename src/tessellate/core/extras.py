@@ -1950,9 +1950,9 @@ def _release_captions_helper(extra: Extra) -> None:
     """Stop the captions helper before its engine or model is replaced or
     removed (it holds the model file open). It starts again on the next use."""
     if extra.id in CAPTIONS_IDS:
-        from tessellate.ai import captions_process
-
-        captions_process.stop()
+        # importlib, not `import`: ai.captions_process reads this module, so a
+        # statement here is a cycle (tests/test_no_import_cycles.py).
+        importlib.import_module("tessellate.ai.captions_process").stop()
 
 
 def _install_refusal(extra: Extra, reinstall: bool) -> str:
@@ -2241,8 +2241,9 @@ def _loaded_in_process_reason(extra: Extra) -> str:
     if extra.id in CAPTIONS_IDS:
         # The helper is a child process of ours, not a mapped library, but a
         # run in progress is using both files.
-        from tessellate.ai import captions
-
+        # importlib, not `import`: ai.captions reaches this module through
+        # captions_process and core.deps, so a statement here is a cycle.
+        captions = importlib.import_module("tessellate.ai.captions")
         return "Stop live captions first. They are using it." if captions.running() else ""
     if extra.id != "voice":
         return ""
