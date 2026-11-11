@@ -21,6 +21,8 @@
 //:   blink   sparkles, gone, sparkles there, back (also a far move a new view asked for)
 //:   cloud   a small cloud forms under it and carries it there, with a bob
 //:   bubble  it floats up in a bubble, drifts there and the bubble pops
+//:   wind    Atlas only (E5, the desk's wind-spirit ride): a gust of motes streams behind it, a spiral curls
+//:           round it as it sets off and a small eddy settles where it comes down; no blink of its own
 //:   fade    reduced motion: a crossfade, and nothing else
 //: Every move is one animation of the host's `translate` and `opacity`, on the
 //: compositor, plus a few small elements for the rings and the puffs (the lazy
@@ -32,7 +34,7 @@
 //: a side only). Nothing here clips it.
 //: `nmb.travelForce` names a move to play whatever the chooser would say (the
 //: sweep, scratchpad/ui-sweeps/companiontravel.js).
-const COMPANION_TRAVEL_MOVES = ["walk", "portal", "smoke", "edge", "blink", "cloud", "bubble"];
+const COMPANION_TRAVEL_MOVES = ["walk", "portal", "smoke", "edge", "blink", "cloud", "bubble", "wind"];
 //: A way on foot off the window and back in may not be longer than this many of its own widths.
 const COMPANION_TRAVEL_EDGE_SIZES = 14;
 
@@ -51,6 +53,8 @@ function companionTravelWeights(o) {
   if (d > s * 3 && out + into + s * 2 <= s * COMPANION_TRAVEL_EDGE_SIZES) w.edge = 2.5;
   //: The new ways are seen, not rare (INBOX 1692: "more life to it"); each wants a way worth the show.
   Object.assign(w, { blink: d > s * 2 ? 1.5 : 0, cloud: d > s * 3 ? 1.5 : 0, bubble: d > s * 3 ? 1 : 0 });
+  //: The wind is Atlas's own (`o.atlas`): a spirit's way, and the others keep their calmer ones.
+  if (o.atlas && d > s * 2) w.wind = 2.5;
   if (o.last in w) w[o.last] = 0;
   return w;
 }
@@ -259,6 +263,30 @@ const COMPANION_TRAVEL_PLAYERS = {
     fx?.animate([{ translate: "0px 0px", opacity: 0, offset: 0 }, { translate: "0px 0px", opacity: 1, offset: 0.14 }, { translate: "0px 0px", opacity: 1, offset: 0.2, easing: "ease-in-out" }, { translate: `${-dx}px ${-dy}px`, opacity: 1, offset: 0.85 }, { translate: `${-dx}px ${-dy}px`, opacity: 0, offset: 1 }], { duration: T, easing: "linear" });
     companionTravelFx(buddy, "nmb-wisp", 0, 0, T * 0.86, 4, 520);
   },
+  //: Atlas rides a gust: a spiral curls round it as it lifts, it is carried across, the motes
+  //: trailing, and a small eddy settles under it where it comes down. 1.4 to 2.6s.
+  wind(buddy, dx, dy, ctx) {
+    const T = Math.round(Math.min(2600, Math.max(1400, Math.hypot(dx, dy) * 2.2)));
+    const pos = (x, y, extra = {}) => ({ translate: `${x}px ${y}px`, ...extra });
+    ctx.frames = [pos(dx, dy, { offset: 0 }), pos(dx, dy, { offset: 0.18, easing: "ease-in-out" }), pos(0, 0, { offset: 0.88 }), pos(0, 0, { offset: 1 })];
+    ctx.ms = T;
+    //: Lifted a little as it goes, set down as it comes in.
+    ctx.body = [{ translate: "0px 0px", offset: 0 }, { translate: "0px -8px", offset: 0.22 }, { translate: "0px -5px", offset: 0.55 }, { translate: "0px -8px", offset: 0.75 }, { translate: "0px 0px", offset: 0.9 }, { translate: "0px 0px", offset: 1 }];
+    //: A trail of six motes, on the side it set off from (`nmb-gust-left` when it went right to left).
+    const gust = companionTravelFx(buddy, "nmb-gust", dx, dy, 0, 6, T + 50);
+    if (gust) {
+      gust.classList.toggle("nmb-gust-left", dx < 0);
+      //: A beat apart and a row apart, so six motes read as a stream and none is drawn per frame.
+      [...gust.children].forEach((mote, i) => {
+        mote.style.top = `${26 + i * 11}%`;
+        mote.style.animationDelay = `${-i * 90}ms`;
+      });
+      //: The same beats as the host's own (the lift at 0.18, in at 0.88), so the trail is never ahead of or behind it.
+      gust.animate([{ translate: "0px 0px", opacity: 0, offset: 0 }, { translate: "0px 0px", opacity: 1, offset: 0.1 }, { translate: "0px 0px", opacity: 1, offset: 0.18, easing: "ease-in-out" }, { translate: `${-dx}px ${-dy}px`, opacity: 1, offset: 0.88 }, { translate: `${-dx}px ${-dy}px`, opacity: 0, offset: 1 }], { duration: T, easing: "linear" });
+    }
+    companionTravelFx(buddy, "nmb-spiral", dx, dy, 0, 0, 900);
+    companionTravelFx(buddy, "nmb-eddy", 0, 0, T * 0.86, 0, 1400);
+  },
   //: It floats up in a bubble, drifts across on a shallow sway and the bubble pops over where it goes. 1.8 to 3.2s.
   bubble(buddy, dx, dy, ctx) {
     const T = Math.round(Math.min(3200, Math.max(1800, Math.hypot(dx, dy) * 3)));
@@ -282,7 +310,7 @@ const COMPANION_TRAVEL_PLAYERS = {
 
 //: Play a far move; false when it should be walked (the chooser's "walk", or no player for it).
 function companionTravelPlay(buddy, dx, dy, size, flies, was, force = "") {
-  const o = { last: nmb.travelLast || "", dx, dy, size, flies, reduced: nameMarkBuddyNoTravel(), win: [innerWidth, innerHeight], x0: was.x, x1: nmb.x };
+  const o = { last: nmb.travelLast || "", dx, dy, size, flies, reduced: nameMarkBuddyNoTravel(), win: [innerWidth, innerHeight], x0: was.x, x1: nmb.x, atlas: isAtlasSeed(buddy.dataset.seed) };
   const move = force || nmb.travelForce || companionTravelChoose(o, Math.random());
   nmb.travelLast = move;
   const player = COMPANION_TRAVEL_PLAYERS[move];

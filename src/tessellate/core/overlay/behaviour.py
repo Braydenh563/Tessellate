@@ -260,7 +260,7 @@ ACTIVITIES.update({
     "self_hug": Activity("stand", (3.0, 6.0), _k((0, 1, 1, 0), (0.12, 0.98, 0.99, 0.02), (0.4, 0.98, 0.99, -0.04), (0.7, 0.98, 0.99, 0.04), (0.9, 0.98, 0.99, 0), (1, 1, 1, 0)), (("comfort", -0.35),), likes="sleepy"),
     "foot_tap": Activity("stand", (2.0, 4.0), _k((0, 1, 1, 0), (0.1, 1, 0.98, 0.02), (0.2, 1, 1, 0), (0.35, 1, 0.98, 0.02), (0.45, 1, 1, 0), (0.6, 1, 0.98, 0.02), (0.7, 1, 1, 0), (0.85, 1, 0.98, 0.02), (1, 1, 1, 0)), (("novelty", -0.1),), likes="bored"),
     #: INBOX 1710, 1711: the long sitting acts (the catalogue's `act.meditate`, `lounge`, `rest_head`) and four more small ones.
-    "meditate": Activity("sit", (12.0, 80.0), _k((0, 1, 1, 0), (0.06, 1, 1.03, 0), (0.2, 1, 0.98, 0), (0.35, 1, 1.03, 0), (0.5, 1, 0.98, 0), (0.65, 1, 1.03, 0), (0.8, 1, 0.98, 0), (0.94, 1, 1.02, 0), (1, 1, 1, 0)), (("rest", -0.3), ("comfort", -0.2)), likes="sleepy"),
+    "meditate": Activity("meditate", (12.0, 80.0), _k((0, 1, 1, 0), (0.06, 1, 1.03, 0), (0.2, 1, 0.98, 0), (0.35, 1, 1.03, 0), (0.5, 1, 0.98, 0), (0.65, 1, 1.03, 0), (0.8, 1, 0.98, 0), (0.94, 1, 1.02, 0), (1, 1, 1, 0)), (("rest", -0.3), ("comfort", -0.2)), likes="sleepy"),
     "lounge": Activity("sit", (14.0, 60.0), _k((0, 1, 1, 0), (0.1, 1.02, 0.96, 0.03), (0.5, 1.02, 0.95, -0.03), (0.9, 1.02, 0.96, 0.02), (1, 1, 1, 0)), (("rest", -0.35), ("comfort", -0.3)), likes="sleepy"),
     "rest_head": Activity("sit", (11.0, 40.0), _k((0, 1, 1, 0), (0.1, 1, 0.98, -0.04), (0.45, 1, 0.98, -0.04), (0.55, 1, 0.98, 0.04), (0.9, 1, 0.98, 0.04), (1, 1, 1, 0)), (("rest", -0.3),)),
     "star_catch": Activity("wave", (3.0, 6.0), _k((0, 1, 1, 0), (0.15, 1, 1.04, 0.03), (0.3, 1, 0.97, -0.03), (0.45, 1, 1.05, 0.04), (0.6, 1, 0.97, -0.02), (0.8, 1, 1.03, 0.02), (1, 1, 1, 0)), (("play", -0.25), ("curiosity", -0.1)), likes="curious"),
@@ -272,9 +272,22 @@ for _n, _extra in {"wave_idle": (("social", -0.3),), "little_dance": (("social",
                    "look_around": (("novelty", -0.1),), "stretch": (("comfort", -0.2),), "sit_down": (("comfort", -0.25),)}.items():
     ACTIVITIES[_n] = ACTIVITIES[_n]._replace(feeds=ACTIVITIES[_n].feeds + _extra)
 #: The long sitting acts: the engine ends them at `IDLE_SIT` so the sit comes on time (they run up to 80 s on the sit frame).
+#: W31 E2 (INBOX 1710): the app's legs over an edge and the let-go hand, now with a picture each. `dangle` and `kick_legs` are
+#: `where="perch"`: only on a window's top (the edge the legs go over); `hang_one_hand` is `where="hang"`, so the table never picks it:
+#: the engine plays it inside a hang (`Engine._let_one_go`) and feeds the mind. Lengths and weights come from the catalogue.
+ACTIVITIES.update({
+    "dangle": Activity("dangle", (6.0, 40.0), _k((0, 1, 1, 0), (0.12, 1, 1.01, 0.02), (0.5, 1, 1.01, -0.02), (0.88, 1, 1.01, 0.02), (1, 1, 1, 0)), (("comfort", -0.2), ("play", -0.05)), where="perch"),
+    "kick_legs": Activity(
+        ((0.0, "kick0"), (0.17, "kick1"), (0.33, "kick0"), (0.5, "kick1"), (0.67, "kick0"), (0.83, "kick1")), (1.6, 3.0),
+        _k((0, 1, 1, 0), (0.2, 1, 1.02, 0.02), (0.5, 1, 1.02, -0.02), (0.8, 1, 1.02, 0.02), (1, 1, 1, 0)), (("play", -0.25),), likes="happy", where="perch",
+    ),
+    "hang_one_hand": Activity("hang_one", (4.2, 8.0), _k((0, 1, 1, 0), (1, 1, 1, 0)), (("play", -0.1),), likes="proud", where="hang"),
+})
 YIELD_TO_SIT = frozenset({"meditate", "lounge", "rest_head"})
 #: The ones that only make sense in place: all of them (a trip is a different table).
 IDLE_NAMES = tuple(ACTIVITIES)
+#: How much likelier a perch-only act is on a window's top than its catalogue weight says (it is the only place it can happen).
+PERCH_ACT_BOOST = 5.0
 #: Base chance of each, before need, mood and repeat shape it. Quiet things are common.
 BASE_WEIGHT = {
     "breathe": 9, "shift_weight": 8, "look_around": 8, "slow_blink": 8, "tail_flick": 7, "nod": 3, "shrug": 3,
@@ -287,6 +300,9 @@ BASE_WEIGHT = {
 
 #: The acts `_from_catalogue` set from the table (props and extras register more later, with lengths of their own).
 CATALOGUED: set[str] = set()
+#: Acts that register later (the props', `props.register`) and still take the catalogue's mood, energy and day weights, so
+#: tea is for the morning and supper for the evening on the desk as it is in the app (E5 c, INBOX 1692 d).
+FACTORED: set[str] = set()
 
 
 def _from_catalogue() -> None:
@@ -325,7 +341,7 @@ def phase_of(hour: int) -> str:
 def catalogue_factor(name: str, mood: str, hour: int) -> float:
     """A5: what the catalogue's mood, energy and day weights make of an act now (1 for an act it does not list, and for the props' own). Energy
     is the part of the day's, none when sleepy and one more when happy or startled."""
-    e = catalogue.by_desk_name().get(name) if name in CATALOGUED else None
+    e = catalogue.by_desk_name().get(name) if name in CATALOGUED or name in FACTORED else None
     if e is None:
         return 1.0
     try:
@@ -425,6 +441,7 @@ CHAINS = (
     Chain(("wave_pointer", "look_around"), ()),
     Chain(("rest_head", "stretch", "yawn"), ()),
     Chain(("lounge", "card_nap"), ("sleepy",)),
+    Chain(("dangle", "kick_legs"), ("happy",)),
     Chain(("pace", "sigh"), ()),
     Chain(("cast_sparkle", "toss_stars"), ("happy",)),
 )
@@ -518,7 +535,8 @@ class Mind:
                 continue  # never the same act twice running, quiet ones included
             if now - self.done.get(name, -1e9) < NO_REPEAT and name not in MICRO:
                 continue  # quiet micro things may recur (not back to back); the rest wait their turn
-            out.append((name, self._weight(name, act, mood, hour, now)))
+            #: on a window top the perch-only acts (legs over its edge) are the point of being there: a visit is short
+            out.append((name, self._weight(name, act, mood, hour, now) * (PERCH_ACT_BOOST if act.where == "perch" else 1.0)))
         return out
 
     def _when(self, name: str, hour: int) -> float:
@@ -715,7 +733,7 @@ FLOW_ARR_EASE = 2.4
 #: What a pose does to the streams: [reach, speed] by the start of the frame's name (the first match). Asleep they
 #: are small and slow, glad or thrown they are wide and quick; both move on the way to the next pose over
 #: `FLOW_POSE_EASE` seconds, so a change of pose is never a step.
-FLOW_POSE = (("sleep", 0.5, 0.6), ("sit", 0.8, 0.85), ("hang", 0.95, 1.1), ("wave", 1.0, 1.3), ("walk", 1.0, 1.35), ("hop", 1.0, 1.6), ("fall", 1.0, 1.6), ("land", 1.0, 1.2), ("idle", 0.9, 0.95))
+FLOW_POSE = (("sleep", 0.5, 0.6), ("sit", 0.8, 0.85), ("hang", 0.95, 1.1), ("dangle", 0.95, 1.1), ("kick", 1.0, 1.7), ("meditate", 0.5, 0.55), ("wave", 1.0, 1.3), ("walk", 1.0, 1.35), ("hop", 1.0, 1.6), ("fall", 1.0, 1.6), ("land", 1.0, 1.2), ("idle", 0.9, 0.95))
 FLOW_POSE_EASE = 0.8
 #: What the figure is doing, over its frame (atlascat-1108 C4, the in-app `lower:*` states; INBOX 1696 z: "the lower body
 #: doesnt change at all"): [reach, speed, tip lean px, rise px] by name, the engine's `_lower_state` picking it. A

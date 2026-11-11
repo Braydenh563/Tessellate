@@ -288,12 +288,12 @@ Parked until the owner's data or a check on real hardware:
 ### Tier E: polish
 
 **W31 Companion life** (E, overlay and in-app acts, Opus for the masculine design, Sonnet for acts; not beside W15 or W24). Files: `core/overlay/*`, `atlas*.js`, frames. Checks: `tests/test_companion_catalogue_1108.py`, the weights test (after Q12). Done when: each act is drawn on both sides or listed with a reason.
-- E1 Acts to the desk: meditate, lounge, rest_head; in-app firefly, star pile | compalive, INBOX 1711 W34: owner-call (tracked in the plans), w34-L1-1111.md.
-- E2 In-app-only acts that need desk frames (dangle, kick_legs, hang_one_hand) | INBOX 1710 W34: owner-call (tracked in the plans), w34-L1-1111.md.
-- E3 The life-1109 ranked list (follow-through, startle settle, micro-saccades, stand-loop drift) | INBOX 1719 (b), life-1109 W34: owner-call (tracked in the plans), w34-L1-1111.md.
+~~- E1 Acts to the desk: meditate, lounge, rest_head; in-app firefly, star pile | compalive, INBOX 1711~~ **Built (W31 E1, E2)**: meditate has its own desk frame; lounge and rest_head are the keyed sit (reason in the catalogue); the firefly and star pile were built on both sides by comp2-1109 (tests/test_overlay_desk_acts_1710.py)
+~~- E2 In-app-only acts that need desk frames (dangle, kick_legs, hang_one_hand) | INBOX 1710~~ **Built (W31 E1, E2)**: `dangle`, `kick0`, `kick1`, `hang_one` for both looks; fire only on a window top (with room for the hem) and inside a long hang (tests/test_overlay_desk_acts_1710.py)
+- ~~E3 The life-1109 ranked list (follow-through, startle settle, micro-saccades, stand-loop drift)~~ **Built 1111 (E3 spoke)**: startle settle and the app's saccade were already built (life2-1109); the desk eye-only saccade (`gaze.py`), the desk stand breath on vitals and the in-app ear follow-through are new; the hem's `FLOW_FROZEN` stays (a 5.7 ms warp per frame in flight, the 1683 lag review) | INBOX 1719 (b), life-1109.
 - E4 Masculine Atlas: head, eyes, shoulder join, expressions | oa 1607 b, c, d, B16 W34: owner-call (tracked in the plans), w34-L1-1111.md.
-- E5 Own activities with props; wind-spirit travel; ambient acts by hour | oa 1692 e, n, d W34: owner-call (tracked in the plans), w34-L1-1111.md.
-- E6 Lower body and nebula follow the pose; landing outcomes; edge squash; portal | oa 1692 e/n, B1, B3, T1, N5, N9 W34: owner-call (tracked in the plans), w34-L1-1111.md.
+- ~~E5 Own activities with props; wind-spirit travel; ambient acts by hour | oa 1692 e, n, d~~ **Built in PR 216 (owner decision 10, e5-1111.md): dinner, bubbles and knitting on both sides; the wind ride on the desk and in the app; day weights from the shared catalogue.**
+- ~~E6 Lower body and nebula follow the pose; landing outcomes; edge squash; portal | oa 1692 e/n, B1, B3, T1, N5, N9~~ done e6-1111 (commits 3614f4e03, 9075c49dc and the pose step: soft, stumble and roll landings, edge squash, portal share pinned, lean/dangle/kick/swing/sloth rows; T1 prop tip-over marked out with a reason in owner-asks-audit-1108.md).
 
 **W32 Backend tidy** (E, backend, Haiku verify then Sonnet). Files: small fixes in `api/`. Checks: targeted route tests.
 ~~- E7 Validation copy leaks field names | 1031-backend BK8~~ **Already built c6cc5767a** (field labels and the limit in the message; tests/test_validation_copy.py). Verified s8-1110.
