@@ -154,6 +154,7 @@ def _merge_categories(session: Session, args: dict) -> dict:
         )
     source_name, target_name = source.name, target.name
     ids = _live_ids(session, source.id)
+    description = source.description or ""
     try:
         result = manager.rename_category(session, source.id, target_name)
     except ValueError as exc:
@@ -162,7 +163,7 @@ def _merge_categories(session: Session, args: dict) -> dict:
         "from": source_name,
         "into": target_name,
         "notes_moved": result["moved"],
-        "undo": _filed_back(source_name, ids),
+        "undo": _filed_back(source_name, ids, description),
         "label": (
             f"ph:folder Merged “{source_name}” into “{target_name}” "
             f"({result['moved']} notes moved)"
@@ -171,16 +172,23 @@ def _merge_categories(session: Session, args: dict) -> dict:
 
 
 def _live_ids(session: Session, category_id: int) -> list[int]:
-    """The notes in a category that are not in the bin: what an Undo of a delete or a merge files back
-    (a binned note keeps its place in the bin and is left out)."""
-    return list(session.scalars(select(Entry.id).where(Entry.category_id == category_id, Entry.is_deleted.is_(False)).order_by(Entry.id)))
+    """Every note in a category, binned ones too: what an Undo of a delete or a merge files back (a binned
+    note stays in the bin but returns to its category)."""
+    return list(session.scalars(select(Entry.id).where(Entry.category_id == category_id).order_by(Entry.id)))
 
 
-def _filed_back(name: str, ids: list[int]) -> dict:
-    """The Undo of a category that went away: file the same notes under its name (made when new), or just make it."""
+def _filed_back(name: str, ids: list[int], description: str = "") -> dict:
+    """The Undo of a category that went away: file the same notes under its name (made when new, with its
+    description), or just make it."""
     if ids:
-        return {"tool": "move_notes", "arguments": {"ids": ids, "category": name}}
-    return {"tool": "create_category", "arguments": {"name": name}}
+        arguments: dict = {"ids": ids, "category": name, "include_binned": True}
+        if description:
+            arguments["description"] = description
+        return {"tool": "move_notes", "arguments": arguments}
+    arguments = {"name": name}
+    if description:
+        arguments["description"] = description
+    return {"tool": "create_category", "arguments": arguments}
 
 
 def _delete_category(session: Session, args: dict) -> dict:
@@ -194,6 +202,7 @@ def _delete_category(session: Session, args: dict) -> dict:
     category = _find_category(session, str(args.get("name") or ""))
     name = category.name
     ids = _live_ids(session, category.id)
+    description = category.description or ""
     try:
         result = manager.delete_category(session, category.id)
     except ValueError as exc:
@@ -205,8 +214,8 @@ def _delete_category(session: Session, args: dict) -> dict:
             f"ph:folder Deleted the category “{name}”: {result['moved']} "
             f"note{'' if result['moved'] == 1 else 's'} kept, now Uncategorised"
         ),
-        #: The notes it held are named before they move, so Undo files them back (the description is not kept).
-        "undo": _filed_back(name, ids),
+        #: The notes it held are named before they move, so Undo files them back, with the description.
+        "undo": _filed_back(name, ids, description),
     }
 
 

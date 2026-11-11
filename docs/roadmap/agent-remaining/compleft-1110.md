@@ -13,7 +13,7 @@ Left, one line each:
 - A typed yes does not reach the skill and plan cards (only a press does): they are page cards, not parked server cards (`ai/consent_store.py` parks act and confirm cards only).
 - "make reminders from my todo note": the sentence normaliser turns "todo" into "to do" before the note is looked up, so a note titled Todo is not found by that word (`commands.read` upstream of `parity_acts`).
 - Edit text replaces the whole body (heading kept); an in-place find-and-replace ("change Bluegum-5G to 6G in the wifi note") is not built.
-- Merge and delete a category: the category's description is not restored by Undo; binned notes in it are not filed back.
+- (done in compleft4: category Undo restores description and binned notes; find-and-replace built.)
 - g13 G1 not done: "when did I last see the dentist" (reads the next booking; `composer_slots`, "last" as past), "how far did I run" (`composer_money` goal line), "has the launch date changed". Probed: all three still answer as before.
 - g1014 G11 (`composer_amounts` label lookup across notes, "whose birthday is next", note_rank lead), G12 Patterns template (pins in five test files), G14 a, e, f, i and the composed list rows in JS (dashboard.js, statistics.js, reminder-notify.js, avatars.js): not started. The JS rows go in lazy files (boot scripts sit at the gzip cap); each needs a server line.
 - s10 F4 (composition layer, INBOX 1353, CHAT_PLAN Phase 5 a to g, "X versus Y"): not started.
@@ -52,3 +52,9 @@ Left:
 - F4 beyond labelled notes: "harbor versus japan" (topics of several notes each) still prints two columns with the ranker's lead, not the defining note (`composer_body._compare`, `note_rank.lead`); the tiers case still needs "Label number" lines (a prose line "Free and Plus at $6 a month" is not read).
 - "what's most important right now" still unrouted.
 - Not verified: the browser (no JS changed), real model inference.
+
+## compleft4 (fourth pass)
+
+Done: items 1, 2 and g13 G1 were already built in compleft2 (verified by their tests); in-place find-and-replace ("change Bluegum-5G to 6G in the wifi note", `parity_acts._find_replace`, Was/Now card, Undo); category delete and merge Undo restores the description and files binned notes back (`categories._filed_back`, `move_notes` `include_binned`/`description`).
+
+Left: not verified in the browser; real model inference (fake transport only). Find-and-replace matches the text as typed (case-insensitive only when no exact match) and needs the note named "... note".

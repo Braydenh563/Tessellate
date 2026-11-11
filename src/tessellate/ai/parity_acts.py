@@ -32,6 +32,12 @@ _MERGE = re.compile(
 _DELETE_TAG = re.compile(rf"{_LEAD}{_VERB}\s+(?:the |my )?(?:tag|label)\s+(?:called |named )?(?P<name>.+)$", re.I)
 _EDIT = re.compile(
     rf"{_LEAD}(?:edit|change|update|rewrite|replace)\s+(?:the )?(?P<target>[^:]+?)\s*(?::|\bto say\b|\bto read\b|\bso (?:that )?it (?:says|reads)\b)\s*(?P<text>.+)$", re.I | re.S)
+_SWAP = r"(?:change|replace|swap|update|switch)\s+(?P<old>.+?)\s+(?:to|with|for|by)\s+(?P<new>.+?)"
+_NOTE_NAMED = r"(?:the |my )?(?P<target>.+?\b(?:note|entry))"
+_FIND = (
+    re.compile(rf"{_LEAD}{_SWAP}\s+in\s+{_NOTE_NAMED}$", re.I | re.S),
+    re.compile(rf"{_LEAD}in\s+{_NOTE_NAMED}\s*,?\s+{_SWAP}$", re.I | re.S),
+)
 _REMINDERS = re.compile(
     rf"{_LEAD}(?:turn|make|convert|change|set)\s+(?:the |my )?(?P<src>.+?)\s+(?:in)?to\s+reminders?(?:\s+(?P<when>(?:for|on|at|by|tomorrow|today|tonight|next|this|in)\b.*))?$", re.I)
 _REMINDERS_FROM = re.compile(
@@ -65,6 +71,9 @@ def _read_category_and_tag(text: str) -> dict | None:
 def _read_edit(text: str, one_target) -> dict | None:  # noqa: ANN001
     """"edit the wifi note: the network is Bluegum-6G": the note named before the colon (or "to say") gets the
     words after it as its text. The target must say a note ("the wifi note"), so "change the heading: x" is no edit."""
+    for pattern in _FIND:
+        if found := pattern.match(text):
+            return _read_find(found, one_target)
     found = _EDIT.match(text)
     if not found:
         return None
@@ -76,6 +85,15 @@ def _read_edit(text: str, one_target) -> dict | None:  # noqa: ANN001
     if not named or not named.get("single", True):
         return None
     return {"intent": "edit_text", **named, "single": True, "content": words}
+
+
+def _read_find(found: re.Match, one_target) -> dict | None:  # noqa: ANN001
+    """"change Bluegum-5G to 6G in the wifi note": only that text changes, the rest of the note stays."""
+    old, new = (found.group(k).strip().strip("\"'“”‘’") for k in ("old", "new"))
+    named = one_target(" ".join(found.group("target").split()), bare=False)
+    if not old or not named or not named.get("single", True) or old.lower().startswith(("the name of", "the title of", "my name")):
+        return None
+    return {"intent": "edit_text", **named, "single": True, "find": old, "replace_with": new}
 
 
 def _read_reminders(text: str, resolve) -> dict | None:  # noqa: ANN001
@@ -172,8 +190,10 @@ def _edit_text(session: Session, parsed: dict, note_ids: list[int] | None, helpe
     ok, skipped = helpers["split_allowed"]([entry])
     if not ok:
         return {"line": helpers["summarise_done"]([], skipped)}
-    new = replaced(entry.content or "", parsed["content"])
     title = helpers["item"](entry)
+    if "find" in parsed:
+        return _find_replace(entry, parsed, helpers, skipped, title)
+    new = replaced(entry.content or "", parsed["content"])
     if new.strip() == (entry.content or "").strip():
         return {"line": f"“{title}” already says that."}
     clip = helpers["clip"]
@@ -182,6 +202,29 @@ def _edit_text(session: Session, parsed: dict, note_ids: list[int] | None, helpe
     label = f"Replace the text of “{title}” with “{clip(parsed['content'].strip(), 80)}”"
     steps = [{"name": "edit_note", "arguments": {"note_id": entry.id, "content": new, "base_hash": content_hash(entry.content)}}]
     card = helpers["card"](label, steps, skipped, [title, f"Was: {clip(' '.join(old_text.split()), 120)}", f"Now: {clip(' '.join(parsed['content'].split()), 120)}"])
+    return {"line": helpers["confirm"](label), "card": card}
+
+
+def _find_replace(entry, parsed: dict, helpers: dict, skipped: list, title: str) -> dict:  # noqa: ANN001
+    """One find-and-replace over the note's text: every place the words stand, the rest untouched (Undo restores the whole)."""
+    from tessellate.api.edit_conflicts import content_hash
+
+    old, now, content, clip = parsed["find"], parsed["replace_with"], entry.content or "", helpers["clip"]
+    pattern = re.compile(re.escape(old), 0 if old in content else re.I)
+    hits = list(pattern.finditer(content))
+    if not hits:
+        return {"line": f"I could not find “{clip(old, 60)}” in “{title}”, so nothing changes."}
+    new = pattern.sub(lambda _m: now, content)
+    if new == content:
+        return {"line": f"“{title}” already says that."}
+    start = content.rfind("\n", 0, hits[0].start()) + 1
+    end = content.find("\n", hits[0].end())
+    was = content[start : end if end != -1 else len(content)]
+    after = pattern.sub(lambda _m: now, was)
+    more = f" ({len(hits)} places)" if len(hits) > 1 else ""
+    label = f"Change “{clip(old, 40)}” to “{clip(now, 40)}” in “{title}”{more}"
+    steps = [{"name": "edit_note", "arguments": {"note_id": entry.id, "content": new, "base_hash": content_hash(entry.content)}}]
+    card = helpers["card"](label, steps, skipped, [title, f"Was: {clip(' '.join(was.split()), 120)}", f"Now: {clip(' '.join(after.split()), 120)}"])
     return {"line": helpers["confirm"](label), "card": card}
 
 

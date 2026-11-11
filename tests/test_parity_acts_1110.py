@@ -246,3 +246,64 @@ def test_a_note_titled_todo_is_found_by_that_word(client, session, sentence):
     card = card_of(stream(client, sentence))
     assert "Todo" in json.dumps(card)
     assert "2 reminders" in json.dumps(card) or "reminder" in json.dumps(card)
+
+
+# --- in-place find and replace (compleft-1110 left item 3) -------------------------------
+
+
+@pytest.mark.parametrize("sentence", ["change Bluegum-5G to Bluegum-6G in the wifi note", "replace Bluegum-5G with Bluegum-6G in the wifi note", "in the wifi note, change Bluegum-5G to Bluegum-6G"])
+def test_find_and_replace_changes_only_that_text_with_was_now_and_undo(client, notebook, sentence):
+    card = card_of(stream(client, sentence))
+    assert any(i.startswith("Was: ") and "Bluegum-5G" in i for i in card["items"]), card["items"]
+    assert any(i.startswith("Now: ") and "Bluegum-6G" in i for i in card["items"]), card["items"]
+    wifi = next(e for e in notebook.scalars(select(Entry)) if e.content.startswith("# Wifi"))
+    before = wifi.content
+    done = confirm(client, card)
+    notebook.expire_all()
+    assert wifi.content == before.replace("Bluegum-5G", "Bluegum-6G"), wifi.content
+    assert "hallway cupboard" in wifi.content
+    undo(client, done)
+    notebook.expire_all()
+    assert wifi.content == before
+
+
+def test_find_and_replace_of_text_that_is_not_there_is_said_not_planned(client, notebook):
+    out = stream(client, "change Orange-9G to Orange-10G in the wifi note")
+    assert not [e for e in out.get("act", []) if not e.get("cancel")]
+    assert "Orange-9G" in out["text"]
+
+
+# --- Undo of a category delete or merge restores its description and its binned notes -----
+
+
+def _describe_work_and_bin_budget(session) -> None:
+    work = session.scalar(select(Category).where(Category.name == "Work"))
+    work.description = "Things for the job"
+    budget = next(e for e in session.scalars(select(Entry)) if (e.content or "").startswith("# Budget"))
+    budget.is_deleted = True
+    session.commit()
+
+
+def _binned_category(session, title: str) -> tuple[str, bool]:
+    session.expire_all()
+    entry = next(e for e in session.scalars(select(Entry)) if (e.content or "").startswith(f"# {title}"))
+    return manager.category_name_for(session, entry), bool(entry.is_deleted)
+
+
+@pytest.mark.parametrize("tool, args", [("delete_category", {"name": "Work"}), ("merge_categories", {"from": "Work", "into": "Life"})])
+def test_category_undo_restores_the_description_and_files_binned_notes_back(notebook, tool, args):
+    _describe_work_and_bin_budget(notebook)
+    undo_step = tools.execute_tool(notebook, tool, args)["undo"]
+    assert commands.run(notebook, [{"name": undo_step["tool"], "arguments": undo_step["arguments"]}])["ok"]
+    notebook.expire_all()
+    assert notebook.scalar(select(Category).where(Category.name == "Work")).description == "Things for the job"
+    assert _binned_category(notebook, "Budget") == ("Work", True)
+    assert filed(notebook, "Harbor launch plan") == "Work"
+
+
+def test_an_empty_described_category_deleted_is_made_again_with_its_description(notebook):
+    tools.execute_tool(notebook, "create_category", {"name": "Hobbies", "description": "Weekend things"})
+    result = tools.execute_tool(notebook, "delete_category", {"name": "Hobbies"})
+    assert commands.run(notebook, [{"name": result["undo"]["tool"], "arguments": result["undo"]["arguments"]}])["ok"]
+    notebook.expire_all()
+    assert notebook.scalar(select(Category).where(Category.name == "Hobbies")).description == "Weekend things"
