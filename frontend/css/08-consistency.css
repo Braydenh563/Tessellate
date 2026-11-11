@@ -10343,7 +10343,7 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   .phone-tab-more,
   .timeline-cal-cell .timeline-cal-item,
   .timeline-cal-cell .timeline-cal-more,
-  .panel-movable-on > button.panel-grip,
+  .panel-movable-on > .panel-grip,
   .dgm-panehead button,
   .dgm-listcol :is(.dgm-join, .dgm-menu > button, .dgm-swatch)
 ):focus-visible {
@@ -10394,6 +10394,18 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 .library-view-section {
   scroll-padding-block: var(--ring-room);
 }
+/* The graph note panel's body scrolls between its head and its dock, and its
+   fields fill it edge to edge: the tags field lost 4px of its ring on both
+   sides, Add properties 4.4px on the right and the topic chip 2.2px on the
+   left (wrap/zoom sweep, 2026-11-11, every viewport). */
+.graph-popup-body {
+  padding-inline: var(--ring-room);
+  margin-inline: calc(-1 * var(--ring-room));
+  scroll-padding-block: var(--ring-room);
+}
+/* A movable panel's grip sits flush in its card's corner (the Guide sheet,
+   the graph note and new-note panels), so the card cut its ring 4px on the
+   right and 4.4px at the foot: the Inset recipe, in the list above. */
 /* The Settings nav scrolls on its own and its last section button stood on
    the bottom edge (2px of padding for a 4px ring). */
 .modal-nav {

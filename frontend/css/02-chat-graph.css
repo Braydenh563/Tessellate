@@ -5153,17 +5153,60 @@ button.ghost.danger:is(:focus-visible, :has(:focus-visible)) {
    Centred rather than at the column's left edge, which is the one horizontal
    position that clears *both* top corners the minimap can be set to: at
    1440px it spans x=473 to x=967 with the minimap's corners ending at 195
-   and starting at 1237. `left`/`right`/`margin-inline` rather than a
-   translate, so the bar lands on whole pixels and its text stays crisp. */
+   and starting at 1237.
+   **Back in the column, under the dock** (wrap/zoom sweep, 2026-11-11). Out
+   of the flow it sat at the same height as the panels the column holds under
+   the dock (a topic's card, the options, the trace), so with a topic open it
+   covered the topic's name: 137px of it at 1280, all of it at 768. After the
+   dock in the column it moves nothing the owner's report was about (the dock
+   and the minimap, which is pinned to the card, keep their places) and the
+   panels under it start below it instead of under it. Centred by the column's
+   cross axis, so it still clears both top corners. */
 .graph-selection-dock {
-  position: absolute;
-  top: calc(var(--graph-dock-h) + var(--space-3));
-  left: 0;
-  right: 0;
-  margin-inline: auto;
+  align-self: center;
   gap: var(--space-2);
   width: max-content;
   max-width: 100%;
+}
+/* **One row at every width** (wrap/zoom sweep, 2026-11-11): its six worded
+   actions are 792px, so in a column under that (768 wide) Mind map and the
+   close dropped to a second row and the bar was 114px tall. Below 1100 the
+   words go, the dock's own recipe (`.dock-word`, the Notes dock): each stays
+   the button's name in the tree, the title stays its tooltip, and the button
+   is a square like the close beside it (about 340px for the bar). */
+@media (max-width: 1099.98px) {
+  .graph-selection-dock .dock-word,
+  .dock[data-dock-name="graph"] .dock-find .dock-word {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .graph-selection-dock .ph-lead:has(~ .dock-word),
+  .dock[data-dock-name="graph"] .dock-find .ph-lead:has(~ .dock-word) {
+    translate: none;
+    margin: 0;
+  }
+  .graph-selection-dock > button:has(> .ph-lead + .dock-word),
+  .dock[data-dock-name="graph"] .dock-find > button:has(> .ph-lead + .dock-word) {
+    width: var(--control-h);
+    padding-inline: 0;
+    justify-content: center;
+  }
+}
+/* The map's own dock, the same way: Clear highlight and Exit focus (144px
+   with their words) made the find zone's floor 288px at 768, so the actions
+   dropped to a second row whenever a highlight was on (52px of chrome over
+   the map). Square, and with the zone asking for the search's own floor (the
+   basis a find zone that is only a search already has, 10-responsive.css),
+   it fits beside the identity and the actions. Not on a phone, where the
+   find zone takes a row of its own by design. */
+@media (min-width: 600px) and (max-width: 1099.98px) {
+  .dock[data-dock-name="graph"] > .dock-find {
+    flex-basis: 8rem;
+  }
 }
 .graph-node-menu {
   z-index: 80;

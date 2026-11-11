@@ -24,6 +24,8 @@ function buildTableBlock(scroller, headers, bodyRows, rawTable, shell = null) {
   const label = document.createElement("span");
   label.className = "code-lang";
   label.textContent = bodyRows.length ? `table · header and ${nounCount(bodyRows.length, "row")}` : "table · header only";
+  //: The label gives way to the actions in a narrow bubble (it ellipsises), so its title says all of it.
+  label.title = label.textContent;
   const cells = (row) => headers.map((_, c) => (row[c] || "").trim());
   const rows = [cells(headers), ...bodyRows.map(cells)];
   const tsv = rows.map((row) => row.map((v) => v.replace(/\t/g, " ")).join("\t")).join("\n");

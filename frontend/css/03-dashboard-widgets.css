@@ -3905,9 +3905,12 @@ button.answer-figure-open {
 
 /* The label half never shrinks below its words; the control half is the
    elastic one. A row whose name is squeezed to fit a slider is the failure
-   `.graph-temporal` was fixed for once already, one axis over. */
+   `.graph-temporal` was fixed for once already, one axis over.
+   `:not(.select-shell)`: a picker's shell is a span too, and this clip on it
+   cut its opener's whole focus ring (the shell's box is the opener's, so the
+   4px ring had nowhere to be painted: wrap/zoom sweep, every viewport). */
 .graph-option-row > label,
-.graph-option-row > span {
+.graph-option-row > span:not(.select-shell) {
   flex: 0 1 auto;
   min-width: 0;
   overflow: hidden;
