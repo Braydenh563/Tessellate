@@ -875,7 +875,14 @@ function escapeAndCapMenu(menu, opener) {
   }
   //: The floor keeps a menu opened near the bottom edge a menu rather than a
   //: slit; under it, scrolling inside the panel is the affordance.
-  menu.style.maxHeight = `${Math.max(120, Math.round(window.innerHeight - top - margin))}px`;
+  //: **A menu left in place is capped to what clips it, not to the window.** It
+  //: fitted when it opened, so it was not escaped; a nested level (Share and
+  //: save, Paste in other ways) then made it taller, and at 768x1024 the board
+  //: menu ran 27px past the whiteboard view's clipping edge, Delete board cut
+  //: 21px (wrapzoom 2026-11-11). Capped to that edge, the level scrolls inside.
+  const clipper = menu._escapedHome ? null : menuClippingAncestor(menu);
+  const floor = clipper ? Math.min(window.innerHeight, clipper.getBoundingClientRect().bottom) : window.innerHeight;
+  menu.style.maxHeight = `${Math.max(120, Math.round(floor - top - margin))}px`;
 }
 
 // **Escapes a `kebabMenu()` dropdown from a clipping scroll ancestor.**

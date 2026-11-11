@@ -134,3 +134,27 @@ def test_a_whiteboard_side_section_scrolls_inside_its_panel():
     960x540@2: they ran out of the panel over the shelf."""
     body = _rule(_css("07-whiteboard-misc.css"), ".wb-side-section")
     assert "overflow-y: auto" in body and "min-height: 0" in body
+
+
+# ---- a menu cut by the view it opens in ----------------------------------------------
+
+
+def test_a_nested_submenu_takes_its_menus_width_not_its_own():
+    """Below 820 a submenu is a nested level of the same menu; a whiteboard
+    submenu kept `.wb-board-menu`'s 19rem inside the menu's padded 19rem box
+    and every row was cut 8px at the right."""
+    css = _css("02-chat-graph.css")
+    nested = "".join(_at_blocks(css, "@media (max-width: 819.98px), (hover: none)"))
+    body = _rule(nested, ".action-menu.submenu")
+    assert "position: static" in body and "width: auto" in body
+
+
+def test_a_menu_left_in_place_is_capped_to_what_clips_it():
+    """The board menu fitted the whiteboard view when it opened; a nested
+    level made it taller and it ran past the view's clipping edge."""
+    js = (ROOT / "frontend" / "js" / "menus.js").read_text(encoding="utf-8")
+    body = js[js.index("function escapeAndCapMenu") :]
+    body = body[: body.index("\n}\n")]
+    assert "menu._escapedHome ? null : menuClippingAncestor(menu)" in body
+    assert "Math.min(window.innerHeight, clipper.getBoundingClientRect().bottom)" in body
+    assert "floor - top - margin" in body
