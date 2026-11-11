@@ -13,9 +13,15 @@ LONG = 50_000
 
 
 def _fast(fn, *args):
-    start = time.perf_counter()
-    fn(*args)
-    return time.perf_counter() - start
+    """The best of three runs: a polynomial pattern is slow every run, while a
+    busy machine (the suite's workers) only slows some (PR 216: 23 ms alone,
+    up to 101 ms under load, against the 50 ms bar)."""
+    times = []
+    for _ in range(3):
+        start = time.perf_counter()
+        fn(*args)
+        times.append(time.perf_counter() - start)
+    return min(times)
 
 
 @pytest.mark.parametrize("junk", [" ", "\t", ",", ", "])
