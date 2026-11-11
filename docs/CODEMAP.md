@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8140, frontend ids 2710, CSS sections 523, backend routes 673, backend modules 10216, test files 2516, tests 20678, plan headings 1004, app scripts 28, boot scripts 37, script files 280.
+Counts: frontend functions 8140, frontend ids 2710, CSS sections 523, backend routes 673, backend modules 10216, test files 2517, tests 20685, plan headings 1004, app scripts 28, boot scripts 37, script files 280.
 
 ## Frontend functions (8140)
 
@@ -5604,16 +5604,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `closeIconPicker` | frontend/js/icon-picker.js:484 |
+| `closeIconPicker` | frontend/js/icon-picker.js:504 |
 | `iconPickerEmojiGroups` | frontend/js/icon-picker.js:374 |
-| `iconPickerGlyph` | frontend/js/icon-picker.js:468 |
+| `iconPickerGlyph` | frontend/js/icon-picker.js:488 |
 | `iconPickerHay` | frontend/js/icon-picker.js:369 |
 | `iconPickerIconGroups` | frontend/js/icon-picker.js:427 |
 | `iconPickerPhosphorNames` | frontend/js/icon-picker.js:409 |
 | `iconPickerRecent` | frontend/js/icon-picker.js:444 |
 | `iconPickerRemember` | frontend/js/icon-picker.js:449 |
-| `iconPickerText` | frontend/js/icon-picker.js:463 |
-| `openIconPicker` | frontend/js/icon-picker.js:493 |
+| `iconPickerText` | frontend/js/icon-picker.js:483 |
+| `openIconPicker` | frontend/js/icon-picker.js:513 |
 
 ### frontend/js/image-layout.js (14)
 
@@ -26456,7 +26456,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20678)
+## Tests (20685)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27767,6 +27767,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_lag_forced_layout_1560.py | 6 |
 | tests/test_lag_forced_layout_1575.py | 4 |
 | tests/test_lag_forced_layout_1591.py | 5 |
+| tests/test_lag_icon_picker_1726.py | 7 |
 | tests/test_lag_layout_reads.py | 11 |
 | tests/test_lag_log.py | 6 |
 | tests/test_lag_models_status_1662.py | 5 |
