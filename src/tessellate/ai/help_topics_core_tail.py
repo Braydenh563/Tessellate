@@ -297,7 +297,7 @@ TAIL_TOPICS.extend(
             "body": (
                 "A board's sidebar (the Sidebar button in its top bar, or the rail on its left edge) has "
                 "four tabs: Library, Notes, Layers and Pages; a mind map's has Library, This map (its "
-                "facts, its look, open every fold or fold every branch, lay it out again) and Outline. The Library starts with "
+                "facts, its look, open every fold, lay it out again) and Outline. The Library starts with "
                 "Templates (38 for boards, 27 for maps; see Board and map templates). Pages lists the "
                 "board's frames in presentation order: drag a row or press Alt+Up and Alt+Down to reorder, "
                 "Enter goes to the frame, P presents from it, double-click or F2 renames it, and its ⋯ menu has more. "
@@ -767,15 +767,15 @@ TAIL_TOPICS.extend(
             "body": (
                 "The layout picker: tree, radial, logic chart, "
                 "timeline, fishbone, tree table or free; Tidy lays every unpinned topic out again. "
-                "View sets Colour by (branch, category, age, note), opens every "
-                "folded branch or folds every branch (Alt+1); Present branches shows it branch by branch. A topic's menu, "
+                "View sets Colour by (branch, category, age, note) and opens every "
+                "folded branch (Alt+1: fold every branch); Present branches shows it branch by branch. A topic's menu, "
                 "Content, Markers sets a priority (1 to 5), how far along it is, a "
                 "flag, a start day, a due day and up to six icons; View, Gantt chart draws "
-                "a bar from start to due for each topic with both, and a dragged bar moves its dates (Undo); "
+                "a bar from start to due for each topic with both, and a dragged bar moves its dates; "
                 "a topic's menu, Audio note attaches a recording from Recordings, its mic mark plays it; "
                 "View, Filter by marker dims every topic "
                 "without the one you pick, and View, Dim all but the selected branch "
-                "dims everything outside the selected topic's branch and its path to "
+                "dims everything outside the selected branch and its path to "
                 "the centre, following the selection. The sidebar's Outline tab (View, "
                 "Outline) lists the map as an indented outline: F2 renames, "
                 "Shift+Enter adds a topic, Tab and Shift+Tab move it in and out a level. "
@@ -787,7 +787,7 @@ TAIL_TOPICS.extend(
                 "the numbers. A topic's menu adds a note behind it: its mark "
                 "opens it; on a topic that is one of your notes, Edit the note's text… changes the note itself. "
                 "Comment… starts a thread, counted on its corner; its Branch group draws a boundary "
-                "round the branch or summarises topics side by side. Templates, import and export are in Mind map import and export."
+                "round the branch or summarises topics side by side. Templates, import and export: see Mind map import and export."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
