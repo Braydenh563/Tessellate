@@ -275,10 +275,10 @@ def test_the_exports_read_the_walker():
     walk `repo/content.walk` rather than each selecting its own rows."""
     import inspect
 
-    from tessellate.api import routes_settings
+    from tessellate.api import routes_settings_transfer
     from tessellate.entry import export_folder
 
-    for fn in (export_folder.snapshot, export_folder.export, export_folder._write_documents, routes_settings._export_rows):
+    for fn in (export_folder.snapshot, export_folder.export, export_folder._write_documents, routes_settings_transfer._export_rows):
         source = inspect.getsource(fn)
         assert "walk(session" in source, fn.__name__
         assert "select(Entry)" not in source and "select(Document)" not in source, fn.__name__

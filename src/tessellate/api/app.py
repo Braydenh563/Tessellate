@@ -77,7 +77,9 @@ from tessellate.api import (
     routes_vision,
     routes_resurface,
     routes_entries,
+    routes_entries_relations,
     routes_files,
+    routes_files_ocr,
     routes_files_readings,
     routes_graph,
     routes_help,
@@ -90,6 +92,7 @@ from tessellate.api import (
     routes_recordings,
     routes_reminders,
     routes_settings,
+    routes_settings_transfer,
     routes_spaces,
     routes_hello,
     routes_origin_handoff,
@@ -1471,6 +1474,9 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     (routes_auth.router, OPEN),
     (routes_hello.router, OPEN),
     (routes_origin_handoff.router, OPEN),
+    # Before routes_entries: its static paths (`/tensions`, `/link-suggestions`) must be tried ahead
+    # of `GET /{entry_id}`, which they used to precede inside that one router (K24).
+    (routes_entries_relations.router, LOCKED),
     (routes_entries.router, LOCKED),
     (routes_mentions.router, LOCKED),
     (routes_meetings.router, LOCKED),
@@ -1482,6 +1488,7 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     (routes_ask_history.router, LOCKED),
     (routes_models.router, LOCKED),
     (routes_settings.router, LOCKED),
+    (routes_settings_transfer.router, LOCKED),  # export and import routes (K24)
     (routes_maintenance.router, LOCKED),
     (routes_lag.router, LOCKED),
     (routes_diag.router, LOCKED),
@@ -1507,6 +1514,7 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     (routes_spaces.router, LOCKED),
     (routes_private_spaces.router, LOCKED),
     (routes_files.router, LOCKED),
+    (routes_files_ocr.router, LOCKED),  # the OCR routes of files and media (K24)
     (routes_files_readings.router, LOCKED),  # the reading-side routes of files and media (K24)
     # A plain `<img src>` (or a note's own inline `![]()` markdown) never
     # attaches the X-Auth-Token header, so only these routes also accept the

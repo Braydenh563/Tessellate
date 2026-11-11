@@ -16140,8 +16140,10 @@ Link to another note with [[its first few words]]."></textarea>
        lazy now (A1): those reads are all inside closures that only run with
        a document surface on screen, which is to say after documents.js has
        arrived, and the two that could run sooner (`applyMarkdown`,
-       `docEventFromCm`) are on app.js's stand-in list and its typeof-guard
-       list respectively. -->
+       `docEventFromCm`) are both behind `typeof ... === "function"` checks
+       in this file; `applyMarkdown` is also on app.js's stand-in list, while
+       `docEventFromCm` is deliberately left off it (its return value is
+       read, and a stand-in promise would be truthy). -->
   <script src="/js/rich-picker.js?v=0.7.0"></script>
   <script src="/js/editor.js?v=0.7.0"></script>
   <!-- Dashboard: widgets, masonry packing, the generative-art widget (§88.3

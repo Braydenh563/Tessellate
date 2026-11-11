@@ -50,9 +50,9 @@ api/app.py::_start_searxng_if_asked::thread::1
 api/routes_backups.py::export_bundle::request-task::1
 api/routes_chat.py::_stop_when_gone::task::1
 api/routes_import.py::export_notebook_folder::request-task::1
-api/routes_settings.py::export_backup::request-task::1
 api/routes_settings.py::restart_app::request-task::1
 api/routes_settings.py::set_console_mode::request-task::1
+api/routes_settings_transfer.py::export_backup::request-task::1
 api/routes_update.py::apply_update::thread::1
 api/routes_update.py::apply_update::thread::2
 core/embedmodels.py::_spawn_download::thread::1

@@ -89,10 +89,10 @@ def test_a_note_made_private_is_not_brought_back_in_the_clear(client, app_state,
 def test_one_failing_file_does_not_take_the_rest_with_it(client, vault, monkeypatch):
     """A failed flush poisons the session for every later file unless the
     failure is rolled back (the audit's code read)."""
-    from tessellate.api import routes_settings
+    from tessellate.api import routes_settings_transfer
     from tessellate.core.database import Entry
 
-    real = routes_settings.manager.create_entry
+    real = routes_settings_transfer.manager.create_entry
 
     def flaky(session, content, **kwargs):
         if content == "note number 2":
@@ -100,7 +100,7 @@ def test_one_failing_file_does_not_take_the_rest_with_it(client, vault, monkeypa
             session.flush()
         return real(session, content, **kwargs)
 
-    monkeypatch.setattr(routes_settings.manager, "create_entry", flaky)
+    monkeypatch.setattr(routes_settings_transfer.manager, "create_entry", flaky)
     client.post("/import/directory", json={"path": str(vault)})
     pool_idle()
     contents = _contents(client)

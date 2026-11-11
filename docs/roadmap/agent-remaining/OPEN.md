@@ -4461,7 +4461,7 @@ Format: id | file:line | one line | status.
 
 **BW1 (whiteboard, 28 rows)**
 
-- K24 | audit-1028-backend:30 | God modules: whiteboard 6,123 lines, composer 5,221, tools 5,159, chat 5,023, entries 4,172, files 4,151 | open
+- K24 | audit-1028-backend:30 | God modules: whiteboard 6,123 lines, composer 5,221, tools 5,159, chat 5,023, entries 4,172, files 4,151 | open (1111: files 4,256 to 2,197 over routes_files_readings and routes_files_ocr; entries 4,423 to 3,776 over routes_entries_relations; settings 3,470 to 2,709 over routes_settings_transfer; left in k24-1111.md)
 - K36 | audit-1028-backend:42 | list_boards and list_images: per-board loops with queries; timeline pulls all dates for the scrubber | fixed: wb_preview._preview_stamps_bulk groups the fingerprint across the page (tests/test_board_list_queries_k36.py: 31 statements for 3 and for 12 boards, 67 before); list_images was already batched and the timeline scrubber reads date-only rows
 - B1 | audit-1028-board:5 | whiteboard.js is 25,012 lines; initWhiteboard alone is 4,064 lines (one closure holding most handlers), u | open
 - B2 | audit-1028-board:6 | whiteboard-map.js is 10,810 lines, 350 functions; wbBuildMapNode is 369 lines | open
