@@ -77,11 +77,13 @@ def test_set_chat_model_requires_installed(ai_client):
 
 
 def test_set_chat_model_needs_ollama(client):
-    assert client.post("/models/chat-model", json={"name": "llama3.2"}).status_code == 409
+    response = client.post("/models/chat-model", json={"name": "llama3.2"})
+    assert response.status_code == 409
 
 
 def test_pull_streams_progress_to_status(ai_client, fake_ollama):
-    assert ai_client.post("/models/pull", json={"name": "nomic-embed-text"}).status_code == 200
+    response = ai_client.post("/models/pull", json={"name": "nomic-embed-text"})
+    assert response.status_code == 200
 
     body = _wait_for(
         ai_client, lambda b: b["pulls"].get("nomic-embed-text", {}).get("status") == "success"
@@ -159,7 +161,8 @@ def test_status_reports_utility_model(client):
 
 def test_set_utility_model_offline_still_saves(client):
     # Ollama unavailable in this fixture, an empty name always applies.
-    assert client.post("/models/utility-model", json={"name": ""}).status_code == 200
+    response = client.post("/models/utility-model", json={"name": ""})
+    assert response.status_code == 200
 
 
 def test_digest_uses_utility_model(ai_client, fake_ollama):
@@ -205,7 +208,8 @@ def test_status_reports_vision_model(client):
 
 
 def test_set_vision_model_offline_still_saves(client):
-    assert client.post("/models/vision-model", json={"name": ""}).status_code == 200
+    response = client.post("/models/vision-model", json={"name": ""})
+    assert response.status_code == 200
 
 
 def test_set_vision_model_rejects_a_name_not_installed(ai_client):
@@ -281,7 +285,8 @@ def test_a_rebuild_also_rebuilds_the_keyword_index(ai_client, fake_embeddings):
         session.commit()
     finally:
         session.close()
-    assert ai_client.post("/models/reindex").status_code == 200
+    response = ai_client.post("/models/reindex")
+    assert response.status_code == 200
     _wait_for(ai_client, lambda b: (b["reindex"] or {}).get("status") == "success")
     stats = ai_client.get("/search/stats").json()
     assert stats["index"]["note"] == 1
@@ -299,7 +304,8 @@ def test_a_rebuild_does_not_change_which_backend_is_in_use(ai_client, fake_embed
         config.get_preference("embedding_model"),
     )
     ai_client.post("/entries", json={"content": "something to embed"})
-    assert ai_client.post("/models/reindex").status_code == 200
+    response = ai_client.post("/models/reindex")
+    assert response.status_code == 200
     _wait_for(ai_client, lambda b: (b["reindex"] or {}).get("status") == "success")
     assert (
         config.get_preference("embedding_backend"),
@@ -565,7 +571,8 @@ def test_a_start_up_choice_is_said_with_its_reason_until_one_is_picked(client, m
     body = client.get("/models/status").json()
     assert body["chat_model"] == "granite4.1:3b" and body["chat_model_chosen"] is True
     assert "llama3.2 is not installed" in body["chat_model_chosen_why"]
-    assert client.post("/models/chat-model", json={"name": "granite4.1:3b"}).status_code == 200
+    response = client.post("/models/chat-model", json={"name": "granite4.1:3b"})
+    assert response.status_code == 200
     assert client.get("/models/status").json()["chat_model_chosen_why"] == ""
     js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "status.js").read_text(encoding="utf-8")
     assert "sayChatModelChosen(modelStatus);" in js and '"Change"' in js.split("function sayChatModelChosen", 1)[1][:900]

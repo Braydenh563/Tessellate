@@ -47,8 +47,9 @@ def test_a_missing_slot_is_asked_never_guessed():
 
 
 def test_a_likely_reading_says_what_it_read():
+    #: Q24 (the owner): "last week" is the previous Monday to Sunday, not the last seven days.
     got = reading.read("what did I write last week", now=NOW)
-    assert got.band == "likely" and got.said == "Read as notes from Tuesday 29 September 2026 to Tuesday 6 October 2026."
+    assert got.band == "likely" and got.said == "Read as notes from Monday 28 September 2026 to Sunday 4 October 2026."
     assert reading.repair(got) is None
 
 

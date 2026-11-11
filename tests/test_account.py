@@ -42,8 +42,10 @@ def test_password_change_swaps_the_password(client):
     assert changed.status_code == 200
 
     client.post("/auth/lock", headers={"X-Auth-Token": changed.json()["token"]})
-    assert client.post("/auth/unlock", json={"password": "first-pass"}).status_code == 401
-    assert client.post("/auth/unlock", json={"password": "second-pass"}).status_code == 200
+    response = client.post("/auth/unlock", json={"password": "first-pass"})
+    assert response.status_code == 401
+    response = client.post("/auth/unlock", json={"password": "second-pass"})
+    assert response.status_code == 200
 
 
 def test_password_change_keeps_private_notes_readable(client):
@@ -90,7 +92,8 @@ def test_password_change_refuses_a_wrong_current_password(client):
     )
     assert response.status_code == 401
     # The old password still works, i.e. nothing was half-applied.
-    assert client.post("/auth/unlock", json={"password": "first-pass"}).status_code == 200
+    response = client.post("/auth/unlock", json={"password": "first-pass"})
+    assert response.status_code == 200
 
 
 def test_password_change_refuses_reusing_the_same_password(client):
@@ -139,7 +142,8 @@ def test_lock_all_also_kills_a_reminder_notification_token(client):
     data_dir = deps.get_config().data_dir
     token = reminder_token.mint(7, now=1_000_000, data_dir=data_dir)["token"]
     assert reminder_token.verify(token, 7, "done", now=1_000_001, data_dir=data_dir)
-    assert client.post("/auth/lock-all", headers=headers).status_code == 200
+    response = client.post("/auth/lock-all", headers=headers)
+    assert response.status_code == 200
     assert not reminder_token.verify(token, 7, "done", now=1_000_001, data_dir=data_dir)
 
 
@@ -302,7 +306,8 @@ def test_rotate_vault_key_interrupted_leaves_notes_readable_with_the_old_key(
     assert still_there["content"] == "a private thought"
 
     client.post("/auth/lock", headers=headers)
-    assert client.post("/auth/unlock", json={"password": "first-pass"}).status_code == 200
+    response = client.post("/auth/unlock", json={"password": "first-pass"})
+    assert response.status_code == 200
 
 
 def test_unlock_throttles_a_run_of_wrong_passwords(client, monkeypatch):
@@ -315,7 +320,8 @@ def test_unlock_throttles_a_run_of_wrong_passwords(client, monkeypatch):
     monkeypatch.setattr(routes_auth, "_failed_unlocks", [])
     _setup(client)
     for _ in range(routes_auth._FAILURE_ALLOWANCE):
-        assert client.post("/auth/unlock", json={"password": "nope"}).status_code == 401
+        response = client.post("/auth/unlock", json={"password": "nope"})
+        assert response.status_code == 401
 
     # Inside the earned wait even the right password is refused, the 429
     # names the wait so the owner knows it is a throttle, not a lockout.
@@ -338,7 +344,8 @@ def test_unlock_forgives_once_the_wait_has_passed(client, monkeypatch):
     routes_auth._failed_unlocks[:] = [t - 5 for t in routes_auth._failed_unlocks]
     for failures in routes_auth._failed_by_client.values():
         failures[:] = [t - 5 for t in failures]
-    assert client.post("/auth/unlock", json={"password": "first-pass"}).status_code == 200
+    response = client.post("/auth/unlock", json={"password": "first-pass"})
+    assert response.status_code == 200
     assert routes_auth._failed_unlocks == []
     assert routes_auth._failed_by_client == {}
 
@@ -348,21 +355,24 @@ def test_full_auth_flow(client):
     # `auto_session` is False: sign-in is on by default (INBOX 426 aa).
     # `reset_here` is False: the test client is not a loopback address (INBOX 663).
     assert client.get("/auth/status").json() == {"setup_required": True, "auto_session": False, "reset_here": False, "pin_here": False, "hello_here": False, "restore_offer": None}
-    assert client.post("/entries", json={"content": "pre-password note"}).status_code == 201
+    response = client.post("/entries", json={"content": "pre-password note"})
+    assert response.status_code == 201
 
     token = client.post("/auth/setup", json={"password": "hunter22"}).json()["token"]
     assert client.get("/auth/status").json() == {"setup_required": False, "auto_session": False, "reset_here": False, "pin_here": False, "hello_here": False, "restore_offer": None}
 
     # Once a password exists the data routes lock without a token…
     assert client.get("/entries").status_code == 401
-    assert client.post("/auth/setup", json={"password": "again"}).status_code == 400
+    response = client.post("/auth/setup", json={"password": "again"})
+    assert response.status_code == 400
 
     # …and open with one.
     ok = client.get("/entries", headers={"X-Auth-Token": token})
     assert ok.status_code == 200 and len(ok.json()) == 1
 
     # Wrong password rejected; right password issues a fresh token.
-    assert client.post("/auth/unlock", json={"password": "wrong"}).status_code == 401
+    response = client.post("/auth/unlock", json={"password": "wrong"})
+    assert response.status_code == 401
     token2 = client.post("/auth/unlock", json={"password": "hunter22"}).json()["token"]
 
     # Locking kills that token.
