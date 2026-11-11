@@ -831,6 +831,30 @@ _SURFACES = {
 }
 
 
+_CLOCK_UNIT = r"(?:hours?|hrs?|h|minutes?|mins?|m|seconds?|secs?|s)"
+_CLOCK = re.compile(
+    r"^(?:please )?(?:(?:set|start|begin|run|make|open|show)(?: me| up)?(?: a| an| the| my)?|(?=countdown|timer))"
+    rf"(?: (?P<n1>\d+(?:\.\d+)?) ?(?P<u1>{_CLOCK_UNIT}))? ?(?P<kind>timer|countdown|pomodoro|stopwatch|clock)"
+    rf"(?:(?: for| of)? (?P<n2>\d+(?:\.\d+)?) ?(?P<u2>{_CLOCK_UNIT}))?$")
+
+
+def _clock_ask(text: str) -> dict | None:
+    """"set a timer for 25 minutes", "start a pomodoro", "start a stopwatch": the Clock window
+    opened on the right tab with the length ready. It starts nothing: Start is the person's press."""
+    found = _CLOCK.match(text.strip(" .!").lower())
+    if not found:
+        return None
+    kind = found.group("kind")
+    n, unit = (found.group("n1"), found.group("u1")) if found.group("n1") else (found.group("n2"), found.group("u2"))
+    minutes = None
+    if n is not None:
+        minutes = round(float(n) * {"h": 60, "m": 1, "s": 1 / 60}[unit[0]], 3)
+        minutes = int(minutes) if minutes == int(minutes) else minutes
+    elif kind == "pomodoro":
+        minutes = 25
+    return {"intent": "navigate", "surface": "clock", "minutes": minutes, "tab": "stopwatch" if kind == "stopwatch" else "timer"}
+
+
 def _navigate(text: str) -> dict | None:
     """"open settings", "go to the graph": a place in the app, not a note."""
     low = text.lower()
@@ -841,6 +865,18 @@ def _navigate(text: str) -> dict | None:
             if rest in _SURFACES:
                 return {"intent": "navigate", "surface": _SURFACES[rest]}
     return None
+
+
+def _plan_clock(parsed: dict) -> dict:
+    minutes = parsed.get("minutes")
+    if parsed["tab"] == "stopwatch":
+        line = "Opening the Clock on the stopwatch. Press Start when you are ready."
+    elif minutes:
+        say = f"{minutes:g} minute" + ("" if minutes == 1 else "s")
+        line = f"Opening the Clock with {say} ready. Press Start to begin."
+    else:
+        line = "Opening the Clock. Pick a length and press Start."
+    return {"line": line, "navigate": "clock", "minutes": minutes, "tab": parsed["tab"]}
 
 
 def _one_target(text: str, *, bare: bool = False) -> dict | None:
@@ -1227,7 +1263,7 @@ def _bare_call(text: str, now: datetime, locale: str | None) -> dict | None:
 
 
 def _read_folded(command: str, question: bool, polite: bool, urgent: bool, now: datetime, locale: str | None) -> dict | None:
-    for reader in (address.read_set, object_acts.read_make, lambda t: parity_acts.read(t, _one_target, lambda w: _time_of(w, now, locale)), task_acts.read_checklist_note, _meeting, lambda t: _reminder(t, now, locale), lambda t: task_acts.read_add(t, lambda r: _reminder(r, now, locale)),
+    for reader in (address.read_set, object_acts.read_make, lambda t: parity_acts.read(t, _one_target, lambda w: _time_of(w, now, locale)), task_acts.read_checklist_note, _meeting, _clock_ask, lambda t: _reminder(t, now, locale), lambda t: task_acts.read_add(t, lambda r: _reminder(r, now, locale)),
                    task_acts.read_uncomplete, task_acts.read_complete, task_acts.read_cancel, lambda t: task_acts.read_snooze(t, lambda w: _time_of(w, now, locale)), lambda t: _bare_call(t, now, locale), _new_note, _untag, _tag, _move, _delete, _pin, _link, object_acts.read_rename, lambda t: object_acts.read_restore(t, _one_target), _rename,
                    _append, _summarise, _navigate, _find):
         found = reader(command)
@@ -1729,6 +1765,8 @@ def _plan_intent(session: Session, parsed: dict, note_ids: list[int] | None) -> 
     if intent == "untag":
         return _plan_untag(session, parsed, note_ids)
     if intent == "navigate":
+        if parsed["surface"] == "clock":
+            return _plan_clock(parsed)
         return {"line": f"Opening {parsed['surface']}.", "navigate": parsed["surface"]}
     if intent in READ_INTENTS:
         return _plan_read(session, parsed)

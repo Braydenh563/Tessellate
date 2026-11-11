@@ -3896,11 +3896,14 @@ _MONEY = lazy_compile(r"[$£€¥]\s?\d|\b\d[\d,.]*\s?(?:dollars|pounds|euros|qu
 _SCORE = lazy_compile(r"\b\d+(?:\.\d+)?\s?(?:/\s?(?:5|10|20|100)\b|out of \d+|stars?\b)", re.I)
 
 
+_DEGREES = lazy_compile(r"\b\d+(?:\.\d+)?\s?(?:°\s?[CF]?|degrees|deg)\b|\b\d+(?:\.\d+)?\s?[CF]\b", re.I)
+
+
 def says_shape(shape: str, text: str) -> bool:
-    """Whether `text` holds a "money" amount, a "score" ("8/10", "4 stars") or a "schedule" (a recurring habit)."""
+    """Whether `text` holds a "money" amount, a "score" ("8/10", "4 stars"), a "temperature" ("175C") or a "schedule" (a recurring habit)."""
     if shape == "schedule":
         return recurring_schedule(text)  # "Gym on Monday, Wednesday and Friday at 7am" is a schedule (bt-compcomp-1109 item 11)
-    pattern = {"money": _MONEY, "score": _SCORE}.get(shape)
+    pattern = {"money": _MONEY, "score": _SCORE, "temperature": _DEGREES}.get(shape)
     return bool(pattern and pattern.search(text or ""))
 
 

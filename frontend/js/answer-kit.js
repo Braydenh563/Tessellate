@@ -1273,7 +1273,7 @@ async function streamChatEvents({
       //: An act with no model (CHAT_PLAN decision 38) is drawn by the same
       //: confirm hook (`renderToolConfirm` hands it to `renderActCard`).
       else if ((event.type === "confirm" || event.type === "act") && onConfirm) onConfirm(event);
-      else if (event.type === "navigate") actNavigate(event.surface);
+      else if (event.type === "navigate") actNavigate(event.surface, event);
       else if (event.type === "web_sources" && onWebSources) onWebSources(event);
       //: How the answer was made, as a job's lines (B30), just before `done`.
       else if (event.type === "why" && onWhy) onWhy(event);
@@ -2232,8 +2232,13 @@ function renderToolConfirm(holder, event) {
 }
 
 //: "open settings", "go to the graph" (decision 38): the place, opened.
-function actNavigate(surface) {
-  if (surface === "settings") openSettingsModal();
+function actNavigate(surface, detail = {}) {
+  if (surface === "clock") {
+    //: Opens the window and puts the length in its box; Start stays the person's press.
+    openClockPanel(detail.tab || "timer");
+    const box = document.querySelector('[data-sheet="clock"] input[data-clock-focus="timer"]');
+    if (box && detail.minutes && detail.tab !== "stopwatch") box.value = `${detail.minutes}m`;
+  } else if (surface === "settings") openSettingsModal();
   else switchTab(surface);
 }
 

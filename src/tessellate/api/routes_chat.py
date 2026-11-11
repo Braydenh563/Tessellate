@@ -1637,7 +1637,7 @@ def _act_planned_events(req: _StreamRequest, parsed: dict) -> Iterator[dict]:
     if card:
         yield {**card, "_say": say}
     elif planned.get("navigate"):
-        yield {"type": "navigate", "surface": planned["navigate"]}
+        yield {"type": "navigate", "surface": planned["navigate"], **({"minutes": planned.get("minutes"), "tab": planned["tab"]} if planned.get("tab") else {})}
 
 
 def _forced_notes(req: _StreamRequest, follow: object) -> bool:

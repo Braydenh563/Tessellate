@@ -1307,7 +1307,9 @@ MORE_TOPICS: list[dict] = [
             "lock screen timers", "show reminders on the lock screen",
         ),
         "body": (
-            "The Clock is one window for timers, a stopwatch and alarms. Open it "
+            "The Clock is one window for timers, a stopwatch and alarms. Ask for it "
+            "in Chat (set a timer for 25 minutes, start a pomodoro) and it opens "
+            "with the length ready for you to start. Open it "
             "from the command palette (Ctrl+K): Start a timer, Start a "
             "stopwatch or Set an alarm, or from the \"/\" menu in Chat, or by "
             "pressing the timer chip in the status bar, which opens the panel "
