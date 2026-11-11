@@ -128,7 +128,6 @@
  "src/tessellate/core/jobstore.py::resume": 25,
  "src/tessellate/core/media_gc.py::usage_map": 17,
  "src/tessellate/core/ocr.py::_rapidocr_regions": 18,
- "src/tessellate/core/ocr.py::_reading_block_kind": 17,
  "src/tessellate/core/ocr.py::attempt_binary_install": 18,
  "src/tessellate/core/ocr.py::extract_regions": 19,
  "src/tessellate/core/webclip.py::_Markdown.inline": 16,

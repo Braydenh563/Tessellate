@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10187, test files 2495, tests 20562, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10189, test files 2495, tests 20562, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -13529,7 +13529,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10187)
+## Backend modules (10189)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -24125,17 +24125,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `read_macos` | src/tessellate/core/netid.py:234 |
 | `read_windows` | src/tessellate/core/netid.py:323 |
 
-### src/tessellate/core/ocr.py (42)
+### src/tessellate/core/ocr.py (44)
 
 | Name | File:line |
 |---|---|
 | `_adopt_tesseract` | src/tessellate/core/ocr.py:136 |
 | `_extra_size` | src/tessellate/core/ocr.py:623 |
 | `_image_size` | src/tessellate/core/ocr.py:470 |
+| `_is_title_line` | src/tessellate/core/ocr.py:1026 |
 | `_language_kwargs` | src/tessellate/core/ocr.py:327 |
 | `_line_words` | src/tessellate/core/ocr.py:947 |
 | `_log_binary_missing` | src/tessellate/core/ocr.py:659 |
 | `_log_package_missing` | src/tessellate/core/ocr.py:673 |
+| `_mostly_bullets` | src/tessellate/core/ocr.py:1018 |
 | `_one_thread_for_tesseract` | src/tessellate/core/ocr.py:644 |
 | `_prepared` | src/tessellate/core/ocr.py:729 |
 | `_probe_windows_tesseract` | src/tessellate/core/ocr.py:107 |
@@ -24145,19 +24147,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_rapidocr_text` | src/tessellate/core/ocr.py:465 |
 | `_read_string` | src/tessellate/core/ocr.py:739 |
 | `_read_with_fallbacks` | src/tessellate/core/ocr.py:747 |
-| `_reading_block_kind` | src/tessellate/core/ocr.py:1018 |
+| `_reading_block_kind` | src/tessellate/core/ocr.py:1034 |
 | `_region_data` | src/tessellate/core/ocr.py:799 |
 | `_registry_tesseract_dir` | src/tessellate/core/ocr.py:75 |
 | `_word_box` | src/tessellate/core/ocr.py:934 |
-| `attempt_binary_install` | src/tessellate/core/ocr.py:1152 |
+| `attempt_binary_install` | src/tessellate/core/ocr.py:1158 |
 | `clear_language_cache` | src/tessellate/core/ocr.py:251 |
 | `effective_language` | src/tessellate/core/ocr.py:314 |
 | `engine` | src/tessellate/core/ocr.py:381 |
 | `engine_name` | src/tessellate/core/ocr.py:399 |
 | `engine_status` | src/tessellate/core/ocr.py:564 |
 | `extra_size` | src/tessellate/core/ocr.py:615 |
-| `extract_and_store` | src/tessellate/core/ocr.py:1056 |
-| `extract_in_background` | src/tessellate/core/ocr.py:1110 |
+| `extract_and_store` | src/tessellate/core/ocr.py:1062 |
+| `extract_in_background` | src/tessellate/core/ocr.py:1116 |
 | `extract_region_text` | src/tessellate/core/ocr.py:761 |
 | `extract_regions` | src/tessellate/core/ocr.py:816 |
 | `extract_text` | src/tessellate/core/ocr.py:682 |
