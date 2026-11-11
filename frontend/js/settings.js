@@ -3971,7 +3971,8 @@ async function refreshJobRuns() {
   if (jobRunsInFlight) return;
   jobRunsInFlight = true;
   try {
-    const body = await apiJson("/jobs/last-runs", { silent: true });
+    //: `cacheMs` 1000, under the 2 s poll: the Data pane's schedule line asks the same endpoint at the same open.
+    const body = await apiJson("/jobs/last-runs", { silent: true, cacheMs: 1000 });
     jobRunsList = body.jobs || [];
   } catch {
     return; // a missing line is better than a toast over a status nicety

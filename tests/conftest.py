@@ -7,6 +7,7 @@ real database, and singletons are rebuilt between tests.
 from __future__ import annotations
 
 import os
+import re
 import importlib
 from contextvars import Context, ContextVar
 import shutil
@@ -144,6 +145,8 @@ def pytest_unconfigure(config):
 # that reads with `errors="replace"` gets different text from one that does not.
 
 _REPO = Path(__file__).resolve().parents[1]
+_INDEX_HTML = _REPO / "frontend" / "index.html"
+_SURFACE_SCRIPT = re.compile(r'<script type="text/x-surface"([^>]*)>(.*?)</script>', re.S)
 _SHARED_PREFIXES = tuple(str(_REPO / d) + os.sep for d in ("frontend", "src", "docs", "tests"))
 _real_read_text = Path.read_text
 _shared_texts: dict[tuple, str] = {}
@@ -156,7 +159,17 @@ def _read_text_once(self, encoding=None, errors=None):
             key = (str(self), encoding, errors, st.st_mtime_ns, st.st_size)
             text = _shared_texts.get(key)
             if text is None:
-                text = _shared_texts[key] = _real_read_text(self, encoding, errors)
+                text = _real_read_text(self, encoding, errors)
+                if self.resolve() == _INDEX_HTML:
+                    # The page keeps each surface's markup as raw text in a
+                    # `<script type="text/x-surface">` so the parser makes no
+                    # nodes for it at boot (settings-body.js). The lints that
+                    # read it for ids, classes and structure see the markup
+                    # where it always was, a `<template data-surface>`, so
+                    # none of them loses a surface; the raw form is held by
+                    # tests/test_surface_scripts.py, which reads the file.
+                    text = _SURFACE_SCRIPT.sub(r"<template\1>\2</template>", text)
+                _shared_texts[key] = text
             return text
     except OSError:
         pass  # let the real call raise the error the test expects
