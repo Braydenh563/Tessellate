@@ -672,17 +672,14 @@ function openLightbox(items, startIndex = 0, opts = {}) {
   const pageLabel = document.createElement("span");
   pageLabel.className = "lightbox-page-label";
   dockPageZone.appendChild(pageLabel);
-  //: The label is a typeable number with a dropdown (INBOX 1694 b): "7" and Enter jumps to page 7, the chevron lists
-  //: pages. An input's value change is not read out, so the page is also said in a status line the screen reader
-  //: hears (the OCR workspace's page label does the same), and the dropdown is rebuilt when the file's page count is
-  //: known (a field's rows are fixed when it is drawn).
+  //: A typeable page number with a dropdown (INBOX 1694 b). An input's change is not read out, so a status line says the page too.
   const pageStatus = document.createElement("span");
   pageStatus.className = "visually-hidden";
   pageStatus.setAttribute("role", "status");
   dockPageZone.appendChild(pageStatus);
   let pageField = null;
   let pageFieldCount = -1;
-  //: Every page up to twelve, else twelve evenly spaced ones with the first and last kept: a 400-page file's menu is not 400 rows.
+  //: Up to twelve rows: every page, else evenly spaced with the first and last kept.
   const pagePresets = (n) => {
     const at = n <= 12 ? Array.from({ length: n }, (_, i) => i + 1) : Array.from({ length: 12 }, (_, i) => 1 + Math.round((i * (n - 1)) / 11));
     return at.map((v) => ({ value: v, label: `Page ${v}` }));

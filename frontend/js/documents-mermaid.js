@@ -512,7 +512,7 @@
   //: The `.mmd` rows, in the app's one picker (1679 slice 9): a row opens its page, the same as the Documents list does.
   async function pickExistingDiagram() {
     //: A list that failed to load says so; it is never shown as "No diagrams yet" (test_load_failed_1028b).
-    //: The Library's list when it is in, else the server's (the builder opens without the Library bundle, INBOX 1722).
+    //: The Library's list when it is in, else the server's.
     let all = typeof docs !== "undefined" && Array.isArray(docs) && docs.length ? docs : null;
     if (!all) {
       try {
@@ -545,7 +545,7 @@
   }
 
   async function diagramDoor({ target = null, doc = false } = {}) {
-    //: `window.`, not the bare name: this door also runs without the Library bundle (INBOX 1722), where no board is live.
+    //: `window.`: no Library bundle means no board.
     const onBoard = !doc && Boolean(window.wbCommandsLive?.()) && (!target || Boolean(target.closest?.("#library-view-whiteboard")));
     if (onBoard) return wbEditDiagram();
     //: The text box as a surface (the adapter `editorBlock` writes through), whether it was handed a surface, a textarea or an editable inside one.
@@ -567,7 +567,6 @@
         onDone: async (next, _changed, name) => {
           const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title: name || `Diagram ${new Date().toISOString().slice(0, 16).replace("T", " ")}`, content: next, file_type: "mmd" }) }).catch(() => (toast("The diagram was not saved. Try Done again.", "info"), null));
           if (!made) return;
-          //: The page it lands on is the Library's: fetched now, after the save, not before the builder opens (INBOX 1722).
           if (!(await ensureModule("library"))) return toast("The diagram was saved. Open the Library to see it.", "info");
           switchTab("documents");
           await loadDocuments(made.id);
@@ -595,14 +594,11 @@
   }
   //: What a new diagram opens on, so the blocks and the picture show at once (the board's Insert used the same lines).
   diagramModel.starter = "flowchart TD\n  A[Start] --> B{Ready?}\n  B -->|yes| C[Ship it]";
-  //: Exported on `diagramModel`, not as a global name of its own: the callers are in other files and ask for the library bundle first
-  //: (or this file alone through `lazyScript`, the builder alone, when they hold no text box or board).
+  //: Exported on `diagramModel`, not as a global name of its own: callers ask for the library bundle first, or this file alone.
   diagramModel.door = diagramDoor;
   diagramModel.madeKnown = diagramMadeKnown;
 
-  //: A toolbar is one Tab stop (dog2 item 21: Tab from the note title walked 16 buttons before the editor). The focused control
-  //: is the stop; Left and Right move between the visible ones. Here, not in documents.js, because the diagram builder's bars
-  //: call it and the builder opens without the Library bundle (INBOX 1722); documents.js's editor strips call it too.
+  //: A toolbar is one Tab stop; Left and Right move between its visible controls. Here because the builder opens without the Library bundle.
   function wireToolbarRoving(bar) {
     const all = () => [...bar.querySelectorAll("button, select, summary")];
     const rove = (to) => all().forEach((el) => { el.tabIndex = el === to ? 0 : -1; });
