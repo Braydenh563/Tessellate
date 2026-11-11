@@ -32,7 +32,6 @@ _BARE = re.compile(r"^(?:(?:i'd like|i want|i need|i would like)\s+)?(?:to\s+)?(
 #: The app's alarm is an ordinary reminder (the Clock's "Set alarm" makes one), so setting one is the reminder act.
 _SET_ALARM = re.compile(r"\b(?:set|add|put in|make|create|need|want)\b[^?]*?\b(?:an|another|a new|the|my) alarm\b", re.IGNORECASE)
 _EVERYTHING = re.compile(r"^(?:everything|all|all of it|all of them|it all|the (?:whole|entire) (?:thing|list))$", re.IGNORECASE)
-_EVENT_TAIL = re.compile(r"\s+events?$", re.IGNORECASE)
 
 CLEAR_LINE = (
     "I do not clear a whole calendar or list in one go. Each item is a reminder: to drop one, say "
@@ -50,7 +49,13 @@ def bulk(text: str) -> bool:
 
 
 def _item(what: str) -> str:
-    return _EVENT_TAIL.sub("", what.strip())
+    """`what` without a trailing "event(s)". A suffix test, not a regex: a `\\s+` anchored at the end
+    backtracks on a long run of spaces (CodeQL, polynomial regular expression)."""
+    item = what.strip()
+    for tail in ("events", "event"):
+        if item.lower().endswith(tail) and item[: -len(tail)][-1:].isspace():
+            return item[: -len(tail)].rstrip()
+    return item
 
 
 def restate(text: str) -> str:
