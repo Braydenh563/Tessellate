@@ -13864,35 +13864,70 @@ Link to another note with [[its first few words]]."></textarea>
               <p id="settings-file-status" class="status" role="status"></p>
             </div>
 
-            <!-- WORLD_CLASS_PLAN B6: sync with another computer, pull over the LAN
-                 pairing. Wired by settings-rows.js (lazy, with Settings). -->
+            <!-- WORLD_CLASS_PLAN B6: sync between computers, two ways in and one apply
+                 path (decision 14). Wired by settings-rows.js (lazy, with Settings);
+                 the folder's sheet is sync-folder.js. -->
             <div class="settings-group" id="sync-group">
               <div class="row help-head">
-                <h3>Sync with another computer</h3>
+                <h3>Sync between computers</h3>
                 <button type="button" class="icon-only ghost small graph-help-toggle"
                   data-help-for="sync-help" aria-controls="sync-help" aria-expanded="false"
                   title="About sync" aria-label="About sync">
                   <i class="ph ph-question" aria-hidden="true"></i>
                 </button>
               </div>
-              <p class="muted">Brings the notes changed on the paired computer into this notebook.</p>
+              <p class="muted">Brings the notes, documents, boards and files changed on another computer into this notebook.</p>
               <div class="help-body hidden" id="sync-help" role="dialog" aria-label="About sync">
                 <p>
-                  Sync now brings in the notes changed on the paired computer
-                  since the last sync; press it on both computers to sync both
-                  ways. A note changed on both keeps the later change, and the
-                  other text is kept in that note's History. A note moved to
-                  the bin lands in the other computer's bin.
+                  Two ways, one result. Over the home network when both
+                  computers are on the same network; through a folder (a USB
+                  stick or a folder a sync tool keeps level) when they are not.
+                  Press Sync on each computer to bring both level.
                 </p>
                 <p>
-                  Private notes travel encrypted and their key stays on the
-                  computer that made them, so they open only there.
-                  Attachments, boards and documents do not sync yet.
+                  A note, document or board changed on both keeps the later
+                  change, and the other words are kept in its History. A note
+                  moved to the bin lands in the other computer's bin, and a
+                  file removed on one is removed on the other.
                 </p>
+                <p>
+                  To pair over the network, turn on other devices on the other
+                  computer and type the address and password it shows there;
+                  it asks there before letting this one in. Removing it there
+                  ends the pairing. The password is not kept. Pairing while
+                  both notebooks are unlocked lets each open the other's
+                  private notes, which stay encrypted on both.
+                </p>
+                <p>
+                  Through a folder, each computer writes one encrypted file
+                  there, locked with a passphrase you type each time (the same
+                  on every computer; it is never kept). Private notes never go
+                  into the folder.
+                </p>
+              </div>
+              <h4 class="setting-subhead">Sync over the home network</h4>
+              <div class="row wrap settings-row-spaced" id="sync-pair-row">
+                <label for="sync-address" class="muted">Other computer's address</label>
+                <input id="sync-address" type="text" inputmode="url" autocomplete="off" spellcheck="false"
+                  maxlength="200" placeholder="192.168.1.20:8443">
+                <label for="sync-password" class="muted">Its password</label>
+                <input id="sync-password" type="password" autocomplete="off" maxlength="1024">
+                <button id="sync-pair" class="ghost small" type="button">Pair</button>
+              </div>
+              <div class="row wrap hidden" id="sync-paired-row">
+                <p id="sync-paired" class="muted sync-paired"></p>
+                <button id="sync-unpair" class="ghost small" type="button">Unpair</button>
               </div>
               <div class="row">
                 <button id="sync-now" class="ghost small" type="button">
                   <i class="ph ph-arrows-clockwise ph-lead" aria-hidden="true"></i> Sync now
+                </button>
+              </div>
+              <h4 class="setting-subhead">Sync through a folder</h4>
+              <p class="muted">For computers that are not on the same network: an encrypted file in a folder you choose.</p>
+              <div class="row">
+                <button id="sync-folder-open" class="ghost small" type="button">
+                  <i class="ph ph-folder-simple ph-lead" aria-hidden="true"></i> Sync through a folder
                 </button>
               </div>
               <p id="sync-status" class="status" role="status"></p>

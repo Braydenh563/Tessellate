@@ -1607,6 +1607,9 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     (routes_utilities.router, LOCKED),
     #: WORLD_CLASS_PLAN B6: the segment the other computer reads, and Sync now.
     (routes_sync.router, LOCKED),
+    #: Open in the table only: its one route's own gate takes a session or the paired
+    #: computer's sync pass (decision 11), and refuses anything else with 401.
+    (routes_sync.open_router, OPEN),
     #: WORLD_CLASS_PLAN section 17: the review queue, most opened, tidy proposals, charts.
     (routes_vision.router, LOCKED),
 )

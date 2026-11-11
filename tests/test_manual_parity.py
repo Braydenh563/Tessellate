@@ -139,7 +139,7 @@ UTILITIES = {
     "equation": ("math-editor.js", "function mathEditorMount({", "Calculator and equations, Equation tab, Alt+=, or /equation", "equation-editor"),
     "count words": ("utility-tools.js", "function countSelection(caught)", "the palette's Count words", "count-words"),
     "audio overview": ("studio.js", "function openStudio()", "the palette's Make an audio overview", "audio-overview"),
-    "sync between computers": ("sync-folder.js", "async function openFolderSync()", "the palette's Sync between computers", "folder-sync"),
+    "sync between computers": ("sync-folder.js", "async function openFolderSync()", "Settings, Import & export, Sync between computers, Sync through a folder", "folder-sync"),
     "live captions": ("captions.js", "async function startLiveCaptions(opts = {})", "the palette's Live captions", "live-captions"),
     "translate this": ("translate.js", "async function translateCaught(caught)", "the palette's Translate this", "translate-offline"),
     "check this computer": ("settings-controls.js", "async function runMaintenanceDoctor()", "Settings, About, Maintenance, Check this computer", "maintenance"),

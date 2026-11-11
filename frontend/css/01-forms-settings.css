@@ -2694,6 +2694,20 @@ button:not(.ghost) > .spinner {
 .settings-row-spaced-6 {
   margin-top: var(--space-6);
 }
+/* Sync, the paired computer's line: a certificate fingerprint is 95
+   characters with no space, so it breaks anywhere rather than widening the
+   Settings column at 360 px. */
+/* Two ids: the Settings row rule above (`.row > input:is(...)`) out-ranks one,
+   and without the cap the password box ran 649px wide on its own line at 1440. */
+#settings-modal #sync-pair-row > input {
+  max-width: 18rem;
+}
+.sync-paired {
+  overflow-wrap: anywhere;
+  min-width: 0;
+  flex: 1 1 16rem;
+  margin: 0;
+}
 /* Recent exports (Settings, Import & export): one row per file, the name
    taking the room and truncating, the size and age beside it, a download
    button at the end. Same shape as the backups list above it. */

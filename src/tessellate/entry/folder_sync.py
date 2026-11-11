@@ -1,159 +1,70 @@
-"""Sync without a server: notes carried between computers by a folder (WORLD_CLASS_PLAN row 36, Q34).
+"""Sync through a folder: the home-network sync's segments, carried by a file (WORLD_CLASS_PLAN B6 decision 14, row 36).
 
 Two installs share nothing but a folder (a USB stick, Syncthing, a cloud drive's local copy). Each writes **only
 its own file**, `tessellate-sync-<device>.json`, so a file-sync tool never has two writers to reconcile, and reads
-the others'. A file is a snapshot of the sender's ordinary notes, encrypted (AES-256-GCM, key from a passphrase
-the two computers share through scrypt, salt in the file header): the folder may sit on a cloud drive and show
-nothing. The passphrase is never stored.
+the others'. The file is sealed with a key from a passphrase the computers share (scrypt, salt in the header;
+AES-256-GCM): the folder may sit on a cloud drive and show nothing. The passphrase is never stored.
 
-**Private notes never leave.** `Entry.is_private` (which also covers every note in a private space) is left out
-of the file and left alone on the way in. Boards are left out too (they are canvases, not text).
+**One apply path (decision 14).** The file carries what the home-network transport serves: this notebook's
+note segments from the start of its log (`sync_segments.export_segment`), the documents, boards and files
+manifest and every item's state (`sync_extras`), and each attached file's bytes sealed beside it in
+`tessellate-sync-<device>-files/`. Reading a peer's file is `sync_pull.pull_from` over `FolderLink`, the same
+transport protocol as the LAN link, so a note, document, board or file changed on both is settled by the
+same rules (decisions 3 and 13: the later change wins, the other words stay in History) and each peer keeps
+its own cursor and agreed hashes in `sync-state.json` (`device_id` is the same name the LAN uses).
 
-**Conflicts keep both versions.** Each note has a stable `uid` (a device's own notes are `<device>-<id>`, an
-imported one keeps the sender's) and each snapshot carries the note's hash and its `parent`, the version the
-sender last agreed on with a peer. Reading a peer's note against ours:
+**Private notes never go into the folder.** The passphrase is the folder's only lock and no data key is
+wrapped for a folder peer, so private notes are left out of the segments, and private documents, boards and
+files of private notes are listed with an empty hash, which the reader skips (they stay home, as items a
+private space seals do).
 
-- same hash: nothing to do;
-- ours is the `parent` the peer built on: the peer's edit is simply newer, take it;
-- the peer still sits on the version we last agreed on (its hash is our `base`): only we changed, keep ours;
-- otherwise both changed since they last agreed: the **later edit wins** and the other text is kept as a
-  `EntryRevision`, so History holds both, once (`handled` remembers the peer version already settled, so a second
-  read of the same file adds nothing). Both computers pick the same winner (stamp, then device name), so they
-  converge. This is per note, not per field: a note's text, tags, category, colour and pin travel together.
-
-A note deleted on one side is deleted on the other unless the other changed it since; then the later of the two
-wins like any conflict, and the words that lose stay in History or the recycle bin.
-Not carried: a note's links, reminders, attachments and thread parent (a note's words and filing are what sync).
-
-Pure of the web layer; `api/routes_sync.py` is the one caller. The state (device name, uid map, bases) is a small
-JSON file beside the database so a restart changes nothing.
+Pure of the web layer; `api/routes_folder_sync.py` is the one caller. The folder and the time of the last run
+are remembered in `folder_sync_state.json` beside the database so the sheet can offer them next time.
 """
 
 from __future__ import annotations
 
 import base64
-import hashlib
 import json
-import secrets
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.core import atomic_io, crypto
-from tessellate.core.database import Entry, EntryRevision, utcnow
-from tessellate.entry import manager
+from tessellate.core import atomic_io, crypto, sync_state
+from tessellate.core.database import utcnow
+from tessellate.entry import sync_extras, sync_pull, sync_segments
 
 FORMAT = "tessellate-sync"
-VERSION = 1
+VERSION = 2
 FILE_PREFIX = "tessellate-sync-"
 FILE_SUFFIX = ".json"
+FILES_SUFFIX = "-files"
+STATE_FILE = "folder_sync_state.json"
 #: The quietest folder a person can point this at still has to hold a passphrase worth the name.
 MIN_PASSPHRASE = 8
+_OPEN_ERRORS = (crypto.DecryptionError, ValueError, KeyError, TypeError, OSError)
 
 
 class SyncError(ValueError):
-    """Something the person can fix: a folder that is not one, a passphrase too short."""
+    """Something the person can fix: a folder that is not one, a passphrase too short, a file not ours."""
 
 
-@dataclass
-class State:
-    """What this install remembers between runs (`sync_state.json`)."""
-
-    device: str = field(default_factory=lambda: secrets.token_hex(4))
-    folder: str = ""
-    last: str = ""
-    #: entry id -> uid
-    uids: dict[str, str] = field(default_factory=dict)
-    #: uid -> the hash this install last agreed on with a peer (or wrote, before any peer read it)
-    base: dict[str, str] = field(default_factory=dict)
-    #: "uid@device" -> the peer version already settled
-    handled: dict[str, str] = field(default_factory=dict)
+def state_path(data_dir: Path) -> Path:
+    return Path(data_dir) / STATE_FILE
 
 
-def load_state(path: Path) -> State:
+def load_state(data_dir: Path) -> dict[str, str]:
+    """{folder, last}: what the sheet offers next time."""
     try:
-        raw = json.loads(path.read_text("utf-8"))
-        return State(**{k: raw[k] for k in State.__dataclass_fields__ if k in raw})
-    except (OSError, ValueError, TypeError):
-        return State()
+        raw = json.loads(state_path(data_dir).read_text("utf-8"))
+        return {k: str(raw.get(k) or "") for k in ("folder", "last")}
+    except (OSError, ValueError, TypeError, AttributeError):
+        return {"folder": "", "last": ""}
 
 
-def save_state(path: Path, state: State) -> None:
-    atomic_io.atomic_write_json(path, state.__dict__)
-
-
-# --- a note as the file carries it -------------------------------------------
-
-
-def _when(value: datetime | str | None) -> datetime:
-    if isinstance(value, str):
-        value = datetime.fromisoformat(value)
-    if value is None:
-        return datetime.min.replace(tzinfo=timezone.utc)
-    return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
-
-
-def _stamp(entry: Entry) -> str:
-    return _when(entry.deleted_at if entry.is_deleted else (entry.edited_at or entry.created_at)).isoformat()
-
-
-def _fields(session: Session, entry: Entry) -> dict:
-    if entry.is_deleted:
-        return {"deleted": True}
-    category = manager.category_name_for(session, entry)
-    return {
-        "deleted": False,
-        "content": entry.content,
-        "tags": manager.tags_from_json(entry.tags),
-        "category": category,
-        "pinned": bool(entry.pinned),
-        "colour": entry.colour,
-    }
-
-
-def _hash(fields: dict) -> str:
-    return hashlib.sha256(json.dumps(fields, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()[:24]
-
-
-def _ours(session: Session) -> list[Entry]:
-    return list(session.scalars(select(Entry).where(Entry.is_private == False, Entry.is_board == False).order_by(Entry.id)))  # noqa: E712
-
-
-def snapshot(session: Session, state: State) -> dict:
-    """Every ordinary note of this install, with the version each was built on."""
-    notes = []
-    for entry in _ours(session):
-        uid = state.uids.setdefault(str(entry.id), f"{state.device}-{entry.id}")
-        fields = _fields(session, entry)
-        digest = _hash(fields)
-        state.base.setdefault(uid, digest)
-        notes.append({"uid": uid, "stamp": _stamp(entry), "hash": digest, "parent": state.base[uid], **fields})
-    return {"device": state.device, "written": utcnow().isoformat(), "notes": notes}
-
-
-# --- the files ---------------------------------------------------------------
-
-
-def _seal(passphrase: str, device: str, body: dict) -> dict:
-    salt = crypto.new_salt()
-    key = crypto.derive_kek(passphrase, salt)
-    return {
-        "format": FORMAT,
-        "version": VERSION,
-        "device": device,
-        "salt": base64.b64encode(salt).decode("ascii"),
-        "data": crypto.encrypt(key, json.dumps(body, ensure_ascii=False)),
-    }
-
-
-def _open(passphrase: str, sealed: dict) -> dict:
-    if sealed.get("format") != FORMAT or sealed.get("version") != VERSION:
-        raise SyncError("That is not a Tessellate sync file.")
-    key = crypto.derive_kek(passphrase, base64.b64decode(sealed["salt"]))
-    return json.loads(crypto.decrypt(key, sealed["data"]))
+def _key(passphrase: str, salt: bytes) -> bytes:
+    return crypto.derive_kek(passphrase, salt)
 
 
 def _checked(folder: str, passphrase: str) -> Path:
@@ -165,108 +76,176 @@ def _checked(folder: str, passphrase: str) -> Path:
     return path
 
 
-# --- reading a peer ------------------------------------------------------------
+# --- this computer's file -------------------------------------------------------
 
 
-def _apply(session: Session, entry: Entry, note: dict) -> None:
-    """Make `entry` say what the peer's note says. A delete or a restore as well as a rewrite."""
-    if note["deleted"]:
-        if not entry.is_deleted:
-            manager.soft_delete_entry(session, entry)
-        return
-    if entry.is_deleted:
-        manager.restore_entry(session, entry)
-    elif note["content"] != entry.content:
-        manager.record_revision(session, entry)  # the words about to be replaced stay in History
-    manager.update_entry(session, entry, note["content"], note["category"], note["tags"])
-    entry.pinned = bool(note["pinned"])
-    entry.colour = note["colour"]
-    entry.edited_at = _when(note["stamp"])
+def segments(session: Session, device: str) -> list[dict[str, Any]]:
+    """Every ordinary note, as the chain of segments a LAN peer pulling from the start would get."""
+    out: list[dict[str, Any]] = []
+    since = 0
+    for _ in range(sync_pull.MAX_ROUNDS):
+        segment = sync_segments.export_segment(session, device, since, "")
+        notes = [n for n in segment["notes"] if not n["is_private"]]
+        out.append({**segment, "notes": notes, "digest": sync_segments.digest(notes)})
+        if not segment["more"] or segment["upto"] <= since:
+            break
+        since = segment["upto"]
+    return out
 
 
-def _keep_text(session: Session, entry: Entry, content: str | None, tags: list[str]) -> None:
-    """The loser's words, as a version in History."""
-    if content:
-        session.add(EntryRevision(entry_id=entry.id, content=content, tags=json.dumps(tags)))
+def _private(session: Session, device: str, item: dict) -> bool:
+    if item["kind"] != "file":
+        return bool(item.get("is_private"))
+    note = sync_segments._find(session, device, item.get("note") or "")  # noqa: SLF001  # the note lookup, one place
+    return note is None or bool(note.is_private)
 
 
-def _settle(session: Session, entry: Entry, note: dict, peer: str, counts: dict, state: State, uid: str) -> None:
-    ours = _fields(session, entry)
-    mine, theirs = _hash(ours), note["hash"]
-    if mine == theirs:
-        state.base[uid] = theirs
-        return
-    if mine == note["parent"]:
-        _apply(session, entry, note)
-        counts["updated"] += 1
-        state.base[uid] = theirs
-        return
-    if theirs == state.base.get(uid):
-        return  # the peer has not moved since we last agreed: only we changed
-    counts["conflicts"] += 1
-    remote_wins = (_when(note["stamp"]), peer) > (_when(_stamp(entry)), state.device)
-    if remote_wins:
-        _apply(session, entry, note)
-        state.base[uid] = theirs
-    else:
-        _keep_text(session, entry, note.get("content"), note.get("tags") or [])
-        state.base[uid] = mine
+def extras(session: Session, data_dir: Path, device: str) -> tuple[dict, dict]:
+    """(manifest, {kind: {sid: state}}) for the folder: private ones listed with an empty hash, no state."""
+    whole = sync_extras.manifest(session, data_dir, device)
+    found: dict[str, dict[str, dict]] = {kind: {} for kind in sync_extras.KINDS}
+    for kind in sync_extras.KINDS:
+        sids = [x["sid"] for x in whole["items"] if x["kind"] == kind and x["hash"]]
+        for start in range(0, len(sids), sync_extras.MAX_ITEMS):
+            for item in sync_extras.items(session, data_dir, device, kind, sids[start:start + sync_extras.MAX_ITEMS]):
+                if not _private(session, device, item):
+                    found[kind][item["sid"]] = item
+    lines = [{**x, "hash": x["hash"] if x["sid"] in found[x["kind"]] else ""} for x in whole["items"]]
+    return {**whole, "items": lines, "digest": sync_extras.digest(lines)}, found
 
 
-def _bring_in(session: Session, note: dict, state: State) -> None:
-    entry = manager.create_entry(
-        session, note["content"], note["category"], note["tags"], commit=False
-    )
-    entry.pinned = bool(note["pinned"])
-    entry.colour = note["colour"]
-    entry.created_at = entry.edited_at = _when(note["stamp"])
-    session.flush()
-    state.uids[str(entry.id)] = note["uid"]
-    state.base[note["uid"]] = note["hash"]
+def _blob_name(sid: str) -> str:
+    return sid.replace(":", "-") + ".bin"
 
 
-def read_peer(session: Session, body: dict, state: State, counts: dict) -> None:
-    peer = body["device"]
-    by_uid = {uid: int(entry_id) for entry_id, uid in state.uids.items()}
-    for note in body["notes"]:
-        uid = note["uid"]
-        marker = f"{uid}@{peer}"
-        if state.handled.get(marker) == note["hash"]:
+def _sealed_sha1(target: Path) -> str:
+    try:
+        return str(json.loads(target.read_text("utf-8")).get("sha1") or "")
+    except (OSError, ValueError, AttributeError):
+        return ""
+
+
+def _write_blobs(session: Session, data_dir: Path, blobs: Path, files: dict, sealing: tuple[bytes, bool]) -> None:
+    """Each attached file sealed once under its sid (again under a new key); one gone from the manifest leaves too."""
+    key, kept = sealing
+    blobs.mkdir(exist_ok=True)
+    keep = set()
+    for sid, item in files.items():
+        name = _blob_name(sid)
+        keep.add(name)
+        target = blobs / name
+        if kept and _sealed_sha1(target) == item["sha1"]:
             continue
-        state.handled[marker] = note["hash"]
-        entry = session.get(Entry, by_uid[uid]) if uid in by_uid else None
-        if entry is None:
-            if not note["deleted"]:
-                _bring_in(session, note, state)
-                counts["added"] += 1
-            continue
-        if entry.is_private or entry.is_board:
-            continue  # a note that has since become private is never overwritten
-        _settle(session, entry, note, peer, counts, state, uid)
+        found = sync_extras.file_bytes(session, data_dir, sync_state.device_id(data_dir), sid)
+        if found is not None:
+            sealed = crypto.encrypt(key, base64.b64encode(found[0]).decode("ascii"))
+            atomic_io.atomic_write_json(target, {"sha1": item["sha1"], "data": sealed}, indent=0)
+    for old in blobs.glob("*.bin"):
+        if old.name not in keep:
+            old.unlink(missing_ok=True)
+
+
+def _own_salt(own: Path, passphrase: str) -> tuple[bytes, bool]:
+    """(salt, kept): the salt of this computer's last file when the passphrase still opens it, so the
+    files sealed beside it stay readable; else a new one, and every file is sealed again."""
+    try:
+        sealed = json.loads(own.read_text("utf-8"))
+        salt = base64.b64decode(sealed["salt"])
+        crypto.decrypt(_key(passphrase, salt), sealed["data"])
+        return salt, True
+    except _OPEN_ERRORS:
+        return crypto.new_salt(), False
+
+
+def write(session: Session, data_dir: Path, path: Path, passphrase: str) -> int:
+    """This computer's file and its sealed attachments; the number of notes it carries."""
+    device = sync_state.device_id(data_dir)
+    own = path / f"{FILE_PREFIX}{device}{FILE_SUFFIX}"
+    salt, kept = _own_salt(own, passphrase)
+    key = _key(passphrase, salt)
+    manifest, found = extras(session, data_dir, device)
+    body = {"device": device, "written": utcnow().isoformat(), "segments": segments(session, device),
+            "manifest": manifest, "items": found}
+    _write_blobs(session, data_dir, path / f"{FILE_PREFIX}{device}{FILES_SUFFIX}", found["file"], (key, kept))
+    sealed = {"format": FORMAT, "version": VERSION, "device": device,
+              "salt": base64.b64encode(salt).decode("ascii"),
+              "data": crypto.encrypt(key, json.dumps(body, ensure_ascii=False))}
+    atomic_io.atomic_write_json(own, sealed, indent=0)
+    return sum(len(s["notes"]) for s in body["segments"])
+
+
+# --- reading a peer --------------------------------------------------------------
+
+
+class FolderLink:
+    """A peer's file as the sync transport (`sync_pull.Transport`): what the LAN routes would answer."""
+
+    def __init__(self, body: dict, blobs: Path, key: bytes) -> None:
+        self.name = str(body["device"])
+        self._segments = list(body["segments"])
+        self._manifest = body["manifest"]
+        self._items = body["items"]
+        self._blobs, self._key = blobs, key
+        if not self._segments:
+            raise SyncError("That is not a Tessellate sync file.")
+
+    def fetch(self, since: int, me: str) -> dict:
+        for segment in self._segments:
+            if segment["upto"] > since:
+                return segment
+        last = self._segments[-1]
+        return {**last, "since": since, "upto": max(since, last["upto"]), "more": False,
+                "notes": [], "digest": sync_segments.digest([])}
+
+    def manifest(self, me: str) -> dict:
+        return self._manifest
+
+    def items(self, kind: str, sids: list[str], me: str) -> list:
+        found = self._items.get(kind) or {}
+        return [found[sid] for sid in sids if sid in found]
+
+    def file(self, sid: str, me: str) -> bytes | None:
+        """The bytes, or None while the folder has not got them yet (a sync tool still copying)."""
+        try:
+            sealed = json.loads((self._blobs / _blob_name(sid)).read_text("utf-8"))
+            return base64.b64decode(crypto.decrypt(self._key, sealed["data"]))
+        except _OPEN_ERRORS:
+            return None
+
+
+def open_peer(path: Path, file: Path, passphrase: str) -> FolderLink:
+    sealed = json.loads(file.read_text("utf-8"))
+    if sealed.get("format") != FORMAT or sealed.get("version") != VERSION:
+        raise SyncError("That is not a Tessellate sync file.")
+    key = _key(passphrase, base64.b64decode(sealed["salt"]))
+    body = json.loads(crypto.decrypt(key, sealed["data"]))
+    return FolderLink(body, path / f"{FILE_PREFIX}{body['device']}{FILES_SUFFIX}", key)
 
 
 # --- one sync ----------------------------------------------------------------
 
 
-def run(session: Session, state: State, folder: str, passphrase: str) -> dict:
-    """Read every peer's file, then write this install's. Commits. Returns what changed."""
+def run(session: Session, data_dir: Path, folder: str, passphrase: str) -> dict[str, Any]:
+    """Read every peer's file through the one apply path, then write this computer's. Returns what changed."""
     path = _checked(folder, passphrase)
-    counts = {"added": 0, "updated": 0, "conflicts": 0, "unreadable": 0, "peers": 0}
+    device = sync_state.device_id(data_dir)
+    counts: dict[str, Any] = {"applied": 0, "conflicts": 0, "waiting": 0, "unreadable": 0, "peers": 0, "error": ""}
     for file in sorted(path.glob(f"{FILE_PREFIX}*{FILE_SUFFIX}")):
-        if file.name == f"{FILE_PREFIX}{state.device}{FILE_SUFFIX}":
+        if file.name == f"{FILE_PREFIX}{device}{FILE_SUFFIX}":
             continue
         try:
-            body = _open(passphrase, json.loads(file.read_text("utf-8")))
-            read_peer(session, body, state, counts)
-            counts["peers"] += 1
-        except (crypto.DecryptionError, SyncError, ValueError, KeyError, TypeError, OSError):
+            link = open_peer(path, file, passphrase)
+        except _OPEN_ERRORS:
             counts["unreadable"] += 1
-    session.commit()
-    mine = snapshot(session, state)
-    atomic_io.atomic_write_json(path / f"{FILE_PREFIX}{state.device}{FILE_SUFFIX}", _seal(passphrase, state.device, mine), indent=0)
-    counts["shared"] = len(mine["notes"])
-    state.folder, state.last = folder, utcnow().isoformat()
+            continue
+        done = sync_pull.pull_from(session, data_dir, link, "folder")
+        counts["peers"] += 1
+        for key in ("applied", "conflicts", "waiting"):
+            counts[key] += int(done.get(key) or 0)
+        counts["error"] = counts["error"] or done["error"]
+    counts["shared"] = write(session, data_dir, path, passphrase)
+    atomic_io.atomic_write_json(state_path(data_dir), {"folder": folder, "last": utcnow().isoformat()})
     return counts
 
 
-__all__ = ["State", "SyncError", "load_state", "run", "save_state", "snapshot"]
+__all__ = ["FolderLink", "SyncError", "load_state", "run", "state_path", "write"]
