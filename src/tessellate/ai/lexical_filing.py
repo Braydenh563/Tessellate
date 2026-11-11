@@ -825,15 +825,18 @@ def filing_call(session: Session, content: str, exclude_entry_id: int | None = N
     best = ranked[0].score if ranked else 0.0
     choices = [(c.name, c.why) for c in ranked if c.score >= CHOICE_WITHIN * best][:CHOICES]
     held = decision.sensitive if decision.held or (choices and decision.sensitive) else None
-    if decision.unsure and not held:
-        why = ASK_WHY
-    elif held:
-        why = f"It reads as {held}, so it waits for you to choose."
-    elif len(choices) > 1:
-        why = f"A close call between {_and_list([name for name, _ in choices])}, so it waits for you to choose."
-    else:
-        why = "Not sure enough to file it, so it waits for you to choose." if choices else ""
-    return FilingCall(None, why, choices, held, decision.proposal)
+    return FilingCall(None, _waits_why(decision.unsure, held, choices), choices, held, decision.proposal)
+
+
+def _waits_why(unsure: bool, held: str | None, choices: list[tuple[str, str]]) -> str:
+    """Why a note waits for the person: asked (the setting), sensitive, a close call, or unsure."""
+    if unsure and not held:
+        return ASK_WHY
+    if held:
+        return f"It reads as {held}, so it waits for you to choose."
+    if len(choices) > 1:
+        return f"A close call between {_and_list([name for name, _ in choices])}, so it waits for you to choose."
+    return "Not sure enough to file it, so it waits for you to choose." if choices else ""
 
 
 def _and_list(names: list[str]) -> str:

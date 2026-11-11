@@ -1286,6 +1286,20 @@ def _filing_similar(session: Session, entry) -> dict | None:  # noqa: ANN001
     return {"id": other.id, "preview": _connection_label(other, 60)}
 
 
+def _choices_filled(session: Session, content: str, entry_id: int, category: str, choices: list[tuple[str, str]]) -> list[tuple[str, str]]:
+    """The filing call's choices, then recent categories by the words, up to three, never the current one."""
+    from tessellate.ai import lexical_filing
+
+    explained = [(name, reason) for name, reason in choices if name != category]
+    if len(explained) < 3:
+        taken = {name for name, _ in explained} | {category}
+        for name, reason in lexical_filing.suggest_categories_explained(session, content, exclude_entry_id=entry_id, limit=4):
+            if name not in taken:
+                explained.append((name, reason))
+                taken.add(name)
+    return explained
+
+
 def _offered_categories(session: Session, entry, category: str) -> tuple[list[str], dict[str, str], dict | None, dict | None, str]:  # noqa: ANN001
     """`(suggestions, reasons, proposal, held, why)`: up to three categories to offer as
     one-tap choices (INBOX 434), each one's line, a new category the pack proposes
@@ -1302,13 +1316,7 @@ def _offered_categories(session: Session, entry, category: str) -> tuple[list[st
     try:
         content = manager.readable_content(entry) or ""
         call = lexical_filing.filing_call(session, content, exclude_entry_id=entry.id)
-        explained = [(name, reason) for name, reason in call.choices if name != category]
-        if len(explained) < 3:
-            taken = {name for name, _ in explained} | {category}
-            for name, reason in lexical_filing.suggest_categories_explained(session, content, exclude_entry_id=entry.id, limit=4):
-                if name not in taken:
-                    explained.append((name, reason))
-                    taken.add(name)
+        explained = _choices_filled(session, content, entry.id, category, call.choices)
         #: A pick the person asked to be asked about (a model's, or by
         #: meaning) is first among the choices, with the words' reason.
         if call.category and call.category != category and lexical_filing.ask_when_unsure():

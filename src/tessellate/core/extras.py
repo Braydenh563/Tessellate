@@ -1007,8 +1007,8 @@ BUNDLES: tuple[Bundle, ...] = (
     Bundle(
         id="languages",
         label="Languages",
-        about="Translate a passage into Spanish, and check grammar a second way, on this computer.",
-        extras=("translate", "languagetool"),
+        about="Translate a passage into Spanish, check grammar a second way, and spell-check French, German and Spanish, on this computer.",
+        extras=("translate", "languagetool", "spell-fr", "spell-de", "spell-es"),
     ),
     Bundle(
         id="code",

@@ -102,8 +102,8 @@
       return !result.error;
     }
     //: Speaker labels need the engine and its models: one click installs the bundle.
-    const request = id === "speakers" ? ["/extras/bulk", { method: "POST", body: JSON.stringify({ action: "install", bundle: "speakers" }) }] : [`/extras/${id}/install`, { method: "POST" }];
-    const result = await apiJson(...request).catch((error) => ({ started: false, message: error.message }));
+    const asked = id === "speakers" ? apiJson("/extras/bulk", { method: "POST", body: JSON.stringify({ action: "install", bundle: "speakers" }) }) : apiJson(`/extras/${id}/install`, { method: "POST" });
+    const result = await asked.catch((error) => ({ started: false, message: error.message }));
     if (!result.started) {
       toast(result.message || "The install could not start.", "info", { action: ["Open Packages", () => openSettingsModal("extras")] });
       return false;
@@ -124,8 +124,8 @@
       toast(body?.detail || "Stopping the install.", "info");
       return;
     }
-    const request = id === "speakers" ? ["/extras/bulk", { method: "POST", body: JSON.stringify({ action: "uninstall", bundle: "speakers" }) }] : [`/extras/${id}/uninstall`, { method: "POST" }];
-    const result = await apiJson(...request).catch((error) => ({ started: false, message: error.message }));
+    const asked = id === "speakers" ? apiJson("/extras/bulk", { method: "POST", body: JSON.stringify({ action: "uninstall", bundle: "speakers" }) }) : apiJson(`/extras/${id}/uninstall`, { method: "POST" });
+    const result = await asked.catch((error) => ({ started: false, message: error.message }));
     if (!result.started) return toast(result.message || "It could not be removed.", "info", { action: ["Open Packages", () => openSettingsModal("extras")] });
     await extraNoticeWaitIdle();
   }

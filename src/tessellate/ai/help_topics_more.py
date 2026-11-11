@@ -754,7 +754,19 @@ MORE_TOPICS: list[dict] = [
             "that package's row. An installed package's ⋮ has Reinstall "
             "(for a feature that is on but not working) and Remove (the "
             "packaged app keeps its Desktop window, so that row has Reinstall "
-            "only), and its row shows its version and size on disk. Dictation model size runs from "
+            "only), and its row shows its version and size on disk. Dictation and "
+            "embedding models, and LanguageTool, have their own topic (Models in Packages)."
+        ),
+        "badge": {"label": "Packages", "section": "extras"},
+    },
+    {
+        "id": "package-models",
+        "keywords": (
+            "dictation model", "whisper size", "model size", "skip silence", "dictation language",
+            "words to expect", "embedding model", "embedding models", "languagetool", "java",
+        ),
+        "body": (
+            "Dictation model size runs from "
             "Tiny (fastest) to Medium (most accurate); each size says whether it "
             "is on this computer, a size that is not downloads the first time "
             "you dictate with it (choosing it asks first, and nothing downloads "
@@ -768,6 +780,23 @@ MORE_TOPICS: list[dict] = [
             "installed and runs only while you write."
         ),
         "badge": {"label": "Packages", "section": "extras"},
+    },
+    {
+        "id": "answer-offers",
+        "keywords": (
+            "offer", "offers", "remind you to", "save it as a checklist", "gather them",
+            "track in a table", "typing yes", "no thanks", "story over many notes", "counting chart",
+        ),
+        "body": (
+            "An answer from your notes can end with one offer as a link: Remind you to..., Save it as a checklist note, "
+            "Start a list of films to watch next, Note the first as your pick, Gather them into one note, Track your "
+            "lifts in a table. Press it and it is done, with Undo; in Chat, typing yes does the same for any of them "
+            "(the app keeps the note the link would make), and no thanks drops it. "
+            "A story over many notes tells the ones it read and says so at the end (That tells five of the twelve; ask for a month or a tag to see the rest). "
+            "A counting question in Ask (how many notes per category this month) also gets "
+            "a chart from your notes, with its numbers and Save as PNG."
+        ),
+        "badge": {"label": "Chat", "tab": "chat"},
     },
     {
         "id": "spelling-packs",
@@ -3056,6 +3085,9 @@ TOPIC_META: dict[str, dict] = {
     "dashboard-controls": {"title": "Dashboard controls", "path": "Dashboard tab"},
     "hidden-features": {"title": "Hidden features and power keys", "path": "Everywhere"},
     "quick-note": {"title": "Quick note", "path": "Alt+N, from any tab"},
+    "package-models": {"title": "Models in Packages", "path": "Settings, Packages"},
+    "spelling-packs": {"title": "Spelling in other languages", "path": "Settings, Packages, or a document's Suggestions panel"},
+    "answer-offers": {"title": "Offers and charts in an answer", "path": "Chat tab, or Ask on the Notes tab"},
     "editor-offers": {"title": "Offers while you write", "path": "Notes, Capture, or a note's Edit form"},
     "quick-add": {"title": "Dates and tags read as you type", "path": "Reminders, Quick note, New meeting, Timeline search, the command palette"},
     "note-outbox": {"title": "Saving while the server is away", "path": "Notes tab, above Capture"},
@@ -3113,7 +3145,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "tags-categories", "filing", "filing-settings", "suggested-tags", "tag-manager", "manage-categories", "tidy",
     )),
     ("Asking Atlas", (
-        "ask-chat", "chat-typos", "answers-from-notes", "chat-controls", "chat-context", "context-window", "chat-private", "chat-attach-cards", "chat-model-picker", "chat-list", "queued-messages", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-menu", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
+        "ask-chat", "chat-typos", "answers-from-notes", "chat-controls", "chat-context", "context-window", "chat-private", "chat-attach-cards", "chat-model-picker", "chat-list", "queued-messages", "wrap-lines", "slash-commands", "chat-acts", "answer-offers", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-menu", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
@@ -3142,7 +3174,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     )),
     ("Models and the AI", (
         "models", "what-is-atlas", "model-downloads", "model-bench", "tools-setting", "autonomous", "websearch",
-        "search-index", "search-engine-moved", "packages",
+        "search-index", "search-engine-moved", "packages", "package-models", "spelling-packs",
     )),
     ("Privacy and your data", (
         "privacy", "security", "encryption", "lock", "phone", "lan-networks", "two-computers", "delete-data", "storage", "import-export", "import-apps", "usage-ledger", "background-tasks", "activity", "health", "data-folder-check",

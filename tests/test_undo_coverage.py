@@ -543,6 +543,7 @@ EXEMPT: dict[str, str] = {
     "whiteboard.js:initWhiteboard": "board: the background image is set through wbSetBackground, which pushes the board step; the file stays in the Library",
     "whiteboard-map.js:wbMapTakePicture": "board: the picture is set on the topic through wbMapSetNodeStyle, which pushes the board step; the file stays in the Library",
     "tidy.js:tidyRunLinkReasons": "job: starts a background pass",
+    "meetings.js:recordingMenu": "job: Label speakers by voice is a background run on the card, asked first when it would replace names",
     "meetings.js:nameRecordingSpeakers": "read: asks the model to name speakers, shown for review",
     "library.js:ocrRunRegion": "read: reads a region of a picture, shows the text for review",
     "chat-edit.js:chatTooLong": "send: saves an over-long message as a note on the person's own click so it can be asked about; deleting it in Notes is the way back",
