@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Notes (sm-1111 row 6): Save in the edit form sends tags and category only when you changed them, so tags filed while the form was open are kept.
 - Security (sm-1111 row 8): importing a Tessellate folder whose private notes are readable is refused while private notes are locked ("Unlock private notes, then import again."); they had come in as ordinary notes.
 - Media (sm-1111 row 9): a picture read or caption that finishes after a hand edit keeps the edit (`vision_ocr_and_store`, `caption_and_store`).
 - Security (audit 1028 E43): Confirm on a card runs what the card proposed and spends it; a press naming a different action, or a card already answered or expired, answers 409 and runs nothing (`consent_store.refusal_for_press`; tests/test_confirm_binds_to_card_e43.py). Undo and redo carry no card and are unchanged.

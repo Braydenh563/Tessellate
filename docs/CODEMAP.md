@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2697, CSS sections 523, backend routes 671, backend modules 10148, test files 2484, tests 20497, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2697, CSS sections 523, backend routes 671, backend modules 10148, test files 2484, tests 20498, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -6334,13 +6334,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `closeNoteForm` | frontend/js/note-edit-panels.js:638 |
-| `forgetNoteEditLocally` | frontend/js/note-edit-panels.js:665 |
-| `holdNoteEdit` | frontend/js/note-edit-panels.js:624 |
-| `keepNoteEditLocally` | frontend/js/note-edit-panels.js:661 |
-| `noteEditToolbar` | frontend/js/note-edit-panels.js:761 |
+| `closeNoteForm` | frontend/js/note-edit-panels.js:640 |
+| `forgetNoteEditLocally` | frontend/js/note-edit-panels.js:667 |
+| `holdNoteEdit` | frontend/js/note-edit-panels.js:626 |
+| `keepNoteEditLocally` | frontend/js/note-edit-panels.js:663 |
+| `noteEditToolbar` | frontend/js/note-edit-panels.js:763 |
 | `noteFormParts` | frontend/js/note-edit-panels.js:210 |
-| `offerKeptNoteEdit` | frontend/js/note-edit-panels.js:691 |
+| `offerKeptNoteEdit` | frontend/js/note-edit-panels.js:693 |
 | `openBookmarkAttachPicker` | frontend/js/note-edit-panels.js:175 |
 | `renderEditForm` | frontend/js/note-edit-panels.js:224 |
 | `renderNoteBookmarksWhileEditing` | frontend/js/note-edit-panels.js:83 |
@@ -26355,7 +26355,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20497)
+## Tests (20498)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27266,7 +27266,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_e2e_tab_ids.py | 1 |
 | tests/test_edit_authorship.py | 3 |
 | tests/test_edit_conflicts.py | 7 |
-| tests/test_edit_conflicts_ui.py | 2 |
+| tests/test_edit_conflicts_ui.py | 3 |
 | tests/test_edit_embeds_off_request.py | 3 |
 | tests/test_edit_form_survives_redraw.py | 1 |
 | tests/test_egress_call_sites.py | 2 |

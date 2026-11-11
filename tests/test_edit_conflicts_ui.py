@@ -33,3 +33,20 @@ def test_taking_their_document_takes_their_title_too():
     start = docs.index("async function docResolveConflict(")
     theirs = docs[docs.index('answer === "theirs"', start): docs.index("\n}\n", start)]
     assert '$("doc-title").value = current.title' in theirs
+
+
+def test_the_note_form_sends_only_the_fields_it_changed(client):
+    """sm-1111 row 6: tags filed by the AI while the form was open were put back to the
+    form's unchanged copy on Save. The form now sends tags and category only when the
+    person changed them, and a PUT without them keeps what is there."""
+    from pathlib import Path
+
+    notes = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "note-edit-panels.js").read_text(encoding="utf-8")
+    save = notes[notes.index("const before = { content: entry.content };"): notes.index("let base = entry.content_hash;")]
+    assert "const after = { content: written };" in save
+    assert "if (category !== entry.category)" in save and "!== (entry.tags || []).join(" in save
+    made = client.post("/entries", json={"content": "form opened on this", "tags": ["old"]}).json()
+    filed = client.put(f"/entries/{made['id']}", json={"tags": ["filed-by-ai"]})
+    assert filed.status_code == 200
+    saved = client.put(f"/entries/{made['id']}", json={"content": "typed in the form", "base_hash": made["content_hash"]})
+    assert saved.status_code == 200 and saved.json()["tags"] == ["filed-by-ai"]
