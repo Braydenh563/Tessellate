@@ -2016,13 +2016,17 @@ def start(extra_id: str, reinstall: bool = False, auto: bool = False) -> tuple[b
 def _release_captions_helper(extra: Extra) -> None:
     """Stop the captions helper before its engine or model is replaced or
     removed (it holds the model file open). It starts again on the next use."""
+    # Asked through `sys.modules`, as the needle check below: both modules read
+    # this one, so importing them here is a cycle, and one never loaded holds
+    # nothing open.
     if extra.id in CAPTIONS_IDS:
-        # importlib, not `import`: ai.captions_process reads this module, so a
-        # statement here is a cycle (tests/test_no_import_cycles.py).
-        importlib.import_module("tessellate.ai.captions_process").stop()
+        module = sys.modules.get("tessellate.ai.captions_process")
+        if module is not None:
+            module.stop()
     elif extra.id in VOICE_IDS:
-        # The same reason: ai.natural_voice reads this module's paths.
-        importlib.import_module("tessellate.ai.natural_voice").release()  # it holds the voice file open (Windows cannot replace it)
+        module = sys.modules.get("tessellate.ai.natural_voice")
+        if module is not None:
+            module.release()  # it holds the voice file open (Windows cannot replace it)
 
 
 def _install_refusal(extra: Extra, reinstall: bool) -> str:
@@ -2311,10 +2315,10 @@ def _loaded_in_process_reason(extra: Extra) -> str:
     if extra.id in CAPTIONS_IDS:
         # The helper is a child process of ours, not a mapped library, but a
         # run in progress is using both files.
-        # importlib, not `import`: ai.captions reaches this module through
-        # captions_process and core.deps, so a statement here is a cycle.
-        captions = importlib.import_module("tessellate.ai.captions")
-        return "Stop live captions first. They are using it." if captions.running() else ""
+        # `sys.modules` for the same reason: ai.captions reaches this module
+        # through captions_process and core.deps, and one never loaded is not running.
+        captions = sys.modules.get("tessellate.ai.captions")
+        return "Stop live captions first. They are using it." if captions is not None and captions.running() else ""
     if extra.id != "voice":
         return ""
     from tessellate.ai import voice

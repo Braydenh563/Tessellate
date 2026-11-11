@@ -37,7 +37,7 @@ from pathlib import Path
 
 import requests
 
-from tessellate.core import egress
+from tessellate.core import egress, jobs
 from tessellate.core.subproc import NO_WINDOW
 
 logger = logging.getLogger("tessellate.captions")
@@ -167,7 +167,7 @@ def _read_port(proc: subprocess.Popen, deadline: float) -> int:
             pass  # the pipe closed under us (child died or was stopped); the reader times out
         lines.put("")
 
-    threading.Thread(target=pump, daemon=True, name="captions-helper-stdout").start()
+    jobs.thread("captions-helper-stdout", pump)
     try:
         first = lines.get(timeout=max(0.1, deadline - clock()))
     except queue.Empty:

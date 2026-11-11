@@ -108,6 +108,10 @@ pytest-xdist>=3.8.0,<4.0
 #   pip install "markitdown[pdf,docx,pptx]"  # import PDF/Word/PowerPoint as notes
 #   pip install sherpa-onnx   # label who speaks in a recording (speaker
 #     labels); its two small voice models are a download in Settings.
+#   pip install pywhispercpp==1.5.1   # live captions engine (whisper.cpp), run as
+#     a child process; its tiny.en model is a download in Settings.
+#   pip install piper-tts==1.8.0   # natural voice for audio overviews
+#     (Piper, on ONNX Runtime); its voice file is a download in Settings.
 #   Run Python files (Pyodide) and needle are downloads, not pip packages:
 #     Settings → Packages fetches and checks them.
 #
