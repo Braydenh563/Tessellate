@@ -47,6 +47,7 @@ from tessellate.core.database import Attachment, Entry, MediaUpload
 from tessellate.core.deps import get_session
 from tessellate.core.subproc import NO_WINDOW
 from tessellate.entry import manager
+from tessellate.repo import uploads as uploads_repo
 from tessellate.repo.content import FILES
 
 logger = logging.getLogger(__name__)
@@ -1472,15 +1473,7 @@ def list_media(
     the same second cannot swap places between pages and hide a row.
     """
     offset = paging.start(cursor, offset)
-    total = session.scalar(select(func.count(MediaUpload.id)).where(MediaUpload.board_only.is_(False))) or 0
-    uploads = (
-        session.query(MediaUpload)
-        .filter(MediaUpload.board_only.is_(False))
-        .order_by(MediaUpload.created_at.desc(), MediaUpload.id.desc())
-        .limit(limit)
-        .offset(offset)
-        .all()
-    )
+    total, uploads = uploads_repo.library_page(session, limit, offset)
     response.headers["X-Total-Count"] = str(total)
     paging.finish(response, offset, limit, total)
     # One scan for the whole gallery rather than one per file: `usage_map`
