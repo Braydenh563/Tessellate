@@ -2107,6 +2107,18 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   cursor: pointer;
 }
 
+/* **A number in a setting row is a number's width** (wrapzoom 2026-11-11).
+   The base field rule gives every `input[type=number]` the full width, so
+   the run budget's two fields took the 694px pane and dropped under their
+   labels at every viewport (rows 121px tall, the field 59px below its
+   name). Wide enough for a six-digit token count and its spinner. Side by
+   side only: the phone width stacks the row and the field takes it. */
+@media (min-width: 600px) {
+  .setting-row > input[type="number"].setting-control {
+    width: 8rem;
+  }
+}
+
 .slider-value {
   font-size: var(--text-base);
   color: var(--muted);

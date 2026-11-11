@@ -10344,10 +10344,13 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   .timeline-cal-cell .timeline-cal-item,
   .timeline-cal-cell .timeline-cal-more,
   .dgm-panehead button,
-  .dgm-listcol :is(.dgm-join, .dgm-menu > button, .dgm-swatch)
+  .dgm-listcol :is(.dgm-join, .dgm-menu > button, .dgm-swatch),
+  .feature-row
 ):focus-visible {
   outline-offset: -2px;
 }
+/* `.feature-row` fills the Tools and features list and lost 4px of ring to
+   its clip at every viewport (wrapzoom 2026-11-11); the grip is below. */
 :is(.graph-zoom-btn, .chat-dock-controls .seg > button):is(.active, [aria-pressed="true"], [aria-checked="true"], [aria-selected="true"]):focus-visible {
   outline-color: var(--on-accent);
 }

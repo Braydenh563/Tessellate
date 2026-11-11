@@ -455,9 +455,17 @@
 /* A number of backups to keep, not a name or a path, this app's other
    `.small-select` uses are all <select>/text and can take the full 16rem;
    a bare number reads as a stray box that wide. */
-.backup-retention-input {
+/* `input.`: the base field rule is `input[type="number"]` (0,1,1) and gave it
+   the whole 694px pane, under its label (wrapzoom 2026-11-11, row 73px). */
+input.backup-retention-input {
   width: 5rem;
   max-width: 5rem;
+}
+/* Its short label and a 5rem number fit a phone's column side by side, so
+   the narrow "label on a line of its own" rule (07-whiteboard-misc.css,
+   Settings at phone width) does not apply here: at 768 the row was 76px. */
+#settings-modal #backup-retention-row > label {
+  flex: 1 1 auto;
 }
 .row .small-select {
   flex: 0 1 auto;
@@ -2240,9 +2248,26 @@ kbd {
   aspect-ratio: 16 / 9;
   background: var(--page);
 }
+/* One line on every card, so the cards line up (wrapzoom 2026-11-11: one
+   card's chip and cost split onto two lines, 42.6px against 20px). The chip
+   keeps its word; the cost gives way with an ellipsis, and the card's title
+   says it whole. */
 .bg-style-facts {
-  flex-wrap: wrap;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  min-width: 0;
+  max-width: 100%;
   gap: var(--space-2);
+}
+.bg-style-facts > .chip {
+  flex: none;
+}
+.bg-style-facts > .theme-note {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .accent-offer-dot {
   width: 0.9rem;

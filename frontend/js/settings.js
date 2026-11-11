@@ -3264,7 +3264,7 @@ function renderBgStyleGrid() {
       //: The cost is a facts row of its own, so a long name never pushes the
       //: label onto a second line on some cards and not others.
       const facts = document.createElement("span");
-      facts.className = "row bg-style-facts";
+      facts.className = "bg-style-facts"; // not a `.row`: a Settings row wraps, and this line never does
       const ms = document.createElement("span");
       ms.className = "theme-note";
       ms.textContent = `${BG_ART_COST[name].toFixed(1)}ms a frame`;

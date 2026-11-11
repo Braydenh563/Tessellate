@@ -97,6 +97,13 @@ html:has(> .desk-page) {
   border: 0;
   border-top: 1px solid var(--border);
 }
+/* The note card's foot keeps one row (wrapzoom 2026-11-11): at 320 its 296px held Note | To-do,
+   the picture, Close and Save in 323px, so Save wrapped under them and the foot was 102px. The
+   window's head X already closes the card (desk-companion.js hands it the card's Close), so
+   the foot's Close is folded into it here. */
+#desk-capture .capture-card-foot > [data-cc="close"] {
+  display: none;
+}
 /* A menu is a list of rows, not a form: the rows sit close, the groups are told apart by the hairline. */
 #desk-menu {
   gap: var(--space-1);

@@ -79,6 +79,8 @@ RING_ROOM: list[tuple[str, str, str]] = [
     ("the graph note panel's scrolling body", ".graph-popup-body", "room"),
     # The 2026-11-11 map wrap sweep.
     ("the board sidebar's Library, layers and Outline lists", ".wb-outline-tree", "room"),
+    # The 2026-11-11 wrap/zoom sweep (wrapzoom-settings.js, ten viewports).
+    ("Tools and features rows fill their list", ".feature-row", "inset"),
 ]
 
 #: A pill track with an edge: its segments fill its inside, never the
