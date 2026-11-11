@@ -68,9 +68,10 @@ def test_the_overlay_is_one_lazy_file_inside_the_figure_that_never_takes_a_press
     assert 'ensureModule("diagramOverlay")' in BUILDER and "diagramModel.overlay.wire(S)" in BUILDER
     assert OVERLAY.count("diagramModel.overlay =") == 1 and OVERLAY.lstrip().startswith("// diagram-overlay.js")
     assert "fig.append(layer)" in OVERLAY and "stage.append" not in OVERLAY
-    assert "(fig.onpaint ||= []).push(draw)" in OVERLAY
+    # Intent kept, how moved (INBOX 1766): every paint draws, in a task after a drawn frame (`soon`), not inside the paint.
+    assert "(fig.onpaint ||= []).push(soon)" in OVERLAY and "const draw = () => {" in OVERLAY
     assert "aria-selected" in OVERLAY and "Observer" not in OVERLAY and "requestAnimationFrame" not in OVERLAY  # read from the list; no new wake source
-    assert "(fig.onzoom ||= []).push(draw)" in OVERLAY and "fig.onzoom" in (JS / "diagram-view.js").read_text(encoding="utf-8")
+    assert "(fig.onzoom ||= []).push(() => (fig.querySelector" in OVERLAY and "? draw() : soon()" in OVERLAY and "fig.onzoom" in (JS / "diagram-view.js").read_text(encoding="utf-8")
     start = CSS.index("\n.dgm-overlay {")
     assert "pointer-events: none" in CSS[start : CSS.index("}", start)]
     box = CSS[CSS.index(".dgm-box.on {") :].split("}")[0]

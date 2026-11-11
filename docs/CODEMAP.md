@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8150, frontend ids 2710, CSS sections 523, backend routes 674, backend modules 10367, test files 2560, tests 20946, plan headings 1010, app scripts 29, boot scripts 38, script files 284.
+Counts: frontend functions 8150, frontend ids 2710, CSS sections 523, backend routes 674, backend modules 10367, test files 2560, tests 20950, plan headings 1010, app scripts 29, boot scripts 38, script files 284.
 
 ## Frontend functions (8150)
 
@@ -26658,7 +26658,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20946)
+## Tests (20950)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27986,7 +27986,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_lag_choose_1575.py | 5 |
 | tests/test_lag_companion_forced_1110.py | 4 |
 | tests/test_lag_dash_spans_1741.py | 3 |
-| tests/test_lag_diagram_reads_1766.py | 5 |
+| tests/test_lag_diagram_reads_1766.py | 9 |
 | tests/test_lag_follow_announce_1591.py | 2 |
 | tests/test_lag_follow_idle_1741.py | 4 |
 | tests/test_lag_forced_layout_1560.py | 6 |
