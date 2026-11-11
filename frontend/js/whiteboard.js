@@ -5159,6 +5159,12 @@ function wbShaftPoints(d) {
 //: Nothing to do on a board where no connector asks for jumps, which is
 //: almost every board, so the cost there is one pass over the data.
 function wbApplyLineJumps(groups) {
+  //: What the paint skip compares the drawn path with (`renderWhiteboard`): a jump rewrites it, so the
+  //: pass records the path it left, and writes only when it differs from the one on the page.
+  const settle = (el, path, d) => {
+    if (path && path.getAttribute("d") !== d) path.setAttribute("d", d);
+    if (el._wbStrokeD != null) el._wbStrokeD = d;
+  };
   const links = [];
   let wanted = false;
   for (const el of groups) {
@@ -5182,7 +5188,10 @@ function wbApplyLineJumps(groups) {
       const path = el.querySelector(".sketch-path");
       const caps = String(path?.getAttribute("d") || "").split(/\s(?=M)/).slice(1).join(" ");
       const shaft = wbLineJumpsD(pts, under, parsed.jumps, wbJumpSize(parsed));
-      path?.setAttribute("d", caps ? `${shaft} ${caps}` : shaft);
+      settle(el, path, caps ? `${shaft} ${caps}` : shaft);
+    } else if (parsed.jumps && parsed.jumps !== "none" && el._wbPlainD != null) {
+      //: A skipped connector keeps the path it was last given; with nothing to hop it goes back to the plain one.
+      settle(el, el.querySelector(".sketch-path"), el._wbPlainD);
     }
     under.push(pts);
   }
@@ -6771,6 +6780,9 @@ async function wbMindMapAddSibling(cardId) {
 // its header.
 
 function wbApplySelectionHighlight() {
+  //: The elements marked so far, kept on the function (no new global). The class is written nowhere
+  //: else, so this is what the page would be asked for with a `querySelectorAll` (1.2 ms a render).
+  const marked = (wbApplySelectionHighlight.marked ??= new Set());
   //: After this frame's selection is settled (see `renderWbGestureHints`).
   requestAnimationFrame(renderWbGestureHints);
   //: **Only what changed is touched** (INBOX 410, the release of a marquee).
@@ -6789,11 +6801,12 @@ function wbApplySelectionHighlight() {
     const el = document.querySelector(WB_SELECTOR_BY_KIND[wbSelectedItem.kind](wbSelectedItem.id));
     if (el && !wanted.has(el)) wanted.set(el, false);
   }
-  document
-    .querySelectorAll(".sketch-group.wb-selected, .node-card.wb-selected, .wb-object.wb-selected")
-    .forEach((el) => {
-      if (!wanted.has(el)) el.classList.remove("wb-selected", "wb-in-group");
-    });
+  //: One that left the page (a render's exit) is not wanted either, so it is dropped here too.
+  for (const el of marked) {
+    if (wanted.has(el)) continue;
+    el.classList.remove("wb-selected", "wb-in-group");
+    marked.delete(el);
+  }
   // A sketch's resize handles have nowhere else to live between renders
   // (unlike a card/object, which always has 8 handle children of its own), 
   // recomputed here so they track a fresh selection or a just-finished move.
@@ -6820,6 +6833,7 @@ function wbApplySelectionHighlight() {
   //: (INBOX 278, and the earlier report it has to keep answering).
   for (const [el, grouped] of wanted) {
     if (!grouped) wbEnsureHandles(el);
+    marked.add(el);
     if (!el.classList.contains("wb-selected")) el.classList.add("wb-selected");
     if (el.classList.contains("wb-in-group") !== grouped) el.classList.toggle("wb-in-group", grouped);
   }
@@ -22634,24 +22648,17 @@ function renderWhiteboard() {
   //: under the marquee's 4px threshold ends without touching the selection.
   //: This class is what the test reads; it is set here rather than at enter
   //: so a sketch reclassified by an edit cannot keep a stale one.
-  sketchUpdate.classed("wb-link-sketch", (d) => {
-    try {
-      return String(JSON.parse(d.data)?.type || "").startsWith("link-");
-    } catch {
-      return false;
-    }
-  });
-
-  sketchUpdate.classed("wb-map-crosslink", (d) => {
-    if (!crossLinkIds.size) return false;
-    let parsed;
-    try {
-      parsed = JSON.parse(d.data);
-    } catch {
-      return false;
-    }
-    return crossLinkIds.has(`${parsed?.sourceId}:${parsed?.targetId}`);
-  });
+  //: The two class writes in one pass, and only where the answer moved: `classed` set the
+  //: attribute on every group every render (560 writes at 280 groups, 1.2 ms), the same value.
+  for (const group of sketchUpdate.nodes()) {
+    //: One parse for both questions.
+    let parsed = null;
+    try { parsed = JSON.parse(group.__data__.data); } catch { parsed = undefined; }
+    const isLink = String(parsed?.type || "").startsWith("link-");
+    const isCross = crossLinkIds.size > 0 && parsed !== undefined && crossLinkIds.has(`${parsed?.sourceId}:${parsed?.targetId}`);
+    if (group.classList.contains("wb-link-sketch") !== isLink) group.classList.toggle("wb-link-sketch", isLink);
+    if (group.classList.contains("wb-map-crosslink") !== isCross) group.classList.toggle("wb-map-crosslink", isCross);
+  }
 
   //: **A pen or highlighter stroke is repainted only when its look can have
   //: changed** (audit 1028 B3, B4): the key is its data plus what decides the
@@ -22691,8 +22698,10 @@ function renderWhiteboard() {
   //: A board's connectors need the same batch (W30): each one read both ends'
   //: `offsetWidth` on a DOM the strokes before it had just written, 6.6 ms for 30
   //: connectors on 500 objects. The sizes are the ones on screen now, as before.
+  //: Off a map only the objects a connector ends on are measured, found through the item index
+  //: (`wbItemElement`): the walk over all 500 and their reads were 2.3 ms of a 10 ms render.
   const hasLinks = wbIsMap() || (wbState.sketches || []).some((s) => typeof s.data === "string" && s.data.includes("link-"));
-  if (hasLinks && wbState.sketches?.length) wbIndexMapNodeElements();
+  if (hasLinks && wbState.sketches?.length) wbIndexMapNodeElements(!wbIsMap());
   sketchUpdate.each(function(d) {
     const strokeKey = strokePaintKey(d);
     const drawn = this.querySelector(".sketch-path");
@@ -22819,6 +22828,8 @@ function renderWhiteboard() {
     wbPaintLinkLabel(this, d, linkData);
     this._wbStrokeKey = strokeKey;
     this._wbStrokeD = strokeKey ? pathData : null;
+    //: The plain path, for the jump pass to go back to when its jumps no longer apply.
+    this._wbPlainD = strokeKey ? pathData : null;
   });
 
   sketchSelection.exit().remove();
@@ -22833,12 +22844,14 @@ function renderWhiteboard() {
   //: that jumps hops over the lines under it (wb-phase2 step 1), in paint
   //: order. Not on a map, whose lines have no order to keep.
   const sketchGroups = new Map(sketchUpdate.nodes().map((el) => [el.__data__.id, el]));
-  const painted = wbPlaceSketchBands(sketchGroups);
+  const stackOrder = wbStackOrder();
+  const painted = wbPlaceSketchBands(sketchGroups, stackOrder);
   if (!wbIsMap()) wbApplyLineJumps(painted);
 
   // Render Nodes (Cards)
   const canvas = d3.select("#wb-html-layer");
-  const stackRank = wbStackRanks();
+  //: One sort of the board's items serves the bands above, the cards here and the objects below (W30).
+  const stackRank = new Map(stackOrder.map((e, i) => [e.key, i + 1]));
   const nodeSelection = canvas.selectAll(".wb-card.node-card")
     .data(wbState.nodes, d => d.id);
     
@@ -23200,7 +23213,7 @@ function renderWhiteboard() {
   //: just gave it.
   wbScheduleCardClampSync();
 
-  renderWbObjects(canvas);
+  renderWbObjects(canvas, stackRank);
   if (typeof wbFmtState !== "undefined") wbFmtState.paintCaptions?.();
 
   // After the nodes, never before: an edge is drawn between two *measured*
@@ -23731,9 +23744,8 @@ async function wbStickyRemind(d, day) {
   }
 }
 
-function renderWbObjects(canvas) {
+function renderWbObjects(canvas, stackRank = wbStackRanks()) {
   wbScheduleStickyDates();
-  const stackRank = wbStackRanks();
 
   // Shared by both `objDrag` (bound to the whole `.wb-object`) and
   // `gripDrag` (bound only to `.wb-object-grip`, see below): `this` is
@@ -24447,8 +24459,13 @@ function renderWbObjects(canvas) {
   objectUpdate.each(function (d) {
     //: Before the paint-key skip: another item's order command moves this
     //: one's rank without changing anything this one would repaint.
-    const rank = String(stackRank.get(`object:${d.id}`) ?? "");
-    if (this.style.zIndex !== rank) this.style.zIndex = rank;
+    //: Kept on the element: this pass and the enter above are the only writers of an object's z-index, and
+    //: reading it back off `style` cost 0.6 ms for 500.
+    const rank = stackRank.get(`object:${d.id}`) ?? "";
+    if (this._wbRank !== rank) {
+      this.style.zIndex = String(rank);
+      this._wbRank = rank;
+    }
     const key = wbObjectPaintKey(d, paintCtx);
     //: **A move is a transform, not a repaint** (audit FEAT-02): the key left
     //: out x and y so a tidy that shifts two hundred topics down for one new
