@@ -404,6 +404,9 @@
   };
   let searchTimer = 0;
   let searchSeq = 0;
+  //: The fetch is out. Enter pressed meanwhile opens the first match when it lands (`enterAt` is that run).
+  let searching = false;
+  let enterAt = 0;
   const plain = (text) =>
     String(text || "")
       .replace(/<[^>]*>/g, "")
@@ -454,6 +457,7 @@
     const q = $("desk-search-text").value.trim();
     const mine = ++searchSeq;
     const list = $("desk-search-hits");
+    searching = !!q;
     if (!q) {
       list.replaceChildren();
       $("desk-search-status").textContent = "";
@@ -465,6 +469,7 @@
       const response = await call(`/search?q=${encodeURIComponent(deskClip(q))}&limit=6`);
       if (mine !== searchSeq) return;
       if (response.status === 401) {
+        searching = false;
         list.replaceChildren();
         await probe();
         return openMenu("menu");
@@ -474,9 +479,12 @@
       list.replaceChildren(...(body.hits || []).map(hitRow));
       $("desk-search-status").textContent = "";
       searchEmpty(body.hits?.length ? "hits" : "none", q);
+      searching = false;
       if (overlay) fit();
+      if (enterAt === mine) list.querySelector("button")?.click();
     } catch (error) {
       if (mine !== searchSeq) return;
+      searching = false;
       $("desk-search-status").textContent = error.message || "Search is not available right now.";
       if (overlay) fit();
     }
@@ -547,6 +555,7 @@
   //: The card changes its own height (a to-do list, the tags): the window follows.
   document.addEventListener("mm:controls-changed", fit);
   $("desk-search-text").addEventListener("input", () => {
+    enterAt = 0;
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => {
       searchTimer = 0;
@@ -565,7 +574,9 @@
         clearTimeout(searchTimer);
         searchTimer = 0;
         runSearch();
-      } else $("desk-search-hits").querySelector("button")?.click();
+        enterAt = searchSeq;
+      } else if (searching) enterAt = searchSeq;
+      else $("desk-search-hits").querySelector("button")?.click();
     }
   });
   //: The results are walked with the arrows; Up from the first goes back to the field.
