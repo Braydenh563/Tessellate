@@ -283,6 +283,8 @@ FAULTS = {
         '"Couldn\'t read this note\'s properties."': "reading a note's properties failed",
     },
     'settings-controls.js': {
+        '"The last review was not cleared. Try again."': 'the clear-review request failed',
+        '"The dashboard greeting was not saved. Try again."': 'the preferences write failed',
         '"Couldn\'t reset those settings."': 'resetting settings failed',
         '(status && status.textContent) || "Couldn\'t apply the update."': "the update step failed; the text is the step's own error",
         'status.textContent || "Couldn\'t install that version."': "the install step failed; the text is the step's own error",
