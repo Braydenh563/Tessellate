@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8322, frontend ids 2761, CSS sections 524, backend routes 697, backend modules 10728, test files 2649, tests 21658, plan headings 1014, app scripts 29, boot scripts 38, script files 299.
+Counts: frontend functions 8322, frontend ids 2761, CSS sections 524, backend routes 697, backend modules 10728, test files 2649, tests 21660, plan headings 1014, app scripts 29, boot scripts 38, script files 299.
 
 ## Frontend functions (8322)
 
@@ -26673,49 +26673,49 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Names` | src/tessellate/entry/sync_extras.py:62 |
-| `_canvas` | src/tessellate/entry/sync_extras.py:113 |
-| `_file_sha1` | src/tessellate/entry/sync_extras.py:214 |
-| `_find_row` | src/tessellate/entry/sync_extras.py:264 |
-| `_json` | src/tessellate/entry/sync_extras.py:147 |
-| `_line` | src/tessellate/entry/sync_extras.py:169 |
-| `_no_id` | src/tessellate/entry/sync_extras.py:165 |
-| `_portable_board` | src/tessellate/entry/sync_extras.py:177 |
-| `_rows` | src/tessellate/entry/sync_extras.py:238 |
-| `_stamp` | src/tessellate/entry/sync_extras.py:127 |
-| `_state` | src/tessellate/entry/sync_extras.py:287 |
-| `_still` | src/tessellate/entry/sync_extras.py:91 |
-| `board_state` | src/tessellate/entry/sync_extras.py:133 |
-| `digest` | src/tessellate/entry/sync_extras.py:58 |
-| `document_state` | src/tessellate/entry/sync_extras.py:103 |
-| `file_bytes` | src/tessellate/entry/sync_extras.py:296 |
-| `file_state` | src/tessellate/entry/sync_extras.py:231 |
-| `folder_canvas` | src/tessellate/entry/sync_extras.py:155 |
-| `iso` | src/tessellate/entry/sync_extras.py:54 |
-| `item_hash` | src/tessellate/entry/sync_extras.py:197 |
-| `items` | src/tessellate/entry/sync_extras.py:274 |
-| `manifest` | src/tessellate/entry/sync_extras.py:255 |
-| `mark` | src/tessellate/entry/sync_extras.py:86 |
-| `names_for` | src/tessellate/entry/sync_extras.py:251 |
-| `raw` | src/tessellate/entry/sync_extras.py:96 |
+| `Names` | src/tessellate/entry/sync_extras.py:64 |
+| `_canvas` | src/tessellate/entry/sync_extras.py:115 |
+| `_file_sha1` | src/tessellate/entry/sync_extras.py:218 |
+| `_find_row` | src/tessellate/entry/sync_extras.py:270 |
+| `_json` | src/tessellate/entry/sync_extras.py:149 |
+| `_line` | src/tessellate/entry/sync_extras.py:171 |
+| `_no_id` | src/tessellate/entry/sync_extras.py:167 |
+| `_portable_board` | src/tessellate/entry/sync_extras.py:179 |
+| `_rows` | src/tessellate/entry/sync_extras.py:244 |
+| `_stamp` | src/tessellate/entry/sync_extras.py:129 |
+| `_state` | src/tessellate/entry/sync_extras.py:293 |
+| `_still` | src/tessellate/entry/sync_extras.py:93 |
+| `board_state` | src/tessellate/entry/sync_extras.py:135 |
+| `digest` | src/tessellate/entry/sync_extras.py:60 |
+| `document_state` | src/tessellate/entry/sync_extras.py:105 |
+| `file_bytes` | src/tessellate/entry/sync_extras.py:302 |
+| `file_state` | src/tessellate/entry/sync_extras.py:237 |
+| `folder_canvas` | src/tessellate/entry/sync_extras.py:157 |
+| `iso` | src/tessellate/entry/sync_extras.py:56 |
+| `item_hash` | src/tessellate/entry/sync_extras.py:199 |
+| `items` | src/tessellate/entry/sync_extras.py:280 |
+| `manifest` | src/tessellate/entry/sync_extras.py:261 |
+| `mark` | src/tessellate/entry/sync_extras.py:88 |
+| `names_for` | src/tessellate/entry/sync_extras.py:257 |
+| `raw` | src/tessellate/entry/sync_extras.py:98 |
 
 ### src/tessellate/entry/sync_extras_apply.py (13)
 
 | Name | File:line |
 |---|---|
 | `Apply` | src/tessellate/entry/sync_extras_apply.py:97 |
-| `_apply_files` | src/tessellate/entry/sync_extras_apply.py:329 |
-| `_apply_kind` | src/tessellate/entry/sync_extras_apply.py:315 |
-| `_gone_files` | src/tessellate/entry/sync_extras_apply.py:307 |
-| `_key` | src/tessellate/entry/sync_extras_apply.py:275 |
+| `_apply_files` | src/tessellate/entry/sync_extras_apply.py:331 |
+| `_apply_kind` | src/tessellate/entry/sync_extras_apply.py:317 |
+| `_gone_files` | src/tessellate/entry/sync_extras_apply.py:309 |
+| `_key` | src/tessellate/entry/sync_extras_apply.py:277 |
 | `_opened` | src/tessellate/entry/sync_extras_apply.py:74 |
 | `_plain` | src/tessellate/entry/sync_extras_apply.py:86 |
 | `_space` | src/tessellate/entry/sync_extras_apply.py:93 |
 | `_theirs_win` | src/tessellate/entry/sync_extras_apply.py:65 |
-| `_wanted` | src/tessellate/entry/sync_extras_apply.py:279 |
+| `_wanted` | src/tessellate/entry/sync_extras_apply.py:281 |
 | `_when` | src/tessellate/entry/sync_extras_apply.py:38 |
 | `checked` | src/tessellate/entry/sync_extras_apply.py:52 |
-| `pull_extras` | src/tessellate/entry/sync_extras_apply.py:339 |
+| `pull_extras` | src/tessellate/entry/sync_extras_apply.py:341 |
 
 ### src/tessellate/entry/sync_keys.py (5)
 
@@ -27618,7 +27618,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21658)
+## Tests (21660)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29894,7 +29894,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_sweep_1004_inbox_bounds.py | 3 |
 | tests/test_sweep_1004_log_scrub_speed.py | 2 |
 | tests/test_sweep_1004_private_entities.py | 1 |
-| tests/test_sync_extras.py | 9 |
+| tests/test_sync_extras.py | 11 |
 | tests/test_sync_lan.py | 13 |
 | tests/test_sync_segments.py | 11 |
 | tests/test_sync_settings_group.py | 4 |
