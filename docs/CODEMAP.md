@@ -2,9 +2,9 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8107, frontend ids 2686, CSS sections 523, backend routes 664, backend modules 10029, test files 2453, tests 20316, plan headings 1002, app scripts 28, boot scripts 37, script files 277.
+Counts: frontend functions 8106, frontend ids 2686, CSS sections 523, backend routes 664, backend modules 10029, test files 2453, tests 20316, plan headings 1002, app scripts 28, boot scripts 37, script files 277.
 
-## Frontend functions (8107)
+## Frontend functions (8106)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -7169,14 +7169,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `waitForRestart` | frontend/js/settings-controls.js:1740 |
 | `wireLearnedSection` | frontend/js/settings-controls.js:4789 |
 
-### frontend/js/settings-data.js (53)
+### frontend/js/settings-data.js (52)
 
 | Name | File:line |
 |---|---|
 | `backupNow` | frontend/js/settings-data.js:499 |
 | `backupScheduleWords` | frontend/js/settings-data.js:256 |
 | `clearPreviews` | frontend/js/settings-data.js:739 |
-| `dismissedWords` | frontend/js/settings-data.js:870 |
+| `dismissedWords` | frontend/js/settings-data.js:869 |
 | `guideTurns` | frontend/js/settings-data.js:745 |
 | `humanBytes` | frontend/js/settings-data.js:434 |
 | `importDirectory` | frontend/js/settings-data.js:510 |
@@ -7184,7 +7184,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `importMarkdown` | frontend/js/settings-data.js:600 |
 | `importSummary` | frontend/js/settings-data.js:535 |
 | `markdownPreview` | frontend/js/settings-data.js:580 |
-| `noteSettingChange` | frontend/js/settings-data.js:1048 |
+| `noteSettingChange` | frontend/js/settings-data.js:1047 |
 | `paintClearRow` | frontend/js/settings-data.js:750 |
 | `previewCaches` | frontend/js/settings-data.js:725 |
 | `previewCount` | frontend/js/settings-data.js:734 |
@@ -7196,35 +7196,34 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderBackupRetention` | frontend/js/settings-data.js:486 |
 | `renderBackupSchedule` | frontend/js/settings-data.js:275 |
 | `renderBackups` | frontend/js/settings-data.js:319 |
-| `renderDismissedList` | frontend/js/settings-data.js:803 |
 | `renderIntegrityNotice` | frontend/js/settings-data.js:474 |
 | `renderPrivacyRange` | frontend/js/settings-data.js:93 |
 | `renderPrivacyReceipt` | frontend/js/settings-data.js:141 |
 | `renderSettingsClear` | frontend/js/settings-data.js:757 |
-| `renderSettingsHistory` | frontend/js/settings-data.js:1285 |
+| `renderSettingsHistory` | frontend/js/settings-data.js:1284 |
 | `renderStorageBreakdown` | frontend/js/settings-data.js:212 |
 | `renderStorageSpaceNotice` | frontend/js/settings-data.js:453 |
-| `restoreGuideTurns` | frontend/js/settings-data.js:932 |
+| `restoreGuideTurns` | frontend/js/settings-data.js:931 |
 | `saveBackupCopyDir` | frontend/js/settings-data.js:297 |
-| `searchRecentAll` | frontend/js/settings-data.js:1082 |
-| `searchRecentClearAll` | frontend/js/settings-data.js:1094 |
-| `searchRecentRestore` | frontend/js/settings-data.js:1100 |
-| `settingChangeWords` | frontend/js/settings-data.js:1013 |
-| `settingListWords` | frontend/js/settings-data.js:996 |
-| `settingName` | frontend/js/settings-data.js:989 |
-| `settingShown` | frontend/js/settings-data.js:978 |
+| `searchRecentAll` | frontend/js/settings-data.js:1081 |
+| `searchRecentClearAll` | frontend/js/settings-data.js:1093 |
+| `searchRecentRestore` | frontend/js/settings-data.js:1099 |
+| `settingChangeWords` | frontend/js/settings-data.js:1012 |
+| `settingListWords` | frontend/js/settings-data.js:995 |
+| `settingName` | frontend/js/settings-data.js:988 |
+| `settingShown` | frontend/js/settings-data.js:977 |
 | `settingsClearCount` | frontend/js/settings-data.js:719 |
-| `settingsClearDone` | frontend/js/settings-data.js:884 |
-| `settingsHistoryAdd` | frontend/js/settings-data.js:1141 |
-| `settingsHistoryApply` | frontend/js/settings-data.js:1157 |
-| `settingsHistoryEntry` | frontend/js/settings-data.js:1122 |
-| `settingsHistoryFind` | frontend/js/settings-data.js:1152 |
-| `settingsHistoryLoad` | frontend/js/settings-data.js:1111 |
-| `settingsHistoryRedo` | frontend/js/settings-data.js:1238 |
-| `settingsHistoryRow` | frontend/js/settings-data.js:1251 |
-| `settingsHistorySave` | frontend/js/settings-data.js:1115 |
-| `settingsHistoryUndo` | frontend/js/settings-data.js:1224 |
-| `settingsPrefsSeen` | frontend/js/settings-data.js:1027 |
+| `settingsClearDone` | frontend/js/settings-data.js:883 |
+| `settingsHistoryAdd` | frontend/js/settings-data.js:1140 |
+| `settingsHistoryApply` | frontend/js/settings-data.js:1156 |
+| `settingsHistoryEntry` | frontend/js/settings-data.js:1121 |
+| `settingsHistoryFind` | frontend/js/settings-data.js:1151 |
+| `settingsHistoryLoad` | frontend/js/settings-data.js:1110 |
+| `settingsHistoryRedo` | frontend/js/settings-data.js:1237 |
+| `settingsHistoryRow` | frontend/js/settings-data.js:1250 |
+| `settingsHistorySave` | frontend/js/settings-data.js:1114 |
+| `settingsHistoryUndo` | frontend/js/settings-data.js:1223 |
+| `settingsPrefsSeen` | frontend/js/settings-data.js:1026 |
 | `undoImport` | frontend/js/settings-data.js:545 |
 
 ### frontend/js/settings-find.js (36)

@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Settings, Data: `renderDismissedList` lives inside `renderSettingsClear` (one shared-scope name fewer, the global-names ratchet is green again at 9,044); behaviour unchanged.
 - Refactor (K25, P3): the tray callbacks (`_tray_open`, `_tray_go`, `_tray_view_logs`, `_tray_new_note`, `_tray_restart`, `_tray_quit`, `_tray_toggle_console`, `_tray_image`) and the window handlers (`_quit_from_app`, `_close_to_tray`) are module-level functions; `_start_tray` 351 to 130 lines and `_run_desktop` 297 to 246; behaviour unchanged, test_tray.py and test_desk_overlay_wiring.py read the functions from their new homes with the same assertions.
 - Undo of a category delete or merge puts the description back and files its binned notes back too (they stay in the bin; `move_notes` takes `include_binned` and `description` from an Undo only).
 - Composer: "change Bluegum-5G to 6G in the wifi note" (or "replace X with Y in the wifi note") changes only that text; the card shows the line as Was and Now, Confirm applies it to every place it stands, Undo puts the whole note back (`parity_acts._find_replace`; the model has `edit_note` for the same).

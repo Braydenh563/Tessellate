@@ -794,69 +794,68 @@ async function renderSettingsClear() {
   $("dismissed-toggle")?.classList.toggle("hidden", !count);
   if (!count) $("dismissed-list")?.classList.add("hidden");
   if ($("dismissed-toggle")?.getAttribute("aria-expanded") === "true") renderDismissedList();
-}
 
-//: **The dismissed suggestions, one row each** (wc3-1110): the words of what
-//: was said no to over its kind, and Restore (the row-actions recipe), which
-//: offers just that one again. Its Undo is the Clear all route's, so the toast,
-//: the status bar and Recent changes agree. A long list filters by typing.
-async function renderDismissedList() {
-  const list = $("dismissed-list");
-  if (!list) return;
-  const found = await apiJson("/suggestions/dismissed/items", { silent: true }).catch(() => null);
-  const items = found?.items || [];
-  const rows = items.map(dismissedRow);
-  if (found?.more) {
-    const more = document.createElement("li");
-    more.className = "muted recent-change-empty";
-    more.textContent = `${settingsClearCount(found.more, "more is", "more are")} not shown. Clear all offers every one again.`;
-    rows.push(more);
-  }
-  if (!rows.length) {
-    const none = document.createElement("li");
-    none.className = "muted recent-change-empty";
-    none.textContent = "You have not dismissed any suggestion.";
-    rows.push(none);
-  }
-  list.replaceChildren(...rows);
-  listFilter(list, { label: "Filter dismissed suggestions", threshold: 20, rows: ":scope > li.recent-change" })?.refresh();
-  function dismissedRow(item) {
-    const li = document.createElement("li");
-    li.className = "entry-item recent-change";
-    const words = document.createElement("div");
-    words.className = "recent-change-words";
-    const label = document.createElement("span");
-    label.className = "recent-change-label";
-    label.textContent = item.label;
-    const kind = document.createElement("small");
-    kind.className = "muted";
-    kind.textContent = item.kind_label;
-    words.append(label, kind);
-    li.append(words, rowActions([{ label: "Restore", title: `Offer this again: ${item.label}`, run: () => dismissedRestore(item) }], `Actions for ${item.label}`));
-    return li;
-  }
+  //: **The dismissed suggestions, one row each** (wc3-1110): the words of what
+  //: was said no to over its kind, and Restore (the row-actions recipe), which
+  //: offers just that one again. Its Undo is the Clear all route's, so the toast,
+  //: the status bar and Recent changes agree. A long list filters by typing.
+  async function renderDismissedList() {
+    const list = $("dismissed-list");
+    if (!list) return;
+    const found = await apiJson("/suggestions/dismissed/items", { silent: true }).catch(() => null);
+    const items = found?.items || [];
+    const rows = items.map(dismissedRow);
+    if (found?.more) {
+      const more = document.createElement("li");
+      more.className = "muted recent-change-empty";
+      more.textContent = `${settingsClearCount(found.more, "more is", "more are")} not shown. Clear all offers every one again.`;
+      rows.push(more);
+    }
+    if (!rows.length) {
+      const none = document.createElement("li");
+      none.className = "muted recent-change-empty";
+      none.textContent = "You have not dismissed any suggestion.";
+      rows.push(none);
+    }
+    list.replaceChildren(...rows);
+    listFilter(list, { label: "Filter dismissed suggestions", threshold: 20, rows: ":scope > li.recent-change" })?.refresh();
+    function dismissedRow(item) {
+      const li = document.createElement("li");
+      li.className = "entry-item recent-change";
+      const words = document.createElement("div");
+      words.className = "recent-change-words";
+      const label = document.createElement("span");
+      label.className = "recent-change-label";
+      label.textContent = item.label;
+      const kind = document.createElement("small");
+      kind.className = "muted";
+      kind.textContent = item.kind_label;
+      words.append(label, kind);
+      li.append(words, rowActions([{ label: "Restore", title: `Offer this again: ${item.label}`, run: () => dismissedRestore(item) }], `Actions for ${item.label}`));
+      return li;
+    }
 
-  async function dismissedRestore(item) {
-    try {
-      const done = await apiJson("/suggestions/dismissed/item/restore", { method: "POST", body: JSON.stringify({ key: item.key }) });
-      if (!done.restored) return renderSettingsClear();
-      settingsClearDone(
-        { kind: "dismissed-one", changes: [], words: `Restored a dismissed suggestion: ${item.label}`, data: { key: item.key, ids: done.ids, tensions: done.tensions, note_tags: done.note_tags } },
-        `Restored “${item.label}”: it can be offered again.`
-      );
-    } catch (error) {
-      toast(error.message || "Couldn't restore that suggestion.", true);
+    async function dismissedRestore(item) {
+      try {
+        const done = await apiJson("/suggestions/dismissed/item/restore", { method: "POST", body: JSON.stringify({ key: item.key }) });
+        if (!done.restored) return renderSettingsClear();
+        settingsClearDone(
+          { kind: "dismissed-one", changes: [], words: `Restored a dismissed suggestion: ${item.label}`, data: { key: item.key, ids: done.ids, tensions: done.tensions, note_tags: done.note_tags } },
+          `Restored “${item.label}”: it can be offered again.`
+        );
+      } catch (error) {
+        toast(error.message || "Couldn't restore that suggestion.", true);
+      }
     }
   }
+  if ($("dismissed-toggle")) $("dismissed-toggle").onclick = () => {
+    const toggle = $("dismissed-toggle");
+    const open = toggle.getAttribute("aria-expanded") !== "true";
+    toggle.setAttribute("aria-expanded", String(open));
+    $("dismissed-list").classList.toggle("hidden", !open);
+    if (open) renderDismissedList();
+  };
 }
-
-$("dismissed-toggle")?.addEventListener("click", () => {
-  const toggle = $("dismissed-toggle");
-  const open = toggle.getAttribute("aria-expanded") !== "true";
-  toggle.setAttribute("aria-expanded", String(open));
-  $("dismissed-list").classList.toggle("hidden", !open);
-  if (open) renderDismissedList();
-});
 
 const DISMISSED_KIND_WORDS = {
   dismiss_merge: ["name merge", "name merges"],
