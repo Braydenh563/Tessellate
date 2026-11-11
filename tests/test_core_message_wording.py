@@ -327,9 +327,11 @@ REVIEWED_COMPUTED: dict[tuple[str, str], str] = {
     ("routes_entries.py", "librarian.AI_FAILED_MESSAGE"): "a constant in ai/librarian.py, checked there",
     ("routes_files.py", "reason"): "core/ocr.py unavailable_reason",
     ("routes_files_readings.py", "reason"): "core/ocr.py unavailable_reason",  # moved with its route; same source
+    ("routes_files_ocr.py", "reason"): "core/ocr.py unavailable_reason",  # moved with its route; same source
+    ("routes_files_ocr.py", "ocr.unavailable_reason('rapidocr')"): "core/ocr.py unavailable_reason",
+    ("routes_files_ocr.py", "str(exc)"): "ValueError from core/ocr.py set_language",
     ("routes_auth.py", "REFUSAL"): "a fixed sentence, the constant in api/this_computer.py",
     ("routes_map_from_notes.py", "str(exc)"): "ValueError from map_from_note_entry in this module: a fixed sentence with the note id",
-        ("routes_files.py", "ocr.unavailable_reason('rapidocr')"): "core/ocr.py unavailable_reason",
     ("routes_files.py", "edit_message"): "core/docview.py editability",
     ("routes_files.py", "str(exc)"): "ValueError and FileExistsError from entry/manager.py, ValueError from core/ocr.py set_language",
     ("routes_learned.py", "str(exc)"): "ValueError from ai/learning.py record and ai/facts.py set_switches",

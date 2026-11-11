@@ -78,6 +78,7 @@ from tessellate.api import (
     routes_resurface,
     routes_entries,
     routes_files,
+    routes_files_ocr,
     routes_files_readings,
     routes_graph,
     routes_help,
@@ -1507,6 +1508,7 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     (routes_spaces.router, LOCKED),
     (routes_private_spaces.router, LOCKED),
     (routes_files.router, LOCKED),
+    (routes_files_ocr.router, LOCKED),  # the OCR routes of files and media (K24)
     (routes_files_readings.router, LOCKED),  # the reading-side routes of files and media (K24)
     # A plain `<img src>` (or a note's own inline `![]()` markdown) never
     # attaches the X-Auth-Token header, so only these routes also accept the
