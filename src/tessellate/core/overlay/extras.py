@@ -123,6 +123,16 @@ REACTIONS: dict[str, Reaction] = {
     "morning_hello": Reaction("morning_wave", "smile", 2.6, "happy", 3000.0),
     "fullscreen_app": Reaction("peek_back", "curious", 1.8, "", 30.0),
     "typing_burst": Reaction("nod_done", "smile", 1.6, "happy", 300.0),
+    # what the app's server notes (W31, `core.companion_events`, read on the screen poll): the in-app companion's reactions
+    # to its own page, with the in-app cooldowns. Each plays a pose the desk already ships (look, stand, wave) or a face alone.
+    "graph_laid": Reaction("glance_screen", "curious", 2.4, "", 60.0),
+    "long_note": Reaction("peek_back", "curious", 5.0, "", 180.0),
+    "note_binned": Reaction("", "worried", 1.4, "", 30.0),
+    "private_note": Reaction("", "shy", 2.4, "", 45.0),
+    "remark": Reaction("poke_curious", "smile", 2.4, "", 600.0),
+    "reminder_bell": Reaction("bell_ring", "surprised", 2.6, "", 5.0),
+    "search_nothing": Reaction("", "confused", 2.0, "", 45.0),
+    "search_found": Reaction("nod_done", "smile", 1.4, "", 45.0),
 }
 #: A poke by mood, as the app's: a happy one giggles, a tired or cross one is miffed, the rest are curious.
 POKE_BY_MOOD = {"happy": "poke_giggle", "proud": "poke_giggle", "sleepy": "poke_miffed", "startled": "poke_miffed", "bored": "poke_curious", "curious": "poke_curious"}
@@ -157,9 +167,11 @@ REACT_ACTS: dict[str, bh.Activity] = {
     "morning_wave": bh.Activity(((0, "wave"), (0.6, "blink"), (0.9, "stand")), (2.4, 3.0), _k((0, 1, 1, 0), (0.2, 1, 1.02, 0.02), (0.55, 1, 1.02, 0.02), (0.75, 0.98, 1.06, 0), (1, 1, 1, 0)), (("play", -0.1),), where="react"),
     "peek_back": bh.Activity("look", (1.6, 2.0), _k((0, 1, 1, 0), (0.2, 0.95, 1.04, 0.12), (0.6, 0.95, 1.04, 0.12), (0.8, 0.98, 1.02, -0.03), (1, 1, 1, 0)), (("curiosity", -0.1),), where="react"),
     "nod_done": bh.Activity("stand", (1.4, 1.8), _k((0, 1, 1, 0), (0.2, 1.01, 0.95, 0.02), (0.4, 1, 1, 0), (0.6, 1.01, 0.95, 0.02), (0.8, 1, 1.01, 0), (1, 1, 1, 0)), (), where="react"),
+    # a reminder falls due: the wave pose, a short shake at its top (the bell it rings is the app's; the card carries the other)
+    "bell_ring": bh.Activity("wave", (2.4, 2.8), _k((0, 1, 1, 0), (0.12, 1, 1.03, 0.06), (0.22, 1, 1.03, -0.06), (0.32, 1, 1.03, 0.06), (0.42, 1, 1.03, -0.06), (0.52, 1, 1.03, 0.05), (0.64, 1, 1.02, -0.04), (0.8, 1, 1.01, 0.02), (1, 1, 1, 0)), (("play", -0.1),), where="react"),
     "perk_up": bh.Activity("look", (1.2, 1.6), _k((0, 1, 1, 0), (0.15, 0.97, 1.06, 0.02), (0.8, 0.98, 1.03, 0.02), (1, 1, 1, 0)), (), where="react"),
 }
-for _kind, _prio in {"flinch": 3, "poke_miffed": 2, "battery_low": 2, "idle_return": 2, "morning_hello": 2, "download_done": 2, "toast": 2}.items():
+for _kind, _prio in {"flinch": 3, "poke_miffed": 2, "battery_low": 2, "idle_return": 2, "morning_hello": 2, "download_done": 2, "toast": 2, "reminder_bell": 2}.items():
     REACTIONS[_kind] = REACTIONS[_kind]._replace(prio=_prio)
 #: The priority of the reaction each reaction-only act belongs to.
 REACT_PRIO: dict[str, int] = {r.act: r.prio for r in REACTIONS.values() if r.act}
