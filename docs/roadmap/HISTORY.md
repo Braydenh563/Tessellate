@@ -7,6 +7,10 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-11 (s9c-1110 F2: WHITEBOARD_PLAN gap rows 9 and 11)
+
+- BPMN set (events, task, sub-process, gateways, data object and store, annotation, pool, lanes; 15 items) and two icon sets from the vendored Phosphor glyphs (Cloud and network 24, Devices and people 16), built by `scripts/build_board_library.py`, listed in `frontend/board-library/index.json`. Built the same run: Edit image and Crop on picture (WHITEBOARD_PLAN section 1, Edit image row).
+
 ## Moved from the plans, 2026-11-10 (q31-1110: the Tessellation view, GRAPH_PLAN Q31)
 
 - Built: Q31, one Tessellation layout beside Force, Tree, Radial, Arc and Treemap (`graph-tessellate.js`, a lazy file of the graph bundle, one `gcTess` name in the shared scope), with a Look list (Cells, the default, and Hexes). Cells: a Voronoi inside each category's rectangle seeded from a link-weighted treemap, so a well-linked note owns a bigger cell; Hexes: one hexagon size under every category, linked notes in neighbouring hexagons. One layout, selection, legend, popup and hit test under both (a whole cell answers a pointer). The Map: tile area follows 1 plus a note's links (capped at 12), a category name wraps or shrinks and is never cut (`gcTess.fit`, header height from the name), and each rectangle has a title tooltip. Measured on the 75-note showcase at 390, 1280 and 1920, both themes: 7 of 7 labels drawn, 0 overflowing, 0 NaN, tooltip "Work: 17 notes".

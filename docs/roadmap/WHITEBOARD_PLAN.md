@@ -1531,8 +1531,6 @@ Rows (owner: canvasdepth3, after C5): P1 to P3, each a commit with a test and a 
 
 Owner: "stuff like that, dont stop there, find what is missing on the whiteboard, mindmap and documents editor and add them." Built in surfaces-1019: the W/H link in Arrange, multi-part library elements placing as one group, 19 wireframe / 23 UML / 14 ERD / 16 flowchart elements, four templates (login, dashboard, mobile, sequence), Select similar, swimlanes. Gap list, read from the code against draw.io, Excalidraw and Miro (sizes S, M, L). Rows 1 to 8, 10 and 12 to 14 are built and moved to HISTORY.md ("Moved from the plans, 2026-10-30 (whiteboard 1313 gap rows)"); open:
 
-9. BPMN set: task, event, gateway, data object - M.
-11. Cloud and network icon sets, drawn here (no draw.io files) - M.
 15. Text along a path - L.
 
 ## Placed from INBOX, 2026-10-19 (wb1327)
@@ -1556,7 +1554,6 @@ Exists (no work): connector waypoints and elbow routing (`route`, Bend a line); 
 Missing (items 1 to 5, zoom to the selection, tidy as a tree, change the shape, a shape's link and text that shrinks to fit, are built: HISTORY.md, "Moved from the plans, 2026-10-25 (wb2)"):
 6. Dimension lines with a live length (10-19 item 7). M.
 7. Crop a picture to a circle or rounded box (10-19 item 13). M.
-8. BPMN element set (10-19 item 9). M.
 9. Pages inside one board (draw.io's page tabs); boards and frames stand in. L, not planned.
 10. Rulers and units. M, not planned for a student's board.
 
