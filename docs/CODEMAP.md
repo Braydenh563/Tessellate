@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10178, test files 2496, tests 20563, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10186, test files 2496, tests 20564, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -778,24 +778,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aboveDockFab` | frontend/js/navigation.js:2452 |
-| `activeNotesSection` | frontend/js/navigation.js:2279 |
+| `aboveDockFab` | frontend/js/navigation.js:2453 |
+| `activeNotesSection` | frontend/js/navigation.js:2280 |
 | `arrowNavTarget` | frontend/js/navigation.js:205 |
 | `backgroundWriteFailed` | frontend/js/navigation.js:1811 |
 | `chatMidStream` | frontend/js/navigation.js:1743 |
 | `closeNavHistoryMenu` | frontend/js/navigation.js:905 |
 | `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1773 |
-| `coversAFormPrimary` | frontend/js/navigation.js:2585 |
+| `coversAFormPrimary` | frontend/js/navigation.js:2586 |
 | `entryLabel` | frontend/js/navigation.js:1003 |
-| `formPrimaryButtons` | frontend/js/navigation.js:2546 |
+| `formPrimaryButtons` | frontend/js/navigation.js:2547 |
 | `goToTabHistory` | frontend/js/navigation.js:1094 |
 | `hasUnsavedWork` | frontend/js/navigation.js:1722 |
 | `hideClosedDockMenuLists` | frontend/js/navigation.js:1501 |
-| `initNotesSubtabs` | frontend/js/navigation.js:2342 |
-| `initScrollTopButton` | frontend/js/navigation.js:2605 |
+| `initNotesSubtabs` | frontend/js/navigation.js:2343 |
+| `initScrollTopButton` | frontend/js/navigation.js:2606 |
 | `insideClosedDetails` | frontend/js/navigation.js:1555 |
 | `loadSurface` | frontend/js/navigation.js:1299 |
-| `measureSpacingPx` | frontend/js/navigation.js:2576 |
+| `measureSpacingPx` | frontend/js/navigation.js:2577 |
 | `menuOfOpener` | frontend/js/navigation.js:1577 |
 | `menuRowsOf` | frontend/js/navigation.js:1562 |
 | `mermaidSoon` | frontend/js/navigation.js:370 |
@@ -805,7 +805,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openSelectionScope` | frontend/js/navigation.js:318 |
 | `paintTabHistory` | frontend/js/navigation.js:952 |
 | `placeDockMenuInWindow` | frontend/js/navigation.js:1370 |
-| `positionScrollTopForNested` | frontend/js/navigation.js:2461 |
+| `positionScrollTopForNested` | frontend/js/navigation.js:2462 |
 | `recordTabVisit` | frontend/js/navigation.js:1040 |
 | `recordingLive` | frontend/js/navigation.js:1750 |
 | `renderMarkdown` | frontend/js/navigation.js:379 |
@@ -814,15 +814,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `restoreSettingsScroll` | frontend/js/navigation.js:1141 |
 | `revealTab` | frontend/js/navigation.js:815 |
 | `rowMenuAtEvent` | frontend/js/navigation.js:127 |
-| `scrollTopTargetEl` | frontend/js/navigation.js:2428 |
-| `scrollingPage` | frontend/js/navigation.js:2381 |
-| `showNotesSection` | frontend/js/navigation.js:2284 |
-| `spacingPx` | frontend/js/navigation.js:2569 |
+| `scrollTopTargetEl` | frontend/js/navigation.js:2429 |
+| `scrollingPage` | frontend/js/navigation.js:2382 |
+| `showNotesSection` | frontend/js/navigation.js:2285 |
+| `spacingPx` | frontend/js/navigation.js:2570 |
 | `stepTabHistory` | frontend/js/navigation.js:1084 |
 | `stripMarkdownPreview` | frontend/js/navigation.js:2187 |
 | `surfaceRecovered` | frontend/js/navigation.js:1277 |
 | `switchTab` | frontend/js/navigation.js:1860 |
-| `syncScrollLock` | frontend/js/navigation.js:2747 |
+| `syncScrollLock` | frontend/js/navigation.js:2748 |
 | `tabLabel` | frontend/js/navigation.js:991 |
 | `tabPlaceholder` | frontend/js/navigation.js:2123 |
 | `tabSkeletonBar` | frontend/js/navigation.js:2104 |
@@ -833,7 +833,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `usageFlush` | frontend/js/navigation.js:1825 |
 | `watchDockMenuPlacement` | frontend/js/navigation.js:1432 |
 | `wireLongPress` | frontend/js/navigation.js:24 |
-| `zoomWheelDelta` | frontend/js/navigation.js:2765 |
+| `zoomWheelDelta` | frontend/js/navigation.js:2766 |
 
 ### frontend/js/router.js (12)
 
@@ -13529,7 +13529,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10178)
+## Backend modules (10186)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -23118,56 +23118,57 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `reset_app_state` | src/tessellate/core/deps.py:268 |
 | `store_quietly` | src/tessellate/core/deps.py:657 |
 
-### src/tessellate/core/desk_companion.py (46)
+### src/tessellate/core/desk_companion.py (47)
 
 | Name | File:line |
 |---|---|
-| `DeskApi` | src/tessellate/core/desk_companion.py:863 |
-| `DeskCompanion` | src/tessellate/core/desk_companion.py:936 |
-| `_SnoozeTimer` | src/tessellate/core/desk_companion.py:830 |
-| `_await_loaded` | src/tessellate/core/desk_companion.py:2075 |
+| `DeskApi` | src/tessellate/core/desk_companion.py:875 |
+| `DeskCompanion` | src/tessellate/core/desk_companion.py:948 |
+| `_SnoozeTimer` | src/tessellate/core/desk_companion.py:842 |
+| `_await_loaded` | src/tessellate/core/desk_companion.py:2087 |
 | `_config` | src/tessellate/core/desk_companion.py:220 |
-| `_default_overlay_factory` | src/tessellate/core/desk_companion.py:1967 |
+| `_default_overlay_factory` | src/tessellate/core/desk_companion.py:1979 |
 | `_figure_unsettled` | src/tessellate/core/desk_companion.py:284 |
-| `_follow` | src/tessellate/core/desk_companion.py:2017 |
-| `_linux_areas` | src/tessellate/core/desk_companion.py:359 |
-| `_lively_pref` | src/tessellate/core/desk_companion.py:857 |
-| `_log_placed` | src/tessellate/core/desk_companion.py:764 |
+| `_follow` | src/tessellate/core/desk_companion.py:2029 |
+| `_linux_areas` | src/tessellate/core/desk_companion.py:371 |
+| `_lively_pref` | src/tessellate/core/desk_companion.py:869 |
+| `_log_placed` | src/tessellate/core/desk_companion.py:776 |
 | `_look_answer` | src/tessellate/core/desk_companion.py:251 |
-| `_look_in_force` | src/tessellate/core/desk_companion.py:301 |
+| `_look_in_force` | src/tessellate/core/desk_companion.py:313 |
 | `_look_label` | src/tessellate/core/desk_companion.py:295 |
+| `_motion_label` | src/tessellate/core/desk_companion.py:301 |
 | `_motion_of` | src/tessellate/core/desk_companion.py:265 |
 | `_pref` | src/tessellate/core/desk_companion.py:233 |
-| `_read_back` | src/tessellate/core/desk_companion.py:752 |
-| `_screen_area` | src/tessellate/core/desk_companion.py:463 |
+| `_read_back` | src/tessellate/core/desk_companion.py:764 |
+| `_screen_area` | src/tessellate/core/desk_companion.py:475 |
 | `_set_pref` | src/tessellate/core/desk_companion.py:245 |
-| `_system_dpi` | src/tessellate/core/desk_companion.py:349 |
-| `attach` | src/tessellate/core/desk_companion.py:1982 |
-| `carry_due` | src/tessellate/core/desk_companion.py:2054 |
-| `clamp_corner` | src/tessellate/core/desk_companion.py:479 |
-| `clean_size` | src/tessellate/core/desk_companion.py:782 |
-| `companion_ex_style` | src/tessellate/core/desk_companion.py:553 |
+| `_system_dpi` | src/tessellate/core/desk_companion.py:361 |
+| `attach` | src/tessellate/core/desk_companion.py:1994 |
+| `carry_due` | src/tessellate/core/desk_companion.py:2066 |
+| `clamp_corner` | src/tessellate/core/desk_companion.py:491 |
+| `clean_size` | src/tessellate/core/desk_companion.py:794 |
+| `companion_ex_style` | src/tessellate/core/desk_companion.py:565 |
 | `companion_options` | src/tessellate/core/desk_companion.py:194 |
 | `enabled` | src/tessellate/core/desk_companion.py:241 |
 | `figure_key` | src/tessellate/core/desk_companion.py:275 |
-| `hit_script` | src/tessellate/core/desk_companion.py:794 |
-| `monitor_areas` | src/tessellate/core/desk_companion.py:403 |
-| `monitor_for` | src/tessellate/core/desk_companion.py:501 |
-| `mouse_down` | src/tessellate/core/desk_companion.py:615 |
-| `overlay_support` | src/tessellate/core/desk_companion.py:1950 |
-| `panel_corner` | src/tessellate/core/desk_companion.py:488 |
-| `panel_placement` | src/tessellate/core/desk_companion.py:513 |
-| `physical_rect` | src/tessellate/core/desk_companion.py:591 |
-| `pick_area` | src/tessellate/core/desk_companion.py:451 |
-| `place_on_screen` | src/tessellate/core/desk_companion.py:695 |
-| `place_physical` | src/tessellate/core/desk_companion.py:721 |
-| `press_outside` | src/tessellate/core/desk_companion.py:619 |
-| `raise_on_desktop` | src/tessellate/core/desk_companion.py:635 |
-| `shutdown` | src/tessellate/core/desk_companion.py:2091 |
-| `to_logical` | src/tessellate/core/desk_companion.py:330 |
-| `tray_menu_item` | src/tessellate/core/desk_companion.py:2099 |
-| `window_handle` | src/tessellate/core/desk_companion.py:575 |
-| `work_area` | src/tessellate/core/desk_companion.py:381 |
+| `hit_script` | src/tessellate/core/desk_companion.py:806 |
+| `monitor_areas` | src/tessellate/core/desk_companion.py:415 |
+| `monitor_for` | src/tessellate/core/desk_companion.py:513 |
+| `mouse_down` | src/tessellate/core/desk_companion.py:627 |
+| `overlay_support` | src/tessellate/core/desk_companion.py:1962 |
+| `panel_corner` | src/tessellate/core/desk_companion.py:500 |
+| `panel_placement` | src/tessellate/core/desk_companion.py:525 |
+| `physical_rect` | src/tessellate/core/desk_companion.py:603 |
+| `pick_area` | src/tessellate/core/desk_companion.py:463 |
+| `place_on_screen` | src/tessellate/core/desk_companion.py:707 |
+| `place_physical` | src/tessellate/core/desk_companion.py:733 |
+| `press_outside` | src/tessellate/core/desk_companion.py:631 |
+| `raise_on_desktop` | src/tessellate/core/desk_companion.py:647 |
+| `shutdown` | src/tessellate/core/desk_companion.py:2103 |
+| `to_logical` | src/tessellate/core/desk_companion.py:342 |
+| `tray_menu_item` | src/tessellate/core/desk_companion.py:2111 |
+| `window_handle` | src/tessellate/core/desk_companion.py:587 |
+| `work_area` | src/tessellate/core/desk_companion.py:393 |
 
 ### src/tessellate/core/desktop_dialog.py (2)
 
@@ -25071,19 +25072,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_Markdown` | src/tessellate/core/webclip.py:326 |
 | `_Node` | src/tessellate/core/webclip.py:182 |
 | `_Tree` | src/tessellate/core/webclip.py:192 |
-| `_descendants` | src/tessellate/core/webclip.py:411 |
+| `_descendants` | src/tessellate/core/webclip.py:429 |
 | `_link_text` | src/tessellate/core/webclip.py:260 |
 | `_main` | src/tessellate/core/webclip.py:282 |
 | `_new_session` | src/tessellate/core/webclip.py:68 |
-| `_read` | src/tessellate/core/webclip.py:420 |
+| `_read` | src/tessellate/core/webclip.py:438 |
 | `_safe_href` | src/tessellate/core/webclip.py:311 |
 | `_score` | src/tessellate/core/webclip.py:268 |
 | `_score_deep` | src/tessellate/core/webclip.py:307 |
 | `_text` | src/tessellate/core/webclip.py:254 |
 | `clean_url` | src/tessellate/core/webclip.py:78 |
-| `extract` | src/tessellate/core/webclip.py:433 |
+| `extract` | src/tessellate/core/webclip.py:451 |
 | `fetch_page` | src/tessellate/core/webclip.py:83 |
-| `note_content` | src/tessellate/core/webclip.py:460 |
+| `note_content` | src/tessellate/core/webclip.py:478 |
 
 ### src/tessellate/core/window_hook.py (4)
 
@@ -25286,7 +25287,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_version` | src/tessellate/entry/link_offers.py:107 |
 | `offers` | src/tessellate/entry/link_offers.py:194 |
 
-### src/tessellate/entry/link_wording.py (15)
+### src/tessellate/entry/link_wording.py (17)
 
 | Name | File:line |
 |---|---|
@@ -25294,14 +25295,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `PairNote` | src/tessellate/entry/link_wording.py:106 |
 | `_and` | src/tessellate/entry/link_wording.py:246 |
 | `_at_start` | src/tessellate/entry/link_wording.py:133 |
-| `_close_in_time` | src/tessellate/entry/link_wording.py:287 |
+| `_close_in_time` | src/tessellate/entry/link_wording.py:292 |
+| `_clues` | src/tessellate/entry/link_wording.py:307 |
 | `_mentions` | src/tessellate/entry/link_wording.py:220 |
+| `_name_candidates` | src/tessellate/entry/link_wording.py:250 |
 | `_names` | src/tessellate/entry/link_wording.py:142 |
-| `_shared_names` | src/tessellate/entry/link_wording.py:250 |
+| `_shared_names` | src/tessellate/entry/link_wording.py:263 |
 | `_shared_tags` | src/tessellate/entry/link_wording.py:236 |
-| `_shared_words` | src/tessellate/entry/link_wording.py:274 |
+| `_shared_words` | src/tessellate/entry/link_wording.py:279 |
 | `is_generic` | src/tessellate/entry/link_wording.py:198 |
-| `specific_reason` | src/tessellate/entry/link_wording.py:302 |
+| `specific_reason` | src/tessellate/entry/link_wording.py:332 |
 | `strength_word` | src/tessellate/entry/link_wording.py:191 |
 | `title` | src/tessellate/entry/link_wording.py:211 |
 | `tokens` | src/tessellate/entry/link_wording.py:118 |
@@ -25476,15 +25479,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `section_text` | src/tessellate/entry/meetings.py:249 |
 | `strip_cite` | src/tessellate/entry/meetings.py:171 |
 
-### src/tessellate/entry/mentions.py (5)
+### src/tessellate/entry/mentions.py (9)
 
 | Name | File:line |
 |---|---|
-| `backlink_rows` | src/tessellate/entry/mentions.py:146 |
-| `backlink_spans` | src/tessellate/entry/mentions.py:119 |
-| `mention_pattern` | src/tessellate/entry/mentions.py:103 |
-| `names_label` | src/tessellate/entry/mentions.py:112 |
-| `sentence_around` | src/tessellate/entry/mentions.py:40 |
+| `_ends_sentence` | src/tessellate/entry/mentions.py:40 |
+| `_left_edge` | src/tessellate/entry/mentions.py:44 |
+| `_right_edge` | src/tessellate/entry/mentions.py:52 |
+| `_tidied` | src/tessellate/entry/mentions.py:62 |
+| `backlink_rows` | src/tessellate/entry/mentions.py:147 |
+| `backlink_spans` | src/tessellate/entry/mentions.py:120 |
+| `mention_pattern` | src/tessellate/entry/mentions.py:104 |
+| `names_label` | src/tessellate/entry/mentions.py:113 |
+| `sentence_around` | src/tessellate/entry/mentions.py:78 |
 
 ### src/tessellate/entry/moving.py (4)
 
@@ -25695,23 +25702,24 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `undismiss` | src/tessellate/entry/tidy.py:709 |
 | `undo` | src/tessellate/entry/tidy.py:1081 |
 
-### src/tessellate/entry/timewords.py (13)
+### src/tessellate/entry/timewords.py (14)
 
 | Name | File:line |
 |---|---|
 | `Mention` | src/tessellate/entry/timewords.py:62 |
 | `_add_months` | src/tessellate/entry/timewords.py:77 |
-| `_clock` | src/tessellate/entry/timewords.py:258 |
+| `_clock` | src/tessellate/entry/timewords.py:271 |
 | `_count` | src/tessellate/entry/timewords.py:88 |
 | `_day_of_month` | src/tessellate/entry/timewords.py:119 |
 | `_happened` | src/tessellate/entry/timewords.py:213 |
+| `_hour24` | src/tessellate/entry/timewords.py:258 |
 | `_monday` | src/tessellate/entry/timewords.py:73 |
 | `_offset` | src/tessellate/entry/timewords.py:187 |
 | `_weekday` | src/tessellate/entry/timewords.py:220 |
 | `_weekday_late` | src/tessellate/entry/timewords.py:125 |
-| `_with_clock` | src/tessellate/entry/timewords.py:283 |
+| `_with_clock` | src/tessellate/entry/timewords.py:287 |
 | `_written_date` | src/tessellate/entry/timewords.py:107 |
-| `find` | src/tessellate/entry/timewords.py:304 |
+| `find` | src/tessellate/entry/timewords.py:308 |
 
 ### src/tessellate/entry/topics.py (10)
 
@@ -26401,7 +26409,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20563)
+## Tests (20564)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28545,7 +28553,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_suggestions_inbox_kg9.py | 20 |
 | tests/test_suggestions_reads_ids.py | 1 |
 | tests/test_support_email.py | 5 |
-| tests/test_surface_templates.py | 8 |
+| tests/test_surface_templates.py | 9 |
 | tests/test_svg_paint_attributes.py | 2 |
 | tests/test_sweep_1004_deep_json.py | 3 |
 | tests/test_sweep_1004_inbox_bounds.py | 3 |
