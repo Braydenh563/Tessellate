@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2705, CSS sections 523, backend routes 671, backend modules 10177, test files 2494, tests 20551, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2705, CSS sections 523, backend routes 671, backend modules 10177, test files 2494, tests 20553, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -12903,15 +12903,15 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/audit/export.csv` | GET | `audit_export_csv` | src/tessellate/api/routes_settings.py:1892 |
 | `/auto` | PUT | `tidy_auto` | src/tessellate/api/routes_tidy.py:60 |
 | `/auto-session` | POST | `auto_session` | src/tessellate/api/routes_auth.py:1153 |
-| `/backups` | GET | `list_backups` | src/tessellate/api/routes_backups.py:123 |
-| `/backups` | POST | `backup_now` | src/tessellate/api/routes_backups.py:132 |
-| `/backups/bundle` | POST | `export_bundle` | src/tessellate/api/routes_backups.py:278 |
-| `/backups/bundle/restore` | POST | `restore_bundle` | src/tessellate/api/routes_backups.py:319 |
-| `/backups/integrity` | GET | `integrity_at_start` | src/tessellate/api/routes_backups.py:100 |
-| `/backups/restore` | POST | `restore_backup` | src/tessellate/api/routes_backups.py:214 |
-| `/backups/retention` | PUT | `set_retention` | src/tessellate/api/routes_backups.py:154 |
-| `/backups/summary` | GET | `backup_summary` | src/tessellate/api/routes_backups.py:112 |
-| `/backups/{name:path}` | DELETE | `delete_backup` | src/tessellate/api/routes_backups.py:249 |
+| `/backups` | GET | `list_backups` | src/tessellate/api/routes_backups.py:124 |
+| `/backups` | POST | `backup_now` | src/tessellate/api/routes_backups.py:133 |
+| `/backups/bundle` | POST | `export_bundle` | src/tessellate/api/routes_backups.py:279 |
+| `/backups/bundle/restore` | POST | `restore_bundle` | src/tessellate/api/routes_backups.py:320 |
+| `/backups/integrity` | GET | `integrity_at_start` | src/tessellate/api/routes_backups.py:101 |
+| `/backups/restore` | POST | `restore_backup` | src/tessellate/api/routes_backups.py:215 |
+| `/backups/retention` | PUT | `set_retention` | src/tessellate/api/routes_backups.py:155 |
+| `/backups/summary` | GET | `backup_summary` | src/tessellate/api/routes_backups.py:113 |
+| `/backups/{name:path}` | DELETE | `delete_backup` | src/tessellate/api/routes_backups.py:250 |
 | `/begin` | POST | `begin` | src/tessellate/api/routes_hello.py:216 |
 | `/bin/{kind}/{item_id}/restore` | POST | `restore_from_bin` | src/tessellate/api/routes_library.py:1099 |
 | `/board-library` | GET | `list_library` | src/tessellate/api/routes_board_library.py:539 |
@@ -20592,22 +20592,22 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `BundleBody` | src/tessellate/api/routes_backups.py:266 |
-| `RestoreBody` | src/tessellate/api/routes_backups.py:210 |
+| `BundleBody` | src/tessellate/api/routes_backups.py:267 |
+| `RestoreBody` | src/tessellate/api/routes_backups.py:211 |
 | `RetentionBody` | src/tessellate/api/routes_backups.py:42 |
-| `_jobs_held` | src/tessellate/api/routes_backups.py:173 |
-| `_recheck_data_folder` | src/tessellate/api/routes_backups.py:197 |
+| `_jobs_held` | src/tessellate/api/routes_backups.py:174 |
+| `_recheck_data_folder` | src/tessellate/api/routes_backups.py:198 |
 | `_retention` | src/tessellate/api/routes_backups.py:38 |
-| `_unlink_quietly` | src/tessellate/api/routes_backups.py:270 |
-| `backup_now` | src/tessellate/api/routes_backups.py:133 |
-| `backup_summary` | src/tessellate/api/routes_backups.py:113 |
-| `delete_backup` | src/tessellate/api/routes_backups.py:250 |
-| `export_bundle` | src/tessellate/api/routes_backups.py:279 |
-| `integrity_at_start` | src/tessellate/api/routes_backups.py:101 |
-| `list_backups` | src/tessellate/api/routes_backups.py:124 |
-| `restore_backup` | src/tessellate/api/routes_backups.py:215 |
-| `restore_bundle` | src/tessellate/api/routes_backups.py:320 |
-| `set_retention` | src/tessellate/api/routes_backups.py:155 |
+| `_unlink_quietly` | src/tessellate/api/routes_backups.py:271 |
+| `backup_now` | src/tessellate/api/routes_backups.py:134 |
+| `backup_summary` | src/tessellate/api/routes_backups.py:114 |
+| `delete_backup` | src/tessellate/api/routes_backups.py:251 |
+| `export_bundle` | src/tessellate/api/routes_backups.py:280 |
+| `integrity_at_start` | src/tessellate/api/routes_backups.py:102 |
+| `list_backups` | src/tessellate/api/routes_backups.py:125 |
+| `restore_backup` | src/tessellate/api/routes_backups.py:216 |
+| `restore_bundle` | src/tessellate/api/routes_backups.py:321 |
+| `set_retention` | src/tessellate/api/routes_backups.py:156 |
 | `storage_location` | src/tessellate/api/routes_backups.py:47 |
 
 ### src/tessellate/api/routes_bench.py (13)
@@ -26397,7 +26397,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20551)
+## Tests (20553)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28523,7 +28523,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_status_bar_grammar.py | 5 |
 | tests/test_stop_discards_write.py | 5 |
 | tests/test_stop_reaches_the_model.py | 3 |
-| tests/test_storage_footprint.py | 5 |
+| tests/test_storage_footprint.py | 7 |
 | tests/test_store_module.py | 4 |
 | tests/test_stray_paste_720.py | 3 |
 | tests/test_stream_turn_helpers.py | 4 |
