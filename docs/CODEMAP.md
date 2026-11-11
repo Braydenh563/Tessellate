@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10178, test files 2496, tests 20568, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10178, test files 2497, tests 20574, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -5981,9 +5981,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `codeFamilyFor` | frontend/js/lightbox-view.js:2446 |
-| `codeScanner` | frontend/js/lightbox-view.js:2427 |
-| `highlightCodeInto` | frontend/js/lightbox-view.js:2400 |
+| `codeFamilyFor` | frontend/js/lightbox-view.js:2472 |
+| `codeScanner` | frontend/js/lightbox-view.js:2453 |
+| `highlightCodeInto` | frontend/js/lightbox-view.js:2426 |
 | `lightboxZoomFactor` | frontend/js/lightbox-view.js:38 |
 | `openLightbox` | frontend/js/lightbox-view.js:44 |
 
@@ -17252,8 +17252,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3618 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3770 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3620 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3772 |
 
 ### src/tessellate/ai/help_words.py (3)
 
@@ -26401,7 +26401,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20568)
+## Tests (20574)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27751,6 +27751,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_library_tab_leaves_board.py | 1 |
 | tests/test_library_visit_cost.py | 3 |
 | tests/test_lightbox.py | 22 |
+| tests/test_lightbox_page_field_1694.py | 5 |
 | tests/test_lightbox_pinch_1694.py | 2 |
 | tests/test_like_escaping.py | 5 |
 | tests/test_line_clipboard.py | 5 |
@@ -27800,7 +27801,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_make_plan.py | 21 |
 | tests/test_manage_lists_504.py | 5 |
 | tests/test_manual_entry_points.py | 3 |
-| tests/test_manual_parity.py | 31 |
+| tests/test_manual_parity.py | 32 |
 | tests/test_map_actions_clear_of_label.py | 1 |
 | tests/test_map_add_speed.py | 6 |
 | tests/test_map_audio.py | 4 |
