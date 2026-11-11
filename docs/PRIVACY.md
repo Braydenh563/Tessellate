@@ -27,7 +27,10 @@ computer or your own network is refused, not warned about. The check runs when
 you set the address and again when the app builds its client at startup, so a
 hand-edited `preferences.json` or a restored backup cannot quietly route your
 notes somewhere else. Turning the lock off is a deliberate click, for people
-who want a hosted API.
+who want a hosted API. Its API key is kept in the operating system's protected
+store (Windows DPAPI, the macOS Keychain or the Linux Secret Service), or where
+there is none in an owner-only file under `secrets/` in the data folder, never
+in `preferences.json` and never in a backup.
 
 The provider is an address you control. It defaults to Ollama on this machine,
 and the OpenAI-compatible option defaults to `http://localhost:1234/v1`. Point
@@ -46,12 +49,19 @@ use, and none of them is your notes:
 | --- | --- | --- |
 | Model downloads | You press Download in Settings, Models | The model name, to Ollama's registry, or to Hugging Face for an `hf.co` name. Ollama does the fetching |
 | The search model | Only after a yes: the app asks once, the first time search by meaning is needed (Download or No thanks), and Settings, Search and index holds the switch | The `fastembed` package from PyPI and the ONNX build of `BAAI/bge-small-en-v1.5` from Hugging Face. Until you say yes, search uses keywords and nothing is fetched. `TESSELLATE_NO_AUTO_INSTALL` stops it for good, and an Ollama embedding model avoids it |
-| Optional packages and SearXNG | You press Install in Settings, Packages, or Start SearXNG in Settings, Web search | pip downloads; Run Python files (Pyodide) from GitHub and Tool calling without Ollama (needle) from Hugging Face, both checked against a sha256; SearXNG's source from GitHub |
+| Optional packages and SearXNG | You press Install in Settings, Packages or on a feature's install notice, or Start SearXNG in Settings, Web search | pip downloads from PyPI (among them the Live captions engine `pywhispercpp` and the speaker labels engine `sherpa-onnx`). Pinned files, each checked against a sha256: Run Python files (Pyodide) and the speaker models from GitHub; Tool calling without Ollama (needle) and the Live captions model (`ggml-tiny.en-q5_1.bin`) from Hugging Face; LanguageTool from languagetool.org; the French, German and Spanish spelling packs and the translator from the npm registry, and the translation model from Mozilla's storage. `TESSELLATE_EXTRAS_MIRROR` fetches those files from your own mirror instead. SearXNG's source from GitHub |
 | Web search | Only while Settings, Web search is on, which also covers the reader view and page clipping | Your search words, or the address of the page you open. Never your notes |
 | The update check | Only if you turn on Settings, About, Updates, Check GitHub for a newer version, or press Check for updates | A request to GitHub's releases API, with no data about you. The first start asks once whether to check automatically (in the terminal for `start.sh`, in the app otherwise), and until you answer nothing about updating touches the network, a launcher copy's pull included |
 
 Your notes, your questions and everything the AI writes about them stay on your
 machine in every case. The AI provider is a separate matter, covered above.
+
+An optional package, once installed, works on this computer: LanguageTool and
+the Live captions engine each run as a local program that listens on
+`127.0.0.1` only and stops when idle (10 and 5 minutes), and the spelling packs
+and speaker models are files read from your data folder.
+`TESSELLATE_CAPTIONS_URL`, if you set it, sends caption audio to the server it
+names instead.
 
 ## Proof, from the app's own record
 
@@ -80,7 +90,10 @@ Off until you turn it on in **Settings, Web search**. When it is on:
   *Automatic*, uses it whenever it is running and falls back to DuckDuckGo
   until you have one, so search works either way;
 - the results panel says which engine actually answered each search, so the
-  choice you made in Settings is visible at the moment it applies.
+  choice you made in Settings is visible at the moment it applies;
+- a page read in a chat is kept on this computer for 7 days, so a follow-up
+  can use it without fetching it again. **Keep pages I read for 7 days**, in
+  the same place, turns that off and **Clear kept pages** empties it.
 
 **Opening a page** (the reader view, page clipping and the agent's `read_url`
 tool) is address-checked on every redirect hop, then pinned to the address that

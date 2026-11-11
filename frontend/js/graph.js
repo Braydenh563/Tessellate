@@ -2497,7 +2497,7 @@ function graphPopupShows(node) {
 
 async function openGraphPopup(event, node) {
   event.stopPropagation();
-  if (graphPopupId !== node.id) keepGraphPopupEdit();
+  if (graphPopupId !== node.id && !(await graphPopupMayLeave())) return;
   graphPopupId = node.id;
   graphLate.popupDragged = false;
   //: The open note wears the focus ring (graph-canvas.js `openId`).
@@ -3028,6 +3028,8 @@ function graphPanelRoom() {
 const graphLate = {
   newAt: null,
   popupResize: null,
+  //: The one Discard changes card, while it is up (`graphPopupMayLeave`).
+  leaveAsk: null,
   //: The popup's own placement (INBOX 1413): `popupDragged` once the head has
   //: moved it (it then stays where put until closed), `popupDrag` the live gesture.
   popupDragged: false,
@@ -3302,7 +3304,7 @@ async function showTopicInGraph(entryId) {
     toast("That note's topic is not on the graph right now: a filter or the view may be hiding it.", "info");
     return;
   }
-  closeGraphPopup();
+  if (!(await closeGraphPopup())) return;
   gcOpenTopic(topic);
   const members = gcTopicMembers(topic);
   if (members.length) fitGraphToView(gcTab.svg, gcTab.zoom, members, gcTab.dims.w, gcTab.dims.h);
@@ -3438,9 +3440,9 @@ function graphPopupActionList(entry) {
       word: "Open",
       title: "Open this note in the Notes tab",
       primary: true,
-      run: () => {
+      run: async () => {
         const id = entry.id;
-        closeGraphPopup();
+        if (!(await closeGraphPopup())) return;
         flashEntry(id);
       },
     },
@@ -3459,7 +3461,7 @@ function graphPopupActionList(entry) {
         // Reuse the existing highlight pass by searching for these ids.
         graphHighlightIds = new Set(related.map((r) => r.id).concat(entry.id));
         applyGraphHighlight();
-        closeGraphPopup();
+        if (!(await closeGraphPopup())) return;
         toast(`Highlighted ${related.length} similar note${related.length === 1 ? "" : "s"}.`);
       },
     },
@@ -3475,8 +3477,8 @@ function graphPopupActionList(entry) {
       title: tracingFrom
         ? "Trace to here: find how this note connects to the one you started from"
         : "Trace from here: start tracing a path from this note",
-      run: () => {
-        closeGraphPopup();
+      run: async () => {
+        if (!(await closeGraphPopup())) return;
         setTraceEnd(tracingFrom ? "to" : "from", entry.id);
         if (!tracingFrom) toast("Now pick the other note, use Trace to here.");
       },
@@ -3498,11 +3500,11 @@ function graphPopupActionList(entry) {
       word: "Focus on this note",
       short: "Focus",
       title: "Focus: show only this note and its neighbours",
-      run: () => {
+      run: async () => {
+        if (!(await closeGraphPopup())) return;
         graphFocusModeId = entry.id;
         recordTabVisit("graph", `focus:${entry.id}`);
         $("graph-focus-clear")?.classList.remove("hidden");
-        closeGraphPopup();
         renderGraph();
         toast("Focus Mode active. Showing local neighborhood.");
       },
@@ -3534,8 +3536,8 @@ function graphPopupActionList(entry) {
       icon: "link",
       word: "Link",
       title: "Link: start linking this note to another",
-      run: () => {
-        closeGraphPopup();
+      run: async () => {
+        if (!(await closeGraphPopup())) return;
         beginOrCompleteLink(entry);
         toast("Now click another note on the map to link them.");
       },
@@ -3546,8 +3548,8 @@ function graphPopupActionList(entry) {
       icon: "alarm",
       word: "Remind me",
       title: "Remind me about this note",
-      run: () => {
-        closeGraphPopup();
+      run: async () => {
+        if (!(await closeGraphPopup())) return;
         switchTab("reminders");
         $("reminder-text").value = `Follow up: ${stripFrontmatter(entry.content).trim().slice(0, 60)}`;
         setDue(defaultDueValue()); // keeps the visible date/time fields in step
@@ -3569,7 +3571,7 @@ function graphPopupActionList(entry) {
         }).catch((e) => toast(e.message, true));
         if (flipped) pushEntryPutUndo(entry.id, was ? "Removed from Favourites" : "Added to Favourites", { pinned: was }, { pinned: !was });
         toast(entry.pinned ? "Removed from Favourites." : "Added to Favourites.");
-        closeGraphPopup();
+        if (!(await closeGraphPopup())) return;
         await loadEntries().catch(() => {});
         renderGraph();
       },
@@ -3583,7 +3585,7 @@ function graphPopupActionList(entry) {
       danger: true,
       run: async () => {
         if (!(await confirmDialog("Move this note to the bin?"))) return;
-        closeGraphPopup();
+        if (!(await closeGraphPopup())) return;
         try {
           await binNoteWithUndo(entry);
         } catch (e) {
@@ -3670,8 +3672,8 @@ try {
 }
 
 //: The keyboard stays on the map: Esc, or Close from inside the popup, used to leave focus on <body> (audit 1029 G19).
-function closeGraphPopup(returnFocus = false) {
-  keepGraphPopupEdit();
+async function closeGraphPopup(returnFocus = false) {
+  if (!(await graphPopupMayLeave())) return false;
   const held = returnFocus || $("graph-popup").contains(document.activeElement);
   graphPopupId = null;
   graphLate.popupDragged = false;
@@ -3680,6 +3682,7 @@ function closeGraphPopup(returnFocus = false) {
   $("graph-popup").classList.remove("graph-popup-away");
   clearGraphKeyboardFocus();
   if (held) $("graph-box")?.focus({ preventScroll: true });
+  return true;
 }
 
 //: **Keyboard focus ends when the keyboard leaves.** `focusGraphNode` is
@@ -3706,10 +3709,11 @@ $("graph-box")?.addEventListener("pointerdown", () => {
 
 //: **One guard for every way out of the popup** (audit G2: Escape, the X, a
 //: click on the map and a click on another note all dropped unsaved typing).
-//: `closeGraphPopup` and `openGraphPopup` (another note) both call this first.
-//: A dirty popup is saved on the way out, as the document editor autosaves, and
-//: Ctrl+Z undoes it (`pushEntryPutUndo`); a save that fails hands the text back
-//: on the clipboard instead of dropping it.
+//: The owner, 2026-11-11 (INBOX 1769): "I didnt even save it, I just clicked
+//: off the popup and it saved ... it should have canceled unless I pressed
+//: save". So leaving saves nothing: a dirty popup asks first, Discard changes
+//: or Keep editing, and only the Save button writes. `closeGraphPopup` and
+//: `openGraphPopup` (another note) both ask here first.
 function graphPopupIsDirty() {
   if (graphPopupId === null || $("graph-popup").classList.contains("hidden")) return false;
   if (graphPopupClean.content === "Loading…") return false;
@@ -3718,12 +3722,24 @@ function graphPopupIsDirty() {
   );
 }
 
-function keepGraphPopupEdit() {
-  if (!graphPopupIsDirty()) return;
-  saveGraphPopup({ leaving: true });
+//: True when the popup may go: nothing changed, or the person chose Discard
+//: changes. Two ways out at once share the one card.
+async function graphPopupMayLeave() {
+  if (!graphPopupIsDirty()) return true;
+  if (!graphLate.leaveAsk) {
+    graphLate.leaveAsk = confirmDialog("Discard your changes to this note?", {
+      confirmLabel: "Discard changes",
+      cancelLabel: "Keep editing",
+    }).finally(() => {
+      graphLate.leaveAsk = null;
+    });
+  }
+  const leave = await graphLate.leaveAsk;
+  if (!leave) $("graph-popup-content")?.focus({ preventScroll: true });
+  return leave;
 }
 
-async function saveGraphPopup({ leaving = false } = {}) {
+async function saveGraphPopup() {
   if (graphPopupId === null) return;
   const id = graphPopupId;
   const status = $("graph-popup-status");
@@ -3744,7 +3760,6 @@ async function saveGraphPopup({ leaving = false } = {}) {
     });
     pushEntryPutUndo(id, "Edited a note on the map", { content: was.content, tags: wasTags }, { content, tags });
     if (typeof offerWikiRename === "function") offerWikiRename(id, saved);
-    if (leaving) toast("Saved your edit to the note.");
     //: The popup may have moved on to another note while the request ran.
     if (graphPopupId === id) {
       status.textContent = "Saved.";
@@ -3755,18 +3770,10 @@ async function saveGraphPopup({ leaving = false } = {}) {
     }
     await loadEntries().catch(() => {});
     renderGraph(); // content/tags may change what the map shows
-    if (!leaving) {
-      setTimeout(() => {
-        if (graphPopupId === id) closeGraphPopup();
-      }, 600);
-    }
+    setTimeout(() => {
+      if (graphPopupId === id) closeGraphPopup();
+    }, 600);
   } catch (error) {
-    if (leaving) {
-      toastAction(`Couldn't save your edit: ${error.message}`, "Copy text", () => {
-        navigator.clipboard?.writeText(content).catch(() => {});
-      });
-      return;
-    }
     status.textContent = error.message;
     status.classList.add("error");
   }
@@ -3779,8 +3786,8 @@ async function saveGraphPopup({ leaving = false } = {}) {
 
 let graphNewLinkFrom = null; // note id the new one should link to, if any
 
-function openGraphNewNote(event, linkFrom = null) {
-  closeGraphPopup();
+async function openGraphNewNote(event, linkFrom = null) {
+  if (!(await closeGraphPopup())) return;
   graphNewLinkFrom = linkFrom;
   const popup = $("graph-new");
   if (popup.classList.contains("hidden")) graphLate.newOpener = document.activeElement;

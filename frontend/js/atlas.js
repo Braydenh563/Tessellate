@@ -2189,11 +2189,19 @@ atlasHandProps.front = function (layer) {
   const shoot = atlasGroup(sky, "atl-ds-shoot");
   atlasMake("path", { class: "atl-ds-trail", d: "M64 -2L52 6" }, shoot);
   atlasSpark(shoot, 52, 6, 1.8, "atl-ds-twinkle");
+  //: **The nap's blanket drapes** (INBOX 1770, the owner: "idk what Im looking at": it was a flat box over the torso with
+  //: rows of dashes and a gold diamond): its top edge climbs each shoulder and dips at the neck, a turned-down cuff runs
+  //: along it with the shadow it throws, soft creases fall from the shoulders to the hem, and the hem scallops over the
+  //: feet. The pillow under the head is in the back layer (`atlasHandProps.pillow`).
   const blanket = atlasGroup(layer, "nmp nmp-blanket");
-  atlasMake("path", { class: "atl-ds-blanket", d: "M3 64Q14 56 31 58.5Q48 56 59 64Q62 76 58 86H4Q0 76 3 64Z" }, blanket);
-  atlasMake("path", { class: "atl-ds-fold", d: "M3 64Q14 56 31 58.5Q48 56 59 64" }, blanket);
-  atlasMake("path", { class: "atl-ds-stitch", d: "M9 72H14M19 75H24M29 72H34M39 75H44M49 72H54M12 81H17M26 81H31M40 81H45" }, blanket);
-  atlasSpark(blanket, 48, 78, 2, "atl-ds-twinkle atl-ds-twinkle-1");
+  atlasMake("path", { class: "atl-ds-blanket", d: "M8 68C8 57 14 50 24 47.6Q28 46.6 32 47.4Q36 46.6 40 47.6C50 50 56 57 56 68C58 74 59 80 57 85.4Q50 88.6 44 86.6Q37 89.4 31 87.2Q25 89.4 18 86.6Q12 88.6 5 85.4C3 80 4 74 8 68Z" }, blanket);
+  atlasMake("path", { class: "atl-ds-cuff", d: "M8.4 64.4C9 56.8 14.6 51 24 48.6Q28 47.6 32 48.4Q36 47.6 40 48.6C49.4 51 55 56.8 55.6 64.4Q49 60.4 42 59.2Q36 58.2 32 58.8Q28 58.2 22 59.2Q15 60.4 8.4 64.4Z" }, blanket);
+  atlasMake("path", { class: "atl-ds-fold", d: "M8.4 64.4Q15 60.4 22 59.2Q28 58.2 32 58.8Q36 58.2 42 59.2Q49 60.4 55.6 64.4" }, blanket);
+  atlasMake("path", { class: "atl-ds-crease", d: "M15 66Q13 76 10.6 84M24 63Q22.6 75 21 86M40 63Q41.4 75 43 86M49 66Q51 76 53.4 84" }, blanket);
+  //: Two small z's over the sleeper's head, drifting up one after the other (atlas-lazy.css, `atl-nap-z`).
+  const napz = atlasGroup(layer, "nmp nmp-napz");
+  atlasMake("path", { class: "atl-nap-z atl-nap-z-0", d: "M45 11H50.4L45 17.4H50.4" }, napz);
+  atlasMake("path", { class: "atl-nap-z atl-nap-z-1", d: "M52 4.4H56.6L52 9.8H56.6" }, napz);
   const plant = atlasGroup(layer, "nmp nmp-plant");
   atlasMake("path", { class: "atl-ds-pot", d: "M3 78H15L14 87H4Z" }, plant);
   atlasMake("path", { class: "atl-ds-pot-rim", d: "M2 76.6H16V78.6H2Z" }, plant);
@@ -2237,6 +2245,14 @@ atlasHandProps.mat = function (layer) {
   atlasMake("rect", { class: "atl-ds-mat", x: 0, y: 83, width: 62, height: 5, rx: 2.5 }, mat);
   atlasMake("path", { class: "atl-ds-mat-line", d: "M6 85.5H56" }, mat);
   return mat;
+};
+//: The nap's pillow, behind the head and the shoulders (INBOX 1770): a plump rounded cushion the head sinks into, with a
+//: pinched seam at each end; the blanket's cuff (`atlasHandProps.front`) lies over its lower edge.
+atlasHandProps.pillow = function (layer) {
+  const pillow = atlasGroup(layer, "nmp nmp-pillow");
+  atlasMake("path", { class: "atl-ds-pillow", d: "M12 36Q10.6 27.6 19 26.2Q32 24 45 26.2Q53.4 27.6 52 36Q53 44.4 45 45.4Q32 47.2 19 45.4Q11 44.4 12 36Z" }, pillow);
+  atlasMake("path", { class: "atl-ds-pillow-seam", d: "M14.6 30.4Q17 34 14.6 41.2M49.4 30.4Q47 34 49.4 41.2" }, pillow);
+  return pillow;
 };
 
 //: The head: mane, ears, wisps and skin in the edge layer; the mane's
@@ -2457,6 +2473,7 @@ function atlasBody(parent, id, props, look, route = null) {
       atlasCoilProp(back.fill);
       atlasCoilProp.seats(back.fill);
       atlasHandProps.mat(back.fill);
+      atlasHandProps.pillow(back.fill);
     }
     //: The mermaid lower body (the feminine look): one ribbon from the
     //: hips sweeping down to the left and curling, in the tail's paint,

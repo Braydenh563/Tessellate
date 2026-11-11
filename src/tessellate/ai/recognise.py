@@ -101,6 +101,10 @@ from tessellate.ai.recognise_windows import (
 
 #: Re-exported for callers that read these as `recognise.NAME`.
 __all__ = [
+    "AT_THE_TIME_WORD",
+    "DROPPED_NOW_WORD",
+    "STALE_TIME_WORD",
+    "THAT_TIME_WORD",
     "AHEAD_DAY_WORDS",
     "LATELY_DAYS",
     "MONTH_NAMES",
@@ -2853,3 +2857,13 @@ def days_apart(text: str) -> int | None:
         return None
     unit = {"d": 1, "w": 7, "f": 14}[found["u"][0].lower()]
     return amount * unit * (-1 if found["d"].lower() in ("before", "earlier", "prior to") else 1)
+
+
+#: Time words true of the day a note was written, read against the note's date by
+#: `composer_stale` (one reader of date words, tests/test_one_reader.py).
+STALE_TIME_WORD = lazy_compile(
+    r"\b(?:now|today|tonight|right now|at the moment|currently|these days|"
+    r"this (?:morning|afternoon|evening|weekend|week|month))\b", re.I)
+THAT_TIME_WORD = lazy_compile(r"\b(?:tonight|this (?:morning|afternoon|evening|weekend|week|month))\b", re.I)
+AT_THE_TIME_WORD = lazy_compile(r"\b(?:right now|at the moment|these days)\b", re.I)
+DROPPED_NOW_WORD = lazy_compile(r"^(?:now|today)\b,?\s+|\s+\b(?:today|currently)\b(?=\W|$)|^currently\s+", re.I)

@@ -6755,7 +6755,7 @@ Link to another note with [[its first few words]]."></textarea>
               </div>
             </details>
             <!-- A split button (INBOX 1520, DESIGN.md): New makes a blank board in one
-                 press; the arrow, built by `wbNewMenuMount`, holds the kinds and templates. -->
+                 press; the arrow, built by `wbNewMenuMount` (boards-gallery.js), holds the kinds and templates. -->
             <div class="split-button" id="wb-boards-new-menu">
               <button id="wb-boards-new" class="small split-button-main" type="button" title="Start an empty canvas you arrange by hand" aria-label="New board"><i class="ph ph-plus ph-lead" aria-hidden="true"></i> <span class="toolbar-word">New</span></button>
               <span id="wb-boards-new-slot" class="split-button-slot"></span>
@@ -7187,6 +7187,7 @@ Link to another note with [[its first few words]]."></textarea>
               <label class="wb-menu-row wb-snap-label" hidden title="Dim every topic outside the selected topic's branch and the path to its trunk"><span><i class="ph ph-circle-half ph-lead" aria-hidden="true"></i>Dim all but the selected branch</span><input type="checkbox" id="wb-map-dim"></label>
               <button type="button" class="wb-menu-item" id="wb-map-theme-item" hidden><i class="ph ph-palette ph-lead" aria-hidden="true"></i><span>How this map looks</span></button>
               <button type="button" class="wb-menu-item" id="wb-map-expand-all" hidden><i class="ph ph-arrows-out-line-vertical ph-lead" aria-hidden="true"></i><span>Open every folded branch</span></button>
+              <button type="button" class="wb-menu-item" id="wb-map-fold-all" hidden title="Show the trunks only (Alt+1)"><i class="ph ph-arrows-in-line-vertical ph-lead" aria-hidden="true"></i><span>Fold every branch</span></button>
               <button type="button" class="wb-menu-item" id="wb-map-filter-item" data-wb-surface="map" hidden title="Dim every topic that does not carry one marker"><i class="ph ph-funnel ph-lead" aria-hidden="true"></i><span>Filter by marker…</span></button>
               <button type="button" class="wb-menu-item" id="wb-map-gantt-item" data-wb-surface="map" hidden title="A bar from start to due for each topic that has both"><i class="ph ph-chart-bar-horizontal ph-lead" aria-hidden="true"></i><span>Gantt chart…</span></button>
               <button type="button" class="wb-menu-item" id="wb-map-stats-item" hidden><i class="ph ph-chart-bar ph-lead" aria-hidden="true"></i><span>What this map is made of</span></button>
@@ -7245,6 +7246,8 @@ Link to another note with [[its first few words]]."></textarea>
               <!-- Study the map (MINDMAP_PLAN decision 36): each branch hidden
                    until recalled, full screen. Maps only. -->
               <button id="wb-map-study" data-wb-surface="map" type="button" class="wb-menu-item" title="Recall what is under each branch before it is shown; your marks are kept for this map on this device"><i class="ph ph-student ph-lead" aria-hidden="true"></i><span>Study the map</span></button>
+              <!-- Build up branch by branch (INBOX 1774): the same shell, the centre first. Maps only. -->
+              <button id="wb-map-build" data-wb-surface="map" type="button" class="wb-menu-item" title="Present the map from the centre out, a branch and a level at a time; the map is not changed"><i class="ph ph-steps ph-lead" aria-hidden="true"></i><span>Build up branch by branch</span></button>
               <!-- Share and save as one submenu (INBOX 1627, the owner: "should you turn some of the things in the other whiteboard top bar menus into sub menus like you did for the arrange one??"). -->
               <div class="wb-menu-section" data-wb-submenu="ph:share-network Share and save" data-wb-submenu-title="Export, put in a note, copy a link or save as a template">
                 <button id="wb-export" data-wb-closes type="button" class="wb-menu-item" title="Export this board"><i class="ph ph-download-simple ph-lead" aria-hidden="true"></i><span>Export…</span></button>
@@ -8384,6 +8387,7 @@ Link to another note with [[its first few words]]."></textarea>
           <div class="wb-side-actions" role="group" aria-label="Map actions">
             <button type="button" class="ghost small" id="wb-side-map-look"><i class="ph ph-palette ph-lead" aria-hidden="true"></i> How this map looks…</button>
             <button type="button" class="ghost small" id="wb-side-map-expand"><i class="ph ph-arrows-out-line-vertical ph-lead" aria-hidden="true"></i> Open every folded branch</button>
+            <button type="button" class="ghost small" id="wb-side-map-fold" title="Show the trunks only (Alt+1)"><i class="ph ph-arrows-in-line-vertical ph-lead" aria-hidden="true"></i> Fold every branch</button>
             <button type="button" class="ghost small" id="wb-side-map-tidy"><i class="ph ph-broom ph-lead" aria-hidden="true"></i> Lay the map out again</button>
           </div>
           <div class="row help-head wb-side-help">
@@ -14518,6 +14522,56 @@ Link to another note with [[its first few words]]."></textarea>
                     the app is a web page and cannot use it directly.
                   </p>
                 </div>
+              </div>
+            </div>
+
+            <!-- A name instead of localhost, and a domain behind a reverse proxy
+                 (the owner, "customise the domain name"). `POST /auth/address-names`;
+                 a new domain asks for the password. Wired in settings-controls.js
+                 (`renderAddressNames`). -->
+            <div class="settings-group" id="account-names-group">
+              <div class="row help-head">
+                <h3 data-synonyms="domain name localhost host address proxy">Address names</h3>
+                <button type="button" class="icon-only ghost small graph-help-toggle"
+                  data-help-for="address-names-help" aria-controls="address-names-help" aria-expanded="false"
+                  title="About address names" aria-label="About address names">
+                  <i class="ph ph-question" aria-hidden="true"></i>
+                </button>
+              </div>
+              <p class="muted">A short name for this computer, and the domain a reverse proxy uses.</p>
+              <div class="help-body hidden" id="address-names-help" role="dialog" aria-label="About address names">
+                <p>
+                  The short name opens the app at <code>name.localhost</code>
+                  on this computer, with no DNS or hosts file. Browsers
+                  answer every <code>.localhost</code> name themselves, and
+                  the app accepts only the one you set, and only from this
+                  computer. It is a new address, so you sign in once and
+                  per-browser settings start fresh. The window and tray use
+                  it from the next launch.
+                </p>
+                <p>
+                  A domain is for a reverse proxy (Caddy, nginx, Traefik)
+                  that ends https and forwards to this app. List the name
+                  the proxy serves, such as <code>notes.example.com</code>,
+                  so the app accepts it. The app does not get a certificate
+                  or open your router; the proxy does that. Adding a domain
+                  asks for your password.
+                </p>
+              </div>
+              <label class="stacked-label" for="account-local-name">Short name on this computer</label>
+              <div class="row">
+                <input id="account-local-name" type="text" maxlength="63" autocomplete="off" spellcheck="false"
+                  placeholder="tessellate">
+                <span class="muted" id="account-local-name-suffix">.localhost</span>
+              </div>
+              <p class="muted text-sm flush hidden" id="account-local-name-env"></p>
+              <label class="stacked-label" for="account-domains">Domain names for a reverse proxy</label>
+              <input id="account-domains" type="text" autocomplete="off" spellcheck="false"
+                placeholder="notes.example.com, memory.example.com">
+              <p class="muted text-sm flush hidden" id="account-domains-env"></p>
+              <div class="row">
+                <button id="account-names-save" class="ghost small" type="button">Save names</button>
+                <span id="account-names-status" class="status" role="status"></span>
               </div>
             </div>
 

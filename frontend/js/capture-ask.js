@@ -694,6 +694,20 @@ async function saveEntry() {
     //: for their own filing, and the first answer used to overwrite the
     //: line the third save had just written (measured, INBOX 432).
     status.dataset.entryId = String(saved.id);
+    //: Undo is on the stack the moment the note exists, not after the list
+    //: refreshes below: Ctrl+Z pressed in that gap found an empty stack and did
+    //: nothing (e2e capture-filing "Undo takes a new note back").
+    pushUndo(
+      "Created a note",
+      async () => {
+        await api(`/entries/${saved.id}`, { method: "DELETE" });
+        await refreshEntries([saved.id]);
+      },
+      async () => {
+        await api(`/entries/${saved.id}/restore`, { method: "POST" });
+        await refreshEntries([saved.id]);
+      }
+    );
     if (saved.filing_state === "pending") watchFiling(saved);
     // The note finally has an id, which is the only thing the staged files
     // were ever waiting for. Not awaited: the composer is already clear and
@@ -711,17 +725,6 @@ async function saveEntry() {
     focusCaptureBox();
     await refreshEntries([saved.id]);
     loadSuggestions(); // new categories → fresher recommended questions
-    pushUndo(
-      "Created a note",
-      async () => {
-        await api(`/entries/${saved.id}`, { method: "DELETE" });
-        await refreshEntries([saved.id]);
-      },
-      async () => {
-        await api(`/entries/${saved.id}/restore`, { method: "POST" });
-        await refreshEntries([saved.id]);
-      }
-    );
     // Saving from Capture leaves you on Capture, with the note you just wrote
     // now somewhere in a list on another sub-tab. Offer to go to it rather
     // than making you switch tabs and hunt (user request). An offer, not a

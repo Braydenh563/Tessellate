@@ -1128,11 +1128,19 @@ def collect() -> dict[str, Report]:
 
 
 def third_party_libraries() -> list[str]:
-    """The Library column of docs/THIRD_PARTY.md's tables."""
+    """The Library column of docs/THIRD_PARTY.md's tables.
+
+    The "Optional downloads" section is skipped: those are never in the
+    repository, so there is no vendored copy to count.
+    """
     names = []
+    downloads = False
     for line in _read(THIRD_PARTY).splitlines():
+        if line.startswith("## "):
+            downloads = line.startswith("## Optional downloads")
         if (
-            line.startswith("| ")
+            not downloads
+            and line.startswith("| ")
             and not line.startswith("| ---")
             and not line.startswith("| Library")
         ):

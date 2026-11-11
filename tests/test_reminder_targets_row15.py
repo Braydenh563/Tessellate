@@ -14,7 +14,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 LIBRARY = (ROOT / "frontend" / "js" / "library.js").read_text(encoding="utf-8")
-BOARDS = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+#: The board code and the Boards & maps gallery split out of it (INBOX 1772).
+BOARDS = "".join((ROOT / "frontend" / "js" / n).read_text(encoding="utf-8") for n in ("whiteboard.js", "boards-gallery.js"))
 
 
 def _soon() -> str:

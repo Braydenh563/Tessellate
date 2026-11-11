@@ -17,6 +17,7 @@ CSS = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8
 BUILDER = (JS / "diagram-builder.js").read_text(encoding="utf-8")
 EMBED = (JS / "diagram-embed.js").read_text(encoding="utf-8")
 JOINS = (JS / "diagram-joins.js").read_text(encoding="utf-8")
+SELECTS = (JS / "sheets-selects.js").read_text(encoding="utf-8")
 TOUCH = (JS / "diagram-touch.js").read_text(encoding="utf-8")
 STEPS = (JS / "diagram-steps.js").read_text(encoding="utf-8")
 MERMAID_JS = (JS / "documents-mermaid.js").read_text(encoding="utf-8")
@@ -69,8 +70,9 @@ def test_r6_3_a_second_arrow_next_to_a_yes_is_already_labelled_no_and_the_other_
 
 
 def test_r6_4_the_connector_menu_hangs_from_its_row_and_each_line_has_its_own_glyph():
-    assert 'joins(S, "menu"' in BUILDER and "openMenuAtPoint(rows" not in BUILDER
-    assert "r.right" in JOINS and "openMenuAtPoint" in JOINS
+    assert '{ anchor: line }' in BUILDER and "openMenuAtPoint(rows" not in BUILDER
+    # Hung from the row's right edge by the recipe (`kebabMenu`'s `anchor`), each kind's glyph riding on its item (`lead`), not matched by index.
+    assert "row.right - box.width" in SELECTS and "lead: () =>" in JOINS and 'querySelectorAll(":scope > .menu-item")' not in JOINS
     assert ".dgm-link" in CSS
     for style in ("dotted", "thick"):
         assert f'.dgm-link[data-style="{style}"]' in CSS, style

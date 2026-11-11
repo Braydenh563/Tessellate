@@ -4470,7 +4470,7 @@ def test_sub_views_whose_read_failed_say_so_instead_of_claiming_empty() -> None:
     gzip ratchet (OPEN.md)."""
     js = "\n".join(
         (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8")
-        for name in ("library.js", "whiteboard.js", "meetings.js")
+        for name in ("library.js", "whiteboard.js", "boards-gallery.js", "meetings.js")
     )
 
     def body(start: str, length: int = 5200) -> str:
@@ -7658,7 +7658,7 @@ def test_a_picked_sidebar_row_keeps_a_row_of_room():
 
 #: Files that still decorate a built menu's rows by index into `:scope > .menu-item`. A glyph on a menu row rides on its
 #: item (`lead`, the kebabMenu recipe), so a regrouped menu keeps it on the right row; these may only fall, never grow.
-INDEX_MATCHED_MENU_ROWS = {"diagram-joins.js", "diagram-builder.js", "diagram-kindbar.js", "library.js"}
+INDEX_MATCHED_MENU_ROWS = {"diagram-builder.js", "diagram-kindbar.js", "library.js"}
 
 
 def test_a_menu_rows_glyph_rides_on_its_item_not_on_its_index() -> None:
@@ -7667,6 +7667,25 @@ def test_a_menu_rows_glyph_rides_on_its_item_not_on_its_index() -> None:
     assert now <= INDEX_MATCHED_MENU_ROWS, f"{sorted(now - INDEX_MATCHED_MENU_ROWS)} match menu rows by index; give the item a `lead` instead"
     assert 'typeof item.lead === "function"' in (js / "sheets-selects.js").read_text(encoding="utf-8")
     assert "`lead`" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+
+
+def test_a_menu_that_belongs_to_a_row_is_a_kebab_menu_with_an_anchor_and_a_choice_marks_its_current_row() -> None:
+    """INBOX 1771 (hub review): the connector row's ⋯ was a hand-drawn opener whose menu a second function placed. The recipe grew one option
+    instead: `kebabMenu(items, label, { anchor })` places the open menu off the anchor's box (`kebabMenu.beside`), and an item's `current`
+    marks the chosen row. A surface draws neither a ⋯ nor a placement of its own."""
+    js = ROOT / "frontend" / "js"
+    selects = (js / "sheets-selects.js").read_text(encoding="utf-8")
+    assert "{ vertical = false, anchor = null } = {}" in selects and "kebabMenu.beside(menu, anchor.getBoundingClientRect(), opener)" in selects
+    assert 'if (item.current) button.setAttribute("aria-current", "true")' in selects
+    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    assert '.action-menu .menu-item[aria-current="true"]' in css
+    design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    assert "{ anchor: element }" in design and "`current`" in design
+    users = {p.name for p in js.glob("*.js") if re.search(r"kebabMenu\.beside\(|\", \{ anchor: ", p.read_text(encoding="utf-8"))}
+    assert users <= {"sheets-selects.js", "diagram-builder.js"}, f"a new row-anchored menu: name it here and measure it ({sorted(users)})"
+    # no second placement: the connector file neither places a menu nor opens one at a point.
+    joins = (js / "diagram-joins.js").read_text(encoding="utf-8")
+    assert "function beside" not in joins and "openMenuAtPoint" not in joins and "escapeMenuToBody" not in joins
 
 
 def test_a_diagram_change_is_one_marked_picture() -> None:

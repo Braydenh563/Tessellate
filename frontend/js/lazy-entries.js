@@ -84,6 +84,8 @@ Object.assign(LAZY_MODULES, {
   chatTurn: ["/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/chat-turn.js"],
   //: A note card's ... menu rows (entry-menu.js): the first press awaits it, a pointer over a card warms it.
   entryMenu: ["/js/entry-menu.js"],
+  //: The Boards & maps gallery on its own (boards-gallery.js; INBOX 1772): it paints the cards before the board code has run. The `library` list carries it too, so the board code, which calls the gallery, always finds it.
+  boardsGallery: [...LAZY_MODULES.libraryList, "/js/boards-gallery.js"],
   //: A board's miniature (map-preview.js): `mapPreview` returns the empty svg and draws into it once this is in.
   mapPreview: ["/js/map-preview.js"],
   //: The palette's rows (`paletteCommands`) and the dashboard's Quick access draw (app-features.js): `renderQuickLinks` is its stand-in.
@@ -117,7 +119,9 @@ installStandIns({
   //: What the Library list, the documents and every surface that names a board call into the board code (D22).
   //: Nobody reads a return value: a function whose answer is read (`wbCommandsLive`, `wbEditorSurfaceById`)
   //: cannot be one, and its caller tests `typeof` instead, meaning "no board is open".
-  boards: ["createNewBoard", "openWhiteboardBoard", "renderLibraryBoardsGallery", "wbMapFromDocument", "wbShowBoardsLanding"],
+  boards: ["createNewBoard", "openWhiteboardBoard", "wbMapFromDocument", "wbShowBoardsLanding", "wbBinBoard", "wbDeleteBoard", "addBoardToNote"],
+  //: The gallery's redraw, asked for by the Library list and the boards' own Reload (boards-gallery.js).
+  boardsGallery: ["renderLibraryBoardsGallery"],
   //: The lock card's offer of a backup when the notebook file is gone (INBOX 1573).
   accountRecovery: ["showRestoreOffer"],
   companionSettings: ["mountBuddyCustom", "mountBuddyActivities", "mountProfileLook", "nameMarkBuddyMakeIt", "nameMarkBuddyHide", "nameMarkBuddyToggle", "nameMarkBuddyCallBack", "nameMarkRepaintAll"],
@@ -334,4 +338,6 @@ warmOnFirst("pointerover", "li[data-id] .menu-wrap", "entryMenu");
 //: A slider fetches the value field on its first hover or focus (a keyboard-only reach too), so its readout becomes typeable (INBOX 1694 c, value-field.js). Range inputs only: a plain number box has no readout to upgrade.
 warmOnFirst("pointerover", "[type=range]", "vf");
 warmOnFirst("focusin", "[type=range]", "vf");
+//: The gallery and the miniature drawer are fetched when the pointer or focus first reaches the Boards & maps sub-tab, so the press finds them in (INBOX 1772). Not the board code: running 2.3 MB just before the press would delay the first card.
+for (const type of ["pointerover", "focusin"]) for (const bundle of ["boardsGallery", "mapPreview"]) warmOnFirst(type, '#library-subtabs [data-target="library-view-whiteboard"]', bundle);
 installStandIns({ chatDocs: ["importChatDocuments", "keepUnreadableChatFile"] });

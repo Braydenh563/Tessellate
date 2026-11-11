@@ -292,7 +292,9 @@ def _timeline(out: _Answer, sentences: list[Sentence], terms: list[str]) -> None
 
 def _earlier(out: _Answer, sentences: list[Sentence], terms: list[str]) -> None:
     """A "latest" question's older notes, newest first, as prose that walks
-    back: "Before that, on 12 September, three workstreams ... [**Q4 roadmap**]"."""
+    back: "Before that, on 12 September, three workstreams ... [**Q4 roadmap**]".
+    Every joiner faces back: `then_on` ("Soon after, on 29 August" under a 12
+    September note) read as forward in time, which the blind panel marked."""
     sentences = _with_context(out, [s for s in sentences if s.kind == "prose" or s.kind.startswith("picture")])
     order = _by_note(sentences)
     order.sort(key=lambda note_id: out.views[note_id].written or date.min, reverse=True)
@@ -301,7 +303,7 @@ def _earlier(out: _Answer, sentences: list[Sentence], terms: list[str]) -> None:
         out.t("para")
         unit = sorted((s for s in sentences if s.note_id == note_id), key=lambda s: s.order)
         if view.written:
-            _joined(out, [("before_that", "then_on", "earlier_on")[i] if i < 3 else "and_on"], unit, terms, view.written)
+            _joined(out, [("before_that", "earlier_on", "earlier_on")[i] if i < 3 else "and_on"], unit, terms, view.written)
         else:
             _quotes(out, unit, terms)
         out.cite(view)

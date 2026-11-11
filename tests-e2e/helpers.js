@@ -48,7 +48,12 @@ async function waitForApp(page) {
         const field = document.getElementById("lock-password");
         const overlay = document.getElementById("lock-overlay");
         if (field && overlay && !overlay.classList.contains("hidden") && field.offsetParent !== null) return "lock";
-        return overlay && overlay.classList.contains("hidden") && localStorage.getItem("token") ? "app" : false;
+        // Not before the boot splash is gone: while it covers the page the
+        // lock overlay is hidden and a token is stored whether that token is
+        // good or not. A stale one (every session ends on a restore) was taken
+        // for "app" in that window, then the page showed the lock screen and
+        // nothing signed in (first-run: 1 run in 6 alone, 3 in 10 under load).
+        return overlay && overlay.classList.contains("hidden") && localStorage.getItem("token") && !document.getElementById("boot-splash") ? "app" : false;
       },
       null,
       { timeout: 20_000 }
@@ -99,7 +104,10 @@ async function captureNote(page, text, { title, tags, category } = {}) {
   // editor (CodeMirror) the way it does for a person, and the save must read
   // what was typed there.
   const live = page.locator('.cm-content[aria-label="New note"]');
-  await ((await live.count()) ? live : box).click();
+  // Re-decided on every attempt: the editor can mount between the check and the click, and the textarea it replaces stays in the page, so a click on it is intercepted by the editor until the attempt is re-aimed at the editor.
+  await expect(async () => {
+    await ((await live.count()) ? live : box).click({ timeout: 2000 });
+  }).toPass({ timeout: 15000 });
   await page.keyboard.insertText(text);
   await expect(box).toHaveValue(text);
   const status = page.locator("#save-status");

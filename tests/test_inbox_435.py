@@ -92,12 +92,12 @@ def test_lazily_loaded_lists_show_placeholders_while_they_load():
     # skeletons.js with every request held 1.5s: 1 of 11 views showed
     # placeholders before (the Timeline); 9 after, the other two answered.
     code = app_js_text() + "\n".join(
-        (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8") for name in ("documents.js", "library.js", "whiteboard.js")
+        (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8") for name in ("documents.js", "library.js", "whiteboard.js", "boards-gallery.js")
     )
     for container, fetch in (
         ('showSkeletons(list, 4, "li");\n  if (!list.children.length', '"/conversations"'),
         ('showSkeletons(sideList, 4, "li");', "loadDocumentsNow(selectId)"),
-        ("showSkeletons(grid, 4);\n  const listed", '"/whiteboard/boards"'),
+        ("showSkeletons(grid, 4);\n  //: The list the sub-tab press already asked for", '"/whiteboard/boards"'),  # before the prefetched or fetched list (INBOX 1772)
         ('showSkeletons($("reminder-groups"), 3);', '"/reminders"'),
         ('if (ifUnchanged !== "skip") showSkeletons(grid, 6);', '"/media"'),
         ("showSkeletons(container, 3);", '"/audit?limit=100&entity_type=skill"'),

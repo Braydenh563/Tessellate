@@ -120,3 +120,48 @@ def test_the_page_stamps_bubbles_and_the_sessions_list_reads_the_last_message():
     assert 'lazyScript("/js/chat-time.js")' in boot
     assert "stampChatTimes(full.messages)" in boot
     assert "relativeTime(conversation.last_at)" in boot
+
+
+@pytest.mark.skipif(not shutil.which("node"), reason="needs node")
+def test_a_reopened_reply_keeps_its_cost_row_when_the_time_lands_after_the_foot_bar(tmp_path):
+    """INBOX 1693 (b): the foot bar had already taken the cost row, so the time
+    made a solo row and the bar kept that one instead; only text and time stayed."""
+    source = (ROOT / "frontend/js/chat-time.js").read_text(encoding="utf-8")
+    code = source[source.index("function paintChatTime") : source.index("//: A reopened chat")]
+    script = f"""
+const {{ chromium }} = require('playwright');
+(async () => {{
+  const browser = await chromium.launch();
+  const page = await browser.newPage();
+  await page.setContent(`<div id="chat-messages"><div class="msg assistant">
+    <div class="answer-foot-bar"><button class="answer-foot-chip">Why</button>
+      <div class="msg-meta muted"><span class="msg-meta-item">218 ms</span><span class="msg-meta-item">Ask</span></div></div>
+    <div class="msg-actions"></div></div></div>`);
+  const out = await page.evaluate(`
+    const chatTimeLabel = () => ({{ text: '3:14 PM', title: 't', iso: '2026-11-11T15:14:00.000Z' }});
+    ${{{json.dumps(code)}}}
+    const bubble = document.querySelector('.msg.assistant');
+    paintChatTime(bubble, '2026-11-11T15:14:00Z');
+    paintChatTime(bubble, '2026-11-11T15:14:00Z');
+    ({{
+      solo: bubble.querySelectorAll('.msg-meta-solo').length,
+      rows: [...bubble.querySelectorAll('.msg-meta')].map((r) => [...r.children].map((c) => c.textContent)),
+      stamps: bubble.querySelectorAll('.msg-meta-when').length,
+    }})
+  `);
+  console.log(JSON.stringify(out));
+  await browser.close();
+}})();
+"""
+    path = tmp_path / "t.js"
+    path.write_text(script, encoding="utf-8")
+    run = subprocess.run(
+        ["node", str(path)], capture_output=True, text=True,
+        env={"NODE_PATH": "/opt/node22/lib/node_modules", "PLAYWRIGHT_BROWSERS_PATH": "/opt/pw-browsers", "PATH": "/usr/bin:/bin:/usr/local/bin:/opt/node22/bin", "HOME": str(tmp_path)},
+    )
+    if "Executable doesn't exist" in run.stderr or "Cannot find module" in run.stderr:
+        pytest.skip("needs playwright and its browser")
+    assert run.returncode == 0, run.stderr
+    got = json.loads(run.stdout)
+    assert got["solo"] == 0 and got["stamps"] == 1
+    assert got["rows"] == [["218 ms", "Ask", "3:14 PM"]]

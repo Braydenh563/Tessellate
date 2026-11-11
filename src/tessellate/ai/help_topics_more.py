@@ -99,8 +99,9 @@ MORE_TOPICS: list[dict] = [
         ),
         "body": (
             "On its own, Atlas does the same small things as the desktop companion: "
-            "push-ups, dumbbells, tea, a biscuit, fishing, a journal, the stars, a nap under a "
-            "blanket, watering a plant and a puzzle, each with its eyes on the prop, and short "
+            "push-ups, dumbbells, tea, a biscuit, fishing, a journal, the stars, a nap (a blanket draped over a pillow, "
+            "a small z rising, the rings dimmed to a faint halo and slowed until it wakes), watering a plant and a puzzle, "
+            "each with its eyes on the prop, and short "
             "gestures: a nod, a little dance, posing proud, a look down and tiptoeing, then a daydream, "
             "pacing, a made-up game, tinkering with a gear and dusting off, and a sneeze, a hiccup, a hug "
             "round itself and a foot tap, then a firefly chase, a little pile of stars counted, a nap on a note card and a wave at the pointer. A shake or a pout leaves it "
@@ -1981,6 +1982,23 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
 #: own. `tests/test_guide_gaps.py` holds the probe's table at 1.0.
 MORE_TOPICS.extend([
     {
+        "id": "address-names",
+        "keywords": ("custom domain", "domain name", "localhost", "tessellate.localhost", "short name", "reverse proxy",
+                     "caddy", "nginx", "traefik", "my own domain", "address names", "allowed hosts", "rename localhost"),
+        "body": (
+            "Settings, Account & security, Address names. The short name opens the app at name.localhost on "
+            "this computer (no DNS or hosts file; browsers answer every .localhost name themselves). The app "
+            "accepts only that one, and only from this computer. It is a new address, so you sign in once and "
+            "per-browser settings start fresh; the window and tray use it from the next launch. A domain "
+            "name is for a reverse proxy (Caddy, nginx, Traefik) that ends https and forwards to the app: "
+            "list the name the proxy serves, such as notes.example.com, and the app accepts it. The app does "
+            "not get a certificate or open your router; the proxy does that. Adding a domain asks for your "
+            "password; removing one does not. TESSELLATE_LOCAL_NAME and TESSELLATE_ALLOWED_HOSTS still work "
+            "and win over the saved values."
+        ),
+        "badge": {"label": "Account & security", "section": "account"},
+    },
+    {
         "id": "phone",
         "keywords": ("phone", "on my phone", "mobile", "iphone", "android", "tablet", "ipad", "use it on my phone",
                      "open it on my phone", "install on my phone", "phone storage", "runs on my phone",
@@ -2289,7 +2307,7 @@ MORE_TOPICS.extend([
             "drag a block on the picture to move it, and drag on empty space to pick the blocks you touch (Shift adds, Shift+click toggles, Space and drag pans). "
             "Drop onto a group's box to add or move into it. Pick or point at a block and its four round handles show: drag the round handle on any side to another block "
             "or a group to connect them, or to empty space for a new connected block; a click on one adds a joined block (Enter, then click, connects; Escape cancels). "
-            "Double-click a block, an arrow or a group's border or title to rename it in place; click a group's border or title to pick it. Right-click any of them (long press on a phone) for a menu; a picked arrow takes Enter to change its words and Delete, and a dot at either end drags to another block. From the keyboard, Enter on a connector row opens the same menu."
+            "Double-click a block, an arrow or a group's border or title to rename it in place; click a group's border or title to pick it. Right-click any of them (long press on a phone) for a menu; a picked arrow takes Enter to change its words and Delete, and a dot at either end drags to another block. A connector row's words (or Enter) go to its block; its ... opens the menu."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },
@@ -2310,8 +2328,8 @@ MORE_TOPICS.extend([
             "arrow: pick a block, or type a new name to make it; a decision's arrows ask for yes or no. Drag a block: "
             "another's top or bottom puts it before or after, its middle joins "
             "them, a group's body takes it inside. Under a block, "
-            "a connector reads Start to Next and its label. The shape swatch "
-            "picks it. A divider sizes the blocks and the picture (drag or "
+            "a connector reads Start to Next and its label. "
+            "The shape swatch picks it. A divider sizes the blocks and the picture (drag or "
             "arrows; Shift for more). Direction (a menu) turns the flow. An empty one lists "
             "three steps: Add a shape, Name it, Connect it. "
             "The corner bar zooms (Zoom in, Zoom out, Fit), as do Ctrl+wheel and a pinch; "
@@ -2426,8 +2444,8 @@ MORE_TOPICS.extend([
             "With no model a rule reads it; with a model on, the model writes the same kind of change. "
             "It shows first: what it does, and a picture of both with added in green, removed in red and dotted, "
             "and changed in amber. Apply makes it (Ctrl+Z undoes it in one step); Discard leaves the diagram as it was. "
-            "Suggestions, under Ask, lists what looks wrong: an arrow out of a decision with no words, a decision with "
-            "one way out, a block with no way out or joined to nothing, two blocks with the same words, a group "
+            "Suggestions, under Ask, opens like a fold (its arrow turns) and lists what looks wrong: an arrow out of a decision with no words, a decision with "
+            "one way out, a block with no way out or joined to nothing, blocks with the same words (one row numbers them), a group "
             "holding one block. Each row's button shows its fix the same way. On a diagram document every Apply is "
             "a named version (AI: added Refund). Versions..., in the ... menu, lists them: tick two to Compare, or "
             "one to compare it with now, and Restore puts one back."

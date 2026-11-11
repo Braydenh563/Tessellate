@@ -1310,7 +1310,16 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
       documentIds: [...(agentScope.documentIds || []), ...sentFiles.documentIds],
       useTools: true, // the palette is meant to act on the notebook, like Chat
       plan,
-      onPlan: (event) => planTimeline().plan(event),
+      //: **The plan card goes where it happened** (INBOX 1778 c, the owner: "why
+      //: did the steps appear after the response"). The timeline appends to the
+      //: holder, and the turn's own card arrives on the second round, with the
+      //: answer's box already in the holder, so it landed under the words.
+      //: `placeStep` puts it before a box that has none yet, as it does a fold.
+      onPlan: (event) => {
+        planTimeline().plan(event);
+        const card = stepsHolder.lastElementChild;
+        if (card?.classList.contains("step-plan")) placeStep(card);
+      },
       onStep: (event) => planTimeline().step(event),
       onResult: (event) => {
         answered = true;

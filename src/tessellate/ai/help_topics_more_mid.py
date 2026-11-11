@@ -589,7 +589,8 @@ MID_TOPICS.extend(
                 "image viewer", "lightbox", "view a picture", "zoom a picture",
                 "rotate a picture", "actual size", "filmstrip", "next picture",
                 "pinch to zoom", "swipe pictures", "download a picture",
-                "open in a new tab", "picture details",
+                "open in a new tab", "picture details", "copy an image", "copy image",
+                "copy a picture", "save a picture",
             ),
             "body": (
                 "A picture or file opens in the viewer. The bar at the top names "
@@ -605,7 +606,9 @@ MID_TOPICS.extend(
                 "filmstrip above it jumps to any of them. Scroll zooms where the "
                 "pointer is, drag moves a zoomed picture, double-click switches "
                 "between fit and actual size. Keys: Left and Right, plus and "
-                "minus, 0, 1, R, I, Escape. On a phone, swipe and pinch. The bars "
+                "minus, 0, 1, R, I, Ctrl+C (copy the picture), Escape. Right-click a picture here, "
+                "in the Library, in the chat, in a note or on a staged file (hold it on a phone) for Copy image and "
+                "Save image; if the browser will not copy a picture, its link is copied. On a phone, swipe and pinch. The bars "
                 "fade while the mouse rests on the picture and come back when it "
                 "moves; never for the keyboard or reduced motion."
             ),
@@ -1011,6 +1014,7 @@ MID_TOPICS.extend(
             "keywords": (
                 "study the map", "study mode", "revise", "revision", "recall",
                 "flashcards", "quiz me on my map", "test myself", "memorise",
+                "build up branch by branch", "reveal a map step by step", "present a map from the centre",
             ),
             "body": (
                 "On a mind map, the board menu's Study the map "
@@ -1020,7 +1024,8 @@ MID_TOPICS.extend(
                 "them are asked, and then each topic that has a note: its note is the "
                 "answer, read out in the bar when you press Show. Nothing on the map changes. Your marks are kept "
                 "for that map on this device, a branch you missed says so next "
-                "time, and the end says how many you recalled. Esc stops."
+                "time, and the end says how many you recalled. Esc stops. "
+                "Build up branch by branch shows the centre, then each branch a level at a time; Previous takes the last part away, End shows the whole map to take it apart; the map is not changed."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

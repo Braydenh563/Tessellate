@@ -154,6 +154,7 @@ function wbRenderSideMap() {
   const host = document.getElementById("wb-side-map-facts");
   if (!host || !wbIsMap()) return;
   host.replaceChildren(wbMapStatsList(wbMapStats(wbMapIndex()), { tiles: true }));
+  wbMapFoldToLevel.sync();
 }
 
 // --- loading -------------------------------------------------------------------
@@ -1587,6 +1588,7 @@ onSurface("board", () => {
   });
   document.getElementById("wb-side-map-look")?.addEventListener("click", () => wbMapThemeDialog());
   document.getElementById("wb-side-map-expand")?.addEventListener("click", () => wbMapExpandAll());
+  document.getElementById("wb-side-map-fold")?.addEventListener("click", () => wbMapFoldToLevel(1));
   document.getElementById("wb-side-map-tidy")?.addEventListener("click", async () => {
     const moved = await wbMapTidy({ quiet: true });
     toast(moved ? `Tidied ${nounCount(moved, "node")}.` : "Everything is already where this layout puts it.");

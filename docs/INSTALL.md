@@ -218,6 +218,8 @@ pip install pywebview pystray Pillow      # the desktop window and its tray icon
 pip install pypdfium2 Pillow              # read scanned PDFs
 pip install "markitdown[pdf,docx,pptx]"   # import PDF, Word and PowerPoint
 pip install pytesseract Pillow            # text in images
+pip install sherpa-onnx                   # speaker labels by voice (its two models are a download)
+pip install pywhispercpp==1.5.1           # live captions (its model is a download)
 ```
 
 The text-in-images extra also needs the `tesseract` program on your PATH,
@@ -231,9 +233,16 @@ brew install tesseract            # macOS
 ```
 
 Without it, images simply do not get searchable text, and no upload fails.
-Two extras are downloads rather than pip packages, so Settings, Packages is the
-only place that fetches them: Run Python files (Pyodide) and Tool calling
-without Ollama (needle). Both are pinned and checked against a sha256.
+Some extras are downloads rather than pip packages, so Settings, Packages is
+the only place that fetches them: Run Python files (Pyodide), Tool calling
+without Ollama (needle), Translate offline (Bergamot), A second grammar
+checker (LanguageTool, about 252 MB, which also needs Java already
+installed), the speaker label models (about 34 MB), the live captions model
+(`tiny.en`, about 32 MB) and the French, German and Spanish spelling packs
+(237 to 343 KB each). Each is pinned and checked against a sha256, and
+kept in the data folder. Live captions has builds for Windows x86_64, Linux
+x86_64 and aarch64, and macOS on Apple silicon; elsewhere its row says "Not
+for this computer" and captions use the Voice notes engine.
 
 ## Docker
 
@@ -258,7 +267,9 @@ python -m tessellate --desktop   # the same app in its own window
 Without `pywebview`, `--desktop` falls back to a browser tab rather than
 failing.
 
-**A name instead of localhost.** Set `TESSELLATE_LOCAL_NAME=tessellate` and
+**A name instead of localhost.** In Settings, Account & security, Address
+names, type a short name (or set `TESSELLATE_LOCAL_NAME=tessellate`, which
+wins) and
 the launcher, window and tray open `http://tessellate.localhost:8000`.
 Browsers resolve every `*.localhost` name to this computer themselves, so it
 needs no DNS, hosts file or admin rights. The rebinding guard accepts that one
@@ -266,9 +277,10 @@ name, and only from this computer itself; any other `*.localhost` name, or the
 same name arriving from the network, is refused.
 A new name is a new origin: sign in once, and per-browser settings (theme,
 panel widths) start from their defaults. Other devices keep the
-`https://<computer>.local:<port>` address Settings shows; a public domain
-needs a reverse proxy with TLS and `TESSELLATE_ALLOWED_HOSTS` (Docker
-section above).
+`https://<computer>.local:<port>` address Settings shows. A public domain
+needs a reverse proxy with TLS (the proxy gets the certificate; the app does
+not): list its name under Address names (adding one asks for your password)
+or in `TESSELLATE_ALLOWED_HOSTS` (Docker section above).
 
 On first run you choose a password (bcrypt-hashed, kept on your machine). Then
 add a model: see [MODELS.md](MODELS.md).
@@ -281,7 +293,7 @@ Other commands:
 | `python -m tessellate --reset-password` | Clear a forgotten password so you can set a new one; private notes stay sealed (the lock screen's "Forgot your password?" does the same, or keeps them with a recovery key) |
 | `python -m tessellate --reinstall` | One-click repair: clears the app window's cached profile, then starts normally; what the installer's Repair shortcut runs, and your notes and settings are never touched |
 | `python -m tessellate --capture` | Open a one-line capture window on the running app: bind it to a key in your system settings |
-| `python -m tessellate.mcp_server` | A stdio MCP server for another program on this computer: the app's non-destructive tools, your notes as readable resources (`memorymap://note/<id>`, never a private note) and your skills as prompts |
+| `python -m tessellate.mcp_server` | A stdio MCP server for another program on this computer: the app's non-destructive tools, your notes as readable resources (`memorymap://note/<id>`, never a private note) and your skills as prompts. The program must pass this notebook's `TESSELLATE_MCP_TOKEN` (Settings shows it in the snippet to copy), and it can only read until "Let that app add and change notes" is on |
 | `Tessellate --mcp` | The same server from the packaged app, which has no Python to run the line above with (live behaviour of the windowed exe: needs device) |
 
 ### Environment variables
@@ -300,6 +312,7 @@ install.
 | `TESSELLATE_EMBED_THREADS` | automatic | How many threads the built-in search model may use |
 | `TESSELLATE_RAM_GB` | detected | Overrides the memory the app thinks it has, for a container |
 | `TESSELLATE_EXTRAS_MIRROR` | unset | A mirror for the pinned downloads in Settings, Packages |
+| `TESSELLATE_CAPTIONS_URL` | unset | A live-captions helper of your own (one that speaks whisper.cpp's `whisper-server` dialect, on this computer); when set, the app never starts its own |
 
 A model backend other than Ollama is chosen in **Settings, Models**, not here.
 

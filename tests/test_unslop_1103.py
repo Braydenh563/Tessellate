@@ -173,7 +173,7 @@ def test_15_a_dock_title_is_a_count_not_the_tab_name_again():
     assert "nounCount.dock = function (" in _js("library.js"), "a property, not one more global; not in the boot scripts (test_static_compression)"
     calls = {
         "library.js": ('nounCount.dock("library-docs"', 'nounCount.dock("library-media"', 'nounCount.dock("library-links"', 'nounCount.dock("library-skills"', 'nounCount.dock("library",'),
-        "whiteboard.js": ('nounCount.dock("library-boards"',),
+        "boards-gallery.js": ('nounCount.dock("library-boards"',),
         "meetings.js": ('nounCount.dock?.("library-recordings"',),
     }
     for name, needles in calls.items():

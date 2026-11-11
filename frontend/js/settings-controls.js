@@ -2326,6 +2326,7 @@ function renderLanState(state) {
   line.classList.toggle("hidden", !words);
   if (words) setLabel(line, `${icon} ${words}`);
   renderLanTrust(state);
+  renderAddressNames(state);
   $("account-lan-restart")?.classList.toggle("hidden", !state.restart_required);
   //: The certificate the network is served with (core/lancert.py), shown
   //: while the switch is on so a phone's one-time warning can be checked.
@@ -2645,6 +2646,61 @@ async function lanAllowHere(paint) {
     toast("Other devices can open the app on this network now.");
   }
 }
+
+//: **Address names** (the owner, "customise the domain name"): the short
+//: `<name>.localhost` the window opens and the domains a reverse proxy uses.
+//: Both live in the LAN reply (`names`); a new domain asks for the password.
+function renderAddressNames(state) {
+  const names = state?.names;
+  const label = $("account-local-name");
+  const domains = $("account-domains");
+  if (!names || !label || !domains) return;
+  const envLabel = names.local_name_env || "";
+  label.value = envLabel || names.local_name || "";
+  label.disabled = !!envLabel;
+  const envNote = $("account-local-name-env");
+  envNote.classList.toggle("hidden", !envLabel);
+  envNote.textContent = envLabel ? `Set by TESSELLATE_LOCAL_NAME (${envLabel}); change it there.` : "";
+  domains.value = (names.allowed_hosts || []).join(", ");
+  domains.dataset.saved = (names.allowed_hosts || []).join(",");
+  const fromEnv = names.allowed_hosts_env || [];
+  const domainNote = $("account-domains-env");
+  domainNote.classList.toggle("hidden", !fromEnv.length);
+  domainNote.textContent = fromEnv.length ? `Also set by TESSELLATE_ALLOWED_HOSTS: ${fromEnv.join(", ")}.` : "";
+}
+
+async function saveAddressNames() {
+  const label = $("account-local-name");
+  const domains = $("account-domains");
+  const status = $("account-names-status");
+  const wanted = (domains.value || "").split(/[,;\s]+/).filter(Boolean);
+  const body = { local_name: label.disabled ? "" : label.value.trim(), allowed_hosts: wanted };
+  // A domain not already saved loosens the host guard, so it asks for the password.
+  const saved = (domains.dataset.saved || "").split(",");
+  const added = wanted.some((name) => !saved.includes(name.toLowerCase()));
+  const send = (extra) => apiJson("/auth/address-names", { method: "POST", body: JSON.stringify({ ...body, ...extra }), ownsAuthErrors: true, silent: true });
+  try {
+    let reply = null;
+    if (added) {
+      const done = await askPasswordPrompt({
+        title: "Add a domain name",
+        message: "Enter your password to let the app answer to this domain.",
+        submitLabel: "Add",
+        submit: async (password) => (reply = await send({ current_password: password })),
+      });
+      if (!done || !reply) return;
+    } else {
+      reply = await send({});
+    }
+    renderLanState(reply);
+    status.textContent = "Saved.";
+  } catch (error) {
+    status.textContent = "";
+    toast(error.message, true); // a 4xx (bad name, wrong password) shows plain; a fault gets Report this
+  }
+}
+
+$("account-names-save")?.addEventListener("click", saveAddressNames);
 
 async function renderLanAccess() {
   if (!$("account-allow-lan")) return;

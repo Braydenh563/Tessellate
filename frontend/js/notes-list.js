@@ -662,6 +662,7 @@ function attachmentCard(spec) {
     add("caption", "ph:text-align-left Edit description…", "Type or change this file's description yourself", "edit");
   }
   if (kind === "image" && url) add("annotate", "ph:pencil-simple Annotate a copy", "Draw on a copy of this picture, saved as a new note", "edit");
+  if (kind === "image" && url) add("copy-image", "ph:image Copy image", "Put this picture on the clipboard", "share");
   if (stored) add("copy", "ph:link Copy as a link", "Copy the markdown that shows this file in a note or document", "share");
   if (editable) add("remove", "ph:trash Remove", spec.attachment ? `Delete “${label}” from this note` : `Take “${label}” out of this note`, "remove", { danger: true });
   const more = kebabMenu(items, `Actions for “${label}”`);

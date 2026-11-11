@@ -24,7 +24,7 @@ from tests import _js_scope
 ROOT = Path(__file__).resolve().parent.parent
 FRONTEND = ROOT / "frontend"
 LIBRARY = (FRONTEND / "js" / "library.js").read_text(encoding="utf-8")
-WHITEBOARD = (FRONTEND / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WHITEBOARD = (FRONTEND / "js" / "boards-gallery.js").read_text(encoding="utf-8")
 MENUS = (FRONTEND / "js" / "menus.js").read_text(encoding="utf-8")
 NAVIGATION = (FRONTEND / "js" / "navigation.js").read_text(encoding="utf-8")
 CSS = "\n".join(

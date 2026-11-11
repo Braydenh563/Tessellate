@@ -1639,6 +1639,7 @@ const LAZY_MODULES = {
     "/js/image-layout.js",
     //: Before the editors: it holds the file-type table they read.
     "/js/library.js",
+    "/js/boards-gallery.js", //: The Boards & maps gallery: also its own module (`boardsGallery`), and the board code calls it.
     "/js/documents-code.js",
     "/js/documents-prose.js",
     "/js/documents-spell.js",
@@ -1919,4 +1920,4 @@ installStandIns(LAZY_ENTRY_POINTS);
 //: Fetched soon after boot, not on first use: the outbox is for the moment
 //: the server is gone, when no script can be fetched (quick-note.js).
 //: The library bundle is warmed after the first touch (lazy-entries.js), not here.
-setTimeout(() => ["quickNote", "quickAdd", "fieldClear", "chordGuide", "notePanels", "dragEdge", "search", "writingDesk"].forEach(ensureModule), 3000);
+setTimeout(() => ["quickNote", "quickAdd", "fieldClear", "chordGuide", "notePanels", "dragEdge", "search", "writingDesk", "attachments"].forEach(ensureModule), 3000);

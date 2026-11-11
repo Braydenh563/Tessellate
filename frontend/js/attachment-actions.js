@@ -66,6 +66,138 @@
     player.play().catch(() => player.focus());
   }
 
+  //: **Copy image** (INBOX 1775). The one place a picture is put on the
+  //: clipboard: the card menu, the lightbox, Ctrl+C there and the right-click
+  //: on any picture below all come here. Chromium writes only image/png, so
+  //: another type is drawn onto a canvas first (a GIF gives its first frame, an
+  //: SVG its own size or 1024 wide). Bytes come from this app's own routes
+  //: (the media cookie or the auth header), a staged picture's blob, or a data
+  //: url; a remote picture would taint the canvas, so it falls back to its link.
+  //: A staged picture is a `blob:` url and the page's CSP (`connect-src 'self'`)
+  //: refuses to fetch one, so a blob or data url is drawn from an <img> (which
+  //: `img-src` allows) and read back as a PNG.
+  async function pngFromUrl(href) {
+    const pic = new Image();
+    pic.src = href;
+    await pic.decode();
+    const width = pic.naturalWidth || 1024;
+    const height = pic.naturalHeight || Math.round(width * 0.75);
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    canvas.getContext("2d").drawImage(pic, 0, 0, width, height);
+    return new Promise((done, fail) => canvas.toBlob((png) => (png ? done(png) : fail(new Error("encode"))), "image/png"));
+  }
+
+  async function imageBlobOf(source) {
+    if (source.file) return source.file;
+    const src = await source.src;
+    const url = new URL(src, location.href);
+    if (url.protocol === "blob:" || url.protocol === "data:") return pngFromUrl(src);
+    if (url.origin !== location.origin) throw new Error("remote picture");
+    return (await api(url.pathname + url.search)).blob();
+  }
+
+  async function pngBlobOf(blob) {
+    if (blob.type === "image/png") return blob;
+    const holder = URL.createObjectURL(blob);
+    try {
+      return await pngFromUrl(holder);
+    } finally {
+      URL.revokeObjectURL(holder);
+    }
+  }
+
+  //: The blob is handed to the clipboard as a promise, so the click's permission
+  //: is spent at the write and not lost while the picture is fetched and drawn.
+  async function copyImage(source) {
+    const picture = imageBlobOf(source).then(pngBlobOf);
+    picture.catch(() => {});
+    try {
+      if (!navigator.clipboard?.write || typeof ClipboardItem === "undefined") throw new Error("no clipboard");
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": picture })]);
+      toast("Image copied.");
+    } catch {
+      const src = source.file ? "" : await source.src;
+      const link = src && !/^(?:blob|data):/.test(src) ? new URL(src, location.href).href : "";
+      if (link && (await copyToClipboard(link))) toast("Copied the image's link: this picture cannot be copied as an image.");
+      else toast("This picture cannot be copied.", "info");
+    }
+  }
+
+  const imageSource = (spec) => ({
+    file: spec.file,
+    name: spec.name,
+    src: spec.src || (spec.thumb ? spec.thumb() : mediaSrc(spec.url)),
+  });
+
+  //: Right-click or hold on a picture anywhere in the app. Skipped where the
+  //: browser's menu is right (a field, a selection, an open menu), where a row
+  //: menu has already claimed the event (`defaultPrevented`: Library tiles,
+  //: attachment cards, whiteboard objects) and for the app's own faces.
+  const IMAGE_MENU_SKIP =
+    "input, textarea, select, .action-menu, [data-chip-menu], .selection-popup, [class*='avatar'], [class*='companion'], .lock-overlay";
+  const IMAGE_HOSTS = ".lightbox-stage, .msg-attachment-image, .att-chip, .answer-grounding-thumb, figure";
+
+  function pictureAtEvent(event) {
+    const target = event.target;
+    if (!(target instanceof Element) || target.closest(IMAGE_MENU_SKIP)) return null;
+    if (String(window.getSelection?.() || "").trim()) return null;
+    //: The menu key sends the event to the focused element: in the viewer that is the dialog or its stage, and the picture is the stage's.
+    const viewer = !target.closest("button, a, .lightbox-info, .lightbox-doc") && target.closest(".lightbox")?.querySelector(".lightbox-stage > img:not(.hidden)");
+    const img = target.closest("img") || target.closest(IMAGE_HOSTS)?.querySelector("img") || viewer;
+    if (!img || !(img.currentSrc || img.src) || !img.naturalWidth || img.closest(IMAGE_MENU_SKIP)) return null;
+    return img;
+  }
+
+  function openPictureMenu(img, x, y) {
+    //: A staged chip's picture has no alt: its name is the chip's.
+    const chipName = img.closest(".att-chip")?.querySelector(".att-chip-name")?.textContent?.trim();
+    const spec = { src: img.currentSrc || img.src, name: img.alt || chipName || (img.currentSrc || img.src).split("/").pop().split("?")[0] };
+    openMenuAtPoint(
+      [
+        { label: "ph:image Copy image", title: "Put this picture on the clipboard", run: () => copyImage(imageSource(spec)) },
+        {
+          label: "ph:download-simple Save image",
+          title: "Save this picture to this computer",
+          run: async () => {
+            try {
+              const blob = await imageBlobOf({ src: spec.src });
+              //: A blob or data url is saved as the PNG it was drawn into, so the name says so.
+              const name = spec.name || "image";
+              await saveFile(blob.type === "image/png" && !/\.png$/i.test(name) ? name.replace(/\.[A-Za-z0-9]{1,5}$/, "") + ".png" : name, blob);
+            } catch (error) {
+              toast(error.message || "Couldn't save that picture.", true);
+            }
+          },
+        },
+      ],
+      "Picture actions",
+      x,
+      y,
+      img.closest("button, [tabindex]") || null
+    );
+  }
+
+  document.addEventListener("contextmenu", (event) => {
+    if (event.defaultPrevented) return;
+    const img = pictureAtEvent(event);
+    if (!img) return;
+    event.preventDefault();
+    //: The menu key sends the event to the focused element, not the picture (the viewer's dialog, a card's button), with that element's coordinates: off the picture, the menu opens on it.
+    const rect = img.getBoundingClientRect();
+    const onPicture = event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom;
+    openPictureMenu(img, onPicture ? event.clientX : rect.left + Math.min(rect.width, 160) / 2, onPicture ? event.clientY : rect.top + Math.min(rect.height, 160) / 2);
+  });
+  wireLongPress(
+    document,
+    (event, point) => {
+      const img = pictureAtEvent(event);
+      if (img) openPictureMenu(img, point.x, point.y);
+    },
+    { selector: "img, " + IMAGE_HOSTS }
+  );
+
   const ATTACHMENT_ACTIONS = {
     open: (spec, card) => {
       const kind = card.dataset.kind;
@@ -172,6 +304,8 @@
         toast(error.message || "Couldn't open that picture for drawing.", true);
       }
     },
+
+    "copy-image": (spec) => copyImage(imageSource(spec)),
 
     copy: async (spec) => {
       const bang = attachmentKind(spec.name, spec.url) === "image" ? "!" : "";
