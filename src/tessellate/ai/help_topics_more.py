@@ -770,6 +770,24 @@ MORE_TOPICS: list[dict] = [
         "badge": {"label": "Packages", "section": "extras"},
     },
     {
+        "id": "spelling-packs",
+        "keywords": (
+            "spelling pack", "spelling packs", "french spelling", "german spelling",
+            "spanish spelling", "spellcheck in french", "spell check another language",
+            "document language", "lang key", "spelling off for this document",
+        ),
+        "body": (
+            "A document is checked as English unless its properties set a "
+            "language (a lang key, such as fr). For French, German and Spanish, "
+            "Settings, Packages offers a spelling pack each (about 340 KB, "
+            "kept on this computer); the Suggestions panel of such a document "
+            "also has an Install button. Once installed, spelling is checked in "
+            "that language and grammar stays English. Add a word to the "
+            "dictionary as usual to stop it being flagged."
+        ),
+        "badge": {"label": "Packages", "section": "extras"},
+    },
+    {
         "id": "import-export",
         "keywords": (
             "import markdown", "import a folder", "import a pdf", "import word",

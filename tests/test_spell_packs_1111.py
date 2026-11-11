@@ -47,8 +47,8 @@ WORKER = JS / "harper-worker.js"
 
 #: A hand-written French dictionary, small enough to read: "cheval" takes the plural "x" of the
 #: affix rule, so "chevaux" is a word only the affix file knows.
-AFF = "SET UTF-8\nSFX X Y 1\nSFX X al aux al\n"
-DIC = "4\nbonjour\ncheval/X\nécole\nmaison\n"
+AFF = "SET UTF-8\nSFX X Y 1\nSFX X al aux al\nPFX L Y 1\nPFX L 0 l' .\n"
+DIC = "11\nbonjour\ncheval/X\nécole\nmaison\nécurie/L\nle\nmonde\nest\ndans\nun\nnoir\n"
 
 
 def _pack_tgz(aff: str = AFF, dic: str = DIC) -> bytes:
@@ -225,12 +225,24 @@ def test_the_worker_spells_with_the_pack_it_was_given_and_suggests(tmp_path) -> 
     load = {"id": 1, "type": "packload", "lang": "fr", "aff": AFF, "dic": DIC}
     ask = {"id": 2, "type": "packspell", "lang": "fr", "words": ["bonjour", "chevaux", "école", "Maison", "bonjuor", "xyzzy"]}
     (loaded, answered) = _worker(tmp_path, [{"messages": [load]}, {"messages": [ask]}])
-    assert loaded[0]["ok"] is True
+    assert loaded[0]["ok"] is True and loaded[0]["spell"] == {"loaded": True}
     spell = answered[0]["spell"]
     for word in ("bonjour", "chevaux", "école", "Maison"):
         assert spell[word]["known"] is True, word
     assert spell["bonjuor"]["known"] is False and "bonjour" in spell["bonjuor"]["suggestions"]
     assert spell["xyzzy"] == {"known": False, "suggestions": []}
+
+
+def test_a_word_that_is_also_compound_only_is_still_a_word(tmp_path) -> None:
+    """igerman98 lists "fahren" twice, once with ONLYINCOMPOUND; nspell merges the two entries and
+    then refuses the word on its own (4.5% of the German stems measured). The worker drops the
+    compound-only entry of a stem that has a plain one."""
+    aff = "SET UTF-8\nONLYINCOMPOUND o\n"
+    dic = "3\nfahren/o\nfahren/S\nhaus/o\n"
+    ask = {"id": 2, "type": "packspell", "lang": "de", "words": ["fahren", "haus"]}
+    (_, answered) = _worker(tmp_path, [{"messages": [{"id": 1, "type": "packload", "lang": "de", "aff": aff, "dic": dic}]}, {"messages": [ask]}])
+    assert answered[0]["spell"]["fahren"]["known"] is True
+    assert answered[0]["spell"]["haus"]["known"] is False, "a word only ever listed for compounds stays refused"
 
 
 def test_a_language_with_no_pack_loaded_answers_nothing_rather_than_flagging(tmp_path) -> None:
@@ -242,3 +254,149 @@ def test_english_is_unchanged_by_the_pack_messages(tmp_path) -> None:
     (answered,) = _worker(tmp_path, [{"messages": [{"id": 1, "type": "spell", "dialect": "off", "words": ["colour", "teh"]}]}])
     assert answered[0]["spell"]["colour"]["known"] is True
     assert answered[0]["spell"]["teh"]["known"] is False
+
+
+# --- the page ---------------------------------------------------------------------------------
+
+#: documents-spell.js run in node with the real worker behind `docGrammarSend` and the real
+#: `docSpellable` and `docSpellNameKind` cut out of documents.js; the server and the DOM are stubs.
+PAGE_DRIVER = r"""
+import { readFile } from "node:fs/promises";
+import { pathToFileURL } from "node:url";
+const [root, listFile] = process.argv.slice(2);
+const scenario = JSON.parse(await readFile(listFile, "utf8"));
+globalThis.fetch = async (url) => new Response(await readFile(new URL(url)), { headers: { "Content-Type": "text/plain" } });
+let handler = null;
+let replies = [];
+globalThis.self = {
+  addEventListener: (type, fn) => { if (type === "message") handler = fn; },
+  postMessage: (message) => replies.push(message),
+};
+await import(pathToFileURL(`${root}/frontend/js/harper-worker.js`).href);
+const documents = await readFile(`${root}/frontend/js/documents.js`, "utf8");
+const cut = (name) => new RegExp(`^function ${name}\\b[\\s\\S]*?^\\}`, "m").exec(documents)[0];
+const source = await readFile(`${root}/frontend/js/documents-spell.js`, "utf8");
+let renders = 0;
+let probes = 0;
+const listeners = {};
+const env = {
+  window: { addEventListener: (type, fn) => { listeners[type] = fn; } },
+  apiJson: async () => { probes += 1; return { packs: scenario.packs }; },
+  api: async (url) => ({ text: async () => scenario.files[url] }),
+  docGrammarEnabled: () => scenario.grammar !== false,
+  docGrammarSend: async (message, reply = true) => {
+    if (!reply) return null;
+    replies = [];
+    await handler({ data: { ...message, id: 1 } });
+    const data = replies[0];
+    return data.spell || data.lints || [];
+  },
+  renderDocProse: () => { renders += 1; },
+  docSpellCache: new Map(),
+  docDictionary: () => new Set(scenario.own || []),
+  docProse: { langOf: () => "fr", langNote: () => "note" },
+  extraNoticeMount: () => {},
+  document: {},
+};
+const body = `${cut("docSpellable")}\n${cut("docSpellNameKind")}\n${source}\nreturn window.docSpell;`;
+const docSpell = new Function(...Object.keys(env), body)(...Object.values(env));
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const out = { steps: [] };
+for (const step of scenario.steps) {
+  const found = docSpell.packFindings(step.text, step.lang, () => false);
+  await sleep(step.wait);
+  out.steps.push({ found: found.map((f) => ({ text: f.text, alternatives: f.alternatives, message: f.message })), note: docSpell.packNote(step.lang), key: docSpell.packKey(), renders, probes });
+}
+if (scenario.event) { listeners["tessellate:extras-changed"](); await sleep(100); out.afterEvent = { probes, note: docSpell.packNote("fr") }; }
+process.stdout.write(JSON.stringify(out));
+"""
+
+
+def _page(tmp_path: Path, scenario: dict) -> dict:
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    driver, data = tmp_path / "page.mjs", tmp_path / "scenario.json"
+    driver.write_text(PAGE_DRIVER, encoding="utf-8")
+    data.write_text(json.dumps(scenario), encoding="utf-8")
+    done = subprocess.run([node, str(driver), str(ROOT), str(data)], capture_output=True, text=True, timeout=300, check=False)
+    assert done.returncode == 0, done.stderr[-800:]
+    return json.loads(done.stdout)
+
+
+FILES = {"/spellpacks/fr/aff": AFF, "/spellpacks/fr/dic": DIC}
+INSTALLED = [
+    {"lang": "fr", "id": "spell-fr", "name": "French", "installed": True},
+    {"lang": "de", "id": "spell-de", "name": "German", "installed": False},
+]
+TEXT = "Bonjour le monde. Un cheval noir est dans l'écurie. Un chevall noir est ici."
+
+
+def test_a_french_document_is_checked_once_its_pack_has_loaded_and_answered(tmp_path) -> None:
+    steps = [{"text": TEXT, "lang": "fr", "wait": 700}] * 4
+    out = _page(tmp_path, {"packs": INSTALLED, "files": FILES, "steps": steps})
+    first, second, third, fourth = out["steps"]
+    # Each pass moves one stage (the page re-renders when each lands): the packs are listed, the
+    # pack loads in the worker, the words are asked. Nothing is flagged until it has answered.
+    assert first["found"] == [] and second["found"] == [] and third["found"] == []
+    # By the fourth the words are answered: the ones that are not French are flagged, with fixes.
+    third = fourth
+    flagged = {f["text"]: f for f in third["found"]}
+    assert set(flagged) == {"chevall", "ici"}, "ici is not in the small test dictionary; the rest are words"
+    assert "cheval" in flagged["chevall"]["alternatives"]
+    assert "French dictionary" in flagged["chevall"]["message"]
+    assert third["note"] == "Spelling is checked in French from its installed pack. Grammar checks stay English."
+    assert third["key"] > first["key"], "the rule memo's key moves with each answer"
+    assert third["renders"] >= 3, "the page re-renders when the list, the load and the answers land"
+
+
+def test_words_the_person_added_and_names_are_not_flagged(tmp_path) -> None:
+    text = "Bonjour Priya. Un chevall est ici. Ensuite Marie ici."
+    steps = [{"text": text, "lang": "fr", "wait": 700}] * 4
+    out = _page(tmp_path, {"packs": INSTALLED, "files": FILES, "steps": steps, "own": ["chevall", "ici", "ensuite"]})
+    assert out["steps"][3]["found"] == [], "Priya and Marie are names inside a sentence; the rest are the person's own words"
+
+
+def test_a_language_without_an_installed_pack_is_never_flagged(tmp_path) -> None:
+    out = _page(tmp_path, {"packs": INSTALLED, "files": FILES, "steps": [{"text": "Das Haus ist klein.", "lang": "de", "wait": 400}] * 2})
+    for step in out["steps"]:
+        assert step["found"] == [] and step["note"] == ""
+    out = _page(tmp_path, {"packs": INSTALLED, "files": FILES, "steps": [{"text": "Hola mundo.", "lang": "es", "wait": 400}]})
+    assert out["steps"][0]["found"] == [] and out["steps"][0]["note"] == ""
+
+
+def test_an_install_elsewhere_is_seen_without_a_reload(tmp_path) -> None:
+    missing = [{"lang": "fr", "id": "spell-fr", "name": "French", "installed": False}]
+    out = _page(tmp_path, {"packs": missing, "files": FILES, "steps": [{"text": TEXT, "lang": "fr", "wait": 300}], "event": True})
+    assert out["steps"][0]["found"] == [] and out["steps"][0]["note"] == ""
+    assert out["afterEvent"]["probes"] == 2, "the extras-changed event asks the server again at once"
+
+
+def test_with_the_grammar_checker_off_the_pack_is_not_started(tmp_path) -> None:
+    out = _page(tmp_path, {"packs": INSTALLED, "files": FILES, "grammar": False, "steps": [{"text": TEXT, "lang": "fr", "wait": 500}] * 2})
+    assert all(step["found"] == [] and step["note"] == "" for step in out["steps"])
+
+
+# --- the wiring ---------------------------------------------------------------------------------
+
+DOCUMENTS = (JS / "documents.js").read_text(encoding="utf-8")
+SPELL = (JS / "documents-spell.js").read_text(encoding="utf-8")
+NOTICE = (JS / "extra-notice.js").read_text(encoding="utf-8")
+
+
+def test_the_pack_findings_join_the_prose_pass_for_a_non_english_document_only() -> None:
+    assert "if (!english) found.push(...docSpell.packFindings(text, lang, skipped));" in DOCUMENTS
+    assert "function docProseFindings(text, lang = docProse.langOf(text))" in DOCUMENTS
+    # A paragraph passed alone has no frontmatter: the caller hands its document's language down.
+    assert "docProseFindings(part, docProse.langOf(part))" in DOCUMENTS
+    assert "docProseFindings(zone, docProse.langOf(part))" in DOCUMENTS
+    assert "docSpell.packKey()" in DOCUMENTS, "the rule memo must know when a pack answer arrives"
+
+
+def test_the_panel_note_offers_the_install_through_the_shared_notice() -> None:
+    assert "Spelling and grammar are off for this document" in DOCUMENTS
+    assert DOCUMENTS.count("docSpell.langRow(docText())") == 2, "both the empty and the listed panel"
+    assert "extraNoticeMount(slot, `spell-${lang}`, { fresh: true })" in SPELL
+    for lang in ("fr", "de", "es"):
+        assert f'"spell-{lang}":' in NOTICE
+    assert "tessellate:extras-changed" in NOTICE and "tessellate:extras-changed" in SPELL

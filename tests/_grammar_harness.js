@@ -91,7 +91,7 @@ const factory = new Function(
   const docDictionary = () => __env.dictionary;
   const docVariantLookup = () => new Map();
   const docSpellingVariant = () => "off";
-  const docSpell = { answer: () => null, want: () => false, ownWordsSend: () => {}, dictionaryRow: () => ({}) };
+  const docSpell = { answer: () => null, want: () => false, ownWordsSend: () => {}, dictionaryRow: () => ({}), packFindings: () => [], packNote: () => "", packKey: () => 0, langName: (lang) => lang, langRow: () => null };
   const docLoadWordlist = () => {};
   const docProseKey = (f) => f.rule + ":" + f.text.toLowerCase();
   const docGrammarEnabled = () => true;

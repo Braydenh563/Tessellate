@@ -11889,7 +11889,9 @@ function docProseSkipMask(text) {
 //: panel can jump to it and the fix can replace it without searching for the
 //: text again (which would find the wrong occurrence in a document that says
 //: the same thing twice).
-function docProseFindings(text) {
+//: `lang` is the document's, read from its frontmatter; a paragraph passed alone (`docProse.near`)
+//: has none, so the caller says it.
+function docProseFindings(text, lang = docProse.langOf(text)) {
   const found = [];
   //: Kicked off here rather than at load: this is the first moment anything
   //: wants to know whether a word is a word. It returns immediately, and the
@@ -11903,7 +11905,7 @@ function docProseFindings(text) {
   //: rather than every character of it: a rule whose match straddles the end
   //: of a code fence is about the code, not the prose after it.
   const skipped = (at) => skip[at] === 1;
-  const english = docProse.langOf(text) === "en";
+  const english = lang === "en";
   for (const rule of DOC_PROSE_RULES) {
     if (!rule.test) continue;
     //: English word lists (repeat, confusion) would misfire on another language.
@@ -12025,6 +12027,9 @@ function docProseFindings(text) {
       replacement: sure ? docMatchCase(hit[0], sure) : null,
     });
   }
+  //: Another language: its installed spelling pack answers in the worker (documents-spell.js, D30)
+  //: and finds nothing until it has, or when no pack is installed.
+  if (!english) found.push(...docSpell.packFindings(text, lang, skipped));
   //: Long sentences, measured over the prose only. Code fences and headings
   //: are skipped: a fenced block has no sentences, and a heading that runs
   //: long is a heading, not a run-on.
@@ -12178,10 +12183,12 @@ const docProse = {
     return key ? key[1].toLowerCase() : "en";
   },
   //: Why the checker is quiet for a non-English document: the English list would
-  //: flag every word, and no other pack is installed yet (a30h-1102 step 4).
+  //: flag every word, and no pack for its language is installed (a30h-1102 step 4). With a
+  //: pack (D30, documents-spell.js) spelling is checked and the note says so.
   langNote(text) {
     const lang = this.langOf(text);
-    return lang === "en" ? "" : `Spelling and grammar are off for this document: its language is set to ${lang}, and only the English checks are installed.`;
+    if (lang === "en") return "";
+    return docSpell.packNote(lang) || `Spelling and grammar are off for this document: its language is set to ${docSpell.langName(lang)}, and only the English checks are installed.`;
   },
   hidden: false,
   panelView: "list",
@@ -12204,7 +12211,7 @@ const docProse = {
   dirty: false,
   nearMin: 8000,
   rules(part, again) {
-    const key = [docProseIgnored.size, docWordlist ? docWordlist.size : -1, docDictionary().size, docSpellingVariant(), docCheckLinkText()].join("|");
+    const key = [docProseIgnored.size, docWordlist ? docWordlist.size : -1, docDictionary().size, docSpellingVariant(), docCheckLinkText(), docSpell.packKey()].join("|");
     const memo = this.memo;
     if (!((again || this.typing) && memo && memo.part === part && memo.key === key)) {
       const near = (this.typing || again) && memo && memo.key === key && part.length >= this.nearMin && memo.part !== part ? this.near(memo, part) : null;
@@ -12213,7 +12220,7 @@ const docProse = {
         this.dirty = true;
         this.settle();
       } else {
-        const found = docProseFindings(part);
+        const found = docProseFindings(part, docProse.langOf(part));
         //: Kept here, not read back from `docProseSkipMask.memo`: a grammar
         //: answer for an older text replaces that one between two keys.
         this.memo = { part, key, found, mask: part.length >= this.nearMin ? docProseSkipMask(part) : null };
@@ -12255,7 +12262,7 @@ const docProse = {
     if (fences % 2 === 1) return null;
     const shift = part.length - old.length;
     const stop = to - shift;
-    const inside = docProseFindings(zone);
+    const inside = docProseFindings(zone, docProse.langOf(part));
     const mask = new Uint8Array(part.length);
     mask.set(before.subarray(0, from), 0);
     mask.set(docProseSkipMask(zone), from);
@@ -12716,18 +12723,15 @@ function renderDocProsePanel() {
     what.className = "muted";
     what.textContent = `Checked for spelling, ${docGrammarEnabled() ? "grammar, " : ""}spacing, sentence length and accessibility; these read the text, not its meaning.`;
     empty.append(mark, said, what);
-    const langNote = docProse.langNote(docText());
-    if (langNote) {
-      const note = document.createElement("p");
-      note.className = "muted";
-      note.textContent = langNote;
-      empty.appendChild(note);
-    }
+    const langRow = docSpell.langRow(docText());
+    if (langRow) empty.appendChild(langRow);
     panel.appendChild(empty);
     return;
   }
   panel.appendChild(docProseHeader());
   if (aiStatus) panel.appendChild(aiStatus);
+  const langRow = docSpell.langRow(docText());
+  if (langRow) panel.appendChild(langRow);
 
   //: **Grouped by kind, with a count on each group** (DOCUMENTS_PLAN Phase 0
   //: item 3). A flat list of twenty rows is twenty separate decisions in

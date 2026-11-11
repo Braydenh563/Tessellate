@@ -402,15 +402,16 @@ def _spell_pack_extras() -> tuple[Extra, ...]:
     return tuple(
         Extra(
             id=f"spell-{lang}",
-            label=f"{name} spelling",
+            label=f"{name} spelling (Hunspell)",
             short_label=f"{name} spelling",
             enables=f"Spelling checks for documents written in {name} (a document whose language "
             "is set to it), from a Hunspell dictionary kept and read on this computer. "
             "Nothing you write leaves it.",
             packages=(f"dictionary-{lang} {version}",),
             module="",
-            size=f"~{round(size / 1000)} KB download",
-            caveat="Checks spelling only; grammar checks stay English.",
+            size=f"~{round(size / 1000)} KB",
+            caveat="Checks spelling only; grammar checks stay English."
+            + (" A long compound word the list lacks is flagged: add it to your dictionary." if lang == "de" else ""),
             kind="download",
             version=version,
             licence=licence,

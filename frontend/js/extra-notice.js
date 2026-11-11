@@ -20,6 +20,9 @@
     rapidocr: "Reading text in images needs an OCR package.",
     pyodide: "Running Python files needs the Python runner.",
     languagetool: "Grammar checks need the LanguageTool package.",
+    "spell-fr": "Spelling for French needs the French spelling pack.",
+    "spell-de": "Spelling for German needs the German spelling pack.",
+    "spell-es": "Spelling for Spanish needs the Spanish spelling pack.",
     needle: "Local tool calls need the Needle package.",
     translate: "Translating offline needs the translate package.",
     localllm: "A built-in model needs the local model package.",
@@ -100,6 +103,8 @@
       if (manual) return openSettingsModal("extras");
       install.disabled = true;
       await extraNoticeInstall(id, row);
+      //: Tells a surface that read the package's state (the spelling packs) to ask again.
+      window.dispatchEvent(new CustomEvent("tessellate:extras-changed", { detail: { id } }));
       extraNoticeCheck(host, id, true);
     });
     host.append(text, install);
