@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 LIBRARY = (JS / "library.js").read_text(encoding="utf-8")
-DOCUMENTS = (JS / "documents.js").read_text(encoding="utf-8")
+DOCUMENTS = (JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-view.js").read_text(encoding="utf-8")
 
 
 def test_library_new_document_is_a_split_button_with_a_type_slot():

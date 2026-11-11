@@ -30,7 +30,7 @@ ROOT = Path(__file__).resolve().parents[1]
 #: documents.js, so a test that reads "the documents editor" reads all three.
 DOCUMENTS_JS = tuple(
     ROOT / "frontend" / "js" / name
-    for name in ("documents.js", "documents-code.js", "documents-prose.js", "documents-cm.js", "documents-cm-theme.js", "documents-outline.js", "documents-callouts.js")
+    for name in ("documents.js", "documents-code.js", "documents-prose.js", "documents-cm.js", "documents-cm-theme.js", "documents-outline.js", "documents-callouts.js", "documents-view.js")
 )
 
 

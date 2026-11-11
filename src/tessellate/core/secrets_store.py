@@ -21,17 +21,24 @@ from tessellate.core import pinstore
 
 log = logging.getLogger("tessellate.secrets")
 
-#: Settings that are secrets: never written to `preferences.json`.
-SECRET_SETTINGS = frozenset({"llm_api_key", "mcp_token"})
+#: Settings that are secrets: never written to `preferences.json`. Each maps to
+#: its own file name, a literal here, so no path below is ever built from a
+#: name that arrived in a request (CodeQL: path injection).
+SECRET_FILES = {"llm_api_key": "llm_api_key", "mcp_token": "mcp_token"}
+SECRET_SETTINGS = frozenset(SECRET_FILES)
 _SERVICE_PREFIX = "setting|"
 
 
 def _account(data_dir: Path, name: str) -> str:
+    if name not in SECRET_FILES:
+        raise ValueError("not a secret setting")
     return _SERVICE_PREFIX + name + "|" + pinstore.account_for(data_dir)
 
 
 def _file(data_dir: Path, name: str) -> Path:
-    return Path(data_dir) / "secrets" / name
+    if name not in SECRET_FILES:
+        raise ValueError("not a secret setting")
+    return Path(data_dir) / "secrets" / SECRET_FILES[name]
 
 
 def _keyring(data_dir: Path) -> pinstore.Store | None:

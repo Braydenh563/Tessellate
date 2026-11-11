@@ -16,7 +16,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-DOCS = (JS / "documents.js").read_text(encoding="utf-8")
+DOCS = (JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-view.js").read_text(encoding="utf-8")
 
 node = pytest.mark.skipif(shutil.which("node") is None, reason="node is not available")
 
