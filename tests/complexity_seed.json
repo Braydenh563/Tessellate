@@ -104,8 +104,6 @@
  "src/tessellate/core/extras.py::_read_footprint": 20,
  "src/tessellate/core/extras.py::_remove_from_frozen_target": 23,
  "src/tessellate/core/jobstore.py::resume": 25,
- "src/tessellate/core/ocr.py::_rapidocr_regions": 18,
- "src/tessellate/core/ocr.py::attempt_binary_install": 18,
  "src/tessellate/core/ocr.py::extract_regions": 19,
  "src/tessellate/core/webclip.py::fetch_page": 18,
  "src/tessellate/entry/manager.py::_hard_delete": 19,
