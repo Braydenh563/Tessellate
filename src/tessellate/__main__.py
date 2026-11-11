@@ -2073,45 +2073,9 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
     # default, so "where your data is" stays one answer, and deleting the data
     # directory really does remove everything.
 
-    # The app icon: replaces the default Python snake in the taskbar and
-    # title bar. Two levels up from src/tessellate/__main__.py lands at the
-    # repo root; frontend/icon.ico sits there. A PyInstaller build has no
-    # "two levels up", everything bundled lands directly under the
-    # extraction root with the `src/` layer gone, same reasoning and same
-    # fix as FRONTEND_DIR in api/app.py. The ICO contains a 512px PNG entry,
-    # which pywebview on Windows and WebKit on macOS both accept. None is a
-    # valid fallback: a missing file never blocks the window.
-    #
-    # Linux gets the plain PNG instead: GTK's icon loading goes through
-    # GdkPixbuf, and unlike Windows/macOS this was never actually run
-    # against a Linux desktop to confirm ICO decodes there, icon-512.png
-    # is the one format every platform this app now ships on is known to
-    # accept, so there's no reason to gamble on the untested one for a
-    # cosmetic detail.
-    if getattr(sys, "frozen", False):
-        _frontend_dir = Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent)) / "frontend"
-    else:
-        _frontend_dir = Path(__file__).resolve().parents[2] / "frontend"
-    _icon_path = _frontend_dir / ("icon-512.png" if sys.platform.startswith("linux") else "icon.ico")
+    _icon_path = _app_icon_path()
     _icon = str(_icon_path) if _icon_path.is_file() else None
-
-    if sys.platform == "win32":
-        try:
-            import ctypes
-            # Setting a custom AppUserModelID tells Windows this is a distinct app,
-            # decoupling the taskbar icon from the Python executable's default snake.
-            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
-                "memorymap.desktop.app.1"
-            )
-        except Exception as exc:
-            # Best-effort cosmetic fix: a wrong or missing taskbar icon is not
-            # worth blocking the window over, so this must never crash the
-            # launcher. But CodeQL is right that a silent `except: pass` here
-            # hides a real failure mode too: an unexpected `ctypes.windll`
-            # shape (a Windows build this wasn't tested against) would fail
-            # every time with no way to tell a cosmetic no-op from a bug.
-            # Logged, not swallowed.
-            logger.warning("could not set the Windows AppUserModelID: %s", exc, exc_info=True)
+    _set_windows_app_id()
 
     # Asked for directly, alongside the installer: a way to manage the app
     # without a terminal window sitting open, and a place for "close" to go
@@ -2228,6 +2192,50 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
         stop_notifier()
         instance_lock.set_focus_handler(None)
         instance_lock.release()
+
+
+def _app_icon_path() -> Path:
+    # The app icon: replaces the default Python snake in the taskbar and
+    # title bar. Two levels up from src/tessellate/__main__.py lands at the
+    # repo root; frontend/icon.ico sits there. A PyInstaller build has no
+    # "two levels up", everything bundled lands directly under the
+    # extraction root with the `src/` layer gone, same reasoning and same
+    # fix as FRONTEND_DIR in api/app.py. The ICO contains a 512px PNG entry,
+    # which pywebview on Windows and WebKit on macOS both accept. None is a
+    # valid fallback: a missing file never blocks the window.
+    #
+    # Linux gets the plain PNG instead: GTK's icon loading goes through
+    # GdkPixbuf, and unlike Windows/macOS this was never actually run
+    # against a Linux desktop to confirm ICO decodes there, icon-512.png
+    # is the one format every platform this app now ships on is known to
+    # accept, so there's no reason to gamble on the untested one for a
+    # cosmetic detail.
+    if getattr(sys, "frozen", False):
+        _frontend_dir = Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent)) / "frontend"
+    else:
+        _frontend_dir = Path(__file__).resolve().parents[2] / "frontend"
+    return _frontend_dir / ("icon-512.png" if sys.platform.startswith("linux") else "icon.ico")
+
+
+def _set_windows_app_id() -> None:
+    """Best-effort taskbar identity; never blocks the window."""
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            # Setting a custom AppUserModelID tells Windows this is a distinct app,
+            # decoupling the taskbar icon from the Python executable's default snake.
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
+                "memorymap.desktop.app.1"
+            )
+        except Exception as exc:
+            # Best-effort cosmetic fix: a wrong or missing taskbar icon is not
+            # worth blocking the window over, so this must never crash the
+            # launcher. But CodeQL is right that a silent `except: pass` here
+            # hides a real failure mode too: an unexpected `ctypes.windll`
+            # shape (a Windows build this wasn't tested against) would fail
+            # every time with no way to tell a cosmetic no-op from a bug.
+            # Logged, not swallowed.
+            logger.warning("could not set the Windows AppUserModelID: %s", exc, exc_info=True)
 
 
 def _attach_desk_companion(webview, window, tray_icon):  # noqa: ANN001

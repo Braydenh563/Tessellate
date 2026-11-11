@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8107, frontend ids 2686, CSS sections 523, backend routes 664, backend modules 10016, test files 2453, tests 20316, plan headings 1002, app scripts 28, boot scripts 37, script files 277.
+Counts: frontend functions 8107, frontend ids 2686, CSS sections 523, backend routes 664, backend modules 10018, test files 2453, tests 20316, plan headings 1002, app scripts 28, boot scripts 37, script files 277.
 
 ## Frontend functions (8107)
 
@@ -13465,7 +13465,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10016)
+## Backend modules (10018)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -13475,17 +13475,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `_adopt_old_environment` | src/tessellate/__init__.py:12 |
 
-### src/tessellate/__main__.py (62)
+### src/tessellate/__main__.py (64)
 
 | Name | File:line |
 |---|---|
 | `_ancestor_console_hwnds` | src/tessellate/__main__.py:1487 |
+| `_app_icon_path` | src/tessellate/__main__.py:2197 |
 | `_apply_console_visibility` | src/tessellate/__main__.py:1618 |
-| `_attach_desk_companion` | src/tessellate/__main__.py:2233 |
+| `_attach_desk_companion` | src/tessellate/__main__.py:2241 |
 | `_boot_and_swap` | src/tessellate/__main__.py:1103 |
 | `_bootloader_splash` | src/tessellate/__main__.py:756 |
 | `_bring_forward` | src/tessellate/__main__.py:1818 |
-| `_capture` | src/tessellate/__main__.py:2850 |
+| `_capture` | src/tessellate/__main__.py:2858 |
 | `_claim_notebook` | src/tessellate/__main__.py:1082 |
 | `_close_bootloader_splash` | src/tessellate/__main__.py:794 |
 | `_close_launch_splash` | src/tessellate/__main__.py:853 |
@@ -13493,7 +13494,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_desktop_port` | src/tessellate/__main__.py:1026 |
 | `_ensure_std_streams` | src/tessellate/__main__.py:527 |
 | `_existing_instance` | src/tessellate/__main__.py:1825 |
-| `_export_markdown` | src/tessellate/__main__.py:2689 |
+| `_export_markdown` | src/tessellate/__main__.py:2697 |
 | `_finish_splash_start_step` | src/tessellate/__main__.py:882 |
 | `_focus_window` | src/tessellate/__main__.py:1203 |
 | `_get_console_hwnd` | src/tessellate/__main__.py:1236 |
@@ -13504,7 +13505,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_mark_start_step_done` | src/tessellate/__main__.py:952 |
 | `_maybe_relaunch_hidden` | src/tessellate/__main__.py:1448 |
 | `_open_window_onto` | src/tessellate/__main__.py:1871 |
-| `_password_exists` | src/tessellate/__main__.py:2728 |
+| `_password_exists` | src/tessellate/__main__.py:2736 |
 | `_port_from_env` | src/tessellate/__main__.py:119 |
 | `_port_holder` | src/tessellate/__main__.py:968 |
 | `_push_status_to_window` | src/tessellate/__main__.py:935 |
@@ -13512,21 +13513,22 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_reassert_window_state` | src/tessellate/__main__.py:1184 |
 | `_recolour_loading_page` | src/tessellate/__main__.py:428 |
 | `_relaunch_argv` | src/tessellate/__main__.py:1360 |
-| `_repair_install` | src/tessellate/__main__.py:2811 |
+| `_repair_install` | src/tessellate/__main__.py:2819 |
 | `_replace_process` | src/tessellate/__main__.py:1694 |
-| `_reset_password` | src/tessellate/__main__.py:2741 |
+| `_reset_password` | src/tessellate/__main__.py:2749 |
 | `_run_desktop` | src/tessellate/__main__.py:1898 |
-| `_run_mcp` | src/tessellate/__main__.py:2663 |
+| `_run_mcp` | src/tessellate/__main__.py:2671 |
 | `_run_server` | src/tessellate/__main__.py:554 |
-| `_run_server_holding_lock` | src/tessellate/__main__.py:2976 |
+| `_run_server_holding_lock` | src/tessellate/__main__.py:2984 |
 | `_serve_with_lan` | src/tessellate/__main__.py:635 |
 | `_serves_this_notebook` | src/tessellate/__main__.py:1009 |
+| `_set_windows_app_id` | src/tessellate/__main__.py:2220 |
 | `_spawn_desktop` | src/tessellate/__main__.py:1265 |
 | `_spawn_detached` | src/tessellate/__main__.py:1378 |
 | `_splash_status` | src/tessellate/__main__.py:779 |
 | `_start_frozen_splash` | src/tessellate/__main__.py:812 |
-| `_start_reminder_notifier` | src/tessellate/__main__.py:2274 |
-| `_start_tray` | src/tessellate/__main__.py:2310 |
+| `_start_reminder_notifier` | src/tessellate/__main__.py:2282 |
+| `_start_tray` | src/tessellate/__main__.py:2318 |
 | `_stop_background_work` | src/tessellate/__main__.py:1654 |
 | `_stop_lingering_worker_threads` | src/tessellate/__main__.py:691 |
 | `_track_window_state` | src/tessellate/__main__.py:1159 |
@@ -13537,7 +13539,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_webview2_runtime_missing` | src/tessellate/__main__.py:1720 |
 | `_window_class_name` | src/tessellate/__main__.py:1587 |
 | `_window_url` | src/tessellate/__main__.py:97 |
-| `main` | src/tessellate/__main__.py:2868 |
+| `main` | src/tessellate/__main__.py:2876 |
 | `restart_app` | src/tessellate/__main__.py:1409 |
 | `restart_in_console_mode` | src/tessellate/__main__.py:1337 |
 | `window_host` | src/tessellate/__main__.py:79 |
