@@ -4462,33 +4462,33 @@ Format: id | file:line | one line | status.
 **BW1 (whiteboard, 28 rows)**
 
 - K24 | audit-1028-backend:30 | God modules: whiteboard 6,123 lines, composer 5,221, tools 5,159, chat 5,023, entries 4,172, files 4,151 | open
-- K36 | audit-1028-backend:42 | list_boards and list_images: per-board loops with queries; timeline pulls all dates for the scrubber | open
+- K36 | audit-1028-backend:42 | list_boards and list_images: per-board loops with queries; timeline pulls all dates for the scrubber | fixed: wb_preview._preview_stamps_bulk groups the fingerprint across the page (tests/test_board_list_queries_k36.py: 31 statements for 3 and for 12 boards, 67 before); list_images was already batched and the timeline scrubber reads date-only rows
 - B1 | audit-1028-board:5 | whiteboard.js is 25,012 lines; initWhiteboard alone is 4,064 lines (one closure holding most handlers), u | open
 - B2 | audit-1028-board:6 | whiteboard-map.js is 10,810 lines, 350 functions; wbBuildMapNode is 369 lines | open
 - B10 | audit-1028-board:14 | Native PDF export absent: PDF is browser Print > Save as PDF (by design comment), so no page size, no mul | open
 - B15 | audit-1028-board:19 | Four overlapping drag/capture mechanisms (pointer capture, window pointermove, mousedown/mousemove/mouseu | open
 - B23 | audit-1028-board:27 | wbBuildExportSvg is 342 lines and builds the SVG from live DOM (getComputedStyle per element via wbExport | open
-- B24 | audit-1028-board:28 | Dead/duplicate markers: comments reference "decision 43", "INBOX 537", "MINDMAP_PLAN.md section 13a" inli | open
-- B25 | audit-1028-board:29 | Minimap present (navigator) but its stale flag redraws all items on any render, so it lags on big boards | open
-- B29 | audit-1028-board:33 | Text formatting: whiteboard-format.js exists (2,208 lines) but not audited for inline rich text in map to | open
-- B30 | audit-1028-board:34 | whiteboard-library.js (2,530 lines) and interchange (1,249) have no size-based lazy loading; all 27 class | open
-- B33 | audit-1028-board:37 | 24 isFinite/NaN guards in whiteboard.js suggest NaN has leaked before; paths without guards (zoom, snap) | open
-- B39 | audit-1028-board:43 | Three module-level mutable singletons (wbDeleteSketchRef, wbRenderQueued, wbRenderFrame, wbNavState) with | open
-- S71 | audit-1028-shell:77 | md and .txt dropped on the Notes tab become notes, with Undo (file-drop.js) | open
-- U1 | audit-1028-ux:7 | Board dark | open
-- U2 | audit-1028-ux:8 | Board dark | open
-- U3 | audit-1028-ux:9 | Board | open
-- U5 | audit-1028-ux:11 | Mind map | open
-- U13 | audit-1028-ux:19 | Board | open
-- U15 | audit-1028-ux:21 | Board | open
-- U17 | audit-1028-ux:23 | Board dark | open
-- U18 | audit-1028-ux:24 | Board | open
+- B24 | audit-1028-board:28 | Dead/duplicate markers: comments reference "decision 43", "INBOX 537", "MINDMAP_PLAN.md section 13a" inli | wontfix: the INBOX and decision numbers are the repo's cited-from-comments convention (CLAUDE.md); the MINDMAP_PLAN section 13a comment no longer exists
+- B25 | audit-1028-board:29 | Minimap present (navigator) but its stale flag redraws all items on any render, so it lags on big boards | stale: a pan or zoom frame moves the rectangle and one transform (wbNavigatorUpdateViewport); items redraw only after a board render, which is when they move (whiteboard.js:3405-3420)
+- B29 | audit-1028-board:33 | Text formatting: whiteboard-format.js exists (2,208 lines) but not audited for inline rich text in map to | partial: bold, italic and code render in topics (wbMapInlineText); an inline [text](url) does not (the Link door is the way); left
+- B30 | audit-1028-board:34 | whiteboard-library.js (2,530 lines) and interchange (1,249) have no size-based lazy loading; all 27 class | stale: the library, templates and interchange scripts are in the lazy loader's list (app.js:1653-1660), not boot
+- B33 | audit-1028-board:37 | 24 isFinite/NaN guards in whiteboard.js suggest NaN has leaked before; paths without guards (zoom, snap) | fixed: wbSnap returns 0 for a non-finite number (the typed zoom is clamped by its field) (tests/test_wb_nan_guards_b33.py)
+- B39 | audit-1028-board:43 | Three module-level mutable singletons (wbDeleteSketchRef, wbRenderQueued, wbRenderFrame, wbNavState) with | stale: wbCancelBoardTimers (B31) resets wbRenderFrame and wbRenderQueued on a board switch; wbDeleteSketchRef no longer exists; wbNavState is marked stale by every render and its drag ends when the overview closes
+- S71 | audit-1028-shell:77 | md and .txt dropped on the Notes tab become notes, with Undo (file-drop.js) | stale: built (file-drop.js onNotes: .md and .txt become notes with Undo)
+- U1 | audit-1028-ux:7 | Board dark | stale: wbDefaultInk re-picks stored black or white at 4.5:1 (whiteboard.js:10337, tests/test_wb_board_1028.py)
+- U2 | audit-1028-ux:8 | Board dark | stale: wbCoreInkFor picks the ink from the fill; stickies are created with ink #2a2a1f
+- U3 | audit-1028-ux:9 | Board | stale: Enter on Sticky note places it at the view centre (CHANGELOG 1639)
+- U5 | audit-1028-ux:11 | Mind map | stale: library-lazy.css counter-scales .wb-map-collapse and .wb-map-count to a 24px floor (CHANGELOG 1639)
+- U13 | audit-1028-ux:19 | Board | stale: the button reads Sidebar (index.html:7258)
+- U15 | audit-1028-ux:21 | Board | stale: Arrange is five submenu rows (tests/test_wb_arrange_submenus_u15.py, CHANGELOG 784)
+- U17 | audit-1028-ux:23 | Board dark | stale: scratchpad/ui-sweeps/wbgripink.js dark 1440x900 on a sticky, a text box and a dark box: 7.96:1 (need 3:1)
+- U18 | audit-1028-ux:24 | Board | stale: bw-1111 probe, 41 boards and 30 stickies at 1440x900 on a loaded machine: undo 33 ms to paint, board list open 32 ms, no long task
 - Y5 | audit-1030-extras:120 | Still open (X15, partly fixed) | open
 - BD7 | audit-1031-board:20 | Sizes: whiteboard.js 25,569 lines, 553 functions, initWhiteboard 4,090 lines; whiteboard-map.js 10,929 li | open
 - Z10 | audit-1031-extras:113 | sketch-pad.js is one 1,805-line closure ((() => { | open
 - PF4 | audit-1031-perf:38 | Every boot parses the whole app | open
-- 1667c | owner-asks-audit-1108:19 | notes-list.js:3559 still calls loadMapBoardIndex() at load (checked 2026-11-09) | open
-- 1694b2 | owner-asks-audit-1108:86 | Typed value field on diagram, whiteboard and mind map zoom | open
+- 1667c | owner-asks-audit-1108:19 | notes-list.js:3559 still calls loadMapBoardIndex() at load (checked 2026-11-09) | stale: notes-list.js:3554 only walks the index when a page has a [[link]] (ensureMapChipsFor) and dash-boards.js when the widget draws; bw-1111 probe: 0 /whiteboard/boards requests in the first 3 s
+- 1694b2 | owner-asks-audit-1108:86 | Typed value field on diagram, whiteboard and mind map zoom | stale: map boards share the board's #wb-zoom-level valueField; bw-1111 probe on a new map board: input present, 100% shown, 150 typed + Enter reads 150%
 
 **BD1 (documents, 27 rows)**
 
