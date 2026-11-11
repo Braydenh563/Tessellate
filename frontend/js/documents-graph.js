@@ -457,7 +457,7 @@
       const item = document.createElement("li");
       const swatch = document.createElement("span");
       swatch.className = "dg-swatch";
-      swatch.style.setProperty("--dg-hue", hue(i));
+      swatch.style.background = hue(i);
       item.append(swatch, Object.assign(document.createElement("span"), { textContent: curve.label }));
       key.append(item);
     });

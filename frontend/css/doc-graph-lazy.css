@@ -128,7 +128,7 @@
   inline-size: var(--space-4);
   block-size: 0.25rem;
   border-radius: var(--radius-sm);
-  background: var(--dg-hue, var(--accent));
+  background: var(--accent);
 }
 
 .dg-params {
