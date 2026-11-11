@@ -8424,6 +8424,20 @@ input[type="color"].wb-mixed {
 .wb-fmt-commands .wb-fmt-buttons {
   flex-wrap: nowrap;
 }
+/* **Under the finger the arrange rows put their buttons under the name**
+   (wrapzoom 2026-11-11, 768x1024). Four 44px targets and their gaps are 188px
+   against the field track's 179 (11rem, 160 on Small text), so Send to back
+   and Same height stood past the panel's edge, under its scroll clip. The
+   name takes its own line and the buttons the panel's width, still one row. */
+@media (max-width: 819.98px), (pointer: coarse) {
+  .wb-fmt-commands > .wb-fmt-row {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--space-1);
+  }
+  .wb-fmt-commands > .wb-fmt-row > :nth-child(2) {
+    grid-column: 1;
+  }
+}
 /* A pressed toggle (bold, italic, an alignment) on the selection's soft
    ground, the sidebar tab's own state. */
 .wb-fmt-buttons button[aria-pressed="true"] {

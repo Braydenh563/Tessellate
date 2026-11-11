@@ -177,3 +177,10 @@ def test_the_format_panel_leaves_the_selection_bar_and_the_zoom_cluster_clear():
     sig = next(line for line in js.splitlines() if "const foldSig =" in line)
     assert "fmtOpen" in sig
 
+def test_the_arrange_rows_put_four_touch_targets_under_their_name():
+    """Four 44px targets are wider than the field track beside a 6rem name;
+    under the finger the name takes its own line and the buttons stay one row."""
+    css = _css("library-lazy.css")
+    touch = "".join(_at_blocks(css, "@media (max-width: 819.98px), (pointer: coarse)"))
+    assert "minmax(0, 1fr)" in _rule(touch, ".wb-fmt-commands > .wb-fmt-row")
+    assert "flex-wrap: nowrap" in _rule(css, ".wb-fmt-commands .wb-fmt-buttons")
