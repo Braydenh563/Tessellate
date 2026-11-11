@@ -209,11 +209,11 @@ Parked until the owner's data or a check on real hardware:
 **W20 Shell accessibility and narrow widths** (C, shell and CSS, Sonnet). Files: `frontend/css/10-responsive.css`, `palette.js` (accessibility only), `index.html`. Checks: `tests/test_zoom_wrap_1717.py`, `scratchpad/ui-sweeps/zoom1717.js` at 600, 480 and 390, axe. Done when: 0 overflows at 390 and axe clean on the palette and the space menu.
 ~~- C17 The palette is not a combobox: no `aria-activedescendant`, results not announced | 1028-shell S5~~ **Fixed before s5-1110 (CHANGELOG 1503).**
 ~~- C18 The space menu fails axe (aria-required-children, nested-interactive) | 1029-extras X4~~ **Fixed before s5-1110 (CHANGELOG 1517).**
-- C19 Ask button clipped at 390; quiet chips 28.6 px on a phone; selection ticks 44 px | 1028-shell S6, chatfoot L5, UI#11 item 12
-- C20 Notes dock wraps from 1280 to 1500 with the rail open; capture row wrap at 1024; tab bar 600 to 819 | t20#10, WORLD_CLASS#13
-- C21 Settings scrolls sideways at 768; Recent head clipped under 1200 | UI#11 item 12, zoom4
-- C22 1920 by 1080 at 125 to 200 % not driven | zoom4
-- C23 "?" after a Dashboard click hands focus to CodeMirror | row21 L47
+- ~~C19 Ask button clipped at 390; quiet chips 28.6 px on a phone; selection ticks 44 px | 1028-shell S6, chatfoot L5, UI#11 item 12~~ **Built earlier (HISTORY, W20 C17 to C19).**
+- ~~C20 Notes dock wraps from 1280 to 1500 with the rail open; capture row wrap at 1024; tab bar 600 to 819 | t20#10, WORLD_CLASS#13~~ **Not reproduced pr216-settings 2026-11-11** (Chromium on :8791, rail open, 1280, 1366, 1440 and 1500: no flex-wrap bar on two lines).
+- ~~C21 Settings scrolls sideways at 768; Recent head clipped under 1200 | UI#11 item 12, zoom4~~ **Not reproduced pr216-settings** (Settings General, Models, Packages, Data at 768 to 1500: 0 sideways scroll, 0 elements past the viewport; the Recent title is hidden under 1200 on purpose, `10-responsive.css` rule 9, and from 1200 it sits above its four buttons on its own line, nothing clipped).
+- ~~C22 1920 by 1080 at 125 to 200 % not driven | zoom4~~ **Driven before (HISTORY, W20 C22).**
+- ~~C23 "?" after a Dashboard click hands focus to CodeMirror | row21 L47~~ **Not reproduced before (HISTORY); not retried.**
 
 **W21 Dashboard, timeline and counts** (C, dashboard, Sonnet; verify first). Files: `dashboard.js`, `timeline*.js`, the import toast, the appearance settings. Checks: `tests/test_dashboard_*`, `tests/test_timeline_*`. Done when: every count is the true total. Verified 2026-11-11 (graph-1111.md): no count short of the true total found; the Timeline's "N+" while more pages wait is honest, a true figure needs a `/timeline` total (routes_timeline, not this batch).
 ~~- C24 Dashboard insight counts capped by a fixed limit | 1028-shell S8~~ **Fixed before s5-1110 (count in SQL).**
@@ -302,9 +302,9 @@ Parked until the owner's data or a check on real hardware:
 
 **W33 Copy and help** (E, copy, Haiku then Sonnet). Files: help topics, copy strings.
 ~~- E11 "Tools and features" omits 60 palette rows | 1031-extras Z3~~ **Already built 073cc0c6b** (`featureCommandRows`; tests/test_xfix_1031.py). Verified s8-1110.
-- E12 The tool describes itself in the answer ("Read as the days from today") | 1030-composer Z49
-- E13 "¦" written for "&" in a category; a "conversation" topic on a gym note | oa 1620 categories b, topics c
-- E14 Manual pictures as WebP made by the sweeps | oa 1612 c
+- ~~E12 The tool describes itself in the answer ("Read as the days from today") | 1030-composer Z49~~ **Waits on the owner** (49 assertions pin the "Read as" lines, the 1108 ask; decision 54; s8-1110.md).
+- ~~E13 "¦" written for "&" in a category; a "conversation" topic on a gym note | oa 1620 categories b, topics c~~ **No repro** (no writer of the character in src or frontend; s8-1110.md; needs the owner's data).
+- ~~E14 Manual pictures as WebP made by the sweeps | oa 1612 c~~ **Deliberately empty** (s8-1110.md; the owner has not asked for a sweep-made image).
 
 **W34 Verify sweeps** (E, docs only, Haiku, stackable outside the four). Each scout marks rows true, fixed or stale in its source and hands true rows to the batch of their surface.
 - E15 book1 audits 1028 (agent, backend, board, docs, shell, ux; 303 rows) | book1
