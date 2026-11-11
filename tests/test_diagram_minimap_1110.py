@@ -88,5 +88,5 @@ def test_the_overview_lifts_above_the_sideways_offer():
     the inline inset is cleared. On a phone the offer is absolute at the top, so the overview keeps its corner."""
     outline = (JS / "diagram-outline.js").read_text(encoding="utf-8")
     assert 'querySelector(":scope > .dgm-minimap")' in outline and "lift(true)" in outline and outline.count("lift(false)") == 2
-    assert 'getComputedStyle(S.sideways).position !== "absolute"' in outline
+    assert 'getComputedStyle?.(S.sideways).position !== "absolute"' in outline
     assert "map.style.insetBlockEnd = below ?" in outline

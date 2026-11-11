@@ -63,7 +63,7 @@
     //: overview rises by its height (INBOX 1737, it lay over the words). On a phone the row is at the top (absolute), so not.
     const lift = (on) => {
       const map = S.sideways?.parentElement?.querySelector(":scope > .dgm-minimap");
-      const below = on && getComputedStyle(S.sideways).position !== "absolute";
+      const below = on && globalThis.getComputedStyle?.(S.sideways).position !== "absolute";
       if (map) map.style.insetBlockEnd = below ? `calc(var(--space-5) + ${S.sideways.offsetHeight + 8}px)` : "";
     };
     if (!show) return S.sideways?.classList.add("hidden"), lift(false);
