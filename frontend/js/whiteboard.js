@@ -362,7 +362,7 @@ function wbSyncCardClamps() {
       //: The toggle's own row is not text: a card is measured without it.
       cardH: card.offsetHeight - (toggle.hidden ? 0 : toggle.offsetHeight),
       floorH: parseFloat(card.style.minHeight) || 0,
-      capH: clamped ? 0 : parseFloat(getComputedStyle(content).fontSize) * 1.4 * 8,
+      capH: clamped ? 0 : wbNum(getComputedStyle(content).fontSize, 16) * 1.4 * 8,
     })]);
   }
   for (const [toggle, needed] of wanted) toggle.hidden = !needed;
@@ -7369,11 +7369,11 @@ function wbFoldContextBar(bar) {
 //: to fit one row, from one read of every width (no layout between reads).
 function wbFoldPlan(bar, candidates) {
   const cs = getComputedStyle(bar);
-  const room = bar.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-  const gap = parseFloat(cs.columnGap) || 0;
+  const room = bar.clientWidth - wbNum(cs.paddingLeft) - wbNum(cs.paddingRight);
+  const gap = wbNum(cs.columnGap);
   const span = (el) => {
     const st = getComputedStyle(el);
-    return el.getBoundingClientRect().width + parseFloat(st.marginLeft) + parseFloat(st.marginRight) + gap;
+    return el.getBoundingClientRect().width + wbNum(st.marginLeft) + wbNum(st.marginRight) + gap;
   };
   const shown = [...bar.children].filter((el) => !el.classList.contains("hidden") && el.getClientRects().length);
   let need = shown.reduce((sum, el) => sum + span(el), -gap);
@@ -9089,6 +9089,15 @@ function wbVisibleCanvasRect() {
     if (el && el.offsetParent !== null && !el.hidden) covers.push(el.getBoundingClientRect());
   }
   return wbFreeCanvasRect(box, covers);
+}
+
+//: A number out of a CSS string or a stored value, or `fallback` when it is not
+//: finite ("normal", "auto", "", NaN): a raw `parseFloat` of those wrote `NaN`
+//: into a style or transform (audit B33). Use it wherever the result is used
+//: as a length.
+function wbNum(v, fallback = 0) {
+  const n = typeof v === "number" ? v : parseFloat(v);
+  return Number.isFinite(n) ? n : fallback;
 }
 
 //: The middle of what the canvas shows, in board units.
@@ -15824,7 +15833,7 @@ async function initWhiteboard() {
     // up partly or fully off-screen.
     new ResizeObserver(() => {
       if (!panel.style.left) return;
-      const [left, top] = clamp(parseFloat(panel.style.left), parseFloat(panel.style.top));
+      const [left, top] = clamp(wbNum(panel.style.left), wbNum(panel.style.top));
       place(left, top);
     }).observe(bounds);
   }
@@ -17001,8 +17010,10 @@ async function initWhiteboard() {
     closeAllWbMenus();
     const what = choice.dataset.wbInsert;
     //: Enter on the item (detail 0) is not a pointer that can click the board
-    //: next, so it places the note where the view is centred (audit U3).
-    if (what === "sticky" && e.detail === 0) wbCreateSticky(...wbViewCentre());
+    //: next, so a sticky note, text box or frame is placed where the view is
+    //: centred (audit U3), not left as an armed tool on a dropped focus.
+    const byKey = e.detail === 0 && { sticky: wbCreateSticky, text: wbCreateTextBox, frame: wbCreateFrame }[what];
+    if (byKey) byKey(...wbViewCentre());
     else if (what === "image") document.getElementById("wb-add-image")?.click();
     else if (what === "note") document.getElementById("wb-add-note")?.click();
     else document.querySelector(`#wb-tool-group [data-tool="${what}"]`)?.click();

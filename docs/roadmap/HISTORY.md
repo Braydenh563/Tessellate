@@ -35,6 +35,106 @@ Genuinely built afterwards:
   (`#doc-word-goal`) is a working word-count-goal control. §5 already recorded
   the outline and reading-time halves as done and called the word-count goal
   "the one unbuilt part", it was built too.
+## Moved from the plans, 2026-11-11 (comp1743-1111: BACKLOG 109.1)
+
+- Moved from BACKLOG (the section as it stood, 109.1 Fixed, and how each was actually proven):
+
+  >
+  > The theme of this round: **four separate reports were "already fixed" by the
+  > source and still wrong on screen, and one was never a bug at all.** Reading
+  > the code decided none of them. What decided them was measuring.
+  >
+  > - **The nav-history popup, reported four times** ("garbled overlapping
+  >   text", "completely broken", "still broken", with screenshots). Every
+  >   earlier fix: spacing, a `min-width` floor, a last-row margin, moving it
+  >   out of the status bar's `backdrop-filter` stacking context: was aimed at
+  >   the wrong cause, and each one was "verified" by *looking at a screenshot*,
+  >   which is exactly how four rounds got spent on it.
+  >
+  >   The actual cause, found by decoding the screenshot PNG and reading raw
+  >   pixel values instead of trusting my own eyes on it: `--modal-bg` is
+  >   `rgba(…, 0.96)`, i.e. **4% see-through by design**. Over most backdrops
+  >   that is invisible. Over the note editor, the densest block of small text
+  >   in the app: 4% is enough for the labels underneath to survive as legible
+  >   ghosting, and any screenshot pipeline that rescales or recompresses
+  >   amplifies it further. Sampled down the popup's left padding column, the
+  >   background read `(252,253,255)` at the top and `(244,246,253)` lower down:
+  >   a real, measurable ~8-unit gradient that was the form showing through.
+  >
+  >   Fix: a new `--modal-bg-opaque` token (alpha 1) used by `.nav-history-menu`.
+  >   Re-sampled after: every point reads `(252,253,255)` exactly, uniformly.
+  >   `--modal-bg` itself is left alone, its other callers (Settings, the
+  >   command palette) float over much emptier backdrops.
+  >
+  >   **And that was only half of it.** The popup was reported broken *again*
+  >   after the opacity fix, with a dark-mode screenshot showing the rows as
+  >   scattered dashes. That is the "illegible dashes" symptom an earlier
+  >   stretch of this session wrote off as a screenshot/DPI capture artifact,
+  >   **that conclusion was wrong, and writing it off is what let the bug
+  >   survive several more rounds.** Measured this time instead of looked at:
+  >   each row reported `scrollHeight` 35px inside a 32.36px box, so the
+  >   `overflow: hidden` on `.nav-history-item` was slicing every glyph down to
+  >   its top few pixels, which is precisely what "dashes" were. The rows are
+  >   `<button>`s, and the app's generic button rule pins a fixed control
+  >   height; the menu escaped that while it lived inside `#status-bar` (whose
+  >   own `.status-item` rules won) and stopped escaping when it was moved out
+  >   to the body earlier in this same round. Fixed with `height: auto;
+  >   min-height: 0` plus flex centring; re-measured `clipped: false`, and the
+  >   dark-mode render is clean and fully legible.
+  >
+  >   Two independent bugs presenting as one complaint, which is why each
+  >   individual fix "didn't work", and why the report kept coming back.
+  >
+  >   **The transferable lesson, and it is the important part of this section:**
+  >   a screenshot viewed by eye is not evidence at this precision. Both a human
+  >   and a vision model will read faint luminance gradients as "ghost text" or
+  >   fail to see a real 4% blend depending on scaling. `scratchpad/pngpixel.py`
+  >   (a ~50-line pure-Python PNG reader, no dependencies) samples exact pixels
+  >   and is the tool to reach for whenever a report is about transparency,
+  >   contrast, or a colour looking wrong. For anything about text being cut
+  >   off, the equivalent is comparing `scrollHeight` against `clientHeight`,
+  >   which settles in one number what rounds of staring at screenshots could
+  >   not. **Never close a visual report as "a capture artifact" without a
+  >   measurement that says so.**
+  >
+  > - **The AI Skills sidebar, reported three times** ("still doesn't float and
+  >   stay 100% the height of the screen"). The sticking was never broken,
+  >   measured: scrolling its container by 400px left it pinned at y=196.97
+  >   exactly. **The height was wrong.** `max-height: var(--page-sticky-h)`
+  >   resolved to 655px, but this sidebar's scrolling ancestor is
+  >   `#library-view-skills`, a *nested* scroller only 534px tall, so the card
+  >   ran 121px past its own viewport and 52px below the fold on an 800px
+  >   screen. `--page-sticky-h` is the right figure only for a sidebar whose
+  >   scroller is the page (`.doc-sidebar`, where the pattern was copied from).
+  >   Fixed with `container-type: size` on the scroller and `max-height: 100cqh`
+  >   on the sidebar; measured after: 534.2px, bottom at 731, still pinned.
+  >
+  > - **The Graph options separator** clashing with the "All time" read-out:
+  >   the divider `::before` set only `margin-inline-end`, so it had the parent
+  >   gap on one side and gap+space-3 on the other. Now `margin-inline`.
+  >
+  > - **No caption byline in the lightbox**, the Library tile has carried one
+  >   since captions became hand-editable; only the lightbox was missing its
+  >   half, so the same picture named its transcriber but not its describer.
+  >   Added, mirroring `syncCaptionBadge` exactly.
+  >
+  > - **The OCR text in the image gallery** is now clamped and expandable like
+  >   the caption above it, for both the Tesseract and the vision-model field.
+  >
+  > - **Bookmark URL editing: not a bug, and this is the third report of it.**
+  >   Reproduced the whole flow live in Chromium this time rather than grepping
+  >   again: Edit opens "Title:" prefilled, saving opens "URL:" prefilled,
+  >   changing both persists, and a full page reload still shows the new title
+  >   and the new URL. The code is correct and the behaviour is correct.
+  >   Everything points at a stale cached `library.js` on the reporting machine
+  >   - the trap HANDOVER.md already names. **If it is reported a fourth time,
+  >   do not re-read the handler; get the served file's ETag and the browser's
+  >   actual loaded copy and compare them.**
+  >
+  > - **The nav-history popup "doesn't appear in the Documents tab"**, does not
+  >   reproduce. Measured in both Notes and Library→Documents: visible, correct
+  >   box, `elementFromPoint` at its centre lands inside the menu (so nothing is
+  >   covering it), no page errors. Same stale-cache suspicion as above.
 
 ## Moved from the plans, 2026-11-11 (s9c-1110 part 6)
 
@@ -1113,6 +1213,12 @@ window to 72px.
 **Now (2026-11-01b, owner at work, away run, branch claude/sharp-thompson-45hngp, PR 211, head 3ffaed1):** merged motion-1101 (1506), rank4-1101 (rows 7, 8, 11, 12, 13, 52); fixed 1507 (casual acts), 1508 part (composer resize), the Guide E2E flake (a press adopted the sheet and moved it 20px; 55b870c). Running: board-1101 (1510b, 1509, 1510a), perf-1101 (1508 rest), rank5-1101 (rows 17, 23 CE3). Next: merge each, rows 35 to 37, plans, OPEN.md, odysseus.
 
 **Now (2026-11-01a, owner awake, branch claude/sharp-thompson-45hngp, PR 211, head 479794a):** merged ux-1031 (rows 25 to 33, 47 to 50, 14, 15), red-1031 (the 17 CI failures), ui-1101 (INBOX 1503 to 1505); fixed BK8 swallowing DC8's message (`Said`), row 24 (complexity), boot CSS 14 bytes over. Running: motion-1101 (INBOX 1506: motion choice separate from the browser's reduced motion, then one motion vocabulary), rank4-1101 (rows 7, 8, 11, 12, 13, 52). Next: merge both, rows 36 and 37 (god modules, global scope) and GR4 leaders, then plans, OPEN.md, odysseus.
+## Moved from HANDOVER, 2026-11-11 (line cap)
+
+**Now (2026-10-12, branch gemini/composer-improvements, PR 169, 0.5.0):** the rename is done (package `tessellate`, the "notes" lockup, new installs in a `Tessellate` data folder, an old `%APPDATA%\MemoryMap AI` folder kept while it exists, `memorymap.db` renamed `tessellate.db` once at start, downloads named `tessellate-*`); the packaged Windows exe starts `scripts/splash.ps1` itself (`_start_frozen_splash`; not run on Windows from here). First work of the next PR: BACKLOG "Start of the next PR" (the owner's 2026-10-12 list: settings header and gaps, Activity Logs button, OCR workspace empty state, whisper.cpp and needle notices, chord key, companion fall physics, Harper grammar) and INBOX 1298, the complexity rows seeded on the owner's order (16 `composer_digest.py` functions, 18 that grew). The block below is the 2026-10-10 record.
+
+**Now (2026-10-10, branch gemini/composer-improvements, Fable orchestrating):** the owner's order (INBOX 765): the deterministic chatbot (CHAT_PLAN Phase 6 and the foundation, Briefs 64 to 68, then 84), then trust and polish (WORLD_CLASS 28, Briefs 72 to 74 and the design rows), then the code editor as an IDE (DOCUMENTS 23, Briefs 69 to 71), then the companion (Brief 34); release work (installers, GitHub release, landing page) runs beside them because the audience is "Public release now". Merged by 19:30Z: 84 (Atlas everywhere), 34 second round (the faces and the tail), 70 (the debugger), the CI batch (21 tests at cause, guards 281 to 277), 71 (the IDE shell, Debug as its fifth tab) and 79 (OCR: five undos, pinch, Live Text); and 89 (Statistics: one page, the week card, timer and stopwatch, Count words, insert template); and 78 (the mind map: Untitled map N, "mind map" everywhere, grips apart, one render per add, every command at 390, four layouts, effects in the export); and 90 (the palette: UI_MODERNISATION palette rows 1, 3, 5, 7; spelling offer, act rows, learned order); and 85 (timeline and reminders: undo 6/6 and 15/15, firing on time, recurrence and early alerts, On this day, 100-row pages); 83's evaluation says keep (MPL-2.0, 5 MB engine, 25 MB a pair, a paragraph in 0.35 to 0.55 s; the build waits for an Opus slot); and 87 (the agent: every starter answered with no model through ai/starter_acts.py, the agent as a sheet at 390, a plan's writes listed and confirmed, each write on the undo bar); and 82 (live captions: the whisper.cpp helper contract, a fake helper, ai/captions.py, the dock, the palette and Packages rows; the packaged helper's download pins are left); 76 (documents: rows 24.1 to 24.4, 24.9, 25.7); 83 (offline translation, English to Spanish, in the browser) and 80 (recordings as objects, the Audio group, recovery of a killed take); running Opus: 88, 48, graphfeel; Sonnet: uipolish, agentgate, pickers (the owner's morning reports, INBOX 775 to 785) (INBOX 775, the owner's live graph report) (three Opus from here, INBOX 774); next 81 after 80, then 49, 52, 54, 55.
+
 ## Moved from HANDOVER, 2026-11-04 (line cap)
 
 **And its twin, learned the same hour, in the other direction.** A staged
@@ -54284,4 +54390,6 @@ Bullets already marked closed in OPEN.md, moved verbatim, grouped by their OPEN.
 1743. **Owner, 2026-11-11 ~10:16 local (screenshot: Ask, a "courses & study" answer beside the new Matching records):** "I still think the composer ask responses could be sooo much better written with more social awareness and better written sentences and paragraphs and insights. Ive always wanted the ask subtab to be a smart browser for your notes". Seen in the answer: one retold sentence per note in a column (13 lines, each its own paragraph), filler lines ("Two notes more on the right.", "More from courses & study."), an odd opener ("Study is a regular subject of yours, as you told me on 5 November."), a definition retold as something said ("You mentioned that Cloud computing is the delivery of computing services"), slang re-voiced flat ("You didnt lock in."), "Back in July" twice in a row, one citation [7] on two lines, and no insight: the notes tell a semester (IT plus three design subjects, Tuesday and Thursday, cloud computing lectures, prototyping class, a missed bus, sent home from work and needing to lock in, then the final assignment at 3:30am and "uni is done"). Recommendation (taken; CHAT_PLAN decision 64 extended, parity decision 75 both ways): an overview is written as two to four short paragraphs grouped by thread, not one line per note: (1) a lead that says what the notes add up to, with the span ("Your study notes follow one semester, July to early November: one IT subject and three design subjects, Tuesdays and Thursdays."); (2) a paragraph per thread with its notes woven in, cited once each; (3) the arc and how it ended, read with social awareness (a finish is congratulated, a hard week is acknowledged plainly, never gushing); (4) one insight the person did not ask for, from the existing insight rules (recurrence, drift, contrast, load). Definitions are "your cloud computing note defines it as ..."; slang and the person's own phrasing are quoted, not re-voiced; no filler lines; no repeated time openers; the Matching records stay the browse list. "Smart browser" (placed, a design row): the answer's threads become chips that filter the Matching records to that thread, a note's card can open its neighbours in place, and Back walks the trail, so Ask browses as well as answers. **Placed: the next composer agent, after 1739 lands.**
    - Owner follow-up, 2026-11-11 ~10:20 local (screenshots): "why are there dimmed notes and then there are brighter ones below them??" (Matching records 12 to 14 dimmed, link-only, sit above brighter direct matches 15 and 16; "Party Thoughts" matches courses study). "there is no left margin on the links dropdown in the matching records. also why does the composer 'show 6 more' isnt it a summary and overview not a read my notes back to me? that text is very close to the corner numbers on matching records, also it no longer shows all those other stats like the similarity, time references, why it matched etc". Plan: Matching records cards (agent af20): one brightness, direct matches before link-only ones, weak meaning matches dropped, links row padded, title kept clear of the number badge, similarity and time references and why-matched back on each card. Composer (1743 agent): no "Show six more" note list in the answer; the overview summarises, the cards hold the notes.
    - **Fixed 3cafbbd30 (woven overview; smart-browser chips and under-five-note paths left, see agent-remaining/comp1743-1111.md).** Measured: courses & study, 11 notes, 13 paragraphs and a Show six more fold to 5 paragraphs (lead, 3 stretches, insight), 0 filler lines, 11 of 11 notes cited once each (tests/test_composer_overview_1743.py, 24 pass).
+
+1747. **Owner, 2026-11-11 ~04:00Z (an Instagram reel link, not opened: it needs a login):** "I saw this reel and it is about finding all the implicit state machines in apps to help find bugs that may have been missed". Recommendation (taken): one read-only audit pass that lists every implicit state machine (flag pairs and their combinations: lazy surface built or not, a module loaded or not, a sheet open while a popup is, a reply streaming with Stop and Regenerate, consent cards pending, vault locked, lock screen, offline, a drag in progress), draws each one's states and transitions as a table, marks the transitions no code handles, and turns each unhandled transition into a failing test first. One row per machine in the audit file, fixes by the usual agents. Owner, 2026-11-11 ~04:10Z, the reel's transcript (excerpt, verbatim): "Find all the implicit state machines in my app ... the rules about how the application state change end up scattered throughout these functions ... maybe your application allows an order to be shipped before it's paid for, or maybe two functions try to alter an order at the same time ... every single individual function might work perfectly, and all your unit tests are probably passing ... map out all those existing state machines. Then take a deep look at it and look for all the transitions that you never thought were possible." Taken: the audit covers the data lifecycles (note, reminder, consent, job, import, attachment, board, session) and races, ranked above UI flags. **Audit done 2026-11-11:** 27 machines in `docs/roadmap/agent-remaining/sm-1111.md`, 4 reproduced and 3 fixed (419c08551 consent replay, 7cd830737 lazy pane hooks, 194b98906 binned archive); open rows 3, 4, 22, 26 first. **Placed: sm-1111.md rows, next agent slot.**
 

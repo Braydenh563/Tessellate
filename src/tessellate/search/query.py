@@ -151,7 +151,7 @@ _SCAFFOLD = re.compile(
     r"^\s*(?:"
     r"what(?:'s| is| are| did| have| was| were)?|"
     r"which|show me|pull up|bring up|find( me)?|list|tell me( about)?|remind me( about)?|"
-    r"can you (?:show|find|tell|list)( me)?|do i have|did i (?:write|save|note|say)|"
+    r"can you (?:show|find|tell|list)( me)?|do i have|do i know(?: about| on| of)?|did i (?:write|save|note|say)|"
     r"have i (?:written|saved|noted|said)|i (?:wrote|saved|noted|write|save|note)|"
     r"any(?:thing)?|all (?:my|the)|my|the|about|any notes|notes|note|"
     # Pronouns and auxiliaries left behind once the phrase around them goes:
