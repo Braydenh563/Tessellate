@@ -32,6 +32,7 @@ const MEASURE = () => {
   const iris = [...b.querySelectorAll('.atl-eye .atl-iris-fill')];
   const lids = [...b.querySelectorAll('.atl-eye .atl-lid > path.atl-skin')];
   const lows = [...b.querySelectorAll('.atl-eye .atl-lid-low > path.atl-skin')];
+  const inks = [...b.querySelectorAll('.atl-eye .atl-ink')];
   // The iris's top against the white's upper edge straight above it, and the lid's edge there, in px.
   const eyes = scl.map((s, i) => {
     const ir = iris[i].getBoundingClientRect(); const sr = s.getBoundingClientRect();
@@ -44,7 +45,7 @@ const MEASURE = () => {
     }
     const lr = lids[i] ? lids[i].getBoundingClientRect() : null;
     const lo = lows[i] ? lows[i].getBoundingClientRect() : null;
-    return { sclera: r(s), iris: r(iris[i]), scleraTopAtIris: top && +top.toFixed(2), irisTop: +ir.y.toFixed(2), lidBottom: lr && +lr.bottom.toFixed(2), lowTop: lo && +lo.y.toFixed(2), lidOp: lids[i] && getComputedStyle(lids[i].closest('.atl-lid')).opacity };
+    return { sclera: r(s), iris: r(iris[i]), scleraTopAtIris: top && +top.toFixed(2), irisTop: +ir.y.toFixed(2), inkTop: inks[i] ? +inks[i].getBoundingClientRect().y.toFixed(2) : null, lidBottom: lr && +lr.bottom.toFixed(2), lowTop: lo && +lo.y.toFixed(2), lidOp: lids[i] && getComputedStyle(lids[i].closest('.atl-lid')).opacity };
   });
   const arms = [...b.querySelectorAll('.atl-fills .nmb-arm > path.atl-skin')];
   const torso = b.querySelector('.atl-fills .nmb-torso path.atl-skin') || b.querySelector('.nmb-torso path.atl-skin');

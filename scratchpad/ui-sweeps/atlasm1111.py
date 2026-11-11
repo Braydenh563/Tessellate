@@ -68,6 +68,7 @@ def eyes(rec):
     ew = (sa[2] + sb[2]) / 2
     cy = (sa[1] + sa[3] / 2 + sb[1] + sb[3] / 2) / 2
     clear = min(e["irisTop"] - e["scleraTopAtIris"] for e in (a, b)) if a["scleraTopAtIris"] else None
+    ink = min(e["inkTop"] - e["scleraTopAtIris"] for e in (a, b)) if a.get("inkTop") and a["scleraTopAtIris"] else None
     lid = min(e["irisTop"] - e["lidBottom"] for e in (a, b)) if a["lidBottom"] else None
     return {
         "eye_over_head": round(ew / w, 3),
@@ -75,6 +76,7 @@ def eyes(rec):
         "gap_over_eye": round((right[0] - left[0] - left[2]) / ew, 3),
         "iris_clear_px": clear and round(clear, 2),
         "iris_below_lid_px": lid and round(lid, 2),
+        "ink_clear_px": ink and round(ink, 2),
     }
 
 
