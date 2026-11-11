@@ -497,9 +497,11 @@ def _label_in_background(recording_id: int, path: Path, workspace: str | None, j
             row = session.query(Recording).filter(Recording.id == recording_id).first()
             if row is None:
                 raise RuntimeError("That recording was deleted while its voices were told apart.")
-            labelled = transcript.clean(diarize.assign(transcript.loads(row.segments), found))
-            count = diarize.speaker_count(labelled) if len({span[2] for span in found}) > 1 else 0
-            if count:
+            segments = transcript.loads(row.segments)
+            labels = diarize.voice_labels(segments, found)
+            if labels is not None:
+                labelled = transcript.clean([{**seg, "speaker": label} for seg, label in zip(segments, labels, strict=True)])
+                count = diarize.speaker_count(labelled)
                 row.segments = transcript.dumps(labelled)
                 log_action(session, "edited", "recording", row.id, f"{count} speakers labelled by voice")
                 session.commit()

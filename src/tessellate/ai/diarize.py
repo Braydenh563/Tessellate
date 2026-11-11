@@ -119,28 +119,35 @@ def _gap(seg: dict, span: Span) -> int:
     return max(span[0] - seg["end"], seg["start"] - span[1], 0)
 
 
-def assign(segments: list[dict], found: list[Span]) -> list[dict]:
-    """The segments with `speaker` set to "Speaker N" from the spans: each
-    line takes the voice that covers most of it, or, in a gap, the nearest
-    voice within a turn-length pause (`transcript.TURN_PAUSE_MS`), else none.
-    N counts voices in the order they first speak. Fewer than two voices
-    labels nothing. The input is not changed."""
-    if len({span[2] for span in found}) < 2:
-        return [dict(seg) for seg in segments]
+def voice_labels(segments: list[dict], found: list[Span]) -> list[str | None] | None:
+    """One "Speaker N" (or None) per line from the spans: each line takes the
+    voice that covers most of it, or, in a gap, the nearest voice within a
+    turn-length pause (`transcript.TURN_PAUSE_MS`), else none. N counts voices
+    in the order they first speak. None when the lines hear fewer than two
+    voices: the engine may find a second voice where nothing was transcribed,
+    and "Speaker 1" on every line is still noise."""
     picked: list[int | None] = []
     for seg in segments:
         best = max(found, key=lambda span: (_overlap(seg, span), -_gap(seg, span)), default=None)
         if best is not None and _overlap(seg, best) == 0 and _gap(seg, best) > transcript.TURN_PAUSE_MS:
             best = None
         picked.append(best[2] if best is not None else None)
+    if len({voice_id for voice_id in picked if voice_id is not None}) < 2:
+        return None
     numbers: dict[int, int] = {}
-    out = []
-    for seg, voice_id in zip(segments, picked, strict=True):
-        label = None
-        if voice_id is not None:
-            label = f"Speaker {numbers.setdefault(voice_id, len(numbers) + 1)}"
-        out.append({**seg, "speaker": label})
-    return out
+    return [
+        None if voice_id is None else f"Speaker {numbers.setdefault(voice_id, len(numbers) + 1)}"
+        for voice_id in picked
+    ]
+
+
+def assign(segments: list[dict], found: list[Span]) -> list[dict]:
+    """The segments with `speaker` set from `voice_labels`, or as they were
+    when it labels nothing. The input is not changed."""
+    labels = voice_labels(segments, found)
+    if labels is None:
+        return [dict(seg) for seg in segments]
+    return [{**seg, "speaker": label} for seg, label in zip(segments, labels, strict=True)]
 
 
 def speaker_count(segments: list[dict]) -> int:

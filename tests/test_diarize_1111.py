@@ -60,6 +60,13 @@ def test_one_voice_labels_nothing() -> None:
     assert all(s["speaker"] is None for s in out)
 
 
+def test_two_voices_heard_where_only_one_was_transcribed_label_nothing() -> None:
+    """Review fix: the engine can find a second voice in a stretch with no
+    lines (a cough, a door); "Speaker 1" on every line is the same noise."""
+    out = diarize.assign([_seg(0, 1000), _seg(1500, 2500)], [(0, 3000, 5), (30000, 31000, 6)])
+    assert all(s["speaker"] is None for s in out)
+
+
 def test_assign_keeps_the_paragraph_flag_and_text() -> None:
     segs = [{**_seg(0, 1000, "Hello"), "paragraph": True}, _seg(1000, 2000, "Hi")]
     out = diarize.assign(segs, [(0, 1000, 0), (1000, 2000, 1)])
