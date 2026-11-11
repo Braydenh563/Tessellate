@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Refactor (D24, scope-wrap-1111): `lag-watch.js` (five exports) and `agent-activity.js` (eleven) are wrapped whole in one closure, 8,504 to 8,454 names in the shared scope; the lag and diagnostics tests read them through `_js_scope.unwrapped`. No behaviour change.
 - Tests: CI leg 1 back to green after the wrapzoom and settings merges (hop constants read from `engine_consts`, the speaker-labels extra listed in requirements.txt, the `docSpell.packKey` stub in the docs harnesses, the dgpolish block window widened, the wrapzoom docs rule regex anchored).
 - Copy: the draft's save button reads "Save to note" when carrying a note on (was "Save to that note"); the chip beside it names the note, and the shorter word keeps the draft's actions on one row on a phone.
 - Fix (one row at a tablet and a phone): the Documents dock at 768x1024 was two rows (94px, the name on a line of its own) and is one 44px row, the save state leaving the row below 820 of dock; the writing room's draft actions at 360 were two rows (96px) and are one 44px row.

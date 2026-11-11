@@ -35,407 +35,412 @@
 // throttled, and its "lag" is the browser's choice, not the app's.
 
 //: The report's two files, as one lazy module (lazy-entries.js is a boot script and at its budget).
-LAZY_MODULES.diagnostics = ["/js/lag-watch.js", "/js/diag-report.js"];
+(() => {
+  LAZY_MODULES.diagnostics = ["/js/lag-watch.js", "/js/diag-report.js"];
 
-const LAG = { queue: [], timer: 0, lastInput: "", lastInputAt: 0, lastAt: {}, bare: {}, byCause: new Map(), recent: [], errors: new Map() };
-//: The frame sampler: a loop that spends more than `LAG_RAF_BUDGET_MS` of
-//: every second for `LAG_RAF_SECONDS` seconds running is reported once.
-const LAG_RAF_BUDGET_MS = 120;
-const LAG_RAF_SECONDS = 3;
-const LAG_RECENT_MS = 5 * 60 * 1000;
-//: A frame callback this slow is kept (owner, start, ms) so a long-frame row can name it (`LAG_RAF.at`).
-const LAG_RAF = { on: true, slowMs: 4, slow: [], fns: new WeakMap(), src: new Map(), srcN: 0, bucket: new Map(), hot: new Map(), owners: new Map(), second: 0 };
-const LAG_FRAME_MS = 200;
-const LAG_INPUT_MS = 300;
-const LAG_REQUEST_MS = 3000;
+  const LAG = { queue: [], timer: 0, lastInput: "", lastInputAt: 0, lastAt: {}, bare: {}, byCause: new Map(), recent: [], errors: new Map() };
+  //: The frame sampler: a loop that spends more than `LAG_RAF_BUDGET_MS` of
+  //: every second for `LAG_RAF_SECONDS` seconds running is reported once.
+  const LAG_RAF_BUDGET_MS = 120;
+  const LAG_RAF_SECONDS = 3;
+  const LAG_RECENT_MS = 5 * 60 * 1000;
+  //: A frame callback this slow is kept (owner, start, ms) so a long-frame row can name it (`LAG_RAF.at`).
+  const LAG_RAF = { on: true, slowMs: 4, slow: [], fns: new WeakMap(), src: new Map(), srcN: 0, bucket: new Map(), hot: new Map(), owners: new Map(), second: 0 };
+  const LAG_FRAME_MS = 200;
+  const LAG_INPUT_MS = 300;
+  const LAG_REQUEST_MS = 3000;
 
-function lagView() {
-  return prefs.get("activeTab", null) || "notes";
-}
-
-//: `button#ask-btn.primary`: enough to find the control, no text content. With no id of its
-//: own it is named by the nearest one above it (`button.small in #dash-grid`), and a text node
-//: by its parent: 15 dashboard rows read "pointerover on " (audit 1031 PF9).
-function lagTarget(el) {
-  if (el && el.nodeType !== 1) el = el.parentElement;
-  if (!el || !el.tagName) return "an element that has gone";
-  const cls = typeof el.className === "string" ? el.className.trim().split(/\s+/).slice(0, 2).join(".") : "";
-  const home = el.id ? null : el.parentElement?.closest("[id]");
-  return `${el.tagName.toLowerCase()}${el.id ? "#" + el.id : ""}${cls ? "." + cls : ""}${home ? " in #" + home.id : ""}`.slice(0, 80);
-}
-
-function lagFile(url) {
-  return String(url || "").split("?")[0].split("/").pop() || "inline";
-}
-
-//: The scripts that ran in a long frame, longest first: "documents.js
-//: docRender 412ms (layout 120ms)".
-function lagScriptCause(scripts, frame) {
-  return [...(scripts || [])]
-    .sort((a, b) => b.duration - a.duration)
-    .slice(0, 3)
-    .map((s) => {
-      const name = s.sourceFunctionName || s.invoker || s.invokerType || "?";
-      const layout = s.forcedStyleAndLayoutDuration >= 20 ? ` (forced layout ${Math.round(s.forcedStyleAndLayoutDuration)}ms)` : "";
-      //: The sampler's own wrapper runs every animation callback, so LoAF names this file for
-      //: them: say what they are and which loop cost most this second.
-      //: Better still, the callback that ran inside this script's own window (`LAG_RAF.at`).
-      const wrapped = lagFile(s.sourceURL) === "lag-watch.js";
-      const ran = wrapped ? LAG_RAF.at(s.startTime, s.startTime + s.duration) : null;
-      const file = ran ? ran.owner : wrapped ? `animation loops (top: ${lagRafTop()})` : `${lagFile(s.sourceURL)} ${name}`;
-      return `${file} ${Math.round(ran ? ran.ms : s.duration)}ms${layout}${lagApiWho(name, frame)}`;
-    })
-    .join("; ");
-}
-
-//: `Response.json.then` is how LoAF names the continuation of `apiJson`'s caller.
-//: Each answer is stamped with its path and the first script that asked.
-const LAG_API = [];
-
-//: A wrapper around `apiJson` is not the caller. whiteboard-history.js installs `window.apiJson
-//: = async (...) =>`, which V8 names "window.apiJson", so every call read as that file (INBOX
-//: 1667): a frame whose function ends in apiJson is skipped, whatever its prefix.
-lagApi.skip = /lag-watch\.js|at (?:async )?(?:[\w$]+\.)*apiJson /;
-
-function lagApi(path) {
-  Error.stackTraceLimit = 8;
-  const who = lagStackOwner(new Error().stack, lagApi.skip);
-  Error.stackTraceLimit = 10;
-  return (data) => {
-    LAG_API.push({ t: performance.now(), label: `${String(path).split("?")[0]} from ${who}` });
-    if (LAG_API.length > 24) LAG_API.shift();
-    return data;
-  };
-}
-
-function lagApiWho(name, frame) {
-  if (!/Response\.json\.then/.test(name)) return "";
-  const seen = new Set(LAG_API.filter((a) => a.t >= frame.startTime && a.t <= frame.startTime + frame.duration).map((a) => a.label));
-  return seen.size ? ` [apiJson ${[...seen].slice(0, 3).join(", ")}]` : "";
-}
-
-function lagNote(kind, ms, cause, extra = {}) {
-  if (document.hidden) return;
-  const now = Date.now();
-  //: One report a kind per half second: a stall that spans several frames is
-  //: one event to a person, and a flood would push the rest out of the log.
-  if (now - (LAG.lastAt[kind] || 0) < 500) return;
-  LAG.lastAt[kind] = now;
-  LAG.recent.push({ at: now, kind, ms: Math.round(ms), cause: cause || "" });
-  //: The same cause inside a minute is one row with a count and the worst time.
-  const same = cause && LAG.byCause.get(`${kind}|${cause}`);
-  if (same && LAG.queue.includes(same) && now - same.t < 60000) {
-    same.n += 1;
-    same.ms = Math.max(same.ms, Math.round(ms));
-    return;
+  function lagView() {
+    return prefs.get("activeTab", null) || "notes";
   }
-  while (LAG.recent.length > 100 || (LAG.recent[0] && now - LAG.recent[0].at > LAG_RECENT_MS)) LAG.recent.shift();
-  //: A stall no script owns names nothing, so a run of them is one report
-  //: with a count and the worst time, not a line each.
-  const bare = !cause && LAG.bare[kind];
-  if (bare && LAG.queue.includes(bare) && now - bare.t < 10000) {
-    bare.n += 1;
-    bare.ms = Math.max(bare.ms, Math.round(ms));
-    return;
+
+  //: `button#ask-btn.primary`: enough to find the control, no text content. With no id of its
+  //: own it is named by the nearest one above it (`button.small in #dash-grid`), and a text node
+  //: by its parent: 15 dashboard rows read "pointerover on " (audit 1031 PF9).
+  function lagTarget(el) {
+    if (el && el.nodeType !== 1) el = el.parentElement;
+    if (!el || !el.tagName) return "an element that has gone";
+    const cls = typeof el.className === "string" ? el.className.trim().split(/\s+/).slice(0, 2).join(".") : "";
+    const home = el.id ? null : el.parentElement?.closest("[id]");
+    return `${el.tagName.toLowerCase()}${el.id ? "#" + el.id : ""}${cls ? "." + cls : ""}${home ? " in #" + home.id : ""}`.slice(0, 80);
   }
-  const event = {
-    at: new Date().toISOString(),
-    kind,
-    ms: Math.round(ms),
-    view: lagView(),
-    cause: cause || "no script attributed",
-    input: LAG.lastInput,
-    input_ago_ms: LAG.lastInput ? now - LAG.lastInputAt : null,
-    nodes: document.getElementsByTagName("*").length,
-    heap_mb: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null,
-    vp: `${innerWidth}x${innerHeight}`,
-    dpr: window.devicePixelRatio || 1,
-    cores: navigator.hardwareConcurrency || null,
-    mem_gb: navigator.deviceMemory || null,
-    //: A sweep that throttles the CPU sets `window.lagThrottled` to the rate, so its rows do not read
-    //: as a real lag day.
-    visibility: document.visibilityState,
-    throttled: window.lagThrottled || 0,
-    n: 1,
-    ...extra,
-  };
-  event.t = now;
-  if (cause) {
-    recordBrowserLog("WARN", [`Lag: ${kind} ${event.ms}ms on ${event.view}: ${event.cause}`]);
-    LAG.byCause.set(`${kind}|${cause}`, event);
-    if (LAG.byCause.size > 40) LAG.byCause.delete(LAG.byCause.keys().next().value);
-  } else {
-    LAG.bare[kind] = event;
+
+  function lagFile(url) {
+    return String(url || "").split("?")[0].split("/").pop() || "inline";
   }
-  LAG.queue.push(event);
-  if (LAG.queue.length > 20) LAG.queue.shift();
-  if (!LAG.timer) LAG.timer = setTimeout(lagFlush, 10000);
-}
 
-function lagFlush() {
-  LAG.timer = 0;
-  const events = LAG.queue.splice(0, 20).map(({ t, ...rest }) => rest);
-  if (!events.length) return Promise.resolve();
-  return api("/logs/lag", { method: "POST", body: JSON.stringify({ events }) }).catch(() => {});
-}
-
-function lagFrame(e) {
-  if (e.duration < LAG_FRAME_MS) return;
-  const layout = e.styleAndLayoutStart ? e.startTime + e.duration - e.styleAndLayoutStart : 0;
-  const cause = lagScriptCause(e.scripts, e) || (layout >= 50 ? "style and layout" : "") || lagFrameWhy(e);
-  lagNote("frame", e.duration, cause, { blocking_ms: Math.round(e.blockingDuration || 0), layout_ms: Math.round(layout) });
-}
-
-//: What a frame no script owns can still say. `longtask` names its container (an iframe, the
-//: page); a long animation frame says how long rendering ran after its scripts. 53 of 304 frame
-//: rows said "no script attributed", every one over 4 s among them (audit 1031 PF9).
-function lagFrameWhy(e) {
-  const who = [...(e.attribution || [])].map((a) => [a.containerType, a.containerName || a.containerSrc || a.containerId].filter(Boolean).join(" ")).filter(Boolean);
-  if (who.length) return `page task in ${who.slice(0, 2).join(", ")}`;
-  if (!e.renderStart) return "";
-  const paint = Math.round(e.startTime + e.duration - e.renderStart);
-  const before = Math.round(e.duration) - paint;
-  if (before <= paint) return `rendering and painting ${paint}ms after the scripts`;
-  //: **What "script with no source file" was** (INBOX 1575: 1,340 ms on the dashboard, 256 to 458 ms
-  //: after boot). A frame's `scripts` lists only the ones that ran 5ms or more, and nothing else the
-  //: page does between two renders is a script: traced at 4x CPU on a 2,000-note notebook, these frames
-  //: were style and layout the browser ran on its own (a hit test for a pointer event on a page whose
-  //: tab had just flipped: 327 ms in one `UpdateLayoutTree`, no script), or, in the first seconds,
-  //: parsing and compiling the page's own scripts (`ParseHTML` 246 ms); one 522 ms task left no trace
-  //: event at all (a collection or the machine's load). The row says which it most likely was.
-  const input = e.firstUIEventTimestamp;
-  const owner =
-    e.startTime < 8000
-      ? "the page loading: parsing, compiling, style and layout"
-      : input > 0 && input >= e.startTime && input <= e.startTime + e.duration
-        ? "an input event waiting on style and layout"
-        : "the browser's own style, layout or garbage collection";
-  return `${before}ms before rendering with no script over 5ms in it (${owner}), then ${paint}ms rendering`;
-}
-
-function lagInput(e) {
-  if (e.duration < LAG_INPUT_MS) return;
-  lagNote("input", e.duration, `${e.name || "input"} on ${lagTarget(e.target)}`, {
-    wait_ms: Math.round(e.processingStart - e.startTime),
-    run_ms: Math.round(e.processingEnd - e.processingStart),
-    paint_ms: Math.round(e.startTime + e.duration - e.processingEnd),
-  });
-}
-
-function lagRequest(e) {
-  const fetched = e.initiatorType === "fetch" || e.initiatorType === "xmlhttprequest";
-  //: The long-lived streams (chat, logs, events) and the long-poll the
-  //: server holds open (`/auth/lan-watch`, 25 s a turn) are slow by design.
-  if (!fetched || e.duration < LAG_REQUEST_MS || /\/stream\b|\/events\b|\/lan-watch\b/.test(e.name)) return;
-  lagNote("request", e.duration, new URL(e.name, location.href).pathname);
-}
-
-function lagObserve(type, handle, options = {}) {
-  if (!PerformanceObserver.supportedEntryTypes?.includes(type)) return false;
-  new PerformanceObserver((list) => list.getEntries().forEach(handle)).observe({ type, buffered: true, ...options });
-  return true;
-}
-
-//: The first stack line outside this file: "atlas-motion.js tick".
-function lagStackOwner(stack, skip) {
-  for (const line of String(stack).split("\n").slice(1)) {
-    if (skip ? skip.test(line) : line.includes("lag-watch.js")) continue;
-    const m = line.match(/at (?:(\S+) \()?[^\s()]*?([^/\s()]+\.js)[?:\d]/);
-    if (m) return m[1] ? `${m[2]} ${m[1].replace(/^.*\./, "")}` : m[2];
+  //: The scripts that ran in a long frame, longest first: "documents.js
+  //: docRender 412ms (layout 120ms)".
+  function lagScriptCause(scripts, frame) {
+    return [...(scripts || [])]
+      .sort((a, b) => b.duration - a.duration)
+      .slice(0, 3)
+      .map((s) => {
+        const name = s.sourceFunctionName || s.invoker || s.invokerType || "?";
+        const layout = s.forcedStyleAndLayoutDuration >= 20 ? ` (forced layout ${Math.round(s.forcedStyleAndLayoutDuration)}ms)` : "";
+        //: The sampler's own wrapper runs every animation callback, so LoAF names this file for
+        //: them: say what they are and which loop cost most this second.
+        //: Better still, the callback that ran inside this script's own window (`LAG_RAF.at`).
+        const wrapped = lagFile(s.sourceURL) === "lag-watch.js";
+        const ran = wrapped ? LAG_RAF.at(s.startTime, s.startTime + s.duration) : null;
+        const file = ran ? ran.owner : wrapped ? `animation loops (top: ${lagRafTop()})` : `${lagFile(s.sourceURL)} ${name}`;
+        return `${file} ${Math.round(ran ? ran.ms : s.duration)}ms${layout}${lagApiWho(name, frame)}`;
+      })
+      .join("; ");
   }
-  return "unknown";
-}
 
-//: **A fresh closure is known by its source** (audit 1102 DX1): CodeMirror asks for a frame
-//: with a new arrow on every key, and a stack per arrow was 14 us at 1x, 1.3 ms of a key at
-//: 4x in the long-document probe. A short source seen before takes its owner; one call in 32
-//: still takes the stack, and a source two files share (the owners differ) is marked "" and
-//: takes the stack every time from then on.
-function lagRafOwner(fn) {
-  let owner = LAG_RAF.fns.get(fn);
-  if (owner) return owner;
-  const src = fn instanceof Function ? Function.prototype.toString.call(fn) : "";
-  const kept = src && src.length <= 160 ? LAG_RAF.src.get(src) : "";
-  LAG_RAF.srcN = (LAG_RAF.srcN + 1) % 32;
-  if (kept && LAG_RAF.srcN) owner = kept;
-  else {
-    const limit = Error.stackTraceLimit;
-    Error.stackTraceLimit = 5;
-    owner = lagStackOwner(new Error().stack);
-    Error.stackTraceLimit = limit;
-    if (kept === undefined && LAG_RAF.src.size < 500) LAG_RAF.src.set(src, owner);
-    else if (kept && kept !== owner) LAG_RAF.src.set(src, "");
+  //: `Response.json.then` is how LoAF names the continuation of `apiJson`'s caller.
+  //: Each answer is stamped with its path and the first script that asked.
+  const LAG_API = [];
+
+  //: A wrapper around `apiJson` is not the caller. whiteboard-history.js installs `window.apiJson
+  //: = async (...) =>`, which V8 names "window.apiJson", so every call read as that file (INBOX
+  //: 1667): a frame whose function ends in apiJson is skipped, whatever its prefix.
+  lagApi.skip = /lag-watch\.js|at (?:async )?(?:[\w$]+\.)*apiJson /;
+
+  function lagApi(path) {
+    Error.stackTraceLimit = 8;
+    const who = lagStackOwner(new Error().stack, lagApi.skip);
+    Error.stackTraceLimit = 10;
+    return (data) => {
+      LAG_API.push({ t: performance.now(), label: `${String(path).split("?")[0]} from ${who}` });
+      if (LAG_API.length > 24) LAG_API.shift();
+      return data;
+    };
   }
-  if (fn instanceof Function) LAG_RAF.fns.set(fn, owner);
-  return owner;
-}
 
-//: Keeps the last few slow callbacks; the ring is bounded, so a busy loop costs no memory.
-LAG_RAF.note = (owner, t0, ms) => {
-  LAG_RAF.slow.push({ owner, t0, ms });
-  if (LAG_RAF.slow.length > 16) LAG_RAF.slow.shift();
-};
+  function lagApiWho(name, frame) {
+    if (!/Response\.json\.then/.test(name)) return "";
+    const seen = new Set(LAG_API.filter((a) => a.t >= frame.startTime && a.t <= frame.startTime + frame.duration).map((a) => a.label));
+    return seen.size ? ` [apiJson ${[...seen].slice(0, 3).join(", ")}]` : "";
+  }
 
-//: The slowest kept callback that started inside [from, to]: what the wrapper's LoAF row stands for
-//: (it showed `FrameRequestCallback @lag-watch.js`, the wrapper's own name, for every loop).
-LAG_RAF.at = (from, to) => {
-  let best = null;
-  for (const r of LAG_RAF.slow) if (r.t0 >= from - 1 && r.t0 <= to + 1 && (!best || r.ms > best.ms)) best = r;
-  return best;
-};
-
-function lagRafTop() {
-  let top = "none";
-  let most = 0;
-  for (const [owner, s] of LAG_RAF.bucket) if (s.ms > most) [top, most] = [owner, s.ms];
-  return top;
-}
-
-function lagRafClose(now = performance.now()) {
-  for (const [owner, s] of LAG_RAF.bucket) {
-    if (s.ms < LAG_RAF_BUDGET_MS) {
-      LAG_RAF.hot.delete(owner);
-      continue;
+  function lagNote(kind, ms, cause, extra = {}) {
+    if (document.hidden) return;
+    const now = Date.now();
+    //: One report a kind per half second: a stall that spans several frames is
+    //: one event to a person, and a flood would push the rest out of the log.
+    if (now - (LAG.lastAt[kind] || 0) < 500) return;
+    LAG.lastAt[kind] = now;
+    LAG.recent.push({ at: now, kind, ms: Math.round(ms), cause: cause || "" });
+    //: The same cause inside a minute is one row with a count and the worst time.
+    const same = cause && LAG.byCause.get(`${kind}|${cause}`);
+    if (same && LAG.queue.includes(same) && now - same.t < 60000) {
+      same.n += 1;
+      same.ms = Math.max(same.ms, Math.round(ms));
+      return;
     }
-    const seconds = (LAG_RAF.hot.get(owner) || 0) + 1;
-    LAG_RAF.hot.set(owner, seconds);
-    if (seconds >= LAG_RAF_SECONDS) {
-      LAG_RAF.hot.delete(owner);
-      lagNote("raf", s.ms, `${owner} ${s.n} calls/s, ${(s.ms / s.n).toFixed(1)}ms each (${Math.round(s.ms)}ms of every second)`);
+    while (LAG.recent.length > 100 || (LAG.recent[0] && now - LAG.recent[0].at > LAG_RECENT_MS)) LAG.recent.shift();
+    //: A stall no script owns names nothing, so a run of them is one report
+    //: with a count and the worst time, not a line each.
+    const bare = !cause && LAG.bare[kind];
+    if (bare && LAG.queue.includes(bare) && now - bare.t < 10000) {
+      bare.n += 1;
+      bare.ms = Math.max(bare.ms, Math.round(ms));
+      return;
     }
+    const event = {
+      at: new Date().toISOString(),
+      kind,
+      ms: Math.round(ms),
+      view: lagView(),
+      cause: cause || "no script attributed",
+      input: LAG.lastInput,
+      input_ago_ms: LAG.lastInput ? now - LAG.lastInputAt : null,
+      nodes: document.getElementsByTagName("*").length,
+      heap_mb: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null,
+      vp: `${innerWidth}x${innerHeight}`,
+      dpr: window.devicePixelRatio || 1,
+      cores: navigator.hardwareConcurrency || null,
+      mem_gb: navigator.deviceMemory || null,
+      //: A sweep that throttles the CPU sets `window.lagThrottled` to the rate, so its rows do not read
+      //: as a real lag day.
+      visibility: document.visibilityState,
+      throttled: window.lagThrottled || 0,
+      n: 1,
+      ...extra,
+    };
+    event.t = now;
+    if (cause) {
+      recordBrowserLog("WARN", [`Lag: ${kind} ${event.ms}ms on ${event.view}: ${event.cause}`]);
+      LAG.byCause.set(`${kind}|${cause}`, event);
+      if (LAG.byCause.size > 40) LAG.byCause.delete(LAG.byCause.keys().next().value);
+    } else {
+      LAG.bare[kind] = event;
+    }
+    LAG.queue.push(event);
+    if (LAG.queue.length > 20) LAG.queue.shift();
+    if (!LAG.timer) LAG.timer = setTimeout(lagFlush, 10000);
   }
-  LAG_RAF.bucket.clear();
-  LAG_RAF.second = now;
-}
 
-//: Wrapped once. Off, the wrapper hands the callback straight on: the cost
-//: of the switch is one boolean read a call.
-function lagRafInstall() {
-  const native = window.requestAnimationFrame.bind(window);
-  window.requestAnimationFrame = (cb) => {
-    if (!LAG_RAF.on) return native(cb);
-    const owner = lagRafOwner(cb);
-    return native((t) => {
-      const t0 = performance.now();
-      try {
-        cb(t);
-      } finally {
-        const ms = performance.now() - t0;
-        if (ms >= LAG_RAF.slowMs) LAG_RAF.note(owner, t0, ms);
-        const s = LAG_RAF.bucket.get(owner) || { n: 0, ms: 0 };
-        s.n += 1;
-        s.ms += ms;
-        LAG_RAF.bucket.set(owner, s);
-        const all = LAG_RAF.owners.get(owner) || { n: 0, ms: 0, max: 0 };
-        all.n += 1;
-        all.ms += ms;
-        if (ms > all.max) all.max = ms;
-        LAG_RAF.owners.set(owner, all);
-      }
+  function lagFlush() {
+    LAG.timer = 0;
+    const events = LAG.queue.splice(0, 20).map(({ t, ...rest }) => rest);
+    if (!events.length) return Promise.resolve();
+    return api("/logs/lag", { method: "POST", body: JSON.stringify({ events }) }).catch(() => {});
+  }
+
+  function lagFrame(e) {
+    if (e.duration < LAG_FRAME_MS) return;
+    const layout = e.styleAndLayoutStart ? e.startTime + e.duration - e.styleAndLayoutStart : 0;
+    const cause = lagScriptCause(e.scripts, e) || (layout >= 50 ? "style and layout" : "") || lagFrameWhy(e);
+    lagNote("frame", e.duration, cause, { blocking_ms: Math.round(e.blockingDuration || 0), layout_ms: Math.round(layout) });
+  }
+
+  //: What a frame no script owns can still say. `longtask` names its container (an iframe, the
+  //: page); a long animation frame says how long rendering ran after its scripts. 53 of 304 frame
+  //: rows said "no script attributed", every one over 4 s among them (audit 1031 PF9).
+  function lagFrameWhy(e) {
+    const who = [...(e.attribution || [])].map((a) => [a.containerType, a.containerName || a.containerSrc || a.containerId].filter(Boolean).join(" ")).filter(Boolean);
+    if (who.length) return `page task in ${who.slice(0, 2).join(", ")}`;
+    if (!e.renderStart) return "";
+    const paint = Math.round(e.startTime + e.duration - e.renderStart);
+    const before = Math.round(e.duration) - paint;
+    if (before <= paint) return `rendering and painting ${paint}ms after the scripts`;
+    //: **What "script with no source file" was** (INBOX 1575: 1,340 ms on the dashboard, 256 to 458 ms
+    //: after boot). A frame's `scripts` lists only the ones that ran 5ms or more, and nothing else the
+    //: page does between two renders is a script: traced at 4x CPU on a 2,000-note notebook, these frames
+    //: were style and layout the browser ran on its own (a hit test for a pointer event on a page whose
+    //: tab had just flipped: 327 ms in one `UpdateLayoutTree`, no script), or, in the first seconds,
+    //: parsing and compiling the page's own scripts (`ParseHTML` 246 ms); one 522 ms task left no trace
+    //: event at all (a collection or the machine's load). The row says which it most likely was.
+    const input = e.firstUIEventTimestamp;
+    const owner =
+      e.startTime < 8000
+        ? "the page loading: parsing, compiling, style and layout"
+        : input > 0 && input >= e.startTime && input <= e.startTime + e.duration
+          ? "an input event waiting on style and layout"
+          : "the browser's own style, layout or garbage collection";
+    return `${before}ms before rendering with no script over 5ms in it (${owner}), then ${paint}ms rendering`;
+  }
+
+  function lagInput(e) {
+    if (e.duration < LAG_INPUT_MS) return;
+    lagNote("input", e.duration, `${e.name || "input"} on ${lagTarget(e.target)}`, {
+      wait_ms: Math.round(e.processingStart - e.startTime),
+      run_ms: Math.round(e.processingEnd - e.processingStart),
+      paint_ms: Math.round(e.startTime + e.duration - e.processingEnd),
     });
+  }
+
+  function lagRequest(e) {
+    const fetched = e.initiatorType === "fetch" || e.initiatorType === "xmlhttprequest";
+    //: The long-lived streams (chat, logs, events) and the long-poll the
+    //: server holds open (`/auth/lan-watch`, 25 s a turn) are slow by design.
+    if (!fetched || e.duration < LAG_REQUEST_MS || /\/stream\b|\/events\b|\/lan-watch\b/.test(e.name)) return;
+    lagNote("request", e.duration, new URL(e.name, location.href).pathname);
+  }
+
+  function lagObserve(type, handle, options = {}) {
+    if (!PerformanceObserver.supportedEntryTypes?.includes(type)) return false;
+    new PerformanceObserver((list) => list.getEntries().forEach(handle)).observe({ type, buffered: true, ...options });
+    return true;
+  }
+
+  //: The first stack line outside this file: "atlas-motion.js tick".
+  function lagStackOwner(stack, skip) {
+    for (const line of String(stack).split("\n").slice(1)) {
+      if (skip ? skip.test(line) : line.includes("lag-watch.js")) continue;
+      const m = line.match(/at (?:(\S+) \()?[^\s()]*?([^/\s()]+\.js)[?:\d]/);
+      if (m) return m[1] ? `${m[2]} ${m[1].replace(/^.*\./, "")}` : m[2];
+    }
+    return "unknown";
+  }
+
+  //: **A fresh closure is known by its source** (audit 1102 DX1): CodeMirror asks for a frame
+  //: with a new arrow on every key, and a stack per arrow was 14 us at 1x, 1.3 ms of a key at
+  //: 4x in the long-document probe. A short source seen before takes its owner; one call in 32
+  //: still takes the stack, and a source two files share (the owners differ) is marked "" and
+  //: takes the stack every time from then on.
+  function lagRafOwner(fn) {
+    let owner = LAG_RAF.fns.get(fn);
+    if (owner) return owner;
+    const src = fn instanceof Function ? Function.prototype.toString.call(fn) : "";
+    const kept = src && src.length <= 160 ? LAG_RAF.src.get(src) : "";
+    LAG_RAF.srcN = (LAG_RAF.srcN + 1) % 32;
+    if (kept && LAG_RAF.srcN) owner = kept;
+    else {
+      const limit = Error.stackTraceLimit;
+      Error.stackTraceLimit = 5;
+      owner = lagStackOwner(new Error().stack);
+      Error.stackTraceLimit = limit;
+      if (kept === undefined && LAG_RAF.src.size < 500) LAG_RAF.src.set(src, owner);
+      else if (kept && kept !== owner) LAG_RAF.src.set(src, "");
+    }
+    if (fn instanceof Function) LAG_RAF.fns.set(fn, owner);
+    return owner;
+  }
+
+  //: Keeps the last few slow callbacks; the ring is bounded, so a busy loop costs no memory.
+  LAG_RAF.note = (owner, t0, ms) => {
+    LAG_RAF.slow.push({ owner, t0, ms });
+    if (LAG_RAF.slow.length > 16) LAG_RAF.slow.shift();
   };
-  //: **The second closes on a 1 s timer** (owner decision Q10), not on the first callback after it: the wrapper then
-  //: does its counting and nothing else, and a second with no frame at all is closed too. Idle when the sampler is off.
-  const tick = () => {
-    if (LAG_RAF.on) lagRafClose();
+
+  //: The slowest kept callback that started inside [from, to]: what the wrapper's LoAF row stands for
+  //: (it showed `FrameRequestCallback @lag-watch.js`, the wrapper's own name, for every loop).
+  LAG_RAF.at = (from, to) => {
+    let best = null;
+    for (const r of LAG_RAF.slow) if (r.t0 >= from - 1 && r.t0 <= to + 1 && (!best || r.ms > best.ms)) best = r;
+    return best;
+  };
+
+  function lagRafTop() {
+    let top = "none";
+    let most = 0;
+    for (const [owner, s] of LAG_RAF.bucket) if (s.ms > most) [top, most] = [owner, s.ms];
+    return top;
+  }
+
+  function lagRafClose(now = performance.now()) {
+    for (const [owner, s] of LAG_RAF.bucket) {
+      if (s.ms < LAG_RAF_BUDGET_MS) {
+        LAG_RAF.hot.delete(owner);
+        continue;
+      }
+      const seconds = (LAG_RAF.hot.get(owner) || 0) + 1;
+      LAG_RAF.hot.set(owner, seconds);
+      if (seconds >= LAG_RAF_SECONDS) {
+        LAG_RAF.hot.delete(owner);
+        lagNote("raf", s.ms, `${owner} ${s.n} calls/s, ${(s.ms / s.n).toFixed(1)}ms each (${Math.round(s.ms)}ms of every second)`);
+      }
+    }
+    LAG_RAF.bucket.clear();
+    LAG_RAF.second = now;
+  }
+
+  //: Wrapped once. Off, the wrapper hands the callback straight on: the cost
+  //: of the switch is one boolean read a call.
+  function lagRafInstall() {
+    const native = window.requestAnimationFrame.bind(window);
+    window.requestAnimationFrame = (cb) => {
+      if (!LAG_RAF.on) return native(cb);
+      const owner = lagRafOwner(cb);
+      return native((t) => {
+        const t0 = performance.now();
+        try {
+          cb(t);
+        } finally {
+          const ms = performance.now() - t0;
+          if (ms >= LAG_RAF.slowMs) LAG_RAF.note(owner, t0, ms);
+          const s = LAG_RAF.bucket.get(owner) || { n: 0, ms: 0 };
+          s.n += 1;
+          s.ms += ms;
+          LAG_RAF.bucket.set(owner, s);
+          const all = LAG_RAF.owners.get(owner) || { n: 0, ms: 0, max: 0 };
+          all.n += 1;
+          all.ms += ms;
+          if (ms > all.max) all.max = ms;
+          LAG_RAF.owners.set(owner, all);
+        }
+      });
+    };
+    //: **The second closes on a 1 s timer** (owner decision Q10), not on the first callback after it: the wrapper then
+    //: does its counting and nothing else, and a second with no frame at all is closed too. Idle when the sampler is off.
+    const tick = () => {
+      if (LAG_RAF.on) lagRafClose();
+      setTimeout(tick, 1000);
+    };
     setTimeout(tick, 1000);
-  };
-  setTimeout(tick, 1000);
-}
-
-//: Errors by message and first frame, counted: a loop that throws sixty times
-//: a second is one line with a count, and the table stops growing at 60.
-function lagNoteError(message, stack) {
-  const text = String(message || "").slice(0, 300);
-  const key = `${text}|${String(stack || "").split("\n").slice(0, 2).join("|")}`.slice(0, 500);
-  const known = LAG.errors.get(key);
-  if (known) {
-    known.n += 1;
-    known.last = Date.now();
-    return;
   }
-  if (LAG.errors.size >= 60) return;
-  LAG.errors.set(key, { n: 1, first: Date.now(), last: Date.now(), view: lagView(), message: text, stack: String(stack || "").slice(0, 1200) });
-}
 
-function lagErrorsStart() {
-  //: What went wrong before this file loaded, from app.js's own record.
-  for (const r of typeof browserLogs === "undefined" ? [] : browserLogs) {
-    if (r.level === "ERROR") lagNoteError(r.message.slice(0, 200), r.message);
+  //: Errors by message and first frame, counted: a loop that throws sixty times
+  //: a second is one line with a count, and the table stops growing at 60.
+  function lagNoteError(message, stack) {
+    const text = String(message || "").slice(0, 300);
+    const key = `${text}|${String(stack || "").split("\n").slice(0, 2).join("|")}`.slice(0, 500);
+    const known = LAG.errors.get(key);
+    if (known) {
+      known.n += 1;
+      known.last = Date.now();
+      return;
+    }
+    if (LAG.errors.size >= 60) return;
+    LAG.errors.set(key, { n: 1, first: Date.now(), last: Date.now(), view: lagView(), message: text, stack: String(stack || "").slice(0, 1200) });
   }
-  window.addEventListener("error", (e) => e.filename && lagNoteError(e.message, e.error?.stack || `${e.filename}:${e.lineno}`));
-  window.addEventListener("unhandledrejection", (e) => e.reason?.isStale || lagNoteError(`Unhandled rejection: ${e.reason?.message || e.reason}`, e.reason?.stack));
-  const original = console.error;
-  console.error = (...parts) => {
-    const stack = parts.find((p) => p?.stack)?.stack || new Error().stack;
-    lagNoteError(parts.map(recordBrowserLog.text).join(" "), stack.split("\n").filter((l) => !l.includes("lag-watch.js")).join("\n"));
-    original(...parts);
-  };
-}
 
-//: The "why is it heavy" page of the report, on demand: how many elements,
-//: which hold the most children, the worst stalls of the last five minutes,
-//: the ten most expensive animation loops and the heap.
-function lagSnapshot() {
-  const all = document.getElementsByTagName("*");
-  const wide = [];
-  for (const el of all) {
-    if (el.childElementCount >= 100 && el.tagName !== "HEAD") wide.push([el.childElementCount, lagTarget(el)]);
+  function lagErrorsStart() {
+    //: What went wrong before this file loaded, from app.js's own record.
+    for (const r of typeof browserLogs === "undefined" ? [] : browserLogs) {
+      if (r.level === "ERROR") lagNoteError(r.message.slice(0, 200), r.message);
+    }
+    window.addEventListener("error", (e) => e.filename && lagNoteError(e.message, e.error?.stack || `${e.filename}:${e.lineno}`));
+    window.addEventListener("unhandledrejection", (e) => e.reason?.isStale || lagNoteError(`Unhandled rejection: ${e.reason?.message || e.reason}`, e.reason?.stack));
+    const original = console.error;
+    console.error = (...parts) => {
+      const stack = parts.find((p) => p?.stack)?.stack || new Error().stack;
+      lagNoteError(parts.map(recordBrowserLog.text).join(" "), stack.split("\n").filter((l) => !l.includes("lag-watch.js")).join("\n"));
+      original(...parts);
+    };
   }
-  wide.sort((a, b) => b[0] - a[0]);
-  const cutoff = Date.now() - LAG_RECENT_MS;
-  const owners = [...LAG_RAF.owners].sort((a, b) => b[1].ms - a[1].ms).slice(0, 10);
-  return {
-    nodes: all.length,
-    wide: wide.slice(0, 5).map(([n, who]) => `${who} ${n} children`),
-    longest: LAG.recent.filter((r) => r.at >= cutoff).sort((a, b) => b.ms - a.ms).slice(0, 5),
-    raf: owners.map(([owner, s]) => ({ owner, calls: s.n, ms: Math.round(s.ms), avg: +(s.ms / s.n).toFixed(2), max: +s.max.toFixed(1) })),
-    heap_mb: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null,
-    sampler: LAG_RAF.on,
-  };
-}
 
-//: Settings, Logs, the three dots: Copy diagnostics, Save as file and the sampler switch. Wired
-//: here, not in settings.js, so the buttons cost the boot scripts nothing; this file is in by the
-//: time anyone has opened Settings. The report itself (diag-report.js) is fetched on the first press.
-function lagWireSettings() {
-  const press = (id, run) => document.getElementById(id)?.addEventListener("click", () => ensureModule("diagnostics").then((ok) => ok && run()));
-  press("logs-diag-copy", () => diagCopy());
-  press("logs-diag-save", () => diagSave());
-  const box = document.getElementById("logs-sampler");
-  if (!box) return;
-  box.checked = LAG_RAF.on;
-  box.addEventListener("change", () => {
-    LAG_RAF.on = box.checked;
-    prefs.set("lagSampler", box.checked ? "on" : "off");
-  });
-}
-
-function lagStart() {
-  if (typeof PerformanceObserver === "undefined") return;
-  if (!lagObserve("long-animation-frame", lagFrame)) {
-    lagObserve("longtask", (e) => e.duration >= LAG_FRAME_MS && lagNote("frame", e.duration, ""));
+  //: The "why is it heavy" page of the report, on demand: how many elements,
+  //: which hold the most children, the worst stalls of the last five minutes,
+  //: the ten most expensive animation loops and the heap.
+  function lagSnapshot() {
+    const all = document.getElementsByTagName("*");
+    const wide = [];
+    for (const el of all) {
+      if (el.childElementCount >= 100 && el.tagName !== "HEAD") wide.push([el.childElementCount, lagTarget(el)]);
+    }
+    wide.sort((a, b) => b[0] - a[0]);
+    const cutoff = Date.now() - LAG_RECENT_MS;
+    const owners = [...LAG_RAF.owners].sort((a, b) => b[1].ms - a[1].ms).slice(0, 10);
+    return {
+      nodes: all.length,
+      wide: wide.slice(0, 5).map(([n, who]) => `${who} ${n} children`),
+      longest: LAG.recent.filter((r) => r.at >= cutoff).sort((a, b) => b.ms - a.ms).slice(0, 5),
+      raf: owners.map(([owner, s]) => ({ owner, calls: s.n, ms: Math.round(s.ms), avg: +(s.ms / s.n).toFixed(2), max: +s.max.toFixed(1) })),
+      heap_mb: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null,
+      sampler: LAG_RAF.on,
+    };
   }
-  lagObserve("event", lagInput, { durationThreshold: LAG_INPUT_MS });
-  lagObserve("resource", lagRequest);
-  LAG_RAF.on = prefs.get("lagSampler", "on") !== "off";
-  lagRafInstall();
-  lagErrorsStart();
-  onSurface("settings", lagWireSettings);
-  for (const type of ["pointerdown", "keydown"]) {
-    document.addEventListener(type, (e) => { LAG.lastInput = `${type} ${lagTarget(e.target)}`; LAG.lastInputAt = Date.now(); }, { capture: true, passive: true });
+
+  //: Settings, Logs, the three dots: Copy diagnostics, Save as file and the sampler switch. Wired
+  //: here, not in settings.js, so the buttons cost the boot scripts nothing; this file is in by the
+  //: time anyone has opened Settings. The report itself (diag-report.js) is fetched on the first press.
+  function lagWireSettings() {
+    const press = (id, run) => document.getElementById(id)?.addEventListener("click", () => ensureModule("diagnostics").then((ok) => ok && run()));
+    press("logs-diag-copy", () => diagCopy());
+    press("logs-diag-save", () => diagSave());
+    const box = document.getElementById("logs-sampler");
+    if (!box) return;
+    box.checked = LAG_RAF.on;
+    box.addEventListener("change", () => {
+      LAG_RAF.on = box.checked;
+      prefs.set("lagSampler", box.checked ? "on" : "off");
+    });
   }
-  //: A report waiting for its batch is sent when the page is hidden or closed.
-  document.addEventListener("visibilitychange", () => document.hidden && lagFlush());
-}
 
-//: Wrapped here rather than edited in app.js (the boot scripts are at their gzip cap; status.js
-//: wraps it the same way). The caller is read before the call, while it is still on the stack.
-if (typeof apiJson === "function") {
-  const apiJsonInner = apiJson;
-  apiJson = function apiJson(path, options) {
-    return apiJsonInner(path, options).then(lagApi(path));
-  };
-}
+  function lagStart() {
+    if (typeof PerformanceObserver === "undefined") return;
+    if (!lagObserve("long-animation-frame", lagFrame)) {
+      lagObserve("longtask", (e) => e.duration >= LAG_FRAME_MS && lagNote("frame", e.duration, ""));
+    }
+    lagObserve("event", lagInput, { durationThreshold: LAG_INPUT_MS });
+    lagObserve("resource", lagRequest);
+    LAG_RAF.on = prefs.get("lagSampler", "on") !== "off";
+    lagRafInstall();
+    lagErrorsStart();
+    onSurface("settings", lagWireSettings);
+    for (const type of ["pointerdown", "keydown"]) {
+      document.addEventListener(type, (e) => { LAG.lastInput = `${type} ${lagTarget(e.target)}`; LAG.lastInputAt = Date.now(); }, { capture: true, passive: true });
+    }
+    //: A report waiting for its batch is sent when the page is hidden or closed.
+    document.addEventListener("visibilitychange", () => document.hidden && lagFlush());
+  }
 
-lagStart();
+  //: Wrapped here rather than edited in app.js (the boot scripts are at their gzip cap; status.js
+  //: wraps it the same way). The caller is read before the call, while it is still on the stack.
+  if (typeof apiJson === "function") {
+    const apiJsonInner = apiJson;
+    apiJson = function apiJson(path, options) {
+      return apiJsonInner(path, options).then(lagApi(path));
+    };
+  }
+
+  lagStart();
+
+  //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
+  Object.assign(window, { LAG, lagNote, lagNoteError, lagFlush, lagSnapshot });
+})();
