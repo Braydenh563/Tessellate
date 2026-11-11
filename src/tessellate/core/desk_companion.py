@@ -266,7 +266,10 @@ def _motion_of(mode: Any, reason: Any) -> tuple[bool, str] | None:
     """(reduced, reason) for a motion mode, or None for an unknown mode."""
     if mode not in MOTION_MODES:
         return None
-    return (mode != "full", str(reason) if reason in MOTION_REASONS else "")
+    # The reason handed back is the matching constant, never the caller's value: it may have come from
+    # a preference read, and code scanning (rightly, by type alone) treats that read as a possible secret
+    # once it reaches a log line.
+    return (mode != "full", next((r for r in MOTION_REASONS if r == reason), ""))
 
 
 def figure_key(data: dict[str, Any]) -> str | None:
