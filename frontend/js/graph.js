@@ -4031,14 +4031,13 @@ document.addEventListener("visibilitychange", () => {
 function graphMinimapChildren(group, count, tag, className) {
   const kids = group.children;
   while (kids.length > count) group.lastElementChild.remove();
+  //: **Made in one parse, not one by one** (W26, 2,000 notes: the first paint
+  //: made about 1,300 elements one at a time and was a 47 ms task).
+  //: An SVG group parses its own markup as SVG, so the whole run of missing
+  //: elements is one string and one parse.
   if (kids.length < count) {
-    const fragment = document.createDocumentFragment();
-    for (let i = kids.length; i < count; i++) {
-      const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
-      if (className) el.setAttribute("class", className);
-      fragment.appendChild(el);
-    }
-    group.appendChild(fragment);
+    const one = `<${tag}${className ? ` class="${className}"` : ""}></${tag}>`;
+    group.insertAdjacentHTML("beforeend", one.repeat(count - kids.length));
   }
   return kids;
 }

@@ -256,7 +256,7 @@ Parked until the owner's data or a check on real hardware:
 ~~- D9 A composed chat answer mounts 500 to 860 nodes | audit-1108-perf P8~~ **Built s58left3-1110** (older replies' corner head is an svg/use of one hidden copy: 167 to 8 nodes a reply, pixels within 2 of 255; the answer body itself, about 100 nodes, is untouched)
 - ~~D10 `?preview=300` (after Q9) | fitaudit 42~~ **Stale: built** (CHANGELOG, INBOX 1525: list pages, the by-id refresh and the Semantic list carry `?preview=300`; `tests/test_entry_writers_whole_1525.py`)
 
-**W26 Graph at scale** (D, graph, Opus). Files: `graph*.js`, `graph-worker.js`. Checks: the 500 and 2,000 note fixtures at 1x and 4x. Done when: a 2,000-note settle is under 5 s with no task over 50 ms.
+**W26 Graph at scale** (D, graph, Opus). Files: `graph*.js`, `graph-worker.js`. Checks: the 500 and 2,000 note fixtures at 1x and 4x. Done when: a 2,000-note settle is under 5 s with no task over 50 ms. Part done 2026-11-11 (settle 3.3 s; tasks over 50 ms 10 to 5 at 1x; minimap one parse, balance waits for rest, link grid chords); rest in `graph-1111.md`.
 - D11 2,000 notes: layout 28 s and main-thread long tasks | 1029-graph G3, 1028-shell S2, GRAPH row 19
 - D12 500 notes at 4x: hover p50 83 ms, wheel 133 ms | 1029-graph G5, GRAPH Rank 36
 - D13 Hover and wheel at rest redraw whole layers; the crossing count is output-bound | graph19 L4, L5
