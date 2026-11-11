@@ -8289,11 +8289,13 @@ function wbApplyBulkMove(origin, dx, dy) {
         entry.pathEl = el.querySelector(".sketch-path");
         entry.hitEl = el.querySelector(".sketch-hitbox");
         entry.labelEl = el.querySelector(":scope > .sketch-label");
+        entry.labelBgEl = el.querySelector(":scope > .sketch-label-bg");
       }
       entry.pathEl?.setAttribute("d", newD);
       entry.hitEl?.setAttribute("d", newD);
       // A shape's text rides along (decision 12; `wbNudgeShapeLabel`).
       entry.labelEl?.setAttribute("transform", `translate(${dx} ${dy})`);
+      entry.labelBgEl?.setAttribute("transform", `translate(${dx} ${dy})`);
       entry.item._liveD = newD;
     } else {
       entry.item.x = entry.x + dx;
@@ -12977,7 +12979,7 @@ function wbFrameContents(frame, { withLocked = false } = {}) {
 //: "w": the edge handle named fits that edge, a corner handle two, and the
 //: frame's menu all four. Each named edge moves to the bound of what the frame
 //: holds (`wbFrameContents`, the rule a drag of the frame uses) plus a margin
-//: of 32 board units. What a frame holds includes the links between two held
+//: of 32 board units (or the frame's own Padding). What a frame holds includes the links between two held
 //: items, by the curve they are drawn on rather than the straight line
 //: between their ends. A frame holding nothing stays where it is. One Undo
 //: step, and the move eases over 150ms (not at all under reduced motion).
@@ -13012,10 +13014,12 @@ async function wbFrameFit(frame, edges = "nesw") {
   const maxY = Math.max(...boxes.map((b) => b.maxY));
   const right = frame.x + frame.width;
   const bottom = frame.y + frame.height;
-  const nextLeft = edges.includes("w") ? Math.round(minX - WB_FRAME_FIT_MARGIN) : frame.x;
-  const nextTop = edges.includes("n") ? Math.round(minY - WB_FRAME_FIT_MARGIN) : frame.y;
-  const nextRight = edges.includes("e") ? Math.round(maxX + WB_FRAME_FIT_MARGIN) : right;
-  const nextBottom = edges.includes("s") ? Math.round(maxY + WB_FRAME_FIT_MARGIN) : bottom;
+  //: The frame's own Padding (Format panel, `data.pad`) replaces the 32 when it is set; 0 is a snug fit.
+  const margin = frame.data?.pad ?? WB_FRAME_FIT_MARGIN;
+  const nextLeft = edges.includes("w") ? Math.round(minX - margin) : frame.x;
+  const nextTop = edges.includes("n") ? Math.round(minY - margin) : frame.y;
+  const nextRight = edges.includes("e") ? Math.round(maxX + margin) : right;
+  const nextBottom = edges.includes("s") ? Math.round(maxY + margin) : bottom;
   if (nextLeft === frame.x && nextTop === frame.y && nextRight === right && nextBottom === bottom) return true;
   const before = WB_KIND_INFO.object.payload(frame);
   frame.x = nextLeft;
@@ -20271,7 +20275,8 @@ function wbShapeLabelPlace(groupEl, label) {
   } catch {
     labelArea = null;
   }
-  return { bbox, area: wbShapeLabelArea(label.dataset.kind, bbox, labelArea) };
+  const area = wbShapeLabelArea(label.dataset.kind, bbox, labelArea);
+  return { bbox, area: wbFmtState.label?.area(label.__wbLook, area, bbox) ?? area };
 }
 
 //: Lays the label out from the path the group is drawing *now*, so a resize
@@ -20291,9 +20296,11 @@ function wbLayoutShapeLabel(groupEl) {
   const fontSize = label.dataset.fit ? wbFitShapeLabel(label, area) : parseFloat(getComputedStyle(label).fontSize) || 16;
   const lineHeight = fontSize * (Number(label.dataset.lh) || 1.25);
   //: The face, weight and letter spacing change the widths the wrap measures, so they key it.
-  const key = `${label.__wbText}|${Math.round(area.w / 4)}|${fontSize}|${label.style.fontFamily}|${label.style.fontWeight}|${label.style.letterSpacing}`;
+  //: Word wrap off (`label_wrap`, whiteboard-label.js): only a typed line break ends a line.
+  const wrapWidth = label.__wbLook?.wrap === false ? Infinity : area.w;
+  const key = `${label.__wbText}|${Math.round(area.w / 4)}|${wrapWidth}|${fontSize}|${label.style.fontFamily}|${label.style.fontWeight}|${label.style.letterSpacing}`;
   if (label.__wbKey !== key) {
-    label.__wbLines = wbWrapShapeLabel(label, label.__wbText, area.w, fontSize);
+    label.__wbLines = wbWrapShapeLabel(label, label.__wbText, wrapWidth, fontSize);
     label.__wbKey = key;
     label.replaceChildren(
       ...label.__wbLines.map((line, i) => {
@@ -20306,18 +20313,24 @@ function wbLayoutShapeLabel(groupEl) {
     );
   }
   const lines = label.__wbLines.length;
-  const x = label.dataset.align === "left" ? area.cx - area.w / 2 : label.dataset.align === "right" ? area.cx + area.w / 2 : area.cx;
+  //: Words set beside a shape hug it, and words above or below sit on it (`area.align`, `area.valign`).
+  const align = area.align || label.dataset.align;
+  const top = area.valign ? area.valign === "top" : label.dataset.valign === "top";
+  const bottom = area.valign ? area.valign === "bottom" : label.dataset.valign === "bottom";
+  if (area.align) label.setAttribute("text-anchor", align === "left" ? "start" : "end");
+  const x = align === "left" ? area.cx - area.w / 2 : align === "right" ? area.cx + area.w / 2 : area.cx;
   label.setAttribute("x", String(x));
   const block = (lines - 1) * lineHeight;
   //: Top and bottom put the first or last line's middle half a line in from
   //: the band's edge; a block taller than the band stays centred.
   const room = (area.h || 0) - block - lineHeight;
-  const y = room > 0 && label.dataset.valign === "top" ? area.cy - area.h / 2 + lineHeight / 2
-    : room > 0 && label.dataset.valign === "bottom" ? area.cy + area.h / 2 - lineHeight / 2 - block
+  const y = room > 0 && top ? area.cy - area.h / 2 + lineHeight / 2
+    : room > 0 && bottom ? area.cy + area.h / 2 - lineHeight / 2 - block
       : area.cy - block / 2;
   label.setAttribute("y", String(y));
   for (const span of label.children) span.setAttribute("x", String(x));
   if (label.dataset.dir === "vertical") label.setAttribute("transform", `rotate(-90 ${area.cx} ${area.cy})`);
+  wbFmtState.label?.backdrop(groupEl, label);
 }
 
 //: **Text that shrinks to fit its shape** (`label_fit`; draw.io's autosize
@@ -20355,6 +20368,7 @@ function wbFitShapeLabel(label, area) {
 function wbNudgeShapeLabel(groupEl, dx, dy) {
   const label = groupEl?.querySelector?.(":scope > .sketch-label");
   if (label) label.setAttribute("transform", `translate(${dx} ${dy})`);
+  groupEl?.querySelector?.(":scope > .sketch-label-bg")?.setAttribute("transform", `translate(${dx} ${dy})`);
 }
 
 //: The ink the label is written in: the theme's own text colour on an
@@ -20566,6 +20580,7 @@ function wbPaintShapeLabel(groupEl, parsed, sketch) {
   let label = groupEl.querySelector(":scope > .sketch-label");
   if (!text) {
     label?.remove();
+    wbFmtState.label?.drop(groupEl);
     return;
   }
   if (!label) {
@@ -20600,6 +20615,7 @@ function wbPaintShapeLabel(groupEl, parsed, sketch) {
   if (parsed.label_valign === "top" || parsed.label_valign === "bottom") label.dataset.valign = parsed.label_valign;
   else delete label.dataset.valign;
   label.setAttribute("text-anchor", align === "left" ? "start" : align === "right" ? "end" : "middle");
+  wbFmtState.label?.paint(label, parsed);
   wbLayoutShapeLabel(groupEl);
 }
 
@@ -20612,9 +20628,9 @@ function wbEditShapeLabel(sketch) {
   const bbox = kind ? wbPathBBox(parsed.d) : null;
   if (!bbox) return;
   const area = wbShapeLabelArea(kind, bbox, parsed.label_area || null);
-  const h = Math.max(bbox.height, 24);
+  const kit = wbFmtState.label;
   wbOpenSketchLabelEditor(sketch, parsed, {
-    box: { x: area.cx - area.w / 2, y: area.cy - h / 2, w: area.w, h },
+    box: kit ? kit.editBox(kit.look(parsed), area, bbox) : { x: area.cx - area.w / 2, y: area.cy - Math.max(bbox.height, 24) / 2, w: area.w, h: Math.max(bbox.height, 24) },
     ink: wbShapeLabelInk(parsed),
     multiline: true,
     max: WB_SHAPE_LABEL_MAX,
@@ -20666,7 +20682,7 @@ function wbOpenSketchLabelEditor(sketch, parsed, { box, ink, multiline, max, nam
     wbPushUndo({ action: "move", kind: "sketch", id: sketch.id, before });
     //: A shape's words that do not fit make the shape taller, as one step
     //: with the words (the same grow as "Grow to fit the words").
-    if (text && wbShapeLabelKind(parsed) && !parsed.label_fit) {
+    if (text && wbShapeLabelKind(parsed) && !parsed.label_fit && !parsed.label_pos) {
       renderWhiteboardNow();
       await wbGrowShapeToLabel(sketch);
     }

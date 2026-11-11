@@ -147,6 +147,13 @@ button.outline-twist {
   display: none !important;
 }
 
+/* View, Connection arrows and Connection points (`whiteboard-hints.js`): off hides the drawing,
+   not the snapping, so a board can be read or presented without the dots and arrows. */
+#library-view-whiteboard.wb-hide-grips #wb-clone-grips,
+#library-view-whiteboard.wb-hide-ports #wb-anchor-hints {
+  display: none;
+}
+
 /* A text box showing rendered markdown: the app's own markdown body rules
    apply, at the box's own font size and colour rather than the page's. */
 .wb-text-content.wb-text-md {

@@ -979,7 +979,7 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Add and delete a port by clicking | no | `addConnectionPoint` (Actions.js 1814), `getConnectionConstraintForPoint` (Graph.js 23719), `clearAnchors` (Actions.js 1841), `editConnectionPoints` | a "Ports" mode on a selected shape: click the outline to add, click a port to delete; writes `data.ports` | M |
 | Fixed versus floating end | yes (omit `sourceAnchor` for floating) | `exitX`, `exitY`, `entryX`, `entryY`, `exitPerimeter` | done | none |
 | Show ports while dragging a connector end | yes (`wb-port-preview`, whiteboard.js 13437) | `mxConstraintHandler` (blue crosses) | done | none |
-| Connection arrows and points as View toggles | no | `connectionArrows`, `connectionPoints` actions (Actions.js 1389, 1396) | two View toggles (hide grips, hide ports) | S |
+| Connection arrows and points as View toggles | yes, 2026-11-11 (f2-1111; HISTORY) | `connectionArrows`, `connectionPoints` actions (Actions.js 1389, 1396) | two View toggles (hide grips, hide ports) | S |
 | Snap to connection (orthogonal ends) | no | `snapToConnection` and `snapToPoint` (Graph.js 22012, 23241) | with the obstacle router, snap the end so the last leg is square | M |
 | Port constraint on a table row (east-west only) | no | `portConstraint=eastwest` (Graph.js 18454) | with tables | S |
 
@@ -1103,7 +1103,7 @@ product; the NOTICE says so).
 | Fit window, fit page width, fit page, two pages, custom zoom, zoom list | partly (fit everything Shift+1, 100 percent, in and out) | `viewZoom` menu (Menus.js 444): 25 to 400 percent list, `fitWindow`, `fitPage`, `fitTwoPages`, `fitPageWidth`, `customZoom` (Ctrl+0) | a zoom list in the zoom strip's menu; fit selection (F) exists per the decisions | S |
 | Home, enter and exit group, expand and collapse | partly (`group` exists; no enter or collapse) | `home`, `enterGroup`, `exitGroup`, `collapse`, `expand` (Actions.js 562 to 566) | enter group dims everything else; collapse folds a frame to its title bar | M |
 | Ruler | no (matrix says drop) | `ruler` action, `mxRuler.js` (690 lines) | drop; guides and smart guides cover it | none |
-| Grid size and colour, guides, page view, connection arrows, tooltips toggles | partly (grid style: none, lines, dots, iso; snap) | `grid`, `guides`, `tooltips`, `connectionArrows`, `connectionPoints`, `pageView`, `animations`, `zoomWheel` (Actions.js 1313 to 1403) | add grid size (matrix row) and the two port toggles | S |
+| Grid size and colour, guides, page view, connection arrows, tooltips toggles | partly (grid style: none, lines, dots, iso; snap; connection arrows and points, 2026-11-11) | `grid`, `guides`, `tooltips`, `connectionArrows`, `connectionPoints`, `pageView`, `animations`, `zoomWheel` (Actions.js 1313 to 1403) | add grid size (matrix row) | S |
 | Fullscreen | yes | `fullscreen` (diagramly/Menus.js 399) | done | none |
 | Mouse wheel: zoom or scroll | not checked | `zoomWheel` | not checked | none |
 | Presentation mode | yes (`present`) | `presentationMode` (diagramly/Menus.js 3954) | done | none |
@@ -1592,13 +1592,13 @@ Missing (items 1 to 5, zoom to the selection, tidy as a tree, change the shape, 
 ## Placed from INBOX, 2026-11-01 (1510(a), the draw.io Format panel gap list; board-1101)
 
 Read against draw.io's Style, Text and Arrange tabs; the rows in "The draw.io programme" sections 1 and 2 above carry the status. Present 47, built 3 (size presets, text direction, text opacity), placed 9, in this order of use:
-1. Label background and border (`label_bg`, `label_border`), so a connector's words read over crossing lines. S.
+1. Built 2026-11-11, HISTORY "f2-1111".
 2. Built 2026-11-10, HISTORY "s9c-1110 F2".
 3. Built 2026-11-10, HISTORY "s9c-1110 F2".
-4. Word wrap off and a label width (`label_width`). S.
-5. Spacing per side (`label_pad {t,r,b,l}`), shared with Padding. S.
-6. Group padding on a frame. S.
-7. Label position outside the shape (above, below, left, right; `label_pos`). M.
+4. Built 2026-11-11, HISTORY "f2-1111".
+5. Built 2026-11-11, HISTORY "f2-1111".
+6. Built 2026-11-11, HISTORY "f2-1111".
+7. Built 2026-11-11, HISTORY "f2-1111".
 8. Built 2026-11-10, HISTORY "s9c-1110 F2".
 9. Built 2026-11-10, HISTORY "s9c-1110 F2".
 Dropped, as before: glass, text shadow, SVG image styles. Subscript and superscript wait on rich text in shapes (section 2's row).
