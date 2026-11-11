@@ -12365,7 +12365,7 @@ function wbTakesLink(kind, item) {
 function wbItemLink(kind, item) {
   if (!wbTakesLink(kind, item)) return "";
   const link = kind === "sketch" ? wbSketchParsedData(item)?.link : item.data?.link;
-  return typeof link === "string" && (/^https?:\/\//i.test(link) || routeEntry(link)) ? link : "";
+  return typeof link === "string" && (/^https?:\/\//i.test(link) || routeEntry(link) || wbFmtState.drawMore?.frameOf(link)) ? link : "";
 }
 
 //: What a typed or pasted address becomes: an app link's hash, a web
@@ -12393,7 +12393,9 @@ async function wbSetItemLink(kind, item, link) {
 }
 
 function wbOpenItemLink(link) {
-  if (link.startsWith("#/")) location.hash = link;
+  const page = wbFmtState.drawMore?.frameOf(link);
+  if (page) wbPageGo(page.id);
+  else if (link.startsWith("#/")) location.hash = link;
   else window.open(link, "_blank", "noopener,noreferrer");
 }
 
@@ -12419,11 +12421,13 @@ function wbEditItemLink() {
       await wbSetItemLink(kind, item, link);
     }),
   ];
+  const at = wbContextMoreWrap()?.getBoundingClientRect();
+  const pages = wbFmtState.drawMore?.pageLinkItem((link) => wbSetItemLink(kind, item, link), at ? at.left : 80, at ? at.bottom + 4 : 80);
+  if (pages) items.push(pages);
   if (now) {
-    items.push(makeMenuItem("ph:arrow-square-out Open the link", now, () => wbOpenItemLink(now)));
+    items.push(makeMenuItem("ph:arrow-square-out Open the link", wbFmtState.drawMore?.linkWords(now) || now, () => wbOpenItemLink(now)));
     items.push(makeMenuItem("ph:link-break Remove the link", "Take the link off; the shape stays", () => wbSetItemLink(kind, item, "")));
   }
-  const at = wbContextMoreWrap()?.getBoundingClientRect();
   openMenuAtPoint(items, "Link", at ? at.left : 80, at ? at.bottom + 4 : 80);
 }
 
@@ -12482,9 +12486,10 @@ function wbPaintLinkMarks() {
     }
     const mark = pin.firstElementChild;
     const inApp = link.startsWith("#/");
-    const words = inApp ? appAddressLabel(link) : link;
+    const pageWords = wbFmtState.drawMore?.linkWords(link);
+    const words = pageWords || (inApp ? appAddressLabel(link) : link);
     mark.dataset.link = link;
-    mark.firstElementChild.className = `ph ${inApp ? "ph-note" : "ph-arrow-square-out"}`;
+    mark.firstElementChild.className = `ph ${pageWords ? "ph-presentation" : inApp ? "ph-note" : "ph-arrow-square-out"}`;
     mark.setAttribute("aria-label", `Open the link: ${words}`);
     mark.title = words;
     pin.style.left = `${box.minX}px`;

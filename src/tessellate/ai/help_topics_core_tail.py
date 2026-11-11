@@ -560,6 +560,8 @@ TAIL_TOPICS.extend(
                 "shift+delete",
                 "delete the labels",
                 "replace one match",
+                "link to a page",
+                "link to a frame",
                 "self loop",
                 "loop on a shape",
                 "connector to itself",
@@ -573,14 +575,13 @@ TAIL_TOPICS.extend(
                 "shape…, in a closed shape's More, the right-click Arrange and Ctrl+K, turns it into another "
                 "kind (rectangle, ellipse, diamond, cylinder, cloud and the rest) in the same box, keeping "
                 "its text, colours, line and connectors. Link…, in a shape's, text box's or picture's More "
-                "and its right-click menu, links it to one of your notes or a web page (or an app link "
-                "from Copy app link); a small mark on its top-left corner opens it, a note in the app and "
-                "a page in a new tab, and the same Link… changes or removes it. Fit, in the Format "
+                "and its right-click menu, links it to one of your notes, a page (frame) of this board or a web page (or an app link "
+                "from Copy app link); a small mark on its top-left corner opens it, and the same Link… changes or removes it. Fit, in the Format "
                 "panel's Text tab for a shape (or Ctrl+K, Shrink the text to fit), makes long words shrink "
                 "until they fit inside the shape, never past the size you gave them. "
                 "Home goes back to the top left of what is drawn at the zoom you have, and Shift+Home resets the view to 100% there. "
-                "Shift+Delete clears the labels of the selected shapes and connectors and keeps the things; one Undo puts them back. "
-                "In the find bar (Ctrl+H), Replace changes the match the bar is on and moves to the next, and Replace all changes every one. "
+                "Shift+Delete clears the labels of the selected shapes and connectors; one Undo puts them back. "
+                "In the find bar (Ctrl+H), Replace changes the current match and moves on; Replace all changes every one. "
                 "Arrange, Loop on the shape draws a connector from a shape back to itself; Format, Loop side moves it."
             ),
             "badge": {"label": "Library", "tab": "library"},

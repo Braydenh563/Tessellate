@@ -980,7 +980,6 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | Pages (tabs) in one file: insert, duplicate, rename, delete, move, sort | by decision (WHITEBOARD_PLAN decision 22: frames are the pages; boards are separate rows) | `Pages.js` (2,834 lines), `insertPage`, `removePage`, `renamePage`, `duplicatePage`, `sortPages` (diagramly/Menus.js 264 to 292) | done by decision; a "Pages" side tab already lists frames (`wb-side-tab-pages`) | none |
-| Links between pages | no | `data:page/id,` link target (Graph.js `getLinkForCell`) | a link target of "frame" scrolls and zooms to it (the present mode already knows frames) | S |
 | Page background colour and image | yes (board background, `wb1005-bg.js`) | `DiagramFormatPanel.addView` (Format.js 8906) | done | none |
 | Units (points, inches, mm, cm, m) | no | `units` menu (diagramly/Menus.js 370) | drop: the board has no print scale | none |
 

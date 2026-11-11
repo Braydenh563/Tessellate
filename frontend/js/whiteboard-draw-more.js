@@ -10,6 +10,8 @@
   // `perimeter` held on the outline (`snapToOutline`) and a port's name beside its dot while it is lit (`nameBeside`).
   // And the ports editor (draw.io's Edit connection points): `editPorts` shows a closed shape's points, a press on the outline
   // adds one, a press on a point takes it out, Escape or a press elsewhere ends it; `resetPorts` goes back to the standard points.
+  // And a link to a page of the board (draw.io's `data:page/id,`; here a frame is the page, decision 22): `link` is `frame:<id>`,
+  // `frameOf` reads it, `pageLinkItem` is the Link menu's row, and the link's mark opens it with `wbPageGo`.
 
   const STUB = 30;
 
@@ -340,5 +342,28 @@
     layer.appendChild(text);
   }
 
-  wbFmtState.drawMore = { routeStops, entityStops, isometricStops, loopSegs, addLoop, syncLoopRow, sameEnd, SIDES, label2T, paintLabel2, layoutLabel2, snapToOutline, nameBeside, editPorts, resetPorts, outlineNear };
+  //: **A link to a frame** (decision 22: frames are the pages): a shape's `link` may be `frame:<id>`, the frame's own id.
+  //: It counts only while that frame is on this board, so a link left behind by a deleted frame, or carried onto another
+  //: board, shows no mark rather than one that opens nothing.
+  function frameOf(link) {
+    const id = /^frame:(\d+)$/.exec(link || "")?.[1];
+    return id ? (wbState.objects || []).find((o) => o.kind === "frame" && o.id === Number(id)) || null : null;
+  }
+
+  //: The mark's words: the frame's title.
+  function linkWords(link) {
+    const frame = frameOf(link);
+    return frame ? wbFrameTitle(frame) : "";
+  }
+
+  //: The Link menu's row for pages: one row per frame, in presentation order. None when the board has no frame.
+  function pageLinkItem(set, x, y) {
+    const frames = wbFramesInOrder();
+    if (!frames.length) return null;
+    return makeMenuItem("ph:presentation A page of this board…", "Link this to a frame: the mark scrolls and zooms to it", () => {
+      setTimeout(() => openMenuAtPoint(frames.map((f) => makeMenuItem(`ph:frame-corners ${wbFrameTitle(f)}`, "", () => set(`frame:${f.id}`))), "Pages", x, y), 0);
+    });
+  }
+
+  wbFmtState.drawMore = { routeStops, entityStops, isometricStops, loopSegs, addLoop, syncLoopRow, sameEnd, SIDES, label2T, paintLabel2, layoutLabel2, snapToOutline, nameBeside, editPorts, resetPorts, outlineNear, frameOf, linkWords, pageLinkItem };
 })();
