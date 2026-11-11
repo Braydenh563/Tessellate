@@ -833,16 +833,9 @@ def _notes_answer_due(req: _StreamRequest, tool: str, result: object, notes: lis
 
 
 def _reminder_window_args(tool: str, asked: str, now, drawn):  # noqa: ANN001
-    """`(say args, drawn)` for a read tool: only a question that says
-    "reminders" is cut to its window; "what is due this week" lists what
-    waits, as before (1324 widened it to both)."""
-    say_args: dict = {}
-    if tool == "list_reminders" and "remind" in asked.lower():
-        within = _reminder_window(asked, now)
-        if within:
-            say_args["within"] = within
-            drawn = None
-    return say_args, drawn
+    """`(say args, drawn)`: only a question that says "reminders" is cut to its window; "what is due this week" lists what waits (1324)."""
+    within = _reminder_window(asked, now) if tool == "list_reminders" and "remind" in asked.lower() else None
+    return ({"within": within}, None) if within else ({}, drawn)
 
 
 def _tool_read_events(req: _StreamRequest, notes: list | None = None) -> list[dict]:
