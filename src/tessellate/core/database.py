@@ -954,6 +954,9 @@ class SealedTitle(SealedText):
     """`SealedText` on a short column (`String(n)`)."""
 
     impl = String
+    #: SQLAlchemy reads `cache_ok` from each class's own body, not the parent's: without it every
+    #: query on a sealed title skipped the statement cache and warned (the E2E server log, 2026-11-11).
+    cache_ok = True
 
 
 #: The columns whose change is a person editing a board or mind map. Anything
