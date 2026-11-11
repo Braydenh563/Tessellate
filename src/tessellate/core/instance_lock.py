@@ -268,7 +268,8 @@ def process_started(pid: int) -> float | None:
                 int(line.split()[1]) for line in Path("/proc/stat").read_text().splitlines() if line.startswith("btime ")
             )
             return boot + ticks / os.sysconf("SC_CLK_TCK")
-    except Exception:  # noqa: BLE001 - a probe that cannot tell reads as "unknown", never as "gone"
+    except Exception as exc:  # noqa: BLE001 - a probe that cannot tell reads as "unknown", never as "gone"
+        logging.getLogger(__name__).debug("process start time unknown for pid %s: %s", pid, exc)
         return None
     return None
 
