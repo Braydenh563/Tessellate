@@ -7,6 +7,16 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-11 (K24, K25, BK11: god-module carves, k24-1111)
+
+**Built** (Bk2 structure ratchets). Whole moves, no behaviour change; callers and the tests that read the old files follow the new homes.
+
+- `ai/recognise.py` 2,869 to 1,869: `recognise_units.py` 212, `recognise_reminders.py` 266, `recognise_questions.py` 549. The date core and the recogniser stay together (mutually dependent).
+- `entry/manager.py` 2,714 to 1,341: `manager_text.py` 378 (below the base), `manager_links.py` 572, `manager_wiki.py` 288, `manager_categories.py` 159 (above it).
+- `core/database.py` 2,996 to 2,468: `database_manager.py` 539 (`DatabaseManager` and the migration helpers). The ORM models and session hooks stay together (cyclic through the sealed-column constants).
+- K25: a scan of `src/` finds no function over 150 lines (`list_entries` is exactly 150; `_start_tray` 127, `_run_desktop` 99), so the Windows-only blocker was stale.
+- **Not done:** `__main__.py` (2,702 lines) was not carved. `tests/test_import_module_cycles.py` was already red at the base (a group of 19 against a cap of 15) and stays red at 18; the cap was not raised. `tests/test_jobruns_no_raw_exceptions.py` fails on `api/routes_studio.py` at the base too.
+
 ## Built 2026-11-11: decision 8's bar at 0.6, and "ask when unsure" (OPEN row 260)
 
 The owner moved the no-model filing bar to 0.6 top-1 (HANDOVER decision 6; the
