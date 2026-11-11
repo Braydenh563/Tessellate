@@ -293,7 +293,7 @@ Parked until the owner's data or a check on real hardware:
 - E3 The life-1109 ranked list (follow-through, startle settle, micro-saccades, stand-loop drift) | INBOX 1719 (b), life-1109 W34: owner-call (tracked in the plans), w34-L1-1111.md.
 - E4 Masculine Atlas: head, eyes, shoulder join, expressions | oa 1607 b, c, d, B16 W34: owner-call (tracked in the plans), w34-L1-1111.md.
 - E5 Own activities with props; wind-spirit travel; ambient acts by hour | oa 1692 e, n, d W34: owner-call (tracked in the plans), w34-L1-1111.md.
-- E6 Lower body and nebula follow the pose; landing outcomes; edge squash; portal | oa 1692 e/n, B1, B3, T1, N5, N9 W34: owner-call (tracked in the plans), w34-L1-1111.md.
+- ~~E6 Lower body and nebula follow the pose; landing outcomes; edge squash; portal | oa 1692 e/n, B1, B3, T1, N5, N9~~ done e6-1111 (commits 3614f4e03, 9075c49dc and the pose step: soft, stumble and roll landings, edge squash, portal share pinned, lean/dangle/kick/swing/sloth rows; T1 prop tip-over marked out with a reason in owner-asks-audit-1108.md).
 
 **W32 Backend tidy** (E, backend, Haiku verify then Sonnet). Files: small fixes in `api/`. Checks: targeted route tests.
 ~~- E7 Validation copy leaks field names | 1031-backend BK8~~ **Already built c6cc5767a** (field labels and the limit in the message; tests/test_validation_copy.py). Verified s8-1110.

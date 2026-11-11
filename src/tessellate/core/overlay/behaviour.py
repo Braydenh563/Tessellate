@@ -730,7 +730,7 @@ FLOW_ARR_EASE = 2.4
 #: What a pose does to the streams: [reach, speed] by the start of the frame's name (the first match). Asleep they
 #: are small and slow, glad or thrown they are wide and quick; both move on the way to the next pose over
 #: `FLOW_POSE_EASE` seconds, so a change of pose is never a step.
-FLOW_POSE = (("sleep", 0.5, 0.6), ("sit", 0.8, 0.85), ("hang", 0.95, 1.1), ("wave", 1.0, 1.3), ("walk", 1.0, 1.35), ("hop", 1.0, 1.6), ("fall", 1.0, 1.6), ("land", 1.0, 1.2), ("idle", 0.9, 0.95))
+FLOW_POSE = (("sleep", 0.5, 0.6), ("sit", 0.8, 0.85), ("hang", 0.95, 1.1), ("dangle", 0.95, 1.1), ("kick", 1.0, 1.7), ("meditate", 0.5, 0.55), ("wave", 1.0, 1.3), ("walk", 1.0, 1.35), ("hop", 1.0, 1.6), ("fall", 1.0, 1.6), ("land", 1.0, 1.2), ("idle", 0.9, 0.95))
 FLOW_POSE_EASE = 0.8
 #: What the figure is doing, over its frame (atlascat-1108 C4, the in-app `lower:*` states; INBOX 1696 z: "the lower body
 #: doesnt change at all"): [reach, speed, tip lean px, rise px] by name, the engine's `_lower_state` picking it. A

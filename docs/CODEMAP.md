@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8166, frontend ids 2713, CSS sections 524, backend routes 677, backend modules 10437, test files 2586, tests 21138, plan headings 1013, app scripts 29, boot scripts 38, script files 284.
+Counts: frontend functions 8166, frontend ids 2713, CSS sections 524, backend routes 677, backend modules 10437, test files 2588, tests 21146, plan headings 1013, app scripts 29, boot scripts 38, script files 284.
 
 ## Frontend functions (8166)
 
@@ -2084,8 +2084,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasFrameBudget` | frontend/js/atlas-life.js:476 |
 | `atlasPropLoops` | frontend/js/atlas-life.js:803 |
 | `atlasPropsFrame` | frontend/js/atlas-life.js:831 |
-| `atlasRigLower` | frontend/js/atlas-life.js:1428 |
-| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1403 |
+| `atlasRigLower` | frontend/js/atlas-life.js:1442 |
+| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1417 |
 | `atlasRingLoops` | frontend/js/atlas-life.js:20 |
 | `atlasTailAttach` | frontend/js/atlas-life.js:365 |
 | `atlasTailBend` | frontend/js/atlas-life.js:133 |
@@ -2121,19 +2121,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasBlinkStart` | frontend/js/atlas-motion.js:111 |
 | `atlasBlinkTick` | frontend/js/atlas-motion.js:48 |
 | `atlasLowerState` | frontend/js/atlas-motion.js:147 |
-| `atlasMotionOK` | frontend/js/atlas-motion.js:172 |
-| `atlasProbeWatch` | frontend/js/atlas-motion.js:221 |
-| `atlasRigAttach` | frontend/js/atlas-motion.js:180 |
-| `atlasRigFrame` | frontend/js/atlas-motion.js:537 |
-| `atlasRigGesture` | frontend/js/atlas-motion.js:272 |
-| `atlasRigRead` | frontend/js/atlas-motion.js:237 |
-| `atlasRigSpring` | frontend/js/atlas-motion.js:297 |
-| `atlasRigWake` | frontend/js/atlas-motion.js:317 |
-| `atlasStarsFade` | frontend/js/atlas-motion.js:482 |
-| `atlasTossAt` | frontend/js/atlas-motion.js:374 |
-| `atlasTossBob` | frontend/js/atlas-motion.js:388 |
-| `atlasTossDraw` | frontend/js/atlas-motion.js:451 |
-| `atlasTossState` | frontend/js/atlas-motion.js:396 |
+| `atlasMotionOK` | frontend/js/atlas-motion.js:173 |
+| `atlasProbeWatch` | frontend/js/atlas-motion.js:222 |
+| `atlasRigAttach` | frontend/js/atlas-motion.js:181 |
+| `atlasRigFrame` | frontend/js/atlas-motion.js:538 |
+| `atlasRigGesture` | frontend/js/atlas-motion.js:273 |
+| `atlasRigRead` | frontend/js/atlas-motion.js:238 |
+| `atlasRigSpring` | frontend/js/atlas-motion.js:298 |
+| `atlasRigWake` | frontend/js/atlas-motion.js:318 |
+| `atlasStarsFade` | frontend/js/atlas-motion.js:483 |
+| `atlasTossAt` | frontend/js/atlas-motion.js:375 |
+| `atlasTossBob` | frontend/js/atlas-motion.js:389 |
+| `atlasTossDraw` | frontend/js/atlas-motion.js:452 |
+| `atlasTossState` | frontend/js/atlas-motion.js:397 |
 
 ### frontend/js/atlas.js (97)
 
@@ -26861,7 +26861,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21138)
+## Tests (21146)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28314,6 +28314,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_look_mix_1108.py | 7 |
 | tests/test_look_share_1108.py | 11 |
 | tests/test_lower_flow_1683b.py | 3 |
+| tests/test_lower_pose_1111.py | 5 |
 | tests/test_magic_add_wording.py | 2 |
 | tests/test_maintenance.py | 19 |
 | tests/test_make_plan.py | 21 |
@@ -28630,6 +28631,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_perch_hops_1683.py | 2 |
 | tests/test_overlay_perch_small_1697.py | 4 |
 | tests/test_overlay_poof_1108.py | 15 |
+| tests/test_overlay_portal_share_1111.py | 3 |
 | tests/test_overlay_pose_silhouette_1111.py | 1 |
 | tests/test_overlay_presence_1692.py | 18 |
 | tests/test_overlay_react_1700.py | 8 |

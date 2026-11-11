@@ -154,6 +154,7 @@ function atlasLowerState(buddy, box) {
   if (has("nmb-walking") || has("nm-buddy-dragging") || buddy?.dataset.travel) return "walk";
   const posed = atlasLowerState.acts.find((act) => has(`nmb-act-${act}`)) || (pose === "hang" ? "hang" : "");
   if (posed) return posed;
+  if (pose === "lean") return "lean";
   if (pose === "sit" || has("nmb-act-chair") || has("nmb-act-beanbag") || has("nmb-act-meditate")) return "sit";
   if (["wave", "map", "shrug", "bell", "lantern", "carry", "juggle", "scratch", "facepalm", "cheer"].some((a) => has(`nmb-act-${a}`))) return "gesture";
   if (has("nmb-think") || mood === "thinking" || mood === "determined") return "think";
@@ -162,7 +163,7 @@ function atlasLowerState(buddy, box) {
   return "idle";
 }
 //: The acts that pose the lower body of their own (INBOX 1681, avatars.js, after `NMB_ATLAS_ACTS`); a hang does too, climbing or not (a property, not a global: `tests/test_global_scope_ratchet.py`).
-atlasLowerState.acts = ["crouch", "lounge", "glide", "drift"];
+atlasLowerState.acts = ["crouch", "lounge", "glide", "drift", "dangle", "kick", "swing", "sloth"];
 //: **Away is off** (audit AI1, 2026-10-31: the companion faded out on every
 //: tab but the one it lives on kept about 65 animations running, 540 ms of
 //: main thread per 5 s at 4x CPU): a companion that is away (`nmb-away`,
