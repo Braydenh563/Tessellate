@@ -96,6 +96,6 @@ def test_the_page_sends_the_held_id_back_until_the_button_is_pressed():
     from tests._app_js import app_js_text
 
     js = app_js_text()
-    assert 'chatHeldOffer = groundingSupport?.offer?.offer_id || ""' in js
-    assert "offer_id: chatHeldOffer" in js
-    assert 'chatHeldOffer === offer.offer_id) chatHeldOffer = ""' in js
+    assert 'chatHistoryToSend.heldOffer = groundingSupport?.offer?.offer_id || ""' in js
+    assert "offer_id: chatHistoryToSend.heldOffer" in js
+    assert 'chatHistoryToSend.heldOffer === offer.offer_id) chatHistoryToSend.heldOffer = ""' in js

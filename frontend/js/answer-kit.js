@@ -1335,7 +1335,7 @@ async function streamChatEvents({
 }
 
 //: The id of the note offer the last composed answer ended with, while its button is unpressed.
-let chatHeldOffer = "";
+chatHistoryToSend.heldOffer = ""; // a property, not a global: one name fewer in the shared scope (ratchet)
 
 // What the model is given as history: the summary in place of the turns it
 // covers, then everything since, capped as before.
@@ -1357,7 +1357,7 @@ function chatHistoryToSend() {
   let turns = open && chatConv.turns.length ? [...chatConv.turns.slice(0, -1), { ...chatConv.turns.at(-1), pending_act: open.dataset.askedAct, ...(open.consentId ? { pending_id: open.consentId } : {}) }] : chatConv.turns;
   //: The answer's note offer (Gather them, Track your lifts) is held by the server under an id; the last turn
   //: carries it until the button is pressed, so a typed yes makes that note (`composer_talk.held_offer`).
-  if (chatHeldOffer && turns.length) turns = [...turns.slice(0, -1), { ...turns.at(-1), offer_id: chatHeldOffer }];
+  if (chatHistoryToSend.heldOffer && turns.length) turns = [...turns.slice(0, -1), { ...turns.at(-1), offer_id: chatHistoryToSend.heldOffer }];
   if (!chatSummary || chatSummary.covered <= 0) {
     return turns.slice(-MAX_CLIENT_HISTORY);
   }

@@ -1,6 +1,6 @@
 """INBOX 1607 (a, c), the owner, of the masculine Atlas: "the eyes look creepy
 especially when juggling stars" and "the shoulder to arm join should be
-smoother". Measured first (scratchpad/ui-sweeps/atlasm1111.js and .py, 13
+smoother". Measured first (a throwaway sweep, CHANGELOG 1607, 13
 poses and 8 forced arm angles at 4x):
 
 - the shoulder: his torso's corner stood out past a raised arm (70 to 130
@@ -137,7 +137,7 @@ def test_her_juggle_eyes_are_unchanged():
 
 
 def test_his_happy_and_determined_read_from_calm():
-    # 1607 d, measured at 1x on busts (atlasm1111.js faces): his face moved
+    # 1607 d, measured at 1x on busts (busts, a throwaway sweep): his face moved
     # from calm by 15.4 (determined, 40 px) and 15.7 and 15.5 (happy, 72 and
     # 120 px), under her least (16.4 to 18.8). Smiling eyes (the lower lid up
     # 0.42, the brows up 1.8) and a lower, keener brow for determined bring
