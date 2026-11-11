@@ -95,6 +95,7 @@ def sync_status() -> dict:
 
 class PassBody(BaseModel):
     peer: str = Field(min_length=1, max_length=40)
+    want_key: bool = False
 
 
 @router.post("/sync/pass")
@@ -114,12 +115,12 @@ def sync_pass(body: PassBody, request: Request) -> dict:
     address = request.client.host if request.client else ""
     name = f"Paired notebook, {lantrust.device_name(request.headers.get('user-agent'))}"
     device = lantrust.remember_device(data_dir, raw, name, address)
-    return {
-        "pass": sync_state.issue_pass(data_dir, device),
-        "device": sync_state.device_id(data_dir),
-        # Decision 12: this notebook's data key, to a session its password opened.
-        "key": sync_keys.own_key_for_peer(),
-    }
+    answer = {"pass": sync_state.issue_pass(data_dir, device), "device": sync_state.device_id(data_dir)}
+    if body.want_key:
+        # Decision 12: only a Tessellate peer asks; a phone browser signed in over the LAN never gets
+        # the data key. A copy of it cannot be revoked without re-keying, so Remove does not take it back.
+        answer["key"] = sync_keys.own_key_for_peer()
+    return answer
 
 
 class PairBody(BaseModel):

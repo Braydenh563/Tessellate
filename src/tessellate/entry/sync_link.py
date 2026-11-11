@@ -5,9 +5,11 @@ the LAN port: `POST /auth/unlock` with the other computer's password and a
 device cookie this computer made, so the other computer's "Ask before a new
 device signs in" holds it until someone there presses Allow, and it is then
 listed in that computer's Other devices. With the sign-in it asks
-`POST /sync/pass` for a pass that reads `GET /sync/segment` and nothing
-else; the pass is what is kept (decision 11), never the password, and
-Remove in the other computer's Other devices ends it.
+`POST /sync/pass` for a pass that reads `GET /sync/segment`, `/sync/manifest`,
+`/sync/items` and `/sync/file` (the whole non-private notebook plus private
+ciphertext); the pass is what is kept (decision 11), never the password, and
+Remove in the other computer's Other devices ends the pass but cannot take
+back the data key the pairing also asked for (`want_key`).
 
 TLS as the LAN mode does it: the first contact fetches the other computer's
 own certificate authority (`/auth/lan-certificate.pem`, the file a phone
@@ -177,7 +179,7 @@ def pair(data_dir: Path, address: str, password: str) -> dict:
     wire = _Wire(host, port, authority)
     try:
         token = _sign_in(wire, password, cookie)
-        status, raw = wire.call("POST", "/sync/pass", body={"peer": sync_state.device_id(data_dir)},
+        status, raw = wire.call("POST", "/sync/pass", body={"peer": sync_state.device_id(data_dir), "want_key": True},
                                 headers={"X-Auth-Token": token, "Cookie": f"mm_device={cookie}"})
     except ssl.SSLCertVerificationError as exc:
         if not same_place:
