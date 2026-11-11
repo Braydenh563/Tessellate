@@ -31,21 +31,23 @@ def test_the_constellation_is_a_lazy_bundle_behind_a_stand_in():
 
 def test_p5_is_fetched_only_with_background_art_on():
     art = frontend_text("dash-art.js")
+    #: frontend_text unwraps dash-art.js's closure (13d130b11): the function's
+    #: tail is at column 0 again and its body two spaces in.
     body = art[art.index("async function startArt(holder) {") :]
-    body = body[: body.index("\n  }\n")]
+    body = body[: body.index("\n}\n")]
     assert body.index("const live = bgArtOn();") < body.index("ensureP5()")
     assert body.count("ensureP5()") == 2
     assert "if (live && typeof p5 === \"undefined\" && !(await ensureP5()))" in body
     assert "if (live && typeof p5 === \"undefined\") {" in body
     assert "artInstance = live ? new p5(sketch, holder) : artStill(sketch, holder);" in body
     # Off, the sky is the reduced-motion still: one frame, no loop.
-    assert "      !live ||\n      reducedMotionWanted()" in body
+    assert "    !live ||\n    reducedMotionWanted()" in body
 
 
 def test_the_still_sky_uses_p5s_random_generator():
     art = frontend_text("dash-art.js")
     still = art[art.index("function artStill(sketch, holder) {") :]
-    still = still[: still.index("\n  }\n")]
+    still = still[: still.index("\n}\n")]  # unwrapped, as above
     assert "seed = (1664525 * seed + 1013904223) % M;" in still and "const M = 4294967296;" in still
     assert "Math.ceil(window.devicePixelRatio) || 1" in still
     assert "new p5(" not in still

@@ -34,7 +34,8 @@ const wbItemBBox = (kind, item) => boxes[`${kind}:${item.id}`];
 const wbBoxCenter = (b) => ({ x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 });
 const wbSelectedKeys = () => picked;
 const wbRecordGesture = async (run) => run();
-const wbSaveSketchProps = async (sketch, patch) => { saved.push({ id: sketch.id, patch }); };
+//: The writes moved from one save per connector to a merge (wbSketchSetProps) and one wbSaveMany (test_board_selection_batches); the patch each gets is read here as before.
+const wbSketchSetProps = (sketch, patch) => { saved.push({ id: sketch.id, patch }); return true; };
 const wbSelectionEntries = () => [...picked].filter((k) => boxes[k]).map((k) => { const [kind, id] = k.split(":"); return { kind, id: Number(id), item: items[k], bbox: boxes[k] }; });
 const wbMoveItemBy = (kind, id, item, dx, dy, rows) => { moved.push({ key: `${kind}:${id}`, dx, dy }); rows.push({ kind, item }); };
 const wbSaveMany = async () => true;

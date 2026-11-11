@@ -30,7 +30,9 @@ def test_the_three_forms_carry_the_toggle_and_send_its_ask():
 
 
 def test_the_ask_is_null_unless_it_differs_from_the_setting():
-    ask = app_js_text().split("    ask(button = ", 1)[1][:260]
+    #: quick-note.js is one closure; app_js_text unwraps it (13d130b11), so the
+    #: method sits two spaces in, not four.
+    ask = app_js_text().split("\n  ask(button = ", 1)[1][:260]
     assert "if (!button) return {}" in ask
     assert "prefsCache?.new_notes_private" in ask and "{ private: on }" in ask
 

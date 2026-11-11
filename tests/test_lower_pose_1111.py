@@ -14,15 +14,18 @@ from pathlib import Path
 import pytest
 
 from tessellate.core.overlay import behaviour as bh
+from tests._js_scope import unwrapped_copy
 from tests.test_poses_1681 import MOTION, _fn
 
 ROOT = Path(__file__).resolve().parent.parent
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 NEW = ("lean", "dangle", "kick", "swing", "sloth")
 
+#: atlas-life.js is one closure since ce0ad6c61 (D24), so its names are not globals of the vm
+#: context; the harness reads the unwrapped copy, the same code as written before the wrap.
 LIFE_SCRIPT = r"""
 const fs = require("fs"), vm = require("vm");
-const src = fs.readFileSync("frontend/js/atlas-life.js", "utf8");
+const src = fs.readFileSync(process.argv[1], "utf8");
 const ctx = { atlasFix: (v) => Math.round(v * 100) / 100, console, Math, Map, Set, Object, Array, Number, performance, document: {}, window: {}, setTimeout, clearTimeout };
 vm.createContext(ctx);
 vm.runInContext(src + "\n;this.__x = { L: ATLAS_LOWER_STATES, H: ATLAS_HAIR_STATES, N: ATLAS_NEB_STATES, of: atlasRigLower.blend.of, byState: atlasRigLower.flowByState };", ctx);
@@ -43,7 +46,8 @@ console.log(JSON.stringify(out));
 @needs_node
 def test_each_new_pose_has_three_authored_rows_six_or_more_arrangements_and_holds_the_join() -> None:
     script = LIFE_SCRIPT % json.dumps(list(NEW))
-    done = subprocess.run(["node", "-e", script], capture_output=True, text=True, timeout=30, check=True, cwd=ROOT)
+    life = str(unwrapped_copy(ROOT / "frontend" / "js" / "atlas-life.js"))
+    done = subprocess.run(["node", "-e", script, life], capture_output=True, text=True, timeout=30, check=True, cwd=ROOT)
     got = json.loads(done.stdout)
     assert set(got) == set(NEW)
     for state, row in got.items():
@@ -75,7 +79,8 @@ console.log(JSON.stringify([
 ]));
 """
     )
-    done = subprocess.run(["node", "-e", script], capture_output=True, text=True, timeout=30, check=True)
+    life = str(unwrapped_copy(ROOT / "frontend" / "js" / "atlas-life.js"))
+    done = subprocess.run(["node", "-e", script, life], capture_output=True, text=True, timeout=30, check=True)
     assert json.loads(done.stdout) == ["lean", "dangle", "kick", "swing", "sloth", "hang", "sit", "lounge", "lie", "idle"]
 
 

@@ -23,7 +23,9 @@ const saved = [];
 const wbState = { sketches: [] };
 const wbIsLinkSketch = (s) => /"type"\s*:\s*"link-/.test(s.data || "");
 const wbSketchData = (s) => JSON.parse(s.data);
-const wbSaveSketchProps = async (sketch, patch) => { saved.push({ id: sketch.id, patch }); };
+//: The writes moved from one save per connector to a merge (wbSketchSetProps) and one wbSaveMany (test_board_selection_batches); the patch each gets is read here as before.
+const wbSketchSetProps = (sketch, patch) => { saved.push({ id: sketch.id, patch }); return true; };
+const wbSaveMany = async () => true;
 const link = (id, data) => ({ id, data: JSON.stringify({ type: "link-straight", sourceKind: "node", targetKind: "node", ...data }) });
 """
 

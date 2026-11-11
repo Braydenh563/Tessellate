@@ -43,7 +43,9 @@
     }
     const patch = Object.fromEntries(LABEL_FIELDS.map((f) => [f, undefined]));
     await wbRecordGesture(async () => {
-      for (const item of items) await wbSaveSketchProps(item, patch);
+      const rows = [];
+      for (const item of items) if (wbSketchSetProps(item, patch)) rows.push({ kind: "sketch", item });
+      await wbSaveMany(rows);
     });
     wbScheduleRender();
     const said = `Cleared the label on ${items.length === 1 ? "1 item" : `${items.length} items`}.`;

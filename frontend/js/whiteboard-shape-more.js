@@ -65,7 +65,9 @@
     }
     if (!jobs.length) return null;
     return async () => {
-      for (const [sketch, patch] of jobs) await wbSaveSketchProps(sketch, patch);
+      const saves = [];
+      for (const [sketch, patch] of jobs) if (wbSketchSetProps(sketch, patch)) saves.push({ kind: "sketch", item: sketch });
+      await wbSaveMany(saves);
     };
   }
 

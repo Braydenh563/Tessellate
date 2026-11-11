@@ -109,8 +109,14 @@
       return 0;
     }
     const byId = new Map(links.map((l) => [l.id, l]));
+    //: One request for every connector (test_board_selection_batches); the gesture still reads the change as one Undo.
     await wbRecordGesture(async () => {
-      for (const step of steps) await wbSaveSketchProps(byId.get(step.id).sketch, { bend: step.bend.x || step.bend.y ? step.bend : undefined });
+      const rows = [];
+      for (const step of steps) {
+        const { sketch } = byId.get(step.id);
+        if (wbSketchSetProps(sketch, { bend: step.bend.x || step.bend.y ? step.bend : undefined })) rows.push({ kind: "sketch", item: sketch });
+      }
+      await wbSaveMany(rows);
     });
     wbScheduleRender();
     const said = `Spaced ${nounCount(steps.length, "connector")} that share their ends.`;
@@ -181,10 +187,12 @@
         wbMoveItemBy(e.kind, e.id, e.item, dx, dy, rows);
       }
       await wbSaveMany(rows);
+      const links = [];
       for (const { id, sketch, data } of boardLinks()) {
         const patch = mirrored(data, axis, sum, moved, picked.has(keyOf("sketch", id)));
-        if (Object.keys(patch).length) await wbSaveSketchProps(sketch, patch);
+        if (Object.keys(patch).length && wbSketchSetProps(sketch, patch)) links.push({ kind: "sketch", item: sketch });
       }
+      await wbSaveMany(links);
     });
     wbScheduleRender();
     const said = axis === "h" ? `Flipped the layout of ${nounCount(entries.length, "shape")} left to right.` : `Flipped the layout of ${nounCount(entries.length, "shape")} top to bottom.`;

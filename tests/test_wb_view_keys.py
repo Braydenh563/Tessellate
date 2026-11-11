@@ -40,7 +40,9 @@ const wbSelectedKeys = () => new Set(%(keys)s);
 const wbSketchData = (s) => JSON.parse(s.data);
 const wbItemHidden = () => false;
 const wbIsLocked = (kind, s) => Boolean(JSON.parse(s.data).locked);
-const wbSaveSketchProps = async (s, patch) => { log.saved.push([s.id, Object.keys(patch).sort()]); };
+//: The writes moved from one save per connector to a merge (wbSketchSetProps) and one wbSaveMany (test_board_selection_batches); the patch each gets is read here as before.
+const wbSketchSetProps = (s, patch) => { log.saved.push([s.id, Object.keys(patch).sort()]); return true; };
+const wbSaveMany = async () => true;
 const wbRecordGesture = async (run) => { log.gestures += 1; await run(); };
 const wbScheduleRender = () => { log.rendered += 1; };
 const wbFmtState = {};

@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai.tools._common import _visible
 from tessellate.core.database import Category, Entry
-from tessellate.entry import manager
+from tessellate.entry import manager, manager_categories
 
 
 def page_of_notes(session: Session, filters: list, tag: str, offset: int, limit: int) -> tuple[list, int, bool]:
@@ -54,7 +54,7 @@ def unknown_category_hint(session: Session, category: str) -> str | None:
     that guessed "notes" needs to be told that, and shown the real ones."""
     if category_exists(session, category):
         return None
-    known = ", ".join(f"“{c['name']}”" for c in manager.all_categories(session)[:12])
+    known = ", ".join(f"“{c['name']}”" for c in manager_categories.all_categories(session)[:12])
     return (
         f"There is no category called “{category}”, so nothing matched. "
         + (f"The categories that exist are {known}. " if known else "")

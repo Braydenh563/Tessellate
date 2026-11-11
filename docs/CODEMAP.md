@@ -8222,11 +8222,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `canSpread` | frontend/js/whiteboard-arrange-more.js:103 |
 | `centersOf` | frontend/js/whiteboard-arrange-more.js:70 |
 | `currentPlan` | frontend/js/whiteboard-arrange-more.js:97 |
-| `flipLayout` | frontend/js/whiteboard-arrange-more.js:166 |
-| `flippable` | frontend/js/whiteboard-arrange-more.js:161 |
+| `flipLayout` | frontend/js/whiteboard-arrange-more.js:172 |
+| `flippable` | frontend/js/whiteboard-arrange-more.js:167 |
 | `keyOf` | frontend/js/whiteboard-arrange-more.js:10 |
-| `mirrorSum` | frontend/js/whiteboard-arrange-more.js:155 |
-| `mirrored` | frontend/js/whiteboard-arrange-more.js:127 |
+| `mirrorSum` | frontend/js/whiteboard-arrange-more.js:161 |
+| `mirrored` | frontend/js/whiteboard-arrange-more.js:133 |
 | `offsets` | frontend/js/whiteboard-arrange-more.js:13 |
 | `pairOf` | frontend/js/whiteboard-arrange-more.js:28 |
 | `pairsWanted` | frontend/js/whiteboard-arrange-more.js:86 |
@@ -8524,9 +8524,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `clearLabels` | frontend/js/whiteboard-keys.js:30 |
-| `forCanvas` | frontend/js/whiteboard-keys.js:57 |
+| `forCanvas` | frontend/js/whiteboard-keys.js:59 |
 | `go` | frontend/js/whiteboard-keys.js:17 |
-| `onKey` | frontend/js/whiteboard-keys.js:66 |
+| `onKey` | frontend/js/whiteboard-keys.js:68 |
 | `viewAt` | frontend/js/whiteboard-keys.js:11 |
 
 ### frontend/js/whiteboard-label.js (12)
@@ -9056,25 +9056,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `bindPointEditor` | frontend/js/whiteboard-shape-more.js:218 |
+| `bindPointEditor` | frontend/js/whiteboard-shape-more.js:220 |
 | `carryPatch` | frontend/js/whiteboard-shape-more.js:43 |
 | `carryRowPorts` | frontend/js/whiteboard-shape-more.js:59 |
-| `commitPoints` | frontend/js/whiteboard-shape-more.js:210 |
-| `drawHandles` | frontend/js/whiteboard-shape-more.js:150 |
-| `editPoints` | frontend/js/whiteboard-shape-more.js:184 |
-| `nearestCorner` | frontend/js/whiteboard-shape-more.js:114 |
-| `nearestOnSide` | frontend/js/whiteboard-shape-more.js:125 |
-| `pointsTarget` | frontend/js/whiteboard-shape-more.js:140 |
-| `polygonD` | frontend/js/whiteboard-shape-more.js:111 |
-| `polygonPoints` | frontend/js/whiteboard-shape-more.js:79 |
-| `round2` | frontend/js/whiteboard-shape-more.js:110 |
+| `commitPoints` | frontend/js/whiteboard-shape-more.js:212 |
+| `drawHandles` | frontend/js/whiteboard-shape-more.js:152 |
+| `editPoints` | frontend/js/whiteboard-shape-more.js:186 |
+| `nearestCorner` | frontend/js/whiteboard-shape-more.js:116 |
+| `nearestOnSide` | frontend/js/whiteboard-shape-more.js:127 |
+| `pointsTarget` | frontend/js/whiteboard-shape-more.js:142 |
+| `polygonD` | frontend/js/whiteboard-shape-more.js:113 |
+| `polygonPoints` | frontend/js/whiteboard-shape-more.js:81 |
+| `round2` | frontend/js/whiteboard-shape-more.js:112 |
 | `rowAfter` | frontend/js/whiteboard-shape-more.js:35 |
 | `rowMiddle` | frontend/js/whiteboard-shape-more.js:9 |
 | `rowOf` | frontend/js/whiteboard-shape-more.js:25 |
-| `showPoints` | frontend/js/whiteboard-shape-more.js:201 |
-| `stopPoints` | frontend/js/whiteboard-shape-more.js:176 |
+| `showPoints` | frontend/js/whiteboard-shape-more.js:203 |
+| `stopPoints` | frontend/js/whiteboard-shape-more.js:178 |
 | `tableRowPorts` | frontend/js/whiteboard-shape-more.js:14 |
-| `zoomK` | frontend/js/whiteboard-shape-more.js:147 |
+| `zoomK` | frontend/js/whiteboard-shape-more.js:149 |
 
 ### frontend/js/whiteboard-templates.js (16)
 
