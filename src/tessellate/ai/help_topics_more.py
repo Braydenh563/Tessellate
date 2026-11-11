@@ -1766,8 +1766,10 @@ MORE_TOPICS.extend(
                 "reply is being written. Press Enter and what you typed waits in a "
                 "list by the box; each one goes, oldest first, when the reply before "
                 "it ends. Edit puts a waiting message back in the box, and the x "
-                "removes it. Stop holds the list until you send again, and what you "
-                "are typing stays in the box while the list sends."
+                "removes it. Stop ends the reply and keeps the list: nothing sends by "
+                "itself, so press Send to run the waiting messages in order, with "
+                "what you typed last. What you are typing stays in the box while "
+                "the list sends."
             ),
             "badge": {"label": "Chat", "tab": "chat"},
         },

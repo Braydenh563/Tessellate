@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8150, frontend ids 2710, CSS sections 523, backend routes 674, backend modules 10360, test files 2553, tests 20906, plan headings 1010, app scripts 29, boot scripts 38, script files 284.
+Counts: frontend functions 8150, frontend ids 2710, CSS sections 523, backend routes 674, backend modules 10360, test files 2554, tests 20909, plan headings 1010, app scripts 29, boot scripts 38, script files 284.
 
 ## Frontend functions (8150)
 
@@ -521,21 +521,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `attachLibraryFile` | frontend/js/chat-attach.js:208 |
 | `attachSelectionContext` | frontend/js/chat-attach.js:348 |
 | `attachedNotes` | frontend/js/chat-attach.js:401 |
-| `chatDeleteUndo` | frontend/js/chat-attach.js:1160 |
+| `chatDeleteUndo` | frontend/js/chat-attach.js:1172 |
 | `chatDockMoreOpen` | frontend/js/chat-attach.js:910 |
-| `chatLeaveHeld` | frontend/js/chat-attach.js:1069 |
+| `chatLeaveHeld` | frontend/js/chat-attach.js:1081 |
 | `chatTidyTyped` | frontend/js/chat-attach.js:959 |
-| `chatWriteRecord` | frontend/js/chat-attach.js:1189 |
+| `chatWriteRecord` | frontend/js/chat-attach.js:1201 |
 | `clearSelectionAttachment` | frontend/js/chat-attach.js:372 |
 | `closeChatDockMore` | frontend/js/chat-attach.js:947 |
 | `closeExtractPreview` | frontend/js/chat-attach.js:54 |
 | `closeNotePicker` | frontend/js/chat-attach.js:894 |
-| `deleteCurrentChat` | frontend/js/chat-attach.js:1134 |
-| `exportChatMarkdown` | frontend/js/chat-attach.js:1194 |
+| `deleteCurrentChat` | frontend/js/chat-attach.js:1146 |
+| `exportChatMarkdown` | frontend/js/chat-attach.js:1206 |
 | `flattenNoteMarkdown` | frontend/js/chat-attach.js:430 |
-| `followupMatches` | frontend/js/chat-attach.js:994 |
-| `followupTrail` | frontend/js/chat-attach.js:997 |
-| `newChatConversation` | frontend/js/chat-attach.js:1080 |
+| `followupMatches` | frontend/js/chat-attach.js:1006 |
+| `followupTrail` | frontend/js/chat-attach.js:1009 |
+| `newChatConversation` | frontend/js/chat-attach.js:1092 |
 | `noteLabel` | frontend/js/chat-attach.js:407 |
 | `noteNamePlain` | frontend/js/chat-attach.js:467 |
 | `notePickerColumns` | frontend/js/chat-attach.js:754 |
@@ -551,8 +551,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openExtractPreview` | frontend/js/chat-attach.js:22 |
 | `openNotePicker` | frontend/js/chat-attach.js:856 |
 | `plainText` | frontend/js/chat-attach.js:445 |
-| `promptTitle` | frontend/js/chat-attach.js:1178 |
-| `releaseChatComposer` | frontend/js/chat-attach.js:1038 |
+| `promptTitle` | frontend/js/chat-attach.js:1190 |
+| `releaseChatComposer` | frontend/js/chat-attach.js:1050 |
 | `renderAttachments` | frontend/js/chat-attach.js:520 |
 | `renderBoardAttachments` | frontend/js/chat-attach.js:267 |
 | `renderDocumentAttachments` | frontend/js/chat-attach.js:313 |
@@ -563,7 +563,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `setActiveChoice` | frontend/js/chat-attach.js:453 |
 | `setNoteLabel` | frontend/js/chat-attach.js:477 |
 | `setNotePickerSource` | frontend/js/chat-attach.js:829 |
-| `syncChatPrivate` | frontend/js/chat-attach.js:1075 |
+| `syncChatPrivate` | frontend/js/chat-attach.js:1087 |
 
 ### frontend/js/sheets-selects.js (54)
 
@@ -1151,37 +1151,37 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `addAtlasLine` | frontend/js/wiring.js:138 |
 | `askAtlasAbout` | frontend/js/wiring.js:127 |
-| `chatRecallStep` | frontend/js/wiring.js:714 |
-| `clearDueNudges` | frontend/js/wiring.js:1401 |
-| `closeGlobalFind` | frontend/js/wiring.js:552 |
-| `dashboardGreetingPersona` | frontend/js/wiring.js:823 |
-| `escapeForFind` | frontend/js/wiring.js:330 |
-| `globalFindClearHighlights` | frontend/js/wiring.js:388 |
-| `globalFindRun` | frontend/js/wiring.js:399 |
-| `globalFindShowActive` | frontend/js/wiring.js:471 |
-| `globalFindStep` | frontend/js/wiring.js:484 |
-| `globalFindWalkableRoot` | frontend/js/wiring.js:363 |
-| `initGraphOptionFolds` | frontend/js/wiring.js:907 |
+| `chatRecallStep` | frontend/js/wiring.js:713 |
+| `clearDueNudges` | frontend/js/wiring.js:1400 |
+| `closeGlobalFind` | frontend/js/wiring.js:551 |
+| `dashboardGreetingPersona` | frontend/js/wiring.js:822 |
+| `escapeForFind` | frontend/js/wiring.js:329 |
+| `globalFindClearHighlights` | frontend/js/wiring.js:387 |
+| `globalFindRun` | frontend/js/wiring.js:398 |
+| `globalFindShowActive` | frontend/js/wiring.js:470 |
+| `globalFindStep` | frontend/js/wiring.js:483 |
+| `globalFindWalkableRoot` | frontend/js/wiring.js:362 |
+| `initGraphOptionFolds` | frontend/js/wiring.js:906 |
 | `initHelpToggles` | frontend/js/wiring.js:147 |
-| `noteSourceOn` | frontend/js/wiring.js:787 |
-| `nudgeDueShown` | frontend/js/wiring.js:1405 |
-| `openGlobalFind` | frontend/js/wiring.js:490 |
-| `openReminderCompose` | frontend/js/wiring.js:1360 |
-| `paintDashboardPersonaMark` | frontend/js/wiring.js:829 |
+| `noteSourceOn` | frontend/js/wiring.js:786 |
+| `nudgeDueShown` | frontend/js/wiring.js:1404 |
+| `openGlobalFind` | frontend/js/wiring.js:489 |
+| `openReminderCompose` | frontend/js/wiring.js:1359 |
+| `paintDashboardPersonaMark` | frontend/js/wiring.js:828 |
 | `reflectOnlineState` | frontend/js/wiring.js:16 |
-| `renameCurrentConversation` | frontend/js/wiring.js:641 |
-| `renderPlanToggle` | frontend/js/wiring.js:1195 |
-| `renderWebSearchToggle` | frontend/js/wiring.js:1146 |
-| `setFullscreenSurface` | frontend/js/wiring.js:1007 |
-| `setGraphOptionsOpen` | frontend/js/wiring.js:928 |
-| `setNoteSource` | frontend/js/wiring.js:802 |
-| `settingsSectionContaining` | frontend/js/wiring.js:376 |
-| `startNewNote` | frontend/js/wiring.js:1067 |
-| `syncNoteSourceButtons` | frontend/js/wiring.js:795 |
-| `timelineSelectableRows` | frontend/js/wiring.js:1117 |
-| `toggleSelectAllRows` | frontend/js/wiring.js:1101 |
-| `toggleWebSearch` | frontend/js/wiring.js:1230 |
-| `watchFullscreenSurface` | frontend/js/wiring.js:1013 |
+| `renameCurrentConversation` | frontend/js/wiring.js:640 |
+| `renderPlanToggle` | frontend/js/wiring.js:1194 |
+| `renderWebSearchToggle` | frontend/js/wiring.js:1145 |
+| `setFullscreenSurface` | frontend/js/wiring.js:1006 |
+| `setGraphOptionsOpen` | frontend/js/wiring.js:927 |
+| `setNoteSource` | frontend/js/wiring.js:801 |
+| `settingsSectionContaining` | frontend/js/wiring.js:375 |
+| `startNewNote` | frontend/js/wiring.js:1066 |
+| `syncNoteSourceButtons` | frontend/js/wiring.js:794 |
+| `timelineSelectableRows` | frontend/js/wiring.js:1116 |
+| `toggleSelectAllRows` | frontend/js/wiring.js:1100 |
+| `toggleWebSearch` | frontend/js/wiring.js:1229 |
+| `watchFullscreenSurface` | frontend/js/wiring.js:1012 |
 
 ### frontend/js/settings-wiring.js (46)
 
@@ -17349,8 +17349,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3650 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3802 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3652 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3804 |
 
 ### src/tessellate/ai/help_words.py (3)
 
@@ -26646,7 +26646,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20906)
+## Tests (20909)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26950,6 +26950,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_chat_scroll_534.py | 4 |
 | tests/test_chat_slash_order.py | 2 |
 | tests/test_chat_stop_done_w1.py | 9 |
+| tests/test_chat_stop_keeps_queue.py | 3 |
 | tests/test_chat_stray_keys.py | 2 |
 | tests/test_chat_tab_has_ai9.py | 2 |
 | tests/test_chat_times.py | 8 |
@@ -29791,7 +29792,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Earlier morning summary (2026-10-30) | docs/roadmap/HANDOVER.md:79 |
 | Earlier morning summary (2026-11-04) | docs/roadmap/HANDOVER.md:69 |
 | Earlier morning summary (away run 2026-10-18b) | docs/roadmap/HANDOVER.md:98 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:599 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:585 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4151 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
