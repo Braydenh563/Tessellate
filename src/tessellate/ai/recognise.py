@@ -2695,12 +2695,26 @@ _DATE_FROM_NOW = lazy_compile(
 )
 
 
+#: What may follow a bare "how long to": a name for a day or event, never a doing.
+_EVENT_START = lazy_compile(r"^(?:the|my|our|his|her|their|your|this|next|\d|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b|(?:mon|tues?|wed(?:nes)?|thu(?:rs?)?|fri|sat(?:ur)?|sun)(?:day)?\b)", re.I)
+
+
+_HOW_LONG_TO = lazy_compile(r"\bhow long to\s+(?P<what>.+?)\W*$", re.I)
+
+
+def is_duration_of_doing(text: str) -> bool:
+    """"how long to prove sourdough" asks a duration: a bare "to" with a several-word
+    object that does not open like a day or an event (INBOX 1739 row)."""
+    found = _HOW_LONG_TO.search(text)
+    return bool(found) and " " in found.group("what") and not _EVENT_START.match(found.group("what"))
+
+
 def days_question(text: str) -> tuple[str, str] | None:
     """("future", what) for "how many days until what", ("past", what) for
     "how long since what", else None."""
     for pattern, tense in ((_DAYS_UNTIL, "future"), (_DAYS_SINCE, "past")):
         found = pattern.match(text)
-        if found:
+        if found and not is_duration_of_doing(text):
             return tense, found.group("what")
     return None
 

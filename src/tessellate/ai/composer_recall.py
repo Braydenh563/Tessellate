@@ -84,14 +84,20 @@ def _recall_lead(out: _Answer, p: Plan, inside: list[NoteView], said: str, wrote
     dated = not wrote and any(not (p.window[0] <= v.written <= p.window[1]) for v in notes if v.written)
     if dated and notes:
         out.m(out.count(len(notes)).capitalize()).t("recall_dated_note" if len(notes) == 1 else "recall_dated_notes").asked(said)
-    elif docs and notes:
+    else:
+        _recall_count(out, notes, docs, said)
+    out.t(("recall_near_b" if p.around else "recall_b") if len(inside) > 1 else "end_colon")
+
+
+def _recall_count(out: _Answer, notes: list[NoteView], docs: list[NoteView], said: str) -> None:
+    """"You wrote two notes and made one document on <day>": notes and documents, each named as what it is."""
+    if docs and notes:
         out.t("recall_a").m(out.count(len(notes))).t("recall_note_and" if len(notes) == 1 else "recall_notes_and")
         out.m(out.count(len(docs))).t("recall_doc" if len(docs) == 1 else "recall_docs").asked(said)
     elif docs:
         out.t("recall_made").m(out.count(len(docs))).t("recall_doc" if len(docs) == 1 else "recall_docs").asked(said)
     else:
-        out.t("recall_a").m(out.count(len(inside))).t("recall_note" if len(inside) == 1 else "recall_notes").asked(said)
-    out.t(("recall_near_b" if p.around else "recall_b") if len(inside) > 1 else "end_colon")
+        out.t("recall_a").m(out.count(len(notes))).t("recall_note" if len(notes) == 1 else "recall_notes").asked(said)
 
 
 def _recall_name(out: _Answer, view: NoteView) -> None:
@@ -139,6 +145,13 @@ def _recall_quoted(out: _Answer, view: NoteView, units: list[Sentence]) -> None:
     out.t("close_quote")
 
 
+def _nearest_first(out: _Answer, p: Plan, inside: list[NoteView]) -> tuple[list[NoteView], str]:
+    """The days either side, the nearest first; "what else" leaves the day itself, which the turn before gave."""
+    kept = [v for v in inside if not (p.others and v.written == p.around)]
+    kept.sort(key=lambda v: (abs((v.written - p.around).days), -v.rank, v.id))
+    return kept, _near_said(out, p)
+
+
 def _recall(out: _Answer, p: Plan, views: list[NoteView], question: str) -> None:
     """Recall by time (decision 31's schema): the notes in the window, newest
     first, grouped by day, under the count; "nothing from then" when none."""
@@ -150,34 +163,36 @@ def _recall(out: _Answer, p: Plan, views: list[NoteView], question: str) -> None
     )
     said = window_said(_as_typed(p.window_phrase, question))
     if p.around:
-        #: The days either side, the nearest first; "what else" leaves the day itself, which the turn before gave.
-        inside = [v for v in inside if not (p.others and v.written == p.around)]
-        inside.sort(key=lambda v: (abs((v.written - p.around).days), -v.rank, v.id))
-        said = _near_said(out, p)
+        inside, said = _nearest_first(out, p, inside)
     if not inside:
         out.t("recall_none").asked(said).t("stop")
         return
     _recall_lead(out, p, inside, said, wrote)
     for view in inside[:RECALL_NOTES]:
         out.t("line", "bullet")
-        if view.kind == "document":
-            out.t("doc_lead").name(view).dated_both(view).t("stop")
-            continue
-        own = _own_words(view)
-        if own:
-            _recall_quoted(out, view, own)
-            continue
-        _recall_name(out, view)
-        #: A picture's note as what it shows and its words; a note's
-        #: heading with the sentence after it (INBOX 787).
-        units = _overview().best_line(view.sentences, set()) or _label_line(view)
-        if not units:
-            out.t("stop")
-            continue
-        out.t("colon")
-        _overview_line(out, units, set())
+        _recall_row(out, view)
     if len(inside) > RECALL_NOTES:
         out.t("para", "recall_more_a").m(out.count(len(inside) - RECALL_NOTES)).t("recall_more_b")
+
+
+def _recall_row(out: _Answer, view: NoteView) -> None:
+    """One bullet: a document by name, a short personal note quoted, any other by name and its best line."""
+    if view.kind == "document":
+        out.t("doc_lead").name(view).dated_both(view).t("stop")
+        return
+    own = _own_words(view)
+    if own:
+        _recall_quoted(out, view, own)
+        return
+    _recall_name(out, view)
+    #: A picture's note as what it shows and its words; a note's
+    #: heading with the sentence after it (INBOX 787).
+    units = _overview().best_line(view.sentences, set()) or _label_line(view)
+    if not units:
+        out.t("stop")
+        return
+    out.t("colon")
+    _overview_line(out, units, set())
 
 
 def _label_line(view: NoteView) -> list[Sentence]:

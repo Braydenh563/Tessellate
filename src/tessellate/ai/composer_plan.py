@@ -939,8 +939,8 @@ def _answer_text(ctx: Ctx, text: str) -> Reply | None:
         return _left(ctx)
     if _OVERDUE.match(text):
         return _overdue(ctx)
-    until =_UNTIL.match(text)
-    if until:
+    until = _UNTIL.match(text)
+    if until and not recognise.is_duration_of_doing(text):
         return _until(ctx, until.group("t"))
     if (reply := _when_reply(ctx, text)) is not None:
         return reply
