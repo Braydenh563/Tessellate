@@ -24351,17 +24351,17 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Extras` | src/tessellate/core/overlay/extras.py:425 |
-| `Pointer` | src/tessellate/core/overlay/extras.py:207 |
+| `Extras` | src/tessellate/core/overlay/extras.py:429 |
+| `Pointer` | src/tessellate/core/overlay/extras.py:211 |
 | `Reaction` | src/tessellate/core/overlay/extras.py:72 |
-| `_bucketed` | src/tessellate/core/overlay/extras.py:371 |
-| `_in_box` | src/tessellate/core/overlay/extras.py:195 |
+| `_bucketed` | src/tessellate/core/overlay/extras.py:375 |
+| `_in_box` | src/tessellate/core/overlay/extras.py:199 |
 | `_k` | src/tessellate/core/overlay/extras.py:141 |
-| `_seg_dist` | src/tessellate/core/overlay/extras.py:199 |
-| `ease` | src/tessellate/core/overlay/extras.py:411 |
-| `ease_marks` | src/tessellate/core/overlay/extras.py:421 |
-| `register` | src/tessellate/core/overlay/extras.py:181 |
-| `shake_flips` | src/tessellate/core/overlay/extras.py:389 |
+| `_seg_dist` | src/tessellate/core/overlay/extras.py:203 |
+| `ease` | src/tessellate/core/overlay/extras.py:415 |
+| `ease_marks` | src/tessellate/core/overlay/extras.py:425 |
+| `register` | src/tessellate/core/overlay/extras.py:185 |
+| `shake_flips` | src/tessellate/core/overlay/extras.py:393 |
 
 ### src/tessellate/core/overlay/faces.py (18)
 
