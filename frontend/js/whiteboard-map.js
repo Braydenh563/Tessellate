@@ -2897,8 +2897,30 @@ async function wbMapFoldToLevel(level) {
     renderWhiteboardNow();
     wbSyncMapToolState();
   }
-  toast(want === 1 ? "Showing the trunks only." : `Showing ${want} levels.`);
+  if (want === 1) toast(changed.length ? `Folded ${changed.length} branch${changed.length === 1 ? "" : "es"}.` : "Every branch is already folded.");
+  else toast(`Showing ${want} levels.`);
 }
+
+//: **Fold every branch** (INBOX 1773) is `wbMapFoldToLevel(1)`, the twin of
+//: Open every folded branch. `open` counts the topics with a branch under
+//: them that are open (what a level-1 fold would change); `sync` enables the
+//: two twins only when they would change something. Properties, not globals.
+wbMapFoldToLevel.open = (index = wbMapIndex()) =>
+  index.nodes.filter((n) => !n.data?.collapsed && (index.childrenOf.get(n.id) || []).length).length;
+wbMapFoldToLevel.sync = () => {
+  if (!wbIsMap()) return;
+  const index = wbMapIndex();
+  const open = wbMapFoldToLevel.open(index);
+  const folded = index.nodes.filter((n) => n.data?.collapsed).length;
+  for (const id of ["wb-map-fold-all", "wb-side-map-fold"]) {
+    const el = document.getElementById(id);
+    if (el) el.disabled = !open;
+  }
+  for (const id of ["wb-map-expand-all", "wb-side-map-expand"]) {
+    const el = document.getElementById(id);
+    if (el) el.disabled = !folded;
+  }
+};
 
 //: --- drag a branch onto a new parent (MINDMAP_PLAN.md §12.1 item 8) --------
 //:
@@ -5104,6 +5126,7 @@ function mapPaletteCommands() {
   row("This map", "ph:plus-circle Add a top-level topic", () => wbMapAddChild(null));
   row("This map", "ph:broom Tidy the map", () => wbMapTidy());
   row("This map", "ph:arrows-out-simple Open every folded branch", () => wbMapExpandAll());
+  row("This map", "ph:arrows-in-line-vertical Fold every branch", () => wbMapFoldToLevel(1), "Alt+1");
   row("This map", "ph:list-dashes Show two levels", () => wbMapFoldToLevel(2), "Alt+2");
   if (wbMapFocusState) {
     row("This map", "ph:x-circle Show the whole map again", () => wbMapClearFocus());
@@ -9477,6 +9500,8 @@ function wbSyncMapChrome() {
   if (statsRow) statsRow.hidden = !isMap;
   const expandRow = document.getElementById("wb-map-expand-all");
   if (expandRow) expandRow.hidden = !isMap;
+  const foldRow = document.getElementById("wb-map-fold-all");
+  if (foldRow) foldRow.hidden = !isMap;
   const themeRow = document.getElementById("wb-map-theme-item");
   if (themeRow) themeRow.hidden = !isMap;
   //: The numbering switch (decision 17) says what the map does now.

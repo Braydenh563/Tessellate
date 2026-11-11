@@ -297,7 +297,7 @@ TAIL_TOPICS.extend(
             "body": (
                 "A board's sidebar (the Sidebar button in its top bar, or the rail on its left edge) has "
                 "four tabs: Library, Notes, Layers and Pages; a mind map's has Library, This map (its "
-                "facts, its look, open every fold, lay it out again) and Outline. The Library starts with "
+                "facts, its look, open every fold or fold every branch, lay it out again) and Outline. The Library starts with "
                 "Templates (38 for boards, 27 for maps; see Board and map templates). Pages lists the "
                 "board's frames in presentation order: drag a row or press Alt+Up and Alt+Down to reorder, "
                 "Enter goes to the frame, P presents from it, double-click or F2 renames it, and its ⋯ menu has more. "
@@ -767,8 +767,8 @@ TAIL_TOPICS.extend(
             "body": (
                 "The layout picker: tree, radial, logic chart, "
                 "timeline, fishbone, tree table or free; Tidy lays every unpinned topic out again. "
-                "View sets Colour by (branch, category, age, note) and opens every "
-                "folded branch; Present branches shows it branch by branch. A topic's menu, "
+                "View sets Colour by (branch, category, age, note), opens every "
+                "folded branch or folds every branch (Alt+1); Present branches shows it branch by branch. A topic's menu, "
                 "Content, Markers sets a priority (1 to 5), how far along it is, a "
                 "flag, a start day, a due day and up to six icons; View, Gantt chart draws "
                 "a bar from start to due for each topic with both, and a dragged bar moves its dates (Undo); "
