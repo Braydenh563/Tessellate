@@ -54,7 +54,7 @@ Object.assign(LAZY_MODULES, {
   mathField: ["/css/math-field-lazy.css", "/vendor/mathlive/mathlive.min.js", "/js/math-field.js"],
   //: The guided equation editor (math-editor.js's header; DOCUMENTS_PLAN 16), on the same field.
   mathEditor: ["/css/key-grid-lazy.css", "/css/math-field-lazy.css", "/vendor/mathlive/mathlive.min.js", "/js/math-field.js", "/css/math-editor-lazy.css", "/js/math-editor.js"],
-  //: The model badge's spec panel, editing an answer, a note's Explain row, the extract preview's Save (gesture-kit.js's header).
+  //: The model badge's spec panel, editing an answer, a note's Explain row, the extract preview's Save, dictation (gesture-kit.js's header).
   gestureKit: ["/js/gesture-kit.js"],
   //: One chat turn (chat-turn.js): `sendChatMessage` awaits it; the chat box's focus warms it.
   chatTurn: ["/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/chat-turn.js"],
@@ -108,7 +108,7 @@ installStandIns({
   screenContext: ["screenContext"],
   mathEditor: ["openMathEditor"],
   mathField: ["openMathInPlace"],
-  gestureKit: ["openChatModelPanel", "editChatAnswer", "explainNote", "commitExtractPreview"],
+  gestureKit: ["openChatModelPanel", "editChatAnswer", "explainNote", "commitExtractPreview", "toggleDictation"],
   notesLazy: ["toggleRowExpanded", "fullEntry", "nudgeUntaggedNotes", "nudgeReviewQueue", "refreshNoteSearchWhy", "loadSemanticEntries", "noMatchHint", "liveQueryBar"],
   quickAdd: ["reminderComposeAdd"],
   featureRows: ["renderQuickLinks"],

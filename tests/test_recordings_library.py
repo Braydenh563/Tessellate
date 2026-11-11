@@ -105,7 +105,9 @@ def test_the_microphone_is_chosen_cleaned_and_tested_in_one_set_of_controls():
     for key in ("micNoise", "micEcho", "micGain", "deviceId: { ideal: device }"):
         assert key in media
     captions = _js_scope.unwrapped((ROOT / "frontend/js/captions.js").read_text(encoding="utf-8"))
-    for text in (media, JS, captions):
+    # Dictation is in gesture-kit.js (moved from media.js, 2026-11-11, gzip budget).
+    dictation = (ROOT / "frontend/js/gesture-kit.js").read_text(encoding="utf-8")
+    for text in (dictation, JS, captions):
         assert "getUserMedia({ audio: true })" not in text
         assert "getUserMedia({ audio: micAudioConstraints() })" in text
     assert "enumerateDevices" in JS and "const MIC_TEST_MS = 3000;" in JS
