@@ -4,8 +4,7 @@
 
 The header comment stays outside; the body moves two spaces in, inside
 `(() => {` ... `})();`, and the foot lists the names other files call:
-`Object.assign(window, { name });`. Refuses a file with a template literal
-that spans lines, whose text would change if it were re-indented. Then run
+`Object.assign(window, { name });`. A multi-line template literal's own lines are not indented. Then run
 `node --check`, `tests/test_global_scope_ratchet.py` (lower
 `GLOBAL_NAMES_CAP` by what it printed) and the file's own tests.
 """
@@ -15,12 +14,16 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from tests._js_scope import template_lines  # noqa: E402
+
 
 def wrap(text: str, exports: list[str]) -> str:
     lines = text.split("\n")
-    spanning = [n for n, line in enumerate(lines, 1) if line.count("`") % 2]
-    if spanning:
-        raise SystemExit(f"a template literal spans lines at {spanning[:5]}; wrap by hand")
+    #: A line that begins inside a multi-line template literal is string text:
+    #: indenting it would change the string, so it stays as it is (the inverse of
+    #: `tests/_js_scope.unwrapped`, which reads the same set).
+    inside = template_lines(text)
     start = 0
     while start < len(lines) and (lines[start].startswith("//") or not lines[start].strip()):
         start += 1
@@ -34,7 +37,7 @@ def wrap(text: str, exports: list[str]) -> str:
         "})();",
         "",
     ]
-    return "\n".join(lines[:start] + ["(() => {"] + [("  " + line) if line.strip() else "" for line in body] + foot)
+    return "\n".join(lines[:start] + ["(() => {"] + [("  " + line) if line.strip() and start + n not in inside else line for n, line in enumerate(body)] + foot)
 
 
 def main(argv: list[str]) -> None:

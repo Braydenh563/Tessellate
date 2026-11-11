@@ -18,15 +18,16 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-QUICKADD = JS / "quickadd.js"
+QUICKADD = _js_scope.unwrapped_copy(JS / "quickadd.js")
 FIXTURE = ROOT / "tests" / "fixtures" / "composer" / "quickadd_1010.json"
 
 
 def _text(name: str) -> str:
-    return (JS / name).read_text(encoding="utf-8")
+    return _js_scope.unwrapped((JS / name).read_text(encoding="utf-8"))
 
 
 def test_quickadd_is_lazy_with_its_own_stylesheet():

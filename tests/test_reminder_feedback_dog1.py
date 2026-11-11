@@ -4,17 +4,18 @@ Add and a missing day are said in the status line, and a far date is read as
 weeks or a dated word, never "11/3/2026"."""
 
 from pathlib import Path
+from tests import _js_scope
 
 JS = Path(__file__).resolve().parent.parent / "frontend" / "js"
 
 
 def test_day_without_time_is_asked_not_defaulted():
-    text = (JS / "quickadd.js").read_text(encoding="utf-8")
+    text = _js_scope.unwrapped((JS / "quickadd.js").read_text(encoding="utf-8"))
     assert 'slots.time = "09:00";' not in text and "defaultTime" not in text
 
 
 def test_empty_add_and_missing_day_give_feedback():
-    text = (JS / "quickadd.js").read_text(encoding="utf-8")
+    text = _js_scope.unwrapped((JS / "quickadd.js").read_text(encoding="utf-8"))
     assert "Type what to remind you of first" in text
     #: The missing day is asked once, in the chips' own status line (sweep 1028b W28), not again here.
     assert "The question is said once, in the chips' own status line" in text
