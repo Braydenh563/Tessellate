@@ -5010,19 +5010,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `dismiss` | frontend/js/extra-notice.js:52 |
-| `dismissed` | frontend/js/extra-notice.js:51 |
-| `dismissedList` | frontend/js/extra-notice.js:46 |
-| `extraNoticeCheck` | frontend/js/extra-notice.js:138 |
-| `extraNoticeInstall` | frontend/js/extra-notice.js:97 |
-| `extraNoticeMount` | frontend/js/extra-notice.js:215 |
-| `extraNoticeState` | frontend/js/extra-notice.js:66 |
-| `extraNoticeUndo` | frontend/js/extra-notice.js:118 |
-| `extraNoticeWaitIdle` | frontend/js/extra-notice.js:87 |
-| `extraRows` | frontend/js/extra-notice.js:58 |
-| `forget` | frontend/js/extra-notice.js:53 |
-| `saveDismissed` | frontend/js/extra-notice.js:50 |
-| `sleep` | frontend/js/extra-notice.js:84 |
+| `dismiss` | frontend/js/extra-notice.js:53 |
+| `dismissed` | frontend/js/extra-notice.js:52 |
+| `dismissedList` | frontend/js/extra-notice.js:47 |
+| `extraNoticeCheck` | frontend/js/extra-notice.js:139 |
+| `extraNoticeInstall` | frontend/js/extra-notice.js:98 |
+| `extraNoticeMount` | frontend/js/extra-notice.js:216 |
+| `extraNoticeState` | frontend/js/extra-notice.js:67 |
+| `extraNoticeUndo` | frontend/js/extra-notice.js:119 |
+| `extraNoticeWaitIdle` | frontend/js/extra-notice.js:88 |
+| `extraRows` | frontend/js/extra-notice.js:59 |
+| `forget` | frontend/js/extra-notice.js:54 |
+| `saveDismissed` | frontend/js/extra-notice.js:51 |
+| `sleep` | frontend/js/extra-notice.js:85 |
 
 ### frontend/js/extract-preview.js (2)
 

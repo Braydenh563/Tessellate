@@ -35,6 +35,7 @@
     localllm: "A built-in model needs the local model package.",
     captions: "Live captions need the captions package.",
     speakers: "Labelling who speaks needs the speaker packages.",
+    speakermodels: "Telling voices apart needs the two speaker models.",
     searxng: "Private web search needs SearXNG, which is not installed.",
   };
   let cache = { at: 0, rows: null };

@@ -25,7 +25,8 @@ JS = (ROOT / "frontend" / "js" / "extra-notice.js").read_text(encoding="utf-8")
 
 def _sentences() -> dict[str, str]:
     block = re.search(r"const EXTRA_NOTICE_WHAT = \{(.*?)\n  \};", JS, re.S).group(1)
-    return dict(re.findall(r'^\s*(\w+): "([^"]+)",?$', block, re.M))
+    #: A hyphenated id ("spell-fr") is a quoted key.
+    return dict(re.findall(r'^\s*"?([\w-]+)"?: "([^"]+)",?$', block, re.M))
 
 
 def test_every_registry_package_has_one_short_sentence() -> None:

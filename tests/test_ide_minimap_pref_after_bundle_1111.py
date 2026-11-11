@@ -10,5 +10,6 @@ def test_the_ide_script_does_not_call_docToolPref_at_its_top_level():
 
 def test_the_view_sets_the_minimap_box_once_the_bundle_is_in():
     text = (JS / "documents-view.js").read_text()
-    then = text.split('ensureModule("library")]).then(() => {')[1].split("});")[0]
+    # The view loads documents.js, then documents-ide.js, then sets the box (the two spokes' fixes merged).
+    then = text.split('lazyScript("/js/documents.js").then(() => lazyScript("/js/documents-ide.js")).then(() => {')[1].split("});")[0]
     assert 'docToolPref("codeMinimap", false)' in then
