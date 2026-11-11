@@ -28,6 +28,7 @@ from datetime import date, datetime
 
 from tessellate.ai import act_registry
 from tessellate.ai import recognise as rec
+from tessellate.ai import recognise_reminders
 
 #: The bands of decision 48, highest first: a reading is in the first band
 #: whose floor its confidence reaches. Set 2026-10-10 by the eval
@@ -173,7 +174,7 @@ def _weigh(reading: Reading, used: list, context: dict) -> Reading:
 def _reminder_slots(text: str, spans: list, now: datetime, locale: str | None, known: dict,
                     tense: str = "future") -> tuple[dict, list]:
     """Slots for a reminder read from a whole sentence (quick add), and the spans they used."""
-    parsed = rec.parse_reminder_text(text, now, locale=locale, known=known, tense=tense)
+    parsed = recognise_reminders.parse_reminder_text(text, now, locale=locale, known=known, tense=tense)
     used = [s for s in spans if s.rank == 0 and s.kind in _TIME_KINDS]
     if parsed is None:
         return {"text": rec.strip_lead(text.strip()) or text.strip(), "due_at": None}, used
@@ -187,7 +188,7 @@ def _repeat_slots(slots: dict, spans: list) -> None:
     repeat = next((s for s in spans if s.kind == "recurrence" and s.rank == 0), None)
     if repeat is not None:
         slots["repeat"] = repeat.value
-        stored = rec.stored_repeat(repeat.value)
+        stored = recognise_reminders.stored_repeat(repeat.value)
         if stored:
             slots["recurring"] = stored
         return

@@ -15,6 +15,7 @@ from dataclasses import dataclass, field
 from datetime import date, timedelta
 
 from tessellate.ai import composer_numbers, question_noise, recognise as rec, utilities, when as when_words
+from tessellate.ai import recognise_questions
 from tessellate.ai.composer_ask import _ASKING_WORDS, _holds, _stem, _words, classify, rephrase, subject_terms, user_today
 from tessellate.ai.composer_body import length_wish
 
@@ -119,7 +120,7 @@ def _plan_phrase(question: str, terms: list[str]) -> str:
     """The question's time phrase, or "" for a bare "recently" with no subject:
     "what did I write recently" asks for the newest notes, not a fortnight."""
     phrase = _time_phrase(question)
-    return "" if not terms and rec.is_lately(phrase) else phrase
+    return "" if not terms and recognise_questions.is_lately(phrase) else phrase
 
 
 #: What the planner reads of a question. Its passes cost words x length, so a
@@ -213,7 +214,7 @@ def holds_any(stems: list[str], text: str) -> bool:
 
 
 #: A present or future yes/no ("is the plumber coming this week", "are we meeting on Tuesday"): its window dates the event, not the note.
-_PRESENT_ASK = re.compile(rf"^\W*{rec.EVENT_LEAD}", re.I)
+_PRESENT_ASK = re.compile(rf"^\W*{recognise_questions.EVENT_LEAD}", re.I)
 
 
 def without_event_window(question: str) -> str:
@@ -221,7 +222,7 @@ def without_event_window(question: str) -> str:
     event, so searching for it finds the notes that happen to say "week" (R9-7)."""
     if not _PRESENT_ASK.match(question or ""):
         return question
-    return rec.without_event_window_tail(question)
+    return recognise_questions.without_event_window_tail(question)
 
 
 def _plan_window(question: str, terms: list[str], phrase: str, today: date) -> tuple[tuple | None, list[str]]:

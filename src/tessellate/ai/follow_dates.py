@@ -18,6 +18,7 @@ import re
 from datetime import datetime, timedelta
 
 from tessellate.ai import phrasing, recognise
+from tessellate.ai import recognise_questions
 
 Reading = tuple[str | None, str | None]
 
@@ -89,7 +90,7 @@ def _about(rest: str) -> tuple[str, str]:
         return "", rest
     for cut in range(2, len(words)):
         tail = " ".join(words[cut:])
-        if recognise.days_apart(tail) is not None:
+        if recognise_questions.days_apart(tail) is not None:
             return " ".join(words[1:cut]).strip(" ,"), tail
     return "", rest
 
@@ -100,7 +101,7 @@ def _relative(question: str, history: list[dict], last, now: datetime) -> Readin
     found = _REMIND.match(said) or _AND_SPAN.match(said)
     rest = found.group("rest") if found else ""
     subject, rest = _about(rest)
-    span = recognise.days_apart(rest) if found else None
+    span = recognise_questions.days_apart(rest) if found else None
     if span is None or len(rest.split()) > 8:
         return None, None
     anchor = _anchor(history, last, now)

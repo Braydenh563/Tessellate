@@ -19,7 +19,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from tessellate.ai import recognise as rec
+from tessellate.ai import recognise_reminders
 
 #: The hour a date-only event is due at, local time.
 ALL_DAY_HOUR = 9
@@ -169,7 +169,7 @@ def _apply(event: IcsReminder, name: str, params: dict[str, str], value: str, lo
     elif name == "PRIORITY":
         event.priority = _priority(value)
     elif name == "RRULE":
-        event.recurring = rec.stored_repeat(value.strip().upper()) or "none"
+        event.recurring = recognise_reminders.stored_repeat(value.strip().upper()) or "none"
     elif name == "STATUS":
         event.done = value.strip().upper() == "COMPLETED"
     elif name == "UID":

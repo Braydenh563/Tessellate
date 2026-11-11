@@ -20,6 +20,7 @@ import re
 import pytest
 
 from tessellate.ai import notebook_stats, recognise as rec
+from tessellate.ai import recognise_questions
 from tessellate.api import routes_chat
 from tessellate.core import config
 from tests.test_composer_classes_1026c import _SUMMER, _WINTER, _fill
@@ -121,8 +122,8 @@ def test_automatic_follows_the_locale_the_browser_reported():
 
 def test_recognise_and_the_search_window_use_the_same_reading():
     anchor = dt.datetime(2026, 10, 21, 10)
-    south = rec.question_day("what did I write last summer", TODAY, "en-AU")
-    north = rec.question_day("what did I write last summer", TODAY, "en-GB")
+    south = recognise_questions.question_day("what did I write last summer", TODAY, "en-AU")
+    north = recognise_questions.question_day("what did I write last summer", TODAY, "en-GB")
     assert (south[0], south[1]) == SOUTH_SUMMER_GONE
     assert (north[0], north[1]) == NORTH_SUMMER
     spans = rec.recognise("notes from last summer", now=anchor, locale="en-AU", tense="past")

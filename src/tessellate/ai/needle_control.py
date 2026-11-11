@@ -29,7 +29,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from tessellate.ai import composer_compose as compose
-from tessellate.ai import recognise
+from tessellate.ai import recognise_reminders
 from tessellate.ai import when as when_words
 
 #: The acts the composer decides on its own, by the words that ask for them.
@@ -75,7 +75,7 @@ def _reminder(args: dict, text: str, now: datetime, mood: compose.Mood) -> Verdi
     said = str(args.get("when") or "").strip()
     body = str(args.get("text") or "").strip()
     request = _LEAD_IN.sub("", " ".join(text.split()))
-    read = recognise.parse_reminder_text(request, now)
+    read = recognise_reminders.parse_reminder_text(request, now)
     #: A sentence that was only a time keeps itself as its text: no subject.
     if read and read["text"].lower().strip(" .") == request.lower().strip(" ."):
         read = {**read, "text": ""}

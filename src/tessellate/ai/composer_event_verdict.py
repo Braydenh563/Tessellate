@@ -9,6 +9,7 @@ import re
 from datetime import date, timedelta
 
 from tessellate.ai import composer_ahead, recognise
+from tessellate.ai import recognise_questions
 
 
 
@@ -24,7 +25,7 @@ def _window(phrase: str, today: date) -> tuple[date, date]:
     monday = today - timedelta(days=today.weekday())
     saturday = monday + timedelta(days=5)
     next_month = _month_end(today) + timedelta(days=1)
-    if phrase.split()[-1].lower() in recognise._WINDOW_DAYS:  # noqa: SLF001
+    if phrase.split()[-1].lower() in recognise_questions._WINDOW_DAYS:  # noqa: SLF001
         #: "on Thursday" is the next Thursday on or after today: an event asked about is still to come.
         found = recognise.span(phrase.split()[-1], today, "future")
         return (found[0], found[1]) if found else (today, today)
@@ -43,7 +44,7 @@ def _window(phrase: str, today: date) -> tuple[date, date]:
 
 def verdict(question: str, text: str, today: date) -> str:
     """`text` with "Yes, " or "Not <window>: " before it, or as it was."""
-    said = recognise.event_window_asked(question)
+    said = recognise_questions.event_window_asked(question)
     day = composer_ahead.date_in(text.split("\n", 1)[0], today) if said else None
     if day is None:
         return text
@@ -71,10 +72,10 @@ _MEETING = re.compile(r"\b(?:meeting|meetings|sync|call|catch-?up|stand-?up|1:1|
 def day_question(question: str) -> str:
     """"are we meeting on Tuesday" asks of the day, so it is read as "what is on Tuesday"; "" when the question
     names a thing (a person, a place) or has no window."""
-    said = recognise.event_window_asked(question)
-    if not said or not recognise.EVENT_LEAD or not _MEETING.search(question):
+    said = recognise_questions.event_window_asked(question)
+    if not said or not recognise_questions.EVENT_LEAD or not _MEETING.search(question):
         return ""
-    core = re.findall(r"[a-z0-9:'-]+", recognise.without_event_window_tail(question).lower())
+    core = re.findall(r"[a-z0-9:'-]+", recognise_questions.without_event_window_tail(question).lower())
     if any(word not in _GENERIC for word in core):
         return ""
     return f"what is {said}" if said.startswith("on ") else f"what is on {said}"
@@ -90,4 +91,4 @@ def lead(question: str, text: str) -> str:
     """"Yes." when the day's list holds a meeting, else "No meeting is written for <window>."."""
     if _MEETING.search(text):
         return "Yes."
-    return f"No meeting is written for {recognise.event_window_asked(question).removeprefix('on ')}."
+    return f"No meeting is written for {recognise_questions.event_window_asked(question).removeprefix('on ')}."

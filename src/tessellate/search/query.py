@@ -33,6 +33,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 
 from tessellate.ai import recognise
+from tessellate.ai import recognise_questions
 from tessellate.core import clock
 
 #: **How much of a question anything reads** (audit 1031 AI9, HR7): the one
@@ -136,7 +137,7 @@ class Understood:
 
 
 #: What "recently" means when nobody says (the rule lives with the reader).
-RECENT_DAYS = recognise.RECENT_DAYS
+RECENT_DAYS = recognise_questions.RECENT_DAYS
 
 
 # The words a question is *made of* rather than about. Stripped before
@@ -523,12 +524,12 @@ def _read_window(remainder: str, today: date, locale: str | None, operator_dates
     if dated is not None:
         since, until, phrase, start, end = dated
         return (remainder[:start] + " " + remainder[end:]).strip(), since, until, phrase, soft
-    found = recognise.question_range(remainder, today)
+    found = recognise_questions.question_range(remainder, today)
     if found is not None:
         since, until, phrase, start, end, soft = found
         remainder = (remainder[:start] + " " + remainder[end:]).strip()
         return remainder, since, until, phrase, soft
-    day = recognise.question_day(remainder, today, locale)
+    day = recognise_questions.question_day(remainder, today, locale)
     if day is not None:
         since, until, phrase, start, end = day
         remainder = (remainder[:start] + " " + remainder[end:]).strip()

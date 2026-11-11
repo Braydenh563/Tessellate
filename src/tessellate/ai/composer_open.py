@@ -25,7 +25,7 @@ import re
 
 from tessellate.core.lazyre import lazy_compile
 
-from tessellate.ai import recognise
+from tessellate.ai import recognise_questions
 
 PHRASES: dict[str, str] = {
     "open_left_a1": "Still open here: ",
@@ -210,7 +210,7 @@ def _done(out, view, question: str, salt: str) -> None:  # noqa: ANN001
 
 
 def _when(out, view, question: str, salt: str) -> None:  # noqa: ANN001
-    said = [s for s in view.sentences if s.kind != "picture" and recognise.dated_sentence(s.text)][:2]
+    said = [s for s in view.sentences if s.kind != "picture" and recognise_questions.dated_sentence(s.text)][:2]
     if not said:
         _say(out, "open_when_none")
         return

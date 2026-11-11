@@ -30,7 +30,8 @@ import sys
 from datetime import date, datetime, timedelta
 from typing import NamedTuple
 
-from tessellate.ai import arithmetic, recognise
+from tessellate.ai import arithmetic, recognise, recognise_units
+from tessellate.ai import recognise_questions
 from tessellate.core import cjk
 from tessellate.ai import when as when_words
 
@@ -39,7 +40,7 @@ from tessellate.ai import when as when_words
 #: name -> (dimension, size in the dimension's base unit, the name said): the
 #: recogniser's table (CHAT_PLAN decision 46), so a unit the chips read is a
 #: unit this converts.
-_UNITS = recognise.UNITS
+_UNITS = recognise_units.UNITS
 
 _UNIT_NAMES = "|".join(sorted((re.escape(n) for n in _UNITS), key=len, reverse=True))
 _NUM = r"(-?\d+(?:[.,]\d+)?)"
@@ -64,7 +65,7 @@ RATES: dict[str, float] = {
     "CNY": 7.19, "INR": 85.5, "SEK": 9.6, "NOK": 10.1, "DKK": 6.56, "SGD": 1.29, "HKD": 7.85, "MXN": 19.2,
     "BRL": 5.6, "ZAR": 17.9, "KRW": 1370.0, "PLN": 3.75,
 }
-_CURRENCY_NAMES = recognise.CURRENCY_NAMES
+_CURRENCY_NAMES = recognise_units.CURRENCY_NAMES
 _MONEY_NAMES = "|".join(sorted((re.escape(n) for n in _CURRENCY_NAMES), key=len, reverse=True))
 def _compile_money() -> tuple:
     return (
@@ -279,10 +280,10 @@ def _weekday_of(match: re.Match, today: date) -> list[tuple] | None:
 
 def _dates(text: str, now: datetime) -> list[tuple] | None:
     today = now.date()
-    asked = recognise.days_question(text)
+    asked = recognise_questions.days_question(text)
     if asked:
         return _days_to_or_from(asked, today)
-    offset = recognise.offset_question(text)
+    offset = recognise_questions.offset_question(text)
     if offset:
         return _offset_day(offset, today)
     match = _WEEKDAY_OF.match(text)
@@ -324,7 +325,7 @@ def until_subject(question: str) -> tuple[str, str] | None:
     """("future" or "past", the subject) of "how many days until the
     dentist", whose date only a note can give, or None."""
     text = _clean(question)
-    asked = recognise.days_question(text)
+    asked = recognise_questions.days_question(text)
     if asked:
         return asked[0], re.sub(r"^(?:the|my|our)\s+", "", asked[1].strip(), flags=re.I)
     return None
@@ -492,14 +493,14 @@ def _calculation_kind(question: str, text: str) -> str | None:
 
 
 def _date_kind(text: str) -> str | None:
-    asked = recognise.days_question(text)
+    asked = recognise_questions.days_question(text)
     if asked:
         #: "how many days until the dentist": the date is in a note, which
         #: the composer reads (`composer._until_note`).
         return "dates" if when_words.span(asked[1], now_day(), asked[0]) else "until_note"
     if _between(text, now_day()):
         return "dates"
-    if recognise.offset_question(text) or (_WEEKDAY_OF.match(text) and when_words.span(_WEEKDAY_OF.match(text).group(1), now_day(), "future")):
+    if recognise_questions.offset_question(text) or (_WEEKDAY_OF.match(text) and when_words.span(_WEEKDAY_OF.match(text).group(1), now_day(), "future")):
         return "dates"
     return None
 

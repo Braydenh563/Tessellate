@@ -10,7 +10,8 @@ from datetime import datetime
 
 import pytest
 
-from tessellate.ai import follow_items, recognise
+from tessellate.ai import follow_items
+from tessellate.ai import recognise_questions
 from tessellate.api import chat_said, chat_turn, routes_chat
 from tessellate.entry import manager
 from tests._consent import confirmed
@@ -39,7 +40,7 @@ def _said(events):
     ("the day before", -1), ("a week before that", -7), ("two days later", 2), ("the week before", -7), ("a few weeks after", 21), ("an hour before", None), ("hello", None),
 ])
 def test_the_recogniser_reads_a_span_from_a_day(text, days):
-    assert recognise.days_apart(text) == days
+    assert recognise_questions.days_apart(text) == days
 
 
 @pytest.mark.parametrize("ask, sentence", [

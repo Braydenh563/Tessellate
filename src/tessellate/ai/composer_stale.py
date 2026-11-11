@@ -11,10 +11,10 @@ from __future__ import annotations
 import re
 from datetime import date
 
-from tessellate.ai.recognise import AT_THE_TIME_WORD as _AT_THE_TIME
-from tessellate.ai.recognise import DROPPED_NOW_WORD as _DROPPED
-from tessellate.ai.recognise import STALE_TIME_WORD as _STALE
-from tessellate.ai.recognise import THAT_TIME_WORD as _THAT_WORDS
+from tessellate.ai.recognise_questions import AT_THE_TIME_WORD as _AT_THE_TIME
+from tessellate.ai.recognise_questions import DROPPED_NOW_WORD as _DROPPED
+from tessellate.ai.recognise_questions import STALE_TIME_WORD as _STALE
+from tessellate.ai.recognise_questions import THAT_TIME_WORD as _THAT_WORDS
 from tessellate.core.lazyre import lazy_compile
 
 _THAT = {"tonight": "that night", "this morning": "that morning", "this afternoon": "that afternoon",

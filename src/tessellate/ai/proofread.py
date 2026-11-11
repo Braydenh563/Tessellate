@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import re
 
-from tessellate.ai import recognise
+from tessellate.ai import recognise_questions
 
 
 _WORD = re.compile(r"[A-Za-z][A-Za-z']*")
@@ -89,7 +89,7 @@ def _proofread_plain(text: str, known, changes: list) -> str:  # noqa: ANN001
             if replaced != text:
                 text = replaced
                 changes.append((typed, made))
-    named = recognise.capitalise_names(text)
+    named = recognise_questions.capitalise_names(text)
     if named != text:
         changes.append(("day names", "capitals"))
     fixed_i = _LONE_I.sub("I", named)

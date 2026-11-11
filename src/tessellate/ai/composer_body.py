@@ -15,6 +15,7 @@ import re
 from datetime import date
 
 from tessellate.ai import composer_frame, composer_versus, question_noise, recognise as rec, utilities, when as when_words
+from tessellate.ai import recognise_questions
 from tessellate.ai.composer_answer import _Answer
 from tessellate.ai.composer_ask import _holds, _overview, _stem, _words, subject_terms
 from tessellate.ai.composer_quote import _ENDED, _joined, _list_block, _list_lead, _list_sentence, _lowered, _pick, _quotes, _said_before, _sentence_case, _unlike_before, _with_context, decap
@@ -1041,7 +1042,7 @@ def told_as_past(content: str, at: int) -> bool:
     happened (`recognise.told_as_past`, audit 1030 Z26)."""
     start = max(content.rfind(m, 0, at) for m in (". ", "! ", "? ", "\n")) + 1
     stops = [i for i in (content.find(m, at) for m in (". ", "! ", "? ", "\n")) if i >= 0]
-    return rec.told_as_past(content[start: min(stops) if stops else len(content)])
+    return recognise_questions.told_as_past(content[start: min(stops) if stops else len(content)])
 
 
 def _newest_lead(out: _Answer, count: int, guessing: bool) -> None:

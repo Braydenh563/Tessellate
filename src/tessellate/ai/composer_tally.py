@@ -8,6 +8,7 @@ from __future__ import annotations
 import re
 
 from tessellate.ai import composer, composer_lists, realise, recognise
+from tessellate.ai import recognise_questions
 
 _MONEY = re.compile(r"([$£€¥])\s?(\d[\d,]*(?:\.\d+)?)")
 _SIZE = {"cheapest": min, "lowest": min, "smallest": min, "dearest": max, "highest": max, "biggest": max, "largest": max, "most expensive": max}
@@ -113,7 +114,7 @@ def _count_wanted(out, q: str, views: list) -> bool:  # noqa: ANN001
 def _beside(sentence: str, wanted: re.Match):  # noqa: ANN202
     """The distance in `sentence` nearest the asked day: "Ran 5 km on 7 November and 10 km on 8 November" is
     10 km for the 8th. The one before the day wins a tie. (start, end, figure, unit), or None."""
-    near = [(abs(wanted.start() - d[1]) if d[1] <= wanted.start() else d[0] - wanted.end() + 0.5, d) for d in recognise.distances(sentence)]
+    near = [(abs(wanted.start() - d[1]) if d[1] <= wanted.start() else d[0] - wanted.end() + 0.5, d) for d in recognise_questions.distances(sentence)]
     return min(near, key=lambda pair: pair[0])[1] if near else None
 
 
@@ -132,7 +133,7 @@ def _how_far(out, q: str, views: list) -> bool:  # noqa: ANN001
     for view in views:
         for s in view.sentences:
             hit = wanted.search(s.text)
-            dated = dated or bool(hit and recognise.distances(s.text))
+            dated = dated or bool(hit and recognise_questions.distances(s.text))
             d = _beside(s.text, hit) if hit and _says_verb(s.text, str(view.title or ""), verb) else None
             if d:
                 line = f"{d[2]} {d[3]} on {found['day']} ({composer_lists._title(view)})."  # noqa: SLF001
@@ -201,15 +202,15 @@ def _compare_outings(out, q: str, views: list) -> bool:  # noqa: ANN001
 def _best_in(out, q: str, views: list) -> bool:  # noqa: ANN001
     """"Which holiday is better in April": the line of a note about holidays that says it is best that month."""
     found = _BEST_IN.match(q)
-    month = recognise.months_named(found["month"].capitalize()) if found else []
+    month = recognise_questions.months_named(found["month"].capitalize()) if found else []
     if not month:
         return False
     noun = re.compile(rf"\b{re.escape(found['noun'])}s?\b", re.I)
-    cued = [(v, s) for v in views if noun.search(str(v.note.get("content") or "")) for s in v.sentences if _BEST_CUE.search(s.text) and recognise.months_named(s.text)]
+    cued = [(v, s) for v in views if noun.search(str(v.note.get("content") or "")) for s in v.sentences if _BEST_CUE.search(s.text) and recognise_questions.months_named(s.text)]
     if not cued:
         return False
     for view, s in cued:
-        if month[0] in recognise.months_named(s.text):
+        if month[0] in recognise_questions.months_named(s.text):
             head = s.text.split(":", 1)[0].strip() if ":" in s.text[:30] else ""
             line = f"{head or composer_lists._title(view)} is best in {found['month'].capitalize()} ({composer_lists._title(view)})."  # noqa: SLF001
             out.lines.append(line)

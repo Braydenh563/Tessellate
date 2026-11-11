@@ -29,6 +29,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime, time
 
 from tessellate.ai import recognise
+from tessellate.ai import recognise_questions
 from tessellate.ai import when as when_words
 from tessellate.core import clock
 
@@ -332,7 +333,7 @@ _MONTH_WORD = r"(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*"
 
 def _sentence_tense(sentence: str) -> str | None:
     _tables()
-    if _AUX_FUTURE.search(sentence) or _PROGRESSIVE_FUTURE.search(sentence) or re.search(r"\b(?:plan|want|need)s? to\b", sentence, re.I) or recognise.says_ahead(sentence):
+    if _AUX_FUTURE.search(sentence) or _PROGRESSIVE_FUTURE.search(sentence) or re.search(r"\b(?:plan|want|need)s? to\b", sentence, re.I) or recognise_questions.says_ahead(sentence):
         return "future"
     if re.search(r"\bfor\s+(?:the\s+)?\d{1,2}(?:st|nd|rd|th)\b", sentence, re.I):
         return "future"

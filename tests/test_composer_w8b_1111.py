@@ -11,6 +11,7 @@ import pytest
 
 import tests._seed_bt_1109 as bt
 from tessellate.ai import composer_ahead, recognise, recognise_windows
+from tessellate.ai import recognise_questions
 from tessellate.api import routes_chat
 from tessellate.core import config
 from tessellate.entry import manager
@@ -66,12 +67,12 @@ def test_the_appointment_ask_reads_like_the_plain_dentist_ask(btask):
     ("is the dentist", ""), ("what is on Thursday", ""),
 ])
 def test_the_window_a_yes_no_ask_ends_with(question, window):
-    assert recognise.event_window_asked(question) == window
+    assert recognise_questions.event_window_asked(question) == window
 
 
 def test_a_weekday_window_is_cut_from_the_search_words():
-    assert recognise.without_event_window_tail("is my dentist appointment on Thursday") == "is my dentist appointment"
-    assert recognise.without_event_window_tail("is my dentist appointment this Thursday?") == "is my dentist appointment"
+    assert recognise_questions.without_event_window_tail("is my dentist appointment on Thursday") == "is my dentist appointment"
+    assert recognise_questions.without_event_window_tail("is my dentist appointment this Thursday?") == "is my dentist appointment"
 
 
 def test_a_weekday_window_tail_is_linear():
@@ -79,8 +80,8 @@ def test_a_weekday_window_tail_is_linear():
 
     for run in ("is the plumber" + " on" * 3000, "is the plumber" + " " * 9000 + "on Thursday", "is the " + "this " * 2000):
         t0 = time.perf_counter()
-        recognise.event_window_asked(run)
-        recognise.without_event_window_tail(run)
+        recognise_questions.event_window_asked(run)
+        recognise_questions.without_event_window_tail(run)
         assert time.perf_counter() - t0 < 0.5, run[:30]
 
 

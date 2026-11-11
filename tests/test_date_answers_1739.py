@@ -235,12 +235,12 @@ def test_a_model_is_handed_the_notes_either_side_too(ai_client, fake_ollama, not
 # ---------------------------------------------------------------------------
 # "how long to <verb phrase>" asks a duration, not a countdown.
 
-from tessellate.ai import recognise as _recognise  # noqa: E402
+from tessellate.ai import recognise_questions  # noqa: E402
 
 
 @pytest.mark.parametrize("text", ["how long to prove sourdough", "how long to bake a cake", "how long to get to the airport"])
 def test_how_long_to_a_doing_is_not_a_countdown(text):
-    assert _recognise.days_question(text) is None
+    assert recognise_questions.days_question(text) is None
 
 
 @pytest.mark.parametrize("text, what", [
@@ -252,12 +252,12 @@ def test_how_long_to_a_doing_is_not_a_countdown(text):
     ("how long to 25 december", "25 december"),
 ])
 def test_how_long_to_a_dated_subject_or_event_still_counts_down(text, what):
-    assert _recognise.days_question(text) == ("future", what)
+    assert recognise_questions.days_question(text) == ("future", what)
 
 
 def test_how_long_to_a_doing_reaches_the_model_not_the_countdown(client):
     from tessellate.ai import composer_plan
 
     assert composer_plan._UNTIL.match("how long to prove sourdough")  # noqa: SLF001
-    assert _recognise.is_duration_of_doing("how long to prove sourdough")
-    assert not _recognise.is_duration_of_doing("how long to the exam")
+    assert recognise_questions.is_duration_of_doing("how long to prove sourdough")
+    assert not recognise_questions.is_duration_of_doing("how long to the exam")

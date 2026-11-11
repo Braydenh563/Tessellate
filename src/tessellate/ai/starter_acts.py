@@ -22,7 +22,8 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import act_steps, commands, day_digest, lexical_filing, realise, recognise, tagging, utilities
+from tessellate.ai import act_steps, commands, day_digest, lexical_filing, realise, tagging, utilities
+from tessellate.ai import recognise_questions
 from tessellate.ai.composer_frame import note_title
 from tessellate.core.database import Document, Entry, EntryLink, Reminder
 
@@ -89,7 +90,7 @@ _A_WEDNESDAY = datetime(2000, 1, 5, 12)
 
 def _since_a_day(when: str | None) -> bool:
     """No time words, or ones meaning today or since yesterday."""
-    return when is None or recognise.days_since(when, _A_WEDNESDAY) in (0, 1)
+    return when is None or recognise_questions.days_since(when, _A_WEDNESDAY) in (0, 1)
 
 
 def events(session: Session, kind: str, slots: dict, now: datetime, note_ids: list[int] | None,

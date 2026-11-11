@@ -13,7 +13,7 @@ from typing import Callable
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import recognise as rec
+from tessellate.ai import recognise_reminders
 from tessellate.core.database import Reminder, utcnow
 from tessellate.entry.manager import log_action
 from tessellate.repo import Conflict, NotFound
@@ -201,7 +201,7 @@ def complete(session: Session, reminder: Reminder, tz_offset_minutes: int) -> No
         # A 31st clamped to the 28th remembers it was a 31st (Brief 101b).
         anchor = reminder.repeat_day or due.day
         for _ in range(1000):
-            due = rec.next_occurrence(reminder.recurring, due, anchor)
+            due = recognise_reminders.next_occurrence(reminder.recurring, due, anchor)
             if due > now:
                 break
         reminder.repeat_day = anchor if anchor > 28 else None

@@ -34,7 +34,7 @@ import re
 from dataclasses import dataclass
 from datetime import date
 
-from tessellate.ai import recognise
+from tessellate.ai import recognise_questions
 from tessellate.core import clock
 from tessellate.search import query as query_understanding
 
@@ -116,7 +116,7 @@ def _same(a: frozenset, b: frozenset) -> bool:
 def current(question: str, notes: list[dict]) -> tuple[list[dict], list[Replaced]]:
     """`notes` with each note a newer one supersedes left out, and what was
     left out; unchanged for a question about the change or the past."""
-    if recognise.says_past(question) or len(notes) < 2:
+    if recognise_questions.says_past(question) or len(notes) < 2:
         return notes, []
     #: Only the subject asked about: an older note says other things too, and
     #: "what are my uni days" is no reason to set aside an old note on golf.
@@ -182,7 +182,7 @@ def _asks_when(question: str, text: str, notes: list[dict], today: date) -> tupl
 
     asked = frozenset(w for w in query_understanding.search_terms(question or "") if w not in _VALIDITY)
     said = composer_ahead.date_in(text.split("\n", 1)[0], today)
-    ok = _WHEN_ASK.match(question or "") and asked and said and len(notes) > 1 and not recognise.says_past(question)
+    ok = _WHEN_ASK.match(question or "") and asked and said and len(notes) > 1 and not recognise_questions.says_past(question)
     return (asked, said) if ok else None
 
 
@@ -319,7 +319,7 @@ def _lapsed_in(note: dict, written: date | None, asked: frozenset, today: date) 
 def lapsed(question: str, notes: list[dict], today: date) -> Lapsed | None:
     """The first of `notes` (already the current ones) the question names
     whose own window has closed; None for a question about the past."""
-    if recognise.says_past(question):
+    if recognise_questions.says_past(question):
         return None
     asked = frozenset(w for w in query_understanding.search_terms(question or "") if w not in _VALIDITY)
     return next((found for n in notes if (found := _lapsed_in(n, _day(n), asked, today))), None)

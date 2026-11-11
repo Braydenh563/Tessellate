@@ -24,6 +24,7 @@ from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import meaning, recognise
+from tessellate.ai import recognise_questions
 
 #: `read` folds whitespace to one space before these run, so they say " " and never
 #: `\s+` (a lazy group before `\s+` is polynomial on a run of tabs; CodeQL).
@@ -53,7 +54,7 @@ def _past_day(phrase: str, now: datetime) -> date | None:
     found = recognise.span(phrase, today, "past")
     if found is not None:
         return found[0]
-    days = recognise.days_since(f"{phrase} ago", now)
+    days = recognise_questions.days_since(f"{phrase} ago", now)
     return today - timedelta(days=days) if days is not None else None
 
 

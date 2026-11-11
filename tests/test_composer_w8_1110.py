@@ -10,6 +10,7 @@ import pytest
 
 import tests._seed_bt_1109 as bt
 from tessellate.ai import composer_ahead, recognise, source_check
+from tessellate.ai import recognise_questions
 from tests._r5_1108 import driver
 
 
@@ -117,11 +118,11 @@ def test_a_date_the_clock_does_not_hold_is_still_flagged():
 
 @pytest.mark.parametrize("today, back", [(date(2026, 11, 7), 12), (date(2026, 11, 9), 7), (date(2026, 11, 8), 13)])
 def test_last_week_counted_in_days_starts_on_the_monday_before(today, back):
-    assert recognise.days_since("last week", datetime(today.year, today.month, today.day, 12)) == back
+    assert recognise_questions.days_since("last week", datetime(today.year, today.month, today.day, 12)) == back
 
 
 def test_past_week_stays_a_rolling_seven_days():
-    assert recognise.days_since("the past week", datetime(2026, 11, 7, 12)) == 7
+    assert recognise_questions.days_since("the past week", datetime(2026, 11, 7, 12)) == 7
 
 
 @pytest.mark.parametrize("question", ["what did I save last week", "what did I write in October", "list the notes I made in October"])
