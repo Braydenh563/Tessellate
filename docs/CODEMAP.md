@@ -23134,11 +23134,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `latest` | src/tessellate/core/companion_events.py:88 |
-| `record` | src/tessellate/core/companion_events.py:58 |
+| `latest` | src/tessellate/core/companion_events.py:87 |
+| `record` | src/tessellate/core/companion_events.py:57 |
 | `reset` | src/tessellate/core/companion_events.py:48 |
-| `searched` | src/tessellate/core/companion_events.py:74 |
-| `since` | src/tessellate/core/companion_events.py:94 |
+| `searched` | src/tessellate/core/companion_events.py:73 |
+| `since` | src/tessellate/core/companion_events.py:93 |
 
 ### src/tessellate/core/concurrency.py (1)
 

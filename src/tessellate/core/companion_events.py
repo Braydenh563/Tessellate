@@ -42,17 +42,16 @@ _lock = threading.Lock()
 _ring: deque[dict] = deque(maxlen=RING)
 _last_id = 0
 _last_at: dict[str, float] = {}
-_last_miss = -1e9
+_MISS = "_miss"  # the last empty search, kept in _last_at so it is read and set under the lock
 
 
 def reset() -> None:
     """Empty the ring (tests)."""
-    global _last_id, _last_miss
+    global _last_id
     with _lock:
         _ring.clear()
         _last_at.clear()
         _last_id = 0
-        _last_miss = -1e9
 
 
 def record(kind: str, now: float | None = None) -> int:
@@ -73,15 +72,15 @@ def record(kind: str, now: float | None = None) -> int:
 
 def searched(found: bool, now: float | None = None) -> None:
     """A search answered: nothing is a puzzled look; a find is a nod only within `FOUND_AFTER_MISS` s of a miss (as the app's)."""
-    global _last_miss
     at = clock() if now is None else now
+    with _lock:
+        if found:
+            nod = at - _last_at.pop(_MISS, -1e9) <= FOUND_AFTER_MISS
+        else:
+            _last_at[_MISS] = at
     if not found:
-        with _lock:
-            _last_miss = at
         record("search_nothing", at)
-    elif at - _last_miss <= FOUND_AFTER_MISS:
-        with _lock:
-            _last_miss = -1e9
+    elif nod:
         record("search_found", at)
 
 

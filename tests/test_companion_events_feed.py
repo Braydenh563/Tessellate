@@ -83,7 +83,8 @@ def kinds_after(last: int) -> list[str]:
 def test_binning_a_note_records_a_bare_kind(client) -> None:
     made = client.post("/entries", json={"content": "A quiet note about the garden fence."}).json()
     last = ce.latest()
-    assert client.delete(f"/entries/{made['id']}").status_code == 200
+    binned = client.delete(f"/entries/{made['id']}")
+    assert binned.status_code == 200
     rows = ce.since(last, now=ce.clock())
     assert [r["kind"] for r in rows] == ["note_binned"]
     assert all(set(r) == {"id", "kind", "at"} for r in rows) and "garden" not in json.dumps(rows)
