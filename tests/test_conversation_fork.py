@@ -89,3 +89,25 @@ def test_the_fork_is_listed_like_any_other_chat(client):
     listed = {row["id"] for row in client.get("/conversations").json()}
     assert fork["id"] in listed and original in listed
     assert json.loads("[]") == []
+
+
+def test_a_suffix_names_the_copy_after_the_chat_it_came_from(client):
+    """Edit-and-resend keeps the cut turns as a copy (audit 1028 E48): the chat
+    client holds no title, so the server puts the earlier wording after it."""
+    original = _chat(client, "Planning", [("one?", "1"), ("two?", "2")])
+    fork = client.post(f"/conversations/{original}/fork", json={"suffix": "before the edit"}).json()
+    assert fork["title"] == "Planning (before the edit)"
+    assert _messages(client, fork["id"]) == _messages(client, original)
+    assert client.post(f"/conversations/{original}/fork", json={"suffix": "x" * 41}).status_code == 422
+    assert client.post(f"/conversations/{original}/fork", json={"suffix": "  ", "title": "T"}).json()["title"] == "T"
+
+
+def test_the_editor_forks_before_it_cuts_and_only_for_a_saved_chat():
+    from tests._app_js import JS_DIR
+
+    edit = (JS_DIR / "chat-edit.js").read_text(encoding="utf-8")
+    fork_at, cut_at = edit.index("/fork`"), edit.index("/truncate`")
+    assert fork_at < cut_at  # the copy is made first; a failed copy stops the edit
+    assert 'suffix: "before the edit"' in edit
+    assert "chatConv.id !== null && !chatConv.private" in edit
+    assert 'className = "check-row' in edit

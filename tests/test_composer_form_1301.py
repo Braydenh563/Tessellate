@@ -16,9 +16,14 @@ import re
 from datetime import date
 from pathlib import Path
 
+import pytest
+
 from tests import _gold
 from tests.test_gold_answers import FIXTURE, TODAY, _answer, _notebook
 from tessellate.ai import composer_digest, insights
+from tests._framed_path import framed_path  # noqa: F401
+
+pytestmark = pytest.mark.usefixtures("framed_path")
 
 ROOT = Path(__file__).resolve().parents[1]
 ITEM = next(a for a in FIXTURE["answers"] if a["n"] == 22)

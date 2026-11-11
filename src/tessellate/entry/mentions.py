@@ -37,43 +37,30 @@ MENTION_MIN_TITLE_CHARS = 3
 _CONTEXT_LEAD = re.compile(r"(?:[#>]+\s*|[-*+]\s+|\d{1,3}[.)]\s+)+")
 
 
-def sentence_around(text: str, start: int, end: int) -> tuple[str, int, int]:
-    """The sentence a hit sits in, and where the hit is inside that sentence.
+def _ends_sentence(text: str, index: int) -> bool:
+    return text[index] in ".!?" and (index + 1 >= len(text) or text[index + 1] in " \n")
 
-    Returns `(context, hit_start, hit_end)` with the offsets relative to the
-    context, so the browser can mark the hit without searching the string
-    again: searching it again is how the second occurrence of a word gets
-    marked instead of the first.
-    """
-    floor = max(0, start - BACKLINK_CONTEXT_CHARS)
-    left = floor
-    index = start - 1
-    while index >= floor:
-        char = text[index]
-        if char == "\n":
-            left = index + 1
-            break
-        if char in ".!?" and (index + 1 >= len(text) or text[index + 1] in " \n"):
-            left = index + 1
-            break
-        index -= 1
 
-    ceiling = min(len(text), end + BACKLINK_CONTEXT_CHARS)
-    right = ceiling
-    index = end
-    while index < ceiling:
-        char = text[index]
-        if char == "\n":
-            right = index
-            break
-        if char in ".!?" and (index + 1 >= len(text) or text[index + 1] in " \n"):
-            right = index + 1
-            break
-        index += 1
+def _left_edge(text: str, start: int, floor: int) -> int:
+    """Where the sentence holding `start` begins, no further back than `floor`."""
+    for index in range(start - 1, floor - 1, -1):
+        if text[index] == "\n" or _ends_sentence(text, index):
+            return index + 1
+    return floor
 
-    context = text[left:right]
-    hit_start, hit_end = start - left, end - left
 
+def _right_edge(text: str, end: int, ceiling: int) -> int:
+    """Where the sentence holding `end` stops, no further on than `ceiling`."""
+    for index in range(end, ceiling):
+        if text[index] == "\n":
+            return index
+        if _ends_sentence(text, index):
+            return index + 1
+    return ceiling
+
+
+def _tidied(context: str, hit_start: int, hit_end: int) -> tuple[str, int, int]:
+    """The context without its leading marks and trailing space, the hit moved to match."""
     # Tidy the left edge, but never past the hit itself: a document whose only
     # mention is inside its own heading would otherwise lose the hit with the
     # `#`.
@@ -85,8 +72,22 @@ def sentence_around(text: str, start: int, end: int) -> tuple[str, int, int]:
     hit_start -= drop
     hit_end -= drop
     trimmed = context.rstrip()
-    hit_end = min(hit_end, len(trimmed)) if hit_end > len(trimmed) else hit_end
-    context = trimmed
+    return trimmed, hit_start, min(hit_end, len(trimmed))
+
+
+def sentence_around(text: str, start: int, end: int) -> tuple[str, int, int]:
+    """The sentence a hit sits in, and where the hit is inside that sentence.
+
+    Returns `(context, hit_start, hit_end)` with the offsets relative to the
+    context, so the browser can mark the hit without searching the string
+    again: searching it again is how the second occurrence of a word gets
+    marked instead of the first.
+    """
+    floor = max(0, start - BACKLINK_CONTEXT_CHARS)
+    left = _left_edge(text, start, floor)
+    ceiling = min(len(text), end + BACKLINK_CONTEXT_CHARS)
+    right = _right_edge(text, end, ceiling)
+    context, hit_start, hit_end = _tidied(text[left:right], start - left, end - left)
 
     # An ellipsis only where the text really was cut mid-sentence, not where a
     # sentence or a line ended on its own.

@@ -255,6 +255,19 @@ _CLOCK_BEFORE = re.compile(
 )
 
 
+def _hour24(hour: int, meridiem: str, evening: bool) -> int:
+    """The 24-hour hour a clock hour means with its am or pm, or without one."""
+    if meridiem == "am":
+        return 0 if hour == 12 else hour
+    if meridiem == "pm":
+        return hour if hour == 12 else hour + 12
+    if 1 <= hour <= 11 and (evening or hour <= 6):
+        # The rule `ai/when` writes down: a bare 1 to 6 is afternoon, 7 to 11
+        # morning, unless the phrase says evening or tonight.
+        return hour + 12
+    return hour
+
+
 def _clock(found: re.Match, evening: bool) -> time | None:
     """The time a `_CLOCK_*` match says, or None if it is not one."""
     said = found.group(0).strip(" ,").lower()
@@ -269,16 +282,7 @@ def _clock(found: re.Match, evening: bool) -> time | None:
         return None  # a bare number with nothing saying it is a time
     if hour > 23 or minute > 59 or (meridiem and not 1 <= hour <= 12):
         return None
-    if meridiem == "am":
-        hour = 0 if hour == 12 else hour
-    elif meridiem == "pm":
-        hour = hour if hour == 12 else hour + 12
-    elif 1 <= hour <= 11 and (evening or hour <= 6):
-        # The rule `ai/when` writes down: a bare 1 to 6 is afternoon, 7 to 11
-        # morning, unless the phrase says evening or tonight.
-        hour += 12
-    return time(hour, minute)
-
+    return time(_hour24(hour, meridiem, evening), minute)
 
 def _with_clock(text: str, span: tuple[int, int], mention: Mention) -> tuple[tuple[int, int], Mention]:
     """The mention widened to a clock said right after or right before it."""

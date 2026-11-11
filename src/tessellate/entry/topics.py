@@ -45,8 +45,7 @@ MIN_TERM_SHARE = 0.3
 _KIND_ORDER = {"tag": 0, "entity": 1, "word": 2}
 
 
-def detect(index: Connections) -> dict[int, int]:
-    """Note id -> topic label (a member's id), for every note in the index."""
+def _weights(index: Connections) -> dict[int, dict[int, float]]:
     near = {node: set(index.neighbours(node)) for node in index.entries}
     weight: dict[int, dict[int, float]] = defaultdict(dict)
     for node, steps in index.edges.items():
@@ -55,6 +54,12 @@ def detect(index: Connections) -> dict[int, int]:
                 continue
             shared = len(near[node] & near[other])
             weight[node][other] = (1.0 / max(step.weight, 1e-9)) * (1.0 + shared)
+    return weight
+
+
+def detect(index: Connections) -> dict[int, int]:
+    """Note id -> topic label (a member's id), for every note in the index."""
+    weight = _weights(index)
     labels = {node: node for node in index.entries}
     order = sorted(index.entries)
     for _ in range(ROUNDS):

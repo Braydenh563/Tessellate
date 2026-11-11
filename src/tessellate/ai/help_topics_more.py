@@ -2289,6 +2289,30 @@ MORE_TOPICS.extend(
             "badge": {"label": "Notes", "tab": "notes"},
         },
         {
+            #: Audit 1028 E59, E60, E62: the three per-answer ways to say "not that".
+            "id": "answer-menu",
+            "keywords": (
+                "regenerate", "regenerate as", "retry an answer", "answer again", "another persona",
+                "wrong answer", "this answer is wrong", "mark an answer wrong", "thumbs down", "read more notes", "edit your question", "keep the earlier version", "edit and resend",
+            ),
+            "body": (
+                "An answer's menu (the three dots under it) has three ways to ask for a "
+                "better one. Regenerate from here asks the question again; each retry "
+                "reads more notes (5, then 10, 15, up to 20) and ignores a category the "
+                "question named, so a note the first read missed can come in. Regenerate "
+                "as lists your personas: the same question answered as one of them, for "
+                "this answer only, and the persona picker stays as it was. This answer "
+                "is wrong marks the whole answer wrong: the notes it cited come last for a "
+                "question like it, and are left out once you say so twice. It shows "
+                "only where the answer cites a note, never in a private chat, and Undo "
+                "takes it back. Editing your own question clears the replies after "
+                "it; in a saved chat with later replies, Keep the earlier version as "
+                "a copy (on by default) first saves the whole chat as a copy named "
+                "after it, \"before the edit\"."
+            ),
+            "badge": {"label": "Chat", "tab": "chat"},
+        },
+        {
             "id": "library-skills",
             "keywords": (
                 "ai skills", "built-in skill", "built in skill", "copy a skill",
@@ -3012,6 +3036,7 @@ TOPIC_META: dict[str, dict] = {
     "follow-up-trail": {"title": "Where a follow-up came from", "path": "Chat tab, or Ask in the Notes tab, under an answer"},
     "why-this-answer": {"title": "Why this answer", "path": "Chat tab, the popup agent, or Ask in the Notes tab, under an answer"},
     "line-verdicts": {"title": "Wrong fact and Pin as true", "path": "Ask or Chat, a numbered mark in an answer"},
+    "answer-menu": {"title": "Regenerate, This answer is wrong and Edit", "path": "Chat, the three dots under an answer"},
     "answer-pictures": {"title": "Pictures in answers", "path": "Chat tab, or Ask in the Notes tab, Cites under the answer"},
     "library-skills": {"title": "Skills in the Library", "path": "Library tab, Skills"},
     "object-move": {"title": "Moving, copying and carrying cards", "path": "Notes tab, or Library tab, drag a card or press Ctrl+C; the tray in the status bar"},
@@ -3043,7 +3068,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "tags-categories", "filing", "suggested-tags", "tag-manager", "manage-categories", "tidy",
     )),
     ("Asking Atlas", (
-        "ask-chat", "chat-typos", "answers-from-notes", "chat-controls", "chat-context", "context-window", "chat-private", "chat-attach-cards", "chat-model-picker", "chat-list", "queued-messages", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
+        "ask-chat", "chat-typos", "answers-from-notes", "chat-controls", "chat-context", "context-window", "chat-private", "chat-attach-cards", "chat-model-picker", "chat-list", "queued-messages", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-menu", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (

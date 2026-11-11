@@ -34,6 +34,9 @@ from tessellate.search import engine, search_manager
 #: the overview says how many there are.
 OVERVIEW_LIMIT = 24
 
+#: How far the count of a topic's notes looks past the pool (never read, only counted).
+POOL_COUNT_LIMIT = 500
+
 
 #: Notes found by what their pictures show or say, beside retrieval.
 PICTURE_MATCHES = 3
@@ -68,8 +71,8 @@ def _widened(session: Session, question: str, entries: list, scope: str = "") ->
         #: The notes filed under the subject (its category, its tag) come first:
         #: a keyword rank by how often a word repeats put a note that says
         #: "reading" nine times above the Books note (audit 1031 C4).
-        filed = _filed_under(session, composer.subject_terms(subject))
-        said = filed + search_manager.keyword_search(session, subject, limit=OVERVIEW_LIMIT)
+        filed = _filed_under(session, composer.subject_terms(subject), POOL_COUNT_LIMIT)
+        said = filed + search_manager.keyword_search(session, subject, limit=POOL_COUNT_LIMIT)
         extra += said if len({e.id for e in said}) >= 2 else said + _by_synonym(session, subject)
     seen = {entry.id for entry in entries}
     out = list(entries)
@@ -82,7 +85,11 @@ def _widened(session: Session, question: str, entries: list, scope: str = "") ->
         if entry.id not in seen and not entry.is_deleted and not entry.is_private:
             seen.add(entry.id)
             out.append(entry)
-    return out[: max(len(entries), OVERVIEW_LIMIT)]
+    kept = out[: max(len(entries), OVERVIEW_LIMIT)]
+    #: The pool stays at OVERVIEW_LIMIT, but the lead counts the notes there are.
+    if subject and kept and len(out) > len(kept):
+        kept[0]._overview_pool = (len(out), len(kept))  # noqa: SLF001  # read by `_chat_payload`
+    return kept
 
 
 #: Notes read for "the topic whole" come from the first of the retrieved
@@ -142,7 +149,7 @@ def _by_synonym(session: Session, subject: str) -> list:
     return found
 
 
-def _filed_under(session: Session, terms: list[str]) -> list:
+def _filed_under(session: Session, terms: list[str], limit: int = OVERVIEW_LIMIT) -> list:
     """Notes tagged with, or filed in a category named for, a word of the
     topic ("games" finds the notes tagged games that never say the word)."""
     words = [t.lower() for t in terms if len(t) >= 3][:3]
@@ -157,7 +164,7 @@ def _filed_under(session: Session, terms: list[str]) -> list:
         select(Entry)
         .where(Entry.is_deleted == False, Entry.is_private == False, or_(*clauses))  # noqa: E712
         .order_by(Entry.created_at.desc())
-        .limit(OVERVIEW_LIMIT)
+        .limit(limit)
     )
     return list(session.scalars(query))
 
@@ -480,6 +487,10 @@ def _raw_results(session: Session, found: _Found) -> list:
 
 
 def _chat_payload(session: Session, found: _Found, notes: list[dict], config, as_of) -> dict:  # noqa: ANN001
+    #: The cut pool's size travels with the notes to wherever the answer is composed.
+    pool = next((p for p in (getattr(e, "_overview_pool", None) for e in found.entries) if p), None)
+    if pool and notes:
+        notes[0]["overview_pool"] = list(pool)
     return {
         "notes": notes,
         "intent": found.detected,

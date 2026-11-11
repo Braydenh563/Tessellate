@@ -2842,10 +2842,11 @@ body.resizing-sidebar {
 }
 #doc-attach-bookmark {
   margin-top: var(--space-2);
-  /* A `.doc-outline-wrap` is a flex column, so a button in it was stretched
-     to the full width of the sidebar: 226px of ghost button, the heaviest
-     control on the panel, for two words. It is as wide as what it says. */
-  align-self: flex-start;
+  /* The full width of the sidebar, its words centred (the owner, 2026-11-11:
+     "attach a bookmark should be ... the full width of the sidebar and
+     centered"). It stays a ghost, so the width is a target, not weight. */
+  align-self: stretch;
+  justify-content: center;
 }
 /* **An empty section does not reserve a heading and a button.** Measured with
    no references attached: `#doc-bookmarks-wrap` was 69.4px of column for a
@@ -3136,13 +3137,18 @@ button.outline-twist:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  align-self: flex-start;
+  /* The sidebar's footer (the owner, 2026-11-11: "should sit at the bottom
+     of the sidebar like a footer"), full width and centred: the section is a
+     flex column as tall as the sidebar, so `margin-top: auto` takes the
+     space above it, and a long outline keeps --space-5 by the padding. */
+  align-self: stretch;
+  justify-content: center;
   width: auto;
   max-width: 100%;
-  margin-top: var(--space-5);
-  padding: var(--space-2) 0;
+  margin-top: auto;
+  padding: var(--space-5) 0 var(--space-2);
   font-size: var(--text-base);
-  text-align: left;
+  text-align: center;
   color: var(--muted);
   text-decoration: none;
 }

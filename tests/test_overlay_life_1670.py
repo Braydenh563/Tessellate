@@ -13,7 +13,7 @@ from tessellate.core.overlay import behaviour as bh
 from tessellate.core.overlay import engine as eng
 from tessellate.core.overlay.engine import Engine
 from tessellate.core.overlay.sprites import SpriteSet
-from tests.overlay_sim_1670 import skip_flow
+from tests.overlay_sim_1670 import disk_memo, skip_flow
 from tests.test_overlay_ride_1670 import AREA, LOOKS, drag, make
 
 
@@ -309,23 +309,42 @@ def test_an_activity_is_not_repeated_within_a_few_minutes_and_the_mix_is_varied(
     assert len({n for _t, n in picks}) >= 15
 
 
-def test_micro_things_are_weighted_not_all_at_once(monkeypatch) -> None:
-    monkeypatch.setattr(eng, "IDLE_SIT", math.inf)  # the person is about
-    monkeypatch.setattr(eng, "IDLE_SLEEP", math.inf)
-    acts = []
-    for seed in range(2, 8):  # six figures of ten hours each: a settled buddy decides about every six minutes (INBOX 1670)
-        t = 0.0
-        e2, _s = make("masculine", "float", seed)
-        calm(e2)
-        skip_flow(e2)  # a ten-hour loop that reads acts, never the flow picture
-        prev = None
-        out = e2.update(0.0)
-        while t < 36000:
-            t += max(0.016, (out.wake_ms or 1000) / 1000)
-            out = e2.update(t)
-            if e2.state == "act" and e2.act != prev:
-                acts.append(e2.act)
-            prev = e2.act if e2.state == "act" else None
+MICRO_SEEDS = range(2, 8)  # six figures of ten hours each: a settled buddy decides about every six minutes (INBOX 1670)
+
+
+def _micro_acts(seed: int) -> list[str]:
+    """The acts one figure starts in ten hours with the person about. Six of these are 60 simulated hours (181 s on CI),
+    so each seed is its own test (xdist spreads them) and its acts are kept in the session folder for the weights test."""
+    def compute() -> list[str]:
+        saved = eng.IDLE_SIT, eng.IDLE_SLEEP
+        eng.IDLE_SIT = eng.IDLE_SLEEP = math.inf  # the person is about
+        try:
+            acts, t, prev = [], 0.0, None
+            e2, _s = make("masculine", "float", seed)
+            calm(e2)
+            skip_flow(e2)  # a ten-hour loop that reads acts, never the flow picture
+            out = e2.update(0.0)
+            while t < 36000:
+                t += max(0.016, (out.wake_ms or 1000) / 1000)
+                out = e2.update(t)
+                if e2.state == "act" and e2.act != prev:
+                    acts.append(e2.act)
+                prev = e2.act if e2.state == "act" else None
+            return acts
+        finally:
+            eng.IDLE_SIT, eng.IDLE_SLEEP = saved
+
+    return disk_memo(("micro-acts", seed), compute)
+
+
+@pytest.mark.parametrize("seed", MICRO_SEEDS)
+def test_ten_hours_of_a_figure_start_some_named_acts(seed: int) -> None:
+    acts = _micro_acts(seed)
+    assert acts and all(isinstance(a, str) and a for a in acts), acts
+
+
+def test_micro_things_are_weighted_not_all_at_once() -> None:
+    acts = [a for seed in MICRO_SEEDS for a in _micro_acts(seed)]
     assert len(acts) >= 15 and len(set(acts)) >= 8
     assert max(acts.count(a) for a in set(acts)) <= len(acts) * 0.4
 

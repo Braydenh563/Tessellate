@@ -284,14 +284,14 @@ def _recall_window(session: Session, question: str, found: _Found) -> None:
         _keep_window(found, asked)
 
 
-def _search_notes(session: Session, question: str, found: _Found, attached: list, as_of, locale: str | None, composed: bool = False) -> None:  # noqa: ANN001
+def _search_notes(session: Session, question: str, found: _Found, attached: list, as_of, locale: str | None, composed: bool = False, widen: int = 0) -> None:  # noqa: ANN001
     #: Searched with the person's own abbreviations spelt out ("what's due in
     #: CC" also finds the notes that say Cloud Computing, B7).
     found.meaning_loading, found.meaning_off = _meaning_loading(), _meaning_off()
     question = composer_intent.without_event_window(_slips_put_right(question))
     hit = search_manager.retrieve_detailed(
-        session, glossary.expand(question, _glossary(session)), deps.get_embeddings(), limit=5,
-        locale=locale,
+        session, glossary.expand(question, _glossary(session)), deps.get_embeddings(), limit=search_manager.widened_limit(widen),
+        locale=locale, unscoped=widen > 0,
     )
     #: "The latest notes about running", "my last 2 notes": the notes the
     #: request counted, not those widened by what the subject sounds like.
@@ -314,7 +314,7 @@ def _search_notes(session: Session, question: str, found: _Found, attached: list
         _whole_pool(session, question, found)
 
 
-def _retrieve_for(session: Session, question: str, found: _Found, attached: list, attached_notes_only: bool, as_of, locale: str | None, composed: bool = False, held: bool = False) -> None:  # noqa: ANN001
+def _retrieve_for(session: Session, question: str, found: _Found, attached: list, attached_notes_only: bool, as_of, locale: str | None, composed: bool = False, held: bool = False, widen: int = 0) -> None:  # noqa: ANN001
     # `attached_notes_only`: the caller has already chosen the exact, closed set
     # of notes this turn should see; retrieval on top would only add notes
     # nobody asked for, matched against whatever the turn's own instruction
@@ -325,7 +325,7 @@ def _retrieve_for(session: Session, question: str, found: _Found, attached: list
         # whatever the question sounded like would only be noise beside it.
         found.mode = "stats"
     elif intent.needs_retrieval(found.detected) and not (attached_notes_only and (attached or held)):
-        _search_notes(session, question, found, attached, as_of, locale, composed)
+        _search_notes(session, question, found, attached, as_of, locale, composed, widen)
     elif attached_notes_only and attached and as_of is None and not composer_digest.about_this(question):
         found.entries = _records_beside(session, question, attached, locale)
 
@@ -437,8 +437,8 @@ def _context_notes(session: Session, found: _Found, attached: list, attached_doc
     return notes
 
 
-def _retrieve_ranked(session: Session, question: str, found: "_Found", attached: list, attached_notes_only: bool, as_of: "date | None", locale: str | None, composed: bool = False, held: bool = False) -> None:
-    _retrieve_for(session, question, found, attached, attached_notes_only, as_of, locale, composed, held)
+def _retrieve_ranked(session: Session, question: str, found: "_Found", attached: list, attached_notes_only: bool, as_of: "date | None", locale: str | None, composed: bool = False, held: bool = False, widen: int = 0) -> None:
+    _retrieve_for(session, question, found, attached, attached_notes_only, as_of, locale, composed, held, widen)
     _rewind_as_of(session, question, found, as_of, locale)
     #: One ranker for every shape (audit 1029 C19): the note the subject
     #: names, then the one that defines it, then the rest as retrieved.
@@ -462,7 +462,7 @@ def _prepare(
     as_of: "date | None" = None,
     locale: str | None = None,
     skip_search: bool = False,
-    composed: bool = False,
+    composed: bool = False, widen: int = 0,  # widen: Ask again reads more notes (E62, decision 75)
 ) -> dict:
     """The shared first half of both chat endpoints: retrieve entries,
     bump their usage counters, log the question, gather AI settings.
@@ -484,7 +484,7 @@ def _prepare(
     #: plan, a countdown, a quiz), so the search and the hydration of every
     #: hit (0.1 to 1 s on 300 notes) are not paid for an answer that ignores them.
     if not skip_search:
-        _retrieve_ranked(session, question, found, attached, attached_notes_only, as_of, locale, composed, bool(attached_docs or attached_boards))
+        _retrieve_ranked(session, question, found, attached, attached_notes_only, as_of, locale, composed, bool(attached_docs or attached_boards), widen)
     notes = _context_notes(session, found, attached, attached_docs, attached_files, attached_boards, as_of)
     #: Only the notes: a document or a file row has another table's id.
     _frame_matches(session, question, notes[: len(found.entries)], found.match_info, found.mode)
@@ -517,7 +517,7 @@ def chat(body: ChatRequest, session: Session = Depends(get_session)) -> ChatResp
         surface=ASK_SURFACE,
         # Row 23: the same time travel the stream takes.
         as_of=body.as_of,
-        locale=body.locale,
+        locale=body.locale, widen=body.attempt,
     )
     #: This surface's own model, if one is set (model_manager.FEATURES).
     #: A view over the same manager, so everything downstream, the agent
@@ -1812,7 +1812,7 @@ def _exact_note_events(req: _StreamRequest, notes: list) -> list[dict]:
     current, _older = _current_notes(req, notes) if notes else (notes, [])
     result = composer_digest.exact(req.question or "", current, today=user_now(deps.get_config()).date()) if notes else None
     if not result:
-        return chat_extra.facts_events(req.session, req.question or "", now=user_now(deps.get_config()).replace(tzinfo=None), chat=not req.body.notes_only) or []
+        return chat_extra.facts_events(req.session, req.question or "", now=user_now(deps.get_config()).replace(tzinfo=None), chat=not req.body.notes_only, voice=_composer_voice()) or []
     return [{"type": "answer", "delta": result["text"]}, _composed_grounding_event(req, result)]
 
 
@@ -1914,7 +1914,7 @@ def _stream_prepare(req: _StreamRequest) -> dict:
         as_of=None if req.skill else req.body.as_of,
         locale=req.body.locale,
         skip_search=early is not None,
-        composed=_app_answers(req, req.ollama.is_running()),
+        composed=_app_answers(req, req.ollama.is_running()), widen=req.body.attempt,
     )
     prepared["follow_on"] = follow
     prepared["early_events"] = early

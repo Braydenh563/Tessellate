@@ -187,7 +187,7 @@ async function copyToClipboard(text, button) {
 //: newest. Everything after the question is removed first, an answer
 //: regenerated in the middle of a thread that keeps the turns built on the old
 //: one is a transcript that contradicts itself.
-const regenerateFromBubble = (bubble) => lazyScript("/js/chat-edit.js").then(() => regenerateFrom(bubble));
+const regenerateFromBubble = (bubble, opts) => lazyScript("/js/chat-edit.js").then(() => regenerateFrom(bubble, opts));
 
 //: How many times the last question has been asked again (`retries`, kept on
 //: the function, not a top-level let): sent as `attempt`, so an answer

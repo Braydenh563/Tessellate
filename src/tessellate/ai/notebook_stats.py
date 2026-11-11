@@ -374,19 +374,16 @@ def _no_repeats(notes: int) -> str:
     return f"No word comes up in more than one of your {_plural(notes, 'note')} yet."
 
 
-def _top_subjects(session: Session) -> StatAnswer:
-    """What the notebook is most about, by what it is filed under first (its
-    tags, then its categories) and, with neither, by the words the most notes
-    use (engine probe P7: "what did I write most about" listed the newest
-    notes). Every figure is a count of notes."""
-    rows = session.execute(_visible(select(Entry.tags, Entry.content))).all()
-    if not rows:
-        return StatAnswer("subjects", "There are no notes to read yet.")
+def _tag_subjects(rows: list) -> StatAnswer | None:
     tags = Counter(tag for raw, _content in rows for tag in set(_tags_of(raw)))
-    if len(tags) >= 2:
-        top = tags.most_common(5)
-        listed = ", ".join(f"{tag} ({_plural(n, 'note')})" for tag, n in top)
-        return StatAnswer("subjects", f"By your tags, you write most about {listed}.", [{"label": t, "count": n} for t, n in top])
+    if len(tags) < 2:
+        return None
+    top = tags.most_common(5)
+    listed = ", ".join(f"{tag} ({_plural(n, 'note')})" for tag, n in top)
+    return StatAnswer("subjects", f"By your tags, you write most about {listed}.", [{"label": t, "count": n} for t, n in top])
+
+
+def _word_subjects(rows: list) -> StatAnswer:
     words: Counter[str] = Counter()
     for _raw, content in rows:
         words.update({w for w in re.findall(r"[a-z][a-z'-]{2,}", str(content or "").lower()) if w not in _PLAIN})
@@ -395,6 +392,17 @@ def _top_subjects(session: Session) -> StatAnswer:
         return StatAnswer("subjects", _no_repeats(len(rows)))
     listed = ", ".join(f"“{w}” ({_plural(n, 'note')})" for w, n in top)
     return StatAnswer("subjects", f"The words the most notes use are {listed}.", [{"label": w, "count": n} for w, n in top])
+
+
+def _top_subjects(session: Session) -> StatAnswer:
+    """What the notebook is most about, by what it is filed under first (its
+    tags, then its categories) and, with neither, by the words the most notes
+    use (engine probe P7: "what did I write most about" listed the newest
+    notes). Every figure is a count of notes."""
+    rows = session.execute(_visible(select(Entry.tags, Entry.content))).all()
+    if not rows:
+        return StatAnswer("subjects", "There are no notes to read yet.")
+    return _tag_subjects(rows) or _word_subjects(rows)
 
 
 def _top_tags(session: Session) -> StatAnswer:

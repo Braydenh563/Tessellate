@@ -2790,3 +2790,24 @@ def guess_kind(asking: str, embed=None) -> str | None:  # noqa: ANN001
 
 #: The Guide reads a question through this (`act_registry.repair`).
 act_registry.repair = repair
+
+
+#: A catch-up asked with no window ("hey what's been happening?", "what have I
+#: been up to", "catch me up", "what did I miss"): the past week's recap. Whole
+#: question only, so "catch me up on Harbor" stays a recall and "whats
+#: happening" alone (small talk, `intent`) and "what's coming up" (the agenda)
+#: are not it; "been" or "lately" is what makes "happening" past.
+CATCH_LEAD = re.compile(r"^(?:(?:hey|hi|hello|hiya|yo|so|ok|okay|well|um)\b[ ,!]*)+", re.I)
+_CATCH_UP = re.compile(
+    r"^(?:(?:what|whats)(?: has| have)? been (?:happening|going on)(?: (?:lately|recently|so far|these days))?"
+    r"|(?:what|whats)(?: is| has)? (?:happening|going on|happened) (?:lately|recently|these days)"
+    r"|(?:what|whats)(?: have| has| did)? (?:i|we) (?:been (?:up to|doing)|miss(?:ed)?)"
+    r"|(?:catch me up|bring me up to speed|fill me in|catch us up))(?: please)?$"
+)
+
+
+def catching_up(question: str) -> bool:
+    """Whether the whole question is a catch-up with no window and no subject."""
+    text = CATCH_LEAD.sub("", (question or "").strip().lower().replace("\u2019", "'"))
+    text = " ".join(re.sub(r"[^a-z' ]", " ", text).replace("'s", "s").replace("'", "").split())
+    return bool(text) and len(text) <= 60 and bool(_CATCH_UP.match(text))

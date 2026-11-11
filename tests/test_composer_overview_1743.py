@@ -247,3 +247,16 @@ def test_a_volunteered_insight_quotes_slang_as_the_story_does():
     assert found[0].slots["plan"] == "need to lock-in for my assignments lmao", "the slot stays the note's own words"
     plain = {"id": 2, "content": "I plan to repaint the shed fence", "created_at": datetime(2026, 8, 2, 9, 0), "tags": []}
     assert "“" not in insights.drift([plain], date(2026, 11, 11))[0].text
+
+
+def test_the_woven_lead_names_the_category_as_typed_and_says_each_count_once():
+    #: The grouped path's lead and count rules (form_1301, timing_1461) hold for the woven one: the topic as the
+    #: person typed it, one count in the lead, the sections of a guide never said as notes of their own.
+    from tessellate.ai import composer_digest
+    from tests.test_gold_answers import FIXTURE, TODAY, _notebook
+
+    item = next(a for a in FIXTURE["answers"] if a["n"] == 22)
+    text = composer_digest.answer(item["question"], _notebook(item), today=TODAY)["text"]
+    lead = text.split("\n\n")[0]
+    assert lead.startswith("You have five notes about social connections"), lead
+    assert len(re.findall(r"\b(?:five|5)\b", lead)) == 1 and "Phase note" not in text and ";" not in text

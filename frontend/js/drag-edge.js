@@ -104,6 +104,9 @@ function initDragSelectEdgeScroll() {
     d.frame ||= requestAnimationFrame(dragEdgeTick);
   }, true);
   document.addEventListener("mouseup", release, true);
+  //: And a gesture the browser takes away (a pointercancel, or a native drag that begins on the
+  //: selection, which swallows the `mouseup`) stops the loop at once, not at the next move.
+  for (const event of ["pointercancel", "dragstart", "dragend"]) document.addEventListener(event, release, true);
   window.addEventListener("blur", release);
 }
 
