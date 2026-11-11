@@ -45,7 +45,7 @@ from functools import lru_cache, wraps
 from pathlib import Path
 
 from tessellate.ai import composer, composer_doings, composer_done, composer_frame, composer_threads, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, filed_name, glossary, question_noise, realise, verdicts
-from tessellate.ai import composer_answer, composer_brief, composer_nth, composer_oneword, composer_property, composer_small
+from tessellate.ai import composer_ages, composer_answer, composer_brief, composer_nth, composer_oneword, composer_property, composer_small
 from tessellate.ai import composer_ahead, composer_ask, composer_clean, composer_event_verdict, factgraph
 from tessellate.ai import composer_chip_subject
 from tessellate.ai import composer_read
@@ -3851,12 +3851,12 @@ _ASK_VERB = re.compile(
 _ASK_NOUN = re.compile(r"\bhow (?:much|many) ([a-z]{3,}) (?:for|of|do|does|did|is|are)\b", re.I)
 #: "my last run", "the last one": the newest by the sentence's own day, as "latest" asks.
 _LAST_ONE = re.compile(r"\b(?:my|the) last (?!week|month|year|night|weekend|time|few)\w+", re.I)
-_NOT_AN_ASK_VERB = frozenset("is are was were have has had get got put find know need want mention mentions write wrote the my and for did does".split())
+_NOT_AN_ASK_VERB = frozenset("is are was were have has had get got put find know need mention mentions write wrote the my and for did does".split())
 #: What a note says in place of the ask's verb.
 _ASK_VERB_SAYS = {
     "think": "think thought loved liked hated enjoyed disliked", "teach": "teach teacher taught", "love": "love loved liked",
     "like": "like liked loved", "eat": "eat eats ate", "live": "live lives lived", "feed": "feed fed",
-    "say": "say says said tell tells told",
+    "say": "say says said tell tells told", "want": "want wants wanted",
 }
 
 
@@ -5273,6 +5273,11 @@ def _routed_away(question: str, notes: list[dict], today: date) -> tuple:
     #: What is on a named day is one answer, however asked: the recall's (R3-8).
     if composer_intent.asks_the_day(question, today):
         return None, question, None
+    #: "who is older, Anna or Tom" compares the ages the notes give, or says they do not (E9).
+    if aged := composer_ages.read(question, notes, today.year):
+        return _plain_result(*aged), question, None
+    if missing := composer_ages.no_todo(question, notes):
+        return _plain_result(missing, None), question, None
     if one := composer_oneword.named(question, notes):
         return _one_word_result(one), question, None
     #: "The first note I wrote about Sara" ranks that subject's notes by day (R3-4).
@@ -6065,6 +6070,15 @@ def _ask_key(question: str) -> str:
     latest on X" are one chip, and the question just asked is none."""
     words = re.sub(r"\bwhat's\b", "what is", question.lower())
     return " ".join(re.findall(r"[a-z0-9]+", re.sub(r"\b(?:the|my|a|an|last)\b", " ", words)))
+
+
+def _plain_result(text: str, note_id: int | None) -> dict:
+    """A one-line reply, cited to the note it read an age from (none when no note says one)."""
+    out = _Out()
+    out.lines.append(text)
+    if note_id is not None:
+        out.rows.append({"sentence": text, "note_id": note_id, "source": text, "start": 0, "end": len(text), "score": 1.0, "digest": True, "kind": "note"})
+    return _result(out, "fact", "")
 
 
 def _one_word_result(note: dict) -> dict:

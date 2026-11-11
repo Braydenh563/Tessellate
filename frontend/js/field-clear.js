@@ -60,7 +60,7 @@
     { button: "quick-note-clear", fields: ["quick-note-text"], status: "quick-note-status", surface: "quickNote" },
     { button: "ask-clear", fields: ["question"] },
     { button: "chat-clear", fields: ["chat-input"] },
-    { button: "command-palette-clear", fields: ["command-palette-input"], status: "command-palette-status" },
+    { button: "command-palette-clear", fields: ["command-palette-input"], status: "command-palette-status", surface: "palette" },
   ];
 
   function fieldClearBoxes(spec) {

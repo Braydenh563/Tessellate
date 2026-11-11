@@ -633,26 +633,27 @@ function qaPrewarm(tries = 0) {
   qaFetch("in 5 minutes", "reminder").then(() => qaFetch("in 5 minutes", "note"));
 }
 
+onSurface("reminders", () => {
+  quickAddAttach($("reminder-magic"), "reminder", { after: $("reminder-magic-row") });
+  //: The "Remind me to…" box reads its words the same way (sweep 1028b W2):
+  //: its chips go under the whole form, so the time is shown before Add.
+  quickAddAttach($("reminder-text"), "reminder", { after: $("reminder-compose").querySelector(".reminder-form") });
+  for (const id of ["reminder-text", "reminder-date", "reminder-time"]) $(id).addEventListener("input", reminderFormClear);
+  $("reminder-date").min = toLocalInputValue(new Date()).slice(0, 10);
+});
+
+onSurface("timeline", () => {
+  const search = $("timeline-search");
+  quickAddAttach(search, "timeline", { after: search.closest(".search-field") || search });
+  search.addEventListener("keydown", qaTimelineEnter);
+});
+
 (() => {
   //: The reader's first answer loads its tables (measured: over 4 s cold,
   //: and 305 ms for the first note after a reminder: the chat path's own
   //: modules); both asked now, a few seconds after boot, so the first word
   //: typed is not the one that waits.
   qaPrewarm();
-  quickAddAttach($("reminder-magic"), "reminder", { after: $("reminder-magic-row") });
-  //: The "Remind me to…" box reads its words the same way (sweep 1028b W2):
-  //: its chips go under the whole form, so the time is shown before Add.
-  const compose = $("reminder-compose");
-  if (compose) {
-    quickAddAttach($("reminder-text"), "reminder", { after: compose.querySelector(".reminder-form") });
-    for (const id of ["reminder-text", "reminder-date", "reminder-time"]) $(id).addEventListener("input", reminderFormClear);
-    $("reminder-date").min = toLocalInputValue(new Date()).slice(0, 10);
-  }
-  const search =$("timeline-search");
-  if (search) {
-    quickAddAttach(search, "timeline", { after: search.closest(".search-field") || search });
-    search.addEventListener("keydown", qaTimelineEnter);
-  }
   const palette = $("palette-input");
   if (palette) {
     quickAddAttach(palette, "palette", {

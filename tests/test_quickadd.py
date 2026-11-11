@@ -102,7 +102,7 @@ const fs = require("fs");
 const vm = require("vm");
 const ctx = { console, Date, Math, JSON, Number, String, Array, Set, Map, WeakMap, Promise, RegExp, Object,
   setTimeout: () => 0, clearTimeout, encodeURIComponent, $: () => null, document: {}, navigator: {},
-  authToken: () => "", apiJson: () => Promise.reject(new Error("no server here")) };
+  authToken: () => "", apiJson: () => Promise.reject(new Error("no server here")), onSurface: () => {} };
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(process.argv[2], "utf8"), ctx);
 const span = (text, kind, phrase, value, extra = {}) => {

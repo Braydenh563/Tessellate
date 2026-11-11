@@ -383,8 +383,13 @@ function syncAgentOpenNoteToggle() {
 }
 
 const cmdPaletteOverlay = $("command-palette-overlay");
-const cmdPaletteInput = $("command-palette-input");
-const cmdPaletteResults = $("command-palette-results");
+//: The card is a surface template: these two are set when it is built (`toggleAgentPalette`).
+let cmdPaletteInput = null;
+let cmdPaletteResults = null;
+onSurface("palette", () => {
+  cmdPaletteInput = $("command-palette-input");
+  cmdPaletteResults = $("command-palette-results");
+});
 //: **One composer queue for Chat, the popup agent and the Guide** (CHAT_PLAN
 //: B3): a send made while that surface's reply runs waits by its box, with
 //: Edit and Remove (reply-kit.js, `composerQueue.paint`), and the next one
@@ -415,6 +420,7 @@ composerQueue("agent", {
 // palette on Ctrl+K, and then with the sketch pad on Ctrl+Shift+K, twice
 // without anything noticing.
 function toggleAgentPalette() {
+  surfaceBuild("palette");
   //: **On a phone the agent is a sheet** (AGENT_SKILLS_REFORM "Deepened
   //: 2026-10-10" row 2). It went to the Chat tab, which left the shortcut,
   //: the More sheet's row and the palette's row all opening something else.
@@ -488,11 +494,6 @@ cmdPaletteOverlay.addEventListener("click", (e) => {
   }
 });
 
-// The head's Close. Escape and a click on the backdrop both already closed this
-// surface and neither is visible, which is the half of "redesigned with the
-// consistent modern look" that is not paint: every other dialog in the app
-// offers a control you can see and this one asked you to know a key.
-$("command-palette-close").addEventListener("click", () => toggleAgentPalette());
 
 //: The header's agent button moved to the status bar with INBOX 207; the slot's own
 //: listener sits beside the rest of the bar's, and the chord is named in its
@@ -1573,7 +1574,6 @@ function cmdPaletteGrow() {
   cmdPaletteInput.style.height = `${Math.min(cmdPaletteInput.scrollHeight, max)}px`;
 }
 
-cmdPaletteInput.addEventListener("input", cmdPaletteGrow);
 
 //: **The starters are reachable from the keyboard** (INBOX 190's "more ui, ux
 //: and functionality refinements to be more professional"). A command bar
@@ -1603,32 +1603,7 @@ function agentFocusStarter(delta) {
   return true;
 }
 
-$("command-palette-starters")?.addEventListener("keydown", (e) => {
-  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-    if (agentFocusStarter(e.key === "ArrowDown" ? 1 : -1)) e.preventDefault();
-    return;
-  }
-  if (e.key === "Escape") {
-    //: Not `stopPropagation` on the way out of the panel: Escape twice should
-    //: still close it, and the second press arrives with the caret in the box.
-    e.stopPropagation();
-    cmdPaletteInput.focus();
-  }
-});
 
-cmdPaletteInput.addEventListener("keydown", (e) => {
-  if ((e.key === "ArrowDown" || e.key === "ArrowUp") && !e.shiftKey) {
-    //: Only when the box is empty, or the arrows would stop being the arrows
-    //: of a multi-line field halfway through writing a paragraph in it.
-    if (!cmdPaletteInput.value && agentFocusStarter(e.key === "ArrowDown" ? 1 : -1)) {
-      e.preventDefault();
-      return;
-    }
-  }
-  if (e.key !== "Enter" || e.shiftKey || e.isComposing || e.keyCode === 229) return;
-  e.preventDefault(); // or the newline lands in the box we are about to clear
-  cmdPaletteSend();
-});
 
 //: Enter and the Send button take the same path.
 function cmdPaletteSend() {
@@ -1643,39 +1618,11 @@ function cmdPaletteSend() {
   }
   cmdPaletteInput.focus();
 }
-$("command-palette-send").addEventListener("click", cmdPaletteSend);
 
 
-$("command-palette-attach")?.addEventListener("click", () => $("command-palette-attach-input").click());
-$("command-palette-attach-input")?.addEventListener("change", (e) => {
-  agentStageFiles(Array.from(e.target.files));
-  e.target.value = "";
-});
 
 //: Built at boot and again after every turn: see `renderCmdPaletteMenu`.
-renderCmdPaletteMenu();
-$("command-palette-stop")?.addEventListener("click", () => {
-  composerQueue("agent").held = true;
-  cmdPaletteRun?.abort();
-});
-$("command-palette-intro")?.addEventListener("click", (e) => {
-  const example = e.target.closest("[data-example]");
-  if (!example) return;
-  const starter = example.dataset.example;
-  rememberAgentStarter(starter);
-  cmdPaletteInput.value = starter;
-  cmdPaletteGrow();
-  cmdPaletteInput.focus();
-  //: A complete starter runs; a stem ("Make a note of ") is left for the
-  //: person to finish, with the caret already after it. The test is the
-  //: trailing space, not the question mark it used to be: half the twelve are
-  //: instructions rather than questions ("Tag my untagged notes."), and every
-  //: one of those sat in the box waiting for an Enter that said nothing.
-  if (!/\s$/.test(starter)) {
-    cmdPaletteInput.value = "";
-    cmdPaletteAsk(starter.trim());
-  }
-});
+onSurface("palette", renderCmdPaletteMenu);
 
 //: **Notes in the command palette** (audit, 2026-10-03: "manage",
 //: "categories", "#food" and "move" found nothing). Rows in the editor
@@ -1687,3 +1634,65 @@ $("command-palette-intro")?.addEventListener("click", (e) => {
 //: sheet that opens and focuses its first row there took that Enter's
 //: keypress as a press on it (measured: the Move sheet closed unseen).
 const paletteLater = (fn) => () => setTimeout(fn);
+
+onSurface("palette", () => {
+  // The head's Close. Escape and a click on the backdrop both already closed this
+  // surface and neither is visible, which is the half of "redesigned with the
+  // consistent modern look" that is not paint: every other dialog in the app
+  // offers a control you can see and this one asked you to know a key.
+  $("command-palette-close").addEventListener("click", () => toggleAgentPalette());
+  cmdPaletteInput.addEventListener("input", cmdPaletteGrow);
+  $("command-palette-starters")?.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      if (agentFocusStarter(e.key === "ArrowDown" ? 1 : -1)) e.preventDefault();
+      return;
+    }
+    if (e.key === "Escape") {
+      //: Not `stopPropagation` on the way out of the panel: Escape twice should
+      //: still close it, and the second press arrives with the caret in the box.
+      e.stopPropagation();
+      cmdPaletteInput.focus();
+    }
+  });
+  cmdPaletteInput.addEventListener("keydown", (e) => {
+    if ((e.key === "ArrowDown" || e.key === "ArrowUp") && !e.shiftKey) {
+      //: Only when the box is empty, or the arrows would stop being the arrows
+      //: of a multi-line field halfway through writing a paragraph in it.
+      if (!cmdPaletteInput.value && agentFocusStarter(e.key === "ArrowDown" ? 1 : -1)) {
+        e.preventDefault();
+        return;
+      }
+    }
+    if (e.key !== "Enter" || e.shiftKey || e.isComposing || e.keyCode === 229) return;
+    e.preventDefault(); // or the newline lands in the box we are about to clear
+    cmdPaletteSend();
+  });
+  $("command-palette-send").addEventListener("click", cmdPaletteSend);
+  $("command-palette-attach")?.addEventListener("click", () => $("command-palette-attach-input").click());
+  $("command-palette-attach-input")?.addEventListener("change", (e) => {
+    agentStageFiles(Array.from(e.target.files));
+    e.target.value = "";
+  });
+  $("command-palette-stop")?.addEventListener("click", () => {
+    composerQueue("agent").held = true;
+    cmdPaletteRun?.abort();
+  });
+  $("command-palette-intro")?.addEventListener("click", (e) => {
+    const example = e.target.closest("[data-example]");
+    if (!example) return;
+    const starter = example.dataset.example;
+    rememberAgentStarter(starter);
+    cmdPaletteInput.value = starter;
+    cmdPaletteGrow();
+    cmdPaletteInput.focus();
+    //: A complete starter runs; a stem ("Make a note of ") is left for the
+    //: person to finish, with the caret already after it. The test is the
+    //: trailing space, not the question mark it used to be: half the twelve are
+    //: instructions rather than questions ("Tag my untagged notes."), and every
+    //: one of those sat in the box waiting for an Enter that said nothing.
+    if (!/\s$/.test(starter)) {
+      cmdPaletteInput.value = "";
+      cmdPaletteAsk(starter.trim());
+    }
+  });
+});

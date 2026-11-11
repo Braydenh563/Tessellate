@@ -535,6 +535,8 @@ def _mention_count(text: str, session: Session) -> StatAnswer | None:
 _HOLDING = re.compile(
     r"\bnotes?\b(?: (?:do )?(?:i|we|you))? (?:have|has|contains?|holds?|with|including|containing)(?:(?: (?:the|a))? (?:words?|terms?|phrases?)| (?!(?:the|a|an|any|no|tags?|categor\w+|links?|images?|checklists?|tasks?|titles?)\b)) ?([a-z0-9][\w'-]{1,29})$"
 )
+#: "Sara comes up in how many notes", "in how many notes does Sara appear": the same count as "how many notes mention Sara" (R3-35).
+_COMES_UP = re.compile(r"^(?:([a-z0-9][\w'-]{1,29}) (?:comes|come|shows|appears|turns) up in how many notes|in how many notes (?:does|do) ([a-z0-9][\w'-]{1,29}) (?:come up|appear|show up|get mentioned))$")
 
 
 #: What a note can hold that the app counts on its own ("how many notes have
@@ -550,8 +552,9 @@ _HELD_TIMES = frozenset("today yesterday tomorrow tonight now week weekend month
 def _held_word(text: str, message: str) -> str:
     """The word "how many notes have the word Lisbon?" asks for, as the person
     typed it; "" when the ask is a day, a window or a kind the app counts."""
-    found = _HOLDING.search(" ".join(text.split()).rstrip(" ?.!"))
-    word = found.group(1) if found else ""
+    flat = " ".join(text.split()).rstrip(" ?.!")
+    found = _HOLDING.search(flat) or _COMES_UP.match(flat)
+    word = (found.group(1) or found.group(2) if found and found.re is _COMES_UP else found.group(1)) if found else ""
     low = word.lower()
     if not word or low in _KIND_WORDS or low in _HELD_TIMES or low.rstrip("s") in _HELD_KINDS or low in _HELD_KINDS or _window(word) is not None:
         return ""

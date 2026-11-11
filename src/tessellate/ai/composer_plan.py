@@ -920,9 +920,13 @@ def _asks_due(text: str, today: date) -> bool:
     return bool((_SPAN_WORDS.search(text) or _BUSY.match(text)) and win is not None and win[1] >= today and not _written_from(text, today))
 
 
+#: "what is in my todo" names the note called Todo (R3-8), not the next two weeks' dated items.
+_IN_TODO = re.compile(r"^(?:what(?:'s|’s| is| are)?|show me|read me)\s+(?:in|inside)\s+(?:my |the |our )?(?:to-?do|todo|to do)(?:\s+(?:list|note))?\W*$", re.I)
+
+
 def answer(ctx: Ctx) -> Reply | None:
     text = " ".join((ctx.question or "").split())
-    if not text or len(text) > 200:
+    if not text or len(text) > 200 or _IN_TODO.match(text):
         return None
     #: As typed first; then with the casual wrapper and text-speak off ("whats on tmrw", R9-8, R9-14).
     return _answer_text(ctx, text) or (_answer_text(ctx, spelled) if (spelled := rephrase(text)) and spelled != text else None)

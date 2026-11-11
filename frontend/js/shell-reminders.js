@@ -1588,41 +1588,43 @@ function defaultDueValue() {
 //: "Add all to calendar (.ics)" in the Reminders dock's More menu: every open
 //: reminder in this space, one file. The menu closes first so the save
 //: dialog (or the desktop's saved-to toast) is not drawn under it.
-$("reminders-export-ics")?.addEventListener("click", () => {
-  $("reminders-more-menu")?.removeAttribute("open");
-  downloadFromApi("/reminders/export.ics", "tessellate-reminders.ics");
-});
+onSurface("reminders", () => {
+  $("reminders-export-ics").addEventListener("click", () => {
+    $("reminders-more-menu").removeAttribute("open");
+    downloadFromApi("/reminders/export.ics", "tessellate-reminders.ics");
+  });
 
-//: "Import a calendar (.ics)" (TIMELINE_PLAN decision 17): every event a
-//: reminder can hold comes in, a bad one is named by its line and the rest
-//: kept, and Undo bins exactly the reminders it added.
-$("reminders-import-ics").addEventListener("click", () => {
-  $("reminders-more-menu").removeAttribute("open");
-  $("reminders-import-ics-file").click();
-});
-$("reminders-import-ics-file").addEventListener("change", async (event) => {
-  const file = event.target.files?.[0];
-  event.target.value = "";
-  if (!file) return;
-  const form = new FormData();
-  form.append("file", file);
-  form.append("tz_offset_minutes", String(-new Date().getTimezoneOffset()));
-  let result;
-  try {
-    result = await (await api.upload("/reminders/import.ics", form)).json();
-  } catch (error) {
-    toast(error.message, true);
-    return;
-  }
-  loadReminders();
-  const skipped = result.skipped.length ? ` Skipped ${result.skipped.length}: ${result.skipped[0].reason}${result.skipped.length > 1 ? " and more" : ""}.` : "";
-  const message = `Imported ${result.added.length}, updated ${result.updated.length}.${skipped}`;
-  const each = (path, method) => async () => {
-    for (const id of result.added) await apiJson(path(id), { method });
+  //: "Import a calendar (.ics)" (TIMELINE_PLAN decision 17): every event a
+  //: reminder can hold comes in, a bad one is named by its line and the rest
+  //: kept, and Undo bins exactly the reminders it added.
+  $("reminders-import-ics").addEventListener("click", () => {
+    $("reminders-more-menu").removeAttribute("open");
+    $("reminders-import-ics-file").click();
+  });
+  $("reminders-import-ics-file").addEventListener("change", async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    const form = new FormData();
+    form.append("file", file);
+    form.append("tz_offset_minutes", String(-new Date().getTimezoneOffset()));
+    let result;
+    try {
+      result = await (await api.upload("/reminders/import.ics", form)).json();
+    } catch (error) {
+      toast(error.message, true);
+      return;
+    }
     loadReminders();
-  };
-  if (!result.added.length) return void toast(message, "info");
-  offerUndo("Imported reminders", message, each((id) => `/reminders/${id}`, "DELETE"), each((id) => `/reminders/${id}/restore`, "POST"));
+    const skipped = result.skipped.length ? ` Skipped ${result.skipped.length}: ${result.skipped[0].reason}${result.skipped.length > 1 ? " and more" : ""}.` : "";
+    const message = `Imported ${result.added.length}, updated ${result.updated.length}.${skipped}`;
+    const each = (path, method) => async () => {
+      for (const id of result.added) await apiJson(path(id), { method });
+      loadReminders();
+    };
+    if (!result.added.length) return void toast(message, "info");
+    offerUndo("Imported reminders", message, each((id) => `/reminders/${id}`, "DELETE"), each((id) => `/reminders/${id}/restore`, "POST"));
+  });
 });
 
 //: In this boot file rather than app.js, whose gzipped size is a ratchet;
