@@ -18,7 +18,6 @@
  "src/tessellate/ai/composer_voice.py::suggested_searches": 19,
  "src/tessellate/ai/docreader.py::read_document_and_store": 20,
  "src/tessellate/ai/entities.py::undo_merge": 21,
- "src/tessellate/ai/factgraph.py::_units": 17,
  "src/tessellate/ai/facts.py::_Similar.nearest": 18,
  "src/tessellate/ai/facts.py::own_question": 16,
  "src/tessellate/ai/facts.py::run": 27,
