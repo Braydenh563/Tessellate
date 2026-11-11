@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Models (Q11): a liveness probe Ollama answered is believed for 30 s (was 2 s) and any failed request drops it; the model status poll seeing Ollama answer drops the refused and silent marks at once (`ollama_client.note_online`), so the composer never answers as if the model were off in the seconds after a start.
 - Notes (INBOX 1747): a note in the recycle bin can no longer be archived or unarchived from a stale card (409 "in the bin, restore it first"), so Restore never brings it back hidden in the Archive.
 - Settings and other lazy panes (INBOX 1747): one wiring hook that throws while a pane is first built no longer drops every hook after it (their buttons stayed dead) or makes the lookup that opened the pane throw.
 - Chat (INBOX 1747): pressing Confirm on a card a typed yes had already run (a second tab, a reloaded chat) is refused with "That card was already answered" instead of running the act a second time (`consent_store.was_spent`).
