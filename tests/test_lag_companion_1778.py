@@ -85,3 +85,15 @@ def test_quick_access_builds_only_the_tiles_it_draws() -> None:
     current = _fn(js, "function quickAccessCurrent(")
     assert "quickCatalogue(new Set(" in current
     assert "quickCatalogue()" in (JS / "quick-access.js").read_text(encoding="utf-8"), "the picker lists every row"
+
+
+def test_a_placement_spends_at_most_a_hundred_milliseconds_and_180_hit_tests() -> None:
+    """`nameMarkBuddyAfterCleanTask` 143 to 303 ms in the owner's log was `nameMarkBuddyChoose` spending its budget.
+
+    A Notes page of 200 notes took a median 302 ms (max 397) at 4x CPU and 435 hit tests to place, and settled on the
+    window's bar in every run; with these numbers the same pages settle on the same perch in a median 148 ms (max 186),
+    the Library 119 to 75 ms, the Graph 52 to 36 ms. The retry at the smaller size keeps half of it.
+    """
+    js = (JS / "avatars.js").read_text(encoding="utf-8")
+    assert "budget: { ms: 100, hits: 180, fitMs: 50, fitHits: 80," in js
+    assert "ms: 250, hits: 360" not in js

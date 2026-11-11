@@ -181,17 +181,6 @@
     return row;
   }
 
-  //: `window.open` with `noopener`: in the desktop window pywebview hands a
-  //: new-window request to the system browser, and in a browser tab it is a
-  //: new tab. `safeHref` because the URL came from a third party.
-  function openWebPageExternally(url) {
-    window.open(safeHref(url), "_blank", "noopener,noreferrer");
-  }
-
-  async function copyWebLink(url, button) {
-    if (await copyToClipboard(url, button)) announce("Link copied.");
-  }
-
   //: Saves a web result straight into the app's own bookmarks. Reports the
   //: duplicate case rather than silently making a second row: the endpoint
   //: already tells us (`duplicate_of`), and "saved" for something that was
@@ -465,5 +454,5 @@
     }
   }
 
-  Object.assign(window, { webEngineWords, openWebPageExternally, copyWebLink, bookmarkWebResult, renderWebSearchHistory, startSearxng, setWebSearxngRunning, searxngDownRow, runWebSearch });
+  Object.assign(window, { webEngineWords, bookmarkWebResult, renderWebSearchHistory, startSearxng, setWebSearxngRunning, searxngDownRow, runWebSearch });
 })();
