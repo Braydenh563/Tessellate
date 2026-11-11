@@ -333,3 +333,14 @@ def test_a_blob_name_outside_the_files_folder_is_neither_read_nor_written(tmp_pa
     link = folder_sync.FolderLink({"device": "abcdefabcdef", "segments": [{"upto": 0}], "manifest": {}, "items": {}},
                                   blobs, key)
     assert link.file("x:/../../outside", "me") is None
+
+
+def test_a_sibling_of_home_is_refused_and_home_itself_is_kept(tmp_path, monkeypatch):
+    """The root is matched with its separator, so /home/user2 never passes for /home/user; home itself does."""
+    home, sibling = tmp_path / "user", tmp_path / "user2"
+    home.mkdir()
+    sibling.mkdir()
+    monkeypatch.setenv("HOME", str(home))
+    with pytest.raises(folder_sync.SyncError, match="home folder or on a removable drive"):
+        folder_sync._checked(str(sibling), PASS)  # noqa: SLF001  # the guard alone
+    assert folder_sync._checked(str(home), PASS) == home.resolve()  # noqa: SLF001
