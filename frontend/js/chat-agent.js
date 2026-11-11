@@ -938,7 +938,7 @@ function renderDraftTarget() {
   chip.classList.toggle("hidden", draftNoteId === null);
   chip.textContent = draftNoteId === null ? "" : `Carrying on: ${draftNoteLabel}`;
   chip.title = draftNoteId === null ? "" : `Saving writes back to "${draftNoteLabel}"`;
-  setLabel(save, draftNoteId === null ? "ph:floppy-disk Save as note" : "ph:floppy-disk Save to that note");
+  setLabel(save, draftNoteId === null ? "ph:floppy-disk Save as note" : "ph:floppy-disk Save to note");
   $("draft-save-menu-slot")?.classList.toggle("hidden", draftNoteId !== null);
   save.title = draftNoteId === null
     ? ""
