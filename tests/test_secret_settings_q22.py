@@ -99,3 +99,13 @@ def test_a_key_that_cannot_be_stored_is_not_lost(tmp_path, monkeypatch):
     config.set_preference("llm_api_key", "sk-five")
     assert config.get_preference("llm_api_key") == "sk-five"
     assert _saved(config)["llm_api_key"] == "sk-five"
+
+
+def test_only_the_two_secret_names_ever_reach_a_path(tmp_path):
+    """CodeQL path injection: a name that is not in the fixed list is refused,
+    so a key that arrived in a request cannot choose a file."""
+    import pytest
+
+    for bad in ("../preferences", "llm_api_key/../x", "theme"):
+        with pytest.raises(ValueError):
+            secrets_store.write(tmp_path, bad, "x")
