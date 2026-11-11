@@ -3402,7 +3402,7 @@ HELP_TOPICS.extend(
             ),
             "body": (
                 "Enter sends, Shift+Enter starts a new "
-                "line; Escape or Ctrl+. stops the answer, Ctrl+Shift+O starts a new chat, "
+                "line; Escape or Ctrl+. stops the answer (what was written stays, with a Continue button), Ctrl+Shift+O starts a new chat, "
                 "and one sent mid-answer queues above the box (Edit, Remove). "
                 "Ctrl+Shift+G turns agent mode on or off, Ctrl+Shift+P clips a note "
                 "to your next question, and Ctrl+Shift+A opens the same agent over "
