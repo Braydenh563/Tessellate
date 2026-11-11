@@ -842,6 +842,16 @@ $("voice-skip-silence").addEventListener("change", (e) =>
   setPreference("voice_skip_silence", e.target.checked)
 );
 //: Read aloud's speed (E71), kept on this device; `speakText` reads it each time.
+$("pref-read-aloud-voice").value = prefs.get("read-aloud-voice", "browser");
+//: The natural voice (studio.js) is chosen only where it is installed; otherwise the way to it is named.
+$("pref-read-aloud-voice").addEventListener("change", async (e) => {
+  const ready = e.target.value !== "natural" || (await apiJson("/voice/status", { silent: true }).catch(() => null))?.speak?.available;
+  if (!ready) {
+    e.target.value = "browser";
+    return toastAction("The natural voice isn't installed.", "Open Packages", () => openSettingsModal("extras"));
+  }
+  prefs.set("read-aloud-voice", e.target.value);
+});
 $("pref-read-aloud-rate").value = prefs.get("read-aloud-rate", "1");
 $("pref-read-aloud-rate").addEventListener("change", (e) => prefs.set("read-aloud-rate", e.target.value));
 $("voice-language-select").addEventListener("change", (e) =>
