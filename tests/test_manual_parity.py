@@ -683,3 +683,16 @@ def test_the_diagram_ask_suggestions_and_versions_are_in_the_guide_in_the_contro
         assert words in body and control in ai, words
     assert "no model a rule" in body and "Ctrl+Z" in body and len(body) < 1900
     assert "diagram-ai" in TOPIC_META and "diagram-ai" in dict(HELP_GROUPS)["Documents and code"]
+
+
+def test_the_viewer_page_number_is_a_typeable_field_in_the_guide() -> None:
+    """INBOX 1694 (b): the lightbox's 'Page 3 of 12' is a value field; the `image-viewer` topic says so in the words the
+    control carries (its name, its text, the jump)."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "image-viewer"))
+    for words in ("'Page 3 of 12' is a field too", "type 7 and Enter", "pinch to zoom"):
+        assert words in body, words
+    view = (FRONTEND / "js" / "lightbox-view.js").read_text(encoding="utf-8")
+    for label in ('label: "Page number"', "Page ${v} of ${docPageCount}", "setDocPage(n - 1)"):
+        assert label in view, label

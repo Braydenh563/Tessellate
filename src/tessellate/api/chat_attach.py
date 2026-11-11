@@ -464,6 +464,24 @@ def _one_line(text: str) -> str:
     return " / ".join(line.strip() for line in text.splitlines() if line.strip())
 
 
+def _reading_line(upload: MediaUpload, filename: str, captions_only: bool) -> str:
+    caption = (upload.caption or "").strip()
+    text = "" if captions_only else (upload.vision_ocr_text or upload.ocr_text or "").strip()
+    #: One line a picture: the text's own lines joined by " / " (INBOX
+    #: 787: a reading over several lines broke the block, and the answer
+    #: quoted `text in it: "Ranked Solo/Duo.` and stopped).
+    text = _one_line(text)
+    if not caption and not text:
+        return ""
+    parts = []
+    if caption:
+        parts.append(f"shows {caption[:MEDIA_READING_CHARS]}")
+    if text:
+        parts.append(f'text in it: "{text[:MEDIA_READING_CHARS]}"')
+    name = (upload.original_name or filename).strip()
+    return f"- {name}: {'; '.join(parts)}"
+
+
 def _media_readings(session: Session, content: str, captions_only: bool = False) -> str:
     """What the app already knows about the pictures inside a note.
 
@@ -499,21 +517,9 @@ def _media_readings(session: Session, content: str, captions_only: bool = False)
         upload = rows.get(filename)
         if upload is None:
             continue
-        caption = (upload.caption or "").strip()
-        text = "" if captions_only else (upload.vision_ocr_text or upload.ocr_text or "").strip()
-        #: One line a picture: the text's own lines joined by " / " (INBOX
-        #: 787: a reading over several lines broke the block, and the answer
-        #: quoted `text in it: "Ranked Solo/Duo.` and stopped).
-        text = _one_line(text)
-        if not caption and not text:
-            continue
-        parts = []
-        if caption:
-            parts.append(f"shows {caption[:MEDIA_READING_CHARS]}")
-        if text:
-            parts.append(f'text in it: "{text[:MEDIA_READING_CHARS]}"')
-        name = (upload.original_name or filename).strip()
-        lines.append(f"- {name}: {'; '.join(parts)}")
+        line = _reading_line(upload, filename, captions_only)
+        if line:
+            lines.append(line)
     if not lines:
         return ""
     # Bracketed and labelled so the model can tell the app's reading of a

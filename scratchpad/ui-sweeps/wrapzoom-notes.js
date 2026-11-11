@@ -344,7 +344,9 @@ async function run() {
       }
       return picks.slice(0, 14);
     }, scope);
-    const popRoots = ['dialog[open]', '.action-menu:not(.hidden)', 'details[open] > .dock-menu-list', 'details[open] > .doc-dock-menu-list', '.help-body:not(.hidden)', '[popover]:popover-open', '.toast', '.confirm-overlay'];
+    const popRoots = ['dialog[open]', '.action-menu:not(.hidden)', 'details[open] > .dock-menu-list', 'details[open] > .doc-dock-menu-list',
+      // Some menus are carried out of their <details> to float (Library documents).
+      '.dock-menu-list', '.doc-dock-menu-list', '.help-body:not(.hidden)', '[popover]:popover-open', '.toast', '.confirm-overlay'];
     const sweepOpeners = async (state, scope, reset) => {
       const picks = await openers(scope);
       if (!Array.isArray(picks)) return;

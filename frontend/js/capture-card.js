@@ -10,7 +10,7 @@
   const CAPTURE_DRAFT_KEY = "captureCardDraft";
   const CAPTURE_TASK_LINE = /^\s*(?:[-*+]\s+(?:\[[ xX]\]\s+)?)?/;
 
-  const captureCard = { root: null, host: null, returning: false, saving: false, mode: "note", colour: null, due: null, pictures: [], suggestTimer: 0, suggestSeq: 0, sketchHost: null, buddyTimer: 0 };
+  const captureCard = { root: null, host: null, returning: false, saving: false, mode: "note", colour: null, due: null, pictures: [], files: [], made: null, discardOnClose: false, suggestTimer: 0, suggestSeq: 0, sketchHost: null, buddyTimer: 0 };
 
 
   //: **One card, two bars** (INBOX 1592): methods on the state, not more globals. `place` moves the card
@@ -356,8 +356,10 @@
     captureCard.place(host);
     if (captureCard.root.hidden) showCaptureCard(from);
     const pick = type === "click" && Boolean(from?.closest?.(".capture-bar-picture"));
-    //: The colour dots, the bell, the pictures and the tag suggestions are the second lazy file.
-    lazyScript("/js/capture-card-more.js").then((ok) => ok && mountCaptureExtras(pick));
+    //: Pictures and files waiting for Save are the first lazy file (the desk's window has it too);
+    //: the colour dots, the bell, Draw and the tag suggestions are the second (the app's alone).
+    Promise.all([lazyScript("/js/attach-accept.js"), lazyScript("/js/capture-stage.js")]).then((ok) => ok.every(Boolean) && mountCaptureStage(pick));
+    lazyScript("/js/capture-card-more.js").then((ok) => ok && mountCaptureExtras());
   }
 
   function showCaptureCard(from) {
@@ -374,6 +376,8 @@
   }
 
   function closeCaptureCard() {
+    //: The desk's note is a window that rests when it closes: what it held back goes with it.
+    if (captureCard.discardOnClose && captureCard.root.dataset.stage) discardCaptureStage();
     keepCaptureDraft();
     captureCard.root.hidden = true;
     captureCard.host.classList.remove("is-open");
@@ -386,9 +390,9 @@
   }
 
   function resetCaptureCard() {
-    for (const picture of captureCard.pictures) URL.revokeObjectURL(picture.preview);
-    captureCard.pictures = [];
-    if (captureCard.root.dataset.extras) renderCaptureThumbs();
+    if (captureCard.root.dataset.stage) discardCaptureStage();
+    else captureCard.pictures = [];
+    captureCardField("save").textContent = "Save";
     captureCardField("title").value = "";
     captureCardField("body").value = "";
     fillCaptureItems([]);
@@ -411,8 +415,11 @@
 
   async function saveCaptureCard() {
     if (captureCard.saving) return;
+    //: A note made whose files did not all go: Save sends those again, it never writes a second note.
+    if (captureCard.made) return retryCaptureFiles();
     const text = captureCardContent();
-    if (!text && !captureCard.pictures.length) {
+    const held = captureCard.pictures.length + captureCard.files.length;
+    if (!text && !held) {
       captureCardStatus("Write something first, then save.", true);
       return;
     }
@@ -424,14 +431,45 @@
       await ensureModule("quickNote");
       const draft = captureCardDraft();
       const pictures = captureCard.pictures.length ? await uploadCapturePictures() : "";
-      const body = { content: [text, pictures].filter(Boolean).join("\n\n"), tags: captureTagList(draft.tags) };
+      //: A note of files alone is named by them: a note cannot be empty.
+      const names = captureCard.files.map((file) => file.name).join(", ");
+      const body = { content: [text, pictures].filter(Boolean).join("\n\n") || names, tags: captureTagList(draft.tags) };
       if (draft.colour) body.colour = draft.colour;
       Object.assign(body, captureCard.lockAsk());
-      const result = await createNoteSafely(body);
+      //: Files need the note's id, so a note with files is not held for later: it fails whole and stays staged.
+      const result = await createNoteSafely(body, { online: captureCard.files.length > 0 });
+      if (result.saved && captureCard.files.length) {
+        captureCard.made = { result, draft };
+        return await retryCaptureFiles();
+      }
       await finishCaptureSave(result, draft);
     } catch (error) {
-      //: Refused or failed and not held: the words stay, with the reason under them.
-      captureCardStatus(error.message, true);
+      //: Refused or failed and not held: the words and what was staged stay, with the reason under them.
+      captureCardStatus(`${error.message} Press Save to try again.`, true);
+      button.textContent = "Try again";
+    } finally {
+      captureCard.saving = false;
+      button.disabled = false;
+    }
+  }
+
+  //: The files of a note that now has an id. Whatever fails stays staged under a Try again.
+  async function retryCaptureFiles() {
+    const { result, draft } = captureCard.made;
+    captureCard.saving = true;
+    const button = captureCardField("save");
+    button.disabled = true;
+    captureCardStatus("Attaching files…");
+    try {
+      const { failed, entry } = await attachCaptureFiles(result.saved.id);
+      if (entry) result.saved = entry;
+      if (failed.length) {
+        captureCardStatus(`Saved the note, but ${failed.length === 1 ? "a file" : `${failed.length} files`} did not attach (${failed.join("; ")}). Press Save to try again.`, true);
+        button.textContent = "Try again";
+        return;
+      }
+      captureCard.made = null;
+      await finishCaptureSave(result, draft);
     } finally {
       captureCard.saving = false;
       button.disabled = false;

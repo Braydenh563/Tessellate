@@ -1194,19 +1194,22 @@ _NOTE_DEFAULTS = {
 _LINK_DEFAULTS = ("reason", "reason_confidence", "link_type")
 
 
+def _slim_note(node: dict) -> None:
+    for key, default in _NOTE_DEFAULTS.items():
+        if key in node and node[key] == default and type(node[key]) is type(default):
+            del node[key]
+    for key in ("created_at", "updated_at", "edited_at"):
+        if isinstance(node.get(key), str) and "." in node[key]:
+            head, _, tail = node[key].partition(".")
+            node[key] = head + tail.lstrip("0123456789")
+    if isinstance(node.get("centrality"), float):
+        node["centrality"] = float(f"{node['centrality']:.6g}")
+
+
 def _slim(nodes: list[dict], edges: list[dict]) -> None:
     for node in nodes:
-        if node.get("kind") != "note":
-            continue
-        for key, default in _NOTE_DEFAULTS.items():
-            if key in node and node[key] == default and type(node[key]) is type(default):
-                del node[key]
-        for key in ("created_at", "updated_at", "edited_at"):
-            if isinstance(node.get(key), str) and "." in node[key]:
-                head, _, tail = node[key].partition(".")
-                node[key] = head + tail.lstrip("0123456789")
-        if isinstance(node.get("centrality"), float):
-            node["centrality"] = float(f"{node['centrality']:.6g}")
+        if node.get("kind") == "note":
+            _slim_note(node)
     for edge in edges:
         if edge.get("kind") == "link":
             for key in _LINK_DEFAULTS:

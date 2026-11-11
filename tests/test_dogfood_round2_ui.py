@@ -88,8 +88,9 @@ def test_chat_hint_is_left_off_a_one_row_box_in_a_narrow_window():
 
 def test_a_formatting_toolbar_is_one_tab_stop():
     # 21: Tab from the note title walked every toolbar button before the editor.
+    #: INBOX 1722: the function moved to documents-mermaid.js so the diagram builder opens without the Library bundle.
+    assert "function wireToolbarRoving" in (JS / "documents-mermaid.js").read_text()
     src = (JS / "documents.js").read_text()
-    assert "function wireToolbarRoving" in src
     assert "wireToolbarRoving(bar);" in src.split("function wireMarkdownToolbar")[1][:400]
 
 

@@ -504,6 +504,44 @@ def clean_orphaned_vectors(session_factory) -> int:  # noqa: ANN001
     return len(orphans)
 
 
+def _filed_under(session: Session, entry: Entry) -> str:
+    """The "Filed under:" line for a note's category and tags, or "" (never raises: enrichment must not block an embedding)."""
+    try:
+        labels: list[str] = []
+        if entry.category_id is not None:
+            name = session.scalar(
+                select(Category.name).where(Category.id == entry.category_id)
+            )
+            if name and str(name).lower() not in {"uncategorised", "uncategorized"}:
+                labels.append(str(name))
+        raw_tags = json.loads(entry.tags or "[]")
+        labels += [str(tag) for tag in raw_tags if str(tag).strip()][:12]
+        if labels:
+            return "Filed under: " + ", ".join(labels)
+    except Exception:  # noqa: BLE001  # enrichment must never block an embedding
+        logger.debug("no category or tags for entry %s", entry.id, exc_info=True)
+    return ""
+
+
+def _attachment_parts(session: Session, entry: Entry) -> list[str]:
+    parts: list[str] = []
+    try:
+        attachments = session.scalars(
+            select(Attachment).where(Attachment.entry_id == entry.id)
+        ).all()
+        for attachment in attachments:
+            found = [
+                getattr(attachment, "caption", None),
+                getattr(attachment, "ocr_text", None) or getattr(attachment, "vision_ocr_text", None),
+            ]
+            text = " ".join(str(item).strip() for item in found if item)
+            if text:
+                parts.append(f"{attachment.filename}: {text[:2000]}")
+    except Exception:  # noqa: BLE001  # an attachment must never block an embedding
+        logger.debug("no attachment text for entry %s", entry.id, exc_info=True)
+    return parts
+
+
 def embedding_text(session: Session, entry: Entry) -> str:
     """What actually gets embedded for a note: its own words, plus what the
     pictures in it say.
@@ -540,40 +578,16 @@ def embedding_text(session: Session, entry: Entry) -> str:
     # declare foreign keys but no ORM `relationship()` anywhere, so
     # `entry.category` is not an attribute that exists, a `getattr` version
     # of this would have returned None forever and quietly indexed nothing.
-    try:
-        labels: list[str] = []
-        if entry.category_id is not None:
-            name = session.scalar(
-                select(Category.name).where(Category.id == entry.category_id)
-            )
-            if name and str(name).lower() not in {"uncategorised", "uncategorized"}:
-                labels.append(str(name))
-        raw_tags = json.loads(entry.tags or "[]")
-        labels += [str(tag) for tag in raw_tags if str(tag).strip()][:12]
-        if labels:
-            parts.append("Filed under: " + ", ".join(labels))
-    except Exception:  # noqa: BLE001  # enrichment must never block an embedding
-        logger.debug("no category or tags for entry %s", entry.id, exc_info=True)
+    labels_line = _filed_under(session, entry)
+    if labels_line:
+        parts.append(labels_line)
 
     # What this note's own attached files say. The same reasoning as the
     # media captions below, for the half of the app that stores files as
     # `Attachment` rows: a scanned lecture PDF attached to a two-word note
     # was, to the vectors, a two-word note. Now the caption a vision model
     # wrote and the text either extractor read are searchable with it.
-    try:
-        attachments = session.scalars(
-            select(Attachment).where(Attachment.entry_id == entry.id)
-        ).all()
-        for attachment in attachments:
-            found = [
-                getattr(attachment, "caption", None),
-                getattr(attachment, "ocr_text", None) or getattr(attachment, "vision_ocr_text", None),
-            ]
-            text = " ".join(str(item).strip() for item in found if item)
-            if text:
-                parts.append(f"{attachment.filename}: {text[:2000]}")
-    except Exception:  # noqa: BLE001  # an attachment must never block an embedding
-        logger.debug("no attachment text for entry %s", entry.id, exc_info=True)
+    parts.extend(_attachment_parts(session, entry))
 
     try:
         extra = media_process.media_text_for(session, entry.content)

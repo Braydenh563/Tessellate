@@ -6,6 +6,7 @@ Driven by `scratchpad/ui-sweeps/audio80.js` ACT=library at 1440 and 390."""
 from __future__ import annotations
 
 from pathlib import Path
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = (ROOT / "frontend/js/meetings.js").read_text(encoding="utf-8")
@@ -103,7 +104,7 @@ def test_the_microphone_is_chosen_cleaned_and_tested_in_one_set_of_controls():
     assert "function micAudioConstraints()" in media
     for key in ("micNoise", "micEcho", "micGain", "deviceId: { ideal: device }"):
         assert key in media
-    captions = (ROOT / "frontend/js/captions.js").read_text(encoding="utf-8")
+    captions = _js_scope.unwrapped((ROOT / "frontend/js/captions.js").read_text(encoding="utf-8"))
     for text in (media, JS, captions):
         assert "getUserMedia({ audio: true })" not in text
         assert "getUserMedia({ audio: micAudioConstraints() })" in text
@@ -145,7 +146,7 @@ def test_level_line_is_the_signal_and_still_with_reduced_motion():
     assert 'canvas.dataset.mode = still ? "meter" : "line";' in block
 
 
-CAPTIONS = (ROOT / "frontend/js/captions.js").read_text(encoding="utf-8")
+CAPTIONS = _js_scope.unwrapped((ROOT / "frontend/js/captions.js").read_text(encoding="utf-8"))
 
 
 def test_live_words_while_recording_come_from_the_captions_pipeline():

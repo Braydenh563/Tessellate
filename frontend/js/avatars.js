@@ -1307,7 +1307,10 @@ function nameMarkRasterise(svg, parts, pad) {
     nameMarkMeasureHost = document.createElement("div");
     nameMarkMeasureHost.className = "nm-measure";
     nameMarkMeasureHost.setAttribute("aria-hidden", "true");
-    document.body.appendChild(nameMarkMeasureHost);
+    //: Under <html>, not <body>: a node added inside body makes the browser re-check every :has() subject
+    //: in it, and on the Library Images tab (240 tiles) a cold face's draw cost a median 140ms there against
+    //: 65ms here (4x CPU, INBOX 1716). The host is fixed and hidden, so where it sits changes no layout.
+    document.documentElement.appendChild(nameMarkMeasureHost);
   }
   nameMarkMeasureHost.appendChild(svg);
   const [vx, vy, vw, vh] = (svg.getAttribute("viewBox") || "0 0 36 36").split(/[\s,]+/).map(Number);
@@ -2759,8 +2762,12 @@ function nameMarkLive(seed, size) {
 //: A poke: a hop and a spin. The class comes off when the animation ends.
 function nameMarkReact(svg) {
   if (!svg) return;
-  svg.classList.remove("nm-react");
-  void svg.getBoundingClientRect();
+  //: The class is taken off and a layout forced only to restart a hop that is still playing (a second poke
+  //: inside 800ms); on a face at rest it is one class add with no read (INBOX 1716: a poke's forced layout).
+  if (svg.classList.contains("nm-react")) {
+    svg.classList.remove("nm-react");
+    void svg.getBoundingClientRect();
+  }
   svg.classList.add("nm-react");
   setTimeout(() => svg.classList.remove("nm-react"), 800);
 }
@@ -2775,10 +2782,15 @@ function nameMarkSay(anchor, text, ms = 2600) {
   bubble.textContent = text;
   anchor.appendChild(bubble);
   //: Kept inside the window: a face at the edge (the companion at the
-  //: right) used to say half its line off screen.
-  const box = bubble.getBoundingClientRect();
-  const shift = Math.max(0, box.right - (innerWidth - 8)) || -Math.max(0, 8 - box.left);
-  if (shift) bubble.style.left = `calc(50% - ${Math.ceil(shift)}px)`;
+  //: right) used to say half its line off screen. Measured at the next frame's start, before it is drawn
+  //: (the bubble is never painted unshifted), not here: a rect read in the poke's own task billed the
+  //: page's whole pending restyle to it (INBOX 1716: release 239ms, 106 of them layout).
+  afterFrames(() => {
+    if (!bubble.isConnected) return;
+    const box = bubble.getBoundingClientRect();
+    const shift = Math.max(0, box.right - (innerWidth - 8)) || -Math.max(0, 8 - box.left);
+    if (shift) bubble.style.left = `calc(50% - ${Math.ceil(shift)}px)`;
+  }, 1);
   setTimeout(() => bubble.remove(), ms);
 }
 
