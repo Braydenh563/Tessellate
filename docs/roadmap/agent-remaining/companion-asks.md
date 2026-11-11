@@ -4,6 +4,8 @@ The owner, 2026-11-05 01:45Z to 02:00Z, verbatim (INBOX 1683 p): "like keep goin
 
 Built from: this session's owner messages (307 human messages, 93 mention a companion word, read with a filter, dates are UTC from the transcript), INBOX, HISTORY, BACKLOG, OPEN.md, SESSION_BRIEFS, the `*_PLAN.md` files, `agent-remaining/*.md` (desk-1670, overlay-1104, companion-1663, companion-cat-1673, poses-1681) and CHANGELOG. Quotes are the owner's own spelling, trimmed with "..." only where long. The 1670 report is a bundle of one-line asks, split here.
 
+**Count (INBOX 1692 00:35 / S3, 2026-11-11, counted from the Status cells of the 120 ask rows below; no row was re-driven today):** 16 built and measured (BM), 38 desk built on fakes only (BF), 20 built with no number (BU), 17 partial (P), 7 missing (M), 1 missing on the desk (MD), 12 with another lane (L), 9 with no status code in the cell. So of 120 asks, 74 are built (BM, BF, BU) and 25 are partial, missing or desk-missing; none of the desk ones has a real Windows number.
+
 ## How to read it
 
 Surface: **app** (the in-app companion and Atlas), **desk** (the overlay figure outside the window), **both**.

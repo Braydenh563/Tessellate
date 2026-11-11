@@ -4408,20 +4408,20 @@ Format: id | file:line | one line | status.
 **BK1 (companion, 24 rows)**
 
 - X15 | audit-1029-extras:121 | Dashboard has about 13,250 DOM nodes with six notes, 16.6k to 19.9k after opening settings and dialogs | open
-- A36 | audit-1030-ai:67 | Esc on a companion menu returns focus to an anonymous kebab-opener.pointer-menu-anchor, not the companion | partial
+- ~~A36 | audit-1030-ai:67 | Esc on a companion menu returns focus to an anonymous kebab-opener.pointer-menu-anchor, not the companion | partial~~ fixed 6254337 (checked 2026-11-11)
 - A37 | audit-1030-ai:68 | The companion fades to opacity 0 behind the Settings dialog; on phone it sits at about (314,728) over the | open
-- Z18 | audit-1031-extras:121 | Background art, when on, costs 0.203 s of script per 5 s (about 4 percent of one core) at 20 fps on this | open
-- HR23 | audit-1031-harness:39 | Pane opens with long tasks at 390 | open
+- ~~Z18 | audit-1031-extras:121 | Background art, when on, costs 0.203 s of script per 5 s (about 4 percent of one core) at 20 fps on this | open~~ fixed 405fbdcaf (12 fps after 30 s without a pointer; checked 2026-11-11)
+- ~~HR23 | audit-1031-harness:39 | Pane opens with long tasks at 390 | open~~ fixed (Logs row grid 62,573 to 5,090 px; Memory poof not reproduced; audit-1031-harness.md:98; checked 2026-11-11)
 - UX3 | audit-1031-ux:17 | 70 animations run while nothing happens | open
 - P8 | audit-1108-perf:45 | chat answer render path as cited; not re-measured | open
 - 1607b | owner-asks-audit-1108:13 | Masculine Atlas head size and shape against the feminine reference | open
 - B16 | owner-asks-audit-1108:16 | Masculine Atlas design pass (head, eyes, shoulder join, expressions) | open
 - 1634c | owner-asks-audit-1108:17 | nameMarkBuddyBlend reads transformOrigin before and after its writes | open
-- 1634d | owner-asks-audit-1108:18 | No throw read in the first second after visibilitychange (5.6 s cold-window spotNow) | open
+- ~~1634d | owner-asks-audit-1108:18 | No throw read in the first second after visibilitychange (5.6 s cold-window spotNow) | open~~ fixed cc0ca315d (a throw on a window just shown waits two frames; checked 2026-11-11)
 - 1693b1 | owner-asks-audit-1108:29 | The chat area spasms up and down (Agent greeting, 1920x1270, scrollbars, companion on) | open
 - 1643c | owner-asks-audit-1108:31 | Chat send keydown 712 ms, frame 589 ms in nameMarkBuddyTempo | open
 - N14 | owner-asks-audit-1108:35 | Live desk drawing only inside the CPU budget (idle under 1%, moving under 3%) | open
-- 169200:35/S3 | owner-asks-audit-1108:41 | Built, partial and missing count for the owner; is everything built | open
+- ~~169200:35/S3 | owner-asks-audit-1108:41 | Built, partial and missing count for the owner; is everything built | open~~ done: counts line at the top of companion-asks.md (checked 2026-11-11)
 - 1692c/g/N17 | owner-asks-audit-1108:43 | Two tracks: Atlas more detailed, generated companions own behaviour set | open
 - 1692g/N18 | owner-asks-audit-1108:44 | Every motion drawn every frame; in-app p95 under 8 ms at 4x CPU | open
 - 1692m/n/1683g/N11 | owner-asks-audit-1108:45 | The companion should sit on windows | open
