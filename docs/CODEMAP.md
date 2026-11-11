@@ -24977,11 +24977,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_live` | src/tessellate/core/running_copies.py:65 |
 | `_probes` | src/tessellate/core/running_copies.py:87 |
 | `_records` | src/tessellate/core/running_copies.py:104 |
-| `ask_to_stop` | src/tessellate/core/running_copies.py:190 |
+| `ask_to_stop` | src/tessellate/core/running_copies.py:191 |
 | `list_copies` | src/tessellate/core/running_copies.py:151 |
 | `prune_in_background` | src/tessellate/core/running_copies.py:174 |
 | `prune_now` | src/tessellate/core/running_copies.py:169 |
-| `shutdown` | src/tessellate/core/running_copies.py:195 |
+| `shutdown` | src/tessellate/core/running_copies.py:196 |
 
 ### src/tessellate/core/secrets_store.py (6)
 

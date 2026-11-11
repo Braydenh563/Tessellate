@@ -32,6 +32,7 @@ HARNESS = r"""
 const vm = require("vm");
 let frames = [];
 let clock = 0;
+let timers = [];  // setTimeout(f, 0): the rig reads its first look in the task after the frame
 const el = () => ({ style: { setProperty() {}, rotate: "", transform: "", opacity: "" }, attrs: {}, setAttribute(k, v) { this.attrs[k] = v; }, removeAttribute(k) { delete this.attrs[k]; }, closest: () => null });
 const reduced = process.argv[2] === "reduced";
 const ctx = {
@@ -40,6 +41,7 @@ const ctx = {
   document: { documentElement: { dataset: reduced ? { motion: "reduced" } : {}, hasAttribute: () => false } },
   matchMedia: () => ({ matches: false }),
   getComputedStyle: () => ({ transform: "none", rotate: "none", opacity: "1" }),
+  setTimeout: (f) => { timers.push(f); return timers.length; },
   requestAnimationFrame: (f) => { frames.push(f); return frames.length; },
   atlasTailWake() {}, atlasFix: (n) => +n.toFixed(2), atlasArmPath: () => "M0 0", atlasArmHand: () => "", atlasState: {},
   ATLAS_LOOKS: {},
@@ -58,10 +60,10 @@ const box = {
   querySelector: (s) => (s.includes("nmp-stars") && s.includes("arc") ? arc : s.includes("nmp-stars") ? root : null),
   querySelectorAll: (s) => (s.includes("atl-juggle") ? stars : []),
 };
-const arm = (side) => ({ side, sgn: side === "r" ? 1 : -1, probe: {}, running: new Set(), hold: null, groups: [el()], paths: [el()], hand: el(), geo: {}, j: { sh: { x: 0, v: 0, w: 14, t: null }, el: { x: 0, v: 0, w: 14, t: null }, wr: { x: 0, v: 0, w: 14, t: null }, sy: { x: 1, v: 0, w: 14, t: null } }, hist: [], drawn: [0, 0], shown: "", antic: null });
+const arm = (side) => ({ side, sgn: side === "r" ? 1 : -1, probe: { getAnimations: () => [] }, running: new Set(), hold: null, groups: [el()], paths: [el()], hand: el(), geo: {}, j: { sh: { x: 0, v: 0, w: 14, t: null }, el: { x: 0, v: 0, w: 14, t: null }, wr: { x: 0, v: 0, w: 14, t: null }, sy: { x: 1, v: 0, w: 14, t: null } }, hist: [], drawn: [0, 0], shown: "", antic: null });
 const rig = { box, body: {}, look: "masculine", arms: [arm("l"), arm("r")], raf: 0, at: 0, still: 0, host: buddy, observer: {}, pose: null, heads: [], lag: { x: 0, v: 0, w: 9, t: null }, fresh: false };
 box.atlasRig = rig;
-const run = (n, each) => { for (let i = 0; i < n; i += 1) { clock += 1000 / 60; const f = frames; frames = []; for (const g of f) g(clock); if (each) each(); } };
+const run = (n, each) => { for (let i = 0; i < n; i += 1) { clock += 1000 / 60; const f = frames; frames = []; for (const g of f) g(clock); const t = timers; timers = []; for (const g of t) g(); if (each) each(); } };
 const at = (k) => { const m = /translate\(([-0-9.]+)px, ([-0-9.]+)px\)/.exec(stars[k].style.transform); const o = [[10, 17], [31, 4], [52, 17]][k]; return m ? [o[0] + +m[1], o[1] + +m[2]] : null; };
 """
 

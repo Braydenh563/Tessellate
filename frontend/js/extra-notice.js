@@ -59,7 +59,7 @@
 
   async function extraNoticeInstall(id, row) {
     if (id === "searxng") {
-      const result = await apiJson("/websearch/searxng/start", { method: "POST" }).catch((error) => ({ error: error.message }));
+      const result = await startSearxng(true, () => {}).catch((error) => ({ error: error.message }));
       if (result.error) toast(result.error, "info", { action: ["Open Settings", () => openSettingsModal("websearch")] });
       else toast("SearXNG is installing. Settings, Web search shows its progress.", "info");
       return;
