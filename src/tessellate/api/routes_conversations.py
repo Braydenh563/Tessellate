@@ -836,6 +836,9 @@ class ForkBody(BaseModel):
     #: duplicate case.
     up_to: int | None = Field(default=None, le=bounds.HISTORY_MAX_TURNS * 100)
     title: str | None = Field(default=None, max_length=120)
+    #: Words after the chat's own title, "Planning (before the edit)" (audit 1028
+    #: E48): the chat client holds no title, so it cannot build one. A `title` wins.
+    suffix: str | None = Field(default=None, max_length=40)
 
 
 @router.post("/{conversation_id}/fork", status_code=201)
@@ -873,7 +876,7 @@ def fork_conversation(
         messages = messages[: max(0, (body.up_to + 1) * 2)]
     #: The name says where it came from, because a Library listing two
     #: identically-named chats is the thing that makes forking unusable.
-    title = (body.title or "").strip() or f"{conversation.title} (fork)"
+    title = (body.title or "").strip() or f"{conversation.title} ({(body.suffix or '').strip() or 'fork'})"
     fork = Conversation(
         title=title[:120],
         messages=json.dumps(messages),

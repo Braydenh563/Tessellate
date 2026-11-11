@@ -101,6 +101,37 @@ def mark_verdict(body: VerdictBody, session: Session = Depends(get_session)) -> 
     return done
 
 
+class AnswerVerdictBody(BaseModel):
+    """A whole answer marked not right (audit 1028 E59): the question as asked
+    and the notes the answer cited."""
+
+    question: str = Field(min_length=1, max_length=2000)
+    entry_ids: list[int] = Field(min_length=1, max_length=12)
+    line: str = Field(default="", max_length=2000)
+
+
+@router.post("/answer-verdict", status_code=201)
+def mark_answer_wrong(body: AnswerVerdictBody, session: Session = Depends(get_session)) -> dict:
+    """Not right on an answer: one `wrong_answer` correction per cited note
+    (`search_manager._learned_down` reads them). `ids` are the corrections, whose
+    Delete (`DELETE /learned/corrections/{id}`) is the undo."""
+    from tessellate.core.database import Entry
+
+    ids: list[int] = []
+    for note_id in dict.fromkeys(body.entry_ids):
+        entry = session.get(Entry, note_id)
+        if entry is None or entry.is_deleted or entry.is_private:
+            continue
+        item = learning.record(
+            session, kind="wrong_answer", subject={"question": " ".join(body.question.split())[:300], "entry_id": note_id}, excerpt=body.line
+        )
+        ids.append(item.id)
+    if not ids:
+        raise HTTPException(status_code=422, detail="None of those notes could be found.")
+    session.commit()
+    return {"ids": ids, "count": len(ids)}
+
+
 @router.get("/corrections")
 def list_corrections(
     response: Response,

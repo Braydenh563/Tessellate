@@ -1029,6 +1029,16 @@ class Retrieval:
             self.mentioned = set()
 
 
+#: The notes one search reads on a first ask, and how many more each Ask again
+#: adds up to the cap (audit 1028 E62): a retry that read the same five notes
+#: could only reword the same answer.
+FIRST_READ, READ_STEP, READ_CAP = 5, 5, 20
+
+
+def widened_limit(widen: int) -> int:
+    return min(READ_CAP, FIRST_READ + READ_STEP * max(0, widen))
+
+
 def retrieve_detailed(
     session: Session,
     query: str,
@@ -1036,14 +1046,17 @@ def retrieve_detailed(
     limit: int = 5,
     expand_graph: bool = True,
     locale: str | None = None,
+    unscoped: bool = False,
 ) -> Retrieval:
     """`retrieve`, with the provenance kept. See `Retrieval`.
 
     `locale` is the asker's (the browser's), so "3/4" reads as 4 March in
-    en-US and 3 April elsewhere, the way the quick-add reading route does."""
+    en-US and 3 April elsewhere, the way the quick-add reading route does.
+    `unscoped` ignores a category the question named: Ask again on a miss
+    (audit 1028 E62) reads past the scope the first ask was kept inside."""
     found: dict = {}
     entries, mode = _retrieve(
-        session, query, embeddings, limit, expand_graph, found, locale
+        session, query, embeddings, limit, expand_graph, found, locale, unscoped
     )
     return Retrieval(
         entries=entries,
@@ -1498,6 +1511,7 @@ def _retrieve(
     expand_graph: bool,
     found: dict,
     locale: str | None = None,
+    unscoped: bool = False,
 ) -> tuple[list[Entry], str]:
     """The search itself. `found` is filled in with what happened, for
     `retrieve_detailed`; the plain caller passes a dict it throws away."""
@@ -1522,7 +1536,7 @@ def _retrieve(
     #: **A named category is a scope** (`_named_category`). A question that
     #: asks for the whole category lists it; one with a subject searches
     #: inside it, and lists it when nothing inside matches.
-    scope, listed = _category_scope(session, query, limit, found)
+    scope, listed = (None, None) if unscoped else _category_scope(session, query, limit, found)
     if listed is not None:
         return listed
 
@@ -1590,30 +1604,46 @@ def _learned_order(session: Session, query: str, entries: list[Entry]) -> list[E
     # level `from tessellate.ai import learning` here is a cycle, and
     # `tests/test_no_import_cycles.py` counts the statement wherever it sits.
     learning = importlib.import_module("tessellate.ai.learning")
-    boosts = learning.boosts(session, kind="search")
-    if not boosts:
-        return entries
     asked = learning._words(query)
     if not asked:
         return entries
-    by_id = {entry.id: entry for entry in entries}
-    promoted: list[tuple[float, int]] = []
-    for (question, entry_id), weight in boosts.items():
-        if entry_id not in by_id:
-            continue
+
+    def like(question: str) -> bool:
         words = learning._words(question)
-        if not words:
-            continue
-        shared = len(words & asked)
-        if shared and shared * 2 >= len(words):
-            promoted.append((weight, entry_id))
-    if not promoted:
+        shared = len(words & asked) if words else 0
+        return bool(shared) and shared * 2 >= len(words)
+
+    boosts = learning.boosts(session, kind="search")
+    by_id = {entry.id: entry for entry in entries}
+    promoted = sorted(
+        ((weight, entry_id) for (question, entry_id), weight in boosts.items() if entry_id in by_id and like(question)),
+        reverse=True,
+    )
+    if promoted:
+        order = [by_id[entry_id] for _weight, entry_id in promoted]
+        seen = {entry.id for entry in order}
+        entries = order + [entry for entry in entries if entry.id not in seen]
+    #: Last, so a note the person once opened and later marked not right for this question still goes down.
+    return _learned_down(session, learning, entries, like)
+
+
+def _learned_down(session: Session, learning, entries: list[Entry], like) -> list[Entry]:  # noqa: ANN001
+    """The notes an answer to a question like this was marked not right for
+    (audit 1028 E59): read last, and left out once the person has said so
+    `learning.EXCLUDE_AFTER` times. Never an addition, like the boost above, and
+    the correction's Delete puts it all back."""
+    down = learning.boosts(session, kind="search_down")
+    if not down:
         return entries
-    promoted.sort(reverse=True)
-    order = [by_id[entry_id] for _weight, entry_id in promoted]
-    seen = {entry.id for entry in order}
-    order.extend(entry for entry in entries if entry.id not in seen)
-    return order
+    marked: dict[int, float] = {}
+    for (question, entry_id), weight in down.items():
+        if like(question):
+            marked[entry_id] = max(marked.get(entry_id, 0.0), weight)
+    if not marked:
+        return entries
+    drop = learning.EXCLUDE_AFTER * learning.PER_CORRECTION
+    kept = [entry for entry in entries if marked.get(entry.id, 0.0) < drop]
+    return [e for e in kept if e.id not in marked] + [e for e in kept if e.id in marked]
 
 
 def _without_private(entries: list[Entry]) -> list[Entry]:

@@ -85,6 +85,7 @@ TOPIC_LEADS: dict[str, str] = {
     "follow-up-trail": "See the chain of questions behind a follow-up and jump back to any of them.",
     "why-this-answer": "Check an answer's sources and the lines of your notes that back it.",
     "line-verdicts": "Tell Atlas a line in a note is wrong, or pin it as true for later answers.",
+    "answer-menu": "Ask again with more notes or as another persona, mark an answer wrong.",
     "answer-pictures": "See the pictures from the notes an answer draws on, beside its sources.",
     "time-and-recency": "Ask about recent notes or dates and get them read the way your notes meant.",
     "notebook-questions": "Ask about the notebook itself, such as your top tags or how many notes you have.",

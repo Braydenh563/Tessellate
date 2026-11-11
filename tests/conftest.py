@@ -91,6 +91,42 @@ def _share_route_dependants() -> None:
 _share_route_dependants()
 
 
+# --- one simulated overlay hour per session, however many xdist workers ----------
+#
+# The overlay tests read the same seeded hours (2 to 20 s each) from several files, and every `-n auto` worker used
+# to simulate its own copy (the CI profile of 1109: up to four runs of one hour). The controller makes one folder, the
+# workers inherit the variable, and `tests/overlay_sim_1670.disk_memo` computes each hour once and shares it.
+
+def pytest_addoption(parser):
+    parser.addoption("--shard", default=None, help="i/n: run only the test files of leg i of n (tests/_shard.py), for parallel CI legs")
+
+
+def pytest_collection_modifyitems(config, items):
+    spec = config.getoption("--shard")
+    if spec:
+        from tests import _shard
+
+        kept, dropped = _shard.split(items, spec)
+        config.hook.pytest_deselected(items=dropped)
+        items[:] = kept
+
+
+def pytest_configure(config):
+    if os.environ.get("TESSELLATE_SIM_CACHE") or os.environ.get("PYTEST_XDIST_WORKER"):
+        return
+    import tempfile
+
+    os.environ["TESSELLATE_SIM_CACHE"] = tempfile.mkdtemp(prefix="tessellate-sim-")
+    config._tessellate_sim_cache = os.environ["TESSELLATE_SIM_CACHE"]
+
+
+def pytest_unconfigure(config):
+    folder = getattr(config, "_tessellate_sim_cache", None)
+    if folder:
+        shutil.rmtree(folder, ignore_errors=True)
+        os.environ.pop("TESSELLATE_SIM_CACHE", None)
+
+
 # --- one copy of each source file, however many test modules read it ----------
 #
 # About 145 test modules read a frontend file into a module-level constant
