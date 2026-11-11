@@ -4,6 +4,11 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Refactor (K24): `ai/recognise.py` (4,027 to 2,794 lines): the date vocabulary and the span, find and window block moved whole to `recognise_windows.py`; same names, same results.
+- Refactor (K24): `__main__.py` (3,044 to 2,691 lines): the loading page and its phase table moved whole to `launcher_loading.py`; same page, same percentages.
+- Refactor (K24): `entry/manager.py` (3,610 to 2,696 lines): private-note sealing moved whole to `manager_private.py` and the bin, purge and attachment functions to `manager_purge.py`; callers import them from there.
+- Refactor (K24): `core/database.py` (3,345 to 2,986 lines): the startup index work (FTS5, index tables, readings view) moved whole to `database_indexes.py` as a mixin `DatabaseManager` inherits; same SQL, same order.
+- Refactor (K24): `api/routes_entries.py` (3,627 to 2,935 lines): the reference-row scan moved to `routes_entries_refs.py`, the references, then-and-now and history routes to `routes_entries_history.py`, re-evaluate to `routes_entries_reevaluate.py`; same paths.
 - Refactor (K24): `core/overlay/engine.py` (4,845 to 2,910 lines) split into `engine_consts.py` and the `FramesMixin`, `InputMixin`, `FlightMixin` and `RoamMixin` modules as pure moves; the seeded engine hash is unchanged.
 - Refactor (K24): `ai/composer_digest.py` (6,230 to 2,329 lines) split into `composer_digest_sentences.py` and `composer_digest_lines.py` as pure moves; callers import from the new modules.
 - Documents: the code editor file no longer runs before `documents.js` when the idle warm-up loads the library one file at a time (it threw `docToolPref is not defined` and `docCmView is not defined`); a sweep drives 13 ways of opening a board after the library split.

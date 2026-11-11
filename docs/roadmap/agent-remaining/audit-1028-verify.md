@@ -1,4 +1,4 @@
-Counts, re-checked 2026-11-11 at head 5fbaedf23, updated after the decision agents: fixed 23, stale 45 (pointer in the row, details in v1028-1.md to v1028-4.md), open 2 (each names its blocker), unsure 72. Source: audit-1028-ranked.md rows with planned at new (144 rows), first checked 2026-11-02.
+Counts, re-checked 2026-11-11 at head 5fbaedf23, updated after the decision agents: fixed 24, stale 45 (pointer in the row, details in v1028-1.md to v1028-4.md), open 1 (each names its blocker), unsure 72. Source: audit-1028-ranked.md rows with planned at new (144 rows), first checked 2026-11-02.
 
 | id | verdict | evidence | size |
 |---|---|---|---|
@@ -56,7 +56,7 @@ Counts, re-checked 2026-11-11 at head 5fbaedf23, updated after the decision agen
 | D22 | fixed 6c3a88f4e | library/boards bundle split; first document open 47 to 37 scripts, 10 to 0 board files (dec-1111-d2.md) | L |
 | B15 | stale 2026-11-11 | closed, won't do: d3 v7 drag has no pointer-event option; the one-line bridge is pinned by tests/test_wb_edge_pan.py, reopen only if d3 is replaced (dec-1111-w1.md) | L |
 | D23 | partial 483b6a6 | docCmTheme is documents-cm-theme.js; docLivePlugin (1,720 lines) still one function, line in DOCUMENTS_PLAN. | L |
-| K24 | open | routes_entries split (f4260477c, 3,777 to 3,628); still over 3,000: routes_entries 3,628, recognise 3,999, manager ~3,500, database 3,329, __main__ ~3,013; a rolling refactor, one block per pass (dec-1111-r1.md) | L |
+| K24 | fixed (f4260477c, K24 commits through 84484fdcd and the k1 engine and digest moves) | all nine Python files over 3,000 lines are now under (dec-1111-r1.md, k1, k2, k3); database.py has only a 14-line margin | L |
 | K25 | fixed 80c423568..0708b2ccc | ten functions split as pure moves (dec-1111-r1.md) | L |
 | E44 | fixed 6a4162e62..4484ee30d | chatSendTurn 1,193 to 29 lines, stages on `chatSendTurn.stage` (dec-1111-r1.md) | L |
 | E45 | stale 2026-11-11 | closed, no code change: the four stream shapes differ and a shared reader needs a new global at the 9,044 cap (dec-1111-r1.md) | L |
