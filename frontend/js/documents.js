@@ -9271,7 +9271,15 @@ document.addEventListener("focusin", (event) => {
   const host = event.target;
   const options = host instanceof HTMLTextAreaElement && NOTE_SURFACES[host.id];
   if (!options || noteSurfaceViews.has(host)) return;
-  mountNoteSurface(host, options).then(s => !activeOverlay() && s?.focus());
+  mountNoteSurface(host, options).then((s) => {
+    //: Only while this box is still the focused one. A mount that already had
+    //: the caret keeps it itself (`hadFocus`), so this is for the fallback box;
+    //: and a person who left the box while the bundle loaded must not be pulled
+    //: back into it (Save, a blur, then Ctrl+Shift+Z met the editor and Redo
+    //: never ran: e2e capture-filing under load, 400 ms after the blur).
+    if (document.activeElement !== host) return;
+    return !activeOverlay() && s?.focus();
+  });
 });
 // NOTE-SURFACE-END
 
