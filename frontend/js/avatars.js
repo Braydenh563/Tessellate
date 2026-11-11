@@ -3997,6 +3997,14 @@ function nameMarkBuddyControlBoxes(tab) {
   nmb.covers = { tab, boxes, at: performance.now() };
   return boxes;
 }
+//: **Read while it is carried, not at the release** (lag-1109: the release read was the first read after the drag,
+//: 49 to 119 ms at 4x). Once the frame that drew the pick-up is done the page is clean and the 142 boxes are cheap;
+//: the release then finds them kept (`nmb.covers`) and only the figure's own box is read.
+nmb.warmCovers = () => {
+  afterFrames(() => setTimeout(() => {
+    if (document.getElementById("nm-buddy")?.classList.contains("nm-buddy-dragging")) nameMarkBuddyControlBoxes(nameMarkBuddyTab());
+  }), 1);
+};
 function nameMarkBuddyControlsIn(root, boxes) {
   if (!root) return;
   const found = root.matches(NAME_MARK_BUDDY_NEVER_COVER) ? [root] : [];
@@ -10860,6 +10868,8 @@ function nameMarkBuddyBuild() {
       nmb.mood.energy = Math.min(1, nmb.mood.energy + 0.15);
       nmb.mood.sociability = Math.max(0, nmb.mood.sociability - 0.05);
       buddy.classList.add("nm-buddy-dragging");
+      drag.pickedAt = performance.now();
+      nmb.warmCovers();
     }
     //: Shaken up and down while carried, it turns over (`nameMarkBuddyFlip`).
     (drag.shake ||= []).push([event.clientX, event.clientY, t]);
@@ -10888,7 +10898,12 @@ function nameMarkBuddyBuild() {
       //: Reads first, then writes: one restyle of the rig, not three (Atlas at 4x).
       const v = nameMarkBuddyReleaseVelocity(drag.samples || [], event?.timeStamp ?? performance.now());
       const thrown = !!v && Math.hypot(v[0], v[1]) > NMB_TOSS_SPEED && typeof nameMarkBuddyThrow === "function";
-      if (thrown) nameMarkBuddyIndexReset();
+      if (thrown) {
+        //: The tab's control boxes read since the pick-up (`nmb.warmCovers`) are kept: the observers drop them on any change.
+        const kept = nmb.covers?.at >= drag.pickedAt ? nmb.covers : null;
+        nameMarkBuddyIndexReset();
+        nmb.covers = kept;
+      }
       const world = thrown && nameMarkBuddyWorld(nameMarkBuddyTab());
       //: The whole flight and where it comes down, before any write (companion-throw.js).
       const plan = thrown && companionThrowPlan(Math.round(box.left), Math.round(box.top), v[0], v[1], world);
