@@ -658,9 +658,8 @@ def _make_entry(session, record: dict, said: list[str]):  # noqa: ANN001, ANN202
     if record.get("sealed"):
         entry.is_private = True
     elif record.get("is_private") and vault.key() is not None:
+        #: Locked, a readable private note never gets here: `import_app` refuses first (sm-1111 row 8).
         manager.set_private(session, entry, True)
-    elif record.get("is_private"):
-        said.append(f"{record.get('id')}: a private note came in unlocked; open the vault and mark it private again")
     if entry.created_at is not None:
         manager.record_dates(session, entry)
     return entry
