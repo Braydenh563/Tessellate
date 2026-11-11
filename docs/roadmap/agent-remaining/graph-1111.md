@@ -35,3 +35,8 @@ Hub follow-up (2026-11-11, tried and not kept):
 - Palette keystroke, 2,000-note fixture, 51 keystrokes over 7 queries (probe in scratch only): 1x JS p50 6, p90 8, max 17 ms, frame p90 25; 4x JS p50 27, p90 41, max 49 ms, frame (input to next paint) p50 69, p90 98, max 133 ms. Under the 150 ms target, so no code change (the memo, the ranking window and the setting rows from W25 D6 and D10 already did it).
 - Tab open at 4x: see W13 (native style and layout). Settings open stays a design pass (s7-1110.md D8: one 267 KB template).
 - Found, not fixed: a page error on a cold load, `docCmSyncLanguage is not defined` (documents.js:1090 calls it at load, defined in documents-view.js:715); documents files are out of this spoke's scope.
+
+## W14, W15, W31 check (graph-1111)
+- W14: every row is fixed or not reproduced in OPEN.md (Q10 is built: "Still when idle" in Appearance, tests/test_companion_rest_w14.py), so no overlap with the settings spoke and nothing left to build; B56, B58 stay "not reproduced".
+- W15: B64 fall measured on the simulation (see its OPEN row); B63 needs the owner's log, B65 left rows are pose-keyed frames (W31) or a real desktop; B66 scan needs one more Windows log. Nothing else runnable here.
+- W31: not started. E1 to E6 are frame and design work (Opus design for the masculine side, new desk frames) and the row says not beside W15 or W24 (overlay tests); left for a session that owns the overlay.
