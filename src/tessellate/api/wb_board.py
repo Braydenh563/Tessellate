@@ -128,8 +128,12 @@ def get_whiteboard_state(
     if dropped:
         db.commit()
         sketches = [row for row in sketches if row.id not in dropped]
+    #: A card whose note is in the bin is not drawn (it opened a note nobody could see); Restore
+    #: brings it back, so the row and its links stay (the orphan pass above sees every card) and
+    #: only the read leaves it out (INBOX 1747, row 10).
+    binned = set(db.scalars(select(Entry.id).where(Entry.id.in_([n.entry_id for n in nodes]), Entry.is_deleted.is_(True))))
     return WhiteboardStateOut(
-        nodes=list(nodes),
+        nodes=[n for n in nodes if n.entry_id not in binned],
         sketches=list(sketches),
         objects=[_object_to_out(o) for o in objects],
         background=_board_background(db.get(Entry, board_id)) if board_id else {},

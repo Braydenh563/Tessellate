@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8119, frontend ids 2696, CSS sections 523, backend routes 670, backend modules 10122, test files 2477, tests 20449, plan headings 1003, app scripts 28, boot scripts 37, script files 277.
+Counts: frontend functions 8119, frontend ids 2696, CSS sections 523, backend routes 670, backend modules 10122, test files 2477, tests 20451, plan headings 1003, app scripts 28, boot scripts 37, script files 277.
 
 ## Frontend functions (8119)
 
@@ -42,44 +42,44 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `apiPagedList` | frontend/js/app.js:517 |
 | `askPasswordPrompt` | frontend/js/app.js:678 |
 | `authToken` | frontend/js/app.js:168 |
-| `chip` | frontend/js/app.js:1186 |
-| `chipWords` | frontend/js/app.js:1181 |
+| `chip` | frontend/js/app.js:1194 |
+| `chipWords` | frontend/js/app.js:1189 |
 | `clearApiCache` | frontend/js/app.js:557 |
-| `confirmDialog` | frontend/js/app.js:1269 |
-| `confirmVerb` | frontend/js/app.js:1260 |
-| `ensureModule` | frontend/js/app.js:1732 |
+| `confirmDialog` | frontend/js/app.js:1277 |
+| `confirmVerb` | frontend/js/app.js:1268 |
+| `ensureModule` | frontend/js/app.js:1740 |
 | `enterWithoutPassword` | frontend/js/app.js:636 |
 | `hide` | frontend/js/app.js:164 |
-| `hideBootSplash` | frontend/js/app.js:836 |
-| `initAuth` | frontend/js/app.js:849 |
-| `installStandIns` | frontend/js/app.js:1902 |
-| `lazyAssetStamp` | frontend/js/app.js:1689 |
-| `lazyScript` | frontend/js/app.js:1711 |
+| `hideBootSplash` | frontend/js/app.js:844 |
+| `initAuth` | frontend/js/app.js:857 |
+| `installStandIns` | frontend/js/app.js:1910 |
+| `lazyAssetStamp` | frontend/js/app.js:1697 |
+| `lazyScript` | frontend/js/app.js:1719 |
 | `lockFieldForPin` | frontend/js/app.js:752 |
-| `lockNow` | frontend/js/app.js:808 |
+| `lockNow` | frontend/js/app.js:816 |
 | `mediaSrc` | frontend/js/app.js:235 |
-| `mountNoteSurfaceNow` | frontend/js/app.js:1756 |
-| `promptDialog` | frontend/js/app.js:1367 |
+| `mountNoteSurfaceNow` | frontend/js/app.js:1764 |
+| `promptDialog` | frontend/js/app.js:1375 |
 | `purgeLockedContent` | frontend/js/app.js:795 |
 | `recordBrowserLog` | frontend/js/app.js:23 |
-| `refreshActiveTab` | frontend/js/app.js:1064 |
+| `refreshActiveTab` | frontend/js/app.js:1072 |
 | `refuseStagedUrls` | frontend/js/app.js:228 |
 | `replaceMissingMedia` | frontend/js/app.js:283 |
 | `resumeWithoutPassword` | frontend/js/app.js:646 |
-| `setBusy` | frontend/js/app.js:1223 |
-| `setLabel` | frontend/js/app.js:1131 |
-| `settingsModalOpen` | frontend/js/app.js:1175 |
+| `setBusy` | frontend/js/app.js:1231 |
+| `setLabel` | frontend/js/app.js:1139 |
+| `settingsModalOpen` | frontend/js/app.js:1183 |
 | `settleLockPrompt` | frontend/js/app.js:657 |
 | `show` | frontend/js/app.js:163 |
 | `showLockScreen` | frontend/js/app.js:700 |
-| `smallButton` | frontend/js/app.js:1493 |
-| `spinnerEl` | frontend/js/app.js:1215 |
-| `stagePrimary` | frontend/js/app.js:1209 |
+| `smallButton` | frontend/js/app.js:1501 |
+| `spinnerEl` | frontend/js/app.js:1223 |
+| `stagePrimary` | frontend/js/app.js:1217 |
 | `stagedImageByUrl` | frontend/js/app.js:196 |
-| `startApp` | frontend/js/app.js:898 |
+| `startApp` | frontend/js/app.js:906 |
 | `startWithoutPassword` | frontend/js/app.js:621 |
-| `whenScriptsLoaded` | frontend/js/app.js:1670 |
-| `wireBackdropClose` | frontend/js/app.js:1481 |
+| `whenScriptsLoaded` | frontend/js/app.js:1678 |
+| `wireBackdropClose` | frontend/js/app.js:1489 |
 
 ### frontend/js/prefs.js (6)
 
@@ -22506,36 +22506,36 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `BoardBackground` | src/tessellate/api/wb_board.py:571 |
-| `BoardCreate` | src/tessellate/api/wb_board.py:776 |
-| `BoardLayer` | src/tessellate/api/wb_board.py:439 |
-| `BoardOut` | src/tessellate/api/wb_board.py:678 |
-| `BoardTypeMixin` | src/tessellate/api/wb_board.py:750 |
-| `_board_background` | src/tessellate/api/wb_board.py:618 |
-| `_board_entry` | src/tessellate/api/wb_board.py:780 |
+| `BoardBackground` | src/tessellate/api/wb_board.py:575 |
+| `BoardCreate` | src/tessellate/api/wb_board.py:780 |
+| `BoardLayer` | src/tessellate/api/wb_board.py:443 |
+| `BoardOut` | src/tessellate/api/wb_board.py:682 |
+| `BoardTypeMixin` | src/tessellate/api/wb_board.py:754 |
+| `_board_background` | src/tessellate/api/wb_board.py:622 |
+| `_board_entry` | src/tessellate/api/wb_board.py:784 |
 | `_board_filter` | src/tessellate/api/wb_board.py:27 |
-| `_board_layers` | src/tessellate/api/wb_board.py:460 |
-| `_board_numbered` | src/tessellate/api/wb_board.py:396 |
-| `_board_settings` | src/tessellate/api/wb_board.py:190 |
-| `_board_theme` | src/tessellate/api/wb_board.py:319 |
-| `_clean_defaults` | src/tessellate/api/wb_board.py:547 |
-| `_clean_levels` | src/tessellate/api/wb_board.py:285 |
-| `_clean_theme` | src/tessellate/api/wb_board.py:243 |
-| `_default_value` | src/tessellate/api/wb_board.py:534 |
-| `_drop_orphan_links` | src/tessellate/api/wb_board.py:140 |
+| `_board_layers` | src/tessellate/api/wb_board.py:464 |
+| `_board_numbered` | src/tessellate/api/wb_board.py:400 |
+| `_board_settings` | src/tessellate/api/wb_board.py:194 |
+| `_board_theme` | src/tessellate/api/wb_board.py:323 |
+| `_clean_defaults` | src/tessellate/api/wb_board.py:551 |
+| `_clean_levels` | src/tessellate/api/wb_board.py:289 |
+| `_clean_theme` | src/tessellate/api/wb_board.py:247 |
+| `_default_value` | src/tessellate/api/wb_board.py:538 |
+| `_drop_orphan_links` | src/tessellate/api/wb_board.py:144 |
 | `_forget_links_to` | src/tessellate/api/wb_board.py:37 |
-| `_is_link_sketch` | src/tessellate/api/wb_board.py:668 |
-| `_on_current_layer` | src/tessellate/api/wb_board.py:515 |
+| `_is_link_sketch` | src/tessellate/api/wb_board.py:672 |
+| `_on_current_layer` | src/tessellate/api/wb_board.py:519 |
 | `_require_board` | src/tessellate/api/wb_board.py:89 |
 | `_require_entry` | src/tessellate/api/wb_board.py:82 |
-| `_store_board_background` | src/tessellate/api/wb_board.py:644 |
-| `_store_board_layers` | src/tessellate/api/wb_board.py:478 |
-| `_store_board_numbered` | src/tessellate/api/wb_board.py:414 |
-| `_store_board_settings` | src/tessellate/api/wb_board.py:217 |
-| `_store_board_theme` | src/tessellate/api/wb_board.py:332 |
-| `_themed_style` | src/tessellate/api/wb_board.py:366 |
-| `_without_pins` | src/tessellate/api/wb_board.py:384 |
-| `current_layer` | src/tessellate/api/wb_board.py:503 |
+| `_store_board_background` | src/tessellate/api/wb_board.py:648 |
+| `_store_board_layers` | src/tessellate/api/wb_board.py:482 |
+| `_store_board_numbered` | src/tessellate/api/wb_board.py:418 |
+| `_store_board_settings` | src/tessellate/api/wb_board.py:221 |
+| `_store_board_theme` | src/tessellate/api/wb_board.py:336 |
+| `_themed_style` | src/tessellate/api/wb_board.py:370 |
+| `_without_pins` | src/tessellate/api/wb_board.py:388 |
+| `current_layer` | src/tessellate/api/wb_board.py:507 |
 | `get_whiteboard_state` | src/tessellate/api/wb_board.py:115 |
 
 ### src/tessellate/api/wb_boards.py (8)
@@ -25821,11 +25821,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `get_any` | src/tessellate/repo/reminders.py:38 |
 | `import_event` | src/tessellate/repo/reminders.py:152 |
 | `matching` | src/tessellate/repo/reminders.py:101 |
-| `move_to_bin` | src/tessellate/repo/reminders.py:199 |
+| `move_to_bin` | src/tessellate/repo/reminders.py:203 |
 | `on_note` | src/tessellate/repo/reminders.py:97 |
 | `page` | src/tessellate/repo/reminders.py:49 |
-| `purge` | src/tessellate/repo/reminders.py:213 |
-| `restore` | src/tessellate/repo/reminders.py:206 |
+| `purge` | src/tessellate/repo/reminders.py:217 |
+| `restore` | src/tessellate/repo/reminders.py:210 |
 | `snooze` | src/tessellate/repo/reminders.py:193 |
 | `twin` | src/tessellate/repo/reminders.py:130 |
 
@@ -26299,7 +26299,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20449)
+## Tests (20451)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28396,7 +28396,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_starter_acts.py | 7 |
 | tests/test_starter_acts_tabs.py | 2 |
 | tests/test_startup_maintenance_off_path.py | 1 |
-| tests/test_state_machines_1747.py | 6 |
+| tests/test_state_machines_1747.py | 8 |
 | tests/test_static_compression.py | 6 |
 | tests/test_static_freshness.py | 5 |
 | tests/test_static_precompressed.py | 7 |

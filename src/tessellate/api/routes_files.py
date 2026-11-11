@@ -2152,7 +2152,7 @@ def get_media(filename: str, session: Session = Depends(get_session)) -> FileRes
         raise HTTPException(status_code=404, detail="That media file could not be found.")
     # SEC-A2: a picture only a locked private note uses is part of that note.
     if media_gc.sealed_only(session, name):
-        raise HTTPException(status_code=403, detail="Unlock first.")
+        raise HTTPException(status_code=409, detail="Unlock first.")
     # `nosniff` is already set globally, but the header below is the one that
     # decides whether a PDF opens in the page or downloads, and an inline PDF
     # viewer is a script host. Nothing here needs to render in-place: markdown

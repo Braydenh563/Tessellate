@@ -801,6 +801,14 @@ function purgeLockedContent() {
   for (const el of document.querySelectorAll("[data-holds-notebook]")) {
     el.matches("input, textarea") ? (el.value = "") : el.replaceChildren();
   }
+  //: The open conversation's turns live in memory too (INBOX 1747, row 19): a stream still
+  //: running is stopped (it filled detached nodes) and the chat starts fresh; a saved one is in the history list.
+  try {
+    chatController?.abort();
+    chatConv = { id: null, turns: [] };
+  } catch {
+    /* chat.js not loaded yet (a lock at boot): nothing in memory to drop */
+  }
   // `.value` survives `replaceChildren`, so the editor's text needs its own clear.
   for (const id of ["doc-content", "doc-title"]) if ($(id)) $(id).value = "";
 }

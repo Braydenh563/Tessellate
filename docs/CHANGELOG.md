@@ -11852,3 +11852,5 @@ condensed record of what each one delivered.
   at full strength.
 - The Guide's thinking is a labelled block that folds away when the answer
   starts, rather than a line and a half of clipped grey text.
+- Media and lock (INBOX 1747, OPEN Q18): a sealed attachment read while the vault is locked now answers 409 "Unlock first." instead of 403, the same as every other locked read.
+- Reminders, boards and chat (INBOX 1747 rows 5, 10, 19): a notification's Snooze no longer reopens a reminder you already ticked off, a whiteboard no longer draws a card for a note in the bin (its links stay), and locking stops a running answer and forgets the open conversation's turns.

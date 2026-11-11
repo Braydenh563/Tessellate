@@ -86,7 +86,7 @@ Parked until the owner's data or a check on real hardware:
 - ~~A13 With the vault open, a private note is never searchable | 1031-notes N3~~ stale: /search and /entries/query never return a private note, open or locked (tests/test_vault_w3_1110.py)
 - ~~A14 Lock screen: focus not on the field, no dialog semantics, no throttle hint, focus dropped after errors | 1028-shell S4, S25, 1029-extras X23~~ stale: Playwright 2026-11-10 shows focus on #lock-password, role dialog, aria-modal, aria-describedby, aria-invalid, focus kept after 5 wrong tries, 429 countdown on the button
 - ~~A15 Sign-in off never driven (persistent profile, second LAN device, restored preferences) | t20#17~~ driven w3-1110: persistent, relaunched and fresh browsers open with no prompt, vault stays locked; second LAN device and a real restore not driven (no second host); backups exclude the switch
-- A16 `/media` 403 and 409 unified (after Q18) | sec L14
+- ~~A16 `/media` 403 and 409 unified (after Q18)~~ (built sm-1111: 409 "Unlock first.", tests/test_vault_attachments.py) | sec L14
 
 **W4 Documents that lose words** (A, documents, Sonnet; verify first). Files: `frontend/js/documents.js` save and lock paths. Checks: `tests/test_doc*`, a slow-PUT Playwright run. Done when: no typing during a save is lost, an offline first save says "Not saved" and keeps a draft, locking clears every word from the page.
 - ~~A17 Autosave has no in-flight guard; a slow PUT plus typing sends a stale hash~~ (stale: built, tests/test_doc_save_serial.py) | 1028-docs D1

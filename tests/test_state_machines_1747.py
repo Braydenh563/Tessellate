@@ -121,3 +121,37 @@ def test_lock_seals_the_typed_fields_before_it_locks_and_every_listed_id_exists(
     assert panels.count('.dataset.holdsNotebook = ""') == 2
     assert '"dash-glance"' in app and '"dash-more"' in app
     assert 'prefs.remove(EDIT_DRAFT)' in unlock
+    # Row 19: the lock stops a running stream and drops the open conversation's turns from memory.
+    purge = app[app.index("function purgeLockedContent()"):app.index("async function lockNow()")]
+    assert "chatController?.abort()" in purge and "chatConv = { id: null, turns: [] }" in purge
+
+
+def test_a_notification_snooze_does_not_reopen_a_done_reminder(client):
+    """Reminder: snooze of a done one. A notification left on screen after the reminder was ticked
+    off set it open again on its Snooze press; it answers ok and changes nothing."""
+    made = client.post("/reminders", json={"text": "Call Sam", "due_at": "2030-01-25T12:30:00Z"}).json()
+    minted = client.post(f"/reminders/{made['id']}/notification-token").json()
+    ticked = client.put(f"/reminders/{made['id']}", json={"done": True})
+    assert ticked.json()["done"] is True
+    body = {"token": minted["token"], "action": "snooze"}
+    snoozed = client.post(f"/reminders/{made['id']}/notification-act", json=body)
+    assert snoozed.status_code == 200
+    listed = {r["id"]: r for r in client.get("/reminders").json()}
+    assert listed[made["id"]]["done"] is True
+    assert listed[made["id"]]["due_at"][:19] == "2030-01-25T12:30:00"
+
+
+def test_a_board_does_not_draw_a_card_for_a_binned_note(client):
+    """Whiteboard and its linked notes: a card whose note went to the bin stayed on the board and
+    opened a note nobody could see. It is hidden while binned and comes back with Restore."""
+    kept = client.post("/entries", json={"content": "alpha body"}).json()["id"]
+    gone = client.post("/entries", json={"content": "beta body"}).json()["id"]
+    for note in (kept, gone):
+        placed = client.post("/whiteboard/nodes", json={"entry_id": note, "x": 10, "y": 10})
+        assert placed.status_code == 200, placed.text
+    client.delete(f"/entries/{gone}")
+    shown = [n["entry_id"] for n in client.get("/whiteboard/").json()["nodes"]]
+    assert shown == [kept]
+    client.post(f"/entries/{gone}/restore")
+    again = sorted(n["entry_id"] for n in client.get("/whiteboard/").json()["nodes"])
+    assert again == sorted([kept, gone])
