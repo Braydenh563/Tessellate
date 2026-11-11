@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2705, CSS sections 523, backend routes 671, backend modules 10182, test files 2494, tests 20551, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2705, CSS sections 523, backend routes 671, backend modules 10184, test files 2494, tests 20551, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -13526,7 +13526,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10182)
+## Backend modules (10184)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -25282,7 +25282,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_version` | src/tessellate/entry/link_offers.py:107 |
 | `offers` | src/tessellate/entry/link_offers.py:194 |
 
-### src/tessellate/entry/link_wording.py (15)
+### src/tessellate/entry/link_wording.py (17)
 
 | Name | File:line |
 |---|---|
@@ -25290,14 +25290,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `PairNote` | src/tessellate/entry/link_wording.py:106 |
 | `_and` | src/tessellate/entry/link_wording.py:246 |
 | `_at_start` | src/tessellate/entry/link_wording.py:133 |
-| `_close_in_time` | src/tessellate/entry/link_wording.py:287 |
+| `_close_in_time` | src/tessellate/entry/link_wording.py:292 |
+| `_clues` | src/tessellate/entry/link_wording.py:307 |
 | `_mentions` | src/tessellate/entry/link_wording.py:220 |
+| `_name_candidates` | src/tessellate/entry/link_wording.py:250 |
 | `_names` | src/tessellate/entry/link_wording.py:142 |
-| `_shared_names` | src/tessellate/entry/link_wording.py:250 |
+| `_shared_names` | src/tessellate/entry/link_wording.py:263 |
 | `_shared_tags` | src/tessellate/entry/link_wording.py:236 |
-| `_shared_words` | src/tessellate/entry/link_wording.py:274 |
+| `_shared_words` | src/tessellate/entry/link_wording.py:279 |
 | `is_generic` | src/tessellate/entry/link_wording.py:198 |
-| `specific_reason` | src/tessellate/entry/link_wording.py:302 |
+| `specific_reason` | src/tessellate/entry/link_wording.py:332 |
 | `strength_word` | src/tessellate/entry/link_wording.py:191 |
 | `title` | src/tessellate/entry/link_wording.py:211 |
 | `tokens` | src/tessellate/entry/link_wording.py:118 |
