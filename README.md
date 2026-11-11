@@ -437,6 +437,8 @@ later; until then search uses keywords. To avoid the download, pull
 | Translate offline (Bergamot, English to Spanish) | Translate this, in the command palette, with no model; a pinned 27 MB download that works offline |
 | Live captions, engine (whisper.cpp) | Words appear as you speak into the microphone, on this computer; the Live captions bundle installs it with its model in one click |
 | Live captions, model (tiny.en) | The small English speech model the engine reads; a pinned 32 MB download kept in the data folder; works offline |
+| Natural voice, engine (Piper) | Reads notes and a spoken overview aloud in a natural voice, on this computer; the Natural voice bundle installs it with its voice in one click |
+| Natural voice, voice (LJ Speech) | The public-domain US English voice the engine speaks with; a pinned 64 MB download kept in the data folder; works offline |
 
 ## Privacy
 

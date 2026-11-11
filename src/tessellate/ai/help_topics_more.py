@@ -1498,6 +1498,44 @@ MORE_TOPICS: list[dict] = [
         "badge": {"label": "Notes", "tab": "notes"},
     },
     {
+        "id": "audio-overview",
+        "keywords": (
+            "audio overview", "natural voice", "read my notes aloud", "podcast", "brief before a meeting", "meeting brief",
+            "make an audio overview", "piper", "read aloud voice", "listen to my notes",
+        ),
+        "body": (
+            "Make an audio overview in the command palette (Ctrl+K) reads your notes aloud and saves the reading as a "
+            "recording in Library, Recordings, marked overview, with its lines timed like a transcript. Say what it is "
+            "about (notes holding those words; empty means the newest notes) and how long (about 1, 3 or 5 minutes); "
+            "tick A brief before a meeting for a short run-down of those notes instead. Nothing is added to your words: "
+            "it is your own sentences under a fixed frame (First, Next, Last), with no AI model, and private and binned "
+            "notes are never read. Stop ends it and keeps nothing. It needs the Natural voice package (Settings, "
+            "Packages: an engine and a 64 MB voice, fetched once, then everything runs on this computer). With it "
+            "installed, Settings, General, Read aloud, Voice can switch an answer's Read aloud from this browser's "
+            "voices to the natural one; the speaking speed applies to the browser's voices only."
+        ),
+        "badge": {"label": "Notes", "tab": "notes"},
+    },
+    {
+        "id": "folder-sync",
+        "keywords": (
+            "sync", "sync between computers", "sync folder", "two computers", "usb stick", "syncthing", "no server",
+            "merge notes", "another computer", "sync conflict", "edited on both",
+        ),
+        "body": (
+            "Sync between computers in the command palette (Ctrl+K) shares your notes through a folder you choose, with no "
+            "server: a USB stick, a Syncthing folder or a cloud drive's folder on each computer. Type the folder and a sync "
+            "passphrase (at least 8 characters, the same on every computer; it is never saved) and press Sync now. Each "
+            "computer writes only its own file there, encrypted, and reads the others'; press it on each computer to "
+            "bring them level. Private notes never go into the folder. A note edited on both computers keeps the later "
+            "edit and the other words stay in the note's History, so nothing is lost; a note deleted on one is deleted on "
+            "the other unless the other changed it later. Links, reminders, attachments and boards do not travel, only the "
+            "notes' words, tags, category, colour and pin. A file that cannot be opened (a different passphrase) is counted "
+            "and left alone."
+        ),
+        "badge": {"label": "Notes", "tab": "notes"},
+    },
+    {
         "id": "count-words",
         "keywords": (
             "word count", "count words", "character count", "how many words", "reading time",
@@ -1690,6 +1728,8 @@ TOPIC_META: dict[str, dict] = {
     "manual": {"title": "The manual", "path": "Settings, Help, Open the manual"},
     "first-steps": {"title": "First steps and the sample notebook", "path": "Dashboard, First steps"},
     "live-captions": {"title": "How do I get live captions", "path": "Library, Recordings, Captions"},
+    "audio-overview": {"title": "Make an audio overview of my notes", "path": "Command palette, Make an audio overview"},
+    "folder-sync": {"title": "Sync my notes between computers", "path": "Command palette, Sync between computers"},
     "count-words": {"title": "Count words", "path": "Command palette, Count words"},
     "translate-offline": {"title": "Translate this, offline", "path": "Command palette, Translate this"},
     "insert-template": {"title": "Insert a template", "path": "Command palette, insert template"},
@@ -1887,7 +1927,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     ("Writing notes", (
         "capture", "quick-note", "quick-add", "editor-offers", "autocorrect", "share-note", "capture-anywhere", "note-outbox", "attachments", "quick-sketch", "notes-controls",
         "notes-list", "card-content", "note-history", "links", "favourites", "templates",
-        "write-with-atlas", "translate", "translate-offline", "extract-notes", "voice", "live-captions", "meetings",
+        "write-with-atlas", "translate", "translate-offline", "extract-notes", "voice", "live-captions", "audio-overview", "folder-sync", "meetings",
     )),
     ("Filing, tags and categories", (
         "tags-categories", "filing", "filing-settings", "suggested-tags", "tag-manager", "manage-categories", "tidy",
