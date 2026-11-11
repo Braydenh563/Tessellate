@@ -87,6 +87,7 @@ EXEMPT = {
     "askHistoryTotal": "reset with the Ask history list (loadAskHistoryBadge reads it again)",
     "askBadgeTotal": "read again by loadAskHistoryBadge in the swap",
     "manageCategoriesRedraw": "a redraw callback, not data",
+    "wbMapNoteState": "the map's open note panel (UI, not data): closed on the next redraw when its object is gone (wbMapCloseNote)",
     "extractProposal": "the extract preview, closed with its dialog",
     "attachedWebPage": "a page the person fetched, not a space's row",
     "webEngineInfo": "the web search engine, per notebook",
