@@ -396,7 +396,9 @@ def test_the_pack_findings_join_the_prose_pass_for_a_non_english_document_only()
 def test_the_panel_note_offers_the_install_through_the_shared_notice() -> None:
     assert "Spelling and grammar are off for this document" in DOCUMENTS
     assert DOCUMENTS.count("docSpell.langRow(docText())") == 2, "both the empty and the listed panel"
-    assert "extraNoticeMount(slot, `spell-${lang}`, { fresh: true })" in SPELL
+    # Not `fresh`: the row is rebuilt on every panel redraw, so a fresh read was a GET /extras per redraw.
+    assert "extraNoticeMount(slot, `spell-${lang}`)" in SPELL
+    assert "`spell-${lang}`, { fresh: true }" not in SPELL
     for lang in ("fr", "de", "es"):
         assert f'"spell-{lang}":' in NOTICE
     assert "tessellate:extras-changed" in NOTICE and "tessellate:extras-changed" in SPELL

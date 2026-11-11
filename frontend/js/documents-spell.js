@@ -235,7 +235,9 @@
     if (packState(lang) === "missing") {
       const slot = document.createElement("div");
       row.appendChild(slot);
-      extraNoticeMount(slot, `spell-${lang}`, { fresh: true });
+      //: Not `fresh`: this row is rebuilt on every panel redraw (every 400 ms while typing), and the
+      //: pack list above already re-probes; the notice's shared 3 s cache answers before paint.
+      extraNoticeMount(slot, `spell-${lang}`);
     }
     return row;
   }
