@@ -198,6 +198,7 @@ def test_the_guide_names_the_right_click_and_ctrl_c():
 
     body = next(t["body"] for t in help_chat.HELP_TOPICS if t["id"] == "image-viewer")
     assert "Copy image" in body and "Ctrl+C" in body
+    assert "in a note" in body
 
 
 def test_the_viewers_foot_clears_the_status_bar_and_the_details_card():
@@ -210,3 +211,43 @@ def test_the_viewers_foot_clears_the_status_bar_and_the_details_card():
         block = css[css.index(rule):]
         assert "var(--status-bar-h)" in block[: block.index("}")]
     assert "8.5rem" in css and "6.5rem" not in css[css.index(".lightbox.lightbox-framed .lightbox-stage > img"):][:600]
+
+
+ROW_HARNESS = r"""
+const vm = require("vm");
+const fs = require("fs");
+const src = fs.readFileSync(process.argv[1], "utf8");
+const start = src.indexOf("function rowMenuAtEvent");
+const end = src.indexOf("//: At the pointer when the menu's items are known");
+class FakeElement {}
+const opener = {};
+const host = { querySelectorAll: () => [opener] };
+opener.closest = () => host;
+//: A target `inside` some of: the row, an img, an att-card.
+const make = (inside) => {
+  const el = new FakeElement();
+  el.closest = (sel) => {
+    if (sel === "#entry-list img") return inside.includes("img") ? el : null;
+    if (sel === ".att-card") return inside.includes("att-card") ? el : null;
+    if (sel.startsWith("input")) return null;
+    return inside.includes("row") ? host : null;
+  };
+  return el;
+};
+const ctx = { Element: FakeElement, window: { getSelection: () => "" }, ROW_MENU_HOSTS: ".row" };
+vm.createContext(ctx);
+vm.runInContext(src.slice(start, end) + "\nthis.rowMenuAtEvent = rowMenuAtEvent;", ctx);
+const out = {};
+for (const name of ["row", "row img", "row img att-card"]) out[name] = !!ctx.rowMenuAtEvent({ target: make(name) });
+console.log(JSON.stringify(out));
+"""
+
+
+@needs_node
+def test_a_picture_in_a_note_card_is_not_claimed_by_the_notes_row_menu():
+    out = subprocess.run(
+        ["node", "-e", ROW_HARNESS, str(JS / "navigation.js")], capture_output=True, text=True, timeout=30, check=True
+    )
+    claimed = json.loads(out.stdout)
+    #: The row keeps its right-click; a bare picture inside it goes to the picture menu (Copy image); a file card keeps its own.
+    assert claimed == {"row": True, "row img": False, "row img att-card": True}

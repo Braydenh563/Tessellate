@@ -714,6 +714,20 @@ def test_the_answer_offers_and_the_pool_count_line_are_in_the_guide() -> None:
         assert phrase in body, phrase
 
 
+def test_the_connector_row_and_the_suggestions_fold_are_in_the_guide_in_the_controls_words() -> None:
+    """INBOX 1771: a connector row's words go to the block it points at and its ... opens the menu; Suggestions turns its arrow
+    and numbers blocks that share a name in one row. Said in the Guide, in the words the pane carries."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    builder_help = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-builder"))
+    ai_help = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-ai"))
+    assert "A connector row's words (or Enter) go to its block; its ... opens the menu." in builder_help
+    assert "opens like a fold (its arrow turns)" in ai_help and "one row numbers them" in ai_help
+    js = FRONTEND / "js"
+    assert "Go to ${to}" in (js / "diagram-builder.js").read_text(encoding="utf-8")
+    assert "blocks say ${group[0].text}." in (js / "diagram-ai.js").read_text(encoding="utf-8")
+
+
 def test_map_build_up_and_level_stepping_are_in_the_keys_sheet_the_menus_and_the_guide() -> None:
     """INBOX 1774: Alt+= and Alt+- step the levels (the Keys sheet, the palette and
     the map menus), and Build up branch by branch presents the map from the

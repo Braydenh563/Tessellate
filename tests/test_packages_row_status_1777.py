@@ -31,7 +31,8 @@ def test_a_row_that_cannot_be_installed_has_no_tick():
 
 def test_a_computer_with_no_build_says_so_not_ready_yet():
     row = _fn("packagesRow")
-    assert 'extra.no_build ? "ph:prohibit Not for this computer" : "ph:hourglass Not ready yet"' in row
+    # Each label is its own chip() call so the badge recipe lint sees it (test_badge_recipe).
+    assert 'extra.no_build ? chip("ph:prohibit Not for this computer", "item-label extras-soon") : chip("ph:hourglass Not ready yet", "item-label extras-soon")' in row
 
 
 def test_status_and_log_are_placed_under_the_row_they_are_about():

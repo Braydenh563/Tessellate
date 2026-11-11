@@ -1,8 +1,8 @@
 // diagram-joins.js: a flowchart's connectors, in the block pane (1546 P2 built them, P4 moved them out so
 // diagram-builder.js, which every diagram opens, stays small). Lazy: `LAZY_MODULES.diagramJoins`,
 // registered at the foot of documents-mermaid.js and fetched by the builder on the first press of a
-// connector row or of Connect to. Two things: the menu a connector row opens (its line, its label, remove) and the
-// picker that connects one block to another, which can also make the other block (1594). R6: the menu hangs from its row,
+// connector row or of Connect to. Two things: the items of the menu a connector row opens (its line, its label, remove) and the
+// picker that connects one block to another, which can also make the other block (1594). R6: the menu hangs from its row (the builder's kebabMenu, `anchor`),
 // each line kind has its own drawn glyph, the picker shows each block's shape, and a second branch off a decision asks for its words.
 //
 // One closure, one export: `diagramModel.joins`. `h` is the builder's helpers (`say`, `commit`, `ops`, `blockEl`).
@@ -31,8 +31,19 @@
 
   function items(S, edge, h) {
     const to = titleOf(h, S, edge.to);
+    //: The six line kinds are drawn (`dgm-link` through the item's `lead`), where one arrow icon stood for four of them; the kind the connector is wears `current`.
     const links = LINKS.map((kind) => ({
-      label: `${isKind(edge, kind) ? "ph:check" : kind[3] ? "ph:arrows-left-right" : "ph:arrow-right"} ${kind[2]}`,
+      label: kind[2],
+      lead: () => {
+        const slot = Object.assign(document.createElement("span"), { className: "dgm-menu-glyph" });
+        const glyph = Object.assign(document.createElement("span"), { className: "dgm-link" });
+        glyph.dataset.style = kind[0];
+        glyph.dataset.arrow = kind[3] ? "both" : String(kind[1]);
+        slot.setAttribute("aria-hidden", "true");
+        slot.append(glyph);
+        return slot;
+      },
+      current: isKind(edge, kind),
       run: () => {
         const [style, arrow, name, both] = kind;
         Object.assign(edge, { style, arrow });
@@ -68,42 +79,21 @@
         },
         group: "edit",
       },
+      { label: `ph:arrow-elbow-down-right Go to ${to}`, title: "Pick this connector and the block it points at", run: () => go(S, { edge, end: "to" }, h), group: "go" },
+      { label: `ph:arrow-elbow-up-left Go to ${titleOf(h, S, edge.from)}`, title: "Pick this connector and the block it leaves", run: () => go(S, { edge, end: "from" }, h), group: "go" },
       { label: "ph:trash Remove connector", danger: true, run: () => (h.ops.unjoin(S.m, edge), h.commit(S, `Removed the connector to ${to}.`)), group: "edit" },
     ];
   }
 
-  //: The connector row's menu (R6.4). It hangs from the row's right edge, as every menu does, so it opens under its row and
-  //: not at the window's left; the six line kinds are drawn (`dgm-link`), where one arrow icon stood for four of them.
-  function menu(S, { edge, chip }, h) {
-    const r = chip.getBoundingClientRect();
-    const rows = items(S, edge, h);
-    openMenuAtPoint(rows, "This connector", r.right, r.bottom, chip);
-    const open = document.querySelector(".action-menu:not(.hidden):not(.submenu)");
-    open?.querySelectorAll(":scope > .menu-item").forEach((row, i) => {
-      if (i >= LINKS.length) return;
-      const [style, arrow, name, both] = LINKS[i];
-      const made = document.createElement("button");
-      made.type = "button";
-      made.className = "menu-item dgm-shape-row";
-      made.setAttribute("role", "menuitem");
-      const glyph = document.createElement("span");
-      glyph.className = "dgm-link";
-      glyph.dataset.style = style;
-      glyph.dataset.arrow = both ? "both" : String(arrow);
-      glyph.setAttribute("aria-hidden", "true");
-      made.append(glyph, Object.assign(document.createElement("span"), { className: "menu-item-words", textContent: name }));
-      if (isKind(edge, LINKS[i])) {
-        made.setAttribute("aria-current", "true");
-        made.append(Object.assign(document.createElement("i"), { className: "ph ph-check dgm-shape-check" }));
-      }
-      made.addEventListener("click", (event) => {
-        event.stopPropagation();
-        closeActionMenus();
-        rows[i].run();
-      });
-      row.replaceWith(made);
-    });
-    open?.querySelector(".menu-item")?.focus({ preventScroll: true });
+  //: A connector row's press: picks the arrow in the picture and puts the list on the block at one end ("to", or "from" for the source). The
+  //: block row is the list's own selection, so the picture's box and the row agree; the focus stays on the row that was pressed.
+  function go(S, { edge, end = "to" }, h) {
+    const id = edge[end];
+    const key = h.ops.node(S.m, id) ? h.ops.key("n", id) : h.ops.key("g", id);
+    S.pickEdge?.(edge);
+    h.select(S, key);
+    h.blockEl(S, key)?.scrollIntoView({ block: "nearest" });
+    h.say(S, `Went to ${titleOf(h, S, id)}, where the connector ${end === "to" ? `from ${titleOf(h, S, edge.from)} ends` : `to ${titleOf(h, S, edge.to)} starts`}.`);
   }
 
   //: The words for a decision's arrow, in one dialog: the field holds the offer (yes, then no) and a yes | no pair fills it, so one press answers. "" when cancelled.
@@ -175,5 +165,5 @@
     }
   }
 
-  diagramModel.joins = { items, menu, pick, ask };
+  diagramModel.joins = { items, pick, ask, go };
 })();

@@ -27,6 +27,7 @@ from __future__ import annotations
 import ipaddress
 import os
 import re
+from pathlib import Path
 import socket
 import struct
 import sys
@@ -121,22 +122,48 @@ ALLOWED_HOSTS_ENV = "TESSELLATE_ALLOWED_HOSTS"
 _HOST_NAME = re.compile(r"[a-z0-9]([a-z0-9.-]*[a-z0-9])?")
 
 
+ALLOWED_HOSTS_PREF = "allowed_hosts"
+MAX_ALLOWED_HOSTS = 8
+
+#: The Settings copy of the two names below (`apply_address_prefs`), read once at
+#: launch and again when Settings saves, so the guard needs no config on each
+#: request. The environment variables win and add to them.
+_pref_hosts: frozenset[str] = frozenset()
+_pref_local = ""
+
+
+def parse_host(token: str) -> str:
+    """One host name from what a person typed: lower-cased, a URL read for its
+    host, a port dropped; "" when it is not a plain name (`*` and IPs never are)."""
+    text = str(token).strip().lower()
+    if "://" in text:
+        text = text.split("://", 1)[1]
+    text = text.split("/", 1)[0]
+    if text.count(":") == 1:
+        text = text.rsplit(":", 1)[0]
+    return text if _HOST_NAME.fullmatch(text) and not text.replace(".", "").isdigit() else ""
+
+
+def parse_hosts(raw) -> list[str]:
+    """Several names (a list, or a comma or semicolon separated string), cleaned
+    and de-duplicated, in the order typed."""
+    tokens = raw if isinstance(raw, (list, tuple)) else str(raw or "").replace(";", ",").split(",")
+    found: list[str] = []
+    for token in tokens:
+        name = parse_host(token)
+        if name and name not in found:
+            found.append(name)
+    return found
+
+
+def env_allowed_hosts() -> frozenset[str]:
+    """Only the names `TESSELLATE_ALLOWED_HOSTS` lists."""
+    return frozenset(parse_hosts(os.environ.get(ALLOWED_HOSTS_ENV, "")))
+
+
 def extra_allowed_hosts() -> frozenset[str]:
-    """The operator's extra host names, lower-cased, or empty."""
-    raw = os.environ.get(ALLOWED_HOSTS_ENV, "")
-    found = set()
-    for token in raw.replace(";", ",").split(","):
-        text = token.strip().lower()
-        if not text:
-            continue
-        if "://" in text:
-            text = text.split("://", 1)[1]
-        text = text.split("/", 1)[0]
-        if text.count(":") == 1:
-            text = text.rsplit(":", 1)[0]
-        if _HOST_NAME.fullmatch(text):
-            found.add(text)
-    return frozenset(found)
+    """The operator's extra host names (environment and Settings), lower-cased, or empty."""
+    return env_allowed_hosts() | _pref_hosts
 
 
 def set_explicit_bind(value: bool) -> None:
@@ -274,10 +301,59 @@ def _own_names() -> set[str]:
 LOCAL_NAME_ENV = "TESSELLATE_LOCAL_NAME"
 
 
+LOCAL_NAME_PREF = "local_name"
+
+
+def clean_label(text) -> str:
+    """A one-label name (`tessellate`) or "" when it is not one."""
+    name = str(text or "").strip().lower()
+    return name if re.fullmatch(r"[a-z0-9-]{1,63}", name) else ""
+
+
+def env_local_label() -> str:
+    """The label `TESSELLATE_LOCAL_NAME` sets, or ""."""
+    return clean_label(os.environ.get(LOCAL_NAME_ENV, ""))
+
+
 def local_name() -> str:
-    """`<name>.localhost` for the configured name, or "" when none is set."""
-    name = os.environ.get(LOCAL_NAME_ENV, "").strip().lower()
-    return f"{name}.localhost" if re.fullmatch(r"[a-z0-9-]{1,63}", name) else ""
+    """`<name>.localhost` for the configured name (the environment's, else
+    Settings'), or "" when none is set."""
+    name = env_local_label() or _pref_local
+    return f"{name}.localhost" if name else ""
+
+
+def apply_address_prefs(config: ConfigManager) -> None:
+    """Read the two names Settings saved (`local_name`, `allowed_hosts`)."""
+    global _pref_hosts, _pref_local
+    _pref_local = clean_label(config.get_preference(LOCAL_NAME_PREF, ""))
+    _pref_hosts = frozenset(parse_hosts(config.get_preference(ALLOWED_HOSTS_PREF, [])))
+
+
+def load_address_prefs_file(data_dir) -> None:
+    """The same two names read straight from the preferences file, for the
+    desktop launcher, which picks the window's address before it opens the
+    notebook (so it must not build the app's state, or make a folder, to ask)."""
+    import json
+
+    try:
+        saved = json.loads((Path(data_dir) / "preferences.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return
+    if not isinstance(saved, dict):
+        return
+    global _pref_hosts, _pref_local
+    _pref_local = clean_label(saved.get(LOCAL_NAME_PREF, ""))
+    _pref_hosts = frozenset(parse_hosts(saved.get(ALLOWED_HOSTS_PREF, [])))
+
+
+def saved_address_names(config: ConfigManager) -> dict:
+    """What Settings shows: the saved values and what the environment already sets."""
+    return {
+        "local_name": clean_label(config.get_preference(LOCAL_NAME_PREF, "")),
+        "local_name_env": env_local_label(),
+        "allowed_hosts": parse_hosts(config.get_preference(ALLOWED_HOSTS_PREF, [])),
+        "allowed_hosts_env": sorted(env_allowed_hosts()),
+    }
 
 
 def host_allowed(host_header: str | None, *, on_loopback: bool = False) -> bool:

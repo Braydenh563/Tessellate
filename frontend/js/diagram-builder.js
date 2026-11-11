@@ -140,6 +140,12 @@
 
   const blockKeys = (items) => items.flatMap((x) => (x.type === "k" ? [] : [diagramOps.key(x.type, x.id), ...blockKeys(x.kids || [])]));
 
+  const icon = (cls) => {
+    const i = el("i", `ph ${cls}`);
+    i.setAttribute("aria-hidden", "true");
+    return i;
+  };
+
   function shapeGlyph(shape) {
     const glyph = el("span", "dgm-shape");
     glyph.dataset.shape = shape;
@@ -168,9 +174,7 @@
     if (on) row.setAttribute("aria-current", "true");
     row.append(shapeGlyph(shape), el("span", "menu-item-words", SHAPE_LABEL[shape]));
     if (on) {
-      const check = el("i", "ph ph-check dgm-shape-check");
-      check.setAttribute("aria-hidden", "true");
-      row.append(check);
+      row.append(icon("ph-check dgm-shape-check"));
     }
     row.addEventListener("click", (event) => {
       event.stopPropagation();
@@ -224,8 +228,7 @@
       block.setAttribute("aria-level", String(level));
       block.setAttribute("aria-label", `Kept line: ${item.line}`);
       block.title = "Blocks cannot edit this line. It stays in the source where it is.";
-      const lock = el("i", "ph ph-lock-simple dgm-kept-icon");
-      lock.setAttribute("aria-hidden", "true");
+      const lock = icon("ph-lock-simple dgm-kept-icon");
       block.append(el("div", "dgm-card"));
       block.firstChild.append(lock, el("code", "dgm-label", item.line));
       return block;
@@ -248,10 +251,9 @@
     const grip = el("span", "dgm-grip");
     grip.dataset.objGrip = "";
     grip.title = "Drag to move it, or onto another block to connect it";
-    const dots = el("i", "ph ph-dots-six-vertical");
-    dots.setAttribute("aria-hidden", "true");
-    grip.append(dots);
+    grip.append(icon("ph-dots-six-vertical"));
     const label = el("span", "dgm-label", text);
+    label.title = text;
     card.append(grip, isGroup ? groupGlyph() : shapeButton(S, key, data.shape, text), label);
     //: The arrow is on every row, its words on the chosen one.
     const connect = smallButton("ph:arrow-bend-down-right Connect to…", "Draw an arrow from this block to another", (event) => ((S.tapped = event.detail > 0), joinPick(S, key)));
@@ -276,26 +278,24 @@
   }
 
   function groupGlyph() {
-    const icon = el("i", "ph ph-stack dgm-group-icon");
-    icon.setAttribute("aria-hidden", "true");
-    return icon;
+    return icon("ph-stack dgm-group-icon");
   }
 
-  //: A connector: "Start to Next" and its label, in a row under the block it leaves.
+  //: A connector row: the words go to the block they point at (joins `go`); its ⋯ is a kebab kept off the whole row.
   function joinChip(S, edge, index) {
+    const line = el("div", "dgm-joinline");
     const chip = el("button", "dgm-join");
     chip.type = "button";
     const [from, to] = [titleOf(S, edge.from), titleOf(S, edge.to)];
-    const arrow = el("i", `ph ${edge.arrow ? "ph-arrow-right" : "ph-minus"}`);
-    arrow.setAttribute("aria-hidden", "true");
     chip.dataset.style = edge.style;
-    chip.append(arrow, el("span", "dgm-join-to", to));
+    chip.append(icon(edge.arrow ? "ph-arrow-right" : "ph-minus"), el("span", "dgm-join-to", to));
     if (edge.label) chip.append(el("span", "dgm-join-label muted", edge.label));
-    chip.title = "Change this connector: its line, its label, or remove it";
-    chip.setAttribute("aria-label", `Connector from ${from} to ${to}${edge.label ? `, labelled ${edge.label}` : ""}. Opens its menu.`);
-    //: Read from the model when pressed: the row outlives changes.
-    chip.addEventListener("click", () => joins(S, "menu", { edge: S.m.edges[index] || edge, chip }));
-    return chip;
+    chip.title = `Go to ${to}`;
+    chip.setAttribute("aria-label", `Go to ${to}. Connector from ${from} to ${to}${edge.label ? `, labelled ${edge.label}` : ""}.`);
+    chip.addEventListener("click", () => joins(S, "go", { edge: S.m.edges[index] || edge, end: "to" }));
+    const more = diagramModel.library.lazyKebab(() => joins(S, "items", S.m.edges[index] || edge), "Change this connector", { anchor: line });
+    line.append(chip, more);
+    return line;
   }
 
   // --- menus ----------------------------------------------------------------------
