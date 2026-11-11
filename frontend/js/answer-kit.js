@@ -2331,6 +2331,7 @@ function chatSourcesFrom({ meta, toolEvents, touched, grounded, sentences, compo
     const flat = String(text || "").replace(/\s+/g, " ").trim();
     return flat.length > 180 ? `${flat.slice(0, 180)}…` : flat;
   };
+  const linked = new Set(meta?.connected_ids || []);
   for (const entry of meta?.raw_results || []) {
     if (grounded?.size && !grounded.has(entry.id)) continue;
     //: The card's title is the note's first line and its preview what follows
@@ -2355,6 +2356,8 @@ function chatSourcesFrom({ meta, toolEvents, touched, grounded, sentences, compo
     add({
       kind: board === "map" ? "map" : board ? "board" : "note",
       id: entry.id,
+      //: 0 a direct match, 1 one link away, 2 two (`sourcesByFirstMention`).
+      tier: linked.has(entry.id) ? (meta.match_info?.[entry.id]?.type === "connected_2hop" ? 2 : 1) : 0,
       label,
       snippet: board ? "" : preview(rest),
       //: The note itself rides along, so the card can show its picture and its
@@ -2444,9 +2447,15 @@ function sourcesByFirstMention(sources, sentences) {
     notes.push(source);
   });
   const key = (n) => citeKey(n.kind, n.id);
-  const cited = notes.filter((n) => rank.has(key(n))).sort((a, b) => rank.get(key(a)) - rank.get(key(b)));
+  //: Direct matches before notes that only came by a link (INBOX 1746: cards
+  //: 12 to 14, link-only, sat above direct matches 15 and 16 because the answer
+  //: met them first). First mention orders each tier; the tiers keep the
+  //: search's own order, direct then one step then two.
+  const tier = (n) => n.tier || 0;
+  const cited = notes.filter((n) => rank.has(key(n))).sort((a, b) => tier(a) - tier(b) || rank.get(key(a)) - rank.get(key(b)));
+  const uncited = notes.filter((n) => !rank.has(key(n))).sort((a, b) => tier(a) - tier(b));
   const out = sources.slice();
-  [...cited, ...notes.filter((n) => !rank.has(key(n)))].forEach((n, k) => (out[places[k]] = n));
+  [...cited, ...uncited].sort((a, b) => tier(a) - tier(b)).forEach((n, k) => (out[places[k]] = n));
   return out;
 }
 
