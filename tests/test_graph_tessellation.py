@@ -87,7 +87,7 @@ const rects = new Map(out.treemap.map((c) => [c.category, c]));
 const sums = {};
 for (const c of cells) sums[c.category] = (sums[c.category] || 0) + area(c.poly);
 const gaps = out.treemap.map((c) => {
-  const box = (c.x1 - c.x0 - 4) * (c.y1 - c.y0 - c.head - 2);
+  const box = (c.x1 - c.x0 - 10) * (c.y1 - c.y0 - c.head - 5);
   return Math.abs(sums[c.category] - box) / box;
 });
 const inside = cells.every((c) => {
@@ -186,34 +186,53 @@ console.log(JSON.stringify({ flat: flat.treemap.map((c) => c.count), counts, err
 
 
 @needs_node
-def test_a_category_name_is_never_cut():
+def test_a_category_name_is_never_split_inside_a_word():
+    """INBOX 1744 ("Literatur / e", "Eve / nts"): wrap at spaces only, two lines
+    at most; the last resort is whole words and an ellipsis (Q31 said never an
+    ellipsis; the owner's later words moved the means, the intent, no cut
+    glyph, stands)."""
     r = _run(
         """
 const measure = (t, size) => t.length * size * 0.56;
-const names = ["Thoughts", "Thoughts and ideas worth keeping", "Extraordinarily-long-unbroken-category-name", "A"];
+const names = ["Thoughts", "Literature", "Events", "Communication & Connection", "Thoughts and ideas worth keeping", "Extraordinarily-long-unbroken-category-name", "A"];
 const rows = [];
-for (const name of names) for (const w of [40, 70, 110, 220, 600]) for (const h of [14, 21, 36, 60]) {
+for (const name of names) for (const w of [20, 40, 55, 70, 110, 220, 600]) for (const h of [14, 21, 30, 36, 60]) {
   const fit = fitHeaderLabel(measure, name, 7, w, h);
   if (!fit) { rows.push({ name, w, h, dropped: true }); continue; }
-  const text = fit.lines.join("");
+  const shown = fit.lines.join(" ").replace(/ \\(7\\)$/, "");
+  const tail = shown.replace(/\\u2026$/, "");
   const widest = Math.max(...fit.lines.map((l) => measure(l, fit.size)));
   rows.push({
     name, w, h, size: fit.size, lines: fit.lines.length,
-    whole: text.replace(/\\s+/g, "").includes(name.replace(/\\s+/g, "")),
-    ellipsis: /[…]|\\.\\.\\./.test(text),
+    whole: shown === name || (shown.endsWith("\\u2026") && name.startsWith(tail) && name[tail.length] === " "),
     wide: widest <= w + 1e-6,
     tall: fit.lines.length * (fit.size + 3) <= h + 1e-6,
   });
 }
-console.log(JSON.stringify({ rows, roomy: fitHeaderLabel(measure, "Thoughts", 2, 400, 20).lines, short: fitHeaderLabel(measure, "Thoughts", 2, 60, 20).lines }));
+const f = (n, c, w, h) => { const x = fitHeaderLabel(measure, n, c, w, h); return x && x.lines; };
+console.log(JSON.stringify({
+  rows,
+  roomy: f("Thoughts", 2, 400, 20),
+  noCount: f("Literature", 4, 70, 15),
+  wraps: f("Communication & Connection", 3, 120, 30),
+  shrunkSize: fitHeaderLabel(measure, "Literature", 4, 62, 15).size,
+  ellipsis: f("Thoughts and ideas worth keeping", 2, 90, 30),
+  narrowWord: f("Literature", 4, 30, 30),
+  amp: f("Academics & Tech Notes", 4, 76, 15),
+}));
 """
     )
     shown = [row for row in r["rows"] if not row.get("dropped")]
-    assert len(shown) > 40
+    assert len(shown) > 60
     for row in shown:
-        assert row["whole"] and not row["ellipsis"] and row["wide"] and row["tall"], row
+        assert row["whole"] and row["wide"] and row["tall"] and row["lines"] <= 2, row
     assert r["roomy"] == ["Thoughts (2)"]  # room: name and count on one line
-    assert r["short"][-1] != "Thoughts (2)" and "".join(r["short"]).replace(" ", "").startswith("Thoughts")
+    assert r["noCount"] == ["Literature"]  # no room for the count: dropped
+    assert r["wraps"] == ["Communication &", "Connection"]
+    assert r["shrunkSize"] < 12  # one step down before an ellipsis
+    assert r["ellipsis"][-1].endswith("…") and r["ellipsis"][0].startswith("Thoughts")
+    assert r["amp"] is None or not r["amp"][-1].endswith("&\u2026")  # never ends on a bare ampersand
+    assert r["narrowWord"] is None  # a word wider than the room: left out, never split
 
 
 def test_the_view_is_a_lazy_layout_beside_the_others():
@@ -267,3 +286,149 @@ def test_a_cell_pans_and_only_its_dot_is_a_node_for_a_gesture():
     assert "if (gcNodeAtWorld(x, y, s, true)) return;" in CANVAS
     # A wobble under the drag threshold is still a click on the cell.
     assert ".clickDistance(GC_DRAG_THRESHOLD_PX)" in CANVAS
+
+
+@needs_node
+def test_a_category_header_band_is_the_target_not_the_cells_below_it():
+    """INBOX 1744: the band is the rectangle's top `head` px; a point under it
+    (a cell) and a point off every rectangle are no category."""
+    script = "\n".join(
+        [
+            "globalThis.gcTab = null; globalThis.gcVisibleAtTime = () => true;",
+            CANVAS[CANVAS.index("const gcCat = (() => {") : CANVAS.index("\n})();\n", CANVAS.index("const gcCat = (() => {")) + 7],
+            """
+const s = { size: "full", tree: { treemap: [
+  { category: "Events", x0: 0, y0: 0, x1: 100, y1: 80, head: 32 },
+  { category: "Work", x0: 100, y0: 0, x1: 200, y1: 80, head: 18 },
+] } };
+const pane = { size: "pane", tree: s.tree };
+console.log(JSON.stringify({
+  inBand: gcCat.at(50, 20, s).category,
+  second: gcCat.at(150, 10, s).category,
+  below: gcCat.at(50, 60, s),
+  off: gcCat.at(500, 5, s),
+  pane: gcCat.at(50, 20, pane),
+  group: gcCat.of({ isGroup: true, id: "group:Home", category: "Home" }, 0, 0, s),
+  root: gcCat.of({ isGroup: true, id: "root" }, 0, 0, s),
+  note: gcCat.of({ id: 3, category: "Home" }, 50, 20, s),
+  bare: gcCat.of(null, 50, 20, s),
+  none: gcCat.of(null, 50, 60, s),
+}));
+""",
+        ]
+    )
+    out = subprocess.run([NODE, "-e", script], capture_output=True, text=True, timeout=60)
+    assert out.returncode == 0, out.stderr
+    r = json.loads(out.stdout.strip().splitlines()[-1])
+    assert (r["inBand"], r["second"]) == ("Events", "Work")
+    assert r["below"] is None and r["off"] is None and r["pane"] is None
+    assert (r["group"], r["bare"]) == ("Home", "Events")
+    assert r.get("root") is None and r.get("note") is None and r.get("none") is None  # undefined drops from JSON
+
+
+def test_the_category_target_is_wired_to_click_double_click_menu_hold_and_keys():
+    assert "gcCat.select(band.category, s, event.shiftKey)" in CANVAS
+    assert "gcCat.frame(band, s)" in CANVAS
+    assert CANVAS.count("gcCat.menu(category,") == 2  # right-click and the hold
+    assert "categoryMenuItems(meta)" in CANVAS[CANVAS.index("const gcCat = ") :][:3000]  # the app's own rows
+    assert "gcCat.select(node.category" in _function(CANVAS, "gcClickNode")  # Tree and Radial
+    assert "s.kbCat" in _function(CANVAS, "gcDrawTreemap")
+    assert 'event.key === "c"' in GRAPH and "gcCat.select(category, gcTab" in GRAPH
+    css = (ROOT / "frontend" / "css" / "graph-lazy.css").read_text(encoding="utf-8")
+    assert "#graph-canvas.graph-cat-hover" in css
+
+
+def test_the_guide_has_a_graph_categories_topic():
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = next(t["body"] for t in HELP_TOPICS if t["id"] == "graph-categories")
+    assert len(body) < 1900 and "Shift" in body and "Esc" in body
+
+
+@needs_node
+def test_cells_are_pulled_in_to_tiles_and_regions_keep_a_gap():
+    """INBOX 1744 (mock A): `inset` pulls a convex cell in by d on every side;
+    the cells keep `TESS_PAD` off their rectangle, so regions are apart."""
+    r = _run(
+        """
+const sq = [[0, 0], [10, 0], [10, 10], [0, 10]];
+const cw = [[0, 0], [0, 10], [10, 10], [10, 0]];
+const small = window.gcTess.inset([[0, 0], [2, 0], [2, 2], [0, 2]], 1.5);
+const L = layoutTessellation(build(5).nodes, 1400, 800, build(5).info, "cells");
+const cats = new Map();
+for (const c of L.tess.cells) {
+  if (!cats.has(c.category)) cats.set(c.category, [1e9, 1e9, -1e9, -1e9]);
+  const b = cats.get(c.category);
+  for (const [x, y] of c.poly) { b[0] = Math.min(b[0], x); b[1] = Math.min(b[1], y); b[2] = Math.max(b[2], x); b[3] = Math.max(b[3], y); }
+}
+let slack = 1e9;
+for (const q of L.treemap) { const b = cats.get(q.category); slack = Math.min(slack, b[0] - q.x0, q.x1 - b[2], q.y1 - b[3]); }
+console.log(JSON.stringify({
+  area: d3.polygonArea(window.gcTess.inset(sq, 1)), areaCw: d3.polygonArea(window.gcTess.inset(cw, 1)),
+  gone: small.length, slack,
+}));
+"""
+    )
+    assert abs(abs(r["area"]) - 64) < 1e-6 and abs(abs(r["areaCw"]) - 64) < 1e-6  # 10x10 pulled in 1 each side
+    assert r["gone"] == 0  # a cell thinner than the gap vanishes rather than inverts
+    assert r["slack"] >= 5 - 1e-6  # every region's cells keep clear of its rectangle
+
+
+
+def test_a_saved_view_keeps_the_tessellation_look():
+    """INBOX 1744 (q31-1110): the view captures the Look and puts it back before
+    the layout's change event re-lays the cells out."""
+    capture = _function(GRAPH, "graphCaptureView")
+    assert 'tessLook: prefs.get("graph-tess-look", null) === "hexes" ? "hexes" : "cells"' in capture
+    apply = _function(GRAPH, "graphApplyView")
+    assert apply.index('prefs.set("graph-tess-look", view.tessLook)') < apply.index('prefs.set("graph-layout", view.layout)')
+
+
+def test_a_new_note_glides_into_its_cell_from_its_category_header():
+    """INBOX 1744 (q31-1110): in the Map and Tessellation a note new to a map
+    that was already there starts at its category's header and glides to its
+    cell (a few at a time; reduced motion cuts, as the tween's first line)."""
+    body = _function(CANVAS, "gcTweenFromPrior")
+    assert body.index("if (gcStill()) return;") < body.index("s.tree.treemap")
+    assert "prior.size && s.tree && s.tree.treemap" in body
+    assert "node._fromY = home.y0 + (home.head || 18) / 2;" in body
+    assert "fresh <= 12" in body
+
+
+@needs_node
+def test_a_hovered_cell_lights_the_cells_of_the_notes_it_links_to():
+    """INBOX 1744 (q31-1110, mock A): the Tessellation draws no lines, so the
+    hovered note's links show as softer lit cells (0.27) between the hovered
+    one (0.38) and the rest (0.14); a note with no links lights none."""
+    r = _run(
+        """
+globalThis.Path2D = class { moveTo() {} lineTo() {} arcTo() {} closePath() {} };
+globalThis.gcTokens = { ink: "#000" };
+const { nodes, info } = build(3);
+const L = layoutTessellation(nodes, 1400, 800, info, "cells");
+const hub = [...info.near].find(([, set]) => set.size >= 2)[0];
+let alpha = 0;
+const ctx = {
+  save() {}, restore() {}, stroke() {}, set globalAlpha(v) { alpha = v; }, get globalAlpha() { return alpha; },
+  set fillStyle(v) {}, set strokeStyle(v) {}, set lineWidth(v) {}, set lineJoin(v) {},
+  fill() {},
+};
+const byId = new Map(nodes.map((n) => [n.id, n]));
+const paint = (hoveredId) => {
+  const order = [];
+  ctx.fill = () => order.push(alpha);
+  window.gcTess.paint(ctx, { tree: L, selected: new Set(), hoveredId, byId, colourOf: () => "#888" }, 1);
+  return order;
+};
+const lit = paint(hub);
+const cold = paint(null);
+const idx = new Map(L.tess.cells.map((c, i) => [c.id, i]));
+const near = [...info.near.get(hub)];
+console.log(JSON.stringify({
+  hub: lit[idx.get(hub)], neighbour: lit[idx.get(near[0])],
+  other: lit.filter((a, i) => i !== idx.get(hub) && !near.some((n) => idx.get(n) === i)).every((a) => a === 0.14),
+  coldAll: cold.every((a) => a === 0.14), nearCount: near.length, hasNear: L.tess.near instanceof Map,
+}));
+"""
+    )
+    assert r["hub"] == 0.38 and r["neighbour"] == 0.27 and r["other"] and r["coldAll"] and r["hasNear"]

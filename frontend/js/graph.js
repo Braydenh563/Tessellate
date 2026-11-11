@@ -357,15 +357,14 @@ function layoutTreemap(nodes, width, height, info) {
     })
     .sum((d) => (d.note ? weightOf(d.note) : 0))
     .sort((a, b) => b.value - a.value);
-  //: A category header is as tall as its name needs at the rectangle's width
-  //: (one line is 18, each wrapped line 14 more, three at most), so a narrow
-  //: category wraps its name instead of cutting it (Q31: "Thoug... (2)").
-  //: The width of a character is a guess at 12px semibold; `fitHeaderLabel`
-  //: measures for real when it draws.
+  //: A category header is one line (18) when the name fits the rectangle's
+  //: width and two (32) when it must wrap at a space or end on a whole word and
+  //: an ellipsis; a name is never split inside a word (INBOX 1744). The width
+  //: of a character is a guess at 12px semibold; `fitHeaderLabel` measures for
+  //: real when it draws.
   function treemapHeaderH(name, count, width) {
     const room = Math.max(24, width - 12);
-    const lines = Math.min(3, Math.max(1, Math.ceil((`${name || "Unfiled"} (${count})`.length * 7) / room)));
-    return 18 + 14 * (lines - 1);
+    return (name || "Unfiled").length * 7 <= room ? 18 : 32;
   }
   const heads = new Map();
   d3
@@ -2020,6 +2019,30 @@ function initGraphKeyboard() {
       return;
     }
 
+    //: INBOX 1744: C steps through the Map's and Tessellation's categories
+    //: (Shift+C back), Enter selects the lit one's notes, Escape lets it go.
+    const regions = gcTab.tree && gcTab.tree.treemap;
+    if ((event.key === "c" || event.key === "C") && !event.ctrlKey && !event.metaKey && !event.altKey && regions && regions.length) {
+      event.preventDefault();
+      const at = regions.findIndex((r) => r.category === gcTab.kbCat);
+      const next = regions[(at + (event.shiftKey ? -1 : 1) + regions.length) % regions.length];
+      gcTab.kbCat = next.category;
+      gcRequestDraw(gcTab, true);
+      announce(`${next.category || "Unfiled"}, ${nounCount(next.count, "note")}. Enter selects them, Escape leaves.`);
+      return;
+    }
+    if (gcTab.kbCat != null && (event.key === "Enter" || event.key === " " || event.key === "Escape")) {
+      event.preventDefault();
+      const category = gcTab.kbCat;
+      gcTab.kbCat = null;
+      if (event.key !== "Escape") gcCat.select(category, gcTab, event.shiftKey);
+      else gcRequestDraw(gcTab, true);
+      return;
+    }
+    if (gcTab.kbCat != null) {
+      gcTab.kbCat = null;
+      gcRequestDraw(gcTab, true);
+    }
     const directions = {
       ArrowRight: "right",
       ArrowLeft: "left",
@@ -4563,6 +4586,8 @@ function graphCaptureView() {
   const transform = graphSvg ? d3.zoomTransform(graphSvg.node()) : null;
   return {
     layout: prefs.get("graph-layout", null) || "force",
+    //: The Tessellation's Look rides with the layout it belongs to (INBOX 1744).
+    tessLook: prefs.get("graph-tess-look", null) === "hexes" ? "hexes" : "cells",
     colour: prefs.get("graph-colour", null) || "",
     hiddenCategories: [...graphHiddenCategories],
     hiddenKeys: [...graphHiddenKeys],
@@ -4632,6 +4657,12 @@ function graphApplyView(view) {
   // without this function needing to know which `set()` call that will be.
   graphPendingViewPositions =
     view.positions && Object.keys(view.positions).length ? view.positions : null;
+  //: Before the layout's change event, which lays the cells out with it.
+  if (view.tessLook === "cells" || view.tessLook === "hexes") {
+    prefs.set("graph-tess-look", view.tessLook);
+    const look = $("graph-tess-look");
+    if (look) look.value = view.tessLook;
+  }
   prefs.set("graph-layout", view.layout);
   if (view.colour) prefs.set("graph-colour", view.colour);
   //: The layout is a list (INBOX 670; it was a radio group, which `set()` on

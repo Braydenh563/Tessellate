@@ -1335,9 +1335,9 @@ function gcTreeFrameNodes(tree, nodes) {
 function gcDrawTreemap(ctx, s, k) {
   const rects = s.tree && s.tree.treemap;
   if (!rects || !rects.length) return;
-  //: The Tessellation view draws its cells itself; its category frames are
-  //: the heavier border between regions.
-  const heavy = Boolean(s.tree.tess);
+  //: The Tessellation view draws its cells itself, and now leaves a gap
+  //: between regions (`TESS_PAD`), so its frames are the Map's: one header
+  //: grammar, one border, one wash (INBOX 1744).
   ctx.save();
   ctx.lineJoin = "round";
   ctx.textAlign = "left";
@@ -1351,13 +1351,22 @@ function gcDrawTreemap(ctx, s, k) {
     const h = rect.y1 - rect.y0 - 2 * inset;
     if (w <= 0 || h <= 0) continue;
     const colour = s.colourOf({ isGroup: true, category: rect.category });
-    ctx.globalAlpha = heavy ? 0.04 : 0.07;
+    ctx.globalAlpha = 0.07;
     ctx.fillStyle = colour;
     ctx.fillRect(x, y, w, h);
-    ctx.globalAlpha = heavy ? 0.9 : 0.5;
+    ctx.globalAlpha = 0.5;
     ctx.strokeStyle = colour;
-    ctx.lineWidth = (heavy ? 3 : 1.5) / k;
+    ctx.lineWidth = 1.5 / k;
     ctx.strokeRect(x, y, w, h);
+    //: A header that is a target (INBOX 1744): the pointer's or the keyboard's
+    //: category gets its band lit and a full-strength rim.
+    if (rect.category === s.hoverCat || rect.category === s.kbCat) {
+      ctx.globalAlpha = 0.22;
+      ctx.fillRect(x, y, w, Math.min(h, (rect.head || 18) - inset));
+      ctx.globalAlpha = 1;
+      ctx.lineWidth = 2.5 / k;
+      ctx.strokeRect(x, y, w, h);
+    }
     //: Q31 (INBOX 1300 C37: "Thoug... (2)"): a category's name is never cut.
     //: `fitHeaderLabel` keeps the count while it fits, then drops it, then
     //: wraps the name, then shrinks it; a header too small for even that
@@ -1814,6 +1823,69 @@ function gcPlateAtWorld(x, y, s = gcTab) {
   return plate ? graphStructure.topics.find((topic) => topic.id === plate.topic) || null : null;
 }
 
+//: **A category's region is a target** (INBOX 1744, the owner: "on the other
+//: graph views that show categories, I should be able to select and interact
+//: with them as well"). In the Map and Tessellation it is the header band of
+//: its rectangle (the cells below it keep their own meaning); in Tree and
+//: Radial the category is its group node (`gcClickNode`, `gcWireNodeMenu`).
+//: Click selects its notes, double-click frames it, right-click or a hold
+//: opens the category's own menu, and C then Enter does the first from the
+//: keyboard (graph.js). Tab only: a pane has no selection dock.
+const gcCat = (() => {
+  function at(x, y, s = gcTab) {
+    const rects = s.size === "full" && s.tree && s.tree.treemap;
+    if (!rects) return null;
+    return rects.find((r) => x >= r.x0 && x <= r.x1 && y >= r.y0 && y <= r.y0 + (r.head || 18) + 1) || null;
+  }
+
+  //: The category a press means: a group node's (Tree, Radial), or the header
+  //: band's (Map, Tessellation) when no note is under it; undefined otherwise.
+  function of(node, x, y, s = gcTab) {
+    if (node) return node.isGroup && node.id !== "root" ? node.category : undefined;
+    const band = at(x, y, s);
+    return band ? band.category : undefined;
+  }
+
+  function categoryNotes(category, s = gcTab) {
+    return s.nodes.filter((n) => !n.isGroup && n.category === category && Number.isFinite(n.x) && gcVisibleAtTime(n, s));
+  }
+
+  //: The same selection the lasso makes (`s.selected`, the dock), replacing it,
+  //: or added to it with Shift as a second lasso sweep is.
+  function select(category, s = gcTab, add = false) {
+    const notes = categoryNotes(category, s);
+    if (!add) s.selected.clear();
+    for (const n of notes) s.selected.add(n.id);
+    gcSelectionChanged(s);
+    gcRequestDraw(s);
+    const name = category || "Unfiled";
+    announce(notes.length ? `Selected ${nounCount(notes.length, "note")} in ${name}.` : `${name} has no notes on this map.`);
+  }
+
+  function frame(rect, s = gcTab) {
+    s.userZoomed = true;
+    frameTree(s.svg, s.zoom, [{ x: rect.x0, y: rect.y0, corner: true }, { x: rect.x1, y: rect.y1, corner: true }], s.dims.w, s.dims.h, false);
+  }
+
+  //: The category's menu: the rows every other place offers one (`categoryMenuItems`,
+  //: notes-list.js) after the two the map adds.
+  function menu(category, clientX, clientY, s = gcTab) {
+    const rect = (s.tree && s.tree.treemap || []).find((r) => r.category === category);
+    const items = [{ label: "ph:selection-all Select its notes", title: `Select every note in ${category || "Unfiled"} on this map`, run: () => select(category, s) }];
+    if (rect) items.push({ label: "ph:corners-out Frame it", title: "Zoom to this category", run: () => frame(rect, s) });
+    const meta = typeof categoryMeta !== "undefined" && category ? categoryMeta.get(category) : null;
+    if (meta && category !== "Uncategorised") items.push(...categoryMenuItems(meta));
+    openMenuAtPoint(items, `Actions for ${category || "Unfiled"}`, clientX, clientY);
+  }
+  //: The shown hover card as a box in world units, for the names to keep off.
+  function cardBoxes(s, t) {
+    const card = s._hoverCard;
+    if (!card || card.hidden || card._ax == null) return [];
+    return [{ left: (card._ax - t.x) / t.k, right: (card._ax + (card._w || 0) - t.x) / t.k, top: (card._ay - t.y) / t.k, bottom: (card._ay + (card._h || 0) - t.y) / t.k }];
+  }
+  return { at, of, select, frame, menu, cardBoxes };
+})();
+
 function gcPlateTitle(topic, s = gcTab) {
   if (!topic) return "";
   return s.layoutKind === "force"
@@ -1847,7 +1919,6 @@ function gcTopicColour(topic, s = gcTab) {
 }
 
 const GC_HOVER_GROW = 3;         // half the gap from a core to its own halo
-const GC_HOVER_MS = 190;
 
 //: **A fit is balanced on what was drawn** (the owner, 2026-10-10, two
 //: screenshots: "this is my graph's fitted view and it is a bit off",
@@ -2027,10 +2098,27 @@ function gcTweenFromPrior(s, nodes, prior, move = true) {
   if (gcStill()) return;
   const now = performance.now();
   let moved = 0;
+  //: **A new note settles into its cell** (INBOX 1744): in the Map and the
+  //: Tessellation a note added to a map that was already there glides in from
+  //: its category's header to its place, as it fades in, where a cut left the
+  //: whole map to shuffle under it. Only a few at a time: a filter coming off
+  //: is a crowd, and that fades in place as before.
+  const rects = move && prior.size && s.tree && s.tree.treemap ? new Map(s.tree.treemap.map((r) => [r.category, r])) : null;
+  const fresh = rects ? nodes.filter((n) => !prior.has(n.id)).length : 0;
   for (const node of nodes) {
     const was = prior.get(node.id);
     if (!was || !Number.isFinite(was.x) || !Number.isFinite(was.y)) {
       node._born = now;
+      const home = rects && fresh <= 12 ? rects.get(node.category) : null;
+      if (home) {
+        node._fromX = (home.x0 + home.x1) / 2;
+        node._fromY = home.y0 + (home.head || 18) / 2;
+        node._toX = node.x;
+        node._toY = node.y;
+        node.x = node._fromX;
+        node.y = node._fromY;
+        moved += 1;
+      }
       continue;
     }
     if (!move) continue;
@@ -2175,7 +2263,7 @@ function gcHoverStep(s = gcTab) {
   //: would leave them with no hover feedback on this renderer at all, since
   //: there is no CSS here to give them a colour change instead.
   const still = gcStill();
-  const ms = gcTokens.hoverMs ?? GC_HOVER_MS;
+  const ms = gcTokens.hoverMs ?? 190; // the hover grow, before the theme tokens are read
   s.hoverEase = still || !ms ? 1 : gcEaseOut((performance.now() - s.hoverStart) / ms);
   if (s.hoverEase >= 1) {
     s.hoverEase = 1;
@@ -3597,7 +3685,10 @@ function gcDraw(s = gcTab) {
       right: (s.dims.w - t.x) / k - inset,
       bottom: (s.dims.h - t.y) / k - inset,
     };
-    const blocked = [...(s.topicPlates || []), ...gcOverlayBoxes(s, t)];
+    //: The card is placed first so the names are seated around where it is
+    //: (INBOX 1744: dot names ran under the hover card).
+    gcHoverCardFrame(s);
+    const blocked = [...(s.topicPlates || []), ...gcOverlayBoxes(s, t), ...gcCat.cardBoxes(s, t)];
     const placed = gcPlaceLabels(items, discs, lines ? (box, limit) => gcBoxLineCount(lines, box, limit) : null, blocked, frame);
     placedLabels = placed;
     book.labelBoxes = placed;
@@ -4643,9 +4734,18 @@ function gcWireInteraction(s = gcTab) {
       s.canvas.classList.toggle("graph-plate-hover", Boolean(plate) && s.layoutKind === "force");
       if (!node && !edge) s.canvas.title = gcPlateTitle(plate, s);
     }
-    //: Q31: a category's rectangle names itself in a title tooltip.
+    //: Q31: a category's rectangle names itself in a title tooltip; its header
+    //: band is a target (INBOX 1744): the hand cursor, a rim, and what it does.
+    const band = !node && !edge && !plate ? gcCat.at(x, y, s) : null;
+    const group = node && node.isGroup && node.id !== "root" ? node.category : null;
+    const hoverCat = band ? band.category : group;
+    if (hoverCat !== (s.hoverCat ?? null)) {
+      s.hoverCat = hoverCat;
+      s.canvas.classList.toggle("graph-cat-hover", hoverCat != null);
+      gcRequestDraw(s, true);
+    }
     if (!node && !edge && !plate && s.tree && s.tree.treemap) {
-      const title = gcTess.titleAt(x, y, s);
+      const title = gcTess.titleAt(x, y, s) + (band ? ". Click to select its notes, double-click to frame it, right-click for more" : "");
       if (s.canvas.title !== title) s.canvas.title = title;
     }
     if (id !== s.hoveredId || edge !== s.hoverEdge) {
@@ -4660,17 +4760,18 @@ function gcWireInteraction(s = gcTab) {
       // applies.
       //: On the tab a note answers with its hover card (`gcHoverCardFrame`),
       //: so the native tooltip is only the pane's.
-      s.canvas.title = node ? (s.size === "full" ? "" : gcTooltip(node, s)) : edge ? "Click to see this connection" : plate ? gcPlateTitle(plate, s) : gcTess.titleAt(x, y, s);
+      s.canvas.title = node ? (s.size === "full" ? "" : gcTooltip(node, s)) : edge ? "Click to see this connection" : plate ? gcPlateTitle(plate, s) : gcTess.titleAt(x, y, s) + (band ? ". Click to select its notes, double-click to frame it, right-click for more" : "");
       gcRequestDraw(s, true);
     }
   });
   s.canvas.addEventListener("pointerleave", () => {
-    if (s.hoveredId == null && !s.hoverEdge && !s.hoverPlate) return;
+    if (s.hoveredId == null && !s.hoverEdge && !s.hoverPlate && s.hoverCat == null) return;
+    if (s.hoverCat != null) s.hoverCat = null;
     gcSetHovered(s, null);
     gcHoverChanged(null, s);
     s.hoverEdge = null;
     s.hoverPlate = null;
-    s.canvas.classList.remove("graph-edge-hover", "graph-plate-hover");
+    s.canvas.classList.remove("graph-edge-hover", "graph-plate-hover", "graph-cat-hover");
     s.canvas.title = "";
     gcRequestDraw(s, true);
   });
@@ -4698,6 +4799,11 @@ function gcWireInteraction(s = gcTab) {
     //: tab's, and all three are placed against `#graph-box`. A pane that
     //: opened one would put it over a map on another tab.
     if (s.size !== "full") return;
+    const band = gcCat.at(x, y, s);
+    if (band) {
+      gcCat.select(band.category, s, event.shiftKey);
+      return;
+    }
     //: In force a plate's click is the drag's (`gcOpenTopic` at its end).
     const plate = s.layoutKind === "force" ? null : gcPlateAtWorld(x, y, s);
     if (plate) {
@@ -4717,6 +4823,11 @@ function gcWireInteraction(s = gcTab) {
   s.canvas.addEventListener("dblclick", (event) => {
     const [x, y] = gcWorldPoint(event, s);
     const node = gcNodeAtWorld(x, y, s);
+    const band = node ? null : gcCat.at(x, y, s);
+    if (band) {
+      gcCat.frame(band, s);
+      return;
+    }
     const plate = node || s.size !== "full" ? null : gcPlateAtWorld(x, y, s);
     if (plate) {
       gcRenameTopicInline(plate);
@@ -5075,6 +5186,12 @@ function gcWireNodeMenu(s = gcTab) {
   s.canvas.addEventListener("contextmenu", (event) => {
     const [x, y] = gcWorldPoint(event, s);
     const node = gcNodeAtWorld(x, y, s);
+    const category = gcCat.of(node, x, y, s);
+    if (category !== undefined) {
+      event.preventDefault();
+      gcCat.menu(category, event.clientX, event.clientY, s);
+      return;
+    }
     if (!node || node.isGroup) return;
     event.preventDefault();
     gcShowNodeMenu(node, event.clientX, event.clientY, s);
@@ -5100,6 +5217,11 @@ function gcWireNodeMenu(s = gcTab) {
     s.holdFired = true;
     const [x, y] = gcWorldPoint(event, s);
     const node = gcNodeAtWorld(x, y, s);
+    const category = gcCat.of(node, x, y, s);
+    if (category !== undefined) {
+      gcCat.menu(category, point.x, point.y, s);
+      return;
+    }
     if (node && !node.isGroup) {
       gcShowNodeMenu(node, point.x, point.y, s);
       return;
@@ -5365,6 +5487,8 @@ function gcHoverCardFrame(s) {
   }
   left = Math.max(gap, Math.min(left, s.dims.w - w - gap));
   top = Math.max(floor, Math.min(top, s.dims.h - h - gap));
+  card._ax = left;
+  card._ay = top;
   const at = `${Math.round(left)},${Math.round(top)}`;
   if (card._at === at) return;
   card._at = at;
@@ -5455,6 +5579,10 @@ function gcClickNode(event, node, s = gcTab) {
   //: select on separate attachment nodes in the graph??"). Both fell to the
   //: line below and a click did nothing at all.
   if (gcOpenNodeTarget(node)) return;
+  if (node.isGroup && node.id !== "root") {
+    gcCat.select(node.category, s, Boolean(event && event.shiftKey));
+    return;
+  }
   if (!gcIsNote(node)) return;
   if (traceModeActive) {
     pickTraceEnd(node);

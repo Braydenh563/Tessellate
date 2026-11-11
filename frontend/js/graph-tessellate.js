@@ -16,6 +16,49 @@
   //: What the layouts read of the notebook's links: each note's link count and
   //: its neighbours. Built from the edges the map draws, so a hidden kind or a
   //: pruned similarity line weighs nothing here either.
+  //: **A visible gap between categories** (INBOX 1744, the owner's liked mock A):
+  //: the frame is drawn 2px inside its rectangle (`gcDrawTreemap`), and the
+  //: cells keep 5px clear of the rectangle, so two regions are 4px of frame
+  //: apart and each holds its cells 3px off its own frame.
+  const TESS_PAD = 5;
+  //: Half the space between two cells, and the radius their corners are softened to.
+  const TESS_HALF_GAP = 1.5;
+  const TESS_RADIUS = 3;
+
+  //: A convex polygon pulled in by `d` on every side (each edge moved inward,
+  //: then the polygon clipped to it), so neighbouring cells read as tiles with
+  //: a gap between them. Empty when `d` swallows the polygon.
+  function tessInset(poly, d) {
+    const area = d3.polygonArea(poly);
+    if (!area || poly.length < 3) return poly;
+    const sign = area > 0 ? -1 : 1;
+    let out = poly.map((p) => [p[0], p[1]]);
+    for (let i = 0; i < poly.length && out.length; i++) {
+      const [ax, ay] = poly[i];
+      const [bx, by] = poly[(i + 1) % poly.length];
+      const len = Math.hypot(bx - ax, by - ay);
+      if (!len) continue;
+      //: Inward normal (the winding decides which side that is).
+      const nx = (-(by - ay) / len) * sign;
+      const ny = ((bx - ax) / len) * sign;
+      const inside = (p) => (p[0] - ax) * nx + (p[1] - ay) * ny - d;
+      const next = [];
+      for (let j = 0; j < out.length; j++) {
+        const p = out[j];
+        const q = out[(j + 1) % out.length];
+        const dp = inside(p);
+        const dq = inside(q);
+        if (dp >= 0) next.push(p);
+        if ((dp >= 0) !== (dq >= 0)) {
+          const f = dp / (dp - dq);
+          next.push([p[0] + (q[0] - p[0]) * f, p[1] + (q[1] - p[1]) * f]);
+        }
+      }
+      out = next;
+    }
+    return out.length >= 3 ? out : [];
+  }
+
   function gcTessInfo(edges) {
     const degree = new Map();
     const near = new Map();
@@ -68,7 +111,7 @@
     //: count (a hex blob cannot fill an area set by links); Cells follow links.
     const hexes = look === "hexes";
     const done = layoutTreemap(nodes, width, height, hexes ? null : info);
-    done.tess = { look: hexes ? "hexes" : "cells", cells: [] };
+    done.tess = { look: hexes ? "hexes" : "cells", cells: [], near: (info && info.near) || null };
     if (!nodes.length) return done;
     const members = new Map();
     for (const node of done.nodes) {
@@ -78,10 +121,10 @@
     const boxes = done.treemap.map((rect) => ({
       rect,
       notes: tessOrder(members.get(rect.category) || [], info),
-      x0: rect.x0 + 2,
+      x0: rect.x0 + TESS_PAD,
       y0: rect.y0 + rect.head,
-      x1: rect.x1 - 2,
-      y1: rect.y1 - 2,
+      x1: rect.x1 - TESS_PAD,
+      y1: rect.y1 - TESS_PAD,
     }));
     const seat = (note, poly, w, h) => {
       const [x, y] = d3.polygonCentroid(poly);
@@ -182,50 +225,50 @@
     return spots;
   }
 
-  //: A category's name fitted to its header, never cut. `measure(text, size)` is
-  //: a string's width in px at that font size; `maxW` and `maxH` the room in px.
-  //: Tried at 12px first, then down to 9: the name and count on one line, the
-  //: name alone, the name wrapped over as many lines as fit (a word wider than
-  //: the room is broken between letters, not shortened). Null when not even 9px
-  //: fits: the label is left out, the title tooltip and the legend name it.
+  //: A category's name fitted to its header, never split inside a word (INBOX
+  //: 1744: "Literatur / e"). `measure(text, size)` is a string's width in px at
+  //: that font size; `maxW` and `maxH` the room in px. In order, at 12px: the
+  //: name and count on one line; the name alone; the name wrapped at spaces
+  //: over two lines at most; then the same one size down, to 9px; last, the
+  //: name's leading whole words and an ellipsis. Null when even the first word
+  //: is wider than the room or no line fits: the label is left out, the title
+  //: tooltip and the legend name it.
   function fitHeaderLabel(measure, name, count, maxW, maxH) {
     const label = name || "Unfiled";
+    const words = label.split(/\s+/).filter(Boolean);
     for (let size = 12; size >= 9; size--) {
-      const lineH = size + 3;
-      const rows = Math.floor(maxH / lineH);
+      const rows = Math.min(2, Math.floor(maxH / (size + 3)));
       if (rows < 1) continue;
       const full = `${label} (${count})`;
       if (measure(full, size) <= maxW) return { size, lines: [full] };
       if (measure(label, size) <= maxW) return { size, lines: [label] };
-      const lines = tessWrap(measure, label, size, maxW);
-      if (lines.length <= rows) return { size, lines };
+      const lines = rows > 1 ? tessWrap(measure, words, size, maxW) : null;
+      if (lines && lines.length <= rows) return { size, lines };
+    }
+    const size = 9;
+    const rows = Math.min(2, Math.floor(maxH / (size + 3)));
+    if (rows < 1) return null;
+    for (let n = words.length - 1; n >= 1; n--) {
+      //: Never stranded on an ampersand or a dash: "Academics &…" says nothing.
+      if (/^[^\p{L}\p{N}]+$/u.test(words[n - 1])) continue;
+      const lines = tessWrap(measure, [...words.slice(0, n - 1), `${words[n - 1]}\u2026`], size, maxW);
+      if (lines && lines.length <= rows) return { size, lines };
     }
     return null;
   }
 
-  function tessWrap(measure, text, size, maxW) {
+  //: Greedy wrap at spaces only; null when a single word is wider than the room.
+  function tessWrap(measure, words, size, maxW) {
     const lines = [];
     let line = "";
-    const put = (word) => {
+    for (const word of words) {
+      if (measure(word, size) > maxW) return null;
       const joined = line ? `${line} ${word}` : word;
-      if (measure(joined, size) <= maxW) {
-        line = joined;
-        return true;
+      if (measure(joined, size) <= maxW) line = joined;
+      else {
+        lines.push(line);
+        line = word;
       }
-      return false;
-    };
-    for (const word of text.split(/\s+/).filter(Boolean)) {
-      if (put(word)) continue;
-      if (line) lines.push(line);
-      line = "";
-      let rest = word;
-      while (measure(rest, size) > maxW && rest.length > 1) {
-        let n = rest.length - 1;
-        while (n > 1 && measure(rest.slice(0, n), size) > maxW) n--;
-        lines.push(rest.slice(0, n));
-        rest = rest.slice(n);
-      }
-      line = rest;
     }
     if (line) lines.push(line);
     return lines;
@@ -239,25 +282,47 @@
     if (!tess) return;
     ctx.save();
     ctx.lineJoin = "round";
+    //: The tile: the cell pulled in by half the gap, its corners rounded with
+    //: arcs (one path, so a translucent fill never doubles where a stroke
+    //: would overlap it).
     const cellPath = (cell) => {
       if (!cell._path) {
-        cell._path = new Path2D();
-        cell.poly.forEach(([x, y], i) => (i ? cell._path.lineTo(x, y) : cell._path.moveTo(x, y)));
-        cell._path.closePath();
+        const path = new Path2D();
+        const tile = tessInset(cell.poly, TESS_HALF_GAP);
+        const n = tile.length;
+        if (n) {
+          const mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+          const start = mid(tile[0], tile[1 % n]);
+          path.moveTo(start[0], start[1]);
+          for (let i = 1; i <= n; i++) {
+            const corner = tile[i % n];
+            const to = mid(corner, tile[(i + 1) % n]);
+            const reach = Math.min(Math.hypot(corner[0] - start[0], corner[1] - start[1]), Math.hypot(to[0] - corner[0], to[1] - corner[1]));
+            path.arcTo(corner[0], corner[1], to[0], to[1], Math.min(TESS_RADIUS, reach));
+          }
+          path.closePath();
+        }
+        cell._path = path;
       }
       return cell._path;
     };
     const lit = new Set(s.selected ? [...s.selected] : []);
-    if (s.hoveredId != null) lit.add(s.hoveredId);
+    //: A hovered cell lights the cells of the notes it links to, softer
+    //: (mock A; the lines are not drawn here, so this is what shows them).
+    const linked = new Set();
+    if (s.hoveredId != null) {
+      lit.add(s.hoveredId);
+      for (const id of (tess.near && tess.near.get(s.hoveredId)) || []) if (!lit.has(id)) linked.add(id);
+    }
     ctx.lineWidth = 1 / k;
     ctx.strokeStyle = gcTokens.ink;
     for (const cell of tess.cells) {
       const node = s.byId.get(cell.id);
       const path = cellPath(cell);
-      ctx.globalAlpha = lit.has(cell.id) ? 0.38 : 0.14;
+      ctx.globalAlpha = lit.has(cell.id) ? 0.38 : linked.has(cell.id) ? 0.27 : 0.14;
       ctx.fillStyle = (node && node.colour) || s.colourOf({ isGroup: true, category: cell.category });
       ctx.fill(path);
-      ctx.globalAlpha = 0.22;
+      ctx.globalAlpha = linked.has(cell.id) ? 0.5 : 0.16;
       ctx.stroke(path);
     }
     ctx.lineWidth = 2.2 / k;
@@ -307,6 +372,7 @@
       info: gcTessInfo,
       layout: layoutTessellation,
       fit: fitHeaderLabel,
+      inset: tessInset,
       paint: gcDrawTessellation,
       nodeAt: gcTessNodeAt,
       titleAt: gcCategoryTitleAt,
