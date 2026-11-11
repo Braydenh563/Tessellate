@@ -264,7 +264,8 @@ def test_graph_fullscreen_escape_asks_rather_than_relies_on_order():
     match = re.search(
         r'(?ms)document\.addEventListener\("keydown", \(event\) => \{\n'
         r'  if \(event\.key !== "Escape"\) return;\n'
-        r'  if \(!\$\("graph-card"\)\?\.classList\.contains\("graph-fullscreen"\)\) return;.*?\n\}\);',
+        #: `getElementById`, not `$`: `$` would build the lazy graph pane on any Escape (X15).
+        r'  if \(!(?:\$|document\.getElementById)\("graph-card"\)\?\.classList\.contains\("graph-fullscreen"\)\) return;.*?\n\}\);',
         source,
     )
     assert match, "graph full-screen Escape handler not found in app.js"
