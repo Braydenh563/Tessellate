@@ -2241,6 +2241,15 @@ body.scroll-top-visible .skills-split > .tab-main {
   min-width: 0;
   margin-bottom: 0;
 }
+/* At 200% zoom on a 360px phone the viewport is 180 CSS px and the pane's
+   group content box is 54px: the "Remember this" label (99px, centred in an
+   88px button) overran the pane by 5px because Settings buttons are nowrap
+   on purpose, and the "Confirmed patterns" subhead by 6px (it now breaks
+   anywhere). The button may wrap here; `:not(#_)` adds one id of weight to
+   beat the long nowrap selector in 01-forms-settings.css. */
+#settings-modal .memory-add button:not(#_) {
+  white-space: normal;
+}
 /* --- the documents sidebar's vertical budget (§41) ----------------------------
    Reported as "the documents list on the side gets crushed", and it was: the
    list is `flex: 1 1 auto` with `min-height: 0`, and the outline and the help
@@ -4560,6 +4569,7 @@ summary:not(.icon-only):not(.icon-button):not(.fold-summary, .chat-sources-summa
   font-size: var(--text-md);
   font-weight: 600;
   color: var(--ink);
+  overflow-wrap: anywhere;
 }
 .setting-subhead:first-of-type {
   margin-top: var(--space-2);
