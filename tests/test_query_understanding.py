@@ -64,7 +64,9 @@ def _note(session, content, tags=None, days_ago=0, parent_id=None):
 @pytest.mark.parametrize(
     "question,since,until",
     [
-        ("what notes have I saved in the last week", date(2026, 7, 26), TODAY),
+        #: Q24 (the owner): "last week" is the week before this one, Monday to Sunday; "the past week" and "the last 7 days" roll.
+        ("what notes have I saved in the last week", date(2026, 7, 20), date(2026, 7, 26)),
+        ("what notes have I saved in the past week", date(2026, 7, 26), TODAY),
         ("what did I write yesterday", date(2026, 8, 1), date(2026, 8, 1)),
         ("anything from this month", date(2026, 8, 1), TODAY),
         ("notes from the last 3 days", date(2026, 7, 30), TODAY),
@@ -88,7 +90,7 @@ def test_a_question_only_about_time_has_no_subject_left():
 def test_a_subject_survives_the_time_phrase_being_lifted_out():
     asked = query.understand("what did I write about the allotment last week", TODAY)
     assert asked.subject == "allotment"
-    assert asked.since == date(2026, 7, 26)
+    assert asked.since == date(2026, 7, 20)  # Q24: the week before this one
     assert asked.time_only is False
 
 
@@ -122,8 +124,9 @@ def test_an_empty_question_is_not_an_error():
 
 def test_a_time_only_question_returns_the_notes_from_that_range(session, fake_embeddings):
     _note(session, "bread proving notes from ages ago", days_ago=60)
-    recent_one = _note(session, "the beans need netting", days_ago=2)
-    recent_two = _note(session, "shed door hinge", days_ago=5)
+    #: TODAY is a Sunday; "last week" (Q24) is Monday 20 to Sunday 26 July, so these sit 8 and 11 days back.
+    recent_one = _note(session, "the beans need netting", days_ago=8)
+    recent_two = _note(session, "shed door hinge", days_ago=11)
 
     found, mode = search_manager.retrieve(
         session, "what notes have I saved in the last week", fake_embeddings
@@ -136,7 +139,7 @@ def test_a_range_narrows_a_subject_search(session, fake_embeddings):
     """The failure this prevents: a better-matching note from March answering
     a question that said "last week"."""
     _note(session, "the allotment, everything about it", days_ago=90)
-    recent = _note(session, "allotment: netting the beans", days_ago=1)
+    recent = _note(session, "allotment: netting the beans", days_ago=8)
 
     found, _mode = search_manager.retrieve(
         session, "what did I write about the allotment last week", fake_embeddings
@@ -260,7 +263,8 @@ def test_a_question_only_about_time_still_lists_its_window(session, fake_embeddi
     dropping anything: it is the whole question, answered.
     """
     _note(session, "the allotment, everything about it", days_ago=90)
-    this_week = _note(session, "written this week", days_ago=2)
+    #: Q24: "last week" is Monday 20 to Sunday 26 July (TODAY is Sunday 2 August), so 8 days back is inside it.
+    this_week = _note(session, "written last week", days_ago=8)
 
     found, mode = search_manager.retrieve(
         session, "what did I write last week", fake_embeddings
