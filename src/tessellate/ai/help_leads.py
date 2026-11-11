@@ -60,6 +60,8 @@ TOPIC_LEADS: dict[str, str] = {
     "extract-notes": "Break a long block of pasted text into several linked notes.",
     "voice": "Dictate notes, record meetings and lectures, and hear answers read aloud.",
     "live-captions": "See what the microphone hears written out live, on this computer only.",
+    "audio-overview": "Have your notes, or a brief before a meeting, read aloud and saved as a recording.",
+    "folder-sync": "Keep notes level between computers through a folder, encrypted, with no server.",
     "meetings": "Set up a meeting note with an agenda, decisions and actions, and record into it.",
     # Filing, tags and categories
     "tags-categories": "How notes get a category and tags, and how to change them yourself.",

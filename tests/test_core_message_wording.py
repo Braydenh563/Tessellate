@@ -80,6 +80,8 @@ SOURCES: tuple[Source, ...] = (
     Source("core/docview.py", returns=("editability",), keywords=("message",)),
     Source("ai/voice.py", raises=("RuntimeError",), consts=("INSTALL_HINT",), returns=("remove_model",)),
     Source("ai/diarize.py", consts=("INSTALL_HINT",)),
+    Source("ai/natural_voice.py", raises=("ValueError", "RuntimeError"), consts=("INSTALL_HINT",)),
+    Source("entry/folder_sync.py", raises=("SyncError",)),
     Source("ai/captions.py", raises=("CaptionsError",), consts=("NO_HELPER_HINT", "NOT_LOCAL_HINT")),
     Source("entry/importer.py", raises=("RuntimeError",), consts=("INSTALL_HINT",)),
     Source("entry/manager.py", raises=("ValueError",), functions=("rename_category", "delete_category")),
@@ -114,6 +116,7 @@ SOURCES: tuple[Source, ...] = (
 
 #: (file, text with `{}` for each placeholder) -> why it may break a rule.
 ALLOWLIST: dict[tuple[str, str], str] = {
+    ("ai/captions.py", "{}"): "re-wraps a HelperError from ai/captions_process.py, whose messages are fixed sentences",
     ("ai/tools/categories.py", "{}"): (
         "re-wraps a ValueError from entry/manager.py rename_category and "
         "delete_category, whose messages are checked above"
@@ -319,6 +322,10 @@ REVIEWED_COMPUTED: dict[tuple[str, str], str] = {
     ("routes_recordings.py", "str(exc)"): "RuntimeError from ai/voice.py transcribe",
     ("routes_recordings.py", "voice.INSTALL_HINT"): "ai/voice.py INSTALL_HINT",
     ("routes_recordings.py", "diarize.INSTALL_HINT"): "ai/diarize.py INSTALL_HINT",
+    ("routes_studio.py", "natural_voice.INSTALL_HINT"): "ai/natural_voice.py INSTALL_HINT",
+    ("routes_voice.py", "natural_voice.INSTALL_HINT"): "ai/natural_voice.py INSTALL_HINT",
+    ("routes_voice.py", "str(error)"): "ValueError from ai/natural_voice.py speak, one fixed sentence",
+    ("routes_sync.py", "str(exc)"): "SyncError from entry/folder_sync.py, sentences written for a person",
     ("routes_chat.py", "str(exc)"): "ToolError from validate_make_plan and summarise_turns",
     ("routes_documents.py", "str(error)"): "ValueError from core/syntaxcheck.py check",
     ("routes_documents.py", "viewed.message or 'There was no readable text in that file.'"): "ViewedFile.message in core/docview.py",

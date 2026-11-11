@@ -643,7 +643,7 @@ notebook; conflicts become two versions in History). Transport: a folder
 (iCloud/Dropbox/Syncthing) or a LAN pairing over the existing server with a
 QR code. Gate: two instances round-trip 1,000 events with no loss.
 
-**State 2026-09-24:** (c) not built; H5 below is the same row. L, design first.
+**State 2026-11-11:** built as a shared folder of encrypted snapshots, one file per computer; moved to HISTORY.md, "Moved from the plans, 2026-11-11 (Q34, WORLD_CLASS rows 35 to 37)". The LAN pairing is not built: the folder transport was the one H5 chose.
 
 ### B7 The API contract
 
@@ -806,9 +806,9 @@ Mirrored in `agent-remaining/OPEN.md`, table B.
 | 29 | §10 | F1 a `prefs` module, F5 `api.stream`/`api.upload` and the no-bare-fetch lint, F7's threads onto the pool (the ratchet is built), F10 a `readings` table, F12 a store (F4 built 2026-09-26) | S to L | §10 |
 | 32 | 301 | the navigation and undo audit table (written 2026-11-10, below); fixes: the manual and Statistics address; left: the rows marked "row" in the table | M | every surface |
 | 34 | ~~D1, D8, §13~~ | ~~drag on the grid; the reminder row recipe and a 10m snooze; the minimap's NaN rects, the tab bar at 600 to 819px, a whiteboard menu sweep, the tidy layout past five nodes (all not re-checked)~~ built or measured 2026-10-05: drag on the grid found built, the 10m snooze built, the rest measured clean (`nbf1005-recheck.js`); left with its owner: the whiteboard menu sweep (WHITEBOARD_PLAN) | done | HISTORY |
-| 35 | §2 | the offline studio (the privacy receipt, its record, API and Settings page, built 2026-09-26) | L | new |
-| 36 | B6, H5 | sync without a server | L | design first |
-| 37 | Audio | deferred until the owner says go | L | the audio section |
+| 35 | ~~§2~~ | ~~the offline studio~~ built 2026-11-11: an audio overview and a brief from the notes' own sentences, spoken on this computer into a saved recording (HISTORY, "Moved from the plans, 2026-11-11 (Q34, WORLD_CLASS rows 35 to 37)") | done | HISTORY |
+| 36 | ~~B6, H5~~ | ~~sync without a server~~ built 2026-11-11: notes travel through a shared folder, encrypted, a conflict keeps both versions in History (HISTORY, "Moved from the plans, 2026-11-11 (Q34, WORLD_CLASS rows 35 to 37)") | done | HISTORY |
+| 37 | ~~Audio~~ | ~~deferred until the owner says go~~ built 2026-11-11: the natural voice (Piper) for read aloud; the rest was built in 28.5 (HISTORY, "Moved from the plans, 2026-11-11 (Q34, WORLD_CLASS rows 35 to 37)") | done | HISTORY |
 | 38 | §20 | three open questions, each the owner's decision | none | §20 |
 
 Rows 1, 2, 4, 7, 8, 9, 11, 12, 14, 15, 20, 24, 30, 31 and 33 above are built and moved verbatim to HISTORY.md, "Moved from the plans, 2026-11-09 (book5-1109: WORLD_CLASS_PLAN)"; row numbers are kept so citations hold.
@@ -1801,7 +1801,7 @@ server, no account. Gate: two data dirs converge after each replays the
 other's log; a conflicting edit appears once, in the Library, with both
 versions.
 
-**State 2026-09-24:** (c), B6.
+**State 2026-11-11:** built with B6 (`entry/folder_sync.py`); HISTORY.md, "Moved from the plans, 2026-11-11 (Q34, WORLD_CLASS rows 35 to 37)".
 
 ### H6 Professional use (the PR after 144; M, mixed)
 
@@ -4162,7 +4162,7 @@ Briefs: 73 (row 8), 80 (rows 1, 3 to 6), 81 (rows 2, 7, 11), 82 (row 9),
 
 Decisions made (libr-1011, 2026-10-11): a recording is a search kind (`recording`, title plus transcript lines), and a note reaches it through `entry_id`, not an embed syntax; the meeting note keeps plain transcript text and the timed lines stay on the recording; a trim of a long take warns about memory and stays in the page until the app ships a container writer; a second translation pair brings its own picker, none before; RapidOCR stays an optional extra (it runs on this computer once installed).
 
-Decisions made (Q34, 2026-11-11; rows 35 to 37 of the table above; the owner's "Go on all of them", Fable off): (1) Row 35, the offline studio, means an audio overview of the person's own notes (and the same builder as a brief before a meeting), made with no model and spoken on this computer: the script is the notes' own sentences under a fixed frame (`ai/studio.py`), the voice is Piper (`ai/natural_voice.py`), and the result is a saved recording with its timed transcript lines, so it plays, seeks and searches like any take; the privacy receipt half was built 2026-09-26. (2) The engine is the `piper-tts` wheel (a pip extra, GPL-3.0-or-later, which combines into this AGPL-3.0 app) and the voice is the public-domain LJ Speech medium voice (two files, sha256-pinned to a rhasspy/piper-voices commit), both an Install click in Settings, Packages as the bundle Natural voice, never vendored; without them the browser's voices keep reading aloud. (3) Row 37, audio, was already built in 28.5 except the natural voice, which is the same Piper (read aloud and the overview); recall cards (§114 A1) stay with their own plan and the background music player stays unbuilt (it needs a player over the person's own folder and the owner's design call; Decision 1 keeps it out of the notebook). (4) Row 36, sync without a server, stays design first (B6, H5): its gate is two data dirs converging, which needs a replay rule for every event kind and the owner's call on the transport (a folder or a LAN pairing); nothing here changes it. (5) Every engine test runs on a fake voice; real Piper was run once in a scratch venv (5.5 s of speech in 2.5 s including the load).
+Decisions made (Q34, 2026-11-11; rows 35 to 37 of the table above; the owner's "Go on all of them", Fable off): (1) Row 35, the offline studio, means an audio overview of the person's own notes (and the same builder as a brief before a meeting), made with no model and spoken on this computer: the script is the notes' own sentences under a fixed frame (`ai/studio.py`), the voice is Piper (`ai/natural_voice.py`), and the result is a saved recording with its timed transcript lines, so it plays, seeks and searches like any take; the privacy receipt half was built 2026-09-26. (2) The engine is the `piper-tts` wheel (a pip extra, GPL-3.0-or-later, which combines into this AGPL-3.0 app) and the voice is the public-domain LJ Speech medium voice (two files, sha256-pinned to a rhasspy/piper-voices commit), both an Install click in Settings, Packages as the bundle Natural voice, never vendored; without them the browser's voices keep reading aloud. (3) Row 37, audio, was already built in 28.5 except the natural voice, which is the same Piper (read aloud and the overview); recall cards (§114 A1) stay with their own plan and the background music player stays unbuilt (it needs a player over the person's own folder and the owner's design call; Decision 1 keeps it out of the notebook). (4) Row 36, sync without a server, is built on the folder transport H5 chose (a LAN pairing is not built): each computer writes only its own AES-GCM file of ordinary notes into a shared folder and reads the others', under a passphrase typed each time and never stored; the merge is per note, not per field (a note's text, tags, category, colour and pin travel together), the later edit wins and the other words stay in History (or the recycle bin), so a conflicting edit appears once with both versions; private notes and boards never leave, and links, reminders and attachments do not travel (`entry/folder_sync.py`); it is a snapshot per device rather than a replay of the event log, because a replay rule for every event kind was the part that made it design first, and the gate (two data dirs converge, a conflict kept once) holds on snapshots. (5) Every engine test runs on a fake voice; real Piper was run once in a scratch venv (5.5 s of speech in 2.5 s including the load).
 
 ### Vendored capabilities to use, 2026-10-10 (Brief 75)
 
