@@ -117,7 +117,9 @@ def _shown(rule: str, slots: dict) -> dict:
     """The slots as the sentence says them: a recurrence's subject with its capital and its count in
     words (G12), the slot values themselves staying typed for the lint and Confirm."""
     if rule != "recurrence":
-        return dict(slots)
+        from tessellate.ai import composer_story
+
+        return {k: composer_story.quoted_if_slang(v) if composer_tables.INSIGHT_SLOTS.get(k) == "span" else v for k, v in slots.items()}
     return {**slots, "subject": _capital(slots["subject"]), "count": _count_word(int(slots["count"]))}
 
 

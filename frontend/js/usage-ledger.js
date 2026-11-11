@@ -123,14 +123,16 @@
   //: file when the pill first shows, so the popover is wired before it can be
   //: pressed. Its stylesheet is fetched from here rather than listed in
   //: `LAZY_MODULES`: app.js is at its own gzip cap (APP_JS_CAP).
-  wireHelpPopover($("chat-context"), $("chat-context-pop"));
-  $("chat-context-compact").addEventListener("click", () => {
-    closeHelpPopovers();
-    $("chat-compress").click();
-  });
-  $("chat-context-window").addEventListener("click", () => {
-    closeHelpPopovers();
-    openSettingsModal("models", "model-context-window");
+  onSurface("chat", () => {
+    wireHelpPopover($("chat-context"), $("chat-context-pop"));
+    $("chat-context-compact").addEventListener("click", () => {
+      closeHelpPopovers();
+      $("chat-compress").click();
+    });
+    $("chat-context-window").addEventListener("click", () => {
+      closeHelpPopovers();
+      openSettingsModal("models", "model-context-window");
+    });
   });
 
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).

@@ -160,7 +160,7 @@
   //: One notice above the Capture box while anything is held, with a way to
   //: try now rather than wait out the timer.
   function renderNoteOutbox() {
-    const notice = $("note-outbox-notice");
+    const notice = document.getElementById("note-outbox-notice");
     if (!notice) return;
     const held = noteOutbox();
     const count = held.length;
@@ -479,10 +479,12 @@
   (() => {
     //: The Capture page's button (capture-ask.js sends its ask): wired here, not at boot. Its state is
     //: the draft's (`captureDraftPrivate`), put back on load; until then (3 s) the button is the setting's.
-    const capturePrivate = $("entry-private");
-    capturePrivate.addEventListener("click", () => createNoteSafely.lock.flip(capturePrivate, "captureDraftPrivate"));
-    if (prefs.has("captureDraftPrivate")) createNoteSafely.lock.sync(capturePrivate, prefs.get("captureDraftPrivate") === "true");
-    $("note-outbox-retry")?.addEventListener("click", () => flushNoteOutbox());
+    onSurface("notes", () => {
+      const capturePrivate = $("entry-private");
+      capturePrivate.addEventListener("click", () => createNoteSafely.lock.flip(capturePrivate, "captureDraftPrivate"));
+      if (prefs.has("captureDraftPrivate")) createNoteSafely.lock.sync(capturePrivate, prefs.get("captureDraftPrivate") === "true");
+    });
+    onSurface("notes", () => { $("note-outbox-retry")?.addEventListener("click", () => flushNoteOutbox()); renderNoteOutbox(); });
     //: Back on the network the browser knows about (a laptop's wifi), as well
     //: as the server answering again.
     window.addEventListener("online", () => flushNoteOutbox());

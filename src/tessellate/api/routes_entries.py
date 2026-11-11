@@ -3542,7 +3542,8 @@ def create_link(
     entry_id: int, body: LinkBody, session: Session = Depends(get_session)
 ) -> EntryOut:
     source = NOTES.writable(session, entry_id)
-    target = _existing_entry(session, body.target_id)
+    # A binned target would leave an edge to an invisible note until purge (409).
+    target = NOTES.writable(session, body.target_id)
     # A link would put a private note's presence on a plain note's chip (and
     # the reverse), so while the vault is locked either end refuses it (W3 A11).
     _refuse_while_sealed(source)

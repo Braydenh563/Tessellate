@@ -845,8 +845,7 @@ async function noteOfferTake(state, offer, el) {
   }
 }
 
-noteOffersAttach($("entry-content"), {
-  after: $("entry-content")?.closest(".note-composer") || $("entry-content")?.parentElement,
-  category: $("entry-category"),
-  title: $("entry-title"),
+onSurface("notes", () => {
+  const box = $("entry-content");
+  noteOffersAttach(box, { after: box.closest(".note-composer") || box.parentElement, category: $("entry-category"), title: $("entry-title") });
 });

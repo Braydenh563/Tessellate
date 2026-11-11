@@ -781,6 +781,8 @@ const LOCK_PURGE_IDS = [
   "graph-svg", // node labels are note titles
   "palette-list", // whatever was last searched for
   "palette-preview", // and the note it was showing
+  "dash-glance", // the dashboard's recent note titles
+  "dash-more", // and its More menu, whose Continue row names the last note
 ];
 
 //: Empty everything the lock screen is covering.
@@ -799,11 +801,21 @@ function purgeLockedContent() {
   for (const el of document.querySelectorAll("[data-holds-notebook]")) {
     el.matches("input, textarea") ? (el.value = "") : el.replaceChildren();
   }
+  //: The open conversation's turns live in memory too (INBOX 1747, row 19): a stream still
+  //: running is stopped (it filled detached nodes) and the chat starts fresh; a saved one is in the history list.
+  try {
+    chatController?.abort();
+    chatConv = { id: null, turns: [] };
+  } catch {
+    /* chat.js not loaded yet (a lock at boot): nothing in memory to drop */
+  }
   // `.value` survives `replaceChildren`, so the editor's text needs its own clear.
   for (const id of ["doc-content", "doc-title"]) if ($(id)) $(id).value = "";
 }
 
 async function lockNow() {
+  //: The typed words are sealed and emptied before the key goes (INBOX 1747, row 22).
+  await typedWords("keep").catch(() => false);
   try {
     await api("/auth/lock", { method: "POST" });
   } catch {
@@ -897,7 +909,7 @@ function startApp() {
   // "check it's running, then refresh" line sat under the capture form for the
   // whole session after one slow start, telling the user the app was broken
   // while it worked perfectly. Screenshotted.
-  const shellStatus = $("save-status");
+  const shellStatus = document.getElementById("save-status");
   if (shellStatus) shellStatus.textContent = "";
   // Warm the filing model, retry stand-ins (routes_models.warm_filing).
   api("/models/warm-filing", { method: "POST", silent: true }).catch(() => {});
@@ -980,13 +992,10 @@ function startApp() {
   });
 
   const entriesReady = step("load entries", loadEntries);
-  step("load recent questions", loadRecentQuestions);
-  step("load ask history badge", loadAskHistoryBadge);
-  step("load suggestions", loadSuggestions);
-  step("load your most-used items", loadMostUsed);
+  onSurface("notes", () => { loadRecentQuestions(); loadAskHistoryBadge(); loadSuggestions(); loadMostUsed(); });
   const templatesReady = step("load templates", loadTemplates);
   templatesReady.then(() =>
-    step("set up chat options", () => {
+    step("set up chat options", () => onSurface("chat", () => {
       personaOptions();
       // Wave G: skills chips + the agent-mode toggle read the
       // same prefsCache that loadTemplates just filled.
@@ -994,7 +1003,7 @@ function startApp() {
       $("tools-toggle").checked = prefsCache?.tools_enabled !== false;
       renderChatModeSeg();
       renderWebSearchToggle();
-    })
+    }))
   );
   step("load answer-length options", loadResponseModes);
   // Here, not at module level beside initSpaceSwitcher(). The switcher's
@@ -1025,7 +1034,7 @@ function startApp() {
   // not every time they login", the endpoint self-clears after one read,
   // so this only ever fires the run right after a real update landed.
   step("check for an update notice", checkForSourceUpdateNotice);
-  step("load conversations", loadConversationList);
+  step("load conversations", () => onSurface("chat", loadConversationList));
   step("check the model status", refreshModelStatus);
   // Reminders poll on their own timer once running (see startReminderWatch);
   // starting that here, not at module level, is the other half of the fix
@@ -1535,6 +1544,8 @@ const LAZY_MODULES = {
   attachments: ["/js/attachment-actions.js"],
   //: Tesseract's status line (INBOX 443 (3)): see ocr-engine.js.
   ocrEngine: ["/js/ocr-engine.js"],
+  //: The "needs an optional package" notice (INBOX 1748): extra-notice.js.
+  extraNotice: ["/js/extra-notice.js"],
   //: Quick note and the note outbox (INBOX 434): see quick-note.js. router-overlays.js rides with the quick note: Back closes an open overlay first, and Settings' close settles the address. Both preloaded below; boot code is at its cap.
   quickNote: ["/js/quick-note.js", "/js/router-overlays.js"],
   fieldClear: ["/js/field-clear.js"],
@@ -1849,7 +1860,7 @@ const LAZY_ENTRY_POINTS = {
   updates: ["checkForUpdate", "applyUpdateNow", "showSourceUpdatedDialog", "askUpdateChoiceOnce"],
   appPalette: ["openPalette"],
   notePanels: ["beginOrCompleteLink", "toggleRelated", "toggleReferences", "toggleFaded", "toggleNoteReminders", "renderEditForm", "richPickerNote"],
-  vault: ["unlockPrivateNotes", "ensureVaultOpen"],
+  vault: ["unlockPrivateNotes", "ensureVaultOpen", "typedWords"],
   accountRecovery: ["openForgotPassword", "offerRecoveryKey", "showRecoveryKey", "makeRecoveryKey", "recoveryAccountRow"],
   attachTo: ["renderAttachToBoard", "renderAttachToDocument", "renderNotePickerList"],
   noteTemplates: ["openNoteTemplateDialog", "useNoteTemplate", "templateCatalogue"],
@@ -1864,6 +1875,7 @@ const LAZY_ENTRY_POINTS = {
   chipMenus: ["openCategoryChipMenu", "openTagChipMenu"],
   attachments: ["attachmentAction"],
   ocrEngine: ["ocrEngineMount"],
+  extraNotice: ["extraNoticeMount"],
   quickAccess: ["quickAccessEdit"],
   inbox: ["openSuggestionsInbox", "openEntityPage", "openEntitiesSheet", "openLinkTypeSheet", "openRelationTypesSheet", "openNotePropertiesSheet", "openNoteTypesSheet", "openQueryTable", "showQueryOnGraph"],
   assistantAvatar: ["assistantEmblemInto"],

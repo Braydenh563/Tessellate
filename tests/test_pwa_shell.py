@@ -390,7 +390,7 @@ def test_the_offline_page_is_on_the_locked_routes_allowlist():
 def test_a_share_query_becomes_one_capture(tmp_path, query, expected):
     app = (FRONTEND / "js" / "shared-intake.js").read_text(encoding="utf-8")
     start = app.index("function sharedCaptureText(")
-    end = app.index("\n}\n", start) + 3
+    end = app.index("\n  }\n", start) + 5
     probe = tmp_path / "probe.js"
     probe.write_text(
         app[start:end] + f"\nconsole.log(JSON.stringify(sharedCaptureText(new URLSearchParams({query!r}))));\n",

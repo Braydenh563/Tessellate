@@ -168,7 +168,7 @@ _SMALL_WORDS = frozenset(
 
 
 def _is_unfound(out: _Answer, term: str, found: set[str], quoted: set[str], quoted_text: str = "") -> bool:
-    if term.lower() in _SMALL_WORDS or _NOT_A_NOUN.search(term) or re.fullmatch(r"[\d.,$%£€]+", term):
+    if term.lower() in _SMALL_WORDS or _NOT_A_NOUN.search(term) or re.fullmatch(r"(?=.*[.,$%£€])[\d.,$%£€]+", term):
         return False
     if len(term) < _MISSING_MIN or _stem(term) in _INSTRUCTION_STEMS or _MANNER.search(term) or _seen(term, found):
         return False

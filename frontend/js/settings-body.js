@@ -22,12 +22,21 @@
 // `tests/test_settings_body_1501.py` and `tests/test_surface_templates.py` hold
 // that line. Load order: before app.js, so `$` may call these from its first line on.
 //: name -> { tpl, after }: the templates are parsed before this script runs (it loads at the end of the body).
-const SURFACES = new Map([...document.querySelectorAll("template[data-surface]")].map((tpl) => [tpl.dataset.surface, { tpl, after: [] }]));
+//: A surface inside another surface's template (the board inside the Library) is registered with its `parent`,
+//: built first: its markup is not in the page until the parent is.
+const SURFACES = new Map();
+(function register(root, parent) {
+  for (const tpl of root.querySelectorAll?.("template[data-surface]") ?? []) {
+    SURFACES.set(tpl.dataset.surface, { tpl, after: [], parent });
+    register(tpl.content, tpl.dataset.surface);
+  }
+})(document);
 
 //: Puts the surface in the page, once; false when it already is (or no such surface).
 function surfaceBuild(name) {
   const entry = SURFACES.get(name);
   if (!entry?.tpl) return false;
+  if (entry.parent) surfaceBuild(entry.parent);
   const { tpl } = entry;
   entry.tpl = null;
   const host = tpl.parentNode;

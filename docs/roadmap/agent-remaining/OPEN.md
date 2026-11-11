@@ -59,7 +59,7 @@ Parked until the owner's data or a check on real hardware:
 - ~~A13 With the vault open, a private note is never searchable | 1031-notes N3~~ stale: /search and /entries/query never return a private note, open or locked (tests/test_vault_w3_1110.py)
 - ~~A14 Lock screen: focus not on the field, no dialog semantics, no throttle hint, focus dropped after errors | 1028-shell S4, S25, 1029-extras X23~~ stale: Playwright 2026-11-10 shows focus on #lock-password, role dialog, aria-modal, aria-describedby, aria-invalid, focus kept after 5 wrong tries, 429 countdown on the button
 - ~~A15 Sign-in off never driven (persistent profile, second LAN device, restored preferences) | t20#17~~ driven w3-1110: persistent, relaunched and fresh browsers open with no prompt, vault stays locked; second LAN device and a real restore not driven (no second host); backups exclude the switch
-- A16 `/media` 403 and 409 unified (after Q18) | sec L14
+- ~~A16 `/media` 403 and 409 unified (after Q18)~~ (built sm-1111: 409 "Unlock first.", tests/test_vault_attachments.py) | sec L14
 
 **W4 Documents that lose words** (A, documents, Sonnet; verify first). Files: `frontend/js/documents.js` save and lock paths. Checks: `tests/test_doc*`, a slow-PUT Playwright run. Done when: no typing during a save is lost, an offline first save says "Not saved" and keeps a draft, locking clears every word from the page.
 - ~~A17 Autosave has no in-flight guard; a slow PUT plus typing sends a stale hash~~ (stale: built, tests/test_doc_save_serial.py) | 1028-docs D1
@@ -78,7 +78,7 @@ Parked until the owner's data or a check on real hardware:
 - ~~A28 `safeHref` lets `java\tscript:` through | 1028-docs D14~~ fixed (notes-list.js:858, test_link_schemes_controls)
 - ~~A29 No pre-Brief-7 database was ever upgraded for real | t20#18~~ done w5-1110: tests/test_upgrade_pre_brief7_db.py upgrades a real pre-Brief-7 dump; no bug found
 - ~~A30 Deleting a space still purges in one path | 1029-extras X5, 1031-extras Z20~~ fixed (purge needs ?purge=1, name typed; test_space_delete_confirm_1031)
-- A31 Key storage and MCP auth (after Q22) | a30i-1102 B40, B33, B24, D46, K26, K11, K13, E43
+~~- A31 Key storage and MCP auth (after Q22) | a30i-1102 B40, B33, B24, D46, K26, K11, K13, E43~~ done backend-1111 b155304 (K11), 6ff76a7 (K13), 0389648 (E43); K26 closed by design; B40/B33/B24/D46 belong to other batches (W19, composer)
 
 **W6 Recordings and swallowed deletes** (A, voice notes, Sonnet; verify first). Files: `frontend/js/meetings.js`, `media.js`, the board delete handlers. Checks: `tests/test_meeting*`, a Playwright record and reload run. Done when: no audio is dropped on pause, close warns while recording, typing a title never starts the mic.
 - ~~A32 The voice dialog opens on Record: a typed space starts the mic, other keys fire shortcuts | 1029-extras X1~~ [struck 2026-11-10 w6-1110: verified fixed on head, tests in test_recording_is_unsaved_work_1029.py, test_xfix_1031.py, test_wb_board_1028.py]
@@ -215,7 +215,7 @@ Parked until the owner's data or a check on real hardware:
 - C22 1920 by 1080 at 125 to 200 % not driven | zoom4
 - C23 "?" after a Dashboard click hands focus to CodeMirror | row21 L47
 
-**W21 Dashboard, timeline and counts** (C, dashboard, Sonnet; verify first). Files: `dashboard.js`, `timeline*.js`, the import toast, the appearance settings. Checks: `tests/test_dashboard_*`, `tests/test_timeline_*`. Done when: every count is the true total.
+**W21 Dashboard, timeline and counts** (C, dashboard, Sonnet; verify first). Files: `dashboard.js`, `timeline*.js`, the import toast, the appearance settings. Checks: `tests/test_dashboard_*`, `tests/test_timeline_*`. Done when: every count is the true total. Verified 2026-11-11 (graph-1111.md): no count short of the true total found; the Timeline's "N+" while more pages wait is honest, a true figure needs a `/timeline` total (routes_timeline, not this batch).
 ~~- C24 Dashboard insight counts capped by a fixed limit | 1028-shell S8~~ **Fixed before s5-1110 (count in SQL).**
 ~~- C25 Timeline header count and "days" plural wrong for 1 and for paged data | 1028-shell S7~~ **Fixed before s5-1110 (CHANGELOG 1562).**
 ~~- C26 Import toast gives no skipped or duplicate breakdown | 1028-shell S9~~ **Fixed before s5-1110 (import toast).**
@@ -238,6 +238,7 @@ Parked until the owner's data or a check on real hardware:
 - ~~C39 Link offers have no Settings switch; "Untitled document N" naming | t20#15, t20#16~~ **Stale: built** (Settings link offers switch; documents.js Untitled document N), s6-1110
 - ~~C40 Equation panel jump row and Inline/Display pill | DOCUMENTS 1566~~ **Stale: built 6c08378**, s6-1110
 - C41 The remaining 1028-docs and 1031-docs open rows | book1 (40 and 7 rows)
+- ~~D28 Text size is three steps, no Ctrl+wheel | 1028-docs D28~~ built e2775e4 (five sizes, Ctrl+wheel, tests/test_doc_text_zoom_1111.py); D29, D40, D41 stale (built); D25 open
 
 ### Tier D: performance and CI time
 
@@ -255,7 +256,7 @@ Parked until the owner's data or a check on real hardware:
 ~~- D9 A composed chat answer mounts 500 to 860 nodes | audit-1108-perf P8~~ **Built s58left3-1110** (older replies' corner head is an svg/use of one hidden copy: 167 to 8 nodes a reply, pixels within 2 of 255; the answer body itself, about 100 nodes, is untouched)
 - ~~D10 `?preview=300` (after Q9) | fitaudit 42~~ **Stale: built** (CHANGELOG, INBOX 1525: list pages, the by-id refresh and the Semantic list carry `?preview=300`; `tests/test_entry_writers_whole_1525.py`)
 
-**W26 Graph at scale** (D, graph, Opus). Files: `graph*.js`, `graph-worker.js`. Checks: the 500 and 2,000 note fixtures at 1x and 4x. Done when: a 2,000-note settle is under 5 s with no task over 50 ms.
+**W26 Graph at scale** (D, graph, Opus). Files: `graph*.js`, `graph-worker.js`. Checks: the 500 and 2,000 note fixtures at 1x and 4x. Done when: a 2,000-note settle is under 5 s with no task over 50 ms. Part done 2026-11-11 (settle 3.3 s; tasks over 50 ms 10 to 5 at 1x; minimap one parse, balance waits for rest, link grid chords); rest in `graph-1111.md`.
 - D11 2,000 notes: layout 28 s and main-thread long tasks | 1029-graph G3, 1028-shell S2, GRAPH row 19
 - D12 500 notes at 4x: hover p50 83 ms, wheel 133 ms | 1029-graph G5, GRAPH Rank 36
 - D13 Hover and wheel at rest redraw whole layers; the crossing count is output-bound | graph19 L4, L5
@@ -296,7 +297,7 @@ Parked until the owner's data or a check on real hardware:
 **W32 Backend tidy** (E, backend, Haiku verify then Sonnet). Files: small fixes in `api/`. Checks: targeted route tests.
 ~~- E7 Validation copy leaks field names | 1031-backend BK8~~ **Already built c6cc5767a** (field labels and the limit in the message; tests/test_validation_copy.py). Verified s8-1110.
 - E8 ~~A disabled tool refused with the wrong reason (H11, `_refuse_if_off` 3f0030d41); duplicated loopback lists (K28, one list in core/security)~~; token sweep per request (K33) **not built, s8-1110**: `tests/test_vault_sessions.py::test_the_key_goes_when_the_last_granted_session_expires` pins that every authenticated request sweeps (a token injected into `_active_tokens` with an old stamp must revoke the vault key on the next request). A once-a-minute sweep fails it; needs the owner to move that test's intent, or a sweep keyed on a min-expiry that the test's direct injection also lowers | 1029-harness H11, 1028-backend K28, K33
-- E9 Real Tesseract and PDFium reads never ran | sec L13, OPEN RapidOCR row
+- E9 Real Tesseract and PDFium reads never ran | sec L13, OPEN RapidOCR row [unverifiable here: no tesseract or pypdfium2; needs a machine with both]
 - E10 The other 1028-backend and 1031-backend open rows | book1 (37 and 12 rows) [backend-1111: re-verified on head; the rest are built, stale or held (Q22, K38, K32); BK10, K19, K29, E9 left in backend-1111.md]
 
 **W33 Copy and help** (E, copy, Haiku then Sonnet). Files: help topics, copy strings.

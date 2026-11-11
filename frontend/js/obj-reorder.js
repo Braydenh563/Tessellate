@@ -224,7 +224,7 @@
   //: order it had; once it is here, the lists that chose it draw again.
   function objReorderKick() {
     for (const def of OBJ_SURFACES) {
-      const select = $(def.select);
+      const select = document.getElementById(def.select);
       if (select?.value === "custom") select.dispatchEvent(new Event("change", { bubbles: true }));
     }
   }
@@ -236,7 +236,7 @@
 
   function objOrderHintSync(def) {
     const list = document.querySelector(def.list);
-    const on = $(def.select)?.value === "custom";
+    const on = document.getElementById(def.select)?.value === "custom";
     let hint = document.getElementById(`obj-order-hint-${def.scope}`);
     if (on && list && !hint) {
       hint = document.createElement("p");
@@ -251,8 +251,9 @@
 
   function objOrderHints() {
     for (const def of OBJ_SURFACES) {
-      const select = $(def.select);
-      if (!select) continue;
+      const select = document.getElementById(def.select);
+      if (!select || select.dataset.objHint) continue;
+      select.dataset.objHint = "1";
       select.addEventListener("change", () => objOrderHintSync(def));
       objOrderHintSync(def);
     }
@@ -272,8 +273,10 @@
   //: Capture, ahead of the lists' own arrow-key walking, which would move the focus instead.
   window.addEventListener("keydown", objReorderKey, true);
   window.addEventListener("focusin", objReorderKeysNamed, true);
-  objOrderHints();
-  objReorderKick();
+  //: The Library's sorts are wired when its pane is built.
+  const objWireSorts = () => { objOrderHints(); objReorderKick(); };
+  objWireSorts();
+  onSurface("library", objWireSorts);
 
   Object.assign(window, { objReorderStep, objSurfaceAt });
 })();

@@ -466,6 +466,8 @@ function toggleWebPanel(force) {
     //: The "..." is drawn with the head, from what was last known; the
     //: status call below (seconds while Docker answers) only updates it.
     renderWebPanelMenu(webEngineInfo);
+    //: Private web search needs SearXNG: the optional-package notice (extra-notice.js).
+    if (prefsCache && prefsCache.web_search_enabled && prefsCache.search_provider !== "duckduckgo") extraNoticeMount(panel, "searxng");
     refreshWebSearxngStrip();
     renderWebSearchHistory();
     //: The page you were reading is still there when the panel comes back.
@@ -895,11 +897,16 @@ const RESPONSE_MODE_SELECTS = ["response-mode-select", "ask-mode-select"];
 
 // The response presets, fetched once. Served by /chat/modes rather than
 // listed here so adding a fourth is a change to `ai/presets.py` alone (§11).
+let responseModesBody = null;
 async function loadResponseModes() {
-  const selects = RESPONSE_MODE_SELECTS.map((id) => $(id)).filter(Boolean);
-  if (!selects.length) return;
-  const body = await apiJson("/chat/modes", { silent: true }).catch(() => null);
-  if (!body || !body.modes) return;
+  responseModesBody = await apiJson("/chat/modes", { silent: true }).catch(() => null);
+  paintResponseModes();
+}
+//: Again when the Chat pane is built, from the answer already read.
+function paintResponseModes() {
+  const body = responseModesBody;
+  const selects = RESPONSE_MODE_SELECTS.map((id) => document.getElementById(id)).filter(Boolean);
+  if (!selects.length || !body || !body.modes) return;
   const active = body.modes.find((m) => m.id === body.active);
   for (const select of selects) {
     select.replaceChildren();
@@ -914,6 +921,8 @@ async function loadResponseModes() {
     if (active) select.title = active.description;
   }
 }
+
+onSurface("chat", paintResponseModes);
 
 // Picking in one picker moves the other. Without this the two would drift
 // apart the moment either was touched, and the one you weren't looking at
