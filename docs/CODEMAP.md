@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8110, frontend ids 2688, CSS sections 523, backend routes 667, backend modules 10032, test files 2457, tests 20332, plan headings 1002, app scripts 28, boot scripts 37, script files 277.
+Counts: frontend functions 8110, frontend ids 2688, CSS sections 523, backend routes 667, backend modules 10032, test files 2458, tests 20334, plan headings 1002, app scripts 28, boot scripts 37, script files 277.
 
 ## Frontend functions (8110)
 
@@ -26144,7 +26144,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20332)
+## Tests (20334)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26380,6 +26380,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_capture_private_early.py | 1 |
 | tests/test_capture_strip_first_paint.py | 4 |
 | tests/test_card_button_names_n17.py | 2 |
+| tests/test_card_open_ring_bs1.py | 2 |
 | tests/test_casual_acts_1507.py | 7 |
 | tests/test_catalogue_reveal.py | 7 |
 | tests/test_catalogue_sliced_1108.py | 5 |
