@@ -10,6 +10,12 @@
 //
 //   BASE=http://127.0.0.1:8800 SCRATCH=/tmp/x THEME=light VW=1440 VH=900 \
 //   PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node scratchpad/ui-sweeps/wbpresent.js
+//
+// MODE=build (INBOX 1774): a 15-topic map built up branch by branch and taken
+// apart again. The visible topic count per step rises then falls on Previous,
+// no write goes to the server, Escape gives every topic back, the shown topics
+// sit inside the board above the bar, Alt+= / Alt+- step real folds (one Undo
+// each); VW=390 taps instead of keys; REDUCE=1 checks no transition runs.
 const { boot } = require("./lib.js");
 
 let pass = 0;
@@ -33,7 +39,201 @@ const ratio = (a, b) => {
 const VW = Number(process.env.VW || 1440);
 const VH = Number(process.env.VH || 900);
 
+async function buildMain() {
+  const phone = VW < 600;
+  const reduce = process.env.REDUCE === "1";
+  const { browser, page } = await boot({
+    viewport: { width: VW, height: VH },
+    ...(phone ? { hasTouch: true, isMobile: true } : {}),
+  });
+  if (reduce) await page.emulateMedia({ reducedMotion: "reduce" });
+  const errors = [];
+  const writes = [];
+  let counting = false;
+  page.on("pageerror", (e) => errors.push(String(e)));
+  page.on("request", (r) => {
+    if (counting && !["GET", "HEAD", "OPTIONS"].includes(r.method()) && !/\/usage$|\/thumbnail$/.test(new URL(r.url()).pathname)) writes.push(`${r.method()} ${new URL(r.url()).pathname}`);
+  });
+  await page.evaluate(() => document.querySelector('[data-tab="library"]').click());
+  await page.waitForTimeout(500);
+  await page.evaluate(() => document.querySelector('[data-target="library-view-whiteboard"]').click());
+  await page.waitForTimeout(1200);
+  await page.evaluate(async () => {
+    await initWhiteboard();
+    const md = ["- Atlas"];
+    const tree = {
+      Costs: { Hardware: ["Servers", "Network"], Software: ["Licences"] },
+      Plan: { "Quarter one": ["Hire", "Train"], "Quarter two": [] },
+      Risks: { Delay: [] },
+      Team: {},
+    };
+    for (const [b, kids] of Object.entries(tree)) {
+      md.push(`  - ${b}`);
+      for (const [k, leaves] of Object.entries(kids)) {
+        md.push(`    - ${k}`);
+        for (const l of leaves) md.push(`      - ${l}`);
+      }
+    }
+    const board = await apiJson("/whiteboard/boards/import", { method: "POST", body: JSON.stringify({ format: "markdown", content: md.join("\n"), name: `Build sweep ${Date.now()}` }) });
+    await openWhiteboardBoard(board.id);
+    await new Promise((r) => setTimeout(r, 1800));
+  });
+  const ready = await page.evaluate(() => ({ map: wbIsMap(), topics: wbMapIndex().nodes.length }));
+  ok("a 15-topic map is open", ready.map && ready.topics === 15, JSON.stringify(ready));
+  const objs = () =>
+    page.evaluate(() => {
+      const c = document.getElementById("whiteboard-container").getBoundingClientRect();
+      return [...document.querySelectorAll("#whiteboard-container .wb-object")]
+        .filter((el) => {
+          const r = el.getBoundingClientRect();
+          return r.width > 0 && getComputedStyle(el).display !== "none" && getComputedStyle(el).visibility !== "hidden";
+        })
+        .map((el) => ({ id: Number(el.dataset.id), text: el.textContent.trim().slice(0, 20), ring: el.classList.contains("flash-target"), r: el.getBoundingClientRect().toJSON(), c: c.toJSON() }));
+    });
+  const count = async () => (await objs()).length;
+  const caption = () => page.evaluate(() => document.getElementById("wb-present-pick")?.textContent || "");
+  const state = () => page.evaluate(() => wbState.objects.map((o) => `${o.id}:${o.x}:${o.y}:${JSON.stringify({ ...o.data, collapsed: Boolean(o.data?.collapsed) })}`).join("|"));
+
+  // 1. Stepping outside presenting: real folds, one Undo each.
+  await page.evaluate(() => { window.currentTool = "select"; document.getElementById("whiteboard-container").focus(); });
+  const start = await state();
+  const less = [];
+  for (let i = 0; i < 5; i++) {
+    await page.keyboard.press("Alt+Minus");
+    await page.waitForTimeout(700);
+    less.push(await count());
+  }
+  const lessToast = await page.evaluate(() => [...document.querySelectorAll(".toast")].map((t) => t.textContent).join(" | "));
+  ok("Alt+- folds the deepest open ring each press, down to the trunks, then says so", less[0] < 15 && less.every((n, i) => i === 0 || n <= less[i - 1]) && less[4] === less[3] && /Only the centre is showing/.test(lessToast), JSON.stringify(less) + " " + lessToast);
+  const more = [];
+  for (let i = 0; i < 5; i++) {
+    await page.keyboard.press("Alt+Equal");
+    await page.waitForTimeout(700);
+    more.push(await count());
+  }
+  const moreToast = await page.evaluate(() => [...document.querySelectorAll(".toast")].map((t) => t.textContent).join(" | "));
+  ok("Alt+= opens the shallowest folded ring each press, back to every topic, then says so", more[3] === 15 && more.every((n, i) => i === 0 || n >= more[i - 1]) && /Every level is showing/.test(moreToast), JSON.stringify(more) + " " + moreToast);
+  await page.keyboard.press("Alt+Minus");
+  await page.waitForTimeout(600);
+  const folded1 = await count();
+  await page.keyboard.press("Control+z");
+  await page.waitForTimeout(700);
+  const undone = await count();
+  ok("one Undo puts back exactly one step", folded1 < 15 && undone === 15 && (await state()) === start, `${folded1} -> ${undone}`);
+
+  // 2. Build up.
+  const rowState = await page.evaluate(() => {
+    const el = document.getElementById("wb-map-build");
+    return { exists: Boolean(el), text: el?.textContent.trim(), title: el?.title };
+  });
+  ok("the board menu has Build up branch by branch", rowState.exists && rowState.text === "Build up branch by branch", JSON.stringify(rowState));
+  counting = true;
+  writes.length = 0;
+  await page.evaluate(() => document.getElementById("wb-map-build").click());
+  await page.waitForTimeout(1300);
+  const expectCount = [1, 2, 4, 7, 8, 10, 12, 13, 14, 15, 15];
+  const expectCap = ["Atlas", "Costs", "Costs, level 2", "Costs, level 3", "Plan", "Plan, level 2", "Plan, level 3", "Risks", "Risks, level 2", "Team", "The whole map"];
+  const total = expectCount.length;
+  const up = [];
+  for (let i = 0; i < total; i++) {
+    const list = await objs();
+    const cap = await caption();
+    const bar = await page.evaluate(() => document.getElementById("wb-present-bar").getBoundingClientRect().toJSON());
+    const c = list[0]?.c;
+    //: A branch step fits the trunk and the branch on show, so a branch shown earlier may be off screen by design.
+    const mine = i === total - 1 ? list : list.filter((o) => o.ring || o.text.startsWith("Atlas") || o.text.startsWith(expectCap[i].split(",")[0]));
+    const ok1 = (o) => o.r.left >= c.left - 1 && o.r.right <= c.right + 1 && o.r.top >= c.top - 1 && o.r.bottom <= bar.top + 1;
+    const inside = mine.every(ok1);
+    if (!inside && process.env.DEBUG) console.log("   outside at", i, JSON.stringify(mine.filter((o) => !ok1(o)).map((o) => [o.text, Math.round(o.r.left), Math.round(o.r.right), Math.round(o.r.top), Math.round(o.r.bottom)])), "bar top", Math.round(bar.top));
+    up.push({ list, cap, inside, ring: list.filter((o) => o.ring).length, bar });
+    if (i === 5) await page.screenshot({ path: `${process.env.SCRATCH || "."}/wbbuild-${VW}-${process.env.THEME || "light"}-${reduce ? "rm" : "m"}-step6.png` });
+    if (i < total - 1) {
+      if (phone) await page.tap("#wb-present-next");
+      else await page.keyboard.press("ArrowRight");
+      await page.waitForTimeout(reduce ? 250 : 700);
+    }
+  }
+  ok(`the visible topics rise step by step ${expectCount.join(", ")}`, JSON.stringify(up.map((u) => u.list.length)) === JSON.stringify(expectCount), JSON.stringify(up.map((u) => u.list.length)));
+  ok("the captions name the branch and its level", up.every((u, i) => u.cap.includes(`of ${total}: ${expectCap[i]}`)), up.map((u) => u.cap).join(" | "));
+  ok("the trunk and the branch on show sit inside the board, above the bar (the whole map on the last)", up.every((u) => u.inside), JSON.stringify(up.map((u) => u.inside)));
+  ok("only what a step revealed wears the ring; the whole map none", up.slice(0, -1).every((u, i) => u.ring === expectCount[i] - (expectCount[i - 1] || 0)) && up[total - 1].ring === 0, JSON.stringify(up.map((u) => u.ring)));
+  console.log("   page width", VW, "bar", JSON.stringify(up[3].bar), "caption", up[3].cap);
+  await page.screenshot({ path: `${process.env.SCRATCH || "."}/wbbuild-${VW}-${process.env.THEME || "light"}-${reduce ? "rm" : "m"}.png` });
+
+  // 3. Taken apart: Previous, outer to inner.
+  const down = [];
+  for (let i = total - 2; i >= 0; i--) {
+    if (phone) await page.tap("#wb-present-prev");
+    else await page.keyboard.press("ArrowLeft");
+    await page.waitForTimeout(reduce ? 250 : 700);
+    down.push((await objs()).length);
+  }
+  ok("Previous takes the same parts away, last first", JSON.stringify(down) === JSON.stringify(expectCount.slice(0, total - 1).reverse()), JSON.stringify(down));
+
+  // 4. Jumps land right: End, Home, a typed page, the picker.
+  await page.keyboard.press("End");
+  await page.waitForTimeout(500);
+  const end = await count();
+  await page.keyboard.press("Home");
+  await page.waitForTimeout(500);
+  const home = await count();
+  await page.evaluate(() => wbPresentShow(5));
+  await page.waitForTimeout(500);
+  const jump = await count();
+  await page.click("#wb-present-pick");
+  await page.waitForTimeout(300);
+  const rows = await page.evaluate(() => [...document.querySelectorAll(".action-menu:not(.hidden) .menu-item")].map((r) => r.textContent.trim()));
+  await page.evaluate(() => [...document.querySelectorAll(".action-menu:not(.hidden) .menu-item")][8]?.click());
+  await page.waitForTimeout(600);
+  const picked = await count();
+  ok("End shows the whole map, Home the centre, a jump to page 6 and the picker's page 9 land right", end === 15 && home === 1 && jump === 10 && picked === 14, JSON.stringify({ end, home, jump, picked }));
+  ok("the picker lists every step with its words", rows.length === total && /Costs, level 3/.test(rows[3] || ""), rows.join(" | "));
+
+  // 5. A view: no key edits the map, and the level keys do nothing now.
+  const mid = await state();
+  await page.keyboard.press("Alt+Minus");
+  await page.keyboard.press("Delete");
+  await page.keyboard.press("Tab");
+  await page.waitForTimeout(400);
+  ok("keys while presenting change nothing and no write reached the server", writes.length === 0 && (await state()) === mid, writes.join(" | "));
+
+  // 6. Escape: every topic back, the map exactly as it was.
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(800);
+  const after = await page.evaluate(() => ({
+    presenting: document.getElementById("library-view-whiteboard").classList.contains("wb-presenting"),
+    on: wbMapBuild.on, hidden: wbMapBuild.hidden.size, steps: wbMapBuild.steps.length,
+    ring: document.querySelectorAll(".wb-object.flash-target").length,
+  }));
+  ok("Escape gives every topic back, nothing left over", !after.presenting && !after.on && after.hidden === 0 && after.steps === 0 && (await count()) === 15 && after.ring === 0, JSON.stringify(after));
+  ok("the map is exactly as it was (positions, folds, text)", (await state()) === start);
+  counting = false;
+
+  // 7. The other mode still runs on its own; a bare map says what to add.
+  await page.evaluate(() => document.getElementById("wb-map-study")?.click());
+  await page.waitForTimeout(900);
+  const study = await page.evaluate(() => ({ study: wbStudy.on, build: wbMapBuild.on }));
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(600);
+  ok("Study the map still runs on its own, not in build mode", study.study && !study.build, JSON.stringify(study));
+  const empty = await page.evaluate(async () => {
+    const board = await apiJson("/whiteboard/boards", { method: "POST", body: JSON.stringify({ name: `Bare ${Date.now()}`, type: "map", layout: "tree-right" }) });
+    await openWhiteboardBoard(board.id);
+    await new Promise((r) => setTimeout(r, 1200));
+    wbMapBuild.start();
+    await new Promise((r) => setTimeout(r, 300));
+    return { on: wbMapBuild.on, toast: [...document.querySelectorAll(".toast")].map((t) => t.textContent).join(" | ") };
+  });
+  ok("a map with no branch says to add one", !empty.on && /Nothing to build up yet/.test(empty.toast), JSON.stringify(empty));
+
+  ok("no page errors", errors.length === 0, errors.join(" | "));
+  console.log(`\n${pass} passed, ${fail} failed`);
+  await browser.close();
+  process.exit(fail ? 1 : 0);
+}
+
 (async () => {
+  if (process.env.MODE === "build") return buildMain();
   const phone = VW < 600;
   const { browser, page } = await boot({
     viewport: { width: VW, height: VH },

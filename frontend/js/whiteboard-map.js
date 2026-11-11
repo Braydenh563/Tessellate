@@ -9990,6 +9990,8 @@ const wbMapBuild = {
     return step.level === 1 ? name(step.id) : `${name(step.id)}, level ${step.level}`;
   },
   start() {
+    //: One presentation at a time: a second start would take the camera it already holds.
+    if (wbPresent) return;
     const index = wbMapIndex();
     const plan = wbMapBuild.plan(index, wbMapHidden(index));
     if (!plan.some((s) => s.kind === "branch")) {
@@ -10007,6 +10009,8 @@ const wbMapBuild = {
     wbMapBuild.hidden = wbMapBuild.hiddenAt(plan, 0);
     renderWhiteboardNow();
     wbStartPresenting();
+    //: The shell could not open (no board to present on): put the map back whole.
+    if (!wbPresent) wbMapBuild.end();
   },
   //: The shell calls this as step `at` is shown: set what is hidden from the
   //: step alone, so any jump lands right, and ring what just appeared.

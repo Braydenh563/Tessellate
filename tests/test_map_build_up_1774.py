@@ -171,3 +171,15 @@ def test_the_help_says_both():
     text = help_chat_text() + help_core_text() + help_more_text()
     assert "Alt+= and Alt+- show one more or one less level" in text
     assert "Build up branch by branch shows the centre" in text
+
+
+def test_a_second_start_is_refused_and_a_shell_that_did_not_open_puts_the_map_back_whole():
+    start = MAP_JS[MAP_JS.index("  start() {\n    //: One presentation at a time") :][:1500]
+    assert "if (wbPresent) return;" in start
+    assert "if (!wbPresent) wbMapBuild.end();" in start
+
+
+def test_the_canvas_menu_greys_a_level_step_that_would_change_nothing():
+    menu = BOARD[BOARD.index("const openMapCanvasMenu") :][:2600]
+    assert "moreLevel.disabled = !wbMapBuild.ring(index, hiddenByFold, 1).ids.length" in menu
+    assert "lessLevel.disabled = !wbMapBuild.ring(index, hiddenByFold, -1).ids.length" in menu

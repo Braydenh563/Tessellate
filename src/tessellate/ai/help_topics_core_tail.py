@@ -746,6 +746,7 @@ TAIL_TOPICS.extend(
                 "mind map features",
                 "layout picker",
                 "present branches",
+                "show one more level",
                 "marker",
                 "markers",
                 "priority on a topic",
@@ -767,7 +768,7 @@ TAIL_TOPICS.extend(
                 "The layout picker: tree, radial, logic chart, "
                 "timeline, fishbone, tree table or free; Tidy lays every unpinned topic out again. "
                 "View sets Colour by (branch, category, age, note) and opens every "
-                "folded branch; Present branches shows it branch by branch.  A topic's menu, "
+                "folded branch; Present branches shows it branch by branch. A topic's menu, "
                 "Content, Markers sets a priority (1 to 5), how far along it is, a "
                 "flag, a start day, a due day and up to six icons; View, Gantt chart draws "
                 "a bar from start to due for each topic with both, and a dragged bar moves its dates (Undo); "
