@@ -138,7 +138,6 @@
  "src/tessellate/entry/paths.py::_connect": 18,
  "src/tessellate/entry/tidy.py::_apply_merge_notes": 18,
  "src/tessellate/entry/tidy.py::_auto_added": 17,
- "src/tessellate/entry/tidy.py::_rows_short_notes": 16,
  "src/tessellate/entry/tidy.py::_rows_similar_categories": 22,
  "src/tessellate/search/index.py::_boards_touched_by_objects": 17,
  "src/tessellate/search/index.py::_index_on_flush": 16,

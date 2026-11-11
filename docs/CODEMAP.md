@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10192, test files 2495, tests 20562, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10194, test files 2495, tests 20562, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -13529,7 +13529,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10192)
+## Backend modules (10194)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -18293,21 +18293,22 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `tidy` | src/tessellate/ai/question_noise.py:505 |
 | `topic_of` | src/tessellate/ai/question_noise.py:536 |
 
-### src/tessellate/ai/questions.py (11)
+### src/tessellate/ai/questions.py (12)
 
 | Name | File:line |
 |---|---|
 | `_answers_by_question` | src/tessellate/ai/questions.py:56 |
 | `_as_json` | src/tessellate/ai/questions.py:88 |
+| `_notes_for` | src/tessellate/ai/questions.py:149 |
 | `_payload` | src/tessellate/ai/questions.py:48 |
 | `_plain` | src/tessellate/ai/questions.py:80 |
-| `listing` | src/tessellate/ai/questions.py:149 |
+| `listing` | src/tessellate/ai/questions.py:162 |
 | `open_counts` | src/tessellate/ai/questions.py:131 |
-| `open_note_ids` | src/tessellate/ai/questions.py:267 |
-| `set_state` | src/tessellate/ai/questions.py:208 |
+| `open_note_ids` | src/tessellate/ai/questions.py:272 |
+| `set_state` | src/tessellate/ai/questions.py:213 |
 | `state_of` | src/tessellate/ai/questions.py:71 |
-| `summary` | src/tessellate/ai/questions.py:195 |
-| `visible_question` | src/tessellate/ai/questions.py:203 |
+| `summary` | src/tessellate/ai/questions.py:200 |
+| `visible_question` | src/tessellate/ai/questions.py:208 |
 
 ### src/tessellate/ai/reading.py (32)
 
@@ -25632,33 +25633,33 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `inline_tags` | src/tessellate/entry/tagnames.py:81 |
 | `normalise_tags` | src/tessellate/entry/tagnames.py:30 |
 
-### src/tessellate/entry/tidy.py (70)
+### src/tessellate/entry/tidy.py (71)
 
 | Name | File:line |
 |---|---|
 | `Review` | src/tessellate/entry/tidy.py:79 |
 | `_actor_words` | src/tessellate/entry/tidy.py:315 |
-| `_apply_bin` | src/tessellate/entry/tidy.py:860 |
-| `_apply_done` | src/tessellate/entry/tidy.py:871 |
-| `_apply_link_reasons` | src/tessellate/entry/tidy.py:725 |
-| `_apply_merge_categories` | src/tessellate/entry/tidy.py:816 |
-| `_apply_merge_notes` | src/tessellate/entry/tidy.py:789 |
-| `_apply_merge_tags` | src/tessellate/entry/tidy.py:762 |
-| `_apply_move` | src/tessellate/entry/tidy.py:778 |
-| `_apply_remove_tags` | src/tessellate/entry/tidy.py:752 |
-| `_apply_rename_categories` | src/tessellate/entry/tidy.py:845 |
-| `_apply_unlink` | src/tessellate/entry/tidy.py:737 |
+| `_apply_bin` | src/tessellate/entry/tidy.py:865 |
+| `_apply_done` | src/tessellate/entry/tidy.py:876 |
+| `_apply_link_reasons` | src/tessellate/entry/tidy.py:730 |
+| `_apply_merge_categories` | src/tessellate/entry/tidy.py:821 |
+| `_apply_merge_notes` | src/tessellate/entry/tidy.py:794 |
+| `_apply_merge_tags` | src/tessellate/entry/tidy.py:767 |
+| `_apply_move` | src/tessellate/entry/tidy.py:783 |
+| `_apply_remove_tags` | src/tessellate/entry/tidy.py:757 |
+| `_apply_rename_categories` | src/tessellate/entry/tidy.py:850 |
+| `_apply_unlink` | src/tessellate/entry/tidy.py:742 |
 | `_auto_added` | src/tessellate/entry/tidy.py:285 |
 | `_category_ids` | src/tessellate/entry/tidy.py:430 |
-| `_count_duplicates` | src/tessellate/entry/tidy.py:656 |
+| `_count_duplicates` | src/tessellate/entry/tidy.py:661 |
 | `_count_uncategorised` | src/tessellate/entry/tidy.py:558 |
 | `_generic_links` | src/tessellate/entry/tidy.py:237 |
-| `_id_number` | src/tessellate/entry/tidy.py:721 |
+| `_id_number` | src/tessellate/entry/tidy.py:726 |
 | `_live_entries` | src/tessellate/entry/tidy.py:218 |
-| `_log` | src/tessellate/entry/tidy.py:912 |
+| `_log` | src/tessellate/entry/tidy.py:917 |
 | `_meaning_centroids` | src/tessellate/entry/tidy.py:436 |
 | `_percent` | src/tessellate/entry/tidy.py:229 |
-| `_restore_binned` | src/tessellate/entry/tidy.py:1014 |
+| `_restore_binned` | src/tessellate/entry/tidy.py:1019 |
 | `_row` | src/tessellate/entry/tidy.py:233 |
 | `_rows_auto_tags` | src/tessellate/entry/tidy.py:325 |
 | `_rows_category_names` | src/tessellate/entry/tidy.py:532 |
@@ -25666,46 +25667,47 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_rows_link_reasons` | src/tessellate/entry/tidy.py:259 |
 | `_rows_lookalike_tags` | src/tessellate/entry/tidy.py:376 |
 | `_rows_rare_tags` | src/tessellate/entry/tidy.py:366 |
-| `_rows_short_notes` | src/tessellate/entry/tidy.py:589 |
+| `_rows_short_notes` | src/tessellate/entry/tidy.py:601 |
 | `_rows_similar_categories` | src/tessellate/entry/tidy.py:471 |
-| `_rows_stale_reminders` | src/tessellate/entry/tidy.py:612 |
+| `_rows_stale_reminders` | src/tessellate/entry/tidy.py:617 |
 | `_rows_uncategorised` | src/tessellate/entry/tidy.py:392 |
 | `_rows_weak_links` | src/tessellate/entry/tidy.py:275 |
 | `_strength_detail` | src/tessellate/entry/tidy.py:251 |
 | `_tag_counts` | src/tessellate/entry/tidy.py:356 |
 | `_tags` | src/tessellate/entry/tidy.py:208 |
+| `_tied_ids` | src/tessellate/entry/tidy.py:589 |
 | `_title` | src/tessellate/entry/tidy.py:212 |
 | `_top_topics` | src/tessellate/entry/tidy.py:466 |
-| `_touched_entry_ids` | src/tessellate/entry/tidy.py:920 |
-| `_undo_aliases` | src/tessellate/entry/tidy.py:1051 |
-| `_undo_binned` | src/tessellate/entry/tidy.py:1035 |
-| `_undo_done` | src/tessellate/entry/tidy.py:1060 |
-| `_undo_links` | src/tessellate/entry/tidy.py:970 |
-| `_undo_merged` | src/tessellate/entry/tidy.py:1023 |
-| `_undo_moved` | src/tessellate/entry/tidy.py:1002 |
-| `_undo_payload` | src/tessellate/entry/tidy.py:1077 |
-| `_undo_renamed` | src/tessellate/entry/tidy.py:1039 |
-| `_undo_tags` | src/tessellate/entry/tidy.py:994 |
-| `_undo_unlinked` | src/tessellate/entry/tidy.py:980 |
-| `apply` | src/tessellate/entry/tidy.py:943 |
-| `auto_settings` | src/tessellate/entry/tidy.py:1125 |
-| `cancel_link_reasons` | src/tessellate/entry/tidy.py:1254 |
-| `dismiss` | src/tessellate/entry/tidy.py:695 |
-| `dismissed_ids` | src/tessellate/entry/tidy.py:689 |
-| `history` | src/tessellate/entry/tidy.py:1100 |
-| `is_running` | src/tessellate/entry/tidy.py:1208 |
+| `_touched_entry_ids` | src/tessellate/entry/tidy.py:925 |
+| `_undo_aliases` | src/tessellate/entry/tidy.py:1056 |
+| `_undo_binned` | src/tessellate/entry/tidy.py:1040 |
+| `_undo_done` | src/tessellate/entry/tidy.py:1065 |
+| `_undo_links` | src/tessellate/entry/tidy.py:975 |
+| `_undo_merged` | src/tessellate/entry/tidy.py:1028 |
+| `_undo_moved` | src/tessellate/entry/tidy.py:1007 |
+| `_undo_payload` | src/tessellate/entry/tidy.py:1082 |
+| `_undo_renamed` | src/tessellate/entry/tidy.py:1044 |
+| `_undo_tags` | src/tessellate/entry/tidy.py:999 |
+| `_undo_unlinked` | src/tessellate/entry/tidy.py:985 |
+| `apply` | src/tessellate/entry/tidy.py:948 |
+| `auto_settings` | src/tessellate/entry/tidy.py:1130 |
+| `cancel_link_reasons` | src/tessellate/entry/tidy.py:1259 |
+| `dismiss` | src/tessellate/entry/tidy.py:700 |
+| `dismissed_ids` | src/tessellate/entry/tidy.py:694 |
+| `history` | src/tessellate/entry/tidy.py:1105 |
+| `is_running` | src/tessellate/entry/tidy.py:1213 |
 | `is_short` | src/tessellate/entry/tidy.py:186 |
 | `lookalike_groups` | src/tessellate/entry/tidy.py:172 |
 | `lookalike_key` | src/tessellate/entry/tidy.py:160 |
-| `request_stop` | src/tessellate/entry/tidy.py:1201 |
-| `respecify_all` | src/tessellate/entry/tidy.py:1212 |
-| `rows` | src/tessellate/entry/tidy.py:676 |
-| `run_automatic` | src/tessellate/entry/tidy.py:1168 |
-| `set_auto` | src/tessellate/entry/tidy.py:1130 |
-| `summary` | src/tessellate/entry/tidy.py:1142 |
+| `request_stop` | src/tessellate/entry/tidy.py:1206 |
+| `respecify_all` | src/tessellate/entry/tidy.py:1217 |
+| `rows` | src/tessellate/entry/tidy.py:681 |
+| `run_automatic` | src/tessellate/entry/tidy.py:1173 |
+| `set_auto` | src/tessellate/entry/tidy.py:1135 |
+| `summary` | src/tessellate/entry/tidy.py:1147 |
 | `tag_fit` | src/tessellate/entry/tidy.py:195 |
-| `undismiss` | src/tessellate/entry/tidy.py:709 |
-| `undo` | src/tessellate/entry/tidy.py:1081 |
+| `undismiss` | src/tessellate/entry/tidy.py:714 |
+| `undo` | src/tessellate/entry/tidy.py:1086 |
 
 ### src/tessellate/entry/timewords.py (14)
 
