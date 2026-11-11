@@ -7,7 +7,8 @@ import io
 import pytest
 
 from tessellate.ai import vision_ocr
-from tessellate.api import routes_files, routes_files as files_service, routes_tasks
+from tessellate.api import routes_files, routes_tasks
+from tessellate.api import routes_files_ocr as files_service  # the OCR read moved there (K24)
 from tessellate.api.routes_files_readings import MAX_RANGE_PAGES, _parse_page_spec  # moved with their routes (K24)
 from tessellate.core import pdfpages
 

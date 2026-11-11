@@ -32,7 +32,7 @@ import pytest
 
 from tessellate.ai import captioning
 from tessellate.api import routes_files
-from tessellate.api import routes_files as files_service
+from tessellate.api import routes_files_ocr as files_service  # the OCR read moved there (K24)
 from tessellate.core import deps, pdfpages
 from tessellate.core.database import PageRead
 
