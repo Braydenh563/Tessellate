@@ -21,6 +21,7 @@ ALLOWED = {
     "core/activity.py": 1,  # str(exc) or the type name, reviewed 2026-10-11: activity's own tools
     "core/jobs.py": 1,  # `error` is built by the pool from a typed failure
     "api/routes_recordings.py": 1,  # `error` is one of two fixed sentences
+    "api/routes_studio.py": 1,  # `error` is one fixed sentence (the overview could not be made)
 }
 
 
