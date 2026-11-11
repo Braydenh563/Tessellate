@@ -456,16 +456,16 @@ def _regions_for(
         #: served another's miss; only a reader run is shared (`auto` off runs none: nothing to save).
         #: `doc` is the source document for a rasterised PDF page, whose `path` is a temp file new on every look.
         miss_key = (*key, page, doc or str(path), bool(auto), str(choice or ""), hash(stored_text or ""))
-        missed = rf._REGION_MISSES.get(miss_key) if auto else None
+        missed = _REGION_MISSES.get(miss_key) if auto else None
         if missed is not None and time.monotonic() - missed[0] < REGION_MISS_FOR:
             #: A copy: callers set `pages`, `page` and `message` on what they get, concurrently.
             return missed[1].model_copy(deep=True)
         out = _regions_read(path, stored_text, stored_label, key, page, auto, choice)
         if auto and _stored_regions(key, page) is None:
             _prune_region_misses()
-            rf._REGION_MISSES[miss_key] = (time.monotonic(), out.model_copy(deep=True))
+            _REGION_MISSES[miss_key] = (time.monotonic(), out.model_copy(deep=True))
         else:
-            rf._REGION_MISSES.pop(miss_key, None)
+            _REGION_MISSES.pop(miss_key, None)
         return out
 
 
@@ -476,16 +476,16 @@ _REGION_MISSES: dict[tuple, tuple[float, OcrRegionsOut]] = {}
 def _prune_region_misses() -> None:
     """Drop the expired shares, so the dict holds only the last 30 s of misses, never one per page ever asked."""
     now = time.monotonic()
-    for k in [k for k, (at, _) in rf._REGION_MISSES.items() if now - at >= REGION_MISS_FOR]:
-        rf._REGION_MISSES.pop(k, None)
+    for k in [k for k, (at, _) in _REGION_MISSES.items() if now - at >= REGION_MISS_FOR]:
+        _REGION_MISSES.pop(k, None)
 
 
 def _forget_region_misses(key: tuple[str, int] | None, page: int) -> None:
     """A reading stored for this page ends any miss shared for it (the next ask reads the store, not "not read yet")."""
     if not key:
         return
-    for k in [k for k in rf._REGION_MISSES if k[:3] == (*key, page)]:
-        rf._REGION_MISSES.pop(k, None)
+    for k in [k for k in _REGION_MISSES if k[:3] == (*key, page)]:
+        _REGION_MISSES.pop(k, None)
 
 
 _REGION_LOCKS: dict[tuple[str, int, int], list] = {}
@@ -498,7 +498,7 @@ def _region_lock(key: tuple[str, int], page: int):
     holds only pages being read now, never one per page ever asked."""
     slot = (key[0], key[1], int(page))
     with _REGION_LOCKS_GUARD:
-        entry = rf._REGION_LOCKS.setdefault(slot, [threading.Lock(), 0])
+        entry = _REGION_LOCKS.setdefault(slot, [threading.Lock(), 0])
         entry[1] += 1
     try:
         with entry[0]:
@@ -507,7 +507,7 @@ def _region_lock(key: tuple[str, int], page: int):
         with _REGION_LOCKS_GUARD:
             entry[1] -= 1
             if entry[1] <= 0:
-                rf._REGION_LOCKS.pop(slot, None)
+                _REGION_LOCKS.pop(slot, None)
 
 
 def _regions_read(
