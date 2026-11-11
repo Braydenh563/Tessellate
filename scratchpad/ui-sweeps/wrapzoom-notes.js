@@ -24,8 +24,12 @@ const MATRIX = [
 // tab panel, an open dialog or menu). Returns a list of findings.
 function measure({ roots, passB }) {
   const out = [];
-  const vis = (el) => el && el.checkVisibility && el.checkVisibility({ opacityProperty: true, visibilityProperty: true })
-    && el.getClientRects().length > 0;
+  // Effective opacity: a hover-revealed group is opacity 0 on the group, not
+  // on its buttons, and checkVisibility only reads the element's own.
+  const opq = new Map();
+  const eff = (el) => { if (!el || el.nodeType !== 1) return 1; if (opq.has(el)) return opq.get(el); const v = parseFloat(getComputedStyle(el).opacity) * eff(el.parentElement); opq.set(el, v); return v; };
+  const vis = (el) => el && el.checkVisibility && el.checkVisibility({ visibilityProperty: true })
+    && el.getClientRects().length > 0 && eff(el) > 0.05;
   const R = (r) => [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)];
   const STATE = /^(active|hidden|open|is-[a-z-]+|has-[a-z-]+|selected|pressed|focus|hover|dragging|editing)$/;
   const desc = (el) => {
@@ -81,9 +85,10 @@ function measure({ roots, passB }) {
       }
       // A split button or icon segment coming apart sideways.
       if (el.matches('.seg, [class*="split"], .btn-group') && !wrapped) {
+        const cg = parseFloat(cs.columnGap) || 0;
         for (let i = 1; i < rs.length; i++) {
           const gap = rs[i].left - rs[i - 1].right;
-          if (gap > 3) { out.push({ defect: 'wrap', sub: 'split-gap', sel: desc(el), gap: Math.round(gap) }); break; }
+          if (gap > cg + 3) { out.push({ defect: 'wrap', sub: 'split-gap', sel: desc(el), gap: Math.round(gap) }); break; }
         }
       }
     }
@@ -104,6 +109,13 @@ function measure({ roots, passB }) {
           const scrollX = /auto|scroll/.test(ox), scrollY = /auto|scroll/.test(oy);
           const maxX = a.scrollWidth - a.clientWidth, maxY = a.scrollHeight - a.clientHeight;
           const inter = r.right > box.l && r.left < box.r && r.bottom > box.t && r.top < box.b;
+          // Wholly outside a clipping ancestor: scrolled away or hidden, not cut.
+          if (!inter && a.clientWidth > 0 && a.clientHeight > 0) break;
+          // Cut along a scroller's own axis mid-scroll: that is scrolling, and
+          // nothing further out can be judged for this element.
+          const midScroll = (scrollY && (r.top < box.t - 0.5 && a.scrollTop > 0 || r.bottom > box.b + 0.5 && a.scrollTop < maxY - 1))
+            || (scrollX && (r.left < box.l - 0.5 && a.scrollLeft > 0 || r.right > box.r + 0.5 && a.scrollLeft < maxX - 1));
+          if (midScroll) break;
           if (inter && a.clientWidth > 0 && a.clientHeight > 0) {
             const cut = [];
             if (r.left < box.l - 0.5 && (!scrollX || a.scrollLeft <= 0)) cut.push(['left', box.l - r.left]);
@@ -117,7 +129,17 @@ function measure({ roots, passB }) {
               if (!scrollY && oy !== 'visible') { if (r.top - box.t < 3.5) ring.push(['top', +(r.top - box.t).toFixed(1)]); if (box.b - r.bottom < 3.5) ring.push(['bottom', +(box.b - r.bottom).toFixed(1)]); }
             }
             if (cut.length) out.push({ defect: 'clip', sel: desc(el), by: desc(a), overflow: ox + '/' + oy, rect: R(r), box: [box.l, box.t, box.r, box.b].map(Math.round), cut: cut.map(([s, v]) => s + ':' + v.toFixed(1)) });
-            else if (ring.length && !/^(li|tr|td)$/i.test(el.tagName)) out.push({ defect: 'clip', sub: 'ring', sel: desc(el), by: desc(a), overflow: ox + '/' + oy, room: ring.map(([s, v]) => s + ':' + v) });
+            else if (ring.length && !/^(li|tr|td)$/i.test(el.tagName) && el.matches('button, a[href], summary, select, input, [role=button], [role=tab]')) {
+              // Measure the ring the element really draws when focused from the keyboard.
+              const prevFocus = document.activeElement;
+              try { el.focus({ preventScroll: true, focusVisible: true }); } catch (e) {}
+              const fcs = getComputedStyle(el);
+              const ext = fcs.outlineStyle === 'none' ? 0 : parseFloat(fcs.outlineWidth) + parseFloat(fcs.outlineOffset);
+              const focused = document.activeElement === el;
+              el.blur(); if (prevFocus && prevFocus.focus) try { prevFocus.focus({ preventScroll: true }); } catch (e) {}
+              const cutRing = ring.filter(([, v]) => ext > v + 0.5);
+              if (focused && cutRing.length) out.push({ defect: 'clip', sub: 'ring', sel: desc(el), by: desc(a), overflow: ox + '/' + oy, ringPx: +ext.toFixed(1), room: cutRing.map(([s, v]) => s + ':' + v) });
+            }
             if (cut.length) break;
           }
         }
@@ -131,6 +153,7 @@ function measure({ roots, passB }) {
       if (/auto|scroll/.test(cs.overflowX)) continue;
       if (/^(PRE|CODE|svg|path|IMG|CANVAS|VIDEO|TEXTAREA|INPUT|SELECT|OPTION)$/i.test(el.tagName)) continue;
       if (cs.textOverflow === 'ellipsis') continue;
+      if (el.clientWidth <= 2 || el.matches('.visually-hidden, .sr-only, .toolbar-word')) continue;
       const extra = el.scrollWidth - el.clientWidth;
       if (el.clientWidth > 0 && extra > 1) {
         const r = el.getBoundingClientRect();
@@ -192,7 +215,7 @@ function measure({ roots, passB }) {
     }
   }
   const pointClipped = (el, x, y) => {
-    let a = el.parentElement;
+    let a = el;
     while (a && a !== document.documentElement) {
       const cs = getComputedStyle(a);
       if (cs.overflowX !== 'visible' || cs.overflowY !== 'visible') {
@@ -206,7 +229,7 @@ function measure({ roots, passB }) {
   const INTER2 = 'button, a[href], input:not([type=hidden]), select, textarea, summary, [role=button], [role=tab], [role=menuitem]';
   const seen = new Set();
   for (const el of visEls) {
-    if (!el.matches(INTER2)) continue;
+    if (!el.matches(INTER2) || el.matches('img, video, canvas')) continue;
     if (passB) {
       // Pass B (scrollers at their end): only controls in a bottom-sticky foot.
       let s = el, foot = false;
@@ -217,7 +240,7 @@ function measure({ roots, passB }) {
     if (r.width < 2 || r.height < 2 || !onScreen(r)) continue;
     const L = layerOf(el);
     for (const t of texts) {
-      if (el.contains(t.pe)) continue;
+      if (el.contains(t.pe) || !vis(t.pe)) continue;
       if (layerOf(t.pe) !== L) continue;
       const tr = t.tr;
       const ix = Math.min(r.right, tr.right) - Math.max(r.left, tr.left);
@@ -235,7 +258,7 @@ function measure({ roots, passB }) {
         ctl: R(r), txt: R(tr), inter: [Math.round(ix), Math.round(iy)], hitIsCtl: !!(hit && (el === hit || el.contains(hit))) });
     }
   }
-  return out;
+  return { roots: rootEls.length, findings: out };
 }
 
 // ---- driver ----------------------------------------------------------------
@@ -274,8 +297,9 @@ async function run() {
       }, roots);
       let b = [];
       if (restore > 0) { await settle(250); b = await ev(measure, { roots, passB: true }); await ev(() => { for (const [el, t] of window.__wzRestore || []) el.scrollTop = t; }); }
-      const findings = [...(Array.isArray(a) ? a : [a]), ...(Array.isArray(b) ? b : [b])];
-      emit({ vp, state, n: findings.length, findings });
+      const part = (x) => (x && x.findings ? x.findings : x && x.err ? [x] : []);
+      const findings = [...part(a), ...part(b)];
+      emit({ vp, state, roots: a && a.roots, n: findings.length, findings });
     };
     // Openers inside a scope: menus, help ?s and the first kebab of each kind.
     const openers = (scope) => ev((scope) => {
@@ -350,7 +374,7 @@ async function run() {
       async () => { await ev(() => { if (!document.getElementById('quick-note').open) openQuickNote(); }); await settle(300); });
     await ev(() => { const d = document.getElementById('quick-note'); if (d?.open) d.close(); });
     // ---- Library ----
-    const libTabs = await ev(() => { switchTab('library'); return [...document.querySelectorAll('#library-subtabs [data-target]')].map((b) => b.dataset.target); });
+    const libTabs = await ev(() => { switchTab('library'); return [...document.querySelectorAll('#library-subtabs [data-target]')].map((b) => b.dataset.target).filter((t, i, l) => l.indexOf(t) === i); });
     for (const target of Array.isArray(libTabs) ? libTabs : []) {
       const open = async () => {
         await tab('library');
