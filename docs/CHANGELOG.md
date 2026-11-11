@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Performance (INBOX 1772): the Boards & maps sub-tab asks for its list and the miniature drawer when it is pressed, beside the board code, not after it (the list used to leave only once every board file had run); the board code is fetched when the pointer or focus first reaches the sub-tab. Measured, 120 boards, cold, 4x CPU: first card at about 1.9 s before, about 1.0 s after.
 - Performance: a sealed title (reminders, documents, link offers) is cacheable again; `SealedTitle` declares its own `cache_ok`, so its queries use SQLAlchemy's statement cache and the server log loses its SAWarning per query.
 - Tests: the E2E specs find the note card's Edit and More actions buttons by their verb, since each label now names its note.
 - Tests: CI leg 1 back to green after the wrapzoom and settings merges (hop constants read from `engine_consts`, the speaker-labels extra listed in requirements.txt, the `docSpell.packKey` stub in the docs harnesses, the dgpolish block window widened, the wrapzoom docs rule regex anchored).

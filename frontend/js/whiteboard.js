@@ -25420,7 +25420,13 @@ async function renderLibraryBoardsGallery() {
   //: once; skeletons only when there is nothing yet.
   const had = libraryBoardsLast;
   if (!had) showSkeletons(grid, 4);
-  const listed = await apiPagedList("/whiteboard/boards", 200, { silent: true }).catch(() => null);
+  //: The list the sub-tab press already asked for (library.js), used once and
+  //: only while young: one that waited out a slow bundle is asked for again.
+  const early = window.libraryBoardsPrefetch;
+  window.libraryBoardsPrefetch = null;
+  const listed = await (early && Date.now() - early.at < 5000
+    ? early.list
+    : apiPagedList("/whiteboard/boards", 200, { silent: true }).catch(() => null));
   if (!had) clearSkeletons(grid);
   //: The board made a moment ago is part of what is drawn (see below).
   const text = listed ? JSON.stringify(listed) + (window.wbLastCreatedBoard?.id ?? "") : "";

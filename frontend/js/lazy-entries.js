@@ -328,4 +328,6 @@ warmOnFirst("pointerover", "li[data-id] .menu-wrap", "entryMenu");
 //: A slider fetches the value field on its first hover or focus (a keyboard-only reach too), so its readout becomes typeable (INBOX 1694 c, value-field.js). Range inputs only: a plain number box has no readout to upgrade.
 warmOnFirst("pointerover", "[type=range]", "vf");
 warmOnFirst("focusin", "[type=range]", "vf");
+//: The board code is fetched when the pointer or focus first reaches the Boards & maps sub-tab, so the press finds part of it in (INBOX 1772).
+for (const type of ["pointerover", "focusin"]) warmOnFirst(type, '#library-subtabs [data-target="library-view-whiteboard"]', "boards");
 installStandIns({ chatDocs: ["importChatDocuments", "keepUnreadableChatFile"] });
