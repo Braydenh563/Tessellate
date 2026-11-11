@@ -6584,7 +6584,7 @@ def test_an_equation_field_has_one_door() -> None:
         assert 'createElement("math-field")' not in text, f"{path.name} builds a math field of its own"
     design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
     assert "mathFieldPane" in design and "openMathInPlace" in design
-    field = (ROOT / "frontend" / "js" / "math-field.js").read_text(encoding="utf-8")
+    field = _js_scope.unwrapped((ROOT / "frontend" / "js" / "math-field.js").read_text(encoding="utf-8"))
     assert 'setAttribute("style"' not in field and ".style.cssText" in field
 
 

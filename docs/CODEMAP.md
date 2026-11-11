@@ -6089,26 +6089,26 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `closeMathInPlace` | frontend/js/math-field.js:448 |
-| `mathFieldAllowStyles` | frontend/js/math-field.js:204 |
-| `mathFieldBoxes` | frontend/js/math-field.js:70 |
-| `mathFieldChange` | frontend/js/math-field.js:176 |
-| `mathFieldConfigure` | frontend/js/math-field.js:225 |
-| `mathFieldCreate` | frontend/js/math-field.js:250 |
-| `mathFieldFoot` | frontend/js/math-field.js:466 |
-| `mathFieldGroupEnd` | frontend/js/math-field.js:26 |
-| `mathFieldHollow` | frontend/js/math-field.js:151 |
-| `mathFieldKeys` | frontend/js/math-field.js:531 |
-| `mathFieldLatexBox` | frontend/js/math-field.js:268 |
-| `mathFieldOwns` | frontend/js/math-field.js:444 |
-| `mathFieldPane` | frontend/js/math-field.js:289 |
-| `mathFieldPlace` | frontend/js/math-field.js:454 |
-| `mathFieldRead` | frontend/js/math-field.js:263 |
-| `mathFieldSlots` | frontend/js/math-field.js:85 |
-| `mathFieldStored` | frontend/js/math-field.js:60 |
-| `mathFieldTouch` | frontend/js/math-field.js:188 |
-| `mathFieldUnplace` | frontend/js/math-field.js:43 |
-| `openMathInPlace` | frontend/js/math-field.js:483 |
+| `closeMathInPlace` | frontend/js/math-field.js:449 |
+| `mathFieldAllowStyles` | frontend/js/math-field.js:205 |
+| `mathFieldBoxes` | frontend/js/math-field.js:71 |
+| `mathFieldChange` | frontend/js/math-field.js:177 |
+| `mathFieldConfigure` | frontend/js/math-field.js:226 |
+| `mathFieldCreate` | frontend/js/math-field.js:251 |
+| `mathFieldFoot` | frontend/js/math-field.js:467 |
+| `mathFieldGroupEnd` | frontend/js/math-field.js:27 |
+| `mathFieldHollow` | frontend/js/math-field.js:152 |
+| `mathFieldKeys` | frontend/js/math-field.js:532 |
+| `mathFieldLatexBox` | frontend/js/math-field.js:269 |
+| `mathFieldOwns` | frontend/js/math-field.js:445 |
+| `mathFieldPane` | frontend/js/math-field.js:290 |
+| `mathFieldPlace` | frontend/js/math-field.js:455 |
+| `mathFieldRead` | frontend/js/math-field.js:264 |
+| `mathFieldSlots` | frontend/js/math-field.js:86 |
+| `mathFieldStored` | frontend/js/math-field.js:61 |
+| `mathFieldTouch` | frontend/js/math-field.js:189 |
+| `mathFieldUnplace` | frontend/js/math-field.js:44 |
+| `openMathInPlace` | frontend/js/math-field.js:484 |
 
 ### frontend/js/meaning.js (18)
 
