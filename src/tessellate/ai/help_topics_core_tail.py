@@ -498,6 +498,8 @@ TAIL_TOPICS.extend(
                 "new note next to",
                 "arrows round a card",
                 "dimension line",
+                "second label",
+                "two labels on a connector",
                 "measure",
                 "measure between",
                 "length of a line",
@@ -509,11 +511,11 @@ TAIL_TOPICS.extend(
                 "take it out. A straight line runs through its bends, a curved one curves smoothly through "
                 "them, and an elbow turns at right angles round the shapes it joins; Entity relation and "
                 "Isometric go end to end with no bends; changing the "
-                "line shape keeps the bends; moving both things it joins moves its bends too. "
+                "line shape keeps them; moving both ends moves them too. "
                 "With Select, pointing at a shape, card or text box shows its connection points; drag from one to draw an "
                 "elbow connector to whatever you let go on, or to a free end. "
                 "Drag a connector's label by its words to slide "
-                "it along the line; Format sets its size, colour, bold and a chip behind it. The ends include the entity-relationship marks. With one shape or text box selected, the four arrows round it "
+                "it along the line; Format sets its size, colour, bold, a chip and a second label. The ends include the entity-relationship marks. With one shape or text box selected, the four arrows round it "
                 "(or Alt+Shift and an arrow key) copy it that way and join facing sides with an elbow; View, Connection arrows and Connection points hide them; "
                 "a note card's arrows make a new note there instead, joined and ready to type. With two or more selected, Arrange, Tidy and connect joins them in a line or all to the first picked. Measure with a dimension line shows its length. Drag a square at a connector's end onto another shape to re-point it. "
                 "Insert, Diagram, Mermaid, draw.io or board SVG brings in a Mermaid flowchart, state, class or "

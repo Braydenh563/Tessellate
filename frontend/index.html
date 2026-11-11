@@ -8609,6 +8609,7 @@ Link to another note with [[its first few words]]."></textarea>
               <p><b>Start gap, End gap</b>: stop this far short of the shape at each end.</p>
               <p><b>Start, End</b>: the mark at each end of the line, and its size.</p>
               <p><b>Label along</b>: where the connector's label sits along it.</p>
+              <p><b>Second label, Second label along</b>: a second label for the other end of the connector, and where it sits along it (it takes the first label's size and colour).</p>
               <p><b>Label size, colour and look</b>: the connector label's own size, colour, bold, and a chip behind the words.</p>
             </div>
             <label class="wb-fmt-row" data-fmt="route"><span class="wb-fmt-label">Line shape</span>
@@ -8647,6 +8648,10 @@ Link to another note with [[its first few words]]."></textarea>
             </label>
             <label class="wb-fmt-row" data-fmt="label-t"><span class="wb-fmt-label">Label along</span>
               <input type="range" id="wb-fmt-label-t" data-unit="%" min="5" max="95" step="5" aria-label="Label position along the line" title="Label position along the line">
+            </label>
+            <label class="wb-fmt-row" data-fmt="label2"><span class="wb-fmt-label">Second label</span><input type="text" id="wb-fmt-label2" maxlength="120" placeholder="Near the end" aria-label="Second label" title="A second label on this connector"></label>
+            <label class="wb-fmt-row" data-fmt="label2-t"><span class="wb-fmt-label">Second label along</span>
+              <input type="range" id="wb-fmt-label2-t" data-unit="%" min="5" max="95" step="5" aria-label="Second label position along the line" title="Second label position along the line">
             </label>
             <label class="wb-fmt-row" data-fmt="linklook" data-unit="px"><span class="wb-fmt-label">Label size</span><input type="number" id="wb-fmt-lsize" min="8" max="72" step="1" aria-label="Label text size" title="Size of this connector's label"></label>
             <label class="wb-fmt-row" data-fmt="linklook"><span class="wb-fmt-label">Label colour</span><input type="color" id="wb-fmt-lcolor" class="wb-color-picker" aria-label="Label colour" title="Colour of this connector's label"></label>

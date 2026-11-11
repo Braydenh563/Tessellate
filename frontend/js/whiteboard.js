@@ -3833,7 +3833,7 @@ function wbSearchTextFor(kind, item, byId) {
   //: reads first, and what this one missed.
   if (kind === "sketch") {
     const data = wbSketchData(item);
-    return `${data?.label || ""}${wbPropsText(data?.props)}`.toLowerCase();
+    return `${data?.label || ""}${data?.label2 ? `\n${data.label2}` : ""}${wbPropsText(data?.props)}`.toLowerCase();
   }
   return "";
 }
@@ -3926,11 +3926,11 @@ function wbReplaceInProps(props, find, to, opts = {}) {
 }
 
 //: A Replace all hit written into its item in memory (the caller saves the lot).
-function wbReplaceWrite(kind, item, { text, values, grid, note }) {
+function wbReplaceWrite(kind, item, { text, values, grid, note, second }) {
   const props = values.count ? { props: values.props } : {};
   const noted = note?.count ? { note: note.text } : {};
   if (kind === "object") item.data = { ...item.data, content: text.text, ...props, ...noted, ...(grid.count ? { cells: grid.cells } : {}) };
-  else wbSketchSetProps(item, { label: text.text, ...props });
+  else wbSketchSetProps(item, { label: text.text, ...props, ...(second?.count ? { label2: second.text } : {}) });
 }
 
 //: **Replace all** (canvasdepth; WHITEBOARD_PLAN section 9): text boxes,
@@ -3965,10 +3965,12 @@ async function wbBoardReplaceAll(find, to, only = null) {
       const grid = kind === "object" ? wbReplaceInCells(own?.cells, needle, to, wbBoardSearch) : { cells: undefined, count: 0 };
       //: A map topic's note (`data.note`) is searched, so it is rewritten too (undo already holds the whole payload).
       const note = kind === "object" && typeof own?.note === "string" ? wbReplaceText(own.note, needle, to, wbBoardSearch) : { text: "", count: 0 };
-      const done = { count: text.count + values.count + grid.count + note.count };
+      //: A connector's second label (`label2`) is searched, so it is rewritten too.
+      const second = kind === "sketch" && typeof own?.label2 === "string" ? wbReplaceText(own.label2, needle, to, wbBoardSearch) : { text: "", count: 0 };
+      const done = { count: text.count + values.count + grid.count + note.count + second.count };
       if (!done.count) continue;
       undo.push({ action: "move", kind, id: item.id, before: WB_KIND_INFO[kind].payload(item) });
-      wbReplaceWrite(kind, item, { text, values, grid, note });
+      wbReplaceWrite(kind, item, { text, values, grid, note, second });
       rows.push({ kind, item });
       changes += done.count;
     }
@@ -20797,7 +20799,8 @@ function wbLinkLength(d) {
 }
 
 function wbLayoutLinkLabel(groupEl) {
-  const label = groupEl?.querySelector?.(":scope > .wb-link-label");
+  wbFmtState.drawMore?.layoutLabel2(groupEl);
+  const label = groupEl?.querySelector?.(":scope > .wb-link-label:not(.wb-link-label2)");
   if (!label) return;
   //: A label that shows the length is worded again on every layout, so a drag
   //: of either end shows the new number as it moves, not after the drop.
@@ -20865,9 +20868,10 @@ function wbWireLinkLabelDrag(label, groupEl) {
 }
 
 function wbPaintLinkLabel(groupEl, sketch, parsed) {
+  wbFmtState.drawMore?.paintLabel2(groupEl, sketch, parsed);
   const text = wbLinkTakesLabel(sketch, parsed) && typeof parsed.label === "string" ? wbExpandPlaceholders(parsed.label, parsed.props, wbPlaceholderBuiltins("sketch", sketch, groupEl)) : "";
   groupEl.__wbMeasured = text && parsed.label.includes("%length%") ? { sketch, parsed } : null;
-  let label = groupEl.querySelector(":scope > .wb-link-label");
+  let label = groupEl.querySelector(":scope > .wb-link-label:not(.wb-link-label2)");
   if (!text) {
     label?.remove();
     return;
@@ -21347,7 +21351,7 @@ function wbRenderWaypointHandles(group, sketch, parsed, endpoints) {
   //: A label is pressed by its words (INBOX 1404), so a ring that would sit
   //: on them waits: the press would otherwise land on the ring.
   let labelBox = null;
-  try { labelBox = groupEl()?.querySelector(":scope > .wb-link-label")?.getBBox() || null; } catch { labelBox = null; }
+  try { labelBox = groupEl()?.querySelector(":scope > .wb-link-label:not(.wb-link-label2)")?.getBBox() || null; } catch { labelBox = null; }
   const underLabel = (a) => Boolean(labelBox && labelBox.width && a.x > labelBox.x - 6 && a.x < labelBox.x + labelBox.width + 6 && a.y > labelBox.y - 6 && a.y < labelBox.y + labelBox.height + 6);
   for (const add of wbWaypointAddSpots(live(), ends(), groupEl()?.querySelector(".sketch-hitbox")?.getAttribute("d")).filter((a) => !underLabel(a))) {
     const grip = group.append("circle")

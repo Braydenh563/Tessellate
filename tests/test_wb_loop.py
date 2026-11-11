@@ -108,7 +108,7 @@ def test_the_board_the_panel_the_command_and_the_help_agree():
     assert '["er", "iso", "loop"].includes(wbLinkShape(parsed)?.route)' in _function("wbRenderWaypointHandles")
     assert '["er", "iso", "loop"].includes(shape?.route)' in _function("wbWaypointAddSpots")
     fmt = frontend_text("whiteboard-format.js")
-    assert '"tip", "loop"],' in fmt and "wbFmtState.drawMore?.syncLoopRow(takes, sharing);" in fmt
+    assert '"tip", "loop", "label2"' in fmt and "wbFmtState.drawMore?.syncLoopRow(takes, sharing);" in fmt
     commands = frontend_text("whiteboard-commands.js")
     assert 'id: "loop"' in commands and "wbFmtState.drawMore.addLoop()" in commands and 'needs: "clone"' in commands.split('id: "loop"')[1].split("\n")[0]
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")

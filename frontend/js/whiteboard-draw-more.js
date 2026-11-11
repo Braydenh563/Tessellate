@@ -4,6 +4,8 @@
   // used): Entity relation (`route: "er"`) and Isometric (`route: "iso"`). `wbLinkPathD` calls `routeStops` for them.
   // And the self-loop: a curved connector from a shape back to itself (`loop`: top, right, bottom or left, with the two
   // ends on that side) is drawn as a loop out of that side; `addLoop` makes one, `bindLoopRow` is Format's Loop side.
+  // And a second label on a connector (`label2`, at `label2_t` along the line, 0.85 unless moved), set in Format and drawn
+  // beside the first with the same look; `paintLabel2` and `layoutLabel2` are called from the connector label's own paint and layout.
 
   const STUB = 30;
 
@@ -133,5 +135,63 @@
 
   onSurface("board", bindLoopRow);
 
-  wbFmtState.drawMore = { routeStops, entityStops, isometricStops, loopSegs, addLoop, syncLoopRow, sameEnd, SIDES };
+  //: A connector's second label (draw.io lets an edge carry several; two cover the ends). Its words are `label2`, its
+  //: place `label2_t` (0 at the start, 1 at the end), 0.85 until moved; the look (size, colour, bold, chip) is the first
+  //: label's. The text carries both classes so the stylesheet and a standalone SVG export treat it as a connector label.
+  const LABEL2_T = 0.85;
+
+  function label2T(parsed) {
+    const t = Number(parsed?.label2_t);
+    return Number.isFinite(t) && t >= 0 && t <= 1 ? t : LABEL2_T;
+  }
+
+  function layoutLabel2(groupEl) {
+    const el = groupEl?.querySelector?.(":scope > .wb-link-label2");
+    if (!el) return;
+    const t = Number(groupEl.dataset.label2T);
+    const p = wbLinkMidpoint(groupEl.querySelector(".sketch-hitbox")?.getAttribute("d"), Number.isFinite(t) ? t : LABEL2_T);
+    if (!p) return;
+    el.setAttribute("x", String(p.x));
+    el.setAttribute("y", String(p.y));
+  }
+
+  function paintLabel2(groupEl, sketch, parsed) {
+    const words = wbLinkTakesLabel(sketch, parsed) && typeof parsed.label2 === "string" ? parsed.label2.trim() : "";
+    let el = groupEl.querySelector(":scope > .wb-link-label2");
+    if (!words) {
+      el?.remove();
+      return;
+    }
+    if (!el) {
+      el = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      el.setAttribute("class", "wb-link-label wb-link-label2");
+      el.setAttribute("text-anchor", "middle");
+      el.setAttribute("dominant-baseline", "central");
+      groupEl.appendChild(el);
+    }
+    const text = wbExpandPlaceholders(words, parsed.props, wbPlaceholderBuiltins("sketch", sketch, groupEl));
+    if (el.textContent !== text) el.textContent = text;
+    el.style.fontSize = Number(parsed.label_size) > 0 ? `${Number(parsed.label_size)}px` : "";
+    el.style.fontWeight = parsed.label_bold ? "700" : "";
+    el.style.fill = typeof parsed.label_color === "string" ? parsed.label_color : "";
+    el.classList.toggle("wb-link-label-chip", Boolean(parsed.label_chip));
+    groupEl.dataset.label2T = String(label2T(parsed));
+    layoutLabel2(groupEl);
+  }
+
+  //: Format's two rows for it: the words, and the place along the line.
+  function bindLabel2Rows() {
+    document.getElementById("wb-fmt-label2")?.addEventListener("change", (e) => {
+      const words = e.target.value.trim().slice(0, 120);
+      wbFmtApply("label2", () => ({ label2: words || undefined }), words ? "Second label set." : "Second label removed.");
+    });
+    document.getElementById("wb-fmt-label2-t")?.addEventListener("change", (e) => {
+      const pct = Math.max(5, Math.min(95, Number(e.target.value) || 85));
+      wbFmtApply("label2-t", () => ({ label2_t: pct === 85 ? undefined : pct / 100 }), `Second label at ${pct}% along the line.`);
+    });
+  }
+
+  onSurface("board", bindLabel2Rows);
+
+  wbFmtState.drawMore = { routeStops, entityStops, isometricStops, loopSegs, addLoop, syncLoopRow, sameEnd, SIDES, label2T, paintLabel2, layoutLabel2 };
 })();
