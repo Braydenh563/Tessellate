@@ -47,6 +47,10 @@ function measure({ roots, passB }) {
     const par = el.parentElement && el.parentElement !== a ? own(el.parentElement) + ' > ' : '';
     return (anc ? anc + ' ' : '') + par + own(el);
   };
+  // The next ancestor whose overflow can clip `x`: an absolutely placed box
+  // is clipped only from its containing block outwards (offsetParent), a
+  // fixed one by nothing here.
+  const up = (x) => { const p = getComputedStyle(x).position; if (p === 'fixed') return null; if (p === 'absolute') return x.offsetParent; return x.parentElement; };
   const rootEls = [];
   for (const s of roots) for (const el of document.querySelectorAll(s)) if (vis(el) && !rootEls.some((r) => r.contains(el))) rootEls.push(el);
   const inRoots = (el) => rootEls.some((r) => r.contains(el));
@@ -98,7 +102,7 @@ function measure({ roots, passB }) {
       if (!el.matches(INTER)) continue;
       const r = el.getBoundingClientRect();
       if (r.width < 2 || r.height < 2) continue;
-      let a = el.parentElement;
+      let a = up(el);
       while (a && a !== document.body) {
         const cs = getComputedStyle(a);
         const ox = cs.overflowX, oy = cs.overflowY;
@@ -143,7 +147,7 @@ function measure({ roots, passB }) {
             if (cut.length) break;
           }
         }
-        a = a.parentElement;
+        a = up(a);
       }
     }
     // ---- overflow ----
@@ -222,7 +226,7 @@ function measure({ roots, passB }) {
         const ar = a.getBoundingClientRect();
         if (x < ar.left || x > ar.right || y < ar.top || y > ar.bottom) return true;
       }
-      a = a.parentElement;
+      a = up(a);
     }
     return false;
   };

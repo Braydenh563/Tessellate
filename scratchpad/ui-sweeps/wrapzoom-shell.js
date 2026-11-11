@@ -128,6 +128,10 @@ function detect() {
     const tw2 = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
     for (let n = tw2.nextNode(); n; n = tw2.nextNode()) {
       if (!n.textContent.trim()) continue;
+      // A line-clamped hint is allowed its lines (quick-link-hint clamps at 2).
+      let clamped = false;
+      for (let a = n.parentElement; a && a !== el.parentElement; a = a.parentElement) if (cs(a).webkitLineClamp && cs(a).webkitLineClamp !== 'none') { clamped = true; break; }
+      if (clamped) continue;
       const range = document.createRange(); range.selectNodeContents(n);
       const rs = [...range.getClientRects()].filter((r) => r.width > 0.5 && r.height > 0.5 && r.height < 3 * fsz);
       if (rs.length > 1) { const t = rs.map((r) => r.top); selfWrap = Math.max(selfWrap, Math.max(...t) - Math.min(...t)); }
@@ -251,7 +255,8 @@ function detect() {
       if (v) texts.push({ n, p, v });
     }
   }
-  const inters = [...vis.keys()].filter((e) => isInteractive(e) && !e.closest('.visually-hidden, .sr-only'));
+  // A scroll row's edge arrows sit over the row's chips by design (scroll-row-host).
+  const inters = [...vis.keys()].filter((e) => isInteractive(e) && !e.closest('.visually-hidden, .sr-only') && !e.matches('.scroll-row-arrow'));
   const layerMemo = new Map(); const layer = (e) => { if (!layerMemo.has(e)) layerMemo.set(e, layerOf(e)); return layerMemo.get(e); };
   const seenPair = new Set();
   for (const I of inters) {
