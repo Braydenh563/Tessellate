@@ -47,6 +47,7 @@
  "documents-code.js::raf": 1,
  "documents-codekit.js::raf": 2,
  "documents-embeds.js::raf": 1,
+ "documents-graph.js::resize-observer": 1,
  "documents-outline.js::resize-observer": 1,
  "documents-prose.js::raf": 1,
  "documents.js::mutation-observer": 3,

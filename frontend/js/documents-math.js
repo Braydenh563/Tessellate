@@ -589,4 +589,84 @@
     //: True while a document renders its pieces (columns): each piece keeps the whole page's map instead of indexing its own text.
     held: false,
   };
+
+  //: **The ```graph block** (documents-graph.js, lazy; DOCUMENTS_PLAN 16): Read swaps each fence for its plot, and Live draws one
+  //: the caret is outside of, through a state field for the reason the mermaid fence gives (a replace across line breaks may
+  //: not come from a plugin). The plot's own clicks and drags are the plot's: the pencil on its corner puts the caret in the text.
+  docMathRender.graphBlocks = (text) => [...text.matchAll(/^```[ \t]*graph\b[^\n]*\n([\s\S]*?)\n```[ \t]*$/gm)].map((m) => ({ from: m.index, to: m.index + m[0].length, source: m[1] }));
+  docMathRender.graphIn = (container) => {
+    const codes = [...container.querySelectorAll('.code-block code[data-lang="graph"]')];
+    if (!codes.length) return;
+    ensureModule("docGraph").then((ok) => {
+      for (const code of ok ? codes : []) {
+        const block = code.closest(".code-block");
+        if (!block?.isConnected) continue;
+        const figure = document.createElement("figure");
+        figure.className = "md-graph";
+        //: A fence that draws nothing stays the code it is, with the reasons under it.
+        if (docMathRender.graph.fill(figure, code.textContent)) block.replaceWith(figure);
+        else block.after(figure);
+      }
+    });
+  };
+  docMathRender.graphField = (CM) => {
+    if (docMathRender.graphFieldCache) return docMathRender.graphFieldCache;
+    const { StateField } = CM.state;
+    const { Decoration, EditorView, WidgetType } = CM.view;
+    class DocGraphWidget extends WidgetType {
+      constructor(source) {
+        super();
+        this.source = source;
+      }
+      //: The source alone: a key typed above a graph must not draw it again and lose its sliders.
+      eq(other) {
+        return other.source === this.source;
+      }
+      get estimatedHeight() {
+        return 420;
+      }
+      ignoreEvent() {
+        return true;
+      }
+      toDOM(view) {
+        const wrap = document.createElement("div");
+        wrap.className = "cm-md-graph-wrap";
+        const figure = document.createElement("figure");
+        figure.className = "md-graph cm-md-graph md-graph-pending";
+        const edit = smallButton("ph:pencil-simple", "Edit the graph's text", () => {
+          view.dispatch({ selection: { anchor: Math.min(view.posAtDOM(wrap) + 4, view.state.doc.length) } });
+          view.focus();
+        });
+        edit.classList.add("dg-edit", "icon-only");
+        wrap.append(figure, edit);
+        ensureModule("docGraph").then((ok) => {
+          if (!ok) return;
+          figure.classList.remove("md-graph-pending");
+          docMathRender.graph.fill(figure, this.source);
+          view.requestMeasure();
+        });
+        return wrap;
+      }
+    }
+    //: The fences once per text, as the mermaid field does: a caret move rescanned the whole document.
+    const blocksOf = new WeakMap();
+    const build = (state) => {
+      let blocks = blocksOf.get(state.doc);
+      if (!blocks) {
+        const text = state.doc.toString();
+        blocks = /```[ \t]*graph/.test(text) ? docMathRender.graphBlocks(text) : [];
+        blocksOf.set(state.doc, blocks);
+      }
+      const ranges = blocks
+        .filter((block) => !docLiveSpanTouched.anchorIn(state.selection.ranges, block.from, block.to))
+        .map((block) => Decoration.replace({ widget: new DocGraphWidget(block.source), block: true }).range(block.from, block.to));
+      return ranges.length ? Decoration.set(ranges, true) : Decoration.none;
+    };
+    docMathRender.graphFieldCache = StateField.define({
+      create: (state) => build(state),
+      update: (value, tr) => (tr.docChanged || tr.selection ? build(tr.state) : value),
+      provide: (field) => EditorView.decorations.from(field),
+    });
+    return docMathRender.graphFieldCache;
+  };
 })();

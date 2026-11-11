@@ -200,6 +200,20 @@ _JUNK = re.compile(
 )
 
 
+#: The `<meta>` names that fill a clipped note's properties, and which one.
+_META_FACTS = {
+    "og:site_name": "site",
+    "author": "author",
+    "article:author": "author",
+    "article:published_time": "published",
+    "og:article:published_time": "published",
+    "datepublished": "published",
+    "date": "published",
+    "pubdate": "published",
+}
+_ISO_DAY = re.compile(r"\d{4}-\d{2}-\d{2}")
+
+
 class _Node:
     __slots__ = ("tag", "attrs", "children", "parent")
 
@@ -225,14 +239,18 @@ class _Tree(HTMLParser):
         self.title = ""
         self._in_title = False
         self.og_title = ""
+        #: What the page says about itself, for the note's properties.
+        self.facts: dict[str, str] = {}
 
     def handle_starttag(self, tag, attrs):
         tag = tag.lower()
         attrs = {k.lower(): (v or "") for k, v in attrs}
         if tag == "title":
             self._in_title = True
-        if tag == "meta" and attrs.get("property", "").lower() == "og:title":
-            self.og_title = attrs.get("content", "").strip()
+        if tag == "meta":
+            if attrs.get("property", "").lower() == "og:title":
+                self.og_title = attrs.get("content", "").strip()
+            self._meta_fact(attrs)
         if self.skip:
             if tag not in _VOID:
                 self.skip += 1
@@ -249,6 +267,21 @@ class _Tree(HTMLParser):
         self.cur.children.append(node)
         if tag not in _VOID:
             self.cur = node
+
+    def _meta_fact(self, attrs: dict) -> None:
+        """Keep the first site, author and publish date a `<meta>` names."""
+        key = (attrs.get("property") or attrs.get("name") or attrs.get("itemprop") or "").lower()
+        field = _META_FACTS.get(key)
+        value = " ".join(attrs.get("content", "").split())
+        if not field or not value or field in self.facts:
+            return
+        if field == "published":
+            found = _ISO_DAY.match(value)
+            value = found.group(0) if found else ""
+        elif field == "author" and value.lower().startswith(("http://", "https://")):
+            value = ""  # article:author is often a profile address, not a name
+        if value:
+            self.facts[field] = value[:120]
 
     def handle_endtag(self, tag):
         tag = tag.lower()
@@ -473,7 +506,8 @@ def _read(page: str, url: str, junk: bool) -> tuple[_Tree, str]:
 
 
 def extract(page: str, url: str) -> dict:
-    """`{"title", "markdown", "words"}` for a page's main content."""
+    """`{"title", "markdown", "words", "facts"}` for a page's main content;
+    `facts` holds the `site`, `author` and `published` day the page names."""
     tree, markdown = _read(page, url, junk=True)
     #: A theme can hang a "junk" word on the one wrapper everything sits in
     #: (a `div.site-header-wrapper` around the whole page is common), and the
@@ -496,7 +530,35 @@ def extract(page: str, url: str) -> dict:
     names = {title.lower(), tree.og_title.lower()} - {""}
     if blocks and blocks[0].startswith("# ") and blocks[0][2:].strip().lower() in names:
         markdown = "\n\n".join(blocks[1:])
-    return {"title": title[:300], "markdown": markdown, "words": len(markdown.split())}
+    return {"title": title[:300], "markdown": markdown, "words": len(markdown.split()), "facts": dict(tree.facts)}
+
+
+def page_facts(page: str) -> dict[str, str]:
+    """Only the `site`, `author` and `published` a page names, for a clip
+    whose text was selected by hand (the selection is the body, the page
+    still says who wrote it)."""
+    tree = _Tree()
+    try:
+        tree.feed(page)
+        tree.close()
+    except Exception:  # noqa: BLE001  # a malformed page is still a page
+        pass
+    return dict(tree.facts)
+
+
+def note_properties(extracted: dict, url: str, clipped: str) -> dict[str, str]:
+    """The `---` block a clipped note opens with: where it came from, who
+    wrote it and when, and the day it was clipped (passed in, so a test holds
+    the clock still). Empty values are left out."""
+    facts = extracted.get("facts") or {}
+    props = {
+        "source": url,
+        "site": facts.get("site") or "",
+        "author": facts.get("author") or "",
+        "published": facts.get("published") or "",
+        "clipped": clipped,
+    }
+    return {k: v for k, v in props.items() if v}
 
 
 def note_content(extracted: dict, url: str) -> str:

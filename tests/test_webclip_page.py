@@ -16,8 +16,10 @@ import pytest
 from tests import _js_scope
 
 from tessellate.ai import fence, librarian
-from tessellate.core.database import Entry
-from tessellate.entry import manager
+from sqlalchemy import select
+
+from tessellate.core.database import Entry, EntryProperty
+from tessellate.entry import manager, properties as note_properties
 from tests._app_js import frontend_text
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -159,3 +161,62 @@ def test_a_follow_up_about_the_page_carries_the_page():
     attach = frontend_text("chat-attach.js")
     assert "const page = await webFollowUp(typed, chatWeb.lastUrl);" in attach
     assert 'chatWeb.lastUrl = turnSources.find((source) => source.kind === "web" && source.url)?.url || null;' in attach
+
+
+# --- the properties a clip carries (DOCUMENTS gap row 9) ------------------------
+
+BYLINED = """<html><head><title>Sourdough basics | The Gazette</title>
+<meta property="og:site_name" content="The Bread Gazette">
+<meta name="author" content="Ada  Baker">
+<meta property="article:published_time" content="2026-03-02T09:30:00+00:00">
+</head><body><article><h1>Sourdough basics</h1>
+<p>A starter is flour and water kept alive by feeding it every day at the same time.</p>
+</article></body></html>"""
+
+
+def test_a_clip_opens_with_its_site_author_and_dates_as_properties(client, session, monkeypatch):
+    from datetime import datetime
+
+    from tessellate.api import routes_webclip
+
+    monkeypatch.setattr(routes_webclip, "user_now", lambda _config: datetime(2026, 11, 11, 8, 0))
+    note = client.post(
+        "/links/clip-page", json={"url": "https://bread.example/s", "title": "Sourdough basics", "html": BYLINED}
+    ).json()["entry"]
+    props, body = note_properties.split(note["content"])
+    assert props == {
+        "source": ["https://bread.example/s"],
+        "site": ["The Bread Gazette"],
+        "author": ["Ada Baker"],
+        "published": ["2026-03-02"],
+        "clipped": ["2026-11-11"],
+    }
+    assert body.startswith("# Sourdough basics | The Gazette\n\nSource: <https://bread.example/s>")
+    # The index reads them, so they can be queried and sorted like any property.
+    rows = {r.key: r for r in session.scalars(select(EntryProperty).where(EntryProperty.entry_id == note["id"]))}
+    assert rows["published"].date.date().isoformat() == "2026-03-02"
+    assert rows["clipped"].date.date().isoformat() == "2026-11-11"
+
+
+def test_a_page_that_names_nobody_leaves_those_properties_out(client):
+    note = client.post(
+        "/links/clip-page", json={"url": "https://a.example/plain", "title": "Plain", "html": PAGE}
+    ).json()["entry"]
+    props, _ = note_properties.split(note["content"])
+    assert set(props) == {"source", "clipped"}
+
+
+def test_a_selection_still_takes_the_pages_byline(client):
+    note = client.post(
+        "/links/clip-page",
+        json={"url": "https://bread.example/sel", "title": "T", "html": BYLINED, "selection": "Feed it daily."},
+    ).json()["entry"]
+    props, body = note_properties.split(note["content"])
+    assert props["author"] == ["Ada Baker"] and "Feed it daily." in body
+
+
+def test_a_profile_address_is_not_an_author_name():
+    from tessellate.core import webclip
+
+    page = '<head><meta property="article:author" content="https://x.example/u/ada"><meta name="date" content="March 2"></head>'
+    assert webclip.page_facts(page) == {}

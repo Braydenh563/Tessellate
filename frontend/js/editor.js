@@ -955,6 +955,8 @@ function editorBlockRows(context) {
     //: A starter the document's Live view draws at once (OPEN 1119): an empty
     //: ```mermaid fence drew nothing until its syntax was looked up.
     add({ id: "flowchart", group: "Media", icon: "ph:flow-arrow", label: "Flowchart", about: "Boxes and arrows, drawn from the text", keys: "```mermaid", keywords: ["flowchart", "diagram", "mermaid", "chart", "boxes", "arrows", "process"], sample: "flowchart TD\n  A[Start] --> B[Next]", run: (t) => editorBlock(t, "```mermaid\nflowchart TD\n  A[Start] --> B[Next]\n```", "", "") });
+    //: DOCUMENTS_PLAN 16: a plot with sliders, drawn by documents-graph.js (lazy) in Read and in Live.
+    add({ id: "graph", group: "Media", icon: "ph:chart-line", label: "Graph", about: "Plot y = f(x) with sliders you can move", keys: "```graph", keywords: ["graph", "plot", "function", "curve", "desmos", "slider", "equation", "chart", "axes"], sample: "y = sin(a x)\na = 1 [0, 5]", run: (t) => editorBlock(t, "```graph\ny = sin(a x)\na = 1 [0, 5]\n```", "", "") });
   }
   add({ id: "math", group: "Media", icon: "ph:function", label: "Maths block", about: "A formula on its own line, typeset", keys: "$$ ... $$", keywords: ["math", "maths", "formula", "equation", "latex", "tex", "block"], sample: "$$ e^{i\\pi} + 1 = 0 $$", run: (t) => editorBlock(t, "$$ ", "x^2 + y^2 = z^2", " $$") });
   add({ id: "math-inline", group: "Media", icon: "ph:math-operations", label: "Inline maths", about: "A formula inside a sentence", keys: "$ ... $", keywords: ["math", "inline", "formula", "latex", "tex"], run: act("math") });

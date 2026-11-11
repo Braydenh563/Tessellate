@@ -9057,7 +9057,7 @@ Link to another note with [[its first few words]]."></textarea>
             data-help-for="bookmark-help" aria-controls="bookmark-help" aria-expanded="false"
             title="About bookmarks" aria-label="About bookmarks"><i class="ph ph-question" aria-hidden="true"></i></button>
           <div class="help-body hidden" id="bookmark-help" role="dialog" aria-label="About bookmarks">
-            <p>Links to websites you visit often, kept in the notebook instead of the browser. Add one, sort the shelf, and put bookmarks in groups: New group and Manage groups are in the more menu.</p>
+            <p>Links to websites you visit often, kept in the notebook instead of the browser. Add one, sort the shelf, and put bookmarks in groups and tag them (commas, then press a tag to filter): New group and Manage groups are in the more menu, with Import bookmarks file (from your browser's export) and Export bookmarks.</p>
           </div>
           <details class="doc-dock-menu dock-menu dock-more" id="bookmark-more-menu">
             <summary class="ghost small icon-only doc-dock-menu-btn" title="More" aria-label="More"><i class="ph ph-dots-three" aria-hidden="true"></i></summary>
@@ -9070,6 +9070,11 @@ Link to another note with [[its first few words]]."></textarea>
                 <i class="ph ph-folder-plus ph-lead" aria-hidden="true"></i> New group</button>
               <button type="button" id="bookmark-group-manage" class="doc-dock-menu-item">
                 <i class="ph ph-folders ph-lead" aria-hidden="true"></i> Manage groups</button>
+              <button type="button" id="bookmark-import" class="doc-dock-menu-item" title="Add the links from a bookmarks file your browser exported">
+                <i class="ph ph-upload-simple ph-lead" aria-hidden="true"></i> Import bookmarks file</button>
+              <button type="button" id="bookmark-export" class="doc-dock-menu-item" title="Save every bookmark as a file your browser can import">
+                <i class="ph ph-download-simple ph-lead" aria-hidden="true"></i> Export bookmarks</button>
+              <input type="file" id="bookmark-import-file" accept=".html,.htm,text/html" class="hidden" aria-label="Bookmarks file to import">
             </div>
           </details>
           <button id="bookmark-add" class="small" type="button"
@@ -9091,6 +9096,8 @@ Link to another note with [[its first few words]]."></textarea>
         <input id="bookmark-group-input" type="text" list="bookmark-group-options"
           placeholder="Group (optional, e.g. Work/Reading)" aria-label="Bookmark group">
         <datalist id="bookmark-group-options"></datalist>
+        <input id="bookmark-tags-input" type="text"
+          placeholder="Tags (optional, commas)" aria-label="Bookmark tags" maxlength="400">
         <input id="bookmark-note-input" type="text"
           placeholder="Note (optional)" aria-label="Bookmark note" maxlength="2000">
         <button type="submit" class="small"><i class="ph ph-plus ph-lead" aria-hidden="true"></i> Add</button>
