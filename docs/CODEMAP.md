@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10185, test files 2495, tests 20562, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10187, test files 2495, tests 20562, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -13529,7 +13529,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10185)
+## Backend modules (10187)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -23656,11 +23656,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_when` | src/tessellate/core/ics_import.py:93 |
 | `read` | src/tessellate/core/ics_import.py:179 |
 
-### src/tessellate/core/imagesize.py (2)
+### src/tessellate/core/imagesize.py (4)
 
 | Name | File:line |
 |---|---|
-| `_size` | src/tessellate/core/imagesize.py:30 |
+| `_jpeg_size` | src/tessellate/core/imagesize.py:43 |
+| `_size` | src/tessellate/core/imagesize.py:60 |
+| `_webp_size` | src/tessellate/core/imagesize.py:30 |
 | `image_size` | src/tessellate/core/imagesize.py:17 |
 
 ### src/tessellate/core/instance_lock.py (22)

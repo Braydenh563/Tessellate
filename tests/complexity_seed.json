@@ -125,7 +125,6 @@
  "src/tessellate/core/extras.py::_remove_from_frozen_target": 23,
  "src/tessellate/core/extras.py::_run_bulk_item": 17,
  "src/tessellate/core/extras.py::_run_install": 18,
- "src/tessellate/core/imagesize.py::_size": 17,
  "src/tessellate/core/jobstore.py::resume": 25,
  "src/tessellate/core/media_gc.py::usage_map": 17,
  "src/tessellate/core/ocr.py::_rapidocr_regions": 18,
