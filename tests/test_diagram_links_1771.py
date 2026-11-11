@@ -1,0 +1,85 @@
+"""The builder's connector rows (INBOX 1771).
+
+The owner: the connector menu opened "on top of" the row instead of next to it; the rows should select or go to the blocks they
+connect; the first row hid under the Ask bar; a label wrapped because Connect squeezed it; the Suggestions disclosure did not
+read as one. Measured by scratchpad/ui-sweeps/diagram-links.js at 1440, 1100, 820 and 390.
+"""
+
+from __future__ import annotations
+
+import re
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+JS = ROOT / "frontend" / "js"
+CSS = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
+
+
+def _read(name: str) -> str:
+    return (JS / name).read_text(encoding="utf-8")
+
+
+def _body(source: str, head: str) -> str:
+    return source.split(head, 1)[1].split("\n  }\n", 1)[0]
+
+
+# --- a: the menu opens beside its row ---------------------------------------------------------------
+
+
+def test_the_connector_menu_is_placed_off_its_row_not_over_it():
+    joins = _read("diagram-joins.js")
+    menu = _body(joins, "function menu(S, { edge, chip }, h) {")
+    assert "beside(open, r, chip)" in menu
+    place = _body(joins, "function beside(menu, row, opener) {")
+    # below, then above, then to a side: never across the row; a menu taller than the room scrolls instead.
+    assert place.index("row.bottom + gap") < place.index("row.top - gap") < place.index("row.right + gap") < place.index("row.left - gap")
+    assert "maxHeight" in place and "escapeMenuToBody" in place
+
+
+# --- b: a connector row goes to the blocks it connects -----------------------------------------------
+
+
+def test_a_connector_row_picks_the_arrow_and_goes_to_its_target_and_the_menu_is_its_own_button():
+    builder = _read("diagram-builder.js")
+    chip = _body(builder, "function joinChip(S, edge, index) {")
+    assert 'joins(S, "go", { edge: S.m.edges[index] || edge, end: "to" })' in chip
+    assert 'aria-label", `Go to ${to}.' in chip
+    # the menu is a second button, in a `.menu-wrap` so the row's own guards (select, drag, keys) leave it alone.
+    assert 'el("span", "menu-wrap dgm-join-more")' in chip and 'joins(S, "menu"' in chip
+    assert chip.index('"go"') < chip.index('joins(S, "menu"')
+    joins = _read("diagram-joins.js")
+    go = _body(joins, 'function go(S, { edge, end = "to" }, h) {')
+    assert "S.pickEdge?.(edge)" in go and "h.select(S, key)" in go and "scrollIntoView" in go
+    assert 'go(S, { edge, end: "to" }, h)' in joins and 'go(S, { edge, end: "from" }, h)' in joins and "ask, go }" in joins
+    pick = _read("diagram-edge-pick.js")
+    assert "S.pickEdge = (edge) =>" in pick
+    # a press on a connector row must not let go of the arrow it just picked.
+    assert '.dgm-end, .dgm-join"' in pick
+
+
+# --- e: Suggestions reads as a disclosure, and a name used again is one row --------------------------
+
+
+def test_a_name_used_again_is_one_suggestion_that_numbers_them_all_in_one_step():
+    from tests.test_diagram_ai import _run
+
+    source = "flowchart TD\n  A[Start] --> B[Step]\n  B --> C[Step]\n  C --> D[Step]\n  D --> E[Step]\n  E --> F[Step]\n  F --> G[Step 2]\n"
+    out = _run(source, """
+      const found = ai.lint(m, o).filter((f) => /say Step/.test(f.text));
+      const before = found.map((f) => [f.text, f.act, f.ops.length]);
+      for (const f of found) ai.apply(m, f.ops, o);
+      return { before, after: ai.lint(m, o).map((f) => f.text), names: m.nodes.map((n) => n.text) };
+    """)
+    r = out["result"]
+    assert r["before"] == [["Five blocks say Step.", "Number them Step 1 to 6", 5]], r["before"]
+    # "Step 2" was taken by another block, so the five are Step 1, 3, 4, 5, 6 and no pair is made.
+    assert r["names"] == ["Start", "Step 1", "Step 3", "Step 4", "Step 5", "Step 6", "Step 2"]
+    assert not [t for t in r["after"] if "say Step" in t]
+
+
+def test_the_suggestions_row_turns_its_caret_and_its_rows_start_at_its_words():
+    ai = _read("diagram-ai.js")
+    assert "ph ph-caret-down contents-caret" in ai and "ph:caret-right Suggestions" not in ai
+    assert 'aria-expanded", "false"' in ai
+    assert ".dgm-ai-lints-head[aria-expanded=\"false\"] .contents-caret" in CSS
+    assert re.search(r"\.dgm-ai-lints \{[^}]*padding-inline", CSS)

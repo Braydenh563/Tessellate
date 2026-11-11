@@ -2,9 +2,9 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8166, frontend ids 2713, CSS sections 524, backend routes 677, backend modules 10425, test files 2582, tests 21110, plan headings 1010, app scripts 29, boot scripts 38, script files 284.
+Counts: frontend functions 8167, frontend ids 2713, CSS sections 524, backend routes 677, backend modules 10425, test files 2583, tests 21111, plan headings 1010, app scripts 29, boot scripts 38, script files 284.
 
-## Frontend functions (8166)
+## Frontend functions (8167)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3311,19 +3311,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `withLook` | frontend/js/diagram-embed.js:144 |
 | `withSpacing` | frontend/js/diagram-embed.js:173 |
 
-### frontend/js/diagram-joins.js (9)
+### frontend/js/diagram-joins.js (10)
 
 | Name | File:line |
 |---|---|
-| `ask` | frontend/js/diagram-joins.js:121 |
+| `ask` | frontend/js/diagram-joins.js:153 |
+| `beside` | frontend/js/diagram-joins.js:79 |
 | `isKind` | frontend/js/diagram-joins.js:24 |
 | `items` | frontend/js/diagram-joins.js:32 |
 | `lastTarget` | frontend/js/diagram-joins.js:11 |
-| `menu` | frontend/js/diagram-joins.js:77 |
+| `menu` | frontend/js/diagram-joins.js:109 |
 | `nameOf` | frontend/js/diagram-joins.js:30 |
-| `pick` | frontend/js/diagram-joins.js:129 |
+| `pick` | frontend/js/diagram-joins.js:161 |
 | `titleOf` | frontend/js/diagram-joins.js:29 |
-| `words` | frontend/js/diagram-joins.js:110 |
+| `words` | frontend/js/diagram-joins.js:142 |
 
 ### frontend/js/diagram-kindbar.js (11)
 
@@ -26839,7 +26840,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21110)
+## Tests (21111)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27641,6 +27642,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_kinds.py | 33 |
 | tests/test_diagram_let_go_1696.py | 3 |
 | tests/test_diagram_library_1594.py | 8 |
+| tests/test_diagram_links_1771.py | 1 |
 | tests/test_diagram_minimap_1110.py | 7 |
 | tests/test_diagram_model.py | 15 |
 | tests/test_diagram_multi_r5.py | 19 |
@@ -30130,7 +30132,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1217 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:166 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:172 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4057 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3130 |

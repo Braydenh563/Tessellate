@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Fix (INBOX 1771 a, the diagram builder): a connector row's menu opens below, above or beside the row (the first that fits the window, scrolling inside when none does) and no longer lies across it; at 1440x900 the menu was 101 to 505 over a row at 475 to 499 and is 68 to 472.
 - Performance: a sealed title (reminders, documents, link offers) is cacheable again; `SealedTitle` declares its own `cache_ok`, so its queries use SQLAlchemy's statement cache and the server log loses its SAWarning per query.
 - Tests: the E2E specs find the note card's Edit and More actions buttons by their verb, since each label now names its note.
 - Tests: CI leg 1 back to green after the wrapzoom and settings merges (hop constants read from `engine_consts`, the speaker-labels extra listed in requirements.txt, the `docSpell.packKey` stub in the docs harnesses, the dgpolish block window widened, the wrapzoom docs rule regex anchored).

@@ -622,15 +622,12 @@
   text-overflow: ellipsis;
 }
 
-/* A flowchart row's name wraps to two lines before it is cut: its arrow, swatch, grip and menu leave a 209 px row 73 px for the words,
-   and "Order placed" read "Order plac..." (blind test, dgbt-1109 10). The name being typed keeps the single line above. */
-.dgm-card:has(> .dgm-connect) > .dgm-label:not(.dgm-editing) {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  white-space: normal;
-  overflow-wrap: anywhere;
+/* A flowchart row's name stays on one line and ends in an ellipsis with its full words in the title (INBOX 1771, the owner's screenshot:
+   "Can you reproduce it?" wrapped to two lines because Connect squeezed it). It used to wrap to two lines before it was cut (blind test,
+   dgbt-1109 10: "Order plac..."); a wrapped name made the rows uneven and moved the ones below, so the tight list gives the name the
+   room instead: a smaller gap between the row's controls, and its menu and Connect arrow kept square. The name being typed keeps the line. */
+.dgm-tight .dgm-card:has(> .dgm-connect) {
+  gap: var(--space-1);
 }
 
 /* The other kinds' cards carry one quiet line after the words (who a message is between, a period's date),
@@ -706,6 +703,28 @@
   flex-wrap: wrap;
   gap: 0 var(--space-3);
   padding-inline-start: var(--space-8);
+}
+
+.dgm-joinline {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  max-inline-size: 100%;
+}
+
+.dgm-joinline > :first-child {
+  flex: 0 1 auto;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.dgm-join-more {
+  flex: none;
+}
+
+.dgm-join-more button {
+  min-height: var(--control-h-dense);
+  min-width: var(--control-h-dense);
 }
 
 .dgm-join {
@@ -2331,7 +2350,8 @@
 
   .dgm-swatch,
   .dgm-card > button.dgm-connect,
-  .dgm-join {
+  .dgm-join,
+  .dgm-join-more button {
     min-block-size: 2.75rem;
     min-inline-size: 2.75rem;
   }
@@ -2563,6 +2583,35 @@
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+/* The Suggestions row is a disclosure (INBOX 1771, the owner: "hard to tell that this is a dropdown and the arrow doesn't change"): the one
+   disclosure caret, a quarter turn while closed, the pointer and the keyboard both lighting it, and the rows under it starting where its
+   words do rather than at the panel's edge. */
+button.ghost.disclosure-row.dgm-ai-lints-head {
+  gap: var(--space-1);
+  cursor: pointer;
+}
+
+.dgm-ai-lints-head .contents-caret {
+  transition: rotate var(--ui-base) var(--ease-out);
+}
+
+.dgm-ai-lints-head[aria-expanded="false"] .contents-caret {
+  rotate: -90deg;
+}
+
+.dgm-ai-lints-head:is(:hover, :focus-visible) .contents-caret {
+  color: var(--ink);
+}
+
+:where(:root[data-motion="reduced"]) .dgm-ai-lints-head .contents-caret {
+  transition: none;
+}
+
+.dgm-ai-lints {
+  padding-inline: calc(var(--space-2) + 1em + var(--space-1)) var(--space-2);
+  padding-block-end: var(--space-2);
 }
 
 .dgm-versions-list {

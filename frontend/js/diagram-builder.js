@@ -252,6 +252,7 @@
     dots.setAttribute("aria-hidden", "true");
     grip.append(dots);
     const label = el("span", "dgm-label", text);
+    label.title = text;
     card.append(grip, isGroup ? groupGlyph() : shapeButton(S, key, data.shape, text), label);
     //: The arrow is on every row, its words on the chosen one.
     const connect = smallButton("ph:arrow-bend-down-right Connect to…", "Draw an arrow from this block to another", (event) => ((S.tapped = event.detail > 0), joinPick(S, key)));
@@ -281,21 +282,24 @@
     return icon;
   }
 
-  //: A connector: "Start to Next" and its label, in a row under the block it leaves.
+  //: A connector row: the words go to the block it points at (diagram-joins.js `go`, 1771); its own ⋯ opens the menu.
   function joinChip(S, edge, index) {
+    const line = el("div", "dgm-joinline");
     const chip = el("button", "dgm-join");
     chip.type = "button";
-    const [from, to] = [titleOf(S, edge.from), titleOf(S, edge.to)];
+    const to = titleOf(S, edge.to);
     const arrow = el("i", `ph ${edge.arrow ? "ph-arrow-right" : "ph-minus"}`);
     arrow.setAttribute("aria-hidden", "true");
     chip.dataset.style = edge.style;
     chip.append(arrow, el("span", "dgm-join-to", to));
     if (edge.label) chip.append(el("span", "dgm-join-label muted", edge.label));
-    chip.title = "Change this connector: its line, its label, or remove it";
-    chip.setAttribute("aria-label", `Connector from ${from} to ${to}${edge.label ? `, labelled ${edge.label}` : ""}. Opens its menu.`);
-    //: Read from the model when pressed: the row outlives changes.
-    chip.addEventListener("click", () => joins(S, "menu", { edge: S.m.edges[index] || edge, chip }));
-    return chip;
+    chip.title = chip.ariaLabel = `Go to ${to}`;
+    chip.addEventListener("click", () => joins(S, "go", { edge: S.m.edges[index] || edge, end: "to" }));
+    const more = el("span", "menu-wrap dgm-join-more");
+    const dots = smallButton("ph:dots-three", `Menu: ${to}`, () => joins(S, "menu", { edge: S.m.edges[index] || edge, chip: dots }));
+    line.append(chip, more);
+    more.append(dots);
+    return line;
   }
 
   // --- menus ----------------------------------------------------------------------
