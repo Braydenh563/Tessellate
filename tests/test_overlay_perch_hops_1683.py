@@ -11,7 +11,6 @@ import math
 
 import pytest
 
-from tessellate.core.overlay import engine as eng
 from tessellate.core.overlay import engine_consts as consts
 from tessellate.core.overlay.engine import Perch
 from tests.test_overlay_ride_1670 import make
