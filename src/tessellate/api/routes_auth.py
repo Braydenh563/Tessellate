@@ -1317,6 +1317,8 @@ def _lan_state(config: ConfigManager, request: Request) -> dict:
         #: When LAN mode last switched itself off for lack of use (a date).
         "switched_off": trust["switched_off"],
         "unused_days": lantrust.UNUSED_DAYS,
+        #: The short name and the proxy's domain names (WORLD_CLASS_PLAN design requests).
+        "names": netbind.saved_address_names(config),
     }
 
 
@@ -1491,6 +1493,55 @@ def set_lan_option(
         log_action(session, "edited", "user", user.id, f"other devices: {body.name.replace('_', ' ')} {'on' if body.enabled else 'off'}")
         session.commit()
     lantrust.set_flag(config.data_dir, body.name, body.enabled)
+    return _lan_state(config, request)
+
+
+class AddressNamesBody(BaseModel):
+    local_name: str = Field(default="", max_length=63)
+    allowed_hosts: list[str] = Field(default_factory=list, max_length=netbind.MAX_ALLOWED_HOSTS * 2)
+    current_password: str | None = Field(default=None, max_length=MAX_PASSWORD_CHARS)
+
+
+@router.post("/address-names", dependencies=[Depends(require_unlock)])
+def set_address_names(
+    body: AddressNamesBody,
+    request: Request,
+    session: Session = Depends(get_session),
+    config: ConfigManager = Depends(get_config),
+) -> dict:
+    """**A name instead of localhost, and a domain behind a proxy** (the owner,
+    "customise the domain name"): the short name the window opens
+    (`<name>.localhost`, loopback only) and the host names a reverse proxy
+    forwards (`TESSELLATE_ALLOWED_HOSTS` from Settings). This computer's call,
+    like the rest of the network pane. A new domain loosens the rebinding
+    guard, so it asks for the password; removing one, or the short name, does not.
+    """
+    _require_this_computer(request)
+    raw_label = body.local_name.strip()
+    label = netbind.clean_label(raw_label)
+    if raw_label and not label:
+        raise HTTPException(status_code=400, detail="Use letters, digits and hyphens for the short name, up to 63.")
+    hosts = netbind.parse_hosts(body.allowed_hosts)
+    typed = [t for t in body.allowed_hosts if str(t).strip()]
+    for token in typed:
+        if not netbind.parse_host(token):
+            raise HTTPException(status_code=400, detail=f"“{str(token).strip()[:60]}” isn't a domain name. Use a name like notes.example.com.")
+    if len(hosts) > netbind.MAX_ALLOWED_HOSTS:
+        raise HTTPException(status_code=400, detail=f"At most {netbind.MAX_ALLOWED_HOSTS} domain names.")
+    added = [h for h in hosts if h not in netbind.extra_allowed_hosts()]
+    user = None
+    if added:
+        user = _check_password_for_lan(request, session, body.current_password)
+    config.set_preference(netbind.LOCAL_NAME_PREF, label)
+    config.set_preference(netbind.ALLOWED_HOSTS_PREF, hosts)
+    netbind.apply_address_prefs(config)
+    user = user or _get_user(session)
+    if user is not None:
+        log_action(
+            session, "edited", "user", user.id,
+            f"address names: short name {label or 'none'}, domains {', '.join(hosts) or 'none'}",
+        )
+        session.commit()
     return _lan_state(config, request)
 
 

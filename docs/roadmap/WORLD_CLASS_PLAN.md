@@ -3092,8 +3092,7 @@ Entries are the owner's words, then the recommendation. Bugs come first, then de
 
 ### Design requests
 
-- "is it possible to customise the domain name on the network accessible url??"
-  Recommendation: an optional local host name for the LAN address (a mDNS or hosts-file name) shown with the trust guide. Also carried by Brief 40 (the phone over HTTPS).
+- Customise the domain name on the network url: built 2026-11-11, see HISTORY "Moved from the plans, 2026-11-11 (WORLD_CLASS design requests, customise the domain name)".
 - "Should we integrate it as a docker build and image and make it available as a docker app as well??"
   Recommendation: a Dockerfile and compose file with offline model volumes, and the measured image size in the report. Also carried by Brief 40 (a Docker image).
 - "Is it possible to make use of python libraries that the user already may have installed globally on their computer so the user doesn’t have to install the same dependancies twice?? Like sentence transformers, or torch, or triton etc?? Idk"

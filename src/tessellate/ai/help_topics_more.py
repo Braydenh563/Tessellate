@@ -1941,6 +1941,23 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
 #: own. `tests/test_guide_gaps.py` holds the probe's table at 1.0.
 MORE_TOPICS.extend([
     {
+        "id": "address-names",
+        "keywords": ("custom domain", "domain name", "localhost", "tessellate.localhost", "short name", "reverse proxy",
+                     "caddy", "nginx", "traefik", "my own domain", "address names", "allowed hosts", "rename localhost"),
+        "body": (
+            "Settings, Account & security, Address names. The short name opens the app at name.localhost on "
+            "this computer (no DNS or hosts file; browsers answer every .localhost name themselves). The app "
+            "accepts only that one, and only from this computer. It is a new address, so you sign in once and "
+            "per-browser settings start fresh; the window and tray use it from the next launch. A domain "
+            "name is for a reverse proxy (Caddy, nginx, Traefik) that ends https and forwards to the app: "
+            "list the name the proxy serves, such as notes.example.com, and the app accepts it. The app does "
+            "not get a certificate or open your router; the proxy does that. Adding a domain asks for your "
+            "password; removing one does not. TESSELLATE_LOCAL_NAME and TESSELLATE_ALLOWED_HOSTS still work "
+            "and win over the saved values."
+        ),
+        "badge": {"label": "Account & security", "section": "account"},
+    },
+    {
         "id": "phone",
         "keywords": ("phone", "on my phone", "mobile", "iphone", "android", "tablet", "ipad", "use it on my phone",
                      "open it on my phone", "install on my phone", "phone storage", "runs on my phone",

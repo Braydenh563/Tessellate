@@ -22,6 +22,16 @@ waits in Uncategorised; the hint and the saved status offer the closest two or
 three. Leave one out on the 120 notes: 4 of the 11 wrong filings sit under 70,
 beside about 20 right ones (`tests/test_ask_when_unsure.py`).
 
+## Moved from the plans, 2026-11-11 (WORLD_CLASS design requests, "customise the domain name", OPEN Q34/F8)
+
+**Built** (the owner: Q34 "go on ... the custom domain"). The owner's 2026-10-25 ask for a name instead of localhost (the open text of the design-request row, moved here).
+
+- `core/netbind.py`: `parse_host(s)`, `extra_allowed_hosts()` (env plus the saved list), `local_name()` (env wins, else the saved short name, `<n>.localhost`), `apply_address_prefs`, `load_address_prefs_file`, `saved_address_names`; the saved values are the `local_name` and `allowed_hosts` preferences. The launcher reads them from the data folder before the server is up (`__main__.window_host`), so the window and tray open `<name>.localhost` from the next launch.
+- `POST /auth/address-names` (this computer only): a short name needs no password, a domain not already allowed does, removing one does not; a bad name is a 400 in plain words; at most 8 domains. The LAN reply carries `names`.
+- Settings, Account & security, Address names (`#account-names-group`, `renderAddressNames` and `saveAddressNames` in settings-controls.js), the Guide's `address-names` topic, INSTALL, and `tests/test_address_names.py` (9 tests: the guard, loopback-only, password on a new domain, env wins, persistence across a restart, the wiring).
+- **Measured live** (1440x900, scratch data folder): saved `notebook`, `Host: notebook.localhost` 200 and `other.localhost` 421; added `notes.example.com` behind the password prompt, `Host: notes.example.com` 200 and `evil.example.com` 421; removing the domain asked for no password and it went back to 421; a malformed name showed the 400 sentence in the prompt.
+- **Not verified:** a real reverse proxy and certificate (the app does not issue one; the proxy does); the desktop window's relaunch on the new name (the launcher's file read is tested, a real pywebview window is not).
+
 ## Moved from the plans, 2026-11-11 (WORLD_CLASS B6, sync first slice, events-sync)
 
 **Built** (the open text of B6's first slice, moved here; the decisions stay in the plan). Sync as log shipping between two data folders, pull over a transport, through a segment export and apply.
