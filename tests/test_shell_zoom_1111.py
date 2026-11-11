@@ -52,3 +52,10 @@ def test_the_edit_head_folds_its_lesser_controls_into_a_kebab():
     assert '"ph:x"' in block and '"ph:plus"' in block, "Remove and Add are their glyphs, named by their titles"
     assert "title.title = " in block, "a cut title is whole on hover"
     assert '" Drag"' not in block, "the grip is its glyph"
+
+
+def test_a_quick_edit_tile_leaves_room_for_its_menu_button():
+    """At 768 the button is 44px (`--target-min` under touch) and a fixed
+    `--space-9` (32px) left 17px of "Ask your notes" under it."""
+    body = _body(".quick-edit-tile > .quick-link")
+    assert re.search(r"padding-right:\s*calc\(var\(--target-min\)", body), "the room follows the button's own size"
