@@ -259,6 +259,47 @@ def _dismissed_tensions() -> set[str]:
     return {str(key) for key in stored}
 
 
+def _known_tension_keys(session: Session) -> set[str]:
+    """Pairs that are never re-proposed."""
+    # A pair already marked as contradicting is a finding the person has
+    # already accepted, not one to re-propose. Every other link type is left
+    # alone deliberately: notes can be linked as "related" *and* disagree,
+    # and that is one of the more interesting cases.
+    known: set[str] = set(_dismissed_tensions())
+    for link in relations_repo.with_type(session, "contradicts"):
+        known.add(_tension_key(link.source_entry_id, link.target_entry_id))
+    # WORLD_CLASS_PLAN B4: a pair already in the tensions table (found by an
+    # earlier scan or the night shift, whatever became of it) is never asked
+    # about again; the widget and `GET /entries/tensions/known` list it.
+    tensions_module.refresh(session)
+    known.update(session.scalars(select(DerivedTension.pair)))
+    return known
+
+
+def _tension_row(tension, score: float) -> dict:  # noqa: ANN001
+    return {
+        "key": _tension_key(tension.earlier_id, tension.later_id),
+        "earlier_id": tension.earlier_id,
+        "later_id": tension.later_id,
+        "explanation": tension.explanation,
+        "earlier_excerpt": tension.earlier_excerpt,
+        "later_excerpt": tension.later_excerpt,
+        "earlier_at": tension.earlier_at,
+        "later_at": tension.later_at,
+        "gap_days": tension.gap_days,
+        "similarity": round(score, 2),
+    }
+
+
+def _tension_scan_blocker(ollama, embeddings) -> str | None:  # noqa: ANN001
+    """Why a scan cannot run at all, or None."""
+    if not backend_hint.running(ollama):
+        return "no_model"
+    if not embeddings.is_ready():
+        return "no_embeddings"
+    return None
+
+
 @router.get("/tensions")
 def find_tensions(
     limit: int = Query(default=8, ge=1, le=20),
@@ -280,12 +321,9 @@ def find_tensions(
     """
 
     ollama = deps.get_ollama()
-    if not backend_hint.running(ollama):
-        return {"tensions": [], "status": "no_model"}
-
-    embeddings = deps.get_embeddings()
-    if not embeddings.is_ready():
-        return {"tensions": [], "status": "no_embeddings"}
+    blocked = _tension_scan_blocker(ollama, deps.get_embeddings())
+    if blocked:
+        return {"tensions": [], "status": blocked}
 
     entries = manager.list_entries(session)
     by_id = {e.id: e for e in entries if not e.is_private and not e.is_board}
@@ -297,18 +335,7 @@ def find_tensions(
         session, TENSION_CANDIDATE_THRESHOLD, only=set(by_id)
     )
 
-    # A pair already marked as contradicting is a finding the person has
-    # already accepted, not one to re-propose. Every other link type is left
-    # alone deliberately: notes can be linked as "related" *and* disagree,
-    # and that is one of the more interesting cases.
-    known: set[str] = set(_dismissed_tensions())
-    for link in relations_repo.with_type(session, "contradicts"):
-        known.add(_tension_key(link.source_entry_id, link.target_entry_id))
-    # WORLD_CLASS_PLAN B4: a pair already in the tensions table (found by an
-    # earlier scan or the night shift, whatever became of it) is never asked
-    # about again; the widget and `GET /entries/tensions/known` list it.
-    tensions_module.refresh(session)
-    known.update(session.scalars(select(DerivedTension.pair)))
+    known = _known_tension_keys(session)
 
     models = deps.get_model_manager()
     found: list[dict] = []
@@ -336,20 +363,7 @@ def find_tensions(
             model=str(models.utility_model() or "local"),
             confidence=0.7,
         )
-        found.append(
-            {
-                "key": _tension_key(tension.earlier_id, tension.later_id),
-                "earlier_id": tension.earlier_id,
-                "later_id": tension.later_id,
-                "explanation": tension.explanation,
-                "earlier_excerpt": tension.earlier_excerpt,
-                "later_excerpt": tension.later_excerpt,
-                "earlier_at": tension.earlier_at,
-                "later_at": tension.later_at,
-                "gap_days": tension.gap_days,
-                "similarity": round(score, 2),
-            }
-        )
+        found.append(_tension_row(tension, score))
     status = "ok" if found else ("none_found" if checked else "no_candidates")
     session.commit()
     return {"tensions": found, "status": status, "pairs_checked": checked}
