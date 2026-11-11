@@ -2781,7 +2781,7 @@ function renderStatusBar() {
     //: as help. The word is the scope; the name is on hover, where the panel
     //: it opens introduces Atlas anyway.
     word.textContent = "Guide";
-    const guideName = GUIDE_NAME;
+    const guideName = typeof GUIDE_NAME === "string" ? GUIDE_NAME : "Atlas";
     guide.append(glyph, word);
     guide.setAttribute("aria-label", "Guide");
     guide.title = shortcutTitle(`Ask ${guideName} how this app works, from any tab`, "askAtlas");
