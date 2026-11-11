@@ -4382,36 +4382,36 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `docCmApplySpellcheck` | frontend/js/documents-view.js:347 |
-| `docCmChanged` | frontend/js/documents-view.js:734 |
-| `docCmDrawFor` | frontend/js/documents-view.js:649 |
-| `docCmExtensions` | frontend/js/documents-view.js:209 |
-| `docCmGutter` | frontend/js/documents-view.js:770 |
+| `docCmApplySpellcheck` | frontend/js/documents-view.js:349 |
+| `docCmChanged` | frontend/js/documents-view.js:736 |
+| `docCmDrawFor` | frontend/js/documents-view.js:651 |
+| `docCmExtensions` | frontend/js/documents-view.js:211 |
+| `docCmGutter` | frontend/js/documents-view.js:772 |
 | `docCmKeymap` | frontend/js/documents-view.js:47 |
-| `docCmLanguageEffects` | frontend/js/documents-view.js:741 |
-| `docCmRepaintFindings` | frontend/js/documents-view.js:522 |
-| `docCmSpellcheck` | frontend/js/documents-view.js:336 |
-| `docCmSyncFileType` | frontend/js/documents-view.js:682 |
-| `docCmSyncGutter` | frontend/js/documents-view.js:756 |
-| `docCmSyncLanguage` | frontend/js/documents-view.js:715 |
-| `docCmUpdate` | frontend/js/documents-view.js:359 |
-| `docCmViewLanguage` | frontend/js/documents-view.js:707 |
-| `docFenceGutterOn` | frontend/js/documents-view.js:752 |
-| `docFindingsPlugin` | frontend/js/documents-view.js:464 |
-| `docGuardGlobalShortcuts` | frontend/js/documents-view.js:615 |
+| `docCmLanguageEffects` | frontend/js/documents-view.js:743 |
+| `docCmRepaintFindings` | frontend/js/documents-view.js:524 |
+| `docCmSpellcheck` | frontend/js/documents-view.js:338 |
+| `docCmSyncFileType` | frontend/js/documents-view.js:684 |
+| `docCmSyncGutter` | frontend/js/documents-view.js:758 |
+| `docCmSyncLanguage` | frontend/js/documents-view.js:717 |
+| `docCmUpdate` | frontend/js/documents-view.js:361 |
+| `docCmViewLanguage` | frontend/js/documents-view.js:709 |
+| `docFenceGutterOn` | frontend/js/documents-view.js:754 |
+| `docFindingsPlugin` | frontend/js/documents-view.js:466 |
+| `docGuardGlobalShortcuts` | frontend/js/documents-view.js:617 |
 | `docIdeCall` | frontend/js/documents-view.js:198 |
-| `docLineClipboardEvent` | frontend/js/documents-view.js:821 |
-| `docLineClipboardExtension` | frontend/js/documents-view.js:848 |
-| `docLineClipboardRange` | frontend/js/documents-view.js:809 |
-| `docLinePasteEvent` | frontend/js/documents-view.js:834 |
+| `docLineClipboardEvent` | frontend/js/documents-view.js:823 |
+| `docLineClipboardExtension` | frontend/js/documents-view.js:850 |
+| `docLineClipboardRange` | frontend/js/documents-view.js:811 |
+| `docLinePasteEvent` | frontend/js/documents-view.js:836 |
 | `docProseChord` | frontend/js/documents-view.js:29 |
 | `docRedoChord` | frontend/js/documents-view.js:11 |
 | `docTableCellClick` | frontend/js/documents-view.js:160 |
-| `docToggleCodeDraw` | frontend/js/documents-view.js:658 |
-| `docWatchAppearance` | frontend/js/documents-view.js:633 |
-| `ensureDocEditor` | frontend/js/documents-view.js:574 |
-| `mountDocEditor` | frontend/js/documents-view.js:544 |
-| `noteSurfaceGutter` | frontend/js/documents-view.js:864 |
+| `docToggleCodeDraw` | frontend/js/documents-view.js:660 |
+| `docWatchAppearance` | frontend/js/documents-view.js:635 |
+| `ensureDocEditor` | frontend/js/documents-view.js:576 |
+| `mountDocEditor` | frontend/js/documents-view.js:546 |
+| `noteSurfaceGutter` | frontend/js/documents-view.js:866 |
 
 ### frontend/js/documents-word.js (17)
 
