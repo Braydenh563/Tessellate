@@ -22321,7 +22321,6 @@ async function wbDeleteObject(d) {
   }
 }
 
-
 function renderWhiteboard() {
   wbPruneSelection();
   //: A render replaces every map node's element, so every measurement taken
@@ -22631,7 +22630,14 @@ function renderWhiteboard() {
   //: under the marquee's 4px threshold ends without touching the selection.
   //: This class is what the test reads; it is set here rather than at enter
   //: so a sketch reclassified by an edit cannot keep a stale one.
-  sketchUpdate.classed("wb-link-sketch", (d) => {
+  //: **A class is written only when it changes** (audit 1028 B4). d3's `classed` re-sets the
+  //: `class` attribute even when the token is already right, so an unchanged board of 530
+  //: sketches made 1,060 DOM writes a render (two per group, counted with a MutationObserver).
+  const classIfChanged = (selection, name, want) => selection.each(function(d) {
+    const on = !!want(d);
+    if (this.classList.contains(name) !== on) this.classList.toggle(name, on);
+  });
+  classIfChanged(sketchUpdate, "wb-link-sketch", (d) => {
     try {
       return String(JSON.parse(d.data)?.type || "").startsWith("link-");
     } catch {
@@ -22639,7 +22645,7 @@ function renderWhiteboard() {
     }
   });
 
-  sketchUpdate.classed("wb-map-crosslink", (d) => {
+  classIfChanged(sketchUpdate, "wb-map-crosslink", (d) => {
     if (!crossLinkIds.size) return false;
     let parsed;
     try {
