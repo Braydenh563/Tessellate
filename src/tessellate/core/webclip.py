@@ -30,6 +30,7 @@ It lives in `core` rather than beside the web reader so the privacy receipt
 from __future__ import annotations
 
 import html
+import logging
 import re
 import time
 from html.parser import HTMLParser
@@ -40,6 +41,8 @@ import requests
 from tessellate.core import egress
 from tessellate.core.privacy_http import PRIVACY_HEADERS, PinnedAdapter, pin_url, strip_tracking
 from tessellate.core.security import UnsafeUrl, public_addresses
+
+logger = logging.getLogger("tessellate.webclip")
 
 #: The largest page a clip will read. Well past any article, and small enough
 #: that a runaway response (a video served as text/html) is refused quickly.
@@ -542,7 +545,7 @@ def page_facts(page: str) -> dict[str, str]:
         tree.feed(page)
         tree.close()
     except Exception:  # noqa: BLE001  # a malformed page is still a page
-        pass
+        logger.debug("page facts: the page did not parse to the end; keeping what it named so far", exc_info=True)
     return dict(tree.facts)
 
 

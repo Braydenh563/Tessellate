@@ -55,6 +55,8 @@ CSS_FILES = [
     CSS_DIR / "recovery-lazy.css",
     #: Tidy's sheet (`LAZY_MODULES.tidy`, INBOX 691).
     CSS_DIR / "tidy-lazy.css",
+    #: The documents graph view (`LAZY_MODULES.docGraph`).
+    CSS_DIR / "doc-graph-lazy.css",
     #: The Graph tab's late styles (`LAZY_MODULES.graph`, 2026-10-10).
     CSS_DIR / "graph-lazy.css",
     #: The web reader's typography (`LAZY_MODULES` web reader, composer-1025).

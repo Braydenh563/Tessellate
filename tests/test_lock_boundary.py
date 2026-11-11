@@ -209,10 +209,22 @@ def test_no_second_password_form():
     #: cannot be its recipe either.
     pin = ('id="account-pin-new" type="password"', 'id="account-pin-confirm" type="password"')
     assert all(field in html for field in pin)
-    assert html.count('type="password"') == 10, (
-        "lock card, Change password's three, the sealed backup's two, the forgot card's two, the PIN's two"
+    #: And one more, named (B6, LAN pairing): the OTHER computer's password, typed once to pair over
+    #: the home network. It is that machine's secret, not this account's, so neither the lock card
+    #: (which checks this account's password) nor the prompt can be its recipe.
+    assert 'id="sync-password" type="password"' in html
+    assert html.count('type="password"') == 11, (
+        "lock card, Change password's three, the sealed backup's two, the forgot card's two, the PIN's two, "
+        "the other computer's password for LAN pairing"
     )
     for path in sorted(APP_JS.parent.glob("*.js")):
         source = path.read_text(encoding="utf-8")
+        if path.name == "sync-folder.js":
+            #: The one named script exception (sync through a folder): its sheet builds the folder's
+            #: passphrase, a secret shared with the other computers and not this account's password,
+            #: so no lock card can be its recipe. Exactly one, and no markup-string form.
+            assert source.count('type = "password"') == 1, path.name
+            assert "type=\"password\"" not in source, path.name
+            continue
         assert 'type = "password"' not in source, path.name
         assert "type=\"password\"" not in source, path.name

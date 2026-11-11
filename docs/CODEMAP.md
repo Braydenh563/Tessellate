@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8222, frontend ids 2756, CSS sections 524, backend routes 695, backend modules 10691, test files 2633, tests 21504, plan headings 1013, app scripts 29, boot scripts 38, script files 290.
+Counts: frontend functions 8222, frontend ids 2756, CSS sections 524, backend routes 695, backend modules 10694, test files 2633, tests 21505, plan headings 1013, app scripts 29, boot scripts 38, script files 290.
 
 ## Frontend functions (8222)
 
@@ -13420,7 +13420,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/on-this-day` | GET | `on_this_day` | src/tessellate/api/routes_insights.py:683 |
 | `/openapi.json` | GET | `openapi_schema` | src/tessellate/api/app.py:1693 |
 | `/outline` | GET | `documents_outline` | src/tessellate/api/routes_documents.py:480 |
-| `/overview` | POST | `make_overview` | src/tessellate/api/routes_studio.py:94 |
+| `/overview` | POST | `make_overview` | src/tessellate/api/routes_studio.py:95 |
 | `/parse` | POST | `magic_add_reminder` | src/tessellate/api/routes_reminders.py:633 |
 | `/password-on-open` | POST | `set_password_on_open` | src/tessellate/api/routes_auth.py:1241 |
 | `/patterns` | GET | `patterns` | src/tessellate/api/routes_insights.py:453 |
@@ -13499,9 +13499,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/run` | POST | `run_now` | src/tessellate/api/routes_night.py:50 |
 | `/running-copies` | GET | `running_copies_list` | src/tessellate/api/routes_tasks.py:920 |
 | `/running-copies/{pid}/shutdown` | POST | `running_copies_shutdown` | src/tessellate/api/routes_tasks.py:930 |
-| `/runs/{run_id}` | GET | `run_state` | src/tessellate/api/routes_studio.py:109 |
+| `/runs/{run_id}` | GET | `run_state` | src/tessellate/api/routes_studio.py:110 |
 | `/runs/{run_id}/facts` | GET | `run_facts` | src/tessellate/api/routes_night.py:92 |
-| `/runs/{run_id}/stop` | POST | `stop_run` | src/tessellate/api/routes_studio.py:118 |
+| `/runs/{run_id}/stop` | POST | `stop_run` | src/tessellate/api/routes_studio.py:119 |
 | `/sample-notebook` | DELETE | `remove_sample_notebook` | src/tessellate/api/routes_help.py:162 |
 | `/sample-notebook` | GET | `sample_notebook_state` | src/tessellate/api/routes_help.py:131 |
 | `/sample-notebook` | POST | `add_sample_notebook` | src/tessellate/api/routes_help.py:140 |
@@ -13743,7 +13743,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10691)
+## Backend modules (10694)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14180,22 +14180,22 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Failure` | src/tessellate/ai/bench.py:121 |
-| `Item` | src/tessellate/ai/bench.py:105 |
-| `ModelScore` | src/tessellate/ai/bench.py:143 |
-| `_Stop` | src/tessellate/ai/bench.py:273 |
-| `_answer_step` | src/tessellate/ai/bench.py:308 |
-| `_candidates` | src/tessellate/ai/bench.py:224 |
-| `_filing_step` | src/tessellate/ai/bench.py:286 |
-| `_tokens` | src/tessellate/ai/bench.py:279 |
-| `_tool_step` | src/tessellate/ai/bench.py:336 |
-| `_words` | src/tessellate/ai/bench.py:220 |
-| `build_set` | src/tessellate/ai/bench.py:240 |
-| `citation_score` | src/tessellate/ai/bench.py:184 |
-| `cited_numbers` | src/tessellate/ai/bench.py:213 |
-| `filing_right` | src/tessellate/ai/bench.py:201 |
-| `fingerprint` | src/tessellate/ai/bench.py:266 |
-| `run` | src/tessellate/ai/bench.py:361 |
+| `Failure` | src/tessellate/ai/bench.py:123 |
+| `Item` | src/tessellate/ai/bench.py:107 |
+| `ModelScore` | src/tessellate/ai/bench.py:145 |
+| `_Stop` | src/tessellate/ai/bench.py:275 |
+| `_answer_step` | src/tessellate/ai/bench.py:310 |
+| `_candidates` | src/tessellate/ai/bench.py:226 |
+| `_filing_step` | src/tessellate/ai/bench.py:288 |
+| `_tokens` | src/tessellate/ai/bench.py:281 |
+| `_tool_step` | src/tessellate/ai/bench.py:338 |
+| `_words` | src/tessellate/ai/bench.py:222 |
+| `build_set` | src/tessellate/ai/bench.py:242 |
+| `citation_score` | src/tessellate/ai/bench.py:186 |
+| `cited_numbers` | src/tessellate/ai/bench.py:215 |
+| `filing_right` | src/tessellate/ai/bench.py:203 |
+| `fingerprint` | src/tessellate/ai/bench.py:268 |
+| `run` | src/tessellate/ai/bench.py:363 |
 
 ### src/tessellate/ai/budget.py (6)
 
@@ -18538,8 +18538,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `ResponseMode` | src/tessellate/ai/presets.py:48 |
-| `resolve` | src/tessellate/ai/presets.py:197 |
-| `sampling_options` | src/tessellate/ai/presets.py:213 |
+| `resolve` | src/tessellate/ai/presets.py:212 |
+| `sampling_options` | src/tessellate/ai/presets.py:228 |
 
 ### src/tessellate/ai/proofread.py (8)
 
@@ -20077,41 +20077,49 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_find_contradictions` | src/tessellate/ai/tools/tool_learn.py:145 |
 | `_save_user_preference` | src/tessellate/ai/tools/tool_learn.py:26 |
 
+### src/tessellate/ai/tools/tool_list_page.py (4)
+
+| Name | File:line |
+|---|---|
+| `category_exists` | src/tessellate/ai/tools/tool_list_page.py:45 |
+| `describe_filters` | src/tessellate/ai/tools/tool_list_page.py:65 |
+| `page_of_notes` | src/tessellate/ai/tools/tool_list_page.py:17 |
+| `unknown_category_hint` | src/tessellate/ai/tools/tool_list_page.py:52 |
+
 ### src/tessellate/ai/tools/tool_path.py (1)
 
 | Name | File:line |
 |---|---|
 | `_path_between` | src/tessellate/ai/tools/tool_path.py:16 |
 
-### src/tessellate/ai/tools/tool_read.py (25)
+### src/tessellate/ai/tools/tool_read.py (24)
 
 | Name | File:line |
 |---|---|
-| `_calculate` | src/tessellate/ai/tools/tool_read.py:874 |
-| `_category_exists` | src/tessellate/ai/tools/tool_read.py:637 |
-| `_check_answer` | src/tessellate/ai/tools/tool_read.py:906 |
-| `_count_notes` | src/tessellate/ai/tools/tool_read.py:646 |
-| `_find_similar_notes` | src/tessellate/ai/tools/tool_read.py:391 |
-| `_get_current_time` | src/tessellate/ai/tools/tool_read.py:830 |
-| `_get_note_tool` | src/tessellate/ai/tools/tool_read.py:81 |
-| `_graph_neighbours` | src/tessellate/ai/tools/tool_read.py:141 |
-| `_graph_summary` | src/tessellate/ai/tools/tool_read.py:108 |
-| `_list_categories` | src/tessellate/ai/tools/tool_read.py:741 |
-| `_list_notes` | src/tessellate/ai/tools/tool_read.py:545 |
-| `_list_tags` | src/tessellate/ai/tools/tool_read.py:767 |
-| `_named` | src/tessellate/ai/tools/tool_read.py:26 |
-| `_notebook_overview` | src/tessellate/ai/tools/tool_read.py:789 |
-| `_notebook_structure` | src/tessellate/ai/tools/tool_read.py:420 |
-| `_propose_act` | src/tessellate/ai/tools/tool_read.py:915 |
-| `_read_text` | src/tessellate/ai/tools/tool_read.py:894 |
-| `_related_notes` | src/tessellate/ai/tools/tool_read.py:335 |
-| `_scope_filters` | src/tessellate/ai/tools/tool_read.py:498 |
-| `_scope_label` | src/tessellate/ai/tools/tool_read.py:533 |
-| `_search_help` | src/tessellate/ai/tools/tool_read.py:812 |
-| `_search_notes` | src/tessellate/ai/tools/tool_read.py:32 |
-| `_suggested_neighbours` | src/tessellate/ai/tools/tool_read.py:234 |
-| `_summarize_notes` | src/tessellate/ai/tools/tool_read.py:933 |
-| `_walk_neighbourhood` | src/tessellate/ai/tools/tool_read.py:298 |
+| `_calculate` | src/tessellate/ai/tools/tool_read.py:822 |
+| `_check_answer` | src/tessellate/ai/tools/tool_read.py:854 |
+| `_count_notes` | src/tessellate/ai/tools/tool_read.py:594 |
+| `_find_similar_notes` | src/tessellate/ai/tools/tool_read.py:392 |
+| `_get_current_time` | src/tessellate/ai/tools/tool_read.py:778 |
+| `_get_note_tool` | src/tessellate/ai/tools/tool_read.py:82 |
+| `_graph_neighbours` | src/tessellate/ai/tools/tool_read.py:142 |
+| `_graph_summary` | src/tessellate/ai/tools/tool_read.py:109 |
+| `_list_categories` | src/tessellate/ai/tools/tool_read.py:689 |
+| `_list_notes` | src/tessellate/ai/tools/tool_read.py:546 |
+| `_list_tags` | src/tessellate/ai/tools/tool_read.py:715 |
+| `_named` | src/tessellate/ai/tools/tool_read.py:27 |
+| `_notebook_overview` | src/tessellate/ai/tools/tool_read.py:737 |
+| `_notebook_structure` | src/tessellate/ai/tools/tool_read.py:421 |
+| `_propose_act` | src/tessellate/ai/tools/tool_read.py:863 |
+| `_read_text` | src/tessellate/ai/tools/tool_read.py:842 |
+| `_related_notes` | src/tessellate/ai/tools/tool_read.py:336 |
+| `_scope_filters` | src/tessellate/ai/tools/tool_read.py:499 |
+| `_scope_label` | src/tessellate/ai/tools/tool_read.py:534 |
+| `_search_help` | src/tessellate/ai/tools/tool_read.py:760 |
+| `_search_notes` | src/tessellate/ai/tools/tool_read.py:33 |
+| `_suggested_neighbours` | src/tessellate/ai/tools/tool_read.py:235 |
+| `_summarize_notes` | src/tessellate/ai/tools/tool_read.py:881 |
+| `_walk_neighbourhood` | src/tessellate/ai/tools/tool_read.py:299 |
 
 ### src/tessellate/ai/tools/tool_run.py (9)
 
@@ -22851,9 +22859,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_notes` | src/tessellate/api/routes_studio.py:44 |
 | `_set` | src/tessellate/api/routes_studio.py:62 |
 | `_title` | src/tessellate/api/routes_studio.py:55 |
-| `make_overview` | src/tessellate/api/routes_studio.py:95 |
-| `run_state` | src/tessellate/api/routes_studio.py:110 |
-| `stop_run` | src/tessellate/api/routes_studio.py:119 |
+| `make_overview` | src/tessellate/api/routes_studio.py:96 |
+| `run_state` | src/tessellate/api/routes_studio.py:111 |
+| `stop_run` | src/tessellate/api/routes_studio.py:120 |
 
 ### src/tessellate/api/routes_sync.py (12)
 
@@ -25835,29 +25843,29 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `ClipRefused` | src/tessellate/core/webclip.py:57 |
-| `_Markdown` | src/tessellate/core/webclip.py:384 |
-| `_Node` | src/tessellate/core/webclip.py:217 |
-| `_Tree` | src/tessellate/core/webclip.py:227 |
-| `_check_clippable` | src/tessellate/core/webclip.py:120 |
-| `_clip_hop` | src/tessellate/core/webclip.py:82 |
-| `_descendants` | src/tessellate/core/webclip.py:486 |
-| `_link_text` | src/tessellate/core/webclip.py:314 |
-| `_main` | src/tessellate/core/webclip.py:336 |
-| `_new_session` | src/tessellate/core/webclip.py:68 |
-| `_read` | src/tessellate/core/webclip.py:495 |
-| `_read_clip_body` | src/tessellate/core/webclip.py:139 |
-| `_redirect_url` | src/tessellate/core/webclip.py:108 |
-| `_safe_href` | src/tessellate/core/webclip.py:365 |
-| `_score` | src/tessellate/core/webclip.py:322 |
-| `_score_deep` | src/tessellate/core/webclip.py:361 |
-| `_text` | src/tessellate/core/webclip.py:308 |
-| `clean_url` | src/tessellate/core/webclip.py:78 |
-| `extract` | src/tessellate/core/webclip.py:508 |
-| `fetch_page` | src/tessellate/core/webclip.py:153 |
-| `note_content` | src/tessellate/core/webclip.py:564 |
-| `note_properties` | src/tessellate/core/webclip.py:549 |
-| `page_facts` | src/tessellate/core/webclip.py:536 |
+| `ClipRefused` | src/tessellate/core/webclip.py:60 |
+| `_Markdown` | src/tessellate/core/webclip.py:387 |
+| `_Node` | src/tessellate/core/webclip.py:220 |
+| `_Tree` | src/tessellate/core/webclip.py:230 |
+| `_check_clippable` | src/tessellate/core/webclip.py:123 |
+| `_clip_hop` | src/tessellate/core/webclip.py:85 |
+| `_descendants` | src/tessellate/core/webclip.py:489 |
+| `_link_text` | src/tessellate/core/webclip.py:317 |
+| `_main` | src/tessellate/core/webclip.py:339 |
+| `_new_session` | src/tessellate/core/webclip.py:71 |
+| `_read` | src/tessellate/core/webclip.py:498 |
+| `_read_clip_body` | src/tessellate/core/webclip.py:142 |
+| `_redirect_url` | src/tessellate/core/webclip.py:111 |
+| `_safe_href` | src/tessellate/core/webclip.py:368 |
+| `_score` | src/tessellate/core/webclip.py:325 |
+| `_score_deep` | src/tessellate/core/webclip.py:364 |
+| `_text` | src/tessellate/core/webclip.py:311 |
+| `clean_url` | src/tessellate/core/webclip.py:81 |
+| `extract` | src/tessellate/core/webclip.py:511 |
+| `fetch_page` | src/tessellate/core/webclip.py:156 |
+| `note_content` | src/tessellate/core/webclip.py:567 |
+| `note_properties` | src/tessellate/core/webclip.py:552 |
+| `page_facts` | src/tessellate/core/webclip.py:539 |
 
 ### src/tessellate/core/window_hook.py (4)
 
@@ -27378,7 +27386,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21504)
+## Tests (21505)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27541,7 +27549,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_backend_url_safety.py | 23 |
 | tests/test_background_filing.py | 25 |
 | tests/test_background_filing_cost.py | 2 |
-| tests/test_background_mode_1111.py | 3 |
+| tests/test_background_mode_1111.py | 4 |
 | tests/test_background_module.py | 2 |
 | tests/test_background_registry.py | 2 |
 | tests/test_background_registry_shutdown.py | 1 |
@@ -30604,7 +30612,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Earlier morning summary (2026-10-30) | docs/roadmap/HANDOVER.md:81 |
 | Earlier morning summary (2026-11-04) | docs/roadmap/HANDOVER.md:71 |
 | Earlier morning summary (away run 2026-10-18b) | docs/roadmap/HANDOVER.md:100 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:593 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:595 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4151 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
