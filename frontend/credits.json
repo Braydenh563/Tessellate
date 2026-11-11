@@ -119,6 +119,16 @@
      "source": "https://github.com/mozilla/translations"
     },
     {
+     "name": "pyannote segmentation 3.0 (sherpa-onnx export)",
+     "licence": "MIT",
+     "source": "https://github.com/k2-fsa/sherpa-onnx/releases/tag/speaker-segmentation-models"
+    },
+    {
+     "name": "WeSpeaker ResNet34 (English, VoxCeleb), sherpa-onnx export",
+     "licence": "Apache-2.0",
+     "source": "https://github.com/k2-fsa/sherpa-onnx/releases/tag/speaker-recongition-models"
+    },
+    {
      "name": "marian-nmt (inside the Bergamot WASM)",
      "licence": "MIT",
      "source": "https://github.com/browsermt/marian-dev"

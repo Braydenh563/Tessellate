@@ -592,7 +592,7 @@ _CUES: tuple[tuple[str, re.Pattern], ...] = (
     ("What you want", re.compile(r"\b(i|you) (want|need) (it|one|them)\b|\blooking for\b", re.I)),
     ("Prices", re.compile(r"\$\s?\d.*\$\s?\d")),
     ("Your aim", re.compile(r"^(trying|aiming|hoping|planning) to\b", re.I)),
-    ("Your week", re.compile(r"\b(mon|tues|wednes|thurs|fri|satur|sun)days\b|\bevery (mon|tues|wednes|thurs|fri|satur|sun)day\b", re.I)),
+    ("Your schedule", re.compile(r"\b(mon|tues|wednes|thurs|fri|satur|sun)days\b|\bevery (mon|tues|wednes|thurs|fri|satur|sun)day\b", re.I)),
     ("How it went", re.compile(r"\b(felt|fun|incredible|amazing|dragged|boring|straighter|better|worse)\b", re.I)),
 )
 

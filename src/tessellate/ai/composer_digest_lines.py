@@ -17,7 +17,7 @@ from tessellate.ai import (
     composer_likeness,
     composer_overview,
     composer_read,
-    composer_slots,
+    composer_slots, composer_stale,
     composer_story,
     composer_threads,
     composer_verbuse,
@@ -200,7 +200,7 @@ def _said_piece(piece: str, cue: str, written: date | None, pinned, last: bool, 
     #: where is it from?"): its "I" and its "this week" are the asker's,
     #: never "you like your jacket" or "the week of 20 July" (INBOX 1420).
     said = _tidy(piece, None) if asked else _tidy(_second_person(piece, written), written)
-    if cue == "Your week":
+    if cue == "Your schedule":
         said = re.sub(r"\b(?:are|is) (on|every)\b", r"\1", said)
     if cue == "What you want":
         said = re.sub(r"^you (?:want|need) (?:it|one|them) ", "", said)
@@ -789,7 +789,7 @@ def _dated_line(line_body: str, label: str, i: int, by_day: date | None, written
     """A day's line is said as that day, not under it (the owner,
     2026-10-11: no label lines), the time since the last one first."""
     lead = _dated_lead(label, i, by_day, written, before)
-    reported = _said_as_written(_cleaned_body(line_body, label), i, written)
+    lead, reported = composer_stale.dated(lead, _cleaned_body(line_body, label), written, by_day, lambda b: _said_as_written(b, i, written), _backshift)
     if _OWN_DATE.search(reported) and lead.lower().startswith(("today, ", "yesterday, ")):
         #: "Today, you ran 6 km on 25 October" reads as a run today (round 1 D9).
         lead = ""
