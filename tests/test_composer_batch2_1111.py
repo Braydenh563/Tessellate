@@ -76,7 +76,6 @@ def test_a_meeting_ask_that_names_a_person_is_not_taken_for_the_day(btask):
 def test_rung_is_said_as_rang(client, session, monkeypatch):
     from datetime import datetime
 
-    import tests._seed_r9_1109 as r9
     from tessellate.entry import manager
 
     entry = manager.create_entry(session, "Weekend\n\nRung mum about the party. Back Sunday.")
