@@ -370,6 +370,13 @@ def test_the_diagram_blocks_keys_menu_and_views_are_in_the_guide() -> None:
         assert words in body, words
     assert "diagram-blocks" in TOPIC_META
     assert "diagram-blocks" in dict(HELP_GROUPS)["Documents and code"]
+    # The toolbar's Expand and Collapse (the owner, 2026-11-11), said in the controls' words in the Guide and the dock's popover.
+    from tessellate.ai.help_chat import HELP_TOPICS as TOPICS
+
+    builder = str(next(t["body"] for t in TOPICS if t["id"] == "diagram-lines"))
+    assert "Expand, at the end of the toolbar of a diagram in a document" in builder and "Collapse or Escape returns to the document" in builder
+    index = (Path(__file__).resolve().parents[1] / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert "Expand, at the end of the diagram's toolbar" in index and "Collapse or Escape returns to the document" in index
     builder = (FRONTEND / "js" / "diagram-builder.js").read_text(encoding="utf-8")
     for key in ("Insert", "Delete", "Backspace", "ContextMenu"):
         assert key in builder, key

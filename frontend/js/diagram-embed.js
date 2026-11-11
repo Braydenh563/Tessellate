@@ -285,7 +285,9 @@
   //: `{source, kind, title, shapes, named, onDone(source, changed, name)}`. `named` adds a title field: the new document's name and the exports' file name. `kind` names the blank diagram to start
   //: when there is no source. `shapes` is a function that receives the source and makes board shapes
   //: of it (Turn into shapes). `draft` keys the kept unsaved copy (a reload offers it back). `existing` is `{pick, open}` for the door. `offer` is what Save may link. Done calls `onDone` once; Cancel, Escape and the X call nothing, after
-  //: asking when there are changes.
+  //: asking when there are changes. `live` is a host's own `io` (a diagram document's): the dialog is then that diagram taken to the full
+  //: screen ("Expand", `expand` below), every change goes to the host as it is made so the document saves as it always does, and Collapse,
+  //: Escape and the X just close it, with nothing to keep or discard. `onClose` runs once it has closed.
   //: **One builder at a time** (the owner, 2026-11-09: "I clicked it multiple times and it didnt close"). The first press
   //: fetches the code, so a press that seemed to do nothing was pressed again and each press stacked its own dialog; an X
   //: then closed one of identical copies (measured: three presses, three dialogs, three X presses). A press while one is
@@ -304,7 +306,7 @@
     return opening;
   }
 
-  async function mount({ source = "", kind = "flowchart", title = "Edit diagram", shapes = null, offer = null, onDone = null, existing = null, named = false, draft = "" } = {}) {
+  async function mount({ source = "", kind = "flowchart", title = "Edit diagram", shapes = null, offer = null, onDone = null, existing = null, named = false, draft = "", live = null, onClose = null } = {}) {
     if (!(await ensureModule("diagramBuilder"))) return toast("The block editor did not load. Try again.", "info");
     //: Without it the Source pane is a plain field (the list is an extra, so a failed load is not an error).
     const hasComplete = await ensureModule("diagramComplete");
@@ -357,6 +359,8 @@
     window.addEventListener("pagehide", keep);
     const io = {
       get name() { return titleField?.value.trim() || title; },
+      dialog: true,
+      collapse: live ? () => finish(true) : null,
       set: (next) => {
         const kind = diagramModel.builder.kindOf(history[at]);
         history.length = at + 1;
@@ -364,12 +368,13 @@
         at = history.length - 1;
         if (field.value !== next) (field.value = next), number();
         keepSoon();
+        live?.set(next);
         //: A press on another kind (diagram-kindbar.js) only sets the source; the pane has to be drawn for it. The page gets
         //: this through the document; a block gesture draws its own pane, so only a change of kind shows again (DD-1).
         if (diagramModel.builder.kindOf(next) !== kind) show();
       },
-      undo: () => at > 0 && (at -= 1, apply()),
-      redo: () => at < history.length - 1 && (at += 1, apply()),
+      undo: () => at > 0 && (at -= 1, apply(), live?.set(history[at])),
+      redo: () => at < history.length - 1 && (at += 1, apply(), live?.set(history[at])),
       get menu() {
         return [
           ...(shapes ? [makeMenuItem("ph:shapes Turn into shapes", "Replace it with shapes and connectors you can move one by one", () => (leave(), shapes(history[at])))] : []),
@@ -528,13 +533,14 @@
       document.removeEventListener("keydown", onKey, true);
       overlay.remove();
       if (returnFocus?.isConnected) returnFocus.focus?.();
+      onClose?.();
     };
     //: True when leaving may go ahead: nothing changed, or the person confirmed they do not want the changes.
     //: A typed title is a change too: Escape, Cancel and the backdrop ask before dropping it.
     const mayDiscard = async () => (history[at] === first && !titleField?.value.trim()) || (await confirmDialog("Close without keeping your changes to this diagram?", { confirmLabel: "Discard changes", cancelLabel: "Keep editing" }));
     const finish = async (done) => {
       if (closing) return;
-      if (!done && !(await mayDiscard())) return;
+      if (!done && !live && !(await mayDiscard())) return;
       const [next, changed, typed] = [history[at], history[at] !== first, titleField ? titleField.value : ""];
       //: Done keeps the diagram and Discard was confirmed: either way the draft has done its work.
       draftForget(draftId);
@@ -563,7 +569,11 @@
       known.classList.add("dgm-known");
       known.setAttribute("aria-label", "Open an existing diagram");
     }
-    foot.append(seg, ...(known ? [known] : []), chip, cancel, go);
+    //: Expanded, the foot is the views, the keys and one way back; the changes are already in the document.
+    const back = smallButton("ph:arrows-in Collapse", "Back to the document, where you left it (Escape)", () => finish(true), false);
+    back.classList.add("accent");
+    foot.append(seg, ...(live ? [chip, back] : [...(known ? [known] : []), chip, cancel, go]));
+    if (live) overlay.classList.add("dgm-expanded");
     //: On a phone the views are the sheet's top row, not the foot's first (DD-6, 1107): the foot is one row of Keys, Cancel and Done.
     const viewbar = el("div", "dgm-viewbar");
     const phone = matchMedia("(max-width: 599.98px)");
@@ -645,7 +655,8 @@
     //: Focus goes into the dialog, to the first step or block (R6.5): it stayed on the button behind, and the first Tab reached Close.
     //: A starter's first box is selected and focused, so Enter names it, Tab adds the next (DD-3).
     const firstBox = host.querySelector(".dgm-block");
-    if (firstBox && S && !S.k) diagramModel.builder.select(S, firstBox.dataset.key, true);
+    //: Not for an expanded diagram: it is not a starter, and a pick it did not make would take the first Escape.
+    if (firstBox && S && !S.k && !live) diagramModel.builder.select(S, firstBox.dataset.key, true);
     else (host.querySelector(".dgm-steps button, .dgm-block[tabindex='0']") || dialog.querySelector(".dgm-pane") || dialog).focus?.({ preventScroll: true });
     //: A phone hides the blocks (they are a sheet), so that focus went nowhere and the first Tab left the window's top: the picture takes it (measured at 390: BODY).
     if (!dialog.contains(document.activeElement)) (host.querySelector(".dgm-picture") || dialog).focus?.({ preventScroll: true });
@@ -678,5 +689,27 @@
     anchor.after(menu);
   }
 
-  diagramModel.embed = { open, out, outDoc, save, swapRange, link, historyKey, headExport };
+  //: The diagram in a document, taken to the full screen builder (the toolbar's Expand): the same source and the same `io`, so every
+  //: change is saved by the document as it is made. Collapse puts the document back where it was: the scroll of every page around
+  //: the diagram, its list and its picture, kept now and set again once the document has redrawn what the dialog changed.
+  async function expand(S) {
+    const kept = [S.scroll, S.fig];
+    for (let node = S.root; node; node = node.parentElement) kept.push(node);
+    const spots = kept.filter((n) => n && (n.scrollTop || n.scrollLeft)).map((n) => [n, n.scrollLeft, n.scrollTop]);
+    const put = () => spots.forEach(([n, x, y]) => Object.assign(n, { scrollLeft: x, scrollTop: y }));
+    const button = S.root.querySelector(".dgm-expand");
+    const onClose = () => {
+      put();
+      //: The document redraws once the text has settled; for three seconds after, each redraw of the picture sets the places again.
+      const stop = Date.now() + 3000;
+      const again = () => Date.now() < stop && put();
+      (S.fig.onpaint ||= []).push(again);
+      //: A picture's height is known only once its image has decoded; a scroll set before that is clamped to nothing.
+      S.fig.addEventListener("load", again, true);
+      if (button?.isConnected) button.focus({ preventScroll: true });
+    };
+    return open({ source: S.source, title: S.io.name || "Diagram", live: S.io, onClose });
+  }
+
+  diagramModel.embed = { open, out, outDoc, save, swapRange, link, historyKey, headExport, expand };
 })();

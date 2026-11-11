@@ -19,12 +19,13 @@ def test_keys_typed_before_the_name_box_opens_are_kept_for_it_not_run_as_shortcu
     assert "if (held) (input.value = held), (held = \"\")" in edges
 
 
-def test_the_help_line_pins_above_the_sticky_foot_not_under_it():
+def test_the_help_line_and_the_foot_never_share_an_edge():
     css = _read("frontend", "css", "diagram-lazy.css")
     rule = css[css.index(".dgm-next {") :].split("}", 1)[0]
-    # C2: both stuck to the same edge and the foot covered the hint in a scrolling pane (600 to 820 px wide).
-    assert "position: sticky" in rule and "inset-block-end: 0" in rule
-    assert "S.next.style.marginBlockEnd" in _read("frontend", "js", "diagram-steps.js")
+    # C2 (600 to 820 px wide): the sticky foot covered the hint in a scrolling pane. Intent moved (the owner, 2026-11-11): the foot is
+    # outside the scroller and neither is sticky, so there is no shared edge and no margin that pins the hint above the foot.
+    assert "position: sticky" not in rule and "position: sticky" not in css[css.index(".dgm-foot {") :].split("}", 1)[0]
+    assert "S.next.style.marginBlockEnd" not in _read("frontend", "js", "diagram-steps.js")
 
 
 def test_a_drop_on_an_earlier_block_says_it_connects_back():

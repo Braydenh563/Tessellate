@@ -153,5 +153,19 @@
     return event.shiftKey || /y/i.test(event.key) ? S.io.redo() : S.io.undo();
   }
 
-  diagramModel.kindbar = { mount, fresh, historyKey, KINDS, SAMPLE };
+  
+  //: The toolbar's Expand (a diagram in a document opens in the full screen builder) or, in that builder, its Collapse; the same
+  //: place and the same arrows. Neither where the builder is already a dialog of its own (a board's, the door's). Both toolbars add it.
+  function expand(S) {
+    const out = !S.io.dialog;
+    if (!out && !S.io.collapse) return null;
+    const button = smallButton(out ? "ph:arrows-out" : "ph:arrows-in", out ? "Expand to the full screen builder" : "Back to the document (Escape)", () =>
+      out ? ensureModule("diagramEmbed").then((ok) => (ok ? diagramModel.embed.expand(S) : toast("The full screen builder did not load. Try again.", "info"))) : S.io.collapse()
+    );
+    button.setAttribute("aria-label", out ? "Expand" : "Collapse");
+    button.classList.add("dgm-expand", "icon-only");
+    return button;
+  }
+
+  diagramModel.kindbar = { mount, fresh, historyKey, expand, KINDS, SAMPLE };
 })();
