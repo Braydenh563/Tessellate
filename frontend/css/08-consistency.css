@@ -10362,7 +10362,8 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   .doc-sidebar-section,
   .doc-sidebar .doc-outline-wrap,
   .library-view-section,
-  .doc-list
+  .doc-list,
+  .wb-side-section
 ) {
   padding-inline: var(--ring-room);
   margin-inline: calc(-1 * var(--ring-room));
@@ -10373,6 +10374,17 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 /* A whiteboard side panel's section scrolls (07-whiteboard-misc.css), and its
    actions are full-width buttons against both edges. */
 .wb-side-section {
+  padding: var(--ring-room);
+  margin: calc(-1 * var(--ring-room));
+}
+/* The board sidebar's three lists (Library templates, This map's layers,
+   Outline) scroll down and so clip across too: the template tiles lost
+   3.6 to 4px of their ring on the left and right, the group head and the
+   Outline's first Rename button 4px on top (map sweep, 1280 and 360). Room
+   on all four sides, the layout unmoved; the section above holds the same
+   room across, so the list's negative margin lands in the section's padding
+   and not past its edge (the sweep read that as an overflow). */
+:is(.wb-lib-list, .wb-side-section .wb-library-list, .wb-layers-tree, .wb-outline-tree) {
   padding: var(--ring-room);
   margin: calc(-1 * var(--ring-room));
 }

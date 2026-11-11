@@ -3052,7 +3052,11 @@ body.printing-doc #doc-preview p,
 #wb-outline-tree .wb-outline-text {
   display: block;
   width: 100%;
-  min-height: 0;
+  /* A row is as tall as the pencil over its end (`--target-min`: 28px, 44px on
+     a touch screen or below 820). It was 0, with 44px on a coarse pointer
+     only, so at 360 and 768 with a mouse the 44px pencil stood 7px over the
+     first row and the tree's scroll box cut 4px of it. */
+  min-height: var(--target-min);
   margin: 0;
   box-sizing: border-box;
   border: 1px solid transparent;
@@ -3120,12 +3124,6 @@ body.printing-doc #doc-preview p,
   }
 }
 
-/* A finger's row: the 44px target floor on a touch screen. */
-@media (pointer: coarse) {
-  #wb-outline-tree .wb-outline-text {
-    min-height: 44px;
-  }
-}
 
 /* A topic's markers (MINDMAP_PLAN decision 34): a row before the label, in
    the branch's ink, each mark one em square so the row lines up with the
