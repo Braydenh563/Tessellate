@@ -542,6 +542,12 @@ TAIL_TOPICS.extend(
                 "link a shape to a note",
                 "hyperlink on a board",
                 "open a shape's link",
+                "home key",
+                "back to the top left",
+                "reset the view",
+                "clear labels",
+                "shift+delete",
+                "delete the labels",
             ),
             "body": (
                 "Shift+2 (or View, Zoom to the selection) frames what is selected, "
@@ -556,7 +562,9 @@ TAIL_TOPICS.extend(
                 "from Copy app link); a small mark on its top-left corner opens it, a note in the app and "
                 "a page in a new tab, and the same Link… changes or removes it. Fit, in the Format "
                 "panel's Text tab for a shape (or Ctrl+K, Shrink the text to fit), makes long words shrink "
-                "until they fit inside the shape, never past the size you gave them."
+                "until they fit inside the shape, never past the size you gave them. "
+                "Home goes back to the top left of what is drawn at the zoom you have, and Shift+Home resets the view to 100% there. "
+                "Shift+Delete clears the labels of the selected shapes and connectors and keeps the things; one Undo puts them back."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

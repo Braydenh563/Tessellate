@@ -22,6 +22,7 @@ Object.assign(LAZY_MODULES, {
     "/js/whiteboard-format.js",
     "/js/whiteboard-label.js", //: After whiteboard-format.js: it joins that file's field lists and `wbFmtState`.
     "/js/whiteboard-hints.js", //: The View switches for the arrow grips and the connection dots; needs only the page and `prefs`.
+    "/js/whiteboard-keys.js",
     "/js/whiteboard-interchange.js",
     "/js/whiteboard-history.js",
   ],

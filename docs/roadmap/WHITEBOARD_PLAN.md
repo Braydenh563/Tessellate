@@ -1122,8 +1122,6 @@ clash is listed so the choice is made once.
 | Ctrl+Z, Ctrl+Shift+Z or Ctrl+Y | undo, redo | Ctrl+Z, Ctrl+Y | add Ctrl+Shift+Z |
 | Ctrl+X, C, V | cut, copy, paste | same | paste here and paste size: none |
 | Delete, Backspace | delete | Del | Backspace: add on the board only |
-| Ctrl+Delete | delete with connections | none | S |
-| Shift+Delete | delete labels only | none | S |
 | Ctrl+D | duplicate | Ctrl+D | same |
 | Ctrl+A | select all | same | |
 | Ctrl+Shift+I | select vertices | none, 2026-10-18: a command without the key (whiteboard-1018) | one command, "Select all shapes" |
@@ -1151,7 +1149,6 @@ clash is listed so the choice is made once.
 | Ctrl+J, Ctrl+Shift+J | fit page, fit two pages | none | with page frames |
 | Ctrl+0 | custom zoom | 100 percent | differs |
 | Ctrl+plus, Ctrl+minus | zoom in, out | Ctrl+=, Ctrl+- | same |
-| Home, Shift+Home | reset view, home | none | S |
 | Ctrl+Home, Ctrl+End | collapse, expand | none | with collapse |
 | Ctrl+Shift+Home, Ctrl+Shift+End | exit group, enter group | none | with enter group |
 | Ctrl+Shift+Plus, Ctrl+Shift+Minus, Ctrl+{ , Ctrl+} | font size up, down | none | section 2 |
