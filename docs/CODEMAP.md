@@ -2,9 +2,9 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8323, frontend ids 2760, CSS sections 524, backend routes 696, backend modules 10702, test files 2647, tests 21621, plan headings 1014, app scripts 29, boot scripts 38, script files 299.
+Counts: frontend functions 8322, frontend ids 2760, CSS sections 524, backend routes 696, backend modules 10702, test files 2647, tests 21621, plan headings 1014, app scripts 29, boot scripts 38, script files 299.
 
-## Frontend functions (8323)
+## Frontend functions (8322)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -623,63 +623,62 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `webPanelMaxWidth` | frontend/js/sheets-selects.js:522 |
 | `wireInPlaceSheetDismissal` | frontend/js/sheets-selects.js:260 |
 
-### frontend/js/skills.js (53)
+### frontend/js/skills.js (52)
 
 | Name | File:line |
 |---|---|
 | `allSkills` | frontend/js/skills.js:28 |
 | `askSkillInputs` | frontend/js/skills.js:217 |
-| `batchArchive` | frontend/js/skills.js:1190 |
-| `batchDelete` | frontend/js/skills.js:1233 |
-| `batchEach` | frontend/js/skills.js:1157 |
-| `batchExport` | frontend/js/skills.js:1227 |
-| `batchFavourite` | frontend/js/skills.js:1184 |
-| `batchMove` | frontend/js/skills.js:1135 |
-| `batchNoun` | frontend/js/skills.js:1180 |
-| `batchPublish` | frontend/js/skills.js:1201 |
-| `batchPut` | frontend/js/skills.js:1176 |
-| `batchSelection` | frontend/js/skills.js:1129 |
-| `batchTag` | frontend/js/skills.js:1149 |
-| `blobToBase64` | frontend/js/skills.js:935 |
-| `buildSkillsPanel` | frontend/js/skills.js:432 |
+| `batchArchive` | frontend/js/skills.js:1181 |
+| `batchDelete` | frontend/js/skills.js:1224 |
+| `batchEach` | frontend/js/skills.js:1148 |
+| `batchExport` | frontend/js/skills.js:1218 |
+| `batchFavourite` | frontend/js/skills.js:1175 |
+| `batchMove` | frontend/js/skills.js:1126 |
+| `batchNoun` | frontend/js/skills.js:1171 |
+| `batchPublish` | frontend/js/skills.js:1192 |
+| `batchPut` | frontend/js/skills.js:1167 |
+| `batchSelection` | frontend/js/skills.js:1120 |
+| `batchTag` | frontend/js/skills.js:1140 |
+| `blobToBase64` | frontend/js/skills.js:926 |
+| `buildSkillsPanel` | frontend/js/skills.js:424 |
 | `customSkills` | frontend/js/skills.js:35 |
-| `desktopShell` | frontend/js/skills.js:884 |
-| `downloadBlob` | frontend/js/skills.js:972 |
-| `downloadFromApi` | frontend/js/skills.js:951 |
-| `downloadJson` | frontend/js/skills.js:850 |
-| `enterSelectMode` | frontend/js/skills.js:1099 |
-| `exitSelectMode` | frontend/js/skills.js:1117 |
-| `fillBatchCategories` | frontend/js/skills.js:1072 |
-| `fillBatchMore` | frontend/js/skills.js:1207 |
+| `desktopShell` | frontend/js/skills.js:875 |
+| `downloadBlob` | frontend/js/skills.js:963 |
+| `downloadFromApi` | frontend/js/skills.js:942 |
+| `downloadJson` | frontend/js/skills.js:841 |
+| `enterSelectMode` | frontend/js/skills.js:1090 |
+| `exitSelectMode` | frontend/js/skills.js:1108 |
+| `fillBatchCategories` | frontend/js/skills.js:1063 |
+| `fillBatchMore` | frontend/js/skills.js:1198 |
 | `fillSkillSelect` | frontend/js/skills.js:369 |
-| `healthFacts` | frontend/js/skills.js:874 |
+| `healthFacts` | frontend/js/skills.js:865 |
 | `inputsToText` | frontend/js/skills.js:45 |
 | `loadChatSkills` | frontend/js/skills.js:299 |
 | `loadSkills` | frontend/js/skills.js:19 |
-| `looksLikeAnAgentRequest` | frontend/js/skills.js:620 |
-| `markOtherDevice` | frontend/js/skills.js:900 |
-| `onOtherDevice` | frontend/js/skills.js:917 |
-| `paintSkillsNote` | frontend/js/skills.js:426 |
-| `refuseOnOtherDevice` | frontend/js/skills.js:925 |
-| `renderChatNudge` | frontend/js/skills.js:663 |
-| `renderSkillFolderLine` | frontend/js/skills.js:833 |
-| `renderSkillSettings` | frontend/js/skills.js:815 |
+| `looksLikeAnAgentRequest` | frontend/js/skills.js:611 |
+| `markOtherDevice` | frontend/js/skills.js:891 |
+| `onOtherDevice` | frontend/js/skills.js:908 |
+| `refuseOnOtherDevice` | frontend/js/skills.js:916 |
+| `renderChatNudge` | frontend/js/skills.js:654 |
+| `renderSkillFolderLine` | frontend/js/skills.js:824 |
+| `renderSkillSettings` | frontend/js/skills.js:806 |
 | `renderSkillToolPicker` | frontend/js/skills.js:84 |
 | `renderSkillVerifyPicker` | frontend/js/skills.js:116 |
-| `resetChatNudge` | frontend/js/skills.js:731 |
+| `resetChatNudge` | frontend/js/skills.js:722 |
 | `runSkill` | frontend/js/skills.js:159 |
-| `saveFile` | frontend/js/skills.js:988 |
-| `saveSkillList` | frontend/js/skills.js:749 |
+| `saveFile` | frontend/js/skills.js:979 |
+| `saveSkillList` | frontend/js/skills.js:740 |
 | `setSkillVerify` | frontend/js/skills.js:136 |
-| `skillMatchingDraft` | frontend/js/skills.js:630 |
-| `skillPacePill` | frontend/js/skills.js:518 |
-| `skillRow` | frontend/js/skills.js:759 |
-| `skillSummary` | frontend/js/skills.js:736 |
+| `skillMatchingDraft` | frontend/js/skills.js:621 |
+| `skillPacePill` | frontend/js/skills.js:509 |
+| `skillRow` | frontend/js/skills.js:750 |
+| `skillSummary` | frontend/js/skills.js:727 |
 | `startEditingSkill` | frontend/js/skills.js:51 |
 | `startSkill` | frontend/js/skills.js:167 |
 | `stopEditingSkill` | frontend/js/skills.js:69 |
 | `syncSkillVerifyRow` | frontend/js/skills.js:151 |
-| `updateBatchCount` | frontend/js/skills.js:1048 |
+| `updateBatchCount` | frontend/js/skills.js:1039 |
 
 ### frontend/js/shell-reminders.js (50)
 
