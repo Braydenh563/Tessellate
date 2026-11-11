@@ -141,21 +141,30 @@ def forget_link(data_dir: Path) -> None:
 # --- documents and files from another computer (decision 13) -----------------------
 
 
-def arrived(data_dir: Path) -> dict[str, dict[str, int]]:
-    """{kind: {sid: local id}} for each document and file that came from another computer."""
+def _landed(value: object) -> list | None:
+    if isinstance(value, int):
+        return [value, ""]
+    ok = isinstance(value, list) and len(value) == 2 and isinstance(value[0], int) and isinstance(value[1], str)
+    return value if ok else None
+
+
+def arrived(data_dir: Path) -> dict[str, dict[str, list]]:
+    """{kind: {sid: [local id, mark]}} for each document and file that came from another computer.
+
+    The mark (`sync_extras.mark`) tells the row that landed from a later one that took its freed id."""
     found = _read(data_dir).get("arrived")
     if not isinstance(found, dict):
         return {}
-    return {kind: {s: i for s, i in rows.items() if isinstance(i, int)}
+    return {kind: {s: _landed(i) for s, i in rows.items() if _landed(i)}
             for kind, rows in found.items() if isinstance(rows, dict)}
 
 
-def save_arrived(data_dir: Path, kind: str, sid: str, local_id: int | None) -> None:
+def save_arrived(data_dir: Path, kind: str, sid: str, local_id: int | None, mark: str = "") -> None:
     """Remember (or, with None, forget) where an item from another computer landed here."""
     state = _read(data_dir)
     rows = arrived(data_dir)
     kept = {s: i for s, i in rows.get(kind, {}).items() if s != sid}
     if local_id is not None:
-        kept[sid] = local_id
+        kept[sid] = [local_id, mark]
     state["arrived"] = {**rows, kind: kept}
     _write(data_dir, state)

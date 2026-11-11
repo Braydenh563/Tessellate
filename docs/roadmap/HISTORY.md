@@ -22,6 +22,15 @@ waits in Uncategorised; the hint and the saved status offer the closest two or
 three. Leave one out on the 120 notes: 4 of the 11 wrong filings sit under 70,
 beside about 20 right ones (`tests/test_ask_when_unsure.py`).
 
+## Moved from the plans, 2026-11-11 (WORLD_CLASS B6, one sync story, events-sync)
+
+**Built** (B6 decision 14). One Settings group and one apply path for both ways of syncing.
+
+- `#sync-group` (index.html, settings-rows.js): Sync over the home network (pairing, Sync now) and Sync through a folder (`#sync-folder-open` opens `sync-folder.js`'s sheet), one `#sync-status` line naming the way (`via` on `GET /sync/status`; the sheet fires `sync-folder-done`); the palette and Tools and features rows reveal `sync-group`; the Guide's `two-computers` and `folder-sync` point at each other.
+- `entry/folder_sync.py` rewritten as a transport: the file carries `sync_segments.export_segment` from the start of the log, the decision 13 manifest and item states, attached files sealed in `tessellate-sync-<device>-files/`; `FolderLink` answers `fetch`, `manifest`, `items` and `file`; `sync_pull.pull_from` applies it. Its uid, base and `handled` state is gone (the branch was never released, so no data moves). Segments carry pin and colour; `sync_pull.RUNNING` lets one sync run at a time. Fixed: an own item missing here is never fetched back; `sync_extras.mark` tells an arrived row from a later one given its freed id.
+- **Measured:** `tests/test_folder_sync_q34.py`, 13 tests (the ten folder tests kept to their intent on the new path, plus documents, boards and files through the folder with a removal following, a private document staying home, and a note that came over the network not doubled by the folder with the shared line naming the folder); `tests/test_folder_sync_routes_q34.py` (one sync at a time over either way); `tests/test_sync_settings_group.py`, 4 tests. Playwright, dark theme, at 1440, 720 at 200% zoom, 390, 360 and 360 paired: page and group overflow 0, both subheads shown, folder button 44 px tall on touch widths, the tab order runs help, address, password, Pair (or Unpair, Sync now) then the folder button, the sheet opens without overflow with focus on Shared folder, 0 console errors.
+- **Not verified:** two physical computers, or a real shared folder service between them.
+
 ## Moved from the plans, 2026-11-11 (WORLD_CLASS B6, documents, boards and files, events-sync)
 
 **Built** (B6 decision 13). Documents, boards and attached files sync between paired computers by state.

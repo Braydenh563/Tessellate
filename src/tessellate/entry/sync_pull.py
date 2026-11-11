@@ -3,8 +3,8 @@
 Decision 9: the transport is one object, `name` (the other computer's device
 id, learned at pairing) and `fetch(since, me)` returning a segment (with
 `manifest`, `items` and `file` for documents, boards and files, decision
-13), so the LAN fetch, the tests' fake and a later shared-folder transport
-share this loop and `sync_segments.apply_segment`. A transport raises `OSError` when
+13), so the LAN fetch, the tests' fake and the shared-folder transport
+(`entry/folder_sync.py`, decision 14) share this loop and `sync_segments.apply_segment`. A transport raises `OSError` when
 the other computer does not answer.
 
 The cursor moves only after a whole segment has been applied, and an apply
@@ -19,6 +19,7 @@ answers `NOT_PAIRED`.
 from __future__ import annotations
 
 import logging
+import threading
 import time
 from pathlib import Path
 from typing import Callable, Protocol
@@ -36,6 +37,9 @@ NOT_PAIRED = "No other computer is paired for sync yet; this one is unchanged."
 OFFLINE = "The other computer did not answer; nothing changed here."
 STOPPED = "Sync stopped part way; Sync now picks up where it stopped."
 WRONG_PEER = "The answer came from a different computer than the paired one; nothing was applied."
+BUSY = "A sync is already running; this one waits for it."
+#: One sync at a time, over the home network or through a folder: both write `sync-state.json` (decision 14).
+RUNNING = threading.Lock()
 #: A log longer than this many segments is pulled over more than one press.
 MAX_ROUNDS = 500
 
@@ -105,13 +109,21 @@ def pull(session: Session, data_dir: Path) -> dict:
     link = transport(data_dir)
     if link is None:
         return {**status(data_dir), "error": NOT_PAIRED}
+    pull_from(session, data_dir, link, "network")
+    return status(data_dir)
+
+
+def pull_from(session: Session, data_dir: Path, link: Transport, via: str) -> dict:
+    """Pull everything `link` holds and record how it ended under its name; the counts and the failure sentence.
+
+    `via` ("network" or "folder") names the transport on the shared Settings line (decision 14)."""
     totals = {"applied": 0, "same": 0, "conflicts": 0}
     error = _drain(session, data_dir, link, totals)
-    done = {"error": error, "last": totals}
+    done = {"error": error, "last": totals, "via": via}
     if not error:
         done["synced_at"] = time.time()
     sync_state.save_peer(data_dir, link.name, **done)
-    return status(data_dir)
+    return {**totals, "error": error}
 
 
 def status(data_dir: Path) -> dict:
@@ -126,6 +138,7 @@ def status(data_dir: Path) -> dict:
         "fingerprint": stored.get("fingerprint", ""),
         "private_readable": bool(stored.get("peer_key")),
         "synced_at": row.get("synced_at"),
+        "via": row.get("via") or "network",
         "error": row.get("error") or "",
         "applied": int(last.get("applied") or 0),
         "conflicts": int(last.get("conflicts") or 0),

@@ -151,4 +151,10 @@ def sync_unpair() -> dict:
 @router.post("/sync/now")
 def sync_now(session: Session = Depends(get_session)) -> dict:
     """Pull the paired computer's changes into this notebook."""
-    return sync_pull.pull(session, deps.get_config().data_dir)
+    data_dir = deps.get_config().data_dir
+    if not sync_pull.RUNNING.acquire(blocking=False):
+        return {**sync_pull.status(data_dir), "error": sync_pull.BUSY}
+    try:
+        return sync_pull.pull(session, data_dir)
+    finally:
+        sync_pull.RUNNING.release()

@@ -1,10 +1,11 @@
-// sync-folder.js: sync without a server (WORLD_CLASS_PLAN row 36, Q34). Lazy (LAZY_MODULES.syncFolder in lazy-entries.js).
+// sync-folder.js: sync through a folder (WORLD_CLASS_PLAN B6 decision 14, row 36). Lazy (LAZY_MODULES.syncFolder).
 //
-// The sheet names a folder on this computer (a USB stick, a Syncthing or cloud-drive folder) and a sync passphrase,
-// the same on every computer; Sync now reads the other computers' encrypted files there and writes this one's
-// (`POST /sync/folder`, entry/folder_sync.py). The passphrase is typed each time and never stored. Private notes
-// never go into the folder. When both computers changed the same note the later edit wins and the other words
-// stay in the note's History; the result line says how many.
+// Opened from Settings, Import & export, Sync between computers (`#sync-folder-open`). The sheet names a folder on
+// this computer (a USB stick, a Syncthing or cloud-drive folder) and a sync passphrase, the same on every computer;
+// Sync now reads the other computers' encrypted files there and writes this one's (`POST /sync/folder`,
+// entry/folder_sync.py, the home network's apply path). The passphrase is typed each time and never stored.
+// Private notes never go into the folder. The result line says what came in; the group's one last-synced line
+// follows by the `sync-folder-done` event (settings-rows.js).
 (() => {
   function field(labelText, control) {
     const label = document.createElement("label");
@@ -17,21 +18,21 @@
 
   function summary(done) {
     const parts = [];
-    if (done.added) parts.push(`${done.added} new`);
-    if (done.updated) parts.push(`${done.updated} updated`);
-    if (done.conflicts) parts.push(`${done.conflicts} edited on both, both versions kept in History`);
-    if (done.unreadable) parts.push(`${done.unreadable} file${done.unreadable === 1 ? "" : "s"} could not be opened (check the passphrase)`);
-    const wrote = `Wrote ${done.shared} note${done.shared === 1 ? "" : "s"}.`;
+    if (done.applied) parts.push(`${nounCount(done.applied, "change")} brought in`);
+    if (done.conflicts) parts.push(`${nounCount(done.conflicts, "change")} made on both, the other words kept in History`);
+    if (done.unreadable) parts.push(`${nounCount(done.unreadable, "file")} could not be opened (check the passphrase)`);
+    const wrote = `Wrote ${nounCount(done.shared, "note")}.`;
+    const failed = done.error ? ` ${done.error}` : "";
     if (!done.peers && !done.unreadable) return `No other computer has written here yet. ${wrote}`;
-    const head = `Read ${done.peers} other computer${done.peers === 1 ? "" : "s"}`;
-    return `${head}${parts.length ? `: ${parts.join(", ")}` : ", nothing changed"}. ${wrote}`;
+    const head = `Read ${nounCount(done.peers, "other computer")}`;
+    return `${head}${parts.length ? `: ${parts.join(", ")}` : ", nothing changed"}. ${wrote}${failed}`;
   }
 
   async function openFolderSync() {
-    const last = await apiJson("/sync/folder", { silent: true }).catch(() => ({ folder: "", last: "" }));
+    const last = await apiJson("/sync/folder", { silent: true }).catch(() => ({ folder: "" }));
     openSheet({
-      label: "Sync between computers",
-      sub: "Notes travel through a folder you choose, encrypted. Private notes stay where they are.",
+      label: "Sync through a folder",
+      sub: "Notes, documents, boards and files travel through a folder you choose, encrypted. Private notes stay where they are.",
       name: "sync-folder",
       build: (card) => {
         const folder = document.createElement("input");
@@ -48,7 +49,6 @@
         status.className = "muted";
         status.setAttribute("role", "status");
         status.setAttribute("aria-live", "polite");
-        if (last.last) status.textContent = `Last synced ${parseServerTime(last.last).toLocaleString()}.`;
         const go = smallButton("ph:arrows-clockwise Sync now", "Read the other computers' files in the folder and write this one's", async () => {
           go.disabled = true;
           status.textContent = "Syncing";
@@ -59,6 +59,7 @@
           } catch (error) {
             status.textContent = error.message;
           }
+          document.dispatchEvent(new CustomEvent("sync-folder-done"));
           go.disabled = false;
         }, false);
         const actions = document.createElement("div");

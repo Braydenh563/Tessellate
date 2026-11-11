@@ -81,6 +81,8 @@ def note_state(session: Session, entry: Entry, device: str) -> dict[str, Any]:
         "deleted_at": _iso(entry.deleted_at),
         "archived_at": _iso(entry.archived_at),
         "updated_at": _iso(entry.updated_at) or "",
+        "pinned": bool(entry.pinned),
+        "colour": entry.colour,
     }
 
 
@@ -159,6 +161,8 @@ def _set_state(session: Session, entry: Entry, item: dict) -> None:
     entry.is_deleted = item["is_deleted"]
     entry.deleted_at = _when(item.get("deleted_at"))
     entry.archived_at = _when(item.get("archived_at"))
+    entry.pinned = bool(item.get("pinned"))
+    entry.colour = item.get("colour") if isinstance(item.get("colour"), str) else None
     session.flush()
     if not entry.is_private:
         manager.record_dates(session, entry)
@@ -186,7 +190,7 @@ def _words(state: dict) -> str | None:
 
 def _comparable(state: dict) -> tuple:
     return (_words(state), tuple(state["tags"]), state["category"], state["is_private"],
-            state["is_deleted"], bool(state.get("archived_at")))
+            state["is_deleted"], bool(state.get("archived_at")), bool(state.get("pinned")), state.get("colour"))
 
 
 def _theirs_win(entry: Entry, item: dict, me: str, peer: str) -> bool:

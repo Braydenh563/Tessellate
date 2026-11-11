@@ -131,7 +131,7 @@ class Apply:
             self._keep_mine(doc, words)
         self._write_document(doc, item, words)
         if created:
-            sync_state.save_arrived(self.data_dir, "document", item["sid"], doc.id)
+            sync_state.save_arrived(self.data_dir, "document", item["sid"], doc.id, sync_extras.mark(doc))
         manager.log_action(self.session, "created" if created else "edited", "document", doc.id, "from the other computer")
         return "applied"
 
@@ -244,7 +244,7 @@ class Apply:
                          mime=str(item.get("mime") or "application/octet-stream")[:100], size=len(data))
         self.session.add(att)
         self.session.flush()
-        sync_state.save_arrived(self.data_dir, "file", item["sid"], att.id)
+        sync_state.save_arrived(self.data_dir, "file", item["sid"], att.id, sync_extras.mark(att))
         manager.log_action(self.session, "edited", "entry", note, f"a file from the other computer: {name}")
         return "applied"
 
@@ -283,8 +283,8 @@ def _wanted(session: Session, data_dir: Path, me: str, peer: str, lines: list[di
             continue
         if not theirs or (line["kind"] == "file" and mine is not None):
             continue
-        if was == theirs and mine is not None:
-            continue  # changed only here: the other computer takes it from this one
+        if was == theirs or (mine is None and line["sid"].startswith(f"{me}:")):
+            continue  # changed or removed only here (one of this notebook's own is never fetched back)
         out[line["kind"]].append(line["sid"])
         if mine is None or was == mine:
             force.add(line["sid"])

@@ -433,6 +433,9 @@
       $("sync-now")?.addEventListener("click", syncNow);
       $("sync-pair")?.addEventListener("click", syncPair);
       $("sync-unpair")?.addEventListener("click", syncUnpair);
+      $("sync-folder-open")?.addEventListener("click", () => openFolderSync());
+      // The folder's sheet says when it has run: the one last-synced line follows (decision 14).
+      document.addEventListener("sync-folder-done", () => paintSync(() => apiJson("/sync/status")));
     }
     if (name === "data") paintSync(() => apiJson("/sync/status"));
     settingDefaults().then(() => scheduleSettingRowsPaint(name, [0, 400, 1200]));
@@ -538,15 +541,16 @@
     });
   }
 
-  // --- sync with another computer (WORLD_CLASS_PLAN B6) -----------------------------
+  // --- sync between computers (WORLD_CLASS_PLAN B6) --------------------------------
 
-  //: One sentence: the failure as the server words it, or when and how much.
+  //: One sentence for both ways in (decision 14): the failure as the server words it, or when, which way and how much.
   function syncLine(s) {
     if (s.error) return s.error;
-    if (!s.synced_at) return s.paired ? "Not synced yet." : "No other computer is paired for sync yet.";
+    if (!s.synced_at) return s.paired ? "Not synced yet." : "Not synced yet: pair over the home network, or sync through a folder.";
     const when = relativeTime(new Date(s.synced_at * 1000).toISOString());
-    const both = s.conflicts ? ` ${nounCount(s.conflicts, "note")} changed on both computers; the other text is in its History.` : "";
-    return `Last synced ${when}, ${nounCount(s.applied, "note")} brought in.${both}`;
+    const way = s.via === "folder" ? "through a folder" : "over the home network";
+    const both = s.conflicts ? ` ${nounCount(s.conflicts, "change")} made on both computers; the other words are in History.` : "";
+    return `Last synced ${when} ${way}, ${nounCount(s.applied, "change")} brought in.${both}`;
   }
 
   //: The paired computer, or the form to pair one (WORLD_CLASS_PLAN B6, decision 10).

@@ -185,7 +185,7 @@ function featureCatalog() {
       { name: "Export", desc: "Download everything as JSON, Markdown or CSV.", reveal: "set-export" },
       { name: "Import markdown", desc: "Bring in notes from an Obsidian-style vault.", reveal: "set-import-md" },
       { name: "Backups", desc: "Snapshot your notebook and restore it later.", reveal: "set-backups" },
-      { name: "Sync between computers", desc: "Notes travel through a folder you choose, encrypted; a note edited on both keeps both versions in History. Private notes stay put.", reveal: "sync-folder" },
+      { name: "Sync between computers", desc: "Over the home network or through a folder you choose; a change made on both keeps the other words in History.", reveal: "sync-group" },
       { name: "Models", desc: "Choose the chat, utility, vision and reading models, and download more.", reveal: "settings:models" },
       { name: "Search and index", desc: "The search engine, the index it builds, and how strict a match must be.", reveal: "settings:searchindex" },
       { name: "AI tool permissions", desc: "Decide exactly what Atlas is allowed to do.", reveal: "settings:tools" },
@@ -394,7 +394,7 @@ function paletteCommands() {
     { label: "ph:microphone-stage Voice note", reveal: "voice-note" },
     { label: "ph:microphone Dictate a note", reveal: "notes-dictation" },
     { label: "ph:waveform Recordings", reveal: "recordings" },
-    { label: "ph:arrows-clockwise Sync between computers", reveal: "sync-folder", keywords: "sync folder usb syncthing two computers merge devices", about: "Share notes between computers through a folder, encrypted, with no server." },
+    { label: "ph:arrows-clockwise Sync between computers", reveal: "sync-group", keywords: "sync folder usb syncthing two computers merge devices pair network", about: "Keep two computers level, over the home network or through a folder." },
     { label: "ph:waveform Make an audio overview", reveal: "studio", about: "Your notes read aloud in a natural voice, saved as a recording." },
     {
       // The same ask about the page reader, in the same words: "I want an

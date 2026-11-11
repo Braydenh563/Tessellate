@@ -1522,17 +1522,19 @@ MORE_TOPICS: list[dict] = [
             "merge notes", "another computer", "sync conflict", "edited on both",
         ),
         "body": (
-            "Sync between computers in the command palette (Ctrl+K) shares your notes through a folder you choose, with no "
-            "server: a USB stick, a Syncthing folder or a cloud drive's folder on each computer. Type the folder and a sync "
-            "passphrase (at least 8 characters, the same on every computer; it is never saved) and press Sync now. Each "
-            "computer writes only its own file there, encrypted, and reads the others'; press it on each computer to "
-            "bring them level. Private notes never go into the folder. A note edited on both computers keeps the later "
-            "edit and the other words stay in the note's History, so nothing is lost; a note deleted on one is deleted on "
-            "the other unless the other changed it later. Links, reminders, attachments and boards do not travel, only the "
-            "notes' words, tags, category, colour and pin. A file that cannot be opened (a different passphrase) is counted "
-            "and left alone."
+            "Sync between computers (Settings, Import & export; or the command palette, Ctrl+K) has two ways in with "
+            "one result: Sync over the home network (Two computers) when both are on the same network, and Sync through "
+            "a folder when they are not: a USB stick, a Syncthing folder or a cloud drive's folder on each computer. "
+            "Press Sync through a folder, type the folder and a sync passphrase (at least 8 characters, the same on "
+            "every computer; it is never saved) and press Sync now. Each computer writes only its own file there, "
+            "encrypted, and reads the others'; press it on each computer to bring them level. Notes, documents, boards "
+            "and attached files travel; private notes never go into the folder. A change made on both computers keeps "
+            "the later one and the other words stay in History, so nothing is lost; a note moved to the bin on one "
+            "lands in the other's bin, and a file removed on one is removed on the other. A file that cannot be opened "
+            "(a different passphrase) is counted and left alone. The last-synced line under the group says when and "
+            "which way."
         ),
-        "badge": {"label": "Notes", "tab": "notes"},
+        "badge": {"label": "Import & export", "section": "data"},
     },
     {
         "id": "count-words",
@@ -1728,7 +1730,7 @@ TOPIC_META: dict[str, dict] = {
     "first-steps": {"title": "First steps and the sample notebook", "path": "Dashboard, First steps"},
     "live-captions": {"title": "How do I get live captions", "path": "Library, Recordings, Captions"},
     "audio-overview": {"title": "Make an audio overview of my notes", "path": "Command palette, Make an audio overview"},
-    "folder-sync": {"title": "Sync my notes between computers", "path": "Command palette, Sync between computers"},
+    "folder-sync": {"title": "Sync through a folder", "path": "Settings, Import & export, Sync between computers", "target": "sync-group"},
     "count-words": {"title": "Count words", "path": "Command palette, Count words"},
     "translate-offline": {"title": "Translate this, offline", "path": "Command palette, Translate this"},
     "insert-template": {"title": "Insert a template", "path": "Command palette, insert template"},
@@ -2022,14 +2024,16 @@ MORE_TOPICS.extend([
             "& export shows where). To move to a new computer, save a full backup and "
             "restore it there, or copy the data folder while the app is closed. To use "
             "one notebook from a second computer, open it over your network: Settings, "
-            "Account & security, Other devices. Sync with another computer (Settings, "
-            "Import & export) brings in the notes changed on a paired computer: turn on "
-            "other devices there, type its address and password here and press Pair, "
-            "then Allow this computer there. A note changed on both keeps the later "
-            "change and the other text goes to its History. Pairing while both "
+            "Account & security, Other devices. To keep two notebooks level, Sync "
+            "between computers (Settings, Import & export) has two ways in with one "
+            "result. Sync over the home network: turn on other devices on the other "
+            "computer, type its address and password here and press Pair, then Allow "
+            "this computer there, and press Sync now. Sync through a folder, for "
+            "computers not on the same network: see Sync through a folder. Notes, "
+            "documents, boards and attached files come over; a change made on both "
+            "keeps the later one and the other words go to History. Pairing while both "
             "notebooks are unlocked lets each open the other's private notes, which "
-            "stay encrypted on both. Documents, boards and attached files come over "
-            "too; a document changed on both keeps the other words in its History."
+            "stay encrypted on both; private notes never go into a folder."
         ),
         "badge": {"label": "Import & export", "section": "data"},
     },

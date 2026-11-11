@@ -62,9 +62,11 @@ def digest(value: object) -> str:
 class Names:
     """This notebook's sids: an item that came from another computer keeps the sid it came with."""
 
-    def __init__(self, session: Session, device: str, arrived: dict[str, dict[str, int]]) -> None:
-        self.session, self.device, self.arrived = session, device, arrived
-        self._back = {kind: {i: s for s, i in rows.items()} for kind, rows in arrived.items()}
+    def __init__(self, session: Session, device: str, landed: dict[str, dict[str, list]]) -> None:
+        self.session, self.device = session, device
+        self.arrived = {kind: {sid: local for sid, (local, stamp) in rows.items() if _still(session, kind, local, stamp)}
+                        for kind, rows in landed.items()}
+        self._back = {kind: {i: s for s, i in rows.items()} for kind, rows in self.arrived.items()}
 
     def of(self, kind: str, local_id: int) -> str:
         return self._back.get(kind, {}).get(local_id) or f"{self.device}:{local_id}"
@@ -79,6 +81,16 @@ class Names:
         if device == self.device:
             return int(number) if number.isdigit() else None
         return self.arrived.get(kind, {}).get(sid)
+
+
+def mark(row: Document | Attachment) -> str:
+    """What tells a row that came from another computer from a later one given its freed id."""
+    return row.stored_name if isinstance(row, Attachment) else iso(row.created_at) or ""
+
+
+def _still(session: Session, kind: str, local: int, stamp: str) -> bool:
+    row = session.get(Attachment if kind == "file" else Document, local)
+    return row is not None and (not stamp or mark(row) == stamp)
 
 
 def raw(session: Session, model: type, row_id: int) -> dict[str, str]:
