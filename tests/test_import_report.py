@@ -14,7 +14,7 @@ import zipfile
 
 import pytest
 
-from tessellate.api.routes_settings import _parse_frontmatter
+from tessellate.api.routes_settings_transfer import _parse_frontmatter
 from tessellate.core import activity, deps
 from tessellate.core.database import Entry
 from tessellate.entry import app_import, export_folder

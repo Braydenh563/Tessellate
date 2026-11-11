@@ -92,6 +92,7 @@ from tessellate.api import (
     routes_recordings,
     routes_reminders,
     routes_settings,
+    routes_settings_transfer,
     routes_spaces,
     routes_hello,
     routes_origin_handoff,
@@ -1487,6 +1488,7 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     (routes_ask_history.router, LOCKED),
     (routes_models.router, LOCKED),
     (routes_settings.router, LOCKED),
+    (routes_settings_transfer.router, LOCKED),  # export and import routes (K24)
     (routes_maintenance.router, LOCKED),
     (routes_lag.router, LOCKED),
     (routes_diag.router, LOCKED),

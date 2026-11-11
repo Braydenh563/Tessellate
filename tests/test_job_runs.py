@@ -285,14 +285,14 @@ def test_a_folder_import_records_an_import(client, tmp_path, monkeypatch):
 
 
 def test_an_unreadable_document_records_a_failed_import(client, monkeypatch, caplog):
-    from tessellate.api import routes_settings
+    from tessellate.api import routes_settings_transfer
 
-    monkeypatch.setattr(routes_settings.importer, "markitdown_available", lambda: True)
+    monkeypatch.setattr(routes_settings_transfer.importer, "markitdown_available", lambda: True)
 
     def boom(_path):
         raise ValueError("corrupt zip")
 
-    monkeypatch.setattr(routes_settings.importer, "convert_to_markdown", boom)
+    monkeypatch.setattr(routes_settings_transfer.importer, "convert_to_markdown", boom)
     with caplog.at_level("WARNING", logger="tessellate.import"):
         response = client.post("/import/document", files={"file": ("deck.pptx", b"junk", "application/x")})
     assert response.status_code == 422

@@ -16,7 +16,7 @@ import os
 import pytest
 from sqlalchemy import select
 
-from tessellate.api import routes_settings
+from tessellate.api import routes_settings_transfer
 from tessellate.core import deps
 from tessellate.core.database import Entry
 from tests._pool_wait import pool_idle
@@ -97,5 +97,5 @@ def test_the_background_job_checks_again(home, tmp_path, session):
     reachable on its own (the CLI, a test), and a check that lives only at
     the door is one refactor from gone."""
     elsewhere = _vault(tmp_path / "elsewhere")
-    routes_settings._run_directory_import(str(elsewhere))
+    routes_settings_transfer._run_directory_import(str(elsewhere))
     assert "inside the vault" not in _contents(session)

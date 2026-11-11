@@ -40,11 +40,11 @@ def test_markdown_import_returns_the_ids_it_made(client):
 
 
 def test_document_import_returns_the_ids_it_made(client, monkeypatch):
-    from tessellate.api import routes_settings
+    from tessellate.api import routes_settings_transfer
 
-    monkeypatch.setattr(routes_settings.importer, "markitdown_available", lambda: True)
+    monkeypatch.setattr(routes_settings_transfer.importer, "markitdown_available", lambda: True)
     monkeypatch.setattr(
-        routes_settings.importer, "convert_to_markdown", lambda _p: "# One\n\nfirst\n\n# Two\n\nsecond"
+        routes_settings_transfer.importer, "convert_to_markdown", lambda _p: "# One\n\nfirst\n\n# Two\n\nsecond"
     )
     body = client.post("/import/document", files={"file": ("deck.pptx", b"x", "application/x")}).json()
     assert body["imported"] == len(body["ids"]) >= 1
