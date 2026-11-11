@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8140, frontend ids 2710, CSS sections 523, backend routes 673, backend modules 10214, test files 2509, tests 20646, plan headings 1004, app scripts 28, boot scripts 37, script files 280.
+Counts: frontend functions 8140, frontend ids 2710, CSS sections 523, backend routes 673, backend modules 10214, test files 2509, tests 20648, plan headings 1004, app scripts 28, boot scripts 37, script files 280.
 
 ## Frontend functions (8140)
 
@@ -22985,12 +22985,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_adopt_old_db` | src/tessellate/core/config.py:247 |
 | `_default_data_dir` | src/tessellate/core/config.py:272 |
 | `_owner_only` | src/tessellate/core/config.py:328 |
-| `days_from_today` | src/tessellate/core/config.py:525 |
+| `days_from_today` | src/tessellate/core/config.py:529 |
 | `default_preferences` | src/tessellate/core/config.py:345 |
-| `loaded_user_now` | src/tessellate/core/config.py:557 |
+| `loaded_user_now` | src/tessellate/core/config.py:561 |
 | `resolved_data_dir` | src/tessellate/core/config.py:309 |
-| `user_now` | src/tessellate/core/config.py:566 |
-| `week_first_day` | src/tessellate/core/config.py:541 |
+| `user_now` | src/tessellate/core/config.py:570 |
+| `week_first_day` | src/tessellate/core/config.py:545 |
 
 ### src/tessellate/core/crypto.py (11)
 
@@ -26454,7 +26454,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20646)
+## Tests (20648)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26790,7 +26790,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_codemap_closure_z10.py | 3 |
 | tests/test_codemap_fresh.py | 1 |
 | tests/test_codemap_routes.py | 1 |
-| tests/test_codeql_shapes.py | 2 |
+| tests/test_codeql_shapes.py | 4 |
 | tests/test_coerce_number_finite.py | 3 |
 | tests/test_cold_window_guard_1108.py | 3 |
 | tests/test_command_row_shape.py | 3 |
