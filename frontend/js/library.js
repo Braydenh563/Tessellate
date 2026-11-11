@@ -1421,16 +1421,36 @@ function keepLibraryScroll() {
   const saved = new Map();
   const pending = new Set();
   const sections = [...document.querySelectorAll("#tab-library .library-view-section")];
-  const restore = () => {
+  const restore = (entries) => {
+    //: **Whether a section is showing comes from the entries, not from the
+    //: page** (lag trace, 2026-11-11). This used to read `clientHeight` of all eight
+    //: sections on every delivery, and a read after any earlier observer's
+    //: write is a full layout: measured with 34k nodes in the Images grid and
+    //: an earlier observer writing the grid, 4x CPU, 13 deliveries cost 1.9s
+    //: (150ms each), almost all of it forced layout. An entry already carries
+    //: the size it was delivered with, so a section is shown when its own
+    //: border box has height, or (when only a child was delivered) when that
+    //: child has. A section with nothing delivered is left alone: nothing
+    //: about it changed. The one remaining read, `scrollHeight`, is only for
+    //: a section that is showing again with an offset still to put back.
+    const shown = new Map();
+    for (const entry of entries) {
+      const own = sections.includes(entry.target);
+      const el = own ? entry.target : entry.target.parentElement;
+      if (!own && !sections.includes(el)) continue;
+      const size = entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
+      if (own) shown.set(el, size > 0);
+      else if (size > 0 && !shown.has(el)) shown.set(el, true);
+    }
     //: Read every section, then put the offsets back (INBOX 1446).
     const put = [];
-    for (const el of sections) {
-      if (!el.clientHeight) {
-        if (saved.get(el.id)) pending.add(el.id);
+    for (const [el, isShown] of shown) {
+      const want = saved.get(el.id) || 0;
+      if (!isShown) {
+        if (want) pending.add(el.id);
         continue;
       }
       if (!pending.has(el.id)) continue;
-      const want = saved.get(el.id) || 0;
       if (el.scrollHeight - el.clientHeight >= want) {
         put.push([el, want]);
         pending.delete(el.id);

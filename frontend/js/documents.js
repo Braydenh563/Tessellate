@@ -4696,10 +4696,17 @@ const DOC_GUTTER_BASELINE = 0.43;
 //: **Every read, then every write** (OPEN 1076, perfpolish): a write and a
 //: layout read per gutter forced one layout per gutter; read all of them
 //: first and the writes cost one layout after.
+//:
+//: **`only` is one box or a list of them** (lag trace, 2026-11-11): the observer below
+//: hands over every box that resized in one delivery. A call per box put the
+//: second box's reads after the first box's writes, a style and layout pass of
+//: the whole page each (two numbered boxes beside 30k nodes, 4x CPU: 141ms over
+//: a 20-frame drag); one call per delivery reads all of them, then writes.
 function syncDocGutterMetrics(only = null) {
   const jobs = [];
+  const wanted = only && (Array.isArray(only) ? only : [only]);
   for (const { gutter, box } of docGutters()) {
-    if (only && box !== only) continue;
+    if (wanted && !wanted.includes(box)) continue;
     if (gutter.classList.contains("hidden")) continue;
     const metrics = getComputedStyle(box);
     jobs.push({
@@ -4710,7 +4717,7 @@ function syncDocGutterMetrics(only = null) {
     });
   }
   for (const { gutter, metrics, own, height } of jobs) {
-    for (const prop of DOC_GUTTER_PROPS) gutter.style[prop] = metrics[prop];
+    gutter.style.lineHeight = metrics.lineHeight;
     //: **On the text's baseline, not its centre** (INBOX 590). A smaller
     //: figure in the same line box is centred on the row, which puts its
     //: baseline above the text's by about 0.43 of the difference in size
@@ -4718,10 +4725,13 @@ function syncDocGutterMetrics(only = null) {
     //: The figures move down by that much and the bottom padding gives it
     //: back, so the column's scroll range stays the box's.
     const drop = DOC_GUTTER_BASELINE * (parseFloat(metrics.fontSize) - own);
-    if (drop > 0) {
-      gutter.style.paddingTop = `calc(${metrics.paddingTop} + ${drop.toFixed(2)}px)`;
-      gutter.style.paddingBottom = `max(0px, calc(${metrics.paddingBottom} - ${drop.toFixed(2)}px))`;
-    }
+    //: Each padding is written once, to its final value: the plain copy and
+    //: then the baseline drop on top of it were two invalidations a row.
+    const lowered = drop > 0;
+    gutter.style.paddingTop = lowered ? `calc(${metrics.paddingTop} + ${drop.toFixed(2)}px)` : metrics.paddingTop;
+    gutter.style.paddingBottom = lowered
+      ? `max(0px, calc(${metrics.paddingBottom} - ${drop.toFixed(2)}px))`
+      : metrics.paddingBottom;
     gutter.style.height = `${height}px`;
   }
 }
@@ -4737,12 +4747,16 @@ function watchDocGutter(box) {
   if (!box || typeof ResizeObserver !== "function") return;
   if (!docGutterObserver) {
     docGutterObserver = new ResizeObserver((entries) => {
+      const boxes = [];
       for (const entry of entries) {
         //: The status bar's counts ride this one observer (the wake sources are
         //: capped): a box that has no width is not a tab stop (audit 1102 DX21).
         if (entry.target.id === "doc-counts") entry.target.tabIndex = entry.target.clientWidth >= 1 ? 0 : -1;
-        else syncDocGutterMetrics(entry.target);
+        else boxes.push(entry.target);
       }
+      //: One pass for the whole delivery, reads before writes (see
+      //: `syncDocGutterMetrics`).
+      if (boxes.length) syncDocGutterMetrics(boxes);
     });
   }
   //: Observing the same element twice replaces the registration rather than
