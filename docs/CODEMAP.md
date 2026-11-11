@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2697, CSS sections 523, backend routes 671, backend modules 10147, test files 2484, tests 20495, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2697, CSS sections 523, backend routes 671, backend modules 10147, test files 2484, tests 20497, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -13992,7 +13992,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `caption_and_store` | src/tessellate/ai/captioning.py:267 |
-| `caption_in_background` | src/tessellate/ai/captioning.py:345 |
+| `caption_in_background` | src/tessellate/ai/captioning.py:348 |
 | `caption_text` | src/tessellate/ai/captioning.py:239 |
 | `describe_document` | src/tessellate/ai/captioning.py:131 |
 | `page_caption_prompt` | src/tessellate/ai/captioning.py:192 |
@@ -19952,13 +19952,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `cut_reading_loops` | src/tessellate/ai/vision_ocr.py:123 |
 | `finish_page_read` | src/tessellate/ai/vision_ocr.py:67 |
 | `pdf_reader_or_none` | src/tessellate/ai/vision_ocr.py:205 |
-| `pdf_vision_ocr_and_store` | src/tessellate/ai/vision_ocr.py:352 |
-| `pdf_vision_ocr_in_background` | src/tessellate/ai/vision_ocr.py:429 |
+| `pdf_vision_ocr_and_store` | src/tessellate/ai/vision_ocr.py:356 |
+| `pdf_vision_ocr_in_background` | src/tessellate/ai/vision_ocr.py:435 |
 | `pdf_vision_reader` | src/tessellate/ai/vision_ocr.py:248 |
 | `register_page_read` | src/tessellate/ai/vision_ocr.py:57 |
 | `running_page_reads` | src/tessellate/ai/vision_ocr.py:75 |
 | `vision_ocr_and_store` | src/tessellate/ai/vision_ocr.py:292 |
-| `vision_ocr_in_background` | src/tessellate/ai/vision_ocr.py:436 |
+| `vision_ocr_in_background` | src/tessellate/ai/vision_ocr.py:442 |
 | `vision_ocr_text` | src/tessellate/ai/vision_ocr.py:162 |
 
 ### src/tessellate/ai/vocative.py (14)
@@ -26354,7 +26354,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20495)
+## Tests (20497)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26582,7 +26582,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_calculator_equations.py | 10 |
 | tests/test_caption_sentence_1599.py | 4 |
 | tests/test_caption_whole_1555.py | 3 |
-| tests/test_captioning.py | 17 |
+| tests/test_captioning.py | 18 |
 | tests/test_captions.py | 16 |
 | tests/test_captions_keep_audio.py | 6 |
 | tests/test_captions_live.py | 2 |
@@ -28664,7 +28664,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_vendor_utilisation.py | 4 |
 | tests/test_verdicts_b31.py | 5 |
 | tests/test_version_agreement.py | 5 |
-| tests/test_vision_ocr.py | 26 |
+| tests/test_vision_ocr.py | 27 |
 | tests/test_vision_rows_row11.py | 10 |
 | tests/test_vocatives.py | 12 |
 | tests/test_voice_1110.py | 4 |
