@@ -8,9 +8,10 @@ source-level check can hold; the numbers are in the commit that added it.
 
 import re
 from pathlib import Path
+from tests._js_scope import unwrapped
 
 JS = Path(__file__).resolve().parent.parent / "frontend" / "js"
-CANVAS = (JS / "graph-canvas.js").read_text(encoding="utf-8")
+CANVAS = unwrapped((JS / "graph-canvas.js").read_text(encoding="utf-8"))
 
 
 def _body(source: str, signature: str) -> str:

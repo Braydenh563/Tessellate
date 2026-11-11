@@ -7,9 +7,10 @@ from __future__ import annotations
 
 from pathlib import Path
 from tests import _js_scope
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
-JS = (ROOT / "frontend/js/meetings.js").read_text(encoding="utf-8")
+JS = unwrapped((ROOT / "frontend/js/meetings.js").read_text(encoding="utf-8"))
 HTML = (ROOT / "frontend/index.html").read_text(encoding="utf-8")
 
 
@@ -112,7 +113,7 @@ def test_the_microphone_is_chosen_cleaned_and_tested_in_one_set_of_controls():
         assert "getUserMedia({ audio: micAudioConstraints() })" in text
     assert "enumerateDevices" in JS and "const MIC_TEST_MS = 3000;" in JS
     assert 'id="mic-settings-controls"' in HTML and 'id="meeting-mic-controls"' in HTML
-    settings = (ROOT / "frontend/js/settings-controls.js").read_text(encoding="utf-8")
+    settings = unwrapped((ROOT / "frontend/js/settings-controls.js").read_text(encoding="utf-8"))
     assert 'micControlsInto($("mic-settings-controls"))' in settings
 
 

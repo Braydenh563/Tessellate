@@ -32,6 +32,10 @@ waits in Uncategorised; the hint and the saved status offer the closest two or
 three. Leave one out on the 120 notes: 4 of the 11 wrong filings sit under 70,
 beside about 20 right ones (`tests/test_ask_when_unsure.py`).
 
+## Built, 2026-11-11 (OPEN D24, scope-wrap-1111b)
+
+- Ten more frontend files wrapped whole (`avatars.js`, `graph-canvas.js`, `meetings.js`, `bg-art.js`, `settings-controls.js`, `settings-find.js`, `settings-models.js`, `atlas-life.js`, `companion-menu.js`, `companion-throw.js`): 8,457 to 7,406 names in the shared scope (cap in `tests/test_global_scope_ratchet.py`). Module `let`s other files touched became accessors; tests read through `_js_scope.unwrapped`. Not wrapped: whiteboard, documents, sync, settings-rows, studio (other sessions), and graph.js, atlas.js, library.js and the boot files (too many cross-file calls for one pass).
+
 ## Moved from the plans, 2026-11-11 (WORLD_CLASS design requests, "customise the domain name", OPEN Q34/F8)
 
 **Built** (the owner: Q34 "go on ... the custom domain"). The owner's 2026-10-25 ask for a name instead of localhost (the open text of the design-request row, moved here).

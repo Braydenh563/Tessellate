@@ -16,6 +16,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 MOTION = (ROOT / "frontend" / "js" / "atlas-motion.js").read_text(encoding="utf-8")
@@ -55,21 +56,21 @@ console.log(JSON.stringify({
         assert el < 0 and 140 <= raise_ - el <= 176, (raise_, el)
 
 
-AV = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+AV = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
 
 
 def test_the_large_view_opens_on_its_resting_limbs() -> None:
     # The owner: "if it is hanging, the expanded companion kinda looks
     # awkward with both it's arms up". Measured (viewerpose.js): the arms
     # were still at 150 degrees 300 ms in; now at their float's places.
-    visit = _fn((ROOT / "frontend" / "js" / "companion-menu.js").read_text(encoding="utf-8"), "nameMarkBuddyVisit")
+    visit = _fn(unwrapped((ROOT / "frontend" / "js" / "companion-menu.js").read_text(encoding="utf-8")), "nameMarkBuddyVisit")
     cut = visit[visit.index("if (nmb.visit.pose !== nmb.pose) {") :]
     assert visit.index("host.appendChild(buddy);") < visit.index("if (nmb.visit.pose !== nmb.pose) {")
     assert "anim instanceof CSSTransition) moving.push(anim);" in cut and "for (const anim of moving) anim.finish();" in cut
     assert "box.atlasRig.fresh = true;" in cut and "atlasRigWake(box);" in cut
 
 
-AV = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+AV = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
 
 
 def test_a_walk_starts_and_stops_from_where_the_body_is() -> None:
@@ -179,7 +180,7 @@ def test_atlas_props_have_a_keyline_and_say_what_they_are() -> None:
     assert "nameMarkBuddyNameProps(buddy, face);" in AV
 
 
-MENU = (ROOT / "frontend" / "js" / "companion-menu.js").read_text(encoding="utf-8")
+MENU = unwrapped((ROOT / "frontend" / "js" / "companion-menu.js").read_text(encoding="utf-8"))
 
 
 def test_atlas_plays_its_own_three_acts() -> None:
@@ -222,7 +223,7 @@ def test_it_comes_in_three_ways_or_more_wherever_it_stands() -> None:
     `scratchpad/ui-sweeps/entries.js`: every way settles within 1px of the
     perch, no way twice running, both kinds). No squash on landing: DESIGN.md,
     "an entrance never squashes or grows it" (e9ee04b4a)."""
-    src = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+    src = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
     enter = _fn(src, "nameMarkBuddyEnter")
     lists = re.findall(r"ways = \[([^\]]*)\]", enter)
     assert len(lists) == 5
@@ -247,7 +248,7 @@ def test_atlas_takes_three_ways_per_pose_and_never_the_last() -> None:
     the hair and the nebula stream, and a state entered again takes a
     different one from the last time it was in it (it took the same one
     half the time for a two-variant state, and could at any return)."""
-    life = (ROOT / "frontend" / "js" / "atlas-life.js").read_text(encoding="utf-8")
+    life = unwrapped((ROOT / "frontend" / "js" / "atlas-life.js").read_text(encoding="utf-8"))
     lower = life[life.index("const ATLAS_LOWER_STATES = {") : life.index("const ATLAS_HAIR_STATES")]
     for state, row in re.findall(r"  (\w+): \{ ms: [0-9]+, ease: \"[^\"]+\", v: (\[\[.*\]\]) \},", lower):
         assert row.count("], [") >= 2, state

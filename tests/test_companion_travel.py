@@ -26,11 +26,12 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 TRAVEL = (JS / "companion-travel.js").read_text(encoding="utf-8")
-AV = (JS / "avatars.js").read_text(encoding="utf-8")
+AV = unwrapped((JS / "avatars.js").read_text(encoding="utf-8"))
 APP = (JS / "app.js").read_text(encoding="utf-8")
 #: The chooser is the top of the file and touches no DOM, so node runs it alone.
 PURE = TRAVEL[: TRAVEL.index("//: ---- Playing a move")]
@@ -120,7 +121,7 @@ def test_the_per_frame_paths_read_no_layout_directly() -> None:
     drag_follow = AV[AV.index("const follow = () => {") : AV.index('face.addEventListener("pointerdown"')]
     assert not LAYOUT_READS.search(drag_follow)
     assert not LAYOUT_READS.search(_body(AV, "nameMarkBuddyFollowFrame"))
-    flight = (JS / "companion-throw.js").read_text(encoding="utf-8")
+    flight = unwrapped((JS / "companion-throw.js").read_text(encoding="utf-8"))
     frame = flight[flight.index("const frame = (now) => {") : flight.index("const next = () => {")]
     assert not LAYOUT_READS.search(frame)
 
@@ -152,7 +153,7 @@ def test_the_drag_moves_it_by_translate_only() -> None:
 
 
 def test_travel_is_a_lazy_module_with_its_own_sheet() -> None:
-    menu = (JS / "companion-menu.js").read_text(encoding="utf-8")
+    menu = unwrapped((JS / "companion-menu.js").read_text(encoding="utf-8"))
     assert 'lazyScript("/css/companion-travel-lazy.css")' in menu and 'lazyScript("/js/companion-travel.js")' in menu
     assert (ROOT / "frontend" / "css" / "companion-travel-lazy.css").is_file()
     index = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")

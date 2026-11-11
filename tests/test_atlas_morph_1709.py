@@ -11,14 +11,15 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped, unwrapped_copy
 
 ROOT = Path(__file__).resolve().parent.parent
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
-LIFE = (ROOT / "frontend" / "js" / "atlas-life.js").read_text(encoding="utf-8")
+LIFE = unwrapped((ROOT / "frontend" / "js" / "atlas-life.js").read_text(encoding="utf-8"))
 
 SCRIPT = r"""
 const fs = require("fs"), vm = require("vm");
-const src = fs.readFileSync("frontend/js/atlas-life.js", "utf8");
+const src = fs.readFileSync(process.argv[1], "utf8");
 const ctx = { atlasFix: (v) => Math.round(v * 100) / 100, console, Math, Map, Set, Object, Array, Number, Float32Array, document: {}, window: {}, setTimeout, clearTimeout, performance: { now: () => 0 } };
 vm.createContext(ctx);
 vm.runInContext(src + "\n;this.__m = atlasRigLower.morph;", ctx);
@@ -50,7 +51,7 @@ console.log(JSON.stringify(out));
 
 
 def _run() -> dict:
-    res = subprocess.run(["node", "-e", SCRIPT], cwd=ROOT, capture_output=True, text=True, timeout=60)
+    res = subprocess.run(["node", "-e", SCRIPT, str(unwrapped_copy(ROOT / "frontend" / "js" / "atlas-life.js"))], cwd=ROOT, capture_output=True, text=True, timeout=60)
     assert res.returncode == 0, res.stderr
     return json.loads(res.stdout.strip().splitlines()[-1])
 

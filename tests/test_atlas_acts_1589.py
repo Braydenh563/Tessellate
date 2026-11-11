@@ -19,6 +19,7 @@ from __future__ import annotations
 import math
 import re
 from pathlib import Path
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parent.parent
 CSS_DIR = ROOT / "frontend" / "css"
@@ -27,7 +28,7 @@ CSS08 = (CSS_DIR / "08-consistency.css").read_text(encoding="utf-8")
 LAZY = (CSS_DIR / "atlas-lazy.css").read_text(encoding="utf-8")
 ATLAS = (JS_DIR / "atlas.js").read_text(encoding="utf-8")
 MICRO = (JS_DIR / "atlas-micro.js").read_text(encoding="utf-8")
-AVATARS = (JS_DIR / "avatars.js").read_text(encoding="utf-8")
+AVATARS = unwrapped((JS_DIR / "avatars.js").read_text(encoding="utf-8"))
 
 #: The acts that leave the arms as the mood has them: the faceless ones
 #: (every other act sets `nmb-arms`, avatars.js).

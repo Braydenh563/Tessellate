@@ -25,7 +25,9 @@ def test_leaving_the_page_while_recording_asks_first():
     body = js[js.index('window.addEventListener("beforeunload"'):]
     body = body[: body.index("});")]
     assert "recordingLive()" in body
-    helper = _fn(js, "function recordingLive")
+    # navigation.js asks meetings.js (lazy, one closure), which answers from the recorder's state.
+    assert "meetingRecordingLive" in _fn(js, "function recordingLive")
+    helper = _fn(js, "function meetingRecordingLive")
     assert "meetingRecorder" in helper and "inactive" in helper
 
 

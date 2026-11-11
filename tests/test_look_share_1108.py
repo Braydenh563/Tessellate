@@ -15,12 +15,13 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 SETTINGS = (JS / "settings.js").read_text(encoding="utf-8")
 AI_TOOLS = (JS / "ai-tools.js").read_text(encoding="utf-8")
-CONTROLS = (JS / "settings-controls.js").read_text(encoding="utf-8")
+CONTROLS = unwrapped((JS / "settings-controls.js").read_text(encoding="utf-8"))
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 
 

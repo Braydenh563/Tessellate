@@ -14,13 +14,15 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from tests._js_scope import unwrapped
+
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 
 
 def _function(name: str) -> str:
     for path in JS.glob("*.js"):
-        text = path.read_text(encoding="utf-8")
+        text = unwrapped(path.read_text(encoding="utf-8"))
         match = re.search(rf"^(?:async )?function {name}\(.*?^}}$", text, re.S | re.M)
         if match:
             return match.group(0)

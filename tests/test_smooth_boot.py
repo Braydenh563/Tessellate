@@ -29,10 +29,11 @@ import re
 
 from tests._app_js import app_js_text
 from tests._css_paths import CSS_DIR
+from tests._js_scope import unwrapped
 
 ROOT = CSS_DIR.parents[1]
 JS = app_js_text()
-AVATARS = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+AVATARS = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
 CSS = {p.name: p.read_text(encoding="utf-8") for p in sorted(CSS_DIR.glob("*.css"))}
 ALL_CSS = "\n".join(CSS.values())
 

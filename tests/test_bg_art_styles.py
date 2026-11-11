@@ -28,9 +28,11 @@ from pathlib import Path
 import pytest
 from tests._app_js import app_js_text
 
+from tests._js_scope import unwrapped_copy
+
 ROOT = Path(__file__).resolve().parent.parent
 FRONTEND = ROOT / "frontend"
-BG_ART = FRONTEND / "js" / "bg-art.js"
+BG_ART = unwrapped_copy(FRONTEND / "js" / "bg-art.js")
 SETTINGS = FRONTEND / "js" / "settings.js"
 INDEX = FRONTEND / "index.html"
 CSS = FRONTEND / "css" / "03-dashboard-widgets.css"

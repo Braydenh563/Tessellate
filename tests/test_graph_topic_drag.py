@@ -17,9 +17,10 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parent.parent
-CANVAS = (ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8")
+CANVAS = unwrapped((ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8"))
 
 
 def _function(name: str) -> str:
@@ -120,7 +121,7 @@ def _css(name: str) -> str:
 
 def test_the_floating_topic_rename_is_the_plate_s_height():
     """OPEN row 795: the field floated 42px tall over a 17px topic plate."""
-    graph = (ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8")
+    graph = unwrapped((ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8"))
     start = graph.index("function gcRenameTopicInline(")
     body = graph[start : graph.index("\n}\n", start)]
     assert "const plateH = (plate.bottom - plate.top) * t.k;" in body

@@ -8,6 +8,7 @@ from __future__ import annotations
 from tests._help_text import help_more_text
 import re
 from pathlib import Path
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
@@ -30,7 +31,7 @@ def test_the_peek_handle_is_the_head_it_draws() -> None:
 
 
 def test_a_bar_or_hang_that_changes_tab_looks_again_for_a_clear_perch() -> None:
-    av = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+    av = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
     changed = av[av.index("function nameMarkBuddyTabChanged") :]
     changed = changed[: changed.index("\n}\n")]
     bar = changed[changed.index('(nmb.perch === "bar" || nmb.perch === "hang")') :]
@@ -48,13 +49,13 @@ def _body(text: str, head: str) -> str:
 
 def test_a_bare_companion_tells_a_new_person_how_to_use_it() -> None:
     # The face had a title only while a prop was on; the how-to was in aria-label alone.
-    props = _body((JS / "avatars.js").read_text(encoding="utf-8"), "function nameMarkBuddyNameProps")
+    props = _body(unwrapped((JS / "avatars.js").read_text(encoding="utf-8")), "function nameMarkBuddyNameProps")
     assert 'else face.title = face.getAttribute("aria-label");' in props
-    assert "drag to move" in (JS / "avatars.js").read_text(encoding="utf-8")
+    assert "drag to move" in unwrapped((JS / "avatars.js").read_text(encoding="utf-8"))
 
 
 def test_the_menu_has_a_quieter_row_that_the_settings_select_agrees_with() -> None:
-    menu = (JS / "companion-menu.js").read_text(encoding="utf-8")
+    menu = unwrapped((JS / "companion-menu.js").read_text(encoding="utf-8"))
     assert "Quieter" in menu and "Livelier" in menu
     # Through the Appearance select's own change, as Size and Atlas look do.
     assert 'choose("avatar-buddy-actions", lively ? "off" : "fewer")' in menu
@@ -80,7 +81,7 @@ def test_the_keyboard_focus_on_the_figure_has_a_solid_ring_not_only_a_haze() -> 
 
 def test_quieter_and_livelier_answer_in_the_companions_voice() -> None:
     # The row only relabelled itself, so the press read as nothing (blind test, companion dive round 2).
-    menu = (JS / "companion-menu.js").read_text(encoding="utf-8")
+    menu = unwrapped((JS / "companion-menu.js").read_text(encoding="utf-8"))
     row = menu[menu.index('label: lively ? "ph:speaker-slash Quieter"') :]
     row = row[: row.index("\n  });")]
     assert "await choose(" in row and "nameMarkSay(buddy," in row
@@ -96,6 +97,6 @@ def test_hiding_from_the_keyboard_leaves_focus_on_the_way_back() -> None:
 
 
 def test_the_menu_puts_its_speech_bubble_away_before_it_opens_over_it() -> None:
-    menu = (JS / "companion-menu.js").read_text(encoding="utf-8")
+    menu = unwrapped((JS / "companion-menu.js").read_text(encoding="utf-8"))
     opens = _body(menu, "function nameMarkBuddyMenu")
     assert opens.index('querySelector(":scope > .nm-say")?.remove()') < opens.index("openMenuAtPoint(")

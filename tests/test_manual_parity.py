@@ -25,6 +25,7 @@ from pathlib import Path
 import pytest
 
 from tessellate.ai.tools import WRITE_TOOLS
+from tests._js_scope import unwrapped
 
 FRONTEND = Path(__file__).resolve().parents[1] / "frontend"
 
@@ -227,7 +228,7 @@ def test_the_manual_is_the_guides_topics_with_a_door_from_help_and_the_guide():
     assert "window.print()" in manual and 'search.placeholder = "Search the manual";' in manual
     html = (FRONTEND / "index.html").read_text(encoding="utf-8")
     assert 'id="help-open-manual"' in html
-    find = (FRONTEND / "js" / "settings-find.js").read_text(encoding="utf-8")
+    find = unwrapped((FRONTEND / "js" / "settings-find.js").read_text(encoding="utf-8"))
     assert '$("help-open-manual")?.addEventListener("click", () => lazyScript("/js/manual.js")' in find
     guide = (FRONTEND / "js" / "help-chat.js").read_text(encoding="utf-8")
     assert '"ph:book-open-text Open the manual"' in guide
@@ -649,7 +650,7 @@ def test_the_lead_is_never_prompt_text(monkeypatch):
 
 def test_settings_help_and_the_manual_draw_and_search_the_lead():
     # Both scripts are lazy, so they are read as files, not from app_js_text.
-    find = (FRONTEND / "js" / "settings-find.js").read_text(encoding="utf-8")
+    find = unwrapped((FRONTEND / "js" / "settings-find.js").read_text(encoding="utf-8"))
     manual = (FRONTEND / "js" / "manual.js").read_text(encoding="utf-8")
     assert 'lead.className = "help-topic-lead"' in find
     assert "details.append(summary, lead," in find

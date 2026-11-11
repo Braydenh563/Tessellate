@@ -7,6 +7,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from tessellate.ai import tools
+from tests._js_scope import unwrapped
 
 GROUPS = {"read", "write", "confirm", "online"}
 
@@ -31,6 +32,6 @@ def test_the_list_draws_the_heads_and_the_filter_reads_only_tool_rows():
     skills.js with the pane), and the filter that skips them moved with it
     (audit 1031 N9: it read `skills.js` after the pane left)."""
     js_dir = Path(__file__).resolve().parents[1] / "frontend" / "js"
-    drawn = (js_dir / "settings-controls.js").read_text(encoding="utf-8")
+    drawn = unwrapped((js_dir / "settings-controls.js").read_text(encoding="utf-8"))
     assert "tool-group-head" in drawn and "setting-subhead" in drawn
     assert "li[data-tool]" in drawn

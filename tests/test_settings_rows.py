@@ -15,6 +15,7 @@ from pathlib import Path
 
 from tessellate.api.routes_settings import PreferencesBody
 from tests._app_js import frontend_text
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 ROWS_JS = (ROOT / "frontend" / "js" / "settings-rows.js").read_text(encoding="utf-8")
@@ -178,7 +179,7 @@ def test_every_look_row_names_a_control_inside_settings():
 
 def test_the_file_is_lazy_and_reached_from_the_settings_bundle():
     assert "settings-rows.js" not in INDEX.split('id="settings-modal"')[0].split("<body")[0]
-    find = (ROOT / "frontend" / "js" / "settings-find.js").read_text(encoding="utf-8")
+    find = unwrapped((ROOT / "frontend" / "js" / "settings-find.js").read_text(encoding="utf-8"))
     assert 'lazyScript("/js/settings-rows.js")' in find
 
 

@@ -29,6 +29,7 @@ from tessellate.api import routes_auth
 from tessellate.api.this_computer import REFUSAL
 from tessellate.core import egress, lancert, lanlive, lanserve, lantrust, netbind, netid, origin, vault
 from tests._app_js import app_js_text
+from tests._js_scope import unwrapped
 
 
 # The Windows firewall line: Settings, Other devices shows the one-line netsh command when the switch is on, for the private profile only.
@@ -67,7 +68,7 @@ def test_describe_carries_the_hint_only_where_it_applies(app_state, monkeypatch)
 def test_settings_draws_the_line_with_a_copy_button():
     root = Path(__file__).resolve().parents[1]
     html = (root / "frontend" / "index.html").read_text(encoding="utf-8")
-    js = (root / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8")
+    js = unwrapped((root / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8"))
     assert 'id="account-lan-firewall"' in html
     assert "state.firewall" in js and "account-lan-firewall" in js
 

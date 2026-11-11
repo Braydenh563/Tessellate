@@ -12,6 +12,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from tessellate.ai import help_topics_more
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -69,7 +70,7 @@ def test_a_notes_private_row_is_locked_on_inside():
 
 def test_the_idle_minutes_are_in_settings():
     assert 'id="account-private-idle"' in INDEX
-    assert 'setPreference("private_space_idle_minutes"' in (JS / "settings-controls.js").read_text(encoding="utf-8")
+    assert 'setPreference("private_space_idle_minutes"' in unwrapped((JS / "settings-controls.js").read_text(encoding="utf-8"))
 
 
 def test_the_guide_explains_private_spaces():

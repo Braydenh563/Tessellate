@@ -12,8 +12,10 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from tests._js_scope import unwrapped
+
 ROOT = Path(__file__).resolve().parents[1]
-AV = "\n".join((ROOT / "frontend" / "js" / n).read_text(encoding="utf-8") for n in ("avatars.js", "companion-menu.js"))
+AV = "\n".join(unwrapped((ROOT / "frontend" / "js" / n).read_text(encoding="utf-8")) for n in ("avatars.js", "companion-menu.js"))
 CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
 
 

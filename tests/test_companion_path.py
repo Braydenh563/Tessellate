@@ -20,11 +20,12 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 #: The companion's code: avatars.js and the lazy files its settings and throw moved to (audit AI23).
-AV = "\n".join((ROOT / "frontend" / "js" / n).read_text(encoding="utf-8") for n in ("avatars.js", "companion-throw.js"))
-MENU = (ROOT / "frontend" / "js" / "companion-menu.js").read_text(encoding="utf-8")
+AV = "\n".join(unwrapped((ROOT / "frontend" / "js" / n).read_text(encoding="utf-8")) for n in ("avatars.js", "companion-throw.js"))
+MENU = unwrapped((ROOT / "frontend" / "js" / "companion-menu.js").read_text(encoding="utf-8"))
 #: The planner is the end of the file and touches no DOM, so node runs it alone.
 PATH = MENU[MENU.index("const COMPANION_PATH_PEAK") :]
 APP = (ROOT / "frontend" / "js" / "app.js").read_text(encoding="utf-8")

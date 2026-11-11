@@ -12,11 +12,13 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from tests._js_scope import unwrapped
+
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 
 
 def _src(name: str) -> str:
-    return (JS / name).read_text(encoding="utf-8")
+    return unwrapped((JS / name).read_text(encoding="utf-8"))
 
 
 def _body(src: str, head: str) -> str:

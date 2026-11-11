@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 
 from tessellate.core.overlay.engine import Engine, Monitor
+from tests._js_scope import unwrapped
 
 SIZE = (100, 120)
 ONE = [Monitor((0, 0, 1920, 1040), 96)]
@@ -61,7 +62,7 @@ def test_a_hanger_thrown_down_ends_at_rest_on_the_ground(gait: str, fling: int) 
 def test_the_in_app_companion_lets_go_of_the_hang_pose_when_it_is_picked_up() -> None:
     """The in-app half of the same report: the drag's halt cleared lie and curl but not hang, so
     the arms-up pose rode the whole throw."""
-    js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+    js = unwrapped((Path(__file__).resolve().parents[1] / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
     halt = js[js.index("function nameMarkBuddyHalt(buddy)"):]
     halt = halt[: halt.index("\n}\n")]
     assert 'buddy.dataset.pose === "hang"' in halt and 'nmb.pose = "float"' in halt

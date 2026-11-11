@@ -10,10 +10,11 @@ an outside click hid it, Enter and Space each toggled.
 """
 
 from pathlib import Path
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 GRAPH = (ROOT / "frontend" / "js" / "graph.js").read_text(encoding="utf-8")
-CANVAS = (ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8")
+CANVAS = unwrapped((ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8"))
 
 
 def _function(source: str, name: str, kind: str = "function") -> str:

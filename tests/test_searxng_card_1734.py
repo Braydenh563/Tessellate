@@ -16,9 +16,10 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
-JS = (ROOT / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8")
+JS = unwrapped((ROOT / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8"))
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 LAZY_CSS = (ROOT / "frontend" / "css" / "settings-controls-lazy.css").read_text(encoding="utf-8")
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")

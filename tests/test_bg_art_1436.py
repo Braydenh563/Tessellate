@@ -11,10 +11,12 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from tests._js_scope import unwrapped_copy
+
 import pytest
 
 FRONTEND = Path(__file__).resolve().parents[1] / "frontend"
-BG_ART = FRONTEND / "js" / "bg-art.js"
+BG_ART = unwrapped_copy(FRONTEND / "js" / "bg-art.js")
 SETTINGS = FRONTEND / "js" / "settings.js"
 
 _SCRIPT = r"""

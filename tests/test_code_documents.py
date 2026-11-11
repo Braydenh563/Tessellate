@@ -24,6 +24,7 @@ import pytest
 from tessellate.core import filetypes
 from tests import _js_scope
 from tests._app_js import documents_text, with_pieces
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -851,7 +852,7 @@ def test_p5_completions_are_names_the_vendored_p5_has():
 
 # Row 1109: Help puts a group's best match first while searching.
 def test_help_search_orders_each_group_by_its_match():
-    find = (JS / "settings-find.js").read_text(encoding="utf-8")
+    find = unwrapped((JS / "settings-find.js").read_text(encoding="utf-8"))
     body = _fn(find, "helpApplySearch")
     assert "tiers.get(b) - tiers.get(a)" in body and "a._helpAt - b._helpAt" in body
 

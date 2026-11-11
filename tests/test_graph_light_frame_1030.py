@@ -22,10 +22,11 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 WORKER = (JS / "graph-worker.js").read_text(encoding="utf-8")
-CANVAS = (JS / "graph-canvas.js").read_text(encoding="utf-8")
+CANVAS = unwrapped((JS / "graph-canvas.js").read_text(encoding="utf-8"))
 
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 

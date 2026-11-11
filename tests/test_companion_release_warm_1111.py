@@ -16,9 +16,10 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parent.parent
-AV = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+AV = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
 
 
 def test_the_pick_up_warms_the_boxes_after_the_class_is_drawn() -> None:

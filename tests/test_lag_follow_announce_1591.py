@@ -11,9 +11,10 @@ nothing, as a scroll of an unrelated panel does not.
 from __future__ import annotations
 
 from pathlib import Path
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
-AVATARS = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+AVATARS = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
 
 
 def _listener() -> str:

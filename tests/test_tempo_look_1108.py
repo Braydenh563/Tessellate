@@ -9,8 +9,9 @@ a beat after a step. After: no tempo frame with forced style in three runs. Pinn
 from __future__ import annotations
 
 from pathlib import Path
+from tests._js_scope import unwrapped
 
-AV = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+AV = unwrapped((Path(__file__).resolve().parents[1] / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
 
 
 def _tempo() -> str:

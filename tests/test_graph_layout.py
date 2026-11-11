@@ -11,6 +11,7 @@ import shutil
 import subprocess
 
 import pytest
+from tests._js_scope import unwrapped
 
 
 # A more intentional force layout and a Reshuffle: the real worker run in node, settled geometry measured (browser half: scratchpad/ui-sweeps/graph692.js).
@@ -291,7 +292,7 @@ def test_the_reshuffle_control_sits_beside_unpin_all_and_is_explained():
     assert physics.index('id="graph-unpin-all"') < physics.index('id="graph-reshuffle"')
     wiring = (JS / "graph.js").read_text(encoding="utf-8")
     assert '$("graph-reshuffle")' in wiring
-    canvas = (JS / "graph-canvas.js").read_text(encoding="utf-8")
+    canvas = unwrapped((JS / "graph-canvas.js").read_text(encoding="utf-8"))
     assert "function gcReshuffle(" in canvas
     assert 'type: "reshuffle"' in canvas
     assert 'case "reshuffle"' in WORKER
@@ -339,7 +340,7 @@ def test_the_shape_control_is_saved_and_reaches_the_worker():
     assert [part.split('"')[0] for part in options.split('value="')[1:]] == ["organic", "clusters", "galaxy"]
     graph = (JS / "graph.js").read_text(encoding="utf-8")
     assert 'prefs.set("graph-shape", shape.value)' in graph
-    canvas = (JS / "graph-canvas.js").read_text(encoding="utf-8")
+    canvas = unwrapped((JS / "graph-canvas.js").read_text(encoding="utf-8"))
     assert "shape: gcShape(s)," in canvas
     assert 'const SHAPES = new Set(["organic", "clusters", "galaxy"]);' in WORKER
     help_text = help_chat_text()
@@ -349,7 +350,7 @@ def test_the_shape_control_is_saved_and_reaches_the_worker():
 def test_link_styles_carry_meaning_on_three_channels_with_a_key():
     """INBOX 693, the owner: "should links visualise differently or have a
     different style based on distance, similarity, type of link etc??"."""
-    canvas = (JS / "graph-canvas.js").read_text(encoding="utf-8")
+    canvas = unwrapped((JS / "graph-canvas.js").read_text(encoding="utf-8"))
     # Strength: a deduced reason draws its link thinner and fainter.
     assert 'edge.kind === "link" && typeof edge.reason_confidence === "number"' in canvas
     # Between categories: faint, in Clusters, and keyed.
@@ -381,7 +382,7 @@ def test_shape_is_dimmed_with_its_reason_off_the_force_layout():
 # The graph names a fixed layout with a chip, and notes leaving the picture fade out.
 
 
-CANVAS = (ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8")
+CANVAS = unwrapped((ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8"))
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 CSS = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
 
