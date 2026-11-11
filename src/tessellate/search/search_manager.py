@@ -1383,6 +1383,19 @@ def meaning_floor(entries: list[Entry], match_info: dict, kw_terms) -> list[Entr
     ]
 
 
+def direct_before_linked(entries: list[Entry], connected: set, match_info: dict) -> list[Entry]:
+    """Direct matches first, then notes that only came by a link (one step
+    before two), each group keeping its own order. `_append_connected` puts them
+    last, but `_learned_order` moves a note the person opened before and could
+    lift a link-only note over a direct match (owner, Matching records)."""
+    def tier(entry: Entry) -> int:
+        if entry.id not in connected:
+            return 0
+        return 2 if match_info.get(entry.id, {}).get("type") == "connected_2hop" else 1
+
+    return sorted(entries, key=tier)
+
+
 def _append_connected(session: Session, entries: list[Entry], match_info: dict, found: dict) -> None:
     # Appended, never interleaved: a connected note is context and a match is
     # an answer, and a prompt that has to drop something should drop the
@@ -1545,7 +1558,8 @@ def _retrieve(
     # the individual queries and have no embeddings to match on, but retrieval
     # feeds the AI's context: a single missed path would hand a private note
     # to the model, so it's checked once more here where every route converges.
-    return _learned_order(session, query, _without_private(entries)), mode
+    ordered = _learned_order(session, query, _without_private(entries))
+    return direct_before_linked(ordered, found.get("connected", set()), match_info), mode
 
 
 def _learned_order(session: Session, query: str, entries: list[Entry]) -> list[Entry]:

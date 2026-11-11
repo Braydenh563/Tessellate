@@ -2211,19 +2211,8 @@ header#top-bar select,
   font-weight: 500;
 }
 
-/* A result that did not match, it is here because it is linked to one that
-   did. Quieter than a match, and labelled: showing a note about something else
-   with no explanation reads as the search having misfired, when in fact it is
-   the graph doing the one thing this app is for. */
-.result-connected {
-  opacity: 0.85;
-}
-
-/* One tier weaker again (ROADMAP.md item 33's second hop): linked to a note
-   that's linked to a match, not to the match itself. */
-.result-connected-2hop {
-  opacity: 0.65;
-}
+/* A link-only result carries its own label ("Linked", "Two steps away") on the
+   card; it is no dimmer than a match (owner, Matching records: one brightness). */
 
 /* Why a result showed up. Was a chip on the connected case alone
    (`.result-connected-chip`) and nothing at all on an ordinary match, the

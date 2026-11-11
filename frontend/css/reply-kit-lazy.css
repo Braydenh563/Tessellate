@@ -677,10 +677,14 @@ button.reply-by {
   overflow-wrap: anywhere;
 }
 
+:is(#raw-results, .records-cards) > li.record-card.is-numbered > .entry-content {
+  padding-inline-end: calc(1.25rem + var(--space-2));
+}
+
 :is(#raw-results, .records-cards) > li.record-card > .record-links-toggle {
   min-height: 0;
   margin-top: var(--space-1);
-  padding: var(--space-1) 0;
+  padding: var(--space-1) var(--space-2);
   justify-content: flex-start;
   color: var(--muted);
   font-size: var(--text-sm);
