@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8150, frontend ids 2710, CSS sections 523, backend routes 674, backend modules 10338, test files 2543, tests 20838, plan headings 1009, app scripts 29, boot scripts 38, script files 284.
+Counts: frontend functions 8150, frontend ids 2710, CSS sections 523, backend routes 674, backend modules 10338, test files 2543, tests 20839, plan headings 1009, app scripts 29, boot scripts 38, script files 284.
 
 ## Frontend functions (8150)
 
@@ -26624,7 +26624,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20838)
+## Tests (20839)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26732,7 +26732,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_lids_1301.py | 7 |
 | tests/test_atlas_lite_mood_1565.py | 1 |
 | tests/test_atlas_masc_1607.py | 7 |
-| tests/test_atlas_masculine_1607.py | 9 |
+| tests/test_atlas_masculine_1607.py | 10 |
 | tests/test_atlas_micro.py | 10 |
 | tests/test_atlas_morph_1709.py | 4 |
 | tests/test_atlas_rest_1402.py | 10 |

@@ -149,3 +149,17 @@ def test_his_happy_and_determined_read_from_calm():
     # from below leaves the eye open (tests/test_atlas_lids_1301.py).
     assert "--atl-lid: 0; --atl-low: 0.42; --atl-brow-y: -1.8px;" in mood("happy")
     assert "--atl-low: 0.3; --atl-knit: 2deg; --atl-brow-y: 0.4px;" in mood("determined")
+
+
+def test_his_confused_tilts_the_other_way_from_curious():
+    # 1607 d, the coordinator's follow-up: curious and confused were his
+    # closest pair (11.7 to 11.9 at 40/72/120 px, mean grey difference on
+    # busts), both heads tilted the same way (-10 and -8 degrees). His
+    # confused tilts 9 the other way: 37.3, 32.6 to 34.4 and 58.5 to 62.1
+    # over two runs, and no pair of his moods under 15 at any size.
+    def tilt(rule: str) -> float:
+        return float(re.findall(r"--atl-tilt:\s*(-?[0-9.]+)deg", rule)[-1])
+
+    curious = re.search(r'\n\.nm-atlas\[data-atlas-mood="curious"\] \{([^}]*)\}', CSS).group(1)
+    confused = re.search(r'\.nm-atlas\[data-atlas-look="masculine"\]\[data-atlas-mood="confused"\] \{([^}]*)\}', CSS).group(1)
+    assert tilt(curious) <= -8 and tilt(confused) >= 8

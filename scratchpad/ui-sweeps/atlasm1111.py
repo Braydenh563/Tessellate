@@ -131,7 +131,7 @@ def faces(look, px):
     moods = list(crops)
     pairs = sorted((float(np.abs(crops[p] - crops[q]).mean()), p, q) for i, p in enumerate(moods) for q in moods[i + 1 :])
     calm = {m: round(float(np.abs(crops[m] - crops["calm"]).mean()), 1) for m in moods if m != "calm"}
-    return {"least_pair": [round(pairs[0][0], 2), pairs[0][1], pairs[0][2]], "pairs_under_3": sum(p[0] < 3 for p in pairs), "from_calm_min": min(calm.items(), key=lambda kv: kv[1]), "from_calm_mean": round(sum(calm.values()) / len(calm), 2)}
+    return {"least_pair": [round(pairs[0][0], 2), pairs[0][1], pairs[0][2]], "pairs_under_3": sum(p[0] < 3 for p in pairs), "from_calm_min": min(calm.items(), key=lambda kv: kv[1]), "from_calm_mean": round(sum(calm.values()) / len(calm), 2), "curious_confused": round(float(np.abs(crops["curious"] - crops["confused"]).mean()), 2) if "curious" in crops and "confused" in crops else None}
 
 
 def main():

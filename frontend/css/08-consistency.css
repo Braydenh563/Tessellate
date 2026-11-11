@@ -6999,7 +6999,7 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="thinking"] { --atl-ar0: 0deg; --atl-al0: -10deg; --atl-chin0: 1; --atl-ar1: -18deg; --atl-al1: -14deg; --atl-chin1: 0; --atl-ar2: 0deg; --atl-al2: -14deg; --atl-chin2: 1; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="curious"] { --atl-ar0: -40deg; --atl-al0: 0deg; --atl-chin0: 0; --atl-ar1: 0deg; --atl-al1: 40deg; --atl-chin1: 0; --atl-ar2: -60deg; --atl-al2: 10deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="surprised"] { --atl-ar0: -120deg; --atl-al0: 120deg; --atl-chin0: 0; --atl-ar1: -150deg; --atl-al1: 150deg; --atl-chin1: 0; --atl-ar2: -140deg; --atl-al2: 60deg; --atl-chin2: 0; --atl-brow-y: -4.2px; }
-.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="confused"] { --atl-ar0: 0deg; --atl-al0: 163deg; --atl-chin0: 0; --atl-ar1: -163deg; --atl-al1: 0deg; --atl-chin1: 0; --atl-ar2: -20deg; --atl-al2: 163deg; --atl-chin2: 0; }
+.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="confused"] { --atl-ar0: 0deg; --atl-al0: 163deg; --atl-chin0: 0; --atl-ar1: -163deg; --atl-al1: 0deg; --atl-chin1: 0; --atl-ar2: -20deg; --atl-al2: 163deg; --atl-chin2: 0; --atl-tilt: 9deg; }
 /* **Sleepy arms stay off the rings** (the owner: "no arm resting on the
    orbit rings"). Measured (atlasarms.js): the eye-rub turned the arm the
    wrong way, out and up over the rings (masculine left hand at 9.8,25.6,
