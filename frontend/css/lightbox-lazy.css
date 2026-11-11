@@ -433,3 +433,15 @@
     overflow: visible;
   }
 }
+/* The optional-package notice on this fixed dark panel (extra-notice.js): white
+   ink like the panel's own words, in both themes, since the notice's theme
+   tokens flip and measured as dark text on this dark card. */
+.lightbox-info .extra-notice {
+  margin: 0 0 var(--space-3);
+  border-color: color-mix(in srgb, currentColor 16%, transparent);
+  background: transparent;
+  color: inherit;
+}
+.lightbox-info .extra-notice > .ph {
+  color: color-mix(in srgb, currentColor 70%, transparent);
+}

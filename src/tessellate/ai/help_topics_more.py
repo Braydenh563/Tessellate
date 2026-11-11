@@ -749,7 +749,7 @@ MORE_TOPICS: list[dict] = [
             "above the list; they run one after another and one that fails "
             "does not stop the rest; a bundle's row shows each of its packages "
             "as it goes, waiting, installing or done. A feature that needs a missing "
-            "package shows a notice with Install; its x hides it until that package changes. A notice that names Settings, Packages "
+            "package shows a notice with Install; once pressed the button turns to Undo, which stops the download or removes the package again; its x hides it until that package changes. A notice that names Settings, Packages "
             "(a feature that is not installed) has an Open Packages button that scrolls to "
             "that package's row. An installed package's ⋮ has Reinstall "
             "(for a feature that is on but not working) and Remove (the "

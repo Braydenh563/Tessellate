@@ -2,9 +2,9 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8150, frontend ids 2710, CSS sections 523, backend routes 674, backend modules 10356, test files 2552, tests 20900, plan headings 1010, app scripts 29, boot scripts 38, script files 284.
+Counts: frontend functions 8153, frontend ids 2710, CSS sections 523, backend routes 674, backend modules 10356, test files 2553, tests 20909, plan headings 1010, app scripts 29, boot scripts 38, script files 284.
 
-## Frontend functions (8150)
+## Frontend functions (8153)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -4996,20 +4996,23 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `toggleEntryPrivacy` | frontend/js/entry-menu.js:458 |
 | `translateNoteInDesk` | frontend/js/entry-menu.js:551 |
 
-### frontend/js/extra-notice.js (10)
+### frontend/js/extra-notice.js (13)
 
 | Name | File:line |
 |---|---|
-| `dismiss` | frontend/js/extra-notice.js:38 |
-| `dismissed` | frontend/js/extra-notice.js:37 |
-| `dismissedList` | frontend/js/extra-notice.js:32 |
-| `extraNoticeCheck` | frontend/js/extra-notice.js:82 |
-| `extraNoticeInstall` | frontend/js/extra-notice.js:62 |
-| `extraNoticeMount` | frontend/js/extra-notice.js:123 |
-| `extraNoticeState` | frontend/js/extra-notice.js:52 |
-| `extraRows` | frontend/js/extra-notice.js:44 |
-| `forget` | frontend/js/extra-notice.js:39 |
-| `saveDismissed` | frontend/js/extra-notice.js:36 |
+| `dismiss` | frontend/js/extra-notice.js:48 |
+| `dismissed` | frontend/js/extra-notice.js:47 |
+| `dismissedList` | frontend/js/extra-notice.js:42 |
+| `extraNoticeCheck` | frontend/js/extra-notice.js:122 |
+| `extraNoticeInstall` | frontend/js/extra-notice.js:85 |
+| `extraNoticeMount` | frontend/js/extra-notice.js:196 |
+| `extraNoticeState` | frontend/js/extra-notice.js:62 |
+| `extraNoticeUndo` | frontend/js/extra-notice.js:103 |
+| `extraNoticeWaitIdle` | frontend/js/extra-notice.js:75 |
+| `extraRows` | frontend/js/extra-notice.js:54 |
+| `forget` | frontend/js/extra-notice.js:49 |
+| `saveDismissed` | frontend/js/extra-notice.js:46 |
+| `sleep` | frontend/js/extra-notice.js:72 |
 
 ### frontend/js/extract-preview.js (2)
 
@@ -5736,49 +5739,49 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `activityDetailText` | frontend/js/library.js:1528 |
 | `activitySettingValue` | frontend/js/library.js:1512 |
-| `allBookmarkGroups` | frontend/js/library.js:11548 |
-| `analyseMediaRow` | frontend/js/library.js:8601 |
+| `allBookmarkGroups` | frontend/js/library.js:11550 |
+| `analyseMediaRow` | frontend/js/library.js:8603 |
 | `applyLibraryMediaView` | frontend/js/library.js:4012 |
-| `attachBoardTick` | frontend/js/library.js:11198 |
+| `attachBoardTick` | frontend/js/library.js:11200 |
 | `binRoutes` | frontend/js/library.js:1303 |
 | `bookmarkAddress` | frontend/js/library.js:4218 |
-| `bookmarkRow` | frontend/js/library.js:11920 |
-| `bookmarkSiteSection` | frontend/js/library.js:11883 |
-| `bookmarkSort` | frontend/js/library.js:11810 |
-| `buildFileReadingSummary` | frontend/js/library.js:8759 |
-| `bulkDeleteLibraryBoards` | frontend/js/library.js:11237 |
-| `bulkDeleteLibraryLinks` | frontend/js/library.js:11444 |
-| `bulkDeleteLibraryMedia` | frontend/js/library.js:8904 |
-| `bulkMoveLibraryLinks` | frontend/js/library.js:11492 |
-| `bulkUpdateLibraryLinks` | frontend/js/library.js:11466 |
-| `clearLibraryBoardsSelection` | frontend/js/library.js:11229 |
-| `clearLibraryLinksSelection` | frontend/js/library.js:11392 |
-| `clearLibraryMediaSelection` | frontend/js/library.js:8898 |
+| `bookmarkRow` | frontend/js/library.js:11922 |
+| `bookmarkSiteSection` | frontend/js/library.js:11885 |
+| `bookmarkSort` | frontend/js/library.js:11812 |
+| `buildFileReadingSummary` | frontend/js/library.js:8761 |
+| `bulkDeleteLibraryBoards` | frontend/js/library.js:11239 |
+| `bulkDeleteLibraryLinks` | frontend/js/library.js:11446 |
+| `bulkDeleteLibraryMedia` | frontend/js/library.js:8906 |
+| `bulkMoveLibraryLinks` | frontend/js/library.js:11494 |
+| `bulkUpdateLibraryLinks` | frontend/js/library.js:11468 |
+| `clearLibraryBoardsSelection` | frontend/js/library.js:11231 |
+| `clearLibraryLinksSelection` | frontend/js/library.js:11394 |
+| `clearLibraryMediaSelection` | frontend/js/library.js:8900 |
 | `closeBinnedReader` | frontend/js/library.js:1909 |
 | `closeOcrWorkspace` | frontend/js/library.js:5990 |
-| `contentsBuildSection` | frontend/js/library.js:12653 |
-| `contentsDocRow` | frontend/js/library.js:12566 |
-| `contentsGlyph` | frontend/js/library.js:12501 |
-| `contentsGroupMark` | frontend/js/library.js:12637 |
-| `contentsGroups` | frontend/js/library.js:12345 |
-| `contentsMonthKey` | frontend/js/library.js:12338 |
-| `contentsNoteFacts` | frontend/js/library.js:12528 |
-| `contentsNoteMark` | frontend/js/library.js:12508 |
-| `contentsNoteName` | frontend/js/library.js:12441 |
-| `contentsNoteRow` | frontend/js/library.js:12540 |
-| `contentsOpenDocument` | frontend/js/library.js:12459 |
-| `contentsOrderedKeys` | frontend/js/library.js:12414 |
-| `contentsRenameTopic` | frontend/js/library.js:12729 |
-| `contentsRowBody` | frontend/js/library.js:12488 |
-| `contentsSectionLabel` | frontend/js/library.js:12394 |
-| `contentsSetAll` | frontend/js/library.js:12939 |
-| `contentsTopicNames` | frontend/js/library.js:12403 |
-| `contentsTreeItem` | frontend/js/library.js:12474 |
-| `contentsTreeKeys` | frontend/js/library.js:12954 |
-| `contentsWireTopicHeading` | frontend/js/library.js:12703 |
-| `createLibrarySelectbar` | frontend/js/library.js:11133 |
-| `deleteBookmarkGroup` | frontend/js/library.js:11587 |
-| `deleteBookmarksWithUndo` | frontend/js/library.js:11403 |
+| `contentsBuildSection` | frontend/js/library.js:12655 |
+| `contentsDocRow` | frontend/js/library.js:12568 |
+| `contentsGlyph` | frontend/js/library.js:12503 |
+| `contentsGroupMark` | frontend/js/library.js:12639 |
+| `contentsGroups` | frontend/js/library.js:12347 |
+| `contentsMonthKey` | frontend/js/library.js:12340 |
+| `contentsNoteFacts` | frontend/js/library.js:12530 |
+| `contentsNoteMark` | frontend/js/library.js:12510 |
+| `contentsNoteName` | frontend/js/library.js:12443 |
+| `contentsNoteRow` | frontend/js/library.js:12542 |
+| `contentsOpenDocument` | frontend/js/library.js:12461 |
+| `contentsOrderedKeys` | frontend/js/library.js:12416 |
+| `contentsRenameTopic` | frontend/js/library.js:12731 |
+| `contentsRowBody` | frontend/js/library.js:12490 |
+| `contentsSectionLabel` | frontend/js/library.js:12396 |
+| `contentsSetAll` | frontend/js/library.js:12941 |
+| `contentsTopicNames` | frontend/js/library.js:12405 |
+| `contentsTreeItem` | frontend/js/library.js:12476 |
+| `contentsTreeKeys` | frontend/js/library.js:12956 |
+| `contentsWireTopicHeading` | frontend/js/library.js:12705 |
+| `createLibrarySelectbar` | frontend/js/library.js:11135 |
+| `deleteBookmarkGroup` | frontend/js/library.js:11589 |
+| `deleteBookmarksWithUndo` | frontend/js/library.js:11405 |
 | `deleteSkillWithUndo` | frontend/js/library.js:2845 |
 | `docSizeText` | frontend/js/library.js:202 |
 | `docTypeFilter` | frontend/js/library.js:173 |
@@ -5788,12 +5791,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docTypeItems` | frontend/js/library.js:117 |
 | `docTypeMenu` | frontend/js/library.js:191 |
 | `duplicateSkill` | frontend/js/library.js:2817 |
-| `emptyBookmarkGroups` | frontend/js/library.js:11525 |
+| `emptyBookmarkGroups` | frontend/js/library.js:11527 |
 | `ensureLibraryGridStop` | frontend/js/library.js:1771 |
-| `fetchAllBookmarks` | frontend/js/library.js:11350 |
+| `fetchAllBookmarks` | frontend/js/library.js:11352 |
 | `fileMetaLine` | frontend/js/library.js:4199 |
-| `filterBookmarks` | frontend/js/library.js:11825 |
-| `filterLibraryImagesGallery` | frontend/js/library.js:9162 |
+| `filterBookmarks` | frontend/js/library.js:11827 |
+| `filterLibraryImagesGallery` | frontend/js/library.js:9164 |
 | `flashLibraryItem` | frontend/js/library.js:1955 |
 | `focusLibraryFile` | frontend/js/library.js:4146 |
 | `importLibraryDocuments` | frontend/js/library.js:3443 |
@@ -5809,13 +5812,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `libraryDocsMatchesProperty` | frontend/js/library.js:3340 |
 | `libraryDocsNewMount` | frontend/js/library.js:3518 |
 | `libraryDocsPropertyOptions` | frontend/js/library.js:3325 |
-| `libraryImageOrigin` | frontend/js/library.js:9095 |
+| `libraryImageOrigin` | frontend/js/library.js:9097 |
 | `libraryImagesFingerprint` | frontend/js/library.js:3917 |
 | `libraryKeyOf` | frontend/js/library.js:437 |
-| `libraryLightboxItems` | frontend/js/library.js:8703 |
-| `libraryMediaBinItem` | frontend/js/library.js:8877 |
-| `libraryMediaRepaint` | frontend/js/library.js:8882 |
-| `libraryMediaSort` | frontend/js/library.js:9052 |
+| `libraryLightboxItems` | frontend/js/library.js:8705 |
+| `libraryMediaBinItem` | frontend/js/library.js:8879 |
+| `libraryMediaRepaint` | frontend/js/library.js:8884 |
+| `libraryMediaSort` | frontend/js/library.js:9054 |
 | `libraryNewDocument` | frontend/js/library.js:3498 |
 | `librarySelectedItems` | frontend/js/library.js:1378 |
 | `librarySorted` | frontend/js/library.js:625 |
@@ -5824,49 +5827,49 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `linkNoteFromLibrary` | frontend/js/library.js:1321 |
 | `loadDocTypeTable` | frontend/js/library.js:100 |
 | `loadLibrary` | frontend/js/library.js:453 |
-| `manageBookmarkGroups` | frontend/js/library.js:11613 |
+| `manageBookmarkGroups` | frontend/js/library.js:11615 |
 | `mediaFileIcon` | frontend/js/library.js:4160 |
 | `mediaFileKind` | frontend/js/library.js:4242 |
-| `mediaHasBeenRead` | frontend/js/library.js:8629 |
-| `mediaReading` | frontend/js/library.js:8625 |
-| `mediaReadingBadge` | frontend/js/library.js:8637 |
-| `mediaReadingSummary` | frontend/js/library.js:8666 |
-| `mediaRowDeleteEndpoint` | frontend/js/library.js:8870 |
-| `mediaRowKey` | frontend/js/library.js:8863 |
+| `mediaHasBeenRead` | frontend/js/library.js:8631 |
+| `mediaReading` | frontend/js/library.js:8627 |
+| `mediaReadingBadge` | frontend/js/library.js:8639 |
+| `mediaReadingSummary` | frontend/js/library.js:8668 |
+| `mediaRowDeleteEndpoint` | frontend/js/library.js:8872 |
+| `mediaRowKey` | frontend/js/library.js:8865 |
 | `metaLine` | frontend/js/library.js:4182 |
-| `newBookmarkGroup` | frontend/js/library.js:11591 |
-| `noteAnyImage` | frontend/js/library.js:13129 |
-| `noteFirstImage` | frontend/js/library.js:13118 |
-| `ocrAllText` | frontend/js/library.js:7907 |
-| `ocrApplyFind` | frontend/js/library.js:7268 |
+| `newBookmarkGroup` | frontend/js/library.js:11593 |
+| `noteAnyImage` | frontend/js/library.js:13131 |
+| `noteFirstImage` | frontend/js/library.js:13120 |
+| `ocrAllText` | frontend/js/library.js:7909 |
+| `ocrApplyFind` | frontend/js/library.js:7270 |
 | `ocrApplyPageCount` | frontend/js/library.js:5615 |
 | `ocrApplyZoom` | frontend/js/library.js:6518 |
-| `ocrAskRange` | frontend/js/library.js:7796 |
-| `ocrBase` | frontend/js/library.js:8520 |
-| `ocrBinField` | frontend/js/library.js:8576 |
-| `ocrBinPage` | frontend/js/library.js:8571 |
+| `ocrAskRange` | frontend/js/library.js:7798 |
+| `ocrBase` | frontend/js/library.js:8522 |
+| `ocrBinField` | frontend/js/library.js:8578 |
+| `ocrBinPage` | frontend/js/library.js:8573 |
 | `ocrBuildPageRail` | frontend/js/library.js:5915 |
 | `ocrBuildScrollPages` | frontend/js/library.js:6751 |
-| `ocrCan` | frontend/js/library.js:7115 |
+| `ocrCan` | frontend/js/library.js:7117 |
 | `ocrCanOpen` | frontend/js/library.js:6133 |
-| `ocrChooseReader` | frontend/js/library.js:7151 |
-| `ocrCleanLoops` | frontend/js/library.js:8584 |
+| `ocrChooseReader` | frontend/js/library.js:7153 |
+| `ocrCleanLoops` | frontend/js/library.js:8586 |
 | `ocrClearRegionSelection` | frontend/js/library.js:5181 |
-| `ocrCloseEdit` | frontend/js/library.js:7901 |
-| `ocrDockApply` | frontend/js/library.js:7590 |
-| `ocrDockFits` | frontend/js/library.js:7566 |
+| `ocrCloseEdit` | frontend/js/library.js:7903 |
+| `ocrDockApply` | frontend/js/library.js:7592 |
+| `ocrDockFits` | frontend/js/library.js:7568 |
 | `ocrDocumentReading` | frontend/js/library.js:5473 |
-| `ocrEmptyLine` | frontend/js/library.js:7842 |
+| `ocrEmptyLine` | frontend/js/library.js:7844 |
 | `ocrFetchFileText` | frontend/js/library.js:6140 |
-| `ocrFieldText` | frontend/js/library.js:8535 |
+| `ocrFieldText` | frontend/js/library.js:8537 |
 | `ocrFillPageCaptions` | frontend/js/library.js:5562 |
-| `ocrFindMarkRegion` | frontend/js/library.js:7245 |
-| `ocrFindShowCurrent` | frontend/js/library.js:7295 |
-| `ocrFindStep` | frontend/js/library.js:7324 |
-| `ocrFitDock` | frontend/js/library.js:7600 |
+| `ocrFindMarkRegion` | frontend/js/library.js:7247 |
+| `ocrFindShowCurrent` | frontend/js/library.js:7297 |
+| `ocrFindStep` | frontend/js/library.js:7326 |
+| `ocrFitDock` | frontend/js/library.js:7602 |
 | `ocrFitLiveText` | frontend/js/library.js:4676 |
 | `ocrFitStage` | frontend/js/library.js:6414 |
-| `ocrIsLocal` | frontend/js/library.js:7108 |
+| `ocrIsLocal` | frontend/js/library.js:7110 |
 | `ocrIsPdf` | frontend/js/library.js:4308 |
 | `ocrIsTextFile` | frontend/js/library.js:6126 |
 | `ocrKeepCentre` | frontend/js/library.js:6603 |
@@ -5877,46 +5880,46 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `ocrLoadReaders` | frontend/js/library.js:6885 |
 | `ocrLoadReadersNow` | frontend/js/library.js:6890 |
 | `ocrLoadSiblings` | frontend/js/library.js:6093 |
-| `ocrLocalName` | frontend/js/library.js:7124 |
+| `ocrLocalName` | frontend/js/library.js:7126 |
 | `ocrMoveOverlays` | frontend/js/library.js:5173 |
 | `ocrNaturalScale` | frontend/js/library.js:6514 |
 | `ocrNoRendererLink` | frontend/js/library.js:5905 |
-| `ocrOfferBinUndo` | frontend/js/library.js:8555 |
-| `ocrOfferTextUndo` | frontend/js/library.js:8549 |
-| `ocrOpenEdit` | frontend/js/library.js:7891 |
-| `ocrOpenReaderSettings` | frontend/js/library.js:7726 |
+| `ocrOfferBinUndo` | frontend/js/library.js:8557 |
+| `ocrOfferTextUndo` | frontend/js/library.js:8551 |
+| `ocrOpenEdit` | frontend/js/library.js:7893 |
+| `ocrOpenReaderSettings` | frontend/js/library.js:7728 |
 | `ocrOpenSibling` | frontend/js/library.js:6287 |
 | `ocrPageImageUrl` | frontend/js/library.js:4334 |
 | `ocrPaintBoxes` | frontend/js/library.js:4636 |
 | `ocrPaintCaption` | frontend/js/library.js:5539 |
-| `ocrPaintEmpty` | frontend/js/library.js:7815 |
+| `ocrPaintEmpty` | frontend/js/library.js:7817 |
 | `ocrPaintLiveText` | frontend/js/library.js:4546 |
 | `ocrPaintRegionRect` | frontend/js/library.js:5191 |
 | `ocrPlaceRegionPopover` | frontend/js/library.js:5208 |
 | `ocrRailActive` | frontend/js/library.js:5603 |
 | `ocrRailKey` | frontend/js/library.js:5972 |
-| `ocrReadImage` | frontend/js/library.js:7336 |
+| `ocrReadImage` | frontend/js/library.js:7338 |
 | `ocrReadInFlight` | frontend/js/library.js:4417 |
-| `ocrReadMenuItems` | frontend/js/library.js:7741 |
-| `ocrReadRange` | frontend/js/library.js:7470 |
-| `ocrReader` | frontend/js/library.js:7101 |
-| `ocrReaderName` | frontend/js/library.js:7139 |
-| `ocrReaderNameFor` | frontend/js/library.js:7128 |
-| `ocrRefusedPress` | frontend/js/library.js:7090 |
+| `ocrReadMenuItems` | frontend/js/library.js:7743 |
+| `ocrReadRange` | frontend/js/library.js:7472 |
+| `ocrReader` | frontend/js/library.js:7103 |
+| `ocrReaderName` | frontend/js/library.js:7141 |
+| `ocrReaderNameFor` | frontend/js/library.js:7130 |
+| `ocrRefusedPress` | frontend/js/library.js:7092 |
 | `ocrRegionCrop` | frontend/js/library.js:5272 |
-| `ocrRegionPage` | frontend/js/library.js:7182 |
+| `ocrRegionPage` | frontend/js/library.js:7184 |
 | `ocrRegionPoint` | frontend/js/library.js:5256 |
 | `ocrRegionsUrl` | frontend/js/library.js:4312 |
 | `ocrRenderOtherReadings` | frontend/js/library.js:4467 |
 | `ocrRenderRail` | frontend/js/library.js:6238 |
 | `ocrRenderRailSwitch` | frontend/js/library.js:6154 |
 | `ocrRenderRegions` | frontend/js/library.js:4718 |
-| `ocrRepaintReading` | frontend/js/library.js:8524 |
-| `ocrRevealRegionsForPage` | frontend/js/library.js:7210 |
-| `ocrRoveKeys` | frontend/js/library.js:7862 |
-| `ocrRoveSync` | frontend/js/library.js:7853 |
+| `ocrRepaintReading` | frontend/js/library.js:8526 |
+| `ocrRevealRegionsForPage` | frontend/js/library.js:7212 |
+| `ocrRoveKeys` | frontend/js/library.js:7864 |
+| `ocrRoveSync` | frontend/js/library.js:7855 |
 | `ocrRunRegion` | frontend/js/library.js:5370 |
-| `ocrScheduleFitDock` | frontend/js/library.js:7646 |
+| `ocrScheduleFitDock` | frontend/js/library.js:7648 |
 | `ocrScrollToPage` | frontend/js/library.js:6813 |
 | `ocrSelectImage` | frontend/js/library.js:5163 |
 | `ocrSelectRegion` | frontend/js/library.js:4444 |
@@ -5924,55 +5927,55 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `ocrSetBox` | frontend/js/library.js:4661 |
 | `ocrSetLiveWord` | frontend/js/library.js:4582 |
 | `ocrSetViewMode` | frontend/js/library.js:6688 |
-| `ocrSetZoom` | frontend/js/library.js:7731 |
+| `ocrSetZoom` | frontend/js/library.js:7733 |
 | `ocrShowRegionResult` | frontend/js/library.js:5293 |
 | `ocrShownZoom` | frontend/js/library.js:6556 |
 | `ocrSizeStage` | frontend/js/library.js:6431 |
-| `ocrStageRead` | frontend/js/library.js:7791 |
+| `ocrStageRead` | frontend/js/library.js:7793 |
 | `ocrStepPage` | frontend/js/library.js:6853 |
 | `ocrStepZoom` | frontend/js/library.js:6586 |
 | `ocrStopRead` | frontend/js/library.js:4424 |
 | `ocrStoredPageReads` | frontend/js/library.js:5442 |
 | `ocrStoredViewMode` | frontend/js/library.js:6663 |
-| `ocrSyncCanRead` | frontend/js/library.js:7065 |
-| `ocrSyncMoreMenu` | frontend/js/library.js:7403 |
+| `ocrSyncCanRead` | frontend/js/library.js:7067 |
+| `ocrSyncMoreMenu` | frontend/js/library.js:7405 |
 | `ocrSyncPager` | frontend/js/library.js:6827 |
-| `ocrSyncReadMenu` | frontend/js/library.js:7762 |
-| `ocrSyncReaderButton` | frontend/js/library.js:7017 |
+| `ocrSyncReadMenu` | frontend/js/library.js:7764 |
+| `ocrSyncReaderButton` | frontend/js/library.js:7019 |
 | `ocrSyncStopButton` | frontend/js/library.js:4434 |
-| `ocrSyncToolsMenu` | frontend/js/library.js:7673 |
+| `ocrSyncToolsMenu` | frontend/js/library.js:7675 |
 | `ocrSyncViewButtons` | frontend/js/library.js:6677 |
 | `ocrSyncZoomButtons` | frontend/js/library.js:6617 |
 | `ocrTearDownScroll` | frontend/js/library.js:6733 |
-| `ocrTextWriter` | frontend/js/library.js:8542 |
+| `ocrTextWriter` | frontend/js/library.js:8544 |
 | `ocrVisibleStages` | frontend/js/library.js:6421 |
-| `ocrWatchDock` | frontend/js/library.js:7659 |
+| `ocrWatchDock` | frontend/js/library.js:7661 |
 | `ocrWatchPane` | frontend/js/library.js:6480 |
 | `ocrWatchScroll` | frontend/js/library.js:6788 |
-| `ocrWireRegionJump` | frontend/js/library.js:7190 |
+| `ocrWireRegionJump` | frontend/js/library.js:7192 |
 | `ocrZoomAbout` | frontend/js/library.js:6570 |
 | `openBinnedNote` | frontend/js/library.js:1880 |
 | `openLibraryCreatePicker` | frontend/js/library.js:2453 |
 | `openLibraryItem` | frontend/js/library.js:1794 |
 | `openOcrWorkspace` | frontend/js/library.js:6320 |
 | `openPageReader` | frontend/js/library.js:6036 |
-| `pushBookmarksPutUndo` | frontend/js/library.js:11456 |
+| `pushBookmarksPutUndo` | frontend/js/library.js:11458 |
 | `refreshLibraryPhrase` | frontend/js/library.js:2034 |
 | `refreshLibrarySemantic` | frontend/js/library.js:672 |
 | `refreshLibraryServerSearch` | frontend/js/library.js:2008 |
-| `remindAbout` | frontend/js/library.js:13080 |
-| `renameBookmarkGroup` | frontend/js/library.js:11560 |
-| `renderBookmarkGroupChips` | frontend/js/library.js:11717 |
-| `renderBookmarks` | frontend/js/library.js:11361 |
-| `renderContents` | frontend/js/library.js:12783 |
+| `remindAbout` | frontend/js/library.js:13082 |
+| `renameBookmarkGroup` | frontend/js/library.js:11562 |
+| `renderBookmarkGroupChips` | frontend/js/library.js:11719 |
+| `renderBookmarks` | frontend/js/library.js:11363 |
+| `renderContents` | frontend/js/library.js:12785 |
 | `renderIncrementally` | frontend/js/library.js:243 |
 | `renderLibrary` | frontend/js/library.js:746 |
 | `renderLibraryContextBars` | frontend/js/library.js:1340 |
 | `renderLibraryDocsPropertyFilter` | frontend/js/library.js:3357 |
 | `renderLibraryDocuments` | frontend/js/library.js:3560 |
 | `renderLibraryFilters` | frontend/js/library.js:543 |
-| `renderLibraryImageOrigins` | frontend/js/library.js:9113 |
-| `renderLibraryImagesGallery` | frontend/js/library.js:8941 |
+| `renderLibraryImageOrigins` | frontend/js/library.js:9115 |
+| `renderLibraryImagesGallery` | frontend/js/library.js:8943 |
 | `renderLibraryOverview` | frontend/js/library.js:521 |
 | `renderLibraryView` | frontend/js/library.js:441 |
 | `renderSkillCards` | frontend/js/library.js:2892 |
@@ -5981,24 +5984,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `reopenOcrWorkspace` | frontend/js/library.js:6009 |
 | `runLibrarySearch` | frontend/js/library.js:2047 |
 | `seedLibraryDocsAll` | frontend/js/library.js:3487 |
-| `setEmptyBookmarkGroups` | frontend/js/library.js:11536 |
+| `setEmptyBookmarkGroups` | frontend/js/library.js:11538 |
 | `setLibraryCardStop` | frontend/js/library.js:1767 |
 | `setLibraryMediaKind` | frontend/js/library.js:4084 |
 | `setLibraryMediaView` | frontend/js/library.js:4042 |
-| `showDetailDialog` | frontend/js/library.js:13031 |
-| `shownTicksIn` | frontend/js/library.js:11102 |
+| `showDetailDialog` | frontend/js/library.js:13033 |
+| `shownTicksIn` | frontend/js/library.js:11104 |
 | `skillCard` | frontend/js/library.js:2608 |
 | `skillColumnCount` | frontend/js/library.js:2871 |
 | `skillLastRunIndex` | frontend/js/library.js:2597 |
 | `skillSort` | frontend/js/library.js:2804 |
 | `startLibraryImagesPoll` | frontend/js/library.js:3947 |
 | `stopLibraryImagesPoll` | frontend/js/library.js:3960 |
-| `syncLibraryBoardsTicks` | frontend/js/library.js:11184 |
+| `syncLibraryBoardsTicks` | frontend/js/library.js:11186 |
 | `syncLibraryDocsSelectbar` | frontend/js/library.js:3835 |
 | `syncLibraryFilterButton` | frontend/js/library.js:2084 |
-| `syncLibraryMediaSelectbar` | frontend/js/library.js:8887 |
-| `syncSelectAllLabels` | frontend/js/library.js:11106 |
-| `syncSelectbarCount` | frontend/js/library.js:11079 |
+| `syncLibraryMediaSelectbar` | frontend/js/library.js:8889 |
+| `syncSelectAllLabels` | frontend/js/library.js:11108 |
+| `syncSelectbarCount` | frontend/js/library.js:11081 |
 | `toggleLibrarySelection` | frontend/js/library.js:1382 |
 | `trackOcrRead` | frontend/js/library.js:4386 |
 | `updateLibraryCreateButton` | frontend/js/library.js:2546 |
@@ -6018,9 +6021,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `codeFamilyFor` | frontend/js/lightbox-view.js:2469 |
-| `codeScanner` | frontend/js/lightbox-view.js:2450 |
-| `highlightCodeInto` | frontend/js/lightbox-view.js:2423 |
+| `codeFamilyFor` | frontend/js/lightbox-view.js:2474 |
+| `codeScanner` | frontend/js/lightbox-view.js:2455 |
+| `highlightCodeInto` | frontend/js/lightbox-view.js:2428 |
 | `lightboxZoomFactor` | frontend/js/lightbox-view.js:38 |
 | `openLightbox` | frontend/js/lightbox-view.js:44 |
 
@@ -12854,7 +12857,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/key-grid-lazy.css | 55 |
 | frontend/css/lan-lazy.css | 131 |
 | frontend/css/library-lazy.css | 8955 |
-| frontend/css/lightbox-lazy.css | 435 |
+| frontend/css/lightbox-lazy.css | 447 |
 | frontend/css/manual-lazy.css | 168 |
 | frontend/css/math-editor-lazy.css | 169 |
 | frontend/css/math-field-lazy.css | 72 |
@@ -23709,63 +23712,63 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `Bundle` | src/tessellate/core/extras.py:829 |
 | `Extra` | src/tessellate/core/extras.py:334 |
 | `InstallState` | src/tessellate/core/extras.py:905 |
-| `_blocking_failure` | src/tessellate/core/extras.py:2088 |
-| `_bulk_refusal` | src/tessellate/core/extras.py:1922 |
-| `_busy` | src/tessellate/core/extras.py:1695 |
-| `_canonical` | src/tessellate/core/extras.py:1240 |
-| `_claim` | src/tessellate/core/extras.py:1683 |
-| `_constraints_copy` | src/tessellate/core/extras.py:1417 |
-| `_dispatch` | src/tessellate/core/extras.py:1701 |
+| `_blocking_failure` | src/tessellate/core/extras.py:2101 |
+| `_bulk_refusal` | src/tessellate/core/extras.py:1935 |
+| `_busy` | src/tessellate/core/extras.py:1708 |
+| `_canonical` | src/tessellate/core/extras.py:1247 |
+| `_claim` | src/tessellate/core/extras.py:1696 |
+| `_constraints_copy` | src/tessellate/core/extras.py:1424 |
+| `_dispatch` | src/tessellate/core/extras.py:1714 |
 | `_extra_size` | src/tessellate/core/extras.py:806 |
-| `_finish_bulk` | src/tessellate/core/extras.py:1975 |
+| `_finish_bulk` | src/tessellate/core/extras.py:1988 |
 | `_forget_footprints` | src/tessellate/core/extras.py:1133 |
 | `_frozen_target_args` | src/tessellate/core/extras.py:258 |
-| `_install_cleanup` | src/tessellate/core/extras.py:1505 |
-| `_install_ocr_binary` | src/tessellate/core/extras.py:1478 |
-| `_install_refusal` | src/tessellate/core/extras.py:1757 |
-| `_installed_snapshot` | src/tessellate/core/extras.py:1435 |
+| `_install_cleanup` | src/tessellate/core/extras.py:1512 |
+| `_install_ocr_binary` | src/tessellate/core/extras.py:1485 |
+| `_install_refusal` | src/tessellate/core/extras.py:1770 |
+| `_installed_snapshot` | src/tessellate/core/extras.py:1442 |
 | `_interpreter_behind` | src/tessellate/core/extras.py:194 |
-| `_loaded_in_process_reason` | src/tessellate/core/extras.py:2011 |
+| `_loaded_in_process_reason` | src/tessellate/core/extras.py:2024 |
 | `_pip_base_command` | src/tessellate/core/extras.py:315 |
 | `_pip_platforms` | src/tessellate/core/extras.py:279 |
 | `_pip_reason` | src/tessellate/core/extras.py:101 |
 | `_python_candidates` | src/tessellate/core/extras.py:170 |
 | `_read_footprint` | src/tessellate/core/extras.py:1088 |
-| `_remove_from_frozen_target` | src/tessellate/core/extras.py:1245 |
-| `_requirement_name` | src/tessellate/core/extras.py:1234 |
-| `_requirements_path` | src/tessellate/core/extras.py:1403 |
-| `_roll_back` | src/tessellate/core/extras.py:1446 |
-| `_run_bulk` | src/tessellate/core/extras.py:1885 |
-| `_run_bulk_item` | src/tessellate/core/extras.py:1949 |
-| `_run_download_install` | src/tessellate/core/extras.py:1627 |
-| `_run_download_uninstall` | src/tessellate/core/extras.py:1669 |
-| `_run_install` | src/tessellate/core/extras.py:1543 |
-| `_run_single` | src/tessellate/core/extras.py:1722 |
-| `_run_uninstall` | src/tessellate/core/extras.py:1312 |
+| `_remove_from_frozen_target` | src/tessellate/core/extras.py:1252 |
+| `_requirement_name` | src/tessellate/core/extras.py:1241 |
+| `_requirements_path` | src/tessellate/core/extras.py:1410 |
+| `_roll_back` | src/tessellate/core/extras.py:1453 |
+| `_run_bulk` | src/tessellate/core/extras.py:1898 |
+| `_run_bulk_item` | src/tessellate/core/extras.py:1962 |
+| `_run_download_install` | src/tessellate/core/extras.py:1640 |
+| `_run_download_uninstall` | src/tessellate/core/extras.py:1682 |
+| `_run_install` | src/tessellate/core/extras.py:1553 |
+| `_run_single` | src/tessellate/core/extras.py:1735 |
+| `_run_uninstall` | src/tessellate/core/extras.py:1319 |
 | `_status_row` | src/tessellate/core/extras.py:1031 |
-| `_uninstall_skip` | src/tessellate/core/extras.py:1915 |
+| `_uninstall_skip` | src/tessellate/core/extras.py:1928 |
 | `activate_frozen_extras` | src/tessellate/core/extras.py:244 |
 | `bulk` | src/tessellate/core/extras.py:1152 |
-| `bulk_label` | src/tessellate/core/extras.py:1879 |
+| `bulk_label` | src/tessellate/core/extras.py:1892 |
 | `bulk_status` | src/tessellate/core/extras.py:1137 |
 | `bundles` | src/tessellate/core/extras.py:1057 |
 | `cancel` | src/tessellate/core/extras.py:1188 |
 | `current` | src/tessellate/core/extras.py:1184 |
 | `download_mb` | src/tessellate/core/extras.py:815 |
-| `download_ready` | src/tessellate/core/extras.py:2100 |
+| `download_ready` | src/tessellate/core/extras.py:2113 |
 | `find_system_python` | src/tessellate/core/extras.py:132 |
 | `footprint` | src/tessellate/core/extras.py:1065 |
 | `frozen_extras_dir` | src/tessellate/core/extras.py:222 |
-| `install_blocking` | src/tessellate/core/extras.py:2061 |
+| `install_blocking` | src/tessellate/core/extras.py:2074 |
 | `installed_bytes` | src/tessellate/core/extras.py:1118 |
 | `is_installed` | src/tessellate/core/extras.py:984 |
-| `legacy_engine` | src/tessellate/core/extras.py:1807 |
+| `legacy_engine` | src/tessellate/core/extras.py:1820 |
 | `removal_locked` | src/tessellate/core/extras.py:1156 |
-| `remove` | src/tessellate/core/extras.py:1770 |
-| `remove_legacy_engine` | src/tessellate/core/extras.py:1818 |
-| `reset_for_tests` | src/tessellate/core/extras.py:2052 |
-| `start` | src/tessellate/core/extras.py:1729 |
-| `start_bulk` | src/tessellate/core/extras.py:1831 |
+| `remove` | src/tessellate/core/extras.py:1783 |
+| `remove_legacy_engine` | src/tessellate/core/extras.py:1831 |
+| `reset_for_tests` | src/tessellate/core/extras.py:2065 |
+| `start` | src/tessellate/core/extras.py:1742 |
+| `start_bulk` | src/tessellate/core/extras.py:1844 |
 | `status` | src/tessellate/core/extras.py:1012 |
 | `unavailable_reason` | src/tessellate/core/extras.py:1169 |
 
@@ -26642,7 +26645,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20900)
+## Tests (20909)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27654,10 +27657,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_extra_downloads_retry.py | 13 |
 | tests/test_extra_notice.py | 4 |
 | tests/test_extra_notice_mounts_1111.py | 3 |
+| tests/test_extra_notice_undo_1111.py | 6 |
 | tests/test_extract_by_subject_1103.py | 11 |
 | tests/test_extract_notes.py | 21 |
 | tests/test_extractive_answer.py | 9 |
-| tests/test_extras.py | 47 |
+| tests/test_extras.py | 50 |
 | tests/test_extras_1029_row59.py | 9 |
 | tests/test_extras_1030.py | 17 |
 | tests/test_extras_bundles.py | 30 |
@@ -29211,7 +29215,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 0. Performance and "not device heavy" (cross-cutting, first) | docs/roadmap/PLAN.md:26 |
 | 0. The diagnosis in one page | docs/roadmap/WORLD_CLASS_PLAN.md:25 |
 | 0. The operating protocol (read every session, it is short) | docs/roadmap/SESSION_BRIEFS.md:17 |
-| 0.6.01 bug-document pass (2026-10-22, branch claude/project-thread-ol5yuv) | docs/roadmap/HANDOVER.md:88 |
+| 0.6.01 bug-document pass (2026-10-22, branch claude/project-thread-ol5yuv) | docs/roadmap/HANDOVER.md:89 |
 | 1. Format panel, Style tab | docs/roadmap/WHITEBOARD_PLAN.md:861 |
 | 1. Live log console (started, not finished) | docs/roadmap/BACKLOG.md:31 |
 | 1. Research read, 2026-10-10, and what each changes here | docs/roadmap/CHAT_PLAN.md:1543 |
@@ -29375,7 +29379,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 20. A model per feature (asked for directly, 2026-09-21) | docs/roadmap/WORLD_CLASS_PLAN.md:2215 |
 | 20. Backend | docs/roadmap/BACKLOG.md:1282 |
 | 20. The 2026-10-05 feature audit: decisions | docs/roadmap/DOCUMENTS_PLAN.md:865 |
-| 2026-09-08, the third night: read this block first, whoever you are | docs/roadmap/HANDOVER.md:100 |
+| 2026-09-08, the third night: read this block first, whoever you are | docs/roadmap/HANDOVER.md:101 |
 | 21. Every failure names its way out (INBOX 272 part 1, 2026-09-21) | docs/roadmap/WORLD_CLASS_PLAN.md:2285 |
 | 21. Skills: rebuilt; what is left | docs/roadmap/BACKLOG.md:1418 |
 | 21. The code editor against VS Code, and writing checks everywhere (INBOX 646) | docs/roadmap/DOCUMENTS_PLAN.md:274 |
@@ -29783,17 +29787,17 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E2 · The complexity of the AI path is where the next bug will be, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:653 |
 | E3 · Model calls are scattered across request handlers, background threads and module singletons, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:666 |
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
-| Earlier morning summary (2026-10-30) | docs/roadmap/HANDOVER.md:77 |
-| Earlier morning summary (2026-11-04) | docs/roadmap/HANDOVER.md:67 |
-| Earlier morning summary (away run 2026-10-18b) | docs/roadmap/HANDOVER.md:96 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:597 |
+| Earlier morning summary (2026-10-30) | docs/roadmap/HANDOVER.md:78 |
+| Earlier morning summary (2026-11-04) | docs/roadmap/HANDOVER.md:68 |
+| Earlier morning summary (away run 2026-10-18b) | docs/roadmap/HANDOVER.md:97 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:598 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4151 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
 | F1 · Boot is ~1 s and tab switches are ~10–50 ms. The app is not slow; it is *heavy*: Medium | docs/roadmap/MODERNISATION_AUDIT.md:687 |
 | F2 · Fourteen requests in sixty idle seconds, from three separate timers, High | docs/roadmap/MODERNISATION_AUDIT.md:708 |
 | F3 · List rendering is solved; list *fetching* is not, Medium | docs/roadmap/MODERNISATION_AUDIT.md:733 |
-| Fable's working notes for Opus (2026-09-09 05:10 UTC) | docs/roadmap/HANDOVER.md:252 |
+| Fable's working notes for Opus (2026-09-09 05:10 UTC) | docs/roadmap/HANDOVER.md:253 |
 | Found by an agent while measuring something else (2026-09-08, graph) | docs/roadmap/CHAT_PLAN.md:595 |
 | G. Mobile and responsive | docs/roadmap/MODERNISATION_AUDIT.md:743 |
 | G. Test-suite gaps | docs/roadmap/AUDIT.md:123 |
@@ -29820,7 +29824,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Harness robustness, 2026-10-04 (INBOX 527) | docs/roadmap/AGENT_SKILLS_REFORM.md:202 |
 | Harper (Automattic) | docs/roadmap/ANALYSIS.md:1783 |
 | Headroom: evaluated, not adopted | docs/roadmap/BACKLOG.md:704 |
-| How far each plan actually is (honest, as of 2026-10-03) | docs/roadmap/HANDOVER.md:388 |
+| How far each plan actually is (honest, as of 2026-10-03) | docs/roadmap/HANDOVER.md:389 |
 | How to proceed after PR 149 (written 2026-09-14; the live order is CLAUDE.md standing order 1 and HANDOVER's Now line) | docs/ROADMAP.md:295 |
 | How to read the evidence in here | docs/roadmap/MODERNISATION_AUDIT.md:23 |
 | How to work on this repo | docs/ROADMAP.md:364 |
@@ -29838,7 +29842,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/CHAT_PLAN.md:879 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3119 |
-| If Opus is the orchestrator (no Fable available) | docs/roadmap/HANDOVER.md:110 |
+| If Opus is the orchestrator (no Fable available) | docs/roadmap/HANDOVER.md:111 |
 | Image notes and the Library, against photocraft and lightcraft | docs/roadmap/ANALYSIS.md:3955 |
 | Is its backend better designed? No: and it says so about itself | docs/roadmap/ANALYSIS.md:810 |
 | KnowNote (MrSibe) | docs/roadmap/ANALYSIS.md:1932 |
@@ -29848,7 +29852,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Looked at and not recommended | docs/roadmap/ANALYSIS.md:882 |
 | Mind map, against designcraft's canvas and MINDMAP_PLAN's references | docs/roadmap/ANALYSIS.md:3769 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4393 |
-| Morning summary | docs/roadmap/HANDOVER.md:57 |
+| Morning summary | docs/roadmap/HANDOVER.md:58 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:344 |
 | Next: weeks 5–8: "a small model can finish a job, and so can the app" | docs/roadmap/MODERNISATION_AUDIT.md:1049 |
@@ -29863,7 +29867,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1362 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4266 |
 | PDF viewer and OCR workspace, against pdfcraft | docs/roadmap/ANALYSIS.md:3922 |
-| PR 144 is done when (the owner's checklist, 2026-09-09 05:30 UTC) | docs/roadmap/HANDOVER.md:149 |
+| PR 144 is done when (the owner's checklist, 2026-09-09 05:30 UTC) | docs/roadmap/HANDOVER.md:150 |
 | Parity matrix, 2026-10-10 | docs/roadmap/ANALYSIS.md:3703 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -30099,9 +30103,9 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Six repositories read for Tessellate, 2026-09-20 | docs/roadmap/ANALYSIS.md:1760 |
 | Sources | docs/roadmap/MINDMAP_PLAN.md:200 |
 | Speech, four projects read by name, and what this app already does | docs/roadmap/ANALYSIS.md:3102 |
-| Standing orders for this session (whoever the model is) | docs/roadmap/HANDOVER.md:324 |
+| Standing orders for this session (whoever the model is) | docs/roadmap/HANDOVER.md:325 |
 | Start of the next PR (the owner, 2026-10-12, "log everything I've mentioned") | docs/roadmap/BACKLOG.md:4191 |
-| State of the branch (`claude/notes-flow-rebuild`, PR #162) | docs/roadmap/HANDOVER.md:408 |
+| State of the branch (`claude/notes-flow-rebuild`, PR #162) | docs/roadmap/HANDOVER.md:409 |
 | Steps | docs/roadmap/UI_MODERNISATION_PLAN.md:766 |
 | Steps | docs/roadmap/WORLD_CLASS_PLAN.md:1526 |
 | Still open | docs/roadmap/WORLD_CLASS_PLAN.md:2262 |
