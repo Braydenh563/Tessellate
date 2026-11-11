@@ -14565,6 +14565,16 @@ Link to another note with [[its first few words]]."></textarea>
                   <ul id="account-lan-pending" class="entry-list"></ul>
                 </div>
                 <h4 class="setting-subhead">Allowed devices</h4>
+                <p class="muted small">A paired notebook keeps your key; Remove does not take it back.
+                  <button type="button" class="icon-only ghost small graph-help-toggle"
+                    data-help-for="account-lan-devices-help" aria-controls="account-lan-devices-help" aria-expanded="false"
+                    title="What Remove does" aria-label="What Remove does">
+                    <i class="ph ph-question" aria-hidden="true"></i>
+                  </button>
+                </p>
+                <div class="help-body hidden" id="account-lan-devices-help" role="dialog" aria-label="What Remove does">
+                  <p>Remove signs a device out and ends a paired notebook's sync pass. A notebook you paired for sync was also given this notebook's data key, and a copy of a key cannot be revoked without a new one. Re-encrypt private notes makes a new key.</p>
+                </div>
                 <ul id="account-lan-devices" class="entry-list"></ul>
                 <h4 class="setting-subhead">Trusted networks</h4>
                 <ul id="account-lan-networks" class="entry-list"></ul>

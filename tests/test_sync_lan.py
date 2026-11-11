@@ -12,6 +12,7 @@ client address, the way `tests/test_lan.py` drives a phone.
 from __future__ import annotations
 
 import http.client
+import inspect
 import json
 import os
 import socket
@@ -342,6 +343,23 @@ def test_with_asking_off_the_paired_computer_is_still_listed_so_remove_works(not
     assert issued.status_code == 200
     [listed] = lantrust.devices(data_dir)
     assert listed["id"] == lantrust.device_hash(COOKIE) and listed["name"].startswith("Paired notebook")
+
+
+def test_sync_pass_gives_the_data_key_only_when_asked(notebook):
+    lantrust.set_flag(deps.get_config().data_dir, "ask_new_devices", False)
+    other = _other_computer(notebook)
+    signed_in = other.post("/auth/unlock", json={"password": PASSWORD}).json()["token"]
+    headers = {"X-Auth-Token": signed_in}
+    plain = other.post("/sync/pass", json={"peer": "abcdefabcdef"}, headers=headers)
+    asked = other.post("/sync/pass", json={"peer": "abcdefabcdef", "want_key": True}, headers=headers)
+    assert plain.status_code == asked.status_code == 200
+    assert "key" not in plain.json()
+    assert "key" in asked.json()
+
+
+def test_pairing_asks_for_the_key():
+    from tessellate.entry import sync_link
+    assert '"want_key": True' in inspect.getsource(sync_link.pair)
 
 
 def test_pairing_is_for_this_computer_only(notebook):

@@ -2057,7 +2057,8 @@ MORE_TOPICS.extend([
             "documents, boards and attached files come over; a change made on both "
             "keeps the later one and the other words go to History. Pairing while both "
             "notebooks are unlocked lets each open the other's private notes, which "
-            "stay encrypted on both; private notes never go into a folder."
+            "stay encrypted on both, and the paired notebook keeps your key: Remove in "
+            "Other devices ends its pass but cannot take the key back. Private notes never go into a folder."
         ),
         "badge": {"label": "Import & export", "section": "data"},
     },
