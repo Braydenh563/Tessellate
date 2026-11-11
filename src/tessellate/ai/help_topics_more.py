@@ -1947,7 +1947,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     ("Boards and maps", (
         "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-laser", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-diagram-tools", "board-workshop", "board-paste", "make-a-diagram", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
         "board-comments", "sticky-notes",
-        "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-keyboard-create", "board-hand-drawn", "board-tables", "board-mermaid", "board-edit-data", "board-colours",
+        "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-keyboard-create", "board-hand-drawn", "board-tables", "board-shape-points", "board-mermaid", "board-edit-data", "board-colours",
     )),
     ("Library and files", (
         "library", "library-controls", "bookmarks", "web-clipper-bookmark", "contents", "library-skills",
@@ -2280,6 +2280,21 @@ MORE_TOPICS.extend([
         "badge": {"label": "Library", "tab": "library"},
     },
     {
+        "id": "board-shape-points",
+        "keywords": (
+            "edit shape points", "edit polygon points", "move a corner of a shape", "add a corner to a shape",
+            "take a corner out", "reshape a polygon", "change the corners of a shape", "edit points",
+        ),
+        "body": (
+            "Edit shape points, in a straight-sided shape's More, the right-click Arrange and Ctrl+K, shows a square "
+            "handle on each corner. Drag a handle to move that corner (it snaps to the grid when the grid is on), "
+            "press the outline to add a corner there and drag it, press a corner without moving to take it out "
+            "(three stay). The connectors on the shape follow. Each change is one Undo, Escape during a drag puts the corner "
+            "back, and Escape otherwise finishes. A shape with curves, an open line or two outlines has no corners to edit."
+        ),
+        "badge": {"label": "Library", "tab": "library"},
+    },
+    {
         "id": "board-mermaid",
         "keywords": (
             "mermaid on a board", "live diagram", "mermaid diagram on the board", "edit a mermaid diagram",
@@ -2525,6 +2540,7 @@ TOPIC_META.update({
     "board-edit-data": {"title": "Edit data on a board item", "path": "A board's Format panel, Data"},
     "board-colours": {"title": "Fill, border and recent colours on a board", "path": "A shape's bar, Fill or Border"},
     "board-tables": {"title": "Tables on a board", "path": "A board's Insert menu, Table"},
+    "board-shape-points": {"title": "Edit the corners of a shape", "path": "A board, a shape's More, Edit shape points"},
     "board-mermaid": {"title": "Live Mermaid diagrams on a board", "path": "A board's Insert menu, Diagram, Diagram builder..."},
     "diagram-builder": {"title": "The Diagram builder", "path": "Ctrl+K, Diagram builder; Insert in a note, a document or a board; Library, Create, New diagram"},
     "diagram-blocks": {"title": "Editing a diagram as blocks", "path": "A diagram document, Blocks"},

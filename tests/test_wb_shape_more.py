@@ -10,10 +10,15 @@ import subprocess
 
 import pytest
 
+from pathlib import Path
+
 from tests._app_js import frontend_text
+
+ROOT = Path(__file__).resolve().parents[1]
 
 STAND_INS = r"""
 const wbFmtState = {};
+const onSurface = () => {};
 const saved = [];
 const wbState = { sketches: [] };
 const wbIsLinkSketch = (s) => /"type"\s*:\s*"link-/.test(s.data || "");
@@ -88,3 +93,49 @@ def test_the_table_ports_are_wired_into_the_port_lookup_the_reshape_and_the_lazy
     assert 'item.kind === "table"' in frontend_text("whiteboard.js")
     assert "shapeMore?.carryRowPorts" in frontend_text("whiteboard-format.js")
     assert "/js/whiteboard-shape-more.js" in frontend_text("lazy-entries.js")
+
+
+def test_a_closed_shape_of_straight_sides_gives_its_corners_and_nothing_else_does():
+    got = _run(
+        "const m = wbFmtState.shapeMore, P = m.polygonPoints;"
+        "console.log(JSON.stringify([P('M 0 0 L 120 0 L 120 70 L 0 70 Z'), P('M 10 10 H 50 V 40 H 10 Z').length, P('m 10 10 l 40 0 l 0 30 z').length,"
+        " P('M 0 0 L 10 0 L 10 10 L 0 0 Z').length, P('M 0 0 L 10 0 L 10 10'), P('M 0 0 C 1 1 2 2 3 3 L 5 5 Z'), P('M 0 0 L 10 0 L 10 10 Z M 20 20 L 30 20 L 30 30 Z'),"
+        " P('M 0 0 L 10 0 Z'), P('')]));"
+    )
+    assert got[0] == [{"x": 0, "y": 0}, {"x": 120, "y": 0}, {"x": 120, "y": 70}, {"x": 0, "y": 70}]
+    #: H and V, and relative moves, give the same corners; a path that returns to its start does not repeat it.
+    assert got[1:4] == [4, 3, 3]
+    #: Open, curved, two outlines, two corners, empty: not editable.
+    assert got[4:] == [None, None, None, None, None]
+
+
+def test_the_path_written_back_is_a_closed_run_of_straight_sides_to_two_places():
+    got = _run(
+        "const m = wbFmtState.shapeMore; const d = m.polygonD([{ x: 0, y: 0 }, { x: 10.126, y: 0 }, { x: 5, y: 7.5 }]);"
+        "console.log(JSON.stringify([d, m.polygonPoints(d)]));"
+    )
+    assert got[0] == "M 0 0 L 10.13 0 L 5 7.5 Z"
+    assert got[1] == [{"x": 0, "y": 0}, {"x": 10.13, "y": 0}, {"x": 5, "y": 7.5}]
+
+
+def test_a_press_takes_the_nearest_corner_within_reach_else_the_nearest_side_is_found_for_a_new_one():
+    got = _run(
+        "const m = wbFmtState.shapeMore, sq = m.polygonPoints('M 0 0 L 100 0 L 100 100 L 0 100 Z');"
+        "console.log(JSON.stringify([m.nearestCorner(sq, 97, 4, 8), m.nearestCorner(sq, 50, 50, 8), m.nearestOnSide(sq, 60, -3), m.nearestOnSide(sq, 104, 30), m.nearestOnSide(sq, 10, 99)]));"
+    )
+    assert got[0] == 1 and got[1] == -1
+    #: A corner added on the top side goes after corner 0 (index 1); on the right after corner 1 (index 2); on the bottom after corner 2... the bottom runs corner 2 to 3, so index 3.
+    assert [(side["index"], side["x"], side["y"]) for side in got[2:4]] == [(1, 60, 0), (2, 100, 30)]
+    assert got[4]["index"] == 3 and got[4]["x"] == 10 and got[4]["y"] == 100 and abs(got[4]["dist"] - 1) < 1e-9
+
+
+def test_the_points_editor_is_a_command_in_the_menus_and_it_saves_one_undo_step_per_change():
+    cmds = frontend_text("whiteboard-commands.js")
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    row = cmds.split('id: "edit-points"')[1].split("\n")[0]
+    assert 'needs: "polygon"' in row and 'surface: "board"' in row
+    assert html.count('data-wb-cmd="edit-points"') == 1
+    assert "polygon: () => Boolean(wbFmtState.shapeMore?.pointsTarget())" in cmds
+    assert '"edit-points"' in frontend_text("whiteboard.js")  # also in the context menu's Arrange list
+    source = frontend_text("whiteboard-shape-more.js")
+    assert source.count('wbPushUndo({ action: "move"') == 1  # one place saves, so a move, an addition and a removal are each one step

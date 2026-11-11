@@ -9958,7 +9958,7 @@ function wbBuildContextMenu(kind) {
   //: map: a topic's place in a tree is its order (FEAT-17).
   if (!wbIsMap()) {
     subItem("Arrange", (sub) => {
-      for (const id of ["group", "ungroup", "lock", "flip-h", "flip-v", "flip-layout-h", "flip-layout-v", "parallel-edges", "change-shape", "edit-ports", "reset-ports", "tidy-down", "tidy-right"]) {
+      for (const id of ["group", "ungroup", "lock", "flip-h", "flip-v", "flip-layout-h", "flip-layout-v", "parallel-edges", "change-shape", "edit-ports", "edit-points", "reset-ports", "tidy-down", "tidy-right"]) {
         const row = wbCommandMenuRow(id);
         if (row) sub(...row);
       }

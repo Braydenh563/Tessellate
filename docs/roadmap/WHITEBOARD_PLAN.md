@@ -944,7 +944,6 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Note on a shape | no (comments exist, `comment` command) | `editNote` (Actions.js 786) | covered by board comments | none |
 | Link on a shape (URL or page) | yes (object links, WHITEBOARD_PLAN decision) | `getLinkForCell` (Graph.js 15330), `editLink`, `openLink`, `link=`; `data:page/id,` links to pages | done for objects; add sketches and a "frame" target | S |
 | Edit geometry as numbers | yes (`wb-fmt-x/y/w/h`) | `editGeometry` (Menus.js 962) | done | none |
-| Edit polygon points | no | `editPolygon` (Menus.js 991) | a later "edit points" tool on a path (connection points are built: HISTORY 2026-11-11 f2-1111 batch 2) | M |
 | Edit shape (custom stencil XML) | no | `editShape` (Menus.js 768), `EditShapeDialog` | drop; the library's "Save as a shape" (`save-shape`) covers it | none |
 
 ### 4. Connectors: edge styles, waypoints, jumps, arrowheads, labels
