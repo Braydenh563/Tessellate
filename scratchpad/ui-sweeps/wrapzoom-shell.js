@@ -128,6 +128,10 @@ function detect() {
     const tw2 = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
     for (let n = tw2.nextNode(); n; n = tw2.nextNode()) {
       if (!n.textContent.trim()) continue;
+      // A line-clamped hint is allowed its lines (quick-link-hint clamps at 2).
+      let clamped = false;
+      for (let a = n.parentElement; a && a !== el.parentElement; a = a.parentElement) if (cs(a).webkitLineClamp && cs(a).webkitLineClamp !== 'none') { clamped = true; break; }
+      if (clamped) continue;
       const range = document.createRange(); range.selectNodeContents(n);
       const rs = [...range.getClientRects()].filter((r) => r.width > 0.5 && r.height > 0.5 && r.height < 3 * fsz);
       if (rs.length > 1) { const t = rs.map((r) => r.top); selfWrap = Math.max(selfWrap, Math.max(...t) - Math.min(...t)); }
@@ -146,7 +150,10 @@ function detect() {
   const cutOf = (el, rr) => {
     const excused = {};
     for (const { a, s, cx, cy } of clips(el)) {
-      const b = box(a);
+      const b0 = box(a);
+      // `overflow: clip` paints out to its overflow-clip-margin (the ring-room recipe, 08-consistency.css).
+      const m = (s.overflowX === 'clip' || s.overflowY === 'clip') ? parseFloat(s.overflowClipMargin) || 0 : 0;
+      const b = { left: b0.left - (s.overflowX === 'clip' ? m : 0), right: b0.right + (s.overflowX === 'clip' ? m : 0), top: b0.top - (s.overflowY === 'clip' ? m : 0), bottom: b0.bottom + (s.overflowY === 'clip' ? m : 0) };
       const maxL = a.scrollWidth - a.clientWidth, maxT = a.scrollHeight - a.clientHeight;
       const scrollX = /auto|scroll/.test(s.overflowX) && maxL > 1, scrollY = /auto|scroll/.test(s.overflowY) && maxT > 1;
       const cut = {};
@@ -244,11 +251,15 @@ function detect() {
     const range = document.createRange(); range.selectNodeContents(n);
     for (const r of range.getClientRects()) {
       if (r.width < 1 || r.height < 1) continue;
-      const v = visPart(p, { left: r.left + 1, top: r.top + 1, right: r.right - 1, bottom: r.bottom - 1 });
+      let v = visPart(p, { left: r.left + 1, top: r.top + 1, right: r.right - 1, bottom: r.bottom - 1 });
+      // An ellipsised label's range runs past its own box: its own overflow clips it too.
+      const ps = cs(p);
+      if (v && (ps.overflowX !== 'visible' || ps.overflowY !== 'visible')) { const b = box(p); v = inter(v, { left: ps.overflowX !== 'visible' ? b.left : -1e9, right: ps.overflowX !== 'visible' ? b.right : 1e9, top: ps.overflowY !== 'visible' ? b.top : -1e9, bottom: ps.overflowY !== 'visible' ? b.bottom : 1e9 }); if (empty(v)) v = null; }
       if (v) texts.push({ n, p, v });
     }
   }
-  const inters = [...vis.keys()].filter((e) => isInteractive(e) && !e.closest('.visually-hidden, .sr-only'));
+  // A scroll row's edge arrows sit over the row's chips by design (scroll-row-host).
+  const inters = [...vis.keys()].filter((e) => isInteractive(e) && !e.closest('.visually-hidden, .sr-only') && !e.matches('.scroll-row-arrow'));
   const layerMemo = new Map(); const layer = (e) => { if (!layerMemo.has(e)) layerMemo.set(e, layerOf(e)); return layerMemo.get(e); };
   const seenPair = new Set();
   for (const I of inters) {
@@ -328,6 +339,7 @@ function underBars() {
     const r = e.getBoundingClientRect();
     return visible(e) && r.width > 120 && r.height < innerHeight * 0.3;
   });
+  const nearScroller = (e) => { for (let a = e; a && a !== document.body; a = a.parentElement) { const s = cs(a); if (/auto|scroll/.test(s.overflowY) && a.scrollHeight > a.clientHeight + 2) return a; } return document.scrollingElement; };
   const scrollers = [document.scrollingElement, ...[...document.querySelectorAll('body *')].filter((e) => { const s = cs(e); return /auto|scroll/.test(s.overflowY) && e.scrollHeight > e.clientHeight + 2 && visible(e); })];
   for (const S of scrollers) {
     const keep = S.scrollTop;
@@ -337,6 +349,8 @@ function underBars() {
       const sb = S === document.scrollingElement ? { top: 0, bottom: innerHeight, left: 0, right: innerWidth } : S.getBoundingClientRect();
       for (const B of bars) {
         if (B.contains(S)) continue;
+        // A sticky bar belongs to its own scroller.
+        if (cs(B).position === 'sticky' && nearScroller(B.parentElement) !== S) continue;
         const br = B.getBoundingClientRect();
         // Only a bar that sits over this scroller's own area.
         if (br.bottom <= sb.top || br.top >= sb.bottom || br.right <= sb.left || br.left >= sb.right) continue;
@@ -344,6 +358,8 @@ function underBars() {
         for (let n = tw.nextNode(); n; n = tw.nextNode()) {
           const p = n.parentElement;
           if (!n.textContent.trim() || !p || B.contains(p) || p.contains(B) || !visible(p)) continue;
+          // Only text this scroller moves: a nested scroller's text is that scroller's.
+          if (nearScroller(p) !== S) continue;
           if (p.closest('[role=dialog], dialog, .visually-hidden, .sr-only')) continue;
           const range = document.createRange(); range.selectNodeContents(n);
           for (const r of range.getClientRects()) {
@@ -470,8 +486,8 @@ async function runViewport(spec, rows) {
   await page.evaluate(() => document.getElementById('onboarding-overlay')?.classList.add('hidden')).catch(() => {});
   const ONLY = (process.env.ONLY || '').split(',').filter(Boolean);
   const push = (state, found) => {
-    const seen = new Set();
-    for (const f of found) { const k = f.kind + f.sel + (f.what || '') + (f.over || '') + (f.end || ''); if (seen.has(k)) continue; seen.add(k); rows.push({ vp: spec, theme: THEME, state, ...f }); }
+    const seen = new Map();
+    for (const f of found) { const k = f.kind + f.sel + (f.what || '') + (f.over || '') + (f.end || ''); if (seen.has(k)) { seen.get(k).count++; continue; } const row = { vp: spec, theme: THEME, state, count: 1, ...f }; seen.set(k, row); rows.push(row); }
     rows.push({ vp: spec, theme: THEME, state, kind: 'measured', n: found.length });
   };
   for (const st of STATES) {

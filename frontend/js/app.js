@@ -1660,6 +1660,7 @@ const LAZY_MODULES = {
     "/js/documents-view.js", //: Before documents.js: the editor mount and keymap; its top level only declares, and documents.js calls into it at load.
     "/js/documents.js",
     "/js/documents-callouts.js", //: After documents.js: its top level binds through `docListen`.
+    "/js/documents-tabs.js", //: After documents.js: the open code files as a strip; documents.js calls it only once a document opens.
     "/js/margin-reader.js",
     "/js/whiteboard-map.js",
     "/js/whiteboard-map-more.js", //: After whiteboard-map.js: the Gantt view and the audio note, calling its date words and style writer at run time only.

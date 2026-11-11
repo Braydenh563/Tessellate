@@ -322,7 +322,11 @@ def cited_question(question: str, history: list[dict] | None, now: datetime) -> 
     from tessellate.ai import reading
 
     turns = [{"text": str(t.get("question") or ""), "objects": t.get("objects") or []} for t in (history or [])[-reading.FOLLOW_TURNS:]]
-    return reading.cited_follow(question, turns, now) if history else None
+    if not history:
+        return None
+    #: "and the other one?" is the question before about the other note it cited (B21), which `cited_follow` leaves to acts.
+    other = reading.follow(question, turns, now)
+    return reading.cited_follow(question, turns, now) or (other[0] if other and other[1] == "other" else None)
 
 
 # --- what to offer next ---------------------------------------------------------
@@ -460,7 +464,7 @@ def social_turn(question: str, history: list[dict] | None = None) -> bool:
     has no subject, so no statistics chips sit under it (INBOX 1749). Here, not in `composer_remark`,
     because `intent` asks `composer_remark` whether a turn is a remark: asking `intent` from there was an import
     cycle (code scanning 2175, 2176)."""
-    from tessellate.ai import composer_chat, intent, personal, question_noise  # lazy: the composer loads these on first use
+    from tessellate.ai import composer_chat, personal, question_noise  # lazy: the composer loads these on first use
 
     return (
         intent.classify(question) == intent.SMALLTALK

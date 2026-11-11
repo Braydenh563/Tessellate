@@ -122,6 +122,7 @@ TOPIC_LEADS: dict[str, str] = {
     "spelling-check": "Why a word is or is not flagged, and how to keep your own words.",
     "code-files": "Write code in a document with colours, error checks and closing brackets.",
     "code-completions": "Save typing in code with suggestions and short words that expand into blocks.",
+    "code-tabs": "Keep several code files open as tabs and switch between them.",
     "code-run": "Run a code document safely and see what it prints, away from the network.",
     "debugger": "Stop code at a line and look at its variables to find what goes wrong.",
     "code-panel": "Have code explained, fixed or tested, and keep snippets to reuse.",

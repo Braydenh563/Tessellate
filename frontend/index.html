@@ -4887,7 +4887,7 @@ Link to another note with [[its first few words]]."></textarea>
         <div id="doc-sidebar-list" class="doc-sidebar-section">
           <div class="row space-between sidebar-head">
             <h2>Recent</h2>
-            <span class="row">
+            <span class="row doc-head-tools">
               <button type="button" class="icon-only ghost small graph-help-toggle"
                 data-help-for="doc-list-help" aria-controls="doc-list-help" aria-expanded="false"
                 title="About this list" aria-label="About this list"><i class="ph ph-question" aria-hidden="true"></i></button>
@@ -4918,7 +4918,7 @@ Link to another note with [[its first few words]]."></textarea>
             <p>New starts an empty document, and the arrow on it starts an empty file of
               another type (Documents, Data or Code). The layout button beside it starts one
               from a template (a meeting, a plan, a lecture and more, or a code
-              file). The flow arrow beside that is the diagram button: it opens the Diagram builder on an empty diagram. All in Library opens every document, where you can search,
+              file). The flow arrow beside that is the diagram button: it opens the Diagram builder on an empty diagram. On a narrow sidebar the help, template and diagram buttons sit in the ⋯ beside New. All in Library opens every document, where you can search,
               sort and manage them.</p>
           </div>
           <ul id="doc-list" data-holds-notebook class="doc-list"></ul>
@@ -5604,6 +5604,13 @@ Link to another note with [[its first few words]]."></textarea>
              than built in script: a fixed row in a fixed place, and
              `tests/test_frontend_ids.py` is the rule that an id a handler looks
              up is an id a reader can find in this file. -->
+        <!-- The code files open at once (the tab strip script): a `.tabs-line`, words
+             only, beside the one button that closes the open file. Shown for a
+             code document with another one open; empty and hidden otherwise. -->
+        <div id="doc-tabs-row" class="doc-tabs-row hidden">
+          <div id="doc-tabs" class="tabs-line" role="tablist" aria-label="Open code files"></div>
+          <button type="button" id="doc-tab-end" class="ghost small" title="Close this file's tab (middle-click a tab does the same)">Close file</button>
+        </div>
         <nav id="doc-crumbs" class="doc-crumbs edge-fade hidden" aria-label="Breadcrumb">
           <ol class="doc-crumbs-list" data-holds-notebook></ol>
         </nav>
@@ -15105,7 +15112,10 @@ Link to another note with [[its first few words]]."></textarea>
                   and a second start then takes the next free port. Shut down
                   asks that copy to quit, the same as its own Quit button, so
                   it saves and stops its background work first. This copy has
-                  no Shut down here; use Quit for it.
+                  no Shut down here; use Quit for it. Only copies that are
+                  really running are listed; a leftover from a copy that
+                  crashed is removed when you open this list, and Shut down on
+                  one just clears it.
                 </p>
               </div>
               <div id="running-copies-list" aria-live="polite"></div>
@@ -15124,7 +15134,7 @@ Link to another note with [[its first few words]]."></textarea>
               <div class="setting-row">
                 <div class="setting-label">
                   <span>Data folder</span>
-                  <small class="muted">Everything this notebook keeps on disk, in total.</small>
+                  <small class="muted">Everything this notebook keeps on disk. It is more than the kinds under Files on disk, which leave out the search index, logs and other working files.</small>
                 </div>
                 <span class="setting-control muted" id="health-data-dir">, </span>
               </div>
@@ -15148,7 +15158,7 @@ Link to another note with [[its first few words]]."></textarea>
               <div class="setting-row">
                 <div class="setting-label">
                   <span>Files on disk</span>
-                  <small class="muted">Where the space goes: the notebook, attached files, pictures, backups and optional features.</small>
+                  <small class="muted">Where the space goes: the notebook with its write-ahead log, attached files, pictures, backups and optional features. The five add up to less than the data folder.</small>
                 </div>
                 <div class="setting-control storage-breakdown">
                   <div class="storage-bar" id="storage-bar" role="img" aria-label="Storage by kind"></div>
