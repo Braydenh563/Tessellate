@@ -10,7 +10,7 @@ from datetime import date
 import pytest
 
 import tests._seed_bt_1109 as bt
-from tessellate.ai import composer_ahead
+from tessellate.ai import composer_ahead, recognise
 from tessellate.api import routes_chat
 from tessellate.core import config
 from tessellate.entry import manager
@@ -28,6 +28,60 @@ def btask(client, session, monkeypatch):
 @pytest.fixture
 def r5(client, session, monkeypatch):
     return driver(client, session, monkeypatch)
+
+
+# --- 1. a yes/no ask about an appointment is read for its day -------------------------------------------
+
+@pytest.mark.parametrize("question", [
+    "is my dentist appointment tomorrow", "is the dentist appointment tomorrow", "is my dentist appointment today",
+    "is the dentist tomorrow", "is my dentist appointment on Wednesday", "is my dentist appointment on Friday?",
+    "is the dentist on Wednesday",
+])
+def test_an_appointment_ask_with_the_wrong_day_says_no_and_names_the_day(btask, question):
+    said = btask(question)
+    assert said.startswith("No, not "), said
+    assert "Thursday 12 November, 9:30" in said.split("\n")[0], said
+
+
+@pytest.mark.parametrize("question", [
+    "is my dentist appointment on Thursday", "is the dentist appointment on Thursday?", "is my dentist appointment this Thursday",
+    "is the dentist on Thursday",
+])
+def test_an_appointment_ask_on_its_weekday_says_yes_with_the_long_day(btask, question):
+    said = btask(question)
+    assert said.startswith("Yes, Thursday 12 November, 9:30, from your Dentist note"), said
+
+
+def test_the_no_names_the_weekday_asked_with_its_capital(btask):
+    assert btask("is my dentist appointment on Wednesday").startswith("No, not on Wednesday. Thursday 12 November, 9:30")
+
+
+def test_the_appointment_ask_reads_like_the_plain_dentist_ask(btask):
+    assert btask("is my dentist appointment tomorrow").split("\n")[0] == btask("is the dentist tomorrow").split("\n")[0]
+
+
+@pytest.mark.parametrize(("question", "window"), [
+    ("is the dentist on Thursday", "on Thursday"), ("is my dentist appointment this Friday?", "this Friday"),
+    ("is the plumber coming tomorrow", "tomorrow"), ("will the delivery come next week", "next week"),
+    ("is the dentist", ""), ("what is on Thursday", ""),
+])
+def test_the_window_a_yes_no_ask_ends_with(question, window):
+    assert recognise.event_window_asked(question) == window
+
+
+def test_a_weekday_window_is_cut_from_the_search_words():
+    assert recognise.without_event_window_tail("is my dentist appointment on Thursday") == "is my dentist appointment"
+    assert recognise.without_event_window_tail("is my dentist appointment this Thursday?") == "is my dentist appointment"
+
+
+def test_a_weekday_window_tail_is_linear():
+    import time
+
+    for run in ("is the plumber" + " on" * 3000, "is the plumber" + " " * 9000 + "on Thursday", "is the " + "this " * 2000):
+        t0 = time.perf_counter()
+        recognise.event_window_asked(run)
+        recognise.without_event_window_tail(run)
+        assert time.perf_counter() - t0 < 0.5, run[:30]
 
 
 # --- 4. getting in touch is one act said five ways ----------------------------------------------------

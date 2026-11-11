@@ -3973,10 +3973,12 @@ def measures(text: str) -> list[Measure]:
 
 # --- round 9 readers (c11): the event window at the end of a question, and a distance --------------------------------
 
-_EVENT_WINDOW_WORDS = r"this week|next week|this weekend|next weekend|this month|next month|today|tomorrow|tonight"
+_WINDOW_DAYS = frozenset({"monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"})
+_WEEKDAY_WINDOW = r"(?:(?:on|this) )?(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)"
+_EVENT_WINDOW_WORDS = rf"this week|next week|this weekend|next weekend|this month|next month|today|tomorrow|tonight|{_WEEKDAY_WINDOW}"
 #: Both read text whose whitespace is already one space each (the callers join `split()`), so every gap is a single
 #: literal space: no quantified whitespace for a long run to backtrack through (CodeQL polynomial regex).
-_EVENT_TAIL = re.compile(r" (?:this|next) (?:week|month|weekend) ?[?.!]*$| (?:today|tomorrow|tonight) ?[?.!]*$", re.I)
+_EVENT_TAIL = re.compile(rf" (?:this|next) (?:week|month|weekend) ?[?.!]*$| (?:today|tomorrow|tonight|{_WEEKDAY_WINDOW}) ?[?.!]*$", re.I)
 _EVENT_ASK = re.compile(rf"^\W*(?:is|are|will) (?:the|my|our|a)\b.*? (?P<window>{_EVENT_WINDOW_WORDS}) ?[?.!]*$", re.I)
 _DISTANCE = re.compile(r"(?<![\d.,])(\d[\d.,]{0,15})\s{0,3}(km|kilometres|kilometers|miles|mi)\b", re.I)
 
@@ -3992,7 +3994,12 @@ def event_window_asked(question: str) -> str:
     """The window ("next week", "today") a yes/no question about a thing ends with, or ""."""
     text = " ".join((question or "").split())
     found = _EVENT_ASK.match(text) if text and len(text) < 300 else None
-    return found.group("window").lower() if found else ""
+    if not found:
+        return ""
+    window = found.group("window").lower()
+    #: A weekday keeps its capital in the verdict ("No, not on Wednesday"), as it does everywhere else in an answer.
+    *lead, last = window.split()
+    return " ".join([*lead, last.title()]) if last in _WINDOW_DAYS else window
 
 
 def distances(text: str) -> list[tuple[int, int, str, str]]:

@@ -4421,6 +4421,10 @@ def _single_cue(kind: str, asked: str) -> re.Pattern | None:
         return _DURATION
     if kind in _SINGLE_CUES:
         return _SINGLE_CUES[kind]
+    if recogniser.event_window_asked(asked):
+        #: "is my dentist appointment tomorrow": the line that holds the day leads, not the one that names the
+        #: appointment (W8B 1111); its verdict reads the first line.
+        return _SINGLE_CUES["when"]
     if _ROLE_ASK.match(asked):
         return _ROLE_CUE
     return _PlaceCue() if _WHERE_ASK.match(asked) else None
