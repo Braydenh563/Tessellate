@@ -141,7 +141,7 @@ Parked until the owner's data or a check on real hardware:
 - ~~B41 The server accepts whitespace-only notes | 1029-notes N6~~ **Stale** (w11-1110: `POST /entries` with "   " and a blank line is 422 "That note is blank"; `EntryCreate` validator `not_blank`)
 - ~~B42 `before:` excludes its day (after Q25) | OPEN 456~~ **Built w11-1110** (`before:` was already exclusive for ISO dates; Q25 made `before:tuesday`, `yesterday`, `march` and `"last week"` read through `recognise.span`; `tests/test_search_engine.py::test_a_named_day_is_a_date_for_the_operators`)
 
-**W12 Navigation and overlays** (B, shell, Sonnet). Files: `frontend/js/navigation.js`, `settings.js`, notices. Checks: `tests/test_navigation*`, a Playwright Back and Forward run. Done when: Back closes an open overlay first and the hash matches what shows.
+**W12 Navigation and overlays** (B, shell, Sonnet). **Done wb-1111** (Back closes the history, connections, bin, skill-run, board-help, meeting, extract, OCR and document-AI overlays; see wb-1111.md). Files: `frontend/js/navigation.js`, `settings.js`, notices. Checks: `tests/test_navigation*`, a Playwright Back and Forward run. Done when: Back closes an open overlay first and the hash matches what shows.
 - ~~B43 Browser Back with an overlay open steps the tab history and leaves it open | t20#2~~ **Stale for the overlays** (w12-1110, Chromium: shortcuts, palette, finder, features, agent palette, notifications, dialog, lightbox, sketch all close on Back with the stack unchanged); the real gap was the manual and Statistics address, fixed
 - ~~B44 Escape on Settings rewrites the hash to the tab beneath | t20#3~~ **Stale** (w12-1110: Escape on Settings from #/library gives #/library idx 2, Forward gives #/settings/models, Back #/library)
 - ~~B45 A notice's `go: {settings, focus}` does not scroll the phone Settings sheet | t20#7~~ **Stale** (w12-1110, 390x700: 4 of 4 targets inside the sheet scroller, also with Settings already open)
@@ -4741,7 +4741,7 @@ Counts are from `e17-1110.md` "True, by work order batch"; the scout's own cavea
 | X4 | W9 composer follow-ons | 10 | open | Co1 |
 | X5 | W10 composer compare and lists | 14 | open | Co2 |
 | X6 | W11 notes core | 36 | open | Sh1 |
-| X7 | W12 navigation | 11 | open | Sh1 |
+| X7 | W12 navigation | 11 | done wb-1111 (Back and overlays) | Sh1 |
 | X8 | W14 in-app companion | 20 | open | Cp1 |
 | X9 | W15 desk companion | 11 | open | Cp2 |
 | X10 | W19 whiteboard daily UX | 76 | done (wb-1111) | Wb1 |
