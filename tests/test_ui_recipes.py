@@ -5590,7 +5590,7 @@ def test_one_calendar_grid_of_dom_cells() -> None:
     "+n" in a month cell, and its keys and drags on one delegated listener
     each on the view's box, never one per cell. The reminders tab opens it
     rather than drawing a month of its own."""
-    cal = (ROOT / "frontend" / "js" / "timeline-calendar.js").read_text(encoding="utf-8")
+    cal = _js_scope.unwrapped((ROOT / "frontend" / "js" / "timeline-calendar.js").read_text(encoding="utf-8"))
     assert "const TIMELINE_CAL_ROWS = 3;" in cal
     #: A press on a day opens it, and the written notes are chips with titles
     #: wherever the cell has the room (the owner, 2026-10-11): fitted by
