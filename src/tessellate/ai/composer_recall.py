@@ -20,7 +20,7 @@ from tessellate.ai.composer_body import _overview_line
 from tessellate.ai.composer_dialogue import Dialogue, NEXT_MAX_CHARS
 from tessellate.ai.composer_empty import _as_typed, window_said
 from tessellate.ai.composer_help import _in_window, _result
-from tessellate.ai.composer_intent import Plan, plan
+from tessellate.ai.composer_intent import AROUND_DAYS, Plan, plan
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_read import NoteView, Sentence, _ITEM, _distinct_ids, _heading_text, _title, _unit, read_note
 
@@ -66,6 +66,15 @@ def window_as_topic(p: Plan, views: list[NoteView]) -> bool:
     return True
 
 
+#: Said for an "around <day>" window, where `said` would name the whole span.
+def _near_said(out: _Answer, p: Plan) -> str:
+    return f"within {_count_days(AROUND_DAYS)} days of {out.day(p.around)}"
+
+
+def _count_days(n: int) -> str:
+    return {1: "one", 2: "two", 3: "three", 4: "four", 5: "five"}.get(n, str(n))
+
+
 def _recall_lead(out: _Answer, p: Plan, inside: list[NoteView], said: str, wrote: bool) -> None:
     """The count line. Notes that say the day were not all written on it: they
     are "dated", never "you wrote" (R3-8). The documents made in the window are
@@ -82,7 +91,7 @@ def _recall_lead(out: _Answer, p: Plan, inside: list[NoteView], said: str, wrote
         out.t("recall_made").m(out.count(len(docs))).t("recall_doc" if len(docs) == 1 else "recall_docs").asked(said)
     else:
         out.t("recall_a").m(out.count(len(inside))).t("recall_note" if len(inside) == 1 else "recall_notes").asked(said)
-    out.t("recall_b" if len(inside) > 1 else "end_colon")
+    out.t(("recall_near_b" if p.around else "recall_b") if len(inside) > 1 else "end_colon")
 
 
 def _recall_name(out: _Answer, view: NoteView) -> None:
@@ -140,6 +149,11 @@ def _recall(out: _Answer, p: Plan, views: list[NoteView], question: str) -> None
         key=lambda v: (v.written, -v.rank), reverse=True,
     )
     said = window_said(_as_typed(p.window_phrase, question))
+    if p.around:
+        #: The days either side, the nearest first; "what else" leaves the day itself, which the turn before gave.
+        inside = [v for v in inside if not (p.others and v.written == p.around)]
+        inside.sort(key=lambda v: (abs((v.written - p.around).days), -v.rank, v.id))
+        said = _near_said(out, p)
     if not inside:
         out.t("recall_none").asked(said).t("stop")
         return

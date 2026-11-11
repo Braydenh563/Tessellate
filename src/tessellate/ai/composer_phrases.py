@@ -186,6 +186,8 @@ PHRASES: dict[str, str] = {
     "recall_note": " note ",
     "recall_notes": " notes ",
     "recall_b": ", newest first:",
+    #: "around <day>" (INBOX 1739): the days either side, the nearest first.
+    "recall_near_b": ", nearest first:",
     #: A day's documents are counted beside its notes (INBOX 1739).
     "recall_made": "You made ",
     "recall_note_and": " note and made ",
