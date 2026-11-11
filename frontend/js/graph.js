@@ -3063,6 +3063,15 @@ function graphPopupCap(room, dragged) {
   return dragged ? full : Math.min(full, Math.max(280, Math.round(room * 0.6)));
 }
 
+//: A panel's own size, not its box on screen: both open with `ui-grow`
+//: (scale 0.94 to 1), so a rect read while it grows is up to 6% short, and
+//: no resize follows a scale to place it again. New note opened at 1280x720
+//: was placed from 405px of a 424px panel and its foot hung 11px past the
+//: map, cutting its fields' rings at 768 (wrap/zoom sweep, 2026-11-11).
+function graphPanelSize(panel) {
+  return { width: panel.offsetWidth, height: panel.offsetHeight };
+}
+
 function placeGraphPopup() {
   const popup = $("graph-popup");
   watchGraphPopupSize(popup, placeGraphPopup);
@@ -3099,7 +3108,7 @@ function placeGraphPopup() {
   // Never taller than the room it has, beyond that its body scrolls inside
   // it and the action dock stays pinned at its foot (the CSS's sticky row).
   popup.style.maxHeight = `${graphPopupCap(room, graphLate.popupDragged)}px`;
-  const size = popup.getBoundingClientRect();
+  const size = graphPanelSize(popup);
   const maxLeft = Math.max(8, box.width - size.width - 8);
   const maxTop = Math.max(floor + 8, room - size.height - 8);
   let spot = null;
@@ -3814,7 +3823,7 @@ function placeGraphNewNote() {
   // Save/Close/Tags controls rendered below the fold with nothing to
   // scroll them into view).
   popup.style.maxHeight = `${Math.max(120, room - 16)}px`;
-  const size = popup.getBoundingClientRect();
+  const size = graphPanelSize(popup);
   // Centre it when there's no click position (toolbar button).
   const rawX = graphLate.newAt ? graphLate.newAt.x - box.left + 12 : (box.width - size.width) / 2;
   const rawY = graphLate.newAt ? graphLate.newAt.y - box.top + 12 : 60;
