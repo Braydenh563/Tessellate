@@ -55,3 +55,20 @@ def test_turning_the_art_on_or_off_redraws_the_constellation():
     settings = frontend_text("settings.js")
     body = settings[settings.index("function toggleBgArt(on) {") :]
     assert "refreshArtForTheme();" in body[: body.index("\n}\n")]
+
+
+def test_switching_the_art_on_starts_it_once():
+    """Audit 1029 X15: `applyAppearance` reaches `applyPalette`, which restarts
+    the art when it is wanted, so `toggleBgArt` starting it again built it
+    twice per switch (a 125 ms click at 1x, 466 ms at 4x CPU). Only Off needs
+    its own call."""
+    settings = frontend_text("settings.js")
+    body = settings[settings.index("function toggleBgArt(on) {") :]
+    body = body[: body.index("\n}\n")]
+    assert "startBgArt" not in body.replace("`startBgArt`", "")
+    assert "if (!on) stopBgArt();" in body
+    palette = frontend_text("ai-tools.js")
+    palette = palette[palette.index("function applyPalette(") :]
+    assert "if (bgArtOn()) startBgArt();" in palette[: palette.index("\n}\n")]
+    applied = settings[settings.index("function applyAppearance() {") :]
+    assert "applyPalette(activePalette(), false);" in applied[: applied.index("\n}\n")]

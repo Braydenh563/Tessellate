@@ -1527,7 +1527,10 @@ MORE_TOPICS: list[dict] = [
             "Shut down asks that copy to quit the way its own Quit does. This "
             "copy is marked and has no Shut down; use Quit for it. When the "
             "launcher finds its usual port taken it uses the next free one, "
-            "so a copy left running in the background is found here."
+            "so a copy left running in the background is found here. Only "
+            "copies that are really running are listed: a leftover from a "
+            "copy that crashed is removed when the list opens, and Shut down "
+            "on one just clears it."
         ),
         "badge": {"label": "Running copies", "section": "about", "target": "running-copies-group"},
     },

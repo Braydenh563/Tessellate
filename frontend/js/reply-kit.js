@@ -794,7 +794,7 @@
         const group = String.raw`(\d[\d.,]*|\([^()]*\))`;
         const bare = (part) => (part.startsWith("(") ? part.slice(1, -1) : part);
         return text
-          .replace(/\s*[*×]\s*/g, " \\times ")
+          .replace(/\s*[*×]\s*/g, () => " \\times ")
           .replace(new RegExp(`${group}\\s*[/÷]\\s*${group}`, "g"), (_all, top, bottom) => `\\frac{${bare(top)}}{${bare(bottom)}}`)
           .replace(/\s*[/÷]\s*/g, " \\div ")
           .replace(new RegExp(String.raw`\^\s*(-?\d[\d.,]*|\([^()]*\))`, "g"), (_all, power) => `^{${bare(power)}}`)

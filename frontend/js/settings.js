@@ -3389,9 +3389,11 @@ function startBgArt() {
 
 function toggleBgArt(on) {
   prefs.set("bgArt", on ? "on" : "off");
-  applyAppearance(); // updates data-bg-art so the cards adjust with it
-  if (on) startBgArt();
-  else stopBgArt();
+  //: Updates data-bg-art so the cards adjust with it, and, with the art on,
+  //: restarts it: `applyPalette` rebuilds the art from the accent (audit 1029
+  //: X15). A second `startBgArt` here mounted it twice per switch.
+  applyAppearance();
+  if (!on) stopBgArt();
   //: The constellation moves only with it on (INBOX 1530 d).
   refreshArtForTheme();
 }

@@ -11,7 +11,7 @@
   const ENT = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " " };
   //: The words only: entities read, tags and marks dropped (Mermaid draws `**a**` as a, closes a `<b>`, wraps a long name).
   const words = (t) => String(t ?? "").replace(/&(#\d+|\w+);/g, (all, e) => (e[0] === "#" ? String.fromCodePoint(Number(e.slice(1))) : ENT[e] ?? all))
-    .replace(/<[^>]*>/g, "").toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
+    .replace(/<[^>]*>/g, "").replace(/[<>]/g, "").toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
   const said = (seg) => [...seg.matchAll(/<tspan\b[^>]*>([^<]*)<\/tspan>/g)].map((m) => m[1]).join(" ");
 
   //: Every box of a drawn mind map or timeline, in drawing units: `{n, x, y, w, h, text}` (centre-based, n is Mermaid's number).
