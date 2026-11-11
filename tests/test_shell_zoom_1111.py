@@ -59,3 +59,10 @@ def test_a_quick_edit_tile_leaves_room_for_its_menu_button():
     `--space-9` (32px) left 17px of "Ask your notes" under it."""
     body = _body(".quick-edit-tile > .quick-link")
     assert re.search(r"padding-right:\s*calc\(var\(--target-min\)", body), "the room follows the button's own size"
+
+
+def test_the_header_ring_offset_spares_the_panel_grip():
+    """The header's 1px ring offset reached the notifications panel's grip,
+    whose ring the panel then cut by 3px; the grip keeps its inset ring."""
+    assert "button:not(.panel-grip):focus-visible" in CSS
+    assert re.search(r"\.panel-movable-on > button\.panel-grip:focus-visible\s*\{[^}]*outline-offset:\s*-2px", CSS)
