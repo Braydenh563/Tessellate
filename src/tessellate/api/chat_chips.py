@@ -56,7 +56,9 @@ def continue_chips(result: dict, question: str, history: list[dict] | None, curr
     asked, given = _asked(history, question), _given(history, str(result.get("text") or ""))
     kept: list[str] = []
     for chip, notes in _candidates(result, current, today):
-        chip = composer_chips.clean(chip, vocab, titles)
+        if len(kept) >= composer_chips.MAX_CHIPS:
+            break  # a full turn tries no more: each trial is a whole compose (D28)
+        chip =composer_chips.clean(chip, vocab, titles)
         if not chip or composer_chips.kind(chip) in {composer_chips.kind(k) for k in kept} or composer_chips.spent(chip, asked):
             continue
         said = _answer_lead(chip, notes, today, voice, says_cannot)

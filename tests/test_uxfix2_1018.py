@@ -14,7 +14,7 @@ def test_empty_map_shows_one_empty_state():
 
 
 def test_boards_picker_drops_default_row_while_gallery_counts_none():
-    wb = (ROOT / "frontend/js/whiteboard.js").read_text()
+    wb = (ROOT / "frontend/js/whiteboard.js").read_text() + (ROOT / "frontend/js/boards-gallery.js").read_text()  # the gallery split out (INBOX 1772)
     assert "audit 1018, item 11" in wb
     assert "onCanvas" in wb
 

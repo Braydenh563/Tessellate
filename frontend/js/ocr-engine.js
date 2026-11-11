@@ -86,6 +86,17 @@
     const readers = ocrEngineLatest;
     const engine = readers?.engine;
     const opts = host._ocrEngine || {};
+    //: While an install runs the line is kept and only its step text is swapped
+    //: (INBOX 1776): rebuilding it every 1.2 s tick restarted the bar's
+    //: animation and replaced the chip under the pointer. Measured, the host
+    //: stayed 44px, but 16 of 16 ticks replaced the bar; now none do.
+    const installingNow = ocrEngineInstall.running ? ocrEngineInstall.extra : "";
+    const keptDetail = host.querySelector(".ocr-engine-detail");
+    if (installingNow && host._ocrInstalling === installingNow && keptDetail) {
+      keptDetail.textContent = ocrEngineInstall.step || "Starting…";
+      return;
+    }
+    host._ocrInstalling = "";
     host.replaceChildren();
     if (!engine || !Object.keys(engine).length) {
       host.hidden = true;
@@ -119,6 +130,7 @@
       bar.className = "task-progress ocr-engine-progress";
       line.append(step, bar);
       host.appendChild(line);
+      host._ocrInstalling = ocrEngineInstall.extra;
       return;
     }
 

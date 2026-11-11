@@ -2,11 +2,13 @@
 windows of it into text, nothing leaves the machine (WORLD_CLASS_PLAN 28.5
 row 9; "Audio in the notebook" decisions 4 and 5).
 
-**The helper is optional and outside the app.** It is whatever answers the
-whisper.cpp `whisper-server` dialect at `TESSELLATE_CAPTIONS_URL` (a separate
-executable the add-on installer would fetch; never a Python import, never a
-build step in the suite). Without the variable there are no captions, the
-status says so, and no test reaches for a helper: the tests run against
+**The helper is outside the app.** It is whatever answers the whisper.cpp
+`whisper-server` dialect (never a Python import here, never a build step in the
+suite). `TESSELLATE_CAPTIONS_URL` names one and always wins. Without it, once
+Settings, Packages has the Live captions engine and model, the app starts its
+own (`ai/captions_helper.py`, run by `ai/captions_process.py`) on the first
+`begin()`, never at boot. With neither there are no captions and the status
+says so. No test reaches for a real helper: the tests run against
 `scratchpad/fake_captions_server.py`, and the ones that need a real model are
 marked `captions` and skipped without the URL, the shape of
 `TESSELLATE_EVALS_URL`.
@@ -44,6 +46,7 @@ from urllib.parse import urlparse
 
 import requests
 
+from tessellate.ai import captions_process
 from tessellate.core import activity
 
 logger = logging.getLogger("tessellate.captions")
@@ -68,10 +71,7 @@ LAST_LINES = 3
 #: Failed helper calls in a row before the session gives up.
 MAX_FAILURES = 5
 
-NO_HELPER_HINT = (
-    "Live captions need a speech helper that isn't set up yet. Settings, "
-    "Packages, Live captions says what to do."
-)
+NO_HELPER_HINT = "Live captions need a speech helper. Install Live captions in Settings, Packages."
 NOT_LOCAL_HINT = "Live captions only run on this computer, so the helper's address has to be local."
 
 _probe: dict = {"at": 0.0, "url": "", "ok": False}
@@ -81,8 +81,14 @@ class CaptionsError(RuntimeError):
     """Something the person can act on; the message is a sentence."""
 
 
-def helper_url() -> str:
+def _env_url() -> str:
     return os.environ.get("TESSELLATE_CAPTIONS_URL", "").strip().rstrip("/")
+
+
+def helper_url() -> str:
+    """The variable first (nothing is spawned then); else the app's own helper
+    if it is running. Never starts one."""
+    return _env_url() or captions_process.url()
 
 
 def model_label() -> str:
@@ -110,6 +116,18 @@ def status() -> dict:
     """`voice.status`'s `captions` object. The probe is cached ten seconds so
     the dashboard polling it does not hammer the helper."""
     url = helper_url()
+    if not url and not _env_url():
+        if captions_process.gave_up():
+            return {"available": False, "model": model_label(), "hint": captions_process.STOPPED_HINT}
+        if captions_process.installed():
+            # Installed, started on first use: ready as far as the page cares.
+            return {
+                "available": True,
+                "model": model_label(),
+                "hint": None,
+                "starts_on_first_use": True,
+                **({"starting": True} if captions_process.starting else {}),
+            }
     if not url:
         return {"available": False, "model": model_label(), "hint": NO_HELPER_HINT}
     if not _is_local(url):
@@ -321,28 +339,52 @@ class Session:
 
 def infer(pcm: bytes, audio_ctx: int = 0) -> str:
     """One WAV window to the helper's `/inference`; its text, cleaned."""
-    url = helper_url()
+    url = helper_url() or _own_helper()
     if not url:
         raise CaptionsError(NO_HELPER_HINT)
     if not _is_local(url):
         raise CaptionsError(NOT_LOCAL_HINT)
     try:
-        reply = _http().post(
-            url + "/inference",
-            files={"file": ("window.wav", wav_of(pcm), "audio/wav")},
-            data={
-                "response_format": "json",
-                "temperature": "0.0",
-                "no_timestamps": "true",
-                "suppress_nst": "true",
-                **({"audio_ctx": str(audio_ctx)} if audio_ctx else {}),
-            },
-            timeout=10,
-        )
-        reply.raise_for_status()
-        return _clean(str(reply.json().get("text", "")))
+        return _post(url, pcm, audio_ctx)
+    except requests.ConnectionError as exc:
+        if _env_url():
+            raise CaptionsError("The captions helper didn't answer.") from exc
+        # Our own helper died under this window: the next one restarts it
+        # (a bounded number of times, captions_process.MAX_RESTARTS).
+        try:
+            return _post(captions_process.ensure_started(), pcm, audio_ctx)
+        except (captions_process.HelperError, requests.RequestException, ValueError) as again:
+            raise CaptionsError("The captions helper didn't answer.") from again
     except (requests.RequestException, ValueError) as exc:
         raise CaptionsError("The captions helper didn't answer.") from exc
+
+
+def _own_helper() -> str:
+    """The app's own helper, started if it has died since `begin()`; "" when
+    the variable names one (that one is never ours to start)."""
+    if _env_url():
+        return ""
+    try:
+        return captions_process.ensure_started()
+    except captions_process.HelperError as exc:
+        raise CaptionsError(str(exc)) from exc
+
+
+def _post(url: str, pcm: bytes, audio_ctx: int) -> str:
+    reply = _http().post(
+        url + "/inference",
+        files={"file": ("window.wav", wav_of(pcm), "audio/wav")},
+        data={
+            "response_format": "json",
+            "temperature": "0.0",
+            "no_timestamps": "true",
+            "suppress_nst": "true",
+            **({"audio_ctx": str(audio_ctx)} if audio_ctx else {}),
+        },
+        timeout=10,
+    )
+    reply.raise_for_status()
+    return _clean(str(reply.json().get("text", "")))
 
 
 _sessions: dict[str, Session] = {}
@@ -372,6 +414,7 @@ def begin(keep_audio: bool = False) -> Session:
     info = status()
     if not info["available"]:
         raise CaptionsError(info["hint"] or NO_HELPER_HINT)
+    _own_helper()  # the first use starts the app's own helper
     session = Session(keep_audio=keep_audio)
     if keep_audio:
         from tessellate.core import recordings
@@ -392,6 +435,12 @@ def begin(keep_audio: bool = False) -> Session:
     return session
 
 
+def running() -> bool:
+    """Is a caption run in progress (the Packages rows wait for it to stop)."""
+    with _registry_lock:
+        return bool(_sessions)
+
+
 def get(session_id: str) -> Session | None:
     with _registry_lock:
         return _sessions.get(session_id)
@@ -403,6 +452,9 @@ def end(session_id: str) -> Session | None:
     if session is not None:
         session.stopped = True
         activity.finish(session.job)
+        with _registry_lock:
+            left = len(_sessions)
+        captions_process.session_ended(left)
     return session
 
 

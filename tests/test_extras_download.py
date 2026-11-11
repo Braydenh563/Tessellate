@@ -501,3 +501,32 @@ def test_a_missing_file_is_not_tried_again(client, monkeypatch, server):
     _wait()
     assert extras.current().outcome == "failed"
     assert len(tries) == 1
+
+
+def test_the_captions_model_lands_as_the_one_file_the_helper_reads(client, monkeypatch, server):
+    """INBOX 1777: the tiny.en file is a `file` download, hash checked, and
+    `captions_process.model_path` finds it as an absolute path."""
+    from tessellate.ai import captions_process
+
+    monkeypatch.setattr(extra_downloads, "platform_key", lambda: "linux-x86_64")
+    _point_at(monkeypatch, "captionmodel", server, {"model.bin": b"ggml-bytes"})
+    assert captions_process.model_path() is None
+    assert client.post("/extras/captionmodel/install").json()["started"] is True
+    _wait()
+    assert extras.current().outcome == "completed", extras.current().step
+    path = captions_process.model_path()
+    assert path is not None and path.is_absolute()
+    assert path.name == extras.CAPTIONS_MODEL_FILE and path.read_bytes() == b"ggml-bytes"
+    assert _row(client, "captionmodel")["installed"] is True
+
+
+def test_a_corrupt_captions_model_is_refused_and_not_kept(client, monkeypatch, server):
+    from tessellate.ai import captions_process
+
+    monkeypatch.setattr(extra_downloads, "platform_key", lambda: "linux-x86_64")
+    _point_at(monkeypatch, "captionmodel", server, {"model.bin": b"ggml-bytes"}, sha="0" * 64)
+    extras.start("captionmodel")
+    _wait()
+    assert extras.current().outcome == "failed" and "checksum" in extras.current().step.lower()
+    assert captions_process.model_path() is None
+

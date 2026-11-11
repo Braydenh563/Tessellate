@@ -17,7 +17,7 @@ def _rule(text: str, selector: str) -> str:
 
 
 def test_card_children_are_header_title_picture_footer_in_order():
-    js = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    js = (ROOT / "frontend" / "js" / "boards-gallery.js").read_text(encoding="utf-8")
     assert "card.append(top, title, minimap, meta);" in js
 
 

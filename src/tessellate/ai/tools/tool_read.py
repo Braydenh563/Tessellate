@@ -8,7 +8,7 @@ down the layer list in `__init__.py`'s docstring, never back to `__init__`.
 from __future__ import annotations
 
 from tessellate.core.database import Category, Entry, LIKE_ESCAPE, like_escape
-from tessellate.ai.tools._common import DEFAULT_CONTEXT_TOKENS, DEFAULT_LIST_LIMIT, FULL_NOTE_CHARS, MAX_LIST_LIMIT, PREVIEW_CHARS, SEARCH_CONTEXT_SHARE, SUMMARY_NOTE_LIMIT, _READ_MORE, _category_clause, _clip, _limit_arg, _note_summary, _readable, _require_note, _since_days, _visible
+from tessellate.ai.tools._common import DEFAULT_CONTEXT_TOKENS, DEFAULT_LIST_LIMIT, FULL_NOTE_CHARS, MAX_LIST_LIMIT, PREVIEW_CHARS, SEARCH_CONTEXT_SHARE, SUMMARY_NOTE_LIMIT, _READ_MORE, _category_clause, _clip, _limit_arg, _note_summary, _readable, _require_note, _since_clause, _since_days, _span_not_category, _visible
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, func, or_, select
 from tessellate.core import deps
@@ -515,11 +515,9 @@ def _scope_filters(args: dict) -> list:
     into a query the database was always going to be better at.
     """
     filters: list = []
-    since_days = _since_days(args.get("since"))
-    if since_days is not None:
-        from tessellate.core.database import utcnow
-
-        filters.append(Entry.created_at >= utcnow() - timedelta(days=since_days))
+    clause = _since_clause(args.get("since"))
+    if clause is not None:
+        filters.append(clause)
     if args.get("untagged"):
         #: Three shapes for "no tags", and all three are real rows. `tags` is
         #: a JSON string (`entry/manager.py` writes `json.dumps(tags or [])`),
@@ -551,6 +549,7 @@ def _list_notes(session: Session, args: dict) -> dict:
     total against the filter and where the next page starts, so the model can
     tell the difference between "that's all of them" and "there's more".
     """
+    args = _span_not_category(session, args)  # "this week" in `category` is a `since`
     limit = _limit_arg(args, default=DEFAULT_LIST_LIMIT)
     offset = max(0, int(args.get("offset") or 0))
 
@@ -646,6 +645,7 @@ def _count_notes(session: Session, args: dict) -> dict:
     postcondition that counted "untagged" differently from the tool that
     found them would pass runs that left work undone.
     """
+    args = _span_not_category(session, args)
     tag = str(args.get("tag") or "").strip()
     wanted = str(args.get("category") or "").strip()
     extra = _scope_filters(args)

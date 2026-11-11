@@ -75,6 +75,9 @@ REACHES_THE_NETWORK = {
     "ai/provider_http.py": "configured",
     "ai/captions.py": "configured",
     "api/routes_bench.py": "configured",  # this server over 127.0.0.1 only (the live budgets)  # TESSELLATE_CAPTIONS_URL, refused unless loopback
+    # Configured: the captions helper the app starts itself (INBOX 1777): a
+    # health check over 127.0.0.1 at the port its own child process printed.
+    "ai/captions_process.py": "configured",
     # Configured: the app's own SearXNG, which it downloads and starts itself.
     "search/searxng_install.py": "configured",
     # Configured: the update feed and the installer download, both pinned to an

@@ -7405,7 +7405,8 @@ function applyMarkdown(kind, boxId = "doc-content") {
   }
   if (action.custom === "cite") {
     //: A citation: the reference at the caret and the source at the foot (`docPairInput.citeInsert`).
-    promptDialog("Cite a source: an address, or its title", "", { confirmLabel: "Cite" }).then((source) => {
+    //: A note is picked and written as `[[title]]`; an address or words typed in the same box stay as typed.
+    docPairInput.citePick().then((source) => {
       if (!source || !source.trim()) return;
       const done = docPairInput.citeInsert(box.value, end, end, source);
       box.value = done.value;
