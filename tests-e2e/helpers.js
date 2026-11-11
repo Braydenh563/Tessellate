@@ -104,8 +104,10 @@ async function captureNote(page, text, { title, tags, category } = {}) {
   // editor (CodeMirror) the way it does for a person, and the save must read
   // what was typed there.
   const live = page.locator('.cm-content[aria-label="New note"]');
-  // `.or` resolves again on every retry: the editor can mount between a one-off count() and the click, and the textarea it replaces then intercepts nothing.
-  await live.or(box).first().click();
+  // Re-decided on every attempt: the editor can mount between the check and the click, and the textarea it replaces stays in the page, so a click on it is intercepted by the editor until the attempt is re-aimed at the editor.
+  await expect(async () => {
+    await ((await live.count()) ? live : box).click({ timeout: 2000 });
+  }).toPass({ timeout: 15000 });
   await page.keyboard.insertText(text);
   await expect(box).toHaveValue(text);
   const status = page.locator("#save-status");
