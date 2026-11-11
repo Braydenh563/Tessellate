@@ -728,6 +728,8 @@ EXEMPT: dict[str, str] = {
     "documents-languagetool.js:ask": "read: sends a document's paragraphs to the local grammar checker; shows matches, writes nothing",
     "whiteboard-format.js:(anonymous /media/upload)": "board: Replace picture uploads the file; the address swap is wbFmtApply's one board Undo step",
     "answer-kit.js:applyPendingChatTitle": "send: names a chat as its first message creates it; renaming a chat afterwards has Undo",
+    "answer-kit.js:toolChip": "job: a refetch of a kept web page into this computer's 7-day store; it replaces a copy that can be fetched again and deletes no user data",
+    "answer-kit.js:keptPagesRow": "job: a refetch of a kept web page into this computer's 7-day store; it replaces a copy that can be fetched again and deletes no user data",
 }
 
 
