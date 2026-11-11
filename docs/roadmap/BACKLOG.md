@@ -4398,3 +4398,11 @@ Owner, verbatim: "make sure that the ai and the composer cna give specialised mo
 - **Scheduled:** a Settings choice sets the time and how often (daily, weekdays, weekly, off). On open, the app writes a briefing only when one is due and the last open was before that time, never on every open.
 - **Stored:** each briefing is kept as a chat conversation (or a note; decide at design time) so it can be read again later.
 - **Build on what exists first** (CLAUDE.md section 1): the dashboard greeting, the reminders' due stamp (`GET /reminders/due`), the composer's date readers and digest, and the lean-workflow `brief` view as a model of the shape.
+
+## llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog")
+
+Owner, verbatim: "also is llama.cpp still on the table?? maybe for later pr at end of backlog". State: llama.cpp already works through `llama-server` pointed at from Settings, Models (OpenAI-compatible; `n_ctx` read from `/props`, `ai/openai_client.py`); the in-process `localllm` extra (`llama-cpp-python`, `core/extras.py`) is listed but not built.
+
+- **One click, like the captions helper (INBOX 1777):** download a pinned `llama-server` per platform and accelerator (CPU first; Vulkan, CUDA, Metal where the release ships one), verified by sha256, run and stopped by the app on a localhost port, and set as the Models backend with a small default GGUF the owner picks.
+- **Reuse the captions route:** the same pinned-download, helper lifecycle and Settings row states, so the two helpers share one code path (replace, do not layer).
+- **Decide at design time:** whether `llama-cpp-python` in-process is still worth its per-accelerator wheel matrix once the managed `llama-server` exists (likely not: retire the `localllm` row).

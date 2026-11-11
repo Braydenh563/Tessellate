@@ -35,6 +35,16 @@ def _asked_stems(question: str) -> set[str]:
     return {meaning.stem(w) for w in meaning.words_of(question) if w not in _NOT_SUBJECT}
 
 
+def strays(question: str, entries: list, connected: set[int]) -> set[int]:
+    """The notes that came into a topic question only by a link and hold none
+    of its words (INBOX 1767 e: "Ice Breakers", two steps from a gym note).
+    They are not Matching records for it: the Elsewhere row names them."""
+    asked = _asked_stems(question)
+    if not (asked and connected) or asks_about_links(question):
+        return set()
+    return {e.id for e in entries if e.id in connected and not asked & {meaning.stem(w) for w in meaning.words_of(f"{e.content} {e.tags or ''}")}}
+
+
 def _pairs(notes: list[dict]) -> list[tuple[dict, dict, str]]:
     by_id = {n["id"]: n for n in notes}
     seen: set[tuple[int, int]] = set()

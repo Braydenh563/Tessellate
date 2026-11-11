@@ -18,8 +18,10 @@ def _look() -> str:
 
 def test_a_card_gets_its_grip_after_the_pointer_rests_on_it() -> None:
     look = _look()
-    assert re.search(r"rested = setTimeout\(\(\) => show\(next\), OBJ_GRIP_REST_MS\)", look), "a new card waits for the rest"
-    assert "if (next === card) return show(next)" in look, "the card already holding the grip is kept at once"
+    # One `show(` call per look (test_open_note_lag_1667): both paths go through `showNext`.
+    assert "const showNext = () => show(next);" in look
+    assert "rested = setTimeout(showNext, OBJ_GRIP_REST_MS)" in look, "a new card waits for the rest"
+    assert "if (next === card) return showNext()" in look, "the card already holding the grip is kept at once"
     assert re.search(r"const OBJ_GRIP_REST_MS = \d+;", JS)
 
 
