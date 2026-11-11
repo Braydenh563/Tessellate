@@ -39,7 +39,7 @@ def test_the_kebab_presses_the_real_buttons_and_is_built_in_js():
 
 
 def test_the_help_says_where_the_buttons_went():
-    assert "sit in the ⋯ beside New" in HTML
+    assert "sit in the More menu (three dots) beside New" in HTML
 
 
 def test_the_outline_heads_help_ends_the_row_and_is_not_clipped_at_the_top():

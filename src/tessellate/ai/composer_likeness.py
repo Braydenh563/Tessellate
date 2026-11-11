@@ -16,11 +16,17 @@ _WORD = re.compile(r"[A-Za-z']{4,}")
 _FUNCTION = frozenset({"with", "and", "of", "for", "in", "on", "at", "to", "the", "a", "an", "from", "by", "or", "vs"})
 
 
+#: "Book club", "Reading list": the second word says the note is a group or a collection of the first, so the
+#: note is about the plural the question wrote ("books"), where "Apple watch" is a different thing (W7b found-not-fixed:
+#: "what do I know about books" lost "Book club notes" that "what do I have on books" kept).
+_COLLECTIVE = frozenset({"club", "clubs", "list", "lists", "shelf", "shelves", "collection", "library", "group", "groups"})
+
+
 def _product_name(title: str, stems: set[str], asked: set[str]) -> bool:
     words = title.split()
     return (
         len(words) >= 2 and words[0][:1].isupper() and words[0].lower() not in asked and _stem(words[0].lower()) in stems
-        and words[1].lower() not in _FUNCTION
+        and words[1].lower() not in _FUNCTION and words[1].lower() not in _COLLECTIVE
     )
 
 

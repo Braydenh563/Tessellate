@@ -1474,7 +1474,8 @@ def _latest_about(session: Session, query: str, embeddings: EmbeddingService, li
     terms = [*terms, *(n.lower() for n in names)]
     #: A tag is the subject too: "my 2 latest baking notes" are the notes tagged #baking.
     held = [e for e in entries if mode != "recent" and any(t in f"{e.content or ''} {e.tags or ''}".lower() for t in terms)]
-    held.sort(key=lambda e: (e.created_at, e.id), reverse=not rec.oldest)
+    #: Notes written at the same moment keep the search's order (the sort is stable): the more relevant leads a tie.
+    held.sort(key=lambda e: e.created_at, reverse=not rec.oldest)
     #: With a name found the notes saying it need the subject's own beside them to be read as its latest.
     return _without_private(held[: max(rec.count, 5 * len(names[:1]))]), mode if held else "keyword"
 

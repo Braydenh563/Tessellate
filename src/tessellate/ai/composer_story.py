@@ -53,6 +53,8 @@ _WEEKDAY = re.compile(r"\b(mon|tues|wednes|thurs|fri|satur|sun)day(s?)\b")
 #: A time lead the per-note line starts with; the paragraph says its own.
 _LEAD = re.compile(r"^(?:back in [a-z]+|in [a-z]+|on \d{1,2} [a-z]+|(?:[a-z]+ (?:days?|weeks?|months?) (?:ago|later|on))(?:, on \d{1,2} [a-z]+)?|"
                    r"(?:a|one) (?:day|week|month) (?:ago|later|on)(?:, on \d{1,2} [a-z]+)?|yesterday|today|last (?:week|month))\s*,\s*", re.I)
+#: A quote that says "today" (or yesterday, tonight) means the day it was written, not the day it is read.
+_QUOTED_RELATIVE = re.compile(r"“[^”]*\b(?:today|tonight|yesterday|tomorrow|this (?:morning|afternoon|evening)|last night)\b[^”]*”", re.I)
 _REPORT = re.compile(r"^you (?:mentioned|said|noted|recorded|put down|jotted down) that ", re.I)
 #: Typed without its apostrophe: said back flat ("You didnt lock in") it reads as the app's typo, so it is quoted.
 _RAW = re.compile(r"\b(?:didnt|dont|cant|wont|couldnt|wouldnt|isnt|im|ive)\b", re.I)
@@ -162,8 +164,15 @@ def _clipped(quote: str) -> str:
 
 
 def _clean_quote(text: str) -> str:
-    """A note's words for a quote: no emoji, no trailing marks."""
+    """A note's words for a quote: no emoji, no hashtags, no trailing marks."""
     text = re.sub(r"(?:^|\s)[:;]-?[dDpP)(]+(?=\s|$)", "", _EMOJI.sub("", text))
+    #: A hashtag is filing, not something the person said (the plain lines drop it the same way).
+    #: Word by word, not one trailing-run regex (CodeQL 2192: `(\s*#tag)+\s*$` is polynomial on tabs).
+    words = text.split()
+    while words and re.fullmatch(r"#[A-Za-z][\w-]*", words[-1]):
+        words.pop()
+    text = " ".join(words)
+    text = re.sub(r"(?<![\w&/])#([A-Za-z][\w-]*)", r"\1", text)
     return re.sub(r"\s+", " ", text).strip().rstrip("!.?:").strip()
 
 
@@ -225,7 +234,16 @@ def _said_raw(text: str, quote: str) -> bool:
 
 def clause_of(view, line: str, row: dict | None) -> Unit | None:  # noqa: ANN001
     """The note as a clause: a definition says it defines, slang is quoted,
-    an ordinary line loses its time lead and its "you mentioned that"."""
+    an ordinary line loses its time lead and its "you mentioned that".
+    None when a quote would carry a "today" the story cannot pin to its day:
+    the plain lines say it against the day it was written."""
+    unit = _clause_of(view, line, row)
+    if unit is not None and _QUOTED_RELATIVE.search(unit.clause):
+        return None
+    return unit
+
+
+def _clause_of(view, line: str, row: dict | None) -> Unit | None:  # noqa: ANN001
     first = _first(view)
     if first is None:
         return None

@@ -605,7 +605,7 @@ _ACTION = re.compile(r"(?:^|,\s*|;\s*|\band\s+)((?:ask|call|email|text|book|buy|
 _STILL_TO = re.compile(r"\b([a-z]+(?: [a-z]+)?) (?:are |is )?still to (book|buy|pay|do|send|order|sort)\b", re.I)
 _PAST_START = re.compile(
     r"^(went|hit|got|saw|had|did|made|tried|watched|closed|opened|finished|started|played|bought|ate|met|"
-    r"wrote|ran|walked|visited|spent|called|rang|booked|fixed|cooked|cleaned|learnt|took)\b",
+    r"wrote|ran|walked|visited|spent|called|rang|rung|booked|fixed|cooked|cleaned|learnt|took)\b",
     re.I,
 )
 _RATING = re.compile(r"\b(\d+(?:\.\d+)?)\s*(?:out of|/)\s*(10|5|100)\b", re.I)
@@ -1088,6 +1088,12 @@ married engaged injured hooked obsessed sorted done prepared organised organized
 """.split())
 
 
+def _as_you(text: str) -> str:
+    """A note's own past-tense start said as "you ...": "Rung mum" is "you rang mum" (the participle is the
+    British note-taker's short form, never the you-form)."""
+    return "you " + re.sub(r"^rung\b", "rang", text[:1].lower() + text[1:])
+
+
 def _did(word: str) -> bool:
     """A word that says what the writer did ("Baked", "Repotted"): a listed
     past verb, or an "-ed" dictionary word that is not a feeling."""
@@ -1127,7 +1133,7 @@ def _second_person(text: str, written: date | None = None) -> str:
         rest = rest.strip()
         text = "it " + head[0].lower() + head[1:] + (f", and you {rest[0].lower() + rest[1:]}" if comma and rest and not rest.lower().startswith(("and ", "but ")) else (", " + rest if rest else ""))
     elif first and _did(first.group(0)):
-        text = "you " + text[0].lower() + text[1:]
+        text = _as_you(text)
     return text
 
 
@@ -1993,7 +1999,7 @@ def _wrote(body: str, i: int) -> str:
     if _WE.match(body):
         return _REPORTS[i % len(_REPORTS)] + body[:1].lower() + body[1:]
     if first and (_did(first) or _past_verb(first)):
-        return "you " + body[:1].lower() + body[1:]
+        return _as_you(body)
     if _CALENDAR_WORD.match(first.capitalize()) or (first.lower() in _IMPERATIVES and not (len(body.split()) >= 2 and body.split()[1].lower() in _NOUN_AFTER)):
         #: Quoted as written, capital and all: it is the note's sentence.
         said = _DAY_NAME.sub(lambda m: m.group(0).capitalize(), body[:1].upper() + body[1:].rstrip("."))
@@ -5363,7 +5369,7 @@ def answer(question: str, notes: list[dict], **kwargs) -> dict | None:  # noqa: 
     called = composer_aliases.enter(question, notes)
     named = composer_ask.NOTE_CATEGORIES.set(frozenset(re.sub(r"\s+", " ", re.sub(r"\band\b", "&", str(n.get("category") or "").lower())) for n in notes or () if n.get("category")))
     try:
-        return composer_event_verdict.apply(question, _answer(question, notes, **kwargs), kwargs.get("today") or composer.user_today())
+        return composer_event_verdict.answer(question, lambda q: _answer(q, notes, **kwargs), kwargs.get("today") or composer.user_today())
     finally:
         _ASKED_AS.reset(as_asked)
         composer_ask.ALIASES.reset(called)
@@ -5468,7 +5474,9 @@ def _scored_insights(found: list, ids: set, members, said: str, learned) -> list
         if insights.key(item) in dismissed or not item.note_ids:
             continue
         #: The person's word on a sentence beats an inference that quotes it.
-        if known and known.quoted_in(item.text):
+        #: (The plan a drift rests on is the line's own words, which the
+        #: insight's text only paraphrases.)
+        if known and (known.quoted_in(item.text) or known.quoted_in(str(item.slots.get("plan") or ""))):
             continue
         if _old_news(item, members, said):
             continue

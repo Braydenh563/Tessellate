@@ -22,7 +22,7 @@ facts carry (`_dated_spans`); a span from neither is the model's invention.
 from __future__ import annotations
 
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from tessellate.ai import recognise
 
@@ -305,16 +305,42 @@ def _clock_or_year(tokens: list[str], i: int, part: str, known: set[str] | None)
     return False
 
 
+#: The ways a clock hour is stated in facts or a question, each with the hour as group 1: "5pm", "5:30 pm", "5.30pm",
+#: "5 p.m.", "17:00", "17h00", "17.00" (only on the quarter hours: "2.50" is an amount), "5 o'clock", "at 5", "half past
+#: 5", "quarter to 6". The minutes are never an hour ("5.30pm" is not the hour 30). "noon" and "midnight" are words.
+_HOUR_FORMS = (
+    re.compile(r"\b(\d{1,2})(?:[:.h][0-5]\d)?\s*([ap])\.?m\b"),
+    re.compile(r"\b(\d{1,2})[:h][0-5]\d\b"),
+    re.compile(r"\b(\d{1,2})\.(?:00|15|30|45)\b"),
+    re.compile(r"\b(\d{1,2})\s*o'?\s?clock\b"),
+    re.compile(r"\bat\s+(\d{1,2})\b"),
+    re.compile(r"\b(?:half|quarter)\s+past\s+(\d{1,2})\b"),
+)
+_QUARTER_TO = re.compile(r"\bquarter\s+to\s+(\d{1,2})\b")
+
+
+def _hour_figures(hour: int, pm: bool = False) -> set[str]:
+    """An hour as the text a figure may carry: as said, on the 12-hour clock, and on the 24-hour clock."""
+    return {str(hour), str(hour % 12 or 12), str(hour % 12 + (12 if pm else 0))}
+
+
 def _known(facts: str, question: str, now: datetime | None) -> set[str]:
     """The hours and the years the facts and the question state, as the text
-    of a figure: "at 10am" is 10, "2026-10-28" has 2026."""
+    of a figure: "at 10am" is 10, "5.30pm" is 5 and 17, "2026-10-28" has 2026."""
     text = f"{facts or ''} {question or ''}".lower()
     known = set(re.findall(r"\b(?:19|20)\d\d\b", text))
     if now:
         known |= {str(now.year + n) for n in (-1, 0, 1)}
-    for m in re.finditer(r"\b(\d{1,2})(?::\d\d)?\s*(am|pm)\b|\bat\s+(\d{1,2})\b|\b(\d{1,2}):\d\d\b", text):
-        hour = int(m[1] or m[3] or m[4])
-        known |= {str(hour), str(hour % 12 or 12), str(hour % 12 + (12 if m[2] == "pm" else 0))}
+    for form in _HOUR_FORMS:
+        for m in form.finditer(text):
+            if int(m[1]) <= 24:
+                known |= _hour_figures(int(m[1]), m.lastindex == 2 and m[2] == "p")
+    for m in _QUARTER_TO.finditer(text):
+        known |= _hour_figures(int(m[1])) | _hour_figures(int(m[1]) - 1)  # 5.45 is said "quarter to 6": either hour
+    if re.search(r"\bnoon\b", text):
+        known.add("12")
+    if re.search(r"\bmidnight\b", text):
+        known |= {"12", "0", "24"}
     return known
 
 
@@ -509,21 +535,31 @@ def _clock_hour(m: re.Match) -> int | None:
     return hour
 
 
-def _add_moment(found: list[tuple[datetime, bool]], now: datetime, year: int | None, month: int, day: int, hour: int | None, minute: int) -> None:
-    """A date into `found`; with no year, the year that puts it nearest `now`."""
+#: A yearless date whose other reading is no more than this much farther from now than the nearest one has no clear
+#: year: "20 April" in November is 160 days ahead or 205 back. Both stand then; "5 January" (55 or 310) has one.
+_YEAR_DOUBT = timedelta(days=90)
+
+
+def _add_moment(found: list[tuple[datetime, bool]], now: datetime, year: int | None, month: int, day: int, hour: int | None, minute: int, other: list[datetime | None] | None = None) -> None:
+    """A date into `found`; with no year, the year that puts it nearest `now`. When the year is a guess (`_YEAR_DOUBT`),
+    the next-nearest reading goes into `other`, as the same date's alternative at the same index."""
     years = (year,) if year else (now.year - 1, now.year, now.year + 1)
-    tries = [datetime(y, month, day, hour or 0, minute) for y in years if _valid(y, month, day)]
+    tries = sorted((datetime(y, month, day, hour or 0, minute) for y in years if _valid(y, month, day)), key=lambda m: abs(m - now))
     if tries:
-        found.append((min(tries, key=lambda m: abs(m - now)), hour is not None))
+        found.append((tries[0], hour is not None))
+        if other is not None:
+            second = tries[1] if len(tries) > 1 and not year and abs(tries[1] - now) - abs(tries[0] - now) <= _YEAR_DOUBT else None
+            other.append(second)
 
 
-def _moments(text: str, now: datetime) -> list[tuple[datetime, bool]]:
+def _moments(text: str, now: datetime, other: list[datetime | None] | None = None) -> list[tuple[datetime, bool]]:
     """The dates a text carries, as (when, whether it names a time of day).
-    A date with no year is the year that puts it nearest to `now`."""
+    A date with no year is the year that puts it nearest to `now`; `other`, if given, gets one entry per date: its
+    other reading when the year is a guess (`_YEAR_DOUBT`), else None."""
     found: list[tuple[datetime, bool]] = []
 
     def add(year: int | None, month: int, day: int, hour: int | None = None, minute: int = 0) -> None:
-        _add_moment(found, now, year, month, day, hour, minute)
+        _add_moment(found, now, year, month, day, hour, minute, other)
 
     lowered = (text or "").lower()
     for m in _ISO.finditer(lowered):
@@ -552,14 +588,24 @@ def _dated_spans(facts: str, now: datetime | None) -> list[float]:
     # The facts' dates are wall-clock dates with no zone; `user_now` is
     # aware, so compare on the user's wall clock.
     now = now.replace(tzinfo=None)
-    moments = _moments(facts, now)
+    other: list[datetime | None] = []
+    moments = _moments(facts, now, other)
     out: list[float] = []
-    points = [(now, True)] + moments
-    for a in range(len(points)):
-        for b in range(a + 1, len(points)):
-            first, second = points[a][0], points[b][0]
-            out.append(abs((second - first).total_seconds()) / 60)
-            out.append(abs((second.date() - first.date()).days) * 1440.0)
+
+    def spans_between(dates: list[tuple[datetime, bool]]) -> None:
+        points = [(now, True)] + dates
+        for a in range(len(points)):
+            for b in range(a + 1, len(points)):
+                first, second = points[a][0], points[b][0]
+                out.append(abs((second - first).total_seconds()) / 60)
+                out.append(abs((second.date() - first.date()).days) * 1440.0)
+
+    spans_between(moments)
+    #: A date whose year is a guess is read the other way too, one date at a time: the two readings are alternatives,
+    #: so a span from one to the other ("1 year") is no span the facts carry.
+    for index, alternative in enumerate(other):
+        if alternative is not None:
+            spans_between([*moments[:index], (alternative, moments[index][1]), *moments[index + 1 :]])
     return out
 
 
@@ -632,3 +678,44 @@ def _says_asked(said: list[tuple[str, str | None]], facts: str, question: str, e
         value in asked_for or (_is_span(noun) and (value, noun) not in asked and _span_kept(value, noun, asked_spans))
         for value, noun in said
     )
+
+
+#: A reply to "nothing matched" (`says_nothing_found`). The figure check above reads numbers, and that answer has none,
+#: so a model saying "here is what I found" over it could not be caught; this one reads the negative itself.
+_NEGATION = re.compile(r"\b(?:no|none|nothing|nowhere|nobody|not|never|neither|nor|without|empty|zero)\b|\bn't\b|\w+n't\b")
+_PIVOT = re.compile(r"\b(?:but|however|although|though|except|apart from|other than|instead|meanwhile)\b")
+_SENTENCE = re.compile(r"(?<=[.!?])\s+|\n+")
+_APP_WORDS = {"notes", "note", "chat", "library", "tessellate", "settings", "ask", "documents", "reminders", "boards", "search", "i", "i'm", "i've", "i'd", "you", "you'll", "you've"}
+_LIST_LINE = re.compile(r"^\s*(?:[-*•]|\d+[.)])\s", re.M)
+_MAX_SENTENCES = 3
+_MAX_CHARS = 260
+
+
+def _invents(sentences: list[str], text: str, asked: str) -> bool:
+    """A figure the question lacks, or a capitalised word in the middle of a sentence that is neither the question's nor
+    the app's ("Tokyo" is a find)."""
+    if set(re.findall(r"\d+(?:[.,]\d+)*", text)) - set(re.findall(r"\d+(?:[.,]\d+)*", asked)):
+        return True
+    names = (w.lower() for s in sentences for w in re.findall(r"(?<=[\s,;:(])([A-Z][\w'-]*)", s))
+    return any(w not in asked and w not in _APP_WORDS for w in names)
+
+
+def _plain_negative(sentence: str) -> bool:
+    """A sentence that is a negative, or a question back, and turns to nothing else."""
+    low = sentence.lower()
+    return not _PIVOT.search(low) and (sentence.endswith("?") or bool(_NEGATION.search(low)))
+
+
+def says_nothing_found(prose: str, question: str) -> bool:
+    """Whether a model's reply to a question no note answered says only that: a short reply (at most three sentences) in
+    which each sentence is a negative ("couldn't find", "nothing in your notes", "no notes on"), or a question back
+    ("Want to write one?"); with no list, no figure the question lacks, no name it lacks, and no turn to something else
+    ("but your note on Tokyo says ..."). A reply that claims a find, answers from the model's own knowledge or adds a
+    fact fails, and the engine's plain miss stands (the check errs towards refusing: a refused reply costs a model call)."""
+    text = (prose or "").strip()
+    sentences = [s.strip() for s in _SENTENCE.split(text) if s.strip()]
+    if not sentences or len(text) > _MAX_CHARS or len(sentences) > _MAX_SENTENCES or _LIST_LINE.search(text):
+        return False
+    if _invents(sentences, text, (question or "").lower()):
+        return False
+    return any(_NEGATION.search(s.lower()) for s in sentences) and all(_plain_negative(s) for s in sentences)
