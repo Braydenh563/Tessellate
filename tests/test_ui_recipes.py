@@ -7766,12 +7766,15 @@ def test_a_missing_optional_package_notice_has_one_builder() -> None:
 def test_a_footer_row_of_worded_buttons_clips_its_words_rather_than_wrapping() -> None:
     """The Writing room's Copy, Insert into a note and Save as note needed 476px
     in a 472px column at 1280, so Insert went onto a second line. The row never
-    wraps; under 30rem of column the two ghosts keep their icon (`.toolbar-word`)."""
+    wraps: two columns give the draft 30rem (no width query of its own, see
+    test_breakpoints), and under Phase 9's 600 the two ghosts keep their icon
+    (`.toolbar-word`)."""
     row = _sheet_rule("04-chat-dock-appearance.css", ".draft-actions-row")
     assert "flex-wrap: nowrap" in row
-    assert "container: draft-column / inline-size" in _sheet_rule("04-chat-dock-appearance.css", ".draft-column")
+    cols = _sheet_rule("04-chat-dock-appearance.css", ".draft-columns")
+    assert "grid-template-columns: minmax(0, 1fr) minmax(30rem, 1fr)" in cols
     css = (_SHEETS / "04-chat-dock-appearance.css").read_text(encoding="utf-8")
-    assert "@container draft-column (max-width: 30rem)" in css
+    assert re.search(r"@media \(max-width: 599\.98px\) \{\s*\.draft-actions-row > button \.toolbar-word \{", css)
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     row_html = html[html.index('class="row draft-controls draft-actions-row"') :]
     row_html = row_html[: row_html.index('id="draft-save-split"')]
