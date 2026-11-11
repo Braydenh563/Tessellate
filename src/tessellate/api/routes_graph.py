@@ -11,6 +11,7 @@ Nodes are non-deleted entries; edges come from three places:
 from __future__ import annotations
 
 import hashlib
+import html
 import json
 import re
 import threading
@@ -1579,7 +1580,8 @@ def topic_summary(body: TopicSummaryBody, session: Session = Depends(get_session
                 {"role": "user", "content": f"{hint}The notes:\n" + "\n".join(lines)},
             ],
         )
-        summary = " ".join(str(reply.get("content") or "").split()).strip("\"' ")
+        # Small local models write `&#39;` and `&amp;` (B71, Qwen2.5-1.5B): shown as the characters meant.
+        summary = " ".join(html.unescape(str(reply.get("content") or "")).split()).strip("\"' ")
     except Exception:  # noqa: BLE001  # any model failure reads as "no model"
         summary = ""
     if not summary:

@@ -13,6 +13,7 @@ background pass (`ai/autonomous.py`) when `auto_entities_enabled` is on.
 
 from __future__ import annotations
 
+import html
 import logging
 
 from sqlalchemy import select
@@ -88,7 +89,8 @@ def suggest_entities_with_kinds(
         ],
         mode=presets.BACKGROUND_MODE,
     )
-    raw = reply["content"].strip()
+    # Small local models write `&#39;` and `&amp;` into names (B71, Qwen2.5-1.5B): read as the characters meant.
+    raw = html.unescape(reply["content"]).strip()
     if not raw or raw.upper().startswith("NONE"):
         return []
     seen: set[str] = set()
