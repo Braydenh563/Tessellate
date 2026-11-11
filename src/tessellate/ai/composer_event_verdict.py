@@ -23,6 +23,10 @@ def _window(phrase: str, today: date) -> tuple[date, date]:
     monday = today - timedelta(days=today.weekday())
     saturday = monday + timedelta(days=5)
     next_month = _month_end(today) + timedelta(days=1)
+    if phrase.split()[-1].lower() in recognise._WINDOW_DAYS:  # noqa: SLF001
+        #: "on Thursday" is the next Thursday on or after today: an event asked about is still to come.
+        found = recognise.span(phrase.split()[-1], today, "future")
+        return (found[0], found[1]) if found else (today, today)
     return {
         "this week": (monday, monday + timedelta(days=6)),
         "next week": (monday + timedelta(days=7), monday + timedelta(days=13)),
