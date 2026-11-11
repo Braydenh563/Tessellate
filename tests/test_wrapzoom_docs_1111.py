@@ -81,3 +81,18 @@ def test_the_side_panes_no_model_line_places_the_split_button_under_the_words():
     assert "grid-column: 2" in body and "margin-inline-start: 0" in body
     js = (ROOT / "frontend" / "js" / "offline-split.js").read_text(encoding="utf-8")
     assert 'split.className = "split-button ai-offline-split"' in js
+
+
+# ---- a narrow pane in a wide window -----------------------------------------------
+
+
+def test_the_diagram_dock_answers_to_its_pane_not_the_window():
+    """Split view at 1280 gave the builder 428px; the one-row dock's word
+    drop and scroll fallback keyed on the window (under 600), so the menu sat
+    22px past the pane. The pane (`.dgm`, an inline-size container) decides,
+    and the scroller does not shrink in the pane's column."""
+    css = _css("diagram-lazy.css")
+    narrow = "".join(_at_blocks(css, "@container (max-width: 599.98px)"))
+    assert "display: none" in _rule(narrow, ".dgm-kindword")
+    dock = _rule(narrow, ".dgm-dock:has(> .dgm-addsplit)")
+    assert "overflow-x: auto" in dock and "flex-shrink: 0" in dock
