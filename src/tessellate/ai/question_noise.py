@@ -37,7 +37,7 @@ import re
 from tessellate.core.lazyre import lazy_compile
 from collections import Counter
 
-from tessellate.ai import act_registry, repair_turn, spelling
+from tessellate.ai import act_registry, repair_turn, spelling, typo_context
 from tessellate.ai.spelling import distance  # noqa: F401 - re-exported: the speller owns it, so the two modules do not import each other
 
 # --- 1. slang and text-speak ----------------------------------------------------
@@ -2389,7 +2389,7 @@ def repair(text: str, report: list | None = None, known=frozenset(), fixed: list
     i = 0
     while i < len(tokens):
         i += _repair_token(tokens, i, out, text, report, known, fixed)
-    return " ".join(w for w in _real_word_slips(out, fixed) if w)
+    return " ".join(w for w in _real_word_slips(out, fixed, report) if w)
 
 
 #: Real-word slips (Brief 104): a word that is a word, read as another only
@@ -2407,8 +2407,28 @@ _ITS_NOUNS = frozenset(
 _AUX_BEFORE_KNOW = frozenset({"do", "did", "does", "can", "could", "would", "should", "to"})
 
 
-def _real_word_slips(tokens: list[str], fixed: list | None) -> list[str]:
+def _context_slip(out: list[str], i: int, fixed: list | None, report: list | None) -> None:
+    """A real word that the sentence and the notebook say is another ("notes form last week", "run my skull"):
+    read as it (`typo_context`), the other offered when the two stay close. The notebook's own words weigh in there."""
+    word = out[i].rstrip("?!.,:;")
+    if not word.islower() or (i and out[i - 1].rstrip("?!.,:;") != out[i - 1]):
+        return
+    read = typo_context.real_slip(out, i)
+    if read is None:
+        return
+    chosen, other = read
+    if report is not None and other:
+        report.append({"typed": word, "chosen": chosen, "alternative": other})
+    if chosen != word.lower():
+        out[i] = chosen + out[i][len(word):]
+        if fixed is not None:
+            fixed.append((word, chosen))
+
+
+def _real_word_slips(tokens: list[str], fixed: list | None, report: list | None = None) -> list[str]:
     out = list(tokens)
+    for i in range(len(out)):
+        _context_slip(out, i, fixed, report)
     for i in range(1, len(out)):
         prev = out[i - 1].lower().rstrip("?!.,:;")
         word = out[i].rstrip("?!.,:;")
@@ -2528,7 +2548,7 @@ def _repair_misspelt(token: str, word: str, tail: str, nxt: str, text: str, out:
     chosen = nearest(low, ASKING, after) if _at_asking_place(out) and not spelt else None
     pool = ASKING
     if not chosen and _speller_may_read(word, out):
-        if _repair_by_speller(word, tail, after, out, report, known, fixed):
+        if _repair_by_speller(word, tail, after, out, report, known, fixed, text):
             return
     #: Past the opening words only the long words that name a kind
     #: of question are repaired ("lastest"): a subject word near a
@@ -2560,7 +2580,7 @@ def _run_on_reading(word: str, known) -> tuple[str, str] | None:  # noqa: ANN001
     )
 
 
-def _repair_by_speller(word: str, tail: str, after: str, out: list[str], report, known, fixed) -> bool:  # noqa: ANN001
+def _repair_by_speller(word: str, tail: str, after: str, out: list[str], report, known, fixed, text: str = "") -> bool:  # noqa: ANN001
     """Reads a misspelt word as the word it is near (`spelling.fix`), or as two
     words run together, one of them small ("thenthe"), tried only when no list
     word is near; True when it did and `out` has the reading."""
@@ -2573,6 +2593,9 @@ def _repair_by_speller(word: str, tail: str, after: str, out: list[str], report,
     #: "Kristopher called" (Brief 90's list, O3).
     if read and word[:1].isupper() and read[0] not in spelling._common():
         read = None
+    if read and read[1]:
+        #: Two readings near the word: the sentence, the notebook and the last turn choose (INBOX 1745).
+        read = typo_context.lean(low, [read[0], read[1]], out[-1] if out else "", after, text.split(), False)
     if read:
         chosen = read[0].capitalize() if word[0].isupper() else read[0]
         if report is not None and read[1]:
@@ -2648,6 +2671,9 @@ def guided(text: str, accepts, vocabulary=None, *, real_to=_COMMAND_GLUE, known=
             continue
         pool = vocabulary if real_to is None or not spelling.is_word(low) else vocabulary & real_to
         for word in _one_slip_from(low, pool):
+            #: A word that is a title, tag or name of the notebook's own is not the command word (INBOX 1745).
+            if typo_context.prefers(low, word):
+                continue
             reading = " ".join([*tokens[:i], word + token[len(core):], *tokens[i + 1:]])
             if accepts(reading):
                 return reading
