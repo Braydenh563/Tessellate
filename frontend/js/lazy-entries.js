@@ -3,12 +3,8 @@
 // cap. Loads straight after app.js: later scripts name these functions at
 // load (a widget table's `render`, a listener), so the stand-ins must exist.
 Object.assign(LAZY_MODULES, {
-  //: Boards and maps (audit D22): the `library` files first, in their order, then d3 and the nine
-  //: whiteboard files (2.6 MB raw, 820 KB gzipped, measured) that a first document open no longer pays for.
-  //: `lazyScript` fetches a file once whichever bundle asks first, so a board opened after a document costs only
-  //: its own files, and a board opened first still runs the editors before them. A copy by spread, never by hand,
-  //: so the two lists cannot drift. Everything documents or the list call in here is a stand-in below or a
-  //: `typeof` guard; tests/test_lazy_boards_split.py reads every name.
+  //: Boards and maps (audit D22): the `library` files, then d3 and the nine whiteboard files (820 KB gzipped) a first
+  //: document open no longer pays for. A copy by spread so the lists cannot drift; tests/test_lazy_boards_split.py reads every name.
   boards: [
     ...LAZY_MODULES.library,
     "/vendor/d3.v7.min.js", //: Before whiteboard.js, whose top level calls `d3.zoom()`.
@@ -89,7 +85,7 @@ Object.assign(LAZY_MODULES, {
   chatTurn: ["/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/chat-turn.js"],
   //: A note card's ... menu rows (entry-menu.js): the first press awaits it, a pointer over a card warms it.
   entryMenu: ["/js/entry-menu.js"],
-  //: The Boards & maps gallery on its own (boards-gallery.js; INBOX 1772): it paints the cards before the board code has run. The `library` list carries it too, so the board code, which calls the gallery, always finds it.
+  //: The Boards & maps gallery on its own (boards-gallery.js; INBOX 1772): it paints before the board code has run.
   boardsGallery: [...LAZY_MODULES.libraryList, "/js/boards-gallery.js"],
   //: A board's miniature (map-preview.js): `mapPreview` returns the empty svg and draws into it once this is in.
   mapPreview: ["/js/map-preview.js"],
@@ -118,8 +114,12 @@ Object.assign(LAZY_MODULES, {
   companionSettings: ["/js/companion-settings.js"],
   //: What a click, a hover or a focus brings onto the screen fades in, and out where it floats (INBOX 1565): ui-reveal-lazy.css.
   uiReveal: ["/css/ui-reveal-lazy.css"],
-  //: The ```graph block in a document (documents-graph.js; documents-math.js asks for it by name).
+  //: The ```graph and ```base blocks in a document (documents-graph.js, documents-base.js; documents-math.js asks by name),
+  //: and a synced block's edit box (documents-synced.js; documents-embeds.js asks on the pencil).
   docGraph: ["/css/doc-graph-lazy.css", "/js/documents-graph.js"],
+  docBase: ["/css/doc-base-lazy.css", "/js/documents-base.js"],
+  docSynced: ["/js/documents-synced.js"],
+  docBoard: ["/js/documents-board.js"],
 });
 setTimeout(() => ["loadFailed", "modelMenu", "entryCard", "uiReveal"].forEach(ensureModule), 3000);
 installStandIns({

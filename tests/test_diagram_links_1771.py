@@ -33,7 +33,8 @@ def test_the_connector_menu_is_placed_off_its_row_not_over_it():
     # Opening the menu focuses its first item, which scrolls the pane (the row moved 28px at 820x900, 676 to 648, under a menu placed
     # for the 676): the anchor is measured after the menu is open, and that box is the one the menu is placed against.
     assert opener.index("openActionMenu(menu, opener)") < opener.index("kebabMenu.beside(menu, anchor.getBoundingClientRect(), opener)")
-    place = _body(selects, "kebabMenu.beside = (menu, row, opener) => {").split("\n};", 1)[0]
+    # `beside` moved from the boot scripts to diagram-library.js (the boot gzip ratchet): only the diagram builder passes an `anchor`.
+    place = _body(_read("diagram-library.js"), "kebabMenu.beside = (menu, row, opener) => {").split("\n  };", 1)[0]
     # below if it fits, else above, else the larger of the two: never across the row; a menu taller than the room scrolls instead.
     assert place.index("[down, up]") < place.index("const below") < place.index("style.maxHeight = `") < place.index("row.top - gap - menu.")
     assert "maxHeight" in place and "escapeMenuToBody" in place

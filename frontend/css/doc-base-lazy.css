@@ -1,0 +1,109 @@
+/* doc-base-lazy.css: the ```base block (documents-base.js; DOCUMENTS_PLAN gap row 6). Loaded with it
+   (`LAZY_MODULES.docBase`), never at boot. A table of notes, read-only; the table scrolls inside its own box so a
+   phone's page never does. */
+
+.md-base {
+  margin: var(--space-4) 0;
+  color: var(--ink);
+}
+
+.md-base-pending {
+  min-block-size: 4rem;
+}
+
+.db-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-block-end: var(--space-1);
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.db-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+}
+
+.db-table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.db-table th,
+.db-table td {
+  padding: var(--space-2) var(--space-3);
+  border-block-end: 1px solid var(--border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.db-table th {
+  color: var(--muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.db-table tbody tr:last-child td {
+  border-block-end: 0;
+}
+
+.db-title {
+  min-inline-size: 10rem;
+}
+
+.db-open {
+  padding: 0;
+  text-align: start;
+  min-block-size: 0;
+}
+
+.db-empty,
+.db-count {
+  margin: var(--space-2) 0 0;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.db-issues {
+  margin: var(--space-2) 0 0;
+  padding-inline-start: var(--space-4);
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+/* The Live figure's pencil: on the corner, put the caret in the text. */
+.cm-md-base-wrap {
+  position: relative;
+}
+
+.db-edit {
+  position: absolute;
+  inset-block-start: var(--space-2);
+  inset-inline-end: var(--space-2);
+  opacity: 0;
+}
+
+.cm-md-base-wrap:is(:hover, :focus-within) .db-edit {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .db-edit {
+    opacity: 1;
+  }
+}
+
+@media print {
+  .db-edit,
+  .db-bar button {
+    display: none;
+  }
+
+  .db-scroll {
+    overflow: visible;
+  }
+}

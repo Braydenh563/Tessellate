@@ -525,6 +525,62 @@ textarea.has-gutter {
   margin-bottom: 0;
 }
 
+/* A synced block (documents-embeds.js `docEmbedBlockEdit`): the pencil on the quote's corner, and the box that replaces the text. */
+.doc-embed-block {
+  position: relative;
+}
+
+.doc-embed-block-edit {
+  position: absolute;
+  inset-block-start: var(--space-1);
+  inset-inline-end: var(--space-1);
+  opacity: 0;
+}
+
+.doc-embed-block:is(:hover, :focus-within) .doc-embed-block-edit {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .doc-embed-block-edit {
+    opacity: 1;
+  }
+}
+
+.doc-embed-block-input {
+  inline-size: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  font: inherit;
+}
+
+.doc-embed-block-actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-block-start: var(--space-2);
+}
+
+/* A board embedded in a document, edited in a panel over it (documents-board.js, gap row 10). The card is the board's own
+   whiteboard view, lent to the panel; the board's "Boards" button is the dialog's X here, so it is hidden. */
+.doc-embed-board-edit {
+  margin-block-start: var(--space-2);
+}
+.doc-board-card {
+  width: min(90rem, 96vw);
+  height: min(54rem, 92dvh);
+  max-height: 92dvh;
+  padding: var(--space-2);
+  gap: var(--space-2);
+}
+.doc-board-card #library-view-whiteboard {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+.doc-board-card #wb-back-to-boards {
+  display: none;
+}
+
 /* A recording embedded in a document (documents-embeds.js, gap row 1): the take's name over the browser's own audio controls. */
 .doc-embed-recording {
   display: flex;

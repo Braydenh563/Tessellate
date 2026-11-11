@@ -1941,7 +1941,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "code-run",
+        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-synced", "document-board", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
@@ -2793,6 +2793,27 @@ MORE_TOPICS.append({
 TOPIC_META["document-graph"] = {"title": "Graph a function in a document", "path": "A document, the / menu, Graph"}
 
 
+#: DOCUMENTS_PLAN gap row 6: the base block (documents-base.js), a read-only table of notes by property.
+MORE_TOPICS.append({
+    "id": "document-base",
+    "keywords": (
+        "base", "notes table", "database view", "table of notes", "properties table", "query notes",
+        "```base", "bases", "obsidian bases",
+    ),
+    "body": (
+        "Type /notes table in a document, or write a code block marked base, to list the notes that share a property. "
+        "type: Book lists the notes whose properties say type: Book. where: status = read narrows it (any number of "
+        "these, all must hold; a list property matches any of its values). columns: author, rating chooses what to show, "
+        "sort: rating desc orders it (numbers and dates sort as such), and limit: 50 caps the rows at 300. "
+        "The first column is the note's name: press it to open the note. The table is read-only: a value is changed in "
+        "the note's own properties, and the refresh button reads the notes again. Private notes never appear. "
+        "It is a table only; boards and calendars are not built."
+    ),
+    "badge": {"label": "Documents", "tab": "documents"},
+})
+TOPIC_META["document-base"] = {"title": "A table of notes in a document", "path": "A document, the / menu, Notes table"}
+
+
 #: OPEN W18 (s9-1110): the diagram's line shape, spacing and page menu.
 MORE_TOPICS.append({
     "id": "diagram-lines",
@@ -2861,3 +2882,45 @@ MORE_TOPICS.append({
     "badge": {"label": "Library", "tab": "library"},
 })
 TOPIC_META["equation-editor"] = {"title": "Equation editor", "path": "Calculator and equations, Equation tab; type /equation, or Alt+=, in a note, a document, a board's text or Chat"}
+
+
+#: DOCUMENTS_PLAN 26 (decision 82): a block shown in two documents, edited in either (documents-synced.js).
+MORE_TOPICS.append({
+    "id": "document-synced",
+    "keywords": (
+        "synced block", "synced blocks", "transclusion", "transclude", "embed a paragraph", "block embed",
+        "link to this block", "edit an embedded block", "same paragraph in two documents", "![[",
+    ),
+    "body": (
+        "A paragraph can live in one document and be shown in others. In its own document, put the caret in it and "
+        "choose Link to this block in the / menu: it gets a short id at the end of its last line. In another document "
+        "write ![[Document title#^the-id]] and the paragraph appears there, quoted, with a line naming where it comes "
+        "from (press it to open that document). Hover the quote and press the pencil to change the paragraph where "
+        "you are: Save writes it into the document it lives in, so there is only ever one copy, every other place that "
+        "shows it follows, and that document's History has the change. Other edits to that document in the meantime "
+        "stay; if the paragraph itself was changed somewhere else, Save is refused and your text stays in the box. A paragraph is one block: a blank line in it is "
+        "not allowed, and an empty one cannot be saved. In the document the paragraph lives in, the pencil is not "
+        "shown: there the text is simply the text."
+    ),
+    "badge": {"label": "Documents", "tab": "documents"},
+})
+TOPIC_META["document-synced"] = {"title": "A paragraph shown in two documents", "path": "A document, the / menu, Link to this block"}
+
+#: DOCUMENTS_PLAN 26, gap row 10: a board shown in a document is edited from it (documents-board.js).
+MORE_TOPICS.append({
+    "id": "document-board",
+    "keywords": (
+        "board in a document", "embed a board", "edit a board here", "whiteboard in a document", "mind map in a document",
+        "![[board", "![[map", "edit here", "canvas block",
+    ),
+    "body": (
+        "A whiteboard or a mind map can sit in a document as a card: choose Board or mind map in the / menu, or write "
+        "![[board:12]] with the board's number. Press the card to open the board in the Library, or press Edit "
+        "here under it to change the board without leaving the document. The board opens in a dialog over the document "
+        "with its own toolbar, and its changes are saved as you make them, as on the Library page. Press the X to close "
+        "the panel: the card shows the board as it now is. The Library keeps one board window, so while the panel is "
+        "open the board is in it and not in the Library, and closing leaves the Library on its list of boards."
+    ),
+    "badge": {"label": "Documents", "tab": "documents"},
+})
+TOPIC_META["document-board"] = {"title": "A board shown in a document", "path": "A document, a board card, Edit here"}
