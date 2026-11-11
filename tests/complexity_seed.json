@@ -107,8 +107,6 @@
  "src/tessellate/entry/manager.py::_hard_delete": 19,
  "src/tessellate/entry/manager.py::_redact_answers_quoting": 24,
  "src/tessellate/entry/tidy.py::_rows_similar_categories": 22,
- "src/tessellate/search/index.py::_boards_touched_by_objects": 17,
- "src/tessellate/search/index.py::_index_on_flush": 16,
  "src/tessellate/search/search_manager.py::graph_expansion": 19,
  "src/tessellate/search/searxng_process.py::_start_from_source": 20,
  "src/tessellate/search/websearch.py::_searxng_target": 18
