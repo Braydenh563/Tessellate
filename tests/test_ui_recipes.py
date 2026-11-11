@@ -3904,7 +3904,7 @@ def test_a_swatch_is_drawn_only_by_the_swatch_picker() -> None:
         if path.name == "categories-panel.js":
             continue
         assert "swatch-option" not in text, f"{path.name} builds a swatch by hand; use swatchPicker"
-    body = _function_body(frontend_text("categories-panel.js"), "swatchPicker")
+    body = _function_body(_js_scope.unwrapped(frontend_text("categories-panel.js")), "swatchPicker")
     assert 'setAttribute("role", "radiogroup")' in body
     assert 'setAttribute("role", "radio")' in body
     assert 'setAttribute("aria-label"' in body, "a swatch with no name says nothing to a screen reader"

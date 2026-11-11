@@ -2699,36 +2699,36 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `categoryColourName` | frontend/js/categories-panel.js:935 |
-| `chooseCategorySheet` | frontend/js/categories-panel.js:578 |
-| `chooseNoteCategory` | frontend/js/categories-panel.js:851 |
-| `colourCategoriesFromPanel` | frontend/js/categories-panel.js:468 |
-| `createCategoryFromPanel` | frontend/js/categories-panel.js:551 |
-| `deleteCategoriesFromPanel` | frontend/js/categories-panel.js:429 |
-| `deleteCategoryFromPanel` | frontend/js/categories-panel.js:629 |
-| `drawCategoryTidy` | frontend/js/categories-panel.js:277 |
-| `drawManageCategoryFooter` | frontend/js/categories-panel.js:398 |
-| `drawManageCategoryRows` | frontend/js/categories-panel.js:173 |
-| `dropEmptyCategory` | frontend/js/categories-panel.js:918 |
-| `foldSide` | frontend/js/categories-panel.js:1144 |
-| `manageCatHead` | frontend/js/categories-panel.js:147 |
-| `mergeCategoriesFromPanel` | frontend/js/categories-panel.js:516 |
-| `mergeCategoryFromPanel` | frontend/js/categories-panel.js:611 |
-| `moveNotesToCategory` | frontend/js/categories-panel.js:892 |
-| `offerCategoryUndo` | frontend/js/categories-panel.js:1032 |
-| `openManageCategories` | frontend/js/categories-panel.js:21 |
-| `pickCategoryColour` | frontend/js/categories-panel.js:992 |
-| `refreshAfterCategoryChange` | frontend/js/categories-panel.js:1042 |
-| `renameCategory` | frontend/js/categories-panel.js:781 |
-| `restoreCategoryMoves` | frontend/js/categories-panel.js:829 |
-| `saveCategoryColour` | frontend/js/categories-panel.js:984 |
-| `showCategoryNotes` | frontend/js/categories-panel.js:339 |
-| `sidebarEmptyRows` | frontend/js/categories-panel.js:1102 |
-| `sidebarFoldSet` | frontend/js/categories-panel.js:1067 |
-| `sidebarFoldsWire` | frontend/js/categories-panel.js:1080 |
-| `splitCategoryFromPanel` | frontend/js/categories-panel.js:657 |
-| `swatchPicker` | frontend/js/categories-panel.js:937 |
-| `wireManageCategoryKeys` | frontend/js/categories-panel.js:360 |
+| `categoryColourName` | frontend/js/categories-panel.js:936 |
+| `chooseCategorySheet` | frontend/js/categories-panel.js:579 |
+| `chooseNoteCategory` | frontend/js/categories-panel.js:852 |
+| `colourCategoriesFromPanel` | frontend/js/categories-panel.js:469 |
+| `createCategoryFromPanel` | frontend/js/categories-panel.js:552 |
+| `deleteCategoriesFromPanel` | frontend/js/categories-panel.js:430 |
+| `deleteCategoryFromPanel` | frontend/js/categories-panel.js:630 |
+| `drawCategoryTidy` | frontend/js/categories-panel.js:278 |
+| `drawManageCategoryFooter` | frontend/js/categories-panel.js:399 |
+| `drawManageCategoryRows` | frontend/js/categories-panel.js:174 |
+| `dropEmptyCategory` | frontend/js/categories-panel.js:919 |
+| `foldSide` | frontend/js/categories-panel.js:1145 |
+| `manageCatHead` | frontend/js/categories-panel.js:148 |
+| `mergeCategoriesFromPanel` | frontend/js/categories-panel.js:517 |
+| `mergeCategoryFromPanel` | frontend/js/categories-panel.js:612 |
+| `moveNotesToCategory` | frontend/js/categories-panel.js:893 |
+| `offerCategoryUndo` | frontend/js/categories-panel.js:1033 |
+| `openManageCategories` | frontend/js/categories-panel.js:22 |
+| `pickCategoryColour` | frontend/js/categories-panel.js:993 |
+| `refreshAfterCategoryChange` | frontend/js/categories-panel.js:1043 |
+| `renameCategory` | frontend/js/categories-panel.js:782 |
+| `restoreCategoryMoves` | frontend/js/categories-panel.js:830 |
+| `saveCategoryColour` | frontend/js/categories-panel.js:985 |
+| `showCategoryNotes` | frontend/js/categories-panel.js:340 |
+| `sidebarEmptyRows` | frontend/js/categories-panel.js:1103 |
+| `sidebarFoldSet` | frontend/js/categories-panel.js:1068 |
+| `sidebarFoldsWire` | frontend/js/categories-panel.js:1081 |
+| `splitCategoryFromPanel` | frontend/js/categories-panel.js:658 |
+| `swatchPicker` | frontend/js/categories-panel.js:938 |
+| `wireManageCategoryKeys` | frontend/js/categories-panel.js:361 |
 
 ### frontend/js/chat-edit.js (7)
 
