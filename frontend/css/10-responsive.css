@@ -2595,14 +2595,15 @@ header#top-bar[data-scrolled="1"],
    the dock can hold:
    - 47rem and over: the strip is one line, toggles left, model, mode and
      gear right, the free space between (the spacer), as it was at 1440.
-   - under 47rem: two lines, always the same two. Line one is the toggles
-     (Skills, Web, Plan); line two is the mode group, the model picker taking
-     whatever the Ask|Agent switch and the gear leave, ellipsised, never a
-     third line.
-   - under 24rem: the toggles are icon-only squares. Their words stay as
-     the accessible names (`font-size: 0` keeps the text in the tree, unlike
-     `display: none`) and the titles are untouched; Ask and Agent give up
-     their icons to the model picker.
+   - under 47rem: the spacer goes and the mode group shares the toggles'
+     line on a 16rem basis, the model picker taking whatever the Ask|Agent
+     switch and the gear leave, ellipsised. Where even the squares below
+     leave it less, it is the line under them, never a third line.
+   - under 35rem: the toggles are icon-only squares, so the mode group
+     keeps their line. Their words stay as the accessible names (`font-size:
+     0` keeps the text in the tree, unlike `display: none`) and the titles
+     are untouched.
+   - under 24rem: Ask and Agent give up their icons to the model picker.
    - the composer: one line (box grows, the icon buttons are fixed, Send
      last) while the box keeps 12rem or more; under 27rem it is the box on a
      line of its own and the attach buttons left with the mic and Send right
@@ -2666,7 +2667,12 @@ header#top-bar[data-scrolled="1"],
     margin-inline-start: auto;
   }
 }
-@container chat-dock (width < 24rem) {
+/* The toggles go icon-only while the mode group still fits beside them
+   (wrap/zoom sweep, 2026-11-11). With the web panel open at 1280 the strip
+   is 522px: Skills, Web and Plan with their words (270px) and the mode
+   group's 16rem basis are 550px, so the mode group took a second line (72px
+   of strip for 32px of controls). Squares take 130px, and the line holds. */
+@container chat-dock (width < 35rem) {
   .chat-dock-controls > .chat-tool-group:not(.chat-tool-group-mode, .chat-tool-group-attach) > button,
   .chat-dock-controls #chat-skills-btn {
     width: var(--control-h);
@@ -2684,6 +2690,8 @@ header#top-bar[data-scrolled="1"],
   .chat-dock-controls .chat-tool-group + .chat-tool-group:not(.chat-tool-group-mode)::before {
     margin-inline: var(--space-1);
   }
+}
+@container chat-dock (width < 24rem) {
   /* Ask and Agent keep their words and give up their icons, so the model
      picker beside them reads more than its first six letters. */
   .chat-dock-controls > .chat-tool-group-mode > .select-shell ~ .seg .ph-lead {
