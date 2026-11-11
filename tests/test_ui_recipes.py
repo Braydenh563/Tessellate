@@ -5361,7 +5361,8 @@ def test_the_no_model_notice_is_one_row_on_the_notice_recipe() -> None:
     assert all(c == "ai-offline-note notice hidden" for c in built), built
 
     #: One short sentence per surface (under 90 characters), no exclamation mark.
-    sentences = re.findall(r'renderAiOfflineNotice\(\s*\$\("[a-z-]+"\),\s*"([^"]+)"', status)
+    #: The palette's line uses `getElementById`: `$` would build its surface template at boot (X15).
+    sentences = re.findall(r'renderAiOfflineNotice\(\s*(?:\$|document\.getElementById)\("[a-z-]+"\),\s*"([^"]+)"', status)
     assert len(sentences) == 4, sentences
     for sentence in sentences:
         assert len(sentence) < 90 and "!" not in sentence, sentence
