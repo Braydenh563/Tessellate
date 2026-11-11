@@ -10295,6 +10295,12 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 :is(.doc-sidebar-section, .library-view-section, .doc-list) {
   padding-block: var(--ring-room);
 }
+/* A whiteboard side panel's section scrolls (07-whiteboard-misc.css), and its
+   actions are full-width buttons against both edges. */
+.wb-side-section {
+  padding: var(--ring-room);
+  margin: calc(-1 * var(--ring-room));
+}
 /* A rows-view note's meta line scrolls across and clips down, so its chips'
    rings (a category, a tag, a count) were cut at the line's edges (INBOX
    784). The line's own padding is the grid lane's width (a first try with

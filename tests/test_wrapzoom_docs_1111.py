@@ -110,3 +110,27 @@ def test_the_rendered_tables_bar_has_its_own_strip_under_the_table():
     assert "translateY" not in bar and "inset-block-end: 0" in bar
     hover = "".join(_at_blocks(css, "@media (hover: hover)"))
     assert "padding-block-end: 2.5rem" in _rule(hover, "#doc-preview .md-table-block")
+
+
+# ---- a shelf row and the panel above it --------------------------------------------
+
+
+def test_the_shelfs_picker_section_shortens_before_the_shelf_wraps():
+    """A map's Layout section (two selects and Tidy, 370px) sent Edit to a
+    second row at 1280. In the bottom shelf it asks for 12rem, grows back to
+    its own width, and its pickers ellipsise."""
+    css = _css("06-timeline-dialogs.css")
+    sec = _rule(css, '.whiteboard-floating-panel:not([data-dock="side"]) .wb-tool-section:has(.select-shell)')
+    assert "flex: 1 1 12rem" in sec and "max-width: max-content" in sec and "min-width: 0" in sec
+    row = _rule(css, '.wb-tool-section:has(.select-shell) > .wb-tool-section-row')
+    assert "flex-wrap: nowrap" in row
+    assert "min-width: 4.5rem" in _rule(css, ".wb-tool-section-row > .select-shell")
+    ellipsis = _rule(_css("07-whiteboard-misc.css"), ".select-value")
+    assert "text-overflow: ellipsis" in ellipsis
+
+
+def test_a_whiteboard_side_section_scrolls_inside_its_panel():
+    """The map tab's facts and actions were 263px in a 197px section at
+    960x540@2: they ran out of the panel over the shelf."""
+    body = _rule(_css("07-whiteboard-misc.css"), ".wb-side-section")
+    assert "overflow-y: auto" in body and "min-height: 0" in body
