@@ -21,148 +21,149 @@ window.addEventListener("online", reflectOnlineState);
 reflectOnlineState();
 
 // --- writing room wiring ---
-$("draft-compose").addEventListener("click", composeDraft);
-$("draft-undo").addEventListener("click", undoDraft);
-$("draft-cancel").addEventListener("click", () => draftController?.abort());
-$("draft-save").addEventListener("click", () => saveDraftAsNote());
+onSurface("notes", () => {
+  $("draft-compose").addEventListener("click", composeDraft);
+  $("draft-undo").addEventListener("click", undoDraft);
+  $("draft-cancel").addEventListener("click", () => draftController?.abort());
+  $("draft-save").addEventListener("click", () => saveDraftAsNote());
 
-$("draft-title").addEventListener("click", suggestDraftTitle);
-// Refine is Draft with an instruction in hand: the same pass, so it runs the
-// same function rather than a second copy of it that could drift.
-$("draft-refine").addEventListener("click", () => {
-  if (!$("draft-instruction").value.trim()) {
-    setDraftStatus("Say what to change, then refine.", true);
-    $("draft-instruction").focus();
-    return;
-  }
-  composeDraft();
+  $("draft-title").addEventListener("click", suggestDraftTitle);
+  // Refine is Draft with an instruction in hand: the same pass, so it runs the
+  // same function rather than a second copy of it that could drift.
+  $("draft-refine").addEventListener("click", () => {
+    if (!$("draft-instruction").value.trim()) {
+      setDraftStatus("Say what to change, then refine.", true);
+      $("draft-instruction").focus();
+      return;
+    }
+    composeDraft();
+  });
+  $("draft-instruction").addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    $("draft-refine").click();
+  });
+  $("draft-copy").addEventListener("click", async (event) => {
+    const text = $("draft-text").value.trim();
+    if (!text) {
+      setDraftStatus("There's no draft to copy yet.", true);
+      return;
+    }
+    if (await copyToClipboard(text, event.currentTarget)) setDraftStatus("Draft copied.");
+  });
+  // `appendSelectionToNote` is the app's one "add this text to a note you
+  // already have" path (the text-selection popup uses it): the same picker, the
+  // same undo entry, the same flash on the note it landed in.
+  $("draft-insert").addEventListener("click", () => {
+    const text = $("draft-text").value.trim();
+    if (!text) {
+      setDraftStatus("There's no draft to insert yet.", true);
+      return;
+    }
+    // The toast says it landed and offers the trip to it; the status line is
+    // not written here because this returns before the picker has been
+    // answered, and a line saying it was added is a lie until it was.
+    appendSelectionToNote(text, { jump: false });
+  });
+  $("draft-add-source").addEventListener("click", async () => {
+    if (draftSources.length >= DRAFT_MAX_SOURCES) {
+      setDraftStatus(`Six notes is the most one draft can be written from.`, true);
+      return;
+    }
+    const entry = await pickEntryDialog("Which note should Atlas write from?");
+    if (!entry) return;
+    addDraftSource(entry);
+  });
+  $("draft-continue-note").addEventListener("click", async () => {
+    const entry = await pickEntryDialog("Which note should Atlas carry on?");
+    if (!entry) return;
+    if ($("draft-text").value.trim()) pushDraftUndo();
+    $("draft-text").value = entry.content || "";
+    draftNoteId = entry.id;
+    draftNoteLabel = clipText(entry.title || notePreviewText(entry.content) || "a note", 40);
+    $("draft-kind").value = "continue";
+    window.markDraftQuickstart?.("continue");
+    renderDraftTarget();
+    // The note as it stands is version one, so the way back to what it said
+    // before Atlas touched it is the same chip row as every other pass.
+    rememberDraftVersion($("draft-text").value);
+    updateDraftCount();
+    saveDraftLocally();
+    setDraftStatus("That note is in the draft. Add a thought, then draft to carry it on.");
+    $("draft-thoughts").focus();
+  });
 });
-$("draft-instruction").addEventListener("keydown", (event) => {
-  if (event.key !== "Enter") return;
-  event.preventDefault();
-  $("draft-refine").click();
-});
-$("draft-copy").addEventListener("click", async (event) => {
-  const text = $("draft-text").value.trim();
-  if (!text) {
-    setDraftStatus("There's no draft to copy yet.", true);
-    return;
-  }
-  if (await copyToClipboard(text, event.currentTarget)) setDraftStatus("Draft copied.");
-});
-// `appendSelectionToNote` is the app's one "add this text to a note you
-// already have" path (the text-selection popup uses it): the same picker, the
-// same undo entry, the same flash on the note it landed in.
-$("draft-insert").addEventListener("click", () => {
-  const text = $("draft-text").value.trim();
-  if (!text) {
-    setDraftStatus("There's no draft to insert yet.", true);
-    return;
-  }
-  // The toast says it landed and offers the trip to it; the status line is
-  // not written here because this returns before the picker has been
-  // answered, and a line saying it was added is a lie until it was.
-  appendSelectionToNote(text, { jump: false });
-});
-$("draft-add-source").addEventListener("click", async () => {
-  if (draftSources.length >= DRAFT_MAX_SOURCES) {
-    setDraftStatus(`Six notes is the most one draft can be written from.`, true);
-    return;
-  }
-  const entry = await pickEntryDialog("Which note should Atlas write from?");
-  if (!entry) return;
-  addDraftSource(entry);
-});
-$("draft-continue-note").addEventListener("click", async () => {
-  const entry = await pickEntryDialog("Which note should Atlas carry on?");
-  if (!entry) return;
-  if ($("draft-text").value.trim()) pushDraftUndo();
-  $("draft-text").value = entry.content || "";
-  draftNoteId = entry.id;
-  draftNoteLabel = clipText(entry.title || notePreviewText(entry.content) || "a note", 40);
-  $("draft-kind").value = "continue";
-  window.markDraftQuickstart?.("continue");
-  renderDraftTarget();
-  // The note as it stands is version one, so the way back to what it said
-  // before Atlas touched it is the same chip row as every other pass.
-  rememberDraftVersion($("draft-text").value);
-  updateDraftCount();
-  saveDraftLocally();
-  setDraftStatus("That note is in the draft. Add a thought, then draft to carry it on.");
-  $("draft-thoughts").focus();
-});
-for (const id of ["draft-kind", "draft-tone", "draft-length"]) {
-  $(id).addEventListener("change", () => {
-    if (id === "draft-kind") {
-      const kind = $("draft-kind").value;
-      window.markDraftQuickstart?.(kind);
-      //: A chip's "needs a model" line is about that chip, not the next pass.
-      setDraftStatus("");
-      //: The Translate chip goes back to the last language picked here.
-      if (kind.startsWith("translate-")) {
-        try {
-          prefs.set("draft-translate", kind.slice("translate-".length));
-        } catch {
-          /* storage blocked: the chip keeps its default */
+onSurface("notes", () => {
+  for (const id of ["draft-kind", "draft-tone", "draft-length"]) {
+    $(id).addEventListener("change", () => {
+      if (id === "draft-kind") {
+        const kind = $("draft-kind").value;
+        window.markDraftQuickstart?.(kind);
+        //: A chip's "needs a model" line is about that chip, not the next pass.
+        setDraftStatus("");
+        //: The Translate chip goes back to the last language picked here.
+        if (kind.startsWith("translate-")) {
+          try {
+            prefs.set("draft-translate", kind.slice("translate-".length));
+          } catch {
+            /* storage blocked: the chip keeps its default */
+          }
         }
       }
-    }
-    saveDraftLocally();
-  });
-}
-$("draft-extract").addEventListener("click", () => openExtractPreview($("draft-text").value));
+      saveDraftLocally();
+    });
+  }
+});
+onSurface("notes", () => {
+  $("draft-extract").addEventListener("click", () => openExtractPreview($("draft-text").value));
+});
 $("extract-close").addEventListener("click", closeExtractPreview);
 $("extract-cancel").addEventListener("click", closeExtractPreview);
 $("extract-commit").addEventListener("click", commitExtractPreview);
-$("draft-text").addEventListener("input", () => {
-  updateDraftCount();
-  saveDraftLocally();
-});
-//: One listener: the thoughts box keeps its draft and its word count (INBOX 63).
-$("draft-thoughts").addEventListener("input", () => {
-  saveDraftLocally();
-  updateDraftCount();
-});
-$("draft-tags").addEventListener("input", saveDraftLocally);
-// Ctrl/Cmd+Enter from the thoughts box drafts, matching the capture box.
-$("draft-thoughts").addEventListener("keydown", (event) => {
-  if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
-    event.preventDefault();
-    composeDraft();
-  }
-});
-$("draft-discard").addEventListener("click", async () => {
-  if (!$("draft-text").value.trim() && !$("draft-thoughts").value.trim()) return;
-  if (!(await confirmDialog("Discard this draft? It hasn't been saved as a note."))) return;
-  foldedThoughts = "";
-  $("draft-thoughts").value = "";
-  $("draft-text").value = "";
-  $("draft-tags").value = "";
-  $("draft-thinking").classList.add("hidden");
-  // The earlier versions and the notes it was being written from go with it:
-  // a desk that is cleared and still lists six sources and four old drafts
-  // has not been cleared.
-  draftSources = [];
-  draftVersions = [];
-  renderDraftSources();
-  renderDraftVersions();
-  clearDraftTarget();
-  setDraftStatus("");
-  $("draft-diagram").replaceChildren();
-  $("draft-diagram").classList.add("hidden");
-  updateDraftCount();
-  saveDraftLocally();
+onSurface("notes", () => {
+  $("draft-text").addEventListener("input", () => {
+    updateDraftCount();
+    saveDraftLocally();
+  });
+  //: One listener: the thoughts box keeps its draft and its word count (INBOX 63).
+  $("draft-thoughts").addEventListener("input", () => {
+    saveDraftLocally();
+    updateDraftCount();
+  });
+  $("draft-tags").addEventListener("input", saveDraftLocally);
+  // Ctrl/Cmd+Enter from the thoughts box drafts, matching the capture box.
+  $("draft-thoughts").addEventListener("keydown", (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+      event.preventDefault();
+      composeDraft();
+    }
+  });
+  $("draft-discard").addEventListener("click", async () => {
+    if (!$("draft-text").value.trim() && !$("draft-thoughts").value.trim()) return;
+    if (!(await confirmDialog("Discard this draft? It hasn't been saved as a note."))) return;
+    foldedThoughts = "";
+    $("draft-thoughts").value = "";
+    $("draft-text").value = "";
+    $("draft-tags").value = "";
+    $("draft-thinking").classList.add("hidden");
+    // The earlier versions and the notes it was being written from go with it:
+    // a desk that is cleared and still lists six sources and four old drafts
+    // has not been cleared.
+    draftSources = [];
+    draftVersions = [];
+    renderDraftSources();
+    renderDraftVersions();
+    clearDraftTarget();
+    setDraftStatus("");
+    $("draft-diagram").replaceChildren();
+    $("draft-diagram").classList.add("hidden");
+    updateDraftCount();
+    saveDraftLocally();
+  });
 });
 // --- one wiring for every "?" ----------------------------------------------
-// Every "?" is this wiring (tests/test_ui_recipes.py fails if a hand-wired
-// one comes back), so a new one is markup only:
-//   <button type="button" class="icon-only ghost small graph-help-toggle"
-//           data-help-for="thing-help" aria-controls="thing-help"
-//           aria-expanded="false" title="…" aria-label="…">
-//     <i class="ph ph-question" aria-hidden="true"></i></button>
-//   <div class="help-body hidden" id="thing-help" role="dialog" aria-label="…">…</div>
-// A `<button>` gives focus, Enter and Space for free; `wireHelpPopover` owns
-// Escape, outside click and a second click, and its own guard makes a second
+// Every "?" is this wiring (tests/test_ui_recipes.py; markup in docs/DESIGN.md `data-help-for`).
+// `wireHelpPopover` owns Escape, outside click and a second click; a second pass over a wired pair does nothing.
 // pass over a wired pair do nothing (Settings renders some sections lazily).
 //: **Every question the app offers to ask Atlas, in one table** (INBOX 224,
 //: the owner: "also make atlas more accessible and have suggestions to ask it
@@ -239,7 +240,7 @@ for (const [id, question, label, surface] of [
   onSurface(surface, () => $(id)?.appendChild(atlasSuggestion(question, label)));
 }
 
-restoreDraftLocally();
+onSurface("notes", restoreDraftLocally);
 
 // --- note picker wiring ---
 onSurface("chat", () => {
@@ -879,7 +880,9 @@ function setNoteSource(on) {
   syncNoteSourceButtons();
 }
 
-$("entry-preview-toggle")?.addEventListener("click", () => setNoteSource(!noteSourceOn()));
+onSurface("notes", () => {
+  $("entry-preview-toggle")?.addEventListener("click", () => setNoteSource(!noteSourceOn()));
+});
 syncNoteSourceButtons();
 
 //: The persona the greeting speaks as: the override, or Chat's own when the
@@ -914,9 +917,11 @@ $("ai-status").addEventListener("keydown", (event) => {
 // The status bar (§36D). Every item goes somewhere: a count you cannot act on
 // is a number, and a number in permanent furniture is the decoration the
 // roadmap warned this bar would become if anything was added without a job.
-$("status-notes").addEventListener("click", () => {
-  switchTab("notes");
-  showNotesSection("browse"); // or you land on whichever sub-tab was last open
+onSurface("notes", () => {
+  $("status-notes").addEventListener("click", () => {
+    switchTab("notes");
+    showNotesSection("browse"); // or you land on whichever sub-tab was last open
+  });
 });
 $("status-reminders").addEventListener("click", () => switchTab("reminders"));
 //: A running job's slot opens Activity's Running tab, where it can stop
@@ -1112,12 +1117,14 @@ document.addEventListener("keydown", (event) => {
 // subtab", every other list in the Library had one (`#library-refresh` and
 // its four siblings); the notebook's own front page did not. `loadEntries`
 // is the same reload every autosave and filter change already calls.
-$("notes-refresh")?.addEventListener("click", () => loadEntries());
-//: The Notes dock's primary (and the phone's floating +): Capture, with the
-//: box ready to type in. `showNotesSection`'s own `focus` lands on the
-//: sub-tab button, which is right for a keyboard moving between sections
-//: and wrong here, where the press meant "I want to write".
-$("notes-new-note").addEventListener("click", () => startNewNote());
+onSurface("notes", () => {
+  $("notes-refresh")?.addEventListener("click", () => loadEntries());
+  //: The Notes dock's primary (and the phone's floating +): Capture, with the
+  //: box ready to type in. `showNotesSection`'s own `focus` lands on the
+  //: sub-tab button, which is right for a keyboard moving between sections
+  //: and wrong here, where the press meant "I want to write".
+  $("notes-new-note").addEventListener("click", () => startNewNote());
+});
 
 //: **Every "new note" lands in the box, ready to type** (INBOX 434): the
 //: button, Ctrl+Shift+N, the dashboard's actions and the empty states all
@@ -1132,21 +1139,25 @@ function startNewNote() {
   //: A failed bundle fetch must not reject unhandled; the textarea has the focus.
   mountNoteSurfaceNow(box).then((s) => !activeOverlay() && s?.focus()).catch(() => {});
 }
-$("select-btn").addEventListener("click", () =>
-  selectMode ? exitSelectMode() : enterSelectMode()
-);
-//: The Manage categories panel (notes-list.js), from the notes sidebar's
-//: Categories head and from Settings (INBOX 431 (e)).
-$("manage-categories-btn").addEventListener("click", () => openManageCategories());
-$("manage-categories-foot").addEventListener("click", () => openManageCategories());
-//: The tag manager (tag-manager.js, lazy): the Notes ⋯ menu and Settings
-//: (INBOX 447 (4)); the sidebar's Tags row and the palette open it too.
-//: Tidy (INBOX 691, tidy.js): fetched once the boot is done, so its count is on the dock.
-$("notes-tidy").addEventListener("click", () => openTidySheet());
+onSurface("notes", () => {
+  $("select-btn").addEventListener("click", () =>
+    selectMode ? exitSelectMode() : enterSelectMode()
+  );
+  //: The Manage categories panel (notes-list.js), from the notes sidebar's
+  //: Categories head and from Settings (INBOX 431 (e)).
+  $("manage-categories-btn").addEventListener("click", () => openManageCategories());
+  $("manage-categories-foot").addEventListener("click", () => openManageCategories());
+  //: The tag manager (tag-manager.js, lazy): the Notes ⋯ menu and Settings
+  //: (INBOX 447 (4)); the sidebar's Tags row and the palette open it too.
+  //: Tidy (INBOX 691, tidy.js): fetched once the boot is done, so its count is on the dock.
+  $("notes-tidy").addEventListener("click", () => openTidySheet());
+});
 setTimeout(() => ensureModule("tidy"), 4e3);
-$("notes-manage-tags").addEventListener("click", () => {
-  $("notes-more-menu")?.removeAttribute("open");
-  openTagsSheet();
+onSurface("notes", () => {
+  $("notes-manage-tags").addEventListener("click", () => {
+    $("notes-more-menu")?.removeAttribute("open");
+    openTagsSheet();
+  });
 });
 
 //: **Select all, as one toggle** (owner: "no select all option??"). Every
@@ -1163,7 +1174,9 @@ function toggleSelectAllRows(rows, repaint) {
   updateBatchCount();
   repaint();
 }
-$("batch-select-all").addEventListener("click", () => toggleSelectAllRows(libraryVisibleRows(), renderEntries));
+onSurface("notes", () => {
+  $("batch-select-all").addEventListener("click", () => toggleSelectAllRows(libraryVisibleRows(), renderEntries));
+});
 //: Notes and boards only, the rule `timelineRowEl` applies to its ticks: the
 //: bar's actions are actions on an Entry, and a document or reminder id in
 //: `selectedIds` would be handed to the wrong table (a delete of the wrong
@@ -1175,9 +1188,11 @@ onSurface("timeline", () => {
   $("timeline-batch-select-all").addEventListener("click", () => toggleSelectAllRows(timelineSelectableRows(), paintTimeline));
 });
 
-$("batch-tag").addEventListener("click", batchTag);
-$("batch-delete").addEventListener("click", batchDelete);
-$("batch-cancel").addEventListener("click", exitSelectMode);
+onSurface("notes", () => {
+  $("batch-tag").addEventListener("click", batchTag);
+  $("batch-delete").addEventListener("click", batchDelete);
+  $("batch-cancel").addEventListener("click", exitSelectMode);
+});
 
 onSurface("chat", () => {
   $("tools-toggle").addEventListener("change", async () => {

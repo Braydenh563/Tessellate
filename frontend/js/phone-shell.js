@@ -509,15 +509,17 @@ $("skip-link").addEventListener("click", (e) => {
 });
 //: Past the sidebar, the dock and the composer to the first row of the page's
 //: list (UX1: 51 Tabs from the composer to the first note).
-$("skip-to-list").addEventListener("click", (e) => {
-  e.preventDefault();
-  const page = $(`tab-${prefs.get("activeTab", null) || "notes"}`);
-  const rows = page?.querySelectorAll("#entry-list > li, .library-card .card-open, li[tabindex], tbody tr[tabindex]") || [];
-  const first = [...rows].find((el) => el.tabIndex >= 0 && el.checkVisibility?.() !== false);
-  (first || page?.querySelector("[role=tabpanel], h1, h2") || $(`tab-btn-${prefs.get("activeTab", null) || "notes"}`))?.focus?.();
+onSurface("notes", () => {
+  $("skip-to-list").addEventListener("click", (e) => {
+    e.preventDefault();
+    const page = $(`tab-${prefs.get("activeTab", null) || "notes"}`);
+    const rows = page?.querySelectorAll("#entry-list > li, .library-card .card-open, li[tabindex], tbody tr[tabindex]") || [];
+    const first = [...rows].find((el) => el.tabIndex >= 0 && el.checkVisibility?.() !== false);
+    (first || page?.querySelector("[role=tabpanel], h1, h2") || $(`tab-btn-${prefs.get("activeTab", null) || "notes"}`))?.focus?.();
+  });
 });
 initSelectionPopup();
-initEntryListKeyboardNav();
+onSurface("notes", initEntryListKeyboardNav);
 scrollTopUpdate = initScrollTopButton();
 // Reminder watching moved into startApp() (below `_active_tokens` note in
 // api()'s own comment): this used to run unconditionally here, before
@@ -898,14 +900,16 @@ onSurface("documents", mountPhoneSidebarOpeners);
 
 //: Choosing a category on a phone closes the drawer, so the filtered list it
 //: chose is what shows; the row's ⋯ stops its own click before this.
-$("category-list")?.addEventListener("click", () => {
-  const aside = $("sidebar");
-  if (!window.matchMedia(PHONE_TABS).matches || !aside?.classList.contains("sidebar-sheet-open")) return;
-  setSidebarSheet(aside, false);
-  aside.querySelector(".sidebar-collapse-toggle")?.setAttribute("aria-expanded", "false");
-  const opener = document.querySelector('.phone-sidebar-opener[aria-controls="sidebar"]');
-  opener?.setAttribute("aria-expanded", "false");
-  opener?.focus();
+onSurface("notes", () => {
+  $("category-list")?.addEventListener("click", () => {
+    const aside = $("sidebar");
+    if (!window.matchMedia(PHONE_TABS).matches || !aside?.classList.contains("sidebar-sheet-open")) return;
+    setSidebarSheet(aside, false);
+    aside.querySelector(".sidebar-collapse-toggle")?.setAttribute("aria-expanded", "false");
+    const opener = document.querySelector('.phone-sidebar-opener[aria-controls="sidebar"]');
+    opener?.setAttribute("aria-expanded", "false");
+    opener?.focus();
+  });
 });
 
 // --- swipe a row: star to the right, bin to the left --------------------------
@@ -1000,7 +1004,7 @@ function initRowSwipe(list, actions) {
   list.addEventListener("pointercancel", end);
 }
 
-initRowSwipe($("entry-list"), {
+onSurface("notes", () => initRowSwipe($("entry-list"), {
   right: (li) => li.querySelector(".favourite-btn")?.click(),
   // The menu builds its rows on open, so the bin is reached as the one
   // function the menu's own row calls, not by pressing a row that does
@@ -1009,7 +1013,7 @@ initRowSwipe($("entry-list"), {
     const entry = allEntries.find((e) => String(e.id) === li.dataset.id);
     if (entry) binNoteWithUndo(entry);
   },
-});
+}));
 
 //: Reminders (Phase 11 item 8, "reminders as rows with swipe done"): right
 //: presses the row's own Done checkbox, which toggles and saves as a tap on
@@ -1137,7 +1141,7 @@ function initNotePage() {
   });
 }
 
-initNotePage();
+onSurface("notes", initNotePage);
 
 // --- the Library reader as the page ------------------------------------------
 // UI_MODERNISATION_PLAN Phase 11 item 5, "the reader full-screen with a bottom
@@ -2331,33 +2335,35 @@ function toggleAutonomousPanel() {
   if (panel) panel.classList.toggle("hidden", !$("pref-autonomous-tasks").checked);
 }
 
-$("semantic-search-toggle")?.addEventListener("change", () => {
-  // `loadEntries` re-runs the list with the toggle's new state (it once
-  // called an undefined name; tests/test_frontend_symbols.py found it).
-  if (noteSearch) loadEntries();
-  //: Audit 1028 S83: the closed menu says the filter is on.
-  const on = $("semantic-search-toggle").checked;
-  const summary = $("notes-filter-menu")?.firstElementChild;
-  summary?.classList.toggle("is-on", on);
-  summary?.setAttribute("aria-pressed", String(on));
-  //: Turning it on with no engine would otherwise change nothing and say nothing (N25).
-  if (on && meaningEngineMissing()) toast(MEANING_ENGINE_WORDS, "info");
-});
+onSurface("notes", () => {
+  $("semantic-search-toggle")?.addEventListener("change", () => {
+    // `loadEntries` re-runs the list with the toggle's new state (it once
+    // called an undefined name; tests/test_frontend_symbols.py found it).
+    if (noteSearch) loadEntries();
+    //: Audit 1028 S83: the closed menu says the filter is on.
+    const on = $("semantic-search-toggle").checked;
+    const summary = $("notes-filter-menu")?.firstElementChild;
+    summary?.classList.toggle("is-on", on);
+    summary?.setAttribute("aria-pressed", String(on));
+    //: Turning it on with no engine would otherwise change nothing and say nothing (N25).
+    if (on && meaningEngineMissing()) toast(MEANING_ENGINE_WORDS, "info");
+  });
 
-// There is no Tags / Recycle bin / Activity shortcut in the notes sidebar, and
-// `openLibraryOn` went with them. The buttons were dropped once with their
-// handlers left behind (which is how `test_frontend_ids` found three ids that
-// nothing defined), briefly restored during the §40 audit on the assumption
-// the removal had been accidental, and then removed again, deliberately this
-// time, because the owner asked for it.
-//
-// The reasoning is the Library's own (§36G): the bin, the activity log and the
-// tag list are all "show me the things of this sort", which is what the
-// Library is, and it reaches each of them through its own filter chips. A
-// second door in a sidebar that is meant to be a category list is exactly the
-// "too much in one place, clashing with the text beside it" this app has been
-// asked to stop doing.
-$("entry-template")?.addEventListener("click", () => openNoteTemplateDialog());
+  // There is no Tags / Recycle bin / Activity shortcut in the notes sidebar, and
+  // `openLibraryOn` went with them. The buttons were dropped once with their
+  // handlers left behind (which is how `test_frontend_ids` found three ids that
+  // nothing defined), briefly restored during the §40 audit on the assumption
+  // the removal had been accidental, and then removed again, deliberately this
+  // time, because the owner asked for it.
+  //
+  // The reasoning is the Library's own (§36G): the bin, the activity log and the
+  // tag list are all "show me the things of this sort", which is what the
+  // Library is, and it reaches each of them through its own filter chips. A
+  // second door in a sidebar that is meant to be a category list is exactly the
+  // "too much in one place, clashing with the text beside it" this app has been
+  // asked to stop doing.
+  $("entry-template")?.addEventListener("click", () => openNoteTemplateDialog());
+});
 $("note-template-use")?.addEventListener("click", () => useNoteTemplate());
 //: Manage templates, from the picker (the owner at release): the list is
 //: made and edited in Settings, Templates, so the way there is here too.

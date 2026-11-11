@@ -450,7 +450,7 @@ async function loadSpaces() {
   //: when there is something on screen to re-render and the cache actually has
   //: something in it, so this costs a fresh notebook nothing and cannot loop
   //: (nothing in `renderEntries` calls back into here).
-  if (wasEmpty && spacesCache.length && $("entry-list")?.children.length) renderEntriesWhenShown();
+  if (wasEmpty && spacesCache.length && document.getElementById("entry-list")?.children.length) renderEntriesWhenShown();
 }
 
 //: INBOX 1a/38: says which space the capture form actually files into,
@@ -462,7 +462,7 @@ async function loadSpaces() {
 //: Space). Read that off the same rule rather than re-deciding it here, so
 //: this label and the server's own behaviour cannot drift apart.
 function updateCaptureSpaceLabel() {
-  const label = $("capture-space-hint");
+  const label = document.getElementById("capture-space-hint");
   if (!label) return;
   const active = activeSpaceId();
   const filingId = active === SPACE_ALL ? "default" : active;
@@ -473,6 +473,8 @@ function updateCaptureSpaceLabel() {
       ? `Filing into ${name} (pick a space above to file there instead).`
       : `Filing into ${name}.`;
 }
+
+onSurface("notes", updateCaptureSpaceLabel);
 
 function initSpaceSwitcher() {
   const button = $("space-switcher-btn");
@@ -731,7 +733,7 @@ $("notif-mark-all-read")?.addEventListener("click", () => {
 //: every piece has been declared (appjs-split.md hazard 1). What ran after
 //: them in the old order is declarations and listeners, none of which read
 //: what they set up.
-initNotesSubtabs();
+onSurface("notes", initNotesSubtabs);
 //: A timer left running across a reload: load the module that restores it.
 if (prefs.has("utility-clocks")) ensureModule("utilities");
 initAuth();

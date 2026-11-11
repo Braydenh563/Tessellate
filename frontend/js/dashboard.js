@@ -2866,7 +2866,7 @@ async function renderQuickCaptureWidget(body) {
   bar.className = "capture-bar";
   bar.setAttribute("role", "group");
   bar.setAttribute("aria-label", "Add a note");
-  const row = $("capture-bar-row").cloneNode(true);
+  const row = (document.getElementById("capture-bar-row") || SURFACES.get("notes")?.tpl?.content.getElementById("capture-bar-row")).cloneNode(true);
   //: No ids on the copy (two bars on one page): the card finds a bar by class.
   for (const el of [row, ...row.querySelectorAll("[id]")]) el.removeAttribute("id");
   bar.append(row);
@@ -3621,18 +3621,20 @@ async function renderFocusTimerWidget(body) {
 // which handlers happen to be safe.
 //: Edit layout is a row of the dock's menu; Done is the edit line's own
 //: button, the one way out of the mode, so it is the only place this id is.
-$("dash-edit").addEventListener("click", async () => {
-  const leaving = dashEditMode;
-  dashEditMode = !dashEditMode;
-  //: The button just pressed is hidden with its line: the focus goes back to
-  //: the menu it came from rather than to the page's body, once the render
-  //: has rebuilt that menu (it replaces the opener).
-  await renderDashboard();
-  if (leaving) $("dash-more")?.querySelector("button")?.focus();
-  //: The edit line is plain text (audit 1031 N28: a hidden `role=status` is read
-  //: out when it later shows, and 25 such regions exist at once); the one
-  //: status region says what began.
-  else announce("Editing layout. Drag a card to move it, make it wide or narrow, or remove it. Done ends it.");
+onSurface("notes", () => {
+  $("dash-edit").addEventListener("click", async () => {
+    const leaving = dashEditMode;
+    dashEditMode = !dashEditMode;
+    //: The button just pressed is hidden with its line: the focus goes back to
+    //: the menu it came from rather than to the page's body, once the render
+    //: has rebuilt that menu (it replaces the opener).
+    await renderDashboard();
+    if (leaving) $("dash-more")?.querySelector("button")?.focus();
+    //: The edit line is plain text (audit 1031 N28: a hidden `role=status` is read
+    //: out when it later shows, and 25 such regions exist at once); the one
+    //: status region says what began.
+    else announce("Editing layout. Drag a card to move it, make it wide or narrow, or remove it. Done ends it.");
+  });
 });
 
 // Widget picker modal (roadmap §26): a dedicated surface alongside "Edit

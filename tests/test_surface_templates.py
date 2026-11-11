@@ -83,6 +83,12 @@ SURFACES = {
         ("switchTab",),
         ("library-subtabs", "library-boards-grid", "library-bulk-delete", "library-binbar", "library-activitybar"),
     ),
+    "notes": (
+        "tab-notes",
+        ("<boot>",),
+        ("switchTab",),
+        ("entry-content", "entry-list", "sidebar", "category-list", "note-sort"),
+    ),
     "palette": (
         "command-palette-overlay",
         ("palette.js", "app-palette.js", "editor.js", "field-clear.js", "status.js", "wiring.js", "settings-wiring.js", "lazy-entries.js", "dashboard.js", "navigation.js"),

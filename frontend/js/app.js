@@ -897,7 +897,7 @@ function startApp() {
   // "check it's running, then refresh" line sat under the capture form for the
   // whole session after one slow start, telling the user the app was broken
   // while it worked perfectly. Screenshotted.
-  const shellStatus = $("save-status");
+  const shellStatus = document.getElementById("save-status");
   if (shellStatus) shellStatus.textContent = "";
   // Warm the filing model, retry stand-ins (routes_models.warm_filing).
   api("/models/warm-filing", { method: "POST", silent: true }).catch(() => {});
@@ -980,10 +980,7 @@ function startApp() {
   });
 
   const entriesReady = step("load entries", loadEntries);
-  step("load recent questions", loadRecentQuestions);
-  step("load ask history badge", loadAskHistoryBadge);
-  step("load suggestions", loadSuggestions);
-  step("load your most-used items", loadMostUsed);
+  onSurface("notes", () => { loadRecentQuestions(); loadAskHistoryBadge(); loadSuggestions(); loadMostUsed(); });
   const templatesReady = step("load templates", loadTemplates);
   templatesReady.then(() =>
     step("set up chat options", () => onSurface("chat", () => {

@@ -1773,7 +1773,8 @@ document.addEventListener("mousedown", (event) => {
 // --- quick access: recent questions + most-used entries (Phase 5) -------------------
 
 async function loadRecentQuestions() {
-  const box = $("recent-questions");
+  const box = document.getElementById("recent-questions");
+  if (!box) return;
   //: Shared with the dashboard's Recent questions widget (`cacheMs`), which
   //: asks for the same list in the same second at boot. Any write clears it.
   const questions = await apiJson("/chat/recent", { cacheMs: 30000 }).catch(() => []);
@@ -1800,8 +1801,9 @@ async function loadRecentQuestions() {
 }
 
 async function loadMostUsed() {
-  const box = $("most-used-box");
-  const list = $("most-used");
+  const box = document.getElementById("most-used-box");
+  const list = document.getElementById("most-used");
+  if (!box || !list) return;
   const entries = await apiJson("/entries/most-accessed", { cacheMs: 30000 }).catch(() => []);
   list.replaceChildren();
   box.classList.toggle("hidden", entries.length === 0);
@@ -2146,6 +2148,7 @@ document.addEventListener(
 //: The body's own controls are gated when it is built (settings-body.js), not before.
 onSurface("settings", () => syncModelGatedControls());
 onSurface("chat", () => { syncModelGatedControls(); renderChatActiveModelBadge(); syncFeatureModelSelects(); wireFeatureModelSelects(); });
+onSurface("notes", syncModelGatedControls);
 onSurface("palette", () => { syncModelGatedControls(); syncAgentPaletteAvailability(); });
 function syncModelGatedControls(status = modelStatus) {
   const off = status ? status.ollama_running === false : false;
@@ -2195,7 +2198,7 @@ function syncModelGatedControls(status = modelStatus) {
   //: nothing but AI: Ask keeps working (it falls back to the search results
   //: beside it) and says so, the popup agent cannot and says that.
   renderAiOfflineNotice(
-    $("ask-offline"),
+    document.getElementById("ask-offline"),
     "No model connected. Ask shows the matching records below.",
     { dismissible: true, detail: "Ask answers from your notes alone until one is connected." }
   );
@@ -2220,7 +2223,7 @@ function syncModelGatedControls(status = modelStatus) {
   //: Atlas: with no model it cannot draft at all, and before this the only
   //: thing that said so was a title on a button that could not be pressed.
   renderAiOfflineNotice(
-    $("draft-offline"),
+    document.getElementById("draft-offline"),
     "No model connected. Carry on and Translate are off; the rest writes by rule."
   );
   //: UX-12: any other AI-only widget names its own line.
