@@ -15336,6 +15336,7 @@ async function initWhiteboard() {
   $("wb-map-stats-item")?.addEventListener("click", wbShowMapStats);
   $("wb-zoom-actual")?.addEventListener("click", wbZoomTo100);
   $("wb-map-expand-all")?.addEventListener("click", wbMapExpandAll);
+  $("wb-map-fold-all")?.addEventListener("click", () => wbMapFoldToLevel(1));
   $("wb-map-focus-less")?.addEventListener("click", () => wbMapStepFocus(-1));
   $("wb-map-focus-more")?.addEventListener("click", () => wbMapStepFocus(1));
   $("wb-map-focus-clear")?.addEventListener("click", wbMapClearFocus);
@@ -16920,6 +16921,7 @@ async function initWhiteboard() {
       // Before the measurement: a switch's own state can change how tall
       // the list is.
       syncPanelSwitches();
+      wbMapFoldToLevel.sync();
       wbSyncCommandRows(menu);
       menu.classList.remove("wb-menu-one-col");
       escapeAndCapMenu(menu, toggle);
@@ -18371,6 +18373,7 @@ async function initWhiteboard() {
     const [x, y] = getLogicalMouse({ clientX, clientY });
     const index = wbMapIndex();
     const folded = index.nodes.filter((n) => n.data?.collapsed).length;
+    const open = wbMapFoldToLevel.open(index);
     const items = [
       makeMenuItem("ph:plus-circle Add a topic here", "A new trunk, where you pressed: or double-click the canvas", () => wbMapAddRootAt(x, y)),
       makeMenuItem("ph:broom Tidy the map", "Lay every unpinned topic out again", () => wbMapTidy()),
@@ -18378,6 +18381,11 @@ async function initWhiteboard() {
         folded ? `ph:arrows-out-line-vertical Open every folded branch (${folded})` : "ph:arrows-out-line-vertical Open every folded branch",
         folded ? "This map has folded branches" : "Nothing is folded on this map",
         () => wbMapExpandAll()
+      ),
+      makeMenuItem(
+        `ph:arrows-in-line-vertical Fold every branch${open ? ` (${open})` : ""}`,
+        open ? "Show the trunks only (Alt+1)" : "Every branch is already folded",
+        () => wbMapFoldToLevel(1)
       ),
       makeMenuItem("ph:frame-corners Fit everything", "Show the whole map (Shift+1)", () =>
         document.getElementById("wb-zoom-fit")?.click()
@@ -26312,7 +26320,8 @@ const WB_RECORDED = [
 ];
 for (const name of WB_RECORDED) {
   const plain = window[name];
-  if (typeof plain === "function") window[name] = (...args) => wbRecordGesture(plain, args);
+  //: `Object.assign` carries a gesture's helper properties (`wbMapFoldToLevel.open`, `.sync`) across.
+  if (typeof plain === "function") window[name] = Object.assign((...args) => wbRecordGesture(plain, args), plain);
 }
 {
   const plain = window.wbMapTransplant;
