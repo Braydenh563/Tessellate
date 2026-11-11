@@ -51,7 +51,7 @@ from tessellate.api.schemas import (
     LinkOut,
     SimilarOut,
 )
-from tessellate.core import cjk, deps, events, jobruns, jobs, vault
+from tessellate.core import cjk, companion_events, deps, events, jobruns, jobs, vault
 from tessellate.core.database import (
     LIKE_ESCAPE,
     AuditLog,
@@ -252,6 +252,13 @@ def _open_suggestions(entry) -> list[str]:  # noqa: ANN001
 
 #: Longest note whose reasons are remembered: the cache holds the text as its key.
 REASONS_CACHE_CHARS = 20_000
+#: A note longer than this, opened, is the in-app companion's reading glasses (`avatars.js` `nameMarkBuddyNoteOpened`).
+LONG_NOTE_CHARS = 1200
+
+
+def _kept_private(session: Session, entry) -> bool:  # noqa: ANN001
+    """A private note, or one in a private space: the desk companion hears only the generic kind for these."""
+    return bool(entry.is_private) or private_space.is_private_space(session, entry.workspace_id)
 
 
 def _tag_reasons(content: str, tags: list[str]) -> dict[str, str]:
@@ -2254,6 +2261,12 @@ def get_entry(
         # pill pointing at whatever was newest. Same guard as the count: a
         # note read on its way out of the bin has not been come back to.
         entry.last_opened_at = utcnow()
+        #: The in-app companion's reading glasses and covered eyes, for the desk one (W31): a kind and a time. A private
+        #: note is only ever the generic kind (not its length, not which note).
+        if _kept_private(session, entry):
+            companion_events.record("private_note")
+        elif len(entry.content or "") > LONG_NOTE_CHARS:
+            companion_events.record("long_note")
     if not entry.is_deleted:
         # A private note has no audit trail at all otherwise, encrypted at
         # rest and invisible to the AI is the whole promise, but nothing
@@ -2486,6 +2499,7 @@ def delete_entry(
     )
     if not entry.is_deleted:
         manager.soft_delete_entry(session, entry)
+        companion_events.record("private_note" if _kept_private(session, entry) else "note_binned")  # kind and time only (W31)
     return _to_out(session, entry)
 
 

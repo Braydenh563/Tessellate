@@ -218,6 +218,32 @@ def premultiplied_bgra(image: Any) -> bytes:
     return image.convert("RGBA").tobytes("raw", "BGRa")
 
 
+#: INBOX 1724 (the feminine desk companion "very purple or pink compared to the in-app one"): the desk capture leaves out
+#: the app's blue aura and rings, so beside the app the figure tilted violet (the translucent stream 4.4 degrees in the
+#: light theme and 10.3 in the dark, the body bands 0.7 to 3.1). A look's grade is the hue turn, toward blue, of a solid
+#: pixel and of a translucent one, in Pillow's 1/256 of a turn (1.41 degrees). Saturation is left alone: it was already
+#: within 8 points of the app in every band, and lowering it pushed the highlights out of that. Measured by band in
+#: `tests/test_overlay_palette_1724.py`. Colour only: alpha is never touched.
+GRADE = {"feminine": (1, 5)}
+GLOW_BELOW = 200
+
+
+def graded(image: Any, look: str) -> Any:
+    """`image` with the look's grade (`GRADE`) applied to its colour; the image itself when the look has none."""
+    spec = GRADE.get(look)
+    if spec is None:
+        return image
+    from PIL import Image, ImageChops
+
+    solid, glow = spec
+    alpha = image.getchannel("A")
+    hue, sa, val = image.convert("RGB").convert("HSV").split()
+    hue = ImageChops.subtract(hue, alpha.point(lambda a: glow if a < GLOW_BELOW else solid))
+    out = Image.merge("HSV", (hue, sa, val)).convert("RGB").convert("RGBA")
+    out.putalpha(alpha)
+    return out
+
+
 class SpriteSet:
     """One look's frames, scaled per dpi and cached."""
 
@@ -275,7 +301,7 @@ class SpriteSet:
                 self._source[name] = self._lidded()
                 return self._source[name]
             with Image.open(self.directory / f"{name}.png") as im:
-                loaded = tapered(im.convert("RGBA"))
+                loaded = tapered(graded(im.convert("RGBA"), self.look))
             # as shipped: the standing family already carries one shared nebula stream (render_desk_frames.py
             # `shared_stream`); a loader-side veil swap cut it away under the body and added a step (INBOX 1670)
             self._source[name] = loaded

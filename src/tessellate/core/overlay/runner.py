@@ -40,7 +40,7 @@ from collections import Counter, deque
 from pathlib import Path
 from typing import Any, Callable
 
-from tessellate.core import jobs
+from tessellate.core import companion_events, jobs
 from tessellate.core.overlay import engine as eng
 from tessellate.core.overlay import host as host_mod
 from tessellate.core.overlay import pacing
@@ -246,6 +246,7 @@ class OverlayRunner:
             foreground=(lambda: self.k.foreground(self.w)) if hasattr(self.k, "foreground") else None,
             battery=(lambda: self.k.battery(self.w)) if hasattr(self.k, "battery") else None,
             run=lambda fn: jobs.thread("overlay-downloads", fn),
+            feed=companion_events.since,  # the notebook's own events, on this same poll (W31)
         )
         #: kind -> when it is given up: the screen events waiting for a free moment; the last window rects read, by key; when
         #: the window list was last read for events (the climb scan or `_window_events`).

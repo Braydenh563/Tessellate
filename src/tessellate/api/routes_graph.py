@@ -26,7 +26,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai.embeddings import bytes_to_vector, similar_pairs
 from tessellate.api import bounds
-from tessellate.core import cjk
+from tessellate.core import cjk, companion_events
 from tessellate.core import deps
 from tessellate.core.database import Attachment, EmbeddingRecord, Entry, NoteType
 from tessellate.core.deps import get_session
@@ -797,9 +797,11 @@ def graph(
         session=session,
     ).body
     if include_entities or include_documents or include_unresolved or include_attachments:
+        companion_events.record("graph_laid")
         return Response(content=build(), media_type="application/json")
     key = _payload_key(session, similarity, include_maps, include_tags)
     body = _cached(f"payload:{bool(similarity)}:{include_maps}:{include_tags}:{slim}", key, build)
+    companion_events.record("graph_laid")  # the graph tab drawing (a kind and a time for the desk companion, W31)
     return Response(content=body, media_type="application/json")
 
 
