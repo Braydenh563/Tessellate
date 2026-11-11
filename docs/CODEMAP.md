@@ -2,9 +2,9 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8168, frontend ids 2713, CSS sections 524, backend routes 677, backend modules 10433, test files 2584, tests 21124, plan headings 1013, app scripts 29, boot scripts 38, script files 284.
+Counts: frontend functions 8171, frontend ids 2713, CSS sections 524, backend routes 677, backend modules 10433, test files 2584, tests 21126, plan headings 1013, app scripts 29, boot scripts 38, script files 284.
 
-## Frontend functions (8168)
+## Frontend functions (8171)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -4947,21 +4947,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `editConflictPrompt` | frontend/js/edit-conflict.js:7 |
 
-### frontend/js/embed-choices.js (11)
+### frontend/js/embed-choices.js (14)
 
 | Name | File:line |
 |---|---|
-| `embedChoiceInstall` | frontend/js/embed-choices.js:177 |
-| `embedChoiceRow` | frontend/js/embed-choices.js:50 |
-| `embedChoiceUninstall` | frontend/js/embed-choices.js:195 |
-| `embedChoiceUse` | frontend/js/embed-choices.js:320 |
-| `embedFoundRow` | frontend/js/embed-choices.js:210 |
-| `embedLegacyRemove` | frontend/js/embed-choices.js:276 |
-| `embedLegacyRow` | frontend/js/embed-choices.js:255 |
-| `embedPullTyped` | frontend/js/embed-choices.js:292 |
+| `embedChoiceInstall` | frontend/js/embed-choices.js:212 |
+| `embedChoiceRow` | frontend/js/embed-choices.js:95 |
+| `embedChoiceUninstall` | frontend/js/embed-choices.js:230 |
+| `embedChoiceUse` | frontend/js/embed-choices.js:355 |
+| `embedFoundRow` | frontend/js/embed-choices.js:245 |
+| `embedLegacyRemove` | frontend/js/embed-choices.js:311 |
+| `embedLegacyRow` | frontend/js/embed-choices.js:290 |
+| `embedPaintProgress` | frontend/js/embed-choices.js:79 |
+| `embedPaintRows` | frontend/js/embed-choices.js:61 |
+| `embedPullTyped` | frontend/js/embed-choices.js:327 |
+| `embedRowKey` | frontend/js/embed-choices.js:55 |
 | `embedToast` | frontend/js/embed-choices.js:20 |
 | `renderEmbedChoices` | frontend/js/embed-choices.js:25 |
-| `renderEmbedLegacy` | frontend/js/embed-choices.js:246 |
+| `renderEmbedLegacy` | frontend/js/embed-choices.js:281 |
 
 ### frontend/js/entity-page.js (10)
 
@@ -6632,15 +6635,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `ocrEngineFollow` | frontend/js/ocr-engine.js:310 |
+| `ocrEngineFollow` | frontend/js/ocr-engine.js:322 |
 | `ocrEngineLanguageName` | frontend/js/ocr-engine.js:78 |
-| `ocrEngineLanguagePicker` | frontend/js/ocr-engine.js:236 |
+| `ocrEngineLanguagePicker` | frontend/js/ocr-engine.js:248 |
 | `ocrEngineMount` | frontend/js/ocr-engine.js:42 |
 | `ocrEnginePaint` | frontend/js/ocr-engine.js:85 |
 | `ocrEnginePaintAll` | frontend/js/ocr-engine.js:67 |
-| `ocrEnginePaintFailure` | frontend/js/ocr-engine.js:213 |
-| `ocrEngineStartInstall` | frontend/js/ocr-engine.js:287 |
-| `ocrEngineStatusLine` | frontend/js/ocr-engine.js:224 |
+| `ocrEnginePaintFailure` | frontend/js/ocr-engine.js:225 |
+| `ocrEngineStartInstall` | frontend/js/ocr-engine.js:299 |
+| `ocrEngineStatusLine` | frontend/js/ocr-engine.js:236 |
 
 ### frontend/js/offline-split.js (2)
 
@@ -26854,7 +26857,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21124)
+## Tests (21126)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27891,7 +27894,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_extras_bundles.py | 30 |
 | tests/test_extras_desktop_locked.py | 5 |
 | tests/test_extras_download.py | 24 |
-| tests/test_extras_inplace_progress.py | 3 |
+| tests/test_extras_inplace_progress.py | 5 |
 | tests/test_f13_ek_1110.py | 4 |
 | tests/test_f7_pool_moves.py | 3 |
 | tests/test_fact_check_1027.py | 17 |
