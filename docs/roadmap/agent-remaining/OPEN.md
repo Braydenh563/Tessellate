@@ -21,7 +21,7 @@ The recommendation was taken for Q1 to Q9, Q12, Q14, Q18 to Q24, Q26 and Q28. Q1
 - ~~Q30~~ **Stale: built** (tests/test_private_by_default_1695.py). Private notes by default is a Settings switch, off by default, and follows the space: a note made in a private space is private. | F6
 - Q31 and Q32: the owner says these are already done; they are closed here.
 - Q33 is parked: the owner will check whether the stutter returns. W34: owner-call (parked), w34-L1-1111.md.
-- Q34 Go on all of them: sync (B6), offline studio and audio, the desktop pet outside the window, the custom domain and the blind panel. Fable stays off. | F8 W34: owner-call, w34-L1-1111.md.
+- Q34 Go on all of them: sync (B6) (**sync: decided and first slice built 2026-11-11, WORLD_CLASS_PLAN B6; the LAN fetch is next**), offline studio and audio, the desktop pet outside the window, the custom domain and the blind panel. Fable stays off. | F8 W34: owner-call, w34-L1-1111.md.
 - ~~D30 spell-check language packs (owner decision 2026-11-11: optional downloads, never vendored)~~ **Built d30-1111 (2026-11-11):** French, German and Spanish spelling are optional downloads (Settings, Packages: `spell-fr`, `spell-de`, `spell-es`; sha256-pinned Hunspell files from the `dictionary-*` npm tarballs, kept in the data folder, never vendored, egress labelled), built lazily in the Harper worker when a document's `lang:` matches; the panel note offers the install through `extraNoticeMount`. English unchanged. Grammar stays English; autocorrect lists per language are not built. Evidence: `tests/test_spell_packs_1111.py` (22, fake transport); real pinned French tarball through a local mirror in the app: note and Install notice before, French misspellings flagged after, no console errors; worker build fr 4.4 s, de 0.9 s, es 1.0 s; 44 words in 35 to 40 ms; 0% of dictionary stems missed. Not driven in a browser: de and es, dark or narrow layouts, the Packages card visually. d30-1111.md.
 - ~~sm-1111 row 22: on lock, typed fields move into the encrypted draft store and are cleared, then restored on unlock. Add an easy way to pick them back up, a "where you left off" or recent drafts list. | sm row 22~~ **W34: fixed** (w34-L1-1111.md)
 - Q15 to Q17 stay parked (P1 to P3) until the owner sends examples. W34: owner-call (parked), w34-L1-1111.md.
@@ -2933,9 +2933,7 @@ Code editor (Brief 69, I1 built):
   Next step: decide what "open" means on that surface, per the app's own focus
   model. [brief11-retrieval-engine.md]
   *Needs: what "open" means on the card view is a decision.* (checked 2026-11-09) [verified 2026-11-10: true, graph signal needs an open note; search-open-note id present]
-- **Sync (B6) as log shipping.** `id: events-sync`. Unstarted and no longer
-  blocked: it needed the retention rule, which now exists. A compacted
-  snapshot ships as a snapshot. [brief7-event-log.md]
+- **Sync (B6) as log shipping.** `id: events-sync`. **Decided and first slice built 2026-11-11** (WORLD_CLASS_PLAN B6 decisions 1 to 9; HISTORY, "WORLD_CLASS B6, sync first slice"). Open: the LAN fetch (A signing in to B as an allowed device), private notes readable on both, attachments, boards and documents. [brief7-event-log.md]
   *Needs: a large unstarted feature.* (checked 2026-11-09) [verified 2026-11-10: true, sync log shipping unstarted; events-sync id]
 - **I1's later passes**: duplicates, entities and dates as kinds in the same
   table (tensions are built: pass 4 of the night run, `ai/facts.py`
