@@ -577,19 +577,19 @@ function paintReminderList(all) {
 //: What time does to a cached list (a reminder coming due) is worked out here
 //: from `due_at`, as it always was. A stamp that cannot be had falls back to
 //: asking for the list.
-let reminderListCache = { stamp: "", all: null };
-async function openReminderList() {
-  const look = await apiJson("/reminders/due", { silent: true }).catch(() => null);
-  if (look?.stamp && reminderListCache.all && look.stamp === reminderListCache.stamp) {
-    return { all: reminderListCache.all, fetched: false };
-  }
-  const all = await apiJson("/reminders?include_done=false", { silent: true }).catch(() => null);
-  if (!all) return null;
-  //: The stamp was read first, so a change in between leaves the cache looking
-  //: older than the list, and the next look fetches again: the safe side.
-  reminderListCache = { stamp: look?.stamp || "", all };
-  return { all, fetched: true };
-}
+const openReminderList = (() => {
+  let cache = { stamp: "", all: null };
+  return async () => {
+    const look = await apiJson("/reminders/due", { silent: true }).catch(() => null);
+    if (look?.stamp && cache.all && look.stamp === cache.stamp) return { all: cache.all, fetched: false };
+    const all = await apiJson("/reminders?include_done=false", { silent: true }).catch(() => null);
+    if (!all) return null;
+    //: The stamp was read first, so a change in between leaves the cache looking
+    //: older than the list, and the next look fetches again: the safe side.
+    cache = { stamp: look?.stamp || "", all };
+    return { all, fetched: true };
+  };
+})();
 
 async function checkDueReminders() {
   // Before the unlock there is no token, and asking anyway is a guaranteed 401

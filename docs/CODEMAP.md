@@ -964,7 +964,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `offerUndo` | frontend/js/status.js:1552 |
 | `openLanPanel` | frontend/js/status.js:659 |
 | `openModelGate` | frontend/js/status.js:2149 |
-| `openReminderList` | frontend/js/status.js:581 |
+| `openReminderList` | frontend/js/status.js:580 |
 | `paintPrivacyChip` | frontend/js/status.js:3279 |
 | `paintReminderList` | frontend/js/status.js:566 |
 | `paintStatusItem` | frontend/js/status.js:2635 |
