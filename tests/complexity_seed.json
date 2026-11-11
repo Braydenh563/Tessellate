@@ -88,8 +88,6 @@
  "src/tessellate/api/routes_graph.py::graph_local": 23,
  "src/tessellate/api/routes_graph.py::graph_path": 26,
  "src/tessellate/api/routes_insights.py::_ai_greeting": 19,
- "src/tessellate/api/routes_library.py::_notes": 18,
- "src/tessellate/api/routes_library.py::_shelved": 18,
  "src/tessellate/api/routes_map_from_notes.py::build_tree": 26,
  "src/tessellate/api/routes_map_from_notes.py::build_tree.grouping": 28,
  "src/tessellate/api/routes_map_from_notes.py::map_from_notes": 19,
