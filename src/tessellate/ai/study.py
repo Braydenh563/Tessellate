@@ -31,7 +31,9 @@ from tessellate.entry import properties
 _HEADING = re.compile(r"^(#{1,6})\s+(.+?)\s*#*\s*$")
 _BULLET = re.compile(r"^\s*(?:[-*+]|\d{1,2}[.)])\s+(?!\[[ xX]\])(.+)$")
 _CHECK = re.compile(r"^\s*[-*+]\s+\[([ xX])\]\s+(.+)$")
-_SENTENCE_END = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9*\"“(\[])")
+#: One space after a stop: the prose is folded to single spaces before the split, so no `\s+` run is left for
+#: CodeQL to read as polynomial (it ignores the lookbehind; composer_brief has the same fix).
+_SENTENCE_END = re.compile(r"(?<=[.!?]) (?=[A-Z0-9*\"“(\[])")
 _MARKUP = re.compile(r"(\*\*|__|\*|`)")
 _FOOTNOTE = re.compile(r"\[\^[^\]\n]*\]|<sup>[^<]{0,6}</sup>")
 #: A list marker with nothing after it ("-", "* ", "3."): an empty bullet.
@@ -199,7 +201,7 @@ def sentences(text: str) -> list[str]:
     bullets and tables left out."""
     out: list[str] = []
     for para in re.split(r"\n\s*\n", text or ""):
-        out += [s.strip() for s in _SENTENCE_END.split(_prose(para)) if len(s.strip()) > 3]
+        out += [s.strip() for s in _SENTENCE_END.split(" ".join(_prose(para).split())) if len(s.strip()) > 3]
     return out
 
 
