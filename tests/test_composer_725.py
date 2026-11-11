@@ -300,7 +300,7 @@ def test_a_composed_answers_next_questions_are_drawn_as_its_chips():
     assert "renderAskFollowups(question, answerRaw, answerMeta?.composed ? composedNext : null);" in ask_js
     chat_js = with_pieces("chat-attach.js")
     assert "composedNext = Array.isArray(event.next) ? event.next : [];" in chat_js
-    assert "offerFollowups(bubble, question, answerRaw, meta?.composed ? composedNext : null);" in chat_js
+    assert "offerFollowups(bubble, question, answerRaw, t.meta?.composed ? t.composedNext : null);" in chat_js
     routes = Path("src/tessellate/api/routes_chat.py").read_text(encoding="utf-8")
     assert '"next": result["next"],' in routes
 

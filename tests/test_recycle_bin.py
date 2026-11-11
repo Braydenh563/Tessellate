@@ -371,7 +371,14 @@ def test_every_table_pointing_at_an_entry_is_handled_when_one_is_destroyed():
     # A check that a name is mentioned is not a check that it is handled.
     source = "\n".join(
         line.split("#", 1)[0]
-        for line in inspect.getsource(manager._hard_delete).splitlines()
+        # `_hard_delete` and the three helpers it hands its work to (K25 split).
+        for fn in (
+            manager._hard_delete,
+            manager._delete_attachments_and_vectors,
+            manager._delete_entry_dependents,
+            manager._detach_board_contents,
+        )
+        for line in inspect.getsource(fn).splitlines()
     )
     unhandled = []
     for table in Base.metadata.tables.values():

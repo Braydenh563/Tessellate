@@ -136,7 +136,6 @@
  "src/tessellate/entry/duplicates.py::_similar_pairs_dense": 17,
  "src/tessellate/entry/link_wording.py::_shared_names": 17,
  "src/tessellate/entry/link_wording.py::specific_reason": 18,
- "src/tessellate/entry/manager.py::_hard_delete": 19,
  "src/tessellate/entry/manager.py::_redact_answers_quoting": 24,
  "src/tessellate/entry/manager.py::create_link": 17,
  "src/tessellate/entry/manager.py::rekey_private_extras": 16,

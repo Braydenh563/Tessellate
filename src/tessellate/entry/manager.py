@@ -1256,13 +1256,8 @@ def _forget_board_thumbs(uploads_dir: Path | None, ids: list[int]) -> None:
         pass
 
 
-def _hard_delete(session: Session, entries: list[Entry], uploads_dir: Path | None = None) -> int:
-    """Permanently remove entries plus their vectors, links, and files."""
-    ids = [e.id for e in entries]
-    if not ids:
-        return 0
-    _forget_board_thumbs(uploads_dir, ids)
-    seal_private_events(session, [e.id for e in entries if e.is_private])
+def _delete_attachments_and_vectors(session: Session, ids: list[int], uploads_dir: Path | None) -> None:
+    """The attached files, the search index rows, the vectors and the links of the entries being purged."""
     # Attached files: remove bytes from disk (best effort) then the rows.
     attachments = list(
         session.scalars(select(Attachment).where(Attachment.entry_id.in_(ids)))
@@ -1296,6 +1291,10 @@ def _hard_delete(session: Session, entries: list[Entry], uploads_dir: Path | Non
     # stamped for another space would survive its note (every space's, as the delete is).
     links = EntryLink.__table__
     session.execute(delete(links).where(or_(links.c.source_entry_id.in_(ids), links.c.target_entry_id.in_(ids))))
+
+
+def _delete_entry_dependents(session: Session, ids: list[int]) -> None:
+    """Every table that holds a foreign key to `entries.id`, or the purge fails outright."""
     # **Everything else that points at an entry, or the delete fails outright.**
     #
     # Reported twice in one sitting, "request failed (500) when I tried to
@@ -1342,6 +1341,10 @@ def _hard_delete(session: Session, entries: list[Entry], uploads_dir: Path | Non
     # A whiteboard card *is* its note, with the note gone there is nothing
     # left to show, so the card goes with it, same as a sketch's own delete.
     session.execute(delete(WhiteboardNode).where(WhiteboardNode.entry_id.in_(ids)))
+
+
+def _detach_board_contents(session: Session, ids: list[int], uploads_dir: Path | None) -> None:
+    """A purged map takes its own contents (and image files) with it; an ordinary board's are detached."""
     # `board_id` is a different relationship: it names which board a card or
     # sketch lives *on*, and that board is itself just a note. Purging the
     # board note must not take every card on it with it, that would be
@@ -1420,6 +1423,18 @@ def _hard_delete(session: Session, entries: list[Entry], uploads_dir: Path | Non
         .where(WhiteboardObject.board_id.in_(ids))
         .values(board_id=None)
     )
+
+
+def _hard_delete(session: Session, entries: list[Entry], uploads_dir: Path | None = None) -> int:
+    """Permanently remove entries plus their vectors, links, and files."""
+    ids = [e.id for e in entries]
+    if not ids:
+        return 0
+    _forget_board_thumbs(uploads_dir, ids)
+    seal_private_events(session, [e.id for e in entries if e.is_private])
+    _delete_attachments_and_vectors(session, ids, uploads_dir)
+    _delete_entry_dependents(session, ids)
+    _detach_board_contents(session, ids, uploads_dir)
     # A reminder's entry is optional, so it is detached rather than deleted:
     # "water the tomatoes" is still a thing you asked to be reminded of after
     # the note that prompted it has gone, and deleting the reminder would throw
