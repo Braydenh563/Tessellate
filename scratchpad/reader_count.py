@@ -63,6 +63,7 @@ VERDICT = {
     # the recogniser, and nothing here becomes a date, window or quantity.
     "frontend/js/documents.js": "not a reader: the spellcheck's unit mask, which skips the unit straight after a number (10 min, 5 km) so it is not marked as a misspelling",
     # 2026-10-30 (audit 1029 C21): the slot answerer's day and unit names.
+    "src/tessellate/ai/composer_aboutme.py": "not a reader: `_NOTE_ANCHOR`, `_SELF` and `_BYE` are masks that tell a question about the person's own notes, a question about the assistant (its age) and a goodbye ('see you tomorrow') from a lookup; they turn no word into a value, recognise reads every window",
     "src/tessellate/ai/composer_read.py": "not a reader: `_WEEKDAYS` and `_MONTH_INDEX` are a mask that keeps day and month names out of a who answer's names, and `_written` reads back the route's own written stamp, never the person's words; recognise reads every window",
     "src/tessellate/ai/composer_slots.py": "not a reader: _WEEKDAYS matches a question's day to a note's written weekday and _UNITS lists a unit's spellings so the note's figure is quoted as written; days are found and judged by recognise (find, names_a_day)",
     "src/tessellate/ai/composer_small.py": "not a reader: `_OLD` is a mask that recognises the request 'show me something old' (its 'from a while ago' is a phrase of that request); it turns no word into a date, window or quantity, the pick is made by resurface from the notes' own stamps",

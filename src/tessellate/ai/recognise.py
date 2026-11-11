@@ -257,16 +257,22 @@ def asks_time(question: str) -> bool:
     return bool(_ASKS_TIME.search(question))
 
 
-#: "What is tomorrow's date", "what is the date yesterday": which neighbouring day is asked about.
+#: "What is tomorrow's date", "what is the date yesterday", and the CLINC150
+#: phrasings ("what will the date be tomorrow", "tomorrow, what will the date
+#: be", "day is it gonna be tomorrow"): which neighbouring day is asked about.
 _NEIGHBOUR_DAY = lazy_compile(
     r"^(?:(?:what|when) (?:is|was) )?(?:the )?(?P<d>tomorrow|yesterday)(?:'s|s)? date$|^what (?:is|was) the date (?P<e>tomorrow|yesterday)$"
+    r"|^(?:what(?:'s| is| will| would)?\s+)?(?:the\s+)?(?:date\s+(?:will\s+)?(?:be\s+)?(?:for\s+)?(?P<f>tomorrow|yesterday)|(?P<g>tomorrow|yesterday)'?s?\s+date"
+    r"|(?:(?:what\s+)?(?:will\s+)?the\s+)?date\s+(?:will\s+)?be\s+(?P<h>tomorrow|yesterday)|(?P<i>tomorrow|yesterday),?\s+what\s+(?:will\s+)?the\s+date\s+(?:be|was)"
+    r"|day\s+(?:is\s+it\s+)?(?:gonna\s+be\s+)?(?P<j>tomorrow|yesterday))$",
+    re.I,
 )
 
 
 def neighbour_day(question: str) -> str | None:
     """"tomorrow" or "yesterday" when the whole question asks for that day's date."""
     found = _NEIGHBOUR_DAY.match(question)
-    return (found["d"] or found["e"]) if found else None
+    return next(word for word in found.groups() if word).lower() if found else None
 
 
 #: Whole-year words and how far each is from this year.

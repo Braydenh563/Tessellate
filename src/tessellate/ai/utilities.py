@@ -91,13 +91,6 @@ _TODAY = lazy_compile(
     r"today'?s date is what(?: exactly)?|today is what day|the date today|the date|what is the date)$",
     re.I,
 )
-#: "what's the date tomorrow", "tomorrow's date", "what will the date be tomorrow" (CLINC150 phrasings).
-_RELATIVE_DAY = lazy_compile(
-    r"^(?:what(?:'s| is| will| would)?\s+)?(?:the\s+)?(?:date\s+(?:will\s+)?(?:be\s+)?(?:for\s+)?(?P<a>tomorrow|yesterday)|(?P<b>tomorrow|yesterday)'?s?\s+date"
-    r"|(?:(?:what\s+)?(?:will\s+)?the\s+)?date\s+(?:will\s+)?be\s+(?P<c>tomorrow|yesterday)|(?P<d>tomorrow|yesterday),?\s+what\s+(?:will\s+)?the\s+date\s+(?:be|was)"
-    r"|day\s+(?:is\s+it\s+)?(?:gonna\s+be\s+)?(?P<e>tomorrow|yesterday))$",
-    re.I,
-)
 _YEAR = lazy_compile(r"^what (?:year|month) is it(?: now)?$", re.I)
 #: "15% of 240" (CHAT_PLAN section 7 row 1: it quoted a note instead of 36).
 _PERCENT = lazy_compile(r"^(?:what(?:'s| is)\s+|whats\s+|how much is\s+|work out\s+|calculate\s+)?(-?\d+(?:\.\d+)?)\s*(?:%|percent|per cent)\s+of\s+(-?\d[\d,]*(?:\.\d+)?)$", re.I)
@@ -695,7 +688,7 @@ def _hm(moment: datetime, twelve: bool) -> str:
 
 def _is_clock(text: str) -> bool:
     text, _ = _twelve(text)
-    if _CLOCK.match(text) or _TODAY.match(text) or _YEAR.match(text) or _RELATIVE_DAY.match(text):
+    if _CLOCK.match(text) or _TODAY.match(text) or _YEAR.match(text) or recognise.neighbour_day(text):
         return True
     match = _CLOCK_IN.match(text)
     return bool(match and zone_for(match.group("place")))
@@ -753,9 +746,8 @@ def _clock(text: str, now: datetime) -> list[tuple]:
         return [("computed", f"It is {_hm(now, twelve)} on {_day_words(now.date())}."), _CLOCK_READ]
     if _YEAR.match(text):
         return [("computed", f"It is {_MONTH_NAMES[now.month - 1]} {now.year}."), _CLOCK_READ]
-    relative = _RELATIVE_DAY.match(text)
-    if relative:
-        word = next(g for g in relative.groups() if g).lower()
+    word = recognise.neighbour_day(text)
+    if word:
         day = now.date() + timedelta(days=1 if word == "tomorrow" else -1)
         return [("computed", f"{word.capitalize()} is {_day_words(day)}."), _CLOCK_READ]
     return [("computed", f"Today is {_day_words(now.date())}."), _CLOCK_READ]
