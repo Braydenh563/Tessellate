@@ -4320,19 +4320,19 @@ Format: id | file:line | one line | status.
 
 **BS5 (shell, 19 rows)**
 
-- N24 | audit-1031-notes:70 | The Journal template fills "Journal | open
-- N25 | audit-1031-notes:71 | "No similar notes found." with no meaning engine does not say why; the semantic toggle also gives no feed | open
-- N26 | audit-1031-notes:72 | The capture help text ("What can I type in a note?") still says tables and code show as source; cards now | open
-- N29 | audit-1031-notes:75 | harness | open
-- N34 | audit-1031-notes:80 | The [[ picker inserts the raw first line for a note whose title is a markdown heading | open
-- N39 | audit-1031-notes:85 | [[ picker rows without a preview read "Harbor launch plannote" | open
-- N44 | audit-1031-notes:90 | Reload does not restore the list state | open
-- N47 | audit-1031-notes:93 | An inline edit saved while offline is not kept the way a new note is | open
-- N48 | audit-1031-notes:94 | A deep link to a missing note (#/notes/999999) toasts "No such note." but leaves the dead hash in the bar | open
-- N49 | audit-1031-notes:95 | The palette's "Open the bin" row (described "Everything you threw away, in the Library") lands on the Lib | open
-- SH12 | audit-1031-shell:23 | Settings panes block on open: Shortcuts 234 ms (275 nodes, 42 controls), Appearance 150, Templates 141, D | open
+- ~~N24 | audit-1031-notes:70 | The Journal template fills "Journal~~ stale: stampDate writes 'Oct 31, 2026' (capture-ask.js:400)
+- ~~N25 | audit-1031-notes:71 | "No similar notes found." with no meaning engine does not say why; the semantic toggle also gives no feed~~ stale: note-panels.js:72 and graph.js:3455 name the missing meaning engine
+- ~~N26 | audit-1031-notes:72 | The capture help text ("What can I type in a note?") still says tables and code show as source; cards now~~ stale: the capture help says a note card draws tables, fenced code and quotes (index.html:1647)
+- ~~N29 | audit-1031-notes:75 | harness~~ stale: seed-showcase.py:592 opens tessellate.db first
+- ~~N34 | audit-1031-notes:80 | The [[ picker inserts the raw first line for a note whose title is a markdown heading~~ stale: editor.js editorLinkMatches strips the heading marker (N34 comment at the value line)
+- ~~N39 | audit-1031-notes:85 | [[ picker rows without a preview read "Harbor launch plannote"~~ stale: rich-picker.js:147 joins the spans with a separator
+- N44 | audit-1031-notes:90 | Reload does not restore the list state | partial: the filter words persist in sessionStorage 'note-filter' (notes-list.js:2376-2390); sort across a reload not checked
+- ~~N47 | audit-1031-notes:93 | An inline edit saved while offline is not kept the way a new note is~~ stale: note-edit-panels.js:449 keeps an offline edit on the device like a new note
+- ~~N48 | audit-1031-notes:94 | A deep link to a missing note (#/notes/999999) toasts "No such note." but leaves the dead hash in the bar~~ stale: capture-ask.js:905 returns the address to the list and clears the live region
+- ~~N49 | audit-1031-notes:95 | The palette's "Open the bin" row (described "Everything you threw away, in the Library") lands on the Lib~~ stale: router.js ROUTE_LIBRARY has bin; app-features.js:554 has Unlock private notes
+- SH12 | audit-1031-shell:23 | Settings panes block on open: Shortcuts 234 ms (275 nodes, 42 controls), Appearance 150, Templates 141, D | partial: 1111 probe on a loaded box (load 10): first open 964 ms (+3,203 nodes), Shortcuts 56, Appearance 195, Data 148, Templates 45, General 74, Models 238; the Shortcuts case is fixed, the rest need a quiet-machine trace
 - D25 | audit-1107-composer:60 | Citations double up in the Ask and Chat text | owner call
-- P4 | audit-1108-perf:41 | PARTLY FIXED (perfset-1108: listeners 921 to 588, Guide nodes 2,574 to 1,540; the pane-by-pane body build | partial
+- P4 | audit-1108-perf:41 | PARTLY FIXED (perfset-1108: listeners 921 to 588, Guide nodes 2,574 to 1,540; the pane-by-pane body build | partial: same 1111 numbers as SH12; first open still around 1 s here, the pane-by-pane build remains
 - A68 | audit68-1101:9 | Learned-audit leftovers: per-flag Keep it action (settings-controls.js learnedCheckMark), a Settings swit | open
 - F7 | fable-composer-1110:159 | Voice: stat lines deleted, cite style, openers rewritten (tests/test_voice_1110.py); F7.3 "Read as" lines | owner call
 - F12 | fable-composer-1110:212 | Offer accept/decline gate built (tests/test_composer_offers_1110.py); B26 Q5 and Q6 wait on the owner yes | owner call
@@ -4343,7 +4343,7 @@ Format: id | file:line | one line | status.
 **BS6 (shell, 19 rows)**
 
 - F8 | fable-eye-1030:72 | F8 every answer re-reads every note | open
-- FC1 | fablecomp-1031:18 | Reset appearance (resetAppearance, settings.js) leaves avatar-buddy-motion and avatar-buddy-entrances as | open
+- ~~FC1 | fablecomp-1031:18 | Reset appearance (resetAppearance, settings.js) leaves avatar-buddy-motion and avatar-buddy-entrances as~~ stale: resetAppearance's key list includes avatar-buddy-motion and avatar-buddy-entrances (settings.js:3241)
 - FIT55 | fitaudit-1109:6 | Rank 55 (PF2 idle): stop atlas rAF loops after 2 s of no input only while the companion is not walking, l | owner call
 - FIT42 | fitaudit-1109:7 | Rank 42 (BK10, BK12, PF7): ?preview=300 adoption waits on server-side note search (Q9) | owner call
 - FIT19 | fitaudit-1109:9 | Ranks 19, 21, 36, 37: worker layout and labels layer; surfaces as templates; JS files into IIFEs and rout | open
@@ -4355,7 +4355,7 @@ Format: id | file:line | one line | status.
 - 1612c | owner-asks-audit-1108:24 | Manual pictures only where needed, as WebP made by the sweeps | open
 - S14 | owner-asks-audit-1108:27 | Diagram side panels collapsible; no need for the left panel | open
 - 1643b | owner-asks-audit-1108:30 | Notes tab-switch pointerup 312 ms; dashboard 266 ms timer and 172 ms load frame | open
-- 1620categoriesb | owner-asks-audit-1108:32 | Find what wrote "¦" for "&" ("Courses ¦ Study") | open
+- 1620categoriesb | owner-asks-audit-1108:32 | Find what wrote "¦" for "&" ("Courses ¦ Study") | deferred: no writer of the broken bar in src or frontend (grep 1111); the source is model output or an import, needs the owner's data
 - 1620topicsc | owner-asks-audit-1108:33 | How "conversation" was derived for a gym note | open
 - 1620lag:backdropandpointerout | owner-asks-audit-1108:34 | Settings backdrop click 880 ms; dashboard card pointerout 312 to 344 ms | open
 - 1692e/N15 | owner-asks-audit-1108:47 | Own activities with props (fishing, reading, beanbag, dinner, chasing sprites) | open
@@ -4379,8 +4379,8 @@ Format: id | file:line | one line | status.
 - 1667d | owner-asks-audit-1108:80 | Keep-up reads layout once a frame, stops while still | open
 - 1667o | owner-asks-audit-1108:85 | /chat/followups deadline; 5120 token context budget line | open
 - 1661j/S10 | owner-asks-audit-1108:92 | A further deep-dive round for features and look | open
-- 1693a | owner-asks-audit-1108:94 | Autouse clock.today pin in conftest plus a lint | open
-- 1691 | owner-asks-audit-1108:95 | no BACKGROUND_MODE anywhere under src/ (grep, checked 2026-11-09) | open
+- 1693a | owner-asks-audit-1108:94 | Autouse clock.today pin in conftest plus a lint | fixed: conftest.py _fixed_day autouse pins clock.today (the lint half not built)
+- 1691 | owner-asks-audit-1108:95 | no BACKGROUND_MODE anywhere under src/ (grep, checked 2026-11-09) | deferred: no BACKGROUND_MODE in src (grep 1111); needs pytest -m evals with a real model
 - 1643a | owner-asks-audit-1108:96 | Graph redraws only while something moves | open
 - 1620tag+ | owner-asks-audit-1108:97 | Add tags popover opens under the card's + Tag | open
 
