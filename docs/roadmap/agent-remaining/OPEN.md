@@ -4118,26 +4118,26 @@ Format: id | file:line | one line | status.
 
 **BC4 (composer, 20 rows)**
 
-- C11 | audit-1031-composer:54 | With a note open, "what dates are in this" and every other open-note question outside made, edited and le | open
-- C13 | audit-1031-composer:56 | A verb-first diary line gets "you" as its subject whatever the verb, and a "Diary | open
-- C14 | audit-1031-composer:57 | A group sentence says every member shares a tag that only some carry | open
-- C15 | audit-1031-composer:58 | The event count for an activity counts the newest dated sentence only | open
-- C16 | audit-1031-composer:59 | The answer to a "when did I" or "how long do I" is the top note's first sentence; the asked property sits | open
-- C17 | audit-1031-composer:60 | "The short version of X" and "give me the short version" are not read as summarise, so an unrelated note | open
-- C18 | audit-1031-composer:61 | "What am I reading" matches a question inside a note before the Books note | open
-- C19 | audit-1031-composer:62 | "Notes mentioning X" asked as a question is a one-note fact in Ask and a three-note find in Chat | open
-- C20 | audit-1031-composer:63 | Derived "nothing yet" and offer lines ride on answers they do not belong to | open
-- C21 | audit-1031-composer:64 | "Do you like me", "what do you think" and "ur mum" are answered from the nearest note, and a quoted picku | open
-- C22 | audit-1031-composer:65 | A passing-mention note contributes its opening sentence, not the sentence that matched, so an overview en | open
-- C23 | audit-1031-composer:66 | Summaries show raw note emphasis and summarise one note for a plural ask | open
-- C24 | audit-1031-composer:67 | Four compare openers claim a process, side headings switch case, and a side's lines are dropped silently | open
-- C25 | audit-1031-composer:68 | The attempt-based rewording changes the facts, not only the words | open
-- C26 | audit-1031-composer:69 | "Nothing matched" fallbacks list the newest notes for a question that named a note property | open
-- C27 | audit-1031-composer:70 | The day-plan and recap shapes say what was made, not what was done, for "what did I do" (audit 1030 Z28 p | open
-- C28 | audit-1031-composer:71 | A quote is altered: a day is written into it, and "today" is replaced inside quotation marks | open
-- C29 | audit-1031-composer:72 | A checklist's state is lost or misread in the open-note shapes | open
-- C30 | audit-1031-composer:73 | "What do I spend on X", "what's the total" and "total spend" do not read the budget note's amounts | open
-- C31 | audit-1031-composer:74 | A title-less note is named four ways across the list shapes and the chips | open
+- C11 | audit-1031-composer:54 | With a note open, "what dates are in this" and every other open-note question outside made, edited and le | stale: rechecked 2026-11-11: tests/test_composer_cfix_1031.py C10 and C11; probe: 'what dates are in this' on the open Packing note says it has no date
+- C13 | audit-1031-composer:56 | A verb-first diary line gets "you" as its subject whatever the verb, and a "Diary | stale: rechecked 2026-11-11: cfix C13; probe: 'what do I know about Arrival' gives 'it rained all day, and you baked banana bread and watched Arrival'
+- C14 | audit-1031-composer:57 | A group sentence says every member shares a tag that only some carry | stale: rechecked 2026-11-11: cfix C14; probe: the meeting group sentence names no non-holder
+- C15 | audit-1031-composer:58 | The event count for an activity counts the newest dated sentence only | stale: rechecked 2026-11-11: cfix C15 (since skips a note-level 'ran twice'); probe: 'how many times did I run' counts four runs
+- C16 | audit-1031-composer:59 | The answer to a "when did I" or "how long do I" is the top note's first sentence; the asked property sits | stale: rechecked 2026-11-11: cfix C16; probe: 'when did I bake banana bread' and 'how long do I bake' lead with the asked slot
+- C17 | audit-1031-composer:60 | "The short version of X" and "give me the short version" are not read as summarise, so an unrelated note | stale: rechecked 2026-11-11: cfix C17 and C47; probe: 'short version of X' summarises X
+- C18 | audit-1031-composer:61 | "What am I reading" matches a question inside a note before the Books note | stale: rechecked 2026-11-11: cfix C18; probe: 'what am I reading' leads with the Books note
+- C19 | audit-1031-composer:62 | "Notes mentioning X" asked as a question is a one-note fact in Ask and a three-note find in Chat | stale: rechecked 2026-11-11: cfix C19; probe: 'what do My notes mentioning test saY??' lists two notes in Ask
+- C20 | audit-1031-composer:63 | Derived "nothing yet" and offer lines ride on answers they do not belong to | stale: rechecked 2026-11-11: cfix C20 (the overview's own filler lines belong to INBOX 1743: owned by 1743); probe: no offer line on the flights answer
+- C21 | audit-1031-composer:64 | "Do you like me", "what do you think" and "ur mum" are answered from the nearest note, and a quoted picku | stale: rechecked 2026-11-11: cfix C21; probe: 'do you like me' and 'what do you think' get the companion reply, 'ur mum' asks what is meant
+- C22 | audit-1031-composer:65 | A passing-mention note contributes its opening sentence, not the sentence that matched, so an overview en | stale: rechecked 2026-11-11: cfix C22; probe: the sourdough overview says the matching sentence (overview prose owned by 1743)
+- C23 | audit-1031-composer:66 | Summaries show raw note emphasis and summarise one note for a plural ask | stale: rechecked 2026-11-11: cfix C23; probe: a summary shows no ** marks
+- C24 | audit-1031-composer:67 | Four compare openers claim a process, side headings switch case, and a side's lines are dropped silently | stale: rechecked 2026-11-11: cfix C24 and test_composer_compare_1029.py; probe: compare headings start with a capital, no process opener
+- C25 | audit-1031-composer:68 | The attempt-based rewording changes the facts, not only the words | stale: rechecked 2026-11-11: cfix C25; probe: a retry changes frames only
+- C26 | audit-1031-composer:69 | "Nothing matched" fallbacks list the newest notes for a question that named a note property | stale: rechecked 2026-11-11: cfix C26; composer_dialogue._defining_ask answers 'which is the main note' after an overview
+- C27 | audit-1031-composer:70 | The day-plan and recap shapes say what was made, not what was done, for "what did I do" (audit 1030 Z28 p | stale: rechecked 2026-11-11: cfix C27; probe: 'what did I do last weekend' says what the notes hold. Residual: a title-less diary note is linked by its whole line
+- C28 | audit-1031-composer:71 | A quote is altered: a day is written into it, and "today" is replaced inside quotation marks | stale: rechecked 2026-11-11: cfix C28; probe: 'the Saturday being 24 October' sits outside the quotation marks
+- C29 | audit-1031-composer:72 | A checklist's state is lost or misread in the open-note shapes | stale: rechecked 2026-11-11: cfix C29; probe: 'summarise this' on Packing says 'five items, two ticked'
+- C30 | audit-1031-composer:73 | "What do I spend on X", "what's the total" and "total spend" do not read the budget note's amounts | fixed 2026-11-11: total spend names the regular amounts beside a single price (tests/test_composer_bc4_1111.py); the rest by cfix C30
+- C31 | audit-1031-composer:74 | A title-less note is named four ways across the list shapes and the chips | stale: rechecked 2026-11-11: cfix C31; probe: week and month lists name the title-less note by its words
 
 **BC5 (composer, 20 rows)**
 

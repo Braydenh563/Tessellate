@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Composer (audit 1031 C30): a total-spend ask with one price and a budget note says the regular amounts too ("rent $1,200 a month, groceries about $80 a week"), not only the price as money paid. Batch BC4: rows C11 to C31 rechecked on a seeded probe; every other row was already fixed by tests/test_composer_cfix_1031.py.
 - Chat (audit 1028 E60): a plain answer you stopped keeps its words and now has a Continue button under it (a press asks for the rest; tool and skill runs keep Resume), and the Guide says so.
 - Chat (audit 1030 Z70): a note that reached the model only by a link, and did not match the question, goes into its prompt as a 240-character line instead of retold in full (`librarian.LINKED_NOTE_CHARS`, both the plain and the tool prompt; a note you attached by hand keeps its full text).
 - Composer: "is Piranesi 9/10" reads the fraction as a rating ("9 out of 10"), not as 9 October, unless a date cue precedes it (audit 1030 Z17).

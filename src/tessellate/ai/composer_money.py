@@ -572,6 +572,9 @@ def _spent(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
     if len({i.symbol for i in items}) == 1 and _one_of_several(items, views, win, subject):
         return False
     _spent_by_sign(out, items, views, (win, subject), on, when)
+    #: A budget note's "rent $1,200 a month" is spending the sum above leaves out (audit 1031 C30).
+    if not win and (rates := [r for r in _rates(views, subject) if all(r[1].view is not i.view for i in items)]):
+        _say_rates(out, rates, "Your notes also give a regular amount:")
     return True
 
 
