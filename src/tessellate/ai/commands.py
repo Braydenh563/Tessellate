@@ -867,6 +867,12 @@ def _navigate(text: str) -> dict | None:
     return None
 
 
+def _plan_navigate(parsed: dict) -> dict:
+    if parsed["surface"] == "clock":
+        return _plan_clock(parsed)
+    return {"line": f"Opening {parsed['surface']}.", "navigate": parsed["surface"]}
+
+
 def _plan_clock(parsed: dict) -> dict:
     minutes = parsed.get("minutes")
     if parsed["tab"] == "stopwatch":
@@ -1765,9 +1771,7 @@ def _plan_intent(session: Session, parsed: dict, note_ids: list[int] | None) -> 
     if intent == "untag":
         return _plan_untag(session, parsed, note_ids)
     if intent == "navigate":
-        if parsed["surface"] == "clock":
-            return _plan_clock(parsed)
-        return {"line": f"Opening {parsed['surface']}.", "navigate": parsed["surface"]}
+        return _plan_navigate(parsed)
     if intent in READ_INTENTS:
         return _plan_read(session, parsed)
     raise ValueError(intent)
