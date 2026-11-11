@@ -8,6 +8,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from tests._app_js import frontend_text
+from tests import _js_scope
 
 
 def test_z11_tools_and_features_draws_a_first_page_and_the_rest_on_scroll() -> None:
@@ -68,7 +69,7 @@ def test_z2_stopping_a_clock_is_offered_back() -> None:
 
 
 def test_z5_a_pickable_chart_has_full_size_chips_on_a_phone() -> None:
-    js = frontend_text("ask-chart.js")
+    js = _js_scope.unwrapped(frontend_text("ask-chart.js"))
     assert "function askChartChips" in js and "chart.interactive && chart.onPick" in js
     css = Path("frontend/css/utilities-lazy.css").read_text(encoding="utf-8")
     assert ".ask-chart-chips {\n  display: none;" in css

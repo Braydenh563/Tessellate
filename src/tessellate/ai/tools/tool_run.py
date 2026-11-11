@@ -255,6 +255,21 @@ def _schema_key(key: str, props: dict, given: dict) -> str:
     return target if target and target not in given else key
 
 
+def _coerce_in_place(args: dict, props: dict) -> list[str]:
+    """Read each present value as its schema types it; the ones that will not read, named."""
+    wrong = []
+    for key, schema in props.items():
+        if args.get(key) is None:
+            continue
+        coerced, ok = _coerce(args[key], schema)
+        if ok:
+            args[key] = coerced
+        else:
+            shown = json.dumps(args[key], default=str)[:40]
+            wrong.append(f"{_describe_param(key, schema)} not {shown}")
+    return wrong
+
+
 def check_arguments(name: str, arguments: dict) -> tuple[dict, str | None]:
     """(the arguments in the schema's names and types, None), or (them, the
     one-line reason they cannot run), before any handler sees them (INBOX 527).
@@ -273,16 +288,7 @@ def check_arguments(name: str, arguments: dict) -> tuple[dict, str | None]:
         return dict(arguments or {}), None
     props = spec.parameters.get("properties") or {}
     args = {_schema_key(key, props, arguments): value for key, value in arguments.items()}
-    wrong = []
-    for key, schema in props.items():
-        if args.get(key) is None:
-            continue
-        coerced, ok = _coerce(args[key], schema)
-        if ok:
-            args[key] = coerced
-        else:
-            shown = json.dumps(args[key], default=str)[:40]
-            wrong.append(f"{_describe_param(key, schema)} not {shown}")
+    wrong = _coerce_in_place(args, props)
     missing = [
         _describe_param(key, props.get(key) or {})
         for key in spec.parameters.get("required") or []

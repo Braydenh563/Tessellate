@@ -13,6 +13,7 @@ import re
 from pathlib import Path
 
 from tests._app_js import APP_JS, INDEX_HTML, LAZY_PIECES, app_js_files
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -120,7 +121,7 @@ def test_the_draft_keeps_the_mode_and_the_items():
 
 # --- step 3: colour, tags, the bell ---------------------------------------------
 
-MORE = (JS / "capture-card-more.js").read_text(encoding="utf-8")
+MORE = _js_scope.unwrapped((JS / "capture-card-more.js").read_text(encoding="utf-8"))
 STAGE = (JS / "capture-stage.js").read_text(encoding="utf-8")
 
 
