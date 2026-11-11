@@ -416,16 +416,8 @@ function fillSkillSelect(select) {
   select.appendChild(manageGroup);
 
   if ([...select.options].some((option) => option.value === chosen)) select.value = chosen;
-  //: The owner: a pick of a greyed row did nothing and said nothing, and a native list's
-  //: tooltip does not always show, so the menu says it in one line under the list.
-  select.dataset.blocked = String(blocked);
-  paintSkillsNote(select);
-}
-
-//: The `chat-skills-note` line: shown while any skill is greyed for want of a model.
-function paintSkillsNote(select) {
-  const note = select.closest(".chat-skills-panel")?.querySelector(".chat-skills-note");
-  if (note) note.classList.toggle("hidden", !Number(select.dataset.blocked));
+  //: Each open refills the list, so the note under it follows (INBOX 1780).
+  select.closest(".chat-skills-panel")?.querySelector(".chat-skills-note")?.classList.toggle("hidden", !blocked);
 }
 
 //: The Skills menu around the select: built once per `loadChatSkills`.
@@ -465,7 +457,6 @@ function buildSkillsPanel(box, label, select, run, trigger) {
   note.textContent = "Greyed skills need a model.";
 
   panel.append(pickRow, note, paceRow, runRow);
-  paintSkillsNote(select);
 
   //: `refocus`: Escape or Run, with the focus inside, hands it back to the
   //: trigger; hidden with the focus in it, it fell to the page (WCAG 2.4.3).
