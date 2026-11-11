@@ -128,3 +128,37 @@ def test_a_day_is_read_from_the_meeting_date(client) -> None:
     note = client.post("/entries", json={"content": content, "category": "Work"}).json()
     (item,) = client.post(f"/entries/{note['id']}/meeting/summarise").json()["actions"]
     assert item["due"] == "Tuesday 3 March 2026"
+
+
+# gap5-1111: the audit INBOX 1618 asked for on the no-model writers. A line
+# that says a thing is NOT decided, asks whether it was, or says a person will
+# NOT do a task is not a decision or an action item.
+@pytest.mark.parametrize(
+    "line",
+    [
+        "We haven't decided who owns onboarding.",
+        "Nobody agreed to the new schedule.",
+        "The budget has not yet been agreed.",
+        "Have we decided on the venue?",
+        "Did we agree that Priya takes the minutes?",
+    ],
+)
+def test_an_undecided_or_questioned_line_is_not_a_decision(line: str) -> None:
+    assert _found(line)["decisions"] == []
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "Nobody objected, so we decided to move the launch.",
+        "We agreed not to hire this quarter.",
+        "It was agreed that Priya takes the minutes.",
+    ],
+)
+def test_a_decision_with_a_negative_nearby_is_still_a_decision(line: str) -> None:
+    assert len(_found(line)["decisions"]) == 1
+
+
+def test_a_person_who_will_not_do_a_task_is_not_given_the_task() -> None:
+    found = _found("Sam will not attend the review on Friday.\nSam will send the notes.\nPriya does not need to book the room.", ["Sam", "Priya"])
+    assert [a["text"] for a in found["actions"]] == ["@Sam will send the notes"]
