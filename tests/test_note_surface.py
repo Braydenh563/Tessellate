@@ -201,6 +201,18 @@ def test_a_late_mount_does_not_take_the_focus_from_an_open_sheet():
     assert "!activeOverlay() && s?.focus()" in wiring[start : wiring.index("\n}\n", start)]
 
 
+def test_a_late_mount_does_not_take_the_focus_back_from_a_box_left_meanwhile():
+    """e2e capture-filing "Undo takes a new note back", under load: Save puts the
+    caret in the composer (`focusCaptureBox`), the editor bundle is still
+    loading, the person leaves the box (blur), and the mount then focused the
+    editor anyway about 400 ms later. Ctrl+Shift+Z met a text field and Redo,
+    which a text field keeps for itself, never ran. The delegated listener hands
+    the focus on only while the box it mounted for is still the focused one."""
+    start = DOCS.index('document.addEventListener("focusin"', DOCS.index("NOTE-SURFACE-END") - 900)
+    body = DOCS[start : DOCS.index("});", start)]
+    assert body.index("document.activeElement !== host") < body.index("s?.focus()")
+
+
 def test_a_broken_editor_bundle_is_asked_for_once():
     """D47: with the bundle blocked, the idle warm-up failed and then
     code-colour's `loadCodeMirror()` asked again (measured, 2 requests and 2

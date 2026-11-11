@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import logging
 
-from tessellate.api import routes_settings
+from tessellate.api import routes_settings_logs
 
 
 def _post(client, n):
@@ -18,19 +18,19 @@ def _post(client, n):
 
 
 def test_a_flood_is_cut_at_the_budget(client, caplog, monkeypatch):
-    monkeypatch.setattr(routes_settings, "_client_log_clock", lambda: 1000.0)
-    routes_settings._client_log_times.clear()
+    monkeypatch.setattr(routes_settings_logs, "_client_log_clock", lambda: 1000.0)
+    routes_settings_logs._client_log_times.clear()
     with caplog.at_level(logging.ERROR, logger="tessellate.browser"):
-        _post(client, routes_settings.CLIENT_LOG_PER_MINUTE + 25)
+        _post(client, routes_settings_logs.CLIENT_LOG_PER_MINUTE + 25)
     lines = [r for r in caplog.records if r.name == "tessellate.browser"]
-    assert len(lines) == routes_settings.CLIENT_LOG_PER_MINUTE
+    assert len(lines) == routes_settings_logs.CLIENT_LOG_PER_MINUTE
 
 
 def test_the_budget_comes_back_after_a_minute(client, caplog, monkeypatch):
     now = [1000.0]
-    monkeypatch.setattr(routes_settings, "_client_log_clock", lambda: now[0])
-    routes_settings._client_log_times.clear()
-    _post(client, routes_settings.CLIENT_LOG_PER_MINUTE + 1)
+    monkeypatch.setattr(routes_settings_logs, "_client_log_clock", lambda: now[0])
+    routes_settings_logs._client_log_times.clear()
+    _post(client, routes_settings_logs.CLIENT_LOG_PER_MINUTE + 1)
     now[0] += 61
     with caplog.at_level(logging.ERROR, logger="tessellate.browser"):
         _post(client, 1)

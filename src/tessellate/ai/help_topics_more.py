@@ -1980,11 +1980,14 @@ MORE_TOPICS.extend([
                      "move to a new computer", "new computer", "other computer", "use it on two"),
         "body": (
             "One notebook lives on one computer, in its data folder (Settings, Import "
-            "& export shows where). There is no sync between two copies. To move to a "
-            "new computer, save a full backup there and restore it on the new one, or "
-            "copy the data folder while the app is closed. To use one notebook from a "
-            "second computer at the same time, open it over your network from the "
-            "first: Settings, Account & security, Other devices."
+            "& export shows where). To move to a new computer, save a full backup and "
+            "restore it there, or copy the data folder while the app is closed. To use "
+            "one notebook from a second computer, open it over your network: Settings, "
+            "Account & security, Other devices. Sync with another computer (Settings, "
+            "Import & export) brings in the notes changed on a paired computer; a note "
+            "changed on both keeps the later change and the other text goes to its "
+            "History. Private notes stay readable only where they were made, and "
+            "attachments, boards and documents do not sync yet."
         ),
         "badge": {"label": "Import & export", "section": "data"},
     },
@@ -2062,7 +2065,7 @@ MORE_TOPICS.append({
 TOPIC_META.update({
     "lan-networks": {"title": "Other devices and networks", "path": "The wifi icon in the status bar, or Settings, Account & security, Other devices"},
     "phone": {"title": "On your phone", "path": "Settings, Account & security, Other devices"},
-    "two-computers": {"title": "Two computers", "path": "Settings, Import & export"},
+    "two-computers": {"title": "Two computers", "path": "Settings, Import & export", "target": "sync-group"},
     "settings-reset": {"title": "Resetting and moving your settings", "path": "Settings, Import & export, Your settings",
                        "target": "settings-file-group"},
     "encryption": {"title": "What is encrypted", "path": "Settings, Account & security"},

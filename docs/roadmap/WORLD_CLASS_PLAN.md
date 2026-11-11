@@ -634,16 +634,23 @@ an undo button.
 
 **State 2026-10-05:** (b) built: the verifier and budget (Brief 13, `tests/test_harness_verifier.py`), small-model mode in `run_agent` (audit A4), learning from filing corrections (`ai/learning.py`), and (row 19) pre and post conditions per tool (`ai/tools/contracts.py`) and the forced round decoded under a call schema on Ollama (llama.cpp already had it through `tool_choice`): HISTORY.md, "Moved from the plans, 2026-10-05 (row 19)". Open: the 3B gate (evals at 80%) and a 4B pass, which is section 9's breadth and needs a real model.
 
-### B6 Local-first sync (L, later; design now)
+### B6 Local-first sync (L; events-sync)
 
-Because B1 makes every change an event, sync is: export the log since a
-cursor as an encrypted file, import elsewhere, resolve by last-writer-wins
-per field with the event history kept (no CRDT needed for a single-user
-notebook; conflicts become two versions in History). Transport: a folder
-(iCloud/Dropbox/Syncthing) or a LAN pairing over the existing server with a
-QR code. Gate: two instances round-trip 1,000 events with no loss.
+Sync is log shipping over the event log (B1): one computer pulls the other's
+changes since a cursor and applies them. No server, no account, no CRDT.
 
-**State 2026-09-24:** (c) not built; H5 below is the same row. L, design first.
+**Decisions made, 2026-11-11 (owner's go, OPEN Q34; recommendations taken, do not remake).**
+1. **What ships.** A segment is every note with an event after the receiver's cursor in the sender's audit log, each as its whole current state (text, tags, category name, space, private flag, bin and archive marks, `updated_at`), never the event values, so a compacted run ships as the snapshot it already is. The cursor is the sender's audit-log id; a segment holds at most 200 notes, says `more` until the log is drained, and carries a SHA-256 digest of its notes. Events the receiver itself caused (actor `sync:<its device>`) are not echoed back. Boards, documents, notes in a private space and the per-event history do not ship in this slice.
+2. **Identity of a note.** `<device>:<id>` on the computer that wrote it; the other computer keeps it under `client_key` `sync:<that id>`, whose unique index makes a second create impossible, so no id map is kept. Each data folder gets a random device id in `sync-state.json` (0600, beside `lan-trust.json`).
+3. **Conflict rule: the existing edit-conflict model's text hash** (`api/edit_conflicts.content_hash`). Same state: nothing to do. Different: the later `updated_at` wins the whole note (the device id breaks a tie), and a losing text is kept as a version in that note's History first, so no words are lost. Nobody is at the keyboard to answer keep mine or take theirs, so Settings says how many notes changed on both computers instead.
+4. **Who may pull: the LAN pairing trust, never a cloud.** Computer A reads `GET /sync/segment` from computer B as a signed-in, allowed device of B, under B's allowed networks, new-devices-wait and nearby-clients rules unchanged; the route is behind the unlock gate like every other.
+5. **Private notes and the vault.** A private note ships as the ciphertext in its column; the key never leaves. Two notebooks hold two data keys, so on the other computer it lands private and reads "This private note couldn't be decrypted." until the key is shared, a later step (the data key wrapped with the other computer's password at pairing).
+6. **Attachments** do not ship in this slice: the text arrives with its `/media/` links, missing on the other side. Next: files fetched by content hash on demand.
+7. **Deletes and the bin.** A binned note ships its bin mark and lands in the other computer's bin, recoverable there; a restore ships the same way. A purge does not ship: each bin empties on its own schedule.
+8. **Failures.** Offline or no answer: nothing changes, the cursor stays, Settings says so in one sentence. A damaged or cut-off segment (digest mismatch, missing fields) is refused whole before any write. A half-applied segment (a crash part way) is applied again from the same cursor: each note's apply is idempotent (same state is a no-op, a create is keyed by `client_key`) and the cursor moves only after the last note. Clock skew: times are compared as each computer recorded them, so a skewed clock can pick the wrong winner, but the loser is always in History.
+9. **Shape.** Sync now pulls the other computer's changes into this one; pressing it on both is two-way. The transport is one function (`fetch(since, me)` returns a segment), so the LAN fetch, the tests' fake and a later shared-folder transport share one apply.
+
+**First slice built 2026-11-11:** HISTORY.md, "Moved from the plans, 2026-11-11 (WORLD_CLASS B6, sync first slice)". **Open:** the LAN fetch itself (A signing in to B as an allowed device and keeping that sign-in; until then Sync now says no computer is paired); private notes readable on both (decision 5); attachments (6); boards and documents.
 
 ### B7 The API contract
 
@@ -807,7 +814,7 @@ Mirrored in `agent-remaining/OPEN.md`, table B.
 | 32 | 301 | the navigation and undo audit table (written 2026-11-10, below); fixes: the manual and Statistics address; left: the rows marked "row" in the table | M | every surface |
 | 34 | ~~D1, D8, §13~~ | ~~drag on the grid; the reminder row recipe and a 10m snooze; the minimap's NaN rects, the tab bar at 600 to 819px, a whiteboard menu sweep, the tidy layout past five nodes (all not re-checked)~~ built or measured 2026-10-05: drag on the grid found built, the 10m snooze built, the rest measured clean (`nbf1005-recheck.js`); left with its owner: the whiteboard menu sweep (WHITEBOARD_PLAN) | done | HISTORY |
 | 35 | §2 | the offline studio (the privacy receipt, its record, API and Settings page, built 2026-09-26) | L | new |
-| 36 | B6, H5 | sync without a server | L | design first |
+| 36 | B6, H5 | sync without a server: first slice built 2026-11-11; the LAN fetch is next | L | B6 |
 | 37 | Audio | deferred until the owner says go | L | the audio section |
 | 38 | §20 | three open questions, each the owner's decision | none | §20 |
 
@@ -1791,17 +1798,9 @@ activity panel within one poll.
 
 **State 2026-10-05:** built (`/api/v1`, the agent named on an outside write over MCP and HTTP); moved to HISTORY.md, "Moved from the plans, 2026-10-05 (B8, H4)". Left: the gate's first half, the MCP server passing the in-app agent's own tool tests, is not run. S.
 
-### H5 Sync without a server (B6; L, design first)
+### H5 Sync without a server
 
-Design now, build after H1 to H4: an encrypted append-only export of the
-event log (B1 makes this possible) to a folder the person already syncs
-(any file-sync tool), and an importer that replays another device's log
-with last-writer-wins per field and a conflict list for the rest. No
-server, no account. Gate: two data dirs converge after each replays the
-other's log; a conflicting edit appears once, in the Library, with both
-versions.
-
-**State 2026-09-24:** (c), B6.
+The same row as B6, whose decisions and first slice are there.
 
 ### H6 Professional use (the PR after 144; M, mixed)
 
@@ -3865,7 +3864,7 @@ functions, 128 over 80 lines; 306 `except Exception` of which 21 end in
 (`refuse_multiple_workers`); the error envelope (`detail`, `code`, `hint`,
 `ref`); cursors, ETags and `/api/v1` (B7); the event log (B1), durable jobs
 (B2) and the retrieval engine (B3) built; the kernel (B4) and harness (B5)
-part built; sync (B6) designed only.
+part built; sync (B6) first slice built, the LAN fetch open.
 
 ### 26.1 Judgement, by layer
 
