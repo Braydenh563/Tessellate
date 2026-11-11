@@ -15,8 +15,8 @@ from tests._app_js import app_js_text
 
 def test_the_turn_saves_who_wrote_it_and_why():
     js = app_js_text()
-    assert "by: meta && { composed: meta.composed" in js
-    assert "why: whyLines," in js
+    assert "by: t.meta && { composed: t.meta.composed" in js
+    assert "why: t.whyLines," in js
 
 
 def test_the_loader_redraws_the_badge_card_why_and_timing():

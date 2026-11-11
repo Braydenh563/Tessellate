@@ -86,7 +86,7 @@ process.stdout.write(JSON.stringify([text(messageMetaLine({{ elapsedMs: 3300, st
 
 def test_a_stopped_turn_is_saved_and_redrawn_stopped():
     js = app_js_text()
-    assert re.search(r"elapsed_ms: elapsedMs,(\s*//[^\n]*)?\s*stopped,", js), "the turn payload carries stopped"
+    assert re.search(r"elapsed_ms: elapsedMs,(\s*//[^\n]*)?\s*stopped: t\.stopped,", js), "the turn payload carries stopped"
     assert "...message, // stats and stopped, as saved" in js, "a reopened chat draws it"
 
 
