@@ -2248,9 +2248,26 @@ kbd {
   aspect-ratio: 16 / 9;
   background: var(--page);
 }
+/* One line on every card, so the cards line up (wrapzoom 2026-11-11: one
+   card's chip and cost split onto two lines, 42.6px against 20px). The chip
+   keeps its word; the cost gives way with an ellipsis, and the card's title
+   says it whole. */
 .bg-style-facts {
-  flex-wrap: wrap;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  min-width: 0;
+  max-width: 100%;
   gap: var(--space-2);
+}
+.bg-style-facts > .chip {
+  flex: none;
+}
+.bg-style-facts > .theme-note {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .accent-offer-dot {
   width: 0.9rem;

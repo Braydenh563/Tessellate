@@ -62,3 +62,30 @@ def test_a_settings_panes_lone_actions_stand_a_ring_below_the_top():
     css = _css("settings-controls-lazy.css")
     block = css[css.index("h3.jump-echo:only-child) > .dock-actions {"):].split("}", 1)[0]
     assert "inset-block-start: var(--ring-room);" in block
+
+
+def test_an_icon_pickers_track_is_never_narrower_than_its_button():
+    """Overflow: at 768 the touch floor made the square buttons 44px in
+    39.8px tracks, and the last one stood 4px out of New space's picker."""
+    block = _block("07-whiteboard-misc.css", ".space-icon-picker")
+    assert "minmax(max(2.25rem, var(--target-min)), 1fr)" in block
+
+
+def test_a_settings_nav_group_link_keeps_one_line():
+    """Wrap: "Use these tools from another app" ran to two lines in its 212px
+    link. One line, an ellipsis, and the whole name in the title."""
+    block = _block("01-forms-settings.css", "#settings-nav .settings-nav-group")
+    for line in ("white-space: nowrap;", "text-overflow: ellipsis;", "overflow: hidden;"):
+        assert line in block
+    js = (CSS_DIR.parent / "js" / "settings-find.js").read_text(encoding="utf-8")
+    assert "link.title = label;" in js
+
+
+def test_a_background_style_cards_facts_keep_one_line():
+    """Wrap: one card's chip and cost split onto two lines (42.6px against
+    20px) because the facts were a Settings `.row`, which wraps by id."""
+    block = _block("02-chat-graph.css", ".bg-style-facts")
+    assert "flex-wrap: nowrap;" in block
+    assert "text-overflow: ellipsis;" in _block("02-chat-graph.css", ".bg-style-facts > .theme-note")
+    js = (CSS_DIR.parent / "js" / "settings.js").read_text(encoding="utf-8")
+    assert 'facts.className = "bg-style-facts";' in js
