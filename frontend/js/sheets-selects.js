@@ -821,9 +821,24 @@ function enhanceSelect(select) {
   opener.setAttribute("aria-label", label);
   opener.title = select.title || label;
 
+  //: The picture an option names (`data-icon`, a Phosphor name; audit 1028 U27),
+  //: drawn before its name in the list row and on the opener's face. Decorative:
+  //: the name beside it is the label.
+  const optionGlyph = (option) => {
+    const name = option?.dataset.icon;
+    if (!name) return null;
+    const glyph = document.createElement("i");
+    glyph.className = `ph ph-${name} ph-lead`;
+    glyph.setAttribute("aria-hidden", "true");
+    return glyph;
+  };
+  let faceGlyph = null; // the chosen option's picture, if it names one
   const syncValue = () => {
     const chosen = select.options[select.selectedIndex];
     valueText.textContent = chosen ? selectFaceText(chosen, syncValue) : "";
+    faceGlyph?.remove();
+    faceGlyph = optionGlyph(chosen);
+    if (faceGlyph) opener.insertBefore(faceGlyph, valueText);
     //: A face cut down for a phone keeps the whole row in the tooltip.
     opener.title = chosen?.dataset.faceNarrow && NARROW_FACE.matches
       ? chosen.textContent.trim()
@@ -868,12 +883,8 @@ function enhanceSelect(select) {
     //: **A picture before the name** (`data-icon`, a Phosphor name; audit 1028
     //: U27: the Layout list was ten lines of text for ten shapes). Decorative:
     //: the name beside it is the label.
-    if (option.dataset.icon) {
-      const glyph = document.createElement("i");
-      glyph.className = `ph ph-${option.dataset.icon} ph-lead`;
-      glyph.setAttribute("aria-hidden", "true");
-      row.prepend(glyph);
-    }
+    const glyph = optionGlyph(option);
+    if (glyph) row.prepend(glyph);
     //: **An option that wants its row drawn its own way** names a class in
     //: `data-menu-class` (Settings' Font list sets each row in its own face,
     //: INBOX 670). The menu is lifted to <body>, so no selector can reach a
@@ -1937,7 +1948,8 @@ async function loadConversationList() {
     // into an ellipsis at the default sidebar width.
     if (conversation.tokens) bits.push(`${formatTokens(conversation.tokens)} tok`);
     meta.textContent = bits.join(" · ");
-    meta.title = bits.join(" · "); // in full, if the row still has to clip
+    //: The hover holds the exact time (OPEN #593); the row reads relative.
+    meta.title = [parseServerTime(conversation.last_at)?.toLocaleString(undefined, { dateStyle: "full", timeStyle: "short" }), ...bits.slice(1)].filter(Boolean).join(" · ");
     title.append(name, meta);
     // The title often isn't the subject: show what was actually asked.
     if (conversation.preview && conversation.preview !== conversation.title) {
