@@ -1211,8 +1211,6 @@ clash is listed so the choice is made once.
 | Tidy a board | yes (Tidy in the top bar, `whiteboard-map.js`) | `runLayout` (diagramly/Menus.js 1666), `runLastLayout` | done | none |
 | Mind map layouts (radial, tree, left, right) | yes (layout select, MINDMAP_PLAN) | n/a | done | none |
 | Flow (horizontal, vertical), tree (vertical, horizontal, radial), organic, circle, org chart | no on boards | `insertLayout` menu, `mxHierarchicalLayout`, `mxCompactTreeLayout`, `mxRadialTreeLayout`, `mxFastOrganicLayout`, `mxCircleLayout`, ELK (`ElkLayout.js`, `layout: 'elkLayered'`, `elkTree`, `elkOrganic`) | the layered layout (Sugiyama in 150 lines) and the existing map tree layout over a selection of shapes joined by links; circle is ten lines; organic is a force pass | L |
-| Parallel edges spacing | no | `mxParallelEdgeLayout` ("parallels", diagramly/Menus.js 1935) | offset links that share both ends | S |
-| Vertical or horizontal flip of a layout | no | `direction` menu (Menus.js 337) | a command per axis on a selection | S |
 
 ### 17. The Format panel with nothing selected, and diagram options
 

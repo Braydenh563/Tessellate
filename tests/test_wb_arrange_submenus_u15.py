@@ -30,7 +30,7 @@ def test_arrange_is_five_named_submenus_holding_every_row() -> None:
     block = _arrange()
     sections = re.findall(r'<div class="wb-menu-section" data-wb-submenu="ph:([a-z-]+) ([^"]+)"', block)
     assert [name for _, name in sections] == ["Order", "Align", "Distribute, size and flip", "Tidy and connect", "Group and lock"]
-    assert len(re.findall(r'data-wb-cmd="', block)) == 25
+    assert len(re.findall(r'data-wb-cmd="', block)) == 28
     assert "wb-panel-group-label" not in block, "the trigger names the group; a label over it says it twice"
 
 

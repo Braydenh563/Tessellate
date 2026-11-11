@@ -565,6 +565,11 @@ TAIL_TOPICS.extend(
                 "self loop",
                 "loop on a shape",
                 "connector to itself",
+                "parallel connectors",
+                "space the connectors",
+                "two lines between the same shapes",
+                "flip the layout",
+                "mirror a diagram",
             ),
             "body": (
                 "Shift+2 (or View, Zoom to the selection) frames what is selected, "
@@ -582,7 +587,10 @@ TAIL_TOPICS.extend(
                 "Home goes back to the top left of what is drawn at the zoom you have, and Shift+Home resets the view to 100% there. "
                 "Shift+Delete clears the labels of the selected shapes and connectors; one Undo puts them back. "
                 "In the find bar (Ctrl+H), Replace changes the current match and moves on; Replace all changes every one. "
-                "Arrange, Loop on the shape draws a connector from a shape back to itself; Format, Loop side moves it."
+                "Arrange, Loop on the shape draws a connector from a shape back to itself; Format, Loop side moves it. "
+                "Arrange, Space parallel connectors fans the connectors that join the same two shapes so none hides another "
+                "(it leaves a connector with bends of its own alone), and Layout, left to right or top to bottom, "
+                "swaps the selected shapes' places across the middle of the group, with their connectors' bends, and turns no shape itself."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
