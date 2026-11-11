@@ -24,6 +24,41 @@
   border-radius: inherit;
   pointer-events: none;
 }
+/* Crop on picture: a box and eight grips drawn in the picture's own (turned) frame; the dim outside is the
+   box's own shadow, so nothing needs a blur. */
+.wb-crop-frame {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  pointer-events: none;
+}
+#whiteboard-container[data-current-tool] .wb-object.wb-object-image.wb-selected:has(> .wb-crop-frame) .wb-resize-handle { display: none; }
+.wb-crop-rect {
+  position: absolute;
+  border: 1.5px solid var(--accent);
+  box-shadow: 0 0 0 100vmax color-mix(in srgb, var(--bg) 55%, transparent);
+}
+.wb-crop-grip {
+  position: absolute;
+  inline-size: 12px;
+  block-size: 12px;
+  padding: 0;
+  background: var(--accent);
+  border: 1px solid var(--card-bg);
+  border-radius: var(--radius-sm);
+  pointer-events: auto;
+  touch-action: none;
+  transform: translate(-50%, -50%);
+}
+.wb-crop-grip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wb-crop-grip[data-grip^="n"] { top: 0; }
+.wb-crop-grip[data-grip^="s"] { top: 100%; }
+.wb-crop-grip[data-grip="e"], .wb-crop-grip[data-grip="w"] { top: 50%; }
+.wb-crop-grip[data-grip$="w"] { left: 0; }
+.wb-crop-grip[data-grip$="e"] { left: 100%; }
+.wb-crop-grip[data-grip="n"], .wb-crop-grip[data-grip="s"] { left: 50%; }
+.wb-crop-grip[data-grip="n"], .wb-crop-grip[data-grip="s"] { cursor: ns-resize; }
+.wb-crop-grip[data-grip="e"], .wb-crop-grip[data-grip="w"] { cursor: ew-resize; }
 /* A frame (WHITEBOARD_PLAN decision 14): an edge and a title with nothing in
    between, so the shapes on the drawing layer below the card layer show
    through it. Its inside lets the pointer through to the board, so a press
