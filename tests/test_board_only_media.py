@@ -138,3 +138,30 @@ def test_help_names_where_a_board_picture_lives():
     assert "Save to Library" in body and "Captions" in body
     html = (_ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert "<b>Save to Library</b>" in html
+    #: K18 left line: the caption shows under a note's pictures too, and the help says so.
+    assert "popup" in body and "attached" in body
+    assert "popup's menu has the same switch" in html
+
+
+def test_a_notes_own_pictures_get_the_caption_line_in_the_popup_and_the_timeline_view():
+    layout = _js("image-layout.js")
+    #: One cached lookup per picture, drawn as text (never markup), under the muted token, pref-gated.
+    assert "imageLayout.caption = function" in layout and "imageLayout.paintCaptions = function" in layout
+    body = layout[layout.index("imageLayout.caption = function") : layout.index("imageLayout.paintCaptions = function")]
+    assert "/media/meta/" in body and "imageLayout.captions" in body
+    assert "textContent" in body and "innerHTML" not in body
+    assert 'prefs.get("wb-show-captions", null) === "1"' in body
+    assert "/files/" not in body
+    #: A graph popup's live picture and the timeline's note view call it; the popup menu toggles the pref.
+    assert 'closest?.("#graph-popup")' in _js("documents-cm.js")
+    assert "imageEditTarget(img) && imageLayout.caption(" in layout
+    graph = _js("graph.js")
+    assert "Show picture captions" in graph and "Hide picture captions" in graph
+    assert 'prefs.set("wb-show-captions"' in graph
+    css = (_ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    block = css[css.index(".md-picture-caption {") :][:500]
+    assert "color: var(--muted)" in block and "var(--text-xs)" in block
+    #: The Format panel's Library and Captions buttons each take a row: two in one row wrapped.
+    html = (_ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    row = html[html.index('<span class="wb-fmt-label">Library</span>') :]
+    assert row.index('id="wb-fmt-tolibrary"') < row.index("</div>") < row.index('id="wb-fmt-showcaption"')
