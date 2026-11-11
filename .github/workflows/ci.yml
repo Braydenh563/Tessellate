@@ -67,8 +67,14 @@ jobs:
           pip install -r requirements.txt
           pip install -e .
 
+      # --durations=0 with a one-second floor names every slow test; the junit file is summed by test file below,
+      # so one run shows the whole tail and not only the fifteen slowest (OPEN W24).
       - name: Run the test suite
-        run: python -m pytest -n auto --durations=15
+        run: python -m pytest -n auto --durations=0 --durations-min=1.0 --junitxml=junit.xml
+
+      - name: Test time by file
+        if: always()
+        run: python scripts/ci_durations.py junit.xml 40 >> "$GITHUB_STEP_SUMMARY"
 
   pdf:
     # Fourteen tests need the PDF rasteriser (pypdfium2 plus Pillow), which is
