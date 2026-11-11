@@ -361,11 +361,7 @@ Priya) and one note that is not a loose end. Read from the run: the model
 wrote `list_notes({...})` into its prose and then "I cannot execute the tool
 call", so the paging never happened; that shape is now recovered as a call
 for a read (`provider.extract_text_tool_calls`, pass 5). **Still open**: the
-gate itself (8 of 8, and 80% of the skills with no invalid call) on a 3B
-after that fix, and the built-in skills pass, which is hours on these cores.
-Measured 2026-11-11 on a Qwen2.5-1.5B (llama-cpp-python, seed 7): loose ends 2 of 8,
-small-class skill cases 1 pass, 2 partial, 6 fail of 9, tool choice 0 of 10;
-not met at 1.5B (`agent-remaining/w34-unv1-1111.md`, second run).
+gate itself (8 of 8, and 80% of the skills with no invalid call) on a 3B; a Qwen2.5-1.5B (2026-11-11, w34-unv1-1111.md) found 2 of 8, skills 1 pass 2 partial 6 fail of 9, tool choice 0 of 10: not met.
 
 ### Phase 5: the composer, after INBOX 725 (open)
 Left from INBOX 725, each its own step: (a) when a model runs, feed it the

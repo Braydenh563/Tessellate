@@ -22,7 +22,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.core import deps
 from tessellate.core.config import days_from_today, user_now
-from tessellate.core.database import EmbeddingRecord, Entry
+from tessellate.core.database import Category, EmbeddingRecord, Entry
 from tessellate.entry import manager
 
 __all__ = [
@@ -484,3 +484,20 @@ def _refresh_embedding(session: Session, entry: Entry) -> None:
         return
     deps.store_quietly(session, entry)
 
+
+def _missing_category_note(session: Session, category: str | None, total: int) -> dict:
+    """`list_notes` found nothing under a category name: say, when no category
+    has that name, which ones do (a model that guessed "notes" needs it). {}
+    otherwise."""
+    if not category or total or category == manager.UNCATEGORISED:
+        return {}
+    if session.scalar(select(Category.id).where(func.lower(Category.name) == category.lower())) is not None:
+        return {}
+    known = ", ".join(f"“{c['name']}”" for c in manager.all_categories(session)[:12])
+    return {
+        "note_to_model": (
+            f"There is no category called “{category}”, so nothing matched. "
+            + (f"The categories that exist are {known}. " if known else "")
+            + "Call list_notes without `category` to see every note."
+        )
+    }

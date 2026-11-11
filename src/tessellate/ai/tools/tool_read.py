@@ -8,7 +8,7 @@ down the layer list in `__init__.py`'s docstring, never back to `__init__`.
 from __future__ import annotations
 
 from tessellate.core.database import Category, Entry, LIKE_ESCAPE, like_escape
-from tessellate.ai.tools._common import DEFAULT_CONTEXT_TOKENS, DEFAULT_LIST_LIMIT, FULL_NOTE_CHARS, MAX_LIST_LIMIT, PREVIEW_CHARS, SEARCH_CONTEXT_SHARE, SUMMARY_NOTE_LIMIT, _READ_MORE, _category_clause, _clip, _limit_arg, _note_summary, _readable, _require_note, _since_clause, _since_days, _span_not_category, _visible
+from tessellate.ai.tools._common import DEFAULT_CONTEXT_TOKENS, DEFAULT_LIST_LIMIT, FULL_NOTE_CHARS, MAX_LIST_LIMIT, PREVIEW_CHARS, SEARCH_CONTEXT_SHARE, SUMMARY_NOTE_LIMIT, _READ_MORE, _category_clause, _clip, _limit_arg, _missing_category_note, _note_summary, _readable, _require_note, _since_clause, _since_days, _span_not_category, _visible
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, func, or_, select
 from tessellate.core import deps
@@ -622,25 +622,7 @@ def _list_notes(session: Session, args: dict) -> dict:
             f"offset={offset + len(rows)} for the next page, do not assume "
             "these are all the notes."
         )
-    elif category and not total and not _category_exists(session, category):
-        # A name that is not a category matches nothing, on purpose; a model
-        # that guessed "notes" needs to be told that, and shown the real ones.
-        known = ", ".join(f"“{c['name']}”" for c in manager.all_categories(session)[:12])
-        result["note_to_model"] = (
-            f"There is no category called “{category}”, so nothing matched. "
-            + (f"The categories that exist are {known}. " if known else "")
-            + "Call list_notes without `category` to see every note."
-        )
-    return result
-
-
-def _category_exists(session: Session, name: str) -> bool:
-    """Is `name` a category (any case) or the uncategorised bucket?"""
-    from tessellate.core.database import Category
-
-    if name == manager.UNCATEGORISED:
-        return True
-    return session.scalar(select(Category.id).where(func.lower(Category.name) == name.lower())) is not None
+    return {**result, **_missing_category_note(session, category, total)}
 
 
 def _count_notes(session: Session, args: dict) -> dict:
