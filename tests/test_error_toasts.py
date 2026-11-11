@@ -283,6 +283,8 @@ FAULTS = {
         '"Couldn\'t read this note\'s properties."': "reading a note's properties failed",
     },
     'settings-controls.js': {
+        '"The last review was not cleared. Try again."': 'the clear-review request failed',
+        '"The dashboard greeting was not saved. Try again."': 'the preferences write failed',
         '"Couldn\'t reset those settings."': 'resetting settings failed',
         '(status && status.textContent) || "Couldn\'t apply the update."': "the update step failed; the text is the step's own error",
         'status.textContent || "Couldn\'t install that version."': "the install step failed; the text is the step's own error",
@@ -301,6 +303,7 @@ FAULTS = {
         'text.textContent || "Couldn\'t apply the update."': "the update step failed; the text is the step's own error",
     },
     'whiteboard.js': {
+        '"Could not save that move, so it went back."': "the move's save request failed (offline or the item is gone); it offers Reload the board",
         'voiceLine("failed", { what: "undo that" })': 'undo threw an exception',
         'voiceLine("failed", { what: "redo that" })': 'redo threw an exception',
         'voiceLine("failed", { what: "delete that" })': 'the delete request failed (it offers Try again)',

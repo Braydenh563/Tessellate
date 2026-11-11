@@ -886,7 +886,9 @@ function watchDashWidgets() {
     queued = true;
     requestAnimationFrame(() => {
       queued = false;
-      sizeDashWidgets();
+      //: Not behind the veil (INBOX 1741): the grid is hidden while its cards fill and `renderDashboard`'s settle
+      //: sizes it once as it lifts; a pass per fill was 5 or 6 forced layouts at boot.
+      if (!grid.classList.contains("dash-filling")) sizeDashWidgets();
     });
   });
   //: Observing fires once for every card, so the first sizing is the observer's, a frame on,
@@ -1968,7 +1970,7 @@ async function renderDashboard({ refresh = false } = {}) {
   //: The opening curtain waits for this (`curtainShell`), 1.2s at most.
   //: Every visit, not only the first: a switch back to the dashboard redrew
   //: the widgets the same way, in view (0.26 on 300 notes, measured).
-  const settled = (window.dashSettled = Promise.race([Promise.allSettled(drawing), new Promise((r) => setTimeout(r, 1200))]));
+  const settled = (window.dashSettled = Promise.race([Promise.allSettled(drawing), new Promise((resolve) => setTimeout(function dashSettleTimeout() { resolve(); }, 1200))]));
   //: Placed a frame on (INBOX 1591): it reads the grid's box, and read here it laid the whole
   //: page out inside the script that delivered the notes (46ms at 4x); in the frame callback
   //: that layout is the one the frame was going to do anyway. Two frames on, the settle takes
@@ -1979,6 +1981,7 @@ async function renderDashboard({ refresh = false } = {}) {
   }, 1);
   settled.then(() => afterFrames(() => {
     if (window.dashSettled !== settled) return;
+    sizeDashWidgets();
     grid.classList.remove("dash-filling");
     dashFillingSkeletonDone(outline);
   }));

@@ -13,10 +13,11 @@ from __future__ import annotations
 import re
 
 from tests._app_js import INDEX_HTML, JS_DIR, app_js_text
+from tests import _js_scope
 
 
 def _compose_add() -> str:
-    quick = (JS_DIR / "quickadd.js").read_text(encoding="utf-8")
+    quick = _js_scope.unwrapped((JS_DIR / "quickadd.js").read_text(encoding="utf-8"))
     start = quick.index("async function reminderComposeAdd")
     return quick[start: quick.index("\n}\n", start)]
 
@@ -24,7 +25,7 @@ def _compose_add() -> str:
 def test_the_sentence_box_is_read_for_its_time_before_the_add():
     body = _compose_add()
     assert "quickAddSlots(box)" in body and "slots?.due" in body
-    quick = (JS_DIR / "quickadd.js").read_text(encoding="utf-8")
+    quick = _js_scope.unwrapped((JS_DIR / "quickadd.js").read_text(encoding="utf-8"))
     assert 'quickAddAttach($("reminder-text"), "reminder"' in quick
     wiring = (JS_DIR / "wiring.js").read_text(encoding="utf-8")
     assert '$("reminder-add").addEventListener("click", reminderComposeAdd)' in wiring
@@ -37,12 +38,12 @@ def test_the_form_errors_are_inline_and_nothing_rejects_unhandled():
     body = _compose_add()
     assert "try {" in body and "catch (error)" in body and "reminderFormError(error.message" in body
     assert "reminderFormError(" in body and "reminder-text" in body
-    quick = (JS_DIR / "quickadd.js").read_text(encoding="utf-8")
+    quick = _js_scope.unwrapped((JS_DIR / "quickadd.js").read_text(encoding="utf-8"))
     assert '$("reminder-date").min' in quick
 
 
 def test_a_question_is_said_once_and_the_due_label_is_a_word():
-    quick = (JS_DIR / "quickadd.js").read_text(encoding="utf-8")
+    quick = _js_scope.unwrapped((JS_DIR / "quickadd.js").read_text(encoding="utf-8"))
     ask = quick[quick.index("qaHold(input, slots, text);"):]
     assert 'status.textContent = "";' in ask[:300]
     assert "tmrw" not in app_js_text()

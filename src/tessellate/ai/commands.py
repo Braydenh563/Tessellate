@@ -550,7 +550,9 @@ _NAMED = ("called ", "titled ", "named ")
 #: "titled X saying Y", "named X that says Y", "called X: Y" (audit 1028 E25).
 _JOIN = r"(?:with|saying|containing|including|that says|which says|that reads|reading|having|and (?:say|says|put|write|writes))"
 _QUOTED_NAME = re.compile(r"^[\"“‘'](?P<name>.{1,120}?)[\"”’'](?P<tail>.*)$", re.S)
-_PLAIN_NAME = re.compile(rf"^(?P<name>.+?)(?:\s+{_JOIN}\s+|\s*:\s*)(?P<tail>.+)$", re.I | re.S)
+#: A name that is not quoted runs to the end of what was said ("called Shopping with milk, eggs and bread" is
+#: titled that, the owner's Q5), unless a word that can only introduce text ("saying", "that says") or a colon follows it.
+_PLAIN_NAME = re.compile(rf"^(?P<name>.+?)(?:\s+{_JOIN.replace('(?:with|', '(?:')}\s+|\s*:\s*)(?P<tail>.+)$", re.I | re.S)
 _BODY_LEAD = re.compile(rf"^\s*(?:{_JOIN}\s+|[:,;-]\s*)", re.I)
 
 
@@ -1998,6 +2000,10 @@ def _plan_one(session: Session, parsed: dict, note_ids: list[int] | None) -> dic
     """Delete, pin, rename, add to, link: one note, named or attached."""
     intent = parsed["intent"]
     entry, question = _resolve_one(session, parsed.get("about"), note_ids, bool(parsed.get("these")), parsed.get("note_id"))
+    if entry is None and intent == "append":
+        entry, question = _the_list_note(session, parsed, note_ids, question)
+        if entry is None:
+            return _new_list_offer(session, parsed) or {"line": question}
     if entry is None:
         return {"line": question}
     ok, skipped = _split_allowed([entry])
@@ -2015,6 +2021,34 @@ def _plan_one(session: Session, parsed: dict, note_ids: list[int] | None) -> dic
     if intent in CONFIRM_INTENTS:
         return {"line": _confirm(label), "card": card}
     return {"line": label, "card": card}
+
+
+#: A place a thing is added to that reads as a list the person keeps ("the packing list", "my groceries").
+_LIST_NAME = re.compile(r"^(?:my |the |our )?(?P<name>[a-z][a-z' -]{1,40}? list|groceries|shopping)$", re.I)
+
+
+def _the_list_note(session: Session, parsed: dict, note_ids: list[int] | None, question: str) -> tuple:
+    """"the shopping list" is the note called Shopping: the add finds it by its name without "list"."""
+    listed = _LIST_NAME.match((parsed.get("about") or "").strip())
+    bare = re.sub(r"\s+list$", "", listed.group("name"), flags=re.I) if listed else ""
+    if not bare or bare.lower() == listed.group("name").lower() or not _notes_about(session, bare, False):
+        return None, question
+    return _resolve_one(session, bare, note_ids, False, parsed.get("note_id"))
+
+
+def _new_list_offer(session: Session, parsed: dict) -> dict | None:
+    """One rule for every list add (the owner's Q6): it asks first. "add milk to the shopping list" with no such
+    note offers to make that note with the item on it, as a missing todo note does (`task_acts.plan_task_line`);
+    None when the place is no list or some note answers to it (the question of which one stands)."""
+    listed = _LIST_NAME.match((parsed.get("about") or "").strip())
+    if not listed or _notes_about(session, parsed["about"], False):
+        return None
+    title = _cap(listed.group("name").strip())
+    item = _cap(str(parsed.get("content") or "").strip())
+    if not item:
+        return None
+    label = f"Make a note “{title}” with “{item}” on it"
+    return {"line": f"You have no {title.lower()} note yet. {_confirm(label)}", "card": _card(label, [{"name": "create_note", "arguments": {"content": f"# {title}\n\n- [ ] {item}"}}])}
 
 
 def _item(entry) -> str:  # noqa: ANN001

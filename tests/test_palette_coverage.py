@@ -29,9 +29,10 @@ from pathlib import Path
 
 from tessellate.ai import act_registry
 from tests.test_catalogue_reveal import _feature_rows, _list_literal, _palette_rows, _targets
+from tests import _js_scope
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
-PALETTE = (JS / "app-palette.js").read_text(encoding="utf-8")
+PALETTE = _js_scope.unwrapped((JS / "app-palette.js").read_text(encoding="utf-8"))
 
 #: deepen72b.js's palette words, the 11 that found nothing among them.
 QUERIES = (

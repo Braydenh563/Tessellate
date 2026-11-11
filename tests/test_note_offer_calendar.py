@@ -16,10 +16,11 @@ from datetime import datetime, timezone
 
 from tessellate.ai import offers
 from tests._app_js import JS_DIR
+from tests import _js_scope
 
 NOW = datetime(2026, 10, 10, 14, 0, tzinfo=timezone.utc)
-QUICK = (JS_DIR / "quickadd.js").read_text(encoding="utf-8")
-CAL = (JS_DIR / "timeline-calendar.js").read_text(encoding="utf-8")
+QUICK = _js_scope.unwrapped((JS_DIR / "quickadd.js").read_text(encoding="utf-8"))
+CAL = _js_scope.unwrapped((JS_DIR / "timeline-calendar.js").read_text(encoding="utf-8"))
 
 
 def _fn(name: str, text: str) -> str:

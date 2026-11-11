@@ -120,6 +120,11 @@ KINDS = frozenset(
         # The verdict rows stop or pin it; these say so in the log.
         "wrong_fact",
         "pin_fact",
+        # A whole answer marked not right (audit 1028 E59): one row per note
+        # it cited, against the question. `search_down` reads it: those notes
+        # are read last for a question like that one, and left out once the
+        # person has said so `EXCLUDE_AFTER` times.
+        "wrong_answer",
     }
 )
 
@@ -130,6 +135,7 @@ KINDS = frozenset(
 FAMILIES: dict[str, tuple[str, ...]] = {
     "filing": ("refile",),
     "search": ("open_after_ask",),
+    "search_down": ("wrong_answer",),
     "links": ("dismiss_link",),
     "resurface": ("dismiss_resurface",),
 }
@@ -456,7 +462,7 @@ def boosts(session: Session, kind: str) -> dict[tuple, float]:
         key: tuple | None = None
         if item.kind == "refile":
             key = (item.from_value or "", item.to_value or "")
-        elif item.kind == "open_after_ask":
+        elif item.kind in ("open_after_ask", "wrong_answer"):
             question = str(item.subject.get("question") or "")
             entry_id = item.subject.get("entry_id")
             if question and entry_id is not None:

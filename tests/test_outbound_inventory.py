@@ -59,6 +59,7 @@ INVENTORY = {
         "huggingface.co (an allowlisted model, or the metadata and files of a repo typed into Pull a model by name)",
         "an Install, Reinstall or Pull click in Settings, or a yes to the one-time question about search by meaning",
     ),
+    "core/languagetool.py": ("this computer only: the installed LanguageTool child process on 127.0.0.1", "a grammar check once the LanguageTool extra is installed"),
     "core/extra_downloads.py": ("the pinned URL of an allowlisted extra, sha256 checked", "an Install click in Settings, Extras"),
     "core/privacy_http.py": ("whatever its caller names; records each destination on the privacy receipt", "its callers' triggers"),
     "core/webclip.py": ("the page the person clipped, or the agent's read_url", "web_search_enabled (off by default)"),

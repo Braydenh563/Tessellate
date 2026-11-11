@@ -356,9 +356,24 @@ function noteIsMeeting(entry) {
 // carry a second copy of it. Instant + one-click Undo, soft delete
 // underneath (Wave J). Also on the global undo stack (status bar / Ctrl+Z),
 // so it survives past the toast's own timeout.
+//: **A binned note leaves the keyboard user somewhere** (sweep 1028b W8): the
+//: menu's Move to bin removed the row the focus sat in, so it fell to `body`
+//: and the next Tab began at the top of the page. The neighbour is taken
+//: before the delete; once the list is redrawn it gets the focus only if the
+//: focus was lost (a click elsewhere in the meantime wins), and a list that
+//: emptied hands it to the capture field. The Delete key had this already.
 async function binNoteWithUndo(entry) {
+  const list = document.getElementById("entry-list");
+  const rows = list ? entryListItems(list) : [];
+  const at = rows.findIndex((row) => row.dataset.id === String(entry.id));
+  const heirId = (rows[at + 1] || rows[at - 1])?.dataset.id;
   await api(`/entries/${entry.id}`, { method: "DELETE" });
   await refreshEntries([entry.id]);
+  const held = document.activeElement;
+  if (at >= 0 && (!held || held === document.body || !held.isConnected)) {
+    const heir = heirId && list.querySelector(`:scope > li[data-id="${heirId}"]`);
+    (heir || document.getElementById("capture-bar-input"))?.focus();
+  }
   const restoreIt = async () => {
     await api(`/entries/${entry.id}/restore`, { method: "POST" });
     await refreshEntries([entry.id]);

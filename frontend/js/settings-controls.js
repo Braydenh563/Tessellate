@@ -812,7 +812,8 @@ $("memory-new")?.addEventListener("keydown", (e) => {
 });
 
 $("autonomous-review-clear")?.addEventListener("click", async () => {
-  await api("/tasks/autonomous/last/clear", { method: "POST" }).catch(() => {});
+  const ok = await api("/tasks/autonomous/last/clear", { method: "POST" }).then(() => true, () => false);
+  if (!ok) toast("The last review was not cleared. Try again.", true, { action: ["Try again", () => $("autonomous-review-clear")?.click()] });
   renderAutonomousReview();
 });
 
@@ -858,10 +859,11 @@ $("dashboard-persona-select").addEventListener("change", async () => {
   if (prefsCache) prefsCache.dashboard_persona = persona;
   paintDashboardPersonaMark();
   paintDashEmblem();
-  await apiJson("/preferences", {
+  const saved = await apiJson("/preferences", {
     method: "PUT",
     body: JSON.stringify({ dashboard_persona: persona }),
-  }).catch(() => {});
+  }).then(() => true, () => false);
+  if (!saved) return toast("The dashboard greeting was not saved. Try again.", true, { action: ["Try again", () => $("dashboard-persona-select").dispatchEvent(new Event("change"))] });
   toast(persona ? `Dashboard greeting now speaks as ${persona}.` : "Dashboard greeting back to matching Chat.");
 });
 

@@ -19,10 +19,11 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-KIT = (JS / "reply-kit.js").read_text(encoding="utf-8")
+KIT = _js_scope.unwrapped((JS / "reply-kit.js").read_text(encoding="utf-8"))
 EDITOR = (JS / "math-editor.js").read_text(encoding="utf-8")
 PANES = (JS / "settings-panes.js").read_text(encoding="utf-8")
 

@@ -361,8 +361,11 @@ HELP_TOPICS: list[dict] = [
             "(no Tesseract needed); you can pick the model or leave it automatic. A "
             "picture placed on a board or map is the exception: it stays on the board, "
             "unlisted, unsearched and unread, until you select it and press Save to Library "
-            "in Format (then it is filed and read like any other). Captions in the same "
-            "row draws a saved picture's caption as one muted line under it."
+            "in Format (then it is filed and read like any other). Captions, in the row "
+            "below it, draws a saved picture's caption as one muted line under it: on a "
+            "board, under the pictures in a note's popup in the Graph and its timeline "
+            "view, and the popup's menu has the same Show picture captions switch. A "
+            "file attached to a note says nothing."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },
@@ -1873,6 +1876,29 @@ HELP_TOPICS.extend(
                 "caret. Minimap (Editor and layout, "
                 "off at first) maps the whole file; Compare with a saved version "
                 "(palette) shows the changes inline, with Reject to put a hunk back."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
+            "id": "code-tabs",
+            "keywords": (
+                "code tabs",
+                "file tabs",
+                "open files",
+                "open code files",
+                "close file",
+                "switch file",
+                "several files",
+                "more than one file",
+            ),
+            #: Written from `documents-tabs.js` (audit 1028 D52).
+            "body": (
+                "Code files you open stay as tabs above the editor once two are open "
+                "(up to eight, kept in this browser only). Click a tab, or use the "
+                "left and right arrows on one, to switch; the file you leave is saved "
+                "first and reopens where you were. Close file ends the open tab and "
+                "shows its neighbour, and a middle-click closes any tab. A prose "
+                "document never shows the strip."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

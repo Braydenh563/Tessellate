@@ -12,8 +12,9 @@ with a reason written here.
 
 from __future__ import annotations
 
+import functools
 import re
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 
 from tessellate.api.asset_strip import strip_js_comments
@@ -64,9 +65,18 @@ TOP_LEVEL_LETS_CAP = 699
 #: documents-mermaid.js exports `diagramModel`; measured 9,706. 2026-11-08 (after merges took it to 9,711): task-steps.js
 #: (three exports) and obj-order.js (eight) wrapped whole; measured 9,701.  iife-1109: screen-context, load-failed, feature-model-sheet, phone-more,
 #: extract-preview, timeline-detail, scroll-row, assistant-avatar and confirmed-patterns wrapped whole, one export each; measured 9,688. Then date-field, link-types, vault-unlock, offline-split and pick-row wrapped whole; measured 9,678. iife2-1109: twenty lazy files wrapped whole (see CHANGELOG); measured 9,598. iife3-1109: tidy, lan-watch, documents-ai and model-menu wrapped whole (six exports in all); measured 9,513. Then ocr-engine and note-properties wrapped whole; measured 9,490. iife4-1109: twenty-one files that tests reached privately wrapped whole (the tests read them through `_js_scope.unwrapped`, or run the vm with `window` as the context); measured 9,096. s58-1110 (W29 D24): settings-packages.js, appearance-panel.js and whiteboard-history.js wrapped whole; measured 9,044.
-GLOBAL_NAMES_CAP = 9044
+#: 2026-11-11, W29 carve 1: panel-movable.js wrapped whole, one export (panelId). Measured 8,966.
+#: W29 carve 2: suggestions-inbox.js wrapped whole, one export (openSuggestionsInbox). Measured 8,940.
+#: W29 carve 3: tour.js wrapped whole, exporting `TOUR_ENABLED`, `openTour` and `renderTourReplay`. Measured 8,883.
+#: W29 carve 4: timeline-calendar.js wrapped whole, exporting ten names the timeline and its tests call. Measured 8,830.
+#: W29 carve 5: quickadd.js wrapped whole, exporting eight names. Measured 8,782.
+#: W29 carve 6: reply-kit.js wrapped whole, exporting five names. Measured 8,733.
+#: W29 carve 7: app-palette.js wrapped whole, exporting six names. Measured 8,679.
+#: 2026-11-11 W29 carve 8: documents-codekit.js wrapped whole, four exports. Measured 8,629.
+GLOBAL_NAMES_CAP = 8629
 
 
+@functools.lru_cache(maxsize=None)
 def _code() -> dict[str, str]:
     return {p.name: strip_js_comments(p.read_text(encoding="utf-8")) for p in sorted(JS.glob("*.js"))}
 
@@ -98,6 +108,7 @@ def test_no_two_files_define_the_same_function():
     assert not twice, f"defined twice in the one global scope: {twice}"
 
 
+@functools.lru_cache(maxsize=None)
 def _sources() -> dict[str, str]:
     return {
         p.name: p.read_text(encoding="utf-8")
@@ -114,16 +125,33 @@ def test_global_names_only_go_down():
     )
 
 
+_TOKEN = re.compile(r"[\w$]+")
+
+
+def _named_in(code: dict[str, str]) -> dict[str, set[str]]:
+    """Token -> the files that name it as a global would be named: a whole identifier that is not a member access
+    (`x.name`), except `window.name`. One pass over the 14 MB of script, where a regex search per export per file
+    took a minute (CI time 1109); the answer is the old per-export regex's: a name not after a dot, or after `window.`, and not inside a longer one."""
+    named: dict[str, set[str]] = defaultdict(set)
+    for file, text in code.items():
+        for m in _TOKEN.finditer(text):
+            start = m.start()
+            if start and text[start - 1] == "." and text[max(0, start - 7) : start] != "window.":
+                continue
+            named[m.group()].add(file)
+    return named
+
+
 def test_a_wrapped_file_exports_only_what_it_defines_and_others_call():
     """An export the file does not define is a stand-in that resolves to
     nothing; one nothing else names is a private name back in the shared scope."""
     sources = _sources()
-    code = _code()
+    named = _named_in(_code())
     wrong = []
     for name, source in sources.items():
         for export in sorted(_js_scope.listed(source)):
             if not re.search(rf"^  (?:async\s+)?(?:function\s+|const\s+|class\s+){re.escape(export)}\b", source, re.M):
                 wrong.append(f"{name} exports {export} but does not define it at its top")
-            elif not any(re.search(rf"(?:(?<![\w$.])|(?<=window\.)){re.escape(export)}(?![\w$])", other) for other_name, other in code.items() if other_name != name):
+            elif not (named.get(export, set()) - {name}):
                 wrong.append(f"{name} exports {export}, which no other file names")
     assert not wrong, "; ".join(wrong)
