@@ -413,6 +413,7 @@ async function run() {
       await settle(200);
     };
     const doMeasure = async (state, roots) => {
+      const tm = Date.now();
       const a = await ev(measure, { roots, passB: false, excl: EXCL });
       // Pass B: every vertical scroller in the roots at its end (a sticky foot over text).
       const restore = await ev((roots) => {
@@ -427,7 +428,7 @@ async function run() {
       if (restore > 0) { await settle(250); b = await ev(measure, { roots, passB: true, excl: EXCL }); await ev(() => { for (const [el, t] of window.__wzRestore || []) el.scrollTop = t; }); }
       const part = (x) => (x && x.findings ? x.findings : x && x.err ? [x] : []);
       const findings = [...part(a), ...part(b)];
-      emit({ vp, state, roots: a && a.roots, n: findings.length, findings });
+      emit({ vp, state, roots: a && a.roots, ms: Date.now() - tm, at: Math.round((Date.now() - t0) / 1000), n: findings.length, findings });
     };
     // Openers inside a scope: menus, help ?s, menu toggles, the first kebab of each kind.
     const openers = (scope) => ev(({ scope, EXCL }) => {
