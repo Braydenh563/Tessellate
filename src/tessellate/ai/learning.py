@@ -302,8 +302,19 @@ def dismissal_counts(session: Session) -> dict[str, int]:
     return counts
 
 
-def revive_dismissals(session: Session) -> list[int]:
-    """Forget every dismissal: the suggestions they hid may be offered again.
+def live_dismissals(session: Session) -> list[tuple[int, str, dict]]:
+    """Every dismissal in force as `(row id, kind, payload)`, oldest first
+    (Settings, Data lists them one by one)."""
+    return [
+        (row.id, str(_payload(row).get("kind") or ""), _payload(row))
+        for row in _live_dismissal_rows(session)
+        if str(_payload(row).get("kind") or "") in DISMISSAL_KINDS
+    ]
+
+
+def revive_dismissals(session: Session, only: set[int] | None = None) -> list[int]:
+    """Forget every dismissal (or just the rows in `only`): the suggestions
+    they hid may be offered again.
 
     The rows stay, marked `revived`, so the same call can put them back
     (`restore_dismissals`) and nothing is lost to a mis-click. Returns the ids
@@ -311,7 +322,7 @@ def revive_dismissals(session: Session) -> list[int]:
     marked: list[int] = []
     for row in _live_dismissal_rows(session):
         payload = dict(_payload(row))
-        if str(payload.get("kind") or "") not in DISMISSAL_KINDS:
+        if str(payload.get("kind") or "") not in DISMISSAL_KINDS or (only is not None and row.id not in only):
             continue
         payload["revived"] = True
         row.payload = payload  # a new dict: SQLAlchemy sees a JSON column change by assignment

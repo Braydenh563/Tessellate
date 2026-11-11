@@ -14057,7 +14057,9 @@ Link to another note with [[its first few words]]."></textarea>
                   conversation is kept in this window only. Dismissed
                   suggestions are the ones you said no to (merges, link
                   types, links, contradictions, reminders of old notes and
-                  insights): clearing them lets the app offer them again.
+                  insights): clearing them lets the app offer them all again.
+                  Review them one by one lists each with its own Restore, which
+                  offers just that one again and can be undone for ten seconds.
                   Clear app cache, above, is the one that reloads the app.
                 </p>
               </div>
@@ -14089,6 +14091,8 @@ Link to another note with [[its first few words]]."></textarea>
                 </div>
                 <div class="row"><button id="clear-dismissed" class="ghost small" type="button"><i class="ph ph-eye ph-lead" aria-hidden="true"></i> Clear dismissed suggestions</button></div>
               </div>
+              <button id="dismissed-toggle" class="ghost small disclosure-row hidden" type="button" aria-expanded="false" aria-controls="dismissed-list">Review them one by one</button>
+              <ul class="entry-list recent-changes hidden" id="dismissed-list" aria-label="Dismissed suggestions"></ul>
             </div>
 
             <!-- Brief 86 (c): every Settings change is kept (twenty), with its
