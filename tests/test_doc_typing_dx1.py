@@ -18,7 +18,7 @@ from pathlib import Path
 import pytest
 
 JS = Path(__file__).resolve().parent.parent / "frontend" / "js"
-DOCS = (JS / "documents.js").read_text(encoding="utf-8")
+DOCS = (JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-view.js").read_text(encoding="utf-8")
 PROSE = (JS / "documents-prose.js").read_text(encoding="utf-8")
 MERMAID = (JS / "documents-mermaid.js").read_text(encoding="utf-8")
 needs_node = pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")

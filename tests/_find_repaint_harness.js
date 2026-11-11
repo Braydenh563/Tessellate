@@ -11,7 +11,9 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const root = path.resolve(process.argv[2]);
-const SOURCE = fs.readFileSync(path.join(root, "frontend", "js", "documents.js"), "utf8");
+const SOURCE = ["documents.js", "documents-view.js"]
+  .map((f) => fs.readFileSync(path.join(root, "frontend", "js", f), "utf8"))
+  .join("\n");
 
 function declaration(name) {
   const head = new RegExp(`^(?:async function|function|const|let) ${name}\\b`, "m");

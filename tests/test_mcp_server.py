@@ -12,7 +12,7 @@ import json
 
 from tessellate.ai import tools
 from tessellate.core import deps
-from tessellate.mcp_server import handle_request, offered_tools, serve
+from tessellate.mcp_server import handle_request, offered_tools, serve, writes_allowed
 
 
 def test_offered_tools_excludes_every_destructive_tool(app_state):
@@ -356,3 +356,11 @@ def test_the_token_is_a_secret_setting_and_the_snippet_carries_it(client):
     assert env[mcp_server.TOKEN_ENV] == mcp_server.token()
     saved = deps.get_config().preferences_path.read_text(encoding="utf-8")
     assert env[mcp_server.TOKEN_ENV] not in saved
+
+
+def test_the_writes_switch_round_trips_through_the_settings_api(client):
+    """Q22 K13: the Settings checkbox (#pref-mcp-writes) saves and reads back this key."""
+    assert client.get("/preferences").json()["mcp_writes_enabled"] is False
+    client.put("/preferences", json={"mcp_writes_enabled": True})
+    assert client.get("/preferences").json()["mcp_writes_enabled"] is True
+    assert writes_allowed() is True

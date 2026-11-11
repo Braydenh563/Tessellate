@@ -764,6 +764,10 @@ $("pref-auto-stale-review").addEventListener("change", (e) =>
   setPreference("auto_stale_review_enabled", e.target.checked)
 );
 
+$("pref-mcp-writes").addEventListener("change", (e) =>
+  setPreference("mcp_writes_enabled", e.target.checked)
+);
+
 $("pref-auto-capture").addEventListener("change", (e) =>
   setPreference("auto_capture_enabled", e.target.checked)
 );
