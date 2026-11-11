@@ -12,8 +12,10 @@ Left, one line each:
 - Gap row 9 (clipper fields on a note's properties): built (core/webclip.py, routes_webclip.py; tests in test_webclip*.py).
 - Gap row 1 recording embed: built (`![[a recording's name]]` in Edit and Read; tests/test_doc_recording_embed.py). Not supported: Notes-tab `![[recording]]` when the Library bundle is not loaded.
 
-Blockers (true, with the first step):
-- Gap row 10 (board embed editable in place): whiteboard.js holds one global `wbState` and `#whiteboard-container`. Step 1 (whiteboard.js, off limits to this run): make the state per instance; step 2: mount it from documents-embeds.js `docEmbedNode`'s `board` branch. Size L.
-- Gap row 5 (synced blocks): `![[Doc#^id]]` is read-only (`docEmbedNode` block branch). An editable transclusion needs a design (where the text lives, how a save in either place reaches the other). Size L.
-- Gap row 6 (database view): no cross-note property query endpoint exists (only `repo/properties.py` per entry and `types()`). Step 1: a `GET` that lists notes by property; step 2: a lazy table-only `base` block renderer; board and calendar views after. Size L.
+Built in run 2 (2026-11-11), HISTORY "F1 run 2": gap row 6 (the ```base block, a read-only table of notes by property), gap row 5 (synced blocks: a `![[Doc#^id]]` window edits its source, DOCUMENTS_PLAN 26 decision 82) and gap row 10 (Edit here on a board card opens the board in a dialog; whiteboard.js gained `openWhiteboardBoard(id, { stay: true })` and a cancelable `wb-leave` event, no per-instance refactor).
+
+Checks done in run 2 (:8796): dark Live graph at 360, 820 and 1440; bookmarks-import Undo in the UI; bookmarks file round trip; HTML export of a graph and a base block (found and fixed: no plot styles in the file, key swatch lost with the style attributes, a base block saved as "Reading the notes", row names removed with the buttons).
+
+Left, true:
 - Video embed: out by decision 2 (audio is a recording; no video attachment).
+- Not verified: print preview of a plot (the `@media print` rules in the lazy CSS cover it, not driven); Escape and the dialog's minimise and resize inside the board dialog; the Library loses its open board while the dialog is open and is left on the board list.

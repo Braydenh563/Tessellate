@@ -98,6 +98,16 @@ pre {
 pre code { padding: 0; background: none; }
 table { width: 100%; border-collapse: collapse; font-size: 0.95em; }
 th, td { padding: 0.45em 0.7em; border: 1px solid var(--rule); text-align: left; }
+/* A plotted graph and a table of notes: the picture's own lines, not the app's tokens (documents-graph.js, documents-base.js). */
+.dg-title, .db-label { color: var(--muted); font-size: 0.9rem; }
+.dg-plot { border: 1px solid var(--rule); border-radius: 6px; }
+.dg-svg { display: block; width: 100%; height: auto; }
+.dg-svg text { fill: var(--muted); font-size: 11px; }
+.dg-line, .dg-frame { stroke: var(--rule); stroke-width: 1; }
+.dg-axis { stroke: var(--muted); stroke-width: 1.25; }
+.dg-curve { stroke-width: 2.25; stroke-linejoin: round; stroke-linecap: round; }
+.dg-key { display: flex; flex-wrap: wrap; gap: 0.8em; margin-top: 0.4em; color: var(--muted); font-size: 0.9rem; }
+.db-scroll { overflow-x: auto; }
 th { background: var(--inner); }
 hr { height: 1px; margin: 2.5em 0; border: 0; background: var(--rule); }
 ul.task-list, .task-list { list-style: none; padding-left: 1.2em; }
@@ -348,6 +358,13 @@ async function docExportInlineImages(root) {
   return { inlined, dropped, bytes: spent };
 }
 
+//: A ```base block reads its rows from the server after the preview is drawn, so a file saved at once would hold its "Reading the
+//: notes" line instead of the table. Wait until none is left, for three seconds at most (the table is a read of a list, not a job).
+async function docExportBaseSettled(root) {
+  const waiting = () => [...root.querySelectorAll(".db-empty")].some((n) => n.textContent === "Reading the notes");
+  for (let tries = 0; tries < 30 && waiting(); tries++) await new Promise((resolve) => setTimeout(resolve, 100));
+}
+
 async function docExportHtmlRun(slides = false) {
   if (!currentDoc || (slides && !docFileType().previewable)) return;
   const status = $("doc-status");
@@ -371,6 +388,7 @@ async function docExportHtmlRun(slides = false) {
   withDocPreviewShown(async (restore) => {
     try {
       await docMermaidWhenDrawn();
+      await docExportBaseSettled($("doc-preview"));
       const clone = $("doc-preview").cloneNode(true);
       clone.removeAttribute("id");
       clone.removeAttribute("class");

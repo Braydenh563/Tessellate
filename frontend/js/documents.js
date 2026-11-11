@@ -7720,7 +7720,8 @@ const DOC_EXPORT_STRIP = ".code-bar, .entry-image-note, a.md-fn-back, .code-acti
 function docExportUnwrapControls(root) {
   for (const node of [...root.querySelectorAll("button")]) {
     const words = (node.textContent || "").trim();
-    if (!words || !node.classList.contains("wiki-link")) {
+    //: A table of notes names each row by a button (`db-open`); the words are the row, so they stay as text like a wiki link does.
+    if (!words || !node.matches(".wiki-link, .db-open")) {
       node.remove();
       continue;
     }
@@ -7754,8 +7755,29 @@ function docExportPromoteHeadings(root) {
   }
 }
 
+//: A plotted graph and a table of notes carry controls for the screen (zoom, sliders, refresh, the edit pencil). A file has none of
+//: them; the key's swatch is a coloured box whose colour is a style, which the clean-up below drops, so it becomes a drawn bar first.
+const DOC_EXPORT_FIGURE_CHROME = ".dg-tools, .dg-params, .dg-edit, .db-edit, .db-bar button";
+
+function docExportFigures(root) {
+  for (const swatch of [...root.querySelectorAll(".dg-swatch")]) {
+    const bar = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    bar.setAttribute("class", "dg-swatch");
+    bar.setAttribute("width", "16");
+    bar.setAttribute("height", "4");
+    const fill = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    fill.setAttribute("width", "16");
+    fill.setAttribute("height", "4");
+    fill.setAttribute("fill", swatch.style.background || "currentColor");
+    bar.append(fill);
+    swatch.replaceWith(bar);
+  }
+  for (const node of root.querySelectorAll(DOC_EXPORT_FIGURE_CHROME)) node.remove();
+}
+
 function docExportClean(root) {
   for (const node of root.querySelectorAll(DOC_EXPORT_STRIP)) node.remove();
+  docExportFigures(root);
   docExportUnwrapControls(root);
   docExportPromoteHeadings(root);
   for (const box of root.querySelectorAll('input:not([type="checkbox"])')) box.remove();
