@@ -5,8 +5,10 @@ chat route with no model (fake transport); the clock is `_seed_1031c.NOW`."""
 from __future__ import annotations
 
 import pytest
+from sqlalchemy import select
 
 import tests._seed_1031c as seed_c
+from tessellate.core.database import Entry
 from tessellate.entry import manager
 
 
@@ -30,8 +32,16 @@ RUNNING = (
 
 
 @pytest.mark.parametrize("question", ["the latest on running"])
-def test_d9_a_line_with_its_own_date_is_not_led_by_today(notebook, question):
-    said, _ = notebook(*RUNNING)(question)
+def test_d9_a_line_with_its_own_date_is_not_led_by_today(notebook, session, question):
+    go = notebook(*RUNNING)
+    #: "The latest on running" answers with the newest note (W7b B7); the notes are stamped one instant, so the other two
+    #: are made a day older here, and this test stays about how its own-dated line is worded.
+    from datetime import timedelta
+
+    for entry in session.scalars(select(Entry).where(~Entry.content.like("# Running log%"))):
+        entry.created_at = entry.updated_at = seed_c.NOW - timedelta(days=1)
+    session.commit()
+    said, _ = go(question)
     assert "ran 6 km" in said.lower(), said
     assert "Today, you ran" not in said and "today, you ran" not in said.lower(), said
 
@@ -55,7 +65,8 @@ def test_d8_a_weekday_in_a_note_is_not_turned_into_today(notebook):
 @pytest.mark.xfail(strict=True, reason="round 1 D8 open: _join glues non-adjacent sentences inside one quotation (composer_digest._line_of)")
 def test_d8_a_quotation_does_not_skip_a_sentence_inside_the_marks(notebook):
     note = "# Books\n\nCurrently reading Piranesi by Susanna Clarke. Next: The Dispossessed. Finished Dune in September."
-    go = notebook(note, "# Dinner\n\nRemember to book a table for dinner in Lisbon on the first night.")
+    #: The second note is about books too ("Book club" is the noun); "book a table" is the verb and no longer counts (W7b B10).
+    go = notebook(note, "# Book club\n\nBook club meets on the first Tuesday. Next book is The Remains of the Day.")
     said, _ = go("what do I know about books")
     for quoted in _quoted(said):
         if "Piranesi" in quoted and "Dune" in quoted:

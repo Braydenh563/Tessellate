@@ -120,7 +120,7 @@ def test_keep_on_the_tall_chart_offer_is_remembered_per_diagram_not_per_shared_p
     got = run(
         """
 const mk = () => { const e = { cls: new Set(), kids: [], classList: { add(c) { e.cls.add(c); }, remove(c) { e.cls.delete(c); }, contains: (c) => e.cls.has(c) },
-  append(...n) { e.kids.push(...n); }, set className(v) { e.cls = new Set(v.split(" ")); }, set textContent(v) {} }; return e; };
+  append(...n) { e.kids.push(...n); }, setAttribute() {}, set className(v) { e.cls = new Set(v.split(" ")); }, set textContent(v) {} }; return e; };
 ctx.document = { createElement: mk };
 ctx.smallButton = (label, tip, run) => { const b = mk(); b.run = run; b.label = label; return b; };
 load("diagram-outline.js");
@@ -129,7 +129,9 @@ const pane = (key) => ({ host, io: { key }, turn: () => {}, fig: { parentElement
 const shown = (S) => { ctx.diagramModel.outline.offer(S, true); return Boolean(S.sideways) && !S.sideways.cls.has("hidden"); };
 const a1 = pane("doc-a");
 const first = shown(a1);
-a1.sideways.kids.find((k) => k.label === "Keep").run();
+// The two buttons sit in one group now (2026-11-11), so the search goes down a level.
+const all = (e) => e.kids.flatMap((k) => [k, ...all(k)]);
+all(a1.sideways).find((k) => k.label === "Keep").run();
 const a2 = pane("doc-a");
 const b1 = pane("doc-b");
 out({ first, sameDiagramAgain: shown(a2), otherDiagram: shown(b1) });

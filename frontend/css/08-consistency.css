@@ -3939,7 +3939,7 @@ body .chip.item-label,
   :is(#library-docs-list, #bookmark-list):has(.doc-list-tick:checked) .doc-list-tick,
   .library-image-tile:is(:hover, :focus-within) > .library-tile-tick,
   .library-image-tile > .library-tile-tick:checked,
-  body:has(#library-media-selectbar:not(.hidden)) .library-image-tile > .library-tile-tick {
+  body.library-media-selecting .library-image-tile > .library-tile-tick {
     opacity: 1;
   }
   :is(.doc-list-item, .bookmark-row):is(:hover, :focus-within) :is(.doc-list-icon, .bookmark-mark),

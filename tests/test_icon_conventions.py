@@ -92,6 +92,7 @@ def test_in_script_the_overflow_glyph_belongs_to_the_menu_builders_alone() -> No
     allowed = {
         "sheets-selects.js",  # kebabMenu
         "menus.js",  # the note row's own builder, a card (meatball)
+        "entry-card.js",  # that builder (`entryOverflowMenu`), moved here from menus.js for the boot gzip budget
         "documents.js",  # the dock's More toggle label
         "whiteboard-commands.js",  # the legend naming the menu key
         "editor.js",  # (comment on the section break: not a glyph)

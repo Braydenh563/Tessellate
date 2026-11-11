@@ -533,70 +533,6 @@ function isRenderableUrl(url) {
   return /^https?:\/\//i.test(url) || (url.startsWith("/") && !url.startsWith("//"));
 }
 
-// A non-image attachment (handleFileUpload's link-syntax branch) previously
-// rendered as a bare link, indistinguishable at a glance from an ordinary
-// URL: BACKLOG §4's "genuinely still open" follow-up. Only applied to our
-// own /media/ uploads, not arbitrary external links, since a random web
-// page's URL extension says nothing reliable about its content.
-const ATTACHMENT_ICONS = {
-  pdf: "ph-file-pdf", doc: "ph-file-doc", docx: "ph-file-doc", rtf: "ph-file-doc",
-  xls: "ph-file-xls", xlsx: "ph-file-xls", csv: "ph-file-csv",
-  ppt: "ph-file-ppt", pptx: "ph-file-ppt",
-  zip: "ph-file-archive", rar: "ph-file-archive", "7z": "ph-file-archive",
-  mp3: "ph-file-audio", wav: "ph-file-audio", ogg: "ph-file-audio", m4a: "ph-file-audio", webm: "ph-file-audio",
-  mp4: "ph-file-video", mov: "ph-file-video",
-  txt: "ph-file-text", md: "ph-file-md", json: "ph-file-code",
-  png: "ph-file-image", jpg: "ph-file-image", jpeg: "ph-file-image",
-  gif: "ph-file-image", webp: "ph-file-image", heic: "ph-file-image", heif: "ph-file-image",
-};
-
-// `name` is optional and only matters for a `/files/{id}` URL: the
-// note-attachment download endpoint, opaque and extension-less by design
-// (unlike `/media/<filename>.ext`, which pasted/dropped inline images use).
-// Without it, a note's attached PDF/docx/etc. had no extension anywhere in
-// its URL to read a type from, so every non-image attachment fell through
-// to nothing rendering at all wherever a caller built the URL that way.
-function attachmentIconClass(url, name) {
-  const source = name || (url.startsWith("/media/") ? url : "");
-  if (!source) return null;
-  const ext = source.split(".").pop().split(/[?#]/)[0].toLowerCase();
-  return ATTACHMENT_ICONS[ext] || "ph-file";
-}
-
-//: Extensions the file card labels by name rather than by the generic
-//: "File", the type is the second most useful thing about a file after
-//: what it is called, and "PDF · Open" reads as a thing you can do where
-//: "myfile.pdf" alone reads as text that happens to end in .pdf.
-const FILE_KIND_LABELS = {
-  pdf: "PDF", doc: "Word", docx: "Word", odt: "Document", rtf: "Document",
-  xls: "Sheet", xlsx: "Sheet", ods: "Sheet", csv: "CSV",
-  ppt: "Slides", pptx: "Slides", odp: "Slides",
-  txt: "Text", md: "Markdown", markdown: "Markdown",
-  json: "JSON", xml: "XML", yaml: "YAML", yml: "YAML",
-  html: "HTML", htm: "HTML", css: "CSS",
-  js: "Code", ts: "Code", jsx: "Code", tsx: "Code", py: "Code", java: "Code",
-  c: "Code", h: "Code", cpp: "Code", hpp: "Code", cs: "Code", go: "Code",
-  rs: "Code", rb: "Code", php: "Code", sh: "Code", sql: "SQL",
-  swift: "Code", kt: "Code", vb: "Code", vbs: "Code", diff: "Code", patch: "Code",
-  zip: "Archive", mp3: "Audio", wav: "Audio", m4a: "Audio",
-  mp4: "Video", mov: "Video", webm: "Video",
-};
-
-function fileKindLabel(url, name) {
-  const source = name || url;
-  const ext = source.split(".").pop().split(/[?#]/)[0].toLowerCase();
-  return FILE_KIND_LABELS[ext] || "File";
-}
-
-/** The one-line form of the attachment card, for a surface too small for a card. */
-function fileChip(name, url) {
-  const label = name && name !== url ? name : url.split("/").pop();
-  const chipEl = document.createElement("span");
-  chipEl.className = "chip file-chip";
-  setLabel(chipEl, `${(attachmentIconClass(url, name) || "ph-file").replace("ph-", "ph:")} ${label}`);
-  chipEl.title = `${fileKindLabel(url, name)}: ${label}`;
-  return chipEl;
-}
 
 //: **One card for every file attached to anything** (INBOX 440 (2), DESIGN.md
 //: "A file attached to a note"). The owner: "all of the attachment cards ui
@@ -623,13 +559,6 @@ function fileChip(name, url) {
 //: `onChange` (a note's own file), `staged` (Capture, before Save).
 const ATT_KINDS = { pdf: "pdf", mp3: "audio", wav: "audio", ogg: "audio", m4a: "audio", flac: "audio", aac: "audio", opus: "audio", mp4: "video", mov: "video", webm: "video", mkv: "video", m4v: "video" };
 
-function attachmentExt(...sources) {
-  for (const source of sources) {
-    const match = /\.([a-z0-9]{1,5})(?:[?#].*)?$/i.exec(source || "");
-    if (match) return match[1].toLowerCase();
-  }
-  return "";
-}
 
 function attachmentKind(name, url) {
   const ext = attachmentExt(name, url);
@@ -3032,9 +2961,10 @@ function clearSkeletons(container) {
   container.removeAttribute("aria-busy");
   const held = container.querySelectorAll(":scope > .skeleton");
   for (const el of held) el.remove();
-  //: The caller draws its rows right after this in the same task, so a
-  //: microtask sees them (K1; no observer or frame loop, test_frontend_wake_sources).
-  if (held.length && container.id) queueMicrotask(() => skeletonRemember(container));
+  //: The caller draws its rows right after this in the same task; a timer past the next frame sees them and reads
+  //: a clean page (K1; no observer or frame loop, test_frontend_wake_sources). The microtask this was read the
+  //: rows' layout inside the press: 96ms style and 55 layout at 4x on opening Logs, 677 elements (INBOX 1111).
+  if (held.length && container.id) setTimeout(skeletonRemember, 80, container);
   //: **What replaces them settles in** (the motion pass, 2026-10-05): the
   //: first rows fade up a step, staggered (`.ui-settle`, 08-consistency.css),
   //: instead of popping in where the skeletons were. Only on this first

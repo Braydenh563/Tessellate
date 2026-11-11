@@ -98,8 +98,9 @@ def test_atlas_is_asked_to_step_aside_when_the_card_changes_its_box():
     for name in ("setCaptureMode", "closeCaptureCard"):
         assert "captureCard.settle()" in _function(card, name), name
     more = _js("capture-card-more.js")
-    for name in ("syncCaptureExtras", "renderCaptureThumbs", "renderCaptureSuggestions"):
+    for name in ("syncCaptureExtras", "renderCaptureSuggestions"):
         assert "captureCard.settle()" in _function(more, name), name
+    assert "captureCard.settle()" in _function(_js("capture-stage.js"), "renderCaptureStage")
 
 
 def test_the_guide_and_the_widget_list_say_what_the_card_is_now():

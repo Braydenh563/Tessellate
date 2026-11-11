@@ -32,7 +32,7 @@ def test_a_narrow_sidebar_sheds_the_word_then_folds_the_icons_into_a_kebab():
 
 def test_the_kebab_presses_the_real_buttons_and_is_built_in_js():
     body = DOCS_JS.split("function docTypeMount()", 1)[1].split("\n}\n", 1)[0]
-    for target in ("doc-list-help", "#doc-new-template", "#doc-new-diagram"):
+    for target in ("graph-help-toggle", "#doc-new-template", "#doc-new-diagram"):
         assert target in body
     assert "kebabMenu(" in body
     assert "doc-head-more" not in HTML  # the boot document is element-capped
@@ -40,3 +40,9 @@ def test_the_kebab_presses_the_real_buttons_and_is_built_in_js():
 
 def test_the_help_says_where_the_buttons_went():
     assert "sit in the ⋯ beside New" in HTML
+
+
+def test_the_outline_heads_help_ends_the_row_and_is_not_clipped_at_the_top():
+    rule = DOCK.split("#doc-sidebar-outline > .sidebar-head {", 1)[1].split("}", 1)[0]
+    assert "padding-right: 0" in rule
+    assert "margin-top: var(--ring-room)" in rule

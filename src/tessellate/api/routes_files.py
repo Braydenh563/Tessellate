@@ -92,6 +92,11 @@ ATTACHMENT_SUFFIXES = frozenset(
         # Archives
         ".zip",
     }
+    #: Everything the chat's file picker offers (`docview.VIEWABLE_SUFFIXES`),
+    #: so the Quick capture card, which takes the same files and attaches them
+    #: here on Save, never meets a 415 for a type its picker let through. All
+    #: are downloaded, not rendered inline, the reason this list is the wider one.
+    | frozenset(docview.VIEWABLE_SUFFIXES)
 )
 
 

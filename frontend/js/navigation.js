@@ -1858,8 +1858,8 @@ document.addEventListener("input", (event) => {
 });
 
 async function switchTab(name) {
-  surfaceBuild(name);
   if (!(await confirmLeavingUnsavedWork(name))) return;
+  surfaceBuild(name);
   usageCount(`tab:${name}`);
   // Profiled directly: leaving the Graph tab left `graphSimulation` running
   //, it is only ever `.stop()`-ed "before every rebuild" (graph.js), never

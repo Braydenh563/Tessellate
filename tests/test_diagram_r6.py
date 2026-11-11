@@ -130,7 +130,9 @@ def test_r6_11_the_add_sheet_gives_every_glyph_the_same_slot():
 
 def test_r6_12_the_hint_stays_in_view_and_the_library_counts_lines_as_the_status_bar_does(client):
     rule = _rule(".dgm-next")
-    assert "position: sticky" in rule and "inset-block-end: 0" in rule and "background:" in rule
+    # Intent moved (the owner, 2026-11-11): the hint stays in view because the foot is no longer over the list, not because it sticks;
+    # a sticky hint inside the scroller was the other half of the overlap. It is a plain line at the end of the list now.
+    assert "position: sticky" not in rule and "inset-block-end" not in rule
     # "flowchart TD\n  A\n  B\n" is three lines in the status bar (a last newline ends a line, it does not start one).
     made = client.post("/documents", json={"title": "Flow", "content": "flowchart TD\n  A --> B\n  B --> C\n", "file_type": "mmd"}).json()
     row = next(d for d in client.get("/documents").json() if d["id"] == made["id"])

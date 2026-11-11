@@ -348,7 +348,7 @@ def _clean_tags(tags: Any) -> list[str]:
 #: Names are the panel's words, not the converter's `mxgraph.*` source name.
 SHAPE_SET_NAMES = {
     "drawio-basic": "Basic shapes", "drawio-flowchart": "Flowchart, more",
-    "drawio-arrows": "Arrows, more", "drawio-bpmn": "BPMN", "drawio-networks": "Network and cloud",
+    "drawio-arrows": "Arrows, more", "drawio-bpmn": "BPMN, more", "drawio-networks": "Cloud and network, more",
 }
 
 

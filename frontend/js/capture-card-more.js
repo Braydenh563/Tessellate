@@ -1,5 +1,5 @@
 // The capture card's second file (INBOX 1479 steps 3 and 4): the colour dots,
-// the reminder bell, the tag suggestions, the pictures and Draw, fetched with
+// the reminder bell, the tag suggestions and Draw, fetched with
 // the card by capture-card.js. Everything here is optional to a save: the card keeps the
 // chosen colour (`captureCard.colour`) and time (`captureCard.due`) and the
 // core sends them.
@@ -16,18 +16,15 @@
     ["weekend", "This weekend", "later"], ["nextweek", "Next week", "later"],
   ];
 
-  //: `pick`: the bar's picture button took the click that fetched this file, so
-  //: the file picker opens now (the click's permission to open it is still live).
-  async function mountCaptureExtras(pick = false) {
+  async function mountCaptureExtras() {
     const card = captureCard.root;
     if (!card.dataset.extras) {
       card.dataset.extras = "1";
       card.addEventListener("input", scheduleCaptureSuggestions);
       captureCardField("bell").append(captureBell());
       captureCard.mountLock();
-      mountCapturePictures(card);
+      mountCaptureDraw(card);
     }
-    if (pick) captureCardField("file").click();
     await syncCaptureExtras();
   }
 
@@ -131,87 +128,15 @@
     }
   }
 
-  // --- Pictures and Draw ---------------------------------------------------------------
+  // --- Draw ---------------------------------------------------------------------------
 
-  //: A note carries a handful of pictures, not an album.
-  const CAPTURE_PICTURE_LIMIT = 8;
-
-  //: The picture button and the Draw segment in the foot, the hidden picker, and
-  //: the strip of thumbnails under the words. A paste of an image is a picture too.
-  function mountCapturePictures(card) {
-    const seg = card.querySelector(".capture-card-modes");
+  //: The Draw segment in the foot. The pictures and files it adds to are the card's
+  //: staging (capture-stage.js), which the desk's window has too; Draw is the app's alone.
+  function mountCaptureDraw(card) {
     const draw = captureCardEl("button", "", { type: "button", "data-cc": "draw", "aria-haspopup": "dialog", title: "Draw a picture for this note" });
     draw.textContent = "Draw";
-    const picture = captureCardButton("ghost small icon-only", "Add pictures", "ph-image", "picture");
-    const file = captureCardEl("input", "hidden", { type: "file", accept: "image/*", multiple: "", tabindex: "-1", "aria-hidden": "true", "aria-label": "Choose pictures for this note", "data-cc": "file" });
-    seg.append(draw);
-    seg.after(picture, file);
-    card.querySelector(".note-composer").after(captureCardEl("div", "capture-card-thumbs", { "data-cc": "thumbs", hidden: "" }));
+    card.querySelector(".capture-card-modes").append(draw);
     draw.addEventListener("click", openCaptureDraw);
-    picture.addEventListener("click", () => file.click());
-    file.addEventListener("change", () => {
-      addCapturePictures([...file.files]);
-      file.value = "";
-    });
-    card.addEventListener("paste", (event) => {
-      const images = [...(event.clipboardData?.files || [])].filter((item) => item.type.startsWith("image/"));
-      if (!images.length) return;
-      event.preventDefault();
-      addCapturePictures(images);
-    });
-  }
-
-  //: Images only, up to the limit; what was left out is said under the card.
-  function addCapturePictures(files, alt = "") {
-    const images = files.filter((file) => file.type.startsWith("image/"));
-    const room = CAPTURE_PICTURE_LIMIT - captureCard.pictures.length;
-    for (const file of images.slice(0, Math.max(room, 0))) {
-      captureCard.pictures.push({ file, preview: URL.createObjectURL(file), alt: alt || file.name.replace(/\.[^.]+$/, ""), uploaded: "" });
-    }
-    renderCaptureThumbs();
-    const left = files.length - Math.min(images.length, Math.max(room, 0));
-    captureCardStatus(left ? `Added what fits: a note takes ${CAPTURE_PICTURE_LIMIT} pictures, and only pictures.` : "", Boolean(left));
-  }
-
-  function renderCaptureThumbs() {
-    const box = captureCardField("thumbs");
-    if (!box) return;
-    box.replaceChildren(...captureCard.pictures.map(captureThumb));
-    box.hidden = !captureCard.pictures.length;
-    captureCard.settle();
-  }
-
-  function captureThumb(picture) {
-    const item = captureCardEl("span", "capture-card-thumb");
-    const image = captureCardEl("img", "", { src: picture.preview, alt: picture.alt });
-    const remove = captureCardButton("ghost small icon-only", `Remove ${picture.alt}`, "ph-x", "thumb-remove");
-    remove.addEventListener("click", () => removeCapturePicture(picture));
-    item.append(image, remove);
-    return item;
-  }
-
-  function removeCapturePicture(picture) {
-    URL.revokeObjectURL(picture.preview);
-    captureCard.pictures = captureCard.pictures.filter((item) => item !== picture);
-    renderCaptureThumbs();
-  }
-
-  //: The editor's own path: each picture goes to /media/upload and the note
-  //: refers to it as markdown. One already sent (a retry after a failure) is not
-  //: sent twice. Returns the markdown lines, one picture a paragraph.
-  async function uploadCapturePictures() {
-    const lines = [];
-    for (const picture of captureCard.pictures) {
-      if (!picture.uploaded) {
-        const form = new FormData();
-        form.append("file", picture.file, picture.file.name);
-        const sent = await apiJson("/media/upload", { method: "POST", headers: authHeaders(), body: form });
-        if (!sent?.url) throw new Error("Couldn't upload a picture. Nothing was saved.");
-        picture.uploaded = sent.url;
-      }
-      lines.push(`![${picture.alt}](${picture.uploaded})`);
-    }
-    return lines.join("\n\n");
   }
 
   //: Draw: the app's sketch pad in its overlay, saving into this card instead of
@@ -234,9 +159,9 @@
 
   async function addCaptureSketch(blob, caption) {
     const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
-    addCapturePictures([new File([blob], `sketch-${stamp}.png`, { type: "image/png" })], caption);
+    addCaptureFiles([new File([blob], `sketch-${stamp}.png`, { type: "image/png" })], caption);
   }
 
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
-  Object.assign(window, { mountCaptureExtras, renderCaptureThumbs, syncCaptureExtras, uploadCapturePictures });
+  Object.assign(window, { mountCaptureExtras, syncCaptureExtras });
 })();

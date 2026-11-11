@@ -459,6 +459,26 @@
   //: How many tiles a group draws while browsing, before its "Show all".
   const ICON_PICKER_PAGE = 48;
 
+  //: **The first screenful is drawn in the open, the rest in slices** (INBOX 1726, the owner's log: "input 736ms on
+  //: documents: pointerup on button in #doc-toolbar" around the first icon-picker load). All 429 emoji tiles were
+  //: made and laid out in one go: one task of 200 to 250ms at 4x CPU. `now` is how many tiles each group draws at
+  //: once (`first`, nine rows in all: what the panel shows before any scroll) and `later` the slices that follow,
+  //: `[group, from, to]` in document order and never across a group. A field of `iconPickerState`, not a new name
+  //: in the shared scope.
+  iconPickerState.slices = (counts, first = 72, slice = 48) => {
+    let left = first;
+    const now = counts.map((n) => {
+      const k = Math.min(n, left);
+      left -= k;
+      return k;
+    });
+    const later = [];
+    counts.forEach((n, g) => {
+      for (let from = now[g]; from < n; from += slice) later.push([g, from, Math.min(n, from + slice)]);
+    });
+    return { now, later };
+  };
+
   //: What a choice is as text, for a drop into a text box or an insert: an
   //: emoji is itself, an icon the token the reading view draws (decision 46).
   function iconPickerText(choice) {
@@ -632,7 +652,23 @@
       g.setAttribute("role", "presentation");
       return g;
     };
+    //: The slices still to draw (INBOX 1726), one a turn while the thread is idle. A redraw bumps `drawn`, which drops
+    //: them; a key that walks the tiles draws the rest first, so Home, End and the arrows see every tile.
+    let pending = [];
+    let drawn = 0;
+    const fillSoon = (turn) => {
+      (window.requestIdleCallback || ((fn) => setTimeout(fn, 50)))(() => {
+        if (turn !== drawn || !panel.isConnected) return;
+        pending.shift()?.();
+        if (pending.length) fillSoon(turn);
+      }, { timeout: 150 });
+    };
+    const finishDraw = () => {
+      drawn += 1;
+      while (pending.length) pending.shift()();
+    };
     const draw = () => {
+      drawn += 1;
       for (const b of tabs.children) {
         b.setAttribute("aria-selected", String(b.dataset.mode === current));
         b.tabIndex = b.dataset.mode === current ? 0 : -1;
@@ -640,17 +676,16 @@
       const groups = { emoji: iconPickerEmojiGroups, icon: iconPickerIconGroups, symbol: iconPickerState.symbols }[current]();
       const q = query.trim().toLowerCase();
       const parts = [];
+      const specs = [];
       tiles = [];
+      //: A group is its head, its grid (empty here) and its "Show all"; the tiles go in below, a screenful now and
+      //: the rest in slices, so the markup and the order of `tiles` are the same either way.
       const addGroup = (label, items, key) => {
         if (!items.length) return;
         parts.push(groupHead(label));
         const g = grid();
         const shown = q || expanded.has(key) ? items : items.slice(0, ICON_PICKER_PAGE);
-        for (const choice of shown) {
-          const t = tile(choice);
-          tiles.push(t);
-          g.appendChild(t);
-        }
+        specs.push({ g, shown });
         parts.push(g);
         if (shown.length < items.length) {
           const more = smallButton(`ph:caret-down Show all ${items.length}`, `Show every one in ${label}`, () => {
@@ -688,7 +723,20 @@
         addGroup("Recent", recent, "recent");
         for (const group of groups) addGroup(group.label, group.items, group.key);
       }
+      const plan = iconPickerState.slices(specs.map((x) => x.shown.length));
+      const fill = (spec, from, to) => {
+        const frag = document.createDocumentFragment();
+        for (const choice of spec.shown.slice(from, to)) {
+          const t = tile(choice);
+          tiles.push(t);
+          frag.appendChild(t);
+        }
+        spec.g.appendChild(frag);
+      };
+      specs.forEach((spec, i) => fill(spec, 0, plan.now[i]));
+      pending = plan.later.map(([i, from, to]) => () => fill(specs[i], from, to));
       list.replaceChildren(...parts);
+      if (pending.length) fillSoon(drawn);
       active = -1;
       list.removeAttribute("aria-activedescendant");
       status.textContent = tiles.length ? "Arrows to move, Enter to choose, or drag one where it goes." : "";
@@ -722,6 +770,7 @@
       if (active < 0) setActive(0, { scroll: false });
     });
     list.addEventListener("keydown", (event) => {
+      if (pending.length && ["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) finishDraw();
       const across = rowLength();
       const moves = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: across, ArrowUp: -across };
       if (event.key in moves) {

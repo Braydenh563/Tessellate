@@ -58,7 +58,8 @@
   const answered = new Set();
   const whose = (S) => S.io?.key ?? S.host;
   function offer(S, want) {
-    const show = want && !answered.has(whose(S)) && Boolean(S.turn);
+    //: Not in the expanded builder (diagram-embed.js `expand`): that window is already the whole screen, and the offer is for a pane too small.
+    const show = want && !answered.has(whose(S)) && Boolean(S.turn) && !S.io?.collapse;
     //: The overview (diagram-minimap.js) shares the stage's bottom-left corner with this row: while the row shows, the
     //: overview rises by its height (INBOX 1737, it lay over the words). On a phone the row is at the top (absolute), so not.
     const lift = (on) => {
@@ -69,13 +70,22 @@
     if (!show) return S.sideways?.classList.add("hidden"), lift(false);
     if (!S.sideways) {
       const line = document.createElement("div");
-      line.className = "dgm-sideways muted";
+      //: A `.notice` (DESIGN.md): the mark, the words, then the two actions; the words wrap before the buttons do.
+      line.className = "notice dgm-sideways";
+      const mark = document.createElement("i");
+      mark.className = "ph ph-arrows-left-right";
+      mark.setAttribute("aria-hidden", "true");
       const words = document.createElement("span");
       words.textContent = "This chart is tall for this pane.";
       const done = () => answered.add(whose(S));
       const turn = smallButton("ph:arrow-right Turn it sideways", "Draw it left to right", () => (done(), S.turn("LR")), false);
       const keep = smallButton("Keep", "Leave it top to bottom", () => (done(), line.classList.add("hidden"), lift(false)));
-      line.append(words, turn, keep);
+      //: The two actions are one group, so a row too narrow for the words beside them drops the pair under the words, never one button.
+      const acts = document.createElement("span");
+      acts.className = "dgm-sideways-acts";
+      acts.append(turn, keep);
+      words.className = "dgm-sideways-words";
+      line.append(mark, words, acts);
       //: In the picture's stage, not the whole builder: it straddled the list and the picture (blind test 1108).
       (S.fig.parentElement || S.note.parentElement).append(line);
       S.sideways = line;

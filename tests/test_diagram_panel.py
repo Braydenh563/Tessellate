@@ -40,12 +40,17 @@ def test_the_purpose_line_says_what_the_pane_is_and_follows_the_pointer_and_focu
 def test_the_foot_has_add_block_and_connect_as_worded_buttons_and_goes_with_the_last_block():
     assert "ph:plus Add block" in STEPS and "ph:arrow-bend-down-right Connect" in STEPS
     assert 'S.foot?.classList.toggle("hidden"' in STEPS
+    # Intent moved (the owner, 2026-11-11): the foot was `position: sticky` and lay over the hint while the list scrolled.
+    # It now sits outside the scroller (`.dgm-scroll`), so it cannot cover a line, and it is not positioned at all.
     foot = _rule(".dgm-foot")
-    assert "position: sticky;" in foot and "inset-block-end: 0;" in foot
+    assert "position: sticky" not in foot and "flex: none;" in foot
+    assert "S.pane.append(S.scroll, foot)" in STEPS and "S.scroll.append(...S.pane.childNodes)" in STEPS
 
 
 def test_the_new_rules_use_tokens_only_and_no_em_dashes():
-    block = CSS[CSS.index(".dgm-purpose {") :][:1600]
+    # The window used to be a fixed 1600 characters, which only passed because an `@media` cut it short. The foot lost its sticky
+    # lines (2026-11-11) and the nest rule's 2px rail came into it, so the window now ends with the hint's rule, the last of the three.
+    block = CSS[CSS.index(".dgm-purpose {") : CSS.index("}", CSS.index(".dgm-next {")) + 1]
     assert not re.search(r"\d+px", block.split("@media")[0].replace("1px solid", "")), block
     dash = chr(0x2014)
     assert dash not in STEPS and dash not in block

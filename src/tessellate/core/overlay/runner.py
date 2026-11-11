@@ -43,6 +43,7 @@ from typing import Any, Callable
 from tessellate.core import jobs
 from tessellate.core.overlay import engine as eng
 from tessellate.core.overlay import host as host_mod
+from tessellate.core.overlay import pacing
 from tessellate.core.overlay import faces
 from tessellate.core.overlay import perches
 from tessellate.core.overlay import props
@@ -194,6 +195,8 @@ class OverlayRunner:
         self.stay = stay
         self.w = w
         self.clock = clock
+        #: The gap between the moving figure's wakes, as one line a minute (`pacing.IntervalLog`).
+        self._intervals = pacing.IntervalLog()
         self.clock_hour: int | None = None
         self.frames = frames
         self._dispatch = dispatch or jobs.thread
@@ -368,6 +371,13 @@ class OverlayRunner:
     # --- the overlay's thread --------------------------------------------------------------
 
     def _on_event(self, kind: str, x: int, y: int) -> int | None:
+        if kind == "tick":
+            self._note_interval(self.clock())
+        ask = self._on_event_inner(kind, x, y)
+        self._intervals.asked(ask)
+        return ask
+
+    def _on_event_inner(self, kind: str, x: int, y: int) -> int | None:
         if kind == "ready":
             self._ready()
             return None
@@ -452,6 +462,11 @@ class OverlayRunner:
         if self._air_since is None:
             self._air_since = now
         return now - self._air_since < AIR_DEFER
+
+    def _note_interval(self, now: float) -> None:
+        line = self._intervals.note(now)
+        if line:
+            logger.info(line)
 
     def _run_commands(self, engine: eng.Engine, now: float) -> None:
         """The menu's requests, in order. "Sit on a window" reads the window list first, since

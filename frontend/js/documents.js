@@ -145,16 +145,13 @@ function docTypeMount() {
     opener.title = "New document of another type";
     head.replaceChildren(wrap);
   }
-  //: **The Recent head holds one row at every width the sidebar takes (220 to 320px).** Under 16rem of
-  //: sidebar the help, template and diagram buttons give way to this ⋯ (built here, not in index.html: the
-  //: boot document is element-capped), and the CSS (`.doc-head-more`) shows it only then. The rows press the
-  //: real buttons, so each has one handler and one id.
+  //: Under 16rem the head's help, template and diagram buttons fold into this ⋯ (CSS `.doc-head-more`); it presses the real buttons.
   const tools = document.querySelector("#doc-sidebar-list .doc-head-tools");
   if (tools && !tools.querySelector(".doc-head-more")) {
     const press = (selector) => () => document.querySelector(selector)?.click();
     const more = kebabMenu(
       [
-        { label: "ph:question About this list", run: press('#doc-sidebar-list [data-help-for="doc-list-help"]') },
+        { label: "ph:question About this list", run: press("#doc-sidebar-list .doc-head-tools .graph-help-toggle") },
         { label: "ph:layout New from a template", run: press("#doc-new-template") },
         { label: "ph:flow-arrow New diagram", run: press("#doc-new-diagram") },
       ],
@@ -1241,6 +1238,12 @@ function renderDocList() {
           const next = await promptDialog("Rename this document", doc.title || "");
           if (!next || next === doc.title) return;
           await renameDocumentWithUndo(doc, next).catch((e) => toast(e.message, true));
+        }),
+        //: INBOX 904 B17: the model names it when one runs, else the document's
+        //: own words do; renamed through Rename's undoable path.
+        makeMenuItem("ph:sparkle Suggest a name", "A name from what the document says", async () => {
+          const got = await apiJson(`/documents/${doc.id}/suggest-title`, { method: "POST" }).catch((e) => toast(e.message, true));
+          if (got?.title && got.title !== doc.title) await renameDocumentWithUndo(doc, got.title).catch((e) => toast(e.message, true));
         }),
         appLinkMenuItem("document", doc.id),
         // Not destructive, so not grouped with Delete below, same
@@ -2621,18 +2624,20 @@ function markDocDirty() {
     //: A create that failed is not asked again on every key: the words are kept
     //: and one retry runs after a pause (audit 1028 D3).
     if (docSaveQueue.newRetry) return keepDocEditLocally();
+    const retryMs = 8000;
     ensureDocumentExists().then(() => {
       forgetDocEditLocally("new");
       markDocDirty();
     }, (error) => {
       $("doc-saved").textContent = "Not saved";
       $("doc-status").classList.add("error");
-      $("doc-status").textContent = error.message;
+      //: The retry below is silent otherwise: say that one is coming.
+      $("doc-status").textContent = `${String(error.message).replace(/[.\s]+$/, "")}. It will try again in ${retryMs / 1000} seconds.`;
       keepDocEditLocally();
       docSaveQueue.newRetry = setTimeout(() => {
         docSaveQueue.newRetry = null;
         if (!currentDoc && (docText().trim() || $("doc-title").value.trim())) markDocDirty();
-      }, 8000);
+      }, retryMs);
     });
     return;
   }
@@ -8521,27 +8526,6 @@ function mountEditorToolbarExtras(bar) {
     details.append(summary, body);
     bar.appendChild(details);
   }
-}
-
-//: A toolbar is one Tab stop (dog2 item 21: Tab from the note title walked 16
-//: buttons before the editor). The focused control is the stop; Left and Right
-//: move between the visible ones.
-function wireToolbarRoving(bar) {
-  const all = () => [...bar.querySelectorAll("button, select, summary")];
-  const rove = (to) => all().forEach((el) => { el.tabIndex = el === to ? 0 : -1; });
-  rove(bar.querySelector("button"));
-  bar.addEventListener("focusin", (event) => {
-    if (all().includes(event.target)) rove(event.target);
-  });
-  bar.addEventListener("keydown", (event) => {
-    const step = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
-    if (!step || event.target.tagName === "SELECT") return;
-    const shown = all().filter((el) => !el.disabled && el.getClientRects().length);
-    const next = shown[shown.indexOf(event.target) + step];
-    if (!next) return;
-    event.preventDefault();
-    next.focus();
-  });
 }
 
 //: Wire one formatting strip to its textarea: mount the shared extras

@@ -217,7 +217,7 @@ function atlasRigAttach(box) {
 //: 5 s agent turn, each call settling style for a page running 65
 //: animations). The probe's gestures are CSS animations, so their names come
 //: and go with `animationstart`, `animationend` and `animationcancel`; the
-//: list is read once when the rig attaches, to seed the set.
+//: list is read once at the rig's first look, to seed the set.
 function atlasProbeWatch(arm) {
   if (!arm.probe) return;
   const mark = (add) => (e) => {
@@ -225,8 +225,13 @@ function atlasProbeWatch(arm) {
   };
   arm.probe.addEventListener("animationstart", mark(true));
   for (const type of ["animationend", "animationcancel"]) arm.probe.addEventListener(type, mark(false));
-  for (const a of arm.probe.getAnimations()) if (a.animationName) arm.running.add(a.animationName);
 }
+//: The list is read once, at the rig's first look (`atlasRigFrame`), not when it attaches (INBOX 1741, `atlas-motion.js
+//: after 13ms`): `getAnimations()` settles the page's style first, and the attach ran in the task that had just appended
+//: the figure (17ms of it at 4x CPU, for each figure). The first look comes after a frame has drawn, from a clean style.
+atlasProbeWatch.seed = (arm) => {
+  if (arm.probe) for (const a of arm.probe.getAnimations()) if (a.animationName) arm.running.add(a.animationName);
+};
 //: Where the CSS has the arm: the probe's turn (its transform's and any
 //: gesture's `rotate`) and its vertical scale (a meditating arm's).
 function atlasRigRead(arm) {
