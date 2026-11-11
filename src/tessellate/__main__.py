@@ -1092,12 +1092,13 @@ def _claim_notebook() -> None:
     lock as "starting" (live pid, silent port) and waits for it.
     """
     global PORT
-    from tessellate.core import instance_lock
+    from tessellate.core import instance_lock, running_copies
     from tessellate.core.config import resolved_data_dir
 
     PORT = _desktop_port()
     os.environ["TESSELLATE_PORT"] = str(PORT)
     instance_lock.claim(resolved_data_dir(), PORT)
+    running_copies.prune_in_background()
 
 
 def _boot_and_swap(window) -> None:
@@ -2999,10 +3000,11 @@ def _run_server_holding_lock() -> None:
     """`_run_server`, with this data directory's `instance.lock` held for as
     long as it runs, so a desktop launch finds it and opens a window onto it
     rather than starting a second server."""
-    from tessellate.core import instance_lock
+    from tessellate.core import instance_lock, running_copies
     from tessellate.core.config import resolved_data_dir
 
     instance_lock.claim(resolved_data_dir(), PORT)
+    running_copies.prune_in_background()
     try:
         _run_server()
     finally:

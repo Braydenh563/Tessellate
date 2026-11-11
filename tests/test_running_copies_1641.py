@@ -56,6 +56,7 @@ def test_a_stale_record_is_pruned_when_listed(run_dir):
         own_pid=1, now=NOW,
         answers_fn=lambda port: port == 8805,
         alive_fn=lambda pid: pid in (222, 333),
+        started_fn=lambda pid: None,
     )
     assert [c.pid for c in copies] == [333]
     assert sorted(p.name for p in run_dir.glob("*.json")) == ["333.json"]
@@ -65,7 +66,8 @@ def test_a_copy_still_booting_is_kept_and_this_copy_is_marked(run_dir):
     _record(run_dir, 555, 8806, started=NOW - 5)
     _record(run_dir, 556, 8807)
     copies = rc.list_copies(
-        own_pid=556, now=NOW, answers_fn=lambda port: port == 8807, alive_fn=lambda pid: True
+        own_pid=556, now=NOW, answers_fn=lambda port: port == 8807, alive_fn=lambda pid: True,
+        started_fn=lambda pid: None,
     )
     by_pid = {c.pid: c for c in copies}
     assert set(by_pid) == {555, 556} and by_pid[556].this_copy and not by_pid[555].this_copy
@@ -83,6 +85,7 @@ def test_shutdown_asks_the_other_copy_with_its_token(run_dir):
     result = rc.shutdown(
         888, own_pid=1,
         ask_fn=lambda port, token: asked.append((port, token)) or True,
+        identity_fn=lambda port: "", alive_fn=lambda pid: True, started_fn=lambda pid: None, now=NOW,
     )
     assert result == "stopping" and asked == [(8809, "tok-888")]
 
@@ -97,7 +100,8 @@ def test_a_copy_that_does_not_agree_to_stop_is_never_killed(run_dir):
     # Review of 1641: a recorded pid can be reused by another program while a
     # different copy answers on the port, so Shut down only ever asks.
     _record(run_dir, 1010, 8811)
-    assert rc.shutdown(1010, own_pid=1, ask_fn=lambda *a: False) == "failed"
+    live = {"identity_fn": lambda port: "", "alive_fn": lambda pid: True, "started_fn": lambda pid: None, "now": NOW}
+    assert rc.shutdown(1010, own_pid=1, ask_fn=lambda *a: False, **live) == "failed"
     assert not hasattr(rc, "terminate") and not hasattr(rc, "verify_is_this_app")
 
 
@@ -161,3 +165,122 @@ def test_the_settings_row_and_its_help_exist():
     html = (root / "frontend" / "index.html").read_text(encoding="utf-8")
     assert 'id="running-copies-list"' in html and 'data-help-for="running-copies-help"' in html
     assert chr(0x2014) not in html[html.index('id="running-copies-group"'):][:3000]
+
+
+# --- Only copies that really run are listed (the owner, 2026-11-11: about 25 dead
+# "other copies" on port 8000, and Shut down on one answered 502) ---------------
+
+OLD = NOW - 500
+
+
+def _serving(by_port):
+    """`identity_fn`: the instance id each port serves, "" for an older build
+    that answers without one, None for a port nobody answers on."""
+    return lambda port: by_port.get(port)
+
+
+def _list(run_dir, *, serving, alive=(), began=None, own_pid=1):
+    return rc.list_copies(
+        own_pid=own_pid,
+        now=NOW,
+        identity_fn=_serving(serving),
+        alive_fn=lambda pid: pid in alive,
+        started_fn=lambda pid: (began or {}).get(pid),
+    )
+
+
+def test_dead_entries_on_the_port_the_current_copy_holds_are_pruned(run_dir):
+    for pid in range(100, 125):
+        _record(run_dir, pid, 8000, started=NOW - 86_400 - pid, token=f"dead-token-{pid}")
+    _record(run_dir, 999, 8000, started=OLD, token="the-live-token")
+    copies = _list(run_dir, serving={8000: il.instance_id("the-live-token")}, alive={999} | set(range(100, 125)), began={999: OLD - 2})
+    assert [c.pid for c in copies] == [999]
+    assert [f.name for f in run_dir.glob("*.json")] == ["999.json"]
+
+
+def test_a_reused_pid_is_not_a_running_copy(run_dir):
+    # Windows hands a dead copy's pid to another program: alive, but it began after the record was written.
+    _record(run_dir, 4000, 8001, started=OLD)
+    copies = _list(run_dir, serving={}, alive={4000}, began={4000: NOW - 10})
+    assert copies == [] and list(run_dir.glob("*.json")) == []
+
+
+def test_a_live_process_that_began_when_the_record_says_stays_even_if_it_is_silent(run_dir):
+    _record(run_dir, 4001, 8002, started=OLD)
+    copies = _list(run_dir, serving={}, alive={4001}, began={4001: OLD - 3})
+    assert [c.pid for c in copies] == [4001]
+
+
+def test_a_port_held_by_a_different_instance_makes_the_record_stale(run_dir):
+    _record(run_dir, 4002, 8003, started=OLD, token="mine-was-this")
+    copies = _list(run_dir, serving={8003: il.instance_id("someone-else")}, alive={4002}, began={4002: OLD - 1})
+    assert copies == []
+
+
+def test_an_older_build_with_no_instance_id_is_kept_only_while_its_process_matches(run_dir):
+    _record(run_dir, 4003, 8004, started=OLD)
+    _record(run_dir, 4004, 8004, started=OLD - 9_000)
+    copies = _list(run_dir, serving={8004: ""}, alive={4003, 4004}, began={4003: OLD - 1, 4004: NOW - 5})
+    assert [c.pid for c in copies] == [4003]
+
+
+def test_two_older_records_on_one_port_keep_only_the_newest(run_dir):
+    _record(run_dir, 4005, 8005, started=OLD - 100)
+    _record(run_dir, 4006, 8005, started=OLD)
+    copies = _list(run_dir, serving={8005: ""}, alive={4005, 4006}, began={4005: OLD - 101, 4006: OLD - 1})
+    assert [c.pid for c in copies] == [4006]
+
+
+def test_this_copy_is_always_listed(run_dir):
+    _record(run_dir, 4007, 8006, started=OLD)
+    copies = _list(run_dir, serving={}, alive=(), own_pid=4007)
+    assert [c.pid for c in copies] == [4007] and copies[0].this_copy
+
+
+def test_shut_down_on_a_dead_entry_removes_it_and_is_not_an_error(run_dir):
+    _record(run_dir, 4008, 8000, started=OLD, token="dead")
+    asked = []
+    result = rc.shutdown(
+        4008, own_pid=1, ask_fn=lambda *a: asked.append(a) or True,
+        identity_fn=_serving({8000: il.instance_id("the-holder")}), alive_fn=lambda pid: True,
+        started_fn=lambda pid: NOW - 5, now=NOW,
+    )
+    assert result == "gone" and asked == [] and list(run_dir.glob("*.json")) == []
+
+
+def test_a_live_copy_that_does_not_answer_keeps_the_honest_failure(run_dir):
+    _record(run_dir, 4009, 8007, started=OLD, token="hung")
+    result = rc.shutdown(
+        4009, own_pid=1, ask_fn=lambda *a: False,
+        identity_fn=_serving({}), alive_fn=lambda pid: True, started_fn=lambda pid: OLD - 1, now=NOW,
+    )
+    assert result == "failed" and [f.name for f in run_dir.glob("*.json")] == ["4009.json"]
+
+
+def test_a_start_up_prunes_the_dead_records(run_dir, tmp_path, monkeypatch):
+    _record(run_dir, 4010, 8008, started=OLD)
+    monkeypatch.setattr(il, "served_instance", lambda *a, **k: None)
+    monkeypatch.setattr(il, "pid_alive", lambda pid: pid == os.getpid())
+    il.claim(tmp_path / "data", 8009)
+    try:
+        rc.prune_now()
+        assert [f.name for f in run_dir.glob("*.json")] == [f"{os.getpid()}.json"]
+    finally:
+        il.release()
+
+
+def test_health_names_the_instance_without_the_token(client, tmp_path):
+    info = il.claim(tmp_path / "data", 8015)
+    try:
+        body = client.get("/health").json()
+        assert body["instance"] == il.instance_id(info.token)
+        assert info.token not in json.dumps(body)
+    finally:
+        il.release()
+
+
+def test_the_shutdown_route_says_a_stopped_copy_is_removed_not_a_502(client, run_dir, monkeypatch):
+    monkeypatch.setattr(rc, "shutdown", lambda pid: "gone")
+    r = client.post("/running-copies/4011/shutdown")
+    assert r.status_code == 200
+    assert r.json() == {"stopping": False, "removed": True, "message": "That copy had already stopped; removed it from the list."}

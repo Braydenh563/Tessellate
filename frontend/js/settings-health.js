@@ -37,8 +37,14 @@
           stop.addEventListener("click", async () => {
             stop.disabled = true;
             try {
-              await api(`/running-copies/${copy.pid}/shutdown`, { method: "POST" });
-              toast(`Shut down the copy on port ${copy.port}.`);
+              const said = await apiJson(`/running-copies/${copy.pid}/shutdown`, { method: "POST" });
+              //: A record that outlived its copy is removed, not shut down (a crash skips the exit hook).
+              const gone = said && said.removed;
+              toast(gone ? said.message : `Shut down the copy on port ${copy.port}.`);
+              if (gone) {
+                renderRunningCopies().catch(() => {});
+                return;
+              }
             } catch (err) {
               stop.disabled = false;
               toast(err?.message || "That copy did not answer, so it was left running.", "info");

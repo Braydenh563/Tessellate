@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Fixed (owner, Windows): Settings, About, Running copies listed about 25 dead "other copies" on port 8000 and Shut down on one answered 502. A record now counts only when its port names the same instance (`/health` carries a hash of the token, `instance`) or its pid began when the record says (Windows reuses pids); a port's holder wins, start-up prunes, and Shut down on a dead entry removes it and says "That copy had already stopped; removed it from the list."
 - Documents sidebar (the owner, 2026-11-11): Attach a bookmark spans the sidebar with its words centred, and "Where are my documents kept?" sits at the sidebar's foot, centred, as its footer (measured at 1440: 226px of a 234px section; the link's bottom 4px above the section's).
 - Fixed (code scanning 2180): the desk companion's "overlay started" log builds the motion words from fixed strings in `_motion_label`, never from the value read from preferences.
 - Fixed (code scanning, desk companion start-up log): the motion reason is now the matching constant from `MOTION_REASONS`, never the value read from preferences, so the log line carries no value that came from a preference read.
