@@ -2,9 +2,9 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8166, frontend ids 2713, CSS sections 524, backend routes 677, backend modules 10425, test files 2582, tests 21110, plan headings 1010, app scripts 29, boot scripts 38, script files 284.
+Counts: frontend functions 8168, frontend ids 2713, CSS sections 524, backend routes 677, backend modules 10425, test files 2583, tests 21113, plan headings 1010, app scripts 29, boot scripts 38, script files 284.
 
-## Frontend functions (8166)
+## Frontend functions (8168)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -7392,22 +7392,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `saveModelHardware` | frontend/js/settings-models.js:705 |
 | `updateModelProgress` | frontend/js/settings-models.js:453 |
 
-### frontend/js/settings-packages.js (15)
+### frontend/js/settings-packages.js (17)
 
 | Name | File:line |
 |---|---|
-| `packagesBulk` | frontend/js/settings-packages.js:542 |
-| `packagesBulkFromBar` | frontend/js/settings-packages.js:590 |
-| `packagesCan` | frontend/js/settings-packages.js:194 |
-| `packagesInstallOne` | frontend/js/settings-packages.js:489 |
-| `packagesPost` | frontend/js/settings-packages.js:526 |
-| `packagesReinstallOne` | frontend/js/settings-packages.js:506 |
-| `packagesRemoveOne` | frontend/js/settings-packages.js:516 |
-| `packagesRenderBundles` | frontend/js/settings-packages.js:204 |
-| `packagesRow` | frontend/js/settings-packages.js:336 |
-| `packagesRowMenu` | frontend/js/settings-packages.js:464 |
-| `packagesStatusLine` | frontend/js/settings-packages.js:179 |
-| `packagesSyncBar` | frontend/js/settings-packages.js:569 |
+| `packagesBulk` | frontend/js/settings-packages.js:575 |
+| `packagesBulkFromBar` | frontend/js/settings-packages.js:623 |
+| `packagesCan` | frontend/js/settings-packages.js:227 |
+| `packagesInstallOne` | frontend/js/settings-packages.js:522 |
+| `packagesPaintRows` | frontend/js/settings-packages.js:190 |
+| `packagesPost` | frontend/js/settings-packages.js:559 |
+| `packagesReinstallOne` | frontend/js/settings-packages.js:539 |
+| `packagesRemoveOne` | frontend/js/settings-packages.js:549 |
+| `packagesRenderBundles` | frontend/js/settings-packages.js:237 |
+| `packagesRow` | frontend/js/settings-packages.js:369 |
+| `packagesRowKey` | frontend/js/settings-packages.js:184 |
+| `packagesRowMenu` | frontend/js/settings-packages.js:497 |
+| `packagesStatusLine` | frontend/js/settings-packages.js:212 |
+| `packagesSyncBar` | frontend/js/settings-packages.js:602 |
 | `renderExtras` | frontend/js/settings-packages.js:31 |
 | `voiceModelsPaint` | frontend/js/settings-packages.js:102 |
 | `voiceModelsWire` | frontend/js/settings-packages.js:126 |
@@ -12486,7 +12488,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | [[wiki links]] | frontend/css/05-sidebars-themes.css:773 |
 | `.seg-multi`'s word, and the width that decides it | frontend/css/10-responsive.css:591 |
 | `.seg-multi`: one well, independent toggles | frontend/css/03-dashboard-widgets.css:419 |
-| `.selectbar`: the bar stays with you while the selection does | frontend/css/00-tokens-shell.css:1962 |
+| `.selectbar`: the bar stays with you while the selection does | frontend/css/00-tokens-shell.css:1963 |
 | a Files row's facts line, one register (INBOX 421 f) | frontend/css/08-consistency.css:4007 |
 | a board or a map as an object in a note (INBOX 309) | frontend/css/05-sidebars-themes.css:1662 |
 | a callout that folds (REDESIGN.md §R7.3 item 3) | frontend/css/05-sidebars-themes.css:1325 |
@@ -12531,7 +12533,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | assistant message layout | frontend/css/05-sidebars-themes.css:4340 |
 | attaching notes to a chat message | frontend/css/04-chat-dock-appearance.css:2841 |
 | audit 1028 board and map rows (U14 to U28) | frontend/css/library-lazy.css:8546 |
-| back / forward through pages | frontend/css/00-tokens-shell.css:4147 |
+| back / forward through pages | frontend/css/00-tokens-shell.css:4148 |
 | back-to-top button | frontend/css/04-chat-dock-appearance.css:2660 |
 | band 2 (820 to 1200): the tabs keep their names, set small | frontend/css/10-responsive.css:85 |
 | band 2: 820-1100, iPad landscape and small laptops | frontend/css/07-whiteboard-misc.css:9942 |
@@ -12542,7 +12544,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | band 4: below 600, the phone | frontend/css/07-whiteboard-misc.css:10221 |
 | band 4: five columns, and the fifth is a sheet | frontend/css/10-responsive.css:653 |
 | band 4: the settings sheet's head may wrap, but not be squashed | frontend/css/10-responsive.css:972 |
-| boot splash | frontend/css/00-tokens-shell.css:4169 |
+| boot splash | frontend/css/00-tokens-shell.css:4170 |
 | callouts ("specialised boxes and frames") | frontend/css/05-sidebars-themes.css:1250 |
 | category rename / delete | frontend/css/04-chat-dock-appearance.css:2729 |
 | chat dock density pass (§37C) | frontend/css/04-chat-dock-appearance.css:1282 |
@@ -12634,7 +12636,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | one popup, three tiers (INBOX 456, DESIGN.md "A popup window or panel") | frontend/css/08-consistency.css:9323 |
 | one size for every dropdown | frontend/css/01-forms-settings.css:4844 |
 | one switch, everywhere a checkbox means "on or off" | frontend/css/06-timeline-dialogs.css:2118 |
-| one ⋯ button, everywhere (INBOX 722) | frontend/css/00-tokens-shell.css:4325 |
+| one ⋯ button, everywhere (INBOX 722) | frontend/css/00-tokens-shell.css:4326 |
 | optional extras (Settings) | frontend/css/00-tokens-shell.css:1721 |
 | page margins (Appearance > Page Margins) | frontend/css/07-whiteboard-misc.css:2808 |
 | previews on the Library's document and board cards | frontend/css/library-lazy.css:1477 |
@@ -12647,7 +12649,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | resizable sidebars | frontend/css/05-sidebars-themes.css:1815 |
 | results: the list-row recipe | frontend/css/03-dashboard-widgets.css:1245 |
 | rich markdown blocks (tables, quotes, rules, task lists) | frontend/css/01-forms-settings.css:1234 |
-| rows instead of cards | frontend/css/00-tokens-shell.css:2349 |
+| rows instead of cards | frontend/css/00-tokens-shell.css:2350 |
 | rules recovered from inline style attributes (audit of §40) | frontend/css/07-whiteboard-misc.css:1154 |
 | saved filters | frontend/css/05-sidebars-themes.css:666 |
 | screen-reader-only announcements | frontend/css/04-chat-dock-appearance.css:2713 |
@@ -12664,7 +12666,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | space switcher (top bar) | frontend/css/07-whiteboard-misc.css:2487 |
 | spacious density (third option alongside comfortable/compact) | frontend/css/04-chat-dock-appearance.css:1958 |
 | status and foot | frontend/css/sketch-pad.css:519 |
-| tab navigation (Wave A; pill style inside the top bar in Wave L) | frontend/css/00-tokens-shell.css:3567 |
+| tab navigation (Wave A; pill style inside the top bar in Wave L) | frontend/css/00-tokens-shell.css:3568 |
 | text inputs (§36B) | frontend/css/01-forms-settings.css:225 |
 | the "/" menu and block frames | frontend/css/05-sidebars-themes.css:845 |
 | the "?" head row and its help body | frontend/css/01-forms-settings.css:5405 |
@@ -12680,7 +12682,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the Documents editor on a small laptop (INBOX 430's re-scope) | frontend/css/10-responsive.css:2417 |
 | the Graph dock's second row, and the nine pixels that cause it | frontend/css/08-consistency.css:2384 |
 | the HUD: a momentary readout, not a notification | frontend/css/07-whiteboard-misc.css:7833 |
-| the Library (§4, §36F) | frontend/css/00-tokens-shell.css:1869 |
+| the Library (§4, §36F) | frontend/css/00-tokens-shell.css:1870 |
 | the Library on a phone (BACKLOG §116.1 item 3) | frontend/css/07-whiteboard-misc.css:9352 |
 | the Library tab's floating action is not the whiteboard's | frontend/css/07-whiteboard-misc.css:10873 |
 | the Library's Activity rows (library.js, `library-${item.kind}`) | frontend/css/library-lazy.css:3261 |
@@ -12699,7 +12701,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the assistant's head and its three verbs (the owner, 2026-09-24: | frontend/css/04-chat-dock-appearance.css:4942 |
 | the assistant's three verbs (INBOX 192) | frontend/css/09-editor.css:743 |
 | the attachment card (INBOX 440 (2), DESIGN.md "A file attached to a | frontend/css/05-sidebars-themes.css:425 |
-| the bar's three zones | frontend/css/00-tokens-shell.css:3313 |
+| the bar's three zones | frontend/css/00-tokens-shell.css:3314 |
 | the bar: colours, size and style, the sheet | frontend/css/sketch-pad.css:114 |
 | the block bar (INBOX 421 b) | frontend/css/09-editor.css:1055 |
 | the board panel, sorted into the questions it answers | frontend/css/07-whiteboard-misc.css:5137 |
@@ -12744,7 +12746,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the flat looks carry no glow on a button | frontend/css/08-consistency.css:3763 |
 | the flat looks: a selected tab is a place, not an action | frontend/css/08-consistency.css:2912 |
 | the formatting strip says what the caret is already in | frontend/css/09-editor.css:1034 |
-| the glass card | frontend/css/00-tokens-shell.css:3840 |
+| the glass card | frontend/css/00-tokens-shell.css:3841 |
 | the graph node panel becomes a sheet (GRAPH_PLAN Phase 6) | frontend/css/07-whiteboard-misc.css:10241 |
 | the graph's floating controls clear its New note (INBOX 430) | frontend/css/10-responsive.css:2297 |
 | the graph's legend: one container, not a pill in a box | frontend/css/08-consistency.css:3125 |
@@ -12768,10 +12770,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the one map chip (MINDMAP_PLAN.md §5 item 12) | frontend/css/05-sidebars-themes.css:794 |
 | the one popover shell (UI_MODERNISATION_PLAN.md, Phase 2) | frontend/css/07-whiteboard-misc.css:8018 |
 | the orphan-row pattern, everywhere else it appears (§36B) | frontend/css/06-timeline-dialogs.css:1664 |
-| the overview strip | frontend/css/00-tokens-shell.css:1931 |
+| the overview strip | frontend/css/00-tokens-shell.css:1932 |
 | the pad | frontend/css/sketch-pad.css:42 |
 | the page scrollers scroll on the compositor | frontend/css/08-consistency.css:4363 |
-| the page shell (§35L) | frontend/css/00-tokens-shell.css:3657 |
+| the page shell (§35L) | frontend/css/00-tokens-shell.css:3658 |
 | the palette on a touch screen (INBOX 464) | frontend/css/10-responsive.css:2576 |
 | the phone header fits inside the phone | frontend/css/05-sidebars-themes.css:5815 |
 | the picker itself | frontend/css/05-sidebars-themes.css:3711 |
@@ -12786,16 +12788,16 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the selection tick, in the app's own language | frontend/css/07-whiteboard-misc.css:4393 |
 | the settings jump list | frontend/css/07-whiteboard-misc.css:10624 |
 | the settings sheet takes the touch floor | frontend/css/01-forms-settings.css:5538 |
-| the spine | frontend/css/00-tokens-shell.css:2299 |
+| the spine | frontend/css/00-tokens-shell.css:2300 |
 | the spine on the other edge (MINDMAP_PLAN.md §13e) | frontend/css/07-whiteboard-misc.css:8571 |
-| the status bar (§36D) | frontend/css/00-tokens-shell.css:3231 |
+| the status bar (§36D) | frontend/css/00-tokens-shell.css:3232 |
 | the status bar from 820 to 959: one item fewer | frontend/css/10-responsive.css:1240 |
-| the status bar on a small phone | frontend/css/00-tokens-shell.css:3540 |
+| the status bar on a small phone | frontend/css/00-tokens-shell.css:3541 |
 | the status bar's Other devices icon and panel (INBOX 896) | frontend/css/lan-lazy.css:77 |
 | the status line and the recent searches | frontend/css/03-dashboard-widgets.css:1143 |
 | the step group (Perplexity's "Finished N steps") | frontend/css/02-chat-graph.css:4222 |
 | the strip's three doors (MINDMAP_PLAN.md §13b) | frontend/css/07-whiteboard-misc.css:8854 |
-| the strips that appear only when they apply | frontend/css/00-tokens-shell.css:1946 |
+| the strips that appear only when they apply | frontend/css/00-tokens-shell.css:1947 |
 | the structural blocks (INBOX 421 b) | frontend/css/05-sidebars-themes.css:1434 |
 | the suggestion menu, the dictionary, and the goal | frontend/css/05-sidebars-themes.css:5104 |
 | the switch's hit target (MODERNISATION_AUDIT.md Brief 8) | frontend/css/07-whiteboard-misc.css:8163 |
@@ -12820,7 +12822,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | type to filter a long list (row 1643, `listFilter` in sheets-selects.js) | frontend/css/08-consistency.css:10864 |
 | user-tunable corner rounding | frontend/css/04-chat-dock-appearance.css:1927 |
 | web panel (search + reader) | frontend/css/03-dashboard-widgets.css:979 |
-| what a wide screen is for | frontend/css/00-tokens-shell.css:3667 |
+| what a wide screen is for | frontend/css/00-tokens-shell.css:3668 |
 | what it learned (WORLD_CLASS_PLAN I9) | frontend/css/01-forms-settings.css:5596 |
 | what the AI remembers (ROADMAP §39B) | frontend/css/07-whiteboard-misc.css:2073 |
 | what the agent found, as things you can open | frontend/css/07-whiteboard-misc.css:5491 |
@@ -12834,7 +12836,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 
 | File | Lines |
 |---|---|
-| frontend/css/00-tokens-shell.css | 4355 |
+| frontend/css/00-tokens-shell.css | 4356 |
 | frontend/css/01-forms-settings.css | 6309 |
 | frontend/css/02-chat-graph.css | 5307 |
 | frontend/css/03-dashboard-widgets.css | 4878 |
@@ -26839,7 +26841,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21110)
+## Tests (21113)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27875,6 +27877,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_extras_bundles.py | 30 |
 | tests/test_extras_desktop_locked.py | 5 |
 | tests/test_extras_download.py | 24 |
+| tests/test_extras_inplace_progress.py | 3 |
 | tests/test_f13_ek_1110.py | 4 |
 | tests/test_f7_pool_moves.py | 3 |
 | tests/test_fact_check_1027.py | 17 |
@@ -30130,7 +30133,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1217 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:166 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:177 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4057 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3130 |
