@@ -4437,8 +4437,8 @@ Format: id | file:line | one line | status.
 - 1683x5/N10 | owner-asks-audit-1108:56 | In-app scrabble, pull-up, fling, miffed face | open
 - N2 | owner-asks-audit-1108:57 | Flail airborne, scrabble on a wall slide | open
 - 1683l | owner-asks-audit-1108:58 | One shared mind for both companions | open
-- 1683p | owner-asks-audit-1108:60 | One ledger of every companion ask | open
-- 1683t | owner-asks-audit-1108:62 | Come here row on the in-app menu too | open
+- ~~1683p | owner-asks-audit-1108:60 | One ledger of every companion ask | open~~ done: companion-asks.md re-graded with a counts line (checked 2026-11-11)
+- ~~1683t | owner-asks-audit-1108:62 | Come here row on the in-app menu too | open~~ closed by decision: the in-app menu opens on the companion itself, so "come here" has no pointer to come to; "Call back and reset its place" (companion-menu.js:285) is the analogue (checked 2026-11-11)
 - 1645 | owner-asks-audit-1108:64 | Polished goose-style overlay, default on Windows | open
 - 1645scope | owner-asks-audit-1108:65 | Nothing that touches other windows | open
 - 1638b | owner-asks-audit-1108:66 | Companion does not show; root out why | open
