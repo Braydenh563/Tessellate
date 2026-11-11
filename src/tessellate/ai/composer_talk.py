@@ -354,6 +354,10 @@ def cited_question(question: str, history: list[dict] | None, now: datetime) -> 
     turns = [{"text": str(t.get("question") or ""), "objects": t.get("objects") or []} for t in (history or [])[-reading.FOLLOW_TURNS:]]
     if not history:
         return None
+    from tessellate.ai import composer_dialogue
+
+    if composer_dialogue.other_in_frames(question, history):
+        return None  # the frames bind "and the other" to the next note of the list the pick came from
     #: "and the other one?" is the question before about the other note it cited (B21), which `cited_follow` leaves to acts.
     other = reading.follow(question, turns, now)
     return reading.cited_follow(question, turns, now) or (other[0] if other and other[1] == "other" else None)

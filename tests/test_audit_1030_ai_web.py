@@ -124,7 +124,9 @@ def test_a_down_search_is_not_an_argument_fault():
 def test_the_general_reply_names_the_real_cause():
     """A6, A7: never "turn on" when it is on; never "no model" when the person chose notes only."""
     off = personal.general_reply(False)
-    assert "Turn on web search" in off and "no model running" in off
+    #: The miss line no longer blames the model at all (test_composer_audit2_g12_g14, 2026-11-10): the
+    #: 1030 A6 claim that it says "no model running" has moved; what stays is that it names the real fix.
+    assert "Turn on web search" in off and "model" not in off
     chosen = personal.general_reply(False, by_choice=True)
     assert "no model running" not in chosen and "chose to answer from your notes only" in chosen
     mode = personal.general_reply(False, web_pref=True)

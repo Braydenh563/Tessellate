@@ -64,7 +64,13 @@ VERDICT = {
     "src/tessellate/ai/composer_read.py": "not a reader: `_WEEKDAYS` and `_MONTH_INDEX` are a mask that keeps day and month names out of a who answer's names, and `_written` reads back the route's own written stamp, never the person's words; recognise reads every window",
     "src/tessellate/ai/composer_slots.py": "not a reader: _WEEKDAYS matches a question's day to a note's written weekday and _UNITS lists a unit's spellings so the note's figure is quoted as written; days are found and judged by recognise (find, names_a_day)",
     "src/tessellate/ai/composer_small.py": "not a reader: `_OLD` is a mask that recognises the request 'show me something old' (its 'from a while ago' is a phrase of that request); it turns no word into a date, window or quantity, the pick is made by resurface from the notes' own stamps",
-    "src/tessellate/ai/commands.py": "not a reader: _TIME_FIRST, the words that open a reminder's time part (weekday words included), to split it from the task; the date is read by when, which delegates to recognise",
+    "src/tessellate/ai/commands.py": "not a reader: _TIME_FIRST, the words that open a reminder's time part (weekday words included), to split it from the task; the date is read by when, which delegates to recognise; `_BARE_CALL` is a mask that tells call mum from call mum tomorrow so a bare call is asked when, and the time words after it go to when unread",
+    # 2026-11-11 (composer batch 2): patterns from other sessions' work, judged.
+    "src/tessellate/ai/composer_remark.py": "not a reader: `_TIMED` is a mask that tells a remark which names a time (an appointment to ask about) from small talk, and `_WORK_NOUN`, `_WISH_NAMED` and the weather words are stop lists for a social reply; no word becomes a date, window or quantity",
+    "src/tessellate/ai/composer_story.py": "not a reader: `_LEAD` is a mask that strips the time lead a per-note line starts with because the paragraph says its own, and `_QUOTED_RELATIVE` a mask that spots a quote saying today or tonight so the plain lines pin the day; recognise reads every window",
+    "src/tessellate/ai/parity_acts.py": "not a reader: `_REMINDERS` and `_REMINDERS_FROM` are a mask that cuts the time part off 'make reminders from the Harbor note for tomorrow'; the cut words go to when unread",
+    "src/tessellate/ai/study.py": "not a reader: `_WHEN` is a mask-like cue that ranks a sentence with a day, month or clock time above a bare number; it turns no word into a value, recognise reads the window",
+    "frontend/js/onboarding.js": "not a reader: the week_start options (monday, saturday, sunday) of a setting, as in routes_settings",
 }
 
 WEEKDAYS = "monday|tuesday|wednesday|thursday|friday|saturday|sunday"
