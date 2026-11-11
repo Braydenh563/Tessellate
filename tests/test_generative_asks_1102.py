@@ -76,7 +76,9 @@ def test_a_note_command_or_a_notes_question_is_not_generative(ask):
     assert utilities.kind_of(ask) != "generate", ask
 
 
-@pytest.mark.parametrize("ask", ["write me an essay intro on WW1", "make a timetable for revision", "give me a study plan for next week"])
+#: "make a study plan" with no model lays out the notes' dated items instead (g45-1110 F13 g,
+#: CHANGELOG), so a study plan ask left this list when that decision landed.
+@pytest.mark.parametrize("ask", ["write me an essay intro on WW1", "make a timetable for revision", "write me a poem about the alliances"])
 def test_through_the_route_with_no_model_the_reply_is_the_needs_a_model_line(client, session, ask):
     import json
 

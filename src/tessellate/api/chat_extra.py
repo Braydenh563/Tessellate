@@ -187,16 +187,39 @@ def hello_events(session: Session, question: str, *, now: datetime) -> list[dict
     """The facts of a hello (the streak, the last note, the reminders due), so
     a model that answers "good morning" writes from the same numbers the
     composed welcome says (parity, decision 75). None for any other turn."""
-    from tessellate.ai import composer_smalltalk
+    from tessellate.ai import composer_remark, composer_smalltalk
 
     if composer_smalltalk.social_kind(question) not in ("greeting", "morning"):
         return None
+    if composer_remark.register(question) == "casual":
+        #: A tapped hello is answered in a line, for the model too (INBOX 1749).
+        return [{"type": "answer", "delta": composer_remark.casual_hello(question)}]
     try:
         line = welcome_line(session, now, question=question)
     except Exception:  # noqa: BLE001  # the model greets as before
         log.exception("chat: the welcome facts failed")
         return None
     return [{"type": "answer", "delta": line}] if line else None
+
+
+def casual_greeting(question: str, voice: str, recent: list[str], seed: str, history: list[dict] | None) -> str:
+    """A tapped hello ("heyy", "yo") answered in a line in the person's own
+    register, with no status report, card or link (INBOX 1749); "" for a
+    written hello, which keeps the welcome."""
+    from tessellate.ai import address, composer_remark, composer_smalltalk, question_noise
+
+    if composer_smalltalk.social_kind(question) not in ("greeting", "morning") or composer_remark.register(question) != "casual":
+        return ""
+    line = composer_remark.casual_hello(question, voice, recent, seed, asked_how=question_noise.asks_how(question))
+    how = composer_smalltalk.hello_how(question, voice, [line, *recent], seed)
+    return address.greet(" ".join(p for p in (line, how) if p), address.name_of(deps.get_config()), history)
+
+
+def remark_facts(session: Session, question: str) -> str:
+    """What a model is told about a remark: that it is one, and the one note that bears on it."""
+    from tessellate.ai import composer_remark
+
+    return composer_remark.facts(question, lambda word: note_bearing(session, word))
 
 
 def facts_events(session: Session, question: str, *, now: datetime, chat: bool = True) -> list[dict] | None:
@@ -251,16 +274,39 @@ def figures_events(session: Session, typed: str, history: list[dict], today, ope
     return [{"type": "answer", "delta": said}] if said else None
 
 
-def talk_events(session: Session, typed: str, history: list[dict], seed: str, question: str) -> list[dict] | None:
+def note_bearing(session: Session, topic: str) -> tuple[int, str] | None:
+    """`(id, title)` of the newest note that names `topic` as a word (or its
+    stem: "run" finds "running"), for the one gentle link under a remark
+    (INBOX 1749); None when no note does. Archived notes and drafts do not count."""
+    from tessellate.ai import study
+
+    from tessellate.ai import composer_remark
+
+    if not (pattern := composer_remark.topic_pattern(topic)):
+        return None
+    word = re.compile(pattern, re.I)
+    for n in _notes(session):
+        if not n["archived"] and not n["draft"] and word.search(n["content"]):
+            return n["id"], realise.cut_title(study.title_of(n["content"]), 60)
+    return None
+
+
+def talk_events(session: Session, typed: str, history: list[dict], seed: str, question: str, voice: str = "natural") -> list[dict] | None:
     """The turn when it is about the talk itself (`ai/composer_chat`: a feeling,
     "shorter", "which is higher") or about Atlas ("do you have feelings"), read
     on what was typed since a follow-on rewrites `question`. A feeling or a
     missed name offers the notes on its subject only when some are found."""
-    from tessellate.ai import composer_chat, personal
+    from tessellate.ai import composer_chat, composer_remark, personal, phrasing
 
     if (named := name_events(session, question)) is not None:
         return named
+    recent = [str(t.get("answer") or "") for t in history][-phrasing.RECENT :]
+    if hello := casual_greeting(typed, voice, recent, seed, history):
+        return [{"type": "answer", "delta": hello}]
     said = composer_chat.reply(typed, history, seed)
+    if said is None and (remark := composer_remark.reply(typed, history, seed, voice)) is not None:
+        #: A remark gets a human line and, when a note clearly bears on it, one link (INBOX 1749).
+        said = composer_remark.with_link(remark[0], remark[1], lambda word: note_bearing(session, word), seed, voice)
     if said is None:
         itself = personal.about_me(question)
         return [{"type": "answer", "delta": itself}] if itself else None

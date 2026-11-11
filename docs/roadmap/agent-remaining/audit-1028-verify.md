@@ -1,67 +1,67 @@
-Counts: fixed 13, open 59, unsure 72. Source: audit-1028-ranked.md rows with planned at new (144 rows), checked 2026-11-02.
+Counts, re-checked 2026-11-11 at head 5fbaedf23: fixed 13, stale 39 (pointer in the row, details in v1028-1.md to v1028-4.md), open 18 (each names its blocker), unsure 72. Source: audit-1028-ranked.md rows with planned at new (144 rows), first checked 2026-11-02.
 
 | id | verdict | evidence | size |
 |---|---|---|---|
-| E18 | open | composer_digest.py:130 and 3005 still add the told_self phrase to note sentences. | S |
-| E24 | open | composer_write.py:55-58 covers translate and rewrite only; essay and timetable asks get no needs-a-model reply. | S |
-| E25 | open | commands.py:515 _new_note keeps the quoted title as body text; no split on with. | S |
-| E29 | open | No duplicate reminder check in act_registry.py or commands.py. | S |
+| E18 | stale 2026-11-11 | `told_self` is now the neutral "the same note adds:" (ai/composer_digest.py:140); tests/test_composer_frames_1029.py:245-254 pins no "reminded yourself" / "You captured this" (v1028-1.md) | S |
+| E24 | stale 2026-11-11 | `GENERATIVE_VERBS` and `GENERATIVE_THINGS` at ai/utilities.py:109-128, gate at routes_chat.py:205-222; tests/test_generative_asks_1102.py passes (44). One route case ("give me a study plan for next week") failed at head because g45-1110 F13 g (CHANGELOG.md:141) deliberately lays a study plan out from dated notes with no model; the test dropped that case (b9283286e, test only). (v1028-2.md) | S |
+| E25 | stale 2026-11-11 | `commands.read('create a note called "Shopping" with milk, eggs and bread')` gives `Shopping\nMilk, eggs and bread`; pinned by tests/test_new_note_called_1102.py:18 (v1028-3.md) | S |
+| E29 | stale 2026-11-11 | CHANGELOG.md:1060 (same reminder not made or listed twice); pinned by tests/test_reminder_dupes_1102.py (v1028-4.md) | S |
 | D24 | fixed 483b6a6 | The document editor drop target (`docFileDropBox`) moved to documents-embeds.js; the shared paste and drop listeners stay in settings-wiring.js because chat, palette and notes use them too. | S |
-| K16 | open | Space isolation is still an ORM filter on a client header (core/deps.py:378); no not-a-boundary note. | S |
-| B28 | open | No text/uri-list handling in the whiteboard.js paste path. | S |
-| E47 | open | index.html has no chat list search box; no find-in-chat control found. | S |
-| E49 | open | chat-edit.js has no data-turn attribute; the cut still derives the turn from bubble index. | S |
-| E64 | open | commands.py:1356 and 1400 still put #id in card items. | S |
-| E71 | open | No speed control; the Read aloud menu item has one label (chat-turn.js:2507). | S |
-| B34 | open | Dismiss hides the hint (whiteboard.js:15426-15427); no replacement inline cue found. | S |
-| D53 | open | No truncated marker in documents-code.js run output. | S |
-| E41 | open | index.html:10127 still shows Use this model with one model; activity-panel.js:34 says not in memory. | S |
-| E61 | open | index.html:3296 explains the disabled Plan control only in its data-needs-model title. | S |
-| E67 | open | composer_plan.py:412 offers a single Plan my week chip. | S |
-| E68 | open | chat.js:387 sets aria-busy only on web-panel; no transcript busy state found. | S |
-| E69 | open | No as-typed echo found; data-autocorrect still on quick note and title inputs (index.html:1221, 1680). | S |
-| S62 | open | app-palette.js empty state has no Search notes for fallback. | S |
-| S91 | open | status.js:509 sets document.title only for the unread count, not per view. | S |
-| S92 | open | No aria-live region in notes-list.js or library.js. | S |
-| U38 | open | No duplicate-title warning or suffix found in document create. | S |
-| U48 | open | whiteboard.js:14637 defaults the export scope to On screen when nothing is selected. | S |
-| B32 | open | whiteboard-map.js has 2 requestAnimationFrame calls and no cancelAnimationFrame. | S |
-| K35 | open | database.py:2919 and 2964 run PRAGMA table_info per table each start; no schema_version gate. | S |
-| E58 | open | chat-attach.js:1344-1365 reloads the whole conversation list on each refresh; no patch found. | S |
-| S90 | open | notesPaletteCommands is rebuilt on each open (app-palette.js:846); no cache. | S |
-| B24 | open | Decision and INBOX markers remain in whiteboard.js and whiteboard-map.js comments. | S |
-| K29 | open | Async routes remain: routes_auth.py:1473 lan_watch and routes_tasks.py:644 jobs_stream. | S |
-| B10 | open | whiteboard.js:14439 export still opens the browser Print path; no native PDF. | M |
-| E57 | open | No inline notice where turns drop; only compress suggestions (chat-turn.js:696, chat.js:1124). | M |
-| E34 | open | ask-compose.js liveMarkdownRenderer still re-renders the whole answer per flush (capture-ask.js:1263). | M |
-| D25 | open | Document styles still spread across 17 css files (grep doc-). | M |
-| K11 | open | llm_api_key still stored in preferences; the keyring seam covers only the PIN store (pinstore.py). | M |
-| E43 | open | routes_chat.py:2436 /tools/execute has no signature tying the call to a parked card. | M |
-| B33 | open | 23 raw isFinite or isNaN checks in whiteboard.js and no shared number helper. | M |
-| E59 | open | No thumbs or helpful control in chat js files; only insight Confirm and Not right. | M |
-| E60 | open | No Regenerate with or Continue after Stop item in chat-turn.js. | M |
-| E62 | open | chat.js:187 sends attempt to reword; no widened retrieval on regenerate found. | M |
-| S71 | open | No drop target for files on the notes list (notes-list.js, library.js). | M |
-| B26 | open | wbBuildContextMenu is still 448 lines (whiteboard.js:9251). | M |
-| B23 | open | wbBuildExportSvg is still 339 lines and reads live DOM styles (whiteboard.js:13502). | M |
-| D45 | open | documents.js:16206 builds the dictionary on the main thread; the worker only runs grammar. | M |
-| K34 | open | routes_import.py:30-41 still reads uploads into bytes, no spool to disk. | M |
-| E65 | open | composer_read.py:440 read_note has no NoteView cache; functools.cache only wraps a regex. | M |
-| D46 | open | documents*.js comment lines are 10,103 of 36,378 (28 percent). | M |
-| B3 | open | whiteboard.js:21916 renderWhiteboard still clears the map size cache and item element cache each render. | L |
-| B4 | open | wbScheduleRender (whiteboard.js:21762) has no dirty set; renderWhiteboard runs the full board per frame. | L |
+| K16 | stale 2026-11-11 | SECURITY.md:115 says a space is not a security boundary; CHANGELOG 944; tests/test_audit1028_low_1102.py (v1028-1.md) | S |
+| B28 | stale 2026-11-11 | frontend/js/whiteboard.js:18891 `wbPastedPictureAddress` (text/uri-list, img[src]), `wbPictureCap` 50 MB; pinned by tests/test_audit_1028_a28s.py::test_b28 (passes). (v1028-2.md) | S |
+| E47 | stale 2026-11-11 | `#chat-sidebar-search` at index.html:2796 (search-field recipe, wired to `GET /conversations?q=`); pinned by tests/test_chat_ui_a28u.py:22. Find inside one chat (Ctrl+F) was never built; it was the optional half of the row, not the fix named (v1028-3.md) | S |
+| E49 | stale 2026-11-11 | CHANGELOG.md:1070 (turn read from `data-turn`); pinned by tests/test_chat_ui_a28u.py (v1028-4.md) | S |
+| E64 | stale 2026-11-11 | CHANGELOG 1059 acts name notes by title; tests/test_no_ids_in_act_text_1102.py (passes); the cited commands.py lines no longer hold `#id` (only `#tag`) (v1028-1.md) | S |
+| E71 | stale 2026-11-11 | chat-turn.js:2537-2548 the Read aloud item turns to Stop reading while it speaks; speed is the Settings select `pref-read-aloud-rate` (index.html:13092, settings-controls.js:840, media.js:371 clamps 0.75 to 1.5); tests/test_chat_ui_a28u.py::test_e71 passes. (v1028-2.md) | S |
+| B34 | stale 2026-11-11 | `#wb-empty-cue` keeps one line on an empty board (whiteboard.js:15711, 22342); tests/test_audit_1028_a28s.py:78 (v1028-3.md) | S |
+| D53 | stale 2026-11-11 | CHANGELOG.md:1072 ("Output cut at 4,000 characters." marker); tests/test_audit_1028_a28s.py:93 (v1028-4.md) | S |
+| E41 | stale 2026-11-11 | CHANGELOG 1065; frontend/js/ai-tools.js:114 hides Use this model for the one in-use model, :128 "loads when you ask"; activity-panel.js:35; tests/test_chat_ui_a28u.py (v1028-1.md) | S |
+| E61 | stale 2026-11-11 | "Plan and Agent need a model." visible line plus aria-disabled Agent (a Tab stop) with the model-offer popover; tests/test_chat_ui_a28u.py::test_e61 passes. (v1028-2.md) | S |
+| E67 | stale 2026-11-11 | composer_plan.py:515 builds Next chips from the answer's items; tests/test_due_chips_1102.py (v1028-3.md) | S |
+| E68 | stale 2026-11-11 | CHANGELOG.md:1067 (`aria-busy` on the transcript while streaming); tests/test_chat_ui_a28u.py, tests/test_spinner_recipe.py:325 (v1028-4.md) | S |
+| E69 | stale 2026-11-11 | Correction is underlined, click offers Keep / Put back / Edit (frontend/js/autocorrect.js:225-245), server says "I read that as" (ai/composer_ack.py:23); `data-autocorrect` staying on the boxes is the intended design (same verdict as ranked BC1) (v1028-1.md) | S |
+| S62 | stale 2026-11-11 | app-palette.js editor-mode block carries a "Search notes for" row into `openFinder(typed, { kind: "note" })`; tests/test_audit_1028_a28s.py::test_s62 passes. (v1028-2.md) | S |
+| S91 | stale 2026-11-11 | status.js:505-518 `pageTitle.view` sets `document.title` per view (router paints it); `<html lang="en">` is right, the UI is English only and no locale setting exists; tests/test_audit_1028_a28s.py:32 (v1028-3.md) | S |
+| S92 | stale 2026-11-11 | CHANGELOG.md:1078 (count announced through the live region); tests/test_audit_1028_a28s.py:101 (v1028-4.md) | S |
+| U38 | stale 2026-11-11 | frontend/js/documents.js:2701-2710 toasts once on a duplicate title and leaves it as typed; CHANGELOG 1077; tests/test_audit_1028_a28s.py (passes) (v1028-1.md) | S |
+| U48 | stale 2026-11-11 | whiteboard.js `wbExportBoard` has `let scope = hasSelection ? "selection" : "whole";`; tests/test_audit_1028_a28s.py::test_u48 passes. (v1028-2.md) | S |
+| B32 | stale 2026-11-11 | whiteboard-map.js has one rAF and one setTimeout, both inside `wbMapCache.defer` (:240-249) with cancel via `cancelAnimationFrame`/`clearTimeout`, and `wbMapCache.cancelAll()` runs on board switch; tests/test_audit_1028_a28s.py:54 (v1028-3.md) | S |
+| K35 | stale 2026-11-11 | CHANGELOG.md:1071 (schema fingerprint in `PRAGMA user_version` skips the column scan); tests/test_schema_stamp_k35.py (v1028-4.md) | S |
+| E58 | stale 2026-11-11 | Checkpoint rounds do not reload the list: `loadConversationList` runs on row create (chat-turn.js:421), retitle (:1168) and turn end (:1189) only; history is budgeted by `context.fit_history` (ai/agent_turn.py:142, E57) (v1028-1.md) | S |
+| S90 | stale 2026-11-11 | notesPaletteCommands (app-palette.js:873) is still rebuilt per open, but the rebuild measured 0.02 ms of an 11.4 ms open (ranked.md row 276, shell.md S90 4 ms); a cache buys nothing and would go stale on note edits. (v1028-2.md) | S |
+| B24 | open | Re-checked 2026-11-11, still open: 478 `INBOX n`/`decision n`/`*_PLAN.md` markers in whiteboard.js (26k lines) and whiteboard-map.js; stripping them is a mechanical 37k-line rewrite that collides with every other board worktree and with comment text some tests read. Needs the owner to say whether `INBOX n` citations in comments are policy (CLAUDE.md section 2 says section numbers are cited from code) (v1028-3.md) | S |
+| K29 | stale 2026-11-11 | Lint `test_k29_an_async_route_touches_its_database_session_only_in_a_thread` (tests/test_audit1028_low_1102.py:110); the 7 remaining async routes (routes_auth.py:1537 lan_watch, routes_captions.py:113, routes_settings.py:2472, routes_tasks.py:644) offload DB reads or touch memory only (a30i-1102.md, backend-1111) (v1028-4.md) | S |
+| B10 | stale 2026-11-11 | Export dialog states "Opens Print: choose Save as PDF" (whiteboard.js:14773); native PDF lib (jsPDF) declined in the vendoring review, HISTORY.md:214; the audit's own alternative ("document clearly in the export dialog") is met (v1028-1.md) | M |
+| E57 | stale 2026-11-11 | d2e1629bb: turn reports `composition.history_dropped`, reply-kit.js:1593-1622 draws a `history-trimmed-notice` line under the reply; tests/test_history_trimmed_e57.py passes. (v1028-2.md) | M |
+| E34 | stale 2026-11-11 | `liveMarkdownRenderer` (capture-ask.js:1207-1235) keeps finished blocks (`kept`/`keptCount`, `blockBreak` :1192) and draws only the open block, with adaptive gap `max(66, 4x render time)`; tests/test_live_markdown_blocks.py (v1028-3.md) | M |
+| D25 | open | Re-checked 2026-11-11, still open: True: `.doc-` rules sit in 04, 05, 07, 08, 09 and 10 of frontend/css (148, 312, 139, 105, 79, 26 matches; library-lazy.css holds 315 of its own) and no documents lazy css exists. Moving them is hundreds of rules across cascade-order-sensitive files, over 150 lines, with no decision on the target file (v1028-4.md) | M |
+| K11 | stale 2026-11-11 | Fixed b15530478: keyring else owner-only file, core/secrets_store.py, wired at core/config.py:405-416; tests/test_secret_settings_q22.py (passes) (v1028-1.md) | M |
+| E43 | stale 2026-11-11 | 0389648d4: routes_chat.py:2454 `consent_store.refusal_for_press(body.consent_id, name, arguments)` binds the press to the parked card (tool name and arguments must match, card is spent); tests/test_confirm_binds_to_card_e43.py passes (3). A press with no `consent_id` is the Undo and redo path by design (consent_store.py:61). (v1028-2.md) | M |
+| B33 | stale 2026-11-11 | `wbNum(v, fallback)` exists (whiteboard.js:9098), used for CSS lengths; tests/test_wb_board_1028.py:198. The remaining raw `parseFloat` calls are `\|\| 0` guarded or SVG path tokens; the isFinite guards are on parsed data, not style writes (v1028-3.md) | M |
+| E59 | open | Re-checked 2026-11-11, still open: True: no per-answer feedback in frontend/js/chat*.js or answer-kit.js (only insight Confirm / Not right, chat-turn.js:531). Needs a design: what a wrong mark is stored against and what learns from it (no decision in CHAT_PLAN) (v1028-4.md) | M |
+| E60 | open | Re-checked 2026-11-11, still open: Continue after Stop is built (CHANGELOG 43, chat-turn.js:995, tests/test_chat_stop_done_w1.py). Left: "Regenerate with..." a different persona or model; blocked on design (no per-turn model on the chat API, only `persona`; menu placement on the answer actions at chat-turn.js:2509 unspecified) (v1028-1.md) | M |
+| E62 | open | Re-checked 2026-11-11, still open: True: chat.js:187 sends `attempt`, routes_chat.py:1305-1319 only salts the wording; nothing widens retrieval. Blocked on a design: which axes widen (category, dates, k), how the composer knows the last answer missed, and the Brief 39 variation decision (CHAT_PLAN.md:840). Size M, no decision recorded. (v1028-2.md) | M |
+| S71 | stale 2026-11-11 | file-drop.js (window-level `dragover`/`drop`, `fileDrop.note` matches .md/.markdown/.txt on the Notes tab, then `fileDrop.toNotes`) shows the drop veil and makes notes with Undo; tests/test_file_drop.py (v1028-3.md) | M |
+| B26 | stale 2026-11-11 | The long board menu is flyout groups (Library, Arrange, Export) in `wbBuildContextMenu` (whiteboard.js:9506-9530, `buildMenuGroupButton`); pinned by tests/test_ux_1031_board.py (BD10). The function is still about 440 lines, but the scanning problem the row names is gone (v1028-4.md) | M |
+| B23 | stale 2026-11-11 | Perf claim measured: export of 500 objects and 280 sketches builds in 17.9 ms in one task (CHANGELOG 183). The function is still 355 lines (whiteboard.js:13730), an arch item, not a freeze (v1028-1.md) | M |
+| D45 | open | Re-checked 2026-11-11, still open: True but small: documents.js:11470-11500 `docLoadWordlist` builds the 92,972-word Set on the main thread; measured 30-47 ms once per page load (node, unthrottled, 3 runs). A worker needs an async lookup in every `docWordKnown` caller (documents.js:11595, 11928, 12122, 12202, 13403, documents-prose.js:229), over 150 lines. Recommend closing as not worth it unless a throttled-CPU trace shows a long task. (v1028-2.md) | M |
+| K34 | stale 2026-11-11 | routes_import.py:30-45 `_received` sizes the spooled upload by seeking (`app_import.size_of`), `app_import.expand` opens zips from the file and reads one member at a time (v1028-3.md) | M |
+| E65 | stale 2026-11-11 | Declined with the measurement (s11-1110.md:10): `read_note` is not the cost, the per-answer queries were (329 to 96); a process cache adds invalidation risk for no measured gain (v1028-4.md) | M |
+| D46 | open | Re-checked 2026-11-11, still open: Now 11,030 comment lines of 40,034 (27.5%) across documents*.js; trimming ~10k lines of rationale is far over 150 lines and conflicts with "comments explain why" and comments cited from tests; needs an owner call on a target ratio (v1028-1.md) | M |
+| B3 | stale 2026-11-11 | Claim half true: whiteboard.js:22311-22316 `renderWhiteboard` still clears the size cache and `wbItemElCache`, but both are lazy lookup caches refilled on demand; the elements are kept (ranked.md row 14: 500 of 500 topic elements survive a render, 72.8 ms median at 4x throttle for one moved topic). tests/test_map_render_cost.py and tests/test_wb_stroke_paint_key.py pass (18). Not re-measured in a browser here. The comment at whiteboard.js:22313 ("replaces every map node's element") is out of date. (v1028-2.md) | L |
+| B4 | open | Re-checked 2026-11-11, still open: `wbScheduleRender` (whiteboard.js:22157) still runs `renderWhiteboard()` whole per frame with no dirty set; pen strokes were made cheap (a30g) but shapes and connectors repaint. L: a dirty-id set through every caller is a design (W30), over 150 lines (v1028-3.md) | L |
 | D26 | fixed (65c01c4, e3aae86) | Threads: author, time, replies, Show resolved and Reopen in the Comments rows (a30h-1102). | L |
-| D30 | open | Spellcheck still uses one en.txt wordlist (vendor/wordlist, ASCII, lowercased); no other dictionary is vendored, so a per-document language needs new lists first (a30h-1102.md). | L |
-| E48 | open | chat-edit.js has no branch or pager; edit still truncates later turns. | L |
-| D22 | open | documents.js is still 857,982 bytes and unminified; CodeMirror now loads lazily (documents.js:16443). | L |
-| B15 | open | whiteboard.js:17922 still dispatches a synthetic MouseEvent mousemove bridge. | L |
+| D30 | open | Re-checked 2026-11-11, still open: `lang` key and checker-off-for-non-English are built (tests/test_doc_spell_lang_1104.py); the language packs (a30h-1102.md steps 2 and 3) need new per-language wordlists built with network at build time, and only en.txt is vendored (frontend/vendor/wordlist/) (v1028-4.md) | L |
+| E48 | open | Re-checked 2026-11-11, still open: chat-edit.js still truncates later turns, no branch or pager; needs a design (where cut turns live: new conversation-row column or table, migration, pager UI), L (v1028-1.md) | L |
+| D22 | open | Re-checked 2026-11-11, still open: Eager-load claim is stale (boot loads no documents, CodeMirror, whiteboard or d3 file; documents.js is now 798,295 bytes, 17,163 lines). What remains is splitting `library` so a first document open skips whiteboard.js, whiteboard-map.js, d3 and graph.js (about 1.3 MB): a design step first (a30g-1102.md:20, load-order risk). Minify is ruled out by "no build step". (v1028-2.md) | L |
+| B15 | open | Re-checked 2026-11-11, still open: one synthetic `new MouseEvent("mousemove")` remains (whiteboard.js:18258), now handed straight to d3-drag's own `mousemove.drag` listener (B16 narrowed it). Removing it means moving d3.drag to pointer events, L and needs a drag sweep on the live board (v1028-3.md) | L |
 | D23 | partial 483b6a6 | docCmTheme is documents-cm-theme.js; docLivePlugin (1,720 lines) still one function, line in DOCUMENTS_PLAN. | L |
-| K24 | open | Nine Python files still exceed 3,000 lines, e.g. composer_digest.py 5,203 and routes_entries.py 4,373. | L |
-| K25 | open | _start_tray is 351 lines and _run_desktop 325 (__main__.py:2162, 1780); 10 functions over 150 lines. | L |
-| E44 | open | chat-turn.js:11 chatSendTurn still runs 1,171 lines. | L |
-| E45 | open | Five consumers remain: answer-kit.js:1053 streamChatEvents, ask-compose.js askController, help-chat.js, agent-activity.js. | L |
-| D52 | open | No code editor tabs found in documents-ide.js. | L |
-| D47 | open | Textarea fallback still present (documents.js:226). | L |
+| K24 | open | Re-checked 2026-11-11, still open: True: 9 Python files exceed 3,000 lines (composer_digest.py 6,230, engine.py 4,821, recognise.py 4,027, help_topics_more.py 3,915, routes_entries.py 3,777, help_topics_core.py 3,712, manager.py 3,595, database.py 3,345, __main__.py 3,013). Splits are L, and in progress in k24-1111.md (next: routes_entries connections block, routes_settings logs) (v1028-4.md) | L |
+| K25 | open | Re-checked 2026-11-11, still open: Partly done (18 to 10 functions over 150 lines; `_start_tray`, `_build_graph`, `_optimization_pass`, `_run_skill`, `_dispatch_call`, `_prepare_turn`, `timeline` no longer over). Left: core/overlay/engine.py `__init__` 266, `_run_desktop` 245 (__main__.py:1898), routes_models.py `status` 201, app.py `_register_error_handlers` 194, entry/manager.py `_hard_delete` 181, wb_boards.py `list_boards` 181, facts.py `run` 173, routes_settings.py `_preferences_from` 167, app.py `_add_system_routes` 166, agent_turn.py `build_agent_messages` 160; L, one refactor per function (v1028-1.md) | L |
+| E44 | open | Re-checked 2026-11-11, still open: True: chat-turn.js:11-1203 `chatSendTurn` is 1,193 lines. Over 150 lines and a risky refactor of the send path that needs a design (turn state, handler table, persistence, teardown) and a real-browser sweep per stage. (v1028-2.md) | L |
+| E45 | open | Re-checked 2026-11-11, still open: still separate stream readers: answer-kit.js:1212 (`streamChatEvents`, shared by Ask/Chat), help-chat.js:543, agent-activity.js:568, chat-tasks.js:131. One `AnswerStream` plus one transcript component is a design (Opus rung), L (v1028-3.md) | L |
+| D52 | open | Re-checked 2026-11-11, still open: True: documents-ide.js has no tabs or split panes (grep). L feature needing a design (multi-file workspace for the code editor) (v1028-4.md) | L |
+| D47 | open | Re-checked 2026-11-11, still open: Textarea fallback (`docCmBroken` path, documents.js:231) still there; dropping the safety net when CodeMirror fails to load, or adding a CI matrix, is an owner decision, L (v1028-1.md) | L |
 | E19 | unsure | Needs the q1 run; lowercasing path in composer digest not located by grep. | S |
 | E21 | unsure | Lowercase month tuples still at composer_doings.py:31 and composer_digest.py:2458; needs the q2 run. | S |
 | E22 | unsure | _absent (composer_empty.py:68) checks length only; the caller stop list was not read. | S |
