@@ -11060,6 +11060,12 @@ onDomReady(() => {
   });
   $("bookmark-group-new")?.addEventListener("click", newBookmarkGroup);
   $("bookmark-group-manage")?.addEventListener("click", manageBookmarkGroups);
+  $("bookmark-import")?.addEventListener("click", () => $("bookmark-import-file")?.click());
+  $("bookmark-import-file")?.addEventListener("change", (event) => {
+    const input = event.target;
+    renderBookmarks.file.load(input.files?.[0]).finally(() => { input.value = ""; });
+  });
+  $("bookmark-export")?.addEventListener("click", () => renderBookmarks.file.save());
   $("contents-refresh")?.addEventListener("click", renderContents);
   const contentsGroup = $("contents-group");
   if (contentsGroup) {
@@ -11422,6 +11428,50 @@ function clearLibraryLinksSelection() {
 //: bookmark has no bin, so Undo saves the same fields again (the id is new,
 //: nothing refers to a link by id except a note's attached references, which
 //: the delete route already removes). Pin and read state travel with it.
+//: **Browser bookmarks in and out** (DOCUMENTS_PLAN L6; `repo/bookmarks_html.py` reads and writes the Netscape file every browser
+//: uses). Import skips what is already saved and says how many it added; Undo takes exactly those away, Redo reads the file again.
+//: Hung on `renderBookmarks` so the Library's global names stay where they were (the cap).
+renderBookmarks.file = {
+  async load(file) {
+    if (!file) return;
+    const html = await file.text();
+    const run = () => apiJson("/bookmarks/import", { method: "POST", body: JSON.stringify({ html }) });
+    let done;
+    try {
+      done = await run();
+    } catch (err) {
+      return toast(err.message, true);
+    }
+    if (!done.found) return toast("No links found in that file. Choose the bookmarks file your browser exported.", "info");
+    let ids = done.ids;
+    await renderBookmarks();
+    if (!ids.length) return toast("Every link in that file is already saved.");
+    const drop = async () => {
+      for (const id of ids) await apiJson(`/bookmarks/${id}`, { method: "DELETE" }).catch((e) => toast(e.message, true));
+      await renderBookmarks();
+    };
+    const action = pushUndo(`Imported ${nounCount(ids.length, "bookmark")}`, drop, async () => {
+      ids = (await run()).ids;
+      await renderBookmarks();
+    });
+    const notes = [done.duplicates && `${done.duplicates} already saved`, done.skipped && `${done.skipped} not web links`].filter(Boolean);
+    toastAction(`${nounCount(ids.length, "bookmark")} added${notes.length ? ` (${notes.join(", ")})` : ""}.`, "Undo", async () => {
+      settleUndoFromToast(action);
+      await drop();
+      toast("Import undone.");
+    });
+  },
+  async save() {
+    try {
+      const response = await api("/bookmarks/export");
+      if (!response.ok) throw new Error(`The server answered ${response.status}`);
+      await saveFile("tessellate-bookmarks.html", await response.blob());
+    } catch (e) {
+      toast(`Couldn't export your bookmarks: ${e.message}.`, true, { action: ["Try again", () => renderBookmarks.file.save()] });
+    }
+  },
+};
+
 async function deleteBookmarksWithUndo(links) {
   const kept = links.map((b) => ({
     url: b.url, title: b.title, note: b.note, group_name: b.group_name,

@@ -6,13 +6,13 @@ a document. The first resource behind a repository (INBOX 1499); see
 from __future__ import annotations
 
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import delete as sa_delete
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.core.database import Bookmark, DocumentBookmark, EntryBookmark
+from tessellate.core.database import Bookmark, DocumentBookmark, EntryBookmark, utcnow
 from tessellate.entry.manager import log_action
 from tessellate.repo import Invalid, NotFound
 
@@ -114,6 +114,44 @@ def create(session: Session, **fields) -> tuple[Bookmark, int | None]:
     session.flush()
     log_action(session, "created", "bookmark", bookmark.id, bookmark.title or bookmark.url)
     return bookmark, twin
+
+
+def everything(session: Session) -> list[Bookmark]:
+    """Every saved link, oldest first (an export keeps the order it was saved in)."""
+    return list(session.scalars(select(Bookmark).order_by(Bookmark.created_at, Bookmark.id)))
+
+
+def import_rows(session: Session, rows: list[dict]) -> tuple[list[Bookmark], int]:
+    """Save the links of a browser's export; the ones already on the shelf (by address) are skipped.
+
+    A link keeps the day the browser saved it (`added`, seconds since 1970) when that reads as a sane
+    date, so a long export does not all land on today. Returns the new rows and the number skipped as
+    twins, of the shelf or of an earlier row in the same file.
+    """
+    have = set(session.scalars(select(Bookmark.url)))
+    made: list[Bookmark] = []
+    twins = 0
+    for row in rows:
+        url = row["url"]
+        if url in have:
+            twins += 1
+            continue
+        have.add(url)
+        bookmark = Bookmark(url=url, title=row.get("title", ""), group_name=row.get("group_name", ""))
+        stamp = str(row.get("added") or "")
+        if stamp.isdigit():
+            try:
+                when = datetime.fromtimestamp(int(stamp), tz=timezone.utc).replace(tzinfo=None)
+            except (OverflowError, OSError, ValueError):
+                when = None
+            if when is not None and datetime(1995, 1, 1) <= when <= utcnow().replace(tzinfo=None):
+                bookmark.created_at = when
+        session.add(bookmark)
+        made.append(bookmark)
+    session.flush()
+    if made:
+        log_action(session, "imported", "bookmark", made[0].id, f"{len(made)} bookmarks from a file")
+    return made, twins
 
 
 def update(session: Session, bookmark_id: int, **fields) -> Bookmark:
