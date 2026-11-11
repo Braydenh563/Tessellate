@@ -133,7 +133,6 @@ $("improve-custom-input").addEventListener("keydown", (e) => {
     $("improve-custom-go").click();
   }
 });
-$("link-suggest-btn").addEventListener("click", () => openSuggestionsInbox("links"));
 $("status-back").addEventListener("click", () => stepTabHistory(-1));
 $("status-forward").addEventListener("click", () => stepTabHistory(1));
 $("status-back").addEventListener("contextmenu", (event) => {
@@ -710,11 +709,11 @@ document.addEventListener("keydown", (e) => {
     closeFeatures();
     return;
   }
-  if (e.key === "Escape" && !$("graph-new").classList.contains("hidden")) {
+  if (e.key === "Escape" && document.getElementById("graph-new")?.classList.contains("hidden") === false) {
     closeGraphNewNote();
     return;
   }
-  if (e.key === "Escape" && !$("graph-popup").classList.contains("hidden")) {
+  if (e.key === "Escape" && document.getElementById("graph-popup")?.classList.contains("hidden") === false) {
     closeGraphPopup(true);
     return;
   }
@@ -758,7 +757,7 @@ document.addEventListener("keydown", (e) => {
     closeSettingsModal();
     return;
   }
-  if (e.key === "Escape" && !$("doc-ai-panel").classList.contains("hidden")) {
+  if (e.key === "Escape" && document.getElementById("doc-ai-panel")?.classList.contains("hidden") === false) {
     closeDocAiPanel();
     return;
   }
@@ -2322,3 +2321,7 @@ function singleKeysOn() {
     });
   };
 }
+
+onSurface("graph", () => {
+  $("link-suggest-btn").addEventListener("click", () => openSuggestionsInbox("links"));
+});

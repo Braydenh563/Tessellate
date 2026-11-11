@@ -900,36 +900,38 @@ async function timelineCalMovePage(row, day) {
   toast(`The page for ${from} is now the page for ${day}.`);
 }
 
-//: Wired once, on the view's box: the cells are rebuilt on every paint and a
-//: listener per cell would pile up with them.
-(() => {
-  const box = $("timeline-calendar");
-  box.addEventListener("keydown", timelineCalKeys);
-  box.addEventListener("dragstart", timelineCalDragStart);
-  box.addEventListener("dragover", timelineCalDragOver);
-  box.addEventListener("dragend", timelineCalDragEnd);
-  box.addEventListener("drop", timelineCalDrop);
-  box.addEventListener("click", (event) => {
-    const span = event.target.closest?.("[data-cal-span]");
-    if (span) return timelineCalSetSpan(span.dataset.calSpan);
-    const cell = event.target.closest?.(".timeline-cal-stop, .timeline-cal-hourcell");
-    if (!cell || event.target.closest("button")) return undefined;
-    clearTimeout(timelineCal.pickTimer);
-    //: A double click adds on the day, or at the hour (INBOX 904 B72).
-    if (event.detail >= 2) return timelineCalAdd(cell.dataset.calDay, cell.dataset.calHour === undefined ? null : Number(cell.dataset.calHour));
-    //: A press on a day's own ground opens the day (the owner, 2026-10-11:
-    //: "I cant click on or interact with calender dates"), held for a double
-    //: click's length so the second press adds rather than landing in the
-    //: Day view the first one drew.
-    if (cell.classList.contains("timeline-cal-stop") && event.detail === 1) {
-      timelineCal.pickTimer = setTimeout(() => timelineCalPick(cell.dataset.calDay), TIMELINE_CAL_DOUBLE_MS);
-    }
-    return undefined;
-  });
-  //: Crossing 768 or 1024 changes the span drawn.
-  for (const query of ["(min-width: 768px)", "(min-width: 1024px)"]) {
-    window.matchMedia(query).addEventListener("change", () => {
-      if (timelineViewMode() === "calendar") paintTimeline();
+onSurface("timeline", () => {
+  //: Wired once, on the view's box: the cells are rebuilt on every paint and a
+  //: listener per cell would pile up with them.
+  (() => {
+    const box = $("timeline-calendar");
+    box.addEventListener("keydown", timelineCalKeys);
+    box.addEventListener("dragstart", timelineCalDragStart);
+    box.addEventListener("dragover", timelineCalDragOver);
+    box.addEventListener("dragend", timelineCalDragEnd);
+    box.addEventListener("drop", timelineCalDrop);
+    box.addEventListener("click", (event) => {
+      const span = event.target.closest?.("[data-cal-span]");
+      if (span) return timelineCalSetSpan(span.dataset.calSpan);
+      const cell = event.target.closest?.(".timeline-cal-stop, .timeline-cal-hourcell");
+      if (!cell || event.target.closest("button")) return undefined;
+      clearTimeout(timelineCal.pickTimer);
+      //: A double click adds on the day, or at the hour (INBOX 904 B72).
+      if (event.detail >= 2) return timelineCalAdd(cell.dataset.calDay, cell.dataset.calHour === undefined ? null : Number(cell.dataset.calHour));
+      //: A press on a day's own ground opens the day (the owner, 2026-10-11:
+      //: "I cant click on or interact with calender dates"), held for a double
+      //: click's length so the second press adds rather than landing in the
+      //: Day view the first one drew.
+      if (cell.classList.contains("timeline-cal-stop") && event.detail === 1) {
+        timelineCal.pickTimer = setTimeout(() => timelineCalPick(cell.dataset.calDay), TIMELINE_CAL_DOUBLE_MS);
+      }
+      return undefined;
     });
-  }
-})();
+    //: Crossing 768 or 1024 changes the span drawn.
+    for (const query of ["(min-width: 768px)", "(min-width: 1024px)"]) {
+      window.matchMedia(query).addEventListener("change", () => {
+        if (timelineViewMode() === "calendar") paintTimeline();
+      });
+    }
+  })();
+});

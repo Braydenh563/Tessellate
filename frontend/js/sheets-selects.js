@@ -157,7 +157,7 @@ for (const query of [STACKED_LAYOUT, SIDEBAR_TABLET_BAND]) {
   window.matchMedia(query).addEventListener("change", () => {
     applySidebarSheetMode(layoutIsStacked());
     for (const id of SIDEBAR_IDS) {
-      const aside = $(id);
+      const aside = document.getElementById(id);
       if (aside?.dataset.resizable) {
         applySidebarWidth(aside, sidebarWidth(id, sidebarDefault(id)), { remember: false });
       }
@@ -191,7 +191,7 @@ const SIDEBAR_IDS = ["sidebar", "chat-sidebar", "doc-sidebar", "skills-sidebar"]
 
 function eachSidebar(fn) {
   for (const id of SIDEBAR_IDS) {
-    const aside = $(id);
+    const aside = document.getElementById(id);
     if (aside) fn(aside, id);
   }
 }
@@ -471,12 +471,15 @@ function makeSidebarResizable(aside) {
 }
 
 function initResizableSidebars() {
-  for (const id of SIDEBAR_IDS) {
-    const aside = $(id);
-    if (aside) makeSidebarResizable(aside);
-  }
+  //: Not `$`: a sidebar inside a surface template is wired when its pane is built.
+  const wire = () => {
+    eachSidebar(makeSidebarResizable);
+    applySidebarSheetMode(layoutIsStacked());
+    syncSidebarInert();
+  };
+  wire();
+  for (const name of ["documents"]) onSurface(name, wire);
   makeWebPanelResizable($("web-panel"));
-  applySidebarSheetMode(layoutIsStacked());
   window.matchMedia(SIDEBAR_PHONE).addEventListener("change", syncSidebarInert);
   initSidebarSheetDismissal();
 }

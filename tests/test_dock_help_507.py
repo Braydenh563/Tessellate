@@ -122,7 +122,7 @@ def test_the_options_panel_stays_open_when_a_button_in_it_rewrites_its_own_label
     # (found by driving it, graph507.js). The comment is here, not in
     # wiring.js, because that file sits within bytes of its gzip ratchet.
     wiring = (INDEX.parent / "js" / "wiring.js").read_text(encoding="utf-8")
-    start = wiring.index('document.addEventListener("click", (event) => {\n  const panel = $("graph-options");')
+    start = wiring.index('document.addEventListener("click", (event) => {\n  const panel = document.getElementById("graph-options");')
     assert "event.target.isConnected" in wiring[start : start + 500]
 
 

@@ -744,6 +744,7 @@ const ANSWER_PANEL_NAMES = { agent: "Popup agent", guide: "Atlas" };
 function reopenAnswerPanel({ panel, answer } = {}) {
   let list = null;
   if (panel === "agent") {
+    surfaceBuild("palette");
     if (cmdPaletteOverlay.classList.contains("hidden")) toggleAgentPalette();
     list = cmdPaletteResults;
   } else if (panel === "guide") {
@@ -2144,6 +2145,7 @@ document.addEventListener(
 
 //: The body's own controls are gated when it is built (settings-body.js), not before.
 onSurface("settings", () => syncModelGatedControls());
+onSurface("palette", () => { syncModelGatedControls(); syncAgentPaletteAvailability(); });
 function syncModelGatedControls(status = modelStatus) {
   const off = status ? status.ollama_running === false : false;
   for (const control of document.querySelectorAll("[data-needs-model]")) {
@@ -2201,7 +2203,7 @@ function syncModelGatedControls(status = modelStatus) {
   //: "Deepened 2026-10-10" row 1, `ai/starter_acts.py`), so the line says
   //: what a model adds rather than that nothing runs.
   renderAiOfflineNotice(
-    $("command-palette-offline"),
+    document.getElementById("command-palette-offline"),
     "No model connected. The agent runs acts and reads your notes.",
     { dismissible: true, detail: "Reminders, notes, tags, links and the day's changes work now. Open questions and drafting need a model." }
   );
@@ -2330,7 +2332,7 @@ function renderAiOfflineNotice(container, what, { dismissible = false, detail = 
 //: starter and any act the reading knows runs without one, so its field and
 //: starters stay open and only say, on hover, what is answered how.
 function syncAgentPaletteAvailability() {
-  const input = $("command-palette-input");
+  const input = document.getElementById("command-palette-input");
   if (input) input.title = aiIsOff() ? "No model: acts and readings from your notes" : "";
 }
 

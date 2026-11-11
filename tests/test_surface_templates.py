@@ -47,6 +47,36 @@ SURFACES = {
         ("openHelpChat",),
         ("help-chat-group", "help-chat-messages", "help-chat-form", "help-chat-input", "help-chat-send", "help-chat-menu", "help-chat-starters"),
     ),
+    "reminders": (
+        "tab-reminders",
+        ("shell-reminders.js", "reminder-*.js", "quickadd.js", "phone-shell.js", "dashboard.js", "palette.js", "wiring.js", "navigation.js"),
+        ("switchTab",),
+        ("reminder-compose", "reminder-magic", "reminder-groups", "reminders-empty", "reminders-done-pagination"),
+    ),
+    "timeline": (
+        "tab-timeline",
+        ("timeline*.js", "quickadd.js", "skills.js", "wiring.js", "navigation.js", "phone-shell.js", "dashboard.js", "palette.js"),
+        ("switchTab",),
+        ("timeline-scroll", "timeline-scrubber", "timeline-view-seg", "timeline-search", "timeline-table-head", "timeline-jump-today"),
+    ),
+    "graph": (
+        "tab-graph",
+        ("wiring.js", "navigation.js", "settings-wiring.js", "reveal-targets.js", "phone-shell.js", "dashboard.js", "palette.js"),
+        ("switchTab",),
+        ("graph-card", "graph-box", "graph-options", "graph-layout", "graph-popup", "graph-refresh"),
+    ),
+    "documents": (
+        "tab-documents",
+        ("wiring.js", "navigation.js", "settings-wiring.js", "reveal-targets.js", "phone-shell.js", "dashboard.js", "palette.js", "editor.js", "chat.js", "notes-list.js", "capture-ask.js", "menus.js", "skills.js", "status.js"),
+        ("switchTab",),
+        ("doc-editor", "doc-title", "doc-list", "doc-toolbar", "doc-new"),
+    ),
+    "palette": (
+        "command-palette-overlay",
+        ("palette.js", "app-palette.js", "editor.js", "field-clear.js", "status.js", "wiring.js", "settings-wiring.js", "lazy-entries.js", "dashboard.js", "navigation.js"),
+        ("toggleAgentPalette",),
+        ("command-palette-close", "command-palette-input", "command-palette-send", "command-palette-results", "command-palette-status"),
+    ),
     "shortcuts": (
         "shortcuts-overlay",
         ("reveal-targets.js", "settings-wiring.js"),
@@ -100,7 +130,7 @@ def test_the_surface_sits_in_one_template_inside_its_live_root(name):
     before, body = _template(name)
     # The root stays live (checks of "is it open" never build it); the template
     # is its first child, comments aside.
-    opening = re.search(rf'<(?:div|dialog) id="{root}"[^>]*>\s*(?:<!--.*?-->\s*)*$', before, re.S)
+    opening = re.search(rf'<(?:div|dialog)\b[^>]*\bid="{root}"[^>]*>\s*(?:<!--.*?-->\s*)*$', before, re.S)
     assert opening, f"the {name} template is not the first child of #{root}"
     ids = _ids(body)
     assert root not in ids
@@ -122,6 +152,8 @@ def test_opening_the_surface_builds_it_before_reading_it(name):
         assert m, f"{opener} not found"
         body = m.group(1)
         call = f'surfaceBuild("{name}");'
+        if opener == "switchTab" and "surfaceBuild(name);" in body:
+            call = "surfaceBuild(name);"  # a tab pane is a surface named like its tab
         assert call in body, f"{opener} does not build the {name} surface"
         reads = [i for i in (body.find('$("'), body.find("getElementById(")) if i != -1]
         assert not reads or body.index(call) < min(reads), f"{opener} reads an element before it builds the {name} surface"
@@ -186,6 +218,9 @@ def test_load_time_wiring_of_the_surface_waits_for_it(name):
             if head.startswith(f'onSurface("{name}"'):
                 continue
             reached = block + "".join(functions.get(f, "") for f in set(re.findall(r"\b(\w+)\(", block)))
+            if head.startswith("onSurface("):
+                # Another surface's hook runs later; `document.getElementById` never builds this one, so only `$` is the harm.
+                reached = re.sub(r"document\.getElementById\(\s*[\"'][\w-]+[\"']\s*\)", "", reached)
             named = _selector_hits(reached, ids, classes)
             if named:
                 found.append(f"{path.name}:{number} {named[:3]}")
