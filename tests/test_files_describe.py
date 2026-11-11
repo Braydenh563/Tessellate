@@ -29,7 +29,7 @@ class _Ollama:
     def is_running(self):
         return True
 
-    def chat(self, model, messages):
+    def chat(self, model, messages, mode=None):
         # The prompt carries the document's own text, which is the whole
         # point: a describer that never sees the content would be a filename
         # paraphraser.
@@ -46,7 +46,7 @@ class _Models:
 
 
 class _SilentOllama(_Ollama):
-    def chat(self, model, messages):
+    def chat(self, model, messages, mode=None):
         return {"content": "   "}
 
 
