@@ -48,9 +48,9 @@ def test_every_part_an_answer_draws_under_it_is_a_chip_in_the_row() -> None:
 
 def test_the_row_is_watched_on_all_three_surfaces() -> None:
     for root in (
-        'answerFootWatch($("ai-answer")?.parentElement);',
-        'answerFootWatch($("chat-messages"), ".msg.assistant");',
-        'answerFootWatch($("command-palette-results"), ".msg.assistant");',
+        'onSurface("notes", () => answerFootWatch($("ai-answer")?.parentElement));',
+        'onSurface("chat", () => answerFootWatch($("chat-messages"), ".msg.assistant"));',
+        'onSurface("palette", () => answerFootWatch($("command-palette-results"), ".msg.assistant"));',
     ):
         assert root in KIT, root
 
@@ -84,7 +84,7 @@ def test_the_observer_cannot_hear_itself() -> None:
 def test_the_sheet_loads_with_the_kit_that_draws_the_row() -> None:
     """answer-kit.js is in every answer bundle (Ask, its history, Chat), so it
     loads the row's sheet itself; the boot scripts are at their gzip cap."""
-    watch = KIT.index('answerFootWatch($("ai-answer")?.parentElement);')
+    watch = KIT.index('onSurface("notes", () => answerFootWatch($("ai-answer")?.parentElement));')
     assert 'lazyScript("/css/answer-foot-lazy.css");' in KIT[watch - 200 : watch]
 
 

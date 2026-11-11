@@ -362,7 +362,7 @@ function chatDockReleaseRing() {
 // keystroke. A drag is told from a grow by comparing against the height
 // autoGrow last set: anything else was a hand on the corner.
 function initComposerResize() {
-  const box = $("chat-input");
+  const box = document.getElementById("chat-input");
   if (!box || box.dataset.resizeReady) return;
   box.dataset.resizeReady = "1";
 

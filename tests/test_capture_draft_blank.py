@@ -81,7 +81,7 @@ def test_the_draft_is_written_after_a_pause_and_a_cleared_box_writes_nothing() -
         pytest.skip("needs node")
     text = app_js_text()
     start = text.index('{\n  const box = $("entry-content");\n  const flush')
-    block = text[start : text.index("\n}\n", start) + 3]
+    block = text[start : text.index("\n});\n", start) + 2]  # the block, now the body of its onSurface("notes") call
     proc = subprocess.run(["node", "-e", HARNESS, block], capture_output=True, text=True)
     assert proc.returncode == 0, proc.stderr[-1500:]
     out = json.loads(proc.stdout)
