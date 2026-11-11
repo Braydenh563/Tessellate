@@ -925,6 +925,7 @@ def _preferences_from(config) -> dict:
         "auto_dedupe_enabled": config.get_preference("auto_dedupe_enabled", True),
         "auto_stale_review_enabled": config.get_preference("auto_stale_review_enabled", False),
         "auto_capture_enabled": config.get_preference("auto_capture_enabled", False),
+        "mcp_writes_enabled": config.get_preference("mcp_writes_enabled", False),
         "autonomous_tasks_interval_hours": config.get_preference(
             "autonomous_tasks_interval_hours", 6
         ),

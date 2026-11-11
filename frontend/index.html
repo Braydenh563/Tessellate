@@ -4090,23 +4090,22 @@ Link to another note with [[its first few words]]."></textarea>
           </p>
           <ul class="muted">
             <li><strong>Hover a note</strong> to see its dates, links and tags;
-              click it to edit it here.</li>
+              click it to edit.</li>
             <li><strong>Hold Alt and drop one note onto another</strong> to link them.
-              Double-click empty space to add a note there; its Private button seals just that note.</li>
+              Double-click empty space to add a note there; its Private button seals it.</li>
             <li><strong>Trace</strong> shows how any two notes connect.</li>
-            <li>Solid lines are links you made, dashed lines are trains of
-              thought, dotted lines are notes that mean similar things.</li>
-            <li>A bigger dot has more links; Size in the options changes that,
-              and the legend says which. Click a legend colour to hide that
-              category.</li>
-            <li>A Tree, Radial, Arc, Treemap or Tessellation layout stays still; click its
-              name in the toolbar to change it. Treemap sizes categories by links;
+            <li>Solid lines are links you made, dashed are trains of
+              thought, dotted are notes that mean similar things.</li>
+            <li>A bigger dot has more links (Size in the options changes that).
+              Click a legend colour to hide it.</li>
+            <li>Tree, Radial, Arc, Treemap and Tessellation layouts stay still; change
+              them in the toolbar. Treemap sizes categories by links;
               Tessellation gives each note a cell.</li>
             <li>In Treemap and Tessellation, click a category's name bar to
-              select its notes, double-click to zoom to it, right-click for its
-              menu; C steps through them from the keyboard.</li>
-            <li>This map is built from your notes. To draw one yourself, open
-              the <strong>mind map</strong> button in the toolbar.</li>
+              select its notes, double-click to zoom, right-click for its
+              menu; C steps through them.</li>
+            <li>To draw a map yourself, open the <strong>mind map</strong>
+              button in the toolbar.</li>
           </ul>
         </div>
         <!-- The display options, on the dock-menu recipe (INBOX 41: "the
@@ -11624,6 +11623,11 @@ Link to another note with [[its first few words]]."></textarea>
                   app starts the same server with its --mcp option.
                 </p>
               </div>
+              <label class="check-row">
+                <input type="checkbox" id="pref-mcp-writes">
+                <span>Let that app add and change notes
+                  <small class="muted">Off by default: it can only read. Deletes are never offered.</small></span>
+              </label>
               <pre id="mcp-config-snippet" class="code-block"></pre>
               <p id="mcp-config-note" class="muted hidden"></p>
               <div class="row">
