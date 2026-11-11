@@ -11721,6 +11721,11 @@ button.finder-row:is(:focus-visible, :has(:focus-visible)) {
   padding: var(--space-1);
   max-width: calc(100% - 1rem);
   max-height: none;
+  /* A short window (640x400, a laptop at 200%) leaves nothing between the
+     top bar's and the tool rail's clearances: the panel was 8px tall with
+     its menu running off the screen. A floor keeps it a panel; the rail may
+     overlap its foot there, which is the lesser fault. */
+  min-height: min(14rem, 60%);
 }
 /* **Beside a side dock, not over it** (INBOX 596: the dock "clashes with
    the side panel"). Docked at the side, the tools are a column at the left
@@ -11864,6 +11869,37 @@ button.finder-row:is(:focus-visible, :has(:focus-visible)) {
     width: 100%;
     border-left: none;
     padding: 0 var(--space-1);
+  }
+}
+/* **A short window at tablet width** (640x400: a laptop at 200 percent, a
+   phone on its side). The top bar and the tool rail take every pixel the
+   sidebar's column of four 44px tabs needs, so its last two were clipped by
+   the board. The tabs go in a row over the panel, as the phone sheet has
+   them, and the foot is the board's, not the rail's (the rail may overlap
+   it: a floating panel opened on purpose is the one to see). */
+@media (min-width: 600px) and (max-height: 520px) {
+  .wb-sidebar {
+    bottom: var(--space-2);
+    flex-direction: column;
+  }
+  .wb-sidebar .wb-sidebar-rail {
+    flex-direction: row;
+  }
+  .wb-sidebar .wb-sidebar-panel {
+    border-left: none;
+    padding: 0 var(--space-1);
+    /* The panel is a few rows tall here: it scrolls as one, its lists no
+       longer each keeping a share of room that is not there. */
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .wb-sidebar .wb-side-section,
+  .wb-sidebar .wb-lib-list,
+  .wb-sidebar .wb-side-section .wb-library-list,
+  .wb-sidebar .wb-layers-tree,
+  .wb-sidebar .wb-outline-tree {
+    flex: none;
+    overflow-y: visible;
   }
 }
 /* The rows' own list gap, the list-row recipe's other half (`--row-gap`). */

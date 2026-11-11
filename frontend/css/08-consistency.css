@@ -10630,6 +10630,14 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 :is(#library-boards-filter, #reminder-filter) {
   margin-bottom: calc(var(--space-6) - var(--ring-room));
 }
+/* Three chips, "All 4", "Maps 1" and "Boards 3", ran 3px past the strip at
+   360 (311 of 308), so a row that has nothing to scroll to scrolled. A
+   tighter gap on a phone gives it 5px back; a longer row still scrolls. */
+@media (max-width: 599.98px) {
+  #library-boards-filter {
+    gap: var(--space-1);
+  }
+}
 /* The chat's suggestions fill the page's width (`max-width: 100%`), so the
    room is padding inside it. */
 #chat-suggest {

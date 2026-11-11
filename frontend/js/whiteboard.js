@@ -15928,7 +15928,10 @@ async function initWhiteboard() {
         // of whatever is clearing it right on top of the panel above. The
         // CSS fallbacks stay in charge until there is a real size to use.
         if (box.height > 0) wbPanelMetricsRoot.style.setProperty(`--wb-h-${name}`, `${Math.round(box.height)}px`);
-        if (box.width > 0) wbPanelMetricsRoot.style.setProperty(`--wb-w-${name}`, `${Math.round(box.width)}px`);
+        // The tools panel's width is read back by its own side-dock rule
+        // (`width: var(--wb-w-tools)`), so a width taken while it lay along the
+        // bottom (758px at 768) became the side column's width.
+        if (box.width > 0 && (name !== "tools" || panel.dataset.dock === "side")) wbPanelMetricsRoot.style.setProperty(`--wb-w-${name}`, `${Math.round(box.width)}px`);
       };
       new ResizeObserver(publish).observe(panel);
     }
