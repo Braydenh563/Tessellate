@@ -25623,9 +25623,9 @@ async function openWhiteboardBoard(boardId) {
   wbNavState.stale = true;
   await new Promise((resolve) => setTimeout(resolve, 60));
   await nudgeSaved;
-  //: A board restored with the page gets here while the Library bundle is still loading; the
+  //: A board restored with the page gets here while the boards bundle is still loading; the
   //: Library side (`wbSideState`, the tiles) is later in it (INBOX 1530 f).
-  await ensureModule("library");
+  await ensureModule("boards");
   window.currentBoardId = boardId ?? null;
   wbUpdateUndoRedoButtons();
   // Anything a previous board's selection drag left behind goes now. The

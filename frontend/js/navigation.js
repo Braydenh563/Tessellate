@@ -1691,7 +1691,7 @@ document.addEventListener("click", async (event) => {
     //: The Library tab loads library.js alone (FE-03(c)); this button's
     //: listener is the boards' bundle's, so it is waited for first
     //: (tests/test_new_document_opens_new.py).
-    await ensureModule("library");
+    await ensureModule("boards");
     $("wb-boards-new")?.click();
   } else if (action === "add-link") {
     $("bookmark-form")?.classList.remove("hidden");

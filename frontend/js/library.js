@@ -2367,7 +2367,7 @@ const LIBRARY_CREATE_BY_KIND = {
     //: (tests/test_new_document_opens_new.py).
     run: async () => {
       document.querySelector('#library-subtabs button[data-target="library-view-whiteboard"]')?.click();
-      await ensureModule("library");
+      await ensureModule("boards");
       //: New's arrow rows are built by whiteboard.js (`wbNewMenuMount`), so the map is made by its function (through `window`, as below).
       await window.wbNewUntitledBoard("map");
     },
@@ -2379,7 +2379,7 @@ const LIBRARY_CREATE_BY_KIND = {
     //: (tests/test_new_document_opens_new.py).
     run: async () => {
       document.querySelector('#library-subtabs button[data-target="library-view-whiteboard"]')?.click();
-      await ensureModule("library");
+      await ensureModule("boards");
       $("wb-boards-new")?.click();
     },
   },

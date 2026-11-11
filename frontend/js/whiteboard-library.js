@@ -185,9 +185,9 @@ async function wbLoadLibrary({ force = false } = {}) {
       // A set that does not load is left out; the rest still show.
     }
   }));
-  //: The tiles are drawn by whiteboard-templates.js (`wbThumbSvg`), later in this bundle: a
+  //: The tiles are drawn by whiteboard-templates.js (`wbThumbSvg`), later in this bundle (`boards`): a
   //: board restored with its Library side open gets here while the bundle is still loading.
-  await ensureModule("library");
+  await ensureModule("boards");
   wbRenderLibrary();
 }
 

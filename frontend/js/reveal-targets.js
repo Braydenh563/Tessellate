@@ -155,7 +155,7 @@ async function revealDocument() {
 async function revealBoard(wantMap = false) {
   await switchTab("library");
   document.querySelector('#library-subtabs button[data-target="library-view-whiteboard"]')?.click();
-  await ensureModule("library");
+  await ensureModule("boards");
   const onCanvas = !$("wb-canvas-view")?.classList.contains("hidden");
   const isMap = typeof wbIsMap === "function" && wbIsMap();
   if (window.currentBoardId && onCanvas && (!wantMap || isMap)) return true;
@@ -537,7 +537,7 @@ const REVEAL_TARGETS = {
 function revealBoardsGallery() {
   return switchTab("library").then(() => {
     document.querySelector('#library-subtabs button[data-target="library-view-whiteboard"]')?.click();
-    return ensureModule("library").then(() => wbShowBoardsLanding());
+    return ensureModule("boards").then(() => wbShowBoardsLanding());
   });
 }
 

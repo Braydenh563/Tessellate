@@ -3,6 +3,26 @@
 // cap. Loads straight after app.js: later scripts name these functions at
 // load (a widget table's `render`, a listener), so the stand-ins must exist.
 Object.assign(LAZY_MODULES, {
+  //: Boards and maps (audit D22): the `library` files first, in their order, then d3 and the nine
+  //: whiteboard files (2.6 MB raw, 820 KB gzipped, measured) that a first document open no longer pays for.
+  //: `lazyScript` fetches a file once whichever bundle asks first, so a board opened after a document costs only
+  //: its own files, and a board opened first still runs the editors before them. A copy by spread, never by hand,
+  //: so the two lists cannot drift. Everything documents or the list call in here is a stand-in below or a
+  //: `typeof` guard; tests/test_lazy_boards_split.py reads every name.
+  boards: [
+    ...LAZY_MODULES.library,
+    "/vendor/d3.v7.min.js", //: Before whiteboard.js, whose top level calls `d3.zoom()`.
+    "/js/whiteboard-map.js",
+    "/js/whiteboard-map-more.js", //: After whiteboard-map.js: the Gantt view and the audio note, calling its date words and style writer at run time only.
+    "/js/whiteboard.js",
+    "/js/whiteboard-commands.js",
+    "/js/whiteboard-library.js",
+    //: The New board dialog and every template's picture (INBOX 715).
+    "/js/whiteboard-templates.js",
+    "/js/whiteboard-format.js",
+    "/js/whiteboard-interchange.js",
+    "/js/whiteboard-history.js",
+  ],
   //: A space switch, in place (space-swap.js).
   spaceSwap: ["/js/space-swap.js"],
   //: Unlocking, editing and leaving a private space (private-spaces.js's header; INBOX 1727).
@@ -88,6 +108,10 @@ Object.assign(LAZY_MODULES, {
 });
 setTimeout(() => ["loadFailed", "modelMenu", "entryCard", "uiReveal"].forEach(ensureModule), 3000);
 installStandIns({
+  //: What the Library list, the documents and every surface that names a board call into the board code (D22).
+  //: Nobody reads a return value: a function whose answer is read (`wbCommandsLive`, `wbEditorSurfaceById`)
+  //: cannot be one, and its caller tests `typeof` instead, meaning "no board is open".
+  boards: ["createNewBoard", "openWhiteboardBoard", "renderLibraryBoardsGallery", "wbMapFromDocument", "wbShowBoardsLanding"],
   //: The lock card's offer of a backup when the notebook file is gone (INBOX 1573).
   accountRecovery: ["showRestoreOffer"],
   companionSettings: ["mountBuddyCustom", "mountBuddyActivities", "mountProfileLook", "nameMarkBuddyMakeIt", "nameMarkBuddyHide", "nameMarkBuddyToggle", "nameMarkBuddyCallBack", "nameMarkRepaintAll"],
@@ -259,7 +283,7 @@ function onDomReady(fn) {
   else queueMicrotask(fn);
 }
 
-//: The library bundle (boards, documents, d3: 72 scripts, 4.9 MB decoded) is
+//: The library bundle (documents and the list; the boards, d3 and the whiteboard files are `boards`, fetched on a first board) is
 //: not fetched at boot at all (perf 1031 row 21, PF4: 103 scripts and 6.5 MB
 //: parsed in the first nine seconds on a tab that opened nothing). It is warmed
 //: after the person first touches the page, and only with four cores or more

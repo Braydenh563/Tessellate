@@ -928,8 +928,8 @@ function docText() {
 //: reaches CodeMirror once it is mounted.
 function docSurfaceById(id) {
   if (id === "doc-content") return docSurface();
-  //: A board box being typed in has no element id (whiteboard.js, K24).
-  const board = wbEditorSurfaceById(id);
+  //: A board box being typed in has no element id (whiteboard.js, K24). Its answer is read, so no stand-in: without the boards bundle no board box exists to type in.
+  const board = typeof wbEditorSurfaceById === "function" ? wbEditorSurfaceById(id) : null;
   if (board) return board;
   //: A note box that has mounted the engine (Phase 8) answers as its view for
   //: the same reason: the toolbar above it must write where the words are.
@@ -1314,8 +1314,8 @@ async function openDocument(id) {
   //: A document waiting on its conflict asks now (not silently): leaving is
   //: the moment the answer is owed, and the banner is about to go.
   if (docDirty) await saveDocument({ silent: !docConflictPending });
-  //: A document restored with the page can get here while the Library bundle is still
-  //: loading; the board code the steps below reach is later in it (INBOX 1530 f).
+  //: A document restored with the page can get here while the Library bundle is still loading; the files later in it (documents-tabs.js, margin-reader.js)
+  //: are reached by the steps below (INBOX 1530 f). The board code is not in this bundle (`boards`).
   await ensureModule("library");
   docConflictPending = null;
   await docDropIfUntouched(id);
@@ -2566,7 +2566,7 @@ async function ensureDocumentExists() {
       method: "POST",
       body: JSON.stringify({ title: $("doc-title").value.trim() || docNextName(), content: "", file_type: docTypeState.pending || "md" }),
     });
-    await ensureModule("library"); // the list redraw below reaches board code later in the bundle (INBOX 1530 f)
+    await ensureModule("library"); // the list redraw below reaches the files later in the bundle (INBOX 1530 f)
     docTypeState.pending = null;
     currentDoc = doc;
     docsMadeThisSession.add(doc.id);

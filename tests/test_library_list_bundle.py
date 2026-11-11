@@ -48,5 +48,10 @@ def test_every_editor_call_from_the_list_is_a_stand_in():
     entry = _table("LAZY_ENTRY_POINTS")
     library = re.search(r"\n  library: \[(.*?)\]", entry, re.S).group(1)
     stand_ins = set(re.findall(r'"([A-Za-z_$][\w$]*)"', library))
+    #: Since D22 (2026-11-11) the board code is the `boards` bundle, so the list's calls into it
+    #: are `boards`' stand-ins, installed in lazy-entries.js.
+    extra = (JS / "lazy-entries.js").read_text(encoding="utf-8")
+    boards = re.search(r"installStandIns\(\{.*?\n  boards: \[(.*?)\]", extra, re.S).group(1)
+    stand_ins |= set(re.findall(r'"([A-Za-z_$][\w$]*)"', boards))
     missing = sorted(used - stand_ins)
     assert not missing, f"library.js names editor functions with no stand-in: {missing}"

@@ -544,8 +544,8 @@
   }
 
   async function diagramDoor({ target = null, doc = false } = {}) {
-    const onBoard = !doc && wbCommandsLive() && (!target || Boolean(target.closest?.("#library-view-whiteboard")));
-    if (onBoard) return wbEditDiagram();
+    const onBoard = !doc && typeof wbCommandsLive === "function" && wbCommandsLive() && (!target || Boolean(target.closest?.("#library-view-whiteboard")));
+    if (onBoard && typeof wbEditDiagram === "function") return wbEditDiagram();
     //: The text box as a surface (the adapter `editorBlock` writes through), whether it was handed a surface, a textarea or an editable inside one.
     const box = !doc && target && target.isConnected !== false && (target.id === "question" || target.id in EDITOR_SURFACES || editorSurfaceKind(target)) ? editorSurfaceFor(target) : null;
     //: **Anywhere else, the builder itself, then a .mmd document on Done** (the owner: "searching up and clicking

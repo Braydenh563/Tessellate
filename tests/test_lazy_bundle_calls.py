@@ -67,6 +67,10 @@ def _lazy_files() -> dict[str, list[str]]:
     for text in blocks:
         for name, files in re.findall(r"^\s*(\w+):\s*\[(.*?)\],", text, re.M | re.S):
             out[name] = re.findall(r'"/js/([A-Za-z0-9._-]+\.js)"', files)
+            #: `...LAZY_MODULES.library` (the `boards` bundle, 2026-11-11) carries
+            #: another bundle's list first, so the two cannot drift apart.
+            for base in re.findall(r"\.\.\.LAZY_MODULES\.(\w+)", files):
+                out[name] = out[base] + [f for f in out[name] if f not in out[base]]
     #: A bundle that lists the characters first (lazy-entries.js's
     #: `CHARACTER_DEPENDENTS`) carries their files too, at run time.
     deps = re.search(r"const CHARACTER_DEPENDENTS = \[(.*?)\];", extra, re.S)
@@ -156,6 +160,7 @@ REACHED_AFTER_LOAD = {
     #: `file:name` keys (INBOX 1521): the same name is safe in one boot file and
     #: not in another, so these are per file. Every one is a call that only runs
     #: once the bundle is in, with the line that proves it.
+    "wiring.js:wbOpenBoardSearch": "behind `wb-canvas-view` showing, which only a board that is open shows, so the boards bundle is in (D22, 2026-11-11)",
     "editor.js:docTemplateFill": "inside `typeof DOC_TEMPLATES !== \"undefined\"` in editorCommands; DOC_TEMPLATES is defined in documents.js, the same library bundle, so the call runs only once it is in (audit 1102 DX30)",
     "settings-wiring.js:docFileDropBox": "inside `el?.closest?.(\"#doc-editor\")` in fileDropBox: the element exists only while the Documents page, and so the library bundle, is mounted (audit 161 D24)",
     "chat-agent.js:atlasAvatar": "assistantAvatar runs only from paintAssistantAvatar's afterCharacters (chat-agent.js)",
@@ -434,6 +439,8 @@ REACHED_AFTER_LOAD = {
 #: bundle defines. `file:name` keys, each with the line that proves the call is
 #: reached only after the file that defines the name is in.
 LAZY_REACHED_AFTER_LOAD: dict[str, str] = {
+    "reveal-targets.js:wbToggleNavigator": "the `board-overview` target runs it after `await revealBoard()`, which awaits ensureModule(\"boards\") first (D22)",
+    "reveal-targets.js:wbOpenBoardSearch": "the `board-find` target runs it after `await revealBoard()`, which awaits ensureModule(\"boards\") first (D22)",
     "whiteboard-format.js:swatchPicker": "wbColourPalettes fills its rows in the .then of ensureModule('categories'), which carries categories-panel.js",
     "answer-kit.js:agentTimeline": "addAssistantBubble has two callers: chat-turn.js (its own file) and sheets-selects.js's replay, after `await ensureModule(\"chatTurn\")` (line 1991)",
     "answer-kit.js:nameMark": "inside the afterCharacters callback (avatarHead and chatHead paths) or reached from it",

@@ -77,7 +77,8 @@ def test_the_view_is_one_undo_step_a_menu_row_a_lazy_file_and_in_the_guide():
     # The file's one export is a shared object (the audio file adds to it), so the shared scope gains one name.
     assert "Object.assign(window, { wbMapLazy });" in GANTT and "openGantt: wbMapOpenGantt" in GANTT
     assert MAP.count("wbMapLazy.openGantt()") == 2  # the palette row and the View menu item
-    app = (JS / "app.js").read_text(encoding="utf-8")
+    #: In the `boards` bundle (lazy-entries.js) since D22, 2026-11-11; it was `library`'s in app.js.
+    app = (JS / "lazy-entries.js").read_text(encoding="utf-8")
     assert '"/js/whiteboard-map-more.js"' in app
     assert app.index("whiteboard-map-more.js") > app.index('"/js/whiteboard-map.js"')
     topics = (ROOT / "src" / "tessellate" / "ai" / "help_topics_core.py").read_text(encoding="utf-8")
