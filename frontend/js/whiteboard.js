@@ -13496,8 +13496,12 @@ function wbSvgRunLines(text, { x, y, maxWidth, maxLines, fontSize, fill, lineHei
 // guessed constants, so it stays right if a card's real size ever changes.
 function wbBoardBounds() {
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  //: One walk per kind, not one `querySelector` per item (W30 B23: 11 ms of an export of 280 sketches).
+  const idIndex = (selector) => new Map([...document.querySelectorAll(selector)].reverse().map((el) => [el.dataset.id, el]));
+  const cardEls = idIndex(".node-card");
+  const sketchEls = idIndex(".sketch-group");
   for (const node of wbState.nodes) {
-    const el = document.querySelector(`.node-card[data-id="${node.id}"]`);
+    const el = cardEls.get(String(node.id));
     const w = el ? el.offsetWidth : 250;
     const h = el ? el.offsetHeight : 150;
     minX = Math.min(minX, node.x);
@@ -13506,7 +13510,7 @@ function wbBoardBounds() {
     maxY = Math.max(maxY, node.y + h);
   }
   for (const sketch of wbState.sketches) {
-    const el = document.querySelector(`.sketch-group[data-id="${sketch.id}"]`);
+    const el = sketchEls.get(String(sketch.id));
     if (!el) continue;
     try {
       const bbox = el.getBBox();
@@ -13732,6 +13736,18 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
   const container = document.getElementById("whiteboard-container");
   const bgColor = container ? getComputedStyle(container).backgroundColor : "#1b1f2c";
 
+  //: **Each item's element is found once** (W30 B23): a `querySelector` per item walked the
+  //: whole page for every one of them, 28 of the 40 ms an export of 500 objects took. One walk per
+  //: kind builds the index; the first element with an id wins, as the lookups did.
+  const idIndex = (selector) => {
+    const found = new Map();
+    for (const el of document.querySelectorAll(selector)) if (!found.has(el.dataset.id)) found.set(el.dataset.id, el);
+    return found;
+  };
+  const objectEls = idIndex("#wb-html-layer .wb-object");
+  const sketchEls = idIndex(".sketch-group");
+  const cardEls = idIndex(".node-card");
+
   const parts = [
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minX} ${minY} ${width} ${height}" ` +
       `width="${Math.round(width)}" height="${Math.round(height)}">`,
@@ -13746,7 +13762,7 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
   const drawFrame = (frame) => {
     if (frame.kind !== "frame") return;
     if ((onlyKeys && !onlyKeys.has(wbMultiKey("object", frame.id))) || wbItemHidden("object", frame)) return;
-    const frameEl = document.querySelector(`#wb-html-layer .wb-object[data-id="${frame.id}"]`);
+    const frameEl = objectEls.get(String(frame.id));
     const edge = frameEl ? wbExportColour(getComputedStyle(frameEl).borderTopColor) : null;
     const titleEl = frameEl?.querySelector(".wb-frame-title");
     const ink = titleEl ? wbExportColour(getComputedStyle(titleEl).color) : null;
@@ -13820,7 +13836,7 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
   // highlighter's own translucency) survives into the export untouched.
   const drawSketch = (sketch) => {
     if ((onlyKeys && !onlyKeys.has(wbMultiKey("sketch", sketch.id))) || wbSketchHiddenOnBoard(sketch)) return;
-    const el = document.querySelector(`.sketch-group[data-id="${sketch.id}"]`);
+    const el = sketchEls.get(String(sketch.id));
     if (!el) return;
     const clone = el.cloneNode(true);
     clone.removeAttribute("class");
@@ -13867,7 +13883,7 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
   const drawNode = (node) => {
     if ((onlyKeys && !onlyKeys.has(wbMultiKey("node", node.id))) || wbItemHidden("node", node)) return;
     const entry = exportEntriesById.get(String(node.entry_id));
-    const el = document.querySelector(`.node-card[data-id="${node.id}"]`);
+    const el = cardEls.get(String(node.id));
     const w = el ? el.offsetWidth : 250;
     const h = el ? el.offsetHeight : 150;
     const label = entry ? notePreviewText(entry.content || "") : `Note ${node.entry_id}`;
@@ -13918,7 +13934,7 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       // board itself, here too.
       //: A picture with rounded corners (Format > Corners) is clipped to the
       //: same path the board draws, read off the drawn element as a box's is.
-      const radii = wbSvgBoxRadii(document.querySelector(`#wb-html-layer .wb-object[data-id="${obj.id}"]`), obj.data, obj.width, obj.height);
+      const radii = wbSvgBoxRadii(objectEls.get(String(obj.id)), obj.data, obj.width, obj.height);
       //: A crop to a shape wins over rounded corners, as it does on the board.
       const pix = wbPixel(obj.data, obj.width, obj.height);
       const cropPath = wbCropPath(obj.data.crop, pix.w, pix.h, obj.data.trim);
@@ -13945,7 +13961,7 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       // and not drawn" gap this whole section exists to close, one layer down.
       const size = wbMapNodeSize(obj);
       const colour = exportMapColors?.get(obj.id) || "#8888aa";
-      const topicEl = document.querySelector(`#wb-html-layer .wb-object[data-id="${obj.id}"]`);
+      const topicEl = objectEls.get(String(obj.id));
       const topicPaint = wbExportPaint(topicEl, topicEl?.querySelector(".wb-map-text")) || topicFallback;
       //: **Its own shape, not always the rounded box** (MINDMAP_PLAN, the
       //: owner's list 2026-10-10: the rounded rectangle "its export"): the
@@ -13982,7 +13998,7 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       //: the token has to be in the url.
       let labelTop = 22;
       const picture = obj.data.image
-        ? document.querySelector(`.wb-object[data-id="${obj.id}"] .wb-map-node-picture`)
+        ? objectEls.get(String(obj.id))?.querySelector(".wb-map-node-picture")
         : null;
       const card = picture ? picture.closest(".wb-object") : null;
       if (picture && card && !picture.hidden) {
@@ -14036,9 +14052,9 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       const lines = wbSvgWrapLines(obj.data.content || "", obj.width - 2 * pad, 20, fontSize * 0.55);
       //: A text box with no colour of its own writes in the theme's ink, which
       //: is near-white on a dark board: read it off the box, as above.
-      const textEl = obj.data.color ? null : document.querySelector(`#wb-html-layer .wb-object[data-id="${obj.id}"] .wb-text-content`);
+      const textEl = obj.data.color ? null : objectEls.get(String(obj.id))?.querySelector(".wb-text-content");
       const textInk = textEl ? wbExportColour(getComputedStyle(textEl).color) : null;
-      const boxEl = document.querySelector(`#wb-html-layer .wb-object[data-id="${obj.id}"]`);
+      const boxEl = objectEls.get(String(obj.id));
       parts.push(wbSvgBoxBackdrop(boxEl, obj.data, obj.width, obj.height));
       parts.push(wbSvgStickyFold(boxEl, obj.width, obj.height));
       const inkFill = obj.data.color || textInk || "#1f2430";
@@ -14051,7 +14067,7 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
           : wbSvgText(lines, pad, fontSize + pad - 2, { fontSize, fill: inkFill, lineHeight: fontSize * 1.25 })
       );
     } else if (obj.kind === "table") {
-      parts.push(wbSvgTable(document.querySelector(`#wb-html-layer .wb-object[data-id="${obj.id}"]`), obj));
+      parts.push(wbSvgTable(objectEls.get(String(obj.id)), obj));
     }
     if (obj.data?.votes) parts.push(wbSvgVotes(obj));
     parts.push("</g>");
@@ -22632,10 +22648,25 @@ function renderWhiteboard() {
   const strokeInk = `${wbBoardBg()}|${document.documentElement.dataset.mode}`;
   wbBoardBgCache.pass = true;
   queueMicrotask(() => { wbBoardBgCache.pass = false; });
-  const strokePaintKey = (d) =>
-    typeof d.data === "string" && !d.data.includes("link-") && /"shape":\s*"(?:draw|highlighter)"/.test(d.data)
-      ? `${d.data}|${strokeInk}`
-      : null;
+  //: A shape (W30 B4) adds its id (the rough seed) and the board's rough default; a connector
+  //: adds the ends it resolves to now, so a moved or resized end repaints it. Words with a
+  //: placeholder (`%date%`, `%page%`, `%length%` change with the day, the frames and the line),
+  //: a map's cross-links and a raw path string never skip.
+  const linkEnds = new Map();
+  const strokePaintKey = (d) => {
+    if (typeof d.data !== "string" || !d.data.startsWith("{")) return null;
+    if (!d.data.includes("link-")) {
+      if (/"shape":\s*"(?:draw|highlighter)"/.test(d.data)) return `${d.data}|${strokeInk}`;
+      return d.data.includes('"d"') && !d.data.includes("%") ? `${d.data}|${d.id}|${strokeInk}|${wbBoardBackground().rough}` : null;
+    }
+    if (d.data.includes("%") || wbIsMap()) return null;
+    let parsed = null;
+    try { parsed = JSON.parse(d.data); } catch (e) { return null; }
+    if (!String(parsed?.type || "").startsWith("link-") || wbMapCrossLinkLook(parsed)) return null;
+    const ends = wbResolveLinkEndpoints(parsed);
+    linkEnds.set(d.id, ends);
+    return `${d.data}|${strokeInk}|${JSON.stringify(ends)}`;
+  };
   //: **Every topic's box in one walk before the connectors read them** (W30 D26). The render cleared
   //: the size cache, so each link end asked `wbMapNodeSize` for its own `querySelector` walk of the
   //: page: with 500 topics and 300 links that was 7.4 s of 12 renders at 4x CPU (about 600 ms each).
@@ -22706,7 +22737,7 @@ function renderWhiteboard() {
             fillOpacity = 1;
           }
         } else {
-          const endpoints = wbResolveLinkEndpoints(parsed);
+          const endpoints = linkEnds.has(d.id) ? linkEnds.get(d.id) : wbResolveLinkEndpoints(parsed);
           pathData = endpoints ? wbLinkPathD(parsed.type, endpoints.source, endpoints.target, wbLinkCaps(parsed), parsed.width, parsed.bend, wbLinkShape(parsed)) : "";
         }
       }

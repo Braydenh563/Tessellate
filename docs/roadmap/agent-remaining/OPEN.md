@@ -279,7 +279,7 @@ Parked until the owner's data or a check on real hardware:
 - D24 One global scope of 10,000 names | 1031-architecture AR2. **Part done s58-1110:** 9,096 to 9,044 names (settings-packages.js, appearance-panel.js, whiteboard-history.js wrapped whole); not wrapped, too many tests read them privately: math-field.js, ask-chart.js, lag-watch.js, capture-card-more.js; agent-activity.js has a multi-line template (wrap by hand)
 - D25 Split `run_agent`; data tables out of code | SESSION_BRIEFS 62, 63
 
-**W30 Whiteboard render cost** (D, boards render, Opus). **Part done wb-1111** (B39, the connector batch, the colour memo; left: B4 shapes and connectors still repaint every render, B23 export in one pass; see wb-1111.md). Files: `whiteboard.js` render path, `whiteboard-map.js`. Checks: frame time on a 500-object board. Done when: one edit re-renders only what changed.
+**W30 Whiteboard render cost** (D, boards render, Opus). **Done wb-1111** (B39, the connector batch, the colour memo, B4 shape and connector paint key, B23 export index; see wb-1111.md). Files: `whiteboard.js` render path, `whiteboard-map.js`. Checks: frame time on a 500-object board. Done when: one edit re-renders only what changed.
 - ~~D26 Every render rebuilds all map nodes; no dirty set | 1028-board B3, B4~~ **Done s7-1110** (topics and pen strokes were keyed, dec005f44; the cost left was the links: a 500-topic map with 300 cross-links at 4x CPU, median render: nothing changed 1,361 to 342 ms, one topic moved 1,501 to 309 ms, every topic moved 2,678 to 1,072 ms. One `querySelectorAll` of the topic boxes before the link pass instead of 600 `querySelector` walks, and each link's look found once a pass instead of three times, keyed on both ends' place and box. Link paths identical to a fresh computation after a move, a resize, two moves in one task)
 - D27 Split `whiteboard.js` (26,103 lines) and `whiteboard-map.js` by carve | 1028-board B1, B2, WHITEBOARD#Placed 2026-11-04. Not started in s7-1110 (the files are 26,164 and 11,050 lines)
 - D28 The composer's topical digests take 0.45 to 0.78 s on 500 notes (W10's files, Session 7) | audit-1108-perf P6. **Part done s7-1110:** every question moved `updated_at` on the 24 notes it surfaced (`onupdate` on `access_count`), which dropped the abbreviation glossary's cache key and re-read all notes; now one UPDATE that names `updated_at` (a profiled `/chat` request on 1,003 entries: 1,072k to 873k calls for three requests, 1.20 to 0.92 s; edit times no longer move on a read). Left: capping `raw_results` (12 front-end sites read it, a UI contract), the second `compose` for the chips (about 65 ms), `_subject_facts`
@@ -4751,7 +4751,7 @@ Counts are from `e17-1110.md` "True, by work order batch"; the scout's own cavea
 | X14 | W23 documents daily UX | 223 | open | Do1, then a later Do batch |
 | X15 | W24, W25, W26, W28, W29 (3, 3, 5, 4, 4) | 19 | open | Ci1, Sh1, Gr1, Do2, Bk2 |
 | X16 | W27 boot weight | 15 | open | Sh2 |
-| X17 | W30 whiteboard render | 19 | part (wb-1111: B39 and two costs; B4 rest, B23 open) | Wb2 |
+| X17 | W30 whiteboard render | 19 | done (wb-1111: B39, B4, B23 and two costs) | Wb2 |
 | X18 | W31 companion life | 29 | open | Cp1, Cp2 |
 | X19 | W33 copy and help | 4 | open | Ui1 |
 | X20 | W34 verify | 41 | open | Ev1 |

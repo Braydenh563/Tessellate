@@ -6,9 +6,11 @@ changed (a topic moved, an undo). A plain stroke (pen or highlighter) now
 carries a paint key, as an object does (`wbObjectPaintKey`), and a render that
 finds the same key and the same live path skips it.
 
-What the skip must never do: skip a connector or a shape (their look depends
-on other items, a label or the board's setting), skip when the theme changed,
-or skip a stroke whose drawn path was moved by a gesture and not put back.
+W30 B4 (wb-1111) extended the key to shapes and connectors (see
+test_wb_render_w30.py): a shape adds its id and the board's rough default, a
+connector the ends it resolves to now. What no skip may do: skip when the
+theme changed, skip a stroke whose drawn path was moved by a gesture and not
+put back, or skip words that hold a placeholder.
 """
 
 from __future__ import annotations
@@ -31,7 +33,7 @@ def test_a_stroke_has_a_paint_key_and_a_skip():
     assert "return;" in body.split("let pathData = d.data;")[0]
 
 
-def test_the_key_names_only_pen_and_highlighter_strokes():
+def test_the_key_keeps_the_pen_and_highlighter_branch_with_ink_and_mode():
     text = JS.read_text(encoding="utf-8")
     start = text.index("const strokePaintKey = (d) =>")
     fn = text[start : text.index("sketchUpdate.each(function(d) {", start)]
