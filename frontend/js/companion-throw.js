@@ -520,6 +520,7 @@ function nameMarkBuddyThrow(buddy, vx, vy, world, plan = companionThrowPlan(nmb.
   }
   const char = buddy.querySelector(".nm-buddy-char");
   buddy.classList.add("nm-buddy-dragging");
+  nameMarkBuddyAloft.rest(false);
   //: The flight's own clock: hidden, frames stop and it waits in the air;
   //: back, it flies on from there rather than jumping a long step. Its
   //: first frame is one step: the release's own task (20 to 100ms at 1x

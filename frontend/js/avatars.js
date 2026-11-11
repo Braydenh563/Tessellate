@@ -6376,6 +6376,8 @@ function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
   nmb.settledAt = Date.now();
   nameMarkBuddyGlue(spot, x, y);
   nmb.edgeType = spot.edge?.type || "";
+  //: Where it is put, the bar clip of this perch (none off a bar); a move that travels lifts it below (`nameMarkBuddyAloft`) until it lands.
+  nameMarkBuddyAloft.rest();
   //: Where its panel's top edge crosses it, for peeking from behind it.
   nmb.edgeLine = spot.pose === "sit" ? NMB_SEAT : NMB_FEET - 1;
   //: The band was sized by the glue above, before this spot's pose and pivot were set, so for the
@@ -6450,7 +6452,8 @@ function nameMarkBuddyAloft(cut = false) {
   if (!band || anim?.playState !== "running") return;
   const clip = (on) => {
     for (const el of [band, band.firstElementChild]) if (el) el.style.overflow = on ? "" : "visible";
-    band.style.clipPath = !on && cut && nmb.ride ? nameMarkBuddyAloft.cut(nmb.ride) : "";
+    if (on) nameMarkBuddyAloft.rest();
+    else band.style.clipPath = cut && nmb.ride ? nameMarkBuddyAloft.cut(nmb.ride) : "";
   };
   clip(false);
   const land = () => {
@@ -6462,6 +6465,19 @@ function nameMarkBuddyAloft(cut = false) {
 //: The band's clip for a move in the air: from the top bar's bottom edge to the bottom bar's top edge, in the
 //: band's own px (its box is where `nameMarkBuddyRideBox` put it), open at the sides so nothing is cut across.
 nameMarkBuddyAloft.cut = (r) => `inset(${r.barLo - r.top}px -9999px ${r.top + r.height - r.barHi}px -9999px)`;
+//: **At rest on a bar it is clear of the bar** (INBOX 1111, the owner: no overlap anywhere). Hanging from the top bar its ring,
+//: head and wisps reached 10 to 18px up into it (27 at 390 wide, 150%), over the lower edge of the "Reminders" tab at 1280; sitting or
+//: standing on the dock or status bar its tail and legs reached 19 to 24px down into it (pixel diff of the bar, companion hidden vs
+//: shown). The band has no box off a ride (0 by 0 at the window's corner), so an inset with the bar's edge, whole px, as a distance
+//: from that corner and the rest open keeps only what is under the top bar's edge (hanging) or over the bottom bar's (a bar perch). `on`
+//: false lifts it (a pull or a throw takes the figure over the bars whole); a move in the air has its own lift above.
+nameMarkBuddyAloft.rest = (on = true) => {
+  const band = document.getElementById("nm-buddy-band");
+  if (!band) return;
+  const kind = nmb.ride ? "" : nmb.perch;
+  const { top, bottom } = on && (kind === "hang" || kind === "bar") ? nameMarkBuddyLedges() : {};
+  band.style.clipPath = kind === "hang" && top ? `inset(${Math.ceil(top.bottom)}px -9999px -9999px -9999px)` : kind === "bar" && bottom ? `inset(-9999px -9999px -${Math.floor(bottom.top)}px -9999px)` : "";
+};
 
 //: **How it gets there: by the way its body moves, never a slide** (the
 //: owner, 2026-09-27: "instead the slight position displacements, the
@@ -8935,6 +8951,8 @@ function nameMarkBuddyState(buddy = document.getElementById("nm-buddy")) {
   if (!buddy) return "";
   const state = nameMarkBuddyStateOf(buddy);
   const was = buddy.dataset.state || "";
+  //: Resting or acting on a bar perch, the clip that keeps it off the bar (`nameMarkBuddyAloft.rest`); not in a carried or thrown move or a glide in the air, which have their own.
+  if (!nmb.flight && !buddy.classList.contains("nm-buddy-dragging") && nmb.anim?.playState !== "running") nameMarkBuddyAloft.rest();
   if (was !== state) {
     buddy.dataset.state = state;
     nmb.stateAt = Date.now();
@@ -10955,6 +10973,7 @@ function nameMarkBuddyBuild() {
       //: Carried in the window, not in a scroll area: where it lands
       //: decides what it rides next.
       nameMarkBuddyRide(null);
+      nameMarkBuddyAloft.rest(false);
       nameMarkBuddyAct("");
       buddy.classList.remove("nmb-sleep", "nmb-drowsy");
       nameMarkBuddyRelease();

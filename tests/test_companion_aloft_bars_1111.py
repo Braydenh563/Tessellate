@@ -62,6 +62,8 @@ const run = (cut) => {
   const listeners = {};
   const anim = { playState: "running", addEventListener: (k, f) => { listeners[k] = f; } };
   globalThis.document = { getElementById: () => band };
+  // Off a bar perch the rest clip is none (tests/test_companion_rest_bars_1111.py), so landing leaves the band unclipped.
+  nameMarkBuddyAloft.rest = () => { band.style.clipPath = ""; };
   globalThis.nmb = { anim, ride: { barLo: 58, barHi: 800, top: 110, height: 668 } };
   nameMarkBuddyAloft(cut);
   const aloft = { overflow: band.style.overflow, shutter: band.firstElementChild.style.overflow, clip: band.style.clipPath };
