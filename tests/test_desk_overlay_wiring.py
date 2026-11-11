@@ -561,7 +561,7 @@ def test_1666_the_close_x_quit_closes_the_companion_on_the_same_teardown():
     src = (Path(dc.__file__).resolve().parents[1] / "__main__.py").read_text(encoding="utf-8")
     teardown = src.split("def _stop_background_work", 1)[1].split("\ndef ", 1)[0]
     assert "desk_companion.shutdown()" in teardown
-    closing = src.split("def _on_closing", 1)[1].split("return True", 1)[0]
+    closing = src.split("def _close_to_tray", 1)[1].split("return True", 1)[0]  # the handler moved to module level; same assertion
     assert "_stop_background_work()" in closing
 
 
@@ -576,7 +576,7 @@ def test_1666_the_quit_handler_closes_the_companion_before_hiding_the_main_windo
     from pathlib import Path
 
     src = (Path(dc.__file__).resolve().parents[1] / "__main__.py").read_text(encoding="utf-8")
-    body = src.split("def _quit_from_app", 1)[1].split("quit_hook.set_quit_handler", 1)[0]
+    body = src.split("def _quit_from_app", 1)[1].split("\ndef ", 1)[0]  # moved to module level; same assertion
     assert body.index("desk_companion.shutdown()") < body.index("hide()")
 
 
