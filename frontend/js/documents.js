@@ -2621,18 +2621,20 @@ function markDocDirty() {
     //: A create that failed is not asked again on every key: the words are kept
     //: and one retry runs after a pause (audit 1028 D3).
     if (docSaveQueue.newRetry) return keepDocEditLocally();
+    const retryMs = 8000;
     ensureDocumentExists().then(() => {
       forgetDocEditLocally("new");
       markDocDirty();
     }, (error) => {
       $("doc-saved").textContent = "Not saved";
       $("doc-status").classList.add("error");
-      $("doc-status").textContent = error.message;
+      //: The retry below is silent otherwise: say that one is coming.
+      $("doc-status").textContent = `${String(error.message).replace(/[.\s]+$/, "")}. It will try again in ${retryMs / 1000} seconds.`;
       keepDocEditLocally();
       docSaveQueue.newRetry = setTimeout(() => {
         docSaveQueue.newRetry = null;
         if (!currentDoc && (docText().trim() || $("doc-title").value.trim())) markDocDirty();
-      }, 8000);
+      }, retryMs);
     });
     return;
   }
