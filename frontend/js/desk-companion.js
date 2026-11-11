@@ -45,12 +45,14 @@
   const token = () => prefs.get("token", "");
 
   //: The window's one kind of request: signed in, in the space open in the app.
-  const call = (path, method = "GET", body = null) =>
-    fetch(path, {
+  const call = (path, method = "GET", body = null) => {
+    const form = body instanceof FormData;  // a file: the browser sets the multipart type itself
+    return fetch(path, {
       method,
-      headers: { "Content-Type": "application/json", "X-Auth-Token": token(), "X-Workspace-ID": prefs.get("spaceId", "") || "all" },
-      ...(body ? { body: JSON.stringify(body) } : {}),
+      headers: { ...(form ? {} : { "Content-Type": "application/json" }), "X-Auth-Token": token(), "X-Workspace-ID": prefs.get("spaceId", "") || "all" },
+      ...(body ? { body: form ? body : JSON.stringify(body) } : {}),
     });
+  };
 
   const host = () => window.pywebview?.api || null;
   const ask = (name, ...args) => {
@@ -102,6 +104,8 @@
 
   // --- the window ----------------------------------------------------------------
   function show(next) {
+    //: Pictures and files staged in the note card go with it when the panel is left (capture-stage.js).
+    if (state === "note" && next !== "note") window.discardCaptureStage?.();
     state = next;
     document.body.dataset.state = next;
     document.body.dataset.size = SIZES[next].join("x");
@@ -364,10 +368,23 @@
     noteStatus("");
     document.querySelector(".desk-actions").replaceChildren();
     if (!(await ensureModule("captureCard"))) return noteStatus("Couldn't open the note card.", true);
+    captureCard.discardOnClose = true;  // this window rests on Close: what the card held back goes with it
     openCaptureCard($("desk-capture"), "focusin");
     focusCaptureCard();
     fit();  // the card is in the DOM now: measuring forces the layout, so no frame wait (and no new wake source)
   }
+
+  //: The two calls capture-stage.js uploads through (the app's, in its window), answered with this
+  //: window's token: a picture to /media/upload, a file to the new note's /files.
+  const deskApiJson = async (path, { method = "GET", body = null } = {}) => {
+    const response = await call(path, method, body);
+    if (!response.ok) {
+      const detail = (await response.json().catch(() => ({}))).detail;
+      throw new Error(typeof detail === "string" ? detail : "That didn't go through.");
+    }
+    return response.json();
+  };
+  Object.assign(window, { apiJson: deskApiJson, authHeaders: () => ({}) });
 
   const createNote = async (body) => {
     const response = await call("/entries", "POST", { defer_filing: true, inline_tags: true, ...body });

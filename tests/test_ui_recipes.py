@@ -6185,8 +6185,9 @@ def test_one_attachment_chip_serves_chat_and_the_popup_agent() -> None:
     and the popup agent's staged files all call it, and no surface hand-builds
     a second file chip (the old `attachment-chip-image` card is gone)."""
     attach = frontend_text("chat-attach.js")
-    assert attach.count("function attachmentChip(") == 1
-    builder = attach[attach.index("function attachmentChip(") :][:3400]
+    chip = frontend_text("att-chip.js")
+    assert chip.count("function attachmentChip(") == 1
+    builder = chip[chip.index("function attachmentChip(") :][:3400]
     for needle in (
         '"att-chip-stem"',
         '"att-chip-ext"',
@@ -6225,7 +6226,8 @@ def test_a_staged_chip_is_one_quiet_pill() -> None:
     the `.att-chip-pill`, and the selection, OCR and web-page chips that were
     hand-built `.attachment-chip` slabs are built by `attachmentChip` too."""
     attach = frontend_text("chat-attach.js")
-    builder = attach[attach.index("function attachmentChip(") :][:3400]
+    chip = frontend_text("att-chip.js")
+    builder = chip[chip.index("function attachmentChip(") :][:3400]
     assert "const pill = onRemove !== undefined;" in builder
     assert "att-chip-pill" in builder
     selection = attach[attach.index("function renderSelectionAttachment(") :][:1600]

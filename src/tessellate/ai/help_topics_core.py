@@ -43,7 +43,7 @@ HELP_TOPICS: list[dict] = [
         ),
         "body": (
             'Notes tab: the "Add a note" line under the filter row (parted from it by a divider) opens a card over the list, so the list does not move '
-            "(title and words, or a to-do list with Note and To-do; the line has a To-do icon that opens it as a list, pictures from the picture icon or a paste, Draw for a sketch of your own, a colour, tags and a reminder bell; Close keeps your draft, Escape closes, Ctrl+Enter saves). "
+            "(title and words, or a to-do list with Note and To-do; the line has a To-do icon that opens it as a list, pictures and files (any the chat takes) from the paperclip or a paste or drop, held as removable chips until you save, Draw for a sketch of your own, a colour, tags and a reminder bell; Close keeps your draft, Escape closes, Ctrl+Enter saves). "
             'Or type into "Capture a thought" and Save. A local AI files '
             "it into a category and suggests tags; you can re-file or edit anytime. "
             "Save as draft keeps it unfiled under Drafts instead, and after either, "
