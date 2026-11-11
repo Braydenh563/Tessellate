@@ -512,6 +512,7 @@ atlasRigWake.look = function atlasRigLook(rig, inFrame = false) {
     return;
   }
   const live = atlasMotionOK(box);
+  if (!rig.reads) for (const arm of rig.arms) atlasProbeWatch.seed(arm);
   const reads = rig.arms.map((arm) => ({ ...atlasRigRead(arm), anim: live && arm.running.size > 0 }));
   const turnMatrix = rig.pose && rig.heads.length ? /matrix\(([^)]+)\)/.exec(getComputedStyle(rig.pose).transform) : null;
   const was = rig.reads;
