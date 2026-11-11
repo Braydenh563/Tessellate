@@ -249,6 +249,21 @@ def _delete_board_item(session: Session, args: dict) -> dict:
     }
 
 
+def _restore_links(session: Session, row, keep: dict, end_kind: str) -> None:  # noqa: ANN001
+    """Re-add the connectors the deleted item had, pointed at its new id."""
+    from tessellate.core.database import WhiteboardSketch
+
+    for link in keep.get("links") or []:
+        try:
+            data = json.loads(link.get("data") or "{}")
+        except (TypeError, ValueError):
+            continue
+        for end in ("source", "target"):
+            if data.get(f"{end}Id") == keep.get("old_id") and (data.get(f"{end}Kind") or "node") == end_kind:
+                data[f"{end}Id"] = row.id
+        session.add(WhiteboardSketch(board_id=row.board_id, data=json.dumps(data), x=0, y=0, z=link.get("z") or 1))
+
+
 def _restore_board_item(session: Session, args: dict) -> dict:
     """Put back an item `delete_board_item` took off (its undo), with a new id."""
     from tessellate.core.database import WhiteboardNode, WhiteboardObject, WhiteboardSketch
@@ -266,15 +281,7 @@ def _restore_board_item(session: Session, args: dict) -> dict:
     session.add(row)
     session.flush()
     end_kind = {"card": "node", "object": "object", "shape": "sketch"}[kind]
-    for link in keep.get("links") or []:
-        try:
-            data = json.loads(link.get("data") or "{}")
-        except (TypeError, ValueError):
-            continue
-        for end in ("source", "target"):
-            if data.get(f"{end}Id") == keep.get("old_id") and (data.get(f"{end}Kind") or "node") == end_kind:
-                data[f"{end}Id"] = row.id
-        session.add(WhiteboardSketch(board_id=row.board_id, data=json.dumps(data), x=0, y=0, z=link.get("z") or 1))
+    _restore_links(session, row, keep, end_kind)
     events.record(session, "created", _entity(kind), row.id, f"{kind} put back by the assistant", payload={"after": _state(kind, row)})
     session.commit()
     return {"kind": kind, "item_id": row.id, "label": f"ph:arrow-counter-clockwise Put the {kind} back on the board"}
@@ -352,10 +359,8 @@ def _list_library(session: Session, args: dict) -> dict:
     }
 
 
-def _place_library_item(session: Session, args: dict) -> dict:
-    """Place a library item (from list_library) on a board, centred at x, y."""
-    from tessellate.api.routes_board_library import PlaceBody, place_library_item
-
+def _library_body(args: dict) -> dict:
+    """The place request for a `builtin:` or `item:` ref from list_library."""
     ref = str(args.get("ref") or "")
     body = {"x": float(args.get("x") or 0), "y": float(args.get("y") or 0)}
     if ref.startswith("builtin:"):
@@ -364,15 +369,29 @@ def _place_library_item(session: Session, args: dict) -> dict:
         body["item_id"] = int(ref[5:])
     else:
         raise ToolError("ref is one list_library returned, like builtin:flowchart/decision or item:12.")
+    return body
+
+
+def _placed_undo_steps(made: dict) -> list[dict]:
+    """The deletes that take a placed library item off the board again; its link shapes go with their ends."""
+    steps = [{"tool": "delete_board_item", "arguments": {"kind": "shape", "item_id": s["id"]}} for s in made["sketches"]
+             if not str(json.loads(s["data"]).get("type", "")).startswith("link-")]
+    steps += [{"tool": "delete_board_item", "arguments": {"kind": "object", "item_id": o["id"]}} for o in made["objects"]]
+    return steps
+
+
+def _place_library_item(session: Session, args: dict) -> dict:
+    """Place a library item (from list_library) on a board, centred at x, y."""
+    from tessellate.api.routes_board_library import PlaceBody, place_library_item
+
+    body = _library_body(args)
     raw = args.get("board_id")
     board_id = int(raw) if raw not in (None, "") else 0
     try:
         made = place_library_item(board_id, PlaceBody(**body), session)
     except HTTPException as err:
         raise ToolError(str(err.detail)) from err
-    steps = [{"tool": "delete_board_item", "arguments": {"kind": "shape", "item_id": s["id"]}} for s in made["sketches"]
-             if not str(json.loads(s["data"]).get("type", "")).startswith("link-")]
-    steps += [{"tool": "delete_board_item", "arguments": {"kind": "object", "item_id": o["id"]}} for o in made["objects"]]
+    steps = _placed_undo_steps(made)
     return {
         "placed": made.get("name"), "sketch_ids": [s["id"] for s in made["sketches"]], "object_ids": [o["id"] for o in made["objects"]],
         "label": f"ph:shapes Placed “{_clip(made.get('name') or 'item', 30)}” on the board",

@@ -883,6 +883,22 @@ def personal_lexicon(session: Session) -> dict[str, dict[str, int]]:
     return lexicon
 
 
+def _proposed_topics(held, strong):  # noqa: ANN001, ANN202
+    """The strongest topic no category already names, with the runner-up when it ties within `COMPOSITE_WITHIN`; none when all are covered."""
+    from tessellate.ai import taxonomy
+
+    covered = {topic for name in held for topic in taxonomy.name_topics(name)}
+    covered |= set(_lexicon_seen.get("lexicon") or {})
+    topics = [topic for topic in strong if topic not in covered]
+    if not topics:
+        return []
+    first = topics[0]
+    chosen = [first]
+    if len(topics) > 1 and strong[topics[1]] >= COMPOSITE_WITHIN * strong[first]:
+        chosen.append(topics[1])
+    return chosen
+
+
 def _with_proposal(decision, held, strong, hits, sensitive_set):  # noqa: ANN001, ANN202
     """A new category from the pack, only when no existing one scored
     (decision 2): its strongest topic, or two as a composite when they tie
@@ -890,18 +906,10 @@ def _with_proposal(decision, held, strong, hits, sensitive_set):  # noqa: ANN001
     notebook already has, never a topic one of its categories already names."""
     if decision.filed is not None or decision.held or decision.ranked or not strong:
         return decision
-    from tessellate.ai import taxonomy
-
     have = {name.casefold() for name in held}
-    covered = {topic for name in held for topic in taxonomy.name_topics(name)}
-    covered |= set(_lexicon_seen.get("lexicon") or {})
-    topics = [topic for topic in strong if topic not in covered]
-    if not topics:
+    chosen = _proposed_topics(held, strong)
+    if not chosen:
         return decision
-    first = topics[0]
-    chosen = [first]
-    if len(topics) > 1 and strong[topics[1]] >= COMPOSITE_WITHIN * strong[first]:
-        chosen.append(topics[1])
     name = " & ".join(chosen)
     if name.casefold() in have:
         return decision

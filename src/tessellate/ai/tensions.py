@@ -497,6 +497,40 @@ def _link_event_id(session, link) -> int | None:  # noqa: ANN001
     return None
 
 
+def comparable_notes(session, embeddings) -> tuple[dict, dict, set]:  # noqa: ANN001
+    """The notes worth comparing by id, their vectors, and the pairs already linked as contradicting."""
+    from sqlalchemy import select
+
+    from tessellate.ai.embeddings import bytes_to_vector
+    from tessellate.core.database import EmbeddingRecord, EntryLink
+    from tessellate.entry import manager
+
+    by_id = {e.id: e for e in manager.list_entries(session) if not e.is_private and not e.is_board}
+    records = session.execute(
+        select(EmbeddingRecord.entry_id, EmbeddingRecord.embedding).where(
+            EmbeddingRecord.model_version == embeddings.backend_id()
+        )
+    ).all()
+    vectors = {eid: bytes_to_vector(blob) for eid, blob in records if eid in by_id}
+    already = {
+        frozenset((link.source_entry_id, link.target_entry_id))
+        for link in session.scalars(select(EntryLink).where(EntryLink.link_type == "contradicts"))
+    }
+    return by_id, vectors, already
+
+
+def agent_row(tension: Tension) -> dict:
+    """One tension as the agent's `find_contradictions` result reports it."""
+    return {
+        "earlier_note_id": tension.earlier_id,
+        "later_note_id": tension.later_id,
+        "what_they_disagree_about": tension.explanation,
+        "earlier": tension.earlier_excerpt,
+        "later": tension.later_excerpt,
+        "written_apart_days": tension.gap_days,
+    }
+
+
 def _read_links(session, found: _Sources) -> None:  # noqa: ANN001
     """3. The links: a `contradicts` link is the accepted state, whoever made
     it. A link whose pair nothing else found becomes a finding of its own."""

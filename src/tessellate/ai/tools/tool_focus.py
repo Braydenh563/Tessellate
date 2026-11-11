@@ -167,8 +167,7 @@ def focus_detail(question: str, recent: str = "") -> toolwords.Focus:
     wanted.extend(["web_search", "read_url"])
     # De-duplicated but order-preserving: a group can name a tool that is
     # already core, and a repeated schema is a wasted schema.
-    seen: set[str] = set()
-    unique = [n for n in wanted if not (n in seen or seen.add(n))]
+    unique = list(dict.fromkeys(wanted))
     return toolwords.Focus(
         tools=unique,
         ranked=ranked,
