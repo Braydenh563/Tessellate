@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8222, frontend ids 2756, CSS sections 524, backend routes 695, backend modules 10695, test files 2633, tests 21505, plan headings 1013, app scripts 29, boot scripts 38, script files 290.
+Counts: frontend functions 8222, frontend ids 2756, CSS sections 524, backend routes 695, backend modules 10695, test files 2633, tests 21507, plan headings 1013, app scripts 29, boot scripts 38, script files 290.
 
 ## Frontend functions (8222)
 
@@ -14738,11 +14738,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_count` | src/tessellate/ai/composer_brief.py:30 |
-| `_whole_head` | src/tessellate/ai/composer_brief.py:40 |
-| `brief` | src/tessellate/ai/composer_brief.py:55 |
-| `matching` | src/tessellate/ai/composer_brief.py:83 |
-| `unjoined` | src/tessellate/ai/composer_brief.py:34 |
+| `_count` | src/tessellate/ai/composer_brief.py:31 |
+| `_whole_head` | src/tessellate/ai/composer_brief.py:41 |
+| `brief` | src/tessellate/ai/composer_brief.py:56 |
+| `matching` | src/tessellate/ai/composer_brief.py:84 |
+| `unjoined` | src/tessellate/ai/composer_brief.py:35 |
 
 ### src/tessellate/ai/composer_calc.py (27)
 
@@ -27387,7 +27387,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21505)
+## Tests (21507)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27992,7 +27992,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_r9_values_1109.py | 5 |
 | tests/test_composer_ranker_1029.py | 12 |
 | tests/test_composer_redos_1026.py | 4 |
-| tests/test_composer_redos_1109.py | 5 |
+| tests/test_composer_redos_1109.py | 6 |
 | tests/test_composer_regex_linear_1029.py | 3 |
 | tests/test_composer_register_1031.py | 12 |
 | tests/test_composer_relevance_1310.py | 12 |
@@ -28497,7 +28497,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_focus_feedback_1029.py | 8 |
 | tests/test_focus_timer.py | 7 |
 | tests/test_folder_roundtrip.py | 8 |
-| tests/test_folder_sync_q34.py | 18 |
+| tests/test_folder_sync_q34.py | 19 |
 | tests/test_folder_sync_routes_q34.py | 3 |
 | tests/test_follow_items_1110.py | 15 |
 | tests/test_followup_ordinal_e14.py | 9 |

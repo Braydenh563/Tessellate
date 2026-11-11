@@ -47,3 +47,12 @@ def test_short_questions_read_as_before():
     assert composer_intent.without_event_window("is the plumber coming this week") == "is the plumber coming"
     assert composer_intent.without_event_window("is the plumber coming tomorrow?") == "is the plumber coming"
     assert composer_lists.clean("what is due pls").rstrip(" ?.!") == "what is due"
+
+
+@pytest.mark.parametrize("junk", [" ", "\t", ". "])
+def test_brief_sentence_split_is_linear(junk):
+    from tessellate.ai import composer_brief
+
+    long_note = "The roof leaks again." + junk * LONG + "x " * 40
+    assert _fast(composer_brief.brief, long_note, 5) < 0.05
+    assert composer_brief.brief("The roof leaks again.\t\tCall the builder " + "soon " * 30, 5) == "The roof leaks again"

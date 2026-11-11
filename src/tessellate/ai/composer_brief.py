@@ -21,7 +21,8 @@ MIN_HEAD = 12
 _SPACED_DASH = re.compile(r"\s[-\u2013\u2014]\s")
 #: An aside between two spaced dashes ("services, including servers, over").
 _ASIDE = re.compile(r"\s[-\u2013\u2014]\s[^-\u2013\u2014]*?\s[-\u2013\u2014]\s")
-_SENTENCE_END = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9\"“(])")
+#: One space, no loop: `brief` folds spaces before it splits, and CodeQL reads a `\s+` here as polynomial (PR 216).
+_SENTENCE_END = re.compile(r"(?<=[.!?]) (?=[A-Z0-9\"“(])")
 _CLAUSE_BREAK = re.compile(r",\s+(?=(?:and|but|so|because|which|then|while)\b)|;\s+|,\s+")
 #: Words a clause may not end on (cut after one, it dangles).
 _DANGLES = frozenset("and or but nor so then the a an to of with for in on at by as from into that which who if when while because than my your our".split())
