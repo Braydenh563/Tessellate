@@ -848,21 +848,23 @@ function sizeDashWidgets() {
   //: as the grid goes `display: none`, every card measured 0px and was given
   //: `span 1`, and the next visit painted them stacked until it re-measured
   //: (layout shift 0.34). The grid's own fire on showing it measures it right.
-  //: The class is read first: `checkVisibility` needs a clean style tree, so asking it as the tab
-  //: went hidden paid a whole-page style recalc (129 ms at 4x on a switch to Notes, W25 D7).
-  if (!grid || grid.closest(".hidden") || (grid.checkVisibility && !grid.checkVisibility())) return;
-  const styles = getComputedStyle(grid);
-  const rowUnit = Number.parseFloat(styles.getPropertyValue("grid-auto-rows")) || 1;
-  const rowGap = Number.parseFloat(styles.rowGap) || 0;
-  const cardGap = Number.parseFloat(styles.columnGap) || 16;
+  //: The class is the test, and the cards' own boxes are the rest: the visibility API needs a clean
+  //: style tree, so it paid the whole-page style recalc as a flush of its own (129 ms at 4x on a
+  //: switch to Notes, W25 D7; 34 to 46ms of boot, INBOX 1741). A grid that is not drawn measures
+  //: every card 0px, and that is the bail below, before any write.
+  if (!grid || grid.closest(".hidden")) return;
   const cards = [...grid.querySelectorAll(".dash-widget")];
   //: **One layout a call, not three** (INBOX 1591: the dashboard's first reads were 85ms of
   //: forced layout inside the notes response). The grid is `align-items: start`, so a card is
   //: its content's height whatever span it holds (identical at 1440, 1000, 700 and 390): the
   //: release to `span 1` before the read only dirtied the layout the read then paid for. And
-  //: the heatmap's refit reads its end, so it goes with the other reads, before any write.
+  //: reads go before any write.
   const heights = cards.map((card) => card.getBoundingClientRect().height);
-  for (const heat of grid.querySelectorAll(".heatmap")) heat.dispatchEvent(new Event("dash-refit"));
+  if (!heights.some(Boolean)) return;
+  const styles = getComputedStyle(grid);
+  const rowUnit = Number.parseFloat(styles.getPropertyValue("grid-auto-rows")) || 1;
+  const rowGap = Number.parseFloat(styles.rowGap) || 0;
+  const cardGap = Number.parseFloat(styles.columnGap) || 16;
   cards.forEach((card, i) => {
     card.style.gridRowEnd = sizeDashWidgetSpan(heights[i], rowUnit, rowGap, cardGap);
   });
@@ -2960,67 +2962,33 @@ async function renderHeatmapWidget(body) {
   //: (below) rather than to the oldest day, so the crop this replaces is
   //: not missed on first paint.
   function paint() {
-    grid.replaceChildren();
     const counts = data.counts;
     const start = new Date(`${data.start}T00:00:00`);
-    // Pad so each column is a whole week starting on Sunday.
+    // Pad so each column is a whole week starting on Sunday, and the last one is whole too.
     const lead = start.getDay();
-    for (let i = 0; i < lead; i++) {
-      const blank = document.createElement("span");
-      blank.className = "heat-cell heat-blank";
-      grid.appendChild(blank);
-    }
-    counts.forEach((count, index) => {
+    const cells = [];
+    for (let i = 0; i < Math.ceil((lead + counts.length) / 7) * 7; i++) {
       const cell = document.createElement("span");
-      // Five buckets, scaled against the busiest day so quiet notebooks
-      // still show contrast.
-      const level = count === 0 ? 0 : Math.min(4, Math.ceil((count / data.busiest) * 4));
-      cell.className = `heat-cell heat-${level}`;
-      const day = new Date(start);
-      day.setDate(day.getDate() + index);
-      cell.title = `${day.toLocaleDateString()}, ${nounCount(count, "note")}`;
-      grid.appendChild(cell);
-    });
+      const index = i - lead;
+      if (index < 0 || index >= counts.length) cell.className = "heat-cell heat-blank";
+      else {
+        const count = counts[index];
+        // Five buckets, scaled against the busiest day so quiet notebooks still show contrast.
+        cell.className = `heat-cell heat-${count === 0 ? 0 : Math.min(4, Math.ceil((count / data.busiest) * 4))}`;
+        const day = new Date(start);
+        day.setDate(day.getDate() + index);
+        cell.title = `${day.toLocaleDateString()}, ${nounCount(count, "note")}`;
+      }
+      cells.push(cell);
+    }
+    //: **Opens at today by CSS alone** (INBOX 1578, then 1741). The grid is `direction: rtl`, so a
+    //: scroll box starts at its right edge, and its columns run right to left: the weeks are
+    //: appended newest first, which draws them oldest to newest, left to right. The end was read
+    //: from the last cell's rect (a layout read of 13k nodes, 70ms at 4x) and re-taken on every
+    //: refit; nothing reads it now, and a reader who scrolls away is simply left there.
+    for (let w = cells.length - 7; w >= 0; w -= 7) grid.append(...cells.slice(w, w + 7));
   }
-
-  //: **Opens at today, and stays there** (INBOX 1578: it opened at the far
-  //: left of an empty year). The grid runs oldest to newest, so the data is at
-  //: the right. `scrollLeft = scrollWidth` in a frame after the build set
-  //: nothing: the grid is `content-visibility: auto`, and until its cells are
-  //: laid out its `scrollWidth` reads its box (304 of 701 at 1440), so the
-  //: write clamped to 0. The end is read from the last cell's rect instead
-  //: (that read lays the cells out), and re-taken when the grid is laid out
-  //: (the observer, which also fires when a hidden tab shows), when it stops
-  //: being skipped, and on a resize, for as long as the reader has not
-  //: scrolled away from the end.
-  let atEnd = true;
-  function toEnd() {
-    const last = grid.lastElementChild;
-    if (!atEnd || !last) return;
-    //: **Written only when it is off the end** (INBOX 1741 lag rest: at 4x the refit inside
-    //: `sizeDashWidgets` read the last cell, 155ms of cell layout, and the `scroll` event its
-    //: unconditional write fired read `scrollWidth` for another 132ms). Already there, nothing is
-    //: written and no scroll event follows.
-    const off = last.getBoundingClientRect().right - grid.getBoundingClientRect().right;
-    if (Math.abs(off) >= 1) grid.scrollLeft += off;
-  }
-  //: Read two frames on, not in the event (the event lands before the frame's layout, and
-  //: `scrollWidth` paid for the cells the page had dirtied: 132 to 187ms at 4x in the lag log).
-  let atEndAsked = false;
-  grid.addEventListener("scroll", () => {
-    if (atEndAsked) return;
-    atEndAsked = true;
-    afterFrames(() => {
-      atEndAsked = false;
-      atEnd = grid.scrollWidth - grid.clientWidth - grid.scrollLeft < 2;
-    });
-  }, { passive: true });
-  grid.addEventListener("contentvisibilityautostatechange", toEnd);
-  //: The dashboard's own card observer tells it (`sizeDashWidgets`), so no
-  //: observer of its own.
-  grid.addEventListener("dash-refit", toEnd);
   paint();
-  requestAnimationFrame(toEnd);
 
   const legend = document.createElement("div");
   legend.className = "heat-legend muted";
