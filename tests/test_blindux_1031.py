@@ -6,7 +6,7 @@ import json
 
 import pytest
 
-from tessellate.ai import composer_digest
+from tessellate.ai import composer_digest_sentences
 from tests._objmove_node import JS, needs_node, run
 from tessellate.entry import manager
 
@@ -47,7 +47,7 @@ def test_i3_a_words_only_search_never_claims_the_only_note(client, trip, questio
 
 
 def test_i3_every_voice_of_the_only_note_line_is_known():
-    lines = composer_digest.only_note_lines()
+    lines = composer_digest_sentences.only_note_lines()
     assert "So far this is your only note on it." in lines
     assert "This is the only note on that." in lines
     assert all(isinstance(line, str) and line for line in lines)

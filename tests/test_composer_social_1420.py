@@ -114,8 +114,9 @@ def test_the_owners_search_results_are_said_as_english(question):
 
 def test_what_about_a_category_is_an_overview_of_it():
     from tessellate.ai import composer_digest
+    from tessellate.ai import composer_digest_sentences
 
-    assert composer_digest.kind_of("what about social connections") == "overview"
+    assert composer_digest_sentences.kind_of("what about social connections") == "overview"
     text = composer_digest.answer("what about social connections", social.notes(), today=social.TODAY)["text"]
     assert "Complete Social Skills Guide" in text and "stayed with her" in text
 
@@ -182,12 +183,12 @@ def test_a_bold_line_heading_is_a_name_and_its_marks_never_show():
 def test_the_also_line_joins_sentences_as_sentences():
     """"That's fascinating; What drew you to it?; you've always ...": a run of
     sentences joined by semicolons, a capital after each."""
-    from tessellate.ai import composer_digest
+    from tessellate.ai import composer_digest_lines
 
-    assert composer_digest._join(["That's fascinating", "What drew you to it?", "you've always liked it"]) == (
+    assert composer_digest_lines._join(["That's fascinating", "What drew you to it?", "you've always liked it"]) == (
         "That's fascinating. What drew you to it? You've always liked it"
     )
-    assert composer_digest._join(["rows", "pull-ups"]) == "rows; pull-ups"
+    assert composer_digest_lines._join(["rows", "pull-ups"]) == "rows; pull-ups"
 
 
 @pytest.mark.parametrize("question", ["what have I written about uni", "tell me about my university notes"])

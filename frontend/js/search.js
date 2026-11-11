@@ -84,8 +84,8 @@ const finderState = { corrected: "", notices: [], page: 1, more: false, timer: n
 const FINDER_OPEN = {
   note: (hit) => { switchTab("notes"); flashEntry(hit.id); },
   document: (hit) => { switchTab("documents"); openDocument(hit.id); },
-  board: (hit) => ensureModule("library").then(() => openLibraryItem({ kind: "board", id: hit.id })),
-  map: (hit) => ensureModule("library").then(() => openLibraryItem({ kind: "map", id: hit.id })),
+  board: (hit) => ensureModule("boards").then(() => openLibraryItem({ kind: "board", id: hit.id })),
+  map: (hit) => ensureModule("boards").then(() => openLibraryItem({ kind: "map", id: hit.id })),
   file: (hit) => flashLibraryItem("file", hit.id),
   bookmark: (hit) => flashLibraryItem("link", hit.id),
   reminder: () => switchTab("reminders"),

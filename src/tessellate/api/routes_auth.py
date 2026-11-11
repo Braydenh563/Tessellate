@@ -53,7 +53,7 @@ from tessellate.core import (
 from tessellate.core.config import ConfigManager
 from tessellate.core.deps import brief_session, get_config, get_session, register_cache_reset
 from tessellate.core.database import Entry, User, Vault
-from tessellate.entry import manager
+from tessellate.entry import manager_private
 from tessellate.entry.manager import log_action
 from tessellate.api.this_computer import REFUSAL, is_another_device, this_computer_only
 
@@ -1991,7 +1991,7 @@ def rotate_vault_key(
 
     for entry, _plaintext, new_ciphertext in rewritten:
         entry.content = new_ciphertext
-    manager.rekey_private_extras(session, old_key, new_key)
+    manager_private.rekey_private_extras(session, old_key, new_key)
 
     vault_row = session.scalar(select(Vault))
     new_salt = crypto.new_salt()

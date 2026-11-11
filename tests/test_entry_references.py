@@ -423,7 +423,7 @@ def test_a_long_label_is_found_through_the_index_with_the_scan_semantics(client)
 
 
 def test_interior_phrase_leaves_out_the_edges_and_short_labels():
-    from tessellate.api.routes_entries import _interior_phrase
+    from tessellate.api.routes_entries_refs import _interior_phrase
 
     assert _interior_phrase("Recipe") is None
     assert _interior_phrase("Weekly review") is None

@@ -126,9 +126,10 @@ def test_c_a_long_note_is_said_briefly_and_never_with_a_spaced_hyphen(answer):
 def test_d_the_answers_weeks_ago_is_the_cards(gap):
     from datetime import date, timedelta
 
-    from tessellate.ai import composer_digest, realise
+    from tessellate.ai import realise
+    from tessellate.ai import composer_digest_sentences
 
-    said = composer_digest._ago(date(2026, 11, 4) - timedelta(days=gap), date(2026, 11, 4))
+    said = composer_digest_sentences._ago(date(2026, 11, 4) - timedelta(days=gap), date(2026, 11, 4))
     card = int(gap / 7 + 0.5)  # Math.round(days / 7), frontend/js/sheets-selects.js relativeTime
     assert said == ("a week ago" if card == 1 else f"{realise.count_word(card)} weeks ago")
 
@@ -212,10 +213,10 @@ def test_f_a_chat_sign_off_ends_a_sentence(text):
 
 @pytest.mark.parametrize(("sentence", "last"), [("you didnt lock in", "in"), ("you need to log in", "in"), ("you never give up", "up")])
 def test_f_a_phrasal_verb_a_whole_sentence_ends_on_is_not_cut(sentence, last):
-    from tessellate.ai import composer_digest as digest
+    from tessellate.ai import composer_digest_lines
 
-    assert digest.whole_clause(sentence, frozenset({last})) == sentence
-    assert digest.whole_clause("you went to the footer and") == "you went to the footer"
+    assert composer_digest_lines.whole_clause(sentence, frozenset({last})) == sentence
+    assert composer_digest_lines.whole_clause("you went to the footer and") == "you went to the footer"
 
 
 def test_g_a_title_that_says_something_counts_when_the_body_loses_the_point(answer):
@@ -322,10 +323,10 @@ def test_i_a_weak_cue_never_heads_a_separate_notes_event(client, golf):
 
 
 def test_i_a_weak_cue_still_tells_parts_of_one_note_apart():
-    from tessellate.ai import composer_digest as digest
+    from tessellate.ai import composer_digest_lines
 
-    assert digest._cue_for("it was fun", "", "", False, "", True) == "How it went"
-    assert digest._cue_for("it was fun", "", "", False, "", False) == ""
+    assert composer_digest_lines._cue_for("it was fun", "", "", False, "", True) == "How it went"
+    assert composer_digest_lines._cue_for("it was fun", "", "", False, "", False) == ""
 
 
 def test_i_b_a_past_tense_weekday_mention_is_the_past_one(session, golf):

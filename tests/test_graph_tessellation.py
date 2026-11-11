@@ -267,9 +267,9 @@ def test_the_module_adds_one_name_to_the_shared_scope():
 
 
 def test_the_help_names_the_view():
-    from tessellate.ai import help_topics_core
+    from tests._help_text import help_core_text
 
-    text = Path(help_topics_core.__file__).read_text(encoding="utf-8")
+    text = help_core_text()
     assert "Tessellation" in text and "Cells" in text and "Hexes" in text
     view_help = HTML[HTML.index('id="graph-view-help"') :][:1500]
     assert "Tessellation" in view_help and "Cells" in view_help and "Hexes" in view_help

@@ -164,10 +164,10 @@ def test_r3_10_a_verb_that_is_a_noun_here_is_quoted_never_planned():
 
 @pytest.mark.parametrize("i", [0, 1, 2])
 def test_r3_11_a_two_sentence_line_is_quoted_not_reported(i):
-    from tessellate.ai import composer_digest
+    from tessellate.ai import composer_digest_lines
 
     line = "Boiler service due in December. Engineer is Mr Brunetti, phone 020 7946 0555"
-    said = composer_digest._said_as_written(line, i)
+    said = composer_digest_lines._said_as_written(line, i)
     assert "mentioned that" not in said and f"“{line}”" in said, said
 
 

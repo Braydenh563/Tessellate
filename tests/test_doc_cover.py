@@ -11,6 +11,7 @@ from pathlib import Path
 
 import pytest
 
+from tests._help_text import help_core_text
 from tests.test_doc_frontmatter import model_source
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -77,7 +78,7 @@ def test_the_panel_draws_the_cover_and_offers_icon_and_cover_in_the_one_picker()
     assert "pickIconOrEmoji({" in PROPS and "swatchPicker({" in PROPS
     assert 'entry.key === "icon" || entry.key === "cover"' in PROPS  # the look row owns both keys
     assert "var(--swatch)" in CSS.split(".doc-cover {", 1)[1].split("}", 1)[0]
-    topics = (ROOT / "src" / "tessellate" / "ai" / "help_topics_core.py").read_text(encoding="utf-8")
+    topics = help_core_text()
     assert "Add icon and Add cover" in topics
 
 

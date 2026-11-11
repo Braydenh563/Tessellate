@@ -7,6 +7,7 @@ the field, and its menu turns suggestions off for that note (and back on).
 
 from __future__ import annotations
 
+from tests._help_text import help_more_text
 import json
 import shutil
 import subprocess
@@ -116,7 +117,7 @@ def test_turning_it_off_is_undoable() -> None:
 
 
 def test_the_guide_and_the_popover_say_so() -> None:
-    source = (ROOT / "src/tessellate/ai/help_topics_more.py").read_text(encoding="utf-8")
+    source = help_more_text()
     assert "Don't suggest tags for this note" in source
     assert 'data-help-for", "note-tag-pop-help"' in SUGGEST
     assert "Don't suggest tags for this note" in SUGGEST

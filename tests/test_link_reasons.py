@@ -64,7 +64,7 @@ def _linked_pair(session, reason=manager.AUTO_REASON_TEXT, reason_confidence=0.8
 
 def test_audit_never_sends_a_private_note_to_the_model(session, fake_ollama):
     """A note can be marked private *after* it was already linked to another
-    note: `manager.set_private` drops the note's embedding and resolved
+    note: `manager_private.set_private` drops the note's embedding and resolved
     dates for exactly this reason but leaves any existing `EntryLink` rows in
     place. `audit_vague_links` fetches both ends of a link by id with no
     `is_private` check at all, so it read the raw `content` column: ciphertext

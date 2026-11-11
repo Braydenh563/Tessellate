@@ -10,7 +10,7 @@ from datetime import date
 import pytest
 
 import tests._seed_bt_1109 as bt
-from tessellate.ai import composer_ahead, recognise
+from tessellate.ai import composer_ahead, recognise, recognise_windows
 from tessellate.api import routes_chat
 from tessellate.core import config
 from tessellate.entry import manager
@@ -115,10 +115,10 @@ def test_the_year_follows_the_holiday_it_read(r5, question, named):
 
 
 def test_a_holiday_without_a_pointer_and_other_windows_carry_no_year():
-    assert recognise.with_holiday_year("at Christmas", date(2025, 12, 25)) == "at Christmas"
-    assert recognise.with_holiday_year("last week", date(2026, 11, 2)) == "last week"
-    assert recognise.with_holiday_year("last Christmas", None) == "last Christmas"
-    assert recognise.with_holiday_year("last Christmas", date(2025, 12, 25)) == "last Christmas (2025)"
+    assert recognise_windows.with_holiday_year("at Christmas", date(2025, 12, 25)) == "at Christmas"
+    assert recognise_windows.with_holiday_year("last week", date(2026, 11, 2)) == "last week"
+    assert recognise_windows.with_holiday_year("last Christmas", None) == "last Christmas"
+    assert recognise_windows.with_holiday_year("last Christmas", date(2025, 12, 25)) == "last Christmas (2025)"
 
 
 # --- 3. one day, one head -----------------------------------------------------------------------------

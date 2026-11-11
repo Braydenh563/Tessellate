@@ -219,7 +219,7 @@ def test_the_page_asks_before_either_path_starts_a_skill():
     from pathlib import Path
 
     turn = Path("frontend/js/chat-turn.js").read_text(encoding="utf-8")
-    start = turn.index("if (handoff) {")
+    start = turn.index("if (t.handoff) {")
     block = turn[start:start + 1800]
     assert "planProposalCard" in block and "startSkill" in block and "setTimeout(() => startSkill" not in block, block
 

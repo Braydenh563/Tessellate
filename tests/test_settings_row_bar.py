@@ -1,6 +1,7 @@
 """One changed-row bar x for every row recipe, and the Help "Where" line kept
 inside its topic's fold (INBOX 1610, 1612). Measured in a browser by the sweep
 the commit names; this keeps the rules that make the numbers from drifting."""
+from tests._help_text import help_more_text
 from pathlib import Path
 
 CSS = Path(__file__).resolve().parent.parent / "frontend" / "css"
@@ -100,5 +101,5 @@ def test_the_desktop_companion_switch_is_in_appearance_beside_the_corner_compani
     assert 'id="desktop-companion-row"' in appearance and 'id="desktop-companion-help"' in appearance
     about = html.split('id="settings-about"', 1)[1]
     assert 'id="desktop-companion-row"' not in about
-    topics = (CSS.parents[1] / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    topics = help_more_text()
     assert "Settings, Appearance, Corner companion, Show the companion on the desktop" in topics

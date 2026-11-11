@@ -10,6 +10,7 @@ one, so a hand-edited preference cannot leave a token invalid.
 
 from __future__ import annotations
 
+from tests._help_text import help_more_text
 import re
 from pathlib import Path
 
@@ -70,6 +71,6 @@ def test_the_choice_is_applied_validated_defaulted_mirrored_and_resettable():
 
 
 def test_the_guide_names_both():
-    more = (ROOT / "src/tessellate/ai/help_topics_more.py").read_text(encoding="utf-8")
+    more = help_more_text()
     themes = more[more.index('"id": "themes"') :][:4500]
     assert "Line spacing" in themes and "Line width" in themes

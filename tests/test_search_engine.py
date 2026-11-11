@@ -207,13 +207,14 @@ def test_a_purged_note_leaves_no_row_behind(session):
     note's row stayed, flagged `deleted`, for ever (`is:deleted` still found
     a note that no longer existed anywhere else)."""
     from tessellate.entry import manager
+    from tessellate.entry import manager_purge
 
     entry = manager.create_entry(session, "the old boiler manual", tags=[])
     session.commit()
     manager.soft_delete_entry(session, entry)
     session.commit()
     ref = entry.id
-    manager.purge_entries(session, [entry])
+    manager_purge.purge_entries(session, [entry])
     assert not _indexed(session, "note", ref)
 
 
@@ -509,7 +510,7 @@ def test_making_a_note_private_takes_its_vector_out_of_the_matrix(
     """A vector derived from the text is exactly what the encryption is for.
     The bulk `delete()` in `set_private` never reaches the in-memory array,
     so the array is told directly."""
-    from tessellate.entry import manager
+    from tessellate.entry import manager_private
     from tessellate.search import engine
 
     entry = _note(session, "the private thing about bread")
@@ -518,7 +519,7 @@ def test_making_a_note_private_takes_its_vector_out_of_the_matrix(
     assert entry.id in engine.vectors_by_id(session)
 
     monkeypatch.setattr("tessellate.core.vault.key", lambda: b"k" * 32)
-    assert manager.set_private(session, entry, True)
+    assert manager_private.set_private(session, entry, True)
     session.commit()
     assert entry.id not in engine.vectors_by_id(session)
 

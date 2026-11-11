@@ -35,7 +35,7 @@ from fastapi.responses import StreamingResponse
 from starlette.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
 
-from tessellate.ai import address, capability, fact_check, composer, composer_social, composer_unplaced, note_language, composer_aware, composer_compose, composer_digest, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, note_rank, note_recency, personal, verdicts, vocative
+from tessellate.ai import address, capability, fact_check, composer, composer_social, composer_unplaced, note_language, composer_aware, composer_compose, composer_digest, composer_digest_sentences, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, note_rank, note_recency, personal, verdicts, vocative
 from tessellate.ai import ask_chips, composer_dialogue, composer_empty, composer_intent, composer_smalltalk, composer_talk
 from tessellate.ai import consent, consent_store, recognise
 from tessellate.ai import (
@@ -326,7 +326,7 @@ def _retrieve_for(session: Session, question: str, found: _Found, attached: list
         found.mode = "stats"
     elif intent.needs_retrieval(found.detected) and not (attached_notes_only and (attached or held)):
         _search_notes(session, question, found, attached, as_of, locale, composed, widen)
-    elif attached_notes_only and attached and as_of is None and not composer_digest.about_this(question):
+    elif attached_notes_only and attached and as_of is None and not composer_digest_sentences.about_this(question):
         found.entries = _records_beside(session, question, attached, locale)
 
 
@@ -984,7 +984,7 @@ def _app_said(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list
     if placed is not None:
         return [{"type": "answer", "delta": placed["text"]}, {"type": "offer", "offer": placed["offer"]}]
     if _nothing_open(req.body):
-        return [{"type": "answer", "delta": composer_digest.PHRASES["nothing_open"]}]
+        return [{"type": "answer", "delta": composer_digest_sentences.PHRASES["nothing_open"]}]
     return None
 
 
@@ -1094,7 +1094,7 @@ def _with_older(text: str, older: list, result: dict) -> str:
         return text
     line = supersede.older_line(older, voice=_composer_voice(), today=user_now(deps.get_config()).date(), seed=len(text))
     #: "It's your only note on that so far" is not true with an older one.
-    kept = [part for part in text.split("\n\n") if not composer_digest.is_only_claim(part)]
+    kept = [part for part in text.split("\n\n") if not composer_digest_sentences.is_only_claim(part)]
     return "\n\n".join([*kept, line])
 
 
@@ -1456,7 +1456,7 @@ def _composed_text(req: _StreamRequest, prepared: dict, result: dict, follow, *,
     text = result["text"]
     asks: list[str] = []
     #: "what is this" is the open note, whatever it holds (audit 1031 C11), never the world.
-    if missed and not follow and personal.general(req.question or "") and not composer_digest.about_this(req.question or ""):
+    if missed and not follow and personal.general(req.question or "") and not composer_digest_sentences.about_this(req.question or ""):
         #: "what's the capital of France": the world, not the notes, and
         #: said so rather than "nothing in your notes about capital".
         text = personal.general_reply(
@@ -1660,7 +1660,7 @@ def _forced_notes(req: _StreamRequest, follow: object) -> bool:
         return True
     if not req.body.notes_only:
         return False
-    if composer_lists.computed_kind(req.question) is not None or composer_digest.shows_the_lot(req.question):
+    if composer_lists.computed_kind(req.question) is not None or composer_digest_sentences.shows_the_lot(req.question):
         return True
     #: "summarise my gym notes": a look-up, and Ask is where look-ups are
     #: answered, so it is read as the question it is (1324). A find is

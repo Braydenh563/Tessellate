@@ -16,6 +16,7 @@ node vm with a fixed clock; the hooks are checked in the source.
 
 from __future__ import annotations
 
+from tests._help_text import help_more_text
 import json
 import re
 import shutil
@@ -37,7 +38,7 @@ MOTION = (JS / "atlas-motion.js").read_text(encoding="utf-8")
 MENU = (JS / "companion-menu.js").read_text(encoding="utf-8")
 SETTINGS = (JS / "companion-settings.js").read_text(encoding="utf-8")
 CARDS = (JS / "note-cards.js").read_text(encoding="utf-8")
-TOPICS = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+TOPICS = help_more_text()
 
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 

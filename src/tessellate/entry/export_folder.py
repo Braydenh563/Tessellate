@@ -649,6 +649,7 @@ _ENTRY_SKIP = set(ENTRY_LEFT_OUT) | {"parent_id", "is_private"}
 def _make_entry(session, record: dict, said: list[str]):  # noqa: ANN001, ANN202
     from tessellate.core import vault
     from tessellate.entry import manager
+    from tessellate.entry import manager_private
 
     entry = manager.create_entry(session, record["content"], category_name=record.get("category") or manager.UNCATEGORISED,
                                  tags=record.get("tags") or [], ai_confidence=int(record.get("ai_confidence") or 0), commit=False,
@@ -659,7 +660,7 @@ def _make_entry(session, record: dict, said: list[str]):  # noqa: ANN001, ANN202
         entry.is_private = True
     elif record.get("is_private") and vault.key() is not None:
         #: Locked, a readable private note never gets here: `import_app` refuses first (sm-1111 row 8).
-        manager.set_private(session, entry, True)
+        manager_private.set_private(session, entry, True)
     if entry.created_at is not None:
         manager.record_dates(session, entry)
     return entry

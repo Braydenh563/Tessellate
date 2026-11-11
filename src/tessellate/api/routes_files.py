@@ -47,6 +47,7 @@ from tessellate.core.database import Attachment, Entry, MediaUpload
 from tessellate.core.deps import get_session
 from tessellate.core.subproc import NO_WINDOW
 from tessellate.entry import manager
+from tessellate.entry import manager_purge
 from tessellate.repo import uploads as uploads_repo
 from tessellate.repo.content import FILES
 
@@ -146,7 +147,7 @@ def upload_file(
                     raise HTTPException(status_code=413, detail="That file is larger than 50 MB.")
                 out.write(chunk)
 
-    attachment = manager.add_attachment(
+    attachment = manager_purge.add_attachment(
         session,
         entry,
         filename=bounds.display_name(file.filename, stored_name),
@@ -402,7 +403,7 @@ def _attachment_size(session: Session, attachment: Attachment) -> int:
     and the gallery draws a placeholder for that rather than dropping the row,
     so this must report a number instead of raising.
 
-    `Attachment.size` is written at upload time (`manager.add_attachment`)
+    `Attachment.size` is written at upload time (`manager_purge.add_attachment`)
     and kept current by every route that replaces the bytes on disk, so the
     column is normally already the right answer, read it first and skip the
     filesystem call `GET /files/gallery` used to pay once per attachment on
@@ -968,7 +969,7 @@ def delete_file(
         },
         {"bytes": _within(config.uploads_dir, attachment.stored_name)},
     )
-    manager.delete_attachment(session, attachment, config.uploads_dir)
+    manager_purge.delete_attachment(session, attachment, config.uploads_dir)
     out = _to_out(session, entry)
     return JSONResponse({**out.model_dump(mode="json"), "undo_token": token})
 
@@ -1039,7 +1040,7 @@ def rename_file(
             detail="This file is on a private note and can't be renamed until the note is readable.",
         )
     try:
-        manager.rename_attachment(session, attachment, body.filename)
+        manager_purge.rename_attachment(session, attachment, body.filename)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except FileExistsError as exc:
@@ -1934,7 +1935,7 @@ def rename_media(
     """
     upload = deps.get_or_404(session, MediaUpload, upload_id, "That upload could not be found.")
     try:
-        upload.original_name = manager.validate_attachment_filename(body.original_name)
+        upload.original_name = manager_purge.validate_attachment_filename(body.original_name)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     session.commit()

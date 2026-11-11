@@ -7,7 +7,8 @@ import time
 
 import pytest
 
-from tessellate.ai import composer_ask, composer_body, composer_digest, composer_property, question_noise
+from tessellate.ai import composer_ask, composer_body, composer_property, question_noise
+from tessellate.ai import composer_digest_lines
 
 N = 50_000
 BOUND_S = 2.0
@@ -44,14 +45,14 @@ def test_each_reader_is_linear(reader, run):
 
 
 REGEXES = {
-    "digest._SENTENCE_BREAK": composer_digest._SENTENCE_BREAK,
-    "digest._LABELLED": composer_digest._LABELLED,
-    "digest._OWN_DATE": composer_digest._OWN_DATE,
-    "digest._WHEN_NOW": composer_digest._WHEN_NOW,
+    "digest._SENTENCE_BREAK": composer_digest_lines._SENTENCE_BREAK,
+    "digest._LABELLED": composer_digest_lines._LABELLED,
+    "digest._OWN_DATE": composer_digest_lines._OWN_DATE,
+    "digest._WHEN_NOW": composer_digest_lines._WHEN_NOW,
     "body._OWN_DATE": composer_body._OWN_DATE,
-    "digest._PRONOUN_START": composer_digest._PRONOUN_START,
-    "digest._PERSON_TITLE": composer_digest._PERSON_TITLE,
-    "digest._FIRST_PERSON": composer_digest._FIRST_PERSON,
+    "digest._PRONOUN_START": composer_digest_lines._PRONOUN_START,
+    "digest._PERSON_TITLE": composer_digest_lines._PERSON_TITLE,
+    "digest._FIRST_PERSON": composer_digest_lines._FIRST_PERSON,
     "body._DAYISH": composer_body._DAYISH,
     "ask._ORDINAL_NOTE": composer_ask._ORDINAL_NOTE,
     "ask._DATE_ASK": composer_ask._DATE_ASK,

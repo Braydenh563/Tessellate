@@ -13,6 +13,7 @@ package's state changes.
 
 from __future__ import annotations
 
+from tests._help_text import help_more_text
 import re
 from pathlib import Path
 
@@ -66,7 +67,7 @@ def test_surfaces_mount_it_and_nobody_builds_a_second_one() -> None:
 
 
 def test_help_and_the_guide_name_the_notice() -> None:
-    topic = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    topic = help_more_text()
     assert "notice with Install" in topic and "Install" in topic
     #: The long half lives in the button's title, as the no-model notice does.
     assert "install.title" in JS

@@ -17,7 +17,8 @@ import re
 
 import pytest
 
-from tessellate.ai import composer, composer_digest
+from tessellate.ai import composer
+from tessellate.ai import composer_digest_lines
 from tessellate.api import routes_chat
 from tessellate.core import config
 from tessellate.entry import manager
@@ -62,7 +63,7 @@ FRAMES = ["{v} the {s} note", "please {v} my {s} notes", "{v} me the {s} note", 
 @pytest.mark.parametrize("frame", FRAMES)
 def test_a_leading_command_word_is_not_in_the_subject(verb, obj, frame):
     said = frame.format(v=verb, s=obj)
-    stems = composer_digest._subject(said)
+    stems = composer_digest_lines._subject(said)
     assert composer._stem(verb) not in stems, (said, stems)
     for word in obj.lower().split():
         assert composer._stem(word) in stems, (said, stems)
@@ -70,22 +71,22 @@ def test_a_leading_command_word_is_not_in_the_subject(verb, obj, frame):
 
 @pytest.mark.parametrize("said", ["draft a message to Sara", "write an email to Sara", "compose a reply to Sara"])
 def test_a_drafting_request_keeps_the_person_only(said):
-    assert composer_digest._subject(said) == ["sara"], said
+    assert composer_digest_lines._subject(said) == ["sara"], said
 
 
 @pytest.mark.parametrize("said", ["merge the two lentil soup notes", "move the budget to the bin", "read me the lentil soup note"])
 def test_filler_words_of_a_command_are_not_the_subject(said):
-    assert not {"two", "bin", "merg", "merge", "move", "read", "me"} & set(composer_digest._subject(said)), said
+    assert not {"two", "bin", "merg", "merge", "move", "read", "me"} & set(composer_digest_lines._subject(said)), said
 
 
 @pytest.mark.parametrize("said", ["tell me about books I am reading", "notes about the reading list"])
 def test_a_content_word_that_is_also_a_verb_stays_when_it_does_not_open_the_command(said):
-    stems = composer_digest._subject(said)
+    stems = composer_digest_lines._subject(said)
     assert any(st in stems for st in ("read", "plan")), (said, stems)
 
 
 def test_a_name_with_an_s_keeps_it():
-    assert composer_digest._subject("tell me about Project Atlas") == ["project", "atlas"]
+    assert composer_digest_lines._subject("tell me about Project Atlas") == ["project", "atlas"]
 
 
 SUBJECTS = ["sourdough", "kayaking", "espresso", "violin"]

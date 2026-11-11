@@ -160,7 +160,7 @@ FTS_TABLES = ("entries_fts", "search_index")
 def optimize_fts(connection) -> None:  # noqa: ANN001  # SQLAlchemy or sqlite3 connection
     """Merge every FTS5 segment into one, which drops the tokens of deleted
     rows for good (SEC-03, security audit 2026-10-05). Takes a SQLAlchemy
-    connection (the live database, `manager.scrub_private_leftovers`) or a
+    connection (the live database, `manager_private.scrub_private_leftovers`) or a
     plain sqlite3 one (a backup copy)."""
     run = getattr(connection, "exec_driver_sql", None) or connection.execute
     for table in FTS_TABLES:

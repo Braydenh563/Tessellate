@@ -5,6 +5,7 @@ was never seen. A request that moves the figure (wave, come, go somewhere else, 
 
 from __future__ import annotations
 
+from tests._help_text import help_more_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -37,7 +38,7 @@ def test_requests_that_move_the_figure_or_open_something_still_close_it() -> Non
 
 
 def test_the_guide_topic_says_a_setting_keeps_the_menu_open() -> None:
-    text = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    text = help_more_text()
     assert "settings keep it open" in text
 
 

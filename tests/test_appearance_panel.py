@@ -10,7 +10,7 @@ committed); here are the contracts a source check can hold.
 
 from __future__ import annotations
 
-from tests._help_text import help_chat_text
+from tests._help_text import help_chat_text, help_more_text
 from tests._js_scope import unwrapped
 
 import importlib.util
@@ -181,7 +181,7 @@ def test_the_section_in_view_is_the_last_one_that_has_reached_the_line(tmp_path)
 def test_help_moves_with_the_panel():
     chat = help_chat_text()
     assert "Appearance panel" in chat
-    more = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    more = help_more_text()
     assert "Pop out" in chat + more
     assert 'data-help-for' in PANEL or "dataset.helpFor" in PANEL
     assert 'id = "appearance-panel-help"' in PANEL

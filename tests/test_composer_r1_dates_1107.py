@@ -62,7 +62,7 @@ def test_d8_a_weekday_in_a_note_is_not_turned_into_today(notebook):
     assert "Sunday: call Mum" in said, said
 
 
-@pytest.mark.xfail(strict=True, reason="round 1 D8 open: _join glues non-adjacent sentences inside one quotation (composer_digest._line_of)")
+@pytest.mark.xfail(strict=True, reason="round 1 D8 open: _join glues non-adjacent sentences inside one quotation (composer_digest_lines._line_of)")
 def test_d8_a_quotation_does_not_skip_a_sentence_inside_the_marks(notebook):
     note = "# Books\n\nCurrently reading Piranesi by Susanna Clarke. Next: The Dispossessed. Finished Dune in September."
     #: The second note is about books too ("Book club" is the noun); "book a table" is the verb and no longer counts (W7b B10).
@@ -78,6 +78,6 @@ def test_d8_a_quotation_does_not_skip_a_sentence_inside_the_marks(notebook):
 @pytest.mark.parametrize(("line", "dated"), [("Ran 6 km on 25 October", True), ("Ran on 25th october", True), ("Flights leave May 5", True),
                                               ("we may 5 of us go to the match", False), ("I may 3 times a week go running", False)])
 def test_review7_only_a_real_date_in_a_line_is_its_own_date(line, dated):
-    from tessellate.ai import composer_digest
+    from tessellate.ai import composer_digest_lines
 
-    assert bool(composer_digest._OWN_DATE.search(line)) is dated  # noqa: SLF001
+    assert bool(composer_digest_lines._OWN_DATE.search(line)) is dated  # noqa: SLF001

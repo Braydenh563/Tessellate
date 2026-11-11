@@ -11,7 +11,7 @@ JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 def test_the_board_library_waits_for_its_bundle_before_drawing_tiles():
     lib = (JS / "whiteboard-library.js").read_text(encoding="utf-8")
     body = lib[lib.index("async function wbLoadLibrary"):].split("\n}\n")[0]
-    assert body.index('await ensureModule("library");') < body.index("wbRenderLibrary();")
+    assert body.index('await ensureModule("boards");') < body.index("wbRenderLibrary();")
 
 
 def test_a_card_file_without_its_name_is_a_failure_not_a_redraw():

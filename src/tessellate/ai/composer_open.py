@@ -11,7 +11,7 @@ words, chosen for what was asked:
   do ("Book the tram pass before we go.");
 - `when`: the sentences that carry a date, not every date in the note;
 - `who`: the people the note names;
-- `point`: handled by the digest's "Summarise this" (`composer_digest._THIS`).
+- `point`: handled by the digest's "Summarise this" (`composer_digest_sentences._THIS`).
 
 Every clause is the note's sentence, or a count or list of names read off it
 (the composer's rule, `composer.py`); the connecting words are `PHRASES`,

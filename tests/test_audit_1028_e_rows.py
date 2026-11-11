@@ -30,7 +30,7 @@ def test_a_bare_undo_typed_in_chat_runs_the_apps_undo():
         assert re.fullmatch(words, typed, re.I), typed
     for typed in ("undo the tag on my essay note", "how do I undo"):
         assert not re.fullmatch(words, typed, re.I), typed
-    assert 'return chatWriteRecord("chatHistoryTyped", /^undo/i.test(typed));' in js
+    assert 'return { done: true, value: chatWriteRecord("chatHistoryTyped", /^undo/i.test(typed)) };' in js
     assert "Nothing to undo." in js and "performUndo : performRedo" in js
 
 

@@ -24,7 +24,8 @@ import re
 
 import pytest
 
-from tessellate.ai import composer_digest
+from tessellate.ai import composer_digest_lines
+from tessellate.ai import composer_digest_sentences
 from tessellate.api import routes_chat
 from tessellate.core import config
 from tessellate.entry import manager
@@ -196,7 +197,7 @@ def test_a_title_or_a_list_item_is_not_a_doing_clause(answers, fam, chat):
     ("See [[Trips|the trip note]]", "see the trip note"),
 ])
 def test_fragment_keeps_a_title_capital_and_lowers_a_word(text, said):
-    assert composer_digest._fragment(text, set()) == said
+    assert composer_digest_sentences._fragment(text, set()) == said
 
 
 @pytest.mark.parametrize(("item", "led"), [
@@ -205,7 +206,7 @@ def test_fragment_keeps_a_title_capital_and_lowers_a_word(text, said):
     ("pay the rent", True), ("call the bank", True),
 ])
 def test_verb_led(item, led):
-    assert composer_digest._verb_led(item) is led
+    assert composer_digest_sentences._verb_led(item) is led
 
 
 @pytest.mark.parametrize(("content", "name"), [
@@ -227,25 +228,25 @@ def test_a_title_less_note_is_named_by_its_clipped_first_clause(content, name):
     ("Tired after the run", "Tired after the run"),
 ])
 def test_a_title_or_a_feeling_is_not_said_as_doing(text, said):
-    assert composer_digest._second_person(text) == said
+    assert composer_digest_sentences._second_person(text) == said
 
 
 @pytest.mark.parametrize("key", ["learned", "meant"])
 def test_one_reporting_verb_and_none_the_note_did_not_make(key):
-    said = composer_digest._BASE[key]
+    said = composer_digest_sentences._BASE[key]
     assert len(said) == 1 and not re.search(r"heard|took away|set out", said[0]), said
 
 
 @pytest.mark.parametrize("body", ["pay cut", "book club on Friday", "passport", "Tom to draft the spec"])
 def test_a_noun_is_never_put_after_planned_to(body):
-    assert "planned to" not in composer_digest._clause(body, "noted", 0, True)
+    assert "planned to" not in composer_digest_lines._clause(body, "noted", 0, True)
 
 
 def test_no_phrase_invents_a_speech_act_the_note_did_not_make():
     """Audit 1028 E18: "you told yourself to" and "you reminded yourself to"
     put an act in the writer's mouth; an instruction is said as the note's."""
-    assert "told_self" in composer_digest._BASE
-    said = " ".join(composer_digest._BASE["told_self"] if isinstance(composer_digest._BASE["told_self"], tuple) else [composer_digest._BASE["told_self"]])
+    assert "told_self" in composer_digest_sentences._BASE
+    said = " ".join(composer_digest_sentences._BASE["told_self"] if isinstance(composer_digest_sentences._BASE["told_self"], tuple) else [composer_digest_sentences._BASE["told_self"]])
     assert not re.search(r"told yourself|reminded yourself", said)
 
 

@@ -21,6 +21,7 @@ import pytest
 
 import tests._seed_1030 as seed_1030
 from tessellate.ai import composer, composer_digest, note_recency
+from tessellate.ai import composer_digest_sentences
 from tessellate.entry import manager
 from tests.test_composer_class_1031 import uni  # noqa: F401  (a fixture)
 
@@ -243,10 +244,11 @@ def test_the_listing_in_a_notebook_filed_under_university(uni, form):  # noqa: F
     ("show me all my notes", False), ("what is in my notes", False),
 ])
 def test_the_one_reader_of_a_show_ask(text, lot):
-    from tessellate.ai import composer_digest, filed_name
+    from tessellate.ai import filed_name
+    from tessellate.ai import composer_digest_sentences
 
     assert filed_name.shows_the_lot(text) is lot
-    assert composer_digest.shows_the_lot(text) is lot
+    assert composer_digest_sentences.shows_the_lot(text) is lot
 
 
 # 5. A timed answer's day lead says how far away the day is, then the day.
@@ -256,8 +258,8 @@ TODAY = date(2026, 10, 30)
 
 def _said(days_ago: int, question: str = "what did I do") -> str:
     def run() -> str:
-        composer_digest._set_timing(question)  # noqa: SLF001
-        return composer_digest._said_day(date(2026, 10, 30).fromordinal(TODAY.toordinal() - days_ago), TODAY)  # noqa: SLF001
+        composer_digest_sentences._set_timing(question)  # noqa: SLF001
+        return composer_digest_sentences._said_day(date(2026, 10, 30).fromordinal(TODAY.toordinal() - days_ago), TODAY)  # noqa: SLF001
 
     return contextvars.copy_context().run(run)
 
@@ -280,8 +282,8 @@ def test_when_did_i_keeps_the_date_first_and_still_says_how_far(days_ago, said):
 
 def test_a_day_not_yet_gone_stays_a_plain_date():
     def run() -> str:
-        composer_digest._set_timing("what did I do")  # noqa: SLF001
-        return composer_digest._said_day(date(2026, 11, 4), TODAY)  # noqa: SLF001
+        composer_digest_sentences._set_timing("what did I do")  # noqa: SLF001
+        return composer_digest_sentences._said_day(date(2026, 11, 4), TODAY)  # noqa: SLF001
 
     assert contextvars.copy_context().run(run) == "on 4 November"
 
@@ -306,8 +308,8 @@ def _who_lines(question: str) -> str:
     ]
 
     def run() -> str:
-        composer_digest._set_timing(question)  # noqa: SLF001
-        out = composer_digest._Out()  # noqa: SLF001
+        composer_digest_sentences._set_timing(question)  # noqa: SLF001
+        out = composer_digest_sentences._Out()  # noqa: SLF001
         views = [composer.read_note(n, 0) for n in notes]
         assert composer_digest._who(out, "priya", views, set(), TODAY)  # noqa: SLF001
         return "\n".join(out.lines)

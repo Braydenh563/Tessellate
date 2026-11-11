@@ -173,9 +173,9 @@ def test_the_guide_answers_what_the_question_asks_not_a_neighbouring_topic(ask, 
     [("compare the Porto and Lisbon notes", "Porto and Lisbon"), ("what is my running plan for next month", "running plan"), ("what did I write about sourdough last week", "sourdough")],
 )
 def test_the_topic_a_reply_names_is_the_subject_not_a_time_or_a_lowercased_pair(ask, topic):
-    from tessellate.ai import composer_digest
+    from tessellate.ai import composer_digest_lines
 
-    assert composer_digest._topic(ask, []) == topic
+    assert composer_digest_lines._topic(ask, []) == topic
 
 
 def test_one_note_shown_of_many_is_not_called_the_first_ones():

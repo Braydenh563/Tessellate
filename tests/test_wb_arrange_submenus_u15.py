@@ -12,10 +12,12 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from tests._help_text import help_core_text
+
 ROOT = Path(__file__).resolve().parents[1]
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 BOARD = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
-HELP = (ROOT / "src" / "tessellate" / "ai" / "help_topics_core.py").read_text(encoding="utf-8")
+HELP = help_core_text()
 DESIGN = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
 
 

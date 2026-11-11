@@ -119,7 +119,10 @@ def test_no_network_and_no_app_imports():
     # composer imports cold under its budget; the one app module allowed, held below
     # to the standard library with no I/O, so nothing reaches past the computer still.
     names = imported("src/tessellate/ai/recognise.py")
-    assert names <= {"__future__", "re", "dataclasses", "datetime", "typing", "contextlib", "contextvars", "tessellate.core.lazyre"}, names
+    # tessellate.ai.recognise_windows (2026-11-11, K24): the span-of-days half moved out whole; it follows the same rule.
+    assert names <= {"__future__", "re", "dataclasses", "datetime", "typing", "contextlib", "contextvars", "tessellate.core.lazyre", "tessellate.ai.recognise_windows"}, names
+    windows = imported("src/tessellate/ai/recognise_windows.py")
+    assert windows <= {"__future__", "re", "datetime", "typing", "contextlib", "contextvars", "tessellate.core.lazyre"}, windows
     assert imported("src/tessellate/core/lazyre.py") <= {"__future__", "re", "threading"}
 
 

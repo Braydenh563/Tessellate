@@ -4,18 +4,20 @@
 from __future__ import annotations
 
 from tessellate.ai import composer_digest as digest
+from tessellate.ai import composer_digest_lines
+from tessellate.ai import composer_digest_sentences
 
 
 def test_a_direct_gap_lead_is_not_remembered_by_the_next_test_a():
-    digest._VOICE.set("playful")
-    digest._next_gap(1)
-    assert len(digest._GAPS.get()) == 1
+    composer_digest_sentences._VOICE.set("playful")
+    composer_digest_lines._next_gap(1)
+    assert len(composer_digest_sentences._GAPS.get()) == 1
 
 
 def test_a_direct_gap_lead_is_not_remembered_by_the_next_test_b():
-    assert digest._GAPS.get() == () and digest._VOICE.get() == "natural"
-    digest._next_gap(1)
-    assert len(digest._GAPS.get()) == 1
+    assert composer_digest_sentences._GAPS.get() == () and composer_digest_sentences._VOICE.get() == "natural"
+    composer_digest_lines._next_gap(1)
+    assert len(composer_digest_sentences._GAPS.get()) == 1
 
 
 def test_answer_runs_in_its_own_context():

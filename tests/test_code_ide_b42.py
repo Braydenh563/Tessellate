@@ -87,6 +87,14 @@ def test_the_ide_file_is_lazy_and_mounted_from_the_code_tools() -> None:
     assert "docIdeExtensions(CM, type)" in _function(code, "docCompletionExtras")
 
 
+def test_the_ide_file_waits_for_documents_js_before_it_is_fetched() -> None:
+    """The idle warm-up loads the bundle a file at a time, so a fetch started as documents-view.js runs executed
+    documents-ide.js before documents.js defined `docToolPref` (found driving the attach-to path, dec-1111-d2)."""
+    view = (JS / "documents-view.js").read_text(encoding="utf-8")
+    assert 'lazyScript("/js/documents.js").then(() => lazyScript("/js/documents-ide.js"))' in view
+    assert not re.search(r'^lazyScript\("/js/documents-ide\.js"\)', view, re.M), "a bare top-level fetch races documents.js"
+
+
 def test_the_minimap_is_off_by_default_and_a_view_toggle() -> None:
     ide = _js_scope.unwrapped(IDE_JS.read_text(encoding="utf-8"))
     assert 'docToolPref("codeMinimap", false)' in ide

@@ -466,7 +466,7 @@ def forget(session: Session, model: type, ids: Iterable[int]) -> int:
     """Take rows out for things a bulk statement is about to delete, or has.
 
     `touch` above re-reads one object; this is its bulk half, for the deletes
-    that never reach the flush hook: emptying the bin (`manager._hard_delete`
+    that never reach the flush hook: emptying the bin (`manager_purge._hard_delete`
     runs `DELETE FROM entries WHERE id IN (...)`) and deleting a space (every
     table in `routes_spaces.delete_space` goes by a query-level delete). Both
     left their rows here for good, measured: a purged note stayed findable
@@ -585,7 +585,7 @@ def _written(value: datetime | date | None) -> str:
 def _entry_kind(entry) -> str:  # noqa: ANN001
     """"note", "board" or "map" for one row of the entries table.
 
-    The same read as `entry.manager.board_type_of`, repeated rather than
+    The same read as `entry.manager_purge.board_type_of`, repeated rather than
     imported for the reason this module imports nothing from above it: the
     index sits under the entry layer. Tolerant of every shape a JSON text
     column can hold: a bad value is an ordinary board, never an exception in

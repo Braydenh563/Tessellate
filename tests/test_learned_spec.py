@@ -245,7 +245,7 @@ def test_forget_everything_leaves_notes_and_revisions_byte_identical(ai_client, 
 
 def test_a_private_notes_facts_are_never_listed(ai_client, fake_ollama, session, monkeypatch):
     from tessellate.core.database import Entry
-    from tessellate.entry import manager
+    from tessellate.entry import manager_private
 
     saved = ai_client.post("/entries", json={"content": "The batch size should stay at 32."}).json()
     ai_client.post("/night/run", json={"budget": 1000})
@@ -255,7 +255,7 @@ def test_a_private_notes_facts_are_never_listed(ai_client, fake_ollama, session,
     # stubbed the same way `test_search_engine.py` does it, and the return
     # value is asserted, which is what makes this test able to fail.
     monkeypatch.setattr("tessellate.core.vault.key", lambda: b"k" * 32)
-    assert manager.set_private(session, session.get(Entry, saved["id"]), True)
+    assert manager_private.set_private(session, session.get(Entry, saved["id"]), True)
     session.commit()
     assert all(r["entry_id"] != saved["id"] for r in ai_client.get("/learned").json()["items"])
 

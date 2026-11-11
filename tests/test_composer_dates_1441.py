@@ -139,10 +139,10 @@ class _Slots(dict):
 
 
 def _every_phrase() -> list[tuple[str, str]]:
-    from tessellate.ai import composer_digest
+    from tessellate.ai import composer_digest_sentences
 
     said = []
-    for table in [composer_digest._BASE, *composer_digest.VOICES.values()]:
+    for table in [composer_digest_sentences._BASE, *composer_digest_sentences.VOICES.values()]:
         for key, phrases in table.items():
             for phrase in phrases if isinstance(phrases, tuple) else (phrases,):
                 #: A lead ("a week on, ") opens a clause; it is not one.
@@ -154,17 +154,17 @@ def _every_phrase() -> list[tuple[str, str]]:
 def test_a_dropped_date_never_leaves_its_clause_behind():
     """The coordinator, 2026-10-29: "You use HCI in two notes, the last." A
     phrase's date goes with its whole clause, in every phrase of every voice."""
-    from tessellate.ai import composer_digest
+    from tessellate.ai import composer_digest_sentences
 
-    token = composer_digest._TIMED.set(False)
+    token = composer_digest_sentences._TIMED.set(False)
     try:
         bad = []
         for key, phrase in _every_phrase():
-            text = composer_digest._Capitals(phrase).format(**_Slots({k: "thing" for k in re.findall(r"\{(\w+)\}", phrase)}))
+            text = composer_digest_sentences._Capitals(phrase).format(**_Slots({k: "thing" for k in re.findall(r"\{(\w+)\}", phrase)}))
             if re.search(r"\b(?:the last|on|of|from|by|at|written|dated|spanning)\s*[.,:;)]|,\s*[.,:;)]|\s{2}", text):
                 bad.append(f"{key}: {text}")
     finally:
-        composer_digest._TIMED.reset(token)
+        composer_digest_sentences._TIMED.reset(token)
     _bad(bad)
 
 
@@ -172,6 +172,7 @@ def test_a_glossary_answer_names_its_note_and_ends_whole():
     from datetime import date
 
     from tessellate.ai import composer_digest
+    from tessellate.ai import composer_digest_sentences
 
     notes = [{"id": i, "content": c, "created_at": f"2026-09-0{i}T10:00:00", "tags": [], "category": "Uni"}
              for i, c in ((1, "# HCI lecture\n\nHuman Computer Interaction (HCI) lecture 2."), (2, "HCI quiz Friday."))]
@@ -181,8 +182,8 @@ def test_a_glossary_answer_names_its_note_and_ends_whole():
     #: Asked about time, the clause comes back whole.
     from tessellate.ai import composer
 
-    composer_digest._set_timing("when did I write down what HCI is?")
-    out = composer_digest._Out()
+    composer_digest_sentences._set_timing("when did I write down what HCI is?")
+    out = composer_digest_sentences._Out()
     views = [composer.read_note(n, i) for i, n in enumerate(notes)]
     assert composer_digest._stands_for(out, "HCI", views, date(2026, 10, 11))
     timed = " ".join(out.lines + out.closing)
@@ -214,7 +215,7 @@ def test_a_one_line_sentence_is_quoted_never_worn_as_a_name(content, named):
 def test_a_question_about_how_a_taste_stands_now_hears_the_notes_age(question, current):
     """INBOX 1441 keeps the staleness line for a question about how current
     something is; "do I like golf?" asks how a taste stands now (gold 9)."""
-    from tessellate.ai import composer_digest
+    from tessellate.ai import composer_digest_sentences
 
-    composer_digest._set_timing(question)
-    assert composer_digest._CURRENT.get() is current
+    composer_digest_sentences._set_timing(question)
+    assert composer_digest_sentences._CURRENT.get() is current

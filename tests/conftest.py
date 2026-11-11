@@ -603,13 +603,15 @@ def _fresh_digest_context():
     test then read the leads an earlier one had used, so "a day ago" came out
     as another wording, depending on which tests shared the worker. Reset every
     one to its default per test."""
-    from tessellate.ai import composer_digest
+    from tessellate.ai import composer_digest, composer_digest_sentences
 
-    for var in vars(composer_digest).values():
-        if isinstance(var, ContextVar):
-            try:
-                var.set(Context().run(var.get))  # a fresh context answers with the variable's own default
-            except LookupError:
-                # A variable with no default has nothing an earlier test could
-                # have left behind, so there is nothing to reset.
-                continue
+    # The variables live in the layer module they were moved to (K24); each is reset where it is defined.
+    for module in (composer_digest, composer_digest_sentences):
+        for var in vars(module).values():
+            if isinstance(var, ContextVar):
+                try:
+                    var.set(Context().run(var.get))  # a fresh context answers with the variable's own default
+                except LookupError:
+                    # A variable with no default has nothing an earlier test could
+                    # have left behind, so there is nothing to reset.
+                    continue

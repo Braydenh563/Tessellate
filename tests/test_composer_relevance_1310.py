@@ -13,6 +13,7 @@ import re
 from datetime import date, datetime
 
 from tessellate.ai import composer_digest, composer_frame
+from tessellate.ai import composer_digest_sentences
 from tessellate.entry import manager
 from tests._app_js import with_pieces
 from tests import _js_scope
@@ -144,8 +145,8 @@ def test_the_owners_grammar_and_dates(monkeypatch):
 
 
 def test_gap_words_agree():
-    assert composer_digest._gap(10) == "a week"
-    assert all("one weeks" not in composer_digest._gap(d) for d in range(1, 400))
+    assert composer_digest_sentences._gap(10) == "a week"
+    assert all("one weeks" not in composer_digest_sentences._gap(d) for d in range(1, 400))
 
 
 def test_the_route_sends_a_reason_on_every_matching_record(ai_client, session):

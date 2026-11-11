@@ -78,6 +78,9 @@ from tessellate.api import (
     routes_vision,
     routes_resurface,
     routes_entries,
+    routes_entries_history,
+    routes_entries_links,
+    routes_entries_reevaluate,
     routes_entries_relations,
     routes_files,
     routes_files_ocr,
@@ -140,7 +143,7 @@ from tessellate.core import (
     validation_copy,
 )
 from tessellate.core.deps import init_app_state
-from tessellate.entry import manager
+from tessellate.entry import manager_purge
 
 # repo-root/frontend: three levels up from src/tessellate/api/app.py in a
 # source checkout. A PyInstaller build has no "three levels up": everything
@@ -593,7 +596,7 @@ def _purge_expired_bin_entries() -> None:
             config = deps.get_config()
             days = int(config.get_preference("recycle_bin_days", 30))
             with events.acting_as("system:recycle-bin"):
-                manager.purge_expired_deleted(session, days, uploads_dir=config.uploads_dir)
+                manager_purge.purge_expired_deleted(session, days, uploads_dir=config.uploads_dir)
                 # The bin's documents and reminders, on the same rule.
                 from tessellate.entry import bin as other_bin
 
@@ -919,36 +922,8 @@ def _code_for_status(status_code: int) -> str:
     return _STATUS_CODES.get(status_code, f"http_{status_code}")
 
 
-def _register_error_handlers(app: FastAPI) -> None:
-    """Make every failure this app returns machine-readable JSON.
-
-    Before this, an `HTTPException` route returned `{"detail": ...}`, fine
-    for the message, but the frontend had nothing to branch on except
-    parsing that string, and a route that let an exception escape uncaught
-    (the space-delete `IntegrityError`, found in the §40 audit) fell through
-    to Starlette's default `ServerErrorMiddleware`, which in production mode
-    answers with a bare `text/plain` "Internal Server Error", not JSON, no
-    correlation id, and (worse) sometimes a raw traceback if debug ever got
-    left on. Two handlers close both gaps:
-
-    - Every `HTTPException` (FastAPI's own class subclasses Starlette's, so
-      registering on the Starlette base catches both) gets `code` and `hint`
-      added alongside its existing `detail`, `detail` is left exactly as
-      the route set it, which is what keeps every existing
-      `response.json()["detail"] == "..."` assertion passing unchanged.
-      A route may already pass a *dict* detail (`{"detail": ..., "hint": ...,
-      "code": ...}`) to override any of the three explicitly; nothing in
-      this codebase does yet, but nothing has to change here the day one
-      does.
-    - Anything else, a bug, not a deliberately raised HTTP error, becomes
-      `500 {"detail": <a plain sentence>, "code": "internal", "ref": <uuid>}`.
-      The traceback goes to the log keyed by that same `ref` (`logger.exception`,
-      so it's a full traceback, not just the one-line summary `.warning` would
-      give) and never reaches the response body: a stack trace in an HTTP
-      response is a real information leak (paths, versions, sometimes a
-      query with a value in it) and this app has no other layer that would
-      have stopped it reaching the client.
-    """
+def _register_client_error_handlers(app: FastAPI) -> None:
+    """HTTP errors, requests that did not validate, and numbers too large for the store."""
     error_logger = logging.getLogger("tessellate.errors")
 
     @app.exception_handler(StarletteHTTPException)
@@ -971,6 +946,46 @@ def _register_error_handlers(app: FastAPI) -> None:
             content={"detail": detail, "code": code, "hint": hint},
             headers=getattr(exc, "headers", None),
         )
+
+    @app.exception_handler(RequestValidationError)
+    async def _validation_handler(_request, exc: RequestValidationError) -> JSONResponse:
+        """**One error shape for a request that did not validate** (audit
+        2026-10-05, ARCH-12). FastAPI's own answer was `{"detail": [{type,
+        loc, msg, input}]}`: no `code`, a list where every other error has a
+        sentence, and `input` echoed back, so `POST /auth/unlock` with a
+        password sent as a list returned the password in the response body.
+        Now the sentence the frontend already built from that list
+        (`plainHttpError`), `code: "invalid"`, and the fields, never the input.
+        """
+        detail, fields = validation_copy.describe(exc.errors())
+        return JSONResponse(
+            status_code=422,
+            content={"detail": detail, "code": "invalid", "hint": None, "fields": fields},
+        )
+
+    @app.exception_handler(OverflowError)
+    async def _overflow_handler(_request, exc: OverflowError) -> JSONResponse:
+        """A number beyond what the store holds (an id or offset above 2^63)
+        names nothing: a refused request, not a server fault (audit 1030 A41)."""
+        error_logger.info("a number was too large: %s", exc)
+        #: An id in the address that no row can have names nothing, the same
+        #: answer `/entries/-1` gives (audit 1031 BK9); only a number the
+        #: person typed into a field is a refused request.
+        raw = [str(v) for v in (_request.scope.get("path_params") or {}).values()]
+        if any(v.lstrip("-").isdigit() and abs(int(v)) >= 2**63 for v in raw):
+            return JSONResponse(
+                status_code=404,
+                content={"detail": "That could not be found.", "code": "not_found", "hint": None},
+            )
+        return JSONResponse(
+            status_code=422,
+            content={"detail": "That number is too large.", "code": "invalid", "hint": None, "fields": []},
+        )
+
+
+def _register_server_error_handlers(app: FastAPI) -> None:
+    """Out of space, a busy database, a slow model, and the catch-all 500 with a reference."""
+    error_logger = logging.getLogger("tessellate.errors")
 
     #: **Out of space is the one failure the person can actually fix, so it
     #: says so.** Measured before this: with the store unable to take another
@@ -1030,41 +1045,6 @@ def _register_error_handlers(app: FastAPI) -> None:
         error_logger.error("out of disk space", exc_info=exc)
         return JSONResponse(status_code=507, content=out_of_space_body())
 
-    @app.exception_handler(RequestValidationError)
-    async def _validation_handler(_request, exc: RequestValidationError) -> JSONResponse:
-        """**One error shape for a request that did not validate** (audit
-        2026-10-05, ARCH-12). FastAPI's own answer was `{"detail": [{type,
-        loc, msg, input}]}`: no `code`, a list where every other error has a
-        sentence, and `input` echoed back, so `POST /auth/unlock` with a
-        password sent as a list returned the password in the response body.
-        Now the sentence the frontend already built from that list
-        (`plainHttpError`), `code: "invalid"`, and the fields, never the input.
-        """
-        detail, fields = validation_copy.describe(exc.errors())
-        return JSONResponse(
-            status_code=422,
-            content={"detail": detail, "code": "invalid", "hint": None, "fields": fields},
-        )
-
-    @app.exception_handler(OverflowError)
-    async def _overflow_handler(_request, exc: OverflowError) -> JSONResponse:
-        """A number beyond what the store holds (an id or offset above 2^63)
-        names nothing: a refused request, not a server fault (audit 1030 A41)."""
-        error_logger.info("a number was too large: %s", exc)
-        #: An id in the address that no row can have names nothing, the same
-        #: answer `/entries/-1` gives (audit 1031 BK9); only a number the
-        #: person typed into a field is a refused request.
-        raw = [str(v) for v in (_request.scope.get("path_params") or {}).values()]
-        if any(v.lstrip("-").isdigit() and abs(int(v)) >= 2**63 for v in raw):
-            return JSONResponse(
-                status_code=404,
-                content={"detail": "That could not be found.", "code": "not_found", "hint": None},
-            )
-        return JSONResponse(
-            status_code=422,
-            content={"detail": "That number is too large.", "code": "invalid", "hint": None, "fields": []},
-        )
-
     @app.exception_handler(Exception)
     async def _unhandled_exception_handler(_request, exc: Exception) -> JSONResponse:
         if _is_out_of_space(exc):
@@ -1113,6 +1093,40 @@ def _register_error_handlers(app: FastAPI) -> None:
                 "ref": ref,
             },
         )
+
+
+def _register_error_handlers(app: FastAPI) -> None:
+    """Make every failure this app returns machine-readable JSON.
+
+    Before this, an `HTTPException` route returned `{"detail": ...}`, fine
+    for the message, but the frontend had nothing to branch on except
+    parsing that string, and a route that let an exception escape uncaught
+    (the space-delete `IntegrityError`, found in the §40 audit) fell through
+    to Starlette's default `ServerErrorMiddleware`, which in production mode
+    answers with a bare `text/plain` "Internal Server Error", not JSON, no
+    correlation id, and (worse) sometimes a raw traceback if debug ever got
+    left on. Two handlers close both gaps:
+
+    - Every `HTTPException` (FastAPI's own class subclasses Starlette's, so
+      registering on the Starlette base catches both) gets `code` and `hint`
+      added alongside its existing `detail`, `detail` is left exactly as
+      the route set it, which is what keeps every existing
+      `response.json()["detail"] == "..."` assertion passing unchanged.
+      A route may already pass a *dict* detail (`{"detail": ..., "hint": ...,
+      "code": ...}`) to override any of the three explicitly; nothing in
+      this codebase does yet, but nothing has to change here the day one
+      does.
+    - Anything else, a bug, not a deliberately raised HTTP error, becomes
+      `500 {"detail": <a plain sentence>, "code": "internal", "ref": <uuid>}`.
+      The traceback goes to the log keyed by that same `ref` (`logger.exception`,
+      so it's a full traceback, not just the one-line summary `.warning` would
+      give) and never reaches the response body: a stack trace in an HTTP
+      response is a real information leak (paths, versions, sometimes a
+      query with a value in it) and this app has no other layer that would
+      have stopped it reaching the client.
+    """
+    _register_client_error_handlers(app)
+    _register_server_error_handlers(app)
 
 
 #: **"The disk is full" is not something a person can act on; "your notebook
@@ -1482,6 +1496,9 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     # Before routes_entries: its static paths (`/tensions`, `/link-suggestions`) must be tried ahead
     # of `GET /{entry_id}`, which they used to precede inside that one router (K24).
     (routes_entries_relations.router, LOCKED),
+    (routes_entries_links.router, LOCKED),
+    (routes_entries_history.router, LOCKED),
+    (routes_entries_reevaluate.router, LOCKED),
     (routes_entries.router, LOCKED),
     (routes_mentions.router, LOCKED),
     (routes_meetings.router, LOCKED),
@@ -1592,6 +1609,69 @@ def _include_routers(app: FastAPI, locked: list) -> None:
     routes_diag.BUILD["hash"] = lambda: asset_hash(FRONTEND_DIR / "js" / "app.js")
 
 
+def _add_instance_routes(app: FastAPI) -> None:
+    """Which notebook this server is, and the token-guarded focus and shutdown a second launch uses."""
+
+    @app.get("/instance", tags=["system"])
+    def instance() -> dict[str, str]:
+        """Which notebook this server is serving, for a launch deciding
+        whether a Tessellate already on its port is *this* one (WORLD_CLASS 423
+        g). Open like `/health`: the asking process has no session. It carries
+        a hash of the resolved data directory (`instance_lock.data_dir_id`),
+        never the path."""
+        from tessellate.core import instance_lock
+
+        return {
+            "app": "Tessellate",
+            "data_dir_id": instance_lock.data_dir_id(deps.get_config().data_dir),
+        }
+
+    @app.post("/instance/focus", include_in_schema=False)
+    def instance_focus(x_instance_token: str | None = Header(default=None)) -> dict[str, bool]:
+        """A second launch asking this one to bring its window forward.
+
+        Open like `/health` because the asking process has no session, and
+        guarded by something better than one: the token in this server's own
+        `instance.lock` (core/instance_lock.py), which only someone who can
+        read the data directory has. Compared in constant time. `focused` is
+        False on a server started in browser mode, which has no window, and
+        the second launch then opens a window onto this server instead.
+        """
+        from tessellate.core import instance_lock
+
+        expected = instance_lock.current_token()
+        if not expected or not x_instance_token or not hmac.compare_digest(
+            expected.encode(), x_instance_token.encode()
+        ):
+            raise HTTPException(status_code=403, detail="Not this instance's token.")
+        return {"focused": instance_lock.focus()}
+
+    @app.post("/instance/shutdown", include_in_schema=False)
+    def instance_shutdown(
+        request: Request, x_instance_token: str | None = Header(default=None)
+    ) -> dict[str, bool]:
+        """Another copy's Settings, Running copies asking this one to quit
+        (INBOX 1641). Guarded like `/instance/focus` by the token in this
+        copy's `instance.lock` and per-user record (nothing a web page can
+        send or read), and loopback only. The token is the real guard: a
+        DNS-rebound page reaches the loopback port as a same-origin request,
+        but it can never read the token."""
+        from tessellate.api import routes_tasks
+        from tessellate.api.this_computer import is_another_device
+        from tessellate.core import instance_lock
+
+        expected = instance_lock.current_token()
+        if (
+            is_another_device(request)
+            or not expected
+            or not x_instance_token
+            or not hmac.compare_digest(expected.encode(), x_instance_token.encode())
+        ):
+            raise HTTPException(status_code=403, detail="Not this instance's token.")
+        routes_tasks.stop_process_soon()
+        return {"stopping": True}
+
+
 def _add_system_routes(app: FastAPI, locked: list) -> None:
     """The few routes the app answers itself: the schema, the static cache,
     health, the single-instance focus and the changelog. ARCH-22."""
@@ -1664,64 +1744,7 @@ def _add_system_routes(app: FastAPI, locked: list) -> None:
             "instance": instance_lock.current_instance_id(),
         }
 
-    @app.get("/instance", tags=["system"])
-    def instance() -> dict[str, str]:
-        """Which notebook this server is serving, for a launch deciding
-        whether a Tessellate already on its port is *this* one (WORLD_CLASS 423
-        g). Open like `/health`: the asking process has no session. It carries
-        a hash of the resolved data directory (`instance_lock.data_dir_id`),
-        never the path."""
-        from tessellate.core import instance_lock
-
-        return {
-            "app": "Tessellate",
-            "data_dir_id": instance_lock.data_dir_id(deps.get_config().data_dir),
-        }
-
-    @app.post("/instance/focus", include_in_schema=False)
-    def instance_focus(x_instance_token: str | None = Header(default=None)) -> dict[str, bool]:
-        """A second launch asking this one to bring its window forward.
-
-        Open like `/health` because the asking process has no session, and
-        guarded by something better than one: the token in this server's own
-        `instance.lock` (core/instance_lock.py), which only someone who can
-        read the data directory has. Compared in constant time. `focused` is
-        False on a server started in browser mode, which has no window, and
-        the second launch then opens a window onto this server instead.
-        """
-        from tessellate.core import instance_lock
-
-        expected = instance_lock.current_token()
-        if not expected or not x_instance_token or not hmac.compare_digest(
-            expected.encode(), x_instance_token.encode()
-        ):
-            raise HTTPException(status_code=403, detail="Not this instance's token.")
-        return {"focused": instance_lock.focus()}
-
-    @app.post("/instance/shutdown", include_in_schema=False)
-    def instance_shutdown(
-        request: Request, x_instance_token: str | None = Header(default=None)
-    ) -> dict[str, bool]:
-        """Another copy's Settings, Running copies asking this one to quit
-        (INBOX 1641). Guarded like `/instance/focus` by the token in this
-        copy's `instance.lock` and per-user record (nothing a web page can
-        send or read), and loopback only. The token is the real guard: a
-        DNS-rebound page reaches the loopback port as a same-origin request,
-        but it can never read the token."""
-        from tessellate.api import routes_tasks
-        from tessellate.api.this_computer import is_another_device
-        from tessellate.core import instance_lock
-
-        expected = instance_lock.current_token()
-        if (
-            is_another_device(request)
-            or not expected
-            or not x_instance_token
-            or not hmac.compare_digest(expected.encode(), x_instance_token.encode())
-        ):
-            raise HTTPException(status_code=403, detail="Not this instance's token.")
-        routes_tasks.stop_process_soon()
-        return {"stopping": True}
+    _add_instance_routes(app)
 
     # GET /update/check, /update/releases, /update/source-status, and
     # POST /update/apply all live in routes_update.py now, this endpoint

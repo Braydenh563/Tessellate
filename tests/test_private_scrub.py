@@ -17,7 +17,7 @@ import zipfile
 import pytest
 
 from tessellate.core import deps, vault
-from tessellate.entry import manager
+from tessellate.entry import manager_private
 
 SECRET = "# Zebrasecret plan\n\nMy bank PIN is 4417, the spare key is at Quokkatown station."
 TOKENS = (b"quokkatown", b"zebrasecret")
@@ -87,7 +87,7 @@ def test_a_backup_strips_what_an_older_version_left_behind(client, session):
     from tessellate.core.database import Entry
 
     entry = session.get(Entry, entry_id)
-    assert manager.set_private(session, entry, True)
+    assert manager_private.set_private(session, entry, True)
     session.commit()  # no scrub: what an older version did
     made = client.post("/backups")
     assert made.status_code == 201

@@ -69,8 +69,8 @@ def test_item1_no_unrelated_reminder_offer(ask, q):
     ("when was the assassination", False),
 ])
 def test_item1_a_reminder_is_offered_only_for_a_question_about_the_task(asked, on):
-    from tessellate.ai import composer_digest
-    assert composer_digest._on_topic("read chapter 4", asked) is on
+    from tessellate.ai import composer_digest_lines
+    assert composer_digest_lines._on_topic("read chapter 4", asked) is on
 
 
 @pytest.mark.parametrize("q", ["when is my exam", "what date is my exam", "when do I have my exam", "when's the exam"])

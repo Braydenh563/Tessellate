@@ -24,6 +24,7 @@ ins for what they call.
 
 from __future__ import annotations
 
+from tests._help_text import help_more_text
 import json
 import re
 import shutil
@@ -221,7 +222,7 @@ def test_the_dismiss_recipe_is_in_the_design_system():
 
 
 def test_the_guide_says_the_banners_can_be_closed():
-    text = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    text = help_more_text()
     assert "close button" in text and "new session" in text
 
 

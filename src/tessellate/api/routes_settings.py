@@ -38,6 +38,7 @@ from tessellate.core.config import default_preferences
 from tessellate.core.database import AuditLog, Entry, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry import manager
+from tessellate.entry import manager_purge
 from tessellate.repo import categories as categories_repo
 from tessellate.repo import relations
 from tessellate.search import searxng_manager, websearch
@@ -800,7 +801,8 @@ class _FreshConfig:
         return self._prefs.get(key, default)
 
 
-def _preferences_from(config) -> dict:
+def _prefs_notebook(config) -> dict:
+    """Filing, search, writing, dates and the account's display settings."""
     return {
         "recycle_bin_days": config.get_preference("recycle_bin_days", 30),
         "ai_first_filing": config.get_preference("ai_first_filing", True),
@@ -850,6 +852,12 @@ def _preferences_from(config) -> dict:
         # was actually in effect, which reads as "my setting didn't save."
         "session_idle_ttl_minutes": config.get_preference("session_idle_ttl_minutes", 720),
         "private_space_idle_minutes": config.get_preference("private_space_idle_minutes", 10),
+    }
+
+
+def _prefs_profile_and_ai(config) -> dict:
+    """The profile, personas, dashboard, tools and run budget."""
+    return {
         "user_profile": config.get_preference("user_profile", ""),
         "profile_enabled": config.get_preference("profile_enabled", False),
         "custom_templates": config.get_preference("custom_templates", []),
@@ -873,6 +881,12 @@ def _preferences_from(config) -> dict:
         "run_budget_seconds": config.get_preference(
             "run_budget_seconds", run_budget.DEFAULT_SECONDS
         ),
+    }
+
+
+def _prefs_web_updates_voice(config) -> dict:
+    """Web search, updates, semantic search, voice and saved searches."""
+    return {
         "web_search_enabled": config.get_preference("web_search_enabled", False),
         "web_store_enabled": config.get_preference("web_store_enabled", True),
         "update_check_enabled": config.get_preference("update_check_enabled", False),
@@ -901,6 +915,12 @@ def _preferences_from(config) -> dict:
         "voice_vocabulary": config.get_preference("voice_vocabulary", ""),
         "saved_searches": config.get_preference("saved_searches", []),
         "saved_finds": config.get_preference("saved_finds", []),
+    }
+
+
+def _prefs_interface_and_desktop(config) -> dict:
+    """What the interface keeps, the autonomous loop and the desktop shell."""
+    return {
         # Echoed back so the browser can tell whether the zone it just
         # detected is already the stored one, and skip a pointless write on
         # every startup.
@@ -967,6 +987,15 @@ def _preferences_from(config) -> dict:
         "avatar_style": _clean_avatar_style(config.get_preference("avatar_style", {})),
         "status_bar_hidden": config.get_preference("status_bar_hidden", []),
         "status_bar_clock": config.get_preference("status_bar_clock", False),
+    }
+
+
+def _preferences_from(config) -> dict:
+    return {
+        **_prefs_notebook(config),
+        **_prefs_profile_and_ai(config),
+        **_prefs_web_updates_voice(config),
+        **_prefs_interface_and_desktop(config),
     }
 
 
@@ -1878,7 +1907,7 @@ def _not_private_events(query):
     Two ways an event is about a private note: the note is still there and
     private (looked up by id), or it was purged, and its id matches nothing
     any more. A purge seals the events it leaves behind with a `private` flag
-    in their payload (`manager.seal_private_events`), and that flag is the
+    in their payload (`manager_purge.seal_private_events`), and that flag is the
     second test. `is_(True)` rather than `== True`, so an event with no
     payload at all (SQL null) is kept rather than dropped by a null compare.
     """
@@ -2098,7 +2127,7 @@ def clear_audit_log(
 def empty_recycle_bin(session: Session = Depends(get_session)) -> dict:
     from tessellate.entry import bin as other_bin
 
-    removed = manager.empty_recycle_bin(
+    removed = manager_purge.empty_recycle_bin(
         session, uploads_dir=deps.get_config().uploads_dir
     )
     #: The bin's documents and reminders go with its notes (5 item 10).

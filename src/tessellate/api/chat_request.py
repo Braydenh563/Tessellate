@@ -24,7 +24,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from typing import Annotated, Literal
 
-from tessellate.ai import captioning, composer_digest, composer_talk, consent, composer_frame, composer_open, librarian, memory, presets, questions, skills, tools, vocative
+from tessellate.ai import captioning, composer_digest_sentences, composer_talk, consent, composer_frame, composer_open, librarian, memory, presets, questions, skills, tools, vocative
 from tessellate.api import bounds
 from tessellate.api.chat_attach import _attached_boards, _attached_documents, _attached_notes
 from tessellate.api.schemas import EntryOut
@@ -391,14 +391,14 @@ def _category_note_ids(session: Session, name: str) -> list[int]:
 def _first_more_is_this(body: ChatRequest) -> None:
     """"Tell me more" as the first thing said with a note open is about that
     note (audit 1030 Z54), read as "summarise this"."""
-    if body.open_note_id and not body.history and composer_digest.more_of_this(body.question):
+    if body.open_note_id and not body.history and composer_digest_sentences.more_of_this(body.question):
         body.question, body.raw_question = "summarise this", None
 
 
 def _attached_only(body: ChatRequest) -> None:
     """"What is this about" with a note attached is that note alone, never a
     list of the newest (INBOX 1461)."""
-    if not body.scope and composer_digest.about_this(body.question):
+    if not body.scope and composer_digest_sentences.about_this(body.question):
         body.attached_notes_only = True
 
 
@@ -510,7 +510,7 @@ def _apply_open(session: Session, body: ChatRequest) -> None:
     if _named_note(session, body):
         return
     _first_more_is_this(body)
-    if composer_digest.about_this(body.question):
+    if composer_digest_sentences.about_this(body.question):
         if _apply_open_this(session, body):
             return
     elif body.open_note_id and composer_open.kind(body.question):
@@ -522,7 +522,7 @@ def _apply_open(session: Session, body: ChatRequest) -> None:
             body.note_ids = [body.open_note_id]
     else:
         names = categories_repo.names(session)
-        named = composer_digest.named_category(body.question, names)
+        named = composer_digest_sentences.named_category(body.question, names)
         if named:
             body.note_ids = _category_note_ids(session, named)
     if body.note_ids:
@@ -547,7 +547,7 @@ def _apply_open_this(session: Session, body: ChatRequest) -> bool:
 def _nothing_open(body: ChatRequest) -> bool:
     """"Summarise this" with nothing open: said plainly, not answered with
     the newest notes."""
-    return composer_digest.about_this(body.question) and not (body.note_ids or body.document_ids or body.board_ids)
+    return composer_digest_sentences.about_this(body.question) and not (body.note_ids or body.document_ids or body.board_ids)
 
 
 def _resolve_mode(requested: str | None) -> str:

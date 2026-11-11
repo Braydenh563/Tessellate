@@ -239,7 +239,8 @@ def test_history_is_the_presenting_mode_with_its_own_bar() -> None:
     assert 'classList.add("wb-presenting")' in js
     assert '}, true);' in js and "stopImmediatePropagation" in js
     assert "function wbHistGuard(on)" in js and "/^\\/whiteboard\\//" in js
-    assert '"/js/whiteboard-history.js"' in (root / "frontend" / "js" / "app.js").read_text(encoding="utf-8")
+    #: Registered in the `boards` bundle (lazy-entries.js) since D22, 2026-11-11; it was `library`'s in app.js.
+    assert '"/js/whiteboard-history.js"' in (root / "frontend" / "js" / "lazy-entries.js").read_text(encoding="utf-8")
 
 
 def test_a_reused_id_brings_no_other_boards_history(client):

@@ -13,7 +13,7 @@ import contextvars
 import re
 from datetime import date
 
-from tessellate.ai import composer_compose, composer_lines, composer_tables, grounding, recognise as rec
+from tessellate.ai import composer_compose, composer_lines, composer_tables, grounding, recognise as rec, recognise_windows
 from tessellate.ai.composer_answer import _Answer, _SESSION
 from tessellate.ai.composer_ask import _holds, _stem, user_today
 from tessellate.ai.composer_intent import Plan
@@ -80,7 +80,7 @@ def window_said(phrase: str, window: tuple | None = None) -> str:
     October", "in the last 7 days"; "last week" and "today" as they are):
     `recognise.adverbial`, the one reader of it; said with its capitals (audit
     1030 Z45). `window` (first day, last day) lets "last Christmas" name its year."""
-    return rec.with_holiday_year(rec.proper_days(rec.adverbial(phrase)), window[0] if window else None)
+    return recognise_windows.with_holiday_year(rec.proper_days(rec.adverbial(phrase)), window[0] if window else None)
 
 
 def _as_typed(word: str, question: str) -> str:

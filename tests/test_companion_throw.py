@@ -12,6 +12,7 @@ the desktop and the phone, is `scratchpad/ui-sweeps/throw.js`.
 
 from __future__ import annotations
 
+from tests._help_text import help_more_text
 import json
 import re
 import shutil
@@ -26,7 +27,7 @@ from tests.test_companion_landing_1683k import landing_js
 ROOT = Path(__file__).resolve().parents[1]
 #: The companion's code: the throw itself moved to the lazy companion-throw.js (INBOX 1301 D6).
 AV = "\n".join((ROOT / "frontend" / "js" / n).read_text(encoding="utf-8") for n in ("avatars.js", "companion-throw.js"))
-HELP = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+HELP = help_more_text()
 
 
 def _fn(name: str) -> str:

@@ -1,7 +1,7 @@
 """Private spaces: membership is the privacy (INBOX 1727).
 
 Everything in a private space is sealed as a private note is: a note or a
-board through `manager.set_private`, the one crypto path, and a document
+board through `manager_private.set_private`, the one crypto path, and a document
 through the same key by `database.SealedText`, whose hook encrypts every
 write to a private row. `sealed_by_space` records that the space did it, so
 "Make it ordinary" on the way out unseals only those; a note private before
@@ -101,8 +101,8 @@ def starts_private(ask: bool | None = None) -> bool:
 def seal_new(session: Session, entry: Entry, sealed: bool) -> None:
     """Seal a note just created (before its first commit) when it starts private."""
     if sealed:
-        manager = importlib.import_module("tessellate.entry.manager")
-        manager.set_private(session, entry, True)
+        manager_private = importlib.import_module("tessellate.entry.manager_private")
+        manager_private.set_private(session, entry, True)
         session.commit()
 
 
@@ -111,8 +111,8 @@ def seal_entry(session: Session, entry: Entry) -> bool:
     _key()
     sealed = False
     if not entry.is_private:
-        manager = importlib.import_module("tessellate.entry.manager")
-        if not manager.set_private(session, entry, True):
+        manager_private = importlib.import_module("tessellate.entry.manager_private")
+        if not manager_private.set_private(session, entry, True):
             raise VaultLocked("unlock the private spaces first")
         entry.sealed_by_space = True
         sealed = True
@@ -159,8 +159,8 @@ def unseal_entry(session: Session, entry: Entry) -> bool:
     if not (entry.is_private and entry.sealed_by_space):
         return False
     _key()
-    manager = importlib.import_module("tessellate.entry.manager")
-    if not manager.set_private(session, entry, False):
+    manager_private = importlib.import_module("tessellate.entry.manager_private")
+    if not manager_private.set_private(session, entry, False):
         raise VaultLocked("unlock the private spaces first")
     entry.sealed_by_space = False
     if entry.is_board:

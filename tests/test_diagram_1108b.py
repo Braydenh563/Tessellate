@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from tests._help_text import help_more_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -45,5 +46,5 @@ def test_the_shortcuts_sheet_and_guide_list_the_new_keys():
     style = _js("diagram-style.js")
     for needle in ("Shift + Enter", "Alt + Enter", "Ctrl + D", "Ctrl + F, /", "Double press on empty picture"):
         assert needle in style, needle
-    topics = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    topics = help_more_text()
     assert "Shift+Enter adds a joined box" in topics and "Ctrl+F or / finds by name" in topics

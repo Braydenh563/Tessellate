@@ -28,6 +28,7 @@ from pathlib import Path
 import pytest
 
 from tessellate.ai import composer_digest, guide_intent, help_chat
+from tessellate.ai import composer_digest_lines
 from tessellate.ai import composer_empty
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -57,11 +58,11 @@ def test_a_dated_line_reports_what_its_note_said_then():
 
 
 def test_the_reported_speech_has_eight_reporting_verbs_and_backshifts():
-    assert len(set(composer_digest._REPORTS)) >= 8
-    said = {composer_digest._reported("you're stuck in silver", i) for i in range(8)}
+    assert len(set(composer_digest_lines._REPORTS)) >= 8
+    said = {composer_digest_lines._reported("you're stuck in silver", i) for i in range(8)}
     assert len(said) == 8 and all(s.endswith("you were stuck in silver") for s in said), said
-    assert composer_digest._reported("you think it's too small", 0).endswith("you thought it's too small")
-    assert composer_digest._reported("you bought a headset", 0) == "you bought a headset"
+    assert composer_digest_lines._reported("you think it's too small", 0).endswith("you thought it's too small")
+    assert composer_digest_lines._reported("you bought a headset", 0) == "you bought a headset"
 
 
 def _corpus() -> list[str]:

@@ -7,6 +7,7 @@ button that opens the manual over Settings; the dashboard quick-access catalogue
 holds `reveal:manual`. The Guide's text names its More actions menu.
 """
 
+from tests._help_text import help_more_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -29,6 +30,6 @@ def test_the_manual_topic_in_settings_help_opens_the_manual_itself():
 
 
 def test_the_guide_names_the_menu_that_holds_the_manual():
-    text = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    text = help_more_text()
     assert "Guide's More actions menu" in text
     assert "Guide's ... menu" not in text

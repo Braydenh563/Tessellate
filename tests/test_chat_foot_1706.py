@@ -59,9 +59,9 @@ def test_composed_support_counts_picture_readings_as_before():
 
 def test_live_and_reopened_turns_count_sources_the_same_way():
     js = app_js_text()
-    assert js.count("composed: Boolean(meta?.composed)") == 1
+    assert js.count("composed: Boolean(t.meta?.composed)") == 1
     assert "composed: Boolean(message.by?.composed)" in js
-    assert "support: meta?.composed ? groundingSupport : null" in js
+    assert "support: t.meta?.composed ? t.groundingSupport : null" in js
 
 
 def test_the_foot_buttons_are_quiet_text_buttons_not_suggestion_chips():

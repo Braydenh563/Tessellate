@@ -120,9 +120,9 @@ def test_a_turn_that_asks_for_the_web_goes_to_the_web_first():
 def test_cadence_takes_the_bare_unit():
     """"roughly every a week" (owner, 2026-10-12)."""
     import re
-    from tessellate.ai import composer_digest as d
+    from tessellate.ai import composer_digest_sentences
     for days in (1, 7, 30):
-        every = re.sub(r"^(?:about |nearly )?an? ", "", d._gap(days))
+        every = re.sub(r"^(?:about |nearly )?an? ", "", composer_digest_sentences._gap(days))
         assert not every.startswith(("a ", "an ", "about a")), every
 
 

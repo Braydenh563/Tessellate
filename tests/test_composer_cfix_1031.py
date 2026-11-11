@@ -277,9 +277,9 @@ def test_a_note_name_no_title_holds_falls_to_the_search(notebook, question):
     ("Snowed all morning.", "it snowed all morning."),
 ])
 def test_a_weather_verb_takes_it_not_you(line, said):
-    from tessellate.ai import composer_digest
+    from tessellate.ai import composer_digest_sentences
 
-    assert composer_digest._second_person(line) == said
+    assert composer_digest_sentences._second_person(line) == said
 
 
 @pytest.mark.parametrize("question", [
@@ -696,11 +696,11 @@ def test_a_quoted_line_keeps_the_note_s_own_words_and_gives_the_date_outside(not
 
 
 def test_a_pinned_weekday_leaves_the_quotation_and_is_said_after_it():
-    from tessellate.ai import composer_digest
+    from tessellate.ai import composer_digest_lines
 
-    assert composer_digest._unpinned("Tuesday 5 km easy. Saturday 3 October long run") == (
+    assert composer_digest_lines._unpinned("Tuesday 5 km easy. Saturday 3 October long run") == (
         "Tuesday 5 km easy. Saturday long run", ", the Saturday being 3 October")
-    assert composer_digest._unpinned("Bake on Sunday") == ("Bake on Sunday", "")
+    assert composer_digest_lines._unpinned("Bake on Sunday") == ("Bake on Sunday", "")
 
 
 @pytest.mark.parametrize("question", ["when did I last run", "when did I run", "what day did I last run"])
@@ -719,9 +719,9 @@ def test_a_day_is_said_once_in_a_when_answer(notebook, question):
 def test_a_fact_that_names_the_day_is_not_given_it_again(text, said):
     from datetime import date
 
-    from tessellate.ai import composer_digest
+    from tessellate.ai import composer_digest_sentences
 
-    assert composer_digest._says_day(text, date(2026, 10, 25), date(2026, 10, 31)) is said
+    assert composer_digest_sentences._says_day(text, date(2026, 10, 25), date(2026, 10, 31)) is said
 
 
 # C20. A derived line is said only of what the question asked about.
@@ -889,10 +889,10 @@ def test_a_streak_note_gives_the_day_it_began_not_the_day_it_was_counted(noteboo
 
 
 def test_a_start_word_is_not_a_subject_of_a_when_ask():
-    from tessellate.ai import composer_digest as d
+    from tessellate.ai import composer_digest_lines
 
-    assert "start" not in d._subject("when did I start learning Spanish")
-    assert "start" in d._subject("what do I know about the start")
+    assert "start" not in composer_digest_lines._subject("when did I start learning Spanish")
+    assert "start" in composer_digest_lines._subject("what do I know about the start")
 
 
 # "How far in total" sums, in every wording of a total.

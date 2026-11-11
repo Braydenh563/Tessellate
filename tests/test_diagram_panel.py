@@ -7,6 +7,7 @@ there does; "Add block" and "Connect" as worded buttons in a foot that stays whe
 
 from __future__ import annotations
 
+from tests._help_text import help_more_text
 import re
 from pathlib import Path
 
@@ -15,7 +16,7 @@ JS = ROOT / "frontend" / "js"
 STEPS = (JS / "diagram-steps.js").read_text(encoding="utf-8")
 BUILDER = (JS / "diagram-builder.js").read_text(encoding="utf-8")
 CSS = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
-HELP = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+HELP = help_more_text()
 
 
 def _rule(selector: str) -> str:

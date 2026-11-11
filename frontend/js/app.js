@@ -1629,9 +1629,8 @@ const LAZY_MODULES = {
   //: Tidy, the reviews with no AI (INBOX 691): tidy.js's header.
   tidy: ["/css/tidy-lazy.css", "/js/tidy.js"],
   semanticNotice: ["/css/semantic-notice-lazy.css", "/js/semantic-notice.js"],
-  //: The order the `<script>` tags had, kept: every cross-file call between these three is inside a function rather than at parse time, so it is not load-bearing, but it is the order the three files' own headers describe. documents-code.js and documents-prose.js were split out of documents.js (2026-09-24) and go *before* it, and that position is load-bearing: their own top level reads nothing from documents.js, while documents.js's top-level wiring names their functions, and each file here is followed by a microtask checkpoint before the next one runs. See their headers. The other documents-*.js files (DC13) go before it likewise, as does whiteboard-map.js before whiteboard.js.
+  //: The order the `<script>` tags had, kept: every cross-file call between these three is inside a function rather than at parse time, so it is not load-bearing, but it is the order the three files' own headers describe. documents-code.js and documents-prose.js were split out of documents.js (2026-09-24) and go *before* it, and that position is load-bearing: their own top level reads nothing from documents.js, while documents.js's top-level wiring names their functions, and each file here is followed by a microtask checkpoint before the next one runs. See their headers. The other documents-*.js files (DC13) go before it likewise. The whiteboard files and d3 are the `boards` bundle (lazy-entries.js), which lists these files first.
   library: [
-    "/vendor/d3.v7.min.js", //: Before whiteboard.js, whose top level calls `d3.zoom()`.
     "/css/library-lazy.css", //: The styles only this bundle's surfaces draw, out of the boot budget.
     "/js/undo-store.js", //: First: both editors and the list read it.
     "/js/pick-row.js", //: The Attach picker's row, drawn synchronously by the board pickers.
@@ -1661,16 +1660,6 @@ const LAZY_MODULES = {
     "/js/documents-callouts.js", //: After documents.js: its top level binds through `docListen`.
     "/js/documents-tabs.js", //: After documents.js: the open code files as a strip; documents.js calls it only once a document opens.
     "/js/margin-reader.js",
-    "/js/whiteboard-map.js",
-    "/js/whiteboard-map-more.js", //: After whiteboard-map.js: the Gantt view and the audio note, calling its date words and style writer at run time only.
-    "/js/whiteboard.js",
-    "/js/whiteboard-commands.js",
-    "/js/whiteboard-library.js",
-    //: The New board dialog and every template's picture (INBOX 715).
-    "/js/whiteboard-templates.js",
-    "/js/whiteboard-format.js",
-    "/js/whiteboard-interchange.js",
-    "/js/whiteboard-history.js",
   ],
 };
 
@@ -1901,10 +1890,10 @@ const LAZY_ENTRY_POINTS = {
     "setTracePanelOpen",
     "syncGraphPopupSave",
   ],
-  library: ["applyDocGutter", "applyMarkdown", "closeDocAiPanel", "createDocument", "createNewBoard", "expandNoteIntoDocument", "initDocSidebarTabs", "loadDocuments", "markDocDirty", "mountDocToolbarControlsFor", "mountGutterFor", "openDocDictionary", "openDocTemplateDialog", "openDocument", "renderDocStorage", "saveDocument", "showDocSidebarSection", "toggleDocFindBar", "wbOpenBoardSearch", "wbShowBoardsLanding", "wbToggleNavigator", "wireMarkdownToolbar", "wireMdFormatShortcuts", "openWhiteboardBoard", "offerCreateUndo", "offerCreatedDocsUndo", "jumpToDocLine", "renderLibraryBoardsGallery", "renameDocumentWithUndo", "archiveDocumentWithUndo", "deleteDocumentWithUndo"],
+  library: ["applyDocGutter", "applyMarkdown", "closeDocAiPanel", "createDocument", "expandNoteIntoDocument", "initDocSidebarTabs", "loadDocuments", "markDocDirty", "mountDocToolbarControlsFor", "mountGutterFor", "openDocDictionary", "openDocTemplateDialog", "openDocument", "renderDocStorage", "saveDocument", "showDocSidebarSection", "toggleDocFindBar", "wireMarkdownToolbar", "wireMdFormatShortcuts", "offerCreateUndo", "offerCreatedDocsUndo", "jumpToDocLine", "renameDocumentWithUndo", "archiveDocumentWithUndo", "deleteDocumentWithUndo"],
   //: The Library's own list (audit FE-03(c)): library.js alone. A call from
-  //: it into a document or a board is one of `library`'s stand-ins above,
-  //: which fetches the editors on first use.
+  //: it into a document is one of `library`'s stand-ins above and into a board one of `boards`' (lazy-entries.js),
+  //: which fetch the editors on first use.
   libraryList: ["closeBinnedReader", "flashLibraryItem", "focusLibraryFile"],
 };
 

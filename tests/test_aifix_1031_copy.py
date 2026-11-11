@@ -47,7 +47,7 @@ def test_hr11_the_download_toast_has_no_stray_comma():
 
 def test_hr9_a_stop_before_the_first_word_writes_what_happened_into_the_bubble():
     src = _text("chat-attach.js")
-    assert "if (stopped && !answerRaw && !toolEvents.length)" in src
+    assert "if (t.stopped && !answerRaw && !toolEvents.length)" in src
     assert "Stopped before an answer." in src
 
 

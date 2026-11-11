@@ -10,6 +10,7 @@ Measured on 20 synthetic clips, see HISTORY "Brief 87 step 2".
 
 from __future__ import annotations
 
+from tests._help_text import help_more_text
 from pathlib import Path
 
 from tessellate.ai import voice
@@ -106,10 +107,9 @@ def test_settings_has_the_three_controls_and_help_names_them():
     js = app_js_text() + Path("frontend/js/settings-packages.js").read_text(encoding="utf-8")
     for key in ("voice_skip_silence", "voice_language", "voice_vocabulary"):
         assert key in js
-    from tessellate.ai import help_topics_more
 
     import re
 
-    text = re.sub(r'"\s*\n\s*"', "", Path(help_topics_more.__file__).read_text(encoding="utf-8"))
+    text = re.sub(r'"\s*\n\s*"', "", help_more_text())
     assert "Skip silence before transcribing" in text
     assert "Words to expect" in text

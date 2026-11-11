@@ -151,7 +151,7 @@ _LEAD_IN = "|".join(re.escape(w) for w in sorted(LEAD_INS, key=len, reverse=True
 _LEAD_IN_BARE = "|".join(re.escape(w) for w in sorted(LEAD_INS_BARE, key=len, reverse=True))
 
 
-#: Compiled on first use, for the cold-import budget (`recognise._window_words`).
+#: Compiled on first use, for the cold-import budget (`recognise_windows._window_words`).
 @functools.cache
 def _discourse() -> re.Pattern[str]:
     return re.compile(

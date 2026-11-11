@@ -82,5 +82,5 @@ def test_a_wrapped_code_card_breaks_long_lines_and_does_not_scroll() -> None:
 def test_the_recipe_index_names_the_card_head_and_the_guide_says_where_it_is() -> None:
     design = _read(ROOT / "docs" / "DESIGN.md")
     assert "wrapToggle" in design and "tests/test_wrap_toggle.py" in design
-    help_text = _read(ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py")
+    help_text = _read(ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py") + _read(ROOT / "src" / "tessellate" / "ai" / "help_topics_more_mid.py")
     assert '"id": "wrap-lines"' in help_text and "Wrap lines button" in help_text

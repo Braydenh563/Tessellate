@@ -38,8 +38,8 @@ from tessellate.ai.model_manager import ModelManager
 from tessellate.ai.ollama_client import OllamaClient
 
 
-def _clock_hint() -> str:
-    """The sentence that gives the model the weekday, the week ahead and the minute-precise clock."""
+def _now_hint() -> str:
+    """The date line of the agent system prompt: weekday, the week ahead, and the clock last."""
     # The model needs "now" to turn "in 10 minutes" into a real time.
     # The user's wall clock. This line is what "remind me in 10 minutes"
     # is computed from, so resolving it against the server's zone instead
@@ -98,56 +98,8 @@ def _clock_hint() -> str:
     return now_hint
 
 
-def build_agent_messages(
-    question: str,
-    notes: list[dict],
-    style: str = "friendly",
-    profile: str = "",
-    history: list[dict] | None = None,
-    persona_prompt: str | None = None,
-    budget: "context.ContextBudget | None" = None,
-    mode: str | None = None,
-    images: list[str] | None = None,
-) -> list[dict]:
-    """Like librarian.build_messages, but the system prompt allows
-    acting, and each note shows its id so tools can target it.
-
-    `budget` trims the notes and the history to what the model can actually
-    hold. Optional so every existing caller keeps working untrimmed, the
-    agent loop passes one, having measured the window first.
-    """
-    style_hint = librarian.STYLE_HINTS.get(style, librarian.STYLE_HINTS["friendly"])
-    profile_hint = f" About the user: {profile.strip()}" if profile.strip() else ""
-    persona = (persona_prompt or librarian.DEFAULT_PERSONA).strip()
-    now_hint = _clock_hint()
-    # **The clock goes last, and that ordering is the whole point.** A
-    # prefix cache (Ollama's, llama.cpp's, every backend that has one) keeps
-    # the tokens *before the first difference* and re-reads everything after
-    # it. Rounding to the minute above stops the clock changing between the
-    # rounds of one turn; putting it at the end of the message stops the
-    # minute it does change from invalidating anything ahead of it. Persona,
-    # grounding and the tools guide, by far the largest part of this prompt,
-    # and the part that is identical turn after turn, now sit in front of
-    # every volatile byte, so they are re-read from cache instead of
-    # re-processed. Asked for directly: "keep the system prompt + persona
-    # byte-identical turn to turn so the cache is reused."
-    #
-    # Everything between them is stable *within* a conversation: the style
-    # hint, the profile and the length hint only change when the user changes
-    # a setting or the mode, which is a new prefix either way.
-    messages = [
-        {
-            "role": "system",
-            "content": f"{persona} {AGENT_GROUNDING} "
-            f"{tools_guide(budget.window_tokens if budget else None)} "
-            f"{style_hint}{profile_hint}{librarian.length_hint(mode)}{now_hint}",
-        }
-    ]
-    past = librarian.history_messages(history)
-    if budget is not None:
-        past = context.fit_history(past, budget.history_chars)
-    messages.extend(past)
-
+def _notes_section(notes: list[dict], budget: "context.ContextBudget | None") -> str:
+    """The `My notes:` block of the agent user message, trimmed to the budget and honest about what was cut."""
     dropped_notes = 0
     if budget is not None:
         notes, dropped_notes = context.fit_notes(
@@ -196,6 +148,60 @@ def build_agent_messages(
             f"{'' if dropped_notes == 1 else 's'} did not fit: use search_notes "
             f"or get_note if you need them.)\n\n"
         )
+    return body
+
+
+def build_agent_messages(
+    question: str,
+    notes: list[dict],
+    style: str = "friendly",
+    profile: str = "",
+    history: list[dict] | None = None,
+    persona_prompt: str | None = None,
+    budget: "context.ContextBudget | None" = None,
+    mode: str | None = None,
+    images: list[str] | None = None,
+) -> list[dict]:
+    """Like librarian.build_messages, but the system prompt allows
+    acting, and each note shows its id so tools can target it.
+
+    `budget` trims the notes and the history to what the model can actually
+    hold. Optional so every existing caller keeps working untrimmed, the
+    agent loop passes one, having measured the window first.
+    """
+    style_hint = librarian.STYLE_HINTS.get(style, librarian.STYLE_HINTS["friendly"])
+    profile_hint = f" About the user: {profile.strip()}" if profile.strip() else ""
+    persona = (persona_prompt or librarian.DEFAULT_PERSONA).strip()
+    now_hint = _now_hint()
+    # **The clock goes last, and that ordering is the whole point.** A
+    # prefix cache (Ollama's, llama.cpp's, every backend that has one) keeps
+    # the tokens *before the first difference* and re-reads everything after
+    # it. Rounding to the minute above stops the clock changing between the
+    # rounds of one turn; putting it at the end of the message stops the
+    # minute it does change from invalidating anything ahead of it. Persona,
+    # grounding and the tools guide, by far the largest part of this prompt,
+    # and the part that is identical turn after turn, now sit in front of
+    # every volatile byte, so they are re-read from cache instead of
+    # re-processed. Asked for directly: "keep the system prompt + persona
+    # byte-identical turn to turn so the cache is reused."
+    #
+    # Everything between them is stable *within* a conversation: the style
+    # hint, the profile and the length hint only change when the user changes
+    # a setting or the mode, which is a new prefix either way.
+    messages = [
+        {
+            "role": "system",
+            "content": f"{persona} {AGENT_GROUNDING} "
+            f"{tools_guide(budget.window_tokens if budget else None)} "
+            f"{style_hint}{profile_hint}{librarian.length_hint(mode)}{now_hint}",
+        }
+    ]
+    past = librarian.history_messages(history)
+    if budget is not None:
+        past = context.fit_history(past, budget.history_chars)
+    messages.extend(past)
+
+    body = _notes_section(notes, budget)
     user_message = {
         "role": "user",
         "content": f"{librarian._app_help(question)}{body}My request: {question}",

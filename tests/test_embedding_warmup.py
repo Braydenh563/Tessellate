@@ -219,7 +219,7 @@ def test_why_says_the_search_read_words_only():
 def test_through_the_route_a_cold_model_answers_at_once_and_says_so(client, session, monkeypatch):
     import json
 
-    from tessellate.ai import composer_digest
+    from tessellate.ai import composer_digest_sentences
     from tessellate.core import deps
 
     manager.create_entry(session, "Went to the gym after work.", category_name="Fitness")
@@ -234,6 +234,6 @@ def test_through_the_route_a_cold_model_answers_at_once_and_says_so(client, sess
         events = [json.loads(line) for line in response.iter_lines() if line.strip()]
     assert time.perf_counter() - started < 5
     text = "".join(e.get("delta", "") for e in events if e.get("type") == "answer")
-    assert composer_digest.PHRASES["meaning_loading"] in text
+    assert composer_digest_sentences.PHRASES["meaning_loading"] in text
     why = next(e for e in events if e.get("type") == "why")
     assert any("still loading" in line["text"] for line in why["lines"])

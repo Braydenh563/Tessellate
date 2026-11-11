@@ -137,7 +137,7 @@ def audit_vague_links(
         if not source or not target:
             continue
         # A note can be marked private *after* it was linked to another one, 
-        # `manager.set_private` drops the note's embedding and resolved dates
+        # `manager_private.set_private` drops the note's embedding and resolved dates
         # for exactly this reason, but leaves the link itself in place, so
         # this WHERE clause can still hand back a link touching a private
         # note. `source.content`/`target.content` below is ciphertext at rest

@@ -15,7 +15,7 @@ from tests._app_js import app_js_text
 
 def test_chat_stream_routes_grounding_live_into_the_markers():
     text = app_js_text()
-    assert "onGroundingLive: (event) => {\n        groundingSentences = event.sentences" in text
+    assert "onGroundingLive: (event) => {\n        t.groundingSentences = event.sentences" in text
     assert "paintHooks.afterAnswerPaint = placeLiveCitations" in text
 
 

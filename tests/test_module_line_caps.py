@@ -42,6 +42,17 @@ CAPS = {
     "ai/tools/tool_turn.py": 346,
     "ai/tools/tool_web.py": 157,
     "ai/tools/tool_write.py": 539,
+    #: The overlay engine's constants and its method groups moved out whole to engine_*.py (audit K24): 4,845 lines before. `Engine` inherits the four mixins.
+    "core/overlay/engine.py": 2910,
+    "core/overlay/engine_consts.py": 600,
+    "core/overlay/engine_flight.py": 490,
+    "core/overlay/engine_frames.py": 308,
+    "core/overlay/engine_input.py": 325,
+    "core/overlay/engine_roam.py": 426,
+    #: The digest's words and sentence rules, then its facts and lines, moved out whole in two layers (audit K24): 6,230 lines before.
+    "ai/composer_digest.py": 2341,
+    "ai/composer_digest_lines.py": 2729,
+    "ai/composer_digest_sentences.py": 1291,
 }
 #: How far under its cap a file may fall before the cap must come down.
 SLACK = 50

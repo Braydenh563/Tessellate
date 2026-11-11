@@ -237,9 +237,9 @@ def restore_space(
         _seal_restored(session, sid)
     session.commit()
     if body.space.is_private:
-        from tessellate.entry import manager
+        from tessellate.entry import manager_private
 
-        manager.scrub_private_leftovers(session)
+        manager_private.scrub_private_leftovers(session)
     return space_repo.find(session, sid)
 
 
@@ -564,7 +564,8 @@ def move_notes_to_space(space_id: str, body: MoveNotesBody, session: Session = D
 
     if space_id == "all":
         raise HTTPException(400, "Pick one space to move them to.")
-    from tessellate.entry import manager, private_space
+    from tessellate.entry import private_space
+    from tessellate.entry import manager_private
 
     target = deps.get_or_404(session, Space, space_id, "That space could not be found.")
     # A locked private space's notes are out of this read, so only the target can be locked here.
@@ -576,5 +577,5 @@ def move_notes_to_space(space_id: str, body: MoveNotesBody, session: Session = D
         private_space.after_leaving(session, leaving, keep_private=body.keep_private)
         session.commit()
     if target.is_private and moved.get("moved"):
-        manager.scrub_private_leftovers(session)
+        manager_private.scrub_private_leftovers(session)
     return moved

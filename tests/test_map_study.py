@@ -8,6 +8,7 @@ pure, so node runs it here; the run itself is driven in the browser by
 
 from __future__ import annotations
 
+from tests._help_text import help_more_text
 import json
 import shutil
 import subprocess
@@ -90,7 +91,7 @@ def test_a_map_of_bare_topics_with_one_note_has_one_question():
 def test_the_study_bar_and_the_guide_know_the_note_answer():
     mapjs = MAP_JS.read_text(encoding="utf-8")
     assert "function wbMapStudyShown(q)" in mapjs and "wbStudy.revealed.add(step.id)" in mapjs
-    guide = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    guide = help_more_text()
     assert "its note is the" in guide
     #: The caption is set before the frame is fitted, and takes its own line when cut.
     board = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
