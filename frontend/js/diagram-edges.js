@@ -72,9 +72,10 @@
       const id = current();
       const at = id && place().find((b) => b.id === id);
       const only = conn?.side || (armed && armedSide);
-      for (const handle of handles) handle.classList.toggle("hidden", !at || Boolean(editing) || Boolean(only && only !== handle.dataset.side));
-      if (!at) return;
-      //: Shown first, measured once, then placed: a read between writes would lay the page out four times.
+      const show = () => { for (const handle of handles) handle.classList.toggle("hidden", !at || Boolean(editing) || Boolean(only && only !== handle.dataset.side)); };
+      if (!at) return show();
+      //: Measured once, then shown and placed: a read after the class writes laid the page out for them (scrollWidth: 156 ms of 22
+      //: calls at 4x CPU), and the handles (absolute, in the scrolled area) are no part of the area they are kept inside.
       //: A handle is never wider than half the block it leaves, so a zoomed-out block or a phone's small one is not hidden under four of them (1679 m); 14 px is the least that still shows its arrow.
       const coarse = matchMedia("(pointer: coarse)").matches;
       const full = coarse ? 44 : 24;
@@ -86,6 +87,7 @@
       const [ox0, oy0] = [shown.left + fig.clientLeft - fig.scrollLeft, shown.top + fig.clientTop - fig.scrollTop];
       const [x0, y0] = [Math.max(0, seen.left - ox0), Math.max(0, seen.top - oy0)];
       const [x1, y1] = [Math.min(wide, seen.right - ox0), Math.min(tall, seen.bottom - oy0)];
+      show();
       for (const handle of handles) {
         handle.style.inlineSize = handle.style.blockSize = `${size}px`;
         const [x, y] = anchor(at, handle.dataset.side);
@@ -187,11 +189,20 @@
       const live = next.edge && (S.m.edges.includes(next.edge) ? next.edge : S.m.edges.find((e) => e.from === next.edge.from && e.to === next.edge.to));
       if (next.node ? renameNode(next.node) : live && renameEdge(live)) want.shift();
     };
-    const settle = () => (ask(), showHandle());
-    (fig.onpaint ||= []).push(settle);
-    (fig.onzoom ||= []).push(settle);
-    fig.addEventListener("load", settle, true);
-    for (const type of ["click", "keyup", "focusin"]) S.root.addEventListener(type, () => queueMicrotask(showHandle));
+    //: The picture it last placed the handle by: a zoom of that one follows at once, a new one waits for the overlay's task (`afterpaint`).
+    let placed = null;
+    const settle = () => ((placed = img()), ask(), showHandle());
+    //: After a paint: in the overlay's task (diagram-overlay.js `task`), once its boxes are drawn and layout is settled; `sole()` reads
+    //: the picked box and `showHandle` four boxes, which in the paint itself laid the page out (scrollWidth: 188 ms over 30 adds at 4x).
+    (fig.afterpaint ||= []).push(settle);
+    (fig.onzoom ||= []).push(() => img() === placed && settle());
+    //: A pick changes on a click, a key or a focus move; the handle follows in a task after a frame, not in the event (it read
+    //: scrollWidth and the picture's box right after the key's own writes: 232 ms over 30 adds at 4x CPU), once per frame.
+    let moving = 0;
+    const follow = () => {
+      if (!moving) moving = 1, afterFrames(() => setTimeout(() => ((moving = 0), showHandle())), 1);
+    };
+    for (const type of ["click", "keyup", "focusin"]) S.root.addEventListener(type, follow);
 
     fig.addEventListener("pointermove", (event) => {
       if (event.pointerType === "touch" || event.buttons || conn || event.target.closest?.(".dgm-handle")) return;

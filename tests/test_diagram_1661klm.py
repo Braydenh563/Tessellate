@@ -84,7 +84,9 @@ def test_a_new_picked_box_is_scrolled_into_view_but_not_on_the_first_picture():
     draw = overlay[overlay.index("const draw = () => {") :][:1400]
     assert "born.push(b.id)" in overlay and 'sync(found, boxes, "node", "", born)' in draw
     assert "const fresh = seen && born.find((id) => ids.has(id));" in draw
-    assert 'scrollIntoView({ block: "nearest", inline: "nearest" })' in draw
+    # The scroll moved to the task a frame after the draw (INBOX 1766): the draw owes it, `second` does it with the boxes laid out.
+    assert "owed = boxes.get(fresh)" in draw
+    assert 'owed.scrollIntoView({ block: "nearest", inline: "nearest" })' in overlay
 
 
 # --- S3 (m): both side panels fold to a rail

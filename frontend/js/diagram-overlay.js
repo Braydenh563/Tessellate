@@ -80,6 +80,8 @@
     const groups = new Map();
     let hover = "";
     let seen = false;
+    let owed = null;
+    let drawn = null;
 
     //: The picked ids: the primary block and every block of the pick, as the list marks them.
     const chosen = () => {
@@ -110,7 +112,8 @@
       }
       //: A picked group shows the same ring, drawn on its border (the CSS keeps its body clear).
       for (const [id, box] of groups) box.classList.toggle("on", ids.has(`g:${id}`));
-      reveal();
+      //: The scroll into view is a box read; it waits for the task after a frame (`soon`) rather than run in the press or the paint.
+      if ((S.sel || "") !== revealed) soon(false);
     };
     S.mark = () => mark();
     //: One element per box of a list, kept by id; a group's lies under the nodes' (styled lower).
@@ -135,6 +138,7 @@
     };
     const draw = () => {
       const img = fig.querySelector(".md-mermaid-img");
+      drawn = img;
       //: A note or the empty hint replaced the figure's children: the layer comes back with the next picture.
       if (layer.parentElement !== fig) fig.append(layer);
       //: Two boxes read once, before the first write (it read the picture's twice and the layer's twice).
@@ -150,14 +154,48 @@
       const ids = chosen();
       const fresh = seen && born.find((id) => ids.has(id));
       if (found.length) seen = true;
-      if (fresh) boxes.get(fresh).scrollIntoView({ block: "nearest", inline: "nearest" });
+      //: Scrolled by the second task (`owed`): the boxes just written would otherwise be laid out here for it.
+      if (fresh) owed = boxes.get(fresh);
     };
 
-    //: After every draw (including one that leaves no picture), and from the zoom (diagram-view.js) after a zoom, a fit or a resize of the pane.
-    (fig.onpaint ||= []).push(draw);
-    (fig.onzoom ||= []).push(draw);
-    //: An image that decodes after its width was set has its height only now.
-    fig.addEventListener("load", draw, true);
+    //: **A paint asks, it does not draw** (the paint listeners ran inside the mermaid callback, right after the new picture was
+    //: written, so their first box read laid the page out there: scrollIntoView 457 ms, the picture and layer boxes 32 ms over 30
+    //: adds at 4x CPU). Two tasks, each after a drawn frame: the first draws (boxes read once, then written); the second, with the
+    //: boxes laid out by that frame, scrolls what needs it and runs what reads them (`fig.afterpaint`: the edge handle, the find
+    //: ring). Reads in the same task as the draw's writes laid the page out again (scrollWidth 222 ms, max 130). `queued` stays set
+    //: through both so their own `mark` does not ask again; a paint that lands meanwhile is run after.
+    let queued = 0;
+    let again = false;
+    const second = (full) => {
+      try {
+        if (fig.isConnected) {
+          if (owed) owed.scrollIntoView({ block: "nearest", inline: "nearest" });
+          owed = null;
+          reveal();
+          if (full) for (const after of fig.afterpaint || []) after();
+        }
+      } finally {
+        queued = 0;
+        if (again) soon();
+      }
+    };
+    const task = () => {
+      const full = again;
+      again = false;
+      if (full && fig.isConnected) draw();
+      afterFrames(() => setTimeout(() => second(full)), 1);
+    };
+    const soon = (full = true) => {
+      again ||= full;
+      if (!queued) queued = 1, afterFrames(() => setTimeout(task), 1);
+    };
+    //: After every draw (including one that leaves no picture) the task above. From the zoom (diagram-view.js) after a zoom, a fit
+    //: or a resize of the pane the draw itself, so the boxes stay on a picture that is moving; the view's own paint also calls
+    //: it, for a picture it has not met (`drawn`), and that one waits for the task like any paint.
+    (fig.onpaint ||= []).push(soon);
+    (fig.onzoom ||= []).push(() => (fig.querySelector(".md-mermaid-img") === drawn ? draw() : soon()));
+    //: An image that decodes after its width was set has its height only now (a new picture's, so in the task too).
+    fig.addEventListener("load", () => soon(), true);
     //: A pick changes on a press, a key or a focus move inside the pane (the list, its bar); any other change comes with a redraw.
     for (const type of ["click", "keyup", "focusin"]) S.root.addEventListener(type, mark);
     //: Hover outlines the box under the pointer; a touch has no hover.

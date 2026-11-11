@@ -214,7 +214,8 @@
       const ids = new Set(hits.map((k) => ops.split(k)[1]));
       for (const box of S.fig.querySelectorAll(".dgm-overlay .dgm-box")) box.classList.toggle("found", ids.has(box.dataset.node || box.dataset.group));
     };
-    (S.fig.onpaint ||= []).push(ring);
+    //: After a paint, in the overlay's task: its boxes are redrawn there, so a ring set in the paint itself missed the new ones.
+    (S.fig.afterpaint ||= []).push(ring);
     const scan = () => {
       const needle = field.value.trim().toLowerCase();
       hits = needle ? keys().filter((k) => (ops.node(S.m, ops.split(k)[1])?.text ?? ops.group(S.m, ops.split(k)[1])?.title ?? "").toLowerCase().includes(needle)) : [];
