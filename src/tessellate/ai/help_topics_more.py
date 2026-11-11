@@ -3038,7 +3038,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "tags-categories", "filing", "suggested-tags", "tag-manager", "manage-categories", "tidy",
     )),
     ("Asking Atlas", (
-        "ask-chat", "answers-from-notes", "chat-controls", "chat-context", "context-window", "chat-private", "chat-attach-cards", "chat-model-picker", "chat-list", "queued-messages", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
+        "ask-chat", "chat-typos", "answers-from-notes", "chat-controls", "chat-context", "context-window", "chat-private", "chat-attach-cards", "chat-model-picker", "chat-list", "queued-messages", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
@@ -3666,6 +3666,25 @@ MORE_TOPICS.append({
     ),
 })
 TOPIC_META["tasks"] = {"title": "Tasks in Chat", "path": "Chat tab"}
+
+
+#: A slip read in context (INBOX 1745): `ai/typo_context.py`.
+MORE_TOPICS.append({
+    "id": "chat-typos",
+    "title": "How Chat reads a slip",
+    "badge": {"label": "Chat", "tab": "chat"},
+    "keywords": (
+        "did you mean", "misread my word", "wrong word typo", "form for from", "skull for skill", "chat read my typo",
+    ),
+    "body": (
+        "Chat reads a slip by the sentence around it, the words your notebook uses (note titles, tags, people and "
+        "lists) and what the last answer was about, so \"notes form last week\" is from and \"fill in the form\" "
+        "stays form. When two readings stay close it answers the likelier and offers the other as a Did you mean "
+        "chip; press it to ask again with that word. A word that is one of your own titles or tags is left as it is. "
+        "A numeric date like 11/09 follows your locale, and a fraction is a rating only beside a rating word."
+    ),
+})
+TOPIC_META["chat-typos"] = {"title": "How Chat reads a slip", "path": "Chat tab"}
 
 
 #: Autocorrect outside the editor (Brief 94, INBOX 850): autocorrect.js.

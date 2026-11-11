@@ -84,7 +84,7 @@ from __future__ import annotations
 import re
 from datetime import date, datetime
 
-from tessellate.ai import act_registry, composer_ack, composer_brief, composer_links, composer_names, composer_numbers, composer_small, composer_open, composer_tables, composer_versus, grounding, phrasing, question_noise, spelling, utilities
+from tessellate.ai import act_registry, composer_ack, composer_brief, composer_links, composer_names, composer_numbers, composer_small, composer_open, composer_tables, composer_versus, grounding, phrasing, question_noise, spelling, typo_context, utilities
 from tessellate.ai import recognise as rec
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_ask import _ASKS_FIRST, _KNOWN, _SHAPE_RULES, _guessing_recent, _holds, _stem, _still_recent, _words, asks_written_when, classify, compare_sides, rephrase, subject_terms, user_now, user_today, when_terms
@@ -332,6 +332,7 @@ def compose(
     known = _LEARNED.set(learned)
     words = _note_words(notes)
     owned = _KNOWN.set(words)
+    minded = typo_context.CTX.set(typo_context.of_notes(notes, names, previous, history=dialogue.history if dialogue else ()))
     current = _ASKS_NOW.set(asks_now(question))
     try:
         result = _answer_turn(question, notes, today=today, recent=recent, embed=embed, said=said, previous=previous,
@@ -344,6 +345,7 @@ def compose(
         _REGISTER.reset(registered)
         _LEARNED.reset(known)
         _KNOWN.reset(owned)
+        typo_context.CTX.reset(minded)
         _ASKS_NOW.reset(current)
     #: A how-to the notes have nothing on that plainly names the app ("how do
     #: I connect a model") is the help register's (O1): it was answered 'No
@@ -395,12 +397,7 @@ def _read_in_dialogue(question: str, dialogue: Dialogue, *, salt: str, turn: int
     return question, salt, turn, said, prefer, previous
 
 
-def _note_words(notes: list[dict]) -> frozenset:
-    """The words of the notes the question is asked of, lower case."""
-    found: set[str] = set()
-    for note in notes or []:
-        found.update(re.findall(r"[^\W\d_]{3,}", f"{note.get('title') or ''} {note.get('content') or ''}".lower()))
-    return frozenset(found)
+_note_words = typo_context.note_words
 
 
 def _acknowledged(result: dict, asked: str, *, voice: str, seed: str, history: list[dict], previous: str = "",

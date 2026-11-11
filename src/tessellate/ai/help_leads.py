@@ -38,6 +38,7 @@ TOPIC_LEADS: dict[str, str] = {
     "quick-add": "Type a date, time or tag in plain words and see how it was read before saving.",
     "editor-offers": "Small offers while you write, such as a reminder for a date or a fixed sum.",
     "autocorrect": "Fixes clear typos and missing apostrophes as you finish each word.",
+    "chat-typos": "Chat reads a slip by its sentence and your notes, and offers the other reading.",
     "share-note": "Three ways to give someone a note, none of them through a server.",
     "capture-anywhere": "Set a system key that takes a note while you are in any other app.",
     "note-outbox": "A note saved while the server is down waits on this device and sends itself later.",

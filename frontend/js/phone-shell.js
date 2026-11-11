@@ -588,7 +588,8 @@ initHeaderHeightToken();
 function initNotesSubtabHeightToken() {
   const strip = $("notes-subtabs");
   const page = $("tab-notes");
-  if (!strip || !page || typeof ResizeObserver === "undefined") return;
+  if (!strip || !page || typeof ResizeObserver === "undefined" || strip.dataset.sized) return;
+  strip.dataset.sized = "1";
   const write = () => {
     const box = strip.getBoundingClientRect().height;
     //: The strip's own bottom margin counts: it is the gap the strip keeps
@@ -614,7 +615,9 @@ function initNotesSubtabHeightToken() {
   new ResizeObserver(write).observe(strip);
 }
 
-initNotesSubtabHeightToken();
+//: **Not at boot** (INBOX 1741: the hidden strip's first report cost 35 to 40ms at 4x on the
+//: Dashboard): the Notes tab's reveal starts it (`revealTab`), and a start on Notes starts it here.
+if (!$("tab-notes")?.classList.contains("hidden")) initNotesSubtabHeightToken();
 
 // --- the tab bar docks to the bottom on a phone -------------------------------
 // UI_MODERNISATION_PLAN.md Phase 9, band 4.

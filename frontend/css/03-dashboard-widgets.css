@@ -1920,6 +1920,9 @@ header#top-bar select,
   overflow-x: auto;
   overflow-y: hidden;
   padding-bottom: 0.25rem;
+  /* Opens at today with no script: a right-to-left scroll box starts at its right edge, and the
+     weeks are appended newest first (renderHeatmapWidget), so they still read oldest to newest. */
+  direction: rtl;
   /* Below the fold on a first visit: its 373 cells are skipped until it nears
      the window (INBOX 1508: 47% of the Dashboard reveal's elements). Already a
      scroll box, so nothing it paints is clipped that was not. */

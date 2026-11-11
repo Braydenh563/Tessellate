@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1] / "src" / "tessellate"
 #: Lines per file when the split landed. Lower a number when the file
 #: shrinks; never raise one.
 CAPS = {
-    "ai/composer.py": 962,
+    "ai/composer.py": 958,
     "api/routes_chat.py": 2465,
     #: The routes and models moved out whole to the wb_*.py layers; this module only includes them (gods-2).
     "api/routes_whiteboard.py": 64,

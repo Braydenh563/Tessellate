@@ -2196,6 +2196,39 @@ from tessellate.api.routes_files_ocr import (  # noqa: E402,F401
     _stored_page_reads,
 )
 
+#: The names above are this module's on purpose (callers, `rf.<name>` and the
+#: tests' patches reach them here), so they are listed as its exports;
+#: nothing star-imports this module.
+__all__ = [
+    "router",
+    "LOCAL_READERS",
+    "READERS",
+    "OcrPageReadOut",
+    "_checked_engine",
+    "_checked_reader",
+    "_describe_page",
+    "_engine_choice",
+    "_forget_region_misses",
+    "_forget_regions",
+    "_local_region_text",
+    "_local_text",
+    "_page_read_count_map",
+    "_page_read_key",
+    "_page_read_text_map",
+    "_pdf_regions_for",
+    "_read_page",
+    "_reader_model",
+    "_region_lock",
+    "_regions_for",
+    "_reindex_file",
+    "_remember_page_caption",
+    "_remember_page_read",
+    "_set_edited_reading",
+    "_stored_page_reads",
+    "_REGION_LOCKS",
+    "_REGION_MISSES",
+]
+
 from tessellate.api import routes_files_ocr as _routes_files_ocr  # noqa: E402
 
 _routes_files_ocr.bind(sys.modules[__name__])

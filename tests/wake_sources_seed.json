@@ -39,7 +39,7 @@
  "dash-boards.js::resize-observer": 1,
  "dashboard.js::interval": 1,
  "dashboard.js::mutation-observer": 1,
- "dashboard.js::raf": 3,
+ "dashboard.js::raf": 2,
  "dashboard.js::resize-observer": 1,
  "diagram-view.js::raf": 1,
  "diagram-view.js::resize-observer": 1,
