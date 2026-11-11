@@ -382,6 +382,57 @@ class Extra:
     short_label: str = ""
 
 
+#: **Spelling packs (D30, owner decision 2026-11-11).** A Hunspell word list for another
+#: language, fetched on an Install click and never vendored: these lists are MPL, LGPL or GPL,
+#: and the repo takes AGPL or MIT code only. Each is the npm tarball of the `dictionary-<lang>`
+#: package (wooorm/dictionaries, a version never re-published, so the hash cannot move); only
+#: the two Hunspell files and the licence text are kept, as `<lang>.aff`, `<lang>.dic` and
+#: `LICENSE.txt`. The page loads one lazily, in the Harper worker, when a document's `lang`
+#: matches (`frontend/js/documents-spell.js`). **To add a language:** take its package's
+#: tarball URL and `dist.size` from registry.npmjs.org, write its `sha256sum`, and name the
+#: language in `core/spellpacks.py`. Rows: (lang, name, package version, licence, sha256, bytes).
+_SPELL_PACKS = (
+    ("fr", "French", "3.0.0", "MPL-2.0", "b20ab69249881bc36b1dcdfbfd2df226660a7cecc95f2cf122714008b491c78e", 342850),
+    ("de", "German", "3.0.0", "GPL-2.0 OR GPL-3.0", "50b5640b33c276a49cc15f426f2d31ee5faf397f4a27e92b1678e77f43f8d14a", 341743),
+    ("es", "Spanish", "4.0.0", "GPL-3.0 OR LGPL-3.0 OR MPL-1.1", "b46986527b23ff1a578d601db7f1e6dc80cc36b728fdcb6044b5212e12e202d5", 236981),
+)
+
+
+def _spell_pack_extras() -> tuple[Extra, ...]:
+    return tuple(
+        Extra(
+            id=f"spell-{lang}",
+            label=f"{name} spelling (Hunspell)",
+            short_label=f"{name} spelling",
+            enables=f"Spelling checks for documents written in {name} (a document whose language "
+            "is set to it), from a Hunspell dictionary kept and read on this computer. "
+            "Nothing you write leaves it.",
+            packages=(f"dictionary-{lang} {version}",),
+            module="",
+            size=f"~{round(size / 1000)} KB",
+            caveat="Checks spelling only; grammar checks stay English."
+            + (" A long compound word the list lacks is flagged: add it to your dictionary." if lang == "de" else ""),
+            kind="download",
+            version=version,
+            licence=licence,
+            downloads=(
+                Download(
+                    url=f"https://registry.npmjs.org/dictionary-{lang}/-/dictionary-{lang}-{version}.tgz",
+                    sha256=sha,
+                    size=size,
+                    unpack="tar",
+                    members=(
+                        ("package/index.aff", f"{lang}.aff"),
+                        ("package/index.dic", f"{lang}.dic"),
+                        ("package/license", "LICENSE.txt"),
+                    ),
+                ),
+            ),
+        )
+        for lang, name, version, licence, sha, size in _SPELL_PACKS
+    )
+
+
 #: The allowlist. Adding an entry here is the only way to make something
 #: installable, which is the point.
 EXTRAS: tuple[Extra, ...] = (
@@ -586,6 +637,7 @@ EXTRAS: tuple[Extra, ...] = (
             ),
         ),
     ),
+    *_spell_pack_extras(),
     #: **needle (INBOX 302).** The owner, 2026-09-24: "Yes, as an extra"
     #: (opt-in, telemetry forced off). A 121M-parameter tool-calling model
     #: from Cactus Compute: `ai/needle_provider.py` drives its engine through

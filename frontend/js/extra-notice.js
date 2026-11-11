@@ -27,6 +27,9 @@
     rapidocr: "RapidOCR is the quickest way to read text in images.",
     pyodide: "Running Python files needs the Python runner.",
     languagetool: "Grammar checks need the LanguageTool package.",
+    "spell-fr": "Spelling for French needs the French spelling pack.",
+    "spell-de": "Spelling for German needs the German spelling pack.",
+    "spell-es": "Spelling for Spanish needs the Spanish spelling pack.",
     needle: "Local tool calls need the Needle package.",
     translate: "Translating offline needs the translate package.",
     localllm: "A built-in model needs the local model package.",
@@ -154,6 +157,7 @@
       if (phase) {
         install.disabled = true;
         await extraNoticeUndo(id, phase);
+        window.dispatchEvent(new CustomEvent("tessellate:extras-changed", { detail: { id } }));
         //: A removal is over here; a stopped install repaints from its own wait.
         if (phase === "installed") pressed.delete(id);
         return phase === "installed" ? extraNoticeCheck(host, id, true, needed) : undefined;
@@ -171,6 +175,8 @@
       const after = await extraNoticeState(id, true);
       if (id === "searxng" || !after.missing) pressed.set(id, "installed");
       else pressed.delete(id);
+      //: Tells a surface that read the package's state (the spelling packs) to ask again.
+      window.dispatchEvent(new CustomEvent("tessellate:extras-changed", { detail: { id } }));
       extraNoticeCheck(host, id, true, needed);
     });
     host.append(text, install);

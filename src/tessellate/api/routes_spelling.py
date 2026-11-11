@@ -15,11 +15,12 @@ private note.
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from tessellate.core import languagetool
+from tessellate.core import languagetool, spellpacks
 from tessellate.core.deps import get_session
 from tessellate.repo.spelling import own_words
 
@@ -50,3 +51,21 @@ def post_languagetool(body: LanguageToolBody) -> dict:
         return {"available": False, "matches": []}
     matches = languagetool.check(body.text, body.language)
     return {"available": matches is not None, "matches": matches or []}
+
+
+@router.get("/spellpacks")
+def get_spell_packs() -> dict:
+    """The spelling packs for other languages and whether each is installed (D30). A disk look;
+    installing one is `POST /extras/spell-<lang>/install`."""
+    return {"packs": spellpacks.listing()}
+
+
+@router.get("/spellpacks/{lang}/{kind}")
+def get_spell_pack_file(lang: str, kind: str) -> FileResponse:
+    """One Hunspell file of an installed pack, for the page to hand to the spelling worker (a
+    worker's own fetch carries no token). Only a known language and `aff` or `dic`, so the path
+    never comes from the request."""
+    path = spellpacks.files(lang, kind)
+    if path is None:
+        raise HTTPException(status_code=404, detail="That spelling pack is not installed.")
+    return FileResponse(path, media_type="text/plain; charset=utf-8")
