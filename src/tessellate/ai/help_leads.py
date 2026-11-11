@@ -26,7 +26,6 @@ TOPIC_LEADS: dict[str, str] = {
     "find-anything": "One box that searches notes, files, documents, chats and actions as you type.",
     "find-a-place": "Ask where a setting or feature is and get a link that takes you there.",
     "search": "Search every kind of thing at once, and narrow it by tag, kind or date.",
-    "address-names": "Open the app at a short name like notes.localhost, or at your own domain.",
     "addresses": "Bookmark, reload or share a link to any view and land in the same place.",
     "settings-overview": "How Settings is grouped, so you can find the section you need.",
     "settings-reset": "Put a changed setting back to its default, or carry your settings elsewhere.",
