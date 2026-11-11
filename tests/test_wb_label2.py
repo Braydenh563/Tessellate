@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 from tests import _js_scope
-from tests._app_js import frontend_text
+from tests._app_js import frontend_text, script_file_text
 
 ROOT = Path(__file__).resolve().parents[1]
 WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
@@ -105,12 +105,12 @@ def test_find_and_replace_all_read_the_second_label_too():
 
 
 def test_the_panel_the_rows_and_the_help_agree():
-    fmt = frontend_text("whiteboard-format.js")
+    fmt = script_file_text("whiteboard-format.js")
     assert '"tip", "loop", "label2", "label2-t"],' in fmt
     assert 'case "label2": return typeof s?.label2 === "string" ? s.label2 : "";' in fmt
     assert '["wb-fmt-label2", "label2", "label2"], ["wb-fmt-label2-t", "label2-t", "label2-t"]' in fmt
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert 'data-fmt="label2"' in html and 'id="wb-fmt-label2"' in html and 'data-fmt="label2-t"' in html and 'id="wb-fmt-label2-t"' in html
     assert "<b>Second label, Second label along</b>" in html
-    src = frontend_text("whiteboard-draw-more.js")
+    src = script_file_text("whiteboard-draw-more.js")
     assert _js_scope.is_wrapped(src) and _js_scope.global_names(src) == set()

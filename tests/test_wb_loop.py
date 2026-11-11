@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 from tests import _js_scope
-from tests._app_js import frontend_text
+from tests._app_js import frontend_text, script_file_text
 
 ROOT = Path(__file__).resolve().parents[1]
 WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
@@ -107,9 +107,9 @@ def test_the_board_the_panel_the_command_and_the_help_agree():
     assert 'shape?.route === "loop"' in path and "wbFmtState.drawMore.loopSegs(shape.side, sPt, tPt)" in path
     assert '["er", "iso", "loop"].includes(wbLinkShape(parsed)?.route)' in _function("wbRenderWaypointHandles")
     assert '["er", "iso", "loop"].includes(shape?.route)' in _function("wbWaypointAddSpots")
-    fmt = frontend_text("whiteboard-format.js")
+    fmt = script_file_text("whiteboard-format.js")
     assert '"tip", "loop", "label2"' in fmt and "wbFmtState.drawMore?.syncLoopRow(takes, sharing);" in fmt
-    commands = frontend_text("whiteboard-commands.js")
+    commands = script_file_text("whiteboard-commands.js")
     assert 'id: "loop"' in commands and "wbFmtState.drawMore.addLoop()" in commands and 'needs: "clone"' in commands.split('id: "loop"')[1].split("\n")[0]
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     block = html[html.index('id="wb-fmt-loop"') :]
@@ -117,5 +117,5 @@ def test_the_board_the_panel_the_command_and_the_help_agree():
     for side in ("top", "right", "bottom", "left"):
         assert f'value="{side}"' in block
     assert "<b>Loop side</b>" in html
-    src = frontend_text("whiteboard-draw-more.js")
+    src = script_file_text("whiteboard-draw-more.js")
     assert _js_scope.is_wrapped(src) and _js_scope.global_names(src) == set()

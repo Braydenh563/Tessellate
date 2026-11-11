@@ -13,7 +13,7 @@ import subprocess
 
 import pytest
 
-from tests._app_js import frontend_text
+from tests._app_js import frontend_text, script_file_text
 
 
 def _function(source: str, name: str) -> str:
@@ -147,5 +147,5 @@ def test_the_panel_has_every_row_with_help_and_a_script_to_wire_them():
 def test_the_file_adds_no_name_to_the_shared_scope():
     from tests import _js_scope
 
-    assert _js_scope.is_wrapped(frontend_text("whiteboard-label.js"))
-    assert _js_scope.global_names(frontend_text("whiteboard-label.js")) == set()
+    assert _js_scope.is_wrapped(script_file_text("whiteboard-label.js"))
+    assert _js_scope.global_names(script_file_text("whiteboard-label.js")) == set()

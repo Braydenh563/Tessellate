@@ -12,7 +12,7 @@ import subprocess
 import pytest
 
 from tests import _js_scope
-from tests._app_js import frontend_text
+from tests._app_js import frontend_text, script_file_text
 
 
 def _run(stored: dict[str, str], click: str | None = None) -> dict:
@@ -61,4 +61,4 @@ def test_the_menu_rows_the_rule_and_the_bundle_agree():
     rule = rule[: rule.index("}")]
     assert "#library-view-whiteboard.wb-hide-ports #wb-anchor-hints" in rule and "display: none;" in rule and "!important" not in rule
     assert "/js/whiteboard-hints.js" in frontend_text("lazy-entries.js")
-    assert _js_scope.is_wrapped(frontend_text("whiteboard-hints.js")) and _js_scope.global_names(frontend_text("whiteboard-hints.js")) == set()
+    assert _js_scope.is_wrapped(script_file_text("whiteboard-hints.js")) and _js_scope.global_names(script_file_text("whiteboard-hints.js")) == set()

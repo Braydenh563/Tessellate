@@ -13,7 +13,7 @@ import subprocess
 import pytest
 
 from tests import _js_scope
-from tests._app_js import frontend_text
+from tests._app_js import frontend_text, script_file_text
 
 SCRIPT = """
 const log = { zoom: [], saved: [], said: [], toasts: [], gestures: 0, rendered: 0 };
@@ -121,10 +121,10 @@ def test_a_plain_delete_is_not_this_modules():
 
 
 def test_the_rows_the_help_and_the_bundle_agree():
-    commands = frontend_text("whiteboard-commands.js")
+    commands = script_file_text("whiteboard-commands.js")
     for ident, keys in (("view-home", '"Home"'), ("view-reset", '"Shift+Home"'), ("clear-labels", '"Shift+Del"')):
         row = commands[commands.index(f'id: "{ident}"') :].split("\n", 1)[0]
         assert f"keys: {keys}" in row and "wbFmtState.keys." in row
-    assert "/js/whiteboard-keys.js" in frontend_text("lazy-entries.js")
-    src = frontend_text("whiteboard-keys.js")
+    assert "/js/whiteboard-keys.js" in script_file_text("lazy-entries.js")
+    src = script_file_text("whiteboard-keys.js")
     assert _js_scope.is_wrapped(src) and _js_scope.global_names(src) == set()

@@ -14,7 +14,7 @@ from pathlib import Path
 import pytest
 
 from tests import _js_scope
-from tests._app_js import frontend_text
+from tests._app_js import frontend_text, script_file_text
 
 ROOT = Path(__file__).resolve().parents[1]
 WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
@@ -91,14 +91,14 @@ def test_an_empty_layer_says_so_and_changes_nothing():
 
 
 def test_the_layer_menu_the_bundle_and_the_help_agree():
-    library = frontend_text("whiteboard-library.js")
+    library = script_file_text("whiteboard-library.js")
     menu = library[library.index("function wbNamedLayerMenu(") :]
     menu = menu[: menu.index("\n}\n")]
     assert "...wbFmtState.layersMore.rows(layer)," in menu
-    src = frontend_text("whiteboard-layers-more.js")
+    src = script_file_text("whiteboard-layers-more.js")
     for words in ("Bring the layer to the front", "Send the layer to the back", "Duplicate the layer"):
         assert words in src
-    assert "/js/whiteboard-layers-more.js" in frontend_text("lazy-entries.js")
+    assert "/js/whiteboard-layers-more.js" in script_file_text("lazy-entries.js")
     assert _js_scope.is_wrapped(src) and _js_scope.global_names(src) == set()
     #: Duplicate is one Undo step: the copy, the new layer and the move are bundled.
     assert 'action: "batch"' in src and "wbUndoStack.splice(mark)" in src

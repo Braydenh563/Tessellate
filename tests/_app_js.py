@@ -110,6 +110,12 @@ def frontend_text(name: str) -> str:
     return unwrapped(path.read_text(encoding="utf-8"))
 
 
+def script_file_text(name: str) -> str:
+    """A script as written, wrapper and all: the scope tests ask whether the file is one closure,
+    which `frontend_text` hides by unwrapping."""
+    return (JS_DIR / name).read_text(encoding="utf-8")
+
+
 def app_js_family(path: Path) -> bool:
     """Whether a frontend file is one of the pieces of the old app.js, for
     the lints that count or allow things per file."""

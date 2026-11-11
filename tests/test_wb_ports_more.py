@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 from tests import _js_scope
-from tests._app_js import frontend_text
+from tests._app_js import frontend_text, script_file_text
 
 ROOT = Path(__file__).resolve().parents[1]
 WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
@@ -120,7 +120,7 @@ def test_a_named_port_says_so_on_its_dot_and_beside_it_when_lit():
 
 
 def test_the_module_is_still_one_wrapped_file_with_no_globals():
-    src = frontend_text("whiteboard-draw-more.js")
+    src = script_file_text("whiteboard-draw-more.js")
     assert _js_scope.is_wrapped(src) and _js_scope.global_names(src) == set()
 
 

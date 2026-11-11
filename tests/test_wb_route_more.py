@@ -14,7 +14,7 @@ from pathlib import Path
 import pytest
 
 from tests import _js_scope
-from tests._app_js import frontend_text
+from tests._app_js import frontend_text, script_file_text
 
 ROOT = Path(__file__).resolve().parents[1]
 WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
@@ -108,11 +108,11 @@ def test_the_selects_the_setter_and_the_drawio_round_trip_agree():
         block = html[html.index(f'id="{select}"') :]
         block = block[: block.index("</select>")]
         assert 'value="er">Entity relation' in block and 'value="iso">Isometric' in block
-    fmt = frontend_text("whiteboard-format.js")
+    fmt = script_file_text("whiteboard-format.js")
     assert '["elbow", "er", "iso"].includes(value) ? value : undefined' in fmt
-    xchg = frontend_text("whiteboard-interchange.js")
+    xchg = script_file_text("whiteboard-interchange.js")
     assert 'data.route = "er"' in xchg and 'data.route = "iso"' in xchg
     assert "edgeStyle=entityRelationEdgeStyle;" in xchg and "edgeStyle=isometricEdgeStyle;" in xchg
-    src = frontend_text("whiteboard-draw-more.js")
+    src = script_file_text("whiteboard-draw-more.js")
     assert _js_scope.is_wrapped(src) and _js_scope.global_names(src) == set()
-    assert "/js/whiteboard-draw-more.js" in frontend_text("lazy-entries.js")
+    assert "/js/whiteboard-draw-more.js" in script_file_text("lazy-entries.js")

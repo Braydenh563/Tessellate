@@ -17,7 +17,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from test_wb_navigator_cost import WB_JS, code, function_text
+from tests.test_wb_navigator_cost import WB_JS, code, function_text
 
 ROOT = Path(__file__).resolve().parents[1]
 CSS = "\n".join((ROOT / "frontend" / "css" / name).read_text(encoding="utf-8") for name in ("07-whiteboard-misc.css", "library-lazy.css"))
