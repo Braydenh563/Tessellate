@@ -202,7 +202,7 @@ def consent_events(session, found: dict) -> list[dict]:  # noqa: ANN001
     Confirm uses (`commands.RUNNABLE` for an act's steps, the registry for a
     parked tool call), with the same Undo and refresh, and settles the card so
     it is not pressed twice. What the page sends is never what runs."""
-    proposal = consent_store.take(found["id"])
+    proposal = (consent_store.decline if found["verdict"] == "no" else consent_store.take)(found["id"])
     label = str((proposal or {}).get("label") or found["label"])
     what = label[:1].lower() + label[1:]
     if found["verdict"] == "no":

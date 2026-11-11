@@ -1371,6 +1371,16 @@ function chatHistoryToSend() {
   ];
 }
 
+chatHistoryToSend.settle = (card, event, outcome, extra = {}) => {
+  const msg = card.closest(".msg.assistant");
+  const send = () => {
+    const index = msg.turnIndex ?? [...$("chat-messages").querySelectorAll(".msg.assistant")].indexOf(msg);
+    if (chatConv.id === null || index < 0 || !Number.isInteger(event.act_slot)) return;
+    return apiJson(`/conversations/${chatConv.id}/turns/${index}/acts/${event.act_slot}`, { method: "PUT", silent: true, body: JSON.stringify({ outcome, consent_id: event.consent_id || event.offer_id || "", label: event.label, ...extra }) }).catch(() => {});
+  };
+  return msg.saving ? void msg.saving.push(send) : send();
+};
+
 // The persona name to label assistant bubbles with (falls back to "Assistant").
 function assistantLabel() {
   const select = $("persona-select");
@@ -1918,7 +1928,6 @@ function planProposalCard(holder, event, run) {
   row.className = "row";
   row.append(
     smallButton(event.runLabel || "Run the plan", "Run every step; each one's writes are listed above and can be undone", () => {
-      delete card.dataset.pendingAct;
       card.replaceWith(toolChip(`ph:play ${event.running || `Running ${nounCount(event.steps.length, "step")}`}`));
       run();
     }, false),
@@ -2200,11 +2209,17 @@ function toolChip(label, ok = true, event = null) {
   return markToolStep(item, step);
 }
 
+//: A reopened turn's saved cards; an offer is drawn from the answer's support.
+renderToolConfirm.saved = (handles, { acts }) => {
+  for (const act of acts || []) if (act.type !== "offer") renderToolConfirm(act.type === "act" ? handles.timeline.holder : handles.recordsHolder, act);
+};
+
 // A destructive tool call parked for approval (Wave G). Nothing has
 // happened yet: Confirm actually runs it via /chat/tools/execute.
 function renderToolConfirm(holder, event) {
   //: An act's card lives with the composer's page code (ask-compose.js).
   if (event.type === "act") return ensureModule("askCompose").then(() => renderActCard(holder, event));
+  if (event.state === "cancelled" || event.state === "done") return void holder.appendChild(toolChip(event.state === "done" ? `ph:check-circle ${event.summary || event.label || event.name}` : "ph:x Cancelled: nothing was changed."));
   const card = document.createElement("div");
   card.className = "tool-confirm";
   //: Open until Confirm or Cancel settles it; a typed yes or no reaches it through the next turn (`chatHistoryToSend`).
@@ -2215,7 +2230,7 @@ function renderToolConfirm(holder, event) {
   
   const contentArea = document.createElement("div");
   
-  if (event.name === "edit_note" && event.arguments.content) {
+  if (event.name === "edit_note" && event.arguments?.content) {
     // async fetch for diff
     apiJson(`/entries/${event.arguments.note_id}`).then(res => {
       const oldContent = res.content || "";
@@ -2249,6 +2264,7 @@ function renderToolConfirm(holder, event) {
             method: "POST",
             body: JSON.stringify({ name: event.name, arguments: event.arguments, consent_id: event.consent_id || null }),
           });
+          chatHistoryToSend.settle(card, event, "done");
           card.replaceWith(toolChip(`ph:check-circle ${result.label || event.label || event.name}`));
           toast("Done: check Activity for the audit trail.");
           refreshAfterToolChanges();
@@ -2261,10 +2277,16 @@ function renderToolConfirm(holder, event) {
   );
   row.appendChild(
     smallButton("Cancel", "Don't do this", () => {
+      chatHistoryToSend.settle(card, event, "cancelled");
       card.replaceWith(toolChip("ph:x Cancelled: nothing was changed."));
     })
   );
   card.append(text, contentArea, row);
+  if (event.state === "expired") {
+    for (const button of row.querySelectorAll("button")) button.disabled = true;
+    contentArea.textContent = event.notice;
+    delete card.dataset.pendingAct;
+  }
   holder.appendChild(card);
   chatScrollToEnd();
 }

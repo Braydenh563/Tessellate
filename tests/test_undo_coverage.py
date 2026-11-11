@@ -456,6 +456,7 @@ def uncovered() -> dict[str, list[int]]:
 
 
 EXEMPT: dict[str, str] = {
+    "answer-kit.js:send": "job: remembers how a card was answered (Confirm, Cancel, Undo); the card has its own Undo and no note is changed",
     "settings-rows.js:syncPair": "job: pairs with another computer; Unpair undoes it and no note is changed",
     "settings-rows.js:syncUnpair": "job: forgets the pairing; Pair again restores it and no note is changed",
     "settings-controls.js:saveAddressNames": "settings: a setting with its own Reset or the settings history",

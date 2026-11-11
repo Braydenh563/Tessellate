@@ -122,7 +122,8 @@ def run_confirmed(session: Session, steps: list[dict], skipped: list[dict], cons
     Undo posts no id and runs the steps it sends."""
     parked = consent_store.take(consent_id)
     if parked and parked.get("steps"):
-        return run_said(session, parked["label"], parked["steps"], parked["skipped"], parked.get("say"))
+        done = run_said(session, parked["label"], parked["steps"], parked["skipped"], parked.get("say"))
+        return consent_store.remember(consent_id, done) if done["ok"] else done
     return run(session, steps, skipped)
 
 

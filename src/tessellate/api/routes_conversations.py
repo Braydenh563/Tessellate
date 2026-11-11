@@ -21,6 +21,7 @@ from tessellate.core import deps
 from tessellate.core.database import LIKE_ESCAPE, Conversation, like_escape, utcnow
 from tessellate.repo import uploads as uploads_repo
 from tessellate.core.deps import get_session
+from tessellate.ai import consent_store
 from tessellate.ai.grounding import composed_support, support as grounding_support
 from tessellate.entry.manager import log_action
 
@@ -171,6 +172,16 @@ class TurnBody(BaseModel):
     #: write runs again (audit 1028 E2). Kept only when true.
     stopped: bool | None = None
     wrote: bool | None = None
+    #: The act cards the turn showed (Confirm and Cancel, or Undo), so a reopened chat draws them
+    #: again instead of an answer that says "Confirm or Cancel below" over nothing. The state is
+    #: never saved here, it is read from the server's parked card on the way out (`_act_state`).
+    acts: list[dict] | None = None
+
+    @field_validator("acts", mode="before")
+    @classmethod
+    def _few_acts(cls, value: object) -> object:
+        """Cut, never refused: a turn with many cards must still save (`MAX_ACTS`)."""
+        return value[:MAX_ACTS] if isinstance(value, list) else value
 
 
 class RenameBody(BaseModel):
@@ -230,6 +241,89 @@ def _saved_support(turn: TurnBody) -> dict:
     return saved
 
 
+MAX_ACTS = 6
+EXPIRED = "This offer has expired. Ask again to redo it."
+_ACT_KEYS = ("type", "label", "notice", "summary", "consent_id", "ask_label", "name")
+_OFFER_KINDS = ("note", "checklist", "reminder")
+
+
+def _saved_offer(offer: object) -> dict | None:
+    """A note, checklist or reminder offer as a redraw needs it (words only; what runs is the page's own call)."""
+    if not isinstance(offer, dict) or offer.get("kind") not in _OFFER_KINDS:
+        return None
+    kept: dict = {k: str(offer[k])[:4000] for k in ("kind", "label", "line", "text", "surface") if isinstance(offer.get(k), str)}
+    kept["items"] = [str(i)[:400] for i in offer["items"][:60]] if isinstance(offer.get("items"), list) else []
+    return kept
+
+
+def _saved_acts(acts: list[dict]) -> list[dict]:
+    """The cards a turn drew (an act's, an agent's tool confirm, a note offer), cut to what a redraw
+    needs: words, what the card showed, the undo it offered, whether it had already run. None of it
+    runs anything: Confirm runs what the server parked under `consent_id`, never these."""
+    kept = []
+    for act in acts[:MAX_ACTS]:
+        kind = act.get("type") if isinstance(act, dict) else None
+        if kind not in ("act", "confirm", "offer"):
+            continue
+        card: dict = {k: str(act[k])[:600] for k in _ACT_KEYS if isinstance(act.get(k), str) and act[k]}
+        if kind == "offer":
+            offer = _saved_offer(act.get("offer"))
+            if offer is None:
+                continue
+            card["offer"] = offer
+            card["consent_id"] = str((act.get("offer") or {}).get("offer_id") or act.get("consent_id") or "")[:40]
+            card["label"] = offer.get("label", "")
+        if kind == "confirm":
+            args = act.get("arguments")
+            if isinstance(args, dict) and len(json.dumps(args)) <= 20_000:
+                card["arguments"] = args
+            else:
+                card["lost"] = True  # too large to keep: it reads as expired, never as something to press
+        for key in ("steps", "skipped", "undo"):
+            if kind == "act" and isinstance(act.get(key), list) and len(act[key]) <= 60:
+                card[key] = [step for step in act[key] if isinstance(step, dict)]
+        if kind == "act" and act.get("done") is True:
+            card["done"] = True
+        kept.append(card)
+    return kept
+
+
+def _act_state(act: dict) -> str:
+    """Where a saved card stands now, read from the server: its recorded outcome, else done while it
+    ran at once or its press left a result, waiting while the server still holds it, done when it
+    was spent elsewhere (a typed yes), else expired. A note offer with no parked id waits until pressed."""
+    if act.get("outcome") in ("done", "cancelled", "undone"):
+        return act["outcome"]
+    if act.get("done"):
+        return "done"
+    if act.get("lost"):
+        return "expired"
+    key = act.get("consent_id")
+    if consent_store.was_declined(key):
+        return "cancelled"
+    if consent_store.peek(key):
+        return "pending"
+    if consent_store.was_spent(key):
+        return "done"
+    return "pending" if act.get("type") == "offer" and not key else "expired"
+
+
+def _hydrate_acts(messages: list[dict]) -> None:
+    """Each saved card gets its state, and a pressed one the summary and Undo the server kept; a note offer goes back into the turn's support."""
+    for message in messages:
+        for slot, act in enumerate(message.get("acts") or []):
+            act["state"] = _act_state(act)
+            act["act_slot"] = slot
+            act["notice"] = {"expired": EXPIRED, "undone": "Undone.", "cancelled": "Cancelled: nothing was changed."}.get(act["state"], act.get("notice", ""))
+            if act.get("type") == "offer" and isinstance(message.get("support"), dict):
+                #: Back in the answer's support, where the page draws the offer from, with its place in `acts`.
+                message["support"] = {**message["support"], "offer": {**act["offer"], "offer_id": act.get("consent_id", ""), "state": act["state"], "notice": act["notice"] if act["state"] != "done" else "", "summary": act.get("summary", ""), "act_slot": slot}}
+            result = consent_store.result_of(act.get("consent_id")) if act["state"] == "done" and not act.get("outcome") else None
+            if result:
+                act["summary"] = str(result.get("summary") or result.get("label") or act.get("label") or "")[:600]
+                act["undo"] = [step for step in (result.get("undo") or []) if isinstance(step, dict)]
+
+
 def _turn_messages(turn: TurnBody) -> list[dict]:
     # Stamped here, not by the page: the turn is saved when the answer ends,
     # so the answer's time is now and the question's is now minus the
@@ -270,6 +364,8 @@ def _turn_messages(turn: TurnBody) -> list[dict]:
     persona = (turn.persona or "").strip()
     if persona:
         assistant["persona"] = persona
+    if turn.acts and (acts := _saved_acts(turn.acts)):
+        assistant["acts"] = acts
     if turn.by:
         assistant["by"] = {
             "composed": bool(turn.by.get("composed")),
@@ -606,6 +702,7 @@ def get_conversation(
         if (message.get("by") or {}).get("composed") and message.get("sentence_grounding") and (message.get("support") or {}).get("by_model") is not False:
             message["support"] = composed_support(None, message["sentence_grounding"])
     _hydrate_attachments(session, messages)
+    _hydrate_acts(messages)
     return {**_summary(conversation), "messages": messages}
 
 
@@ -947,6 +1044,71 @@ def set_turn_followups(
     )
     session.commit()
     return {"saved": True, "followups": cleaned}
+
+
+class ActOutcomeBody(BaseModel):
+    outcome: str = Field(pattern="^(done|cancelled|undone)$")
+    #: Which card this is for, checked against the one stored at (turn, slot): the page counts its
+    #: bubbles, and a bubble that never saved shifts the count, so the index alone is not trusted.
+    consent_id: str = Field(default="", max_length=40)
+    label: str = Field(default="", max_length=600)
+    #: A note offer's own words (the page made the note; only an offer takes this).
+    summary: str = Field(default="", max_length=600)
+
+
+def _may_become(card: dict, outcome: str) -> bool:
+    """The only moves a card makes: done once (a card the server saw pressed; an offer from the page),
+    cancelled once while it waits, undone only from done; an offer may be pressed again after its Undo."""
+    state = _act_state(card)
+    key = card.get("consent_id") or ""
+    if outcome == "undone":
+        return state == "done"
+    if card.get("type") == "offer":
+        return outcome == "done" and state in ("pending", "undone")
+    if outcome == "cancelled":
+        return state == "cancelled" or (state in ("pending", "expired") and not consent_store.was_spent(key))
+    return state == "done" and not card.get("outcome") and not card.get("done")
+
+
+@router.put("/{conversation_id}/turns/{index}/acts/{n}")
+def set_turn_act_outcome(
+    conversation_id: int, index: int, n: int, body: ActOutcomeBody, session: Session = Depends(get_session)
+) -> dict:
+    """Remember how a card of a saved turn was answered, so the chat reopens with it settled.
+
+    Nothing here is taken on the page's word: the card at (turn, slot) must carry the given id and
+    label; Done needs the press the server saw (its kept result gives the summary and Undo, a note
+    offer's press spends its id); Cancel spends the parked card, so one drawn again cannot run. A turn
+    or card that is gone is a no-op. `updated_at` is held, as for follow-ups: a press is not a message."""
+    conversation = _existing(session, conversation_id)
+    messages = json.loads(conversation.messages)
+    position = index * 2 + 1
+    acts = messages[position].get("acts") if 0 <= position < len(messages) else None
+    if not acts or not 0 <= n < len(acts):
+        return {"saved": False}
+    card = acts[n]
+    if (card.get("consent_id") or "") != body.consent_id or (card.get("label") or "") != body.label:
+        raise HTTPException(status_code=409, detail="That is not the card saved there.")
+    if card.get("outcome") == body.outcome:
+        return {"saved": True, "state": body.outcome}
+    if not _may_become(card, body.outcome):
+        raise HTTPException(status_code=409, detail="That card was already answered.")
+    key = card.get("consent_id") or ""
+    if body.outcome == "done" and card.get("type") == "offer":
+        consent_store.take(key)
+        card["summary"] = body.summary
+    elif body.outcome == "done":
+        result = consent_store.result_of(key) or {}
+        card["summary"] = str(result.get("summary") or result.get("label") or card.get("label") or "")[:600]
+        card["undo"] = [step for step in (result.get("undo") or []) if isinstance(step, dict)]
+    elif body.outcome == "cancelled":
+        consent_store.decline(key)
+    card["outcome"] = body.outcome
+    session.execute(
+        update(Conversation).where(Conversation.id == conversation.id).values(messages=json.dumps(messages), updated_at=conversation.updated_at)
+    )
+    session.commit()
+    return {"saved": True, "state": body.outcome}
 
 
 class AnswerBody(BaseModel):

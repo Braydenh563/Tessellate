@@ -2613,7 +2613,8 @@ MORE_TOPICS.append({
         "a checklist line has no time, so only reminders can be snoozed. "
         "If more than one task fits the words, Chat asks which one before it changes anything, and a name that fits only in part "
         "is asked about too. Each of these waits for Confirm (press it, or type yes or go ahead; Cancel or no drops it), then has Undo on the card, or Ctrl+Z: a ticked task is reopened, a cancelled "
-        "one comes back from the bin, a snoozed reminder returns to its old time. Small typos in the sentence are read through."
+        "one comes back from the bin, a snoozed reminder returns to its old time. Small typos in the sentence are read through. "
+        "A card, or an offer such as Gather them, stays in its chat when you leave and come back: a waiting one lasts about half an hour, then shows as expired, and an answered one shows what was done."
     ),
 })
 TOPIC_META["tasks"] = {"title": "Tasks in Chat", "path": "Chat tab"}

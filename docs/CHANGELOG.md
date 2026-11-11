@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fix (INBOX 1781): a chat's Confirm and Cancel cards (acts, tool confirms, offers) come back when the chat is reopened, in their current state: waiting, done with Undo, cancelled or expired; an expired one can no longer run.
 - Fix (INBOX 1782): document tables: the row and column move grips keep a gap from the active cell's outline, and the add-row plus sits just under the last row (it was a row's height low).
 - Fix (INBOX 1780): with no model, the skills the composer cannot run are greyed in the Skills menu, their tooltip says they are unavailable while no model is connected, and the menu says "Greyed skills need a model." (a pick of one did nothing and said nothing).
 - Fix (full suite at head, PR 216): list_notes reads the category list from its carved module (an AttributeError since the K24 carve); the draw.io spread, flip layout, clear labels and row-port loops save once with `wbSaveMany`; tests import their helpers through the `tests` package; readers of wrapped scripts slice the unwrapped text, and the scope tests read the file as written; the restore-under-a-stream test waits for the job pool first so it times the stream alone (CI 3.13); CodeQL's unused-global alerts closed by making the shared recogniser tables public.

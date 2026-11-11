@@ -27,7 +27,7 @@ const document = {{ createElement: mkEl, querySelectorAll: () => [] }};
 const buttons = {{}};
 const smallButton = (label, _t, onClick) => {{ buttons[label] = onClick; return mkEl(); }};
 const setLabel = () => {{}}, toolChip = mkEl, chatScrollToEnd = () => {{}}, toast = () => {{}};
-const refreshAfterToolChanges = () => {{}}, pushUndo = () => ({{}}), settleUndoFromToast = () => {{}};
+const chatHistoryToSend = {{ settle() {{}} }}, refreshAfterToolChanges = () => {{}}, pushUndo = () => ({{}}), settleUndoFromToast = () => {{}};
 const apiJson = async () => ({{ summary: "Done: made a note", undo: [] }});
 {match.group(0)}
 renderActCard(mkEl(), {{ type: "act", label: "Make a note", notice: "n", steps: [{{}}] }});

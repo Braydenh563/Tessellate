@@ -2207,6 +2207,7 @@ async function openConversation(id) {
       if (message.followups) {
         renderFollowups(handles.bubble, message.followups);
       }
+      renderToolConfirm.saved(handles, message);
       //: And the Resume and Edit-step buttons, which disappeared on reopen for
       //: the same reason and are rebuilt through the same function the live
       //: path uses, from the state saved with the turn.

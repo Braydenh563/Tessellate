@@ -1788,6 +1788,8 @@ def run_command(body: CommandRunBody, session: Session = Depends(get_session)) -
         raise HTTPException(status_code=404, detail="That names a step this app does not run from Chat.")
     if consent_store.was_spent(body.consent_id):
         raise HTTPException(status_code=409, detail="That card was already answered.")
+    if body.consent_id and not consent_store.peek(body.consent_id):  # expired: the page's steps are not trusted once the parked card is gone
+        raise HTTPException(status_code=409, detail="This offer has expired. Ask again to redo it.")
     done = acts.run_confirmed(session, body.steps, body.skipped, body.consent_id)
     return {"ok": done["ok"], "summary": done["summary"], "undo": done["undo"], "open": done.get("open")}
 
@@ -2458,6 +2460,6 @@ def execute_confirmed_tool(
     #: text written for the model, and CodeQL (#552, #553) follows any
     #: whole-result return to the exception text. The Confirm card reads
     #: `label`; `undo` lets a confirmed change be taken back.
-    return {"label": str(result.get("label") or ""), "undo": result.get("undo")}
+    return consent_store.remember(body.consent_id, {"label": str(result.get("label") or ""), "undo": result.get("undo")})
 
 

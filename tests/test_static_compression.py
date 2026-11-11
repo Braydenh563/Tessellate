@@ -162,6 +162,9 @@ PIECE_CAP = 32_000
 #: one caller, in the lazy file it moved to.
 #: 2026-11-11, -586 (250,563 to 249,977): dictation (`toggleDictation`) from media.js into
 #: the lazy gesture-kit.js behind a stand-in; only a mic click reaches it.
+#: 2026-11-11, +15 (250,431 to 250,446): a reopened chat redraws its saved act, offer and tool-confirm
+#: cards; the loop lives in the lazy answer-kit.js (`renderToolConfirm.saved`), sheets-selects.js
+#: only calls it. The cap did not move.
 TOTAL_CAP = 250_450
 
 

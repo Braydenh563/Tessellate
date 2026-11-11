@@ -22,6 +22,13 @@ _parked: dict[str, tuple[float, dict]] = {}
 _spent: dict[str, float] = {}
 
 
+#: What a pressed card did (its summary and Undo steps), kept for the same life under its id: a chat
+#: reopened later reads the outcome from here, never from what a page says it was.
+_results: dict[str, tuple[float, dict]] = {}
+#: Spent ids that were turned down (a typed no, Cancel): they reopen as cancelled, never as done.
+_declined: dict[str, float] = {}
+
+
 def _now() -> float:
     return time.monotonic()
 
@@ -77,6 +84,40 @@ def refusal_for_press(key: str | None, name: str, arguments: dict) -> str:
     return ""
 
 
+def remember(key: str | None, result: dict) -> dict:
+    """Keep `result` (summary, undo, label) under a pressed card's id and hand it back."""
+    if key:
+        with _lock:
+            while len(_results) >= MAX_PARKED * 4:
+                _results.pop(next(iter(_results)))
+            _results[key] = (_now() + TTL_SECONDS, result)
+    return result
+
+
+def result_of(key: str | None) -> dict | None:
+    """What the pressed card `key` did, or None (never pressed, or past its life)."""
+    with _lock:
+        held = _results.get(key or "")
+    return held[1] if held is not None and held[0] > _now() else None
+
+
+def decline(key: str | None) -> dict | None:
+    """`take` for a no: the card is spent and remembered as declined."""
+    held = take(key)
+    if key:
+        with _lock:
+            while len(_declined) >= MAX_PARKED * 4:
+                _declined.pop(next(iter(_declined)))
+            _declined[key] = _now() + TTL_SECONDS
+    return held
+
+
+def was_declined(key: str | None) -> bool:
+    with _lock:
+        until = _declined.get(key or "")
+    return until is not None and until > _now()
+
+
 def was_spent(key: str | None) -> bool:
     """True when `key` was parked and has been taken since (a press or a typed yes ran it)."""
     with _lock:
@@ -88,3 +129,5 @@ def reset_for_tests() -> None:
     with _lock:
         _parked.clear()
         _spent.clear()
+        _results.clear()
+        _declined.clear()

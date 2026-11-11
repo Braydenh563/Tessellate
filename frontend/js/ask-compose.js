@@ -159,6 +159,8 @@ function renderActCard(holder, event) {
     refreshAfterToolChanges(); // what the typed yes wrote, as Confirm does
     if (!event.done) return;
   }
+  const restored = typeof event.state === "string";
+  if (event.state === "cancelled" || event.state === "undone") return void holder.appendChild(toolChip(`ph:${event.state === "undone" ? "check" : "x"} ${event.notice}`));
   const card = document.createElement("div");
   card.className = "tool-confirm";
   const run = (steps, then) =>
@@ -183,7 +185,7 @@ function renderActCard(holder, event) {
   //: note or a pin ran at once), so the card carries only Undo; drawing the
   //: sentence again made the bubble say it twice. The words stay on the card
   //: as its accessible name, and a run with nothing to undo draws no card.
-  const done = (summary, undo, steps, said = false) => {
+  const done = (summary, undo, steps, said = false, again = false) => {
     delete card.dataset.pendingAct;
     //: A Confirmed card wrote: Regenerate on this answer asks first (sm-1111 row 16, `confirmRerun`).
     const answer = card.closest(".msg");
@@ -192,18 +194,21 @@ function renderActCard(holder, event) {
     row.className = "row";
     if (undo?.length) {
       let inverse = undo;
-      const action = pushUndo(
-        summary.replace(/^Done:\s*/, "").replace(/\.$/, ""),
-        () => post(inverse),
-        async () => {
-          const again = await post(steps);
-          inverse = again.undo || [];
-        }
-      );
+      const action = again
+        ? null
+        : pushUndo(
+            summary.replace(/^Done:\s*/, "").replace(/\.$/, ""),
+            () => post(inverse),
+            async () => {
+              const redone = await post(steps);
+              inverse = redone.undo || [];
+            }
+          );
       row.appendChild(
         smallButton("Undo", "Take this back", () =>
           run(inverse, () => {
-            settleUndoFromToast(action);
+            if (action) settleUndoFromToast(action);
+            chatHistoryToSend.settle(card, event, "undone");
             card.replaceWith(toolChip("ph:arrow-counter-clockwise Undone."));
           })
         )
@@ -217,7 +222,7 @@ function renderActCard(holder, event) {
     }
     line(`ph:check-circle ${summary}`, row);
   };
-  if (event.done) done(event.summary || event.label, event.undo, event.steps, true);
+  if (event.done || event.state === "done") done(event.summary || event.label, event.undo, event.steps, Boolean(event.done), restored);
   else {
     const notice = document.createElement("p");
     notice.className = "muted";
@@ -225,10 +230,22 @@ function renderActCard(holder, event) {
     const row = document.createElement("div");
     row.className = "row";
     row.append(
-      smallButton("Confirm", "Do this", () => run(event.steps, (result) => done(result.summary, result.undo, event.steps)), false),
-      smallButton("Cancel", "Don't do this", () => card.replaceWith(toolChip("ph:x Cancelled: nothing was changed.")))
+      smallButton("Confirm", "Do this", () =>
+        run(event.steps, (result) => {
+          chatHistoryToSend.settle(card, event, "done");
+          done(result.summary, result.undo, event.steps);
+        }),
+      false),
+      smallButton("Cancel", "Don't do this", () => {
+        chatHistoryToSend.settle(card, event, "cancelled");
+        card.replaceWith(toolChip("ph:x Cancelled: nothing was changed."));
+      })
     );
     line(`ph:warning ${event.label}`, notice, row);
+    if (event.state === "expired") {
+      for (const button of row.querySelectorAll("button")) button.disabled = true;
+      return void holder.appendChild(card);
+    }
     //: Open until Confirm settles it (`done` clears this) or Cancel replaces the card; the page tells the server (`chatHistoryToSend`).
     card.dataset.pendingAct = card.dataset.askedAct = event.label || "";
     card.consentId = event.consent_id || ""; // the server holds what a typed yes runs (`chatHistoryToSend`)
@@ -492,6 +509,10 @@ function digestOffer(answerEl, offer) {
   button.className = "linklike digest-offer";
   button.dataset.surface = offer.surface || "";
   button.textContent = offer.label;
+  if (offer.state && offer.state !== "pending") {
+    line.textContent = offer.notice || offer.summary || "Done.";
+    return void line.classList.add("muted");
+  }
   button.addEventListener("click", async () => {
     button.disabled = true;
     if (offer.offer_id && chatHistoryToSend.heldOffer === offer.offer_id) chatHistoryToSend.heldOffer = ""; // pressed: a later yes must not make it twice
@@ -556,18 +577,21 @@ function digestOffer(answerEl, offer) {
       }
       line.textContent = said;
       line.classList.add("muted");
+      chatHistoryToSend.settle(line, offer, "done", { summary: said });
       if (undo) {
         offerUndo(
           label,
           said,
           async () => {
             await undo();
+            chatHistoryToSend.settle(line, offer, "undone");
             line.replaceChildren(button);
             line.classList.remove("muted");
             button.disabled = false;
           },
           async () => {
             await redo();
+            chatHistoryToSend.settle(line, offer, "done", { summary: said });
             line.textContent = said;
             line.classList.add("muted");
           }

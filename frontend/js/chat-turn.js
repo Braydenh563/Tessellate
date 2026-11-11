@@ -68,6 +68,7 @@ chatSendTurn.stage = {
     //: A regenerate in another persona names it (`opts.persona`, E60): this answer only, the picker is left as it was.
     const sentPersona = opts.persona || $("persona-select").value || aiNameNow();
     const { bubble, stepsHolder, recordsHolder, groundingHolder, timeline, paintHooks } = addAssistantBubble(sentPersona);
+    bubble.saving = []; // outcomes of cards pressed before the turn is saved wait here (`chatHistoryToSend.settle`)
     // The live counter rides in the bubble it is timing, and leaves with it.
     mountChatTimer(bubble);
     // A newer answer exists, so the previous one's chips stop being the end of
@@ -228,7 +229,7 @@ chatSendTurn.stage = {
     //: Harbor launch?" twice, 43ms apart (INBOX 431 (g)).
     t.checkpointRun = null;
 
-    Object.assign(t, { userBubble, followupOf, sentPersona, bubble, stepsHolder, recordsHolder, groundingHolder, timeline, paintHooks, pending, pendingLine, startedAt, toolEvents, touchedItems, controller, convRef, viewing, clearPending, placeLiveCitations });
+    Object.assign(t, { keepCard(card, mark = card) { mark.act_slot = (t.actCards ||= []).length; t.actCards.push(card); }, userBubble, followupOf, sentPersona, bubble, stepsHolder, recordsHolder, groundingHolder, timeline, paintHooks, pending, pendingLine, startedAt, toolEvents, touchedItems, controller, convRef, viewing, clearPending, placeLiveCitations });
     //: **A new chat gets its row at send time, not at the first agent round.**
     //: A plain answer has no round boundary, so a chat started with one had no
     //: row, and so no entry in the list, until the reply finished: start a new
@@ -315,6 +316,7 @@ chatSendTurn.stage = {
         t.groundingSentences = event.sentences;
         t.composedNext = Array.isArray(event.next) ? event.next : [];
         t.groundingSupport = event.support || null;
+        if (["note", "checklist", "reminder"].includes(t.groundingSupport?.offer?.kind)) t.keepCard({ type: "offer", offer: t.groundingSupport.offer }, t.groundingSupport.offer);
         renderAnswerGrounding(
           groundingHolder,
           event.sentences,
@@ -481,6 +483,7 @@ chatSendTurn.stage = {
       onConfirm: (event) => {
         clearPending();
         //: Waiting cards are output (`showWaiting`); an act's is the answer's own.
+        if ((event.type === "act" && !event.cancel && (!event.settle || event.done)) || event.type === "confirm") t.keepCard(event);
         showWaiting(event.type === "act" ? timeline.holder : recordsHolder, renderToolConfirm, event);
         if (event.done) bubble.dataset.wrote = "1"; // an act that ran at once wrote
         if (!event.cancel && !event.done && !event.settle) status.textContent = "Waiting for your confirmation…";
@@ -954,6 +957,7 @@ chatSendTurn.stage = {
         // looks note content up in it), so there's nothing to persist without it.
         sentence_grounding: t.groundingSentences?.length ? t.groundingSentences : null,
         support: t.meta?.composed ? t.groundingSupport : null,
+        acts: t.actCards?.length ? t.actCards : null,
         // Which uploads this turn actually used, asked for directly: without
         // this, a sent chat image had no record anywhere that anything still
         // used it, so the Library's "Clean orphaned media" tool (which can
@@ -1020,6 +1024,8 @@ chatSendTurn.stage = {
         });
         if (viewing()) renderChatUsage(saved.tokens);
       }
+      bubble.turnIndex = convRef.turns.length - 1;
+      for (const send of bubble.saving.splice(0)) send();
       loadConversationList();
     } catch {
       toast("Couldn't save this chat turn.", true);
