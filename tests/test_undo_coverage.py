@@ -649,6 +649,7 @@ EXEMPT: dict[str, str] = {
     "ocr-engine.js:ocrEngineStartInstall": "job: starts or stops work or a model; deletes no user data",
     "onboarding.js:maybeShowConsoleViewIntro": "settings: a setting with its own Reset or the settings history",
     "onboarding.js:renderOnboardingActions": "job: starts or stops work or a model; deletes no user data",
+    "onboarding.js:renderPrefs": "settings: a setting with its own Reset or the settings history",
     "phone-shell.js:clearAppCache": "job: starts or stops work or a model; deletes no user data",
     "notifications.js:openExportsFromNotification": "job: starts or stops work or a model; deletes no user data",
     "phone-shell.js:quitApp": "auth: sign-in, recovery or lock; no user data",

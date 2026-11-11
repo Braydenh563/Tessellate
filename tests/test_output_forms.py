@@ -91,7 +91,9 @@ def test_chat_with_no_model_runs_the_read_and_sends_the_chart(ai_client, fake_ol
     charts = [e["chart"] for e in events if e["type"] == "chart"]
     assert charts and charts[0]["by"] == "tag" and charts[0]["total"] == 4
     table = "".join(e.get("delta", "") for e in _stream(ai_client, "what reminders do I have") if e["type"] == "answer")
-    assert "| Reminder | When |" in table and "call mum" in table
+    #: The reminders question is the reminders reader's since audit 2 G3 (parity, decision 75): the
+    #: same sentence with a model up or not. The table form of the read tool is checked above.
+    assert table.startswith("Nothing is due today.") and "call mum" in table
 
 
 def test_the_chat_draws_a_chart_event_with_the_ask_chart_drawer():
