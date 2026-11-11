@@ -60,7 +60,6 @@ _TAILS = {
     "natural": ("", "How is your day going?", "What are you up to?", "What is on your mind?", "Good to see you.", "Anything I can dig up for you?"),
     "professional": ("", "How can I help?", "What would you like to look up?"),
 }
-_STRETCHED = re.compile(r"^\W*([a-z]+?)(\1|[a-z])\2+\b", re.I)
 
 
 def register(message: str) -> str:
@@ -108,7 +107,6 @@ _WEATHER_SUBJECT = re.compile(r"\b(?:it|its|it's|today|outside|weather|heat|day|
 _PAST = {"snowed": "snow", "rained": "rain", "hailed": "rain", "thundered": "storm"}
 _HOT = frozenset("hot boiling baking roasting warm sweltering humid muggy sunny heatwave heat".split())
 _COLD = frozenset("cold freezing chilly frosty icy snow snowing snowy snowed".split())
-_WET = frozenset("rain raining rainy drizzling pouring windy stormy storm foggy cloudy grey gloomy".split())
 _WEATHER_LINES = {
     "hot": ("That sounds uncomfortable. Keep some water close and stay out of the sun if you can.", "Hot days are draining. Drink plenty and take it slowly.", "Rough with the heat. A cold drink and some shade will help."),
     "cold": ("Brr. Wrap up warm and keep something hot to drink nearby.", "That sounds bitter. I hope you can stay somewhere warm.", "Cold days call for a warm drink and a thick jumper."),
@@ -143,7 +141,7 @@ _SLEPT = re.compile(
     r"(?:bad|rough|terrible|awful|restless|sleepless) night|tossing and turning)\b"
 )
 _SLEPT_WELL = re.compile(r"\bslept (?:well|great|like a baby|really well|so well)\b|\b(?:good|great|lovely) (?:night'?s? sleep|sleep)\b")
-_BEDTIME = re.compile(r"^(?:i'?m |im |i am |ok |okay |right |well )*(?:off to bed|going to bed|going to sleep|heading to bed|heading off to bed|time for bed|bedtime|time to sleep|turning in|calling it a night|hitting the hay|need to sleep)\b")
+_BEDTIME = re.compile(r"^(?:i'?m |i am |ok |okay |right |well )*(?:off to bed|going to bed|going to sleep|heading to bed|heading off to bed|time for bed|bedtime|time to sleep|turning in|calling it a night|hitting the hay|need to sleep)\b")
 _SLEEP_LINES = ("That is rotten. A bad night makes everything harder, so go gently today.", "Sorry to hear that. Tired days are slow ones; be kind to yourself.", "That sounds like a long night. Try to rest when you can today.")
 _SLEEP_WELL_LINES = ("Good. A proper night's sleep sets the day up.", "Lovely, that makes everything easier.")
 _BEDTIME_LINES = ("Sleep well. Your notes will keep.", "Goodnight, then. Rest well.", "Sleep well. Everything you wrote is saved.")
@@ -169,29 +167,28 @@ _BAD_DAY_PRO = ("I am sorry to hear it has been a difficult day.",)
 _GOOD_DAY_LINES = ("Glad to hear it. Those days are worth holding on to.", "Lovely, I am glad it went well.", "That is good to hear.")
 _GOOD_DAY_PRO = ("I am glad to hear it went well.",)
 
-_HUNGRY = re.compile(r"^(?:i'?m |im |i am |i'?m so |getting |so |really |feeling )*(?:hungry|starving|famished|peckish|ravenous|hangry)\b")
+_HUNGRY = re.compile(r"^(?:i'?m |i am |getting |so |really |feeling )*(?:hungry|starving|famished|peckish|ravenous|hangry)\b")
 _ATE = re.compile(
-    r"^(?:i |we |just |i'?ve |ive |i have )*(?:had|ate|eaten|having|eating|made|am making|cooked|am cooking|'?m cooking|'?m making|cooking|making|baking|baked|grabbed|am grabbing|'?m grabbing|got)"
+    r"^(?:i |we |just |i'?ve |i have )*(?:had|ate|eaten|having|eating|made|am making|cooked|am cooking|'?m cooking|'?m making|cooking|making|baking|baked|grabbed|am grabbing|'?m grabbing|got)"
     r" (?:some |a |an |the |my |another |leftover |leftovers of )?(?P<what>[a-z][a-z ]{1,24}?)(?: for (?:breakfast|brunch|lunch|dinner|tea|supper|dessert|a snack))?(?: (?:today|tonight|again|earlier|just now))*[\s.!]*$"
 )
 _NEED = re.compile(r"^(?:i |we )?(?:really |just |badly )*(?:need|want|could do|could use|am craving|'?m craving) (?:a |an |some |another )?(?:coffee|tea|food|snack|drink|break|nap|rest|lie down|sleep)\b")
 _NEED_LINES = ("Go and get it. Your notes will wait.", "Sounds like it is time. I will be here when you are back.", "Then take it. Nothing here needs you this minute.")
-_MEAL_TIME = re.compile(r"^(?:it'?s |its |time for |time to eat|lunch ?time|dinner ?time|breakfast ?time|coffee ?time|tea ?time|snack ?time|(?:i'?m |im |i am |we'?re )*(?:cooking|baking|making (?:dinner|lunch|tea|breakfast|supper)|having (?:a )?(?:takeaway|takeout|bbq|barbecue)))\b")
+_MEAL_TIME = re.compile(r"^(?:it'?s |its |time for |time to eat|lunch ?time|dinner ?time|breakfast ?time|coffee ?time|tea ?time|snack ?time|(?:i'?m |i am |we'?re )*(?:cooking|baking|making (?:dinner|lunch|tea|breakfast|supper)|having (?:a )?(?:takeaway|takeout|bbq|barbecue)))\b")
 _FOOD_NOUNS = re.compile(r"\b(?:breakfast|brunch|lunch|dinner|tea|supper|dessert|snack|coffee|food|meal|pizza|pasta|soup|curry|salad|toast|cake|pancakes?|sandwich|noodles|rice|burger|steak|eggs|bread|cookies|biscuits|cooking|baking|bbq|barbecue|takeaway|takeout|curry|stir fry)\b")
 _FOOD_LINES = ("Sounds good. Enjoy it.", "Nice, I hope it is a good one.", "Hope it hits the spot.", "Enjoy your meal.")
 _HUNGRY_LINES = ("Go and get something to eat. Your notes will wait.", "Sounds like it is time for a snack.", "Feed yourself first; I am not going anywhere.")
 _FOOD_PRO = ("I hope you enjoy it.",)
 
 _GOING = re.compile(
-    r"^(?:i'?m |im |i am |we'?re |just |right |ok |okay |well |off |heading |going )*(?:going|headed|heading|off|popping|nipping|running|walking) (?:out )?(?:to|for|down to|over to|into) (?:the |a |my |some )?"
+    r"^(?:i'?m |i am |we'?re |just |right |ok |okay |well |off |heading |going )*(?:going|headed|heading|off|popping|nipping|running|walking) (?:out )?(?:to|for|down to|over to|into) (?:the |a |my |some )?"
     r"(?P<what>gym|run|jog|walk|swim|shops?|shopping|store|supermarket|work|class|lecture|uni|school|park|beach|doctor|dentist|library|cinema|pub|bank|yoga|climbing|hike|bike ride|cycle|workout|training|practice)\b"
 )
-_BACK = re.compile(r"^(?:i'?m |im |i am |just )*(?:back|home|back home|back again|here again|just got home|got home|just got back|got back)\b[\s.!]*$")
+_BACK = re.compile(r"^(?:i'?m |i am |just )*(?:back|home|back home|back again|here again|just got home|got home|just got back|got back)\b[\s.!]*$")
 _GOING_LINES = ("Have a good one. I will be here when you are back.", "Enjoy it. Your notes will keep.", "Sounds good. See you after.", "Have fun with that.")
 _GOING_PRO = ("Have a good time. I will be here when you return.",)
 _BACK_LINES = ("Welcome back. How did it go?", "Good to have you back.", "Welcome back. Anything to jot down?")
 
-_WISH = re.compile(r"^(?:happy|merry|joyous|blessed|have a (?:good|great|nice|lovely|happy|wonderful) |enjoy your )(?P<what>[a-z][a-z' ]{1,24}?)(?: to you| to everyone| all| everyone)?[\s.!]*$")
 _WISH_NAMED = re.compile(r"^(?P<w>happy|merry) (?P<what>birthday|christmas|new year|easter|halloween|diwali|eid|hanukkah|thanksgiving|valentines?|anniversary|friday|monday|saturday|sunday|weekend|holidays?|mothers? day|fathers? day|year|day)")
 _WELLWISH = re.compile(r"\bhope (?:you(?:'re| are| have|'ve)? (?:doing |been |having |feeling )*(?:well|good|ok|okay|great|fine|a (?:good|great|nice) (?:day|one))|all is well|everything is (?:well|good|ok)|things are (?:well|good|going well))")
 _PRAISE = re.compile(r"^(?:i |we )?(?:really |just |absolutely )*(?:love|like|adore|enjoy|appreciate)(?: using)? (?:this|the|my) (?:app|assistant|tool|notebook|chat|bot)\b|^(?:this|the) (?:app|assistant|tool|notebook|chat|bot) (?:is|'?s) (?:so |really |very |pretty |quite )*(?:great|amazing|awesome|good|brilliant|useful|cool|helpful|nice|fantastic|handy|lovely)\b")
@@ -356,17 +353,3 @@ def facts(question: str, finder: Callable[[str], tuple[int, str] | None]) -> str
         line += f" A note that bears on it, which you may link once: [{found[1]}](#/notes/{found[0]})."
     return line
 
-
-def social(question: str, history: list[dict] | None = None) -> bool:
-    """Whether the turn is conversation, not a question about the notes: small
-    talk, a remark, a feeling, thanks or a question about Atlas. Such a turn
-    has no subject, so no statistics chips sit under it (INBOX 1749)."""
-    from tessellate.ai import composer_chat, intent, personal, question_noise
-
-    return (
-        intent.classify(question) == intent.SMALLTALK
-        or is_remark(question)
-        or question_noise.social_kind(question) is not None
-        or composer_chat.reply(question, history or [], "") is not None
-        or bool(personal.about_me(question))
-    )
