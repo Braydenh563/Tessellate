@@ -2613,7 +2613,16 @@ body.resizing-sidebar {
   padding: 0.25rem 0.4rem 0.25rem 0.8rem;
   border-bottom: 1px solid var(--border);
 }
+/* **The bar is one line** (wrap/zoom sweep, 2026-11-11): in a 331px chat
+   bubble (1280 with the web panel open) "table · header and 1 row" took two
+   lines and the actions wrapped under each other, an 81px head over a
+   two-row table. The label is what gives way, ellipsised (its title holds
+   the rest, table-block.js); the actions keep their row. */
 .code-lang {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: var(--text-sm);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -2631,8 +2640,9 @@ body.resizing-sidebar {
    head rather than as four chips dropped on it. */
 .code-actions {
   display: inline-flex;
+  flex: none;
   align-items: stretch;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 0;
   padding: 2px;
   border-radius: var(--radius-pill);

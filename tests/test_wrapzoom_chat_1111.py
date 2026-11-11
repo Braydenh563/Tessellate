@@ -63,3 +63,15 @@ def test_an_option_rows_clip_skips_the_picker_shell():
     assert ".graph-option-row > span:not(.select-shell) {" in WIDGETS_CSS
     assert not re.search(r"\.graph-option-row > span \{", WIDGETS_CSS)
     assert not re.search(r"\.graph-option-row > span,", WIDGETS_CSS)
+
+
+def test_a_code_or_table_bar_keeps_its_actions_on_one_row():
+    """In a 331px chat bubble the label took two lines and the actions
+    wrapped under each other: an 81px head over a two-row table."""
+    themes = (CSS_DIR / "05-sidebars-themes.css").read_text(encoding="utf-8")
+    actions = _rule(themes, ".code-actions")
+    assert "flex-wrap: nowrap" in actions and "flex: none" in actions
+    label = _rule(themes, ".code-lang")
+    assert "text-overflow: ellipsis" in label and "min-width: 0" in label and "white-space: nowrap" in label
+    js = (ROOT / "frontend" / "js" / "table-block.js").read_text(encoding="utf-8")
+    assert "label.title = label.textContent;" in js
