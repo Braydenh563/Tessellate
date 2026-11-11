@@ -124,3 +124,21 @@ def test_the_setting_round_trips_and_the_saved_note_waits_with_choices(client, s
     assert on["filed_by"] == "none" and on["category"] == manager.UNCATEGORISED, on
     assert on["suggestions"][0] == base.filed.name
     assert on["waits_why"] == lexical_filing.ASK_WHY
+
+
+def test_a_sensitive_note_says_it_is_sensitive_not_unsure(session, app_state, monkeypatch) -> None:
+    """Both hold the note; the sensitive reason is the more useful one, so it
+    wins even when the number is also under the line (review, 2026-11-11)."""
+    ids = _seed(session)
+    held = [
+        i for i, (entry_id, note) in enumerate(zip(ids, NOTES))
+        if lexical_filing.decide(session, note["content"], exclude_entry_id=entry_id).held
+    ]
+    assert held, "the fixture has sensitive notes"
+    app_state.set_preference("ask_when_unsure", True)
+    monkeypatch.setattr(lexical_filing, "UNSURE_LINE", 101)
+    for i in held:
+        decision = lexical_filing.decide(session, NOTES[i]["content"], exclude_entry_id=ids[i])
+        assert decision.held and not decision.unsure and decision.filed is None, i
+        call = lexical_filing.filing_call(session, NOTES[i]["content"], exclude_entry_id=ids[i])
+        assert call.held and call.why.startswith("It reads as"), call.why

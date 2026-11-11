@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8150, frontend ids 2712, CSS sections 523, backend routes 674, backend modules 10359, test files 2553, tests 20907, plan headings 1010, app scripts 29, boot scripts 38, script files 284.
+Counts: frontend functions 8150, frontend ids 2712, CSS sections 523, backend routes 674, backend modules 10359, test files 2553, tests 20908, plan headings 1010, app scripts 29, boot scripts 38, script files 284.
 
 ## Frontend functions (8150)
 
@@ -358,50 +358,50 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `announce` | frontend/js/capture-ask.js:837 |
-| `captureNeedsWords` | frontend/js/capture-ask.js:601 |
-| `clearAskAnswerFoot` | frontend/js/capture-ask.js:1120 |
-| `clearCaptureTagSuggestions` | frontend/js/capture-ask.js:541 |
-| `copyAnswer` | frontend/js/capture-ask.js:1289 |
+| `announce` | frontend/js/capture-ask.js:838 |
+| `captureNeedsWords` | frontend/js/capture-ask.js:602 |
+| `clearAskAnswerFoot` | frontend/js/capture-ask.js:1121 |
+| `clearCaptureTagSuggestions` | frontend/js/capture-ask.js:542 |
+| `copyAnswer` | frontend/js/capture-ask.js:1290 |
 | `createDocumentNamed` | frontend/js/capture-ask.js:298 |
-| `evidenceSpan` | frontend/js/capture-ask.js:1067 |
-| `evidenceSwitchReset` | frontend/js/capture-ask.js:1086 |
+| `evidenceSpan` | frontend/js/capture-ask.js:1068 |
+| `evidenceSwitchReset` | frontend/js/capture-ask.js:1087 |
 | `filedByText` | frontend/js/capture-ask.js:230 |
 | `filingOutcomeText` | frontend/js/capture-ask.js:185 |
-| `flashCategory` | frontend/js/capture-ask.js:1016 |
-| `flashEntry` | frontend/js/capture-ask.js:895 |
-| `flashReminder` | frontend/js/capture-ask.js:990 |
-| `focusCaptureBox` | frontend/js/capture-ask.js:503 |
-| `heldOffline` | frontend/js/capture-ask.js:617 |
-| `holdPictureTokens` | frontend/js/capture-ask.js:1103 |
-| `liveMarkdownRenderer` | frontend/js/capture-ask.js:1199 |
-| `loadAskHistoryBadge` | frontend/js/capture-ask.js:1325 |
+| `flashCategory` | frontend/js/capture-ask.js:1017 |
+| `flashEntry` | frontend/js/capture-ask.js:896 |
+| `flashReminder` | frontend/js/capture-ask.js:991 |
+| `focusCaptureBox` | frontend/js/capture-ask.js:504 |
+| `heldOffline` | frontend/js/capture-ask.js:618 |
+| `holdPictureTokens` | frontend/js/capture-ask.js:1104 |
+| `liveMarkdownRenderer` | frontend/js/capture-ask.js:1200 |
+| `loadAskHistoryBadge` | frontend/js/capture-ask.js:1326 |
 | `loadCaptureDocuments` | frontend/js/capture-ask.js:286 |
-| `loadSuggestions` | frontend/js/capture-ask.js:1295 |
-| `loadTemplates` | frontend/js/capture-ask.js:1397 |
-| `newChat` | frontend/js/capture-ask.js:1270 |
-| `noteSurfaceIfAny` | frontend/js/capture-ask.js:468 |
-| `noteTemplateForUse` | frontend/js/capture-ask.js:450 |
-| `noteTemplateText` | frontend/js/capture-ask.js:439 |
+| `loadSuggestions` | frontend/js/capture-ask.js:1296 |
+| `loadTemplates` | frontend/js/capture-ask.js:1398 |
+| `newChat` | frontend/js/capture-ask.js:1271 |
+| `noteSurfaceIfAny` | frontend/js/capture-ask.js:469 |
+| `noteTemplateForUse` | frontend/js/capture-ask.js:451 |
+| `noteTemplateText` | frontend/js/capture-ask.js:440 |
 | `offerJumpToNewNote` | frontend/js/capture-ask.js:12 |
-| `openDocumentFromNote` | frontend/js/capture-ask.js:472 |
-| `openNoteAtPassage` | frontend/js/capture-ask.js:985 |
-| `pictureItems` | frontend/js/capture-ask.js:1078 |
+| `openDocumentFromNote` | frontend/js/capture-ask.js:473 |
+| `openNoteAtPassage` | frontend/js/capture-ask.js:986 |
+| `pictureItems` | frontend/js/capture-ask.js:1079 |
 | `renderCaptureDocumentAdder` | frontend/js/capture-ask.js:361 |
 | `renderCaptureDocuments` | frontend/js/capture-ask.js:323 |
-| `renderCaptureTagSuggestions` | frontend/js/capture-ask.js:552 |
-| `resetCaptureForm` | frontend/js/capture-ask.js:510 |
-| `retryAnswer` | frontend/js/capture-ask.js:1285 |
-| `saveEntry` | frontend/js/capture-ask.js:631 |
-| `saveEntryAsDraft` | frontend/js/capture-ask.js:744 |
-| `scheduleCaptureTagSuggestions` | frontend/js/capture-ask.js:578 |
-| `scrollEditingEntryIntoView` | frontend/js/capture-ask.js:870 |
+| `renderCaptureTagSuggestions` | frontend/js/capture-ask.js:553 |
+| `resetCaptureForm` | frontend/js/capture-ask.js:511 |
+| `retryAnswer` | frontend/js/capture-ask.js:1286 |
+| `saveEntry` | frontend/js/capture-ask.js:632 |
+| `saveEntryAsDraft` | frontend/js/capture-ask.js:745 |
+| `scheduleCaptureTagSuggestions` | frontend/js/capture-ask.js:579 |
+| `scrollEditingEntryIntoView` | frontend/js/capture-ask.js:871 |
 | `settleCaptureStatus` | frontend/js/capture-ask.js:129 |
-| `showAskAsOf` | frontend/js/capture-ask.js:1370 |
-| `stampDate` | frontend/js/capture-ask.js:437 |
-| `stopAnswer` | frontend/js/capture-ask.js:1266 |
+| `showAskAsOf` | frontend/js/capture-ask.js:1371 |
+| `stampDate` | frontend/js/capture-ask.js:438 |
+| `stopAnswer` | frontend/js/capture-ask.js:1267 |
 | `watchFiling` | frontend/js/capture-ask.js:52 |
-| `withTitle` | frontend/js/capture-ask.js:488 |
+| `withTitle` | frontend/js/capture-ask.js:489 |
 
 ### frontend/js/chat.js (57)
 
@@ -26647,7 +26647,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20907)
+## Tests (20908)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26735,7 +26735,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_ask_use_ai_714.py | 7 |
 | tests/test_ask_user.py | 18 |
 | tests/test_ask_wait_1027.py | 4 |
-| tests/test_ask_when_unsure.py | 6 |
+| tests/test_ask_when_unsure.py | 7 |
 | tests/test_asset_cache_busting.py | 3 |
 | tests/test_asset_strip.py | 27 |
 | tests/test_atlas_access.py | 6 |

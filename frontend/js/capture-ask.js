@@ -399,8 +399,9 @@ function renderCaptureDocumentAdder() {
     if (!slot) return;
     if (typeof on !== "boolean") on = Boolean((await apiJson("/preferences").catch(() => null))?.ask_when_unsure);
     const flip = async () => {
+      //: Read back: `setPreference` toasts a failed save, and the label must not flip then.
       await setPreference("ask_when_unsure", !on);
-      render(!on);
+      render();
     };
     slot.replaceChildren(
       kebabMenu(

@@ -720,13 +720,13 @@ def _file_if_clear(decision: Decision, sensitive_set: set) -> None:
     share = best.score / sum(c.score for c in ranked)
     #: Kept between 50 and 85, as before: this is word overlap.
     decision.confidence = max(50, min(85, round(40 + 50 * share)))
-    if is_unsure(decision.confidence):
-        decision.unsure = True
-        return
     sensitive_here = decision.sensitive or next((t for t in best.topics if t in sensitive_set), None)
     if sensitive_here and not _auto_file_sensitive():
         decision.sensitive = sensitive_here
         decision.held = True
+    #: After the sensitive hold, so a sensitive note still says why it waits.
+    elif is_unsure(decision.confidence):
+        decision.unsure = True
     else:
         decision.filed = best
 
