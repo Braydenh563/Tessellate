@@ -271,3 +271,39 @@ def test_find_and_replace_of_text_that_is_not_there_is_said_not_planned(client, 
     out = stream(client, "change Orange-9G to Orange-10G in the wifi note")
     assert not [e for e in out.get("act", []) if not e.get("cancel")]
     assert "Orange-9G" in out["text"]
+
+
+# --- Undo of a category delete or merge restores its description and its binned notes -----
+
+
+def _describe_work_and_bin_budget(session) -> None:
+    work = session.scalar(select(Category).where(Category.name == "Work"))
+    work.description = "Things for the job"
+    budget = next(e for e in session.scalars(select(Entry)) if (e.content or "").startswith("# Budget"))
+    budget.is_deleted = True
+    session.commit()
+
+
+def _binned_category(session, title: str) -> tuple[str, bool]:
+    session.expire_all()
+    entry = next(e for e in session.scalars(select(Entry)) if (e.content or "").startswith(f"# {title}"))
+    return manager.category_name_for(session, entry), bool(entry.is_deleted)
+
+
+@pytest.mark.parametrize("tool, args", [("delete_category", {"name": "Work"}), ("merge_categories", {"from": "Work", "into": "Life"})])
+def test_category_undo_restores_the_description_and_files_binned_notes_back(notebook, tool, args):
+    _describe_work_and_bin_budget(notebook)
+    undo_step = tools.execute_tool(notebook, tool, args)["undo"]
+    assert commands.run(notebook, [{"name": undo_step["tool"], "arguments": undo_step["arguments"]}])["ok"]
+    notebook.expire_all()
+    assert notebook.scalar(select(Category).where(Category.name == "Work")).description == "Things for the job"
+    assert _binned_category(notebook, "Budget") == ("Work", True)
+    assert filed(notebook, "Harbor launch plan") == "Work"
+
+
+def test_an_empty_described_category_deleted_is_made_again_with_its_description(notebook):
+    tools.execute_tool(notebook, "create_category", {"name": "Hobbies", "description": "Weekend things"})
+    result = tools.execute_tool(notebook, "delete_category", {"name": "Hobbies"})
+    assert commands.run(notebook, [{"name": result["undo"]["tool"], "arguments": result["undo"]["arguments"]}])["ok"]
+    notebook.expire_all()
+    assert notebook.scalar(select(Category).where(Category.name == "Hobbies")).description == "Weekend things"

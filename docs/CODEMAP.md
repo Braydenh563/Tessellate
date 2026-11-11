@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8106, frontend ids 2684, CSS sections 523, backend routes 662, backend modules 10001, test files 2452, tests 20301, plan headings 1002, app scripts 28, boot scripts 37, script files 277.
+Counts: frontend functions 8106, frontend ids 2684, CSS sections 523, backend routes 662, backend modules 10002, test files 2452, tests 20303, plan headings 1002, app scripts 28, boot scripts 37, script files 277.
 
 ## Frontend functions (8106)
 
@@ -13460,7 +13460,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10001)
+## Backend modules (10002)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -19326,10 +19326,10 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `_create_category` | src/tessellate/ai/tools/categories.py:60 |
-| `_delete_category` | src/tessellate/ai/tools/categories.py:186 |
-| `_filed_back` | src/tessellate/ai/tools/categories.py:179 |
+| `_delete_category` | src/tessellate/ai/tools/categories.py:194 |
+| `_filed_back` | src/tessellate/ai/tools/categories.py:180 |
 | `_find_category` | src/tessellate/ai/tools/categories.py:28 |
-| `_live_ids` | src/tessellate/ai/tools/categories.py:173 |
+| `_live_ids` | src/tessellate/ai/tools/categories.py:174 |
 | `_merge_categories` | src/tessellate/ai/tools/categories.py:136 |
 | `_rename_category` | src/tessellate/ai/tools/categories.py:99 |
 
@@ -19386,16 +19386,17 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_read_file` | src/tessellate/ai/tools/files.py:168 |
 | `_search_files` | src/tessellate/ai/tools/files.py:121 |
 
-### src/tessellate/ai/tools/moving.py (6)
+### src/tessellate/ai/tools/moving.py (7)
 
 | Name | File:line |
 |---|---|
-| `_find_space` | src/tessellate/ai/tools/moving.py:51 |
+| `_describe` | src/tessellate/ai/tools/moving.py:89 |
+| `_find_space` | src/tessellate/ai/tools/moving.py:53 |
 | `_live_notes` | src/tessellate/ai/tools/moving.py:41 |
-| `_move_notes` | src/tessellate/ai/tools/moving.py:87 |
+| `_move_notes` | src/tessellate/ai/tools/moving.py:98 |
 | `_note_ids` | src/tessellate/ai/tools/moving.py:26 |
-| `_plural` | src/tessellate/ai/tools/moving.py:60 |
-| `_put_back` | src/tessellate/ai/tools/moving.py:64 |
+| `_plural` | src/tessellate/ai/tools/moving.py:62 |
+| `_put_back` | src/tessellate/ai/tools/moving.py:66 |
 
 ### src/tessellate/ai/tools/reminder_rules.py (4)
 
@@ -26095,7 +26096,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (20301)
+## Tests (20303)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27819,7 +27820,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_panel_rim_1536.py | 3 |
 | tests/test_panel_scrim_lift_1029.py | 3 |
 | tests/test_parity_1110.py | 34 |
-| tests/test_parity_acts_1110.py | 20 |
+| tests/test_parity_acts_1110.py | 22 |
 | tests/test_passes.py | 7 |
 | tests/test_passive_capture.py | 9 |
 | tests/test_password_floor.py | 6 |

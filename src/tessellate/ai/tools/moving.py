@@ -38,8 +38,10 @@ def _note_ids(args: dict) -> list[int]:
     return ids
 
 
-def _live_notes(session: Session, ids: list[int]) -> list[Entry]:
-    entries = list(session.scalars(select(Entry).where(Entry.id.in_(ids), Entry.is_deleted.is_(False))))
+def _live_notes(session: Session, ids: list[int], binned: bool = False) -> list[Entry]:
+    """The notes by id; `binned` also takes those in the bin (an Undo files them back, they stay binned)."""
+    query = select(Entry).where(Entry.id.in_(ids))
+    entries = list(session.scalars(query if binned else query.where(Entry.is_deleted.is_(False))))
     found = {e.id for e in entries}
     missing = [i for i in ids if i not in found]
     if missing:
@@ -84,6 +86,15 @@ def _put_back(session: Session, args: dict) -> dict | None:
     return {"restored": count, "label": f"ph:arrow-u-up-left Put {_plural(count)} back"}
 
 
+def _describe(session: Session, name: str, description: str) -> None:
+    """A category an Undo made again gets its old description back (one that has its own is left alone)."""
+    if description.strip():
+        row = manager.get_or_create_category(session, name)
+        if not row.description:
+            row.description = description.strip()[:500]
+            session.commit()
+
+
 def _move_notes(session: Session, args: dict) -> dict:
     """Move notes into a category (by name, made when new) or into a space."""
     restored = _put_back(session, args)
@@ -94,12 +105,13 @@ def _move_notes(session: Session, args: dict) -> dict:
     space = str(args.get("space") or "").strip()
     if bool(category) == bool(space):
         raise ToolError("Say where they go: either a category or a space, not both.")
-    entries = _live_notes(session, ids)
+    entries = _live_notes(session, ids, bool(args.get("include_binned")))
     if category:
         try:
             previous = moving.to_category(session, entries, category)
         except ValueError as exc:
             raise ToolError(str(exc)) from exc
+        _describe(session, category, str(args.get("description") or ""))
         if not previous:
             return {"moved": 0, "category": category, "label": f"ph:folder Already in “{category}”"}
         return {
