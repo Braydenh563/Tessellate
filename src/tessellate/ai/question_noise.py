@@ -2580,10 +2580,8 @@ def _run_on_reading(word: str, known) -> tuple[str, str] | None:  # noqa: ANN001
     )
 
 
-def _repair_by_speller(word: str, tail: str, after: str, out: list[str], report, known, fixed, text: str = "") -> bool:  # noqa: ANN001
-    """Reads a misspelt word as the word it is near (`spelling.fix`), or as two
-    words run together, one of them small ("thenthe"), tried only when no list
-    word is near; True when it did and `out` has the reading."""
+def _speller_reading(word: str, after: str, out: list[str], known, text: str) -> tuple[str, str | None] | None:  # noqa: ANN001
+    """The speller's (reading, alternative) for a misspelt word, the sentence choosing between two (INBOX 1745)."""
     low = word.lower()
     read = spelling.fix(
         low, after=after.lower(), before=out[-1].strip("?!.,:;") if out else "", known=known, distance=distance,
@@ -2593,9 +2591,17 @@ def _repair_by_speller(word: str, tail: str, after: str, out: list[str], report,
     #: "Kristopher called" (Brief 90's list, O3).
     if read and word[:1].isupper() and read[0] not in spelling._common():
         read = None
-    if read and read[1]:
+    if read and read[1] and typo_context.speaks_for(read):
         #: Two readings near the word: the sentence, the notebook and the last turn choose (INBOX 1745).
         read = typo_context.lean(low, [read[0], read[1]], out[-1] if out else "", after, text.split(), False)
+    return read
+
+
+def _repair_by_speller(word: str, tail: str, after: str, out: list[str], report, known, fixed, text: str = "") -> bool:  # noqa: ANN001
+    """Reads a misspelt word as the word it is near (`spelling.fix`), or as two
+    words run together, one of them small ("thenthe"), tried only when no list
+    word is near; True when it did and `out` has the reading."""
+    read = _speller_reading(word, after, out, known, text)
     if read:
         chosen = read[0].capitalize() if word[0].isupper() else read[0]
         if report is not None and read[1]:
