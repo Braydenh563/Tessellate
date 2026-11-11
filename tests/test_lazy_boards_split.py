@@ -28,7 +28,7 @@ JS = FRONTEND / "js"
 
 BOARD_FILES = [
     "whiteboard-map.js", "whiteboard-map-more.js", "whiteboard.js", "whiteboard-commands.js",
-    "whiteboard-library.js", "whiteboard-templates.js", "whiteboard-format.js",
+    "whiteboard-library.js", "whiteboard-templates.js", "whiteboard-format.js", "whiteboard-label.js",
     "whiteboard-interchange.js", "whiteboard-history.js",
 ]
 

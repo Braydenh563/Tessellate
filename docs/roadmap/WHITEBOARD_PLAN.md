@@ -1592,13 +1592,13 @@ Missing (items 1 to 5, zoom to the selection, tidy as a tree, change the shape, 
 ## Placed from INBOX, 2026-11-01 (1510(a), the draw.io Format panel gap list; board-1101)
 
 Read against draw.io's Style, Text and Arrange tabs; the rows in "The draw.io programme" sections 1 and 2 above carry the status. Present 47, built 3 (size presets, text direction, text opacity), placed 9, in this order of use:
-1. Label background and border (`label_bg`, `label_border`), so a connector's words read over crossing lines. S.
+1. Built 2026-11-11, HISTORY "f2-1111".
 2. Built 2026-11-10, HISTORY "s9c-1110 F2".
 3. Built 2026-11-10, HISTORY "s9c-1110 F2".
-4. Word wrap off and a label width (`label_width`). S.
-5. Spacing per side (`label_pad {t,r,b,l}`), shared with Padding. S.
+4. Built 2026-11-11, HISTORY "f2-1111".
+5. Built 2026-11-11, HISTORY "f2-1111".
 6. Group padding on a frame. S.
-7. Label position outside the shape (above, below, left, right; `label_pos`). M.
+7. Built 2026-11-11, HISTORY "f2-1111".
 8. Built 2026-11-10, HISTORY "s9c-1110 F2".
 9. Built 2026-11-10, HISTORY "s9c-1110 F2".
 Dropped, as before: glass, text shadow, SVG image styles. Subscript and superscript wait on rich text in shapes (section 2's row).
