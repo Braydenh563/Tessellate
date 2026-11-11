@@ -239,6 +239,7 @@ TOPIC_LEADS: dict[str, str] = {
     "encryption": "Which notes are encrypted on disk, and what keeps the rest safe.",
     "lock": "Set when the app asks for a password and which other devices may sign in.",
     "phone": "Open this computer's notebook on your phone over your own network.",
+    "address-names": "Open the app at a short name.localhost, or give a reverse proxy a domain it may use.",
     "lan-networks": "Control which networks let other devices open the app, from the status bar.",
     "two-computers": "Move your notebook to a new computer, or use it from a second one.",
     "delete-data": "How to erase your notebook for good, and get back what you deleted by mistake.",

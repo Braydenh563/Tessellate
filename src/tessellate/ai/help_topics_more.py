@@ -1965,7 +1965,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "search-index", "search-engine-moved", "packages", "package-models", "spelling-packs",
     )),
     ("Privacy and your data", (
-        "privacy", "security", "encryption", "lock", "phone", "lan-networks", "two-computers", "delete-data", "storage", "import-export", "import-apps", "usage-ledger", "background-tasks", "activity", "health", "data-folder-check",
+        "privacy", "security", "encryption", "lock", "phone", "address-names", "lan-networks", "two-computers", "delete-data", "storage", "import-export", "import-apps", "usage-ledger", "background-tasks", "activity", "health", "data-folder-check",
     )),
     ("Settings and support", (
         "profile", "general-settings", "desktop-companion", "desktop-companion-moods", "updates", "maintenance", "logs", "troubleshooting", "credits",
@@ -2121,6 +2121,7 @@ MORE_TOPICS.append({
 })
 TOPIC_META.update({
     "lan-networks": {"title": "Other devices and networks", "path": "The wifi icon in the status bar, or Settings, Account & security, Other devices"},
+    "address-names": {"title": "A name instead of localhost", "path": "Settings, Account & security, Address names"},
     "phone": {"title": "On your phone", "path": "Settings, Account & security, Other devices"},
     "two-computers": {"title": "Two computers", "path": "Settings, Import & export", "target": "sync-group"},
     "settings-reset": {"title": "Resetting and moving your settings", "path": "Settings, Import & export, Your settings",
