@@ -3846,7 +3846,7 @@ span > .chip {
   top: 0;
   align-self: stretch;
   height: 100%;
-  max-height: var(--page-sticky-h);
+  max-height: calc(var(--page-viewport) - var(--page-top) - var(--page-bottom));
   display: flex;
   flex-direction: column;
   gap: 0.5rem;

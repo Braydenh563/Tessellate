@@ -1251,13 +1251,6 @@ body.graph-fullscreen-on .sidebar-panel {
 }
 .graph-node {
   cursor: pointer;
-  /* Declared here so the token has a live value of its own, and overridden per
-     node from graph.js with `(r + GRAPH_HOVER_GROW) / r`, this node's own
-     factor from its core half way out to its halo. 1.2 is the middle of the
-     range that produces (1.15 on the largest node, 1.33 on the smallest), so a
-     node drawn before the script has set its property still grows by about the
-     right amount rather than by a number chosen to look harmless. */
-  --graph-hover-scale: 1.2;
 }
 /* --- hovering a node --------------------------------------------------------
    Asked for: "can you make graph nodes temporarily expand to fill their glow
@@ -1268,16 +1261,15 @@ body.graph-fullscreen-on .sidebar-panel {
    around it rather than something the dot has eaten. It went the whole
    distance first and was shown: "the halo growth on the nodes is a bit
    visually jarring tbh", so it is half the travel and half the light now.
-   `--graph-hover-scale` is set per node in graph.js: it is
-   `(r + GRAPH_HOVER_GROW) / r`, this node's own factor, and it has to be per
-   node because the halo sits a fixed 6 outside a radius that ranges from 9 to
-   20 (graph.js says this at length).
+   The dot grows by 1.2, the middle of the 1.15 to 1.33 that half the way
+   out to the halo makes over the radii a node can have (nothing sets a
+   per-node factor any more, so the token that carried it was retired).
    `transform-box: fill-box` is what makes `transform-origin: center` mean the
    circle's own centre. Without it the origin is the SVG viewport's, and every
    node would fly across the canvas instead of growing in place. */
 .graph-node:hover .graph-core,
 .graph-node:is(:focus-visible, :has(:focus-visible)) .graph-core {
-  transform: scale(var(--graph-hover-scale));
+  transform: scale(1.2);
 }
 .graph-node .graph-core {
   stroke: var(--card);
