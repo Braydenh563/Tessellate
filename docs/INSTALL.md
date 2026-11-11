@@ -239,7 +239,7 @@ without Ollama (needle), Translate offline (Bergamot), A second grammar
 checker (LanguageTool, about 252 MB, which also needs Java already
 installed), the speaker label models (about 34 MB), the live captions model
 (`tiny.en`, about 32 MB) and the French, German and Spanish spelling packs
-(about 240 to 345 KB each). Each is pinned and checked against a sha256, and
+(237 to 343 KB each). Each is pinned and checked against a sha256, and
 kept in the data folder. Live captions has builds for Windows x86_64, Linux
 x86_64 and aarch64, and macOS on Apple silicon; elsewhere its row says "Not
 for this computer" and captions use the Voice notes engine.
