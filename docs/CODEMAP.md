@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10178, test files 2496, tests 20563, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10185, test files 2496, tests 20563, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -13529,7 +13529,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10178)
+## Backend modules (10185)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -25071,19 +25071,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_Markdown` | src/tessellate/core/webclip.py:326 |
 | `_Node` | src/tessellate/core/webclip.py:182 |
 | `_Tree` | src/tessellate/core/webclip.py:192 |
-| `_descendants` | src/tessellate/core/webclip.py:411 |
+| `_descendants` | src/tessellate/core/webclip.py:429 |
 | `_link_text` | src/tessellate/core/webclip.py:260 |
 | `_main` | src/tessellate/core/webclip.py:282 |
 | `_new_session` | src/tessellate/core/webclip.py:68 |
-| `_read` | src/tessellate/core/webclip.py:420 |
+| `_read` | src/tessellate/core/webclip.py:438 |
 | `_safe_href` | src/tessellate/core/webclip.py:311 |
 | `_score` | src/tessellate/core/webclip.py:268 |
 | `_score_deep` | src/tessellate/core/webclip.py:307 |
 | `_text` | src/tessellate/core/webclip.py:254 |
 | `clean_url` | src/tessellate/core/webclip.py:78 |
-| `extract` | src/tessellate/core/webclip.py:433 |
+| `extract` | src/tessellate/core/webclip.py:451 |
 | `fetch_page` | src/tessellate/core/webclip.py:83 |
-| `note_content` | src/tessellate/core/webclip.py:460 |
+| `note_content` | src/tessellate/core/webclip.py:478 |
 
 ### src/tessellate/core/window_hook.py (4)
 
@@ -25286,7 +25286,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_version` | src/tessellate/entry/link_offers.py:107 |
 | `offers` | src/tessellate/entry/link_offers.py:194 |
 
-### src/tessellate/entry/link_wording.py (15)
+### src/tessellate/entry/link_wording.py (17)
 
 | Name | File:line |
 |---|---|
@@ -25294,14 +25294,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `PairNote` | src/tessellate/entry/link_wording.py:106 |
 | `_and` | src/tessellate/entry/link_wording.py:246 |
 | `_at_start` | src/tessellate/entry/link_wording.py:133 |
-| `_close_in_time` | src/tessellate/entry/link_wording.py:287 |
+| `_close_in_time` | src/tessellate/entry/link_wording.py:292 |
+| `_clues` | src/tessellate/entry/link_wording.py:307 |
 | `_mentions` | src/tessellate/entry/link_wording.py:220 |
+| `_name_candidates` | src/tessellate/entry/link_wording.py:250 |
 | `_names` | src/tessellate/entry/link_wording.py:142 |
-| `_shared_names` | src/tessellate/entry/link_wording.py:250 |
+| `_shared_names` | src/tessellate/entry/link_wording.py:263 |
 | `_shared_tags` | src/tessellate/entry/link_wording.py:236 |
-| `_shared_words` | src/tessellate/entry/link_wording.py:274 |
+| `_shared_words` | src/tessellate/entry/link_wording.py:279 |
 | `is_generic` | src/tessellate/entry/link_wording.py:198 |
-| `specific_reason` | src/tessellate/entry/link_wording.py:302 |
+| `specific_reason` | src/tessellate/entry/link_wording.py:332 |
 | `strength_word` | src/tessellate/entry/link_wording.py:191 |
 | `title` | src/tessellate/entry/link_wording.py:211 |
 | `tokens` | src/tessellate/entry/link_wording.py:118 |
@@ -25476,15 +25478,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `section_text` | src/tessellate/entry/meetings.py:249 |
 | `strip_cite` | src/tessellate/entry/meetings.py:171 |
 
-### src/tessellate/entry/mentions.py (5)
+### src/tessellate/entry/mentions.py (9)
 
 | Name | File:line |
 |---|---|
-| `backlink_rows` | src/tessellate/entry/mentions.py:146 |
-| `backlink_spans` | src/tessellate/entry/mentions.py:119 |
-| `mention_pattern` | src/tessellate/entry/mentions.py:103 |
-| `names_label` | src/tessellate/entry/mentions.py:112 |
-| `sentence_around` | src/tessellate/entry/mentions.py:40 |
+| `_ends_sentence` | src/tessellate/entry/mentions.py:40 |
+| `_left_edge` | src/tessellate/entry/mentions.py:44 |
+| `_right_edge` | src/tessellate/entry/mentions.py:52 |
+| `_tidied` | src/tessellate/entry/mentions.py:62 |
+| `backlink_rows` | src/tessellate/entry/mentions.py:147 |
+| `backlink_spans` | src/tessellate/entry/mentions.py:120 |
+| `mention_pattern` | src/tessellate/entry/mentions.py:104 |
+| `names_label` | src/tessellate/entry/mentions.py:113 |
+| `sentence_around` | src/tessellate/entry/mentions.py:78 |
 
 ### src/tessellate/entry/moving.py (4)
 
@@ -25695,23 +25701,24 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `undismiss` | src/tessellate/entry/tidy.py:709 |
 | `undo` | src/tessellate/entry/tidy.py:1081 |
 
-### src/tessellate/entry/timewords.py (13)
+### src/tessellate/entry/timewords.py (14)
 
 | Name | File:line |
 |---|---|
 | `Mention` | src/tessellate/entry/timewords.py:62 |
 | `_add_months` | src/tessellate/entry/timewords.py:77 |
-| `_clock` | src/tessellate/entry/timewords.py:258 |
+| `_clock` | src/tessellate/entry/timewords.py:271 |
 | `_count` | src/tessellate/entry/timewords.py:88 |
 | `_day_of_month` | src/tessellate/entry/timewords.py:119 |
 | `_happened` | src/tessellate/entry/timewords.py:213 |
+| `_hour24` | src/tessellate/entry/timewords.py:258 |
 | `_monday` | src/tessellate/entry/timewords.py:73 |
 | `_offset` | src/tessellate/entry/timewords.py:187 |
 | `_weekday` | src/tessellate/entry/timewords.py:220 |
 | `_weekday_late` | src/tessellate/entry/timewords.py:125 |
-| `_with_clock` | src/tessellate/entry/timewords.py:283 |
+| `_with_clock` | src/tessellate/entry/timewords.py:287 |
 | `_written_date` | src/tessellate/entry/timewords.py:107 |
-| `find` | src/tessellate/entry/timewords.py:304 |
+| `find` | src/tessellate/entry/timewords.py:308 |
 
 ### src/tessellate/entry/topics.py (10)
 
