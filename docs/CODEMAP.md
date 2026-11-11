@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2705, CSS sections 523, backend routes 672, backend modules 10158, test files 2498, tests 20560, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2705, CSS sections 523, backend routes 672, backend modules 10158, test files 2500, tests 20570, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -26374,7 +26374,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20560)
+## Tests (20570)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26682,6 +26682,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_chip_target.py | 2 |
 | tests/test_chips_paced_z1c.py | 3 |
 | tests/test_chunk_vectors.py | 11 |
+| tests/test_ci_shards.py | 5 |
 | tests/test_citation_after_heading.py | 1 |
 | tests/test_citation_order_1029.py | 7 |
 | tests/test_cjk_search.py | 6 |
@@ -28061,7 +28062,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_land_1683.py | 4 |
 | tests/test_overlay_landing_1683k.py | 12 |
 | tests/test_overlay_life2_1109.py | 11 |
-| tests/test_overlay_life_1670.py | 25 |
+| tests/test_overlay_life_1670.py | 26 |
 | tests/test_overlay_lower_layer_1108.py | 8 |
 | tests/test_overlay_modes_1107.py | 3 |
 | tests/test_overlay_mood_1108.py | 12 |
@@ -28077,7 +28078,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_presence_1692.py | 18 |
 | tests/test_overlay_react_1700.py | 8 |
 | tests/test_overlay_release_1696.py | 5 |
-| tests/test_overlay_rest_1670.py | 21 |
+| tests/test_overlay_rest_1670.py | 22 |
 | tests/test_overlay_rest_life_1670.py | 8 |
 | tests/test_overlay_ride_1670.py | 16 |
 | tests/test_overlay_ring_1692.py | 3 |
@@ -28088,6 +28089,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_screen_1678.py | 6 |
 | tests/test_overlay_seams_1683e.py | 4 |
 | tests/test_overlay_shake_1108.py | 18 |
+| tests/test_overlay_sim_cache.py | 3 |
 | tests/test_overlay_size_1107.py | 8 |
 | tests/test_overlay_size_review_1107.py | 10 |
 | tests/test_overlay_slow_tick_1108.py | 2 |

@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- CI time (W24): the Python tests run in two legs per version split by file (`pytest --shard i/2`), the overlay's simulated hours are computed once per session instead of once per worker, the portal and puff, micro-act and forced hang tests are split so workers share them, and the global scope ratchet takes 2 s instead of 62.
 - Documents (the owner, 2026-11-11): the block bar (edit, copy, delete) no longer covers text: in Read view it stands in a column in the preview's right gutter, level with the block's top (it was centred on the block's top edge, over the line above and the first words below); the bar's overlap with text and blocks is 0 at 1440 and 390.
 - Whiteboard: an unchanged board no longer rewrites its sketches' class attributes every render (530 sketches: 1,060 DOM writes per render to 0; render 44 to 28-33 ms at 4x CPU); audit 1028 B4 closed, the paint key is the dirty set.
 - Composer: one answer no longer says the same joining phrase twice (two joiner keys shared wordings); the acts and insights evals follow the consent rule and the quieter "keeps coming up" line.
