@@ -1015,10 +1015,16 @@ def test_a_drop_shadow_is_an_elevation_token():
 
 #: 171 at the design review, 128 when Brief 57 measured, 117 after the 13a
 #: full-screen pass (graph card, board, document focus now win by id and
-#: class). Most left are the motion switches overriding every element's own
-#: animation, print, the companion's states and inline styles set by script;
-#: each goes by specificity, and the count only falls.
-IMPORTANT_LEFT = 117
+#: class), 96 after the settings Peek, the folded rail, the board's ink swatch,
+#: the ambient canvas, the status-bar slots and the print reset went by
+#: specificity. The count is of declarations outside comments (`grep -c` reads
+#: the lines that explain them too, which is why it says 166). Most left are
+#: the motion switches overriding every element's own animation (02, 08,
+#: motion-still), the Appearance border-style and the `.hidden` utility they
+#: answer, the native selects kept out of flow whose id rules outrank a class,
+#: print, the companion's states and inline styles set by script; each goes by
+#: specificity, and the count only falls.
+IMPORTANT_LEFT = 96
 
 
 def test_important_only_falls():

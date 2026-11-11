@@ -1256,8 +1256,8 @@ body {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  width: 100vw !important;
-  height: 100vh !important;
+  width: 100vw;
+  height: 100vh;
 }
 /* Wave L rework: one compact, sticky top bar, brand · tabs · controls.
    The old two-row header + tab strip spent ~120px before any content. */
@@ -3240,8 +3240,8 @@ button.scroll-row-arrow[hidden] {
    slots (`#status-task`) is already shown and hidden by `.hidden` from a
    different code path: sharing the class would mean a running job could
    un-hide a slot somebody had turned off. */
-.status-slot-off {
-  display: none !important;
+[data-status-slot].status-slot-off {
+  display: none;
 }
 /* The checkboxes that drive it: the same pill toggle as everywhere else,
    wrapped so a narrow settings panel wraps between them. */

@@ -280,7 +280,7 @@
   body.printing-doc #doc-status,
   body.printing-doc .scroll-top,
   body.printing-doc #bg-art {
-    display: none !important;
+    display: none;
   }
   /* The shell's own window-high, scroll-inside boxes, let go, so the
      document runs on to as many pages as it needs. */
@@ -289,9 +289,9 @@
   body.printing-doc #tab-documents,
   body.printing-doc .doc-panes {
     display: block !important;
-    height: auto !important;
-    max-height: none !important;
-    overflow: visible !important;
+    height: auto;
+    max-height: none;
+    overflow: visible;
   }
   body.printing-doc .doc-layout {
     display: block;
