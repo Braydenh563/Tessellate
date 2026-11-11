@@ -1591,6 +1591,7 @@ function recordingFacts(rec) {
   const when = parseServerTime(rec.created_at) || new Date(rec.created_at);
   const facts = [when.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }), meetingClockText(rec.duration_ms), recordingTranscriptState(rec)];
   if (rec.derived === "enhanced") facts.push("enhanced");
+  else if (rec.derived === "overview" || rec.derived === "brief") facts.push(rec.derived);
   else if (rec.source_id) facts.push("trimmed");
   if (rec.recovered) facts.push("recovered");
   return facts.join(" · ");

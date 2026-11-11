@@ -118,7 +118,7 @@ def test_kebab_menu_draws_the_vertical_glyph_only_when_asked() -> None:
     source = JS["sheets-selects.js"]
     start = source.index("function kebabMenu(")
     body = source[start : start + 900]
-    assert "{ vertical = false } = {}" in body
+    assert "{ vertical = false, anchor = null } = {}" in body
     assert 'vertical ? "ph:dots-three-vertical" : "ph:dots-three"' in body
 
 

@@ -456,6 +456,11 @@ def uncovered() -> dict[str, list[int]]:
 
 
 EXEMPT: dict[str, str] = {
+    "settings-controls.js:saveAddressNames": "settings: a setting with its own Reset or the settings history",
+    "studio.js:speakNatural": "read: speaks a note aloud; nothing is written",
+    "studio.js:follow": "job: stops a studio run; deletes no user data",
+    "studio.js:start": "job: starts a studio run that saves a new recording the person can delete; changes no existing note",
+    "sync-folder.js:build": "send: a sync keeps the older text of any note it replaces in that note's History, and a note it binned is in the recycle bin",
     "answer-kit.js:toolChip": "send: Fetch again refreshes the kept copy of a web page from the web; nothing the person wrote changes",
     "answer-kit.js:keptPagesRow": "read: asks how old the kept web pages are; its Fetch again refreshes a kept copy, nothing the person wrote changes",
     "settings-controls.js:(anonymous /websearch/stored)": "send: clears the cache of fetched web pages; each fetches again when next asked, nothing the person wrote is lost",
@@ -553,7 +558,10 @@ EXEMPT: dict[str, str] = {
     "whiteboard.js:wbRestoreLinks": "inverse: draws a deleted item's links again for the board history's own Undo",
     "whiteboard-map.js:wbMapRestoreRows": "inverse: puts back a deleted branch for the board history's own Undo and Redo",
     "whiteboard-map.js:wbMapAdoptProvisional": "board: gives a topic already on the board's history (its create step is remapped to the server id)",
-    "settings-wiring.js:commitCaptureImages": "send: uploads the pictures of a note being saved; the save is the step (Undo bins the note)",
+    #: The note's create step is now pushed before the staged files go (INBOX e2e "Undo takes a new note back"), so the
+    #: pictures uploaded first sit inside the step and the files attached after it are the exempt send.
+    "settings-wiring.js:uploadStagedFiles": "send: attaches the staged files to the note just saved; the save is the step (Undo bins the note with them)",
+    "settings-rows.js:syncNow": "job: pulls the paired computer's changes (WORLD_CLASS_PLAN B6); an Undo would be pulled back by the next sync, each note keeps its own history",
     "library.js:noteRead": "telemetry: opening a saved link marks it read, as visiting a page does; reading is not an edit",
     "chat-undo.js:chatPut": "inverse: the chat undo helpers' own PUT",
     "batch-space.js:batchSpaceRequest": "inverse: the move request itself; batchMoveToSpace pushes the step with the answer's old places",

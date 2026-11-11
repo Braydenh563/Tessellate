@@ -473,7 +473,7 @@
       blocked.disabled = true;
       actions.appendChild(blocked);
       //: A computer the engine has no build for will not get one by waiting.
-      title.appendChild(chip(extra.no_build ? "ph:prohibit Not for this computer" : "ph:hourglass Not ready yet", "item-label extras-soon"));
+      title.appendChild(extra.no_build ? chip("ph:prohibit Not for this computer", "item-label extras-soon") : chip("ph:hourglass Not ready yet", "item-label extras-soon"));
     } else {
       const install = smallButton("ph:download-simple Install", `Install ${extra.label}`, () => packagesInstallOne(extra));
       install.disabled = Boolean(body.running);

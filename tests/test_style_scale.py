@@ -915,7 +915,14 @@ def test_colour_literals_live_in_the_two_colour_files():
 #: 423 on Brief 57's base; the merge set it at the merged tree's count, 429:
 #: the calendar's six own sizes (timeline-calendar-lazy.css, decision 14) landed
 #: beside it, and inlining them would grow the literal-heights ratchet instead.
-TOKEN_BUDGET = 428
+#: 417 after the 1111 pass (OPEN F6): six single-use tokens inlined, five
+#: root-only names for other tokens merged into them. The floor under the
+#: decision's 200 is measured, not guessed: 170 tokens are named by a script
+#: (atlas.js writes 31 through templates), 81 more change with the theme or
+#: the element and are read twice or more, 251 already; the rest are recipe
+#: tokens a test pins, state a selector sets, or values a literal ratchet
+#: keeps out of the rules. A merge that lowers it lowers this too.
+TOKEN_BUDGET = 417
 
 
 def test_the_token_count_only_falls():
@@ -1017,14 +1024,16 @@ def test_a_drop_shadow_is_an_elevation_token():
 #: full-screen pass (graph card, board, document focus now win by id and
 #: class), 96 after the settings Peek, the folded rail, the board's ink swatch,
 #: the ambient canvas, the status-bar slots and the print reset went by
-#: specificity. The count is of declarations outside comments (`grep -c` reads
+#: specificity, 87 after the dead `.dock-native-hidden` rule (no markup or script
+#: ever applied the class) and the emblem mark's size (the script already draws
+#: it at the same 24px inline) went. The count is of declarations outside comments (`grep -c` reads
 #: the lines that explain them too, which is why it says 166). Most left are
 #: the motion switches overriding every element's own animation (02, 08,
 #: motion-still), the Appearance border-style and the `.hidden` utility they
 #: answer, the native selects kept out of flow whose id rules outrank a class,
 #: print, the companion's states and inline styles set by script; each goes by
 #: specificity, and the count only falls.
-IMPORTANT_LEFT = 96
+IMPORTANT_LEFT = 87
 
 
 def test_important_only_falls():

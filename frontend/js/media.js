@@ -289,6 +289,13 @@ function startMicLevelMeter(stream, button) {
 
 //: `button` shows a stop icon and `aria-pressed` while it speaks (INBOX 1423).
 function speakText(text, button = null) {
+  //: The natural voice, once chosen in Settings, Read aloud and installed (studio.js, lazy: a stand-in fetches it on the first press).
+  //: The caller follows the returned object's onstart and onend, as it does an utterance.
+  if (text.trim() && prefs.get("read-aloud-voice", "browser") === "natural") {
+    const handle = { onstart: null, onend: null, onerror: null };
+    speakNatural(text, button, handle);
+    return handle;
+  }
   if (!("speechSynthesis" in window)) {
     toast("This browser has no text-to-speech voices.", "info");
     return;

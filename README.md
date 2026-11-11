@@ -21,7 +21,7 @@
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-green)](LICENSE)
 
 [![Last commit](https://img.shields.io/github/last-commit/Braydenh563/Tessellate)](https://github.com/Braydenh563/Tessellate/commits/main)
-[![Tests](https://img.shields.io/badge/tests-17%2C000%2B%20offline-brightgreen)](tests)
+[![Tests](https://img.shields.io/badge/tests-21%2C000%2B%20offline-brightgreen)](tests)
 [![Complexity](https://github.com/Braydenh563/Tessellate/actions/workflows/complexity.yml/badge.svg)](https://github.com/Braydenh563/Tessellate/actions/workflows/complexity.yml)
 [![Performance](https://github.com/Braydenh563/Tessellate/actions/workflows/performance.yml/badge.svg)](https://github.com/Braydenh563/Tessellate/actions/workflows/performance.yml)
 
@@ -87,8 +87,9 @@ capture a thought  ->  it files itself  ->  ask a question  ->  an answer, with 
 - **Works without AI.** With no model, Atlas still answers from your notes
   (dates, tasks, reminders, how-to questions) with citations, and the app
   files, searches and keeps every feature working.
-- **Quick unlock.** A PIN unlocks the notebook on this computer, kept in the
-  system's protected store; the password still works everywhere.
+- **Quick unlock.** A PIN, or Windows Hello on Windows, unlocks the notebook
+  on this computer, kept in the system's protected store; the password still
+  works everywhere.
 - **More than notes.** Documents, whiteboards and mind maps, a graph of your
   ideas, a timeline and reminders, in one app.
 
@@ -127,7 +128,10 @@ Open a section for the detail.
 - Attach any file. Images are captioned, read by a vision model and run
   through Tesseract OCR (or RapidOCR) where each is available; scanned PDFs are read page
   by page, and the OCR workspace lets you correct each region before it
-  becomes a note.
+  becomes a note. Right-click any picture to copy or save it.
+- Two optional local extras for recordings: speaker labels, so a transcript
+  reads Speaker 1, Speaker 2 told apart by voice, and live captions that
+  write what the microphone hears as it is said.
 - A note saved while the server is away waits on this device and is sent once
   when the server is back.
 
@@ -140,7 +144,8 @@ Open a section for the detail.
   estimate of how sure it was (never 100%) and suggests tags, one press to keep each. With no AI, tags come from
   the notes most like it.
 - Manage categories and tags by hand: create, rename, merge, split, delete and
-  move, each step undoable. Spaces keep separate areas of life apart.
+  move, each step undoable. Spaces keep separate areas of life apart, and a
+  private space seals everything in it and locks as one.
 - A background librarian can tag, link and flag duplicates on a schedule you
   set. It never deletes anything.
 - Everything lives in the Library: notes, documents, chats, boards and maps,
@@ -180,13 +185,19 @@ Open a section for the detail.
 <summary><b>Write</b>: a long-form editor with live preview, local spelling and grammar, history and export</summary>
 
 - Documents is a long-form editor with Live, Source, Split and Read views,
-  spelling and grammar checks that run on your computer, version history,
+  spelling and grammar checks that run on your computer (French, German and
+  Spanish spelling are optional packs), version history,
   focus mode, and code files with line numbers, the line you are on lightly
   highlighted. A document reopens where you left it.
 - A ```mermaid block draws as a diagram (flowchart, sequence, class, state, Gantt, pie and
   more) in documents, chat and exports, with Mermaid 12.2.0 shipped in the app and loaded on
   first use, so it works offline. The diagram builder edits a flowchart by
-  pointing at the drawn picture.
+  pointing at the drawn picture, or from a sentence ("add a refund step after
+  In stock? No"), shown marked on the picture before you apply it.
+- Tables add up: a cell such as `=SUM(B)` or `=AVG(B2:B5)` shows its result,
+  and a column can be filtered without changing the file. Code blocks that
+  name a language are coloured in notes, chat and documents, and code files
+  you open stay as tabs above the editor.
 - Equations are drawn as you write them, as in Word: click one in a note or document, or open
   Calculator and equations on its Equation tab (Alt+=), and fill the dotted boxes of a fraction, script, root, integral, sum,
   bracket, function, accent, limit or matrix, or type LaTeX; the file keeps plain TeX between
@@ -202,7 +213,8 @@ Open a section for the detail.
 <summary><b>Visualise</b>: graph, timeline, whiteboards and mind maps, dashboard</summary>
 
 - The Graph draws your notes as a map coloured by category, with the reason
-  for each link written down.
+  for each link written down. Its layouts include Treemap and Tessellation,
+  where each note owns a cell.
 - The Timeline puts every note and reminder on a time axis.
 - Boards hold cards, sketches, images and shapes that contain text, joined by
   connectors that carry a label, with a library of shapes, flowchart symbols
@@ -212,8 +224,9 @@ Open a section for the detail.
 - A board can be a mind map, with tasks to tick, a note behind any topic and
   numbered branches. The centre, main branches and deeper topics each get their
   own size and look (Classic, Outline, Boxed or Flat, or your own per level),
-  and a topic can wear any icon or emoji. Maps export as Markdown, OPML or
-  FreeMind, and import XMind.
+  and a topic can wear any icon or emoji. Build up branch by branch presents a
+  map from the centre out. Maps export as Markdown, OPML or FreeMind, and
+  import XMind.
 - The Dashboard shows your capture streak, statistics, a weekly digest and the
   widgets you choose.
 
@@ -222,7 +235,7 @@ Open a section for the detail.
 <details>
 <summary><b>Also</b>: themes, accessibility, a guided tour, sign-in</summary>
 
-- Thirteen themes, each in light or dark, with your own accent, type, density
+- Fifteen themes, each in light or dark, with your own accent, type, density
   and corners. A drawn face for every person and persona, and an optional
   corner companion that can also live on your desktop (Windows and Linux X11).
 - An Interface animations switch (Settings, Appearance, Effects & accessibility)
@@ -315,8 +328,8 @@ Captured from the app in the dark theme at 1440 by 900.
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/settings.png" alt="Settings, Appearance: thirteen themes as swatches, with saved looks below and the section list on the left" width="850">
-  <br><sub><b>Settings</b>: thirteen themes, your own accent, type, density and corners, and every setting searchable</sub>
+  <img src="docs/screenshots/settings.png" alt="Settings, Appearance: fifteen themes as swatches, with saved looks below and the section list on the left" width="850">
+  <br><sub><b>Settings</b>: fifteen themes, your own accent, type, density and corners, and every setting searchable</sub>
 </p>
 
 <p align="center">
@@ -416,7 +429,7 @@ later; until then search uses keywords. To avoid the download, pull
 | Search inside images (Tesseract OCR) | Text in images becomes searchable; also needs the Tesseract program |
 | Read images without Tesseract (RapidOCR) | A second local reader, nothing else to install; used when Tesseract isn't ready |
 | A second grammar checker (LanguageTool) | Grammar and style findings from a local Java program, merged with the built-in checker's; about 252 MB, needs Java already installed |
-| French, German and Spanish spelling (Hunspell) | Spelling checks for a document whose language is set to one of them; a pinned download of about 340 KB each that works offline |
+| French, German and Spanish spelling (Hunspell) | Spelling checks for a document whose language is set to one of them; a pinned download of 237 to 343 KB each that works offline |
 | Run Python files (Pyodide) | Runs a `.py` document in a sandbox; a pinned download that works offline |
 | Tool calling without Ollama (needle) | A small built-in model that picks tools when no model server is running; a pinned download that works offline |
 | Speaker labels, engine (sherpa-onnx) | Tells voices apart in a recording so a transcript reads Speaker 1, Speaker 2; the Speakers bundle installs it with its models |
@@ -424,6 +437,8 @@ later; until then search uses keywords. To avoid the download, pull
 | Translate offline (Bergamot, English to Spanish) | Translate this, in the command palette, with no model; a pinned 27 MB download that works offline |
 | Live captions, engine (whisper.cpp) | Words appear as you speak into the microphone, on this computer; the Live captions bundle installs it with its model in one click |
 | Live captions, model (tiny.en) | The small English speech model the engine reads; a pinned 32 MB download kept in the data folder; works offline |
+| Natural voice, engine (Piper) | Reads notes and a spoken overview aloud in a natural voice, on this computer; the Natural voice bundle installs it with its voice in one click |
+| Natural voice, voice (LJ Speech) | The public-domain US English voice the engine speaks with; a pinned 64 MB download kept in the data folder; works offline |
 
 ## Privacy
 
@@ -442,11 +457,15 @@ password. Every import keeps a report naming anything it left out.
 - The AI runs where you point it, and a setting that is on by default
   refuses a model address that is not on your computer or network.
 - Private notes are encrypted at rest with a key derived from your password,
-  and kept out of search, the graph and every AI tool. A recovery key, shown
-  once, lets "Forgot your password?" on the lock screen set a new password
-  and keep them.
+  and kept out of search, the graph and every AI tool. New notes can start
+  private (Settings, Account & security), and a whole space can be private.
+  A recovery key, shown once, lets "Forgot your password?" on the lock screen
+  set a new password and keep them.
+- A model API key is kept in the system's keyring (or an owner-only file),
+  never in `preferences.json`.
 - Web search is off by default, and the update check waits for your answer to
-  the question the first start asks. Web search sends only your search words.
+  the question the first start asks. Web search sends only your search words,
+  and a page read in a chat is kept on this computer for 7 days (a setting).
 - Settings, Privacy lists every connection the app has made.
 
 [docs/PRIVACY.md](docs/PRIVACY.md) has the full model, including sessions, the

@@ -99,8 +99,9 @@ MORE_TOPICS: list[dict] = [
         ),
         "body": (
             "On its own, Atlas does the same small things as the desktop companion: "
-            "push-ups, dumbbells, tea, a biscuit, fishing, a journal, the stars, a nap under a "
-            "blanket, watering a plant and a puzzle, each with its eyes on the prop, and short "
+            "push-ups, dumbbells, tea, a biscuit, fishing, a journal, the stars, a nap (a blanket draped over a pillow, "
+            "a small z rising, the rings dimmed to a faint halo and slowed until it wakes), watering a plant and a puzzle, "
+            "each with its eyes on the prop, and short "
             "gestures: a nod, a little dance, posing proud, a look down and tiptoeing, then a daydream, "
             "pacing, a made-up game, tinkering with a gear and dusting off, and a sneeze, a hiccup, a hug "
             "round itself and a foot tap, then a firefly chase, a little pile of stars counted, a nap on a note card and a wave at the pointer. A shake or a pout leaves it "
@@ -1497,6 +1498,44 @@ MORE_TOPICS: list[dict] = [
         "badge": {"label": "Notes", "tab": "notes"},
     },
     {
+        "id": "audio-overview",
+        "keywords": (
+            "audio overview", "natural voice", "read my notes aloud", "podcast", "brief before a meeting", "meeting brief",
+            "make an audio overview", "piper", "read aloud voice", "listen to my notes",
+        ),
+        "body": (
+            "Make an audio overview in the command palette (Ctrl+K) reads your notes aloud and saves the reading as a "
+            "recording in Library, Recordings, marked overview, with its lines timed like a transcript. Say what it is "
+            "about (notes holding those words; empty means the newest notes) and how long (about 1, 3 or 5 minutes); "
+            "tick A brief before a meeting for a short run-down of those notes instead. Nothing is added to your words: "
+            "it is your own sentences under a fixed frame (First, Next, Last), with no AI model, and private and binned "
+            "notes are never read. Stop ends it and keeps nothing. It needs the Natural voice package (Settings, "
+            "Packages: an engine and a 64 MB voice, fetched once, then everything runs on this computer). With it "
+            "installed, Settings, General, Read aloud, Voice can switch an answer's Read aloud from this browser's "
+            "voices to the natural one; the speaking speed applies to the browser's voices only."
+        ),
+        "badge": {"label": "Notes", "tab": "notes"},
+    },
+    {
+        "id": "folder-sync",
+        "keywords": (
+            "sync", "sync between computers", "sync folder", "two computers", "usb stick", "syncthing", "no server",
+            "merge notes", "another computer", "sync conflict", "edited on both",
+        ),
+        "body": (
+            "Sync between computers in the command palette (Ctrl+K) shares your notes through a folder you choose, with no "
+            "server: a USB stick, a Syncthing folder or a cloud drive's folder on each computer. Type the folder and a sync "
+            "passphrase (at least 8 characters, the same on every computer; it is never saved) and press Sync now. Each "
+            "computer writes only its own file there, encrypted, and reads the others'; press it on each computer to "
+            "bring them level. Private notes never go into the folder. A note edited on both computers keeps the later "
+            "edit and the other words stay in the note's History, so nothing is lost; a note deleted on one is deleted on "
+            "the other unless the other changed it later. Links, reminders, attachments and boards do not travel, only the "
+            "notes' words, tags, category, colour and pin. A file that cannot be opened (a different passphrase) is counted "
+            "and left alone."
+        ),
+        "badge": {"label": "Notes", "tab": "notes"},
+    },
+    {
         "id": "count-words",
         "keywords": (
             "word count", "count words", "character count", "how many words", "reading time",
@@ -1689,6 +1728,8 @@ TOPIC_META: dict[str, dict] = {
     "manual": {"title": "The manual", "path": "Settings, Help, Open the manual"},
     "first-steps": {"title": "First steps and the sample notebook", "path": "Dashboard, First steps"},
     "live-captions": {"title": "How do I get live captions", "path": "Library, Recordings, Captions"},
+    "audio-overview": {"title": "Make an audio overview of my notes", "path": "Command palette, Make an audio overview"},
+    "folder-sync": {"title": "Sync my notes between computers", "path": "Command palette, Sync between computers"},
     "count-words": {"title": "Count words", "path": "Command palette, Count words"},
     "translate-offline": {"title": "Translate this, offline", "path": "Command palette, Translate this"},
     "insert-template": {"title": "Insert a template", "path": "Command palette, insert template"},
@@ -1886,7 +1927,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     ("Writing notes", (
         "capture", "quick-note", "quick-add", "editor-offers", "autocorrect", "share-note", "capture-anywhere", "note-outbox", "attachments", "quick-sketch", "notes-controls",
         "notes-list", "card-content", "note-history", "links", "favourites", "templates",
-        "write-with-atlas", "translate", "translate-offline", "extract-notes", "voice", "live-captions", "meetings",
+        "write-with-atlas", "translate", "translate-offline", "extract-notes", "voice", "live-captions", "audio-overview", "folder-sync", "meetings",
     )),
     ("Filing, tags and categories", (
         "tags-categories", "filing", "filing-settings", "suggested-tags", "tag-manager", "manage-categories", "tidy",
@@ -1924,7 +1965,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "search-index", "search-engine-moved", "packages", "package-models", "spelling-packs",
     )),
     ("Privacy and your data", (
-        "privacy", "security", "encryption", "lock", "phone", "lan-networks", "two-computers", "delete-data", "storage", "import-export", "import-apps", "usage-ledger", "background-tasks", "activity", "health", "data-folder-check",
+        "privacy", "security", "encryption", "lock", "phone", "address-names", "lan-networks", "two-computers", "delete-data", "storage", "import-export", "import-apps", "usage-ledger", "background-tasks", "activity", "health", "data-folder-check",
     )),
     ("Settings and support", (
         "profile", "general-settings", "desktop-companion", "desktop-companion-moods", "updates", "maintenance", "logs", "troubleshooting", "credits",
@@ -1940,6 +1981,23 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
 #: encryption, deleting your data and sharing a note had no topic of their
 #: own. `tests/test_guide_gaps.py` holds the probe's table at 1.0.
 MORE_TOPICS.extend([
+    {
+        "id": "address-names",
+        "keywords": ("custom domain", "domain name", "localhost", "tessellate.localhost", "short name", "reverse proxy",
+                     "caddy", "nginx", "traefik", "my own domain", "address names", "allowed hosts", "rename localhost"),
+        "body": (
+            "Settings, Account & security, Address names. The short name opens the app at name.localhost on "
+            "this computer (no DNS or hosts file; browsers answer every .localhost name themselves). The app "
+            "accepts only that one, and only from this computer. It is a new address, so you sign in once and "
+            "per-browser settings start fresh; the window and tray use it from the next launch. A domain "
+            "name is for a reverse proxy (Caddy, nginx, Traefik) that ends https and forwards to the app: "
+            "list the name the proxy serves, such as notes.example.com, and the app accepts it. The app does "
+            "not get a certificate or open your router; the proxy does that. Adding a domain asks for your "
+            "password; removing one does not. TESSELLATE_LOCAL_NAME and TESSELLATE_ALLOWED_HOSTS still work "
+            "and win over the saved values."
+        ),
+        "badge": {"label": "Account & security", "section": "account"},
+    },
     {
         "id": "phone",
         "keywords": ("phone", "on my phone", "mobile", "iphone", "android", "tablet", "ipad", "use it on my phone",
@@ -2063,6 +2121,7 @@ MORE_TOPICS.append({
 })
 TOPIC_META.update({
     "lan-networks": {"title": "Other devices and networks", "path": "The wifi icon in the status bar, or Settings, Account & security, Other devices"},
+    "address-names": {"title": "A name instead of localhost", "path": "Settings, Account & security, Address names"},
     "phone": {"title": "On your phone", "path": "Settings, Account & security, Other devices"},
     "two-computers": {"title": "Two computers", "path": "Settings, Import & export", "target": "sync-group"},
     "settings-reset": {"title": "Resetting and moving your settings", "path": "Settings, Import & export, Your settings",
@@ -2249,7 +2308,7 @@ MORE_TOPICS.extend([
             "drag a block on the picture to move it, and drag on empty space to pick the blocks you touch (Shift adds, Shift+click toggles, Space and drag pans). "
             "Drop onto a group's box to add or move into it. Pick or point at a block and its four round handles show: drag the round handle on any side to another block "
             "or a group to connect them, or to empty space for a new connected block; a click on one adds a joined block (Enter, then click, connects; Escape cancels). "
-            "Double-click a block, an arrow or a group's border or title to rename it in place; click a group's border or title to pick it. Right-click any of them (long press on a phone) for a menu; a picked arrow takes Enter to change its words and Delete, and a dot at either end drags to another block. From the keyboard, Enter on a connector row opens the same menu."
+            "Double-click a block, an arrow or a group's border or title to rename it in place; click a group's border or title to pick it. Right-click any of them (long press on a phone) for a menu; a picked arrow takes Enter to change its words and Delete, and a dot at either end drags to another block. A connector row's words (or Enter) go to its block; its ... opens the menu."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },
@@ -2270,8 +2329,8 @@ MORE_TOPICS.extend([
             "arrow: pick a block, or type a new name to make it; a decision's arrows ask for yes or no. Drag a block: "
             "another's top or bottom puts it before or after, its middle joins "
             "them, a group's body takes it inside. Under a block, "
-            "a connector reads Start to Next and its label. The shape swatch "
-            "picks it. A divider sizes the blocks and the picture (drag or "
+            "a connector reads Start to Next and its label. "
+            "The shape swatch picks it. A divider sizes the blocks and the picture (drag or "
             "arrows; Shift for more). Direction (a menu) turns the flow. An empty one lists "
             "three steps: Add a shape, Name it, Connect it. "
             "The corner bar zooms (Zoom in, Zoom out, Fit), as do Ctrl+wheel and a pinch; "
@@ -2386,8 +2445,8 @@ MORE_TOPICS.extend([
             "With no model a rule reads it; with a model on, the model writes the same kind of change. "
             "It shows first: what it does, and a picture of both with added in green, removed in red and dotted, "
             "and changed in amber. Apply makes it (Ctrl+Z undoes it in one step); Discard leaves the diagram as it was. "
-            "Suggestions, under Ask, lists what looks wrong: an arrow out of a decision with no words, a decision with "
-            "one way out, a block with no way out or joined to nothing, two blocks with the same words, a group "
+            "Suggestions, under Ask, opens like a fold (its arrow turns) and lists what looks wrong: an arrow out of a decision with no words, a decision with "
+            "one way out, a block with no way out or joined to nothing, blocks with the same words (one row numbers them), a group "
             "holding one block. Each row's button shows its fix the same way. On a diagram document every Apply is "
             "a named version (AI: added Refund). Versions..., in the ... menu, lists them: tick two to Compare, or "
             "one to compare it with now, and Restore puts one back."

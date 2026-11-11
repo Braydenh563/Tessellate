@@ -229,12 +229,15 @@ class _Scorer:
         relevance = self.relevance(s, view)
         if self.stems and relevance <= 0:
             return 0.0
-        score = relevance + _cue(self.shape, s.text) + 0.4 / (1 + s.rank)
+        cue = _cue(self.shape, s.text)
+        score = relevance + cue + 0.4 / (1 + s.rank)
         #: A sentence that only names the subject ("Store listing copy", a
         #: task on someone's checklist) says nothing about it: measured on
         #: the voice eval, it led "what did I decide about the store
-        #: listing" over the note called "Store listing".
-        if len(self.stems) >= 2 and len([w for w in s.words if w not in self.stems]) <= 1:
+        #: listing" over the note called "Store listing". Not one that has
+        #: what the shape asks for ("Due in March." for a "when is it due",
+        #: which the blind panel found left out).
+        if not cue and len(self.stems) >= 2 and len([w for w in s.words if w not in self.stems]) <= 1:
             score *= 0.5
         if self.shape == "status":
             score += self.recency.get(s.note_id, 0.0)

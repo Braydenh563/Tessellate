@@ -77,14 +77,14 @@ function wbFmtKind(entry) {
 
 //: The fields each kind takes, by the `data-fmt` names in index.html.
 const WB_FMT_FIELDS = {
-  shape: ["stroke", "strokealpha", "width", "dash", "fill", "alpha", "shadow", "shadowset", "rough", "text", "fit", "geometry", "flip", "style-lib", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "fillstyle", "fillalpha", "gradient", "tip"],
+  shape: ["stroke", "strokealpha", "width", "dash", "fill", "alpha", "shadow", "shadowset", "rough", "text", "fit", "geometry", "flip", "style-lib", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "fillstyle", "fillalpha", "gradient", "tip", "shapelabel"],
   line: ["stroke", "strokealpha", "width", "dash", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "tip"],
   //: A straight line or arrow: a line that takes ends.
   arrow: ["stroke", "strokealpha", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "tip"],
   link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "linklook", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "jumpsize", "gapstart", "gapend", "tip"],
   text: ["stroke", "fill", "fillalpha", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props", "rawstyle"],
   image: ["alpha", "shadow", "shadowset", "radii", "crop", "trim", "cropbox", "pixels", "replace", "geometry", "angle", "props"],
-  frame: ["geometry", "props"],
+  frame: ["pad", "geometry", "props"],
   table: ["alpha", "shadow", "shadowset", "radii", "geometry", "props"],
   note: ["geometry", "angle"],
   //: A Mermaid diagram object: the fill and the line it draws with (INBOX 1486).
@@ -741,6 +741,7 @@ function wbFormatSync() {
       document.getElementById(id)?.setAttribute("aria-pressed", mixed(field) ? "mixed" : String(wbFmtValue(first, field)));
     }
   }
+  wbFmtState.label?.sync(takes, sharing);
   if (takes.has("text")) {
     const pressed = (field, value) => {
       const some = sharing.map((e) => wbFmtValue(e, field) === value);
@@ -1553,6 +1554,8 @@ function wbAutoSizeFactors(text, area) {
 //: and, on its own, when a label is typed into a shape: 80 characters in a
 //: 100x60 rectangle used to be drawn 160px tall across the border.
 async function wbGrowShapeToLabel(sketch) {
+  //: Words set outside a shape (`label_pos`) are not inside it to be fitted.
+  if (wbSketchParsedData(sketch)?.label_pos) return false;
   let changed = false;
   for (let round = 0; round < 4; round += 1) {
     const group = document.querySelector(`.sketch-group[data-id="${sketch.id}"]`);

@@ -337,13 +337,25 @@ CAPTIONS_MODEL_FILE = "ggml-tiny.en-q5_1.bin"
 #: The two rows the captions helper reads; changing either stops the helper
 #: first (`_release_captions_helper`).
 CAPTIONS_IDS = ("captions", "captionmodel")
+VOICE_IDS = ("naturalvoice", "naturalvoice-voice")
 CAPTIONS_MODEL_VERSION = "hf-5359861-tiny.en-q5_1"
 _CAPTIONS_NO_BUILD = (
     "No whisper.cpp build for this computer yet. Captions use the Voice notes "
     "engine when it is installed."
 )
 #: The sentence for an `Extra.platforms` miss, by extra id.
-NO_BUILD_REASON = {"captions": _CAPTIONS_NO_BUILD, "captionmodel": _CAPTIONS_NO_BUILD}
+_VOICE_NO_BUILD = "No Piper build for this computer yet. Your browser's own voices keep reading aloud."
+NO_BUILD_REASON = {
+    "captions": _CAPTIONS_NO_BUILD,
+    "captionmodel": _CAPTIONS_NO_BUILD,
+    "naturalvoice": _VOICE_NO_BUILD,
+    "naturalvoice-voice": _VOICE_NO_BUILD,
+}
+#: The wheels `piper-tts` 1.8.0 publishes (abi3: any CPython 3.9 or later).
+_VOICE_PLATFORMS = ("windows-x86_64", "linux-x86_64", "linux-aarch64", "macos-arm64", "macos-x86_64")
+#: The voice, from rhasspy/piper-voices at a commit (never `main`); both files are kept as named.
+_PIPER_VOICES = "https://huggingface.co/rhasspy/piper-voices/resolve/cf910fb59f1d79ab3b625a63993a108751c6c25d/"
+NATURAL_VOICE_VERSION = "ljspeech-medium-cf910fb"
 
 
 @dataclass(frozen=True)
@@ -963,6 +975,55 @@ EXTRAS: tuple[Extra, ...] = (
             ),
         ),
     ),
+    #: **Natural voice (Q34, WORLD_CLASS rows 35 and 37).** Piper from OHF-Voice/piper1-gpl
+    #: (GPL-3.0-or-later, which combines into this AGPL-3.0 app; the MIT rhasspy/piper is archived),
+    #: a pip extra, and one voice as a pinned download. The voice is `en_US-ljspeech-medium`
+    #: (MODEL_CARD: "License: public domain", the LJ Speech data). **To add a voice:** read its
+    #: MODEL_CARD licence, take both files at the same commit, write each `sha256sum` and byte size.
+    Extra(
+        id="naturalvoice",
+        label="Natural voice, engine (Piper)",
+        short_label="Natural voice engine",
+        enables="Reads notes, answers and audio overviews aloud in a natural voice, made on this "
+        "computer. Needs the voice below as well; the Natural voice bundle installs both.",
+        packages=("piper-tts==1.8.0",),
+        module="piper",
+        size="~34 MB, plus onnxruntime if it is not here yet",
+        licence="GPL-3.0-or-later",
+        platforms=_VOICE_PLATFORMS,
+    ),
+    Extra(
+        id="naturalvoice-voice",
+        label="Natural voice, English (LJ Speech)",
+        short_label="Natural voice",
+        enables="The US English voice the engine speaks with. It is read from this computer's data "
+        "folder; nothing is sent anywhere after the download.",
+        packages=("Piper voice en_US-ljspeech-medium",),
+        module="",
+        size="~64 MB download",
+        caveat="English only. About five times faster than real time on one core (measured "
+        "4.9 s of speech in 1.1 s).",
+        kind="download",
+        version=NATURAL_VOICE_VERSION,
+        licence="Public domain",
+        platforms=_VOICE_PLATFORMS,
+        downloads=(
+            Download(
+                url=_PIPER_VOICES + "en/en_US/ljspeech/medium/en_US-ljspeech-medium.onnx",
+                sha256="6f52a751e2349abe7a76735eb09dc1875298c77ea2342ffd2fef79ff81b87f22",
+                size=63531379,
+                unpack="file",
+                members=(("", "en_US-ljspeech-medium.onnx"),),
+            ),
+            Download(
+                url=_PIPER_VOICES + "en/en_US/ljspeech/medium/en_US-ljspeech-medium.onnx.json",
+                sha256="141d612cc0a95ed7efc1ca936b845c2364967f2e9217c5dbfcf69fc4d6c65860",
+                size=4972,
+                unpack="file",
+                members=(("", "en_US-ljspeech-medium.onnx.json"),),
+            ),
+        ),
+    ),
 )
 
 
@@ -1046,6 +1107,12 @@ BUNDLES: tuple[Bundle, ...] = (
         label="Live captions",
         about="Captions over any screen as you speak, written on this computer.",
         extras=("captions", "captionmodel"),
+    ),
+    Bundle(
+        id="naturalvoice",
+        label="Natural voice",
+        about="Read aloud and audio overviews in a natural voice, made on this computer.",
+        extras=("naturalvoice", "naturalvoice-voice"),
     ),
     Bundle(
         id="desktop",
@@ -1949,10 +2016,17 @@ def start(extra_id: str, reinstall: bool = False, auto: bool = False) -> tuple[b
 def _release_captions_helper(extra: Extra) -> None:
     """Stop the captions helper before its engine or model is replaced or
     removed (it holds the model file open). It starts again on the next use."""
+    # Asked through `sys.modules`, as the needle check below: both modules read
+    # this one, so importing them here is a cycle, and one never loaded holds
+    # nothing open.
     if extra.id in CAPTIONS_IDS:
-        from tessellate.ai import captions_process
-
-        captions_process.stop()
+        module = sys.modules.get("tessellate.ai.captions_process")
+        if module is not None:
+            module.stop()
+    elif extra.id in VOICE_IDS:
+        module = sys.modules.get("tessellate.ai.natural_voice")
+        if module is not None:
+            module.release()  # it holds the voice file open (Windows cannot replace it)
 
 
 def _install_refusal(extra: Extra, reinstall: bool) -> str:
@@ -2241,9 +2315,10 @@ def _loaded_in_process_reason(extra: Extra) -> str:
     if extra.id in CAPTIONS_IDS:
         # The helper is a child process of ours, not a mapped library, but a
         # run in progress is using both files.
-        from tessellate.ai import captions
-
-        return "Stop live captions first. They are using it." if captions.running() else ""
+        # `sys.modules` for the same reason: ai.captions reaches this module
+        # through captions_process and core.deps, and one never loaded is not running.
+        captions = sys.modules.get("tessellate.ai.captions")
+        return "Stop live captions first. They are using it." if captions is not None and captions.running() else ""
     if extra.id != "voice":
         return ""
     from tessellate.ai import voice

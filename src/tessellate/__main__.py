@@ -101,7 +101,9 @@ def window_host(port: int | None = None) -> str:
     (`_localhost_works`) and `HOST` is used for that launch when it fails;
     127.0.0.1 is only ever this automatic fallback, never a setting."""
     from tessellate.core import netbind
+    from tessellate.core.config import resolved_data_dir
 
+    netbind.load_address_prefs_file(resolved_data_dir())  # the name Settings saved
     name = netbind.local_name()
     if name:
         return name
@@ -237,6 +239,7 @@ def _run_server() -> None:
     # password (`_serve_with_lan`). This computer always has plain http on
     # HOST:PORT, which everything else in this file talks to.
     config = deps.get_config()
+    netbind.apply_address_prefs(config)  # the short name and domains Settings saved
     #: Docker (Brief 40): TESSELLATE_BIND names a non-loopback address, and
     #: TESSELLATE_FIRST_PASSWORD seeds the password a fresh container has no
     #: console to type. Both unset is the ordinary launch, unchanged.

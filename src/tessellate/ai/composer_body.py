@@ -71,13 +71,20 @@ def _opening(out: _Answer, s: Sentence, shape: str, question: str) -> None:
         out.t("notes_have" if key == "going_by" else key)
 
 
+_WORRIES = re.compile(r"\b(?:risks?|concerns?|worr(?:y|ies)|blockers?|problems?)\b", re.I)
+
+
 def _opener_options(out: _Answer, s: Sentence, shape: str, view: NoteView) -> tuple[str, ...]:
     if shape == "yesno":
         #: A sentence that holds every word the question is about answers it
         #: in the note's own words: "Going by your notes, the deposit is
         #: paid." Never a yes or a no of the app's own (INBOX 688's rule).
         stems = out.subject
-        return ("going_by", "notes_have") if stems and _says_every(stems, s, view) else ("closest_a", "closest_b")
+        #: An entry of a risks list says what might go wrong, not how things
+        #: stand ("The pricing page is not signed off in time."): the nearest
+        #: the notes come, said so (the blind panel's Q17).
+        worry = s.kind == "item" and _WORRIES.search(view.title or "")
+        return ("going_by", "notes_have") if stems and _says_every(stems, s, view) and not worry else ("closest_a", "closest_b")
     needs = _OPENER_NEEDS.get(shape)
     if needs is not None and not needs(s.text):
         return _PLAIN_OPENERS
@@ -292,7 +299,9 @@ def _timeline(out: _Answer, sentences: list[Sentence], terms: list[str]) -> None
 
 def _earlier(out: _Answer, sentences: list[Sentence], terms: list[str]) -> None:
     """A "latest" question's older notes, newest first, as prose that walks
-    back: "Before that, on 12 September, three workstreams ... [**Q4 roadmap**]"."""
+    back: "Before that, on 12 September, three workstreams ... [**Q4 roadmap**]".
+    Every joiner faces back: `then_on` ("Soon after, on 29 August" under a 12
+    September note) read as forward in time, which the blind panel marked."""
     sentences = _with_context(out, [s for s in sentences if s.kind == "prose" or s.kind.startswith("picture")])
     order = _by_note(sentences)
     order.sort(key=lambda note_id: out.views[note_id].written or date.min, reverse=True)
@@ -301,7 +310,7 @@ def _earlier(out: _Answer, sentences: list[Sentence], terms: list[str]) -> None:
         out.t("para")
         unit = sorted((s for s in sentences if s.note_id == note_id), key=lambda s: s.order)
         if view.written:
-            _joined(out, [("before_that", "then_on", "earlier_on")[i] if i < 3 else "and_on"], unit, terms, view.written)
+            _joined(out, [("before_that", "earlier_on", "earlier_on")[i] if i < 3 else "and_on"], unit, terms, view.written)
         else:
             _quotes(out, unit, terms)
         out.cite(view)
@@ -547,7 +556,9 @@ def _compare(out: _Answer, sides: tuple[str, ...], views: list[NoteView], meanin
     if not any(only):
         return False
     if not _length_lead(out, question, own) and not _versus_lead(out, question, own, sides):
-        _compare_lead(out, sides, [len({s.note_id for s in side}) for side in only])
+        #: Every found note that names a side, not the lines shown under it:
+        #: a note about both is a mention of each (the blind panel's Q6).
+        _compare_lead(out, sides, [sum(1 for v in views if any(_holds(t, v.words | v.title_words) for t in stems[i])) for i in range(len(sides))])
     #: The lead names only what follows (probe P15): no "Here is what
     #: each says." before the headings that say it.
     out.t("stop")

@@ -20,11 +20,17 @@ Object.assign(LAZY_MODULES, {
     //: The New board dialog and every template's picture (INBOX 715).
     "/js/whiteboard-templates.js",
     "/js/whiteboard-format.js",
+    "/js/whiteboard-label.js", //: After whiteboard-format.js: it joins that file's field lists and `wbFmtState`.
+    "/js/whiteboard-hints.js", //: The View switches for the arrow grips and the connection dots; needs only the page and `prefs`.
     "/js/whiteboard-interchange.js",
     "/js/whiteboard-history.js",
   ],
   //: A non-image file chosen in the chat: imported as a document, or kept in the Library (chat-docs.js).
   chatDocs: ["/js/chat-docs.js"],
+  //: The offline studio's sheet and the natural voice's reading (studio.js's header; WORLD_CLASS_PLAN rows 35 and 37).
+  studio: ["/js/studio.js"],
+  //: Sync between computers through a folder, no server (sync-folder.js's header; WORLD_CLASS_PLAN row 36).
+  syncFolder: ["/js/sync-folder.js"],
   //: A space switch, in place (space-swap.js).
   spaceSwap: ["/js/space-swap.js"],
   //: Unlocking, editing and leaving a private space (private-spaces.js's header; INBOX 1727).
@@ -122,6 +128,8 @@ installStandIns({
   accountRecovery: ["showRestoreOffer"],
   companionSettings: ["mountBuddyCustom", "mountBuddyActivities", "mountProfileLook", "nameMarkBuddyMakeIt", "nameMarkBuddyHide", "nameMarkBuddyToggle", "nameMarkBuddyCallBack", "nameMarkRepaintAll"],
   spaceSwap: ["swapSpace", "spaceEnterFor"],
+  studio: ["openStudio", "speakNatural"],
+  syncFolder: ["openFolderSync"],
   privateSpaces: ["privateSpaces"],
   companionRemark: ["nameMarkBuddyRemark"],
   chatPrivate: ["chatPrivateStart", "chatPrivateToggle", "chatPrivateLeave"],

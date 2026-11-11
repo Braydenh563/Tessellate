@@ -167,6 +167,12 @@ _SMALL_WORDS = frozenset(
 )
 
 
+#: A verb of the thing is not the thing: "Stay one night at a quinta" is an
+#: instruction, so it does not stand in for the "hotel" someone asked which they
+#: booked (the blind panel's Q10). The synonym group still finds notes.
+_VERB_SYNONYMS = frozenset({"stay", "staying", "stayed"})
+
+
 def _is_unfound(out: _Answer, term: str, found: set[str], quoted: set[str], quoted_text: str = "") -> bool:
     if term.lower() in _SMALL_WORDS or _NOT_A_NOUN.search(term) or re.fullmatch(r"(?=.*[.,$%£€])[\d.,$%£€]+", term):
         return False
@@ -176,7 +182,7 @@ def _is_unfound(out: _Answer, term: str, found: set[str], quoted: set[str], quot
         return False
     if _stem(term) in _frame_stems(out.question or ""):
         return False
-    if _alternatives(_stem(term)) & quoted or _said_by_shape(term, quoted_text):
+    if (_alternatives(_stem(term)) - _VERB_SYNONYMS) & quoted or _said_by_shape(term, quoted_text):
         return False
     return not out.question or term.lower() in out.question.lower()
 

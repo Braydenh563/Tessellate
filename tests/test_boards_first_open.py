@@ -80,6 +80,15 @@ def test_a_file_dropped_before_the_board_code_ran_is_held_and_dropped_again() ->
     assert 'new DragEvent("drop"' in drop and "held.items.add(file)" in drop
 
 
+def test_the_new_arrow_is_mounted_with_the_cards_and_its_rows_wait_for_the_board_code() -> None:
+    source = _text("boards-gallery.js")
+    assert "function wbNewMenuMount()" in source and "  wbNewMenuMount();\n" in source
+    assert "wbNewMenuMount" not in _text("whiteboard.js"), "the board bundle no longer builds it"
+    mount = source[source.index("function wbNewMenuMount()") :][:1800]
+    assert 'const afterBoards = (act) => () => ensureModule("boards").then(act);' in mount
+    assert mount.count("run: afterBoards(") == 3
+
+
 def test_the_hover_fetches_the_small_files_not_the_board_code() -> None:
     source = _text("lazy-entries.js")
     assert '["boardsGallery", "mapPreview"]' in source

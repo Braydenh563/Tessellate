@@ -565,7 +565,7 @@
    body (atlas.js `atlasHandProps.front`), the pencil, the can and the piece in a hand. */
 #nm-buddy.nmb-act-journal .atl-figure :is(.nmp-diary, .nmp-pen),
 #nm-buddy.nmb-act-stars .atl-figure .nmp-sky,
-#nm-buddy.nmb-act-blanket .atl-figure .nmp-blanket,
+#nm-buddy.nmb-act-blanket .atl-figure :is(.nmp-blanket, .nmp-pillow, .nmp-napz),
 #nm-buddy.nmb-act-plant .atl-figure :is(.nmp-plant, .nmp-can),
 #nm-buddy.nmb-act-puzzle .atl-figure :is(.nmp-puzzle, .nmp-piece) { opacity: 1; }
 #nm-buddy:is(.nmb-act-journal, .nmb-act-stars, .nmb-act-blanket, .nmb-act-plant, .nmb-act-puzzle) .nm-atlas .atl-iris { translate: none; }
@@ -580,11 +580,20 @@
 #nm-buddy.nmb-act-stars .atl-figure .nmb-arm-l { transform: rotate(14deg); }
 #nm-buddy.nmb-act-stars .nm-atlas { --atl-lean: -6deg; --atl-tail: 18deg; --atl-head-y: -1px; --atl-tilt: 4deg; }
 #nm-buddy.nmb-act-stars .nm-atlas .atl-pupil { --atl-px: 0.4px; --atl-py: -1.9px; }
-/* A nap under a blanket: both hands on its edge at the chest, eyes closed, a little tipped. */
+/* A nap under a blanket: both hands on its edge at the chest, eyes closed, a little tipped. INBOX 1770: the blanket
+   drapes over a pillow, a small z rises, and what moved all the time rests: the rings dim to a faint halo and go a third
+   as fast (their planets with them: `atlasTailFrame` sets the playback rate, which keeps each planet where it is; a
+   longer duration would jump it), the nebula strand draws in to a soft haze, and the tail (a calm curl under the lower
+   body's "lie", atlas-motion.js) swings a few degrees. Waking puts all of it back, eased over a second. */
 #nm-buddy.nmb-act-blanket .atl-figure .nmb-arm-r { transform: rotate(26deg); }
 #nm-buddy.nmb-act-blanket .atl-figure .nmb-arm-l { transform: rotate(-26deg); }
-#nm-buddy.nmb-act-blanket .nm-atlas { --atl-lean: 2deg; --atl-sy: 0.97; --atl-tail: 24deg; --atl-head-y: 1.6px; --atl-tilt: 6deg; --atl-open: 0; --atl-doze: 1; }
+#nm-buddy.nmb-act-blanket .nm-atlas { --atl-lean: 2deg; --atl-sy: 0.97; --atl-tail: 24deg; --atl-head-y: 1.6px; --atl-tilt: 6deg; --atl-open: 0; --atl-doze: 1; --atl-halo-o: 0.2; --atl-glow: 0.55; }
 #nm-buddy.nmb-act-blanket .nm-atlas .atl-pupil { --atl-px: 0px; --atl-py: 1.8px; }
+#nm-buddy.nmb-act-blanket .atl-orbits { opacity: 0.28; }
+#nm-buddy :is(.atl-lw-neb, .atl-lw-neb-front) { transition: scale calc(var(--motion-slow) * 5) var(--ease-in-out), opacity calc(var(--motion-slow) * 5) var(--ease-in-out); }
+#nm-buddy.nmb-act-blanket :is(.atl-lw-neb, .atl-lw-neb-front) { scale: 0.58; opacity: 0.45; }
+#nm-buddy.nmb-act-blanket .atl-nap-z-0 { opacity: 0.9; }
+#nm-buddy.nmb-act-blanket .atl-nap-z-1 { opacity: 0.6; }
 /* Watering: the can raised in the left hand over the pot, leaning to it, eyes on the leaves. */
 #nm-buddy.nmb-act-plant .atl-figure .nmb-arm-l { transform: rotate(30deg); }
 #nm-buddy.nmb-act-plant .atl-figure .nmb-arm-r { transform: rotate(-14deg); }
@@ -609,8 +618,12 @@
 .nm-atlas .atl-ds-trail { fill: none; stroke: var(--atl-gold); stroke-width: 0.9; stroke-linecap: round; opacity: 0.85; }
 .nm-atlas .atl-ds-shoot { opacity: 0; }
 .nm-atlas .atl-ds-blanket { fill: color-mix(in oklab, var(--atl-lilac) 78%, var(--atl-navy)); stroke: var(--atl-glow-c); stroke-width: 0.5; stroke-linejoin: round; }
-.nm-atlas .atl-ds-fold { fill: none; stroke: var(--atl-hi); stroke-width: 1.3; stroke-linecap: round; opacity: 0.8; }
-.nm-atlas .atl-ds-stitch { fill: none; stroke: var(--atl-navy); stroke-width: 0.6; stroke-linecap: round; opacity: 0.6; }
+.nm-atlas .atl-ds-cuff { fill: color-mix(in oklab, var(--atl-lilac) 70%, var(--atl-hi)); stroke: var(--atl-glow-c); stroke-width: 0.4; stroke-linejoin: round; }
+.nm-atlas .atl-ds-fold { fill: none; stroke: var(--atl-navy); stroke-width: 1; stroke-linecap: round; opacity: 0.4; }
+.nm-atlas .atl-ds-crease { fill: none; stroke: var(--atl-navy); stroke-width: 0.7; stroke-linecap: round; opacity: 0.3; }
+.nm-atlas .atl-ds-pillow { fill: color-mix(in oklab, var(--atl-hi) 78%, var(--atl-lilac)); stroke: var(--atl-glow-c); stroke-width: 0.5; stroke-linejoin: round; }
+.nm-atlas .atl-ds-pillow-seam { fill: none; stroke: var(--atl-lilac); stroke-width: 0.6; stroke-linecap: round; opacity: 0.7; }
+.nm-atlas .atl-nap-z { transform-box: fill-box; transform-origin: 50% 50%; fill: none; stroke: var(--atl-gold-line); stroke-width: 1; stroke-linecap: round; stroke-linejoin: round; }
 .nm-atlas .atl-ds-pot { fill: color-mix(in oklab, var(--atl-gold) 45%, var(--atl-navy)); stroke: var(--atl-gold-line); stroke-width: 0.5; stroke-linejoin: round; }
 .nm-atlas .atl-ds-pot-rim { fill: var(--atl-gold); stroke: var(--atl-gold-line); stroke-width: 0.5; stroke-linejoin: round; }
 .nm-atlas .atl-ds-stem { fill: none; stroke: color-mix(in oklab, color-mix(in oklab, var(--atl-glow-c) 50%, var(--atl-gold)) 65%, var(--atl-navy)); stroke-width: 0.9; stroke-linecap: round; }
@@ -661,7 +674,9 @@
   & #nm-buddy.nmb-act-blanket .nm-atlas .atl-tail { animation: atl-ds-blanket-tail 6s ease-in-out infinite; }
   & #nm-buddy.nmb-act-blanket .nm-atlas .atl-m-grin { animation: atl-ds-grin-chew 30s linear infinite; }
   & #nm-buddy.nmb-act-blanket .nm-atlas .atl-m-smile { animation: atl-ds-smile-chew 30s linear infinite; }
-  & #nm-buddy.nmb-act-blanket .atl-ds-twinkle { animation: atl-ds-twinkle 4.1s ease-in-out infinite; }
+  /* Two z's rise a few seconds apart. */
+  & #nm-buddy.nmb-act-blanket .atl-nap-z { animation: atl-ds-blanket-z 6s ease-out infinite; }
+  & #nm-buddy.nmb-act-blanket .atl-nap-z-1 { animation-delay: -3s; }
   /* Watering (10 s): the can lifted, tipped to pour, the drops falling, the leaves perking up, the can lowered. */
   & #nm-buddy.nmb-act-plant .atl-figure .nmb-arm-l { animation: atl-ds-plant-arm 10s ease-in-out infinite; }
   & #nm-buddy.nmb-act-plant .atl-figure .nmb-arm-r { animation: atl-ds-plant-arm-r 10s ease-in-out infinite; }
@@ -712,7 +727,8 @@
 @keyframes atl-ds-blanket-eye { 0%, 46%, 60%, 100% { translate: 0px 1.8px; } 50% { translate: -1.2px 1.3px; } 56% { translate: -0.8px 1.4px; } }
 @keyframes atl-ds-blanket-open { 0%, 48% { opacity: 0; } 50%, 56% { opacity: 1; } 58%, 100% { opacity: 0; } }
 @keyframes atl-ds-blanket-doze { 0%, 48% { opacity: 1; } 50%, 56% { opacity: 0; } 58%, 100% { opacity: 1; } }
-@keyframes atl-ds-blanket-tail { 0%, 100% { rotate: -6deg; } 50% { rotate: 6deg; } }
+@keyframes atl-ds-blanket-tail { 0%, 100% { rotate: -3deg; } 50% { rotate: 3deg; } }
+@keyframes atl-ds-blanket-z { 0% { transform: translate(0, 3px) scale(0.7); opacity: 0; } 25% { opacity: 0.9; } 100% { transform: translate(3px, -8px) scale(1.1); opacity: 0; } }
 /* Watering a plant. */
 @keyframes atl-ds-plant-arm { 0% { transform: rotate(8deg); } 12% { transform: rotate(30deg); } 18% { transform: rotate(34deg); } 44% { transform: rotate(36deg); } 50% { transform: rotate(24deg); } 60% { transform: rotate(10deg); } 100% { transform: rotate(8deg); } }
 @keyframes atl-ds-plant-arm-r { 0% { transform: rotate(-14deg); } 50% { transform: rotate(-22deg); } 100% { transform: rotate(-14deg); } }

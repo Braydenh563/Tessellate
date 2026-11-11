@@ -39,7 +39,7 @@ ACTS = {
     "fish": ("act.fish", ["nmp-rod"], 8.4),
     "journal": ("act.write_journal", ["nmp-diary", "nmp-pen"], 12),
     "stars": ("act.watch_stars", ["nmp-sky"], 36),
-    "blanket": ("act.blanket_nap", ["nmp-blanket"], 30),
+    "blanket": ("act.blanket_nap", ["nmp-blanket", "nmp-pillow", "nmp-napz"], 30),
     "plant": ("act.water_plant", ["nmp-plant", "nmp-can"], 10),
     "puzzle": ("act.puzzle", ["nmp-puzzle", "nmp-piece"], 7),
     "agree": ("act.nod", [], 1.2),
@@ -223,3 +223,53 @@ def test_miffed_and_smirk_are_atlas_faces_with_a_cue_a_look_and_a_trigger():
     # What reaches them: a pout, a grumble, a shake and a facepalm (miffed), a shrug (smirk).
     assert re.search(r'\{ unimpressed: "miffed", angry: "miffed", nervous: "worried", sly: "smirk" \}', AVATARS)
     assert 'shrug: "sly"' in AVATARS and "isAtlasSeed(buddy.dataset.seed" in AVATARS
+
+
+# --- INBOX 1770: the nap's blanket drapes, the rings rest, a z rises -------------------------------------------
+
+
+def test_the_nap_blanket_drapes_over_a_pillow_with_no_flat_box_stitches_or_gold_diamond():
+    """The owner, seeing it asleep on the bar: "idk what Im looking at" (a flat rectangle, rows of dashes, a gold diamond)."""
+    front = ATLAS[ATLAS.index('const blanket = atlasGroup(layer, "nmp nmp-blanket")'):]
+    front = front[: front.index("const napz = ")]
+    for cls in ("atl-ds-blanket", "atl-ds-cuff", "atl-ds-fold", "atl-ds-crease"):
+        assert f'class: "{cls}"' in front, cls
+    assert "atl-ds-stitch" not in front and "atlasSpark" not in front  # no stitches, no gold diamond
+    assert "atl-ds-stitch" not in LAZY
+    # The pillow is behind the head, in the back layer with the mat, not over the body.
+    assert "atlasHandProps.pillow(back.fill);" in ATLAS and 'atlasGroup(layer, "nmp nmp-pillow")' in ATLAS
+    for cls in ("atl-ds-cuff", "atl-ds-crease", "atl-ds-pillow", "atl-ds-pillow-seam"):
+        assert re.search(rf"^\.nm-atlas \.{cls} \{{[^}}]*var\(--atl-", LAZY, re.M), cls
+
+
+def test_asleep_the_rings_dim_the_nebula_draws_in_and_the_pose_says_so():
+    nap = re.search(r"#nm-buddy\.nmb-act-blanket \.nm-atlas \{([^}]*)\}", LAZY).group(1)
+    assert float(re.search(r"--atl-halo-o:\s*([\d.]+)", nap).group(1)) <= 0.25  # the rings' own opacity token
+    orbits = re.search(r"#nm-buddy\.nmb-act-blanket \.atl-orbits \{([^}]*)\}", LAZY).group(1)
+    assert 0 < float(re.search(r"opacity:\s*([\d.]+)", orbits).group(1)) <= 0.35  # the planets with them: a halo, not gone
+    neb = re.search(r"#nm-buddy\.nmb-act-blanket :is\(\.atl-lw-neb, \.atl-lw-neb-front\) \{([^}]*)\}", LAZY).group(1)
+    assert float(re.search(r"scale:\s*([\d.]+)", neb).group(1)) < 0.7
+    # The tail is the lower body's calm "lie" one (a curl), not the idle sway, flick and loop.
+    motion = (JS / "atlas-motion.js").read_text(encoding="utf-8")
+    assert 'has("nmb-act-nap") || has("nmb-act-lie") || has("nmb-act-blanket")) return "lie"' in motion
+
+
+def test_the_slow_down_keeps_the_planets_where_they_are_and_the_waking_rings_ease_back():
+    """A longer `animation-duration` on a running loop jumped the planets up to 50 degrees (measured), so the nap changes the
+    playback rate instead, and the rings' opacity is a transition both ways."""
+    css08 = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    assert re.search(r"#nm-buddy \.atl-figure-box > \.atl-orbits \{[^}]*transition: [^;}]*opacity", css08)
+    life = (JS / "atlas-life.js").read_text(encoding="utf-8")
+    assert 'classList.contains("nmb-act-blanket") ? 1 / 3 : 1' in life
+    assert "updatePlaybackRate(pace)" in life and '.closest?.(".atl-orbits")' in life
+
+
+def test_the_z_rises_only_under_the_motion_gate_and_rests_drawn_under_reduced_motion():
+    assert re.search(r"#nm-buddy\.nmb-act-blanket \.atl-figure :is\([^)]*\.nmp-napz\)", LAZY)
+    gate_at = LAZY.rindex(':root:not([data-avatar-motion="off"])', 0, LAZY.index("/* A journal: a stroke"))
+    assert "nmb-act-blanket .atl-nap-z { animation: atl-ds-blanket-z" in LAZY[gate_at : LAZY.index("/* A journal. */")]
+    # Outside the gate (reduced motion, avatar animation off) the two z's are held drawn, one fainter.
+    outside = LAZY[:gate_at]
+    assert "nmb-act-blanket .atl-nap-z-0 { opacity: 0.9; }" in outside and "atl-ds-blanket-z" not in outside
+    frames = _keyframes("atl-ds-blanket-z")
+    assert "opacity: 0" in frames and "-8px" in frames  # it drifts up and fades out

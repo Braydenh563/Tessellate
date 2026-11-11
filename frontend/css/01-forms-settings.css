@@ -2923,7 +2923,7 @@ li.link-source {
   padding: var(--space-3) var(--space-4);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: var(--card-bg);
+  background: var(--card);
   cursor: pointer;
 }
 .ask-history-item:hover,

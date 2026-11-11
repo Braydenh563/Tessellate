@@ -17,6 +17,7 @@ from tessellate.api.this_computer import is_another_device, this_computer_only
 HOST_ONLY = {
     "routes_auth": {"/lan-certificate", "/recovery-key/save"},
     "routes_backups": {"/backups/restore", "/backups/bundle/restore"},
+    "routes_folder_sync": {"/folder"},  # a path on this computer's disk (CodeQL path injection review)
     "routes_files": {"/files/open-exports-folder", "/files/save"},
     "routes_maintenance": {"/system/maintenance", "/system/doctor", "/system/reinstall-on-start",
                            "/system/open-logs-folder", "/system/desktop-shortcut"},
