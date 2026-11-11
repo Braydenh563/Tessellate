@@ -345,6 +345,16 @@ _NOT_A_NAME = frozenset(
     "We I You They He She It This That There Everyone Everybody Someone Nobody The A An "
     "Let Lets Okay Ok So And But Then Next First Also Thanks".split()
 )
+#: A decision word with a "not" straight in front of it ("haven't decided",
+#: "nobody agreed", "has not yet been agreed"), or a word that says it is open.
+#: A negative further away ("nobody objected, so we decided") leaves it be.
+_UNDECIDED = re.compile(
+    r"(?:\b(?:not|never|nobody|no[ \t]one|neither)|n't)[ \t]+(?:(?:yet|really|actually|fully|been|have|had|be)[ \t]+)*"
+    r"(?:decided|agreed|resolved|approved|settled)\b|\b(?:undecided|unresolved|unsettled)\b",
+    re.I,
+)
+#: A person declining a task: "Sam will not", "Priya needn't", "Alex does not need to".
+_NOT_COMMITTING = re.compile(r"^@?[A-Z][a-z]+(?:[ \t]+[A-Z][a-z]+)?[ \t]+(?:will[ \t]+not|won't|does[ \t]+not|doesn't|needn't|is[ \t]+not|isn't)\b")
 _WORD = re.compile(r"[a-z][a-z'-]+")
 _FILLER = frozenset(
     "the and for with will to by of on in at a an is be our we that this it from as "
@@ -400,13 +410,16 @@ def _read_line(line: str, now, names: set[str]) -> tuple[str, dict] | None:  # n
 
     marked = bool(_ACTION_MARK.match(line))
     text = _ACTION_MARK.sub("", line).rstrip(" .")
+    #: A question asks, and a declined task is nobody's: neither is minuted.
+    if not marked and (line.rstrip().endswith("?") or _NOT_COMMITTING.match(text.lstrip("@"))):
+        return None
     spans = recognise(text, now=now, tense="future")
     owner = _owner_of(text, marked, spans, names)
     if marked or (owner and _SUBJECT.match(text.lstrip("@"))):
         due = next((s for s in spans if s.kind in {"date", "datetime"} and s.rank == 0), None)
         item = {"text": _as_owned(text, owner), "quote": line, "owner": owner, "due": due.read_as if due else None}
         return "actions", {**item, "verbatim": True}
-    if _DECISION_WORDS.search(text):
+    if _DECISION_WORDS.search(text) and not _UNDECIDED.search(text):
         return "decisions", {"text": text, "quote": line, "verbatim": True}
     return None
 

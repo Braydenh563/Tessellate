@@ -1486,3 +1486,7 @@ Block `docLists`, documents-cm.js. Scout of the bundled CodeMirror:
 - Row L2 was already built (`docPairInput`, documents-prose.js; see HISTORY 2026-11-08).
 - Row L3 was already built (the markdown grammar folds list items), see HISTORY.
 - Row L4 built, see HISTORY. Row L5 built, see HISTORY.
+
+## Placed from W34, 2026-11-11 (gap5: the diagram builder's open cost)
+
+- **Diagram builder opens with about 251 row listeners (M; perfdgm-1108:4).** Each row attaches about 3 (shape, connect, chip) in diagram-builder.js `show` (:656); the mermaid fetch already starts first. First step: delegate them to one listener on `S.tree`, then idle-slice rows past 40 blocks. Check: listeners on open 251 to under 20; the blind-tester on keyboard row selection. The audit's 2,500 listeners and 766 / 1,128 ms relabel long tasks did not reproduce (host loaded): re-measure first.

@@ -1239,6 +1239,12 @@ function renderDocList() {
           if (!next || next === doc.title) return;
           await renameDocumentWithUndo(doc, next).catch((e) => toast(e.message, true));
         }),
+        //: INBOX 904 B17: the model names it when one runs, else the document's
+        //: own words do; renamed through Rename's undoable path.
+        makeMenuItem("ph:sparkle Suggest a name", "A name from what the document says", async () => {
+          const got = await apiJson(`/documents/${doc.id}/suggest-title`, { method: "POST" }).catch((e) => toast(e.message, true));
+          if (got?.title && got.title !== doc.title) await renameDocumentWithUndo(doc, got.title).catch((e) => toast(e.message, true));
+        }),
         appLinkMenuItem("document", doc.id),
         // Not destructive, so not grouped with Delete below, same
         // "keep it, but out of the way" action the Notes tab already has
@@ -2618,18 +2624,20 @@ function markDocDirty() {
     //: A create that failed is not asked again on every key: the words are kept
     //: and one retry runs after a pause (audit 1028 D3).
     if (docSaveQueue.newRetry) return keepDocEditLocally();
+    const retryMs = 8000;
     ensureDocumentExists().then(() => {
       forgetDocEditLocally("new");
       markDocDirty();
     }, (error) => {
       $("doc-saved").textContent = "Not saved";
       $("doc-status").classList.add("error");
-      $("doc-status").textContent = error.message;
+      //: The retry below is silent otherwise: say that one is coming.
+      $("doc-status").textContent = `${String(error.message).replace(/[.\s]+$/, "")}. It will try again in ${retryMs / 1000} seconds.`;
       keepDocEditLocally();
       docSaveQueue.newRetry = setTimeout(() => {
         docSaveQueue.newRetry = null;
         if (!currentDoc && (docText().trim() || $("doc-title").value.trim())) markDocDirty();
-      }, 8000);
+      }, retryMs);
     });
     return;
   }

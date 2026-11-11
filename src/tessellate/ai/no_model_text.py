@@ -112,14 +112,46 @@ def draft_title(draft: str) -> str:
     from tessellate.ai import composer_voice
 
     heading, lines = _split_heading(draft)
+    lines = _outside_fences(lines)
     body = "\n".join(lines).strip()
     title = (
-        (composer_voice.title_for(_without_marks(body)) if body else "")
+        (not heading and _label_title(lines))
+        or (composer_voice.title_for(_without_marks(body)) if body else "")
         or _first_line_title(lines)
         or _top_terms(body)
         or (_trim(heading.split()) if heading else "")
     )
     return title if len(title) >= 3 else ""
+
+
+def _outside_fences(lines: list[str]) -> list[str]:
+    """The lines with every fenced code block (and its fence lines) taken
+    out: the fence's language word ("python") and the code are not the
+    draft's words, so neither can name it."""
+    out, fenced = [], False
+    for line in lines:
+        if _FENCE.match(line):
+            fenced = not fenced
+        elif not fenced:
+            out.append(line)
+    return out
+
+
+#: A first line this short, with no sentence or list mark, that has more
+#: written below it is the person's own label for the note ("Trip to
+#: Lisbon"), the way the notebook itself reads a note's first line.
+LABEL_WORDS = 6
+
+
+def _label_title(lines: list[str]) -> str:
+    rows = [line for line in lines if line.strip()]
+    if len(rows) < 2:
+        return ""
+    first = rows[0].strip()
+    if _marks_end(first) or _RULE.match(first) or first.endswith((".", "!", "?", ",", ";")) or "://" in first:
+        return ""
+    words = first.rstrip(":").split()
+    return _trim(words) if 1 <= len(words) <= LABEL_WORDS else ""
 
 
 def _without_marks(body: str) -> str:
@@ -319,7 +351,8 @@ def _part(chunk: str) -> Part:
     if found:
         body = rest.strip()
         return Part(title=_plain_title(found), content=body or chunk)
-    return Part(title=_tidy_title(composer_voice.title_for(_without_marks(chunk))), content=chunk)
+    label = _label_title(_outside_fences(chunk.split("\n")))
+    return Part(title=label or _tidy_title(composer_voice.title_for(_without_marks(chunk))), content=chunk)
 
 
 def _tidy_title(title: str) -> str:
