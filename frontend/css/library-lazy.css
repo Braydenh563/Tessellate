@@ -7179,19 +7179,19 @@ input[type="color"].wb-mixed {
    cut to 9rem), which leaves the name under its 5rem below 1165 of dock, a
    band the 1100 above cannot reach. Their icons make the actions 840: the
    name keeps 253px at 1100, and the line is whole there. */
-#tab-documents.doc-is-code .doc-dock:has(#doc-code-run-why:not(.hidden)) > .doc-dock-identity {
+#tab-documents.doc-is-code .doc-dock.doc-run-why > .doc-dock-identity {
   flex-basis: 8rem;
   min-width: 0;
 }
-#tab-documents.doc-is-code .doc-dock:has(#doc-code-run-why:not(.hidden)) :is(.doc-ai-label, #doc-code-format > .toolbar-word) {
+#tab-documents.doc-is-code .doc-dock.doc-run-why :is(.doc-ai-label, #doc-code-format > .toolbar-word) {
   display: none;
 }
-#tab-documents.doc-is-code .doc-dock:has(#doc-code-run-why:not(.hidden)) :is(#doc-code-snippets-open, #doc-code-assist-open, #doc-code-format) {
+#tab-documents.doc-is-code .doc-dock.doc-run-why :is(#doc-code-snippets-open, #doc-code-assist-open, #doc-code-format) {
   flex: 0 0 var(--target-min);
   justify-content: center;
   padding-inline: 0;
 }
-#tab-documents.doc-is-code .doc-dock:has(#doc-code-run-why:not(.hidden)) :is(#doc-code-snippets-open, #doc-code-assist-open, #doc-code-format) > .ph-lead {
+#tab-documents.doc-is-code .doc-dock.doc-run-why :is(#doc-code-snippets-open, #doc-code-assist-open, #doc-code-format) > .ph-lead {
   margin: 0;
 }
 @container docdock (max-width: 819.98px) {
