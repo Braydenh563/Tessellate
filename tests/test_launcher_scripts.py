@@ -1042,7 +1042,7 @@ class TestOneDesignThreeSurfaces:
         assert "launch_status.read_file" in main
         # Read before _close_launch_splash deletes the file: create_window's
         # own argument list is the only place that is guaranteed.
-        assert main.index("html=_loading_html()") < main.index("_close_launch_splash()\n    #")
+        assert main.index("html=_loading_html()") < main.index("_close_launch_splash()\n    return window")
 
     def test_reduced_motion_is_respected_on_the_python_window(self):
         main = _read(ROOT / "src" / "tessellate" / "__main__.py")

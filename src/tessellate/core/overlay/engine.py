@@ -678,6 +678,27 @@ class Engine:
         self.idle_frames = max(0, int(idle_frames))
         self.walk_frames = max(1, int(walk_frames))
         self.wave_frames = max(0, int(wave_frames))
+        self._init_rng_and_config(monitors, roam, reduced, rng, gait, hang_top)
+        self._init_state_and_blink(now)
+        self._init_press_and_tumble(now)
+        self._init_perch_and_cards(now, roam_windows)
+        self._init_mind_and_flow(now)
+        self._init_hang_and_carry(now)
+        x, y = home if home is not None else self._default_home()
+        self.x, self.y = float(x), float(y)
+        self._place_on_floor()
+        self.home_x = self.x
+        #: When the person last chose its home from the menu (`_wander`); -inf for never.
+        self.homed_at = -math.inf
+        self.last_x = self.x
+        self.last_y = self.y
+        #: Its props, its face, its answers to the pointer and the screen (`extras.py`).
+        self.ex = extras.Extras(self)
+        self._enter("stand" if not reduced else "sit", now)
+        self._maybe_relocate(now)
+
+    def _init_rng_and_config(self, monitors: list[Monitor], roam: bool, reduced: bool, rng: random.Random | None, gait: str, hang_top: float) -> None:
+        """The monitors, the random streams and the gait: the choices made once, at the start."""
         self.monitors = list(monitors) or [Monitor((0, 0, 1920, 1040))]
         self.roam = roam
         self.reduced = reduced
@@ -692,6 +713,9 @@ class Engine:
         self.gait = "float" if gait == "float" else "walk"
         #: The share of the hang frame's height that is clear above the hands.
         self.hang_top = min(max(float(hang_top), 0.0), 0.5)
+
+    def _init_state_and_blink(self, now: float) -> None:
+        """The hang, the base state, blinks and looks."""
         #: The window whose title bar a hang (or the trip to one) takes hold of.
         self.hang_on: Perch | None = None
         #: Edges only a hang takes hold of (a maximised window's title bar, a floating window's bottom edge).
@@ -726,6 +750,9 @@ class Engine:
         self.carrying = False
         self.hop_from = 0.0
         self.settled_now = False
+
+    def _init_press_and_tumble(self, now: float) -> None:
+        """The pointer, the throw and the landing: tumble, lie and wall-slide state."""
         #: Trips that arrived home or at the home the menu chose (`_arrive`): the runner saves the place on a change.
         self.home_arrivals = 0
         self.click_now: str | None = None
@@ -761,6 +788,9 @@ class Engine:
         self.goal: tuple[float, float] | None = None
         self.then = "stand"
         self.trip = False
+
+    def _init_perch_and_cards(self, now: float, roam_windows: bool) -> None:
+        """Where it roams, the windows it knows, and the cards it holds."""
         self.hover = self.rng.uniform(*HOVER)
         self.big_ready = now + self.rng.uniform(*BIG_FIRST)
         self.roam_windows = roam_windows
@@ -783,6 +813,9 @@ class Engine:
         self.card_until = 0.0
         self.card_clicked: Any = None
         self.sink = 0.0
+
+    def _init_mind_and_flow(self, now: float) -> None:
+        """Mind, flow, mood and the first trip and wave timers."""
         #: Mind, home, and the body's follow-through (INBOX 1670, row B).
         self.mind = bh.Mind(now)
         self.tail = bh.Trail()
@@ -858,6 +891,9 @@ class Engine:
         self.spell: dict[str, Any] | None = None
         self.spells: list[tuple[str, float, float]] = []
         self.spell_len = 0.0
+
+    def _init_hang_and_carry(self, now: float) -> None:
+        """Hanging, peeking, tucking, being thrown or carried, and the slip."""
         self.hang_started = now
         self.hang_drag0 = 0.0
         self.hang_kick_at = -1e9  # when a hanger was last patted or startled: the swing kick (`HANG_KICK`)
@@ -911,18 +947,6 @@ class Engine:
         self.phase_from = (0.0, 0.0)
         self.phase_started = now
         self.phase_to = (0.0, 0.0)
-        x, y = home if home is not None else self._default_home()
-        self.x, self.y = float(x), float(y)
-        self._place_on_floor()
-        self.home_x = self.x
-        #: When the person last chose its home from the menu (`_wander`); -inf for never.
-        self.homed_at = -math.inf
-        self.last_x = self.x
-        self.last_y = self.y
-        #: Its props, its face, its answers to the pointer and the screen (`extras.py`).
-        self.ex = extras.Extras(self)
-        self._enter("stand" if not reduced else "sit", now)
-        self._maybe_relocate(now)
 
     # --- geometry ------------------------------------------------------------------
 

@@ -1895,15 +1895,9 @@ def _open_window_onto(port: int) -> None:
         webview.start(_focus_window, window)
 
 
-def _run_desktop(hidden_relaunch: bool = False) -> None:
-    """A real app window: uvicorn in a background thread,
-    pywebview in front. Closing the window exits the process.
-
-    `hidden_relaunch` is True only when this process IS the console-less
-    `pythonw.exe` relaunch `_maybe_relaunch_hidden` spawned: see there for
-    why relaunching, rather than hiding an already-created console, is
-    "User view"'s actual mechanism now.
-    """
+def _desktop_preflight(hidden_relaunch: bool) -> tuple | None:
+    """Single instance, the hidden relaunch and the pywebview import: `(webview, show_on_startup)`, or None when
+    this process has nothing more to do (it handed off, or fell back to the plain server)."""
     # Read the preference, and try a relaunch if it calls for one, before
     # anything else, including importing webview: if this is about to hand
     # off to a separate process and exit, nothing below matters. ConfigManager
@@ -1923,7 +1917,7 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
     )
     if action != "start":
         _hand_off_to_running(running, action)
-        return
+        return None
     _start_frozen_splash()
 
     show_on_startup = ConfigManager().get_preference("show_console_on_startup", True)
@@ -1940,8 +1934,13 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
             "Starting the normal server instead, open http://localhost:8000"
         )
         _run_server_holding_lock()
-        return
+        return None
 
+    return webview, show_on_startup
+
+
+def _desktop_console(show_on_startup: bool) -> tuple[int | None, bool, dict[int, str]]:
+    """Hide the console unless asked to keep it: its handle, whether it is hidden now, and its window targets."""
     # Hide the console before starting anything else, unless the user has
     # asked to keep seeing it, asked for directly: "I want it to be hidden
     # but the user can make it show ... if they want", both as a startup
@@ -1971,7 +1970,11 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
         if not show_on_startup:
             _apply_console_visibility(console_targets, hidden=True)
             console_hidden = True
+    return console_hwnd, console_hidden, console_targets
 
+
+def _desktop_window(webview):  # noqa: ANN001, ANN202
+    """Open the loading window and wire the quit, fullscreen and splash handoffs; None when the web view cannot render."""
     # The window opens on the loading page immediately, before the server
     # thread has even started, let alone finished create_app()'s
     # migrations/embeddings-warmup/etc.: instead of waiting here for
@@ -1991,7 +1994,7 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
     # render is worse than no window: at least this says what is wrong.
     if _webview2_runtime_missing():
         _warn_webview2_missing()
-        return
+        return None
 
     _claim_notebook()
     _splash_status("Opening the window...")
@@ -2034,6 +2037,63 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
     except AttributeError:  # an older pywebview without window events
         _close_bootloader_splash()
         _close_launch_splash()
+    return window
+
+
+def _desktop_close_to_tray(window, tray_icon) -> None:  # noqa: ANN001
+    """Closing the window hides it to the tray (with a first-time notice) instead of quitting."""
+    if tray_icon is not None:
+        # **Closing the window is not quitting the app, and it now says so.**
+        # The hide itself has been here since the tray was added; what was
+        # missing is everything around it. Reported as a thing to build, 
+        # "maybe make it so the app window can be closed but the app will
+        # still be open in the system tray, and then the window can be
+        # reopened again. so there is a difference between minimising the app
+        # and quitting the app", which is a fair description of what a
+        # silent hide looks like from outside: the window vanishes, nothing
+        # explains where it went, and the only way back is noticing an icon
+        # you were never told to look for.
+        #
+        # Two things fix that and neither changes the hide:
+        #
+        # 1. **A preference.** `close_to_tray` defaults to on (a background
+        #    notebook is the point of the tray) and can be turned off, in
+        #    which case the X button quits properly, which is what someone
+        #    who does not want a resident app expects it to do, and what the
+        #    Linux/macOS builds already do for want of a tray.
+        # 2. **One notice, the first time.** A balloon from the tray icon
+        #    itself, so the explanation appears next to the thing being
+        #    explained. Once per install, keyed on a preference: an app that
+        #    tells you the same thing every time you close it is worse than
+        #    one that never tells you.
+        told_about_tray = {"done": False}
+
+        def _on_closing() -> bool:
+            return _close_to_tray(window, tray_icon, told_about_tray)
+
+        window.events.closing += _on_closing
+
+
+def _run_desktop(hidden_relaunch: bool = False) -> None:
+    """A real app window: uvicorn in a background thread,
+    pywebview in front. Closing the window exits the process.
+
+    `hidden_relaunch` is True only when this process IS the console-less
+    `pythonw.exe` relaunch `_maybe_relaunch_hidden` spawned: see there for
+    why relaunching, rather than hiding an already-created console, is
+    "User view"'s actual mechanism now.
+    """
+    from tessellate.core import instance_lock
+
+    ready = _desktop_preflight(hidden_relaunch)
+    if ready is None:
+        return
+    webview, show_on_startup = ready
+    console_hwnd, console_hidden, console_targets = _desktop_console(show_on_startup)
+    window = _desktop_window(webview)
+    if window is None:
+        return
+
     # `private_mode` defaults to True in pywebview, which throws away
     # localStorage and cookies when the window closes. The browser build keeps
     # a great deal in localStorage, the theme and every appearance key, the
@@ -2074,36 +2134,7 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
         else None
     )
     _attach_desk_companion(webview, window, tray_icon)
-    if tray_icon is not None:
-        # **Closing the window is not quitting the app, and it now says so.**
-        # The hide itself has been here since the tray was added; what was
-        # missing is everything around it. Reported as a thing to build, 
-        # "maybe make it so the app window can be closed but the app will
-        # still be open in the system tray, and then the window can be
-        # reopened again. so there is a difference between minimising the app
-        # and quitting the app", which is a fair description of what a
-        # silent hide looks like from outside: the window vanishes, nothing
-        # explains where it went, and the only way back is noticing an icon
-        # you were never told to look for.
-        #
-        # Two things fix that and neither changes the hide:
-        #
-        # 1. **A preference.** `close_to_tray` defaults to on (a background
-        #    notebook is the point of the tray) and can be turned off, in
-        #    which case the X button quits properly, which is what someone
-        #    who does not want a resident app expects it to do, and what the
-        #    Linux/macOS builds already do for want of a tray.
-        # 2. **One notice, the first time.** A balloon from the tray icon
-        #    itself, so the explanation appears next to the thing being
-        #    explained. Once per install, keyed on a preference: an app that
-        #    tells you the same thing every time you close it is worse than
-        #    one that never tells you.
-        told_about_tray = {"done": False}
-
-        def _on_closing() -> bool:
-            return _close_to_tray(window, tray_icon, told_about_tray)
-
-        window.events.closing += _on_closing
+    _desktop_close_to_tray(window, tray_icon)
 
     from tessellate.core.config import resolved_data_dir
 
