@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8150, frontend ids 2710, CSS sections 523, backend routes 674, backend modules 10242, test files 2537, tests 20803, plan headings 1009, app scripts 29, boot scripts 38, script files 284.
+Counts: frontend functions 8150, frontend ids 2710, CSS sections 523, backend routes 674, backend modules 10242, test files 2537, tests 20805, plan headings 1009, app scripts 29, boot scripts 38, script files 284.
 
 ## Frontend functions (8150)
 
@@ -232,12 +232,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `_loadEntries` | frontend/js/notes-list.js:3041 |
+| `_loadEntries` | frontend/js/notes-list.js:3040 |
 | `appendInline` | frontend/js/notes-list.js:1177 |
 | `appendInlineRun` | frontend/js/notes-list.js:931 |
 | `appendPictureBox` | frontend/js/notes-list.js:861 |
 | `appendPlainText` | frontend/js/notes-list.js:1653 |
-| `applyEntryListTabOrder` | frontend/js/notes-list.js:2476 |
+| `applyEntryListTabOrder` | frontend/js/notes-list.js:2475 |
 | `applyNotesViewMode` | frontend/js/notes-list.js:2085 |
 | `attachmentCard` | frontend/js/notes-list.js:603 |
 | `attachmentFacts` | frontend/js/notes-list.js:572 |
@@ -246,20 +246,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `boardEmbedTarget` | frontend/js/notes-list.js:1277 |
 | `bodyWithoutTitleLine` | frontend/js/notes-list.js:1194 |
 | `captureBar` | frontend/js/notes-list.js:2177 |
-| `categoryAutoDot` | frontend/js/notes-list.js:2571 |
-| `categoryColour` | frontend/js/notes-list.js:2566 |
-| `categoryColoursChanged` | frontend/js/notes-list.js:2583 |
-| `categoryDotColour` | frontend/js/notes-list.js:2576 |
-| `categoryMenuItems` | frontend/js/notes-list.js:2858 |
-| `clearSkeletons` | frontend/js/notes-list.js:2959 |
-| `compareCategoryNames` | frontend/js/notes-list.js:2796 |
-| `dockConnectionsInRail` | frontend/js/notes-list.js:3636 |
+| `categoryAutoDot` | frontend/js/notes-list.js:2570 |
+| `categoryColour` | frontend/js/notes-list.js:2565 |
+| `categoryColoursChanged` | frontend/js/notes-list.js:2582 |
+| `categoryDotColour` | frontend/js/notes-list.js:2575 |
+| `categoryMenuItems` | frontend/js/notes-list.js:2857 |
+| `clearSkeletons` | frontend/js/notes-list.js:2958 |
+| `compareCategoryNames` | frontend/js/notes-list.js:2795 |
+| `dockConnectionsInRail` | frontend/js/notes-list.js:3635 |
 | `engineQueryIds` | frontend/js/notes-list.js:245 |
-| `ensureCardCounts` | frontend/js/notes-list.js:3438 |
-| `ensureMapChipsFor` | frontend/js/notes-list.js:3484 |
-| `ensureOneCardCount` | frontend/js/notes-list.js:3442 |
-| `entryListItems` | frontend/js/notes-list.js:2458 |
-| `entryListOrder` | frontend/js/notes-list.js:3142 |
+| `ensureCardCounts` | frontend/js/notes-list.js:3437 |
+| `ensureMapChipsFor` | frontend/js/notes-list.js:3483 |
+| `ensureOneCardCount` | frontend/js/notes-list.js:3441 |
+| `entryListItems` | frontend/js/notes-list.js:2457 |
+| `entryListOrder` | frontend/js/notes-list.js:3141 |
 | `entryNeedsReview` | frontend/js/notes-list.js:268 |
 | `expandAngleAutolinks` | frontend/js/notes-list.js:810 |
 | `fileCard` | frontend/js/notes-list.js:676 |
@@ -268,21 +268,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `filterNotesByTag` | frontend/js/notes-list.js:2213 |
 | `focusNoteRow` | frontend/js/notes-list.js:62 |
 | `foldNoteToolbarForFirstPaint` | frontend/js/notes-list.js:17 |
-| `followNoteChanges` | frontend/js/notes-list.js:3212 |
+| `followNoteChanges` | frontend/js/notes-list.js:3211 |
 | `heldNoteControl` | frontend/js/notes-list.js:94 |
 | `highlightIconsInto` | frontend/js/notes-list.js:1674 |
 | `highlightInto` | frontend/js/notes-list.js:1701 |
-| `initEntryListKeyboardNav` | frontend/js/notes-list.js:2486 |
+| `initEntryListKeyboardNav` | frontend/js/notes-list.js:2485 |
 | `isRemoteImage` | frontend/js/notes-list.js:867 |
 | `isRenderableUrl` | frontend/js/notes-list.js:523 |
 | `libraryVisibleRows` | frontend/js/notes-list.js:2240 |
 | `linkAppAddresses` | frontend/js/notes-list.js:821 |
 | `listedNoteIds` | frontend/js/notes-list.js:2104 |
 | `liveQueryIds` | frontend/js/notes-list.js:198 |
-| `loadCategories` | frontend/js/notes-list.js:2592 |
+| `loadCategories` | frontend/js/notes-list.js:2591 |
 | `loadEmbedDocuments` | frontend/js/notes-list.js:1390 |
-| `loadEntries` | frontend/js/notes-list.js:3030 |
-| `markSidebarRowCurrent` | frontend/js/notes-list.js:2800 |
+| `loadEntries` | frontend/js/notes-list.js:3029 |
+| `markSidebarRowCurrent` | frontend/js/notes-list.js:2799 |
 | `matchesSearch` | frontend/js/notes-list.js:405 |
 | `matchesTagCount` | frontend/js/notes-list.js:384 |
 | `meaningEngineMissing` | frontend/js/notes-list.js:292 |
@@ -295,34 +295,34 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `noteRowStays` | frontend/js/notes-list.js:1941 |
 | `noteSemanticLoaded` | frontend/js/notes-list.js:401 |
 | `noteSortName` | frontend/js/notes-list.js:1760 |
-| `noteTopicChip` | frontend/js/notes-list.js:3365 |
-| `notesRailFocusSubject` | frontend/js/notes-list.js:3629 |
-| `notesRailHiddenByChoice` | frontend/js/notes-list.js:3536 |
-| `notesRailSync` | frontend/js/notes-list.js:3547 |
-| `notesRailWanted` | frontend/js/notes-list.js:3564 |
+| `noteTopicChip` | frontend/js/notes-list.js:3364 |
+| `notesRailFocusSubject` | frontend/js/notes-list.js:3628 |
+| `notesRailHiddenByChoice` | frontend/js/notes-list.js:3535 |
+| `notesRailSync` | frontend/js/notes-list.js:3546 |
+| `notesRailWanted` | frontend/js/notes-list.js:3563 |
 | `notesScroller` | frontend/js/notes-list.js:1931 |
-| `offerWikiRename` | frontend/js/notes-list.js:3720 |
+| `offerWikiRename` | frontend/js/notes-list.js:3719 |
 | `openNoteEditor` | frontend/js/notes-list.js:112 |
 | `orderedNotesForCurrentView` | frontend/js/notes-list.js:2027 |
 | `paginateNotesForDisplay` | frontend/js/notes-list.js:1993 |
-| `paintCategoryDot` | frontend/js/notes-list.js:2579 |
-| `paintEntriesProgress` | frontend/js/notes-list.js:2995 |
+| `paintCategoryDot` | frontend/js/notes-list.js:2578 |
+| `paintEntriesProgress` | frontend/js/notes-list.js:2994 |
 | `parseNoteQuery` | frontend/js/notes-list.js:302 |
 | `propQuery` | frontend/js/notes-list.js:2220 |
 | `readableUrl` | frontend/js/notes-list.js:837 |
-| `referenceCountChip` | frontend/js/notes-list.js:3294 |
-| `referenceCountText` | frontend/js/notes-list.js:3282 |
-| `refreshEntries` | frontend/js/notes-list.js:3150 |
-| `rememberNoteFilter` | frontend/js/notes-list.js:2310 |
-| `reminderCountChip` | frontend/js/notes-list.js:3337 |
+| `referenceCountChip` | frontend/js/notes-list.js:3293 |
+| `referenceCountText` | frontend/js/notes-list.js:3281 |
+| `refreshEntries` | frontend/js/notes-list.js:3149 |
+| `rememberNoteFilter` | frontend/js/notes-list.js:2309 |
+| `reminderCountChip` | frontend/js/notes-list.js:3336 |
 | `remoteImageNote` | frontend/js/notes-list.js:871 |
-| `renderEntries` | frontend/js/notes-list.js:2322 |
-| `renderEntriesWhenShown` | frontend/js/notes-list.js:3008 |
+| `renderEntries` | frontend/js/notes-list.js:2321 |
+| `renderEntriesWhenShown` | frontend/js/notes-list.js:3007 |
 | `renderInlineMarkdown` | frontend/js/notes-list.js:887 |
 | `renderNoteInline` | frontend/js/notes-list.js:1566 |
 | `renderNoteText` | frontend/js/notes-list.js:1405 |
-| `renderNotesRail` | frontend/js/notes-list.js:3583 |
-| `renderSidebar` | frontend/js/notes-list.js:2607 |
+| `renderNotesRail` | frontend/js/notes-list.js:3582 |
+| `renderSidebar` | frontend/js/notes-list.js:2606 |
 | `renderWindowed` | frontend/js/notes-list.js:1944 |
 | `resetNoteList` | frontend/js/notes-list.js:2282 |
 | `resolveCategoryChoice` | frontend/js/notes-list.js:164 |
@@ -331,28 +331,28 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `restoreFocusTo` | frontend/js/notes-list.js:78 |
 | `restoreNoteControl` | frontend/js/notes-list.js:100 |
 | `safeHref` | frontend/js/notes-list.js:785 |
-| `scheduleEntriesProgress` | frontend/js/notes-list.js:3023 |
-| `scheduleNotesRail` | frontend/js/notes-list.js:3559 |
-| `selectNoteRange` | frontend/js/notes-list.js:2461 |
-| `setNotesRailHidden` | frontend/js/notes-list.js:3642 |
+| `scheduleEntriesProgress` | frontend/js/notes-list.js:3022 |
+| `scheduleNotesRail` | frontend/js/notes-list.js:3558 |
+| `selectNoteRange` | frontend/js/notes-list.js:2460 |
+| `setNotesRailHidden` | frontend/js/notes-list.js:3641 |
 | `setNotesViewMode` | frontend/js/notes-list.js:2141 |
-| `showEntrySkeletons` | frontend/js/notes-list.js:2895 |
+| `showEntrySkeletons` | frontend/js/notes-list.js:2894 |
 | `showNotesFilter` | frontend/js/notes-list.js:279 |
-| `showSkeletons` | frontend/js/notes-list.js:2916 |
-| `sidebarRovingRows` | frontend/js/notes-list.js:2780 |
-| `skeletonRemember` | frontend/js/notes-list.js:2938 |
+| `showSkeletons` | frontend/js/notes-list.js:2915 |
+| `sidebarRovingRows` | frontend/js/notes-list.js:2779 |
+| `skeletonRemember` | frontend/js/notes-list.js:2937 |
 | `sortEntries` | frontend/js/notes-list.js:1764 |
-| `syncNotesRailToggle` | frontend/js/notes-list.js:3572 |
+| `syncNotesRailToggle` | frontend/js/notes-list.js:3571 |
 | `toggleExpandAllRows` | frontend/js/notes-list.js:2130 |
-| `topicRepeatsTag` | frontend/js/notes-list.js:3359 |
+| `topicRepeatsTag` | frontend/js/notes-list.js:3358 |
 | `unlatex` | frontend/js/notes-list.js:720 |
 | `updateExpandAllButton` | frontend/js/notes-list.js:2110 |
 | `whyThisResultChip` | frontend/js/notes-list.js:1741 |
 | `wikiForms` | frontend/js/notes-list.js:1223 |
 | `wikiStem` | frontend/js/notes-list.js:1241 |
 | `windowRows` | frontend/js/notes-list.js:1817 |
-| `wireCategoryDropTarget` | frontend/js/notes-list.js:2877 |
-| `wireSidebarRowKeys` | frontend/js/notes-list.js:2809 |
+| `wireCategoryDropTarget` | frontend/js/notes-list.js:2876 |
+| `wireSidebarRowKeys` | frontend/js/notes-list.js:2808 |
 
 ### frontend/js/capture-ask.js (44)
 
@@ -1188,16 +1188,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `activeOverlay` | frontend/js/settings-wiring.js:971 |
-| `captureCountText` | frontend/js/settings-wiring.js:1751 |
+| `captureCountText` | frontend/js/settings-wiring.js:1752 |
 | `captureShortcutKey` | frontend/js/settings-wiring.js:1475 |
-| `clearStagedImages` | frontend/js/settings-wiring.js:2154 |
+| `clearStagedImages` | frontend/js/settings-wiring.js:2155 |
 | `closeOverlaysForChord` | frontend/js/settings-wiring.js:1270 |
 | `closeShortcuts` | frontend/js/settings-wiring.js:1505 |
 | `comboFromEvent` | frontend/js/settings-wiring.js:1306 |
-| `commitCaptureImages` | frontend/js/settings-wiring.js:2139 |
-| `fileDropBox` | frontend/js/settings-wiring.js:2002 |
+| `commitCaptureImages` | frontend/js/settings-wiring.js:2140 |
+| `fileDropBox` | frontend/js/settings-wiring.js:2003 |
 | `flashSaved` | frontend/js/settings-wiring.js:523 |
-| `handleFileUpload` | frontend/js/settings-wiring.js:2186 |
+| `handleFileUpload` | frontend/js/settings-wiring.js:2187 |
 | `hideChordGuide` | frontend/js/settings-wiring.js:1288 |
 | `inEditable` | frontend/js/settings-wiring.js:969 |
 | `loadForgottenOrder` | frontend/js/settings-wiring.js:1602 |
@@ -1212,13 +1212,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `maybeShowOnboarding` | frontend/js/settings-wiring.js:992 |
 | `notebookLocked` | frontend/js/settings-wiring.js:508 |
 | `persistSavedSearches` | frontend/js/settings-wiring.js:54 |
-| `renderCaptureFiles` | frontend/js/settings-wiring.js:1716 |
-| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1683 |
-| `renderInstallRow` | frontend/js/settings-wiring.js:1924 |
+| `renderCaptureFiles` | frontend/js/settings-wiring.js:1717 |
+| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1684 |
+| `renderInstallRow` | frontend/js/settings-wiring.js:1925 |
 | `renderSavedSearches` | frontend/js/settings-wiring.js:17 |
 | `resetShortcuts` | frontend/js/settings-wiring.js:1442 |
 | `restampShortcutHints` | frontend/js/settings-wiring.js:1193 |
-| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2127 |
+| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2128 |
 | `runShortcut` | frontend/js/settings-wiring.js:1333 |
 | `saveCurrentSearch` | frontend/js/settings-wiring.js:62 |
 | `saveShortcutOverrides` | frontend/js/settings-wiring.js:1294 |
@@ -1226,13 +1226,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `savedSearches` | frontend/js/settings-wiring.js:13 |
 | `setShortcutStatus` | frontend/js/settings-wiring.js:1459 |
 | `setShortcutStatusError` | frontend/js/settings-wiring.js:1466 |
-| `singleKeysOn` | frontend/js/settings-wiring.js:2313 |
-| `stagedImageUrl` | frontend/js/settings-wiring.js:2104 |
+| `singleKeysOn` | frontend/js/settings-wiring.js:2314 |
+| `stagedImageUrl` | frontend/js/settings-wiring.js:2105 |
 | `stampShortcutTitles` | frontend/js/settings-wiring.js:1169 |
 | `submitLockForm` | frontend/js/settings-wiring.js:322 |
-| `textCounts` | frontend/js/settings-wiring.js:1741 |
-| `uploadStagedFiles` | frontend/js/settings-wiring.js:2163 |
-| `wordCount` | frontend/js/settings-wiring.js:1736 |
+| `textCounts` | frontend/js/settings-wiring.js:1742 |
+| `uploadStagedFiles` | frontend/js/settings-wiring.js:2164 |
+| `wordCount` | frontend/js/settings-wiring.js:1737 |
 
 ### frontend/js/spaces-find.js (24)
 
@@ -2292,7 +2292,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `characterFor` | frontend/js/avatars.js:1232 |
 | `characterRendererFor` | frontend/js/avatars.js:1215 |
 | `drawCharacter` | frontend/js/avatars.js:1708 |
-| `dropAnimations` | frontend/js/avatars.js:10578 |
+| `dropAnimations` | frontend/js/avatars.js:10579 |
 | `isAtlasSeed` | frontend/js/avatars.js:1226 |
 | `nameCharacterFigure` | frontend/js/avatars.js:3880 |
 | `nameCharacterHeld` | frontend/js/avatars.js:2594 |
@@ -2313,11 +2313,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyBand` | frontend/js/avatars.js:5388 |
 | `nameMarkBuddyBeat` | frontend/js/avatars.js:7633 |
 | `nameMarkBuddyBehindCover` | frontend/js/avatars.js:7400 |
-| `nameMarkBuddyBellErrand` | frontend/js/avatars.js:10230 |
+| `nameMarkBuddyBellErrand` | frontend/js/avatars.js:10231 |
 | `nameMarkBuddyBlend` | frontend/js/avatars.js:9796 |
 | `nameMarkBuddyBody` | frontend/js/avatars.js:3841 |
-| `nameMarkBuddyBoredom` | frontend/js/avatars.js:9912 |
-| `nameMarkBuddyBuild` | frontend/js/avatars.js:10629 |
+| `nameMarkBuddyBoredom` | frontend/js/avatars.js:9913 |
+| `nameMarkBuddyBuild` | frontend/js/avatars.js:10630 |
 | `nameMarkBuddyBurst` | frontend/js/avatars.js:7243 |
 | `nameMarkBuddyCalmAllows` | frontend/js/avatars.js:9756 |
 | `nameMarkBuddyCanvasAt` | frontend/js/avatars.js:6218 |
@@ -2325,12 +2325,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyCanvasZoom` | frontend/js/avatars.js:6241 |
 | `nameMarkBuddyCaret` | frontend/js/avatars.js:4045 |
 | `nameMarkBuddyCatchUp` | frontend/js/avatars.js:5666 |
-| `nameMarkBuddyChatErrand` | frontend/js/avatars.js:10240 |
+| `nameMarkBuddyChatErrand` | frontend/js/avatars.js:10241 |
 | `nameMarkBuddyCheck` | frontend/js/avatars.js:7481 |
 | `nameMarkBuddyChoose` | frontend/js/avatars.js:4801 |
 | `nameMarkBuddyClickReaction` | frontend/js/avatars.js:9742 |
 | `nameMarkBuddyColours` | frontend/js/avatars.js:3826 |
-| `nameMarkBuddyContext` | frontend/js/avatars.js:10357 |
+| `nameMarkBuddyContext` | frontend/js/avatars.js:10358 |
 | `nameMarkBuddyControlBoxes` | frontend/js/avatars.js:3993 |
 | `nameMarkBuddyControlsIn` | frontend/js/avatars.js:4000 |
 | `nameMarkBuddyCoverCheck` | frontend/js/avatars.js:7383 |
@@ -2348,11 +2348,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyDrift` | frontend/js/avatars.js:9231 |
 | `nameMarkBuddyDrop` | frontend/js/avatars.js:5091 |
 | `nameMarkBuddyDue` | frontend/js/avatars.js:5891 |
-| `nameMarkBuddyEase` | frontend/js/avatars.js:9883 |
+| `nameMarkBuddyEase` | frontend/js/avatars.js:9884 |
 | `nameMarkBuddyEdges` | frontend/js/avatars.js:4552 |
 | `nameMarkBuddyEmote` | frontend/js/avatars.js:3346 |
 | `nameMarkBuddyEnter` | frontend/js/avatars.js:8062 |
-| `nameMarkBuddyErrand` | frontend/js/avatars.js:10212 |
+| `nameMarkBuddyErrand` | frontend/js/avatars.js:10213 |
 | `nameMarkBuddyExpress` | frontend/js/avatars.js:9141 |
 | `nameMarkBuddyFeel` | frontend/js/avatars.js:9713 |
 | `nameMarkBuddyFlies` | frontend/js/avatars.js:6433 |
@@ -2367,15 +2367,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyGlue` | frontend/js/avatars.js:5467 |
 | `nameMarkBuddyGlueBand` | frontend/js/avatars.js:5516 |
 | `nameMarkBuddyGo` | frontend/js/avatars.js:6585 |
-| `nameMarkBuddyGone` | frontend/js/avatars.js:10586 |
+| `nameMarkBuddyGone` | frontend/js/avatars.js:10587 |
 | `nameMarkBuddyHalt` | frontend/js/avatars.js:8748 |
 | `nameMarkBuddyHasAtlas` | frontend/js/avatars.js:8697 |
-| `nameMarkBuddyHeadAt` | frontend/js/avatars.js:10057 |
-| `nameMarkBuddyHint` | frontend/js/avatars.js:11305 |
+| `nameMarkBuddyHeadAt` | frontend/js/avatars.js:10058 |
+| `nameMarkBuddyHint` | frontend/js/avatars.js:11306 |
 | `nameMarkBuddyHits` | frontend/js/avatars.js:4353 |
 | `nameMarkBuddyHold` | frontend/js/avatars.js:9226 |
 | `nameMarkBuddyHover` | frontend/js/avatars.js:6934 |
-| `nameMarkBuddyHoverReaction` | frontend/js/avatars.js:9904 |
+| `nameMarkBuddyHoverReaction` | frontend/js/avatars.js:9905 |
 | `nameMarkBuddyIndexReset` | frontend/js/avatars.js:4468 |
 | `nameMarkBuddyIndexResized` | frontend/js/avatars.js:4477 |
 | `nameMarkBuddyInsideCard` | frontend/js/avatars.js:4665 |
@@ -2384,8 +2384,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyKeepSpots` | frontend/js/avatars.js:4950 |
 | `nameMarkBuddyKeepUp` | frontend/js/avatars.js:5689 |
 | `nameMarkBuddyLandNear` | frontend/js/avatars.js:6908 |
-| `nameMarkBuddyLean` | frontend/js/avatars.js:10167 |
-| `nameMarkBuddyLeanSide` | frontend/js/avatars.js:10162 |
+| `nameMarkBuddyLean` | frontend/js/avatars.js:10168 |
+| `nameMarkBuddyLeanSide` | frontend/js/avatars.js:10163 |
 | `nameMarkBuddyLedges` | frontend/js/avatars.js:3939 |
 | `nameMarkBuddyLegsNow` | frontend/js/avatars.js:6250 |
 | `nameMarkBuddyLieDown` | frontend/js/avatars.js:8718 |
@@ -2400,15 +2400,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyMotion` | frontend/js/avatars.js:3766 |
 | `nameMarkBuddyMotionApply` | frontend/js/avatars.js:3800 |
 | `nameMarkBuddyMoveTo` | frontend/js/avatars.js:6255 |
-| `nameMarkBuddyNameProps` | frontend/js/avatars.js:10325 |
+| `nameMarkBuddyNameProps` | frontend/js/avatars.js:10326 |
 | `nameMarkBuddyNapMs` | frontend/js/avatars.js:5711 |
 | `nameMarkBuddyNear` | frontend/js/avatars.js:3980 |
 | `nameMarkBuddyNextSpot` | frontend/js/avatars.js:7816 |
 | `nameMarkBuddyNoTravel` | frontend/js/avatars.js:3812 |
 | `nameMarkBuddyNoteOpen` | frontend/js/avatars.js:9395 |
 | `nameMarkBuddyNoteOpened` | frontend/js/avatars.js:9388 |
-| `nameMarkBuddyNotice` | frontend/js/avatars.js:10088 |
-| `nameMarkBuddyNudge` | frontend/js/avatars.js:11192 |
+| `nameMarkBuddyNotice` | frontend/js/avatars.js:10089 |
+| `nameMarkBuddyNudge` | frontend/js/avatars.js:11193 |
 | `nameMarkBuddyObstacles` | frontend/js/avatars.js:3949 |
 | `nameMarkBuddyOnBoard` | frontend/js/avatars.js:6234 |
 | `nameMarkBuddyOrigin` | frontend/js/avatars.js:4309 |
@@ -2421,11 +2421,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyPerches` | frontend/js/avatars.js:4741 |
 | `nameMarkBuddyPet` | frontend/js/avatars.js:6956 |
 | `nameMarkBuddyPickVariant` | frontend/js/avatars.js:8518 |
-| `nameMarkBuddyPointer` | frontend/js/avatars.js:10409 |
+| `nameMarkBuddyPointer` | frontend/js/avatars.js:10410 |
 | `nameMarkBuddyPoof` | frontend/js/avatars.js:7191 |
 | `nameMarkBuddyPopupEls` | frontend/js/avatars.js:4152 |
 | `nameMarkBuddyPopups` | frontend/js/avatars.js:4138 |
-| `nameMarkBuddyPout` | frontend/js/avatars.js:9894 |
+| `nameMarkBuddyPout` | frontend/js/avatars.js:9895 |
 | `nameMarkBuddyPrewarm` | frontend/js/avatars.js:9213 |
 | `nameMarkBuddyPropGaps` | frontend/js/avatars.js:5880 |
 | `nameMarkBuddyPut` | frontend/js/avatars.js:5171 |
@@ -2443,8 +2443,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyRideBox` | frontend/js/avatars.js:5289 |
 | `nameMarkBuddyRideClip` | frontend/js/avatars.js:5276 |
 | `nameMarkBuddyRideFrames` | frontend/js/avatars.js:5263 |
-| `nameMarkBuddyRoom` | frontend/js/avatars.js:10437 |
-| `nameMarkBuddyRoomSoon` | frontend/js/avatars.js:10427 |
+| `nameMarkBuddyRoom` | frontend/js/avatars.js:10438 |
+| `nameMarkBuddyRoomSoon` | frontend/js/avatars.js:10428 |
 | `nameMarkBuddyRoute` | frontend/js/avatars.js:6485 |
 | `nameMarkBuddyRubbed` | frontend/js/avatars.js:7001 |
 | `nameMarkBuddyScaleSaved` | frontend/js/avatars.js:4250 |
@@ -2466,9 +2466,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyShapeAt1` | frontend/js/avatars.js:4323 |
 | `nameMarkBuddyShown` | frontend/js/avatars.js:3917 |
 | `nameMarkBuddyShowy` | frontend/js/avatars.js:8266 |
-| `nameMarkBuddyShy` | frontend/js/avatars.js:10466 |
+| `nameMarkBuddyShy` | frontend/js/avatars.js:10467 |
 | `nameMarkBuddySizeSelect` | frontend/js/avatars.js:4288 |
-| `nameMarkBuddySound` | frontend/js/avatars.js:10335 |
+| `nameMarkBuddySound` | frontend/js/avatars.js:10336 |
 | `nameMarkBuddySpotFor` | frontend/js/avatars.js:4982 |
 | `nameMarkBuddySpots` | frontend/js/avatars.js:4941 |
 | `nameMarkBuddySquash` | frontend/js/avatars.js:6827 |
@@ -2478,7 +2478,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyStepAside` | frontend/js/avatars.js:5045 |
 | `nameMarkBuddyStill` | frontend/js/avatars.js:3809 |
 | `nameMarkBuddyStillGood` | frontend/js/avatars.js:7468 |
-| `nameMarkBuddyStir` | frontend/js/avatars.js:10027 |
+| `nameMarkBuddyStir` | frontend/js/avatars.js:10028 |
 | `nameMarkBuddyStreak` | frontend/js/avatars.js:9373 |
 | `nameMarkBuddyStride` | frontend/js/avatars.js:6813 |
 | `nameMarkBuddyStrokes` | frontend/js/avatars.js:6974 |
@@ -2501,10 +2501,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyTypingKey` | frontend/js/avatars.js:4209 |
 | `nameMarkBuddyVary` | frontend/js/avatars.js:8539 |
 | `nameMarkBuddyViewChanged` | frontend/js/avatars.js:7704 |
-| `nameMarkBuddyWake` | frontend/js/avatars.js:9987 |
+| `nameMarkBuddyWake` | frontend/js/avatars.js:9988 |
 | `nameMarkBuddyWalkEnter` | frontend/js/avatars.js:7892 |
 | `nameMarkBuddyWalkIn` | frontend/js/avatars.js:8294 |
-| `nameMarkBuddyWander` | frontend/js/avatars.js:9925 |
+| `nameMarkBuddyWander` | frontend/js/avatars.js:9926 |
 | `nameMarkBuddyWarmUp` | frontend/js/avatars.js:4064 |
 | `nameMarkBuddyWarmthAt` | frontend/js/avatars.js:9709 |
 | `nameMarkBuddyWatch` | frontend/js/avatars.js:6085 |
@@ -2546,7 +2546,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `queueNameMarkBuddyCheck` | frontend/js/avatars.js:7588 |
 | `registerCharacter` | frontend/js/avatars.js:1209 |
 | `setOwnNameMarkStyle` | frontend/js/avatars.js:294 |
-| `syncNameMarkBuddy` | frontend/js/avatars.js:11203 |
+| `syncNameMarkBuddy` | frontend/js/avatars.js:11204 |
 | `watchNameMark` | frontend/js/avatars.js:1096 |
 
 ### frontend/js/batch-space.js (7)
@@ -26518,7 +26518,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20803)
+## Tests (20805)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27578,7 +27578,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_first_run_prefs_q25.py | 3 |
 | tests/test_first_steps_ask_count.py | 1 |
 | tests/test_fixa2_1025.py | 5 |
-| tests/test_fixed_day_1693.py | 3 |
+| tests/test_fixed_day_1693.py | 4 |
 | tests/test_flash_entry_missing_s93.py | 3 |
 | tests/test_flaw_class_lints.py | 2 |
 | tests/test_flow_1683.py | 17 |
@@ -28548,7 +28548,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_search_spaces.py | 2 |
 | tests/test_search_suggest_close.py | 4 |
 | tests/test_search_suggest_lists.py | 9 |
-| tests/test_search_surfaces.py | 14 |
+| tests/test_search_surfaces.py | 15 |
 | tests/test_searxng_card_1734.py | 7 |
 | tests/test_searxng_down_1490.py | 9 |
 | tests/test_searxng_down_action_1556.py | 7 |
