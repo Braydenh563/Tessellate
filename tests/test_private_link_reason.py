@@ -13,7 +13,7 @@ from sqlalchemy import text
 
 from tessellate.core import crypto, vault
 from tessellate.core.database import AuditLog, Entry, EntryLink, EntryRevision
-from tessellate.entry import manager
+from tessellate.entry import manager_private
 
 SECRET = "named after my oncologist, Dr Weatherby"
 
@@ -140,7 +140,7 @@ def test_rotating_the_key_moves_reasons_history_and_payloads(client, session):
     before = _raw_reason(session)
 
     old, new = vault.key(), crypto.new_dek()
-    manager.rekey_private_extras(session, old, new)
+    manager_private.rekey_private_extras(session, old, new)
     session.commit()
     vault.set_key(new)
     session.expire_all()

@@ -19,6 +19,7 @@ from tessellate.core.config import ConfigManager
 from tessellate.core.database import Space
 from tessellate.core.deps import get_config, get_session
 from tessellate.entry import manager, private_space
+from tessellate.entry import manager_private
 
 router = APIRouter(tags=["spaces"])
 
@@ -107,7 +108,7 @@ def _open_spaces(session: Session, x_auth_token: str | None) -> dict:
     manager.log_action(session, "unlocked", "vault", detail="private spaces opened")
     session.commit()
     if sealed:
-        manager.scrub_private_leftovers(session)
+        manager_private.scrub_private_leftovers(session)
     return {"open": True}
 
 
@@ -166,7 +167,7 @@ def set_space_private(
     manager.log_action(session, "edited", "space", None, f"space {space.id} private={body.private}")
     session.commit()
     if body.private:
-        manager.scrub_private_leftovers(session)
+        manager_private.scrub_private_leftovers(session)
         spacelock.open_for(x_auth_token)
     return {"private": space.is_private, "changed": changed}
 

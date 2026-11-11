@@ -68,6 +68,7 @@ from tessellate.core.deps import get_session
 from tessellate.core.events import ACTOR_USER_AND_AI
 from tessellate.core.validation_copy import Said
 from tessellate.entry import manager, private_space
+from tessellate.entry import manager_private
 from tessellate.entry import meetings as meeting_shape
 from tessellate.entry import properties as note_properties
 from tessellate.entry.mentions import MENTION_MIN_TITLE_CHARS, names_label
@@ -937,14 +938,14 @@ def create_entry(body: EntryCreate, session: Session = Depends(get_session)) -> 
         entry.parent_id = parent.id
     _mark_new_entry(entry, body, filed_by)
     if by_ask:
-        manager.set_private(session, entry, True)  # sealed before the first commit
+        manager_private.set_private(session, entry, True)  # sealed before the first commit
     if defer:
         entry.filing_state = "pending"
     elif janitor.settled_state(filed_by) != "done":
         entry.filing_state = janitor.settled_state(filed_by)
     session.commit()  # a note in a private space is sealed on the way in (`database._seal_private_space_joins`)
     if sealed:
-        manager.scrub_private_leftovers(session)
+        manager_private.scrub_private_leftovers(session)
     _finish_new_entry(session, entry, body, defer)
     out = _to_out(
         session,
@@ -3156,12 +3157,12 @@ def make_all_private(body: MakeAllPrivateBody, session: Session = Depends(get_se
     server refuses without `confirm` so a stray call cannot do it."""
     if not body.confirm:
         raise HTTPException(status_code=400, detail="Confirm first: this locks every note.")
-    sealed = manager.make_all_private(session)
+    sealed = manager_private.make_all_private(session)
     if sealed is None:
         raise HTTPException(status_code=409, detail="Unlock the app first: the encryption key isn't loaded.")
     session.commit()
     if sealed:
-        manager.scrub_private_leftovers(session)
+        manager_private.scrub_private_leftovers(session)
     return {"sealed": len(sealed), "ids": sealed}
 
 
@@ -3178,7 +3179,7 @@ def set_entry_privacy(
     if not body.private and private_space.is_private_space(session, entry.workspace_id):
         # INBOX 1727: no per-note opt-out inside a private space.
         raise HTTPException(status_code=409, detail=private_space.MOVE_OUT_TO_SHARE)
-    if not manager.set_private(session, entry, body.private):
+    if not manager_private.set_private(session, entry, body.private):
         raise HTTPException(
             status_code=409,
             detail="Unlock the app first: the encryption key isn't loaded.",
@@ -3189,7 +3190,7 @@ def set_entry_privacy(
     if body.private:
         # SEC-03: the note's words out of the search index's segments and the
         # WAL too, not only out of the answers.
-        manager.scrub_private_leftovers(session)
+        manager_private.scrub_private_leftovers(session)
     session.refresh(entry)
     return _to_out(session, entry)
 

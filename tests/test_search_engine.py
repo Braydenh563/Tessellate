@@ -509,7 +509,7 @@ def test_making_a_note_private_takes_its_vector_out_of_the_matrix(
     """A vector derived from the text is exactly what the encryption is for.
     The bulk `delete()` in `set_private` never reaches the in-memory array,
     so the array is told directly."""
-    from tessellate.entry import manager
+    from tessellate.entry import manager_private
     from tessellate.search import engine
 
     entry = _note(session, "the private thing about bread")
@@ -518,7 +518,7 @@ def test_making_a_note_private_takes_its_vector_out_of_the_matrix(
     assert entry.id in engine.vectors_by_id(session)
 
     monkeypatch.setattr("tessellate.core.vault.key", lambda: b"k" * 32)
-    assert manager.set_private(session, entry, True)
+    assert manager_private.set_private(session, entry, True)
     session.commit()
     assert entry.id not in engine.vectors_by_id(session)
 

@@ -475,12 +475,12 @@ def test_the_graph_never_labels_a_note_with_its_ciphertext(client, session, monk
     with a base64 blob. `readable_content` names the graph in its own docstring
     as a place that must not break on one."""
     from tessellate.core import crypto
-    from tessellate.entry import manager
+    from tessellate.entry import manager_private
 
     note = _note(session, "the plain words of a private note")
     key = b"k" * 32
     monkeypatch.setattr("tessellate.core.vault.key", lambda: key)
-    assert manager.set_private(session, note, True)
+    assert manager_private.set_private(session, note, True)
     session.commit()
     assert crypto.is_encrypted(note.content)
 
