@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10196, test files 2495, tests 20562, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10198, test files 2495, tests 20562, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -13079,16 +13079,16 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/forget` | POST | `forget` | src/tessellate/api/routes_hello.py:200 |
 | `/grammar/languagetool` | POST | `post_languagetool` | src/tessellate/api/routes_spelling.py:39 |
 | `/graph` | GET | `graph` | src/tessellate/api/routes_graph.py:756 |
-| `/graph/local/{entry_id}` | GET | `graph_local` | src/tessellate/api/routes_graph.py:1270 |
+| `/graph/local/{entry_id}` | GET | `graph_local` | src/tessellate/api/routes_graph.py:1273 |
 | `/graph/match` | GET | `graph_match` | src/tessellate/api/routes_graph.py:360 |
-| `/graph/path` | GET | `graph_path` | src/tessellate/api/routes_graph.py:1636 |
-| `/graph/pin/{node_id}` | PUT | `pin_node` | src/tessellate/api/routes_graph.py:1850 |
-| `/graph/pins` | PUT | `pin_nodes` | src/tessellate/api/routes_graph.py:1907 |
-| `/graph/structure` | GET | `graph_structure` | src/tessellate/api/routes_graph.py:1394 |
-| `/graph/topics/name` | PUT | `name_topic` | src/tessellate/api/routes_graph.py:1472 |
-| `/graph/topics/of` | GET | `graph_topics_of` | src/tessellate/api/routes_graph.py:1432 |
-| `/graph/topics/summary` | POST | `topic_summary` | src/tessellate/api/routes_graph.py:1504 |
-| `/graph/unpin-all` | POST | `unpin_all_nodes` | src/tessellate/api/routes_graph.py:1939 |
+| `/graph/path` | GET | `graph_path` | src/tessellate/api/routes_graph.py:1639 |
+| `/graph/pin/{node_id}` | PUT | `pin_node` | src/tessellate/api/routes_graph.py:1853 |
+| `/graph/pins` | PUT | `pin_nodes` | src/tessellate/api/routes_graph.py:1910 |
+| `/graph/structure` | GET | `graph_structure` | src/tessellate/api/routes_graph.py:1397 |
+| `/graph/topics/name` | PUT | `name_topic` | src/tessellate/api/routes_graph.py:1475 |
+| `/graph/topics/of` | GET | `graph_topics_of` | src/tessellate/api/routes_graph.py:1435 |
+| `/graph/topics/summary` | POST | `topic_summary` | src/tessellate/api/routes_graph.py:1507 |
+| `/graph/unpin-all` | POST | `unpin_all_nodes` | src/tessellate/api/routes_graph.py:1942 |
 | `/greeting` | GET | `greeting` | src/tessellate/api/routes_insights.py:175 |
 | `/hardware` | GET | `hardware_memory` | src/tessellate/api/routes_models.py:974 |
 | `/hardware` | PUT | `save_hardware` | src/tessellate/api/routes_models.py:982 |
@@ -13529,7 +13529,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10196)
+## Backend modules (10198)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -18854,43 +18854,44 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `run_skill` | src/tessellate/ai/skill_runner.py:728 |
 | `verify` | src/tessellate/ai/skill_runner.py:250 |
 
-### src/tessellate/ai/skills.py (33)
+### src/tessellate/ai/skills.py (34)
 
 | Name | File:line |
 |---|---|
 | `SkillError` | src/tessellate/ai/skills.py:170 |
-| `_check_placeholders` | src/tessellate/ai/skills.py:546 |
-| `_checked_folder_skill` | src/tessellate/ai/skills.py:1867 |
-| `_clean_inputs` | src/tessellate/ai/skills.py:520 |
-| `_clean_tools` | src/tessellate/ai/skills.py:492 |
-| `_declared_blocks` | src/tessellate/ai/skills.py:617 |
-| `_one_step_spec` | src/tessellate/ai/skills.py:227 |
-| `_step` | src/tessellate/ai/skills.py:888 |
+| `_check_placeholders` | src/tessellate/ai/skills.py:551 |
+| `_checked_folder_skill` | src/tessellate/ai/skills.py:1872 |
+| `_clean_inputs` | src/tessellate/ai/skills.py:525 |
+| `_clean_tools` | src/tessellate/ai/skills.py:497 |
+| `_declared_blocks` | src/tessellate/ai/skills.py:622 |
+| `_one_step_spec` | src/tessellate/ai/skills.py:250 |
+| `_step` | src/tessellate/ai/skills.py:893 |
 | `_step_specs` | src/tessellate/ai/skills.py:189 |
+| `_step_tools` | src/tessellate/ai/skills.py:227 |
 | `_text` | src/tessellate/ai/skills.py:182 |
-| `_verify_args` | src/tessellate/ai/skills.py:334 |
-| `ad_hoc_plan` | src/tessellate/ai/skills.py:657 |
-| `budget_caps` | src/tessellate/ai/skills.py:630 |
-| `builtins` | src/tessellate/ai/skills.py:1830 |
-| `catalog` | src/tessellate/ai/skills.py:1842 |
-| `contract_nudge` | src/tessellate/ai/skills.py:402 |
-| `fill` | src/tessellate/ai/skills.py:692 |
-| `find` | src/tessellate/ai/skills.py:1905 |
-| `folder_skills` | src/tessellate/ai/skills.py:1875 |
-| `held_back_reason` | src/tessellate/ai/skills.py:1821 |
-| `input_values` | src/tessellate/ai/skills.py:719 |
-| `is_action` | src/tessellate/ai/skills.py:652 |
-| `larger_model_reason` | src/tessellate/ai/skills.py:1788 |
-| `measured_rates` | src/tessellate/ai/skills.py:1779 |
-| `missing_inputs` | src/tessellate/ai/skills.py:708 |
-| `normalise` | src/tessellate/ai/skills.py:561 |
-| `run_instruction` | src/tessellate/ai/skills.py:730 |
-| `small_class` | src/tessellate/ai/skills.py:1805 |
-| `state_line` | src/tessellate/ai/skills.py:456 |
-| `step_instruction` | src/tessellate/ai/skills.py:777 |
-| `step_specs` | src/tessellate/ai/skills.py:377 |
-| `stored` | src/tessellate/ai/skills.py:1837 |
-| `verify_spec` | src/tessellate/ai/skills.py:269 |
+| `_verify_args` | src/tessellate/ai/skills.py:339 |
+| `ad_hoc_plan` | src/tessellate/ai/skills.py:662 |
+| `budget_caps` | src/tessellate/ai/skills.py:635 |
+| `builtins` | src/tessellate/ai/skills.py:1835 |
+| `catalog` | src/tessellate/ai/skills.py:1847 |
+| `contract_nudge` | src/tessellate/ai/skills.py:407 |
+| `fill` | src/tessellate/ai/skills.py:697 |
+| `find` | src/tessellate/ai/skills.py:1910 |
+| `folder_skills` | src/tessellate/ai/skills.py:1880 |
+| `held_back_reason` | src/tessellate/ai/skills.py:1826 |
+| `input_values` | src/tessellate/ai/skills.py:724 |
+| `is_action` | src/tessellate/ai/skills.py:657 |
+| `larger_model_reason` | src/tessellate/ai/skills.py:1793 |
+| `measured_rates` | src/tessellate/ai/skills.py:1784 |
+| `missing_inputs` | src/tessellate/ai/skills.py:713 |
+| `normalise` | src/tessellate/ai/skills.py:566 |
+| `run_instruction` | src/tessellate/ai/skills.py:735 |
+| `small_class` | src/tessellate/ai/skills.py:1810 |
+| `state_line` | src/tessellate/ai/skills.py:461 |
+| `step_instruction` | src/tessellate/ai/skills.py:782 |
+| `step_specs` | src/tessellate/ai/skills.py:382 |
+| `stored` | src/tessellate/ai/skills.py:1842 |
+| `verify_spec` | src/tessellate/ai/skills.py:274 |
 
 ### src/tessellate/ai/slash.py (15)
 
@@ -21475,15 +21476,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `restore_binned_reading` | src/tessellate/api/routes_files_readings.py:592 |
 | `vision_ocr_media` | src/tessellate/api/routes_files_readings.py:718 |
 
-### src/tessellate/api/routes_graph.py (56)
+### src/tessellate/api/routes_graph.py (57)
 
 | Name | File:line |
 |---|---|
-| `PinBody` | src/tessellate/api/routes_graph.py:1829 |
-| `PinRow` | src/tessellate/api/routes_graph.py:1895 |
-| `PinsBody` | src/tessellate/api/routes_graph.py:1903 |
-| `TopicNameBody` | src/tessellate/api/routes_graph.py:1467 |
-| `TopicSummaryBody` | src/tessellate/api/routes_graph.py:1484 |
+| `PinBody` | src/tessellate/api/routes_graph.py:1832 |
+| `PinRow` | src/tessellate/api/routes_graph.py:1898 |
+| `PinsBody` | src/tessellate/api/routes_graph.py:1906 |
+| `TopicNameBody` | src/tessellate/api/routes_graph.py:1470 |
+| `TopicSummaryBody` | src/tessellate/api/routes_graph.py:1487 |
 | `_add_attachment_nodes` | src/tessellate/api/routes_graph.py:636 |
 | `_add_degree` | src/tessellate/api/routes_graph.py:1022 |
 | `_add_document_nodes` | src/tessellate/api/routes_graph.py:452 |
@@ -21495,46 +21496,47 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_add_unresolved_nodes` | src/tessellate/api/routes_graph.py:595 |
 | `_age_days` | src/tessellate/api/routes_graph.py:46 |
 | `_build_graph` | src/tessellate/api/routes_graph.py:1106 |
-| `_build_structure` | src/tessellate/api/routes_graph.py:1588 |
-| `_build_topics` | src/tessellate/api/routes_graph.py:1559 |
+| `_build_structure` | src/tessellate/api/routes_graph.py:1591 |
+| `_build_topics` | src/tessellate/api/routes_graph.py:1562 |
 | `_cached` | src/tessellate/api/routes_graph.py:128 |
 | `_centrality` | src/tessellate/api/routes_graph.py:317 |
-| `_extractive_summary` | src/tessellate/api/routes_graph.py:1490 |
+| `_extractive_summary` | src/tessellate/api/routes_graph.py:1493 |
 | `_graph_entries` | src/tessellate/api/routes_graph.py:797 |
 | `_graph_fingerprint` | src/tessellate/api/routes_graph.py:107 |
-| `_hop_reasons` | src/tessellate/api/routes_graph.py:1787 |
+| `_hop_reasons` | src/tessellate/api/routes_graph.py:1790 |
 | `_iso_or_none` | src/tessellate/api/routes_graph.py:793 |
 | `_label` | src/tessellate/api/routes_graph.py:165 |
 | `_link_edges` | src/tessellate/api/routes_graph.py:948 |
-| `_load_entries` | src/tessellate/api/routes_graph.py:1216 |
-| `_local_topology` | src/tessellate/api/routes_graph.py:1228 |
+| `_load_entries` | src/tessellate/api/routes_graph.py:1219 |
+| `_local_topology` | src/tessellate/api/routes_graph.py:1231 |
 | `_maps_of` | src/tessellate/api/routes_graph.py:834 |
 | `_note_nodes` | src/tessellate/api/routes_graph.py:874 |
 | `_note_texts` | src/tessellate/api/routes_graph.py:180 |
 | `_note_types_of` | src/tessellate/api/routes_graph.py:856 |
-| `_path_node` | src/tessellate/api/routes_graph.py:1383 |
+| `_path_node` | src/tessellate/api/routes_graph.py:1386 |
 | `_payload_key` | src/tessellate/api/routes_graph.py:686 |
-| `_pin_target` | src/tessellate/api/routes_graph.py:1840 |
+| `_pin_target` | src/tessellate/api/routes_graph.py:1843 |
 | `_preview` | src/tessellate/api/routes_graph.py:228 |
 | `_preview_line` | src/tessellate/api/routes_graph.py:253 |
 | `_similarity_edges` | src/tessellate/api/routes_graph.py:262 |
-| `_slim` | src/tessellate/api/routes_graph.py:1197 |
+| `_slim` | src/tessellate/api/routes_graph.py:1209 |
+| `_slim_note` | src/tessellate/api/routes_graph.py:1197 |
 | `_tags_of` | src/tessellate/api/routes_graph.py:54 |
 | `_thread_edges` | src/tessellate/api/routes_graph.py:1011 |
 | `_word_count` | src/tessellate/api/routes_graph.py:657 |
 | `_words` | src/tessellate/api/routes_graph.py:173 |
 | `graph` | src/tessellate/api/routes_graph.py:757 |
-| `graph_local` | src/tessellate/api/routes_graph.py:1271 |
+| `graph_local` | src/tessellate/api/routes_graph.py:1274 |
 | `graph_match` | src/tessellate/api/routes_graph.py:361 |
-| `graph_path` | src/tessellate/api/routes_graph.py:1637 |
-| `graph_structure` | src/tessellate/api/routes_graph.py:1395 |
-| `graph_topics_of` | src/tessellate/api/routes_graph.py:1433 |
-| `name_topic` | src/tessellate/api/routes_graph.py:1473 |
-| `pin_node` | src/tessellate/api/routes_graph.py:1851 |
-| `pin_nodes` | src/tessellate/api/routes_graph.py:1908 |
+| `graph_path` | src/tessellate/api/routes_graph.py:1640 |
+| `graph_structure` | src/tessellate/api/routes_graph.py:1398 |
+| `graph_topics_of` | src/tessellate/api/routes_graph.py:1436 |
+| `name_topic` | src/tessellate/api/routes_graph.py:1476 |
+| `pin_node` | src/tessellate/api/routes_graph.py:1854 |
+| `pin_nodes` | src/tessellate/api/routes_graph.py:1911 |
 | `reset_graph_cache` | src/tessellate/api/routes_graph.py:145 |
-| `topic_summary` | src/tessellate/api/routes_graph.py:1505 |
-| `unpin_all_nodes` | src/tessellate/api/routes_graph.py:1940 |
+| `topic_summary` | src/tessellate/api/routes_graph.py:1508 |
+| `unpin_all_nodes` | src/tessellate/api/routes_graph.py:1943 |
 
 ### src/tessellate/api/routes_hello.py (15)
 
