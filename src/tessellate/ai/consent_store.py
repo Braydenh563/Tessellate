@@ -17,6 +17,9 @@ MAX_PARKED = 64
 
 _lock = threading.Lock()
 _parked: dict[str, tuple[float, dict]] = {}
+#: Ids already spent, kept for the same life: an expired id and a spent one both find nothing in
+#: `_parked`, but only the spent one must not run again from the steps a page sends.
+_spent: dict[str, float] = {}
 
 
 def _now() -> float:
@@ -40,11 +43,23 @@ def take(key: str | None) -> dict | None:
     """The proposal under `key`, once; None when unknown, spent or too old."""
     with _lock:
         held = _parked.pop(key or "", None)
+        if held is not None:
+            while len(_spent) >= MAX_PARKED * 4:
+                _spent.pop(next(iter(_spent)))
+            _spent[key] = _now() + TTL_SECONDS
     if held is None or held[0] <= _now():
         return None
     return held[1]
 
 
+def was_spent(key: str | None) -> bool:
+    """True when `key` was parked and has been taken since (a press or a typed yes ran it)."""
+    with _lock:
+        until = _spent.get(key or "")
+    return until is not None and until > _now()
+
+
 def reset_for_tests() -> None:
     with _lock:
         _parked.clear()
+        _spent.clear()

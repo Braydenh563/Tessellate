@@ -1778,14 +1778,15 @@ def _starter_events(req: _StreamRequest, starter: tuple[str, dict]) -> Iterator[
 @router.post("/command/run")
 def run_command(body: CommandRunBody, session: Session = Depends(get_session)) -> dict:
     """Run what an act's card showed, after Confirm, or take it back (Undo).
-    Only the steps `commands.RUNNABLE` names run, each through the agent's
-    own tool door, so permissions and the event log are the agent's."""
+    Only the steps `commands.RUNNABLE` names run, each through the agent's own tool door."""
     from tessellate.ai import commands
 
     if not body.steps:
         raise HTTPException(status_code=400, detail="There is nothing to run.")
     if any(str(step.get("name") or "") not in commands.RUNNABLE for step in body.steps):
         raise HTTPException(status_code=404, detail="That names a step this app does not run from Chat.")
+    if consent_store.was_spent(body.consent_id):
+        raise HTTPException(status_code=409, detail="That card was already answered.")
     done = acts.run_confirmed(session, body.steps, body.skipped, body.consent_id)
     return {"ok": done["ok"], "summary": done["summary"], "undo": done["undo"], "open": done.get("open")}
 
