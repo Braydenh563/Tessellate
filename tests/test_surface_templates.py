@@ -53,6 +53,12 @@ SURFACES = {
         ("switchTab",),
         ("reminder-compose", "reminder-magic", "reminder-groups", "reminders-empty", "reminders-done-pagination"),
     ),
+    "timeline": (
+        "tab-timeline",
+        ("timeline*.js", "quickadd.js", "skills.js", "wiring.js", "navigation.js", "phone-shell.js", "dashboard.js", "palette.js"),
+        ("switchTab",),
+        ("timeline-scroll", "timeline-scrubber", "timeline-view-seg", "timeline-search", "timeline-table-head", "timeline-jump-today"),
+    ),
     "shortcuts": (
         "shortcuts-overlay",
         ("reveal-targets.js", "settings-wiring.js"),

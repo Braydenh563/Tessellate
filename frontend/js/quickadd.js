@@ -642,17 +642,18 @@ onSurface("reminders", () => {
   $("reminder-date").min = toLocalInputValue(new Date()).slice(0, 10);
 });
 
+onSurface("timeline", () => {
+  const search = $("timeline-search");
+  quickAddAttach(search, "timeline", { after: search.closest(".search-field") || search });
+  search.addEventListener("keydown", qaTimelineEnter);
+});
+
 (() => {
   //: The reader's first answer loads its tables (measured: over 4 s cold,
   //: and 305 ms for the first note after a reminder: the chat path's own
   //: modules); both asked now, a few seconds after boot, so the first word
   //: typed is not the one that waits.
   qaPrewarm();
-  const search =$("timeline-search");
-  if (search) {
-    quickAddAttach(search, "timeline", { after: search.closest(".search-field") || search });
-    search.addEventListener("keydown", qaTimelineEnter);
-  }
   const palette = $("palette-input");
   if (palette) {
     quickAddAttach(palette, "palette", {

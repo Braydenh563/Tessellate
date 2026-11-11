@@ -1909,7 +1909,7 @@ function initPrimaryFab() {
   const query = window.matchMedia(PHONE_FAB);
   floatPrimaryActions(query.matches);
   query.addEventListener("change", (event) => floatPrimaryActions(event.matches));
-  onSurface("reminders", () => floatPrimaryActions(query.matches));
+  for (const name of ["reminders", "timeline"]) onSurface(name, () => floatPrimaryActions(query.matches));
 }
 
 initPrimaryFab();

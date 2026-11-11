@@ -1319,9 +1319,9 @@ $("batch-select-all").addEventListener("click", () => toggleSelectAllRows(librar
 function timelineSelectableRows() {
   return timelineVisibleRows().filter((row) => row.kind === "note" || row.kind === "board");
 }
-$("timeline-batch-select-all")?.addEventListener("click", () =>
-  toggleSelectAllRows(timelineSelectableRows(), paintTimeline)
-);
+onSurface("timeline", () => {
+  $("timeline-batch-select-all").addEventListener("click", () => toggleSelectAllRows(timelineSelectableRows(), paintTimeline));
+});
 
 $("batch-tag").addEventListener("click", batchTag);
 $("batch-delete").addEventListener("click", batchDelete);
