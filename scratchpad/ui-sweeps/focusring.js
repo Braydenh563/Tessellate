@@ -31,7 +31,8 @@ const { boot } = require('./lib.js');
         ground = ground || rgba(getComputedStyle(document.documentElement).backgroundColor);
         //: A search field's input is ringed by its field (`.search-field:
         //: focus-within`, an outline over an accent border).
-        const host = e.closest('.search-field:focus-within') || e;
+        //: A card's title takes the focus but the card wears the ring (`:has()`, 08-consistency.css).
+        const host = e.closest('.search-field:focus-within') || (e.classList.contains('card-open') && e.closest('.library-card, .doc-list-item')) || e;
         const s = getComputedStyle(host);
         let ring = null, w = 0;
         if (s.outlineStyle !== 'none' && parseFloat(s.outlineWidth) > 0 && rgba(s.outlineColor)[3] > 0) { ring = s.outlineColor; w = parseFloat(s.outlineWidth) + (host !== e && s.borderTopColor === s.outlineColor ? parseFloat(s.borderTopWidth) : 0); }
