@@ -973,7 +973,7 @@ def _app_said(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list
     ("do you have feelings", the owner, 2026-10-11), a capability, a call, a
     place ("where is the bin?", `ai/find_it.py`, with a link that opens it),
     or that nothing is open."""
-    itself = chat_extra.talk_events(req.session, req.body.question or "", req.history or [], _reply_seed(req)[1], req.question or "")
+    itself = chat_extra.talk_events(req.session, req.body.question or "", req.history or [], _reply_seed(req)[1], req.question or "", _composer_voice())
     if itself:
         return itself
     if _asks_capability(req, prepared):
@@ -1173,6 +1173,7 @@ def _conversational_messages(req: _StreamRequest, prepared: dict, ollama_running
             for part in (
                 _capability_answer(req, ollama_running) if _asks_capability(req, prepared) else "",
                 composer_aware.model_context(_awareness(req)) if req.body.screen else "",
+                chat_extra.remark_facts(req.session, req.question or ""),  # parity, INBOX 1749
             )
             if part
         ),
