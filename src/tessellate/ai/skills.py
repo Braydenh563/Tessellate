@@ -224,14 +224,7 @@ def _step_specs(
     return specs
 
 
-def _one_step_spec(
-    text: str, step: dict, known_tools: set[str] | None, declared: list[str]
-) -> dict:
-    expects = str(step.get("expects") or "").strip() or None
-    if expects is not None and expects not in STEP_EXPECTS:
-        raise SkillError(
-            f"“{expects}” is not something a step can expect. Use one of {', '.join(STEP_EXPECTS)}."
-        )
+def _step_tools(text: str, step: dict, known_tools: set[str] | None, declared: list[str]) -> list[str]:
     tools: list[str] = []
     for tool in step.get("tools") or []:
         tool = str(tool or "").strip()
@@ -251,6 +244,18 @@ def _one_step_spec(
                 "not declare in its tools."
             )
         tools.append(tool)
+    return tools
+
+
+def _one_step_spec(
+    text: str, step: dict, known_tools: set[str] | None, declared: list[str]
+) -> dict:
+    expects = str(step.get("expects") or "").strip() or None
+    if expects is not None and expects not in STEP_EXPECTS:
+        raise SkillError(
+            f"“{expects}” is not something a step can expect. Use one of {', '.join(STEP_EXPECTS)}."
+        )
+    tools = _step_tools(text, step, known_tools, declared)
     if len(tools) > MAX_STEP_TOOLS:
         raise SkillError(f"A step can name at most {MAX_STEP_TOOLS} tools.")
     retries = step.get("retries", DEFAULT_STEP_RETRIES)

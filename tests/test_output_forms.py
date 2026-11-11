@@ -16,6 +16,7 @@ import pytest
 from tessellate.ai import realise, tools
 from tests._app_js import app_js_text
 from tests._app_js import with_pieces
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = json.loads((Path(__file__).parent / "fixtures" / "composer" / "forms_1010.json").read_text(encoding="utf-8"))
@@ -113,5 +114,5 @@ def test_no_model_reminders_name_every_open_one_or_the_next_few_and_a_count(ai_c
 def test_the_chat_draws_a_chart_event_with_the_ask_chart_drawer():
     code = app_js_text()
     assert 'event.type === "chart" && onChart' in code
-    assert "function drawAskChart(host, chart)" in (ROOT / "frontend" / "js" / "ask-chart.js").read_text(encoding="utf-8")
+    assert "function drawAskChart(host, chart)" in _js_scope.unwrapped((ROOT / "frontend" / "js" / "ask-chart.js").read_text(encoding="utf-8"))
     assert "onChart:" in with_pieces("chat-attach.js")

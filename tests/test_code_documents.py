@@ -386,7 +386,7 @@ def test_the_answer_names_the_place_as_read():
 
 
 # Row 1056: the Statistics charts' axis, unchecked at a 0 to 1,240 range.
-ASK_CHART = (JS / "ask-chart.js").read_text(encoding="utf-8")
+ASK_CHART = _js_scope.unwrapped((JS / "ask-chart.js").read_text(encoding="utf-8"))
 
 
 def test_chart_ticks_are_round_and_cover_the_top():

@@ -19,6 +19,7 @@ from pathlib import Path
 
 from tessellate.api import routes_entries
 from tests._app_js import with_pieces
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parent.parent
 FRONTEND = ROOT / "frontend"
@@ -106,7 +107,7 @@ def test_the_filing_outcome_is_said_once_and_never_as_zero_percent():
 def test_one_note_moves_from_its_chip_and_its_menu():
     # In the lazy categories piece, reached from boot code through app.js's
     # LAZY_ENTRY_POINTS.
-    assert "function chooseNoteCategory(" in _read("categories-panel.js")
+    assert "function chooseNoteCategory(" in _js_scope.unwrapped(_read("categories-panel.js"))
     assert '"chooseNoteCategory"' in _read("app.js")
     cards = (_read("note-cards.js") + _read("entry-card.js"))
     chip_block = cards[cards.index('const categoryEl = chip("", "category")'):][:3200]
@@ -219,7 +220,7 @@ def test_the_rail_follows_the_note_being_read():
 
 
 def test_category_rename_and_merge_can_be_undone_and_redraw_the_panel():
-    panel = _read("categories-panel.js")
+    panel = _js_scope.unwrapped(_read("categories-panel.js"))
     rename = _function(panel, "renameCategory")
     assert "offerCategoryUndo(" in rename and "refreshAfterCategoryChange()" in rename
     assert 'confirmLabel: "Merge"' in rename

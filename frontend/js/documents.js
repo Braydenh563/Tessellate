@@ -145,6 +145,25 @@ function docTypeMount() {
     opener.title = "New document of another type";
     head.replaceChildren(wrap);
   }
+  //: **The Recent head holds one row at every width the sidebar takes (220 to 320px).** Under 16rem of
+  //: sidebar the help, template and diagram buttons give way to this ⋯ (built here, not in index.html: the
+  //: boot document is element-capped), and the CSS (`.doc-head-more`) shows it only then. The rows press the
+  //: real buttons, so each has one handler and one id.
+  const tools = document.querySelector("#doc-sidebar-list .doc-head-tools");
+  if (tools && !tools.querySelector(".doc-head-more")) {
+    const press = (selector) => () => document.querySelector(selector)?.click();
+    const more = kebabMenu(
+      [
+        { label: "ph:question About this list", run: press('#doc-sidebar-list [data-help-for="doc-list-help"]') },
+        { label: "ph:layout New from a template", run: press("#doc-new-template") },
+        { label: "ph:flow-arrow New diagram", run: press("#doc-new-diagram") },
+      ],
+      "More about the document list",
+    );
+    more.querySelector("button").id = "doc-head-more-button";
+    more.classList.add("doc-head-more");
+    tools.append(more);
+  }
 }
 
 //: The foot's button names the type and its row wears the check. Only when the

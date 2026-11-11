@@ -290,31 +290,6 @@ const noteClampFit = new ResizeObserver((seen) => {
 });
 
 
-//: **The facts about a file, as facts.** Asked for directly with the Files
-//: sub-tab redesign: "the card format is difficult with files as they can be
-//: quite long and large, a single image or ocr caption doesnt fit them. there
-//: should be details on the name, a generated description that cna happen,
-//: file details such as the type, size, topic/category, linked notes and
-//: other features."
-//:
-//: A tile could show a thumbnail, a name and a caption; everything else a
-//: person actually brings to a file list, how big is it, how many pages,
-//: when did it arrive, has it been read, was either absent or buried. These
-//: are the ones the row can state in one line.
-function formatFileSize(bytes) {
-  const size = Number(bytes) || 0;
-  if (size <= 0) return ""; // unknown, or the file is gone, say nothing
-  if (size < 1024) return `${size} B`;
-  const units = ["KB", "MB", "GB"];
-  let value = size / 1024;
-  let unit = 0;
-  while (value >= 1024 && unit < units.length - 1) {
-    value /= 1024;
-    unit += 1;
-  }
-  // One decimal below 10 (2.4 MB reads better than 2 MB), none above it.
-  return `${value < 10 ? value.toFixed(1) : Math.round(value)} ${units[unit]}`;
-}
 
 
 //: The page size each of those lists is asked for, matching the server's own
@@ -356,9 +331,24 @@ function noteIsMeeting(entry) {
 // carry a second copy of it. Instant + one-click Undo, soft delete
 // underneath (Wave J). Also on the global undo stack (status bar / Ctrl+Z),
 // so it survives past the toast's own timeout.
+//: **A binned note leaves the keyboard user somewhere** (sweep 1028b W8): the
+//: menu's Move to bin removed the row the focus sat in, so it fell to `body`
+//: and the next Tab began at the top of the page. The neighbour is taken
+//: before the delete; once the list is redrawn it gets the focus only if the
+//: focus was lost (a click elsewhere in the meantime wins), and a list that
+//: emptied hands it to the capture field. The Delete key had this already.
 async function binNoteWithUndo(entry) {
+  const list = document.getElementById("entry-list");
+  const rows = list ? entryListItems(list) : [];
+  const at = rows.findIndex((row) => row.dataset.id === String(entry.id));
+  const heirId = (rows[at + 1] || rows[at - 1])?.dataset.id;
   await api(`/entries/${entry.id}`, { method: "DELETE" });
   await refreshEntries([entry.id]);
+  const held = document.activeElement;
+  if (at >= 0 && (!held || held === document.body || !held.isConnected)) {
+    const heir = heirId && list.querySelector(`:scope > li[data-id="${heirId}"]`);
+    (heir || document.getElementById("capture-bar-input"))?.focus();
+  }
   const restoreIt = async () => {
     await api(`/entries/${entry.id}/restore`, { method: "POST" });
     await refreshEntries([entry.id]);
