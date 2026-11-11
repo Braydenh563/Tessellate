@@ -4233,52 +4233,52 @@ Format: id | file:line | one line | status.
 **BS1 (shell, 19 rows)**
 
 - E33 | audit-1028-agent:45 | Guide answers are verbatim topic chunks (first paragraphs) rather than answers; several arrive with a "Re | owner call
-- E37 | audit-1028-agent:49 | The AI status control is a red circle with an x and only a visually hidden label; a sighted new user read | open
+- ~~E37 | audit-1028-agent:49 | The AI status control is a red circle with an x and only a visually hidden label; a sighted new user read~~ stale: level off is neutral (--chip-bg, --muted, 00-tokens-shell.css:1637-1650), red only for data-level error; no red x without a failure
 - K11 | audit-1028-backend:17 | llm_api_key is stored in plain text in preferences.json; the 0700 folder only helps on POSIX | owner call
 - K13 | audit-1028-backend:19 | MCP server: no auth, offers every non-destructive write tool plus web_search/read_url when enabled; separ | owner call
 - K26 | audit-1028-backend:32 | Two schema systems: ad hoc _add_missing_columns/_ensure_indexes at every launch plus migrations/ and alem | owner call
 - K27 | audit-1028-backend:33 | Dead routes (no frontend call; tests only) | owner call
 - K32 | audit-1028-backend:38 | The page polls GET /reminders?include_done=false (a full page of 200 rows) every minute per open tab | open
 - D25 | audit-1028-docs:29 | Doc styles are scattered across 11 CSS files (00-10) with only 1,102 lines in 09-editor.css | open
-- S23 | audit-1028-shell:29 | Palette has about 103 commands but no recent-first ordering or per-command shortcut hints | open
-- S28 | audit-1028-shell:34 | No wiki-style [[ ]] autocomplete while typing in notes | open
-- S30 | audit-1028-shell:36 | No pin-to-top for notes in the list | open
-- S31 | audit-1028-shell:37 | No bulk move to category or bulk tag from the selection bar | open
-- S34 | audit-1028-shell:40 | No export of a single note to Markdown or PDF from the overflow menu | open
-- S39 | audit-1028-shell:45 | Focus ring contrast and visibility inconsistent across custom controls | open
-- S41 | audit-1028-shell:47 | Touch targets under 24px in dense rows (WCAG 2.2 target size) | open
-- S45 | audit-1028-shell:51 | Reaching Settings sections takes three clicks; palette lacks deep links to each pane | open
-- S47 | audit-1028-shell:53 | No keyboard way to reorder or move between notes with j/k in the list | open
-- S49 | audit-1028-shell:55 | No note version history view | open
-- S55 | audit-1028-shell:61 | Settings labels use mixed case in places against sentence-case rule | open
+- ~~S23 | audit-1028-shell:29 | Palette has about 103 commands but no recent-first ordering or per-command shortcut hints~~ stale: palette ranks by use (paletteUsage, app-palette.js) and the preview pane shows the bound keys (paletteLight)
+- ~~S28 | audit-1028-shell:34 | No wiki-style [[ ]] autocomplete while typing in notes~~ stale: typing [[ opens the note picker (editor.js:1244-1290 editorOpenMenu)
+- ~~S30 | audit-1028-shell:36 | No pin-to-top for notes in the list~~ stale: pinned notes sort first (notes-list.js:1842, 3213) and the Favourites row
+- ~~S31 | audit-1028-shell:37 | No bulk move to category or bulk tag from the selection bar~~ stale: #batch-bar has the move menu (#batch-category-host), Tags (#batch-tag), Favourite and Archive
+- ~~S34 | audit-1028-shell:40 | No export of a single note to Markdown or PDF from the overflow menu~~ stale: the card menu has Download .md (entry-menu.js:118-121); PDF is not asked for elsewhere
+- ~~S39 | audit-1028-shell:45 | Focus ring contrast and visibility inconsistent across custom controls~~ stale: scratchpad/ui-sweeps/focusring.js light and dark 1111: 317 stops, 0 under 2px or 3:1, min 3.56:1; the 5 ringless stops are the composer's own text fields
+- ~~S41 | audit-1028-shell:47 | Touch targets under 24px in dense rows (WCAG 2.2 target size)~~ stale: 1029 rank 46 (tests/test_ui_targets_1029b.py) put a 24px floor and hit overhang under chips and rows; probe 1111 of every button, link, input and select on the default view: 0 under 24px
+- ~~S45 | audit-1028-shell:51 | Reaching Settings sections takes three clicks; palette lacks deep links to each pane~~ stale: the palette searches every Settings row and opens its pane (app-palette.js paletteSettingRows)
+- ~~S47 | audit-1028-shell:53 | No keyboard way to reorder or move between notes with j/k in the list~~ stale: ArrowUp/Down/Home/End walk the list (notes-list.js:2593), already marked s11-1110
+- ~~S49 | audit-1028-shell:55 | No note version history view~~ stale: the card menu has History (entry-menu.js:108, openEntryHistory)
+- ~~S55 | audit-1028-shell:61 | Settings labels use mixed case in places against sentence-case rule~~ stale: grep of index.html and the settings JS labels finds no Title Case copy; only theme names (Sage Study, Deep Ocean) and 'All Time' in the graph (graph owner, deferred)
 
 **BS2 (shell, 19 rows)**
 
-- S56 | audit-1028-shell:62 | Toast stack can cover the bottom nav at phone width | open
-- S57 | audit-1028-shell:63 | Floating "New note" button overlaps content at 390px | open
-- S60 | audit-1028-shell:66 | Reduced-motion handling not applied to every animation | open
-- S61 | audit-1028-shell:67 | Colour contrast of muted text in dark theme near threshold on chips | open
-- S63 | audit-1028-shell:69 | Palette lacks "go to note by title" with live preview | open
+- ~~S56 | audit-1028-shell:62 | Toast stack can cover the bottom nav at phone width~~ stale: 390x844 probe 1111 with 4 error toasts: stack 606-660, tab bar top 787
+- ~~S57 | audit-1028-shell:63 | Floating "New note" button overlaps content at 390px~~ stale: 390x844 probe 1111: the New note button is fixed at 729-773, 14px above the tab bar (787)
+- ~~S60 | audit-1028-shell:66 | Reduced-motion handling not applied to every animation~~ stale: motion-still.css is the reduced-motion blanket, linked by theme-boot.js for data-motion=reduced; tests/test_motion_resolved.py holds it
+- ~~S61 | audit-1028-shell:67 | Colour contrast of muted text in dark theme near threshold on chips~~ stale: contrast.js THEME=dark 1111: every tab and Settings section ok, none under 4.5:1 (empty notebook, no boards or maps)
+- ~~S63 | audit-1028-shell:69 | Palette lacks "go to note by title" with live preview~~ stale: note results with snippets already show under the commands (paletteNoteHits, app-palette.js:31)
 - S64 | audit-1028-shell:70 | Mascot and avatar assets load even when disabled | open
 - S65 | audit-1028-shell:71 | Service worker precache list not trimmed to boot-critical assets | open
-- S66 | audit-1028-shell:72 | 27 global-scope scripts raise collision risk; no lint for duplicate top-level names across lazy modules | open
+- ~~S66 | audit-1028-shell:72 | 27 global-scope scripts raise collision risk; no lint for duplicate top-level names across lazy modules~~ stale: tests/test_global_scope_ratchet.py counts duplicate and total names across the bundles
 - S70 | audit-1028-shell:76 | No note count per tag in tag chips | open
-- S74 | audit-1028-shell:80 | a Headings row in the note card's | open
+- ~~S74 | audit-1028-shell:80 | a Headings row in the note card's~~ built s12b-1110 (Headings row in the card menu)
 - S76 | audit-1028-shell:82 | No note linking preview on hover | open
 - S78 | audit-1028-shell:84 | Empty states differ in tone and illustration across views | open
 - S79 | audit-1028-shell:85 | Icon set mixes stroke weights between nav and toolbars | open
 - S80 | audit-1028-shell:86 | Card shadows and borders vary between Library and Notes | open
 - S81 | audit-1028-shell:87 | Settings has dense long panes with no sticky section index | open
-- S82 | audit-1028-shell:88 | Segmented view toggle lacks labels for first-time users | open
-- S84 | audit-1028-shell:90 | Onboarding cannot be re-opened from Help | open
+- ~~S82 | audit-1028-shell:88 | Segmented view toggle lacks labels for first-time users~~ stale: both buttons have title and aria-label (index.html:2535-2540)
+- ~~S84 | audit-1028-shell:90 | Onboarding cannot be re-opened from Help~~ stale: Take the tour is in Help and the palette (first-run.js:197, 335), already marked s11-1110
 - S85 | audit-1028-shell:91 | Error toasts say what failed but not what to do | open
 - S86 | audit-1028-shell:92 | Library to notes round trip needs 3 clicks | open
 
 **BS3 (shell, 19 rows)**
 
-- S88 | audit-1028-shell:94 | utility | open
+- ~~S88 | audit-1028-shell:94 | utility~~ stale: highlightInto marks search terms (notes-list.js:1148-1224), already marked s11-1110
 - S89 | audit-1028-shell:95 | utility | open
-- S91 | audit-1028-shell:97 | Page language and title do not update on view change | open
+- ~~S91 | audit-1028-shell:97 | Page language and title do not update on view change~~ stale: status.js:505-518 pageTitle.view is set per view by the router; <html lang> is a fixed en
 - U19 | audit-1028-ux:25 | Mind map | open
 - U20 | audit-1028-ux:26 | Code editor | open
 - U23 | audit-1028-ux:29 | Mind map phone | open
@@ -4292,9 +4292,9 @@ Format: id | file:line | one line | status.
 - U45 | audit-1028-ux:51 | Consist | open
 - U49 | audit-1028-ux:55 | Board | open
 - H12 | audit-1029-harness:43 | The report's top lag row: 17 frames of 202 to 1,682 ms after a pointerdown on button#settings-nav-models | open
-- N17 | audit-1029-notes:52 | 240 wiki-link chips in the list share one accessible name, "Go to the note starting “Atlas project”", so | open
-- A35 | audit-1030-ai:66 | Not a bug: the focus is a glow on .nm-buddy-face::before (owner decision 2026-10-11); the audit read the | owner call
-- Y7 | audit-1030-extras:122 | Still open (W7): the bell lists the app's own housekeeping as news to a new person | partial
+- ~~N17 | audit-1029-notes:52 | 240 wiki-link chips in the list share one accessible name, "Go to the note starting “Atlas project”", so~~ fixed 7032dd106: entry-card.js names each icon button after its note ("Edit this entry: Lisbon trip"); live probe 1111 on two notes read distinct names for all eight buttons
+- ~~A35 | audit-1030-ai:66 | Not a bug: the focus is a glow on .nm-buddy-face::before (owner decision 2026-10-11); the audit read the~~ closed ff5ac76 (not a bug)
+- ~~Y7 | audit-1030-extras:122 | Still open (W7): the bell lists the app's own housekeeping as news to a new person~~ fixed a9f6aea
 
 **BS4 (shell, 19 rows)**
 
