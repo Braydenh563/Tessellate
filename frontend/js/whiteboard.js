@@ -4356,6 +4356,14 @@ function wbPortFractions(kind, item) {
   //: come before anything guessed from the path.
   if (Array.isArray(parsed.ports) && parsed.ports.length) {
     const own = parsed.ports.filter((q) => Number.isFinite(q?.x) && Number.isFinite(q?.y));
+    //: A port flagged `perimeter` is held on the outline, wherever the box has been resized to (`snapToOutline`).
+    if (own.some((q) => q.perimeter)) {
+      const held = wbPortCache.get(item.id);
+      if (held && held.d === parsed.d && held.own === parsed.ports) return held.ports;
+      const ports = own.map((q) => (q.perimeter ? wbFmtState.drawMore?.snapToOutline(q, parsed.d) || q : q));
+      wbPortCache.set(item.id, { d: parsed.d, own: parsed.ports, ports });
+      return ports;
+    }
     if (own.length) return own;
   }
   const cached = wbPortCache.get(item.id);
@@ -4406,7 +4414,8 @@ function wbAnchorPositions(kind, item) {
   const c = wbBoxCenter(box);
   const rot = wbItemRotation(kind, item);
   return wbPortFractions(kind, item).map((a) => {
-    const pt = wbRotatePoint({ x: box.minX + a.x * w, y: box.minY + a.y * h }, c, rot);
+    //: A port may carry a pixel offset from its place in the box (`dx`, `dy`; draw.io's `points` offsets).
+    const pt = wbRotatePoint({ x: box.minX + a.x * w + (Number(a.dx) || 0), y: box.minY + a.y * h + (Number(a.dy) || 0) }, c, rot);
     return { anchor: a, x: pt.x, y: pt.y };
   });
 }
@@ -4418,7 +4427,7 @@ function wbAnchorPoint(kind, item, anchor) {
   if (!anchor || !Number.isFinite(anchor.x) || !Number.isFinite(anchor.y)) return null;
   const box = wbItemBBox(kind, item);
   if (!box) return null;
-  const pt = { x: box.minX + anchor.x * (box.maxX - box.minX), y: box.minY + anchor.y * (box.maxY - box.minY) };
+  const pt = { x: box.minX + anchor.x * (box.maxX - box.minX) + (Number(anchor.dx) || 0), y: box.minY + anchor.y * (box.maxY - box.minY) + (Number(anchor.dy) || 0) };
   return wbRotatePoint(pt, wbBoxCenter(box), wbItemRotation(kind, item));
 }
 
@@ -5381,7 +5390,14 @@ function wbShowAnchorHints(kind, item, nearAnchor) {
     dot.setAttribute("fill", near ? "var(--accent)" : "var(--card)");
     dot.setAttribute("stroke", "var(--accent)");
     dot.setAttribute("stroke-width", "1.5");
+    //: A named port (a stencil's `N`, `S`, `Out`) says so: a title on its dot, and the name beside the lit one.
+    if (a.name) {
+      const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+      title.textContent = a.name;
+      dot.appendChild(title);
+    }
     hints.appendChild(dot);
+    if (near && a.name) wbFmtState.drawMore?.nameBeside(hints, a.name, x, y);
   }
 }
 
@@ -9940,7 +9956,7 @@ function wbBuildContextMenu(kind) {
   //: map: a topic's place in a tree is its order (FEAT-17).
   if (!wbIsMap()) {
     subItem("Arrange", (sub) => {
-      for (const id of ["group", "ungroup", "lock", "flip-h", "flip-v", "change-shape", "tidy-down", "tidy-right"]) {
+      for (const id of ["group", "ungroup", "lock", "flip-h", "flip-v", "change-shape", "edit-ports", "reset-ports", "tidy-down", "tidy-right"]) {
         const row = wbCommandMenuRow(id);
         if (row) sub(...row);
       }

@@ -944,7 +944,7 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Note on a shape | no (comments exist, `comment` command) | `editNote` (Actions.js 786) | covered by board comments | none |
 | Link on a shape (URL or page) | yes (object links, WHITEBOARD_PLAN decision) | `getLinkForCell` (Graph.js 15330), `editLink`, `openLink`, `link=`; `data:page/id,` links to pages | done for objects; add sketches and a "frame" target | S |
 | Edit geometry as numbers | yes (`wb-fmt-x/y/w/h`) | `editGeometry` (Menus.js 962) | done | none |
-| Edit polygon points, edit connection points | no | `editPolygon` (Menus.js 991), `editConnectionPoints` (1011) | section 5 (the ports editor); polygon editing is a later "edit points" tool on a path | M |
+| Edit polygon points | no | `editPolygon` (Menus.js 991) | a later "edit points" tool on a path (connection points are built: HISTORY 2026-11-11 f2-1111 batch 2) | M |
 | Edit shape (custom stencil XML) | no | `editShape` (Menus.js 768), `EditShapeDialog` | drop; the library's "Save as a shape" (`save-shape`) covers it | none |
 
 ### 4. Connectors: edge styles, waypoints, jumps, arrowheads, labels
@@ -969,9 +969,6 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | Fixed ports on a shape (eight, or polygon corners and side middles) | yes (`wbPortFractions`, `wbPortsForPath`, whiteboard.js 2321 to 2510) | `getAllConnectionConstraints` (Graph.js 23647): the `points` style, else the shape's `getConstraints`, else the stencil's `constraints` | done; `data.ports` (section "Decisions") supplies a shape's own list first | S |
-| Ports from a stencil (names, perimeter flag) | no (converter writes them; the board does not read them) | `mxStencil` `<connections><constraint x y perimeter name>` | `wbPortFractions` returns `parsed.ports` when present; names become port tooltips; `perimeter` ports snap to the outline | S |
-| Custom ports with an offset (`points=[[x,y,perimeter,dx,dy]]`) | no | `points` style (Graph.js 23651 comment) | `data.ports` entries take optional `dx`, `dy` in pixels | S |
-| Add and delete a port by clicking | no | `addConnectionPoint` (Actions.js 1814), `getConnectionConstraintForPoint` (Graph.js 23719), `clearAnchors` (Actions.js 1841), `editConnectionPoints` | a "Ports" mode on a selected shape: click the outline to add, click a port to delete; writes `data.ports` | M |
 | Fixed versus floating end | yes (omit `sourceAnchor` for floating) | `exitX`, `exitY`, `entryX`, `entryY`, `exitPerimeter` | done | none |
 | Show ports while dragging a connector end | yes (`wb-port-preview`, whiteboard.js 13437) | `mxConstraintHandler` (blue crosses) | done | none |
 | Connection arrows and points as View toggles | yes, 2026-11-11 (f2-1111; HISTORY) | `connectionArrows`, `connectionPoints` actions (Actions.js 1389, 1396) | two View toggles (hide grips, hide ports) | S |

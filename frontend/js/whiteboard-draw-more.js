@@ -6,6 +6,10 @@
   // ends on that side) is drawn as a loop out of that side; `addLoop` makes one, `bindLoopRow` is Format's Loop side.
   // And a second label on a connector (`label2`, at `label2_t` along the line, 0.85 unless moved), set in Format and drawn
   // beside the first with the same look; `paintLabel2` and `layoutLabel2` are called from the connector label's own paint and layout.
+  // And connection points beyond the eight: a port's pixel offset (`dx`, `dy`, read where a port is placed), a port flagged
+  // `perimeter` held on the outline (`snapToOutline`) and a port's name beside its dot while it is lit (`nameBeside`).
+  // And the ports editor (draw.io's Edit connection points): `editPorts` shows a closed shape's points, a press on the outline
+  // adds one, a press on a point takes it out, Escape or a press elsewhere ends it; `resetPorts` goes back to the standard points.
 
   const STUB = 30;
 
@@ -193,5 +197,148 @@
 
   onSurface("board", bindLabel2Rows);
 
-  wbFmtState.drawMore = { routeStops, entityStops, isometricStops, loopSegs, addLoop, syncLoopRow, sameEnd, SIDES, label2T, paintLabel2, layoutLabel2 };
+  //: A stencil port flagged `perimeter` (draw.io's `<constraint perimeter="1">`) is held on the outline: the nearest point of
+  //: the shape's drawn path to where its fractions put it, so a box resized after the port was placed keeps it on the edge.
+  function snapToOutline(port, d) {
+    const box = wbPathBBox(d);
+    if (!box) return port;
+    const near = outlineNear(d, box.minX + port.x * (box.maxX - box.minX || 1), box.minY + port.y * (box.maxY - box.minY || 1));
+    return near ? { ...port, x: near.x, y: near.y } : port;
+  }
+
+  //: **Edit connection points** (draw.io's `editConnectionPoints`): the points of the one selected closed shape are shown,
+  //: a press on its outline adds a point there, a press on a point takes it out, and the list is saved as the shape's own
+  //: `ports` (seeded from the points it has, so the standard ones stay until they are taken out). Taking out the last one
+  //: gives the standard points back. Escape, or a press anywhere else, ends it.
+  const editing = { id: null };
+  const GRAB_PX = 8;
+
+  function zoomK() {
+    return d3.zoomTransform(document.getElementById("whiteboard-container")).k || 1;
+  }
+
+  //: The nearest point of a drawn outline to a board point, as fractions of the shape's box, with its distance.
+  function outlineNear(d, x, y) {
+    const box = wbPathBBox(d);
+    if (!box || !wbLinkMidpoint(d, 0) || !wbLinkMeasurePath) return null;
+    let length = 0;
+    try {
+      length = wbLinkMeasurePath.getTotalLength();
+    } catch {
+      return null;
+    }
+    if (!length) return null;
+    let best = null, bestDist = Infinity;
+    for (let i = 0; i <= 240; i++) {
+      const q = wbLinkMeasurePath.getPointAtLength((length * i) / 240);
+      const dist = Math.hypot(q.x - x, q.y - y);
+      if (dist < bestDist) { bestDist = dist; best = q; }
+    }
+    const w = box.maxX - box.minX || 1, h = box.maxY - box.minY || 1;
+    const round = (n) => Math.round(n * 1e4) / 1e4;
+    return best ? { x: round((best.x - box.minX) / w), y: round((best.y - box.minY) / h), dist: bestDist } : null;
+  }
+
+  function stopEditing(say) {
+    if (editing.id == null) return;
+    editing.id = null;
+    wbClearAnchorHints();
+    if (say) wbAnnounce("Connection points done.");
+  }
+
+  function editPorts() {
+    if (editing.id != null) {
+      stopEditing(true);
+      return;
+    }
+    const target = wbSwapTarget();
+    if (!target) return;
+    editing.id = target.item.id;
+    wbShowAnchorHints("sketch", target.item, null);
+    wbAnnounce("Editing connection points: press the outline to add one, press a point to take it out, Escape to finish.");
+    toast("Press the outline to add a point, a point to take it out. Escape finishes.", "info");
+  }
+
+  async function savePorts(item, ports, said) {
+    await wbRecordGesture(async () => {
+      await wbSaveSketchProps(item, { ports: ports.length ? ports : undefined });
+    });
+    wbScheduleRender();
+    wbShowAnchorHints("sketch", item, null);
+    wbAnnounce(said);
+  }
+
+  async function resetPorts() {
+    const target = wbSwapTarget();
+    if (!target) return;
+    if (!Array.isArray(target.parsed.ports) || !target.parsed.ports.length) {
+      toast("This shape has its standard connection points.", "info");
+      return;
+    }
+    await savePorts(target.item, [], "Connection points back to the standard ones.");
+  }
+
+  function bindPortEditor() {
+    const container = document.getElementById("whiteboard-container");
+    if (!container) return;
+    container.addEventListener("pointerdown", (e) => {
+      if (editing.id == null || e.button !== 0) return;
+      const target = wbSwapTarget();
+      if (!target || target.item.id !== editing.id) {
+        stopEditing(false);
+        return;
+      }
+      const [x, y] = wbClientToBoard(e.clientX, e.clientY);
+      const grab = GRAB_PX / zoomK();
+      const ports = wbPortFractions("sketch", target.item).map((q) => ({ ...q }));
+      const hit = wbAnchorPositions("sketch", target.item).findIndex((q) => Math.hypot(q.x - x, q.y - y) <= grab);
+      const near = hit < 0 ? outlineNear(target.parsed.d, x, y) : null;
+      if (hit < 0 && !(near && near.dist <= grab * 1.5)) {
+        stopEditing(true);
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      if (hit >= 0) {
+        ports.splice(hit, 1);
+        savePorts(target.item, ports, ports.length ? "Connection point taken out." : "No points left of its own: the standard connection points are back.");
+      } else {
+        ports.push({ x: near.x, y: near.y });
+        savePorts(target.item, ports, `Connection point added; the shape has ${ports.length}.`);
+      }
+    }, true);
+    container.addEventListener("pointermove", (e) => {
+      if (editing.id == null) return;
+      const target = wbSwapTarget();
+      if (!target || target.item.id !== editing.id) return;
+      const [x, y] = wbClientToBoard(e.clientX, e.clientY);
+      wbShowAnchorHints("sketch", target.item, wbNearestAnchor("sketch", target.item, x, y, GRAB_PX / zoomK()));
+    }, { passive: true });
+    document.addEventListener("keydown", (e) => {
+      if (editing.id == null || e.key !== "Escape") return;
+      e.preventDefault();
+      e.stopPropagation();
+      stopEditing(true);
+    }, true);
+  }
+
+  onSurface("board", bindPortEditor);
+
+  //: The lit port's name, drawn beside its dot at a readable size whatever the zoom.
+  function nameBeside(layer, name, x, y) {
+    const k = d3.zoomTransform(document.getElementById("whiteboard-container")).k || 1;
+    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    text.setAttribute("class", "wb-port-name");
+    text.setAttribute("x", String(x + 9 / k));
+    text.setAttribute("y", String(y - 9 / k));
+    text.setAttribute("font-size", String(12 / k));
+    text.setAttribute("fill", "var(--ink)");
+    text.setAttribute("stroke", "var(--card)");
+    text.setAttribute("stroke-width", String(3 / k));
+    text.setAttribute("paint-order", "stroke");
+    text.textContent = name;
+    layer.appendChild(text);
+  }
+
+  wbFmtState.drawMore = { routeStops, entityStops, isometricStops, loopSegs, addLoop, syncLoopRow, sameEnd, SIDES, label2T, paintLabel2, layoutLabel2, snapToOutline, nameBeside, editPorts, resetPorts, outlineNear };
 })();
