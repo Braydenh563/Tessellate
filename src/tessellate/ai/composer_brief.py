@@ -12,6 +12,7 @@ Only words the person wrote are kept; nothing is added.
 from __future__ import annotations
 
 import bisect
+import itertools
 import re
 
 #: About how many words a note may run before it is said by its gist.
@@ -24,6 +25,7 @@ _SPACED_DASH = re.compile(r"\s[-\u2013\u2014]\s")
 _ASIDE = re.compile(r"\s[-\u2013\u2014]\s[^-\u2013\u2014]*?\s[-\u2013\u2014]\s")
 #: One space, no loop: `brief` folds spaces before it splits, and CodeQL reads a `\s+` here as polynomial (PR 216).
 _SENTENCE_END = re.compile(r"(?<=[.!?]) (?=[A-Z0-9\"“(])")
+_KEPT_RUN = re.compile(r"[^ ,;:]+")
 _CLAUSE_BREAK = re.compile(r",\s+(?=(?:and|but|so|because|which|then|while)\b)|;\s+|,\s+")
 #: Words a clause may not end on (cut after one, it dangles).
 _DANGLES = frozenset("and or but nor so then the a an to of with for in on at by as from into that which who if when while because than my your our".split())
@@ -46,14 +48,19 @@ def _whole_head(text: str, limit: int) -> str:
     Linear, not one slice and split per break: `", " * 25000` took 1.6 s
     that way (PR 216). Each head is `text[:k]`, k being the break with the
     trailing " ,;:" taken off, and its word count is the words starting before k."""
-    stop = [0] * (len(text) + 1)  # stop[i]: where text[:i].rstrip(" ,;:") ends
-    for i, char in enumerate(text, 1):
-        stop[i] = stop[i - 1] if char in " ,;:" else i
-    words = [(m.start(), m.end()) for m in re.finditer(r"\S+", text)]
+    #: Only the first `limit` + 1 words are read: a break past them counts more than `limit` and ends
+    #: the walk. k, where text[:break].rstrip(" ,;:") ends, is the end of the last run of other
+    #: characters before the break, walked alongside the breaks (a loop per character and lists over
+    #: every word took 67 ms on a 100,000-character first sentence, CI 3.11).
+    words = [(m.start(), m.end()) for m in itertools.islice(re.finditer(r"\S+", text), limit + 1)]
     starts = [start for start, _ in words]
-    best = 0
+    runs = _KEPT_RUN.finditer(text)
+    run = next(runs, None)
+    k = best = 0
     for found in _CLAUSE_BREAK.finditer(text):
-        k = stop[found.start()]
+        while run is not None and run.end() <= found.start():
+            k = run.end()
+            run = next(runs, None)
         count = bisect.bisect_left(starts, k)
         if count > limit:
             break

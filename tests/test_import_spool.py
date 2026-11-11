@@ -13,10 +13,14 @@ from tessellate.entry import app_import
 
 
 class _NoWholeRead(io.BytesIO):
-    """Fails on a read of the whole file; members come through the zip."""
+    """Fails on a read of the whole file; members come through the zip.
+
+    A sizeless read is judged by what it would return: Python 3.11's zipfile reads the
+    22-byte end record with a bare `read()` from 22 bytes before the end, which is not the upload."""
 
     def read(self, size: int | None = -1) -> bytes:
-        if size is None or size < 0 or size > 1024 * 1024:
+        wanted = len(self.getvalue()) - self.tell() if size is None or size < 0 else size
+        if wanted > 1024 * 1024 or (self.tell() == 0 and wanted >= len(self.getvalue())):
             raise AssertionError("the upload was read whole")
         return super().read(size)
 
