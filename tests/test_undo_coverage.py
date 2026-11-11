@@ -553,7 +553,10 @@ EXEMPT: dict[str, str] = {
     "whiteboard.js:wbRestoreLinks": "inverse: draws a deleted item's links again for the board history's own Undo",
     "whiteboard-map.js:wbMapRestoreRows": "inverse: puts back a deleted branch for the board history's own Undo and Redo",
     "whiteboard-map.js:wbMapAdoptProvisional": "board: gives a topic already on the board's history (its create step is remapped to the server id)",
-    "settings-wiring.js:commitCaptureImages": "send: uploads the pictures of a note being saved; the save is the step (Undo bins the note)",
+    #: The note's create step is now pushed before the staged files go (INBOX e2e "Undo takes a new note back"), so the
+    #: pictures uploaded first sit inside the step and the files attached after it are the exempt send.
+    "settings-wiring.js:uploadStagedFiles": "send: attaches the staged files to the note just saved; the save is the step (Undo bins the note with them)",
+    "settings-rows.js:syncNow": "job: pulls the paired computer's changes (WORLD_CLASS_PLAN B6); an Undo would be pulled back by the next sync, each note keeps its own history",
     "library.js:noteRead": "telemetry: opening a saved link marks it read, as visiting a page does; reading is not an edit",
     "chat-undo.js:chatPut": "inverse: the chat undo helpers' own PUT",
     "batch-space.js:batchSpaceRequest": "inverse: the move request itself; batchMoveToSpace pushes the step with the answer's old places",
