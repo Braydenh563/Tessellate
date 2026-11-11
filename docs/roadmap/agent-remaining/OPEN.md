@@ -3940,3 +3940,229 @@ deduplicated against the ledger above.
 ## Boot budget, 2026-11-03
 
 - [ ] Win back the 2026-11-03 raise of the boot gzip cap (260,350 to 260,520, `tests/test_static_compression.py`, INBOX 1603, the tray drop, 1619 and 1620): the next boot diet moves a boot-time wiring to a lazy file and lowers the cap again. (checked 2026-11-09) [verified 2026-11-10: true, boot gzip cap raise from 2026-11-03 still to win back in test_static_compression.py]
+
+## PR 216 close-out: inbox, handover and remaining lists (2026-11-11)
+
+Scope: INBOX, HANDOVER, OPEN.md (work-order rows W0 to W34 and F1 to F8, "From the 22-10 bug doc", "Everything open"), SESSION_BRIEFS and the other ~470 `agent-remaining/*` files. Not here: the `*_PLAN.md` rows, ROADMAP, BACKLOG (one plan per PR, later) and the `audit-*` and `fable-*` files (another inventory). Docs only; no code was changed and no app was run. Status words: **fixed** only with a pointer; **open**; **owner call** (the question is named); **unverifiable** (real Windows, a real model, a touch device, the owner's data).
+
+How it was built, and its limits:
+- Read in full: INBOX (19 items), HANDOVER top blocks and every "Now" line, the work order, SESSION_BRIEFS headings and each unmarked brief's E19 stamp, and the Left, Not verified and Found-not-fixed blocks of the 1109, 1110 and 1111 files. Older files (1101 to 1108, 1026 to 1031, the a28 to a31 series, ~345 files) were not re-read line by line: their open lines were already stamped "Open (checked 2026-11-09)" (214 lines in 30 files) or sorted by the E17 scout into 636 true / 31 stale / 10 fixed bullets of this file's older sections (`e17-1110.md`, by batch). Those 636 are carried below as counted groups (rows X1 to X24), not itemised; the scout's keyword batching is a first sort and some overlap the named rows.
+- "Merged" means one row with every source listed. Fixed rows were spot-checked in code or CHANGELOG (see "Spot checks").
+
+### Rows
+
+Columns: id | item | sources (file:line) | status | batch
+
+**INBOX and HANDOVER, owner words**
+
+| id | item | sources | status | batch |
+| --- | --- | --- | --- | --- |
+| I1 | Graph categories selectable on Map and Tessellation (hover rim, click selects notes, category popover, double-click frames), names never break inside a word, Tessellation polish toward mock A | INBOX:37 (1744), q31-1110.md:10 | open | Gr2 |
+| I2 | Tessellation drag-pan from a cell and fitted zoom not cutting the edges | INBOX:37 (states fixed, "drag pans from a cell"); CHANGELOG:22 covers the layout only | fixed (INBOX's own record only, no CHANGELOG line; re-drive in Gr2) | Gr2 |
+| I3 | Ask overview written as 2 to 4 grouped paragraphs (lead with span, thread paragraphs, arc read with social awareness, one insight), no filler lines, definitions and slang quoted, no repeated openers, no "Show six more" note list | INBOX:38 (1743), HANDOVER:410 (F4), s10-1110.md:7, compleft-1110.md:12 | open | Co3 |
+| I4 | "Smart browser": answer threads as chips that filter Matching records, a card opens its neighbours in place, Back walks the trail | INBOX:38 (1743, design row) | open | Co3 |
+| I5 | Matching records: one brightness, direct before link-only, links padding, badge clearance, stats on card | INBOX:39; CHANGELOG:13 | fixed | none |
+| I6 | Matching records: drop weak meaning-only matches when fewer than 3 word anchors | INBOX:39, mr-1110.md:11 (`meaning_floor`, search_manager.py) | open | Bk1 |
+| I7 | Dashboard lag after start: follow loop under a persistent announcer; the 20 ms look from the figure's own tempo writes; `atlasRigWake.after` 96 ms (atlas-motion.js:342) | INBOX:40 (1741), lag-1111.md:5,6,8 | open (owner trace unverifiable) | Cp1 |
+| I8 | Dashboard lag: `style and layout 380ms` start frame, widget fill callbacks 98 to 119 ms in dashboard.js, anonymous timers dashboard.js:2036 | INBOX:40, lag-1111.md:7,9 | open | Da1 |
+| I9 | Date answers: retelling marked or quoted, no title repeated in the body, "around that time" carries the date subject and gives notes a few days either side nearest first, no "We were on November" | INBOX:41 (1739 points 1 to 3, 6), g13-1110.md:5, w8-1110.md (found-not-fixed) | open | Co2 |
+| I10 | Timeline and a date answer disagree on a note's day (event day against written day); answer says both; date answers count documents or say notes only | INBOX:41 (1739 points 4, 5); no timeline fix found | open | Co2 |
+| I11 | Desk companion: pat while hanging, hang height on browser tabs, corner loop with no standable tops | INBOX:43 (1721 a to c); CHANGELOG:134 (pat on the edge); deskfix-1110.md:13 | fixed on fakes; real Windows unverifiable | Cp2 |
+| I12 | Desk companion: more activities (variety) and visible lower-body and ribbon motion; Opus design pass | INBOX:43 (1721 d, e), INBOX:59, INBOX:64, OPEN:318 (E3), life-1109.md (ranked list) | open | Cp2 |
+| I13 | Diagram builder first open slow (3.5 to 3.9 s at 8x, 1.7 to 2.3 s the Library bundle): a `diagramDoor` bundle, `diagramModel` out of documents-mermaid.js | INBOX:44 (1722); `diagramDoor` is not in frontend/js | open | Dg1 |
+| I14 | Feminine desk Atlas too purple or pink against the in-app look: pixel-hue parity in `core/overlay` | INBOX:45 (1724) | open | Cp2 |
+| I15 | Lag log 1726 residue: chat typing keydown 285 ms, avatars timers 516 ms, graph `gcRequestDraw` 35 to 53 calls/s, notes-subtabs 400 ms, tab clicks, Settings pane clicks 250 ms | INBOX:46, lag-1110.md:7 (not reproduced), lag1726-1110.md:6, s7-1110.md:19 | unverifiable (needs the owner's Windows trace or a 22,800-node chat) | none |
+| I16 | Throw hard enough leaves through the top and falls back by throw speed | INBOX:47 (1719 a); CHANGELOG:192 (1.0 to 8.0 s seeded); engine.py:3652 | fixed (desk Windows unverifiable) | none |
+| I17 | More life and biological design on both companions (follow-through, startle settle, micro-saccades, stand drift, floater breath, media) | INBOX:47 (1719 b), life-1109.md Remaining 1 to 5 | open | Cp1 (in-app), Cp2 (desk) |
+| I18 | Composer "response issues": the owner to give examples, then a deep-audit round | INBOX:47 (1719 c), OPEN:57 (P3, Q17) | owner call: which answers read badly? | none |
+| I19 | 1716 lag residue: avatars.js timer 1295 ms (needs the owner's dirty page), phone-shell tab, `openDoc`, web-reader-open, idle graph draws, ocrScheduleFitDock | INBOX:52, log1716.md, OPEN:189 (B56) | unverifiable (not reproduced at 44 notes) | none |
+| I20 | Chat Sources rows extend far to the right | INBOX:54 (1712), OPEN:49 (Q15, P1) | owner call: window width and which surface (popup agent, Chat tab or Ask tab)? | none |
+| I21 | Companion acts: pointer-idle wave built; remaining catalogue acts (meditate, lounge, rest_head to desk; dangle, kick_legs, hang_one_hand need desk frames; hold still, carry over, catch mid-air, tail pull, drag skid, toss up, pointer chase) | INBOX:56 (1711), OPEN:316,317 (E1, E2), compalive-1109.md desklane block | open | Cp2 (desk frames), Cp1 (in-app) |
+| I22 | 1696 a falling stutter at about 8 fps on the downward arc | INBOX:59, OPEN:199 (B64), atlasf1696-1108c.md | open | Cp2 |
+| I23 | 1696 b perch finds no standable edges on a real desktop (Explorer, Chrome counted invisible) | INBOX:59, OPEN:202 (B66), w15-1110.md, log1716.md | open; Windows cause needs one more log (unverifiable) | Cp2 |
+| I24 | 1696 c to e: Settings selected-bar consistency, md asterisks in What it learned links, selected sidebar item scrolls into comfort | INBOX:59; asterisks fixed CHANGELOG:402; c and e no record found | open (c, e); fixed (d) | Sh1 |
+| I25 | Typeable values: lightbox pinch, value field in lightbox, diagram, board zoom, slider readouts built; present-mode page counters and preset dropdowns not checked; zoom per gesture not measured on a real trackpad | INBOX:62 (1694); lightbox-view.js:442; 76b77b1 | open (counters, presets); unverifiable (trackpad) | Wb1 |
+| I26 | Chat reply persistence: card, badge, Why trail and timing survive a reload; greeting asked as a question gets a companion line; the "spasm" not reproduced | INBOX:63 (1693 b), small3-1109.md | open (persistence unverified); spasm not reproduced | Co3 |
+| I27 | 1693 a: date-dependent composer tests | INBOX:63; tests/conftest.py:157 `_fixed_day` | fixed | none |
+| I28 | 1683 residue: desk half of B1, B3, B5, B6 pose-keyed lower body and nebula variants; hop chain on a perch unmeasured; every desk motion unverified on real Windows | INBOX:64, travel-1109.md Left, wisp-1109 note | open (frames); unverifiable (Windows) | Cp2 |
+| I29 | 1670 desk companion ride: cut off, sits about 20 px above the bar, not animated | INBOX:70; E18 "true" (e18-1110.md) | open; unverifiable (Windows) | Cp2 |
+| I30 | 1598 and 1606: companion carried over the top bar after Ask scroll; a pat over the head lifts Atlas 30 px | INBOX:71, OPEN:50 (Q16, P2) | owner call: window size or a short recording? (not reproduced, a31q) | none |
+| I31 | INBOX 904 B01 to B86 owner bug list: 47 fixed, 5 stale, 34 true | INBOX:73, e18-1110.md:3 | 34 open; true ids are marked `**E18 true.**` in INBOX | Ev1 (list them) |
+| H1 | Windows Hello on a real origin; WebView2 WebAuthn PRF; localhost fallback | HANDOVER:10, hello-1110.md:8, localhost-1110.md:8,16 | unverifiable (real Windows) | none |
+| H2 | Fable named for a read-only composer audit and a whole-app deep dive "next session" | HANDOVER:11,12 | owner call: is Fable named for the close-out? (nothing may start it otherwise, order 4) | none |
+| H3 | Q20: `complexity.yml` still `--exit-zero`; CI definition edits guarded in away mode, `tests/test_complexity.py` holds the zero baseline | HANDOVER:412, OPEN:40 (Q20) | owner call: edit the workflow (guarded)? | none |
+| H4 | Held: K38 single-use media links (breaks range playback), K32 due-count endpoint (poll redesign), E43/K11/K13/K26 key storage and MCP auth (Q22) | HANDOVER:410, s11-1110.md:8,9 | owner call: Q22 (keyring or 0600 file, one token per MCP server) and K38 (accept a 120 s reusable link?) | none |
+| H5 | `test_repo_boundaries::test_orm_calls_in_the_routers_only_go_down` red: 690 ORM calls under api/, cap 687 | g69-1110.md:11 (said 691); run 2026-11-11 | open | Bk2 |
+| H6 | Test reds named in older notes: `test_boot_diet3` (3573 vs 3569), `test_lazy_bundle_calls` (dashboard.js:3833,3889), `test_atlas_access` fixture, `test_static_compression` | s9b-1110.md:12, s14-1110.md:6, s58left3-1110.md:10, s12b-1110.md:7; the four pass on 2026-11-11 | fixed (run; only the boundaries test fails) | none |
+
+**Work-order rows (OPEN.md) still open, merged with their remaining files**
+
+| id | item | sources | status | batch |
+| --- | --- | --- | --- | --- |
+| O1 | A16 `/media/{id}` 403 against 409: unify on 409 "Unlock first." | OPEN:89 (Q18), sec-1109.md Left | open | Bk1 |
+| O2 | Real Tesseract and PDFium reads never ran (no `tesseract`, no `pypdfium2` here) | OPEN:326 (E9), s8-1110.md, sec-1109.md | unverifiable (needs a machine with both) | none |
+| O3 | B7 "latest on sourdough" leads the wrong note; "what do I need to read" names by date | OPEN:126, w7-1110.md | open | Co2 |
+| O4 | B21 follow-on loses its subject ("who wrote it", "and the dentist"; Ask sends no objects); frame not saved with a chat | OPEN:144, conv-1110.md:11, fc1-1110.md | open | Co1 |
+| O5 | B22/B23: chips from leftover words; a bare "yes" after the five other offers is small talk | OPEN:149, w9b-1110.md Left | open | Co1 |
+| O6 | B24: four confirm wordings; undo only inverts pin, unpin, tick, untick; "undo" after "delete it" gives Help text | OPEN:149, w9b-1110.md, fc3-1110.md:6, consent-1110.md | open | Co1 |
+| O7 | B26 Q5 "called X with Y" is the title, Q6 one list-add rule; both rewrite pinned tests | OPEN:149, w9b-1110.md, fc12-1110.md:4,5 | owner call: Q5 and Q6 are taken as recommendations; the pinned tests (`test_new_note_called_1102`) must move with a stated reason | Co1 |
+| O8 | B27 "similar to X" searches X itself instead of ranking by likeness | w9b-1110.md | open | Co1 |
+| O9 | B29 tick-off forms not re-checked | OPEN:152 | open (verify) | Co1 |
+| O10 | B33 proper noun lowercased in a quoted line | OPEN:158, compleft-1110.md:17 (not reproduced) | open (not reproduced) | Co2 |
+| O11 | B34 joke note leads by quote not name (1705 b) | OPEN:159, composer-r8-1109.md Left | open | Co2 |
+| O12 | Composer small asks: "call anna" lower case, "make a checklist for my trip", "tom and sara" pair, "put it in my journal" | composer-r8-1109.md Left (4 rows) | open (left as written; no later commit) | Co1 |
+| O13 | B56/B58 (not reproduced at 4x): 4.5 s avatars timer after opening a note; phone resize covers Send | OPEN:189,191, w14-1110.md | unverifiable (not reproduced) | none |
+| O14 | w14 next: B55 pacer reads during an agent turn; B57 throw scrolls the page; B59 `ring-held` removed on every keydown (settings-panes.js:350, 36 writes for 37 keys); B60 Reset appearance leaves motion prefs (appearance-panel.js) | w14-1110.md:4 to 9 | open | Cp1 (B55, B57), Sh1 (B59, B60) |
+| O15 | B63 companion does not show: root cause; B62 to B67 list | OPEN:198, b62-1110.md | open; unverifiable (Windows) | Cp2 |
+| O16 | B65 the 1683 travel mix | OPEN:200, travel-1109.md | open | Cp2 |
+| O17 | W16 real-model: B68 model-on parity, B69 evals gate, B70 SKILLS Phase D, B71 entity extraction, B72 BACKGROUND_MODE, B74 tool contracts on Ollama | OPEN:206 to 212 | unverifiable (needs `scratchpad/llama-dev.sh serve`) | Mo |
+| O18 | B73 probe cache (Q11 recommendation: cache 30 s, drop on failure) | OPEN:211, deskperf-1109.md | open | Co3 |
+| O19 | C1/C2/C4/C5/C9 diagram: Connect words on a sideways phone, door dialog repeats the page, midpoint click on an arrow opens the name box, tray "Open" row and Done silently creating a file not driven, touch Add-then-Enter adds a second block, Versions "Named only" filter, Ask for mind maps, timelines, sequence | OPEN:220,225, w17-1110.md Left, dgai-1110.md:29, dgml-1109.md Left | open | Dg1 |
+| O20 | Diagram unverified: touch long-press and one-finger pan, Space+drag, Cmd+arrows, 17 px scrollbars, 390 px for new shelf kinds, group border long press | dgsel-1111.md:5 to 7, dgfold-1110.md:4, dgroup-1110.md:4, dgmseq-1109.md | unverifiable (touch device, macOS, Windows scrollbars) | none |
+| O21 | Diagram default fold: Q14 decided fold on New diagram only | dgml-1109.md Left, OPEN:54 (Q14), HANDOVER:12 | fixed by decision; code not re-checked, verify in Dg1 | Dg1 |
+| O22 | C19 to C22 shell widths: Ask button clipped at 390, quiet chips 28.6 px, Notes dock wrap 1280 to 1500, Settings sideways at 768, 1920 by 1080 at 125 to 200 % | OPEN:239 to 242, s5-1110.md:11 | open | Sh1 |
+| O23 | C23 "?" after a Dashboard click hands focus to CodeMirror | OPEN:243, row21-1109.md, s58left-1110.md:9 | unverifiable (not reproduced on an empty notebook) | none |
+| O24 | C30 Ask redesign at half width | OPEN:254, 22-10 doc section | open | Co3 |
+| O25 | C35 citation style: numbered marks match Sources, bracket link removed (D25, Q1 taken); E33 path-first Guide answers (Q23) | OPEN:259, HANDOVER:12 | open (Q1 and Q23 answered; build not found) | Co3 |
+| O26 | C36 "buttons disappeared" after Why | OPEN:260, s58left-1110.md:8 | unverifiable (0 removals in three drives) | none |
+| O27 | C41 remaining 1028-docs and 1031-docs rows (40 and 7) | OPEN:267, e15-1110.md (docs true rows D25, D28, D29, D40, D41) | open | Do1 |
+| O28 | D2 to D4 CI time: longest overlay tests (81 s, 69 s), slow tests outside overlay, `--durations=0` on one CI run | OPEN:273 to 275, cispeed-1109.md | open | Ci1 |
+| O29 | D8 Settings panes block on open (655 ms task, 3,000 nodes in one template) | OPEN:281 | open (measured, not built) | Sh1 |
+| O30 | D11 to D14 graph at scale: 2,000-note layout 28 s, 500-note hover p50 83 ms, redraw only while something moves | OPEN:286 to 289, graph19-1109.md | open | Gr1 |
+| O31 | D16 lazy meeting recorder card, graph options panel (26 KB, 79 ids), boot CSS | OPEN:293, row21-1109.md | open (measured, not built) | Sh2 |
+| O32 | D18 trim decodes the whole recording (700 MB an hour); notes cannot embed a recording | OPEN:295 | owner call: a server-side cut needs a container writer; keep raw audio? | none |
+| O33 | D21 split documents.js 16,381 to 17,190 (CodeMirror glue); D27 split whiteboard.js (26,164 lines) and whiteboard-map.js (11,050) | OPEN:300,310 | open | Do2 (D21), Wb2 (D27) |
+| O34 | D22 to D25 ratchets: IIFE wraps, 359 ORM queries in routes, 9,044 global names, split `run_agent`, data tables out of code | OPEN:303 to 306, s8-1110.md, SESSION_BRIEFS:216,223 | open | Bk2 |
+| O35 | D28 composer topical digests 0.45 to 0.78 s on 500 notes (part done) | OPEN:311 | open | Co2 |
+| O36 | D19 typing in a long document: p50 56 to 112 ms, gate under 16 ms not met | OPEN:297, s7-1110.md:12 | open (closed s58left4-1110 as "no cheap app-side cut") | Do2 |
+| O37 | E1 to E6 companion life: acts to desk, in-app-only acts need frames, life list, masculine Atlas, props, lower body follow-through | OPEN:316 to 321 | open | Cp1, Cp2 |
+| O38 | E8 K33 token sweep per request (pinned by `test_vault_sessions`) | OPEN:325, s8-1110.md:5 | owner call: may that test's intent move (Q22 area)? | none |
+| O39 | E10 backend rows true: BK6 update signature, BK10 list payloads, BK11 god modules, BK12 reminders poll, K36 N+1 in `list_boards`, K20, K24, K25, K27 kept routes | OPEN:327, s8-1110.md, s14-1110.md:6, e15-1110.md | open | Bk1 (BK6, BK10, K36, K20), Bk2 (BK11, K24, K25) |
+| O40 | E12 "Read as ..." lines under computed answers (49 assertions in about 18 test files) | OPEN:331, fc7-1110.md:14, s8-1110.md | owner call: drop the lines that only restate the sum? (moves a stated intent) | none |
+| O41 | E13 "¦" for "&" in a category; "conversation" topic on a gym note | OPEN:332, s8-1110.md | open; needs a repro from the owner's data | none |
+| O42 | E14 manual pictures as WebP from sweeps | OPEN:333 | owner call: want one sweep-made image? | none |
+| O43 | E15 verify 1028 audits | OPEN:336, e15-1110.md (303 rows: 62 true, 155 fixed, 20 stale, 52 not reached, 14 skipped) | fixed (62 true rows moved to batches; the 52 not reached stay open for a scout) | Ev1 |
+| O44 | E16 verify 1029 to 1031 audits (362 rows) | OPEN:337; no e16 file exists | open (belongs to the audit inventory; listed so it is not lost) | Ev1 |
+| O45 | E17, E18, E19, E20 verify sweeps | e17-1110.md, e18-1110.md, e19-1110.md, s58left4-1110.md:5 | fixed | none |
+| O46 | E21 the 1692 and 1683 owner-asks partial rows | OPEN:342, book2-1109.md | open | Ev1 |
+| O47 | F1 documents: live code blocks done; open gap rows 1, 2, 5, 6, 9, 10, 12, guided equation editor items, Live multi-line `$$`, label completion, VC rows, links L6, Guide topic for slides, `{{cursor}}` caret | OPEN:348, s9c-1110.md:5,6,9 | open | Do1 |
+| O48 | F2 whiteboard Format gaps: Edit image, draggable crop, BPMN and icon sets, draw.io rows, board view per device only, cross-link default on a map | OPEN:349, s9c-1110.md:8, s9-1110.md:12 | open | Wb1 |
+| O49 | F3 mind map: Replace all does not rewrite notes (`wbBoardReplaceAll`), render pass 13b, row 2 citations | OPEN:350, s9-1110.md:13, s9c-1110.md:10 | open | Wb1 |
+| O50 | F4 chat: composition layer (INBOX 1353), Phase 5 a to g, Foundation F5, "X versus Y" | OPEN:351, s10-1110.md:7, compleft-1110.md | open | Co3 |
+| O51 | F5 world class: durable jobs, multi-window, torch at launch, F1 prefs, RapidOCR (Q27), web-search store, Try again on a failed web tool chip | OPEN:352, s10-1110.md:6, wc3-1110.md | open | Ui1 |
+| O52 | F6 UI: Settings panes indexed, token budget, `!important` to 0 (117 left), dissolve 08 and 10 stylesheets, new-note lock toggle | OPEN:353, s10-1110.md:4, s10b-1110.md:9 | open | Ui1 |
+| O53 | F7 graph and timeline: `?since=` cursor (deferred, no caller), dot density at 5,000, day strip and spans (Q32 parked) | OPEN:354, s10-1110.md:5 | open (`?since=` deferred by design); owner call (Q32) for the day strip | Gr2 |
+| O54 | F8 owner go: sync, offline studio, audio, desktop pet, custom domain, blind panel, Fable diagram dive | OPEN:355, OPEN:55 (Q34) | owner call: say go | none |
+| O55 | The 84 struck rows of the work order (W1 to W34) | OPEN:69 to 340 (`~~`) | fixed (each row carries its sha or "Fixed before s5-1110") | none |
+
+**22-10 bug doc, SESSION_BRIEFS and remaining-file items not in the work order**
+
+| id | item | sources | status | batch |
+| --- | --- | --- | --- | --- |
+| P1 | "You asked: ..." line above the Ask answer stays removed (Q19) | OPEN:381, OPEN:54 | fixed by decision (HANDOVER:12; a test pins it) | none |
+| P2 | Start SearXNG from a button | OPEN:379 | open | Bk1 |
+| P3 | `_start_tray` over complexity 20 (now 23): split menu build from start-up; test on Windows | OPEN:389 | open; Windows part unverifiable | Bk2 |
+| P4 | Reminder edit form: time field about 0.2 rem high | OPEN:390 | open | Sh1 |
+| P5 | Brief 27 phone bottom bar | SESSION_BRIEFS:132 | fixed (phone-shell.js:673, shell-reminders.js:588; E19 stale) | none |
+| P6 | Brief 34 second part: one snap in ten minutes; reaction rows | SESSION_BRIEFS:154 | open | Cp1 |
+| P7 | Brief 88 N8 dodge glance (avatars.js:4155), N10 milestone cheer | SESSION_BRIEFS:251,258 | open | Cp1 |
+| P8 | Brief 45 part 2 / 58 / 59 file splits (`index.html` 16,043, `status.js` 3,283, `notes-list.js` 3,805, `chat.js`) | SESSION_BRIEFS:176,194,200 | open | Bk2 (non-hot files only) |
+| P9 | Brief 62 data out of code; Brief 63 runners (embedder half built) | SESSION_BRIEFS:216,223 | open | Bk2 |
+| P10 | Brief 87 step 2: build top two vendor candidates (TTS listening pair, dictation WER on 20 clips) | SESSION_BRIEFS:245 | unverifiable (needs a listening test and models) | none |
+| P11 | Brief 90/91: 838 not met (dash-art.js:131 one-frame redraw), two more of five open | SESSION_BRIEFS:278,285 | open | Da1 |
+| P12 | Brief 92 (b): Radix, shadcn and APG element comparison has no record | SESSION_BRIEFS:291 | open | Sh1 |
+| P13 | Brief 101b/c found-not-fixed rows (binned notes purged by the startup sweep, monthly repeat from the 31st, reminder action token across restarts, Agent undo then Ctrl+Z) | SESSION_BRIEFS:335 (E19: true) | open | Bk1 |
+| P14 | Brief 104 typos read in context (no notebook word-pair scoring) | SESSION_BRIEFS:359, spelling.py:456 | open | Co1 |
+| P15 | Briefs 95, 97, 98, 102 | SESSION_BRIEFS:304,313,323,346 | open, unstamped (no E19 mark and no HISTORY pointer found) | Ev1 |
+| P16 | Notes filter box reads only ISO dates for `before:`/`after:`; `before:tuesday` is a word there | w11-1110.md:7, notes-list.js:353 | open | Sh1 |
+| P17 | Pasted `#/Manual` / `#/Statistics` ignored at load; manual opened in first 3 s writes `#/dashboard` | w12-1110.md:4, router.js | open | Sh1 |
+| P18 | Early press on Capture's Private button does nothing in the first 3 s (quick-note.js preloaded late) | s14-1110.md:5, s9c-1110.md (says built) | open (verify) | Sh2 |
+| P19 | Agent tool writes on a confirmed "Run again": no idempotency by turn id (E70) | w1-1110.md:14 | open | Bk1 |
+| P20 | Private spaces: recordings, bookmarks and files not sealed; deleting a locked space offers no unlock prompt | pspace-1110.md Left | open | Bk1 |
+| P21 | Private spaces unverified: desk companion while locked, real OS keyring PIN, real model in a private chat | pspace-1110.md Not verified | unverifiable | none |
+| P22 | New note popover has no `data-help-for` (order 13); refresh icon report not reproduced | priv-1110.md:5,7 | open (help); not reproduced | Sh1 |
+| P23 | Consent: `"run": True` keys in task_acts.py (5 sites), Undo row after a typed yes on a parked tool call, a typed yes does not reach skill and plan cards | consent-1110.md:20, compleft-1110.md:3 | open | Co3 |
+| P24 | Parity acts: Undo of merge or delete category loses description and binned notes; in-place find and replace in a note not built; "make reminders from my todo note" (todo to "to do") | compleft-1110.md:4 to 6 | open | Co3 |
+| P25 | Fable F-rows left: F1 bound slot lead, F5 chips on small talk and clarifications, "What else is on that week?", F6 "which is higher", "by how much", compare with no figures, F8 ranking ("wats on my shoping list", dentist, "who is anna"), F9 agenda ("this week" is no day), F13 e to k, F4 bare reactions ("really?", "are you sure") | fc1-1110.md, fc56-1110.md, fc8-1110.md, fc24-1110.md, left-1110.md, g45-1110.md:7 | open | Co1 (F4, F5), Co2 (F1, F6, F8, F9, F13) |
+| P26 | Composer G-rows left: G1 ("when did I last see the dentist", "how far did I run", "has the launch date changed"), G3 stats wording, G5 guide leads, G6 today line and year gaps, G8 poke lines table (avatars.js:2731) and dated things in the notes, G9 week_review, G11, G12, G14 a, e, f, i | g13-1110.md:4,5, g45-1110.md:6, g69-1110.md, g1014-1110.md | open (G14 a, f not reproduced) | Co2 (composer files), Da1 (dashboard.js:526,633,3018,4229, statistics.js:121), Co3 (voice) |
+| P27 | Name use rules 5 and 4 across a restart; Guide "profile" topic; 20-turn eval | g69-1110.md | open | Co3 |
+| P28 | E54 identity copy "Atlas's assistant" (CHAT_PLAN decision 36): composer_lines.py:497, composer_smalltalk.py:147, composer_tables.py:1157 | s12b-1110.md:5 | open | Co3 |
+| P29 | E69 as-typed echo after autocorrect (design call); E59 to E62, E44, E45, E48 chat design | s13-1110.md:5, s11-1110.md:9 | owner call: where the "as typed" line shows | none |
+| P30 | W8 found-not-fixed: "is my dentist appointment tomorrow" no verdict, "last Christmas" no year, single-day head printed twice, "phone mum" synonym | w8-1110.md | open | Co2 |
+| P31 | Web-search store of recent pages; Try again on a failed non-SearXNG web chip | wc3-1110.md:5,7 | owner call: store fetched pages with a re-fetch control? | none |
+| P32 | Tour at 390 reports a 455 px spill on one step; Memory and Logs panes hide h3 on a phone | wc3-1110.md:9, wc-1110.md:7 | open | Sh1 |
+| P33 | Spell hold in documents editor and Add to dictionary row not driven; LanguageTool install not proven (jar never started) | spell-1110.md:5, lag1726-1110.md:4 | unverifiable (running a downloaded jar was refused here) | none |
+| P34 | Q29 filing: re-measure with the embedder; review `memorymap_related.json` (236 sources) | q29-1111.md:4,5 | owner call: review the related-topic table? | none |
+| P35 | Gantt, audio note and row 8 (cover and icon) not verified at 390 or with a physical click | s9c-1110.md:10 | unverifiable (touch) | none |
+| P36 | Chat avatar loader path unverified in a browser | small-1110.md:7 | open (verify) | Cp1 |
+| P37 | Older "found, not fixed" notes stamped stale: test reds that now pass, desk `blink` catalogue row, wake-sources tests | compalive-1109.md, dgml-1109.md, dgmseq-1109.md ("Stale" stamps) | fixed (stamped stale against a pass run) | none |
+
+**Grouped bulk (E17 true bullets in OPEN.md's older sections, not itemised)**
+
+Counts are from `e17-1110.md` "True, by work order batch"; the scout's own caveat applies (keyword sort, may overlap the named rows). 636 true, 31 stale, 10 fixed.
+
+| id | batch group | count | status | work batch |
+| --- | --- | --- | --- | --- |
+| X1 | W6 recordings and deletes | 11 | open | Sh2 |
+| X2 | W7 composer which note leads | 37 | open | Co2 |
+| X3 | W8 composer dates | 23 | open | Co2 |
+| X4 | W9 composer follow-ons | 10 | open | Co1 |
+| X5 | W10 composer compare and lists | 14 | open | Co2 |
+| X6 | W11 notes core | 36 | open | Sh1 |
+| X7 | W12 navigation | 11 | open | Sh1 |
+| X8 | W14 in-app companion | 20 | open | Cp1 |
+| X9 | W15 desk companion | 11 | open | Cp2 |
+| X10 | W19 whiteboard daily UX | 76 | open | Wb1 |
+| X11 | W20 shell accessibility | 7 | open | Sh1 |
+| X12 | W21 dashboard, timeline | 15 | open | Da1 |
+| X13 | W22 chat, Ask, Guide | 15 | open | Co3 |
+| X14 | W23 documents daily UX | 223 | open | Do1, then a later Do batch |
+| X15 | W24, W25, W26, W28, W29 (3, 3, 5, 4, 4) | 19 | open | Ci1, Sh1, Gr1, Do2, Bk2 |
+| X16 | W27 boot weight | 15 | open | Sh2 |
+| X17 | W30 whiteboard render | 19 | open | Wb2 |
+| X18 | W31 companion life | 29 | open | Cp1, Cp2 |
+| X19 | W33 copy and help | 4 | open | Ui1 |
+| X20 | W34 verify | 41 | open | Ev1 |
+| X21 | Stale bullets (lines listed in e17-1110.md) | 31 | stale, to strike | Ev1 |
+| X22 | Fixed bullets (lines listed in e17-1110.md) | 10 | fixed | none |
+| X23 | Residue the scout mapped to no batch (W5, W13, W16, W17, W18, W32 surfaces) | see e17-1110.md | open | Ev1 |
+| X24 | E15 true rows by batch (62): W5 E43 K11 K13 K26 K33 K38; W9 E56; W11 S28 S47 S71 S74 S88; W19 U1 U2 U3 U5 U13 B10 B33; W21 S51; W22 E33 E44 E45 E48 E59 E60; W23 D25 D28 D29 D40 D41; W26 S52; W27 S3 B30 D22; W28 D23 D45; W29 K24 K25 B1 B2 B24 D46; W30 B4 B23 B39; W32 K20 K27 K32 K34; W33 E54 S84; backlog D43 D52 S49 S77 | e15-1110.md:20 to 40, s11-1110.md, s12-1110.md | open (minus S71, S74, K34 built, and the 9 s11 stale rows) | per batch |
+
+### Spot checks (2026-11-11)
+
+- Verified in code or CHANGELOG: 1693 a `tests/conftest.py:157 _fixed_day`; 1694 `frontend/js/lightbox-view.js:442 valueField(zoomLabel`; W19 C10 `whiteboard.js:10337 wbDefaultInk` (used at 22619); lag 1741 `atlas.js:4130 function charactersArrivedTask`; 1719 a CHANGELOG:192 and `engine.py:3652 _ceiling_holds`; 1721 a CHANGELOG:134; Matching records CHANGELOG:13; 1696 d CHANGELOG:402; consent cap `ai/agent.py:470 MAX_PARKED_CONFIRMS`.
+- Wrong or unproven: `diagramDoor` (INBOX 1722) is not in frontend/js; `?since=` is not in routes_graph.py (deferred by design); INBOX 1744 "drag pans from a cell" has no CHANGELOG line (INBOX's own word only); INBOX 1696 c and e have no record; E16 has no file or CHANGELOG record (CHANGELOG:837 "Audit E16" is an unrelated compare fix); `tests/test_repo_boundaries.py` fails at 690 against 687.
+- Run with `/home/user/Tessellate/.venv/bin/python` and `PYTHONPATH=src` (the default python has no fastapi).
+
+### Owner-call list
+
+1. I18 / Q17: examples of the composer answers that still read badly. 2. I20 / Q15: window width and surface of the Chat Sources rows. 3. I30 / Q16: window size or a recording for the companion over the top bar. 4. H2: is Fable named for this close-out. 5. H3 / Q20: guarded edit of `complexity.yml`. 6. H4 / Q22 and K38: key storage, one token per MCP server, the 120 s reusable media link; K32. 7. O7: confirm Q5 and Q6 (they move pinned tests). 8. O32: D18 trim and raw audio. 9. O38: the K33 token sweep against its pinned test. 10. O40: drop the "Read as ..." lines. 11. O42: a sweep-made WebP in the manual. 12. O53 / Q32: the timeline day strip. 13. O54 / Q34: go on sync, offline studio, audio, desktop pet, custom domain, blind panel, Fable diagram dive. 14. P29: where the "as typed" line shows. 15. P31: store fetched pages. 16. P34: review the related-topic table.
+
+### Batches (up to 4 parallel slots per session; no two slots in a session share a hot file)
+
+Hot families: `ai/composer_*.py` plus `commands.py`; `chat-turn.js`; `documents*.js` (including documents-mermaid.js); `whiteboard*.js`; `graph*.js`; `diagram*.js`; `dashboard.js`; atlas, avatars, `core/overlay`. Rung: Sonnet unless named.
+
+| Session | Slot | Batch, files, item ids |
+| --- | --- | --- |
+| 1 | A | Co1 composer follow-ons: `composer_follow.py`, `composer_dialogue.py`, `composer_talk.py`, `composer_chips.py`, `commands.py`, `spelling.py`; O4 to O9, O12, P14, P25 (F4, F5) |
+| 1 | B | Cp1 in-app companion: `avatars.js`, `atlas*.js`, `lag-watch.js`; I7, I17 (in-app), O14 (B55, B57), O37, P6, P7, P36, X8, X18 |
+| 1 | C | Gr1 graph at scale (Opus): `graph-canvas.js`, `graph-worker.js`, `graph*.js`; O30 (D11 to D14) |
+| 1 | D | Sh1 shell and notes (no hot files): `10-responsive.css`, `router.js`, `navigation.js`, `notes-list.js`, `settings*.js`, `index.html`; I24, O14 (B59, B60), O22, O29, P4, P12, P16, P17, P22, P32, X6, X7, X11 |
+| 2 | A | Co2 composer dates and ranking: `composer_ahead.py`, `composer_digest.py`, `composer_slots.py`, `composer_money.py`, `composer_plan.py`, `composer_figures.py`, `factgraph.py`, `chat_extra.py`; I9, I10 (with timeline reading), O3, O10, O11, O35, P25 (F1, F6, F8, F9, F13), P26 (composer G-rows), P30, X2, X3, X5 |
+| 2 | B | Cp2 desk companion: `core/overlay/*`, `tests/test_overlay_*` (serial); I12, I14, I21, I22, I23, I28, I29, O15, O16, O37, X9, X18 |
+| 2 | C | Do1 documents: `documents*.js` outside the save path, DOCUMENTS gap rows; O27, O47, X14 (first slice of 223) |
+| 2 | D | Bk1 backend: `api/routes_*`, `core/security`, `search_manager.py`; I6, O1, O39 (BK6, BK10, K36, K20), P2, P13, P19, P20 |
+| 3 | A | Co3 composer voice, overview and consent (Opus): `composer_voice.py`, `composer_lines.py`, `composer_tables.py`, `composer_smalltalk.py`, `composer_openlinks.py`, `ai/parity_acts.py`, `chat-turn.js`, `ask-compose.js`, `capture-ask.js`; I3, I4, I26, O18, O24, O25, O50, P23, P24, P26 (voice), P27, P28, X13 |
+| 3 | B | Wb1 whiteboard daily: `whiteboard*.js` outside the render path; I25, O48, O49, X10 (76 rows) |
+| 3 | C | Dg1 diagram: `diagram-*.js` and `documents-mermaid.js` (the `diagramDoor` carve); I13, O19, O21 |
+| 3 | D | Ci1 CI time: overlay test speed, `.github/workflows` only if the owner says (H3); O28 (D2 to D4) |
+| 4 | A | Gr2 graph features: `graph*.js`, tessellation; I1, I2, O53 |
+| 4 | B | Wb2 whiteboard render split (Opus): `whiteboard.js`, `whiteboard-map.js`; O33 (D27), X17 |
+| 4 | C | Da1 dashboard and timeline: `dashboard.js`, `timeline*.js`, `statistics.js`; I8, P11, P26 (JS rows), X12 |
+| 4 | D | Ui1 UI and world class: stylesheets, F5/F6 rows; O51, O52, X19 |
+| 5 | A | Do2 documents split (Opus): `documents.js` 16,381 to 17,190, `docLivePlugin`; O33 (D21), O36, X14 (rest) |
+| 5 | B | Sh2 boot and recordings: `meetings.js`, `index.html`, `prefs.js`; O31, P18, X1, X16 |
+| 5 | C | Bk2 structure ratchets (non-hot files): O34, O39 (BK11, K24, K25), P3, P8, P9, H5, X15 |
+| 5 | D | Ev1 Haiku scouts, docs only: O44 (E16), O46 (E21), I31 (34 true B-rows), P15, X20 to X23; then Mo (O17, needs `llama-dev.sh serve`) |
+
+Session count: 5 sessions (20 slots, 4 Opus in all, at most 1 per session) clear every named open row; honestly 9 (range 8 to 11), because X14 (223 documents rows), X10 (76 whiteboard rows) and the rest of the E17 bulk are 636 bullets with unknown overlap, composer batches usually need a second round, and F8 and the owner-call rows wait outside the count.
