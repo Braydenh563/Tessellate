@@ -27,4 +27,4 @@ Verified on head c334542, 2026-11-11. No code change was needed: every W5, W6 an
 
 ## Remaining
 - BK10: `/library` and `/graph` payloads carry full content per row; needs a shape decision with the frontend (ledger: stale in part, FIT42 waits on Q9).
-- W2 (next).
+- W2: A6, A7, A8 were done w2-1110; re-verified 2026-11-11 (test_outside_text_taints_chat, test_spelling_own_words_1731, test_composer_z_spell_1030, test_composer_grammar, test_spell_second_opinion_1731, tests/test_agent_*), no change needed.
