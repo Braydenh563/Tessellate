@@ -4546,21 +4546,21 @@ Format: id | file:line | one line | status.
 
 **BG1 (diagram, 15 rows)**
 
-- D1.3 | diagram-fable-1679:13 | diagram-lazy.css:741 and :757 still hide .ph-text inside .dgm-tight | open
-- D1.8 | diagram-fable-1679:18 | One branch is silent. Off "Valid?" the first arrow got no words (C --> D), the second asked "Words for th | partial
-- D1.12 | diagram-fable-1679:22 | R11 left: Done still saves silently (not re-driven) | open
-- D2.1 | diagram-fable-1679:30 | handles, pick and reconnect landed; reverse and connector delete bar not confirmed | open
-- 1661m | owner-asks-audit-1108:25 | Both diagram side panels fold to a rail with a labelled toggle and key, kept per user; blind test | open
-- S11 | owner-asks-audit-1108:28 | Diagram kind picker alone on its row | open
-- 1692b | owner-asks-audit-1108:42 | Deep dives (desk, in-app, diagram) each with a coverage table and ranked list | open
-- 1661a | owner-asks-audit-1108:88 | Builder picture-first; the blocks list an outline that hides | open
-- 1661c | owner-asks-audit-1108:89 | Templates, styles, align and distribute, find, copy as picture, shortcuts | open
-- 1661e | owner-asks-audit-1108:90 | Each connection once under its source as "to Y" with an editable label | open
-- 1661f | owner-asks-audit-1108:91 | Connect handle and on-picture controls meet 3:1 on both themes | open
-- 1661k | owner-asks-audit-1108:93 | Kind picker as a labelled Kind menu in the Title row with samples | open
-- 1661g/S7 | owner-asks-audit-1108:127 | Arrow-added node does not overlap (0 in 20 adds); overlays follow scroll | open
-- 1661h/S8 | owner-asks-audit-1108:128 | A press on empty canvas and Escape clear the selection | open
-- 1661i/S9 | owner-asks-audit-1108:129 | Name Canvas and Blocks for what they are | open
+- D1.3 | diagram-fable-1679:13 | diagram-lazy.css:741 and :757 still hide .ph-text inside .dgm-tight | fixed b8475fc09
+- D1.8 | diagram-fable-1679:18 | One branch is silent. Off "Valid?" the first arrow got no words (C --> D), the second asked "Words for th | fixed 5017d6e06
+- D1.12 | diagram-fable-1679:22 | R11 left: Done still saves silently (not re-driven) | stale (2026-11-11)
+- D2.1 | diagram-fable-1679:30 | handles, pick and reconnect landed; reverse and connector delete bar not confirmed | deferred
+- 1661m | owner-asks-audit-1108:25 | Both diagram side panels fold to a rail with a labelled toggle and key, kept per user; blind test | fixed ff33cd1fe
+- S11 | owner-asks-audit-1108:28 | Diagram kind picker alone on its row | fixed 262c70da3
+- 1692b | owner-asks-audit-1108:42 | Deep dives (desk, in-app, diagram) each with a coverage table and ranked list | deferred
+- 1661a | owner-asks-audit-1108:88 | Builder picture-first; the blocks list an outline that hides | stale (2026-11-11)
+- 1661c | owner-asks-audit-1108:89 | Templates, styles, align and distribute, find, copy as picture, shortcuts | deferred
+- 1661e | owner-asks-audit-1108:90 | Each connection once under its source as "to Y" with an editable label | stale (2026-11-11)
+- 1661f | owner-asks-audit-1108:91 | Connect handle and on-picture controls meet 3:1 on both themes | fixed b8475fc09
+- 1661k | owner-asks-audit-1108:93 | Kind picker as a labelled Kind menu in the Title row with samples | fixed 262c70da3
+- 1661g/S7 | owner-asks-audit-1108:127 | Arrow-added node does not overlap (0 in 20 adds); overlays follow scroll | fixed b006cfaf9
+- 1661h/S8 | owner-asks-audit-1108:128 | A press on empty canvas and Escape clear the selection | fixed b006cfaf9
+- 1661i/S9 | owner-asks-audit-1108:129 | Name Canvas and Blocks for what they are | fixed b006cfaf9
 
 **BR1 (graph, 16 rows)**
 
@@ -4583,21 +4583,21 @@ Format: id | file:line | one line | status.
 
 **BA1 (agent, 15 rows)**
 
-- K20 | audit-1028-backend:26 | Import of a memorymap folder: record['file'] raised KeyError becomes a 500 for a malformed sidecar | open
-- K33 | audit-1028-backend:39 | _sweep_expired scans every token on every authenticated request, and BodyCap calls _session_is_live per n | open
-- K38 | audit-1028-backend:44 | /auth/media-link tickets live 120 s and are reusable, delivered in a URL query that reaches uvicorn's acc | open
-- S20 | audit-1028-shell:26 | Cache prefix still carries the old product name | open
-- A9 | audit-1030-ai:25 | The web-down message drops the port (shows 127.0.0.1 for 127.0.0.1:8888) and gives the same advice twice | open
-- A15 | audit-1030-ai:36 | Bare-verb forms miss in many classes (bare-not-ok of total) | partial
-- A17 | audit-1030-ai:38 | Covered by test_audit_1030_ai_acts | partial
-- A24 | audit-1030-ai:55 | #web-search-history is empty after a search | open
-- A25 | audit-1030-ai:56 | Not a bug: .answer-citation-link::after already pads the hit area to var(--target-min); the audit measure | open
-- A30 | audit-1030-ai:61 | After Clear history the badge still reads "99+" until reload (list is empty, a fresh load hides it) | open
-- A43 | audit-1030-ai:70 | unverified | open
-- A44 | audit-1030-ai:71 | The no-model Chat answer to a question with an attached note ("what does it say" with Gift ideas attached | open
-- A42 | audit-1030-ai:80 | Streaming at 4x CPU throttle (30 chunks/s for 4.9 s) | partial
-- BK3 | audit-1031-backend:15 | Workspace scope trusts any header value | open
-- C8 | audit-1031-composer:51 | A plural or inflected subject word is required verbatim, so notes titled with the singular are called mis | open
+- K20 | audit-1028-backend:26 | Import of a memorymap folder: record['file'] raised KeyError becomes a 500 for a malformed sidecar | stale (2026-11-11)
+- K33 | audit-1028-backend:39 | _sweep_expired scans every token on every authenticated request, and BodyCap calls _session_is_live per n | fixed 8d9cfce9e
+- K38 | audit-1028-backend:44 | /auth/media-link tickets live 120 s and are reusable, delivered in a URL query that reaches uvicorn's acc | fixed 8d9cfce9e (log redaction; single use left, a PDF viewer asks ranges more than once)
+- S20 | audit-1028-shell:26 | Cache prefix still carries the old product name | stale (2026-11-11)
+- A9 | audit-1030-ai:25 | The web-down message drops the port (shows 127.0.0.1 for 127.0.0.1:8888) and gives the same advice twice | deferred
+- A15 | audit-1030-ai:36 | Bare-verb forms miss in many classes (bare-not-ok of total) | fixed 1d3da33, 0ba1a33
+- A17 | audit-1030-ai:38 | Covered by test_audit_1030_ai_acts | fixed ff5ac76
+- A24 | audit-1030-ai:55 | #web-search-history is empty after a search | stale (2026-11-11)
+- A25 | audit-1030-ai:56 | Not a bug: .answer-citation-link::after already pads the hit area to var(--target-min); the audit measure | closed ff5ac76
+- A30 | audit-1030-ai:61 | After Clear history the badge still reads "99+" until reload (list is empty, a fresh load hides it) | stale (2026-11-11)
+- A43 | audit-1030-ai:70 | unverified | unverified
+- A44 | audit-1030-ai:71 | The no-model Chat answer to a question with an attached note ("what does it say" with Gift ideas attached | deferred
+- A42 | audit-1030-ai:80 | Streaming at 4x CPU throttle (30 chunks/s for 4.9 s) | fixed 6254337
+- BK3 | audit-1031-backend:15 | Workspace scope trusts any header value | fixed (s8, verified 2026-11-10)
+- C8 | audit-1031-composer:51 | A plural or inflected subject word is required verbatim, so notes titled with the singular are called mis | deferred
 
 ## PR 216 close-out: inbox, handover and remaining lists (2026-11-11)
 
