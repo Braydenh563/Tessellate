@@ -51,7 +51,7 @@ function recordBrowserLog(level, parts) {
 recordBrowserLog.text = (p) => {
   try {
     const j = JSON.stringify(p);
-    return typeof p === "string" ? p : j === "{}" ? p.stack || `${p}` : j;
+    return typeof p === "string" ? p : j === "{}" ? p.stack || String(p) : j;
   } catch {
     return String(p);
   }

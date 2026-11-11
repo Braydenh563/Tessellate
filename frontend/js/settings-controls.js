@@ -4232,6 +4232,20 @@ $("log-follow").addEventListener("change", (event) => {
 // to the bottom resumes it, which is the same gesture every terminal uses.
 // Both containers get the listener, only one is ever visible at a time, but
 // whichever it is has to pause Follow the same way.
+//: Live records draw together, at most four times a second, not once each: every request is a
+//: log line, and each draw rebuilt up to 500 rows and laid them out (190ms of forced layout at
+//: 4x across the draws on opening Logs, INBOX 1111). `toBottom` is the browser's own errors.
+renderActiveLogView.soon = (toBottom) => {
+  renderActiveLogView.bottom ||= toBottom;
+  renderActiveLogView.frame ||= setTimeout(() => {
+    renderActiveLogView.frame = 0;
+    renderActiveLogView();
+    if (renderActiveLogView.bottom) scrollLogToBottom();
+    renderActiveLogView.bottom = false;
+  }, 250);
+};
+//: Only drawn with the Logs section open, which is after this file is in (settings.js: renderLogs).
+
 //: The read waits for a timer past the frame (the stream appends rows between scrolls, and
 //: reading `scrollHeight` right after laid the whole list out: 120ms in the handler at 4x).
 for (const id of ["log-list", "log-terminal"]) {

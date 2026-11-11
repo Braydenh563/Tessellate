@@ -1075,19 +1075,6 @@ function renderActiveLogView() {
   if (logView === "terminal") renderLogTerminal();
   else renderLogList();
 }
-//: Live records draw together, at most four times a second, not once each: every request is a
-//: log line, and each draw rebuilt up to 500 rows and laid them out (190ms of forced layout at
-//: 4x across the draws on opening Logs, INBOX 1111). `toBottom` is the browser's own errors.
-renderActiveLogView.soon = (toBottom) => {
-  renderActiveLogView.bottom ||= toBottom;
-  renderActiveLogView.frame ||= setTimeout(() => {
-    renderActiveLogView.frame = 0;
-    renderActiveLogView();
-    if (renderActiveLogView.bottom) scrollLogToBottom();
-    renderActiveLogView.bottom = false;
-  }, 250);
-};
-
 function setLogLive(state, detail) {
   const pill = $("log-live");
   setLabel(pill, detail);

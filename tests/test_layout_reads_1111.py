@@ -36,8 +36,8 @@ def test_a_streamed_record_asks_for_a_draw_and_does_not_make_one():
 
 def _soon_draws(requests: str) -> list[int]:
     """Run `renderActiveLogView.soon` under a fake timer: how many draws, and how many scrolls."""
-    start = SETTINGS.index("renderActiveLogView.soon = (toBottom) => {")
-    body = SETTINGS[start : SETTINGS.index("\n};\n", start) + 4]
+    start = CONTROLS.index("renderActiveLogView.soon = (toBottom) => {")
+    body = CONTROLS[start : CONTROLS.index("\n};\n", start) + 4]
     script = (
         "let draws = 0, scrolls = 0, timers = [];"
         "const setTimeout = (fn) => timers.push(fn);"
@@ -70,3 +70,14 @@ def test_the_log_scroll_listener_is_passive_and_reads_a_frame_later():
 
 def test_a_tab_change_asks_only_the_regions_last_seen_scrolled():
     assert "scrollEdgeLastState.get(region) && page.contains(region) && region.scrollTop > 1" in REMINDERS
+
+
+def test_the_idle_warm_fetches_scripts_only_so_it_restyles_nothing():
+    """library-lazy.css is 288 KB: adding it to the page restyled the Dashboard in whatever the person was
+    doing (125 to 159ms of style at 4x). Its first real ask (`ensureModule`) still brings every stylesheet."""
+    entries = frontend_text("lazy-entries.js")
+    assert 'LAZY_MODULES.library].filter((f) => f[1] > "c")' in entries
+    lazy = APP_JS.read_text(encoding="utf-8")
+    for name in ("graph", "library"):
+        assert re.search(rf"{name}: \[[^\]]*\"/css/\w+-lazy\.css\"", lazy), name
+    assert all(f[1] > "c" for f in ("/js/a.js", "/vendor/d3.js")) and not "/css/a.css"[1] > "c"
