@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8108, frontend ids 2684, CSS sections 523, backend routes 662, backend modules 9999, test files 2450, tests 20298, plan headings 1002, app scripts 28, boot scripts 37, script files 277.
+Counts: frontend functions 8108, frontend ids 2684, CSS sections 523, backend routes 662, backend modules 9999, test files 2450, tests 20299, plan headings 1002, app scripts 28, boot scripts 37, script files 277.
 
 ## Frontend functions (8108)
 
@@ -5218,10 +5218,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `fitHeaderLabel` | frontend/js/graph-tessellate.js:236 |
-| `gcCategoryTitleAt` | frontend/js/graph-tessellate.js:354 |
+| `gcCategoryTitleAt` | frontend/js/graph-tessellate.js:360 |
 | `gcDrawTessellation` | frontend/js/graph-tessellate.js:280 |
 | `gcTessInfo` | frontend/js/graph-tessellate.js:62 |
-| `gcTessNodeAt` | frontend/js/graph-tessellate.js:334 |
+| `gcTessNodeAt` | frontend/js/graph-tessellate.js:340 |
 | `layoutTessellation` | frontend/js/graph-tessellate.js:109 |
 | `tessHexRadius` | frontend/js/graph-tessellate.js:191 |
 | `tessHexSpots` | frontend/js/graph-tessellate.js:206 |
@@ -26095,7 +26095,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (20298)
+## Tests (20299)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27221,7 +27221,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_graph_slim.py | 3 |
 | tests/test_graph_style_no_relayout.py | 2 |
 | tests/test_graph_tabstops_1518.py | 2 |
-| tests/test_graph_tessellation.py | 16 |
+| tests/test_graph_tessellation.py | 17 |
 | tests/test_graph_tether.py | 2 |
 | tests/test_graph_tick_rate_1029.py | 4 |
 | tests/test_graph_tidy_1529.py | 2 |

@@ -393,3 +393,42 @@ def test_a_new_note_glides_into_its_cell_from_its_category_header():
     assert "prior.size && s.tree && s.tree.treemap" in body
     assert "node._fromY = home.y0 + (home.head || 18) / 2;" in body
     assert "fresh <= 12" in body
+
+
+@needs_node
+def test_a_hovered_cell_lights_the_cells_of_the_notes_it_links_to():
+    """INBOX 1744 (q31-1110, mock A): the Tessellation draws no lines, so the
+    hovered note's links show as softer lit cells (0.27) between the hovered
+    one (0.38) and the rest (0.14); a note with no links lights none."""
+    r = _run(
+        """
+globalThis.Path2D = class { moveTo() {} lineTo() {} arcTo() {} closePath() {} };
+globalThis.gcTokens = { ink: "#000" };
+const { nodes, info } = build(3);
+const L = layoutTessellation(nodes, 1400, 800, info, "cells");
+const hub = [...info.near].find(([, set]) => set.size >= 2)[0];
+let alpha = 0;
+const ctx = {
+  save() {}, restore() {}, stroke() {}, set globalAlpha(v) { alpha = v; }, get globalAlpha() { return alpha; },
+  set fillStyle(v) {}, set strokeStyle(v) {}, set lineWidth(v) {}, set lineJoin(v) {},
+  fill() {},
+};
+const byId = new Map(nodes.map((n) => [n.id, n]));
+const paint = (hoveredId) => {
+  const order = [];
+  ctx.fill = () => order.push(alpha);
+  window.gcTess.paint(ctx, { tree: L, selected: new Set(), hoveredId, byId, colourOf: () => "#888" }, 1);
+  return order;
+};
+const lit = paint(hub);
+const cold = paint(null);
+const idx = new Map(L.tess.cells.map((c, i) => [c.id, i]));
+const near = [...info.near.get(hub)];
+console.log(JSON.stringify({
+  hub: lit[idx.get(hub)], neighbour: lit[idx.get(near[0])],
+  other: lit.filter((a, i) => i !== idx.get(hub) && !near.some((n) => idx.get(n) === i)).every((a) => a === 0.14),
+  coldAll: cold.every((a) => a === 0.14), nearCount: near.length, hasNear: L.tess.near instanceof Map,
+}));
+"""
+    )
+    assert r["hub"] == 0.38 and r["neighbour"] == 0.27 and r["other"] and r["coldAll"] and r["hasNear"]

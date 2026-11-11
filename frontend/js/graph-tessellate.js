@@ -111,7 +111,7 @@
     //: count (a hex blob cannot fill an area set by links); Cells follow links.
     const hexes = look === "hexes";
     const done = layoutTreemap(nodes, width, height, hexes ? null : info);
-    done.tess = { look: hexes ? "hexes" : "cells", cells: [] };
+    done.tess = { look: hexes ? "hexes" : "cells", cells: [], near: (info && info.near) || null };
     if (!nodes.length) return done;
     const members = new Map();
     for (const node of done.nodes) {
@@ -307,16 +307,22 @@
       return cell._path;
     };
     const lit = new Set(s.selected ? [...s.selected] : []);
-    if (s.hoveredId != null) lit.add(s.hoveredId);
+    //: A hovered cell lights the cells of the notes it links to, softer
+    //: (mock A; the lines are not drawn here, so this is what shows them).
+    const linked = new Set();
+    if (s.hoveredId != null) {
+      lit.add(s.hoveredId);
+      for (const id of (tess.near && tess.near.get(s.hoveredId)) || []) if (!lit.has(id)) linked.add(id);
+    }
     ctx.lineWidth = 1 / k;
     ctx.strokeStyle = gcTokens.ink;
     for (const cell of tess.cells) {
       const node = s.byId.get(cell.id);
       const path = cellPath(cell);
-      ctx.globalAlpha = lit.has(cell.id) ? 0.38 : 0.14;
+      ctx.globalAlpha = lit.has(cell.id) ? 0.38 : linked.has(cell.id) ? 0.27 : 0.14;
       ctx.fillStyle = (node && node.colour) || s.colourOf({ isGroup: true, category: cell.category });
       ctx.fill(path);
-      ctx.globalAlpha = 0.16;
+      ctx.globalAlpha = linked.has(cell.id) ? 0.5 : 0.16;
       ctx.stroke(path);
     }
     ctx.lineWidth = 2.2 / k;

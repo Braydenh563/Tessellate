@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Graph Tessellation: hovering a cell lights the cells of the notes it links to, softer (no lines are drawn here).
 - Graph Map and Tessellation: a note added to a map that is already drawn glides in from its category header to its cell (a few at a time; reduced motion cuts).
 - Graph saved views keep the Tessellation Look (Cells or Hexes) with the layout they were saved under.
 - Graph Tessellation toward the liked mock A (INBOX 1744): a visible gap between category regions (cell to cell across a boundary 4 to 10 units, 3.1 to 7.7 px at the fit), cells pulled in and rounded so they read as tiles, category headers drawn exactly as the Map's (the heavy border is gone), dot names kept off the hover card, and an ellipsis never strands on an ampersand.
