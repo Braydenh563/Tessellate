@@ -379,12 +379,10 @@
       //: **Rest before showing** (INBOX 1716 lag log, `show` 1192ms of self time on a hover): the popup test below is a hit test, 8 to 54ms a card at 4x on a
       //: page of 30,000 nodes, and a pointer crossing cards paid it for each. A card under the pointer for `OBJ_GRIP_REST_MS` gets the grip; the card already holding it is kept at once.
       clearTimeout(rested);
-      if (next === card || next) {
-        //: One read of the boxes a look: now for the card already holding the grip, after the rest for a new one.
-        const showNext = () => show(next);
-        if (next === card) return showNext();
+      if (next === card) return show(next);
+      if (next) {
         clearTimeout(timer);
-        rested = setTimeout(showNext, OBJ_GRIP_REST_MS);
+        rested = setTimeout(() => show(next), OBJ_GRIP_REST_MS);
         return;
       }
       if (card) {
