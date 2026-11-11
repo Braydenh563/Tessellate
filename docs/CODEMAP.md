@@ -2627,24 +2627,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addCapturePictures` | frontend/js/capture-card-more.js:164 |
-| `addCaptureSketch` | frontend/js/capture-card-more.js:234 |
-| `askCaptureSuggestions` | frontend/js/capture-card-more.js:102 |
-| `captureBell` | frontend/js/capture-card-more.js:54 |
-| `captureSketchHost` | frontend/js/capture-card-more.js:218 |
-| `captureThumb` | frontend/js/capture-card-more.js:183 |
-| `clearCaptureSuggestions` | frontend/js/capture-card-more.js:95 |
-| `mountCaptureExtras` | frontend/js/capture-card-more.js:20 |
-| `mountCapturePictures` | frontend/js/capture-card-more.js:140 |
-| `openCaptureDraw` | frontend/js/capture-card-more.js:230 |
-| `paintCaptureBell` | frontend/js/capture-card-more.js:75 |
-| `removeCapturePicture` | frontend/js/capture-card-more.js:192 |
-| `renderCaptureSuggestions` | frontend/js/capture-card-more.js:110 |
-| `renderCaptureThumbs` | frontend/js/capture-card-more.js:175 |
-| `scheduleCaptureSuggestions` | frontend/js/capture-card-more.js:87 |
-| `setCaptureReminder` | frontend/js/capture-card-more.js:69 |
-| `syncCaptureExtras` | frontend/js/capture-card-more.js:34 |
-| `uploadCapturePictures` | frontend/js/capture-card-more.js:201 |
+| `addCapturePictures` | frontend/js/capture-card-more.js:165 |
+| `addCaptureSketch` | frontend/js/capture-card-more.js:235 |
+| `askCaptureSuggestions` | frontend/js/capture-card-more.js:103 |
+| `captureBell` | frontend/js/capture-card-more.js:55 |
+| `captureSketchHost` | frontend/js/capture-card-more.js:219 |
+| `captureThumb` | frontend/js/capture-card-more.js:184 |
+| `clearCaptureSuggestions` | frontend/js/capture-card-more.js:96 |
+| `mountCaptureExtras` | frontend/js/capture-card-more.js:21 |
+| `mountCapturePictures` | frontend/js/capture-card-more.js:141 |
+| `openCaptureDraw` | frontend/js/capture-card-more.js:231 |
+| `paintCaptureBell` | frontend/js/capture-card-more.js:76 |
+| `removeCapturePicture` | frontend/js/capture-card-more.js:193 |
+| `renderCaptureSuggestions` | frontend/js/capture-card-more.js:111 |
+| `renderCaptureThumbs` | frontend/js/capture-card-more.js:176 |
+| `scheduleCaptureSuggestions` | frontend/js/capture-card-more.js:88 |
+| `setCaptureReminder` | frontend/js/capture-card-more.js:70 |
+| `syncCaptureExtras` | frontend/js/capture-card-more.js:35 |
+| `uploadCapturePictures` | frontend/js/capture-card-more.js:202 |
 
 ### frontend/js/capture-card.js (33)
 

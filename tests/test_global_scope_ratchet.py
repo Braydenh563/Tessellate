@@ -73,7 +73,8 @@ TOP_LEVEL_LETS_CAP = 699
 #: W29 carve 7: app-palette.js wrapped whole, exporting six names. Measured 8,679.
 #: 2026-11-11 W29 carve 8: documents-codekit.js wrapped whole, four exports. Measured 8,629.
 #: 2026-11-11 W29 carve 9: categories-panel.js wrapped whole, 12 exports. Measured 8,609.
-GLOBAL_NAMES_CAP = 8609
+#: 2026-11-11 W29 carve 10: capture-card-more.js wrapped whole, 4 exports. Measured 8,592.
+GLOBAL_NAMES_CAP = 8592
 
 
 def _code() -> dict[str, str]:
