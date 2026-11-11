@@ -403,6 +403,18 @@ LEXICON_MAX = 3
 LEXICON_VOTE = 1.5
 #: The preference that lets a sensitive note file itself (decision 6).
 PREF_AUTO_FILE_SENSITIVE = "auto_file_sensitive"
+#: The preference that holds an unsure filing for the person (the owner,
+#: 2026-11-11, HANDOVER decision 6). Off by default.
+PREF_ASK_WHEN_UNSURE = "ask_when_unsure"
+#: With it on, a filing under this confidence is not applied; the note waits
+#: and the top choices are offered. The number is the one shown on the chip
+#: (words 50 to 85, calibrated for a model's pick). On the 120-note fixture,
+#: leave one out, 4 of the 11 wrong filings sit under 70 beside 20 right
+#: ones: it asks about about a third of what it files, and about a third of
+#: its mistakes.
+UNSURE_LINE = 70
+#: Said where a note waits because of that setting.
+ASK_WHY = "You asked to be asked when it is not sure, so it waits for you to choose."
 
 
 @dataclass
@@ -448,6 +460,9 @@ class Decision:
     sensitive: str | None = None
     #: It would have filed, and was held back because it is sensitive.
     held: bool = False
+    #: It would have filed, and waits because the person asked to be asked
+    #: when it is unsure (`ask_when_unsure`). `ranked[0]` is what it would have filed.
+    unsure: bool = False
 
 
 _OPEN, _CLOSE = chr(0x201C), chr(0x201D)
@@ -554,14 +569,29 @@ def sensitive_subject(content: str, hits: dict | None = None) -> str | None:
     return next((topic for topic in taxonomy.strong_topics(content, hits) if topic in sensitive_set), None)
 
 
-def _auto_file_sensitive() -> bool:
+def _preference(key: str) -> bool:
     try:
         from tessellate.core import deps
 
-        return bool(deps.get_config().get_preference(PREF_AUTO_FILE_SENSITIVE, False))
+        return bool(deps.get_config().get_preference(key, False))
     except Exception:  # noqa: BLE001 - no config (a script, a test without app state): the safe default
-        logging.getLogger("tessellate.lexical_filing").debug("no preference store; sensitive notes are held", exc_info=True)
+        logging.getLogger("tessellate.lexical_filing").debug("no preference store; %s is off", key, exc_info=True)
         return False
+
+
+def _auto_file_sensitive() -> bool:
+    return _preference(PREF_AUTO_FILE_SENSITIVE)
+
+
+def ask_when_unsure() -> bool:
+    """Whether the person asked to choose where an unsure filing goes."""
+    return _preference(PREF_ASK_WHEN_UNSURE)
+
+
+def is_unsure(confidence: int) -> bool:
+    """A filing of this confidence waits for the person: the setting is on and
+    the number is a real one under the line (0 is no filing at all)."""
+    return 0 < confidence < UNSURE_LINE and ask_when_unsure()
 
 
 @dataclass
@@ -690,6 +720,9 @@ def _file_if_clear(decision: Decision, sensitive_set: set) -> None:
     share = best.score / sum(c.score for c in ranked)
     #: Kept between 50 and 85, as before: this is word overlap.
     decision.confidence = max(50, min(85, round(40 + 50 * share)))
+    if is_unsure(decision.confidence):
+        decision.unsure = True
+        return
     sensitive_here = decision.sensitive or next((t for t in best.topics if t in sensitive_set), None)
     if sensitive_here and not _auto_file_sensitive():
         decision.sensitive = sensitive_here
@@ -792,7 +825,9 @@ def filing_call(session: Session, content: str, exclude_entry_id: int | None = N
     best = ranked[0].score if ranked else 0.0
     choices = [(c.name, c.why) for c in ranked if c.score >= CHOICE_WITHIN * best][:CHOICES]
     held = decision.sensitive if decision.held or (choices and decision.sensitive) else None
-    if held:
+    if decision.unsure and not held:
+        why = ASK_WHY
+    elif held:
         why = f"It reads as {held}, so it waits for you to choose."
     elif len(choices) > 1:
         why = f"A close call between {_and_list([name for name, _ in choices])}, so it waits for you to choose."

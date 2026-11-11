@@ -8,6 +8,7 @@ calls run (plan §4).
 from __future__ import annotations
 
 import contextlib
+import dataclasses
 import functools
 import json
 import logging
@@ -470,6 +471,8 @@ class _LateFiling:
         if lexical_filing.holds_sensitive(self._content, category):
             return  # decision 6: the model's late answer is held like an early one
         confidence = self._calibrated(category, confidence)
+        if lexical_filing.is_unsure(confidence):
+            return  # ask when unsure: a late pick under the line waits like an early one
         with self._lock:
             if self._stand_in is None:
                 self._early = (category, confidence)
@@ -1299,6 +1302,11 @@ def _offered_categories(session: Session, entry, category: str) -> tuple[list[st
                 if name not in taken:
                     explained.append((name, reason))
                     taken.add(name)
+        #: A pick the person asked to be asked about (a model's, or by
+        #: meaning) is first among the choices, with the words' reason.
+        if call.category and call.category != category and lexical_filing.ask_when_unsure():
+            explained = [(call.category, call.why)] + [row for row in explained if row[0] != call.category]
+            call = dataclasses.replace(call, why=lexical_filing.ASK_WHY)
         explained = explained[:3]
         if call.proposal is not None:
             proposal = {"name": call.proposal.name, "why": call.proposal.why}
