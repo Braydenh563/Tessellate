@@ -53,8 +53,14 @@ def test_the_fixed_argv_parses_in_both_install_types():
     assert _parser().parse_args(source_argv[2:]).desktop is True
 
 
+def _top(name: str) -> str:
+    """One module-level function of the launcher (the tray callbacks and the close handler
+    moved out of their enclosing functions; the assertions on them are unchanged)."""
+    return SOURCE.split(f"\ndef {name}(")[1].split("\ndef ")[0]
+
+
 def test_restart_branches_on_frozen():
-    block = SOURCE.split("def _restart(")[1].split("def ")[0]
+    block = _top("_tray_restart")
     assert 'getattr(sys, "frozen", False)' in block
     assert "_replace_process(argv)" in block
     # A Restart from a Repair launch must not repair again.
@@ -103,23 +109,23 @@ def test_the_menu_has_the_items_it_advertises():
 def test_showing_the_window_also_raises_it():
     """`show()` un-minimises but does not raise or focus, so clicking a menu
     item while the window was merely behind something did nothing visible."""
-    for callback in ("_open", "_view_logs", "_new_note"):
-        block = SOURCE.split(f"def {callback}(")[1].split("\n    def ")[0]
+    for callback in ("_tray_open", "_tray_view_logs", "_tray_new_note"):
+        block = _top(callback)
         assert "_focus_window(window)" in block, callback
 
 
 def test_no_tray_item_can_reach_past_the_lock_screen():
     """Reported once already for View Logs, which used to open Settings
     unconditionally. Any item that runs JS in the page has to check."""
-    for callback in ("_view_logs", "_new_note"):
-        block = SOURCE.split(f"def {callback}(")[1].split("\n    def ")[0]
+    for callback in ("_tray_view_logs", "_tray_new_note"):
+        block = _top(callback)
         assert "lock-overlay" in block, callback
 
 
 def test_quick_capture_targets_an_element_that_exists():
     """The id was wrong first time, `entry-input`, which is not in the page.
     A tray item that focuses nothing looks like it did nothing."""
-    block = SOURCE.split("def _new_note(")[1].split("\n    def ")[0]
+    block = _top("_tray_new_note")
     ids = re.findall(r"getElementById\('([^']+)'\)", block)
     html = Path("frontend/index.html").read_text(encoding="utf-8")
     for element_id in ids:
@@ -143,13 +149,13 @@ def test_closing_the_window_hides_it_rather_than_quitting():
     """Asked for directly: "make it so the app window can be closed but the
     app will still be open in the system tray… so there is a difference
     between minimising the app and quitting the app"."""
-    block = SOURCE.split("def _on_closing(")[1].split("\n        window.events.closing")[0]
+    block = _top("_close_to_tray")
     assert "window.hide()" in block
     assert "return False" in block, "returning False is what cancels the real close"
 
 
 def test_close_to_tray_is_a_choice_and_defaults_to_on():
-    block = SOURCE.split("def _on_closing(")[1].split("\n        window.events.closing")[0]
+    block = _top("_close_to_tray")
     assert 'get_preference("close_to_tray", True)' in block
     # Off means the X button really quits, and that path skips the lifespan
     # handler, so it has to stop background work itself.
@@ -161,7 +167,7 @@ def test_close_to_tray_is_a_choice_and_defaults_to_on():
 def test_the_hide_explains_itself_exactly_once():
     """An app that tells you the same thing every time you close it is worse
     than one that never tells you."""
-    block = SOURCE.split("def _on_closing(")[1].split("\n        window.events.closing")[0]
+    block = _top("_close_to_tray")
     assert "tray_hide_explained" in block
     assert 'set_preference("tray_hide_explained", True)' in block
     assert "tray_icon.notify(" in block
@@ -185,14 +191,14 @@ def test_quit_and_restart_stop_background_work_before_exiting():
     """`os._exit` and `os.execv` skip every shutdown hook this process has,
     including the lifespan handler that stops background jobs, so quitting
     from the tray was the one exit that left pip and SearXNG running."""
-    for callback in ("_quit", "_restart"):
-        block = SOURCE.split(f"def {callback}(")[1].split("\n    def ")[0]
+    for callback in ("_tray_quit", "_tray_restart"):
+        block = _top(callback)
         assert "_stop_background_work()" in block, callback
         # Before, not after: there is no after.
         # `rindex`, not `index`: the comment above the call names it too, and
         # matching the prose instead of the code is how this test would pass
         # for a version that stops nothing.
-        exit_call = "os._exit(0)" if callback == "_quit" else "_replace_process(argv)"
+        exit_call = "os._exit(0)" if callback == "_tray_quit" else "_replace_process(argv)"
         assert block.index("_stop_background_work()") < block.rindex(exit_call), callback
 
 
@@ -219,7 +225,7 @@ def test_the_menu_reaches_the_features_it_names():
 def test_every_generated_menu_item_carries_the_lock_guard():
     """The guard lives in the factory rather than in each item, which is the
     reason it cannot be forgotten for a new one."""
-    block = SOURCE.split("def _go(js: str):")[1].split("\n    def _view_logs")[0]
+    block = _top("_tray_go")
     assert "lock-overlay" in block
     assert "window.show()" in block and "_focus_window(window)" in block
 
@@ -239,7 +245,7 @@ def test_the_tray_only_calls_frontend_functions_that_exist():
     """
     import re as _re
 
-    menu = SOURCE.split("def _go(js: str):")[1].split("icon = pystray.Icon(")[0]
+    menu = _top("_tray_go") + _top("_tray_view_logs") + _top("_tray_new_note") + _top("_start_tray")
     names = set(_re.findall(r"typeof (\w+) === 'function'", menu))
     js = "".join(
         frontend_text(name)
