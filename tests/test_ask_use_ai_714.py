@@ -20,7 +20,6 @@ from tests._help_text import help_chat_text, help_more_text
 import re
 from pathlib import Path
 
-from tessellate.ai import help_topics_more
 from tests._css_paths import CSS_DIR
 
 ROOT = Path(__file__).resolve().parents[1]

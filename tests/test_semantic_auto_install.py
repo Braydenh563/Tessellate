@@ -162,7 +162,6 @@ def test_the_switch_is_bound_to_the_preference():
 
 
 def test_the_guide_tells_the_choice():
-    from tessellate.ai import help_topics_more
 
     text = (
         help_chat_text()

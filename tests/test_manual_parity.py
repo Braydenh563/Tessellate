@@ -237,7 +237,6 @@ def test_the_open_packages_button_and_the_transcript_and_strip_controls_are_in_t
     """Standing order 13: the Open Packages button on package notices (fixes1),
     the transcript's copy controls (C40) and the strip's dates switch (C36) are
     named in the Guide and in Settings or the Timeline's own help."""
-    from tessellate.ai import help_topics_more
 
     text = help_chat_text() + help_more_text()
     html = (FRONTEND / "index.html").read_text(encoding="utf-8")
