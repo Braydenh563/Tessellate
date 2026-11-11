@@ -131,7 +131,7 @@
      After, at 820: seven buttons at 44px tall, the strip 385px in 448, the
      header 64px and one row. */
   #tab-bar {
-    --target-min: 2.75rem;
+    --target-min: max(2.75rem, 44px);
   }
   #tab-bar button {
     min-height: var(--target-min);
@@ -1188,12 +1188,12 @@ header#top-bar[data-scrolled="1"],
      six of them (the space switcher, Back, Undo, the AI dot, the bell, More)
      beside a switcher wider than a square: 353px of controls in the 331 a
      360 window leaves. A finger does not grow with the caption size, and 44
-     is the floor the band is built on; Small and Normal were already at or
-     under it, so only Large changes. The dock's own five columns are
+     is the floor the band is built on, so it is 44 at every text size (Small
+     measured 39.9 with 2.75rem). The dock's own five columns are
      proportional and were never the cause: they only followed the layout
      viewport the header had stretched. Measured with `shellwidth.js`. */
   header#top-bar {
-    --target-min: min(2.75rem, 44px);
+    --target-min: 44px;
     /* The same cap on the height the bar's squares are levelled to, which
        is also their minimum width (05-sidebars-themes.css, `icon-only`). */
     --header-control-h: min(calc(var(--control-h-body) + 0.5rem), 44px);
