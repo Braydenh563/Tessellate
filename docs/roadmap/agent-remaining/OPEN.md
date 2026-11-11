@@ -242,7 +242,7 @@ Parked until the owner's data or a check on real hardware:
 
 ### Tier D: performance and CI time
 
-**W24 CI time** (D, overlay engine and tests, Sonnet high). Files: `core/overlay/behaviour.py`, `engine.py`, `tests/test_overlay_*`, `.github/workflows/`. Checks: seeded output hashes identical before and after (the cispeed method), `--durations=0` on CI. Done when: the 3.11 and 3.12 jobs finish under 45 minutes.
+**W24 CI time** (D, overlay engine and tests, Sonnet high). Files: `core/overlay/behaviour.py`, `engine.py`, `tests/test_overlay_*`, `.github/workflows/`. Checks: seeded output hashes identical before and after (the cispeed method), `--durations=0` on CI. Done when: the 3.11 and 3.12 jobs finish under 45 minutes. **Built 2026-11-11 (5b2dc80bd, 3b29229d6):** CI runs in two legs per version (`pytest --shard i/2`, `tests/_shard.py`), shared overlay hours, split portal/puff and life tests, scope ratchet 62 s to 2 s, durations summary per file. **Left, needs CI:** read the first "Test time by file" summary and tune `WEIGHTS` in `tests/_shard.py`; confirm each leg is under 45 minutes; a branch-protection rule naming `Tests (Python 3.11)` must be changed to the six leg names (owner setting).
 - ~~D1 `FlowField.step` closed-form rest for a settled flow; `_next_act_pose_change` 30 samples a wake | cispeed L5~~ **Done** (Flow.step rest; `_next_act_pose_change` left), s6-1110
 - D2 The longest overlay tests (rest 81 s, life 69 s) | cispeed L4
 - D3 Slow tests outside the overlay (launcher 20 s, resurface 18 s, search spec 15 s, backup 13 s) | cispeed L6
