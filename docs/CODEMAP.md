@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8140, frontend ids 2710, CSS sections 523, backend routes 673, backend modules 10232, test files 2517, tests 20682, plan headings 1004, app scripts 28, boot scripts 37, script files 280.
+Counts: frontend functions 8140, frontend ids 2710, CSS sections 523, backend routes 673, backend modules 10233, test files 2518, tests 20684, plan headings 1004, app scripts 28, boot scripts 37, script files 280.
 
 ## Frontend functions (8140)
 
@@ -13546,7 +13546,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10232)
+## Backend modules (10233)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -24477,32 +24477,33 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `solid_box` | src/tessellate/core/overlay/sizing.py:65 |
 | `with_handle` | src/tessellate/core/overlay/sizing.py:132 |
 
-### src/tessellate/core/overlay/sprites.py (23)
+### src/tessellate/core/overlay/sprites.py (24)
 
 | Name | File:line |
 |---|---|
 | `Frame` | src/tessellate/core/overlay/sprites.py:104 |
-| `SpriteSet` | src/tessellate/core/overlay/sprites.py:221 |
-| `_draw_fx` | src/tessellate/core/overlay/sprites.py:904 |
+| `SpriteSet` | src/tessellate/core/overlay/sprites.py:247 |
+| `_draw_fx` | src/tessellate/core/overlay/sprites.py:930 |
 | `_drawn_box` | src/tessellate/core/overlay/sprites.py:210 |
-| `_feather_mask` | src/tessellate/core/overlay/sprites.py:833 |
-| `_glint` | src/tessellate/core/overlay/sprites.py:792 |
-| `_glint_tables` | src/tessellate/core/overlay/sprites.py:781 |
-| `_smooth` | src/tessellate/core/overlay/sprites.py:744 |
-| `_star` | src/tessellate/core/overlay/sprites.py:898 |
-| `_tail_shift` | src/tessellate/core/overlay/sprites.py:852 |
+| `_feather_mask` | src/tessellate/core/overlay/sprites.py:859 |
+| `_glint` | src/tessellate/core/overlay/sprites.py:818 |
+| `_glint_tables` | src/tessellate/core/overlay/sprites.py:807 |
+| `_smooth` | src/tessellate/core/overlay/sprites.py:770 |
+| `_star` | src/tessellate/core/overlay/sprites.py:924 |
+| `_tail_shift` | src/tessellate/core/overlay/sprites.py:878 |
 | `capped_pose` | src/tessellate/core/overlay/sprites.py:138 |
 | `captured_root` | src/tessellate/core/overlay/sprites.py:175 |
 | `clear_faint_alpha` | src/tessellate/core/overlay/sprites.py:199 |
 | `clipped` | src/tessellate/core/overlay/sprites.py:119 |
-| `effect` | src/tessellate/core/overlay/sprites.py:943 |
-| `flow_offsets` | src/tessellate/core/overlay/sprites.py:749 |
+| `effect` | src/tessellate/core/overlay/sprites.py:969 |
+| `flow_offsets` | src/tessellate/core/overlay/sprites.py:775 |
 | `frames_dir` | src/tessellate/core/overlay/sprites.py:183 |
-| `fx_margin` | src/tessellate/core/overlay/sprites.py:891 |
+| `fx_margin` | src/tessellate/core/overlay/sprites.py:917 |
+| `graded` | src/tessellate/core/overlay/sprites.py:231 |
 | `look_for` | src/tessellate/core/overlay/sprites.py:190 |
-| `mix` | src/tessellate/core/overlay/sprites.py:872 |
+| `mix` | src/tessellate/core/overlay/sprites.py:898 |
 | `premultiplied_bgra` | src/tessellate/core/overlay/sprites.py:216 |
-| `tail_source` | src/tessellate/core/overlay/sprites.py:828 |
+| `tail_source` | src/tessellate/core/overlay/sprites.py:854 |
 | `tapered` | src/tessellate/core/overlay/sprites.py:154 |
 
 ### src/tessellate/core/overlay/travel.py (16)
@@ -26472,7 +26473,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20682)
+## Tests (20684)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28181,6 +28182,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_moves.py | 26 |
 | tests/test_overlay_nap_1683u.py | 7 |
 | tests/test_overlay_pace_1683.py | 5 |
+| tests/test_overlay_palette_1724.py | 2 |
 | tests/test_overlay_parity_1683.py | 29 |
 | tests/test_overlay_peek_edges_1107.py | 13 |
 | tests/test_overlay_peek_flip_1108.py | 6 |
@@ -29698,7 +29700,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1217 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:171 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:170 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4057 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3130 |
