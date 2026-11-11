@@ -4,6 +4,9 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Packages (INBOX 1748, Q27): the optional-package notice now shows where voice notes, Translate this, grammar checks, Run on a .py file, document import, search by meaning, the tool-calling and built-in models and Settings, Web search open, until the package is installed (and again after an uninstall; closable). The RapidOCR card says about 140 MB, about 113 MB new (was 60).
+- Settings (Q25): Settings, General has "Count the day itself in before: searches" (off: `before:2026-03-10` stops at the 9th) and "Dates like 3/4 mean" (auto, day first, month first); the welcome's last card offers these and the first day of the week once, skippable. Q10 and Q30 were already built (Motion at rest, New notes start private).
+- Models (Q11): a liveness probe Ollama answered is believed for 30 s (was 2 s) and any failed request drops it; the model status poll seeing Ollama answer drops the refused and silent marks at once (`ollama_client.note_online`), so the composer never answers as if the model were off in the seconds after a start.
 - Notes (sm-1111 row 6): Save in the edit form sends tags and category only when you changed them, so tags filed while the form was open are kept.
 - Security (sm-1111 row 8): importing a Tessellate folder whose private notes are readable is refused while private notes are locked ("Unlock private notes, then import again."); they had come in as ordinary notes.
 - Timeline header is a true total (W21): the first `/timeline` page carries `total`, the rows in the whole range, so the line reads "300 of 2000 items" and not "300+ items" while more pages wait; the plus stays only if the server does not say.

@@ -129,6 +129,12 @@ DEFAULT_PREFERENCES: dict[str, Any] = {
     # pick, "north" or "south" (ai/recognise.py `configure_hemisphere`).
     "season_hemisphere": "auto",
     "season_locale": "",
+    # `before:` in a search leaves its own day out unless this is on (Q25;
+    # search/query.py `configure_before`).
+    "before_includes_day": False,
+    # The order "3/4" is read in: "auto" follows the browser's language and
+    # region, "day" or "month" is the person's pick (ai/recognise.py `configure_date_order`).
+    "date_order": "auto",
     # Whisper's options (ai/voice.py `options_from`, Brief 87 step 2): skip
     # the silence and hum around a clip (Silero VAD, no download); a language
     # ("" detects it); names and terms to expect, as Whisper's prompt.

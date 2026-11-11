@@ -14,11 +14,11 @@ How to read it:
 ### Owner answers, 2026-11-11 (one sitting)
 
 The recommendation was taken for Q1 to Q9, Q12, Q14, Q18 to Q24, Q26 and Q28. Q13 was not asked; its recommendation stands. Rows waiting "after Qn" can start. The answers that differ from the recommendation, quoted in INBOX 1748:
-- Q10 Atlas's rAF loops keep running by default ("I still want it to feel biological and have life"). An Advanced setting stops them after 2 s with no input. | W14
+- ~~Q10~~ **Stale: built** (Appearance, Motion at rest, "Still when idle"; tests/test_companion_rest_w14.py). Atlas's rAF loops keep running by default ("I still want it to feel biological and have life"). An Advanced setting stops them after 2 s with no input. | W14
 - Q11 The Ollama probe is cached for 30 s, dropped on a failure, and also dropped the moment Ollama is seen coming online (the model status poll or the start event), so the composer never answers in that window. | W16
-- Q25 `before:` is a Settings choice, excluding by default. The owner also wants a first-run calibration of preferences like this (INBOX 1748). | W11
-- Q27 RapidOCR is bundled if small, otherwise an optional extra. Every feature that needs an optional package (RapidOCR, SearXNG, the PDF viewer and the rest) shows a dismissable notice with a one-click Install when it is used. The notice comes back if the package is uninstalled, on the no-model notice recipe (INBOX 1748). | F5
-- Q30 Private notes by default is a Settings switch, off by default, and follows the space: a note made in a private space is private. | F6
+- ~~Q25~~ **Built settings-1111** (Settings, General, Search; date order; welcome preferences card). `before:` is a Settings choice, excluding by default. The owner also wants a first-run calibration of preferences like this (INBOX 1748). | W11
+- ~~Q27~~ **Built pr216-settings** (mounts in pkg-1111.md). Q27 RapidOCR is bundled if small, otherwise an optional extra. Every feature that needs an optional package (RapidOCR, SearXNG, the PDF viewer and the rest) shows a dismissable notice with a one-click Install when it is used. The notice comes back if the package is uninstalled, on the no-model notice recipe (INBOX 1748). | F5
+- ~~Q30~~ **Stale: built** (tests/test_private_by_default_1695.py). Private notes by default is a Settings switch, off by default, and follows the space: a note made in a private space is private. | F6
 - Q31 and Q32: the owner says these are already done; they are closed here.
 - Q33 is parked: the owner will check whether the stutter returns.
 - Q34 Go on all of them: sync (B6), offline studio and audio, the desktop pet outside the window, the custom domain and the blind panel. Fable stays off. | F8
@@ -181,7 +181,7 @@ Parked until the owner's data or a check on real hardware:
 - B70 SKILLS Phase D never ran on a model | t20#19
 - B71 Entity extraction and topic sentence on a local model | GRAPH#KG1-KG9
 - B72 BACKGROUND_MODE (think off) for utility jobs, measured | CHAT 1691, oa 1691
-- B73 The probe cache (after Q11) | deskperf L4, audit-1108-perf P7
+- ~~B73 The probe cache (after Q11) | deskperf L4, audit-1108-perf P7~~ **Fixed 94cff43** (30 s up window, dropped on a failure and on seeing Ollama online; tests/test_ollama_probe_30s.py)
 - B74 Tool contracts on Ollama, model bench gates | WORLD_CLASS#8 rows 5, 6, 19, 21
 
 ### Tier C: UX and accessibility on daily surfaces
@@ -209,11 +209,11 @@ Parked until the owner's data or a check on real hardware:
 **W20 Shell accessibility and narrow widths** (C, shell and CSS, Sonnet). Files: `frontend/css/10-responsive.css`, `palette.js` (accessibility only), `index.html`. Checks: `tests/test_zoom_wrap_1717.py`, `scratchpad/ui-sweeps/zoom1717.js` at 600, 480 and 390, axe. Done when: 0 overflows at 390 and axe clean on the palette and the space menu.
 ~~- C17 The palette is not a combobox: no `aria-activedescendant`, results not announced | 1028-shell S5~~ **Fixed before s5-1110 (CHANGELOG 1503).**
 ~~- C18 The space menu fails axe (aria-required-children, nested-interactive) | 1029-extras X4~~ **Fixed before s5-1110 (CHANGELOG 1517).**
-- C19 Ask button clipped at 390; quiet chips 28.6 px on a phone; selection ticks 44 px | 1028-shell S6, chatfoot L5, UI#11 item 12
-- C20 Notes dock wraps from 1280 to 1500 with the rail open; capture row wrap at 1024; tab bar 600 to 819 | t20#10, WORLD_CLASS#13
-- C21 Settings scrolls sideways at 768; Recent head clipped under 1200 | UI#11 item 12, zoom4
-- C22 1920 by 1080 at 125 to 200 % not driven | zoom4
-- C23 "?" after a Dashboard click hands focus to CodeMirror | row21 L47
+- ~~C19 Ask button clipped at 390; quiet chips 28.6 px on a phone; selection ticks 44 px | 1028-shell S6, chatfoot L5, UI#11 item 12~~ **Built earlier (HISTORY, W20 C17 to C19).**
+- ~~C20 Notes dock wraps from 1280 to 1500 with the rail open; capture row wrap at 1024; tab bar 600 to 819 | t20#10, WORLD_CLASS#13~~ **Not reproduced pr216-settings 2026-11-11** (Chromium on :8791, rail open, 1280, 1366, 1440 and 1500: no flex-wrap bar on two lines).
+- ~~C21 Settings scrolls sideways at 768; Recent head clipped under 1200 | UI#11 item 12, zoom4~~ **Not reproduced pr216-settings** (Settings General, Models, Packages, Data at 768 to 1500: 0 sideways scroll, 0 elements past the viewport; the Recent title is hidden under 1200 on purpose, `10-responsive.css` rule 9, and from 1200 it sits above its four buttons on its own line, nothing clipped).
+- ~~C22 1920 by 1080 at 125 to 200 % not driven | zoom4~~ **Driven before (HISTORY, W20 C22).**
+- ~~C23 "?" after a Dashboard click hands focus to CodeMirror | row21 L47~~ **Not reproduced before (HISTORY); not retried.**
 
 **W21 Dashboard, timeline and counts** (C, dashboard, Sonnet; verify first). Files: `dashboard.js`, `timeline*.js`, the import toast, the appearance settings. Checks: `tests/test_dashboard_*`, `tests/test_timeline_*`. Done when: every count is the true total. Verified 2026-11-11 (graph-1111.md): no count short of the true total found; the Timeline's "N+" became a true total (`/timeline` first page `total`, tests/test_timeline.py).
 ~~- C24 Dashboard insight counts capped by a fixed limit | 1028-shell S8~~ **Fixed before s5-1110 (count in SQL).**
@@ -302,9 +302,9 @@ Parked until the owner's data or a check on real hardware:
 
 **W33 Copy and help** (E, copy, Haiku then Sonnet). Files: help topics, copy strings.
 ~~- E11 "Tools and features" omits 60 palette rows | 1031-extras Z3~~ **Already built 073cc0c6b** (`featureCommandRows`; tests/test_xfix_1031.py). Verified s8-1110.
-- E12 The tool describes itself in the answer ("Read as the days from today") | 1030-composer Z49
-- E13 "¦" written for "&" in a category; a "conversation" topic on a gym note | oa 1620 categories b, topics c
-- E14 Manual pictures as WebP made by the sweeps | oa 1612 c
+- ~~E12 The tool describes itself in the answer ("Read as the days from today") | 1030-composer Z49~~ **Waits on the owner** (49 assertions pin the "Read as" lines, the 1108 ask; decision 54; s8-1110.md).
+- ~~E13 "¦" written for "&" in a category; a "conversation" topic on a gym note | oa 1620 categories b, topics c~~ **No repro** (no writer of the character in src or frontend; s8-1110.md; needs the owner's data).
+- ~~E14 Manual pictures as WebP made by the sweeps | oa 1612 c~~ **Deliberately empty** (s8-1110.md; the owner has not asked for a sweep-made image).
 
 **W34 Verify sweeps** (E, docs only, Haiku, stackable outside the four). Each scout marks rows true, fixed or stale in its source and hands true rows to the batch of their surface.
 - E15 book1 audits 1028 (agent, backend, board, docs, shell, ux; 303 rows) | book1

@@ -15680,6 +15680,7 @@ async function openDocDictionary() {
   renderDocDictionary();
   const variant = $("doc-spelling-variant");
   if (variant) variant.value = docSpellingVariant();
+  extraNoticeMount($("xn-languagetool"), "languagetool", { fresh: true });
   const grammar = $("doc-grammar-check");
   if (grammar) {
     grammar.checked = !(prefsCache && prefsCache.grammar_check === false);

@@ -33,6 +33,8 @@
     { key: "composer_voice", id: "pref-voice" },
     { key: "week_start", id: "pref-week-start" },
     { key: "season_hemisphere", id: "pref-season-hemisphere" },
+    { key: "before_includes_day", id: "pref-before-includes-day" },
+    { key: "date_order", id: "pref-date-order" },
     { key: "insight_level", id: "pref-insight" },
     { key: "smart_punctuation", id: "pref-smart-punctuation" },
     { key: "link_offers", id: "pref-link-offers" },

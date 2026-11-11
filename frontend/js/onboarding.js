@@ -38,6 +38,14 @@ const ONBOARDING_SLIDES = [
     title: "Your setup",
     dynamic: true,
   },
+  //: **Calibrate, skippably** (the owner, 2026-11-11, Q25: "a bunch of things may need to be calibrated to the user in settings or on first download"):
+  //: the choices that depend on the person, each with its default already chosen. Skip, on any card, passes them all by.
+  {
+    icon: "ph:sliders-horizontal",
+    title: "Your preferences",
+    text: "How dates and search read what you write. The defaults suit most people; every one is in Settings, General.",
+    prefs: true,
+  },
   // **The seven slides that used to follow this one are the guided tour now**
   // (frontend/js/tour.js). They described a tab in prose, "the Graph tab draws
   // how your notes connect", "press Ctrl+K anywhere", from the middle of a
@@ -237,6 +245,49 @@ function renderOnboardingActions(models, notebook) {
     semanticOnboardingOffer(box);
 }
 
+//: The preferences card: one select per calibratable choice, saved as it changes (`PUT /preferences`, the way Settings does).
+//: `before:` is a bool on the server, so its two options carry "yes" and "no".
+onboardingRun.choices = [
+  { key: "week_start", label: "First day of the week", options: [["auto", "From my region"], ["monday", "Monday"], ["saturday", "Saturday"], ["sunday", "Sunday"]] },
+  { key: "date_order", label: "Dates like 3/4 mean", options: [["auto", "From my region"], ["day", "Day first (3 April)"], ["month", "Month first (4 March)"]] },
+  { key: "before_includes_day", label: "Search before:2026-03-10", options: [["no", "Stops at the 9th"], ["yes", "Includes the 10th"]] },
+];
+onboardingRun.renderPrefs = async () => {
+  const box = $("onboarding-actions");
+  const forSlide = onboardingRun.index;
+  const have = (await apiJson("/preferences").catch(() => null)) || {};
+  if (onboardingRun.index !== forSlide) return;
+  const grid = document.createElement("div");
+  grid.className = "onboarding-prefs";
+  for (const choice of onboardingRun.choices) {
+    const id = `onboarding-pref-${choice.key}`;
+    const label = document.createElement("label");
+    label.htmlFor = id;
+    label.className = "muted";
+    label.textContent = choice.label;
+    const select = document.createElement("select");
+    select.id = id;
+    for (const [value, text] of choice.options) select.appendChild(new Option(text, value));
+    const now = have[choice.key];
+    select.value = choice.key === "before_includes_day" ? (now === true ? "yes" : "no") : now || "auto";
+    select.addEventListener("change", async () => {
+      const value = choice.key === "before_includes_day" ? select.value === "yes" : select.value;
+      try {
+        const saved = await apiJson("/preferences", { method: "PUT", body: JSON.stringify({ [choice.key]: value }) });
+        if (typeof prefsCache !== "undefined") prefsCache = saved;
+      } catch (error) {
+        toast(error.message || "Couldn't save that setting.", true);
+      }
+    });
+    const row = document.createElement("div");
+    row.className = "onboarding-pref";
+    row.append(label, select);
+    grid.appendChild(row);
+  }
+  box.replaceChildren(grid);
+  box.classList.remove("hidden");
+};
+
 function renderOnboardingSlide() {
   const slide = ONBOARDING_SLIDES[onboardingRun.index];
   setLabel($("onboarding-icon"), slide.icon);
@@ -268,6 +319,9 @@ function renderOnboardingSlide() {
     loadOnboardingDiagnostics(onboardingRun.index);
   } else {
     $("onboarding-text").textContent = slide.text;
+    onboardingRun.diagnosticsToken += 1;
+    if (slide.prefs) onboardingRun.renderPrefs();
+    else $("onboarding-actions").classList.add("hidden");
   }
   const dots = $("onboarding-dots");
   dots.replaceChildren();

@@ -3492,7 +3492,8 @@ HELP_TOPICS.extend(
                 "meeting. In the list, Up and Down move note to note and Tab walks "
                 "that note's buttons. The filter box understands, with no AI: two words (both, "
                 'in any order), "a quoted phrase", tag:work, cat:recipes, '
-                "#tag, title:, in:, before: and after: (a date such as 2026-09), "
+                "#tag, title:, in:, before: and after: (a date such as 2026-09; before: leaves "
+                "its own day out unless Settings, General, Search counts it), "
                 "is:favourite, is:pinned, is:private, is:linked, is:untagged, "
                 "is:draft, tags:<2 (also <=, > and >=), has:link (also file, image or "
                 "reminder), space:work and kind:note (asked of the search engine), and -word to leave a word "

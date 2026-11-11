@@ -201,10 +201,11 @@ def mark_quiet(base_url: str) -> None:
 #: 3198 ms). `is_running` is asked by every liveness check (the embedding
 #: service's `is_ready` on a dozen routes, the status poll, a turn's steps), and
 #: each one made a real GET: free against a runner that answers, up to the whole
-#: probe timeout against one that is busy loading a model. A runner that was
-#: heard from this second is still there; one that is not fails its real request
-#: and is marked down then, as before.
-UP_TTL_SECONDS = 2.0
+#: probe timeout against one that is busy loading a model. A runner heard from
+#: in the last 30 s (the owner, Q11) is still there; one that is not fails its
+#: real request, which drops the mark (`_note_failure`), as does any quiet or
+#: refused mark. The other way, Ollama coming online, is `note_online`.
+UP_TTL_SECONDS = 30.0
 
 
 def _up_key(base_url: str) -> str:
@@ -228,7 +229,18 @@ def forget_quiet(base_url: str) -> None:
     _down_until.pop(_quiet_key(base_url), None)
 
 
+def note_online(base_url: str) -> None:
+    """Ollama was seen answering (the model status poll, a start): drop the
+    refused and silent marks at once and believe it for the up window, so a
+    turn in the seconds after a start never takes it for off (Q11)."""
+    _down_until.pop(base_url, None)
+    forget_quiet(base_url)
+    remember_up(base_url)
+
+
 def _note_failure(base_url: str, exc: BaseException) -> None:
+    #: Any failed request ends the up window, not only a refusal (Q11).
+    _down_until.pop(_up_key(base_url), None)
     if _is_refusal(exc):
         _mark_down(base_url)
 

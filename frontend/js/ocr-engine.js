@@ -31,7 +31,7 @@
   const ocrEngineInstall = { running: false, step: "", failed: "", extra: "ocr" };
   const OCR_ENGINE_EXTRAS = {
     ocr: { name: "Tesseract", ask: "Install Tesseract OCR?\n\nAbout 10 MB is downloaded from PyPI, then your system's package manager (winget, Homebrew, apt) is asked for the Tesseract program. It reads text in images on this computer, and nothing is sent anywhere. No restart is needed." },
-    rapidocr: { name: "RapidOCR", ask: "Install RapidOCR?\n\nAbout 60 MB is downloaded from PyPI, with no system program to fetch. It reads text in images on this computer (English and Chinese), and nothing is sent anywhere. No restart is needed." },
+    rapidocr: { name: "RapidOCR", ask: "Install RapidOCR?\n\nAbout 140 MB is downloaded from PyPI (about 113 MB of it new), with no system program to fetch. It reads text in images on this computer (English and Chinese), and nothing is sent anywhere. No restart is needed." },
   };
 
   //: Mount the status line into `host` and keep it current. `readers` is the
