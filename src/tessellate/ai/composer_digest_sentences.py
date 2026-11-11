@@ -220,7 +220,7 @@ _TURN: ContextVar[int] = ContextVar("digest_turn", default=0)
 #: The question's own number (INBOX 870): picks among a phrase's wordings,
 #: so two questions in a row are not joined the same way.
 _SEED: ContextVar[int] = ContextVar("digest_seed", default=0)
-__all__ = ["_GAPS", "_ASKED_AS", "_REMINDABLE", "_DAYS_PLURAL", "_RELATIVE", "_PREFIX", "_TIME_LABEL", "_ACTION", "_STILL_TO", "_RATING", "_WORK", "_FEELING_ASK", "_CUES", "_STRONG_CUES", "_FRAME_WORDS", "_ASKING", "_VERBS", "_NAMES", "_ASKS_WORDS", "_SUBJECT_STEMS", "_KNOWN"]  # read by the digest halves that import them
+__all__ = ["CONTEXT_TAGS", "FACETS", "LINES", "shows_the_lot", "_GAPS", "_ASKED_AS", "_REMINDABLE", "_DAYS_PLURAL", "_RELATIVE", "_PREFIX", "_TIME_LABEL", "_ACTION", "_STILL_TO", "_RATING", "_WORK", "_FEELING_ASK", "_CUES", "_STRONG_CUES", "_FRAME_WORDS", "_ASKING", "_VERBS", "_NAMES", "_ASKS_WORDS", "_SUBJECT_STEMS", "_KNOWN"]  # read by the digest halves that import them
 
 #: The gap leads already said in this answer, in order (reset per answer).
 _GAPS: ContextVar[tuple[str, ...]] = ContextVar("digest_gaps", default=())
@@ -466,13 +466,6 @@ def only_note_lines() -> frozenset[str]:
         if value:
             said.update(value if isinstance(value, tuple) else (value,))
     return frozenset(said)
-
-
-#: Said in place of the "only note" claim when only the words were searched
-#: (blind test 2026-10-31, item 3): one sentence in every voice (audit 1031
-#: C33), short because it sits beside an answer (gold 11 lost six points to a
-#: twelve-word one), and not a promise: search by meaning "could" find more.
-ONLY_WORDS = "Only one note has those words; search by meaning could find others."
 
 
 #: What a review is of (`_reviewed_word`): the only nouns `only_kind` is said with.

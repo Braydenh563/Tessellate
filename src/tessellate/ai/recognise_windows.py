@@ -1336,6 +1336,10 @@ def window(phrase: str, now: datetime) -> tuple[datetime, datetime] | None:
 
 #: Read by `recognise` (imported there); listed so the split's one-way use is explicit.
 __all__ = [
+    "AHEAD_DAY_WORDS",
+    "PHRASE_FILLER",
+    "SPAN_MINUTES",
+    "WEEKDAY_WORD",
     "_PARTS",
     "_ANCHORED",
     "_CLOCK",
