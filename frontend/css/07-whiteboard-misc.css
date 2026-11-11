@@ -60,7 +60,7 @@
   block-size: 12px;
   padding: 0;
   background: var(--accent);
-  border: 1px solid var(--card-bg);
+  border: 1px solid var(--card);
   border-radius: var(--radius-sm);
   pointer-events: auto;
   touch-action: none;
@@ -323,7 +323,7 @@
   width: 10px;
   height: 10px;
   background: var(--accent);
-  border: 1px solid var(--card-bg);
+  border: 1px solid var(--card);
   border-radius: var(--radius-sm);
   z-index: 5;
   opacity: 0;
@@ -407,7 +407,7 @@
   height: 12px;
   border-radius: var(--radius-pill);
   background: var(--accent);
-  border: 1px solid var(--card-bg);
+  border: 1px solid var(--card);
   /* A curved-arrow rotate cursor, not a plain grab hand, asked for
      directly ("cursor changing to the rotate icon when hovering over or
      using the rotate nodes"). Same inline-SVG-as-cursor technique
@@ -957,7 +957,7 @@
 }
 textarea.drag-over {
   border-color: var(--accent);
-  background-color: var(--card-bg-hover);
+  background-color: var(--inner);
   outline: 2px dashed var(--accent);
   outline-offset: -2px;
 }
@@ -1255,7 +1255,7 @@ body.has-agent-monitor #timeline-scroll {
      same content starts in the settings sheet, the meeting recorder or the
      sketch pad. The token also carries the responsive step for free. */
   padding: var(--space-4) var(--card-pad-x);
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--glass-border);
 }
 /* The popup agent's staged files: the card's own inset, a strip of
    `attachmentChip`s (DESIGN.md "A file waiting on the next message"). */
@@ -1471,10 +1471,10 @@ body.has-agent-monitor #timeline-scroll {
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3) var(--card-pad-x);
-  /* `--border-light`, the same hairline the bar above draws. One card drew its
+  /* `--glass-border`, the same hairline the bar above draws. One card drew its
      two internal rules in two different weights, which is the kind of thing
      that reads as "not quite right" without ever being seen. */
-  border-top: 1px solid var(--border-light);
+  border-top: 1px solid var(--glass-border);
 }
 /* The status pushes the buttons right; Stop takes Start-over's place while
    a turn is running, so the row never changes length. */
@@ -1515,7 +1515,7 @@ body.has-agent-monitor #timeline-scroll {
 #agent-monitor .monitor-header {
   margin: 0;
   padding-bottom: var(--space-3);
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--glass-border);
 }
 /* The identity takes the width the icon group leaves and ellipsises in it;
    the group is pushed to the right edge, where the run rows' state pills
@@ -2065,7 +2065,7 @@ body.scroll-top-visible .skills-split > .tab-main {
   margin: var(--space-3) 0;
   padding: var(--space-3);
   overflow-y: auto;
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm);
   background: var(--inner);
   font-family: ui-monospace, Consolas, monospace;
@@ -8764,7 +8764,7 @@ input[type="file"] {
   position: absolute;
   inset: 7px;
   background: var(--wb-branch);
-  border: 1px solid var(--card-bg);
+  border: 1px solid var(--card);
   border-radius: var(--radius-sm);
 }
 /* The focus ring is the app's own (every button has it). */
@@ -10987,7 +10987,7 @@ header#top-bar {
 }
 .finder-head {
   padding: var(--space-4) var(--card-pad-x);
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--glass-border);
 }
 /* **The bar is the field, on the Ask composer's own recipe.** Reported: "the
    search icon isnt aligned with the text bar and it is hard to see the text

@@ -768,15 +768,12 @@ select optgroup {
      nothing, borders that drew nothing, shadows that cast nothing. Nothing
      complained, because a stylesheet has no way to say "I meant a token that
      exists", hence the new lint in test_style_scale.
-     Aliased rather than rewritten at all twenty-three sites: the names are
-     reasonable and someone will reach for them again, and pointing them at the
-     real tokens makes them theme-aware for free, in all twelve palettes. */
+     Aliased at first; the token pass of 1111 (OPEN F6, the budget) rewrote
+     the sites of `--panel`, `--card-bg`, `--card-bg-hover` and `--border-light`
+     to the tokens they named (all four are declared on the root only, so the
+     value is the same everywhere); the three left are read by a script too. */
   --bg: var(--page);
   --text: var(--ink);
-  --panel: var(--card);
-  --card-bg: var(--card);
-  --card-bg-hover: var(--inner);
-  --border-light: var(--glass-border);
   --font-sans: var(--ui-font);
   /* **Light's shadows are cast in the app's own ink** (`--ink`, 31 36 48).
      They were `rgba(31, 38, 135, ...)`, the blue-violet that glassmorphism

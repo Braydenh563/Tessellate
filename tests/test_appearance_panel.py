@@ -124,7 +124,7 @@ def test_it_is_non_modal_and_on_panel_movable():
 def test_peek_fades_the_ground_with_a_token_mix_never_element_opacity():
     css = _own_css()
     peek = css[css.index(".appearance-panel.peeking {") : css.index("}", css.index(".appearance-panel.peeking {"))]
-    assert "color-mix(in srgb, var(--panel)" in peek and "opacity" not in css
+    assert "color-mix(in srgb, var(--card)" in peek and "opacity" not in css
     assert 'setAttribute("aria-pressed"' in PANEL and 'peek.title = ' in PANEL
     # It ends with the panel, as Settings' does.
     close = PANEL[PANEL.index("function closeAppearancePanel") :]

@@ -199,7 +199,7 @@
   gap: 0.25rem;
   padding: 0.15rem;
   border-radius: var(--radius-md);
-  background: var(--panel);
+  background: var(--card);
   /* A hairline, not `--shadow-sm`: this row hangs two pixels under a bubble
      that has a shadow of its own, and the two stacked into the "excessive
      shadow" the owner reported (03-dashboard-widgets.css, `.msg`). */
@@ -1990,11 +1990,10 @@ kbd {
    looks weird"): two rows. The message and the close button are the first,
    the actions (`.toast-actions`, one wrapper from `toastActions`) sit under
    the message on their own row, so the X is alone in its corner. Every
-   control is `--toast-ctl` tall and the message's first line is padded to
+   control is `--target-min` tall and the message's first line is padded to
    centre on the close button, so a wrapped message keeps the X beside its
    first line rather than floating to the middle of the paragraph. */
 .toast {
-  --toast-ctl: var(--target-min);
   --toast-line: 1.375rem;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -2009,7 +2008,7 @@ kbd {
      its second line ("Moved 3 notes to / the bin."). */
   text-wrap: pretty;
   line-height: var(--toast-line);
-  padding-block: calc((var(--toast-ctl) - var(--toast-line)) / 2);
+  padding-block: calc((var(--target-min) - var(--toast-line)) / 2);
   overflow-wrap: anywhere;
 }
 .toast > .toast-actions {
@@ -2029,15 +2028,15 @@ kbd {
   padding-inline: var(--space-2);
 }
 .toast.toast button {
-  height: var(--toast-ctl);
-  min-height: var(--toast-ctl);
+  height: var(--target-min);
+  min-height: var(--target-min);
   margin: 0;
   white-space: nowrap;
 }
 .toast.toast > .toast-close {
   grid-column: 2;
   grid-row: 1;
-  min-width: var(--toast-ctl);
+  min-width: var(--target-min);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -4197,7 +4196,7 @@ mark.lightbox-hit {
   padding: var(--space-4);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  background: var(--card-bg);
+  background: var(--card);
 }
 /* Capped and scrollable: this is a preview inside a conversation, and a note
    that runs to four screens must not push the answer you were reading off the

@@ -4310,12 +4310,12 @@ def test_presenting_is_one_mode_with_one_bar() -> None:
 
 
 def test_the_text_box_grip_stands_on_an_opaque_ground() -> None:
-    """The "⠿" tab on a text box or sticky's top edge: `--card-bg` is a glass
+    """The "⠿" tab on a text box or sticky's top edge: `--card` (once `--card-bg`) is a glass
     in most looks, so on a sticky's yellow the muted glyph measured 1.68:1 in
     dark (`scratchpad/ui-sweeps/wbgripink.js`; 7.86:1 on the opaque ground)."""
     css = "\n".join((ROOT / "frontend" / "css" / name).read_text(encoding="utf-8") for name in ("07-whiteboard-misc.css", "library-lazy.css"))
     rule = css[css.index(".wb-object-grip {") :][:900]
-    assert "background: var(--modal-bg-opaque);" in rule and "var(--card-bg)" not in rule.split("}")[0]
+    assert "background: var(--modal-bg-opaque);" in rule and "var(--card)" not in rule.split("}")[0]
 
 
 def test_a_maps_boundaries_and_summaries_are_drawn_in_one_pass() -> None:

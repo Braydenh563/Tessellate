@@ -1684,7 +1684,7 @@ math .math-xcancel {
 }
 .board-embed-open:hover,
 .board-embed-open:focus-visible {
-  background: var(--card-bg-hover);
+  background: var(--inner);
 }
 .board-embed-open .note-embed-head {
   display: flex;

@@ -12,7 +12,7 @@
   width: min(33rem, calc(100vw - 2 * var(--space-6)));
   max-height: calc(100dvh - var(--space-9) * 3 - var(--space-6));
   overflow: hidden;
-  background: var(--panel);
+  background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
@@ -65,13 +65,13 @@
 /* Peek: the ground goes to a token mix and nothing else fades, so the controls stay sharp
    (Settings' Peek in 06-timeline-dialogs.css does the same with the same mix). */
 .appearance-panel.peeking {
-  background: color-mix(in srgb, var(--panel) 14%, transparent);
+  background: color-mix(in srgb, var(--card) 14%, transparent);
   border-color: color-mix(in srgb, var(--border) 60%, transparent);
   box-shadow: none;
   backdrop-filter: none;
 }
 .appearance-panel.peeking > .dialog-head {
-  background: color-mix(in srgb, var(--panel) 88%, transparent);
+  background: color-mix(in srgb, var(--card) 88%, transparent);
   border-radius: var(--radius-md);
 }
 .appearance-panel [data-fold-key] {
