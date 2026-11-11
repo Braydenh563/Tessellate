@@ -1633,7 +1633,7 @@
 
 .dgm-dialog[data-view="source"] .dgm-dock,
 .dgm-dialog[data-view="source"] .dgm-split-handle,
-.dgm-dialog[data-view="source"] .dgm-pane {
+.dgm-dialog[data-view="source"] :is(.dgm-pane, .dgm-listcol) {
   display: none;
 }
 
@@ -2135,25 +2135,53 @@
 
 /* A side folded to its rail (diagram-split.js, 1661 m): the list or the picture leaves, a 32 px rail holds its word and the
    toggle that brings it back, and the divider goes with it. One column below 600, so no rail there. */
+/* The list column (diagram-split.js `wire`): from 600 it is the frame, with the head above the pane, so the pane's scrollbar
+   starts under the head (INBOX 1738). Below 600 it is not a box: the pane is the grid item and the head is hidden. */
+.dgm-listcol {
+  display: contents;
+}
+
+.dgm-listcol:has(> .dgm-pane.hidden) {
+  display: none;
+}
+
 .dgm-panehead {
-  position: sticky;
-  inset-block-start: calc(-1 * var(--space-2));
-  z-index: 2;
   display: flex;
+  flex: none;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
-  margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-2)) 0;
   padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3);
+  border-block-end: 1px solid var(--border);
   background: var(--surface-1);
   font-size: var(--text-xs);
+}
+
+@media (min-width: 600px) {
+  .dgm-listcol {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-block-size: 12rem;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface-1);
+  }
+
+  .dgm-listcol > .dgm-pane {
+    flex: 1 1 auto;
+    min-block-size: 0;
+    border: 0;
+    border-radius: 0;
+  }
 }
 
 .dgm-stage > .dgm-fold {
   position: absolute;
   inset-block-start: var(--space-2);
-  /* The picture's scrollbar takes layout width: diagram-split.js `wireFold` adds its measured width to this offset. */
-  inset-inline-end: var(--space-2);
+  /* On the zoom dock's right edge; `wireFold` widens it only where the picture's scrollbar runs under the button. */
+  inset-inline-end: var(--space-5);
   z-index: 2;
   background: var(--modal-bg);
   border: 1px solid var(--border);
@@ -2168,7 +2196,7 @@
 }
 
 @media (min-width: 600px) {
-  .dgm-body.dgm-fold-left > :is(.dgm-pane, .dgm-split-handle),
+  .dgm-body.dgm-fold-left > :is(.dgm-listcol, .dgm-split-handle),
   .dgm-body.dgm-fold-right > :is(.dgm-stage, .dgm-split-handle) {
     display: none;
   }

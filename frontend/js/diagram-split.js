@@ -35,7 +35,12 @@
     handle.setAttribute("tabindex", "0");
     handle.setAttribute("aria-label", "Resize the blocks list: arrow keys, or drag");
     handle.title = "Drag to resize, double-click to reset";
-    S.pane.after(handle);
+    //: The list column (INBOX 1738): the head sits above the scroller, so the pane's scrollbar starts under it. `S.pane` stays the scroller.
+    const col = document.createElement("div");
+    col.className = "dgm-listcol";
+    S.pane.replaceWith(col);
+    col.append(S.pane);
+    col.after(handle);
     body.classList.add("dgm-split");
 
     const room = () => body.getBoundingClientRect().width - handle.getBoundingClientRect().width;
@@ -174,13 +179,17 @@
     const all = smallButton("Select all", "Pick every block (Ctrl+A on the picture)", () => S.pickAll?.());
     all.classList.add("dgm-head-all");
     head.append(Object.assign(document.createElement("span"), { className: "muted", textContent: "List" }), ...(S.pickAll ? [all] : []), leftToggle);
-    S.pane.prepend(head);
+    S.pane.before(head);
     const right = toggle("right", false);
     stage.append(right);
-    //: The picture's own scrollbar takes layout width, and this button sits on it (1702): its offset adds the bar's measured width after every draw and zoom.
+    //: On the zoom dock's right edge (INBOX 1738). The picture's own scrollbar only matters where the picture starts above the button's bottom (the shelf folded): there the offset is the bar's width, if that is more.
     const clear = () => {
-      const bar = Math.max(0, S.fig.offsetWidth - S.fig.clientWidth - 2 * S.fig.clientLeft);
-      right.style.insetInlineEnd = `calc(var(--space-2) + ${bar}px)`;
+      const dock = stage.querySelector(".dgm-zoom");
+      const base = (dock && Number.parseFloat(getComputedStyle(dock).insetInlineEnd)) || 0;
+      right.style.insetInlineEnd = "";
+      const under = S.fig.getBoundingClientRect().top < right.getBoundingClientRect().bottom;
+      const bar = under ? Math.max(0, S.fig.offsetWidth - S.fig.clientWidth - S.fig.clientLeft) : 0;
+      if (base && bar + 4 > base) right.style.insetInlineEnd = `${bar + 4}px`;
     };
     (S.fig.onzoom ||= []).push(clear);
     (S.fig.onpaint ||= []).push(clear);

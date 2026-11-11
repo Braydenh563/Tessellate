@@ -89,7 +89,7 @@ def test_the_blocks_list_can_be_hidden_and_the_choice_is_kept():
     split = (JS / "diagram-split.js").read_text(encoding="utf-8")
     assert "dgm-outline-toggle" not in BAR and 'const FOLD = "diagram.fold"' in split
     css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
-    assert ".dgm-body.dgm-fold-left > :is(.dgm-pane, .dgm-split-handle)" in css
+    assert ".dgm-body.dgm-fold-left > :is(.dgm-listcol, .dgm-split-handle)" in css
 
 
 def test_blind_test_fixes_phone_toolbar_empty_steps_caret_menu_and_new_block_shape():
