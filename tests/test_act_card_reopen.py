@@ -75,8 +75,10 @@ def test_confirm_is_saved_with_its_undo(client):
 def test_a_missing_turn_or_card_is_a_no_op(client):
     consent_store.reset_for_tests()
     cid = _turn(client, consent_id="k")
-    assert client.put(f"/conversations/{cid}/turns/5/acts/0", json={"outcome": "cancelled"}).json() == {"saved": False}
-    assert client.put(f"/conversations/{cid}/turns/0/acts/3", json={"outcome": "cancelled"}).json() == {"saved": False}
+    past_turns = client.put(f"/conversations/{cid}/turns/5/acts/0", json={"outcome": "cancelled"})
+    assert past_turns.json() == {"saved": False}
+    past_acts = client.put(f"/conversations/{cid}/turns/0/acts/3", json={"outcome": "cancelled"})
+    assert past_acts.json() == {"saved": False}
 
 
 def test_a_card_that_ran_at_once_keeps_its_undo(client):
@@ -206,7 +208,8 @@ def test_a_pressed_tool_card_reads_done_from_the_servers_result(client):
     assert ran.status_code == 200
     card = _acts(client, cid)[0]
     assert card["state"] == "done" and card["summary"] == ran.json()["label"]
-    assert client.post("/chat/tools/execute", json={"name": "delete_note", "arguments": args, "consent_id": key}).status_code == 409
+    again = client.post("/chat/tools/execute", json={"name": "delete_note", "arguments": args, "consent_id": key})
+    assert again.status_code == 409
 
 
 def _offer(**extra):
