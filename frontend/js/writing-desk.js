@@ -414,7 +414,7 @@ const DRAFT_QUICKSTARTS = [
 ];
 
 function renderDraftQuickstarts() {
-  const host = $("draft-quickstarts");
+  const host = document.getElementById("draft-quickstarts");
   if (!host) return;
   host.replaceChildren();
   const rule = aiIsOff();
@@ -476,13 +476,14 @@ function syncDraftGate() {
   const off = aiIsOff();
   if (off === draftGate.off) return;
   draftGate.off = off;
-  for (const id of ["draft-kind", "draft-tone", "draft-length"]) gateDraftSelect($(id), off);
+  for (const id of ["draft-kind", "draft-tone", "draft-length"]) gateDraftSelect(document.getElementById(id), off);
   renderDraftQuickstarts();
-  $("draft-rule-line")?.classList.toggle("hidden", !off);
+  document.getElementById("draft-rule-line")?.classList.toggle("hidden", !off);
 }
 
 document.addEventListener("mm-model-gate", syncDraftGate);
 syncDraftGate();
+onSurface("notes", () => { draftGate.off = null; syncDraftGate(); });
 
 //: A note the draft is written from: the adder and the Tray (INBOX 1696 n).
 //: Here, not at boot: a gesture in the open room reaches it (the stand-in loads it).

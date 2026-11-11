@@ -143,7 +143,9 @@ nearestScrollParent.reveal = function revealRow(row, box = row && nearestScrollP
 };
 //: The notes sidebar: a pick (a press, or Enter, which presses) redraws the list inside the row's own click
 //: (`renderSidebar`), so on the way back up the redrawn current row is brought in.
-$("category-list")?.addEventListener("click", (event) => nearestScrollParent.reveal(event.currentTarget.querySelector('li[aria-current="true"]')));
+onSurface("notes", () => {
+  $("category-list")?.addEventListener("click", (event) => nearestScrollParent.reveal(event.currentTarget.querySelector('li[aria-current="true"]')));
+});
 
 function showSettingsSection(name) {
   //: The companion's one-time nudge (avatars.js) may show when Appearance

@@ -52,6 +52,24 @@ def take(key: str | None) -> dict | None:
     return held[1]
 
 
+def refusal_for_press(key: str | None, name: str, arguments: dict) -> str:
+    """Why Confirm may not run `name` with `arguments` under card `key`, or "" when it may.
+
+    The press is bound to the card (audit 1028 E43): what runs is what the card
+    proposed, so a page cannot spend a card on a different action, and a card
+    that was answered or has expired runs nothing. No `key` is an Undo or a
+    redo of a change that already ran, which the card never covered."""
+    if not key:
+        return ""
+    held = take(key)
+    if held is None:
+        return "That card is no longer waiting. Ask for it again."
+    tool = held.get("tool")
+    if not isinstance(tool, dict) or tool.get("name") != name or (tool.get("arguments") or {}) != (arguments or {}):
+        return "That card is for a different action."
+    return ""
+
+
 def was_spent(key: str | None) -> bool:
     """True when `key` was parked and has been taken since (a press or a typed yes ran it)."""
     with _lock:

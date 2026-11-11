@@ -441,6 +441,19 @@ def _forget_the_docker_probe():
 
 
 @pytest.fixture(autouse=True)
+def _no_real_keyring():
+    """Secret settings (core/secrets_store.py) use the OS keyring when one is
+    present; a developer's machine must never have a test write into theirs.
+    Every test starts on a store with no keyring, so the owner-only file in the
+    test's own data dir is used; a test that wants a keyring sets a fake."""
+    from tessellate.core import pinstore
+
+    pinstore.set_store(pinstore.Store())
+    yield
+    pinstore.set_store(None)
+
+
+@pytest.fixture(autouse=True)
 def _forget_the_ocr_probe():
     """`/models/status` remembers the OCR reader question for thirty seconds
     (routes_models.ocr_probe); a test that fakes a reader must not leave its

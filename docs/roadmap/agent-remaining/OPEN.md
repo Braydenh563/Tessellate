@@ -78,7 +78,7 @@ Parked until the owner's data or a check on real hardware:
 - ~~A28 `safeHref` lets `java\tscript:` through | 1028-docs D14~~ fixed (notes-list.js:858, test_link_schemes_controls)
 - ~~A29 No pre-Brief-7 database was ever upgraded for real | t20#18~~ done w5-1110: tests/test_upgrade_pre_brief7_db.py upgrades a real pre-Brief-7 dump; no bug found
 - ~~A30 Deleting a space still purges in one path | 1029-extras X5, 1031-extras Z20~~ fixed (purge needs ?purge=1, name typed; test_space_delete_confirm_1031)
-- A31 Key storage and MCP auth (after Q22) | a30i-1102 B40, B33, B24, D46, K26, K11, K13, E43
+~~- A31 Key storage and MCP auth (after Q22) | a30i-1102 B40, B33, B24, D46, K26, K11, K13, E43~~ done backend-1111 b155304 (K11), 6ff76a7 (K13), 0389648 (E43); K26 closed by design; B40/B33/B24/D46 belong to other batches (W19, composer)
 
 **W6 Recordings and swallowed deletes** (A, voice notes, Sonnet; verify first). Files: `frontend/js/meetings.js`, `media.js`, the board delete handlers. Checks: `tests/test_meeting*`, a Playwright record and reload run. Done when: no audio is dropped on pause, close warns while recording, typing a title never starts the mic.
 - ~~A32 The voice dialog opens on Record: a typed space starts the mic, other keys fire shortcuts | 1029-extras X1~~ [struck 2026-11-10 w6-1110: verified fixed on head, tests in test_recording_is_unsaved_work_1029.py, test_xfix_1031.py, test_wb_board_1028.py]
@@ -279,7 +279,7 @@ Parked until the owner's data or a check on real hardware:
 - D24 One global scope of 10,000 names | 1031-architecture AR2. **Part done s58-1110:** 9,096 to 9,044 names (settings-packages.js, appearance-panel.js, whiteboard-history.js wrapped whole); not wrapped, too many tests read them privately: math-field.js, ask-chart.js, lag-watch.js, capture-card-more.js; agent-activity.js has a multi-line template (wrap by hand)
 - D25 Split `run_agent`; data tables out of code | SESSION_BRIEFS 62, 63
 
-**W30 Whiteboard render cost** (D, boards render, Opus). Files: `whiteboard.js` render path, `whiteboard-map.js`. Checks: frame time on a 500-object board. Done when: one edit re-renders only what changed.
+**W30 Whiteboard render cost** (D, boards render, Opus). **Part done wb-1111** (B39, the connector batch, the colour memo; left: B4 shapes and connectors still repaint every render, B23 export in one pass; see wb-1111.md). Files: `whiteboard.js` render path, `whiteboard-map.js`. Checks: frame time on a 500-object board. Done when: one edit re-renders only what changed.
 - ~~D26 Every render rebuilds all map nodes; no dirty set | 1028-board B3, B4~~ **Done s7-1110** (topics and pen strokes were keyed, dec005f44; the cost left was the links: a 500-topic map with 300 cross-links at 4x CPU, median render: nothing changed 1,361 to 342 ms, one topic moved 1,501 to 309 ms, every topic moved 2,678 to 1,072 ms. One `querySelectorAll` of the topic boxes before the link pass instead of 600 `querySelector` walks, and each link's look found once a pass instead of three times, keyed on both ends' place and box. Link paths identical to a fresh computation after a move, a resize, two moves in one task)
 - D27 Split `whiteboard.js` (26,103 lines) and `whiteboard-map.js` by carve | 1028-board B1, B2, WHITEBOARD#Placed 2026-11-04. Not started in s7-1110 (the files are 26,164 and 11,050 lines)
 - D28 The composer's topical digests take 0.45 to 0.78 s on 500 notes (W10's files, Session 7) | audit-1108-perf P6. **Part done s7-1110:** every question moved `updated_at` on the 24 notes it surfaced (`onupdate` on `access_count`), which dropped the abbreviation glossary's cache key and re-read all notes; now one UPDATE that names `updated_at` (a profiled `/chat` request on 1,003 entries: 1,072k to 873k calls for three requests, 1.20 to 0.92 s; edit times no longer move on a read). Left: capping `raw_results` (12 front-end sites read it, a UI contract), the second `compose` for the chips (about 65 ms), `_subject_facts`
@@ -297,7 +297,7 @@ Parked until the owner's data or a check on real hardware:
 **W32 Backend tidy** (E, backend, Haiku verify then Sonnet). Files: small fixes in `api/`. Checks: targeted route tests.
 ~~- E7 Validation copy leaks field names | 1031-backend BK8~~ **Already built c6cc5767a** (field labels and the limit in the message; tests/test_validation_copy.py). Verified s8-1110.
 - E8 ~~A disabled tool refused with the wrong reason (H11, `_refuse_if_off` 3f0030d41); duplicated loopback lists (K28, one list in core/security)~~; token sweep per request (K33) **not built, s8-1110**: `tests/test_vault_sessions.py::test_the_key_goes_when_the_last_granted_session_expires` pins that every authenticated request sweeps (a token injected into `_active_tokens` with an old stamp must revoke the vault key on the next request). A once-a-minute sweep fails it; needs the owner to move that test's intent, or a sweep keyed on a min-expiry that the test's direct injection also lowers | 1029-harness H11, 1028-backend K28, K33
-- E9 Real Tesseract and PDFium reads never ran | sec L13, OPEN RapidOCR row
+- E9 Real Tesseract and PDFium reads never ran | sec L13, OPEN RapidOCR row [unverifiable here: no tesseract or pypdfium2; needs a machine with both]
 - E10 The other 1028-backend and 1031-backend open rows | book1 (37 and 12 rows) [backend-1111: re-verified on head; the rest are built, stale or held (Q22, K38, K32); BK10, K19, K29, E9 left in backend-1111.md]
 
 **W33 Copy and help** (E, copy, Haiku then Sonnet). Files: help topics, copy strings.
@@ -4751,7 +4751,7 @@ Counts are from `e17-1110.md` "True, by work order batch"; the scout's own cavea
 | X14 | W23 documents daily UX | 223 | open | Do1, then a later Do batch |
 | X15 | W24, W25, W26, W28, W29 (3, 3, 5, 4, 4) | 19 | open | Ci1, Sh1, Gr1, Do2, Bk2 |
 | X16 | W27 boot weight | 15 | open | Sh2 |
-| X17 | W30 whiteboard render | 19 | open | Wb2 |
+| X17 | W30 whiteboard render | 19 | part (wb-1111: B39 and two costs; B4 rest, B23 open) | Wb2 |
 | X18 | W31 companion life | 29 | open | Cp1, Cp2 |
 | X19 | W33 copy and help | 4 | open | Ui1 |
 | X20 | W34 verify | 41 | open | Ev1 |

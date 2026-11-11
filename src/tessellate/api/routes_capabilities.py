@@ -49,7 +49,9 @@ def _mcp() -> dict:
     #: The snippet an outside client's config takes (Settings, Tools it can
     #: use): this interpreter, because the client's own `python` rarely has the
     #: app's packages, and this notebook's folder, so it opens the same notes.
-    env = {"TESSELLATE_DATA_DIR": str(resolved_data_dir())}
+    from tessellate import mcp_server
+
+    env = {"TESSELLATE_DATA_DIR": str(resolved_data_dir()), mcp_server.TOKEN_ENV: mcp_server.token()}
     if getattr(sys, "frozen", False):
         return {
             "installed": True,

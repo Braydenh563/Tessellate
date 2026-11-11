@@ -10375,8 +10375,12 @@ function wbDefaultInk(color) {
   return c === "#000000" || c === "#ffffff" ? wbReadableInk(c, wbBoardBg()) : color;
 }
 
-const wbBoardBgCache = { sig: "", value: "" };
+//: `pass` is true for the rest of one synchronous render (a microtask clears
+//: it): every stroke asks for the same colour, and building the signature
+//: below walked the root's attributes 280 times a render (W30, 2.4 ms).
+const wbBoardBgCache = { sig: "", value: "", pass: false, out: "" };
 function wbBoardBg() {
+  if (wbBoardBgCache.pass) return wbBoardBgCache.out;
   const el = document.getElementById("whiteboard-container");
   if (!el) return "";
   const root = document.documentElement;
@@ -10384,7 +10388,7 @@ function wbBoardBg() {
   for (const attr of root.attributes) sig += `|${attr.name}=${attr.value}`;
   if (wbBoardBgCache.sig !== sig) Object.assign(wbBoardBgCache, { sig, value: getComputedStyle(el).backgroundColor });
   //: Transparent says nothing about the board: no remap.
-  return /,\s*0\)$/.test(wbBoardBgCache.value) ? "" : wbBoardBgCache.value;
+  return (wbBoardBgCache.out = /,\s*0\)$/.test(wbBoardBgCache.value) ? "" : wbBoardBgCache.value);
 }
 
 function wbDeleteFailed(entry, redoBefore, e, retry) {
@@ -22624,7 +22628,10 @@ function renderWhiteboard() {
   //: label and a rough look. 300 strokes cost 90ms a render at 4x throttle
   //: whatever had moved; a gesture that moved a stroke's drawn path and did
   //: not put it back is caught by the skip's own check of that path.
+  wbBoardBgCache.pass = false; // a second render in one task re-reads the colour
   const strokeInk = `${wbBoardBg()}|${document.documentElement.dataset.mode}`;
+  wbBoardBgCache.pass = true;
+  queueMicrotask(() => { wbBoardBgCache.pass = false; });
   const strokePaintKey = (d) =>
     typeof d.data === "string" && !d.data.includes("link-") && /"shape":\s*"(?:draw|highlighter)"/.test(d.data)
       ? `${d.data}|${strokeInk}`
@@ -22633,7 +22640,11 @@ function renderWhiteboard() {
   //: the size cache, so each link end asked `wbMapNodeSize` for its own `querySelector` walk of the
   //: page: with 500 topics and 300 links that was 7.4 s of 12 renders at 4x CPU (about 600 ms each).
   //: The index takes one `querySelectorAll` and one batch of reads, as a drag's first frame does.
-  if (wbIsMap() && wbState.sketches?.length) wbIndexMapNodeElements();
+  //: A board's connectors need the same batch (W30): each one read both ends'
+  //: `offsetWidth` on a DOM the strokes before it had just written, 6.6 ms for 30
+  //: connectors on 500 objects. The sizes are the ones on screen now, as before.
+  const hasLinks = wbIsMap() || (wbState.sketches || []).some((s) => typeof s.data === "string" && s.data.includes("link-"));
+  if (hasLinks && wbState.sketches?.length) wbIndexMapNodeElements();
   sketchUpdate.each(function(d) {
     const strokeKey = strokePaintKey(d);
     const drawn = this.querySelector(".sketch-path");
@@ -22763,6 +22774,8 @@ function renderWhiteboard() {
   });
 
   sketchSelection.exit().remove();
+  //: Off a map the sizes were read before the objects below were repainted, so none is kept.
+  if (!wbIsMap()) wbClearMapNodeSizeCache();
   //: **A shape's z is its paint order** (found with FEAT-07). SVG paints in
   //: document order, and a new sketch was appended last whatever its z, so
   //: Bring forward on a shape wrote a number nothing read. The groups are
@@ -25545,6 +25558,18 @@ async function openWhiteboardBoard(boardId) {
   wbShowCanvasView();
   const nudgeSaved = wbCancelBoardTimers();
   wbLinkParseCache.clear(); // the next board's sketches are other ids
+  //: **What the last board's renders left behind is dropped here** (audit 1028 B39:
+  //: render state lived at module level with no reset). A frame queued for the old
+  //: board is called off, and the element, size, colour and overview caches are
+  //: emptied, so nothing measured on one board answers for the next.
+  if (wbRenderFrame) cancelAnimationFrame(wbRenderFrame);
+  wbRenderFrame = 0;
+  wbRenderQueued = false;
+  wbItemElCache.clear();
+  wbItemElIndex.count = -1;
+  wbClearMapNodeSizeCache();
+  Object.assign(wbBoardBgCache, { sig: "", pass: false });
+  wbNavState.stale = true;
   await new Promise((resolve) => setTimeout(resolve, 60));
   await nudgeSaved;
   //: A board restored with the page gets here while the Library bundle is still loading; the
