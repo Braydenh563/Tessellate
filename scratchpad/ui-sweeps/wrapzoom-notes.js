@@ -238,6 +238,16 @@ function measure({ roots, passB }) {
     }
     return false;
   };
+  // Scrolled-under: one of the pair rides a sticky bar and the other scrolls
+  // beneath it, and the scroller is off its start. That is scrolling.
+  const stickyOf = (el) => { let s = el; while (s && s !== document.body) { if (getComputedStyle(s).position === 'sticky') return s; s = s.parentElement; } return null; };
+  const scrollerOf = (el) => { let s = el && el.parentElement; while (s && s !== document.documentElement) { const o = getComputedStyle(s).overflowY; if (/auto|scroll/.test(o) && s.scrollHeight > s.clientHeight + 1) return s; s = s.parentElement; } return document.scrollingElement; };
+  const scrolledUnder = (a, b) => {
+    const sa = stickyOf(a), sb = stickyOf(b);
+    if (sa === sb) return false;
+    const sc = scrollerOf(sa || sb);
+    return !!(sc && sc.scrollTop > 0);
+  };
   const INTER2 = 'button, a[href], input:not([type=hidden]), select, textarea, summary, [role=button], [role=tab], [role=menuitem]';
   const seen = new Set();
   for (const el of visEls) {
@@ -260,6 +270,7 @@ function measure({ roots, passB }) {
       if (ix <= 1.5 || iy <= 1.5) continue;
       const cx = Math.max(r.left, tr.left) + ix / 2, cy = Math.max(r.top, tr.top) + iy / 2;
       if (pointClipped(t.pe, cx, cy) || pointClipped(el, cx, cy)) continue;
+      if (!passB && scrolledUnder(el, t.pe)) continue;
       const hit = document.elementFromPoint(cx, cy);
       // A label's <input> sits under its own text on purpose (custom checkbox);
       // a control that is the text's own label target is skipped too.
