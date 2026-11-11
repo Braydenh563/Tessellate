@@ -574,6 +574,14 @@ function atlasRigFrame(rig, now) {
   //: that follows a drawn frame (clean style, so a read is a lookup); the frame works from what it took.
   //: Only the very first look, at attach, is taken here, and the wake has already put that after a paint.
   if (!rig.reads) atlasRigWake.look(rig, true);
+  //: **A look that took nothing leaves nothing to draw** (INBOX 1111, `Cannot read properties of undefined (reading '0')`):
+  //: the look returns unread for a figure below the fold (`atl-off`, set by the viewport observer before the first
+  //: frame), and `reads[0]` threw. The class change that brings it back wakes the rig (`atlasRigWake`'s observer).
+  if (!rig.reads) {
+    rig.at = 0;
+    rig.dirty = true;
+    return;
+  }
   const { reads, turnMatrix } = rig;
   const toss = atlasTossState(rig, now, live, buddy);
   for (const [i, arm] of rig.arms.entries()) {
