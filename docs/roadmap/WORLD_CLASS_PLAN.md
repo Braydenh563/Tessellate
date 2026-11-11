@@ -650,7 +650,7 @@ changes since a cursor and applies them. No server, no account, no CRDT.
 8. **Failures.** Offline or no answer: nothing changes, the cursor stays, Settings says so in one sentence. A damaged or cut-off segment (digest mismatch, missing fields) is refused whole before any write. A half-applied segment (a crash part way) is applied again from the same cursor: each note's apply is idempotent (same state is a no-op, a create is keyed by `client_key`) and the cursor moves only after the last note. Clock skew: times are compared as each computer recorded them, so a skewed clock can pick the wrong winner, but the loser is always in History.
 9. **Shape.** Sync now pulls the other computer's changes into this one; pressing it on both is two-way. The transport is one function (`fetch(since, me)` returns a segment), so the LAN fetch, the tests' fake and a later shared-folder transport share one apply.
 
-**Open:** the first slice (segment export and apply, Settings' Sync now, a two-folder test on a fake transport); then the LAN fetch itself (A signing in to B as an allowed device and keeping that sign-in); private notes readable on both (decision 5); attachments (6); boards and documents.
+**First slice built 2026-11-11:** HISTORY.md, "Moved from the plans, 2026-11-11 (WORLD_CLASS B6, sync first slice)". **Open:** the LAN fetch itself (A signing in to B as an allowed device and keeping that sign-in; until then Sync now says no computer is paired); private notes readable on both (decision 5); attachments (6); boards and documents.
 
 ### B7 The API contract
 
@@ -814,7 +814,7 @@ Mirrored in `agent-remaining/OPEN.md`, table B.
 | 32 | 301 | the navigation and undo audit table (written 2026-11-10, below); fixes: the manual and Statistics address; left: the rows marked "row" in the table | M | every surface |
 | 34 | ~~D1, D8, §13~~ | ~~drag on the grid; the reminder row recipe and a 10m snooze; the minimap's NaN rects, the tab bar at 600 to 819px, a whiteboard menu sweep, the tidy layout past five nodes (all not re-checked)~~ built or measured 2026-10-05: drag on the grid found built, the 10m snooze built, the rest measured clean (`nbf1005-recheck.js`); left with its owner: the whiteboard menu sweep (WHITEBOARD_PLAN) | done | HISTORY |
 | 35 | §2 | the offline studio (the privacy receipt, its record, API and Settings page, built 2026-09-26) | L | new |
-| 36 | B6, H5 | sync without a server: decided 2026-11-11, first slice next | L | B6 |
+| 36 | B6, H5 | sync without a server: first slice built 2026-11-11; the LAN fetch is next | L | B6 |
 | 37 | Audio | deferred until the owner says go | L | the audio section |
 | 38 | §20 | three open questions, each the owner's decision | none | §20 |
 
@@ -3864,7 +3864,7 @@ functions, 128 over 80 lines; 306 `except Exception` of which 21 end in
 (`refuse_multiple_workers`); the error envelope (`detail`, `code`, `hint`,
 `ref`); cursors, ETags and `/api/v1` (B7); the event log (B1), durable jobs
 (B2) and the retrieval engine (B3) built; the kernel (B4) and harness (B5)
-part built; sync (B6) decided (B6, 2026-11-11).
+part built; sync (B6) first slice built, the LAN fetch open.
 
 ### 26.1 Judgement, by layer
 

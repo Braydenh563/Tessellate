@@ -430,7 +430,9 @@
         if (event.target.closest?.(".seg button")) repaint();
       });
       wireSettingsFile();
+      $("sync-now")?.addEventListener("click", syncNow);
     }
+    if (name === "data") paintSync(() => apiJson("/sync/status"));
     settingDefaults().then(() => scheduleSettingRowsPaint(name, [0, 400, 1200]));
   }
 
@@ -532,6 +534,34 @@
       input.value = "";
       if (chosen) importSettingsFile(chosen);
     });
+  }
+
+  // --- sync with another computer (WORLD_CLASS_PLAN B6) -----------------------------
+
+  //: One sentence: the failure as the server words it, or when and how much.
+  function syncLine(s) {
+    if (s.error) return s.error;
+    if (!s.synced_at) return s.paired ? "Not synced yet." : "No other computer is paired for sync yet.";
+    const when = relativeTime(new Date(s.synced_at * 1000).toISOString());
+    const both = s.conflicts ? ` ${nounCount(s.conflicts, "note")} changed on both computers; the other text is in its History.` : "";
+    return `Last synced ${when}, ${nounCount(s.applied, "note")} brought in.${both}`;
+  }
+
+  async function paintSync(request) {
+    const line = $("sync-status");
+    if (!line) return;
+    try {
+      line.textContent = syncLine(await request());
+    } catch (error) {
+      line.textContent = error.message;
+    }
+  }
+
+  async function syncNow() {
+    const button = $("sync-now");
+    button.disabled = true;
+    await paintSync(() => apiJson("/sync/now", { method: "POST" }));
+    button.disabled = false;
   }
 
   // --- Reveal replies ---------------------------------------------------------------

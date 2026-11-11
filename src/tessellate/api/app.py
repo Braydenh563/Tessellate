@@ -98,6 +98,7 @@ from tessellate.api import (
     routes_settings,
     routes_settings_transfer,
     routes_spaces,
+    routes_sync,
     routes_hello,
     routes_origin_handoff,
     routes_private_spaces,
@@ -1594,6 +1595,8 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     (routes_spelling.router, LOCKED),
     (routes_statistics.router, LOCKED),
     (routes_utilities.router, LOCKED),
+    #: WORLD_CLASS_PLAN B6: the segment the other computer reads, and Sync now.
+    (routes_sync.router, LOCKED),
     #: WORLD_CLASS_PLAN section 17: the review queue, most opened, tidy proposals, charts.
     (routes_vision.router, LOCKED),
 )
