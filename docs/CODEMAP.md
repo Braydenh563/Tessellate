@@ -2,9 +2,9 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8174, frontend ids 2713, CSS sections 524, backend routes 677, backend modules 10468, test files 2589, tests 21179, plan headings 1013, app scripts 29, boot scripts 38, script files 284.
+Counts: frontend functions 8175, frontend ids 2713, CSS sections 524, backend routes 677, backend modules 10468, test files 2590, tests 21182, plan headings 1014, app scripts 29, boot scripts 38, script files 284.
 
-## Frontend functions (8174)
+## Frontend functions (8175)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3074,44 +3074,45 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dateFieldShift` | frontend/js/date-field.js:12 |
 | `dateFieldWire` | frontend/js/date-field.js:14 |
 
-### frontend/js/desk-companion.js (35)
+### frontend/js/desk-companion.js (36)
 
 | Name | File:line |
 |---|---|
 | `$` | frontend/js/desk-companion.js:20 |
-| `announceSaved` | frontend/js/desk-companion.js:399 |
+| `announceSaved` | frontend/js/desk-companion.js:411 |
 | `ask` | frontend/js/desk-companion.js:58 |
 | `call` | frontend/js/desk-companion.js:48 |
-| `companionRows` | frontend/js/desk-companion.js:213 |
-| `createNote` | frontend/js/desk-companion.js:389 |
-| `deskApiJson` | frontend/js/desk-companion.js:379 |
-| `deskClip` | frontend/js/desk-companion.js:418 |
+| `cardHeight` | frontend/js/desk-companion.js:164 |
+| `companionRows` | frontend/js/desk-companion.js:225 |
+| `createNote` | frontend/js/desk-companion.js:401 |
+| `deskApiJson` | frontend/js/desk-companion.js:391 |
+| `deskClip` | frontend/js/desk-companion.js:430 |
 | `draw` | frontend/js/desk-companion.js:76 |
-| `figure` | frontend/js/desk-companion.js:194 |
+| `figure` | frontend/js/desk-companion.js:206 |
 | `fit` | frontend/js/desk-companion.js:124 |
-| `groups` | frontend/js/desk-companion.js:210 |
-| `hideRow` | frontend/js/desk-companion.js:230 |
-| `hitRow` | frontend/js/desk-companion.js:434 |
+| `groups` | frontend/js/desk-companion.js:222 |
+| `hideRow` | frontend/js/desk-companion.js:242 |
+| `hitRow` | frontend/js/desk-companion.js:446 |
 | `host` | frontend/js/desk-companion.js:57 |
-| `item` | frontend/js/desk-companion.js:167 |
-| `keepOpen` | frontend/js/desk-companion.js:321 |
-| `leave` | frontend/js/desk-companion.js:335 |
-| `note` | frontend/js/desk-companion.js:187 |
-| `noteStatus` | frontend/js/desk-companion.js:362 |
-| `openCompanion` | frontend/js/desk-companion.js:295 |
-| `openMenu` | frontend/js/desk-companion.js:234 |
-| `openNoteCard` | frontend/js/desk-companion.js:367 |
-| `openPanel` | frontend/js/desk-companion.js:344 |
-| `panelHeight` | frontend/js/desk-companion.js:142 |
-| `plain` | frontend/js/desk-companion.js:427 |
+| `item` | frontend/js/desk-companion.js:179 |
+| `keepOpen` | frontend/js/desk-companion.js:333 |
+| `leave` | frontend/js/desk-companion.js:347 |
+| `note` | frontend/js/desk-companion.js:199 |
+| `noteStatus` | frontend/js/desk-companion.js:374 |
+| `openCompanion` | frontend/js/desk-companion.js:307 |
+| `openMenu` | frontend/js/desk-companion.js:246 |
+| `openNoteCard` | frontend/js/desk-companion.js:379 |
+| `openPanel` | frontend/js/desk-companion.js:356 |
+| `panelHeight` | frontend/js/desk-companion.js:143 |
+| `plain` | frontend/js/desk-companion.js:439 |
 | `probe` | frontend/js/desk-companion.js:89 |
-| `rest` | frontend/js/desk-companion.js:351 |
-| `runSearch` | frontend/js/desk-companion.js:473 |
-| `searchEmpty` | frontend/js/desk-companion.js:461 |
+| `rest` | frontend/js/desk-companion.js:363 |
+| `runSearch` | frontend/js/desk-companion.js:485 |
+| `searchEmpty` | frontend/js/desk-companion.js:473 |
 | `seed` | frontend/js/desk-companion.js:68 |
-| `separator` | frontend/js/desk-companion.js:181 |
+| `separator` | frontend/js/desk-companion.js:193 |
 | `show` | frontend/js/desk-companion.js:106 |
-| `toggle` | frontend/js/desk-companion.js:203 |
+| `toggle` | frontend/js/desk-companion.js:215 |
 | `token` | frontend/js/desk-companion.js:45 |
 
 ### frontend/js/desk-frames.js (12)
@@ -26915,7 +26916,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21179)
+## Tests (21182)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27656,6 +27657,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_dependency_audit.py | 3 |
 | tests/test_derived_facts.py | 14 |
 | tests/test_desk_away_log_1721.py | 3 |
+| tests/test_desk_card_fit_q34.py | 3 |
 | tests/test_desk_click_away_1689.py | 5 |
 | tests/test_desk_companion.py | 63 |
 | tests/test_desk_counts_63.py | 5 |
@@ -29511,7 +29513,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_zoom_wheel_delta.py | 3 |
 | tests/test_zoom_wrap_1717.py | 21 |
 
-## Plan headings (1013)
+## Plan headings (1014)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -30068,6 +30070,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Decisions made (do not re-decide) | docs/roadmap/TIMELINE_PLAN.md:226 |
 | Decisions made, 2026-10-05: draw.io phase 2 (wb-phase2) | docs/roadmap/WHITEBOARD_PLAN.md:366 |
 | Decisions made, 2026-10-05: the draw.io pass (INBOX 557, 558) | docs/roadmap/WHITEBOARD_PLAN.md:297 |
+| Decisions made: Q34, the desktop pet outside the window (owner go, OPEN.md:24, 2026-11-11) | docs/roadmap/UI_MODERNISATION_PLAN.md:1322 |
 | Decisions, 2026-10-10 | docs/roadmap/WHITEBOARD_PLAN.md:1311 |
 | Decisions, 2026-10-10 (do not re-decide) | docs/roadmap/UI_MODERNISATION_PLAN.md:715 |
 | Decisions, 2026-10-10 (do not re-decide) | docs/roadmap/WORLD_CLASS_PLAN.md:1476 |
