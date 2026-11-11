@@ -2033,7 +2033,7 @@ function dashFillingSkeleton(grid, count) {
   //: filling in had left the layout dirty, and each read laid the page out.
   const follow = () => {
     if (!outline.isConnected) return;
-    afterFrames(() => setTimeout(() => {
+    afterFrames(() => setTimeout(function dashSkeletonFollowTask() {
       if (!outline.isConnected) return;
       outline.style.translate = `0 ${grid.offsetTop - top0}px`;
       setTimeout(follow, 80);

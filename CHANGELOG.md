@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Dashboard lag (INBOX 1741, rest): the companion follow loop's look after a nap and the Atlas rig's first look are taken in a task after a drawn frame (not in a frame callback ahead of its style pass), and the anonymous timers are named (`nameMarkBuddyNapTask`, `nameMarkBuddyAfterCleanTask`, `dashSkeletonFollowTask`, `atlasRigWakeFirstLook`).
 - Dashboard lag (INBOX 1741, rest): the Activity heatmap's end-scroll writes only when it is off the end and the grid's scroll handler reads its width two frames on, not inside the event (at 4x on 30 notes the refit's last-cell read was 155ms forced and the scroll read 132 to 187ms; now 21 to 62ms and about 32ms).
 - Graph Tessellation: a drag on a cell pans (only the dot is a node for a gesture), a wobbly click still opens it, and Fit frames the whole map by its rectangles as it first opened.
 - Dashboard lag (INBOX 1741, part): the follow loop's resize observer renews its 1.5 s only when a watched box really changed size (a re-armed or same-size report renewed it for ever); observer renewals after a re-arm 2 to 1 in 15 s at 4x. Still open: the 20 ms a look, the 380 ms style frame, `atlasRigWake.after` (agent-remaining/lag-1111.md).
