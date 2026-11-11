@@ -34,8 +34,10 @@ text for the client's model to act on with the tools listed above, never a run.
 
 from __future__ import annotations
 
+import hmac
 import json
 import logging
+import os
 import re
 import sys
 from typing import TextIO
@@ -62,9 +64,18 @@ SERVER_VERSION = "0.1.0"
 CHAT_ONLY = frozenset({"get_app_navigation", "search_chat_history"})
 
 
+def writes_allowed() -> bool:
+    """Whether an outside client may change notes. Off until the person turns
+    it on (audit 1028 K13): a prompt-injected client could otherwise edit notes
+    silently, and the activity panel is the only trace."""
+    return bool(deps.get_config().get_preference("mcp_writes_enabled", False))
+
+
 def offered_tools() -> list[tools.ToolSpec]:
     """Every tool this server will list and run: not destructive, not
-    interactive, and not turned off in Settings -> Tools."""
+    interactive, not turned off in Settings -> Tools, and, unless writes are
+    switched on, read-only."""
+    writes = writes_allowed()
     return [
         spec
         for spec in tools.TOOLS.values()
@@ -72,7 +83,40 @@ def offered_tools() -> list[tools.ToolSpec]:
         and not spec.ends_turn
         and spec.name not in CHAT_ONLY
         and tools.tool_enabled(spec.name)
+        and (writes or _is_read_only(spec))
     ]
+
+
+#: One token per notebook, made on first use and shown in the snippet Settings
+#: hands an outside client (Q22, owner 2026-11-11). The client passes it back
+#: as `TESSELLATE_MCP_TOKEN`; a process that does not has no way to read or
+#: change notes through this server, so "any local process" stops being enough.
+TOKEN_ENV = "TESSELLATE_MCP_TOKEN"
+NOT_AUTHORISED = -32001
+#: Set by `serve()` once, from the environment; `handle_request` stays pure.
+_auth = {"denied": ""}
+
+
+def token() -> str:
+    """This notebook's MCP token, made and kept (as a secret setting) on first ask."""
+    import secrets
+
+    config = deps.get_config()
+    value = str(config.get_preference("mcp_token", "") or "")
+    if not value:
+        value = secrets.token_urlsafe(32)
+        config.set_preference("mcp_token", value)
+    return value
+
+
+def _check_token(given: str) -> str:
+    """Empty when `given` is this notebook's token, else what to tell the client."""
+    expected = str(deps.get_config().get_preference("mcp_token", "") or "")
+    if not expected:
+        return "The tool server has no token yet. Open Settings, Tools it can use, and copy the connection snippet into your client."
+    if not hmac.compare_digest(given.encode(), expected.encode()):
+        return f"The tool server needs {TOKEN_ENV} set to this notebook's token. Open Settings, Tools it can use, and copy the connection snippet."
+    return ""
 
 
 #: Tools that change nothing, so a client may auto-approve them. The registry
@@ -362,6 +406,8 @@ def handle_request(message: dict) -> dict | None:
     method = message.get("method")
     msg_id = message.get("id")
     is_notification = "id" not in message
+    if _auth["denied"] and method != "ping":
+        return None if is_notification else _error(msg_id, NOT_AUTHORISED, _auth["denied"])
     handler = _METHODS.get(method)
     if handler is None:
         if is_notification or str(method).startswith("notifications/"):
@@ -392,6 +438,14 @@ def serve(stdin: TextIO = sys.stdin, stdout: TextIO = sys.stdout) -> None:
     garbage shouldn't take down an otherwise-working session.
     """
     deps.init_app_state()
+    _auth["denied"] = _check_token(os.environ.get(TOKEN_ENV, ""))
+    try:
+        _serve_lines(stdin, stdout)
+    finally:
+        _auth["denied"] = ""
+
+
+def _serve_lines(stdin: TextIO, stdout: TextIO) -> None:
     for line in stdin:
         line = line.strip()
         if not line:

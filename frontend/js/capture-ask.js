@@ -1301,9 +1301,9 @@ async function copyAnswer() {
 // --- suggested questions (Round 1) ----------------------------------------------
 
 async function loadSuggestions() {
-  const box = $("suggested-questions");
+  const box = document.getElementById("suggested-questions");
   // Only meaningful before the first answer of a conversation.
-  if (!$("chat-results").classList.contains("hidden")) return;
+  if (!box || !document.getElementById("chat-results").classList.contains("hidden")) return;
   const picks = await apiJson("/chat/suggestions").catch(() => []);
   box.replaceChildren();
   box.classList.toggle("hidden", picks.length === 0);
@@ -1331,7 +1331,7 @@ let askHistoryOpen = false;
 let askBadgeTotal = null;
 
 async function loadAskHistoryBadge() {
-  const badge = $("ask-history-badge");
+  const badge = document.getElementById("ask-history-badge");
   if (!badge) return;
   const stats = await apiJson("/ask-history/stats").catch(() => null);
   if (stats) askBadgeTotal = stats.total || 0;
@@ -1364,8 +1364,10 @@ for (const type of ["focusin", "input", "click"]) {
 
 //: A press on Private before quick-note.js has loaded (it is preloaded 3 s after boot) loads it and flips the lock itself:
 //: its own listener is attached after this click has gone by. Once `lock` exists its listener takes every press.
-$("entry-private")?.addEventListener("click", async (event) => {
-  if (!createNoteSafely.lock && (await ensureModule("quickNote"))) createNoteSafely.lock.flip(event.target.closest("button"), "captureDraftPrivate");
+onSurface("notes", () => {
+  $("entry-private")?.addEventListener("click", async (event) => {
+    if (!createNoteSafely.lock && (await ensureModule("quickNote"))) createNoteSafely.lock.flip(event.target.closest("button"), "captureDraftPrivate");
+  });
 });
 
 //: Open questions (WORLD_CLASS_PLAN I3, row 7): the Notes, Questions view is
