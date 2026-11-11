@@ -112,6 +112,7 @@ TOPIC_LEADS: dict[str, str] = {
     "diagram-ai": "Change a diagram by asking in words, take its suggestions, and compare its versions.",
     "diagram-lines": "Shape a diagram's arrows and spacing, export it, and move a picture too big for its pane.",
     "equation-numbers": "Number a display equation with a label and cite it elsewhere in the document.",
+    "document-graph": "Plot y = f(x) in a document, with sliders you can move and a plot you can pan and zoom.",
     "documents-replace": "Find and replace words across all your documents in one go, with one Undo.",
     "live-view-marks": "Formatting stays drawn as you write, showing its markdown only where you edit.",
     "documents-features": "Extra editing tools, such as word statistics, sorting lines and numbered headings.",

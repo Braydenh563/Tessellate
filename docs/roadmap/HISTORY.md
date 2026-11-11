@@ -22,6 +22,15 @@ waits in Uncategorised; the hint and the saved status offer the closest two or
 three. Leave one out on the 120 notes: 4 of the 11 wrong filings sit under 70,
 beside about 20 right ones (`tests/test_ask_when_unsure.py`).
 
+## Moved from the plans, 2026-11-11 (F1 graph block, DOCUMENTS_PLAN 16)
+
+**Built** (the open "graph block" of item 16, moved here). `/graph`, or a code block marked graph, plots y = f(x) in Read and Live (`frontend/js/documents-graph.js`, `frontend/css/doc-graph-lazy.css`, lazy as `docGraph` in `lazy-entries.js`; Read swaps the fence through `docMathRender.graphIn`, Live draws it through a state field, `docMathRender.graphField`, beside the mermaid precedent).
+
+- Grammar: `y = expr`, `f(x) = expr` or a bare expression in x is a curve (six at most); `name = v [min, max(, step)]` is a slider (eight at most); `x: lo..hi`, `y: lo to hi`, `title: text`, `#` comments. A safe recursive-descent parser, no eval or Function; a line it cannot read is listed under the plot with the reason and the rest draw.
+- Plot: SVG sized to its pane (height 0.56 of the width, 220 to 460), tick counts by pixel room, hover trace and readout, drag pans, Ctrl and the wheel or the buttons zoom, 0 resets, the pencil puts the caret in the text. Sliders are native ranges that the value field upgrades.
+- Measured in Chromium (Live and Read, light and dark, 320, 360, 390, 720, 1440, 2560 wide): 0 overlapping tick labels, 0 horizontal overflow, 0 console errors; slider and drag change the path. Guide topic `document-graph`; tests `tests/test_doc_graph.py`.
+- **Not verified:** a real touch or phone gesture; the plot in print and the HTML export (a slider is not exported as a control); dark theme in Live was driven at one width only.
+
 ## Moved from the plans, 2026-11-11 (WORLD_CLASS 28.5 row 9, one-click captions, INBOX 1777)
 
 **Built** (the open text of the row, moved here). Settings, Packages, Install on Live captions fetches the engine and the model in one click; the first caption starts the helper; a computer with no build says so.

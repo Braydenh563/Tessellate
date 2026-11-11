@@ -4298,6 +4298,7 @@ function renderDocPreview() {
   layerDocWikiLinks(preview);
   imageLayoutRoot(preview);
   docRenderMermaidIn(preview);
+  docMathRender.graphIn(preview);
   docWireReadTasks(preview, text);
 }
 
@@ -6645,7 +6646,7 @@ docLiveSpanTouched.anchorIn = (ranges, from, to) => ranges.some((range) => range
 //: widget and the arrow keys that step into it belong to Live exactly as the
 //: markdown decorations do.
 function docLiveExtensions(CM) {
-  return [docLivePlugin(CM), docTableGripsPlugin(CM), docColumnsField(CM), docColumnsArrowKeymap(CM), docMermaidField(CM), docLiveExtensions.dragHandle(CM)];
+  return [docLivePlugin(CM), docTableGripsPlugin(CM), docColumnsField(CM), docColumnsArrowKeymap(CM), docMermaidField(CM), docMathRender.graphField(CM), docLiveExtensions.dragHandle(CM)];
 }
 
 //: **A drag handle for a Live block** (audit 1102 DX29; Notion's grip). Beside

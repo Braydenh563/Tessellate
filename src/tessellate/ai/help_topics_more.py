@@ -1896,7 +1896,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "equation-numbers", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "code-run",
+        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
@@ -2695,6 +2695,29 @@ MORE_TOPICS.append({
     "badge": {"label": "Documents", "tab": "documents"},
 })
 TOPIC_META["equation-numbers"] = {"title": "Numbering and citing equations", "path": "A document, Live or Read view"}
+
+
+#: DOCUMENTS_PLAN 16: the graph block (documents-graph.js).
+MORE_TOPICS.append({
+    "id": "document-graph",
+    "keywords": (
+        "graph", "graph block", "plot", "plot a function", "y = f(x)", "function graph",
+        "curve", "slider", "desmos", "axes", "```graph",
+    ),
+    "body": (
+        "Type /graph in a document, or write a code block marked graph, to plot a function. "
+        "One line is one curve: y = sin(a x), f(x) = x^2 / 10, or just x^3 - x. Up to six curves. "
+        "A line such as a = 2 [0, 5] makes a slider named a, from 0 to 5, that the curves can use; "
+        "add a third number for the step. x: -5..5 and y: -2 to 2 set the axes, "
+        "title: Waves adds a heading, and a line starting with # is a note to yourself. "
+        "Read and Live draw it as a picture; in Live, move the caret into the block (or press the pencil) "
+        "to edit the text. Hover or touch the plot to read a value, drag to pan, Ctrl and the wheel or the plus and "
+        "minus buttons to zoom, and the third button, or 0, to reset. A line it cannot read is listed under the plot with the reason, "
+        "and the rest still draw. Nothing is run: only numbers, x, the slider names and the usual functions are understood."
+    ),
+    "badge": {"label": "Documents", "tab": "documents"},
+})
+TOPIC_META["document-graph"] = {"title": "Graph a function in a document", "path": "A document, the / menu, Graph"}
 
 
 #: OPEN W18 (s9-1110): the diagram's line shape, spacing and page menu.
