@@ -283,7 +283,7 @@ def _pace(units: list[Unit], first_days: list[date]) -> tuple[str, Unit] | None:
     end = first_days[last]
     where = f"in {_part(first_days[window])}{_month(first_days[window])}" if (first_days[window].year, first_days[window].month) == (end.year, end.month) else (
         f"between {_part(first_days[window])}{_month(first_days[window])} and {_part(end)}{_month(end)}")
-    text = f"{_NUMBERS.get(len(inside), len(inside)).capitalize()} of the {_NUMBERS.get(n, n)} fall {where}; after that you wrote far less often."
+    text = f"{str(_NUMBERS.get(len(inside), len(inside))).capitalize()} of the {_NUMBERS.get(n, n)} fall {where}; after that you wrote far less often."
     return text, units[last]
 
 

@@ -3804,6 +3804,30 @@ span > .chip {
   overflow: hidden;
 }
 
+/* The Recent head's tools hold one row at every sidebar width (220 to 320px);
+   the rules are in library-lazy.css. The sidebar is the container: under 16rem
+   of content New gives up its word (the `.toolbar-word` recipe, DESIGN.md);
+   under 14.5rem the help, template and diagram buttons fold into the head's ⋯
+   (the kebab built in `docTypeMount`). Measured before: head 58 px tall at 260 and 97 px at
+   220, against 32 px on one row. */
+.doc-sidebar {
+  container: doc-sidebar / inline-size;
+}
+.doc-sidebar .doc-head-more {
+  display: none;
+}
+@container doc-sidebar (max-width: 16rem) {
+  .doc-sidebar .doc-new-split .toolbar-word {
+    display: none;
+  }
+  #doc-sidebar-list .doc-head-tools > :is(.graph-help-toggle, #doc-new-template, #doc-new-diagram) {
+    display: none;
+  }
+  .doc-sidebar .doc-head-more {
+    display: inline-flex;
+  }
+}
+
 /* The lists are the scrolling part, not the card. */
 .doc-sidebar .doc-list,
 .doc-sidebar .doc-outline-wrap {

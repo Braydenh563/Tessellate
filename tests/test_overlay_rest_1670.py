@@ -35,7 +35,7 @@ def hour(gait: str, seed: int, look: str = "masculine") -> dict:
         # is off here too (its own test: test_overlay_wave_pointer_1711.py); the stillness bars are unchanged.
         def setup(e: eng.Engine) -> None:
             e.presence, e.wave_ready = False, math.inf
-        _CACHE[key] = simulate(gait, seed, look=look, setup=setup)
+        _CACHE[key] = simulate(gait, seed, look=look, setup=setup, setup_key="rest-1670: no presence, no wave")
     return _CACHE[key]
 
 
@@ -105,18 +105,40 @@ def test_trips_vary_and_it_rests_out_of_the_middle_third() -> None:
     assert len(seen) >= 3, seen  # walk, glide, jump, climb, and now and then a puff, portal or the edge walk
 
 
-def test_a_portal_or_a_puff_takes_between_four_tenths_and_one_and_a_fifth_seconds() -> None:
+#: The seeds read for portals and puffs, 15 to a test so xdist spreads the 90 simulated hours (213 s as one test on CI);
+#: 1 to 45 is where the search for both kinds stopped on the last measured engine (first puff at 45). A block that holds
+#: no warp asserts nothing; the search for both kinds, and the bar on any seed past 45 it has to read, is the last test.
+SEED_BLOCKS = [tuple(range(lo, lo + 15)) for lo in range(1, 46, 15)]
+
+
+def _warp_kinds(seed: int) -> set[str]:
+    return {kind for gait in GAITS for kind, spans in hour(gait, seed)["warps"].items() if kind in ("portal", "puff") and spans}
+
+
+@pytest.mark.parametrize("seeds", SEED_BLOCKS, ids=lambda b: f"seeds-{b[0]}-{b[-1]}")
+def test_a_portal_or_a_puff_takes_between_four_tenths_and_one_and_a_fifth_seconds(seeds: tuple[int, ...]) -> None:
     # A puff is a perch trip's 40 percent and an evade's; the hang spots (INBOX 1683 w, g) took a share of the trips,
-    # so the three seeds show none now. More seeds are read until both kinds show (the life pass, 1719 b, moved the
-    # first puff past seed 23; the range grew to 40, then to 80 with life2b-1109, the stop at both kinds is unchanged); the
-    # duration bar is unchanged.
-    kinds: set[str] = set()
-    for seed in (*SEEDS, *range(4, 80)):
+    # so the three seeds show none now. The duration bar is unchanged and covers the same seeds the search read (1 to
+    # 45 on the last measured engine), in blocks so the hours run on different workers.
+    for seed in seeds:
         for gait in GAITS:
             for kind, spans in hour(gait, seed)["warps"].items():
                 if kind in ("portal", "puff"):
-                    kinds.add(kind)
-                    assert all(0.4 <= d <= 1.2 for d in spans), (kind, spans)
+                    assert all(0.4 <= d <= 1.2 for d in spans), (kind, seed, spans)
+
+
+def test_both_a_portal_and_a_puff_show_within_the_seeds_read() -> None:
+    # More seeds are read until both kinds show (the life pass, 1719 b, moved the first puff past seed 23; the range grew
+    # to 40, then to 80 with life2b-1109, the stop at both kinds is unchanged). The hours of the blocks above come from the
+    # session folder, so only a first puff past seed 45 simulates more here, and those hours get the duration bar too.
+    kinds: set[str] = set()
+    for seed in (*SEEDS, *range(4, 80)):
+        kinds |= _warp_kinds(seed)
+        if seed > SEED_BLOCKS[-1][-1]:
+            for gait in GAITS:
+                for kind, spans in hour(gait, seed)["warps"].items():
+                    if kind in ("portal", "puff"):
+                        assert all(0.4 <= d <= 1.2 for d in spans), (kind, seed, spans)
         if seed >= SEEDS[-1] and kinds == {"portal", "puff"}:
             break
     assert kinds == {"portal", "puff"}

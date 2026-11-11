@@ -3592,6 +3592,22 @@ function graphPopupActionList(entry) {
       },
     }
   );
+  //: Show captions (K18, the board's pref): only a note that carries a saved (`/media/`) picture has a caption to show.
+  if (graphPopupMediaRefs(entry).some((r) => r.image && r.url.startsWith("/media/"))) {
+    const on = prefs.get("wb-show-captions", null) === "1";
+    list.splice(list.findIndex((a) => a.key === "trace") + 1, 0, {
+      key: "captions",
+      group: "read",
+      icon: "text-aa",
+      word: on ? "Hide picture captions" : "Show picture captions",
+      title: "Draw a saved picture's caption as one line under it, on boards, maps, graph popups and note cards",
+      run: () => {
+        prefs.set("wb-show-captions", on ? "0" : "1");
+        if (typeof imageLayout === "function") imageLayout.paintCaptions();
+        renderGraphPopupActions(entry);
+      },
+    });
+  }
   return list;
 }
 

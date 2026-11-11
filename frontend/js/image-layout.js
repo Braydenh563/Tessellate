@@ -259,9 +259,54 @@ function imageLayout(img) {
   }
   const laid = imageApplyOptions(frame, options);
   if (laid.parentNode !== parent) parent.insertBefore(laid, next);
+  //: Only a note's own view (a card, the timeline's note view) says a caption; a chat answer keeps its pictures plain. Once the card is in the page.
+  if (node === img) queueMicrotask(() => imageEditTarget(img) && imageLayout.caption(frame, img.getAttribute("src")));
   //: A finger has no hover: the controls are drawn (and reachable) from the start.
   if (window.matchMedia?.("(pointer: coarse)").matches) queueMicrotask(() => imageWirePicture(img));
 }
+
+//: **A saved picture's caption as one muted line under it** (owner-1026b K18: the board's Show caption pref,
+//: `wb-show-captions`, drawn the same under a note's own pictures in a note card and in a graph popup). Methods of
+//: `imageLayout`, not globals of their own: the shared scope is counted. Only a `/media/` picture has a caption (an
+//: attachment, `/files/{id}`, has none, so it draws nothing). It is asked of `GET /media/meta/{name}` once per
+//: picture; an empty answer (not captioned yet) is forgotten so the next paint asks again. `textContent` only.
+imageLayout.captions = new Map();
+imageLayout.caption = function (frame, src) {
+  const name = /\/media\/([^/?#]+)/.exec(String(src || ""))?.[1];
+  const show = prefs.get("wb-show-captions", null) === "1";
+  const typed = frame.closest(".cm-md-figure")?.querySelector(".cm-md-caption");
+  const draw = (text) => {
+    let line = frame.querySelector(":scope > .md-picture-caption");
+    if (!text) {
+      line?.remove();
+      frame.classList.remove("has-caption");
+      return;
+    }
+    if (!line) {
+      line = document.createElement("span");
+      line.className = "md-picture-caption";
+      frame.append(line);
+    }
+    if (line.textContent !== text) line.textContent = text;
+    frame.classList.add("has-caption");
+  };
+  if (!show || !name || typed) return draw("");
+  if (!imageLayout.captions.has(name)) {
+    const asked = apiJson(`/media/meta/${encodeURIComponent(name)}`, { headers: authHeaders() })
+      .then((meta) => meta?.caption || "")
+      .catch(() => "");
+    imageLayout.captions.set(name, asked);
+    asked.then((text) => text || imageLayout.captions.delete(name));
+  }
+  imageLayout.captions.get(name).then((text) => draw(prefs.get("wb-show-captions", null) === "1" ? text : ""));
+};
+//: Every framed picture on the page again, after the pref turns (the board's Format panel, a graph popup's menu).
+imageLayout.paintCaptions = function () {
+  for (const frame of document.querySelectorAll(".cm-md-image-frame")) {
+    const img = frame.querySelector(":scope > img");
+    if (img && (frame.closest("#graph-popup") || imageEditTarget(img))) imageLayout.caption(frame, img.getAttribute("src"));
+  }
+};
 
 //: Where a picture's note is, when the surface lets a picture be edited in
 //: place: a note card in the Notes list, and the timeline's note view (which

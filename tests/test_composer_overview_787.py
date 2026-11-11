@@ -21,6 +21,9 @@ import pytest
 from tessellate.ai import composer, composer_overview
 from tessellate.ai import composer_dialogue
 from tests._composer_eval import trace_failures
+from tests._framed_path import framed_path  # noqa: F401
+
+pytestmark = pytest.mark.usefixtures("framed_path")
 
 TODAY = date(2026, 10, 10)
 

@@ -129,13 +129,14 @@ def _first_hang_end(gait: str, seed: int, scene: str) -> str:
     return next((leg[0] for leg in e.legs[n:] if leg[0].startswith("hang_")), "")  # "hang_calm" is the top hang's own end
 
 
+@pytest.mark.parametrize("scene", ["window below", "title bar"])
 @pytest.mark.parametrize("gait", ["walk", "float"])
-def test_forced_hang_ends_take_the_choice_that_the_scene_offers(gait: str) -> None:
+def test_forced_hang_ends_take_the_choice_that_the_scene_offers(gait: str, scene: str) -> None:
     """A hang is rare in a seeded hour, so this forces 100 ends per scene: a window below is a swing and a drop, a
     title bar is a pull-up or a startled let-go; a screen-top hang with nothing in reach makes a calm drop (owner
     2026-11-10: no fall roll)."""
-    for scene, option in (("window below", "hang_swing"), ("title bar", "hang_pull")):
-        ends = [_first_hang_end(gait, seed, scene) for seed in range(100)]
-        assert set(ends) <= {option, "hang_calm", "hang_react"}, set(ends)  # calm: a top hang with no window in reach; react: a window's edge only
-        assert ends.count(option) >= 40, (scene, ends.count(option))
+    option = {"window below": "hang_swing", "title bar": "hang_pull"}[scene]
+    ends = [_first_hang_end(gait, seed, scene) for seed in range(100)]
+    assert set(ends) <= {option, "hang_calm", "hang_react"}, set(ends)  # calm: a top hang with no window in reach; react: a window's edge only
+    assert ends.count(option) >= 40, (scene, ends.count(option))
     assert {_first_hang_end(gait, seed, "ceiling") for seed in range(20)} == {"hang_calm"}

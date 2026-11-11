@@ -16,7 +16,8 @@ NOW = datetime(2026, 11, 2, 9, 0)
     ("ask", "content"),
     [
         ('create a note called "Shopping" with milk, eggs and bread', "Shopping\nMilk, eggs and bread"),
-        ("create a note called Shopping with milk, eggs and bread", "Shopping\nMilk, eggs and bread"),
+        #: Moved with the owner's Q5 (2026-11-11): the whole unquoted phrase after "called" is the title; quotes still end it.
+        ("create a note called Shopping with milk, eggs and bread", "Shopping with milk, eggs and bread"),
         ("make a note titled 'Trip ideas' saying book flights first", "Trip ideas\nBook flights first"),
         ("new note called Gym that says squats on Monday", "Gym\nSquats on Monday"),
         ("make a note named Garden containing tomatoes and basil", "Garden\nTomatoes and basil"),

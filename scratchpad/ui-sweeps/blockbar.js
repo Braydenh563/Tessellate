@@ -70,7 +70,7 @@ const { boot } = require("./lib.js");
     const c = await hover(".callout");
     let b = await bar();
     check("bar shows on a callout", b && b.buttons.length === 4, JSON.stringify(b && b.buttons));
-    check("bar sits on the block's top edge", b && Math.abs(b.top + 14 - c.top) < 20 && Math.abs(b.right - c.right) < 4, b && `bar ${Math.round(b.top)},${Math.round(b.right)} block ${Math.round(c.top)},${Math.round(c.right)}`);
+    check("bar stands in the block's right gutter, level with its top, off the text", b && Math.abs(b.top - c.top) < 4 && b.left >= c.right, b && `bar ${Math.round(b.top)},${Math.round(b.left)} block ${Math.round(c.top)},${Math.round(c.right)}`);
     await page.click("#doc-block-bar .doc-block-kind");
     await page.waitForTimeout(300);
     const tip = await page.evaluate(() => [...document.querySelectorAll(".action-menu:not(.hidden) [role=menuitem], .action-menu:not(.hidden) button")].find((el) => /^\s*Tip\s*$/.test(el.textContent)));

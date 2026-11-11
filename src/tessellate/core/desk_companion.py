@@ -298,6 +298,18 @@ def _look_label(look: Any) -> str:
     return "a drawn companion" if capture.is_key(look) else "an Atlas look"
 
 
+def _motion_label(motion: tuple[bool, str] | None) -> str:
+    """The motion in force as words for the log: built only from fixed strings, the reason being the
+    matching entry of `MOTION_REASONS` and never the value that was passed in (see `_motion_of`)."""
+    if motion is None:
+        return "unknown, the system flag decides"
+    word = "still" if motion[0] else "moving"
+    for known in MOTION_REASONS:
+        if known == motion[1]:
+            return f"{word} ({known})"
+    return f"{word} ()"
+
+
 def _look_in_force(data: dict[str, Any], look: str) -> tuple[str, tuple[bool, str] | None]:
     """The look and motion an answer stands for. A locked app window has not
     read its prefs and answers the default look (INBOX 1670), so the last
@@ -1333,8 +1345,8 @@ class DeskCompanion:
         self.overlay_why = ""
         self.runner = runner
         logger.info(
-            "desk companion: overlay started, look=%s, motion=%s (%s)",
-            _look_label(look), "unknown, the system flag decides" if motion is None else "still" if motion[0] else "moving", motion[1] if motion else "",
+            "desk companion: overlay started, look=%s, motion=%s",
+            _look_label(look), _motion_label(motion),
         )
         return True
 

@@ -26,7 +26,7 @@ from datetime import date, datetime, timedelta, timezone
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import activity
+from tessellate.ai import activity, question_noise
 from tessellate.ai import when as when_words
 from tessellate.ai.notebook_stats import StatAnswer
 
@@ -116,7 +116,7 @@ def _streak(question: str, words: list[str]) -> Asked | None:
 def read(question: str) -> Asked | None:
     """The shape `question` asks for, or None when it is not one (a subject
     is named, or nothing asks for new, changed or a streak)."""
-    text = (question or "").strip()
+    text = question_noise.CATCH_LEAD.sub("", (question or "").strip())  # "hey what's new" is "what's new"
     if not text or len(text) > 160:
         return None
     #: A window phrase is not a subject: it is removed before the words are read.

@@ -309,10 +309,8 @@ REACHED_AFTER_LOAD = {
     #: `#meeting-overlay` is showing, and meetings.js is what shows it.
     "closeMeetingRecorder": "meetings, the Escape handler in settings-wiring.js runs it only while #meeting-overlay is open, which only meetings.js opens",
     "renderAskChart": "askHistory, called from ensureModule('askHistory').then in askQuestion",
-    #: The 2026-10-10 triage: a composed answer's cited names are linked
-    #: once ask-compose.js is in (`addInlineCitations`, capture-ask.js).
-    "linkCitedTitles": "askCompose, called from ensureModule('askCompose').then in addInlineCitations",
-    "markSaidSentences": "askCompose, called beside linkCitedTitles in the same ensureModule('askCompose').then",
+    #: A composed answer's quoted sentences take the quote style once ask-compose.js is in (`addInlineCitations`, capture-ask.js).
+    "markSaidSentences": "askCompose, called from ensureModule('askCompose').then in addInlineCitations",
     "renderActCard": "askCompose, called from ensureModule('askCompose').then in renderToolConfirm (chat-agent.js)",
     "renderWebSources": "askCompose, called from ensureModule('askCompose').then in chat-attach's onWebSources",
     #: The Escape handler (settings-wiring.js) closes the welcome card only

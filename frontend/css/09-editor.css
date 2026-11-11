@@ -1048,11 +1048,16 @@
    child of body (`docPlaceFixed` corrects its frame), solid rather than
    blurred so it is not one more surface for the glass-off list, and the
    height of one small button so it sits on the block's edge without covering
-   its first line. */
+   its first line. **A column in the preview's right gutter** (2026-11-11, the
+   owner: it "covers the content in the top corner of that row"): centred on
+   the block's top edge it lay over the line above and the words below, so it
+   now stands up the block's right side in the room
+   `#doc-preview` keeps for it on a device that can hover (the bar is hover-only). */
 .doc-block-bar {
   position: fixed;
   z-index: 55;
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: var(--space-1);
   padding: var(--space-1);

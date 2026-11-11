@@ -2545,7 +2545,9 @@ _QUESTION_RANGES: list[tuple[str, object]] = [
         r"eleven|twelve|few|couple of)\s+(day|week|fortnight|month|year)s?",
         "back",
     ),
-    (r"(?:in|over|during)?\s*(?:the\s+)?(?:last|past)\s+(week)\b", "back"),
+    #: "last week" is the week before this one, Monday to Sunday, as everywhere else (the owner's Q24); "past week" rolls.
+    (r"(?:in|over|during)?\s*(?:the\s+)?last\s+week\b", "last_week"),
+    (r"(?:in|over|during)?\s*(?:the\s+)?past\s+(week)\b", "back"),
     (r"(?:in|over|during)?\s*(?:the\s+)?(?:last|past)\s+(month)\b", "back"),
     (r"(?:in|over|during)?\s*(?:the\s+)?(?:last|past)\s+(year)\b", "back"),
     (r"\btoday\b", "today"),
@@ -2591,6 +2593,9 @@ def _range_for(kind: str, match: re.Match, today: date) -> tuple[date, date]:
         return today - timedelta(days=1), today - timedelta(days=1)
     if kind == "this_week":
         return today - timedelta(days=today.weekday()), today
+    if kind == "last_week":
+        monday = today - timedelta(days=today.weekday() + 7)
+        return monday, monday + timedelta(days=6)
     if kind == "this_month":
         return today.replace(day=1), today
     if kind == "this_year":

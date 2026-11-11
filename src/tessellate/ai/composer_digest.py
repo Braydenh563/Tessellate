@@ -47,7 +47,7 @@ from pathlib import Path
 from tessellate.ai import composer, composer_doings, composer_done, composer_frame, composer_threads, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, filed_name, glossary, question_noise, realise, verdicts
 from tessellate.ai import composer_ages, composer_answer, composer_brief, composer_nth, composer_oneword, composer_property, composer_small
 from tessellate.ai import composer_ahead, composer_ask, composer_clean, composer_event_verdict, factgraph
-from tessellate.ai import composer_chip_subject
+from tessellate.ai import composer_chip_subject, composer_overview
 from tessellate.ai import composer_read
 from tessellate.ai import composer_select
 from tessellate.ai import composer_story
@@ -3084,7 +3084,7 @@ def _opening_line(members, facts: list[Fact], today: date, topic: str) -> tuple[
     """The opening of an overview, and the facts still to say. It answers in
     the person's terms (INBOX 870): where they have got to, or how much is
     still open, not only how many notes."""
-    opening = PHRASES["overview"].format(count=_count(len(members)), topic=topic, span=_span(members, today))
+    opening = PHRASES["overview"].format(count=_count(composer_overview.pooled(len(members))), topic=topic, span=_span(members, today))
     landed = next((f for f in facts if f.label == "Where you landed"), None)
     left = [f for f in facts if f.label == "Still to do"]
     if landed:
@@ -3624,7 +3624,7 @@ def _overview_tail(out: _Out, kind: str, members, today: date, moved, shown: int
             out.rows.append({"sentence": name, "note_id": v.note.get("source_id", v.id), "source": name, "score": 1.0, "digest": True,
                              "kind": getattr(v, "kind", "note")})
     else:
-        out.lines.append(PHRASES["more_right"].format(count=_count(len(hidden)).capitalize()))
+        out.lines.append(PHRASES["more_right"].format(count=_count(len(hidden) + composer_overview.pooled(len(members)) - len(members)).capitalize()))
 
 
 #: A name a summary line can carry: a title or a short noun phrase, never a
@@ -3687,7 +3687,10 @@ def _storied(out: _Out, question: str, members, facts, today: date) -> bool:  # 
     if None in units:
         return False
     out.framed = True
-    composer_story.story(out, _count(len(dated)), units, [v.written for v in dated], _topic(question, members), plan, _themed(dated))
+    composer_story.story(out, _count(composer_overview.pooled(len(dated))), units, [v.written for v in dated], _topic(question, members), plan, _themed(dated))
+    if (whole := composer_overview.pooled(len(dated))) > len(dated):
+        #: The lead counts every note; the story tells the pool it read, and says so.
+        out.lines.append(f"That tells {realise.count_word(len(dated))} of the {whole}; ask for a month or a tag to see the rest.")
     return True
 
 
@@ -5320,6 +5323,7 @@ def answer(question: str, notes: list[dict], **kwargs) -> dict | None:  # noqa: 
     command, nothing found): the caller then asks `composer.compose`. Read with
     the notes' words set, as `compose` does: "tom and sara" is two subjects
     only when the notes hold both words."""
+    composer_overview.read_pool(notes)
     owned = composer_ask.NOTE_WORDS.set(composer._note_words(notes))  # noqa: SLF001
     texts = composer_ask.NOTE_TEXTS.set(tuple(f"{n.get('title') or ''} {n.get('content') or ''}" for n in notes or ()))
     as_asked = _ASKED_AS.set(question)

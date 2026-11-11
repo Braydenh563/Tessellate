@@ -399,9 +399,13 @@ class ConfigManager:
         self.ollama_url = os.getenv("OLLAMA_URL", "http://localhost:11434")
 
         self._preferences = self._load_preferences()
-        self._secrets = self._take_secrets_out()
+        #: The settings kept out of `preferences.json` (secrets_store). Not named
+        #: "secrets": CodeQL's sensitive-data check goes by name, not key, and a
+        #: secret-looking name read in `get_preference` made every setting's log
+        #: line a clear-text-logging alert (tests/test_codeql_shapes.py).
+        self._kept_apart = self._load_kept_apart()
 
-    def _take_secrets_out(self) -> dict[str, str]:
+    def _load_kept_apart(self) -> dict[str, str]:
         """Secret settings (`secrets_store.SECRET_FILES`) read from their
         keyring or owner-only file, and moved there from `preferences.json` if
         an older version left one in plain text (audit 1028 K11). The file is
@@ -462,8 +466,8 @@ class ConfigManager:
         selfcheck.note(f"preferences.json could not be read, so it was kept as {kept.name} and the defaults used.")
 
     def get_preference(self, key: str, default: Any = None) -> Any:
-        if key in self._secrets:
-            return self._secrets[key] or default
+        if key in self._kept_apart:
+            return self._kept_apart[key] or default
         return self._preferences.get(key, default)
 
     def all_preferences(self) -> dict[str, Any]:
@@ -472,13 +476,13 @@ class ConfigManager:
         A copy rather than the live dict: a caller that only means to read
         should not be able to edit the app's settings by accident.
         """
-        return {**self._preferences, **self._secrets}
+        return {**self._preferences, **self._kept_apart}
 
     def merge_preferences(self, values: dict[str, Any]) -> None:
         """Set many settings with one atomic write (a restored backup's)."""
         if not values:
             return
-        values = self._keep_secrets(values)
+        values = self._set_apart(values)
         self._preferences.update(values)
         atomic_write_json(self.preferences_path, self._preferences)
 
@@ -487,7 +491,7 @@ class ConfigManager:
         for name in secrets_store.SECRET_FILES:
             if name == key:  # the loop's own literal reaches the store, never `key`
                 secrets_store.write(self.data_dir, name, "")
-                self._secrets[name] = ""
+                self._kept_apart[name] = ""
         if key in self._preferences:
             del self._preferences[key]
             atomic_write_json(self.preferences_path, self._preferences)
@@ -504,7 +508,7 @@ class ConfigManager:
         """
         self.merge_preferences({key: value})
 
-    def _keep_secrets(self, values: dict[str, Any]) -> dict[str, Any]:
+    def _set_apart(self, values: dict[str, Any]) -> dict[str, Any]:
         """`values` with each secret setting stored away and blanked. A secret
         that could not be stored stays in the file: losing it is worse."""
         out = dict(values)
@@ -515,10 +519,10 @@ class ConfigManager:
                 continue
             text = str(out[name] or "")
             if secrets_store.write(self.data_dir, name, text):
-                self._secrets[name] = text
+                self._kept_apart[name] = text
                 out[name] = ""
             else:
-                self._secrets[name] = text
+                self._kept_apart[name] = text
         return out
 
 

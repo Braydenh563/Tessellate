@@ -1019,6 +1019,8 @@ onSurface("board", () => {
     e.currentTarget.setAttribute("aria-pressed", String(next));
     wbFmtState.captions = new Map();
     wbFmtState.paintCaptions();
+    //: The same pref draws under a note's pictures in a card and a graph popup.
+    if (typeof imageLayout === "function") imageLayout.paintCaptions();
   });
   document.getElementById("wb-fmt-showcaption")?.setAttribute("aria-pressed", String(prefs.get("wb-show-captions", null) === "1"));
   //: Replace picture: the button opens the file box; the new file is uploaded and the picture's address

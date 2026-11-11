@@ -199,3 +199,13 @@ def test_a_late_mount_does_not_take_the_focus_from_an_open_sheet():
     wiring = (ROOT / "frontend" / "js" / "wiring.js").read_text(encoding="utf-8")
     start = wiring.index("function startNewNote()")
     assert "!activeOverlay() && s?.focus()" in wiring[start : wiring.index("\n}\n", start)]
+
+
+def test_a_broken_editor_bundle_is_asked_for_once():
+    """D47: with the bundle blocked, the idle warm-up failed and then
+    code-colour's `loadCodeMirror()` asked again (measured, 2 requests and 2
+    warnings; `scratchpad/ui-sweeps/docfallback.js` now reads 1 and 1). The
+    loader itself refuses once `docCmBroken` is set, so no caller can retry."""
+    start = DOCS.index("function loadCodeMirror() {")
+    body = DOCS[start : DOCS.index("\n}\n", start)]
+    assert body.index("if (docCmBroken) return Promise.resolve(null);") < body.index("docCmLoad = new Promise")

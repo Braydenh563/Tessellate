@@ -145,6 +145,25 @@ function docTypeMount() {
     opener.title = "New document of another type";
     head.replaceChildren(wrap);
   }
+  //: **The Recent head holds one row at every width the sidebar takes (220 to 320px).** Under 16rem of
+  //: sidebar the help, template and diagram buttons give way to this ⋯ (built here, not in index.html: the
+  //: boot document is element-capped), and the CSS (`.doc-head-more`) shows it only then. The rows press the
+  //: real buttons, so each has one handler and one id.
+  const tools = document.querySelector("#doc-sidebar-list .doc-head-tools");
+  if (tools && !tools.querySelector(".doc-head-more")) {
+    const press = (selector) => () => document.querySelector(selector)?.click();
+    const more = kebabMenu(
+      [
+        { label: "ph:question About this list", run: press('#doc-sidebar-list [data-help-for="doc-list-help"]') },
+        { label: "ph:layout New from a template", run: press("#doc-new-template") },
+        { label: "ph:flow-arrow New diagram", run: press("#doc-new-diagram") },
+      ],
+      "More about the document list",
+    );
+    more.querySelector("button").id = "doc-head-more-button";
+    more.classList.add("doc-head-more");
+    tools.append(more);
+  }
 }
 
 //: The foot's button names the type and its row wears the check. Only when the
@@ -1278,6 +1297,7 @@ function showNoDocument() {
   renderDocOutline();
   renderDocProperties();
   renderDocComments();
+  document.dispatchEvent(new CustomEvent("doc-shown", { detail: null }));
   //: **A new empty page opens to write in** (audit 1028 U8). A phone's default
   //: is Rendered, where the first tap on a blank page did nothing. Not stored:
   //: the next document still opens the way the person last chose.
@@ -1378,6 +1398,7 @@ async function openDocument(id) {
     renderDocComments();
   });
   renderDocList();
+  document.dispatchEvent(new CustomEvent("doc-shown", { detail: doc }));
   //: Before the place is restored, which stays last (tests/test_doc_long.py).
   offerKeptDocEdit(doc);
   docRestorePosition(doc.id);
@@ -15978,6 +15999,7 @@ let docCmBroken = false;
 
 function loadCodeMirror() {
   if (window.CM6) return Promise.resolve(window.CM6);
+  if (docCmBroken) return Promise.resolve(null);
   if (docCmLoad) return docCmLoad;
   docCmLoad = new Promise((resolve, reject) => {
     const script = document.createElement("script");
