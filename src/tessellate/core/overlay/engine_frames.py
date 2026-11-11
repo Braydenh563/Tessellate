@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import math
 from . import behaviour as bh, wisps
+from .sprites import EXTRA_FALLBACK
 from .engine_consts import (
     BLINK_PHASES,
     CARD_SWAP,
@@ -47,6 +48,8 @@ class FramesMixin:
         #: state, an act that waves, a dance.
         if name == "wave" and self.wave_frames:
             return f"wave{int(now * WAVE_FPS + 1e-6) % self.wave_frames}"
+        if name in EXTRA_FALLBACK and name not in self.extra_frames:
+            return EXTRA_FALLBACK[name]  # a look without the picture of the act draws the pose it is a variation of
         return name
 
     def _state_frame(self, now: float) -> str:
@@ -59,6 +62,8 @@ class FramesMixin:
             return "land"
         if s == "warp" and self.warp is not None and self.warp["kind"] == "edge":
             return self._edge_warp_frame(now)
+        if s == "hang" and now < self.hang_one_until:
+            return "hang_one"
         if s in FRAME_OF:
             return self._fixed_frame(s)
         if s == "fly":

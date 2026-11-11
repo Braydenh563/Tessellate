@@ -260,7 +260,7 @@ ACTIVITIES.update({
     "self_hug": Activity("stand", (3.0, 6.0), _k((0, 1, 1, 0), (0.12, 0.98, 0.99, 0.02), (0.4, 0.98, 0.99, -0.04), (0.7, 0.98, 0.99, 0.04), (0.9, 0.98, 0.99, 0), (1, 1, 1, 0)), (("comfort", -0.35),), likes="sleepy"),
     "foot_tap": Activity("stand", (2.0, 4.0), _k((0, 1, 1, 0), (0.1, 1, 0.98, 0.02), (0.2, 1, 1, 0), (0.35, 1, 0.98, 0.02), (0.45, 1, 1, 0), (0.6, 1, 0.98, 0.02), (0.7, 1, 1, 0), (0.85, 1, 0.98, 0.02), (1, 1, 1, 0)), (("novelty", -0.1),), likes="bored"),
     #: INBOX 1710, 1711: the long sitting acts (the catalogue's `act.meditate`, `lounge`, `rest_head`) and four more small ones.
-    "meditate": Activity("sit", (12.0, 80.0), _k((0, 1, 1, 0), (0.06, 1, 1.03, 0), (0.2, 1, 0.98, 0), (0.35, 1, 1.03, 0), (0.5, 1, 0.98, 0), (0.65, 1, 1.03, 0), (0.8, 1, 0.98, 0), (0.94, 1, 1.02, 0), (1, 1, 1, 0)), (("rest", -0.3), ("comfort", -0.2)), likes="sleepy"),
+    "meditate": Activity("meditate", (12.0, 80.0), _k((0, 1, 1, 0), (0.06, 1, 1.03, 0), (0.2, 1, 0.98, 0), (0.35, 1, 1.03, 0), (0.5, 1, 0.98, 0), (0.65, 1, 1.03, 0), (0.8, 1, 0.98, 0), (0.94, 1, 1.02, 0), (1, 1, 1, 0)), (("rest", -0.3), ("comfort", -0.2)), likes="sleepy"),
     "lounge": Activity("sit", (14.0, 60.0), _k((0, 1, 1, 0), (0.1, 1.02, 0.96, 0.03), (0.5, 1.02, 0.95, -0.03), (0.9, 1.02, 0.96, 0.02), (1, 1, 1, 0)), (("rest", -0.35), ("comfort", -0.3)), likes="sleepy"),
     "rest_head": Activity("sit", (11.0, 40.0), _k((0, 1, 1, 0), (0.1, 1, 0.98, -0.04), (0.45, 1, 0.98, -0.04), (0.55, 1, 0.98, 0.04), (0.9, 1, 0.98, 0.04), (1, 1, 1, 0)), (("rest", -0.3),)),
     "star_catch": Activity("wave", (3.0, 6.0), _k((0, 1, 1, 0), (0.15, 1, 1.04, 0.03), (0.3, 1, 0.97, -0.03), (0.45, 1, 1.05, 0.04), (0.6, 1, 0.97, -0.02), (0.8, 1, 1.03, 0.02), (1, 1, 1, 0)), (("play", -0.25), ("curiosity", -0.1)), likes="curious"),
@@ -272,9 +272,22 @@ for _n, _extra in {"wave_idle": (("social", -0.3),), "little_dance": (("social",
                    "look_around": (("novelty", -0.1),), "stretch": (("comfort", -0.2),), "sit_down": (("comfort", -0.25),)}.items():
     ACTIVITIES[_n] = ACTIVITIES[_n]._replace(feeds=ACTIVITIES[_n].feeds + _extra)
 #: The long sitting acts: the engine ends them at `IDLE_SIT` so the sit comes on time (they run up to 80 s on the sit frame).
+#: W31 E2 (INBOX 1710): the app's legs over an edge and the let-go hand, now with a picture each. `dangle` and `kick_legs` are
+#: `where="perch"`: only on a window's top (the edge the legs go over); `hang_one_hand` is `where="hang"`, so the table never picks it:
+#: the engine plays it inside a hang (`Engine._let_one_go`) and feeds the mind. Lengths and weights come from the catalogue.
+ACTIVITIES.update({
+    "dangle": Activity("dangle", (6.0, 40.0), _k((0, 1, 1, 0), (0.12, 1, 1.01, 0.02), (0.5, 1, 1.01, -0.02), (0.88, 1, 1.01, 0.02), (1, 1, 1, 0)), (("comfort", -0.2), ("play", -0.05)), where="perch"),
+    "kick_legs": Activity(
+        ((0.0, "kick0"), (0.17, "kick1"), (0.33, "kick0"), (0.5, "kick1"), (0.67, "kick0"), (0.83, "kick1")), (1.6, 3.0),
+        _k((0, 1, 1, 0), (0.2, 1, 1.02, 0.02), (0.5, 1, 1.02, -0.02), (0.8, 1, 1.02, 0.02), (1, 1, 1, 0)), (("play", -0.25),), likes="happy", where="perch",
+    ),
+    "hang_one_hand": Activity("hang_one", (4.2, 8.0), _k((0, 1, 1, 0), (1, 1, 1, 0)), (("play", -0.1),), likes="proud", where="hang"),
+})
 YIELD_TO_SIT = frozenset({"meditate", "lounge", "rest_head"})
 #: The ones that only make sense in place: all of them (a trip is a different table).
 IDLE_NAMES = tuple(ACTIVITIES)
+#: How much likelier a perch-only act is on a window's top than its catalogue weight says (it is the only place it can happen).
+PERCH_ACT_BOOST = 5.0
 #: Base chance of each, before need, mood and repeat shape it. Quiet things are common.
 BASE_WEIGHT = {
     "breathe": 9, "shift_weight": 8, "look_around": 8, "slow_blink": 8, "tail_flick": 7, "nod": 3, "shrug": 3,
@@ -425,6 +438,7 @@ CHAINS = (
     Chain(("wave_pointer", "look_around"), ()),
     Chain(("rest_head", "stretch", "yawn"), ()),
     Chain(("lounge", "card_nap"), ("sleepy",)),
+    Chain(("dangle", "kick_legs"), ("happy",)),
     Chain(("pace", "sigh"), ()),
     Chain(("cast_sparkle", "toss_stars"), ("happy",)),
 )
@@ -518,7 +532,8 @@ class Mind:
                 continue  # never the same act twice running, quiet ones included
             if now - self.done.get(name, -1e9) < NO_REPEAT and name not in MICRO:
                 continue  # quiet micro things may recur (not back to back); the rest wait their turn
-            out.append((name, self._weight(name, act, mood, hour, now)))
+            #: on a window top the perch-only acts (legs over its edge) are the point of being there: a visit is short
+            out.append((name, self._weight(name, act, mood, hour, now) * (PERCH_ACT_BOOST if act.where == "perch" else 1.0)))
         return out
 
     def _when(self, name: str, hour: int) -> float:

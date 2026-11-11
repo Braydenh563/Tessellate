@@ -43,6 +43,12 @@ OLD_WALK_COUNT = 6
 #: swung side to side about the raised position, `wave0` to `wave5`. Optional: a set without it draws `wave`.
 WAVE_COUNT = 6
 WAVE_FRAMES = tuple(f"wave{i}" for i in range(WAVE_COUNT))
+#: Pictures of acts the app drew and the desk did not (W31 E1, E2; INBOX 1710): the lower wisp let down over an edge
+#: and swung (`dangle`, and `kick0` and `kick1` thrown forward and back), the hang with one hand let go (`hang_one`)
+#: and the long sit with the eyes shut (`meditate`). Optional like the wave's: a set without them draws `EXTRA_FALLBACK`
+#: (the sit, the hang), and a companion made from the person's own name has none (`capture.CAPTURED`).
+EXTRA_FRAMES = ("dangle", "kick0", "kick1", "hang_one", "meditate")
+EXTRA_FALLBACK = {"dangle": "sit", "kick0": "sit", "kick1": "sit", "hang_one": "hang", "meditate": "sit"}
 #: Every frame of a look, in the order they are rendered. Walking is `walk0` to
 #: `walk11`; the others are what the engine's states draw. `card0` and `card1` are the
 #: figure holding a reminder's card (`scripts/render_card_frames.py`, Pillow, from
@@ -54,6 +60,7 @@ FRAME_NAMES = (
     "card0", "card1",
     *IDLE_FRAMES,
     *WAVE_FRAMES,
+    *EXTRA_FRAMES,
 )
 #: Drawn by `scripts/render_card_frames.py`, not captured from the app.
 CARD_FRAMES = ("card0", "card1")
@@ -276,7 +283,7 @@ class SpriteSet:
 
     def missing(self) -> list[str]:
         """What a look must have to run: the frames an older, shorter set also had."""
-        extra = {*WALK_FRAMES[OLD_WALK_COUNT:], *IDLE_FRAMES[OLD_IDLE_COUNT:], *WAVE_FRAMES}
+        extra = {*WALK_FRAMES[OLD_WALK_COUNT:], *IDLE_FRAMES[OLD_IDLE_COUNT:], *WAVE_FRAMES, *EXTRA_FRAMES}
         return [n for n in FRAME_NAMES if n not in extra and not self._has(n)]
 
     def walk_count(self) -> int:
@@ -286,6 +293,10 @@ class SpriteSet:
     def wave_count(self) -> int:
         """The wave's arm swing frames shipped (`WAVE_COUNT`), or 0: the one `wave` frame is drawn."""
         return WAVE_COUNT if all(self._has(n) for n in WAVE_FRAMES) else 0
+
+    def extras(self) -> frozenset[str]:
+        """Which of `EXTRA_FRAMES` are shipped: the engine draws the others' `EXTRA_FALLBACK`."""
+        return frozenset(n for n in EXTRA_FRAMES if self._has(n))
 
     def idle_count(self) -> int:
         return IDLE_COUNT if all(self._has(n) for n in IDLE_FRAMES) else OLD_IDLE_COUNT

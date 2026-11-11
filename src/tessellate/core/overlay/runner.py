@@ -62,7 +62,7 @@ BLEND_S = 0.12
 BLEND_LOOK_S = 0.24
 BLEND_STEPS = 7
 BLEND_TICK_MS = 16
-BLENDED = ("stand", "walk", "idle", "look", "sit", "sleep", "wave", "land", "hang")
+BLENDED = ("stand", "walk", "idle", "look", "sit", "sleep", "wave", "land", "hang", "hang_one", "dangle", "kick", "meditate")
 BUSY_EVERY = 2.0
 #: A flight or a fall holds the periodic reads back this long at most (s): longer than any throw is in the air, so it is a
 #: bound, not a pace (`OverlayRunner._aloft`).
@@ -762,7 +762,7 @@ class OverlayRunner:
         first = self.monitors[0]
         self.dpi = first.dpi
         self.engine = eng.Engine(
-            spr.size(self._fdpi()), self.monitors, home=self.home, reduced=reduced, roam=not self.stay, roam_windows=self.roam_windows, gait=spr.gait, hang_top=spr.top_share("hang"), idle_frames=spr.idle_count(), walk_frames=spr.walk_count(), wave_frames=spr.wave_count(), now=self.clock(), rng=self.rng,
+            spr.size(self._fdpi()), self.monitors, home=self.home, reduced=reduced, roam=not self.stay, roam_windows=self.roam_windows, gait=spr.gait, hang_top=spr.top_share("hang"), idle_frames=spr.idle_count(), walk_frames=spr.walk_count(), wave_frames=spr.wave_count(), extra_frames=spr.extras(), now=self.clock(), rng=self.rng,
         )
         self.engine.set_metrics(spr.metrics(self._fdpi()))
         self.engine.take(self.carried, self.clock())
