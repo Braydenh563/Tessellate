@@ -256,9 +256,9 @@ def test_a_note_binned_long_ago_comes_in_with_a_fresh_bin_period(exported):
         for entry in binned:
             stamp = entry.deleted_at if entry.deleted_at.tzinfo else entry.deleted_at.replace(tzinfo=timezone.utc)
             assert stamp > floor, (entry.id, entry.deleted_at)
-        from tessellate.entry import manager
+        from tessellate.entry import manager_purge
 
-        assert manager.purge_expired_deleted(session, 30) == 0  # the start-up purge keeps them
+        assert manager_purge.purge_expired_deleted(session, 30) == 0  # the start-up purge keeps them
     finally:
         session.close()
 

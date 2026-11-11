@@ -207,13 +207,14 @@ def test_a_purged_note_leaves_no_row_behind(session):
     note's row stayed, flagged `deleted`, for ever (`is:deleted` still found
     a note that no longer existed anywhere else)."""
     from tessellate.entry import manager
+    from tessellate.entry import manager_purge
 
     entry = manager.create_entry(session, "the old boiler manual", tags=[])
     session.commit()
     manager.soft_delete_entry(session, entry)
     session.commit()
     ref = entry.id
-    manager.purge_entries(session, [entry])
+    manager_purge.purge_entries(session, [entry])
     assert not _indexed(session, "note", ref)
 
 

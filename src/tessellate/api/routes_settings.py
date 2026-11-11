@@ -38,6 +38,7 @@ from tessellate.core.config import default_preferences
 from tessellate.core.database import AuditLog, Entry, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry import manager
+from tessellate.entry import manager_purge
 from tessellate.repo import categories as categories_repo
 from tessellate.repo import relations
 from tessellate.search import searxng_manager, websearch
@@ -1902,7 +1903,7 @@ def _not_private_events(query):
     Two ways an event is about a private note: the note is still there and
     private (looked up by id), or it was purged, and its id matches nothing
     any more. A purge seals the events it leaves behind with a `private` flag
-    in their payload (`manager.seal_private_events`), and that flag is the
+    in their payload (`manager_purge.seal_private_events`), and that flag is the
     second test. `is_(True)` rather than `== True`, so an event with no
     payload at all (SQL null) is kept rather than dropped by a null compare.
     """
@@ -2122,7 +2123,7 @@ def clear_audit_log(
 def empty_recycle_bin(session: Session = Depends(get_session)) -> dict:
     from tessellate.entry import bin as other_bin
 
-    removed = manager.empty_recycle_bin(
+    removed = manager_purge.empty_recycle_bin(
         session, uploads_dir=deps.get_config().uploads_dir
     )
     #: The bin's documents and reminders go with its notes (5 item 10).

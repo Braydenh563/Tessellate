@@ -224,7 +224,7 @@ def test_notes_list_fetches_attachments_once_not_once_per_note(client, session):
     The fourth thing `_to_out` resolves per entry. `_to_out_bulk` had been
     given batched forms for categories, dates, documents and links, so the
     endpoint looked bulk-fetched; `attachments=` still called
-    `manager.attachments_for` inside the list comprehension. Counted on a
+    `manager_purge.attachments_for` inside the list comprehension. Counted on a
     60-note page: 67 statements, 60 of them the same
     `SELECT ... FROM attachments WHERE entry_id = ?`; 8 after. This is the
     notes list, so it is the most-requested endpoint in the app.

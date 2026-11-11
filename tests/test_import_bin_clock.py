@@ -16,6 +16,7 @@ from tessellate.api.routes_settings_transfer import _parse_frontmatter
 from tessellate.core import deps
 from tessellate.core.database import Entry, utcnow
 from tessellate.entry import app_import, export_folder, manager
+from tessellate.entry import manager_purge
 
 
 def _zip_of(session) -> bytes:
@@ -45,6 +46,6 @@ def test_a_binned_note_imported_with_an_old_stamp_survives_the_sweep(client, tmp
     assert imported.deleted_at is not None
     assert utcnow() - imported.deleted_at < timedelta(minutes=5)
 
-    assert manager.purge_expired_deleted(session, 30, deps.get_config().uploads_dir) == 0
+    assert manager_purge.purge_expired_deleted(session, 30, deps.get_config().uploads_dir) == 0
     assert session.get(Entry, written["ids"][0]) is not None
     session.close()

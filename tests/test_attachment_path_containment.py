@@ -12,6 +12,7 @@ import io
 from tessellate.core import deps
 from tessellate.core.database import Attachment
 from tessellate.entry import manager
+from tessellate.entry import manager_purge
 
 
 def _attachment(client, session):
@@ -56,5 +57,5 @@ def test_deleting_does_not_unlink_a_file_outside(ai_client, session, tmp_path_fa
     secret = _outside(tmp_path_factory)
     attachment.stored_name = str(secret)
     session.commit()
-    manager.delete_attachment(session, attachment, deps.get_config().uploads_dir)
+    manager_purge.delete_attachment(session, attachment, deps.get_config().uploads_dir)
     assert secret.exists()

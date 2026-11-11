@@ -81,15 +81,12 @@ SOURCES: tuple[Source, ...] = (
     Source("ai/voice.py", raises=("RuntimeError",), consts=("INSTALL_HINT",), returns=("remove_model",)),
     Source("ai/captions.py", raises=("CaptionsError",), consts=("NO_HELPER_HINT", "NOT_LOCAL_HINT")),
     Source("entry/importer.py", raises=("RuntimeError",), consts=("INSTALL_HINT",)),
+    Source("entry/manager.py", raises=("ValueError",), functions=("rename_category", "delete_category")),
+    #: The attachment functions moved out of manager.py whole (K24): same messages, new file.
     Source(
-        "entry/manager.py",
+        "entry/manager_purge.py",
         raises=("ValueError", "FileExistsError"),
-        functions=(
-            "validate_attachment_filename",
-            "rename_attachment",
-            "rename_category",
-            "delete_category",
-        ),
+        functions=("validate_attachment_filename", "rename_attachment"),
     ),
     Source("repo/tags.py", raises=("ValueError",), functions=("rename",)),
     Source("entry/tidy.py", raises=("ValueError", "LookupError"), functions=("set_auto", "undo")),

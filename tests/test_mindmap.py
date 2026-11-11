@@ -64,7 +64,7 @@ def test_deleting_a_map_takes_its_topics_and_leaves_the_notes_it_referenced(
 
     Without this the default behaviour is actively wrong in two different
     directions at once: purging a board detaches everything on it to the
-    default scratch board (`manager._hard_delete`), so a deleted map's topics
+    default scratch board (`manager_purge._hard_delete`), so a deleted map's topics
     would reappear as loose text on the one board nobody deletes, and any
     attempt to fix that by simply deleting everything on the board would take
     the referenced *notes* with it, which is data loss.

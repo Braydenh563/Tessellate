@@ -141,7 +141,7 @@ from tessellate.core import (
     validation_copy,
 )
 from tessellate.core.deps import init_app_state
-from tessellate.entry import manager
+from tessellate.entry import manager_purge
 
 # repo-root/frontend: three levels up from src/tessellate/api/app.py in a
 # source checkout. A PyInstaller build has no "three levels up": everything
@@ -594,7 +594,7 @@ def _purge_expired_bin_entries() -> None:
             config = deps.get_config()
             days = int(config.get_preference("recycle_bin_days", 30))
             with events.acting_as("system:recycle-bin"):
-                manager.purge_expired_deleted(session, days, uploads_dir=config.uploads_dir)
+                manager_purge.purge_expired_deleted(session, days, uploads_dir=config.uploads_dir)
                 # The bin's documents and reminders, on the same rule.
                 from tessellate.entry import bin as other_bin
 

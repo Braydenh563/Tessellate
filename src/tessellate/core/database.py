@@ -3234,7 +3234,7 @@ class DatabaseManager:
     def _drop_orphan_links(self) -> None:
         """Remove link rows whose source or target note no longer exists.
 
-        Every purge clears a note's links (`manager._hard_delete`), so a row
+        Every purge clears a note's links (`manager_purge._hard_delete`), so a row
         pointing at a missing note came from a path that did not (a database
         written with foreign keys off, an interrupted import). Left in place
         it inflates the link count (diagnostics showed 4,234 links on 37

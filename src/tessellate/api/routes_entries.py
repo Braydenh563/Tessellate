@@ -68,6 +68,7 @@ from tessellate.core.deps import get_session
 from tessellate.core.events import ACTOR_USER_AND_AI
 from tessellate.core.validation_copy import Said
 from tessellate.entry import manager, private_space
+from tessellate.entry import manager_purge
 from tessellate.entry import manager_private
 from tessellate.entry import meetings as meeting_shape
 from tessellate.entry import properties as note_properties
@@ -126,7 +127,7 @@ def _to_out(
     )
     resolved_links = manager.links_for_entry(session, entry) if links is None else links
     resolved_attachments = (
-        manager.attachments_for(session, entry) if attachments is None else attachments
+        manager_purge.attachments_for(session, entry) if attachments is None else attachments
     )
     return EntryOut(
         id=entry.id,
@@ -320,7 +321,7 @@ def _to_out_bulk(session: Session, entries: list) -> list[EntryOut]:
     dates_by_id = manager.entry_dates_bulk(session, ids)
     documents_by_id = manager.documents_for_entries_bulk(session, ids)
     links_by_id = manager.links_for_entries_bulk(session, ids)
-    attachments_by_id = manager.attachments_for_entries_bulk(session, ids)
+    attachments_by_id = manager_purge.attachments_for_entries_bulk(session, ids)
     return [
         _to_out(
             session,
@@ -2513,7 +2514,7 @@ def purge_entry(entry_id: int, session: Session = Depends(get_session)) -> dict:
             status_code=400,
             detail="Only notes in the recycle bin can be permanently deleted.",
         )
-    removed = manager.purge_entries(
+    removed = manager_purge.purge_entries(
         session, [entry], uploads_dir=deps.get_config().uploads_dir
     )
     return {"purged": removed, "id": entry_id}
@@ -2697,11 +2698,11 @@ def _board_reference_rows_batch(session: Session, entry_ids: list[int]) -> dict[
         for board_id, board in boards:
             #: `board_settings` says whether this is a whiteboard or a mind map,
             #: and the owner asked for both by name, so the row says which.
-            #: Through `manager.board_type_of` rather than parsed here: this app
+            #: Through `manager_purge.board_type_of` rather than parsed here: this app
             #: already reads that column in four places and CodeQL caught the
             #: fifth arriving with a bare `except: pass`, which is fair. One
             #: reader, one decision about what a malformed value means.
-            kind = manager.board_type_of(board)
+            kind = manager_purge.board_type_of(board)
             rows.append({
                 "kind": kind,
                 "id": board_id,

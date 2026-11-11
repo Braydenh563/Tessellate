@@ -403,7 +403,7 @@ def delete_object(object_id: int, db: Session = Depends(get_session)) -> dict:
     doomed = _subtree(db, obj)
     deleted = [_object_to_out(row).model_dump() for row in doomed]
     # One event with the id list, the same shape a purge of notes records
-    # (`manager.purge_entries`): deleting a branch is one action a person took
+    # (`manager_purge.purge_entries`): deleting a branch is one action a person took
     # and has to be undoable as one, so it is one event holding the state of
     # every row that went, not one event per row.
     events.record(
