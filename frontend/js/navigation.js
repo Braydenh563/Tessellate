@@ -134,6 +134,8 @@ function rowMenuAtEvent(event) {
     return null;
   }
   if (String(window.getSelection?.() || "").trim()) return null;
+  //: A picture inside a note is the picture menu's (Copy image, attachment-actions.js); a file card keeps its own.
+  if (target.closest("#entry-list img") && !target.closest(".att-card")) return null;
   const host = target.closest(ROW_MENU_HOSTS);
   if (!host) return null;
   const opener = [...host.querySelectorAll('.menu-wrap > [aria-haspopup="menu"]')].find(

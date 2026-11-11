@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8181, frontend ids 2716, CSS sections 524, backend routes 677, backend modules 10470, test files 2595, tests 21233, plan headings 1012, app scripts 29, boot scripts 38, script files 284.
+Counts: frontend functions 8181, frontend ids 2716, CSS sections 524, backend routes 677, backend modules 10470, test files 2595, tests 21234, plan headings 1012, app scripts 29, boot scripts 38, script files 284.
 
 ## Frontend functions (8181)
 
@@ -779,62 +779,62 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aboveDockFab` | frontend/js/navigation.js:2455 |
-| `activeNotesSection` | frontend/js/navigation.js:2282 |
-| `arrowNavTarget` | frontend/js/navigation.js:205 |
-| `backgroundWriteFailed` | frontend/js/navigation.js:1813 |
-| `chatMidStream` | frontend/js/navigation.js:1745 |
-| `closeNavHistoryMenu` | frontend/js/navigation.js:905 |
-| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1775 |
-| `coversAFormPrimary` | frontend/js/navigation.js:2588 |
-| `entryLabel` | frontend/js/navigation.js:1003 |
-| `formPrimaryButtons` | frontend/js/navigation.js:2549 |
-| `goToTabHistory` | frontend/js/navigation.js:1094 |
-| `hasUnsavedWork` | frontend/js/navigation.js:1724 |
-| `hideClosedDockMenuLists` | frontend/js/navigation.js:1503 |
-| `initNotesSubtabs` | frontend/js/navigation.js:2345 |
-| `initScrollTopButton` | frontend/js/navigation.js:2608 |
-| `insideClosedDetails` | frontend/js/navigation.js:1557 |
-| `loadSurface` | frontend/js/navigation.js:1301 |
-| `measureSpacingPx` | frontend/js/navigation.js:2579 |
-| `menuOfOpener` | frontend/js/navigation.js:1579 |
-| `menuRowsOf` | frontend/js/navigation.js:1564 |
-| `mermaidSoon` | frontend/js/navigation.js:370 |
-| `openHistoryEntry` | frontend/js/navigation.js:1154 |
-| `openNavHistoryMenu` | frontend/js/navigation.js:925 |
-| `openRowMenu` | frontend/js/navigation.js:148 |
-| `openSelectionScope` | frontend/js/navigation.js:318 |
-| `paintTabHistory` | frontend/js/navigation.js:952 |
-| `placeDockMenuInWindow` | frontend/js/navigation.js:1372 |
-| `positionScrollTopForNested` | frontend/js/navigation.js:2464 |
-| `recordTabVisit` | frontend/js/navigation.js:1040 |
-| `recordingLive` | frontend/js/navigation.js:1752 |
-| `renderMarkdown` | frontend/js/navigation.js:379 |
-| `resetNavigationForNewSession` | frontend/js/navigation.js:2243 |
-| `resetNavigationToDefaults` | frontend/js/navigation.js:2262 |
-| `restoreSettingsScroll` | frontend/js/navigation.js:1141 |
-| `revealTab` | frontend/js/navigation.js:815 |
+| `aboveDockFab` | frontend/js/navigation.js:2457 |
+| `activeNotesSection` | frontend/js/navigation.js:2284 |
+| `arrowNavTarget` | frontend/js/navigation.js:207 |
+| `backgroundWriteFailed` | frontend/js/navigation.js:1815 |
+| `chatMidStream` | frontend/js/navigation.js:1747 |
+| `closeNavHistoryMenu` | frontend/js/navigation.js:907 |
+| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1777 |
+| `coversAFormPrimary` | frontend/js/navigation.js:2590 |
+| `entryLabel` | frontend/js/navigation.js:1005 |
+| `formPrimaryButtons` | frontend/js/navigation.js:2551 |
+| `goToTabHistory` | frontend/js/navigation.js:1096 |
+| `hasUnsavedWork` | frontend/js/navigation.js:1726 |
+| `hideClosedDockMenuLists` | frontend/js/navigation.js:1505 |
+| `initNotesSubtabs` | frontend/js/navigation.js:2347 |
+| `initScrollTopButton` | frontend/js/navigation.js:2610 |
+| `insideClosedDetails` | frontend/js/navigation.js:1559 |
+| `loadSurface` | frontend/js/navigation.js:1303 |
+| `measureSpacingPx` | frontend/js/navigation.js:2581 |
+| `menuOfOpener` | frontend/js/navigation.js:1581 |
+| `menuRowsOf` | frontend/js/navigation.js:1566 |
+| `mermaidSoon` | frontend/js/navigation.js:372 |
+| `openHistoryEntry` | frontend/js/navigation.js:1156 |
+| `openNavHistoryMenu` | frontend/js/navigation.js:927 |
+| `openRowMenu` | frontend/js/navigation.js:150 |
+| `openSelectionScope` | frontend/js/navigation.js:320 |
+| `paintTabHistory` | frontend/js/navigation.js:954 |
+| `placeDockMenuInWindow` | frontend/js/navigation.js:1374 |
+| `positionScrollTopForNested` | frontend/js/navigation.js:2466 |
+| `recordTabVisit` | frontend/js/navigation.js:1042 |
+| `recordingLive` | frontend/js/navigation.js:1754 |
+| `renderMarkdown` | frontend/js/navigation.js:381 |
+| `resetNavigationForNewSession` | frontend/js/navigation.js:2245 |
+| `resetNavigationToDefaults` | frontend/js/navigation.js:2264 |
+| `restoreSettingsScroll` | frontend/js/navigation.js:1143 |
+| `revealTab` | frontend/js/navigation.js:817 |
 | `rowMenuAtEvent` | frontend/js/navigation.js:127 |
-| `scrollTopTargetEl` | frontend/js/navigation.js:2431 |
-| `scrollingPage` | frontend/js/navigation.js:2384 |
-| `showNotesSection` | frontend/js/navigation.js:2287 |
-| `spacingPx` | frontend/js/navigation.js:2572 |
-| `stepTabHistory` | frontend/js/navigation.js:1084 |
-| `stripMarkdownPreview` | frontend/js/navigation.js:2189 |
-| `surfaceRecovered` | frontend/js/navigation.js:1279 |
-| `switchTab` | frontend/js/navigation.js:1862 |
-| `syncScrollLock` | frontend/js/navigation.js:2750 |
-| `tabLabel` | frontend/js/navigation.js:991 |
-| `tabPlaceholder` | frontend/js/navigation.js:2125 |
-| `tabSkeletonBar` | frontend/js/navigation.js:2106 |
-| `tabSkeletonDock` | frontend/js/navigation.js:2116 |
-| `tabSkeletonPiece` | frontend/js/navigation.js:2095 |
-| `usageCount` | frontend/js/navigation.js:1823 |
-| `usageFeatureName` | frontend/js/navigation.js:1819 |
-| `usageFlush` | frontend/js/navigation.js:1827 |
-| `watchDockMenuPlacement` | frontend/js/navigation.js:1434 |
+| `scrollTopTargetEl` | frontend/js/navigation.js:2433 |
+| `scrollingPage` | frontend/js/navigation.js:2386 |
+| `showNotesSection` | frontend/js/navigation.js:2289 |
+| `spacingPx` | frontend/js/navigation.js:2574 |
+| `stepTabHistory` | frontend/js/navigation.js:1086 |
+| `stripMarkdownPreview` | frontend/js/navigation.js:2191 |
+| `surfaceRecovered` | frontend/js/navigation.js:1281 |
+| `switchTab` | frontend/js/navigation.js:1864 |
+| `syncScrollLock` | frontend/js/navigation.js:2752 |
+| `tabLabel` | frontend/js/navigation.js:993 |
+| `tabPlaceholder` | frontend/js/navigation.js:2127 |
+| `tabSkeletonBar` | frontend/js/navigation.js:2108 |
+| `tabSkeletonDock` | frontend/js/navigation.js:2118 |
+| `tabSkeletonPiece` | frontend/js/navigation.js:2097 |
+| `usageCount` | frontend/js/navigation.js:1825 |
+| `usageFeatureName` | frontend/js/navigation.js:1821 |
+| `usageFlush` | frontend/js/navigation.js:1829 |
+| `watchDockMenuPlacement` | frontend/js/navigation.js:1436 |
 | `wireLongPress` | frontend/js/navigation.js:24 |
-| `zoomWheelDelta` | frontend/js/navigation.js:2768 |
+| `zoomWheelDelta` | frontend/js/navigation.js:2770 |
 
 ### frontend/js/router.js (12)
 
@@ -26917,7 +26917,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21233)
+## Tests (21234)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27609,7 +27609,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_conversation_retention.py | 7 |
 | tests/test_conversations_api.py | 37 |
 | tests/test_convert_zones_1617.py | 5 |
-| tests/test_copy_image_1775.py | 14 |
+| tests/test_copy_image_1775.py | 15 |
 | tests/test_copy_places_1029b.py | 7 |
 | tests/test_core.py | 23 |
 | tests/test_core_message_wording.py | 15 |
