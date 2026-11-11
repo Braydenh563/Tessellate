@@ -2046,7 +2046,7 @@ def _polish_out(out: _Out, kind: str) -> None:
     _clean_out(out)
     if out.offer and out.offer.get("label"):
         out.offer = {**out.offer, "label": polish(str(out.offer["label"]), keep)}
-    _rows_as_polished(out)
+    _rows_as_polished(out, lambda t: _plain_marks(composer_threads.own_words(polish(t, keep), pool)))
 
 
 def _clean_out(out: _Out) -> None:
@@ -2055,12 +2055,12 @@ def _clean_out(out: _Out) -> None:
         lines[:] = [kept for kept in map(composer_clean.line, lines) if kept]
 
 
-def _rows_as_polished(out: _Out) -> None:
-    """A row is the sentence as the answer now reads it ("tuesday" became
-    "Tuesday"), else the card cannot find its words in the text (INBOX 1665 f)."""
+def _rows_as_polished(out: _Out, said_as=_plain_marks) -> None:
+    """A row is the sentence as the answer now reads it ("tuesday" became "Tuesday",
+    "to gym" "to the gym"), else the card finds no words (INBOX 1665 f, 1767 c)."""
     whole = "\n".join([*out.lines, *out.more, *out.closing, *out.next])
     for row in out.rows:
-        said = _plain_marks(str(row.get("sentence") or ""))
+        said = said_as(str(row.get("sentence") or ""))
         row["sentence"] = said
         found = re.search(re.escape(said), whole, re.IGNORECASE) if said and said not in whole else None
         if found:
