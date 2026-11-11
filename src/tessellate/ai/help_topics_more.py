@@ -3885,6 +3885,7 @@ MORE_TOPICS.append({
     "keywords": (
         "curved arrows", "straight arrows", "stepped arrows", "arrow lines", "line shape",
         "diagram spacing", "compact spacing", "roomy spacing", "diagram page menu", "diagram minimap", "diagram overview",
+        "expand a diagram", "full screen diagram",
     ),
     "body": (
         "A flowchart's ... menu sets how arrows are drawn (Straight lines, Curved lines, "
@@ -3895,7 +3896,8 @@ MORE_TOPICS.append({
         "writing switches, Read aloud and Extract notes. Export, beside Picture, List and "
         "Source, saves it as a PNG or an SVG, or copies it as a picture, as Mermaid or as SVG. "
         "A picture larger than its pane (zoomed in, or a big diagram at Fit) shows a small overview in "
-        "its lower left corner: press or drag it to move the picture. A phone pans by finger instead."
+        "its lower left corner: press or drag it to move the picture. A phone pans by finger instead. "
+        "Expand, at the end of the toolbar of a diagram in a document, opens it full screen with the same saving; Collapse or Escape returns to the document where you left it."
     ),
     "badge": {"label": "Documents", "tab": "documents"},
 })

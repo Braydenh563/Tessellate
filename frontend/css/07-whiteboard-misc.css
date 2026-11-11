@@ -5153,7 +5153,7 @@ rect.board-minimap-card,
 .library-image-tile:has(> .library-image-frame):hover > .library-tile-tick,
 .library-image-tile:has(> .library-image-frame):focus-within > .library-tile-tick,
 .library-image-tile:has(> .library-image-frame) > .library-tile-tick:checked,
-body:has(#library-media-selectbar:not(.hidden))
+body.library-media-selecting
   .library-image-tile:has(> .library-image-frame) > .library-tile-tick {
   opacity: 1;
 }
