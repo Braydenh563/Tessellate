@@ -6,6 +6,25 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 - Documents sidebar, Outline tab (the owner, 2026-11-11): the ? beside "This document" ends the row (right edge level with the row's, was 38px short) and starts 8px below the section's top instead of being clipped flat 4px above it.
 - Merge fixes (queue-1102): LanguageTool is in the Languages bundle; Make all notes private re-reads only its sealed notes (`refreshEntries(ids)`); switchTab asks before leaving unsaved work and only then builds the surface; att-chip.js and attach-accept.js are wrapped whole (fileChip moved into att-chip.js, 3 shared names fewer); the note card's menu (`entryOverflowMenu`) moved to entry-card.js, bringing the boot gzip down; tool_read.py's `_path_between` to tool_path.py and tool_run.py's coercers to tool_coerce.py, caps lowered (952, 304); test_inbox_732_733 finds the no-model banners by `document.getElementById`, the shape status.js uses.
+- Verify sweep W34 (list L1): 182 candidate open rows checked; 75 fixed, 6 owner-call, 8 owner-call/parked, 33 owner-call/plan, 24 stale, 16 true, 20 unverifiable (`docs/roadmap/agent-remaining/w34-L1-1111.md`).
+- Tests: the undo ratchet knows the two kept-page refetch chips in the Ask answer (`answer-kit.js` toolChip and keptPagesRow) are jobs, not writes to take back.
+- Text size Small no longer puts phone tap targets under 44 px: the touch floor is `max(2.75rem, 44px)`, and the header is 44 px at every size (OPEN #347).
+- Chat list: hovering a chat's time line shows the exact date and time of its last message (OPEN #593).
+- Select menus: the closed button of a menu whose options carry a picture (the map Layout list) shows the chosen picture too (audit 1028 U27).
+- Notes: Move to bin from a note's menu hands the keyboard focus to the next row (the capture field when the list empties) instead of dropping it to the page (sweep 1028b W8; `tests/test_bin_keeps_focus_w34.py`).
+- Fixed (docks, W34 C20): a surface built on demand (Notes, Reminders, Timeline, Graph, Library) had its docks missed by the fold-by-width observer, so with the connections rail open the Notes dock wrapped to two rows (82 px at 1366 to 1500, also at 820 and 1024); each surface's docks are now watched as it is built: 46 px on one row, and at 390 Notes 174 to 114 px, Graph 111 to 59.
+- Refactor (complexity, cplx-1031): `graph_path`, `graph_local` and the agent's `_run_and_record` are split into helpers and leave the complexity seed; no behaviour change.
+- Guide: "how do I export one note?" now finds Sharing a note and the note menu's Download .md.
+- Whiteboard: the sticky, text and frame tool titles say that Enter on the canvas places one too.
+- Documents: the title field meets the 44 px target floor on a phone.
+- Find anything: when the notebook holds private notes, an empty result says "Private notes are not searched."
+- Settings, Extras: a bundle with nothing installable in one click says why it has no Install button.
+- Documents: the editor is described to screen readers, including how to leave it (Escape, then Tab).
+- Quick search on the desk companion: pressing Enter while the search is still running opens the first match as soon as it arrives.
+- Tests: `tests/test_overlay_rest_1670.py` tries the seeds that last showed both a portal and a puff first (560 s to 60 s).
+- Desk companion logs its frame interval (p50, p95, max) once a minute, so a stutter report comes with numbers.
+- Tests: the writing room pins one "No model connected" notice.
+- Tests: the desk companion pins that each pose draws its own lower-body silhouette.
 - Documents sidebar (the owner, 2026-11-11): the Recent heading and its tools hold one row at every sidebar width from 220 to 320px (head 32px at 220, 260 and 320, tools level); below 16rem of sidebar the New word drops and the help, template and diagram buttons fold into a ⋯ beside New.
 - Fixed (owner, Windows): Settings, About, Running copies listed about 25 dead "other copies" on port 8000 and Shut down on one answered 502. A record now counts only when its port names the same instance (`/health` carries a hash of the token, `instance`) or its pid began when the record says (Windows reuses pids); a port's holder wins, start-up prunes, and Shut down on a dead entry removes it and says "That copy had already stopped; removed it from the list."
 - Captions (K18 left line): with Captions on, a note's own pictures get one muted line of their saved caption in the graph popup and in the timeline's note view (one cached lookup per picture, drawn as text; attachments say nothing); the popup's menu has Show or Hide picture captions. The Format panel's Library row wrapped its two buttons at 390 and at 1440, so Save to Library and Captions now have a row each. Help: the files-images topic and the Format popover. Swept at 390 and 1440: 18 of 18.
