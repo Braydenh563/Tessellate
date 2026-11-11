@@ -2940,7 +2940,9 @@ HELP_TOPICS.extend(
                 "names a language (python, js, html, css, sql and more) is coloured "
                 "as that language while you edit it, indents and closes brackets "
                 "as it does, and suggests its words as you type; typing the name "
-                "after the opening fence lists the languages."
+                "after the opening fence lists the languages. The block's corner "
+                "shows its title (title=\"fit.py\" on the fence) or language; press it "
+                "to pick another language."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

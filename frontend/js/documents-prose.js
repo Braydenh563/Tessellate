@@ -1846,6 +1846,26 @@ docPairInput.tagSource = (CM) => {
   };
 };
 
+//: **`\ref{` and `\eqref{` completion**: the labels of the page's equations,
+//: with the number each one takes (`docMathRender.labels.index`, the same map
+//: the rendered number reads). `docPairInput.refTyped` is the typed key after
+//: the open brace, or null.
+docPairInput.refTyped = (before) => {
+  const m = /\\(?:eqref|ref)\{([\w:.-]*)$/.exec(before);
+  return m ? m[1] : null;
+};
+
+docPairInput.refSource = (CM) => (context) => {
+  const line = context.state.doc.lineAt(context.pos);
+  const typed = docPairInput.refTyped(line.text.slice(0, context.pos - line.from));
+  if (typed === null || !docMathRender.labels) return null;
+  const labels = docMathRender.labels.index(context.state.doc.toString());
+  const options = [...labels]
+    .filter(([key]) => !key.startsWith("eq-auto-"))
+    .map(([key, number]) => ({ label: key, detail: `(${number})`, type: "variable" }));
+  return options.length ? { from: context.pos - typed.length, options, validFor: /^[\w:.-]*$/ } : null;
+};
+
 // DOC-FENCE-BEGIN (tests/test_live_code_blocks.py runs this region in node)
 //: **Live code blocks** (the owner, 2026-10-07 and 2026-10-26). A fenced block
 //: that names a language is not a second editor: the Markdown parser mounts
@@ -1870,6 +1890,14 @@ docPairInput.fenceNames = {
 docPairInput.fenceExt = (info) => {
   const word = /^[{.\s]*([A-Za-z+#][\w+#-]*)/.exec(String(info || ""));
   return word ? docPairInput.fenceNames[word[1].toLowerCase()] || null : null;
+};
+
+//: An info string as the language word and the `title="fit.py"` beside it.
+docPairInput.fenceParts = (info) => {
+  const text = String(info || "");
+  const title = /\btitle=(?:"([^"]*)"|'([^']*)')/.exec(text);
+  const word = /^[{.\s]*([A-Za-z+#][\w+#-]*)/.exec(text.replace(/\btitle=(?:"[^"]*"|'[^']*')/, ""));
+  return { language: word ? word[1] : "", title: title ? title[1] ?? title[2] : "" };
 };
 
 docPairInput.fenceCache = new Map();
