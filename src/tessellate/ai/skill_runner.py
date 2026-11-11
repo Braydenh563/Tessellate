@@ -49,6 +49,7 @@ from dataclasses import field as dc_field
 
 from sqlalchemy.orm import Session
 
+from tessellate.ai import presets
 from tessellate.ai import agent, budget as run_budget, plan_writes, skills, tools
 from tessellate.ai.model_manager import ModelManager
 from tessellate.ai.ollama_client import OllamaClient
@@ -675,7 +676,7 @@ def _replan_step(
                         + "Rewrite the step."
                     ),
                 },
-            ],
+            ],            mode=presets.BACKGROUND_MODE,
         )
     except Exception:  # noqa: BLE001  # recovery must not itself end the run
         logger.warning("couldn't re-plan a failed step", exc_info=True)

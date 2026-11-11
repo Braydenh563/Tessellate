@@ -64,6 +64,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
+from tessellate.ai import presets
 from tessellate.ai import model_manager as model_manager_module
 from tessellate.ai import ollama_client as ollama_client_module
 from tessellate.core.database import Entry
@@ -234,6 +235,7 @@ def compare_pair(
                 {"role": "system", "content": _SYSTEM},
                 {"role": "user", "content": prompt},
             ],
+            mode=presets.BACKGROUND_MODE,
         )
     except Exception:  # noqa: BLE001  # one pair failing must not end the pass
         logger.debug("tension check failed for %s/%s", earlier.id, later.id, exc_info=True)

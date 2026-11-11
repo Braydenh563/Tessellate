@@ -17,6 +17,7 @@ import json
 import re
 from datetime import datetime, timedelta
 
+from tessellate.ai import presets
 from tessellate.ai import recognise
 
 _PRIORITIES = ("low", "normal", "high")
@@ -149,7 +150,7 @@ def parse_reminder(text: str, ollama, model_manager, now: datetime) -> dict:
         {"role": "user", "content": text},
     ]
     try:
-        reply = ollama.chat(model_manager.utility_model(), messages)
+        reply = ollama.chat(model_manager.utility_model(), messages, mode=presets.BACKGROUND_MODE)
     except Exception:  # noqa: BLE001  # any model failure degrades gracefully
         return _fallback(text, now)
 

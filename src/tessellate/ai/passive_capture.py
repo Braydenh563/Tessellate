@@ -49,6 +49,7 @@ import logging
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from tessellate.ai import presets
 from tessellate.ai.model_manager import ModelManager
 from tessellate.ai.ollama_client import OllamaClient
 from tessellate.core.database import Conversation
@@ -199,6 +200,7 @@ def capture_pass(
                     {"role": "system", "content": _SYSTEM},
                     {"role": "user", "content": "\n".join(f"- {q}" for q in questions)},
                 ],
+                mode=presets.BACKGROUND_MODE,
             )
         except Exception as exc:  # noqa: BLE001  # a backend failure skips, never stops
             logger.info("passive capture skipped a conversation: %s", exc)

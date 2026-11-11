@@ -94,6 +94,12 @@ ANSWER = (
 #: Calls per tool round (`--calls`, `FAKE_CALLS`); see the module docstring.
 CALLS = max(1, int(os.environ.get("FAKE_CALLS") or 1))
 
+#: A server that cannot honour `tool_choice` and says so with an empty 200
+#: (`FAKE_BREAK_TOOL_CHOICE=1`, B69: llama-cpp-python's chatml-function-calling
+#: handler asserts on "required" after the stream has opened). A request that
+#: names the field gets headers and a clean end with no frame.
+BREAK_TOOL_CHOICE = bool(os.environ.get("FAKE_BREAK_TOOL_CHOICE"))
+
 #: A slow backend (`FAKE_STREAM_DELAY_MS`, ledger 1530): the plain-text answer
 #: arrives as `STREAM_PIECES` pieces with this pause before each, so a Stop
 #: pressed mid-answer has something to stop. 0 is the ordinary instant stand-in.
@@ -278,6 +284,11 @@ class Handler(BaseHTTPRequestHandler):
                 self._stream_many(calls) if calls else self._stream(None)
             else:
                 self._complete_many(calls, messages)
+            return
+        if BREAK_TOOL_CHOICE and body.get("tool_choice") and body.get("stream"):
+            self._sse_open()
+            self.wfile.write(b"0\r\n\r\n")
+            self.wfile.flush()
             return
         call = None if _already_called(messages) else _pick_tool(tools)
         if body.get("stream"):

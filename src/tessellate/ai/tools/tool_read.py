@@ -622,7 +622,25 @@ def _list_notes(session: Session, args: dict) -> dict:
             f"offset={offset + len(rows)} for the next page, do not assume "
             "these are all the notes."
         )
+    elif category and not total and not _category_exists(session, category):
+        # A name that is not a category matches nothing, on purpose; a model
+        # that guessed "notes" needs to be told that, and shown the real ones.
+        known = ", ".join(f"“{c['name']}”" for c in manager.all_categories(session)[:12])
+        result["note_to_model"] = (
+            f"There is no category called “{category}”, so nothing matched. "
+            + (f"The categories that exist are {known}. " if known else "")
+            + "Call list_notes without `category` to see every note."
+        )
     return result
+
+
+def _category_exists(session: Session, name: str) -> bool:
+    """Is `name` a category (any case) or the uncategorised bucket?"""
+    from tessellate.core.database import Category
+
+    if name == manager.UNCATEGORISED:
+        return True
+    return session.scalar(select(Category.id).where(func.lower(Category.name) == name.lower())) is not None
 
 
 def _count_notes(session: Session, args: dict) -> dict:

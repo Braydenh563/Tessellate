@@ -636,3 +636,20 @@ def test_set_reminder_offers_and_keeps_a_repeat(ai_client, session):
     assert "every week" in tool_say.say("set_reminder", made, args)["text"]
     plain = tools.execute_tool(session, "set_reminder", {"text": "other", "due_at": "2030-01-03T09:00"})
     assert session.get(Reminder, plain["id"]).recurring == "none" and "repeating" not in plain["label"]
+
+
+def test_list_notes_names_the_categories_when_the_one_asked_for_does_not_exist(ai_client, session):
+    """B69, measured on a 1.5B model: it asked for `category: "notes"`, got an
+    empty list with no reason, and gave up on a notebook that had eight loose
+    ends. An empty list caused by a name that is not a category says so and
+    names the ones that exist, like the category tools do."""
+    _save(ai_client, "bare note", category="Work")
+    _save(ai_client, "other note", category="Life")
+
+    listed = tools.execute_tool(session, "list_notes", {"category": "notes"})
+    assert listed["total_matching"] == 0
+    assert "no category called" in listed["note_to_model"].lower()
+    assert "Work" in listed["note_to_model"] and "Life" in listed["note_to_model"]
+
+    # A real category with nothing in it, and a real one with notes, say nothing.
+    assert "note_to_model" not in tools.execute_tool(session, "list_notes", {"category": "Work"})
