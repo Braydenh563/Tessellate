@@ -38,6 +38,7 @@ BOUNDED = {
     "/chat/recent": "the last questions asked, capped by `_recent_questions`",
     "/chat/suggestions": "a handful of starter questions built from two categories",
     "/chat/tools": "the AI tools this app defines",
+    "/suggestions/dismissed/items": "the suggestions said no to, newest first, cut at DISMISSED_LIST_MAX (200); `more` says how many were left out",
     "/documents/contents": "Replace in every document reads them whole, capped at CONTENTS_READ_MAX (1,000)",
     "/documents/outline": "capped at OUTLINE_DOCUMENTS documents",
     "/documents/{document_id}/ai-edit-log": "one document's AI edits",
