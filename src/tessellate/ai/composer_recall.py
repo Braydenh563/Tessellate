@@ -161,7 +161,7 @@ def _recall(out: _Answer, p: Plan, views: list[NoteView], question: str) -> None
         (v for v in views if _in_window(v, p.window, mentions=not wrote) and str(v.note.get("kind") or "note") not in ("board", "map")),
         key=lambda v: (v.written, -v.rank), reverse=True,
     )
-    said = window_said(_as_typed(p.window_phrase, question))
+    said = window_said(_as_typed(p.window_phrase, question), p.window)
     if p.around:
         inside, said = _nearest_first(out, p, inside)
     if not inside:

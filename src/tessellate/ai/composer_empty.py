@@ -75,12 +75,12 @@ def _absent(terms: list[str], views: list[NoteView]) -> list[str]:
     return absent if terms and len(absent) == len(terms) else []
 
 
-def window_said(phrase: str) -> str:
+def window_said(phrase: str, window: tuple | None = None) -> str:
     """A time window as an adverbial, with the preposition it needs ("on 20
     October", "in the last 7 days"; "last week" and "today" as they are):
     `recognise.adverbial`, the one reader of it; said with its capitals (audit
-    1030 Z45)."""
-    return rec.proper_days(rec.adverbial(phrase))
+    1030 Z45). `window` (first day, last day) lets "last Christmas" name its year."""
+    return rec.with_holiday_year(rec.proper_days(rec.adverbial(phrase)), window[0] if window else None)
 
 
 def _as_typed(word: str, question: str) -> str:
@@ -216,7 +216,7 @@ def empty_window(when: str, first: date | None, last: date | None, *, voice: str
     with that note."""
     voice = _window_voice(voice, register)
     today = today or user_today()
-    when = window_said(when)
+    when = window_said(when, window)
     if window and window[0] > today:
         return _nothing_planned(when)
     lead = _pick(seed or when, "empty_window", list(_EMPTY_WINDOW[voice])).format(when=when, When=when[:1].upper() + when[1:])
