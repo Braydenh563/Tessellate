@@ -2932,8 +2932,14 @@ wbFmtState.board = (() => {
   function groupOf() {
     const sketch = wbSelectedSketchOrNull();
     if (sketch) {
-      const data = wbSketchParsedData(sketch);
-      if (!data) return null;
+      //: Plain parse: the shape reader wants a drawn path (`d`), which a connector does not have.
+      let data = null;
+      try {
+        data = JSON.parse(sketch.data);
+      } catch {
+        return null;
+      }
+      if (!data || typeof data !== "object") return null;
       const group = String(data.type || "").startsWith("link-") ? "link" : { draw: "pen", highlighter: "highlighter" }[data.shape] || "shape";
       return { group, style: wbPickStyle(data, WB_SKETCH_STYLE_KEYS) };
     }

@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8106, frontend ids 2692, CSS sections 523, backend routes 662, backend modules 9999, test files 2454, tests 20308, plan headings 1002, app scripts 28, boot scripts 37, script files 277.
+Counts: frontend functions 8106, frontend ids 2692, CSS sections 523, backend routes 662, backend modules 9999, test files 2455, tests 20309, plan headings 1002, app scripts 28, boot scripts 37, script files 277.
 
 ## Frontend functions (8106)
 
@@ -26101,7 +26101,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (20308)
+## Tests (20309)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28416,6 +28416,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_context_menu_place.py | 4 |
 | tests/test_wb_context_pin.py | 1 |
 | tests/test_wb_crop.py | 10 |
+| tests/test_wb_default_link.py | 1 |
 | tests/test_wb_diagram.py | 3 |
 | tests/test_wb_dimension.py | 5 |
 | tests/test_wb_dog1_fixb.py | 16 |
