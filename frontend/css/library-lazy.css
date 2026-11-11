@@ -7109,7 +7109,9 @@ input[type="color"].wb-mixed {
    name asked for 128 beside them, so the name sat on a line of its own, 94px; without
    the 64px save state the row is 603 and one line, 44px, for a markdown and a .py file). */
 @container docdock (max-width: 819.98px) {
-  .doc-back-label,
+  .doc-back-label {
+    display: none;
+  }
   .doc-dock-status {
     display: none;
   }
@@ -7179,19 +7181,19 @@ input[type="color"].wb-mixed {
    cut to 9rem), which leaves the name under its 5rem below 1165 of dock, a
    band the 1100 above cannot reach. Their icons make the actions 840: the
    name keeps 253px at 1100, and the line is whole there. */
-#tab-documents.doc-is-code .doc-dock:has(#doc-code-run-why:not(.hidden)) > .doc-dock-identity {
+#tab-documents.doc-is-code .doc-dock.doc-run-why > .doc-dock-identity {
   flex-basis: 8rem;
   min-width: 0;
 }
-#tab-documents.doc-is-code .doc-dock:has(#doc-code-run-why:not(.hidden)) :is(.doc-ai-label, #doc-code-format > .toolbar-word) {
+#tab-documents.doc-is-code .doc-dock.doc-run-why :is(.doc-ai-label, #doc-code-format > .toolbar-word) {
   display: none;
 }
-#tab-documents.doc-is-code .doc-dock:has(#doc-code-run-why:not(.hidden)) :is(#doc-code-snippets-open, #doc-code-assist-open, #doc-code-format) {
+#tab-documents.doc-is-code .doc-dock.doc-run-why :is(#doc-code-snippets-open, #doc-code-assist-open, #doc-code-format) {
   flex: 0 0 var(--target-min);
   justify-content: center;
   padding-inline: 0;
 }
-#tab-documents.doc-is-code .doc-dock:has(#doc-code-run-why:not(.hidden)) :is(#doc-code-snippets-open, #doc-code-assist-open, #doc-code-format) > .ph-lead {
+#tab-documents.doc-is-code .doc-dock.doc-run-why :is(#doc-code-snippets-open, #doc-code-assist-open, #doc-code-format) > .ph-lead {
   margin: 0;
 }
 @container docdock (max-width: 819.98px) {
