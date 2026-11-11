@@ -1318,7 +1318,7 @@ Read from the code against Notion and Obsidian. Sizes S, M, L. Nothing here is b
 9. Web clipper fields on a note's properties - M.
 10. Canvas block: a board embedded and editable in place - M.
 11. Built 2026-11-10 (`\label`, `\eqref`, `\ref`): see HISTORY.md, "Moved from the plans, 2026-11-10 (s9-1110)".
-12. Table: column sort, filter row, formulas - M.
+12. Built 2026-11-11 (s9c-1110 part 6): sort, filter rows and `=SUM`/`=AVG`/`=COUNT`/`=MIN`/`=MAX`; see HISTORY.md, "Moved from the plans, 2026-11-11 (s9c-1110 part 6)".
 13. Built 2026-10-26 (docs5-1026): the Read view takes a progress line; see HISTORY.md.
 14. Built 2026-11-10 (`{{time}}`, `{{cursor}}`): see HISTORY.md, "Moved from the plans, 2026-11-10 (s9c-1110)".
 15. Built 2026-11-10 (s9c-1110): Download as slides; see HISTORY.md, "Moved from the plans, 2026-11-10 (s9c-1110 part 2)".

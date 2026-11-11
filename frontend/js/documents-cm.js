@@ -322,6 +322,64 @@ function docLivePlugin(CM) {
     }
   }
 
+  //: A formula cell's result, drawn in place of `=SUM(B)` while the caret is
+  //: elsewhere (the cell keeps its formula in the markdown; the title says
+  //: it). A grid child like DocTableCellWidget, so the columns hold.
+  class DocTableResultWidget extends WidgetType {
+    constructor(cls, result, formula) {
+      super();
+      this.cls = cls;
+      this.result = result;
+      this.formula = formula;
+    }
+    eq(other) {
+      return other.cls === this.cls && other.result === this.result && other.formula === this.formula;
+    }
+    ignoreEvent() {
+      return false;
+    }
+    toDOM() {
+      const cell = document.createElement("span");
+      cell.className = this.cls + " cm-md-td-calc";
+      cell.contentEditable = "false";
+      cell.textContent = this.result;
+      cell.title = this.formula;
+      cell.dataset.docFormula = this.formula;
+      return cell;
+    }
+  }
+
+  //: The filter chip on a filtered table's header: what is shown, and a
+  //: press that shows every row again.
+  class DocTableFilterWidget extends WidgetType {
+    constructor(key, label, short, onClear) {
+      super();
+      this.key = key;
+      this.label = label;
+      this.short = short;
+      this.onClear = onClear;
+    }
+    eq(other) {
+      return other.key === this.key && other.label === this.label;
+    }
+    ignoreEvent() {
+      return true;
+    }
+    toDOM() {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "cm-md-table-filter ghost small";
+      //: CSSOM, not the theme: the theme width lost to the grid line (measured 15px for 130px of text).
+      chip.style.width = "max-content";
+      chip.textContent = this.short;
+      chip.title = `${this.label}. Show all rows`;
+      chip.setAttribute("aria-label", `${this.label}. Show all rows`);
+      chip.addEventListener("mousedown", (event) => event.preventDefault());
+      chip.addEventListener("click", () => this.onClear());
+      return chip;
+    }
+  }
+
   //: The cell menu, on the table the caret is in. Rebuilt when the caret
   //: changes cell (`eq` on the key) because two of its rows are unavailable
   //: in the header and in a one-column table, and a menu that says a row can
@@ -1358,6 +1416,11 @@ function docLivePlugin(CM) {
         //: on it puts the menu on the header.
         const menuCell = docTableCellAt(table, sel.from) || { row: 0, col: 0 };
         const menuRow = menuCell.row === table.delim ? 0 : menuCell.row;
+        //: The values formulas read, and the rows a filter hides (a row the
+        //: caret is in stays, or typing would vanish under the hand).
+        const sheet = docTableParse.calc.values(table);
+        const filter = docViewState.tableFilter.of(table);
+        const hiddenRows = filter ? docTableParse.calc.hidden(table, filter.col, filter.needle) : [];
         for (let r = 0; r < table.rows.length; r += 1) {
           const row = table.rows[r];
           const rule = r === table.delim && !touched(row.from, row.to);
@@ -1376,7 +1439,8 @@ function docLivePlugin(CM) {
               : " cm-md-table-wide";
           ranges.push(
             Decoration.line({
-              class: (r === 0 ? "cm-md-table cm-md-table-head" : "cm-md-table") + grid,
+              class: (r === 0 ? "cm-md-table cm-md-table-head" : "cm-md-table") + grid
+                + (hiddenRows.includes(r) && !(focused && sel.from <= row.to && sel.to >= row.from) ? " cm-md-row-hidden" : ""),
             }).range(row.from)
           );
           const body = row.from + row.indent.length;
@@ -1389,11 +1453,16 @@ function docLivePlugin(CM) {
             //: Every row's last cell keeps room for the kebab, since the kebab
             //: now follows the caret from row to row: the room is reserved on
             //: all of them so moving the caret never re-wraps a cell.
-            const last = c === row.cells.length - 1 ? " cm-md-td-last" : "";
+            const last = c === row.cells.length - 1 ? (r === 0 && filter ? " cm-md-td-last cm-md-td-filtered" : " cm-md-td-last") : "";
             const active =
               activeCell && activeCell.row === r && activeCell.col === c ? " cm-md-td-active" : "";
             const cls = (align ? `cm-md-td cm-md-td-${align}` : "cm-md-td") + place + last + active;
-            if (span.to > span.from) {
+            const formula = r > table.delim && !(activeCell && activeCell.row === r && activeCell.col === c)
+              ? docTableParse.calc.formula(row.cells[c], sheet)
+              : null;
+            if (formula !== null) {
+              ranges.push(Decoration.replace({ widget: new DocTableResultWidget(cls, formula, row.cells[c].trim()) }).range(span.from, span.to));
+            } else if (span.to > span.from) {
               ranges.push(Decoration.mark({ class: cls }).range(span.from, span.to));
             } else {
               ranges.push(Decoration.widget({ widget: new DocTableCellWidget(cls) }).range(span.from));
@@ -1408,6 +1477,21 @@ function docLivePlugin(CM) {
           //: controls sit in every editor the plan names, and is drawn out of
           //: the grid's flow by its class so it cannot become a column of its
           //: own.
+          if (r === 0 && filter) {
+            const column = (table.rows[0].cells[filter.col] || "").trim() || docViewState.tableFilter.letters(filter.col);
+            const shown = table.rows.length - table.delim - 1 - hiddenRows.length;
+            ranges.push(
+              Decoration.widget({
+                widget: new DocTableFilterWidget(
+                  `${table.from}:${filter.col}:${filter.needle}:${shown}`,
+                  `${column} contains ${filter.needle}: ${shown} of ${table.rows.length - table.delim - 1} rows`,
+                  `Filtered, ${shown} of ${table.rows.length - table.delim - 1}`,
+                  () => docViewState.tableFilter.set(view, table, null)
+                ),
+                side: 1,
+              }).range(row.to)
+            );
+          }
           if (r === menuRow && (inTable || menuHeld)) {
             const cell = menuCell;
             //: The *view's* own surface, not the document's: this plugin is

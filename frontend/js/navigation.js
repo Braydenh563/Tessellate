@@ -536,7 +536,7 @@ function renderMarkdown(container, text, depth = 0) {
         for (let c = 0; c < headers.length; c++) {
           const td = document.createElement("td");
           if (aligns[c]) td.style.textAlign = aligns[c];
-          appendInline(td, (row[c] || "").trim());
+          appendInline(td, window.docTableParse?.cell(row[c], rawTable) || (row[c] || "").trim());
           tr.appendChild(td);
         }
         tbody.appendChild(tr);
