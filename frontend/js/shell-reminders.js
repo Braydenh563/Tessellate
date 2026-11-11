@@ -107,7 +107,7 @@ window.addEventListener("resize", () => {
   //: sizeDashWidgets is not defined (app.js:22128)". The grid is not on
   //: screen yet at that moment anyway, so skipping the call loses nothing;
   //: dashboard.js sizes its own widgets when it renders.
-  if ($("dash-grid")) sizeDashWidgets();
+  if ($("dash-grid") && typeof sizeDashWidgets === "function") sizeDashWidgets();
   // A dragged composer height is only valid for the window it was dragged in.
   refitComposer();
 });

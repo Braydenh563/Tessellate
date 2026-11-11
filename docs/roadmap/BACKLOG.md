@@ -4497,3 +4497,14 @@ With the chat agent (a30e) in this order: 1561, 1569, 1570.
 ## Vector index: sqlite-vec when the notebook outgrows brute force (owner question, 2026-11-11, INBOX 1733)
 
 Vectors are float32 blobs in the notebook's SQLite file (`EmbeddingRecord`, `search/chunks.py`), compared by numpy on every search. That is fast at today's sizes. When a notebook reaches the hundreds of thousands of notes or chunks (measure search p95 first), add sqlite-vec (MIT or Apache-2.0, a SQLite extension): the index lives in the same file, so backup, restore, the private vault and one lock stay as they are. A separate vector database (Chroma, Qdrant, LanceDB) is not taken: a second store to back up, encrypt and keep in step.
+
+## Contact book (owner idea, 2026-11-11; backlog, "not a necessary feature right now or any time soon")
+
+Owner, verbatim: "its a contact book where you can add contacts with information, descriptions, logged interactions, contact info, and more and then you can log events into the timeline and reminders and it will be like a proper calendar event and then if you want to mention people saved in your contacts you cna use the @ citations to mention them which hyperlinks their name for easy contact access and then there will be another popup window feature like the diagram builder, ocr workspace and quick sketch or a library subtab, where the contacts are all stored. but if you write the @ symbol, it will also give you the option to quickly add new or edit existign contacts."
+
+- **Contact:** name, description, contact details (phone, email, address, links), free fields, and a log of interactions (date, what happened, linked notes). Stored locally like every other record; private notes rules apply.
+- **Events:** an interaction or plan can be logged to the Timeline and Reminders as a proper calendar event (start, end, place, people), not a plain reminder.
+- **@ mentions:** typing @ in a note, document or chat lists contacts; picking one inserts a link that opens the contact. The same menu offers "New contact" and "Edit" for the matched one.
+- **Where it lives:** a pop-up workspace like the diagram builder, OCR workspace and quick sketch, or a Library sub-tab (decide at design time).
+- **Build on what exists first** (CLAUDE.md section 1): the entity and people readers the composer already uses ("list my people", "where does Sara live"), the entity page, and the `[[` link picker; a contact should be the stored form of a person the notes already mention, so @ and the composer agree.
+- **Parity both ways** (decision 75): the composer and the AI can read, add and log to contacts, each act with consent.

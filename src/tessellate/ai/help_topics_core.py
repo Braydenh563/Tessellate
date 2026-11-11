@@ -3431,8 +3431,8 @@ HELP_TOPICS.extend(
                 "none backs. When an agent "
                 "answer takes more than one step, a checklist above it ticks off "
                 "each round, what it searched or read, then the answer. A number "
-                "or a name in an answer that nothing it read contains gets a "
-                "heads-up under the answer, so check it before relying on it."
+                "or name in an answer that nothing it read contains gets a "
+                "heads-up under it, so check it first."
             ),
             "badge": {"label": "Chat", "tab": "chat"},
         },

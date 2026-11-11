@@ -28,13 +28,6 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["files"])
 
-# `/media/{filename}` and `/files/{attachment_id}` are the two routes an
-# `<img src>` points at directly rather than something the frontend fetches
-# with its own X-Auth-Token header, see `require_unlock_media`'s own
-# docstring in routes_auth.py for why they need a separate router (a
-
-router = APIRouter(tags=["files"])
-
 
 class OcrRangeReadOut(BaseModel):
     """Several pages of a document, read by one of the readers above."""

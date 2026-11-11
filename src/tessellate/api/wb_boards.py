@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 
+from tessellate.repo import whiteboard as whiteboard_repo
 from tessellate.repo.content import BOARDS
 from pydantic import BaseModel, Field
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
@@ -22,7 +23,7 @@ from tessellate.core.deps import get_session
 from tessellate.api import paging
 from tessellate.api.wb_model import BOARD_TYPES, DEFAULT_BOARD_TYPE
 from tessellate.api.wb_board import BoardBackground, BoardCreate, BoardLayer, BoardOut, BoardTypeMixin, MAX_BOARD_LAYERS, _board_background, _board_filter, _board_layers, _board_numbered, _board_settings, _board_theme, _is_link_sketch, _require_board, _store_board_background, _store_board_layers, _store_board_numbered, _store_board_settings, _store_board_theme
-from tessellate.api.wb_preview import _preview_fields, _preview_stamps_bulk
+from tessellate.api.wb_preview import _preview_fields
 
 router = APIRouter()
 
@@ -174,7 +175,7 @@ def list_boards(
     paging.finish(response, offset, limit, len(page_rows))
     boards = []
     page = page_rows[offset:offset + limit]
-    stamps = _preview_stamps_bulk(db, page)
+    stamps = whiteboard_repo.preview_stamps(db, page)
     for entry in page:
         if entry is None:
             # The default scratch board has no note behind it, so it has

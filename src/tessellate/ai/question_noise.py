@@ -481,7 +481,11 @@ def strip_strays(text: str) -> str:
 
 
 _RATING_SLASH = re.compile(r"(?<![\w/])(\d{1,3}) ?/ ?(5|10|20|100)\b(?! ?/)")
-_DATE_CUES = frozenset("on by due before until till from since at for of".split())
+_DATE_CUES = frozenset("on by due before until till from since at for of around near about after during circa week"
+                        " starting ending".split())
+# A fraction is a rating only beside a rating word; with none ("what did I do around 9/10") it is a date (the owner,
+# 2026-11-11: "9/10 could be a date based on context").
+_RATING_CUES = re.compile(r"\b(?:is|was|are|were|gave|give|given|giving|rate[ds]?|rating|ratings|scored?|scores|stars?|out)\b", re.I)
 
 
 def _rating_words(text: str) -> str:
@@ -489,7 +493,9 @@ def _rating_words(text: str) -> str:
     "by", "due" and the like it stays a date (audit 1030 Z17)."""
     def say(m: re.Match) -> str:
         before = text[: m.start()].split()
-        if int(m.group(1)) > int(m.group(2)) or (before and before[-1].lower() in _DATE_CUES):
+        if before and before[-1].lower() in ("a", "an"):  # "I reckon it was around a 9/10": "a 9/10" is always a score
+            return f"{m.group(1)} out of {m.group(2)}"
+        if int(m.group(1)) > int(m.group(2)) or (before and before[-1].lower() in _DATE_CUES) or not _RATING_CUES.search(text):
             return m.group(0)
         return f"{m.group(1)} out of {m.group(2)}"
 

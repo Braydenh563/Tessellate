@@ -11,7 +11,6 @@ import json
 import re
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
-from tessellate.repo import whiteboard as whiteboard_repo
 from tessellate.repo.content import BOARDS
 from tessellate.core.database import Entry, WhiteboardNode, WhiteboardObject, WhiteboardSketch
 from collections import OrderedDict
@@ -755,8 +754,6 @@ _PREVIEW_CACHE: "OrderedDict[tuple, tuple[list[dict], list[dict], float]]" = Ord
 #: works: the response is identical either way, which is the point of it.
 PREVIEW_CACHE_STATS = {"hits": 0, "misses": 0}
 
-
-_preview_stamps_bulk = whiteboard_repo.preview_stamps
 
 
 def _preview_fingerprint(db: Session, board_id: int | None, stamps: list | None = None) -> tuple:
