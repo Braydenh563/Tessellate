@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8166, frontend ids 2713, CSS sections 524, backend routes 677, backend modules 10434, test files 2583, tests 21126, plan headings 1013, app scripts 29, boot scripts 38, script files 284.
+Counts: frontend functions 8166, frontend ids 2713, CSS sections 524, backend routes 677, backend modules 10435, test files 2584, tests 21135, plan headings 1013, app scripts 29, boot scripts 38, script files 284.
 
 ## Frontend functions (8166)
 
@@ -13595,7 +13595,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10434)
+## Backend modules (10435)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -17429,8 +17429,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2464 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2616 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2465 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2617 |
 
 ### src/tessellate/ai/help_words.py (3)
 
@@ -24623,22 +24623,28 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Engine` | src/tessellate/core/overlay/engine.py:113 |
+| `Engine` | src/tessellate/core/overlay/engine.py:114 |
 
 ### src/tessellate/core/overlay/engine_consts.py (10)
 
 | Name | File:line |
 |---|---|
-| `Bar` | src/tessellate/core/overlay/engine_consts.py:526 |
-| `Cover` | src/tessellate/core/overlay/engine_consts.py:507 |
-| `Monitor` | src/tessellate/core/overlay/engine_consts.py:536 |
-| `Output` | src/tessellate/core/overlay/engine_consts.py:554 |
-| `Perch` | src/tessellate/core/overlay/engine_consts.py:495 |
-| `TuckSpot` | src/tessellate/core/overlay/engine_consts.py:516 |
-| `_adjoins` | src/tessellate/core/overlay/engine_consts.py:591 |
-| `_same_screens` | src/tessellate/core/overlay/engine_consts.py:602 |
-| `perch_room` | src/tessellate/core/overlay/engine_consts.py:449 |
-| `stand_x` | src/tessellate/core/overlay/engine_consts.py:455 |
+| `Bar` | src/tessellate/core/overlay/engine_consts.py:522 |
+| `Cover` | src/tessellate/core/overlay/engine_consts.py:503 |
+| `Monitor` | src/tessellate/core/overlay/engine_consts.py:532 |
+| `Output` | src/tessellate/core/overlay/engine_consts.py:550 |
+| `Perch` | src/tessellate/core/overlay/engine_consts.py:491 |
+| `TuckSpot` | src/tessellate/core/overlay/engine_consts.py:512 |
+| `_adjoins` | src/tessellate/core/overlay/engine_consts.py:587 |
+| `_same_screens` | src/tessellate/core/overlay/engine_consts.py:598 |
+| `perch_room` | src/tessellate/core/overlay/engine_consts.py:445 |
+| `stand_x` | src/tessellate/core/overlay/engine_consts.py:451 |
+
+### src/tessellate/core/overlay/engine_deskacts.py (1)
+
+| Name | File:line |
+|---|---|
+| `DeskActsMixin` | src/tessellate/core/overlay/engine_deskacts.py:22 |
 
 ### src/tessellate/core/overlay/engine_flight.py (1)
 
@@ -24650,7 +24656,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `FramesMixin` | src/tessellate/core/overlay/engine_frames.py:35 |
+| `FramesMixin` | src/tessellate/core/overlay/engine_frames.py:34 |
 
 ### src/tessellate/core/overlay/engine_input.py (1)
 
@@ -26853,7 +26859,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21126)
+## Tests (21135)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28579,6 +28585,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_clip_1699.py | 1 |
 | tests/test_overlay_come_1683.py | 5 |
 | tests/test_overlay_daylife_1719.py | 5 |
+| tests/test_overlay_desk_acts_1710.py | 9 |
 | tests/test_overlay_deskface_1704.py | 12 |
 | tests/test_overlay_deskfix_1110.py | 6 |
 | tests/test_overlay_deskframes_1696.py | 3 |
@@ -30145,7 +30152,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1217 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:157 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:153 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4057 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3130 |

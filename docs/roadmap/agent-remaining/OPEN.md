@@ -288,8 +288,8 @@ Parked until the owner's data or a check on real hardware:
 ### Tier E: polish
 
 **W31 Companion life** (E, overlay and in-app acts, Opus for the masculine design, Sonnet for acts; not beside W15 or W24). Files: `core/overlay/*`, `atlas*.js`, frames. Checks: `tests/test_companion_catalogue_1108.py`, the weights test (after Q12). Done when: each act is drawn on both sides or listed with a reason.
-- E1 Acts to the desk: meditate, lounge, rest_head; in-app firefly, star pile | compalive, INBOX 1711 W34: owner-call (tracked in the plans), w34-L1-1111.md.
-- E2 In-app-only acts that need desk frames (dangle, kick_legs, hang_one_hand) | INBOX 1710 W34: owner-call (tracked in the plans), w34-L1-1111.md.
+~~- E1 Acts to the desk: meditate, lounge, rest_head; in-app firefly, star pile | compalive, INBOX 1711~~ **Built (W31 E1, E2)**: meditate has its own desk frame; lounge and rest_head are the keyed sit (reason in the catalogue); the firefly and star pile were built on both sides by comp2-1109 (tests/test_overlay_desk_acts_1710.py)
+~~- E2 In-app-only acts that need desk frames (dangle, kick_legs, hang_one_hand) | INBOX 1710~~ **Built (W31 E1, E2)**: `dangle`, `kick0`, `kick1`, `hang_one` for both looks; fire only on a window top (with room for the hem) and inside a long hang (tests/test_overlay_desk_acts_1710.py)
 - E3 The life-1109 ranked list (follow-through, startle settle, micro-saccades, stand-loop drift) | INBOX 1719 (b), life-1109 W34: owner-call (tracked in the plans), w34-L1-1111.md.
 - E4 Masculine Atlas: head, eyes, shoulder join, expressions | oa 1607 b, c, d, B16 W34: owner-call (tracked in the plans), w34-L1-1111.md.
 - E5 Own activities with props; wind-spirit travel; ambient acts by hour | oa 1692 e, n, d W34: owner-call (tracked in the plans), w34-L1-1111.md.

@@ -9,7 +9,7 @@ Branch agent/compalive-1109. Done: 1e96de2 (INBOX 1709, resolved), adf9960 (1710
 
 ## INBOX 1710 (partly)
 - Desk-only left: `react.window_opened`, `window_closed`, `window_dragged` (a page is never told: no meaning in a browser).
-- App-only left (27, tests/test_companion_catalogue_1108.py `APP_ONLY`; comp2-1109 moved `act.meditate`, `act.lounge`, `act.rest_head` to the desk with `YIELD_TO_SIT` in the engine; w31 moved the eight note and search reactions, below): the hangs (`dangle`, `hang_by_feet`, `hang_one_hand`, `sloth`), `chair`, `kick_legs`, `lower.drift`, `move.afield`, the positions `back_float`, `cross_legged`, `edge_dangle`, `lean`, `lounge`, and 13 transitions.
+- App-only left (22, tests/test_companion_catalogue_1108.py `APP_ONLY`; W31 E1, E2 moved `act.dangle`, `act.kick_legs`, `act.hang_one_hand`, `pos.cross_legged`, `pos.edge_dangle` to the desk with five frames, see HISTORY; comp2-1109 moved `act.meditate`, `act.lounge`, `act.rest_head` to the desk with `YIELD_TO_SIT` in the engine; w31 moved the eight note and search reactions, below): the hangs (`hang_by_feet`, `sloth`), `chair`, `lower.drift`, `move.afield`, the positions `back_float`, `lean`, `lounge` (the act is on the desk as the sit settled low; no second sit picture), and 13 transitions.
 - Weights parity (test_companion_weights_1108, tolerance 3.6): the test ran slowly here and printed no failure; not re-measured for the gap itself (39.1 against 35.7 before).
 - Not verified: the four new acts' look in motion (the companion sat at the page's top edge in the sweep, so only the applied variables were measured); the desk's twelve new acts were not rendered.
 
@@ -25,7 +25,7 @@ Branch agent/compalive-1109. Done: 1e96de2 (INBOX 1709, resolved), adf9960 (1710
 
 ## desklane-1109 (done 2229e7a, 89394b9; INBOX 1718 resolved)
 - Left (1696 aa): the plant pot held in the tail curl needs a tail-curl frame. (1696 kk): hold still, carry over, catch mid-air, tail pull, drag skid, toss up and pointer chase are built on neither side (catalogue `int.*` missing).
-- Left (1710 b): desk needs frames for dangle, kick_legs, hang_one_hand, hang_by_feet, sloth, chair, pos.lean/lounge/cross_legged/edge_dangle/back_float.
+- Left (1710 b): desk needs frames for hang_by_feet, sloth, chair, pos.lean/lounge/back_float.
 - Left (1711): the card nap still curls on nothing (needs a note-card box).
 - Not verified: real Windows (FakeWin32 only); the entrance, wave and menu line in motion; the in-app wave trigger was read as text, not driven in a browser.
 - Fixed here: the desk face blink has its own catalogue row; test_overlay_idle's two base failures pass on this branch.
@@ -37,14 +37,9 @@ Branch agent/compalive-1109. Done: 1e96de2 (INBOX 1709, resolved), adf9960 (1710
 
 ## w31 frames the desk still lacks (nothing drawn; app-only acts that need new art)
 Every desk pose is one PNG per look, same canvas for all of a look's frames: feminine 275 x 298 px, masculine 289 x 304 px (twice the CSS size; `scripts/render_desk_frames.js` captures the live rig, `render_desk_frames.py` solidifies, crops to the shared `crop_box` and quantises). A new pose is a row in `render_desk_frames.js`, a name in `sprites.FRAME_NAMES` (a look without it must keep working) and an act in `behaviour.py`/`extras.py` that names it. Counts below are poses per look, so double them for the two looks. Seen in-betweens (`trans.*`) are separate and not counted; the pose dissolve in `sprites.py` stands in until they exist.
-- `dangle` (`act.dangle`, `pos.edge_dangle`): one new pose `dangle`, 275 x 298 and 289 x 304, the figure sitting on a window's top edge, both legs hanging over and the hem below the sit line; the edge itself is the window, so no prop. The feet must end on the sit line's lower side so the window-top perch (`perches.py`) can seat it.
-- `kick_legs` (`act.kick_legs`): two poses `kick0` and `kick1`, same size, `dangle` with the lower legs swung forward and back; the engine alternates them. Needs `dangle` first.
-- `hang_one_hand` (`act.hang_one_hand`): one pose `hang_one`, same size, `hang` with the far arm down at the side or waving and the near hand still gripping at the frame's top (the grip row must match `hang`'s, `sprites.top_share`).
 - `hang_by_feet` (`act.hang_by_feet`): one pose `hang_feet`, same size, upside down: knees hooked over the edge at the frame's top, arms and hair falling, tail drooping (the frame is the `hang` canvas turned head down, not a rotation of it).
 - `sloth` (`act.sloth`): one pose `hang_sloth`, same size, `hang` with all limbs limp, head sunk between the arms; two frames if the sway is to read (`hang_sloth0`, `hang_sloth1`), one if the engine's sway keys do it.
 - `chair` (`act.chair`): no new body frame (`sit` exists); missing is the prop, a chair drawn in code in `props.py` (like `_journal`), a seat and a back behind the `sit` frame sized to its 275 x 298 canvas. That is code, not art.
 - `lean` (`pos.lean`, `act.peek_side`, `act.lean_on_edge`): one pose `lean`, same size, the figure leaning a shoulder on a vertical edge, weight on one leg, near arm folded; it needs a side edge to stand against (the engine has none, only top edges: `perches.top_edges`), so the perch finder is also missing.
 - `lounge` (`pos.lounge`): one pose `lounge`, same size, propped on one hand, one knee up, tail curled; `act.lounge` is already on the desk through `sit`, so this is only the nicer rest pose.
-- `cross_legged` (`pos.cross_legged`): one pose `cross_legged`, same size, legs crossed, hands on the knees, floating a little above the sit line; `act.meditate` is already on the desk through `sit`.
-- `edge_dangle`: the same pose as `dangle`; it is the catalogue's position name for it, so it is not a second frame.
 - `back_float` (`pos.back_float`, `act.stargaze_awake`): one pose `back_float`, same size, on its back in the air, face up, arms behind the head, tail trailing; `lower.drift` needs no frame (the desk's flow offsets are `behaviour.Flow`) and `move.afield` needs none (an engine trip, not a pose).
