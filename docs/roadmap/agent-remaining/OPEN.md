@@ -4650,7 +4650,7 @@ Columns: id | item | sources (file:line) | status | batch
 | H2 | Fable named for a read-only composer audit and a whole-app deep dive "next session" | HANDOVER:11,12 | owner call: is Fable named for the close-out? (nothing may start it otherwise, order 4) | none |
 | H3 | Q20: `complexity.yml` still `--exit-zero`; CI definition edits guarded in away mode, `tests/test_complexity.py` holds the zero baseline | HANDOVER:412, OPEN:40 (Q20) | owner call: edit the workflow (guarded)? | none |
 | H4 | Held: K38 single-use media links (breaks range playback), K32 due-count endpoint (poll redesign), E43/K11/K13/K26 key storage and MCP auth (Q22) | HANDOVER:410, s11-1110.md:8,9 | owner call: Q22 (keyring or 0600 file, one token per MCP server) and K38 (accept a 120 s reusable link?) | none |
-| H5 | `test_repo_boundaries::test_orm_calls_in_the_routers_only_go_down` red: 690 ORM calls under api/, cap 687 | g69-1110.md:11 (said 691); run 2026-11-11 | open | Bk2 |
+| H5 | `test_repo_boundaries::test_orm_calls_in_the_routers_only_go_down` red: 690 ORM calls under api/, cap 687 | g69-1110.md:11 (said 691); run 2026-11-11 | green at f06fd0e09 (re-run, nothing to fix) | Bk2 |
 | H6 | Test reds named in older notes: `test_boot_diet3` (3573 vs 3569), `test_lazy_bundle_calls` (dashboard.js:3833,3889), `test_atlas_access` fixture, `test_static_compression` | s9b-1110.md:12, s14-1110.md:6, s58left3-1110.md:10, s12b-1110.md:7; the four pass on 2026-11-11 | fixed (run; only the boundaries test fails) | none |
 
 **Work-order rows (OPEN.md) still open, merged with their remaining files**
@@ -4719,7 +4719,7 @@ Columns: id | item | sources (file:line) | status | batch
 | --- | --- | --- | --- | --- |
 | P1 | "You asked: ..." line above the Ask answer stays removed (Q19) | OPEN:381, OPEN:54 | fixed by decision (HANDOVER:12; a test pins it) | none |
 | P2 | Start SearXNG from a button | OPEN:379 | open | Bk1 |
-| P3 | `_start_tray` over complexity 20 (now 23): split menu build from start-up; test on Windows | OPEN:389 | open; Windows part unverifiable | Bk2 |
+| P3 | `_start_tray` over complexity 20 (now 23): split menu build from start-up; test on Windows | OPEN:389 | built deb7ab83d (callbacks module-level, 130 lines); Windows part unverifiable | Bk2 |
 | P4 | Reminder edit form: time field about 0.2 rem high | OPEN:390 | open | Sh1 |
 | P5 | Brief 27 phone bottom bar | SESSION_BRIEFS:132 | fixed (phone-shell.js:673, shell-reminders.js:588; E19 stale) | none |
 | P6 | Brief 34 second part: one snap in ten minutes; reaction rows | SESSION_BRIEFS:154 | open | Cp1 |
