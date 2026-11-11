@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2705, CSS sections 523, backend routes 671, backend modules 10154, test files 2493, tests 20535, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2705, CSS sections 523, backend routes 671, backend modules 10176, test files 2494, tests 20551, plan headings 1003, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -13526,7 +13526,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10154)
+## Backend modules (10176)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -15890,6 +15890,29 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `resolved` | src/tessellate/ai/composer_refer.py:14 |
 
+### src/tessellate/ai/composer_remark.py (18)
+
+| Name | File:line |
+|---|---|
+| `_asks` | src/tessellate/ai/composer_remark.py:42 |
+| `_body` | src/tessellate/ai/composer_remark.py:242 |
+| `_clean` | src/tessellate/ai/composer_remark.py:33 |
+| `_is_question` | src/tessellate/ai/composer_remark.py:210 |
+| `_is_remark` | src/tessellate/ai/composer_remark.py:48 |
+| `_life` | src/tessellate/ai/composer_remark.py:262 |
+| `_pick` | src/tessellate/ai/composer_remark.py:98 |
+| `_weather` | src/tessellate/ai/composer_remark.py:127 |
+| `_wish_back` | src/tessellate/ai/composer_remark.py:214 |
+| `_words` | src/tessellate/ai/composer_remark.py:226 |
+| `casual_hello` | src/tessellate/ai/composer_remark.py:76 |
+| `facts` | src/tessellate/ai/composer_remark.py:346 |
+| `is_remark` | src/tessellate/ai/composer_remark.py:305 |
+| `register` | src/tessellate/ai/composer_remark.py:66 |
+| `reply` | src/tessellate/ai/composer_remark.py:283 |
+| `social` | src/tessellate/ai/composer_remark.py:360 |
+| `topic_pattern` | src/tessellate/ai/composer_remark.py:326 |
+| `with_link` | src/tessellate/ai/composer_remark.py:332 |
+
 ### src/tessellate/ai/composer_reminders.py (10)
 
 | Name | File:line |
@@ -16198,12 +16221,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `pick` | src/tessellate/ai/composer_study.py:106 |
 | `topic_notes` | src/tessellate/ai/composer_study.py:151 |
 
-### src/tessellate/ai/composer_suggest.py (16)
+### src/tessellate/ai/composer_suggest.py (17)
 
 | Name | File:line |
 |---|---|
 | `Option` | src/tessellate/ai/composer_suggest.py:103 |
-| `_app_tool` | src/tessellate/ai/composer_suggest.py:348 |
+| `_app_tool` | src/tessellate/ai/composer_suggest.py:362 |
 | `_bare_kind` | src/tessellate/ai/composer_suggest.py:181 |
 | `_catalogue` | src/tessellate/ai/composer_suggest.py:129 |
 | `_cosine` | src/tessellate/ai/composer_suggest.py:158 |
@@ -16211,13 +16234,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_stem` | src/tessellate/ai/composer_suggest.py:110 |
 | `_tokens` | src/tessellate/ai/composer_suggest.py:117 |
 | `_unfilled` | src/tessellate/ai/composer_suggest.py:214 |
+| `_which_reply` | src/tessellate/ai/composer_suggest.py:322 |
 | `closest` | src/tessellate/ai/composer_suggest.py:139 |
 | `fill_slot` | src/tessellate/ai/composer_suggest.py:255 |
 | `open_ended` | src/tessellate/ai/composer_suggest.py:167 |
 | `pending_kind` | src/tessellate/ai/composer_suggest.py:244 |
 | `reference` | src/tessellate/ai/composer_suggest.py:233 |
-| `reply` | src/tessellate/ai/composer_suggest.py:315 |
-| `unknown_action` | src/tessellate/ai/composer_suggest.py:364 |
+| `reply` | src/tessellate/ai/composer_suggest.py:336 |
+| `unknown_action` | src/tessellate/ai/composer_suggest.py:378 |
 
 ### src/tessellate/ai/composer_sum.py (16)
 
@@ -16311,7 +16335,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `from_history` | src/tessellate/ai/composer_talk.py:263 |
 | `previous` | src/tessellate/ai/composer_talk.py:96 |
 | `reply` | src/tessellate/ai/composer_talk.py:273 |
-| `stumped_asks` | src/tessellate/ai/composer_talk.py:450 |
+| `stumped_asks` | src/tessellate/ai/composer_talk.py:452 |
 
 ### src/tessellate/ai/composer_tally.py (15)
 
@@ -17309,16 +17333,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_about_app_first` | src/tessellate/ai/intent.py:194 |
 | `_classify` | src/tessellate/ai/intent.py:251 |
 | `_is_act` | src/tessellate/ai/intent.py:224 |
-| `_laughs` | src/tessellate/ai/intent.py:302 |
-| `_mash_word` | src/tessellate/ai/intent.py:319 |
+| `_laughs` | src/tessellate/ai/intent.py:309 |
+| `_mash_word` | src/tessellate/ai/intent.py:326 |
 | `_matches_any` | src/tessellate/ai/intent.py:129 |
 | `_normalise` | src/tessellate/ai/intent.py:117 |
 | `_reads_as_app_question` | src/tessellate/ai/intent.py:241 |
 | `_social_run` | src/tessellate/ai/intent.py:136 |
 | `classify` | src/tessellate/ai/intent.py:200 |
-| `is_mash` | src/tessellate/ai/intent.py:341 |
-| `is_test` | src/tessellate/ai/intent.py:366 |
-| `needs_retrieval` | src/tessellate/ai/intent.py:378 |
+| `is_mash` | src/tessellate/ai/intent.py:348 |
+| `is_test` | src/tessellate/ai/intent.py:373 |
+| `needs_retrieval` | src/tessellate/ai/intent.py:385 |
 | `request_core` | src/tessellate/ai/intent.py:184 |
 
 ### src/tessellate/ai/janitor.py (30)
@@ -20147,7 +20171,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_given` | src/tessellate/api/chat_chips.py:26 |
 | `continue_chips` | src/tessellate/api/chat_chips.py:52 |
 
-### src/tessellate/api/chat_extra.py (22)
+### src/tessellate/api/chat_extra.py (25)
 
 | Name | File:line |
 |---|---|
@@ -20157,22 +20181,25 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_reminders` | src/tessellate/api/chat_extra.py:45 |
 | `_summary_goes_elsewhere` | src/tessellate/api/chat_extra.py:136 |
 | `_tags` | src/tessellate/api/chat_extra.py:36 |
-| `_turn_label` | src/tessellate/api/chat_extra.py:357 |
+| `_turn_label` | src/tessellate/api/chat_extra.py:403 |
+| `casual_greeting` | src/tessellate/api/chat_extra.py:205 |
 | `events` | src/tessellate/api/chat_extra.py:121 |
-| `facts_events` | src/tessellate/api/chat_extra.py:202 |
-| `figures_events` | src/tessellate/api/chat_extra.py:241 |
+| `facts_events` | src/tessellate/api/chat_extra.py:225 |
+| `figures_events` | src/tessellate/api/chat_extra.py:264 |
 | `hello_events` | src/tessellate/api/chat_extra.py:186 |
-| `language_events` | src/tessellate/api/chat_extra.py:301 |
-| `mentioning` | src/tessellate/api/chat_extra.py:340 |
-| `name_events` | src/tessellate/api/chat_extra.py:224 |
+| `language_events` | src/tessellate/api/chat_extra.py:347 |
+| `mentioning` | src/tessellate/api/chat_extra.py:386 |
+| `name_events` | src/tessellate/api/chat_extra.py:247 |
+| `note_bearing` | src/tessellate/api/chat_extra.py:277 |
 | `notebook_events` | src/tessellate/api/chat_extra.py:59 |
-| `read_events` | src/tessellate/api/chat_extra.py:209 |
+| `read_events` | src/tessellate/api/chat_extra.py:232 |
+| `remark_facts` | src/tessellate/api/chat_extra.py:218 |
 | `reminder_events` | src/tessellate/api/chat_extra.py:163 |
-| `saved_joke` | src/tessellate/api/chat_extra.py:322 |
-| `slot_reply` | src/tessellate/api/chat_extra.py:366 |
+| `saved_joke` | src/tessellate/api/chat_extra.py:368 |
+| `slot_reply` | src/tessellate/api/chat_extra.py:412 |
 | `starter_leads` | src/tessellate/api/chat_extra.py:89 |
-| `talk_events` | src/tessellate/api/chat_extra.py:254 |
-| `welcome_line` | src/tessellate/api/chat_extra.py:274 |
+| `talk_events` | src/tessellate/api/chat_extra.py:294 |
+| `welcome_line` | src/tessellate/api/chat_extra.py:320 |
 
 ### src/tessellate/api/chat_pool.py (36)
 
@@ -26369,7 +26396,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20535)
+## Tests (20551)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26935,6 +26962,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_regex_linear_1029.py | 3 |
 | tests/test_composer_register_1031.py | 12 |
 | tests/test_composer_relevance_1310.py | 12 |
+| tests/test_composer_remark_1749.py | 16 |
 | tests/test_composer_reminder_ask_1668.py | 7 |
 | tests/test_composer_repair_1668.py | 8 |
 | tests/test_composer_requests_1649.py | 6 |
@@ -29570,7 +29598,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1217 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:173 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:171 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4057 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3130 |

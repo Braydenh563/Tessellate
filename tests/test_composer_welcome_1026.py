@@ -40,9 +40,10 @@ def test_the_voice_changes_the_welcome(session):
     assert not (by_voice["natural"] & by_voice["plain"]) and not (by_voice["playful"] & by_voice["professional"])
 
 
-def test_hi_in_chat_is_answered_with_a_welcome(client, session):
+def test_a_written_hello_in_chat_is_answered_with_a_welcome(client, session):
+    #: A tapped "hi" is one line in kind (INBOX 1749); a written hello keeps the welcome.
     _fill(session)
-    out = _ask(client, "hi")
+    out = _ask(client, "hello")
     #: In Chat the last note is a link to it, no longer a quoted title
     #: (INBOX 1485: "didnt reference the note and no link or source was shown?").
     assert "[Tides](#/notes/" in out["text"], out["text"]
