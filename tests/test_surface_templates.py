@@ -266,6 +266,22 @@ def test_build_is_once_per_surface_find_builds_only_the_one_asked_and_the_queue_
     ], result["log"]
 
 
+@needs_node
+def test_one_wiring_hook_that_throws_does_not_strand_the_rest_of_the_surface():
+    """INBOX 1747: the queue was spliced out before it ran, so a hook that threw dropped every hook
+    after it for good (their buttons dead) and made the `$` that built the surface throw."""
+    result = _run(
+        """
+        onSurface('board', () => { throw new Error('boom'); });
+        onSurface('board', () => log.push('second wiring'));
+        let thrown = null;
+        try { surfaceFind('whiteboard-container'); } catch (error) { thrown = error.message; }
+        console.log(JSON.stringify({ thrown, log }));
+        """
+    )
+    assert result["thrown"] is None and "second wiring" in result["log"], result
+
+
 def test_the_sweeps_the_page_runs_at_boot_take_the_stamped_host():
     """Row 21 review: a stamped surface got the help sweep only. The closed dock-menu lists (the OCR reader
     menu), the Mac chord on static titles and the table-driven shortcut titles (the board's tooltips) are

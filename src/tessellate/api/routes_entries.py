@@ -2479,7 +2479,7 @@ def archive_entry(entry_id: int, session: Session = Depends(get_session)) -> Ent
     """Kept, but out of the way (BACKLOG §30b): distinct from the recycle
     bin: never auto-cleared, never purgeable, no confirmation needed since
     nothing is at risk of being lost."""
-    entry = _existing_entry(session, entry_id)
+    entry = NOTES.writable(session, entry_id)
     if not entry.archived_at:
         manager.archive_entry(session, entry)
     return _to_out(session, entry)
@@ -2487,7 +2487,7 @@ def archive_entry(entry_id: int, session: Session = Depends(get_session)) -> Ent
 
 @router.post("/{entry_id}/unarchive", response_model=EntryOut)
 def unarchive_entry(entry_id: int, session: Session = Depends(get_session)) -> EntryOut:
-    entry = _existing_entry(session, entry_id)
+    entry = NOTES.writable(session, entry_id)
     if entry.archived_at:
         manager.unarchive_entry(session, entry)
     return _to_out(session, entry)
