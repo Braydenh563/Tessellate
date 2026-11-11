@@ -10,6 +10,7 @@ down. New tests make the request first and assert on its response.
 
 from __future__ import annotations
 
+import ast
 import re
 from pathlib import Path
 
@@ -40,3 +41,41 @@ def test_the_shape_is_matched():
     # A pattern that silently matched nothing would pass forever.
     assert SIDE_EFFECT_ASSERT.search('    assert client.post("/x").status_code == 200\n')
     assert not SIDE_EFFECT_ASSERT.search('    response = client.post("/x")\n')
+
+
+#: The names CodeQL's sensitive-data heuristics read as a secret, a password,
+#: a certificate or an account (its HeuristicNames, abridged). The heuristic is
+#: name-based and key-blind: an attribute or method named like this on the
+#: settings path made every `get_preference` result "sensitive", so the
+#: timezone, model and backend-address log lines that read one were 15
+#: clear-text-logging alerts (PR 216).
+SENSITIVE_NAME = re.compile(r"secret|token|pass(?:wd|word|code|phrase)|cert|acc(?:ou)?nt|private", re.I)
+
+
+def _config_manager_names() -> set[str]:
+    source = (TESTS.parent / "src" / "tessellate" / "core" / "config.py").read_text(encoding="utf-8")
+    cls = next(
+        node
+        for node in ast.walk(ast.parse(source))
+        if isinstance(node, ast.ClassDef) and node.name == "ConfigManager"
+    )
+    names = {node.name for node in ast.walk(cls) if isinstance(node, ast.FunctionDef)}
+    names |= {
+        node.attr
+        for node in ast.walk(cls)
+        if isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name) and node.value.id == "self"
+    }
+    return names
+
+
+def test_settings_path_has_no_secret_looking_names():
+    # `get_preference` serves every setting, the two secret ones included;
+    # what it reads from must not be named like a secret, or every caller's
+    # log line is reported as logging one.
+    flagged = sorted(name for name in _config_manager_names() if SENSITIVE_NAME.search(name))
+    assert not flagged, f"ConfigManager names CodeQL reads as secrets: {flagged}"
+
+
+def test_the_sensitive_name_shape_is_matched():
+    assert SENSITIVE_NAME.search("_secrets") and SENSITIVE_NAME.search("_keep_secrets")
+    assert not SENSITIVE_NAME.search("_kept_apart") and not SENSITIVE_NAME.search("get_preference")
