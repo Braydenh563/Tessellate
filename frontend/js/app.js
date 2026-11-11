@@ -1657,8 +1657,8 @@ const LAZY_MODULES = {
     "/js/documents-tables.js",
     "/js/documents-columns.js",
     "/js/autocorrect.js",
+    "/js/documents-view.js", //: Before documents.js: the editor mount and keymap; its top level only declares, and documents.js calls into it at load.
     "/js/documents.js",
-    "/js/documents-view.js", //: After documents.js: the editor mount and keymap, called at run time only.
     "/js/documents-callouts.js", //: After documents.js: its top level binds through `docListen`.
     "/js/margin-reader.js",
     "/js/whiteboard-map.js",

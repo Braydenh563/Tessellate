@@ -278,6 +278,25 @@ def test_a_later_page_does_not_recompute_the_density_strip(client, session):
     assert second["density"] == {}
 
 
+def test_the_first_page_says_how_many_rows_the_whole_range_holds(client, session):
+    """W26 / W21: the header said "300+" because nothing told the page how many
+    followed. The first page carries the range's true total (every kind it
+    shows, once each); a later page does not repeat the count."""
+    for i in range(6):
+        note = _save(client, f"note {i}")
+        _age(session, note["id"], i * 3)
+    first = client.get("/timeline?limit=2").json()
+    assert len(first["rows"]) == 2 and first["has_more"] is True
+    assert first["total"] == 6
+    everything = client.get("/timeline?limit=50").json()
+    assert everything["total"] == 6
+    second = client.get(f"/timeline?limit=2&cursor={first['next_cursor']}").json()
+    assert second["total"] is None
+    # A narrower range counts only itself.
+    narrower = client.get("/timeline?limit=2&days=5").json()
+    assert narrower["total"] == 2
+
+
 def test_a_cursor_it_cannot_read_is_refused_rather_than_ignored(client):
     """A silently ignored cursor is a view that starts again at the top on
     every page, which reads as duplicated notes rather than as an error."""

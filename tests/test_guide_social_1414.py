@@ -112,9 +112,27 @@ def test_a_can_you_about_the_app_is_still_answered():
 
 
 @pytest.mark.parametrize("question", HOWTOS)
-def test_a_place_is_added_only_when_one_is_asked_for(question):
+def test_a_place_follows_an_answer_that_walks_no_steps(question):
+    #: OPEN Q23 (audit 1028 E33) moved this: the spoken lead stays first and the
+    #: place is its own last line, for a find question and for a how-to with no
+    #: steps; a how-to that walks numbered steps says its place in the first.
     text = help_chat.offline_answer(question, "notes")["content"]
-    assert ("**Where:**" in text) <= bool(re.search(r"\b(?:where|find|locate)\b", question, re.I)), text
+    walked = bool(re.search(r"^1\. ", text, re.M))
+    asked = bool(re.search(r"\b(?:where|find|locate)\b", question, re.I))
+    assert ("**Where:**" in text) <= (asked or not walked), text
+
+
+@pytest.mark.parametrize(
+    ("question", "place"),
+    [
+        ("how do I export my notes", "Settings, Import & export"),
+        ("how do I change the theme", "Settings, Appearance"),
+    ],
+)
+def test_a_howto_with_no_steps_ends_on_its_place(question, place):
+    text = help_chat.offline_answer(question, "notes")["content"]
+    assert f"**Where:** {place}" in text, text
+    assert not text.startswith("It's in"), text  # the sentence that answers still leads
 
 
 def test_a_resume_is_offered_for_an_open_note_not_for_a_finished_act():

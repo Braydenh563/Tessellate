@@ -23,3 +23,15 @@ Not done (the 50 ms bound, 1x):
 Hub follow-up (2026-11-11, tried and not kept):
 - At rest the chain is whole frame (fc 2) then composed, then a balance pass 2 and composed again. Making pass 2 ride the layer paint (`again()` asking `gcRequestDraw(s, true)` once shown) removed one whole frame (30 ms) but left the composed frames at 46 and 59 ms: tasks over 50 ms unchanged, total 188 to 167 ms. Reverted: a balance inside a padded layer paint is a risk for 11% of the work.
 - A composed frame measured by part (2,000 notes, 1x): layer paint 15 to 22 ms, the `over` pass 0.8 to 1.2 ms, the whole 37 to 48 ms. The other 21 to 24 ms is the `drawImage` of the layer, where the sandbox's software raster flushes the layer's pending paint. A GPU raster would not show it, so no code cut is left in the composed path; a real-GPU measure is the next step, not more code.
+
+## W13 and W27 (this branch)
+
+- W13 traced at 4x: handlers over 50 ms are `(program)` style and layout; the only big JS forced layout in the Settings open is `nameMarkRasterise` (avatars.js:1305, 86 ms, companion, out of scope). Settings tools, Library, Dashboard: script self time 18 ms or less per function. Nothing left in `settings*.js`, `dashboard.js`, `library*.js`.
+- W27: boot gzip 250,954 to 250,434. Moved: applyHarmony, applyContrast, resetThemeOnly, copyLogs, clearManualOverrides, nearLogBottom, clearEmbeddingBackendLatch, looksLikeEmbeddingModel (settings-controls.js); inlineActionIs, translateNoteInDesk (entry-menu.js); searchHighlightTerms, notesSpanSpaces (entry-card.js).
+- Tried and kept at boot (a test names them or a lazy-to-lazy call breaks): resetAppearance, saveCurrentLook, clearLogs, evidenceSwitchReset, entryOverflowMenu, dailyNotePair, publishDraft, focusFirstIn, zoomWheelDelta, taskLogButton, paletteCaughtNow, wirePrefsDirtyMarks (calls nameMark), askAtlasAboutNote (noteNamePlain test). Each needs its test's source path updated: next batch if the cap needs it.
+
+## W25 (this branch)
+
+- Palette keystroke, 2,000-note fixture, 51 keystrokes over 7 queries (probe in scratch only): 1x JS p50 6, p90 8, max 17 ms, frame p90 25; 4x JS p50 27, p90 41, max 49 ms, frame (input to next paint) p50 69, p90 98, max 133 ms. Under the 150 ms target, so no code change (the memo, the ranking window and the setting rows from W25 D6 and D10 already did it).
+- Tab open at 4x: see W13 (native style and layout). Settings open stays a design pass (s7-1110.md D8: one 267 KB template).
+- Found, not fixed: a page error on a cold load, `docCmSyncLanguage is not defined` (documents.js:1090 calls it at load, defined in documents-view.js:715); documents files are out of this spoke's scope.

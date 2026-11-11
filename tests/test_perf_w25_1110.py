@@ -31,4 +31,5 @@ def test_the_dashboard_sizer_reads_the_class_before_the_layout():
     # `checkVisibility` needs a clean style tree: asked as the tab went hidden it cost 129 ms at 4x.
     js = frontend_text("dashboard.js")
     sizer = _between(js, "function sizeDashWidgets() {", "const styles = getComputedStyle(grid);")
-    assert sizer.index('grid.closest(".hidden")') < sizer.index("checkVisibility()")
+    # The class alone is the test now: the visibility API is not asked at all (INBOX 1741).
+    assert 'grid.closest(".hidden")' in sizer and "checkVisibility()" not in sizer

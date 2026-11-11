@@ -512,8 +512,9 @@ const TIMELINE_FIRST = 100;
 //: Which render a page belongs to: a page asked for before the range
 //: changed is dropped, not appended to the new range's rows. `pagingFor`:
 //: the render a page is being fetched for (0: none); a page in flight for a
-//: superseded range must not stop the new range asking for its own.
-const timelineRenders = { n: 0, pagingFor: 0 };
+//: superseded range must not stop the new range asking for its own. `total`:
+//: how many rows the whole range holds (the first page's `total`), null until it lands.
+const timelineRenders = { n: 0, pagingFor: 0, total: null };
 // Counts per day for the whole range (not just the loaded pages), which is
 // what the scrubber draws.
 let timelineDensity = {};
@@ -579,6 +580,7 @@ async function renderTimeline() {
   surfaceRecovered($("timeline-empty"));
   timelineDensity = body?.density || {};
   timelineNextCursor = body?.next_cursor || null;
+  timelineRenders.total = Number.isFinite(body?.total) ? body.total : null;
   timelineRows = body ? body.rows.map(timelineRow) : [];
   // Newest first by the moment the row *sits* on, not by when it was typed.
   // Those differ for every note placed by what it mentions, and the old grid
@@ -733,8 +735,9 @@ async function timelineLoadMore(limit = TIMELINE_PAGE) {
 }
 
 //: **One header line for the feed, the grid and the table.** A page is not the
-//: range: while `timelineNextCursor` says more follow, the count is what is
-//: loaded and a plus ("300+ items"), never a total it is not. "1 day", not
+//: range: while `timelineNextCursor` says more follow, the count is against
+//: the range's total ("40 of 1200 items"), or what is loaded and a plus when
+//: the total is not known ("300+ items"), never a total it is not. "1 day", not
 //: "1 days"; "1 item" only when nothing follows.
 function timelineUnitText(n, unit) {
   return nounCount(n, unit);
@@ -754,9 +757,15 @@ function timelineKindsText(rows) {
 }
 
 function timelineCountLine(shown, loaded, tail, rows = []) {
-  const more = timelineNextCursor ? "+" : "";
-  const count = shown === loaded ? `${shown}${more}` : `${shown} of ${loaded}${more}`;
-  return `${count} item${shown === 1 && !more ? "" : "s"}${timelineKindsText(rows)} · ${tail}`;
+  //: Said as a figure when the first page told the range's total, and as a
+  //: plus only when it did not (an older server, a failed count).
+  const total = timelineRenders.total;
+  const known = timelineNextCursor && total >= loaded && total > 0;
+  const more = timelineNextCursor && !known ? "+" : "";
+  let count = shown === loaded ? `${shown}${more}` : `${shown} of ${loaded}${more}`;
+  if (known) count = shown === loaded ? `${shown} of ${total}` : `${shown} of ${loaded}`;
+  const range = known && shown !== loaded ? ` (${total} in the range)` : "";
+  return `${count} item${shown === 1 && !more && !known ? "" : "s"}${range}${timelineKindsText(rows)} · ${tail}`;
 }
 
 //: **The feed is windowed** (`windowRows`, notes-list.js): a row is built only

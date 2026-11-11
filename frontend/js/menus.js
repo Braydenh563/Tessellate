@@ -5,10 +5,6 @@
 // app.js's globals, loaded in app.js's old order; nothing in an earlier file
 // calls into it while the page loads (scratchpad/appjs-map.js --check).
 
-function inlineActionIs(id, kind) {
-  return inlineAction && inlineAction.id === id && inlineAction.kind === kind;
-}
-
 // Close every open ⋯ menu (shared by outside-click and Esc, Wave L).
 // A kebab menu that stays where it opened while the list scrolls under it
 // ends up beside the wrong note (reported: "they stay sticky on the screen

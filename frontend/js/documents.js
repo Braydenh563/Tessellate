@@ -9309,6 +9309,9 @@ for (const button of document.querySelectorAll("#doc-view-seg [data-doc-view], #
 //: The same `setDocGutter`, so this and the strip's button are two views of
 //: one remembered choice rather than two settings; `applyDocGutter` writes
 //: both their pressed states back.
+//: The two draw switches show the stored choice (their change handlers are in documents-view.js).
+if ($("doc-code-wrap")) $("doc-code-wrap").checked = docToolPref("codeWrap", false);
+if ($("doc-whitespace")) $("doc-whitespace").checked = docToolPref("whitespace", false);
 wireDocScrollSync();
 try {
   //: **Live is the default now.** Asked for: "I want the text editor to be
