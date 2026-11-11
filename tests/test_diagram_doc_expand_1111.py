@@ -34,8 +34,11 @@ def test_the_foot_is_outside_the_scroller_so_it_cannot_cover_a_line():
 
 
 def test_the_pane_hugs_its_content_so_there_is_no_dead_gap_under_the_foot():
-    pane = _rule(".dgm-pane.dgm-framed")
-    assert "align-self: start" in pane and "max-block-size: 100%" in pane
+    assert "max-block-size: 100%" in _rule(".dgm-pane.dgm-framed")
+    # The list column is the frame from 600 up: it sits at the top of its cell, not stretched to the picture's height.
+    column = CSS[CSS.index("@media (min-width: 600px) {\n  .dgm-listcol {") :][:400]
+    assert "align-self: start" in column and "max-block-size: 100%" in column
+    assert "flex: 0 1 auto" in CSS[CSS.index(".dgm-listcol > .dgm-pane {") :][:80]
 
 
 def test_the_drop_line_reads_the_scroller_that_holds_the_blocks():
@@ -43,18 +46,25 @@ def test_the_drop_line_reads_the_scroller_that_holds_the_blocks():
     assert "S.scroll || S.pane" in pointer and "g.S.scroll || g.S.pane" in pointer
 
 
-def test_the_sideways_offer_is_one_notice_row_whose_words_wrap_and_buttons_do_not():
+def test_the_sideways_offer_is_one_notice_row_whose_words_wrap_before_its_buttons_do():
     outline = _js("diagram-outline.js")
-    assert 'line.className = "notice dgm-sideways"' in outline and "line.append(mark, words, turn, keep)" in outline
-    row, words, button = _rule(".dgm-sideways.notice"), _rule(".dgm-sideways > span"), _rule(".dgm-sideways > button")
-    assert "flex-wrap: nowrap" in row
-    assert "min-width" in words and "flex: 0 1 auto" in words
-    assert "flex: none" in button and "white-space: nowrap" in button
+    assert 'line.className = "notice dgm-sideways"' in outline and "line.append(mark, words, acts)" in outline
+    # The pair is one group: the row drops it under the words as a pair (never one button alone) and only below the width of a narrow column of words.
+    assert "acts.append(turn, keep)" in outline
+    row, words, acts = _rule(".dgm-sideways"), _rule(".dgm-sideways-words"), _rule(".dgm-sideways-acts")
+    assert "flex-wrap: wrap" in row
+    assert "min-width: 6rem" in words and "flex: 1 1 6rem" in words
+    assert "flex: none" in acts
+    assert "white-space: nowrap" in _rule(".dgm-sideways-acts > button")
+
+
+def test_the_expanded_builder_does_not_make_the_offer_it_is_already_the_whole_screen():
+    assert "!S.io?.collapse" in _js("diagram-outline.js")
 
 
 def test_both_toolbars_carry_the_expand_button_made_in_the_kind_bar():
     kindbar = _js("diagram-kindbar.js")
-    assert "diagramModel.kindbar = { mount, fresh, expand, KINDS }" in kindbar
+    assert "expand, KINDS" in kindbar.split("diagramModel.kindbar = {")[1]
     assert '"ph:arrows-out"' in kindbar and '"ph:arrows-in"' in kindbar
     assert 'out ? "Expand" : "Collapse"' in kindbar and "dgm-expand" in kindbar
     # A builder that is a dialog of its own (a board's, the door's) has no Expand, and only a live one a Collapse.

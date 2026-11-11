@@ -199,22 +199,27 @@
   margin: var(--space-2) var(--space-3);
   /* Left of the zoom bar (about 12rem, bottom right). */
   max-inline-size: calc(100% - 2 * var(--space-3) - 12rem);
-  /* A `.notice` (DESIGN.md's notice recipe) with two actions. The buttons never wrap: below the width the words need, the words
-     wrap and the row grows, not the buttons (the owner, 2026-11-11: "Keep" fell to a second row and the offer was 140px tall). */
-  flex-wrap: nowrap;
+  /* A `.notice` (DESIGN.md's notice recipe) with two actions. The buttons never split: below the width the words need, the words
+     wrap, and only when even a narrow column of words does not fit does the pair drop under them (the owner, 2026-11-11: "Keep" fell to a second row and the offer was 140px tall). */
+  flex-wrap: wrap;
   align-items: center;
   padding-block: var(--space-1);
   background: var(--modal-bg);
   box-shadow: var(--shadow-md);
 }
 
-.dgm-sideways > span {
-  flex: 0 1 auto;
+.dgm-sideways-words {
+  flex: 1 1 6rem;
   min-width: 6rem;
 }
 
-.dgm-sideways > button {
+.dgm-sideways-acts {
+  display: flex;
   flex: none;
+  gap: var(--space-2);
+}
+
+.dgm-sideways-acts > button {
   white-space: nowrap;
 }
 

@@ -655,7 +655,8 @@
     //: Focus goes into the dialog, to the first step or block (R6.5): it stayed on the button behind, and the first Tab reached Close.
     //: A starter's first box is selected and focused, so Enter names it, Tab adds the next (DD-3).
     const firstBox = host.querySelector(".dgm-block");
-    if (firstBox && S && !S.k) diagramModel.builder.select(S, firstBox.dataset.key, true);
+    //: Not for an expanded diagram: it is not a starter, and a pick it did not make would take the first Escape.
+    if (firstBox && S && !S.k && !live) diagramModel.builder.select(S, firstBox.dataset.key, true);
     else (host.querySelector(".dgm-steps button, .dgm-block[tabindex='0']") || dialog.querySelector(".dgm-pane") || dialog).focus?.({ preventScroll: true });
     //: A phone hides the blocks (they are a sheet), so that focus went nowhere and the first Tab left the window's top: the picture takes it (measured at 390: BODY).
     if (!dialog.contains(document.activeElement)) (host.querySelector(".dgm-picture") || dialog).focus?.({ preventScroll: true });
