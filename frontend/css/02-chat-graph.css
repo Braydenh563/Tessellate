@@ -2735,9 +2735,13 @@ kbd {
 /* Where a side flyout has nowhere to go (a narrow window, or a touch screen
    with no hover: `SUBMENU_STACK` in menus.js) the group is a nested level of
    the same menu: its rows replace the menu's, under a back row. */
+/* `width: auto`: a submenu that carries its menu's own width (a whiteboard
+   menu's 19rem) stood that wide inside the menu's padded 19rem box, every row
+   cut 8px at the right (wrapzoom 2026-11-11, 768). */
 @media (max-width: 819.98px), (hover: none) {
   .action-menu.submenu {
     position: static;
+    width: auto;
     min-width: 100%;
     margin: 0;
     padding: 0;

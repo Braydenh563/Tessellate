@@ -2768,6 +2768,25 @@
      while its icons stayed behind would read as two unrelated pieces. */
   flex-shrink: 0;
 }
+/* **The section with the pickers gives way before the shelf wraps** (wrapzoom
+   2026-11-11). A map's Layout section is two selects and Tidy, 370px, and at
+   1280 it sent Edit to a second row of the shelf. In the bottom shelf it asks
+   for 12rem, grows back to its own width when the row has room, and its
+   pickers shorten with an ellipsis (`.select-value`; the select's title and
+   label name the choice) before the shelf takes a row. */
+.whiteboard-floating-panel:not([data-dock="side"]) .wb-tool-section:has(.select-shell) {
+  flex: 1 1 12rem;
+  max-width: max-content;
+  min-width: 0;
+}
+.whiteboard-floating-panel:not([data-dock="side"]) .wb-tool-section:has(.select-shell) > .wb-tool-section-row {
+  flex-wrap: nowrap;
+  max-width: 100%;
+}
+.whiteboard-floating-panel:not([data-dock="side"]) .wb-tool-section-row > .select-shell {
+  flex: 0 1 auto;
+  min-width: 4.5rem;
+}
 .wb-tool-section-label {
   font-size: var(--text-xs);
   font-weight: 700;

@@ -10320,7 +10320,10 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
    hides what leaves it, a list of rows fills the list. The ring is drawn
    inside the control (one outline, 2px, offset -2px); a chosen segment is an
    accent fill, so its ring is `--on-accent` there, or it would vanish into
-   the fill it sits on. */
+   the fill it sits on. A movable panel's grip sits in the clipping card's
+   corner (#wb-help-card: 0px of room right, 0.4 below), and the diagram list
+   column clips its head and rows (wrapzoom 2026-11-11: 3px over a head button
+   at 960@2, 0.5 under a join at 768). */
 :is(
   .tabs-line > button,
   .doc-crumbs .doc-crumb,
@@ -10339,7 +10342,10 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   .job-run-now,
   .phone-tab-more,
   .timeline-cal-cell .timeline-cal-item,
-  .timeline-cal-cell .timeline-cal-more
+  .timeline-cal-cell .timeline-cal-more,
+  .panel-movable-on > button.panel-grip,
+  .dgm-panehead button,
+  .dgm-listcol :is(.dgm-join, .dgm-menu > button, .dgm-swatch)
 ):focus-visible {
   outline-offset: -2px;
 }
@@ -10364,6 +10370,12 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 }
 :is(.doc-sidebar-section, .library-view-section, .doc-list) {
   padding-block: var(--ring-room);
+}
+/* A whiteboard side panel's section scrolls (07-whiteboard-misc.css), and its
+   actions are full-width buttons against both edges. */
+.wb-side-section {
+  padding: var(--ring-room);
+  margin: calc(-1 * var(--ring-room));
 }
 /* A rows-view note's meta line scrolls across and clips down, so its chips'
    rings (a category, a tag, a count) were cut at the line's edges (INBOX

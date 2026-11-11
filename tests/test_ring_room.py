@@ -71,6 +71,11 @@ RING_ROOM: list[tuple[str, str, str]] = [
     ("the week's day heads on the top of their row", ".timeline-cal-weektop", "room"),
     ("calendar items filling their cell", ".timeline-cal-cell .timeline-cal-item", "inset"),
     ("a calendar cell's More row", ".timeline-cal-cell .timeline-cal-more", "inset"),
+    # The 2026-11-11 zoom sweep (wrapzoom-docs.js, 768 to 2560, 100 to 200 %).
+    ("a movable panel's corner grip (the whiteboard help card)", ".panel-movable-on > button.panel-grip", "inset"),
+    ("the diagram list column's head", ".dgm-panehead button", "inset"),
+    ("a whiteboard side panel's section, which scrolls", ".wb-side-section", "room"),
+    ("the diagram list column's rows", ".dgm-listcol :is(.dgm-join, .dgm-menu > button, .dgm-swatch)", "inset"),
 ]
 
 #: A pill track with an edge: its segments fill its inside, never the

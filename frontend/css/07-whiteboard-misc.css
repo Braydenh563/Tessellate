@@ -11802,12 +11802,18 @@ button.finder-row:is(:focus-visible, :has(:focus-visible)) {
   min-width: 0;
   margin: 0;
 }
+/* A section scrolls when its rows outrun the panel (wrapzoom 2026-11-11: at
+   960x540 and 200 % the map tab's facts and actions were 263px tall in 197,
+   so they ran out of the panel, over the tool shelf, and were cut by the
+   board's edge). A list inside keeps its own scroller: it shrinks first. */
 .wb-side-section {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 .wb-side-section[hidden] {
   display: none;
