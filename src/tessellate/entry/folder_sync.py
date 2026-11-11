@@ -100,17 +100,22 @@ def _checked(folder: str, passphrase: str, notebook: Path | None = None) -> Path
     a sync file there would travel with every copy of the notebook."""
     if not folder.strip() or "\x00" in folder:
         raise SyncError("Choose a folder that exists on this computer.")
-    real = os.path.join(os.path.realpath(os.path.expanduser(folder)), "")
-    # The positive prefix test is a bare `if real.startswith(root)` and the path used from here on is the one
-    # taken inside it: the shape CodeQL counts as a guard (core/paths.py). A test inside `any(...)` is not seen.
+    # The receiver of the bare `startswith` is the `realpath` result itself, and the path used from here on is the
+    # one taken inside that branch: the shape CodeQL counts as a guard (core/paths.py). A test inside `any(...)`,
+    # or on a `join` made after the `realpath`, is not seen. The root keeps its separator, so a sibling such as
+    # /home/user2 never passes for /home/user; the root itself is matched apart and kept as the root's own text.
+    real = os.path.realpath(os.path.expanduser(folder))
     inside = ""
     for root in _sync_roots():
         if real.startswith(root):
             inside = real
             break
+        if os.path.join(real, "") == root:
+            inside = root
+            break
     if not inside:
         raise SyncError("Choose a folder in your home folder or on a removable drive.")
-    if notebook is not None and inside.startswith(os.path.join(os.path.realpath(str(notebook)), "")):
+    if notebook is not None and os.path.join(inside, "").startswith(os.path.join(os.path.realpath(str(notebook)), "")):
         raise SyncError("Choose a folder outside the notebook's own folder.")
     path = Path(inside)
     if not path.is_dir():

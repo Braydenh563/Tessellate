@@ -29,7 +29,7 @@ import threading
 from pathlib import Path
 from urllib.parse import urlencode
 
-from tessellate.core import sync_state
+from tessellate.core import egress, sync_state
 from tessellate.entry import sync_keys
 from tessellate.entry.sync_segments import SegmentError
 
@@ -98,6 +98,7 @@ class _Wire:
             context = ssl.create_default_context(cadata=authority)
         self.context = context
 
+    @egress.labelled("Sync with the other computer the person paired (its address, typed in Settings)")
     def call(self, method: str, path: str, *, body: dict | None = None, headers: dict | None = None) -> tuple[int, bytes]:
         conn = http.client.HTTPSConnection(self.host, self.port, timeout=TIMEOUT, context=self.context)
         try:
@@ -142,32 +143,37 @@ def _sign_in(wire: _Wire, password: str, cookie: str) -> str:
     raise PairError(WRONG_PASSWORD if status == 401 else UNREACHABLE)
 
 
+def _checked_place(data_dir: Path, host: str, port: int, before: dict, same_place: bool) -> tuple[str, str]:
+    """The cookie and certificate a press may sign in with, or the PairError naming a certificate to check first.
+
+    Trust on first use, made a choice: a new certificate is shown, not used, so the password goes only to the
+    computer the person checked (someone else on the network could answer the first call)."""
+    if not same_place:
+        # A new address is held apart until its second press works, so a first press (or a stranger
+        # answering it) never undoes a working pairing.
+        waiting = before.get("pending") or {}
+        if waiting.get("host") == host and waiting.get("port") == port and waiting.get("authority"):
+            return waiting["cookie"], waiting["authority"]
+        authority = _authority(host, port)
+        sync_state.save_link(data_dir, pending={"host": host, "port": port, "authority": authority,
+                                                "cookie": secrets.token_urlsafe(32)})
+        raise PairError(confirm_sentence(fingerprint(authority)))
+    # The cookie and authority are kept, so a press after Allow is the same device to the other
+    # computer and checks the same certificate; a wrong password keeps the old pass.
+    cookie = before.get("cookie") or secrets.token_urlsafe(32)
+    if before.get("authority"):
+        return cookie, before["authority"]
+    authority = _authority(host, port)
+    sync_state.save_link(data_dir, cookie=cookie, authority=authority, fingerprint=fingerprint(authority))
+    raise PairError(confirm_sentence(fingerprint(authority)))
+
+
 def pair(data_dir: Path, address: str, password: str) -> dict:
     """Sign in to the other computer and keep a sync pass; the stored link."""
     host, port = parse_address(address)
     before = sync_state.link(data_dir)
     same_place = before.get("host") == host and before.get("port") == port
-    waiting = before.get("pending") or {}
-    if not same_place:
-        # A new address is held apart until its second press works, so a first press (or a stranger
-        # answering it) never undoes a working pairing.
-        if waiting.get("host") != host or waiting.get("port") != port or not waiting.get("authority"):
-            authority = _authority(host, port)
-            sync_state.save_link(data_dir, pending={"host": host, "port": port, "authority": authority,
-                                                    "cookie": secrets.token_urlsafe(32)})
-            # Trust on first use, made a choice: a new certificate is shown, not used, so the password goes
-            # only to the computer the person checked (someone else on the network could answer the first call).
-            raise PairError(confirm_sentence(fingerprint(authority)))
-        cookie, authority = waiting["cookie"], waiting["authority"]
-    else:
-        # The cookie and authority are kept, so a press after Allow is the same device to the other
-        # computer and checks the same certificate; a wrong password keeps the old pass.
-        cookie = before.get("cookie") or secrets.token_urlsafe(32)
-        if not before.get("authority"):
-            authority = _authority(host, port)
-            sync_state.save_link(data_dir, cookie=cookie, authority=authority, fingerprint=fingerprint(authority))
-            raise PairError(confirm_sentence(fingerprint(authority)))
-        authority = before["authority"]
+    cookie, authority = _checked_place(data_dir, host, port, before, same_place)
     wire = _Wire(host, port, authority)
     try:
         token = _sign_in(wire, password, cookie)
