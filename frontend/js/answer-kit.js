@@ -3091,3 +3091,46 @@ function agentRunTool(run, node) {
   onSurface("chat", () => answerFootWatch($("chat-messages"), ".msg.assistant"));
   onSurface("palette", () => answerFootWatch($("command-palette-results"), ".msg.assistant"));
 })();
+
+// Why a result showed up, as a badge, not a footnote. Reported directly:
+// the one existing explanation ("Link linked to a match") was a muted chip
+// easy to miss, and every *other* result, the actual matches, carried no
+// reason at all, so "why is this here?" only had an answer for the minority
+// of rows that arrived by connection rather than by matching. `match_info`
+// (search/search_manager.py's `_retrieve`) now carries real provenance for
+// the rest: a cosine similarity score for a semantic hit, the words that
+// matched for a keyword hit, both for a hybrid one.
+const MATCH_REASON_LABEL = {
+  // `info.reason` is the link's own reason, when whoever made the link gave
+  // one ("both about scheduling"), asked for directly: does a link's
+  // reason show up here too, not just on the graph and in Trace. It does
+  // now (search_manager.graph_expansion carries it through).
+  connected: (info) => ({
+    text: info.reason ? `ph:link Linked (${info.reason})` : "ph:link Linked to a match",
+    title: info.reason
+      ? `This note didn't match your question, it's here because it's linked to one that did: ${info.reason}.`
+      : "This note didn't match your question, it's here because it is linked to one that did.",
+  }),
+  // ROADMAP.md item 33: an opt-in second hop, linked to something linked
+  // to a match, not to the match itself. Real evidence, weaker evidence;
+  // its own badge text says so rather than reading identically to a direct
+  // connection; both look as bright as a match.
+  connected_2hop: (info) => ({
+    text: info.reason ? `ph:link Two steps away (${info.reason})` : "ph:link Two steps from a match",
+    title: info.reason
+      ? `This note is linked to a note that's linked to a match, not to the match itself: ${info.reason}.`
+      : "This note is linked to a note that's linked to a match, not to the match itself, weaker evidence than a direct connection.",
+  }),
+  semantic: (info) => ({
+    text: `ph:target ${Math.round(info.score * 100)}% similar`,
+    title: `Matched by meaning, not exact words, ${Math.round(info.score * 100)}% cosine similarity to your question.`,
+  }),
+  keyword: (info) => ({
+    text: `ph:magnifying-glass Matched “${info.terms.join("”, “")}”`,
+    title: `Matched the word(s) “${info.terms.join(", ")}” in your question.`,
+  }),
+  hybrid: (info) => ({
+    text: `ph:target ${Math.round(info.score * 100)}% similar · “${info.terms.join("”, “")}”`,
+    title: `Matched both by meaning (${Math.round(info.score * 100)}% similarity) and by the word(s) “${info.terms.join(", ")}”.`,
+  }),
+};
