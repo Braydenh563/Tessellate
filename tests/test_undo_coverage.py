@@ -456,6 +456,12 @@ def uncovered() -> dict[str, list[int]]:
 
 
 EXEMPT: dict[str, str] = {
+    "answer-kit.js:toolChip": "send: Fetch again refreshes the kept copy of a web page from the web; nothing the person wrote changes",
+    "answer-kit.js:keptPagesRow": "read: asks how old the kept web pages are; its Fetch again refreshes a kept copy, nothing the person wrote changes",
+    "settings-controls.js:(anonymous /websearch/stored)": "send: clears the cache of fetched web pages; each fetches again when next asked, nothing the person wrote is lost",
+    "extra-notice.js:extraNoticeInstall": "send: installs an optional package; Settings, Packages removes it again",
+    "vault-unlock.js:keepTypedWords": "auth: seals the words typed and not saved at a lock; no note changes",
+    "vault-unlock.js:restoreTypedWords": "auth: puts the sealed typed words back at unlock and drops the seal; no note changes",
     "origin-bridge.js:(anonymous path)": "send: the one-time carry of saved settings from 127.0.0.1 to localhost (routes_origin_handoff); it writes nothing the person made and runs once before the app opens",
     "settings-health.js:renderRunningCopies": "send: asks another running copy to quit (Shut down); a quit cannot be undone, and the row names the copy and port",
     "capture-card-more.js:askCaptureSuggestions": "read: asks for tag suggestions for the capture card's words (/entries/suggest-tags); writes nothing",
