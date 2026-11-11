@@ -266,7 +266,10 @@ def _motion_of(mode: Any, reason: Any) -> tuple[bool, str] | None:
     """(reduced, reason) for a motion mode, or None for an unknown mode."""
     if mode not in MOTION_MODES:
         return None
-    return (mode != "full", str(reason) if reason in MOTION_REASONS else "")
+    # The reason handed back is the matching constant, never the caller's value: it may have come from
+    # a preference read, and code scanning (rightly, by type alone) treats that read as a possible secret
+    # once it reaches a log line.
+    return (mode != "full", next((r for r in MOTION_REASONS if r == reason), ""))
 
 
 def figure_key(data: dict[str, Any]) -> str | None:
@@ -287,6 +290,24 @@ def _figure_unsettled(data: dict[str, Any] | None) -> bool:
     if not isinstance(figure, dict) or not figure.get("sig"):
         return True
     return figure.get("atlas") is True and data.get("who") != "persona"
+
+
+def _look_label(look: Any) -> str:
+    """What a look is called in the log: a drawn companion is named by its capture key (a stored identifier, and
+    code scanning reads a value called a key as a secret), so the log says which kind it is, never the key."""
+    return "a drawn companion" if capture.is_key(look) else "an Atlas look"
+
+
+def _motion_label(motion: tuple[bool, str] | None) -> str:
+    """The motion in force as words for the log: built only from fixed strings, the reason being the
+    matching entry of `MOTION_REASONS` and never the value that was passed in (see `_motion_of`)."""
+    if motion is None:
+        return "unknown, the system flag decides"
+    word = "still" if motion[0] else "moving"
+    for known in MOTION_REASONS:
+        if known == motion[1]:
+            return f"{word} ({known})"
+    return f"{word} ()"
 
 
 def _look_in_force(data: dict[str, Any], look: str) -> tuple[str, tuple[bool, str] | None]:
@@ -1175,7 +1196,7 @@ class DeskCompanion:
         if data is not None and isinstance(data.get("size"), (int, float)) and not isinstance(data.get("size"), bool) and self._size_unsent is None and self._now() >= self._size_held:
             self.size_pref = sizing.clamp(data["size"])
         if data is None:
-            logger.info("desk companion: the app window gave no look, keeping %s", self.look)
+            logger.info("desk companion: the app window gave no look, keeping %s", _look_label(self.look))
         else:
             look, motion = _look_in_force(data, look)
             self._explain_figure(data)
@@ -1323,8 +1344,8 @@ class DeskCompanion:
         self.overlay_why = ""
         self.runner = runner
         logger.info(
-            "desk companion: overlay started, look=%s, motion=%s (%s)",
-            look, "unknown, the system flag decides" if motion is None else "still" if motion[0] else "moving", motion[1] if motion else "",
+            "desk companion: overlay started, look=%s, motion=%s",
+            _look_label(look), _motion_label(motion),
         )
         return True
 

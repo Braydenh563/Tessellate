@@ -135,6 +135,7 @@ EXPECTED = {
         '"Reading is paused in Settings, What it learned."',
     ],
     'settings-controls.js': [
+        '"Nothing to copy: the filters above are hiding every record."',
         '"Pick an embedding model first, e.g. nomic-embed-text."',
         '"No skills found in that file."',
         '"No personas found in that file."',
@@ -157,7 +158,6 @@ EXPECTED = {
         '"There is no text on the clipboard to save."',
     ],
     'settings.js': [
-        '"Nothing to copy: the filters above are hiding every record."',
         '"Give the look a name first."',
         '`You can keep ${MAX_CUSTOM_THEMES} saved looks: delete one first.`',
     ],
@@ -217,6 +217,9 @@ for _name, _messages in EXPECTED_RULE4.items():
 #: fault. Anything that passes `true` and is not a failed request's own
 #: `.message` has to appear here.
 FAULTS = {
+    'whiteboard-format.js': {
+        'err?.message || "The picture could not be saved to the Library."': 'the Save to Library request failed (the server gave no message)',
+    },
     'entity-page.js': {
         '"Couldn\'t load the people and things in your notes. Try again."': 'the entities request failed',
     },
@@ -280,6 +283,8 @@ FAULTS = {
         '"Couldn\'t read this note\'s properties."': "reading a note's properties failed",
     },
     'settings-controls.js': {
+        '"The last review was not cleared. Try again."': 'the clear-review request failed',
+        '"The dashboard greeting was not saved. Try again."': 'the preferences write failed',
         '"Couldn\'t reset those settings."': 'resetting settings failed',
         '(status && status.textContent) || "Couldn\'t apply the update."': "the update step failed; the text is the step's own error",
         'status.textContent || "Couldn\'t install that version."': "the install step failed; the text is the step's own error",

@@ -14,6 +14,7 @@ Each test pins one defect measured in Chromium at 390 with touch:
 
 import re
 from pathlib import Path
+from tests import _js_scope
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -85,7 +86,7 @@ def test_a_phone_toast_stands_above_the_floating_button():
 
 
 def test_the_command_palette_carries_the_notes_rows():
-    palette = _read("app-palette.js")
+    palette = _js_scope.unwrapped(_read("app-palette.js"))
     rows = _function(palette, "notesPaletteCommands")
     for label in (
         "Manage categories",
@@ -106,9 +107,9 @@ def test_the_command_palette_carries_the_notes_rows():
     assert "filterNotesByTag(tag)" in rows
     assert "chooseNoteCategory(ids," in rows and "openManageCategories()" in rows
     assert "openBulkTags(ids)" in rows and "openTagsSheet()" in rows
-    go = _function(_read("app-palette.js"), "paletteGoToCategory")
+    go = _function(_js_scope.unwrapped(_read("app-palette.js")), "paletteGoToCategory")
     assert '$("category-list")' in go and ".click()" in go
-    hand = _function(_read("app-palette.js"), "paletteNotesInHand")
+    hand = _function(_js_scope.unwrapped(_read("app-palette.js")), "paletteNotesInHand")
     for source in ("selectedIds", "notePageOpenId", "editingId", "overlayReturnFocus"):
         assert source in hand
     # Both sheets load on first use, so the palette may call them at boot.
@@ -117,7 +118,7 @@ def test_the_command_palette_carries_the_notes_rows():
 
 
 def test_the_palette_asks_for_the_notes_rows_with_the_query():
-    palette = _read("app-palette.js")
+    palette = _js_scope.unwrapped(_read("app-palette.js"))
     #: Brief 90 moved the list's assembly into `paletteBase`, which `paletteMatches` reads first.
     assert "paletteBase(lowered)" in _function(palette, "paletteMatches")
     assert "...notesPaletteCommands(lowered)" in _function(palette, "paletteBase")

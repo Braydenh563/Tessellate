@@ -61,6 +61,8 @@ def _label(content: str) -> str:
 const allEntries = [{{ id: 1, content: {json.dumps(content)}, is_private: false }}];
 const editorDocumentCache = [];
 const editorFileCache = [];
+const mapBoardRows = () => [{{ id: 0 }}];
+const loadMapBoardIndex = () => {{}};
 // editorLinkMatches names a note by noteNamePlain (chat-attach.js, INBOX 820); its own tests cover the Markdown.
 const noteNamePlain = (content, limit = 0) => {{ const name = String(content).split('\\n').find((l) => l.trim()).replace(/^#+\\s*/, '').trim(); return limit ? name.slice(0, limit) : name; }};
 {match.group(0)}

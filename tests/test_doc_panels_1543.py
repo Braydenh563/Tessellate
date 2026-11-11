@@ -21,10 +21,12 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from tests import _js_scope
+
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "frontend" / "js" / "panel-movable.js"
+SRC = _js_scope.unwrapped_copy(ROOT / "frontend" / "js" / "panel-movable.js")
 SWEEP = ROOT / "scratchpad" / "ui-sweeps" / "panelmin.js"
 
 node = pytest.mark.skipif(shutil.which("node") is None, reason="node is not available")

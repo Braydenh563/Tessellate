@@ -10,6 +10,7 @@ import json
 from pathlib import Path
 
 from tessellate.ai import acts
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parents[1]
 ROWS = json.loads((ROOT / "tests/fixtures/composer/board_acts_1010.json").read_text(encoding="utf-8"))["rows"]
@@ -46,7 +47,7 @@ def test_the_palette_runs_it_through_the_boards_commands():
     assert "wbArrangeGridSelection(" in js
     board = (ROOT / "frontend/js/whiteboard.js").read_text(encoding="utf-8")
     assert "async function wbArrangeGridSelection(columns)" in board
-    palette = (ROOT / "frontend/js/app-palette.js").read_text(encoding="utf-8")
+    palette = _js_scope.unwrapped((ROOT / "frontend/js/app-palette.js").read_text(encoding="utf-8"))
     assert "wbPaletteActRow(query)" in palette
 
 

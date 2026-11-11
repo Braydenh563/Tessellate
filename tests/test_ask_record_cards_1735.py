@@ -12,9 +12,10 @@ import re
 from pathlib import Path
 
 from tests._app_js import with_pieces
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parent.parent
-KIT = (ROOT / "frontend" / "js" / "reply-kit.js").read_text(encoding="utf-8")
+KIT = _js_scope.unwrapped((ROOT / "frontend" / "js" / "reply-kit.js").read_text(encoding="utf-8"))
 LAZY_CSS = (ROOT / "frontend" / "css" / "reply-kit-lazy.css").read_text(encoding="utf-8")
 
 

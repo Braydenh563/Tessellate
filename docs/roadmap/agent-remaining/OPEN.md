@@ -209,11 +209,11 @@ Parked until the owner's data or a check on real hardware:
 **W20 Shell accessibility and narrow widths** (C, shell and CSS, Sonnet). Files: `frontend/css/10-responsive.css`, `palette.js` (accessibility only), `index.html`. Checks: `tests/test_zoom_wrap_1717.py`, `scratchpad/ui-sweeps/zoom1717.js` at 600, 480 and 390, axe. Done when: 0 overflows at 390 and axe clean on the palette and the space menu.
 ~~- C17 The palette is not a combobox: no `aria-activedescendant`, results not announced | 1028-shell S5~~ **Fixed before s5-1110 (CHANGELOG 1503).**
 ~~- C18 The space menu fails axe (aria-required-children, nested-interactive) | 1029-extras X4~~ **Fixed before s5-1110 (CHANGELOG 1517).**
-- ~~C19 Ask button clipped at 390; quiet chips 28.6 px on a phone; selection ticks 44 px | 1028-shell S6, chatfoot L5, UI#11 item 12~~ **Built earlier (HISTORY, W20 C17 to C19).**
-- ~~C20 Notes dock wraps from 1280 to 1500 with the rail open; capture row wrap at 1024; tab bar 600 to 819 | t20#10, WORLD_CLASS#13~~ **Not reproduced pr216-settings 2026-11-11** (Chromium on :8791, rail open, 1280, 1366, 1440 and 1500: no flex-wrap bar on two lines).
+- ~~C19 Ask button clipped at 390; quiet chips 28.6 px on a phone; selection ticks 44 px | 1028-shell S6, chatfoot L5, UI#11 item 12~~ **Built earlier (HISTORY, W20 C17 to C19); re-measured pr216-settings at 360 and 390: Ask button 59 by 44 px, right edge 147, no chip under 32 px, 0 sideways scroll.**
+- ~~C20 Notes dock wraps from 1280 to 1500 with the rail open; capture row wrap at 1024; tab bar 600 to 819 | t20#10, WORLD_CLASS#13~~ **Not reproduced pr216-settings 2026-11-11** (Chromium on :8791, rail open, 1280, 1366, 1440 and 1500: no flex-wrap bar on two lines; capture rows at 1440, 1280 and 1024: each 36 px, one line; tab bar at 819, 700 and 600: one line, 7 tabs, 0 overflow).
 - ~~C21 Settings scrolls sideways at 768; Recent head clipped under 1200 | UI#11 item 12, zoom4~~ **Not reproduced pr216-settings** (Settings General, Models, Packages, Data at 768 to 1500: 0 sideways scroll, 0 elements past the viewport; the Recent title is hidden under 1200 on purpose, `10-responsive.css` rule 9, and from 1200 it sits above its four buttons on its own line, nothing clipped).
 - ~~C22 1920 by 1080 at 125 to 200 % not driven | zoom4~~ **Driven before (HISTORY, W20 C22).**
-- ~~C23 "?" after a Dashboard click hands focus to CodeMirror | row21 L47~~ **Not reproduced before (HISTORY); not retried.**
+- ~~C23 "?" after a Dashboard click hands focus to CodeMirror | row21 L47~~ **Not reproduced** (HISTORY and pr216-settings 2026-11-11: Dashboard click, then "?": focus lands on the shortcuts Close, not CodeMirror, empty notebook).
 
 **W21 Dashboard, timeline and counts** (C, dashboard, Sonnet; verify first). Files: `dashboard.js`, `timeline*.js`, the import toast, the appearance settings. Checks: `tests/test_dashboard_*`, `tests/test_timeline_*`. Done when: every count is the true total. Verified 2026-11-11 (graph-1111.md): no count short of the true total found; the Timeline's "N+" became a true total (`/timeline` first page `total`, tests/test_timeline.py).
 ~~- C24 Dashboard insight counts capped by a fixed limit | 1028-shell S8~~ **Fixed before s5-1110 (count in SQL).**
@@ -4281,7 +4281,7 @@ Format: id | file:line | one line | status.
 - ~~Z7 | audit-1031-extras:110 | Sketch "Save as note" closes the pad, toasts "Sketch saved to your notebook." and leaves focus on body wi~~ stale: media.js:151 announceSavedNote with an opener
 - ~~Z14 | audit-1031-extras:117 | The Voice note and Record dialogs show a "Live captions" button when no caption engine is installed; pres~~ stale: syncCaptionsDoors marks the doors captions-off when no engine is installed (meetings.js:2451-2456)
 - ~~Z17 | audit-1031-extras:120 | settings-panes.js (a boot script) builds the palette rows "Count words" and "Translate this" around palet~~ stale: paletteCaughtNow guards with typeof paletteCaught (settings-panes.js:1179)
-- Z19 | audit-1031-extras:122 | A card dragged out of the Notes list cannot be dropped on a category in the sidebar, a tag, a space or a | deferred: dropping a card on a category or space is a new carry destination (M, obj-ref.js OBJ_DESTS)
+- ~~Z19 | audit-1031-extras:122 | A card dragged out of the Notes list cannot be dropped on a category in the sidebar, a tag, a space or a~~ stale (2026-11-11): obj-carry.js:21-25 `OBJ_FILE_DESTS`, :176-185 category and space renderers; tests/test_xfix_1031.py
 - HR18 | audit-1031-harness:34 | Settings > Models (1029 H12) now opens with 9 long tasks of 53 to 95 ms at 1440 and 15,191 DOM elements p | deferred: needs a performance trace of Settings > Models (9 long tasks, 15,191 elements)
 - ~~N8 | audit-1031-notes:54 | Date extraction turns "on the 14th of next month" into "Mentions month of Nov 30" (card chip and dates fi~~ stale: timewords.find on 'on the 14th of next month' gives 2026-11-14, precision day (1111, clock 2026-10-06); a bare month shows as 'Nov' (entry-card.js:859)
 - ~~N10 | audit-1031-notes:56 | After Save from the capture bar there is no toast and the new note is not the first row (favourites sort~~ stale: capture-card.js:455 announceSavedNote
@@ -4457,9 +4457,9 @@ Format: id | file:line | one line | status.
 - U15 | audit-1028-ux:21 | Board | stale: Arrange is five submenu rows (tests/test_wb_arrange_submenus_u15.py, CHANGELOG 784)
 - U17 | audit-1028-ux:23 | Board dark | stale: scratchpad/ui-sweeps/wbgripink.js dark 1440x900 on a sticky, a text box and a dark box: 7.96:1 (need 3:1)
 - U18 | audit-1028-ux:24 | Board | stale: bw-1111 probe, 41 boards and 30 stickies at 1440x900 on a loaded machine: undo 33 ms to paint, board list open 32 ms, no long task
-- Y5 | audit-1030-extras:120 | Still open (X15, partly fixed) | open
+- ~~Y5 | audit-1030-extras:120 | Still open (X15, partly fixed)~~ fixed 57421a4b7 (unlock no longer builds Notes; page elements 7 s after login 2,725 to 1,705; checked 2026-11-11)
 - BD7 | audit-1031-board:20 | Sizes: whiteboard.js 25,569 lines, 553 functions, initWhiteboard 4,090 lines; whiteboard-map.js 10,929 li | open
-- Z10 | audit-1031-extras:113 | sketch-pad.js is one 1,805-line closure ((() => { | open
+- ~~Z10 | audit-1031-extras:113 | sketch-pad.js is one 1,805-line closure ((() => {~~ stale (2026-11-11): map half fixed (tests/test_codemap_closure_z10.py, CODEMAP sketch-pad.js (143)); no JS ratchet exists; bg-art split left by default
 - PF4 | audit-1031-perf:38 | Every boot parses the whole app | open
 - 1667c | owner-asks-audit-1108:19 | notes-list.js:3559 still calls loadMapBoardIndex() at load (checked 2026-11-09) | stale: notes-list.js:3554 only walks the index when a page has a [[link]] (ensureMapChipsFor) and dash-boards.js when the widget draws; bw-1111 probe: 0 /whiteboard/boards requests in the first 3 s
 - 1694b2 | owner-asks-audit-1108:86 | Typed value field on diagram, whiteboard and mind map zoom | stale: map boards share the board's #wb-zoom-level valueField; bw-1111 probe on a new map board: input present, 100% shown, 150 typed + Enter reads 150%
@@ -4484,7 +4484,7 @@ Format: id | file:line | one line | status.
 - DC7 | audit-1031-docs:19 | Opening the Documents tab loads the last document and then the one asked for | stale (2026-11-11): driven on :8909 from the dashboard to #/docs/10, requests were GET /documents then GET /documents/10, one open (documents.js:1119-1140 `asked` guard); the list refetch on return not re-measured (audit-1031-docs:19)
 - DC10 | audit-1031-docs:22 | The fallback find bar (#doc-find-bar, #doc-find-input, #doc-find-count, #doc-replace-one, #doc-replace-al | fixed board1518-1101 (2026-11-11: `doc-find-bar` is in no frontend file) (audit-1031-docs:22)
 - DC13 | audit-1031-docs:25 | Sizes: documents.js 24,437 lines, 673 functions, 232 addEventListener against 7 removeEventListener, docL | deferred: L, same split as D22/D23 (audit-1031-docs:25)
-- Z11 | audit-1031-extras:114 | Still open (Y5, X15): opening a surface pays for the hidden DOM | deferred: perf across Settings/Writing room panes, not documents (audit-1031-extras:114)
+- ~~Z11 | audit-1031-extras:114 | Still open (Y5, X15): opening a surface pays for the hidden DOM~~ stale (2026-11-11): X15 templates, 073cc0c6b, 57421a4b7; Settings first-open stamp is the one-time cost, left by default
 - N42 | audit-1031-notes:88 | The autocorrect typo table lives twice and has drifted | stale (2026-11-11): one table, `DOC_AUTOCORRECT = AUTOCORRECT_TYPOS` (documents.js:11347) (audit-1031-notes:88)
 - PF6 | audit-1031-perf:40 | The page is heavy and some of it does not come back | deferred: listener growth on timeline/dashboard redraws, not documents (audit-1031-perf:40)
 - DX1 | audit-1102-docs:30 | partial: the 4x gate is not met (row status); a29i-1102.md holds the rest | partial: the 4x typing gate stays open, a29i-1102.md holds the rest (audit-1102-docs:30)
