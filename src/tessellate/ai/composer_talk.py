@@ -311,9 +311,39 @@ def accepted_offer(question: str, history: list[dict] | None, now: datetime | No
     lines = [ln.strip(" *_") for ln in str(history[-1].get("answer") or "").splitlines() if ln.strip()]
     found = _REMIND_OFFER.match(lines[-1]) if lines else None
     if not found:
-        return None
+        return _note_offer_sentence(lines)
     action = re.sub(r"\byour\b", "my", found.group("action").strip().rstrip("?."), flags=re.I) if found.group("every") else found.group("action").strip().rstrip("?.")
     return f"remind me to {action}" + (f" {found.group('every').replace('each', 'every')}" if found.group("every") else "")
+
+
+#: The offers that save a note, said as the button's label says them (`composer_digest.PHRASES`).
+_CHECKLIST_OFFER = re.compile(r"^save it as a checklist note\??$", re.I)
+_PICK_OFFER = re.compile(r"^note the (?P<side>.+?) as your pick\??$", re.I)
+_LIST_OFFER = re.compile(r"^start a list of (?P<what>.+?) to (?P<verb>[\w ]+?) next\??$", re.I)
+_OPENING_COUNT = re.compile(r"^(?:\w+) (?P<what>.+?), from ", re.I)
+
+
+def _note_offer_sentence(lines: list[str]) -> str | None:
+    """The sentence for a note offer taken up (B23): "Save it as a checklist note?" is the
+    list lines above it, "Note the first as your pick?" the pick, "Start a list of films to
+    watch next?" an empty list. Rebuilt from the answer's own text, since a turn sent back
+    holds no more; the yes is the consent, as for a reminder. Gathering and a table carry
+    notes' words the text no longer holds, so they stay the button's."""
+    last = lines[-1] if lines else ""
+    if _CHECKLIST_OFFER.match(last):
+        items = [m.group(1).strip() for ln in lines if (m := re.match(r"^-\s*\[ \]\s+(.+)$", ln))]
+        if not items:
+            return None
+        what = _OPENING_COUNT.match(lines[0])
+        title = (what.group("what") if what else "").strip()
+        called = f" called {title[:1].upper() + title[1:]}" if title and not re.search(r"\b(?:of|for|with|containing|including)\b", title, re.I) else ""
+        quoted = ", ".join(f'"{i}"' if re.search(r"\band\b|[,;&]", i) else i for i in items)
+        return f"make a checklist note{called} of {quoted}"
+    if pick := _PICK_OFFER.match(last):
+        return f"make a note: My pick: the {pick.group('side').strip()}"
+    if start := _LIST_OFFER.match(last):
+        return f"make a checklist for {start.group('what')} to {start.group('verb')} next"
+    return None
 
 
 def cited_question(question: str, history: list[dict] | None, now: datetime) -> str | None:
