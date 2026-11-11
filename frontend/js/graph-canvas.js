@@ -2093,10 +2093,27 @@ function gcTweenFromPrior(s, nodes, prior, move = true) {
   if (gcStill()) return;
   const now = performance.now();
   let moved = 0;
+  //: **A new note settles into its cell** (INBOX 1744): in the Map and the
+  //: Tessellation a note added to a map that was already there glides in from
+  //: its category's header to its place, as it fades in, where a cut left the
+  //: whole map to shuffle under it. Only a few at a time: a filter coming off
+  //: is a crowd, and that fades in place as before.
+  const rects = move && prior.size && s.tree && s.tree.treemap ? new Map(s.tree.treemap.map((r) => [r.category, r])) : null;
+  const fresh = rects ? nodes.filter((n) => !prior.has(n.id)).length : 0;
   for (const node of nodes) {
     const was = prior.get(node.id);
     if (!was || !Number.isFinite(was.x) || !Number.isFinite(was.y)) {
       node._born = now;
+      const home = rects && fresh <= 12 ? rects.get(node.category) : null;
+      if (home) {
+        node._fromX = (home.x0 + home.x1) / 2;
+        node._fromY = home.y0 + (home.head || 18) / 2;
+        node._toX = node.x;
+        node._toY = node.y;
+        node.x = node._fromX;
+        node.y = node._fromY;
+        moved += 1;
+      }
       continue;
     }
     if (!move) continue;

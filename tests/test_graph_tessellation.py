@@ -382,3 +382,14 @@ def test_a_saved_view_keeps_the_tessellation_look():
     assert 'tessLook: prefs.get("graph-tess-look", null) === "hexes" ? "hexes" : "cells"' in capture
     apply = _function(GRAPH, "graphApplyView")
     assert apply.index('prefs.set("graph-tess-look", view.tessLook)') < apply.index('prefs.set("graph-layout", view.layout)')
+
+
+def test_a_new_note_glides_into_its_cell_from_its_category_header():
+    """INBOX 1744 (q31-1110): in the Map and Tessellation a note new to a map
+    that was already there starts at its category's header and glides to its
+    cell (a few at a time; reduced motion cuts, as the tween's first line)."""
+    body = _function(CANVAS, "gcTweenFromPrior")
+    assert body.index("if (gcStill()) return;") < body.index("s.tree.treemap")
+    assert "prior.size && s.tree && s.tree.treemap" in body
+    assert "node._fromY = home.y0 + (home.head || 18) / 2;" in body
+    assert "fresh <= 12" in body
