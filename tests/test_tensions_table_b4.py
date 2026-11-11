@@ -141,14 +141,14 @@ def test_the_listing_shows_what_a_person_may_open(client, session):
 
 
 def test_a_scan_records_what_it_found_and_never_asks_twice(client, session, monkeypatch):
-    from tessellate.api import routes_entries
+    from tessellate.api import routes_entries_relations
     from tessellate.core import deps
 
     a = _note(client, session, "The launch is in May.", 90)
     b = _note(client, session, "The launch slipped to August.", 10)
     monkeypatch.setattr(deps.get_ollama(), "is_running", lambda: True)
     monkeypatch.setattr(deps.get_embeddings(), "is_ready", lambda: True)
-    monkeypatch.setattr(routes_entries.search_engine, "cached_similar_pairs", lambda *a_, **k: [(a.id, b.id, 0.8)])
+    monkeypatch.setattr(routes_entries_relations.search_engine, "cached_similar_pairs", lambda *a_, **k: [(a.id, b.id, 0.8)])
     asked = []
 
     def judge(earlier, later, models, ollama):

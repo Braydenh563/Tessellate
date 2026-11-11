@@ -24,7 +24,7 @@ exposed the bug.
 
 from __future__ import annotations
 
-from tessellate.api.routes_entries import MAX_SUGGESTIONS_PER_NOTE
+from tessellate.api.routes_entries_relations import MAX_SUGGESTIONS_PER_NOTE
 
 
 def _suggest(client):

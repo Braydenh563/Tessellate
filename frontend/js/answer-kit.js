@@ -3085,5 +3085,5 @@ function agentRunTool(run, node) {
   lazyScript("/css/answer-foot-lazy.css");
   answerFootWatch($("ai-answer")?.parentElement);
   answerFootWatch($("chat-messages"), ".msg.assistant");
-  answerFootWatch($("command-palette-results"), ".msg.assistant");
+  onSurface("palette", () => answerFootWatch($("command-palette-results"), ".msg.assistant"));
 })();

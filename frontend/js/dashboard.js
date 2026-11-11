@@ -4,7 +4,8 @@
 // functions (refreshActiveTab, switchTab, the appearance code). Two split
 // hazards, both a bare top-level reference resolving before this file loads:
 // the features-close wiring moved here beside its functions, and
-// ai-tools.js's applyPalette guards refreshArtForTheme with `typeof`.
+// ai-tools.js's applyPalette calls refreshArtForTheme unguarded, which holds
+// because applyAppearance now runs from settings.js's tail, after this file.
 // Left in app.js: tickClocks (Reminders uses it too), the tab-bar overflow
 // fade, safeMdSlice/notePreviewText/renderEmblem (shared), the Settings
 // appearance and persona code, and the AI Skills page.

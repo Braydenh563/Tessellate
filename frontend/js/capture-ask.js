@@ -958,7 +958,7 @@ async function flashReminder(id) {
   // not match whatever filter was last active, "open" is the default, and
   // completing one is exactly the case where it would just have vanished.
   reminderFilter = "all";
-  for (const b of document.querySelectorAll("#reminder-filter button")) {
+  for (const b of $("reminder-filter").querySelectorAll("button")) {
     setActiveChoice(b, b.dataset.filter === "all");
   }
   await loadReminders();

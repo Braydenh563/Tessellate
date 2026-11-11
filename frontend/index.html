@@ -633,6 +633,7 @@
 
   <div id="command-palette-overlay" class="lock-overlay command-palette-overlay hidden"
     role="dialog" aria-modal="true" aria-label="Agent command palette">
+  <template data-surface="palette">
     <div class="card glass command-palette-card">
       <!-- **A dialog in this app says what it is and how to leave it.**
            INBOX 126, the owner: "I want the popup agent better redesigned with
@@ -782,6 +783,7 @@
           title="Stop the answer being written"><i class="ph ph-stop ph-lead" aria-hidden="true"></i> Stop</button>
       </div>
     </div>
+  </template>
   </div>
 
 
@@ -3589,6 +3591,7 @@ Link to another note with [[its first few words]]."></textarea>
        sorted list. -->
   <div class="tab-page hidden" id="tab-timeline" role="tabpanel"
     aria-labelledby="tab-btn-timeline" tabindex="-1">
+  <template data-surface="timeline">
     <section class="card">
       <!-- Same split as the graph toolbar (§37F/DESIGN.md's control-strip
            rule): what you touch while reading, the view mode and the
@@ -3910,9 +3913,11 @@ Link to another note with [[its first few words]]."></textarea>
         <button class="ghost small" type="button" id="timeline-clear-search"><i class="ph ph-x ph-lead" aria-hidden="true"></i> Clear the search</button>
       </div>
     </section>
+  </template>
   </div>
 
   <div class="tab-page hidden" id="tab-graph" role="tabpanel" aria-labelledby="tab-btn-graph" tabindex="-1">
+  <template data-surface="graph">
     <section class="card" id="graph-card">
       <!-- Two rows, split by *how often you touch them*, reported as "the ui
            elements above the graph are messy and a lot to take in", and it was
@@ -4805,6 +4810,7 @@ Link to another note with [[its first few words]]."></textarea>
         </div>
       </div>
     </section>
+  </template>
   </div>
 
   <!-- ======================= DOCUMENTS TAB ======================= -->
@@ -4813,6 +4819,7 @@ Link to another note with [[its first few words]]."></textarea>
        write, and mixing them would put every half-finished draft into search
        results and the graph. -->
   <div class="tab-page hidden" id="tab-documents" role="tabpanel" aria-label="Documents" tabindex="-1">
+  <template data-surface="documents">
     <!-- **Focus mode's own dock** (INBOX 425 i). Everything else on the
          page is gone while the mode is on, so this is what is left of it:
          which document this is, whether it is saved, full screen when the
@@ -5925,10 +5932,12 @@ Link to another note with [[its first few words]]."></textarea>
          distinct from the app's own session-only global undo stack, which
          also fires on every accept for an immediate Ctrl+Z but forgets
          everything on reload. -->
+  </template>
   </div>
 
   <!-- ======================= REMINDERS TAB ================================= -->
   <div class="tab-page hidden" id="tab-reminders" role="tabpanel" aria-labelledby="tab-btn-reminders" tabindex="-1">
+  <template data-surface="reminders">
     <!-- Compose: the two ways to add a reminder, kept apart from the list -->
     <section class="card reminders-card" id="reminder-compose">
       <div class="row space-between reminders-head">
@@ -6155,6 +6164,7 @@ Link to another note with [[its first few words]]."></textarea>
         <p class="muted">Add one above, or hit Remind on any note.</p>
       </div>
     </section>
+  </template>
   </div>
 
   <!-- ======================= LIBRARY TAB (§4, §36F) =======================
@@ -16130,8 +16140,10 @@ Link to another note with [[its first few words]]."></textarea>
        lazy now (A1): those reads are all inside closures that only run with
        a document surface on screen, which is to say after documents.js has
        arrived, and the two that could run sooner (`applyMarkdown`,
-       `docEventFromCm`) are on app.js's stand-in list and its typeof-guard
-       list respectively. -->
+       `docEventFromCm`) are both behind `typeof ... === "function"` checks
+       in this file; `applyMarkdown` is also on app.js's stand-in list, while
+       `docEventFromCm` is deliberately left off it (its return value is
+       read, and a stand-in promise would be truthy). -->
   <script src="/js/rich-picker.js?v=0.7.0"></script>
   <script src="/js/editor.js?v=0.7.0"></script>
   <!-- Dashboard: widgets, masonry packing, the generative-art widget (§88.3

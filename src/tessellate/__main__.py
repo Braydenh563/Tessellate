@@ -2721,7 +2721,7 @@ def _export_markdown(destination: str) -> int:
     directory gets the default filename inside it, which is what someone
     typing `--export .` means.
     """
-    from tessellate.api.routes_settings import build_markdown_export
+    from tessellate.api.routes_settings_transfer import build_markdown_export
     from tessellate.core import deps
 
     target = Path(destination).expanduser()

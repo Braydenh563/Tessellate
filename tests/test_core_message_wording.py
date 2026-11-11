@@ -327,9 +327,11 @@ REVIEWED_COMPUTED: dict[tuple[str, str], str] = {
     ("routes_entries.py", "librarian.AI_FAILED_MESSAGE"): "a constant in ai/librarian.py, checked there",
     ("routes_files.py", "reason"): "core/ocr.py unavailable_reason",
     ("routes_files_readings.py", "reason"): "core/ocr.py unavailable_reason",  # moved with its route; same source
+    ("routes_files_ocr.py", "reason"): "core/ocr.py unavailable_reason",  # moved with its route; same source
+    ("routes_files_ocr.py", "ocr.unavailable_reason('rapidocr')"): "core/ocr.py unavailable_reason",
+    ("routes_files_ocr.py", "str(exc)"): "ValueError from core/ocr.py set_language",
     ("routes_auth.py", "REFUSAL"): "a fixed sentence, the constant in api/this_computer.py",
     ("routes_map_from_notes.py", "str(exc)"): "ValueError from map_from_note_entry in this module: a fixed sentence with the note id",
-        ("routes_files.py", "ocr.unavailable_reason('rapidocr')"): "core/ocr.py unavailable_reason",
     ("routes_files.py", "edit_message"): "core/docview.py editability",
     ("routes_files.py", "str(exc)"): "ValueError and FileExistsError from entry/manager.py, ValueError from core/ocr.py set_language",
     ("routes_learned.py", "str(exc)"): "ValueError from ai/learning.py record and ai/facts.py set_switches",
@@ -337,7 +339,7 @@ REVIEWED_COMPUTED: dict[tuple[str, str], str] = {
     ("routes_models.py", "str(exc)"): "ValueError from ai/model_manager.py known_feature",
     ("routes_models.py", "reason"): "core/security.py check_backend_url",
     ("routes_models.py", "info['error']"): "ai/model_cards.py inspect_model_name",
-    ("routes_settings.py", "importer.INSTALL_HINT"): "entry/importer.py INSTALL_HINT",
+    ("routes_settings_transfer.py", "importer.INSTALL_HINT"): "entry/importer.py INSTALL_HINT",
     ("routes_tags.py", "str(exc)"): "ValueError from repo/tags.py rename",
     ("routes_tidy.py", "str(exc)"): "ValueError from entry/tidy.py set_auto and LookupError from entry/tidy.py undo",
     ("routes_voice.py", "voice.INSTALL_HINT"): "ai/voice.py INSTALL_HINT",
@@ -514,15 +516,15 @@ def test_a_clip_that_cannot_be_transcribed_does_not_show_the_exception(client, m
 
 
 def test_a_document_that_cannot_be_converted_does_not_show_the_exception(client, monkeypatch, caplog):
-    from tessellate.api import routes_settings
+    from tessellate.api import routes_settings_transfer
 
     caplog.set_level("WARNING")
-    monkeypatch.setattr(routes_settings.importer, "markitdown_available", lambda: True)
+    monkeypatch.setattr(routes_settings_transfer.importer, "markitdown_available", lambda: True)
 
     def broken(_path):
         raise ValueError("corrupt zip at offset 0x2a")
 
-    monkeypatch.setattr(routes_settings.importer, "convert_to_markdown", broken)
+    monkeypatch.setattr(routes_settings_transfer.importer, "convert_to_markdown", broken)
     response = client.post("/import/document", files={"file": ("deck.pptx", b"junk", "application/x")})
     assert response.status_code == 422
     assert "corrupt zip" not in response.json()["detail"]

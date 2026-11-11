@@ -1068,27 +1068,14 @@ function applyPalette(id, remember = true) {
   // The generative background paints from the accent, so it has to be rebuilt, 
   // and so does the dashboard constellation, for the same reason.
   if (bgArtOn()) startBgArt();
-  // Guarded since the dashboard.js split (roadmap §88.3 item 3): originally
-  // because applyPalette() was reachable from a bare top-level call in THIS
-  // file's own wiring (`applyAppearance()` -> `applyPalette()`, painting the
-  // saved appearance before first render) while dashboard.js, which owns
-  // `refreshArtForTheme`, hadn't loaded yet. An unguarded call threw
-  // `ReferenceError: refreshArtForTheme is not defined` from inside that
-  // exact chain and aborted the rest of app.js's synchronous top-level code
-  // (same shape as the `initDocSidebarTabs()` hazard documents.js's split
-  // found). The settings.js split (item 4) moved that bare call itself, 
-  // `applyAppearance()` now runs from settings.js's own tail, after
-  // dashboard.js has already loaded, so this guard now always passes at
-  // that call site too. Left in place rather than removed: applyPalette()
-  // stays a plain global function, callable from anywhere, and nothing
-  // guarantees a *future* caller runs this late, the guard is what makes
-  // that safe by construction instead of by "nothing calls it early right
-  // now." Still a genuine no-op either way at today's one early call site:
-  // the dashboard's art widget hasn't mounted a canvas yet at startup
-  // (`artHolder` is still null), so `refreshArtForTheme()` returns
-  // immediately regardless of whether the guard lets it run. Every other
-  // call site (the theme toggle, the accent/theme pickers, the OS
-  // dark-mode listener) fires only from user interaction, well after every
-  // script has loaded.
+  // Not `typeof`-guarded (88bfe5341 removed it). `refreshArtForTheme` lives in
+  // dashboard.js, which loads after this file, so a call made before
+  // dashboard.js has run would throw ReferenceError. That no longer happens:
+  // the one early path, `applyAppearance()` -> `applyPalette()`, now runs from
+  // settings.js's tail, after dashboard.js, and every other caller (theme
+  // toggle, accent/theme pickers, the OS dark-mode listener) fires from user
+  // interaction. A new caller that runs at parse time here must not reach
+  // this line. At startup the art widget has not mounted a canvas
+  // (`artHolder` is null), so the call returns at once anyway.
   refreshArtForTheme();
 }

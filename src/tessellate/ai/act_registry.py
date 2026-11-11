@@ -214,7 +214,11 @@ def app_verb_line(verb: str) -> str:
 def ask_line(parsed: dict | None) -> str:
     """What Ask says to a sentence that is an act: where it is done."""
     act = ACTS.get((parsed or {}).get("intent", ""))
-    named = f" ({act.label})" if act else ""
+    label = act.label if act else ""
+    if act and act.intent == "navigate" and (parsed or {}).get("surface"):
+        #: Name the place ("open the clock timer"), so the line says what it would open, not just "a part of the app".
+        label = " ".join(["open the", str(parsed["surface"]), str(parsed.get("tab") or "")]).strip()
+    named = f" ({label})" if label else ""
     return f"That is something to do{named} rather than to look up: say it in Chat and it is done there, with Undo."
 
 

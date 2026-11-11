@@ -11,7 +11,7 @@ evidence that each might be wrong, any of which could be right.
 
 Pure on purpose: `recognise` takes plain data, so it is tested and measured
 without a database (`tests/test_relations_kg2.py`), and the route
-(`routes_entries.link_suggestions`) only gathers the rows.
+(`routes_entries_relations.link_suggestions`) only gathers the rows.
 
 **Every signal's cost is bounded by a hub cap, not by the notebook.** Pairs
 come from shared things (an entity, a neighbour, a tag), so a thing shared by

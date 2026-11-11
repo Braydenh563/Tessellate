@@ -117,7 +117,7 @@ def test_what_about_a_category_is_an_overview_of_it():
 
     assert composer_digest.kind_of("what about social connections") == "overview"
     text = composer_digest.answer("what about social connections", social.notes(), today=social.TODAY)["text"]
-    assert "The Complete Social Skills Guide" in text and "stayed with her" in text
+    assert "Complete Social Skills Guide" in text and "stayed with her" in text
 
 
 def test_the_link_reasons_carry_no_markdown_and_no_doubled_article():

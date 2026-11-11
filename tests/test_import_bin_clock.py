@@ -12,7 +12,7 @@ import io
 import zipfile
 from datetime import timedelta
 
-from tessellate.api.routes_settings import _parse_frontmatter
+from tessellate.api.routes_settings_transfer import _parse_frontmatter
 from tessellate.core import deps
 from tessellate.core.database import Entry, utcnow
 from tessellate.entry import app_import, export_folder, manager
