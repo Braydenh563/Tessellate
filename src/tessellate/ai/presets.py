@@ -144,6 +144,12 @@ GUIDE_MODE = "guide"
 #: prompts carry their own); only `think` differs.
 BACKGROUND_MODE = "background"
 
+#: The model bench (`ai/bench.py`): temperature 0, so the same held-out set on
+#: the same model scores the same twice. Measured (2026-11-11, Qwen2.5-1.5B on
+#: llama-cpp-python, server default sampling): two runs of 29 tasks scored 0.667
+#: and 0.611, one citation task flipping, against a gate of two points.
+BENCH_MODE = "bench"
+
 INTERNAL_MODES: dict[str, ResponseMode] = {
     #: The Guide panel (`ai/help_chat.py`): Quick's shape, because a "how do I
     #: save a note" answer is two or three sentences and the low temperature
@@ -189,6 +195,15 @@ INTERNAL_MODES: dict[str, ResponseMode] = {
         max_output_tokens=MODES["normal"].max_output_tokens,
         temperature=None,
         think=False,
+        length_hint="",
+    ),
+    BENCH_MODE: ResponseMode(
+        id=BENCH_MODE,
+        label="Bench",
+        description="The model bench: temperature 0 so a rerun matches.",
+        max_output_tokens=MODES["normal"].max_output_tokens,
+        temperature=0.0,
+        think=None,
         length_hint="",
     ),
 }
