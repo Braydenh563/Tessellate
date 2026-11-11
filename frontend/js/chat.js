@@ -12,7 +12,9 @@ let chatController = null;
 //: Chat's composer queue (CHAT_PLAN B3), made one by palette.js's `composerQueue`, off the boot bytes.
 const chatQueue = {
   input: () => $("chat-input"),
-  busy: () => !$("chat-stop").classList.contains("hidden"),
+  //: Also the save after the stream (Stop is already hidden): a send then made a second conversation (sm-1111 row 25).
+  finishing: new Set(),
+  busy: () => !$("chat-stop").classList.contains("hidden") || chatQueue.finishing.has(chatConv),
   send: (text) => sendChatMessage(text, { keepBox: true }),
   before: () => $("chat-input").parentElement,
 };

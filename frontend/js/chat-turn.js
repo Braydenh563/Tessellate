@@ -786,6 +786,9 @@ async function chatSendTurn(preset, opts = {}) {
     }
   } finally {
     clearTimeout(slowLoadTimeout);
+    //: Until `sendChatMessage` returns, a message sent here is queued, not a second turn racing this save.
+    chatQueue.finishing.add(convRef);
+    opts.finishing = convRef;
     // Whatever happened, answered, stopped, errored, the turn is no longer
     // generating, so the signal that says it is has to come down here rather
     // than on any one success path.
