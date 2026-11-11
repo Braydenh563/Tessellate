@@ -22,7 +22,7 @@ from sqlalchemy import select
 
 from tessellate.core import crypto, sync_state, vault
 from tessellate.core.database import DatabaseManager, Entry, EntryRevision
-from tessellate.entry import manager, sync_pull, sync_segments
+from tessellate.entry import manager, sync_extras, sync_pull, sync_segments
 from tessellate.entry.manager_private import set_private
 
 
@@ -72,6 +72,17 @@ class Link:
         if self.tamper and segment["notes"]:
             segment["notes"][0]["content"] += " (changed on the way)"
         return segment
+
+    # Decision 13: documents, boards and files (`tests/test_sync_extras.py`).
+    def manifest(self, me: str) -> dict:
+        return json.loads(json.dumps(sync_extras.manifest(self.source.session, self.source.dir, self.name)))
+
+    def items(self, kind: str, sids: list[str], me: str) -> list:
+        return json.loads(json.dumps(sync_extras.items(self.source.session, self.source.dir, self.name, kind, sids)))
+
+    def file(self, sid: str, me: str) -> bytes | None:
+        found = sync_extras.file_bytes(self.source.session, self.source.dir, self.name, sid)
+        return found[0] if found else None
 
 
 @pytest.fixture()

@@ -151,24 +151,38 @@ def pair(data_dir: Path, address: str, password: str) -> dict:
 
 
 class LanLink:
-    """The transport `sync_pull` uses (decision 9): `name` and `fetch`."""
+    """The transport `sync_pull` uses (decisions 9 and 13): `name`, `fetch`, `manifest`, `items` and `file`."""
 
     def __init__(self, stored: dict) -> None:
         self.name = stored["peer"]
         self._wire = _Wire(stored["host"], stored["port"], stored["authority"])
         self._pass = stored["sync_pass"]
 
-    def fetch(self, since: int, me: str) -> dict:
-        query = urlencode({"since": since, "peer": me})
+    def _get(self, path: str, query: list[tuple[str, object]]) -> bytes:
         try:
-            status, raw = self._wire.call("GET", f"/sync/segment?{query}", headers={"X-Sync-Pass": self._pass})
+            status, raw = self._wire.call("GET", f"{path}?{urlencode(query)}", headers={"X-Sync-Pass": self._pass})
         except ssl.SSLCertVerificationError as exc:
             raise SegmentError(CERT_CHANGED) from exc
         if status == 401:
             raise SegmentError(NOT_ALLOWED)
+        if status == 404 and path == "/sync/file":
+            return b""
         if status != 200:
             raise ConnectionError(f"the other computer answered {status}")
-        return _json(raw)
+        return raw
+
+    def fetch(self, since: int, me: str) -> dict:
+        return _json(self._get("/sync/segment", [("since", since), ("peer", me)]))
+
+    def manifest(self, me: str) -> dict:
+        return _json(self._get("/sync/manifest", [("peer", me)]))
+
+    def items(self, kind: str, sids: list[str], me: str) -> list:
+        found = _json(self._get("/sync/items", [("kind", kind), ("peer", me), *(("sid", s) for s in sids)])).get("items")
+        return found if isinstance(found, list) else []
+
+    def file(self, sid: str, me: str) -> bytes | None:
+        return self._get("/sync/file", [("sid", sid), ("peer", me)]) or None
 
 
 def load(data_dir: Path) -> LanLink | None:

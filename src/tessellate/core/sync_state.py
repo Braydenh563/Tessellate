@@ -136,3 +136,26 @@ def forget_link(data_dir: Path) -> None:
     state = _read(data_dir)
     state.pop("link", None)
     _write(data_dir, state)
+
+
+# --- documents and files from another computer (decision 13) -----------------------
+
+
+def arrived(data_dir: Path) -> dict[str, dict[str, int]]:
+    """{kind: {sid: local id}} for each document and file that came from another computer."""
+    found = _read(data_dir).get("arrived")
+    if not isinstance(found, dict):
+        return {}
+    return {kind: {s: i for s, i in rows.items() if isinstance(i, int)}
+            for kind, rows in found.items() if isinstance(rows, dict)}
+
+
+def save_arrived(data_dir: Path, kind: str, sid: str, local_id: int | None) -> None:
+    """Remember (or, with None, forget) where an item from another computer landed here."""
+    state = _read(data_dir)
+    rows = arrived(data_dir)
+    kept = {s: i for s, i in rows.get(kind, {}).items() if s != sid}
+    if local_id is not None:
+        kept[sid] = local_id
+    state["arrived"] = {**rows, kind: kept}
+    _write(data_dir, state)

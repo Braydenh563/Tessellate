@@ -166,6 +166,22 @@ def test_two_computers_pair_over_https_and_sync_a_note_both_ways(two_computers):
     status, pulled = b.call("POST", "/sync/now")
     assert pulled["applied"] == 0, pulled  # the same words under two keys are the same note
 
+    # A document and an attached file come over the same pass (decision 13).
+    assert a.call("POST", "/documents", {"title": "Boiler", "content": "Service in March"})[0] == 201
+    note = next(e for e in _entries(a) if e["content"] == "Written on the first computer")
+    assert _upload(a, note["id"], "receipt.png", b"\x89PNG not really") == 201
+    status, pulled = b.call("POST", "/sync/now")
+    assert pulled["error"] == "" and pulled["applied"] == 2, pulled
+    status, docs = b.call("GET", "/documents")
+    found = docs if isinstance(docs, list) else docs.get("documents") or docs.get("items")
+    assert [d["title"] for d in found] == ["Boiler"], docs
+    copy = next(e for e in _entries(b) if e["content"] == "Written on the first computer")
+    status, shown = b.call("GET", f"/entries/{copy['id']}")
+    [attached] = shown["attachments"]
+    assert attached["filename"] == "receipt.png"
+    assert _raw_file(b, attached["id"]) == b"\x89PNG not really"
+    assert b.call("POST", "/sync/now")[1]["applied"] == 0
+
     # The pass reads the segment and nothing else.
     pass_b = json.loads((a.data / sync_state.FILE_NAME).read_text())["link"]["sync_pass"]
     for path in ("/entries", "/sync/status"):
@@ -187,6 +203,37 @@ def _raw_contents(server: Server) -> list[str]:
 
     with sqlite3.connect(server.data / "tessellate.db") as db:
         return [row[0] for row in db.execute("SELECT content FROM entries")]
+
+
+def _https(server: Server):  # noqa: ANN202
+    import ssl
+
+    return http.client.HTTPSConnection(
+        "127.0.0.1", server.port, timeout=30, context=ssl.create_default_context(cadata=server.authority)
+    )
+
+
+def _upload(server: Server, entry_id: int, name: str, data: bytes) -> int:
+    boundary = "tessellate-sync-test"
+    body = (f"--{boundary}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"{name}\"\r\n"
+            f"Content-Type: image/png\r\n\r\n").encode() + data + f"\r\n--{boundary}--\r\n".encode()
+    conn = _https(server)
+    try:
+        conn.request("POST", f"/entries/{entry_id}/files", body=body, headers={
+            "X-Auth-Token": server.token, "Content-Type": f"multipart/form-data; boundary={boundary}"})
+        response = conn.getresponse()
+        response.read()
+        return response.status
+    finally:
+        conn.close()
+
+
+def _raw_file(server: Server, attachment_id: int) -> bytes:
+    import sqlite3
+
+    with sqlite3.connect(server.data / "tessellate.db") as db:
+        [(stored,)] = db.execute("SELECT stored_name FROM attachments WHERE id = ?", (attachment_id,)).fetchall()
+    return (server.data / "uploads" / stored).read_bytes()
 
 
 def _with_pass(server: Server, path: str, sync_pass: str) -> int:

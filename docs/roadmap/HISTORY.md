@@ -22,6 +22,14 @@ waits in Uncategorised; the hint and the saved status offer the closest two or
 three. Leave one out on the 120 notes: 4 of the 11 wrong filings sit under 70,
 beside about 20 right ones (`tests/test_ask_when_unsure.py`).
 
+## Moved from the plans, 2026-11-11 (WORLD_CLASS B6, documents, boards and files, events-sync)
+
+**Built** (B6 decision 13). Documents, boards and attached files sync between paired computers by state.
+
+- `entry/sync_extras.py` (the manifest: kind, sid and the hash of each item's portable state; `items` and `file_bytes`; a private row's sealed columns read as stored), `entry/sync_extras_apply.py` (`pull_extras`: three-way against the hash agreed at the last sync, later wins on both, a document's losing words kept as a named version, a board's canvas hung through `export_folder._hang_canvas`, files checked by SHA-1, removals both ways), `core/sync_state.py` (`arrived`, the sid each document and file came with), `GET /sync/manifest`, `/sync/items` and `/sync/file` on the pass gate, `sync_link.LanLink` with the same three calls; `sync_pull` runs them once the notes are in.
+- **Measured:** `tests/test_sync_extras.py`, 9 tests (a document and its linked note, no second apply either way; edited on both, the later wins and the other words are in History on both; a board's card, shape and connector joined to the new rows; a card moved on one and a connector rubbed out on the other both arrive; a file byte for byte and removals both ways; a file changed on the way refused; a private document and a private board opened with both keys and stored sealed with the receiver's, waiting without them; the three routes). Over two real HTTPS servers (`tests/test_sync_lan.py`): a document and a 16-byte file uploaded on A arrive on B, then nothing more.
+- **Not verified:** two physical computers; a large notebook's manifest time (every item is hashed per pull).
+
 ## Moved from the plans, 2026-11-11 (WORLD_CLASS B6, LAN pairing, events-sync)
 
 **Built** (B6 decisions 10 to 12). Two computers pair over the LAN port and sync each other's notes, private notes included.

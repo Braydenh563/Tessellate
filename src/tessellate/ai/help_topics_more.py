@@ -1988,7 +1988,8 @@ MORE_TOPICS.extend([
             "then Allow this computer there. A note changed on both keeps the later "
             "change and the other text goes to its History. Pairing while both "
             "notebooks are unlocked lets each open the other's private notes, which "
-            "stay encrypted on both; attachments, boards and documents do not sync yet."
+            "stay encrypted on both. Documents, boards and attached files come over "
+            "too; a document changed on both keeps the other words in its History."
         ),
         "badge": {"label": "Import & export", "section": "data"},
     },

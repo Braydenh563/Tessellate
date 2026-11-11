@@ -9,7 +9,7 @@ session. The work is in `entry/sync_segments.py`, `entry/sync_pull.py` and
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, Response
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
@@ -18,7 +18,7 @@ from tessellate.api.this_computer import is_another_device, this_computer_only
 from tessellate.core import deps, lantrust, sync_state
 from tessellate.core.config import ConfigManager
 from tessellate.core.deps import get_config, get_session
-from tessellate.entry import sync_keys, sync_link, sync_pull, sync_segments
+from tessellate.entry import sync_extras, sync_keys, sync_link, sync_pull, sync_segments
 
 router = APIRouter(tags=["sync"])
 #: Registered open in `app.ROUTERS`: its own gate takes a session or a sync pass.
@@ -52,6 +52,39 @@ def sync_segment(
     """This notebook's notes changed after `since`, for the computer named `peer`."""
     device = sync_state.device_id(deps.get_config().data_dir)
     return sync_segments.export_segment(session, device, since, peer)
+
+
+@open_router.get("/sync/manifest", dependencies=[Depends(require_unlock_or_pass)])
+def sync_manifest(peer: str = Query(min_length=1, max_length=40), session: Session = Depends(get_session)) -> dict:
+    """One line per document, board and file with the hash of its state (decision 13)."""
+    data_dir = deps.get_config().data_dir
+    return sync_extras.manifest(session, data_dir, sync_state.device_id(data_dir))
+
+
+@open_router.get("/sync/items", dependencies=[Depends(require_unlock_or_pass)])
+def sync_items(
+    kind: str = Query(pattern="^(document|board|file)$"),
+    sid: list[str] = Query(default=[], max_length=sync_extras.MAX_ITEMS),
+    peer: str = Query(min_length=1, max_length=40),
+    session: Session = Depends(get_session),
+) -> dict:
+    """The whole state of each asked document, board or file."""
+    data_dir = deps.get_config().data_dir
+    return {"items": sync_extras.items(session, data_dir, sync_state.device_id(data_dir), kind, sid)}
+
+
+@open_router.get("/sync/file", dependencies=[Depends(require_unlock_or_pass)])
+def sync_file(
+    sid: str = Query(min_length=3, max_length=80),
+    peer: str = Query(min_length=1, max_length=40),
+    session: Session = Depends(get_session),
+) -> Response:
+    """An attached file's bytes, for the paired computer to keep."""
+    data_dir = deps.get_config().data_dir
+    found = sync_extras.file_bytes(session, data_dir, sync_state.device_id(data_dir), sid)
+    if found is None:
+        raise HTTPException(status_code=404, detail="That file is not here.")
+    return Response(content=found[0], media_type="application/octet-stream")
 
 
 @router.get("/sync/status")

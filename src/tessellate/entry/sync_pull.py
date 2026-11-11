@@ -1,9 +1,10 @@
 """Sync now: pull the other computer's segments until its log is drained (WORLD_CLASS_PLAN B6).
 
 Decision 9: the transport is one object, `name` (the other computer's device
-id, learned at pairing) and `fetch(since, me)` returning a segment, so the
-LAN fetch, the tests' fake and a later shared-folder transport share this
-loop and `sync_segments.apply_segment`. A transport raises `OSError` when
+id, learned at pairing) and `fetch(since, me)` returning a segment (with
+`manifest`, `items` and `file` for documents, boards and files, decision
+13), so the LAN fetch, the tests' fake and a later shared-folder transport
+share this loop and `sync_segments.apply_segment`. A transport raises `OSError` when
 the other computer does not answer.
 
 The cursor moves only after a whole segment has been applied, and an apply
@@ -26,6 +27,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.core import sync_state
 from tessellate.entry import sync_keys, sync_link
+from tessellate.entry.sync_extras_apply import pull_extras
 from tessellate.entry.sync_segments import DAMAGED, SegmentError, apply_segment
 
 logger = logging.getLogger("tessellate.sync")
@@ -42,6 +44,12 @@ class Transport(Protocol):
     name: str
 
     def fetch(self, since: int, me: str) -> dict: ...
+
+    def manifest(self, me: str) -> dict: ...
+
+    def items(self, kind: str, sids: list[str], me: str) -> list: ...
+
+    def file(self, sid: str, me: str) -> bytes | None: ...
 
 
 #: Another way to reach the paired computer, tried before the stored LAN link (the tests' fake).
@@ -77,7 +85,10 @@ def _drain(session: Session, data_dir: Path, link: Transport, totals: dict) -> s
     try:
         for _ in range(MAX_ROUNDS):
             if not _round(session, data_dir, link, me, totals):
-                return ""
+                break
+        # Decision 13: documents, boards and files, by state, once the notes are in.
+        for key, count in pull_extras(session, data_dir, link, me, sync_keys.keys(data_dir)).items():
+            totals[key] = totals.get(key, 0) + count
         return ""
     except SegmentError as exc:
         return str(exc)
