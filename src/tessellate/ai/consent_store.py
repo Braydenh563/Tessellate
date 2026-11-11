@@ -52,6 +52,13 @@ def take(key: str | None) -> dict | None:
     return held[1]
 
 
+def peek(key: str | None) -> dict | None:
+    """The proposal under `key` without spending it; None when unknown, spent or too old."""
+    with _lock:
+        held = _parked.get(key or "")
+    return held[1] if held is not None and held[0] > _now() else None
+
+
 def refusal_for_press(key: str | None, name: str, arguments: dict) -> str:
     """Why Confirm may not run `name` with `arguments` under card `key`, or "" when it may.
 
