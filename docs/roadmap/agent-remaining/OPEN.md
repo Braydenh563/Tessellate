@@ -78,7 +78,7 @@ Parked until the owner's data or a check on real hardware:
 - ~~A28 `safeHref` lets `java\tscript:` through | 1028-docs D14~~ fixed (notes-list.js:858, test_link_schemes_controls)
 - ~~A29 No pre-Brief-7 database was ever upgraded for real | t20#18~~ done w5-1110: tests/test_upgrade_pre_brief7_db.py upgrades a real pre-Brief-7 dump; no bug found
 - ~~A30 Deleting a space still purges in one path | 1029-extras X5, 1031-extras Z20~~ fixed (purge needs ?purge=1, name typed; test_space_delete_confirm_1031)
-- A31 Key storage and MCP auth (after Q22) | a30i-1102 B40, B33, B24, D46, K26, K11, K13, E43
+~~- A31 Key storage and MCP auth (after Q22) | a30i-1102 B40, B33, B24, D46, K26, K11, K13, E43~~ done backend-1111 b155304 (K11), 6ff76a7 (K13), 0389648 (E43); K26 closed by design; B40/B33/B24/D46 belong to other batches (W19, composer)
 
 **W6 Recordings and swallowed deletes** (A, voice notes, Sonnet; verify first). Files: `frontend/js/meetings.js`, `media.js`, the board delete handlers. Checks: `tests/test_meeting*`, a Playwright record and reload run. Done when: no audio is dropped on pause, close warns while recording, typing a title never starts the mic.
 - ~~A32 The voice dialog opens on Record: a typed space starts the mic, other keys fire shortcuts | 1029-extras X1~~ [struck 2026-11-10 w6-1110: verified fixed on head, tests in test_recording_is_unsaved_work_1029.py, test_xfix_1031.py, test_wb_board_1028.py]
@@ -296,7 +296,7 @@ Parked until the owner's data or a check on real hardware:
 **W32 Backend tidy** (E, backend, Haiku verify then Sonnet). Files: small fixes in `api/`. Checks: targeted route tests.
 ~~- E7 Validation copy leaks field names | 1031-backend BK8~~ **Already built c6cc5767a** (field labels and the limit in the message; tests/test_validation_copy.py). Verified s8-1110.
 - E8 ~~A disabled tool refused with the wrong reason (H11, `_refuse_if_off` 3f0030d41); duplicated loopback lists (K28, one list in core/security)~~; token sweep per request (K33) **not built, s8-1110**: `tests/test_vault_sessions.py::test_the_key_goes_when_the_last_granted_session_expires` pins that every authenticated request sweeps (a token injected into `_active_tokens` with an old stamp must revoke the vault key on the next request). A once-a-minute sweep fails it; needs the owner to move that test's intent, or a sweep keyed on a min-expiry that the test's direct injection also lowers | 1029-harness H11, 1028-backend K28, K33
-- E9 Real Tesseract and PDFium reads never ran | sec L13, OPEN RapidOCR row
+- E9 Real Tesseract and PDFium reads never ran | sec L13, OPEN RapidOCR row [unverifiable here: no tesseract or pypdfium2; needs a machine with both]
 - E10 The other 1028-backend and 1031-backend open rows | book1 (37 and 12 rows) [backend-1111: re-verified on head; the rest are built, stale or held (Q22, K38, K32); BK10, K19, K29, E9 left in backend-1111.md]
 
 **W33 Copy and help** (E, copy, Haiku then Sonnet). Files: help topics, copy strings.

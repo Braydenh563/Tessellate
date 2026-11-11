@@ -6,8 +6,6 @@ import json
 import os
 import stat
 
-import pytest
-
 from tessellate.core import pinstore, secrets_store
 from tessellate.core.config import ConfigManager
 

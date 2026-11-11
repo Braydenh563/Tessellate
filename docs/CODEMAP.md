@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8112, frontend ids 2696, CSS sections 523, backend routes 667, backend modules 10127, test files 2478, tests 20454, plan headings 1003, app scripts 28, boot scripts 37, script files 277.
+Counts: frontend functions 8112, frontend ids 2696, CSS sections 523, backend routes 667, backend modules 10128, test files 2479, tests 20457, plan headings 1003, app scripts 28, boot scripts 37, script files 277.
 
 ## Frontend functions (8112)
 
@@ -13483,7 +13483,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10127)
+## Backend modules (10128)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -16569,15 +16569,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `read` | src/tessellate/ai/consent.py:90 |
 | `says` | src/tessellate/ai/consent.py:43 |
 
-### src/tessellate/ai/consent_store.py (5)
+### src/tessellate/ai/consent_store.py (6)
 
 | Name | File:line |
 |---|---|
 | `_now` | src/tessellate/ai/consent_store.py:25 |
 | `park` | src/tessellate/ai/consent_store.py:29 |
-| `reset_for_tests` | src/tessellate/ai/consent_store.py:62 |
+| `refusal_for_press` | src/tessellate/ai/consent_store.py:55 |
+| `reset_for_tests` | src/tessellate/ai/consent_store.py:80 |
 | `take` | src/tessellate/ai/consent_store.py:42 |
-| `was_spent` | src/tessellate/ai/consent_store.py:55 |
+| `was_spent` | src/tessellate/ai/consent_store.py:73 |
 
 ### src/tessellate/ai/context.py (6)
 
@@ -26294,7 +26295,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20454)
+## Tests (20457)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26920,6 +26921,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_compress_context.py | 9 |
 | tests/test_compression.py | 8 |
 | tests/test_concurrency_sizing_1031.py | 6 |
+| tests/test_confirm_binds_to_card_e43.py | 3 |
 | tests/test_confirmed_patterns_b9.py | 18 |
 | tests/test_confirmed_patterns_review_216.py | 3 |
 | tests/test_connected_results.py | 9 |
