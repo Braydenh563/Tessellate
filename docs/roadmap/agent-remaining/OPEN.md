@@ -4259,25 +4259,25 @@ Format: id | file:line | one line | status.
 - ~~S60 | audit-1028-shell:66 | Reduced-motion handling not applied to every animation~~ stale: motion-still.css is the reduced-motion blanket, linked by theme-boot.js for data-motion=reduced; tests/test_motion_resolved.py holds it
 - ~~S61 | audit-1028-shell:67 | Colour contrast of muted text in dark theme near threshold on chips~~ stale: contrast.js THEME=dark 1111: every tab and Settings section ok, none under 4.5:1 (empty notebook, no boards or maps)
 - ~~S63 | audit-1028-shell:69 | Palette lacks "go to note by title" with live preview~~ stale: note results with snippets already show under the commands (paletteNoteHits, app-palette.js:31)
-- S64 | audit-1028-shell:70 | Mascot and avatar assets load even when disabled | open
-- S65 | audit-1028-shell:71 | Service worker precache list not trimmed to boot-critical assets | open
+- ~~S64 | audit-1028-shell:70 | Mascot and avatar assets load even when disabled~~ stale: avatars.js and atlas.js are the lazy characters bundle, fetched at idle (lazy-entries.js:82, index.html:16096); boot probe 1111 with the companion off: 147 KB of it plus atlas-lazy.css, needed by Atlas's own marks, so a setting gate would break them
+- ~~S65 | audit-1028-shell:71 | Service worker precache list not trimmed to boot-critical assets~~ stale: frontend/sw.js keeps no precache list: it caches stamped files on first fetch (header, lines 1-60)
 - ~~S66 | audit-1028-shell:72 | 27 global-scope scripts raise collision risk; no lint for duplicate top-level names across lazy modules~~ stale: tests/test_global_scope_ratchet.py counts duplicate and total names across the bundles
-- S70 | audit-1028-shell:76 | No note count per tag in tag chips | open
+- S70 | audit-1028-shell:76 | No note count per tag in tag chips | deferred: counts exist in the tag manager and the dashboard tag chips (dashboard.js:2645); counts on every card chip is a design call
 - ~~S74 | audit-1028-shell:80 | a Headings row in the note card's~~ built s12b-1110 (Headings row in the card menu)
-- S76 | audit-1028-shell:82 | No note linking preview on hover | open
-- S78 | audit-1028-shell:84 | Empty states differ in tone and illustration across views | open
-- S79 | audit-1028-shell:85 | Icon set mixes stroke weights between nav and toolbars | open
-- S80 | audit-1028-shell:86 | Card shadows and borders vary between Library and Notes | open
-- S81 | audit-1028-shell:87 | Settings has dense long panes with no sticky section index | open
+- S76 | audit-1028-shell:82 | No note linking preview on hover | deferred: hover preview on wiki-links is a new feature (M); citation-peek.js and attachment-peek.js are the recipe to follow
+- S78 | audit-1028-shell:84 | Empty states differ in tone and illustration across views | deferred: empty-state recipe is a design pass across views, not a reproducible defect
+- S79 | audit-1028-shell:85 | Icon set mixes stroke weights between nav and toolbars | deferred: index.html carries 4 ph-light icons among the regular ones; whether they are meant is a design call
+- S80 | audit-1028-shell:86 | Card shadows and borders vary between Library and Notes | deferred: measured 1111: Notes card border 1px transparent, tint rgba(31,36,48,0.04), radius 8px; Library card border 1px rgb(227,225,221), white, radius 6.4px; both no shadow; a design call whether they should match
+- S81 | audit-1028-shell:87 | Settings has dense long panes with no sticky section index | deferred: Settings has a section nav (#settings-nav); a sticky index inside a long pane is a design call
 - ~~S82 | audit-1028-shell:88 | Segmented view toggle lacks labels for first-time users~~ stale: both buttons have title and aria-label (index.html:2535-2540)
 - ~~S84 | audit-1028-shell:90 | Onboarding cannot be re-opened from Help~~ stale: Take the tour is in Help and the palette (first-run.js:197, 335), already marked s11-1110
-- S85 | audit-1028-shell:91 | Error toasts say what failed but not what to do | open
-- S86 | audit-1028-shell:92 | Library to notes round trip needs 3 clicks | open
+- S85 | audit-1028-shell:91 | Error toasts say what failed but not what to do | deferred: toast() already takes an action ({ action: [label, fn] }, status.js:347); adding one per error is a sweep of call sites
+- S86 | audit-1028-shell:92 | Library to notes round trip needs 3 clicks | deferred: shortcut design, not reproducible as a defect
 
 **BS3 (shell, 19 rows)**
 
 - ~~S88 | audit-1028-shell:94 | utility~~ stale: highlightInto marks search terms (notes-list.js:1148-1224), already marked s11-1110
-- S89 | audit-1028-shell:95 | utility | open
+- ~~S89 | audit-1028-shell:95 | utility~~ stale: Settings, Data has Export JSON, CSV, Markdown, folder and full backup, each with a title, plus an About exports popover (index.html:13604-13623)
 - ~~S91 | audit-1028-shell:97 | Page language and title do not update on view change~~ stale: status.js:505-518 pageTitle.view is set per view by the router; <html lang> is a fixed en
 - U19 | audit-1028-ux:25 | Mind map | open
 - U20 | audit-1028-ux:26 | Code editor | open
@@ -4288,35 +4288,35 @@ Format: id | file:line | one line | status.
 - U37 | audit-1028-ux:43 | Code editor | open
 - U39 | audit-1028-ux:45 | Polish | open
 - U41 | audit-1028-ux:47 | Board | open
-- U42 | audit-1028-ux:48 | Consist | open
+- ~~U42 | audit-1028-ux:48 | Consist~~ stale: #library-boards-filter margin is calc(var(--space-6) - var(--ring-room)) (08-consistency.css:10491)
 - U45 | audit-1028-ux:51 | Consist | open
 - U49 | audit-1028-ux:55 | Board | open
-- H12 | audit-1029-harness:43 | The report's top lag row: 17 frames of 202 to 1,682 ms after a pointerdown on button#settings-nav-models | open
+- H12 | audit-1029-harness:43 | The report's top lag row: 17 frames of 202 to 1,682 ms after a pointerdown on button#settings-nav-models | deferred: same as HR18; needs a performance trace of Settings > Models, not a code reading
 - ~~N17 | audit-1029-notes:52 | 240 wiki-link chips in the list share one accessible name, "Go to the note starting “Atlas project”", so~~ fixed 7032dd106: entry-card.js names each icon button after its note ("Edit this entry: Lisbon trip"); live probe 1111 on two notes read distinct names for all eight buttons
 - ~~A35 | audit-1030-ai:66 | Not a bug: the focus is a glow on .nm-buddy-face::before (owner decision 2026-10-11); the audit read the~~ closed ff5ac76 (not a bug)
 - ~~Y7 | audit-1030-extras:122 | Still open (W7): the bell lists the app's own housekeeping as news to a new person~~ fixed a9f6aea
 
 **BS4 (shell, 19 rows)**
 
-- Y18 | audit-1030-extras:133 | Writing room with no model still says "No model connected" twice (the model select and the banner), W27 n | partial
-- AR2 | audit-1031-architecture:28 | One global scope of 10,000 names | open
-- AR5 | audit-1031-architecture:31 | The page carries every surface in one document | open
-- BK12 | audit-1031-backend:24 | The page polls GET /reminders?include_done=false every minute per tab (1028 K32); 5.6 KB per poll here, a | open
-- Z2 | audit-1031-extras:105 | One click on the status-bar timer chip stops it with no confirm, no pause and no Undo | open
-- Z6 | audit-1031-extras:109 | Questions, "Drop: it no longer matters" | open
-- Z7 | audit-1031-extras:110 | Sketch "Save as note" closes the pad, toasts "Sketch saved to your notebook." and leaves focus on body wi | open
-- Z14 | audit-1031-extras:117 | The Voice note and Record dialogs show a "Live captions" button when no caption engine is installed; pres | open
-- Z17 | audit-1031-extras:120 | settings-panes.js (a boot script) builds the palette rows "Count words" and "Translate this" around palet | open
-- Z19 | audit-1031-extras:122 | A card dragged out of the Notes list cannot be dropped on a category in the sidebar, a tag, a space or a | open
-- HR18 | audit-1031-harness:34 | Settings > Models (1029 H12) now opens with 9 long tasks of 53 to 95 ms at 1440 and 15,191 DOM elements p | open
-- N8 | audit-1031-notes:54 | Date extraction turns "on the 14th of next month" into "Mentions month of Nov 30" (card chip and dates fi | open
-- N10 | audit-1031-notes:56 | After Save from the capture bar there is no toast and the new note is not the first row (favourites sort | open
-- N12 | audit-1031-notes:58 | A note saved with YAML frontmatter shows title | open
-- N13 | audit-1031-notes:59 | The palette cannot find a title-less note by its first words | open
-- N16 | audit-1031-notes:62 | Engine-backed filters (kind:, has:link, title:) cap at 50 and the heading reads "50 of 199" with no way t | open
-- N18 | audit-1031-notes:64 | is:draft, has:attachment, in:bin and other unknown flags silently give 0 rows while is:untitled gets a no | open
-- N19 | audit-1031-notes:65 | The finder explains a title: hit on a title-less note as "matched your words"; a title-only hit on a note | open
-- N20 | audit-1031-notes:66 | Card menu taxonomy: AI acts are split across "AI actions›" (Tag and file, Proofread, Title, Remove title) | open
+- ~~Y18 | audit-1030-extras:133 | Writing room with no model still says "No model connected" twice (the model select and the banner), W27 n~~ fixed a9f6aea
+- AR2 | audit-1031-architecture:28 | One global scope of 10,000 names | deferred: the global-scope ratchet (tests/test_global_scope_ratchet.py) holds the number; wrapping files whole is an ongoing step
+- AR5 | audit-1031-architecture:31 | The page carries every surface in one document | deferred: one-document page is an architecture decision, not a batch fix
+- BK12 | audit-1031-backend:24 | The page polls GET /reminders?include_done=false every minute per tab (1028 K32); 5.6 KB per poll here, a | partial: one tab polls and a hidden tab stops (status.js:556-566); the 200-row payload remains, same as K32
+- ~~Z2 | audit-1031-extras:105 | One click on the status-bar timer chip stops it with no confirm, no pause and no Undo~~ stale: stopUtilityClock offers Undo with the time left (utility-tools.js:140-157)
+- ~~Z6 | audit-1031-extras:109 | Questions, "Drop: it no longer matters"~~ stale: Drop toasts 'Dropped the question.' with Undo (questions-view.js:59-66)
+- ~~Z7 | audit-1031-extras:110 | Sketch "Save as note" closes the pad, toasts "Sketch saved to your notebook." and leaves focus on body wi~~ stale: media.js:151 announceSavedNote with an opener
+- ~~Z14 | audit-1031-extras:117 | The Voice note and Record dialogs show a "Live captions" button when no caption engine is installed; pres~~ stale: syncCaptionsDoors marks the doors captions-off when no engine is installed (meetings.js:2451-2456)
+- ~~Z17 | audit-1031-extras:120 | settings-panes.js (a boot script) builds the palette rows "Count words" and "Translate this" around palet~~ stale: paletteCaughtNow guards with typeof paletteCaught (settings-panes.js:1179)
+- Z19 | audit-1031-extras:122 | A card dragged out of the Notes list cannot be dropped on a category in the sidebar, a tag, a space or a | deferred: dropping a card on a category or space is a new carry destination (M, obj-ref.js OBJ_DESTS)
+- HR18 | audit-1031-harness:34 | Settings > Models (1029 H12) now opens with 9 long tasks of 53 to 95 ms at 1440 and 15,191 DOM elements p | deferred: needs a performance trace of Settings > Models (9 long tasks, 15,191 elements)
+- ~~N8 | audit-1031-notes:54 | Date extraction turns "on the 14th of next month" into "Mentions month of Nov 30" (card chip and dates fi~~ stale: timewords.find on 'on the 14th of next month' gives 2026-11-14, precision day (1111, clock 2026-10-06); a bare month shows as 'Nov' (entry-card.js:859)
+- ~~N10 | audit-1031-notes:56 | After Save from the capture bar there is no toast and the new note is not the first row (favourites sort~~ stale: capture-card.js:455 announceSavedNote
+- ~~N12 | audit-1031-notes:58 | A note saved with YAML frontmatter shows title~~ stale: tests/test_frontmatter_title_1031.py
+- ~~N13 | audit-1031-notes:59 | The palette cannot find a title-less note by its first words~~ stale: palette note rows come from the finder (app-palette.js paletteNoteRows)
+- ~~N16 | audit-1031-notes:62 | Engine-backed filters (kind:, has:link, title:) cap at 50 and the heading reads "50 of 199" with no way t~~ stale: liveQueryBar says 'The first N notes that match this query, add words to narrow it' when capped (notes-lazy.js)
+- ~~N18 | audit-1031-notes:64 | is:draft, has:attachment, in:bin and other unknown flags silently give 0 rows while is:untitled gets a no~~ stale: noMatchHint names the unknown filter and lists the real ones (notes-lazy.js:207); is:draft is a real flag
+- ~~N19 | audit-1031-notes:65 | The finder explains a title: hit on a title-less note as "matched your words"; a title-only hit on a note~~ stale: search/engine.py _where_in_body says matched the first line or the text
+- N20 | audit-1031-notes:66 | Card menu taxonomy: AI acts are split across "AI actions›" (Tag and file, Proofread, Title, Remove title) | deferred: menu taxonomy is a design call
 
 **BS5 (shell, 19 rows)**
 
