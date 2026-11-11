@@ -361,6 +361,8 @@ function lockOpened(body, mode, password) {
   setBusy($("lock-submit"), true, "Opening…");
   const opening = startApp();
   curtainShell(opening);
+  //: The words typed before the lock come back once the page is drawn (INBOX 1747, row 22).
+  if (mode !== "setup") Promise.resolve(opening).then(() => typedWords("restore")).catch(() => {});
   //: The step after setup (INBOX 663): a recovery key, offered once the
   //: app is drawn, skippable. The password just chosen goes with it so
   //: the offer does not ask for it again; account-recovery.js drops it

@@ -59,7 +59,7 @@ Parked until the owner's data or a check on real hardware:
 - ~~A13 With the vault open, a private note is never searchable | 1031-notes N3~~ stale: /search and /entries/query never return a private note, open or locked (tests/test_vault_w3_1110.py)
 - ~~A14 Lock screen: focus not on the field, no dialog semantics, no throttle hint, focus dropped after errors | 1028-shell S4, S25, 1029-extras X23~~ stale: Playwright 2026-11-10 shows focus on #lock-password, role dialog, aria-modal, aria-describedby, aria-invalid, focus kept after 5 wrong tries, 429 countdown on the button
 - ~~A15 Sign-in off never driven (persistent profile, second LAN device, restored preferences) | t20#17~~ driven w3-1110: persistent, relaunched and fresh browsers open with no prompt, vault stays locked; second LAN device and a real restore not driven (no second host); backups exclude the switch
-- A16 `/media` 403 and 409 unified (after Q18) | sec L14
+- ~~A16 `/media` 403 and 409 unified (after Q18)~~ (built sm-1111: 409 "Unlock first.", tests/test_vault_attachments.py) | sec L14
 
 **W4 Documents that lose words** (A, documents, Sonnet; verify first). Files: `frontend/js/documents.js` save and lock paths. Checks: `tests/test_doc*`, a slow-PUT Playwright run. Done when: no typing during a save is lost, an offline first save says "Not saved" and keeps a draft, locking clears every word from the page.
 - ~~A17 Autosave has no in-flight guard; a slow PUT plus typing sends a stale hash~~ (stale: built, tests/test_doc_save_serial.py) | 1028-docs D1
@@ -215,7 +215,7 @@ Parked until the owner's data or a check on real hardware:
 - C22 1920 by 1080 at 125 to 200 % not driven | zoom4
 - C23 "?" after a Dashboard click hands focus to CodeMirror | row21 L47
 
-**W21 Dashboard, timeline and counts** (C, dashboard, Sonnet; verify first). Files: `dashboard.js`, `timeline*.js`, the import toast, the appearance settings. Checks: `tests/test_dashboard_*`, `tests/test_timeline_*`. Done when: every count is the true total.
+**W21 Dashboard, timeline and counts** (C, dashboard, Sonnet; verify first). Files: `dashboard.js`, `timeline*.js`, the import toast, the appearance settings. Checks: `tests/test_dashboard_*`, `tests/test_timeline_*`. Done when: every count is the true total. Verified 2026-11-11 (graph-1111.md): no count short of the true total found; the Timeline's "N+" while more pages wait is honest, a true figure needs a `/timeline` total (routes_timeline, not this batch).
 ~~- C24 Dashboard insight counts capped by a fixed limit | 1028-shell S8~~ **Fixed before s5-1110 (count in SQL).**
 ~~- C25 Timeline header count and "days" plural wrong for 1 and for paged data | 1028-shell S7~~ **Fixed before s5-1110 (CHANGELOG 1562).**
 ~~- C26 Import toast gives no skipped or duplicate breakdown | 1028-shell S9~~ **Fixed before s5-1110 (import toast).**
@@ -238,6 +238,7 @@ Parked until the owner's data or a check on real hardware:
 - ~~C39 Link offers have no Settings switch; "Untitled document N" naming | t20#15, t20#16~~ **Stale: built** (Settings link offers switch; documents.js Untitled document N), s6-1110
 - ~~C40 Equation panel jump row and Inline/Display pill | DOCUMENTS 1566~~ **Stale: built 6c08378**, s6-1110
 - C41 The remaining 1028-docs and 1031-docs open rows | book1 (40 and 7 rows)
+- ~~D28 Text size is three steps, no Ctrl+wheel | 1028-docs D28~~ built e2775e4 (five sizes, Ctrl+wheel, tests/test_doc_text_zoom_1111.py); D29, D40, D41 stale (built); D25 open
 
 ### Tier D: performance and CI time
 
