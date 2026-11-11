@@ -36,6 +36,16 @@ def test_the_five_sets_are_listed_with_their_counts(ai_client):
         assert "mxgraph" not in s["name"].lower()
 
 
+def test_no_two_library_sections_share_a_name(ai_client):
+    """bw-1111: the panel showed two "BPMN" and two near-identical cloud and network sections."""
+    lib = ai_client.get("/board-library").json()
+    names = [s["name"].lower() for s in lib["sets"]] + [s["name"].lower() for s in lib["shape_sets"]]
+    assert len(names) == len(set(names)), sorted(n for n in names if names.count(n) > 1)
+    by_key = {s["key"]: s["name"] for s in lib["shape_sets"]}
+    assert by_key["drawio-bpmn"] == "BPMN, more"
+    assert by_key["drawio-networks"] == "Cloud and network, more"
+
+
 def test_a_draw_io_shape_places_and_keeps_its_ports(ai_client):
     board = _board(ai_client)
     out = ai_client.post(f"/whiteboard/boards/{board['id']}/place",

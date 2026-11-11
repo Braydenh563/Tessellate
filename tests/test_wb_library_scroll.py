@@ -1,7 +1,7 @@
 """INBOX 904 B26: opening a shape group must not throw the library list to the top.
 
 The owner: "these dropdowns don't show anything" (Basic shapes, Flowchart more,
-Arrows more, BPMN, Network and cloud). A draw.io group loads its file when it is
+Arrows more, BPMN more, Cloud and network more). A draw.io group loads its file when it is
 opened and the library redraws when it arrives; the redraw emptied the list and
 its scroll went to 0, so a group opened low in the list (header at 1280px) was
 rebuilt out of sight. Measured with `scratchpad/ui-sweeps/shapescroll904.js`:
