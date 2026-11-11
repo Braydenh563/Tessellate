@@ -45,7 +45,7 @@ def test_a_marked_note_is_read_last_for_a_question_like_it(session):
 
 
 def test_marked_twice_is_left_out_but_never_for_an_unlike_question(session):
-    a, b = _two(session)
+    _two(session)
     first = _ids(session, "sourdough notes")[0]
     for _ in range(learning.EXCLUDE_AFTER):
         learning.record(session, kind="wrong_answer", subject={"question": "sourdough notes", "entry_id": first})
@@ -56,7 +56,7 @@ def test_marked_twice_is_left_out_but_never_for_an_unlike_question(session):
 
 
 def test_a_correction_is_taken_back_by_its_delete(client, session):
-    a, b = _two(session)
+    _two(session)
     first = _ids(session, "sourdough notes")[0]
     made = client.post(
         "/learned/answer-verdict", json={"question": "sourdough notes", "entry_ids": [first], "line": "sourdough"}
@@ -65,7 +65,8 @@ def test_a_correction_is_taken_back_by_its_delete(client, session):
     ids = made.json()["ids"]
     assert len(ids) == 1
     assert _ids(session, "sourdough notes")[-1] == first
-    assert client.delete(f"/learned/corrections/{ids[0]}").status_code == 200
+    taken_back = client.delete(f"/learned/corrections/{ids[0]}")
+    assert taken_back.status_code == 200
     session.expire_all()
     assert _ids(session, "sourdough notes")[0] == first
 
@@ -90,7 +91,7 @@ def test_a_private_note_is_not_marked(client, session):
 
 
 def test_the_switch_for_corrections_stops_it(session, monkeypatch):
-    a, b = _two(session)
+    _two(session)
     first = _ids(session, "sourdough notes")[0]
     learning.record(session, kind="wrong_answer", subject={"question": "sourdough notes", "entry_id": first})
     session.commit()
