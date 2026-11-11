@@ -7736,3 +7736,17 @@ def test_a_lock_toggle_keeps_its_space_and_enter_inside_a_graph_popup() -> None:
     js = (ROOT / "frontend" / "js" / "graph.js").read_text(encoding="utf-8")
     keys = js.split('box.addEventListener("keydown"', 1)[1][:2600]
     assert 'closest?.(".graph-popup")) return' in keys
+
+
+def test_a_missing_optional_package_notice_has_one_builder() -> None:
+    """DESIGN.md, "A notice for a missing optional package" (INBOX 1748): a
+    surface never builds its own; it calls `extraNoticeMount`."""
+    own = "extra-notice.js"
+    stray = [
+        p.name
+        for p in JS
+        if p.name != own and re.search(r'createElement\([^)]*\)[^;]*;?\s*[^;]*"notice extra-notice', p.read_text(encoding="utf-8"))
+    ]
+    assert not stray, f"an optional-package notice built outside {own}: {stray}"
+    assert "notice extra-notice hidden" in (ROOT / "frontend" / "js" / own).read_text(encoding="utf-8")
+    assert "A notice for a missing optional package" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
