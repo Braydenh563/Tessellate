@@ -52,7 +52,7 @@ const SIZES = process.env.W ? ALL.filter((s) => String(s[0]) === process.env.W) 
     await go.click();
     await page.waitForTimeout(300);
     const went = await page.evaluate(() => ({ selected: document.querySelector('.dgm-block[aria-selected="true"]')?.getAttribute("aria-label"), arrow: document.querySelector(".dgm-edge-on")?.getAttribute("d")?.length || 0, focusOnRow: document.activeElement?.classList.contains("dgm-join") }));
-    const chip = page.locator(".dgm-join-more button:visible").nth(1);
+    const chip = page.locator(".dgm-joinline .kebab-opener:visible").nth(1);
     // A real press at the button's centre: locator.click() scrolls the pane first, and the pane settles back 28px later at 820.
     await chip.evaluate((b) => b.scrollIntoView({ block: "center" }));
     await page.waitForTimeout(200);

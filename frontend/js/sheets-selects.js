@@ -1396,6 +1396,25 @@ function menuRowFits(row, hint) {
   //: the divider, not the label. `role="separator"` so the grouping is in the
   //: accessibility tree too, and `wireMenuKeyboard` walks `.menu-item`, so a
   //: divider is never a stop on the way down.
+//: `anchor` (INBOX 1771): the menu keeps off a whole row, not a point. Below, else above, the first that fits the window; neither, the larger of the two, scrolling.
+kebabMenu.beside = (menu, row, opener) => {
+  const [margin, gap] = [8, 4];
+  escapeMenuToBody(menu, opener);
+  menu.style.visibility = "hidden";
+  menu.style.maxHeight = "";
+  menu.style.left = menu.style.top = "0px";
+  const box = menu.getBoundingClientRect();
+  const [down, up] = [innerHeight - margin - row.bottom - gap, row.top - gap - margin];
+  const below = box.height <= down || (box.height > up && down >= up);
+  menu.style.maxHeight = `${Math.max(120, Math.floor(below ? down : up))}px`;
+  const left = Math.max(margin, Math.min(row.right - box.width, innerWidth - margin - box.width));
+  const top = below ? row.bottom + gap : Math.max(margin, row.top - gap - menu.getBoundingClientRect().height);
+  menu.style.left = `${Math.round(left)}px`;
+  menu.style.top = `${Math.round(top)}px`;
+  menu.style.visibility = "";
+  menu.querySelector(".menu-item")?.focus({ preventScroll: true });
+};
+
 //: Its own function so a menu can build its rows on first open instead of at once: the Library's cards (audit 1029 X15), where the rows were 43 of a card's 55 nodes.
 kebabMenu.rows = (menu, items) => {
   let lastGroup = null;
@@ -1436,6 +1455,8 @@ kebabMenu.rows = (menu, items) => {
       button.append(hint);
       button.setAttribute("aria-keyshortcuts", item.keys.replace(/ or /g, " "));
     }
+    //: `current`: the chosen row of a choice menu.
+    if (item.current) button.setAttribute("aria-current", "true");
     if (item.title) button.title = item.title;
     menuRowFits(button, item.title || "");
     // Muted, not `disabled`, a native disabled button also blocks its own
@@ -1452,7 +1473,7 @@ kebabMenu.rows = (menu, items) => {
   }
 };
 
-function kebabMenu(items, ariaLabel, { vertical = false } = {}) {
+function kebabMenu(items, ariaLabel, { vertical = false, anchor = null } = {}) {
   const wrap = document.createElement("span");
   wrap.className = "menu-wrap";
 
@@ -1467,8 +1488,10 @@ function kebabMenu(items, ariaLabel, { vertical = false } = {}) {
       return;
     }
     const willOpen = menu.classList.contains("hidden");
-    if (willOpen) openActionMenu(menu, opener);
-    else closeActionMenus();
+    if (willOpen) {
+      openActionMenu(menu, opener);
+      if (anchor) kebabMenu.beside(menu, anchor.getBoundingClientRect(), opener);
+    } else closeActionMenus();
   });
   //: **A kebab is one glyph, so it is square.** Reported: "all the chat header
   //: buttons [should] be square, there should be no rectangle single icon

@@ -191,6 +191,7 @@
 .doc-dock-menu-list .doc-dock-menu-item.active,
 .doc-dock-menu-list .doc-dock-menu-item.is-on,
 .action-menu .menu-item[aria-pressed="true"],
+.action-menu .menu-item[aria-current="true"],
 .nav-history-menu .nav-history-item.nav-history-current {
   background: var(--accent-soft);
   color: var(--accent-text);

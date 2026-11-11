@@ -178,13 +178,16 @@
 
   //: A row's ⋯ before it is pressed: an empty `kebabMenu` (1108 P2). The press is caught on the way down, and the
   //: real menu, with its rows and the shape submenu, is built then and swapped in; 41 blocks no longer carry 41
-  //: full menus nobody opened. `items` is called on that press.
-  function lazyKebab(items, label) {
-    const stub = kebabMenu([], label);
+  //: full menus nobody opened. `items` is called on that press (it may be async, a connector's rows come from a lazy file; null opens
+  //: nothing), and `opts` are `kebabMenu`'s (a connector's `anchor` is its whole row).
+  function lazyKebab(items, label, opts) {
+    const stub = kebabMenu([], label, opts);
     stub.classList.add("dgm-menu");
-    stub.addEventListener("click", (event) => {
-      event.stopPropagation();
-      const real = kebabMenu(items(), label);
+    let busy = false;
+    const swap = (rows) => {
+      busy = false;
+      if (!rows) return;
+      const real = kebabMenu(rows, label, opts);
       real.classList.add("dgm-menu");
       const [old, again] = [stub, real].map((wrap) => wrap.querySelector(".kebab-opener"));
       const tab = old.getAttribute("tabindex");
@@ -193,6 +196,14 @@
       stub.replaceWith(real);
       if (focused) again.focus({ preventScroll: true });
       again.click();
+    };
+    stub.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (busy) return;
+      const rows = items();
+      busy = Boolean(rows?.then);
+      if (busy) rows.then(swap);
+      else swap(rows);
     }, true);
     return stub;
   }

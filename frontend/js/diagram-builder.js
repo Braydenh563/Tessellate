@@ -281,22 +281,20 @@
     return icon("ph-stack dgm-group-icon");
   }
 
-  //: A connector row: the words go to the block it points at (diagram-joins.js `go`, 1771); its own ⋯ opens the menu.
+  //: A connector row: the words go to the block they point at (joins `go`); its ⋯ is a kebab kept off the whole row.
   function joinChip(S, edge, index) {
     const line = el("div", "dgm-joinline");
     const chip = el("button", "dgm-join");
     chip.type = "button";
     const [from, to] = [titleOf(S, edge.from), titleOf(S, edge.to)];
-        chip.dataset.style = edge.style;
+    chip.dataset.style = edge.style;
     chip.append(icon(edge.arrow ? "ph-arrow-right" : "ph-minus"), el("span", "dgm-join-to", to));
     if (edge.label) chip.append(el("span", "dgm-join-label muted", edge.label));
     chip.title = `Go to ${to}`;
     chip.setAttribute("aria-label", `Go to ${to}. Connector from ${from} to ${to}${edge.label ? `, labelled ${edge.label}` : ""}.`);
     chip.addEventListener("click", () => joins(S, "go", { edge: S.m.edges[index] || edge, end: "to" }));
-    const more = el("span", "menu-wrap dgm-join-more");
-    const dots = smallButton("ph:dots-three", "Change this connector", () => joins(S, "menu", { edge: S.m.edges[index] || edge, chip: dots }));
+    const more = diagramModel.library.lazyKebab(() => joins(S, "items", S.m.edges[index] || edge), "Change this connector", { anchor: line });
     line.append(chip, more);
-    more.append(dots);
     return line;
   }
 
