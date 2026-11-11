@@ -110,7 +110,7 @@ window.addEventListener("resize", () => {
   //: dashboard.js sizes its own widgets when it renders.
   if ($("dash-grid") && typeof sizeDashWidgets === "function") sizeDashWidgets();
   // A dragged composer height is only valid for the window it was dragged in.
-  refitComposer();
+  if (typeof refitComposer === "function") refitComposer();
 });
 
 // Fade a tab-strip edge only while there is something hidden beyond it.
