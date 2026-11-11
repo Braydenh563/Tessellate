@@ -145,11 +145,10 @@ def test_the_document_dock_gives_its_name_up_before_its_tools():
     assert wide, "Back keeps its word at 820 and under"
     assert re.search(r"#tab-documents \.doc-dock > \.doc-dock-identity\s*\{\s*flex-basis: 12rem;\s*min-width: 0;", lazy)
     assert re.search(r"\.doc-dock-identity > \.doc-title-input\s*\{[^}]*min-width: 5rem", lazy)
-    assert re.search(
-        r"@container docdock \(max-width: 599\.98px\)\s*\{\s*\.doc-dock-status\s*\{\s*display: none;\s*\}"
-        r"\s*#tab-documents \.doc-dock > \.doc-dock-identity\s*\{\s*flex-basis: 8rem;",
-        lazy,
-    )
+    #: The save state leaves the row below 820, not 600 (wrapzoom 2026-11-11: at 768 the
+    #: dock is 652px and the state's 64px made a second row); test_wrapzoom_docs_1111 pins it.
+    assert re.search(r"@container docdock \(max-width: 819\.98px\)\s*\{[^@]*?\.doc-dock-status\s*\{\s*display: none;", lazy)
+    assert re.search(r"@container docdock \(max-width: 599\.98px\)\s*\{\s*#tab-documents \.doc-dock > \.doc-dock-identity\s*\{\s*flex-basis: 8rem;", lazy)
 
 
 def test_code_document_tools_fold_into_the_kebab_by_the_docks_own_width():
