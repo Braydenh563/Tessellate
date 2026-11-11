@@ -14586,9 +14586,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_item` | src/tessellate/ai/composer_calendar.py:51 |
-| `bulk` | src/tessellate/ai/composer_calendar.py:42 |
-| `restate` | src/tessellate/ai/composer_calendar.py:61 |
+| `_item` | src/tessellate/ai/composer_calendar.py:53 |
+| `bulk` | src/tessellate/ai/composer_calendar.py:44 |
+| `restate` | src/tessellate/ai/composer_calendar.py:63 |
 
 ### src/tessellate/ai/composer_cancel.py (2)
 

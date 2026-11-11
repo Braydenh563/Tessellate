@@ -15,6 +15,8 @@ _LEAD = r"^(?:(?:hey|please|also|just|can you|could you|will you|would you|i nee
 _CAL = r"(?:calendar|schedule|planner|agenda|diary)"
 _LIST = r"(?:[\w ]{0,25}?(?:to[- ]?do|task) list|list of (?:reminders|chores|housework)|reminders? list)"
 _PLACE = rf"(?:my|the)\s+(?:{_CAL}|{_LIST})"
+#: The to-do list the task acts already read ("put buy milk on my todo list").
+_PLAIN_TODO = re.compile(r"(?:^|\s)(?:my|the)\s+(?:to[- ]?do|task)\s+list$", re.IGNORECASE)
 _WHEN = r"(?P<when>\s+(?:for|on)\s+\S.*)?"
 
 _ADD = re.compile(
@@ -67,13 +69,16 @@ def restate(text: str) -> str:
         return re.sub(r"\b(?:an|another|a new) alarm\b", "a reminder", said, count=1, flags=re.IGNORECASE)
     added = _ADD.match(said)
     if added:
-        on_calendar = re.search(_CAL, added.group("where"), re.IGNORECASE)
-        #: "add X to my to do list" is already read as it stands; the calendar and the other verbs are not.
-        if on_calendar or added.group("verb").lower() != "add":
-            what = _item(added.group("what"))
-            return f"remind me to {what}{added.group('when') or ''}"
+        what, when = _item(added.group("what")), added.group("when") or ""
+        #: The plain to-do list keeps its own path (the task acts, the to-do note's line): "add" and "put" are
+        #: read as they stand, the other verbs are said as "add" to reach it. A calendar, a list of reminders or
+        #: a named list (spring cleaning) is a reminder.
+        if not _PLAIN_TODO.match(added.group("where")):
+            return f"remind me to {what}{when}"
+        if added.group("verb").lower() not in ("add", "put"):
+            return f"add {what} to {added.group('where')}{when}"
     gone = _REMOVE.match(said)
-    if gone and not _EVERYTHING.match(gone.group("what").strip()):
+    if gone and not _EVERYTHING.match(gone.group("what").strip()) and not _PLAIN_TODO.search(said):
         return f"cancel the reminder about {_item(gone.group('what'))}"
     ticked = _CHECK_OFF.match(said)
     if ticked:
