@@ -82,3 +82,54 @@ def test_the_find_bar_sits_above_the_format_panel():
         return int(re.search(r"\n" + re.escape(selector) + r" \{[^}]*?z-index: (\d+);", css).group(1))
 
     assert z(".wb-search-bar") > z(".wb-format")
+
+
+def _replace_one_source() -> str:
+    start = WB.index("wbBoardSearch.replaceOne = async")
+    return WB[start : WB.index("\n};\n", start) + 4]
+
+
+def _replace_one(matches, index, changed, still_matching=()):
+    """Run `wbBoardSearch.replaceOne` against a stand-in for the find bar: `changed` is what Replace all reports, and
+    `still_matching` are matches that remain after it (a card, or words that hold the needle)."""
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    script = f"""
+const wbBoardSearch = {{ matches: {json.dumps(matches)}, index: {index} }};
+const log = [];
+const wbBoardSearchGo = (d) => {{ const t = wbBoardSearch.matches.length; wbBoardSearch.index = wbBoardSearch.index < 0 ? 0 : (wbBoardSearch.index + d + t) % t; log.push(['go', wbBoardSearch.index]); }};
+const wbBoardReplaceAll = async (find, to, only) => {{
+  log.push(['all', find, to, only]);
+  const keep = {json.dumps(list(still_matching))};
+  wbBoardSearch.matches = wbBoardSearch.matches.filter((m) => m.id !== only.id || keep.includes(m.id));
+  wbBoardSearch.index = -1;
+  return {json.dumps(changed)};
+}};
+{_replace_one_source()}
+wbBoardSearch.replaceOne("ship", "send").then((n) => console.log(JSON.stringify({{ n, index: wbBoardSearch.index, log }})));
+"""
+    return json.loads(subprocess.run([node, "-e", script], capture_output=True, text=True, check=True).stdout)
+
+
+def test_replace_one_first_goes_to_the_first_match_then_replaces_in_the_one_it_is_on():
+    matches = [{"kind": "sketch", "id": 1}, {"kind": "sketch", "id": 2}, {"kind": "sketch", "id": 3}]
+    first = _replace_one(matches, -1, 1)
+    assert first["n"] == 0 and first["log"] == [["go", 0]]
+    #: On the second match: only it is replaced, and the bar moves to what is now second (the old third).
+    second = _replace_one(matches, 1, 1)
+    assert second["log"][0] == ["all", "ship", "send", {"kind": "sketch", "id": 2}]
+    assert second["n"] == 1 and second["index"] == 1
+    #: On the last one: it wraps round to the first.
+    assert _replace_one(matches, 2, 1)["index"] == 0
+
+
+def test_replace_one_steps_past_an_item_that_still_matches():
+    matches = [{"kind": "node", "id": 7}, {"kind": "sketch", "id": 2}]
+    got = _replace_one(matches, 0, 0, still_matching=[7])
+    assert got["n"] == 0 and got["index"] == 1
+
+
+def test_the_replace_row_has_a_replace_button_before_replace_all():
+    assert 'one.id = "wb-replace-one";' in WB and "row.append(field, one, all);" in WB
+    assert "if (only && (only.kind !== kind || only.id !== item.id)) continue;" in WB

@@ -1090,7 +1090,6 @@ product; the NOTICE says so).
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | Find text, next and previous, highlight, count | yes for cards and objects (`wbBoardSearchRun`, whiteboard.js 2210; `wb-search-*`; Ctrl+F) | `FindWindow` (diagramly/Dialogs.js 9512), `findReplace` action (Ctrl+F) | done; extend to shape and connector labels (`label`) and `data.props` | S |
-| Replace and replace all | no | `FindWindow` with `withReplace`: replace field, Replace, Replace all | a second field and two buttons on `wb-search-bar`; one undo step per Replace all through `wbRecordGesture` | S |
 | Regular expression, all pages, case | regex and whole word yes, 2026-10-18 (whiteboard-1018; HISTORY); "all frames" open: find already spans every frame of the board, so the row needs a decision (a "this frame only" scope?) | `regularExpression` and `allPages` checkboxes (Dialogs.js 9512 onward); matches in label text and, with regex, in metadata | regex toggle and "all frames" (not boards); case-insensitive by default | S |
 | Find in custom data | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `testMeta` over the cell's attributes | with `data.props` | S |
 | Tags on shapes, filter by tag | no | `tags` action (Ctrl+K, diagramly/Menus.js 1299), `tags` style attribute | `data.tags` with a tag filter that dims the rest; the Library already has tags | M |

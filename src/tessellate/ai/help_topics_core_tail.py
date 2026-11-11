@@ -548,6 +548,7 @@ TAIL_TOPICS.extend(
                 "clear labels",
                 "shift+delete",
                 "delete the labels",
+                "replace one match",
             ),
             "body": (
                 "Shift+2 (or View, Zoom to the selection) frames what is selected, "
@@ -564,7 +565,8 @@ TAIL_TOPICS.extend(
                 "panel's Text tab for a shape (or Ctrl+K, Shrink the text to fit), makes long words shrink "
                 "until they fit inside the shape, never past the size you gave them. "
                 "Home goes back to the top left of what is drawn at the zoom you have, and Shift+Home resets the view to 100% there. "
-                "Shift+Delete clears the labels of the selected shapes and connectors and keeps the things; one Undo puts them back."
+                "Shift+Delete clears the labels of the selected shapes and connectors and keeps the things; one Undo puts them back. "
+                "In the find bar (Ctrl+H), Replace changes the match the bar is on and moves to the next, and Replace all changes every one."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

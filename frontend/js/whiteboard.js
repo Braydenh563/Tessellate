@@ -3936,7 +3936,7 @@ function wbReplaceWrite(kind, item, { text, values, grid, note }) {
 //: **Replace all** (canvasdepth; WHITEBOARD_PLAN section 9): text boxes,
 //: shape labels and connector labels, one undo step. A card is a note and
 //: keeps its words; the announcement says how many cards hold the words.
-async function wbBoardReplaceAll(find, to) {
+async function wbBoardReplaceAll(find, to, only = null) {
   const needle = String(find || "").trim() ? String(find) : "";
   if (!needle) return 0;
   const pattern = wbSearchPattern(needle, wbBoardSearch);
@@ -3950,6 +3950,8 @@ async function wbBoardReplaceAll(find, to) {
   for (const kind of ["object", "sketch", "node"]) {
     for (const item of wbState[WB_LIST_BY_KIND[kind]] || []) {
       if (wbItemHidden(kind, item) || wbIsLocked(kind, item)) continue;
+      //: Replace (one) is the same pass over the item the find bar is on.
+      if (only && (only.kind !== kind || only.id !== item.id)) continue;
       if (kind === "node") {
         if (pattern.has(wbSearchTextFor("node", item, null))) cards += 1;
         continue;
@@ -3980,6 +3982,28 @@ async function wbBoardReplaceAll(find, to) {
   wbBoardSearchRun(document.getElementById("wb-search-input")?.value || "");
   return changes;
 }
+
+//: **Replace** (`wbBoardSearch.replaceOne`, a method so it adds no global name; the one the find bar is on, draw.io's Replace beside Replace all): the first press goes to the first
+//: match, the next ones replace in the match the bar is on and move to the next. A card keeps its words.
+wbBoardSearch.replaceOne = async (find, to) => {
+  if (wbBoardSearch.index < 0) {
+    wbBoardSearchGo(1);
+    return 0;
+  }
+  const match = wbBoardSearch.matches[wbBoardSearch.index];
+  if (!match) return 0;
+  const at = wbBoardSearch.index;
+  const changes = await wbBoardReplaceAll(find, to, match);
+  //: A replaced item usually stops matching, so the next one is at the same place; one that still matches (a card,
+  //: or words that hold the needle) is stepped past.
+  const total = wbBoardSearch.matches.length;
+  if (total) {
+    const still = wbBoardSearch.matches.findIndex((m) => m.kind === match.kind && m.id === match.id);
+    wbBoardSearch.index = ((still >= 0 ? still + 1 : at) % total) - 1;
+    wbBoardSearchGo(1);
+  }
+  return changes;
+};
 
 function wbBoardSearchRun(query) {
   wbBoardSearch.query = query;
@@ -4113,8 +4137,16 @@ function wbEnsureReplaceRow(bar) {
   all.id = "wb-replace-all";
   all.className = "small";
   all.textContent = "Replace all";
-  const go = () => wbBoardReplaceAll(document.getElementById("wb-search-input")?.value || "", field.value);
+  const query = () => document.getElementById("wb-search-input")?.value || "";
+  const go = () => wbBoardReplaceAll(query(), field.value);
   all.addEventListener("click", go);
+  const one = document.createElement("button");
+  one.type = "button";
+  one.id = "wb-replace-one";
+  one.className = "small";
+  one.textContent = "Replace";
+  one.title = "Replace in the match the bar is on, then go to the next";
+  one.addEventListener("click", () => wbBoardSearch.replaceOne(query(), field.value));
   field.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
@@ -4124,7 +4156,7 @@ function wbEnsureReplaceRow(bar) {
       wbCloseBoardSearch();
     }
   });
-  row.append(field, all);
+  row.append(field, one, all);
   bar.append(row);
 }
 
