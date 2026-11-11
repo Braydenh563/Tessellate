@@ -175,7 +175,7 @@ def test_the_copy_helper_writes_the_full_address_through_the_shared_clipboard_he
 COPY_LINK_SITES = [
     ("entry-menu.js", 'appLinkMenuItem("note", entry.id)'),
     ("library.js", "appLinkMenuItem(kind, id)"),
-    ("whiteboard.js", 'appLinkMenuItem(board.type === "map" ? "map" : "board", board.id)'),
+    ("boards-gallery.js", 'appLinkMenuItem(board.type === "map" ? "map" : "board", board.id)'),
     ("documents.js", 'appLinkMenuItem("document", doc.id)'),
     ("documents.js", 'copyObjectAddress("document", currentDoc.id)'),
     ("sheets-selects.js", 'appLinkMenuItem("chat", conversation.id)'),

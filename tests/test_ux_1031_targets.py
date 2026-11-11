@@ -62,5 +62,5 @@ def test_a_suggested_tags_controls_are_buttons_not_spans_with_a_role():
 def test_a_library_or_board_card_is_named_by_its_visible_words_first():
     lib = (JS / "library.js").read_text(encoding="utf-8")
     assert "`${title.textContent}, ${kindWord.toLowerCase()}" in lib
-    board = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    board = "".join((JS / n).read_text(encoding="utf-8") for n in ("whiteboard.js", "boards-gallery.js"))  # the gallery split out (INBOX 1772)
     assert '`${board.title}, ${isMapCard ? "map" : "board"}`' in board

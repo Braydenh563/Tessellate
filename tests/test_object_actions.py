@@ -13,7 +13,8 @@ from tests._app_js import app_js_text
 FRONTEND = Path(__file__).resolve().parents[1] / "frontend"
 APP = app_js_text()
 LIBRARY = (FRONTEND / "js" / "library.js").read_text(encoding="utf-8")
-BOARDS = (FRONTEND / "js" / "whiteboard.js").read_text(encoding="utf-8")
+#: The board code and the Boards & maps gallery split out of it (INBOX 1772).
+BOARDS = "".join((FRONTEND / "js" / n).read_text(encoding="utf-8") for n in ("whiteboard.js", "boards-gallery.js"))
 
 
 def _block(source: str, start: str, end: str) -> str:
@@ -88,7 +89,7 @@ def test_board_failures_are_said_on_screen_not_in_the_console():
     """Audit 1028 B22: a failed drawing save, board fetch or connection was a
     `console.error` and nothing else. The remaining `console.warn` lines are
     diagnostics for menus refused at the window's corner, not failures."""
-    board = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    board = BOARDS
     assert "console.error(" not in board and "console.log(" not in board
     for what in ("save that drawing", "open that board", "connect those"):
         assert f'voiceLine("failed", {{ what: "{what}"' in board, what

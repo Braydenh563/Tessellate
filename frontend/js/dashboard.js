@@ -4343,11 +4343,17 @@ function renderPaceWidget(body) {
   body.appendChild(caption);
 }
 
-//: Recordings a killed tab left: the server finishes them at each start and
-//: meetings.js says so once. Hooked here, after agent-activity.js's own hook, because
+//: After the app has painted: the agent log stream, then the wheel-scroll wiring
+//: (the strips built at run time, the Library sub-tabs and editor toolbars, are in
+//: the DOM by then; idempotent per element, `data-wheel-x`). Then recordings a
+//: killed tab left: the server finishes them at each start and meetings.js says
+//: so once. Hooked here, not in agent-activity.js: that file is wrapped whole and
+//: a `window.startApp =` there is a second owner of app.js's global (audit 1028 S66);
 //: app.js and the files up to agent-activity.js sit under a gzip total (tests/test_static_compression.py).
 const startAppBeforeRecover = window.startApp;
 window.startApp = async function () {
   if (startAppBeforeRecover) await startAppBeforeRecover.apply(this, arguments);
+  streamAgentLogs();
+  wireHorizontalWheelScrolling();
   apiJson("/recordings/recover", { method: "POST", silent: true }).then((r) => r.length && ensureModule("meetings").then(() => noteRecoveredRecordings(r))).catch(() => {});
 };

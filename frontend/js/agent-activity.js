@@ -595,19 +595,6 @@
     }
   }
 
-  // Hook it into startApp
-  const originalStartAppAgentHook = window.startApp;
-  window.startApp = async function() {
-    if (originalStartAppAgentHook) {
-      await originalStartAppAgentHook.apply(this, arguments);
-    }
-    streamAgentLogs();
-    //: After the app has painted, so the strips that are built at run time
-    //: (the Library sub-tabs, the editor toolbars) are in the DOM to be wired.
-    //: Idempotent per element (`data-wheel-x`), so calling it again is free.
-    wireHorizontalWheelScrolling();
-  }
-
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
-  Object.assign(window, { agentRuns, stepStateWords, renderAgentRunSummary, addAgentRun, agentRunAddStep, agentRunPaintStep, endAgentRun, openPanelForRun, setAgentMonitorLogVisible, openActivity });
+  Object.assign(window, { agentRuns, stepStateWords, renderAgentRunSummary, addAgentRun, agentRunAddStep, agentRunPaintStep, endAgentRun, openPanelForRun, setAgentMonitorLogVisible, openActivity, streamAgentLogs });
 })();
