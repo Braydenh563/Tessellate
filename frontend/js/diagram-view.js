@@ -387,7 +387,9 @@
     const roomy = () => fig.scrollWidth > fig.clientWidth + 1 || fig.scrollHeight > fig.clientHeight + 1;
     fig.addEventListener("pointerdown", (event) => {
       //: A handle, an arrow's end or the name field sits in the figure (diagram-overlay.js): its press is not a pan.
-      if (event.button || event.target.closest?.(".dgm-overlay > *")) return;
+      if ((event.button && event.button !== 1) || event.target.closest?.(".dgm-overlay > *")) return;
+      //: The middle button pans (no autoscroll), as Space and drag does; a plain mouse drag on empty space is the marquee (diagram-canvas.js).
+      if (event.button === 1) event.preventDefault();
       if (!points.size) (travel = 0), (wasted = 0);
       cancelGlide();
       trail = [{ t: event.timeStamp, x: event.clientX, y: event.clientY }];

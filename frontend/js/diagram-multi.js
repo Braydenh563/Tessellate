@@ -78,12 +78,8 @@
       if (list.length > 1) say(`${list.length} blocks selected.`);
     }
     S.pick = show;
-    //: A modified click on a drawn block (the picture, as the list does): Shift a range from the anchor, Ctrl or Cmd one more.
-    S.pickAt = (key, shift) => {
-      if (!shift) return toggle(key);
-      S.anchor = base().includes(S.anchor) ? S.anchor : S.sel || key;
-      show(range(S.anchor, key), key);
-    };
+    //: A Shift, Ctrl or Cmd click on a drawn block adds it to the pick or takes it out (the whiteboard's way; the list keeps Shift for a range).
+    S.pickAt = (key) => toggle(key);
     //: A render prunes the pick to the blocks that are still there.
     S.rendered = (live) => {
       for (const k of S.picked) if (!live.includes(k)) S.picked.delete(k);

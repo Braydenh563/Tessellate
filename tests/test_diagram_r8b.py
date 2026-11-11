@@ -95,7 +95,7 @@ def test_the_canvas_gestures_are_in_the_guide_in_the_controls_words():
 
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-builder"))
     assert len(body) < 1900
-    assert "drag a shape from the Add strip onto the picture" in body and "hold Shift and drag on empty space" in body
+    assert "drag a shape from the Add strip onto the picture" in body and "drag on empty space" in body
 
 
 def test_a_block_dragged_to_empty_space_cancels_but_a_palette_tile_still_adds_there():
