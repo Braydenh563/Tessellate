@@ -11,6 +11,7 @@ import io
 import json
 
 from tessellate.ai import tools
+from tessellate.core import deps
 from tessellate.mcp_server import handle_request, offered_tools, serve
 
 
@@ -135,6 +136,7 @@ def test_chat_only_and_interactive_tools_are_not_listed(app_state):
 
 
 def test_annotations_mark_reads_and_writes(app_state):
+    app_state.set_preference("mcp_writes_enabled", True)
     listed = {
         entry["name"]: entry["annotations"]
         for entry in handle_request({"jsonrpc": "2.0", "id": 1, "method": "tools/list"})["result"]["tools"]
@@ -174,6 +176,7 @@ def _rpc(method, params=None, msg_id=1):
 
 
 def _make_note(text):
+    deps.get_config().set_preference("mcp_writes_enabled", True)
     response = _rpc("tools/call", {"name": "create_note", "arguments": {"content": text}})
     payload = json.loads(response["result"]["content"][0]["text"])
     return payload.get("id") or payload["note"]["id"]
@@ -297,8 +300,59 @@ def test_serve_survives_a_bad_shape_and_a_raising_handler(app_state, monkeypatch
         json.dumps({"jsonrpc": "2.0", "id": 3, "method": "ping"}),
     ]
     monkeypatch.setitem(mcp_server._METHODS, "boom", lambda message: 1 / 0)
+    deps.init_app_state()
+    monkeypatch.setenv(mcp_server.TOKEN_ENV, mcp_server.token())
     out = io.StringIO()
     serve(io.StringIO("\n".join(lines) + "\n"), out)
     replies = [json.loads(x) for x in out.getvalue().splitlines()]
     assert [r.get("id") for r in replies] == [None, 1, 2, 3]
     assert replies[2]["error"]["code"] == -32603 and replies[3]["result"] == {}
+
+
+# --- Q22 / audit 1028 K13: a token, and read-only until writes are switched on ---
+
+
+def test_a_client_sees_only_readers_until_writes_are_switched_on(app_state):
+    names = {spec.name for spec in offered_tools()}
+    assert "count_notes" in names and "create_note" not in names
+    refused = handle_request(
+        {"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {"name": "create_note", "arguments": {"content": "x"}}}
+    )
+    assert refused["result"]["isError"] is True
+    app_state.set_preference("mcp_writes_enabled", True)
+    assert "create_note" in {spec.name for spec in offered_tools()}
+
+
+def _serve_one(message, monkeypatch, env_token):
+    from tessellate import mcp_server
+
+    deps.init_app_state()
+    if env_token is None:
+        monkeypatch.delenv(mcp_server.TOKEN_ENV, raising=False)
+    else:
+        monkeypatch.setenv(mcp_server.TOKEN_ENV, env_token)
+    out = io.StringIO()
+    serve(io.StringIO(json.dumps(message) + "\n"), out)
+    return json.loads(out.getvalue())
+
+
+def test_a_client_without_the_token_is_refused_and_one_with_it_is_served(app_state, monkeypatch):
+    from tessellate import mcp_server
+
+    ask = {"jsonrpc": "2.0", "id": 1, "method": "tools/list"}
+    right = mcp_server.token()
+    assert right == mcp_server.token(), "one token per notebook, kept"
+    for wrong in (None, "", "nope", right + "x"):
+        reply = _serve_one(ask, monkeypatch, wrong)
+        assert reply["error"]["code"] == mcp_server.NOT_AUTHORISED, wrong
+    assert "tools" in _serve_one(ask, monkeypatch, right)["result"]
+    assert mcp_server._auth["denied"] == "", "handle_request is pure again after serve"
+
+
+def test_the_token_is_a_secret_setting_and_the_snippet_carries_it(client):
+    from tessellate import mcp_server
+
+    env = client.get("/capabilities").json()["features"]["mcp"]["config"]["env"]
+    assert env[mcp_server.TOKEN_ENV] == mcp_server.token()
+    saved = deps.get_config().preferences_path.read_text(encoding="utf-8")
+    assert env[mcp_server.TOKEN_ENV] not in saved

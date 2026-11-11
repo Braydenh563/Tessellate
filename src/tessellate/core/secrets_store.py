@@ -22,7 +22,7 @@ from tessellate.core import pinstore
 log = logging.getLogger("tessellate.secrets")
 
 #: Settings that are secrets: never written to `preferences.json`.
-SECRET_SETTINGS = frozenset({"llm_api_key"})
+SECRET_SETTINGS = frozenset({"llm_api_key", "mcp_token"})
 _SERVICE_PREFIX = "setting|"
 
 

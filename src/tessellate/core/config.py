@@ -149,6 +149,9 @@ DEFAULT_PREFERENCES: dict[str, Any] = {
     # Only ever needed by a hosted gateway; local servers ignore it. Kept out
     # of the support bundle by the same redaction that hides other secrets.
     "llm_api_key": "",
+    # Q22: the outside tool server's token (a secret setting, kept in the keyring or an owner-only file) and its write switch.
+    "mcp_token": "",
+    "mcp_writes_enabled": False,
     # How much effort a chat turn is worth by default (§11): "quick", "normal"
     # or "detailed". One dial over the reply cap, the temperature, the thinking
     # toggle and a length hint, see `ai/presets.py`. "normal" reproduces the

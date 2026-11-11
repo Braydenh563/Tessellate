@@ -4,6 +4,7 @@ All notable changes to Tessellate (formerly MemoryMap AI) are recorded here. The
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
+- Security (audit 1028 K13, Q22): the stdio tool server needs this notebook's token (`TESSELLATE_MCP_TOKEN`, made on first use, kept as a secret setting, carried in the Settings snippet) and offers only read-only tools until `mcp_writes_enabled` is on; a client without the token is told where to find it (`mcp_server.py`; tests/test_mcp_server.py).
 - Security (audit 1028 K11, Q22): the model API key is kept in the OS keyring when one is present and in an owner-only (0600) file otherwise, never in `preferences.json`; a key an older version left there moves out on the next start (`core/secrets_store.py`, `ConfigManager`; tests/test_secret_settings_q22.py).
 - Notes (INBOX 1747): a note in the recycle bin can no longer be archived or unarchived from a stale card (409 "in the bin, restore it first"), so Restore never brings it back hidden in the Archive.
 - Settings and other lazy panes (INBOX 1747): one wiring hook that throws while a pane is first built no longer drops every hook after it (their buttons stayed dead) or makes the lookup that opened the pane throw.
