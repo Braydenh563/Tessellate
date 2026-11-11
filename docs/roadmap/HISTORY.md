@@ -7,6 +7,10 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-11 (s9c-1110 part 6)
+
+- Built: DOCUMENTS_PLAN gap row 12, a table's filter and formulas. `docTableFormula`, `docTableFilterHidden`, `docTableValues`, `docTableCell` (documents-tables.js, pure, tested in node by `tests/test_doc_table_calc.py`); Live draws a formula cell's result as `DocTableResultWidget` unless the caret is in it, hides filtered rows with `.cm-md-row-hidden`, and a `DocTableFilterWidget` chip clears the filter (documents-cm.js); the menu items are `filter`, `filter-clear`, `formula-sum`, `formula-avg`, `formula-count` (documents.js). Read view calls `docTableCell` from navigation.js once the Documents bundle is in. A filter is a view held in `docViewState.tableFilters` by header text (two tables with one header share it; it is gone with the page); Read view has no filter.
+
 ## Moved from the plans, 2026-11-10 (q31-1110: the Tessellation view, GRAPH_PLAN Q31)
 
 - Built: Q31, one Tessellation layout beside Force, Tree, Radial, Arc and Treemap (`graph-tessellate.js`, a lazy file of the graph bundle, one `gcTess` name in the shared scope), with a Look list (Cells, the default, and Hexes). Cells: a Voronoi inside each category's rectangle seeded from a link-weighted treemap, so a well-linked note owns a bigger cell; Hexes: one hexagon size under every category, linked notes in neighbouring hexagons. One layout, selection, legend, popup and hit test under both (a whole cell answers a pointer). The Map: tile area follows 1 plus a note's links (capped at 12), a category name wraps or shrinks and is never cut (`gcTess.fit`, header height from the name), and each rectangle has a title tooltip. Measured on the 75-note showcase at 390, 1280 and 1920, both themes: 7 of 7 labels drawn, 0 overflowing, 0 NaN, tooltip "Work: 17 notes".

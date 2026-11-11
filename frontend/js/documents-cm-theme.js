@@ -956,6 +956,8 @@
         ".cm-md-table .cm-md-td-last": {
           paddingRight: "calc(var(--space-4) + 1.75rem)",
         },
+        //: Room for the filter chip beside the menu, so it never covers the header's last word.
+        ".cm-md-table .cm-md-td-filtered": { paddingRight: "calc(var(--space-4) + 1.75rem + 9rem)" },
         ".cm-md-td-left": { textAlign: "left" },
         ".cm-md-td-center": { textAlign: "center" },
         ".cm-md-td-right": { textAlign: "right" },
@@ -983,6 +985,25 @@
           opacity: "0.7",
         },
         ".cm-md-table-menu:hover, .cm-md-table-menu:focus-within": { opacity: "1" },
+        //: A filtered row is out of the grid, not blank. Two classes beat the
+        //: line's `display: grid`.
+        ".cm-md-table.cm-md-row-hidden": { display: "none" },
+        //: A formula's result reads as a computed value, not typed text.
+        ".cm-md-td-calc": { fontVariantNumeric: "tabular-nums", fontStyle: "italic" },
+        //: The filter chip sits left of the menu on the header row, out of the
+        //: grid's flow like the menu itself.
+        ".cm-md-table-filter": {
+          position: "absolute",
+          right: "calc(1.75rem + var(--space-2))",
+          top: "calc(50% - 0.75rem)",
+          maxWidth: "min(18rem, 40vw)",
+          height: "1.5rem",
+          minHeight: "0",
+          padding: "0 var(--space-2)",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        },
 
         //: --- the prose findings ---------------------------------------------
         //: Three shapes, one per kind of claim. Wavy for a spelling

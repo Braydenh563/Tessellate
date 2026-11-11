@@ -691,8 +691,79 @@
     };
   }
 
+  //: The text of a table's cells as rows, trimmed, the delimiter row left
+  //: out: the sheet a formula reads (row 1 is the header, as on a ruled page).
+  function docTableValues(table) {
+    return table.rows.filter((_, i) => i !== table.delim).map((row) => {
+      const cells = row.cells.map((cell) => cell.trim());
+      while (cells.length < table.columns) cells.push("");
+      return cells;
+    });
+  }
+
+  //: **Simple formulas in a cell** (DOCUMENTS_PLAN gap row 12): `=SUM(B)`,
+  //: `=AVG(B2:B5)`, `=COUNT(C)`, `=MIN` and `=MAX`, over a column or a range.
+  //: The cell keeps the formula as its markdown; the result is drawn over it
+  //: (Live when the caret is elsewhere, Read always), so a table read in Source
+  //: is still the file the author wrote. A column alone is every body row.
+  //: Only numbers count: blanks and words are skipped, `$` and thousands
+  //: commas are read, and a formula cell is a word, so a total in the column
+  //: it sums cannot count itself. Null when the text is not a formula.
+  const DOC_TABLE_FORMULA = /^=\s*(SUM|AVG|AVERAGE|COUNT|MIN|MAX)\s*\(\s*([A-Z]+)(\d*)\s*(?::\s*([A-Z]+)(\d*))?\s*\)$/i;
+  function docTableFormula(text, grid) {
+    const m = DOC_TABLE_FORMULA.exec(String(text || "").trim());
+    if (!m) return null;
+    const colOf = (letters) => [...letters.toUpperCase()].reduce((n, ch) => n * 26 + ch.charCodeAt(0) - 64, 0) - 1;
+    const c1 = colOf(m[2]);
+    const c2 = m[4] ? colOf(m[4]) : c1;
+    const r1 = m[3] ? Number(m[3]) : 2;
+    const r2 = m[5] ? Number(m[5]) : m[3] && !m[4] ? r1 : grid.length;
+    const width = Math.max(0, ...grid.map((row) => row.length));
+    if (Math.min(c1, c2) < 0 || Math.max(c1, c2) >= width || r1 < 1 || r2 < r1) return "#REF";
+    const nums = [];
+    for (let r = r1; r <= Math.min(r2, grid.length); r += 1) {
+      for (let c = Math.min(c1, c2); c <= Math.max(c1, c2); c += 1) {
+        const raw = String((grid[r - 1] || [])[c] || "").replace(/[,\s$]/g, "");
+        if (raw !== "" && Number.isFinite(Number(raw))) nums.push(Number(raw));
+      }
+    }
+    const fn = m[1].toUpperCase();
+    if (fn === "COUNT") return String(nums.length);
+    if (!nums.length) return fn === "SUM" ? "0" : "#N/A";
+    const sum = nums.reduce((a, b) => a + b, 0);
+    const value = fn === "SUM" ? sum : fn === "MIN" ? Math.min(...nums) : fn === "MAX" ? Math.max(...nums) : sum / nums.length;
+    return String(Number(value.toFixed(8)));
+  }
+
+  //: Read view's call (navigation.js): the result of a formula cell given the
+  //: table's lines as written, or "" for any other cell.
+  function docTableCell(text, lines) {
+    text = String(text || "").trim();
+    if (text[0] !== "=") return "";
+    const table = docTableParse(lines.join("\n"), 0);
+    return (table && docTableFormula(text, docTableValues(table))) || "";
+  }
+
+  //: **The filter row** (same gap row): the body rows whose cell in `col` (or
+  //: any cell, `-1`) does not hold `needle`, as row indexes. A view, not an
+  //: edit: the markdown keeps every row, so Source is untouched and clearing
+  //: the filter brings them back.
+  function docTableFilterHidden(table, col, needle) {
+    const want = String(needle || "").trim().toLowerCase();
+    const hidden = [];
+    if (!want) return hidden;
+    for (let r = table.delim + 1; r < table.rows.length; r += 1) {
+      const cells = col < 0 ? table.rows[r].cells : [table.rows[r].cells[col] || ""];
+      if (!cells.some((cell) => cell.toLowerCase().includes(want))) hidden.push(r);
+    }
+    return hidden;
+  }
+
   // DOC-TABLE-END
 
   //: The file's whole surface: what documents.js and documents-cm.js call.
   Object.assign(window, { DOC_TABLE_GRID_MAX, docTableRowLike, docTableParse, docTableCellSpan, docTableAddRowEdits, docTableRemoveRowEdits, docTableAddColumnEdits, docTableRemoveColumnEdits, docTableFillRowEdits, docTableAlignEdits, docTableMoveRowEdits, docTableMoveColumnEdits, docTableSortEdits, docTableSelectRanges, docTableApplyEdits, docTableCellAt, docTableStepCell, docTableStepRow, docTableExitEdit, docTableEscapeCell, docTableGridFromText, docTableFromGrid, docTablePasteEdits });
+  //: The formula and filter half hangs off the parse, as `.at` does: the shared scope has no room for four more names.
+  docTableParse.calc = { values: docTableValues, formula: docTableFormula, hidden: docTableFilterHidden };
+  docTableParse.cell = docTableCell;
 })();

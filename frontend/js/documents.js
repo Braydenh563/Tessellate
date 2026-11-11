@@ -5636,6 +5636,41 @@ function docTableSelect(context, kind) {
   return true;
 }
 
+//: **The filter row and the formula letters** (DOCUMENTS_PLAN gap row 12). A
+//: filter is a view of the table, never an edit: it lives in `docViewState`
+//: under the header's text (a table has no id in markdown, and the header is
+//: what a person calls it), hides body rows in Live only, and is gone with the
+//: page. `docViewState.tableFilter.set` repaints by re-sending the selection, which the
+//: table decoration always rebuilds on.
+docViewState.tableFilter = {
+  key: (table) => table.rows[0].cells.map((cell) => cell.trim()).join("|"),
+  of(table) {
+    const filter = docViewState.tableFilters && docViewState.tableFilters[this.key(table)];
+    return filter && filter.needle ? filter : null;
+  },
+  set(view, table, filter) {
+    docViewState.tableFilters = docViewState.tableFilters || {};
+    const key = this.key(table);
+    if (filter && filter.needle) docViewState.tableFilters[key] = filter;
+    else delete docViewState.tableFilters[key];
+    if (view) view.dispatch({ selection: view.state.selection });
+  },
+  letters(col) {
+    let letters = "";
+    for (let n = col + 1; n > 0; n = Math.floor((n - 1) / 26)) letters = String.fromCharCode(65 + ((n - 1) % 26)) + letters;
+    return letters;
+  },
+  async ask(context) {
+    const column = (context.table.rows[0].cells[context.cell.col] || "").trim() || `column ${this.letters(context.cell.col)}`;
+    const was = this.of(context.table);
+    const needle = await promptDialog(`Show rows where ${column} contains`, was ? was.needle : "", { confirmLabel: "Filter" });
+    if (needle !== null && needle !== undefined) {
+      this.set(context.surface.view, context.table, { col: context.cell.col, needle: needle.trim() });
+    }
+    context.surface.focus();
+  },
+};
+
 //: The commands, as data, because three things read them: the cell menu, the
 //: "/" menu's table entry and the tests. `run` takes the live context rather
 //: than closing over one, so a menu built for the cell you opened it on still
@@ -5762,6 +5797,38 @@ const DOC_TABLE_COMMANDS = [
       docTableGo(context, docTableSortEdits(context.table, context.cell.col, true),
         context.cell.row, context.cell.col),
   },
+  {
+    id: "filter",
+    group: "filter",
+    label: "Filter rows…",
+    title: "Show only the rows whose cell in this column holds some text. The markdown keeps every row",
+    enabled: (context) => !!context.surface.view && context.table.rows.length > context.table.delim + 1,
+    run: (context) => {
+      docViewState.tableFilter.ask(context);
+      return true;
+    },
+  },
+  {
+    id: "filter-clear",
+    group: "filter",
+    label: "Show all rows",
+    title: "Remove this table's filter",
+    enabled: (context) => !!docViewState.tableFilter.of(context.table),
+    run: (context) => {
+      docViewState.tableFilter.set(context.surface.view, context.table, null);
+      return true;
+    },
+  },
+  ...[["sum", "Sum", "SUM"], ["avg", "Average", "AVG"], ["count", "Count", "COUNT"]].map(([id, word, fn]) => ({
+    id: `formula-${id}`,
+    group: "formula",
+    label: `${word} of this column`,
+    title: `Write =${fn}(column) in this cell: it shows the ${word.toLowerCase()} of the numbers in the column`,
+    enabled: (context) => context.cell.row > context.table.delim,
+    run: (context) =>
+      docTableGo(context, docTableSetCellEdits(context.table, [{ row: context.cell.row, col: context.cell.col,
+        text: `=${fn}(${docViewState.tableFilter.letters(context.cell.col)})` }]), context.cell.row, context.cell.col),
+  })),
   {
     id: "select-row",
     group: "select",
