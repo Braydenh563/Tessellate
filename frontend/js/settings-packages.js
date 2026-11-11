@@ -293,6 +293,13 @@
         meta.className = "muted extras-meta";
         meta.textContent = members.map((extra) => String(extra.packages[0] || extra.id).split(/[[\s]/)[0]).join(", ");
         li.append(about, meta);
+        //: No Install above when every missing package cannot be installed in one click: say so (W24).
+        if (!missing.length && members.some((extra) => extra.unavailable && !extra.installed)) {
+          const why = document.createElement("p");
+          why.className = "muted extras-caveat";
+          setLabel(why, "ph:traffic-cone Not installable in one click yet. The package below says what is left.");
+          li.appendChild(why);
+        }
 
         //: Where each of its packages is in the bulk action in hand (INBOX 696,
         //: the owner: "it just stayed as the 2/3 packages I had installed until

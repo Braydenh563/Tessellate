@@ -429,3 +429,11 @@ def test_the_help_says_how_bundles_and_bulk_actions_work():
     assert "bundle" in popover and "Reinstall" in popover
     topic = next(t for t in help_topics_more.MORE_TOPICS if t["id"] == "packages")
     assert "bundle" in topic["body"].lower() and "reinstall" in topic["body"].lower()
+
+
+def test_a_bundle_with_nothing_installable_says_why_it_has_no_install():
+    """W24 (sweep-1028b): "Live captions 0 of 1 installed" had no Install and no reason."""
+    source = unwrapped(PACKAGES_JS.read_text(encoding="utf-8"))
+    bundles = _function(source, "packagesRenderBundles")
+    assert "!missing.length && members.some((extra) => extra.unavailable && !extra.installed)" in bundles
+    assert "Not installable in one click yet" in bundles
