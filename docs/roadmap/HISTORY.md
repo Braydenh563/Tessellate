@@ -7,6 +7,21 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Built 2026-11-11: decision 8's bar at 0.6, and "ask when unsure" (OPEN row 260)
+
+The owner moved the no-model filing bar to 0.6 top-1 (HANDOVER decision 6; the
+model path keeps 0.8). Measured 0.625 filed outright, so
+`tests/test_filing_accuracy.py` holds honestly; the Q29 reading (a held note
+counted by its suggestion) stays as a ranker guard at 0.800.
+
+"Ask me when filing is not sure" (Settings, Background tasks, and Capture's
+Filing options menu; `ask_when_unsure`, off by default): a filing under
+`lexical_filing.UNSURE_LINE` (70, the number on the chip) is not applied
+(`Decision.unsure`, `janitor._unless_held`, the late model answer). The note
+waits in Uncategorised; the hint and the saved status offer the closest two or
+three. Leave one out on the 120 notes: 4 of the 11 wrong filings sit under 70,
+beside about 20 right ones (`tests/test_ask_when_unsure.py`).
+
 ## Moved from the plans, 2026-11-11 (backlog-2: BACKLOG §2, Quick wins)
 
 **Nothing here is open, all six are done**, and the section is kept rather
