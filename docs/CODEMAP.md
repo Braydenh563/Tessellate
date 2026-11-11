@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10199, test files 2495, tests 20562, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10201, test files 2495, tests 20562, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -13529,7 +13529,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10199)
+## Backend modules (10201)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -16759,37 +16759,39 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `of` | src/tessellate/ai/due_summary.py:50 |
 | `say` | src/tessellate/ai/due_summary.py:57 |
 
-### src/tessellate/ai/embeddings.py (31)
+### src/tessellate/ai/embeddings.py (33)
 
 | Name | File:line |
 |---|---|
 | `EmbeddingCacheBroken` | src/tessellate/ai/embeddings.py:52 |
 | `EmbeddingNeedsConsent` | src/tessellate/ai/embeddings.py:56 |
-| `EmbeddingService` | src/tessellate/ai/embeddings.py:796 |
-| `_PinnedModels` | src/tessellate/ai/embeddings.py:1435 |
+| `EmbeddingService` | src/tessellate/ai/embeddings.py:810 |
+| `_PinnedModels` | src/tessellate/ai/embeddings.py:1449 |
+| `_attachment_parts` | src/tessellate/ai/embeddings.py:526 |
 | `_backfill_chunks` | src/tessellate/ai/embeddings.py:419 |
 | `_backfill_missing` | src/tessellate/ai/embeddings.py:337 |
-| `_digest` | src/tessellate/ai/embeddings.py:605 |
-| `_download_and_open` | src/tessellate/ai/embeddings.py:777 |
+| `_digest` | src/tessellate/ai/embeddings.py:619 |
+| `_download_and_open` | src/tessellate/ai/embeddings.py:791 |
 | `_engine_missing` | src/tessellate/ai/embeddings.py:80 |
-| `_fetch_model_as_a_task` | src/tessellate/ai/embeddings.py:786 |
+| `_fetch_model_as_a_task` | src/tessellate/ai/embeddings.py:800 |
+| `_filed_under` | src/tessellate/ai/embeddings.py:507 |
 | `_notebook_has_notes` | src/tessellate/ai/embeddings.py:143 |
-| `_open_snapshot` | src/tessellate/ai/embeddings.py:757 |
+| `_open_snapshot` | src/tessellate/ai/embeddings.py:771 |
 | `_package_present` | src/tessellate/ai/embeddings.py:67 |
-| `_quiet_engine_log` | src/tessellate/ai/embeddings.py:746 |
-| `_register` | src/tessellate/ai/embeddings.py:718 |
+| `_quiet_engine_log` | src/tessellate/ai/embeddings.py:760 |
+| `_register` | src/tessellate/ai/embeddings.py:732 |
 | `_wait_for_idle` | src/tessellate/ai/embeddings.py:125 |
 | `backfill_missing` | src/tessellate/ai/embeddings.py:305 |
-| `bytes_to_vector` | src/tessellate/ai/embeddings.py:616 |
-| `chunk_text` | src/tessellate/ai/embeddings.py:592 |
+| `bytes_to_vector` | src/tessellate/ai/embeddings.py:630 |
+| `chunk_text` | src/tessellate/ai/embeddings.py:606 |
 | `clean_orphaned_vectors` | src/tessellate/ai/embeddings.py:462 |
-| `cosine_similarity` | src/tessellate/ai/embeddings.py:622 |
+| `cosine_similarity` | src/tessellate/ai/embeddings.py:636 |
 | `embed_threads` | src/tessellate/ai/embeddings.py:295 |
-| `embedding_text` | src/tessellate/ai/embeddings.py:507 |
+| `embedding_text` | src/tessellate/ai/embeddings.py:545 |
 | `note_request` | src/tessellate/ai/embeddings.py:119 |
-| `similar_pairs` | src/tessellate/ai/embeddings.py:643 |
+| `similar_pairs` | src/tessellate/ai/embeddings.py:657 |
 | `start_warmup` | src/tessellate/ai/embeddings.py:163 |
-| `vector_to_bytes` | src/tessellate/ai/embeddings.py:609 |
+| `vector_to_bytes` | src/tessellate/ai/embeddings.py:623 |
 | `wait_for_quiet` | src/tessellate/ai/embeddings.py:136 |
 | `warm_then_backfill` | src/tessellate/ai/embeddings.py:329 |
 | `warmup_failed` | src/tessellate/ai/embeddings.py:458 |
