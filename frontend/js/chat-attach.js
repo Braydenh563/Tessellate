@@ -1169,6 +1169,7 @@ async function sendChatMessage(preset, opts = {}) {
     if (!(await ensureModule("chatTurn"))) return lazyLoadFailed();
     return await chatSendTurn(preset, opts);
   } finally {
+    chatQueue.finishing.delete(opts.finishing);
     chatQueue.next();
   }
 }
