@@ -1024,7 +1024,8 @@ class TestOneDesignThreeSurfaces:
     reads as three different programs."""
 
     def test_the_same_tips_appear_on_every_surface(self):
-        main = _read(ROOT / "src" / "tessellate" / "__main__.py")
+        # The loading page moved out of __main__ whole (K24): read both files.
+        main = _read(ROOT / "src" / "tessellate" / "__main__.py") + _read(ROOT / "src" / "tessellate" / "launcher_loading.py")
         ps1 = _read(ROOT / "scripts" / "splash.ps1")
         html = _read(ROOT / "frontend" / "index.html")
         shared = "Your notes never leave this machine."
@@ -1038,14 +1039,15 @@ class TestOneDesignThreeSurfaces:
 
     def test_the_loading_window_seeds_itself_from_the_launcher(self):
         main = _read(ROOT / "src" / "tessellate" / "__main__.py")
-        assert "def _loading_html" in main
-        assert "launch_status.read_file" in main
+        loading = _read(ROOT / "src" / "tessellate" / "launcher_loading.py")
+        assert "def _loading_html" in loading
+        assert "launch_status.read_file" in loading
         # Read before _close_launch_splash deletes the file: create_window's
         # own argument list is the only place that is guaranteed.
         assert main.index("html=_loading_html()") < main.index("_close_launch_splash()\n    return window")
 
     def test_reduced_motion_is_respected_on_the_python_window(self):
-        main = _read(ROOT / "src" / "tessellate" / "__main__.py")
+        main = _read(ROOT / "src" / "tessellate" / "launcher_loading.py")
         assert "prefers-reduced-motion: reduce" in main
         assert "animation: none" in main
 

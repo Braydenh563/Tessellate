@@ -13554,89 +13554,86 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `_adopt_old_environment` | src/tessellate/__init__.py:12 |
 
-### src/tessellate/__main__.py (79)
+### src/tessellate/__main__.py (76)
 
 | Name | File:line |
 |---|---|
-| `_ancestor_console_hwnds` | src/tessellate/__main__.py:1487 |
-| `_app_icon_path` | src/tessellate/__main__.py:2233 |
-| `_apply_console_visibility` | src/tessellate/__main__.py:1618 |
-| `_attach_desk_companion` | src/tessellate/__main__.py:2277 |
-| `_boot_and_swap` | src/tessellate/__main__.py:1103 |
-| `_bootloader_splash` | src/tessellate/__main__.py:756 |
-| `_bring_forward` | src/tessellate/__main__.py:1818 |
-| `_capture` | src/tessellate/__main__.py:2903 |
-| `_claim_notebook` | src/tessellate/__main__.py:1082 |
-| `_close_bootloader_splash` | src/tessellate/__main__.py:794 |
-| `_close_launch_splash` | src/tessellate/__main__.py:853 |
-| `_close_to_tray` | src/tessellate/__main__.py:2203 |
-| `_console_window_targets` | src/tessellate/__main__.py:1603 |
-| `_desktop_close_to_tray` | src/tessellate/__main__.py:2043 |
-| `_desktop_console` | src/tessellate/__main__.py:1942 |
-| `_desktop_port` | src/tessellate/__main__.py:1026 |
-| `_desktop_preflight` | src/tessellate/__main__.py:1898 |
-| `_desktop_window` | src/tessellate/__main__.py:1976 |
-| `_ensure_std_streams` | src/tessellate/__main__.py:527 |
-| `_existing_instance` | src/tessellate/__main__.py:1825 |
-| `_export_markdown` | src/tessellate/__main__.py:2742 |
-| `_finish_splash_start_step` | src/tessellate/__main__.py:882 |
-| `_focus_window` | src/tessellate/__main__.py:1203 |
-| `_get_console_hwnd` | src/tessellate/__main__.py:1236 |
-| `_hand_off_to_running` | src/tessellate/__main__.py:1839 |
-| `_loading_html` | src/tessellate/__main__.py:462 |
-| `_loading_motion` | src/tessellate/__main__.py:415 |
-| `_localhost_works` | src/tessellate/__main__.py:44 |
-| `_mark_start_step_done` | src/tessellate/__main__.py:952 |
-| `_maybe_relaunch_hidden` | src/tessellate/__main__.py:1448 |
-| `_open_window_onto` | src/tessellate/__main__.py:1871 |
-| `_password_exists` | src/tessellate/__main__.py:2781 |
-| `_port_from_env` | src/tessellate/__main__.py:119 |
-| `_port_holder` | src/tessellate/__main__.py:968 |
-| `_push_status_to_window` | src/tessellate/__main__.py:935 |
-| `_pythonw_path` | src/tessellate/__main__.py:1254 |
-| `_quit_from_app` | src/tessellate/__main__.py:2176 |
-| `_reassert_window_state` | src/tessellate/__main__.py:1184 |
-| `_recolour_loading_page` | src/tessellate/__main__.py:428 |
-| `_relaunch_argv` | src/tessellate/__main__.py:1360 |
-| `_repair_install` | src/tessellate/__main__.py:2864 |
-| `_replace_process` | src/tessellate/__main__.py:1694 |
-| `_reset_password` | src/tessellate/__main__.py:2794 |
-| `_run_desktop` | src/tessellate/__main__.py:2077 |
-| `_run_mcp` | src/tessellate/__main__.py:2716 |
-| `_run_server` | src/tessellate/__main__.py:554 |
-| `_run_server_holding_lock` | src/tessellate/__main__.py:3029 |
-| `_run_tray_loop` | src/tessellate/__main__.py:2702 |
-| `_serve_with_lan` | src/tessellate/__main__.py:635 |
-| `_serves_this_notebook` | src/tessellate/__main__.py:1009 |
-| `_set_windows_app_id` | src/tessellate/__main__.py:2256 |
-| `_spawn_desktop` | src/tessellate/__main__.py:1265 |
-| `_spawn_detached` | src/tessellate/__main__.py:1378 |
-| `_splash_status` | src/tessellate/__main__.py:779 |
-| `_start_frozen_splash` | src/tessellate/__main__.py:812 |
-| `_start_reminder_notifier` | src/tessellate/__main__.py:2318 |
-| `_start_tray` | src/tessellate/__main__.py:2573 |
-| `_stop_background_work` | src/tessellate/__main__.py:1654 |
-| `_stop_lingering_worker_threads` | src/tessellate/__main__.py:691 |
-| `_track_window_state` | src/tessellate/__main__.py:1159 |
-| `_tray_go` | src/tessellate/__main__.py:2427 |
-| `_tray_image` | src/tessellate/__main__.py:2354 |
-| `_tray_new_note` | src/tessellate/__main__.py:2540 |
-| `_tray_open` | src/tessellate/__main__.py:2382 |
-| `_tray_quit` | src/tessellate/__main__.py:2519 |
-| `_tray_restart` | src/tessellate/__main__.py:2494 |
-| `_tray_toggle_console` | src/tessellate/__main__.py:2390 |
-| `_tray_view_logs` | src/tessellate/__main__.py:2474 |
-| `_wait_for_exit` | src/tessellate/__main__.py:1433 |
-| `_wait_for_server` | src/tessellate/__main__.py:727 |
-| `_wait_for_server_with_progress` | src/tessellate/__main__.py:1054 |
-| `_warn_webview2_missing` | src/tessellate/__main__.py:1784 |
-| `_webview2_runtime_missing` | src/tessellate/__main__.py:1720 |
-| `_window_class_name` | src/tessellate/__main__.py:1587 |
-| `_window_url` | src/tessellate/__main__.py:97 |
-| `main` | src/tessellate/__main__.py:2921 |
-| `restart_app` | src/tessellate/__main__.py:1409 |
-| `restart_in_console_mode` | src/tessellate/__main__.py:1337 |
-| `window_host` | src/tessellate/__main__.py:79 |
+| `_ancestor_console_hwnds` | src/tessellate/__main__.py:1134 |
+| `_app_icon_path` | src/tessellate/__main__.py:1880 |
+| `_apply_console_visibility` | src/tessellate/__main__.py:1265 |
+| `_attach_desk_companion` | src/tessellate/__main__.py:1924 |
+| `_boot_and_swap` | src/tessellate/__main__.py:750 |
+| `_bootloader_splash` | src/tessellate/__main__.py:403 |
+| `_bring_forward` | src/tessellate/__main__.py:1465 |
+| `_capture` | src/tessellate/__main__.py:2550 |
+| `_claim_notebook` | src/tessellate/__main__.py:729 |
+| `_close_bootloader_splash` | src/tessellate/__main__.py:441 |
+| `_close_launch_splash` | src/tessellate/__main__.py:500 |
+| `_close_to_tray` | src/tessellate/__main__.py:1850 |
+| `_console_window_targets` | src/tessellate/__main__.py:1250 |
+| `_desktop_close_to_tray` | src/tessellate/__main__.py:1690 |
+| `_desktop_console` | src/tessellate/__main__.py:1589 |
+| `_desktop_port` | src/tessellate/__main__.py:673 |
+| `_desktop_preflight` | src/tessellate/__main__.py:1545 |
+| `_desktop_window` | src/tessellate/__main__.py:1623 |
+| `_ensure_std_streams` | src/tessellate/__main__.py:174 |
+| `_existing_instance` | src/tessellate/__main__.py:1472 |
+| `_export_markdown` | src/tessellate/__main__.py:2389 |
+| `_finish_splash_start_step` | src/tessellate/__main__.py:529 |
+| `_focus_window` | src/tessellate/__main__.py:850 |
+| `_get_console_hwnd` | src/tessellate/__main__.py:883 |
+| `_hand_off_to_running` | src/tessellate/__main__.py:1486 |
+| `_localhost_works` | src/tessellate/__main__.py:54 |
+| `_mark_start_step_done` | src/tessellate/__main__.py:599 |
+| `_maybe_relaunch_hidden` | src/tessellate/__main__.py:1095 |
+| `_open_window_onto` | src/tessellate/__main__.py:1518 |
+| `_password_exists` | src/tessellate/__main__.py:2428 |
+| `_port_from_env` | src/tessellate/__main__.py:129 |
+| `_port_holder` | src/tessellate/__main__.py:615 |
+| `_push_status_to_window` | src/tessellate/__main__.py:582 |
+| `_pythonw_path` | src/tessellate/__main__.py:901 |
+| `_quit_from_app` | src/tessellate/__main__.py:1823 |
+| `_reassert_window_state` | src/tessellate/__main__.py:831 |
+| `_relaunch_argv` | src/tessellate/__main__.py:1007 |
+| `_repair_install` | src/tessellate/__main__.py:2511 |
+| `_replace_process` | src/tessellate/__main__.py:1341 |
+| `_reset_password` | src/tessellate/__main__.py:2441 |
+| `_run_desktop` | src/tessellate/__main__.py:1724 |
+| `_run_mcp` | src/tessellate/__main__.py:2363 |
+| `_run_server` | src/tessellate/__main__.py:201 |
+| `_run_server_holding_lock` | src/tessellate/__main__.py:2676 |
+| `_run_tray_loop` | src/tessellate/__main__.py:2349 |
+| `_serve_with_lan` | src/tessellate/__main__.py:282 |
+| `_serves_this_notebook` | src/tessellate/__main__.py:656 |
+| `_set_windows_app_id` | src/tessellate/__main__.py:1903 |
+| `_spawn_desktop` | src/tessellate/__main__.py:912 |
+| `_spawn_detached` | src/tessellate/__main__.py:1025 |
+| `_splash_status` | src/tessellate/__main__.py:426 |
+| `_start_frozen_splash` | src/tessellate/__main__.py:459 |
+| `_start_reminder_notifier` | src/tessellate/__main__.py:1965 |
+| `_start_tray` | src/tessellate/__main__.py:2220 |
+| `_stop_background_work` | src/tessellate/__main__.py:1301 |
+| `_stop_lingering_worker_threads` | src/tessellate/__main__.py:338 |
+| `_track_window_state` | src/tessellate/__main__.py:806 |
+| `_tray_go` | src/tessellate/__main__.py:2074 |
+| `_tray_image` | src/tessellate/__main__.py:2001 |
+| `_tray_new_note` | src/tessellate/__main__.py:2187 |
+| `_tray_open` | src/tessellate/__main__.py:2029 |
+| `_tray_quit` | src/tessellate/__main__.py:2166 |
+| `_tray_restart` | src/tessellate/__main__.py:2141 |
+| `_tray_toggle_console` | src/tessellate/__main__.py:2037 |
+| `_tray_view_logs` | src/tessellate/__main__.py:2121 |
+| `_wait_for_exit` | src/tessellate/__main__.py:1080 |
+| `_wait_for_server` | src/tessellate/__main__.py:374 |
+| `_wait_for_server_with_progress` | src/tessellate/__main__.py:701 |
+| `_warn_webview2_missing` | src/tessellate/__main__.py:1431 |
+| `_webview2_runtime_missing` | src/tessellate/__main__.py:1367 |
+| `_window_class_name` | src/tessellate/__main__.py:1234 |
+| `_window_url` | src/tessellate/__main__.py:107 |
+| `main` | src/tessellate/__main__.py:2568 |
+| `restart_app` | src/tessellate/__main__.py:1056 |
+| `restart_in_console_mode` | src/tessellate/__main__.py:984 |
+| `window_host` | src/tessellate/__main__.py:89 |
 
 ### src/tessellate/ai/act_registry.py (11)
 
@@ -25785,6 +25782,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `overlap` | src/tessellate/entry/topics.py:212 |
 | `store_name` | src/tessellate/entry/topics.py:239 |
 | `terms_sentence` | src/tessellate/entry/topics.py:166 |
+
+### src/tessellate/launcher_loading.py (3)
+
+| Name | File:line |
+|---|---|
+| `_loading_html` | src/tessellate/launcher_loading.py:323 |
+| `_loading_motion` | src/tessellate/launcher_loading.py:276 |
+| `_recolour_loading_page` | src/tessellate/launcher_loading.py:289 |
 
 ### src/tessellate/mcp_server.py (27)
 
