@@ -110,7 +110,7 @@
       return b;
     });
     const actions = el("div", "dock-actions");
-    actions.append(suggest, ...hist, h.more(S));
+    actions.append(suggest, ...hist, ...[diagramModel.kindbar?.expand(S)].filter(Boolean), h.more(S));
     bar.append(split, S.dirs, actions);
     diagramModel.kindbar?.mount(S, h, bar);
     sync(S);

@@ -84,7 +84,7 @@ def test_the_door_opens_on_a_drawn_starter_with_its_first_box_selected_and_clear
 
 def test_the_dialog_has_a_keys_chip_a_question_mark_anywhere_and_a_help_popover_with_the_guide_offer():
     # DD-7: help in reach. `?` from anywhere but a field; a block's own `?` is not opened twice.
-    assert 'smallButton("ph:keyboard Keys"' in EMBED and "foot.append(seg, ...(known ? [known] : []), chip, cancel, go)" in EMBED
+    assert 'smallButton("ph:keyboard Keys"' in EMBED and "foot.append(seg, ...(live ? [chip, back] : [...(known ? [known] : []), chip, cancel, go]))" in EMBED  # 2026-11-11: an expanded diagram has Collapse for Cancel and Done
     ask = EMBED[EMBED.index('event.key !== "?"') :][:260]
     assert "event.defaultPrevented" in ask and 'input, textarea, select, [contenteditable]' in ask and "keys();" in EMBED
     assert 'data-help-for", "dgm-dialog-help"' in EMBED and "initHelpToggles(dialog)" in EMBED

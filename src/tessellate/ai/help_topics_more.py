@@ -2164,7 +2164,9 @@ MORE_TOPICS.extend(
                 "and the ⋯ (rename, delete, see the text on the page). The bar at "
                 "the foot zooms: out, in, back to fit, 1:1 for actual size, and "
                 "Rotate; the percentage between out and in is a field: type 150 and Enter, "
-                "or open its arrow for 25 to 400 and Fit. A PDF adds its page stepper. With more than one file a "
+                "or open its arrow for 25 to 400 and Fit. A PDF adds its page stepper, and its 'Page 3 of 12' "
+                "is a field too: type 7 and Enter to jump to page 7, or open its arrow for a list of pages. "
+                "On a trackpad, pinch to zoom. With more than one file a "
                 "filmstrip above it jumps to any of them. Scroll zooms where the "
                 "pointer is, drag moves a zoomed picture, double-click switches "
                 "between fit and actual size. Keys: Left and Right, plus and "
@@ -3199,7 +3201,8 @@ MORE_TOPICS.extend([
     {
         "id": "share-note",
         "keywords": ("share a note", "share this note", "send a note", "share", "sharing", "give someone a note",
-                     "email a note"),
+                     "email a note", "export one note", "export a note", "export this note", "export a single note",
+                     "download a note", "download this note", "download .md", "save a note as markdown"),
         "body": (
             "Three ways, none through a server: the note's menu, Download .md, "
             "saves it as a Markdown file to send; copy its "
@@ -3882,6 +3885,7 @@ MORE_TOPICS.append({
     "keywords": (
         "curved arrows", "straight arrows", "stepped arrows", "arrow lines", "line shape",
         "diagram spacing", "compact spacing", "roomy spacing", "diagram page menu", "diagram minimap", "diagram overview",
+        "expand a diagram", "full screen diagram",
     ),
     "body": (
         "A flowchart's ... menu sets how arrows are drawn (Straight lines, Curved lines, "
@@ -3892,7 +3896,8 @@ MORE_TOPICS.append({
         "writing switches, Read aloud and Extract notes. Export, beside Picture, List and "
         "Source, saves it as a PNG or an SVG, or copies it as a picture, as Mermaid or as SVG. "
         "A picture larger than its pane (zoomed in, or a big diagram at Fit) shows a small overview in "
-        "its lower left corner: press or drag it to move the picture. A phone pans by finger instead."
+        "its lower left corner: press or drag it to move the picture. A phone pans by finger instead. "
+        "Expand, at the end of the toolbar of a diagram in a document, opens it full screen with the same saving; Collapse or Escape returns to the document where you left it."
     ),
     "badge": {"label": "Documents", "tab": "documents"},
 })

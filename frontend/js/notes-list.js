@@ -534,16 +534,6 @@ function isRenderableUrl(url) {
 }
 
 
-/** The one-line form of the attachment card, for a surface too small for a card. */
-function fileChip(name, url) {
-  const label = name && name !== url ? name : url.split("/").pop();
-  const chipEl = document.createElement("span");
-  chipEl.className = "chip file-chip";
-  setLabel(chipEl, `${(attachmentIconClass(url, name) || "ph-file").replace("ph-", "ph:")} ${label}`);
-  chipEl.title = `${fileKindLabel(url, name)}: ${label}`;
-  return chipEl;
-}
-
 //: **One card for every file attached to anything** (INBOX 440 (2), DESIGN.md
 //: "A file attached to a note"). The owner: "all of the attachment cards ui
 //: and ux and utility need a massive redesign and upgrade." One note measured
@@ -2971,9 +2961,10 @@ function clearSkeletons(container) {
   container.removeAttribute("aria-busy");
   const held = container.querySelectorAll(":scope > .skeleton");
   for (const el of held) el.remove();
-  //: The caller draws its rows right after this in the same task, so a
-  //: microtask sees them (K1; no observer or frame loop, test_frontend_wake_sources).
-  if (held.length && container.id) queueMicrotask(() => skeletonRemember(container));
+  //: The caller draws its rows right after this in the same task; a timer past the next frame sees them and reads
+  //: a clean page (K1; no observer or frame loop, test_frontend_wake_sources). The microtask this was read the
+  //: rows' layout inside the press: 96ms style and 55 layout at 4x on opening Logs, 677 elements (INBOX 1111).
+  if (held.length && container.id) setTimeout(skeletonRemember, 80, container);
   //: **What replaces them settles in** (the motion pass, 2026-10-05): the
   //: first rows fade up a step, staggered (`.ui-settle`, 08-consistency.css),
   //: instead of popping in where the skeletons were. Only on this first

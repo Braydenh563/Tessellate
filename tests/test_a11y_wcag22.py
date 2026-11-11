@@ -533,3 +533,9 @@ def test_every_labelledby_and_describedby_names_an_element_that_exists():
         if ref not in ids
     ]
     assert missing == []
+
+
+def test_the_document_editor_describes_its_way_out():
+    """W26 (sweep-1028b): Escape then Tab leaves the editor and nothing said so."""
+    docs = _read("documents.js")
+    assert '"aria-description": "Tab indents. To leave the editor, press Escape, then Tab."' in docs

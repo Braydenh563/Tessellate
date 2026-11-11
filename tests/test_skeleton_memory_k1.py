@@ -34,7 +34,8 @@ def test_it_records_only_what_was_on_screen_and_only_once():
 
 def test_it_records_after_the_swap_without_a_new_wake_source():
     body = _show()
-    assert "queueMicrotask(() => skeletonRemember(container))" in body
+    #: A timer past the next frame, not a microtask (INBOX 1111): the microtask read laid the rows out inside the press.
+    assert "setTimeout(skeletonRemember, 80, container)" in body
     assert "MutationObserver" not in body and "requestAnimationFrame" not in body
 
 

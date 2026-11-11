@@ -367,12 +367,9 @@ function lagErrorsStart() {
   window.addEventListener("unhandledrejection", (e) => e.reason?.isStale || lagNoteError(`Unhandled rejection: ${e.reason?.message || e.reason}`, e.reason?.stack));
   const original = console.error;
   console.error = (...parts) => {
-    const said = (p) => (typeof p === "string" ? p : p?.message || JSON.stringify(p) || String(p));
     const stack = parts.find((p) => p?.stack)?.stack || new Error().stack;
-    lagNoteError(parts.map(said).join(" "), stack.split("\n").filter((l) => !l.includes("lag-watch.js")).join("\n"));
-    //: The app's log turns an Error into "{}" (INBOX 1549: "CodeMirror plugin
-    //: crashed: {}"), so it is handed on as its stack; app.js has no bytes to spare.
-    original(...parts.map((p) => (p instanceof Error ? p.stack || String(p) : p)));
+    lagNoteError(parts.map(recordBrowserLog.text).join(" "), stack.split("\n").filter((l) => !l.includes("lag-watch.js")).join("\n"));
+    original(...parts);
   };
 }
 

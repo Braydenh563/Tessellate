@@ -674,7 +674,10 @@ function syncScrollEdges() {
       scrollEdgeRegions.delete(region);
       continue;
     }
-    if (page && page.contains(region) && region.scrollTop > 1) {
+    //: Only a region last seen scrolled is asked: a `scrollTop` read lays the page out, and on
+    //: a tab change (this runs from the class mutation) that was 59ms of forced style plus
+    //: 14ms of layout on the Dashboard at 4x, for regions that never scrolled (INBOX 1111).
+    if (page && scrollEdgeLastState.get(region) && page.contains(region) && region.scrollTop > 1) {
       markScrollEdge(region, true);
       handled = true;
     }

@@ -53,3 +53,43 @@ class Pacer:
         else:  # the first line at or after the ask (a millisecond of slack so 33 ms is two lines, not three)
             lines = max(1, math.ceil((now + int(wake_ms) / 1000.0 - 0.001 - self.anchor) / self.period))
         return self.anchor + lines * self.period
+
+
+#: Frame asks (the engine wants the next display frame): the wakes whose gap should read 16.7 ms. A longer paced ask is an
+#: animation's own step (33 or 62 ms on the grid), and a rest is slower still; neither is a measure of the timer.
+LOG_EVERY_S = 60.0
+#: A gap more than this past the ask is the timer or the machine being late, not a different ask: it counts.
+LATE_GAP_S = 0.25
+
+
+class IntervalLog:
+    """What the timer really did (INBOX 1683 a, 1670 r): for each wake that came after a frame ask, the gap since the wake
+    before it, summed up once a minute as one line. The simulation proves the grid is 16.67 ms; only a log from the machine
+    itself says what the system timer made of it. A rest, or an animation's own longer ask, is not a frame and is left out,
+    so a figure that stands still for a minute logs nothing. Pure: no clock of its own."""
+
+    def __init__(self) -> None:
+        self.last: float | None = None
+        self.started: float | None = None
+        self.frame = False
+        self.gaps: list[float] = []
+
+    def asked(self, wake_ms: int | None) -> None:
+        """The wake the engine just asked for: only a next-frame ask makes the gap that follows worth counting."""
+        self.frame = wake_ms is not None and PACED_FROM_MS <= int(wake_ms) <= NEXT_FRAME_MS
+
+    def note(self, now: float) -> str | None:
+        """Record a wake at `now`; the summary line when a minute has passed since the last one, else None."""
+        if self.started is None:
+            self.started = now
+        if self.frame and self.last is not None and 0.0 < now - self.last <= LATE_GAP_S:
+            self.gaps.append(now - self.last)
+        self.last = now
+        if now - self.started < LOG_EVERY_S:
+            return None
+        gaps, self.gaps, self.started = sorted(self.gaps), [], now
+        if not gaps:
+            return None
+        n = len(gaps)
+        return "overlay: frame interval over %d frame wakes: p50 %.1f ms, p95 %.1f ms, max %.1f ms" % (
+            n, gaps[n // 2] * 1000.0, gaps[min(n - 1, int(n * 0.95))] * 1000.0, gaps[-1] * 1000.0)

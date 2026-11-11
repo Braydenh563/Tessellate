@@ -53,6 +53,8 @@
   //: The pane's frame (1679 k): the purpose line above the list, and a foot under it with the two things a first use wants where the
   //: eye ends, Add block and Connect. Under the pointer or in focus, the line says what that control does (its own title, so a
   //: hover and a screen reader never disagree); it goes back to the purpose when the pointer or the focus leaves.
+  //: The pane holds two things: `S.scroll` (the purpose line, the list, the hint: the part that scrolls) and the foot, outside it,
+  //: so the foot never lies over a line and a short list leaves no gap under it (the owner, 2026-11-11: the sticky foot covered the hint while it scrolled).
   //: `use` is the builder's `add(S, options)` and `connect(S, key)`.
   function frame(S, use) {
     const line = document.createElement("p");
@@ -67,8 +69,12 @@
     add.tabIndex = connect.tabIndex = -1;
     foot.append(add, connect);
     S.footConnect = connect;
+    S.scroll = document.createElement("div");
+    S.scroll.className = "dgm-scroll";
+    S.scroll.append(...S.pane.childNodes);
+    S.pane.classList.add("dgm-framed");
+    S.pane.append(S.scroll, foot);
     S.tree.before(line);
-    S.tree.after(foot);
     const say = (target) => {
       const control = target?.closest?.(".dgm-label, [title]");
       const words = control?.classList.contains("dgm-label") ? LABEL_WORDS() : control?.title;
@@ -89,8 +95,6 @@
     const lesson = m.edges.length === 0 && m.nodes.length < 2;
     S.empty.classList.toggle("hidden", !lesson);
     S.foot?.classList.toggle("hidden", !blocks);
-    //: The hint pins above this row, so its bottom margin is the row's height (a phone's hint scrolls, see `.dgm-next`).
-    if (S.foot && S.next) S.next.style.marginBlockEnd = blocks && !matchMedia("(max-width: 599.98px)").matches ? `${S.foot.offsetHeight}px` : "";
     //: The checklist already offers the first arrow and the first box, so the foot does not say the same twice (1679 blind pass): Add block
     //: stays where the eye ends, Connect joins it once the checklist has gone, and a box that is added drops the checklist's first row.
     S.footConnect?.classList.toggle("hidden", lesson && Boolean(S.steps));
