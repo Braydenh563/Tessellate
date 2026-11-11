@@ -34,7 +34,8 @@ def test_a_click_on_the_open_note_closes_before_it_would_reopen() -> None:
 
 
 def test_enter_and_space_toggle_the_same_way() -> None:
-    start = GRAPH.index('event.key === "Enter" || event.key === " "')
+    # The category-focus branch also tests Enter/Space (with Escape); the note toggle is the bare form.
+    start = GRAPH.index('if (event.key === "Enter" || event.key === " ") {')
     block = GRAPH[start : start + 400]
     assert "graphPopupShows(current)" in block and "closeGraphPopup(true)" in block
     assert "openGraphPopup(" in block
