@@ -36,13 +36,16 @@ jobs:
         run: ruff check .
 
   test:
-    name: Tests (Python ${{ matrix.python-version }})
+    # Two legs per Python version, split by test file (tests/_shard.py: heaviest file to the lightest leg, the ratchets
+    # together in leg 1): one leg of the 48,000 tests took 44 to 50 minutes on 3.11 and 3.12 (W24).
+    name: Tests (Python ${{ matrix.python-version }}, leg ${{ matrix.shard }} of 2)
     runs-on: ubuntu-latest
     timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
+        shard: [1, 2]
     steps:
       - uses: actions/checkout@v7
 
@@ -70,7 +73,7 @@ jobs:
       # --durations=0 with a one-second floor names every slow test; the junit file is summed by test file below,
       # so one run shows the whole tail and not only the fifteen slowest (OPEN W24).
       - name: Run the test suite
-        run: python -m pytest -n auto --durations=0 --durations-min=1.0 --junitxml=junit.xml
+        run: python -m pytest -n auto --shard ${{ matrix.shard }}/2 --durations=0 --durations-min=1.0 --junitxml=junit.xml
 
       - name: Test time by file
         if: always()

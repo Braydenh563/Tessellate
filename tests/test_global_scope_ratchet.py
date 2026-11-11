@@ -12,8 +12,9 @@ with a reason written here.
 
 from __future__ import annotations
 
+import functools
 import re
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 
 from tessellate.api.asset_strip import strip_js_comments
@@ -67,6 +68,7 @@ TOP_LEVEL_LETS_CAP = 699
 GLOBAL_NAMES_CAP = 9044
 
 
+@functools.lru_cache(maxsize=None)
 def _code() -> dict[str, str]:
     return {p.name: strip_js_comments(p.read_text(encoding="utf-8")) for p in sorted(JS.glob("*.js"))}
 
@@ -98,6 +100,7 @@ def test_no_two_files_define_the_same_function():
     assert not twice, f"defined twice in the one global scope: {twice}"
 
 
+@functools.lru_cache(maxsize=None)
 def _sources() -> dict[str, str]:
     return {
         p.name: p.read_text(encoding="utf-8")
@@ -114,16 +117,33 @@ def test_global_names_only_go_down():
     )
 
 
+_TOKEN = re.compile(r"[\w$]+")
+
+
+def _named_in(code: dict[str, str]) -> dict[str, set[str]]:
+    """Token -> the files that name it as a global would be named: a whole identifier that is not a member access
+    (`x.name`), except `window.name`. One pass over the 14 MB of script, where a regex search per export per file
+    took a minute (CI time 1109); the answer is the old per-export regex's: a name not after a dot, or after `window.`, and not inside a longer one."""
+    named: dict[str, set[str]] = defaultdict(set)
+    for file, text in code.items():
+        for m in _TOKEN.finditer(text):
+            start = m.start()
+            if start and text[start - 1] == "." and text[max(0, start - 7) : start] != "window.":
+                continue
+            named[m.group()].add(file)
+    return named
+
+
 def test_a_wrapped_file_exports_only_what_it_defines_and_others_call():
     """An export the file does not define is a stand-in that resolves to
     nothing; one nothing else names is a private name back in the shared scope."""
     sources = _sources()
-    code = _code()
+    named = _named_in(_code())
     wrong = []
     for name, source in sources.items():
         for export in sorted(_js_scope.listed(source)):
             if not re.search(rf"^  (?:async\s+)?(?:function\s+|const\s+|class\s+){re.escape(export)}\b", source, re.M):
                 wrong.append(f"{name} exports {export} but does not define it at its top")
-            elif not any(re.search(rf"(?:(?<![\w$.])|(?<=window\.)){re.escape(export)}(?![\w$])", other) for other_name, other in code.items() if other_name != name):
+            elif not (named.get(export, set()) - {name}):
                 wrong.append(f"{name} exports {export}, which no other file names")
     assert not wrong, "; ".join(wrong)
