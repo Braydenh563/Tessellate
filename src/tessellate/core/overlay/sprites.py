@@ -977,6 +977,34 @@ def _draw_fx(draw: Any, kind: str, strength: float, face: int, cx: float, cy: fl
             draw.ellipse((x - r, y - r, x + r, y + r), fill=(*PUFF_SMOKE, tone))
 
 
+#: A figure pressed against an edge (E6): its width loses up to this share at amount 1, about the edge it touches, and it
+#: gains half that in height (about its middle), so the squash keeps its size to the eye. Amounts are on a 1/8 grid.
+EDGE_SQUASH = 0.16
+
+
+def squashed(frame: Frame, squash: tuple[float, int] | None) -> Frame:
+    """The frame pressed against the wall `side` (-1 left, 1 right) by `amount` (0 to 1): narrower about the edge of its
+    drawn box on that side, which does not move, and taller about the box's middle (kept inside the canvas). The box
+    follows. Straight alpha through Pillow, then the halo guard, as `effect` does."""
+    if not squash or not squash[0] or not frame.box[2]:
+        return frame
+    from PIL import Image
+
+    amount, side = squash
+    sx = 1.0 - EDGE_SQUASH * max(0.0, min(1.0, amount))
+    left, top, right, bottom = frame.box
+    w, h = frame.width, frame.height
+    ax, cy = (left if side < 0 else right), (top + bottom) / 2.0
+    # the stretch is held where the scaled box stays inside the canvas
+    sy = max(1.0, min(1.0 + 0.5 * (1.0 - sx), cy / max(1.0, cy - top), (h - cy) / max(1.0, bottom - cy)))
+    image = Image.frombytes("RGBA", (w, h), frame.bgra, "raw", "BGRa")
+    # output (x, y) takes its colour from input (ax + (x - ax) / sx, cy + (y - cy) / sy)
+    image = image.transform((w, h), Image.Transform.AFFINE, (1.0 / sx, 0.0, ax - ax / sx, 0.0, 1.0 / sy, cy - cy / sy), Image.Resampling.BILINEAR)
+    clear = clear_faint_alpha(image)
+    box = (round(ax + (left - ax) * sx), round(cy + (top - cy) * sy), round(ax + (right - ax) * sx), round(cy + (bottom - cy) * sy))
+    return Frame(w, h, premultiplied_bgra(clear), frame.pad_x, frame.pad_y, box)
+
+
 def effect(frame: Frame, fx: tuple[str, float, int] | None, alpha: float) -> Frame:
     """The frame as a vanish, an arrival or a ride shows it (INBOX 1670): the figure's alpha scaled by `alpha`
     (clear below FADE_CLEAR), with a portal ring, smoke, sparkles, a cloud or a bubble. `fx` is (kind, strength

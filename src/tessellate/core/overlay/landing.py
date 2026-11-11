@@ -40,6 +40,25 @@ WALL_GRIP = 0.45
 SCRABBLE = (0.1, 6.0)
 FLAIL = (0.2, 3.0)
 FLAIL_AFTER = 0.5
+#: How hard a landing on the feet came down (E6): the speed it met the floor at (px/s at 96 dpi; v squared is twice g times
+#: the drop, so about a 200 px drop and a 520 px one at g 2200). Under the first it is soft (a shallow squash, no slide),
+#: between them a stumble (a deeper squash, a lean and a shuffle on), over the second a roll (one forward turn that takes
+#: the impact, then up). Each touch: [squash share of `LAND_SQUASH`, hold share of LAND_FOR, forward lean share, floor friction].
+SOFT_SPEED = 940.0
+ROLL_SPEED = 1510.0
+TOUCHES = {"soft": (0.45, 0.8, 0.0, STUMBLE_K), "stumble": (1.0, 1.0, 1.0, 3.2), "roll": (1.25, 1.2, 0.0, 2.0)}
+LAND_SQUASH = 0.12
+#: A wall touch presses the figure flat (E6): a bounce for this long (s), full strength at this wall speed (px/s at 96 dpi),
+#: and a slide holds this share of the full squash (0.875 is a width of 0.86, on the 1/8 grid of the picture cache).
+EDGE_FOR = 0.18
+EDGE_SPEED = 700.0
+EDGE_HOLD = 0.875
+#: A roll is one turn in this long (s): a smooth start and end, so the quickest the eye sees it is 1.5 turns over this
+#: (about 9 rad/s, 9 degrees a tick at 60 Hz), and it carries on forward at least this fast (px/s at 96 dpi).
+ROLL_FOR = 1.05
+ROLL_SPEED_MIN = 190.0
+#: A stumble leans forward this much (rad) at the deepest, over the hold.
+STUMBLE_LEAN = 0.09
 
 
 def wrap(angle: float) -> float:
@@ -67,6 +86,19 @@ def hermite(a0: float, w0: float, elapsed: float, d: float = FEET_FOR) -> tuple[
     angle = a0 * (2 * u**3 - 3 * u**2 + 1) + d * w0 * (u**3 - 2 * u**2 + u)
     rate = a0 * (6 * u**2 - 6 * u) / d + w0 * (3 * u**2 - 4 * u + 1)
     return angle, rate
+
+
+def touch(speed: float, scale: float = 1.0) -> str:
+    """How a landing on the feet comes down at `speed` (px/s, display `scale`): "soft", "stumble" or "roll"."""
+    if speed < SOFT_SPEED * scale:
+        return "soft"
+    return "roll" if speed >= ROLL_SPEED * scale else "stumble"
+
+
+def roll_turn(a0: float, w0: float, direction: int, elapsed: float) -> tuple[float, float]:
+    """(angle, rate) `elapsed` s into a roll that starts at `a0` turning `w0`, goes one full turn the way `direction`
+    (1 clockwise) says and ends upright and still: the eased move of `hermite`, starting a turn behind."""
+    return hermite(a0 - direction * TAU, w0, elapsed, ROLL_FOR)
 
 
 def rest_for(rng: random.Random) -> float:

@@ -44,7 +44,7 @@ def _run(body: str):
         "function fly(vx, vy, x = 200, y = 400, world = W, k = NMB_THROW) {"
         " let s = { x, y, vx, vy, rot: 0, t: 0, on: null, rest: false }; let steps = 0; let peak = 0; let bounces = 0; let walls = 0;"
         " while (!s.rest && steps < 500) { const was = s.vx; s = nameMarkBuddyFlightStep(s, 16, world, k); steps += 1;"
-        " peak = Math.max(peak, Math.abs(s.rot)); if (s.hit > 0.35) bounces += 1; if (Math.sign(was) !== Math.sign(s.vx) && was) walls += 1; }"
+        " if (!s.roll) peak = Math.max(peak, Math.abs(s.rot)); if (s.hit > 0.35) bounces += 1; if (Math.sign(was) !== Math.sign(s.vx) && was) walls += 1; }"
         " return { x: Math.round(s.x), y: Math.round(s.y), t: s.t, on: s.on === 'floor' ? 'floor' : s.on ? 'ledge' : null, rot: Math.round(s.rot), peak: Math.round(peak), bounces, walls }; }"
     )
     script = "\n".join([consts, src, world, fly, f"console.log(JSON.stringify({body}));"])
