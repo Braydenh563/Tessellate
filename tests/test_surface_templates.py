@@ -59,6 +59,12 @@ SURFACES = {
         ("switchTab",),
         ("timeline-scroll", "timeline-scrubber", "timeline-view-seg", "timeline-search", "timeline-table-head", "timeline-jump-today"),
     ),
+    "graph": (
+        "tab-graph",
+        ("wiring.js", "navigation.js", "settings-wiring.js", "reveal-targets.js", "phone-shell.js", "dashboard.js", "palette.js"),
+        ("switchTab",),
+        ("graph-card", "graph-box", "graph-options", "graph-layout", "graph-popup", "graph-refresh"),
+    ),
     "shortcuts": (
         "shortcuts-overlay",
         ("reveal-targets.js", "settings-wiring.js"),

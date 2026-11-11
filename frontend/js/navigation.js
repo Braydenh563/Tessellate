@@ -2197,25 +2197,6 @@ function stripMarkdownPreview(text) {
     .replace(/!?\[([^[\]\n|]*)(?:\|[^[\]\n]*)?\]\([^()\n]*\)?/g, "$1");
 }
 
-// Layout picker (§9). Stored, because which shape suits a notebook is a
-// property of the notebook rather than of one visit.
-$("graph-layout").addEventListener("change", async (event) => {
-  prefs.set("graph-layout", event.target.value);
-  //: The picker is drawn at boot and graph.js is not (`switchTab`'s `inert`
-  //: covers a person's press; this covers a change made from script, a saved
-  //: view or the palette, before the first visit). `setGraphPhysicsEnabled`
-  //: and `renderGraph` are stand-ins that would load it anyway; the await is
-  //: for `graphAutoFitDone`, a `let` in graph.js, which a bare assignment on a
-  //: cold bundle would write to a stray global that graph.js's own binding
-  //: then shadows, so the re-frame asked for here would be lost.
-  await ensureModule("graph");
-  setGraphPhysicsEnabled(event.target.value);
-  // A different layout is a different shape (a radial ring is nothing like
-  // a force-directed cloud): re-frame for it, unlike the filter/slider
-  // changes that intentionally leave the camera alone.
-  if (prefs.get("graph-autofit", null) !== "0") graphAutoFitDone = false;
-  renderGraph();
-});
 
 // --- Notes sub-tabs ---------------------------------------------------------------
 // Four full-height cards stacked on one page meant scrolling past three forms
@@ -2782,3 +2763,25 @@ function zoomWheelDelta(event) {
   if (event.ctrlKey) pixels = Math.max(-24, Math.min(24, pixels));
   return -pixels * 0.002 * (event.ctrlKey ? 10 : 1);
 }
+
+onSurface("graph", () => {
+  // Layout picker (§9). Stored, because which shape suits a notebook is a
+  // property of the notebook rather than of one visit.
+  $("graph-layout").addEventListener("change", async (event) => {
+    prefs.set("graph-layout", event.target.value);
+    //: The picker is drawn at boot and graph.js is not (`switchTab`'s `inert`
+    //: covers a person's press; this covers a change made from script, a saved
+    //: view or the palette, before the first visit). `setGraphPhysicsEnabled`
+    //: and `renderGraph` are stand-ins that would load it anyway; the await is
+    //: for `graphAutoFitDone`, a `let` in graph.js, which a bare assignment on a
+    //: cold bundle would write to a stray global that graph.js's own binding
+    //: then shadows, so the re-frame asked for here would be lost.
+    await ensureModule("graph");
+    setGraphPhysicsEnabled(event.target.value);
+    // A different layout is a different shape (a radial ring is nothing like
+    // a force-directed cloud): re-frame for it, unlike the filter/slider
+    // changes that intentionally leave the camera alone.
+    if (prefs.get("graph-autofit", null) !== "0") graphAutoFitDone = false;
+    renderGraph();
+  });
+});
