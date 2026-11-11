@@ -726,3 +726,17 @@ def test_the_connector_row_and_the_suggestions_fold_are_in_the_guide_in_the_cont
     js = FRONTEND / "js"
     assert "Go to ${to}" in (js / "diagram-builder.js").read_text(encoding="utf-8")
     assert "blocks say ${group[0].text}." in (js / "diagram-ai.js").read_text(encoding="utf-8")
+
+
+def test_map_build_up_and_level_stepping_are_in_the_keys_sheet_the_menus_and_the_guide() -> None:
+    """INBOX 1774: Alt+= and Alt+- step the levels (the Keys sheet, the palette and
+    the map menus), and Build up branch by branch presents the map from the
+    centre out; the Guide says both in the controls' words."""
+    commands = (FRONTEND / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
+    assert 'keys: ["Alt+=", "Alt+-"]' in commands
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    assert "<span>Build up branch by branch</span>" in html
+    text = help_chat_text() + help_more_text()
+    assert "Alt+= and Alt+- show one more or one less level" in text
+    assert "Build up branch by branch shows the centre, then each branch a level at a time" in text
+    assert "End shows the whole map to take it apart" in text

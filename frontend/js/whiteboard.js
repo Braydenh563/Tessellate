@@ -16046,6 +16046,7 @@ async function initWhiteboard() {
   $("wb-add-to-note")?.addEventListener("click", wbAddBoardToNote);
   $("wb-map-to-doc")?.addEventListener("click", () => wbMapWriteDocument());
   $("wb-map-study")?.addEventListener("click", () => wbMapStartStudy());
+  $("wb-map-build")?.addEventListener("click", () => wbMapBuild.start());
   $("wb-copy-link")?.addEventListener("click", () => {
     const id = window.currentBoardId ?? null;
     if (id === null) return toast("The default board has no address. Make a board first.");
@@ -17601,6 +17602,15 @@ async function initWhiteboard() {
       wbMapFoldToLevel(Number(e.code.slice(5)));
       return;
     }
+    //: Alt+= and Alt+- on a map: one more or one less level (INBOX 1774). On
+    //: the canvas only: in a writing box Alt+= stays the equation editor
+    //: (this handler is the canvas's, after the editors have kept their keys),
+    //: and never while presenting, when no key edits the map (decision 21).
+    if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && (e.code === "Equal" || e.code === "Minus") && wbIsMap() && !wbPresent) {
+      e.preventDefault();
+      wbMapFoldToLevel({ by: e.code === "Equal" ? 1 : -1 });
+      return;
+    }
     if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === "g") {
       e.preventDefault();
       wbUngroupSelection();
@@ -18374,6 +18384,12 @@ async function initWhiteboard() {
     const index = wbMapIndex();
     const folded = index.nodes.filter((n) => n.data?.collapsed).length;
     const open = wbMapFoldToLevel.open(index);
+    //: One more or one less level, each greyed unless it changes something (INBOX 1774).
+    const hiddenByFold = wbMapHidden(index);
+    const moreLevel = makeMenuItem("ph:plus-circle Show one more level", "Open the shallowest folded branches (Alt+=)", () => wbMapFoldToLevel({ by: 1 }));
+    const lessLevel = makeMenuItem("ph:minus-circle Show one less level", "Fold the deepest open branches (Alt+-)", () => wbMapFoldToLevel({ by: -1 }));
+    moreLevel.disabled = !wbMapBuild.ring(index, hiddenByFold, 1).ids.length;
+    lessLevel.disabled = !wbMapBuild.ring(index, hiddenByFold, -1).ids.length;
     const items = [
       makeMenuItem("ph:plus-circle Add a topic here", "A new trunk, where you pressed: or double-click the canvas", () => wbMapAddRootAt(x, y)),
       makeMenuItem("ph:broom Tidy the map", "Lay every unpinned topic out again", () => wbMapTidy()),
@@ -18387,6 +18403,8 @@ async function initWhiteboard() {
         open ? "Show the trunks only (Alt+1)" : "Every branch is already folded",
         () => wbMapFoldToLevel(1)
       ),
+      moreLevel,
+      lessLevel,
       makeMenuItem("ph:frame-corners Fit everything", "Show the whole map (Shift+1)", () =>
         document.getElementById("wb-zoom-fit")?.click()
       ),
@@ -25914,6 +25932,7 @@ function wbPresentSteps() {
       };
     });
   }
+  if (wbMapBuild.on) return wbMapBuild.steps;
   return wbStudy.on ? wbMapStudySteps() : wbMapPresentSteps();
 }
 
@@ -25955,6 +25974,8 @@ function wbPresentShow(index) {
   wbPresent.steps = steps;
   const at = Math.max(0, Math.min(steps.length - 1, index));
   wbPresent.at = at;
+  //: A mode's own part of the step (Build up shows its topics) before the caption and the fit.
+  steps[at].enter?.();
   wbPresentCaption(at, steps);
   //: **The page number, typeable** (INBOX 1694 b, value-field.js): a small field before the page picker, "2" then
   //: "of 5: Title". Type a number and Enter to go there; Escape puts it back. Built on a presentation's first step,
@@ -26229,6 +26250,7 @@ function wbStopPresenting() {
   wbPresent = null;
   wbPresentLaser(false);
   wbMapEndStudy();
+  wbMapBuild.end();
   closeActionMenus();
   document.getElementById("wb-present-count")?.replaceChildren();
   document.querySelector(".wb-present-page")?.remove();
