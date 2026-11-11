@@ -1812,7 +1812,7 @@ def _exact_note_events(req: _StreamRequest, notes: list) -> list[dict]:
     current, _older = _current_notes(req, notes) if notes else (notes, [])
     result = composer_digest.exact(req.question or "", current, today=user_now(deps.get_config()).date()) if notes else None
     if not result:
-        return chat_extra.facts_events(req.session, req.question or "", now=user_now(deps.get_config()).replace(tzinfo=None), chat=not req.body.notes_only) or []
+        return chat_extra.facts_events(req.session, req.question or "", now=user_now(deps.get_config()).replace(tzinfo=None), chat=not req.body.notes_only, voice=_composer_voice()) or []
     return [{"type": "answer", "delta": result["text"]}, _composed_grounding_event(req, result)]
 
 

@@ -183,17 +183,18 @@ def reminder_events(session: Session, question: str, *, now: datetime) -> list[d
     return [{"type": "answer", "delta": reply.text}]
 
 
-def hello_events(session: Session, question: str, *, now: datetime) -> list[dict] | None:
+def hello_events(session: Session, question: str, *, now: datetime, voice: str = "natural") -> list[dict] | None:
     """The facts of a hello (the streak, the last note, the reminders due), so
     a model that answers "good morning" writes from the same numbers the
     composed welcome says (parity, decision 75). None for any other turn."""
     from tessellate.ai import composer_remark, composer_smalltalk
 
-    if composer_smalltalk.social_kind(question) not in ("greeting", "morning"):
+    #: A hello that leads a request is the request's turn, not a hello (review of 1749).
+    if composer_smalltalk.social_kind(question) not in ("greeting", "morning") or not composer_remark.bare_hello(question):
         return None
     if composer_remark.register(question) == "casual":
-        #: A tapped hello is answered in a line, for the model too (INBOX 1749).
-        return [{"type": "answer", "delta": composer_remark.casual_hello(question)}]
+        #: A tapped hello is answered in a line, in the composer voice, for the model too (INBOX 1749, parity).
+        return [{"type": "answer", "delta": composer_remark.casual_hello(question, voice)}]
     try:
         line = welcome_line(session, now, question=question)
     except Exception:  # noqa: BLE001  # the model greets as before
@@ -208,7 +209,7 @@ def casual_greeting(question: str, voice: str, recent: list[str], seed: str, his
     written hello, which keeps the welcome."""
     from tessellate.ai import address, composer_remark, composer_smalltalk, question_noise
 
-    if composer_smalltalk.social_kind(question) not in ("greeting", "morning") or composer_remark.register(question) != "casual":
+    if composer_smalltalk.social_kind(question) not in ("greeting", "morning") or composer_remark.register(question) != "casual" or not composer_remark.bare_hello(question):
         return ""
     line = composer_remark.casual_hello(question, voice, recent, seed, asked_how=question_noise.asks_how(question))
     how = composer_smalltalk.hello_how(question, voice, [line, *recent], seed)
@@ -222,11 +223,11 @@ def remark_facts(session: Session, question: str) -> str:
     return composer_remark.facts(question, lambda word: note_bearing(session, word))
 
 
-def facts_events(session: Session, question: str, *, now: datetime, chat: bool = True) -> list[dict] | None:
+def facts_events(session: Session, question: str, *, now: datetime, chat: bool = True, voice: str = "natural") -> list[dict] | None:
     """What the app knows that a model is handed as facts: the reminders'
     answer, the agenda, a hello's numbers (Chat only: the Ask box answers a hello with its hint), or one of the reads the agent has a
     tool for (`ai/parity_reads`)."""
-    return reminder_events(session, question, now=now) or (hello_events(session, question, now=now) if chat else None) or read_events(session, question, model=True)
+    return reminder_events(session, question, now=now) or (hello_events(session, question, now=now, voice=voice) if chat else None) or read_events(session, question, model=True)
 
 
 def read_events(session: Session, question: str, *, model: bool = False) -> list[dict] | None:

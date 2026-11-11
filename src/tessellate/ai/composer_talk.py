@@ -27,7 +27,7 @@ from datetime import date, datetime, time, timedelta
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import composer_chips, composer_remark, follow_items, realise, recognise, slash, slash_more
+from tessellate.ai import composer_chips, composer_remark, follow_items, intent, realise, recognise, slash, slash_more
 
 #: The charts the app can already draw from the notes, in the order offered.
 CHARTS = ("time", "tag", "category", "weekday")
@@ -435,7 +435,7 @@ class Closing:
         if not self.asked and composer_chips.asks_time(answer):
             return [{"type": "offer", "offer": {"kind": "ask", "label": "", "asks": composer_chips.TIME_CHIPS}}]
         #: A social turn ("heyy", "its been hot") has no subject: no statistics chips under it (INBOX 1749).
-        social = composer_remark.social(self.question, self.history)
+        social = intent.classify(self.question) == intent.SMALLTALK or composer_remark.social(self.question, self.history)
         asks = [] if self.chipped or not answer.strip() or social else self.asks(answer)
         if not asks and not self.offered and answer.strip() and not self.framed and social:
             #: "thanks" has no subject of its own: it offers the last answer's chips (F5).
