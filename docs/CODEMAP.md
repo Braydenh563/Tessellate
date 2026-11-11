@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8112, frontend ids 2696, CSS sections 523, backend routes 667, backend modules 10111, test files 2476, tests 20442, plan headings 1003, app scripts 28, boot scripts 37, script files 277.
+Counts: frontend functions 8112, frontend ids 2696, CSS sections 523, backend routes 667, backend modules 10115, test files 2476, tests 20442, plan headings 1003, app scripts 28, boot scripts 37, script files 277.
 
 ## Frontend functions (8112)
 
@@ -4061,8 +4061,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `asLint` | frontend/js/documents-languagetool.js:17 |
 | `ask` | frontend/js/documents-languagetool.js:46 |
-| `matchesByParagraph` | frontend/js/documents-languagetool.js:60 |
-| `merge` | frontend/js/documents-languagetool.js:86 |
+| `matchesByParagraph` | frontend/js/documents-languagetool.js:63 |
+| `merge` | frontend/js/documents-languagetool.js:89 |
 | `overlaps` | frontend/js/documents-languagetool.js:27 |
 | `paragraphs` | frontend/js/documents-languagetool.js:36 |
 
@@ -7065,115 +7065,115 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addMemoryByHand` | frontend/js/settings-controls.js:1812 |
-| `addPersona` | frontend/js/settings-controls.js:1423 |
-| `addSkill` | frontend/js/settings-controls.js:2061 |
-| `addTemplate` | frontend/js/settings-controls.js:1613 |
-| `appendToolRow` | frontend/js/settings-controls.js:3760 |
-| `applyBackendChoice` | frontend/js/settings-controls.js:1355 |
-| `applyChatModel` | frontend/js/settings-controls.js:1537 |
-| `applyEmbeddingBackend` | frontend/js/settings-controls.js:5056 |
-| `applyOcrModel` | frontend/js/settings-controls.js:1553 |
-| `applyToolFilter` | frontend/js/settings-controls.js:3824 |
-| `applyUtilityModel` | frontend/js/settings-controls.js:1572 |
-| `applyVisionModel` | frontend/js/settings-controls.js:1591 |
+| `addMemoryByHand` | frontend/js/settings-controls.js:1816 |
+| `addPersona` | frontend/js/settings-controls.js:1427 |
+| `addSkill` | frontend/js/settings-controls.js:2065 |
+| `addTemplate` | frontend/js/settings-controls.js:1617 |
+| `appendToolRow` | frontend/js/settings-controls.js:3764 |
+| `applyBackendChoice` | frontend/js/settings-controls.js:1359 |
+| `applyChatModel` | frontend/js/settings-controls.js:1541 |
+| `applyEmbeddingBackend` | frontend/js/settings-controls.js:5060 |
+| `applyOcrModel` | frontend/js/settings-controls.js:1557 |
+| `applyToolFilter` | frontend/js/settings-controls.js:3828 |
+| `applyUtilityModel` | frontend/js/settings-controls.js:1576 |
+| `applyVisionModel` | frontend/js/settings-controls.js:1595 |
 | `changePassword` | frontend/js/settings-controls.js:185 |
-| `chosenSkillTools` | frontend/js/settings-controls.js:2123 |
-| `chosenSkillVerify` | frontend/js/settings-controls.js:2102 |
-| `decorateThemeCards` | frontend/js/settings-controls.js:3183 |
-| `deleteProfile` | frontend/js/settings-controls.js:2016 |
-| `ensureAppearancePopOut` | frontend/js/settings-controls.js:3377 |
-| `ensurePaneTabs` | frontend/js/settings-controls.js:3347 |
-| `ensureSettingsFoldAll` | frontend/js/settings-controls.js:3305 |
-| `exportFullBackup` | frontend/js/settings-controls.js:2004 |
-| `findDuplicates` | frontend/js/settings-controls.js:1770 |
-| `glassWake` | frontend/js/settings-controls.js:3943 |
-| `lanAllowHere` | frontend/js/settings-controls.js:2602 |
-| `lanCall` | frontend/js/settings-controls.js:2455 |
-| `lanEmptyRow` | frontend/js/settings-controls.js:2448 |
-| `lanListRow` | frontend/js/settings-controls.js:2430 |
-| `lanNetworkRows` | frontend/js/settings-controls.js:2513 |
+| `chosenSkillTools` | frontend/js/settings-controls.js:2127 |
+| `chosenSkillVerify` | frontend/js/settings-controls.js:2106 |
+| `decorateThemeCards` | frontend/js/settings-controls.js:3187 |
+| `deleteProfile` | frontend/js/settings-controls.js:2020 |
+| `ensureAppearancePopOut` | frontend/js/settings-controls.js:3381 |
+| `ensurePaneTabs` | frontend/js/settings-controls.js:3351 |
+| `ensureSettingsFoldAll` | frontend/js/settings-controls.js:3309 |
+| `exportFullBackup` | frontend/js/settings-controls.js:2008 |
+| `findDuplicates` | frontend/js/settings-controls.js:1774 |
+| `glassWake` | frontend/js/settings-controls.js:3947 |
+| `lanAllowHere` | frontend/js/settings-controls.js:2606 |
+| `lanCall` | frontend/js/settings-controls.js:2459 |
+| `lanEmptyRow` | frontend/js/settings-controls.js:2452 |
+| `lanListRow` | frontend/js/settings-controls.js:2434 |
+| `lanNetworkRows` | frontend/js/settings-controls.js:2517 |
 | `lanSwitch` | frontend/js/settings-controls.js:81 |
-| `lanTrustNetwork` | frontend/js/settings-controls.js:2550 |
-| `learnedBulk` | frontend/js/settings-controls.js:4491 |
-| `learnedCheckLine` | frontend/js/settings-controls.js:4929 |
-| `learnedCheckMark` | frontend/js/settings-controls.js:4961 |
-| `learnedCheckPutBack` | frontend/js/settings-controls.js:5009 |
-| `learnedCheckRefresh` | frontend/js/settings-controls.js:4972 |
-| `learnedCheckRun` | frontend/js/settings-controls.js:4980 |
-| `learnedCheckSentence` | frontend/js/settings-controls.js:4924 |
-| `learnedCheckShow` | frontend/js/settings-controls.js:4943 |
-| `learnedDelete` | frontend/js/settings-controls.js:4701 |
-| `learnedEdit` | frontend/js/settings-controls.js:4654 |
-| `learnedExport` | frontend/js/settings-controls.js:4743 |
-| `learnedForget` | frontend/js/settings-controls.js:4723 |
-| `learnedFromYouText` | frontend/js/settings-controls.js:4841 |
-| `learnedKindLabel` | frontend/js/settings-controls.js:4350 |
-| `learnedReset` | frontend/js/settings-controls.js:4680 |
-| `learnedRow` | frontend/js/settings-controls.js:4537 |
-| `learnedRunNow` | frontend/js/settings-controls.js:4762 |
-| `learnedSetSwitch` | frontend/js/settings-controls.js:4457 |
-| `maintenanceDoctorRow` | frontend/js/settings-controls.js:2945 |
-| `maintenanceSay` | frontend/js/settings-controls.js:2921 |
-| `makeMaintenanceShortcut` | frontend/js/settings-controls.js:3018 |
-| `mergeDuplicateGroup` | frontend/js/settings-controls.js:1906 |
-| `mergeNamedPrompts` | frontend/js/settings-controls.js:2029 |
-| `openMaintenanceFolder` | frontend/js/settings-controls.js:3009 |
-| `openTaskLog` | frontend/js/settings-controls.js:3229 |
-| `openUninstallSteps` | frontend/js/settings-controls.js:3029 |
-| `pickJsonFile` | frontend/js/settings-controls.js:2633 |
-| `previewTheme` | frontend/js/settings-controls.js:3109 |
-| `refreshSearxngHost` | frontend/js/settings-controls.js:1241 |
-| `releaseThemeHold` | frontend/js/settings-controls.js:3116 |
-| `renderAccount` | frontend/js/settings-controls.js:3491 |
-| `renderAutoChoices` | frontend/js/settings-controls.js:3257 |
-| `renderAutonomousReview` | frontend/js/settings-controls.js:3575 |
-| `renderDuplicateGroups` | frontend/js/settings-controls.js:1848 |
-| `renderFeatureModelRows` | frontend/js/settings-controls.js:3393 |
-| `renderLanAccess` | frontend/js/settings-controls.js:2623 |
-| `renderLanAddresses` | frontend/js/settings-controls.js:2364 |
-| `renderLanFirewall` | frontend/js/settings-controls.js:2412 |
-| `renderLanState` | frontend/js/settings-controls.js:2275 |
-| `renderLanTrust` | frontend/js/settings-controls.js:2464 |
-| `renderLearned` | frontend/js/settings-controls.js:4862 |
-| `renderLearnedFromYou` | frontend/js/settings-controls.js:4853 |
-| `renderLearnedList` | frontend/js/settings-controls.js:4614 |
-| `renderLearnedSwitches` | frontend/js/settings-controls.js:4354 |
-| `renderMaintenance` | frontend/js/settings-controls.js:2925 |
-| `renderMcpSnippet` | frontend/js/settings-controls.js:2251 |
-| `renderMemorySettings` | frontend/js/settings-controls.js:2690 |
-| `renderPinSettings` | frontend/js/settings-controls.js:3546 |
-| `renderRunBudget` | frontend/js/settings-controls.js:3678 |
-| `renderSmallModelAuto` | frontend/js/settings-controls.js:3282 |
-| `renderSmallModelMode` | frontend/js/settings-controls.js:3666 |
-| `renderStatusBarSettings` | frontend/js/settings-controls.js:2188 |
-| `renderToolFocus` | frontend/js/settings-controls.js:3640 |
-| `renderToolSettings` | frontend/js/settings-controls.js:3591 |
-| `resetAllFeatureModels` | frontend/js/settings-controls.js:1520 |
-| `restartMemoryMap` | frontend/js/settings-controls.js:1721 |
-| `restoreFullBackup` | frontend/js/settings-controls.js:1967 |
-| `runEmbeddingFallback` | frontend/js/settings-controls.js:1456 |
-| `runMaintenanceDoctor` | frontend/js/settings-controls.js:2971 |
-| `saveExportSaveDir` | frontend/js/settings-controls.js:1795 |
-| `saveModelContextWindow` | frontend/js/settings-controls.js:1390 |
-| `saveRunBudget` | frontend/js/settings-controls.js:1651 |
-| `saveToolGroup` | frontend/js/settings-controls.js:3729 |
-| `saveToolSwitch` | frontend/js/settings-controls.js:3689 |
-| `saveWebSearchSettings` | frontend/js/settings-controls.js:1688 |
-| `setCustomAccent` | frontend/js/settings-controls.js:4044 |
-| `setLanOption` | frontend/js/settings-controls.js:2573 |
-| `setMaintenanceReinstall` | frontend/js/settings-controls.js:2996 |
-| `showLanQr` | frontend/js/settings-controls.js:2331 |
-| `showVoiceSample` | frontend/js/settings-controls.js:672 |
-| `syncLearnedSelectbar` | frontend/js/settings-controls.js:4479 |
-| `textToInputs` | frontend/js/settings-controls.js:2664 |
-| `textToSteps` | frontend/js/settings-controls.js:2657 |
-| `themeEyeButton` | frontend/js/settings-controls.js:3156 |
-| `themePreviewNotice` | frontend/js/settings-controls.js:3129 |
-| `toolGroupAllPaint` | frontend/js/settings-controls.js:3718 |
-| `toolGroupBoxes` | frontend/js/settings-controls.js:3709 |
-| `waitForRestart` | frontend/js/settings-controls.js:1747 |
-| `wireLearnedSection` | frontend/js/settings-controls.js:4796 |
+| `lanTrustNetwork` | frontend/js/settings-controls.js:2554 |
+| `learnedBulk` | frontend/js/settings-controls.js:4495 |
+| `learnedCheckLine` | frontend/js/settings-controls.js:4933 |
+| `learnedCheckMark` | frontend/js/settings-controls.js:4965 |
+| `learnedCheckPutBack` | frontend/js/settings-controls.js:5013 |
+| `learnedCheckRefresh` | frontend/js/settings-controls.js:4976 |
+| `learnedCheckRun` | frontend/js/settings-controls.js:4984 |
+| `learnedCheckSentence` | frontend/js/settings-controls.js:4928 |
+| `learnedCheckShow` | frontend/js/settings-controls.js:4947 |
+| `learnedDelete` | frontend/js/settings-controls.js:4705 |
+| `learnedEdit` | frontend/js/settings-controls.js:4658 |
+| `learnedExport` | frontend/js/settings-controls.js:4747 |
+| `learnedForget` | frontend/js/settings-controls.js:4727 |
+| `learnedFromYouText` | frontend/js/settings-controls.js:4845 |
+| `learnedKindLabel` | frontend/js/settings-controls.js:4354 |
+| `learnedReset` | frontend/js/settings-controls.js:4684 |
+| `learnedRow` | frontend/js/settings-controls.js:4541 |
+| `learnedRunNow` | frontend/js/settings-controls.js:4766 |
+| `learnedSetSwitch` | frontend/js/settings-controls.js:4461 |
+| `maintenanceDoctorRow` | frontend/js/settings-controls.js:2949 |
+| `maintenanceSay` | frontend/js/settings-controls.js:2925 |
+| `makeMaintenanceShortcut` | frontend/js/settings-controls.js:3022 |
+| `mergeDuplicateGroup` | frontend/js/settings-controls.js:1910 |
+| `mergeNamedPrompts` | frontend/js/settings-controls.js:2033 |
+| `openMaintenanceFolder` | frontend/js/settings-controls.js:3013 |
+| `openTaskLog` | frontend/js/settings-controls.js:3233 |
+| `openUninstallSteps` | frontend/js/settings-controls.js:3033 |
+| `pickJsonFile` | frontend/js/settings-controls.js:2637 |
+| `previewTheme` | frontend/js/settings-controls.js:3113 |
+| `refreshSearxngHost` | frontend/js/settings-controls.js:1245 |
+| `releaseThemeHold` | frontend/js/settings-controls.js:3120 |
+| `renderAccount` | frontend/js/settings-controls.js:3495 |
+| `renderAutoChoices` | frontend/js/settings-controls.js:3261 |
+| `renderAutonomousReview` | frontend/js/settings-controls.js:3579 |
+| `renderDuplicateGroups` | frontend/js/settings-controls.js:1852 |
+| `renderFeatureModelRows` | frontend/js/settings-controls.js:3397 |
+| `renderLanAccess` | frontend/js/settings-controls.js:2627 |
+| `renderLanAddresses` | frontend/js/settings-controls.js:2368 |
+| `renderLanFirewall` | frontend/js/settings-controls.js:2416 |
+| `renderLanState` | frontend/js/settings-controls.js:2279 |
+| `renderLanTrust` | frontend/js/settings-controls.js:2468 |
+| `renderLearned` | frontend/js/settings-controls.js:4866 |
+| `renderLearnedFromYou` | frontend/js/settings-controls.js:4857 |
+| `renderLearnedList` | frontend/js/settings-controls.js:4618 |
+| `renderLearnedSwitches` | frontend/js/settings-controls.js:4358 |
+| `renderMaintenance` | frontend/js/settings-controls.js:2929 |
+| `renderMcpSnippet` | frontend/js/settings-controls.js:2255 |
+| `renderMemorySettings` | frontend/js/settings-controls.js:2694 |
+| `renderPinSettings` | frontend/js/settings-controls.js:3550 |
+| `renderRunBudget` | frontend/js/settings-controls.js:3682 |
+| `renderSmallModelAuto` | frontend/js/settings-controls.js:3286 |
+| `renderSmallModelMode` | frontend/js/settings-controls.js:3670 |
+| `renderStatusBarSettings` | frontend/js/settings-controls.js:2192 |
+| `renderToolFocus` | frontend/js/settings-controls.js:3644 |
+| `renderToolSettings` | frontend/js/settings-controls.js:3595 |
+| `resetAllFeatureModels` | frontend/js/settings-controls.js:1524 |
+| `restartMemoryMap` | frontend/js/settings-controls.js:1725 |
+| `restoreFullBackup` | frontend/js/settings-controls.js:1971 |
+| `runEmbeddingFallback` | frontend/js/settings-controls.js:1460 |
+| `runMaintenanceDoctor` | frontend/js/settings-controls.js:2975 |
+| `saveExportSaveDir` | frontend/js/settings-controls.js:1799 |
+| `saveModelContextWindow` | frontend/js/settings-controls.js:1394 |
+| `saveRunBudget` | frontend/js/settings-controls.js:1655 |
+| `saveToolGroup` | frontend/js/settings-controls.js:3733 |
+| `saveToolSwitch` | frontend/js/settings-controls.js:3693 |
+| `saveWebSearchSettings` | frontend/js/settings-controls.js:1692 |
+| `setCustomAccent` | frontend/js/settings-controls.js:4048 |
+| `setLanOption` | frontend/js/settings-controls.js:2577 |
+| `setMaintenanceReinstall` | frontend/js/settings-controls.js:3000 |
+| `showLanQr` | frontend/js/settings-controls.js:2335 |
+| `showVoiceSample` | frontend/js/settings-controls.js:676 |
+| `syncLearnedSelectbar` | frontend/js/settings-controls.js:4483 |
+| `textToInputs` | frontend/js/settings-controls.js:2668 |
+| `textToSteps` | frontend/js/settings-controls.js:2661 |
+| `themeEyeButton` | frontend/js/settings-controls.js:3160 |
+| `themePreviewNotice` | frontend/js/settings-controls.js:3133 |
+| `toolGroupAllPaint` | frontend/js/settings-controls.js:3722 |
+| `toolGroupBoxes` | frontend/js/settings-controls.js:3713 |
+| `waitForRestart` | frontend/js/settings-controls.js:1751 |
+| `wireLearnedSection` | frontend/js/settings-controls.js:4800 |
 
 ### frontend/js/settings-data.js (52)
 
@@ -12924,11 +12924,11 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/code-snippets` | POST | `create_snippet` | src/tessellate/api/routes_code_snippets.py:89 |
 | `/code-snippets/{snippet_id}` | PUT | `update_snippet` | src/tessellate/api/routes_code_snippets.py:105 |
 | `/command` | GET | `capture_command` | src/tessellate/api/routes_usage.py:46 |
-| `/command/run` | POST | `run_command` | src/tessellate/api/routes_chat.py:1778 |
-| `/commands` | GET | `list_commands` | src/tessellate/api/routes_chat.py:2370 |
+| `/command/run` | POST | `run_command` | src/tessellate/api/routes_chat.py:1784 |
+| `/commands` | GET | `list_commands` | src/tessellate/api/routes_chat.py:2376 |
 | `/compose` | POST | `compose_draft` | src/tessellate/api/routes_drafts.py:92 |
 | `/compose/stream` | POST | `compose_draft_stream` | src/tessellate/api/routes_drafts.py:134 |
-| `/compress` | POST | `compress_history` | src/tessellate/api/routes_chat.py:2406 |
+| `/compress` | POST | `compress_history` | src/tessellate/api/routes_chat.py:2412 |
 | `/compute` | POST | `compute` | src/tessellate/api/routes_resurface.py:95 |
 | `/confirm` | POST | `confirm_insight` | src/tessellate/api/routes_insights.py:533 |
 | `/confirmed` | GET | `list_confirmed` | src/tessellate/api/routes_insights.py:601 |
@@ -13156,7 +13156,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/merges/{undo_id}/undo` | POST | `undo_merge_route` | src/tessellate/api/routes_entities.py:228 |
 | `/mermaid-frame` | GET | `mermaid_frame` | src/tessellate/api/app.py:1610 |
 | `/models/{size}` | DELETE | `remove_model` | src/tessellate/api/routes_voice.py:44 |
-| `/modes` | GET | `list_modes` | src/tessellate/api/routes_chat.py:2379 |
+| `/modes` | GET | `list_modes` | src/tessellate/api/routes_chat.py:2385 |
 | `/most-accessed` | GET | `most_accessed` | src/tessellate/api/routes_entries.py:2053 |
 | `/most-opened` | GET | `most_opened` | src/tessellate/api/routes_vision.py:113 |
 | `/move` | POST | `move_notes` | src/tessellate/api/routes_categories.py:162 |
@@ -13290,7 +13290,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/status` | GET | `status` | src/tessellate/api/routes_voice.py:25 |
 | `/stop` | POST | `stop` | src/tessellate/api/routes_bench.py:250 |
 | `/storage` | GET | `storage_location` | src/tessellate/api/routes_backups.py:46 |
-| `/stream` | POST | `chat_stream` | src/tessellate/api/routes_chat.py:2223 |
+| `/stream` | POST | `chat_stream` | src/tessellate/api/routes_chat.py:2229 |
 | `/suggest` | POST | `suggest_reminder` | src/tessellate/api/routes_reminders.py:595 |
 | `/suggest-tags` | POST | `suggest_tags_for_draft` | src/tessellate/api/routes_entries.py:1419 |
 | `/suggested` | GET | `suggested` | src/tessellate/api/routes_models.py:852 |
@@ -13328,8 +13328,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/tidy-proposals/undismiss` | POST | `undismiss_tidy` | src/tessellate/api/routes_vision.py:262 |
 | `/title` | POST | `draft_title` | src/tessellate/api/routes_drafts.py:217 |
 | `/today-line` | GET | `today_line` | src/tessellate/api/routes_insights.py:484 |
-| `/tools` | GET | `list_tools` | src/tessellate/api/routes_chat.py:2400 |
-| `/tools/execute` | POST | `execute_confirmed_tool` | src/tessellate/api/routes_chat.py:2433 |
+| `/tools` | GET | `list_tools` | src/tessellate/api/routes_chat.py:2406 |
+| `/tools/execute` | POST | `execute_confirmed_tool` | src/tessellate/api/routes_chat.py:2439 |
 | `/topics` | GET | `topics` | src/tessellate/api/routes_help.py:61 |
 | `/transcribe` | POST | `transcribe` | src/tessellate/api/routes_voice.py:103 |
 | `/turned-down` | GET | `list_turned_down` | src/tessellate/api/routes_tags.py:126 |
@@ -13483,7 +13483,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10111)
+## Backend modules (10115)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14208,14 +14208,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `last_used` | src/tessellate/ai/composer_ack.py:48 |
 | `reading_of` | src/tessellate/ai/composer_ack.py:75 |
 
-### src/tessellate/ai/composer_ages.py (5)
+### src/tessellate/ai/composer_ages.py (7)
 
 | Name | File:line |
 |---|---|
 | `_ages` | src/tessellate/ai/composer_ages.py:25 |
-| `_says` | src/tessellate/ai/composer_ages.py:76 |
+| `_compare` | src/tessellate/ai/composer_ages.py:75 |
+| `_gap` | src/tessellate/ai/composer_ages.py:65 |
+| `_says` | src/tessellate/ai/composer_ages.py:87 |
 | `answer` | src/tessellate/ai/composer_ages.py:44 |
-| `no_todo` | src/tessellate/ai/composer_ages.py:87 |
+| `no_todo` | src/tessellate/ai/composer_ages.py:98 |
 | `read` | src/tessellate/ai/composer_ages.py:49 |
 
 ### src/tessellate/ai/composer_ahead.py (6)
@@ -17167,8 +17169,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3612 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3764 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3613 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3765 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -19756,7 +19758,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `served` | src/tessellate/ai/translate.py:85 |
 | `status` | src/tessellate/ai/translate.py:67 |
 
-### src/tessellate/ai/typo_context.py (12)
+### src/tessellate/ai/typo_context.py (13)
 
 | Name | File:line |
 |---|---|
@@ -19767,11 +19769,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_hits` | src/tessellate/ai/typo_context.py:163 |
 | `_plain` | src/tessellate/ai/typo_context.py:159 |
 | `_score` | src/tessellate/ai/typo_context.py:183 |
+| `_worth_offering` | src/tessellate/ai/typo_context.py:213 |
 | `lean` | src/tessellate/ai/typo_context.py:195 |
 | `note_words` | src/tessellate/ai/typo_context.py:51 |
 | `of_notes` | src/tessellate/ai/typo_context.py:65 |
-| `prefers` | src/tessellate/ai/typo_context.py:226 |
-| `real_slip` | src/tessellate/ai/typo_context.py:216 |
+| `prefers` | src/tessellate/ai/typo_context.py:231 |
+| `real_slip` | src/tessellate/ai/typo_context.py:221 |
 
 ### src/tessellate/ai/unreachable.py (1)
 
@@ -20707,118 +20710,119 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `set_category_colour` | src/tessellate/api/routes_categories.py:315 |
 | `split_category` | src/tessellate/api/routes_categories.py:185 |
 
-### src/tessellate/api/routes_chat.py (109)
+### src/tessellate/api/routes_chat.py (110)
 
 | Name | File:line |
 |---|---|
-| `_act_events` | src/tessellate/api/routes_chat.py:1601 |
-| `_act_planned_events` | src/tessellate/api/routes_chat.py:1630 |
+| `_act_events` | src/tessellate/api/routes_chat.py:1607 |
+| `_act_planned_events` | src/tessellate/api/routes_chat.py:1636 |
 | `_activity` | src/tessellate/api/routes_chat.py:238 |
-| `_address` | src/tessellate/api/routes_chat.py:2134 |
-| `_answer_lines` | src/tessellate/api/routes_chat.py:2302 |
+| `_address` | src/tessellate/api/routes_chat.py:2140 |
+| `_answer_lines` | src/tessellate/api/routes_chat.py:2308 |
 | `_answer_voice` | src/tessellate/api/routes_chat.py:627 |
-| `_app_first_events` | src/tessellate/api/routes_chat.py:1715 |
-| `_app_said` | src/tessellate/api/routes_chat.py:972 |
-| `_asked` | src/tessellate/api/routes_chat.py:2118 |
-| `_asked_back_events` | src/tessellate/api/routes_chat.py:1486 |
+| `_app_first_events` | src/tessellate/api/routes_chat.py:1721 |
+| `_app_said` | src/tessellate/api/routes_chat.py:978 |
+| `_asked` | src/tessellate/api/routes_chat.py:2124 |
+| `_asked_back_events` | src/tessellate/api/routes_chat.py:1492 |
 | `_assist` | src/tessellate/api/routes_chat.py:682 |
-| `_call_events` | src/tessellate/api/routes_chat.py:961 |
-| `_capability_answer` | src/tessellate/api/routes_chat.py:878 |
-| `_changed_line` | src/tessellate/api/routes_chat.py:1102 |
+| `_call_events` | src/tessellate/api/routes_chat.py:967 |
+| `_capability_answer` | src/tessellate/api/routes_chat.py:884 |
+| `_changed_line` | src/tessellate/api/routes_chat.py:1108 |
 | `_chat_voice` | src/tessellate/api/routes_chat.py:638 |
-| `_check_model_prose` | src/tessellate/api/routes_chat.py:2001 |
-| `_choose_events` | src/tessellate/api/routes_chat.py:1969 |
-| `_compose_for` | src/tessellate/api/routes_chat.py:1301 |
+| `_check_model_prose` | src/tessellate/api/routes_chat.py:2007 |
+| `_choose_events` | src/tessellate/api/routes_chat.py:1975 |
+| `_compose_for` | src/tessellate/api/routes_chat.py:1307 |
 | `_composed_chat` | src/tessellate/api/routes_chat.py:591 |
-| `_composed_events` | src/tessellate/api/routes_chat.py:1412 |
-| `_composed_grounding_event` | src/tessellate/api/routes_chat.py:1359 |
-| `_composed_result` | src/tessellate/api/routes_chat.py:1330 |
-| `_composed_text` | src/tessellate/api/routes_chat.py:1455 |
+| `_composed_events` | src/tessellate/api/routes_chat.py:1418 |
+| `_composed_grounding_event` | src/tessellate/api/routes_chat.py:1365 |
+| `_composed_result` | src/tessellate/api/routes_chat.py:1336 |
+| `_composed_text` | src/tessellate/api/routes_chat.py:1461 |
 | `_composer_embed` | src/tessellate/api/routes_chat.py:671 |
 | `_composer_voice` | src/tessellate/api/routes_chat.py:650 |
 | `_computed_answer` | src/tessellate/api/routes_chat.py:249 |
 | `_context_note` | src/tessellate/api/routes_chat.py:370 |
 | `_context_notes` | src/tessellate/api/routes_chat.py:413 |
-| `_conversational_messages` | src/tessellate/api/routes_chat.py:1158 |
-| `_digest_for` | src/tessellate/api/routes_chat.py:1244 |
-| `_earlier_rows` | src/tessellate/api/routes_chat.py:1283 |
-| `_early_events` | src/tessellate/api/routes_chat.py:1511 |
-| `_exact_events` | src/tessellate/api/routes_chat.py:1007 |
-| `_exact_note_events` | src/tessellate/api/routes_chat.py:1808 |
-| `_extra_events` | src/tessellate/api/routes_chat.py:1700 |
-| `_fact_events` | src/tessellate/api/routes_chat.py:1028 |
-| `_first_events` | src/tessellate/api/routes_chat.py:1739 |
-| `_follow_up` | src/tessellate/api/routes_chat.py:1843 |
-| `_forced_notes` | src/tessellate/api/routes_chat.py:1655 |
+| `_conversational_messages` | src/tessellate/api/routes_chat.py:1164 |
+| `_digest_for` | src/tessellate/api/routes_chat.py:1250 |
+| `_earlier_rows` | src/tessellate/api/routes_chat.py:1289 |
+| `_early_events` | src/tessellate/api/routes_chat.py:1517 |
+| `_exact_events` | src/tessellate/api/routes_chat.py:1013 |
+| `_exact_note_events` | src/tessellate/api/routes_chat.py:1814 |
+| `_extra_events` | src/tessellate/api/routes_chat.py:1706 |
+| `_fact_events` | src/tessellate/api/routes_chat.py:1034 |
+| `_first_events` | src/tessellate/api/routes_chat.py:1745 |
+| `_follow_up` | src/tessellate/api/routes_chat.py:1849 |
+| `_forced_notes` | src/tessellate/api/routes_chat.py:1661 |
 | `_from_records` | src/tessellate/api/routes_chat.py:225 |
-| `_ground_final` | src/tessellate/api/routes_chat.py:2029 |
-| `_guarded_slash_lines` | src/tessellate/api/routes_chat.py:2308 |
-| `_hello_reply` | src/tessellate/api/routes_chat.py:903 |
-| `_interactive_lines` | src/tessellate/api/routes_chat.py:2282 |
-| `_lines_for` | src/tessellate/api/routes_chat.py:2296 |
+| `_ground_final` | src/tessellate/api/routes_chat.py:2035 |
+| `_guarded_slash_lines` | src/tessellate/api/routes_chat.py:2314 |
+| `_hello_reply` | src/tessellate/api/routes_chat.py:909 |
+| `_interactive_lines` | src/tessellate/api/routes_chat.py:2288 |
+| `_lines_for` | src/tessellate/api/routes_chat.py:2302 |
 | `_meaning_off` | src/tessellate/api/routes_chat.py:656 |
-| `_missed_events` | src/tessellate/api/routes_chat.py:1473 |
-| `_no_model_events` | src/tessellate/api/routes_chat.py:1537 |
-| `_no_notes_answer` | src/tessellate/api/routes_chat.py:1221 |
-| `_no_notes_events` | src/tessellate/api/routes_chat.py:1204 |
-| `_no_notes_line` | src/tessellate/api/routes_chat.py:1062 |
-| `_note_tool_read` | src/tessellate/api/routes_chat.py:1819 |
+| `_missed_events` | src/tessellate/api/routes_chat.py:1479 |
+| `_no_model_events` | src/tessellate/api/routes_chat.py:1543 |
+| `_no_notes_answer` | src/tessellate/api/routes_chat.py:1227 |
+| `_no_notes_events` | src/tessellate/api/routes_chat.py:1210 |
+| `_no_notes_line` | src/tessellate/api/routes_chat.py:1068 |
+| `_note_tool_read` | src/tessellate/api/routes_chat.py:1825 |
 | `_notes_answer_due` | src/tessellate/api/routes_chat.py:824 |
-| `_offered_open` | src/tessellate/api/routes_chat.py:1924 |
-| `_personal_unsearched` | src/tessellate/api/routes_chat.py:1183 |
+| `_offered_open` | src/tessellate/api/routes_chat.py:1930 |
+| `_personal_unsearched` | src/tessellate/api/routes_chat.py:1189 |
 | `_placed` | src/tessellate/api/routes_chat.py:361 |
-| `_plain_events` | src/tessellate/api/routes_chat.py:1549 |
-| `_plan_turn` | src/tessellate/api/routes_chat.py:1940 |
-| `_pre_answer_events` | src/tessellate/api/routes_chat.py:1577 |
+| `_plain_events` | src/tessellate/api/routes_chat.py:1555 |
+| `_plan_turn` | src/tessellate/api/routes_chat.py:1946 |
+| `_pre_answer_events` | src/tessellate/api/routes_chat.py:1583 |
 | `_prepare` | src/tessellate/api/routes_chat.py:452 |
-| `_prime_model_notes` | src/tessellate/api/routes_chat.py:1958 |
+| `_prime_model_notes` | src/tessellate/api/routes_chat.py:1964 |
 | `_recall_window` | src/tessellate/api/routes_chat.py:274 |
-| `_repair_reply` | src/tessellate/api/routes_chat.py:950 |
+| `_reminder_window_args` | src/tessellate/api/routes_chat.py:835 |
+| `_repair_reply` | src/tessellate/api/routes_chat.py:956 |
 | `_resolve_plan` | src/tessellate/api/routes_chat.py:172 |
 | `_retrieve_for` | src/tessellate/api/routes_chat.py:317 |
 | `_retrieve_ranked` | src/tessellate/api/routes_chat.py:440 |
 | `_rewind_as_of` | src/tessellate/api/routes_chat.py:333 |
 | `_search_notes` | src/tessellate/api/routes_chat.py:287 |
-| `_settle_turn` | src/tessellate/api/routes_chat.py:2072 |
-| `_skill_lines` | src/tessellate/api/routes_chat.py:2348 |
-| `_slash_lines` | src/tessellate/api/routes_chat.py:2322 |
-| `_small_talk_events` | src/tessellate/api/routes_chat.py:1124 |
-| `_social_reply` | src/tessellate/api/routes_chat.py:917 |
-| `_spoken_act` | src/tessellate/api/routes_chat.py:1793 |
-| `_starter_events` | src/tessellate/api/routes_chat.py:1769 |
-| `_stats_events` | src/tessellate/api/routes_chat.py:992 |
-| `_stop_when_gone` | src/tessellate/api/routes_chat.py:2252 |
-| `_stream_lines` | src/tessellate/api/routes_chat.py:2091 |
-| `_stream_prepare` | src/tessellate/api/routes_chat.py:1884 |
-| `_stream_request` | src/tessellate/api/routes_chat.py:2157 |
-| `_this_note_events` | src/tessellate/api/routes_chat.py:1710 |
-| `_this_note_said` | src/tessellate/api/routes_chat.py:1682 |
-| `_told_sources` | src/tessellate/api/routes_chat.py:1268 |
-| `_tool_read_events` | src/tessellate/api/routes_chat.py:835 |
-| `_tools_provider` | src/tessellate/api/routes_chat.py:1870 |
-| `_unplaced_events` | src/tessellate/api/routes_chat.py:1194 |
-| `_unsaid_greeting` | src/tessellate/api/routes_chat.py:2062 |
+| `_settle_turn` | src/tessellate/api/routes_chat.py:2078 |
+| `_skill_lines` | src/tessellate/api/routes_chat.py:2354 |
+| `_slash_lines` | src/tessellate/api/routes_chat.py:2328 |
+| `_small_talk_events` | src/tessellate/api/routes_chat.py:1130 |
+| `_social_reply` | src/tessellate/api/routes_chat.py:923 |
+| `_spoken_act` | src/tessellate/api/routes_chat.py:1799 |
+| `_starter_events` | src/tessellate/api/routes_chat.py:1775 |
+| `_stats_events` | src/tessellate/api/routes_chat.py:998 |
+| `_stop_when_gone` | src/tessellate/api/routes_chat.py:2258 |
+| `_stream_lines` | src/tessellate/api/routes_chat.py:2097 |
+| `_stream_prepare` | src/tessellate/api/routes_chat.py:1890 |
+| `_stream_request` | src/tessellate/api/routes_chat.py:2163 |
+| `_this_note_events` | src/tessellate/api/routes_chat.py:1716 |
+| `_this_note_said` | src/tessellate/api/routes_chat.py:1688 |
+| `_told_sources` | src/tessellate/api/routes_chat.py:1274 |
+| `_tool_read_events` | src/tessellate/api/routes_chat.py:848 |
+| `_tools_provider` | src/tessellate/api/routes_chat.py:1876 |
+| `_unplaced_events` | src/tessellate/api/routes_chat.py:1200 |
+| `_unsaid_greeting` | src/tessellate/api/routes_chat.py:2068 |
 | `_web_answer` | src/tessellate/api/routes_chat.py:782 |
 | `_web_events` | src/tessellate/api/routes_chat.py:811 |
-| `_web_events_or_down` | src/tessellate/api/routes_chat.py:1499 |
+| `_web_events_or_down` | src/tessellate/api/routes_chat.py:1505 |
 | `_web_pages` | src/tessellate/api/routes_chat.py:745 |
-| `_welcome` | src/tessellate/api/routes_chat.py:890 |
-| `_with_lapsed` | src/tessellate/api/routes_chat.py:1110 |
-| `_with_next_step` | src/tessellate/api/routes_chat.py:1385 |
-| `_with_older` | src/tessellate/api/routes_chat.py:1089 |
+| `_welcome` | src/tessellate/api/routes_chat.py:896 |
+| `_with_lapsed` | src/tessellate/api/routes_chat.py:1116 |
+| `_with_next_step` | src/tessellate/api/routes_chat.py:1391 |
+| `_with_older` | src/tessellate/api/routes_chat.py:1095 |
 | `_worked_out` | src/tessellate/api/routes_chat.py:201 |
 | `chat` | src/tessellate/api/routes_chat.py:501 |
 | `chat_followups` | src/tessellate/api/routes_chat.py:151 |
-| `chat_stream` | src/tessellate/api/routes_chat.py:2225 |
-| `compress_history` | src/tessellate/api/routes_chat.py:2407 |
-| `execute_confirmed_tool` | src/tessellate/api/routes_chat.py:2434 |
+| `chat_stream` | src/tessellate/api/routes_chat.py:2231 |
+| `compress_history` | src/tessellate/api/routes_chat.py:2413 |
+| `execute_confirmed_tool` | src/tessellate/api/routes_chat.py:2440 |
 | `forget_recent_question` | src/tessellate/api/routes_chat.py:99 |
-| `list_commands` | src/tessellate/api/routes_chat.py:2371 |
-| `list_modes` | src/tessellate/api/routes_chat.py:2380 |
-| `list_tools` | src/tessellate/api/routes_chat.py:2401 |
+| `list_commands` | src/tessellate/api/routes_chat.py:2377 |
+| `list_modes` | src/tessellate/api/routes_chat.py:2386 |
+| `list_tools` | src/tessellate/api/routes_chat.py:2407 |
 | `recent_questions` | src/tessellate/api/routes_chat.py:93 |
 | `remember_recent_question` | src/tessellate/api/routes_chat.py:107 |
-| `run_command` | src/tessellate/api/routes_chat.py:1779 |
+| `run_command` | src/tessellate/api/routes_chat.py:1785 |
 | `suggestions` | src/tessellate/api/routes_chat.py:122 |
 
 ### src/tessellate/api/routes_code_assist.py (2)
@@ -23731,11 +23735,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_free_port` | src/tessellate/core/languagetool.py:56 |
 | `_opener` | src/tessellate/core/languagetool.py:62 |
 | `_ready` | src/tessellate/core/languagetool.py:67 |
-| `_running_port` | src/tessellate/core/languagetool.py:134 |
-| `_shape` | src/tessellate/core/languagetool.py:140 |
+| `_running_port` | src/tessellate/core/languagetool.py:140 |
+| `_shape` | src/tessellate/core/languagetool.py:146 |
 | `_start` | src/tessellate/core/languagetool.py:75 |
 | `available` | src/tessellate/core/languagetool.py:52 |
-| `check` | src/tessellate/core/languagetool.py:162 |
+| `check` | src/tessellate/core/languagetool.py:168 |
 | `installed_folder` | src/tessellate/core/languagetool.py:48 |
 | `stop` | src/tessellate/core/languagetool.py:106 |
 
@@ -28806,30 +28810,30 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 10. Not verified | docs/roadmap/ANALYSIS.md:4381 |
 | 10. Outline, navigation and view | docs/roadmap/WHITEBOARD_PLAN.md:1098 |
 | 10. The spelling check: decided 2026-09-12 | docs/roadmap/DOCUMENTS_PLAN.md:461 |
-| 10. Timeline tab, and time-aware notes | docs/roadmap/BACKLOG.md:670 |
+| 10. Timeline tab, and time-aware notes | docs/roadmap/BACKLOG.md:645 |
 | 104. Sub-categories, asked about directly, and whether the graph needs a new mechanism to answer it | docs/roadmap/ANALYSIS.md:954 |
-| 109.1 Fixed, and how each was actually proven | docs/roadmap/BACKLOG.md:3456 |
-| 109.2 Text highlighting: built | docs/roadmap/BACKLOG.md:3554 |
-| 109.3 The competitor gap analysis, triaged | docs/roadmap/BACKLOG.md:3558 |
-| 109.4 Brainstormed: not asked for, worth doing | docs/roadmap/BACKLOG.md:3597 |
+| 109.1 Fixed, and how each was actually proven | docs/roadmap/BACKLOG.md:3431 |
+| 109.2 Text highlighting: built | docs/roadmap/BACKLOG.md:3529 |
+| 109.3 The competitor gap analysis, triaged | docs/roadmap/BACKLOG.md:3533 |
+| 109.4 Brainstormed: not asked for, worth doing | docs/roadmap/BACKLOG.md:3572 |
 | 11. Built: the previews, Phase 4 and Phase 5 | docs/roadmap/MINDMAP_PLAN.md:219 |
 | 11. Deepened 2026-10-10: reminders and notifications (Brief 72b, decisions 69 and 71) | docs/roadmap/TIMELINE_PLAN.md:349 |
 | 11. Graph | docs/roadmap/PLAN.md:210 |
 | 11. Keyboard shortcuts | docs/roadmap/WHITEBOARD_PLAN.md:1113 |
-| 11. Performance, accuracy and AI efficiency | docs/roadmap/BACKLOG.md:727 |
+| 11. Performance, accuracy and AI efficiency | docs/roadmap/BACKLOG.md:702 |
 | 11. Phase 4 decisions, made 2026-09-12 | docs/roadmap/DOCUMENTS_PLAN.md:538 |
 | 11. The week, session by session (Opus/Sonnet), and the quarter | docs/roadmap/WORLD_CLASS_PLAN.md:897 |
-| 110.1 Built | docs/roadmap/BACKLOG.md:3630 |
-| 110.2 The five bugs, and the measurement that found each | docs/roadmap/BACKLOG.md:3634 |
-| 110.3 Still open | docs/roadmap/BACKLOG.md:3671 |
-| 111.1 Inefficiencies, measured or read rather than guessed | docs/roadmap/BACKLOG.md:3689 |
-| 111.2 Features worth building, ranked by value per unit of work | docs/roadmap/BACKLOG.md:3712 |
-| 111.3 Directions, not features | docs/roadmap/BACKLOG.md:3740 |
-| 112.1 The one thing this app has that the others structurally cannot | docs/roadmap/BACKLOG.md:3770 |
-| 112.2 Missing features, ranked by "would someone pay for this" | docs/roadmap/BACKLOG.md:3802 |
-| 112.3 Scaling and optimisation, in the order it will actually bite | docs/roadmap/BACKLOG.md:3839 |
-| 112.4 What "professionalise" actually means here | docs/roadmap/BACKLOG.md:3860 |
-| 112.5 Deliberately not doing | docs/roadmap/BACKLOG.md:3885 |
+| 110.1 Built | docs/roadmap/BACKLOG.md:3605 |
+| 110.2 The five bugs, and the measurement that found each | docs/roadmap/BACKLOG.md:3609 |
+| 110.3 Still open | docs/roadmap/BACKLOG.md:3646 |
+| 111.1 Inefficiencies, measured or read rather than guessed | docs/roadmap/BACKLOG.md:3664 |
+| 111.2 Features worth building, ranked by value per unit of work | docs/roadmap/BACKLOG.md:3687 |
+| 111.3 Directions, not features | docs/roadmap/BACKLOG.md:3715 |
+| 112.1 The one thing this app has that the others structurally cannot | docs/roadmap/BACKLOG.md:3745 |
+| 112.2 Missing features, ranked by "would someone pay for this" | docs/roadmap/BACKLOG.md:3777 |
+| 112.3 Scaling and optimisation, in the order it will actually bite | docs/roadmap/BACKLOG.md:3814 |
+| 112.4 What "professionalise" actually means here | docs/roadmap/BACKLOG.md:3835 |
+| 112.5 Deliberately not doing | docs/roadmap/BACKLOG.md:3860 |
 | 114. A product-strategy read: competitive teardown, per-feature upgrades, inventions, and a 90-day plan | docs/roadmap/ANALYSIS.md:998 |
 | 114.0 The brief, filled in from the code | docs/roadmap/ANALYSIS.md:1014 |
 | 114.0b Three stale claims caught while grounding this | docs/roadmap/ANALYSIS.md:1039 |
@@ -28839,13 +28843,13 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 114.4 Prioritisation | docs/roadmap/ANALYSIS.md:1535 |
 | 114.5 Risk, moat, and how to measure anything without telemetry | docs/roadmap/ANALYSIS.md:1609 |
 | 114.6 Start tomorrow: the five highest-leverage actions | docs/roadmap/ANALYSIS.md:1659 |
-| 115. After PR 144: professional use (the owner's stated next block, 2026-09-14) | docs/roadmap/BACKLOG.md:3930 |
-| 116.1 Dropped or half-done, and therefore first | docs/roadmap/BACKLOG.md:3907 |
-| 116.2 Mindmaps, Phases 4-5 (MINDMAP_PLAN.md §5 items 14-21) | docs/roadmap/BACKLOG.md:3914 |
-| 116.3 PLAN.md rows not started (by track) | docs/roadmap/BACKLOG.md:3918 |
-| 116.4 Tooling | docs/roadmap/BACKLOG.md:3925 |
+| 115. After PR 144: professional use (the owner's stated next block, 2026-09-14) | docs/roadmap/BACKLOG.md:3905 |
+| 116.1 Dropped or half-done, and therefore first | docs/roadmap/BACKLOG.md:3882 |
+| 116.2 Mindmaps, Phases 4-5 (MINDMAP_PLAN.md §5 items 14-21) | docs/roadmap/BACKLOG.md:3889 |
+| 116.3 PLAN.md rows not started (by track) | docs/roadmap/BACKLOG.md:3893 |
+| 116.4 Tooling | docs/roadmap/BACKLOG.md:3900 |
 | 12. Deepened 2026-10-10: the calendar (Brief 72b, decision 71) | docs/roadmap/TIMELINE_PLAN.md:390 |
-| 12. Does the AI know it is an agent? | docs/roadmap/BACKLOG.md:974 |
+| 12. Does the AI know it is an agent? | docs/roadmap/BACKLOG.md:949 |
 | 12. Library | docs/roadmap/PLAN.md:220 |
 | 12. Security review (read, not penetration-tested; each item names the file) | docs/roadmap/WORLD_CLASS_PLAN.md:906 |
 | 12. Selection, grouping, containers, swimlanes, tables | docs/roadmap/WHITEBOARD_PLAN.md:1174 |
@@ -28862,7 +28866,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 13. Open bugs and gaps from the merged agent reports (with owners) | docs/roadmap/WORLD_CLASS_PLAN.md:956 |
 | 13. The map, read against its six complaints: measured 2026-09-21, phases open | docs/roadmap/MINDMAP_PLAN.md:526 |
 | 13. Timeline | docs/roadmap/PLAN.md:234 |
-| 13. Web search effectiveness | docs/roadmap/BACKLOG.md:1017 |
+| 13. Web search effectiveness | docs/roadmap/BACKLOG.md:992 |
 | 13. What a self-contained HTML export is: decided 2026-09-13 | docs/roadmap/DOCUMENTS_PLAN.md:602 |
 | 13.1 Is it slow? The one claim measured before anything was designed | docs/roadmap/MINDMAP_PLAN.md:554 |
 | 13.1 The principles, each as a rule with a measurement | docs/roadmap/UI_MODERNISATION_PLAN.md:993 |
@@ -28875,7 +28879,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 13.5 Clean and professional: the same measurements section 17 took | docs/roadmap/MINDMAP_PLAN.md:789 |
 | 14. Core nodes, levels and the icon library (INBOX 641, 642; mc1, 2026-10-05) | docs/roadmap/MINDMAP_PLAN.md:1571 |
 | 14. Export and import formats | docs/roadmap/WHITEBOARD_PLAN.md:1200 |
-| 14. More tools worth adding | docs/roadmap/BACKLOG.md:1100 |
+| 14. More tools worth adding | docs/roadmap/BACKLOG.md:1075 |
 | 14. Reminders | docs/roadmap/PLAN.md:243 |
 | 14. The core algorithms, read line by line (2026-09-08) | docs/roadmap/WORLD_CLASS_PLAN.md:993 |
 | 14. What a document daily note is: decided 2026-09-20 | docs/roadmap/DOCUMENTS_PLAN.md:666 |
@@ -28883,14 +28887,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 14.2 What the five apps do, and what is taken | docs/roadmap/MINDMAP_PLAN.md:1584 |
 | 14.3 Decisions made (do not remake) | docs/roadmap/MINDMAP_PLAN.md:1599 |
 | 14.4 What is open | docs/roadmap/MINDMAP_PLAN.md:1682 |
-| 15. Appearance: more of everything | docs/roadmap/BACKLOG.md:1136 |
+| 15. Appearance: more of everything | docs/roadmap/BACKLOG.md:1111 |
 | 15. Deepened 2026-10-10 (Brief 72a, decision 71) | docs/roadmap/MINDMAP_PLAN.md:1703 |
 | 15. Insert menu, shape picker and the sidebar search | docs/roadmap/WHITEBOARD_PLAN.md:1217 |
 | 15. Inventions: eight things no notebook does, specified for Opus and Sonnet | docs/roadmap/WORLD_CLASS_PLAN.md:1051 |
 | 15. Settings: section by section | docs/roadmap/PLAN.md:252 |
 | 15. The code block's own bar, and where it belongs: measured 2026-09-20 | docs/roadmap/DOCUMENTS_PLAN.md:715 |
 | 16. Layouts | docs/roadmap/WHITEBOARD_PLAN.md:1228 |
-| 16. Sweeping UI quality-of-life | docs/roadmap/BACKLOG.md:1159 |
+| 16. Sweeping UI quality-of-life | docs/roadmap/BACKLOG.md:1134 |
 | 16. The backend, read for structure, silent failure and lag (2026-09-08) | docs/roadmap/WORLD_CLASS_PLAN.md:1385 |
 | 16. The engine's three omissions, and the table menu: decided 2026-09-20 | docs/roadmap/DOCUMENTS_PLAN.md:754 |
 | 16. Utilities and overlays | docs/roadmap/PLAN.md:272 |
@@ -28898,14 +28902,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 17. The Format panel with nothing selected, and diagram options | docs/roadmap/WHITEBOARD_PLAN.md:1238 |
 | 17. The live view for professional use: measured 2026-09-21, phases open | docs/roadmap/DOCUMENTS_PLAN.md:795 |
 | 17. The original vision, audited (2026-09-09) | docs/roadmap/WORLD_CLASS_PLAN.md:1627 |
-| 17. Use cases the app can't serve yet | docs/roadmap/BACKLOG.md:1207 |
-| 18. Agent quality | docs/roadmap/BACKLOG.md:1241 |
+| 17. Use cases the app can't serve yet | docs/roadmap/BACKLOG.md:1182 |
+| 18. Agent quality | docs/roadmap/BACKLOG.md:1216 |
 | 18. Order for Part II (after Part I sprints 1–3) | docs/roadmap/PLAN.md:295 |
 | 18. Out of scope, with the reason | docs/roadmap/WHITEBOARD_PLAN.md:1248 |
 | 18. The next horizon, written 2026-09-14 at the close of PR 144 | docs/roadmap/WORLD_CLASS_PLAN.md:1721 |
 | 18. The slash menus as one system: built 2026-09-21 | docs/roadmap/DOCUMENTS_PLAN.md:997 |
 | 19. A board or a map as an object in a note, and a note's reminders: built 2026-09-21 | docs/roadmap/DOCUMENTS_PLAN.md:1211 |
-| 19. Accessibility audit | docs/roadmap/BACKLOG.md:1279 |
+| 19. Accessibility audit | docs/roadmap/BACKLOG.md:1254 |
 | 19. The architecture and framework review (2026-09-20, INBOX 266) | docs/roadmap/WORLD_CLASS_PLAN.md:1906 |
 | 19.1 The one number that matters: 776 MB resident, idle | docs/roadmap/WORLD_CLASS_PLAN.md:1919 |
 | 19.2 The frontend is 5.9 MB decoded, and that is mostly fine | docs/roadmap/WORLD_CLASS_PLAN.md:1959 |
@@ -28928,13 +28932,13 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 2. Why it disappoints (measured, 48 notes across six months, 1358px) | docs/roadmap/TIMELINE_PLAN.md:24 |
 | 2. Why it disappoints: measured and read | docs/roadmap/GRAPH_PLAN.md:27 |
 | 20. A model per feature (asked for directly, 2026-09-21) | docs/roadmap/WORLD_CLASS_PLAN.md:2215 |
-| 20. Backend | docs/roadmap/BACKLOG.md:1307 |
+| 20. Backend | docs/roadmap/BACKLOG.md:1282 |
 | 20. The 2026-10-05 feature audit: decisions | docs/roadmap/DOCUMENTS_PLAN.md:865 |
 | 2026-09-08, the third night: read this block first, whoever you are | docs/roadmap/HANDOVER.md:98 |
 | 21. Every failure names its way out (INBOX 272 part 1, 2026-09-21) | docs/roadmap/WORLD_CLASS_PLAN.md:2285 |
-| 21. Skills: rebuilt; what is left | docs/roadmap/BACKLOG.md:1443 |
+| 21. Skills: rebuilt; what is left | docs/roadmap/BACKLOG.md:1418 |
 | 21. The code editor against VS Code, and writing checks everywhere (INBOX 646) | docs/roadmap/DOCUMENTS_PLAN.md:274 |
-| 22. Reported in use, not yet done | docs/roadmap/BACKLOG.md:1518 |
+| 22. Reported in use, not yet done | docs/roadmap/BACKLOG.md:1493 |
 | 22. The diagram builder redesign: design note, 2026-11-04 (INBOX 1613 to 1615, 1621) | docs/roadmap/DOCUMENTS_PLAN.md:1342 |
 | 22. The professional baseline and the devibecode programme (2026-09-27) | docs/roadmap/WORLD_CLASS_PLAN.md:2298 |
 | 22.0 Verified present at HEAD (do not rebuild) | docs/roadmap/DOCUMENTS_PLAN.md:1346 |
@@ -28950,10 +28954,10 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 22.5 Where the app goes next (release path) | docs/roadmap/WORLD_CLASS_PLAN.md:2418 |
 | 23. Filing and the taxonomy: candidates, a decision, an explanation (2026-10-10; Brief 39b) | docs/roadmap/WORLD_CLASS_PLAN.md:1454 |
 | 23. List styles, decision 40 (INBOX 1696 cc, built 2026-11-08) | docs/roadmap/DOCUMENTS_PLAN.md:1476 |
-| 23. Organisation: manual grouping and multi-category notes | docs/roadmap/BACKLOG.md:1612 |
+| 23. Organisation: manual grouping and multi-category notes | docs/roadmap/BACKLOG.md:1587 |
 | 23. The code editor as an IDE: run, preview, test and debug (INBOX 748) | docs/roadmap/DOCUMENTS_PLAN.md:1009 |
 | 24. Codebase census, 2026-10-10 | docs/roadmap/WORLD_CLASS_PLAN.md:3210 |
-| 24. Dashboard: more widgets, and layout depth | docs/roadmap/BACKLOG.md:1644 |
+| 24. Dashboard: more widgets, and layout depth | docs/roadmap/BACKLOG.md:1619 |
 | 24. Deepened 2026-10-10: the documents editor (Brief 72a, decision 71) | docs/roadmap/DOCUMENTS_PLAN.md:1106 |
 | 24.1 Size and complexity | docs/roadmap/WORLD_CLASS_PLAN.md:3214 |
 | 24.2 Duplicated blocks | docs/roadmap/WORLD_CLASS_PLAN.md:3334 |
@@ -28962,7 +28966,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 24.5 Counts | docs/roadmap/WORLD_CLASS_PLAN.md:3514 |
 | 24.6 Console errors per surface | docs/roadmap/WORLD_CLASS_PLAN.md:3620 |
 | 24.6b Interaction timings, 2026-10-10 | docs/roadmap/WORLD_CLASS_PLAN.md:3633 |
-| 25. App control: tray, health checks, and dependency repair | docs/roadmap/BACKLOG.md:1676 |
+| 25. App control: tray, health checks, and dependency repair | docs/roadmap/BACKLOG.md:1651 |
 | 25. Deepened 2026-10-10: the code editor (Brief 72a, decision 71) | docs/roadmap/DOCUMENTS_PLAN.md:1147 |
 | 25. The whole app against world class, 2026-10-10 (Fable) | docs/roadmap/WORLD_CLASS_PLAN.md:3710 |
 | 25.1 The bar | docs/roadmap/WORLD_CLASS_PLAN.md:3729 |
@@ -28970,7 +28974,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 25.3 Decisions, 2026-10-10 (do not re-decide) | docs/roadmap/WORLD_CLASS_PLAN.md:3784 |
 | 25.4 Phases with gates (each a brief; measure first) | docs/roadmap/WORLD_CLASS_PLAN.md:3824 |
 | 25.5 Not verified | docs/roadmap/WORLD_CLASS_PLAN.md:3840 |
-| 26. Data lifecycle: archive, a full wipe, and a real trust page | docs/roadmap/BACKLOG.md:1742 |
+| 26. Data lifecycle: archive, a full wipe, and a real trust page | docs/roadmap/BACKLOG.md:1717 |
 | 26. The backend against world class, 2026-10-10 (Fable) | docs/roadmap/WORLD_CLASS_PLAN.md:3848 |
 | 26.1 Judgement, by layer | docs/roadmap/WORLD_CLASS_PLAN.md:3870 |
 | 26.2 Decisions, 2026-10-10 (do not re-decide) | docs/roadmap/WORLD_CLASS_PLAN.md:3886 |
@@ -28978,11 +28982,11 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 26.4 Measured, 2026-10-10 (Brief 60, numbers only) | docs/roadmap/WORLD_CLASS_PLAN.md:3926 |
 | 26.5 Complexity, cycles, hot routes and frames, 2026-10-10 (decision 63, numbers only) | docs/roadmap/WORLD_CLASS_PLAN.md:3947 |
 | 27. Every feature, its utility and its popups, 2026-10-10 (Fable) | docs/roadmap/WORLD_CLASS_PLAN.md:3962 |
-| 27. Onboarding and first-run experience | docs/roadmap/BACKLOG.md:1819 |
+| 27. Onboarding and first-run experience | docs/roadmap/BACKLOG.md:1794 |
 | 27.1 Feature by feature: what it offers, what a professional expects, the gap | docs/roadmap/WORLD_CLASS_PLAN.md:3976 |
 | 27.2 The popups, one by one | docs/roadmap/WORLD_CLASS_PLAN.md:4004 |
 | 27.3 Decisions, 2026-10-10 (do not re-decide) | docs/roadmap/WORLD_CLASS_PLAN.md:4025 |
-| 28. In-app help: an AI that knows the docs, built | docs/roadmap/BACKLOG.md:1849 |
+| 28. In-app help: an AI that knows the docs, built | docs/roadmap/BACKLOG.md:1824 |
 | 28. The trust contract, 2026-10-10 (INBOX 750) | docs/roadmap/WORLD_CLASS_PLAN.md:4039 |
 | 28.1 The rules, each with its measure | docs/roadmap/WORLD_CLASS_PLAN.md:4048 |
 | 28.2 Decisions, 2026-10-10 (do not re-decide) | docs/roadmap/WORLD_CLASS_PLAN.md:4067 |
@@ -28990,13 +28994,13 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 28.4 Deepened 2026-10-10: the OCR workspace (Brief 72a, decision 71) | docs/roadmap/WORLD_CLASS_PLAN.md:4098 |
 | 28.5 Deepened 2026-10-10: the audio set (Brief 72a, decision 71) | docs/roadmap/WORLD_CLASS_PLAN.md:4132 |
 | 28.6 T0 numbers, 2026-10-10 | docs/roadmap/WORLD_CLASS_PLAN.md:4176 |
-| 29. Extensibility ideas, not yet scoped | docs/roadmap/BACKLOG.md:1855 |
-| 29b. Carried out of the §40 audit | docs/roadmap/BACKLOG.md:2037 |
-| 29c. Whiteboard, brainstormed: not yet triaged | docs/roadmap/BACKLOG.md:1882 |
-| 29d. Whiteboard: scoped and next, not brainstormed | docs/roadmap/BACKLOG.md:1903 |
-| 29e. Whiteboard master spec (uploaded, MS Whiteboard/OneNote/draw.io/ | docs/roadmap/BACKLOG.md:1960 |
+| 29. Extensibility ideas, not yet scoped | docs/roadmap/BACKLOG.md:1830 |
+| 29b. Carried out of the §40 audit | docs/roadmap/BACKLOG.md:2012 |
+| 29c. Whiteboard, brainstormed: not yet triaged | docs/roadmap/BACKLOG.md:1857 |
+| 29d. Whiteboard: scoped and next, not brainstormed | docs/roadmap/BACKLOG.md:1878 |
+| 29e. Whiteboard master spec (uploaded, MS Whiteboard/OneNote/draw.io/ | docs/roadmap/BACKLOG.md:1935 |
 | 3. Backend: fix and redesign | docs/roadmap/PLAN.md:81 |
-| 3. Chat page: Chat / Agent / Browse sub-tabs | docs/roadmap/BACKLOG.md:117 |
+| 3. Chat page: Chat / Agent / Browse sub-tabs | docs/roadmap/BACKLOG.md:92 |
 | 3. Edit style, Edit data, placeholders, tooltips | docs/roadmap/WHITEBOARD_PLAN.md:938 |
 | 3. Frontend dossiers (one per surface, each a hand-off brief) | docs/roadmap/WORLD_CLASS_PLAN.md:295 |
 | 3. Metadata and dependencies | docs/roadmap/ANALYSIS.md:4222 |
@@ -29032,19 +29036,19 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 4. Decisions made (do not re-decide) | docs/roadmap/WHITEBOARD_PLAN.md:76 |
 | 4. Decisions to make first | docs/roadmap/GRAPH_PLAN.md:73 |
 | 4. Decisions, 2026-10-10 (not to be remade; numbered after Phase 6's 45) | docs/roadmap/CHAT_PLAN.md:1570 |
-| 4. Library tab: chats, documents, images, archive | docs/roadmap/BACKLOG.md:203 |
+| 4. Library tab: chats, documents, images, archive | docs/roadmap/BACKLOG.md:178 |
 | 4. Provenance and publication practice | docs/roadmap/ANALYSIS.md:4234 |
 | 4. Scope decision (make this call first) | docs/roadmap/MINDMAP_PLAN.md:119 |
 | 4. The backend, made revolutionary (and still SQLite, still offline) | docs/roadmap/WORLD_CLASS_PLAN.md:478 |
 | 4. The decision to make first: the editing surface | docs/roadmap/DOCUMENTS_PLAN.md:108 |
 | 4. The eval sets this implies for Brief 39 step 10 | docs/roadmap/CHAT_PLAN.md:1424 |
 | 4. What it does worse than us | docs/roadmap/ANALYSIS.md:2504 |
-| 4a. A real whiteboard, not just a bigger sketch | docs/roadmap/BACKLOG.md:270 |
-| 4b. Templates and base layouts (boards, maps, documents) | docs/roadmap/BACKLOG.md:282 |
+| 4a. A real whiteboard, not just a bigger sketch | docs/roadmap/BACKLOG.md:245 |
+| 4b. Templates and base layouts (boards, maps, documents) | docs/roadmap/BACKLOG.md:257 |
 | 5. Abilities without AI (the app must be excellent with the model off) | docs/roadmap/WORLD_CLASS_PLAN.md:672 |
 | 5. Build first: fifteen capabilities by value over cost | docs/roadmap/CHAT_PLAN.md:1465 |
 | 5. Connection points and constraints | docs/roadmap/WHITEBOARD_PLAN.md:972 |
-| 5. Documents | docs/roadmap/BACKLOG.md:286 |
+| 5. Documents | docs/roadmap/BACKLOG.md:261 |
 | 5. Features by surface, not covered before | docs/roadmap/ANALYSIS.md:4266 |
 | 5. Phases | docs/roadmap/CHAT_PLAN.md:337 |
 | 5. Phases | docs/roadmap/GRAPH_PLAN.md:95 |
@@ -29065,19 +29069,19 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 6. Layers and pages | docs/roadmap/WHITEBOARD_PLAN.md:986 |
 | 6. Measuring "professional" without telemetry | docs/roadmap/WORLD_CLASS_PLAN.md:700 |
 | 6. Not verified | docs/roadmap/CHAT_PLAN.md:1603 |
-| 6. OpenAI-compatible backends: **done** | docs/roadmap/BACKLOG.md:408 |
+| 6. OpenAI-compatible backends: **done** | docs/roadmap/BACKLOG.md:383 |
 | 6. Semantic search and the knowledge graph, "the ultimate upgrade" | docs/roadmap/PLAN.md:128 |
 | 6. The companion and device pairing | docs/roadmap/ANALYSIS.md:4295 |
 | 60. Odysseus, re-read: the repo tripled in size, and this time the question was answered from its own words | docs/roadmap/ANALYSIS.md:792 |
-| 62. Extract notes: from the Writing Room, Documents, and Graph selections | docs/roadmap/BACKLOG.md:2075 |
-| 63. Ship a starter skills library, DONE, this claim was stale | docs/roadmap/BACKLOG.md:2089 |
-| 64. Documents editor: built, moved to HISTORY.md | docs/roadmap/BACKLOG.md:2093 |
-| 65. Highlight/web-clip capture | docs/roadmap/BACKLOG.md:2098 |
+| 62. Extract notes: from the Writing Room, Documents, and Graph selections | docs/roadmap/BACKLOG.md:2050 |
+| 63. Ship a starter skills library, DONE, this claim was stale | docs/roadmap/BACKLOG.md:2064 |
+| 64. Documents editor: built, moved to HISTORY.md | docs/roadmap/BACKLOG.md:2068 |
+| 65. Highlight/web-clip capture | docs/roadmap/BACKLOG.md:2073 |
 | 66. Kortex.co, read and triaged, and the second-frontend question decided | docs/roadmap/ANALYSIS.md:912 |
 | 7. Acceptance | docs/roadmap/MINDMAP_PLAN.md:175 |
 | 7. Deepened 2026-10-10: the deterministic features (Brief 72b, decision 71) | docs/roadmap/CHAT_PLAN.md:1607 |
 | 7. Design system | docs/roadmap/ANALYSIS.md:4312 |
-| 7. Desktop packaging | docs/roadmap/BACKLOG.md:412 |
+| 7. Desktop packaging | docs/roadmap/BACKLOG.md:387 |
 | 7. Files this will touch | docs/roadmap/DOCUMENTS_PLAN.md:236 |
 | 7. Not verified until built | docs/roadmap/CHAT_PLAN.md:528 |
 | 7. Not verified until built | docs/roadmap/GRAPH_PLAN.md:134 |
@@ -29089,24 +29093,24 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 7.1 The top risks, and how to de-risk each | docs/roadmap/MODERNISATION_AUDIT.md:1429 |
 | 7.2 The moat, in three strategies | docs/roadmap/MODERNISATION_AUDIT.md:1441 |
 | 7.3 Metrics: north star and phase KPIs, with no telemetry | docs/roadmap/MODERNISATION_AUDIT.md:1463 |
-| 75. Voice memos: capture, storage, playback, and a dedicated library page | docs/roadmap/BACKLOG.md:2125 |
-| 76. Keyword-only note filing while the AI is unavailable, flagged for later AI review | docs/roadmap/BACKLOG.md:2148 |
-| 77. Notes-tab pagination and page-aware note links | docs/roadmap/BACKLOG.md:2155 |
-| 78. Whether the backend needs more concurrency than it already has | docs/roadmap/BACKLOG.md:2236 |
-| 79. Linux release packaging: done; macOS still open | docs/roadmap/BACKLOG.md:2245 |
-| 79b. New items, raised by the §85/§86 audit, not yet triaged | docs/roadmap/BACKLOG.md:2276 |
+| 75. Voice memos: capture, storage, playback, and a dedicated library page | docs/roadmap/BACKLOG.md:2100 |
+| 76. Keyword-only note filing while the AI is unavailable, flagged for later AI review | docs/roadmap/BACKLOG.md:2123 |
+| 77. Notes-tab pagination and page-aware note links | docs/roadmap/BACKLOG.md:2130 |
+| 78. Whether the backend needs more concurrency than it already has | docs/roadmap/BACKLOG.md:2211 |
+| 79. Linux release packaging: done; macOS still open | docs/roadmap/BACKLOG.md:2220 |
+| 79b. New items, raised by the §85/§86 audit, not yet triaged | docs/roadmap/BACKLOG.md:2251 |
 | 8. Acceptance for the whole plan | docs/roadmap/DOCUMENTS_PLAN.md:246 |
 | 8. Dashboard | docs/roadmap/PLAN.md:176 |
 | 8. Deepened 2026-10-10: chat access to information (Brief 72b, decision 71) | docs/roadmap/CHAT_PLAN.md:1639 |
 | 8. Execution order for the coming week (Opus/Sonnet sessions) | docs/roadmap/WORLD_CLASS_PLAN.md:778 |
-| 8. Open bug list | docs/roadmap/BACKLOG.md:510 |
+| 8. Open bug list | docs/roadmap/BACKLOG.md:485 |
 | 8. Research: tldraw, Excalidraw, Miro, FigJam, and what it changes here | docs/roadmap/WHITEBOARD_PLAN.md:559 |
 | 8. Research: what the reference products actually do, and what it changes here | docs/roadmap/CHAT_PLAN.md:535 |
 | 8. Research: what the reference products do, and what it changes here | docs/roadmap/TIMELINE_PLAN.md:174 |
 | 8. Risks | docs/roadmap/MINDMAP_PLAN.md:188 |
 | 8. Templates | docs/roadmap/WHITEBOARD_PLAN.md:1079 |
 | 8. The strongest things worth taking, ranked | docs/roadmap/ANALYSIS.md:4344 |
-| 8b. Web search: two Windows bugs found, and what is left | docs/roadmap/BACKLOG.md:544 |
+| 8b. Web search: two Windows bugs found, and what is left | docs/roadmap/BACKLOG.md:519 |
 | 9. Built: Phase 1 (backend) | docs/roadmap/MINDMAP_PLAN.md:211 |
 | 9. Declined, with why | docs/roadmap/ANALYSIS.md:4364 |
 | 9. Deepened 2026-10-10: the Guide (Brief 72b, decisions 59 and 71) | docs/roadmap/CHAT_PLAN.md:1662 |
@@ -29115,10 +29119,10 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 9. On testing with a real model in the sandbox | docs/roadmap/WORLD_CLASS_PLAN.md:836 |
 | 9. Phase 5: the calendar as the third view (Fable, 2026-10-10; WORLD_CLASS_PLAN 25, decision 47; Brief 55) | docs/roadmap/TIMELINE_PLAN.md:219 |
 | 9. Risks | docs/roadmap/DOCUMENTS_PLAN.md:258 |
-| 9. The graph: make it a tool, and give it a look | docs/roadmap/BACKLOG.md:593 |
+| 9. The graph: make it a tool, and give it a look | docs/roadmap/BACKLOG.md:568 |
 | A real, narrow bug this comparison surfaced | docs/roadmap/ANALYSIS.md:844 |
 | A. Bugs that had gone unnoticed (found this session) | docs/roadmap/AUDIT.md:20 |
-| A. Model and backend | docs/roadmap/BACKLOG.md:2379 |
+| A. Model and backend | docs/roadmap/BACKLOG.md:2354 |
 | A. UI design and visual consistency | docs/roadmap/MODERNISATION_AUDIT.md:264 |
 | A1 · One component family has up to 22 recipes on a single screen, Critical | docs/roadmap/MODERNISATION_AUDIT.md:266 |
 | A2 · Glass and shadow scale with content, not with structure, High | docs/roadmap/MODERNISATION_AUDIT.md:294 |
@@ -29129,11 +29133,11 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Adopted this session | docs/roadmap/ANALYSIS.md:298 |
 | After the bugs: the parity programme (the owner, 2026-10-10) | docs/ROADMAP.md:132 |
 | Architecture review, 2026-09-24 (INBOX 400, asked for directly) | docs/roadmap/ANALYSIS.md:3666 |
-| Asked for this session, not yet built | docs/roadmap/BACKLOG.md:329 |
+| Asked for this session, not yet built | docs/roadmap/BACKLOG.md:304 |
 | Audio in the notebook: the architecture decided 2026-09-21, the build deferred | docs/roadmap/WORLD_CLASS_PLAN.md:2130 |
 | Audio notes and meetings, against soundcraft | docs/roadmap/ANALYSIS.md:3988 |
 | Audit, 2026-09-13 night (INBOX 209: "poke holes in this application") | docs/roadmap/WORLD_CLASS_PLAN.md:770 |
-| B. Retrieval and context: where the real quality ceiling is | docs/roadmap/BACKLOG.md:2404 |
+| B. Retrieval and context: where the real quality ceiling is | docs/roadmap/BACKLOG.md:2379 |
 | B. Schema and backend: what a professional backend would change | docs/roadmap/AUDIT.md:41 |
 | B. UX, feedback states and accessibility | docs/roadmap/MODERNISATION_AUDIT.md:364 |
 | B1 The event log: every change is a fact, the tables are views | docs/roadmap/WORLD_CLASS_PLAN.md:484 |
@@ -29249,7 +29253,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Built: Phase C, the run as a readable object | docs/roadmap/AGENT_SKILLS_REFORM.md:172 |
 | Built: Phases A and B, backend only | docs/roadmap/AGENT_SKILLS_REFORM.md:168 |
 | Built: items 1, 3, 4 and 5 | docs/roadmap/UI_MODERNISATION_PLAN.md:233 |
-| C. Capture: the half the app is named for | docs/roadmap/BACKLOG.md:2428 |
+| C. Capture: the half the app is named for | docs/roadmap/BACKLOG.md:2403 |
 | C. Frontend architecture and code quality | docs/roadmap/MODERNISATION_AUDIT.md:462 |
 | C. Whiteboard: sub-par against Miro / FigJam / tldraw (after this session's fixes) | docs/roadmap/AUDIT.md:62 |
 | C1 · `app.js` is the architecture, and it is 26,113 lines, Critical | docs/roadmap/MODERNISATION_AUDIT.md:464 |
@@ -29258,10 +29262,10 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | C4 · Static assets are `no-cache`, and the version stamp cannot make them `immutable`, Medium | docs/roadmap/MODERNISATION_AUDIT.md:536 |
 | Candidate libraries | docs/roadmap/ANALYSIS.md:4108 |
 | Composer decisions, taken with the owner, 2026-10-06 | docs/roadmap/CHAT_PLAN.md:744 |
-| Contact book (owner idea, 2026-11-11; backlog, "not a necessary feature right now or any time soon") | docs/roadmap/BACKLOG.md:4501 |
+| Contact book (owner idea, 2026-11-11; backlog, "not a necessary feature right now or any time soon") | docs/roadmap/BACKLOG.md:4476 |
 | D. Backend architecture and reliability | docs/roadmap/MODERNISATION_AUDIT.md:550 |
 | D. Documents: sub-par against Obsidian / Typora / iA Writer | docs/roadmap/AUDIT.md:78 |
-| D. Trust and safety | docs/roadmap/BACKLOG.md:2448 |
+| D. Trust and safety | docs/roadmap/BACKLOG.md:2423 |
 | D1 Dashboard (M, Sonnet after a Fable/Opus design pass) | docs/roadmap/WORLD_CLASS_PLAN.md:301 |
 | D1 · Errors are not a contract, and nothing catches what falls through, High | docs/roadmap/MODERNISATION_AUDIT.md:552 |
 | D10 Documents and PDFs (L, see DOCUMENTS_PLAN.md; add PDF annotation as | docs/roadmap/WORLD_CLASS_PLAN.md:418 |
@@ -29321,19 +29325,19 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Deepened 2026-10-10: the agent and its harness (Brief 72b, decision 71) | docs/roadmap/AGENT_SKILLS_REFORM.md:438 |
 | Deepened 2026-10-10: the command palette and Find anything (Brief 72b, decision 71) | docs/roadmap/UI_MODERNISATION_PLAN.md:1160 |
 | Deepened 2026-10-10: utilities (Brief 72b, decision 71) | docs/roadmap/UI_MODERNISATION_PLAN.md:1134 |
-| Deliberately not on this list | docs/roadmap/BACKLOG.md:2504 |
+| Deliberately not on this list | docs/roadmap/BACKLOG.md:2479 |
 | Design requests | docs/roadmap/CHAT_PLAN.md:823 |
 | Design requests | docs/roadmap/DOCUMENTS_PLAN.md:1257 |
 | Design requests | docs/roadmap/UI_MODERNISATION_PLAN.md:921 |
 | Design requests | docs/roadmap/WORLD_CLASS_PLAN.md:3094 |
 | Deta Surf (deta) | docs/roadmap/ANALYSIS.md:1991 |
-| Diagrams: mermaid as the interchange format | docs/roadmap/BACKLOG.md:2559 |
+| Diagrams: mermaid as the interchange format | docs/roadmap/BACKLOG.md:2534 |
 | Direction, 2026-10-10 (Fable orchestrating): the thesis, the policies, the tracks | docs/ROADMAP.md:26 |
 | Documents (code), against VS Code's editor features | docs/roadmap/ANALYSIS.md:3851 |
 | Documents (prose), against wordcraft | docs/roadmap/ANALYSIS.md:3808 |
 | E. App-wide usability and accessibility, the things that read as "side project" | docs/roadmap/AUDIT.md:95 |
 | E. Local AI: where it is overused or misused | docs/roadmap/MODERNISATION_AUDIT.md:640 |
-| E. Polish worth doing as one pass | docs/roadmap/BACKLOG.md:2467 |
+| E. Polish worth doing as one pass | docs/roadmap/BACKLOG.md:2442 |
 | E1 · A step is a turn, not a goal, Critical (reasoned) | docs/roadmap/MODERNISATION_AUDIT.md:645 |
 | E2 · The complexity of the AI path is where the next bug will be, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:653 |
 | E3 · Model calls are scattered across request handlers, background threads and module singletons, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:666 |
@@ -29342,7 +29346,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Earlier morning summary (2026-11-04) | docs/roadmap/HANDOVER.md:65 |
 | Earlier morning summary (away run 2026-10-18b) | docs/roadmap/HANDOVER.md:94 |
 | Earlier sessions | docs/roadmap/HANDOVER.md:596 |
-| Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4270 |
+| Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4245 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
 | F1 · Boot is ~1 s and tab switches are ~10–50 ms. The app is not slow; it is *heavy*: Medium | docs/roadmap/MODERNISATION_AUDIT.md:687 |
@@ -29357,7 +29361,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Gap audit against XMind and MindNode, 2026-10-25 (wb2) | docs/roadmap/MINDMAP_PLAN.md:1813 |
 | Gap audit against draw.io, 2026-10-25 (wb2) | docs/roadmap/WHITEBOARD_PLAN.md:1548 |
 | Gates | docs/roadmap/TIMELINE_PLAN.md:295 |
-| Guides: curated instructions the AI writes to | docs/roadmap/BACKLOG.md:2521 |
+| Guides: curated instructions the AI writes to | docs/roadmap/BACKLOG.md:2496 |
 | H. Missing table stakes, security and privacy | docs/roadmap/MODERNISATION_AUDIT.md:768 |
 | H. Suggested order (feeds PLAN.md's sprints) | docs/roadmap/AUDIT.md:162 |
 | H1 The night shift, finished (I1 second pass; L, Opus) | docs/roadmap/WORLD_CLASS_PLAN.md:1745 |
@@ -29374,7 +29378,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | H9 Polish in use (the owner's question, 2026-09-14; S to M each) | docs/roadmap/WORLD_CLASS_PLAN.md:1894 |
 | Harness robustness, 2026-10-04 (INBOX 527) | docs/roadmap/AGENT_SKILLS_REFORM.md:202 |
 | Harper (Automattic) | docs/roadmap/ANALYSIS.md:1783 |
-| Headroom: evaluated, not adopted | docs/roadmap/BACKLOG.md:729 |
+| Headroom: evaluated, not adopted | docs/roadmap/BACKLOG.md:704 |
 | How far each plan actually is (honest, as of 2026-10-03) | docs/roadmap/HANDOVER.md:386 |
 | How to proceed after PR 149 (written 2026-09-14; the live order is CLAUDE.md standing order 1 and HANDOVER's Now line) | docs/ROADMAP.md:295 |
 | How to read the evidence in here | docs/roadmap/MODERNISATION_AUDIT.md:23 |
@@ -29389,7 +29393,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | I7 The corrections loop: every "no" makes the notebook better | docs/roadmap/WORLD_CLASS_PLAN.md:1205 |
 | I8 The model bench: which local model is best on *your* notebook | docs/roadmap/WORLD_CLASS_PLAN.md:1257 |
 | I9 What the notebook learned: one place to see, edit, delete and switch it all off | docs/roadmap/WORLD_CLASS_PLAN.md:1261 |
-| Ideas | docs/roadmap/BACKLOG.md:4167 |
+| Ideas | docs/roadmap/BACKLOG.md:4142 |
 | Ideas | docs/roadmap/CHAT_PLAN.md:867 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3119 |
@@ -29415,7 +29419,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Open items | docs/roadmap/INBOX.md:35 |
 | OpenJarvis (open-jarvis) | docs/roadmap/ANALYSIS.md:2894 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1362 |
-| Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4385 |
+| Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4360 |
 | PDF viewer and OCR workspace, against pdfcraft | docs/roadmap/ANALYSIS.md:3922 |
 | PR 144 is done when (the owner's checklist, 2026-09-09 05:30 UTC) | docs/roadmap/HANDOVER.md:147 |
 | Parity matrix, 2026-10-10 | docs/roadmap/ANALYSIS.md:3703 |
@@ -29459,7 +29463,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1217 |
 | Placed (last 20, newest first) | docs/roadmap/INBOX.md:171 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
-| Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4176 |
+| Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4151 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3130 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/CHAT_PLAN.md:1703 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/DOCUMENTS_PLAN.md:1284 |
@@ -29467,7 +29471,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/MINDMAP_PLAN.md:1749 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/WHITEBOARD_PLAN.md:1432 |
 | Placed from INBOX 561 (2026-10-17) | docs/roadmap/TIMELINE_PLAN.md:204 |
-| Placed from INBOX 904 (the owner, 2026-10-17) | docs/roadmap/BACKLOG.md:4400 |
+| Placed from INBOX 904 (the owner, 2026-10-17) | docs/roadmap/BACKLOG.md:4375 |
 | Placed from INBOX, 2026-09-09 | docs/roadmap/CHAT_PLAN.md:581 |
 | Placed from INBOX, 2026-09-09 | docs/roadmap/GRAPH_PLAN.md:170 |
 | Placed from INBOX, 2026-09-09 | docs/roadmap/MINDMAP_PLAN.md:1371 |
@@ -29494,12 +29498,12 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-09-27 | docs/roadmap/WHITEBOARD_PLAN.md:755 |
 | Placed from INBOX, 2026-09-27 (399) | docs/roadmap/WORLD_CLASS_PLAN.md:2436 |
 | Placed from INBOX, 2026-10-03 (445 (2) audit, found not fixed) | docs/roadmap/MINDMAP_PLAN.md:1406 |
-| Placed from INBOX, 2026-10-03 (INBOX 213) | docs/roadmap/BACKLOG.md:3976 |
-| Placed from INBOX, 2026-10-03 (INBOX 266) | docs/roadmap/BACKLOG.md:4020 |
+| Placed from INBOX, 2026-10-03 (INBOX 213) | docs/roadmap/BACKLOG.md:3951 |
+| Placed from INBOX, 2026-10-03 (INBOX 266) | docs/roadmap/BACKLOG.md:3995 |
 | Placed from INBOX, 2026-10-03 (INBOX 268) | docs/roadmap/AGENT_SKILLS_REFORM.md:176 |
-| Placed from INBOX, 2026-10-03 (INBOX 303, music) | docs/roadmap/BACKLOG.md:3956 |
+| Placed from INBOX, 2026-10-03 (INBOX 303, music) | docs/roadmap/BACKLOG.md:3931 |
 | Placed from INBOX, 2026-10-03 (INBOX 391, 392) | docs/roadmap/WORLD_CLASS_PLAN.md:2494 |
-| Placed from INBOX, 2026-10-03 (INBOX 397) | docs/roadmap/BACKLOG.md:4133 |
+| Placed from INBOX, 2026-10-03 (INBOX 397) | docs/roadmap/BACKLOG.md:4108 |
 | Placed from INBOX, 2026-10-03 (INBOX 403, the standing bar) | docs/roadmap/WORLD_CLASS_PLAN.md:2473 |
 | Placed from INBOX, 2026-10-03 (INBOX 409: the AI assistant bar is what stays open) | docs/roadmap/DOCUMENTS_PLAN.md:1229 |
 | Placed from INBOX, 2026-10-03 (the chat stutter, INBOX 413) | docs/roadmap/CHAT_PLAN.md:617 |
@@ -29537,7 +29541,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-11 (the owner: Atlas as the app's assistant) | docs/roadmap/CHAT_PLAN.md:1707 |
 | Placed from INBOX, 2026-10-11 (the topic's tools) | docs/roadmap/MINDMAP_PLAN.md:1770 |
 | Placed from INBOX, 2026-10-11 (voice notes, live captions, the focus timer; voiceup) | docs/roadmap/UI_MODERNISATION_PLAN.md:1224 |
-| Placed from INBOX, 2026-10-12 (grammar in digest answers) | docs/roadmap/BACKLOG.md:4296 |
+| Placed from INBOX, 2026-10-12 (grammar in digest answers) | docs/roadmap/BACKLOG.md:4271 |
 | Placed from INBOX, 2026-10-19 | docs/roadmap/DOCUMENTS_PLAN.md:1329 |
 | Placed from INBOX, 2026-10-19 (INBOX 1307, 1308: elements, templates, the W/H link; the gap audit) | docs/roadmap/WHITEBOARD_PLAN.md:1530 |
 | Placed from INBOX, 2026-10-19 (INBOX 1308: the gap audit) | docs/roadmap/DOCUMENTS_PLAN.md:1306 |
@@ -29555,7 +29559,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-27 | docs/roadmap/DOCUMENTS_PLAN.md:1335 |
 | Placed from INBOX, 2026-10-27 | docs/roadmap/UI_MODERNISATION_PLAN.md:1252 |
 | Placed from INBOX, 2026-10-27 | docs/roadmap/WHITEBOARD_PLAN.md:1578 |
-| Placed from INBOX, 2026-10-27 (next PR) | docs/roadmap/BACKLOG.md:4424 |
+| Placed from INBOX, 2026-10-27 (next PR) | docs/roadmap/BACKLOG.md:4399 |
 | Placed from INBOX, 2026-10-27 (speed and smoothness, 1415) | docs/roadmap/UI_MODERNISATION_PLAN.md:1254 |
 | Placed from INBOX, 2026-10-28 (present bar picker, lag, movable panels, companion) | docs/roadmap/PLAN.md:304 |
 | Placed from INBOX, 2026-10-29 (1435 Appearance panel, 1436 sketch and noise art) | docs/roadmap/UI_MODERNISATION_PLAN.md:1259 |
@@ -29566,9 +29570,9 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-11-01 (1510(a), the draw.io Format panel gap list; board-1101) | docs/roadmap/WHITEBOARD_PLAN.md:1592 |
 | Placed from INBOX, 2026-11-02 (the owner: the calculator, equations, insert panels and a diagram builder) | docs/roadmap/DOCUMENTS_PLAN.md:314 |
 | Placed from INBOX, 2026-11-03 | docs/roadmap/UI_MODERNISATION_PLAN.md:1269 |
-| Placed from INBOX, 2026-11-03 (chat; CHAT_PLAN is at its cap) | docs/roadmap/BACKLOG.md:4433 |
-| Placed from INBOX, 2026-11-03b | docs/roadmap/BACKLOG.md:4443 |
-| Placed from INBOX, 2026-11-04 | docs/roadmap/BACKLOG.md:4487 |
+| Placed from INBOX, 2026-11-03 (chat; CHAT_PLAN is at its cap) | docs/roadmap/BACKLOG.md:4408 |
+| Placed from INBOX, 2026-11-03b | docs/roadmap/BACKLOG.md:4418 |
+| Placed from INBOX, 2026-11-04 | docs/roadmap/BACKLOG.md:4462 |
 | Placed from INBOX, 2026-11-04 | docs/roadmap/DOCUMENTS_PLAN.md:1472 |
 | Placed from INBOX, 2026-11-04 | docs/roadmap/MINDMAP_PLAN.md:1823 |
 | Placed from INBOX, 2026-11-04 | docs/roadmap/PLAN.md:318 |
@@ -29588,9 +29592,9 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, built (pointers) | docs/roadmap/UI_MODERNISATION_PLAN.md:780 |
 | Placed from INBOX: 107d, the segmented mini bars | docs/roadmap/DOCUMENTS_PLAN.md:355 |
 | Placed from INBOX: the composer everywhere (the owner, 2026-10-06) | docs/roadmap/CHAT_PLAN.md:644 |
-| Placed from review, 2026-10-27 (counted answers, `fact_check.keeps`) | docs/roadmap/BACKLOG.md:4409 |
-| Placed from the guide round, 2026-10-27 (INBOX 1414 follow-ups) | docs/roadmap/BACKLOG.md:4415 |
-| Placed from the owner's list, 2026-10-10 | docs/roadmap/BACKLOG.md:4163 |
+| Placed from review, 2026-10-27 (counted answers, `fact_check.keeps`) | docs/roadmap/BACKLOG.md:4384 |
+| Placed from the guide round, 2026-10-27 (INBOX 1414 follow-ups) | docs/roadmap/BACKLOG.md:4390 |
+| Placed from the owner's list, 2026-10-10 | docs/roadmap/BACKLOG.md:4138 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/CHAT_PLAN.md:768 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/DOCUMENTS_PLAN.md:1242 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/GRAPH_PLAN.md:565 |
@@ -29638,7 +29642,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | R8.4 Three regressions I introduced, and what they have in common | docs/roadmap/REDESIGN.md:798 |
 | R9. Where the numbers stand at the end of this session | docs/roadmap/REDESIGN.md:923 |
 | Read before you touch anything | docs/roadmap/FABLE_BRIEF.md:35 |
-| Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2667 |
+| Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2642 |
 | Repositories and libraries read, 2026-10-10 | docs/roadmap/ANALYSIS.md:4051 |
 | Revisited: where theirs is better, project by project | docs/roadmap/ANALYSIS.md:3527 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -29648,16 +29652,16 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Sources | docs/roadmap/MINDMAP_PLAN.md:200 |
 | Speech, four projects read by name, and what this app already does | docs/roadmap/ANALYSIS.md:3102 |
 | Standing orders for this session (whoever the model is) | docs/roadmap/HANDOVER.md:322 |
-| Start of the next PR (the owner, 2026-10-12, "log everything I've mentioned") | docs/roadmap/BACKLOG.md:4310 |
+| Start of the next PR (the owner, 2026-10-12, "log everything I've mentioned") | docs/roadmap/BACKLOG.md:4285 |
 | State of the branch (`claude/notes-flow-rebuild`, PR #162) | docs/roadmap/HANDOVER.md:406 |
 | Steps | docs/roadmap/UI_MODERNISATION_PLAN.md:766 |
 | Steps | docs/roadmap/WORLD_CLASS_PLAN.md:1526 |
 | Still open | docs/roadmap/WORLD_CLASS_PLAN.md:2262 |
 | Still open after KG1 to KG9 | docs/roadmap/GRAPH_PLAN.md:503 |
-| Still open: the upload split, and what it collides with | docs/roadmap/BACKLOG.md:2788 |
+| Still open: the upload split, and what it collides with | docs/roadmap/BACKLOG.md:2763 |
 | Table | docs/roadmap/ANALYSIS.md:4430 |
 | Tables in notes and documents, against gridcraft | docs/roadmap/ANALYSIS.md:3891 |
-| The 2026-10-12 sweep: everything said and not done, so nothing is missed | docs/roadmap/BACKLOG.md:4353 |
+| The 2026-10-12 sweep: everything said and not done, so nothing is missed | docs/roadmap/BACKLOG.md:4328 |
 | The `pytesseract` vendoring question, measured | docs/roadmap/ANALYSIS.md:2102 |
 | The assistant catalogue, 2026-10-10 | docs/roadmap/CHAT_PLAN.md:901 |
 | The asymmetry these exploit | docs/roadmap/WORLD_CLASS_PLAN.md:1061 |
@@ -29697,7 +29701,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Top five, ranked | docs/roadmap/ANALYSIS.md:4467 |
 | Traps that have each cost real time | docs/ROADMAP.md:383 |
 | Twenty-four repositories read for Tessellate, 2026-09-21 | docs/roadmap/ANALYSIS.md:2588 |
-| Vector index: sqlite-vec when the notebook outgrows brute force (owner question, 2026-11-11, INBOX 1733) | docs/roadmap/BACKLOG.md:4497 |
+| Vector index: sqlite-vec when the notebook outgrows brute force (owner question, 2026-11-11, INBOX 1733) | docs/roadmap/BACKLOG.md:4472 |
 | Vendor candidates, 2026-10-11 | docs/roadmap/ANALYSIS.md:4400 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/CHAT_PLAN.md:1687 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/DOCUMENTS_PLAN.md:1273 |
@@ -29728,7 +29732,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | What the code actually does today | docs/roadmap/AGENT_SKILLS_REFORM.md:27 |
 | What this audit did not verify | docs/roadmap/MODERNISATION_AUDIT.md:1522 |
 | What this read could not verify | docs/roadmap/ANALYSIS.md:3592 |
-| What was built | docs/roadmap/BACKLOG.md:2784 |
+| What was built | docs/roadmap/BACKLOG.md:2759 |
 | What was deliberately left out | docs/roadmap/WORLD_CLASS_PLAN.md:1377 |
 | What was wrong, and is fixed this session | docs/roadmap/WORLD_CLASS_PLAN.md:1010 |
 | Where I think the roadmap is over-invested | docs/roadmap/ANALYSIS.md:577 |
@@ -29747,21 +29751,21 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | needle (cactus-compute) | docs/roadmap/ANALYSIS.md:2684 |
 | openwolf (cytostack) | docs/roadmap/ANALYSIS.md:2838 |
 | quickLiquid (amarnath3003) | docs/roadmap/ANALYSIS.md:2629 |
-| §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2837 |
-| §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2888 |
-| §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2995 |
-| §105: Library "All" tab: the create button now follows the filter chip, the rest is scoped not built | docs/roadmap/BACKLOG.md:3080 |
-| §106: Links, Contents and note References built; §102 items 5 and 6 checked, not built as originally scoped | docs/roadmap/BACKLOG.md:3129 |
-| §107: a fast live-report round: nav-history contrast, Contents redesign, a bookmark-edit gap, and three items logged not built | docs/roadmap/BACKLOG.md:3272 |
-| §108: a fast bug-fix round: three real front-end bugs and a batch of small polish | docs/roadmap/BACKLOG.md:3367 |
-| §109: the measured bug round, the competitor gap list triaged, and what is genuinely still open | docs/roadmap/BACKLOG.md:3449 |
-| §110: the toolbar round: formatting in Notes, and five more measured bugs | docs/roadmap/BACKLOG.md:3628 |
-| §111: where this app should go next, grounded in what the code actually does | docs/roadmap/BACKLOG.md:3683 |
-| §112: the strategic pass: what would make this app hard to compete with | docs/roadmap/BACKLOG.md:3757 |
+| §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2812 |
+| §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2863 |
+| §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2970 |
+| §105: Library "All" tab: the create button now follows the filter chip, the rest is scoped not built | docs/roadmap/BACKLOG.md:3055 |
+| §106: Links, Contents and note References built; §102 items 5 and 6 checked, not built as originally scoped | docs/roadmap/BACKLOG.md:3104 |
+| §107: a fast live-report round: nav-history contrast, Contents redesign, a bookmark-edit gap, and three items logged not built | docs/roadmap/BACKLOG.md:3247 |
+| §108: a fast bug-fix round: three real front-end bugs and a batch of small polish | docs/roadmap/BACKLOG.md:3342 |
+| §109: the measured bug round, the competitor gap list triaged, and what is genuinely still open | docs/roadmap/BACKLOG.md:3424 |
+| §110: the toolbar round: formatting in Notes, and five more measured bugs | docs/roadmap/BACKLOG.md:3603 |
+| §111: where this app should go next, grounded in what the code actually does | docs/roadmap/BACKLOG.md:3658 |
+| §112: the strategic pass: what would make this app hard to compete with | docs/roadmap/BACKLOG.md:3732 |
 | §114 addendum, two external write-ups folded in and removed | docs/roadmap/ANALYSIS.md:1717 |
 | §114 addendum: after the whiteboard / documents / search sprint | docs/roadmap/ANALYSIS.md:1680 |
-| §116: capability gaps identified in the Fable session | docs/roadmap/BACKLOG.md:3899 |
-| §95: the forward list | docs/roadmap/BACKLOG.md:2368 |
-| §96: Guides, and diagrams the whiteboard can take | docs/roadmap/BACKLOG.md:2516 |
-| §98: reported live during the §90.2 small-screen pass, logged not built | docs/roadmap/BACKLOG.md:2678 |
-| §99: the lightbox as a showcase, and uploads split by file type | docs/roadmap/BACKLOG.md:2778 |
+| §116: capability gaps identified in the Fable session | docs/roadmap/BACKLOG.md:3874 |
+| §95: the forward list | docs/roadmap/BACKLOG.md:2343 |
+| §96: Guides, and diagrams the whiteboard can take | docs/roadmap/BACKLOG.md:2491 |
+| §98: reported live during the §90.2 small-screen pass, logged not built | docs/roadmap/BACKLOG.md:2653 |
+| §99: the lightbox as a showcase, and uploads split by file type | docs/roadmap/BACKLOG.md:2753 |
