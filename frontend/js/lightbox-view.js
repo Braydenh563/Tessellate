@@ -25,7 +25,7 @@
 //: The viewer's '?' popover: the gestures and keys no button shows.
 const LIGHTBOX_HELP = [
   "Scroll to zoom where the pointer is, drag to move a zoomed picture, and double-click to switch between fit and actual size.",
-  "Keys: Left and Right move between files, plus and minus zoom, 0 fits, 1 shows actual size, R rotates, I shows or hides the details, Escape closes.",
+  "Keys: Left and Right move between files, plus and minus zoom, 0 fits, 1 shows actual size, R rotates, I shows or hides the details, Ctrl+C copies the picture, Escape closes.",
   "On a touch screen, swipe sideways to move between files and pinch to zoom.",
   "The bars fade when the mouse rests on the picture and come back when it moves.",
 ];
@@ -1076,6 +1076,14 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     await copyToClipboard(value, b);
   }, topActions);
 
+  //: The picture itself (INBOX 1775); Ctrl+C does the same while a picture is shown.
+  const copyPictureNow = () => {
+    const item = items[index];
+    if (img.classList.contains("hidden") || item.kind) return;
+    attachmentAction("copy-image", { src: img.currentSrc || img.src, name: item.filename });
+  };
+  const copyPictureBtn = actionBtn("ph:image", "Copy image (Ctrl+C)", copyPictureNow, topActions);
+
   // Save the original file. `download` needs a same-origin href to name the
   // file, which `mediaSrc()` gives us: it is this app's own /media route.
   actionBtn("ph:download-simple", "Download this file", async () => {
@@ -1505,6 +1513,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     const menu = kebabMenu(
       [
         ...items,
+        { label: "ph:image Copy image", title: "Put this picture on the clipboard", run: copyPictureNow },
         {
           label: "ph:pencil-simple Rename",
           title: "Rename this image",
@@ -2268,6 +2277,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     syncTitle(item);
     syncFilmstrip();
     openTabBtn.classList.toggle("hidden", Boolean(item.kind));
+    copyPictureBtn.classList.toggle("hidden", Boolean(item.kind));
     for (const b of [dockPrevBtn, dockNextBtn]) b.classList.toggle("hidden", items.length < 2);
   }
   //: The dock goes when nothing in it applies (a text file has no zoom and
@@ -2316,6 +2326,13 @@ function openLightbox(items, startIndex = 0, opts = {}) {
   //: Typing keeps its keys: the find box and the file editor are inside this
   //: dialog, and an arrow there moves the caret, not the file.
   const typing = (el) => el instanceof Element && el.matches("input, textarea, select, [contenteditable=''], [contenteditable='true']");
+  //: Ctrl+C is the picture's only while nothing is selected or typed in (a selected reading copies as text).
+  const copyKey = (e, above) => {
+    if (!(e.ctrlKey || e.metaKey) || e.altKey || e.shiftKey || (e.key !== "c" && e.key !== "C") || above || typing(e.target) || String(window.getSelection?.() || "").trim()) return false;
+    copyPictureNow();
+    e.preventDefault();
+    return true;
+  };
   const onKey = (e) => {
     keysSeen = true;
     wake();
@@ -2326,6 +2343,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
       if (!above && !e.target.closest?.(".value-field")) close();
       return;
     }
+    if (copyKey(e, above)) return;
     if (above || typing(e.target) || e.ctrlKey || e.metaKey || e.altKey) return;
     const picture = !img.classList.contains("hidden") && doc.classList.contains("hidden");
     const zoomable = picture || !pdfPages.classList.contains("hidden");

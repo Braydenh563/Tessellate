@@ -191,20 +191,20 @@
      a bar's height (the dock's control, 32, plus its padding and edge) and
      the gap either side. */
   padding-top: calc(max(2rem, var(--control-h-dense)) + var(--space-4) * 2 + var(--space-5));
-  padding-bottom: calc(max(2rem, var(--control-h-dense)) + var(--space-4) * 2 + var(--space-5));
+  padding-bottom: calc(max(2rem, var(--control-h-dense)) + var(--space-4) * 2 + var(--space-5) + var(--status-bar-h));
 }
 .lightbox.lightbox-framed.lightbox-has-film {
-  padding-bottom: calc(max(2rem, var(--control-h-dense)) + var(--space-9) * 2 + var(--space-4) * 3 + var(--space-7));
+  padding-bottom: calc(max(2rem, var(--control-h-dense)) + var(--space-9) * 2 + var(--space-4) * 3 + var(--space-7) + var(--status-bar-h));
 }
 /* WORLD_CLASS 423 (e): the picture also leaves the padding above and below
-   (the same sums as above) and 6.5rem for the facts and caption lead, so on
+   (the same sums as above) and 8.5rem for the facts and caption lead, so on
    a short window (960x600 at 150%) the fixed filmstrip no longer draws over
    the caption line at rest. */
 .lightbox.lightbox-framed .lightbox-stage > img {
-  max-height: min(68vh, calc(100dvh - 2 * (max(2rem, var(--control-h-dense)) + var(--space-4) * 2 + var(--space-5)) - 6.5rem));
+  max-height: min(68vh, calc(100dvh - 2 * (max(2rem, var(--control-h-dense)) + var(--space-4) * 2 + var(--space-5)) - var(--status-bar-h) - 8.5rem));
 }
 .lightbox.lightbox-framed.lightbox-has-film .lightbox-stage > img {
-  max-height: min(68vh, calc(100dvh - (max(2rem, var(--control-h-dense)) + var(--space-4) * 2 + var(--space-5)) - (max(2rem, var(--control-h-dense)) + var(--space-9) * 2 + var(--space-4) * 3 + var(--space-7)) - 6.5rem));
+  max-height: min(68vh, calc(100dvh - (max(2rem, var(--control-h-dense)) + var(--space-4) * 2 + var(--space-5)) - (max(2rem, var(--control-h-dense)) + var(--space-9) * 2 + var(--space-4) * 3 + var(--space-7) + var(--status-bar-h)) - 8.5rem));
 }
 .lightbox .lightbox-topbar,
 .lightbox .lightbox-dock,
@@ -264,7 +264,9 @@
   position: fixed;
   left: var(--space-4);
   right: var(--space-4);
-  bottom: var(--space-4);
+  /* Above the status bar, not over it (INBOX 1775: the zoom bar sat on the
+     bar's words). The bar's height is 0 where a phone hides it. */
+  bottom: calc(var(--space-4) + var(--status-bar-h));
   z-index: 2;
   display: flex;
   flex-direction: column;
@@ -414,7 +416,7 @@
     top: var(--space-2);
   }
   .lightbox-bottom {
-    bottom: var(--space-2);
+    bottom: calc(var(--space-2) + var(--status-bar-h));
   }
   /* Five controls and a name fit a phone's bar; the browser tab and the
      keys-and-pointer help are a desktop's. */
