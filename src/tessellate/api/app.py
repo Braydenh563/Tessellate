@@ -96,6 +96,8 @@ from tessellate.api import (
     routes_recordings,
     routes_reminders,
     routes_settings,
+    routes_settings_extras,
+    routes_settings_logs,
     routes_settings_transfer,
     routes_spaces,
     routes_hello,
@@ -1409,7 +1411,7 @@ class Layer(NamedTuple):
 #
 # **Streaming was checked, not assumed**, this app has three streaming
 # endpoints (chat in `routes_chat`, the weekly digest in `routes_insights`,
-# the live log in `routes_settings`), and "gzip buffers a stream into
+# the live log in `routes_settings_logs`), and "gzip buffers a stream into
 # uselessness" is true of some implementations. Starlette's is not one:
 # `GZipResponder._compress_body` flushes with `Z_SYNC_FLUSH` on every chunk
 # carrying `more_body`, so each chunk still leaves the server as it is
@@ -1512,13 +1514,15 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     (routes_models.router, LOCKED),
     (routes_settings.router, LOCKED),
     (routes_settings_transfer.router, LOCKED),  # export and import routes (K24)
+    (routes_settings_extras.router, LOCKED),  # optional extras and embedding models (K24)
+    (routes_settings_logs.router, LOCKED),  # the log viewer (K24)
     (routes_maintenance.router, LOCKED),
     (routes_lag.router, LOCKED),
     (routes_diag.router, LOCKED),
     # The browser's own crash reports, which have to reach the log *before*
     # unlock: that is when the failure they describe happens. One route, and
-    # `routes_settings.open_router`'s own comment says why it is separate.
-    (routes_settings.open_router, OPEN),
+    # `routes_settings_logs.open_router`'s own comment says why it is separate.
+    (routes_settings_logs.open_router, OPEN),
     # The Run button's sandbox page: no data, its own sandboxing policy, and
     # registered before the documents router so `/documents/{id}` does not
     # claim the path (`api/run_sandbox.py`).

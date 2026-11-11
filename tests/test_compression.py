@@ -55,7 +55,7 @@ def test_both_streaming_media_types_are_excluded(app_state):
     a constant we could drift from.
 
     `text/event-stream` comes from Starlette's own default list; the two NDJSON
-    streams in this app (`routes_insights`' weekly digest and `routes_settings`'
+    streams in this app (`routes_insights`' weekly digest and `routes_settings_logs`'
     live log) do not, so they have to be named explicitly. If a future upgrade
     drops either from the defaults, this fails here rather than showing up as
     a log view that stops updating.
