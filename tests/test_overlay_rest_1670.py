@@ -22,6 +22,8 @@ from tests.test_overlay_ride_1670 import AREA, make
 
 GAITS = ("float", "walk")
 SEEDS = (1, 2, 3)
+#: Seeds past `SEEDS` that showed a portal and a puff when last read (see the portal-or-puff test).
+LAST_SHOWN = (35, 45)
 # (gait, seed) -> metrics, built once: a simulated hour takes about two seconds.
 _CACHE: dict[tuple[str, int, str], dict] = {}
 
@@ -110,8 +112,11 @@ def test_a_portal_or_a_puff_takes_between_four_tenths_and_one_and_a_fifth_second
     # so the three seeds show none now. More seeds are read until both kinds show (the life pass, 1719 b, moved the
     # first puff past seed 23; the range grew to 40, then to 80 with life2b-1109, the stop at both kinds is unchanged); the
     # duration bar is unchanged.
+    # The seeds that last showed a portal (35) and a puff (45) are tried first (2026-11-11: reading 4 to 79 in order
+    # simulated 90 hours before seed 45, 544 s on a loaded box and the longest test in the suite); when the engine's
+    # stream moves they stop showing one and the in-order scan below finds the next, as before.
     kinds: set[str] = set()
-    for seed in (*SEEDS, *range(4, 80)):
+    for seed in (*SEEDS, *LAST_SHOWN, *(s for s in range(4, 80) if s not in LAST_SHOWN)):
         for gait in GAITS:
             for kind, spans in hour(gait, seed)["warps"].items():
                 if kind in ("portal", "puff"):
