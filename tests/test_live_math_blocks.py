@@ -43,7 +43,7 @@ def test_a_label_key_is_the_typed_word_after_ref_or_eqref() -> None:
 
 def test_the_completion_is_wired_into_the_markdown_sources() -> None:
     assert "docPairInput.refSource(CM)" in _read("documents-code.js")
-    assert "labels.index(context.state.doc.toString())" in _read("documents-prose.js")
+    assert "labels.index(docStr(context.state.doc))" in _read("documents-prose.js")
 
 
 def test_a_multi_line_formula_is_drawn_over_its_first_line_and_folds_the_rest() -> None:

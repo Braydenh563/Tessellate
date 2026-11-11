@@ -8939,7 +8939,7 @@ input[type="color"].wb-mixed {
   flex: 0 0 auto;
   min-width: 0;
 }
-.doc-tabs-row > .tabs-line {
+.doc-tabs-row > #doc-tabs {
   flex: 1 1 auto;
   min-width: 0;
   overflow-x: auto;
