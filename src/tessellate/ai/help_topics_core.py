@@ -361,8 +361,11 @@ HELP_TOPICS: list[dict] = [
             "(no Tesseract needed); you can pick the model or leave it automatic. A "
             "picture placed on a board or map is the exception: it stays on the board, "
             "unlisted, unsearched and unread, until you select it and press Save to Library "
-            "in Format (then it is filed and read like any other). Captions in the same "
-            "row draws a saved picture's caption as one muted line under it."
+            "in Format (then it is filed and read like any other). Captions, in the row "
+            "below it, draws a saved picture's caption as one muted line under it: on a "
+            "board, under the pictures in a note's popup in the Graph and its timeline "
+            "view, and the popup's menu has the same Show picture captions switch. A "
+            "file attached to a note says nothing."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },

@@ -3367,6 +3367,26 @@ body.printing-doc #doc-preview p,
   width: 100%;
 }
 
+/* K18: a saved picture's caption, one muted line under it (Show captions). Laid below the frame and the room reserved,
+   so the grip stays on the picture's corner. */
+.cm-md-image-frame.has-caption {
+  margin-bottom: calc(var(--text-xs) * 1.3 + var(--space-1));
+}
+.md-picture-caption {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: var(--space-1);
+  color: var(--muted);
+  font-size: var(--text-xs);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
 /* The hit area is the touch floor (24px, WCAG 2.5.8) on every pointer; the
    box the eye sees is the ::before, 12px with a pointer and 24px on a finger. */
 .cm-md-image-grip {
