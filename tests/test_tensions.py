@@ -146,7 +146,7 @@ def test_dismissing_a_pair_is_remembered(client, session):
     )
     assert response.status_code == 200
 
-    from tessellate.api.routes_entries import TENSION_DISMISSED_KEY, _tension_key
+    from tessellate.api.routes_entries_relations import TENSION_DISMISSED_KEY, _tension_key
     from tessellate.core import deps
 
     stored = deps.get_config().get_preference(TENSION_DISMISSED_KEY, [])
@@ -156,7 +156,7 @@ def test_dismissing_a_pair_is_remembered(client, session):
 def test_the_dismissed_key_does_not_depend_on_which_note_came_first():
     """A pair is one thing however it is named, or dismissing it once would
     leave the mirrored ordering still being offered."""
-    from tessellate.api.routes_entries import _tension_key
+    from tessellate.api.routes_entries_relations import _tension_key
 
     assert _tension_key(7, 3) == _tension_key(3, 7)
 

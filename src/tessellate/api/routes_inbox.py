@@ -229,7 +229,7 @@ def _turned_down_on_notes(session: Session) -> dict[int, list[str]]:
 
 
 def _tension_keys() -> list[str]:
-    from tessellate.api.routes_entries import TENSION_DISMISSED_KEY
+    from tessellate.api.routes_entries_relations import TENSION_DISMISSED_KEY
     from tessellate.core import deps
 
     return [str(key) for key in (deps.get_config().get_preference(TENSION_DISMISSED_KEY, []) or [])]
@@ -252,7 +252,7 @@ def dismissed_suggestions(session: Session = Depends(get_session)) -> dict:
 @router.post("/dismissed/clear")
 def clear_dismissed_suggestions(session: Session = Depends(get_session)) -> dict:
     """Forget every dismissal; the response is what `/dismissed/restore` takes back."""
-    from tessellate.api.routes_entries import TENSION_DISMISSED_KEY
+    from tessellate.api.routes_entries_relations import TENSION_DISMISSED_KEY
     from tessellate.core import deps
 
     from sqlalchemy import text
@@ -278,7 +278,7 @@ def clear_dismissed_suggestions(session: Session = Depends(get_session)) -> dict
 
 @router.post("/dismissed/restore")
 def restore_dismissed_suggestions(body: DismissedRestore, session: Session = Depends(get_session)) -> dict:
-    from tessellate.api.routes_entries import TENSION_DISMISSED_KEY
+    from tessellate.api.routes_entries_relations import TENSION_DISMISSED_KEY
     from tessellate.core import deps
 
 
@@ -401,7 +401,7 @@ def dismissed_items(session: Session = Depends(get_session)) -> dict:
 
 
 def _restore_pair(session: Session, pair: str) -> tuple[list[int], list[str]]:
-    from tessellate.api.routes_entries import TENSION_DISMISSED_KEY
+    from tessellate.api.routes_entries_relations import TENSION_DISMISSED_KEY
     from tessellate.core import deps
 
     keys = _tension_keys()

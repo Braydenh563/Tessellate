@@ -47,7 +47,7 @@ prompt does:
 
 ## Nothing is written without a person saying yes
 
-Same policy as the auto-linker (`routes_entries.link_suggestions`) and for a
+Same policy as the auto-linker (`routes_entries_relations.link_suggestions`) and for a
 stronger reason: telling someone they contradicted themselves when they did
 not is worse than telling them nothing. This module only ever *proposes*.
 Accepting a tension is what creates the `EntryLink` with
@@ -303,7 +303,7 @@ _SOURCE_RANK = {"scan": 0, "night": 1, "link": 2}
 
 def pair_key(a: int, b: int) -> str:
     """`"low:high"`: one pair, one key, whichever side is named first. The
-    same shape as `routes_entries._tension_key` and the dismissed list."""
+    same shape as `routes_entries_relations._tension_key` and the dismissed list."""
     low, high = sorted((int(a), int(b)))
     return f"{low}:{high}"
 
