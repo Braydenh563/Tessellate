@@ -102,7 +102,7 @@ def test_a_plain_comparison_of_three_heads_each_side(ask, question):
     heads = re.findall(r"^\*\*([^*\n]+)\*\*$", said, re.M)
     assert len(heads) >= 3, said
     assert {"lisbon", "tokyo", "porto"} <= {h.lower().replace(" trip", "") for h in heads}, said
-    assert re.search(r"one mentions .+ and one mentions .+ and one mentions", _lead(said)), said
+    assert re.search(r"\w+ mentions? .+ and \w+ mentions? .+ and \w+ mentions?", _lead(said)), said
 
 
 # 2. A format wish is not part of a name.

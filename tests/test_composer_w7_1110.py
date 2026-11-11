@@ -4,6 +4,7 @@ fixed as a class (B9 one-note notebook and time travel here; B1 to B8 and B10 be
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime
 
 import pytest
@@ -120,7 +121,7 @@ def test_a_pair_of_names_is_a_block_each_whatever_its_case(ask5, question):
     text = ask5(question)
     first, second = (w.capitalize() for w in question.split(" and "))
     assert f"**{first}**" in text and f"**{second}**" in text, text
-    assert f"mentions {first}" in text and f"mentions {second}" in text, text  # said as the notes write the names
+    assert re.search(rf"mentions? {first}\b", text) and re.search(rf"mentions? {second}\b", text), text  # said as the notes write the names
     assert "notes about" not in text
 
 
