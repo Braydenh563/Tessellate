@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10201, test files 2495, tests 20562, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
+Counts: frontend functions 8132, frontend ids 2707, CSS sections 523, backend routes 672, backend modules 10202, test files 2495, tests 20562, plan headings 1004, app scripts 28, boot scripts 37, script files 279.
 
 ## Frontend functions (8132)
 
@@ -13529,7 +13529,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10201)
+## Backend modules (10202)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -18722,21 +18722,22 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `is_refusal` | src/tessellate/ai/repair_turn.py:83 |
 | `is_repair` | src/tessellate/ai/repair_turn.py:69 |
 
-### src/tessellate/ai/resurface.py (12)
+### src/tessellate/ai/resurface.py (13)
 
 | Name | File:line |
 |---|---|
 | `_clamp` | src/tessellate/ai/resurface.py:62 |
-| `_comparable_vectors` | src/tessellate/ai/resurface.py:348 |
-| `_dismissed` | src/tessellate/ai/resurface.py:204 |
+| `_comparable_vectors` | src/tessellate/ai/resurface.py:354 |
+| `_dismissed` | src/tessellate/ai/resurface.py:210 |
+| `_link_counts` | src/tessellate/ai/resurface.py:95 |
 | `_refresh` | src/tessellate/ai/resurface.py:74 |
-| `_relatedness` | src/tessellate/ai/resurface.py:310 |
+| `_relatedness` | src/tessellate/ai/resurface.py:316 |
 | `_upsert_scores` | src/tessellate/ai/resurface.py:79 |
-| `compute_scores` | src/tessellate/ai/resurface.py:95 |
-| `ensure_fresh` | src/tessellate/ai/resurface.py:174 |
-| `for_context` | src/tessellate/ai/resurface.py:364 |
-| `for_day` | src/tessellate/ai/resurface.py:261 |
-| `ranked` | src/tessellate/ai/resurface.py:212 |
+| `compute_scores` | src/tessellate/ai/resurface.py:106 |
+| `ensure_fresh` | src/tessellate/ai/resurface.py:180 |
+| `for_context` | src/tessellate/ai/resurface.py:370 |
+| `for_day` | src/tessellate/ai/resurface.py:267 |
+| `ranked` | src/tessellate/ai/resurface.py:218 |
 | `score_for` | src/tessellate/ai/resurface.py:66 |
 
 ### src/tessellate/ai/review_digest.py (12)

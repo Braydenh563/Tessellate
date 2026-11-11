@@ -44,7 +44,6 @@
  "src/tessellate/ai/recognise.py::_recognise": 18,
  "src/tessellate/ai/relations.py::explain_pair": 24,
  "src/tessellate/ai/relations.py::recognise": 18,
- "src/tessellate/ai/resurface.py::compute_scores": 17,
  "src/tessellate/ai/skill_folder.py::parse": 17,
  "src/tessellate/ai/skill_runner.py::_absorb": 22,
  "src/tessellate/ai/skill_runner.py::verify": 18,
