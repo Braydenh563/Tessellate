@@ -44,11 +44,9 @@ def test_a_paired_format_field_gives_back_its_side_padding():
     )
 
 
-def test_the_format_range_has_no_margin_and_the_commands_may_wrap():
+def test_the_format_range_has_no_margin():
+    #: The command row's overflow at 768 is fixed the other way, by test_wrapzoom_docs_1111 (the buttons drop under the name, the row stays nowrap), which landed on the hub first.
     assert "margin: 0" in _rule("library-lazy.css", '.wb-fmt-row input[type="range"]')
-    text = (CSS / "library-lazy.css").read_text(encoding="utf-8")
-    commands = re.search(r"\.wb-fmt-commands \.wb-fmt-buttons\s*\{[^}]*\}", text)
-    assert commands is None, "the command row went back to nowrap"
 
 
 def test_the_tools_width_is_published_only_while_docked_at_the_side():
