@@ -92,7 +92,9 @@ def _sealed_image(client, session, *, also_plain=False):
 def test_a_locked_private_notes_picture_is_not_served(client, session):
     url = _sealed_image(client, session)
     reply = client.get(url)
-    assert reply.status_code == 403
+    # Q18 (owner): a locked read answers 409 "Unlock first." like the link and read routes; it was 403.
+    assert reply.status_code == 409
+    assert reply.json()["detail"] == "Unlock first."
 
 
 def test_a_picture_a_readable_note_also_uses_stays_served(client, session):
@@ -145,7 +147,7 @@ def test_a_private_note_restored_to_a_version_with_a_picture_keeps_it_sealed(cli
     assert restored.status_code == 200, restored.text
     vault.close()
     reply = client.get(url)
-    assert reply.status_code == 403
+    assert reply.status_code == 409
 
 
 _PIC_ROUTES = [

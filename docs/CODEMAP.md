@@ -2,9 +2,9 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8123, frontend ids 2696, CSS sections 523, backend routes 667, backend modules 10127, test files 2479, tests 20463, plan headings 1003, app scripts 28, boot scripts 37, script files 278.
+Counts: frontend functions 8130, frontend ids 2696, CSS sections 523, backend routes 670, backend modules 10133, test files 2479, tests 20469, plan headings 1003, app scripts 28, boot scripts 37, script files 278.
 
-## Frontend functions (8123)
+## Frontend functions (8130)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -42,44 +42,44 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `apiPagedList` | frontend/js/app.js:517 |
 | `askPasswordPrompt` | frontend/js/app.js:678 |
 | `authToken` | frontend/js/app.js:168 |
-| `chip` | frontend/js/app.js:1182 |
-| `chipWords` | frontend/js/app.js:1177 |
+| `chip` | frontend/js/app.js:1194 |
+| `chipWords` | frontend/js/app.js:1189 |
 | `clearApiCache` | frontend/js/app.js:557 |
-| `confirmDialog` | frontend/js/app.js:1265 |
-| `confirmVerb` | frontend/js/app.js:1256 |
-| `ensureModule` | frontend/js/app.js:1730 |
+| `confirmDialog` | frontend/js/app.js:1277 |
+| `confirmVerb` | frontend/js/app.js:1268 |
+| `ensureModule` | frontend/js/app.js:1742 |
 | `enterWithoutPassword` | frontend/js/app.js:636 |
 | `hide` | frontend/js/app.js:164 |
-| `hideBootSplash` | frontend/js/app.js:832 |
-| `initAuth` | frontend/js/app.js:845 |
-| `installStandIns` | frontend/js/app.js:1901 |
-| `lazyAssetStamp` | frontend/js/app.js:1687 |
-| `lazyScript` | frontend/js/app.js:1709 |
+| `hideBootSplash` | frontend/js/app.js:844 |
+| `initAuth` | frontend/js/app.js:857 |
+| `installStandIns` | frontend/js/app.js:1913 |
+| `lazyAssetStamp` | frontend/js/app.js:1699 |
+| `lazyScript` | frontend/js/app.js:1721 |
 | `lockFieldForPin` | frontend/js/app.js:752 |
-| `lockNow` | frontend/js/app.js:806 |
+| `lockNow` | frontend/js/app.js:816 |
 | `mediaSrc` | frontend/js/app.js:235 |
-| `mountNoteSurfaceNow` | frontend/js/app.js:1754 |
-| `promptDialog` | frontend/js/app.js:1363 |
-| `purgeLockedContent` | frontend/js/app.js:793 |
+| `mountNoteSurfaceNow` | frontend/js/app.js:1766 |
+| `promptDialog` | frontend/js/app.js:1375 |
+| `purgeLockedContent` | frontend/js/app.js:795 |
 | `recordBrowserLog` | frontend/js/app.js:23 |
-| `refreshActiveTab` | frontend/js/app.js:1060 |
+| `refreshActiveTab` | frontend/js/app.js:1072 |
 | `refuseStagedUrls` | frontend/js/app.js:228 |
 | `replaceMissingMedia` | frontend/js/app.js:283 |
 | `resumeWithoutPassword` | frontend/js/app.js:646 |
-| `setBusy` | frontend/js/app.js:1219 |
-| `setLabel` | frontend/js/app.js:1127 |
-| `settingsModalOpen` | frontend/js/app.js:1171 |
+| `setBusy` | frontend/js/app.js:1231 |
+| `setLabel` | frontend/js/app.js:1139 |
+| `settingsModalOpen` | frontend/js/app.js:1183 |
 | `settleLockPrompt` | frontend/js/app.js:657 |
 | `show` | frontend/js/app.js:163 |
 | `showLockScreen` | frontend/js/app.js:700 |
-| `smallButton` | frontend/js/app.js:1489 |
-| `spinnerEl` | frontend/js/app.js:1211 |
-| `stagePrimary` | frontend/js/app.js:1205 |
+| `smallButton` | frontend/js/app.js:1501 |
+| `spinnerEl` | frontend/js/app.js:1223 |
+| `stagePrimary` | frontend/js/app.js:1217 |
 | `stagedImageByUrl` | frontend/js/app.js:196 |
-| `startApp` | frontend/js/app.js:894 |
+| `startApp` | frontend/js/app.js:906 |
 | `startWithoutPassword` | frontend/js/app.js:621 |
-| `whenScriptsLoaded` | frontend/js/app.js:1668 |
-| `wireBackdropClose` | frontend/js/app.js:1477 |
+| `whenScriptsLoaded` | frontend/js/app.js:1680 |
+| `wireBackdropClose` | frontend/js/app.js:1489 |
 
 ### frontend/js/prefs.js (6)
 
@@ -688,43 +688,43 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addReminder` | frontend/js/shell-reminders.js:1531 |
+| `addReminder` | frontend/js/shell-reminders.js:1533 |
 | `armMinuteTick` | frontend/js/shell-reminders.js:41 |
 | `clearDoneReminders` | frontend/js/shell-reminders.js:1070 |
 | `clipText` | frontend/js/shell-reminders.js:839 |
-| `curtainShell` | frontend/js/shell-reminders.js:1673 |
-| `defaultDueValue` | frontend/js/shell-reminders.js:1582 |
+| `curtainShell` | frontend/js/shell-reminders.js:1675 |
+| `defaultDueValue` | frontend/js/shell-reminders.js:1584 |
 | `edgeFadeWire` | frontend/js/shell-reminders.js:443 |
 | `glideStrip` | frontend/js/shell-reminders.js:310 |
-| `liftLockScreen` | frontend/js/shell-reminders.js:1696 |
+| `liftLockScreen` | frontend/js/shell-reminders.js:1698 |
 | `loadReminders` | frontend/js/shell-reminders.js:925 |
 | `markScrollEdge` | frontend/js/shell-reminders.js:514 |
 | `markTabBarRecede` | frontend/js/shell-reminders.js:589 |
 | `notePreviewText` | frontend/js/shell-reminders.js:874 |
-| `nudgeDue` | frontend/js/shell-reminders.js:1477 |
+| `nudgeDue` | frontend/js/shell-reminders.js:1479 |
 | `onScrollEdge` | frontend/js/shell-reminders.js:621 |
-| `openCalendarPage` | frontend/js/shell-reminders.js:1310 |
+| `openCalendarPage` | frontend/js/shell-reminders.js:1312 |
 | `paginateDoneReminders` | frontend/js/shell-reminders.js:1021 |
-| `presetDate` | frontend/js/shell-reminders.js:1366 |
+| `presetDate` | frontend/js/shell-reminders.js:1368 |
 | `previewBlocks` | frontend/js/shell-reminders.js:866 |
-| `refreshMediaSession` | frontend/js/shell-reminders.js:1637 |
-| `refreshReminderDefaults` | frontend/js/shell-reminders.js:1498 |
-| `relativeWhen` | frontend/js/shell-reminders.js:1346 |
-| `reminderComposeIsPristine` | frontend/js/shell-reminders.js:1486 |
+| `refreshMediaSession` | frontend/js/shell-reminders.js:1639 |
+| `refreshReminderDefaults` | frontend/js/shell-reminders.js:1500 |
+| `relativeWhen` | frontend/js/shell-reminders.js:1348 |
+| `reminderComposeIsPristine` | frontend/js/shell-reminders.js:1488 |
 | `reminderItem` | frontend/js/shell-reminders.js:1111 |
-| `reminderMadeUndo` | frontend/js/shell-reminders.js:1522 |
-| `reminderPutUndoably` | frontend/js/shell-reminders.js:1510 |
-| `reminderTarget` | frontend/js/shell-reminders.js:1327 |
+| `reminderMadeUndo` | frontend/js/shell-reminders.js:1524 |
+| `reminderPutUndoably` | frontend/js/shell-reminders.js:1512 |
+| `reminderTarget` | frontend/js/shell-reminders.js:1329 |
 | `revealActiveTab` | frontend/js/shell-reminders.js:270 |
 | `safeMdSlice` | frontend/js/shell-reminders.js:753 |
-| `setDue` | frontend/js/shell-reminders.js:1415 |
+| `setDue` | frontend/js/shell-reminders.js:1417 |
 | `startClockTicker` | frontend/js/shell-reminders.js:77 |
 | `startMinuteTicker` | frontend/js/shell-reminders.js:60 |
 | `stopClockTicker` | frontend/js/shell-reminders.js:81 |
 | `stripFrontmatter` | frontend/js/shell-reminders.js:849 |
-| `syncDueFromParts` | frontend/js/shell-reminders.js:1429 |
+| `syncDueFromParts` | frontend/js/shell-reminders.js:1431 |
 | `syncEdgeFade` | frontend/js/shell-reminders.js:414 |
-| `syncPartsFromDue` | frontend/js/shell-reminders.js:1421 |
+| `syncPartsFromDue` | frontend/js/shell-reminders.js:1423 |
 | `syncScrollEdges` | frontend/js/shell-reminders.js:669 |
 | `syncTabOverflowFade` | frontend/js/shell-reminders.js:233 |
 | `tabBarMode` | frontend/js/shell-reminders.js:227 |
@@ -732,8 +732,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `tabContentWidth` | frontend/js/shell-reminders.js:204 |
 | `tabRowSpace` | frontend/js/shell-reminders.js:139 |
 | `tickClocks` | frontend/js/shell-reminders.js:12 |
-| `toLocalInputValue` | frontend/js/shell-reminders.js:1359 |
-| `updateDueReadout` | frontend/js/shell-reminders.js:1441 |
+| `toLocalInputValue` | frontend/js/shell-reminders.js:1361 |
+| `updateDueReadout` | frontend/js/shell-reminders.js:1443 |
 | `updateReminderBadge` | frontend/js/shell-reminders.js:1040 |
 | `wikiLinkLabel` | frontend/js/shell-reminders.js:800 |
 | `wikiLinkShown` | frontend/js/shell-reminders.js:826 |
@@ -1191,52 +1191,52 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `activeOverlay` | frontend/js/settings-wiring.js:948 |
-| `captureCountText` | frontend/js/settings-wiring.js:1718 |
-| `captureShortcutKey` | frontend/js/settings-wiring.js:1452 |
-| `clearStagedImages` | frontend/js/settings-wiring.js:2115 |
-| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1247 |
-| `closeShortcuts` | frontend/js/settings-wiring.js:1482 |
-| `comboFromEvent` | frontend/js/settings-wiring.js:1283 |
-| `commitCaptureImages` | frontend/js/settings-wiring.js:2100 |
-| `fileDropBox` | frontend/js/settings-wiring.js:1963 |
-| `flashSaved` | frontend/js/settings-wiring.js:500 |
-| `handleFileUpload` | frontend/js/settings-wiring.js:2147 |
-| `hideChordGuide` | frontend/js/settings-wiring.js:1265 |
-| `inEditable` | frontend/js/settings-wiring.js:946 |
-| `loadForgottenOrder` | frontend/js/settings-wiring.js:1577 |
-| `loadShortcuts` | frontend/js/settings-wiring.js:1117 |
-| `localizeStaticChords` | frontend/js/settings-wiring.js:1160 |
+| `activeOverlay` | frontend/js/settings-wiring.js:950 |
+| `captureCountText` | frontend/js/settings-wiring.js:1720 |
+| `captureShortcutKey` | frontend/js/settings-wiring.js:1454 |
+| `clearStagedImages` | frontend/js/settings-wiring.js:2117 |
+| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1249 |
+| `closeShortcuts` | frontend/js/settings-wiring.js:1484 |
+| `comboFromEvent` | frontend/js/settings-wiring.js:1285 |
+| `commitCaptureImages` | frontend/js/settings-wiring.js:2102 |
+| `fileDropBox` | frontend/js/settings-wiring.js:1965 |
+| `flashSaved` | frontend/js/settings-wiring.js:502 |
+| `handleFileUpload` | frontend/js/settings-wiring.js:2149 |
+| `hideChordGuide` | frontend/js/settings-wiring.js:1267 |
+| `inEditable` | frontend/js/settings-wiring.js:948 |
+| `loadForgottenOrder` | frontend/js/settings-wiring.js:1579 |
+| `loadShortcuts` | frontend/js/settings-wiring.js:1119 |
+| `localizeStaticChords` | frontend/js/settings-wiring.js:1162 |
 | `lockFail` | frontend/js/settings-wiring.js:267 |
 | `lockFailed` | frontend/js/settings-wiring.js:279 |
 | `lockOpened` | frontend/js/settings-wiring.js:335 |
-| `lockRequest` | frontend/js/settings-wiring.js:377 |
-| `mapEditorShown` | frontend/js/settings-wiring.js:943 |
-| `matchesShortcut` | frontend/js/settings-wiring.js:1301 |
-| `maybeShowOnboarding` | frontend/js/settings-wiring.js:969 |
-| `notebookLocked` | frontend/js/settings-wiring.js:485 |
+| `lockRequest` | frontend/js/settings-wiring.js:379 |
+| `mapEditorShown` | frontend/js/settings-wiring.js:945 |
+| `matchesShortcut` | frontend/js/settings-wiring.js:1303 |
+| `maybeShowOnboarding` | frontend/js/settings-wiring.js:971 |
+| `notebookLocked` | frontend/js/settings-wiring.js:487 |
 | `persistSavedSearches` | frontend/js/settings-wiring.js:53 |
-| `renderCaptureFiles` | frontend/js/settings-wiring.js:1683 |
-| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1650 |
-| `renderInstallRow` | frontend/js/settings-wiring.js:1885 |
+| `renderCaptureFiles` | frontend/js/settings-wiring.js:1685 |
+| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1652 |
+| `renderInstallRow` | frontend/js/settings-wiring.js:1887 |
 | `renderSavedSearches` | frontend/js/settings-wiring.js:17 |
-| `resetShortcuts` | frontend/js/settings-wiring.js:1419 |
-| `restampShortcutHints` | frontend/js/settings-wiring.js:1170 |
-| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2088 |
-| `runShortcut` | frontend/js/settings-wiring.js:1310 |
+| `resetShortcuts` | frontend/js/settings-wiring.js:1421 |
+| `restampShortcutHints` | frontend/js/settings-wiring.js:1172 |
+| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2090 |
+| `runShortcut` | frontend/js/settings-wiring.js:1312 |
 | `saveCurrentSearch` | frontend/js/settings-wiring.js:61 |
-| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1271 |
-| `saveWhatIsInFront` | frontend/js/settings-wiring.js:563 |
+| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1273 |
+| `saveWhatIsInFront` | frontend/js/settings-wiring.js:565 |
 | `savedSearches` | frontend/js/settings-wiring.js:13 |
-| `setShortcutStatus` | frontend/js/settings-wiring.js:1436 |
-| `setShortcutStatusError` | frontend/js/settings-wiring.js:1443 |
-| `singleKeysOn` | frontend/js/settings-wiring.js:2286 |
-| `stagedImageUrl` | frontend/js/settings-wiring.js:2065 |
-| `stampShortcutTitles` | frontend/js/settings-wiring.js:1146 |
+| `setShortcutStatus` | frontend/js/settings-wiring.js:1438 |
+| `setShortcutStatusError` | frontend/js/settings-wiring.js:1445 |
+| `singleKeysOn` | frontend/js/settings-wiring.js:2288 |
+| `stagedImageUrl` | frontend/js/settings-wiring.js:2067 |
+| `stampShortcutTitles` | frontend/js/settings-wiring.js:1148 |
 | `submitLockForm` | frontend/js/settings-wiring.js:303 |
-| `textCounts` | frontend/js/settings-wiring.js:1708 |
-| `uploadStagedFiles` | frontend/js/settings-wiring.js:2124 |
-| `wordCount` | frontend/js/settings-wiring.js:1703 |
+| `textCounts` | frontend/js/settings-wiring.js:1710 |
+| `uploadStagedFiles` | frontend/js/settings-wiring.js:2126 |
+| `wordCount` | frontend/js/settings-wiring.js:1705 |
 
 ### frontend/js/spaces-find.js (24)
 
@@ -1920,10 +1920,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `featureCommandRows` | frontend/js/app-features.js:223 |
 | `paletteCommands` | frontend/js/app-features.js:296 |
 | `popupToolMaths` | frontend/js/app-features.js:254 |
-| `quickAccessCurrent` | frontend/js/app-features.js:601 |
-| `quickAccessItems` | frontend/js/app-features.js:592 |
-| `quickCatalogue` | frontend/js/app-features.js:573 |
-| `renderQuickLinks` | frontend/js/app-features.js:605 |
+| `quickAccessCurrent` | frontend/js/app-features.js:602 |
+| `quickAccessItems` | frontend/js/app-features.js:593 |
+| `quickCatalogue` | frontend/js/app-features.js:574 |
+| `renderQuickLinks` | frontend/js/app-features.js:606 |
 | `renderToolShortcutList` | frontend/js/app-features.js:270 |
 
 ### frontend/js/app-import.js (6)
@@ -6328,13 +6328,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `closeNoteForm` | frontend/js/note-edit-panels.js:634 |
-| `forgetNoteEditLocally` | frontend/js/note-edit-panels.js:661 |
-| `holdNoteEdit` | frontend/js/note-edit-panels.js:620 |
-| `keepNoteEditLocally` | frontend/js/note-edit-panels.js:657 |
-| `noteEditToolbar` | frontend/js/note-edit-panels.js:757 |
+| `closeNoteForm` | frontend/js/note-edit-panels.js:638 |
+| `forgetNoteEditLocally` | frontend/js/note-edit-panels.js:665 |
+| `holdNoteEdit` | frontend/js/note-edit-panels.js:624 |
+| `keepNoteEditLocally` | frontend/js/note-edit-panels.js:661 |
+| `noteEditToolbar` | frontend/js/note-edit-panels.js:761 |
 | `noteFormParts` | frontend/js/note-edit-panels.js:210 |
-| `offerKeptNoteEdit` | frontend/js/note-edit-panels.js:687 |
+| `offerKeptNoteEdit` | frontend/js/note-edit-panels.js:691 |
 | `openBookmarkAttachPicker` | frontend/js/note-edit-panels.js:175 |
 | `renderEditForm` | frontend/js/note-edit-panels.js:224 |
 | `renderNoteBookmarksWhileEditing` | frontend/js/note-edit-panels.js:83 |
@@ -7994,11 +7994,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `valueField` | frontend/js/value-field.js:20 |
 | `valueFieldParse` | frontend/js/value-field.js:8 |
 
-### frontend/js/vault-unlock.js (2)
+### frontend/js/vault-unlock.js (9)
 
 | Name | File:line |
 |---|---|
 | `ensureVaultOpen` | frontend/js/vault-unlock.js:33 |
+| `fieldsOf` | frontend/js/vault-unlock.js:62 |
+| `jumpToTyped` | frontend/js/vault-unlock.js:125 |
+| `keepTypedWords` | frontend/js/vault-unlock.js:67 |
+| `openLeftOff` | frontend/js/vault-unlock.js:112 |
+| `restoreTypedWords` | frontend/js/vault-unlock.js:88 |
+| `typedFields` | frontend/js/vault-unlock.js:63 |
+| `typedWords` | frontend/js/vault-unlock.js:136 |
 | `unlockPrivateNotes` | frontend/js/vault-unlock.js:12 |
 
 ### frontend/js/web-clip.js (11)
@@ -12825,7 +12832,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/web-lazy.css | 88 |
 | frontend/css/writing-desk-lazy.css | 27 |
 
-## Backend routes (667)
+## Backend routes (670)
 
 `@router.<method>(`, `@<name>_router.<method>(` and `@app.<method>(` decorators in `src/tessellate/api/*.py`, sorted by path. The line is the decorator's.
 
@@ -12833,6 +12840,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |---|---|---|---|
 |  | DELETE | `clear` | src/tessellate/api/routes_usage.py:40 |
 |  | DELETE | `clear_ask_history` | src/tessellate/api/routes_ask_history.py:200 |
+|  | DELETE | `forget` | src/tessellate/api/routes_kept_words.py:79 |
 |  | DELETE | `forget_everything` | src/tessellate/api/routes_learned.py:238 |
 |  | GET | `list_ask_history` | src/tessellate/api/routes_ask_history.py:48 |
 |  | GET | `list_bookmarks` | src/tessellate/api/routes_bookmarks.py:66 |
@@ -12847,6 +12855,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |  | GET | `list_reminders` | src/tessellate/api/routes_reminders.py:505 |
 |  | GET | `list_tags` | src/tessellate/api/routes_tags.py:40 |
 |  | GET | `list_types` | src/tessellate/api/routes_relations.py:43 |
+|  | GET | `read` | src/tessellate/api/routes_kept_words.py:65 |
 |  | GET | `search` | src/tessellate/api/routes_search.py:98 |
 |  | GET | `state` | src/tessellate/api/routes_bench.py:241 |
 |  | GET | `suggestions` | src/tessellate/api/routes_inbox.py:122 |
@@ -12863,6 +12872,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |  | POST | `create_reminder` | src/tessellate/api/routes_reminders.py:538 |
 |  | POST | `create_type` | src/tessellate/api/routes_relations.py:54 |
 |  | POST | `start` | src/tessellate/api/routes_bench.py:201 |
+|  | PUT | `keep` | src/tessellate/api/routes_kept_words.py:44 |
 | `/` | GET | `get_whiteboard_state` | src/tessellate/api/wb_board.py:114 |
 | `/account` | GET | `account` | src/tessellate/api/routes_auth.py:1672 |
 | `/activity` | GET | `list_activity` | src/tessellate/api/routes_tasks.py:1014 |
@@ -12927,7 +12937,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/bulk` | POST | `bulk_edit_tags` | src/tessellate/api/routes_tags.py:106 |
 | `/capabilities` | GET | `capabilities` | src/tessellate/api/routes_capabilities.py:77 |
 | `/change-password` | POST | `change_password` | src/tessellate/api/routes_auth.py:1718 |
-| `/changelog` | GET | `changelog` | src/tessellate/api/app.py:1721 |
+| `/changelog` | GET | `changelog` | src/tessellate/api/app.py:1723 |
 | `/changes` | GET | `entry_changes` | src/tessellate/api/routes_entries.py:2078 |
 | `/charts/question` | POST | `chart_for_question` | src/tessellate/api/routes_vision.py:409 |
 | `/chat-model` | POST | `set_chat_model` | src/tessellate/api/routes_models.py:1032 |
@@ -13011,8 +13021,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/export/folder` | GET | `export_notebook_folder` | src/tessellate/api/routes_import.py:150 |
 | `/export/json` | GET | `export_json` | src/tessellate/api/routes_settings_transfer.py:74 |
 | `/export/markdown` | GET | `export_markdown` | src/tessellate/api/routes_settings_transfer.py:202 |
-| `/extract/commit` | POST | `extract_commit` | src/tessellate/api/routes_entries.py:3716 |
-| `/extract/preview` | POST | `extract_preview` | src/tessellate/api/routes_entries.py:3670 |
+| `/extract/commit` | POST | `extract_commit` | src/tessellate/api/routes_entries.py:3717 |
+| `/extract/preview` | POST | `extract_preview` | src/tessellate/api/routes_entries.py:3671 |
 | `/extras` | GET | `list_extras` | src/tessellate/api/routes_settings.py:2091 |
 | `/extras/bulk` | POST | `bulk_extras` | src/tessellate/api/routes_settings.py:2123 |
 | `/extras/{extra_id}/install` | POST | `install_extra` | src/tessellate/api/routes_settings.py:2132 |
@@ -13064,7 +13074,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/hardware` | GET | `hardware_memory` | src/tessellate/api/routes_models.py:971 |
 | `/hardware` | PUT | `save_hardware` | src/tessellate/api/routes_models.py:979 |
 | `/health` | GET | `debug_health` | src/tessellate/api/routes_debug.py:99 |
-| `/health` | GET | `health` | src/tessellate/api/app.py:1631 |
+| `/health` | GET | `health` | src/tessellate/api/app.py:1633 |
 | `/health/integrity` | POST | `integrity_check` | src/tessellate/api/routes_debug.py:284 |
 | `/health/self-check` | POST | `self_check` | src/tessellate/api/routes_debug.py:276 |
 | `/heatmap` | GET | `heatmap` | src/tessellate/api/routes_insights.py:401 |
@@ -13085,9 +13095,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/import/reports/{report_id}` | GET | `import_report_page` | src/tessellate/api/routes_import.py:141 |
 | `/improve` | POST | `improve_writing` | src/tessellate/api/routes_entries.py:1743 |
 | `/inspect` | POST | `inspect_model` | src/tessellate/api/routes_models.py:1004 |
-| `/instance` | GET | `instance` | src/tessellate/api/app.py:1657 |
-| `/instance/focus` | POST | `instance_focus` | src/tessellate/api/app.py:1671 |
-| `/instance/shutdown` | POST | `instance_shutdown` | src/tessellate/api/app.py:1691 |
+| `/instance` | GET | `instance` | src/tessellate/api/app.py:1659 |
+| `/instance/focus` | POST | `instance_focus` | src/tessellate/api/app.py:1673 |
+| `/instance/shutdown` | POST | `instance_shutdown` | src/tessellate/api/app.py:1693 |
 | `/items/save-many` | PUT | `save_items` | src/tessellate/api/wb_items.py:352 |
 | `/jobs` | GET | `list_jobs` | src/tessellate/api/routes_tasks.py:613 |
 | `/jobs/cancel` | POST | `cancel_job` | src/tessellate/api/routes_models.py:1241 |
@@ -13170,7 +13180,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/merges/accept` | POST | `accept_merge` | src/tessellate/api/routes_inbox.py:141 |
 | `/merges/dismiss` | POST | `dismiss_merge` | src/tessellate/api/routes_inbox.py:155 |
 | `/merges/{undo_id}/undo` | POST | `undo_merge_route` | src/tessellate/api/routes_entities.py:228 |
-| `/mermaid-frame` | GET | `mermaid_frame` | src/tessellate/api/app.py:1610 |
+| `/mermaid-frame` | GET | `mermaid_frame` | src/tessellate/api/app.py:1612 |
 | `/models/{size}` | DELETE | `remove_model` | src/tessellate/api/routes_voice.py:44 |
 | `/modes` | GET | `list_modes` | src/tessellate/api/routes_chat.py:2379 |
 | `/most-accessed` | GET | `most_accessed` | src/tessellate/api/routes_entries.py:2053 |
@@ -13191,7 +13201,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/ocr-readers` | GET | `ocr_readers` | src/tessellate/api/routes_files_ocr.py:1318 |
 | `/ocr/language` | POST | `set_ocr_language` | src/tessellate/api/routes_files_ocr.py:1367 |
 | `/on-this-day` | GET | `on_this_day` | src/tessellate/api/routes_insights.py:681 |
-| `/openapi.json` | GET | `openapi_schema` | src/tessellate/api/app.py:1593 |
+| `/openapi.json` | GET | `openapi_schema` | src/tessellate/api/app.py:1595 |
 | `/outline` | GET | `documents_outline` | src/tessellate/api/routes_documents.py:480 |
 | `/parse` | POST | `magic_add_reminder` | src/tessellate/api/routes_reminders.py:623 |
 | `/password-on-open` | POST | `set_password_on_open` | src/tessellate/api/routes_auth.py:1241 |
@@ -13317,7 +13327,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/support-bundle` | GET | `support_bundle` | src/tessellate/api/routes_settings.py:2620 |
 | `/switches` | GET | `get_switches` | src/tessellate/api/routes_learned.py:223 |
 | `/switches` | PUT | `put_switches` | src/tessellate/api/routes_learned.py:229 |
-| `/system/clear-static-cache` | POST | `system_clear_static_cache` | src/tessellate/api/app.py:1603 |
+| `/system/clear-static-cache` | POST | `system_clear_static_cache` | src/tessellate/api/app.py:1605 |
 | `/system/console-mode` | POST | `set_console_mode` | src/tessellate/api/routes_settings.py:1353 |
 | `/system/desktop-shortcut` | POST | `desktop_shortcut` | src/tessellate/api/routes_maintenance.py:85 |
 | `/system/doctor` | GET | `run_doctor` | src/tessellate/api/routes_maintenance.py:44 |
@@ -13453,10 +13463,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{entry_id}/history` | GET | `entry_history` | src/tessellate/api/routes_entries.py:2978 |
 | `/{entry_id}/history/{revision_id}/restore` | POST | `restore_revision` | src/tessellate/api/routes_entries.py:3125 |
 | `/{entry_id}/links` | POST | `create_link` | src/tessellate/api/routes_entries.py:3540 |
-| `/{entry_id}/links/{link_id}` | DELETE | `delete_link` | src/tessellate/api/routes_entries.py:3569 |
-| `/{entry_id}/links/{link_id}` | PATCH | `patch_link` | src/tessellate/api/routes_entries.py:3579 |
-| `/{entry_id}/links/{link_id}/generate-reason` | POST | `generate_link_reason_endpoint` | src/tessellate/api/routes_entries.py:3618 |
-| `/{entry_id}/links/{link_id}/reason` | PUT | `update_link_reason` | src/tessellate/api/routes_entries.py:3599 |
+| `/{entry_id}/links/{link_id}` | DELETE | `delete_link` | src/tessellate/api/routes_entries.py:3570 |
+| `/{entry_id}/links/{link_id}` | PATCH | `patch_link` | src/tessellate/api/routes_entries.py:3580 |
+| `/{entry_id}/links/{link_id}/generate-reason` | POST | `generate_link_reason_endpoint` | src/tessellate/api/routes_entries.py:3619 |
+| `/{entry_id}/links/{link_id}/reason` | PUT | `update_link_reason` | src/tessellate/api/routes_entries.py:3600 |
 | `/{entry_id}/mentions/link` | POST | `link_mention` | src/tessellate/api/routes_mentions.py:174 |
 | `/{entry_id}/privacy` | POST | `set_entry_privacy` | src/tessellate/api/routes_entries.py:3169 |
 | `/{entry_id}/purge` | DELETE | `purge_entry` | src/tessellate/api/routes_entries.py:2496 |
@@ -13483,15 +13493,15 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{key}/apply` | POST | `tidy_apply` | src/tessellate/api/routes_tidy.py:112 |
 | `/{key}/dismiss` | POST | `tidy_dismiss` | src/tessellate/api/routes_tidy.py:98 |
 | `/{key}/undismiss` | POST | `tidy_undismiss` | src/tessellate/api/routes_tidy.py:106 |
-| `/{reminder_id}` | DELETE | `delete_reminder` | src/tessellate/api/routes_reminders.py:812 |
+| `/{reminder_id}` | DELETE | `delete_reminder` | src/tessellate/api/routes_reminders.py:827 |
 | `/{reminder_id}` | PUT | `update_reminder` | src/tessellate/api/routes_reminders.py:717 |
 | `/{reminder_id}/calendar-links` | GET | `calendar_links` | src/tessellate/api/routes_reminders.py:417 |
-| `/{reminder_id}/complete` | POST | `complete_reminder` | src/tessellate/api/routes_reminders.py:753 |
+| `/{reminder_id}/complete` | POST | `complete_reminder` | src/tessellate/api/routes_reminders.py:763 |
 | `/{reminder_id}/export.ics` | GET | `export_one_ics` | src/tessellate/api/routes_reminders.py:410 |
-| `/{reminder_id}/notification-act` | POST | `act_from_notification` | src/tessellate/api/routes_reminders.py:789 |
-| `/{reminder_id}/notification-token` | POST | `notification_token` | src/tessellate/api/routes_reminders.py:772 |
-| `/{reminder_id}/purge` | DELETE | `purge_reminder` | src/tessellate/api/routes_reminders.py:828 |
-| `/{reminder_id}/restore` | POST | `restore_reminder` | src/tessellate/api/routes_reminders.py:821 |
+| `/{reminder_id}/notification-act` | POST | `act_from_notification` | src/tessellate/api/routes_reminders.py:804 |
+| `/{reminder_id}/notification-token` | POST | `notification_token` | src/tessellate/api/routes_reminders.py:787 |
+| `/{reminder_id}/purge` | DELETE | `purge_reminder` | src/tessellate/api/routes_reminders.py:843 |
+| `/{reminder_id}/restore` | POST | `restore_reminder` | src/tessellate/api/routes_reminders.py:836 |
 | `/{session_id}/audio` | POST | `audio` | src/tessellate/api/routes_captions.py:112 |
 | `/{session_id}/stop` | POST | `stop` | src/tessellate/api/routes_captions.py:137 |
 | `/{turn_id}` | DELETE | `delete_ask_turn` | src/tessellate/api/routes_ask_history.py:183 |
@@ -13499,7 +13509,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10127)
+## Backend modules (10133)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -19989,44 +19999,44 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Layer` | src/tessellate/api/app.py:1362 |
-| `RequestPulse` | src/tessellate/api/app.py:1227 |
-| `RevalidatedStatic` | src/tessellate/api/app.py:339 |
-| `SpaceGuard` | src/tessellate/api/app.py:1154 |
-| `_UnversionedStatic` | src/tessellate/api/app.py:330 |
-| `_add_middleware` | src/tessellate/api/app.py:1462 |
-| `_add_system_routes` | src/tessellate/api/app.py:1589 |
-| `_backup_if_due` | src/tessellate/api/app.py:763 |
-| `_check_data_folder` | src/tessellate/api/app.py:749 |
-| `_check_notebook_file` | src/tessellate/api/app.py:741 |
-| `_choose_chat_model_if_missing` | src/tessellate/api/app.py:692 |
-| `_code_for_status` | src/tessellate/api/app.py:910 |
-| `_compact_event_log` | src/tessellate/api/app.py:610 |
-| `_compact_step` | src/tessellate/api/app.py:656 |
-| `_content_length` | src/tessellate/api/app.py:1206 |
-| `_has_password` | src/tessellate/api/app.py:1337 |
-| `_include_routers` | src/tessellate/api/app.py:1579 |
-| `_install_pending_extras` | src/tessellate/api/app.py:664 |
-| `_purge_expired_bin_entries` | src/tessellate/api/app.py:586 |
-| `_purge_step` | src/tessellate/api/app.py:652 |
-| `_read_note_dates` | src/tessellate/api/app.py:733 |
-| `_register_error_handlers` | src/tessellate/api/app.py:921 |
-| `_stamp_for` | src/tessellate/api/app.py:245 |
-| `_start_autonomous_loop` | src/tessellate/api/app.py:865 |
-| `_start_searxng_if_asked` | src/tessellate/api/app.py:788 |
-| `_start_services` | src/tessellate/api/app.py:1264 |
-| `_startup_maintenance` | src/tessellate/api/app.py:703 |
-| `_static_gzip` | src/tessellate/api/app.py:525 |
-| `_warm_routes` | src/tessellate/api/app.py:820 |
-| `_warm_search_at_launch` | src/tessellate/api/app.py:1351 |
-| `asset_hash` | src/tessellate/api/app.py:221 |
-| `asset_stamps` | src/tessellate/api/app.py:250 |
-| `clear_static_cache` | src/tessellate/api/app.py:566 |
-| `create_app` | src/tessellate/api/app.py:1757 |
-| `out_of_space_body` | src/tessellate/api/app.py:1124 |
-| `pin_static_mime_types` | src/tessellate/api/app.py:188 |
-| `served_index_html` | src/tessellate/api/app.py:295 |
-| `served_offline_html` | src/tessellate/api/app.py:279 |
+| `Layer` | src/tessellate/api/app.py:1363 |
+| `RequestPulse` | src/tessellate/api/app.py:1228 |
+| `RevalidatedStatic` | src/tessellate/api/app.py:340 |
+| `SpaceGuard` | src/tessellate/api/app.py:1155 |
+| `_UnversionedStatic` | src/tessellate/api/app.py:331 |
+| `_add_middleware` | src/tessellate/api/app.py:1463 |
+| `_add_system_routes` | src/tessellate/api/app.py:1591 |
+| `_backup_if_due` | src/tessellate/api/app.py:764 |
+| `_check_data_folder` | src/tessellate/api/app.py:750 |
+| `_check_notebook_file` | src/tessellate/api/app.py:742 |
+| `_choose_chat_model_if_missing` | src/tessellate/api/app.py:693 |
+| `_code_for_status` | src/tessellate/api/app.py:911 |
+| `_compact_event_log` | src/tessellate/api/app.py:611 |
+| `_compact_step` | src/tessellate/api/app.py:657 |
+| `_content_length` | src/tessellate/api/app.py:1207 |
+| `_has_password` | src/tessellate/api/app.py:1338 |
+| `_include_routers` | src/tessellate/api/app.py:1581 |
+| `_install_pending_extras` | src/tessellate/api/app.py:665 |
+| `_purge_expired_bin_entries` | src/tessellate/api/app.py:587 |
+| `_purge_step` | src/tessellate/api/app.py:653 |
+| `_read_note_dates` | src/tessellate/api/app.py:734 |
+| `_register_error_handlers` | src/tessellate/api/app.py:922 |
+| `_stamp_for` | src/tessellate/api/app.py:246 |
+| `_start_autonomous_loop` | src/tessellate/api/app.py:866 |
+| `_start_searxng_if_asked` | src/tessellate/api/app.py:789 |
+| `_start_services` | src/tessellate/api/app.py:1265 |
+| `_startup_maintenance` | src/tessellate/api/app.py:704 |
+| `_static_gzip` | src/tessellate/api/app.py:526 |
+| `_warm_routes` | src/tessellate/api/app.py:821 |
+| `_warm_search_at_launch` | src/tessellate/api/app.py:1352 |
+| `asset_hash` | src/tessellate/api/app.py:222 |
+| `asset_stamps` | src/tessellate/api/app.py:251 |
+| `clear_static_cache` | src/tessellate/api/app.py:567 |
+| `create_app` | src/tessellate/api/app.py:1759 |
+| `out_of_space_body` | src/tessellate/api/app.py:1125 |
+| `pin_static_mime_types` | src/tessellate/api/app.py:189 |
+| `served_index_html` | src/tessellate/api/app.py:296 |
+| `served_offline_html` | src/tessellate/api/app.py:280 |
 
 ### src/tessellate/api/asset_strip.py (21)
 
@@ -21076,10 +21086,10 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `DailyDayOut` | src/tessellate/api/routes_entries.py:1001 |
 | `DailyJournalOut` | src/tessellate/api/routes_entries.py:1006 |
-| `ExtractCommitBody` | src/tessellate/api/routes_entries.py:3708 |
-| `ExtractLinkIn` | src/tessellate/api/routes_entries.py:3698 |
-| `ExtractNoteIn` | src/tessellate/api/routes_entries.py:3687 |
-| `ExtractPreviewBody` | src/tessellate/api/routes_entries.py:3661 |
+| `ExtractCommitBody` | src/tessellate/api/routes_entries.py:3709 |
+| `ExtractLinkIn` | src/tessellate/api/routes_entries.py:3699 |
+| `ExtractNoteIn` | src/tessellate/api/routes_entries.py:3688 |
+| `ExtractPreviewBody` | src/tessellate/api/routes_entries.py:3662 |
 | `FilingDecisionBody` | src/tessellate/api/routes_entries.py:1202 |
 | `FilingStopBody` | src/tessellate/api/routes_entries.py:1185 |
 | `ImproveBody` | src/tessellate/api/routes_entries.py:1733 |
@@ -21174,25 +21184,25 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `daily_note` | src/tessellate/api/routes_entries.py:1109 |
 | `decide_filing` | src/tessellate/api/routes_entries.py:1209 |
 | `delete_entry` | src/tessellate/api/routes_entries.py:2451 |
-| `delete_link` | src/tessellate/api/routes_entries.py:3570 |
+| `delete_link` | src/tessellate/api/routes_entries.py:3571 |
 | `entry_changes` | src/tessellate/api/routes_entries.py:2079 |
 | `entry_connections` | src/tessellate/api/routes_entries.py:3425 |
 | `entry_history` | src/tessellate/api/routes_entries.py:2979 |
 | `entry_reference_counts` | src/tessellate/api/routes_entries.py:2141 |
 | `entry_references` | src/tessellate/api/routes_entries.py:2933 |
 | `export_entry` | src/tessellate/api/routes_entries.py:2271 |
-| `extract_commit` | src/tessellate/api/routes_entries.py:3717 |
-| `extract_preview` | src/tessellate/api/routes_entries.py:3671 |
+| `extract_commit` | src/tessellate/api/routes_entries.py:3718 |
+| `extract_preview` | src/tessellate/api/routes_entries.py:3672 |
 | `filing_status` | src/tessellate/api/routes_entries.py:1318 |
 | `generate_entry_title` | src/tessellate/api/routes_entries.py:3199 |
-| `generate_link_reason_endpoint` | src/tessellate/api/routes_entries.py:3619 |
+| `generate_link_reason_endpoint` | src/tessellate/api/routes_entries.py:3620 |
 | `get_entry` | src/tessellate/api/routes_entries.py:2191 |
 | `improve_writing` | src/tessellate/api/routes_entries.py:1744 |
 | `list_entries` | src/tessellate/api/routes_entries.py:1900 |
 | `make_all_private` | src/tessellate/api/routes_entries.py:3155 |
 | `most_accessed` | src/tessellate/api/routes_entries.py:2054 |
 | `open_daily_note` | src/tessellate/api/routes_entries.py:1125 |
-| `patch_link` | src/tessellate/api/routes_entries.py:3580 |
+| `patch_link` | src/tessellate/api/routes_entries.py:3581 |
 | `purge_entry` | src/tessellate/api/routes_entries.py:2497 |
 | `query_entries` | src/tessellate/api/routes_entries.py:1798 |
 | `reevaluate_entry` | src/tessellate/api/routes_entries.py:1592 |
@@ -21212,7 +21222,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `then_and_now_of_text` | src/tessellate/api/routes_entries.py:2966 |
 | `unarchive_entry` | src/tessellate/api/routes_entries.py:2489 |
 | `update_entry` | src/tessellate/api/routes_entries.py:2365 |
-| `update_link_reason` | src/tessellate/api/routes_entries.py:3600 |
+| `update_link_reason` | src/tessellate/api/routes_entries.py:3601 |
 | `wiki_rename` | src/tessellate/api/routes_entries.py:2437 |
 
 ### src/tessellate/api/routes_entries_relations.py (28)
@@ -21586,6 +21596,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `today_line` | src/tessellate/api/routes_insights.py:485 |
 | `weekly_digest` | src/tessellate/api/routes_insights.py:948 |
 | `weekly_digest_stream` | src/tessellate/api/routes_insights.py:875 |
+
+### src/tessellate/api/routes_kept_words.py (5)
+
+| Name | File:line |
+|---|---|
+| `KeptWordsIn` | src/tessellate/api/routes_kept_words.py:36 |
+| `_path` | src/tessellate/api/routes_kept_words.py:40 |
+| `forget` | src/tessellate/api/routes_kept_words.py:80 |
+| `keep` | src/tessellate/api/routes_kept_words.py:45 |
+| `read` | src/tessellate/api/routes_kept_words.py:66 |
 
 ### src/tessellate/api/routes_lag.py (5)
 
@@ -21961,12 +21981,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `list_types` | src/tessellate/api/routes_relations.py:44 |
 | `patch_type` | src/tessellate/api/routes_relations.py:71 |
 
-### src/tessellate/api/routes_reminders.py (41)
+### src/tessellate/api/routes_reminders.py (42)
 
 | Name | File:line |
 |---|---|
 | `MagicAddBody` | src/tessellate/api/routes_reminders.py:77 |
-| `NotificationAct` | src/tessellate/api/routes_reminders.py:782 |
+| `NotificationAct` | src/tessellate/api/routes_reminders.py:797 |
 | `ReminderCreate` | src/tessellate/api/routes_reminders.py:53 |
 | `ReminderUpdate` | src/tessellate/api/routes_reminders.py:88 |
 | `SuggestBody` | src/tessellate/api/routes_reminders.py:590 |
@@ -21986,24 +22006,25 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_reject_if_in_the_past` | src/tessellate/api/routes_reminders.py:107 |
 | `_repeat_words` | src/tessellate/api/routes_reminders.py:200 |
 | `_rule_words` | src/tessellate/api/routes_reminders.py:211 |
+| `_same_instant` | src/tessellate/api/routes_reminders.py:753 |
 | `_target` | src/tessellate/api/routes_reminders.py:122 |
 | `_to_out` | src/tessellate/api/routes_reminders.py:159 |
 | `_writable` | src/tessellate/api/routes_reminders.py:232 |
-| `act_from_notification` | src/tessellate/api/routes_reminders.py:790 |
+| `act_from_notification` | src/tessellate/api/routes_reminders.py:805 |
 | `calendar_links` | src/tessellate/api/routes_reminders.py:418 |
-| `complete_reminder` | src/tessellate/api/routes_reminders.py:754 |
+| `complete_reminder` | src/tessellate/api/routes_reminders.py:764 |
 | `create_reminder` | src/tessellate/api/routes_reminders.py:539 |
-| `delete_reminder` | src/tessellate/api/routes_reminders.py:813 |
+| `delete_reminder` | src/tessellate/api/routes_reminders.py:828 |
 | `export_ics` | src/tessellate/api/routes_reminders.py:403 |
 | `export_one_ics` | src/tessellate/api/routes_reminders.py:411 |
 | `import_ics` | src/tessellate/api/routes_reminders.py:477 |
 | `list_reminders` | src/tessellate/api/routes_reminders.py:506 |
 | `magic_add_reminder` | src/tessellate/api/routes_reminders.py:624 |
-| `notification_token` | src/tessellate/api/routes_reminders.py:773 |
-| `purge_reminder` | src/tessellate/api/routes_reminders.py:829 |
+| `notification_token` | src/tessellate/api/routes_reminders.py:788 |
+| `purge_reminder` | src/tessellate/api/routes_reminders.py:844 |
 | `read_when` | src/tessellate/api/routes_reminders.py:572 |
 | `reminder_counts` | src/tessellate/api/routes_reminders.py:256 |
-| `restore_reminder` | src/tessellate/api/routes_reminders.py:822 |
+| `restore_reminder` | src/tessellate/api/routes_reminders.py:837 |
 | `suggest_reminder` | src/tessellate/api/routes_reminders.py:596 |
 | `update_reminder` | src/tessellate/api/routes_reminders.py:718 |
 
@@ -22512,36 +22533,36 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `BoardBackground` | src/tessellate/api/wb_board.py:571 |
-| `BoardCreate` | src/tessellate/api/wb_board.py:776 |
-| `BoardLayer` | src/tessellate/api/wb_board.py:439 |
-| `BoardOut` | src/tessellate/api/wb_board.py:678 |
-| `BoardTypeMixin` | src/tessellate/api/wb_board.py:750 |
-| `_board_background` | src/tessellate/api/wb_board.py:618 |
-| `_board_entry` | src/tessellate/api/wb_board.py:780 |
+| `BoardBackground` | src/tessellate/api/wb_board.py:575 |
+| `BoardCreate` | src/tessellate/api/wb_board.py:780 |
+| `BoardLayer` | src/tessellate/api/wb_board.py:443 |
+| `BoardOut` | src/tessellate/api/wb_board.py:682 |
+| `BoardTypeMixin` | src/tessellate/api/wb_board.py:754 |
+| `_board_background` | src/tessellate/api/wb_board.py:622 |
+| `_board_entry` | src/tessellate/api/wb_board.py:784 |
 | `_board_filter` | src/tessellate/api/wb_board.py:27 |
-| `_board_layers` | src/tessellate/api/wb_board.py:460 |
-| `_board_numbered` | src/tessellate/api/wb_board.py:396 |
-| `_board_settings` | src/tessellate/api/wb_board.py:190 |
-| `_board_theme` | src/tessellate/api/wb_board.py:319 |
-| `_clean_defaults` | src/tessellate/api/wb_board.py:547 |
-| `_clean_levels` | src/tessellate/api/wb_board.py:285 |
-| `_clean_theme` | src/tessellate/api/wb_board.py:243 |
-| `_default_value` | src/tessellate/api/wb_board.py:534 |
-| `_drop_orphan_links` | src/tessellate/api/wb_board.py:140 |
+| `_board_layers` | src/tessellate/api/wb_board.py:464 |
+| `_board_numbered` | src/tessellate/api/wb_board.py:400 |
+| `_board_settings` | src/tessellate/api/wb_board.py:194 |
+| `_board_theme` | src/tessellate/api/wb_board.py:323 |
+| `_clean_defaults` | src/tessellate/api/wb_board.py:551 |
+| `_clean_levels` | src/tessellate/api/wb_board.py:289 |
+| `_clean_theme` | src/tessellate/api/wb_board.py:247 |
+| `_default_value` | src/tessellate/api/wb_board.py:538 |
+| `_drop_orphan_links` | src/tessellate/api/wb_board.py:144 |
 | `_forget_links_to` | src/tessellate/api/wb_board.py:37 |
-| `_is_link_sketch` | src/tessellate/api/wb_board.py:668 |
-| `_on_current_layer` | src/tessellate/api/wb_board.py:515 |
+| `_is_link_sketch` | src/tessellate/api/wb_board.py:672 |
+| `_on_current_layer` | src/tessellate/api/wb_board.py:519 |
 | `_require_board` | src/tessellate/api/wb_board.py:89 |
 | `_require_entry` | src/tessellate/api/wb_board.py:82 |
-| `_store_board_background` | src/tessellate/api/wb_board.py:644 |
-| `_store_board_layers` | src/tessellate/api/wb_board.py:478 |
-| `_store_board_numbered` | src/tessellate/api/wb_board.py:414 |
-| `_store_board_settings` | src/tessellate/api/wb_board.py:217 |
-| `_store_board_theme` | src/tessellate/api/wb_board.py:332 |
-| `_themed_style` | src/tessellate/api/wb_board.py:366 |
-| `_without_pins` | src/tessellate/api/wb_board.py:384 |
-| `current_layer` | src/tessellate/api/wb_board.py:503 |
+| `_store_board_background` | src/tessellate/api/wb_board.py:648 |
+| `_store_board_layers` | src/tessellate/api/wb_board.py:482 |
+| `_store_board_numbered` | src/tessellate/api/wb_board.py:418 |
+| `_store_board_settings` | src/tessellate/api/wb_board.py:221 |
+| `_store_board_theme` | src/tessellate/api/wb_board.py:336 |
+| `_themed_style` | src/tessellate/api/wb_board.py:370 |
+| `_without_pins` | src/tessellate/api/wb_board.py:388 |
+| `current_layer` | src/tessellate/api/wb_board.py:507 |
 | `get_whiteboard_state` | src/tessellate/api/wb_board.py:115 |
 
 ### src/tessellate/api/wb_boards.py (8)
@@ -25827,11 +25848,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `get_any` | src/tessellate/repo/reminders.py:38 |
 | `import_event` | src/tessellate/repo/reminders.py:152 |
 | `matching` | src/tessellate/repo/reminders.py:101 |
-| `move_to_bin` | src/tessellate/repo/reminders.py:199 |
+| `move_to_bin` | src/tessellate/repo/reminders.py:203 |
 | `on_note` | src/tessellate/repo/reminders.py:97 |
 | `page` | src/tessellate/repo/reminders.py:49 |
-| `purge` | src/tessellate/repo/reminders.py:213 |
-| `restore` | src/tessellate/repo/reminders.py:206 |
+| `purge` | src/tessellate/repo/reminders.py:217 |
+| `restore` | src/tessellate/repo/reminders.py:210 |
 | `snooze` | src/tessellate/repo/reminders.py:193 |
 | `twin` | src/tessellate/repo/reminders.py:130 |
 
@@ -26305,7 +26326,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (20463)
+## Tests (20469)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28404,7 +28425,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_starter_acts.py | 7 |
 | tests/test_starter_acts_tabs.py | 2 |
 | tests/test_startup_maintenance_off_path.py | 1 |
-| tests/test_state_machines_1747.py | 2 |
+| tests/test_state_machines_1747.py | 8 |
 | tests/test_static_compression.py | 6 |
 | tests/test_static_freshness.py | 5 |
 | tests/test_static_precompressed.py | 7 |

@@ -191,6 +191,10 @@ def complete(session: Session, reminder: Reminder, tz_offset_minutes: int) -> No
 
 
 def snooze(session: Session, reminder: Reminder, by: timedelta) -> None:
+    """Later by `by`. A done reminder stays done: a notification left on screen after the tick
+    must not open it again (INBOX 1747, row 5)."""
+    if reminder.done:
+        return
     reminder.due_at = utcnow() + by
     reminder.done = False
     log_action(session, "edited", "reminder", reminder.id, "snoozed")
