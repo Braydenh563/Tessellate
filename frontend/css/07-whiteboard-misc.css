@@ -9741,23 +9741,6 @@ input[type="file"] {
   color: var(--accent-surface);
   background: var(--accent-soft);
 }
-/* A native control a dock keeps only as the value its handlers read (the
-   Timeline's view select, driven by the icon segment beside it). Out of
-   flow, out of the tab order, out of the pointer's reach: and `!important`
-   for the same reason `.select-native-hidden` needs it: an id rule for the
-   control's old visible shape outranks a class. */
-.dock-native-hidden {
-  position: absolute !important;
-  width: 1px !important;
-  height: 1px !important;
-  min-width: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-  clip-path: inset(50%);
-  opacity: 0;
-  pointer-events: none;
-}
 .dock-menu-section .timeline-custom-range {
   margin: var(--space-2) 0 0;
 }
