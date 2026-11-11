@@ -498,52 +498,11 @@ def _overridden_count(manager) -> int:  # noqa: ANN001
     return sum(1 for row in manager.feature_rows() if row["overridden"])
 
 
-@router.get("/status")
-def status(session: Session = Depends(get_session)) -> dict:
-    """One call that tells the UI everything: is Ollama up, what's
-    installed, what's active, and whether any job is running."""
-    ollama = _CachedCapabilities(deps.get_ollama())
-    manager = deps.get_model_manager()
-    embeddings = deps.get_embeddings()
-
-    # is_running() and list_models() both hit Ollama's own /api/tags: 
-    # calling both in sequence (as this used to) can take up to 7s (2s + 5s)
-    # for one poll, which used to be longer than the frontend's
-    # AbortSignal.timeout on this exact call (app.js refreshModelStatus): 
-    # since raised from 5s to 8s, but still worth beating rather than
-    # trusting that margin. That mismatch read as "AI unavailable" on a
-    # backend that is genuinely up but momentarily slow to answer, one
-    # round-trip now serves both purposes.
-    known, checking = _installed_state(ollama)
-    installed = known if known is not None else []
-    running = known is not None
-    if running:
-        #: Seen online: drop the refused and silent marks now (Q11).
-        ollama_client.note_online(ollama.base_url)
-    pulls = jobs.pull_statuses()
-    if running:
-        installed = _installed_after_pulls(ollama, installed, pulls)
-    chat_model = manager.chat_model()
-    utility_resolved, utility_reason = manager.utility_resolution()
-    # Resolved once. It walks the installed models asking each whether it can
-    # see, which is an HTTP call per model on a cold cache.
-    resolved_vision = manager.resolve_vision_model(ollama, installed) if running else None
-
-    config = deps.get_config()
-    semantic_offer = _semantic_offer(embeddings, config)
-    provider = str(config.get_preference("llm_provider", "ollama") or "ollama")
-    # Judged on every status poll, not only when the address is changed. A
-    # warning that appears once and vanishes on the next reload is a warning
-    # about a condition that has not gone away, and this one is about notes
-    # leaving the machine, which is the app's central promise.
-    local_only = bool(config.get_preference("local_only_ai", True))
-    _, privacy_note, is_local = security.check_backend_url(ollama.base_url)
-
-    #: Section 21 row 12: nothing answered, at an address the person set.
-    #: The default address unanswered is a server not started ("isn't
-    #: running"); a custom one is as likely a typo, so the line names it.
-    busy, unreachable_hint = _unreachable_state(ollama, provider, running, checking)
-
+def _status_chat_fields(  # noqa: ANN001
+    *, ollama, manager, running, installed, checking, busy, unreachable_hint, provider,
+    chat_model, is_local, privacy_note, local_only, utility_resolved, utility_reason, resolved_vision,
+) -> dict:
+    """The chat backend half of /status: reachability, privacy, and the models in use."""
     return {
         # Named for Ollama because the whole UI is, and it means "the chat
         # backend is answering", which is the question the pill asks whoever
@@ -630,6 +589,12 @@ def status(session: Session = Depends(get_session)) -> dict:
             if running
             else None
         ),
+    }
+
+
+def _status_search_fields(session, manager, embeddings, running, semantic_offer, pulls) -> dict:  # noqa: ANN001
+    """The feature models, embeddings, index and OCR half of /status."""
+    return {
         # One row per feature that may run on a model of its own, resolved:
         # the name in use and whether that is this feature's own choice or the
         # role's. Carried on the poll that already runs rather than in a
@@ -699,6 +664,64 @@ def status(session: Session = Depends(get_session)) -> dict:
         #: `ocr.engine`); the key keeps the name the frontend reads.
         "tesseract_available": ocr_probe()[0],
         "ocr_engine": ocr_probe()[1],
+    }
+
+
+@router.get("/status")
+def status(session: Session = Depends(get_session)) -> dict:
+    """One call that tells the UI everything: is Ollama up, what's
+    installed, what's active, and whether any job is running."""
+    ollama = _CachedCapabilities(deps.get_ollama())
+    manager = deps.get_model_manager()
+    embeddings = deps.get_embeddings()
+
+    # is_running() and list_models() both hit Ollama's own /api/tags: 
+    # calling both in sequence (as this used to) can take up to 7s (2s + 5s)
+    # for one poll, which used to be longer than the frontend's
+    # AbortSignal.timeout on this exact call (app.js refreshModelStatus): 
+    # since raised from 5s to 8s, but still worth beating rather than
+    # trusting that margin. That mismatch read as "AI unavailable" on a
+    # backend that is genuinely up but momentarily slow to answer, one
+    # round-trip now serves both purposes.
+    known, checking = _installed_state(ollama)
+    installed = known if known is not None else []
+    running = known is not None
+    if running:
+        #: Seen online: drop the refused and silent marks now (Q11).
+        ollama_client.note_online(ollama.base_url)
+    pulls = jobs.pull_statuses()
+    if running:
+        installed = _installed_after_pulls(ollama, installed, pulls)
+    chat_model = manager.chat_model()
+    utility_resolved, utility_reason = manager.utility_resolution()
+    # Resolved once. It walks the installed models asking each whether it can
+    # see, which is an HTTP call per model on a cold cache.
+    resolved_vision = manager.resolve_vision_model(ollama, installed) if running else None
+
+    config = deps.get_config()
+    semantic_offer = _semantic_offer(embeddings, config)
+    provider = str(config.get_preference("llm_provider", "ollama") or "ollama")
+    # Judged on every status poll, not only when the address is changed. A
+    # warning that appears once and vanishes on the next reload is a warning
+    # about a condition that has not gone away, and this one is about notes
+    # leaving the machine, which is the app's central promise.
+    local_only = bool(config.get_preference("local_only_ai", True))
+    _, privacy_note, is_local = security.check_backend_url(ollama.base_url)
+
+    #: Section 21 row 12: nothing answered, at an address the person set.
+    #: The default address unanswered is a server not started ("isn't
+    #: running"); a custom one is as likely a typo, so the line names it.
+    busy, unreachable_hint = _unreachable_state(ollama, provider, running, checking)
+
+    return {
+        **_status_chat_fields(
+            ollama=ollama, manager=manager, running=running, installed=installed,
+            checking=checking, busy=busy, unreachable_hint=unreachable_hint, provider=provider,
+            chat_model=chat_model, is_local=is_local, privacy_note=privacy_note,
+            local_only=local_only, utility_resolved=utility_resolved,
+            utility_reason=utility_reason, resolved_vision=resolved_vision,
+        ),
+        **_status_search_fields(session, manager, embeddings, running, semantic_offer, pulls),
     }
 
 
