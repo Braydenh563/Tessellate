@@ -11,6 +11,7 @@ from datetime import timedelta
 
 from tessellate.core import deps
 from tessellate.core.database import WebPage, utcnow
+from tessellate.core.privacy_http import strip_tracking
 
 logger = logging.getLogger(__name__)
 
@@ -19,8 +20,6 @@ MAX_PAGES = 200
 
 
 def _key(url: str) -> str:
-    from tessellate.search.websearch import strip_tracking
-
     return strip_tracking(url)[:2000]
 
 
