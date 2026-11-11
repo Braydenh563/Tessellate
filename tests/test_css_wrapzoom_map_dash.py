@@ -77,3 +77,17 @@ def test_last_reminder_scrolls_clear_of_the_floating_new_button():
     )
     assert rule, "the Reminders page foot rule is not in the phone media query"
     assert "padding-bottom: calc(var(--target-min) + var(--space-5) + var(--space-3))" in rule.group(1)
+
+
+def test_map_dock_slides_off_the_zoom_pill_only_as_far_as_it_needs():
+    band = re.search(
+        r"@media \(min-width: 820px\)\s*\{\s*"
+        r"\.whiteboard-floating-panel\.bottom-center:not\(\[data-dock=\"side\"\]\)\s*\{([^}]*)\}",
+        CLEAN,
+    )
+    assert band, "the dock's slide is not in the 820 and up band"
+    rule = re.sub(r"\s+", " ", band.group(1))
+    slide = "clamp(0px, calc(2 * (var(--wb-w-zoom) + 1.5rem) + 53rem - 100%), calc(var(--wb-w-zoom) + 1.5rem))"
+    assert f"right: {slide}" in rule
+    # The old symmetric cap stays, plus what the dock slid: a longer row wraps, never goes under the pill.
+    assert f"max-width: calc( 100% + {slide} - 2 * (var(--wb-w-zoom) + 1.5rem) )" in rule

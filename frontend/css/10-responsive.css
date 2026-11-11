@@ -3016,3 +3016,25 @@ header#top-bar[data-scrolled="1"],
     padding-bottom: calc(var(--target-min) + var(--space-5) + var(--space-3));
   }
 }
+/* 7. **The map's tool dock shares the bottom edge with the zoom pill, so it
+       gives up only as much of the pill's side as it needs.** Both sides were
+       kept clear (07-whiteboard-misc.css: `100% - 2 * (zoom + 1.5rem)`,
+       "symmetric so centring can never put the dock under it"), which needs
+       1284px for the dock's one 834px row: at 1280 it was 27px short and
+       wrapped to two rows (86px), at 960 (a 1920 window at 200 %) to three
+       (114px of a 270px canvas). The `right` inset is how far the centre has to
+       slide left for a row of 53rem (the dock's natural width, 834px, and a
+       little over) to clear the pill: nothing from 1284 up, the whole
+       reserve at 1059 and below, a straight line between, so the dock never
+       jumps as the window is resized. The `max-width` is the old cap plus
+       what it slid, so a longer row (a translation) still wraps rather than
+       going under the pill. Below 820 it is the edge-to-edge strip. */
+@media (min-width: 820px) {
+  .whiteboard-floating-panel.bottom-center:not([data-dock="side"]) {
+    right: clamp(0px, calc(2 * (var(--wb-w-zoom) + 1.5rem) + 53rem - 100%), calc(var(--wb-w-zoom) + 1.5rem));
+    max-width: calc(
+      100% + clamp(0px, calc(2 * (var(--wb-w-zoom) + 1.5rem) + 53rem - 100%), calc(var(--wb-w-zoom) + 1.5rem)) -
+        2 * (var(--wb-w-zoom) + 1.5rem)
+    );
+  }
+}
