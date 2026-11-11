@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8166, frontend ids 2713, CSS sections 524, backend routes 677, backend modules 10433, test files 2583, tests 21118, plan headings 1013, app scripts 29, boot scripts 38, script files 284.
+Counts: frontend functions 8166, frontend ids 2713, CSS sections 524, backend routes 677, backend modules 10433, test files 2583, tests 21122, plan headings 1013, app scripts 29, boot scripts 38, script files 284.
 
 ## Frontend functions (8166)
 
@@ -2080,24 +2080,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `atlasBreathFrame` | frontend/js/atlas-life.js:897 |
+| `atlasBreathFrame` | frontend/js/atlas-life.js:907 |
 | `atlasFrameBudget` | frontend/js/atlas-life.js:476 |
-| `atlasPropLoops` | frontend/js/atlas-life.js:803 |
-| `atlasPropsFrame` | frontend/js/atlas-life.js:831 |
-| `atlasRigLower` | frontend/js/atlas-life.js:1428 |
-| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1403 |
+| `atlasPropLoops` | frontend/js/atlas-life.js:813 |
+| `atlasPropsFrame` | frontend/js/atlas-life.js:841 |
+| `atlasRigLower` | frontend/js/atlas-life.js:1438 |
+| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1413 |
 | `atlasRingLoops` | frontend/js/atlas-life.js:20 |
 | `atlasTailAttach` | frontend/js/atlas-life.js:365 |
 | `atlasTailBend` | frontend/js/atlas-life.js:133 |
-| `atlasTailCalm` | frontend/js/atlas-life.js:611 |
-| `atlasTailDraw` | frontend/js/atlas-life.js:730 |
+| `atlasTailCalm` | frontend/js/atlas-life.js:621 |
+| `atlasTailDraw` | frontend/js/atlas-life.js:740 |
 | `atlasTailFollow` | frontend/js/atlas-life.js:144 |
 | `atlasTailFrame` | frontend/js/atlas-life.js:502 |
 | `atlasTailKit` | frontend/js/atlas-life.js:238 |
 | `atlasTailPick` | frontend/js/atlas-life.js:439 |
-| `atlasTailRest` | frontend/js/atlas-life.js:693 |
+| `atlasTailRest` | frontend/js/atlas-life.js:703 |
 | `atlasTailShape` | frontend/js/atlas-life.js:205 |
-| `atlasTailUnrest` | frontend/js/atlas-life.js:708 |
+| `atlasTailUnrest` | frontend/js/atlas-life.js:718 |
 
 ### frontend/js/atlas-micro.js (8)
 
@@ -2140,40 +2140,40 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `atlasAlmond` | frontend/js/atlas.js:1579 |
-| `atlasApply` | frontend/js/atlas.js:3580 |
+| `atlasApply` | frontend/js/atlas.js:3597 |
 | `atlasArmHand` | frontend/js/atlas.js:1020 |
 | `atlasArmPath` | frontend/js/atlas.js:1015 |
 | `atlasArmSegs` | frontend/js/atlas.js:1006 |
-| `atlasAuraAt` | frontend/js/atlas.js:3034 |
-| `atlasAvatar` | frontend/js/atlas.js:3461 |
+| `atlasAuraAt` | frontend/js/atlas.js:3051 |
+| `atlasAvatar` | frontend/js/atlas.js:3478 |
 | `atlasBand` | frontend/js/atlas.js:1926 |
 | `atlasBandPaths` | frontend/js/atlas.js:1503 |
 | `atlasBandSplit` | frontend/js/atlas.js:1525 |
-| `atlasBody` | frontend/js/atlas.js:2424 |
+| `atlasBody` | frontend/js/atlas.js:2440 |
 | `atlasBookProp` | frontend/js/atlas.js:1984 |
 | `atlasBuild` | frontend/js/atlas.js:1103 |
-| `atlasBuildDefs` | frontend/js/atlas.js:2769 |
-| `atlasClassicFigure` | frontend/js/atlas.js:3738 |
-| `atlasClassicMark` | frontend/js/atlas.js:3616 |
+| `atlasBuildDefs` | frontend/js/atlas.js:2786 |
+| `atlasClassicFigure` | frontend/js/atlas.js:3755 |
+| `atlasClassicMark` | frontend/js/atlas.js:3633 |
 | `atlasCoilProp` | frontend/js/atlas.js:2017 |
-| `atlasCue` | frontend/js/atlas.js:2287 |
-| `atlasDefs` | frontend/js/atlas.js:2752 |
-| `atlasDraw` | frontend/js/atlas.js:3402 |
-| `atlasDrawFigure` | frontend/js/atlas.js:3057 |
-| `atlasDressMarks` | frontend/js/atlas.js:3465 |
-| `atlasDrift` | frontend/js/atlas.js:3989 |
+| `atlasCue` | frontend/js/atlas.js:2303 |
+| `atlasDefs` | frontend/js/atlas.js:2769 |
+| `atlasDraw` | frontend/js/atlas.js:3419 |
+| `atlasDrawFigure` | frontend/js/atlas.js:3074 |
+| `atlasDressMarks` | frontend/js/atlas.js:3482 |
+| `atlasDrift` | frontend/js/atlas.js:4006 |
 | `atlasDrop` | frontend/js/atlas.js:1569 |
 | `atlasEars` | frontend/js/atlas.js:1840 |
 | `atlasExtras` | frontend/js/atlas.js:1681 |
 | `atlasEye` | frontend/js/atlas.js:1595 |
-| `atlasFigure` | frontend/js/atlas.js:3511 |
+| `atlasFigure` | frontend/js/atlas.js:3528 |
 | `atlasFix` | frontend/js/atlas.js:214 |
 | `atlasFoot` | frontend/js/atlas.js:394 |
 | `atlasGroup` | frontend/js/atlas.js:172 |
 | `atlasHairCap` | frontend/js/atlas.js:1777 |
 | `atlasHand` | frontend/js/atlas.js:393 |
 | `atlasHandProps` | frontend/js/atlas.js:2084 |
-| `atlasHead` | frontend/js/atlas.js:2302 |
+| `atlasHead` | frontend/js/atlas.js:2318 |
 | `atlasHeadProps` | frontend/js/atlas.js:1956 |
 | `atlasHeart` | frontend/js/atlas.js:1562 |
 | `atlasHelixAt` | frontend/js/atlas.js:1443 |
@@ -2181,9 +2181,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasHelixSpan` | frontend/js/atlas.js:1492 |
 | `atlasHelixWidth` | frontend/js/atlas.js:1482 |
 | `atlasHemTip` | frontend/js/atlas.js:1031 |
-| `atlasHiddenSync` | frontend/js/atlas.js:3559 |
-| `atlasLevelFor` | frontend/js/atlas.js:3010 |
-| `atlasLids` | frontend/js/atlas.js:3370 |
+| `atlasHiddenSync` | frontend/js/atlas.js:3576 |
+| `atlasLevelFor` | frontend/js/atlas.js:3027 |
+| `atlasLids` | frontend/js/atlas.js:3387 |
 | `atlasLimbShaped` | frontend/js/atlas.js:402 |
 | `atlasLimbTo` | frontend/js/atlas.js:397 |
 | `atlasLimbWidth` | frontend/js/atlas.js:926 |
@@ -2197,21 +2197,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasMirror` | frontend/js/atlas.js:902 |
 | `atlasMirrorPoints` | frontend/js/atlas.js:392 |
 | `atlasNightcap` | frontend/js/atlas.js:1670 |
-| `atlasOn` | frontend/js/atlas.js:3937 |
-| `atlasOrbits` | frontend/js/atlas.js:3240 |
+| `atlasOn` | frontend/js/atlas.js:3954 |
+| `atlasOrbits` | frontend/js/atlas.js:3257 |
 | `atlasPaw` | frontend/js/atlas.js:915 |
 | `atlasPivot` | frontend/js/atlas.js:166 |
-| `atlasPlay` | frontend/js/atlas.js:3920 |
-| `atlasRepaint` | frontend/js/atlas.js:3763 |
-| `atlasRestingMood` | frontend/js/atlas.js:3815 |
+| `atlasPlay` | frontend/js/atlas.js:3937 |
+| `atlasRepaint` | frontend/js/atlas.js:3780 |
+| `atlasRestingMood` | frontend/js/atlas.js:3832 |
 | `atlasRetune` | frontend/js/atlas.js:1399 |
-| `atlasRing` | frontend/js/atlas.js:2373 |
-| `atlasRings` | frontend/js/atlas.js:3309 |
+| `atlasRing` | frontend/js/atlas.js:2389 |
+| `atlasRings` | frontend/js/atlas.js:3326 |
 | `atlasScalePath` | frontend/js/atlas.js:488 |
 | `atlasScalePathX` | frontend/js/atlas.js:1392 |
 | `atlasSegsAt` | frontend/js/atlas.js:219 |
 | `atlasSegsCut` | frontend/js/atlas.js:231 |
-| `atlasSheet` | frontend/js/atlas.js:2296 |
+| `atlasSheet` | frontend/js/atlas.js:2312 |
 | `atlasSmooth` | frontend/js/atlas.js:265 |
 | `atlasSpark` | frontend/js/atlas.js:1555 |
 | `atlasSpecks` | frontend/js/atlas.js:414 |
@@ -2219,23 +2219,23 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasStem` | frontend/js/atlas.js:285 |
 | `atlasStemEdge` | frontend/js/atlas.js:406 |
 | `atlasStemSides` | frontend/js/atlas.js:187 |
-| `atlasStreak` | frontend/js/atlas.js:4012 |
-| `atlasStyle` | frontend/js/atlas.js:3612 |
+| `atlasStreak` | frontend/js/atlas.js:4029 |
+| `atlasStyle` | frontend/js/atlas.js:3629 |
 | `atlasTail` | frontend/js/atlas.js:1888 |
-| `atlasTailMasks` | frontend/js/atlas.js:2718 |
-| `atlasTailWake` | frontend/js/atlas.js:3475 |
+| `atlasTailMasks` | frontend/js/atlas.js:2735 |
+| `atlasTailWake` | frontend/js/atlas.js:3492 |
 | `atlasTaper` | frontend/js/atlas.js:421 |
 | `atlasTipShape` | frontend/js/atlas.js:327 |
 | `atlasTorsoEdge` | frontend/js/atlas.js:978 |
 | `atlasTune` | frontend/js/atlas.js:1071 |
 | `atlasTuneSegs` | frontend/js/atlas.js:1086 |
-| `atlasTuneStyle` | frontend/js/atlas.js:3018 |
+| `atlasTuneStyle` | frontend/js/atlas.js:3035 |
 | `atlasTurnAbout` | frontend/js/atlas.js:1001 |
-| `atlasWake` | frontend/js/atlas.js:4045 |
-| `atlasWatchFigure` | frontend/js/atlas.js:3546 |
-| `atlasWhenShown` | frontend/js/atlas.js:3491 |
-| `charactersArrived` | frontend/js/atlas.js:4142 |
-| `setAtlasMood` | frontend/js/atlas.js:3835 |
+| `atlasWake` | frontend/js/atlas.js:4062 |
+| `atlasWatchFigure` | frontend/js/atlas.js:3563 |
+| `atlasWhenShown` | frontend/js/atlas.js:3508 |
+| `charactersArrived` | frontend/js/atlas.js:4159 |
+| `setAtlasMood` | frontend/js/atlas.js:3852 |
 
 ### frontend/js/attach-to.js (4)
 
@@ -12849,7 +12849,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/appearance-panel-lazy.css | 333 |
 | frontend/css/appearance-panel-own-lazy.css | 86 |
 | frontend/css/ask-compose-lazy.css | 301 |
-| frontend/css/atlas-lazy.css | 1126 |
+| frontend/css/atlas-lazy.css | 1142 |
 | frontend/css/captions-lazy.css | 95 |
 | frontend/css/capture-card-lazy.css | 204 |
 | frontend/css/chat-private-lazy.css | 18 |
@@ -17429,8 +17429,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2463 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2615 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2464 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2616 |
 
 ### src/tessellate/ai/help_words.py (3)
 
@@ -24555,39 +24555,39 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `Activity` | src/tessellate/core/overlay/behaviour.py:179 |
-| `Chain` | src/tessellate/core/overlay/behaviour.py:404 |
-| `Flow` | src/tessellate/core/overlay/behaviour.py:882 |
-| `Mind` | src/tessellate/core/overlay/behaviour.py:450 |
+| `Chain` | src/tessellate/core/overlay/behaviour.py:417 |
+| `Flow` | src/tessellate/core/overlay/behaviour.py:897 |
+| `Mind` | src/tessellate/core/overlay/behaviour.py:464 |
 | `Pose` | src/tessellate/core/overlay/behaviour.py:53 |
 | `SecondOrder` | src/tessellate/core/overlay/behaviour.py:64 |
-| `TailLayer` | src/tessellate/core/overlay/behaviour.py:813 |
-| `Trail` | src/tessellate/core/overlay/behaviour.py:602 |
+| `TailLayer` | src/tessellate/core/overlay/behaviour.py:828 |
+| `Trail` | src/tessellate/core/overlay/behaviour.py:617 |
 | `Variation` | src/tessellate/core/overlay/behaviour.py:134 |
-| `_amplitude` | src/tessellate/core/overlay/behaviour.py:667 |
-| `_arr_pick` | src/tessellate/core/overlay/behaviour.py:875 |
-| `_frac` | src/tessellate/core/overlay/behaviour.py:869 |
-| `_from_catalogue` | src/tessellate/core/overlay/behaviour.py:292 |
+| `_amplitude` | src/tessellate/core/overlay/behaviour.py:682 |
+| `_arr_pick` | src/tessellate/core/overlay/behaviour.py:890 |
+| `_frac` | src/tessellate/core/overlay/behaviour.py:884 |
+| `_from_catalogue` | src/tessellate/core/overlay/behaviour.py:305 |
 | `_k` | src/tessellate/core/overlay/behaviour.py:196 |
-| `activity_frame` | src/tessellate/core/overlay/behaviour.py:589 |
-| `catalogue_factor` | src/tessellate/core/overlay/behaviour.py:325 |
+| `activity_frame` | src/tessellate/core/overlay/behaviour.py:604 |
+| `catalogue_factor` | src/tessellate/core/overlay/behaviour.py:338 |
 | `cell` | src/tessellate/core/overlay/behaviour.py:103 |
-| `curve` | src/tessellate/core/overlay/behaviour.py:433 |
-| `idle_tier` | src/tessellate/core/overlay/behaviour.py:390 |
-| `mood_of` | src/tessellate/core/overlay/behaviour.py:357 |
-| `phase_of` | src/tessellate/core/overlay/behaviour.py:317 |
+| `curve` | src/tessellate/core/overlay/behaviour.py:447 |
+| `idle_tier` | src/tessellate/core/overlay/behaviour.py:403 |
+| `mood_of` | src/tessellate/core/overlay/behaviour.py:370 |
+| `phase_of` | src/tessellate/core/overlay/behaviour.py:330 |
 | `quantise` | src/tessellate/core/overlay/behaviour.py:92 |
 | `quantised` | src/tessellate/core/overlay/behaviour.py:109 |
 | `sample` | src/tessellate/core/overlay/behaviour.py:172 |
 | `sample3` | src/tessellate/core/overlay/behaviour.py:155 |
 | `scaled` | src/tessellate/core/overlay/behaviour.py:147 |
-| `shift_every` | src/tessellate/core/overlay/behaviour.py:340 |
+| `shift_every` | src/tessellate/core/overlay/behaviour.py:353 |
 | `sine_ease` | src/tessellate/core/overlay/behaviour.py:124 |
 | `smooth` | src/tessellate/core/overlay/behaviour.py:114 |
 | `smoother` | src/tessellate/core/overlay/behaviour.py:119 |
-| `tail_bend` | src/tessellate/core/overlay/behaviour.py:792 |
-| `tail_points` | src/tessellate/core/overlay/behaviour.py:800 |
-| `tier_factor` | src/tessellate/core/overlay/behaviour.py:395 |
-| `utility` | src/tessellate/core/overlay/behaviour.py:439 |
+| `tail_bend` | src/tessellate/core/overlay/behaviour.py:807 |
+| `tail_points` | src/tessellate/core/overlay/behaviour.py:815 |
+| `tier_factor` | src/tessellate/core/overlay/behaviour.py:408 |
+| `utility` | src/tessellate/core/overlay/behaviour.py:453 |
 | `vary` | src/tessellate/core/overlay/behaviour.py:142 |
 
 ### src/tessellate/core/overlay/capture.py (14)
@@ -24629,16 +24629,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Bar` | src/tessellate/core/overlay/engine_consts.py:522 |
-| `Cover` | src/tessellate/core/overlay/engine_consts.py:503 |
-| `Monitor` | src/tessellate/core/overlay/engine_consts.py:532 |
-| `Output` | src/tessellate/core/overlay/engine_consts.py:550 |
-| `Perch` | src/tessellate/core/overlay/engine_consts.py:491 |
-| `TuckSpot` | src/tessellate/core/overlay/engine_consts.py:512 |
-| `_adjoins` | src/tessellate/core/overlay/engine_consts.py:587 |
-| `_same_screens` | src/tessellate/core/overlay/engine_consts.py:598 |
-| `perch_room` | src/tessellate/core/overlay/engine_consts.py:445 |
-| `stand_x` | src/tessellate/core/overlay/engine_consts.py:451 |
+| `Bar` | src/tessellate/core/overlay/engine_consts.py:526 |
+| `Cover` | src/tessellate/core/overlay/engine_consts.py:507 |
+| `Monitor` | src/tessellate/core/overlay/engine_consts.py:536 |
+| `Output` | src/tessellate/core/overlay/engine_consts.py:554 |
+| `Perch` | src/tessellate/core/overlay/engine_consts.py:495 |
+| `TuckSpot` | src/tessellate/core/overlay/engine_consts.py:516 |
+| `_adjoins` | src/tessellate/core/overlay/engine_consts.py:591 |
+| `_same_screens` | src/tessellate/core/overlay/engine_consts.py:602 |
+| `perch_room` | src/tessellate/core/overlay/engine_consts.py:449 |
+| `stand_x` | src/tessellate/core/overlay/engine_consts.py:455 |
 
 ### src/tessellate/core/overlay/engine_flight.py (1)
 
@@ -24650,7 +24650,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `FramesMixin` | src/tessellate/core/overlay/engine_frames.py:34 |
+| `FramesMixin` | src/tessellate/core/overlay/engine_frames.py:35 |
 
 ### src/tessellate/core/overlay/engine_input.py (1)
 
@@ -24810,30 +24810,30 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Frame` | src/tessellate/core/overlay/sprites.py:104 |
-| `SpriteSet` | src/tessellate/core/overlay/sprites.py:247 |
-| `_draw_fx` | src/tessellate/core/overlay/sprites.py:930 |
-| `_drawn_box` | src/tessellate/core/overlay/sprites.py:210 |
-| `_feather_mask` | src/tessellate/core/overlay/sprites.py:859 |
-| `_glint` | src/tessellate/core/overlay/sprites.py:818 |
-| `_glint_tables` | src/tessellate/core/overlay/sprites.py:807 |
-| `_smooth` | src/tessellate/core/overlay/sprites.py:770 |
-| `_star` | src/tessellate/core/overlay/sprites.py:924 |
-| `_tail_shift` | src/tessellate/core/overlay/sprites.py:878 |
-| `capped_pose` | src/tessellate/core/overlay/sprites.py:138 |
-| `captured_root` | src/tessellate/core/overlay/sprites.py:175 |
-| `clear_faint_alpha` | src/tessellate/core/overlay/sprites.py:199 |
-| `clipped` | src/tessellate/core/overlay/sprites.py:119 |
-| `effect` | src/tessellate/core/overlay/sprites.py:969 |
-| `flow_offsets` | src/tessellate/core/overlay/sprites.py:775 |
-| `frames_dir` | src/tessellate/core/overlay/sprites.py:183 |
-| `fx_margin` | src/tessellate/core/overlay/sprites.py:917 |
-| `graded` | src/tessellate/core/overlay/sprites.py:231 |
-| `look_for` | src/tessellate/core/overlay/sprites.py:190 |
-| `mix` | src/tessellate/core/overlay/sprites.py:898 |
-| `premultiplied_bgra` | src/tessellate/core/overlay/sprites.py:216 |
-| `tail_source` | src/tessellate/core/overlay/sprites.py:854 |
-| `tapered` | src/tessellate/core/overlay/sprites.py:154 |
+| `Frame` | src/tessellate/core/overlay/sprites.py:111 |
+| `SpriteSet` | src/tessellate/core/overlay/sprites.py:254 |
+| `_draw_fx` | src/tessellate/core/overlay/sprites.py:941 |
+| `_drawn_box` | src/tessellate/core/overlay/sprites.py:217 |
+| `_feather_mask` | src/tessellate/core/overlay/sprites.py:870 |
+| `_glint` | src/tessellate/core/overlay/sprites.py:829 |
+| `_glint_tables` | src/tessellate/core/overlay/sprites.py:818 |
+| `_smooth` | src/tessellate/core/overlay/sprites.py:781 |
+| `_star` | src/tessellate/core/overlay/sprites.py:935 |
+| `_tail_shift` | src/tessellate/core/overlay/sprites.py:889 |
+| `capped_pose` | src/tessellate/core/overlay/sprites.py:145 |
+| `captured_root` | src/tessellate/core/overlay/sprites.py:182 |
+| `clear_faint_alpha` | src/tessellate/core/overlay/sprites.py:206 |
+| `clipped` | src/tessellate/core/overlay/sprites.py:126 |
+| `effect` | src/tessellate/core/overlay/sprites.py:980 |
+| `flow_offsets` | src/tessellate/core/overlay/sprites.py:786 |
+| `frames_dir` | src/tessellate/core/overlay/sprites.py:190 |
+| `fx_margin` | src/tessellate/core/overlay/sprites.py:928 |
+| `graded` | src/tessellate/core/overlay/sprites.py:238 |
+| `look_for` | src/tessellate/core/overlay/sprites.py:197 |
+| `mix` | src/tessellate/core/overlay/sprites.py:909 |
+| `premultiplied_bgra` | src/tessellate/core/overlay/sprites.py:223 |
+| `tail_source` | src/tessellate/core/overlay/sprites.py:865 |
+| `tapered` | src/tessellate/core/overlay/sprites.py:161 |
 
 ### src/tessellate/core/overlay/travel.py (16)
 
@@ -26852,7 +26852,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21118)
+## Tests (21122)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26952,7 +26952,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_cover_1587.py | 8 |
 | tests/test_atlas_crest_1696.py | 2 |
 | tests/test_atlas_daylife_1719.py | 2 |
-| tests/test_atlas_desk_acts_1696.py | 10 |
+| tests/test_atlas_desk_acts_1696.py | 14 |
 | tests/test_atlas_face_inherit_1591.py | 4 |
 | tests/test_atlas_fade_1107.py | 5 |
 | tests/test_atlas_fem_1696.py | 4 |
@@ -30027,7 +30027,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Earlier morning summary (2026-10-30) | docs/roadmap/HANDOVER.md:80 |
 | Earlier morning summary (2026-11-04) | docs/roadmap/HANDOVER.md:70 |
 | Earlier morning summary (away run 2026-10-18b) | docs/roadmap/HANDOVER.md:99 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:590 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:592 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4151 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
@@ -30144,7 +30144,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1217 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:156 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:157 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4057 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3130 |
