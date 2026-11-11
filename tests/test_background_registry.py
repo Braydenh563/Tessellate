@@ -86,6 +86,18 @@ core/lanserve.py::serve::task::2
 core/deadline.py::guard::timer::1
 core/deadline.py::guard::task::1
 """.strip().splitlines()
+) | frozenset(
+    #: Registered 2026-11-11 with the live-captions helper (INBOX 1777): the
+    #: pump that reads the child process's stdout ends when that process
+    #: does, the idle timer is cancelled by `stop()` and re-armed per
+    #: session, and `captions_helper.main` runs in the helper's own process
+    #: (not the app's), where its stdin watcher is what makes it exit with
+    #: the app.
+    """
+ai/captions_helper.py::main::thread::1
+ai/captions_process.py::_read_port::thread::1
+ai/captions_process.py::session_ended::timer::1
+""".strip().splitlines()
 )
 
 

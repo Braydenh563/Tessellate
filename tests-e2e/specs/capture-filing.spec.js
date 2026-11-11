@@ -121,8 +121,9 @@ test.describe("capture and filing with no model", () => {
     await expect(page.locator("#tab-timeline")).toContainText(text.slice(0, 40));
 
     await openTab(page, "graph");
+    // The Graph tab is a lazy bundle: its lookup does not exist until it has loaded.
     await expect
-      .poll(() => page.evaluate((nid) => !!graphNodeById(nid), id), {
+      .poll(() => page.evaluate((nid) => typeof graphNodeById === "function" && !!graphNodeById(nid), id), {
         message: "the new note is not a node on the graph",
       })
       .toBe(true);

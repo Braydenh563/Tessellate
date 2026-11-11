@@ -367,7 +367,9 @@ def _own_helper() -> str:
     try:
         return captions_process.ensure_started()
     except captions_process.HelperError as exc:
-        raise CaptionsError(str(exc)) from exc
+        # HelperError's text is a sentence for the person (checked in
+        # test_core_message_wording), so it passes through as written.
+        raise CaptionsError(exc.args[0] if exc.args else NO_HELPER_HINT) from exc
 
 
 def _post(url: str, pcm: bytes, audio_ctx: int) -> str:

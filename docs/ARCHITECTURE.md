@@ -553,7 +553,7 @@ gate** (`routes_auth.require_unlock`). Routers are grouped by feature area:
 | `routes_conversations` | `/conversations` | saved chat threads |
 | `routes_ask_history` | `/ask-history` | the Ask tab's past question/answer turns, independent of saved chats |
 | `routes_models` | `/models` | Ollama status, pull models, switch chat/embedding/utility model; `GET /models/suggested` (cards decorated by `ai/model_cards.py` with size, memory and fit), `GET /models/hardware` (`core/hardware.py`), `POST /models/inspect` |
-| `routes_settings` | `/` | preferences, skills (`GET /skills`), audit log, JSON/CSV/Markdown export & import, logs, optional extras (`/extras`), embedding models (`/embedding-models`) |
+| `routes_settings` | `/` | preferences, skills (`GET /skills`), audit log, support bundle; its export and import, optional extras (`/extras`) with embedding models (`/embedding-models`), and logs moved whole to `routes_settings_transfer`, `routes_settings_extras` and `routes_settings_logs` (K24) |
 | `routes_update` | `/update` | check GitHub for a newer release and apply it in place, instead of sending the user back through a browser to redownload the installer |
 | `routes_websearch` | `/websearch` | web search provider selection + SearXNG install/start/status lifecycle, split out of `routes_settings` |
 | `routes_backups` | `/`, `/backups` | `GET /storage` (where the data lives, how big it is) + daily local backup list/create/restore/delete |
