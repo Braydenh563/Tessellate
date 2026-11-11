@@ -246,14 +246,14 @@ def process_started(pid: int) -> float | None:
     try:
         if sys.platform == "win32":
             import ctypes
-            from ctypes import wintypes
+            import ctypes.wintypes
 
             kernel32 = ctypes.windll.kernel32
             handle = kernel32.OpenProcess(0x1000, False, pid)  # QUERY_LIMITED_INFORMATION
             if not handle:
                 return None
             try:
-                created, ended, kernel, user = (wintypes.FILETIME() for _ in range(4))
+                created, ended, kernel, user = (ctypes.wintypes.FILETIME() for _ in range(4))
                 if not kernel32.GetProcessTimes(handle, *(ctypes.byref(t) for t in (created, ended, kernel, user))):
                     return None
                 ticks = (created.dwHighDateTime << 32) | created.dwLowDateTime  # 100 ns since 1601
