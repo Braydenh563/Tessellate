@@ -119,7 +119,6 @@ EXPECTED = {
         '"Nothing in the Library gallery yet, upload one from Library → Files & Images first."',
     ],
     'media.js': [
-        '"Microphone access was blocked, allow it in your browser."',
         '"This browser has no text-to-speech voices."',
     ],
     'note-edit-panels.js': [
@@ -163,6 +162,7 @@ EXPECTED = {
     ],
     'gesture-kit.js': [
         '"An empty answer isn\'t a correction: delete the message instead."',
+        '"Microphone access was blocked, allow it in your browser."',
     ],
     'skills.js': [
         '`“${skill.name}” needs ${item.label || item.name}.`',

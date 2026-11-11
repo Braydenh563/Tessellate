@@ -894,7 +894,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `watchOverlays` | frontend/js/settings-panes.js:462 |
 | `wirePrefsDirtyMarks` | frontend/js/settings-panes.js:962 |
 
-### frontend/js/media.js (10)
+### frontend/js/media.js (9)
 
 | Name | File:line |
 |---|---|
@@ -905,9 +905,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openSketch` | frontend/js/media.js:91 |
 | `saveSketch` | frontend/js/media.js:119 |
 | `sketchHost` | frontend/js/media.js:67 |
-| `speakText` | frontend/js/media.js:359 |
+| `speakText` | frontend/js/media.js:291 |
 | `startMicLevelMeter` | frontend/js/media.js:206 |
-| `toggleDictation` | frontend/js/media.js:287 |
 
 ### frontend/js/status.js (128)
 
@@ -5084,15 +5083,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderGetStarted` | frontend/js/first-run.js:394 |
 | `writeNoteHint` | frontend/js/first-run.js:16 |
 
-### frontend/js/gesture-kit.js (5)
+### frontend/js/gesture-kit.js (6)
 
 | Name | File:line |
 |---|---|
-| `chatTurnTranscript` | frontend/js/gesture-kit.js:17 |
-| `commitExtractPreview` | frontend/js/gesture-kit.js:285 |
-| `editChatAnswer` | frontend/js/gesture-kit.js:158 |
-| `explainNote` | frontend/js/gesture-kit.js:239 |
-| `openChatModelPanel` | frontend/js/gesture-kit.js:54 |
+| `chatTurnTranscript` | frontend/js/gesture-kit.js:18 |
+| `commitExtractPreview` | frontend/js/gesture-kit.js:286 |
+| `editChatAnswer` | frontend/js/gesture-kit.js:159 |
+| `explainNote` | frontend/js/gesture-kit.js:240 |
+| `openChatModelPanel` | frontend/js/gesture-kit.js:55 |
+| `toggleDictation` | frontend/js/gesture-kit.js:367 |
 
 ### frontend/js/graph-canvas.js (181)
 

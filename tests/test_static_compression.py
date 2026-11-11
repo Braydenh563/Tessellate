@@ -160,6 +160,8 @@ PIECE_CAP = 32_000
 #: latch and model check) into settings-controls.js, inlineActionIs and translateNoteInDesk
 #: into entry-menu.js, searchHighlightTerms and notesSpanSpaces into entry-card.js: each has
 #: one caller, in the lazy file it moved to.
+#: 2026-11-11, -586 (250,563 to 249,977): dictation (`toggleDictation`) from media.js into
+#: the lazy gesture-kit.js behind a stand-in; only a mic click reaches it.
 TOTAL_CAP = 250_450
 
 

@@ -26,7 +26,7 @@ def _function(source: str, head: str) -> str:
 
 def test_dictation_without_the_add_on_says_where_to_get_it_not_report_this():
     # The hint is the server's (ai/voice.py): it names Settings, Packages.
-    body = _function((JS / "media.js").read_text(encoding="utf-8"), "async function toggleDictation(")
+    body = _function((JS / "gesture-kit.js").read_text(encoding="utf-8"), "async function toggleDictation(")
     branch = body[body.index("if (!voiceStatus.available) {") :]
     branch = branch[: branch.index("return;")]
     assert "toast(voiceStatus.hint || \"Voice capture isn't available.\");" in branch
