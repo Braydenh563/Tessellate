@@ -157,7 +157,9 @@ def test_the_worker_and_the_palette_row_are_wired():
     assert "/translate/files/" in worker and "importScripts" in worker
     sheet = (JS / "translate.js").read_text(encoding="utf-8")
     assert "translate-worker.js" in sheet and "/translate/status" in sheet
-    assert 'revealFeature("extra-row", "translate")' in sheet
+    #: Not installed: the one optional-package notice (Install, or Open Packages) replaced the
+    #: toast and the jump to Settings; the intent, a way to the install, is unchanged.
+    assert 'extraNoticeMount(slot, "translate"' in sheet
     panes = (JS / "settings-panes.js").read_text(encoding="utf-8") + (JS / "app-features.js").read_text(encoding="utf-8")
     assert "Translate this" in panes
     app = (JS / "app.js").read_text(encoding="utf-8")

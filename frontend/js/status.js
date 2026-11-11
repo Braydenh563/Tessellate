@@ -2933,6 +2933,16 @@ function renderSettings() {
     ? `${backend} is running`
     : status.unreachable_hint || `${backend} isn't running`;
   ollamaLine.className = `status ${status.ollama_running ? "ok" : status.ollama_busy ? "is-checking" : "off"}`;
+  //: With no model server running, the two optional ways to run a model here
+  //: (extra-notice.js). Drawn when the answer changes, not on every poll.
+  const noServer = !status.ollama_running && !status.ollama_busy;
+  if (ollamaLine.dataset.noServer !== String(noServer)) {
+    ollamaLine.dataset.noServer = String(noServer);
+    for (const id of ["needle", "localllm"]) {
+      if (noServer) extraNoticeMount($(`xn-${id}`), id);
+      else $(`xn-${id}`)?.replaceChildren();
+    }
+  }
   //: A slow poll keeps the last answer on screen (see refreshModelStatus), so
   //: the line says so instead of presenting a stale answer as fresh.
   if (modelStatusProblem === "slow") {

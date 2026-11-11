@@ -98,8 +98,17 @@
     }
     const status = await apiJson("/translate/status", { silent: true }).catch(() => null);
     if (!status?.installed || !status.pairs?.length) {
-      toast(status?.hint || "Translate this needs the offline translator, in Settings, Packages.", "info");
-      revealFeature("extra-row", "translate");
+      //: Not installed: a sheet with the one optional-package notice, whose Install is the way on.
+      openSheet({
+        label: "Translate this",
+        sub: status?.hint || "Translating needs the offline translator.",
+        name: "translate",
+        build: (card) => {
+          const slot = document.createElement("div");
+          card.append(slot);
+          extraNoticeMount(slot, "translate", { fresh: true });
+        },
+      });
       return;
     }
     const pair = status.pairs[0];

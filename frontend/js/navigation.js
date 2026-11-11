@@ -2284,7 +2284,10 @@ function activeNotesSection() {
 function showNotesSection(name, { focus = false } = {}) {
   // The picker lists documents that may have been created since this page
   // loaded: a stale list is how "add to document" ends up offering nothing.
-  if (name === "capture") loadCaptureDocuments();
+  if (name === "capture") {
+    loadCaptureDocuments();
+    extraNoticeMount($("xn-voice"), "voice");
+  }
   if (name === "writing-room") draftSaveMenuInit();
   //: Questions (row 7) re-reads its list each time it is shown.
   if (name === "questions") {
