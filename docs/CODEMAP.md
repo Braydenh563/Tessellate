@@ -25067,19 +25067,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_Markdown` | src/tessellate/core/webclip.py:326 |
 | `_Node` | src/tessellate/core/webclip.py:182 |
 | `_Tree` | src/tessellate/core/webclip.py:192 |
-| `_descendants` | src/tessellate/core/webclip.py:411 |
+| `_descendants` | src/tessellate/core/webclip.py:429 |
 | `_link_text` | src/tessellate/core/webclip.py:260 |
 | `_main` | src/tessellate/core/webclip.py:282 |
 | `_new_session` | src/tessellate/core/webclip.py:68 |
-| `_read` | src/tessellate/core/webclip.py:420 |
+| `_read` | src/tessellate/core/webclip.py:438 |
 | `_safe_href` | src/tessellate/core/webclip.py:311 |
 | `_score` | src/tessellate/core/webclip.py:268 |
 | `_score_deep` | src/tessellate/core/webclip.py:307 |
 | `_text` | src/tessellate/core/webclip.py:254 |
 | `clean_url` | src/tessellate/core/webclip.py:78 |
-| `extract` | src/tessellate/core/webclip.py:433 |
+| `extract` | src/tessellate/core/webclip.py:451 |
 | `fetch_page` | src/tessellate/core/webclip.py:83 |
-| `note_content` | src/tessellate/core/webclip.py:460 |
+| `note_content` | src/tessellate/core/webclip.py:478 |
 
 ### src/tessellate/core/window_hook.py (4)
 

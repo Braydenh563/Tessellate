@@ -132,7 +132,6 @@
  "src/tessellate/core/ocr.py::_reading_block_kind": 17,
  "src/tessellate/core/ocr.py::attempt_binary_install": 18,
  "src/tessellate/core/ocr.py::extract_regions": 19,
- "src/tessellate/core/webclip.py::_Markdown.block": 28,
  "src/tessellate/core/webclip.py::_Markdown.inline": 16,
  "src/tessellate/core/webclip.py::fetch_page": 18,
  "src/tessellate/entry/duplicates.py::_similar_pairs_dense": 17,
