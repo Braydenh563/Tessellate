@@ -24,7 +24,9 @@
 // read off its own stylesheet (`/vendor/phosphor/style.css`, already loaded at
 // boot), so there is no second list to keep in step with the font. The emoji
 // are a curated set with their Unicode names, written as escapes, as
-// `DOC_EMOJI_SOURCE` (documents-prose.js) is.
+// `DOC_EMOJI_SOURCE` (documents-prose.js) is. Every glyph of that shortcode table is also here
+// (`tests/test_emoji_sources_1112.py`), so the two cannot drift: the picker is the full set, the
+// shortcodes are GitHub's names for 248 of it.
 //
 // **Keys:** arrows move through the grid (Up and Down by a row), Home and End,
 // Enter or Space picks, Escape closes and hands focus back to whatever opened
@@ -65,7 +67,7 @@
       "face_screaming_in_fear=\u{1F631},shocked_face_with_exploding_head=\u{1F92F}," +
       "face_with_open_mouth_and_cold_sweat=\u{1F630},overheated_face=\u{1F975},freezing_face=\u{1F976}," +
       "face_with_uneven_eyes_and_wavy_mouth=\u{1F974},tired_face=\u{1F62B},yawning_face=\u{1F971}," +
-      "face_with_look_of_triumph=\u{1F624},pouting_face=\u{1F621},angry_face=\u{1F620}," +
+      "confounded_face=\u{1F616},face_with_look_of_triumph=\u{1F624},pouting_face=\u{1F621},angry_face=\u{1F620}," +
       "money_mouth_face=\u{1F911},skull=\u{1F480},pile_of_poo=\u{1F4A9},clown_face=\u{1F921}," +
       "ghost=\u{1F47B},extraterrestrial_alien=\u{1F47D},robot_face=\u{1F916}," +
       "see_no_evil_monkey=\u{1F648},hear_no_evil_monkey=\u{1F649},speak_no_evil_monkey=\u{1F64A},"],
@@ -91,13 +93,13 @@
       "unicorn_face=\u{1F984},horse_face=\u{1F434},pig_face=\u{1F437},cow_face=\u{1F42E}," +
       "frog_face=\u{1F438},monkey_face=\u{1F435},chicken=\u{1F414},penguin=\u{1F427},bird=\u{1F426}," +
       "eagle=\u{1F985},owl=\u{1F989},honeybee=\u{1F41D},butterfly=\u{1F98B},lady_beetle=\u{1F41E}," +
-      "turtle=\u{1F422},snake=\u{1F40D},octopus=\u{1F419},spouting_whale=\u{1F433},dolphin=\u{1F42C}," +
+      "bug=\u{1F41B},turtle=\u{1F422},snake=\u{1F40D},octopus=\u{1F419},spouting_whale=\u{1F433},dolphin=\u{1F42C}," +
       "shark=\u{1F988},tropical_fish=\u{1F420},seedling=\u{1F331},evergreen_tree=\u{1F332}," +
       "deciduous_tree=\u{1F333},palm_tree=\u{1F334},cactus=\u{1F335},four_leaf_clover=\u{1F340}," +
       "maple_leaf=\u{1F341},fallen_leaf=\u{1F342},rose=\u{1F339},sunflower=\u{1F33B}," +
       "cherry_blossom=\u{1F338},tulip=\u{1F337},herb=\u{1F33F},mushroom=\u{1F344}," +
       "earth_globe_europe_africa=\u{1F30D},crescent_moon=\u{1F319},black_sun_with_rays=\u{2600}\u{FE0F}," +
-      "white_medium_star=\u{2B50}\u{FE0F},glowing_star=\u{1F31F},cloud=\u{2601}\u{FE0F}," +
+      "white_medium_star=\u{2B50}\u{FE0F},glowing_star=\u{1F31F},cloud=\u{2601}\u{FE0F},umbrella=\u{2602}\u{FE0F}," +
       "rainbow=\u{1F308},high_voltage_sign=\u{26A1}\u{FE0F},snowflake=\u{2744}\u{FE0F},fire=\u{1F525}," +
       "droplet=\u{1F4A7},water_wave=\u{1F30A},"],
     ["food", "Food and drink",

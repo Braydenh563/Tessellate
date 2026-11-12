@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Emoji: the icon picker holds every glyph the :shortcode: menu types, guarded by a test, so the two tables cannot drift (L296).
 - Documents: the fallback find bar (no editor engine) has All documents and Replace in all (L341).
 - Lists: i. numerals keep continuing past 59 in the renderer; the settings index no longer reads layout (L307).
 - Inline AI: an AI edit is one step on the app's undo stack, so the bar's Undo, the status bar's Undo and Ctrl+Z agree (L755) (L288).
