@@ -315,7 +315,7 @@ _FREEMIND_PRIVATE = {
     **{f: f"_{f}" for f in ("boundary", "boundary_label", "summary", "summary_span", "branch_layout", "callout", "labels", "stamps")},
     #: Markers (decision 34): neither format has a place for them that the
     #: other reads, so all four ride as private attributes.
-    **{f: f"_{f}" for f in ("priority", "progress", "flag", "markers", "due", "start")},
+    **{f: f"_{f}" for f in ("priority", "progress", "flag", "markers", "due", "due_time", "start")},
 }
 #: OPML 2.0 defines `text`, `type`, `url`, `isComment`, `isBreakpoint`,
 #: `created` and `category` and nothing else, so `url` is the only native
@@ -350,7 +350,7 @@ _OPML_PRIVATE = {
     **{f: f"_{f}" for f in ("boundary", "boundary_label", "summary", "summary_span", "branch_layout", "callout", "labels", "stamps")},
     #: Markers (decision 34): neither format has a place for them that the
     #: other reads, so all four ride as private attributes.
-    **{f: f"_{f}" for f in ("priority", "progress", "flag", "markers", "due", "start")},
+    **{f: f"_{f}" for f in ("priority", "progress", "flag", "markers", "due", "due_time", "start")},
 }
 
 

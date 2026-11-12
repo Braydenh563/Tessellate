@@ -12,12 +12,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
-| mindmap | 33 | 21 | 5 | 1 | 5 | 59 |
-| ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
+| mindmap | 33 | 16 | 4 | 1 | 5 | 53 |
+| ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 693 | 157 | 3 | 195 | 1403 |
+| all | 553 | 687 | 156 | 3 | 195 | 1396 |
 
 ## graph
 
@@ -449,19 +449,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L368** `mindmap` open, M: Resolve map theme per node on export and test a FreeMind-authored arrowlink. From OPEN.md:1685; OPEN.md:3037. Evidence: wb_export.py:567-581 writes arrowlink; tests/test_mindmap.py only covers own export and a dangling destination, no FreeMind-authored file
 - [ ] **L369** `mindmap` open, M: Make wbSyncMapStrip ring the map's look, and add options for 17px size and level fill. From OPEN.md:1773; OPEN.md:3558. Evidence: whiteboard-map.js:7559 wbSyncMapStrip unchanged by evidence; 17px size and level fill gap remain
 - [ ] **L370** `mindmap` open, M: Cut press-to-editable at 390 from 140-159 ms toward 50 ms (renderWbObjects). From OPEN.md:2800. Evidence: Cause not isolated (renderWbObjects); verified open
-- [ ] **L371** `mindmap` open, M: Replace native due date on map topics with a picker that sets time too. From OPEN.md:3807. Evidence: whiteboard-map.js due date stays native
 - [ ] **L372** `mindmap` open, M: mapcull: cull freehand and link sketches. From OPEN.md:1227. Evidence: Row conditional on a measured many-stroke board; no culling of strokes found.
 - [ ] **L373** `mindmap` open, M: Narrow radial leaf boxes so large maps fit above 45 percent zoom. From agent-remaining/mapdog-1026.md. Evidence: Radial layout is large: 31 topics (6 branches of 4) lay out 1927x1771 board units, fit zoom 31% (words 4.4px); 57 topics
 - [ ] **L374** `mindmap` open, L: Make picture node resize to its picture; fix mindmap3 timeout and AI half; curve probe at 390. From OPEN.md:1112; OPEN.md:3041. Evidence: mindmapimage.js removed 2026-10-12; picture-fit not confirmed; sweep script gone
-- [ ] **L375** `mindmap` partly, S: Render inline `[text](url)` links in map topics (bold, italic, code already work). From OPEN.md:4446. Evidence: Bold, italic, code render via wbMapInlineText; inline `[text](url)` does not (Link door is the way)
 - [ ] **L376** `mindmap` partly, S: Close mind map gaps: structure per branch, labels under topic, .xmind export, stickers. From OPEN.md:1109. Evidence: Callouts whiteboard-map.js:1803, votes :8537, .xmind import wb_import.py:356; .xmind export not found
 - [ ] **L377** `mindmap` partly, M: Drive the undriven checks: dark hand-drawn look, tables, Data tab, XMind, multi-page draw.io, callout export (touch double-tap needs hardware). From OPEN.md:589; OPEN.md:2562. Evidence: Dark theme/tables drivable in Playwright; touch double-tap needs touch hardware
 - [ ] **L378** `mindmap` partly, M: Verify remaining map render and persistence leftovers. From OPEN.md:1935. Evidence: wbMapNodeSize row closed per HISTORY; rest of list not individually verified
 - [ ] **L379** `mindmap` partly, M: Name and finish the two remaining mind map leftover items. From OPEN.md:2388. Evidence: Four of six items done per row; remaining two not named in the first lines read
-- [ ] **L-mindmap-1** `mindmap` open, S: Save a custom mind map theme for reuse. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:491. Evidence: wbMapThemeDialog (whiteboard-map.js:1038) has no save action; untracked
-- [ ] **L-mindmap-2** `mindmap` open, M: Show equations and code blocks inside map topics. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:510. Evidence: map topics render plain text only; no plan or LEDGER row
-- [ ] **L-mindmap-5** `mindmap` open, M: Add a spaced order and the note as answer to map study mode. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1204. Evidence: Open line in the plan's prose a session could miss. Decision 36 lists spaced-order study mode as not built.
-- [ ] **L-mindmap-6** `mindmap` open, S: Make map node fill and background colour controls discoverable. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1440. Evidence: Open line in the plan's prose a session could miss. 431(b), discoverability of the node fill and background colour controls, says it was placed as its own item. No such item exists.
 - [ ] **L-mindmap-8** `mindmap` open, S: Reproduce a toggle in the note edit preview exiting preview. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1527. Evidence: Open line in the plan's prose a session could miss. A reported bug left unreproduced, with no row.
 - [ ] **L-mindmap-9** `mindmap` open, S: Measure idle and drag cost on a map of hundreds of nodes. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1751. Evidence: Open line in the plan's prose a session could miss. The Brief 60 census gap, with no row.
 - [ ] **L-mindmap-11** `mindmap` open, S: Mind map link labels take the connector label look (size, bold, colour, chip, position). From MINDMAP_PLAN 2026-10-11 INBOX 819 (2). Evidence: whiteboard-format.js:1318 has label look for board connectors; mind map edge labels only edge_label_dx/dy (whiteboard-map.js:4328)
@@ -565,7 +559,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L773** `ui-modernisation` open, M: Rethink Notes dock wrapping (nine controls at 1440, two rows at 1280-1500 with rail open). From OPEN.md:3480; OPEN.md:3559. Evidence: Judgement for the dock grammar's owner; same dock as 3559. Owner decided 2026-11-12: Fewer worded buttons (Some buttons show icons only above 1400px or move into the menu, so the bar keeps one row). Build: Notes .dock: fold two worded controls to icon-only or the dock kebab; sweep docks.js at 1280, 1440, 1500 with rail open.
 - [ ] **L765** `ui-modernisation` open, M: Design pass to unify empty-state tone and illustration across views. From OPEN.md:4241. Evidence: Design pass across views, not a reproducible defect. Owner decided 2026-11-12: Align to the recipe. Build: inventory every .empty-state and ad hoc empty line, convert to the DESIGN.md Empty state recipe, add a lint in tests/test_ui_recipes.py.
 - [ ] **L778** `ui-modernisation` open, S: Decide cropping of tall maps in dashboard widget. From OPEN.md:3184. Evidence: Owner's judgement on cropping Owner decided 2026-11-12: Crop around the centre. Build: mapPreview for the dashboard widget: crop to a readable window around the root; sweep with a 25-topic tree-right map.
-- [ ] **L-ui-modernisation-2** `ui-modernisation` open, S: Measure the stuck-ground recipe on the timeline table head and empty its freeze. From open-work sweep 2026-11-12, tests/test_nested_surfaces_1489.py:34. Evidence: This freeze ratchet holds one known offender, and the comment states the intent to remove it once the stuck-ground recipe is measured on table cells. No LEDGER row or plan item names it.
 - [ ] **L-ui-modernisation-3** `ui-modernisation` open, M: Sweep every toolbar onto the control height tokens and drain the literal heights ratchet. From open-work sweep 2026-11-12, docs/DESIGN.md:1584. Evidence: The doc admits toolbars that do not use --control-h yet and calls them gaps. No row lists or tracks the sweep to find and convert them.
 - [ ] **L-ui-modernisation-4** `ui-modernisation` open, S: Shorten the lock setup note and rename its button. From open-work sweep 2026-11-12, scratchpad/first-run-472.md:32. Evidence: index.html:346 #lock-setup-note is still 58 words and app.js:723 still reads "Set password & start"; there is no LEDGER row or plan item for it
 - [ ] **L-ui-modernisation-5** `ui-modernisation` open, S: Keep the welcome footer buttons on one row at 390 px. From open-work sweep 2026-11-12, scratchpad/first-run-472.md:36. Evidence: no change to the welcome slide footer layout at narrow width was found and nothing tracks it

@@ -1081,6 +1081,63 @@ function wbMapThemeDialog() {
   body.append(scope, rows);
   show("map");
 
+  //: **Saved looks** (L-mindmap-1): the whole theme under a name, kept in `prefs` like the rest of what the board remembers about looking (a look is a preference, not a map's content, so it needs no migration and follows the device). Applying one is a single theme patch, so it is one Undo step; keys the saved look never set are cleared so the map ends up exactly as saved. The server drops anything it does not know, so a look from a newer build degrades instead of failing.
+  const looksKey = "wb-map-saved-looks";
+  const readLooks = () => prefs.json(looksKey, {});
+  const looks = document.createElement("div");
+  looks.className = "wb-menu-row wb-map-theme-row wb-map-theme-looks";
+  const looksName = document.createElement("span");
+  looksName.textContent = "Saved looks";
+  const looksSelect = document.createElement("select");
+  looksSelect.className = "ghost small";
+  looksSelect.setAttribute("aria-label", "Apply a saved look to this map");
+  const fillLooks = (picked = "") => {
+    const saved = Object.keys(readLooks());
+    looksSelect.replaceChildren(...[["", saved.length ? "Choose one to apply" : "None saved yet"], ...saved.map((n) => [n, n])].map(([value, label]) => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = label;
+      return option;
+    }));
+    looksSelect.value = saved.includes(picked) ? picked : "";
+    forgetLook.disabled = !looksSelect.value;
+  };
+  const saveLook = smallButton("ph:floppy-disk Save this look", "Keep this map's look under a name, to apply to another map", async () => {
+    const name = String((await promptDialog("What should this look be called?", "", { confirmLabel: "Save the look" })) ?? "").trim().slice(0, 40);
+    if (!name) return;
+    const saved = readLooks();
+    if (!(name in saved) && Object.keys(saved).length >= 20) {
+      toast("Twenty saved looks is the most: forget one first.", "info");
+      return;
+    }
+    saved[name] = JSON.parse(JSON.stringify(wbMapTheme()));
+    if (!prefs.setJSON(looksKey, saved)) { toast("This browser would not keep the look.", "info"); return; }
+    fillLooks(name);
+    toast(`Saved the look "${name}".`);
+  });
+  const forgetLook = smallButton("ph:trash Forget", "Remove the chosen saved look (maps that use it keep their look)", () => {
+    const saved = readLooks();
+    const name = looksSelect.value;
+    if (!(name in saved)) return;
+    delete saved[name];
+    prefs.setJSON(looksKey, saved);
+    fillLooks();
+  });
+  looksSelect.addEventListener("change", async () => {
+    forgetLook.disabled = !looksSelect.value;
+    const look = readLooks()[looksSelect.value];
+    if (!look) return;
+    const patch = Object.fromEntries(Object.keys(wbMapTheme()).map((key) => [key, null]));
+    if (await wbMapSetTheme({ ...patch, ...look })) {
+      scopeSelect.value = "map";
+      show("map");
+      toast(`Applied the look "${looksSelect.value}".`);
+    }
+  });
+  fillLooks();
+  looks.append(looksName, looksSelect, saveLook, forgetLook);
+  body.insertBefore(looks, body.children[1]);
+
   const foot = document.createElement("div");
   foot.className = "row wb-map-theme-foot";
   const reset = smallButton(
@@ -1747,33 +1804,65 @@ function wbMapLabel(obj) {
 //:
 //: Each alternative is anchored and bounded by a negated class, so there is no
 //: nested quantifier for CodeQL's polynomial-ReDoS shape to find.
-const WB_MAP_INLINE = /(\*\*[^*\n]+\*\*|\*[^*\n]+\*|`[^`\n]+`)/;
+//: A fourth alternative reads `[text](address)` (L375). Same shape as the others (a negated class on each side, no nested quantifier).
+const WB_MAP_INLINE = /(\*\*[^*\n]+\*\*|\*[^*\n]+\*|`[^`\n]+`|\[[^\]\n]+\]\([^)\s]+\))/;
 
 function wbMapInlineText(el, raw) {
   if (!el) return;
   el.replaceChildren();
-  for (const piece of String(raw || "").split(WB_MAP_INLINE)) {
-    if (!piece) continue;
-    let tag = null;
-    let inner = piece;
-    if (piece.length > 4 && piece.startsWith("**") && piece.endsWith("**")) {
-      tag = "strong";
-      inner = piece.slice(2, -2);
-    } else if (piece.length > 2 && piece.startsWith("*") && piece.endsWith("*")) {
-      tag = "em";
-      inner = piece.slice(1, -1);
-    } else if (piece.length > 2 && piece.startsWith("`") && piece.endsWith("`")) {
-      tag = "code";
-      inner = piece.slice(1, -1);
+  //: **`$formula$` first** (L-mindmap-2), cut out before the bold, code and link grammar sees it, the way a note's inline text does: the same `INLINE_MATH_RE` rule (no space inside the dollars, "$5 and $10" stays money) and the same TeX-to-MathML drawing as the notes (`mdInlineMathElement`, which asks for the documents bundle itself if it has not loaded and redraws in place). Inline code needed nothing: `code` already draws as a code span above.
+  const text = String(raw || "");
+  const run = (chunk) => {
+    for (const piece of String(chunk || "").split(WB_MAP_INLINE)) {
+      if (!piece) continue;
+      let tag = null;
+      let inner = piece;
+      const linked = /^\[([^\]\n]+)\]\(([^)\s]+)\)$/.exec(piece);
+      //: A link whose address is not http, https or mailto stays the words it was typed as (L375): the same three schemes as a topic's own link, so a `javascript:` or `data:` address is never made live. The anchor carries the real address (a middle click and the status bar tell the truth), but a plain click only selects, as on any topic: it opens from Ctrl/Cmd or from a topic that was already selected before the press, through `window.open` with `noopener`, the way the Link door does.
+      if (linked && WB_MAP_LINK_SCHEMES.test(linked[2])) {
+        const anchor = document.createElement("a");
+        anchor.className = "wb-map-inline-link";
+        anchor.textContent = linked[1];
+        anchor.href = linked[2];
+        anchor.target = "_blank";
+        anchor.rel = "noopener noreferrer";
+        let wasSelected = false;
+        anchor.addEventListener("pointerdown", () => { wasSelected = !!anchor.closest(".wb-selected"); });
+        anchor.addEventListener("click", (ev) => {
+          ev.preventDefault();
+          if (el.isContentEditable) return;
+          if (ev.ctrlKey || ev.metaKey || wasSelected) window.open(linked[2], "_blank", "noopener,noreferrer");
+        });
+        el.append(anchor);
+        continue;
+      }
+      if (piece.length > 4 && piece.startsWith("**") && piece.endsWith("**")) {
+        tag = "strong";
+        inner = piece.slice(2, -2);
+      } else if (piece.length > 2 && piece.startsWith("*") && piece.endsWith("*")) {
+        tag = "em";
+        inner = piece.slice(1, -1);
+      } else if (piece.length > 2 && piece.startsWith("`") && piece.endsWith("`")) {
+        tag = "code";
+        inner = piece.slice(1, -1);
+      }
+      if (!tag) {
+        el.append(document.createTextNode(piece));
+        continue;
+      }
+      const marked = document.createElement(tag);
+      marked.textContent = inner;
+      el.append(marked);
     }
-    if (!tag) {
-      el.append(document.createTextNode(piece));
-      continue;
-    }
-    const marked = document.createElement(tag);
-    marked.textContent = inner;
-    el.append(marked);
+  };
+  const math = typeof INLINE_MATH_RE === "undefined" || typeof mdInlineMathElement !== "function" ? null : new RegExp(INLINE_MATH_RE.source, "g");
+  let cursor = 0;
+  for (let hit = math?.exec(text); hit; hit = math.exec(text)) {
+    run(text.slice(cursor, hit.index));
+    el.append(mdInlineMathElement(hit[1].trim()));
+    cursor = math.lastIndex;
   }
+  run(text.slice(cursor));
 }
 
 //: **The topic's current object, not the one its handlers were built with.**
@@ -5137,6 +5226,8 @@ function mapPaletteCommands() {
     row("This topic", "ph:arrow-down Add a sibling topic", () => wbMapAddSibling(node.id), "Enter");
     //: The topic's grips by name (row 9): the library `+` and the corner.
     row("This topic", "ph:link-simple Add a child that points at a note, document, file or link", () => wbMapAddReference(node.id));
+    //: The fill and the canvas colour by name (INBOX 431(b)): both wells were wired but only a right-click or the View menu led to them, and a search for fill, colour or background found neither.
+    row("This topic", "ph:paint-bucket Topic fill colour", () => document.getElementById("wb-map-strip-color")?.click(), "", "Colours this topic's card; the branch colour is in the right-click menu. Also found by colour, color or background.");
     row("This topic", "ph:corners-in Resize this topic to the usual width", () => wbMapResetTopicSize(node.id));
     //: The line's mid `+` by name: a touch screen has no hover to find it.
     if (node.parent_id != null) row("This topic", "ph:arrow-elbow-left-up Put a topic between this and its parent", () => wbMapInsertBetween(node.parent_id, node.id));
@@ -5165,6 +5256,7 @@ function mapPaletteCommands() {
     row("This topic", "ph:trash Delete the topic and its branch", () => wbMapDeleteSubtree(node.id), "Delete");
   }
   row("This map", "ph:plus-circle Add a top-level topic", () => wbMapAddChild(null));
+  row("This map", "ph:paint-bucket Map background colour", () => document.getElementById("wb-bg-color-picker")?.click(), "", "The canvas colour behind the map, also in View. Also found by colour, color or fill.");
   row("This map", "ph:broom Tidy the map", () => wbMapTidy());
   row("This map", "ph:arrows-out-simple Open every folded branch", () => wbMapExpandAll());
   row("This map", "ph:arrows-in-line-vertical Fold every branch", () => wbMapFoldToLevel(1), "Alt+1");
@@ -5186,10 +5278,11 @@ function mapPaletteCommands() {
   row("This map", "ph:presentation Present branches", () => wbStartPresenting());
   row("This map", "ph:steps Build up branch by branch", () => wbMapBuild.start());
   row("This map", "ph:student Study the map", () => wbMapStartStudy());
+  row("This map", "ph:list-numbers Study the map in map order", () => wbMapStartStudy({ inOrder: true }));
   row("This map", "ph:chart-bar-horizontal Gantt chart of the dated topics", () => wbMapLazy.openGantt());
   row("This map", wbMapLazy.timerOn() ? "ph:timer Stop the brainstorm timer" : "ph:timer Start a five minute brainstorm timer", () => (wbMapLazy.timerOn() ? wbMapLazy.stopTimer() : wbMapLazy.startTimer(5)));
   row("This map", "ph:funnel Filter by marker…", () => wbMapChooseMarkerFilter());
-  if (wbMarkerUi.filter) row("This map", "ph:x-circle Stop filtering by marker", () => wbMapSetMarkerFilter(null));
+  if (wbMarkerUi.filters.size) row("This map", "ph:x-circle Stop filtering by marker", () => wbMapSetMarkerFilter(null));
   row("This map", wbOutlineShowing() ? "ph:list-dashes Hide the outline" : "ph:list-dashes Show the map as an outline", () => wbOutlineToggle());
   row("This map", "ph:frame-corners Zoom to fit the map", () => wbZoomToFit());
   for (const [value, name] of WB_MAP_LAYOUT_NAMES) {
@@ -8546,7 +8639,7 @@ const WB_MAP_STYLE_KEYS = [
 //: And a boundary and a summary (decisions 19, 20): what the map says.
 const WB_MAP_CONTENT_KEYS = [
   "image", "task", "note", "boundary", "boundary_label", "summary", "summary_span",
-  "priority", "progress", "flag", "markers", "due", "start", "recording", "branch_layout", "callout", "labels", "stamps", "stamped",
+  "priority", "progress", "flag", "markers", "due", "due_time", "start", "recording", "branch_layout", "callout", "labels", "stamps", "stamped",
 ];
 
 //: **Reaction stamps and votes** (Miro; MINDMAP_PLAN 14.4): six Phosphor
@@ -10115,8 +10208,12 @@ const wbStudy = {
 // WB-MAP-STUDY-BEGIN
 //: The questions: each trunk's children with a branch under them, in sibling
 //: order (`childrenOf` is already sorted), and every topic under each one.
-//: Pure, so `tests/test_map_study.py` runs it in node.
-function wbMapStudyQuestions(index) {
+//: Pure, so `tests/test_map_study.py` runs it in node. With `marks` (the
+//: map's record on this device) the order is spaced (decision 36): a branch
+//: missed last time first, then those due for review (a streak of knowing it
+//: waits 0, 1, 3, 7, 14 then 30 days, most overdue first), then any never
+//: asked, in the map's order, then those not due yet, soonest first.
+function wbMapStudyQuestions(index, marks = null, now = 0) {
   const out = [];
   const under = (id) => {
     const all = [];
@@ -10153,7 +10250,17 @@ function wbMapStudyQuestions(index) {
     for (const child of index.childrenOf.get(node.id) || []) walk(child);
   };
   for (const root of index.roots) walk(root);
-  return out;
+  if (!marks || !Object.keys(marks).length) return out;
+  const rank = (q) => {
+    const m = marks[q.id];
+    if (!m) return [2, 0];
+    if (m.last === "missed") return [0, m.at || 0];
+    const over = now - (m.at || 0) - [0, 1, 3, 7, 14, 30][Math.min(m.streak || 1, 5)] * 86400000;
+    return over >= 0 ? [1, -over] : [3, -over];
+  };
+  const keyed = out.map((q, i) => ({ q, i, r: rank(q) }));
+  keyed.sort((a, b) => a.r[0] - b.r[0] || a.r[1] - b.r[1] || a.i - b.i);
+  return keyed.map((k) => k.q);
 }
 
 //: What "Recalled 3 of 5" counts, and the line a step carries from last time.
@@ -10191,8 +10298,10 @@ function wbMapStudyShown(q) {
   return q.answer ? wbStudy.revealed.has(q.id) : !q.hides.some((id) => wbStudy.hidden.has(id));
 }
 
-function wbMapStartStudy() {
-  const questions = wbMapStudyQuestions(wbMapIndex());
+//: `inOrder` asks in the map's order instead of the spaced one.
+function wbMapStartStudy({ inOrder = false } = {}) {
+  const marks = wbStudy.load();
+  const questions = wbMapStudyQuestions(wbMapIndex(), inOrder ? null : marks, Date.now());
   if (!questions.length) {
     toast("Nothing to recall yet: a branch with topics under it, or a topic with a note, is a question.");
     return;
@@ -10202,7 +10311,7 @@ function wbMapStartStudy() {
   wbStudy.steps = questions;
   wbStudy.hidden = new Set(questions.flatMap((q) => q.hides));
   wbStudy.revealed = new Set();
-  wbStudy.marks = wbStudy.load();
+  wbStudy.marks = marks;
   renderWhiteboardNow();
   wbStartPresenting();
   wbMapStudySyncBar();
@@ -10234,7 +10343,8 @@ function wbMapStudyMark(knew) {
   const step = wbPresent && wbStudy.steps[wbPresent.at];
   if (!step) return;
   const was = wbStudy.marks[step.id] || { knew: 0, missed: 0 };
-  wbStudy.marks[step.id] = { ...was, [knew ? "knew" : "missed"]: (was[knew ? "knew" : "missed"] || 0) + 1, last: knew ? "knew" : "missed" };
+  //: `streak` (times in a row it was known) and `at` (when) place it in the spaced order.
+  wbStudy.marks[step.id] = { ...was, [knew ? "knew" : "missed"]: (was[knew ? "knew" : "missed"] || 0) + 1, last: knew ? "knew" : "missed", streak: knew ? (was.last === "knew" ? was.streak || 1 : 0) + 1 : 0, at: Date.now() };
   wbStudy.save();
   if (wbPresent.at < wbStudy.steps.length - 1) {
     wbPresentShow(wbPresent.at + 1);
@@ -10354,7 +10464,38 @@ function wbOutlineRowEl(node, depth) {
     setLabel(pencil, "ph:pencil-simple");
     row.appendChild(pencil);
   }
+  //: The topic's markers and due day, then its labels, as cells under its
+  //: words (decision 34): the canvas's own painting, so the two agree.
+  const cells = document.createElement("div");
+  cells.className = "wb-outline-cells";
+  const marks = document.createElement("span");
+  marks.className = "wb-map-markers wb-outline-marks";
+  const tags = document.createElement("span");
+  tags.className = "wb-outline-tags";
+  cells.append(marks, tags);
+  row.appendChild(cells);
+  wbOutlineCells(row);
   return row;
+}
+
+//: Brings a row's cells up to date; each repaints only when its content changed.
+function wbOutlineCells(row, node = row._node) {
+  const data = node.data || {};
+  const [marks, tags] = row.lastChild.children;
+  wbMapPaintMarkers(marks, data);
+  const labels = Array.isArray(data.labels) ? data.labels.filter((l) => typeof l === "string" && l.trim()) : [];
+  const key = labels.join("\u0000");
+  if (tags.dataset.key !== key) {
+    tags.dataset.key = key;
+    tags.replaceChildren(...labels.map((label) => {
+      const chip = document.createElement("span");
+      chip.className = "wb-map-tag";
+      chip.textContent = label;
+      return chip;
+    }));
+    tags.title = labels.length ? "Labels" : "";
+  }
+  row.lastChild.hidden = marks.hidden && !labels.length;
 }
 
 function wbOutlineEditing(row) {
@@ -10420,11 +10561,13 @@ function wbOutlineSync(force = false) {
     }
   }
   const now = tree.contains(document.activeElement) ? document.activeElement : null;
+  let at = 0;
   for (const row of tree.children) {
     const field = row.firstChild;
     const label = wbMapLabel(row._node);
     if (!(field === now && wbOutlineEditing(row)) && field.value !== label) field.value = label;
     row.setAttribute("aria-selected", String(row._node.id === selected));
+    wbOutlineCells(row, rows[at++].node);
   }
 }
 
@@ -10662,13 +10805,17 @@ function wbMapMarkerParts(data) {
   const due = typeof data?.due === "string" && /^\d{4}-\d{2}-\d{2}$/.test(data.due) ? data.due : null;
   //: A start day (the Gantt view), the same shape; a bar needs both.
   const start = typeof data?.start === "string" && /^\d{4}-\d{2}-\d{2}$/.test(data.start) ? data.start : null;
-  return { priority, progress, flag, icons, due, start };
+  //: The time on the due day (L371), only beside a due day.
+  const dueTime = due && typeof data?.due_time === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(data.due_time) ? data.due_time : null;
+  return { priority, progress, flag, icons, due, dueTime, start };
 }
 
 //: "12 Oct", and whether that day has gone (local midnight to midnight).
 //: With a `start` too, "5 Oct to 12 Oct"; a `start` alone (no due day), "from 5 Oct".
-function wbMapDueWords(due, start = null) {
-  const today = new Date();
+//: With a `time` ("09:30") the due day reads "20 Nov, 9:30 am" and is gone only once that time has.
+function wbMapDueWords(due, start = null, time = null) {
+  const now = new Date();
+  const today = new Date(now);
   today.setHours(0, 0, 0, 0);
   const say = (text) => {
     const [y, m, d] = text.split("-").map(Number);
@@ -10678,7 +10825,11 @@ function wbMapDueWords(due, start = null) {
   const end = say(due || start);
   const from = due && start ? say(start).words : null;
   const words = from ? `${from} to ${end.words}` : due ? end.words : `from ${end.words}`;
-  return { words, past: Boolean(due) && end.day < today };
+  if (!time || !due || from) return { words, past: Boolean(due) && end.day < today };
+  const [h, m] = time.split(":").map(Number);
+  const at = new Date(end.day);
+  at.setHours(h, m);
+  return { words: `${words}, ${at.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`, past: at < now };
 }
 
 //: What the row says to a screen reader and in its tooltip, in the order it
@@ -10689,7 +10840,7 @@ function wbMapMarkerWords(parts) {
   if (parts.progress != null) words.push(parts.progress === 100 ? "done" : parts.progress === 0 ? "not started" : `${parts.progress}% done`);
   if (parts.flag) words.push("flagged");
   if (parts.due) {
-    const due = wbMapDueWords(parts.due);
+    const due = wbMapDueWords(parts.due, null, parts.dueTime);
     words.push(due.past ? `was due ${due.words}` : `due ${due.words}`);
   }
   if (parts.start) words.push(`starts ${wbMapDueWords(parts.start).words}`);
@@ -10702,7 +10853,7 @@ function wbMapMarkerWords(parts) {
 //: render of an unchanged map writes nothing here.
 function wbMapPaintMarkers(host, data) {
   const parts = wbMapMarkerParts(data);
-  const key = `${parts.priority}|${parts.progress}|${parts.flag}|${parts.icons.join(",")}|${parts.due}|${parts.start}`;
+  const key = `${parts.priority}|${parts.progress}|${parts.flag}|${parts.icons.join(",")}|${parts.due}|${parts.dueTime}|${parts.start}`;
   if (host.dataset.key === key) return;
   host.dataset.key = key;
   host.replaceChildren();
@@ -10737,7 +10888,7 @@ function wbMapPaintMarkers(host, data) {
   };
   if (parts.flag) glyph("flag", " wb-map-mark-flag");
   if (parts.due || parts.start) {
-    const when = wbMapDueWords(parts.due, parts.start);
+    const when = wbMapDueWords(parts.due, parts.start, parts.dueTime);
     const chip = document.createElement("span");
     chip.className = `wb-map-mark wb-map-mark-due${when.past ? " is-past" : ""}`;
     chip.textContent = when.words;
@@ -10746,9 +10897,10 @@ function wbMapPaintMarkers(host, data) {
   for (const icon of parts.icons) glyph(icon);
 }
 
-//: The Due and Start rows (decision 37; the Gantt view): the browser's own
-//: date field and Clear; Due also has Remind me. Each field stops at the
-//: other's day (`min` and `max`), so the pair cannot be set backwards here.
+//: The Due and Start rows (decision 37; the Gantt view): the date-field
+//: recipe's picker (`enhanceDateField`) and Clear; Due also has a time field
+//: (L371, `due_time`, kept only with a day) and Remind me. Each field stops
+//: at the other's day (`min` and `max`), so the pair cannot be set backwards.
 function wbMapDateRow(node, parts, set, label, key) {
   const wrap = document.createElement("div");
   wrap.className = "wb-map-markers-row";
@@ -10761,34 +10913,45 @@ function wbMapDateRow(node, parts, set, label, key) {
   if (key === "start" && parts.due) field.max = parts.due;
   if (key === "due" && parts.start) field.min = parts.start;
   field.setAttribute("aria-label", `${label} date`);
-  field.addEventListener("change", () => set({ [key]: field.value || null }));
+  field.addEventListener("change", () => set(key === "due" && !field.value ? { due: null, due_time: null } : { [key]: field.value || null }));
   wrap.append(name, field);
+  enhanceDateField(field);
   if (!parts[key]) return wrap;
+  if (key === "due") {
+    const time = document.createElement("input");
+    time.type = "time";
+    time.value = parts.dueTime || "";
+    time.setAttribute("aria-label", "Due time");
+    time.addEventListener("change", () => set({ due_time: time.value || null }));
+    wrap.append(time);
+    enhanceDateField(time);
+  }
   const clear = document.createElement("button");
   clear.type = "button";
   clear.className = "ghost small";
   clear.textContent = "Clear";
   clear.setAttribute("aria-label", `Clear ${label.toLowerCase()} date`);
-  clear.addEventListener("click", () => set({ [key]: null }));
+  clear.addEventListener("click", () => set(key === "due" ? { due: null, due_time: null } : { [key]: null }));
   wrap.append(clear);
   if (key !== "due") return wrap;
-  //: Remind me makes an ordinary reminder at 9:00 on the due day.
+  //: Remind me makes an ordinary reminder at the due time, or 9:00 with none.
   const remind = document.createElement("button");
   remind.type = "button";
   remind.className = "ghost small";
   remind.textContent = "Remind me";
-  remind.title = "A reminder at 9:00 on the due day, in Reminders";
+  remind.title = "A reminder at the due time (9:00 with none), in Reminders";
   remind.addEventListener("click", async () => {
     const [y, m, d] = parts.due.split("-").map(Number);
-    const at = new Date(y, m - 1, d, 9, 0, 0);
+    const [h, min] = (parts.dueTime || "09:00").split(":").map(Number);
+    const at = new Date(y, m - 1, d, h, min, 0);
     if (at < new Date()) {
-      toast("That day has gone: pick a later due date for a reminder.", "info");
+      toast("That time has gone: pick a later due date for a reminder.", "info");
       return;
     }
     try {
       const made = await apiJson("/reminders", { method: "POST", body: JSON.stringify({ text: wbMapLabel(node) || "Map topic", due_at: at.toISOString() }) });
       reminderMadeUndo(made);
-      toast(`Reminder set for ${wbMapDueWords(parts.due).words}, 9:00.`);
+      toast(`Reminder set for ${wbMapDueWords(parts.due, null, parts.dueTime).words}${parts.dueTime ? "" : ", 9:00"}.`);
     } catch (error) {
       toast(error.message || voiceLine("failed", { what: "set that reminder" }), true);
     }
@@ -10797,7 +10960,7 @@ function wbMapDateRow(node, parts, set, label, key) {
   return wrap;
 }
 
-const wbMarkerUi = { pop: null, filter: null };
+const wbMarkerUi = { pop: null, filters: new Set(), choose: null };
 
 function wbMapCloseMarkers({ restoreFocus = false } = {}) {
   const state = wbMarkerUi.pop;
@@ -10974,7 +11137,8 @@ function wbMapOpenMarkers(id, anchor = null) {
     }
   });
   const outside = (event) => {
-    if (panel.contains(event.target) || target.contains(event.target)) return;
+    //: The Due field's calendar is a popover of its own, drawn in the page.
+    if (panel.contains(event.target) || target.contains(event.target) || event.target.closest?.(".timeline-monthpop")) return;
     wbMapCloseMarkers();
   };
   document.addEventListener("pointerdown", outside, true);
@@ -10985,9 +11149,11 @@ function wbMapOpenMarkers(id, anchor = null) {
 }
 
 //: --- Filter by marker ---------------------------------------------------
-//: One marker at a time; every topic without it is dimmed, never hidden, so
-//: the tree stays readable around what is lit. For this visit only.
-
+//: Several at once (decision 34): a topic stays lit when it carries any of
+//: the chosen markers or labels (a label is the topic's tag); every other
+//: topic is dimmed, never hidden, so the tree stays readable around what is
+//: lit. For this visit only.
+// WB-MAP-FILTER-BEGIN
 function wbMapMarkerKeys(data) {
   const parts = wbMapMarkerParts(data);
   const keys = [];
@@ -10996,10 +11162,14 @@ function wbMapMarkerKeys(data) {
   if (parts.flag) keys.push("flag");
   if (parts.due) keys.push("due");
   for (const icon of parts.icons) keys.push(`i:${icon}`);
+  for (const label of Array.isArray(data?.labels) ? data.labels : []) {
+    if (typeof label === "string" && label.trim()) keys.push(`t:${label.trim()}`);
+  }
   return keys;
 }
 
 function wbMapMarkerKeyWords(key) {
+  if (key.startsWith("t:")) return [key.slice(2), "ph:tag"];
   if (key.startsWith("p")) return [`Priority ${key.slice(1)}`, "ph:number-circle-one"];
   if (key === "done") return ["Done", "ph:check-circle"];
   if (key === "going") return ["Under way", "ph:circle-half"];
@@ -11009,37 +11179,111 @@ function wbMapMarkerKeyWords(key) {
   return [WB_MAP_MARKER_ICON_NAMES.get(icon) || icon, `ph:${icon}`];
 }
 
+const wbMapFilter = {
+  //: Lit when nothing is chosen, or the topic carries any chosen key.
+  lit: (keys, filters) => !filters.size || keys.some((key) => filters.has(key)),
+  //: The bar's words: the first three by name, then how many more.
+  words(filters) {
+    const names = [...filters].map((key) => wbMapMarkerKeyWords(key)[0]);
+    return names.length > 3 ? `${names.slice(0, 3).join(", ")} and ${names.length - 3} more` : names.join(", ");
+  },
+};
+// WB-MAP-FILTER-END
+
 function wbMapMarkersInUse() {
   const used = new Map();
   for (const node of wbMapIndex().nodes) {
     for (const key of wbMapMarkerKeys(node.data)) used.set(key, (used.get(key) || 0) + 1);
   }
-  const rank = (k) => (k.startsWith("p") ? 0 : k === "flag" ? 1 : k === "going" || k === "done" ? 2 : 3);
+  const rank = (k) => (k.startsWith("t:") ? 4 : k.startsWith("p") ? 0 : k === "flag" ? 1 : k === "going" || k === "done" ? 2 : 3);
   return [...used].sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0]));
 }
 
+//: A popover of pressed-or-not choices (the Markers popover's recipe), one
+//: press adds or takes away one filter and the map follows at once.
 function wbMapChooseMarkerFilter(anchor = null) {
-  const used = wbMapMarkersInUse();
-  if (!used.length) {
-    toast("No topic on this map has a marker yet. A topic's menu, Content, Markers adds one.");
+  if (wbMarkerUi.choose) {
+    wbMarkerUi.choose.close();
     return;
   }
-  const items = used.map(([key, count]) => {
-    const [words, icon] = wbMapMarkerKeyWords(key);
-    return makeMenuItem(`${icon} ${words} (${count})`, `Dim every topic that is not marked ${words.toLowerCase()}`, () => wbMapSetMarkerFilter(key));
+  const used = wbMapMarkersInUse();
+  if (!used.length) {
+    toast("No topic on this map has a marker or a label yet. A topic's menu, Content, Markers adds one.");
+    return;
+  }
+  const target = anchor || document.querySelector('[aria-controls="wb-view-menu"]') || document.getElementById("whiteboard-container");
+  const panel = document.createElement("div");
+  panel.className = "help-popover wb-map-markers-pop wb-map-filter-pop";
+  panel.setAttribute("role", "dialog");
+  panel.setAttribute("aria-label", "Filter by marker");
+  const fill = () => {
+    const chips = used.map(([key, count]) => {
+      const [words, icon] = wbMapMarkerKeyWords(key);
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "ghost small";
+      b.setAttribute("aria-pressed", String(wbMarkerUi.filters.has(key)));
+      b.title = `Light the topics marked ${words.toLowerCase()}`;
+      setLabel(b, `${icon} ${words} (${count})`);
+      b.addEventListener("click", () => {
+        if (!wbMarkerUi.filters.delete(key)) wbMarkerUi.filters.add(key);
+        wbMapSetMarkerFilter(undefined);
+        const again = [...panel.querySelectorAll("button")].indexOf(b);
+        fill();
+        panel.querySelectorAll("button")[again]?.focus({ preventScroll: true });
+      });
+      return b;
+    });
+    const group = document.createElement("div");
+    group.className = "wb-map-filter-choices";
+    group.setAttribute("role", "group");
+    group.setAttribute("aria-label", "Markers and labels in use");
+    group.append(...chips);
+    const hint = document.createElement("p");
+    hint.className = "muted wb-map-markers-hint";
+    hint.textContent = "A topic stays lit if it has any you press. Esc closes.";
+    const clear = document.createElement("button");
+    clear.type = "button";
+    clear.className = "ghost small";
+    clear.textContent = "Show every topic";
+    clear.disabled = !wbMarkerUi.filters.size;
+    clear.addEventListener("click", () => {
+      wbMapSetMarkerFilter(null);
+      fill();
+    });
+    panel.replaceChildren(group, hint, clear);
+  };
+  panel.addEventListener("keydown", (event) => {
+    event.stopPropagation();
+    if (event.key === "Escape") {
+      event.preventDefault();
+      close();
+    }
   });
-  if (wbMarkerUi.filter) items.unshift(makeMenuItem("ph:x-circle Show every topic", "Stop filtering", () => wbMapSetMarkerFilter(null)));
-  const box = (anchor || document.querySelector('[aria-controls="wb-view-menu"]') || document.getElementById("whiteboard-container"))?.getBoundingClientRect();
-  openMenuAtPoint(items, "Filter by marker", box ? box.left : 80, box ? box.bottom + 4 : 80);
+  const close = () => {
+    wbMarkerUi.choose = null;
+    document.removeEventListener("pointerdown", outside, true);
+    panel.remove();
+  };
+  const outside = (event) => {
+    if (!panel.contains(event.target) && !target.contains?.(event.target)) close();
+  };
+  document.addEventListener("pointerdown", outside, true);
+  document.body.appendChild(panel);
+  wbMarkerUi.choose = { close };
+  fill();
+  placeHelpPopover(panel, target);
+  panel.querySelector("button")?.focus({ preventScroll: true });
 }
 
+//: `null` ends the filter; `undefined` repaints for the set as it now stands.
 function wbMapSetMarkerFilter(key) {
-  wbMarkerUi.filter = key;
+  if (key === null) wbMarkerUi.filters.clear();
   wbMapPaintMarkerFilter();
   const bar = document.getElementById("wb-map-filter");
-  if (key) wbAnnounce(`Showing the topics marked ${wbMapMarkerKeyWords(key)[0].toLowerCase()}.`);
-  else wbAnnounce("Showing every topic.");
-  if (bar && !key) document.getElementById("whiteboard-container")?.focus({ preventScroll: true });
+  const on = wbMarkerUi.filters.size > 0;
+  wbAnnounce(on ? `Showing the topics marked ${wbMapFilter.words(wbMarkerUi.filters).toLowerCase()}.` : "Showing every topic.");
+  if (bar && !on) document.getElementById("whiteboard-container")?.focus({ preventScroll: true });
 }
 
 //: After every render (`wbMapAfterRender`): a class on each topic the filter
@@ -11071,13 +11315,12 @@ function wbMapDimLit(index) {
 
 function wbMapPaintMarkerFilter() {
   const bar = document.getElementById("wb-map-filter");
-  const on = Boolean(wbMarkerUi.filter) && wbIsMap();
+  const on = wbMarkerUi.filters.size > 0 && wbIsMap();
   if (bar) {
     bar.hidden = !on;
     if (on) {
-      const [words] = wbMapMarkerKeyWords(wbMarkerUi.filter);
       const label = document.getElementById("wb-map-filter-label");
-      if (label) label.textContent = `Marked: ${words}`;
+      if (label) label.textContent = `Marked: ${wbMapFilter.words(wbMarkerUi.filters)}`;
     }
   }
   const container = document.getElementById("whiteboard-container");
@@ -11089,7 +11332,7 @@ function wbMapPaintMarkerFilter() {
     for (const el of container.querySelectorAll(".wb-map-filtered-out")) el.classList.remove("wb-map-filtered-out");
     return;
   }
-  const out = (node) => (on ? !wbMapMarkerKeys(node.data).includes(wbMarkerUi.filter) : !lit.has(node.id));
+  const out = (node) => (on ? !wbMapFilter.lit(wbMapMarkerKeys(node.data), wbMarkerUi.filters) : !lit.has(node.id));
   for (const node of index.nodes) {
     const el = container.querySelector(`.wb-object[data-id="${node.id}"]`);
     if (el) el.classList.toggle("wb-map-filtered-out", out(node));
@@ -11105,7 +11348,7 @@ function wbMapPaintMarkerFilter() {
 //: What follows every render of a map: the outline and the marker filter.
 function wbMapAfterRender() {
   wbOutlineSync();
-  if (wbMarkerUi.filter || wbMapDim.on || document.getElementById("whiteboard-container")?.classList.contains("wb-map-filtering")) {
+  if (wbMarkerUi.filters.size || wbMapDim.on || document.getElementById("whiteboard-container")?.classList.contains("wb-map-filtering")) {
     wbMapPaintMarkerFilter();
   }
 }
