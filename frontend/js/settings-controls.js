@@ -1194,6 +1194,15 @@
 
   $("import-document-file").addEventListener("change", () => importDocument());
 
+  //: A control whose backend is not installed is not drawn (WORLD_CLASS_PLAN B7, `GET /capabilities`):
+  //: the document importer needs the markitdown extra, and a button that fails on its first press is
+  //: worse than none. Only an explicit `installed: false` hides it; a failed read leaves it as it is.
+  apiJson("/capabilities", { silent: true })
+    .then((caps) => {
+      if (caps?.features?.office_import?.installed === false) $("import-document").closest(".fold-help-wrap")?.classList.add("hidden");
+    })
+    .catch(() => {});
+
   $("backup-now").addEventListener("click", backupNow);
 
   $("pref-hide-offline-notice").checked = aiOfflineNoticeHidden();
