@@ -16623,6 +16623,7 @@ async function initWhiteboard() {
     wbRefreshArrowStyleControlRef?.();
     wbToolsOpenerSyncRef?.();
     updateWbCursor();
+    wbFmtState.hints?.toolHint(tool);
     // The properties panel now also carries the style a drawing tool will
     // use, so a tool switch has to reopen/close it, see its own comment.
     wbUpdateContextBar();

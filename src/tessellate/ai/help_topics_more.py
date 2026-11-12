@@ -2254,7 +2254,8 @@ MORE_TOPICS.extend([
             "of the view (Insert, Sticky note does too). Tab walks the items; Enter on a selected "
             "text box or sticky puts the caret at the end of its words, and Enter on a "
             "selected shape writes in it. Escape leaves the words. Ctrl+Alt+Y (Edit, Repeat last move, "
-            "turn or resize) does the last move, turn or resize again to what is selected now."
+            "turn or resize) does the last move, turn or resize again to what is selected now. "
+            "The first time you hold each tool a one-line hint says what it does; it shows once per tool on this device."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },

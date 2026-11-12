@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
+| whiteboard | 30 | 38 | 4 | 0 | 11 | 72 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 701 | 157 | 3 | 195 | 1411 |
+| all | 553 | 700 | 157 | 3 | 195 | 1410 |
 
 ## graph
 
@@ -350,7 +350,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-whiteboard-7** `whiteboard` open, M: Edit inside a group with the rest of the board dimmed. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:262. Evidence: groups can be nested (WHITEBOARD_PLAN item 1354), but no edit-inside-group isolation exists or is tracked
 - [ ] **L-whiteboard-8** `whiteboard` open, M: Save and switch board workspace presets. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:391. Evidence: no saved panel layout presets exist for the board editor and nothing tracks them
 - [ ] **L-whiteboard-9** `whiteboard` open, M: Update a placed library copy from its source. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:634. Evidence: library_ref is stored on placed items, but no update command exists; untracked
-- [ ] **L-whiteboard-10** `whiteboard` open, S: Show a one-line hint the first time each board tool is used. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:720. Evidence: no per-tool first-use hint with a remembered dismissal exists; untracked
 - [ ] **L-whiteboard-12** `whiteboard` open, L: Bind board cards to note properties through their frame. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:768. Evidence: no shape that stays bound to live notebook content exists; lines 768 to 772 are untracked
 - [ ] **L-whiteboard-13** `whiteboard` open, S: Park port dx and dy offsets and the ports editor in BACKLOG. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1310. Evidence: Open line in the plan's prose a session could miss. A conditional deferral of the port offsets, and perimeter use waits on the ports editor. There is no row.
 - [ ] **L-whiteboard-15** `whiteboard` open, S: Measure board idle and drag cost at 500 objects and with the companion on. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1405. Evidence: Open line in the plan's prose a session could miss. The Brief 60 census leaves two measurements unmeasured, with no row.

@@ -28,6 +28,8 @@ for (const id of ["wb-view-grips", "wb-view-ports"]) {{
 }}
 const document = {{ getElementById: (id) => (id === "library-view-whiteboard" ? {{ classList: {{ toggle: (c, on) => (on ? classes.add(c) : classes.delete(c)) }} }} : boxes[id] ?? null) }};
 const onSurface = (name, run) => run();
+const wbFmtState = {{}};
+const toast = () => {{}};
 const prefs = {{ get: (k, d) => saved[k] ?? d, set: (k, v) => (saved[k] = v) }};
 {frontend_text("whiteboard-hints.js")}
 {"boxes[" + json.dumps(click) + "].checked = false; boxes[" + json.dumps(click) + "].on.change();" if click else ""}
