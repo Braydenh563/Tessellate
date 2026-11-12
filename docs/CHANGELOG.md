@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- A tool call the app did not offer (no card, no tag) is refused and runs nothing; Undo and Redo carry the server's tag (L-world-class-28)
 - Two world-class checks were already true: every route is named by a test (L615) and the palette's Find anything handoff passes in Playwright (L538)
 - The staged gate is about a minute faster: the lazy-bundle lint tokenises each file once (L545).
 - Settings hides Import a document until its package is installed, and clearing dismissed suggestions is covered end to end (L-world-class-10, L590).

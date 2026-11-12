@@ -45,3 +45,26 @@ def test_the_undo_a_press_returns_carries_its_tag(client):
     assert reply.status_code == 200, reply.text
     undo = reply.json()["undo"]
     assert consent_store.tag_matches(undo["tool"], undo["arguments"], undo.get("steps"), undo["sig"])
+
+
+def test_a_call_with_neither_a_card_nor_a_tag_is_refused_and_runs_nothing(client):
+    """L-world-class-28: only what the server offered runs; a page cannot make up a call."""
+    made = _made(client)
+    reply = client.post("/chat/tools/execute", json={"name": "delete_note", "arguments": {"note_id": made}})
+    assert reply.status_code == 400 and "not offered" in reply.json()["detail"]
+    assert client.get(f"/entries/{made}").status_code == 200
+
+
+def test_a_change_carries_a_redo_tag_for_the_same_call():
+    """The agent's change event signs its own call, so Redo (which runs it again) passes the rule."""
+    import inspect
+
+    from tessellate.ai import agent
+
+    assert '"redo_sig": consent_store.sign_call(name, arguments)' in inspect.getsource(agent)
+
+
+def test_the_redo_button_sends_the_change_s_redo_tag():
+    from tests._app_js import app_js_text
+
+    assert "sig: change.redo_sig" in app_js_text()

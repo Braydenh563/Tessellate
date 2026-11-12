@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 116 | 42 | 0 | 18 | 288 |
+| world-class | 130 | 115 | 42 | 0 | 18 | 287 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 613 | 139 | 3 | 136 | 1305 |
+| all | 553 | 612 | 139 | 3 | 136 | 1304 |
 
 ## graph
 
@@ -755,7 +755,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-25** `world-class` partly, M: B4 knowledge kernel: per-claim citations, 'what changed about X' on an entity page, and the 'computed by <model> at <ts>' stamp on derived rows. From WORLD_CLASS_PLAN.md B4. Evidence: routes_entities.py entity_page has open_items, timeline, links (2b7d96fe); no per-claim citation rows, no what-changed view, no computed-by stamp
 - [ ] **L-world-class-26** `world-class` partly, M: I5 time travel: the model's judgement over then and now claim pairs, re-embedding past texts for as-of retrieval, and an as-of answer's cards grouped by month (H8). From WORLD_CLASS_PLAN.md I5. Evidence: ai/timetravel.py:179 then_and_now pairs claims by shared words; claims_as_of route (72ce2bca) resolves revisions at a day
 - [ ] **L-world-class-27** `world-class` open, L: I1 night shift pass 2: dates, duplicates and entities as derived_facts rows, with accept of a date (a reminder) and of a duplicate (the merge). From WORLD_CLASS_PLAN.md I1 and H1. Evidence: ai/facts.py:109 KINDS = claim, question, tension, answered; no date, duplicate or entity kinds
-- [ ] **L-world-class-28** `world-class` open, M: Require a sig on every key-less /chat/tools/execute call and move the about 40 test call sites to send one. From L566 follow-on, 2026-11-12. Evidence: L566 allows a key-less /chat/tools/execute call without sig; a sig that does not match gets 400
 
 ## general
 

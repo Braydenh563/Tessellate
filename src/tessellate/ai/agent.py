@@ -214,6 +214,8 @@ def _record_call(
             "reminder_id": _change_reminder_id(name, result),
             "category_name": _change_category_name(name, result),
             "undo": consent_store.signed(undo),
+            #: Redo runs this same call again, so it needs the server's tag too (L-world-class-28).
+            "redo_sig": consent_store.sign_call(name, arguments),
         }
     return change
 

@@ -18,7 +18,11 @@ _HEADERS = {"X-Accel-Buffering": "no", "Cache-Control": "no-cache"}
 
 def _tracked(body: object) -> bool:
     """A send is deduplicated only when it has an id and is not a private or peek turn."""
-    return bool(getattr(body, "turn_id", None)) and not getattr(body, "private", False) and not getattr(body, "peek", False)
+    return (
+        bool(getattr(body, "turn_id", None))
+        and not getattr(body, "private", False)
+        and not getattr(body, "peek", False)
+    )
 
 
 def json_route(handler: Callable) -> Callable:
@@ -76,6 +80,14 @@ def stream_route(handler: Callable) -> Callable:
 
 
 def check_tag(body: object) -> None:
-    """A tool call that carries a tag must still match it: a changed Undo or redo is refused, not run."""
+    """A tool call runs only as the server offered it: a card press is bound by its id (E43), anything
+    else (an Undo, a redo) must carry the tag it was handed out with, unchanged (L566)."""
+    if not body.sig and not body.consent_id:
+        raise HTTPException(
+            status_code=400, detail="That action was not offered by this app, so it was not run."
+        )
     if body.sig and not consent_store.tag_matches(body.name, body.arguments, body.steps, body.sig):
-        raise HTTPException(status_code=400, detail="That action was changed after it was offered, so it was not run.")
+        raise HTTPException(
+            status_code=400,
+            detail="That action was changed after it was offered, so it was not run.",
+        )

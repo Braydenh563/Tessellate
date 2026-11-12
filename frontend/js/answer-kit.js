@@ -1919,7 +1919,7 @@ function pushAgentChangeUndo(change, call) {
     (change.label || change.tool).replace(/^ph:[\w-]+\s*/, ""),
     () => exec({ name: inverse.tool, arguments: inverse.arguments, steps: inverse.steps, sig: inverse.sig }).then(refreshAfterToolChanges),
     async () => {
-      const again = await exec({ name: call.name, arguments: call.arguments });
+      const again = await exec({ name: call.name, arguments: call.arguments, sig: change.redo_sig });
       inverse = again.undo || inverse;
       refreshAfterToolChanges();
     }

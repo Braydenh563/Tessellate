@@ -22,6 +22,8 @@ never by widening a rule.
 """
 from __future__ import annotations
 
+from tests._tool_sig import call
+
 import ast
 import re
 from dataclasses import dataclass, field
@@ -504,7 +506,7 @@ def test_a_model_failure_reading_a_spec_or_removing_a_model_is_a_sentence(
 def test_a_confirmed_tool_that_fails_answers_with_a_sentence_for_the_person(ai_client, caplog):
     caplog.set_level("WARNING")
     response = ai_client.post(
-        "/chat/tools/execute", json={"name": "delete_category", "arguments": {"name": "No such category"}}
+        "/chat/tools/execute", json=call("delete_category", {"name": "No such category"})
     )
     assert response.status_code == 400
     detail = response.json()["detail"]
