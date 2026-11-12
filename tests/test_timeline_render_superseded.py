@@ -35,6 +35,7 @@ const painted = [];
 const paintTimeline = () => painted.push(timelineRows.map((r) => r.key).join(","));
 const timelineViewMode = () => "table";
 const requestAnimationFrame = () => {};
+const timelineRecall = { hold: () => {} };  // the on-this-day row's hold, outside this test
 %s
 (async () => {
   const first = renderTimeline();
