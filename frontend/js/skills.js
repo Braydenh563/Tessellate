@@ -359,6 +359,10 @@ async function loadChatSkills() {
   trigger.addEventListener("click", () => {
     // Runs before the toggle below, so "true" here means it is closing.
     if (trigger.getAttribute("aria-expanded") === "true") return;
+    //: Filled from the cache first, so the list and its "Greyed skills" note
+    //: are right as the menu opens; the fetch then refills it (the owner,
+    //: 2026-11-12: the note took a second to appear).
+    fillSkillSelect(select);
     loadSkills().then(() => fillSkillSelect(select));
   });
   buildSkillsPanel(box, label, select, run, trigger);

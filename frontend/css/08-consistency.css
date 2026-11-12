@@ -267,6 +267,20 @@
 .action-menu .menu-item.menu-item-unavailable:focus-visible {
   background: none;
 }
+/* A select row its option disables (a skill that needs a model) reads as
+   unavailable, as `.menu-item-unavailable` does; at 0,3,0 for the same reason
+   as above. The native popup's own grey never reached this menu (the owner,
+   2026-11-12: "I see no greyed out skills"). */
+.select-menu .select-option[aria-disabled="true"] {
+  color: var(--muted);
+  opacity: 0.75;
+  cursor: default;
+}
+.select-menu .select-option[aria-disabled="true"]:hover,
+.select-menu .select-option[aria-disabled="true"]:focus-visible {
+  background: none;
+  color: var(--muted);
+}
 /* A select's opener inside a dock menu is a *field*, not a menu row - it is
    the control the section's label names. Excluded from the row recipe by not
    being in its list; restated here only so the row padding above cannot be
