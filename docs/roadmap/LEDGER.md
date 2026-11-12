@@ -8,16 +8,16 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
-| graph | 8 | 17 | 5 | 5 | 4 | 30 |
+| graph | 8 | 17 | 4 | 5 | 4 | 29 |
 | chat | 38 | 167 | 59 | 38 | 55 | 264 |
-| whiteboard | 24 | 25 | 5 | 0 | 7 | 54 |
+| whiteboard | 24 | 25 | 4 | 0 | 8 | 53 |
 | documents | 44 | 50 | 17 | 7 | 16 | 111 |
 | mindmap | 27 | 22 | 5 | 5 | 2 | 54 |
-| ui-modernisation | 69 | 85 | 6 | 19 | 13 | 160 |
-| timeline | 0 | 25 | 4 | 3 | 5 | 29 |
-| world-class | 79 | 146 | 61 | 31 | 68 | 286 |
-| general | 0 | 20 | 0 | 0 | 1 | 20 |
-| all | 289 | 557 | 162 | 108 | 171 | 1008 |
+| ui-modernisation | 69 | 85 | 4 | 20 | 13 | 158 |
+| timeline | 0 | 25 | 3 | 3 | 5 | 28 |
+| world-class | 79 | 146 | 58 | 31 | 68 | 283 |
+| general | 0 | 21 | 0 | 0 | 1 | 21 |
+| all | 289 | 558 | 154 | 109 | 172 | 1001 |
 
 ## graph
 
@@ -37,7 +37,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L14** `graph` open, L: Split gcDraw (809 lines), gcWireInteraction (467) and gcStartWorker (290) in graph-canvas.js. From OPEN.md:4552. Evidence: graph-canvas.js 7,492 lines; multi-day refactor deferred
 - [ ] **L15** `graph` open, L: Reduce graph layout crossings, hub spokes and label density in applyGrouping. From OPEN.md:3882. Evidence: Tuning reverted; graph-worker.js applyGrouping untouched
 - [ ] **L16** `graph` partly, S: Filter already-linked notes out of /entries/{id}/related. From OPEN.md:3561. Evidence: Message now says already linked/self (routes_entries_links.py:107); related list (routes_entries_relations.py:631) not seen to filter linked notes
-- [ ] **L17** `graph` partly, S: #graph-new popover (index.html:4766) has no data-help-for; refresh icon report not reproduced. From ledger-1112 P22.
 - [ ] **L18** `graph` partly, M: Re-measure and improve neighbours following a graph drag. From OPEN.md:1712. Evidence: graph-canvas.js:4598-4615 freezes all but the direct neighbourhood which is carried; the measured follow ratio not re-measured
 - [ ] **L19** `graph` partly, M: Fix blank minimap and node card overlap for a graph with no links. From OPEN.md:3868. Evidence: graph-canvas.js:6979 adds 'no links yet'; minimap, card overlap not shown fixed
 - [ ] **L20** `graph` partly, L: Write concrete link reasons (shared tag, name, week) instead of 'similar in meaning'. From OPEN.md:3519. Evidence: f6f71aa20 re-voiced reasons; deducedStrength in note-cards.js; concrete overlap reasons (shared tag/name/week) not confirmed.
@@ -300,7 +299,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L279** `whiteboard` open, M: Close or record U19 U20 U23 U30 U31 U36 U37 U39 U41 U45 U49 across map, board, documents, code editor. From bs-1111.md. Evidence: Other agents' surfaces; no closing record found
 - [ ] **L280** `whiteboard` open, M: Add AI rename for boards and maps; drop weak meaning-only matches. From w34-gap3-1111.md Found. Evidence: Only documents have suggest-title (fe169b9d8); no board/map equivalent
 - [ ] **L281** `whiteboard` open, M: Time board open from a click, not direct openWhiteboardBoard(id). From OPEN.md:1328. Evidence: Methodology caveat; no click-driven timing sweep recorded.
-- [ ] **L282** `whiteboard` partly, S: Trackpad pinch rate per gesture in the lightbox needs a real trackpad (preset dropdowns and present page counter are driven and pass). From ledger-1112 I25.
 - [ ] **L283** `whiteboard` partly, M: Add frame hint edit path and connector arrow-head set (Reset style exists). From OPEN.md:1205; OPEN.md:2418. Evidence: whiteboard.js:13260 handles frame hint edit/clear; arrow-head set on connectors not confirmed (whiteboard-map.js arrowhead is branch-only).
 - [ ] **L284** `whiteboard` partly, M: Finish frame rotate reset, emoji scale and resize dimension label/lag. From OPEN.md:3828. Evidence: 25e10059b frame upright stands up contents; dimension label while resizing not found
 - [ ] **L285** `whiteboard` partly, L: Finish templates, styles, align and distribute, find, copy as picture and shortcuts for the board. From OPEN.md:4531. Evidence: Smart alignment guides and find exist in whiteboard.js; templates/styles/copy-as-picture set not confirmed complete
@@ -495,8 +493,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L464** `ui-modernisation` partly, M: uipolish leftovers: rows-view 28px meta button, tool-confirm pair, lower BOOT_CSS_CAP. From OPEN.md:1806; OPEN.md:2609. Evidence: BOOT_CSS_CAP lowered 2026-10-11 (test_boot_budget.py:68-79); tool-confirm (02-chat-graph.css:601) and meta button remain
 - [ ] **L465** `ui-modernisation` partly, M: Add a lint measuring every rail and top-bar control has a data-help-for popover and palette row. From OPEN.md:1813. Evidence: app-features.js:563-567 added top-bar palette rows (ledger 1410); the 0-missing coverage lint/measure not found
 - [ ] **L466** `ui-modernisation` partly, M: C4 Connect words on sideways phone (no 480 step) and door dialog repeat (design); Versions 'Named only' filter. From ledger-1112 O19.
-- [ ] **L467** `ui-modernisation` partly, M: No Radix, shadcn or APG element comparison record. From ledger-1112 P12.
-- [ ] **L468** `ui-modernisation` partly, M: Tour 455px spill not investigated; Memory and Logs panes hide h3 on a phone (.jump-echo). From ledger-1112 P32.
 - [ ] **L469** `ui-modernisation` partly, L: Finish the uipolish-0924 surface-by-surface pass (item D). From OPEN.md:1914; OPEN.md:2314. Evidence: Icon-only floor done (iconfloor.js); the per-surface pass not recorded done
 - [ ] **L-ui-modernisation-1** `ui-modernisation` open, M: Adopt CSS cascade layers (@layer tokens, base, components, surfaces, overrides) so 08-consistency.css stops winning by specificity. From ANALYSIS.md:3680. Evidence: grep @layer frontend/css returns 0; UI_MODERNISATION_PLAN item 18 dissolves 08 into components but never names layers or the 'only shrinks' lint
 
@@ -526,7 +522,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L491** `timeline` open, M: Window the Timeline table view rows like the feed. From agent-remaining/listwin-1031.md. Evidence: The Timeline table view (`timelineTableRow`, paintTimelineTable) still builds every loaded row; only the feed is windowe
 - [ ] **L492** `timeline` open, L: Timeline feed lays out ~39x/s while scrolling. From OPEN.md:1385. Evidence: content-visibility: auto still in css (03-dashboard-widgets.css:1927, library-lazy.css:6866); no layout-rate fix or measurement after
 - [ ] **L493** `timeline` partly, S: Verify every weekday, every other friday and yearly repeats save once in Recurring model. From OPEN.md:1400. Evidence: routes_reminders.py:215-224 reads WEEKLY/MONTHLY/YEARLY and every weekday/every other; Recurring model itself not re-verified
-- [ ] **L494** `timeline` partly, S: Drive the reminder edit form and measure that time, priority, repeat, alert share one height. From ledger-1112 P4.
 - [ ] **L495** `timeline` partly, M: Add the Timeline dock streak surface for D6 streak count. From OPEN.md:1388. Evidence: dashboard.js:50 has a Streak widget; the Timeline dock/streak surface the row asks for not found
 - [ ] **L496** `timeline` partly, M: Re-check timeline pinned bucket head flake and 4 off-screen ghost buttons. From OPEN.md:3902. Evidence: Pointer note to other OPEN rows (44px On this day shift, meeting mark in table, map under Boards chip), each tracked separately; flaky pinned-head sweep and Notes off-screen buttons not re-checked.
 - [ ] **L-timeline-1** `timeline` open, S: Mark empty weeks on the timeline with a one-click 'what happened here?' prompt. From ANALYSIS.md:1190. Evidence: grep gap|quiet timeline.js only finds TIMELINE_AUTO_MAX_GAP (bucket choice); TIMELINE_PLAN has no gap marker
@@ -691,8 +686,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L651** `world-class` partly, S: Drive undo helpers in a browser (only node --check and scanner so far). From OPEN.md:512. Evidence: Scanner + node checks exist; no cited Playwright drive of every undo step; Playwright is available so can be driven
 - [ ] **L652** `world-class` partly, S: Brief 3: api.stream/upload and no-bare-fetch lint. From OPEN.md:1959. Evidence: tests/test_no_bare_fetch.py exists; HISTORY still lists remainder
 - [ ] **L653** `world-class` partly, S: test_typo_routing writes ./data serially; boot JS 588516 over cap 588400. From OPEN.md:3891. Evidence: Boot cap stale: BOOT_JS_CAP now 448_400 (tests/test_boot_budget.py:64). Serial ./data write in tests/test_typo_routing.py not re-run (read-only); unverified.
-- [ ] **L654** `world-class` partly, S: Pasted #/Manual and #/Statistics ignored at load; no Manual handling in router.js. From ledger-1112 P17.
-- [ ] **L655** `world-class` partly, S: Record then reload run not driven (static tests only). From ledger-1112 X1.
 - [ ] **L656** `world-class` partly, M: Finish palette rows for note/meeting acts and search chip. From OPEN.md:3721. Evidence: palette.js:178 now draws /read/acts rows; per-act note/meeting rows and the search chip unverified
 - [ ] **L657** `world-class` partly, M: Add duplicates, entities and dates as fact kinds in ai/facts.py. From OPEN.md:1226. Evidence: Tensions built (ai/facts.py:1197 _pair_passes); duplicates/entities/dates kinds not present.
 - [ ] **L658** `world-class` partly, M: Add a stop step to night shift, backup, resurfacing and embeddings backfill. From OPEN.md:1697; OPEN.md:3538. Evidence: core/passes.py:95,201 stop_requested only checked in maintenance; backfill loop and others have no stop step
@@ -717,7 +710,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L677** `world-class` partly, M: Stop parsing the whole app on every boot (PF4). From OPEN.md:4462. Evidence: x15-1111: Guide chat, Reminders, Timeline, Graph, Documents panes and palette are templates (5,640 to 3,887 boot nodes); chat, library, notes still parse at boot
 - [ ] **L678** `world-class` partly, M: Cut import cost 3.3 s to 1.5 s; ai.autonomous pulls ai.agent. From OPEN.md:1710; OPEN.md:3785. Evidence: autonomous.py:48 still imports ai.agent at module level; heavy imports not lazily deferred
 - [ ] **L679** `world-class` partly, M: Register long tasks outside THREAD_SITES (imports, summary, jobs lane). From OPEN.md:3666. Evidence: tests/test_activity.py:137 THREAD_SITES table lint; request-bound long work not covered
-- [ ] **L680** `world-class` partly, M: Notes filter box: date operators only ISO; add day names, verify typing in real browser. From ledger-1112 P16; ledger-1112 X6.
 - [ ] **L681** `world-class` partly, M: BK12 200-row reminders payload remains (OPEN 4277); BK6 not evidenced; K27 dead routes owner call. From ledger-1112 O39.
 - [ ] **L682** `world-class` partly, M: E70 server idempotency by turn id not built; no turn_id guard in agent.py or chat routes. From ledger-1112 P19.
 - [ ] **L683** `world-class` partly, M: D4 --durations=0 needs one CI run (hardware-only CI); D3 slow tests true-deferred. From ledger-1112 O28.
@@ -764,6 +756,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-11** `general` open, M: Build a meeting-prep brief: a reminder naming a person or topic pulls the last related notes into a card at fire time. From ANALYSIS.md:1217. Evidence: grep meeting.prep in src and frontend/js returns nothing
 - [ ] **L-general-12** `general` open, S: Add an overdue triage view (still matters / drop / reschedule) with a bulk action. From ANALYSIS.md:1219. Evidence: shell-reminders.js:974 only groups Overdue/Today/Upcoming/Done; no triage or bulk reschedule
 - [ ] **L-general-13** `general` open, S: Show a source-provenance chip on every row (imported from file, clipped from URL, extracted from document, transcribed from audio). From ANALYSIS.md:1204. Evidence: no provenance/source chip in frontend/js or routes_entries.py output; no plan holds it
+- [ ] **L-general-14** `general` open, S: Tour sweeps: drive the tour through openTour() instead of its old globals. From shell-1112 (Sh1). Evidence: scratchpad/ui-sweeps/toursteps.js, tourdim.js, tour.js read TOUR_SECTIONS and tourRun, now inside tour.js's IIFE; they stop on a ReferenceError
 
 ## Owner calls
 
@@ -877,6 +870,7 @@ Rows only the owner can decide. A recommendation is taken per standing order 3 u
 - [ ] **L814** `world-class` owner-call, M: test_name_mood asserts oklch(from var(--accent)); replace with fixed-palette test. From OPEN.md:1793; OPEN.md:2264. Evidence: tests/test_name_mood.py:405 still asserts it; needs the fixed palette values decided first
 - [ ] **L179** `chat` owner-call, L: Wind-spirit travel visuals: new travel art (B65 L9), a redraw only the owner can judge by eye on real Windows, with a human rater. From OPEN.md:4335; ledger-1112 I12; ledger-1112 O16. Evidence: the 2026-11-12 companion session left it as an owner call; L10 hop chain was done earlier.
 - [ ] **L-chat-3** `chat` owner-call, M: The masculine Atlas (E4): head, eyes and shoulder join wait for the owner's pick. From ledger-1112 O37; OPEN.md:294.
+- [ ] **L-ui-modernisation-2** `ui-modernisation` owner-call, S: Lightbox typed zoom on a phone: show the readout below 600 px or leave it hidden. From shell-1112 (Sh2), INBOX 430, INBOX 1694 b. Evidence: the lightbox hides its zoom readout below 600 px wide, so the typed zoom has no phone form there
 
 ## Needs hardware
 
@@ -1053,6 +1047,7 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L983** `general` blocked-hardware, M: Owner's Windows lag lines not reproduced on Linux: desk overlay hide/show flips, desk window scan counted as invisible, avatars.js 1295 ms timer, settings-panes 285 ms keydown, chat pointerover. From INBOX 1716, 1726. Evidence: Needs the owner's Windows desktop; each line was measured as not reproducing at 4x CPU here
 - [ ] **L-chat-4** `chat` blocked-hardware, M: Desk companion reaction to media playing: needs the Windows audio session; the catalogue refuses an in-app-only entry. From ledger-1112 I17.
 - [ ] **L246** `chat` blocked-hardware, M: A real model's first token replaces a shown composed preview cleanly. The gate on the preview is built (651624f81, `chat_chips.shows_first`) and tested on the fake transport. From ledger-1112 P1. Evidence: `scratchpad/llama-dev.sh serve`, then `pytest -m evals`.
+- [ ] **L282** `whiteboard` blocked-hardware, S: Trackpad pinch rate per gesture in the lightbox needs a real trackpad (preset dropdowns and present page counter are driven and pass). From ledger-1112 I25.
 
 ## Plan session briefs
 
