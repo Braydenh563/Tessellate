@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Docs: the PR 216 work order is marked done so the Stop hook stops reading it as running.
+- Docs: IDEAS.md is retired; its built entries moved to HISTORY and its open ones to BACKLOG.
 - Docs: ROADMAP.md retires its three open-looking queues (text kept in HISTORY), and the README describes the file by what it holds now.
 - Docs: five placed INBOX items (1716, 1726, 1748, 1779, 904) move to HISTORY and the 904 list's stale built and not-built statuses are corrected.
 - Docs: the deep-audit skill briefs from and writes LEDGER rows, matching its checklist, instead of ranked audit files.
