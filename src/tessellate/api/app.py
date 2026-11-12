@@ -124,6 +124,7 @@ from tessellate.api import (
     routes_board_history,
     routes_map_suggest,
     routes_map_from_notes,
+    routes_documents_from_notes,
 )
 from tessellate.ai.provider import ProviderError
 from tessellate.api.routes_auth import require_unlock
@@ -1612,6 +1613,7 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     (routes_board_history.router, LOCKED),
     (routes_map_suggest.router, LOCKED),
     (routes_map_from_notes.router, LOCKED),
+    (routes_documents_from_notes.router, LOCKED),
     (routes_debug.router, LOCKED),
     (routes_privacy.router, LOCKED),
     (routes_capabilities.router, LOCKED),

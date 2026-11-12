@@ -4878,6 +4878,29 @@ function renderGraphViews() {
   }
 }
 
+//: The selection dock's ⋯ (`kebabMenu`): rows that act on the selected notes
+//: and are too many for the dock itself. "Compose into a draft" makes one
+//: document from them (`expandNoteIntoDocument` takes a list of ids).
+graphLate.wireSelectionMore = function () {
+  const slot = document.getElementById("graph-selection-more");
+  if (!slot || slot.firstChild) return;
+  slot.appendChild(
+    kebabMenu(
+      [
+        {
+          label: "ph:file-text Compose into a draft",
+          title: "Make one document from the selected notes, a section each; the notes stay as they are",
+          run: () => {
+            const ids = [...gcSelected].filter((id) => Number.isInteger(id));
+            if (!ids.length) return toast("Select some notes first.");
+            expandNoteIntoDocument(ids);
+          },
+        },
+      ],
+      "More actions for the selected notes"
+    )
+  );
+};
 function initGraphViews() {
   const select = document.getElementById("graph-view-picker");
   if (!select || select._wired) return;
@@ -4913,6 +4936,7 @@ function initGraphViews() {
 initGraphDockHeightToken();
 initGraphRailToken();
 initGraphToastClearance();
+graphLate.wireSelectionMore();
 //: Tidy spacing (INBOX 1529) is drawn on the first visit, beside Group by
 //: category, not shipped in index.html (the boot element cap, test_boot_diet3).
 (function graphTidyRow() {
