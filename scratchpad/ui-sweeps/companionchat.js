@@ -77,7 +77,7 @@ async function sample(page, label) {
       over,
       //: Whether its own placement thinks this place is clear: a cover
       //: the sweep sees and this misses is the shape being wrong.
-      hits: nameMarkBuddyHits(nmb.x, nmb.y, nmb.pose, nameMarkBuddyObstacles("chat"), nmb.legs),
+      hits: nmb.inner.nameMarkBuddyHits(nmb.x, nmb.y, nmb.pose, nmb.inner.nameMarkBuddyObstacles("chat"), nmb.legs),
       stopBox: r(box(document.getElementById("chat-stop"))),
       at: [nmb.x, nmb.y].map(Math.round),
       //: On its way between two places (a walk, a poof, a crossfade): a
@@ -92,11 +92,9 @@ async function sample(page, label) {
   const { browser, page } = await boot({ viewport: { width: W, height: phone ? 844 : 900 }, ...(phone ? { hasTouch: true, isMobile: true } : {}) });
   const fake = process.env.FAKE || "8774";
   await page.evaluate(async (port) => apiJson("/models/provider", { method: "POST", body: JSON.stringify({ provider: "openai", base_url: `http://127.0.0.1:${port}/v1` }) }).catch((e) => ({ error: String(e) })), fake);
-  await page.evaluate((k) => {
+  await page.evaluate(async (k) => {
     localStorage.removeItem("nm-buddy-spots");
-    const b = document.getElementById("avatar-buddy");
-    b.value = k;
-    b.dispatchEvent(new Event("change", { bubbles: true }));
+    prefs.set("avatar-buddy", k); await ensureModule("characters"); syncNameMarkBuddy();
   }, process.env.KIND || "atlas");
   await page.evaluate(() => switchTab("chat"));
   await page.waitForTimeout(3000);

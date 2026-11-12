@@ -51,7 +51,7 @@ const show = (o) => console.log("    " + JSON.stringify(o));
   await page.evaluate(async () => {
     const v = document.getElementById("library-view-whiteboard");
     for (const s of document.querySelectorAll('[id^="library-view-"]')) s.classList.toggle("hidden", s !== v);
-    await initWhiteboard();
+    await ensureModule('boards'); await initWhiteboard();
   });
   await page.waitForTimeout(500);
 

@@ -20,7 +20,7 @@ const { boot } = require("./lib.js");
 
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 }, reducedMotion: process.env.MOTION === "reduce" ? "reduce" : "no-preference" });
-  await page.evaluate(() => { localStorage.removeItem("nm-buddy-spots"); const b = document.getElementById("avatar-buddy"); b.value = "atlas"; b.dispatchEvent(new Event("change", { bubbles: true })); });
+  await page.evaluate(async () => { localStorage.removeItem("nm-buddy-spots"); prefs.set('avatar-buddy', "atlas"); await ensureModule('characters'); syncNameMarkBuddy(); });
   await page.evaluate(() => switchTab("dashboard"));
   await page.waitForTimeout(3500);
   const state = () => page.evaluate(() => {

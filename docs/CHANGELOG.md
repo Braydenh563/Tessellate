@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Phone: the sidebar opener, the resizable sidebars and the floating New buttons are wired when Notes, Chat and Library are built (they were missed since those became lazy, so Notes had no opener at 390); the companion's tick, pat and probes are reachable on `nmb` for the ui sweeps; 11 more sweeps (touch, phonesidebar, phonecapture, spinners, eight companion ones) run in CI (L-general-47).
 - CI: a UI sweeps job runs 30 steady ui sweeps and 10 deepflows.js flows on fresh notebooks every push (`scripts/ci_sweeps.sh`); the update question re-reads the answer when its first-run turn comes, so it is never asked twice (L-general-20).
 - Tour sweeps read tour.js through `openTour.inspect` (its state moved into a closure); tourdim reads `color(srgb … / a)` alpha; tourfirst measures the ring's 6px pad and top clamp (L-general-14).
 - Dashboard: list widgets render `_italic_` and drop task boxes from the preview; Rediscover unwraps `[[links]]` (L-general-39).

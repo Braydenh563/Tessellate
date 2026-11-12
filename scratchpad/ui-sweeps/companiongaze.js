@@ -16,7 +16,7 @@ const KIND = process.env.KIND || 'atlas';
 
 (async () => {
   const { browser, page } = await boot({ viewport: { width: VW, height: VH } });
-  await page.evaluate((k) => { const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, KIND);
+  await page.evaluate(async (k) => { prefs.set('avatar-buddy', k); await ensureModule('characters'); syncNameMarkBuddy(); }, KIND);
   // The setting on, by its own switch (the owner: "it doesnt follow the
   // mouse movement if i have it turned on either").
   await page.evaluate(() => { const f = document.getElementById('avatar-follow'); f.checked = true; f.dispatchEvent(new Event('change', { bubbles: true })); });

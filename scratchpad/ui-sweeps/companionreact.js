@@ -9,7 +9,7 @@ const { boot } = require('./lib.js');
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
   const fails = [];
-  await page.evaluate((k) => { const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
+  await page.evaluate(async (k) => { prefs.set('avatar-buddy', k); await ensureModule('characters'); syncNameMarkBuddy(); }, process.env.KIND || 'me');
   // Two long notes to open.
   const ids = await page.evaluate(async () => {
     const body = (n) => `Long note ${n} for the companion. ${'A sentence that goes on for a while, with enough words to need a Show more. '.repeat(24)}`;
@@ -107,7 +107,7 @@ const { boot } = require('./lib.js');
   const night = await page.evaluate(() => {
     const orig = Date.prototype.getHours;
     Date.prototype.getHours = function () { return 23; };
-    try { nmb.lastInput = Date.now(); nameMarkBuddyTick(); } finally { Date.prototype.getHours = orig; }
+    try { nmb.lastInput = Date.now(); nmb.tick(); } finally { Date.prototype.getHours = orig; }
     return { kind: nmb.reacted || '', act: nmb.act };
   });
   if (night.kind !== 'yawn' || night.act !== 'yawn') fails.push(`night: ${JSON.stringify(night)}`);

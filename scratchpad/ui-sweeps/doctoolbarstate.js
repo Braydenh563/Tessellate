@@ -269,23 +269,16 @@ const STOPS = [
     };
   });
   console.log("      table menu:", JSON.stringify(menu));
-  ok("the table cell menu still offers all ten commands", menu.items === 10, `${menu.items} items`);
-  ok("in four groups, so three hairlines", menu.separators === 3, `${menu.separators} separators`);
-  ok(
-    "each hairline is drawn and is one pixel tall",
-    (menu.sepHeights || []).length === 3 && (menu.sepHeights || []).every((h) => h === 1),
-    JSON.stringify(menu.sepHeights)
-  );
-  ok(
-    "and spans the menu's rows rather than collapsing",
-    (menu.sepWidths || []).length === 3 && menu.sepWidths.every((w) => w > 80),
-    JSON.stringify(menu.sepWidths)
-  );
-  ok(
-    "a hairline is a separator, never a menu item",
-    menu.menuItemRoles === 10 && menu.separatorRoles === 3,
-    `${menu.menuItemRoles} menuitems, ${menu.separatorRoles} separators`
-  );
+  //: The menu grew from ten rows in four groups to two dozen (sort, filter, totals); the grammar is what is kept:
+  //: at least the first four groups, a hairline only between rows, drawn one pixel tall, never a menu item.
+  const seps = menu.separators || 0;
+  const order = menu.order || [];
+  ok("the table cell menu still offers its ten commands and more", menu.items >= 10, `${menu.items} items`);
+  ok("in groups, so at least three hairlines", seps >= 3, `${seps} separators`);
+  ok("and a hairline sits between rows, never first, last or doubled", order.length > 0 && order[0] !== "---" && order[order.length - 1] !== "---" && order.every((c, i) => c !== "---" || order[i - 1] !== "---"), JSON.stringify(order.slice(0, 5)));
+  ok("each hairline is drawn and is one pixel tall", (menu.sepHeights || []).length === seps && (menu.sepHeights || []).every((h) => h === 1), JSON.stringify(menu.sepHeights));
+  ok("and spans the menu's rows rather than collapsing", (menu.sepWidths || []).length === seps && menu.sepWidths.every((w) => w > 80), JSON.stringify(menu.sepWidths));
+  ok("a hairline is a separator, never a menu item", menu.menuItemRoles === menu.items && menu.separatorRoles === seps, `${menu.menuItemRoles} menuitems, ${menu.separatorRoles} separators`);
   console.log("      menu order:", JSON.stringify(menu.order));
 
   console.log(bad ? `${bad} FAILURES` : "all clear");

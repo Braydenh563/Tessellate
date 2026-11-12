@@ -17,7 +17,7 @@ const { boot } = require('./lib.js');
   await page.waitForTimeout(500);
   await page.click('[data-target="library-view-whiteboard"]');
   await page.waitForTimeout(700);
-  await page.evaluate(() => document.getElementById('wb-boards-new').click());
+  await page.evaluate(() => document.getElementById('wb-boards-new-template').click());
   await page.waitForTimeout(700);
   await page.fill('#wb-template-name', 'Export picture');
   await page.click('#wb-template-create');
