@@ -13796,8 +13796,7 @@ function wbExportPaint(el, inkEl) {
 //: A map topic's effect in the exported picture: a filter attribute for its
 //: box, with the filter defined once in `parts`. The glow's ring is a rect
 //: drawn under the box. Nothing for a topic drawn without a box.
-function wbExportTopicEffect(topicEl, colour, rx, ry, size, parts) {
-  const effect = topicEl?.dataset.shape === "none" ? null : topicEl?.dataset.effect;
+function wbExportTopicEffect(effect, colour, rx, ry, size, parts) {
   if (effect === "shadow") {
     return wbExportShadow(parts, null);
   }
@@ -13833,15 +13832,16 @@ function wbExportTopicGlyph(topicEl) {
   return canvas.toDataURL("image/png");
 }
 
-function wbBuildExportSvg(scope, { transparent = false } = {}) {
-  //: A selection export is the selection plus 24px, not the bar's 40.
-  const bounds = scope === "selection" ? wbSelectionBounds(24)
-    : scope === "visible" ? wbVisibleBounds() : wbBoardBounds();
-  const { minX, minY, width, height } = bounds || wbBoardBounds();
-  const onlyKeys = scope === "selection" ? wbSelectedKeys() : null;
-  const container = document.getElementById("whiteboard-container");
-  const bgColor = container ? getComputedStyle(container).backgroundColor : "#1b1f2c";
-
+//: **The export's one reader of the live page** (LEDGER L272). The picture used
+//: to be built with `getComputedStyle`, `querySelector` and `getBoundingClientRect`
+//: calls scattered through `wbBuildExportSvg`, so what the builder knew about a
+//: board and what it read off the screen could not be told apart. Now every
+//: read of the drawn page is a method here, each answering in plain data (a
+//: colour, a size, a box, a string of markup); `wbBuildExportSvg` takes the
+//: board's data from `wbState` and the look from this, and touches no element.
+//: An item the page is not drawing (culled off screen) answers with the
+//: fallback the data gives, as it did when the reads were inline.
+function wbExportLook() {
   //: **Each item's element is found once** (W30 B23): a `querySelector` per item walked the
   //: whole page for every one of them, 28 of the 40 ms an export of 500 objects took. One walk per
   //: kind builds the index; the first element with an id wins, as the lookups did.
@@ -13853,6 +13853,175 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
   const objectEls = idIndex("#wb-html-layer .wb-object");
   const sketchEls = idIndex(".sketch-group");
   const cardEls = idIndex(".node-card");
+  const container = document.getElementById("whiteboard-container");
+  //: A card or topic that is not in the DOM (culled off screen) takes the
+  //: paint of one that is, which is the theme's own card look. The last topic
+  //: in the layer rather than the first, because the first is usually the
+  //: trunk, which wears its branch colour as a fill.
+  const cardFallback = wbExportPaint(document.querySelector("#wb-html-layer .node-card"));
+  const topics = document.querySelectorAll("#wb-html-layer .wb-object.wb-map-node");
+  const lastTopic = topics[topics.length - 1];
+  const topicFallback = wbExportPaint(lastTopic, lastTopic?.querySelector(".wb-map-text"));
+  const elOf = (obj) => objectEls.get(String(obj.id));
+  return {
+    //: The board's ground, as the stylesheet resolved the chosen colour.
+    background: container ? getComputedStyle(container).backgroundColor : "#1b1f2c",
+    //: A frame's edge and title ink, as drawn; null for either when it is not.
+    frame(frame) {
+      const frameEl = elOf(frame);
+      const titleEl = frameEl?.querySelector(".wb-frame-title");
+      return {
+        edge: frameEl ? wbExportColour(getComputedStyle(frameEl).borderTopColor) : null,
+        ink: titleEl ? wbExportColour(getComputedStyle(titleEl).color) : null,
+      };
+    },
+    //: A map's boundaries or summaries, one markup string each, the paint on as attributes.
+    structure(selector) {
+      const out = [];
+      for (const el of document.querySelectorAll(selector)) {
+        const clone = el.cloneNode(true);
+        const look = getComputedStyle(el);
+        for (const attr of ["class", "style", "data-topic"]) clone.removeAttribute(attr);
+        clone.setAttribute("fill", wbExportColour(look.fill) || "none");
+        clone.setAttribute("stroke", wbExportColour(look.stroke) || "none");
+        clone.setAttribute("stroke-width", look.strokeWidth || "1");
+        if (look.fillOpacity && look.fillOpacity !== "1") clone.setAttribute("fill-opacity", look.fillOpacity);
+        if (look.strokeDasharray && look.strokeDasharray !== "none") clone.setAttribute("stroke-dasharray", look.strokeDasharray);
+        if (el.tagName === "text") {
+          clone.setAttribute("font-size", look.fontSize);
+          clone.setAttribute("font-family", look.fontFamily);
+          clone.setAttribute("paint-order", "stroke");
+        }
+        out.push(clone.outerHTML);
+      }
+      return out;
+    },
+    //: The map's tree edges, already real SVG paths in board coordinates (that is
+    //: the whole reason `wbRenderMapEdges` draws them as SVG instead of on a
+    //: canvas), cloned rather than recomputed so they cannot disagree with the
+    //: screen. Painted as drawn: a branch is a filled, tapered ribbon in its
+    //: branch's colour (a stylesheet rule over an inline custom property), and
+    //: the export used to force `fill="none"` and a grey stroke, so every branch
+    //: came out as a pair of thin grey outlines. The class and the custom
+    //: property do not survive the clone, so the computed paint goes on as attributes.
+    mapEdges() {
+      const out = [];
+      for (const edge of document.querySelectorAll(".wb-map-edges .wb-map-edge")) {
+        const clone = edge.cloneNode(true);
+        clone.removeAttribute("class");
+        const look = getComputedStyle(edge);
+        const paint = (value) => (value && !value.startsWith("url(") ? wbExportColour(value) : null);
+        clone.removeAttribute("style");
+        clone.setAttribute("fill", paint(look.fill) || "none");
+        clone.setAttribute("stroke", paint(look.stroke) || "none");
+        clone.setAttribute("stroke-width", look.strokeWidth || "2");
+        if (look.opacity && look.opacity !== "1") clone.setAttribute("opacity", look.opacity);
+        if (look.strokeDasharray && look.strokeDasharray !== "none") clone.setAttribute("stroke-dasharray", look.strokeDasharray);
+        out.push(clone.outerHTML);
+      }
+      return out;
+    },
+    //: A sketch already exists as real SVG, cloned as-is rather than
+    //: reinterpreted, so a stroke's colour/width/opacity (including the
+    //: highlighter's own translucency) survives untouched. A shape's text
+    //: (decision 12) is painted by the stylesheet, which does not travel into a
+    //: standalone SVG: its ink, size and face go on as attributes, read off the
+    //: label as drawn. Null when the sketch is not on the page.
+    sketch(sketch) {
+      const el = sketchEls.get(String(sketch.id));
+      if (!el) return null;
+      const clone = el.cloneNode(true);
+      clone.removeAttribute("class");
+      const labels = el.querySelectorAll(":scope > .sketch-label, :scope > .wb-link-label");
+      const copies = clone.querySelectorAll(":scope > .sketch-label, :scope > .wb-link-label");
+      labels.forEach((label, i) => {
+        const look = getComputedStyle(label);
+        const copy = copies[i];
+        if (!copy) return;
+        copy.removeAttribute("class");
+        copy.removeAttribute("style");
+        copy.removeAttribute("data-kind");
+        copy.setAttribute("fill", wbExportColour(look.fill) || "#1f2430");
+        copy.setAttribute("font-size", look.fontSize);
+        copy.setAttribute("font-family", look.fontFamily);
+        if (look.fontWeight && look.fontWeight !== "400") copy.setAttribute("font-weight", look.fontWeight);
+        if (look.fontStyle === "italic") copy.setAttribute("font-style", "italic");
+        //: A connector's label is haloed in the card colour (decision 13).
+        if (look.paintOrder && look.paintOrder.startsWith("stroke") && look.stroke !== "none") {
+          copy.setAttribute("stroke", wbExportColour(look.stroke) || "none");
+          copy.setAttribute("stroke-width", look.strokeWidth);
+          copy.setAttribute("paint-order", "stroke");
+        }
+      });
+      return clone.outerHTML;
+    },
+    //: A note card's measured size and paint. `h` is `el.offsetHeight`, the live
+    //: card, so an expanded card exports what it shows and a collapsed one what
+    //: it shows.
+    card(node) {
+      const el = cardEls.get(String(node.id));
+      return { w: el ? el.offsetWidth : 250, h: el ? el.offsetHeight : 150, paint: wbExportPaint(el) || cardFallback };
+    },
+    //: A picture's corners (Format > Corners), read off the drawn element as a box's are.
+    radii(obj) {
+      return wbSvgBoxRadii(elOf(obj), obj.data, obj.width, obj.height);
+    },
+    //: A map topic as drawn: its size, paint, corner, effect, picture box and icon glyph.
+    topic(obj) {
+      const size = wbMapNodeSize(obj);
+      const el = elOf(obj);
+      //: The box is measured off the live node rather than recomputed from the
+      //: stylesheet's padding: two rects in the same units give the picture's
+      //: place inside the card exactly, at any zoom, without this having to
+      //: know what `--space-2` is today.
+      const picture = obj.data.image ? el?.querySelector(".wb-map-node-picture") : null;
+      const card = picture ? picture.closest(".wb-object") : null;
+      let pictureBox = null;
+      if (picture && card && !picture.hidden) {
+        const cardBox = card.getBoundingClientRect();
+        const picBox = picture.getBoundingClientRect();
+        const scale = cardBox.width ? size.w / cardBox.width : 1;
+        pictureBox = {
+          x: (picBox.left - cardBox.left) * scale, y: (picBox.top - cardBox.top) * scale,
+          w: picBox.width * scale, h: picBox.height * scale,
+        };
+      }
+      return {
+        size,
+        paint: wbExportPaint(el, el?.querySelector(".wb-map-text")) || topicFallback,
+        corner: el ? getComputedStyle(el).borderTopLeftRadius : "8px",
+        effect: el?.dataset.shape === "none" ? null : el?.dataset.effect,
+        pictureBox,
+        glyph: wbExportTopicGlyph(el),
+      };
+    },
+    //: A text box, sticky or sticker's paper, fold and ink. A box with no colour
+    //: of its own writes in the theme's ink, which is near-white on a dark board.
+    text(obj) {
+      const el = elOf(obj);
+      const textEl = obj.data.color ? null : el?.querySelector(".wb-text-content");
+      return {
+        ink: textEl ? wbExportColour(getComputedStyle(textEl).color) : null,
+        backdrop: wbSvgBoxBackdrop(el, obj.data, obj.width, obj.height),
+        fold: wbSvgStickyFold(el, obj.width, obj.height),
+      };
+    },
+    //: A table's cells, as markup.
+    table(obj) {
+      return wbSvgTable(elOf(obj), obj);
+    },
+  };
+}
+
+function wbBuildExportSvg(scope, { transparent = false } = {}) {
+  //: A selection export is the selection plus 24px, not the bar's 40.
+  const bounds = scope === "selection" ? wbSelectionBounds(24)
+    : scope === "visible" ? wbVisibleBounds() : wbBoardBounds();
+  const { minX, minY, width, height } = bounds || wbBoardBounds();
+  const onlyKeys = scope === "selection" ? wbSelectedKeys() : null;
+  //: Everything read off the drawn page comes through this one object.
+  const look = wbExportLook();
+  const bgColor = look.background;
 
   const parts = [
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minX} ${minY} ${width} ${height}" ` +
@@ -13868,10 +14037,7 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
   const drawFrame = (frame) => {
     if (frame.kind !== "frame") return;
     if ((onlyKeys && !onlyKeys.has(wbMultiKey("object", frame.id))) || wbItemHidden("object", frame)) return;
-    const frameEl = objectEls.get(String(frame.id));
-    const edge = frameEl ? wbExportColour(getComputedStyle(frameEl).borderTopColor) : null;
-    const titleEl = frameEl?.querySelector(".wb-frame-title");
-    const ink = titleEl ? wbExportColour(getComputedStyle(titleEl).color) : null;
+    const { edge, ink } = look.frame(frame);
     parts.push(
       `<rect x="${frame.x}" y="${frame.y}" width="${frame.width}" height="${frame.height}" rx="6" fill="none" ` +
         `stroke="${wbSvgEscape(edge || "#8a90a0")}" stroke-width="1.5" />`
@@ -13894,46 +14060,9 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
   const exportMapColors = exportMapIndex ? wbMapNodeColors(exportMapIndex) : null;
   //: A map's boundaries (decision 19) under its lines, its summaries over
   //: them, as drawn, the paint read off each one like the lines below.
-  const structure = (selector) => {
-    for (const el of document.querySelectorAll(selector)) {
-      const clone = el.cloneNode(true);
-      const look = getComputedStyle(el);
-      for (const attr of ["class", "style", "data-topic"]) clone.removeAttribute(attr);
-      clone.setAttribute("fill", wbExportColour(look.fill) || "none");
-      clone.setAttribute("stroke", wbExportColour(look.stroke) || "none");
-      clone.setAttribute("stroke-width", look.strokeWidth || "1");
-      if (look.fillOpacity && look.fillOpacity !== "1") clone.setAttribute("fill-opacity", look.fillOpacity);
-      if (look.strokeDasharray && look.strokeDasharray !== "none") clone.setAttribute("stroke-dasharray", look.strokeDasharray);
-      if (el.tagName === "text") {
-        clone.setAttribute("font-size", look.fontSize);
-        clone.setAttribute("font-family", look.fontFamily);
-        clone.setAttribute("paint-order", "stroke");
-      }
-      parts.push(clone.outerHTML);
-    }
-  };
+  const structure = (selector) => parts.push(...look.structure(selector));
   if (exportMapIndex) structure(".wb-map-boundaries > *");
-  if (exportMapIndex) {
-    for (const edge of document.querySelectorAll(".wb-map-edges .wb-map-edge")) {
-      const clone = edge.cloneNode(true);
-      clone.removeAttribute("class");
-      //: Painted as drawn, the same rule as the boxes below: a branch is a
-      //: filled, tapered ribbon in its branch's colour (a stylesheet rule
-      //: over an inline custom property), and the export used to force
-      //: `fill="none"` and a grey stroke, so every branch came out as a pair
-      //: of thin grey outlines. The class and the custom property do not
-      //: survive the clone, so the computed paint goes on as attributes.
-      const look = getComputedStyle(edge);
-      const paint = (value) => (value && !value.startsWith("url(") ? wbExportColour(value) : null);
-      clone.removeAttribute("style");
-      clone.setAttribute("fill", paint(look.fill) || "none");
-      clone.setAttribute("stroke", paint(look.stroke) || "none");
-      clone.setAttribute("stroke-width", look.strokeWidth || "2");
-      if (look.opacity && look.opacity !== "1") clone.setAttribute("opacity", look.opacity);
-      if (look.strokeDasharray && look.strokeDasharray !== "none") clone.setAttribute("stroke-dasharray", look.strokeDasharray);
-      parts.push(clone.outerHTML);
-    }
-  }
+  if (exportMapIndex) parts.push(...look.mapEdges());
 
   if (exportMapIndex) structure(".wb-map-summaries > *");
 
@@ -13942,35 +14071,8 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
   // highlighter's own translucency) survives into the export untouched.
   const drawSketch = (sketch) => {
     if ((onlyKeys && !onlyKeys.has(wbMultiKey("sketch", sketch.id))) || wbSketchHiddenOnBoard(sketch)) return;
-    const el = sketchEls.get(String(sketch.id));
-    if (!el) return;
-    const clone = el.cloneNode(true);
-    clone.removeAttribute("class");
-    //: A shape's text (decision 12) is painted by the stylesheet, which does
-    //: not travel into a standalone SVG: its ink, size and face go on as
-    //: attributes, read off the label as drawn.
-    const labels = el.querySelectorAll(":scope > .sketch-label, :scope > .wb-link-label");
-    const copies = clone.querySelectorAll(":scope > .sketch-label, :scope > .wb-link-label");
-    labels.forEach((label, i) => {
-      const look = getComputedStyle(label);
-      const copy = copies[i];
-      if (!copy) return;
-      copy.removeAttribute("class");
-      copy.removeAttribute("style");
-      copy.removeAttribute("data-kind");
-      copy.setAttribute("fill", wbExportColour(look.fill) || "#1f2430");
-      copy.setAttribute("font-size", look.fontSize);
-      copy.setAttribute("font-family", look.fontFamily);
-      if (look.fontWeight && look.fontWeight !== "400") copy.setAttribute("font-weight", look.fontWeight);
-      if (look.fontStyle === "italic") copy.setAttribute("font-style", "italic");
-      //: A connector's label is haloed in the card colour (decision 13).
-      if (look.paintOrder && look.paintOrder.startsWith("stroke") && look.stroke !== "none") {
-        copy.setAttribute("stroke", wbExportColour(look.stroke) || "none");
-        copy.setAttribute("stroke-width", look.strokeWidth);
-        copy.setAttribute("paint-order", "stroke");
-      }
-    });
-    parts.push(clone.outerHTML);
+    const markup = look.sketch(sketch);
+    if (markup) parts.push(markup);
   };
 
   // Cards are the HTML layer, which doesn't survive SVG rasterization the
@@ -13978,22 +14080,11 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
   // card, matching what the live card itself shows (raw content, truncated;
   // it has no private-note masking of its own to match either).
   const exportEntriesById = new Map(allEntries.map((e) => [String(e.id), e]));
-  //: A card or topic that is not in the DOM (culled off screen) takes the
-  //: paint of one that is, which is the theme's own card look. The last topic
-  //: in the layer rather than the first, because the first is usually the
-  //: trunk, which wears its branch colour as a fill.
-  let cardFallback = wbExportPaint(document.querySelector("#wb-html-layer .node-card"));
-  const topics = document.querySelectorAll("#wb-html-layer .wb-object.wb-map-node");
-  const lastTopic = topics[topics.length - 1];
-  const topicFallback = wbExportPaint(lastTopic, lastTopic?.querySelector(".wb-map-text"));
   const drawNode = (node) => {
     if ((onlyKeys && !onlyKeys.has(wbMultiKey("node", node.id))) || wbItemHidden("node", node)) return;
     const entry = exportEntriesById.get(String(node.entry_id));
-    const el = cardEls.get(String(node.id));
-    const w = el ? el.offsetWidth : 250;
-    const h = el ? el.offsetHeight : 150;
+    const { w, h, paint: cardPaint } = look.card(node);
     const label = entry ? notePreviewText(entry.content || "") : `Note ${node.entry_id}`;
-    const cardPaint = wbExportPaint(el) || cardFallback;
     parts.push(`<g transform="translate(${node.x}, ${node.y})">`);
     parts.push(
       `<rect width="${w}" height="${h}" rx="10" fill="${cardPaint?.fill || "#ffffffcc"}" ` +
@@ -14040,7 +14131,7 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       // board itself, here too.
       //: A picture with rounded corners (Format > Corners) is clipped to the
       //: same path the board draws, read off the drawn element as a box's is.
-      const radii = wbSvgBoxRadii(objectEls.get(String(obj.id)), obj.data, obj.width, obj.height);
+      const radii = look.radii(obj);
       //: A crop to a shape wins over rounded corners, as it does on the board.
       const pix = wbPixel(obj.data, obj.width, obj.height);
       const cropPath = wbCropPath(obj.data.crop, pix.w, pix.h, obj.data.trim);
@@ -14065,23 +14156,23 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       // this branch a map exported as an empty `<g>` per node: every PNG and
       // SVG of a mind map came out blank, which is the same "stored, served
       // and not drawn" gap this whole section exists to close, one layer down.
-      const size = wbMapNodeSize(obj);
+      const topic = look.topic(obj);
+      const size = topic.size;
       const colour = exportMapColors?.get(obj.id) || "#8888aa";
-      const topicEl = objectEls.get(String(obj.id));
-      const topicPaint = wbExportPaint(topicEl, topicEl?.querySelector(".wb-map-text")) || topicFallback;
+      const topicPaint = topic.paint;
       //: **Its own shape, not always the rounded box** (MINDMAP_PLAN, the
       //: owner's list 2026-10-10: the rounded rectangle "its export"): the
       //: corner the topic is drawn with, read off the drawn topic, so a
       //: pill, an ellipse, a box and the rounded rectangle each export as
       //: themselves. A percentage is of the box (the ellipse's 50%).
-      const corner = topicEl ? getComputedStyle(topicEl).borderTopLeftRadius : "8px";
+      const corner = topic.corner;
       const pct = /%$/.test(corner) ? parseFloat(corner) / 100 : null;
       const rx = pct != null ? size.w * pct : Math.min(parseFloat(corner) || 0, size.h / 2, size.w / 2);
       const ry = pct != null ? size.h * pct : rx;
       //: **Its effect travels too** (MINDMAP_PLAN 15, row 8): the shadow as
       //: the board's own export shadow, the glow as a ring and a blur in the
       //: branch colour, read off the drawn topic as the shape is.
-      const fx = wbExportTopicEffect(topicEl, colour, rx, ry, size, parts);
+      const fx = wbExportTopicEffect(topic.effect, colour, rx, ry, size, parts);
       parts.push(
         `<rect width="${size.w}" height="${size.h}" rx="${Math.round(rx * 10) / 10}" ry="${Math.round(ry * 10) / 10}" fill="${topicPaint?.fill || "#ffffffee"}" ` +
           `stroke="${wbSvgEscape(topicPaint?.edge || colour)}" stroke-width="1.5"${fx} />`
@@ -14103,18 +14194,8 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       //: pass loads the SVG through a plain `<img>`, which sends no header, so
       //: the token has to be in the url.
       let labelTop = 22;
-      const picture = obj.data.image
-        ? objectEls.get(String(obj.id))?.querySelector(".wb-map-node-picture")
-        : null;
-      const card = picture ? picture.closest(".wb-object") : null;
-      if (picture && card && !picture.hidden) {
-        const cardBox = card.getBoundingClientRect();
-        const picBox = picture.getBoundingClientRect();
-        const scale = cardBox.width ? size.w / cardBox.width : 1;
-        const px = (picBox.left - cardBox.left) * scale;
-        const py = (picBox.top - cardBox.top) * scale;
-        const pw = picBox.width * scale;
-        const ph = picBox.height * scale;
+      if (topic.pictureBox) {
+        const { x: px, y: py, w: pw, h: ph } = topic.pictureBox;
         parts.push(
           `<image href="${wbSvgEscape(mediaSrc(obj.data.image))}" x="${px}" y="${py}" ` +
             `width="${pw}" height="${ph}" preserveAspectRatio="xMidYMid slice" />`
@@ -14132,7 +14213,7 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       const icon = obj.data?.icon && !/^[a-z0-9-]+$/.test(obj.data.icon) ? `${obj.data.icon} ` : "";
       //: A Phosphor icon travels as its own picture (row 8): the glyph drawn
       //: once from the font the topic is showing it in, before the label.
-      const glyph = wbExportTopicGlyph(topicEl);
+      const glyph = topic.glyph;
       const textLeft = glyph ? 34 : 14;
       if (glyph) {
         parts.push(`<image href="${glyph}" x="14" y="${labelTop - 13}" width="16" height="16" />`);
@@ -14158,12 +14239,10 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       const lines = wbSvgWrapLines(obj.data.content || "", obj.width - 2 * pad, 20, fontSize * 0.55);
       //: A text box with no colour of its own writes in the theme's ink, which
       //: is near-white on a dark board: read it off the box, as above.
-      const textEl = obj.data.color ? null : objectEls.get(String(obj.id))?.querySelector(".wb-text-content");
-      const textInk = textEl ? wbExportColour(getComputedStyle(textEl).color) : null;
-      const boxEl = objectEls.get(String(obj.id));
-      parts.push(wbSvgBoxBackdrop(boxEl, obj.data, obj.width, obj.height));
-      parts.push(wbSvgStickyFold(boxEl, obj.width, obj.height));
-      const inkFill = obj.data.color || textInk || "#1f2430";
+      const paper = look.text(obj);
+      parts.push(paper.backdrop);
+      parts.push(paper.fold);
+      const inkFill = obj.data.color || paper.ink || "#1f2430";
       parts.push(
         new RegExp(MD_RUN.source).test(obj.data.content || "")
           ? wbSvgRunLines(obj.data.content, {
@@ -14173,7 +14252,7 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
           : wbSvgText(lines, pad, fontSize + pad - 2, { fontSize, fill: inkFill, lineHeight: fontSize * 1.25 })
       );
     } else if (obj.kind === "table") {
-      parts.push(wbSvgTable(objectEls.get(String(obj.id)), obj));
+      parts.push(look.table(obj));
     }
     if (obj.data?.votes) parts.push(wbSvgVotes(obj));
     parts.push("</g>");
