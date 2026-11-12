@@ -26,6 +26,7 @@ from __future__ import annotations
 import re
 
 from tessellate.ai import question_noise
+from tessellate.core.lazyre import lazy_compile
 
 GROUPS: tuple[tuple[str, ...], ...] = (
     #: The Settings groups (CHAT_PLAN section 2, the settings row); the first
@@ -83,7 +84,7 @@ FILLER = frozenset(
     some any just more less again way show find access""".split()
 )
 
-_WORD = re.compile(r"[a-z0-9][a-z0-9']*")
+_WORD = lazy_compile(r"[a-z0-9][a-z0-9']*")
 
 
 def words_of(text: str) -> list[str]:

@@ -23,8 +23,9 @@ from collections.abc import Iterable
 from contextvars import ContextVar
 from dataclasses import dataclass, field
 from typing import NamedTuple
+from tessellate.core.lazyre import lazy_compile
 
-_WORD = re.compile(r"[^\W\d_]{3,}")
+_WORD = lazy_compile(r"[^\W\d_]{3,}")
 _TITLE_WEIGHT = 2.0
 _TEXT_WEIGHT = 0.5
 _PREVIOUS_WEIGHT = 0.8

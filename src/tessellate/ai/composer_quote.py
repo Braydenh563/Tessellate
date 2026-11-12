@@ -17,6 +17,7 @@ from tessellate.ai import composer_done, composer_tables, composer_threads, comp
 from tessellate.ai.composer_answer import _Answer, _SESSION
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_read import NoteView, Sentence
+from tessellate.core.lazyre import lazy_compile
 
 
 def _pick(question: str, salt: str, options: list[str]) -> str:
@@ -56,7 +57,7 @@ def _lowered(s: Sentence) -> str | None:
 
 #: A sentence opening with one of these leans on the one before it: "It
 #: forces the reading to be active" quoted alone has lost what "it" is.
-_LEANS_BACK = re.compile(r"^(it|this|that|these|those|they|he|she|then|there|which|second|third|another)\b", re.I)
+_LEANS_BACK = lazy_compile(r"^(it|this|that|these|those|they|he|she|then|there|which|second|third|another)\b", re.I)
 
 
 def _with_context(out: _Answer, sentences: list[Sentence]) -> list[Sentence]:
@@ -165,7 +166,7 @@ def _picture_run(out: _Answer, sentences: list[Sentence], i: int) -> list[Senten
     return run
 
 
-_ENDED = re.compile(r"[.!?…:;\"”’)\]]\s*$")
+_ENDED = lazy_compile(r"[.!?…:;\"”’)\]]\s*$")
 
 
 #: A list the person wrote reads as one sentence when every entry is a short

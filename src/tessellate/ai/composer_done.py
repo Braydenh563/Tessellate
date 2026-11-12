@@ -13,6 +13,7 @@ from datetime import date
 
 from tessellate.ai import factgraph, variants
 from tessellate.ai.composer_ask import _words
+from tessellate.core.lazyre import lazy_compile
 
 
 #: How a day is said ("29 October"): the digest's own, bound by
@@ -21,7 +22,7 @@ _day = None
 
 
 #: A line that says the doing did not happen ("Didn't buy replacement mint").
-_UNDONE = re.compile(r"\b(?:did\s*n[o']t|didnt|not|never|forgot|failed|yet\s+to)\b", re.I)
+_UNDONE = lazy_compile(r"\b(?:did\s*n[o']t|didnt|not|never|forgot|failed|yet\s+to)\b", re.I)
 
 
 #: Words that carry no subject: the framing of the request itself.
@@ -77,7 +78,7 @@ def _done_later(views: list, verb: frozenset[str], obj, task_view):  # noqa: ANN
 
 #: Where an open task's own words stop being the doing ("Renew library
 #: membership - due 28 October" is renew + library membership).
-_DOING_END = re.compile(r"\s+(?:-|due|by|on|before|at)\b|[,.;:(]", re.I)
+_DOING_END = lazy_compile(r"\s+(?:-|due|by|on|before|at)\b|[,.;:(]", re.I)
 
 
 def recorded_later(views: list, view, task):  # noqa: ANN001, ANN202
@@ -101,12 +102,12 @@ def done_later(views: list, view, tasks: list) -> dict[int, tuple]:  # noqa: ANN
 
 #: A line that plans the doing is not a record of it: "did I pay rent"
 #: beside "Remember to pay rent on the 1st" is "not yet" (audit 1030 Z19).
-_INTENT = re.compile(
+_INTENT = lazy_compile(
     r"^\s*(?:[-*]\s*)?(?:i\s+)?(?:remember to|need to|have to|must|should|plan to|going to|want to|don't forget to|todo:?|to do:?)\b",
     re.I,
 )
-_DUE = re.compile(r"\b(?:due|deadline)\b", re.I)
-_WAS_DUE = re.compile(r"\b(?:was|were|had been|been)\s+due\b", re.I)
+_DUE = lazy_compile(r"\b(?:due|deadline)\b", re.I)
+_WAS_DUE = lazy_compile(r"\b(?:was|were|had been|been)\s+due\b", re.I)
 
 
 def planned(text: str) -> bool:

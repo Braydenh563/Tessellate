@@ -197,7 +197,7 @@ _CAPTION_VERBS = frozenset(
     "fills fill covers cover surrounds surround stretches stretch glows glow rises rise falls fall flows flow grows grow "
     "wanders wander poses pose smiles smile waits wait lounges lounge perches perch crouches crouch leans lean".split()
 )
-_SENTENCE_BREAK = re.compile(r"[.!?][\"”’)]?\s+[A-Z]")
+_SENTENCE_BREAK = lazy_compile(r"[.!?][\"”’)]?\s+[A-Z]")
 
 
 def caption_form(caption: str) -> tuple[bool, str]:

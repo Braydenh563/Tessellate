@@ -13,6 +13,7 @@ import re
 from dataclasses import dataclass
 
 from tessellate.ai import composer_calendar
+from tessellate.core.lazyre import lazy_compile
 
 #: The act runner's `propose` (acts.py), set when acts.py is imported: the
 #: agent's `propose_act` tool (ai/tools) calls it through this leaf rather
@@ -186,7 +187,7 @@ def capability_line() -> str:
 #: Verbs only the app's own menus do (decision 42: archiving stays a UI
 #: action). A sentence that opens with one is an act said to the wrong place,
 #: so it is answered "done in the app", never searched (audit 1029 C45).
-_APP_VERB = re.compile(
+_APP_VERB = lazy_compile(
     r"^(?:(?:and|then|please|can you|could you|would you|just)\s+)*"
     r"(?P<verb>archive|unarchive|restore|split|merge|duplicate|clone|combine)\s+(?:the|my|a|an|this|that|these|those|all|both|every|\w+)\b",
     re.IGNORECASE,

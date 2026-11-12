@@ -30,6 +30,7 @@ from collections.abc import Callable
 from functools import lru_cache
 
 from tessellate.ai import variants
+from tessellate.core.lazyre import lazy_compile
 
 
 #: Abbreviations typed as they are: never read as a typo of a small word.
@@ -170,7 +171,7 @@ def _app_counts() -> Counter:
     return counts
 
 
-_QUOTED = re.compile(r'"[^"\n]{1,80}"|\u201c[^\u201d\n]{1,80}\u201d')
+_QUOTED = lazy_compile(r'"[^"\n]{1,80}"|\u201c[^\u201d\n]{1,80}\u201d')
 
 
 #: The general English list lives with the spelling pairs (`variants`, a
@@ -458,7 +459,7 @@ def _reading_row(word: str, before: str, after: str, prefix: str, ending: str, h
     return whole + penalty - 0.8 * FUNCTION_PRIOR.get(rebuilt, 0.0), rebuilt, -negw
 
 
-_Y_ENDING = re.compile(r"^([a-z]{2,}[^aeiouy])y(er|ers|est|ed)$")
+_Y_ENDING = lazy_compile(r"^([a-z]{2,}[^aeiouy])y(er|ers|est|ed)$")
 
 
 def _y_to_i(word: str) -> str | None:
@@ -773,7 +774,7 @@ def rejoin(tokens: list[str], known=(), skip=frozenset(), changes: list | None =
     return out
 
 
-_STRAY_SEMI = re.compile(r"(?<=[a-z]);(?=[a-z])")
+_STRAY_SEMI = lazy_compile(r"(?<=[a-z]);(?=[a-z])")
 
 
 def drop_stray(token: str, known=(), changes: list | None = None) -> str:  # noqa: ANN001

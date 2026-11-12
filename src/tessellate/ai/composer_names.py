@@ -6,14 +6,14 @@ and only a subject word is read (after about, is, of, for, ..., or last)."""
 
 from __future__ import annotations
 
-import re
 
 from tessellate.ai import common_words, common_words_more, question_noise
+from tessellate.core.lazyre import lazy_compile
 
 #: A word after one of these (or the last word) can be the subject asked about.
 _BEFORE_SUBJECT = frozenset({"about", "is", "of", "for", "on", "does", "did", "was", "with", "from", "to", "who", "whos"})
-_CAPITAL = re.compile(r"\b[A-Z][a-z]{3,}\b")
-_LOWER = re.compile(r"\b[a-z]{3,}\b")
+_CAPITAL = lazy_compile(r"\b[A-Z][a-z]{3,}\b")
+_LOWER = lazy_compile(r"\b[a-z]{3,}\b")
 
 
 #: Everyday English: a capital on one of these, at the start of a sentence, is only its place.

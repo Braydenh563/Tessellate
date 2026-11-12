@@ -8,11 +8,12 @@ from __future__ import annotations
 import re
 
 from tessellate.ai import composer_frame, meaning
+from tessellate.core.lazyre import lazy_compile
 
-_ASKS = re.compile(
+_ASKS = lazy_compile(
     r"^(?:why|how|what|which|are|is|did|do|does|show|tell)\b.*\b(?:links?|linked|linking|connect(?:s|ed|ion|ions)?|related|relationship)\b", re.I)
 #: "how do I link two notes" is a how-to, which the help register answers.
-_HOW_TO = re.compile(r"\bhow (?:do|can|could|should|would|to)\b|\bhow-to\b", re.I)
+_HOW_TO = lazy_compile(r"\bhow (?:do|can|could|should|would|to)\b|\bhow-to\b", re.I)
 _NOT_SUBJECT = frozenset(
     "why how what which are is did do does show tell me the a an of to and with between i my you your link links linked linking "
     "connect connects connected connection connections related relationship together notes note".split())

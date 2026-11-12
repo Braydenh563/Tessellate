@@ -19,6 +19,7 @@ from tessellate.ai.composer_ask import _MONTHS, _stem
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_read import NoteView, Sentence
 from tessellate.search import query as query_understanding
+from tessellate.core.lazyre import lazy_compile
 
 
 # --- composition ------------------------------------------------------------------
@@ -350,7 +351,7 @@ class _Answer:
 
 #: The openers that promise the person's words as written: after one, the
 #: run is quoted, not shifted (`_Answer.t`).
-_CLAIMS_WORDS = re.compile(r"\b(?:wrote|written|put it|own words|phrasing|exactly|noted|jotted|write)\b[^:]*:\s*$", re.I)
+_CLAIMS_WORDS = lazy_compile(r"\b(?:wrote|written|put it|own words|phrasing|exactly|noted|jotted|write)\b[^:]*:\s*$", re.I)
 
 
 def _due(note: dict, s: Sentence) -> date | None:
@@ -385,7 +386,7 @@ def figures_of(text: str) -> frozenset:
     return frozenset((d, round(v, 6)) for d, v, _unit, _at in rec.measures(text))
 
 
-_NOW_WORDS = re.compile(r"\b(?:now|currently|current|latest|these days|any ?more|new one)\b", re.I)
+_NOW_WORDS = lazy_compile(r"\b(?:now|currently|current|latest|these days|any ?more|new one)\b", re.I)
 
 
 def asks_now(question: str) -> bool:

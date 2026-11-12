@@ -32,6 +32,7 @@ from tessellate.ai import recognise
 from tessellate.ai import recognise_questions
 from tessellate.ai import when as when_words
 from tessellate.core import clock
+from tessellate.core.lazyre import lazy_compile
 
 _WEEKDAY_WORDS = frozenset("monday tuesday wednesday thursday friday saturday sunday mon tue tues wed thu thur thurs fri sat sun".split())
 
@@ -102,9 +103,9 @@ _REGULAR = frozenset(
     backup bike camp code commit email fill fry jog lift log mix park ping pitch row sail ski skate slice stretch
     surf sync tag text tour type wire wrap""".split()
 )
-_AUX_FUTURE = re.compile(r"\b(?:will|'ll|shall|going to|gonna)\s+(?:not\s+)?([a-z]+)\b", re.I)
-_DID_NOT = re.compile(r"\b(?:did not|didn't|never)\s+([a-z]+)\b", re.I)
-_PROGRESSIVE_FUTURE = re.compile(r"\b(?:am|is|are|'m|'re)\s+(going)\b(?!\s+to\b)", re.I)
+_AUX_FUTURE = lazy_compile(r"\b(?:will|'ll|shall|going to|gonna)\s+(?:not\s+)?([a-z]+)\b", re.I)
+_DID_NOT = lazy_compile(r"\b(?:did not|didn't|never)\s+([a-z]+)\b", re.I)
+_PROGRESSIVE_FUTURE = lazy_compile(r"\b(?:am|is|are|'m|'re)\s+(going)\b(?!\s+to\b)", re.I)
 
 
 def _past_forms() -> dict[str, str]:
@@ -142,8 +143,8 @@ def _tables() -> None:
 #: Where an event's object stops: a time or place phrase, a clause break.
 _OBJECT_STOP = frozenset("on at in after before during since until for with by from because but and so then when while".split())
 _NEGATORS = frozenset("not no never didn't don't doesn't won't can't cannot isn't wasn't aren't weren't haven't hasn't hadn't nothing".split())
-_HEDGES = re.compile(r"\b(maybe|might|perhaps|possibly|probably|could|would)\b", re.I)
-_IF = re.compile(r"^\s*(?:if|unless|in case)\b|\b(?:if|unless)\b", re.I)
+_HEDGES = lazy_compile(r"\b(maybe|might|perhaps|possibly|probably|could|would)\b", re.I)
+_IF = lazy_compile(r"^\s*(?:if|unless|in case)\b|\b(?:if|unless)\b", re.I)
 
 _NUMBER_WORDS = {
     "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
@@ -162,35 +163,35 @@ _UNITS = frozenset(
     oz cm mm l litres liters ml percent % sets reps laps times steps pages words people notes loaves cups tbsp tsp
     degrees grit bpm kcal calories items tickets users testers""".split()
 )
-_QUANTITY = re.compile(r"\b" + _NUMBER + r"\s*(%|[a-z]+)\b(?:\s+of\s+([a-z]+(?:\s[a-z]+)?))?", re.I)
-_DECISION = re.compile(r"\b(decided|going with|chose|settled on|opted for)\b\s*(?:to\s+go\s+with\s+|to\s+|on\s+)?", re.I)
-_PREFERENCE = re.compile(
+_QUANTITY = lazy_compile(r"\b" + _NUMBER + r"\s*(%|[a-z]+)\b(?:\s+of\s+([a-z]+(?:\s[a-z]+)?))?", re.I)
+_DECISION = lazy_compile(r"\b(decided|going with|chose|settled on|opted for)\b\s*(?:to\s+go\s+with\s+|to\s+|on\s+)?", re.I)
+_PREFERENCE = lazy_compile(
     r"\b(?:(?:i|we)\s+(?:really\s+|also\s+)?(?P<neg>don't |do not |didn't |never )?(?P<verb>like|love|prefer|hate|dislike|enjoy|adore|can't stand|cannot stand)"
     r"|(?:my\s+)?(?P<fav>favou?rite)\b)\s*",
     re.I,
 )
 _NEGATIVE_PREFERENCE = frozenset({"hate", "dislike", "can't stand", "cannot stand"})
-_PLAN = re.compile(r"\b(plan(?:ning)? to|want to|wants to|going to|need to|needs to|should|have to|has to)\s+(?!be\b)", re.I)
-_LINK = re.compile(r"https?://[^\s)>\]]+|\[\[[^\]\n]{1,120}\]\]")
-_QUOTED = re.compile(r"[\"“]([^\"“”\n]{2,400})[\"”]")
-_SAID = re.compile(r"\b([A-Z][a-z]+|[Ss]he|[Hh]e|[Tt]hey)\s+(?:said|says|wrote|writes|told me|replied|asked)\s*[:,]?\s*", re.U)
-_ACCORDING = re.compile(r"\baccording to\s+([A-Z][\w ]{0,40}?),\s*", re.U)
-_CAPITAL = re.compile(r"\b[A-Z][a-z]+(?:[ -][A-Z][a-z]+)*\b")
-_SPEECH_AFTER = re.compile(r"^\s*(?:and I\b|and me\b|said\b|says\b|wrote\b|told\b|asked\b|replied\b)")
-_PERSON_BEFORE = re.compile(r"\b(?:met|with|told|asked|called|emailed|texted|saw|and|from|to|by)\s+$", re.I)
-_PLACE_BEFORE = re.compile(r"\b(?:at|in|near|to)\s+(?:the\s+)?$", re.I)
-_PLACE_AFTER = re.compile(r"^\s+(?:cafe|café|course|park|street|road|lane|beach|station|gym|office|hotel|airport|centre|center|hall|bar|pub|market|lake|river)\b", re.I)
-_ORG_AFTER = re.compile(r"^\s+(?:Inc|Ltd|LLC|Corp|Co|Group|Labs|University|Bank)\b")
+_PLAN = lazy_compile(r"\b(plan(?:ning)? to|want to|wants to|going to|need to|needs to|should|have to|has to)\s+(?!be\b)", re.I)
+_LINK = lazy_compile(r"https?://[^\s)>\]]+|\[\[[^\]\n]{1,120}\]\]")
+_QUOTED = lazy_compile(r"[\"“]([^\"“”\n]{2,400})[\"”]")
+_SAID = lazy_compile(r"\b([A-Z][a-z]+|[Ss]he|[Hh]e|[Tt]hey)\s+(?:said|says|wrote|writes|told me|replied|asked)\s*[:,]?\s*", re.U)
+_ACCORDING = lazy_compile(r"\baccording to\s+([A-Z][\w ]{0,40}?),\s*", re.U)
+_CAPITAL = lazy_compile(r"\b[A-Z][a-z]+(?:[ -][A-Z][a-z]+)*\b")
+_SPEECH_AFTER = lazy_compile(r"^\s*(?:and I\b|and me\b|said\b|says\b|wrote\b|told\b|asked\b|replied\b)")
+_PERSON_BEFORE = lazy_compile(r"\b(?:met|with|told|asked|called|emailed|texted|saw|and|from|to|by)\s+$", re.I)
+_PLACE_BEFORE = lazy_compile(r"\b(?:at|in|near|to)\s+(?:the\s+)?$", re.I)
+_PLACE_AFTER = lazy_compile(r"^\s+(?:cafe|café|course|park|street|road|lane|beach|station|gym|office|hotel|airport|centre|center|hall|bar|pub|market|lake|river)\b", re.I)
+_ORG_AFTER = lazy_compile(r"^\s+(?:Inc|Ltd|LLC|Corp|Co|Group|Labs|University|Bank)\b")
 _NOT_NAMES = frozenset(
     """I I'm I've I'll I'd Monday Tuesday Wednesday Thursday Friday Saturday Sunday January February March April May
     June July August September October November December Today Tomorrow Yesterday The A An This That These Those It
     My Our Your We He She They Then Also But And So Next Last Ok Okay Yes No""".split()
 )
-_HEADING = re.compile(r"^\s{0,3}#{1,6}\s+")
-_ITEM = re.compile(r"^(\s*(?:[-*+]|\d{1,3}[.)])\s+)(\[([ xX])\]\s+)?")
-_SPLIT = re.compile(r"([.!?][\"”’)]?)\s+(?=[\"“‘(]?[A-Z0-9])")
+_HEADING = lazy_compile(r"^\s{0,3}#{1,6}\s+")
+_ITEM = lazy_compile(r"^(\s*(?:[-*+]|\d{1,3}[.)])\s+)(\[([ xX])\]\s+)?")
+_SPLIT = lazy_compile(r"([.!?][\"”’)]?)\s+(?=[\"“‘(]?[A-Z0-9])")
 _PICTURES_HEAD = "[Pictures in this note"
-_JOKE = re.compile(r"\bjoke\b|\bpunchline\b", re.I)
+_JOKE = lazy_compile(r"\bjoke\b|\bpunchline\b", re.I)
 
 
 # --- reading -----------------------------------------------------------------------

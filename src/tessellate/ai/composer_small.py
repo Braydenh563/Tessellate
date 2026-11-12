@@ -19,10 +19,11 @@ from tessellate.ai.composer_answer import _Answer
 from tessellate.ai.composer_ask import _holds, _stem, _words, subject_terms, user_today
 from tessellate.ai.composer_help import _result
 from tessellate.ai.composer_read import NoteView, read_note
+from tessellate.core.lazyre import lazy_compile
 
 # --- U16: a what-if has no fact to answer from ----------------------------------------
 
-_WHAT_IF = re.compile(
+_WHAT_IF = lazy_compile(
     r"^(?:(?:ok|okay|so|hmm|and),? )?(?:what (?:if|would happen if|will happen if|happens if|might happen if|could happen if)"
     r"|suppose(?: that)?|supposing(?: that)?|imagine(?: that)?|let'?s say|how would (?:it|things) (?:be|change) if) (?P<premise>\S.*)$",
     re.I,
@@ -46,7 +47,7 @@ _PREMISE_FILLER = frozenset({"i", "we", "my", "the", "a", "an", "to", "of", "up"
 
 #: A premise that is an instruction or a plan ("what if I translate hello", "imagine I buy a car")
 #: with nothing in the notes about it is left to the ordinary answer.
-_COMMANDISH = re.compile(r"^(?:(?:that\s+)?(?:i|we)\s+)?(?:to\s+)?(?:translate|buy|make|write|remind|add|create|draft|send|set|book|tell|summari[sz]e|find|show)\b", re.I)
+_COMMANDISH = lazy_compile(r"^(?:(?:that\s+)?(?:i|we)\s+)?(?:to\s+)?(?:translate|buy|make|write|remind|add|create|draft|send|set|book|tell|summari[sz]e|find|show)\b", re.I)
 
 NO_FACT = "Your notes do not say what would happen."
 MAX_QUOTES = 2
@@ -114,14 +115,14 @@ def what_if(question: str, notes: list[dict], *, today: date | None = None) -> d
 
 # --- A22: where did I write X ---------------------------------------------------------
 
-_WHERE = re.compile(
+_WHERE = lazy_compile(
     r"^where (?:did|have|had|do) (?:i|we) (?:write|wrote|written|put|note|noted|jot|jotted|save|saved|store|stored|keep|kept|mention|mentioned|say|said|record|recorded|type|typed)"
     r"(?: down)? (?P<rest>\S.*)$",
     re.I,
 )
-_FILLER = re.compile(r"^(?:(?:about|on|that|the|my|it|of) )+", re.I)
-_HEADING = re.compile(r"^#{2,6}[ \t]+(.+?)[ \t#]*$", re.M)
-_EDITED = re.compile(r"edited\s+\w+\s+(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})")
+_FILLER = lazy_compile(r"^(?:(?:about|on|that|the|my|it|of) )+", re.I)
+_HEADING = lazy_compile(r"^#{2,6}[ \t]+(.+?)[ \t#]*$", re.M)
+_EDITED = lazy_compile(r"edited\s+\w+\s+(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})")
 _MONTHS = {m: i for i, m in enumerate("january february march april may june july august september october november december".split(), 1)}
 
 
@@ -274,7 +275,7 @@ def where_written(question: str, notes: list[dict], *, today: date | None = None
 #: "What is the first note I wrote about Sara", "the latest note about the dentist":
 #: a rank by day inside the subject, not a search. `_plain` collapsed the
 #: spaces, so each one below is a single literal and no two quantifiers share characters.
-_ORDINAL_ABOUT = re.compile(
+_ORDINAL_ABOUT = lazy_compile(
     r"^(?:(?:what|which) (?:is|was) |show me |tell me )?(?:my |the )?(?P<end>first|oldest|earliest|last)"
     r"(?: note| entry)?(?: (?:that )?i (?:wrote|made|saved|noted))? (?:about|on|mentioning|that mentions) (?:the |my )?(?P<rest>\S.*)$",
     re.I,
@@ -319,7 +320,7 @@ def ordinal_about(question: str, notes: list[dict], *, today: date | None = None
 
 # --- A24: show me something old -------------------------------------------------------
 
-_OLD = re.compile(
+_OLD = lazy_compile(
     r"^(?:(?:can|could|would) you )?(?:please )?(?:show|give|get|find|pull up|bring up|dig up|surface|remind)(?: me)? "
     r"(?:(?:something|a note|an? (?:old|forgotten) note|one|anything|a thing) (?:(?:that is|that i wrote|i wrote) )?)?"
     r"(?:(?:really|very|quite) )?(?:old|forgotten|from (?:a while|ages|long) (?:ago|back)|i(?:'ve| have) (?:forgotten|not seen)(?: in a while)?)"

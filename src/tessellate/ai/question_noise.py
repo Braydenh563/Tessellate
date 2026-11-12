@@ -480,12 +480,12 @@ def strip_strays(text: str) -> str:
     return _RUN_OF_SPACES.sub(" ", text).strip()
 
 
-_RATING_SLASH = re.compile(r"(?<![\w/])(\d{1,3}) ?/ ?(5|10|20|100)\b(?! ?/)")
+_RATING_SLASH = lazy_compile(r"(?<![\w/])(\d{1,3}) ?/ ?(5|10|20|100)\b(?! ?/)")
 _DATE_CUES = frozenset("on by due before until till from since at for of around near about after during circa week"
                         " starting ending".split())
 # A fraction is a rating only beside a rating word; with none ("what did I do around 9/10") it is a date (the owner,
 # 2026-11-11: "9/10 could be a date based on context").
-_RATING_CUES = re.compile(r"\b(?:is|was|are|were|gave|give|given|giving|rate[ds]?|rating|ratings|scored?|scores|stars?|out)\b", re.I)
+_RATING_CUES = lazy_compile(r"\b(?:is|was|are|were|gave|give|given|giving|rate[ds]?|rating|ratings|scored?|scores|stars?|out)\b", re.I)
 
 
 def _rating_words(text: str) -> str:
@@ -2802,8 +2802,8 @@ act_registry.repair = repair
 #: question only, so "catch me up on Harbor" stays a recall and "whats
 #: happening" alone (small talk, `intent`) and "what's coming up" (the agenda)
 #: are not it; "been" or "lately" is what makes "happening" past.
-CATCH_LEAD = re.compile(r"^(?:(?:hey|hi|hello|hiya|yo|so|ok|okay|well|um)\b[ ,!]*)+", re.I)
-_CATCH_UP = re.compile(
+CATCH_LEAD = lazy_compile(r"^(?:(?:hey|hi|hello|hiya|yo|so|ok|okay|well|um)\b[ ,!]*)+", re.I)
+_CATCH_UP = lazy_compile(
     r"^(?:(?:what|whats)(?: has| have)? been (?:happening|going on)(?: (?:lately|recently|so far|these days))?"
     r"|(?:what|whats)(?: is| has)? (?:happening|going on|happened) (?:lately|recently|these days)"
     r"|(?:what|whats)(?: have| has| did)? (?:i|we) (?:been (?:up to|doing)|miss(?:ed)?)"

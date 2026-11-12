@@ -36,6 +36,7 @@ from dataclasses import dataclass, field
 
 from tessellate.ai import composer_lines as lines
 from tessellate.ai import recognise
+from tessellate.core.lazyre import lazy_compile
 
 #: Voice names the rest of the app uses (the `composer_voice` preference and
 #: the composer's two registers) mapped onto the four voices written here.
@@ -58,13 +59,13 @@ _LEXICON: dict[str, tuple[str, ...]] = {
               "wrong", "stupid", "worst", "damn", "sad", "upset"),
     "upbeat": ("great", "thank", "awesome", "love", "nice", "cool", "happy", "excited", "amazing", "yay", "brilliant", "perfect", "fantastic", "wonderful"),
 }
-_WORD = re.compile(r"[a-z0-9']+")
+_WORD = lazy_compile(r"[a-z0-9']+")
 _STOP = frozenset("the a an of to and or is are was were my me i you it in on for with about what when how do does did can could please this that".split())
 
 
 #: One alternation per emotion, compiled at import: a read is four scans.
 _LEXICON_RE = {e: re.compile("|".join(re.escape(x) for x in stems)) for e, stems in _LEXICON.items()}
-_EMPHASIS = re.compile(r"[!?]{2,}")
+_EMPHASIS = lazy_compile(r"[!?]{2,}")
 
 
 def voice_for(name: str | None) -> str:
@@ -334,7 +335,7 @@ def time_of_day(hour: int) -> str:
     return "morning" if 5 <= hour < 12 else "afternoon" if 12 <= hour < 17 else "evening" if 17 <= hour < 22 else "night"
 
 
-_GREETED = re.compile(r"^\W*(morning|afternoon|evening)\b|\bgood\s+(morning|afternoon|evening)\b", re.I)
+_GREETED = lazy_compile(r"^\W*(morning|afternoon|evening)\b|\bgood\s+(morning|afternoon|evening)\b", re.I)
 
 
 def greeted_as(question: str, hour: int) -> str:

@@ -12,14 +12,15 @@ answers it. Free of project imports so `question_noise` can ask it first.
 from __future__ import annotations
 
 import re
+from tessellate.core.lazyre import lazy_compile
 
 #: What makes a message about the person's own notes, whatever else it says.
-_NOTE_ANCHOR = re.compile(r"\b(?:my|mine|notes?|wrote|written|saved|noted|reminders?|todo|entries|entry|last (?:week|month)|yesterday)\b")
+_NOTE_ANCHOR = lazy_compile(r"\b(?:my|mine|notes?|wrote|written|saved|noted|reminders?|todo|entries|entry|last (?:week|month)|yesterday)\b")
 #: A question that wants something found, not a remark to the assistant.
-_WANTS_FOUND = re.compile(r"\b(?:what|when|where|which|who|how many|how much)\b")
+_WANTS_FOUND = lazy_compile(r"\b(?:what|when|where|which|who|how many|how much)\b")
 
 _ATTRIBUTE = r"(?:name|age|birthday|birth ?date|boss|employer|employeer|manager|supervisor|creator|maker|owner|parents?|gender|company)"
-_SELF = re.compile(
+_SELF = lazy_compile(
     rf"\b(?:your|ur) (?:(?:full|real|first|last|actual|legal) )?{_ATTRIBUTE}\b"
     r"|\bhow (?:old|many (?:years|months|days|weeks) old) (?:are|r) (?:you|u)\b|\bhow old you (?:are|r)\b|\byou (?:are|r|re) how old\b"
     r"|\bhow (?:old|long ago) (?:were|was) (?:you|u) (?:born|made|created|built)\b|\bwhen (?:were|was|did) (?:you|u) (?:born|made|created|built)\b|\bwhen (?:you|u) (?:were|was) (?:born|made|created|built)\b"
@@ -33,18 +34,18 @@ _SELF = re.compile(
     r"|\bhuman or (?:a )?(?:computer|machine|bot|robot|ai)\b|\byourself\b.{0,24}\b(?:bot|human|robot|ai|person)\b"
     r"|\b(?:call|refer to|address) (?:you|u)\b|\byour attention\b"
 )
-_QUESTION_FRAME = re.compile(r"^(?:what|who|how|is|are|do|does|did|can|could|should|would|tell|please|provide|which|for|don't|i|ai|atlas|hey|and|so|may|your|you|when)\b")
-_THANKS = re.compile(r"\b(?:thank you|thanks|thankyou|much obliged|many thanks|gratitude|i appreciate|appreciated)\b")
-_BYE = re.compile(
+_QUESTION_FRAME = lazy_compile(r"^(?:what|who|how|is|are|do|does|did|can|could|should|would|tell|please|provide|which|for|don't|i|ai|atlas|hey|and|so|may|your|you|when)\b")
+_THANKS = lazy_compile(r"\b(?:thank you|thanks|thankyou|much obliged|many thanks|gratitude|i appreciate|appreciated)\b")
+_BYE = lazy_compile(
     r"\b(?:good ?bye|talk to you (?:later|soon)|(?:nice|great|good|lovely|a pleasure) to (?:have|had) (?:this|our|a) (?:conversation|chat)|see you (?:soon|later|around|next time|tomorrow)|say goodbye|goodbye|"
     r"(?:was|been|is) (?:so |really )?(?:nice|great|enjoyable|lovely|good|a pleasure)(?: to)? (?:chat|chatting|talk|talking|speak|speaking)|"
     r"(?:nice|good|great) (?:chatting|talking|speaking)|later,? (?:gator|alligator)|sayonara|syonara|adios|farewell|until next time|catch you later|"
     r"glad we got to talk)\b"
 )
-_HOW = re.compile(r"\bhow(?:'?s| is| are) (?:everything|things|you)\b|\bis everything (?:going )?(?:okay|ok|good|fine|alright|well)\b")
-_HELLO = re.compile(r"^(?:(?:why|well|oh) )?(?:hello|hi|hey)(?: there)?$|^(?:ahoy|ello|g'?day|greetings|salutations|howdy)\b")
+_HOW = lazy_compile(r"\bhow(?:'?s| is| are) (?:everything|things|you)\b|\bis everything (?:going )?(?:okay|ok|good|fine|alright|well)\b")
+_HELLO = lazy_compile(r"^(?:(?:why|well|oh) )?(?:hello|hi|hey)(?: there)?$|^(?:ahoy|ello|g'?day|greetings|salutations|howdy)\b")
 #: "tell me a joke about cats" stays a notes question first (C31: "tell me a joke about the scarecrow" is the saved one).
-_JOKE = re.compile(r"\b(?:tell|say|hear|give|crack|share|recite|know|got|make)\b.*\b(?:jokes?|something funny|one liners?|giggle|laugh|smile)\b(?! about\b)|^what(?:'s| is) a (?:good |funny )?joke$|^what (?:funny |good )?jokes do you know$")
+_JOKE = lazy_compile(r"\b(?:tell|say|hear|give|crack|share|recite|know|got|make)\b.*\b(?:jokes?|something funny|one liners?|giggle|laugh|smile)\b(?! about\b)|^what(?:'s| is) a (?:good |funny )?joke$|^what (?:funny |good )?jokes do you know$")
 
 
 def _words(message: str) -> str:

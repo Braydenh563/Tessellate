@@ -770,8 +770,8 @@ def _still_tonight(at: datetime | None, now: datetime, part: str | None) -> date
     return now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
 
 
-_SCHEDULE_DAY = re.compile(r"\b(?:mon|tues|wednes|thurs|fri|satur|sun)day", re.I)
-_SCHEDULE_EVERY = re.compile(r"\bevery (?:other )?(?:week|day|month|(?:mon|tues|wednes|thurs|fri|satur|sun)day)|\b(?:mon|tues|wednes|thurs|fri|satur|sun)days\b", re.I)
+_SCHEDULE_DAY = lazy_compile(r"\b(?:mon|tues|wednes|thurs|fri|satur|sun)day", re.I)
+_SCHEDULE_EVERY = lazy_compile(r"\bevery (?:other )?(?:week|day|month|(?:mon|tues|wednes|thurs|fri|satur|sun)day)|\b(?:mon|tues|wednes|thurs|fri|satur|sun)days\b", re.I)
 
 
 def recurring_schedule(sentence: str) -> bool:
@@ -1794,10 +1794,10 @@ def _recognise(
 #: A day named in a dated note is that week's, not this one's (the owner,
 #: 2026-10-26: "it was due that friday, not this friday").
 _DAY_SHIFT = (
-    (re.compile(r"\b(?:on |this )?(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b"), r"that \1"),
-    (re.compile(r"\btonight\b"), "that night"), (re.compile(r"\btoday\b"), "that day"),
-    (re.compile(r"\btomorrow\b"), "the next day"), (re.compile(r"\bnext week\b"), "the week after"),
-    (re.compile(r"\bis due\b"), "was due"),
+    (lazy_compile(r"\b(?:on |this )?(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b"), r"that \1"),
+    (lazy_compile(r"\btonight\b"), "that night"), (lazy_compile(r"\btoday\b"), "that day"),
+    (lazy_compile(r"\btomorrow\b"), "the next day"), (lazy_compile(r"\bnext week\b"), "the week after"),
+    (lazy_compile(r"\bis due\b"), "was due"),
 )
 
 

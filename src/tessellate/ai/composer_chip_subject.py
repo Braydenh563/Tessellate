@@ -12,15 +12,16 @@ from __future__ import annotations
 import re
 
 from tessellate.ai.composer_ask import _holds, _stem
+from tessellate.core.lazyre import lazy_compile
 
-_LEAD = re.compile(r"^(?:with|the latest on|latest|newest|of|on|about|for|to|and|at|in|by|from|is|are|was|were)\s+", re.I)
+_LEAD = lazy_compile(r"^(?:with|the latest on|latest|newest|of|on|about|for|to|and|at|in|by|from|is|are|was|were)\s+", re.I)
 _OWNERS = frozenset({"the", "my", "our", "your", "his", "her", "their", "a", "an"})
 #: Words that are the question's own, never a thing: asks, verbs and fillers.
 _NOT_A_THING = frozenset(
     "latest newest called named due date needs need live lives eat eats born think thought allergic going doing "
     "number phone coming come got have has had like likes love loves want wants say said tell told know".split()
 )
-_NAME_WORD = re.compile(r"[\w'’&-]+")
+_NAME_WORD = lazy_compile(r"[\w'’&-]+")
 
 
 def _titles(views: list) -> dict[str, str]:
@@ -91,7 +92,7 @@ def clean(subject: str, views: list, question: str = "") -> str:
 
 
 #: The chip templates that name a subject (`composer_digest._NEXT_ABOUT` and `composer._next_questions`).
-_ABOUT = re.compile(
+_ABOUT = lazy_compile(
     r"^(?P<head>When did I (?:last )?write about|What(?:'s| is) the latest on|What else have I saved about|What do I know about|Tell me more about) (?P<subject>.+?)\?$"
 )
 

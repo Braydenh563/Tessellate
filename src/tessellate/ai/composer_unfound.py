@@ -16,6 +16,7 @@ from tessellate.ai import composer_frame, composer_tables, recognise as rec
 from tessellate.ai.composer_answer import _Answer
 from tessellate.ai.composer_ask import _alternatives, _holds, _stem, _stem_plain
 from tessellate.ai.composer_read import NoteView
+from tessellate.core.lazyre import lazy_compile
 
 
 #: Words too short or too common to report as missing: a two-letter word
@@ -79,7 +80,7 @@ _FOREIGN = frozenset(
 
 #: An adverb says how, not what: "what did I personally think", "is it
 #: actually recorded" are never missing their "personally" (stress run 2026-10-30).
-_MANNER = re.compile(r"(?:ally|ely|ently|antly|ously|ively|edly|icitly)$|^(?:simply|merely|basically|honestly|truly|mostly|mainly|barely|nearly|hardly)$", re.I)
+_MANNER = lazy_compile(r"(?:ally|ely|ently|antly|ously|ively|edly|icitly)$|^(?:simply|merely|basically|honestly|truly|mostly|mainly|barely|nearly|hardly)$", re.I)
 
 
 def _quoted_words(out: _Answer, views: list[NoteView]) -> set[str]:
@@ -111,7 +112,7 @@ def _said_by_shape(term: str, quoted_text: str) -> bool:
 #: ("do I turn", "have I seen"), and aggregate, pronoun and comparison words.
 #: Named as "not mentioned" they told the person a note was missing a word
 #: no note would hold (audit 1030 Z16: "turn", "seen", "total", "him").
-_FRAME_SHAPES = re.compile(
+_FRAME_SHAPES = lazy_compile(
     r"\bhow (?!to\b)(\w+)"
     r"|\b(?:do|does|did|can|could|should|would|will|have|has|had|am|is|are|was|were) (?:i|we|you) (?:\w+ly )?(?!a\b|an\b|the\b)(\w+)"
     r"|\b(?:i|we)(?:'ve|'d|'ll| have| had| will)? (?!have\b|had\b|am\b|was\b)(\w+)"
@@ -136,13 +137,13 @@ _FRAME_WORDS = frozenset(
 #: table", "in two snippets", "the top three memos", and after an order verb
 #: "in a haiku", "with a timeline". No list of formats: the position names it
 #: (audit 1029 C37; a bare "in a hotel" with no order verb stays a topic).
-_SHAPE_ASKED = re.compile(
+_SHAPE_ASKED = lazy_compile(
     r"\bas (?:a |an |the )?(\w+)"
     r"|\bin (?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|a few|a couple of) (\w+)"
     r"|\b(?:top|first|last|best|worst|latest|newest|oldest)\s+(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s+(\w+)",
     re.I,
 )
-_ORDER_SHAPE = re.compile(
+_ORDER_SHAPE = lazy_compile(
     r"^\s*(?:please\s+|(?:can|could|would) you\s+(?:please\s+)?)?(?:summari[sz]e|give|write|draft|explain|describe|show|tell|list|put|format|turn|sum)\b"
     r"(?:(?!\b(?:what|which|who|where|when|how|about|my|our)\b).)*?\b(?:in|with) (?:a|an) (\w+)",
     re.I,
@@ -160,7 +161,7 @@ def _frame_stems(question: str) -> frozenset[str]:
 #: A word that is no thing the notes could hold: a manner, a feeling, a verb form or a small
 #: everyday word ("very", "stressed", "stops", "good", "minus"). Calling it missing is a tail a
 #: person would not say (fable-composer-1110 F7.1); only a noun-like word is.
-_NOT_A_NOUN = re.compile(r"(?:ed|ing|ly|ful|less|ish)$", re.I)
+_NOT_A_NOUN = lazy_compile(r"(?:ed|ing|ly|ful|less|ish)$", re.I)
 _SMALL_WORDS = frozenset(
     "very good bad far well sure fine nice great big small minus plus those these turn turns stop stops start starts "
     "helpful stressed worried tired happy sad more most less least much many some any again still just really quite".split()

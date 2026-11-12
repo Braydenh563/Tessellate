@@ -21,6 +21,7 @@ from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_quote import _pick
 from tessellate.ai.composer_read import NoteView
 from tessellate.search import query as query_understanding
+from tessellate.core.lazyre import lazy_compile
 
 
 #: A message this short that names one of the app's own tools ("timer",
@@ -35,8 +36,8 @@ _FEATURE_FILLER = frozenset({"the", "a", "an", "my", "that", "this", "it", "last
 
 #: "and last week?" carries on the question before; it is not asking for the Timeline tab. "who wrote it" is a
 #: question about a note, not the name of a tool (R9-9).
-_ABOUT_AN_ANSWER = re.compile(r"^\s*(?:is|are|was|what|what's|whats|who|when|where|why|how|do|does|did|can|the)\b|\b(?:it|its|one|they|them)\b", re.I)
-_CARRIES_ON = re.compile(r"^\s*(?:and|but|or|also|then|who)\b", re.I)
+_ABOUT_AN_ANSWER = lazy_compile(r"^\s*(?:is|are|was|what|what's|whats|who|when|where|why|how|do|does|did|can|the)\b|\b(?:it|its|one|they|them)\b", re.I)
+_CARRIES_ON = lazy_compile(r"^\s*(?:and|but|or|also|then|who)\b", re.I)
 
 
 def _may_name_a_tool(question: str, words: list[str]) -> bool:
@@ -211,7 +212,7 @@ def _help_ask(question: str, topic: dict) -> dict:
 
 #: Where the thing a doing is done to ends: "remove a tag from a note" is about
 #: the tag, and the note only says where.
-_PLACE_WORD = re.compile(r"\b(?:from|in|on|to|into|onto|of|out|off|for|at|about|by|with|between)\b")
+_PLACE_WORD = lazy_compile(r"\b(?:from|in|on|to|into|onto|of|out|off|for|at|about|by|with|between)\b")
 
 
 def _direct_object(question: str, verb: str) -> set[str]:
@@ -294,16 +295,16 @@ def _help_act_stems() -> dict[str, frozenset[str]]:
 
 
 #: "change a note's title": a rename said without its verb.
-_RETITLING = re.compile(r"\b(?:change|edit|set|update|fix)\b.{0,20}\b(?:title|name)s?\b", re.I)
+_RETITLING = lazy_compile(r"\b(?:change|edit|set|update|fix)\b.{0,20}\b(?:title|name)s?\b", re.I)
 
 #: "get a note back", "bring it back": a restore said without its verb.
-_BACK_PHRASE = re.compile(
+_BACK_PHRASE = lazy_compile(
     r"\b(?:get|bring|put|have|take)\b(?:\s+\w+){0,4}\s+back\b|\b(?:out of|from) (?:the |my )?(?:bin|trash|recycle bin)\b", re.I
 )
 
 #: Asked as a restore of something deleted (not of a backup): the bin sentence
 #: is the one whose subject says it ("A deleted note ... goes to the bin").
-_RESTORING = re.compile(r"\b(?:restor\w*|recover\w*|undelet\w*|retriev\w*)\b|" + _BACK_PHRASE.pattern, re.I)
+_RESTORING = lazy_compile(r"\b(?:restor\w*|recover\w*|undelet\w*|retriev\w*)\b|" + _BACK_PHRASE.pattern, re.I)
 
 
 def _help_act(question: str) -> str:
@@ -335,31 +336,31 @@ def _act_score(line: str, at: int, ask: set, stems: set[str], topic: dict, place
 
 
 #: A sentence that lists what the thing cannot do, not how to do it.
-_EXCEPTION = re.compile(r"\b(?:no undo|except|cannot|can't|never|nothing)\b", re.I)
+_EXCEPTION = lazy_compile(r"\b(?:no undo|except|cannot|can't|never|nothing)\b", re.I)
 
 #: The ask is about the exception itself ("why is there no undo", "permanently").
-_EXCEPTION_ASKED = re.compile(r"\b(?:no undo|except\w*|cannot|can't|never|for good|permanent\w*|empty|why)\b", re.I)
+_EXCEPTION_ASKED = lazy_compile(r"\b(?:no undo|except\w*|cannot|can't|never|for good|permanent\w*|empty|why)\b", re.I)
 
-_NO_UNDO = re.compile(r"\bno undo\b", re.I)
+_NO_UNDO = lazy_compile(r"\bno undo\b", re.I)
 
 #: The sentence about emptying the bin, and the ask that wants it: it answers
 #: "how do I empty the bin" and nothing about deleting one thing.
-_EMPTYING_LINE = re.compile(r"\bempty the bin\b", re.I)
-_EMPTYING = re.compile(r"\b(?:empt\w*|clear\w*|purge\w*|wipe\w*)\b", re.I)
+_EMPTYING_LINE = lazy_compile(r"\bempty the bin\b", re.I)
+_EMPTYING = lazy_compile(r"\b(?:empt\w*|clear\w*|purge\w*|wipe\w*)\b", re.I)
 
 #: The ask is for the list itself, not a word that merely touches it: "what
 #: can't I undo", "what cannot be undone", "which things have no undo". The
 #: list leads for these (a negated doing is a class, not a question).
-_EXCEPTION_LISTED = re.compile(
+_EXCEPTION_LISTED = lazy_compile(
     r"\b(?:can'?t|cannot|can not|couldn'?t|won'?t|never|no|not)\b.{0,15}\b(?:undo|undone|recover\w*|restor\w*|reversed?)\b|\bno undo\b|\birreversible\b", re.I
 )
 
 #: Where a sentence's subject ends: its first verb or clause break. A comma
 #: inside a list is not one: "A deleted note, board, document, reminder goes
 #: to the bin" has a subject of four things, and the ask names any of them.
-_SUBJECT_END = re.compile(r"\s(?:goes|go|is|are|has|have|keeps|makes|lets|shows|says|covers|opens|adds|removes|moves|finds|takes|asks|puts|sets|clears|deletes|gives|needs|offers|lists|reads|saves)\b|[,;:]")
+_SUBJECT_END = lazy_compile(r"\s(?:goes|go|is|are|has|have|keeps|makes|lets|shows|says|covers|opens|adds|removes|moves|finds|takes|asks|puts|sets|clears|deletes|gives|needs|offers|lists|reads|saves)\b|[,;:]")
 #: A comma inside a list of single words ("note, board, document or reminder").
-_LIST_COMMA = re.compile(r"(?<=\w), (?=\w+(?:,| or | and ))")
+_LIST_COMMA = lazy_compile(r"(?<=\w), (?=\w+(?:,| or | and ))")
 
 
 def _subject_fit(line: str, ask: dict) -> float:
@@ -467,10 +468,10 @@ def _clauses(sentence: str) -> list[str]:
     return [c[:1].upper() + c[1:] for c in ended]
 
 
-_JA_STOP = re.compile(r"([。！？])\.")
+_JA_STOP = lazy_compile(r"([。！？])\.")
 
 
-_UNTICK = re.compile(r"^(?:please |can you |could you )?(?:un-?tick|un-?check|un-?mark|un-?cross)\b", re.I)
+_UNTICK = lazy_compile(r"^(?:please |can you |could you )?(?:un-?tick|un-?check|un-?mark|un-?cross)\b", re.I)
 
 
 def cannot_answer(question: str, notes: list[dict]) -> dict | None:

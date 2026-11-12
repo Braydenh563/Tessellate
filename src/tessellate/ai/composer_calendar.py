@@ -10,30 +10,31 @@ in bulk. Every restated sentence still ends in a card that waits for Confirm.
 from __future__ import annotations
 
 import re
+from tessellate.core.lazyre import lazy_compile
 
 _LEAD = r"^(?:(?:hey|please|also|just|can you|could you|will you|would you|i need you to|i want you to|i need to|i must|i want to|i would like to|i'd like to)\s+)*"
 _CAL = r"(?:calendar|schedule|planner|agenda|diary)"
 _LIST = r"(?:[\w ]{0,25}?(?:to[- ]?do|task) list|list of (?:reminders|chores|housework)|reminders? list)"
 _PLACE = rf"(?:my|the)\s+(?:{_CAL}|{_LIST})"
 #: The to-do list the task acts already read ("put buy milk on my todo list").
-_PLAIN_TODO = re.compile(r"(?:^|\s)(?:my|the)\s+(?:to[- ]?do|task)\s+list$", re.IGNORECASE)
+_PLAIN_TODO = lazy_compile(r"(?:^|\s)(?:my|the)\s+(?:to[- ]?do|task)\s+list$", re.IGNORECASE)
 _WHEN = r"(?P<when>\s+(?:for|on)\s+\S.*)?"
 
-_ADD = re.compile(
+_ADD = lazy_compile(
     rf"{_LEAD}(?P<verb>add|put|list|schedule|pencil in|write)\s+(?P<what>.+?)\s+(?:to|on|onto|in|into)\s+(?P<where>{_PLACE}){_WHEN}$",
     re.IGNORECASE,
 )
-_REMOVE = re.compile(
+_REMOVE = lazy_compile(
     rf"{_LEAD}(?:remove|delete|take|cancel|drop|get rid of|scratch)\s+(?P<what>.+?)\s+(?:off(?: of)?|from|out of)\s+{_PLACE}{_WHEN}$",
     re.IGNORECASE,
 )
-_NO_LONGER = re.compile(rf"{_LEAD}(?:remove|delete|cancel|clear|empty|wipe)\s+(?:out\s+)?{_PLACE}\b", re.IGNORECASE)
-_TAKE_ALL = re.compile(rf"{_LEAD}(?:take|clear|remove)\s+(?:off|out)\s+(?:everything|all|it all)\s+(?:from|on|off|in)\s+{_PLACE}$", re.IGNORECASE)
-_CHECK_OFF = re.compile(rf"{_LEAD}(?:check|tick|cross)\s+(?P<what>.+?)\s+off(?: of)?(?: on| from)?\s+{_PLACE}$", re.IGNORECASE)
-_BARE = re.compile(r"^(?:(?:i'd like|i want|i need|i would like)\s+)?(?:to\s+)?(?:have\s+)?a reminder (?:made|set|created|added)$", re.IGNORECASE)
+_NO_LONGER = lazy_compile(rf"{_LEAD}(?:remove|delete|cancel|clear|empty|wipe)\s+(?:out\s+)?{_PLACE}\b", re.IGNORECASE)
+_TAKE_ALL = lazy_compile(rf"{_LEAD}(?:take|clear|remove)\s+(?:off|out)\s+(?:everything|all|it all)\s+(?:from|on|off|in)\s+{_PLACE}$", re.IGNORECASE)
+_CHECK_OFF = lazy_compile(rf"{_LEAD}(?:check|tick|cross)\s+(?P<what>.+?)\s+off(?: of)?(?: on| from)?\s+{_PLACE}$", re.IGNORECASE)
+_BARE = lazy_compile(r"^(?:(?:i'd like|i want|i need|i would like)\s+)?(?:to\s+)?(?:have\s+)?a reminder (?:made|set|created|added)$", re.IGNORECASE)
 #: The app's alarm is an ordinary reminder (the Clock's "Set alarm" makes one), so setting one is the reminder act.
-_SET_ALARM = re.compile(r"\b(?:set|add|put in|make|create|need|want)\b[^?]*?\b(?:an|another|a new|the|my) alarm\b", re.IGNORECASE)
-_EVERYTHING = re.compile(r"^(?:everything|all|all of it|all of them|it all|the (?:whole|entire) (?:thing|list))$", re.IGNORECASE)
+_SET_ALARM = lazy_compile(r"\b(?:set|add|put in|make|create|need|want)\b[^?]*?\b(?:an|another|a new|the|my) alarm\b", re.IGNORECASE)
+_EVERYTHING = lazy_compile(r"^(?:everything|all|all of it|all of them|it all|the (?:whole|entire) (?:thing|list))$", re.IGNORECASE)
 
 CLEAR_LINE = (
     "I do not clear a whole calendar or list in one go. Each item is a reminder: to drop one, say "

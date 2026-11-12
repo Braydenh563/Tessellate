@@ -27,6 +27,7 @@ from __future__ import annotations
 import re
 
 from tessellate.ai import composer_replies
+from tessellate.core.lazyre import lazy_compile
 
 VOICES = ("natural", "professional")
 DEFAULT_VOICE = "natural"
@@ -942,10 +943,10 @@ _NAME = r"[A-Z][\w'’-]+(?: [A-Z][\w'’-]+)?"
 _BARE_NAMES = rf"^(?P<a>{_NAME}(?:, {_NAME})*),? and (?P<b>{_NAME})[?.!]*$"
 
 #: "tom and sara" as typed in lower case: two names only when neither is an everyday word ("salt and pepper" stays one thing); `composer_ask.compare_sides` is the gate.
-LOWER_PAIR = re.compile(r"^(?P<a>[a-z][\w'’-]{1,20}) and (?P<b>[a-z][\w'’-]{1,20})[?.!]*$")
+LOWER_PAIR = lazy_compile(r"^(?P<a>[a-z][\w'’-]{1,20}) and (?P<b>[a-z][\w'’-]{1,20})[?.!]*$")
 
 #: Tried last (after the comparison verbs, or "Compare Lisbon and Porto" would be a bare pair).
-BARE_COMPARE_SIDES: tuple[re.Pattern[str], ...] = (re.compile(_BARE_NAMES),)
+BARE_COMPARE_SIDES: tuple[re.Pattern[str], ...] = (lazy_compile(_BARE_NAMES),)
 
 #: "one mentions", "two mention", "the other mentions": the composer's own count lead for a comparison.
 _COUNT_MENTIONS = r"(?:one|two|three|four|five|six|\d+|the other)\s+mentions?"
@@ -953,31 +954,31 @@ _COUNT_MENTIONS = r"(?:one|two|three|four|five|six|\d+|the other)\s+mentions?"
 #: Two-sided comparison patterns, tried after the originals in
 #: `composer._COMPARE_SIDES`: each needs both sides in the question.
 EXTRA_COMPARE_SIDES: tuple[re.Pattern[str], ...] = (
-    re.compile(rf"^{_EACH_LEAD}\s+(?P<a>{_EACH_NAME})\s+and\s+(?P<b>{_EACH_NAME})[?.!]*$", re.I),
-    re.compile(rf"^(?:(?:is|are|was|were|does|do|did)\s+)?(?P<a>.+?)(?<!\s)\s+(?:(?:is|are|was|were)\s+)?(?:{_MORE}) than (?P<b>.+?)[?.!]*$", re.I),
-    re.compile(r"^(?:how|what) (?:does|do|did) (?P<a>.+?) (?:compare|stack up|measure up) (?:with|to|against) (?P<b>.+?)[?.!]*$", re.I),
+    lazy_compile(rf"^{_EACH_LEAD}\s+(?P<a>{_EACH_NAME})\s+and\s+(?P<b>{_EACH_NAME})[?.!]*$", re.I),
+    lazy_compile(rf"^(?:(?:is|are|was|were|does|do|did)\s+)?(?P<a>.+?)(?<!\s)\s+(?:(?:is|are|was|were)\s+)?(?:{_MORE}) than (?P<b>.+?)[?.!]*$", re.I),
+    lazy_compile(r"^(?:how|what) (?:does|do|did) (?P<a>.+?) (?:compare|stack up|measure up) (?:with|to|against) (?P<b>.+?)[?.!]*$", re.I),
     #: The composer's own lead, said back: "Among these notes, one mentions Lisbon and one mentions Atlas" (W10 B30).
-    re.compile(rf"^(?:[^,]{{3,40}},\s*)?{_COUNT_MENTIONS}\s+(?P<a>.+?)(?:,|\s+and)\s+(?:and\s+)?{_COUNT_MENTIONS}\s+(?P<b>.+?)[?.!]*$", re.I),
-    re.compile(r"^(?P<a>.+?),? compare[sd]? (?:with|to) (?P<b>.+?)[?.!]*$", re.I),
-    re.compile(rf"^{_WHICH} (?:is|are|was|were) (?:the )?(?:{_MORE})[,:]?\s+(?P<a>.+?) or (?P<b>.+?)[?.!]*$", re.I),
+    lazy_compile(rf"^(?:[^,]{{3,40}},\s*)?{_COUNT_MENTIONS}\s+(?P<a>.+?)(?:,|\s+and)\s+(?:and\s+)?{_COUNT_MENTIONS}\s+(?P<b>.+?)[?.!]*$", re.I),
+    lazy_compile(r"^(?P<a>.+?),? compare[sd]? (?:with|to) (?P<b>.+?)[?.!]*$", re.I),
+    lazy_compile(rf"^{_WHICH} (?:is|are|was|were) (?:the )?(?:{_MORE})[,:]?\s+(?P<a>.+?) or (?P<b>.+?)[?.!]*$", re.I),
     #: "which comes first, the dentist or the trip".
-    re.compile(r"^which(?: one)? (?:comes|came|is|was) first[,:]?\s+(?P<a>.+?) or (?P<b>.+?)[?.!]*$", re.I),
+    lazy_compile(r"^which(?: one)? (?:comes|came|is|was) first[,:]?\s+(?P<a>.+?) or (?P<b>.+?)[?.!]*$", re.I),
     #: The same asked the other way round: "Lisbon or Tokyo, which is cheaper" (audit 1030 Z58).
-    re.compile(rf"^(?P<a>[\w' ,-]+?) or (?P<b>[\w' ,-]+?),? {_WHICH} (?:is|are|was|were) (?:the )?(?:{_MORE})[?.!]*$", re.I),
+    lazy_compile(rf"^(?P<a>[\w' ,-]+?) or (?P<b>[\w' ,-]+?),? {_WHICH} (?:is|are|was|were) (?:the )?(?:{_MORE})[?.!]*$", re.I),
     #: "which costs more, Lisbon or Tokyo" and the other way round (round 2 E9).
-    re.compile(r"^which(?: one| note)? costs? (?:more|less)[,:]?\s+(?P<a>.+?) or (?P<b>.+?)[?.!]*$", re.I),
-    re.compile(r"^(?P<a>[\w' ,-]+?) or (?P<b>[\w' ,-]+?),? which(?: one| note)? costs? (?:more|less)[?.!]*$", re.I),
+    lazy_compile(r"^which(?: one| note)? costs? (?:more|less)[,:]?\s+(?P<a>.+?) or (?P<b>.+?)[?.!]*$", re.I),
+    lazy_compile(r"^(?P<a>[\w' ,-]+?) or (?P<b>[\w' ,-]+?),? which(?: one| note)? costs? (?:more|less)[?.!]*$", re.I),
     #: "Lisbon or Atlas which", "Lisbon or Atlas, which one": two names and a bare which (D3).
-    re.compile(r"^(?P<a>[\w' -]{1,40}?) or (?P<b>[\w' -]{1,40}?),?\s+which(?: one| is| of them| note)?(?: \w+){0,3}[?.!]*$", re.I),
-    re.compile(r"^(?:(?:what are|what is) )?(?:the )?(?:pros and cons|advantages and disadvantages|upsides and downsides|pros|cons) of (?P<a>.+?) (?:and|or|vs\.?|versus) (?P<b>.+?)[?.!]*$", re.I),
-    re.compile(r"^(?:how|what) (?:is|are) (?P<a>.+?) (?:different|difference|differs?) from (?P<b>.+?)[?.!]*$", re.I),
-    re.compile(r"^(?P<a>.+?) (?:differs?|is different|is a difference) from (?P<b>.+?)[?.!]*$", re.I),
-    re.compile(r"^(?:the )?comparison (?:of|between) (?P<a>.+?) (?:and|with|to|vs\.?|versus) (?P<b>.+?)[?.!]*$", re.I),
-    re.compile(r"\b(?:similarities|contrast) between (?P<a>.+?) and (?P<b>.+?)[?.!]*$", re.I),
+    lazy_compile(r"^(?P<a>[\w' -]{1,40}?) or (?P<b>[\w' -]{1,40}?),?\s+which(?: one| is| of them| note)?(?: \w+){0,3}[?.!]*$", re.I),
+    lazy_compile(r"^(?:(?:what are|what is) )?(?:the )?(?:pros and cons|advantages and disadvantages|upsides and downsides|pros|cons) of (?P<a>.+?) (?:and|or|vs\.?|versus) (?P<b>.+?)[?.!]*$", re.I),
+    lazy_compile(r"^(?:how|what) (?:is|are) (?P<a>.+?) (?:different|difference|differs?) from (?P<b>.+?)[?.!]*$", re.I),
+    lazy_compile(r"^(?P<a>.+?) (?:differs?|is different|is a difference) from (?P<b>.+?)[?.!]*$", re.I),
+    lazy_compile(r"^(?:the )?comparison (?:of|between) (?P<a>.+?) (?:and|with|to|vs\.?|versus) (?P<b>.+?)[?.!]*$", re.I),
+    lazy_compile(r"\b(?:similarities|contrast) between (?P<a>.+?) and (?P<b>.+?)[?.!]*$", re.I),
     #: "how are Deep Work and The Overstory different" (audit 1029 C36).
-    re.compile(r"^(?:how|in what ways?) (?:are|were|do|did) (?P<a>.+?) and (?P<b>.+?) (?:different|differ|alike|similar|the same)[?.!]*$", re.I),
+    lazy_compile(r"^(?:how|in what ways?) (?:are|were|do|did) (?P<a>.+?) and (?P<b>.+?) (?:different|differ|alike|similar|the same)[?.!]*$", re.I),
     #: "what changed between the old plan and the new one", "what is different between A and B" (audit 1031 C24).
-    re.compile(r"^what(?:'s| is| has| have)? (?:changed|different|the change|the changes) between (?P<a>.+?) and (?P<b>.+?)[?.!]*$", re.I),
+    lazy_compile(r"^what(?:'s| is| has| have)? (?:changed|different|the change|the changes) between (?P<a>.+?) and (?P<b>.+?)[?.!]*$", re.I),
 )
 
 #: The comparison triggers added to the "compare" shape rule: all two-sided,

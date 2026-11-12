@@ -179,17 +179,17 @@ def first_person(text: str) -> bool:
 # --- tense ------------------------------------------------------------------------
 
 _PLAN_PAST = (
-    (re.compile(r"\byou plan to\b"), "you planned to"),
-    (re.compile(r"\byou are planning to\b"), "you were planning to"),
-    (re.compile(r"\byou're planning to\b"), "you were planning to"),
-    (re.compile(r"\byou are going to\b"), "you were going to"),
-    (re.compile(r"\byou're going to\b"), "you were going to"),
-    (re.compile(r"\byou are going\b"), "you were going"),
-    (re.compile(r"\byou're going\b"), "you were going"),
-    (re.compile(r"\byou will\b"), "you were going to"),
-    (re.compile(r"\byou want to\b"), "you wanted to"),
-    (re.compile(r"\byou need to\b"), "you needed to"),
-    (re.compile(r"\byou intend to\b"), "you intended to"),
+    (lazy_compile(r"\byou plan to\b"), "you planned to"),
+    (lazy_compile(r"\byou are planning to\b"), "you were planning to"),
+    (lazy_compile(r"\byou're planning to\b"), "you were planning to"),
+    (lazy_compile(r"\byou are going to\b"), "you were going to"),
+    (lazy_compile(r"\byou're going to\b"), "you were going to"),
+    (lazy_compile(r"\byou are going\b"), "you were going"),
+    (lazy_compile(r"\byou're going\b"), "you were going"),
+    (lazy_compile(r"\byou will\b"), "you were going to"),
+    (lazy_compile(r"\byou want to\b"), "you wanted to"),
+    (lazy_compile(r"\byou need to\b"), "you needed to"),
+    (lazy_compile(r"\byou intend to\b"), "you intended to"),
 )
 
 

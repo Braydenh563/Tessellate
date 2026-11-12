@@ -15,19 +15,20 @@ import re
 from datetime import date, timedelta
 
 from tessellate.ai import recognise_questions
+from tessellate.core.lazyre import lazy_compile
 
 _NUMBERS = {"a": 1, "one": 1, "two": 2, "three": 3, "four": 4}
 _LEAD = r"^\s*(?:(?:and|but|so|ok)[, ]+)*(?:what about\s+)?"
-_SHIFT = re.compile(
+_SHIFT = lazy_compile(
     _LEAD + r"(?:the\s+)?(?:(?P<n>\d+|a|one|two|three|four)\s+)?(?P<unit>day|week|month)s?\s+(?P<dir>before|after|earlier|later|prior)"
     r"(?:\s+(?:that|it|then))?\s*[?.!]*$",
     re.I,
 )
-_STEP = re.compile(_LEAD + r"(?:the\s+)?(?P<dir>previous|next|following|preceding)\s+(?P<unit>day|week|month)\s*[?.!]*$", re.I)
-_THAT = re.compile(_LEAD + r"what else (?:is|was|'s) (?:on|happening|going on) (?:that|the same) (?P<unit>day|week)\s*[?.!]*$", re.I)
+_STEP = lazy_compile(_LEAD + r"(?:the\s+)?(?P<dir>previous|next|following|preceding)\s+(?P<unit>day|week|month)\s*[?.!]*$", re.I)
+_THAT = lazy_compile(_LEAD + r"what else (?:is|was|'s) (?:on|happening|going on) (?:that|the same) (?P<unit>day|week)\s*[?.!]*$", re.I)
 #: "any other notes around that time", "what else around then", "near then" (INBOX 1739):
 #: the notes a few days either side of the day the turn before named.
-_NEAR = re.compile(
+_NEAR = lazy_compile(
     _LEAD + r"(?:(?:are there |is there |do i have |did i write |what )?(?:any|anything|something)?\s*(?:(?:other|more|else)\s+)*(?:notes?|stuff|things?|entries)?\s*)"
     r"(?:and\s+)?(?:(?:what about|how about)\s+)?(?:(?:around|near|nearby|close to|within a few days of|about)\s+)"
     r"(?:that\s+(?:time|day|date|week)|then|the same (?:time|day|week))\s*[?.!]*$",

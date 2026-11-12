@@ -23,6 +23,7 @@ from tessellate.ai.composer_help import _in_window, _result
 from tessellate.ai.composer_intent import AROUND_DAYS, Plan, plan
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_read import NoteView, Sentence, _ITEM, _distinct_ids, _heading_text, _title, _unit, read_note
+from tessellate.core.lazyre import lazy_compile
 
 
 #: A recall by time lists at most this many notes; the count says how many.
@@ -30,13 +31,13 @@ RECALL_NOTES = 8
 
 
 #: A question about the act of writing: only the day a note was made answers it.
-_WROTE_VERB = re.compile(r"\b(?:wrote|write|written|made|created|added|saved|captured|jotted|typed)\b", re.I)
+_WROTE_VERB = lazy_compile(r"\b(?:wrote|write|written|made|created|added|saved|captured|jotted|typed)\b", re.I)
 
 
 #: A question that asks for everything on a subject rather than one fact:
 #: answered by how many notes mention it, then the sentence most of them lean
 #: towards (`centrality`), then one sentence from each other note.
-_BROAD = re.compile(
+_BROAD = lazy_compile(
     r"^\s*(?:what (?:do|did|have) (?:i|we|my notes|you) (?:know|say|said|written|write|wrote|got|have)\b"
     r"|what(?:'s| is) in my notes\b|tell me (?:about|everything)\b|everything (?:about|on)\b"
     r"|summari[sz]e\b|give me an overview\b|(?:an )?overview of\b"
@@ -47,7 +48,7 @@ _BROAD = re.compile(
 )
 
 
-_WINDOW_NOUN = re.compile(r"\b(weekend|week|month|year|fortnight)\b", re.I)
+_WINDOW_NOUN = lazy_compile(r"\b(weekend|week|month|year|fortnight)\b", re.I)
 
 
 def window_as_topic(p: Plan, views: list[NoteView]) -> bool:
@@ -111,8 +112,8 @@ def _recall_name(out: _Answer, view: NoteView) -> None:
 
 #: A short note about oneself is quoted as written, not retold (INBOX 1739).
 QUOTE_WHOLE_CHARS = 240
-_TRIVIA = re.compile(r"^\s*(?:who|where|which|how (?:tall|far|big|old|long|fast|deep))", re.I)
-_NOTE_WORD = re.compile(r"\b(?:notes?|wrote|written|saved|entry|entries|reminders?|diary|journal)\b", re.I)
+_TRIVIA = lazy_compile(r"^\s*(?:who|where|which|how (?:tall|far|big|old|long|fast|deep))", re.I)
+_NOTE_WORD = lazy_compile(r"\b(?:notes?|wrote|written|saved|entry|entries|reminders?|diary|journal)\b", re.I)
 
 
 def trivia(question: str) -> bool:
@@ -121,7 +122,7 @@ def trivia(question: str) -> bool:
     return bool(_TRIVIA.match(question) and re.search(r"\b(?:1\d|20)\d\d\b", question)) and not _PERSONAL.search(question) and not _NOTE_WORD.search(question)
 
 
-_PERSONAL = re.compile(r"\b(?:i|i'm|i've|i'd|i'll|my|me|mine|myself|we|our)\b", re.I)
+_PERSONAL = lazy_compile(r"\b(?:i|i'm|i've|i'd|i'll|my|me|mine|myself|we|our)\b", re.I)
 
 
 def _own_words(view: NoteView) -> list[Sentence]:
@@ -233,7 +234,7 @@ OVERVIEW_PER_THEME = 4
 
 #: The subject is a name ("Jake"): the lead says where it comes up, and
 #: its notes are not grouped (each is about them already).
-_PERSON = re.compile(r"^[A-Z][\w'-]+$")
+_PERSON = lazy_compile(r"^[A-Z][\w'-]+$")
 
 
 def _with_matched(found: list[NoteView], views: list[NoteView]) -> tuple[list[NoteView], int]:

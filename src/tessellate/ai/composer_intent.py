@@ -18,6 +18,7 @@ from tessellate.ai import composer_numbers, question_noise, recognise as rec, ut
 from tessellate.ai import recognise_questions
 from tessellate.ai.composer_ask import _ASKING_WORDS, _holds, _stem, _words, classify, rephrase, subject_terms, user_today
 from tessellate.ai.composer_body import length_wish
+from tessellate.core.lazyre import lazy_compile
 
 
 # --- the query plan (CHAT_PLAN Phase 6, decision 31) ------------------------------
@@ -37,10 +38,10 @@ _SHAPE_KIND = {
 }
 
 
-_WHY = re.compile(r"^\s*(?:why|how come|what (?:made|makes|caused|causes)|explain why)\b", re.I)
+_WHY = lazy_compile(r"^\s*(?:why|how come|what (?:made|makes|caused|causes)|explain why)\b", re.I)
 
 
-_RECALL = re.compile(
+_RECALL = lazy_compile(
     r"\bwhat (?:did|have|had) (?:i|we) (?:do|did|done|write|wrote|written|get up to|work on|worked on|note|noted|been up to)\b"
     r"|\bwhat (?:did|have|had) (?:i|we) (?:add|added|save|saved|make|made|jot|jotted|capture|captured)\b"
     r"|\banything (?:i|we) (?:added|saved|made|wrote|noted|jotted|did|captured)\b|\bdid (?:i|we) (?:add|write|save|make|note|jot) anything\b"
@@ -51,27 +52,27 @@ _RECALL = re.compile(
 
 #: The verbs of such a question, which are not subjects to search for.
 #: "do I have anything on Wednesday" asks what is on the day, as "what is on Wednesday" does (R3-8).
-_ANYTHING_ON = re.compile(r"^\W*(?:do i have|have i got|have i|got|is there|are there)\s+(?:anything|something)\b", re.I)
+_ANYTHING_ON = lazy_compile(r"^\W*(?:do i have|have i got|have i|got|is there|are there)\s+(?:anything|something)\b", re.I)
 
 
 _RECALL_VERBS = frozenset("add added save saved make made jot jotted capture captured anything write wrote note noted".split())
 
 
-_INSIGHT = re.compile(r"\b(?:patterns?|habits?|trends?|keeps? coming up|how often do i|what do i (?:keep|always))\b", re.I)
+_INSIGHT = lazy_compile(r"\b(?:patterns?|habits?|trends?|keeps? coming up|how often do i|what do i (?:keep|always))\b", re.I)
 
 
-_RECOMMEND = re.compile(r"^\s*(?:what|which) should (?:i|we)\b|^\s*should (?:i|we)\b|\brecommend|\bsuggest(?:ion)?s?\b", re.I)
+_RECOMMEND = lazy_compile(r"^\s*(?:what|which) should (?:i|we)\b|^\s*should (?:i|we)\b|\brecommend|\bsuggest(?:ion)?s?\b", re.I)
 
 
-_TAGGED = re.compile(r"\b(?:tagged(?: with)?|with the tags?|under the tags?)\s+#?([\w-]{1,40})|(?<![\w&])#([A-Za-z][\w-]{0,39})", re.I)
+_TAGGED = lazy_compile(r"\b(?:tagged(?: with)?|with the tags?|under the tags?)\s+#?([\w-]{1,40})|(?<![\w&])#([A-Za-z][\w-]{0,39})", re.I)
 
 
 #: The words that name a kind of source (decision 37), and the kind.
 _SOURCE_WORDS = (
-    ("board", re.compile(r"\b(?:white)?boards?\b", re.I)),
-    ("map", re.compile(r"\bmind ?maps?\b|\bmaps?\b", re.I)),
-    ("document", re.compile(r"\bdocuments?\b|\bdocs\b", re.I)),
-    ("picture", re.compile(r"\b(?:pictures?|photos?|images?|screenshots?)\b", re.I)),
+    ("board", lazy_compile(r"\b(?:white)?boards?\b", re.I)),
+    ("map", lazy_compile(r"\bmind ?maps?\b|\bmaps?\b", re.I)),
+    ("document", lazy_compile(r"\bdocuments?\b|\bdocs\b", re.I)),
+    ("picture", lazy_compile(r"\b(?:pictures?|photos?|images?|screenshots?)\b", re.I)),
 )
 
 
@@ -100,7 +101,7 @@ class Plan:
 
 #: The days either side of an "around <day>" question.
 AROUND_DAYS = 3
-_OTHERS = re.compile(r"\b(?:else|other|others|more|besides|another)\b", re.I)
+_OTHERS = lazy_compile(r"\b(?:else|other|others|more|besides|another)\b", re.I)
 
 
 def _around(question: str, phrase: str, span: tuple | None, kind: str) -> date | None:
@@ -151,7 +152,7 @@ def _plan_constraints(question: str, terms: list[str]) -> tuple[dict, list[str],
 
 
 #: "what do I have on Friday", "do I have anything on Friday": the day's items (R3-8).
-_DAY_ASK = re.compile(r"^\W*(?:what do i have|do i have|have i got|have i|got|is there|are there)\s+(?:(?:anything|something)\s+)?(?:on|for)\b", re.I)
+_DAY_ASK = lazy_compile(r"^\W*(?:what do i have|do i have|have i got|have i|got|is there|are there)\s+(?:(?:anything|something)\s+)?(?:on|for)\b", re.I)
 
 
 def asks_the_day(question: str, today: date) -> bool:
@@ -214,7 +215,7 @@ def holds_any(stems: list[str], text: str) -> bool:
 
 
 #: A present or future yes/no ("is the plumber coming this week", "are we meeting on Tuesday"): its window dates the event, not the note.
-_PRESENT_ASK = re.compile(rf"^\W*{recognise_questions.EVENT_LEAD}", re.I)
+_PRESENT_ASK = lazy_compile(rf"^\W*{recognise_questions.EVENT_LEAD}", re.I)
 
 
 def without_event_window(question: str) -> str:

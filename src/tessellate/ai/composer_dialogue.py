@@ -25,6 +25,7 @@ from tessellate.ai.composer_quote import _pick
 from tessellate.ai.composer_read import NoteView
 from tessellate.core import clock
 from tessellate.search import query as query_understanding
+from tessellate.core.lazyre import lazy_compile
 
 
 # --- what to ask next -----------------------------------------------------------
@@ -113,7 +114,7 @@ def _next_questions(question: str, shape: str, terms: list[str], views: list[Not
 
 # --- a follow-up, read against the turn before ----------------------------------
 
-_MORE = re.compile(
+_MORE = lazy_compile(
     r"^\s*(?:tell me more|more|go on|continue|keep going|say more|what else|anything else|and|more please|"
     r"more about (?:that|it|this|those)|(?:and |what about |what are )?the (?:others|rest|other ones))[\s?.]*$",
     re.I,
@@ -123,18 +124,18 @@ _MORE = re.compile(
 _ORDINALS = {"first": 0, "1st": 0, "second": 1, "2nd": 1, "third": 2, "3rd": 2, "fourth": 3, "4th": 3, "fifth": 4, "5th": 4, "last": -1}
 
 
-_ORDINAL = re.compile(r"\bthe (first|1st|second|2nd|third|3rd|fourth|4th|fifth|5th|last) (?:one|note)\b", re.I)
+_ORDINAL = lazy_compile(r"\bthe (first|1st|second|2nd|third|3rd|fourth|4th|fifth|5th|last) (?:one|note)\b", re.I)
 
 
-_PRONOUN = re.compile(r"\b(it|that|this|them|those|they)\b", re.I)
+_PRONOUN = lazy_compile(r"\b(it|that|this|them|those|they)\b", re.I)
 
 
 #: A question that leans on the answer before it (audit 1030 Z53): it opens
 #: with an asking word and either says "it" or has no subject of its own.
-_ASKS_SLOT = re.compile(r"^(?:and |so |ok |okay )*(?:what|when|where|who|which|how|why|is|are|was|were|does|do|did|can|could|will|would|should)\b", re.I)
+_ASKS_SLOT = lazy_compile(r"^(?:and |so |ok |okay )*(?:what|when|where|who|which|how|why|is|are|was|were|does|do|did|can|could|will|would|should)\b", re.I)
 
 
-_SLOT_PRONOUN = re.compile(r"\b(?:it|its|that|them|those)\b", re.I)
+_SLOT_PRONOUN = lazy_compile(r"\b(?:it|its|that|them|those)\b", re.I)
 
 
 #: A question about a total or an instance with no subject of its own:
@@ -142,7 +143,7 @@ _SLOT_PRONOUN = re.compile(r"\b(?:it|its|that|them|those)\b", re.I)
 _TOTAL_WORDS = frozenset({"far", "much", "many", "long", "total", "last", "latest", "first", "next", "previous", "one", "altogether"})
 
 
-_TOTAL_ASK = re.compile(
+_TOTAL_ASK = lazy_compile(
     r"^(?:and |so |ok |okay )*(?:what|when|where|how)\b(?!.*(?-i:[A-Z]\w|\d))"
     r"(?=.*\b(?:in total|in all|altogether|the total|(?:the )?(?:last|latest|first|next|previous) one)\b)[^.]*$",
     re.I,
@@ -150,7 +151,7 @@ _TOTAL_ASK = re.compile(
 
 
 #: A pronoun that is the point of the phrase, not a reference to a note.
-_NOT_REFERRING = re.compile(r"\b(?:what|how|when) (?:is|was) (?:it|that) like\b|\bwhat is (?:it|that)\b$|\bhow is it\b", re.I)
+_NOT_REFERRING = lazy_compile(r"\b(?:what|how|when) (?:is|was) (?:it|that) like\b|\bwhat is (?:it|that)\b$|\bhow is it\b", re.I)
 
 
 def refers_back(question: str) -> bool:
@@ -170,7 +171,7 @@ def refers_back(question: str) -> bool:
 
 #: "what about the boiler?", "and the boiler?", "how about Porto": the turn
 #: before asked again of something else (INBOX 741, turn-aware follow-ons).
-_SWAP = re.compile(
+_SWAP = lazy_compile(
     r"^\s*(?:(?:and|but|ok|okay|so)[, ]+)?(?:what|how) about\s+(?P<x>[^\s,].*)$"
     r"|^\s*(?:and|but)\s+(?P<y>(?!(?:what|when|who|where|why|how|which|is|are|do|does|did)\b)[^\s?].*)$",
     re.I,
@@ -183,18 +184,18 @@ _SWAP = re.compile(
 #: Closing quote and "?" come off in code: `(.+?)...\s*\?*\s*$` was quadratic
 #: on a run of whitespace (CodeQL); so for `_CORRECTION`, `_LENGTH`,
 #: `_WINDOW_ONLY` and `_BARE` below.
-_MEANT = re.compile(r"^\s*did you mean\s+[“\"']?(\S.*)$", re.I)
+_MEANT = lazy_compile(r"^\s*did you mean\s+[“\"']?(\S.*)$", re.I)
 
 
-_BARE = re.compile(r"^\s*(?:(?:and|but|so|ok|okay)[, ]+)?(why|when|where|who|how come|how many|how much|how|since when)[\s?.!]*$", re.I)
+_BARE = lazy_compile(r"^\s*(?:(?:and|but|so|ok|okay)[, ]+)?(why|when|where|who|how come|how many|how much|how|since when)[\s?.!]*$", re.I)
 
 
-_BOLD = re.compile(r"\*\*(.+?)\*\*")
+_BOLD = lazy_compile(r"\*\*(.+?)\*\*")
 
 
 #: "no, the gym one", "not that one, the running note", "I meant the dentist
 #: note": the turn before answered from the wrong note (decision 35).
-_CORRECTION = re.compile(
+_CORRECTION = lazy_compile(
     r"^\s*(?:no|nope|not that(?: one)?|wrong one|not quite)[,.!]?\s+(?:i meant\s+|i mean\s+|the one about\s+)?(?P<x>\S.*)$"
     r"|^\s*i meant\s+(?P<x2>\S.*)$",
     re.I,
@@ -202,7 +203,7 @@ _CORRECTION = re.compile(
 
 
 #: "shorter", "in more detail": the turn before again, at another length.
-_LENGTH = re.compile(
+_LENGTH = lazy_compile(
     r"^\s*(?:shorter|briefer|less|in short|tl;?dr|summari[sz]e that|longer|more detail|in (?:more )?detail|"
     r"(?:make it|say it|be|can you be) (?:shorter|briefer|longer|more detailed))(?:\s+please)?[\s.?!]*$",
     re.I,
@@ -210,7 +211,7 @@ _LENGTH = re.compile(
 
 
 #: "and last week?", "what about yesterday?": the turn before over another time.
-_WINDOW_ONLY = re.compile(r"^\s*(?:(?:and|but|so|ok)[, ]+)?(?:(?:what|how) about\s+)?(?P<w>[^\s,].*)$", re.I)
+_WINDOW_ONLY = lazy_compile(r"^\s*(?:(?:and|but|so|ok)[, ]+)?(?:(?:what|how) about\s+)?(?P<w>[^\s,].*)$", re.I)
 
 
 def _without_length(question: str) -> str:
@@ -261,7 +262,7 @@ def _named_notes(answer: str) -> list[str]:
 _DEFINING_WORD = r"(?:main|defining|key|best|central|principal|primary|core|top|most important|definitive)"
 
 
-_DEFINING = re.compile(
+_DEFINING = lazy_compile(
     rf"(?:and |so |ok |okay )?(?:which|whats?)(?:'s| is| one is| note is| one's)?(?: (?:is|note is|one is))? (?:my |the |your )?{_DEFINING_WORD}"
     r"(?: (?:note|one|entry))?(?: (?:note|one|entry))?(?: (?:on|about|for|in|of) (?P<x>.+?))?[?.!\s]*",
     re.I,
@@ -281,7 +282,7 @@ def _defining_ask(question: str, turns: list[dict]) -> FollowOn | None:
     return FollowOn(f"what do I know about {subject}", previous, "", "subject") if subject else None
 
 
-_ABOUT_THE_TALK = re.compile(r"^\s*(?:thanks|thank you|thx|cheers)\b|\b(?:did|are|were) you\b(?! mean)|\bwhere(?:'d| did) you\b", re.I)
+_ABOUT_THE_TALK = lazy_compile(r"^\s*(?:thanks|thank you|thx|cheers)\b|\b(?:did|are|were) you\b(?! mean)|\bwhere(?:'d| did) you\b", re.I)
 
 
 def follow_on(question: str, history: list[dict] | None) -> FollowOn | None:
@@ -488,7 +489,7 @@ def _swap_plain_what(previous: str, other: str, subject: str, entity: bool) -> F
 
 #: A question that asked for an act ("remind me about it a week before") is not asked again of
 #: something else: "what about mia" after it stands as typed (fable-composer-1110 F1).
-_ACT_LEAD = re.compile(r"^\s*(?:remind|add|delete|remove|tick|untick|rename|move|tag|pin|create|cancel|undo|new note)\b", re.I)
+_ACT_LEAD = lazy_compile(r"^\s*(?:remind|add|delete|remove|tick|untick|rename|move|tag|pin|create|cancel|undo|new note)\b", re.I)
 
 
 def _follow_swap(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
@@ -521,11 +522,11 @@ def _swap_reading(text: str, previous: str) -> Any:
 
 #: "what should I get her", "what else do I know about him": a person the turn
 #: before named (audit 1031 C12).
-_PERSON_PRONOUN = re.compile(r"\b(?:her|him|she|he|hers|his)\b", re.I)
+_PERSON_PRONOUN = lazy_compile(r"\b(?:her|him|she|he|hers|his)\b", re.I)
 
 
 #: "and his address", "what about her birthday": a thing of the person the turn before named, with no asking word.
-_PERSON_THING = re.compile(r"^(?:(?:and|also|but|so)[, ]+)?(?:(?:what|how) about\s+)?(?:his|her|their)\s+[a-z][\w' -]{1,30}$", re.I)
+_PERSON_THING = lazy_compile(r"^(?:(?:and|also|but|so)[, ]+)?(?:(?:what|how) about\s+)?(?:his|her|their)\s+[a-z][\w' -]{1,30}$", re.I)
 
 
 #: The thing of a subject a question asks for by its kind alone ("what should I
@@ -534,7 +535,7 @@ _PERSON_THING = re.compile(r"^(?:(?:and|also|but|so)[, ]+)?(?:(?:what|how) about
 _PROPERTY_WORDS = frozenset(
     "appointment appointments cost costs price prices deadline address pack bring wear start end flight flights hotel hotels next".split()
 )
-_OWNED = re.compile(r"\b(?:my|our|your)\b", re.I)
+_OWNED = lazy_compile(r"\b(?:my|our|your)\b", re.I)
 
 
 def _property_only(text: str) -> bool:
@@ -601,7 +602,7 @@ def _carried_source(previous: str, turns: list[dict]) -> str:
 
 #: "those distinct tags", "that month": the demonstrative names its own thing, the one the
 #: answer before showed. It keeps its noun; the question before is not its subject (INBOX 1729).
-_DEMONSTRATIVE_THING = re.compile(
+_DEMONSTRATIVE_THING = lazy_compile(
     r"\b(?:those|these|that|this)\s+(?:[a-z]+\s+)?(?:tags?|categor(?:y|ies)|documents?|docs|months?|weeks?|notes?|reminders?|tasks?|charts?|graphs?|diagrams?)\b", re.I)
 
 
@@ -677,13 +678,13 @@ def _bound_pronoun(text: str, kind: str, previous: str, last: dict, turns: list[
 
 
 #: A turn that names an app thing is its own question, never a slot of the note before.
-_APP_NOUNS = re.compile(r"\b(?:you|your|reminders?|tasks?|tags?|categor(?:y|ies)|documents?|notes?|charts?|lists?|statistics|stats|todo)\b", re.I)
+_APP_NOUNS = lazy_compile(r"\b(?:you|your|reminders?|tasks?|tags?|categor(?:y|ies)|documents?|notes?|charts?|lists?|statistics|stats|todo)\b", re.I)
 _SLOT_WORDS_MAX = 5
 
 
 #: Comparing or counting over what was shown ("which is higher", "what's the difference") is
 #: computed from it (audit F6), not read as a slot of one note.
-_COMPARES = re.compile(r"^which\b|\b(?:difference|between|total|compare|versus|vs|more|less|first|last)\b", re.I)
+_COMPARES = lazy_compile(r"^which\b|\b(?:difference|between|total|compare|versus|vs|more|less|first|last)\b", re.I)
 
 
 def _follow_slot(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
@@ -702,7 +703,7 @@ def _follow_slot(text: str, previous: str, last: dict, turns: list[dict]) -> Any
 
 
 #: "until then", "before then": the day the last answer showed.
-_THEN = re.compile(r"\b(?:until|till|til|before|after|since|by) then\b", re.I)
+_THEN = lazy_compile(r"\b(?:until|till|til|before|after|since|by) then\b", re.I)
 
 
 def _follow_then(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
@@ -719,8 +720,8 @@ def _follow_then(text: str, previous: str, last: dict, turns: list[dict]) -> Any
 
 
 #: "and mia", "what about Sam?": the same question of another person.
-_AND_WHO = re.compile(r"^(?:and|(?:and |so )?(?:what|how) about)\s+(?P<x>[a-z][\w'-]*(?: [a-z][\w'-]*)?)\W*$", re.I)
-_NOT_A_NAME = re.compile(r"^(?:the|a|an|my|our|your|that|this|it|then|so|more|else|now|next|last|other|again|after|before)\b|\b(?:it|that|this|them)$", re.I)
+_AND_WHO = lazy_compile(r"^(?:and|(?:and |so )?(?:what|how) about)\s+(?P<x>[a-z][\w'-]*(?: [a-z][\w'-]*)?)\W*$", re.I)
+_NOT_A_NAME = lazy_compile(r"^(?:the|a|an|my|our|your|that|this|it|then|so|more|else|now|next|last|other|again|after|before)\b|\b(?:it|that|this|them)$", re.I)
 
 
 def _person_swap(text: str, last: dict) -> FollowOn | None:
@@ -737,7 +738,7 @@ def _person_swap(text: str, last: dict) -> FollowOn | None:
 
 
 #: "and the other" after "the first one": the next note the list before it showed.
-_OTHER_ONE = re.compile(r"^(?:and |what about |how about )?the other(?: one| note)?\W*$", re.I)
+_OTHER_ONE = lazy_compile(r"^(?:and |what about |how about )?the other(?: one| note)?\W*$", re.I)
 
 
 def other_in_frames(text: str, turns: list[dict]) -> bool:
@@ -760,7 +761,7 @@ def _follow_other(text: str, previous: str, last: dict, turns: list[dict]) -> An
 
 
 #: "and the flights", "also the hotel?": a part of the thing the turn before named, with no verb.
-_AND_PART = re.compile(r"^(?:and|also)\s+(?:the\s+)?(?P<part>[a-z][a-z'-]*(?: [a-z][a-z'-]*)?)\s*[?.!]?\s*$")
+_AND_PART = lazy_compile(r"^(?:and|also)\s+(?:the\s+)?(?P<part>[a-z][a-z'-]*(?: [a-z][a-z'-]*)?)\s*[?.!]?\s*$")
 
 
 def _follow_part(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
@@ -782,7 +783,7 @@ def _follow_part(text: str, previous: str, last: dict, turns: list[dict]) -> Any
 
 
 #: Tried in this order: a "more" is not a correction, and a correction is not a swap.
-_WHICH_IS = re.compile(r"^(?:and |so )?which (?:one )?(?:is|was|would be) (?:the )?(cheaper|cheapest|better|bigger|longer|shorter|faster|sooner|older|newer|nearer|closer|more expensive|pricier)\W*$", re.I)
+_WHICH_IS = lazy_compile(r"^(?:and |so )?which (?:one )?(?:is|was|would be) (?:the )?(cheaper|cheapest|better|bigger|longer|shorter|faster|sooner|older|newer|nearer|closer|more expensive|pricier)\W*$", re.I)
 
 
 def _follow_which(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
@@ -795,7 +796,7 @@ def _follow_which(text: str, previous: str, last: dict, turns: list[dict]) -> An
 
 
 #: "how is it now", "how's it going today": the latest on the subject the turn before named (R9-9).
-_HOW_NOW = re.compile(r"^(?:and )?(?:how is|how's|how are|how was|what's|what is) (?:it|that|this|he|she|they)(?: going)? (?:now|today|these days|at the moment|currently)$")
+_HOW_NOW = lazy_compile(r"^(?:and )?(?:how is|how's|how are|how was|what's|what is) (?:it|that|this|he|she|they)(?: going)? (?:now|today|these days|at the moment|currently)$")
 
 
 def _follow_now(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
@@ -880,7 +881,7 @@ class Dialogue:
 
 #: A joining or opening phrase (letters and length), as opposed to a stop or
 #: a space: the words a conversation should not hear twice.
-_TEMPLATE_WORDS = re.compile(r"[A-Za-z]{3}")
+_TEMPLATE_WORDS = lazy_compile(r"[A-Za-z]{3}")
 
 
 def _templates_in(answer: str) -> set[str]:
@@ -904,12 +905,12 @@ def _WORDED_PHRASES() -> list[str]:  # noqa: N802  # a cached table, read like o
 FRAME_NOTES = 5
 FRAME_ITEMS = 12
 FRAME_TEXT = 80
-_LINKED = re.compile(r"\]\(#/notes/(\d+)\)")
-_NAME = re.compile(r"(?<![.!?]\s)(?<!^)\b[A-Z][a-z]{1,20}\b", re.M)
+_LINKED = lazy_compile(r"\]\(#/notes/(\d+)\)")
+_NAME = lazy_compile(r"(?<![.!?]\s)(?<!^)\b[A-Z][a-z]{1,20}\b", re.M)
 _CALENDAR_NAMES = frozenset([*calendar.month_name[1:], *calendar.day_name])
-_THIRD_PERSON = re.compile(r"\b(?:she|he|her|his|him)\b", re.I)
-_LIST_LINE = re.compile(r"^\s*(?:[-*]|\d+[.)])\s+(?P<line>\S.*)$", re.M)
-_MARKS = re.compile(r"\[([^\]]*)\]\([^)]*\)|[*_`]|\[\s*[xX ]?\s*\]")
+_THIRD_PERSON = lazy_compile(r"\b(?:she|he|her|his|him)\b", re.I)
+_LIST_LINE = lazy_compile(r"^\s*(?:[-*]|\d+[.)])\s+(?P<line>\S.*)$", re.M)
+_MARKS = lazy_compile(r"\[([^\]]*)\]\([^)]*\)|[*_`]|\[\s*[xX ]?\s*\]")
 
 
 def _frame_ids(result: dict) -> list[int]:

@@ -15,13 +15,13 @@ gold eval floors (`tests/test_reply_variety.py`).
 from __future__ import annotations
 
 import hashlib
-import re
 from collections.abc import Sequence
+from tessellate.core.lazyre import lazy_compile
 
 #: How many earlier replies a pick must not echo.
 RECENT = 3
-_WORDS = re.compile(r"[a-z']+")
-_SENTENCE = re.compile(r"[.?]\s+(?=[A-Z])")
+_WORDS = lazy_compile(r"[a-z']+")
+_SENTENCE = lazy_compile(r"[.?]\s+(?=[A-Z])")
 
 
 def opener(text: str) -> str:

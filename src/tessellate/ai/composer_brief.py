@@ -14,19 +14,20 @@ from __future__ import annotations
 import bisect
 import itertools
 import re
+from tessellate.core.lazyre import lazy_compile
 
 #: About how many words a note may run before it is said by its gist.
 BRIEF_WORDS = 25
 #: The fewest words a cut-back clause may keep: less is a lead, not the point.
 MIN_HEAD = 12
 #: A dash or hyphen with a space each side, the way a person joins clauses.
-_SPACED_DASH = re.compile(r"\s[-\u2013\u2014]\s")
+_SPACED_DASH = lazy_compile(r"\s[-\u2013\u2014]\s")
 #: An aside between two spaced dashes ("services, including servers, over").
-_ASIDE = re.compile(r"\s[-\u2013\u2014]\s[^-\u2013\u2014]*?\s[-\u2013\u2014]\s")
+_ASIDE = lazy_compile(r"\s[-\u2013\u2014]\s[^-\u2013\u2014]*?\s[-\u2013\u2014]\s")
 #: One space, no loop: `brief` folds spaces before it splits, and CodeQL reads a `\s+` here as polynomial (PR 216).
-_SENTENCE_END = re.compile(r"(?<=[.!?]) (?=[A-Z0-9\"“(])")
-_KEPT_RUN = re.compile(r"[^ ,;:]+")
-_CLAUSE_BREAK = re.compile(r",\s+(?=(?:and|but|so|because|which|then|while)\b)|;\s+|,\s+")
+_SENTENCE_END = lazy_compile(r"(?<=[.!?]) (?=[A-Z0-9\"“(])")
+_KEPT_RUN = lazy_compile(r"[^ ,;:]+")
+_CLAUSE_BREAK = lazy_compile(r",\s+(?=(?:and|but|so|because|which|then|while)\b)|;\s+|,\s+")
 #: Words a clause may not end on (cut after one, it dangles).
 _DANGLES = frozenset("and or but nor so then the a an to of with for in on at by as from into that which who if when while because than my your our".split())
 

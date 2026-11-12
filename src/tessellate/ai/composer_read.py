@@ -17,6 +17,7 @@ from datetime import date
 from tessellate.ai import composer_frame, composer_tables, realise, recognise as rec
 from tessellate.ai.composer_ask import _MONTHS, _words
 from tessellate.core.docmeta import block_end
+from tessellate.core.lazyre import lazy_compile
 
 
 #: A quote longer than this is cut at a word with an ellipsis, which says it
@@ -98,17 +99,17 @@ class NoteView:
 
 #: Only a heading's marks: the text after them is read in code, as a pattern
 #: running on to the line's end backtracks over runs of whitespace (CodeQL).
-_HEADING_LEAD = re.compile(r"[ \t]{0,3}#{1,6}[ \t]+")
+_HEADING_LEAD = lazy_compile(r"[ \t]{0,3}#{1,6}[ \t]+")
 
 
 #: A list line, or a checkbox written with no bullet ("[ ] Buy mint.", as
 #: pasted from many apps; stress run 2026-10-30 read those as prose, so an
 #: open task answered "did I" with "Yes").
 #: A line indented under a list item, carrying on its words.
-_CONTINUES = re.compile(r"^(?:\t| {2,})\S")
+_CONTINUES = lazy_compile(r"^(?:\t| {2,})\S")
 
 
-_ITEM = re.compile(r"^(\s*(?:[-*+]|\d{1,3}[.)])\s+|\s*(?=\[[ xX]\]\s))(\[[ xX]\]\s+)?")
+_ITEM = lazy_compile(r"^(\s*(?:[-*+]|\d{1,3}[.)])\s+|\s*(?=\[[ xX]\]\s))(\[[ xX]\]\s+)?")
 
 
 #: Where one sentence ends and the next begins: a stop (and the quote mark or
@@ -118,7 +119,7 @@ _ITEM = re.compile(r"^(\s*(?:[-*+]|\d{1,3}[.)])\s+|\s*(?=\[[ xX]\]\s))(\[[ xX]\]
 #: A chat sign-off closes a sentence the writer did not capitalise after
 #: ("...at work lol. need to lock-in"), so a stop after one splits too
 #: (INBOX 1665 f: two sentences run into "at work need to lock-in").
-_SPLIT = re.compile(
+_SPLIT = lazy_compile(
     r"(?:([.!?][\"”’)]?)\s+(?=[\"“‘(]?[A-Z0-9])|([。！？][」』”’)]?)\s*"
     r"|(\b(?:lol|lmao|lmfao|rofl|haha+|hehe+)[.!?]+)\s+(?=[a-z]))")
 
@@ -160,10 +161,10 @@ def _discourse() -> re.Pattern[str]:
     )
 
 
-_WRITTEN = re.compile(r"(\d{1,2}) (" + "|".join(_MONTHS) + r") (\d{4})")
+_WRITTEN = lazy_compile(r"(\d{1,2}) (" + "|".join(_MONTHS) + r") (\d{4})")
 
 
-_MARKS = re.compile(r"[*_`]")
+_MARKS = lazy_compile(r"[*_`]")
 
 
 def _written(note: dict) -> date | None:
@@ -192,22 +193,22 @@ def _heading_text(line: str) -> str | None:
 
 #: A line that is only bold ("**After making an initial connection**") is a
 #: heading the person made without "#" (INBOX 1420): a name, never a sentence.
-_BOLD_LINE = re.compile(r"[ \t]{0,3}(\*\*|__)(?=\S)([^*_\n]{1,80}?)\1:?[ \t]*\r?\n?$")
+_BOLD_LINE = lazy_compile(r"[ \t]{0,3}(\*\*|__)(?=\S)([^*_\n]{1,80}?)\1:?[ \t]*\r?\n?$")
 
 
 #: "Follow- Up" as typed on a phone: the hyphen's word goes on (INBOX 1420).
-_SPLIT_HYPHEN = re.compile(r"(?<=[A-Za-z])- (?=[A-Z][a-z])")
+_SPLIT_HYPHEN = lazy_compile(r"(?<=[A-Za-z])- (?=[A-Z][a-z])")
 
 
-_BOLD_STARS = re.compile(r"\*\*(?=\S)([^*\n]+?)(?<=\S)\*\*")
+_BOLD_STARS = lazy_compile(r"\*\*(?=\S)([^*\n]+?)(?<=\S)\*\*")
 
 
-_BOLD_UNDERS = re.compile(r"__(?=\S)([^_\n]+?)(?<=\S)__")
+_BOLD_UNDERS = lazy_compile(r"__(?=\S)([^_\n]+?)(?<=\S)__")
 
 
 #: A short first line ending in a colon, with lines under it: "Ice Breakers:"
 #: over its list is the note's name (INBOX 1420).
-_COLON_TITLE = re.compile(r"([^\s:.!?][^:.!?\n]{0,48}?):$")
+_COLON_TITLE = lazy_compile(r"([^\s:.!?][^:.!?\n]{0,48}?):$")
 
 
 def bold_line(line: str) -> str | None:
@@ -260,8 +261,8 @@ def _depth(line: str) -> int:
 
 
 #: A subordinating word and a gerund open a clause that needs a main clause.
-_FRAGMENT_OPEN = re.compile(r"(?:after|before|when|while|once|until|upon|by|without|instead of|prior to|in order to|on)\s+[a-z]+ing\b", re.I)
-_OWN_SUBJECT = re.compile(r"\b(?:i|we|you|he|she|they|it|there)\b|[,;:]", re.I)
+_FRAGMENT_OPEN = lazy_compile(r"(?:after|before|when|while|once|until|upon|by|without|instead of|prior to|in order to|on)\s+[a-z]+ing\b", re.I)
+_OWN_SUBJECT = lazy_compile(r"\b(?:i|we|you|he|she|they|it|there)\b|[,;:]", re.I)
 
 
 def _dependent_fragment(text: str) -> bool:
@@ -312,7 +313,7 @@ def _unit(view: NoteView, content: str, start: int, end: int, kind: str, done: b
 
 #: A rating or a verdict is the whole review in a book or film note: "9/10",
 #: "Loved it" (audit 1030 Z11: "did I like Piranesi" never saw either).
-_SHORT_VERDICT = re.compile(
+_SHORT_VERDICT = lazy_compile(
     r"^(?:\d+(?:\.\d)?\s*/\s*(?:5|10)|\d\s*stars?|(?:really\s+|not\s+)?(?:lov|lik|enjoy|hat|dislik)(?:ed|e)\s+(?:it|this|that|them)"
     r"|(?:so\s+|really\s+|not\s+)?(?:good|great|boring|amazing|brilliant|terrible|awful|meh))[.!]?$",
     re.I,
@@ -373,14 +374,14 @@ def _picture_groups(line: str) -> dict[str, tuple[str, int]] | None:
 #: A captioning model's frame around what a picture shows ("The image
 #: contains a text excerpt ..."): read past, so the answer says "a text
 #: excerpt ..." and never "shows The image shows" (INBOX 787).
-_CAPTION_FRAME = re.compile(
+_CAPTION_FRAME = lazy_compile(
     r"^(?:(?:the|this)\s+(?:image|picture|photo|photograph|screenshot)\s+(?:contains|shows|depicts|is of|is)"
     #: "A photo of a grassy hill": said "shows a grassy hill", never "shows A photo of" (INBOX 1555).
     r"|(?:an?|the|this)\s+(?:image|picture|photo|photograph)\s+of)\s+(?=\S)", re.I
 )
 
 
-_LIST_NUMBER = re.compile(r"\d{1,2}[.)]\s")
+_LIST_NUMBER = lazy_compile(r"\d{1,2}[.)]\s")
 
 
 def _picture_text_breaks(text: str) -> list[tuple[int, int]]:
@@ -435,7 +436,7 @@ def _picture_units(view: NoteView, content: str, line_start: int, line: str) -> 
 
 
 #: A list line naming a picture file and what it shows.
-_PICTURE_ITEM = re.compile(r"^\s*[-*+]\s+[^:\n]{1,120}\.(?:png|jpe?g|gif|webp|heic|avif|bmp|svg)\s*:\s+\S", re.I)
+_PICTURE_ITEM = lazy_compile(r"^\s*[-*+]\s+[^:\n]{1,120}\.(?:png|jpe?g|gif|webp|heic|avif|bmp|svg)\s*:\s+\S", re.I)
 
 
 #: The kind a route's row is, from its own `kind` or the category the route
@@ -470,7 +471,7 @@ def _not_prose(line: str, stripped: str) -> bool:
     return _heading_text(line) is not None or bold_line(line) is not None or stripped.startswith("![")
 
 
-_TABLE_RULE = re.compile(r"^\|?\s*:?-{2,}:?\s*(?:\|\s*:?-{2,}:?\s*)*\|?$")
+_TABLE_RULE = lazy_compile(r"^\|?\s*:?-{2,}:?\s*(?:\|\s*:?-{2,}:?\s*)*\|?$")
 
 
 def is_table_rule(stripped: str) -> bool:
@@ -543,9 +544,9 @@ def _open_item(view: NoteView, line: str, line_start: int, before: int) -> tuple
 
 
 #: A title that says something ("Uni is done!!") rather than names the note.
-_SAYS = re.compile(r"\b(?:is|are|was|were|am|has|have|had)\b|[!?]\s*$", re.I)
+_SAYS = lazy_compile(r"\b(?:is|are|was|were|am|has|have|had)\b|[!?]\s*$", re.I)
 #: A body that leans on a word the title gives ("... but it's done").
-_LEANS = re.compile(r"\b(?:it|that|this)(?:'s|\u2019s| is| was)\b", re.I)
+_LEANS = lazy_compile(r"\b(?:it|that|this)(?:'s|\u2019s| is| was)\b", re.I)
 
 
 def title_is_content(title: str, body: str) -> bool:
@@ -671,23 +672,23 @@ def _line_units(view: NoteView, content: str, line_start: int, line: str) -> Non
 
 # --- scoring --------------------------------------------------------------------
 
-_NUMBER_CUE = re.compile(
+_NUMBER_CUE = lazy_compile(
     r"\d|\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twenty|thirty|forty|fifty|"
     r"hundred|thousand|dozen|half|twice|double)\b",
     re.I,
 )
 
 
-_CAUSE_CUE = re.compile(r"\b(because|since|so that|which is why|that is why|due to|caused|the reason|means)\b", re.I)
+_CAUSE_CUE = lazy_compile(r"\b(because|since|so that|which is why|that is why|due to|caused|the reason|means)\b", re.I)
 
 
-_WHERE_CUE = re.compile(
+_WHERE_CUE = lazy_compile(
     r"\b(?:in|at|near|on|by|from|to) (?:the )?[A-Z][\w-]+|\b(street|road|avenue|address|room|floor|hotel|station|"
     r"shop|office|cafe|restaurant|square|park|airport|flat|house|apartment|upstairs|downstairs|drawer|shelf|garage)\b",
 )
 
 
-_WHO_CUE = re.compile(r"\b(people|person|someone|team|testers?|users?|he|she|they|asked|said)\b", re.I)
+_WHO_CUE = lazy_compile(r"\b(people|person|someone|team|testers?|users?|he|she|they|asked|said)\b", re.I)
 
 
 def _cue(shape: str, text: str) -> float:

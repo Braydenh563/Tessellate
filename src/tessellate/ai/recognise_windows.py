@@ -477,13 +477,13 @@ def _nth_in_month(found: re.Match, anchor: date, tense: str | None) -> date | No
 #: Time words that bound "what is coming up": (pattern, how it is said, days ahead).
 #: -1 runs to the month's end.
 _AHEAD_WORDS = (
-    (re.compile(r"\btoday\b"), "today", 0),
-    (re.compile(r"\btomorrow\b"), "tomorrow", 1),
-    (re.compile(r"\bnext week\b"), "next week", 14),
-    (re.compile(r"\b(?:next|coming) fortnight\b"), "in the next fortnight", 14),
-    (re.compile(r"\bthis week\b"), "in the next seven days", 7),
-    (re.compile(r"\bthis month\b"), "this month", -1),
-    (re.compile(r"\bsoon\b"), "in the next two weeks", 14),
+    (lazy_compile(r"\btoday\b"), "today", 0),
+    (lazy_compile(r"\btomorrow\b"), "tomorrow", 1),
+    (lazy_compile(r"\bnext week\b"), "next week", 14),
+    (lazy_compile(r"\b(?:next|coming) fortnight\b"), "in the next fortnight", 14),
+    (lazy_compile(r"\bthis week\b"), "in the next seven days", 7),
+    (lazy_compile(r"\bthis month\b"), "this month", -1),
+    (lazy_compile(r"\bsoon\b"), "in the next two weeks", 14),
 )
 
 

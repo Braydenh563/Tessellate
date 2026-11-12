@@ -22,6 +22,7 @@ from tessellate.ai.composer_quote import _ENDED, _joined, _list_block, _list_lea
 from tessellate.ai.composer_read import NoteView, Sentence, _NUMBER_CUE, _cue
 from tessellate.ai.composer_select import _Meaning, _was_said, centrality, disagree, select
 from tessellate.ai.composer_unfound import _says_every
+from tessellate.core.lazyre import lazy_compile
 
 
 #: What the person said of insights (decision 60, `insights.Memory`), set by
@@ -72,7 +73,7 @@ def _opening(out: _Answer, s: Sentence, shape: str, question: str) -> None:
         out.t("notes_have" if key == "going_by" else key)
 
 
-_WORRIES = re.compile(r"\b(?:risks?|concerns?|worr(?:y|ies)|blockers?|problems?)\b", re.I)
+_WORRIES = lazy_compile(r"\b(?:risks?|concerns?|worr(?:y|ies)|blockers?|problems?)\b", re.I)
 
 
 def _opener_options(out: _Answer, s: Sentence, shape: str, view: NoteView) -> tuple[str, ...]:
@@ -271,7 +272,7 @@ def _joiners(relation: str, first: Sentence) -> list[str]:
 
 
 #: A sentence that names its own date ("on 3 October", "11 November"), which the day it was written must not stand in front of.
-_OWN_DATE = re.compile(
+_OWN_DATE = lazy_compile(
     r"\b\d{1,2}(?:st|nd|rd|th)?\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b"
     r"|\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+\d{1,2}\b", re.I)
 
@@ -317,7 +318,7 @@ def _earlier(out: _Answer, sentences: list[Sentence], terms: list[str]) -> None:
         out.cite(view)
 
 
-_DAYISH = re.compile(r"\d+|(?:mon|tues?|wednes|thurs?|fri|satur|sun)(?:day)?|(?:jan|febr?|mar|apr|may|jun|jul|aug|sept?|oct|nov|dec)[a-z]*", re.I)
+_DAYISH = lazy_compile(r"\d+|(?:mon|tues?|wednes|thurs?|fri|satur|sun)(?:day)?|(?:jan|febr?|mar|apr|may|jun|jul|aug|sept?|oct|nov|dec)[a-z]*", re.I)
 
 
 def _other_subjects(views: dict, a: Sentence, b: Sentence) -> bool:
@@ -485,7 +486,7 @@ def _compare_lead(out: _Answer, sides: tuple[str, ...], counts: list[int]) -> No
         out.m(out.count(n)).t("mentions_one" if n == 1 else "mention_many").asked(label)
 
 
-_LENGTH_ASK = re.compile(r"\b(?:longer|shorter|bigger|smaller)\b", re.I)
+_LENGTH_ASK = lazy_compile(r"\b(?:longer|shorter|bigger|smaller)\b", re.I)
 
 
 def _length_lead(out: _Answer, question: str, own: list[list[NoteView]]) -> bool:
@@ -582,7 +583,7 @@ def _shared(picks: list[list], others: list[set[str]], said: set[int]) -> list:
     return seen[:2]
 
 
-_LEADING_ARTICLE = re.compile(r"^(?:the|a|an|my|our|your)\s+(?=\S)", re.I)
+_LEADING_ARTICLE = lazy_compile(r"^(?:the|a|an|my|our|your)\s+(?=\S)", re.I)
 
 
 def heading_name(label: str) -> str:
@@ -613,10 +614,10 @@ def _compare_side(out: _Answer, label: str, side: list, side_terms) -> None:  # 
 #: "briefly", "in short", "quick": the lead note alone. "in detail",
 #: "everything": more points than an ordinary answer (INBOX 741, length
 #: fitted to the question).
-_BRIEF = re.compile(r"\b(briefly|in brief|in short|short answer|quick(?:ly)?|tl;?dr|in a (?:word|sentence|line)|just tell me)\b", re.I)
+_BRIEF = lazy_compile(r"\b(briefly|in brief|in short|short answer|quick(?:ly)?|tl;?dr|in a (?:word|sentence|line)|just tell me)\b", re.I)
 
 
-_FULL = re.compile(r"\b(in detail|in depth|more detail|detailed|thorough(?:ly)?|the full|everything|all (?:the|of the))\b", re.I)
+_FULL = lazy_compile(r"\b(in detail|in depth|more detail|detailed|thorough(?:ly)?|the full|everything|all (?:the|of the))\b", re.I)
 
 
 FULL_POINTS = 9
@@ -884,7 +885,7 @@ def _body(
 
 #: "what is still open on the harbor launch", "whats left to do for X",
 #: "what do I still need to do for X" (ledger row 444).
-_STILL_OPEN = re.compile(
+_STILL_OPEN = lazy_compile(
     r"^(?:what(?:'s|s| is| are)?|which)(?: things?| items?| tasks?)?(?: is| are)?(?: still)? "
     r"(?:open|left(?: to [a-z]+)?|outstanding|remaining|not done|undone|unticked|unchecked|to do|todo|pending)(?: still)? "
     r"(?:on|for|in|from|with|about) (?P<a>.+)$"

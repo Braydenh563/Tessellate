@@ -35,6 +35,7 @@ from datetime import date, datetime, timedelta
 from tessellate.ai import recognise
 from tessellate.ai import recognise_questions
 from tessellate.core import clock
+from tessellate.core.lazyre import lazy_compile
 
 #: **How much of a question anything reads** (audit 1031 AI9, HR7): the one
 #: number the search, the warm, the finder routes, the follow-up route and the
@@ -148,7 +149,7 @@ RECENT_DAYS = recognise_questions.RECENT_DAYS
 # to prove bread" must keep its "how", that one is the subject. A leading
 # "what did I write about" is scaffolding; the same words inside a sentence may
 # not be.
-_SCAFFOLD = re.compile(
+_SCAFFOLD = lazy_compile(
     r"^\s*(?:"
     r"what(?:'s| is| are| did| have| was| were)?|"
     r"which|show me|pull up|bring up|find( me)?|list|tell me( about)?|remind me( about)?|"
@@ -304,7 +305,7 @@ _VALUE_ALIASES = {
 _KNOWN_VALUES = {"is": IS_VALUES, "has": HAS_VALUES}
 #: Prefixes that look like `name:value` and are not filters.
 _NOT_OPERATORS = frozenset({"http", "https", "mailto", "ftp", "file", "www", "tel", "sms", "re", "fwd"})
-_UNKNOWN_OPERATOR = re.compile(r'(?<!\S)([A-Za-z][A-Za-z-]{1,24}):(?=[A-Za-z0-9"])\S*')
+_UNKNOWN_OPERATOR = lazy_compile(r'(?<!\S)([A-Za-z][A-Za-z-]{1,24}):(?=[A-Za-z0-9"])\S*')
 
 #: `before:` and `after:` are dates rather than filters: see `Understood.filters`.
 _DATE_OPERATORS = ("before", "after", "since", "until")
@@ -321,7 +322,7 @@ def configure_before(includes_day: bool) -> None:
 # where the name must start the token so a bare URL ("http://example.com") is
 # never read as an operator. The lookbehind is on whitespace rather than `\b`
 # for exactly that reason.
-_OPERATOR = re.compile(
+_OPERATOR = lazy_compile(
     r'(?<!\S)(' + "|".join([*_OPERATOR_NAMES, *_DATE_OPERATORS]) + r'):(?:"([^"]*)"|(\S+))',
     re.IGNORECASE,
 )
@@ -330,21 +331,21 @@ _OPERATOR = re.compile(
 #: and `[^"]+` gets that right without backtracking, which matters because this
 #: runs on search-box text (see `_tidy` on the two ReDoS alerts this file has
 #: already collected).
-_PHRASE = re.compile(r'"([^"]+)"')
+_PHRASE = lazy_compile(r'"([^"]+)"')
 
 #: A word the person does not want. Leading `-`, and only at the start of a
 #: token, so "state-of-the-art" and a negative number keep their hyphens.
-_EXCLUDED = re.compile(r"(?<!\S)-([\w][\w'-]*)")
+_EXCLUDED = lazy_compile(r"(?<!\S)-([\w][\w'-]*)")
 
 #: `-tag:work`: an operator the person does not want. Read before the
 #: positive operators and before `_EXCLUDED`, which would otherwise take
 #: `-tag` as an unwanted word and leave `:work` behind as text.
-_NEGATED = re.compile(r'(?<!\S)-(' + "|".join(_OPERATOR_NAMES) + r'):(?:"([^"]*)"|(\S+))', re.IGNORECASE)
+_NEGATED = lazy_compile(r'(?<!\S)-(' + "|".join(_OPERATOR_NAMES) + r'):(?:"([^"]*)"|(\S+))', re.IGNORECASE)
 
 
-_CATEGORY = re.compile(r'(?<!\S)(-?)(?:cat|category):(?:"([^"]*)"|(\S+))', re.IGNORECASE)
+_CATEGORY = lazy_compile(r'(?<!\S)(-?)(?:cat|category):(?:"([^"]*)"|(\S+))', re.IGNORECASE)
 #: `tags:<2`, `tags:0`, `tags:>=3`: a count of tags, never a tag name (`tag:` is that).
-_TAG_COUNT = re.compile(r"(?<!\S)tags:(<=|>=|<|>|=)?(\d+)(?!\S)", re.IGNORECASE)
+_TAG_COUNT = lazy_compile(r"(?<!\S)tags:(<=|>=|<|>|=)?(\d+)(?!\S)", re.IGNORECASE)
 
 
 def _take_categories(text: str) -> tuple[str, list[str], list[str]]:
@@ -659,7 +660,7 @@ _PRONOUNS = frozenset(
 )
 
 #: A word with an apostrophe in it, either mark: "I've", "you’re", "don't", "Alice's".
-_APOSTROPHE_WORD = re.compile(r"\b([^\W\d_]+)['\u2019]([^\W\d_]+)\b")
+_APOSTROPHE_WORD = lazy_compile(r"\b([^\W\d_]+)['\u2019]([^\W\d_]+)\b")
 #: The bases whose "'s", "'d" or "'ll" is a pronoun or an auxiliary, never a possessive.
 _SPEAKER_BASES = frozenset(
     """i you we they he she it that this there here who what where when why how which would could should might must
@@ -721,7 +722,7 @@ def is_topic_word(term: str) -> bool:
     return bool(word) and word not in STOPWORDS and word not in FUNCTION_WORDS
 
 
-_LEADING_COMMAND = re.compile(r"^\s*(?:please\s+)?(?:pull|bring)\s+up\b")
+_LEADING_COMMAND = lazy_compile(r"^\s*(?:please\s+)?(?:pull|bring)\s+up\b")
 
 
 def search_terms(text: str) -> list[str]:

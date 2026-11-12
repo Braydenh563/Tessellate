@@ -598,10 +598,10 @@ def _without_asked_shape(question: str, seen: list[str]) -> list[str]:
     return seen
 
 
-_EVENT_ENDS = re.compile(r"^\s*when\s+(?:does|do|will|is)\b[^?.!]{1,80}?\b(?:start|begin|end|finish)s?\s*[?.!]*$", re.I)
+_EVENT_ENDS = lazy_compile(r"^\s*when\s+(?:does|do|will|is)\b[^?.!]{1,80}?\b(?:start|begin|end|finish)s?\s*[?.!]*$", re.I)
 _EVENT_VERBS = frozenset(("start", "starts", "begin", "begins", "end", "ends", "finish", "finishes"))
-_ORDINAL_NOTE = re.compile(r"\b(?:first|last)\s+(?:note|notes|entry|entries)\b", re.I)
-_DATE_ASK = re.compile(r"\b(?:what|which)\s+dates?\b|\bdates?\s+(?:of|for)\b", re.I)
+_ORDINAL_NOTE = lazy_compile(r"\b(?:first|last)\s+(?:note|notes|entry|entries)\b", re.I)
+_DATE_ASK = lazy_compile(r"\b(?:what|which)\s+dates?\b|\bdates?\s+(?:of|for)\b", re.I)
 
 
 _COMPARE_SIDES = (

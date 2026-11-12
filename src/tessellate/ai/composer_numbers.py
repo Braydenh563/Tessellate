@@ -15,6 +15,7 @@ from __future__ import annotations
 import re
 
 from tessellate.entry import timewords
+from tessellate.core.lazyre import lazy_compile
 
 #: `timewords` knows "a", "an", "a couple of" and "few" as counts of a time
 #: phrase; here they are ordinary words, so only its plain numbers are kept.
@@ -30,12 +31,12 @@ _COUNTED = r"(?:days?|weeks?|months?|years?|hours?|minutes?|notes?|entr(?:y|ies)
 _ALL = sorted({*_SMALL, *_TENS}, key=len, reverse=True)
 _TENS_ALT = "|".join(sorted(_TENS, key=len, reverse=True))
 _UNITS_ALT = "|".join(w for w in sorted(_SMALL, key=len, reverse=True) if 1 <= _SMALL[w] <= 9)
-_NUMBER = re.compile(
+_NUMBER = lazy_compile(
     rf"\b(?:(?P<tens>{_TENS_ALT})(?:[\s-]+(?P<unit>{_UNITS_ALT}))?|(?P<small>{'|'.join(w for w in _ALL if w not in _TENS)}))\b(?!\s+(?:hundred|thousand|million)\b)",
     re.I,
 )
-_QUOTED = re.compile(r'"[^"]*"|“[^“”]*”|`[^`]*`')
-_COUNTED_AFTER = re.compile(rf"\s+{_COUNTED}\b", re.I)
+_QUOTED = lazy_compile(r'"[^"]*"|“[^“”]*”|`[^`]*`')
+_COUNTED_AFTER = lazy_compile(rf"\s+{_COUNTED}\b", re.I)
 
 
 def _digits(match: re.Match, text: str) -> str:
@@ -53,7 +54,7 @@ def _plain(text: str) -> str:
     return _NUMBER.sub(lambda m: _digits(m, text), text)
 
 
-_TOMORROW = re.compile(r"\b(?:tmrw|tmr|tmw|tmrow|2mrw|2morrow|2moro)\b", re.I)
+_TOMORROW = lazy_compile(r"\b(?:tmrw|tmr|tmw|tmrow|2mrw|2morrow|2moro)\b", re.I)
 
 
 def normalise(question: str) -> str:

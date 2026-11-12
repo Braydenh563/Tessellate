@@ -9,8 +9,9 @@ about anything else is left to the ordinary answer."""
 from __future__ import annotations
 
 import re
+from tessellate.core.lazyre import lazy_compile
 
-_DIGITS = re.compile(r"\+?\d[\d ()./-]{6,}\d")
+_DIGITS = lazy_compile(r"\+?\d[\d ()./-]{6,}\d")
 _PROPERTIES: dict[str, tuple[re.Pattern, re.Pattern | str, str]] = {
     #: key: (the question's word, the sentence's word or shape, the noun said)
     "phone": (
@@ -19,18 +20,18 @@ _PROPERTIES: dict[str, tuple[re.Pattern, re.Pattern | str, str]] = {
         # only beside a person or a business ("Sara's number", "the number for the dentist"), not
         # "what is the number" or "the table number" (round 3, R3-2). "Number of" and "number to" are a
         # count or an action ("number of mice", "the number to call"), never a person's.
-        re.compile(
+        lazy_compile(
             r"\b(?:his|her|their|my|your|our)\s+(?:phone\s+|mobile\s+|cell\s+)?number\b"
             r"|\w['\u2019]s?\s+(?:phone\s+|mobile\s+|cell\s+)?number\b|\bnumber\s+for\s+(?!(?:the\s+)?day\b)\w"
             r"|\b(?:phone|mobile|cell|telephone)\s+(?:number|no)\b"
             r"|^(?:the\s+)?[a-z]+\s+number\s*[?.!]*$"
             r"|^(?:what(?:'s|s| is| are)?|give me|tell me|find)\b[^?]*\b(?:phone|mobile|cell|telephone)\s*[?.!]*$", re.I),
-        re.compile(r"\b(?:phone|mobile|tel|telephone)\b", re.I), "phone number"),
-    "password": (re.compile(r"\b(?:password|passcode|pin)\b", re.I), re.compile(r"\b(?:password|passcode|pin)\b", re.I), "password"),
+        lazy_compile(r"\b(?:phone|mobile|tel|telephone)\b", re.I), "phone number"),
+    "password": (lazy_compile(r"\b(?:password|passcode|pin)\b", re.I), lazy_compile(r"\b(?:password|passcode|pin)\b", re.I), "password"),
     "address": (
-        re.compile(r"\baddress\b", re.I),
-        re.compile(r"\b(?:address|street|road|avenue|lane|close|drive|postcode|[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2})\b", re.I), "address"),
-    "email": (re.compile(r"\be-?mail\b(?!\s+(?:me|them|him|her|the)\b)", re.I), re.compile(r"@|\be-?mail\b", re.I), "email address"),
+        lazy_compile(r"\baddress\b", re.I),
+        lazy_compile(r"\b(?:address|street|road|avenue|lane|close|drive|postcode|[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2})\b", re.I), "address"),
+    "email": (lazy_compile(r"\be-?mail\b(?!\s+(?:me|them|him|her|the)\b)", re.I), lazy_compile(r"@|\be-?mail\b", re.I), "email address"),
 }
 #: The things that carry a number a note may or may not give ("what is the table number": a dinner
 #: booking with no table in it is no answer, R3-2 residue). Each is a property of its own word.
@@ -38,12 +39,12 @@ NUMBERED = ("table", "room", "seat", "booking", "reservation", "confirmation", "
             "ticket", "locker", "gate", "platform", "passport", "visa", "student", "employee", "customer", "parcel", "house", "flat", "apartment", "membership", "licence", "license", "plate", "case", "invoice", "tracking")
 for _word in NUMBERED:
     _PROPERTIES[_word] = (
-        re.compile(rf"\b{_word}\s+(?:number|no\.?|num|#)(?!\w)", re.I),
+        lazy_compile(rf"\b{_word}\s+(?:number|no\.?|num|#)(?!\w)", re.I),
         #: The shape is a string, compiled on first use by `held` (through re's own cache):
         #: 25 of them compiled at import cost the composer's cold-import budget (PR 216 CI, 3.12).
         rf"\b{_word}s?\s*(?:number|no\.?|num|ref(?:erence)?|code|id)?\s*[:#-]?\s*(?=[A-Za-z-]*\d)[\w-]+", f"{_word} number")
 #: A "number" that is not a phone number: a count, a reference, a place in a list.
-_NOT_PHONE = re.compile(
+_NOT_PHONE = lazy_compile(
     r"\b(?:how many|what number|which number|serial|order|house|flat|room|page|reference|booking|account|policy|ticket|"
     r"sort code|item|step|day|week|month|year|line|chapter|lap|set|rep|table|seat|car|bus|size|shoe|plate|locker|bin|"
     r"lucky|favourite|favorite|pin)\b|\bnumber\s+of\s+(?:the\s+|my\s+)?\w+s\b", re.I)
@@ -51,9 +52,9 @@ _NOT_PHONE = re.compile(
 
 #: Only the tail is a pattern: the one or two words before it are read backwards (`_words_before`), so
 #: no match can start at every letter of a long run (CodeQL 2097, polynomial ReDoS).
-_POSSESSIVE = re.compile(r"['\u2019]s?\s+(?:phone\s+|mobile\s+|cell\s+)?number\b", re.I)
-_HAS_PHONE = re.compile(r"^(?:does|did|do)\s+([^?.!]{1,40}?)\s+(?:have|got)\s+(?:a|an|any)\s+(?:phone|mobile|cell)\b", re.I)
-_OF_SUBJECT = re.compile(r"\bnumber\s+for\s+([^?.!]{1,60})", re.I)
+_POSSESSIVE = lazy_compile(r"['\u2019]s?\s+(?:phone\s+|mobile\s+|cell\s+)?number\b", re.I)
+_HAS_PHONE = lazy_compile(r"^(?:does|did|do)\s+([^?.!]{1,40}?)\s+(?:have|got)\s+(?:a|an|any)\s+(?:phone|mobile|cell)\b", re.I)
+_OF_SUBJECT = lazy_compile(r"\bnumber\s+for\s+([^?.!]{1,60})", re.I)
 _LEAD_WORDS = frozenset(("what", "whats", "what's", "is", "are", "give", "me", "tell", "find", "and", "also", "then"))
 
 

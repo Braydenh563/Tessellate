@@ -12,7 +12,7 @@ typo repair against a closed vocabulary, so a new phrasing needs no new row.
 from __future__ import annotations
 
 import difflib
-import re
+from tessellate.core.lazyre import lazy_compile
 
 #: The words a correction is made of; any other word makes the message not one.
 _VOCAB = frozenset(
@@ -28,7 +28,7 @@ _ASKED = frozenset("asked ask asking meant mean said say saying want wanted need
 _TRIGGER = frozenset("wrong incorrect misunderstood misread misheard mistaken".split())
 _LEAD = frozenset("no nope nah sorry but".split())
 _QUESTION_WORD = frozenset("is are was did do does why how what who when where can could should".split())
-_WORDS = re.compile(r"[a-z]+")
+_WORDS = lazy_compile(r"[a-z]+")
 
 
 def _normal(message: str) -> list[str]:

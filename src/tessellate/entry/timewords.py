@@ -25,6 +25,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
+from tessellate.core.lazyre import lazy_compile
 
 # How exact the phrase was. A note saying "last week" did not mean a day, and
 # showing it as one would be inventing precision the writer did not use.
@@ -197,13 +198,13 @@ def _offset(match: re.Match, today: date, forward: bool):
 #: the note's day, never the coming one (INBOX 1665 e: "Mentions 6 Nov" on a
 #: note written 3 Nov). A future word in the same sentence (will, due, need
 #: to) wins: "I have to hand it in on friday" is ahead.
-_PAST_WORD = re.compile(
+_PAST_WORD = lazy_compile(
     r"\b(?:finished|completed|missed|submitted|handed|had|went|saw|met|came|left|ran|took|"
     r"played|wrote|passed|failed|done|ate|slept|worked|visited|attended|"
     r"lost|won|found|caught|spent|woke|heard|felt)\b",
     re.IGNORECASE,
 )
-_FUTURE_WORD = re.compile(
+_FUTURE_WORD = lazy_compile(
     r"\b(?:will|won't|going to|gonna|need to|needs to|have to|has to|must|should|due|deadline|plan to|planning|"
     r"would|is|are|starts|begins|want to|wanna|hope to|supposed to|scheduled|booked for|by|before|until|next|upcoming|can't wait)\b|'ll\b",
     re.IGNORECASE,
@@ -243,12 +244,12 @@ def _weekday(match: re.Match, today: date):
 # meetings" and "tomorrow, 4 people" keep their day alone.
 _MERIDIEM = r"(?:am|pm|a\.m\.|p\.m\.)"
 _CLOCK_WORDS = r"(?:noon|midday|midnight)"
-_CLOCK_AFTER = re.compile(
+_CLOCK_AFTER = lazy_compile(
     rf"^,?\s*(?:(?:at|@|by|around|from)\s*)?(?:{_CLOCK_WORDS}\b|"
     rf"(?P<h>\d{{1,2}})(?::(?P<m>\d{{2}}))?\s*(?P<ap>{_MERIDIEM})?(?![\w:]))",
     re.IGNORECASE,
 )
-_CLOCK_BEFORE = re.compile(
+_CLOCK_BEFORE = lazy_compile(
     rf"(?:\b(?:at|by|around|from)\s*|@\s*)?(?:\b{_CLOCK_WORDS}|\b"
     rf"(?P<h>\d{{1,2}})(?::(?P<m>\d{{2}}))?\s*(?P<ap>{_MERIDIEM})?)\s+$",
     re.IGNORECASE,
