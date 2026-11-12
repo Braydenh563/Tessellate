@@ -644,6 +644,12 @@ function wbBoardToDrawio(state, { title = "Board", box = null, hidden = null } =
       const look = font(d.font_size, d.bold, d.italic, d.underline, d.color);
       if (filled) vertex(`object:${o.id}`, `rounded=0;whiteSpace=wrap;html=0;${hex(d.bg) ? `fillColor=${hex(d.bg)};${d.bg_alpha != null && d.bg_alpha < 1 ? `fillOpacity=${Math.round(d.bg_alpha * 100)};` : ""}` : ""}${hex(d.border_color) ? `strokeColor=${hex(d.border_color)};` : ""}${look}`, d.content || "", b);
       else vertex(`object:${o.id}`, `text;whiteSpace=wrap;html=0;align=left;verticalAlign=top;${look}`, d.content || "", b);
+    } else if (o.kind === "table" && Array.isArray(d.cells) && d.cells.length) {
+      //: A table is its cells, one vertex each (a merged cell as one spanning its rows and columns), so the file draws it as the board does.
+      for (const cell of wbTableRules.wbTableCellBoxes(o, b.w, b.h)) {
+        const fill = cell.head ? "#eef1f6" : cell.stripe ? "#f4f6fa" : "#ffffff";
+        vertex(`object:${o.id}:${cell.r}:${cell.c}`, `rounded=0;whiteSpace=wrap;html=0;align=left;verticalAlign=top;fillColor=${fill};strokeColor=#9aa3b5;${cell.head ? "fontStyle=1;" : ""}`, cell.text, { x: b.x + cell.x, y: b.y + cell.y, w: cell.w, h: cell.h });
+      }
     } else if (o.kind === "image" || o.kind === "table") skip(o.kind === "image" ? "pictures" : "tables");
     else skip("other items");
   }

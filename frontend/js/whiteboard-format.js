@@ -85,7 +85,7 @@ const WB_FMT_FIELDS = {
   text: ["stroke", "fill", "fillalpha", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props", "rawstyle"],
   image: ["alpha", "shadow", "shadowset", "radii", "crop", "trim", "cropbox", "pixels", "replace", "geometry", "angle", "props"],
   frame: ["pad", "geometry", "props"],
-  table: ["alpha", "shadow", "shadowset", "radii", "geometry", "props"],
+  table: ["alpha", "shadow", "shadowset", "radii", "tableheader", "stripes", "geometry", "props"],
   note: ["geometry", "angle"],
   //: A Mermaid diagram object: the fill and the line it draws with (INBOX 1486).
   diagram: ["fill", "fillalpha", "strokealpha"],
@@ -731,6 +731,11 @@ function wbFormatSync() {
   }
   const sticky = entries.find((e) => e.kind === "object" && wbIsSticky(e.item));
   if (sticky) set("wb-fmt-fold", wbStickyFolds(sticky.item), "checked");
+  const table = entries.find((e) => e.kind === "object" && e.item.kind === "table");
+  if (table) {
+    set("wb-fmt-tableheader", Boolean(table.item.data?.header), "checked");
+    set("wb-fmt-stripes", Boolean(table.item.data?.stripes), "checked");
+  }
   if (takes.has("pixels")) {
     for (const [id, field] of [["wb-fmt-flipx", "flipx"], ["wb-fmt-flipy", "flipy"], ["wb-fmt-grey", "grey"]]) {
       document.getElementById(id)?.setAttribute("aria-pressed", mixed(field) ? "mixed" : String(wbFmtValue(first, field)));
@@ -1270,6 +1275,8 @@ onSurface("board", () => {
     if (button) alphaSetters[button.dataset.alphaFor]?.(alphaPct(button.dataset.alphaPreset));
   });
   on("wb-fmt-fold", "change", (e) => wbFmtApply("fold", (entry) => (entry.kind === "object" && wbIsSticky(entry.item) ? { fold: e.target.checked } : null), e.target.checked ? "Corner folded." : "Corner flat."));
+  on("wb-fmt-tableheader", "change", (e) => wbFmtApply("tableheader", (entry) => (entry.item.kind === "table" ? { header: e.target.checked || undefined } : null), e.target.checked ? "First row is a header." : "First row is plain."));
+  on("wb-fmt-stripes", "change", (e) => wbFmtApply("stripes", (entry) => (entry.item.kind === "table" ? { stripes: e.target.checked || undefined } : null), e.target.checked ? "Rows striped." : "Rows plain."));
   on("wb-fmt-shadow", "change", (e) => wbFmtApply("shadow", () => ({ shadow: e.target.checked || undefined }), e.target.checked ? "Shadow on." : "Shadow off."));
   //: An item that matches the board's look stores nothing, so it follows the
   //: board when the board's look changes.
@@ -1769,6 +1776,7 @@ function wbRoughD(d, seed) {
 //: share. Double-click a cell to type in it; Tab and Shift+Tab walk the
 //: cells, Enter keeps the words, Escape drops them. The cell last pressed is
 //: where the menu's rows and columns go in or come out.
+//: table-core-begin (pure; tests/test_wb_table_merge.py runs this block under node)
 const WB_TABLE_ROW_H = 40;
 const WB_TABLE_COL_W = 120;
 
@@ -1801,12 +1809,195 @@ function wbTableResizeColumn(weights, c, factor) {
   return out.every((n, i) => Math.abs(n - weights[i]) < 0.001) ? null : out;
 }
 
-//: Where each column starts, as a share of the width: [0, ..., 1].
+//: Where each column (or row) starts, as a share of the whole: [0, ..., 1].
 function wbTableColumnEdges(weights) {
   const sum = weights.reduce((a, n) => a + n, 0);
   let at = 0;
   return [0, ...weights.map((n) => (at += n / sum))];
 }
+
+const wbTableRules = (() => {
+  //: **A table's row heights**, the same kind of weights as the columns' (mean 1,
+  //: `data.row_heights`, absent or the wrong length reads as equal).
+  function wbTableRowWeights(d) {
+    const rows = wbTableCells(d).length;
+    const h = d.data?.row_heights;
+    const ok = Array.isArray(h) && h.length === rows && h.every((n) => Number.isFinite(n) && n > 0);
+    return ok ? h : Array(rows).fill(1);
+  }
+
+  //: Weights after a drag of the line between track `i` and the next: the two
+  //: trade `shift` (in weight units), each held to the least and most a track
+  //: may take, so the others and the table's size are untouched. `null` when
+  //: nothing would change.
+  function wbTableDragWeights(weights, i, shift) {
+    const a = weights[i];
+    const b = weights[i + 1];
+    if (a === undefined || b === undefined || !Number.isFinite(shift)) return null;
+    const lo = Math.max(WB_TABLE_WEIGHT_MIN - a, b - WB_TABLE_WEIGHT_MAX);
+    const by = Math.max(lo, Math.min(WB_TABLE_WEIGHT_MAX - a, b - WB_TABLE_WEIGHT_MIN, shift));
+    const out = weights.map((n, k) => Math.round((k === i ? a + by : k === i + 1 ? b - by : n) * 1000) / 1000);
+    return out.every((n, k) => Math.abs(n - weights[k]) < 0.001) ? null : out;
+  }
+
+  //: Weights after a row or column goes in or out at `at` (a new track takes an
+  //: average share), back to a mean of 1.
+  function wbTableAxisWeights(weights, at, remove) {
+    const total = weights.reduce((a, n) => a + n, 0);
+    const grown = remove ? weights.filter((_, i) => i !== at) : [...weights.slice(0, at), total / weights.length, ...weights.slice(at)];
+    const mean = grown.reduce((a, n) => a + n, 0) / grown.length;
+    return grown.map((n) => Math.round((n / mean) * 1000) / 1000);
+  }
+
+  //: **Merged cells**: `data.merges`, each `{r, c, rs, cs}`, the cell at row r,
+  //: column c spanning rs rows and cs columns. Only those inside the grid,
+  //: covering two cells or more and clear of the ones before them are kept, so a
+  //: hand-edited or stale list cannot break the grid.
+  function wbTableCleanMerges(list, rows, cols) {
+    const taken = new Set();
+    const out = [];
+    for (const m of Array.isArray(list) ? list : []) {
+      const ok = [m?.r, m?.c, m?.rs, m?.cs].every(Number.isInteger) && m.r >= 0 && m.c >= 0 && m.rs >= 1 && m.cs >= 1 && m.rs * m.cs > 1 && m.r + m.rs <= rows && m.c + m.cs <= cols;
+      if (!ok) continue;
+      const spots = [];
+      for (let r = m.r; r < m.r + m.rs; r += 1) for (let c = m.c; c < m.c + m.cs; c += 1) spots.push(r * 1000 + c);
+      if (spots.some((k) => taken.has(k))) continue;
+      spots.forEach((k) => taken.add(k));
+      out.push({ r: m.r, c: m.c, rs: m.rs, cs: m.cs });
+    }
+    return out;
+  }
+
+  function wbTableMerges(d) {
+    const cells = wbTableCells(d);
+    return wbTableCleanMerges(d.data?.merges, cells.length, cells[0].length);
+  }
+
+  //: The merge that holds the cell at (r, c), its origin or a cell under it.
+  function wbTableMergeAt(merges, r, c) {
+    return merges.find((m) => r >= m.r && r < m.r + m.rs && c >= m.c && c < m.c + m.cs) || null;
+  }
+
+  //: A cell hidden under another one's span (not the origin).
+  function wbTableCovered(merges, r, c) {
+    const m = wbTableMergeAt(merges, r, c);
+    return Boolean(m) && (m.r !== r || m.c !== c);
+  }
+
+  //: A picked range as {r0, c0, r1, c1}, corners in order.
+  function wbTableRect(a, b) {
+    return { r0: Math.min(a.r, b.r), c0: Math.min(a.c, b.c), r1: Math.max(a.r, b.r), c1: Math.max(a.c, b.c) };
+  }
+
+  //: The range grown until no merge is cut by its edge (a merge half inside joins it whole).
+  function wbTableGrowRect(merges, rect) {
+    let now = { ...rect };
+    for (let again = true; again;) {
+      again = false;
+      for (const m of merges) {
+        const hit = m.r <= now.r1 && m.r + m.rs - 1 >= now.r0 && m.c <= now.c1 && m.c + m.cs - 1 >= now.c0;
+        const grown = { r0: Math.min(now.r0, m.r), c0: Math.min(now.c0, m.c), r1: Math.max(now.r1, m.r + m.rs - 1), c1: Math.max(now.c1, m.c + m.cs - 1) };
+        if (hit && JSON.stringify(grown) !== JSON.stringify(now)) {
+          now = grown;
+          again = true;
+        }
+      }
+    }
+    return now;
+  }
+
+  //: The cells and merges after the range becomes one cell: its words (the
+  //: non-empty ones, in reading order) go to the top-left, the rest are emptied.
+  //: `null` when the range is one cell.
+  function wbTableMergeRect(cells, merges, rect) {
+    const now = wbTableGrowRect(merges, rect);
+    if (now.r0 === now.r1 && now.c0 === now.c1) return null;
+    const words = [];
+    const next = cells.map((row, r) => row.map((text, c) => {
+      const inside = r >= now.r0 && r <= now.r1 && c >= now.c0 && c <= now.c1;
+      if (inside && text.trim()) words.push(text.trim());
+      return inside ? "" : text;
+    }));
+    next[now.r0][now.c0] = words.join(" ").slice(0, 500);
+    const kept = merges.filter((m) => !(m.r >= now.r0 && m.r <= now.r1 && m.c >= now.c0 && m.c <= now.c1));
+    return { cells: next, merges: [...kept, { r: now.r0, c: now.c0, rs: now.r1 - now.r0 + 1, cs: now.c1 - now.c0 + 1 }], rect: now };
+  }
+
+  //: The merges left once every one touching the range is split.
+  function wbTableSplitRect(merges, rect) {
+    return merges.filter((m) => !(m.r <= rect.r1 && m.r + m.rs - 1 >= rect.r0 && m.c <= rect.c1 && m.c + m.cs - 1 >= rect.c0));
+  }
+
+  //: The merges after a row or column goes in or out at `at`: one below moves
+  //: down, one the new track lands inside grows, one that loses a track shrinks
+  //: and one left covering a single cell is dropped.
+  function wbTableReshapeMerges(merges, axis, at, remove) {
+    const [start, span] = axis === "row" ? ["r", "rs"] : ["c", "cs"];
+    const out = [];
+    for (const m of merges) {
+      const next = { ...m };
+      if (remove) {
+        if (at < m[start]) next[start] -= 1;
+        else if (at < m[start] + m[span]) next[span] -= 1;
+      } else if (at <= m[start]) next[start] += 1;
+      else if (at < m[start] + m[span]) next[span] += 1;
+      if (next.rs * next.cs > 1) out.push(next);
+    }
+    return out;
+  }
+
+  //: Whether row `r` wears the stripe tint: every other body row, the first body row plain.
+  function wbTableStripe(d, r) {
+    const first = d.data?.header ? 1 : 0;
+    return Boolean(d.data?.stripes) && r >= first && (r - first) % 2 === 1;
+  }
+
+  //: Where a grip may sit along the line after track `i` of `axis` ("col" or
+  //: "row"): runs of [from, to) over the other axis's tracks, leaving out the
+  //: stretches a merged cell crosses (its inside is not a border, and a grip
+  //: there would be on top of the cell's own words).
+  function wbTableGripRuns(merges, axis, i, along) {
+    const col = axis === "col";
+    const crossed = (k) => merges.some((m) => (col
+      ? m.c <= i && i < m.c + m.cs - 1 && m.r <= k && k < m.r + m.rs
+      : m.r <= i && i < m.r + m.rs - 1 && m.c <= k && k < m.c + m.cs));
+    const out = [];
+    let from = -1;
+    for (let k = 0; k <= along; k += 1) {
+      const free = k < along && !crossed(k);
+      if (free && from < 0) from = k;
+      if (!free && from >= 0) {
+        out.push([from, k]);
+        from = -1;
+      }
+    }
+    return out;
+  }
+
+  //: Every drawn cell of a table in the box's own pixels (the covered ones left
+  //: out, a merged one spanning its rows and columns): what the SVG and the
+  //: draw.io file are drawn from, so both agree with the board.
+  function wbTableCellBoxes(d, width, height) {
+    const cells = wbTableCells(d);
+    const merges = wbTableMerges(d);
+    const xs = wbTableColumnEdges(wbTableWeights(d));
+    const ys = wbTableColumnEdges(wbTableRowWeights(d));
+    const out = [];
+    cells.forEach((row, r) => row.forEach((text, c) => {
+      if (wbTableCovered(merges, r, c)) return;
+      const m = wbTableMergeAt(merges, r, c);
+      const c2 = c + (m ? m.cs : 1);
+      const r2 = r + (m ? m.rs : 1);
+      out.push({
+        r, c, text, head: r === 0 && Boolean(d.data?.header), stripe: wbTableStripe(d, r),
+        x: xs[c] * width, y: ys[r] * height, w: (xs[c2] - xs[c]) * width, h: (ys[r2] - ys[r]) * height,
+      });
+    }));
+    return out;
+  }
+  return { wbTableRowWeights, wbTableDragWeights, wbTableAxisWeights, wbTableCleanMerges, wbTableMerges, wbTableMergeAt, wbTableCovered, wbTableRect, wbTableGrowRect, wbTableMergeRect, wbTableSplitRect, wbTableReshapeMerges, wbTableStripe, wbTableGripRuns, wbTableCellBoxes };
+})();
+//: table-core-end
 
 //: **A text box, a sticky or a table, as the export draws it.** The export
 //: drew a text box as its words alone and left a table out of the file, so a
@@ -1867,26 +2058,39 @@ function wbSvgTableCell(paint, text, box, size) {
 }
 
 function wbSvgTable(el, obj) {
-  const cells = wbTableCells(obj);
-  const edges = wbTableColumnEdges(wbTableWeights(obj));
-  const box = { h: obj.height / cells.length };
   const plain = { fill: "#ffffff", edge: "#9aa3b5", ink: "#1f2430" };
-  const cellEl = (r) => el?.querySelector(`.wb-table-cell[data-r="${Math.min(r, cells.length - 1)}"]`);
-  const body = (cellEl(1) && wbExportPaint(cellEl(1))) || plain;
-  const head = obj.data?.header ? (cellEl(0) && wbExportPaint(cellEl(0))) || { ...plain, fill: "#eef1f6" } : body;
-  const size = parseFloat(cellEl(1) && getComputedStyle(cellEl(1)).fontSize) || 14;
-  return cells.map((row, r) => row.map((text, c) => {
-    const x = edges[c] * obj.width;
-    return wbSvgTableCell(r === 0 ? head : body, text, { ...box, x, w: edges[c + 1] * obj.width - x, y: r * box.h }, size);
-  }).join("")).join("");
+  const paintOf = (sel, fallback) => {
+    const node = el?.querySelector(sel);
+    return (node && wbExportPaint(node)) || fallback;
+  };
+  const body = paintOf(".wb-table-cell:not([data-head]):not([data-stripe])", plain);
+  const head = paintOf(".wb-table-cell[data-head]", { ...plain, fill: "#eef1f6" });
+  const stripe = paintOf(".wb-table-cell[data-stripe]", { ...plain, fill: "#f4f6fa" });
+  const sample = el?.querySelector(".wb-table-cell:not([data-head])");
+  const size = parseFloat(sample && getComputedStyle(sample).fontSize) || 14;
+  return wbTableRules.wbTableCellBoxes(obj, obj.width, obj.height)
+    .map((cell) => wbSvgTableCell(cell.head ? head : cell.stripe ? stripe : body, cell.text, cell, size)).join("");
 }
 
 function wbBuildTable(el, d) {
+  const selectedHere = () => wbSelectedItem?.kind === "object" && wbSelectedItem.id === d.id && wbMultiSelection.size <= 1;
   el.append("div").attr("class", "wb-table-grid").attr("role", "grid").attr("aria-label", "Table")
     .on("pointerdown", (event) => {
       const cell = event.target.closest(".wb-table-cell");
-      if (cell) wbFmtState.tableCell = { id: d.id, r: Number(cell.dataset.r), c: Number(cell.dataset.c) };
+      const here = wbFmtState.tableCell;
+      //: Shift on a second cell picks the range between it and the cell last pressed.
+      if (cell && event.shiftKey && selectedHere() && here?.id === d.id) {
+        wbFmtState.tableRange = { id: d.id, ...wbTableRules.wbTableRect(here, { r: Number(cell.dataset.r), c: Number(cell.dataset.c) }) };
+      } else if (cell) {
+        wbFmtState.tableCell = { id: d.id, r: Number(cell.dataset.r), c: Number(cell.dataset.c) };
+        wbFmtState.tableRange = null;
+      }
+      wbTableRules.wbTableShowRange(el.node(), d);
       if (cell?.isContentEditable) event.stopPropagation();
+    })
+    //: A shift-click that picked a range is not a multi-select toggle of the table.
+    .on("click", (event) => {
+      if (event.shiftKey && selectedHere() && wbFmtState.tableCell?.id === d.id && event.target.closest(".wb-table-cell")) event.stopPropagation();
     })
     .on("dblclick", (event) => {
       const cell = event.target.closest(".wb-table-cell");
@@ -1896,28 +2100,128 @@ function wbBuildTable(el, d) {
     });
 }
 
-//: Rebuilt only when the cells or the header change, and never under a
-//: cell being typed in.
+//: The cells of the picked range wear `is-picked`; cheap when nothing changed.
+wbTableRules.wbTableShowRange = function wbTableShowRange(node, d) {
+  const grid = node?.querySelector(".wb-table-grid");
+  if (!grid) return;
+  const pick = wbFmtState.tableRange?.id === d.id ? wbFmtState.tableRange : null;
+  const marker = pick ? JSON.stringify(pick) : "";
+  if ((grid.dataset.range || "") === marker) return;
+  grid.dataset.range = marker;
+  for (const cell of grid.querySelectorAll(".wb-table-cell")) {
+    const r = Number(cell.dataset.r);
+    const c = Number(cell.dataset.c);
+    cell.classList.toggle("is-picked", Boolean(pick) && r >= pick.r0 && r <= pick.r1 && c >= pick.c0 && c <= pick.c1);
+  }
+};
+
+//: The grid's tracks from the weights, and each grip on the stretch of line it drags.
+wbTableRules.wbTableTracks = function wbTableTracks(grid, colWeights, rowWeights) {
+  grid.style.gridTemplateColumns = colWeights.map((n) => `minmax(0, ${n}fr)`).join(" ");
+  grid.style.gridTemplateRows = rowWeights.map((n) => `minmax(0, ${n}fr)`).join(" ");
+  const cols = wbTableColumnEdges(colWeights);
+  const rows = wbTableColumnEdges(rowWeights);
+  const pct = (n) => `${n * 100}%`;
+  for (const grip of grid.querySelectorAll(".wb-table-grip")) {
+    const at = Number(grip.dataset.i) + 1;
+    const [from, to] = [Number(grip.dataset.from), Number(grip.dataset.to)];
+    if (grip.dataset.axis === "col") {
+      grip.style.left = pct(cols[at]);
+      grip.style.top = pct(rows[from]);
+      grip.style.height = pct(rows[to] - rows[from]);
+    } else {
+      grip.style.top = pct(rows[at]);
+      grip.style.left = pct(cols[from]);
+      grip.style.width = pct(cols[to] - cols[from]);
+    }
+  }
+};
+
+//: **A line dragged to size a row or column** (`data.col_widths`, `data.row_heights`):
+//: the two tracks either side of the line trade width, so the table keeps its size.
+//: The grid follows the pointer; the weights are written once, on release, as
+//: one Undo step. The menu's Widen, Taller and the like are the keyboard's way.
+wbTableRules.wbTableGripDrag = function wbTableGripDrag(event, d, grip) {
+  const grid = grip.parentElement;
+  if (event.button > 0 || !grid || wbIsLocked("object", d)) return;
+  event.preventDefault();
+  event.stopPropagation();
+  const col = grip.dataset.axis === "col";
+  const i = Number(grip.dataset.i);
+  const box = grid.getBoundingClientRect();
+  const before = col ? wbTableWeights(d) : wbTableRules.wbTableRowWeights(d);
+  const unit = (col ? box.width : box.height) / before.length;
+  const from = col ? event.clientX : event.clientY;
+  let next = null;
+  grip.setPointerCapture?.(event.pointerId);
+  grip.classList.add("is-dragging");
+  const show = (weights) => wbTableRules.wbTableTracks(grid, col ? weights : wbTableWeights(d), col ? wbTableRules.wbTableRowWeights(d) : weights);
+  const move = (e) => {
+    next = unit > 0 ? wbTableRules.wbTableDragWeights(before, i, ((col ? e.clientX : e.clientY) - from) / unit) : null;
+    show(next || before);
+  };
+  const end = async (e) => {
+    grip.removeEventListener("pointermove", move);
+    grip.removeEventListener("pointerup", end);
+    grip.removeEventListener("pointercancel", end);
+    grip.classList.remove("is-dragging");
+    if (!next || e.type === "pointercancel") return show(before);
+    await wbSetTable(d, wbTableCells(d), null, col ? "Column resized." : "Row resized.", { [col ? "col_widths" : "row_heights"]: next });
+  };
+  grip.addEventListener("pointermove", move);
+  grip.addEventListener("pointerup", end);
+  grip.addEventListener("pointercancel", end);
+};
+
+//: Rebuilt only when the cells, the header, the stripes, the merges or the
+//: tracks change, and never under a cell being typed in.
 function wbPaintTable(node, d) {
   const grid = node.querySelector(".wb-table-grid");
   if (!grid || grid.querySelector("[contenteditable='true']")) return;
   const cells = wbTableCells(d);
   const weights = wbTableWeights(d);
-  const key = JSON.stringify([cells, Boolean(d.data?.header), weights]);
-  if (grid.dataset.key === key) return;
+  const heights = wbTableRules.wbTableRowWeights(d);
+  const merges = wbTableRules.wbTableMerges(d);
+  const key = JSON.stringify([cells, Boolean(d.data?.header), Boolean(d.data?.stripes), weights, heights, merges]);
+  if (grid.dataset.key === key) return wbTableRules.wbTableShowRange(node, d);
   grid.dataset.key = key;
-  grid.style.gridTemplateColumns = weights.map((n) => `minmax(0, ${n}fr)`).join(" ");
-  grid.style.gridTemplateRows = `repeat(${cells.length}, minmax(0, 1fr))`;
+  grid.dataset.range = "";
   grid.classList.toggle("has-header", Boolean(d.data?.header));
-  grid.replaceChildren(...cells.flatMap((row, r) => row.map((text, c) => {
+  const out = [];
+  cells.forEach((row, r) => row.forEach((text, c) => {
+    if (wbTableRules.wbTableCovered(merges, r, c)) return;
+    const m = wbTableRules.wbTableMergeAt(merges, r, c);
     const cell = document.createElement("div");
     cell.className = "wb-table-cell";
     cell.setAttribute("role", r === 0 && d.data?.header ? "columnheader" : "gridcell");
     cell.dataset.r = String(r);
     cell.dataset.c = String(c);
+    if (r === 0 && d.data?.header) cell.dataset.head = "1";
+    else if (wbTableRules.wbTableStripe(d, r)) cell.dataset.stripe = "1";
+    cell.style.gridRow = `${r + 1} / span ${m ? m.rs : 1}`;
+    cell.style.gridColumn = `${c + 1} / span ${m ? m.cs : 1}`;
+    if (m) {
+      cell.dataset.rs = String(m.rs);
+      cell.dataset.cs = String(m.cs);
+    }
     cell.textContent = text;
-    return cell;
-  })));
+    out.push(cell);
+  }));
+  const grip = (axis, i, from, to) => {
+    const g = document.createElement("div");
+    g.className = `wb-table-grip wb-table-grip-${axis}`;
+    Object.assign(g.dataset, { axis, i: String(i), from: String(from), to: String(to) });
+    g.title = axis === "col" ? "Drag to size the columns either side" : "Drag to size the rows either side";
+    //: The object's own drag listens for mouse and touch as well as pointer events.
+    for (const type of ["mousedown", "touchstart"]) g.addEventListener(type, (event) => event.stopPropagation(), { passive: true });
+    g.addEventListener("pointerdown", (event) => wbTableRules.wbTableGripDrag(event, d, g));
+    return g;
+  };
+  for (let c = 0; c < weights.length - 1; c += 1) for (const [from, to] of wbTableRules.wbTableGripRuns(merges, "col", c, heights.length)) out.push(grip("col", c, from, to));
+  for (let r = 0; r < heights.length - 1; r += 1) for (const [from, to] of wbTableRules.wbTableGripRuns(merges, "row", r, weights.length)) out.push(grip("row", r, from, to));
+  grid.replaceChildren(...out);
+  wbTableRules.wbTableTracks(grid, weights, heights);
+  wbTableRules.wbTableShowRange(node, d);
 }
 
 async function wbInsertTable(rows = 3, cols = 3) {
@@ -1933,15 +2237,17 @@ async function wbInsertTable(rows = 3, cols = 3) {
   return made;
 }
 
-//: Writes new cells (and a new size) as one Undo step.
-//: `widths`: the column weights to keep (undefined leaves them, null clears them).
-async function wbSetTable(d, cells, size = null, said = "", widths = undefined) {
+//: Writes new cells (and a new size) as one Undo step. `patch` is the table's
+//: other data keys (`col_widths`, `row_heights`, `merges`, `stripes`): a value
+//: of `null` (or an empty list) clears the key, `undefined` leaves it.
+async function wbSetTable(d, cells, size = null, said = "", patch = {}) {
   if (!d || wbIsLocked("object", d)) return;
   wbPushUndo({ action: "move", kind: "object", id: d.id, before: WB_KIND_INFO.object.payload(d) });
   d.data = { ...d.data, cells };
-  if (widths !== undefined) {
-    if (widths) d.data.col_widths = widths;
-    else delete d.data.col_widths;
+  for (const [key, value] of Object.entries(patch)) {
+    if (value === undefined) continue;
+    if (value === null || value === false || (Array.isArray(value) && !value.length)) delete d.data[key];
+    else d.data[key] = value;
   }
   if (size) Object.assign(d, size);
   await wbSaveObject(d);
@@ -1990,7 +2296,11 @@ function wbEditTableCell(id, r, c) {
       event.preventDefault();
       const cells = wbTableCells(d);
       const cols = cells[0].length;
-      const at = r * cols + c + (event.shiftKey ? -1 : 1);
+      const merges = wbTableRules.wbTableMerges(d);
+      //: A cell under a merged one has no box to type in, so Tab steps over it.
+      let at = r * cols + c;
+      do at += event.shiftKey ? -1 : 1;
+      while (at >= 0 && at < cells.length * cols && wbTableRules.wbTableCovered(merges, Math.floor(at / cols), at % cols));
       if (at >= 0 && at < cells.length * cols) moveTo = [Math.floor(at / cols), at % cols];
       cell.blur();
     }
@@ -2001,7 +2311,7 @@ function wbEditTableCell(id, r, c) {
 
 //: Insert or remove a row or column at `at` (`axis` "row" or "col"); the
 //: table grows or shrinks by one row's or column's share, so the others keep
-//: their size.
+//: their size. Merged cells and a set row height or column width follow.
 function wbTableReshape(d, axis, at, remove) {
   const cells = wbTableCells(d);
   const rows = cells.length;
@@ -2020,45 +2330,90 @@ function wbTableReshape(d, axis, at, remove) {
   } else {
     next = cells.map((row) => (remove ? row.filter((_, i) => i !== at) : [...row.slice(0, at), "", ...row.slice(at)]));
   }
-  //: A column takes the width it has (a removed one gives up its own), a new
-  //: one an average share; the weights go back to a mean of 1 so the others
-  //: keep their pixels.
-  const weights = wbTableWeights(d);
+  //: A track takes the size it has (a removed one gives up its own), a new one
+  //: an average share; the weights go back to a mean of 1 so the others keep
+  //: their pixels.
+  const row = axis === "row";
+  const weights = row ? wbTableRules.wbTableRowWeights(d) : wbTableWeights(d);
   const total = weights.reduce((a, n) => a + n, 0);
-  const share = axis === "row" ? d.height / rows : remove ? (d.width * weights[at]) / total : d.width / cols;
-  const size = axis === "row" ? { height: Math.max(WB_TABLE_ROW_H / 2, d.height + (remove ? -share : share)) } : { width: Math.max(WB_TABLE_COL_W / 2, d.width + (remove ? -share : share)) };
-  let widths;
-  if (axis === "col" && Array.isArray(d.data?.col_widths)) {
-    const grown = remove ? weights.filter((_, i) => i !== at) : [...weights.slice(0, at), total / cols, ...weights.slice(at)];
-    const mean = grown.reduce((a, n) => a + n, 0) / grown.length;
-    widths = grown.map((n) => Math.round((n / mean) * 1000) / 1000);
-  }
-  const word = axis === "row" ? "Row" : "Column";
+  const extent = row ? d.height : d.width;
+  const share = remove ? (extent * weights[at]) / total : extent / weights.length;
+  const grown = Math.max(row ? WB_TABLE_ROW_H / 2 : WB_TABLE_COL_W / 2, extent + (remove ? -share : share));
+  const size = row ? { height: grown } : { width: grown };
+  const kept = Array.isArray(d.data?.[row ? "row_heights" : "col_widths"]);
+  const patch = {
+    merges: wbTableRules.wbTableReshapeMerges(wbTableRules.wbTableMerges(d), axis, at, remove),
+    [row ? "row_heights" : "col_widths"]: kept ? wbTableRules.wbTableAxisWeights(weights, at, remove) : undefined,
+  };
+  const word = row ? "Row" : "Column";
+  const said = `${word} ${remove ? "removed" : "added"}.`;
   //: A connector joined to a row stays on that row (whiteboard-shape-more.js), in the same Undo step.
-  const carry = axis === "row" ? wbFmtState.shapeMore?.carryRowPorts(d, at, remove, rows) : null;
-  if (!carry) return wbSetTable(d, next, size, `${word} ${remove ? "removed" : "added"}.`, widths);
+  const carry = row ? wbFmtState.shapeMore?.carryRowPorts(d, at, remove, rows) : null;
+  if (!carry) return wbSetTable(d, next, size, said, patch);
   return wbRecordGesture(async () => {
-    await wbSetTable(d, next, size, `${word} ${remove ? "removed" : "added"}.`, widths);
+    await wbSetTable(d, next, size, said, patch);
     await carry();
   });
 }
 
-//: The column-width rows of the item menu: a quarter wider or narrower at the
-//: cell last pressed (the others give way, the table keeps its width), and
-//: back to equal once any has been set.
-function wbTableWidthRows(d, cells, c, at) {
-  const here = at ? "The column of the cell you pressed" : "The last column; press a cell first to pick another";
-  const set = (factor, said) => () => {
-    const next = wbTableResizeColumn(wbTableWeights(d), c, factor);
-    if (next) wbSetTable(d, wbTableCells(d), null, said, next);
-  };
-  const rows = [
-    ["Widen this column", `${here}, a quarter wider`, set(1.25, "Column widened.")],
-    ["Narrow this column", `${here}, a fifth narrower`, set(0.8, "Column narrowed.")],
+//: The size rows of the item menu: a quarter wider or taller, or a fifth
+//: narrower or shorter, at the cell last pressed (the others give way, the
+//: table keeps its size), and back to equal once any has been set.
+wbTableRules.wbTableSizeRows = function wbTableSizeRows(d, cells, r, c, at) {
+  const sizes = [
+    ["column", "col_widths", c, wbTableWeights, ["Widen this column", "Narrow this column", "Equal column widths"]],
+    ["row", "row_heights", r, wbTableRules.wbTableRowWeights, ["Taller row", "Shorter row", "Equal row heights"]],
   ];
-  if (Array.isArray(d.data?.col_widths)) rows.push(["Equal column widths", "Every column the same share again", () => wbSetTable(d, cells, null, "Columns equal.", null)]);
+  return sizes.flatMap(([word, key, index, weightsOf, [more, less, equal]]) => {
+    const here = at ? `The ${word} of the cell you pressed` : `The last ${word}; press a cell first to pick another`;
+    const set = (factor, said) => () => {
+      const next = wbTableResizeColumn(weightsOf(d), index, factor);
+      if (next) wbSetTable(d, wbTableCells(d), null, said, { [key]: next });
+    };
+    const rows = [
+      [more, `${here}, a quarter bigger`, set(1.25, `${word[0].toUpperCase()}${word.slice(1)} enlarged.`)],
+      [less, `${here}, a fifth smaller`, set(0.8, `${word[0].toUpperCase()}${word.slice(1)} reduced.`)],
+    ];
+    if (Array.isArray(d.data?.[key])) rows.push([equal, `Every ${word} the same share again`, () => wbSetTable(d, cells, null, `${word[0].toUpperCase()}${word.slice(1)}s equal.`, { [key]: null })]);
+    return rows;
+  });
+};
+
+//: The merge rows of the item menu. With a range picked (Shift and click a
+//: second cell) it merges that range; with none, the pressed cell joins the one
+//: to its right or below, which is also the way without a shift key. Split
+//: undoes every merge the pressed cell or the range touches.
+wbTableRules.wbTableMergeRows = function wbTableMergeRows(d, cells, r, c, at) {
+  const merges = wbTableRules.wbTableMerges(d);
+  const pick = wbFmtState.tableRange?.id === d.id ? wbFmtState.tableRange : null;
+  const range = pick && (pick.r1 > pick.r0 || pick.c1 > pick.c0) ? pick : null;
+  const merge = (rect, said) => {
+    const out = wbTableRules.wbTableMergeRect(cells, merges, rect);
+    if (!out) return;
+    wbFmtState.tableRange = null;
+    wbFmtState.tableCell = { id: d.id, r: out.rect.r0, c: out.rect.c0 };
+    return wbSetTable(d, out.cells, null, said, { merges: out.merges });
+  };
+  const rows = [];
+  const here = wbTableRules.wbTableMergeAt(merges, r, c);
+  const [r1, c1] = here ? [here.r + here.rs - 1, here.c + here.cs - 1] : [r, c];
+  const top = here ? here.r : r;
+  const left = here ? here.c : c;
+  if (range) rows.push(["Merge cells", "The cells you picked become one; the words are joined", () => merge(range, "Cells merged.")]);
+  else if (at) {
+    if (c1 + 1 < cells[0].length) rows.push(["Merge with the cell on the right", "This cell and the next one become one", () => merge({ r0: top, c0: left, r1, c1: c1 + 1 }, "Cells merged.")]);
+    if (r1 + 1 < cells.length) rows.push(["Merge with the cell below", "This cell and the next one down become one", () => merge({ r0: top, c0: left, r1: r1 + 1, c1 }, "Cells merged.")]);
+  }
+  const rect = range || { r0: r, c0: c, r1: r, c1: c };
+  const split = wbTableRules.wbTableSplitRect(merges, rect);
+  if (split.length !== merges.length) {
+    rows.push(["Split cell", range ? "Every merged cell in the range goes back to single cells" : "The merged cell goes back to single cells", () => {
+      wbFmtState.tableRange = null;
+      return wbSetTable(d, cells, null, "Cells split.", { merges: split });
+    }]);
+  }
   return rows;
-}
+};
 
 //: The table's rows for the item menu: around the cell last pressed when it
 //: is this table's, else at the ends.
@@ -2068,21 +2423,29 @@ function wbTableMenuRows(d) {
   const r = at ? Math.min(at.r, cells.length - 1) : cells.length - 1;
   const c = at ? Math.min(at.c, cells[0].length - 1) : cells[0].length - 1;
   const here = at ? "this cell's" : "the last";
+  //: Past a merged cell's far edge, so a row or column lands beside it, not inside it.
+  const span = wbTableRules.wbTableMergeAt(wbTableRules.wbTableMerges(d), r, c);
+  const below = r + (span ? span.rs : 1);
+  const right = c + (span ? span.cs : 1);
+  const toggle = (key, said) => async () => {
+    wbPushUndo({ action: "move", kind: "object", id: d.id, before: WB_KIND_INFO.object.payload(d) });
+    d.data = { ...d.data, [key]: !d.data?.[key] || undefined };
+    if (!d.data[key]) delete d.data[key];
+    await wbSaveObject(d);
+    wbScheduleRender();
+    wbAnnounce(said(Boolean(d.data[key])));
+  };
   return [
-    ["Add a row below", `Under ${here} row`, () => wbTableReshape(d, "row", r + 1, false)],
+    ["Add a row below", `Under ${here} row`, () => wbTableReshape(d, "row", below, false)],
     ["Add a row above", `Over ${here} row`, () => wbTableReshape(d, "row", r, false)],
-    ["Add a column to the right", `Beside ${here} column`, () => wbTableReshape(d, "col", c + 1, false)],
+    ["Add a column to the right", `Beside ${here} column`, () => wbTableReshape(d, "col", right, false)],
     ["Add a column to the left", `Before ${here} column`, () => wbTableReshape(d, "col", c, false)],
     [at ? "Delete this row" : "Delete the last row", at ? "The row of the cell you pressed" : "Press a cell first to pick another", () => wbTableReshape(d, "row", r, true)],
     [at ? "Delete this column" : "Delete the last column", at ? "The column of the cell you pressed" : "Press a cell first to pick another", () => wbTableReshape(d, "col", c, true)],
-    ...wbTableWidthRows(d, cells, c, at),
-    [d.data?.header ? "Plain first row" : "First row as a header", "Bold on a tint, or like the rest", async () => {
-      wbPushUndo({ action: "move", kind: "object", id: d.id, before: WB_KIND_INFO.object.payload(d) });
-      d.data = { ...d.data, header: !d.data?.header || undefined };
-      if (!d.data.header) delete d.data.header;
-      await wbSaveObject(d);
-      wbScheduleRender();
-    }],
+    ...wbTableRules.wbTableMergeRows(d, cells, r, c, at),
+    ...wbTableRules.wbTableSizeRows(d, cells, r, c, at),
+    [d.data?.header ? "Plain first row" : "First row as a header", "Bold on a tint, or like the rest", toggle("header", (on) => (on ? "First row is a header." : "First row is plain."))],
+    [d.data?.stripes ? "Plain rows" : "Striped rows", "Every other row on a tint, or all alike", toggle("stripes", (on) => (on ? "Rows striped." : "Rows plain."))],
   ];
 }
 
