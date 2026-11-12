@@ -127,6 +127,15 @@ def week(session: Session, now: datetime) -> str:
     return "\n\n".join(paras + (["\n".join(tail)] if tail else []))
 
 
+def span(session: Session, start: date, end: date, now: datetime) -> tuple[str, list[dict]]:
+    """The days from `start` to `end` as a review, and the notes in them,
+    oldest first (L-timeline-2: a span brushed on the timeline's strip)."""
+    zone = now.tzinfo or timezone.utc
+    notes = [n for n in _notes(session, start, zone) if n["created_at"][:10] <= end.isoformat()]
+    said = composer_voice.span_review(notes, start=start, end=end, today=now.date(), unlinked=_unlinked(session))
+    return said["text"].strip(), notes
+
+
 def day(session: Session, now: datetime) -> str:
     """Today: what was written, what was ticked, what is due tonight and tomorrow."""
     today, zone = now.date(), now.tzinfo or timezone.utc

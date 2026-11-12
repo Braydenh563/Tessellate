@@ -83,7 +83,13 @@
         }
         editingReminderId = null;
         try {
-          await reminderPutUndoably(reminder.id, "Edited a reminder", before, after);
+          const action = await reminderPutUndoably(reminder.id, "Edited a reminder", before, after);
+          //: The same Undo toast delete and snooze give (it was Ctrl+Z only).
+          toastAction(`Saved ${toastName(text, "the reminder")}.`, "Undo", async () => {
+            settleUndoFromToast(action);
+            await action.undo().catch((e) => toast(e.message, true));
+            toast(`Put back ${toastName(reminder.text, "the reminder")}.`);
+          });
         } catch (error) {
           //: A refusal (a new time already gone) says why and keeps the form.
           editingReminderId = reminder.id;

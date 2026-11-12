@@ -1858,8 +1858,9 @@ function windowRows(root, o) {
     for (const name of ROW_WINDOW_CARRY) if (from.classList.contains(name)) to.classList.add(name);
     return to;
   };
+  //: `o.shell` names the shell's tag: a `<tbody>` takes `tr` (L491, the Timeline table).
   const shellFor = (items, i, from) => {
-    const li = document.createElement("li");
+    const li = document.createElement(o.shell || "li");
     li.className = "row-shell";
     li.setAttribute("aria-hidden", "true");
     //: Hidden inline, not by a rule: the boot stylesheets are at their cap.
