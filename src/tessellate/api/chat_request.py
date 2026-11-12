@@ -304,6 +304,9 @@ class ChatRequest(BaseModel):
     #: Ask box's "From your notes" under an AI answer): read-only, so it is
     #: not saved as a second turn in Ask history, and always the composed one.
     peek: bool = False
+    #: One id per send (E70, L682): a repeated POST with the same id gets the first turn's
+    #: result back instead of a second run (`ai/turn_once.py`). A "Try again" is a new send, so a new id.
+    turn_id: str | None = Field(default=None, min_length=8, max_length=64, pattern=r"^[A-Za-z0-9_-]+$")
     #: "Try again" on the same question (CHAT_PLAN decision 34): the how-many-
     #: th retry, so an answer composed from the notes is worded anew rather
     #: than repeated word for word. 0 for a first ask.
@@ -934,3 +937,6 @@ class ToolExecuteBody(BaseModel):
     #: Posted as name "batch" it used to answer 404, so such a change had an
     #: Undo button that could never undo.
     steps: list[dict] = Field(default_factory=list, max_length=bounds.BATCH_STEPS_MAX)
+    #: The server's tag on an Undo or redo it handed out (`consent_store.sign_call`): sent back
+    #: unchanged, and a call whose name, arguments or steps no longer match it is refused (L566).
+    sig: str | None = Field(default=None, max_length=80)

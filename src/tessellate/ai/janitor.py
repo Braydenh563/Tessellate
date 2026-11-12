@@ -972,8 +972,10 @@ def _chat_within_deadline(
 
         #: The request's context too, so a call made for a request is named
         #: for it ("Create entry") rather than "AI request to <model>".
-        worker = threading.Thread(target=contextvars.copy_context().run, args=(run,), name="mm-filing-chat", daemon=True)
-        worker.start()
+        from tessellate.core import jobs
+
+        context = contextvars.copy_context()
+        worker = jobs.thread("mm-filing-chat", lambda: context.run(run))
         worker.join(deadline)
         with lock:
             if "reply" not in outcome and "error" not in outcome:

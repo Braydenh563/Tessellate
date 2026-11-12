@@ -779,8 +779,9 @@ def _boot_and_swap(window) -> None:
     from tessellate.core import instance_lock
 
     instance_lock.set_focus_handler(lambda: _bring_forward(window))
-    server = threading.Thread(target=_run_server, daemon=True)
-    server.start()
+    from tessellate.core import jobs
+
+    jobs.thread("desktop-server", _run_server)
     if _wait_for_server_with_progress(window):
         # Tick the step this process owns *before* the swap, not after: after
         # the swap this page no longer exists. The step is genuinely over at
@@ -2353,7 +2354,9 @@ def _start_tray(
         "Tessellate",
         pystray.Menu(*menu_items),
     )
-    threading.Thread(target=_run_tray_loop, args=(icon,), daemon=True).start()
+    from tessellate.core import jobs
+
+    jobs.thread("tray-icon", lambda: _run_tray_loop(icon))
     return icon
 
 

@@ -270,8 +270,9 @@ class _FirstByteWatcher:
         with self._lock:
             self._waiting[conn] = (loop, future, time.monotonic() + timeout)
             if self._thread is None:
-                self._thread = threading.Thread(target=self._run, name="lan-first-byte", daemon=True)
-                self._thread.start()
+                from tessellate.core import jobs
+
+                self._thread = jobs.thread("lan-first-byte", self._run)
         return future
 
     @staticmethod

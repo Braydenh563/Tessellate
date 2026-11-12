@@ -60,7 +60,7 @@ from tessellate.ai.grounding import (
     support as grounding_support,
 )
 from tessellate.ai.ollama_client import OllamaError
-from tessellate.api import chat_extra, chat_web
+from tessellate.api import chat_extra, chat_web, once_routes
 from tessellate.core import activity, deps, jobs, model_gate, private_turn
 from tessellate.core.database import (
     AuditLog,
@@ -499,7 +499,7 @@ def _prepare(
 
 
 @router.post("", response_model=ChatResponse)
-@private_turn.route
+@once_routes.json_route
 def chat(body: ChatRequest, session: Session = Depends(get_session)) -> ChatResponse:
     _check_refs(session, body)
     _apply_scope(session, body)
@@ -2221,7 +2221,7 @@ def _stream_request(body: ChatRequest, session: Session) -> _StreamRequest:
 
 
 @router.post("/stream")
-@private_turn.route
+@once_routes.stream_route
 def chat_stream(body: ChatRequest, session: Session = Depends(get_session)):
     """NDJSON stream. Line types, in order:
     {"type":"status", "stage": "searching"}   (sent immediately, so the
@@ -2431,12 +2431,11 @@ def compress_history(body: CompressBody) -> dict:
 
 
 @router.post("/tools/execute")
-def execute_confirmed_tool(
-    body: ToolExecuteBody, session: Session = Depends(get_session)
-) -> dict:
+def execute_confirmed_tool(body: ToolExecuteBody, session: Session = Depends(get_session)) -> dict:
     """Run one registry tool, how the UI executes a destructive call
     after the user clicks Confirm. Only registry tools can run, and the
     result carries the same human label shown in chat."""
+    once_routes.check_tag(body)  # an Undo changed on the way back is refused (L566)
     if body.name == "batch":
         calls = [(str(step.get("tool") or ""), step.get("arguments") or {}) for step in body.steps]
         if not calls or any(name not in tools.TOOLS for name, _ in calls):
@@ -2460,6 +2459,7 @@ def execute_confirmed_tool(
     #: text written for the model, and CodeQL (#552, #553) follows any
     #: whole-result return to the exception text. The Confirm card reads
     #: `label`; `undo` lets a confirmed change be taken back.
-    return consent_store.remember(body.consent_id, {"label": str(result.get("label") or ""), "undo": result.get("undo")})
+    undo = consent_store.signed(result.get("undo"))
+    return consent_store.remember(body.consent_id, {"label": str(result.get("label") or ""), "undo": undo})
 
 

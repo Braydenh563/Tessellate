@@ -1129,6 +1129,8 @@ async function streamChatEvents({
   //: Fetched now, so a composed reply's reveal (`finishReply`) never waits on it.
   ensureModule("replyKit").catch(() => {});
   const body = { question, history: history || [], locale: navigator.language };
+  //: One id per send, so a repeated POST of this same send (a dropped connection retried) is answered once (E70, `turn_once`).
+  body.turn_id = crypto.randomUUID ? crypto.randomUUID() : `t${Date.now()}${Math.random().toString(36).slice(2, 12)}`;
   //: "Try again" (CHAT_PLAN decision 34): an answer from the notes reworded.
   if (attempt) body.attempt = attempt;
   if (isPrivate) body.private = true;
@@ -1915,7 +1917,7 @@ function pushAgentChangeUndo(change, call) {
   const key = JSON.stringify(change.undo);
   agentUndoActions.set(key, pushUndo(
     (change.label || change.tool).replace(/^ph:[\w-]+\s*/, ""),
-    () => exec({ name: inverse.tool, arguments: inverse.arguments, steps: inverse.steps }).then(refreshAfterToolChanges),
+    () => exec({ name: inverse.tool, arguments: inverse.arguments, steps: inverse.steps, sig: inverse.sig }).then(refreshAfterToolChanges),
     async () => {
       const again = await exec({ name: call.name, arguments: call.arguments });
       inverse = again.undo || inverse;

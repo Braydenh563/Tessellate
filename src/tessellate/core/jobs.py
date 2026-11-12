@@ -855,10 +855,11 @@ def join_threads(timeout: float = 5.0) -> None:
 # message is a normal answer. Nothing here kills a thread: a stop is a flag
 # checked at the next boundary or a `terminate()` on a child process.
 
-#: kind -> "module:function". `embeddings` is absent: the warm-up is one
-#: blocking model load with nothing to check a flag between, so the panel
-#: says so rather than offering a button that would do nothing.
+#: kind -> "module:function". `embeddings` is the warm-up: a download in it
+#: stops after its file and nothing follows the load (L650); the load call
+#: itself is the one step that cannot be interrupted, and the row says so.
 CANCELLERS: dict[str, str] = {
+    "embeddings": "tessellate.ai.embeddings:stop_warmup",
     "reindex": "tessellate.ai.model_manager:stop_reindex",
     "pull": "tessellate.ai.model_manager:stop_pulls",
     "autonomous": "tessellate.ai.autonomous:stop_pass",

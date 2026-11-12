@@ -287,6 +287,26 @@ def _forget_private_spaces(session, flush_context, instances):
         session.info.pop(PRIVATE_SPACES, None)
 
 
+@event.listens_for(Session, "before_flush")
+def _stamp_edited_at(session, flush_context, instances):
+    """Every write that changes a saved note's text stamps `Entry.edited_at`
+    in this one place (L570), so an AI-tool edit, an import over an existing
+    note and a duplicate merge are covered as well as the edit routes, and
+    `lexical_filing` can key its changed-since read on it. Not an insert (a
+    new note is "never edited"), not a privacy toggle (sealing rewrites
+    `content` with ciphertext), not an access_count bump, filing or a pin:
+    only `content` is read here. Tag and category edits still stamp through
+    `manager.mark_edited`, which the AI's own filing must not call."""
+    for obj in session.dirty:
+        if not isinstance(obj, Entry) or obj in session.new:
+            continue
+        attrs = sa_inspect(obj).attrs
+        if attrs["edited_at"].history.has_changes():
+            continue
+        if attrs["content"].history.has_changes() and not attrs["is_private"].history.has_changes():
+            obj.edited_at = utcnow()
+
+
 def _sealed_owner_private(session: Session, obj: object, private_spaces: set[str] | None = None) -> bool:
     if isinstance(obj, tuple(_SPACE_SEALED)):
         # Before `_set_workspace` has stamped a new row: the request's space.

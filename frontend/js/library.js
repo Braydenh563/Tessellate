@@ -1735,8 +1735,10 @@ function libraryCard(item) {
   }
   const when = document.createElement("span");
   when.className = "library-card-when";
-  when.textContent = relativeTime(item.updated_at);
-  when.title = whenText(item.updated_at);
+  //: A chat shows when it was last spoken in (`last_at`), not when its row last changed (a pin or a rename moves that).
+  const shownAt = item.last_at || item.updated_at;
+  when.textContent = relativeTime(shownAt);
+  when.title = whenText(shownAt);
   foot.append(detail, when);
   card.appendChild(foot);
 

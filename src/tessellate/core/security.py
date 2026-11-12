@@ -781,7 +781,9 @@ def _backend_addresses(host: str) -> list:
         raw = _resolve(host)
         finished.set()
 
-    threading.Thread(target=_probe, name=f"dns-{host}", daemon=True).start()
+    from tessellate.core import jobs
+
+    jobs.thread(f"dns-{host}", _probe)
     if not finished.wait(_DNS_TIMEOUT_SECONDS):
         return []
     found = []

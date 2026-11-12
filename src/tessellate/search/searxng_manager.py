@@ -214,8 +214,9 @@ def _run_streaming(
         finally:
             lines.put(None)  # sentinel: the pipe is closed, one way or another
 
-    reader = threading.Thread(target=_pump, daemon=True)
-    reader.start()
+    from tessellate.core import jobs
+
+    reader = jobs.thread("searxng-output", _pump)
 
     _stop_streaming.clear()
     deadline = time.time() + timeout

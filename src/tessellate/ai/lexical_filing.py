@@ -1006,9 +1006,11 @@ def _category_aggregates(corpus, names, scope, scope_key):  # noqa: ANN001, ANN2
 # notes are read and tokenised again. Scoring then reads only the notes that
 # share a word with the one being filed, through an inverted index.
 #
-# The stamp is what an edit moves: `updated_at` (`onupdate`, so every ORM
-# write), and the tags and category themselves, because a notebook-wide tag
-# or category rename is one UPDATE statement that does not.
+# The stamp is what an edit moves: `edited_at` (set in one `before_flush` hook
+# for every write to a note's text, falling back to `created_at` for a note
+# never edited; not `updated_at`, which an open's access_count bump moves too),
+# and the tags and category themselves, because a notebook-wide tag or
+# category rename is one UPDATE statement that does not.
 
 
 @dataclass
@@ -1057,7 +1059,7 @@ class _Corpus:
         #: taken again the next time its doc is scored.
         self.epoch: dict[str, int] = {"words": 0, "tagged": 0}
         self._epoch_total: dict[str, int] = {"words": 0, "tagged": 0}
-        #: The newest `updated_at` read, and when the corpus was last read
+        #: The newest edit stamp read, and when the corpus was last read
         #: whole (`_corpus_for`).
         self.mark: str | None = None
         self.full_at = 0.0
@@ -1214,12 +1216,13 @@ def _make_doc(stamp: tuple, content: str, tags: list[str], workspace, category_i
 
 
 #: How often the corpus is read whole rather than by what changed. Between
-#: full reads only notes whose `updated_at` moved are read, which every ORM
-#: write does; a statement that writes round the ORM (a space deleted, its
+#: full reads only notes whose edit stamp moved are read, which every write
+#: to a note's text does; a statement that writes round the ORM (a space deleted, its
 #: notes moved, which calls `forget_corpus`; a hard purge) is caught here.
 FULL_REFRESH_SECONDS = 30.0
 
-_STAMP_COLUMNS = "id, updated_at, tags, category_id, user_filed, is_board, workspace_id"
+_STAMP = "COALESCE(edited_at, created_at)"
+_STAMP_COLUMNS = f"id, {_STAMP}, tags, category_id, user_filed, is_board, workspace_id"
 
 
 def _read_stamps(connection, corpus: _Corpus, now: float) -> dict[int, tuple]:  # noqa: ANN001
@@ -1236,13 +1239,13 @@ def _read_stamps(connection, corpus: _Corpus, now: float) -> dict[int, tuple]:  
             corpus.remove(gone)
         corpus.full_at = now
         return current
-    # What moved since the last read, binned and made private included:
-    # those leave the corpus. `>=`, so a write in the same instant as the
+    # What moved since the last read, binned and made private included
+    # (found by `updated_at`: neither is an edit, and both must leave the corpus now). `>=`, so a write in the same instant as the
     # mark is read again rather than missed; its stamp then matches.
     for row in connection.exec_driver_sql(
         f"SELECT {_STAMP_COLUMNS}, is_deleted, is_private FROM entries "  # noqa: S608  # constant columns
-        "WHERE updated_at >= ?",
-        (corpus.mark,),
+        f"WHERE {_STAMP} >= ? OR ((is_deleted = 1 OR is_private = 1) AND updated_at >= ?)",
+        (corpus.mark, corpus.mark),
     ).fetchall():
         entry_id = int(row[0])
         if row[7] or row[8]:
