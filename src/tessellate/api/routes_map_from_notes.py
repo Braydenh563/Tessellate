@@ -70,6 +70,157 @@ def _key_category(info: dict, note_id: int) -> str:
     return (info[note_id].get("category") or "").strip() or UNCATEGORISED
 
 
+class _MapTree:
+    """The state one map outline is built from: the notes, their links, the
+    nodes placed so far and the links the tree itself uses."""
+
+    def __init__(self, notes: list[dict], edges: list[tuple[int, int]]):
+        self.info = {n["id"]: n for n in notes}
+        self.order = {n["id"]: i for i, n in enumerate(notes)}
+        self.adj: dict[int, set[int]] = {i: set() for i in self.info}
+        for a, b in edges:
+            if a != b and a in self.info and b in self.info:
+                self.adj[a].add(b)
+                self.adj[b].add(a)
+        self.refs = iter(range(1, 10**9))
+        self.placed: dict[int, dict] = {}
+        self.tree_edges: set[frozenset] = set()
+
+    def rank(self, i: int) -> tuple[int, int]:
+        return (-len(self.adj[i]), self.order[i])
+
+    def topic(self, text: str) -> dict:
+        return {"note": None, "text": text[:100], "ref": f"t{next(self.refs)}", "children": [], "links": []}
+
+    def note(self, i: int) -> dict:
+        title = (self.info[i].get("title") or "").strip() or "Untitled"
+        return {"note": i, "text": title[:100], "ref": f"n{i}", "children": [], "links": []}
+
+    def span(self, center: int) -> dict:
+        """The breadth-first tree of `center`'s cluster, hubs first."""
+        placed = self.placed
+        head = placed[center] = self.note(center)
+        queue = deque([center])
+        while queue:
+            current = queue.popleft()
+            for nxt in sorted(self.adj[current], key=self.rank):
+                if nxt in placed:
+                    continue
+                placed[nxt] = self.note(nxt)
+                placed[current]["children"].append(placed[nxt])
+                self.tree_edges.add(frozenset((current, nxt)))
+                queue.append(nxt)
+        return head
+
+    def root(self, root_id: int | None, name: str) -> tuple[dict, int | None]:
+        info = self.info
+        if root_id in info:
+            root_note = root_id
+        elif any(self.adj.values()):
+            root_note = min(info, key=self.rank)
+        else:
+            root_note = None
+        root = self.span(root_note) if root_note is not None else self.topic(name or "Map")
+        return root, root_note
+
+    def attach_islands(self, root: dict, root_note: int | None) -> None:
+        """The clusters the root's links do not reach, each as its own tree,
+        grouped by the category of its centre."""
+        groups: dict[str, list[dict]] = {}
+        for i in sorted(self.info, key=self.rank):
+            if i not in self.placed:
+                groups.setdefault(_key_category(self.info, i), []).append(self.span(i))
+        if len(groups) == 1 and (root_note is None or len(next(iter(groups.values()))) <= 3):
+            root["children"].extend(next(iter(groups.values())))
+            return
+        for category, trees in groups.items():
+            if len(trees) == 1:
+                root["children"].append(trees[0])
+            else:
+                branch = self.topic(category)
+                branch["children"].extend(trees)
+                root["children"].append(branch)
+
+    def grouping(self, kids: list[dict]) -> dict[str, list[dict]] | None:
+        """How to split an overfull set of note children, or None."""
+        info = self.info
+        notes_only = [k for k in kids if k["note"] is not None]
+        by_category: dict[str, list[dict]] = {}
+        for kid in notes_only:
+            by_category.setdefault(_key_category(info, kid["note"]), []).append(kid)
+        if sum(1 for g in by_category.values() if len(g) > 1) >= 2:
+            return by_category
+        by_tag = _group_by_shared_tag(info, notes_only)
+        if by_tag:
+            return by_tag
+        if len(notes_only) <= 2 * MAX_FANOUT:
+            return None
+        return _alphabetical_runs(notes_only)
+
+    def split(self, node: dict) -> None:
+        kids = node["children"]
+        groups_here = self.grouping(kids) if len(kids) > MAX_FANOUT else None
+        if groups_here:
+            grouped = {id(k) for g in groups_here.values() if len(g) > 1 for k in g}
+            rebuilt = [k for k in kids if id(k) not in grouped]
+            for label, members in groups_here.items():
+                if len(members) > 1:
+                    branch = self.topic(label.strip())
+                    branch["children"] = members
+                    rebuilt.append(branch)
+            node["children"] = rebuilt
+        for child in node["children"]:
+            self.split(child)
+
+    def cross_links(self, edges: list[tuple[int, int]]) -> None:
+        placed, crossed = self.placed, 0
+        for a, b in sorted({frozenset(e) for e in edges if e[0] != e[1]}, key=sorted):
+            pair = frozenset((a, b))
+            if pair in self.tree_edges or a not in placed or b not in placed:
+                continue
+            if crossed >= MAX_CROSS_LINKS:
+                break
+            lo, hi = sorted(pair)
+            placed[lo]["links"].append(placed[hi]["ref"])
+            crossed += 1
+
+
+def _group_by_shared_tag(info: dict, notes_only: list[dict]) -> dict[str, list[dict]] | None:
+    """A tag the children share, but not all of them: the most common one
+    each child carries."""
+    counts = Counter(t for k in notes_only for t in set(info[k["note"]].get("tags") or []))
+    useful = {t for t, c in counts.items() if 1 < c < len(notes_only)}
+    if not useful:
+        return None
+    by_tag: dict[str, list[dict]] = {}
+    for kid in notes_only:
+        by_tag.setdefault(_commonest_tag(info[kid["note"]].get("tags") or [], useful, counts), []).append(kid)
+    if sum(1 for k, g in by_tag.items() if k and len(g) > 1) >= 2:
+        return {(f"#{k}" if k else "Other"): g for k, g in by_tag.items()}
+    return None
+
+
+def _commonest_tag(tags: list[str], useful: set[str], counts: Counter) -> str:
+    """The most common useful tag a child carries, or "" for none."""
+    mine = [t for t in tags if t in useful]
+    return max(mine, key=lambda t: (counts[t], t)) if mine else ""
+
+
+def _alphabetical_runs(notes_only: list[dict]) -> dict[str, list[dict]]:
+    """The last resort every set of titles has: alphabetical runs."""
+    ordered = sorted(notes_only, key=lambda k: k["text"].casefold())
+    size = -(-len(ordered) // -(-len(ordered) // MAX_FANOUT))
+    runs: dict[str, list[dict]] = {}
+    for start in range(0, len(ordered), size):
+        run = ordered[start : start + size]
+        first, last = run[0]["text"][:1].upper(), run[-1]["text"][:1].upper()
+        label = first if first == last else f"{first} to {last}"
+        while label in runs:
+            label += " "
+        runs[label] = run
+    return runs
+
+
 def build_tree(
     notes: list[dict], edges: list[tuple[int, int]], root_id: int | None = None, name: str = "Map"
 ) -> dict:
@@ -77,135 +228,11 @@ def build_tree(
     "links"}` per node, `note` None for a topic. `notes` are
     `{"id", "title", "category", "tags"}` in the order the person chose them;
     `edges` are pairs of note ids, either direction."""
-    info = {n["id"]: n for n in notes}
-    order = {n["id"]: i for i, n in enumerate(notes)}
-    adj: dict[int, set[int]] = {i: set() for i in info}
-    for a, b in edges:
-        if a != b and a in info and b in info:
-            adj[a].add(b)
-            adj[b].add(a)
-
-    def rank(i: int) -> tuple[int, int]:
-        return (-len(adj[i]), order[i])
-
-    refs = iter(range(1, 10**9))
-
-    def topic(text: str) -> dict:
-        return {"note": None, "text": text[:100], "ref": f"t{next(refs)}", "children": [], "links": []}
-
-    def note(i: int) -> dict:
-        title = (info[i].get("title") or "").strip() or "Untitled"
-        return {"note": i, "text": title[:100], "ref": f"n{i}", "children": [], "links": []}
-
-    placed: dict[int, dict] = {}
-    tree_edges: set[frozenset] = set()
-
-    def span(center: int) -> dict:
-        """The breadth-first tree of `center`'s cluster, hubs first."""
-        head = placed[center] = note(center)
-        queue = deque([center])
-        while queue:
-            current = queue.popleft()
-            for nxt in sorted(adj[current], key=rank):
-                if nxt in placed:
-                    continue
-                placed[nxt] = note(nxt)
-                placed[current]["children"].append(placed[nxt])
-                tree_edges.add(frozenset((current, nxt)))
-                queue.append(nxt)
-        return head
-
-    linked = any(adj.values())
-    if root_id in info:
-        root_note = root_id
-    elif linked:
-        root_note = min(info, key=rank)
-    else:
-        root_note = None
-    root = span(root_note) if root_note is not None else topic(name or "Map")
-
-    #: The clusters the root's links do not reach, each as its own tree,
-    #: grouped by the category of its centre.
-    groups: dict[str, list[dict]] = {}
-    for i in sorted(info, key=rank):
-        if i in placed:
-            continue
-        cluster = span(i)
-        groups.setdefault(_key_category(info, i), []).append(cluster)
-    if len(groups) == 1 and (root_note is None or len(next(iter(groups.values()))) <= 3):
-        root["children"].extend(next(iter(groups.values())))
-    else:
-        for category, trees in groups.items():
-            if len(trees) == 1:
-                root["children"].append(trees[0])
-            else:
-                branch = topic(category)
-                branch["children"].extend(trees)
-                root["children"].append(branch)
-
-    def grouping(kids: list[dict]) -> dict[str, list[dict]] | None:
-        """How to split an overfull set of note children, or None."""
-        notes_only = [k for k in kids if k["note"] is not None]
-        by_category: dict[str, list[dict]] = {}
-        for kid in notes_only:
-            by_category.setdefault(_key_category(info, kid["note"]), []).append(kid)
-        if sum(1 for g in by_category.values() if len(g) > 1) >= 2:
-            return by_category
-        #: A tag the children share, but not all of them: the most common one
-        #: each child carries.
-        counts = Counter(t for k in notes_only for t in set(info[k["note"]].get("tags") or []))
-        useful = {t for t, c in counts.items() if 1 < c < len(notes_only)}
-        if useful:
-            by_tag: dict[str, list[dict]] = {}
-            for kid in notes_only:
-                tags = [t for t in info[kid["note"]].get("tags") or [] if t in useful]
-                key = max(tags, key=lambda t: (counts[t], t)) if tags else ""
-                by_tag.setdefault(key, []).append(kid)
-            if sum(1 for k, g in by_tag.items() if k and len(g) > 1) >= 2:
-                return {(f"#{k}" if k else "Other"): g for k, g in by_tag.items()}
-        if len(notes_only) <= 2 * MAX_FANOUT:
-            return None
-        #: The last resort every set of titles has: alphabetical runs.
-        ordered = sorted(notes_only, key=lambda k: k["text"].casefold())
-        size = -(-len(ordered) // -(-len(ordered) // MAX_FANOUT))
-        runs: dict[str, list[dict]] = {}
-        for start in range(0, len(ordered), size):
-            run = ordered[start : start + size]
-            first, last = run[0]["text"][:1].upper(), run[-1]["text"][:1].upper()
-            label = first if first == last else f"{first} to {last}"
-            while label in runs:
-                label += " "
-            runs[label] = run
-        return runs
-
-    def split(node: dict) -> None:
-        kids = node["children"]
-        if len(kids) > MAX_FANOUT:
-            groups_here = grouping(kids)
-            if groups_here:
-                grouped = {id(k) for g in groups_here.values() if len(g) > 1 for k in g}
-                rebuilt = [k for k in kids if id(k) not in grouped]
-                for label, members in groups_here.items():
-                    if len(members) > 1:
-                        branch = topic(label.strip())
-                        branch["children"] = members
-                        rebuilt.append(branch)
-                node["children"] = rebuilt
-        for child in node["children"]:
-            split(child)
-
-    split(root)
-
-    crossed = 0
-    for a, b in sorted({frozenset(e) for e in edges if e[0] != e[1]}, key=sorted):
-        pair = frozenset((a, b))
-        if pair in tree_edges or a not in placed or b not in placed:
-            continue
-        if crossed >= MAX_CROSS_LINKS:
-            break
-        lo, hi = sorted(pair)
-        placed[lo]["links"].append(placed[hi]["ref"])
-        crossed += 1
+    tree = _MapTree(notes, edges)
+    root, root_note = tree.root(root_id, name)
+    tree.attach_islands(root, root_note)
+    tree.split(root)
+    tree.cross_links(edges)
     return root
 
 

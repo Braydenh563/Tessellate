@@ -53,8 +53,6 @@
  "src/tessellate/api/routes_files.py::caption_media": 23,
  "src/tessellate/api/routes_graph.py::_hop_reasons": 19,
  "src/tessellate/api/routes_insights.py::_ai_greeting": 19,
- "src/tessellate/api/routes_map_from_notes.py::build_tree": 26,
- "src/tessellate/api/routes_map_from_notes.py::build_tree.grouping": 28,
  "src/tessellate/api/routes_map_from_notes.py::map_from_notes": 19,
  "src/tessellate/api/routes_map_suggest.py::_candidates": 20,
  "src/tessellate/api/routes_mentions.py::_backlinks": 22,
