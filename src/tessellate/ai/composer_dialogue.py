@@ -15,9 +15,9 @@ import hashlib
 import re
 from dataclasses import dataclass, field
 from datetime import date as date_type, datetime, time as time_type
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from tessellate.ai import composer_chip_subject, composer_frame, composer_shift, question_noise, recognise as rec, repair_turn, when as when_words
+from tessellate.ai import composer_chip_subject, composer_tables, composer_frame, composer_shift, question_noise, recognise as rec, repair_turn, when as when_words
 from tessellate.ai.composer_ask import _stem, _words, classify, compare_sides, rephrase, subject_terms
 from tessellate.ai.composer_body import _BRIEF, _FULL, _NOTE_NOUNS, _asked_span
 from tessellate.ai.composer_phrases import PHRASES
@@ -26,6 +26,9 @@ from tessellate.ai.composer_read import NoteView
 from tessellate.core import clock
 from tessellate.search import query as query_understanding
 from tessellate.core.lazyre import lazy_compile
+
+if TYPE_CHECKING:
+    from tessellate.ai.composer_answer import _Answer
 
 
 # --- what to ask next -----------------------------------------------------------
@@ -1009,3 +1012,26 @@ def repeats(text: str, history: list[dict] | None) -> bool:
     lead = (text or "").strip().split("\n", 1)[0].strip()
     last = str(((history or [{}])[-1] or {}).get("answer") or "").strip().split("\n", 1)[0].strip()
     return bool(lead) and lead == last
+
+
+#: The wording of each next-question chip in the natural voice, to the key whose variants the other voice has.
+_CHIP_KEYS = ("next_tag_a", "next_tag_b", "next_note_a", "next_note_b", "next_latest_a", "next_when_a")
+
+
+def voiced_chips(out: "_Answer", chips: list[list[tuple]]) -> list[list[tuple]]:
+    """The chips' fixed words in the answer's voice (L97). A chip is built with the natural wording; the second
+    half of a pair takes the index its first half chose, so "What does the entry “X” state?" never splits."""
+    voice = composer_tables.VOICE_VARIANTS[out.voice]
+    keys = {PHRASES[k]: k for k in _CHIP_KEYS}
+    chosen: dict[str, int] = {}
+
+    def said(part: tuple) -> tuple:
+        key = keys.get(part[1]) if part[0] == "template" else None
+        if key is None:
+            return part
+        lead = composer_tables.PAIRED.get(key, key)
+        if lead == key:
+            chosen[key] = voice[key].index(out.voiced(key))
+        return ("template", PHRASES[voice[key][chosen.get(lead, 0)]])
+
+    return [[said(part) for part in chip] for chip in chips]

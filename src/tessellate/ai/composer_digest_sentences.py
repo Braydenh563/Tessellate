@@ -1252,11 +1252,9 @@ def _said_gone(text: str, gone: list[str]) -> str:
 
 #: The words for the day a note was written, said as that day once read:
 #: the recogniser gives the day each means from the note's own date.
-#: "Tomorrow" is said as its day too once that day is past (INBOX 1357, class
-#: D: "tomorrow you pick up your student card" from a July note).
+#: "Tomorrow" is said as its day too once that day is past (INBOX 1357).
 _DEICTIC = frozenset(("today", "tonight", "yesterday"))
-#: Time words that were true on the day a note was written and not after: "tomorrow", "tomorrow at 3pm",
-#: "in 3 days", "two weeks ago" (L94; the recogniser reads them, this only picks which to restate).
+#: Time words true only on the day written: "tomorrow (at 3pm)", "in 3 days", "two weeks ago" (L94).
 _RELATIVE_TIME = re.compile(r"(?:tomorrow|yesterday)(?: at .+)?$|in \w+ (?:days?|weeks?)$|\w+ (?:days?|weeks?) ago$", re.I)
 
 

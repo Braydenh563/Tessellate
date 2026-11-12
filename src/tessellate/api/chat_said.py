@@ -325,6 +325,16 @@ def _asks_capability(req: _StreamRequest, prepared: dict) -> bool:
     return prepared["intent"] == intent.ABOUT_APP and capability.asks(req.question or "")
 
 
+def _capability_answer(req: _StreamRequest, ollama_running: bool, voice: str) -> str:
+    try:
+        web = bool(deps.get_config().get_preference("web_search_enabled", False))
+    except Exception:  # noqa: BLE001  # an unreadable preference is off
+        web = False
+    recent, seed = _reply_seed(req)
+    return capability.answer(req.question, prefs={"web_search_enabled": web}, model_running=ollama_running,
+                             voice=voice, recent=recent, seed=seed)
+
+
 def _app_answers(req: _StreamRequest, ollama_running: bool) -> bool:
     """Whether the app's own engine gives this turn's finished answer
     (CHAT_PLAN decision 75, the owner: "it SHOULD completely replace it if

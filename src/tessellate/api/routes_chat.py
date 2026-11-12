@@ -35,7 +35,7 @@ from fastapi.responses import StreamingResponse
 from starlette.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
 
-from tessellate.ai import address, capability, fact_check, composer, composer_social, composer_unplaced, note_language, composer_aware, composer_compose, composer_digest, composer_digest_sentences, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, note_rank, note_recency, personal, verdicts, vocative
+from tessellate.ai import address, composer_retry, fact_check, composer, composer_social, composer_unplaced, note_language, composer_aware, composer_compose, composer_digest, composer_digest_sentences, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, note_rank, note_recency, personal, verdicts, vocative
 from tessellate.ai import ask_chips, composer_dialogue, composer_empty, composer_intent, composer_links, composer_smalltalk, composer_talk
 from tessellate.ai import consent, consent_store, recognise
 from tessellate.ai import (
@@ -81,7 +81,7 @@ from tessellate.api.chat_pool import _Found, _NoteCtx, _chat_payload, _composer_
 from tessellate.api.chat_recent import AGENT_SURFACE, ASK_SURFACE, STARTER_SUGGESTIONS, _about, _asked_key, _feature_for, _fill, _recent_questions
 from tessellate.api.chat_web import WEB_PAGES, _can_start_searxng, _torn_events, _home_place, _link_events, _offer_events, _search_service, _unmatched_recents, _web_allowed, _web_chip, _web_first, _web_page_row, _web_pref_on
 from tessellate.api.chat_agent import _agent_events, consent_events, run_card_events, _close_quietly, _first_agent_event, _refuse_failed, _refuse_if_off, _starter_read
-from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _miss_events, acts_on_listed_task, _says_cannot, _ROWS_KEPT, _app_answers, _asked_before, _asks_capability, _asks_only_a_time, _awareness, _chart_line, _cited_titles, _composed_lines, _current_notes, _older_dates, _diagram_events, _engine_counts, _engine_stands, _filed_or_counted_events, _first_cited_has_list, _held_reply, _help_events, _in_notes, _late_panel, _linked_notes, _listed_below, _model_said, _name_documents, _newest_titles, _newest_word, _open_note_answer, _ping_offer, _related_elsewhere, _related_sentence, _remember_rows, _reminder_window, _reply_seed, _row_source, _rows_key, _run_title, _said_events, _save_ask_turn, _saved_joke_reply, _search_footer, _sees, _slash_chart, _stats_chart, _stats_listed, _suggest_events, _with_words_only, reply_panel
+from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _capability_answer, _miss_events, acts_on_listed_task, _says_cannot, _ROWS_KEPT, _app_answers, _asked_before, _asks_capability, _asks_only_a_time, _awareness, _chart_line, _cited_titles, _composed_lines, _current_notes, _older_dates, _diagram_events, _engine_counts, _engine_stands, _filed_or_counted_events, _first_cited_has_list, _held_reply, _help_events, _in_notes, _late_panel, _linked_notes, _listed_below, _model_said, _name_documents, _newest_titles, _newest_word, _open_note_answer, _ping_offer, _related_elsewhere, _related_sentence, _remember_rows, _reminder_window, _reply_seed, _row_source, _rows_key, _run_title, _said_events, _save_ask_turn, _saved_joke_reply, _search_footer, _sees, _slash_chart, _stats_chart, _stats_listed, _suggest_events, _with_words_only, reply_panel
 from tessellate.api.chat_turn import _composed_support, _frame_events, _not_again, _with_frame, _asks_change, _chat_reply, _checks_grounding, _cited_scope, _composes_offline, _detect_intent, _engine_answers, _facts_turn, _insight_level, _insight_memory, _is_composing, _log_question, _may_digest, _meaning_loading, model_chips, _model_stream_events, _note_with_hint, _notes_first, _notes_messages, _relay_events, _searched_question, _social_line, _trim_answer, _uncut, _verdicts, _why, _will_answer
 
 
@@ -883,18 +883,8 @@ def _tool_read_events(req: _StreamRequest, notes: list | None = None) -> list[di
 
 
 def _capability_response(body: ChatRequest, session: Session, prepared: dict, ollama_running: bool) -> ChatResponse | None:
-    answer = _capability_answer(req, ollama_running) if _asks_capability(req := _stream_request(body, session), prepared) else None
+    answer = _capability_answer(req, ollama_running, _composer_voice()) if _asks_capability(req := _stream_request(body, session), prepared) else None
     return answer and ChatResponse(ai_response=answer, raw_results=[], search_mode=prepared["search_mode"], ollama_running=ollama_running)
-
-
-def _capability_answer(req: _StreamRequest, ollama_running: bool) -> str:
-    try:
-        web = bool(deps.get_config().get_preference("web_search_enabled", False))
-    except Exception:  # noqa: BLE001  # an unreadable preference is off
-        web = False
-    recent, seed = _reply_seed(req)
-    return capability.answer(req.question, prefs={"web_search_enabled": web}, model_running=ollama_running,
-                             voice=_composer_voice(), recent=recent, seed=seed)
 
 
 def _welcome(req: _StreamRequest, seed: str, recent: list[str]) -> str:
@@ -988,7 +978,7 @@ def _app_said(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list
     if itself:
         return itself
     if _asks_capability(req, prepared):
-        return [{"type": "answer", "delta": _capability_answer(req, ollama_running)}]
+        return [{"type": "answer", "delta": _capability_answer(req, ollama_running, _composer_voice())}]
     if req.address is not None and req.address.call:
         return _call_events(req)
     placed = find_it.answer(req.question or "") if not req.images_raw else None
@@ -1182,7 +1172,7 @@ def _conversational_messages(req: _StreamRequest, prepared: dict, ollama_running
         context="\n".join(
             part
             for part in (
-                _capability_answer(req, ollama_running) if _asks_capability(req, prepared) else "",
+                _capability_answer(req, ollama_running, _composer_voice()) if _asks_capability(req, prepared) else "",
                 composer_aware.model_context(_awareness(req)) if req.body.screen else "", chat_extra.remark_facts(req.session, req.question or ""),  # remark parity, INBOX 1749
             )
             if part
@@ -1269,7 +1259,7 @@ def _digest_for(req: _StreamRequest, prepared: dict, follow, current: list, rest
         insight=_insight_level(), learned=_insight_memory(req.session), known=_verdicts(req.session),
     ), req.question)
     try:
-        return composer.retried(ask(current), current, ask, req.body.attempt)
+        return composer_retry.retried(ask(current), current, ask, req.body.attempt)
     except Exception:  # noqa: BLE001  # the composer's answer stands
         logging.getLogger("tessellate.chat").exception("chat: the digest failed")
         return None

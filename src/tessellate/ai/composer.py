@@ -84,7 +84,7 @@ from __future__ import annotations
 import re
 from datetime import date, datetime
 
-from tessellate.ai import act_registry, composer_ack, composer_brief, composer_links, composer_names, composer_numbers, composer_overview, composer_small, composer_open, composer_tables, composer_versus, grounding, phrasing, question_noise, spelling, typo_context, utilities
+from tessellate.ai import act_registry, composer_ack, composer_dialogue, composer_retry, composer_brief, composer_links, composer_names, composer_numbers, composer_overview, composer_small, composer_open, composer_tables, composer_versus, grounding, phrasing, question_noise, spelling, typo_context, utilities
 from tessellate.ai import recognise as rec
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_ask import _KNOWN, _SHAPE_RULES, _guessing_recent, _holds, _stem, _still_recent, _words, asked_whole, asks_written_when, classify, compare_sides, rephrase, subject_terms, user_now, user_today, when_terms
@@ -96,7 +96,7 @@ from tessellate.ai.composer_body import BROAD_NOTES, FULL_POINTS, _body, _compar
 from tessellate.ai.composer_dialogue import Dialogue, _next_questions, follow_on
 from tessellate.ai.composer_intent import _ACT_VERBS, _lead_act_verb, plan, tag_gap
 from tessellate.ai.composer_help import _feature_instead, cannot_answer, _help_answer, _in_window, _result, _utility, help_line, offered
-from tessellate.ai.composer_empty import _absent, _as_phrase, _as_typed, _bare_title, _did_you_mean, _filtered, _nothing, _REGISTER, window_said
+from tessellate.ai.composer_empty import _absent, refusal, _as_phrase, _as_typed, _bare_title, _did_you_mean, _filtered, _nothing, _REGISTER, window_said
 from tessellate.ai.composer_recall import _BROAD, _overview_answer, _recall, _recall_next, trivia, window_as_topic
 
 
@@ -294,8 +294,7 @@ def compose(
     retry: int = 0,
 ) -> dict:
     """`{"text", "grounding", "support", "shape", "parts", "next", "next_parts"}`
-    for one question. `retry` is Ask again's count: an answer that quoted one note is given again from the
-    other notes the search read, when one of them answers (E62, L93).
+    for one question. `retry` is Ask again's count (E62, L93): see `composer_retry`.
 
     `notes` are the route's retrieved notes, ranked (each with `id`,
     `content`, and `written` or `created_at`). `recent` is the retrieval's
@@ -337,9 +336,9 @@ def compose(
     minded = typo_context.CTX.set(typo_context.of_notes(notes, names, previous, history=dialogue.history if dialogue else ()))
     current = _ASKS_NOW.set(asks_now(question))
     try:
-        answer = lambda pool: _answer_turn(question, pool, today=today, recent=recent, embed=embed, said=said, previous=previous,  # noqa: E731
-                                           voice=voice, now=now, salt=salt, turn=turn, dialogue=dialogue, prefer=prefer)
-        result = varied(answer(notes), notes, answer) if retry else answer(notes)
+        answer = lambda pool: _answer_turn(question, pool, today=today, recent=recent, embed=embed, said=said, previous=previous, voice=voice, now=now, salt=salt,  # noqa: E731
+                                            turn=turn, dialogue=dialogue, prefer=prefer)
+        result = composer_retry.varied(answer(notes), notes, answer) if retry else answer(notes)
         result = offered(result, asked)
         result = _acknowledged(result, asked, voice=composer_tables.voice_of(voice), seed=f"{asked.strip().lower()}:{salt}:{turn}",
                                history=dialogue.history if dialogue is not None else [{"answer": previous}], previous=previous, known=words, names=names)
@@ -663,58 +662,10 @@ def _fill_selected(out: "_Answer", p, shape: str, question: str, terms: list, ty
     return None
 
 
-def unread(first: dict | None, notes: list[dict]) -> list[dict]:
-    """The notes an answer that quoted exactly one note did not use: what a retry may read instead (L93)."""
-    cited = {row["note_id"] for row in (first or {}).get("grounding") or []}
-    return [n for n in notes if n.get("id") not in cited] if len(cited) == 1 else []
-
-
-def varied(first: dict | None, notes: list[dict], answer) -> dict | None:  # noqa: ANN001
-    """Ask again on an answer that quoted one note (a "when is", a "what is"): the same question over the notes
-    the first answer did not use, kept only when one of them answers it the same way. An answer over several
-    notes (a count, an overview) is left as it was: its figures are the same on every retry (audit 1031 C25)."""
-    others = unread(first, notes)
-    if not others:
-        return first
-    again = answer(others)
-    return again if again and again.get("grounding") and again.get("shape") == first.get("shape") else first
-
-
-def retried(first: dict | None, notes: list[dict], answer, attempt: int) -> dict | None:  # noqa: ANN001
-    """A digest answer on a retry: over one quoted note it reads the others, or hands over to `compose`, which does (L93)."""
-    if not attempt:
-        return first
-    again = varied(first, notes, answer)
-    return None if again is first and unread(first, notes) else again
-
-
-#: The wording of each next-question chip in the natural voice, to the key whose variants the other voice has.
-_CHIP_KEYS = ("next_tag_a", "next_tag_b", "next_note_a", "next_note_b", "next_latest_a", "next_when_a")
-
-
-def _voiced_chips(out: "_Answer", chips: list[list[tuple]]) -> list[list[tuple]]:
-    """The chips' fixed words in the answer's voice (L97). A chip is built with the natural wording; the second
-    half of a pair takes the index its first half chose, so "What does the entry “X” state?" never splits."""
-    voice = composer_tables.VOICE_VARIANTS[out.voice]
-    keys = {PHRASES[k]: k for k in _CHIP_KEYS}
-    chosen: dict[str, int] = {}
-
-    def said(part: tuple) -> tuple:
-        key = keys.get(part[1]) if part[0] == "template" else None
-        if key is None:
-            return part
-        lead = composer_tables.PAIRED.get(key, key)
-        if lead == key:
-            chosen[key] = voice[key].index(out.voiced(key))
-        return ("template", PHRASES[voice[key][chosen.get(lead, 0)]])
-
-    return [[said(part) for part in chip] for chip in chips]
-
-
 def _answer_dict(out: "_Answer", shape: str, question: str, terms: list, views_list: list, unsure: list) -> dict:
     quotes = "\n\n".join(row["sentence"] for row in out.rows)
     cited = {row["note_id"] for row in out.rows}
-    next_parts = _voiced_chips(out, (_did_you_mean(unsure) + _next_questions(question, shape, terms, views_list, cited))[:3])
+    next_parts = composer_dialogue.voiced_chips(out, (_did_you_mean(unsure) + _next_questions(question, shape, terms, views_list, cited))[:3])
     readings = [
         {"n": i, "note_id": out.views[v].note.get("source_id", v), "label": out.views[v].title}
         for i, v in enumerate(out.readings, 1)
@@ -767,21 +718,13 @@ def _fill_by_shape(out: "_Answer", p, shape: str, question: str, terms: list, ty
     return shape, _fill_selected(out, p, shape, question, terms, typed, unsure, views_list, said, embed, voice)
 
 
-def _refusal(refused: tuple, question: str, shape: str) -> dict:
-    """The answer that says the word asked about is one the notes are kept
-    from (a filter refused it)."""
-    key, word = refused
-    return _result([("template", PHRASES[key]), ("template", PHRASES["open_quote"]), ("asked", _as_typed(word, question)),
-                    ("template", PHRASES["close_quote"]), ("template", PHRASES["stop"])], shape)
-
-
 def _planned(question: str, today: date, recent: bool, embed, prefer: str, notes: list[dict], views_list: list):  # noqa: ANN001, ANN202
     """The plan for the question, the notes it may read, and the refusal when
     a word it asks about is one the notes are kept from (else None)."""
     p = plan(question, today, recent=recent, embed=embed)
     _steer_to_correction(p, prefer, notes)
     views_list, refused = _filtered(views_list, p)
-    return p, views_list, (_refusal(refused, question, p.shape) if refused else None)
+    return p, views_list, (refusal(refused, question, p.shape) if refused else None)
 
 
 def _compose(

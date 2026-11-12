@@ -2430,44 +2430,35 @@ def _story_unit(v, gisted: list[Fact], today: date):  # noqa: ANN001, ANN202
     return composer_story.clause_of(v, scratch.lines[0] if scratch.lines else "", scratch.rows[0] if scratch.rows else None)
 
 
-def _storied(out: _Out, question: str, members, facts, today: date) -> bool:  # noqa: ANN001
-    """An overview of several dated notes written as paragraphs (INBOX 1743):
-    the lead, a paragraph a stretch, the read of how it went, one insight.
-    False, with `out` untouched, when the notes do not fit that shape."""
-    #: Past MAX_NOTES the best-ranked note (the defining one leads `members`) is told first, on its own; the rest
-    #: follow oldest first (audit 1031 C4: filler with the word repeated is not what the story opens with).
-    lead = members[0] if len(members) > composer_story.MAX_NOTES else None
-    dated = sorted((v for v in members if v.written and v is not lead), key=lambda v: (v.written, v.id))
-    plan = composer_story.plan([v.written for v in dated], [v.note.get("content") or "" for v in dated]) if len(dated) == len(members) - (lead is not None) else None
-    #: Under five notes the plain lines have no filler to lose; they are woven only when a frame would have
-    #: told some of them as "More loosely related" or "More from X" (INBOX 1743 follow-up).
-    if plan is None or (len(dated) < composer_story.PLAIN_NOTES and not _would_fill(dated)):
-        return False
-    if lead is not None and lead.written:
-        #: The span says all the notes' days, the lead's too.
-        plan.first, plan.last = min(plan.first, lead.written), max(plan.last, lead.written)
+def _story_tellable(members, facts, today: date, lead):  # noqa: ANN001
+    """The dated notes, their plan, units and the lead's unit, or None when the notes do not fit the story shape."""
+    planned = composer_story.plan_of(members, lead)
+    if planned is None:
+        return None
+    dated, plan = planned
     gisted = _gists(members, facts)
     units = [_story_unit(v, gisted, today) for v in dated]
     first = _story_unit(lead, gisted, today) if lead is not None and lead.written else None
     if None in units or (lead is not None and first is None):
+        return None
+    return dated, plan, units, first
+
+
+def _storied(out: _Out, question: str, members, facts, today: date) -> bool:  # noqa: ANN001
+    """An overview of several dated notes written as paragraphs (INBOX 1743):
+    the lead, a paragraph a stretch, the read of how it went, one insight.
+    False, with `out` untouched, when the notes do not fit that shape."""
+    lead = members[0] if len(members) > composer_story.MAX_NOTES else None
+    told = _story_tellable(members, facts, today, lead)
+    if told is None:
         return False
+    dated, plan, units, first = told
     out.framed = True
-    composer_story.story(out, _count(composer_overview.pooled(len(members))), units, [v.written for v in dated], _topic(question, members), plan, _themed(dated), (first, lead.written if first else None))
+    composer_story.story(out, _count(composer_overview.pooled(len(members))), units, [v.written for v in dated], _topic(question, members), plan, composer_story.themed(dated), (first, lead.written if first else None))
     if (whole := composer_overview.pooled(len(members))) > len(dated) + (lead is not None):
         #: The lead counts every note; the story tells the pool it read, and says so.
         out.lines.append(f"That tells {realise.count_word(len(dated) + (lead is not None))} of the {whole}; ask for a month or a tag to see the rest.")
     return True
-
-
-def _would_fill(dated) -> bool:  # noqa: ANN001
-    """Whether the frame would tell any of these notes as "more loosely related": the filler a story replaces."""
-    return any(g.band == "loose" for g in composer_frame.groups([v.note for v in dated]))
-
-
-def _themed(dated) -> list[list[int]]:  # noqa: ANN001
-    """The positions (oldest first) of the notes that go together, by a tag they share or a link, one list a theme."""
-    place = {v.id: i for i, v in enumerate(dated)}
-    return [sorted(place[i] for i in g.ids) for g in composer_frame.themes([v.note for v in dated]) if len(g.ids) > 1]
 
 
 #: A question that asks for the figure ("count my notes about Hobart", "how many notes on Sara"): the count, not a story.

@@ -25,6 +25,8 @@ import re
 from dataclasses import dataclass
 from datetime import date
 
+from tessellate.ai import composer_frame
+
 #: Two notes are a pair, said in the question's own shape; from three a stretch
 #: is written as one. Up to MAX_NOTES the paragraphs are cut at the biggest
 #: gaps; past it a paragraph holds at most PARAGRAPH_NOTES, a sentence at most
@@ -351,15 +353,41 @@ def _beat(out, group: list[Unit], opener: str) -> str:  # noqa: ANN001
     return text
 
 
+def _lead_line(count: str, topic: str, p: Plan) -> str:
+    """The opening sentence: the count, the topic, and the span (or the one semester they follow)."""
+    span = span_words(p.first, p.last)
+    if p.arc == "one semester":
+        return f"You have {count} about {topic}, and they follow {p.arc}, {span}."
+    return f"You have {count} about {topic}, written from {span}." if " to " in span else f"You have {count} about {topic}, all written in {span}."
+
+
+def _tell_run(out, run: list[int], last: bool, units: list[Unit], days: list[date], said: list[str], themes: list[list[int]]) -> str:  # noqa: ANN001
+    """One stretch as a paragraph: a sentence a beat, then the hard-stretch or finished note when it applies."""
+    sentences, prev = [], None
+    for k, beat in enumerate(_beats(run, themes)):
+        opener = _when(prev, days[beat[0]], said, k == 0)
+        said.append(opener)
+        sentences.append(_beat(out, [units[i] for i in beat], opener))
+        prev = days[beat[-1]]
+    hard = _hard_run([units[i] for i in run])
+    if len(hard) >= 2:
+        note = "That reads like a hard stretch."
+        sentences.append(note)
+        out.rows.append(_row(hard[0], note))
+    elif last and _FINISH.search(units[run[-1]].source.text):
+        note = "Congratulations on getting it done."
+        sentences.append(note)
+        out.rows.append(_row(units[run[-1]], note))
+    return " ".join(sentences)
+
+
 def story(out, count: str, units: list[Unit], days: list[date], topic: str, p: Plan, themes: list[list[int]] | None = None, first: tuple | None = None) -> None:  # noqa: ANN001
     """Fill `out.lines` and `out.rows` from the units, oldest first; the pace
     insight waits in `out.spare` for `_finish`, which says it only when no
     other rule found an insight. `themes` are the unit indexes that go together."""
     said: list[str] = []
     lead_unit = next((u for u in units if _SEMESTER.search(u.source.text)), units[0])
-    span = span_words(p.first, p.last)
-    lead = f"You have {count} about {topic}, and they follow {p.arc}, {span}." if p.arc == "one semester" else (
-        f"You have {count} about {topic}, written from {span}." if " to " in span else f"You have {count} about {topic}, all written in {span}.")
+    lead = _lead_line(count, topic, p)
     out.lines.append(lead)
     out.rows.append(_row(lead_unit, lead))
     if first and first[0] is not None:
@@ -367,22 +395,34 @@ def story(out, count: str, units: list[Unit], days: list[date], topic: str, p: P
         said.append(_when(None, first[1], said, True))
         out.lines.append(_beat(out, [first[0]], said[-1]))
     for n, run in enumerate(p.chunks):
-        sentences, prev = [], None
-        for k, beat in enumerate(_beats(run, themes or [])):
-            opener = _when(prev, days[beat[0]], said, k == 0)
-            said.append(opener)
-            sentences.append(_beat(out, [units[i] for i in beat], opener))
-            prev = days[beat[-1]]
-        hard = _hard_run([units[i] for i in run])
-        if len(hard) >= 2:
-            note = "That reads like a hard stretch."
-            sentences.append(note)
-            out.rows.append(_row(hard[0], note))
-        elif n == len(p.chunks) - 1 and _FINISH.search(units[run[-1]].source.text):
-            note = "Congratulations on getting it done."
-            sentences.append(note)
-            out.rows.append(_row(units[run[-1]], note))
-        out.lines.append(" ".join(sentences))
+        out.lines.append(_tell_run(out, run, n == len(p.chunks) - 1, units, days, said, themes or []))
     found = _pace(units, days)
     if found:
         out.spare = (found[0], _row(found[1], found[0]))
+
+
+def plan_of(members, lead):  # noqa: ANN001
+    """The dated notes (lead apart) and their plan, or None when the notes do not fit the story shape."""
+    #: Past MAX_NOTES the best-ranked note (the defining one leads `members`) is told first, on its own; the rest
+    #: follow oldest first (audit 1031 C4: filler with the word repeated is not what the story opens with).
+    dated = sorted((v for v in members if v.written and v is not lead), key=lambda v: (v.written, v.id))
+    made = plan([v.written for v in dated], [v.note.get("content") or "" for v in dated]) if len(dated) == len(members) - (lead is not None) else None
+    #: Under five notes the plain lines have no filler to lose; they are woven only when a frame would have
+    #: told some of them as "More loosely related" or "More from X" (INBOX 1743 follow-up).
+    if made is None or (len(dated) < PLAIN_NOTES and not _would_fill(dated)):
+        return None
+    if lead is not None and lead.written:
+        #: The span says all the notes' days, the lead's too.
+        made.first, made.last = min(made.first, lead.written), max(made.last, lead.written)
+    return dated, made
+
+
+def _would_fill(dated) -> bool:  # noqa: ANN001
+    """Whether the frame would tell any of these notes as "more loosely related": the filler a story replaces."""
+    return any(g.band == "loose" for g in composer_frame.groups([v.note for v in dated]))
+
+
+def themed(dated) -> list[list[int]]:  # noqa: ANN001
+    """The positions (oldest first) of the notes that go together, by a tag they share or a link, one list a theme."""
+    place = {v.id: i for i, v in enumerate(dated)}
+    return [sorted(place[i] for i in g.ids) for g in composer_frame.themes([v.note for v in dated]) if len(g.ids) > 1]

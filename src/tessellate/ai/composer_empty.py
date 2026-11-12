@@ -16,6 +16,7 @@ from datetime import date
 from tessellate.ai import composer_compose, composer_lines, composer_tables, grounding, recognise as rec, recognise_windows
 from tessellate.ai.composer_answer import _Answer, _SESSION
 from tessellate.ai.composer_ask import _holds, _stem, user_today
+from tessellate.ai.composer_help import _result
 from tessellate.ai.composer_intent import Plan
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_quote import _pick
@@ -294,3 +295,11 @@ def _nothing_parts(out: "_Answer", register: str, absent: list[str]) -> list[tup
         parts += [("template", PHRASES["open_quote"]), ("asked", word), ("template", PHRASES["close_quote"])]
     parts += [("template", PHRASES["stop"]), ("template", PHRASES["space"]), ("template", tail.text if tail else PHRASES[out.voiced("nothing_ask")])]
     return parts
+
+
+def refusal(refused: tuple, question: str, shape: str) -> dict:
+    """The answer that says the word asked about is one the notes are kept
+    from (a filter refused it)."""
+    key, word = refused
+    return _result([("template", PHRASES[key]), ("template", PHRASES["open_quote"]), ("asked", _as_typed(word, question)),
+                    ("template", PHRASES["close_quote"]), ("template", PHRASES["stop"])], shape)
