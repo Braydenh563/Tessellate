@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Docs: five placed INBOX items (1716, 1726, 1748, 1779, 904) move to HISTORY and the 904 list's stale built and not-built statuses are corrected.
 - Docs: the deep-audit skill briefs from and writes LEDGER rows, matching its checklist, instead of ranked audit files.
 - Fix: stale duplicate-warning pointers (`filing_similar_id` naming a deleted note) are cleared in the launch housekeeping (`tests/test_filing_sweep.py`).
 - Docs: RELEASING names the lint that checks pyproject's version, the optional search engine (fastembed, not torch) and where the 1.0 criterion is written.
