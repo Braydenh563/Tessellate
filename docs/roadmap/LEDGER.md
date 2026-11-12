@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 118 | 42 | 0 | 18 | 290 |
+| world-class | 130 | 116 | 42 | 0 | 18 | 288 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 615 | 139 | 3 | 136 | 1307 |
+| all | 553 | 613 | 139 | 3 | 136 | 1305 |
 
 ## graph
 
@@ -611,7 +611,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L533** `world-class` open, S: 13.0 gate every-offence counts for decisions 9-17 are plan counts, not sweep. From OPEN.md:1341. Evidence: Row says counts are stylesheet counts from the plan paragraph; no sweep recount recorded.
 - [ ] **L534** `world-class` open, S: Undo counts per surface are static reads; drive documents/OCR/meetings and whiteboard 43/14. From OPEN.md:1116; OPEN.md:1485. Evidence: Undo ledger not closed; counts recorded, uncovered writes remain (see 587)
 - [ ] **L535** `world-class` open, S: decide is 34 ms/call at 5,000 notes vs 8-17 ms old tally. From OPEN.md:1496. Evidence: Perf measurement (scratchpad/filing-tools/perf.py); no optimisation found
-- [ ] **L538** `world-class` open, S: Run shell.spec.js handoff test in Playwright (only node --check'd). From OPEN.md:1828; OPEN.md:3536. Evidence: tests-e2e/specs/shell.spec.js handoff comment at line 35; runner run not recorded
 - [ ] **L539** `world-class` open, S: Run errors.js in THEME=dark and FAULTS=1. From OPEN.md:1889. Evidence: No record of the dark/fault runs; cheap to run
 - [ ] **L540** `world-class` open, S: Caps measured loaded; re-measure idle and tighten. From OPEN.md:1919; OPEN.md:2652. Evidence: Needs idle re-measure; table/README/test move together
 - [ ] **L541** `world-class` open, S: Exercise slow/failed app-features.js fetch and late Quick access paint. From OPEN.md:1921; OPEN.md:2719. Evidence: No fault test found
@@ -673,7 +672,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L611** `world-class` open, M: App scripts gzip cap has no room (320,589 of 320,600); unblock chat-agent.js budget line and helpers. From OPEN.md:2499; OPEN.md:3909; OPEN.md:3818. Evidence: Budget at 11 bytes headroom; guard paths not driven
 - [ ] **L613** `world-class` open, M: Smaller backend/gate rows: note-types undo id, gate --changed, palette test, CSS budgets. From OPEN.md:3289. Evidence: Undo id loss unreproduced; budgets near limit; palette undecided
 - [ ] **L614** `world-class` open, M: Night shift pairing phase slow (120 s) and bar resets between phases. From OPEN.md:3501. Evidence: No commit or test addressing pairing speed or bar reset found.
-- [ ] **L615** `world-class` open, M: 49 routes need a test or removal. From OPEN.md:3783. Evidence: tests/test_routes_named.py SEED still present
 - [ ] **L616** `world-class` open, M: Trigger the other 100 toast(...,true) call sites. From OPEN.md:3567. Evidence: Lint test_error_toasts.py covers them; situations never driven in a browser
 - [ ] **L617** `world-class` open, M: phone-shell tab click, openDoc, timeline-calendar onclick lag and 16 s searxng start. From INBOX.md:1716. Evidence: hascss-1111/lag-1110: 'remains', not reproduced at 44 to 200 notes; no later fix found
 - [ ] **L618** `world-class` open, M: showNotesSection autoGrowVisible, syncScrollEdges, sizeDashWidgets first-reader costs. From a31c-1103.md Left, with numbers. Evidence: lag agent: moving the read a frame later only relocates it; not kept
