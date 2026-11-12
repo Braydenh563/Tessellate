@@ -1959,7 +1959,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     ("Boards and maps", (
         "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-laser", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-diagram-tools", "board-workshop", "board-paste", "make-a-diagram", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
         "board-comments", "sticky-notes",
-        "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-keyboard-create", "board-hand-drawn", "board-tables", "board-shape-points", "board-mermaid", "board-edit-data", "board-colours",
+        "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-keyboard-create", "board-group-edit", "board-hand-drawn", "board-tables", "board-shape-points", "board-mermaid", "board-edit-data", "board-colours",
     )),
     ("Library and files", (
         "library", "library-controls", "bookmarks", "web-clipper-bookmark", "contents", "library-skills",
@@ -2243,6 +2243,21 @@ MORE_TOPICS.extend([
         "badge": {"label": "Library", "tab": "library"},
     },
     {
+        "id": "board-group-edit",
+        "keywords": (
+            "edit inside a group", "enter a group", "leave a group", "dim the rest of the board", "board workspace",
+            "save panel layout", "workspaces", "which panels are open",
+        ),
+        "body": (
+            "Edit inside a group: double-click a grouped item (or Ctrl+K, Edit inside the group) and the rest "
+            "of the board dims and cannot be clicked, swept or reached with Select all or Tab; the group's own "
+            "items select one at a time. Escape leaves it. Workspaces, in the View menu's Panels, save which "
+            "panels are open (the context bar, overview, search, Format and the sidebar with its tab) under a "
+            "name, and switch between up to eight; they are kept on this device."
+        ),
+        "badge": {"label": "Library", "tab": "library"},
+    },
+    {
         "id": "board-keyboard-create",
         "keywords": (
             "keyboard only board", "make a sticky with the keyboard", "enter on a board",
@@ -2253,7 +2268,9 @@ MORE_TOPICS.extend([
             "the Sticky note, Text or Frame tool, then Enter to drop one in the middle "
             "of the view (Insert, Sticky note does too). Tab walks the items; Enter on a selected "
             "text box or sticky puts the caret at the end of its words, and Enter on a "
-            "selected shape writes in it. Escape leaves the words."
+            "selected shape writes in it. Escape leaves the words. Ctrl+Alt+Y (Edit, Repeat last move, "
+            "turn or resize) does the last move, turn or resize again to what is selected now. "
+            "The first time you hold each tool a one-line hint says what it does; it shows once per tool on this device."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },
@@ -2564,6 +2581,7 @@ TOPIC_META.update({
     "diagram-ai": {"title": "Asking the diagram builder for a change, its suggestions and versions", "path": "A flowchart's blocks list, Ask; the ... menu, Versions..."},
     "board-hand-drawn": {"title": "The hand-drawn look", "path": "A board's View menu, Hand-drawn look"},
     "board-current-layer": {"title": "The current layer", "path": "A board's sidebar, Layers"},
+    "board-group-edit": {"title": "Edit inside a group, and workspaces", "path": "A board's View menu, Panels, Workspaces"},
     "board-keyboard-create": {"title": "Making and writing without a mouse", "path": "A board, Keys and controls"},
     "mind-map-structure": {"title": "A structure per branch", "path": "A map topic's menu, Structure"},
     "mind-map-lines": {"title": "Map line style, line ends and topic shapes", "path": "A map, Layout, the line style picker"},

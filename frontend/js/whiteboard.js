@@ -5912,6 +5912,7 @@ function wbNudgeSelection(dx, dy) {
         })()
       : [];
   if (entries.length === 0) return;
+  wbFmtState.keys?.record({ kind: "move", dx, dy });
   const key = entries.map((e) => wbMultiKey(e.kind, e.id)).sort().join(",");
   const joining = wbNudgeBurst && wbNudgeBurst.key === key
     && wbUndoStack[wbUndoStack.length - 1] === wbNudgeBurst.entry;
@@ -6995,7 +6996,7 @@ function wbSelectableItems() {
   for (const o of wbState.objects || []) if (o.kind === "image" || o.kind === "frame" || o.kind === "diagram") out.push(["object", o]);
   //: A locked item is out of reach until it is unlocked (decision 15): not
   //: in Select all, not in the Tab walk.
-  return out.filter(([kind, item]) => !wbIsLocked(kind, item) && !wbHiddenOnBoard(kind, item));
+  return out.filter(([kind, item]) => !wbIsLocked(kind, item) && !wbHiddenOnBoard(kind, item) && !wbFmtState.isolate?.outside(kind, item) /* L-whiteboard-7: dimmed outside an open group */);
 }
 
 //: **Tab walks the board's items, and the board says which one** (INBOX
@@ -7783,9 +7784,19 @@ function wbHandleItemClick(kind, id, event) {
   //: A click inside the group already selected keeps it (so a press to drag
   //: does not climb back out); a double-click goes one group further in, and
   //: past the innermost to the item itself (INBOX 1354).
-  const depth = wbSelectedGroupDepth(chain);
+  //: Inside an opened group (`base` ids deep) its own members are single items and only a deeper group is one.
+  const base = wbFmtState.isolate?.depth() || 0;
+  if (base && chain.length <= base) {
+    wbMultiSelection.clear();
+    selectWbItem(kind, id);
+    return;
+  }
+  const found = wbSelectedGroupDepth(chain);
+  const depth = found > base ? found : 0;
   if (depth && !(event.detail >= 2)) return;
-  const want = depth ? depth + 1 : 1;
+  //: A double-click on a member goes into the group it was already in (L-whiteboard-7) and one level further.
+  if (depth && event.detail >= 2) wbFmtState.isolate?.enter(chain.slice(0, depth));
+  const want = depth ? depth + 1 : base + 1;
   wbMultiSelection.clear();
   if (want > chain.length) {
     wbDrilledAt = performance.now();
@@ -8856,6 +8867,7 @@ function wbPushDragUndo(entries) {
 //: Everything a drag that ends has to do after its own item is saved: the
 //: carried members saved, the copies made, and one undo step pushed for it.
 async function wbFinishDrag(primary, bulkOrigin, altCopy) {
+  wbFmtState.keys?.recordDrag(primary);
   const carried = wbBulkUndoEntries(bulkOrigin);
   if (bulkOrigin) await wbSaveBulkMove(bulkOrigin);
   const bends = await wbCarryWaypoints(primary, bulkOrigin);
@@ -16723,6 +16735,7 @@ async function initWhiteboard() {
     wbRefreshArrowStyleControlRef?.();
     wbToolsOpenerSyncRef?.();
     updateWbCursor();
+    wbFmtState.hints?.toolHint(tool);
     // The properties panel now also carries the style a drawing tool will
     // use, so a tool switch has to reopen/close it, see its own comment.
     wbUpdateContextBar();
@@ -18946,7 +18959,7 @@ async function initWhiteboard() {
     //: `wbSelectedItem`, not the set, and was dropped (the owner, 2026-10-07).
     else if (wbSelectedItem) wbMultiSelection.add(wbMultiKey(wbSelectedItem.kind, wbSelectedItem.id));
     for (const node of wbState.nodes) {
-      if (node.locked) continue; // decision 15: out of reach until unlocked
+      if (node.locked || wbFmtState.isolate?.outside("node", node)) continue; // decision 15: out of reach until unlocked
       const el = document.querySelector(WB_SELECTOR_BY_KIND.node(node.id));
       const w = el?.offsetWidth || 250, h = el?.offsetHeight || 150;
       if (rectsIntersect(mx, my, mw, mh, node.x, node.y, w, h)) {
@@ -18954,7 +18967,7 @@ async function initWhiteboard() {
       }
     }
     for (const obj of wbState.objects || []) {
-      if (wbIsLocked("object", obj)) continue;
+      if (wbIsLocked("object", obj) || wbFmtState.isolate?.outside("object", obj)) continue;
       //: A frame only when the sweep holds all of it (decision 14): a sweep
       //: drawn inside a frame is about what is in it, and taking the frame
       //: along would make the next drag carry the frame and everything else.
@@ -18968,7 +18981,7 @@ async function initWhiteboard() {
     for (const sketch of wbState.sketches) {
       const parsed = wbSketchParsedData(sketch);
       if (!parsed) continue; // a link sketch: nothing here to select as a shape
-      if (parsed.locked) continue;
+      if (parsed.locked || wbFmtState.isolate?.outside("sketch", sketch)) continue;
       const bbox = wbPathBBox(parsed.d);
       if (bbox && rectsIntersect(mx, my, mw, mh, bbox.minX, bbox.minY, bbox.width, bbox.height)) {
         wbMultiSelection.add(wbMultiKey("sketch", sketch.id));
@@ -19090,7 +19103,7 @@ async function initWhiteboard() {
     //: `wbSelectedItem`, not the set, and was dropped (the owner, 2026-10-07).
     else if (wbSelectedItem) wbMultiSelection.add(wbMultiKey(wbSelectedItem.kind, wbSelectedItem.id));
     for (const node of wbState.nodes) {
-      if (node.locked) continue; // decision 15: out of reach until unlocked
+      if (node.locked || wbFmtState.isolate?.outside("node", node)) continue; // decision 15: out of reach until unlocked
       const el = document.querySelector(WB_SELECTOR_BY_KIND.node(node.id));
       const w = el?.offsetWidth || 250, h = el?.offsetHeight || 150;
       if (wbPointInPolygon(node.x + w / 2, node.y + h / 2, points)) {
@@ -19098,7 +19111,7 @@ async function initWhiteboard() {
       }
     }
     for (const obj of wbState.objects || []) {
-      if (wbIsLocked("object", obj)) continue;
+      if (wbIsLocked("object", obj) || wbFmtState.isolate?.outside("object", obj)) continue;
       if (wbPointInPolygon(obj.x + obj.width / 2, obj.y + obj.height / 2, points)) {
         wbMultiSelection.add(wbMultiKey("object", obj.id));
       }
@@ -19106,7 +19119,7 @@ async function initWhiteboard() {
     for (const sketch of wbState.sketches) {
       const parsed = wbSketchParsedData(sketch);
       if (!parsed) continue; // a link sketch: nothing here to select as a shape
-      if (parsed.locked) continue;
+      if (parsed.locked || wbFmtState.isolate?.outside("sketch", sketch)) continue;
       const bbox = wbPathBBox(parsed.d);
       if (bbox && wbPointInPolygon(bbox.minX + bbox.width / 2, bbox.minY + bbox.height / 2, points)) {
         wbMultiSelection.add(wbMultiKey("sketch", sketch.id));
@@ -23225,6 +23238,7 @@ function renderWhiteboard() {
         //: the double-click that fits the text is one) is not a resize.
         if (cancelled || (before && before.width === (d.width ?? null) && before.height === (d.height ?? null))) return;
         await wbSaveNode(d);
+        wbFmtState.keys?.record({ kind: "turn", deg: (d.rotation || 0) - (before?.rotation || 0) });
         if (before) wbPushUndo({ action: "move", kind: "node", id: d.id, before });
         wbScheduleRender();
       });
@@ -23527,6 +23541,7 @@ function renderWhiteboard() {
   wbApplySelectionHighlight();
   wbPaintLocks();
   wbPaintHidden();
+  wbFmtState.isolate?.paint();
   wbPaintCommentMarks();
   wbCloseOrphanedPopovers();
 
@@ -24463,6 +24478,7 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
           return;
         }
         await wbSaveObject(d);
+        wbFmtState.keys?.record({ kind: "turn", deg: (d.rotation || 0) - (before?.rotation || 0) });
         if (!d._turnOrigin) {
           if (before) wbPushUndo({ action: "move", kind: "object", id: d.id, before });
           return;

@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 30 | 28 | 3 | 0 | 11 | 61 |
+| whiteboard | 30 | 27 | 3 | 0 | 11 | 60 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 690 | 156 | 3 | 195 | 1399 |
+| all | 553 | 689 | 156 | 3 | 195 | 1398 |
 
 ## graph
 
@@ -337,14 +337,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-whiteboard-2** `whiteboard` open, M: Add a resizable PDF and document viewer object to the whiteboard. From open-work sweep 2026-11-12, docs/roadmap/INBOX.md:121. Evidence: BACKLOG claims it went to WHITEBOARD_PLAN, but no whiteboard plan item, LEDGER row or code exists for a resizable PDF or document viewer on the board
 - [ ] **L-whiteboard-3** `whiteboard` open, M: Turn rough ink strokes into clean shapes. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:293. Evidence: there is no shape recognition code in frontend/js; it exists only in this audit file, which BACKLOG points at only in general terms
 - [ ] **L-whiteboard-4** `whiteboard` open, M: Replay a board's ink strokes in drawing order. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:296. Evidence: no stroke replay exists in the code and no plan or LEDGER row covers it
-- [ ] **L-whiteboard-6** `whiteboard` open, S: Repeat the last move, rotate or scale on the selection. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:276. Evidence: WB_COMMANDS has no repeat command and nothing tracks it
-- [ ] **L-whiteboard-7** `whiteboard` open, M: Edit inside a group with the rest of the board dimmed. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:262. Evidence: groups can be nested (WHITEBOARD_PLAN item 1354), but no edit-inside-group isolation exists or is tracked
-- [ ] **L-whiteboard-8** `whiteboard` open, M: Save and switch board workspace presets. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:391. Evidence: no saved panel layout presets exist for the board editor and nothing tracks them
 - [ ] **L-whiteboard-9** `whiteboard` open, M: Update a placed library copy from its source. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:634. Evidence: library_ref is stored on placed items, but no update command exists; untracked
-- [ ] **L-whiteboard-10** `whiteboard` open, S: Show a one-line hint the first time each board tool is used. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:720. Evidence: no per-tool first-use hint with a remembered dismissal exists; untracked
 - [ ] **L-whiteboard-12** `whiteboard` open, L: Bind board cards to note properties through their frame. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:768. Evidence: no shape that stays bound to live notebook content exists; lines 768 to 772 are untracked
 - [ ] **L-whiteboard-15** `whiteboard` open, S: Measure board idle and drag cost at 500 objects and with the companion on. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1405. Evidence: Open line in the plan's prose a session could miss. The Brief 60 census leaves two measurements unmeasured, with no row.
 - [ ] **L-whiteboard-16** `whiteboard` open, S: Run the blind-tester timing for transparency and hex entry. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1583. Evidence: Open line in the plan's prose a session could miss. INBOX 1685's acceptance (find transparency and enter a hex in under 20 s) was never run.
+- [ ] **L-whiteboard-17** `whiteboard` open, S: Move stale whiteboard entries 1358, 258 and the contrast.js note to HISTORY. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1546. Evidence: Open line in the plan's prose a session could miss. Stale entries still read as open: the 1358 dogfood passes (merged), 'contrast.js never visits a board' (line 779, built), the 258 recommendation (line 623, superseded by 1452), and decision 36's ghost note. They need moving to HISTORY.
+- [ ] **L-whiteboard-18** `whiteboard` open, M: Record a drawn shape's rotate-grip turn for Repeat last. From wbcmds L-whiteboard-6. Evidence: frontend/js/whiteboard.js sketch rotate grip bakes the turn into the path; no delta is recorded for Repeat last
+- [ ] **L-whiteboard-19** `whiteboard` open, S: Keep connectors between group members live while editing inside a group, and drive group edit, first-use hints and workspaces in a Playwright sweep. From wbcmds report 2026-11-12. Evidence: whiteboard-workspace.js edit-inside-group dims non-members only; connectors joining two members are dimmed too; no browser sweep was run for group edit, tool hints or workspaces
 
 ## documents
 

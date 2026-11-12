@@ -314,6 +314,8 @@ async function wbFmtSizeAxis(axis, target) {
   const entries = wbFmtEntries().filter((e) => !wbIsLocked(e.kind, e.item));
   const box = wbFmtBox(entries);
   if (!entries.length || !box) return;
+  const was = axis === "w" ? box.maxX - box.minX : box.maxY - box.minY;
+  if (was > 0 && target > 0 && Math.abs(was - target) >= 0.5) wbFmtState.keys?.record({ kind: "scale", axis, factor: target / was });
   if (entries.length !== 1) {
     await wbFmtScaleSelection(entries, box, axis, target);
     return;
@@ -1448,6 +1450,7 @@ function wbStepFontSize(delta) {
 //: turned about its own centre. Each item turns about its own centre, and a
 //: connector follows its ends.
 function wbTurnSelection(degrees = 90) {
+  wbFmtState.keys?.record({ kind: "turn", deg: degrees });
   return wbRecordGesture(async () => {
     const entries = wbFmtEntries().filter((e) => !wbIsLocked(e.kind, e.item) && e.bbox);
     let turned = 0;
