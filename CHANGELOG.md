@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Silent excepts: the ratchet now also counts a broad except that returns a fallback ("", [], False) without a word; 59 seeded, the list only shrinks (L797).
 - Architecture: a rule for which schema path a change takes, the additive migrator, create_all, _ensure_indexes or an Alembic revision (L794).
 - Categories: a broken bar (¦) in a category name becomes "&" when saved or renamed, and names stored before are mended once on load; a clash merges (L803).
 - Filters: a test pins "last week" as the Monday to Sunday before this one, in the filter box and in /made (L804).
