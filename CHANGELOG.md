@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Docs: CONTRIBUTING agrees with CLAUDE.md on replacing rather than layering and on the test count (about 9,000).
 - Docs: SECURITY.md lists its known gaps; CONTRIBUTING.md sets a 30-day floor on adopting a new dependency, Action or vendored release.
 - Health: `/health` carries source_commit, started_at, data_dir_id and data_dir_writable, and Settings, About shows the build and warns when the notebook folder cannot be written (`tests/test_health_build_stamp.py`).
 - Vendored code: `frontend/vendor/PROVENANCE.json` lists every vendored file with its sha256, size, version, upstream, licence and notice; a test recomputes the hashes (`scripts/vendor_provenance.py` regenerates it).
