@@ -6,6 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: while editing inside a group, a connector joining two of its members stays full opacity and clickable (the rest of the board stays at 0.25); `scratchpad/ui-sweeps/wbgroupedit.js` drives group edit, first-use tool hints and saved workspaces, 22/22 (L-whiteboard-19).
+- Whiteboard: Repeat last (Ctrl+Alt+Y) now repeats a turn made with the rotate grip on a drawn shape (L-whiteboard-18, `tests/test_wb_repeat_last.py`).
+- Whiteboard: a table's row connection points follow unequal row heights (`data.row_heights`), also when a row is added or removed (L-whiteboard-20, `tests/test_wb_shape_more.py`).
 - Whiteboard: a shape's connection points keep draw.io's pixel offsets and "on outline" flag (`points=[[x,y,perimeter,dx,dy]]` comes in and goes back out on .drawio export), a point on the outline stays on it after a resize (nearest-point search refined between samples), and Format, Position and size lists a shape's points to add, remove, hold on the outline or nudge, one Undo step each (L-whiteboard-13, `scratchpad/ui-sweeps/wbports-offsets.js` 19/19).
 - Whiteboard: Export as PDF now writes the file itself instead of opening Print: A4 or Letter, auto, portrait or landscape, and one page, one page per frame, or tiled pages (`wbPdf.plan`, `wbPdf.build`; a two-frame board is a two-page PDF, `tests/test_wb_export_pdf.py`); the export dialog says "Export this branch" when opened for a branch (map menu passes `{ branch: true }`).
 - Code: the board export reads the drawn page in one place (`wbExportLook`), so `wbBuildExportSvg` builds the picture from board data and touches no element; the exported SVG is identical on a fixed board and map (`scratchpad/ui-sweeps/wbexport-parity.js`, 20 of 20, `tests/test_wb_export_builder.py`).
