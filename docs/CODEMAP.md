@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8327, frontend ids 2770, CSS sections 524, backend routes 698, backend modules 10787, test files 2675, tests 21859, plan headings 687, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8327, frontend ids 2770, CSS sections 524, backend routes 698, backend modules 10787, test files 2676, tests 21863, plan headings 687, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8327)
 
@@ -27702,7 +27702,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21859)
+## Tests (21863)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28273,6 +28273,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_pa_dialogue_1112.py | 17 |
 | tests/test_composer_pa_parity_1112.py | 5 |
 | tests/test_composer_panel_216.py | 5 |
+| tests/test_composer_parity_1112b.py | 4 |
 | tests/test_composer_parts.py | 4 |
 | tests/test_composer_past_lines_z26.py | 2 |
 | tests/test_composer_phrasings_1025.py | 11 |
