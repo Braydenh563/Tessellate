@@ -562,13 +562,16 @@ function timelineQuery() {
 }
 
 async function renderTimeline() {
-  timelineRenders.n += 1;
+  const render = (timelineRenders.n += 1);
   const url = `${timelineQuery()}&limit=${TIMELINE_FIRST}`;
   //: Which of these entries are maps, awaited alongside the timeline rather
   //: than before it, because neither needs the other's answer.
   const feed = $("timeline-feed");
   if (!feed.closest(".hidden")) showSkeletons(feed, 5);
   const [body] = await Promise.all([apiJson(url).catch(() => null), loadMapBoardIndex()]);
+  //: A newer render started while this one waited (a range chosen after the
+  //: tab's own render, L483): its answer is the one painted, this one is not.
+  if (render !== timelineRenders.n) return;
   clearSkeletons(feed);
   //: A null here is a request that failed, not a notebook with nothing in it,
   //: and the two used to look identical on screen: "Nothing to plot yet" over

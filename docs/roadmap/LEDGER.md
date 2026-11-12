@@ -14,10 +14,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
-| timeline | 3 | 27 | 3 | 0 | 5 | 33 |
+| timeline | 3 | 26 | 3 | 0 | 5 | 32 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 699 | 158 | 3 | 195 | 1410 |
+| all | 553 | 698 | 158 | 3 | 195 | 1409 |
 
 ## graph
 
@@ -608,7 +608,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L480** `timeline` open, S: Drive and measure the reminders quick-add row at 390. From OPEN.md:747. Evidence: No sweep drives phone reminders compose; unmeasured
 - [ ] **L481** `timeline` open, S: Run contrast and errors sweeps on the calendar view. From OPEN.md:1374. Evidence: No calendar sweep in scratchpad/ui-sweeps recorded; runnable without hardware.
 - [ ] **L482** `timeline` open, S: Make feed Last-year range filter by calendar date, not written date. From OPEN.md:1375; OPEN.md:2570. Evidence: No change found in timeline-calendar.js/timeline.js for date vs written-date filtering.
-- [ ] **L483** `timeline` open, S: Stop timeline-days preference arriving after click rendering the timeline twice. From OPEN.md:1381; OPEN.md:2783. Evidence: timeline.js:2503 change handler unchanged; double render guard not found.
 - [ ] **L484** `timeline` open, S: Stop reminders presets menu laying out while closed (7 overlaps at 1440). From OPEN.md:1393. Evidence: No fix/test found in tests/ or CHANGELOG for presets-menu closed layout; TIMELINE_PLAN 11 row 2
 - [ ] **L485** `timeline` open, S: Add a mark column to the timeline table view so meetings do not read as Note. From OPEN.md:3564. Evidence: grep meeting in timeline*.js shows no table mark column; only calendar/add paths
 - [ ] **L486** `timeline` open, S: Fix deepen72b.js timeline row at 390 timing out waiting for .timeline-rows. From OPEN.md:735; OPEN.md:2782. Evidence: scratchpad/ui-sweeps/deepen72b.js:61 still waits on .timeline-rows; phone keeps table view

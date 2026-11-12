@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8325, frontend ids 2763, CSS sections 524, backend routes 698, backend modules 10758, test files 2668, tests 21799, plan headings 687, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8325, frontend ids 2763, CSS sections 524, backend routes 698, backend modules 10758, test files 2669, tests 21800, plan headings 687, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8325)
 
@@ -1514,85 +1514,85 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `appendTimelineRows` | frontend/js/timeline.js:822 |
-| `applyTimelineRowTabOrder` | frontend/js/timeline.js:1468 |
-| `closeTimelineRow` | frontend/js/timeline.js:1684 |
-| `dailyNotePair` | frontend/js/timeline.js:1170 |
+| `appendTimelineRows` | frontend/js/timeline.js:825 |
+| `applyTimelineRowTabOrder` | frontend/js/timeline.js:1471 |
+| `closeTimelineRow` | frontend/js/timeline.js:1687 |
+| `dailyNotePair` | frontend/js/timeline.js:1173 |
 | `dailyNoteTitle` | frontend/js/timeline.js:186 |
-| `drawTimelineScrubber` | frontend/js/timeline.js:1825 |
-| `drawTimelineWindow` | frontend/js/timeline.js:1855 |
-| `fillTimelineBandOptions` | frontend/js/timeline.js:877 |
-| `focusTimelineRow` | frontend/js/timeline.js:1634 |
-| `newTimelineWindow` | frontend/js/timeline.js:783 |
-| `openDayPage` | frontend/js/timeline.js:1138 |
-| `openTimelineRowDetail` | frontend/js/timeline.js:1697 |
-| `openTimelineTableDetail` | frontend/js/timeline.js:2178 |
-| `openTodaysPage` | frontend/js/timeline.js:1126 |
-| `paintTimeline` | frontend/js/timeline.js:940 |
-| `paintTimelineFeed` | frontend/js/timeline.js:983 |
-| `paintTimelineTable` | frontend/js/timeline.js:1999 |
+| `drawTimelineScrubber` | frontend/js/timeline.js:1828 |
+| `drawTimelineWindow` | frontend/js/timeline.js:1858 |
+| `fillTimelineBandOptions` | frontend/js/timeline.js:880 |
+| `focusTimelineRow` | frontend/js/timeline.js:1637 |
+| `newTimelineWindow` | frontend/js/timeline.js:786 |
+| `openDayPage` | frontend/js/timeline.js:1141 |
+| `openTimelineRowDetail` | frontend/js/timeline.js:1700 |
+| `openTimelineTableDetail` | frontend/js/timeline.js:2181 |
+| `openTodaysPage` | frontend/js/timeline.js:1129 |
+| `paintTimeline` | frontend/js/timeline.js:943 |
+| `paintTimelineFeed` | frontend/js/timeline.js:986 |
+| `paintTimelineTable` | frontend/js/timeline.js:2002 |
 | `renderTimeline` | frontend/js/timeline.js:564 |
-| `renderTimelineDayStrip` | frontend/js/timeline.js:1255 |
+| `renderTimelineDayStrip` | frontend/js/timeline.js:1258 |
 | `renderTimelineKinds` | frontend/js/timeline.js:344 |
-| `renderTimelineMonthPop` | frontend/js/timeline.js:1379 |
-| `renderTimelineRecall` | frontend/js/timeline.js:631 |
-| `setTimelineRowSelected` | frontend/js/timeline.js:2166 |
-| `shortDate` | frontend/js/timeline.js:1748 |
-| `startDayNote` | frontend/js/timeline.js:1201 |
-| `startTodaysNote` | frontend/js/timeline.js:1197 |
-| `syncTimelineDetailSpans` | frontend/js/timeline.js:2052 |
-| `syncTimelineFilterChip` | frontend/js/timeline.js:907 |
+| `renderTimelineMonthPop` | frontend/js/timeline.js:1382 |
+| `renderTimelineRecall` | frontend/js/timeline.js:634 |
+| `setTimelineRowSelected` | frontend/js/timeline.js:2169 |
+| `shortDate` | frontend/js/timeline.js:1751 |
+| `startDayNote` | frontend/js/timeline.js:1204 |
+| `startTodaysNote` | frontend/js/timeline.js:1200 |
+| `syncTimelineDetailSpans` | frontend/js/timeline.js:2055 |
+| `syncTimelineFilterChip` | frontend/js/timeline.js:910 |
 | `syncTimelineKindsLabel` | frontend/js/timeline.js:400 |
-| `syncTimelineSelectUi` | frontend/js/timeline.js:2195 |
-| `syncTimelineViewSeg` | frontend/js/timeline.js:2213 |
-| `syncTimelineYears` | frontend/js/timeline.js:682 |
-| `timelineAheadBuckets` | frontend/js/timeline.js:1033 |
+| `syncTimelineSelectUi` | frontend/js/timeline.js:2198 |
+| `syncTimelineViewSeg` | frontend/js/timeline.js:2216 |
+| `syncTimelineYears` | frontend/js/timeline.js:685 |
+| `timelineAheadBuckets` | frontend/js/timeline.js:1036 |
 | `timelineAutoScale` | frontend/js/timeline.js:454 |
 | `timelineBucketKey` | frontend/js/timeline.js:219 |
 | `timelineBucketLabel` | frontend/js/timeline.js:236 |
-| `timelineBucketSection` | frontend/js/timeline.js:1043 |
-| `timelineCalendarCall` | frontend/js/timeline.js:2208 |
-| `timelineCountLine` | frontend/js/timeline.js:759 |
+| `timelineBucketSection` | frontend/js/timeline.js:1046 |
+| `timelineCalendarCall` | frontend/js/timeline.js:2211 |
+| `timelineCountLine` | frontend/js/timeline.js:762 |
 | `timelineDailyNote` | frontend/js/timeline.js:203 |
-| `timelineDayKeys` | frontend/js/timeline.js:1323 |
-| `timelineDayLabel` | frontend/js/timeline.js:1250 |
-| `timelineDayPages` | frontend/js/timeline.js:1234 |
-| `timelineDayShift` | frontend/js/timeline.js:1191 |
-| `timelineDensitySpan` | frontend/js/timeline.js:1798 |
-| `timelineDensitySpanOf` | frontend/js/timeline.js:1806 |
-| `timelineFocusFirstIn` | frontend/js/timeline.js:813 |
-| `timelineForgetRows` | frontend/js/timeline.js:1850 |
+| `timelineDayKeys` | frontend/js/timeline.js:1326 |
+| `timelineDayLabel` | frontend/js/timeline.js:1253 |
+| `timelineDayPages` | frontend/js/timeline.js:1237 |
+| `timelineDayShift` | frontend/js/timeline.js:1194 |
+| `timelineDensitySpan` | frontend/js/timeline.js:1801 |
+| `timelineDensitySpanOf` | frontend/js/timeline.js:1809 |
+| `timelineFocusFirstIn` | frontend/js/timeline.js:816 |
+| `timelineForgetRows` | frontend/js/timeline.js:1853 |
 | `timelineIsDailyNote` | frontend/js/timeline.js:310 |
-| `timelineJumpToDay` | frontend/js/timeline.js:1366 |
+| `timelineJumpToDay` | frontend/js/timeline.js:1369 |
 | `timelineKindChoice` | frontend/js/timeline.js:294 |
-| `timelineKindName` | frontend/js/timeline.js:2059 |
-| `timelineKindsText` | frontend/js/timeline.js:748 |
-| `timelineLoadMore` | frontend/js/timeline.js:707 |
-| `timelineMonthKeys` | frontend/js/timeline.js:1433 |
-| `timelineMonthShift` | frontend/js/timeline.js:1360 |
-| `timelineMonthStart` | frontend/js/timeline.js:1356 |
+| `timelineKindName` | frontend/js/timeline.js:2062 |
+| `timelineKindsText` | frontend/js/timeline.js:751 |
+| `timelineLoadMore` | frontend/js/timeline.js:710 |
+| `timelineMonthKeys` | frontend/js/timeline.js:1436 |
+| `timelineMonthShift` | frontend/js/timeline.js:1363 |
+| `timelineMonthStart` | frontend/js/timeline.js:1359 |
 | `timelineQuery` | frontend/js/timeline.js:534 |
 | `timelineResolvedScale` | frontend/js/timeline.js:481 |
 | `timelineRow` | frontend/js/timeline.js:117 |
-| `timelineRowByKey` | frontend/js/timeline.js:807 |
-| `timelineRowElement` | frontend/js/timeline.js:1496 |
-| `timelineRowEls` | frontend/js/timeline.js:802 |
-| `timelineRowGroups` | frontend/js/timeline.js:863 |
+| `timelineRowByKey` | frontend/js/timeline.js:810 |
+| `timelineRowElement` | frontend/js/timeline.js:1499 |
+| `timelineRowEls` | frontend/js/timeline.js:805 |
+| `timelineRowGroups` | frontend/js/timeline.js:866 |
 | `timelineRowMoment` | frontend/js/timeline.js:102 |
 | `timelineScaleChoice` | frontend/js/timeline.js:438 |
-| `timelineScrollToToday` | frontend/js/timeline.js:2243 |
-| `timelineScrubTo` | frontend/js/timeline.js:1903 |
-| `timelineSortValue` | frontend/js/timeline.js:1970 |
-| `timelineSortedRows` | frontend/js/timeline.js:1981 |
-| `timelineStepScale` | frontend/js/timeline.js:1717 |
-| `timelineTableColumnCount` | frontend/js/timeline.js:2032 |
-| `timelineTableRow` | frontend/js/timeline.js:2063 |
-| `timelineUnitText` | frontend/js/timeline.js:742 |
-| `timelineViewMode` | frontend/js/timeline.js:1943 |
-| `timelineVisibleRows` | frontend/js/timeline.js:920 |
-| `timelineWatchRow` | frontend/js/timeline.js:1840 |
+| `timelineScrollToToday` | frontend/js/timeline.js:2246 |
+| `timelineScrubTo` | frontend/js/timeline.js:1906 |
+| `timelineSortValue` | frontend/js/timeline.js:1973 |
+| `timelineSortedRows` | frontend/js/timeline.js:1984 |
+| `timelineStepScale` | frontend/js/timeline.js:1720 |
+| `timelineTableColumnCount` | frontend/js/timeline.js:2035 |
+| `timelineTableRow` | frontend/js/timeline.js:2066 |
+| `timelineUnitText` | frontend/js/timeline.js:745 |
+| `timelineViewMode` | frontend/js/timeline.js:1946 |
+| `timelineVisibleRows` | frontend/js/timeline.js:923 |
+| `timelineWatchRow` | frontend/js/timeline.js:1843 |
 | `toggleTimelineKind` | frontend/js/timeline.js:419 |
-| `toggleTimelineRow` | frontend/js/timeline.js:1658 |
+| `toggleTimelineRow` | frontend/js/timeline.js:1661 |
 
 ### frontend/js/palette.js (35)
 
@@ -27659,7 +27659,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21799)
+## Tests (21800)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30018,6 +30018,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_timeline_opens_on_today.py | 3 |
 | tests/test_timeline_query_count.py | 5 |
 | tests/test_timeline_rail_centre.py | 1 |
+| tests/test_timeline_render_superseded.py | 1 |
 | tests/test_timeline_strip_ahead_1316.py | 3 |
 | tests/test_timeline_table_meeting.py | 2 |
 | tests/test_timeline_ticks.py | 4 |
@@ -30750,14 +30751,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4393 |
-| Needs hardware | docs/roadmap/LEDGER.md:914 |
+| Needs hardware | docs/roadmap/LEDGER.md:913 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:906 |
+| Owner calls | docs/roadmap/LEDGER.md:905 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4266 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -30938,7 +30939,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1114 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1113 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2642 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -30992,25 +30993,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:58 |
-| chat | docs/roadmap/LEDGER.md:1130 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1214 |
+| chat | docs/roadmap/LEDGER.md:1129 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1213 |
 | documents | docs/roadmap/LEDGER.md:361 |
-| documents | docs/roadmap/LEDGER.md:1154 |
-| general | docs/roadmap/LEDGER.md:865 |
+| documents | docs/roadmap/LEDGER.md:1153 |
+| general | docs/roadmap/LEDGER.md:864 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:1118 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1226 |
+| graph | docs/roadmap/LEDGER.md:1117 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1225 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4402 |
 | mindmap | docs/roadmap/LEDGER.md:441 |
-| mindmap | docs/roadmap/LEDGER.md:1166 |
+| mindmap | docs/roadmap/LEDGER.md:1165 |
 | timeline | docs/roadmap/LEDGER.md:596 |
-| timeline | docs/roadmap/LEDGER.md:1190 |
+| timeline | docs/roadmap/LEDGER.md:1189 |
 | ui-modernisation | docs/roadmap/LEDGER.md:478 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1178 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1177 |
 | whiteboard | docs/roadmap/LEDGER.md:315 |
-| whiteboard | docs/roadmap/LEDGER.md:1142 |
-| world-class | docs/roadmap/LEDGER.md:629 |
-| world-class | docs/roadmap/LEDGER.md:1202 |
+| whiteboard | docs/roadmap/LEDGER.md:1141 |
+| world-class | docs/roadmap/LEDGER.md:628 |
+| world-class | docs/roadmap/LEDGER.md:1201 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2812 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2863 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2970 |
