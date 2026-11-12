@@ -15,6 +15,8 @@ from tessellate.ai.composer_study import Ctx, Reply
 
 #: "Rent 650", "- Groceries: $140.50", "Eating out 90".
 _LINE = re.compile(r"^\s*(?:[-*]\s*)?(?P<label>[A-Za-z][A-Za-z '&/-]{0,40}?)\s*[:=]?\s*[$£€]?\s*(?P<n>\d[\d,]*(?:\.\d+)?)\s*$")
+#: "| Milk | £1.20 |": a table row of a label and a figure (G11: "how much more cheese than milk" over a price table).
+_CELLS = re.compile(r"^\s*\|\s*(?P<label>[A-Za-z][A-Za-z '&/-]{0,40}?)\s*\|\s*[$£€]?\s*(?P<n>\d[\d,]*(?:\.\d+)?)\s*\|?\s*$")
 _TOTAL = re.compile(r"^(?:what(?:'s| is| was)\s+)?(?:the\s+|my\s+|our\s+)?(?:grand\s+)?total\s+(?P<t>.+?)\W*$", re.I)
 _TOTAL_HOW = re.compile(r"^how much (?:is|was|are) (?:the |my )?(?P<t>.+?) (?:in total|altogether|all together)\W*$", re.I)
 _DIFFER = re.compile(
@@ -39,7 +41,7 @@ def lines(note: dict, runs: bool = False) -> list[tuple[str, float]]:
     (only "A versus B" asks it: "compare" and the figures reader are pinned to one label a line)."""
     out = []
     for raw in str(note.get("content") or "").splitlines()[1:]:
-        found = [m] if (m := _LINE.match(raw)) else _sentence_run(raw) if runs else []
+        found = [m] if (m := _LINE.match(raw) or _CELLS.match(raw)) else _sentence_run(raw) if runs else []
         out.extend((f.group("label").strip(" :-").strip(), float(f.group("n").replace(",", ""))) for f in found)
     return out
 
@@ -67,11 +69,11 @@ def _named(ctx: Ctx, words: list[str], runs: bool = False) -> list[dict]:
 
 def _total(ctx: Ctx, topic: str) -> Reply | None:
     words = [w for w in _NOISE.sub(" ", topic).split() if w]
-    found = _named(ctx, words)
+    found = _named(ctx, words, True)
     if not found:
         return None
     note = found[0]
-    rows = lines(note)
+    rows = lines(note, True)
     total = sum(n for _l, n in rows)
     shown = ", ".join(f"{label} {_amount(n)}" for label, n in rows)
     return Reply(f"Your {composer_study._link(note)} note adds up to **{_amount(total)}**: {shown}.")  # noqa: SLF001
@@ -156,13 +158,19 @@ _MORE = re.compile(
     rf"(?: (?:than|compared (?:to|with)|vs\.?|versus) (?:in )?(?P<m2>{_MONTHS}))?\W*$",
     re.I,
 )
+#: "how much more is cheese than milk", "how much more rent than groceries in november": two labels of one note (G11).
+_GAP = re.compile(
+    r"^how much (?P<dir>more|less) (?:(?:is|was|are|does|do|did) )?(?:the |a )?(?P<a>[a-z][a-z '&/-]{0,30}?)(?: cost| costs)? than (?:the |a )?"
+    rf"(?P<b>[a-z][a-z '&/-]{{0,30}}?)(?: in (?P<m>{_MONTHS}))?\W*$",
+    re.I,
+)
 _LESS_WORDS = ("cheaper", "less expensive", "cost less", "costs less")
 
 
 def _labelled(ctx: Ctx, words: str, notes: list[dict] | None = None) -> list[tuple[dict, str, float]]:
     """Each priced note's line whose label is exactly `words` (by stem), as (note, label, figure)."""
     wanted = set(study.content_stems(words))
-    return [(n, label, value) for n in (notes if notes is not None else _priced(ctx)) for label, value in lines(n) if wanted and set(study.content_stems(label)) == wanted]
+    return [(n, label, value) for n in (notes if notes is not None else _priced(ctx, True)) for label, value in lines(n, True) if wanted and set(study.content_stems(label)) == wanted]
 
 
 def _which(ctx: Ctx, found: re.Match) -> Reply | None:
@@ -179,6 +187,24 @@ def _which(ctx: Ctx, found: re.Match) -> Reply | None:
     win, other = ((a_label, a_value), (b_label, b_value)) if (a_value < b_value) == lower else ((b_label, b_value), (a_label, a_value))
     verb = f"costs {cmp.split()[-1]}" if cmp.startswith("cost") else f"is {cmp}"
     return Reply(f"{win[0]} {verb}: {_amount(win[1])} against {_amount(other[1])} for {other[0]}, from {composer_study._link(note)}.")  # noqa: SLF001
+
+
+def _gap(ctx: Ctx, found: re.Match) -> Reply | None:
+    """Two labels of one note, the figures and the difference in the direction asked (a month names the note)."""
+    notes = [n for n in _priced(ctx, True) if not found.group("m") or _titled_month(n, found.group("m"))]
+    first, second = _labelled(ctx, found.group("a"), notes), _labelled(ctx, found.group("b"), notes)
+    both = next(((x, y) for x in first for y in second if x[0] is y[0] and x[1] != y[1]), None)
+    if not both:
+        return None
+    (note, a_label, a_value), (_n, b_label, b_value) = both
+    gap = a_value - b_value
+    facts = f"{a_label} is {_amount(a_value)} and {b_label} is {_amount(b_value)}, from {composer_study._link(note)}."  # noqa: SLF001
+    if gap == 0:
+        return Reply(f"The same: {facts}")
+    word = "more" if gap > 0 else "less"
+    asked_more = found.group("dir").lower() == "more"
+    lead = f"{_amount(abs(gap))} {word}" if (gap > 0) == asked_more else f"No, {_amount(abs(gap))} {word}"
+    return Reply(f"{lead}: {facts}")
 
 
 def _titled_month(note: dict, month: str) -> bool:
@@ -210,6 +236,9 @@ def answer(ctx: Ctx) -> Reply | None:
     which, more = _WHICH.match(text), _MORE.match(text)
     if which or more:
         return _which(ctx, which) if which else _more(ctx, more)
+    gap = _GAP.match(text)
+    if gap and (said := _gap(ctx, gap)):
+        return said
     total = _TOTAL.match(text) or _TOTAL_HOW.match(text)
     if total:
         return _total(ctx, total.group("t"))

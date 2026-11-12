@@ -69,3 +69,43 @@ def test_f8_a_real_word_before_list_is_never_turned_into_a_name():
     names = composer_names.names_of([{"content": "# Shopping\n\n- milk"}])
     assert composer_names.respell("what is on my reading list", names) == "what is on my reading list"
 
+
+# --- G11 ---------------------------------------------------------------------
+
+
+def _price_table(session):
+    from tessellate.entry import manager
+
+    manager.create_entry(session, "# Shopping prices\n\n| Item | Price |\n|---|---|\n| Milk | £1.20 |\n| Bread | £2.50 |\n| Cheese | £4.00 |", category_name="Life")
+
+
+def test_g11_how_much_more_cheese_than_milk_is_the_difference_of_the_two_figures(client, session):
+    _price_table(session)
+    said = _ask(client, "how much more cheese than milk")
+    assert said.startswith("2.8 more: Cheese is 4 and Milk is 1.2"), said
+    assert "Shopping prices" in said, said
+
+
+def test_g11_the_other_way_round_says_no(client, session):
+    _price_table(session)
+    said = _ask(client, "how much more is milk than bread")
+    assert said.startswith("No, 1.3 less"), said
+
+
+def test_g11_a_total_over_a_run_of_sentences_adds_the_figures(notebook):
+    said = notebook("total budget for november")
+    assert "**955**" in said and "Budget November" in said, said
+
+
+def test_g11_one_label_in_two_months_is_the_gap_between_them(notebook):
+    said = notebook("how much more did I spend eating out in october than november")
+    assert said.startswith("70 more in October"), said
+
+
+def test_g11_two_labels_of_one_months_note(notebook):
+    said = notebook("how much more is rent than groceries in november")
+    assert said.startswith("510 more: Rent is 650 and Groceries is 140"), said
+
+
+def test_g11_two_things_that_are_no_labels_are_left_to_the_other_readers(notebook):
+    assert "510" not in notebook("how much more is a plane ticket than a train ticket")

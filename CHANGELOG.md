@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fix (ledger 1112 G11): "how much more cheese than milk" and "how much more is rent than groceries in november" give the difference of the two figures from the one note that holds both (price tables and "Rent 650. Groceries 140." runs are read as lines), "total budget for november" adds the run of sentences to 955, and "how much more did I spend eating out in october than november" gives the 70 gap.
 - Fix (ledger 1112 F8): "wats on my shoping list" is read as "what is on my shopping list" and answered from the Shopping note (a word before a bare list is a name word, and a note's one-word heading counts as a name even when other notes use the word in lower case); "what's in my budget" is checked to lead with the latest Budget note.
 - Fix (ledger 1112 F4): "you are not helpful at all" and other complaints about the composer's own answers get a line instead of a note search, a bare reaction after an answer stays a reaction, and "what did I just add" with no chat before it says there is nothing yet.
 - Fix (ledger 1112 O4, O6, D23, F3): a reopened chat keeps what each answer showed (the frame and the notes it named), so "and the other one" still binds; typed "undo the delete", "undo that please" and "redo the change" run the app's undo like a bare "undo" (undo after "delete it" measured in Chat: note back, 0 to 1); every act wording checked for Confirm and Cancel or Undo.
