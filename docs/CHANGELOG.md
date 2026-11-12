@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Timeline: the calendar's double tap is measured with real touch events (`hasTouch`, `isMobile`, 1024): two taps 90 ms apart send clicks with detail 1 then 2 and open the add sheet on the day (20 Nov, 09:00); one tap opens the Day view; the handler is pinned in `tests/test_timeline_cal_double_tap.py`; L911 closes with the real device and the real model's reading in BACKLOG.
 - Timeline: a day page dropped on another day in the calendar's month view is measured under touch emulation at 1024 (it moves, or stays with "That day already has a page; open it to write there.", or does nothing on its own day) and pinned without a browser (`tests/test_timeline_cal_drop_page.py`); L910 closes with the real tablet long-press in BACKLOG.
 - Timeline: a ranged note shows as a span: the feed and table label it "3 Mar to 7 Mar", the calendar draws a "continues" chip on each later day (not draggable), and the help and Guide say so; the BACKLOG row for spans is removed (`tests/test_timeline_spans_view.py`).
 - Timeline: the startup `done_at` backfill is removed and L472 and L495 close under TIMELINE_PLAN decision 22 (no invented done moment, no streak count on the timeline; the streak stays on the Dashboard).
