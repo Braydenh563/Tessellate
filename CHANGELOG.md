@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Knowledge kernel (WORLD_CLASS B4): person and project pages. An entity's page adds Open items (a project's unticked tasks and reminders in its notes, a person's tasks that name them or `@` them), a Timeline of its notes by month and Linked notes (joined to its notes without naming it); a note's Connections lists the people and projects it names, each opening its page (`tests/test_entity_pages_b4.py`).
 - Corrections loop (WORLD_CLASS I7): each card of Show the evidence carries Is this line right? with Confirm and Not right; a sentence marked wrong is left out of the next answer and of what filing reads (the note re-filed and a neighbour quoted as evidence), listed in What it learned, and undone by its Delete (`tests/test_corrections_wrong_card_i7.py`).
 - Fix: Ask as of a day answers "what did I write" with the notebook as it stood, not the newest note; `TurnFrame` lives in `api/schemas.py`, so conversations no longer import the chat stack (import cycle); tests follow the Settings load code into settings-prefs.js.
 - Fix: the chat's Web toggle no longer throws a ReferenceError while the page loads; `renderWebSearchToggle` is defined in status.js, above the chat mode strip that first calls it (`tests/test_web_search_toggle_order.py`).

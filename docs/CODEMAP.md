@@ -2,9 +2,9 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8326, frontend ids 2763, CSS sections 524, backend routes 698, backend modules 10759, test files 2669, tests 21800, plan headings 687, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8329, frontend ids 2763, CSS sections 524, backend routes 698, backend modules 10764, test files 2670, tests 21807, plan headings 687, app scripts 29, boot scripts 38, script files 300.
 
-## Frontend functions (8326)
+## Frontend functions (8329)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3019,7 +3019,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `buildConnectionGroups` | frontend/js/connections.js:167 |
 | `connectionRowCues` | frontend/js/connections.js:53 |
 | `connectionRowEl` | frontend/js/connections.js:139 |
-| `drawNotesRail` | frontend/js/connections.js:312 |
+| `drawNotesRail` | frontend/js/connections.js:319 |
 | `linkNoteMention` | frontend/js/connections.js:110 |
 | `openConnections` | frontend/js/connections.js:11 |
 | `withBacklinks` | frontend/js/connections.js:100 |
@@ -5036,18 +5036,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderEmbedChoices` | frontend/js/embed-choices.js:25 |
 | `renderEmbedLegacy` | frontend/js/embed-choices.js:281 |
 
-### frontend/js/entity-page.js (10)
+### frontend/js/entity-page.js (13)
 
 | Name | File:line |
 |---|---|
-| `entityDateRow` | frontend/js/entity-page.js:140 |
+| `entityDateRow` | frontend/js/entity-page.js:193 |
 | `entityIcon` | frontend/js/entity-page.js:15 |
-| `entityMentionRow` | frontend/js/entity-page.js:124 |
-| `entityMenuItems` | frontend/js/entity-page.js:164 |
-| `entitySave` | frontend/js/entity-page.js:152 |
-| `entitySection` | frontend/js/entity-page.js:107 |
+| `entityMentionRow` | frontend/js/entity-page.js:131 |
+| `entityMenuItems` | frontend/js/entity-page.js:217 |
+| `entityMonthRow` | frontend/js/entity-page.js:177 |
+| `entityNoteButton` | frontend/js/entity-page.js:147 |
+| `entityOpenRow` | frontend/js/entity-page.js:170 |
+| `entitySave` | frontend/js/entity-page.js:205 |
+| `entitySection` | frontend/js/entity-page.js:114 |
 | `entityWhen` | frontend/js/entity-page.js:22 |
-| `openEntitiesSheet` | frontend/js/entity-page.js:202 |
+| `openEntitiesSheet` | frontend/js/entity-page.js:255 |
 | `openEntityPage` | frontend/js/entity-page.js:62 |
 | `toastEntityMerge` | frontend/js/entity-page.js:34 |
 
@@ -12709,7 +12712,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Settings rows that wrap their actions under the title (INBOX 82) | frontend/css/08-consistency.css:2258 |
 | Settings, About, Maintenance (settings-controls.js, renderMaintenance). | frontend/css/01-forms-settings.css:6251 |
 | Settings: a section's intro sits under its heading, not above it | frontend/css/08-consistency.css:4618 |
-| TENSIONS: THE DISAGREEMENT REVIEW | frontend/css/inbox-lazy.css:244 |
+| TENSIONS: THE DISAGREEMENT REVIEW | frontend/css/inbox-lazy.css:252 |
 | THE CHAT ON A PHONE, MEASURED | frontend/css/04-chat-dock-appearance.css:5697 |
 | THE OCR WORKSPACE | frontend/css/07-whiteboard-misc.css:5584 |
 | THE QUIET SIDE OF THE BUTTON RAMP: A RUN OF ROW ACTIONS | frontend/css/08-consistency.css:2347 |
@@ -13162,7 +13165,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/help-chat-lazy.css | 38 |
 | frontend/css/icon-picker.css | 132 |
 | frontend/css/improve-lazy.css | 110 |
-| frontend/css/inbox-lazy.css | 306 |
+| frontend/css/inbox-lazy.css | 314 |
 | frontend/css/key-grid-lazy.css | 55 |
 | frontend/css/lan-lazy.css | 131 |
 | frontend/css/library-lazy.css | 9236 |
@@ -13558,7 +13561,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/merge` | POST | `merge_tags` | src/tessellate/api/routes_tags.py:84 |
 | `/merges/accept` | POST | `accept_merge` | src/tessellate/api/routes_inbox.py:141 |
 | `/merges/dismiss` | POST | `dismiss_merge` | src/tessellate/api/routes_inbox.py:155 |
-| `/merges/{undo_id}/undo` | POST | `undo_merge_route` | src/tessellate/api/routes_entities.py:228 |
+| `/merges/{undo_id}/undo` | POST | `undo_merge_route` | src/tessellate/api/routes_entities.py:335 |
 | `/mermaid-frame` | GET | `mermaid_frame` | src/tessellate/api/app.py:1726 |
 | `/models/{size}` | DELETE | `remove_model` | src/tessellate/api/routes_voice.py:68 |
 | `/modes` | GET | `list_modes` | src/tessellate/api/routes_chat.py:2379 |
@@ -13842,8 +13845,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{document_id}/suggest-title` | POST | `suggest_document_title` | src/tessellate/api/routes_documents.py:1225 |
 | `/{document_id}/unarchive` | PUT | `unarchive_document` | src/tessellate/api/routes_documents.py:840 |
 | `/{entity_id}` | GET | `entity_page` | src/tessellate/api/routes_entities.py:104 |
-| `/{entity_id}` | PATCH | `patch_entity` | src/tessellate/api/routes_entities.py:183 |
-| `/{entity_id}/merge` | POST | `merge_into` | src/tessellate/api/routes_entities.py:216 |
+| `/{entity_id}` | PATCH | `patch_entity` | src/tessellate/api/routes_entities.py:290 |
+| `/{entity_id}/merge` | POST | `merge_into` | src/tessellate/api/routes_entities.py:323 |
 | `/{entry_id}` | DELETE | `delete_entry` | src/tessellate/api/routes_entries.py:2348 |
 | `/{entry_id}` | GET | `get_entry` | src/tessellate/api/routes_entries.py:2082 |
 | `/{entry_id}` | PUT | `update_entry` | src/tessellate/api/routes_entries.py:2262 |
@@ -13852,7 +13855,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{entry_id}/bookmarks` | GET | `entry_bookmarks` | src/tessellate/api/routes_entries_relations.py:674 |
 | `/{entry_id}/bookmarks` | POST | `attach_bookmark` | src/tessellate/api/routes_entries_relations.py:689 |
 | `/{entry_id}/bookmarks/{bookmark_id}` | DELETE | `detach_bookmark` | src/tessellate/api/routes_entries_relations.py:699 |
-| `/{entry_id}/connections` | GET | `entry_connections` | src/tessellate/api/routes_entries_links.py:46 |
+| `/{entry_id}/connections` | GET | `entry_connections` | src/tessellate/api/routes_entries_links.py:47 |
 | `/{entry_id}/context` | POST | `add_context` | src/tessellate/api/routes_entries.py:1559 |
 | `/{entry_id}/export.md` | GET | `export_entry` | src/tessellate/api/routes_entries.py:2168 |
 | `/{entry_id}/filing` | GET | `filing_status` | src/tessellate/api/routes_entries.py:1368 |
@@ -13861,11 +13864,11 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{entry_id}/generate-title` | POST | `generate_entry_title` | src/tessellate/api/routes_entries.py:2565 |
 | `/{entry_id}/history` | GET | `entry_history` | src/tessellate/api/routes_entries_history.py:83 |
 | `/{entry_id}/history/{revision_id}/restore` | POST | `restore_revision` | src/tessellate/api/routes_entries_history.py:230 |
-| `/{entry_id}/links` | POST | `create_link` | src/tessellate/api/routes_entries_links.py:82 |
-| `/{entry_id}/links/{link_id}` | DELETE | `delete_link` | src/tessellate/api/routes_entries_links.py:112 |
-| `/{entry_id}/links/{link_id}` | PATCH | `patch_link` | src/tessellate/api/routes_entries_links.py:122 |
-| `/{entry_id}/links/{link_id}/generate-reason` | POST | `generate_link_reason_endpoint` | src/tessellate/api/routes_entries_links.py:161 |
-| `/{entry_id}/links/{link_id}/reason` | PUT | `update_link_reason` | src/tessellate/api/routes_entries_links.py:142 |
+| `/{entry_id}/links` | POST | `create_link` | src/tessellate/api/routes_entries_links.py:85 |
+| `/{entry_id}/links/{link_id}` | DELETE | `delete_link` | src/tessellate/api/routes_entries_links.py:115 |
+| `/{entry_id}/links/{link_id}` | PATCH | `patch_link` | src/tessellate/api/routes_entries_links.py:125 |
+| `/{entry_id}/links/{link_id}/generate-reason` | POST | `generate_link_reason_endpoint` | src/tessellate/api/routes_entries_links.py:164 |
+| `/{entry_id}/links/{link_id}/reason` | PUT | `update_link_reason` | src/tessellate/api/routes_entries_links.py:145 |
 | `/{entry_id}/mentions/link` | POST | `link_mention` | src/tessellate/api/routes_mentions.py:175 |
 | `/{entry_id}/privacy` | POST | `set_entry_privacy` | src/tessellate/api/routes_entries.py:2536 |
 | `/{entry_id}/purge` | DELETE | `purge_entry` | src/tessellate/api/routes_entries.py:2395 |
@@ -13908,7 +13911,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10759)
+## Backend modules (10764)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -21815,21 +21818,26 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `ReadBody` | src/tessellate/api/routes_editor.py:23 |
 | `read` | src/tessellate/api/routes_editor.py:35 |
 
-### src/tessellate/api/routes_entities.py (11)
+### src/tessellate/api/routes_entities.py (16)
 
 | Name | File:line |
 |---|---|
-| `EntityPatch` | src/tessellate/api/routes_entities.py:177 |
-| `MergeInto` | src/tessellate/api/routes_entities.py:212 |
+| `EntityPatch` | src/tessellate/api/routes_entities.py:284 |
+| `MergeInto` | src/tessellate/api/routes_entities.py:319 |
 | `_hit` | src/tessellate/api/routes_entities.py:91 |
+| `_linked_notes` | src/tessellate/api/routes_entities.py:241 |
 | `_live` | src/tessellate/api/routes_entities.py:56 |
+| `_names_line` | src/tessellate/api/routes_entities.py:189 |
+| `_open_items` | src/tessellate/api/routes_entities.py:198 |
 | `_row` | src/tessellate/api/routes_entities.py:46 |
+| `_timeline` | src/tessellate/api/routes_entities.py:224 |
 | `_visible_ids` | src/tessellate/api/routes_entities.py:40 |
 | `entity_page` | src/tessellate/api/routes_entities.py:105 |
 | `list_entities` | src/tessellate/api/routes_entities.py:69 |
-| `merge_into` | src/tessellate/api/routes_entities.py:217 |
-| `patch_entity` | src/tessellate/api/routes_entities.py:184 |
-| `undo_merge_route` | src/tessellate/api/routes_entities.py:229 |
+| `merge_into` | src/tessellate/api/routes_entities.py:324 |
+| `names_in_note` | src/tessellate/api/routes_entities.py:265 |
+| `patch_entity` | src/tessellate/api/routes_entities.py:291 |
+| `undo_merge_route` | src/tessellate/api/routes_entities.py:336 |
 
 ### src/tessellate/api/routes_entries.py (119)
 
@@ -21971,12 +21979,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `create_link` | src/tessellate/api/routes_entries_links.py:83 |
-| `delete_link` | src/tessellate/api/routes_entries_links.py:113 |
-| `entry_connections` | src/tessellate/api/routes_entries_links.py:47 |
-| `generate_link_reason_endpoint` | src/tessellate/api/routes_entries_links.py:162 |
-| `patch_link` | src/tessellate/api/routes_entries_links.py:123 |
-| `update_link_reason` | src/tessellate/api/routes_entries_links.py:143 |
+| `create_link` | src/tessellate/api/routes_entries_links.py:86 |
+| `delete_link` | src/tessellate/api/routes_entries_links.py:116 |
+| `entry_connections` | src/tessellate/api/routes_entries_links.py:48 |
+| `generate_link_reason_endpoint` | src/tessellate/api/routes_entries_links.py:165 |
+| `patch_link` | src/tessellate/api/routes_entries_links.py:126 |
+| `update_link_reason` | src/tessellate/api/routes_entries_links.py:146 |
 
 ### src/tessellate/api/routes_entries_reevaluate.py (6)
 
@@ -27661,7 +27669,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21800)
+## Tests (21807)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28697,6 +28705,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_entities_kg5.py | 8 |
 | tests/test_entity_merge_undo.py | 3 |
 | tests/test_entity_page_private.py | 2 |
+| tests/test_entity_pages_b4.py | 7 |
 | tests/test_entries_by_ids.py | 4 |
 | tests/test_entries_changes.py | 9 |
 | tests/test_entries_keyset_paging.py | 4 |

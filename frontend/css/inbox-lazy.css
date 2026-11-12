@@ -170,6 +170,14 @@
   margin: 0 0 var(--space-1);
   font-size: var(--text-sm);
 }
+/* B4: a row's quiet second line (where a task is, a reminder's day), and a
+   month of the timeline with its newest notes under it. */
+.entity-row-sub {
+  font-size: var(--text-xs);
+}
+.entity-month + .entity-month {
+  margin-top: var(--space-3);
+}
 .entity-count {
   margin-inline-start: auto;
   font-size: var(--text-sm);
