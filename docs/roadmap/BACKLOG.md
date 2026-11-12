@@ -4410,3 +4410,4 @@ Owner, verbatim: "also is llama.cpp still on the table?? maybe for later pr at e
 ## Timeline, parked 2026-11-12
 
 - **Day strip and calendar view: the owner's look (INBOX 561).** Built in 543 (the month between its arrows, one well of days, one Tab stop) and widened into the calendar view by INBOX 904 B72 (HISTORY.md, "Moved from the plans, 2026-10-17 (TIMELINE B72)"). The only step left is the owner opening the timeline and saying whether the strip now reads right; a "no" becomes a TIMELINE_PLAN row.
+- **L910, the browser's own long-press drag on a real tablet.** Emulation at 1024 with `hasTouch` and `isMobile` drives dragstart, dragover and drop and the page moves; what no emulation presses is the OS long-press that starts a native drag. On a real tablet: long-press a day page in the month view, drag it to another day, release, and see the "now the page for" toast and the cell change; then drop it on a day with a page and see it stay.

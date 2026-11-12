@@ -14,10 +14,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
-| timeline | 3 | 0 | 0 | 0 | 5 | 3 |
+| timeline | 3 | 0 | 0 | 0 | 4 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 672 | 155 | 3 | 195 | 1380 |
+| all | 553 | 672 | 155 | 3 | 194 | 1380 |
 
 ## graph
 
@@ -980,7 +980,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L907** `ui-modernisation` blocked-hardware, M: Check forced colours, 200% zoom, screen reader; fix applyThemeChoice('light') leaving data-mode dark. From audit-1031-ux.md. Evidence: Screen reader and forced-colours need human/OS; theme data-mode case not re-driven
 - [ ] **L908** `ui-modernisation` blocked-hardware, S: Reproduce dashboard scroll jump (426 u) with owner's preferences. From OPEN.md:2310. Evidence: Needs the owner's preferences (LS=) to reproduce; scrolljump.js reference
 - [ ] **L909** `ui-modernisation` blocked-hardware, M: Frame-cost numbers need GPU; background slider effect unmeasured. From OPEN.md:1234; OPEN.md:3383. Evidence: Needs real GPU hardware to confirm absolute milliseconds.
-- [ ] **L910** `timeline` blocked-hardware, S: Drive touch drag on tablet, day page drop on another day, 1,000-note month. From OPEN.md:1373; OPEN.md:2569. Evidence: Needs real touch device; timeline-calendar.js:313 has non-touch path built.
 - [ ] **L911** `timeline` blocked-hardware, S: Verify calendar touch double tap and real model reading. From OPEN.md:3839. Evidence: Needs touch hardware and a real model
 - [ ] **L912** `timeline` blocked-hardware, M: Timeline row 8 bar click to rows under 300 ms at 96 notes. From OPEN.md:1378. Evidence: Load-dependent timing on loaded headless machine; needs idle/real hardware to confirm. Measured 2026-11-12 (L490, headless, load 3.8-4.5, 96 notes, fresh browser per run, dashboard then `#tab-btn-timeline` to first `.timeline-rows > *`): 125-249 ms over 10 runs, app side 77-172 ms; 137-365 ms at load 6.3. Still needs real hardware.
 - [ ] **L913** `timeline` blocked-hardware, M: Windows and macOS toast/notification behaviour not run. From OPEN.md:2631. Evidence: Needs owner's Windows desktop and a Mac
