@@ -281,7 +281,7 @@ INI; Emmet (`frontend/vendor/emmet`); Harper grammar in a worker
 (`harper-worker.js`); `documents-code.js` (4,400 lines). Open, for one Opus
 agent that audits what renders first (section 1 of CLAUDE.md) and then builds:
 
-- Languages missing: Visual Basic (`vb`, `vbScript` legacy modes), p5.js (JS
+- Languages missing (Visual Basic built, HISTORY 2026-11-12): p5.js (JS
   plus p5 completions from the vendored `p5.min.js`), PHP stays out (section
   above, the size).
 - Per-language completions and snippets: CSS property values for the property
@@ -1179,10 +1179,9 @@ lists every command with its shortcut.
 | 5 | expansion | Run, preview, test, debug, consoles: D1 to D9 (Briefs 69 to 71) | section 23's gates | 5, 12 |
 | 6 | fix | Built 2026-10-10 (HISTORY "DOCUMENTS Brief 42 remainder" and "DOCUMENTS Brief 71, I3"): 64 commands, 0 without a key or "none"; the keybindings sheet (Ctrl+K Ctrl+S) draws the same table, 34 keys each pressed by `code-keys.js` | 45 commands, 0 without a shortcut or a "none" | 6, 10 |
 | 7 | optimisation | Built 2026-10-10 (HISTORY "DOCUMENTS 24 and 25, Brief 76"): `docCodeScan` was 1 to 4 ms; two no-op reconfigures skipped, the findings repainted once, the panels a frame after the text | `deepen72a.js` code open 1440 538 to 240 ms, 390 963 to 649 ms (from the 3,724-word document; load 6 to 7) | 13 |
-| 8 | expansion | A minimap, off by default, one toggle in View (Brief 42's bar) | toggle present; its width remembered | 11 |
 | 9 | fix | Built 2026-10-10 (HISTORY "DOCUMENTS Brief 69, I1"): a run past 2 s lists in `/activity` and stops from it | the run lists in `/activity` and stops from it | 5 |
 
-**Briefs.** 42 (rows 3, 4, 8), 69 to 71 (row 5), 73 (row 9), 76 (rows 1, 2,
+**Briefs.** 42 (rows 3, 4; row 8 built), 69 to 71 (row 5), 73 (row 9), 76 (rows 1, 2,
 6, 7, with section 24).
 
 ## Built, the sidebar redesign (INBOX 115), 2026-09-12
@@ -1277,7 +1276,6 @@ The owner: "make sure all the vendored repositories are made full use of. I want
 - **VC4, CodeMirror's merge view against a chosen version** (M, rank 4). `@codemirror/merge` is not in `codemirror/package.json`; the version diff is hand-built (`docDiffLcs` to `docDiffHunks`, `documents.js` lines 11260 to 11400). With autosave a diff against "the last save" is moments old, so the use is the chosen version: accept or reject one hunk in the editor. Measure: the bytes `codemirror.min.js` grows by (795,151 now), and rejecting one hunk restores exactly that hunk's lines (a node test on a three-hunk fixture).
 - **VC5, FlashText link offers** (rank 5): built 2026-10-18, see HISTORY.md "OPEN.md rows closed, 2026-10-18 (open-1018)". Tag offers were not built (a document has no tags).
 - **VC6, Harper's own dictionary and the other three dialects** (S, rank 6). The worker uses 3 of 29 `Linter` members; `import_words` and `export_words` take a personal dictionary (names and jargon from the notebook) and `ignore_lints` keeps a dismissed finding dismissed; `Dialect` offers 5 and `docSpellingVariant` passes two (US, UK), leaving Australian, Canadian and Indian. Measure: findings on a fixture of 10 proper nouns drop to 0 with the dictionary loaded; the spelling setting lists five dialects and each flags its own variant of "colour" or "center".
-- **VC7, the `diff` and `dockerFile` modes already in the bundle** (S, rank 7). `legacy modes` 15 of 18 called; `diff`, `dockerFile` and the `sql` factory are bundled and no file type offers them (`core/filetypes.py` lists 26 types, none a diff or a Dockerfile). Zero bytes. Measure: two rows in `FILE_TYPES`, and a `.patch` and a `Dockerfile` highlight in the editor (token classes counted in a Playwright run).
 - **VC13, the lint panel and fold-all in the palette** (S, rank 13). `lint` is 5 of 12 (gutter and next/previous only; `openLintPanel` and `lintKeymap` unused), `language` has `foldAll`, `unfoldAll` and `toggleFold` unused. A list of every problem in a source file is one panel. Measure: the panel lists the same count as the gutter markers on a file with 5 seeded errors; fold-all folds every top-level block of a 200-line fixture.
 - **VC17, Emmet's stylesheet syntaxes** (L, rank 17, lowest). Emmet is fully used (6 of 6 functions) but 4 of its 10 syntaxes are passed (html, css, xml, jsx); scss, sass, stylus, pug, haml and slim need a file type to apply to, and the matching highlight mode (`@codemirror/lang-sass`) is not vendored. Measure: only after a file type exists; an abbreviation `p10` in a `.scss` document expands to `padding: 10px;`.
 

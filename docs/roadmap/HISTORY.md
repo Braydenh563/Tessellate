@@ -55276,3 +55276,10 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 - [x] **L242** `chat` partly, M: Thinking-dots reads in B55, throw-landing walk, opening-view appendChild 92-144 ms unverified in browser. From ledger-1112 X8. Built: 42e037951 (the large view's fit reads a part's style only past the counted box: 455 style reads to 10); the other hot spots, driven at 4x throttle, did not reproduce above 50 ms.
 - [x] **L200** `chat` partly, S: One Playwright drive of the atlas.js charactersArrived fix. From ledger-1112 P36. Built: verified 2026-11-12 with no code change: a drive holding the character scripts 9 s showed 4 saved turns with 0 avatar children while charactersLoaded was false, then 3 resting plus 1 live Atlas and 0 empty holders.
 - [x] **L182** `chat` open, L: Brief 88: dodge glance (N8), milestone cheer (N10), W31 E1 to E6 remainder. From SESSION_BRIEFS.md:258; ledger-1112 P7; ledger-1112 X18. Evidence: avatars.js:4155 nameMarkBuddyDodge has no glance; no milestone cheer found Built: 26092ac88 (nameMarkBuddyDodge.glance, NMB_MILESTONES and the milestone row) and a7e56bda1 (desk note_milestone); E1, E2, E3, E5 and E6 were already built, N9 is still open as L-chat-7 (typing_burst is a nod, not the asked stretch), E4 is L-chat-3. Desk looks are fake-transport tests only.
+
+## Moved from the plans, 2026-11-12 (documents-plan: stale rows found built)
+
+- **VC7, the `diff` and `dockerFile` modes already in the bundle** (S, rank 7). `legacy modes` 15 of 18 called; `diff`, `dockerFile` and the `sql` factory are bundled and no file type offers them (`core/filetypes.py` lists 26 types, none a diff or a Dockerfile). Zero bytes. Measure: two rows in `FILE_TYPES`, and a `.patch` and a `Dockerfile` highlight in the editor (token classes counted in a Playwright run). Built: `core/filetypes.py:90` (`diff`), `:93` (`dockerfile`), `:137` (`.patch` alias).
+- DOCUMENTS_PLAN 25 row 8, the minimap: built, `doc-minimap` toggle in View (`documents-view.js:206`, pref `codeMinimap`, off by default; `documents.js:547`).
+- DOCUMENTS_PLAN 21, Visual Basic: built, `vb` and `vbs` modes (`documents.js:16182`).
+
