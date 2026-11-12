@@ -187,7 +187,7 @@ const out = (v) => process.stdout.write(JSON.stringify(v));
 
 def _react_src() -> str:
     table = re.search(r"^const NMB_REACTIONS = \{.*?^\};", AV, re.S | re.M).group(0)
-    gap = re.search(r"^const NMB_REACT_GAP = .*$", AV, re.M).group(0)
+    gap = "\n".join(re.search(rf"^const {n} = .*$", AV, re.M).group(0) for n in ("NMB_REACT_GAP", "NMB_REACT_BUDGET", "NMB_REACT_WINDOW_MS"))  # the budget joined the gap in P6 (1112)
     return "\n".join([table, gap, _fn(AV, "nameMarkBuddyReact")])
 
 

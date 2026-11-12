@@ -409,7 +409,7 @@ def test_it_notices_the_app_rate_limited_and_never_under_reduced_motion() -> Non
     # The streak: once, and only for a count longer than the last seen.
     assert "if (seen && days > seen) nameMarkBuddyReact(\"streak\");" in _fn("nameMarkBuddyStreak")
     dashboard = (ROOT / "frontend" / "js" / "dashboard.js").read_text(encoding="utf-8")
-    assert "nameMarkBuddyStreak(streak)" in dashboard
+    assert "nameMarkBuddyStreak(streak, stats.total_entries)" in dashboard  # P6/N10 (1112): the call carries the note count for the milestone
     # Night: a tick yawns, and the yawn's early return comes after the mood
     # has moved, so a tick that yawns still tires it at night (review, round 6).
     tick = _fn("nameMarkBuddyTick")

@@ -4217,7 +4217,11 @@
     //: skirt hang below the button, and a tour ring under them was missed.
     const face = buddy.querySelector(".nm-figure") || buddy.querySelector(".nm-buddy-face") || buddy;
     const me = nameMarkBuddyDodge.box(face);
-    const over = [...nameMarkBuddyPopups(), ...nameMarkBuddyAttention()].some((b) => b.left < me.right && b.right > me.left && b.top < me.bottom && b.bottom > me.top);
+    const hit = [...nameMarkBuddyPopups(), ...nameMarkBuddyAttention()].find((b) => b.left < me.right && b.right > me.left && b.top < me.bottom && b.bottom > me.top);
+    const over = !!hit;
+    //: **It looks before it steps aside** (Brief 88, N8): the first look that finds a popup over it turns its eyes to
+    //: the popup, a beat that costs no layout (the box is already read), and lets go when it has gone.
+    if (over && !buddy.classList.contains("nmb-dodge")) nameMarkBuddyDodge.glance(hit);
     buddy.classList.toggle("nmb-dodge", over);
     //: Faded to a ghost, it is not a place the keyboard may stop either: a
     //: face nobody can see took Tab and left focus on nothing (AI3).
@@ -4237,6 +4241,12 @@
       return { left: Math.min(...shape.map((b) => b.left)), right: Math.max(...shape.map((b) => b.right)), top: Math.min(...shape.map((b) => b.top)), bottom: Math.max(...shape.map((b) => b.bottom)) };
     }
     return face.getBoundingClientRect();
+  };
+  nameMarkBuddyDodge.glance = function nameMarkBuddyDodgeGlance(box) {
+    if (nameMarkBuddyStill() || document.documentElement.dataset.motion === "reduced" || nameMarkBuddyAsleep(document.getElementById("nm-buddy"))) return;
+    nameMarkBuddyAim([(box.left + box.right) / 2, (box.top + box.bottom) / 2]);
+    clearTimeout(nmb.releaseTimer);
+    nmb.releaseTimer = setTimeout(nameMarkBuddyRelease, 900);
   };
   let nmbDodgeTimer = 0;
   let nmbDodgeLate = 0;
@@ -9384,6 +9394,8 @@
     read: { cool: 3 * 60 * 1000, ms: 7000 },
     graph: { cool: 60 * 1000, ms: 2600 },
     streak: { cool: 20 * 60 * 60 * 1000, ms: 1300 },
+    //: The note count crossed a round number (Brief 88, N10): a cheer and the number said once (`nameMarkBuddyStreak`).
+    milestone: { cool: 60 * 60 * 1000, ms: 2400 },
     yawn: { cool: 30 * 60 * 1000, ms: 2200 },
     private: { cool: 45 * 1000, ms: 2400 },
     toast: { cool: 8000, ms: 2000 },
@@ -9417,6 +9429,11 @@
     sent: { cool: 4000, ms: 1200, world: true, play: ["nod", "curious", 1200] },
   };
   const NMB_REACT_GAP = 6000;
+  //: **A reaction budget per minute** (Brief 34 second part, INBOX 752): at most four reactions in any sixty seconds, on
+  //: top of each row's own cool-down and the six-second gap, so a burst of different events (a toast, a note opened, a
+  //: window resize, a chime) is a few reactions, not a run of them. The log is timestamps only, pruned on each ask.
+  const NMB_REACT_BUDGET = 4;
+  const NMB_REACT_WINDOW_MS = 60000;
   function nameMarkBuddyReact(kind, target = null) {
     const buddy = document.getElementById("nm-buddy");
     const spec = NMB_REACTIONS[kind];
@@ -9445,6 +9462,9 @@
       }
       wait[kind] = 0;
     }
+    nmb.reactLog = (nmb.reactLog || []).filter((at) => now - at < NMB_REACT_WINDOW_MS);
+    if (nmb.reactLog.length >= NMB_REACT_BUDGET) return false;
+    nmb.reactLog.push(now);
     nmb.reactCool[kind] = now + spec.cool;
     nmb.reactAt = now;
     nmb.reacted = kind;
@@ -9471,9 +9491,10 @@
       buddy.dataset.turn = side;
       nameMarkBuddyExpress("surprised", 900);
       nameMarkBuddyAct(NAME_MARK_BUDDY_ACTS.peek.poses.includes(nmb.pose) && nmb.edgeType === "top" ? "look" : "glance", spec.ms);
-    } else if (kind === "streak") {
+    } else if (kind === "streak" || kind === "milestone") {
       nameMarkBuddyExpress("excited", 2400);
       nameMarkBuddyAct("cheer");
+      if (kind === "milestone" && target?.say) nameMarkSay(buddy, target.say, 3200);
     } else if (kind === "yawn") {
       nameMarkBuddyExpress("sleepy", spec.ms);
       nameMarkBuddyAct("yawn");
@@ -9495,7 +9516,8 @@
   //: The capture streak, from the dashboard each time it counts: a cheer the
   //: first time it is seen longer than before (kept on this computer), never
   //: for the count the page merely loads with.
-  function nameMarkBuddyStreak(days) {
+  function nameMarkBuddyStreak(days, total) {
+    nameMarkBuddyStreak.milestone(total);
     if (!(days >= 2)) return;
     let seen = 0;
     try {
@@ -9506,6 +9528,25 @@
     }
     if (seen && days > seen) nameMarkBuddyReact("streak");
   }
+  //: **A round number of notes** (Brief 88, N10): 10, 25, 50, 100, 250, 500, then every thousand. The highest one already
+  //: seen is kept on this computer; the count the page merely loads with is only recorded, so the cheer is for the note
+  //: that crossed it, never for a notebook opened at 100.
+  const NMB_MILESTONES = [10, 25, 50, 100, 250, 500];
+  nameMarkBuddyStreak.milestone = function nameMarkBuddyMilestone(total) {
+    if (!(total >= 10)) return 0;
+    const reached = total >= 1000 ? Math.floor(total / 1000) * 1000 : Math.max(...NMB_MILESTONES.filter((m) => m <= total));
+    let seen = -1;
+    try {
+      const kept = prefs.get("nm-buddy-milestone", null);
+      seen = kept === null ? -1 : Number(kept) || 0;
+      if (reached > seen) prefs.set("nm-buddy-milestone", String(reached));
+    } catch (e) {
+      return 0;
+    }
+    if (seen < 0 || reached <= seen) return 0;
+    nameMarkBuddyReact("milestone", { say: `${reached} notes. That is a lot of thinking.` });
+    return reached;
+  };
 
   //: The page's own events, watched here rather than hooked into each
   //: surface: a note opened (by its Show more, its row in the rows view, or
