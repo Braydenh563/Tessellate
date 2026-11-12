@@ -4387,7 +4387,7 @@ function wbMapEdgeKey(parent, child, layout, colors) {
   const c = wbMapNodeSize(child);
   const themed = wbMapThemedData(child);
   const own = child.data || WB_MAP_NO_THEME;
-  return `${layout}|${child._bl}|${child._blTop}|${parent.id}|${parent.parent_id == null}|${parent.x},${parent.y},${p.w},${p.h}|${child.x},${child.y},${c.w},${c.h}|${themed.edge_style}|${themed.edge_dashed}|${themed.edge_width}|${themed.edge_arrow}|${own.edge_from}|${own.edge_to}|${own.edge_slide}|${own.edge_bend}|${own.edge_label}|${own.edge_label_dx}|${own.edge_label_dy}|${colors.get(child.id)}`;
+  return `${layout}|${child._bl}|${child._blTop}|${parent.id}|${parent.parent_id == null}|${parent.x},${parent.y},${p.w},${p.h}|${child.x},${child.y},${c.w},${c.h}|${themed.edge_style}|${themed.edge_dashed}|${themed.edge_width}|${themed.edge_arrow}|${own.edge_from}|${own.edge_to}|${own.edge_slide}|${own.edge_bend}|${own.edge_label}|${own.edge_label_dx}|${own.edge_label_dy}|${own.edge_label_size}|${own.edge_label_bold}|${own.edge_label_color}|${own.edge_label_chip}|${colors.get(child.id)}`;
 }
 
 //: Everything one tree edge draws, worked out from the two topics it joins,
@@ -4433,9 +4433,13 @@ function wbMapEdgeGeometry(parent, child, layout, colors) {
   const ldy = Number(child.data?.edge_label_dy) || 0;
   const lx = grip.x + ldx;
   const ly = grip.y + ldy;
+  //: The label's look is the board connector's (size, bold, colour, chip;
+  //: `wbPaintLinkLabel`), kept on the topic beside the label itself.
+  const own = child.data || WB_MAP_NO_THEME;
+  const look = `${Number(own.edge_label_size) > 0 ? Number(own.edge_label_size) : ""}|${own.edge_label_bold ? 1 : ""}|${typeof own.edge_label_color === "string" ? own.edge_label_color : ""}|${own.edge_label_chip ? 1 : ""}`;
   return {
-    className, d, line, grip, ends, colour, label, lx, ly,
-    paint: `${className}|${d}|${line}|${grip.x},${grip.y}|${ends.from.x},${ends.from.y},${ends.to.x},${ends.to.y}|${colour}|${label}|${lx},${ly}`,
+    className, d, line, grip, ends, colour, label, lx, ly, look,
+    paint: `${className}|${d}|${line}|${grip.x},${grip.y}|${ends.from.x},${ends.from.y},${ends.to.x},${ends.to.y}|${colour}|${label}|${lx},${ly}|${look}`,
   };
 }
 
@@ -4644,6 +4648,11 @@ function wbMapEdgeApply(wrap, geom) {
   text.setAttribute("x", String(geom.lx));
   text.setAttribute("y", String(geom.ly));
   text.textContent = geom.label;
+  const [size, bold, ink, chip] = geom.look.split("|");
+  text.style.fontSize = size ? `${size}px` : "";
+  text.style.fontWeight = bold ? "700" : "";
+  text.style.fill = ink;
+  text.classList.toggle("wb-map-edge-label-chip", Boolean(chip));
 }
 
 //: Where the mid-line `+` sits: a short step along the line from the handle,
@@ -7845,6 +7854,14 @@ function wbSyncMapStrip(node) {
         dash.setAttribute("aria-pressed", on ? "true" : "false");
         dash.title = on ? "Draw the line into this topic solid again" : "Dash the line into this topic";
       }
+      //: The label's look rows, on the line menu; they read the stored look.
+      const size = document.getElementById("wb-map-label-size");
+      if (size) size.value = Number(data.edge_label_size) > 0 ? String(data.edge_label_size) : "";
+      const ink = document.getElementById("wb-map-label-color");
+      if (ink) ink.value = typeof data.edge_label_color === "string" ? data.edge_label_color : "#000000";
+      for (const [id, key] of [["wb-map-label-bold", "edge_label_bold"], ["wb-map-label-chip", "edge_label_chip"]]) {
+        document.getElementById(id)?.setAttribute("aria-pressed", data[key] ? "true" : "false");
+      }
       const arrow = document.getElementById("wb-map-edge-arrow");
       if (arrow) {
         //: The *effective* state, not the stored one: an unset line has a head
@@ -8658,7 +8675,7 @@ const WB_MAP_COPY_MAX = 120;
 //: line's look travelling with a copy is worse than none of it.
 const WB_MAP_STYLE_KEYS = [
   "color", "bold", "italic", "font_size", "align", "icon", "link", "edge_label",
-  "edge_label_dx", "edge_label_dy",
+  "edge_label_dx", "edge_label_dy", "edge_label_size", "edge_label_bold", "edge_label_color", "edge_label_chip",
   "shape", "core", "spine", "fill", "effect", "edge_style", "edge_dashed", "edge_width", "edge_arrow",
   //: The waypoint on the line (§12.1 item 5's third) belongs with the other
   //: four for the same reason: it is written from the line itself onto the

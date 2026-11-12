@@ -992,6 +992,22 @@ def test_a_lines_thickness_and_arrowhead_are_kept_per_branch(client):
     assert put({"edge_arrow": "maybe"}).status_code == 422
 
 
+def test_a_lines_label_offset_and_look_survive_a_save(client):
+    """L-mindmap-11: the label's size, bold, colour and chip, and the dragged
+    offset (which the model used to drop), come back from the server."""
+    board = _map(client, name="Label look")
+    kid = _node(client, board["id"], text="Kid")
+    look = {
+        "edge_label": "because", "edge_label_dx": 12.0, "edge_label_dy": -8.0, "edge_label_size": 20,
+        "edge_label_bold": True, "edge_label_color": "#aa0000", "edge_label_chip": True,
+    }
+    body = {"kind": kid["kind"], "board_id": board["id"], "data": {**kid["data"], **look}, "x": kid["x"], "y": kid["y"], "z": kid["z"]}
+    got = client.put(f"/whiteboard/objects/{kid['id']}", json=body).json()["data"]
+    assert {k: got[k] for k in look} == look
+    body["data"] = {**body["data"], "edge_label_size": 200}
+    assert client.put(f"/whiteboard/objects/{kid['id']}", json=body).status_code == 422
+
+
 def test_the_bar_on_a_topics_edge_is_kept_and_is_a_closed_set(client):
     """MINDMAP_PLAN.md item 177: "per-node left edge: solid, dashed or none".
 

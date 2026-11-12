@@ -718,6 +718,15 @@ class WhiteboardObjectData(BaseModel):
     #: only thing that can carry its label is one of its two ends, and the
     #: child is the end that has exactly one incoming edge.
     edge_label: str | None = Field(default=None, max_length=80)
+    #: Where the label sits off the line's middle (dragged), and its look, the
+    #: board connector's four (size, bold, colour, chip). The offsets were
+    #: missing from the model, so a dragged label came back to the middle on reload.
+    edge_label_dx: float | None = Field(default=None, ge=-2000, le=2000)
+    edge_label_dy: float | None = Field(default=None, ge=-2000, le=2000)
+    edge_label_size: int | None = Field(default=None, ge=8, le=72)
+    edge_label_bold: bool | None = None
+    edge_label_color: str | None = Field(default=None, pattern="^#[0-9a-fA-F]{6}$")
+    edge_label_chip: bool | None = None
     #: And how that line is drawn (§12.1 item 4, the link radial). Stored on
     #: the child for the same reason as its label. `curve` is the default and
     #: is what an unset value means, so a map made before these existed draws
