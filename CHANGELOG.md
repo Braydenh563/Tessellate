@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fix: a confirm or name prompt opened from inside a modal dialog mounts in that dialog, so it is no longer beneath it and unreachable (L453; `dialogHost` in app.js, measured: the confirm button is the element at its own centre, in the dialog).
 - Fix: a Settings deep link (a notice button, a "Find a setting" row) finishes at the control: the smooth scroll is re-aimed when it ends, since the pane grows under it (L447; a reopened link left the row 8,561px down at 390, now 481).
 - Fix: finding "Palette" in Settings lands focus on the palette grid, not its label (L422; 121 of 292 index rows still land on a head, which is right for a group).
 - Fix: Ask as of a day answers "what did I write" with the notebook as it stood, not the newest note; `TurnFrame` lives in `api/schemas.py`, so conversations no longer import the chat stack (import cycle); tests follow the Settings load code into settings-prefs.js.
