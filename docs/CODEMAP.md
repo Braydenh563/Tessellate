@@ -2,9 +2,9 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8325, frontend ids 2763, CSS sections 524, backend routes 698, backend modules 10758, test files 2668, tests 21796, plan headings 687, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8326, frontend ids 2763, CSS sections 524, backend routes 698, backend modules 10759, test files 2669, tests 21800, plan headings 687, app scripts 29, boot scripts 38, script files 300.
 
-## Frontend functions (8325)
+## Frontend functions (8326)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -1801,30 +1801,30 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `stopActivityModel` | frontend/js/activity-panel.js:142 |
 | `stopAllActivity` | frontend/js/activity-panel.js:153 |
 
-### frontend/js/answer-kit.js (87)
+### frontend/js/answer-kit.js (88)
 
 | Name | File:line |
 |---|---|
-| `actNavigate` | frontend/js/answer-kit.js:2295 |
-| `addAssistantBubble` | frontend/js/answer-kit.js:1839 |
+| `actNavigate` | frontend/js/answer-kit.js:2311 |
+| `addAssistantBubble` | frontend/js/answer-kit.js:1855 |
 | `addInlineCitations` | frontend/js/answer-kit.js:195 |
-| `agentRunStep` | frontend/js/answer-kit.js:2911 |
-| `agentRunTitle` | frontend/js/answer-kit.js:2889 |
-| `agentRunTool` | frontend/js/answer-kit.js:2943 |
-| `answerFigure` | frontend/js/answer-kit.js:763 |
-| `answerObject` | frontend/js/answer-kit.js:856 |
-| `applyPendingChatTitle` | frontend/js/answer-kit.js:2863 |
-| `applyPlanMode` | frontend/js/answer-kit.js:2881 |
-| `askNotesOnTheRight` | frontend/js/answer-kit.js:950 |
+| `agentRunStep` | frontend/js/answer-kit.js:2927 |
+| `agentRunTitle` | frontend/js/answer-kit.js:2905 |
+| `agentRunTool` | frontend/js/answer-kit.js:2959 |
+| `answerFigure` | frontend/js/answer-kit.js:779 |
+| `answerObject` | frontend/js/answer-kit.js:872 |
+| `applyPendingChatTitle` | frontend/js/answer-kit.js:2879 |
+| `applyPlanMode` | frontend/js/answer-kit.js:2897 |
+| `askNotesOnTheRight` | frontend/js/answer-kit.js:966 |
 | `askOpenContext` | frontend/js/answer-kit.js:21 |
-| `assistantLabel` | frontend/js/answer-kit.js:1385 |
-| `buildFollowupStrip` | frontend/js/answer-kit.js:2772 |
-| `chatHistoryToSend` | frontend/js/answer-kit.js:1348 |
-| `chatMessageActions` | frontend/js/answer-kit.js:1390 |
-| `chatScrollToEnd` | frontend/js/answer-kit.js:1778 |
-| `chatSourcesFrom` | frontend/js/answer-kit.js:2344 |
-| `chatSourcesPanel` | frontend/js/answer-kit.js:2507 |
-| `chatTurnObjects` | frontend/js/answer-kit.js:2729 |
+| `assistantLabel` | frontend/js/answer-kit.js:1401 |
+| `buildFollowupStrip` | frontend/js/answer-kit.js:2788 |
+| `chatHistoryToSend` | frontend/js/answer-kit.js:1364 |
+| `chatMessageActions` | frontend/js/answer-kit.js:1406 |
+| `chatScrollToEnd` | frontend/js/answer-kit.js:1794 |
+| `chatSourcesFrom` | frontend/js/answer-kit.js:2360 |
+| `chatSourcesPanel` | frontend/js/answer-kit.js:2523 |
+| `chatTurnObjects` | frontend/js/answer-kit.js:2745 |
 | `citationInsertionPoint` | frontend/js/answer-kit.js:165 |
 | `citationKey` | frontend/js/answer-kit.js:123 |
 | `citationMarker` | frontend/js/answer-kit.js:287 |
@@ -1835,63 +1835,64 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `clearCitedPassage` | frontend/js/answer-kit.js:424 |
 | `clickableResult` | frontend/js/answer-kit.js:57 |
 | `collapseCitationRuns` | frontend/js/answer-kit.js:252 |
-| `deactivateControls` | frontend/js/answer-kit.js:2315 |
-| `drawAnswerPanels` | frontend/js/answer-kit.js:958 |
-| `everyRowScored` | frontend/js/answer-kit.js:987 |
+| `deactivateControls` | frontend/js/answer-kit.js:2331 |
+| `drawAnswerPanels` | frontend/js/answer-kit.js:974 |
+| `everyRowScored` | frontend/js/answer-kit.js:1003 |
+| `evidenceCardVerdict` | frontend/js/answer-kit.js:772 |
 | `evidenceChecksOn` | frontend/js/answer-kit.js:650 |
 | `evidenceRows` | frontend/js/answer-kit.js:696 |
 | `evidenceToggle` | frontend/js/answer-kit.js:664 |
-| `finishReply` | frontend/js/answer-kit.js:965 |
-| `followupChain` | frontend/js/answer-kit.js:2798 |
-| `followupParent` | frontend/js/answer-kit.js:2792 |
+| `finishReply` | frontend/js/answer-kit.js:981 |
+| `followupChain` | frontend/js/answer-kit.js:2814 |
+| `followupParent` | frontend/js/answer-kit.js:2808 |
 | `groundingThumbs` | frontend/js/answer-kit.js:514 |
-| `isStreamingConversation` | frontend/js/answer-kit.js:2815 |
-| `livingInterval` | frontend/js/answer-kit.js:1657 |
-| `markToolStep` | frontend/js/answer-kit.js:2102 |
-| `matchReasonBadge` | frontend/js/answer-kit.js:991 |
-| `messageMetaLine` | frontend/js/answer-kit.js:1480 |
-| `metaItem` | frontend/js/answer-kit.js:1446 |
+| `isStreamingConversation` | frontend/js/answer-kit.js:2831 |
+| `livingInterval` | frontend/js/answer-kit.js:1673 |
+| `markToolStep` | frontend/js/answer-kit.js:2118 |
+| `matchReasonBadge` | frontend/js/answer-kit.js:1007 |
+| `messageMetaLine` | frontend/js/answer-kit.js:1496 |
+| `metaItem` | frontend/js/answer-kit.js:1462 |
 | `notePictures` | frontend/js/answer-kit.js:502 |
-| `noticeUnwatchedAnswer` | frontend/js/answer-kit.js:2845 |
+| `noticeUnwatchedAnswer` | frontend/js/answer-kit.js:2861 |
 | `numberMatchingRecords` | frontend/js/answer-kit.js:441 |
-| `paintNamedHead` | frontend/js/answer-kit.js:1819 |
-| `paintPersonaAvatar` | frontend/js/answer-kit.js:1807 |
-| `placeAnswerFigures` | frontend/js/answer-kit.js:798 |
+| `paintNamedHead` | frontend/js/answer-kit.js:1835 |
+| `paintPersonaAvatar` | frontend/js/answer-kit.js:1823 |
+| `placeAnswerFigures` | frontend/js/answer-kit.js:814 |
 | `placeResultBadge` | frontend/js/answer-kit.js:52 |
-| `planProposalCard` | frontend/js/answer-kit.js:1914 |
-| `planStepWrites` | frontend/js/answer-kit.js:1887 |
-| `progressLine` | frontend/js/answer-kit.js:1678 |
-| `pushAgentChangeUndo` | frontend/js/answer-kit.js:1895 |
-| `reattachStreamingTurn` | frontend/js/answer-kit.js:2826 |
-| `refreshAfterToolChanges` | frontend/js/answer-kit.js:2305 |
-| `refreshFollowupVisibility` | frontend/js/answer-kit.js:2752 |
+| `planProposalCard` | frontend/js/answer-kit.js:1930 |
+| `planStepWrites` | frontend/js/answer-kit.js:1903 |
+| `progressLine` | frontend/js/answer-kit.js:1694 |
+| `pushAgentChangeUndo` | frontend/js/answer-kit.js:1911 |
+| `reattachStreamingTurn` | frontend/js/answer-kit.js:2842 |
+| `refreshAfterToolChanges` | frontend/js/answer-kit.js:2321 |
+| `refreshFollowupVisibility` | frontend/js/answer-kit.js:2768 |
 | `renderAnswerGrounding` | frontend/js/answer-kit.js:549 |
 | `renderAnswerSupport` | frontend/js/answer-kit.js:476 |
-| `renderAskAnswerFoot` | frontend/js/answer-kit.js:896 |
+| `renderAskAnswerFoot` | frontend/js/answer-kit.js:912 |
 | `renderEvidenceView` | frontend/js/answer-kit.js:718 |
-| `renderFollowups` | frontend/js/answer-kit.js:2738 |
-| `renderToolConfirm` | frontend/js/answer-kit.js:2219 |
-| `restoreChatPosition` | frontend/js/answer-kit.js:1767 |
-| `rewriteAnswerWith` | frontend/js/answer-kit.js:1638 |
-| `savedPersona` | frontend/js/answer-kit.js:1803 |
+| `renderFollowups` | frontend/js/answer-kit.js:2754 |
+| `renderToolConfirm` | frontend/js/answer-kit.js:2235 |
+| `restoreChatPosition` | frontend/js/answer-kit.js:1783 |
+| `rewriteAnswerWith` | frontend/js/answer-kit.js:1654 |
+| `savedPersona` | frontend/js/answer-kit.js:1819 |
 | `scheduleCitationPeek` | frontend/js/answer-kit.js:378 |
-| `setAnsweredBy` | frontend/js/answer-kit.js:977 |
+| `setAnsweredBy` | frontend/js/answer-kit.js:993 |
 | `showCitedPassage` | frontend/js/answer-kit.js:393 |
-| `sourceLines` | frontend/js/answer-kit.js:2331 |
-| `sourcesByFirstMention` | frontend/js/answer-kit.js:2466 |
-| `startPlannedRun` | frontend/js/answer-kit.js:2840 |
-| `streamChat` | frontend/js/answer-kit.js:1011 |
-| `streamChatEvents` | frontend/js/answer-kit.js:1055 |
-| `toolCardChips` | frontend/js/answer-kit.js:2017 |
-| `toolCardsRow` | frontend/js/answer-kit.js:2076 |
-| `toolChip` | frontend/js/answer-kit.js:2107 |
-| `toolPhaseVerb` | frontend/js/answer-kit.js:1671 |
-| `toolPreviewBody` | frontend/js/answer-kit.js:1960 |
-| `toolPreviewPanel` | frontend/js/answer-kit.js:1995 |
-| `toolTouchedRow` | frontend/js/answer-kit.js:2090 |
-| `userMarkEl` | frontend/js/answer-kit.js:1790 |
-| `verificationRow` | frontend/js/answer-kit.js:2901 |
-| `webPageContextBlock` | frontend/js/answer-kit.js:1646 |
+| `sourceLines` | frontend/js/answer-kit.js:2347 |
+| `sourcesByFirstMention` | frontend/js/answer-kit.js:2482 |
+| `startPlannedRun` | frontend/js/answer-kit.js:2856 |
+| `streamChat` | frontend/js/answer-kit.js:1027 |
+| `streamChatEvents` | frontend/js/answer-kit.js:1071 |
+| `toolCardChips` | frontend/js/answer-kit.js:2033 |
+| `toolCardsRow` | frontend/js/answer-kit.js:2092 |
+| `toolChip` | frontend/js/answer-kit.js:2123 |
+| `toolPhaseVerb` | frontend/js/answer-kit.js:1687 |
+| `toolPreviewBody` | frontend/js/answer-kit.js:1976 |
+| `toolPreviewPanel` | frontend/js/answer-kit.js:2011 |
+| `toolTouchedRow` | frontend/js/answer-kit.js:2106 |
+| `userMarkEl` | frontend/js/answer-kit.js:1806 |
+| `verificationRow` | frontend/js/answer-kit.js:2917 |
+| `webPageContextBlock` | frontend/js/answer-kit.js:1662 |
 
 ### frontend/js/app-features.js (9)
 
@@ -12806,7 +12807,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | a settings row where nothing squashes anything else | frontend/css/07-whiteboard-misc.css:4292 |
 | a sheet (DESIGN.md's recipe index, "A sheet") | frontend/css/10-responsive.css:830 |
 | a sticker (MINDMAP_PLAN decision 44, INBOX 642) | frontend/css/library-lazy.css:3669 |
-| a stored file that is no longer stored | frontend/css/02-chat-graph.css:4109 |
+| a stored file that is no longer stored | frontend/css/02-chat-graph.css:4125 |
 | a traced path (§9) | frontend/css/graph-lazy.css:290 |
 | a turn that is still working says so, for as long as it is | frontend/css/03-dashboard-widgets.css:4151 |
 | a zone that cannot shrink says so, instead of spilling | frontend/css/10-responsive.css:1113 |
@@ -12977,7 +12978,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the Library, second pass: cards in reading order, one anatomy | frontend/css/library-lazy.css:311 |
 | the OCR rail's own switch | frontend/css/07-whiteboard-misc.css:6720 |
 | the Skills dropdown | frontend/css/04-chat-dock-appearance.css:1142 |
-| the Sources panel | frontend/css/02-chat-graph.css:4308 |
+| the Sources panel | frontend/css/02-chat-graph.css:4324 |
 | the accessible card: the title opens it (INBOX 433) | frontend/css/08-consistency.css:3005 |
 | the agent activity panel: nothing scrolls sideways, nothing folds onto | frontend/css/07-whiteboard-misc.css:10706 |
 | the agent's run, as a timeline | frontend/css/02-chat-graph.css:612 |
@@ -12999,7 +13000,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the bottom docks | frontend/css/07-whiteboard-misc.css:9908 |
 | the chat dock follows its own width (INBOX 694) | frontend/css/10-responsive.css:2590 |
 | the chat page fills its height (§36A) | frontend/css/06-timeline-dialogs.css:1348 |
-| the chat sidebar on a phone | frontend/css/02-chat-graph.css:4822 |
+| the chat sidebar on a phone | frontend/css/02-chat-graph.css:4838 |
 | the chat toolbar, grouped (§36B) | frontend/css/06-timeline-dialogs.css:1476 |
 | the citation peek (INBOX 80) | frontend/css/02-chat-graph.css:3840 |
 | the code editor: gutter + monospace | frontend/css/04-chat-dock-appearance.css:4549 |
@@ -13043,10 +13044,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the help popover is a popover, not a page (INBOX 206) | frontend/css/08-consistency.css:2567 |
 | the in-app confirm dialog (§35F) | frontend/css/06-timeline-dialogs.css:1127 |
 | the lightbox on a phone (INBOX 430) | frontend/css/10-responsive.css:2282 |
-| the live action line | frontend/css/02-chat-graph.css:4140 |
+| the live action line | frontend/css/02-chat-graph.css:4156 |
 | the lock screen | frontend/css/08-consistency.css:3837 |
 | the log console (§1) | frontend/css/06-timeline-dialogs.css:711 |
-| the map is the tab, and its controls float over it | frontend/css/02-chat-graph.css:4846 |
+| the map is the tab, and its controls float over it | frontend/css/02-chat-graph.css:4862 |
 | the mind map's outline and markers (MINDMAP_PLAN decisions 33, 34) | frontend/css/library-lazy.css:3145 |
 | the node edit strip (MINDMAP_PLAN.md §12.1 item 2) | frontend/css/07-whiteboard-misc.css:8769 |
 | the node radial (MINDMAP_PLAN.md §12.1 item 3) | frontend/css/07-whiteboard-misc.css:9034 |
@@ -13082,7 +13083,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the status bar on a small phone | frontend/css/00-tokens-shell.css:3522 |
 | the status bar's Other devices icon and panel (INBOX 896) | frontend/css/lan-lazy.css:77 |
 | the status line and the recent searches | frontend/css/03-dashboard-widgets.css:1138 |
-| the step group (Perplexity's "Finished N steps") | frontend/css/02-chat-graph.css:4213 |
+| the step group (Perplexity's "Finished N steps") | frontend/css/02-chat-graph.css:4229 |
 | the strip's three doors (MINDMAP_PLAN.md §13b) | frontend/css/07-whiteboard-misc.css:8867 |
 | the strips that appear only when they apply | frontend/css/00-tokens-shell.css:1928 |
 | the structural blocks (INBOX 421 b) | frontend/css/05-sidebars-themes.css:1434 |
@@ -13113,7 +13114,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | what it learned (WORLD_CLASS_PLAN I9) | frontend/css/01-forms-settings.css:5615 |
 | what the AI remembers (ROADMAP §39B) | frontend/css/07-whiteboard-misc.css:2082 |
 | what the agent found, as things you can open | frontend/css/07-whiteboard-misc.css:5504 |
-| what the answering model is | frontend/css/02-chat-graph.css:4642 |
+| what the answering model is | frontend/css/02-chat-graph.css:4658 |
 | what the phone block assumed, and the sheet undoes | frontend/css/07-whiteboard-misc.css:10191 |
 | whiteboard fixes (§41) | frontend/css/07-whiteboard-misc.css:2187 |
 | whiteboard objects: images and text boxes, neither tied to a note | frontend/css/07-whiteboard-misc.css:1 |
@@ -13125,7 +13126,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |---|---|
 | frontend/css/00-tokens-shell.css | 4337 |
 | frontend/css/01-forms-settings.css | 6328 |
-| frontend/css/02-chat-graph.css | 5298 |
+| frontend/css/02-chat-graph.css | 5314 |
 | frontend/css/03-dashboard-widgets.css | 4931 |
 | frontend/css/04-chat-dock-appearance.css | 6626 |
 | frontend/css/05-sidebars-themes.css | 6209 |
@@ -13907,7 +13908,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10758)
+## Backend modules (10759)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -18062,7 +18063,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_match_info_hint` | src/tessellate/ai/librarian.py:613 |
 | `_pictures_hint` | src/tessellate/ai/librarian.py:572 |
 | `_tags_files_hint` | src/tessellate/ai/librarian.py:551 |
-| `_words_candidates` | src/tessellate/ai/librarian.py:1518 |
+| `_words_candidates` | src/tessellate/ai/librarian.py:1525 |
 | `_written_hint` | src/tessellate/ai/librarian.py:534 |
 | `answer` | src/tessellate/ai/librarian.py:840 |
 | `build_conversational_messages` | src/tessellate/ai/librarian.py:438 |
@@ -18075,7 +18076,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `draft_template` | src/tessellate/ai/librarian.py:1200 |
 | `evidence_note` | src/tessellate/ai/librarian.py:1484 |
 | `filing_corrections` | src/tessellate/ai/librarian.py:1394 |
-| `filing_prompt` | src/tessellate/ai/librarian.py:1531 |
+| `filing_prompt` | src/tessellate/ai/librarian.py:1538 |
 | `filing_style_note` | src/tessellate/ai/librarian.py:1472 |
 | `fill_ai_name` | src/tessellate/ai/librarian.py:221 |
 | `generate_link_reason` | src/tessellate/ai/librarian.py:1080 |
@@ -20633,17 +20634,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `pairs` | src/tessellate/ai/variants.py:129 |
 | `short_english` | src/tessellate/ai/variants.py:115 |
 
-### src/tessellate/ai/verdicts.py (7)
+### src/tessellate/ai/verdicts.py (8)
 
 | Name | File:line |
 |---|---|
 | `Known` | src/tessellate/ai/verdicts.py:42 |
-| `_replace` | src/tessellate/ai/verdicts.py:139 |
+| `_replace` | src/tessellate/ai/verdicts.py:149 |
 | `day_words` | src/tessellate/ai/verdicts.py:37 |
 | `for_model` | src/tessellate/ai/verdicts.py:115 |
 | `known` | src/tessellate/ai/verdicts.py:64 |
 | `mark` | src/tessellate/ai/verdicts.py:81 |
 | `norm` | src/tessellate/ai/verdicts.py:32 |
+| `without_wrong` | src/tessellate/ai/verdicts.py:139 |
 
 ### src/tessellate/ai/vision_ocr.py (12)
 
@@ -27659,7 +27661,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21796)
+## Tests (21800)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28380,6 +28382,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_copy_places_1029b.py | 7 |
 | tests/test_core.py | 23 |
 | tests/test_core_message_wording.py | 15 |
+| tests/test_corrections_wrong_card_i7.py | 4 |
 | tests/test_count_wording_1026.py | 5 |
 | tests/test_credits.py | 3 |
 | tests/test_crypto.py | 11 |

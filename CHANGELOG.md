@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Corrections loop (WORLD_CLASS I7): each card of Show the evidence carries Is this line right? with Confirm and Not right; a sentence marked wrong is left out of the next answer and of what filing reads (the note re-filed and a neighbour quoted as evidence), listed in What it learned, and undone by its Delete (`tests/test_corrections_wrong_card_i7.py`).
 - Fix: Ask as of a day answers "what did I write" with the notebook as it stood, not the newest note; `TurnFrame` lives in `api/schemas.py`, so conversations no longer import the chat stack (import cycle); tests follow the Settings load code into settings-prefs.js.
 - Fix: the chat's Web toggle no longer throws a ReferenceError while the page loads; `renderWebSearchToggle` is defined in status.js, above the chat mode strip that first calls it (`tests/test_web_search_toggle_order.py`).
 - Boot weight: the Skills pane's list (`renderSkillSettings` and its rows) moves into the lazy settings-controls.js, with a boot stand-in, so the boot scripts stay under the gzip cap.

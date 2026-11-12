@@ -724,10 +724,11 @@ MID_TOPICS.extend(
                 "is this line right", "confirm a line",
             ),
             "body": (
-                "Press a numbered mark in an answer: under the note's words, "
-                "Is this line right? has Confirm and Not right. Not right "
-                "leaves those sentences of the note out of every answer from "
-                "the next one on, and no pattern that quotes them is offered. "
+                "Press a numbered mark in an answer, or open Show the evidence: "
+                "under the note's words, Is this line right? has Confirm and "
+                "Not right. Not right leaves those sentences of the note out "
+                "of every answer from the next one on, and out of what filing "
+                "reads, and no pattern that quotes them is offered. "
                 "Confirm pins them as true: answers say them as your word, "
                 "with the day you pinned them, and a model reads them that "
                 "way too. Each goes on the undo stack, and lists in Settings, "
