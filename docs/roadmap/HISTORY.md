@@ -55519,6 +55519,7 @@ keystroke-to-margin update.
 **State 2026-10-05:** I5 (b), built as row 23 (HISTORY.md, "Moved from the plans, 2026-10-05 (row 23: time travel)"), without the month grouping or a date slider (a day picker); I2 (c).
 
 ## Moved from the LEDGER
+- [x] **L577** `world-class` open, M: Offer sums without requiring '=' and support a Total: column in ai/offers.py. From OPEN.md:3745. Evidence: ai/offers.py:38 _SUM requires = Built: ai/offers.py _BARE_SUM and blank _TOTAL; tests/test_note_offers.py
 - [x] **L665** `world-class` partly, M: Meeting decision/action rules beyond English cue words. From OPEN.md:1917; OPEN.md:2624. Evidence: Rename done: routes_recordings.py:538, meetings.js:2124; English-only rules remain Built: entry/meetings_cues.py, six languages; tests/test_meetings_languages.py
 - [x] **L657** `world-class` partly, M: Left: duplicates, entities and dates as fact kinds. `KINDS` is claim, question, tension, answered (ai/facts.py:109); tensions built. From OPEN.md:1226. Built: ai/facts_kinds.py; facts.KINDS; tests/test_fact_kinds_exact.py
 - [x] **L513** `world-class` open, S: Add the person's own titles as a source for alternate category names in tidy.py. From OPEN.md:1703; OPEN.md:3615. Evidence: tidy.py:543-566 _rows_category_names uses profiles and taxonomy.name_topics only Built: tidy.py _rows_own_titles; tests/test_tidy_own_titles.py

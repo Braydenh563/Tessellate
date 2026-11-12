@@ -105,3 +105,22 @@ def test_the_editor_asks_through_the_route_and_reads_nothing_itself():
     js = (ROOT / "frontend/js/quickadd.js").read_text(encoding="utf-8")
     assert '"/read/offers"' in js
     assert "entry-content" in js
+
+
+def test_a_sum_alone_on_its_line_is_offered_its_answer_without_an_equals_sign(session):
+    """L577: "12 + 30" written alone, no "=". A range, a date or a sum in prose is left."""
+    for text, label, after in (("12 + 30\n", "12 + 30 = 42", "12 + 30 = 42\n"), ("- 4.5 * 3 ?\n", "4.5 * 3 = 13.5", "- 4.5 * 3 = 13.5 ?\n"), ("Shopping\n10 / 4", "10 / 4 = 2.5", "Shopping\n10 / 4 = 2.5")):
+        sums = [o for o in offers.offers(session, text, now=NOW) if o["kind"] == "sum"]
+        assert [o["label"] for o in sums] == [label], (text, sums)
+        assert text[: sums[0]["start"]] + sums[0]["value"]["replace"] + text[sums[0]["end"] :] == after
+    for text in ("It takes 3-4 days", "Booked for 2026-11-12", "I paid 12 + 30 pounds for it", "12 +30", "5 - 3 days"):
+        assert not [o for o in offers.offers(session, text, now=NOW) if o["kind"] == "sum"], text
+
+
+def test_a_total_line_with_no_amount_is_offered_the_column_sum(session):
+    text = "Milk £3.50\nBread £1.20\nEggs £2\nTotal:"
+    sums = [o for o in offers.offers(session, text, now=NOW) if o["kind"] == "sum"]
+    assert [o["reason"] for o in sums] == ["the 3 amounts above add up to 6.70"], sums
+    assert text[: sums[0]["start"]] + sums[0]["value"]["replace"] == text + " 6.70"
+    one = "Rent 1200\nTotal:"
+    assert not [o for o in offers.offers(session, one, now=NOW) if o["kind"] == "sum"]

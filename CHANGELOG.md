@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Note editor: a sum alone on its line with no "=" is offered its answer, and a "Total:" line with no amount is offered the column's sum (L577).
 - Night pass: dates a note names, the entities it mentions and a note that repeats another word for word are fact kinds, read by rule and not judged by the learned-store check (L657).
 - Meetings: decisions and actions are read in French, Spanish, German, Italian, Portuguese and Dutch as well as English (a cue table per language; a name taking a task on counts only if it is an attendee) (L665).
 - Tidy: the rename review also reads the person's own note titles; a word most of a category's titles share is offered as its name when the pack's topic is not (L513).

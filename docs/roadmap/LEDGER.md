@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 143 | 42 | 0 | 17 | 315 |
+| world-class | 130 | 142 | 42 | 0 | 17 | 314 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 669 | 141 | 3 | 140 | 1363 |
+| all | 553 | 668 | 141 | 3 | 140 | 1362 |
 
 ## graph
 
@@ -686,7 +686,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L574** `world-class` open, M: Measure note editor offers on the Edit form in a sweep. From OPEN.md:868; OPEN.md:3744. Evidence: note-edit-panels offers wired; no Edit-form measurement recorded
 - [ ] **L575** `world-class` open, M: Write imported people and places as tags and recognise more contact shapes. From OPEN.md:870; OPEN.md:3751. Evidence: Row states design; no change commit found
 - [ ] **L576** `world-class` open, M: Make Library boxes suggest the person's own titles, not only recents. From OPEN.md:2497. Evidence: Prior verify: not built
-- [ ] **L577** `world-class` open, M: Offer sums without requiring '=' and support a Total: column in ai/offers.py. From OPEN.md:3745. Evidence: ai/offers.py:38 _SUM requires =
 - [ ] **L578** `world-class` open, M: Recorder: keep timed lines in saved transcripts (transcribe-meeting returns text only). From OPEN.md:1619; OPEN.md:2623. Evidence: No transcribe-meeting route in src now (grep none); core/recordings.py transcription_of:111 holds timed data
 - [ ] **L579** `world-class` open, M: Let notes link or embed a recording and make search find recordings. From OPEN.md:1621; OPEN.md:2739. Evidence: No recording link or search hits in core/search.py or routes_search; only entry_id on Recording
 - [ ] **L580** `world-class` open, M: Replace deprecated ScriptProcessorNode in live captions (AudioWorklet blocked by CSP). From OPEN.md:1630; OPEN.md:2767. Evidence: captions.js:239 still createScriptProcessor, kept deliberately (comment at :237); CSP worker-src is 'self' only
