@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 172 | 58 | 0 | 72 | 360 |
+| world-class | 130 | 171 | 57 | 0 | 72 | 358 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 698 | 157 | 3 | 195 | 1408 |
+| all | 553 | 697 | 156 | 3 | 195 | 1406 |
 
 ## graph
 
@@ -635,7 +635,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L499** `world-class` open, S: Refresh README palette.png which still shows notes, a document, a board. From OPEN.md:1248. Evidence: palette.png last committed 97ba7d73b 2026-10-12; no later retake in git log.
 - [ ] **L500** `world-class` open, S: Stop a titled note's every sentence scoring on title in the brief (TITLE_WEIGHT). From OPEN.md:1947. Evidence: Brief keeps up to four dated sentences; TITLE_WEIGHT fix not found in brief code
 - [ ] **L501** `world-class` open, S: Add a count kind to recognise and make factgraph _QUANTITY use it. From OPEN.md:3713. Evidence: factgraph.py:166 _QUANTITY still own regex; recognise.py has count_of but factgraph delegates only money (:576)
-- [ ] **L503** `world-class` open, S: Cover request-bound long tasks with core/activity.track and extend the THREAD_SITES lint. From OPEN.md:1498. Evidence: tests/test_activity.py THREAD_SITES covers thread sites only; core/activity.track not added at import/summary sites
 - [ ] **L504** `world-class` open, S: Speed up the night shift pairing phase (120 s) and stop the bar resetting. From OPEN.md:1945. Evidence: No speed-up commit found
 - [ ] **L505** `world-class` open, S: Audit jobruns detail strings that carry {exc}. From OPEN.md:1950; OPEN.md:3542. Evidence: Audit not recorded
 - [ ] **L508** `world-class` open, S: Batch commits in 5,000-note import (45.9 s) while keeping Stop. From OPEN.md:1763. Evidence: routes_import.py:108 'each one is committed as it is made' (deliberate for Stop); no batching found
@@ -807,7 +806,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L676** `world-class` partly, M: Reduce Dashboard DOM node count at boot and after dialogs (X15). From OPEN.md:4383. Evidence: CHANGELOG.md:234-236: 2,348 elements at first paint, Library menus/first chunk fixed; rest is stylesheet recalc, blocked on owner decision; x15-1111.md
 - [ ] **L677** `world-class` partly, M: Stop parsing the whole app on every boot (PF4). From OPEN.md:4462. Evidence: x15-1111: Guide chat, Reminders, Timeline, Graph, Documents panes and palette are templates (5,640 to 3,887 boot nodes); chat, library, notes still parse at boot
 - [ ] **L678** `world-class` partly, M: Cut import cost 3.3 s to 1.5 s; ai.autonomous pulls ai.agent. From OPEN.md:1710; OPEN.md:3785. Evidence: autonomous.py:48 still imports ai.agent at module level; heavy imports not lazily deferred
-- [ ] **L679** `world-class` partly, M: Register long tasks outside THREAD_SITES (imports, summary, jobs lane). From OPEN.md:3666. Evidence: tests/test_activity.py:137 THREAD_SITES table lint; request-bound long work not covered
 - [ ] **L681** `world-class` partly, M: BK12 200-row reminders payload remains (OPEN 4277); BK6 not evidenced; K27 dead routes owner call. From ledger-1112 O39.
 - [ ] **L682** `world-class` partly, M: E70 server idempotency by turn id not built; no turn_id guard in agent.py or chat routes. From ledger-1112 P19.
 - [ ] **L683** `world-class` partly, M: D4 --durations=0 needs one CI run (hardware-only CI); D3 slow tests true-deferred. From ledger-1112 O28.

@@ -37,7 +37,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.core import deps, events
+from tessellate.core import activity, deps, events
 from tessellate.core.database import Entry, WhiteboardObject
 from tessellate.core.deps import get_session
 from tessellate.repo import relations as relations_repo
@@ -435,7 +435,8 @@ def summarise_branch(board_id: int, node_id: int, db: Session = Depends(get_sess
     summary, source, reason = "", "outline", "offline"
     if len(outline) > 1 and deps.get_ollama().is_running():
         try:
-            summary = _ask_for_summary(outline)
+            with activity.track("generation", "Summarising a branch", stoppable=False):
+                summary = _ask_for_summary(outline)
             reason = "unusable"
         except Exception:
             logging.getLogger("tessellate.whiteboard").warning("Branch summary: the model failed", exc_info=True)

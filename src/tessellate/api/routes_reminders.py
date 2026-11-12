@@ -20,7 +20,7 @@ from urllib.parse import quote, urlencode
 
 from tessellate.ai import recognise as rec
 from tessellate.ai import recognise_reminders
-from tessellate.core import deps, ics_import, reminder_token
+from tessellate.core import activity, deps, ics_import, reminder_token
 from tessellate.core.database import PRIVATE_SPACES, Entry, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry import private_space
@@ -502,12 +502,13 @@ def import_ics(
     added: list[int] = []
     updated: list[int] = []
     skipped = list(reading.skipped)
-    for event in reading.events:
-        if _past_and_open(event):
-            skipped.append({"line": event.line, "text": event.text, "reason": f"line {event.line}: already past"})
-            continue
-        verb, reminder = reminder_repo.import_event(session, event)
-        (added if verb == "added" else updated).append(reminder.id)
+    with activity.track("import", "Importing a calendar", stoppable=False):
+        for event in reading.events:
+            if _past_and_open(event):
+                skipped.append({"line": event.line, "text": event.text, "reason": f"line {event.line}: already past"})
+                continue
+            verb, reminder = reminder_repo.import_event(session, event)
+            (added if verb == "added" else updated).append(reminder.id)
     if added or updated:
         log_action(session, "created", "reminder", added[0] if added else updated[0], f"imported {len(added)}, updated {len(updated)}")
     session.commit()

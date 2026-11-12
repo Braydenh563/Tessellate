@@ -163,3 +163,39 @@ def test_every_thread_site_is_registered_with_activity():
         "core/activity.track or jobruns.job_run, then name it in THREAD_SITES"
     )
     assert not set(THREAD_SITES) - found, "a listed thread site is gone: drop its row"
+
+
+#: Request-bound long work (a model call or an import the person waits on) that
+#: is not a thread site: the handler that does it, and the kind it registers
+#: under. The THREAD_SITES lint above cannot see these, so each is named here
+#: and must reach `activity.track` or `jobruns.job_run` inside that function.
+REQUEST_BOUND_LONG = {
+    ("api/routes_graph.py", "topic_summary"): "generation",
+    ("api/routes_map_suggest.py", "summarise_branch"): "generation",
+    ("api/routes_reminders.py", "import_ics"): "import",
+    ("api/routes_bookmarks.py", "import_bookmarks"): "import",
+    ("api/routes_meetings.py", "_model_pass"): "generation",
+    ("api/routes_import.py", "import_app"): "import",
+    ("api/routes_documents.py", "import_document"): "import",
+    ("api/routes_settings_transfer.py", "import_markdown"): "import",
+}
+
+
+def _function_text(rel: str, name: str) -> str | None:
+    import ast
+
+    text = (SRC / rel).read_text(encoding="utf-8")
+    for node in ast.walk(ast.parse(text)):
+        if isinstance(node, ast.FunctionDef) and node.name == name:
+            return ast.get_source_segment(text, node)
+    return None
+
+
+def test_request_bound_long_tasks_register_with_activity():
+    missing = []
+    for (rel, name), kind in REQUEST_BOUND_LONG.items():
+        body = _function_text(rel, name)
+        assert body is not None, f"{rel}::{name} is gone: drop its row"
+        if f"activity.track(\"{kind}\"" not in body and "jobruns.job_run(" not in body and "activity.tracked_stream(" not in body:
+            missing.append(f"{rel}::{name}")
+    assert not missing, f"{missing} do long work in a request and nothing lists it: wrap it in activity.track"
