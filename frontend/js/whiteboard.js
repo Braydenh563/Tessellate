@@ -9734,6 +9734,7 @@ function wbBuildContextMenu(kind) {
       if (!WB_MAP_REFERENCE_KINDS.has(mapNode.kind)) {
         sub(mapNode.data?.image ? "Change this topic's picture…" : "Put a picture in this topic…",
           "An image from this computer", () => wbMapEditPicture(mapNode));
+        sub("Put a picture from a link…", "An address; fetched here and kept with the board", () => wbMapLazy.imageFromLink(mapNode));
         if (mapNode.data?.image) {
           sub("Take the picture out of this topic", "The upload stays in the library", () =>
             wbMapRemovePicture(mapNode)
@@ -9825,6 +9826,11 @@ function wbBuildContextMenu(kind) {
       sub("Export this branch…", "A picture or PDF of this topic and everything under it", () =>
         wbMapExportBranch(mapNode.id)
       );
+      sub("Save this branch as Markdown", "A .md file of this topic and everything under it", () => wbMapLazy.saveBranch(mapNode));
+      sub("Copy this topic's shape", "Its look and branch layout, to paste onto another", () => wbMapLazy.copyShape(mapNode));
+      sub("Paste the copied shape here", "One Undo step", () => wbMapLazy.pasteShape(mapNode));
+      sub("Add a template branch…", "Pros and cons, SWOT, the five questions, a meeting agenda", () => wbMapLazy.pickTemplate(mapNode));
+      sub("Add a second central topic…", "Joined to this one by a link that can carry words", () => wbMapLazy.secondRoot(mapNode));
       if (!(rooted && wbMapLevels(index).get(mapNode.id) === 0)) sub("Move under…", "M: pick the topic to put this branch under", () =>
         wbMapMoveUnder(mapNode.id)
       );

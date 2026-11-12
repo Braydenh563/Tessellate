@@ -5137,6 +5137,12 @@ function mapPaletteCommands() {
     row("This topic", "ph:crosshair Focus on this branch", () => wbMapSetFocus(node.id));
     row("This topic", "ph:flag Markers on this topic…", () => wbMapOpenMarkers(node.id));
     row("This topic", "ph:microphone Audio note: pick a recording…", () => wbMapLazy.pickAudio(node));
+    row("This topic", "ph:image Picture from a link…", () => wbMapLazy.imageFromLink(node));
+    row("This topic", "ph:copy-simple Copy this topic's shape", () => wbMapLazy.copyShape(node));
+    row("This topic", "ph:clipboard Paste the copied shape onto this topic", () => wbMapLazy.pasteShape(node));
+    row("This topic", "ph:stack-plus Add a template branch…", () => wbMapLazy.pickTemplate(node));
+    row("This topic", "ph:file-md Save this branch as Markdown", () => wbMapLazy.saveBranch(node));
+    row("This topic", "ph:flow-arrow Add a second central topic joined to this one…", () => wbMapLazy.secondRoot(node));
     if (node.data?.recording) {
       row("This topic", "ph:play Play the audio note", () => wbMapLazy.playAudio(node.id, document.querySelector(`.wb-object[data-id="${node.id}"] .wb-map-audio`) || document.getElementById("whiteboard-container")));
       row("This topic", "ph:microphone-slash Remove the audio note", () => wbMapLazy.removeAudio(node));
@@ -5173,6 +5179,7 @@ function mapPaletteCommands() {
   row("This map", "ph:steps Build up branch by branch", () => wbMapBuild.start());
   row("This map", "ph:student Study the map", () => wbMapStartStudy());
   row("This map", "ph:chart-bar-horizontal Gantt chart of the dated topics", () => wbMapLazy.openGantt());
+  row("This map", wbMapLazy.timerOn() ? "ph:timer Stop the brainstorm timer" : "ph:timer Start a five minute brainstorm timer", () => (wbMapLazy.timerOn() ? wbMapLazy.stopTimer() : wbMapLazy.startTimer(5)));
   row("This map", "ph:funnel Filter by marker…", () => wbMapChooseMarkerFilter());
   if (wbMarkerUi.filter) row("This map", "ph:x-circle Stop filtering by marker", () => wbMapSetMarkerFilter(null));
   row("This map", wbOutlineShowing() ? "ph:list-dashes Hide the outline" : "ph:list-dashes Show the map as an outline", () => wbOutlineToggle());

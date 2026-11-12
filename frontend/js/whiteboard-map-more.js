@@ -444,6 +444,201 @@
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // The gap audit's topic tools (MINDMAP_PLAN "Placed from INBOX, 2026-10-19",
+  // rows 5 to 8 and 12; XMind and MindNode do each of them). Kept together and
+  // in this lazy file so the main map file stays free for other work.
+  // ---------------------------------------------------------------------------
+
+  //: **Brainstorm timer** (row 5; XMind's brainstorm mode): a countdown chip
+  //: over the map. The clock is passed in, so a test never reads the real one.
+  function wbBrainstormLeft(startedAt, minutes, now) {
+    return Math.max(0, Math.ceil((startedAt + minutes * 60000 - now) / 1000));
+  }
+
+  function wbBrainstormClock(seconds) {
+    return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+  }
+
+  let wbBrainstormTimer = null;
+
+  function wbBrainstormStop() {
+    if (wbBrainstormTimer) clearInterval(wbBrainstormTimer.tick);
+    wbBrainstormTimer?.chip.remove();
+    wbBrainstormTimer = null;
+  }
+
+  function wbBrainstormStart(minutes = 5) {
+    wbBrainstormStop();
+    const host = document.getElementById("whiteboard-container");
+    if (!host) return;
+    const chip = document.createElement("div");
+    chip.className = "wb-map-brainstorm dock";
+    chip.setAttribute("role", "timer");
+    const clock = document.createElement("span");
+    clock.className = "wb-map-brainstorm-clock";
+    const stop = document.createElement("button");
+    stop.type = "button";
+    stop.className = "btn btn-ghost btn-sm";
+    stop.textContent = "Stop the timer";
+    stop.addEventListener("click", wbBrainstormStop);
+    chip.append(clock, stop);
+    host.append(chip);
+    const startedAt = Date.now();
+    const paint = () => {
+      const left = wbBrainstormLeft(startedAt, minutes, Date.now());
+      clock.textContent = left ? `Brainstorm ${wbBrainstormClock(left)}` : "Time is up";
+      if (!left) {
+        clearInterval(wbBrainstormTimer?.tick);
+        wbAnnounce("The brainstorm time is up.");
+        toast("The brainstorm time is up.");
+      }
+    };
+    wbBrainstormTimer = { chip, tick: setInterval(paint, 1000) };
+    paint();
+    wbAnnounce(`A ${minutes} minute brainstorm timer started.`);
+  }
+
+  //: **Copy the shape of a branch** (row 6; MindNode's Copy style): the
+  //: topic's look and its branch layout, pasted onto another topic as one Undo
+  //: step. A key the source lacks clears the target's, so the two match.
+  function wbShapePatch(data, keys) {
+    const patch = {};
+    for (const key of [...keys, "branch_layout"]) patch[key] = data?.[key] ?? null;
+    return patch;
+  }
+
+  let wbShapeCopied = null;
+
+  function wbShapeCopy(node) {
+    if (!node) return;
+    wbShapeCopied = wbShapePatch(node.data, WB_MAP_STYLE_KEYS);
+    toast("Copied this topic's shape. Choose another topic and paste it.");
+  }
+
+  async function wbShapePaste(node) {
+    if (!node || !wbShapeCopied) {
+      toast("Copy a topic's shape first.", "info");
+      return;
+    }
+    await wbRecordGesture(async () => {
+      await wbMapSetNodeStyle(node, { ...wbShapeCopied });
+      renderWhiteboardNow();
+    });
+    wbAnnounce("Pasted the shape. Ctrl+Z takes it back.");
+  }
+
+  //: **Topic templates** (row 7; XMind's templates for one topic): a ready
+  //: set of children, chosen in the ghost picker and added by the outline
+  //: reader as one Undo step.
+  const WB_TOPIC_TEMPLATES = Object.freeze({
+    pros: ["Pros and cons", ["Pros", "Cons"]],
+    swot: ["SWOT", ["Strengths", "Weaknesses", "Opportunities", "Threats"]],
+    five: ["Who, what, when, where, why", ["Who", "What", "When", "Where", "Why"]],
+    agenda: ["Meeting agenda", ["Goal", "Attendees", "Discussion", "Decisions", "Actions"]],
+  });
+
+  function wbTemplateOutline(key) {
+    const parts = WB_TOPIC_TEMPLATES[key]?.[1];
+    return parts ? parts.join("\n") : "";
+  }
+
+  async function wbTemplatePick(node) {
+    if (!node) return;
+    const rows = Object.entries(WB_TOPIC_TEMPLATES).map(([key, [name, parts]], id) => ({ id, key, text: name, parts }));
+    const chosen = await wbMapBranchPicker(rows, {
+      title: "Templates for this topic",
+      about: "Each one adds its branches under the topic.",
+      node,
+      meta: (row) => [row.parts.join(", ")],
+    });
+    for (const pick of chosen || []) {
+      const row = rows.find((r) => r.text === pick.text);
+      if (row) await wbTemplateAdd(node, row.key);
+    }
+  }
+
+  async function wbTemplateAdd(node, key) {
+    const text = wbTemplateOutline(key);
+    if (!node || !text) return 0;
+    selectWbItem("object", node.id);
+    return wbRecordGesture(wbMapPasteText, [text]);
+  }
+
+  //: **A picture from a link** (row 8; XMind's Insert image from URL): the
+  //: server fetches it (`/links/image`, public addresses only, pictures only)
+  //: and keeps it as a board picture, then it is the topic's picture.
+  async function wbTopicImageFromLink(node) {
+    if (!node) return;
+    const url = String(await promptDialog("The address of the picture. An http or https link to an image.", "", { confirmLabel: "Fetch the picture" }) ?? "").trim();
+    if (!url) return;
+    wbAnnounce("Fetching the picture.");
+    try {
+      const uploaded = await apiJson("/links/image", { method: "POST", body: JSON.stringify({ url }) });
+      await wbMapSetNodeStyle(node, { image: uploaded.url });
+      renderWhiteboardNow();
+    } catch (err) {
+      toast(err.message || "That picture could not be fetched.", true);
+    }
+  }
+
+  //: **A second central topic** (row 12; XMind's multiple roots): a new root
+  //: beside the chosen topic, joined to it by a link that may carry words.
+  //: OPML and FreeMind keep the link and its label; Markdown cannot (decision 12).
+  async function wbSecondRoot(from) {
+    const name = String(await promptDialog("Name the second central topic.", "", { confirmLabel: "Add the topic" }) ?? "").trim();
+    if (!name) return;
+    const label = String(await promptDialog("What joins the two? A few words, or leave it empty.", "", { confirmLabel: "Join them" }) ?? "").trim();
+    await wbRecordGesture(async () => {
+      const root = await wbMapCreateNode({ parentId: null, text: name });
+      if (!root) return;
+      if (from) {
+        root.x = Math.round((from.x || 0) + (from.width || 160) + 160);
+        root.y = Math.round(from.y || 0);
+        await wbSaveObject(root);
+        const link = await apiJson("/whiteboard/sketches", {
+          method: "POST",
+          body: JSON.stringify({
+            data: JSON.stringify({ type: "link-straight", sourceId: from.id, sourceKind: "object", targetId: root.id, targetKind: "object", label }),
+            x: 0, y: 0, z: 1, board_id: window.currentBoardId ?? null,
+          }),
+        });
+        wbState.sketches = [...(wbState.sketches || []), link];
+      }
+      selectWbItem("object", root.id);
+      renderWhiteboardNow();
+    });
+    wbAnnounce(`Added ${name} as a second central topic.`);
+  }
+
+  //: **Save a branch as Markdown** (row 9): the same outline Copy as text
+  //: writes, as a file.
+  async function wbBranchSaveMarkdown(node) {
+    const boardId = window.currentBoardId;
+    if (!node || !boardId) return;
+    let tree;
+    try {
+      tree = await apiJson(`/whiteboard/boards/${boardId}/tree`);
+    } catch (err) {
+      toast(err.message || "This map could not be read.", true);
+      return;
+    }
+    const find = (list) => {
+      for (const n of list || []) {
+        if (n.id === node.id) return n;
+        const hit = find(n.children);
+        if (hit) return hit;
+      }
+      return null;
+    };
+    const found = find(tree.roots);
+    if (!found) return;
+    const { title, body } = wbMapTreeMarkdown([found]);
+    const name = `${(title || "branch").replace(/[^\w\- ]+/g, "").trim().slice(0, 60) || "branch"}.md`;
+    downloadBlob(new Blob([body ? `# ${title}\n\n${body}\n` : `# ${title}\n`], { type: "text/markdown" }), name);
+    toast(`Saved “${title}” as ${name}.`);
+  }
+
   //: The file's whole surface, one object, so the shared scope gains one name rather than one per entry point.
   const wbMapLazy = {
     openGantt: wbMapOpenGantt,
@@ -451,6 +646,15 @@
     pickAudio: wbAudioPick,
     removeAudio: wbAudioRemove,
     playAudio: wbAudioPlay,
+    startTimer: wbBrainstormStart,
+    stopTimer: wbBrainstormStop,
+    timerOn: () => Boolean(wbBrainstormTimer),
+    copyShape: wbShapeCopy,
+    pasteShape: wbShapePaste,
+    pickTemplate: wbTemplatePick,
+    imageFromLink: wbTopicImageFromLink,
+    secondRoot: wbSecondRoot,
+    saveBranch: wbBranchSaveMarkdown,
   };
   Object.assign(window, { wbMapLazy });
 })();
