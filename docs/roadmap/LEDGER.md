@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 175 | 58 | 0 | 72 | 363 |
+| world-class | 130 | 172 | 58 | 0 | 72 | 360 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 701 | 157 | 3 | 195 | 1411 |
+| all | 553 | 698 | 157 | 3 | 195 | 1408 |
 
 ## graph
 
@@ -658,7 +658,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L522** `world-class` open, S: Palette learned order: add prefix matching at half weight. From OPEN.md:2792. Evidence: app-palette.js paletteRanked; recommendation not built
 - [ ] **L523** `world-class` open, S: renderAutonomousSettings fills checkboxes only when Background tasks/Web search opens. From OPEN.md:3499. Evidence: Documented behaviour in settings.js; no change recorded.
 - [ ] **L524** `world-class` open, S: Add a test fixture for the Settings synonym table. From OPEN.md:3750. Evidence: filters.py:235 SETTING_FILLER; no settings phrase fixture in tests
-- [ ] **L525** `world-class` open, S: Hash the ?v= stamps in clip.html and capture.html. From OPEN.md:3775. Evidence: clip.html:13-19 still ?v=0.7.0
 - [ ] **L526** `world-class` open, S: Stop '?' after a Dashboard click handing focus to a CodeMirror editor. From row21-1109.md Left. Evidence: reveal-targets.js openShortcuts; no fix commit found
 - [ ] **L527** `world-class` open, S: Restyle Connections unlinked-mention Link button and tool-confirm pair away from bordered ghost. From OPEN.md:1677; OPEN.md:2670. Evidence: connections.js:226 smallButton('ph:link Link', ...) defaults ghost small (app.js:1497-1499)
 - [ ] **L528** `world-class` open, S: Exclude binned and private notes from EntryLink row counts. From OPEN.md:2815. Evidence: notebook_stats._notebook_block; verified open
@@ -669,7 +668,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L533** `world-class` open, S: 13.0 gate every-offence counts for decisions 9-17 are plan counts, not sweep. From OPEN.md:1341. Evidence: Row says counts are stylesheet counts from the plan paragraph; no sweep recount recorded.
 - [ ] **L534** `world-class` open, S: Undo counts per surface are static reads; drive documents/OCR/meetings and whiteboard 43/14. From OPEN.md:1116; OPEN.md:1485. Evidence: Undo ledger not closed; counts recorded, uncovered writes remain (see 587)
 - [ ] **L535** `world-class` open, S: decide is 34 ms/call at 5,000 notes vs 8-17 ms old tally. From OPEN.md:1496. Evidence: Perf measurement (scratchpad/filing-tools/perf.py); no optimisation found
-- [ ] **L536** `world-class` open, S: clip.html/capture.html unhashed ?v=<version> stamps. From OPEN.md:1504. Evidence: frontend/clip.html:13,18 still ?v=0.7.0 static stamps
 - [ ] **L537** `world-class` open, S: Frontend ids lint regex includes ids inside HTML comments. From OPEN.md:1610. Evidence: tests/test_frontend_ids.py:128,136 regex over _markup(); false hits unchecked
 - [ ] **L538** `world-class` open, S: Run shell.spec.js handoff test in Playwright (only node --check'd). From OPEN.md:1828; OPEN.md:3536. Evidence: tests-e2e/specs/shell.spec.js handoff comment at line 35; runner run not recorded
 - [ ] **L539** `world-class` open, S: Run errors.js in THEME=dark and FAULTS=1. From OPEN.md:1889. Evidence: No record of the dark/fault runs; cheap to run
@@ -689,7 +687,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L553** `world-class` open, S: 1662 key lint misses key.toLowerCase() === 'x' and switch(e.key). From a30c-1102.md Still open small. Evidence: No lint test matching toLowerCase() === in tests/test_key*.py
 - [ ] **L554** `world-class` open, S: Run the 249/251 unrun browser sweep scripts. From a30c-1102.md Left unmarked. Evidence: scratchpad/ui-sweeps scripts, not pytest; no run record
 - [ ] **L555** `world-class` open, S: Run the written E2E spec (Playwright runner + global-setup). From a31i-1103.md Left. Evidence: Needs the E2E runner; no run record found
-- [ ] **L556** `world-class` open, S: test_consent_1110 reads the real clock; use a fixed clock. From sm-1111.md Found. Evidence: tests/test_consent_1110.py still reads clock; standing rule says fixed clock
 - [ ] **L557** `world-class` open, S: test_static_compression ratchet red (250664 vs 250450). From w34-gap3-1111.md Found. Evidence: Source: red on base; not re-run (read-only)
 - [ ] **L558** `world-class` open, M: Voice: move failure toasts in the 112 other JS files holding their own strings. From OPEN.md:1259. Evidence: Row left: surface by surface (decision 55); only library.js, whiteboard.js, whiteboard-map.js moved.
 - [ ] **L559** `world-class` open, M: Finish left items C44, C39, C40, C36 and Open Packages help. From OPEN.md:3875. Evidence: Named items listed as left; help owed by order 13
