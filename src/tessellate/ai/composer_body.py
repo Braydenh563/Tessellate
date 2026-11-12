@@ -794,6 +794,22 @@ def _broad_pool(out: _Answer, chosen: list[Sentence], terms: list[str]) -> list[
     return pool
 
 
+def _topic_extras(out: _Answer, pool: list[Sentence], stems: set[str]) -> list[Sentence]:
+    """A note whose name or tags are the subject is the note about it, so a
+    broad question quotes its next-best sentence as well (INBOX 813, 2700); a
+    note that only mentions the subject in passing is quoted once. The extra
+    is a sentence of that note that is not already in the pool and not said."""
+    extras: list[Sentence] = []
+    for first in pool:
+        view = out.views[first.note_id]
+        if not stems or not stems <= (view.title_words | view.filed_words) or view.note.get("connected"):
+            continue
+        more = [s for s in view.sentences if s.kind == "prose" and s.key != first.key and s.score > 0 and not _was_said(s, out.said)]
+        if more:
+            extras.append(max(more, key=lambda s: (s.score, -s.order)))
+    return extras
+
+
 def _status_body(out: _Answer, chosen: list[Sentence], terms: list[str], question: str, skip: set[tuple]) -> Sentence:
     ordered = sorted(chosen, key=lambda s: (out.views[s.note_id].written or date.min, s.score), reverse=True)
     lead = ordered[0]
@@ -841,8 +857,9 @@ def _broad_body(
     )
     if not _mentions(out, question, terms, list(out.views.values())):
         _summary(out, question, terms, firsts)
-    _lead_block(out, shape, lead, [lead], terms, question)
-    _others(out, meaning, lead, [s for s in firsts if s.note_id != lead.note_id and s.key not in skip], terms, question)
+    more = _topic_extras(out, firsts, stems)
+    _lead_block(out, shape, lead, [lead] + [s for s in more if s.note_id == lead.note_id], terms, question)
+    _others(out, meaning, lead, [s for s in firsts + more if s.note_id != lead.note_id and s.key not in skip], terms, question)
     return lead
 
 

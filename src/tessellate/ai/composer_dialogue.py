@@ -86,7 +86,8 @@ def _subject_pick(question: str, shape: str, terms: list[str], views: list[NoteV
     #: A noun phrase the notes use, never the question's leftover words (R9-1).
     subject = composer_chip_subject.clean(subject, views, question) if subject else subject
     #: Never a stop word, a pronoun or a piece of a contraction (INBOX 1590: "about ve").
-    if subject and query_understanding.is_chip_subject(subject) and len(subject.split()) == len(own) <= 3 and shape not in ("status", "recent", "compare"):
+    if subject and query_understanding.is_chip_subject(subject) and len(subject.split()) == len(own) <= 3 and shape not in ("status", "recent", "compare", "yesno"):
+        #: A yes or no question's span holds its predicate ("Harbor work offline"): no subject to ask the latest on.
         prefix = "next_latest_a" if shape == "when" or _pick(question, "next", ["a", "b"]) == "a" else "next_when_a"
         return [("template", PHRASES[prefix]), ("asked", subject), ("template", PHRASES["next_tag_b"])]
     return None

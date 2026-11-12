@@ -4406,3 +4406,5 @@ Owner, verbatim: "also is llama.cpp still on the table?? maybe for later pr at e
 - **One click, like the captions helper (INBOX 1777):** download a pinned `llama-server` per platform and accelerator (CPU first; Vulkan, CUDA, Metal where the release ships one), verified by sha256, run and stopped by the app on a localhost port, and set as the Models backend with a small default GGUF the owner picks.
 - **Reuse the captions route:** the same pinned-download, helper lifecycle and Settings row states, so the two helpers share one code path (replace, do not layer).
 - **Decide at design time:** whether `llama-cpp-python` in-process is still worth its per-accelerator wheel matrix once the managed `llama-server` exists (likely not: retire the `localllm` row).
+
+- **Composer eval, hybrid re-capture (needs a real embedder):** re-capture `tests/fixtures/composer/showcase_725.json` retrieval with embeddings on, then read the 25 answers (`scratchpad/llama-dev.sh serve`, `pytest -m evals`). The keyword-only capture passes unchanged (CHAT_PLAN Phase 5 e, closed), so this only refreshes which notes a hybrid search picks.
