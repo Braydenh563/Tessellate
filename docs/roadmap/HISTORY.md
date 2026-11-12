@@ -7,6 +7,14 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-12 (mapexport-1112)
+
+From MINDMAP_PLAN.md section 14's open list, the two stale export lines (L365):
+
+- Topic effects: built 2026-10-10, and in the PNG and SVG picture (`wbExportTopicEffect`: shadow filter, glow ring).
+- The exported picture draws a topic's shape, level type (size, weight, slant), effect and Phosphor icon
+  (`wbExportTopicGlyph`); the cut shapes (diamond, hexagon, chevron) are polygons, underline a bar, plain words only.
+
 ## Moved from the plans, 2026-11-12 (mindmap-plan: mapquick)
 
 From MINDMAP_PLAN.md "Placed from INBOX, 2026-10-19 (edge sides; next PR)", verbatim:
@@ -55242,6 +55250,8 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
 
 ## Moved from the LEDGER
+- [x] **L363** `mindmap` open, S: Name a saved Tree/Arc layout on a map as a dock chip when not Force. From OPEN.md:2659. Evidence: Recommendation not built; verified 2026-11-10 Built: already built: graph-canvas.js graphSyncLayoutChip + #graph-layout-chip, tests/test_graph_layout.py (verified passing)
+- [x] **L365** `mindmap` open, M: Make PNG/SVG export draw map topics with levels, shapes, icons, shadow and glow. From OPEN.md:1241; OPEN.md:3488; OPEN.md:2415. Evidence: whiteboard.js:14033 shadow and :14133 glyph/emoji icon handled; levels and shapes in map-node export not confirmed. Built: levels + cut shapes in wbBuildExportSvg map branch; effect/glyph already built; tests/test_map_export_topics_l365.py
 - [x] **L356** `mindmap` open, S: Tint monochrome map library schematics and stop the hollow diamond drawing its shaft. From OPEN.md:1110; OPEN.md:2677. Evidence: wbMapThumbSpec still in whiteboard-templates.js/whiteboard-library.js; no tint change found Built: wbThumbShapePart draws diamond/hexagon/circle; branches already tinted by wb-thumb-bN; test_map_templates_k15
 - [x] **L-mindmap-7** `mindmap` open, S: Make Web link insert inline syntax distinct from Link card. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1526. Evidence: Open line in the plan's prose a session could miss. The slash menu's Link card and Web link render the same. The inline-syntax recommendation waits on the owner. Built: Web link writes [text](<url>) alone on a line; tests/test_weblink_inline_lmm7.py
 - [x] **L362** `mindmap` open, S: Sweep pointer reorder in tree-down, org and tree-both layouts. From OPEN.md:3906. Evidence: Layouts exist (tests/test_map_branch_structure.py uses tree-down) but pointer reorder sweep for them not found; unverified, needs a sweep. Built: driven 2026-11-12 with a real pointer: tree-right 1,2,3,4 to 2,3,1,4; tree-down 2,3,1,4 to 3,1,2,4; tree-both 1,2,3,4 to 2,3,1,4, cue shown each (mapquick reorder.js)

@@ -12,12 +12,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
-| mindmap | 33 | 15 | 4 | 1 | 5 | 52 |
+| mindmap | 33 | 13 | 4 | 1 | 5 | 50 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 686 | 156 | 3 | 195 | 1395 |
+| all | 553 | 684 | 156 | 3 | 195 | 1393 |
 
 ## graph
 
@@ -441,8 +441,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 ## mindmap
 
 - [ ] **L355** `mindmap` open, S: Time tree, timeline and fishbone whole-map tidy per add at 200 topics and scope it. From OPEN.md:1383; OPEN.md:2803. Evidence: whiteboard-map.js:6115 still tidies whole map via wbMapTidyBranchScope; no 200-topic timing recorded.
-- [ ] **L363** `mindmap` open, S: Name a saved Tree/Arc layout on a map as a dock chip when not Force. From OPEN.md:2659. Evidence: Recommendation not built; verified 2026-11-10
-- [ ] **L365** `mindmap` open, M: Make PNG/SVG export draw map topics with levels, shapes, icons, shadow and glow. From OPEN.md:1241; OPEN.md:3488; OPEN.md:2415. Evidence: whiteboard.js:14033 shadow and :14133 glyph/emoji icon handled; levels and shapes in map-node export not confirmed.
 - [ ] **L366** `mindmap` open, M: Give the size stepper words and Classic level sizes S/M/L/XL instead of 17px/22px. From OPEN.md:1114. Evidence: No fix commit found for stepper words; needs a sweep to confirm
 - [ ] **L367** `mindmap` open, M: Add search or filter to the More sheet on a map (59-62 rows at 390). From OPEN.md:1682; OPEN.md:2802. Evidence: No filter in the sheet (chat-attach.js sheet recipe unchanged for this); long list remains
 - [ ] **L368** `mindmap` open, M: Resolve map theme per node on export and test a FreeMind-authored arrowlink. From OPEN.md:1685; OPEN.md:3037. Evidence: wb_export.py:567-581 writes arrowlink; tests/test_mindmap.py only covers own export and a dangling destination, no FreeMind-authored file

@@ -13537,12 +13537,12 @@ function wbSvgWrapLines(text, maxWidth, maxLines = 6, charWidth = 7) {
   return lines;
 }
 
-function wbSvgText(lines, x, y, { fontSize = 13, fill = "#1f2430", lineHeight, fontFamily = "sans-serif" } = {}) {
+function wbSvgText(lines, x, y, { fontSize = 13, fill = "#1f2430", lineHeight, fontFamily = "sans-serif", fontWeight, fontStyle } = {}) {
   const dy = lineHeight || fontSize + 3;
   const tspans = lines
     .map((l, i) => `<tspan x="${x}" dy="${i === 0 ? 0 : dy}">${wbSvgEscape(l)}</tspan>`)
     .join("");
-  return `<text x="${x}" y="${y}" font-family="${wbSvgEscape(fontFamily)}" font-size="${fontSize}" fill="${fill}">${tspans}</text>`;
+  return `<text x="${x}" y="${y}" font-family="${wbSvgEscape(fontFamily)}" font-size="${fontSize}"${fontWeight && fontWeight !== "400" && fontWeight !== "normal" ? ` font-weight="${wbSvgEscape(String(fontWeight))}"` : ""}${fontStyle === "italic" ? ` font-style="italic"` : ""} fill="${fill}">${tspans}</text>`;
 }
 
 
@@ -14091,10 +14091,31 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       //: the board's own export shadow, the glow as a ring and a blur in the
       //: branch colour, read off the drawn topic as the shape is.
       const fx = wbExportTopicEffect(topicEl, colour, rx, ry, size, parts);
-      parts.push(
-        `<rect width="${size.w}" height="${size.h}" rx="${Math.round(rx * 10) / 10}" ry="${Math.round(ry * 10) / 10}" fill="${topicPaint?.fill || "#ffffffee"}" ` +
-          `stroke="${wbSvgEscape(topicPaint?.edge || colour)}" stroke-width="1.5"${fx} />`
-      );
+      //: **The cut shapes are polygons, as the canvas clips them** (L365): a
+      //: diamond, hexagon or chevron paints its face on `::after` and its
+      //: rim on `::before`, with the topic's own background off, so the rect
+      //: path read "none" for all three and drew them as bare boxes. Same
+      //: outlines as library-lazy.css's clip-paths; a cloud keeps its ellipse.
+      const cut = topicEl?.dataset.shape;
+      const fill = topicPaint?.fill || "#ffffffee";
+      const edge = wbSvgEscape(topicPaint?.edge || colour);
+      const sw = size.w, sh = size.h;
+      const slant = Math.min(20, sw * 0.22);
+      const outline = cut === "diamond" ? `M ${sw / 2} 0 L ${sw} ${sh / 2} L ${sw / 2} ${sh} L 0 ${sh / 2} Z`
+        : cut === "hexagon" ? `M ${slant} 0 L ${sw - slant} 0 L ${sw} ${sh / 2} L ${sw - slant} ${sh} L ${slant} ${sh} L 0 ${sh / 2} Z`
+        : cut === "chevron" ? `M 0 0 L ${sw - slant} 0 L ${sw} ${sh / 2} L ${sw - slant} ${sh} L 0 ${sh} Z` : "";
+      if (outline) {
+        const face = wbExportColour(getComputedStyle(topicEl, "::after").backgroundColor) || fill;
+        const rim = wbExportColour(getComputedStyle(topicEl, "::before").backgroundColor) || colour;
+        parts.push(`<path d="${outline}" fill="${face}" stroke="${wbSvgEscape(rim)}" stroke-width="1.5"${fx} />`);
+      } else if (cut === "underline") {
+        parts.push(`<path d="M 0 ${sh} L ${sw} ${sh}" stroke="${wbSvgEscape(colour)}" stroke-width="2"${fx} />`);
+      } else if (cut !== "none") {
+        parts.push(
+          `<rect width="${sw}" height="${sh}" rx="${Math.round(rx * 10) / 10}" ry="${Math.round(ry * 10) / 10}" fill="${fill}" ` +
+            `stroke="${edge}" stroke-width="1.5"${fx} />`
+        );
+      }
       parts.push(
         `<rect width="4" height="${size.h}" rx="2" fill="${wbSvgEscape(colour)}" />`
       );
@@ -14150,9 +14171,15 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       //: In the map's own face when it has one (§13e's remainder): the file is
       //: the second place a map's text is drawn, and a serif map exported in
       //: sans-serif is two pictures of one map.
+      //: **Its level's type**, read off the drawn label (L365): a main topic
+      //: is larger and bolder than a leaf, a core topic bolder again; the
+      //: export drew every topic at 14px regular. Line height follows.
+      const textStyle = topicEl ? getComputedStyle(topicEl.querySelector(".wb-map-text") || topicEl) : null;
+      const level = textStyle ? Math.min(40, Math.max(9, parseFloat(textStyle.fontSize) || 14)) : 14;
       parts.push(wbSvgText(lines, textLeft, labelTop, {
-        fontSize: 14, fill: topicPaint?.ink || "#1f2430", lineHeight: 17,
+        fontSize: level, fill: topicPaint?.ink || "#1f2430", lineHeight: Math.round(level * 1.2),
         fontFamily: wbMapFontStack() || "sans-serif",
+        fontWeight: textStyle?.fontWeight, fontStyle: textStyle?.fontStyle,
       }));
     } else if (obj.kind === "text" && obj.data.sticker) {
       //: A sticker exports as its glyph, centred, at the size it is drawn.
