@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 28 | 5 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 30 | 23 | 4 | 0 | 11 | 57 |
+| whiteboard | 30 | 23 | 3 | 0 | 11 | 56 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 657 | 155 | 3 | 190 | 1365 |
+| all | 553 | 657 | 154 | 3 | 190 | 1364 |
 
 ## graph
 
@@ -340,7 +340,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-whiteboard-16** `whiteboard` open, S: Run the blind-tester timing for transparency and hex entry. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1583. Evidence: Open line in the plan's prose a session could miss. INBOX 1685's acceptance (find transparency and enter a hex in under 20 s) was never run.
 - [ ] **L-whiteboard-21** `whiteboard` open, S: Include connectors in Select all and the board Tab walk. From wbgroupedit sweep 2026-11-12. Evidence: frontend/js/whiteboard.js wbSelectableItems takes wbLinkCandidates, which leaves out link sketches, so Select all and the Tab walk skip connectors
 - [ ] **L-whiteboard-22** `whiteboard` open, S: Keys still unbound: Ctrl+K tags (app palette key, needs a choice), Ctrl+. and Ctrl+, super/subscript (app keys; text batch), Alt+Shift+L, T, N link/tooltip/note. From WHITEBOARD_PLAN section 11 keys, 2026-11-12. Evidence: docs/roadmap/WHITEBOARD_PLAN.md shortcut table rows Ctrl+K, Ctrl+. Ctrl+, Ctrl+{ Ctrl+}, Alt+Shift+L T N
-- [ ] **L-whiteboard-24** `whiteboard` partly, M: Review and close the board library batch: Shape libraries dialog, stemmed search, drop on a line, update from source, linked copies (WHITEBOARD_PLAN rows ~914, ~916, ~919, ~979, LEDGER L-whiteboard-9 and L275): run wblibrary3.js, then move the rows to HISTORY with a CHANGELOG line. From whiteboard session stop at 85% weekly, 2026-11-12. Evidence: commit fcf97e2a (library agent, stopped at the 85% line before its docs step) is parked on branch `claude/whiteboard-library-wip`, reverted on claude/whiteboard-plan; it fails 3 tests: global names 7408 over cap 7406, whiteboard-library-more.js:splitLink writes without Undo (test_undo_coverage), stale CODEMAP. Fix those, run scratchpad/ui-sweeps/wblibrary3.js, merge.
 
 ## documents
 

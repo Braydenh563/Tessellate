@@ -492,6 +492,7 @@ EXEMPT: dict[str, str] = {
     "settings-health.js:onclick": "job: the data folder check only makes missing folders again and lists missing files; it deletes and overwrites nothing",
     "statistics.js:ask": "read: a counted answer to a question about the notebook (readOnly); nothing is written",
     "whiteboard-interchange.js:picture": "board: stores a picture read out of a .drawio file; the import that places it is one undo step and the file is unused if that is undone",
+    "whiteboard-library-more.js:splitLink": "board: runs only inside the library drop's wbRecordGesture (whiteboard-library.js wbLibPlace, through wbFmtState.libraryMore), so the split is the drop's one Undo step",
     "whiteboard-interchange.js:wbThumbFlush": "board: stores the board's preview picture, rebuilt from the board itself; nothing of the person's changes",
     "documents-prose.js:docLinkOfferAsk": "read: asks which note names the text mentions; applying an offer is an editor change, undone by the editor's own history",
     "lan-watch.js:lanAnswerDevice": "auth: a sign-in decision for a device; Other devices lists it again to remove",
