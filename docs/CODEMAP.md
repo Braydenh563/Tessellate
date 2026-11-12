@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8329, frontend ids 2776, CSS sections 525, backend routes 701, backend modules 10783, test files 2716, tests 21962, plan headings 684, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8329, frontend ids 2776, CSS sections 525, backend routes 701, backend modules 10783, test files 2718, tests 21966, plan headings 684, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8329)
 
@@ -27,9 +27,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `onSurface` | frontend/js/settings-body.js:133 |
+| `onSurface` | frontend/js/settings-body.js:135 |
 | `surfaceBuild` | frontend/js/settings-body.js:97 |
-| `surfaceFind` | frontend/js/settings-body.js:121 |
+| `surfaceFind` | frontend/js/settings-body.js:123 |
 
 ### frontend/js/app.js (45)
 
@@ -681,56 +681,56 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addReminder` | frontend/js/shell-reminders.js:1614 |
+| `addReminder` | frontend/js/shell-reminders.js:1618 |
 | `armMinuteTick` | frontend/js/shell-reminders.js:41 |
-| `clearDoneReminders` | frontend/js/shell-reminders.js:1138 |
-| `clipText` | frontend/js/shell-reminders.js:842 |
-| `curtainShell` | frontend/js/shell-reminders.js:1756 |
-| `defaultDueValue` | frontend/js/shell-reminders.js:1665 |
+| `clearDoneReminders` | frontend/js/shell-reminders.js:1142 |
+| `clipText` | frontend/js/shell-reminders.js:846 |
+| `curtainShell` | frontend/js/shell-reminders.js:1760 |
+| `defaultDueValue` | frontend/js/shell-reminders.js:1669 |
 | `edgeFadeWire` | frontend/js/shell-reminders.js:443 |
 | `glideStrip` | frontend/js/shell-reminders.js:310 |
-| `liftLockScreen` | frontend/js/shell-reminders.js:1779 |
-| `loadReminders` | frontend/js/shell-reminders.js:928 |
-| `markScrollEdge` | frontend/js/shell-reminders.js:514 |
-| `markTabBarRecede` | frontend/js/shell-reminders.js:589 |
-| `notePreviewText` | frontend/js/shell-reminders.js:877 |
-| `nudgeDue` | frontend/js/shell-reminders.js:1560 |
-| `onScrollEdge` | frontend/js/shell-reminders.js:621 |
-| `openCalendarPage` | frontend/js/shell-reminders.js:1393 |
-| `paginateDoneReminders` | frontend/js/shell-reminders.js:1089 |
-| `presetDate` | frontend/js/shell-reminders.js:1449 |
-| `previewBlocks` | frontend/js/shell-reminders.js:869 |
-| `refreshMediaSession` | frontend/js/shell-reminders.js:1720 |
-| `refreshReminderDefaults` | frontend/js/shell-reminders.js:1581 |
-| `relativeWhen` | frontend/js/shell-reminders.js:1429 |
-| `reminderComposeIsPristine` | frontend/js/shell-reminders.js:1569 |
-| `reminderItem` | frontend/js/shell-reminders.js:1179 |
-| `reminderMadeUndo` | frontend/js/shell-reminders.js:1605 |
-| `reminderPutUndoably` | frontend/js/shell-reminders.js:1593 |
-| `reminderTarget` | frontend/js/shell-reminders.js:1410 |
+| `liftLockScreen` | frontend/js/shell-reminders.js:1783 |
+| `loadReminders` | frontend/js/shell-reminders.js:932 |
+| `markScrollEdge` | frontend/js/shell-reminders.js:518 |
+| `markTabBarRecede` | frontend/js/shell-reminders.js:593 |
+| `notePreviewText` | frontend/js/shell-reminders.js:881 |
+| `nudgeDue` | frontend/js/shell-reminders.js:1564 |
+| `onScrollEdge` | frontend/js/shell-reminders.js:625 |
+| `openCalendarPage` | frontend/js/shell-reminders.js:1397 |
+| `paginateDoneReminders` | frontend/js/shell-reminders.js:1093 |
+| `presetDate` | frontend/js/shell-reminders.js:1453 |
+| `previewBlocks` | frontend/js/shell-reminders.js:873 |
+| `refreshMediaSession` | frontend/js/shell-reminders.js:1724 |
+| `refreshReminderDefaults` | frontend/js/shell-reminders.js:1585 |
+| `relativeWhen` | frontend/js/shell-reminders.js:1433 |
+| `reminderComposeIsPristine` | frontend/js/shell-reminders.js:1573 |
+| `reminderItem` | frontend/js/shell-reminders.js:1183 |
+| `reminderMadeUndo` | frontend/js/shell-reminders.js:1609 |
+| `reminderPutUndoably` | frontend/js/shell-reminders.js:1597 |
+| `reminderTarget` | frontend/js/shell-reminders.js:1414 |
 | `revealActiveTab` | frontend/js/shell-reminders.js:270 |
-| `safeMdSlice` | frontend/js/shell-reminders.js:756 |
-| `setDue` | frontend/js/shell-reminders.js:1498 |
+| `safeMdSlice` | frontend/js/shell-reminders.js:760 |
+| `setDue` | frontend/js/shell-reminders.js:1502 |
 | `startClockTicker` | frontend/js/shell-reminders.js:77 |
 | `startMinuteTicker` | frontend/js/shell-reminders.js:60 |
 | `stopClockTicker` | frontend/js/shell-reminders.js:81 |
-| `stripFrontmatter` | frontend/js/shell-reminders.js:852 |
-| `syncDueFromParts` | frontend/js/shell-reminders.js:1512 |
+| `stripFrontmatter` | frontend/js/shell-reminders.js:856 |
+| `syncDueFromParts` | frontend/js/shell-reminders.js:1516 |
 | `syncEdgeFade` | frontend/js/shell-reminders.js:414 |
-| `syncPartsFromDue` | frontend/js/shell-reminders.js:1504 |
-| `syncScrollEdges` | frontend/js/shell-reminders.js:669 |
+| `syncPartsFromDue` | frontend/js/shell-reminders.js:1508 |
+| `syncScrollEdges` | frontend/js/shell-reminders.js:673 |
 | `syncTabOverflowFade` | frontend/js/shell-reminders.js:233 |
 | `tabBarMode` | frontend/js/shell-reminders.js:227 |
 | `tabCentreSpace` | frontend/js/shell-reminders.js:164 |
 | `tabContentWidth` | frontend/js/shell-reminders.js:204 |
 | `tabRowSpace` | frontend/js/shell-reminders.js:139 |
 | `tickClocks` | frontend/js/shell-reminders.js:12 |
-| `toLocalInputValue` | frontend/js/shell-reminders.js:1442 |
-| `updateDueReadout` | frontend/js/shell-reminders.js:1524 |
-| `updateReminderBadge` | frontend/js/shell-reminders.js:1108 |
-| `wikiLinkLabel` | frontend/js/shell-reminders.js:803 |
-| `wikiLinkShown` | frontend/js/shell-reminders.js:829 |
-| `wikiLinkTarget` | frontend/js/shell-reminders.js:820 |
+| `toLocalInputValue` | frontend/js/shell-reminders.js:1446 |
+| `updateDueReadout` | frontend/js/shell-reminders.js:1528 |
+| `updateReminderBadge` | frontend/js/shell-reminders.js:1112 |
+| `wikiLinkLabel` | frontend/js/shell-reminders.js:807 |
+| `wikiLinkShown` | frontend/js/shell-reminders.js:833 |
+| `wikiLinkTarget` | frontend/js/shell-reminders.js:824 |
 
 ### frontend/js/markdown.js (34)
 
@@ -12646,7 +12646,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Capture: the two labelled rows under the note box | frontend/css/07-whiteboard-misc.css:3051 |
 | Capture: three families, three rows | frontend/css/07-whiteboard-misc.css:5665 |
 | Carbon: near-monochrome, minimal colour, maximum text contrast. | frontend/css/05-sidebars-themes.css:3460 |
-| Chat sources: every card reads from the top | frontend/css/02-chat-graph.css:4772 |
+| Chat sources: every card reads from the top | frontend/css/02-chat-graph.css:4775 |
 | Chat: the user's bubble as a quiet surface, not an accent slab | frontend/css/04-chat-dock-appearance.css:2515 |
 | Columns and image options (DOCUMENTS_PLAN Phase 3 item 5) | frontend/css/09-editor.css:335 |
 | Curated palettes (Settings, Appearance, Theme) | frontend/css/05-sidebars-themes.css:3217 |
@@ -12886,7 +12886,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | finding your way about inside Settings (INBOX 444) | frontend/css/01-forms-settings.css:6131 |
 | first-run onboarding tour | frontend/css/04-chat-dock-appearance.css:2358 |
 | forms | frontend/css/01-forms-settings.css:224 |
-| glass reaches the floating chrome that sat outside it | frontend/css/02-chat-graph.css:5559 |
+| glass reaches the floating chrome that sat outside it | frontend/css/02-chat-graph.css:5562 |
 | glass restraint (UI_MODERNISATION_PLAN.md, Phase 3) | frontend/css/07-whiteboard-misc.css:9397 |
 | graph minimap | frontend/css/02-chat-graph.css:3736 |
 | graph polish | frontend/css/03-dashboard-widgets.css:3708 |
@@ -13017,7 +13017,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the bottom docks | frontend/css/07-whiteboard-misc.css:11754 |
 | the chat dock follows its own width (INBOX 694) | frontend/css/04-chat-dock-appearance.css:6797 |
 | the chat page fills its height (§36A) | frontend/css/06-timeline-dialogs.css:1452 |
-| the chat sidebar on a phone | frontend/css/02-chat-graph.css:5151 |
+| the chat sidebar on a phone | frontend/css/02-chat-graph.css:5154 |
 | the chat toolbar, grouped (§36B) | frontend/css/06-timeline-dialogs.css:1589 |
 | the citation peek (INBOX 80) | frontend/css/02-chat-graph.css:4019 |
 | the code editor: gutter + monospace | frontend/css/04-chat-dock-appearance.css:4615 |
@@ -13064,7 +13064,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the live action line | frontend/css/02-chat-graph.css:4319 |
 | the lock screen | frontend/css/07-whiteboard-misc.css:17352 |
 | the log console (§1) | frontend/css/06-timeline-dialogs.css:809 |
-| the map is the tab, and its controls float over it | frontend/css/02-chat-graph.css:5175 |
+| the map is the tab, and its controls float over it | frontend/css/02-chat-graph.css:5178 |
 | the mind map's outline and markers (MINDMAP_PLAN decisions 33, 34) | frontend/css/library-lazy.css:4125 |
 | the node edit strip (MINDMAP_PLAN.md §12.1 item 2) | frontend/css/07-whiteboard-misc.css:10171 |
 | the node radial (MINDMAP_PLAN.md §12.1 item 3) | frontend/css/07-whiteboard-misc.css:10539 |
@@ -13131,7 +13131,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | what it learned (WORLD_CLASS_PLAN I9) | frontend/css/01-forms-settings.css:5978 |
 | what the AI remembers (ROADMAP §39B) | frontend/css/07-whiteboard-misc.css:2198 |
 | what the agent found, as things you can open | frontend/css/07-whiteboard-misc.css:6488 |
-| what the answering model is | frontend/css/02-chat-graph.css:4971 |
+| what the answering model is | frontend/css/02-chat-graph.css:4974 |
 | what the phone block assumed, and the sheet undoes | frontend/css/07-whiteboard-misc.css:12317 |
 | whiteboard fixes (§41) | frontend/css/07-whiteboard-misc.css:2315 |
 | whiteboard objects: images and text boxes, neither tied to a note | frontend/css/07-whiteboard-misc.css:1 |
@@ -13143,7 +13143,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |---|---|
 | frontend/css/00-tokens-shell.css | 4310 |
 | frontend/css/01-forms-settings.css | 6996 |
-| frontend/css/02-chat-graph.css | 5664 |
+| frontend/css/02-chat-graph.css | 5667 |
 | frontend/css/03-dashboard-widgets.css | 5216 |
 | frontend/css/04-chat-dock-appearance.css | 6895 |
 | frontend/css/05-sidebars-themes.css | 6522 |
@@ -13154,7 +13154,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/answer-foot-lazy.css | 161 |
 | frontend/css/appearance-panel-lazy.css | 333 |
 | frontend/css/appearance-panel-own-lazy.css | 86 |
-| frontend/css/ask-compose-lazy.css | 301 |
+| frontend/css/ask-compose-lazy.css | 298 |
 | frontend/css/atlas-lazy.css | 1228 |
 | frontend/css/captions-lazy.css | 95 |
 | frontend/css/capture-card-lazy.css | 204 |
@@ -13205,7 +13205,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/reveal-lazy.css | 10 |
 | frontend/css/search-lazy.css | 153 |
 | frontend/css/semantic-notice-lazy.css | 10 |
-| frontend/css/settings-controls-lazy.css | 341 |
+| frontend/css/settings-controls-lazy.css | 363 |
 | frontend/css/settings-data-lazy.css | 60 |
 | frontend/css/sidebar-folds-lazy.css | 28 |
 | frontend/css/sketch-pad.css | 791 |
@@ -27715,7 +27715,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21962)
+## Tests (21966)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29901,6 +29901,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_server_time_readers.py | 1 |
 | tests/test_session_navigation.py | 6 |
 | tests/test_setting_label_toggles.py | 3 |
+| tests/test_setting_reset_slot_l416.py | 1 |
 | tests/test_settings_body_1501.py | 9 |
 | tests/test_settings_bugs_1017.py | 14 |
 | tests/test_settings_close_no_redraw_1111.py | 5 |
@@ -30021,6 +30022,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_stream_turn_helpers.py | 4 |
 | tests/test_streaming_laziness.py | 7 |
 | tests/test_strip_dead_embeds.py | 10 |
+| tests/test_strip_focus_reveal_l419.py | 2 |
 | tests/test_studio_frontend_q34.py | 4 |
 | tests/test_studio_routes_q34.py | 9 |
 | tests/test_studio_script_q34.py | 6 |
@@ -30166,7 +30168,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_typo_routing.py | 4 |
 | tests/test_ui_1017b.py | 7 |
 | tests/test_ui_batch_726.py | 13 |
-| tests/test_ui_recipes.py | 295 |
+| tests/test_ui_recipes.py | 296 |
 | tests/test_ui_signatures.py | 2 |
 | tests/test_ui_state.py | 6 |
 | tests/test_ui_targets_1029b.py | 9 |
@@ -30856,13 +30858,13 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | In-app browser with MCP tools (IDEAS, parked 2026-11-12, L-general-41) | docs/roadmap/BACKLOG.md:4415 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4382 |
-| Needs hardware | docs/roadmap/LEDGER.md:822 |
+| Needs hardware | docs/roadmap/LEDGER.md:814 |
 | Next up: retired queues, now the ledger and HANDOVER | docs/ROADMAP.md:214 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:814 |
+| Owner calls | docs/roadmap/LEDGER.md:806 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4255 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31038,7 +31040,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1013 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1005 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2632 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31093,25 +31095,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:59 |
-| chat | docs/roadmap/LEDGER.md:1029 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1113 |
+| chat | docs/roadmap/LEDGER.md:1021 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1105 |
 | documents | docs/roadmap/LEDGER.md:367 |
-| documents | docs/roadmap/LEDGER.md:1053 |
-| general | docs/roadmap/LEDGER.md:796 |
+| documents | docs/roadmap/LEDGER.md:1045 |
+| general | docs/roadmap/LEDGER.md:788 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:1017 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1125 |
+| graph | docs/roadmap/LEDGER.md:1009 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1117 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4391 |
 | mindmap | docs/roadmap/LEDGER.md:447 |
-| mindmap | docs/roadmap/LEDGER.md:1065 |
-| timeline | docs/roadmap/LEDGER.md:557 |
-| timeline | docs/roadmap/LEDGER.md:1089 |
+| mindmap | docs/roadmap/LEDGER.md:1057 |
+| timeline | docs/roadmap/LEDGER.md:549 |
+| timeline | docs/roadmap/LEDGER.md:1081 |
 | ui-modernisation | docs/roadmap/LEDGER.md:485 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1077 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1069 |
 | whiteboard | docs/roadmap/LEDGER.md:320 |
-| whiteboard | docs/roadmap/LEDGER.md:1041 |
-| world-class | docs/roadmap/LEDGER.md:560 |
-| world-class | docs/roadmap/LEDGER.md:1101 |
+| whiteboard | docs/roadmap/LEDGER.md:1033 |
+| world-class | docs/roadmap/LEDGER.md:552 |
+| world-class | docs/roadmap/LEDGER.md:1093 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2802 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2853 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2960 |
