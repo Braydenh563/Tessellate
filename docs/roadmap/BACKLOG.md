@@ -4395,3 +4395,9 @@ Owner, verbatim: "also is llama.cpp still on the table?? maybe for later pr at e
 - **One click, like the captions helper (INBOX 1777):** download a pinned `llama-server` per platform and accelerator (CPU first; Vulkan, CUDA, Metal where the release ships one), verified by sha256, run and stopped by the app on a localhost port, and set as the Models backend with a small default GGUF the owner picks.
 - **Reuse the captions route:** the same pinned-download, helper lifecycle and Settings row states, so the two helpers share one code path (replace, do not layer).
 - **Decide at design time:** whether `llama-cpp-python` in-process is still worth its per-accelerator wheel matrix once the managed `llama-server` exists (likely not: retire the `localllm` row).
+
+## Device and model checks left from the UI modernisation session (2026-11-12)
+
+Each row is the one step that needs hardware or a real model; everything that runs here is built and tested.
+
+- **"ai is cool" with a real model (L-general-43).** No-model filing is pinned by `tests/test_short_note_filing_l_general_43.py` (AI, then Technology, else nothing; never Sketches). **Check:** `scratchpad/llama-dev.sh serve`, a notebook with Sketches, Work and Technology, save "ai is cool", and confirm it is not filed under Sketches.
