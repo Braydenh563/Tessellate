@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 175 | 58 | 0 | 72 | 363 |
+| world-class | 130 | 176 | 59 | 0 | 73 | 365 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 701 | 157 | 3 | 195 | 1411 |
+| all | 553 | 702 | 158 | 3 | 196 | 1413 |
 
 ## graph
 
@@ -805,7 +805,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L671** `world-class` partly, M: First launch: say once which chat/background/image models were chosen and why, with Change. From OPEN.md:3498. Evidence: app.py:702 and model_manager.py:1208 choose_chat_model_if_missing exist; 'say once what and why, with Change' not found.
 - [ ] **L672** `world-class` partly, M: Dictation model: installed markers, remove, unsloth Gemma variant licence call. From INBOX.md:904 B61. Evidence: Markers/Remove at settings-packages.js:110,:122; model_manager.py:126 lists a unsloth Gemma 4 GGUF; embedding unsloth variant licence call open
 - [ ] **L673** `world-class` partly, M: Verify service worker caching, first-run onboarding and phone Settings nav. From audit-1031-shell.md. Evidence: before: now exclusive and a Settings choice (253967002, w11-1110); SW caching and onboarding unchecked
-- [ ] **L674** `world-class` partly, M: Find and fix the wrong correction on the evidence card (Most opened built). From OPEN.md:3275. Evidence: Most-accessed built: routes_entries.py:1929, commit 87676c5ab; wrong correction not found
 - [ ] **L675** `world-class` partly, M: Finish pane-by-pane Settings body build so panes stop blocking on open. From OPEN.md:4306; OPEN.md:4308. Evidence: Shortcuts case fixed (56 ms); first open 964 ms and others need quiet-machine trace.
 - [ ] **L676** `world-class` partly, M: Reduce Dashboard DOM node count at boot and after dialogs (X15). From OPEN.md:4383. Evidence: CHANGELOG.md:234-236: 2,348 elements at first paint, Library menus/first chunk fixed; rest is stylesheet recalc, blocked on owner decision; x15-1111.md
 - [ ] **L677** `world-class` partly, M: Stop parsing the whole app on every boot (PF4). From OPEN.md:4462. Evidence: x15-1111: Guide chat, Reminders, Timeline, Graph, Documents panes and palette are templates (5,640 to 3,887 boot nodes); chat, library, notes still parse at boot
@@ -863,6 +862,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-21** `world-class` open, S: Add a partial index on live entries. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3934. Evidence: Open line in the plan's prose a session could miss. Index work open alongside audit_log.entity_id.
 - [ ] **L-world-class-22** `world-class` open, L: Build the 27.1 remainder: templates, pin and archive, space tools. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3975. Evidence: Open line in the plan's prose a session could miss. Section 27.1 items besides bulk edit and exports have no rows.
 - [ ] **L-world-class-23** `world-class` open, M: Filing leftovers from the 1010 pass. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:4173. Evidence: Open line in the plan's prose a session could miss. Pointer leftovers lost when pointer files were deleted.
+- [ ] **L-world-class-25** `world-class` partly, M: B4 knowledge kernel: per-claim citations, 'what changed about X' on an entity page, and the 'computed by <model> at <ts>' stamp on derived rows. From WORLD_CLASS_PLAN.md B4. Evidence: routes_entities.py entity_page has open_items, timeline, links (2b7d96fe); no per-claim citation rows, no what-changed view, no computed-by stamp
+- [ ] **L-world-class-26** `world-class` partly, M: I5 time travel: the model's judgement over then and now claim pairs, re-embedding past texts for as-of retrieval, and an as-of answer's cards grouped by month (H8). From WORLD_CLASS_PLAN.md I5. Evidence: ai/timetravel.py:179 then_and_now pairs claims by shared words; claims_as_of route (72ce2bca) resolves revisions at a day
+- [ ] **L-world-class-27** `world-class` open, L: I1 night shift pass 2: dates, duplicates and entities as derived_facts rows, with accept of a date (a reminder) and of a duplicate (the merge). From WORLD_CLASS_PLAN.md I1 and H1. Evidence: ai/facts.py:109 KINDS = claim, question, tension, answered; no date, duplicate or entity kinds
 
 ## general
 
@@ -1111,6 +1113,7 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-ui-modernisation-18** `ui-modernisation` blocked-hardware, S: Verify phone tab scroll-to-top under reduced motion on a device. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1250. Evidence: Open line in the plan's prose a session could miss. L906 covers safe-area insets only. The reduced-motion scroll-to-top on a device has no row.
 - [ ] **L-ui-modernisation-21** `ui-modernisation` blocked-hardware, S: Verify paused background art and freed GPU memory on a minimised Windows window. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1264. Evidence: Open line in the plan's prose a session could miss. A hardware check from the deleted leftover list, with no row.
 - [ ] **L-ui-modernisation-23** `ui-modernisation` blocked-hardware, S: Verify the desktop pet on-top, transparency and DPI on Windows and macOS. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1325. Evidence: Open line in the plan's prose a session could miss. Q34's real-desktop checks have no hardware row.
+- [ ] **L-world-class-28** `world-class` blocked-hardware, S: I7 gate: filing accuracy with 20 synthetic corrections up 10 points, on a real model (pytest -m evals). From WORLD_CLASS_PLAN.md I7 gate. Evidence: test_corrections_wrong_card_i7.py runs on a fake transport; the 20-correction filing eval needs a real model
 
 ## Plan session briefs
 
