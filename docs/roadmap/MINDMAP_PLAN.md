@@ -1522,8 +1522,8 @@ Built; moved whole to HISTORY.md ("Moved from the plans, 2026-10-03", "From MIND
      Same day, also open: the graph's default layout "looks messy and is
      distributed wierdly"; the slash menu's Link card and Web link render the
      same on a line of their own (a lone link is a card, CHAT_PLAN decision
-     12; recommendation: Web link on an empty line inserts inline syntax the
-     card rule skips, owner to confirm); a toggle in the note edit form's
+     12; the owner took the inline syntax 2026-11-12, built: HISTORY.md
+     "Moved from the LEDGER", L-mindmap-7); a toggle in the note edit form's
      preview reportedly exits preview (not reproduced in Chromium, capture's
      half fixed in 31d5460).
      Done the same day (commits 3d493ac to 2b721bd): capture preview and

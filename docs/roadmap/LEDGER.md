@@ -12,12 +12,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
-| mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
+| mindmap | 33 | 28 | 5 | 1 | 5 | 66 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 701 | 157 | 3 | 195 | 1411 |
+| all | 553 | 700 | 157 | 3 | 195 | 1410 |
 
 ## graph
 
@@ -471,7 +471,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-mindmap-2** `mindmap` open, M: Show equations and code blocks inside map topics. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:510. Evidence: map topics render plain text only; no plan or LEDGER row
 - [ ] **L-mindmap-5** `mindmap` open, M: Add a spaced order and the note as answer to map study mode. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1204. Evidence: Open line in the plan's prose a session could miss. Decision 36 lists spaced-order study mode as not built.
 - [ ] **L-mindmap-6** `mindmap` open, S: Make map node fill and background colour controls discoverable. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1440. Evidence: Open line in the plan's prose a session could miss. 431(b), discoverability of the node fill and background colour controls, says it was placed as its own item. No such item exists.
-- [ ] **L-mindmap-7** `mindmap` open, S: Make Web link insert inline syntax distinct from Link card. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1526. Evidence: Open line in the plan's prose a session could miss. The slash menu's Link card and Web link render the same. The inline-syntax recommendation waits on the owner.
 - [ ] **L-mindmap-8** `mindmap` open, S: Reproduce a toggle in the note edit preview exiting preview. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1527. Evidence: Open line in the plan's prose a session could miss. A reported bug left unreproduced, with no row.
 - [ ] **L-mindmap-9** `mindmap` open, S: Measure idle and drag cost on a map of hundreds of nodes. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1751. Evidence: Open line in the plan's prose a session could miss. The Brief 60 census gap, with no row.
 
