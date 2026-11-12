@@ -1103,7 +1103,6 @@ clash is listed so the choice is made once.
 | --- | --- | --- | --- | --- |
 | Background colour or image | yes | `DiagramFormatPanel.addView` (Format.js 8906) | done | none |
 | Options: "Edit data" of the diagram | connection arrows and points, tooltips, guides, page view, shadow default built (Format > Board) | `addOptions` (Format.js 9016) | the toggles in section 10 | S |
-| Paper size, orientation | no | `addPaperSize` (Format.js 9231) | section 6 | S |
 
 ### 18. Out of scope, with the reason
 

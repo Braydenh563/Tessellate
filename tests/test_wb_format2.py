@@ -143,7 +143,7 @@ def test_the_switches_are_read_by_guides_new_shapes_and_the_page_frames():
     js = app_js_text()
     assert "if (wbBoardBackground().guides === false) return [];" in js
     assert 'bg.shadow_default && (group === "shape" || group === "text")' in js
-    assert '["grid_size", "grid_color", "guides", "page_view", "shadow_default"].map' in js
+    assert '"guides", "page_view", "shadow_default"' in js
     options = (ROOT / "frontend" / "js" / "whiteboard-options.js").read_text(encoding="utf-8")
     assert "wbPdf.pagePx(bg)" in options and 'class", "wb-page-frame"' in options
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
@@ -154,3 +154,54 @@ def test_the_switches_are_read_by_guides_new_shapes_and_the_page_frames():
 def test_the_page_size_in_board_units_comes_from_the_one_size_table():
     out = _node(_pdf_source() + ' console.log(JSON.stringify([...wbPdf.pagePx({}), ...wbPdf.pagePx({ orientation: "landscape" })]));')
     assert json.loads(out) == [794, 1123, 1123, 794]
+
+
+# --- 4. Paper size and orientation ------------------------------------------------------------------------
+
+
+def test_a_boards_paper_and_orientation_are_kept_and_the_defaults_are_not(ai_client):
+    board = _board(ai_client)
+    url = f"/whiteboard/boards/{board['id']}"
+    out = ai_client.put(url, json={"background": {"paper": "a3", "orientation": "landscape"}})
+    assert out.status_code == 200, out.text
+    assert out.json()["background"] == {"paper": "a3", "orientation": "landscape"}
+    custom = ai_client.put(url, json={"background": {"paper": "custom", "paper_w": 200, "paper_h": 120}})
+    assert custom.json()["background"] == {"paper": "custom", "paper_w": 200, "paper_h": 120, "orientation": "landscape"}
+    back = ai_client.put(url, json={"background": {"paper": "a4", "orientation": "portrait", "paper_w": None, "paper_h": None}})
+    assert back.json()["background"] == {}
+
+
+def test_a_paper_that_is_not_in_the_table_or_a_custom_size_out_of_range_is_refused(ai_client):
+    board = _board(ai_client)
+    for patch in ({"paper": "tabloid"}, {"orientation": "sideways"}, {"paper_w": 10}, {"paper_h": 9000}):
+        refused = ai_client.put(f"/whiteboard/boards/{board['id']}", json={"background": patch})
+        assert refused.status_code == 422, patch
+
+
+def test_the_page_table_holds_every_size_and_a_custom_one_in_millimetres():
+    out = _node(
+        _pdf_source()
+        + ' const px = (bg) => wbPdf.pagePx(bg);'
+        + ' console.log(JSON.stringify([px({ paper: "a3" }), px({ paper: "letter" }), px({ paper: "legal", orientation: "landscape" }),'
+        + ' px({ paper: "custom", paper_w: 100, paper_h: 200 })]));'
+    )
+    # 96 px to the inch: A3 297 x 420 mm, Letter 8.5 x 11 in, Legal 8.5 x 14 in landscape, custom 100 x 200 mm.
+    assert json.loads(out) == [[1123, 1587], [816, 1056], [1344, 816], [378, 756]]
+
+
+def test_the_pdf_export_starts_from_the_boards_paper_and_orientation():
+    out = _node(
+        _pdf_source()
+        + ' const bounds = { x: 0, y: 0, w: 400, h: 300 };'
+        + ' const a = wbPdf.plan({ bounds, ...wbPdf.boardChoice({ paper: "a3", orientation: "landscape" }, { size: "a4", orientation: "auto", layout: "fit" }) });'
+        + ' const b = wbPdf.plan({ bounds, ...wbPdf.boardChoice({}, { size: "letter", orientation: "auto", layout: "fit" }) });'
+        + ' console.log(JSON.stringify([a[0].page, b[0].page]));'
+    )
+    a3, letter = json.loads(out)
+    assert [round(v) for v in a3] == [1191, 842]  # A3 landscape: the board's choice beats the saved one
+    assert letter == [792, 612]  # a board with no paper keeps the last choice made in the dialog (Auto: wide board, landscape)
+    js = app_js_text()
+    assert "wbPdf.boardChoice(wbBoardBackground(), wbPdf.savedChoice())" in js
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    for ident in ("wb-bo-paper", "wb-bo-orient", "wb-bo-paper-w", "wb-bo-paper-h"):
+        assert f'id="{ident}"' in html

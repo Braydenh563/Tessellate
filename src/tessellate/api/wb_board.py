@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import re
+from typing import Literal
 
 from tessellate.repo.content import BOARDS
 from pydantic import BaseModel, Field, field_validator
@@ -575,6 +576,11 @@ def _clean_defaults(value, *, strict: bool = False) -> dict:
 #: The grid's spacing when a board sets none (the client's `WB_GRID_SPACING`).
 BOARD_DEFAULT_GRID = 24
 #: The switches a board's settings keep, each with the one value that is stored (the other is the default and is not).
+BOARD_PAPERS = ("a4", "a3", "letter", "legal", "custom")
+BOARD_ORIENTATIONS = ("portrait", "landscape")
+#: Choices whose default is not stored (A4, portrait), with the client's table of sizes in `wbPdf`.
+BOARD_CHOICE_DEFAULT = {"paper": "a4", "orientation": "portrait"}
+BOARD_CUSTOM_MM = (50, 2000)
 BOARD_SWITCH_STORED = {"sticky_fold": False, "rough": True, "guides": False, "page_view": True, "shadow_default": True}
 
 
@@ -606,6 +612,12 @@ class BoardBackground(BaseModel):
     guides: bool | None = None
     page_view: bool | None = None
     shadow_default: bool | None = None
+    #: **Paper** (wbformat2): the page the page view draws and the PDF export starts from. A4 portrait is the default
+    #: and is not stored; a custom size is in millimetres.
+    paper: Literal["a4", "a3", "letter", "legal", "custom"] | None = None
+    orientation: Literal["portrait", "landscape"] | None = None
+    paper_w: int | None = Field(default=None, ge=BOARD_CUSTOM_MM[0], le=BOARD_CUSTOM_MM[1])
+    paper_h: int | None = Field(default=None, ge=BOARD_CUSTOM_MM[0], le=BOARD_CUSTOM_MM[1])
 
     @field_validator("grid_color")
     @classmethod
@@ -654,6 +666,21 @@ def _background_flags_and_grid(stored: dict) -> dict:
     if isinstance(grid, str) and BOARD_BG_COLOR_RE.match(grid):
         out["grid_color"] = grid
     out.update({key: kept for key, kept in BOARD_SWITCH_STORED.items() if stored.get(key) is kept})
+    out.update(_background_paper(stored))
+    return out
+
+
+def _background_paper(stored: dict) -> dict:
+    """The paper fields out of a stored background: a known size or direction that is not the default, a custom
+    size inside the bounds."""
+    out = {}
+    for key, choices in (("paper", BOARD_PAPERS), ("orientation", BOARD_ORIENTATIONS)):
+        if stored.get(key) in choices and stored[key] != BOARD_CHOICE_DEFAULT[key]:
+            out[key] = stored[key]
+    for key in ("paper_w", "paper_h"):
+        mm = stored.get(key)
+        if isinstance(mm, int) and not isinstance(mm, bool) and BOARD_CUSTOM_MM[0] <= mm <= BOARD_CUSTOM_MM[1]:
+            out[key] = mm
     return out
 
 
@@ -684,7 +711,7 @@ def _store_board_background(entry: Entry, patch: BoardBackground) -> dict:
     merged = _board_background(entry)
     for field in patch.model_fields_set:
         value = getattr(patch, field)
-        if value is None or value == {} or (field in BOARD_SWITCH_STORED and value is not BOARD_SWITCH_STORED[field]) or (field == "grid_size" and value == BOARD_DEFAULT_GRID):
+        if value is None or value == {} or (field in BOARD_SWITCH_STORED and value is not BOARD_SWITCH_STORED[field]) or (field == "grid_size" and value == BOARD_DEFAULT_GRID) or BOARD_CHOICE_DEFAULT.get(field) == value:
             merged.pop(field, None)
         else:
             merged[field] = value

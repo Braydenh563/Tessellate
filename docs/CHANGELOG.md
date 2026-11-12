@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: paper size (A4, A3, Letter, Legal, custom) and direction as board settings, driving the page view and the PDF export's starting choice.
 - Whiteboard: Board section switches for alignment guides, page view (dashed page frames) and a shadow for new shapes, kept per board.
 - Whiteboard: grid size and grid colour are board settings in the Format panel (nothing selected, Board); snap, Shift with the arrow keys and the drawn grid all follow the size (`tests/test_wb_format2.py`).
 - Whiteboard: a picture can have a border (Format panel, Border: width and colour), drawn on the board, in SVG, PNG and PDF export and in a .drawio file as imageBorder and strokeWidth; pictures of this notebook now travel through .drawio too (`tests/test_wb_format2.py`).

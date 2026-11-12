@@ -2998,7 +2998,7 @@ MORE_TOPICS.append({
     "keywords": (
         "picture border", "image border", "border on a picture", "outline a picture",
         "grid size", "grid colour", "grid color", "change the grid", "board options",
-        "alignment guides", "turn off guides", "page view", "page frames", "default shadow", "shadow for new shapes",
+        "paper size", "page size", "landscape", "A3", "Legal", "custom paper", "alignment guides", "turn off guides", "page view", "page frames", "default shadow", "shadow for new shapes",
     ),
     "body": (
         "Picture border: select a picture, then in the Format panel set Border to a width in pixels and pick its colour; "
@@ -3007,7 +3007,8 @@ MORE_TOPICS.append({
         "Board options: with nothing selected, the Format panel's Style tab has a Board section. Grid size (4 to 200, empty is 24) "
         "and Grid colour belong to this board; Snap to grid, Shift with the arrow keys and the drawn grid all use that size. "
         "The same section has three switches, each kept on the board: Guides (the alignment lines while you drag, on by default), "
-        "Page view (dashed frames for the printed pages, drawn under the cards) and Shadow (new shapes and text boxes start with a shadow)."
+        "Page view (dashed frames for the printed pages, drawn under the cards) and Shadow (new shapes and text boxes start with a shadow). "
+        "Paper and Direction (A4, A3, Letter, Legal or a custom size in millimetres; portrait or landscape) set the page frames and are where a PDF export starts."
     ),
     "badge": {"label": "Whiteboard", "tab": "library"},
 })

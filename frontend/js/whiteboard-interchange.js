@@ -1475,7 +1475,17 @@ async function wbDiagramToShapes(d, source) {
 //: library: nothing vendored writes PDF, and a page of one picture is a dozen
 //: lines of structure.
 const wbPdf = (() => {
-  const SIZES = { a4: [595.28, 841.89], letter: [612, 792] };
+  //: Every paper size, in points (short side, long side), A4 the fallback: the one table the PDF export, the board's
+  //: paper setting and the page view all read.
+  const SIZES = { a4: [595.28, 841.89], a3: [841.89, 1190.55], letter: [612, 792], legal: [612, 1008] };
+  const MM = 72 / 25.4;
+  //: A paper's short and long side in points: a known size, or a board's custom one (`paper_w`, `paper_h`, millimetres).
+  function sideOf(size, custom) {
+    if (size === "custom" && custom?.paper_w > 0 && custom?.paper_h > 0) {
+      return [custom.paper_w * MM, custom.paper_h * MM].sort((a, b) => a - b);
+    }
+    return SIZES[size] || SIZES.a4;
+  }
   const MARGIN = 28;
   const TILE_SCALE = 0.75;
   const MAX_PAGES = 40;
@@ -1483,7 +1493,7 @@ const wbPdf = (() => {
   //: A board's page in board units (96 to the inch; the table is in points): its paper and orientation, A4 portrait
   //: when it sets none. Page view draws these frames.
   function pagePx(bg = {}) {
-    const [short, long] = SIZES[bg.paper] || SIZES.a4;
+    const [short, long] = sideOf(bg.paper, bg);
     const [w, h] = bg.orientation === "landscape" ? [long, short] : [short, long];
     return [Math.round((w * 96) / 72), Math.round((h * 96) / 72)];
   }
@@ -1492,8 +1502,8 @@ const wbPdf = (() => {
   //: `frames` the frames to give a page each ({x, y, width, height}). Every page
   //: has its size in points, the part of the board it shows (`crop`, board
   //: units) and where that sits on the page (`place`, points, from the top-left).
-  function plan({ bounds, frames = [], size = "a4", orientation = "auto", layout = "fit" }) {
-    const [short, long] = SIZES[size] || SIZES.a4;
+  function plan({ bounds, frames = [], size = "a4", orientation = "auto", layout = "fit", custom = null }) {
+    const [short, long] = sideOf(size, custom);
     const pageFor = (w, h) => {
       const landscape = orientation === "landscape" || (orientation === "auto" && w > h);
       return landscape ? [long, short] : [short, long];
@@ -1582,7 +1592,7 @@ const wbPdf = (() => {
 
   //: The choices the export dialog offers, and the last ones made.
   const CHOICES = {
-    size: [{ value: "a4", label: "A4" }, { value: "letter", label: "Letter" }],
+    size: [{ value: "a4", label: "A4" }, { value: "a3", label: "A3" }, { value: "letter", label: "Letter" }, { value: "legal", label: "Legal" }],
     orientation: [
       { value: "auto", label: "Auto", title: "Landscape for a wide board, portrait for a tall one" },
       { value: "portrait", label: "Portrait" },
@@ -1600,9 +1610,22 @@ const wbPdf = (() => {
     return { size: pick("size", "a4"), orientation: pick("orientation", "auto"), layout: pick("layout", "fit") };
   }
 
+  //: The export dialog's starting point: the board's own paper and direction when it sets them (Format > Board), else
+  //: the last choice made here. A custom paper carries its millimetres along for the plan.
+  function boardChoice(bg, saved) {
+    const out = { ...saved };
+    if (bg.paper) {
+      out.size = bg.paper;
+      if (bg.paper === "custom") out.custom = { paper_w: bg.paper_w, paper_h: bg.paper_h };
+    }
+    if (bg.orientation) out.orientation = bg.orientation;
+    return out;
+  }
+
   function saveChoice(choice) {
     try {
-      prefs.set("wb-export-pdf", JSON.stringify(choice));
+      const { size, orientation, layout } = choice;
+      prefs.set("wb-export-pdf", JSON.stringify({ size, orientation, layout }));
     } catch {
       // Private mode: the choice holds for this export.
     }
@@ -1636,5 +1659,5 @@ const wbPdf = (() => {
     return pages;
   }
 
-  return { plan, build, pictures, choices: CHOICES, savedChoice, saveChoice, SIZES, pagePx };
+  return { plan, build, pictures, choices: CHOICES, savedChoice, saveChoice, boardChoice, SIZES, pagePx };
 })();

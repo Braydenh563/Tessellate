@@ -11802,7 +11802,7 @@ async function wbApplyHistoryEntry(from, to) {
   if (entry.action === "background") {
     const current = { ...wbBoardBackground() };
     const was = entry.before || {};
-    await wbSetBackground({ color: was.color ?? null, image: was.image ?? null, sticky_fold: was.sticky_fold ?? null, rough: was.rough ?? null, defaults: was.defaults ?? null, ...Object.fromEntries(["grid_size", "grid_color", "guides", "page_view", "shadow_default"].map((k) => [k, was[k] ?? null])) }, { undo: false });
+    await wbSetBackground({ color: was.color ?? null, image: was.image ?? null, sticky_fold: was.sticky_fold ?? null, rough: was.rough ?? null, defaults: was.defaults ?? null, ...Object.fromEntries(["grid_size", "grid_color", "guides", "page_view", "shadow_default", "paper", "orientation", "paper_w", "paper_h"].map((k) => [k, was[k] ?? null])) }, { undo: false });
     to.push({ action: "background", before: current });
     return true;
   }
@@ -14959,7 +14959,7 @@ async function wbCopyAsSvg() {
 }
 
 async function wbExportPdf(scope) {
-  const pages = await wbPdf.pictures(scope, wbPdf.savedChoice());
+  const pages = await wbPdf.pictures(scope, wbPdf.boardChoice(wbBoardBackground(), wbPdf.savedChoice()));
   await saveFile(wbExportFileName(scope, "pdf"), new Blob([wbPdf.build(pages)], { type: "application/pdf" }));
   toast(pages.length === 1 ? "Board exported as a PDF." : `Board exported as a PDF of ${pages.length} pages.`);
 }
@@ -15183,7 +15183,7 @@ function wbExportBoard({ branch = false } = {}) {
     }
   );
   //: A PDF's page size, direction and cut (L270), one labelled row each.
-  const pdfPrefs = wbPdf.savedChoice();
+  const pdfPrefs = wbPdf.boardChoice(wbBoardBackground(), wbPdf.savedChoice());
   const pdfRows = ["size", "orientation", "layout"].map((key) => {
     const label = document.createElement("span");
     label.className = "wb-export-label";

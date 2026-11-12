@@ -18,6 +18,12 @@
     put("wb-bo-guides", bg.guides !== false, "checked");
     put("wb-bo-pageview", bg.page_view === true, "checked");
     put("wb-bo-shadow", bg.shadow_default === true, "checked");
+    put("wb-bo-paper", bg.paper || "a4");
+    put("wb-bo-orient", bg.orientation || "portrait");
+    put("wb-bo-paper-w", bg.paper_w || "");
+    put("wb-bo-paper-h", bg.paper_h || "");
+    const custom = $("wb-bo-custom");
+    if (custom) custom.hidden = bg.paper !== "custom";
     drawPages(bg);
     put("wb-bo-grid-color", bg.grid_color || "#888888");
   }
@@ -77,6 +83,12 @@
         //: Only the non-default value is stored; the default clears the setting.
         wbSetBackground({ [key]: e.target.checked === off ? off : null }).then((ok) => ok && wbAnnounce(`${e.target.getAttribute("aria-label")} ${e.target.checked ? "on" : "off"}.`));
       });
+    }
+    for (const [id, key] of [["wb-bo-paper", "paper"], ["wb-bo-orient", "orientation"]]) {
+      $(id)?.addEventListener("change", (e) => wbSetBackground({ [key]: e.target.value }).then((ok) => ok && wbAnnounce(`${e.target.getAttribute("aria-label")} ${e.target.selectedOptions[0].textContent}.`)));
+    }
+    for (const [id, key] of [["wb-bo-paper-w", "paper_w"], ["wb-bo-paper-h", "paper_h"]]) {
+      $(id)?.addEventListener("change", (e) => wbSetBackground({ [key]: boxValue(e.target, 50, 2000) }));
     }
     $("wb-bo-grid-color")?.addEventListener("change", (e) => wbSetBackground({ grid_color: e.target.value }));
     $("wb-bo-grid-reset")?.addEventListener("click", () => wbSetBackground({ grid_color: null }));
