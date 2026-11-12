@@ -1,5 +1,5 @@
 // A toast fired while a phone sheet is open must be the thing at its own
-// centre (GRAPH_PLAN, "Still open after KG1 to KG9"). Opens `openSheet` from
+// centre (GRAPH_PLAN, "After KG1 to KG9"). Opens `openSheet` from
 // openers at several layers, fires a toast, and asks `elementFromPoint` at the
 // toast's centre who answers. Exit code 1 when any case is covered.
 //

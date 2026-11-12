@@ -54,7 +54,14 @@ from dataclasses import dataclass
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.core.database import Entry, EntryLink, link_strength
+from tessellate.core.database import (
+    Document,
+    DocumentLink,
+    Entry,
+    EntryLink,
+    EntityMention,
+    link_strength,
+)
 
 #: What each kind of step costs, before `link_strength` (core/database.py)
 #: adjusts an individual link up or down. Links and replies are decisions
@@ -122,6 +129,18 @@ class Connections:
         #: Tags left out for being filing rather than connection, so the "no
         #: path" answer can say what it declined to count.
         self.hub_tags: list[str] = []
+        #: Document and entity nodes, when asked for: prefixed id
+        #: (`document:3`, `entity:5`, never an Entry id) -> "document" or
+        #: "entity". Kept apart from `entries` so every consumer that reads
+        #: `entries[id]` as a note is untouched; only the walkers
+        #: (`has`, `nodes`, `neighbours`) see both kinds.
+        self.extra: dict[str, str] = {}
+
+    def has(self, node_id) -> bool:  # noqa: ANN001
+        return node_id in self.entries or node_id in self.extra
+
+    def nodes(self) -> list:
+        return [*self.entries, *self.extra]
 
     def _add(self, source: int, target: int, kind: str, how: str, back: str, weight: float) -> None:
         """Record a step and its reverse. Cheaper always wins."""
@@ -139,6 +158,8 @@ def build(
     include_private: bool = True,
     extra_edges: list[dict] = None,
     entries: list[Entry] | None = None,
+    documents: bool = False,
+    entities: bool = False,
 ) -> Connections:
     """Index the notebook's connections.
 
@@ -155,13 +176,23 @@ def build(
     when `include_private` is left at its default: a caller passing
     `include_private=False` needs the narrower query this function runs
     itself, not the caller's unfiltered list.
+
+    `documents` and `entities` (owner, 2026-11-12) add those nodes under
+    prefixed ids so a route can run through a document two notes are attached
+    to, or an entity both name. Off by default: the AI tools and the
+    structure views read `entries[id]` for every node and stay notes-only.
+    Neither layer reaches a private note when `include_private` is False (the
+    edge needs both ends known), nor a private document.
     """
     if entries is None or not include_private:
         query = select(Entry).where(Entry.is_deleted == False)  # noqa: E712
         if not include_private:
             query = query.where(Entry.is_private == False)  # noqa: E712
         entries = list(session.scalars(query))
-    return _connect(session, entries, extra_edges)
+    return _connect(
+        session, entries, extra_edges, documents=documents, entities=entities,
+        private=include_private, cap_entities=True,
+    )
 
 
 def build_light(
@@ -169,6 +200,8 @@ def build_light(
     extra_edges: list[dict] | None = None,
     drafts: bool = True,
     boards: bool = True,
+    documents: bool = False,
+    entities: bool = False,
 ) -> Connections:
     """`build` over three columns instead of whole notes.
 
@@ -191,7 +224,7 @@ def build_light(
     if not boards:
         query = query.where(Entry.is_board == False)  # noqa: E712
     rows = list(session.execute(query))
-    return _connect(session, rows, extra_edges)
+    return _connect(session, rows, extra_edges, documents=documents, entities=entities)
 
 
 def _link_phrase(reason: str | None, reason_confidence: float | None) -> str:
@@ -242,7 +275,55 @@ def _add_tag_edges(index: Connections, entries: list) -> None:
     index.hub_tags.sort()
 
 
-def _connect(session: Session, entries: list, extra_edges: list[dict] | None) -> Connections:
+def _add_layer_edges(
+    session: Session, index: Connections, documents: bool, entities: bool, private: bool, cap_entities: bool
+) -> None:
+    """Document and entity nodes, joined to the notes they touch.
+
+    An attachment is a decision (`DocumentLink`), so it costs a link's weight
+    each way; an entity mention is an extraction, an observation like a tag,
+    so it costs a tag's. `cap_entities` applies the hub rule to an entity named
+    in more than `HUB_TAG_NOTES` notes for a route (it would make everything
+    two hops from everything); centrality leaves it off, since a name that
+    many notes share is exactly a hub.
+    """
+    known = index.entries
+    if documents:
+        query = (
+            select(DocumentLink.document_id, DocumentLink.entry_id)
+            .join(Document, Document.id == DocumentLink.document_id)
+            .where(Document.archived_at.is_(None), Document.deleted_at.is_(None))
+        )
+        if not private:
+            query = query.where(Document.is_private == False)  # noqa: E712
+        for document_id, entry_id in session.execute(query):
+            if entry_id in known:
+                node = f"document:{document_id}"
+                index.extra[node] = "document"
+                index._add(node, entry_id, "document", "is attached to", "has attached", LINK_WEIGHT)
+    if entities:
+        by_entity: dict[int, set[int]] = defaultdict(set)
+        for entity_id, entry_id in session.execute(select(EntityMention.entity_id, EntityMention.entry_id)):
+            if entry_id in known:
+                by_entity[entity_id].add(entry_id)
+        for entity_id, notes in by_entity.items():
+            if cap_entities and len(notes) > HUB_TAG_NOTES:
+                continue
+            node = f"entity:{entity_id}"
+            index.extra[node] = "entity"
+            for entry_id in notes:
+                index._add(node, entry_id, "entity", "names", "is named in", TAG_WEIGHT)
+
+
+def _connect(
+    session: Session,
+    entries: list,
+    extra_edges: list[dict] | None,
+    documents: bool = False,
+    entities: bool = False,
+    private: bool = True,
+    cap_entities: bool = False,
+) -> Connections:
     """The indexing both builders share. `entries` need only carry `id`,
     `parent_id` and `tags`, which an `Entry` and a column row both do."""
     index = Connections(entries)
@@ -281,7 +362,14 @@ def _connect(session: Session, entries: list, extra_edges: list[dict] | None) ->
             # Treat dynamic extra edges (like similarity) with their appropriate weight
             weight = SIMILAR_WEIGHT if edge.get("kind") == "similar" else LINK_WEIGHT
             index._add(edge["source"], edge["target"], edge.get("kind", "similar"), "is related to", "is related to", weight)
+            #: A document or entity end (a derived similarity line) is a
+            #: labelled stop even when the layer builder drops it (a hub entity).
+            for end in (edge["source"], edge["target"]):
+                if isinstance(end, str):
+                    index.extra.setdefault(end, end.partition(":")[0])
 
+    if documents or entities:
+        _add_layer_edges(session, index, documents, entities, private, cap_entities)
     return index
 
 
@@ -312,9 +400,9 @@ def _dijkstra(
     then the "best route" and "route 1 of 3" would disagree about which route
     is best, which is worse than not offering alternatives at all.
     """
-    if source_id == target_id or source_id not in index.entries:
+    if source_id == target_id or not index.has(source_id):
         return None
-    if target_id not in index.entries:
+    if not index.has(target_id):
         return None
 
     #: (cost, hops, node): the heap orders on cost then hops, which is the
@@ -476,7 +564,7 @@ HUB_DEGREE = 3
 
 def pagerank(index: Connections, iterations: int = 15, damping: float = 0.85) -> dict[int, float]:
     """Computes PageRank to mathematically identify the true hubs of the notebook."""
-    nodes = list(index.entries.keys())
+    nodes = index.nodes()
     N = len(nodes)
     if N == 0:
         return {}

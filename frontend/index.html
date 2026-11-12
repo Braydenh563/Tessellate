@@ -4096,6 +4096,7 @@ Link to another note with [[its first few words]]."></textarea>
           <button id="graph-selection-link" class="ghost small" type="button" title="Link the selected notes to each other"><i class="ph ph-link ph-lead" aria-hidden="true"></i> <span class="dock-word">Link together</span></button>
           <button id="graph-selection-unlink" class="ghost small" type="button" title="Remove every link between the selected notes (undoable)"><i class="ph ph-link-break ph-lead" aria-hidden="true"></i> <span class="dock-word">Unlink</span></button>
           <button id="graph-selection-map" class="ghost small" type="button" title="Make a mind map of these notes, shaped by their links"><i class="ph ph-tree-structure ph-lead" aria-hidden="true"></i> <span class="dock-word">Mind map</span></button>
+          <span id="graph-selection-more"></span>
           <button id="graph-selection-clear" class="ghost small icon-only" type="button" title="Clear the selection" aria-label="Clear the selection"><i class="ph ph-x" aria-hidden="true"></i></button>
         </div>
         <div id="graph-help-panel" class="help-body hidden" role="dialog" aria-label="How to use this map">
@@ -4116,14 +4117,14 @@ Link to another note with [[its first few words]]."></textarea>
               thought, dotted are notes that mean similar things.</li>
             <li>A bigger dot has more links (Size in the options changes that).
               Click a legend colour to hide it.</li>
-            <li>Tree, Radial, Arc, Treemap and Tessellation layouts stay still; change
+            <li>Tree, Radial, Arc, Map of meaning, Treemap and Tessellation layouts stay still; change
               them in the toolbar. Treemap sizes categories by links;
               Tessellation gives each note a cell.</li>
             <li>In Treemap and Tessellation, click a category's name bar to
               select its notes, double-click to zoom, right-click for its
               menu; C steps through them.</li>
-            <li>To draw a map yourself, open the <strong>mind map</strong>
-              button in the toolbar.</li>
+            <li>To draw a map yourself, use <strong>mind map</strong>
+              in the toolbar.</li>
           </ul>
         </div>
         <!-- The display options, on the dock-menu recipe (INBOX 41: "the
@@ -4187,6 +4188,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <option value="tree">Tree</option>
                 <option value="radial">Radial</option>
                 <option value="arc">Arc</option>
+                <option value="map">Map of meaning</option>
                 <option value="treemap">Treemap</option>
                 <option value="tessellation">Tessellation</option>
               </select>
@@ -4317,7 +4319,7 @@ Link to another note with [[its first few words]]."></textarea>
                  actions (Trace, Legend, Suggest links, Reset). -->
             <summary><span class="muted dock-menu-label" id="graph-physics-label">Physics</span></summary>
             <div class="help-body hidden" id="graph-physics-help" role="dialog" aria-label="What the Physics controls do">
-              <p>These shape the Force layout; under Tree, Radial, Arc, Treemap and Tessellation they are dimmed.</p>
+              <p>These shape the Force layout; under Tree, Radial, Arc, Map of meaning, Treemap and Tessellation they are dimmed.</p>
               <ul>
                 <li>Gravity: how hard every note is drawn toward the middle, so the map packs tighter or spreads wider.</li>
                 <li>Spread: how far apart linked notes sit.</li>
@@ -4714,11 +4716,8 @@ Link to another note with [[its first few words]]."></textarea>
             </svg>
           </div>
         <!-- The map is the Canvas 2D renderer (graph-canvas.js, GRAPH_PLAN.md
-             section 5 Phase 1). The empty SVG below is what the removed SVG
-             renderer drew into; it stays hidden until its click handlers,
-             styles and lock-list entries go (audit 1029 row 60 follow-up). -->
+             section 5 Phase 1). -->
         <canvas id="graph-canvas" class="graph-canvas hidden"></canvas>
-        <svg id="graph-svg" class="hidden"></svg>
         <!-- Click a node: edit it in place without leaving the map -->
         <div id="graph-popup" class="graph-popup hidden" role="dialog"
           aria-label="Note">

@@ -9,6 +9,7 @@ draw starts the count again."""
 from __future__ import annotations
 
 from tests._app_js import frontend_text
+from tests._js_scope import gc_frame
 
 
 def _fn(src: str, name: str) -> str:
@@ -19,7 +20,7 @@ def _fn(src: str, name: str) -> str:
 def test_the_draw_loop_rearms_only_on_motion_and_is_bounded():
     src = frontend_text("js/graph-canvas.js")
     assert "gcRequestDraw.selfCap = 300;" in src
-    draw = _fn(src, "gcDraw")
+    draw = gc_frame(src)
     # All four things a frame asks for itself count; none is exempt.
     assert "if (easing || fading || gliding || s.bornPending) {" in draw
     assert "!gliding && !s.bornPending) {" not in draw
