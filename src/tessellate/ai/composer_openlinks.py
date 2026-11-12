@@ -34,12 +34,18 @@ _NAMED = re.compile(
 _WHY = re.compile(_LEAD + r"(?:why|how) (?:is|are) (?:they|these|those|it|the two|the notes) (?:linked|connected|related|joined)(?: together)?\s*[?.!]*$", re.I)
 
 
+def _linked_by_answer(history: list[dict]) -> list[int]:
+    """The note a command's answer ("Here it is: [Kyoto ideas](#/notes/12)") links, when that turn has no frame."""
+    last = history[-1] if history and isinstance(history[-1], dict) else {}
+    if last.get("frame"):
+        return []
+    return [int(i) for i in re.findall(r"#/notes/(\d+)", str(last.get("answer") or ""))[:1]]
+
+
 def _subject(session: Session, history: list[dict], open_ids: list[int]) -> list[int]:
     """The notes "it" is: the open note, else the last answer's own, rechecked as visible."""
     frame = next((t.get("frame") for t in reversed(history or []) if isinstance(t, dict) and t.get("frame")), None) or {}
-    #: A command's answer ("Here it is: [Kyoto ideas](#/notes/12)") has no frame: the note it links is the one.
-    linked = [int(i) for i in re.findall(r"#/notes/(\d+)", str((history[-1] if history else {}).get("answer") or ""))[:1]] if not frame else []
-    wanted = [i for i in [*open_ids, *(frame.get("note_ids") or []), *linked] if isinstance(i, int)]
+    wanted = [i for i in [*open_ids, *(frame.get("note_ids") or []), *_linked_by_answer(history or [])] if isinstance(i, int)]
     seen = {i for (i,) in session.query(Entry.id).filter(Entry.id.in_(wanted or [0]), *_visible())}
     return [i for i in dict.fromkeys(wanted) if i in seen]
 
