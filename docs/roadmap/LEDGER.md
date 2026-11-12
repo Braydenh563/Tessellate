@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 28 | 5 | 0 | 4 | 48 |
-| chat | 176 | 112 | 44 | 2 | 59 | 332 |
+| chat | 176 | 104 | 44 | 2 | 59 | 324 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 590 | 139 | 3 | 190 | 1282 |
+| all | 553 | 582 | 139 | 3 | 190 | 1274 |
 
 ## graph
 
@@ -62,14 +62,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L84** `chat` open, S: Throw must not scroll the page (Playwright test). From OPEN.md:4350. Evidence: No scrollY throw test found; ledger open.
 - [ ] **L85** `chat` open, S: Atlas look row landed under Settings head at 390 in one of four runs. From OPEN.md:1067. Evidence: Intermittent 390 layout flake; no fix commit found
 - [ ] **L86** `chat` open, S: Face sheet: crowns spill 6 px past card top. From OPEN.md:1092. Evidence: facesheet.js removed 2026-10-12; spill not rechecked; needs a fresh sheet run
-- [ ] **L89** `chat` open, M: Remove or decide the composer's self-describing 'Read as' lines and related frame defects (Z49, F7, Decision 54, F7.3 to F7.9). From OPEN.md:4067; OPEN.md:4310; OPEN.md:1972; fc7-1110.md Left. Evidence: Decision 54 mandates the 'Read as ...' sentence; recommendation shorten it, owner to decide.
-- [ ] **L90** `chat` open, M: Rank the defining note above term frequency in noisy notebooks (C4). From OPEN.md:4085. Evidence: Reproduced at 207 notes: filler notes lead after the Books note; no fix.
-- [ ] **L91** `chat` open, M: Stop gluing notes into one sentence with commas and ellipses (C5). From OPEN.md:4086. Evidence: Reproduced at 207 notes: filler notes quoted in full with ellipses.
-- [ ] **L92** `chat` open, M: Fix statistics ask: summarise-my-week tag clause and week_review comparison (G9). From OPEN.md:4313. Evidence: Ledger says built apart from these two; no later commit found.
-- [ ] **L93** `chat` open, M: Make Regenerate for composer answers vary retrieval, not just wording (E62). From OPEN.md:4507. Evidence: Composer retrieval widening in composer_*.py, not done Status 2026-11-12: built and green in the worktree (composer.unread/varied/retried, e62 route test passes) but uncommitted: the gate fails on complexity (composer_digest_lines._storied, composer_story.story), line caps (composer.py 1009>958, composer_digest_lines.py 2736>2729, composer_digest_sentences.py 1293>1291). Left: split those, then commit L90-L94, L96, L97.
-- [ ] **L94** `chat` open, M: Composer pulls from notes' time words and time references (INBOX 899). From OPEN.md:404. Evidence: w34-L2r-1111.md:14 TRUE: date asks work but notes' own time words not pulled generally
-- [ ] **L96** `chat` open, M: Restore or drop ai/tool_summary.py named on wip/composer-acts but missing. From OPEN.md:941. Evidence: src/tessellate/ai/tool_summary.py does not exist; no module references it
-- [ ] **L97** `chat` open, M: Add professional variants for next-question chips, citation phrases and other languages. From OPEN.md:3512. Evidence: No variants found in voice.py/composer_voice.py for mention_*, lists, echo; other languages absent.
 - [ ] **L101** `chat` open, M: Hand the model linked_to and why. From OPEN.md:3845. Evidence: No linked_to in ai/librarian.py
 - [ ] **L102** `chat` open, M: Derive themes beyond shared tags and links. From OPEN.md:3846. Evidence: composer_frame.themes unchanged
 - [ ] **L103** `chat` open, M: Answer who/status questions over list notes instead of returning a quote. From OPEN.md:3847. Evidence: composer.py select not changed

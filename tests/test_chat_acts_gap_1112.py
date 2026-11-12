@@ -105,7 +105,8 @@ def test_a_checklist_note_card_does_not_say_its_empty_checkbox(session):
     assert card["steps"][0]["arguments"]["content"].startswith("# Trip checklist")
     for text in ("call anna", "call the dentist"):
         got = acts.parse(text, NOW)
-        assert got["intent"] == "reminder" and not got["time_given"] and acts.missing(got) == []
+        #: L99 and decision 50 (asked once, never guessed) moved this: a reminder with no time now asks for one.
+        assert got["intent"] == "reminder" and not got["time_given"] and acts.missing(got) == ["due_at"]
 
 
 def test_undo_says_the_inverse_of_a_tag_a_link_and_a_reminder_too():
