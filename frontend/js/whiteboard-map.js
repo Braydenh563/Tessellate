@@ -6604,10 +6604,16 @@ function wbMapLayoutPositions(index, layout) {
   //: is folded in here for the same reason, so the distance function keeps
   //: working in one unit.
   const radial = layout === "radial";
+  //: How much of a ring a topic takes: its width, or for a structured branch standing in as one
+  //: box (`_block`) its longer side, because a tall block taken for its width overlapped its neighbour.
+  const wbMapRadialSpan = (obj, size) => {
+    const s = size || { w: WB_MAP_NODE_W, h: WB_MAP_NODE_H };
+    return obj?._block ? Math.max(s.w, s.h) : s.w;
+  };
   const breadthOf = (w) => {
     if (!w.obj) return 0; // the virtual root below has no size of its own
     const s = sizes.get(w.obj.id) || { w: WB_MAP_NODE_W, h: WB_MAP_NODE_H };
-    if (radial) return (s.w + wbMapGapBreadth()) / Math.max(1, w.depth);
+    if (radial) return (wbMapRadialSpan(w.obj, s) + wbMapGapBreadth()) / Math.max(1, w.depth);
     return vertical ? s.w : s.h;
   };
   const gap = radial ? 0 : wbMapGapBreadth();
@@ -6673,7 +6679,7 @@ function wbMapLayoutPositions(index, layout) {
     // was wrong for the same reason the breadths above are divided by depth:
     // it is not a quantity in this unit at all.
     const extentOf = (f) =>
-      ((sizes.get(f.obj.id)?.w || WB_MAP_NODE_W) + wbMapGapBreadth()) / Math.max(1, f.depth);
+      (wbMapRadialSpan(f.obj, sizes.get(f.obj.id)) + wbMapGapBreadth()) / Math.max(1, f.depth);
     const min = Math.min(...flat.map((f) => f.breadth));
     const max = Math.max(...flat.map((f) => f.breadth));
     const span = max - min + Math.min(...flat.map(extentOf)) || 1;
@@ -6690,16 +6696,28 @@ function wbMapLayoutPositions(index, layout) {
     //: map small enough that the base spacing was already sufficient.
     //: Measured (WHITEBOARD_PLAN Phase 4, `wbphase4.js`): 30 nodes in radial
     //: gave 6 overlapping pairs, the worst 38x28 board units, and 0 after.
-    const ringRadius = Math.max(ring, span / (2 * Math.PI));
-    for (const f of flat) {
-      const size = sizes.get(f.obj.id) || { w: WB_MAP_NODE_W, h: WB_MAP_NODE_H };
-      const angle = ((f.breadth - min) / span) * 2 * Math.PI - Math.PI / 2;
-      const radius = f.depth * ringRadius;
-      // Centres, then back to the top-left corner an object's `x`/`y` mean.
-      positions.set(f.obj.id, {
-        x: radius * Math.cos(angle) - size.w / 2,
-        y: radius * Math.sin(angle) - size.h / 2,
-      });
+    //: Arc length is the centres' distance, but boxes meet at their corners, so a
+    //: wide block beside a narrow topic can still touch (a structured branch
+    //: standing in as one box, measured 6 units). The rings widen by a tenth
+    //: until no two boxes overlap, at most twelve times; a no-op on a clear map.
+    let ringRadius = Math.max(ring, span / (2 * Math.PI));
+    for (let tries = 0; tries < 12; tries += 1) {
+      positions.clear();
+      for (const f of flat) {
+        const size = sizes.get(f.obj.id) || { w: WB_MAP_NODE_W, h: WB_MAP_NODE_H };
+        const angle = ((f.breadth - min) / span) * 2 * Math.PI - Math.PI / 2;
+        const radius = f.depth * ringRadius;
+        // Centres, then back to the top-left corner an object's `x`/`y` mean.
+        positions.set(f.obj.id, {
+          x: radius * Math.cos(angle) - size.w / 2,
+          y: radius * Math.sin(angle) - size.h / 2,
+        });
+      }
+      const boxes = flat.map((f) => ({ ...positions.get(f.obj.id), ...(sizes.get(f.obj.id) || { w: WB_MAP_NODE_W, h: WB_MAP_NODE_H }) }));
+      const touching = boxes.some((a, i) => boxes.slice(i + 1).some((c) =>
+        Math.min(a.x + a.w, c.x + c.w) - Math.max(a.x, c.x) > 1 && Math.min(a.y + a.h, c.y + c.h) - Math.max(a.y, c.y) > 1));
+      if (!touching) break;
+      ringRadius *= 1.1;
     }
   } else {
     for (const f of flat) {
