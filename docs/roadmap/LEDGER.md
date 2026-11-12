@@ -11,17 +11,17 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 57 | 16 | 0 | 18 | 143 |
-| documents | 70 | 57 | 16 | 0 | 18 | 143 |
-| documents | 70 | 57 | 16 | 0 | 18 | 143 |
+| documents | 70 | 57 | 15 | 0 | 18 | 142 |
+| documents | 70 | 57 | 15 | 0 | 18 | 142 |
+| documents | 70 | 57 | 15 | 0 | 18 | 142 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 697 | 156 | 3 | 195 | 1406 |
-| all | 553 | 697 | 156 | 3 | 195 | 1406 |
-| all | 553 | 697 | 156 | 3 | 195 | 1406 |
+| all | 553 | 697 | 155 | 3 | 195 | 1405 |
+| all | 553 | 697 | 155 | 3 | 195 | 1405 |
+| all | 553 | 697 | 155 | 3 | 195 | 1405 |
 
 ## graph
 
@@ -410,7 +410,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L337** `documents` partly, S: Add status-bar switch for typo autocorrect (Editor menu switch exists). From OPEN.md:4473. Evidence: Autocorrect switch in Editor menu (index.html:5424 #doc-autocorrect-row); status-bar switch not built
 - [ ] **L339** `documents` partly, S: Confirm queue rows B21 to B27 and B40 individually. From OPEN.md:405. Evidence: B20 shipped (2bdd1af55 lock badge, 6087e6602 Alt+Up/Down); other rows not individually confirmed
 - [ ] **L340** `documents` partly, S: Link offers: persist ignore beyond session. From OPEN.md:3890. Evidence: Switch now exists: settings-panes.js:661 pref-link-offers, settings-rows.js:40, documents-prose.js:377. Ignore still per-session (docProseIgnored, documents-prose.js:486); tag offers dropped by design.
-- [ ] **L341** `documents` partly, S: Add All documents / Replace in all buttons to the textarea fallback find bar. From a30h-1102.md Left. Evidence: documents.js:3231 'Replace in every document' command exists; documents-view.js:125 Mod-f uses engine; fallback bar buttons not found
 - [ ] **L342** `documents` partly, M: Meet the 4x typing gate (rest in a29i-1102.md). From OPEN.md:4489. Evidence: a29i-1102.md holds the rest; 4x typing gate stays open
 - [ ] **L343** `documents` partly, M: Confirm Documents delete restore via Ctrl+Z / toast Undo. From OPEN.md:1399. Evidence: status.js:1627-1672 surfaceHistory has a Documents branch with one timeline (DOCUMENTS 24 row 1); delete restore via Ctrl+Z not confirmed
 - [ ] **L344** `documents` partly, M: Replace in every document: batch requests and add a dock-menu row. From OPEN.md:1458; OPEN.md:2759. Evidence: documents.js:3231 command 'Replace in every document' exists; per-doc request batching/dock row unverified
