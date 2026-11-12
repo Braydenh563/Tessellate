@@ -8,7 +8,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
-| graph | 15 | 2 | 0 | 0 | 0 | 17 |
+| graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
@@ -17,12 +17,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 674 | 153 | 3 | 191 | 1380 |
+| all | 553 | 672 | 153 | 3 | 191 | 1378 |
 
 ## graph
 
-- [ ] **L14** `graph` open, L: Split gcDraw (809 lines), gcWireInteraction (467) and gcStartWorker (290) in graph-canvas.js. From OPEN.md:4552. Evidence: graph-canvas.js 7,492 lines; multi-day refactor deferred
-- [ ] **L15** `graph` open, L: Reduce graph layout crossings, hub spokes and label density in applyGrouping. From OPEN.md:3882. Evidence: Tuning reverted; graph-worker.js applyGrouping untouched
 
 ## chat
 

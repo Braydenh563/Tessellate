@@ -600,6 +600,16 @@ Built 2026-11-10 (q31-1110): the Tessellation layout with Cells and Hexes, and t
    3). Nothing polls `/graph`: the map reloads on a notebook-version change
    and the payload is cached per version (`tests/test_graph_payload_cache.py`),
    so a delta parameter would have no caller and would never run.
+3. **No further ring or hub tuning in `applyGrouping`** (L15, closed).
+   The best candidate (a brute-force category ring order for eight or fewer
+   categories, plus `hubForce` on Organic) won a 100-seed holdout with the
+   shipped worker under node: crossings 9.9 to 9.1, 23.3 to 22.1 and 20.5
+   to 19.1 per map, overlaps 0. It lost on the guards already in the suite:
+   the 2,000-note map's close dots went from 35 to 41 pairs
+   (`test_graph_untangle_scale.py`), and the untangle fixture ended with one
+   crossing instead of none (`test_graph_untangle_1400.py`). About one
+   crossing a small map does not pay for that; the harness and variants are
+   in the session scratchpad (`g15/cmp.sh`), not the repo.
 
 ## Placed from INBOX, 2026-10-26 (the owner: the force view is messy, popups and controls hard to learn)
 
