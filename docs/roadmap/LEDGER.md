@@ -11,17 +11,17 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 36 | 13 | 0 | 18 | 119 |
-| documents | 70 | 36 | 13 | 0 | 18 | 119 |
-| documents | 70 | 36 | 13 | 0 | 18 | 119 |
+| documents | 70 | 35 | 13 | 0 | 18 | 118 |
+| documents | 70 | 35 | 13 | 0 | 18 | 118 |
+| documents | 70 | 35 | 13 | 0 | 18 | 118 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 676 | 153 | 3 | 195 | 1382 |
-| all | 553 | 676 | 153 | 3 | 195 | 1382 |
-| all | 553 | 676 | 153 | 3 | 195 | 1382 |
+| all | 553 | 675 | 153 | 3 | 195 | 1381 |
+| all | 553 | 675 | 153 | 3 | 195 | 1381 |
+| all | 553 | 675 | 153 | 3 | 195 | 1381 |
 
 ## graph
 
@@ -408,7 +408,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-4** `documents` open, M: Turn a board's frames into a document draft. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:843. Evidence: no command turns a board into a document draft; lines 843 to 846 are untracked
 - [ ] **L-documents-8** `documents` open, M: Diagram builder a30u and a30y leftovers. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:350. Evidence: Open line in the plan's prose a session could miss. a30u/a30y leftovers incl. clipboard read-back, ghost-row contrast in dark.
 - [ ] **L-documents-9** `documents` open, M: Code block runner leftovers. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1100. Evidence: Open line in the plan's prose a session could miss. Unmined pointer leftovers.
-- [ ] **L-documents-10** `documents` open, S: Tray Open row for diagrams. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1430. Evidence: Open line in the plan's prose a session could miss. No ROUTE_OBJECTS row; script cap at 260,620 bytes.
 - [ ] **L-documents-11** `documents` open, L: Per-instance whiteboard for boards inside documents. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1502. Evidence: Open line in the plan's prose a session could miss. Waits on a whiteboard per-instance refactor (also 1319).
 - [ ] **L-documents-15** `documents` open, M: Diagram builder at 390: first paint, Tab stops, tap scroll and 44 px targets (R11). From DOCUMENTS_PLAN R11 blind test 2026-11-04. Evidence: diagram-embed.js: first paint blank about 1 s; 27 Tab stops to the first block; 390 px tap scrolls the toolbar under the header; tabs 28, grips 14x19, swatches 24, Connect 44x40 under 44 px
 - [ ] **L-documents-17** `documents` open, M: Board Mermaid import keeps block colour and edge labels (R12). From DOCUMENTS_PLAN R12 blind test of 0931c35. Evidence: board Mermaid import (wbImportMermaid, whiteboard-interchange.js) drops block colour and stacks edge labels

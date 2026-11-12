@@ -945,7 +945,7 @@ MID_TOPICS.extend(
                 "The tray in the status bar holds cards across pages: "
                 "drop one on it (held over, it opens) "
                 "or choose Add to tray, then drag cards out or click "
-                "one to paste it where you were typing, or attach it to the chat. "
+                "one to paste it where you typed, or attach it to the chat or open it. "
                 "In a long card menu a row "
                 "with an arrow (Text and description on a picture, Copy and arrange "
                 "on a board) opens a list beside it: rest the pointer on it, click it, "
