@@ -11,17 +11,17 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 55 | 15 | 0 | 18 | 140 |
-| documents | 70 | 55 | 15 | 0 | 18 | 140 |
-| documents | 70 | 55 | 15 | 0 | 18 | 140 |
+| documents | 70 | 54 | 15 | 0 | 18 | 139 |
+| documents | 70 | 54 | 15 | 0 | 18 | 139 |
+| documents | 70 | 54 | 15 | 0 | 18 | 139 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 695 | 155 | 3 | 195 | 1403 |
-| all | 553 | 695 | 155 | 3 | 195 | 1403 |
-| all | 553 | 695 | 155 | 3 | 195 | 1403 |
+| all | 553 | 694 | 155 | 3 | 195 | 1402 |
+| all | 553 | 694 | 155 | 3 | 195 | 1402 |
+| all | 553 | 694 | 155 | 3 | 195 | 1402 |
 
 ## graph
 
@@ -369,7 +369,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L292** `documents` open, S: Lift the 78ch cap on the code editor in 09-editor.css (724px panel at 1440). From OPEN.md:1455; OPEN.md:2692. Evidence: 09-editor.css:55,134 max-width: 78ch still set
 - [ ] **L293** `documents` open, S: Preserve run state when a never-ending console loop is killed after 10 s. From OPEN.md:1468. Evidence: Design limit; worker terminate path unchanged, no preservation found
 - [ ] **L294** `documents` open, S: Give the split second half completions, lint, snippets and run panel. From OPEN.md:1469. Evidence: No change found in documents split code; limitation recorded
-- [ ] **L297** `documents` open, S: Suppress prose grammar lint tooltip in code documents while the pointer menu is open. From OPEN.md:1492; OPEN.md:3552. Evidence: Only documents-cm-theme.js:200 styles it; no suppression while pointer menu open found
 - [ ] **L298** `documents` open, S: Decide and vendor an indent-guides extension for the CodeMirror bundle. From OPEN.md:1508. Evidence: Active line built; no indent-markers extension found in vendor; needs vendoring decision
 - [ ] **L299** `documents` open, S: Fix console line border clash and doc assistant buttons/field/send height. From OPEN.md:1589. Evidence: No fix found in CHANGELOG/tests (backups part marked fixed in row)
 - [ ] **L300** `documents` open, S: Use js-beautify on a selection instead of conservative re-indent. From OPEN.md:1968. Evidence: Selection keeps conservative re-indent; no change

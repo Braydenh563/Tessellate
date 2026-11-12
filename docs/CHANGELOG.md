@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Code documents: lint tooltips stay out of the way while the pointer menu is open (L297).
 - Guide: the diagram-blocks topic has 48 characters of room under its budget; the Kind menu rows are checked (L290).
 - Emoji: the icon picker holds every glyph the :shortcode: menu types, guarded by a test, so the two tables cannot drift (L296).
 - Documents: the fallback find bar (no editor engine) has All documents and Replace in all (L341).
