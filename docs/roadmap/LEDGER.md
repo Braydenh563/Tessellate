@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 144 | 45 | 0 | 17 | 319 |
+| world-class | 130 | 144 | 44 | 0 | 17 | 318 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 670 | 144 | 3 | 140 | 1367 |
+| all | 553 | 670 | 143 | 3 | 140 | 1366 |
 
 ## graph
 
@@ -758,7 +758,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L659** `world-class` partly, M: Add an egress lint that makes each outbound call site name its purpose and confirm remaining trust-contract rules. From OPEN.md:2023; OPEN.md:2513. Evidence: 72a/72b/73/74 landed (HISTORY 'Moved from the plans' Brief 72b); leftover rules unconfirmed, egress lint absent
 - [ ] **L660** `world-class` partly, M: Fix remaining Brief 101b/101c rows: installer progress and default-model warm. From SESSION_BRIEFS.md:335. Evidence: Files-missing row embed-choices.js:74 built; backend W5 rows re-verified built (ddd087984); installer progress and janitor warm not found
 - [ ] **L662** `world-class` partly, M: Left: a meeting card preview of when, who and open actions. Meeting cards get actions only (entry-card.js:999, note-cards.js:324). From OPEN.md:3563.
-- [ ] **L663** `world-class` partly, M: Left: wire the 30 context rules and 50 fixtures into decide. `taxonomy.context_rules()` (taxonomy.py:441) has no caller outside tests/test_taxonomy_pack.py:228. From OPEN.md:3618.
 - [ ] **L664** `world-class` partly, M: Package bundles: restore Word writer tests in CI (install python-docx, replace missing pictures test). From OPEN.md:1770. Evidence: python-docx 1.2.0 importable here; tests/test_docexport_bundle.py and test_docx_markdown_paths.py exist, but test_docexport_pictures.py cited is gone and CI does not install docx
 - [ ] **L665** `world-class` partly, M: Meeting decision/action rules beyond English cue words. From OPEN.md:1917; OPEN.md:2624. Evidence: Rename done: routes_recordings.py:538, meetings.js:2124; English-only rules remain
 - [ ] **L666** `world-class` partly, M: Verify captions stop attaches audio via the recording object. From OPEN.md:2766. Evidence: routes_captions._save attaches audio only after Brief 80 object; recordings exist but wiring unverified

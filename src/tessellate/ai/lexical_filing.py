@@ -760,7 +760,7 @@ def decide(session: Session, content: str, exclude_entry_id: int | None = None) 
     #: footer says nothing about where it belongs (INBOX 781).
     content = clean(content)
     wanted = tokens(content)
-    hits = taxonomy.topic_hits(content)
+    hits = taxonomy.in_context(content, taxonomy.topic_hits(content))
     note_topics = taxonomy.topic_weights(content, hits)
     sensitive_set = taxonomy.sensitive_topics()
     strong = taxonomy.strong_topics(content, hits)
