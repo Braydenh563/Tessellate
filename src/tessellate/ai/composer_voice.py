@@ -645,7 +645,7 @@ def _today_opening(v: _Voice, dated: list, today: date, k: int, counts: dict[dat
         v.m(_count_word(n_today))
         #: An untitled note names itself "your note from today", which cannot
         #: follow "the latest": the count then ends the sentence on its own.
-        if todays[0].titled:
+        if todays and todays[0].titled:
             v.t(("v_today_notes", "v_today_notes_b", "v_today_notes_c", "v_today_notes_d", "v_today_notes_e", "v_today_notes_f")[k])
             v.name(todays[0])
         else:

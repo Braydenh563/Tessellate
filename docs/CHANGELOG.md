@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fix: the dashboard line under the greeting no longer fails with a server error when the notebook count says several notes were written today but none of them is in the newest-notes sample (`/insights/today-line` 500 to 200; `tests/test_composer_voice.py`).
 - Tests: the contrast and errors sweeps now cover the Timeline calendar (`CAL=1 errors.js`; `ONLY=pr contrast.js` waits for the calendar's cells and prints their count). Measured, light and dark at 1440 and 390: 0 low-contrast text (month 91, week 48, day 36 text elements at 1440; the 390 calendar is the agenda, 132), errors 0 and layout findings 0 at 1440, 1024, 820 and 390; the sr-only headings and a zero-height heading no longer read as clipped.
 - Fix: on a phone the Timeline's On this day row no longer pushes the list down 44px on a later open of the same day (it holds its one-chip slot from the remembered answer); first row at 427 before and after the chips at 390, was 383 to 427 (`tests/test_timeline_recall_hold.py`).
 - Tests: `deepen72b.js` waits for the timeline's real rows (`#timeline-table-body` on a phone, which keeps the table view), so the 390 run no longer times out; 390: rows in 69 ms, 1440: 126 ms.
