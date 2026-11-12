@@ -133,7 +133,7 @@ def _target(session: Session, reminder) -> tuple[str | None, str | None]:
         return "document", document.title or "Untitled"
     if reminder.entry_id is None:
         return None, None
-    entry = session.get(Entry, reminder.entry_id)
+    entry = reminder_repo.its_note(session, reminder)
     if entry is None or entry.is_deleted:
         return None, None
     text = strip_properties(readable_content(entry))
@@ -164,7 +164,7 @@ def _to_out(session: Session, reminder) -> dict:
     private = False
     target_kind, target_title = _target(session, reminder)
     if reminder.entry_id is not None:
-        entry = session.get(Entry, reminder.entry_id)
+        entry = reminder_repo.its_note(session, reminder)
         private = bool(entry is not None and entry.is_private)
         if entry is not None and not entry.is_deleted:
             # `readable_content`, not the raw column: a private note's
@@ -360,7 +360,7 @@ def _event_details(session: Session, reminder) -> str:
     own text and nothing of the note behind it."""
     if reminder.entry_id is None:
         return ""
-    entry = session.get(Entry, reminder.entry_id)
+    entry = reminder_repo.its_note(session, reminder)
     if entry is None or entry.is_deleted or entry.is_private:
         return ""
     return " ".join(readable_content(entry).split())[:280]
@@ -823,7 +823,7 @@ def reminder_outcome(
     from tessellate.api.schemas import EntryUpdate
 
     reminder = _writable(session, reminder_id)
-    entry = session.get(Entry, reminder.entry_id) if reminder.entry_id is not None else None
+    entry = reminder_repo.its_note(session, reminder)
     if entry is None or entry.is_deleted or entry.is_board:
         raise HTTPException(status_code=400, detail="This reminder is not about a note.")
     content = readable_content(entry).rstrip()

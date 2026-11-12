@@ -6709,7 +6709,8 @@ def test_a_pane_tab_row_names_sections_that_exist() -> None:
     each tab names its section by `data-target`, a glyph and a word, and a
     count is a `.pop-count` with an id the script fills."""
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-    navs = re.findall(r'<nav class="tabs-line popup-kinds pane-tabs" id="([a-z-]+)"[^>]*>(.*?)</nav>', html, flags=re.S)
+    # Extra classes may follow (`edge-fade` on the two rows that scroll).
+    navs = re.findall(r'<nav class="tabs-line popup-kinds pane-tabs(?: [a-z-]+)*" id="([a-z-]+)"[^>]*>(.*?)</nav>', html, flags=re.S)
     #: Tools and Appearance joined with L771 (the owner 2026-11-12: keep one
     #: pane each, add the jump row Skills has).
     assert {name for name, _ in navs} == {"skills-tabs", "tasks-tabs", "tools-tabs", "appearance-tabs"}

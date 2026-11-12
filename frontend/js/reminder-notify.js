@@ -91,7 +91,7 @@
     //: reminder made from a note or a document says so under its words.
     const about = one && one.target_title ? `\nAbout ${toastName(one.target_title)}` : "";
     await showReminderNotification(one ? "Reminder" : "Tessellate", text + about, one && !one.early ? one.id : null);
-    const brief = one ? await api(`/reminders/${one.id}/brief`).catch(() => null) : null;
+    const brief = one ? await apiJson(`/reminders/${one.id}/brief`, { silent: true }).catch(() => null) : null;
     const notes = brief?.notes || [];
     if (!notes.length) return toast(text, false, { exempt: true });
     //: A meeting-prep brief (L-general-11): the last notes the reminder's

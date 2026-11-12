@@ -27,5 +27,9 @@ def test_the_menu_moves_ticks_or_bins_them_all_with_one_undo():
     body = _triage()
     for label in ("Move all to tomorrow 9am", "Move all to next Monday 9am", "Mark all done", "Delete all"):
         assert label in body
-    assert body.count("pushUndo(") == 1
+    # One Undo per batch, never one per reminder: the moves and ticks share
+    # run()'s, and Delete all pushes its own (restore back, drop again), so
+    # Ctrl+Z reaches a binned batch too (L-general-63, undo coverage).
+    assert body.count("pushUndo(") == 2
+    assert "pushUndo(`Moved ${n} to the bin`, restore, drop)" in body
     assert "kebabMenu(" in body and "confirmDialog(" in body

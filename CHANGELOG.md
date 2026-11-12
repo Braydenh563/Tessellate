@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- CI: the seven py3.11 failures from c054446f fixed (rename row is contextual, characters bundle test follows its stylesheet, reminder note lookup moved to the repo layer, bin-all triage has an Undo, two settings tab strips fade, toast copy). The reminder brief now reads JSON (`apiJson`), so a meeting-prep brief shows when a reminder fires; before, it never did.
 - A tick row in a dock menu (Settings, Logs, More) matches the menu's items: same padding, corner and type size (L412).
 - Recent places opened from the phone bar's sheet sits under the header beside Back instead of flush on the screen's left edge (L410).
 - The Atlas starters and the empty states' Ask Atlas offer are buttons, so they take the button's corner instead of a capsule; the pill lint now reads suggest and starter controls too (L407).

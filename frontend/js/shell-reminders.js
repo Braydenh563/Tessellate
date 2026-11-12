@@ -1062,7 +1062,11 @@ loadReminders.overdueTriage = function (items) {
       loadReminders();
     };
     await drop();
-    toastAction(`Moved ${n} to the bin.`, "Undo", () => restore().catch((e) => toast(e.message, true)));
+    const action = pushUndo(`Moved ${n} to the bin`, restore, drop);
+    toastAction(`Moved ${n} to the bin.`, "Undo", async () => {
+      settleUndoFromToast(action);
+      await restore().catch((e) => toast(e.message, true));
+    });
   };
   return kebabMenu(
     [
@@ -1227,7 +1231,7 @@ function reminderItem(reminder, label) {
           await apiJson(`/reminders/${reminder.id}/outcome`, { method: "POST", body: JSON.stringify({ text }) });
           toast("Added to the note.");
         } catch (err) {
-          toast(`Could not add it to the note: ${err.message}`, true);
+          toast(`Couldn't add it to the note: ${err.message}`, true);
         }
       });
     }
