@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8325, frontend ids 2762, CSS sections 524, backend routes 698, backend modules 10750, test files 2661, tests 21751, plan headings 685, app scripts 29, boot scripts 38, script files 299.
+Counts: frontend functions 8325, frontend ids 2762, CSS sections 524, backend routes 698, backend modules 10750, test files 2662, tests 21753, plan headings 685, app scripts 29, boot scripts 38, script files 299.
 
 ## Frontend functions (8325)
 
@@ -904,7 +904,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `speakText` | frontend/js/media.js:291 |
 | `startMicLevelMeter` | frontend/js/media.js:206 |
 
-### frontend/js/status.js (128)
+### frontend/js/status.js (129)
 
 | Name | File:line |
 |---|---|
@@ -920,7 +920,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `appStackIsNewer` | frontend/js/status.js:1647 |
 | `armReminderTimer` | frontend/js/status.js:531 |
 | `askNotificationPermission` | frontend/js/status.js:393 |
-| `backendLabel` | frontend/js/status.js:2915 |
+| `backendLabel` | frontend/js/status.js:2939 |
 | `boardHistoryActive` | frontend/js/status.js:1612 |
 | `checkDueReminders` | frontend/js/status.js:596 |
 | `closeModelGate` | frontend/js/status.js:2141 |
@@ -940,7 +940,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `isNotificationUnread` | frontend/js/status.js:211 |
 | `jobsRunning` | frontend/js/status.js:1964 |
 | `keepToastAction` | frontend/js/status.js:337 |
-| `kickBackgroundTaskPoll` | frontend/js/status.js:3093 |
+| `kickBackgroundTaskPoll` | frontend/js/status.js:3117 |
 | `lastAnswerLine` | frontend/js/status.js:2516 |
 | `loadMostUsed` | frontend/js/status.js:1827 |
 | `loadRecentQuestions` | frontend/js/status.js:1799 |
@@ -948,7 +948,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `noteDamagedNotebook` | frontend/js/status.js:1335 |
 | `noteServerDown` | frontend/js/status.js:1391 |
 | `noteServerUp` | frontend/js/status.js:1400 |
-| `noticeTaskTransitions` | frontend/js/status.js:3193 |
+| `noticeTaskTransitions` | frontend/js/status.js:3217 |
 | `notificationsMuted` | frontend/js/status.js:710 |
 | `notificationsReadAt` | frontend/js/status.js:138 |
 | `notify` | frontend/js/status.js:474 |
@@ -957,7 +957,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openLanPanel` | frontend/js/status.js:661 |
 | `openModelGate` | frontend/js/status.js:2151 |
 | `openReminderList` | frontend/js/status.js:580 |
-| `paintPrivacyChip` | frontend/js/status.js:3291 |
+| `paintPrivacyChip` | frontend/js/status.js:3315 |
 | `paintReminderList` | frontend/js/status.js:566 |
 | `paintStatusItem` | frontend/js/status.js:2637 |
 | `paintTitle` | frontend/js/status.js:507 |
@@ -974,27 +974,28 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `pushEntryPutUndo` | frontend/js/status.js:1587 |
 | `pushUndo` | frontend/js/status.js:1465 |
 | `recordNotification` | frontend/js/status.js:97 |
-| `refreshBackgroundTasks` | frontend/js/status.js:3112 |
+| `refreshBackgroundTasks` | frontend/js/status.js:3136 |
 | `refreshModelStatus` | frontend/js/status.js:1992 |
-| `refreshPrivacyChip` | frontend/js/status.js:3305 |
+| `refreshPrivacyChip` | frontend/js/status.js:3329 |
 | `rememberAnnounced` | frontend/js/status.js:50 |
 | `reminderNoticeKey` | frontend/js/status.js:228 |
 | `renderAgentActivityMode` | frontend/js/status.js:790 |
 | `renderAiOfflineNotice` | frontend/js/status.js:2318 |
 | `renderAiPill` | frontend/js/status.js:2524 |
-| `renderChatModeSeg` | frontend/js/status.js:2853 |
+| `renderChatModeSeg` | frontend/js/status.js:2877 |
 | `renderNotifMuteToggle` | frontend/js/status.js:267 |
 | `renderNotificationBadge` | frontend/js/status.js:247 |
-| `renderSettings` | frontend/js/status.js:2926 |
+| `renderSettings` | frontend/js/status.js:2950 |
 | `renderStatusBar` | frontend/js/status.js:2680 |
 | `renderUndoBar` | frontend/js/status.js:1731 |
+| `renderWebSearchToggle` | frontend/js/status.js:2857 |
 | `reopenAnswerPanel` | frontend/js/status.js:768 |
 | `resetStatusCadence` | frontend/js/status.js:1915 |
 | `retryServerNow` | frontend/js/status.js:1441 |
 | `sayChatModelChosen` | frontend/js/status.js:1878 |
 | `scheduleServerDownRetry` | frontend/js/status.js:1415 |
 | `scheduleUndoBar` | frontend/js/status.js:1723 |
-| `setChatMode` | frontend/js/status.js:2899 |
+| `setChatMode` | frontend/js/status.js:2923 |
 | `setForcedReadIds` | frontend/js/status.js:196 |
 | `setForcedUnreadIds` | frontend/js/status.js:165 |
 | `setTitleCount` | frontend/js/status.js:512 |
@@ -1002,9 +1003,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `settingsOpen` | frontend/js/status.js:1931 |
 | `settleNotification` | frontend/js/status.js:116 |
 | `settleUndoFromToast` | frontend/js/status.js:1575 |
-| `showAgentNoModelHint` | frontend/js/status.js:2894 |
+| `showAgentNoModelHint` | frontend/js/status.js:2918 |
 | `showServerDownBanner` | frontend/js/status.js:1374 |
-| `startPrivacyChip` | frontend/js/status.js:3315 |
+| `startPrivacyChip` | frontend/js/status.js:3339 |
 | `startReminderWatch` | frontend/js/status.js:672 |
 | `storedNotifications` | frontend/js/status.js:84 |
 | `surfaceHistory` | frontend/js/status.js:1629 |
@@ -1012,7 +1013,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `syncModelGatedControls` | frontend/js/status.js:2177 |
 | `syncNotifBlocked` | frontend/js/status.js:386 |
 | `taskEndingWords` | frontend/js/status.js:130 |
-| `taskKey` | frontend/js/status.js:3173 |
+| `taskKey` | frontend/js/status.js:3197 |
 | `toast` | frontend/js/status.js:1163 |
 | `toastAction` | frontend/js/status.js:1307 |
 | `toastActionButton` | frontend/js/status.js:1287 |
@@ -1140,16 +1141,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `watchEmblemVisibility` | frontend/js/phone-shell.js:16 |
 | `watchStatusBarIdle` | frontend/js/phone-shell.js:790 |
 
-### frontend/js/wiring.js (35)
+### frontend/js/wiring.js (34)
 
 | Name | File:line |
 |---|---|
 | `addAtlasLine` | frontend/js/wiring.js:138 |
 | `askAtlasAbout` | frontend/js/wiring.js:127 |
 | `chatRecallStep` | frontend/js/wiring.js:713 |
-| `clearDueNudges` | frontend/js/wiring.js:1411 |
+| `clearDueNudges` | frontend/js/wiring.js:1390 |
 | `closeGlobalFind` | frontend/js/wiring.js:551 |
-| `copyWebLink` | frontend/js/wiring.js:1354 |
+| `copyWebLink` | frontend/js/wiring.js:1333 |
 | `dashboardGreetingPersona` | frontend/js/wiring.js:822 |
 | `escapeForFind` | frontend/js/wiring.js:329 |
 | `globalFindClearHighlights` | frontend/js/wiring.js:387 |
@@ -1160,15 +1161,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `initGraphOptionFolds` | frontend/js/wiring.js:906 |
 | `initHelpToggles` | frontend/js/wiring.js:147 |
 | `noteSourceOn` | frontend/js/wiring.js:786 |
-| `nudgeDueShown` | frontend/js/wiring.js:1415 |
+| `nudgeDueShown` | frontend/js/wiring.js:1394 |
 | `openGlobalFind` | frontend/js/wiring.js:489 |
-| `openReminderCompose` | frontend/js/wiring.js:1370 |
-| `openWebPageExternally` | frontend/js/wiring.js:1349 |
+| `openReminderCompose` | frontend/js/wiring.js:1349 |
+| `openWebPageExternally` | frontend/js/wiring.js:1328 |
 | `paintDashboardPersonaMark` | frontend/js/wiring.js:828 |
 | `reflectOnlineState` | frontend/js/wiring.js:16 |
 | `renameCurrentConversation` | frontend/js/wiring.js:640 |
-| `renderPlanToggle` | frontend/js/wiring.js:1194 |
-| `renderWebSearchToggle` | frontend/js/wiring.js:1145 |
+| `renderPlanToggle` | frontend/js/wiring.js:1173 |
 | `setFullscreenSurface` | frontend/js/wiring.js:1006 |
 | `setGraphOptionsOpen` | frontend/js/wiring.js:927 |
 | `setNoteSource` | frontend/js/wiring.js:801 |
@@ -1177,7 +1177,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `syncNoteSourceButtons` | frontend/js/wiring.js:794 |
 | `timelineSelectableRows` | frontend/js/wiring.js:1116 |
 | `toggleSelectAllRows` | frontend/js/wiring.js:1100 |
-| `toggleWebSearch` | frontend/js/wiring.js:1229 |
+| `toggleWebSearch` | frontend/js/wiring.js:1208 |
 | `watchFullscreenSurface` | frontend/js/wiring.js:1012 |
 
 ### frontend/js/settings-wiring.js (46)
@@ -27645,7 +27645,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21751)
+## Tests (21753)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30257,6 +30257,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_web_reader_site_builders.py | 4 |
 | tests/test_web_reply_meta_1550.py | 1 |
 | tests/test_web_result_highlight.py | 7 |
+| tests/test_web_search_toggle_order.py | 2 |
 | tests/test_web_store_1111.py | 8 |
 | tests/test_web_tool_kept_on_small_windows.py | 3 |
 | tests/test_webclip.py | 20 |

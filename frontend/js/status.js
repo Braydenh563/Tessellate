@@ -2850,6 +2850,30 @@ function agentModeAvailable() {
   return modelStatus?.model_ready === true || !!modelStatus?.tools_engine;
 }
 
+//: Moved from wiring.js (2026-11-12): `renderChatModeSeg` below calls it while the page
+//: loads, before wiring.js exists (tests/test_web_search_toggle_order.py).
+// In-chat web-search toggle: reflects and flips the web_search_enabled pref,
+// with a clear active state (it's the same setting as Settings, Web search).
+function renderWebSearchToggle() {
+  const on = Boolean(prefsCache && prefsCache.web_search_enabled);
+  const button = document.getElementById("web-search-toggle");
+  if (!button) return;
+  button.classList.toggle("active", on);
+  button.setAttribute("aria-pressed", on ? "true" : "false");
+  //: **Web stays pressable with no model, and says what it does then** (the
+  //: owner, 2026-10-10: "Do plan and web search work with the composer??").
+  //: The answer from your notes never searches the web: a search is a tool
+  //: call, and tools need Agent mode. The button also opens the search panel,
+  //: which works with no model at all, so greying it would take browsing away
+  //: to say something a title can say.
+  button.dataset.enabledTitle ??= button.title;
+  button.title = !agentModeAvailable()
+    ? "Browse the web here. With no model, answers come from your notes only."
+    : on && !$("tools-toggle").checked
+      ? "Atlas searches in Agent mode, not Ask."
+      : button.dataset.enabledTitle;
+}
+
 function renderChatModeSeg() {
   //: **Agent mode needs something that can call tools** (INBOX 725, the
   //: owner: "maybe agent mode should be disabled though unless needle is used
