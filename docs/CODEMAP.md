@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8338, frontend ids 2763, CSS sections 524, backend routes 703, backend modules 10800, test files 2687, tests 21871, plan headings 687, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8338, frontend ids 2763, CSS sections 524, backend routes 703, backend modules 10800, test files 2687, tests 21872, plan headings 687, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8338)
 
@@ -5386,10 +5386,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `applyForces` | frontend/js/graph-worker.js:2326 |
 | `applyGrouping` | frontend/js/graph-worker.js:2265 |
 | `bridgeGroup` | frontend/js/graph-worker.js:1334 |
-| `calmPass` | frontend/js/graph-worker.js:4260 |
+| `calmPass` | frontend/js/graph-worker.js:4266 |
 | `carryForce` | frontend/js/graph-worker.js:699 |
 | `centreScale` | frontend/js/graph-worker.js:1122 |
-| `clampToWorld` | frontend/js/graph-worker.js:4065 |
+| `clampToWorld` | frontend/js/graph-worker.js:4071 |
 | `clearChordInv` | frontend/js/graph-worker.js:1841 |
 | `clearCurve` | frontend/js/graph-worker.js:1807 |
 | `clearNearest` | frontend/js/graph-worker.js:1848 |
@@ -5399,7 +5399,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `clustered` | frontend/js/graph-worker.js:1322 |
 | `collidePadFor` | frontend/js/graph-worker.js:1015 |
 | `collideRadius` | frontend/js/graph-worker.js:1023 |
-| `coolToRest` | frontend/js/graph-worker.js:3775 |
+| `coolToRest` | frontend/js/graph-worker.js:3781 |
 | `crossStrength` | frontend/js/graph-worker.js:1088 |
 | `crossingsGridded` | frontend/js/graph-worker.js:2584 |
 | `crossingsOn` | frontend/js/graph-worker.js:2524 |
@@ -5419,7 +5419,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `introCancel` | frontend/js/graph-worker.js:984 |
 | `introInto` | frontend/js/graph-worker.js:903 |
 | `introStep` | frontend/js/graph-worker.js:973 |
-| `landTargets` | frontend/js/graph-worker.js:3765 |
+| `landTargets` | frontend/js/graph-worker.js:3771 |
 | `landscapePull` | frontend/js/graph-worker.js:1188 |
 | `leafForce` | frontend/js/graph-worker.js:2221 |
 | `lineCurveFile` | frontend/js/graph-worker.js:2963 |
@@ -5432,8 +5432,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `lineGridRefile` | frontend/js/graph-worker.js:3015 |
 | `lineGridTouches` | frontend/js/graph-worker.js:3020 |
 | `linkStrength` | frontend/js/graph-worker.js:1091 |
-| `loop` | frontend/js/graph-worker.js:4119 |
-| `loopYield` | frontend/js/graph-worker.js:4232 |
+| `loop` | frontend/js/graph-worker.js:4125 |
+| `loopYield` | frontend/js/graph-worker.js:4238 |
 | `markFollowers` | frontend/js/graph-worker.js:682 |
 | `median` | frontend/js/graph-worker.js:2123 |
 | `nodeGridBox` | frontend/js/graph-worker.js:2884 |
@@ -5455,34 +5455,34 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `orbitReach` | frontend/js/graph-worker.js:1575 |
 | `orbitUpdate` | frontend/js/graph-worker.js:1681 |
 | `orbitUpdateGrouped` | frontend/js/graph-worker.js:1627 |
-| `pendingAbandon` | frontend/js/graph-worker.js:3957 |
-| `pendingCancel` | frontend/js/graph-worker.js:3995 |
-| `pendingEnd` | frontend/js/graph-worker.js:3988 |
-| `pendingSnap` | frontend/js/graph-worker.js:3949 |
-| `pendingStart` | frontend/js/graph-worker.js:3970 |
-| `pendingStep` | frontend/js/graph-worker.js:4014 |
+| `pendingAbandon` | frontend/js/graph-worker.js:3963 |
+| `pendingCancel` | frontend/js/graph-worker.js:4001 |
+| `pendingEnd` | frontend/js/graph-worker.js:3994 |
+| `pendingSnap` | frontend/js/graph-worker.js:3955 |
+| `pendingStart` | frontend/js/graph-worker.js:3976 |
+| `pendingStep` | frontend/js/graph-worker.js:4020 |
 | `portraitPull` | frontend/js/graph-worker.js:1194 |
-| `post` | frontend/js/graph-worker.js:4074 |
+| `post` | frontend/js/graph-worker.js:4080 |
 | `quadCharge` | frontend/js/graph-worker.js:338 |
 | `quadCollide` | frontend/js/graph-worker.js:526 |
 | `reshuffle` | frontend/js/graph-worker.js:2357 |
 | `rimOffset` | frontend/js/graph-worker.js:2173 |
 | `ringFor` | frontend/js/graph-worker.js:1447 |
-| `run` | frontend/js/graph-worker.js:4281 |
+| `run` | frontend/js/graph-worker.js:4287 |
 | `seededRandom` | frontend/js/graph-worker.js:1357 |
 | `segmentsCross` | frontend/js/graph-worker.js:2515 |
 | `setRingSeed` | frontend/js/graph-worker.js:1368 |
-| `settleGlideCancel` | frontend/js/graph-worker.js:3917 |
-| `settleGlideFrom` | frontend/js/graph-worker.js:3882 |
-| `settleGlideStep` | frontend/js/graph-worker.js:3902 |
-| `settleUntangled` | frontend/js/graph-worker.js:3817 |
+| `settleGlideCancel` | frontend/js/graph-worker.js:3923 |
+| `settleGlideFrom` | frontend/js/graph-worker.js:3888 |
+| `settleGlideStep` | frontend/js/graph-worker.js:3908 |
+| `settleUntangled` | frontend/js/graph-worker.js:3823 |
 | `shapeForce` | frontend/js/graph-worker.js:2195 |
 | `shuffleStep` | frontend/js/graph-worker.js:2387 |
 | `sliceOver` | frontend/js/graph-worker.js:2472 |
 | `sliceRun` | frontend/js/graph-worker.js:2476 |
 | `smallSpread` | frontend/js/graph-worker.js:1112 |
-| `smoothstep` | frontend/js/graph-worker.js:3898 |
-| `stopLoop` | frontend/js/graph-worker.js:4108 |
+| `smoothstep` | frontend/js/graph-worker.js:3904 |
+| `stopLoop` | frontend/js/graph-worker.js:4114 |
 | `tetherForce` | frontend/js/graph-worker.js:2127 |
 | `tickOnce` | frontend/js/graph-worker.js:639 |
 | `tidyOn` | frontend/js/graph-worker.js:2322 |
@@ -5491,23 +5491,23 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `untangleChordD2` | frontend/js/graph-worker.js:2909 |
 | `untangleCleanup` | frontend/js/graph-worker.js:3222 |
 | `untangleFree` | frontend/js/graph-worker.js:2763 |
-| `untangleGlide` | frontend/js/graph-worker.js:3741 |
-| `untangleInside` | frontend/js/graph-worker.js:3498 |
-| `untangleKeepBest` | frontend/js/graph-worker.js:3799 |
-| `untangleLayout` | frontend/js/graph-worker.js:3505 |
+| `untangleGlide` | frontend/js/graph-worker.js:3747 |
+| `untangleInside` | frontend/js/graph-worker.js:3504 |
+| `untangleKeepBest` | frontend/js/graph-worker.js:3805 |
+| `untangleLayout` | frontend/js/graph-worker.js:3511 |
 | `untangleLineOver` | frontend/js/graph-worker.js:3108 |
 | `untangleNear` | frontend/js/graph-worker.js:2922 |
 | `untangleNearCurve` | frontend/js/graph-worker.js:2917 |
 | `untangleOnLine` | frontend/js/graph-worker.js:3094 |
-| `untangleOwed` | frontend/js/graph-worker.js:3785 |
+| `untangleOwed` | frontend/js/graph-worker.js:3791 |
 | `untanglePasses` | frontend/js/graph-worker.js:2452 |
-| `untangleReach` | frontend/js/graph-worker.js:3483 |
+| `untangleReach` | frontend/js/graph-worker.js:3489 |
 | `untangleSetup` | frontend/js/graph-worker.js:2485 |
 | `untangleStepOff` | frontend/js/graph-worker.js:3194 |
 | `untangleStepOrder` | frontend/js/graph-worker.js:3175 |
-| `untangleTakeBest` | frontend/js/graph-worker.js:3805 |
-| `untangleTouching` | frontend/js/graph-worker.js:3412 |
-| `untangleUntouch` | frontend/js/graph-worker.js:3426 |
+| `untangleTakeBest` | frontend/js/graph-worker.js:3811 |
+| `untangleTouching` | frontend/js/graph-worker.js:3418 |
+| `untangleUntouch` | frontend/js/graph-worker.js:3432 |
 | `workNow` | frontend/js/graph-worker.js:2469 |
 
 ### frontend/js/graph.js (147)
@@ -27734,7 +27734,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21871)
+## Tests (21872)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28997,7 +28997,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_graph_topic_drag.py | 10 |
 | tests/test_graph_treemap.py | 5 |
 | tests/test_graph_untangle_1400.py | 10 |
-| tests/test_graph_untangle_scale.py | 2 |
+| tests/test_graph_untangle_scale.py | 3 |
 | tests/test_graph_view_link_kinds.py | 3 |
 | tests/test_graph_view_positions.py | 6 |
 | tests/test_graph_w26_1111.py | 4 |
@@ -30845,14 +30845,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4405 |
-| Needs hardware | docs/roadmap/LEDGER.md:885 |
+| Needs hardware | docs/roadmap/LEDGER.md:884 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:877 |
+| Owner calls | docs/roadmap/LEDGER.md:876 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4278 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31033,7 +31033,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1081 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1080 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2654 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31085,26 +31085,26 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Why the app feels "off" even where each screen is fine | docs/roadmap/WORLD_CLASS_PLAN.md:54 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
-| chat | docs/roadmap/LEDGER.md:28 |
-| chat | docs/roadmap/LEDGER.md:1097 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1181 |
-| documents | docs/roadmap/LEDGER.md:331 |
-| documents | docs/roadmap/LEDGER.md:1121 |
-| general | docs/roadmap/LEDGER.md:837 |
+| chat | docs/roadmap/LEDGER.md:27 |
+| chat | docs/roadmap/LEDGER.md:1096 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1180 |
+| documents | docs/roadmap/LEDGER.md:330 |
+| documents | docs/roadmap/LEDGER.md:1120 |
+| general | docs/roadmap/LEDGER.md:836 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:1085 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1193 |
+| graph | docs/roadmap/LEDGER.md:1084 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1192 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4414 |
-| mindmap | docs/roadmap/LEDGER.md:411 |
-| mindmap | docs/roadmap/LEDGER.md:1133 |
-| timeline | docs/roadmap/LEDGER.md:566 |
-| timeline | docs/roadmap/LEDGER.md:1157 |
-| ui-modernisation | docs/roadmap/LEDGER.md:448 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1145 |
-| whiteboard | docs/roadmap/LEDGER.md:285 |
-| whiteboard | docs/roadmap/LEDGER.md:1109 |
-| world-class | docs/roadmap/LEDGER.md:601 |
-| world-class | docs/roadmap/LEDGER.md:1169 |
+| mindmap | docs/roadmap/LEDGER.md:410 |
+| mindmap | docs/roadmap/LEDGER.md:1132 |
+| timeline | docs/roadmap/LEDGER.md:565 |
+| timeline | docs/roadmap/LEDGER.md:1156 |
+| ui-modernisation | docs/roadmap/LEDGER.md:447 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1144 |
+| whiteboard | docs/roadmap/LEDGER.md:284 |
+| whiteboard | docs/roadmap/LEDGER.md:1108 |
+| world-class | docs/roadmap/LEDGER.md:600 |
+| world-class | docs/roadmap/LEDGER.md:1168 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2824 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2875 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2982 |

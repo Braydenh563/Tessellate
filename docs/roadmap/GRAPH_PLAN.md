@@ -608,7 +608,7 @@ INBOX 1400 and 1306, measured with `gm.js` (numbers in `graph-1026.md` (git hist
 ## Placed from INBOX, 2026-11-04 (audit Rank 36, hover decision)
 
 - Hover refill on rest: built 2026-11-12, moved to HISTORY.md ("Moved from the plans, 2026-11-12 (graph-plan session)").
-- Audit row 19 (2,000 notes, 4x): the wheel settle repaint is sliced (L-graph-16) and the worker's settle cut by the untangle gates (5.7 to 3.4 s under node, 2026-11-12); the rest is the d3 charge and collide, LEDGER L-graph-18. Label fades are done (`gcDrawLabels.frame`, 4.6 ms a frame against 14).
+- Audit row 19 (2,000 notes, 4x): the wheel settle repaint is sliced (L-graph-16) and the worker's settle cut by the untangle gates (5.7 to 3.4 s under node, 2026-11-12); the browser settle is 5.3 s (from 11 to 14) with the meet scan cut, moved to HISTORY.md (L-graph-18). Label fades are done (`gcDrawLabels.frame`, 4.6 ms a frame against 14).
 
 ## Placed from W34, 2026-11-11 (gap5: the open graph rows, sized)
 
