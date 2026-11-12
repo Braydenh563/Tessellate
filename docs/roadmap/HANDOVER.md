@@ -62,7 +62,7 @@
 
 # HANDOVER
 
-**Now (2026-11-12f, chat plan session, PR 230, stopped at the 85% line):** branch claude/chat-plan holds chat batches 1 to 3 plus the base merge; batch 4 is on agent/chatrows4-1112 unmerged (L89, L98 committed; L90 to L97 WIP at 69bcdbd3, blocked by complexity and line-cap lints; L98 duplicates the base's new birthday setting). Their LEDGER rows say what is left. Next chat session: reconcile L98, finish the lints, merge, then continue the chat rows from L101.
+**Now (2026-11-12g, chat plan session, PR 230, head 75aacc7c):** batches 1 to 4 and the review 5883496750 fixes are pushed; L89 to L98 closed. In flight: batch 5 on agent/chatrows5-1112 (L122, L124, L106, L107, L126). Open chat rows: L101 onward (104 open, 44 partly). Next: merge batch 5 after the hub's "merged", then continue the chat rows in LEDGER order, one Sonnet agent at a time. Local-only work: none outside agent branches.
 
 **Now (2026-11-12e, PR 216, closing):** all 109 owner calls answered and on their rows; `scripts/open_scan.py` lists open-work lines outside BACKLOG; the eight plan briefs at the end of LEDGER end only when nothing open is left outside BACKLOG. In flight: workflow wf_812f9e7b-276 (open-work sweep, 8 finders plus verifiers) finds open work tracked nowhere. Next: add its verified items as LEDGER rows (`scripts/ledger.py add`), write a ninth closing-session brief (full `open_scan.py` run, LEDGER and INBOX at zero, only BACKLOG left), regenerate CODEMAP, push, wait for CI green, then the owner merges and starts the nine sessions.
 
