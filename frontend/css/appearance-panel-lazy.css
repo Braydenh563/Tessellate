@@ -299,6 +299,21 @@
 #appearance-panel :is(.select-shell > .setting-reset, .select-shell + .setting-reset) {
   margin-inline-start: var(--space-2);
 }
+@media (min-width: 820px) {
+  #appearance-panel .settings-section .row:has(> label:first-child:not(.setting-check):not(.check-row):not(.checkbox-label)) {
+    position: relative;
+    padding-inline-end: calc(var(--control-h-dense) + var(--space-2));
+  }
+  #appearance-panel .settings-section .row:has(> label:first-child:not(.setting-check):not(.check-row):not(.checkbox-label)) > .setting-reset {
+    position: absolute;
+    inset-inline-end: 0;
+    top: 50%;
+    translate: 0 -50%;
+  }
+  #appearance-panel .settings-section .row > label:first-child:not(.setting-check):not(.check-row):not(.checkbox-label) {
+    flex-basis: calc(16rem - var(--control-h-dense) - var(--space-2));
+  }
+}
 #appearance-panel .help-head > .check-row {
   flex: 1 1 0;
   min-width: 0;
