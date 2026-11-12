@@ -720,6 +720,7 @@ def _startup_maintenance() -> None:
         steps = (
             ("_check_notebook_file", "Check the notebook file"),
             ("_check_data_folder", "Check the data folder"),
+            ("_mend_category_names", "Mend category names saved with a broken bar"),
             ("_purge_expired_bin_entries", "Clear expired notes from the bin"),
             ("_compact_event_log", "Tidy the edit history"),
             ("_backup_if_due", "Back up if today's is due"),
@@ -738,6 +739,17 @@ def _startup_maintenance() -> None:
                 run.say(f"That step did not finish: {words.lower()}. The server log has the detail.")
             run.step(index + 1)
         run.result = "at start"
+
+
+def _mend_category_names() -> None:
+    """Category names saved with a broken bar for "&" are renamed once (L803)."""
+    from tessellate.entry.manager_categories import mend_broken_bar_names
+
+    session = deps.get_db().session()
+    try:
+        mend_broken_bar_names(session)
+    finally:
+        session.close()
 
 
 def _read_note_dates() -> None:

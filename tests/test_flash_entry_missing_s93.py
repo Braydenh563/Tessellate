@@ -50,7 +50,7 @@ vm.runInContext(`flashEntry(${target}).then(() => __done())`, Object.assign(ctx,
 
 def _flash_source() -> str:
     text = SOURCE.read_text(encoding="utf-8")
-    start = text.index("async function flashEntry(id)")
+    start = text.index("async function flashEntry(id")
     return text[start : text.index("\n}\n", start) + 3]
 
 

@@ -84,7 +84,7 @@ def test_only_a_meeting_gets_one():
 def test_the_card_holds_glance_and_body_and_a_class_says_which_shows():
     assert "const glance = meetingGlance(entry);" in CARDS
     assert "const isLong = !glance && (" in CARDS
-    assert 'li.classList.toggle("meeting-open", expandedNotes.has(entry.id) || searchHighlightTerms().length > 0);' in CARDS
+    assert 'li.classList.toggle("meeting-open", expandedNotes.has(entry.id) || searchHighlightTerms(entry.id).length > 0);' in CARDS
     assert ".meeting-card:not(.meeting-open):not(.row-expanded) > .entry-content" in CSS
     assert ".meeting-card.row-expanded > .meeting-glance" in CSS
     glance_code = _block(CARDS, "if (glance) {", "li.appendChild(content);\n  }")

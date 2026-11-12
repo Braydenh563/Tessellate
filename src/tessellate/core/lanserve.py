@@ -116,7 +116,7 @@ def _trust_page(fingerprint: str, https_url: str) -> bytes:
     steps = (
         "<li>iPhone or iPad: tap <b>Download the certificate</b>, allow it, then Settings, Profile Downloaded, "
         "Install. After that, Settings, General, About, Certificate Trust Settings, and switch it on.</li>"
-        "<li>Android: tap <b>Download the certificate</b>, then Settings, Security, Install a certificate, "
+        "<li>Android: tap <b>Download the certificate</b>, then in the phone's own settings app: Security, Install a certificate, "
         "CA certificate.</li><li>Brave on iPhone uses the same system trust as Safari.</li>"
     )
     html = (

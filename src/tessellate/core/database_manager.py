@@ -230,22 +230,6 @@ class DatabaseManager(IndexesMixin):
         )
         self._ensure_search_index()
         self._ensure_default_spaces()
-        self._mend_broken_bar_names()
-
-    def _mend_broken_bar_names(self) -> None:
-        """A category saved with a broken bar for "&" before `category_label`
-        mended it (LEDGER L803) is renamed once; a clash merges, as a rename
-        does. A clean notebook matches nothing."""
-        from tessellate.core.database import Category
-        from tessellate.entry.manager import BROKEN_BAR
-        from tessellate.entry.manager_categories import rename_category
-
-        with self._session_factory() as session:
-            hit = session.query(Category.id, Category.name).filter(Category.name.contains(BROKEN_BAR)).all()
-            for category_id, name in hit:
-                rename_category(session, category_id, name)
-            if hit:
-                session.commit()
 
     def _ensure_search_index(self) -> None:
         """The index that covers every kind (`search/index.py`), built once.
