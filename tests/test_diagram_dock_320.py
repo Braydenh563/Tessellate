@@ -15,7 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CSS = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
-BUILDER = (ROOT / "frontend" / "js" / "diagram-builder.js").read_text(encoding="utf-8")
+BUILDER = (ROOT / "frontend" / "js" / "diagram-kindbar.js").read_text(encoding="utf-8")
 
 
 def test_the_builder_marks_a_tight_phone() -> None:

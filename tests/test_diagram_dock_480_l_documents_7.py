@@ -13,7 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 CSS = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
-BUILDER = (JS / "diagram-builder.js").read_text(encoding="utf-8")
+BUILDER = (JS / "diagram-kindbar.js").read_text(encoding="utf-8")  # the narrow fold moved here from the builder (gzip budget)
 
 
 def test_the_three_buttons_hide_at_480():
@@ -30,7 +30,7 @@ def test_redo_carries_the_class_in_both_docks():
 
 
 def test_the_menu_takes_the_three_rows_when_narrow():
-    more = BUILDER[BUILDER.index("function more(S)") : BUILDER.index("function refreshMore")]
+    more = BUILDER[BUILDER.index("function fold(S") : BUILDER.index("diagramModel.kindbar =")]
     assert "max-width: 480px" in BUILDER
     for label in ("Direction", "Redo", "Ask for a change"):
         assert label in more
