@@ -55189,6 +55189,7 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
 
 ## Moved from the LEDGER
+- [x] **L506** `world-class` open, S: Build the core/background.py registry. From OPEN.md:1975. Evidence: No core/background.py in src/tessellate/core; lint only counts sites Built: tests/test_background_workers.py
 - [x] **L800** `world-class` owner-call, S: Decide what the evidence_checks switch gates and build its runner. From OPEN.md:2944. Evidence: Only facts.py:88 default; decision needed on what it gates Built: owner decision 2026-11-12: Keep it as built, no build needed
 - [x] **L796** `world-class` owner-call, S: Decide and build server restore routes for media deletes, ask-history, learned and tidy undo. From OPEN.md:532. Evidence: Row marks owner-call (w34-L1-1111.md); server restore routes needing a design decision; some exist (HISTORY:653) Built: owner decision 2026-11-12: Keep the built Undo, no build needed
 - [x] **L793** `world-class` owner-call, M: Decide auth and write-tool scope for the MCP server. From OPEN.md:4211. Evidence: Ledger owner call on MCP auth/scope. Built: owner decision 2026-11-12: Keep token, read-only, no build needed
