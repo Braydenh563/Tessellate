@@ -527,11 +527,13 @@ def chat(body: ChatRequest, session: Session = Depends(get_session)) -> ChatResp
     model_manager = deps.get_model_manager().for_feature(_feature_for(body))
     ollama = deps.get_ollama()
     ollama_running = ollama.is_running()
-    if (plain := _capability_response(body, session, prepared, ollama_running)) is not None:
+    #: Captioned once: the capability check below reuses these rather than asking the model again.
+    seen = _chat_images(session, body, model_manager, ollama)
+    if (plain := _capability_response(body, session, prepared, ollama_running, seen)) is not None:
         return plain
     conversational = not intent.needs_retrieval(prepared["intent"])
     mode = _resolve_mode(body.mode)
-    images_raw, images, image_context = _chat_images(session, body, model_manager, ollama)
+    images_raw, images, image_context = seen
     #: A counted answer *is* an answer, and it does not need a model running to
     #: be one: which is the whole point of computing it. Without this the
     #: response would carry a correct sentence and simultaneously report that
@@ -882,8 +884,10 @@ def _tool_read_events(req: _StreamRequest, notes: list | None = None) -> list[di
     return out
 
 
-def _capability_response(body: ChatRequest, session: Session, prepared: dict, ollama_running: bool) -> ChatResponse | None:
-    answer = _capability_answer(req, ollama_running, _composer_voice()) if _asks_capability(req := _stream_request(body, session), prepared) else None
+def _capability_response(body: ChatRequest, session: Session, prepared: dict, ollama_running: bool, seen: tuple) -> ChatResponse | None:
+    if prepared["intent"] != intent.ABOUT_APP:  # the only intent `_asks_capability` accepts: no request to build for the rest
+        return None
+    answer = _capability_answer(req, ollama_running, _composer_voice()) if _asks_capability(req := _stream_request(body, session, seen), prepared) else None
     return answer and ChatResponse(ai_response=answer, raw_results=[], search_mode=prepared["search_mode"], ollama_running=ollama_running)
 
 
@@ -2153,7 +2157,7 @@ def _address(question: str, session: Session, skill: dict | None) -> tuple:
     return address.question, address
 
 
-def _stream_request(body: ChatRequest, session: Session) -> _StreamRequest:
+def _stream_request(body: ChatRequest, session: Session, seen: tuple | None = None) -> _StreamRequest:
     """What one chat turn settles before it answers: the same for the stream and
     for the non-streaming route when no model runs."""
     ollama = deps.get_ollama()
@@ -2165,7 +2169,7 @@ def _stream_request(body: ChatRequest, session: Session) -> _StreamRequest:
     history = [turn.model_dump(exclude_none=True) for turn in body.history]
     persona_prompt = _resolve_persona(body.persona, session)
     mode = _resolve_mode(body.mode)
-    images_raw, images, image_context = _chat_images(session, body, model_manager, ollama)
+    images_raw, images, image_context = seen or _chat_images(session, body, model_manager, ollama)
     use_tools = (
         body.use_tools
         if body.use_tools is not None

@@ -21,7 +21,7 @@ _logger = logging.getLogger(__name__)
 TTL_SECONDS = 1800
 MAX_PARKED = 64
 
-_lock = threading.Lock()
+_lock = threading.RLock()
 _parked: dict[str, tuple[float, dict]] = {}
 #: Ids already spent, kept for the same life: an expired id and a spent one both find nothing in
 #: `_parked`, but only the spent one must not run again from the steps a page sends.
@@ -76,11 +76,15 @@ def log_undo(undo: list[dict] | None, title: str) -> None:
     with _lock:
         keep = (_read_log() + rows)[-LOG_MAX:]
         path = _log_path()
+        tmp = path.with_name(path.name + ".tmp")
         try:
-            path.write_text(json.dumps(keep), "utf-8")
-            os.chmod(path, 0o600)
+            #: Born 0600 and swapped in whole: never readable by others, never half-written.
+            fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+            with os.fdopen(fd, "w", encoding="utf-8") as handle:
+                handle.write(json.dumps(keep))
+            os.replace(tmp, path)
         except OSError:
-            pass  # a log that cannot be written only costs the undo-by-sentence of older acts
+            tmp.unlink(missing_ok=True)  # a log that cannot be written only costs the undo-by-sentence of older acts
 
 
 def undo_log() -> list[dict]:

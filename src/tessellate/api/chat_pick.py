@@ -18,7 +18,7 @@ from collections.abc import Callable
 
 _log = logging.getLogger(__name__)
 
-_DIGITS = re.compile(r"\d+")
+_BARE = re.compile(r"^\s*(\d+)\s*\.?\s*$")
 
 RULE = (
     "You choose between readings of a question about someone's notes. "
@@ -34,13 +34,9 @@ def messages(question: str, readings: list[dict]) -> list[dict]:
 
 
 def choice(reply: str, readings: list[dict]) -> int | None:
-    """The note id of the reading the reply names, or None for none, garbage or a number not offered."""
-    if re.search(r"\bnone\b", reply, re.I) and not _DIGITS.search(reply):
-        return None
-    found = _DIGITS.search(reply)
-    if not found:
-        return None
-    wanted = int(found.group())
+    """The note id of the reading the reply names. Only a bare number ("2", "2.") counts: anything else, "none" included, is no pick."""
+    found = _BARE.match(reply)
+    wanted = int(found.group(1)) if found else None
     return next((r["note_id"] for r in readings if r["n"] == wanted), None)
 
 

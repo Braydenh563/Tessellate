@@ -108,12 +108,13 @@ def _one(rows: list[str], wanted: str) -> tuple[str | None, str]:
 def _delete_document(session: Session, parsed: dict, c: dict) -> dict:
     from tessellate.core.database import Document
 
-    rows = list(session.execute(select(Document.id, Document.title)).all())
+    #: A private document is never matched by a sentence: with the vault locked its title reads the same as every other.
+    rows = list(session.execute(select(Document.id, Document.title).where(Document.is_private.is_(False))).all())
     titles = {t: i for i, t in rows}
     name, why = _one(list(titles), parsed["name"])
     if name is None:
         return {"line": f"I found no document called “{parsed['name']}”." if why == "none" else why}
-    label = f"Delete the document “{name}”"
+    label = f"Move the document “{name}” to the bin"
     return {"line": c["confirm"](label), "card": c["card"](label, [{"name": "delete_document", "arguments": {"document_id": titles[name]}}])}
 
 
@@ -166,8 +167,25 @@ def plan(session: Session, parsed: dict, note_ids: list[int] | None, c: dict) ->
     return {"line": c["confirm"](label), "card": c["card"](label, steps, [], [c["item"](entry)])}
 
 
-def run_step(args: dict) -> dict:
-    """The theme step. The page applies it; the undo carries "system" until the page patches in the theme it replaced."""
+def restore_document(session: Session, args: dict) -> dict:
+    """Out of the bin, the same row and id: the Undo of `delete_document` (a step of this module, not a tool the model is offered)."""
+    from tessellate.core.database import Document
+    from tessellate.entry.bin import including_binned
+
+    with including_binned(session):
+        document = session.get(Document, int(args.get("document_id") or 0))
+    if document is None or document.is_private:
+        return {"error": f"No document with id {args.get('document_id')}"}
+    if document.deleted_at is not None:
+        document.deleted_at = None
+        session.commit()
+    return {"label": f"Restored the document “{document.title[:60]}” from the bin", "undo": {"tool": "delete_document", "arguments": {"document_id": document.id}}}
+
+
+def run_step(session: Session, name: str, args: dict) -> dict:
+    """The theme step (the page applies it; the undo carries "system" until the page patches in the theme it replaced), or `restore_document`."""
+    if name == "restore_document":
+        return restore_document(session, args)
     theme = str(args.get("theme") or "")
     if theme not in THEMES:
         return {"error": "That theme is not one I know: light, dark or system."}

@@ -728,7 +728,7 @@ def _created_document(result: dict, args: dict) -> Said:
 
 
 def _deleted_document(result: dict, args: dict) -> Said:
-    return f"Deleted the document “{result.get('title') or 'Untitled'}”.", "", _chips(("Open Documents", DOCUMENTS))
+    return f"Moved the document “{result.get('title') or 'Untitled'}” to the bin.", "", _chips(("Open Documents", DOCUMENTS))
 
 
 def _mindmap_made(result: dict, args: dict) -> Said:

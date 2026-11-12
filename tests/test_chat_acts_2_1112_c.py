@@ -118,7 +118,8 @@ def test_every_act_maps_to_the_tool_the_model_has():
 def test_the_models_delete_document_returns_the_same_undo(notebook):
     doc_id = notebook.scalars(select(Document)).first().id
     result = tools.execute_tool(notebook, "delete_document", {"document_id": doc_id})
-    assert result["undo"]["tool"] == "create_document"
+    #: The delete moved to the bin (review 5883496750), so its Undo restores the same row, not a new document.
+    assert result["undo"]["tool"] == "restore_document"
     assert commands.RUNNABLE >= {"delete_document", "create_document", "delete_skill", "save_skill", "add_whiteboard_card", "delete_board_item", "map_from_note", "create_mindmap"}
 
 

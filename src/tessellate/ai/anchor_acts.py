@@ -21,6 +21,7 @@ _AMOUNT = recognise.amount_before()
 _AFTER = r"\s+before\s+(?:the |my |our )?(?P<what>[\w' -]+?)(?:\s+(?:appointment|meeting|call|session))?$"
 _TASK_FIRST = re.compile(rf"{_LEAD}to\s+(?P<task>.+?)\s+{_AMOUNT}{_AFTER}", re.I)
 _PLAIN = re.compile(rf"{_LEAD}(?:to\s+(?P<task>.+?)\s+)?{_AMOUNT}{_AFTER}", re.I)
+_LOOKED_AT = 500
 _NO_WHAT = frozenset({"it", "that", "this", "then", "now", "bed", "work", "lunch", "dinner", "midnight", "noon"})
 
 
@@ -52,12 +53,15 @@ def settle(session: Session, parsed: dict, now: datetime) -> dict:
     anchor = parsed["anchor"]
     what = anchor["what"].casefold()
     offset = timedelta(minutes=anchor["minutes"])
+    #: A private note and a board never anchor a reminder (Chat does not read them), and only a time still ahead is read.
     rows = session.execute(
         select(EntryDate.at, Entry.content).join(Entry, Entry.id == EntryDate.entry_id)
-        .where(EntryDate.precision == "minute", Entry.deleted_at.is_(None)).order_by(EntryDate.at)
+        .where(EntryDate.precision == "minute", Entry.deleted_at.is_(None), Entry.is_private.is_(False), Entry.is_board.is_(False), EntryDate.at > now + offset)
+        .order_by(EntryDate.at).limit(_LOOKED_AT)
     ).all()
+    named = re.compile(rf"(?<!\w){re.escape(what)}(?!\w)")
     #: Wall-clock times, as the person typed them: the stored zone is not part of "3pm".
-    ahead = [at.replace(tzinfo=None) for at, content in rows if at.replace(tzinfo=None) - offset > now and what in (content or "").casefold()]
+    ahead = [at.replace(tzinfo=None) for at, content in rows if at.replace(tzinfo=None) - offset > now and named.search((content or "").casefold())]
     if not ahead:
         return {**parsed, "ask": f"I found no time for “{anchor['what']}” in your notes. When is it, so I can set the reminder against it?"}
     clock = f"{ahead[0].hour % 12 or 12}:{ahead[0].minute:02d} {'pm' if ahead[0].hour >= 12 else 'am'}"  # "%-I" is glibc-only

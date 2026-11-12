@@ -76,7 +76,8 @@ def _document_created(session: Session, args: dict, result: dict) -> str | None:
 
 
 def _document_deleted(session: Session, args: dict, result: dict) -> str | None:
-    if _row(session, Document, args.get("document_id")) is not None:
+    document = _row(session, Document, args.get("document_id"))
+    if document is not None and document.deleted_at is None:
         return f"document {args.get('document_id')} is still there"
     return None
 

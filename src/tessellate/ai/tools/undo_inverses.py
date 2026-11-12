@@ -6,11 +6,6 @@ call the page hands back to `POST /chat/command/run`."""
 from __future__ import annotations
 
 
-def document_restore(title: str, content: str) -> dict:
-    """`create_document` with the text the deleted document held (an empty one comes back with a placeholder, the tool refuses none)."""
-    return {"tool": "create_document", "arguments": {"title": title, "content": content if content.strip() else "(empty document)"}}
-
-
 def skill_restore(skill: dict) -> dict:
     """`save_skill` with a deleted skill's fields: its `verify` block back in the flat `verify_*` arguments the tool takes."""
     arguments = {key: skill.get(key) for key in ("name", "prompt", "steps", "tools", "when_to_use") if skill.get(key)}

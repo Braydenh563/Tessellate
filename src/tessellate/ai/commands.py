@@ -74,7 +74,7 @@ def __getattr__(name: str) -> str:
 RUNNABLE = frozenset(
     {"set_reminder", "tag_note", "edit_note", "create_note", "delete_note", "restore_note", "rename_tag", "rename_category", "create_category", "delete_category", "merge_categories", "delete_tag", "move_notes",
      "pin_note", "link_notes", "unlink_notes", "start_meeting", "bin_reminder", "complete_reminder", "restore_reminder", "snooze_reminder", "set_display_name",
-     "delete_document", "create_document", "delete_skill", "save_skill", "add_whiteboard_card", "delete_board_item", "restore_board_item", "map_from_note", "create_mindmap", "set_theme"}
+     "delete_document", "restore_document", "create_document", "delete_skill", "save_skill", "add_whiteboard_card", "delete_board_item", "restore_board_item", "map_from_note", "create_mindmap", "set_theme"}
 )
 
 _MAX_TEXT = 300
@@ -2337,8 +2337,8 @@ def _run_one(session: Session, name: str, args: dict, tools) -> dict:  # noqa: A
         return _bin_reminder(session, args)
     if name in task_acts.OWN_STEPS:
         return task_acts.run_step(session, name, args)
-    if name == "set_theme":
-        return surface_acts.run_step(args)
+    if name in ("set_theme", "restore_document"):
+        return surface_acts.run_step(session, name, args)
     if name == "set_display_name":
         from tessellate.core import deps
 
