@@ -321,7 +321,7 @@ def compose(
         voice = composer_tables.DEFAULT_VOICE
     #: In a conversation (decisions 34, 35): turn and salt choose the wording; a terse turn is read against the ones before.
     names = composer_names.names_of(notes)
-    asked, question = question, composer_names.respell(composer_numbers.normalise(question), names)
+    asked, question = question, composer_small.only_list_question(composer_names.respell(composer_numbers.normalise(question), names), notes)
     if dialogue is not None:
         question, salt, turn, said, prefer, previous = _read_in_dialogue(
             question, dialogue, salt=salt, turn=turn, said=said, prefer=prefer, previous=previous, resolved=resolved

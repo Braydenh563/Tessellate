@@ -961,6 +961,8 @@ EXTRA_COMPARE_SIDES: tuple[re.Pattern[str], ...] = (
     lazy_compile(rf"^(?:[^,]{{3,40}},\s*)?{_COUNT_MENTIONS}\s+(?P<a>.+?)(?:,|\s+and)\s+(?:and\s+)?{_COUNT_MENTIONS}\s+(?P<b>.+?)[?.!]*$", re.I),
     lazy_compile(r"^(?P<a>.+?),? compare[sd]? (?:with|to) (?P<b>.+?)[?.!]*$", re.I),
     lazy_compile(rf"^{_WHICH} (?:is|are|was|were) (?:the )?(?:{_MORE})[,:]?\s+(?P<a>.+?) or (?P<b>.+?)[?.!]*$", re.I),
+    #: "which of alpha, beta and gamma is the newest": the names between "of" and the verb (L105).
+    lazy_compile(rf"^which(?: one)? of (?:the |my )?(?P<a>.+?),? (?:or|and) (?P<b>.+?) (?:is|are|was|were|comes?|came) (?:the )?(?:{_MORE}|earliest|latest|first|last)[?.!]*$", re.I),
     #: "which comes first, the dentist or the trip".
     lazy_compile(r"^which(?: one)? (?:comes|came|is|was) first[,:]?\s+(?P<a>.+?) or (?P<b>.+?)[?.!]*$", re.I),
     #: The same asked the other way round: "Lisbon or Tokyo, which is cheaper" (audit 1030 Z58).
@@ -990,6 +992,7 @@ COMPARE_SHAPE_EXTRA = (
     rf"^{_EACH_LEAD}\s+{_EACH_NAME}\s+and\s+{_EACH_NAME}[?.!]*$|"
     r"^[\w' -]{1,40}? or [\w' -]{1,40}?,?\s+which\b|"
     r"^which(?: one)? (?:comes|came|is|was) first\b.+? or |"
+    rf"^which(?: one)? of .+? (?:or|and) .+? (?:is|are|was|were|comes?|came) (?:the )?(?:{_MORE}|earliest|latest|first|last)\W*$|"
     r"^which(?: one| note)? costs? (?:more|less)\b.+? or |^[\w' ,-]+? or [\w' ,-]+?,? which(?: one| note)? costs? (?:more|less)\W*$|"
     rf"\b(?:{_MORE}) than\b|\bcompare[sd]? (?:with|to)\b|\b(?:pros and cons|advantages and disadvantages) of .+? (?:and|or|vs\.?|versus) |"
     rf"^{_WHICH} (?:is|are|was|were) (?:the )?(?:{_MORE})\b.+? or |^[\w' ,-]+? or [\w' ,-]+?,? {_WHICH} (?:is|are|was|were) (?:the )?(?:{_MORE})\W*$|\b(?:differs?|different|difference) from\b|\bcomparison (?:of|between)\b|"
