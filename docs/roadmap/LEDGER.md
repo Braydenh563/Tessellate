@@ -12,12 +12,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
-| mindmap | 33 | 11 | 4 | 1 | 5 | 48 |
+| mindmap | 33 | 9 | 4 | 1 | 5 | 46 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 682 | 156 | 3 | 195 | 1391 |
+| all | 553 | 680 | 156 | 3 | 195 | 1389 |
 
 ## graph
 
@@ -441,8 +441,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 ## mindmap
 
 - [ ] **L355** `mindmap` open, S: Time tree, timeline and fishbone whole-map tidy per add at 200 topics and scope it. From OPEN.md:1383; OPEN.md:2803. Evidence: whiteboard-map.js:6115 still tidies whole map via wbMapTidyBranchScope; no 200-topic timing recorded.
-- [ ] **L366** `mindmap` open, M: Give the size stepper words and Classic level sizes S/M/L/XL instead of 17px/22px. From OPEN.md:1114. Evidence: No fix commit found for stepper words; needs a sweep to confirm
-- [ ] **L369** `mindmap` open, M: Make wbSyncMapStrip ring the map's look, and add options for 17px size and level fill. From OPEN.md:1773; OPEN.md:3558. Evidence: whiteboard-map.js:7559 wbSyncMapStrip unchanged by evidence; 17px size and level fill gap remain
 - [ ] **L370** `mindmap` open, M: Cut press-to-editable at 390 from 140-159 ms toward 50 ms (renderWbObjects). From OPEN.md:2800. Evidence: Cause not isolated (renderWbObjects); verified open
 - [ ] **L372** `mindmap` open, M: mapcull: cull freehand and link sketches. From OPEN.md:1227. Evidence: Row conditional on a measured many-stroke board; no culling of strokes found.
 - [ ] **L373** `mindmap` open, M: Narrow radial leaf boxes so large maps fit above 45 percent zoom. From agent-remaining/mapdog-1026.md. Evidence: Radial layout is large: 31 topics (6 branches of 4) lay out 1927x1771 board units, fit zoom 31% (words 4.4px); 57 topics
