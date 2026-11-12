@@ -404,7 +404,8 @@ Closed 2026-10-05 (op5): moved whole to HISTORY.md ("Moved from the plans,
    the filter are built (decision 34; HISTORY.md, "Moved from the plans,
    2026-10-05 (markers)"); due dates with a reminder are built (decision
    37; HISTORY.md, "Moved from the plans, 2026-10-05 (due dates, op5)");
-   tags on a topic are open.
+   tags on a topic are built as the `labels` field (HISTORY.md, "Moved from
+   the plans, 2026-11-12 (mindmap-plan)", decision 34 extended).
 5. **Notes on nodes**: a node that is a notebook note shows the note's
    own text here, editable both ways. The text note behind a topic is
    built (decision 18; HISTORY.md, "Moved from the plans, 2026-10-04").
@@ -976,8 +977,9 @@ topic: a control that wide has nowhere to go.
    carries it as `- [ ]` / `- [x]`, the one thing a node wears that Markdown
    has a word for (decision 12's reasoning about that file holds: every
    reader draws those as boxes), and reads it back; OPML and FreeMind carry
-   `_task`. No key: Space is the hand tool's hold. Priority, progress
-   percentages, flags and due dates (the rest of item 4) stay open.
+   `_task`. No key: Space is the hand tool's hold. The rest of item 4 is
+   built (decisions 34 and 37; HISTORY.md, "Moved from the plans,
+   2026-10-05 (markers)" and "(due dates, op5)").
 16. **The board's Insert and Arrange menus stay in the markup** (taken
    2026-10-04, §13f's remainder). Read as dead markup on a map; measured, it
    is the board's own: one top bar serves both kinds and a board uses all 20
