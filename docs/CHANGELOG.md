@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Timeline: a due reminder's page notification is measured under a stubbed `Notification` (granted, denied, default; with and without the worker): granted gives title "Reminder", the text as body and the toast, with Done and Snooze 10 minutes through the worker; denied and default give the toast alone; pinned in `tests/test_reminder_notification_matrix.py`; L913 closes with the real Windows and macOS look in BACKLOG.
 - Timeline: the Timeline tab click to its first rows re-measured at 96 notes (10 runs, fresh browser each, load 0.8 to 2.1): 70 to 158 ms, median 84 ms, against the 300 ms bar; L912 closes with the owner's own hardware in BACKLOG.
 - Timeline: the calendar's double tap is measured with real touch events (`hasTouch`, `isMobile`, 1024): two taps 90 ms apart send clicks with detail 1 then 2 and open the add sheet on the day (20 Nov, 09:00); one tap opens the Day view; the handler is pinned in `tests/test_timeline_cal_double_tap.py`; L911 closes with the real device and the real model's reading in BACKLOG.
 - Timeline: a day page dropped on another day in the calendar's month view is measured under touch emulation at 1024 (it moves, or stays with "That day already has a page; open it to write there.", or does nothing on its own day) and pinned without a browser (`tests/test_timeline_cal_drop_page.py`); L910 closes with the real tablet long-press in BACKLOG.
