@@ -302,6 +302,16 @@
           );
           install.dataset.packagesFocus = `bundle-install-${bundle.id}`;
           actions.appendChild(install);
+        } else if (installed < members.length && !body.running) {
+          //: Audit 1029 W24 (L518): a count short of whole with no Install said
+          //: nothing about why; the package's own reason does.
+          const why = members.find((extra) => !extra.installed && extra.unavailable)?.unavailable;
+          if (why) {
+            const said = document.createElement("span");
+            said.className = "muted text-sm extras-bundle-why";
+            said.textContent = why;
+            actions.appendChild(said);
+          }
         }
         const reinstallable = members.filter((extra) => packagesCan(extra, "reinstall"));
         const removable = members.filter((extra) => packagesCan(extra, "uninstall"));
