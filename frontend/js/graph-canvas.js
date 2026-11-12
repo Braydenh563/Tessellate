@@ -6012,133 +6012,11 @@
         //: one skipped frame's worth of pool.
         if (message.epoch !== s.epoch) return;
         if (message.type === "tick") {
-          s.ticksSeen = (s.ticksSeen || 0) + 1;
-          s.alpha = message.alpha;
-          s.ticks = message.ticks || 0;
-          s.tickMs = message.tickMs || 0;
-          s.layoutRunning = message.running !== false;
-          const positions = message.positions;
-          const count = Math.min(s.nodes.length, positions.length / 2);
-          //: **Drawn between ticks, not at them** (INBOX 586, "the graph is a
-          //: little jittery when nodes move around or adjust position"). The
-          //: worker steps on its own timer (16 ms, or as long as a tick took on
-          //: a big map) and the canvas paints on the display's: the two beat,
-          //: so a note moved two steps in one frame, none in the next, one in
-          //: the one after. Each tick is now kept with the one before it, and a
-          //: frame draws the point between them that its time says
-          //: (`gcGlideStep`): the motion one tick interval late, at an even
-          //: speed across the frames in between.
-          //: How long a glide lasts is the interval ticks have been arriving
-          //: at, smoothed (a timer's few milliseconds of jitter would otherwise
-          //: make every glide a different speed), and a gap after the layout was
-          //: at rest is not an interval at all.
-          const now = performance.now();
-          const gap = s.lastTickAt && now - s.lastTickAt < GC_GLIDE_MAX_MS * 2 ? now - s.lastTickAt : null;
-          s.lastTickAt = now;
-          if (gap !== null) {
-            const smoothed = s.tickGap ? s.tickGap * 0.8 + gap * 0.2 : gap;
-            s.tickGap = Math.min(GC_GLIDE_MAX_MS, Math.max(GC_GLIDE_MIN_MS, smoothed));
-          }
-          const drift = gcAimNodes(s, positions, count);
-          s.glideFrom = now;
-          s.glideMs = 0;
-          s.gliding = true;
-          if (gcTickSettles(s)) gcGlideFinish(s);
-          // The positions moved, so the hit-test index is stale. Marked here
-          // rather than at the end of every draw: a settled map redraws on
-          // hover without anything having moved, and rebuilding a 2,000-point
-          // quadtree per pointermove for nothing is a millisecond a frame.
-          s.quadtreeDirty = true;
-          gcTickDraw(s, now, drift);
-          // **Framed twice: once straight away, once when it settles.**
-          //
-          // The SVG renderer framed the map exactly once, when the simulation
-          // cooled below alpha 0.08, about 110 ticks. Measured on the 2,000-note
-          // fixture in this sandbox, a tick costs ~80 ms, so that is nine seconds
-          // of watching a graph whose notes are mostly outside the frame at
-          // zoom 1, with no way to know that is what you are looking at. The
-          // first tick is framed immediately instead, so the map is *visible*
-          // from the first moment, and the settle re-frames it once the layout
-          // has actually decided its shape.
-          //
-          // The second fit is skipped if the user has zoomed or panned in the
-          // meantime: recentring the camera out from under someone who has
-          // deliberately gone to look at something is the reported bug
-          // `graphAutoFitDone` exists for, and an early fit must not reintroduce
-          // it by making the late fit unconditional.
-          //: The warm-up's playback (`frame`, below) is framed already: the
-          //: fits wait for the live layout, which starts where it ends.
-          if (!message.intro) s.intro = false;
-          if (!gcAutoFitDone(s) && s.nodes.length && !s.intro) {
-            if (!s.fittedOnce) {
-              s.fittedOnce = true;
-              //: Instant (INBOX 738): a glide from the default camera is the
-              //: zoomed-in first frames the hiding exists to keep off screen.
-              //: And framed on where this tick put the notes, not where the
-              //: glide has them: `x`/`y` are still the starting spiral until
-              //: the next paint, which is what the first fit used to frame
-              //: (k 2.5, the clamp, on 60 notes).
-              gcGlideFinish(s);
-              fitGraphToView(s.svg, s.zoom, s.nodes, s.dims.w, s.dims.h, true);
-              s.fitTicks = s.ticksSeen;
-              gcRevealAfterBalance(s);
-            } else if (message.alpha < 0.08) {
-              gcSetAutoFitDone(s, true);
-              if (!s.userZoomed) {
-                fitGraphToView(s.svg, s.zoom, s.nodes, s.dims.w, s.dims.h);
-                //: The layout keeps drifting between alpha 0.08 and rest, so
-                //: this frame could end lopsided: a wide empty band along one
-                //: edge (owner, 0.3.31: "the graph auto size leaves quite a bit
-                //: of a gap at the bottom"). One more fit at "end", below.
-                s.fitAgainAtEnd = true;
-              }
-            }
-          }
-          // Hand the buffer back so the worker can reuse it (see its `pool`).
-          s.worker.postMessage({ type: "recycle", buffer: positions.buffer }, [positions.buffer]);
-          //: By the clock, not by the tick count: a tick is 16 ms on a small map
-          //: and 80 on a big one, so one paint in eight was eight a second on one
-          //: and one a second on the other, each rewriting up to 700 dots and 700
-          //: lines. The map at rest paints it again (`end`).
-          if (s.size === "full" && now - (s.minimapAt || 0) >= GC_MINIMAP_MS) {
-            s.minimapAt = now;
-            graphMinimapQueuePaint();
-          }
+          gcOnWorkerTick(s, message);
         } else if (message.type === "frame") {
           gcFrameIntro(s, message.positions, message.start);
         } else if (message.type === "end") {
-          s.layoutRunning = false;
-          //: At rest is where the last tick said: the glide is finished here,
-          //: not by the next paint, so the fit below frames the final shape.
-          gcGlideFinish(s);
-          gcDrawHeld(s);
-          //: What just came to rest, so the next render of exactly these
-          //: inputs can hold it instead of settling it again (`gcStartWorker`).
-          s.settledSig = s.layoutSig;
-          gcSavePositions(s);
-          //: Links drawn as hairlines while moving (`gcSetStroke`) are true at rest.
-          if (s.hairDrawn) gcRequestDraw(s);
-          if (s.size === "full") graphMinimapQueuePaint();
-          if (!gcAutoFitDone(s) && s.nodes.length) {
-            gcSetAutoFitDone(s, true);
-            //: Nothing moved since the first fit (the settled map as the one
-            //: frame, less motion): framing it again from the guess undid its
-            //: balance, a hop just after the cut-in.
-            if (s.ticksSeen !== s.fitTicks) fitGraphToView(s.svg, s.zoom, s.nodes, s.dims.w, s.dims.h);
-          } else if (s.fitAgainAtEnd && !s.userZoomed && s.nodes.length) {
-            fitGraphToView(s.svg, s.zoom, s.nodes, s.dims.w, s.dims.h);
-          }
-          s.fitAgainAtEnd = false;
-          if (!s.revealAfterFit) gcReveal(s);
-          // GRAPH_PLAN Phase 5: the settle a restored view's unplaced notes
-          // forced is over, so the notes it held still (`viewSeed.freezeIds`,
-          // below) are released the same way a drag's freeze is: `thaw`, no
-          // alpha change, so releasing them does not itself start another
-          // settle.
-          if (s._viewRestorePending) {
-            s._viewRestorePending = false;
-            gcPost({ type: "thaw" }, s);
-          }
+          gcOnWorkerEnd(s);
         }
       };
       s.worker.onerror = () => {
@@ -6170,6 +6048,186 @@
       setTimeout(() => gcReveal(s), 4000);
     }
     const hidden = s.canvas?.style.opacity === "0";
+    const init = gcWorkerInit(nodes, edges, world, s, viewSeed, reframe, hidden);
+    //: **A layout that already settled is held, not settled again** (INBOX
+    //: 424c/d). Every visit to the Graph tab refetched the map and restarted
+    //: the simulation at full heat from the positions it had already come to
+    //: rest in, so each visit paid a whole settle for a picture that ended up
+    //: where it started: measured at 4x CPU on a 400-note, 1,200-link graph,
+    //: about 7s of main-thread work in the eight seconds after arriving, and
+    //: the map visibly shuffling the whole time. The signature is everything
+    //: the worker's answer depends on apart from where the notes start (which
+    //: notes, their pins and sizes, every line, the forces, the world); when
+    //: it is the signature of the layout that last came to rest, and every
+    //: note is starting from where that layout left it (`holdIfSettled`, from
+    //: the render), the layout starts at rest, exactly the way a restored
+    //: view does. Anything that changes an input changes the signature, and
+    //: that render heats the layout as it always did.
+    const sig = JSON.stringify([
+      init.perf,
+      //: Not the radius (audit G4): the Size rule only changes how big a dot is drawn, and
+      //: a settled map stays where it is rather than re-laying out (12 s at 2,000 notes).
+      //: The new radii still reach the worker in `init`, for the next drag or real change.
+      init.nodes.map((n) => [n.id, n.fx, n.fy]),
+      init.edges.map((e) => [e.source, e.target, e.kind, e.score, e.curated]),
+      init.params,
+      world,
+    ]);
+    if (init.alpha && viewSeed?.holdIfSettled && s.settledSig === sig) init.alpha = 0;
+    //: **An update moves the map from where it is** (Brief 100 (a)): a filter,
+    //: a hidden category or a deleted note, every note still there already
+    //: placed and the forces unchanged, reheats as a drag does rather than
+    //: from full heat, which shuffled the whole map for one note's change.
+    const forces = gcForcesKey(s);
+    if (init.alpha === 1 && viewSeed?.holdIfSettled && s.lastForces === forces) init.alpha = GC_UPDATE_ALPHA;
+    s.lastForces = forces;
+    s.layoutSig = sig;
+    s.settledSig = null;
+    gcPost(init, s);
+    // Freeze the view's own notes *after* init, so the worker reads their
+    // current (just-seeded) x/y as the position to hold, exactly the "freeze
+    // holds where a note already is" contract `freeze` has for a drag.
+    if (viewSeed && viewSeed.freezeIds && viewSeed.freezeIds.length) {
+      gcPost({ type: "freeze", ids: viewSeed.freezeIds }, s);
+      s._viewRestorePending = true;
+    }
+  }
+
+  function gcOnWorkerTick(s, message) {
+    s.ticksSeen = (s.ticksSeen || 0) + 1;
+    s.alpha = message.alpha;
+    s.ticks = message.ticks || 0;
+    s.tickMs = message.tickMs || 0;
+    s.layoutRunning = message.running !== false;
+    const positions = message.positions;
+    const count = Math.min(s.nodes.length, positions.length / 2);
+    //: **Drawn between ticks, not at them** (INBOX 586, "the graph is a
+    //: little jittery when nodes move around or adjust position"). The
+    //: worker steps on its own timer (16 ms, or as long as a tick took on
+    //: a big map) and the canvas paints on the display's: the two beat,
+    //: so a note moved two steps in one frame, none in the next, one in
+    //: the one after. Each tick is now kept with the one before it, and a
+    //: frame draws the point between them that its time says
+    //: (`gcGlideStep`): the motion one tick interval late, at an even
+    //: speed across the frames in between.
+    //: How long a glide lasts is the interval ticks have been arriving
+    //: at, smoothed (a timer's few milliseconds of jitter would otherwise
+    //: make every glide a different speed), and a gap after the layout was
+    //: at rest is not an interval at all.
+    const now = performance.now();
+    const gap = s.lastTickAt && now - s.lastTickAt < GC_GLIDE_MAX_MS * 2 ? now - s.lastTickAt : null;
+    s.lastTickAt = now;
+    if (gap !== null) {
+      const smoothed = s.tickGap ? s.tickGap * 0.8 + gap * 0.2 : gap;
+      s.tickGap = Math.min(GC_GLIDE_MAX_MS, Math.max(GC_GLIDE_MIN_MS, smoothed));
+    }
+    const drift = gcAimNodes(s, positions, count);
+    s.glideFrom = now;
+    s.glideMs = 0;
+    s.gliding = true;
+    if (gcTickSettles(s)) gcGlideFinish(s);
+    // The positions moved, so the hit-test index is stale. Marked here
+    // rather than at the end of every draw: a settled map redraws on
+    // hover without anything having moved, and rebuilding a 2,000-point
+    // quadtree per pointermove for nothing is a millisecond a frame.
+    s.quadtreeDirty = true;
+    gcTickDraw(s, now, drift);
+    gcFitOnTick(s, message);
+    // Hand the buffer back so the worker can reuse it (see its `pool`).
+    s.worker.postMessage({ type: "recycle", buffer: positions.buffer }, [positions.buffer]);
+    //: By the clock, not by the tick count: a tick is 16 ms on a small map
+    //: and 80 on a big one, so one paint in eight was eight a second on one
+    //: and one a second on the other, each rewriting up to 700 dots and 700
+    //: lines. The map at rest paints it again (`end`).
+    if (s.size === "full" && now - (s.minimapAt || 0) >= GC_MINIMAP_MS) {
+      s.minimapAt = now;
+      graphMinimapQueuePaint();
+    }
+  }
+
+  function gcFitOnTick(s, message) {
+    // **Framed twice: once straight away, once when it settles.**
+    //
+    // The SVG renderer framed the map exactly once, when the simulation
+    // cooled below alpha 0.08, about 110 ticks. Measured on the 2,000-note
+    // fixture in this sandbox, a tick costs ~80 ms, so that is nine seconds
+    // of watching a graph whose notes are mostly outside the frame at
+    // zoom 1, with no way to know that is what you are looking at. The
+    // first tick is framed immediately instead, so the map is *visible*
+    // from the first moment, and the settle re-frames it once the layout
+    // has actually decided its shape.
+    //
+    // The second fit is skipped if the user has zoomed or panned in the
+    // meantime: recentring the camera out from under someone who has
+    // deliberately gone to look at something is the reported bug
+    // `graphAutoFitDone` exists for, and an early fit must not reintroduce
+    // it by making the late fit unconditional.
+    //: The warm-up's playback (`frame`, below) is framed already: the
+    //: fits wait for the live layout, which starts where it ends.
+    if (!message.intro) s.intro = false;
+    if (!gcAutoFitDone(s) && s.nodes.length && !s.intro) {
+      if (!s.fittedOnce) {
+        s.fittedOnce = true;
+        //: Instant (INBOX 738): a glide from the default camera is the
+        //: zoomed-in first frames the hiding exists to keep off screen.
+        //: And framed on where this tick put the notes, not where the
+        //: glide has them: `x`/`y` are still the starting spiral until
+        //: the next paint, which is what the first fit used to frame
+        //: (k 2.5, the clamp, on 60 notes).
+        gcGlideFinish(s);
+        fitGraphToView(s.svg, s.zoom, s.nodes, s.dims.w, s.dims.h, true);
+        s.fitTicks = s.ticksSeen;
+        gcRevealAfterBalance(s);
+      } else if (message.alpha < 0.08) {
+        gcSetAutoFitDone(s, true);
+        if (!s.userZoomed) {
+          fitGraphToView(s.svg, s.zoom, s.nodes, s.dims.w, s.dims.h);
+          //: The layout keeps drifting between alpha 0.08 and rest, so
+          //: this frame could end lopsided: a wide empty band along one
+          //: edge (owner, 0.3.31: "the graph auto size leaves quite a bit
+          //: of a gap at the bottom"). One more fit at "end", below.
+          s.fitAgainAtEnd = true;
+        }
+      }
+    }
+  }
+
+  function gcOnWorkerEnd(s) {
+    s.layoutRunning = false;
+    //: At rest is where the last tick said: the glide is finished here,
+    //: not by the next paint, so the fit below frames the final shape.
+    gcGlideFinish(s);
+    gcDrawHeld(s);
+    //: What just came to rest, so the next render of exactly these
+    //: inputs can hold it instead of settling it again (`gcStartWorker`).
+    s.settledSig = s.layoutSig;
+    gcSavePositions(s);
+    //: Links drawn as hairlines while moving (`gcSetStroke`) are true at rest.
+    if (s.hairDrawn) gcRequestDraw(s);
+    if (s.size === "full") graphMinimapQueuePaint();
+    if (!gcAutoFitDone(s) && s.nodes.length) {
+      gcSetAutoFitDone(s, true);
+      //: Nothing moved since the first fit (the settled map as the one
+      //: frame, less motion): framing it again from the guess undid its
+      //: balance, a hop just after the cut-in.
+      if (s.ticksSeen !== s.fitTicks) fitGraphToView(s.svg, s.zoom, s.nodes, s.dims.w, s.dims.h);
+    } else if (s.fitAgainAtEnd && !s.userZoomed && s.nodes.length) {
+      fitGraphToView(s.svg, s.zoom, s.nodes, s.dims.w, s.dims.h);
+    }
+    s.fitAgainAtEnd = false;
+    if (!s.revealAfterFit) gcReveal(s);
+    // GRAPH_PLAN Phase 5: the settle a restored view's unplaced notes
+    // forced is over, so the notes it held still (`viewSeed.freezeIds`,
+    // below) are released the same way a drag's freeze is: `thaw`, no
+    // alpha change, so releasing them does not itself start another
+    // settle.
+    if (s._viewRestorePending) {
+      s._viewRestorePending = false;
+      gcPost({ type: "thaw" }, s);
+    }
+  }
+
+  function gcWorkerInit(nodes, edges, world, s, viewSeed, reframe, hidden) {
     //: **A saved view's notes are held from the first step** (claim #238): the
     //: `freeze` below arrived after `init`, and an init that warmed (a view
     //: re-picks its layout, which clears the fit, so `reframe`) stepped every
@@ -6230,48 +6288,7 @@
       //: notes stand.
       bloom: hidden,
     };
-    //: **A layout that already settled is held, not settled again** (INBOX
-    //: 424c/d). Every visit to the Graph tab refetched the map and restarted
-    //: the simulation at full heat from the positions it had already come to
-    //: rest in, so each visit paid a whole settle for a picture that ended up
-    //: where it started: measured at 4x CPU on a 400-note, 1,200-link graph,
-    //: about 7s of main-thread work in the eight seconds after arriving, and
-    //: the map visibly shuffling the whole time. The signature is everything
-    //: the worker's answer depends on apart from where the notes start (which
-    //: notes, their pins and sizes, every line, the forces, the world); when
-    //: it is the signature of the layout that last came to rest, and every
-    //: note is starting from where that layout left it (`holdIfSettled`, from
-    //: the render), the layout starts at rest, exactly the way a restored
-    //: view does. Anything that changes an input changes the signature, and
-    //: that render heats the layout as it always did.
-    const sig = JSON.stringify([
-      init.perf,
-      //: Not the radius (audit G4): the Size rule only changes how big a dot is drawn, and
-      //: a settled map stays where it is rather than re-laying out (12 s at 2,000 notes).
-      //: The new radii still reach the worker in `init`, for the next drag or real change.
-      init.nodes.map((n) => [n.id, n.fx, n.fy]),
-      init.edges.map((e) => [e.source, e.target, e.kind, e.score, e.curated]),
-      init.params,
-      world,
-    ]);
-    if (init.alpha && viewSeed?.holdIfSettled && s.settledSig === sig) init.alpha = 0;
-    //: **An update moves the map from where it is** (Brief 100 (a)): a filter,
-    //: a hidden category or a deleted note, every note still there already
-    //: placed and the forces unchanged, reheats as a drag does rather than
-    //: from full heat, which shuffled the whole map for one note's change.
-    const forces = gcForcesKey(s);
-    if (init.alpha === 1 && viewSeed?.holdIfSettled && s.lastForces === forces) init.alpha = GC_UPDATE_ALPHA;
-    s.lastForces = forces;
-    s.layoutSig = sig;
-    s.settledSig = null;
-    gcPost(init, s);
-    // Freeze the view's own notes *after* init, so the worker reads their
-    // current (just-seeded) x/y as the position to hold, exactly the "freeze
-    // holds where a note already is" contract `freeze` has for a drag.
-    if (viewSeed && viewSeed.freezeIds && viewSeed.freezeIds.length) {
-      gcPost({ type: "freeze", ids: viewSeed.freezeIds }, s);
-      s._viewRestorePending = true;
-    }
+    return init;
   }
 
   //: **The camera is framed on where the warm-up ends, before it is played**
