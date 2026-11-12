@@ -7413,15 +7413,21 @@ button.connection-row:is(:hover, :focus-visible) {
 /* On a phone the page has no room to give up: the panel is the width of the
    window less its gutters, over the page, whatever the grip set on a wider
    screen (half of a 360 window is a 180px column of wrapped words). */
-@media (max-width: 719.98px) {
+@media (max-width: 599.98px) {
   #tab-documents.doc-focus #doc-prose-panel:not(.hidden) {
     left: var(--space-4);
     width: auto;
   }
 }
-/* From 720 the page keeps 320px or more beside either panel (L403: at 760
-   and 819 both covered it, the 820 line being the phone's). */
-@media (min-width: 720px) {
+/* From 600 the page sits beside either panel (L403: at 760 and 819 both
+   covered it, the 820 line being the phone's); below 820 the suggestions
+   take 40vw, not half, so the page keeps 280px or more. */
+@media (max-width: 819.98px) {
+  #tab-documents.doc-focus {
+    --doc-focus-prose-w: min(var(--doc-prose-w), 40vw);
+  }
+}
+@media (min-width: 600px) {
   #tab-documents.doc-focus:has(#doc-prose-panel:not(.hidden)) .doc-main {
     padding-right: calc(var(--doc-focus-prose-w) + var(--space-4) * 2);
   }
@@ -7506,7 +7512,7 @@ button.connection-row:is(:hover, :focus-visible) {
     display: none;
   }
 }
-@media (max-width: 719.98px) {
+@media (max-width: 599.98px) {
   #tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar {
     right: var(--space-4);
     width: auto;
@@ -7520,7 +7526,7 @@ button.connection-row:is(:hover, :focus-visible) {
 #tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar {
   transition: opacity var(--ui-slow) var(--ease-out), translate var(--ui-slow) var(--ease-out);
 }
-@media (min-width: 720px) {
+@media (min-width: 600px) {
   #tab-documents.doc-focus.doc-focus-sidebar .doc-main {
     padding-left: calc(var(--doc-focus-sidebar-w) + var(--space-4) * 2);
   }
