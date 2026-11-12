@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
-| chat | 176 | 188 | 59 | 2 | 59 | 423 |
+| chat | 176 | 187 | 56 | 2 | 59 | 419 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 695 | 156 | 3 | 195 | 1404 |
+| all | 553 | 694 | 153 | 3 | 195 | 1400 |
 
 ## graph
 
@@ -60,7 +60,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L21** `chat` open, S: Stop listing past-dated lines as upcoming (Z26). From OPEN.md:4055. Evidence: composer_ahead.py deferred, no fix found. Probed 2026-11-12: "what is coming up" correctly drops a past-dated line; "what is due soon" and "due this week" return "cannot find" on the bare composer (another route may own them); unverified end to end.
 - [ ] **L22** `chat` open, S: Make the due-soon window and due-soon set agree (Z27). From OPEN.md:4056. Evidence: composer_ahead.py date windows deferred, no fix found. Probed 2026-11-12: see L21; not fixed.
 - [ ] **L23** `chat` open, S: Write reminder confirmations as full sentences with one time format (Z62). From OPEN.md:4078. Evidence: Built in when.py/acts.py; was held by another agent, no fix found.
-- [ ] **L24** `chat` open, S: Stop the act turning a whole sentence into the note title (Z63). From OPEN.md:4079. Evidence: Not reproduced from Ask tab; needs Chat-tab sweep of title built from a sentence.
 - [ ] **L25** `chat` open, S: Read a one-line CJK note as content, not title-only (C10). From OPEN.md:4090. Evidence: Not probed (needs CJK note in seed); recorded in bc-1111.md.
 - [ ] **L26** `chat` open, S: Fix citation superscript landing mid-sentence (E51). From OPEN.md:4503. Evidence: Lead phrase table in composer_*.py, another agent's file; not changed
 - [ ] **L27** `chat` open, S: Fix grammar slips in fixed answer frames (C36). From OPEN.md:4515. Evidence: Remaining frames are in composer_tables.py, another agent's file
@@ -83,8 +82,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L45** `chat` open, S: Add a model-needed message for 'make it simpler' with no model. From a30e-1102.md Found, not fixed. Evidence: No 'simpler' in capability.py/commands.py/composer_help.py
 - [ ] **L47** `chat` open, S: Fix rename 'X to Y' splitting at the first ' to '. From acts-1108.md Left. Evidence: No later fix commit found
 - [ ] **L48** `chat` open, S: Add chips to 'thanks'/'hello' replies (F5). From fc56-1110.md Left. Evidence: No closing-chip change found in composer_talk.py
-- [ ] **L49** `chat` open, S: Stop 'Remind me about Dentist the day before' asking what it is for. From fc56-1110.md Left. Evidence: No test with 'the day before' reminder phrase found
-- [ ] **L50** `chat` open, S: Fix title for 'new note called Christmas with mum, dad and Sara' (B26 Q5). From w9b-1110.md Left. Evidence: No test with that phrase found; commands._PLAIN_NAME splits at 'with'
 - [ ] **L51** `chat` open, S: Make tab-level Guide topics ring each topic's own control, not the tab's main control. From OPEN.md:963; OPEN.md:2709. Evidence: No per-topic ring found in help-chat.js (grep ring/highlight empty); topics carry tab-level path only
 - [ ] **L52** `chat` open, S: Read the Guide fallback log line (help_chat.answer_stream) when the Guide fails with a model. From OPEN.md:968; OPEN.md:987; OPEN.md:2858. Evidence: Only reproduces with a real model; help-chat.js catch needs a model-run server log
 - [ ] **L54** `chat` open, S: Drive Brief 84 Guide first line and act topics in a browser. From OPEN.md:606; OPEN.md:2861. Evidence: API/unit tests only; browser drive of Guide not recorded
@@ -104,8 +101,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L68** `chat` open, S: Reword or remove the dead 'managed runner killed' message (Rule 5). From OPEN.md:1966. Evidence: App starts no runner; message wording/dead path not confirmed removed
 - [ ] **L69** `chat` open, S: Block held-back skills from the agent run_skill tool. From OPEN.md:2583. Evidence: run_skill in agent_turn.py; label only in picker/Settings
 - [ ] **L70** `chat` open, S: Keep modelStatus on a failed status poll so Agent does not grey and flicker. From OPEN.md:2733. Evidence: Verified open 2026-11-10
-- [ ] **L71** `chat` open, S: Let reading commands take a note by number ('pin note 12'). From OPEN.md:2775. Evidence: commands.py:893 _one_target; verified open
-- [ ] **L72** `chat` open, S: Give each act a stem instead of starting with the example's first word. From OPEN.md:2793. Evidence: Stem per act not set; verified open
 - [ ] **L73** `chat` open, S: Draw the chart event in the Ask box (capture-ask.js onChart). From OPEN.md:2854. Evidence: onChart passed only at chat-turn.js:473; capture-ask.js has no chart handling
 - [ ] **L74** `chat` open, S: Wire Ask all notes (#ask-scope-clear) before the Questions view is opened. From OPEN.md:3515. Evidence: Pre-existing; no fix recorded.
 - [ ] **L75** `chat` open, S: Browser-run the Chat can't-be-reached message and quiz chips. From OPEN.md:3853. Evidence: node --check only; a sweep could verify
@@ -131,7 +126,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L96** `chat` open, M: Restore or drop ai/tool_summary.py named on wip/composer-acts but missing. From OPEN.md:941. Evidence: src/tessellate/ai/tool_summary.py does not exist; no module references it
 - [ ] **L97** `chat` open, M: Add professional variants for next-question chips, citation phrases and other languages. From OPEN.md:3512. Evidence: No variants found in voice.py/composer_voice.py for mention_*, lists, echo; other languages absent.
 - [ ] **L98** `chat` open, M: Support 'on my birthday' with a stored birthday setting. From OPEN.md:3717. Evidence: routes_read.py:42 takes birthday=; no setting stores one
-- [ ] **L99** `chat` open, M: Ask for a time instead of guessing tomorrow 9 for a reminder with no time. From OPEN.md:3728. Evidence: commands.py:352 and :394 still resolve('tomorrow'); acts.py:62 slots_missing not applied there
 - [ ] **L100** `chat` open, M: Agent mode with no model should not answer with the whole sentence as subject. From OPEN.md:3843. Evidence: Found not fixed (composer-1011)
 - [ ] **L101** `chat` open, M: Hand the model linked_to and why. From OPEN.md:3845. Evidence: No linked_to in ai/librarian.py
 - [ ] **L102** `chat` open, M: Derive themes beyond shared tags and links. From OPEN.md:3846. Evidence: composer_frame.themes unchanged
@@ -221,7 +215,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L191** `chat` partly, S: Fix single-note '[your note, date]' endings, repeated chips and 24-note overview. From OPEN.md:814. Evidence: No literal '[your note, ' found in composer*.py; chip repeats and 24-note wording unverified Probed 2026-11-12: see L117; literal ending not found.
 - [ ] **L192** `chat` partly, S: Show open checklist items for 'what is still open on X' (P16). From OPEN.md:848. Evidence: composer.py:46 handles checklist ticked counts; open-items question not found
 - [ ] **L193** `chat` partly, S: Magic add 'tonight around 7pm'; equalise edit button heights. From OPEN.md:3826. Evidence: reminder_parser.py:218 hedges parse 'probably around 7pm'; button heights unverified
-- [ ] **L194** `chat` partly, S: Fix 'call anna' lower-case and 'call the dentist' reminder offer; 'make a checklist for my trip'. From composer-r8-1109.md Left. Evidence: Trip checklist phrase in tests/test_composer_talk_1110.py; lower-case call-reminder offer not found in tests
 - [ ] **L195** `chat` partly, S: Check that each Guide topic answers its question (only the head was read). From OPEN.md:984. Evidence: tests/test_help_coverage.py checks topics_for per question; not read end to end by a human rater
 - [ ] **L196** `chat` partly, S: Stop saved-chat list refetch per checkpoint (E58). From OPEN.md:4504. Evidence: List does not flash (showSkeletons, notes-list.js:2991); refetch per checkpoint stays (sheets-selects.js:1833)
 - [ ] **L197** `chat` partly, S: Fix web-down message repeating advice and dropping the port (A9). From OPEN.md:4564. Evidence: composer_web.py:152 prints the saved searxng_url (port included if saved); duplicate advice and agent_policy web_down not re-driven
@@ -231,7 +224,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L204** `chat` partly, S: Repeat in 'milk' line still reproduced; 'what did I write about in October' restates a line. From ledger-1112 E18.
 - [ ] **L205** `chat` partly, S: 'compare Tokyo and Lisbon' opener 'Of the notes found...' and repeated cites need fixing. From ledger-1112 D20.
 - [ ] **L206** `chat` partly, S: 'how far did I run' adds goal to distance (16 km for 6 km); no fix or test. From ledger-1112 G1.
-- [ ] **L207** `chat` partly, S: 'remember to take the bins out tonight' returns None; 'between 8 and 10' becomes 09:00. From ledger-1112 G10.
 - [ ] **L208** `chat` partly, M: Finish reminder, timer and dark-mode composer commands (E56). From OPEN.md:4026. Evidence: Timer/pomodoro/stopwatch done (tests/test_composer_bc1_1111.py). Missing: 'remind me ... an hour before' (when.py) and 'switch to dark mode' act.
 - [ ] **L209** `chat` partly, M: Finish comparison questions such as 'which is cheaper' and 'who is older' (E9). From OPEN.md:4135. Evidence: Cheaper/costs-more compare figures; 'who is older, Anna or Tom' still gives gift line, no birth-year reader in composer_amounts.
 - [ ] **L210** `chat` partly, M: Fix the 'who is Priya' overview shape (R3-20). From OPEN.md:4152. Evidence: Owned by 1743 (overview answer shape); not closed.
@@ -247,7 +239,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L220** `chat` partly, M: Make composer do AI actions without a model. From INBOX.md:904 B33. Evidence: tests/test_composer_ai_actions.py exists; O7 (OPEN) still holds the quality bar
 - [ ] **L221** `chat` partly, M: Fix composer wording and grammar around dates. From INBOX.md:904 B85. Evidence: OPEN O4 holds it; date wording tests in tests/test_composer_r9_values_1109.py; no closing record
 - [ ] **L222** `chat` partly, M: Read typos in context with notebook word-pair scoring (Brief 104, W2). From SESSION_BRIEFS.md:359; e19-1110.md Tier F. Evidence: ai/spelling.py:56,:456,:580,:594 CONTEXT_READINGS; notebook word-pair scoring and before/after share missing
-- [ ] **L223** `chat` partly, M: Extend undo beyond pin/tick; duplicate-card wording; 'similar to X' ranking (B24, B27). From w9b-1110.md Left. Evidence: reading.py:498 _INVERSE covers tick/pin only; commands.py:801 searches topic, no likeness ranking
+- [ ] **L223** `chat` partly, M: Extend undo beyond pin/tick; duplicate-card wording; 'similar to X' ranking (B24, B27). From w9b-1110.md Left. Evidence: undo now says the inverse of tag, untag, link, unlink and reminder too (reading.py _INVERSE, tests/test_chat_acts_gap_1112.py); a rename or a move cannot be said back (old title unknown); 'similar to X' alone still reads as no act, commands.py:801 searches topic, no likeness ranking
 - [ ] **L224** `chat` partly, M: Verify Chat next-question chips (.chat-followups) in a browser with a real model; sweep stubs /chat/followups. From OPEN.md:952; OPEN.md:981; OPEN.md:2373; OPEN.md:3517. Evidence: Real chip text needs a real model; no-model path returns [] by design
 - [ ] **L225** `chat` partly, M: Design per-answer 'wrong' feedback (E59) and code editor tabs (D52). From OPEN.md:4505; v1028-4.md Remaining. Evidence: Thumbs/Not right store: what it teaches and consent are owner calls
 - [ ] **L226** `chat` partly, M: Show times for messages saved before stamps existed. From OPEN.md:995. Evidence: chat-time.js and routes_conversations.py:418 last_at fall back to updated_at; per-line old messages still unstamped by nature
@@ -260,7 +252,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L233** `chat` partly, M: Class/data-* change on #nm-buddy restyles 1,244 elements. From a31c-1103.md Left, with numbers. Evidence: 36ecedeb1 reduced it; Windows numbers never taken (Not verified block)
 - [ ] **L236** `chat` partly, M: Joke note naming: leads by quote not name; lowercased 'orchard', backlinks mapping. From ledger-1112 O11; ledger-1112 X5.
 - [ ] **L238** `chat` partly, M: pointerup 320 ms on button.nm-buddy-face. From INBOX.md:1726. Evidence: 36ecedeb1 band under html: Blend 822-1315 to 136-226 ms; event timing still noisy 40-350 ms
-- [ ] **L240** `chat` partly, M: B26 Q6 list-add rule on the chat route. B24 undo and confirm wordings, B26 Q5 title and B27 find-similar are pinned (ea5a6427d). From ledger-1112 X4.
 - [ ] **L241** `chat` partly, M: Name rules 5 and 4 wired only for first hello and dashboard; Guide profile topic lacks 'call me Sam'; no 20-turn eval. From ledger-1112 P27.
 - [ ] **L245** `chat` partly, M: Per-letter recheck; chip code and 'Something sometime' magic add not examined. From ledger-1112 G14.
 - [ ] **L248** `chat` partly, M: chat_pool.py _raw_results uncapped; re-measure composer digest lines on 500 notes. From ledger-1112 P6.
@@ -304,6 +295,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-21** `chat` open, M: Write the chat degrade tests. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:929. Evidence: Open line in the plan's prose a session could miss. Section 0 found list; tests/test_chat_degrades.py does not exist.
 - [ ] **L-chat-22** `chat` open, M: Build the missing composer eval fixtures. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1435. Evidence: Open line in the plan's prose a session could miss. Fixtures listed, not built.
 - [ ] **L-chat-24** `chat` open, S: Group the arrange commands in the phone More sheet. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1888. Evidence: Open line in the plan's prose a session could miss. Handed to the whiteboard plan, no row there.
+- [ ] **L-chat-25** `chat` open, M: L23: composer act card time format and label wording. From acts-1112. Evidence: src/tessellate/ai/commands.py _clock: 'at 9' vs '3pm'; card label not a full sentence
+- [ ] **L-chat-26** `chat` open, M: L67 L216: board, map, document and skill act rows. From acts-1112. Evidence: tools already return undo; no act rows for board, map, document, skill
+- [ ] **L-chat-27** `chat` open, M: L100, L123, L220: not reached by acts agent, re-read rows. From acts-1112. Evidence: L100 L123 L220 not reached in acts-1112
+- [ ] **L-chat-28** `chat` open, M: L208: dark-mode act and meeting-anchored reminder. From acts-1112. Evidence: applyThemeChoice in settings.js is client-side; 'an hour before the meeting' anchoring
+- [ ] **L-chat-29** `chat` open, M: L223 remainder: similar-to, rename/move undo, untag parse, summarise note id. From acts-1112. Evidence: similar to X not parsed; rename/move have no undo by sentence; 'untag the note about boiler' parses about=the; 'summarise note 12' drops note_id
 
 ## whiteboard
 

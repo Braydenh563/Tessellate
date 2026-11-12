@@ -497,19 +497,44 @@ def _follow_referent(raw: str, low: str, turns: list[dict]) -> str | None:
     return None
 
 
-#: What takes an act back, said as the sentence that does it (B24): "undo" after a tick, an untick, a pin or an unpin.
-_INVERSE = {"complete": "untick {about}", "uncomplete": "tick off {about}", "pin": "unpin the {about} note", "unpin": "pin the {about} note"}
+def _the(done: dict) -> str:
+    """The note an act named, as a phrase a sentence can take: "note 12" as it is, a title as "the X note"."""
+    return done["about"] if done.get("note_id") is not None else f"the {done['about']} note"
+
+
+def _other(done: dict) -> str:
+    return f"note {done['other_id']}" if done.get("other_id") is not None else f"the {done['other']} note"
+
+
+#: What takes an act back, said as the sentence that does it (B24, L223): "undo" after a tick, an untick, a
+#: pin, an unpin, a tag, an untag, a link, an unlink or a reminder. A rename or a move cannot be said (the old
+#: title or category is not in the sentence), so "undo" after those is still the help line about the keys.
+_INVERSE = {
+    "complete": lambda d: f"untick {d['about']}",
+    "uncomplete": lambda d: f"tick off {d['about']}",
+    "pin": lambda d: f"unpin {_the(d)}",
+    "unpin": lambda d: f"pin {_the(d)}",
+    "tag": lambda d: f"remove the tag {', '.join(d['tags'])} from {_the(d)}" if d.get("tags") else None,
+    "untag": lambda d: f"tag {_the(d)} with {', '.join(d['tags'])}" if d.get("tags") else None,
+    "link": lambda d: f"unlink {_the(d)} from {_other(d)}" if d.get("other") or d.get("other_id") is not None else None,
+    "unlink": lambda d: f"link {_the(d)} to {_other(d)}" if d.get("other") or d.get("other_id") is not None else None,
+    "reminder": lambda d: f"cancel the {d['said']} reminder" if d.get("said") else None,
+}
 
 
 def _untick_of(turn: dict, now: datetime) -> tuple[str, str] | None:
-    """The sentence that takes the last turn back when it ticked, unticked, pinned or
-    unpinned something, else None (so "undo" after anything else is still the help
+    """The sentence that takes the last turn back when it ticked, unticked, pinned, unpinned, tagged,
+    untagged, linked, unlinked or set a reminder, else None (so "undo" after anything else is still the help
     line about the keys)."""
     from tessellate.ai import commands
 
     done = commands.read(str(turn.get("text") or ""), now)
-    inverse = _INVERSE.get(done["intent"]) if done and done.get("about") else None
-    return (inverse.format(about=done["about"]), "undo") if inverse else None
+    inverse = _INVERSE.get(done["intent"]) if done else None
+    try:
+        said = inverse(done) if inverse else None
+    except KeyError:
+        said = None
+    return (said, "undo") if said else None
 
 
 def cited_follow(text: str, turns: list[dict] | None, now: datetime) -> str | None:

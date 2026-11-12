@@ -374,6 +374,11 @@ reminder for X on Friday", "tag these notes Y"), shown as the action they
 would take and confirmed before anything is written, the same confirm card
 an agent's write uses; Agent mode then opens with no model for those verbs;
 (g) built, see HISTORY.md "Moved from the plans, 2026-11-12 (compose agent)". Open items and
+composer acts": built, moved to HISTORY.md ("Moved from the plans,
+2026-11-12 (CHAT_PLAN Phase 5 f)"); (g) link reasons beyond "similar in meaning" (the owner: "can the composer be
+user to write better link reasons"): INBOX 691's concrete overlaps first,
+then the composer's quoted sentence pair, a model's checked line when one
+runs, feeding Tidy's "Add reasons" and "Add reasons to all". Open items and
 numbers: `composer725-1006.md` (git history).
 INBOX 1301 D5 (an overview note as its gist, sections said as its shape, no "You asked:" echo, a reminder only for a stated task): built, see HISTORY.md "Moved from the plans, 2026-10-18 (design4-1018: how a no-model answer reads)".
 
