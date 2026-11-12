@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
-| chat | 176 | 159 | 50 | 2 | 59 | 385 |
+| chat | 176 | 161 | 50 | 2 | 59 | 387 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 666 | 147 | 3 | 195 | 1366 |
+| all | 553 | 668 | 147 | 3 | 195 | 1368 |
 
 ## graph
 
@@ -266,6 +266,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-27** `chat` open, M: L100, L123, L220: not reached by acts agent, re-read rows. From acts-1112. Evidence: L100 L123 L220 not reached in acts-1112
 - [ ] **L-chat-28** `chat` open, M: L208: dark-mode act and meeting-anchored reminder. From acts-1112. Evidence: applyThemeChoice in settings.js is client-side; 'an hour before the meeting' anchoring
 - [ ] **L-chat-29** `chat` open, M: L223 remainder: similar-to, rename/move undo, untag parse, summarise note id. From acts-1112. Evidence: similar to X not parsed; rename/move have no undo by sentence; 'untag the note about boiler' parses about=the; 'summarise note 12' drops note_id
+- [ ] **L-chat-30** `chat` open, M: Strip the ask words from the subject of an overview question. From compose2 agent 2026-11-12. Evidence: probe: 'give me an overview of my sourdough notes' -> 'There are three notes on give me an overview of my sourdough.'
+- [ ] **L-chat-31** `chat` open, M: Drop the stray which-do-you-mean after a summarise-my-notes answer. From compose2 agent 2026-11-12. Evidence: probe: 'summarise my sourdough notes' ends 'Which do you mean: 1. Sourdough log; 2. More sourdough?'
 
 ## whiteboard
 
