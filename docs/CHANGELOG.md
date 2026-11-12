@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Live Text follows the page you scroll to in a PDF's scroll layout (checked, with a test).
 - A package bundle that cannot be installed here says why.
 - Settings, Search and index has a dated currency rate table you can edit; currency answers use it and say its date.
 - Undoing a fresh read puts back who read the old reading too.
