@@ -580,6 +580,8 @@ function wbSyncMoreMenu(menu) {
   let shown = false;
   let rule = null;
   for (const child of menu.children) {
+    //: The filter field and its "no match" note are not rows.
+    if (child.classList.contains("list-filter") || child.classList.contains("list-filter-empty")) continue;
     if (child.classList.contains("menu-sep")) {
       child.hidden = true;
       if (shown) rule = child;
@@ -653,7 +655,35 @@ function wbInitMoreMenu() {
   opener.id = "wb-more-toggle";
   //: Capture, so the rows are right before `kebabMenu`'s own listener opens
   //: the menu or moves it into the sheet.
-  opener.addEventListener("click", () => wbSyncMoreMenu(menu), true);
+  //: **A map's sheet is 59 to 62 rows at 390** (L367), so it takes the app's
+  //: one filter field (`listFilter`, DESIGN.md's long-list recipe): shown past
+  //: twelve rows, empty on every open, its misses hidden with the `hidden`
+  //: attribute the sync also writes. A separator means nothing in a list that
+  //: is being narrowed, so they hide while there is a query and the sync
+  //: puts them back when it clears.
+  const filter = listFilter(menu, { label: "Filter commands", inside: true, rows: ":scope > .menu-item" });
+  const sync = () => {
+    filter.refresh();
+    if (filter.input.value) for (const rule of menu.querySelectorAll(":scope > .menu-sep")) rule.hidden = true;
+  };
+  opener.addEventListener("click", () => {
+    filter.input.value = "";
+    filter.refresh();
+    wbSyncMoreMenu(menu);
+    sync();
+  }, true);
+  filter.input.addEventListener("input", () => {
+    sync();
+    if (!filter.input.value) wbSyncMoreMenu(menu);
+  });
+  filter.input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      menu.querySelector(":scope > .menu-item:not([hidden])")?.click();
+    } else if (event.key === "Home" || event.key === "End") {
+      event.stopPropagation();
+    }
+  });
   bar.append(wrap);
 }
 

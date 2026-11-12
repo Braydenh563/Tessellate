@@ -7,6 +7,19 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-12 (mapexport-1112)
+
+From MINDMAP_PLAN.md section 14's open list, the two stale export lines (L365):
+
+- Topic effects: built 2026-10-10, and in the PNG and SVG picture (`wbExportTopicEffect`: shadow filter, glow ring).
+- The exported picture draws a topic's shape, level type (size, weight, slant), effect and Phosphor icon
+  (`wbExportTopicGlyph`); the cut shapes (diamond, hexagon, chevron) are polygons, underline a bar, plain words only.
+
+## Moved from the plans, 2026-11-12 (mapexport-1112: emoji table)
+
+From MINDMAP_PLAN.md section 14's open list: the document editor's `:shortcode:` completion kept its own
+248-entry table (`DOC_EMOJI_SOURCE`). Folded into `ICON_EMOJI_SOURCE` through an alias map, resolved at call time.
+
 ## Moved from the plans, 2026-11-12 (mindmap-plan: mapquick)
 
 From MINDMAP_PLAN.md "Placed from INBOX, 2026-10-19 (edge sides; next PR)", verbatim:
@@ -55242,6 +55255,13 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
 
 ## Moved from the LEDGER
+- [x] **L369** `mindmap` open, M: Make wbSyncMapStrip ring the map's look, and add options for 17px size and level fill. From OPEN.md:1773; OPEN.md:3558. Evidence: whiteboard-map.js:7559 wbSyncMapStrip unchanged by evidence; 17px size and level fill gap remain Built: wbSyncMapStrip adds data-off-scale option for 17px so the pick row rings it; level fill already in wbSyncMapFill; test_map_node_controls
+- [x] **L366** `mindmap` open, M: Give the size stepper words and Classic level sizes S/M/L/XL instead of 17px/22px. From OPEN.md:1114. Evidence: No fix commit found for stepper words; needs a sweep to confirm Built: wbMapSizeStepper.say: level rows read S/M/L/XL/XXL; test_map_node_controls
+- [x] **L367** `mindmap` open, M: Add search or filter to the More sheet on a map (59-62 rows at 390). From OPEN.md:1682; OPEN.md:2802. Evidence: No filter in the sheet (chat-attach.js sheet recipe unchanged for this); long list remains Built: wbInitMoreMenu uses listFilter; 82 rows -> 9 for 'layout' at 390, restored 82; test_wb_commands
+- [x] **L368** `mindmap` open, M: Resolve map theme per node on export and test a FreeMind-authored arrowlink. From OPEN.md:1685; OPEN.md:3037. Evidence: wb_export.py:567-581 writes arrowlink; tests/test_mindmap.py only covers own export and a dangling destination, no FreeMind-authored file Built: theme resolved per node at wb_export.py:705-725 (test_an_export_of_a_themed_map...); new test_a_freemind_authored_arrowlink_imports_and_comes_back_out
+- [x] **L363** `mindmap` open, S: Name a saved Tree/Arc layout on a map as a dock chip when not Force. From OPEN.md:2659. Evidence: Recommendation not built; verified 2026-11-10 Built: already built: graph-canvas.js graphSyncLayoutChip + #graph-layout-chip, tests/test_graph_layout.py (verified passing)
+- [x] **L365** `mindmap` open, M: Make PNG/SVG export draw map topics with levels, shapes, icons, shadow and glow. From OPEN.md:1241; OPEN.md:3488; OPEN.md:2415. Evidence: whiteboard.js:14033 shadow and :14133 glyph/emoji icon handled; levels and shapes in map-node export not confirmed. Built: levels + cut shapes in wbBuildExportSvg map branch; effect/glyph already built; tests/test_map_export_topics_l365.py
+- [x] **L356** `mindmap` open, S: Tint monochrome map library schematics and stop the hollow diamond drawing its shaft. From OPEN.md:1110; OPEN.md:2677. Evidence: wbMapThumbSpec still in whiteboard-templates.js/whiteboard-library.js; no tint change found Built: wbThumbShapePart draws diamond/hexagon/circle; branches already tinted by wb-thumb-bN; test_map_templates_k15
 - [x] **L-mindmap-7** `mindmap` open, S: Make Web link insert inline syntax distinct from Link card. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1526. Evidence: Open line in the plan's prose a session could miss. The slash menu's Link card and Web link render the same. The inline-syntax recommendation waits on the owner. Built: Web link writes [text](<url>) alone on a line; tests/test_weblink_inline_lmm7.py
 - [x] **L362** `mindmap` open, S: Sweep pointer reorder in tree-down, org and tree-both layouts. From OPEN.md:3906. Evidence: Layouts exist (tests/test_map_branch_structure.py uses tree-down) but pointer reorder sweep for them not found; unverified, needs a sweep. Built: driven 2026-11-12 with a real pointer: tree-right 1,2,3,4 to 2,3,1,4; tree-down 2,3,1,4 to 3,1,2,4; tree-both 1,2,3,4 to 2,3,1,4, cue shown each (mapquick reorder.js)
 - [x] **L361** `mindmap` open, S: Stop the topic bar wrapping to two rows at 390. From OPEN.md:3555. Evidence: Measured identical on base; no fix commit. Built: decided in CSS (07-whiteboard-misc.css:8775): two rows on a phone, strip 260x102 at 390, scrollWidth = clientWidth, no page overflow

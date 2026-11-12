@@ -1699,14 +1699,8 @@ Phases 14a to 14e are built (HISTORY.md, "Moved from the plans, 2026-10-05
 - **Linked stickers** (Illustrator's symbols): edit one placed icon or emoji
   and every copy follows. Needs a `library_ref` that is followed, which
   decision 25 of WHITEBOARD_PLAN keeps as "kept, never followed".
-- ~~Topic effects~~ built 2026-10-10: HISTORY.md ("Moved from the plans, 2026-10-10 (boardmap-1010)"); not yet in the PNG or SVG picture.
 - Reaction stamps and voting: on a topic, built 2026-10-11 (HISTORY "Moved from the plans, 2026-10-11 (canvasdepth2)"); on a board card, open.
 - **The whiteboard half of 641's research**, beyond stickers.
-- The exported picture draws each topic's shape since 2026-10-10 (boardmap-1010); a
-  topic's effect and a Phosphor icon still do not reach PNG or SVG (an emoji icon does, as text).
-- The document editor's `:shortcode:` completion keeps its own 248-entry table
-  (`DOC_EMOJI_SOURCE`); fold it into `ICON_EMOJI_SOURCE` when the completion
-  can wait on the picker's script.
 
 ## Placed from the owner's list, 2026-10-10
 

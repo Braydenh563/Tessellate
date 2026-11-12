@@ -76,8 +76,8 @@ def test_the_surfaces_that_offer_a_glyph_open_the_one_picker():
 
 
 def test_no_third_emoji_table():
-    """The document editor's shortcode table and the picker's set, nothing else:
-    a file with dozens of escaped pictographs is an emoji table."""
+    """The picker's set and nothing else (the document editor's shortcodes are
+    aliases of it now): a file with dozens of escaped pictographs is an emoji table."""
     tables = sorted(
         path.name
         for path in JS.glob("*.js")
@@ -85,9 +85,27 @@ def test_no_third_emoji_table():
     )
     #: avatars.js holds emoji the companion recognises in what a person typed
     #: (matchers, not a table to pick from: test_no_ui_emoji.py says so).
-    assert tables == ["avatars.js", "documents-prose.js", "icon-picker.js"], tables
+    assert tables == ["avatars.js", "icon-picker.js"], tables
 
 
 def test_the_recipe_index_names_it():
     design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
     assert "`openIconPicker(" in design
+
+
+def test_every_shortcode_aliases_a_picker_emoji_and_the_old_248_survive():
+    """The document editor's `:shortcode:` names are aliases of the picker's
+    emoji (folded from `DOC_EMOJI_SOURCE`): each target must exist, so none
+    resolves to nothing, and the table keeps its 248 names."""
+    names = {pair.split("=")[0] for _, _, body in _emoji_source() for pair in body.split(",") if pair}
+    block = PICKER[PICKER.index("const ICON_SHORTCODES =") :]
+    block = block[: block.index(";\n")]
+    codes = "".join(re.findall(r'"([^"]*)"', block))
+    pairs = [pair.split("=") for pair in codes.split(",") if pair]
+    assert len(pairs) == 248
+    assert [code for code, target in pairs if target not in names] == []
+    assert {"heart", "+1", "-1", "fire", "umbrella", "bug", "confounded"} <= {code for code, _ in pairs}
+    # The completion asks the picker lazily, at call time, and says so to the loader.
+    prose = (JS / "documents-prose.js").read_text(encoding="utf-8")
+    assert "window.iconShortcodes?.()" in prose and 'ensureModule("iconPicker")' in prose
+    assert "DOC_EMOJI_SOURCE" not in prose

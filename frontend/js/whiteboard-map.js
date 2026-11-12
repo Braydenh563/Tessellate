@@ -1197,7 +1197,7 @@ function wbMapThemeLevelRows(level) {
     const said = preset[field.key];
     const shown = said === undefined ? "the app's own"
       : field.bool ? (said ? "on" : "off")
-        : field.number ? `${said}px`
+        : field.number ? wbMapSizeStepper.say(said)
           : (options.find(([v]) => v === String(said))?.[1] || String(said)).toLowerCase();
     const row = document.createElement("div");
     row.className = "wb-menu-row wb-map-theme-row";
@@ -7389,6 +7389,14 @@ wbMapSizeStepper.sizeName = function wbMapSizeName(size, steps) {
   return below.px === size || size < steps[0].px ? below.name : `${below.name}+`;
 };
 
+//: **A size in words** (L366): Classic's levels are 17 and 22px, which the
+//: sentences used to say as "17px" beside a bar that reads S, M, L, XL. A size
+//: on the level scale is its word; one off it stays a number.
+wbMapSizeStepper.say = function wbMapSay(size) {
+  const row = WB_MAP_LEVEL_ROWS.find((r) => r.key === "font_size");
+  return row.options.find(([v]) => Number(v) === Number(size))?.[1] || `${size}px`;
+};
+
 function wbMapSizeStepper(select) {
   const wrap = document.createElement("div");
   wrap.className = "stepper wb-map-size-stepper";
@@ -7766,7 +7774,26 @@ function wbSyncMapStrip(node) {
       }
       return value == null || value === "" ? "" : String(value);
     };
-    setSelect("wb-map-text-size", shown("font_size"));
+    //: **A size the strip has no word for gets a row of its own** (L369):
+    //: Classic's main topics are 17px, which none of S, M, L, XL is, so the
+    //: select could not hold it and the strip rang nothing (the pick row
+    //: rings what the select holds). The row is added while the topic uses
+    //: that size and removed after, as the icon slot adds its one-off
+    //: (`wbMapIconOption`), and named in pixels: its word on the level scale
+    //: would collide with the strip's own L.
+    const sizeSelect = document.getElementById("wb-map-text-size");
+    const wantSize = shown("font_size");
+    if (sizeSelect) {
+      sizeSelect.querySelector("option[data-off-scale]")?.remove();
+      if (wantSize && ![...sizeSelect.options].some((o) => o.value === wantSize)) {
+        const extra = document.createElement("option");
+        extra.value = wantSize;
+        extra.textContent = `${wantSize}px`;
+        extra.dataset.offScale = "";
+        sizeSelect.append(extra);
+      }
+    }
+    setSelect("wb-map-text-size", wantSize);
     setSelect("wb-map-align", shown("align"));
     wbMapIconOption(data.icon || "");
     setSelect("wb-map-strip-icon", data.icon || "");
