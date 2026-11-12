@@ -17,7 +17,8 @@ STABLE=(docks contrast leaks keyboard diskspace vibecheck graphminimap wbgroupgu
   touch phonesidebar phonecapture spinners companionbeats companionactease companionblend
   companioncollapse companionemotes companionentry companionlegs companionsay
   doccodecopy dockeyboard graphphone slashicons wbexportimage ctrlwheelzoom companionfade companiontabs doctoolbarstate profilelook iconfloor
-  errors@1440,1024 errors@820,390 asktab noteobject canvasconventions)
+  errors@1440,1024 errors@820,390 asktab noteobject canvasconventions
+  maplinkcue maplayouts mapmidpan)
 failed=()
 bash "$ROOT/scratchpad/ui-sweeps/serve.sh" ${SWEEP_PORT:-8781} "$DIR/sweeps" || exit 1
 for name in "${STABLE[@]}"; do

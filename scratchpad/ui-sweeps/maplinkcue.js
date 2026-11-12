@@ -43,7 +43,9 @@ function ok(label, good, detail) {
     const b = await wbMapCreateNode({ parentId: root.id, text: "Branch B" });
     await wbMapTidy({ quiet: true });
     const loose = await wbMapCreateNode({ text: "Loose idea" });
-    loose.x = a.x + 420;
+    // 300, not 420: with the map laid out as it is now, +420 put the topic's centre 1px past the right edge of a
+    // 1440px window, so the pointer never reached it and no cue could show.
+    loose.x = a.x + 300;
     loose.y = a.y + 40;
     loose.data = { ...loose.data, pinned: true };
     await wbSaveObject(loose);

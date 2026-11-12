@@ -356,7 +356,9 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
       switchTab("dashboard");
     });
     await page.waitForTimeout(700);
-    await page.evaluate(() => openOnboarding());
+    // showOnboarding, not openOnboarding: the latter now queues the welcome behind the first-run turns (firstRunTurn)
+    // and waits for a clear screen, so the sweep's next click waited on a card that had not been drawn.
+    await page.evaluate(() => showOnboarding());
     await page.waitForTimeout(400);
     const slides = await page.evaluate(() => ONBOARDING_SLIDES.length);
     for (let slide = 0; slide < slides - 1; slide += 1) {

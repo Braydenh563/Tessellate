@@ -315,9 +315,11 @@ const show = (o) => console.log("    " + JSON.stringify(o));
   //: own two (branch colours and font) in a fourth, first; since §14 the
   //: hierarchy select above them (decision 39), a tenth select; and since
   //: then the scope select ("whose look the rows set") and spacing: twelve
-  //: selects (listed in `labels`) and three switches.
-  check("fifteen fields in four named groups, from the recipe index's own rows",
-    dialog.selects === 12 && dialog.checks === 3 && dialog.heads.length === 4,
+  //: selects (listed in `labels`); the switches are Colour every level, Show a
+  //: legend, Bold, Italic and Dashed (the legend and Dashed arrived after the
+  //: count of three was written), so seventeen fields in all.
+  check("seventeen fields in four named groups, from the recipe index's own rows",
+    dialog.selects === 12 && dialog.checks === 5 && dialog.heads.length === 4,
     `${dialog.selects} selects, ${dialog.checks} switches, ${(dialog.heads || []).join(" | ")}`);
   check("and it fits without scrolling at this size",
     !dialog.overflows && dialog.viewMenuClosed,
