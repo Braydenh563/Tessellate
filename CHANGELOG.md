@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Notes: on card view the last card you clicked counts as the open note, so search ranks its linked notes higher.
 - Graph: a topic's card names the category most of its notes sit in, and File as a category offers it first.
 - Graph: topics can be merged and removed from the topic card's menu; each has an Undo, and Reset topic edits in the legend brings the automatic grouping back.
 - Graph: saved views and Reset now carry the link-kind chips; the node popup's topic chip is 44 px on touch.

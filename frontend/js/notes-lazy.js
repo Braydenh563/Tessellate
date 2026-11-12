@@ -156,9 +156,10 @@ async function refreshNoteSearchWhy() {
   // out in the list is the app's own "open note", and it is what makes the
   // third signal (distance over the links) mean anything. Two open rows, or
   // none, is not a context, and passing a guess would put "linked to the open
-  // note" on a note linked to something nobody is reading.
+  // note" on a note linked to something nobody is reading. On card view the
+  // last card clicked or focused counts (L709, the owner 2026-11-12).
   const open =
-    editingId || (expandedRows.size === 1 ? [...expandedRows][0] : null);
+    editingId || (expandedRows.size === 1 ? [...expandedRows][0] : null) || Number($("entry-list")?.dataset.lastCard) || null;
   let body;
   try {
     // 50 is the endpoint's own ceiling (`routes_search.MAX_LIMIT`): a search
