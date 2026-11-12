@@ -325,6 +325,8 @@ def _framed_scope(req: _StreamRequest, follow) -> list[int]:  # noqa: ANN001
     rows = visible_notes.by_ids(req.session, follow.note_ids)
     ids = [row.id for row in rows]
     bound = " ".join(row.content or "" for row in rows).lower()
+    if _said_plainly_instead(req, follow, bound):
+        return []
     asked = composer_dialogue.subject_terms(req.question) if follow.kind == "bound" else []
     own = _own_words(asked, bound)
     if follow.kind == "bound" and not own and not _slot_cue(req.question):
@@ -333,6 +335,15 @@ def _framed_scope(req: _StreamRequest, follow) -> list[int]:  # noqa: ANN001
         follow.question = req.question if follow.kind == "bound" else follow.question  # let go: the turn's own words, searched
         return []
     return ids
+
+
+def _said_plainly_instead(req: _StreamRequest, follow, bound: str) -> bool:  # noqa: ANN001
+    """"who am I going with" after an answer binds to that note; when it has no such line the question is the trip note's (F13 a)."""
+    plain = composer_dialogue.said_plainly(req.question)
+    if follow.kind != "bound" or plain is None or not plain.question.endswith("travelling with") or "going with" in bound:
+        return False
+    follow.question, follow.kind, follow.note_ids = plain.question, "subject", ()
+    return True
 
 
 def _own_words(asked: list[str], bound: str) -> list[str]:

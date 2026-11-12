@@ -136,3 +136,34 @@ def test_notes_per_week_is_the_chart_with_a_model_up(client, clock, spread, fake
     out = _ask(client, "Show notes per week", use_tools=True)
     assert out["text"].startswith("Here are your notes per week"), out["text"]
     assert sum(_strip(out)["points"]) == 3
+
+
+#: A filtered or summarised ask is the agent's, not the whole-notebook chart (review of PR 216).
+@pytest.mark.parametrize("question", [
+    "show me my notes by tag recipes",
+    "Show notes by category Work from last month",
+    "give me a summary of my notes by category",
+    "show me the meeting notes by tag urgent and summarise them",
+    "Show me my notes per week about the garden project",
+])
+def test_a_filtered_chart_ask_reaches_the_agent(client, clock, spread, fake_ollama, session, question):
+    manager.create_entry(session, "# Soup\n\nA recipe.", category_name="Work", tags=["recipes"])
+    session.commit()
+    out = _ask(client, question, use_tools=True)
+    assert not out["text"].startswith("Here are your notes"), out["text"]
+    assert fake_ollama.chat_calls or fake_ollama.tool_rounds
+
+
+def test_a_chart_ask_about_selected_notes_is_not_the_whole_notebook(client, clock, spread, fake_ollama, session):
+    from tessellate.core.database import Entry
+
+    note = session.query(Entry).first()
+    out = _ask(client, "Show notes per week", use_tools=True, note_ids=[note.id])
+    assert not out["text"].startswith("Here are your notes"), out["text"]
+
+
+@pytest.mark.parametrize("question", ["show notes per week", "Show me my notes per week, please", "draw notes by month."])
+def test_a_plain_chart_ask_still_charts(client, clock, spread, fake_ollama, session, question):
+    manager.create_entry(session, "# Soup\n\nA recipe.", category_name="Work", tags=["recipes"])
+    session.commit()
+    assert _ask(client, question, use_tools=True)["text"].startswith("Here are your notes")

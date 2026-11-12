@@ -40,6 +40,11 @@ _CHART_NOUN = r"diagrams?|charts?|graphs?|plots?|visuali[sz]ations?"
 _OTHER_CHART = re.compile(rf"\b(?:{_OTHER})\b.*\b(?:{_CHART_NOUN})\b|\b(?:{_CHART_NOUN})\b.*\b(?:{_OTHER})\b", re.I)
 _BARE_OTHER = re.compile(rf"^(?:and |ok |okay |so )?(?:(?:show|give|draw) me |any |do you have |got )?(?:an?|the|any)? ?(?:{_OTHER}) ?(?:one|ones)?\W*$", re.I)
 _CHART_ASK = re.compile(r"^(?:(?:show|draw|chart|graph|plot|give|see)\b.*?)\b(?:notes?|writing) (?:per|by|each) (?P<by>week ?day|day of the week|week|month|tag|category)\b", re.I)
+#: The ask said whole, for a turn a model may answer: anything after the period word ("by tag recipes",
+#: "per week about the garden") is a filter or a summary the chart does not do (review of PR 216).
+_CHART_ASK_WHOLE = re.compile(
+    rf"^(?:show|draw|chart|graph|plot|give|see)\b(?: me| us)?(?: an?| the| all)?(?: my| our| the)?(?: (?:{_CHART_NOUN}) of)?(?: my| our| the| all)? ?(?:notes?|writing) (?:per|by|each) "
+    r"(?P<by>week ?day|day of the week|week|month|tag|category)(?:[\s,]*(?:please|thanks|thank you|for me))?$", re.I)
 _BY_WORD = {"week": "time", "tag": "tag", "category": "category", "weekday": "weekday"}
 _PART = re.compile(r"\b(?P<part>tags?|categor(?:y|ies)|documents?|docs|month)\b", re.I)
 _REFERS = re.compile(r"\b(?:those|these|that|the|which|what|list|show|name|its|their)\b", re.I)
@@ -166,9 +171,9 @@ def _other_chart(session: Session, question: str, prev: Prev, today: date) -> li
     return _chart_reply(session, first, today, f"Here are your notes {_CHART_WORDS[first]}.", rest)
 
 
-def _chart_by(session: Session, question: str, prev: Prev, today: date) -> list[dict] | None:
+def _chart_by(session: Session, question: str, prev: Prev, today: date, *, whole: bool = False) -> list[dict] | None:
     """"Show notes per tag", the chip an offered chart is."""
-    got = _CHART_ASK.search(question)
+    got = (_CHART_ASK_WHOLE if whole else _CHART_ASK).search(question)
     if not got:
         return None
     word = got.group("by").lower().replace(" ", "")
@@ -291,7 +296,7 @@ def chart_ask(session: Session, question: str, history: list[dict], today: date)
     75). A model handed the ask called the notes list with the category "week"
     and said there were none (the owner, 2026-11-12)."""
     said = _clean(question).rstrip("?!. ")
-    return _chart_by(session, said, from_history(history, today), today) if said else None
+    return _chart_by(session, said, from_history(history, today), today, whole=True) if said else None
 
 
 # --- an offer taken up (B23) ----------------------------------------------------

@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8325, frontend ids 2763, CSS sections 524, backend routes 698, backend modules 10752, test files 2667, tests 21774, plan headings 685, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8325, frontend ids 2763, CSS sections 524, backend routes 698, backend modules 10754, test files 2667, tests 21782, plan headings 685, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8325)
 
@@ -13907,7 +13907,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10752)
+## Backend modules (10754)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -15107,65 +15107,66 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_words` | src/tessellate/ai/composer_credit.py:18 |
 | `answer` | src/tessellate/ai/composer_credit.py:22 |
 
-### src/tessellate/ai/composer_dialogue.py (55)
+### src/tessellate/ai/composer_dialogue.py (56)
 
 | Name | File:line |
 |---|---|
-| `Dialogue` | src/tessellate/ai/composer_dialogue.py:852 |
+| `Dialogue` | src/tessellate/ai/composer_dialogue.py:855 |
 | `FollowOn` | src/tessellate/ai/composer_dialogue.py:225 |
-| `_WORDED_PHRASES` | src/tessellate/ai/composer_dialogue.py:916 |
-| `_bound_pronoun` | src/tessellate/ai/composer_dialogue.py:686 |
-| `_carried_source` | src/tessellate/ai/composer_dialogue.py:604 |
+| `_WORDED_PHRASES` | src/tessellate/ai/composer_dialogue.py:919 |
+| `_bound_pronoun` | src/tessellate/ai/composer_dialogue.py:689 |
+| `_carried_source` | src/tessellate/ai/composer_dialogue.py:607 |
 | `_defining_ask` | src/tessellate/ai/composer_dialogue.py:272 |
-| `_follow_bare` | src/tessellate/ai/composer_dialogue.py:460 |
-| `_follow_correction` | src/tessellate/ai/composer_dialogue.py:399 |
-| `_follow_length` | src/tessellate/ai/composer_dialogue.py:411 |
-| `_follow_meant` | src/tessellate/ai/composer_dialogue.py:444 |
-| `_follow_more` | src/tessellate/ai/composer_dialogue.py:374 |
-| `_follow_now` | src/tessellate/ai/composer_dialogue.py:821 |
-| `_follow_one` | src/tessellate/ai/composer_dialogue.py:840 |
-| `_follow_one_repaired` | src/tessellate/ai/composer_dialogue.py:335 |
-| `_follow_ordinal` | src/tessellate/ai/composer_dialogue.py:386 |
-| `_follow_other` | src/tessellate/ai/composer_dialogue.py:772 |
-| `_follow_part` | src/tessellate/ai/composer_dialogue.py:786 |
-| `_follow_pronoun` | src/tessellate/ai/composer_dialogue.py:628 |
-| `_follow_shift` | src/tessellate/ai/composer_dialogue.py:419 |
-| `_follow_slot` | src/tessellate/ai/composer_dialogue.py:709 |
-| `_follow_swap` | src/tessellate/ai/composer_dialogue.py:514 |
-| `_follow_then` | src/tessellate/ai/composer_dialogue.py:728 |
-| `_follow_which` | src/tessellate/ai/composer_dialogue.py:808 |
-| `_follow_window` | src/tessellate/ai/composer_dialogue.py:425 |
-| `_frame_days` | src/tessellate/ai/composer_dialogue.py:959 |
-| `_frame_ids` | src/tessellate/ai/composer_dialogue.py:935 |
-| `_frame_of` | src/tessellate/ai/composer_dialogue.py:671 |
-| `_frame_thing` | src/tessellate/ai/composer_dialogue.py:676 |
-| `_frames` | src/tessellate/ai/composer_dialogue.py:666 |
+| `_follow_bare` | src/tessellate/ai/composer_dialogue.py:463 |
+| `_follow_correction` | src/tessellate/ai/composer_dialogue.py:402 |
+| `_follow_length` | src/tessellate/ai/composer_dialogue.py:414 |
+| `_follow_meant` | src/tessellate/ai/composer_dialogue.py:447 |
+| `_follow_more` | src/tessellate/ai/composer_dialogue.py:377 |
+| `_follow_now` | src/tessellate/ai/composer_dialogue.py:824 |
+| `_follow_one` | src/tessellate/ai/composer_dialogue.py:843 |
+| `_follow_one_repaired` | src/tessellate/ai/composer_dialogue.py:338 |
+| `_follow_ordinal` | src/tessellate/ai/composer_dialogue.py:389 |
+| `_follow_other` | src/tessellate/ai/composer_dialogue.py:775 |
+| `_follow_part` | src/tessellate/ai/composer_dialogue.py:789 |
+| `_follow_pronoun` | src/tessellate/ai/composer_dialogue.py:631 |
+| `_follow_shift` | src/tessellate/ai/composer_dialogue.py:422 |
+| `_follow_slot` | src/tessellate/ai/composer_dialogue.py:712 |
+| `_follow_swap` | src/tessellate/ai/composer_dialogue.py:517 |
+| `_follow_then` | src/tessellate/ai/composer_dialogue.py:731 |
+| `_follow_which` | src/tessellate/ai/composer_dialogue.py:811 |
+| `_follow_window` | src/tessellate/ai/composer_dialogue.py:428 |
+| `_frame_days` | src/tessellate/ai/composer_dialogue.py:962 |
+| `_frame_ids` | src/tessellate/ai/composer_dialogue.py:938 |
+| `_frame_of` | src/tessellate/ai/composer_dialogue.py:674 |
+| `_frame_thing` | src/tessellate/ai/composer_dialogue.py:679 |
+| `_frames` | src/tessellate/ai/composer_dialogue.py:669 |
 | `_named_notes` | src/tessellate/ai/composer_dialogue.py:248 |
 | `_next_questions` | src/tessellate/ai/composer_dialogue.py:95 |
 | `_own_terms` | src/tessellate/ai/composer_dialogue.py:37 |
-| `_person` | src/tessellate/ai/composer_dialogue.py:948 |
-| `_person_swap` | src/tessellate/ai/composer_dialogue.py:746 |
-| `_plain` | src/tessellate/ai/composer_dialogue.py:944 |
-| `_pronoun_kind` | src/tessellate/ai/composer_dialogue.py:571 |
-| `_pronoun_read` | src/tessellate/ai/composer_dialogue.py:648 |
-| `_pronoun_swap` | src/tessellate/ai/composer_dialogue.py:591 |
-| `_property_only` | src/tessellate/ai/composer_dialogue.py:560 |
+| `_person` | src/tessellate/ai/composer_dialogue.py:951 |
+| `_person_swap` | src/tessellate/ai/composer_dialogue.py:749 |
+| `_plain` | src/tessellate/ai/composer_dialogue.py:947 |
+| `_pronoun_kind` | src/tessellate/ai/composer_dialogue.py:574 |
+| `_pronoun_read` | src/tessellate/ai/composer_dialogue.py:651 |
+| `_pronoun_swap` | src/tessellate/ai/composer_dialogue.py:594 |
+| `_property_only` | src/tessellate/ai/composer_dialogue.py:563 |
 | `_shared_tag_pick` | src/tessellate/ai/composer_dialogue.py:54 |
-| `_standing` | src/tessellate/ai/composer_dialogue.py:352 |
+| `_spoken_turns` | src/tessellate/ai/composer_dialogue.py:307 |
+| `_standing` | src/tessellate/ai/composer_dialogue.py:355 |
 | `_subject_pick` | src/tessellate/ai/composer_dialogue.py:81 |
-| `_swap_in_shape` | src/tessellate/ai/composer_dialogue.py:477 |
-| `_swap_plain_what` | src/tessellate/ai/composer_dialogue.py:491 |
-| `_swap_reading` | src/tessellate/ai/composer_dialogue.py:523 |
+| `_swap_in_shape` | src/tessellate/ai/composer_dialogue.py:480 |
+| `_swap_plain_what` | src/tessellate/ai/composer_dialogue.py:494 |
+| `_swap_reading` | src/tessellate/ai/composer_dialogue.py:526 |
 | `_tag_holders` | src/tessellate/ai/composer_dialogue.py:43 |
-| `_templates_in` | src/tessellate/ai/composer_dialogue.py:906 |
+| `_templates_in` | src/tessellate/ai/composer_dialogue.py:909 |
 | `_unquoted_note_pick` | src/tessellate/ai/composer_dialogue.py:68 |
 | `_without_length` | src/tessellate/ai/composer_dialogue.py:217 |
-| `follow_on` | src/tessellate/ai/composer_dialogue.py:307 |
-| `other_in_frames` | src/tessellate/ai/composer_dialogue.py:763 |
+| `follow_on` | src/tessellate/ai/composer_dialogue.py:311 |
+| `other_in_frames` | src/tessellate/ai/composer_dialogue.py:766 |
 | `refers_back` | src/tessellate/ai/composer_dialogue.py:157 |
-| `repeats` | src/tessellate/ai/composer_dialogue.py:992 |
+| `repeats` | src/tessellate/ai/composer_dialogue.py:995 |
 | `said_plainly` | src/tessellate/ai/composer_dialogue.py:296 |
-| `turn_frame` | src/tessellate/ai/composer_dialogue.py:969 |
+| `turn_frame` | src/tessellate/ai/composer_dialogue.py:972 |
 
 ### src/tessellate/ai/composer_digest.py (135)
 
@@ -16803,43 +16804,43 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Closing` | src/tessellate/ai/composer_talk.py:452 |
-| `Prev` | src/tessellate/ai/composer_talk.py:49 |
-| `_bar` | src/tessellate/ai/composer_talk.py:116 |
-| `_busiest_month` | src/tessellate/ai/composer_talk.py:215 |
-| `_busiest_week` | src/tessellate/ai/composer_talk.py:407 |
-| `_category_list` | src/tessellate/ai/composer_talk.py:197 |
-| `_chart_by` | src/tessellate/ai/composer_talk.py:169 |
-| `_chart_chip` | src/tessellate/ai/composer_talk.py:138 |
-| `_chart_reply` | src/tessellate/ai/composer_talk.py:142 |
-| `_clean` | src/tessellate/ai/composer_talk.py:64 |
-| `_day` | src/tessellate/ai/composer_talk.py:395 |
-| `_document_list` | src/tessellate/ai/composer_talk.py:206 |
-| `_empty_day_acts` | src/tessellate/ai/composer_talk.py:416 |
-| `_join` | src/tessellate/ai/composer_talk.py:152 |
-| `_kind_of_answer` | src/tessellate/ai/composer_talk.py:89 |
-| `_month_list` | src/tessellate/ai/composer_talk.py:224 |
-| `_n` | src/tessellate/ai/composer_talk.py:59 |
-| `_nearest_day` | src/tessellate/ai/composer_talk.py:399 |
-| `_note_offer_sentence` | src/tessellate/ai/composer_talk.py:352 |
-| `_offers_chips` | src/tessellate/ai/composer_talk.py:447 |
-| `_other_chart` | src/tessellate/ai/composer_talk.py:156 |
-| `_part_of` | src/tessellate/ai/composer_talk.py:240 |
-| `_previous_turn` | src/tessellate/ai/composer_talk.py:256 |
-| `_tag_list` | src/tessellate/ai/composer_talk.py:185 |
-| `_weekdays` | src/tessellate/ai/composer_talk.py:120 |
-| `_window` | src/tessellate/ai/composer_talk.py:68 |
-| `accepted_offer` | src/tessellate/ai/composer_talk.py:310 |
-| `acts_for` | src/tessellate/ai/composer_talk.py:428 |
-| `chart_ask` | src/tessellate/ai/composer_talk.py:289 |
-| `cited_question` | src/tessellate/ai/composer_talk.py:375 |
-| `drawing` | src/tessellate/ai/composer_talk.py:126 |
-| `from_history` | src/tessellate/ai/composer_talk.py:264 |
-| `held_offer` | src/tessellate/ai/composer_talk.py:328 |
-| `previous` | src/tessellate/ai/composer_talk.py:97 |
-| `reply` | src/tessellate/ai/composer_talk.py:274 |
-| `social_turn` | src/tessellate/ai/composer_talk.py:521 |
-| `stumped_asks` | src/tessellate/ai/composer_talk.py:516 |
+| `Closing` | src/tessellate/ai/composer_talk.py:457 |
+| `Prev` | src/tessellate/ai/composer_talk.py:54 |
+| `_bar` | src/tessellate/ai/composer_talk.py:121 |
+| `_busiest_month` | src/tessellate/ai/composer_talk.py:220 |
+| `_busiest_week` | src/tessellate/ai/composer_talk.py:412 |
+| `_category_list` | src/tessellate/ai/composer_talk.py:202 |
+| `_chart_by` | src/tessellate/ai/composer_talk.py:174 |
+| `_chart_chip` | src/tessellate/ai/composer_talk.py:143 |
+| `_chart_reply` | src/tessellate/ai/composer_talk.py:147 |
+| `_clean` | src/tessellate/ai/composer_talk.py:69 |
+| `_day` | src/tessellate/ai/composer_talk.py:400 |
+| `_document_list` | src/tessellate/ai/composer_talk.py:211 |
+| `_empty_day_acts` | src/tessellate/ai/composer_talk.py:421 |
+| `_join` | src/tessellate/ai/composer_talk.py:157 |
+| `_kind_of_answer` | src/tessellate/ai/composer_talk.py:94 |
+| `_month_list` | src/tessellate/ai/composer_talk.py:229 |
+| `_n` | src/tessellate/ai/composer_talk.py:64 |
+| `_nearest_day` | src/tessellate/ai/composer_talk.py:404 |
+| `_note_offer_sentence` | src/tessellate/ai/composer_talk.py:357 |
+| `_offers_chips` | src/tessellate/ai/composer_talk.py:452 |
+| `_other_chart` | src/tessellate/ai/composer_talk.py:161 |
+| `_part_of` | src/tessellate/ai/composer_talk.py:245 |
+| `_previous_turn` | src/tessellate/ai/composer_talk.py:261 |
+| `_tag_list` | src/tessellate/ai/composer_talk.py:190 |
+| `_weekdays` | src/tessellate/ai/composer_talk.py:125 |
+| `_window` | src/tessellate/ai/composer_talk.py:73 |
+| `accepted_offer` | src/tessellate/ai/composer_talk.py:315 |
+| `acts_for` | src/tessellate/ai/composer_talk.py:433 |
+| `chart_ask` | src/tessellate/ai/composer_talk.py:294 |
+| `cited_question` | src/tessellate/ai/composer_talk.py:380 |
+| `drawing` | src/tessellate/ai/composer_talk.py:131 |
+| `from_history` | src/tessellate/ai/composer_talk.py:269 |
+| `held_offer` | src/tessellate/ai/composer_talk.py:333 |
+| `previous` | src/tessellate/ai/composer_talk.py:102 |
+| `reply` | src/tessellate/ai/composer_talk.py:279 |
+| `social_turn` | src/tessellate/ai/composer_talk.py:526 |
+| `stumped_asks` | src/tessellate/ai/composer_talk.py:521 |
 
 ### src/tessellate/ai/composer_tally.py (15)
 
@@ -21031,49 +21032,50 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `acts_on_listed_task` | src/tessellate/api/chat_said.py:953 |
 | `reply_panel` | src/tessellate/api/chat_said.py:447 |
 
-### src/tessellate/api/chat_turn.py (39)
+### src/tessellate/api/chat_turn.py (40)
 
 | Name | File:line |
 |---|---|
-| `_asks_change` | src/tessellate/api/chat_turn.py:545 |
+| `_asks_change` | src/tessellate/api/chat_turn.py:556 |
 | `_chat_reply` | src/tessellate/api/chat_turn.py:92 |
-| `_checks_grounding` | src/tessellate/api/chat_turn.py:392 |
+| `_checks_grounding` | src/tessellate/api/chat_turn.py:403 |
 | `_cited_scope` | src/tessellate/api/chat_turn.py:303 |
-| `_composed_support` | src/tessellate/api/chat_turn.py:355 |
+| `_composed_support` | src/tessellate/api/chat_turn.py:366 |
 | `_composes_offline` | src/tessellate/api/chat_turn.py:139 |
 | `_detect_intent` | src/tessellate/api/chat_turn.py:41 |
-| `_engine_answers` | src/tessellate/api/chat_turn.py:402 |
-| `_facts_turn` | src/tessellate/api/chat_turn.py:465 |
-| `_fold_event` | src/tessellate/api/chat_turn.py:591 |
-| `_frame_events` | src/tessellate/api/chat_turn.py:380 |
+| `_engine_answers` | src/tessellate/api/chat_turn.py:413 |
+| `_facts_turn` | src/tessellate/api/chat_turn.py:476 |
+| `_fold_event` | src/tessellate/api/chat_turn.py:602 |
+| `_frame_events` | src/tessellate/api/chat_turn.py:391 |
 | `_framed_scope` | src/tessellate/api/chat_turn.py:319 |
 | `_insight_level` | src/tessellate/api/chat_turn.py:151 |
 | `_insight_memory` | src/tessellate/api/chat_turn.py:282 |
-| `_is_composing` | src/tessellate/api/chat_turn.py:417 |
-| `_live_grounder` | src/tessellate/api/chat_turn.py:615 |
+| `_is_composing` | src/tessellate/api/chat_turn.py:428 |
+| `_live_grounder` | src/tessellate/api/chat_turn.py:626 |
 | `_log_question` | src/tessellate/api/chat_turn.py:62 |
 | `_may_digest` | src/tessellate/api/chat_turn.py:296 |
 | `_meaning_loading` | src/tessellate/api/chat_turn.py:161 |
 | `_model_stream_events` | src/tessellate/api/chat_turn.py:208 |
-| `_names_a_note_word` | src/tessellate/api/chat_turn.py:724 |
-| `_not_again` | src/tessellate/api/chat_turn.py:360 |
-| `_note_kind` | src/tessellate/api/chat_turn.py:580 |
-| `_note_with_hint` | src/tessellate/api/chat_turn.py:693 |
-| `_notes_first` | src/tessellate/api/chat_turn.py:741 |
+| `_names_a_note_word` | src/tessellate/api/chat_turn.py:735 |
+| `_not_again` | src/tessellate/api/chat_turn.py:371 |
+| `_note_kind` | src/tessellate/api/chat_turn.py:591 |
+| `_note_with_hint` | src/tessellate/api/chat_turn.py:704 |
+| `_notes_first` | src/tessellate/api/chat_turn.py:752 |
 | `_notes_messages` | src/tessellate/api/chat_turn.py:178 |
-| `_own_words` | src/tessellate/api/chat_turn.py:338 |
-| `_relay_events` | src/tessellate/api/chat_turn.py:629 |
-| `_searched_question` | src/tessellate/api/chat_turn.py:384 |
-| `_slot_cue` | src/tessellate/api/chat_turn.py:343 |
-| `_social_line` | src/tessellate/api/chat_turn.py:734 |
-| `_trim_answer` | src/tessellate/api/chat_turn.py:675 |
-| `_uncut` | src/tessellate/api/chat_turn.py:461 |
+| `_own_words` | src/tessellate/api/chat_turn.py:349 |
+| `_relay_events` | src/tessellate/api/chat_turn.py:640 |
+| `_said_plainly_instead` | src/tessellate/api/chat_turn.py:340 |
+| `_searched_question` | src/tessellate/api/chat_turn.py:395 |
+| `_slot_cue` | src/tessellate/api/chat_turn.py:354 |
+| `_social_line` | src/tessellate/api/chat_turn.py:745 |
+| `_trim_answer` | src/tessellate/api/chat_turn.py:686 |
+| `_uncut` | src/tessellate/api/chat_turn.py:472 |
 | `_verdicts` | src/tessellate/api/chat_turn.py:270 |
-| `_visible_elsewhere` | src/tessellate/api/chat_turn.py:349 |
-| `_why` | src/tessellate/api/chat_turn.py:699 |
-| `_will_answer` | src/tessellate/api/chat_turn.py:431 |
-| `_with_frame` | src/tessellate/api/chat_turn.py:370 |
-| `model_chips` | src/tessellate/api/chat_turn.py:444 |
+| `_visible_elsewhere` | src/tessellate/api/chat_turn.py:360 |
+| `_why` | src/tessellate/api/chat_turn.py:710 |
+| `_will_answer` | src/tessellate/api/chat_turn.py:442 |
+| `_with_frame` | src/tessellate/api/chat_turn.py:381 |
+| `model_chips` | src/tessellate/api/chat_turn.py:455 |
 
 ### src/tessellate/api/chat_web.py (13)
 
@@ -27653,7 +27655,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21774)
+## Tests (21782)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28214,12 +28216,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_owner_1459.py | 24 |
 | tests/test_composer_owner_1665.py | 22 |
 | tests/test_composer_owner_1705_1109.py | 10 |
-| tests/test_composer_pa_1112.py | 4 |
+| tests/test_composer_pa_1112.py | 5 |
 | tests/test_composer_pa_acts_1112.py | 5 |
 | tests/test_composer_pa_asks_1112.py | 11 |
 | tests/test_composer_pa_chat_1112.py | 3 |
 | tests/test_composer_pa_chips_1112.py | 3 |
-| tests/test_composer_pa_dialogue_1112.py | 15 |
+| tests/test_composer_pa_dialogue_1112.py | 17 |
 | tests/test_composer_pa_parity_1112.py | 5 |
 | tests/test_composer_panel_216.py | 5 |
 | tests/test_composer_parts.py | 4 |
@@ -29536,7 +29538,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_panel_movable_whole_1448.py | 1 |
 | tests/test_panel_rim_1536.py | 3 |
 | tests/test_panel_scrim_lift_1029.py | 3 |
-| tests/test_parity_1110.py | 34 |
+| tests/test_parity_1110.py | 36 |
 | tests/test_parity_acts_1110.py | 22 |
 | tests/test_passes.py | 7 |
 | tests/test_passive_capture.py | 9 |
@@ -29866,7 +29868,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_slash_ai_gate_1102.py | 3 |
 | tests/test_slash_charts_1333.py | 3 |
 | tests/test_slash_falls_through.py | 1 |
-| tests/test_slash_timeline_1333.py | 11 |
+| tests/test_slash_timeline_1333.py | 14 |
 | tests/test_slot_reference_1570.py | 2 |
 | tests/test_slot_reply_1570.py | 8 |
 | tests/test_small_b_1108_a22.py | 5 |
