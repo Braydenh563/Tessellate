@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timedelta
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi.exceptions import RequestValidationError
@@ -22,6 +23,7 @@ from tessellate.core.database import LIKE_ESCAPE, Conversation, like_escape, utc
 from tessellate.repo import uploads as uploads_repo
 from tessellate.core.deps import get_session
 from tessellate.ai import consent_store
+from tessellate.api.chat_request import TurnFrame
 from tessellate.ai.grounding import composed_support, support as grounding_support
 from tessellate.entry.manager import log_action
 
@@ -176,6 +178,11 @@ class TurnBody(BaseModel):
     #: again instead of an answer that says "Confirm or Cancel below" over nothing. The state is
     #: never saved here, it is read from the server's parked card on the way out (`_act_state`).
     acts: list[dict] | None = None
+    #: What the answer showed (`composer_dialogue.turn_frame`) and the notes it named, so a reopened
+    #: chat binds "and the other one" as the live one did instead of falling back to the text
+    #: reading (O4). Bounded by the same model the live request uses.
+    frame: TurnFrame | None = None
+    objects: list[Annotated[str, Field(max_length=200)]] | None = Field(default=None, max_length=8)
 
     @field_validator("acts", mode="before")
     @classmethod
@@ -347,6 +354,12 @@ def _hydrate_acts(messages: list[dict]) -> None:
             _hydrate_act(message, slot, act)
 
 
+def _frame_fields(turn: TurnBody) -> dict:
+    """What the next turn leans on, kept only when the answer had any (O4)."""
+    frame = turn.frame.model_dump() if turn.frame else {}
+    return {k: v for k, v in (("frame", frame if any(frame.values()) else None), ("objects", turn.objects)) if v}
+
+
 def _turn_messages(turn: TurnBody) -> list[dict]:
     # Stamped here, not by the page: the turn is saved when the answer ends,
     # so the answer's time is now and the question's is now minus the
@@ -388,6 +401,7 @@ def _turn_messages(turn: TurnBody) -> list[dict]:
     if persona:
         assistant["persona"] = persona
     assistant.update(_acts_field(turn))
+    assistant.update(_frame_fields(turn))
     if turn.by:
         assistant["by"] = {
             "composed": bool(turn.by.get("composed")),

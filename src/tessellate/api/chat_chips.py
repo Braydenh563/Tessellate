@@ -67,3 +67,10 @@ def continue_chips(result: dict, question: str, history: list[dict] | None, curr
         given.add(said)  # two chips with one answer are one chip
         kept.append(chip)
     return kept[: composer_chips.MAX_CHIPS]
+
+
+def shows_first(composed: dict) -> bool:
+    """Whether the composed draft is sent ahead of a model's answer (`composed_preview`): it must quote the notes
+    and be backed by them, since a draft most of whose sentences no note backs would flash a claim the notebook
+    does not make (P1). The support judgement that marks the finished answer is the one used."""
+    return bool(composed.get("grounding")) and not (composed.get("support") or {}).get("low")

@@ -534,11 +534,15 @@ def _chip_title(title: str) -> str:
     return "" if not title or title.endswith("…") or len(title) > 40 or re.search(r"[\"“”‘’\[\]#]", title) else title
 
 
+#: What goes on from "Nothing is overdue." or an empty reminders count (F5).
+AHEAD_CHIPS = ["What's due this week?", "What's due next week?"]
+
+
 def _overdue(ctx: Ctx) -> Reply:
     """The reminders past their day, oldest first; nothing else."""
     late = sorted(_reminder_events(ctx, ctx.now.date(), ctx.now.date())[1], key=lambda e: (e.day, e.at))
     if not late:
-        return Reply("Nothing is overdue.")
+        return Reply("Nothing is overdue.", asks=AHEAD_CHIPS)
     n = len(late)
     lines = [f"{n} reminder{'s are' if n != 1 else ' is'} overdue:", ""]
     lines += [e.line(overdue=True) for e in late[:MAX_ITEMS]]

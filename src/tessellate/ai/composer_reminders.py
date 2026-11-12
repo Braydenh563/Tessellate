@@ -95,7 +95,8 @@ def _have(ctx: Ctx, found: re.Match) -> Reply | None:
         got = shown, head
     shown, head = got
     more = [f"and {len(shown) - cap} more."] if len(shown) > cap else []
-    return Reply("\n".join([head, *([""] + [_line(r, today) for r in shown[:cap]] + more if shown else [])]))
+    #: A count with nothing in it goes on to the weeks ahead, not the statistics chips (F5).
+    return Reply("\n".join([head, *([""] + [_line(r, today) for r in shown[:cap]] + more if shown else [])]), asks=[] if shown else composer_plan.AHEAD_CHIPS)
 
 
 def _matching(ctx: Ctx, wanted: set[str], verbs: frozenset[str] = frozenset()) -> list[dict]:

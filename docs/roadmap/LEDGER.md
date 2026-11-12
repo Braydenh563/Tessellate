@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 8 | 17 | 5 | 5 | 4 | 30 |
-| chat | 38 | 163 | 71 | 38 | 54 | 272 |
+| chat | 38 | 165 | 60 | 38 | 55 | 263 |
 | whiteboard | 24 | 25 | 5 | 0 | 7 | 54 |
 | documents | 44 | 50 | 17 | 7 | 16 | 111 |
 | mindmap | 27 | 22 | 5 | 5 | 2 | 54 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 25 | 4 | 3 | 5 | 29 |
 | world-class | 79 | 146 | 61 | 31 | 68 | 286 |
 | general | 0 | 20 | 0 | 0 | 1 | 20 |
-| all | 289 | 553 | 174 | 108 | 170 | 1016 |
+| all | 289 | 555 | 163 | 108 | 171 | 1007 |
 
 ## graph
 
@@ -224,8 +224,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L198** `chat` partly, S: Improve Guide topic ranking when searching (top-3 38/60 gap). From OPEN.md:1512. Evidence: ai/help_chat.py:115,334,449 ranking by question-word overlap exists; top-3 38/60 gap not re-measured
 - [ ] **L199** `chat` partly, S: Make the status.js suggest code call meaningAlts (Brief 86). From OPEN.md:1509. Evidence: meaningAlts used by settings-find.js:117,135; status.js suggest code call not found
 - [ ] **L201** `chat` partly, S: Rows 839 and 841 never checked (no text located for either). From ledger-1112 P11.
-- [ ] **L202** `chat` partly, S: Bare 'yes' after an offer card not answered; add test. From ledger-1112 D10.
-- [ ] **L203** `chat` partly, S: Act cards and 'Nothing is overdue.' chips not checked. From ledger-1112 F5.
 - [ ] **L204** `chat` partly, S: Repeat in 'milk' line still reproduced; 'what did I write about in October' restates a line. From ledger-1112 E18.
 - [ ] **L205** `chat` partly, S: 'compare Tokyo and Lisbon' opener 'Of the notes found...' and repeated cites need fixing. From ledger-1112 D20.
 - [ ] **L206** `chat` partly, S: 'how far did I run' adds goal to distance (16 km for 6 km); no fix or test. From ledger-1112 G1.
@@ -256,19 +254,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L231** `chat` partly, M: Cut Atlas idle cost (670 recalcs and 130 layouts a minute). From OPEN.md:1068. Evidence: Commits 7da5ea424 (no :has on #nm-buddy), 661204da1 Atlas at rest off every bar; remaining cost not re-measured
 - [ ] **L232** `chat` partly, M: Mood blend read costs 75-280 ms per mood change; gcResize first draw 400 ms. From a31b-1103.md Found, not fixed. Evidence: Band moved under html 36ecedeb1; avatars.js:5794 settle comment; gcResize deferral refused
 - [ ] **L233** `chat` partly, M: Class/data-* change on #nm-buddy restyles 1,244 elements. From a31c-1103.md Left, with numbers. Evidence: 36ecedeb1 reduced it; Windows numbers never taken (Not verified block)
-- [ ] **L234** `chat` partly, M: Client-side undo wording and real undo after 'delete it' in chat. From ledger-1112 O6; ledger-1112 D23; ledger-1112 F3.
-- [ ] **L235** `chat` partly, M: Ask recheck: 'wats on my shoping list', 'this week' no day, 'the week before', two-summary shapes. From ledger-1112 P25; ledger-1112 F9; ledger-1112 F8; ledger-1112 F13.
 - [ ] **L236** `chat` partly, M: Joke note naming: leads by quote not name; lowercased 'orchard', backlinks mapping. From ledger-1112 O11; ledger-1112 X5.
-- [ ] **L237** `chat` partly, M: Title-less citation naming parity between composer and model-context, with test. From ledger-1112 X2; ledger-1112 D28.
 - [ ] **L238** `chat` partly, M: pointerup 320 ms on button.nm-buddy-face. From INBOX.md:1726. Evidence: 36ecedeb1 band under html: Blend 822-1315 to 136-226 ms; event timing still noisy 40-350 ms
-- [ ] **L239** `chat` partly, M: 'and the dentist' asks what is meant; frame not saved with a chat. From ledger-1112 O4.
-- [ ] **L240** `chat` partly, M: B26 Q5 title, Q6 list-add rule, B24 undo sentences, B27 similar-to ranking. From ledger-1112 X4.
+- [ ] **L240** `chat` partly, M: B26 Q6 list-add rule on the chat route. B24 undo and confirm wordings, B26 Q5 title and B27 find-similar are pinned (ea5a6427d). From ledger-1112 X4.
 - [ ] **L241** `chat` partly, M: Name rules 5 and 4 wired only for first hello and dashboard; Guide profile topic lacks 'call me Sam'; no 20-turn eval. From ledger-1112 P27.
-- [ ] **L243** `chat` partly, M: 'how much more cheese than milk' returns Milk 1.20 only; no arithmetic route. From ledger-1112 G11.
-- [ ] **L244** `chat` partly, M: 'you're not very helpful' searched as a note; 'say that again', 'what did I just add' recheck. From ledger-1112 F4.
 - [ ] **L245** `chat` partly, M: Per-letter recheck; chip code and 'Something sometime' magic add not examined. From ledger-1112 G14.
-- [ ] **L246** `chat` partly, M: routes_chat composed_preview sent ungated on composer confidence; needs gate and test. From ledger-1112 P1.
-- [ ] **L247** `chat` partly, M: 'do my notes contradict each other' answers none mention contradict; wire supersede.py to composer. From ledger-1112 PAR1.
 - [ ] **L248** `chat` partly, M: chat_pool.py _raw_results uncapped; re-measure composer digest lines on 500 notes. From ledger-1112 P6.
 - [ ] **L249** `chat` partly, L: Finish composer as a smart chatbot after atlas (INBOX 895 part 2). From OPEN.md:583. Evidence: Composer work shipped (CHANGELOG:293, typo_context.py) but no entry names a smart-chatbot step; unclear if complete
 - [ ] **L250** `chat` partly, L: Make composer run skills well. From INBOX.md:904 B69. Evidence: OPEN O7 holds the quality bar; composer acts exist (ai/parity_acts.py, compleft-1110)
@@ -277,9 +267,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L253** `chat` partly, L: Close remaining unverified audit rows (C35, W21, Z*, K*, B*, S*, w34 spoke lists). From ledger-1112 X13; ledger-1112 X12; ledger-1112 FX2; ledger-1112 X24 (+2).
 - [ ] **L254** `chat` partly, L: Chart maker and answer shapes (only ask-chart.js exists); goals and lists have no surface at all. From ledger-1112 P15.
 - [ ] **L255** `chat` partly, L: Hold still, carry over, tail pull, toss up, pointer chase and drag skid need new desk frames and a human rater (the catalogue refuses one-sided acts; engine.py and engine_input.py are at their line caps, so a desk hook lives in extras.py). Catch mid-air is built (05b51746d, `caught` both sides). From ledger-1112 I21.
-- [ ] **L256** `chat` partly, L: Ask reading what the last answer showed (state beyond last question and 5 titles) not verified or tested. From ledger-1112 F1.
 - [ ] **L-chat-1** `chat` open, M: Close the Guide answer gap so a question about the app gets an answer. From INBOX 904 B86 (W22). Evidence: the owner's Guide question went unanswered
 - [ ] **L-chat-2** `chat` open, S: Stop at the turn start with a plain sentence when a tool group the request needs is switched off in Settings, instead of a ToolError after the model tried. From ANALYSIS.md:4354. Evidence: ANALYSIS names CHAT_PLAN 'deterministic foundation' as home; grep 'turn contract' in plans returns nothing
+- [ ] **L-chat-5** `chat` open, M: A three-way 'which is oldest' over notes with little in common retrieves only the best match, so the answer names the other two as missing. From composerA 2026-11-12. Evidence: reading._follow_place makes the sentence; chat_turn._framed_scope binds ids; a follow-on that carried the cited note ids into the compare would fix it
+- [ ] **L-chat-6** `chat` open, S: 'which is oldest, Shopping or Todo' answers with the Shopping checklist line, not a date comparison. From composerA 2026-11-12.
 
 ## whiteboard
 
@@ -1060,6 +1051,7 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L982** `world-class` blocked-hardware, M: settings-panes keydown 285 ms, chat pointerover 411 ms, tab clicks 304-352 ms, gcRequestDraw calls. From INBOX.md:1726. Evidence: lag-1110: settings-panes.js:1104 keydown returns on plain key; graph 0 draws in 5 s at 4x; not reproduced off Windows
 - [ ] **L983** `general` blocked-hardware, M: Owner's Windows lag lines not reproduced on Linux: desk overlay hide/show flips, desk window scan counted as invisible, avatars.js 1295 ms timer, settings-panes 285 ms keydown, chat pointerover. From INBOX 1716, 1726. Evidence: Needs the owner's Windows desktop; each line was measured as not reproducing at 4x CPU here
 - [ ] **L-chat-4** `chat` blocked-hardware, M: Desk companion reaction to media playing: needs the Windows audio session; the catalogue refuses an in-app-only entry. From ledger-1112 I17.
+- [ ] **L246** `chat` blocked-hardware, M: A real model's first token replaces a shown composed preview cleanly. The gate on the preview is built (651624f81, `chat_chips.shows_first`) and tested on the fake transport. From ledger-1112 P1. Evidence: `scratchpad/llama-dev.sh serve`, then `pytest -m evals`.
 
 ## Plan session briefs
 
