@@ -1664,6 +1664,7 @@
       back.classList.add("icon-only");
       tools.append(back);
     }
+    tools.append(kebabMenu(gcTopicMenuRows(topic), `More actions for the topic ${topic.name}`));
     const close = smallButton("ph:x", "Close the topic", gcHideTopic);
     close.classList.add("icon-only");
     tools.append(close);
@@ -1716,6 +1717,53 @@
     if (known) say(known);
     box.replaceChildren(head, terms, summary, actions);
     box.classList.remove("hidden");
+  }
+
+  //: **Merge and remove, saved as overrides** (ledger L711, the owner,
+  //: 2026-11-12): laid over the worked-out topics by the notes they cover, one
+  //: Undo each; the reset brings the automatic grouping back.
+  async function gcTopicsRepaint() {
+    if (typeof noteTopicsCache !== "undefined") noteTopicsCache.clear();
+    gcHideTopic();
+    await renderGraph();
+  }
+
+  async function gcTopicEdit(label, request) {
+    const row = await request().catch((e) => { toast(`The topics were not changed: ${e?.message || e}`, true, { action: ["Try again", () => gcTopicEdit(label, request)] }); return null; });
+    if (!row) return;
+    pushRequestUndo(label, "/graph/topics/edits", "PUT", row.was, row.edits, gcTopicsRepaint);
+    await gcTopicsRepaint();
+  }
+
+  const gcTopicPost = (route, ids) => () => apiJson(route, { method: "POST", body: JSON.stringify({ ids }) });
+
+  function gcResetTopicEdits() {
+    return gcTopicEdit("Reset the topic edits", () => apiJson("/graph/topics/edits", { method: "PUT", body: JSON.stringify({ merges: [], excluded: [] }) }));
+  }
+
+  //: The topic card's ⋯ (`kebabMenu`): merge into another topic (a submenu of
+  //: the others, largest first), remove this one, and the reset when any edit
+  //: is saved. Removing ungroups the notes; none is deleted.
+  function gcTopicMenuRows(topic) {
+    const others = (graphStructure?.topics || []).filter((t) => t.id !== topic.id).slice(0, 12);
+    const rows = [];
+    if (others.length) {
+      rows.push({
+        label: "ph:arrows-merge Merge with",
+        title: "Join this topic and another into one",
+        items: others.map((t) => ({
+          label: `${t.name} (${t.size})`,
+          title: `Join these notes and ${nounCount(t.size, "note")} into one topic`,
+          run: () => gcTopicEdit(`Merged the topics “${topic.name}” and “${t.name}”`, gcTopicPost("/graph/topics/merge", [...topic.ids, ...t.ids])),
+        })),
+      });
+    }
+    rows.push({
+      label: "ph:eye-slash Remove topic",
+      title: "Ungroup these notes: none is deleted, and Undo or a reset brings the topic back",
+      run: () => gcTopicEdit(`Removed the topic “${topic.name}”`, gcTopicPost("/graph/topics/remove", topic.ids)),
+    });
+    return rows;
   }
 
   //: A topic's name, saved (INBOX 547's route): an empty name brings the found
@@ -6826,6 +6874,11 @@
           }
         );
         item.dataset.topic = topic.id;
+      }
+      const edits = graphStructure.topic_edits;
+      if (edits && edits.merges + edits.removed) {
+        const reset = entry("Merges and removals you made are laid over the found topics; this brings the automatic grouping back", gcTokens.muted, "Reset topic edits", gcResetTopicEdits);
+        reset.dataset.action = "reset-topics";
       }
       return;
     }

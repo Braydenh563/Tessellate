@@ -1584,10 +1584,28 @@ def graph_structure(
     found = _cached("topics", fingerprint, lambda: _build_topics(session))
     #: INBOX 547: the names the person gave, laid over after the cache, so a
     #: rename shows at once without recomputing a single topic.
-    named = topic_finder.apply_names(
-        found["topics"], deps.get_config().get_preference(TOPIC_NAMES_KEY, [])
-    )
-    return {**structure, **found, "topics": named}
+    named, topic_of, edits = _topics_laid(found)
+    return {
+        **structure,
+        "topics": named,
+        "topic_of": topic_of,
+        "topic_edits": {"merges": len(edits["merges"]), "removed": len(edits["excluded"])},
+    }
+
+
+#: The preference holding merges and removals: `{"merges": [[ids]], "excluded": [ids]}`.
+TOPIC_EDITS_KEY = "graph_topic_edits"
+
+
+def _topics_laid(found: dict) -> tuple[list[dict], dict, dict]:
+    """The cached topics with the person's removals, merges and names laid
+    over, after the cache so each shows at once without recomputing a topic
+    (INBOX 547, ledger L711). Also the note -> topic map of the result."""
+    config = deps.get_config()
+    edits = topic_finder.clean_edits(config.get_preference(TOPIC_EDITS_KEY, {}))
+    edited = topic_finder.apply_edits(found["topics"], edits)
+    named = topic_finder.apply_names(edited, config.get_preference(TOPIC_NAMES_KEY, []))
+    return named, topic_finder.topic_of(named), edits
 
 
 #: The preference holding renamed topics: `[{"ids": [...], "name": "..."}]`.
@@ -1614,13 +1632,11 @@ def graph_topics_of(
         return {"topics": {}}
     fingerprint = _graph_fingerprint(session)
     found = _cached("topics", fingerprint, lambda: _build_topics(session))
-    named = topic_finder.apply_names(
-        found["topics"], deps.get_config().get_preference(TOPIC_NAMES_KEY, [])
-    )
+    named, topic_of, _ = _topics_laid(found)
     by_id = {topic["id"]: topic for topic in named}
     out = {}
     for note in wanted:
-        topic = by_id.get(found["topic_of"].get(str(note)))
+        topic = by_id.get(topic_of.get(str(note)))
         if topic is not None:
             row = {"id": topic["id"], "name": topic["name"], "size": topic["size"]}
             #: The words that named it, for the chip's hover (INBOX 1620: "idk
@@ -1648,6 +1664,45 @@ def name_topic(body: TopicNameBody) -> dict:
     stored = config.get_preference(TOPIC_NAMES_KEY, [])
     config.set_preference(TOPIC_NAMES_KEY, topic_finder.store_name(stored, body.ids, name))
     return {"name": name}
+
+
+class TopicIdsBody(BaseModel):
+    ids: list[int] = Field(min_length=1, max_length=5000)
+
+
+class TopicEditsBody(BaseModel):
+    merges: list[list[int]] = Field(default_factory=list, max_length=100)
+    excluded: list[int] = Field(default_factory=list, max_length=5000)
+
+
+def _save_edits(edits: dict, was: dict) -> dict:
+    deps.get_config().set_preference(TOPIC_EDITS_KEY, edits)
+    return {"edits": edits, "was": was}
+
+
+@router.post("/graph/topics/merge")
+def merge_topics(body: TopicIdsBody) -> dict:
+    """Join topics: `ids` is the notes of every topic being joined. Saved as an
+    override on top of the worked-out topics (ledger L711, owner 2026-11-12);
+    `was` is the state before, which the same `PUT /graph/topics/edits` puts back."""
+    was = topic_finder.clean_edits(deps.get_config().get_preference(TOPIC_EDITS_KEY, {}))
+    return _save_edits(topic_finder.store_merge(was, body.ids), was)
+
+
+@router.post("/graph/topics/remove")
+def remove_topic(body: TopicIdsBody) -> dict:
+    """Take a topic's notes out of every topic (the notes stay; only the
+    grouping goes). Saved like a merge, and undone like one."""
+    was = topic_finder.clean_edits(deps.get_config().get_preference(TOPIC_EDITS_KEY, {}))
+    return _save_edits(topic_finder.store_remove(was, body.ids), was)
+
+
+@router.put("/graph/topics/edits")
+def set_topic_edits(body: TopicEditsBody) -> dict:
+    """Put the merges and removals back to a given state: Undo, Redo, and the
+    reset (both lists empty) that brings the automatic grouping back."""
+    was = topic_finder.clean_edits(deps.get_config().get_preference(TOPIC_EDITS_KEY, {}))
+    return _save_edits(topic_finder.clean_edits(body.model_dump()), was)
 
 
 class TopicSummaryBody(BaseModel):
