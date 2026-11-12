@@ -362,7 +362,10 @@ function waitForFake() {
 
   await page.waitForFunction(() => {
     const a = document.getElementById('ai-answer');
-    return a && a.textContent.trim().length > 20 && !a.classList.contains('is-streaming');
+    // And Stop gone: the answer box drops `is-streaming` between phases with
+    // words already in it, so that alone read the numbering mid-answer.
+    return a && a.textContent.trim().length > 20 && !a.classList.contains('is-streaming')
+      && !!document.getElementById('stop-btn')?.classList.contains('hidden');
   }, { timeout: 90000 }).catch(() => {});
   await page.waitForTimeout(2500);
 
