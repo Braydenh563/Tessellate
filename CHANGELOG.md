@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Timeline: the calendar head's Add button, the Show: reminders chip, the Month, Week and Day strip and the title share one height and one centre line (Add sat 4px below the strip, which was 4px taller).
 - Fixes from the review on PR 222: the span review reads only its own days from the database and stops waiting for the model after 8 seconds (the composed review instead); Done on a reminder in the bell names the time it was raised for, so one ticked elsewhere is not rolled twice, and the row then says where it is, with focus on that line; notes saved before a range's last day was kept are read again once, so the calendar runs them across their days.
 - Graph: a headless sweep checks saved views, focus and global switching, the keyboard ring, reduced motion and the hover draw cost with numbers (L815 to L818).
 - Graph: a sweep draws the Tessellation view beside the chosen layout as one PNG with numbers (L-graph-12); a Map or Tessellation header no longer sits under the minimap.
