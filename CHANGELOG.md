@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Facts: `recognise` reads counted things ("5 sets", "three loaves of bread") as a `count` kind, and the fact layer's quantity facts take it and the measure spans instead of a pattern of their own (L501).
 - Brief: a titled note's title weight goes to the sentence that says the title's words, not to every sentence of the note (L500).
 - Timers: the chat timer, focus timer, meeting recorder and status bar clock share one one-second clock (L-world-class-15).
 - Tests: property tests for the time reader and the realiser, a few hundred seeded cases each against a fixed clock (L-world-class-19).

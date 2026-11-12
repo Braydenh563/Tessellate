@@ -146,24 +146,8 @@ _NEGATORS = frozenset("not no never didn't don't doesn't won't can't cannot isn'
 _HEDGES = lazy_compile(r"\b(maybe|might|perhaps|possibly|probably|could|would)\b", re.I)
 _IF = lazy_compile(r"^\s*(?:if|unless|in case)\b|\b(?:if|unless)\b", re.I)
 
-_NUMBER_WORDS = {
-    "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
-    "eleven": 11, "twelve": 12, "thirteen": 13, "fourteen": 14, "fifteen": 15, "sixteen": 16, "seventeen": 17,
-    "eighteen": 18, "nineteen": 19, "twenty": 20, "a dozen": 12, "half a dozen": 6,
-}
-_NUMBER = r"(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?|" + "|".join(sorted(_NUMBER_WORDS, key=len, reverse=True)) + r")"
-#: Time units: a number with one of these is a duration, in seconds.
-_TIME_UNITS = {
-    "second": 1, "seconds": 1, "secs": 1, "sec": 1, "minute": 60, "minutes": 60, "mins": 60, "min": 60,
-    "hour": 3600, "hours": 3600, "hrs": 3600, "hr": 3600, "day": 86400, "days": 86400, "week": 604800,
-    "weeks": 604800, "month": 2629800, "months": 2629800, "year": 31557600, "years": 31557600,
-}
-_UNITS = frozenset(
-    """km kms kilometres kilometers kilometre kilometer m metres meters mile miles mi kg kgs kilos g grams lb lbs pounds
-    oz cm mm l litres liters ml percent % sets reps laps times steps pages words people notes loaves cups tbsp tsp
-    degrees grit bpm kcal calories items tickets users testers""".split()
-)
-_QUANTITY = lazy_compile(r"\b" + _NUMBER + r"\s*(%|[a-z]+)\b(?:\s+of\s+([a-z]+(?:\s[a-z]+)?))?", re.I)
+_UNIT_WORD = lazy_compile(r"^[\d.,\s]+(%|[a-z]+)$")
+_OF_WHAT = lazy_compile(r"^\s+of\s+([A-Za-z]+(?:\s[A-Za-z]+)?)")
 _DECISION = lazy_compile(r"\b(decided|going with|chose|settled on|opted for)\b\s*(?:to\s+go\s+with\s+|to\s+|on\s+)?", re.I)
 _PREFERENCE = lazy_compile(
     r"\b(?:(?:i|we)\s+(?:really\s+|also\s+)?(?P<neg>don't |do not |didn't |never )?(?P<verb>like|love|prefer|hate|dislike|enjoy|adore|can't stand|cannot stand)"
@@ -426,32 +410,26 @@ class _SentenceReader:
             self.add("duration", found.start, found.end, {"seconds": int(found.value.total_seconds()), "unit": unit}, confidence=0.9)
             self.taken.append((found.start, found.end))
 
-    @staticmethod
-    def _counted_unit(unit: str) -> bool:
-        """Whether a word after a number is a unit worth keeping."""
-        if unit not in _UNITS and not (unit.endswith("s") and len(unit) > 3 and unit not in ("is", "was", "this", "has", "as")):
-            return False
-        return unit not in ("am", "pm", "st", "nd", "rd", "th") and unit not in _TIME_UNITS
-
-    def quantities(self) -> None:
-        for match in _QUANTITY.finditer(self.sentence):
-            if any(s <= match.start() < e or s < match.end() <= e for s, e in self.taken):
+    def quantities(self, spans: list) -> None:
+        #: Counted things are read by `ai/recognise.py` too (the `count` kind, L501), like money; a measure
+        #: ("5 km", "80 kg") is its `quantity` kind, said as the person wrote the unit.
+        for found in spans:
+            if found.rank or found.kind not in ("count", "quantity") or any(s <= found.start < e or s < found.end <= e for s, e in self.taken):
                 continue
-            unit = match.group(2).lower()
-            if not self._counted_unit(unit):
-                continue
-            raw = match.group(1).lower()
-            value = _NUMBER_WORDS.get(raw)
-            if value is None:
-                number = float(raw.replace(",", ""))
-                value = int(number) if number == int(number) else number
-            end = match.end(2)
-            attrs = {"value": value, "unit": unit, "of": None}
-            if match.group(3) and not re.fullmatch(r"\d.*", match.group(3)):
-                attrs["of"] = match.group(3)
-                end = match.end(3)
-            self.add("quantity", match.start(), end, attrs, confidence=0.85)
-            self.taken.append((match.start(), end))
+            if found.kind == "count":
+                value, unit, of = found.value
+            else:
+                unit = _UNIT_WORD.search(found.text.lower())
+                if unit is None:
+                    continue
+                value, unit, of = found.value[0], unit.group(1), None
+                after = _OF_WHAT.match(self.sentence[found.end:])
+                if after:
+                    of = after.group(1)
+                    found = type(found)(found.kind, found.text, found.start, found.end + after.end(), found.value, found.read_as)
+            value = int(value) if value == int(value) else value
+            self.add("quantity", found.start, found.end, {"value": value, "unit": unit, "of": of}, confidence=0.85)
+            self.taken.append((found.start, found.end))
 
     def _bare_past_verb(self, match: re.Match, low: str) -> bool:
         """A past form that is really a bare verb or a negation ("did not")."""
@@ -573,10 +551,10 @@ class _SentenceReader:
     def read(self, index: int, units: list, joke: bool) -> list[Fact]:
         self.structure(index)
         self.dates()
-        spans = recognise.recognise(self.sentence, now=datetime.combine(self.written or clock.today(), time(12)))
+        spans = recognise.recognise(self.sentence, now=datetime.combine(self.written or clock.today(), time(12)), counts=True)
         self.money(spans)
         self.durations(spans)
-        self.quantities()
+        self.quantities(spans)
         self.past_events()
         self.negated_and_future_events()
         self.decisions()

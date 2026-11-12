@@ -210,3 +210,28 @@ CURRENCY_NAMES = {
     "hkd": "HKD", "mxn": "MXN", "pesos": "MXN", "brl": "BRL", "reais": "BRL", "zar": "ZAR", "rand": "ZAR", "krw": "KRW",
     "won": "KRW", "pln": "PLN", "zloty": "PLN",
 }
+
+
+# --- counted things ("5 sets", "3 loaves of bread"): the `count` kind of `recognise` ---------------
+
+#: Number words a count may start with (the fact layer's reading, "a dozen of ...").
+COUNT_NUMBER_WORDS = {
+    "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
+    "eleven": 11, "twelve": 12, "thirteen": 13, "fourteen": 14, "fifteen": 15, "sixteen": 16, "seventeen": 17,
+    "eighteen": 18, "nineteen": 19, "twenty": 20, "a dozen": 12, "half a dozen": 6,
+}
+#: A number with one of these is a duration, read as such, never counted.
+_COUNT_TIME = frozenset(
+    "second seconds secs sec minute minutes mins min hour hours hrs hr day days week weeks month months year years".split()
+)
+#: Words counted that no unit table holds.
+COUNTED_UNITS = frozenset(
+    "sets reps laps times steps pages words people notes loaves cups tbsp tsp grit items tickets users testers".split()
+)
+
+
+def counted_noun(word: str) -> bool:
+    """Whether the word after a number names things counted: a known one, or a plural of more than three letters."""
+    if word not in COUNTED_UNITS and not (word.endswith("s") and len(word) > 3 and word not in ("is", "was", "this", "has", "as")):
+        return False
+    return word not in ("am", "pm", "st", "nd", "rd", "th") and word not in _COUNT_TIME
