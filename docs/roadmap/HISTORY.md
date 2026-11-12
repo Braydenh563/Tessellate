@@ -55298,6 +55298,7 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
 
 ## Moved from the LEDGER
+- [x] **L-general-51** `general` open, M: doctoolbarstate sweep asserts a toolbar strip that no longer exists. From L-general-47. Evidence: doctoolbarstate.js asserts heading and quote buttons that the strip replaced with Turn into Built: doctoolbarstate.js 0 FAIL in 19s on :8822
 - [x] **L-general-42** `general` open, L: A VS Code extension. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open. Verify in code first. Built: Owner call: recommendation taken, see INBOX Placed 2026-11-12 (L-general-42)
 - [x] **L-general-41** `general` open, L: An in-app browser with MCP tool abilities beside web search. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open; the stdio MCP server is the other direction. Verify in code first. Built: Owner call: recommendation taken, see INBOX Placed 2026-11-12 (L-general-41)
 - [x] **L-general-38** `general` open, M: Compress notes and data on disk. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open. Verify in code first. Built: Owner call: recommendation taken, see INBOX Placed 2026-11-12 (L-general-38)

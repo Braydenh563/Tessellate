@@ -42,16 +42,19 @@ const DOC = [
 //: offsets are found by searching the text so a line added above cannot
 //: silently move every expectation.
 const STOPS = [
-  { find: "A heading", into: 2, want: ["h1"] },
+  //: Heading and quote have no strip button since DX6/DX26 (they are rows of
+  //: Insert and Turn into, Ctrl+1 to 3 still set a heading), so the strip must
+  //: stay unlit there; the guard below checks the buttons really are gone.
+  { find: "A heading", into: 2, want: [] },
   { find: "Plain prose", into: 3, want: [] },
   { find: "a bold run", into: 4, want: ["bold"] },
   { find: "an italic one", into: 4, want: ["italic"] },
   { find: "some code", into: 4, want: ["code"] },
-  { find: "A second heading", into: 3, want: ["h2"] },
+  { find: "A second heading", into: 3, want: [] },
   { find: "a bullet", into: 3, want: ["ul"] },
   { find: "a task", into: 3, want: ["task"] },
   { find: "a number", into: 3, want: ["ol"] },
-  { find: "a quote", into: 3, want: ["quote"] },
+  { find: "a quote", into: 3, want: [] },
   { find: "link to somewhere", into: 4, want: ["link"] },
 ];
 
@@ -97,6 +100,10 @@ const STOPS = [
     shown.stateful > 0 && shown.stateful < shown.total,
     `${shown.stateful} of ${shown.total}`
   );
+
+  const gone = await page.evaluate(() =>
+    ["h1", "h2", "h3", "quote"].filter((m) => document.querySelector(`#doc-toolbar button[data-md="${m}"]`)));
+  ok("the strip has no heading or quote button (Turn into owns those)", gone.length === 0, JSON.stringify(gone));
 
   for (const stop of STOPS) {
     const seen = await page.evaluate((s) => {
