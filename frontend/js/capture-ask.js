@@ -443,7 +443,7 @@ function noteTemplateText(raw, clipboard = "[clipboard]") {
   const now = new Date();
   return String(raw || "")
     .replace(/\{\{?date\}\}?/g, stampDate(now))
-    .replace(/\{\{?time\}\}?/g, now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))
+    .replace(/\{\{?time\}\}?/g, now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", ...clockOptions() }))
     .replaceAll("{{clipboard}}", clipboard);
 }
 

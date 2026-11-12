@@ -32,7 +32,7 @@ let statusClockTimer = null;
 function paintStatusClock() {
   const el = $("status-clock");
   if (!el) return;
-  el.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  el.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", ...clockOptions() });
 }
 
 // Reads prefsCache.status_bar_clock rather than taking an argument, the same
@@ -84,6 +84,7 @@ function paintStatusClockDetail() {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
+    ...clockOptions(),
   });
   // Both the IANA name (what a person recognises, "Europe/London") and
   // the numeric offset (what actually explains a gap between two

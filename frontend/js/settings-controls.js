@@ -666,6 +666,7 @@
   );
   $("pref-week-start").addEventListener("change", (e) => setPreference("week_start", e.target.value));
   $("pref-date-order").addEventListener("change", (e) => setPreference("date_order", e.target.value));
+  $("pref-time-format").addEventListener("change", (e) => setPreference("time_format", e.target.value));
   $("pref-before-includes-day").addEventListener("change", (e) => setPreference("before_includes_day", e.target.checked));
   $("pref-season-hemisphere").addEventListener("change", (e) => setPreference("season_hemisphere", e.target.value));
   //: The voice's live sample (CHAT_PLAN decision 72): the same three lines
@@ -3084,7 +3085,7 @@
       const result = await apiJson("/system/doctor");
       box.replaceChildren(...result.rows.map(maintenanceDoctorRow));
       box.classList.remove("hidden");
-      const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", ...clockOptions() });
       const worth = result.rows.filter((row) => row.status === "warn").length;
       maintenanceSay(
         result.failed

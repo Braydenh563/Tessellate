@@ -374,7 +374,7 @@ async function readWebPage(fold, list, reader, source, { back: withBack = true }
     link.rel = "noopener noreferrer";
     link.textContent = page.url || source.url;
     where.appendChild(link);
-    const at = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    const at = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit", ...clockOptions() });
     const facts = document.createElement("p");
     facts.className = "library-file-meta web-reader-facts";
     const said = [page.domain || sourceHost(page.url || source.url)];

@@ -1142,7 +1142,7 @@ const VOICE = {
 //: `toLocaleString()` printed seconds on version lists, notes' hovers and run
 //: logs while the Timeline and the reminders printed none, and 12 or 24 hours
 //: follows the locale's own rule everywhere.
-const WHEN_FORMAT = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" });
+const WHEN_FORMAT = clockOptions.formatter({ dateStyle: "medium", timeStyle: "short" });
 function whenText(value = new Date()) {
   const moment = value instanceof Date ? value : new Date(value);
   return Number.isNaN(moment.getTime()) ? "" : WHEN_FORMAT.format(moment);

@@ -327,6 +327,8 @@ class PreferencesBody(BaseModel):
     before_includes_day: bool | None = None
     #: The order a numeric date such as 3/4 is read in; "auto" follows the browser's region.
     date_order: Literal["auto", "day", "month"] | None = None
+    #: A 12 or 24 hour clock everywhere; "auto" follows the browser's region.
+    time_format: Literal["auto", "12", "24"] | None = None
     #: Which half of the year "summer" and "last winter" mean: the person's
     #: pick, or "auto" to follow the locale the browser reports (`season_locale`).
     season_hemisphere: Literal["auto", "north", "south"] | None = None
@@ -822,6 +824,7 @@ def _prefs_notebook(config) -> dict:
         "week_start_locale": config.get_preference("week_start_locale", 0),
         "before_includes_day": config.get_preference("before_includes_day", False),
         "date_order": config.get_preference("date_order", "auto"),
+        "time_format": config.get_preference("time_format", "auto"),
         "season_hemisphere": config.get_preference("season_hemisphere", "auto"),
         "season_locale": config.get_preference("season_locale", ""),
         "embedder_idle_unload_minutes": config.get_preference("embedder_idle_unload_minutes", 60),

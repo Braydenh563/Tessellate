@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Clock: Settings, General has a 12 or 24 hour choice that every time in the app follows (it was the browser's region only).
 - Escape: a lint checks every overlay and dialog closes on Escape; the graph's Manage this connection panel did not, and now does.
 - Other devices (Brief 40): Settings shows a Phone setup QR code to a plain-http `/lan/trust` page (the certificate and the steps, open for fifteen minutes), counts the secure connections a device refused, and has an off-by-default Also allow plain http choice (password to turn on, with its warning).
 - Model pill (section 20): the Writing room's dock and the document editor's bar each show the model that feature runs on (its own pick, else its role's); pressing it opens the same picker sheet as the menu rows. Both measure 28px, the dock's control height.

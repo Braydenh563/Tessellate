@@ -397,6 +397,7 @@ function paintDashClock() {
   timeEl.textContent = now.toLocaleTimeString([], {
     hour: "numeric",
     minute: "2-digit",
+    ...clockOptions(),
   });
   dateEl.textContent = now.toLocaleDateString([], {
     weekday: "long",
@@ -609,7 +610,7 @@ function renderDashboardGreeting() {
 //: is a token `renderDashGlance` turns into the press, not a closure.
 function dashGlanceFacts({ reminders = [], stats = null, entries = [], now = new Date() } = {}) {
   const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-  const time = (d) => d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  const time = (d) => d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", ...clockOptions() });
   const byDue = (a, b) => new Date(a.due_at) - new Date(b.due_at);
   const open = (reminders || []).filter((r) => r && !r.done).sort(byDue);
   const today = open.filter((r) => new Date(r.due_at) < endOfDay);
@@ -2893,7 +2894,7 @@ async function renderRemindersWidget(body) {
     //: The day and the time a person would say, never a machine timestamp
     //: with seconds ("9/24/2026, 1:22:17 PM", measured); the relative phrase
     //: ("in 23 hours") is the tooltip.
-    const when = due.toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+    const when = due.toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit", ...clockOptions() });
     //: The thing to do, then when, on a line of its own in the muted rank:
     //: "Submit IT assignment: Thu, Sep 24, 1:22 PM" as one run-on line made
     //: the time read as part of the sentence.

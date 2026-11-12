@@ -11,7 +11,7 @@
 // no sense of "now" at all (user-reported).
 function tickClocks() {
   const now = new Date();
-  const time = now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  const time = now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", ...clockOptions() });
   const date = now.toLocaleDateString([], {
     weekday: "long",
     month: "long",
@@ -1200,7 +1200,7 @@ function reminderItem(reminder, label) {
   const due = document.createElement("span");
   due.className = "entry-date";
   //: The day and clock, then how far off (dog2 item 8).
-  due.textContent = `${parseServerTime(reminder.due_at)?.toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })} · ${relativeWhen(reminder.due_at)}`;
+  due.textContent = `${parseServerTime(reminder.due_at)?.toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit", ...clockOptions() })} · ${relativeWhen(reminder.due_at)}`;
   row.appendChild(due);
 
   const actions = document.createElement("span");
@@ -1464,6 +1464,7 @@ function updateDueReadout() {
     month: "short",
     hour: "numeric",
     minute: "2-digit",
+    ...clockOptions(),
   });
   let relative;
   if (minutes < 0) relative = "in the past";

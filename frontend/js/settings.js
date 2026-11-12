@@ -805,7 +805,7 @@ function renderLogGap(stats) {
     return;
   }
   const since = stats.dropped_since
-    ? ` The oldest record still kept is from ${new Date(stats.dropped_since).toLocaleTimeString()}.`
+    ? ` The oldest record still kept is from ${new Date(stats.dropped_since).toLocaleTimeString(undefined, clockOptions())}.`
     : "";
   note.textContent =
     `${stats.dropped.toLocaleString()} earlier record${stats.dropped === 1 ? "" : "s"} ` +
@@ -865,7 +865,7 @@ function logRow(record) {
 
   const when = document.createElement("span");
   when.className = "when";
-  when.textContent = new Date(record.time).toLocaleTimeString();
+  when.textContent = new Date(record.time).toLocaleTimeString(undefined, clockOptions());
 
   const level = document.createElement("span");
   level.className = "what";
@@ -1022,7 +1022,7 @@ function renderLogList() {
 //, message", level padded like uvicorn's own default formatter pads
 // "INFO:"/"WARNING:"/"ERROR:" so a column of mixed levels still lines up.
 function logTerminalParts(record) {
-  const when = new Date(record.time).toLocaleTimeString();
+  const when = new Date(record.time).toLocaleTimeString(undefined, clockOptions());
   const level = `${record.level}:`.padEnd(9);
   const body = record.logger ? `${record.logger}: ${record.message}` : record.message;
   return [`${when} ${level}`, body];

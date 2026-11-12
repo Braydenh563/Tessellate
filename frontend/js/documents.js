@@ -2337,7 +2337,7 @@ function docTemplateFill(template, typedTitle = "") {
     String(now.getMonth() + 1).padStart(2, "0"),
     String(now.getDate()).padStart(2, "0"),
   ].join("-");
-  const time = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const time = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", ...clockOptions() });
   const fill = (text) => (text || "").replaceAll("{{date}}", date).replaceAll("{{isodate}}", iso).replaceAll("{{time}}", time);
   //: A template's gallery label and the title it gives the document are not
   //: always the same words: "Daily" names the choice in the gallery, and the

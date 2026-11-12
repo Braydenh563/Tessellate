@@ -1099,7 +1099,7 @@ function enhanceAllSelects(root) {
 function dateFieldFace(value, isTime) {
   if (isTime) {
     const [h, m] = value.split(":").map(Number);
-    return new Date(2000, 0, 1, h, m).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+    return new Date(2000, 0, 1, h, m).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", ...clockOptions() });
   }
   const day = new Date(`${value}T00:00:00`);
   const year = day.getFullYear() === new Date().getFullYear() ? undefined : "numeric";
@@ -1969,7 +1969,7 @@ async function loadConversationList() {
     if (conversation.tokens) bits.push(`${formatTokens(conversation.tokens)} tok`);
     meta.textContent = bits.join(" · ");
     //: The hover holds the exact time (OPEN #593); the row reads relative.
-    meta.title = [parseServerTime(conversation.last_at)?.toLocaleString(undefined, { dateStyle: "full", timeStyle: "short" }), ...bits.slice(1)].filter(Boolean).join(" · ");
+    meta.title = [parseServerTime(conversation.last_at)?.toLocaleString(undefined, { dateStyle: "full", timeStyle: "short", ...clockOptions() }), ...bits.slice(1)].filter(Boolean).join(" · ");
     title.append(name, meta);
     // The title often isn't the subject: show what was actually asked.
     if (conversation.preview && conversation.preview !== conversation.title) {

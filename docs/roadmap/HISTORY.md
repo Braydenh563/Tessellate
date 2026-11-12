@@ -7,6 +7,23 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-12 (22.2, the 12 or 24 hour setting)
+
+- **Every date and time follows one 12 or 24 hour setting.** `time_format`
+  ("auto", "12", "24"; default auto) is a preference (`routes_settings.py`,
+  `config.py`), shown in Settings, General, Calendar as "Clock". prefs.js
+  turns it into `clockOptions()` (`hourCycle` h12 or h23, never `hour12`,
+  which prints midnight as 24:00) and `clockOptions.formatter()` (a cached
+  `Intl.DateTimeFormat` rebuilt only when the setting changes); about 40
+  formatters across 22 files take one of them, and
+  `tests/test_time_format.py` fails on a new `toLocaleTimeString`,
+  `timeStyle` or `hour:` that skips both. Driven in Playwright at a fixed
+  15:05 and 00:05: auto "3:05 PM" and "12:05 AM"; 24 hour "15:05" and "00:05"
+  (timeline row, the status bar's `WHEN_FORMAT` and an inline
+  `toLocaleTimeString` all agree); 12 hour back to "3:05 PM"; the choice
+  survives a reload. Not covered: times the server formats into text itself (a reminder
+  line the model writes) do not read it.
+
 ## Moved from the plans, 2026-11-12 (the Escape lint)
 
 - **Every dialog, popover and sheet closes on Escape.** `tests/test_escape_closes.py`

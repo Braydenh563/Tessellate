@@ -67,7 +67,7 @@ function connectionRowCues(rows) {
     const day = d.toLocaleDateString(undefined, thisYear
       ? { day: "numeric", month: "short" }
       : { day: "numeric", month: "short", year: "numeric" });
-    return withTime ? `${day}, ${d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}` : day;
+    return withTime ? `${day}, ${d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", ...clockOptions() })}` : day;
   };
   //: The first of these that tells every note in the clash apart wins; the
   //: note's own number is the last resort, because two notes written in the

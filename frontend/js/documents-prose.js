@@ -1543,10 +1543,10 @@ function docFillDate(kind, now, locale) {
   const loc = locale || undefined;
   if (kind === "today") return now.toLocaleDateString(loc, { year: "numeric", month: "long", day: "numeric" });
   if (kind === "date") return now.toLocaleDateString(loc, { year: "numeric", month: "2-digit", day: "2-digit" });
-  if (kind === "time") return now.toLocaleTimeString(loc, { hour: "numeric", minute: "2-digit" });
+  if (kind === "time") return now.toLocaleTimeString(loc, { hour: "numeric", minute: "2-digit", ...clockOptions() });
   if (kind === "now") {
     return now.toLocaleString(loc, {
-      year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit",
+      year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit", ...clockOptions(),
     });
   }
   return docIsoDay(now);

@@ -919,7 +919,7 @@ function rememberDraftVersion(text) {
   draftVersions.push({
     text: trimmed,
     words: wordCount(trimmed),
-    at: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    at: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", ...clockOptions() }),
   });
   if (draftVersions.length > MAX_DRAFT_VERSIONS) draftVersions.shift();
   renderDraftVersions();

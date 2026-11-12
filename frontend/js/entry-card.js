@@ -854,7 +854,7 @@ function entryItem(entry, options = {}) {
     const dayLabel = day.toLocaleDateString(undefined, { day: "numeric", month: "short" });
     //: UX-02: a clock said with the day, shown as written.
     const clock = when.precision === "minute" && /^\d{2}:\d{2}$/.test(when.time || "")
-      ? new Date(`${when.at}T${when.time}:00`).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })
+      ? new Date(`${when.at}T${when.time}:00`).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", ...clockOptions() })
       : "";
     //: A month or a year is shown as that, not as a day in it (audit 1031 N8:
     //: "month of Nov 30" read as a date).

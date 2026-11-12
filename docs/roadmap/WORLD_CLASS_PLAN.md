@@ -2290,7 +2290,6 @@ Checked item by item 2026-11-12; the built ones moved to HISTORY.md, "Moved from
 - Ctrl+S and Ctrl+Z behave the same in every editor and dialog: not audited (Escape is linted, HISTORY.md, "Moved from the plans, 2026-11-12 (the Escape lint)").
 - Search highlights the match inside the note it opens: cards highlight terms (notes-list.js:1600), the opened note does not.
 - Every destructive action has an Undo toast: partial, tracked as LEDGER L694 and L696.
-- Every date and time follows one 12 or 24 hour setting: none exists; the clocks use the locale (`chat-time.js:15`, `status.js:1145`).
 - Right-click works on every card and row with a hold on touch: 38 `contextmenu` sites, not every card.
 - The status bar's "!" says what it means on hover and click: only the AI status glyph is seen (`status.js:2484`); not checked for the rest.
 - 22.3 not re-measured: card padding and body size at laptop widths (`tests/test_density_height.py` covers controls only), Settings section-head weight, one Phosphor weight app-wide (no lint found), the toast corner at 1093x614.
