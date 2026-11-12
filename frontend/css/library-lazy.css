@@ -6625,6 +6625,7 @@ button.ghost.doc-template-choice.wb-template-choice {
 .wb-selected .wb-table-grip:hover,
 .wb-table-grip.is-dragging {
   background: color-mix(in srgb, var(--accent) 45%, transparent);
+  border-radius: var(--radius-sm);
 }
 
 /* Edit data (canvasdepth2): a name and a value per row, the value taking

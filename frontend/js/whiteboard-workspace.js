@@ -27,7 +27,7 @@
   };
   const outside = (kind, item) => prefix.length > 0 && !inside(item) && !(kind === "sketch" && joinsMembers(item));
 
-  function paint() {
+  function paintIsolation() {
     //: A group whose members are gone (ungrouped, deleted, another board) is left rather than kept open on nothing.
     if (prefix.length && !wbItemsWithGroupPrefix(prefix).length) prefix = [];
     if (!prefix.length && !painted) return;
@@ -40,18 +40,18 @@
     painted = prefix.length > 0;
   }
 
-  function enter(chain) {
+  function enterGroup(chain) {
     if (!chain?.length || (chain.length === prefix.length && chain.every((s, i) => s === prefix[i]))) return false;
     prefix = [...chain];
-    paint();
+    paintIsolation();
     wbAnnounce("Editing inside the group. Escape leaves it.");
     return true;
   }
 
-  function leave() {
+  function leaveGroup() {
     if (!prefix.length) return false;
     prefix = [];
-    paint();
+    paintIsolation();
     wbAnnounce("Left the group.");
     return true;
   }
@@ -69,10 +69,10 @@
       toast("Select a grouped item first.", "info");
       return false;
     }
-    return enter(chain);
+    return enterGroup(chain);
   }
 
-  function onKey(e) {
+  function onGroupKey(e) {
     if (e.key !== "Escape" || !prefix.length || e.defaultPrevented) return;
     const active = document.activeElement;
     const tag = (active?.tagName || "").toLowerCase();
@@ -81,9 +81,9 @@
     if (e.target?.closest?.("[role=menu], [role=dialog], dialog")) return;
     e.preventDefault();
     e.stopImmediatePropagation();
-    leave();
+    leaveGroup();
   }
-  window.addEventListener("keydown", onKey, true);
+  window.addEventListener("keydown", onGroupKey, true);
 
   // --- Workspaces ------------------------------------------------------------------------------------------
   const KEY = "wb-workspaces";
@@ -97,7 +97,7 @@
 
   //: Which panels are open now: the context bar, the overview, the search bar, the Format panel, and the sidebar
   //: with the tab it shows (Library, Layers, Pages, Notes or Outline), "" when it is closed.
-  function snapshot() {
+  function panelSnapshot() {
     return {
       props: !document.getElementById("library-view-whiteboard")?.classList.contains("wb-hide-context"),
       overview: open("wb-navigator"),
@@ -108,7 +108,7 @@
   }
 
   //: Puts the panels as a snapshot has them, pressing only the ones that differ.
-  function apply(snap) {
+  function applyPanels(snap) {
     const box = document.getElementById("wb-panel-props");
     if (box && snap.props !== undefined && box.checked !== Boolean(snap.props)) {
       box.checked = Boolean(snap.props);
@@ -124,17 +124,17 @@
   const saved = () => prefs.json(KEY, []).filter((w) => w && typeof w.name === "string" && w.panels);
   const store = (list) => prefs.set(KEY, JSON.stringify(list));
 
-  function use(name) {
+  function useWorkspace(name) {
     const found = saved().find((w) => w.name === name);
     if (!found) return false;
-    apply(found.panels);
+    applyPanels(found.panels);
     current = name;
     wbAnnounce(`Workspace ${name}.`);
-    mount();
+    mountWorkspaces();
     return true;
   }
 
-  async function save(name) {
+  async function saveWorkspace(name) {
     const clean = String(name ?? (await promptDialog("Name this workspace", current || "", { confirmLabel: "Save" })) ?? "").trim().slice(0, 40);
     if (!clean) return false;
     const list = saved().filter((w) => w.name !== clean);
@@ -142,40 +142,40 @@
       toast(`Keep at most ${MAX} workspaces; delete one first.`, "info");
       return false;
     }
-    list.push({ name: clean, panels: snapshot() });
+    list.push({ name: clean, panels: panelSnapshot() });
     store(list);
     current = clean;
     wbAnnounce(`Workspace ${clean} saved.`);
-    mount();
+    mountWorkspaces();
     return true;
   }
 
-  function remove(name) {
+  function removeWorkspace(name) {
     store(saved().filter((w) => w.name !== name));
     if (current === name) current = "";
-    mount();
+    mountWorkspaces();
   }
 
   //: The menu's rows: one to switch to each workspace, one to save the panels now, one to delete each.
-  function rows() {
+  function workspaceRows() {
     const list = saved();
     return [
-      ...list.map((w) => ({ label: `ph:layout ${w.name}`, title: "Open the panels this workspace was saved with", current: w.name === current, run: () => use(w.name) })),
-      { label: "ph:floppy-disk Save the open panels as a workspace…", group: "manage", run: () => save() },
-      ...list.map((w) => ({ label: `ph:trash Delete ${w.name}`, group: "manage", danger: true, run: () => remove(w.name) })),
+      ...list.map((w) => ({ label: `ph:layout ${w.name}`, title: "Open the panels this workspace was saved with", current: w.name === current, run: () => useWorkspace(w.name) })),
+      { label: "ph:floppy-disk Save the open panels as a workspace…", group: "manage", run: () => saveWorkspace() },
+      ...list.map((w) => ({ label: `ph:trash Delete ${w.name}`, group: "manage", danger: true, run: () => removeWorkspace(w.name) })),
     ];
   }
 
   //: The View menu's Workspaces row holds a ⋯ menu (the shared kebab recipe), built again when the list changes.
-  function mount() {
+  function mountWorkspaces() {
     const slot = document.getElementById("wb-workspaces");
     if (!slot || typeof kebabMenu !== "function") return;
     slot.querySelector(".menu-wrap")?.remove();
-    slot.append(kebabMenu(rows(), "Workspaces"));
+    slot.append(kebabMenu(workspaceRows(), "Workspaces"));
   }
 
-  onSurface("board", mount);
+  onSurface("board", mountWorkspaces);
 
-  wbFmtState.isolate = { outside, depth: () => prefix.length, enter, leave, paint, enterSelection, active: () => prefix.length > 0, onKey };
-  wbFmtState.workspaces = { snapshot, apply, save, use, remove, rows, saved };
+  wbFmtState.isolate = { outside, depth: () => prefix.length, enter: enterGroup, leave: leaveGroup, paint: paintIsolation, enterSelection, active: () => prefix.length > 0, onKey: onGroupKey };
+  wbFmtState.workspaces = { snapshot: panelSnapshot, apply: applyPanels, save: saveWorkspace, use: useWorkspace, remove: removeWorkspace, rows: workspaceRows, saved };
 })();

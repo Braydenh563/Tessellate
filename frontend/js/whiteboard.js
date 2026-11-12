@@ -16271,7 +16271,7 @@ async function initWhiteboard() {
     if (id === null) return toast("The default board has no address. Make a board first.");
     copyObjectAddress(wbIsMap() ? "map" : "board", id);
   });
-  $("wb-export")?.addEventListener("click", wbExportBoard);
+  $("wb-export")?.addEventListener("click", () => wbExportBoard());
 
   // Tool Selection
   window.currentTool = "pan";

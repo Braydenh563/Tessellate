@@ -46,7 +46,7 @@ def test_u38_a_document_title_another_has_is_said_once_and_left_as_typed():
 
 def test_u48_the_export_dialog_opens_on_the_whole_board_when_nothing_is_selected():
     """U48: "On screen" was the first export's scope and put "(view)" in its file name."""
-    block = _between(_js("whiteboard.js"), "function wbExportBoard()", "const overlay = ")
+    block = _between(_js("whiteboard.js"), "function wbExportBoard(", "const overlay = ")  # takes { branch } since L267
     assert 'let scope = hasSelection ? "selection" : "whole";' in block
 
 
