@@ -29,6 +29,18 @@ def _function(name: str) -> str:
     return TIMELINE[start : start + match.end()]
 
 
+def _spans() -> str:
+    """`timelineSpans`, the one name the gap lines and the brush share."""
+    start = TIMELINE.index("const timelineSpans = {")
+    return TIMELINE[start : TIMELINE.index("\n};\n", start) + 4]
+
+
+def _method(name: str) -> str:
+    spans = _spans()
+    start = re.search(rf"\n  (?:async )?{name}\(", spans).start()
+    return spans[start : spans.index("\n  },", start) + 5]
+
+
 HARNESS = r"""
 const timelineBucketKey = (d) => d.toISOString().slice(0, 10);
 %s
@@ -40,13 +52,13 @@ const cases = [
   ["2026-03-09", "2026-03-02", "week"],
   ["2026-03", "2026-01", "month"],
 ];
-process.stdout.write(JSON.stringify(cases.map((c) => timelineGap(...c))));
+process.stdout.write(JSON.stringify(cases.map((c) => timelineSpans.gap(...c))));
 """
 
 
 @pytest.mark.skipif(not shutil.which("node"), reason="node is not installed")
 def test_a_week_or_more_with_nothing_is_a_gap_and_less_is_not():
-    harness = HARNESS % (_function("timelineDayShift"), _function("timelineGap"))
+    harness = HARNESS % (_function("timelineDayShift"), _spans())
     out = subprocess.run(["node", "-e", harness], capture_output=True, text=True, timeout=30, env={**os.environ, "TZ": "UTC"})
     assert out.returncode == 0, out.stderr
     got = json.loads(out.stdout)
@@ -62,11 +74,11 @@ def test_a_week_or_more_with_nothing_is_a_gap_and_less_is_not():
 
 def test_the_feed_and_the_next_page_both_draw_the_marker():
     for name in ("paintTimelineFeed", "appendTimelineRows"):
-        assert "timelineGapMarker(" in _function(name), name
+        assert "timelineSpans.gapMarker(" in _function(name), name
 
 
 def test_the_marker_opens_the_day_and_does_not_write():
-    body = _function("timelineGapMarker")
+    body = _method("gapMarker")
     assert "openDayPage(gap.first)" in body
     assert "What happened here?" in body
     assert "apiJson" not in body

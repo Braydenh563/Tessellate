@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Timeline: Shift and drag on the strip at the feed's edge reads a span, what you wrote in those days (composed, no model) with the notes listed beside it on one sheet; a plain click or drag still jumps (L-timeline-2, `/timeline/digest`).
 - Timeline: a week or more with nothing written shows a quiet line between the dates ("Nothing written for 2 weeks") on the day and week groupings, and its What happened here? opens the page for the first empty day; nothing is saved until Save (L-timeline-1).
 - Measured: the Timeline bar click reaches its first rows in 125 to 249 ms at 96 notes (10 runs, headless), under the 300 ms bar (L490; real hardware stays L912).
 - Fix: a time range chosen while the Timeline's own render is still waiting paints once, with the newer answer; the older answer landing last no longer paints the old range over it (L483, `tests/test_timeline_render_superseded.py`).

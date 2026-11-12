@@ -839,7 +839,7 @@ function appendTimelineRows(fresh) {
     const section = feed.lastElementChild;
     if (!section || section.dataset.bucket !== run.key) {
       //: The gap before a section a later page brings (L-timeline-1).
-      const gap = section && timelineGapMarker(section.dataset.bucket, run.key, scale);
+      const gap = section && timelineSpans.gapMarker(section.dataset.bucket, run.key, scale);
       if (gap) feed.appendChild(gap);
       feed.appendChild(timelineBucketSection(run, scale, feed.dataset.density, false));
       continue;
@@ -1029,7 +1029,7 @@ function paintTimelineFeed(rows) {
   const showsToday = scale === "day" && !timelineFilter && !$("timeline-search").value.trim();
   let newer = null;
   for (const bucket of showsToday ? timelineAheadBuckets(buckets, todayKey) : buckets) {
-    const gap = newer && timelineGapMarker(newer, bucket.key, scale);
+    const gap = newer && timelineSpans.gapMarker(newer, bucket.key, scale);
     if (gap) fragment.appendChild(gap);
     fragment.appendChild(timelineBucketSection(bucket, scale, density, showsToday && bucket.key === todayKey));
     newer = bucket.key;
@@ -1049,36 +1049,7 @@ function timelineAheadBuckets(buckets, todayKey) {
   return all.sort((a, b) => (a.key < b.key ? 1 : -1));
 }
 
-//: **A run of empty weeks says so** (L-timeline-1, ANALYSIS 1190). Two
-//: sections three weeks apart read as neighbours; the gap between them is the
-//: part of the year a reader most wants to fill in. A week or more with
-//: nothing, on the day and week scales only (a month bucket is too coarse to
-//: name a gap in). `first` is the first empty day, the page the button opens.
-function timelineGap(newerKey, olderKey, scale) {
-  if (scale !== "day" && scale !== "week") return null;
-  const step = scale === "week" ? 7 : 1;
-  const first = timelineDayShift(olderKey, step);
-  const days = Math.round((new Date(`${newerKey}T00:00:00`) - new Date(`${first}T00:00:00`)) / 86400000);
-  return days >= 7 ? { days, first } : null;
-}
 
-//: The line between two sections, or null. Not under a filter or a search,
-//: where an empty week only means nothing matched. The button is
-//: `openDayPage`: the composer for that day, nothing saved until Save.
-function timelineGapMarker(newerKey, olderKey, scale) {
-  if (timelineFilter || $("timeline-search").value.trim()) return null;
-  const gap = timelineGap(newerKey, olderKey, scale);
-  if (!gap || gap.first >= timelineBucketKey(new Date(), "day")) return null;
-  const marker = document.createElement("div");
-  marker.className = "timeline-gap";
-  marker.dataset.gapFirst = gap.first;
-  const line = document.createElement("span");
-  line.className = "muted";
-  line.textContent = gap.days < 14 ? `Nothing written for ${gap.days} days` : `Nothing written for ${Math.floor(gap.days / 7)} weeks`;
-  const long = new Date(`${gap.first}T00:00:00`).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
-  marker.append(line, smallButton("ph:question What happened here?", `Start a page for ${long}`, () => openDayPage(gap.first)));
-  return marker;
-}
 
 //: One bucket: its header, its rows, and, on today, the journal's own action.
 function timelineBucketSection(bucket, scale, density, isToday = bucket.rows.length === 0) {
@@ -1844,6 +1815,92 @@ function timelineDensitySpan() {
   timelineSpanCache = { density: timelineDensity, head, span };
   return span;
 }
+
+
+//: The timeline's gap lines and its brushed span (L-timeline-1, L-timeline-2),
+//: one name in the shared scope rather than four (the global-scope ratchet).
+const timelineSpans = {
+  //: **A run of empty weeks says so** (L-timeline-1, ANALYSIS 1190). Two
+  //: sections three weeks apart read as neighbours; the gap between them is the
+  //: part of the year a reader most wants to fill in. A week or more with
+  //: nothing, on the day and week scales only (a month bucket is too coarse to
+  //: name a gap in). `first` is the first empty day, the page the button opens.
+  gap(newerKey, olderKey, scale) {
+    if (scale !== "day" && scale !== "week") return null;
+    const step = scale === "week" ? 7 : 1;
+    const first = timelineDayShift(olderKey, step);
+    const days = Math.round((new Date(`${newerKey}T00:00:00`) - new Date(`${first}T00:00:00`)) / 86400000);
+    return days >= 7 ? { days, first } : null;
+  },
+  //: The line between two sections, or null. Not under a filter or a search,
+  //: where an empty week only means nothing matched. The button is
+  //: `openDayPage`: the composer for that day, nothing saved until Save.
+  gapMarker(newerKey, olderKey, scale) {
+    if (timelineFilter || $("timeline-search").value.trim()) return null;
+    const gap = timelineSpans.gap(newerKey, olderKey, scale);
+    if (!gap || gap.first >= timelineBucketKey(new Date(), "day")) return null;
+    const marker = document.createElement("div");
+    marker.className = "timeline-gap";
+    marker.dataset.gapFirst = gap.first;
+    const line = document.createElement("span");
+    line.className = "muted";
+    line.textContent = gap.days < 14 ? `Nothing written for ${gap.days} days` : `Nothing written for ${Math.floor(gap.days / 7)} weeks`;
+    const long = new Date(`${gap.first}T00:00:00`).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
+    marker.append(line, smallButton("ph:question What happened here?", `Start a page for ${long}`, () => openDayPage(gap.first)));
+    return marker;
+  },
+  //: **A brush on the strip** (L-timeline-2, ANALYSIS 1186): Shift and a drag
+  //: marks a stretch of the strip, and its days are the span the sheet reads.
+  //: The top of the strip is the newest day, so whichever way the drag ran the
+  //: lower edge is the start. A press that hardly moved is the plain click's
+  //: jump, not a span of one pixel (under 4px).
+  fromBrush(y0, y1, box, span) {
+    if (!span || Math.abs(y1 - y0) < 4) return null;
+    const at = (y) => span.newest - Math.min(1, Math.max(0, (y - box.top) / Math.max(box.height, 1))) * span.width;
+    const key = (time) => timelineBucketKey(new Date(time), "day");
+    return { start: key(at(Math.max(y0, y1))), end: key(at(Math.min(y0, y1))) };
+  },
+  //: The brushed span on the sheet recipe: the composed review (no model,
+  //: `/timeline/digest`) with the span's notes listed beside it, each one a
+  //: connection row that opens the note. Nothing is written.
+  async open(start, end) {
+    //: The rows are connections.js's (lazy, the Connections sheet's own bundle).
+    const [body] = await Promise.all([
+      apiJson(`/timeline/digest?start=${start}&end=${end}`).catch(() => null),
+      lazyScript("/js/connections.js"),
+    ]);
+    if (!body) return;
+    const day = (key) => new Date(`${key}T00:00:00`).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
+    openSheet({
+      label: start === end ? day(start) : `${day(start)} to ${day(end)}`,
+      sub: body.notes.length === 1 ? "One note in these days." : `${body.notes.length} notes in these days.`,
+      name: "timeline-span",
+      build: (card, close) => {
+        card.classList.add("inbox-card");
+        const grid = document.createElement("div");
+        grid.className = "timeline-span-body";
+        const said = document.createElement("div");
+        said.className = "timeline-span-review";
+        renderMarkdown(said, body.text);
+        const notes = document.createElement("div");
+        notes.className = "timeline-span-notes";
+        notes.setAttribute("role", "list");
+        notes.setAttribute("aria-label", "Notes in these days");
+        for (const note of body.notes) {
+          const row = connectionRowEl("ph:note", note.title, `Open ${note.title}`, [day(note.day), note.category].filter(Boolean).join(" · "), () => {
+            close();
+            flashEntry(note.id);
+          });
+          row.setAttribute("role", "listitem");
+          notes.appendChild(row);
+        }
+        grid.append(said, notes);
+        card.appendChild(grid);
+      },
+    });
+  },
+};
+
 function timelineDensitySpanOf(density, head = -Infinity) {
   const days = Object.keys(density);
   if (!days.length) return null;
@@ -2409,16 +2466,43 @@ onSurface("timeline", () => {
     },
     { passive: false },
   );
+  //: Shift and a drag brushes a span (L-timeline-2) instead of jumping; the
+  //: brush is drawn on its own rect and read on release.
+  let brushFrom = null;
+  const brushRect = $("timeline-scrubber-brush");
+  const drawBrush = (y) => {
+    const box = $("timeline-scrubber").getBoundingClientRect();
+    const unit = (v) => (Math.min(Math.max(v - box.top, 0), box.height) / Math.max(box.height, 1)) * 1000;
+    const top = unit(Math.min(brushFrom, y));
+    brushRect.setAttribute("y", String(top));
+    brushRect.setAttribute("height", String(unit(Math.max(brushFrom, y)) - top));
+  };
   $("timeline-scrubber").addEventListener("pointerdown", (event) => {
     // Pointer capture, so a drag that leaves the 40px strip keeps scrubbing
     // instead of stopping the moment the pointer wanders into the feed.
     $("timeline-scrubber").setPointerCapture(event.pointerId);
+    if (event.shiftKey) {
+      brushFrom = event.clientY;
+      drawBrush(event.clientY);
+      brushRect.classList.remove("hidden");
+      return;
+    }
     timelineScrubTo(event.clientY);
   });
   $("timeline-scrubber").addEventListener("pointermove", (event) => {
     if (!event.buttons) return;
-    timelineScrubTo(event.clientY);
+    if (brushFrom !== null) drawBrush(event.clientY);
+    else timelineScrubTo(event.clientY);
   });
+  const endBrush = (event, read) => {
+    if (brushFrom === null) return;
+    const span = read && timelineSpans.fromBrush(brushFrom, event.clientY, $("timeline-scrubber").getBoundingClientRect(), timelineDensitySpan());
+    brushFrom = null;
+    brushRect.classList.add("hidden");
+    if (span) timelineSpans.open(span.start, span.end);
+  };
+  $("timeline-scrubber").addEventListener("pointerup", (event) => endBrush(event, true));
+  $("timeline-scrubber").addEventListener("pointercancel", (event) => endBrush(event, false));
   $("timeline-select-btn").addEventListener("click", () => {
     if (selectMode) exitSelectMode();
     else enterSelectMode();

@@ -386,7 +386,7 @@ HELP_TOPICS: list[dict] = [
             "as do + and - on a row. The thin strip at the feed's right edge shows how "
             "much you wrote over the whole range, labelled by month or year (Options, "
             "Dates beside the strip, hides the labels and remembers it); click or "
-            "drag it to jump. The strip under the bar walks your daily pages, and the "
+            "drag it to jump; Shift and drag reads a span, what you wrote in those days with the notes beside it. The strip under the bar walks your daily pages, and the "
             "chip under it offers On this day, and the year menu beside the month narrows the list to one year. A note that names a "
             'day ("on Friday") sits on that day and says All day; one that '
             'names a time too ("on Friday at 3pm") shows that time. '
