@@ -11,28 +11,28 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 28 | 5 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 17 | 4 | 0 | 20 | 91 |
-| documents | 70 | 17 | 4 | 0 | 20 | 91 |
-| documents | 70 | 17 | 4 | 0 | 20 | 91 |
-| documents | 70 | 17 | 4 | 0 | 20 | 91 |
-| documents | 70 | 17 | 4 | 0 | 20 | 91 |
-| documents | 70 | 17 | 4 | 0 | 20 | 91 |
+| documents | 70 | 17 | 3 | 0 | 20 | 90 |
+| documents | 70 | 17 | 3 | 0 | 20 | 90 |
+| documents | 70 | 17 | 3 | 0 | 20 | 90 |
+| documents | 70 | 17 | 3 | 0 | 20 | 90 |
+| documents | 70 | 17 | 3 | 0 | 20 | 90 |
+| documents | 70 | 17 | 3 | 0 | 20 | 90 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 628 | 142 | 3 | 192 | 1323 |
-| all | 553 | 628 | 142 | 3 | 192 | 1323 |
-| all | 553 | 628 | 142 | 3 | 192 | 1323 |
+| all | 553 | 628 | 141 | 3 | 192 | 1322 |
+| all | 553 | 628 | 141 | 3 | 192 | 1322 |
+| all | 553 | 628 | 141 | 3 | 192 | 1322 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 628 | 142 | 3 | 192 | 1323 |
+| all | 553 | 628 | 141 | 3 | 192 | 1322 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 628 | 142 | 3 | 192 | 1323 |
-| all | 553 | 628 | 142 | 3 | 192 | 1323 |
-| all | 553 | 628 | 142 | 3 | 192 | 1323 |
+| all | 553 | 628 | 141 | 3 | 192 | 1322 |
+| all | 553 | 628 | 141 | 3 | 192 | 1322 |
+| all | 553 | 628 | 141 | 3 | 192 | 1322 |
 
 ## graph
 
@@ -387,7 +387,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L334** `documents` open, L: Lower more JS constructs for the stepper (class fields, destructuring, spread, async). From OPEN.md:1767; OPEN.md:2826. Evidence: run-debug.js:97 lowers classes; RUN_DEBUG_REFUSED (:23-26) still names class fields, static blocks, private members etc.
 - [ ] **L335** `documents` open, L: Brief 45 part 2: split whiteboard.js/initWhiteboard and documents.js, fold 133 duplicate blocks. From SESSION_BRIEFS.md:176. Evidence: whiteboard.js still holds initWhiteboard (E19: 26,159 lines); no split commit found
 - [ ] **L342** `documents` partly, M: Meet the 4x typing gate (rest in a29i-1102.md). From OPEN.md:4489. Evidence: a29i-1102.md holds the rest; 4x typing gate stays open
-- [ ] **L348** `documents` partly, M: AI rename option for new boards and maps (documents already have suggest-title). From INBOX.md:904 B17. Evidence: Names 787f8a9; documents suggest-title fe169b9d8 (routes_documents); boards and maps have no AI rename (w34-gap3)
 - [ ] **L351** `documents` partly, L: Re-check run/debug tools and skeletons for every language after snippet drag. From INBOX.md:904 B19. Evidence: documents-codekit.js:530 docSnippetDragStart; tests/test_snippet_drag.py; run/debug tools for every language not re-checked
 - [ ] **L352** `documents` partly, L: Documents: Autocorrect status-bar switch, deferred-large rows, DC1/DC2 lock, old audit rows re-verify. From ledger-1112 O27; ledger-1112 X14.
 - [ ] **L-documents-3** `documents` open, M: Compare two documents side by side. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:568. Evidence: there is version diff within a document but no compare of two documents; untracked

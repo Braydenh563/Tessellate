@@ -146,9 +146,9 @@ TAIL_TOPICS.extend(
                 "handle fits that edge to what it holds; a note, text box or picture fits its content. Ctrl+Shift+L "
                 "locks the selection. Right-click an item, "
                 "Comment…, starts a thread. View, Present frames: one frame at a "
-                "time, the bar lists pages; ? shows every key; Ctrl+K finds any board action by name. Menus: Insert, Edit, "
+                "time, the bar lists pages; ? shows every key; Ctrl+K finds a board action. Menus: Insert, Edit, "
                 "Arrange opens as submenus: Order, Align, Distribute, Tidy, Group, View (panels, background, grid, "
-                "snap, zoom) and Board (new, export). Rename a board: Board, Rename."
+                "snap, zoom) and Board (new, export). Rename: Board, Rename or Suggest a name."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
