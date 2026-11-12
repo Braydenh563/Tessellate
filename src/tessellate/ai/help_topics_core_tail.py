@@ -456,7 +456,7 @@ TAIL_TOPICS.extend(
                 "The top bar's Format button, Ctrl+Shift+P or View > Format panel opens "
                 "the Format panel on the right, with three tabs. Style: line colour, width and pattern, "
                 "your own dashes (like 8 4), a line style (sharp, rounded or curved), flow (dashes that move), "
-                "fill (gradient, hatch, dots or zigzag), fill and line opacity (presets 0 to 100), opacity, shadow, box corner radii and padding, a picture's crop and trim, and for a connector its line shape (curved, straight or elbow), "
+                "fill (gradient, hatch, dots or zigzag), fill and line opacity (presets 0 to 100), opacity, shadow, box corner radii and padding, a picture's crop and trim, and for a connector its line shape (curved, straight or elbow), its connector shape (double line, block, flex or tapered arrow, pipe or wire), its label along the line (text on path), "
                 "its line jumps (an arc, a gap or a "
                 "peak over a line under it, of a size you set), a gap to stop short of the shape at each end, its two ends (twenty-one marks, three sizes) "
                 "and where its label sits. Text: font (default, serif, monospace, wide sans, handwritten), size, colour, bold, italic, underline, strikethrough, "

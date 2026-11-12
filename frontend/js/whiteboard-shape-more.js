@@ -316,8 +316,124 @@
 
   onSurface("board", bindPointEditor);
 
+  // --- Connector shapes (WHITEBOARD_PLAN section 4: draw.io's `shape=link|flexArrow|pipe|wire` and tapered arrows) ----
+  //
+  // A connector's `shape` (absent or "line": the plain stroked line) is drawn as an outline around its centre line, the
+  // way the map's ribbon is: `connectorOutline` takes the centre line as points (`wbShaftPoints`, the line before any
+  // end mark) and answers one closed path, with how to paint it. An arrow's head is where the link has an end mark
+  // (the arrow-like caps), or at the end when it has none. Pure, so a node test and the .drawio import share it.
+  const CONNECTOR_SHAPES = ["line", "double", "block", "flex", "tapered", "pipe", "wire"];
+  const CONNECTOR_SHAPE_WORDS = { line: "Line", double: "Double line", block: "Block arrow", flex: "Flex arrow", tapered: "Tapered arrow", pipe: "Pipe", wire: "Wire" };
+
+  //: The half-width of the body and of the head, the head's length, and how the body is painted, for a line `w` thick.
+  function connectorProfile(shape, w) {
+    switch (shape) {
+      case "double": return { half: () => w * 1.75, paint: "outline", stroke: w };
+      case "pipe": return { half: () => w * 2.2, paint: "tube", stroke: Math.max(1, w * 0.6) };
+      case "wire": return { half: () => w * 0.9, paint: "solid", stroke: 1, dots: w * 1.6 };
+      case "block": return { half: () => w * 1.5, paint: "solid", stroke: 1, head: { half: w * 3.5, len: w * 5 + 8 } };
+      case "flex": return { half: () => w * 0.9, paint: "solid", stroke: 1, head: { half: w * 3.2, len: w * 4 + 12 } };
+      case "tapered": return { half: (u) => w * (0.4 + 2.6 * u), paint: "solid", stroke: 1 };
+      default: return null;
+    }
+  }
+
+  //: Where along a polyline (`cum` its running lengths) the length `s` falls: the point and the direction there, the
+  //: average of the two runs at a corner.
+  function polylineFrame(pts, cum, s) {
+    const n = pts.length;
+    let k = 0;
+    while (k < n - 2 && cum[k + 1] < s - 1e-6) k++;
+    const dir = (i) => {
+      const dx = pts[i + 1].x - pts[i].x, dy = pts[i + 1].y - pts[i].y, len = Math.hypot(dx, dy) || 1;
+      return { x: dx / len, y: dy / len };
+    };
+    const d = dir(k);
+    const u = Math.max(0, Math.min(1, (s - cum[k]) / ((cum[k + 1] - cum[k]) || 1)));
+    const p = { x: pts[k].x + (pts[k + 1].x - pts[k].x) * u, y: pts[k].y + (pts[k + 1].y - pts[k].y) * u };
+    let t = d;
+    if (Math.abs(s - cum[k]) < 1e-6 && k > 0) {
+      const a = dir(k - 1);
+      t = { x: a.x + d.x, y: a.y + d.y };
+    } else if (Math.abs(s - cum[k + 1]) < 1e-6 && k < n - 2) {
+      const b = dir(k + 1);
+      t = { x: b.x + d.x, y: b.y + d.y };
+    }
+    const tl = Math.hypot(t.x, t.y) || 1;
+    t = { x: t.x / tl, y: t.y / tl };
+    //: How much wider a corner's offset is than the run's, held to a miter limit.
+    const scale = Math.min(2.5, 1 / Math.max(0.4, t.x * d.x + t.y * d.y));
+    return { p, t, scale };
+  }
+
+  //: The outline of a connector shape round the centre line `pts`, or null for the plain line (or a line with no length).
+  //: `heads`: which ends carry an arrowhead on a shape that has one. Answers `{ d, paint, stroke }`.
+  function connectorOutline(shape, pts, width, heads = { start: false, end: true }) {
+    const w = Number(width) > 0 ? Number(width) : 3;
+    const profile = connectorProfile(shape, w);
+    if (!profile || !pts || pts.length < 2) return null;
+    const cum = [0];
+    for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y));
+    const total = cum[cum.length - 1];
+    if (total < 1) return null;
+    const head = profile.head;
+    const headLen = head ? Math.min(head.len, total / (heads.start && heads.end ? 2.2 : 1.2)) : 0;
+    const from = head && heads.start ? headLen : 0, to = total - (head && heads.end ? headLen : 0);
+    const stops = [from, ...cum.filter((c) => c > from + 1e-6 && c < to - 1e-6), to];
+    const left = [], right = [];
+    for (const s of stops) {
+      const f = polylineFrame(pts, cum, s);
+      const h = profile.half(s / total) * f.scale;
+      left.push({ x: f.p.x - f.t.y * h, y: f.p.y + f.t.x * h });
+      right.push({ x: f.p.x + f.t.y * h, y: f.p.y - f.t.x * h });
+    }
+    //: A head: out to its full width at the shaft's end, then in to the tip.
+    const headAt = (s, tipS) => {
+      const f = polylineFrame(pts, cum, s), tip = polylineFrame(pts, cum, tipS).p;
+      return { l: { x: f.p.x - f.t.y * head.half, y: f.p.y + f.t.x * head.half }, r: { x: f.p.x + f.t.y * head.half, y: f.p.y - f.t.x * head.half }, tip };
+    };
+    const ring = [...left];
+    if (head && heads.end) {
+      const h = headAt(to, total);
+      ring.push(h.l, h.tip, h.r);
+    }
+    ring.push(...right.reverse());
+    if (head && heads.start) {
+      const h = headAt(from, 0);
+      ring.push(h.r, h.tip, h.l);
+    }
+    const num = (n) => Math.round(n * 100) / 100;
+    let d = `M ${ring.map((p) => `${num(p.x)} ${num(p.y)}`).join(" L ")} Z`;
+    //: A wire ends in a round terminal at each end.
+    if (profile.dots) {
+      for (const p of [pts[0], pts[pts.length - 1]]) {
+        const r = num(profile.dots);
+        d += ` M ${num(p.x - r)} ${num(p.y)} a ${r} ${r} 0 1 0 ${num(r * 2)} 0 a ${r} ${r} 0 1 0 ${num(-r * 2)} 0 Z`;
+      }
+    }
+    return { d, paint: profile.paint, stroke: profile.stroke };
+  }
+
+  //: A shaped connector as drawn: its outline, the plain centre line (the hit band, the label's line) and how the outline
+  //: is painted; null for the plain line. Called from the board's render (`renderWhiteboard`).
+  function shapedLink(parsed, endpoints) {
+    if (!CONNECTOR_SHAPES.includes(parsed.shape) || parsed.shape === "line") return null;
+    const centre = wbLinkPathD(parsed.type, endpoints.source, endpoints.target, { startCap: "none", endCap: "none" }, parsed.width, parsed.bend, wbLinkShape(parsed));
+    const out = connectorOutline(parsed.shape, wbShaftPoints(centre), parsed.width, connectorHeads(wbLinkCaps(parsed)));
+    return out && { ...out, centre };
+  }
+
+  //: Which ends of a shaped connector carry a head: where it has an arrow-like end mark, else the end.
+  function connectorHeads(caps) {
+    const mark = (c) => c && c !== "none";
+    const start = mark(caps?.startCap), end = mark(caps?.endCap);
+    return start || end ? { start, end } : { start: false, end: true };
+  }
+
+
   wbFmtState.shapeMore = {
     tableRowPorts, rowOf, rowAfter, carryPatch, carryRowPorts,
     polygonPoints, polygonD, nearestCorner, nearestOnSide, pointsTarget, editPoints,
+    connectorOutline, connectorHeads, shapedLink, CONNECTOR_SHAPES, CONNECTOR_SHAPE_WORDS,
   };
 })();
