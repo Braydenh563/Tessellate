@@ -45,6 +45,14 @@ def test_an_unknown_timezone_is_refused(client):
     assert client.put("/preferences", json={"timezone": "Middle/Earth"}).status_code == 422
 
 
+def test_the_name_a_browser_in_india_reports_is_taken_and_kept_as_the_current_one(client):
+    """Chromium reports Kolkata as "Asia/Calcutta", which a system tz database
+    without the legacy links lacks; the whole startup PUT was refused (L914)."""
+    put = client.put("/preferences", json={"timezone": "Asia/Calcutta", "week_start_locale": 0})
+    assert put.status_code == 200
+    assert client.get("/preferences").json()["timezone"] == "Asia/Kolkata"
+
+
 def test_no_timezone_falls_back_to_the_server_clock(client):
     """The ordinary case, app and browser on one machine, must need no setup."""
     from tessellate.core import deps

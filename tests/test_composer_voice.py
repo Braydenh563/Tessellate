@@ -148,3 +148,14 @@ def test_overdue_reminders_are_one_remark_and_the_next_few_days_are_named():
     assert any("Take bins out" in t and "today" in t for t in due)
     assert any("Dentist" in t and "Friday" in t for t in due)
     assert len(due) == 3
+
+
+def test_today_line_survives_a_count_with_no_sampled_note_from_today():
+    """The sample holds only the newest notes, so the whole-notebook count can
+    say several were written today while none of them is in the sample (a 500
+    on /insights/today-line at 5,000 notes)."""
+    today = date(2026, 10, 18)
+    notes = [{"id": 1, "content": "ring the landlord", "category": "Home", "tags": [], "created_at": "2026-10-10"}]
+    for seed in range(12):
+        line = composer_voice.today_line(notes, today=today, seed=seed, counts={today: 5})
+        assert line and line["text"]
