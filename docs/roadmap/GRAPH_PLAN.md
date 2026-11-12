@@ -58,7 +58,7 @@ community pass) and `/graph/path`. The dock is on the Phase 8 grammar.
    timeline scrub with a *play*; no local-graph pane beside an open note;
    no export of the picture that matches the screen.
 
-- `clearanceForce` (2,000 notes, 3,999 links) costs 28 ms a call: the corridor walk and tests take 11 ms and the hits 17 ms. A coarser corridor cannot cut the hits, and fewer hits needs an owner quality decision (a long line's push every other tick was tried and reverted). (from `gr1b-1101.md` (git history))
+- `clearanceForce` coarser push: built 2026-11-12 (L-graph-5, owner yes), moved to HISTORY.md ("Moved from the plans, 2026-11-12 (graph-plan session)").
 - The board's remaining layers: parked in BACKLOG.md §9 ("Parked from the graph plan, 2026-11-12").
 
 ## 3. The target, in one paragraph

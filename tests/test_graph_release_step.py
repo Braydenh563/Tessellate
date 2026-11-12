@@ -28,9 +28,13 @@ SCRIPT = r"""
 const fs = require("fs"), path = require("path"), vm = require("vm");
 const root = process.argv[1];
 const timers = [], sent = [];
-const sandbox = { console, Math, Date, Float32Array, Map, Set,
+// A counter clock (as tests/_graph_worker_harness.js's clockStep): the worker's
+// time budgets buy the same work on a loaded machine (it failed once under -n 4).
+let fakeNow = 1e12;
+const clock = class extends Date { static now() { return (fakeNow += 0.05); } };
+const sandbox = { console, Math, Date: clock, Float32Array, Map, Set,
   setTimeout: (fn) => { timers.push(fn); return timers.length; }, clearTimeout: () => {},
-  setInterval: () => 0, clearInterval: () => {}, performance: { now: () => Date.now() },
+  setInterval: () => 0, clearInterval: () => {}, performance: { now: () => clock.now() },
   postMessage: (m) => sent.push(m) };
 sandbox.self = sandbox;
 vm.createContext(sandbox);

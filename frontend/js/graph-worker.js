@@ -1785,10 +1785,16 @@ const CLEAR_LEAN_TICKS = 60;
 const CLEAR_LEAN_GAIN = 2;
 //: A chord longer than this many cells reads each column's cells as one run.
 const CLEAR_LONG_CELLS = 4;
+//: **A long line pushes on every second tick, twice as hard** (L-graph-5, the
+//: owner 2026-11-12: a coarser push if dot overlaps stay 0). Lines longer than
+//: `CLEAR_SPLIT_CELLS` cells hold most of the hits; half of them take each tick.
+const CLEAR_SPLIT_CELLS = 3;
 const clear = {
   curved: true,
   lean: 0,
   gain: 1,
+  push: 1,
+  tick: 0,
   stamp: 0,
   start: new Int32Array(1),
   items: new Int32Array(0),
@@ -1885,7 +1891,7 @@ function clearPush(node, a, b) {
     nx = -(b.y - a.y) / len;
     ny = (b.x - a.x) / len;
   }
-  const push = (need - dist) * CLEAR_STRENGTH * clear.gain;
+  const push = (need - dist) * CLEAR_STRENGTH * clear.push;
   // A held note does not move; whoever is free takes the whole step.
   const along = clearNear[3];
   const nodeFree = node.fx == null ? 1 : 0;
@@ -1901,6 +1907,14 @@ function clearPush(node, a, b) {
   b.vy -= (ny * push * bFree) / (2 * share);
 }
 
+//: Whether a line pushes this tick, and how hard (`clear.push`): a long one on
+//: every second tick at twice the tick's gain.
+function clearSplitTurn(a, b) {
+  const split = Math.abs(b.x - a.x) + Math.abs(b.y - a.y) > CLEAR_SPLIT_CELLS * CLEAR_CELL;
+  clear.push = split ? clear.gain * 2 : clear.gain;
+  return !split || (clear.tick + a.index + b.index) % 2 === 0;
+}
+
 function clearanceForce() {
   clear.gain = 1;
   if (clear.lean > 0) {
@@ -1913,6 +1927,7 @@ function clearanceForce() {
   let widest = 0;
   for (const node of nodes) widest = Math.max(widest, node.r || 8);
   const reach = widest + CLEAR_GAP;
+  clear.tick += 1;
   //: **The notes by cell in two typed arrays, not a Map of lists** (audit
   //: 1029 row 35): a long line's corridor reads hundreds of cells, nearly
   //: all empty, and a Map lookup on a number key was most of this force's
@@ -1987,8 +2002,9 @@ function clearanceForce() {
   for (const link of links) {
     const a = link.source;
     const b = link.target;
-    const points = clearCurve(a, b);
     const stamp = ++clear.stamp;
+    if (!clearSplitTurn(a, b)) continue;
+    const points = clearCurve(a, b);
     const ai = a.index;
     const bi = b.index;
     //: Chord by chord, not the whole line's box: a note within `reach` of the

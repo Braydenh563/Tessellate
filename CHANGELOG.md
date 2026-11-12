@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Graph: the line-clearance push is cheaper on big maps: a long line pushes every second tick at twice the strength (2,000 notes 66 to 40 ms a call, overlaps still 0 on the 36-note seeds).
 - Graph: a big map's settle repaint after a zoom or pan is painted in eight bands, one per frame, under the scaled layer, so it no longer lands as one 110 ms task (2,000 notes, CPU 4x).
 - Graph: Escape closing a lightbox opened over the full-screen map no longer also leaves full screen.
 - Graph similarity: documents and entities get a derived vector (the mean of their notes' vectors), so they join similarity lines, centrality and trace hops; lines are marked derived.
