@@ -666,6 +666,7 @@ _THIS = re.compile(
     #: Every demonstrative is the open note (audit 1030 Z54): "what is this",
     #: "what's in here", "explain this", "describe this note", "what is here".
     r"|what(?:'s| is) (?:this|here)(?: note| page)?|what(?:'s| is) in (?:here|this(?: note| page)?)"
+    r"|what(?:'s| is) (?:going on|happening)(?: in)? (?:here|this(?: note| page)?)|what happened(?: in)? (?:here|this(?: note| page)?)"
     r"|(?:explain|describe|read(?: out)?|go (?:over|through)|run (?:me )?through) (?:this|it)(?: note| page)?"
     #: "tell me about this", "give me a summary of this note" (L46): a request for the open note, said as a request.
     r"|(?:tell|talk|walk) me (?:about|through) this(?: note| page| one)?|give me (?:a |an |the )?(?:summary|overview|rundown) of this(?: note| page| one)?"

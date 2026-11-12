@@ -45,6 +45,7 @@ from tessellate.ai import composer_credit, composer_each, composer_label, compos
 from tessellate.ai.composer_lists import clean
 from tessellate.ai import recognise as recogniser, recognise_questions
 from tessellate.search import query as query_understanding
+from tessellate.ai.composer_clause import trailing_clause
 from tessellate.ai.composer_digest_sentences import (
     CONTEXT_TAGS, Fact, LINES, PHRASES, VOICES, _ASKED_AS, _ASKS, _ASKS_WORDS, _BAD, _CUES,
     _DAYS_PLURAL, _DAY_NAMES, _FEELING_ASK, _GAPS, _GOOD, _KNOWN, _NAMES, _Out, _PREFIX, _RATING,
@@ -2061,10 +2062,9 @@ def _rows_as_polished(out: _Out, said_as=_plain_marks) -> None:
     whole = "\n".join([*out.lines, *out.more, *out.closing, *out.next])
     for row in out.rows:
         said = said_as(str(row.get("sentence") or ""))
-        row["sentence"] = said
         found = re.search(re.escape(said), whole, re.IGNORECASE) if said and said not in whole else None
-        if found:
-            row["sentence"] = found.group(0)
+        row["sentence"] = found.group(0) if found else said
+        row["sentence"] += "" if row.get("anchor") else trailing_clause(whole, row["sentence"])
 
 
 #: Shapes whose chips are their own (a web answer, a "more" turn).

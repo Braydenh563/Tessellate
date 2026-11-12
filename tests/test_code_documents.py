@@ -955,3 +955,22 @@ def test_a_template_fills_the_time_and_places_the_cursor():
     assert re.search(r"At \d{1,2}:\d{2}", with_cursor["content"])
     assert with_cursor["content"][with_cursor["cursor"] :].startswith("end")
     assert plain["cursor"] == -1
+
+
+def test_chart_ticks_are_sound_for_every_top_from_0_to_1240_l80():
+    """L80: measured over all 1,241 tops, not a sample: ascending whole numbers from 0, a round step,
+    the last tick at or above the top and under one step past it, at most five ticks."""
+    prelude = _fn(ASK_CHART, "askChartTicks")
+    got = _node(prelude, "Array.from({length: 1241}, (_, m) => askChartTicks(m))")
+    assert len(got) == 1241
+    for top, ticks in enumerate(got):
+        assert ticks[0] == 0 and ticks[-1] >= top, (top, ticks)
+        assert len(ticks) <= (top + 1 if top <= 4 else 5), (top, ticks)
+        if top <= 4:
+            assert ticks == list(range(top + 1)), (top, ticks)
+            continue
+        step = ticks[1] - ticks[0]
+        assert step > 0 and ticks[-1] - top < step, (top, ticks)
+        assert all(b - a == step for a, b in zip(ticks, ticks[1:])) and all(isinstance(t, int) for t in ticks), (top, ticks)
+        lead = step / 10 ** (len(str(step)) - 1)
+        assert lead in (1, 2, 5) or step == 25 * 10 ** (len(str(step)) - 2), (top, step)

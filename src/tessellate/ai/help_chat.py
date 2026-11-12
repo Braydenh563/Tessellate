@@ -43,6 +43,7 @@ handed on each call.
 from __future__ import annotations
 
 import functools
+import logging
 import math
 from datetime import datetime
 import re
@@ -51,6 +52,7 @@ from collections.abc import Iterator
 
 from tessellate import SUPPORT_EMAIL
 from tessellate.ai import AI_NAME
+from tessellate.ai.provider import ProviderError
 from tessellate.ai import act_registry, guide_lead, help_words, presets, variants
 from tessellate.ai.guide_lead import help_sentences  # the sentence cutter, a leaf with the lead rules (G5)
 from tessellate.ai.help_topics_core import HELP_TOPICS  # the table, moved out whole (AI23)
@@ -1228,16 +1230,24 @@ def answer_stream(
     #: but thinking is not turned off, so the `thinking` events below are
     #: events that can actually happen. Under `"quick"` this loop's
     #: `thinking_delta` branch had never once run on a real backend.
-    for piece in ollama.chat_stream(
-        model_manager.utility_model(), messages, mode=presets.GUIDE_MODE
-    ):
-        thinking = piece.get("thinking_delta")
-        if thinking:
-            yield {"type": "thinking", "text": thinking}
-        delta = piece.get("content_delta")
-        if delta:
-            pieces.append(delta)
-            yield {"type": "delta", "text": delta}
+    try:
+        for piece in ollama.chat_stream(
+            model_manager.utility_model(), messages, mode=presets.GUIDE_MODE
+        ):
+            thinking = piece.get("thinking_delta")
+            if thinking:
+                yield {"type": "thinking", "text": thinking}
+            delta = piece.get("content_delta")
+            if delta:
+                pieces.append(delta)
+                yield {"type": "delta", "text": delta}
+    except ProviderError as exc:
+        #: The model call was cut (a closed tab, a model that failed): not a server fault. The
+        #: app's own help answers, as `/help/ask` does, and the log says why (L52).
+        logging.getLogger("tessellate.help").info("help/ask: the model call ended: %s", exc)
+        offline = _aware(offline_answer(question, tab, context, history), question, tab, actions)
+        yield {"type": "done", **offline, "composed": True}
+        return
     content = "".join(pieces).strip()
     yield {
         "type": "done",

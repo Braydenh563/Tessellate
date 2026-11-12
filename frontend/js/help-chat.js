@@ -140,9 +140,9 @@ async function guideLand(link) {
   closeOverlaysForChord();
   if (link.section) await openSettingsModal(link.section, link.target || null);
   else await switchTab(link.tab);
-  //: Notes opens on its list; the topics are about writing one.
-  if (link.tab === "notes") showNotesSection("capture");
   const ids = (link.target || (link.section ? "" : GUIDE_TAB_LANDING[link.tab])).split(" ").filter(Boolean);
+  //: Notes opens on its list; the topics are about writing one, unless the control is in the list (L51).
+  if (link.tab === "notes") showNotesSection($(ids[0])?.closest("#browse") ? "browse" : "capture");
   const live = (id) => (guideOnScreen($(id)) ? $(id) : null);
   //: A row hidden on purpose (no model, not the desktop app) is not waited for.
   const onPurpose = ids.every((id) => $(id)?.closest(".hidden, [hidden]"));

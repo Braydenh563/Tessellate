@@ -2067,8 +2067,8 @@ function editedMarker() {
   return tag;
 }
 
-async function openConversation(id) {
-  if (chatLeaveHeld(() => openConversation(id))) return;
+async function openConversation(id, turn = null) {
+  if (chatLeaveHeld(() => openConversation(id, turn))) return;
   const full = await apiJson(`/conversations/${id}`).catch(() => null);
   if (!full) return;
   //: The replayed run is drawn by `agentTimeline`, in the chat turn's lazy file.
@@ -2275,7 +2275,10 @@ async function openConversation(id) {
   loadConversationList();
   //: Where it was left, not always its end (Placed 2026-09-09 item 99 (b)).
   if (isStreamingConversation(full.id)) chatScrollToEnd();
-  else restoreChatPosition(full.id);
+  else if (Number.isInteger(turn) && $("chat-messages").querySelectorAll(".msg")[turn]) {
+    //: A Library hit inside the chat opens at the message that has the words (L78).
+    flashRevealed($("chat-messages").querySelectorAll(".msg")[turn]);
+  } else restoreChatPosition(full.id);
 }
 
 async function loadChatSuggestions() {
