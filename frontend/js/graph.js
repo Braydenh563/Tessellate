@@ -1327,7 +1327,7 @@ function drawTrace() {
 //:, dragging reheats the simulation, so everything else keeps moving while
 //: you aim. Fourteen makes it a comfortable 23px and is still far short of the
 //: nearest neighbour, so a drop in open space still links nothing.
-const DROP_SLOP = 14;
+//: The slop is the 14 in `graphNodeRadius(other) + 14` below (a constant of its own cost a shared-scope name).
 
 
 
@@ -1339,7 +1339,7 @@ function graphNodeUnder(dragged, event) {
     // Squared, not `Math.hypot`. This runs over every node on every pointer
     // event of a drag, so the square root is one transcendental call per note
     // per event for a comparison that does not need it.
-    const reach = graphNodeRadius(other) + DROP_SLOP;
+    const reach = graphNodeRadius(other) + 14;
     if (dx * dx + dy * dy <= reach * reach) return other;
   }
   return null;
@@ -4031,7 +4031,7 @@ const GRAPH_MINIMAP_H = 112;
 //: render rather than once per paint (a cooling layout paints every eighth
 //: tick), drawn at a hard cap, and a line is two coordinates with no hit
 //: testing, which is a different thing from the canvas's own edge pass.
-const GRAPH_MINIMAP_MAX_EDGES = 600;
+//: The cap is the 600 in `edgeStride` below.
 let graphMinimapPairs = null;
 let graphMinimapPairsFrom = null; // the adjacency map those pairs were built from
 
@@ -4205,7 +4205,7 @@ function graphMinimapPaint() {
   if (edgesGroup) {
     const byId = new Map(nodes.map((n) => [n.id, n]));
     const pairs = graphMinimapEdgePairs();
-    const edgeStride = Math.max(1, Math.ceil(pairs.length / GRAPH_MINIMAP_MAX_EDGES));
+    const edgeStride = Math.max(1, Math.ceil(pairs.length / 600));
     const ends = [];
     for (let i = 0; i < pairs.length; i += edgeStride) {
       const from = byId.get(pairs[i][0]);
