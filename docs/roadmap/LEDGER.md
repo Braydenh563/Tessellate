@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 101 | 4 | 0 | 17 | 201 |
+| ui-modernisation | 96 | 93 | 4 | 0 | 17 | 193 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 13 | 0 | 0 | 0 | 13 |
-| all | 553 | 673 | 158 | 3 | 191 | 1384 |
+| all | 553 | 665 | 158 | 3 | 191 | 1376 |
 
 ## graph
 
@@ -496,10 +496,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L391** `ui-modernisation` open, S: Check and fix the chat dock settings button radius (Brief 91, E19). From SESSION_BRIEFS.md:285. Evidence: E19 not checked; no fix commit found
 - [ ] **L392** `ui-modernisation` open, S: Measure broom accent contrast and run the automatic contrast pass in a browser; check Tags Atlas review with a real model. From OPEN.md:624; OPEN.md:3562. Evidence: contrast.js measurement and browser run not recorded; pytest only
 - [ ] **L393** `ui-modernisation` open, S: Fix phone collapsed row buttons overflowing the right edge by 87.8px. From OPEN.md:744; OPEN.md:3549. Evidence: Measured, unchanged per row; no fix commit found
-- [ ] **L394** `ui-modernisation` open, S: Fix .skill-fact-reads chip 4px vertical offset and rerun badgealign sweep. From OPEN.md:978. Evidence: Selector still in library.js; no fix commit found; badgealign sweep not rerun
 - [ ] **L395** `ui-modernisation` open, S: Fix select-btn and notes-filter-menu dock-word clipping at 320-1024. From OPEN.md:1837. Evidence: No CSS rule for these selectors found by grep
 - [ ] **L396** `ui-modernisation` open, S: Fix rail-dot alignment at 390. From OPEN.md:1955. Evidence: 0px at 1440; 390 not fixed
-- [ ] **L397** `ui-modernisation` open, S: Stop the Capture box shifting 2.4px/1.6px on first click. From OPEN.md:2539. Evidence: Measured open item (Brief 93 follow-up)
 - [ ] **L398** `ui-modernisation` open, S: Show the Categories head at 390 so it can fold. From OPEN.md:3880. Evidence: Existing <600 rule; found not fixed
 - [ ] **L399** `ui-modernisation` open, S: Fix notes-tidy button and tab-notes 4px overflow. From OPEN.md:3700. Evidence: Sweep finding; no fix commit found
 - [ ] **L400** `ui-modernisation` open, S: Flatten Library > Contents > Probe document > Outline from depth 4. From OPEN.md:3706. Evidence: One destination at depth 4; no flattening commit found
@@ -515,7 +513,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L410** `ui-modernisation` open, S: Measure nav history popup placement on a phone at 390 (status-bar button not drawn). From OPEN.md:728; OPEN.md:2239. Evidence: Status-bar button not drawn at 390; placement on a real phone unmeasured
 - [ ] **L411** `ui-modernisation` open, S: Check the Settings voice row in dark theme (only light checked). From OPEN.md:833; OPEN.md:3513. Evidence: Only light checked per row; THEME=dark run not recorded
 - [ ] **L412** `ui-modernisation` open, S: Re-measure Logs More menu .dock-menu-check rows and board Start/End menus against other menu items. From OPEN.md:1207; OPEN.md:2523. Evidence: 07-whiteboard-misc.css:9720 .dock-menu-check now token padding; re-measure of Logs menu and board menus not shown.
-- [ ] **L413** `ui-modernisation` open, S: Measure the 390 px layout of Tidy Patterns rows and the Chat pattern line. From OPEN.md:991. Evidence: Only 1440 measured; no 390 measure recorded
 - [ ] **L415** `ui-modernisation` open, S: Measure the status ring under 'auto' motion. From OPEN.md:1758. Evidence: No later measurement found; needs a sweep of the status ring in auto motion
 - [ ] **L416** `ui-modernisation` open, S: Stop the Bin row's long label wrapping when its reset appears; add per-row marker. From OPEN.md:1761; OPEN.md:2592. Evidence: No change found in settings rows for the bin reset label; unverified fix absent
 - [ ] **L417** `ui-modernisation` open, S: Background jobs Report button waits for boot room; make Activity panel opaque at 390. From OPEN.md:1809; OPEN.md:2686. Evidence: No change found; row stands (unverified fix absent)
@@ -523,12 +520,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L419** `ui-modernisation` open, S: Fix focus ring clipping: header buttons, Library sub-tab, chat composer at 390. From OPEN.md:2546. Evidence: Mechanical clipping open per row
 - [ ] **L420** `ui-modernisation` open, S: Make skeleton shimmer honour OS reduced-motion. From OPEN.md:2668. Evidence: 02-chat-graph.css:2080 gates on data-progress-motion=always; verified open
 - [ ] **L421** `ui-modernisation` open, S: Restyle sidebar Comments, Linked from and Notes rows. From OPEN.md:2694. Evidence: Verified open 2026-11-10
-- [ ] **L424** `ui-modernisation` open, S: Restore focus ring on Chat button.active. From OPEN.md:3809. Evidence: Bug recorded; later ring fixes (d8cee9ffa) cover other rows only
 - [ ] **L425** `ui-modernisation` open, S: Verify CSS blank-line tests, picker and 390 layout. From OPEN.md:3810. Evidence: No recorded follow-up sweep
-- [ ] **L426** `ui-modernisation` open, S: Fix rail-dot alignment at 390. From OPEN.md:3580. Evidence: No fix commit found; needs a 390 measurement
 - [ ] **L427** `ui-modernisation` open, S: Count title-only icon buttons outside the Notes list (other tabs, Settings). From OPEN.md:3610. Evidence: Measurement gap; no later count found
 - [ ] **L428** `ui-modernisation` open, S: Reproduce the pill bottom cut-off at DPR 1.25/dark; measure Pace pill. From OPEN.md:3652. Evidence: Try DPR 1.25 and dark; skills.js pill unmeasured; no repro
-- [ ] **L429** `ui-modernisation` open, S: Write the exception for select-btn/notes-filter-menu dock-word clipping at 320-1024. From OPEN.md:3699. Evidence: dock-word collapse by clipping; no commit or lint exception found
 - [ ] **L430** `ui-modernisation` open, S: Raise output grip above touch floor and fix entry-meta overflow at 320/390. From a30c-1102.md Still open small. Evidence: No fix commit found by grep; needs a 390 px measure
 - [ ] **L431** `ui-modernisation` open, S: Measure findings 5-12 in dark, 390 on a real device and the one-column gap at 900. From a30k-1103.md Left. Evidence: Source says unmeasured; no later sweep record found
 - [ ] **L432** `ui-modernisation` open, S: Fix constellation yellow stars contrast (~2.1:1 in light) and notes rows/cards toggle 28x24. From OPEN.md:1337; OPEN.md:2540. Evidence: No contrast fix located in graph-canvas.js; .notes-view-toggle at 03-dashboard-widgets.css:466 not rechecked.
@@ -536,7 +530,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L435** `ui-modernisation` open, S: Crossfade dashboard constellation on theme change; fix chat dock button radius. From SESSION_BRIEFS.md:285; e19-1110.md True. Evidence: dash-art.js:131 redraws in one frame, no crossfade
 - [ ] **L436** `ui-modernisation` open, S: Ring sweep flags fixed-sheet control at viewport edge as scroll clip. From OPEN.md:740. Evidence: Sweep-lint false positive for phone Writing room textarea; no exemption found
 - [ ] **L437** `ui-modernisation` open, S: Ring sweep skips end-of-scroller controls; fixed-height text cut unseen. From OPEN.md:1946; OPEN.md:3505. Evidence: Sweep limitation, no change recorded
-- [ ] **L438** `ui-modernisation` open, S: Measure dark theme axe target-size/scrollable-region and 1024 width. From OPEN.md:3611. Evidence: Sweep gap; needs THEME=dark axe run
 - [ ] **L439** `ui-modernisation` open, M: Finish help audit: press-drawn menus, JS popovers, Find/dock at 1440, list/outline/find at 390 and 1024, dark. From OPEN.md:975; OPEN.md:3205; OPEN.md:3889. Evidence: Source-level checks exist; a driven browser audit of '/' menu, message menu, board menus not done (needs sweep)
 - [ ] **L440** `ui-modernisation` open, M: Record Radix/shadcn/APG element comparison (Brief 92b). From SESSION_BRIEFS.md:291. Evidence: No Radix block in HISTORY; E19 W20
 - [ ] **L441** `ui-modernisation` open, M: Unify #attach-image 999px radius with #attach-note at 390 px. From OPEN.md:803; OPEN.md:2236. Evidence: 07-whiteboard-misc.css:3634 comment on spread; 04-chat-dock-appearance.css:2852 only has-attachments; radius equality unverified
@@ -562,7 +555,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L466** `ui-modernisation` partly, M: C4 Connect words on sideways phone (no 480 step) and door dialog repeat (design); Versions 'Named only' filter. From ledger-1112 O19.
 - [ ] **L469** `ui-modernisation` partly, L: Finish the uipolish-0924 surface-by-surface pass (item D). From OPEN.md:1914; OPEN.md:2314. Evidence: Icon-only floor done (iconfloor.js); the per-surface pass not recorded done
 - [ ] **L-ui-modernisation-1** `ui-modernisation` open, M: Adopt CSS cascade layers (@layer tokens, base, components, surfaces, overrides) so 08-consistency.css stops winning by specificity. From ANALYSIS.md:3680. Evidence: grep @layer frontend/css returns 0; UI_MODERNISATION_PLAN item 18 dissolves 08 into components but never names layers or the 'only shrinks' lint
-- [ ] **L763** `ui-modernisation` open, S: Decide the card menu taxonomy for AI acts. From OPEN.md:4292. Evidence: Menu taxonomy is a design call. Owner decided 2026-11-12: One rule per group (AI actions holds every act the AI does; Connect holds links and places; Add holds things attached to the note). Build: entry-menu.js grouped menu (~line 370-392): move Explain, Add context, Continue thought, Make a mind map, Similar, Ask Atlas into aiItems; update menu tests and Guide topics.
 - [ ] **L767** `ui-modernisation` open, S: Decide whether Library and Notes card shadows, borders and radius should match. From OPEN.md:4243. Evidence: Measured 1111: differing border/tint/radius, design call whether to match. Owner decided 2026-11-12: Match them (Both use one card token for border, fill and corner radius). Build: library.js and note-cards.js card CSS onto one card token (border, tint, radius); measure both at 1440 light and dark.
 - [ ] **L770** `ui-modernisation` open, M: Tablet layouts: decide on Documents dock two rows at 1024, arc framing and Notes sub-tabs. From OPEN.md:1233; OPEN.md:3223. Evidence: No tablet-specific fix found; 07-whiteboard-misc.css:9656 only notes 1024 measurement for notes dock. Owner decided 2026-11-12: Fix the arc zoom only (The arc opens no smaller than a readable zoom, like the mind map; the two toolbars stay as they are). Build: graph arc layout: minimum readable zoom on first frame (reuse the mind map fit-floor); sweep at 1024x768.
 - [ ] **L771** `ui-modernisation` open, M: Decision 10: split or keep indexed the oversized Tools and Appearance Settings panes. From OPEN.md:1824; OPEN.md:3474. Evidence: Row says decision 10 still open; waits on owner Owner decided 2026-11-12: Keep, add a jump row (Each stays one pane and gets the row of section buttons Skills already has). Build: index.html Tools and Appearance panes: add nav.pane-tabs rows wired by ensurePaneTabs (settings-controls.js:3430); update Help and test_manual_parity.

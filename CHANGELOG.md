@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Notes: a card's menu keeps every AI act under AI actions; Similar notes, Add context and Continue thought moved there (L763).
 - Calculator: the equation palette opens without a forced layout (mount about 30 ms to 11 ms, L702).
 - OCR: RapidOCR now reads light-on-dark pages inverted and small text scaled up, as Tesseract already did (L703).
 - Ledger: hardware and release-gate rows (L-general-19, 23, 29) moved to BACKLOG's device checks; bookkeeping rows L-general-15 and 16 closed with their evidence.

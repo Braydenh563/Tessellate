@@ -22,14 +22,16 @@ def _labels(source: str) -> set[str]:
 
 def test_ai_actions_hold_every_act_atlas_does():
     ai = _labels(_group("aiItems"))
-    assert {"Explain this note", "Make a mind map", "Ask Atlas about this note", "Translate", "Remove title"} <= ai
+    #: L763, the owner 2026-11-12 (newer than INBOX 1518): Similar, Add context
+    #: and Continue thought are acts the AI does, so they moved here.
+    assert {"Explain this note", "Make a mind map", "Ask Atlas about this note", "Translate", "Remove title", "Similar notes", "Add context", "Continue thought"} <= ai
     assert not ai & (_labels(_group("connectItems")) | _labels(_group("addItems")))
 
 
 def test_connect_holds_links_and_places_and_add_holds_what_attaches():
     connect, add = _labels(_group("connectItems")), _labels(_group("addItems"))
-    assert {"Add to a document", "Add to a board or map", "Link to another", "Copy wiki link", "Similar notes", "Referenced by", "Show in graph"} <= connect
-    assert {"Properties", "Add context", "Continue thought", "Remind me", "Attach a file"} <= add
+    assert {"Add to a document", "Add to a board or map", "Link to another", "Copy wiki link", "Referenced by", "Show in graph"} <= connect
+    assert {"Properties", "Remind me", "Attach a file"} <= add
     assert not connect & {"Properties", "Ask Atlas about this note", "Explain this note"}
 
 
