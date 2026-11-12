@@ -148,7 +148,7 @@ TAIL_TOPICS.extend(
                 "Comment…, starts a thread. View, Present frames: one frame at a "
                 "time, the bar lists pages; ? shows every key; Ctrl+K finds any board action by name. Menus: Insert, Edit, "
                 "Arrange opens as submenus: Order, Align, Distribute, Tidy, Group, View (panels, background, grid, "
-                "snap, zoom) and Board (new, export). Rename a board: Board, Rename. On a phone the More sheet lists the rest; type in its filter field to find a command."
+                "snap, zoom) and Board (new, export). Rename a board: Board, Rename."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

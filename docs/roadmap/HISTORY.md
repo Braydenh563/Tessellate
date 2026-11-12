@@ -15,6 +15,11 @@ From MINDMAP_PLAN.md section 14's open list, the two stale export lines (L365):
 - The exported picture draws a topic's shape, level type (size, weight, slant), effect and Phosphor icon
   (`wbExportTopicGlyph`); the cut shapes (diamond, hexagon, chevron) are polygons, underline a bar, plain words only.
 
+## Moved from the plans, 2026-11-12 (mapexport-1112: emoji table)
+
+From MINDMAP_PLAN.md section 14's open list: the document editor's `:shortcode:` completion kept its own
+248-entry table (`DOC_EMOJI_SOURCE`). Folded into `ICON_EMOJI_SOURCE` through an alias map, resolved at call time.
+
 ## Moved from the plans, 2026-11-12 (mindmap-plan: mapquick)
 
 From MINDMAP_PLAN.md "Placed from INBOX, 2026-10-19 (edge sides; next PR)", verbatim:

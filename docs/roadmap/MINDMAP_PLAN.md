@@ -1701,9 +1701,6 @@ Phases 14a to 14e are built (HISTORY.md, "Moved from the plans, 2026-10-05
   decision 25 of WHITEBOARD_PLAN keeps as "kept, never followed".
 - Reaction stamps and voting: on a topic, built 2026-10-11 (HISTORY "Moved from the plans, 2026-10-11 (canvasdepth2)"); on a board card, open.
 - **The whiteboard half of 641's research**, beyond stickers.
-- The document editor's `:shortcode:` completion keeps its own 248-entry table
-  (`DOC_EMOJI_SOURCE`); fold it into `ICON_EMOJI_SOURCE` when the completion
-  can wait on the picker's script.
 
 ## Placed from the owner's list, 2026-10-10
 

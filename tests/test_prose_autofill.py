@@ -44,10 +44,24 @@ def _function(path: Path, name: str) -> str:
     return text[start : text.index("\n}\n", start) + 2]
 
 
+def _picker_shortcodes() -> str:
+    """The icon picker's own emoji data and `window.iconShortcodes`, cut out of
+    its file: the completion's names are aliases of the picker's emoji and the
+    picker is a lazy script, so the harness stands in for it with the real text."""
+    text = (ROOT / "frontend" / "js" / "icon-picker.js").read_text(encoding="utf-8")
+    source = text[text.index("const ICON_EMOJI_SOURCE = [") : text.index("\n  ];", text.index("const ICON_EMOJI_SOURCE = ["))] + "\n];"
+    codes = text[text.index("const ICON_SHORTCODES ="):]
+    codes = codes[: codes.index(";\n") + 2]
+    fn = text[text.index("window.iconShortcodes = () => {"):]
+    fn = fn[: fn.index("\n  };") + 5]
+    return f"const window = {{}}; const iconPickerState = {{}}; function ensureModule() {{}}\n{source}\n{codes}\n{fn}\n"
+
+
 def run(calls: list) -> list:
     """Evaluate `[name, *args]` calls against the region, in node."""
     script = (
-        _region()
+        _picker_shortcodes()
+        + _region()
         + "\n"
         + _function(PREFS_JS, "nounCount")
         + "\n"

@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8341, frontend ids 2763, CSS sections 524, backend routes 699, backend modules 10766, test files 2678, tests 21851, plan headings 687, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8341, frontend ids 2763, CSS sections 524, backend routes 699, backend modules 10766, test files 2678, tests 21852, plan headings 687, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8341)
 
@@ -4265,24 +4265,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `docAccessFindings` | frontend/js/documents-prose.js:919 |
-| `docApplyWholeText` | frontend/js/documents-prose.js:2820 |
-| `docBulletRetype` | frontend/js/documents-prose.js:2262 |
+| `docApplyWholeText` | frontend/js/documents-prose.js:2766 |
+| `docBulletRetype` | frontend/js/documents-prose.js:2208 |
 | `docCheckLinkText` | frontend/js/documents-prose.js:185 |
-| `docCopyFormatted` | frontend/js/documents-prose.js:2863 |
-| `docDateText` | frontend/js/documents-prose.js:2683 |
-| `docEaseLabel` | frontend/js/documents-prose.js:2772 |
-| `docEditorMenuItems` | frontend/js/documents-prose.js:3484 |
-| `docEditorPaste` | frontend/js/documents-prose.js:3468 |
-| `docEmojiList` | frontend/js/documents-prose.js:1669 |
-| `docEmojiMatches` | frontend/js/documents-prose.js:1682 |
-| `docFenceCloseIndent` | frontend/js/documents-prose.js:2271 |
+| `docCopyFormatted` | frontend/js/documents-prose.js:2809 |
+| `docDateText` | frontend/js/documents-prose.js:2629 |
+| `docEaseLabel` | frontend/js/documents-prose.js:2718 |
+| `docEditorMenuItems` | frontend/js/documents-prose.js:3430 |
+| `docEditorPaste` | frontend/js/documents-prose.js:3414 |
+| `docEmojiList` | frontend/js/documents-prose.js:1617 |
+| `docEmojiMatches` | frontend/js/documents-prose.js:1628 |
+| `docFenceCloseIndent` | frontend/js/documents-prose.js:2217 |
 | `docFillDate` | frontend/js/documents-prose.js:1542 |
-| `docFillGhost` | frontend/js/documents-prose.js:1788 |
-| `docFillOptions` | frontend/js/documents-prose.js:1722 |
+| `docFillGhost` | frontend/js/documents-prose.js:1734 |
+| `docFillOptions` | frontend/js/documents-prose.js:1668 |
 | `docFillSig` | frontend/js/documents-prose.js:1599 |
 | `docFillTable` | frontend/js/documents-prose.js:1559 |
 | `docFillToc` | frontend/js/documents-prose.js:1573 |
-| `docFillToken` | frontend/js/documents-prose.js:1703 |
+| `docFillToken` | frontend/js/documents-prose.js:1649 |
 | `docGrammarAsk` | frontend/js/documents-prose.js:99 |
 | `docGrammarEnabled` | frontend/js/documents-prose.js:59 |
 | `docGrammarFail` | frontend/js/documents-prose.js:65 |
@@ -4293,8 +4293,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docGrammarRequest` | frontend/js/documents-prose.js:334 |
 | `docGrammarSend` | frontend/js/documents-prose.js:109 |
 | `docGrammarWhy` | frontend/js/documents-prose.js:82 |
-| `docHeadingRows` | frontend/js/documents-prose.js:2665 |
-| `docInCodeAt` | frontend/js/documents-prose.js:2306 |
+| `docHeadingRows` | frontend/js/documents-prose.js:2611 |
+| `docInCodeAt` | frontend/js/documents-prose.js:2252 |
 | `docIsoDay` | frontend/js/documents-prose.js:1532 |
 | `docLinkOfferAsk` | frontend/js/documents-prose.js:425 |
 | `docLinkOfferCurrent` | frontend/js/documents-prose.js:462 |
@@ -4304,46 +4304,46 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docLinkOfferIgnoredNames` | frontend/js/documents-prose.js:380 |
 | `docLinkOfferQuiet` | frontend/js/documents-prose.js:364 |
 | `docLinkOfferRequest` | frontend/js/documents-prose.js:450 |
-| `docListEnter` | frontend/js/documents-prose.js:2179 |
-| `docListExitText` | frontend/js/documents-prose.js:2256 |
-| `docListFenceExtensions` | frontend/js/documents-prose.js:2494 |
+| `docListEnter` | frontend/js/documents-prose.js:2125 |
+| `docListExitText` | frontend/js/documents-prose.js:2202 |
+| `docListFenceExtensions` | frontend/js/documents-prose.js:2440 |
 | `docLorem` | frontend/js/documents-prose.js:1520 |
-| `docMinutesLabel` | frontend/js/documents-prose.js:2766 |
-| `docNumberHeadings` | frontend/js/documents-prose.js:2645 |
-| `docOpenStatistics` | frontend/js/documents-prose.js:2799 |
-| `docPairBackspace` | frontend/js/documents-prose.js:2164 |
-| `docPairInput` | frontend/js/documents-prose.js:2124 |
-| `docPasteBlockPad` | frontend/js/documents-prose.js:3035 |
-| `docPasteChipClose` | frontend/js/documents-prose.js:3120 |
-| `docPasteChipKey` | frontend/js/documents-prose.js:3187 |
-| `docPasteChipMenu` | frontend/js/documents-prose.js:3172 |
-| `docPasteChipPlace` | frontend/js/documents-prose.js:3132 |
-| `docPasteChoose` | frontend/js/documents-prose.js:3152 |
-| `docPasteFence` | frontend/js/documents-prose.js:3016 |
-| `docPasteGuessLang` | frontend/js/documents-prose.js:3006 |
-| `docPasteIsLinewise` | frontend/js/documents-prose.js:3265 |
-| `docPasteIsTsvGrid` | frontend/js/documents-prose.js:3260 |
-| `docPasteMatch` | frontend/js/documents-prose.js:3025 |
-| `docPasteMenuOpen` | frontend/js/documents-prose.js:3180 |
-| `docPasteOffer` | frontend/js/documents-prose.js:3207 |
-| `docPasteOfferRich` | frontend/js/documents-prose.js:3321 |
-| `docPasteOfferTable` | frontend/js/documents-prose.js:3333 |
-| `docPasteSpecial` | frontend/js/documents-prose.js:3354 |
-| `docPasteSpecialApply` | frontend/js/documents-prose.js:3338 |
-| `docPasteSpecialMenu` | frontend/js/documents-prose.js:3378 |
-| `docPasteTextVariants` | frontend/js/documents-prose.js:3248 |
-| `docPasteTransform` | frontend/js/documents-prose.js:3074 |
-| `docPasteUrlEvent` | frontend/js/documents-prose.js:3271 |
-| `docPasteVariant` | frontend/js/documents-prose.js:3116 |
-| `docPasteWrite` | frontend/js/documents-prose.js:3235 |
-| `docPlainText` | frontend/js/documents-prose.js:2692 |
+| `docMinutesLabel` | frontend/js/documents-prose.js:2712 |
+| `docNumberHeadings` | frontend/js/documents-prose.js:2591 |
+| `docOpenStatistics` | frontend/js/documents-prose.js:2745 |
+| `docPairBackspace` | frontend/js/documents-prose.js:2110 |
+| `docPairInput` | frontend/js/documents-prose.js:2070 |
+| `docPasteBlockPad` | frontend/js/documents-prose.js:2981 |
+| `docPasteChipClose` | frontend/js/documents-prose.js:3066 |
+| `docPasteChipKey` | frontend/js/documents-prose.js:3133 |
+| `docPasteChipMenu` | frontend/js/documents-prose.js:3118 |
+| `docPasteChipPlace` | frontend/js/documents-prose.js:3078 |
+| `docPasteChoose` | frontend/js/documents-prose.js:3098 |
+| `docPasteFence` | frontend/js/documents-prose.js:2962 |
+| `docPasteGuessLang` | frontend/js/documents-prose.js:2952 |
+| `docPasteIsLinewise` | frontend/js/documents-prose.js:3211 |
+| `docPasteIsTsvGrid` | frontend/js/documents-prose.js:3206 |
+| `docPasteMatch` | frontend/js/documents-prose.js:2971 |
+| `docPasteMenuOpen` | frontend/js/documents-prose.js:3126 |
+| `docPasteOffer` | frontend/js/documents-prose.js:3153 |
+| `docPasteOfferRich` | frontend/js/documents-prose.js:3267 |
+| `docPasteOfferTable` | frontend/js/documents-prose.js:3279 |
+| `docPasteSpecial` | frontend/js/documents-prose.js:3300 |
+| `docPasteSpecialApply` | frontend/js/documents-prose.js:3284 |
+| `docPasteSpecialMenu` | frontend/js/documents-prose.js:3324 |
+| `docPasteTextVariants` | frontend/js/documents-prose.js:3194 |
+| `docPasteTransform` | frontend/js/documents-prose.js:3020 |
+| `docPasteUrlEvent` | frontend/js/documents-prose.js:3217 |
+| `docPasteVariant` | frontend/js/documents-prose.js:3062 |
+| `docPasteWrite` | frontend/js/documents-prose.js:3181 |
+| `docPlainText` | frontend/js/documents-prose.js:2638 |
 | `docProseExtras` | frontend/js/documents-prose.js:475 |
-| `docProseFillExtensions` | frontend/js/documents-prose.js:2533 |
-| `docProseFillOn` | frontend/js/documents-prose.js:2292 |
-| `docProseGhostPlugin` | frontend/js/documents-prose.js:2389 |
-| `docProseGhostSet` | frontend/js/documents-prose.js:2374 |
-| `docProseInputHandler` | frontend/js/documents-prose.js:2322 |
-| `docProsePairKeymap` | frontend/js/documents-prose.js:2435 |
+| `docProseFillExtensions` | frontend/js/documents-prose.js:2479 |
+| `docProseFillOn` | frontend/js/documents-prose.js:2238 |
+| `docProseGhostPlugin` | frontend/js/documents-prose.js:2335 |
+| `docProseGhostSet` | frontend/js/documents-prose.js:2320 |
+| `docProseInputHandler` | frontend/js/documents-prose.js:2268 |
+| `docProsePairKeymap` | frontend/js/documents-prose.js:2381 |
 | `docProseRemap` | frontend/js/documents-prose.js:305 |
 | `docProseToolExtensions` | frontend/js/documents-prose.js:1455 |
 | `docReadAloudExtension` | frontend/js/documents-prose.js:1411 |
@@ -4352,15 +4352,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docReadAloudStart` | frontend/js/documents-prose.js:1320 |
 | `docReadAloudStop` | frontend/js/documents-prose.js:1389 |
 | `docReadAloudVoice` | frontend/js/documents-prose.js:1304 |
-| `docRunTextTool` | frontend/js/documents-prose.js:2831 |
-| `docSentenceCase` | frontend/js/documents-prose.js:2590 |
-| `docSmartPasteEvent` | frontend/js/documents-prose.js:3290 |
-| `docSmartPunct` | frontend/js/documents-prose.js:1805 |
-| `docSmartPunctOn` | frontend/js/documents-prose.js:2299 |
-| `docSortLines` | frontend/js/documents-prose.js:2608 |
+| `docRunTextTool` | frontend/js/documents-prose.js:2777 |
+| `docSentenceCase` | frontend/js/documents-prose.js:2536 |
+| `docSmartPasteEvent` | frontend/js/documents-prose.js:3236 |
+| `docSmartPunct` | frontend/js/documents-prose.js:1751 |
+| `docSmartPunctOn` | frontend/js/documents-prose.js:2245 |
+| `docSortLines` | frontend/js/documents-prose.js:2554 |
 | `docSpeakable` | frontend/js/documents-prose.js:1247 |
-| `docStatistics` | frontend/js/documents-prose.js:2737 |
-| `docStatsRows` | frontend/js/documents-prose.js:2777 |
+| `docStatistics` | frontend/js/documents-prose.js:2683 |
+| `docStatsRows` | frontend/js/documents-prose.js:2723 |
 | `docStructuralBlank` | frontend/js/documents-prose.js:206 |
 | `docStructuralMask` | frontend/js/documents-prose.js:196 |
 | `docSuggestActive` | frontend/js/documents-prose.js:995 |
@@ -4379,23 +4379,23 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docSuggestParse` | frontend/js/documents-prose.js:689 |
 | `docSuggestResolve` | frontend/js/documents-prose.js:825 |
 | `docSuggestResolveAll` | frontend/js/documents-prose.js:831 |
-| `docSyllables` | frontend/js/documents-prose.js:2717 |
-| `docTitleCase` | frontend/js/documents-prose.js:2576 |
-| `docTopWords` | frontend/js/documents-prose.js:2725 |
-| `docTurnInto` | frontend/js/documents-prose.js:3425 |
-| `docTurnIntoLines` | frontend/js/documents-prose.js:3410 |
-| `docTurnIntoMenu` | frontend/js/documents-prose.js:3446 |
-| `docUniqueLines` | frontend/js/documents-prose.js:2614 |
+| `docSyllables` | frontend/js/documents-prose.js:2663 |
+| `docTitleCase` | frontend/js/documents-prose.js:2522 |
+| `docTopWords` | frontend/js/documents-prose.js:2671 |
+| `docTurnInto` | frontend/js/documents-prose.js:3371 |
+| `docTurnIntoLines` | frontend/js/documents-prose.js:3356 |
+| `docTurnIntoMenu` | frontend/js/documents-prose.js:3392 |
+| `docUniqueLines` | frontend/js/documents-prose.js:2560 |
 | `noteGrammarMenu` | frontend/js/documents-prose.js:602 |
 | `noteGrammarPlugin` | frontend/js/documents-prose.js:521 |
-| `pasteClean` | frontend/js/documents-prose.js:2904 |
-| `pasteGrid` | frontend/js/documents-prose.js:2948 |
-| `pasteLines` | frontend/js/documents-prose.js:2919 |
-| `pasteLinkLabel` | frontend/js/documents-prose.js:2913 |
-| `pasteOutline` | frontend/js/documents-prose.js:2966 |
-| `pasteParseDelimited` | frontend/js/documents-prose.js:2925 |
-| `pasteStripMark` | frontend/js/documents-prose.js:2958 |
-| `pasteUrl` | frontend/js/documents-prose.js:2908 |
+| `pasteClean` | frontend/js/documents-prose.js:2850 |
+| `pasteGrid` | frontend/js/documents-prose.js:2894 |
+| `pasteLines` | frontend/js/documents-prose.js:2865 |
+| `pasteLinkLabel` | frontend/js/documents-prose.js:2859 |
+| `pasteOutline` | frontend/js/documents-prose.js:2912 |
+| `pasteParseDelimited` | frontend/js/documents-prose.js:2871 |
+| `pasteStripMark` | frontend/js/documents-prose.js:2904 |
+| `pasteUrl` | frontend/js/documents-prose.js:2854 |
 | `renderDocReadAloudState` | frontend/js/documents-prose.js:1397 |
 | `renderDocSuggestState` | frontend/js/documents-prose.js:1198 |
 | `setDocSuggestMode` | frontend/js/documents-prose.js:1000 |
@@ -5716,16 +5716,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `closeIconPicker` | frontend/js/icon-picker.js:505 |
-| `iconPickerEmojiGroups` | frontend/js/icon-picker.js:375 |
-| `iconPickerGlyph` | frontend/js/icon-picker.js:489 |
-| `iconPickerHay` | frontend/js/icon-picker.js:370 |
-| `iconPickerIconGroups` | frontend/js/icon-picker.js:428 |
-| `iconPickerPhosphorNames` | frontend/js/icon-picker.js:410 |
-| `iconPickerRecent` | frontend/js/icon-picker.js:445 |
-| `iconPickerRemember` | frontend/js/icon-picker.js:450 |
-| `iconPickerText` | frontend/js/icon-picker.js:484 |
-| `openIconPicker` | frontend/js/icon-picker.js:514 |
+| `closeIconPicker` | frontend/js/icon-picker.js:603 |
+| `iconPickerEmojiGroups` | frontend/js/icon-picker.js:473 |
+| `iconPickerGlyph` | frontend/js/icon-picker.js:587 |
+| `iconPickerHay` | frontend/js/icon-picker.js:468 |
+| `iconPickerIconGroups` | frontend/js/icon-picker.js:526 |
+| `iconPickerPhosphorNames` | frontend/js/icon-picker.js:508 |
+| `iconPickerRecent` | frontend/js/icon-picker.js:543 |
+| `iconPickerRemember` | frontend/js/icon-picker.js:548 |
+| `iconPickerText` | frontend/js/icon-picker.js:582 |
+| `openIconPicker` | frontend/js/icon-picker.js:612 |
 
 ### frontend/js/image-layout.js (14)
 
@@ -27689,7 +27689,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21851)
+## Tests (21852)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28994,7 +28994,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_icon_label_gap.py | 2 |
 | tests/test_icon_names.py | 2 |
 | tests/test_icon_only_buttons.py | 2 |
-| tests/test_icon_picker.py | 5 |
+| tests/test_icon_picker.py | 6 |
 | tests/test_icon_picker_aliases.py | 3 |
 | tests/test_icon_picker_kaomoji.py | 4 |
 | tests/test_ics.py | 7 |
@@ -30470,7 +30470,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 14.3 Decisions made (do not remake) | docs/roadmap/MINDMAP_PLAN.md:1611 |
 | 14.4 What is open | docs/roadmap/MINDMAP_PLAN.md:1694 |
 | 15. Appearance: more of everything | docs/roadmap/BACKLOG.md:1111 |
-| 15. Deepened 2026-10-10 (Brief 72a, decision 71) | docs/roadmap/MINDMAP_PLAN.md:1712 |
+| 15. Deepened 2026-10-10 (Brief 72a, decision 71) | docs/roadmap/MINDMAP_PLAN.md:1709 |
 | 15. Insert menu, shape picker and the sidebar search | docs/roadmap/WHITEBOARD_PLAN.md:1192 |
 | 15. Inventions: eight things no notebook does, specified for Opus and Sonnet | docs/roadmap/WORLD_CLASS_PLAN.md:1055 |
 | 15. The code block's own bar, and where it belongs: measured 2026-09-20 | docs/roadmap/DOCUMENTS_PLAN.md:715 |
@@ -30760,7 +30760,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E. Polish worth doing as one pass | docs/roadmap/BACKLOG.md:2442 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4151 |
 | Found by an agent while measuring something else (2026-09-08, graph) | docs/roadmap/CHAT_PLAN.md:594 |
-| Gap audit against XMind and MindNode, 2026-10-25 (wb2) | docs/roadmap/MINDMAP_PLAN.md:1807 |
+| Gap audit against XMind and MindNode, 2026-10-25 (wb2) | docs/roadmap/MINDMAP_PLAN.md:1804 |
 | Gap audit against draw.io, 2026-10-25 (wb2) | docs/roadmap/WHITEBOARD_PLAN.md:1519 |
 | Gates | docs/roadmap/TIMELINE_PLAN.md:295 |
 | Guides: curated instructions the AI writes to | docs/roadmap/BACKLOG.md:2496 |
@@ -30838,7 +30838,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/CHAT_PLAN.md:1714 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/DOCUMENTS_PLAN.md:1284 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/GRAPH_PLAN.md:582 |
-| Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/MINDMAP_PLAN.md:1758 |
+| Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/MINDMAP_PLAN.md:1755 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/WHITEBOARD_PLAN.md:1403 |
 | Placed from INBOX 561 (2026-10-17) | docs/roadmap/TIMELINE_PLAN.md:204 |
 | Placed from INBOX 904 (the owner, 2026-10-17) | docs/roadmap/BACKLOG.md:4281 |
@@ -30892,7 +30892,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-10 (code as documents) | docs/roadmap/DOCUMENTS_PLAN.md:1288 |
 | Placed from INBOX, 2026-10-10 (filing suggestions) | docs/roadmap/WORLD_CLASS_PLAN.md:4171 |
 | Placed from INBOX, 2026-10-10 (the coverage pass over 729 to 744) | docs/roadmap/CHAT_PLAN.md:1705 |
-| Placed from INBOX, 2026-10-10 (the owner on feature depth) | docs/roadmap/MINDMAP_PLAN.md:1762 |
+| Placed from INBOX, 2026-10-10 (the owner on feature depth) | docs/roadmap/MINDMAP_PLAN.md:1759 |
 | Placed from INBOX, 2026-10-10 (the owner on feature depth) | docs/roadmap/WHITEBOARD_PLAN.md:1407 |
 | Placed from INBOX, 2026-10-10 (the owner on the graph, again) | docs/roadmap/GRAPH_PLAN.md:586 |
 | Placed from INBOX, 2026-10-10 (the owner's afternoon reports) | docs/roadmap/UI_MODERNISATION_PLAN.md:1193 |
@@ -30907,14 +30907,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-11 (the owner on dragging the force graph) | docs/roadmap/GRAPH_PLAN.md:591 |
 | Placed from INBOX, 2026-10-11 (the owner's sweep request) | docs/roadmap/UI_MODERNISATION_PLAN.md:1207 |
 | Placed from INBOX, 2026-10-11 (the owner: Atlas as the app's assistant) | docs/roadmap/CHAT_PLAN.md:1718 |
-| Placed from INBOX, 2026-10-11 (the topic's tools) | docs/roadmap/MINDMAP_PLAN.md:1779 |
+| Placed from INBOX, 2026-10-11 (the topic's tools) | docs/roadmap/MINDMAP_PLAN.md:1776 |
 | Placed from INBOX, 2026-10-11 (voice notes, live captions, the focus timer; voiceup) | docs/roadmap/UI_MODERNISATION_PLAN.md:1225 |
 | Placed from INBOX, 2026-10-12 (grammar in digest answers) | docs/roadmap/BACKLOG.md:4177 |
 | Placed from INBOX, 2026-10-19 | docs/roadmap/DOCUMENTS_PLAN.md:1329 |
 | Placed from INBOX, 2026-10-19 (INBOX 1307, 1308: elements, templates, the W/H link; the gap audit) | docs/roadmap/WHITEBOARD_PLAN.md:1501 |
 | Placed from INBOX, 2026-10-19 (INBOX 1308: the gap audit) | docs/roadmap/DOCUMENTS_PLAN.md:1306 |
-| Placed from INBOX, 2026-10-19 (INBOX 1308: the gap audit) | docs/roadmap/MINDMAP_PLAN.md:1783 |
-| Placed from INBOX, 2026-10-19 (edge sides) | docs/roadmap/MINDMAP_PLAN.md:1803 |
+| Placed from INBOX, 2026-10-19 (INBOX 1308: the gap audit) | docs/roadmap/MINDMAP_PLAN.md:1780 |
+| Placed from INBOX, 2026-10-19 (edge sides) | docs/roadmap/MINDMAP_PLAN.md:1800 |
 | Placed from INBOX, 2026-10-19 (mobile1314) | docs/roadmap/UI_MODERNISATION_PLAN.md:1243 |
 | Placed from INBOX, 2026-10-19 (peek sidebar header, split button; next PR) | docs/roadmap/UI_MODERNISATION_PLAN.md:1251 |
 | Placed from INBOX, 2026-10-19 (per-board view, Format on a map; next PR) | docs/roadmap/WHITEBOARD_PLAN.md:1513 |
@@ -30941,7 +30941,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-11-03b | docs/roadmap/BACKLOG.md:4324 |
 | Placed from INBOX, 2026-11-04 | docs/roadmap/BACKLOG.md:4368 |
 | Placed from INBOX, 2026-11-04 | docs/roadmap/DOCUMENTS_PLAN.md:1472 |
-| Placed from INBOX, 2026-11-04 | docs/roadmap/MINDMAP_PLAN.md:1817 |
+| Placed from INBOX, 2026-11-04 | docs/roadmap/MINDMAP_PLAN.md:1814 |
 | Placed from INBOX, 2026-11-04 | docs/roadmap/WHITEBOARD_PLAN.md:1579 |
 | Placed from INBOX, 2026-11-04 (1657, what the two lag rounds left) | docs/roadmap/UI_MODERNISATION_PLAN.md:1273 |
 | Placed from INBOX, 2026-11-04 (audit Rank 36, hover decision) | docs/roadmap/GRAPH_PLAN.md:615 |
@@ -30970,7 +30970,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/CHAT_PLAN.md:779 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/DOCUMENTS_PLAN.md:1242 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/GRAPH_PLAN.md:569 |
-| Placed from the owner's list, 2026-10-10 | docs/roadmap/MINDMAP_PLAN.md:1708 |
+| Placed from the owner's list, 2026-10-10 | docs/roadmap/MINDMAP_PLAN.md:1705 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/TIMELINE_PLAN.md:198 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/UI_MODERNISATION_PLAN.md:901 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/WHITEBOARD_PLAN.md:801 |
@@ -31013,7 +31013,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/CHAT_PLAN.md:1698 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/DOCUMENTS_PLAN.md:1273 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/GRAPH_PLAN.md:576 |
-| Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/MINDMAP_PLAN.md:1752 |
+| Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/MINDMAP_PLAN.md:1749 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/TIMELINE_PLAN.md:306 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/UI_MODERNISATION_PLAN.md:1096 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/WHITEBOARD_PLAN.md:1396 |
@@ -31029,7 +31029,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | What was deliberately left out | docs/roadmap/WORLD_CLASS_PLAN.md:1381 |
 | What was wrong, and is fixed this session | docs/roadmap/WORLD_CLASS_PLAN.md:1014 |
 | Why the app feels "off" even where each screen is fine | docs/roadmap/WORLD_CLASS_PLAN.md:54 |
-| canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1766 |
+| canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1763 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:58 |
 | chat | docs/roadmap/LEDGER.md:1109 |

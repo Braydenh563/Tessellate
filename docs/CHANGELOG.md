@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The document editor's :shortcode: completion now reads the icon picker's emoji through an alias map (one emoji table, resolved when the picker script is in).
 - Mind map: the level rows say a size in words where the level scale has one (Classic main topics L, the centre XL, not 17px and 22px), and a topic at a size the strip has no word for (17px) gets a one-off row so the strip rings it (L366, L369); the level fill was already named by `wbSyncMapFill`; `tests/test_map_node_controls.py`.
 - Mind map: the phone More sheet (59 to 82 rows on a map) has the app filter field (`listFilter`); typing "layout" leaves 9 of 82 rows, separators hide while a query is set, and clearing restores all 82 (measured at 390, `scratchpad` sweep, L367); `tests/test_wb_commands.py`.
 - Mind map: a FreeMind-authored `<arrowlink>` (its own ids, colour and inclinations, pointing at a later node) is held by a test to import as a cross-link and export back; the per-node theme resolution on export was already in place (L368); `tests/test_mindmap.py`.

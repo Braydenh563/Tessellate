@@ -661,25 +661,22 @@ function wbInitMoreMenu() {
   //: attribute the sync also writes. A separator means nothing in a list that
   //: is being narrowed, so they hide while there is a query and the sync
   //: puts them back when it clears.
-  const filter = typeof listFilter === "function"
-    ? listFilter(menu, { label: "Filter commands", inside: true, rows: ":scope > .menu-item" }) : null;
+  const filter = listFilter(menu, { label: "Filter commands", inside: true, rows: ":scope > .menu-item" });
   const sync = () => {
-    filter?.refresh();
-    if (filter?.input.value) for (const rule of menu.querySelectorAll(":scope > .menu-sep")) rule.hidden = true;
+    filter.refresh();
+    if (filter.input.value) for (const rule of menu.querySelectorAll(":scope > .menu-sep")) rule.hidden = true;
   };
   opener.addEventListener("click", () => {
-    if (filter) {
-      filter.input.value = "";
-      filter.refresh();
-    }
+    filter.input.value = "";
+    filter.refresh();
     wbSyncMoreMenu(menu);
     sync();
   }, true);
-  filter?.input.addEventListener("input", () => {
+  filter.input.addEventListener("input", () => {
     sync();
     if (!filter.input.value) wbSyncMoreMenu(menu);
   });
-  filter?.input.addEventListener("keydown", (event) => {
+  filter.input.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
       menu.querySelector(":scope > .menu-item:not([hidden])")?.click();
