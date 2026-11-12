@@ -7391,7 +7391,7 @@
   //: hanging) is within 2px of that line? Floating, peeking over the bar,
   //: leaning on a side or pinned where you put it is not a perch to check;
   //: what is drawn on a board, a map or the graph is never one.
-  const NMB_CANVAS = "#whiteboard-container, #graph-canvas, #graph-svg, #graph-pane-canvas, canvas";
+  const NMB_CANVAS = "#whiteboard-container, #graph-canvas, #graph-pane-canvas, canvas";
   function nameMarkBuddySupported() {
     if (nmb.pinned) return true;
     //: Peeking over a bar or leaning on a side holds on to its edge, which
