@@ -6,10 +6,11 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+
 - CI: the Ask tab sweep waits for Stop to go before reading the numbering (it read mid-answer, when the box drops `is-streaming` between phases), and its stand-in model skips every bracketed group on a note's header line, not the first.
 - Progress motion: "Still" now makes the status bar's working ring breathe instead of turn, as reduced motion does; "Auto" measured: it breathes under the OS reduced-motion setting and turns otherwise (L415).
 - Notifications: the bell's panel is fetched soon after start-up, so its first press opens at once on a slow link (L409; it waited for the file with nothing drawn). The moved Library rules checked in dark at four widths: no findings.
-- Documents, focus mode: from 720px wide the sidebar and the suggestions panel sit beside the page instead of over it (L403; the line was 820).
+- Documents, focus mode: from 600px wide the sidebar and the suggestions panel sit beside the page instead of over it, the suggestions taking 40% of the window below 820 (L403; the line was 820).
 - Library: a document with headings opened from Contents opens on its Outline tab, a click sooner than before (L400).
 - Settings: from 820px wide a form row keeps room for its reset, so changing a setting no longer pushes the reset onto its own line or moves the field (L416). Kept: the Bin row's confirm ring sits 27px clear of the screen edges (L404).
 - Scrolling tab strips: the Library sub-tabs, and any strip in a surface built after start-up, now fade at a cut edge, and a tab reached with the keyboard scrolls fully into view, so its focus ring is never cut (L419).

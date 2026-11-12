@@ -1838,7 +1838,7 @@ const LAZY_ENTRY_POINTS = {
   //: The icon and emoji picker: reached through `pickIconOrEmoji` (editor.js).
   iconPicker: ["openIconPicker"],
   //: Async, and reached from a Settings pane drawn before the window's own await.
-  settingsControls: ["refreshSearxngHost", "renderPrefs", "renderWebSearch", "syncEmbeddingPickerState", "renderStatusBarSettings", "renderLanAccess", "renderMemorySettings", "renderAccount", "renderAutonomousReview", "renderToolSettings", "renderSkillSettings"],
+  settingsControls: ["ensureSettingsFoldAll", "refreshSearxngHost", "renderPrefs", "renderWebSearch", "syncEmbeddingPickerState", "renderStatusBarSettings", "renderLanAccess", "renderMemorySettings", "renderAccount", "renderAutonomousReview", "renderToolSettings", "renderSkillSettings"],
   settingsData: ["renderPrivacyRange", "renderPrivacyReceipt", "renderBackups", "renderBackupRetention", "backupNow", "importDirectory", "importMarkdown", "importDocument"],
   tagSuggest: ["openTagSuggest", "renderReevaluateResult"],
   writingDesk: ["addDraftSource", "composeDraft", "suggestDraftTitle", "saveDraftAsNote", "draftSaveMenuInit"],
