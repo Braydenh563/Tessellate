@@ -11,17 +11,17 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 33 | 13 | 0 | 18 | 116 |
-| documents | 70 | 33 | 13 | 0 | 18 | 116 |
-| documents | 70 | 33 | 13 | 0 | 18 | 116 |
+| documents | 70 | 32 | 13 | 0 | 18 | 115 |
+| documents | 70 | 32 | 13 | 0 | 18 | 115 |
+| documents | 70 | 32 | 13 | 0 | 18 | 115 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 673 | 153 | 3 | 195 | 1379 |
-| all | 553 | 673 | 153 | 3 | 195 | 1379 |
-| all | 553 | 673 | 153 | 3 | 195 | 1379 |
+| all | 553 | 672 | 153 | 3 | 195 | 1378 |
+| all | 553 | 672 | 153 | 3 | 195 | 1378 |
+| all | 553 | 672 | 153 | 3 | 195 | 1378 |
 
 ## graph
 
@@ -367,7 +367,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L294** `documents` open, S: Give the split second half completions, lint, snippets and run panel. From OPEN.md:1469. Evidence: No change found in documents split code; limitation recorded
 - [ ] **L308** `documents` open, M: Consolidate scattered document styles across frontend/css 00-10 (09-editor.css is 1143 lines). From OPEN.md:4215. Evidence: frontend/css 00-10 still split; 09-editor.css is 1143 lines.
 - [ ] **L309** `documents` open, M: Keep Python runtime frame persistent across documents to avoid 5-7 s cold reload per document. From OPEN.md:1219; OPEN.md:1224; OPEN.md:2829; OPEN.md:2907. Evidence: Row: needs the Pyodide extra, not installed here; cold Debug cannot be timed.
-- [ ] **L312** `documents` open, M: Debug variables: expand into children. From OPEN.md:2824. Evidence: _mm_names / run_sandbox.py:186 show; verified open
 - [ ] **L313** `documents` open, M: Step JS watches instead of evaluating natively. From OPEN.md:2825. Evidence: run_sandbox.py:250 evaluate; known limitation, verified
 - [ ] **L314** `documents` open, M: Debug test files with a harness instead of as plain scripts. From OPEN.md:2827. Evidence: Verified open 2026-11-10
 - [ ] **L317** `documents` open, M: Load a CSV document as a SQL table from a panel action. From OPEN.md:2903. Evidence: run-core.js:169 accepts tables; no panel action sends a CSV doc

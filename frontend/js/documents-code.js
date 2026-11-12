@@ -3375,8 +3375,9 @@ function docDebugView() {
 }
 
 //: A name and its value, as one row: text only, never markup.
-//: A list, a dict or an object opens one level into its children, as VS
-//: Code's Variables tree does (OPEN row 1058); the row is a disclosure then.
+//: A list, a dict or an object opens into its children, and a child that is
+//: one opens in turn (the sandbox sends three levels, L312), as VS Code's
+//: Variables tree does (OPEN row 1058); the row is a disclosure then.
 function docDebugValueRow(name, value, type, error = false, children = null) {
   const li = document.createElement("li");
   li.className = `cm-debug-row${error ? " is-error" : ""}`;
@@ -3398,7 +3399,7 @@ function docDebugValueRow(name, value, type, error = false, children = null) {
   summary.append(n, v);
   const list = document.createElement("ul");
   list.className = "cm-debug-list cm-debug-children";
-  for (const child of children) list.appendChild(docDebugValueRow(String(child.name), String(child.value), String(child.type || "")));
+  for (const child of children) list.appendChild(docDebugValueRow(String(child.name), String(child.value), String(child.type || ""), false, child.children));
   tree.append(summary, list);
   li.appendChild(tree);
   return li;
@@ -3484,7 +3485,7 @@ function docDebugRender() {
   const values = new Map((Array.isArray(stop?.watches) ? stop.watches : []).map((w) => [String(w.expr), w]));
   DOC_DEBUG.watches.forEach((expr, index) => {
     const w = values.get(expr);
-    const row = docDebugValueRow(expr, w ? (w.error ? String(w.error) : String(w.value)) : "not evaluated", "", Boolean(w?.error));
+    const row = docDebugValueRow(expr, w ? (w.error ? String(w.error) : String(w.value)) : "not evaluated", "", Boolean(w?.error), w?.children);
     row.appendChild(docDebugRemoveButton(`Stop watching ${expr}`, () => {
       DOC_DEBUG.watches.splice(index, 1);
       if (DOC_DEBUG.stop) docDebugAct("eval");

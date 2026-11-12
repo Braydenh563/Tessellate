@@ -1227,7 +1227,7 @@ MID_TOPICS.extend(
                 "its breakpoints on this device after a reload. Press F5, or "
                 "Start debugging in the run panel's Debug tab; the stopped line is lit, and "
                 "the Debug tab shows Variables (the frame's names, then Globals; a "
-                "list, dict or object opens into its items), "
+                "list, dict or object opens into its items, three levels down; a Watch opens too), "
                 "Watch (type an expression under it; each stop evaluates it), the "
                 "Call stack (a row goes to its line) and Breakpoints. F10 steps "
                 "over a line, F11 into a call, Shift+F11 out of the function, F5 "
