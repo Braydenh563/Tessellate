@@ -107,9 +107,10 @@ the tab draws a colour, a font or a card that the rest of the app does not.
     seven-control ceiling and the strip under it walks days; a range is what
     the choice is. The server filters (`/timeline?on=MM-DD&tz=`), in the
     reader's own day, today left out: the Dashboard widget's rule.
-13. **Date ranges as spans wait for a ranged note** (EntryDate ranges in the feed):
-    a feed row is one moment by decision 3; the span view is parked in
-    BACKLOG ("Timeline, parked 2026-11-12").
+13. **A written range is one row on its first day** ("3 to 7 March"): a feed row
+    stays one moment (decision 3), labelled with the range; the calendar draws a
+    "continues" ghost on each later day. Built 2026-11-12 (HISTORY, "Moved from
+    the plans, 2026-11-12 (TIMELINE spans)").
 
 ## 5. Phases
 
