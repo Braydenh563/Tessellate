@@ -96,21 +96,42 @@ function reminderDoneButton(item) {
   button.className = "ghost small quiet notif-cta notif-reminder-done";
   button.textContent = "Done";
   button.setAttribute("aria-label", `Done: ${item.title}`);
+  //: The row's own stored line, set to `done` (or back) so the panel says what happened.
+  const mark = (done, detail) => {
+    const items = storedNotifications();
+    const row = items.find((n) => n.id === item.id);
+    if (row) {
+      if (done) row.reminderDone = true;
+      else delete row.reminderDone;
+      row.detail = detail;
+      prefs.set(NOTIFICATIONS_KEY, JSON.stringify(items));
+    }
+  };
+  const was = item.detail;
   button.addEventListener("click", async (event) => {
     event.stopPropagation();
     button.disabled = true;
-    const rolled = await apiJson(`/reminders/${item.reminderId}/complete?tz_offset_minutes=${-new Date().getTimezoneOffset()}`, { method: "POST" }).catch(() => null);
-    if (!rolled) {
+    let rolled;
+    try {
+      rolled = await apiJson(`/reminders/${item.reminderId}/complete?tz_offset_minutes=${-new Date().getTimezoneOffset()}`, { method: "POST" });
+    } catch {
       button.disabled = false;
       toast("Couldn't complete that reminder. Press Done to try again.", "info");
       return;
     }
-    const items = storedNotifications();
-    const row = items.find((n) => n.id === item.id);
-    if (row) {
-      row.reminderDone = true;
-      row.detail = rolled.done ? "Done" : `Done, next ${whenText(rolled.due_at)}`;
-      prefs.set(NOTIFICATIONS_KEY, JSON.stringify(items));
+    const said = rolled.done ? "Done" : `Done, next ${whenText(rolled.due_at)}`;
+    mark(true, said);
+    //: Undo puts the due time back and reopens it (`restore`: that time is past);
+    //: redo sets the rolled time, the same pair the Reminders tab's tick pushes.
+    const put = (body, done, detail) => async () => {
+      await apiJson(`/reminders/${item.reminderId}`, { method: "PUT", body: JSON.stringify({ ...body, restore: true }) });
+      mark(done, detail);
+      loadReminders().catch(() => {});
+    };
+    if (item.reminderDue) {
+      pushUndo(rolled.done ? "Completed a reminder" : "Rescheduled a reminder",
+        put({ due_at: item.reminderDue, done: false }, false, was),
+        put({ due_at: rolled.due_at, done: rolled.done }, true, said));
     }
     loadReminders().catch(() => {});
     openNotifications({ keepWatermark: true });
@@ -145,6 +166,7 @@ async function openNotifications({ keepWatermark = false } = {}) {
       key: reminderNoticeKey(reminder),
       action: { tab: "reminders" },
       reminderId: reminder.id,
+      reminderDue: reminder.due_at,
     });
   }
 

@@ -94,14 +94,14 @@ function storedNotifications() {
 // runs every thirty seconds and must not add the same fired reminder twice.
 //: Returns the row's id (null when nothing was recorded), so a toast's live
 //: action can be tied to its row (`keepToastAction`).
-function recordNotification({ kind, title, detail = "", key = "", action = null, runId = "", reminderId = null }) {
+function recordNotification({ kind, title, detail = "", key = "", action = null, runId = "", reminderId = null, reminderDue = null }) {
   if (kind !== "reminder" && notificationsMuted()) return null;
   const items = storedNotifications();
   const id = key || `${kind}:${title}:${Date.now()}`;
   if (key && items.some((n) => n.id === id)) return null;
   if (key && dismissedNotificationIds().has(id)) return null;
   //: `runId` ties a "Started:" row to its run, so the ending can replace it.
-  items.push({ id, kind, title, detail, at: Date.now(), action, ...(runId ? { runId } : {}), ...(reminderId ? { reminderId } : {}) });
+  items.push({ id, kind, title, detail, at: Date.now(), action, ...(runId ? { runId } : {}), ...(reminderId ? { reminderId, reminderDue } : {}) });
   if (!prefs.set(NOTIFICATIONS_KEY, JSON.stringify(items.slice(-MAX_NOTIFICATIONS)))) {
     return null; // storage refused: the toast still shows, the row is not kept
   }
@@ -651,6 +651,7 @@ async function checkDueReminders() {
       action: { tab: "reminders" },
       //: Done from the bell (an early alert is not due yet, so it has none).
       reminderId: reminder.early ? null : reminder.id,
+      reminderDue: reminder.due_at,
     });
   }
 
