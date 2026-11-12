@@ -1445,9 +1445,9 @@ Built; moved whole to HISTORY.md ("Moved from the plans, 2026-10-03", "From MIND
      (verified live in Chromium against a real palette search and a real
      mind map), no feature code changed; regression tests added
      (`tests/test_palette_contract.py`, `tests/test_export_paint.py`).
-     Left, from the same report: (b)'s discoverability (the owner asked
-     without knowing they exist, so the controls need better labels/help,
-     placed below as its own item) and companion motion. (c) companion
+     (b)'s discoverability was built 2026-11-12 (palette rows
+     `Topic fill colour` and `Map background colour`; see HISTORY). Left,
+     from the same report: companion motion. (c) companion
      motion first (transitions, glide, secondary motion on hair, tails and
      nebula), then new states and props, the subtle feminine chest, the
      test pages, per-feature toggles, cost: the two Opus agents on atlas.js

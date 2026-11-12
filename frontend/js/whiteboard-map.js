@@ -5129,6 +5129,8 @@ function mapPaletteCommands() {
     row("This topic", "ph:arrow-down Add a sibling topic", () => wbMapAddSibling(node.id), "Enter");
     //: The topic's grips by name (row 9): the library `+` and the corner.
     row("This topic", "ph:link-simple Add a child that points at a note, document, file or link", () => wbMapAddReference(node.id));
+    //: The fill and the canvas colour by name (INBOX 431(b)): both wells were wired but only a right-click or the View menu led to them, and a search for fill, colour or background found neither.
+    row("This topic", "ph:paint-bucket Topic fill colour", () => document.getElementById("wb-map-strip-color")?.click(), "", "Colours this topic's card; the branch colour is in the right-click menu. Also found by colour, color or background.");
     row("This topic", "ph:corners-in Resize this topic to the usual width", () => wbMapResetTopicSize(node.id));
     //: The line's mid `+` by name: a touch screen has no hover to find it.
     if (node.parent_id != null) row("This topic", "ph:arrow-elbow-left-up Put a topic between this and its parent", () => wbMapInsertBetween(node.parent_id, node.id));
@@ -5151,6 +5153,7 @@ function mapPaletteCommands() {
     row("This topic", "ph:trash Delete the topic and its branch", () => wbMapDeleteSubtree(node.id), "Delete");
   }
   row("This map", "ph:plus-circle Add a top-level topic", () => wbMapAddChild(null));
+  row("This map", "ph:paint-bucket Map background colour", () => document.getElementById("wb-bg-color-picker")?.click(), "", "The canvas colour behind the map, also in View. Also found by colour, color or fill.");
   row("This map", "ph:broom Tidy the map", () => wbMapTidy());
   row("This map", "ph:arrows-out-simple Open every folded branch", () => wbMapExpandAll());
   row("This map", "ph:arrows-in-line-vertical Fold every branch", () => wbMapFoldToLevel(1), "Alt+1");
