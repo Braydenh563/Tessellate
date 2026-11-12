@@ -11,17 +11,17 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 61 | 16 | 0 | 18 | 147 |
-| documents | 70 | 61 | 16 | 0 | 18 | 147 |
-| documents | 70 | 61 | 16 | 0 | 18 | 147 |
+| documents | 70 | 60 | 16 | 0 | 18 | 146 |
+| documents | 70 | 60 | 16 | 0 | 18 | 146 |
+| documents | 70 | 60 | 16 | 0 | 18 | 146 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 701 | 156 | 3 | 195 | 1410 |
-| all | 553 | 701 | 156 | 3 | 195 | 1410 |
-| all | 553 | 701 | 156 | 3 | 195 | 1410 |
+| all | 553 | 700 | 156 | 3 | 195 | 1409 |
+| all | 553 | 700 | 156 | 3 | 195 | 1409 |
+| all | 553 | 700 | 156 | 3 | 195 | 1409 |
 
 ## graph
 
@@ -364,7 +364,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## documents
 
-- [ ] **L287** `documents` open, S: Offer sum for columns of amounts with 'Total:' not only '='. From OPEN.md:1503. Evidence: ai/offers.py:38 _SUM requires '=' (line 114 loop); no Total: column rule
 - [ ] **L288** `documents` open, S: Make editor.js inlineAiUndo revert through pushUndo, not a CM transaction. From OPEN.md:1507. Evidence: editor.js:2630,2776 inlineAiUndo still present; owner's list of six, rule 1.8
 - [ ] **L289** `documents` open, S: Drive the attached-image thumbnail path in [[ preview. From OPEN.md:2726. Evidence: attachmentObjectUrl path undriven; verified open
 - [ ] **L290** `documents` open, S: Trim diagram-blocks Guide topic (1893/1900); recheck kind menu decorate selector. From dgmfix-1108.md Left. Evidence: Help text budget still binds (test_manual_parity pins sentence); decorate not re-checked

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Offers: the sum offer for a column of amounts under a Total: line was already built; the row is closed with its test (L287).
 - Code: the keybindings sheet's close (`docIdeCloseKeys`) is on `window`, so the `code-keys.js` sweep can close it (L-documents-14).
 - Recordings: Import audio offers one Undo that bins the whole import.
 - Links: a link opens as a card (icon, title, site, a two-line excerpt, the page text behind Show page text), takes an icon and a highlight colour from its menu or the card, and a folder does too; drag a link onto a folder or another link, drag a folder to nest it one level, double-click or F2 to rename in place, New folder; sort, a List or Cards view, Read later, and Duplicates with Keep one of each (INBOX 827 L3 to L6, `tests/test_links_827.py`).
