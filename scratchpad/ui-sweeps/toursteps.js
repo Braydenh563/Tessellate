@@ -26,7 +26,7 @@ function ok(label, pass, detail) {
     const { page, browser } = await boot({ viewport: vp, isMobile: vp.width < 500 });
     // tour.js is a lazy bundle now; load it before reading its table.
     await page.evaluate(() => (typeof ensureModule === "function" ? ensureModule("tour") : null));
-    const sections = await page.evaluate(() => TOUR_SECTIONS.map((s) => s.id));
+    const sections = await page.evaluate(() => openTour.inspect.sections.map((s) => s.id));
     for (const sec of sections) {
       const res = await page.evaluate(async (sec) => {
         const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -75,7 +75,7 @@ function ok(label, pass, detail) {
             // control has to be the thing at its own centre (nothing drawn
             // over it), or the ring frames an empty square.
             target: (() => {
-              const el = typeof tourRun !== "undefined" && tourRun && tourRun.el;
+              const el = openTour.inspect.run && openTour.inspect.run.el;
               if (!el) return null;
               let o = 1;
               for (let n = el; n && n !== document.documentElement; n = n.parentElement) o *= Number(getComputedStyle(n).opacity || "1");

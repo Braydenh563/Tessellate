@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8329, frontend ids 2770, CSS sections 524, backend routes 698, backend modules 10765, test files 2682, tests 21847, plan headings 681, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8329, frontend ids 2770, CSS sections 524, backend routes 698, backend modules 10765, test files 2683, tests 21849, plan headings 681, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8329)
 
@@ -27687,7 +27687,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21847)
+## Tests (21849)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30094,6 +30094,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_topics_kg6.py | 8 |
 | tests/test_touched_notes.py | 15 |
 | tests/test_tour_follow.py | 7 |
+| tests/test_tour_sweeps_inspect_l_general_14.py | 2 |
 | tests/test_tour_targets.py | 2 |
 | tests/test_transcript_81.py | 6 |
 | tests/test_transcript_copy.py | 2 |

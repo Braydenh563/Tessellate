@@ -56,7 +56,7 @@ const STEP_PROBE = () => {
   const vh = document.documentElement.clientHeight;
   const c = card.getBoundingClientRect();
   const s = spot.getBoundingClientRect();
-  const el = tourRun.el;
+  const el = openTour.inspect.run.el;
   const t = el ? el.getBoundingClientRect() : { left: 0, top: 0, right: 0, bottom: 0, width: 0, height: 0 };
   const overlapW = Math.min(c.right, t.right) - Math.max(c.left, t.left);
   const overlapH = Math.min(c.bottom, t.bottom) - Math.max(c.top, t.top);
@@ -82,20 +82,20 @@ const STEP_PROBE = () => {
     }
   }
   const style = el ? getComputedStyle(el) : null;
-  const step = tourRun.step;
+  const step = openTour.inspect.run.step;
   const notesShown = step.notes
     ? !document.getElementById(step.notes)?.classList.contains("hidden")
     : true;
   return {
     target: step.target,
     shownTarget: el ? (el.id ? `#${el.id}` : el.className) : "none",
-    alt: Boolean(tourRun.alt),
+    alt: Boolean(openTour.inspect.run.alt),
     counter: document.getElementById("tour-count").textContent,
     section: document.getElementById("tour-section").textContent,
     title: document.getElementById("tour-title").textContent,
     text: document.getElementById("tour-text").textContent,
     side: card.dataset.side,
-    stranded: Boolean(tourRun.stranded),
+    stranded: Boolean(openTour.inspect.run.stranded),
     card: [Math.round(c.left), Math.round(c.top), Math.round(c.width), Math.round(c.height)],
     spot: [Math.round(s.left), Math.round(s.top), Math.round(s.width), Math.round(s.height)],
     anchor: [Math.round(t.left), Math.round(t.top), Math.round(t.width), Math.round(t.height)],
@@ -126,19 +126,19 @@ const STEP_PROBE = () => {
       document.getElementById("tour-text").scrollHeight > document.getElementById("tour-text").clientHeight + 1 ||
       card.scrollHeight > card.clientHeight + 1,
     focus: document.activeElement ? document.activeElement.id : "",
-    index: tourRun.index,
-    total: tourRun.steps.length,
+    index: openTour.inspect.run.index,
+    total: openTour.inspect.run.steps.length,
     wantTab: step.tab || "",
-    tab: tourActiveTab(),
+    tab: openTour.inspect.activeTab(),
     notesShown,
     busy: card.getAttribute("aria-busy") === "true",
     // Chaining (the owner, 2026-09-23): the count is per section, and the
     // last card of a section offers the next one by name.
-    sectionId: (tourRun.steps[tourRun.index] || step).sectionId,
-    sectionAt: tourSectionPlace(tourRun).at,
-    sectionTotal: tourSectionPlace(tourRun).total,
-    nextSection: tourSectionPlace(tourRun).next,
-    last: tourRun.index >= tourRun.steps.length - 1,
+    sectionId: (openTour.inspect.run.steps[openTour.inspect.run.index] || step).sectionId,
+    sectionAt: openTour.inspect.place(openTour.inspect.run).at,
+    sectionTotal: openTour.inspect.place(openTour.inspect.run).total,
+    nextSection: openTour.inspect.place(openTour.inspect.run).next,
+    last: openTour.inspect.run.index >= openTour.inspect.run.steps.length - 1,
     nextText: document.getElementById("tour-next").textContent,
     skipText: document.getElementById("tour-skip").textContent,
     wantSettings: step.settings || "",
@@ -162,7 +162,7 @@ const STEP_PROBE = () => {
 // drawn), then a frame more for the placement.
 async function settled(page) {
   await page.waitForFunction(
-    () => !tourRun || document.getElementById("tour-card").getAttribute("aria-busy") !== "true",
+    () => !openTour.inspect.run || document.getElementById("tour-card").getAttribute("aria-busy") !== "true",
     null,
     { timeout: 8000 }
   );
@@ -214,9 +214,9 @@ function judge(label, m, phone) {
 async function walk(page, label, phone, { oneSection = false } = {}) {
   const seen = [];
   for (let guard = 0; guard < 90; guard += 1) {
-    if (!(await page.evaluate(() => !!tourRun))) break;
+    if (!(await page.evaluate(() => !!openTour.inspect.run))) break;
     await settled(page);
-    if (!(await page.evaluate(() => !!tourRun))) break;
+    if (!(await page.evaluate(() => !!openTour.inspect.run))) break;
     const m = await page.evaluate(STEP_PROBE);
     seen.push(m);
     console.log(
@@ -228,7 +228,7 @@ async function walk(page, label, phone, { oneSection = false } = {}) {
       await page.click("#tour-skip");
       await page.waitForTimeout(200);
       check(
-        await page.evaluate(() => !tourRun && localStorage.getItem("tourDone") === "1"),
+        await page.evaluate(() => !openTour.inspect.run && localStorage.getItem("tourDone") === "1"),
         `${label} Finish at the end of ${m.section} ends the tour`
       );
       break;
@@ -250,7 +250,7 @@ async function walk(page, label, phone, { oneSection = false } = {}) {
     );
   }
   // Sections are played in table order, each once, with no jump back.
-  const table = await page.evaluate(() => TOUR_SECTIONS.map((s) => s.id));
+  const table = await page.evaluate(() => openTour.inspect.sections.map((s) => s.id));
   const order = [...bySection.keys()];
   check(
     seen.every((m, i) => i === 0 || table.indexOf(m.sectionId) >= table.indexOf(seen[i - 1].sectionId)),
@@ -258,7 +258,7 @@ async function walk(page, label, phone, { oneSection = false } = {}) {
   );
   if (!oneSection) {
     check(
-      await page.evaluate(() => !tourRun && document.getElementById("tour-card").classList.contains("hidden")),
+      await page.evaluate(() => !openTour.inspect.run && document.getElementById("tour-card").classList.contains("hidden")),
       `${label} Done closes the tour`
     );
   }
@@ -269,7 +269,7 @@ async function walk(page, label, phone, { oneSection = false } = {}) {
 // one side of a breakpoint), against what a walk showed.
 async function sectionReport(page, label, seen) {
   const planned = await page.evaluate(() =>
-    TOUR_SECTIONS.map((s) => ({
+    openTour.inspect.sections.map((s) => ({
       id: s.id,
       targets: s.steps.filter((x) => !x.media || window.matchMedia(x.media).matches).map((x) => x.target),
     }))
@@ -305,6 +305,8 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     const errors = [];
     page.on("pageerror", (e) => errors.push(e.message));
 
+    //: tour.js is lazy: until it loads, openTour and TOUR_ENABLED are app.js stand-ins.
+    await page.evaluate(() => ensureModule("tour"));
     // --- every door is live --------------------------------------------------
     const doors = await page.evaluate(() => {
       renderTourReplay();
@@ -320,7 +322,7 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     });
     console.log(`${label} doors: ${JSON.stringify(doors)}`);
     check(doors.enabled, `${label} TOUR_ENABLED is on`);
-    const sectionCount = await page.evaluate(() => TOUR_SECTIONS.length);
+    const sectionCount = await page.evaluate(() => openTour.inspect.sections.length);
     check(
       doors.replay === sectionCount + 1 && doors.replayDisabled === 0,
       `${label} the ${sectionCount + 1} replay buttons are live (${doors.replay})`
@@ -357,14 +359,14 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     );
     await page.click("#onboarding-next");
     await page.waitForTimeout(300);
-    check(await page.evaluate(() => !!tourRun), `${label} the welcome's last button starts the tour`);
+    check(await page.evaluate(() => !!openTour.inspect.run), `${label} the welcome's last button starts the tour`);
     // The welcome hands over to the basics, and the basics chain on through
     // every section to the end.
     const fromWelcome = await walk(page, `${label} welcome`, phone);
     await sectionReport(page, `${label} welcome`, fromWelcome);
 
     // --- every section on its own, ending with Finish -------------------------
-    const sections = await page.evaluate(() => TOUR_SECTIONS.map((s) => s.id));
+    const sections = await page.evaluate(() => openTour.inspect.sections.map((s) => s.id));
     for (const section of sections) {
       await page.evaluate(() => switchTab("dashboard"));
       await page.waitForTimeout(300);
@@ -401,7 +403,7 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
       back.sectionId === "notes" && back.target === boundary.target,
       `${label} Back from Chat's first card returns to Notes' last (${back.section} ${back.counter})`
     );
-    await page.evaluate(() => tourClose(false));
+    await page.evaluate(() => openTour.inspect.close(false));
 
     // --- the whole tour from Settings' Start the tour -------------------------
     if (process.env.FULL !== "0") {
@@ -441,7 +443,7 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
       );
       judge(`${label} over ${opener}`, m, phone);
       check(open.length === 0, `${label} ${opener} was closed by the tour (${JSON.stringify(open)})`);
-      await page.evaluate(() => tourClose(false));
+      await page.evaluate(() => openTour.inspect.close(false));
       await page.waitForTimeout(200);
     }
 
@@ -464,7 +466,7 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
       const wide = await page.evaluate(STEP_PROBE);
       check(wide.shownTarget === "#settings-btn" && !wide.alt, `${label} back at ${width} it points at the gear again`);
       check(wide.cardInside && wide.overlap === 0 && wide.spotCovers, `${label} back at ${width} the card and cut-out follow`);
-      await page.evaluate(() => tourClose(false));
+      await page.evaluate(() => openTour.inspect.close(false));
     }
 
     // --- typing in the lit control is typing ---------------------------------
@@ -475,7 +477,7 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     await page.keyboard.press("ArrowLeft");
     await page.keyboard.press("Enter");
     const typed = await page.evaluate(() => ({
-      index: tourRun && tourRun.index,
+      index: openTour.inspect.run && openTour.inspect.run.index,
       value: document.getElementById("entry-content").value,
     }));
     check(typed.index === 0 && typed.value === "a\nb", `${label} arrows and Enter in the lit box edit it (${JSON.stringify(typed)})`);
@@ -485,10 +487,10 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     });
     await page.keyboard.press("ArrowRight");
     await settled(page);
-    check(await page.evaluate(() => tourRun && tourRun.index === 1), `${label} ArrowRight on the card moves the tour on`);
+    check(await page.evaluate(() => openTour.inspect.run && openTour.inspect.run.index === 1), `${label} ArrowRight on the card moves the tour on`);
     await page.keyboard.press("Escape");
     await page.waitForTimeout(200);
-    check(await page.evaluate(() => !tourRun), `${label} Escape ends the tour`);
+    check(await page.evaluate(() => !openTour.inspect.run), `${label} Escape ends the tour`);
 
     // --- Next twice while a tab loads ----------------------------------------
     await page.evaluate(() => switchTab("dashboard"));
@@ -496,15 +498,15 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     await page.evaluate(() => openTour("notes"));
     await settled(page);
     await page.evaluate(() => {
-      tourNext();
-      tourNext();
+      openTour.inspect.next();
+      openTour.inspect.next();
     });
     await settled(page);
     await page.waitForTimeout(400);
     const twice = await page.evaluate(STEP_PROBE);
     check(twice.index === 2 && twice.counter === `3 of ${twice.sectionTotal}`, `${label} two quick Nexts land on step 3 once (${twice.counter})`);
     judge(`${label} after two quick Nexts`, twice, phone);
-    await page.evaluate(() => tourClose(false));
+    await page.evaluate(() => openTour.inspect.close(false));
 
     // --- Back, Skip, the X, the Tab trap, focus handed back -------------------
     await page.evaluate(() => openTour("basics"));
@@ -523,13 +525,13 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     await settled(page);
     await page.click("#tour-back");
     await settled(page);
-    check(await page.evaluate(() => tourRun.index === 1), `${label} Back goes one step back`);
+    check(await page.evaluate(() => openTour.inspect.run.index === 1), `${label} Back goes one step back`);
     await page.click("#tour-skip");
     await page.waitForTimeout(200);
     check(
       await page.evaluate(
         () =>
-          !tourRun &&
+          !openTour.inspect.run &&
           ["tour-card", "tour-spot", "tour-block"].every((id) => document.getElementById(id).classList.contains("hidden"))
       ),
       `${label} Skip closes the tour and its dim`
@@ -541,7 +543,7 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     await settled(page);
     await page.click("#tour-close");
     await page.waitForTimeout(200);
-    const afterClose = await page.evaluate(() => ({ open: !!tourRun, focus: document.activeElement?.id }));
+    const afterClose = await page.evaluate(() => ({ open: !!openTour.inspect.run, focus: document.activeElement?.id }));
     check(!afterClose.open && afterClose.focus === "space-switcher-btn", `${label} the X closes it and focus returns to the opener (${afterClose.focus})`);
 
     // --- a control hidden for good is left out before the count --------------
@@ -549,18 +551,18 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
       const el = document.getElementById("space-switcher-btn");
       el.style.display = "none";
       openTour("basics");
-      const first = tourRun.steps.filter((x) => x.sectionId === "basics").length;
+      const first = openTour.inspect.run.steps.filter((x) => x.sectionId === "basics").length;
       el.style.display = "";
       return first;
     });
     await settled(page);
-    await page.evaluate(() => tourClose(false));
+    await page.evaluate(() => openTour.inspect.close(false));
     check(hidden === 3, `${label} a hidden chrome control is left out before the count (3, got ${hidden})`);
 
     // --- a notebook with no mind map: pointed at New mind map, nothing made --
     await page.evaluate(() => {
-      window.__tourNeedsMap = TOUR_NEEDS.map;
-      TOUR_NEEDS.map = () => false;
+      window.__tourNeedsMap = openTour.inspect.needs.map;
+      openTour.inspect.needs.map = () => false;
       switchTab("dashboard");
     });
     await page.waitForTimeout(300);
@@ -573,8 +575,8 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
       `${label} with no map, Mind maps is one card on New mind map (${noMap.counter}, ${noMap.shownTarget}, ${noMap.wbFace})`
     );
     await page.evaluate(() => {
-      tourClose(false);
-      TOUR_NEEDS.map = window.__tourNeedsMap;
+      openTour.inspect.close(false);
+      openTour.inspect.needs.map = window.__tourNeedsMap;
     });
     const after = await holdings();
     check(after === before, `${label} the tours made nothing (before ${before}, after ${after})`);
@@ -602,7 +604,7 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
       points.dim[1] = cardBox.top > height / 2 ? Math.round(cardBox.top / 2) : Math.round((cardBox.bottom + height) / 2);
     }
     await page.screenshot({ path: dimmed });
-    await page.evaluate(() => tourClose(false));
+    await page.evaluate(() => openTour.inspect.close(false));
     const pixel = (file, [x, y]) =>
       execFileSync("python3", [path.join(ROOT, "scratchpad/pngpixel.py"), file, String(Math.round(x * scale)), String(Math.round(y * scale))], {
         encoding: "utf-8",
@@ -629,14 +631,14 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     await page.waitForTimeout(300);
     await settled(page);
     const fromSettings = await page.evaluate(() => ({
-      open: !!tourRun,
+      open: !!openTour.inspect.run,
       settingsOpen: !document.getElementById("settings-modal").classList.contains("hidden"),
       section: document.getElementById("tour-section").textContent,
     }));
     check(fromSettings.open && fromSettings.section === "Graph", `${label} a section button plays that section`);
     check(!fromSettings.settingsOpen, `${label} the settings modal is out of the way first`);
     judge(`${label} from Settings`, await page.evaluate(STEP_PROBE), phone);
-    await page.evaluate(() => tourClose(false));
+    await page.evaluate(() => openTour.inspect.close(false));
 
     // --- the card's text as rendered ------------------------------------------
     await page.evaluate(() => openTour("basics"));
@@ -651,7 +653,7 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
       }
       return out;
     });
-    await page.evaluate(() => tourClose(false));
+    await page.evaluate(() => openTour.inspect.close(false));
     const ink = {};
     for (const [id, box] of Object.entries(inkBoxes)) {
       ink[id] = Number(

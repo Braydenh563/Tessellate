@@ -147,12 +147,12 @@ const OPEN = {
     await page.waitForTimeout(1500);
     //: A step that points at a control (the first one may be a welcome).
     for (let i = 0; i < 4; i += 1) {
-      const has = await page.evaluate(() => Boolean(tourRun && tourRun.el));
+      const has = await page.evaluate(() => Boolean(openTour.inspect.run && openTour.inspect.run.el));
       if (has) break;
       await page.click('#tour-next').catch(() => null);
       await page.waitForTimeout(1200);
     }
-    await page.evaluate(() => { if (tourRun?.el) tourRun.el.dataset.sweepTour = '1'; });
+    await page.evaluate(() => { if (openTour.inspect.run?.el) openTour.inspect.run.el.dataset.sweepTour = '1'; });
     return { anchorSel: '[data-sweep-tour="1"]', surfaceSel: '#tour-card:not(.hidden)', close: async () => { await page.evaluate(() => { document.querySelector('[data-sweep-tour]')?.removeAttribute('data-sweep-tour'); if (typeof closeTour === 'function') closeTour(); else document.getElementById('tour-skip')?.click(); }); } };
   },
   async palette(page) {

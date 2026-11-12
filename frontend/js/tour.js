@@ -1994,5 +1994,12 @@
   }
 
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
+  //: Read-only view for the tour sweeps (L-general-14): the state moved inside this
+  //: closure, and a property adds no global name.
+  openTour.inspect = {
+    get run() { return tourRun; },
+    sections: TOUR_SECTIONS, needs: TOUR_NEEDS, place: tourSectionPlace, activeTab: tourActiveTab,
+    blockPanels: tourBlockPanels, context: tourContext, next: tourNext, back: tourBack, close: tourClose,
+  };
   Object.assign(window, { TOUR_ENABLED, openTour, renderTourReplay });
 })();
