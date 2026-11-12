@@ -871,7 +871,7 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | Straight, curved, elbow routes | yes (three: `wb-fmt-route`, `line-curved/straight/elbow`) | `edgeStyle` menu (Menus.js 59): straight, orthogonal, curved, entity relation, elbow horizontal and vertical, isometric horizontal and vertical, sequence | done | none |
-| Orthogonal routing that avoids other shapes | partly: elbow detours around its own two end boxes only (`wbElbowRoute`, `wbElbowDetour`) | mxEdgeStyle plus libavoid (`LibavoidRouting.js`, `libavoidRouting=1`), loaded when the extensions bundle is | an obstacle grid over item boxes (A* on a coarse grid, then simplify to corners); `route: "elbow"` keeps its shape, the router becomes the default behind it | L |
+| Orthogonal routing that avoids other shapes | yes, 2026-11-12 (wbconnectors3; HISTORY): `wbFmtState.router` (whiteboard-draw-more.js), `wbElbowRoute` is the fallback | mxEdgeStyle plus libavoid (`LibavoidRouting.js`, `libavoidRouting=1`), loaded when the extensions bundle is | an obstacle grid over item boxes (A* on a coarse grid, then simplify to corners); `route: "elbow"` keeps its shape, the router becomes the default behind it | L |
 | Waypoints: add, move, remove, clear | yes (`waypoint` in `whiteboard-map.js`; `points` in the link data); "Clear the connector's bends" command 2026-10-18 (whiteboard-1018; HISTORY), the numeric list not | `addWaypoint`, `removeWaypoint`, `clearWaypoints` (Actions.js 1782, 1830, 1871), `addEdgeWaypoints` list (Format.js 4278) | done; add a "Clear waypoints" command and the numeric list in the Arrange tab | S |
 | Line jumps (arc, gap, sharp) with size | yes, size 2026-10-18 (whiteboard-1018; HISTORY) | `addLineJumps` (Format.js 7835), `jumpStyle`, `jumpSize` | add `jump_size` | S |
 | Connector shapes: line, link (double), flex arrow, simple arrow, tapered arrow, filled edge, pipe, wire | no | `edgeShape` menu (Menus.js 107); `Shapes.js` `link`, `flexArrow`, `taperedArrow`, `filledEdge`, `pipe`, `wire` | `link-*` gains `shape` (line, double, block arrow, pipe) drawn as a closed outline around the centre line | L |
@@ -889,7 +889,7 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Fixed versus floating end | yes (omit `sourceAnchor` for floating) | `exitX`, `exitY`, `entryX`, `entryY`, `exitPerimeter` | done | none |
 | Show ports while dragging a connector end | yes (`wb-port-preview`, whiteboard.js 13437) | `mxConstraintHandler` (blue crosses) | done | none |
 | Connection arrows and points as View toggles | yes, 2026-11-11 (f2-1111; HISTORY) | `connectionArrows`, `connectionPoints` actions (Actions.js 1389, 1396) | two View toggles (hide grips, hide ports) | S |
-| Snap to connection (orthogonal ends) | no | `snapToConnection` and `snapToPoint` (Graph.js 22012, 23241) | with the obstacle router, snap the end so the last leg is square | M |
+| Snap to connection (orthogonal ends) | yes, 2026-11-12 (wbconnectors3; HISTORY): the router leaves and enters on a stub square to the side | `snapToConnection` and `snapToPoint` (Graph.js 22012, 23241) | with the obstacle router, snap the end so the last leg is square | M |
 
 ### 6. Layers and pages
 
@@ -1132,9 +1132,7 @@ commit. Help moves with each control (standing order 13).
    draw.io set, jump size, perimeter gap, entity and isometric routes,
    reverse, clear waypoints. Gate: `wbrotatelinks.js`, both ends rendered
    during drag (the owner's "edge arrows" bug).
-6. **The obstacle-avoiding elbow router.** Grid A* over item boxes, one
-   `route: "elbow"` behind the existing shape. Gate: `wb1005-elbow.js` plus a
-   timing on a 200-item board (budget 16 ms per drag frame).
+6. Built 2026-11-12: the obstacle-avoiding elbow router (HISTORY, wbconnectors3).
 7. **Edit data, placeholders, tooltips, tags.** `data.props`, an Edit data
    dialog and Ctrl+M, `%key%` in labels, a tooltip, tag filter; the AI tools
    read `props`. Gate: search finds a property; the assistant's board read

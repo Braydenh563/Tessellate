@@ -4853,7 +4853,10 @@ function wbLinkPathD(type, sPt, tPt, caps, width, bend, shape = null) {
     //: along the way the route leaves it.
     const ends = wbElbowEnds(sPt, tPt, shape.points);
     const held = wbGapEnds(ends.source, ends.target, shape.gap);
-    return wbElbowPathD(wbElbowRoute(held.source, held.target, sPt.box, tPt.box, shape.points), caps, width);
+    //: With no waypoint the obstacle router (`wbFmtState.router`) goes round every item; it answers null when
+    //: there is no path or the grid would be too large, and the classic route below is drawn instead.
+    const routed = shape.points?.length ? null : wbFmtState.router?.route(held.source, held.target, sPt.box, tPt.box);
+    return wbElbowPathD(routed || wbElbowRoute(held.source, held.target, sPt.box, tPt.box, shape.points), caps, width);
   }
   if (shape?.gap) {
     const way = shape.points || [];

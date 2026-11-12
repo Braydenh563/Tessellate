@@ -7,6 +7,12 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-12 (wbconnectors3: obstacle router, connector shapes, text on path)
+
+From WHITEBOARD_PLAN section 4 (connectors) and step 6. Evidence per row:
+
+- Obstacle-avoiding elbow router and snap to connection: `wbFmtState.router.find` and `.route` (frontend/js/whiteboard-draw-more.js), grid A* over every item box with a bend cost of 400 so the fewest bends win, a 24 unit stub square to the side at both ends, a 9000-cell cap and `wbElbowRoute` as the fallback (`wbLinkPathD`, whiteboard.js). tests/test_wb_router.py (misses every box, fewest bends, deterministic, square last leg, null past the cap); scratchpad/ui-sweeps/wbconnectors3.js on a 204-item board: path-to-box distance above 0, p95 1.1 ms a drag frame (budget 16 ms).
+
 ## Moved from the plans, 2026-11-12 (wblibrary3: Shape libraries, stemming, drop on a line, linked copies)
 
 - More-shapes dialog: "Shape libraries" in the Library menu (`wbFmtState.libraryMore.sets.open`, frontend/js/whiteboard-library-more.js); one row per set with its count and a switch, kept per device (`wb-lib-sets-off`, `wbLibState.isOff`, whiteboard-library.js). A set that is off is not listed, searched or fetched; turning it on fetches it.
