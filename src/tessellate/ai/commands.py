@@ -349,14 +349,16 @@ def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | Non
             # "Remind me about my trip" with no time is a question as often
             # as a request; a reminder needs the time said.
             return None
-        due, said, words = when.resolve("tomorrow", now), False, rest
+        #: No time said: asked once ("Remind you when?"), never guessed as tomorrow
+        #: at 9 (decisions 48 and 50, the owner's pick 2026-11-12).
+        due, said, words = None, False, rest
     else:
         due, said, words = parsed["due_at"], True, parsed["text"]
     words = _without_lead(words, ("to ", "about ", "that ", "for "), once=False)
     words = _without_dangling(words)
     said_words = _as_typed_case(words.strip(" ,.;:-"), rest)
     words = _cap(words)
-    if not words or due is None:
+    if not words:
         return None
     return {
         "intent": "reminder", "text": words[:500], "said": said_words[:500], "due_at": due, "time_given": said and _ahead(due, now),
@@ -391,7 +393,7 @@ def _reminder_gap(rest: str, parsed: dict | None, now: datetime) -> dict | None:
         return {"intent": "reminder", "text": "", "said": "", "due_at": parsed["due_at"], "time_given": True, "no_subject": rest.strip(" .,")}
     impossible = _impossible_day(rest) if parsed is None else ""
     if impossible:
-        return {"intent": "reminder", "text": rest[:500], "said": rest[:500], "due_at": when.resolve("tomorrow", now), "time_given": False, "impossible": impossible}
+        return {"intent": "reminder", "text": rest[:500], "said": rest[:500], "due_at": None, "time_given": False, "impossible": impossible}
     return None
 
 
