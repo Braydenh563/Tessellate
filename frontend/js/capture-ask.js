@@ -443,7 +443,7 @@ function noteTemplateText(raw, clipboard = "[clipboard]") {
   const now = new Date();
   return String(raw || "")
     .replace(/\{\{?date\}\}?/g, stampDate(now))
-    .replace(/\{\{?time\}\}?/g, now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))
+    .replace(/\{\{?time\}\}?/g, now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", ...clockOptions() }))
     .replaceAll("{{clipboard}}", clipboard);
 }
 
@@ -898,8 +898,10 @@ function scrollEditingEntryIntoView(id) {
   if (rect.top < 0) window.scrollBy(0, rect.top - 8);
 }
 
-async function flashEntry(id) {
+async function flashEntry(id, { terms = [] } = {}) {
   lastOpenedEntryId = id;
+  //: Cleared with the filter below, so the finder hands its words over: that note's card marks them.
+  noteEngine.opened = { id, terms };
   switchTab("notes");
   // The Notes tab is split into sub-tabs, and the note list lives in "browse".
   // Without this the card is found and scrolled to while its whole section is

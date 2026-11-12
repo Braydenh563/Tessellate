@@ -4406,3 +4406,9 @@ Owner, verbatim: "also is llama.cpp still on the table?? maybe for later pr at e
 - **One click, like the captions helper (INBOX 1777):** download a pinned `llama-server` per platform and accelerator (CPU first; Vulkan, CUDA, Metal where the release ships one), verified by sha256, run and stopped by the app on a localhost port, and set as the Models backend with a small default GGUF the owner picks.
 - **Reuse the captions route:** the same pinned-download, helper lifecycle and Settings row states, so the two helpers share one code path (replace, do not layer).
 - **Decide at design time:** whether `llama-cpp-python` in-process is still worth its per-accelerator wheel matrix once the managed `llama-server` exists (likely not: retire the `localllm` row).
+
+## World-class plan: the checks that need a real device or a real model (2026-11-12)
+
+Each row is the one step left of a built item; everything that runs here is built and tested.
+
+- **Real phones on the LAN trust page and plain http (Brief 40):** Real-phone check of the LAN trust page and plain http: on an iPhone and an Android phone, scan Settings, Other devices, Phone setup QR code, install the certificate from /lan/trust, then open the https address with no warning; turn on Also allow plain http and open the address without https. From WORLD_CLASS_PLAN Brief 40. Evidence: tests/test_lan_trust_page.py drives a real TLS client and a plain-http client; no phone was used

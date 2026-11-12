@@ -1142,11 +1142,11 @@ const VOICE = {
 //: `toLocaleString()` printed seconds on version lists, notes' hovers and run
 //: logs while the Timeline and the reminders printed none, and 12 or 24 hours
 //: follows the locale's own rule everywhere.
-const WHEN_FORMAT = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" });
 function whenText(value = new Date()) {
   const moment = value instanceof Date ? value : new Date(value);
-  return Number.isNaN(moment.getTime()) ? "" : WHEN_FORMAT.format(moment);
+  return Number.isNaN(moment.getTime()) ? "" : whenText.format.format(moment);
 }
+whenText.format = clockOptions.formatter({ dateStyle: "medium", timeStyle: "short" });
 
 function toastName(text, fallback = "it", limit = 48) {
   const flat = String(text || "").replace(/\s+/g, " ").trim();

@@ -994,7 +994,7 @@ function editorBlockRows(context) {
   }
   const now = new Date();
   const date = stampDate(now);
-  const time = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const time = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", ...clockOptions() });
   add({ id: "stamp-date", group: "Advanced", icon: "ph:calendar-blank", label: "Today's date", about: date, keys: "", keywords: ["date", "today", "stamp", "day"], run: (t) => editorApplyAction(t, { insert: date }) });
   add({ id: "stamp-time", group: "Advanced", icon: "ph:clock", label: "Time now", about: time, keys: "", keywords: ["time", "now", "stamp", "clock"], run: (t) => editorApplyAction(t, { insert: time }) });
   add({ id: "stamp-datetime", group: "Advanced", icon: "ph:calendar-dots", label: "Date and time", about: `${date} ${time}`, keys: "", keywords: ["date", "time", "timestamp", "stamp", "now", "log"], run: (t) => editorApplyAction(t, { insert: `${date} ${time}` }) });

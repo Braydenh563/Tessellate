@@ -2214,15 +2214,6 @@ added against, and what is still open.
    while the heading of the panel it opens already said "Write with Atlas",
    so the app contradicted itself on one screen.
 
-### Still open
-
-- **A model pill in the writing desk's and the documents assistant's dock**
-  (the owner, 2026-11-12: "Yes, a dock pill"; supersedes decision 4's "never a
-  new control in its chrome" for this one pill): the `#chat-active-model`
-  recipe, reading the feature's resolved model, opening the same picker sheet.
-  The routing switch copy and the Guide rows (the other two questions) are in
-  HISTORY.md, "Moved from the plans", 2026-11-12.
-
 ## 21. Every failure names its way out (INBOX 272 part 1, 2026-09-21)
 
 The owner, verbatim: "make sure all features and alternatives are easily
@@ -2296,10 +2287,8 @@ mobile first, as the owner's web design class teaches. Measured with
 
 Checked item by item 2026-11-12; the built ones moved to HISTORY.md, "Moved from the plans, 2026-11-12 (22.2 and 22.3, the baseline list checked item by item)". Still open, one line each:
 
-- Ctrl+S, Ctrl+Z and Escape behave the same in every editor and dialog: the key contract (1.6) has no Escape lint.
-- Search highlights the match inside the note it opens: cards highlight terms (notes-list.js:1600), the opened note does not.
+- Ctrl+S and Ctrl+Z behave the same in every editor and dialog: not audited (Escape is linted, HISTORY.md, "Moved from the plans, 2026-11-12 (the Escape lint)").
 - Every destructive action has an Undo toast: partial, tracked as LEDGER L694 and L696.
-- Every date and time follows one 12 or 24 hour setting: none exists; the clocks use the locale (`chat-time.js:15`, `status.js:1145`).
 - Right-click works on every card and row with a hold on touch: 38 `contextmenu` sites, not every card.
 - The status bar's "!" says what it means on hover and click: only the AI status glyph is seen (`status.js:2484`); not checked for the rest.
 - 22.3 not re-measured: card padding and body size at laptop widths (`tests/test_density_height.py` covers controls only), Settings section-head weight, one Phosphor weight app-wide (no lint found), the toast corner at 1093x614.
@@ -3046,7 +3035,7 @@ Entries are the owner's words, then the recommendation. Bugs come first, then de
 
 ## Placed from Brief 40, 2026-10-10 (the phone over HTTPS)
 
-Built; moved to HISTORY.md, "Moved from the plans, 2026-11-12 (Brief 40, the phone over HTTPS)". Left: a QR code to a `/lan/trust` page, a plain-http-on-purpose option (plain http redirects to https instead), and a failed-TLS-handshake count in Settings (`lanserve.py:302` drops them uncounted).
+Built; moved to HISTORY.md, "Moved from the plans, 2026-11-12 (Brief 40, the phone over HTTPS)" and "(Brief 40 leftovers)".
 
 ## 24. Codebase census, 2026-10-10
 

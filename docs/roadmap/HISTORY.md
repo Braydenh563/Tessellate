@@ -12,6 +12,84 @@ that answers "has this been done?" before anyone starts.
 - **Built, WORLD_CLASS I7 (and I6's last line):** each card of Show the evidence carries Is this line right? with Confirm and Not right (`evidenceCardVerdict`, answer-kit.js, the peek's `citationVerdictRow`); Not right is a `wrong` verdict and a `wrong_fact` correction, listed in What it learned, undone by its Delete; the next answer leaves the sentence out and so does filing (`librarian.filing_prompt` reads a re-filed note, and `evidence_note` quotes a neighbour, through `verdicts.without_wrong`). `tests/test_corrections_wrong_card_i7.py` (e67497ec). Sweep at :8794: one card, zero nested buttons, Not right made 1 wrong row, the toast's Undo took it to 0.
 - **Built, WORLD_CLASS B4 person and project pages:** `GET /entities/{id}` adds `open_items` (a project's unticked tasks and open reminders in its notes; a person's only where the line names them or `@` them), `timeline` (its notes by month, newest first) and `links` (notes linked to its notes that do not name it); the page draws Open items, Timeline and Linked notes; a note's Connections lists People and projects it names, each opening the page (`names_in_note`). `tests/test_entity_pages_b4.py` (2b7d96fe, f75b5d13). Sweep at :8794: project page 4 open items (3 tasks, 1 reminder), person page 2, 0 px sideways overflow, rows 60 px, Connections 2 name rows and the first opens its page.
 - **Built, WORLD_CLASS I5 `GET /entries/{id}/claims?as_of=`:** the note's claims at a day with the revision they came from, the stored night-shift fact id and the person's wrong verdict; 404 before the note existed, 403 for a private note. `tests/test_claims_as_of_i5.py` (72ce2bca).
+## Moved from the plans, 2026-11-12 (22.2, search terms marked in the note a result opens)
+
+- **Search highlights the match inside the note it opens.** `flashEntry`
+  clears the Notes filter so the card can be found, which also cleared the
+  highlight. The finder (`FINDER_OPEN.note`, search.js) now passes
+  `finderState.terms()` (its query's words and phrases) to
+  `flashEntry(id, { terms })`, which records them in `noteEngine.opened`;
+  `searchHighlightTerms(id)` (entry-card.js) returns them for that one note
+  while no filter is typed, and typing in the Notes filter forgets them. Driven
+  in Playwright: three notes holding "quillfeather", opened one from the
+  finder: that card had 2 `<mark>` ("Quillfeather", "quillfeather"), the other
+  two 0; typing "budget" in the filter cleared the opened terms and marked
+  "budget" 3 times. The finder's ? says so.
+
+## Moved from the plans, 2026-11-12 (22.2, the 12 or 24 hour setting)
+
+- **Every date and time follows one 12 or 24 hour setting.** `time_format`
+  ("auto", "12", "24"; default auto) is a preference (`routes_settings.py`,
+  `config.py`), shown in Settings, General, Calendar as "Clock". prefs.js
+  turns it into `clockOptions()` (`hourCycle` h12 or h23, never `hour12`,
+  which prints midnight as 24:00) and `clockOptions.formatter()` (a cached
+  `Intl.DateTimeFormat` rebuilt only when the setting changes); about 40
+  formatters across 22 files take one of them, and
+  `tests/test_time_format.py` fails on a new `toLocaleTimeString`,
+  `timeStyle` or `hour:` that skips both. Driven in Playwright at a fixed
+  15:05 and 00:05: auto "3:05 PM" and "12:05 AM"; 24 hour "15:05" and "00:05"
+  (timeline row, the status bar's `WHEN_FORMAT` and an inline
+  `toLocaleTimeString` all agree); 12 hour back to "3:05 PM"; the choice
+  survives a reload. Not covered: times the server formats into text itself (a reminder
+  line the model writes) do not read it.
+
+## Moved from the plans, 2026-11-12 (the Escape lint)
+
+- **Every dialog, popover and sheet closes on Escape.** `tests/test_escape_closes.py`
+  holds three static checks: each overlay a script builds with
+  `wireBackdropClose` has an Escape handler in its function (or, for a fixed
+  id, beside that id); each `.overlay` in index.html is in
+  `router-overlays.js`'s table or beside an Escape handler (the lock screen is
+  the one gate, exempt); a native `<dialog>` is not made to ignore Escape.
+  It found one real miss: the graph's "Manage this connection" panel
+  (`openGraphLinkPanel`) closed only by its buttons and the backdrop; it now
+  closes on Escape. 31 `wireBackdropClose` sites and 16 page overlays checked.
+
+## Moved from the plans, 2026-11-12 (Brief 40 leftovers)
+
+- **A QR code to `/lan/trust`.** `lanserve.trust_response` answers a plain-http
+  GET of `/lan/trust` (guide, fingerprint, link) and `/lan/trust/ca.crt` (the
+  public authority certificate) for a Host naming this computer, only while
+  `POST /auth/lan-trust-page` (this computer, 15 minutes) has opened the
+  window; otherwise the redirect answers. Settings, Other devices has "Phone
+  setup QR code" beside the address's own QR button, drawn by the existing
+  `/privacy/lan-qr.svg` (which now also accepts `netbind.trust_urls`).
+- **A failed-handshake count.** `lanserve._route` counts a TLS handshake that
+  fails (`handshake_failures()`); Settings says "N secure connections refused
+  by a device since the app started". `test_a_handshake_a_client_refuses_is_counted`
+  drives a real client that distrusts the certificate: 0 to 1.
+- **The plain-http option.** Brief 40's text (fix shape 3) asks for it, so it
+  is built: `plain_http` in the trust file (off unless a literal True, the
+  looser direction, so this computer and the password); on, a plain first byte
+  goes to uvicorn's protocol without TLS (`test_plain_http_serves_the_app_when_it_is_on`:
+  200 `http /notes`; off: 301). The switch's line says anyone on the Wi-Fi can
+  read the password. Not built: the Windows firewall rule (fix shape 5, already
+  the printed `netsh` line). Not verified: a real phone.
+
+## Moved from the plans, 2026-11-12 (section 20, the dock model pill)
+
+- **A model pill in the writing desk's and the documents assistant's dock**
+  (the owner, 2026-11-12: "Yes, a dock pill"). Built: `#draft-model-pill` and
+  `#doc-ai-model-pill`, both `.chat-model-button` marked `data-feature-pill`,
+  filled by `syncFeatureModelPills` (ai-tools.js) from the feature's resolved
+  row (its own pick, else its role's), hidden while no model server answers,
+  pressing one opens `openFeatureModelSheet`. Driven on :8795 with a faked
+  `/models/status` (`tests/test_feature_model_pill.py` holds the markup): the
+  desk's pill read `llama3.2:latest` (its row's model), the documents pill
+  `qwen2.5:7b` (a per-feature pin); both are 28px tall, equal to the dock's
+  `#draft-feature-model` select and small ghost buttons; pressing the documents
+  pill opened the sheet listing Default, Same as chat model, Same as utility
+  model and both installed models. Not verified: a real model server.
 
 ## Moved from the plans, 2026-11-12 (Sh1, Sh2, Wb1: shell build agent, PR 216)
 

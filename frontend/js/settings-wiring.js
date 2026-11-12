@@ -1578,6 +1578,7 @@ let noteSearchDebounceTimeout;
 onSurface("notes", () => {
   $("note-search").addEventListener("input", (e) => {
     noteSearch = e.target.value.trim();
+    noteEngine.opened = { id: null, terms: [] };
     // Nothing to save when the box is empty; the button appears when it isn't.
     // Cheap, so it stays immediate rather than waiting on the debounce below.
     $("save-search").classList.toggle("hidden", !noteSearch);

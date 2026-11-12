@@ -230,7 +230,7 @@ const utilityOps = (() => {
     const timers = utilityClocks
       .filter((c) => c.kind === "timer")
       .map((c) => `${c.name} timer, ${c.paused == null && c.end <= now ? "time is up" : `${utilityTimeText(utilityClockSeconds(c))} left${c.paused == null ? "" : ", paused"}`}`);
-    const when = { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" };
+    const when = { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit", ...clockOptions() };
     return [...timers, ...prefs.json("lock-digest", []).map((r) => `${r.t}, ${new Date(r.d).toLocaleString([], when)}`)];
   }
 

@@ -666,6 +666,7 @@
   );
   $("pref-week-start").addEventListener("change", (e) => setPreference("week_start", e.target.value));
   $("pref-date-order").addEventListener("change", (e) => setPreference("date_order", e.target.value));
+  $("pref-time-format").addEventListener("change", (e) => setPreference("time_format", e.target.value));
   $("pref-before-includes-day").addEventListener("change", (e) => setPreference("before_includes_day", e.target.checked));
   $("pref-season-hemisphere").addEventListener("change", (e) => setPreference("season_hemisphere", e.target.value));
   //: The voice's live sample (CHAT_PLAN decision 72): the same three lines
@@ -2356,13 +2357,16 @@
     lanQrShown: "",
     themePreviewTimer: 0,
   };
-  async function showLanQr(holder, address, button, open) {
+  async function showLanQr(holder, address, button, open, caption = "Point the phone's camera at it to open this address.") {
     holder.querySelector(".lan-qr")?.remove();
+    holder.querySelectorAll("[data-lan-qr]").forEach((other) => other.setAttribute("aria-expanded", "false"));
     button.setAttribute("aria-expanded", String(open));
     settingsControlState.lanQrShown = open ? address : "";
     if (!open) return;
     let blob;
     try {
+      //: The trust page answers only while this window is open (core/lanserve.py).
+      if (address.startsWith("http://")) await api("/auth/lan-trust-page", { method: "POST", silent: true });
       blob = await (await api(`/privacy/lan-qr.svg?address=${encodeURIComponent(address)}`, { silent: true })).blob();
     } catch (error) {
       toast(`Couldn't draw the QR code: ${error.message}`, true);
@@ -2377,10 +2381,10 @@
     img.src = URL.createObjectURL(blob);
     img.alt = `QR code for ${address}`;
     img.addEventListener("load", () => URL.revokeObjectURL(img.src), { once: true });
-    const caption = document.createElement("figcaption");
-    caption.className = "muted text-sm";
-    caption.textContent = "Point the phone's camera at it to open this address.";
-    figure.append(img, caption);
+    const note = document.createElement("figcaption");
+    note.className = "muted text-sm";
+    note.textContent = caption;
+    figure.append(img, note);
     holder.querySelector(".lan-address-main")?.after(figure);
   }
 
@@ -2406,9 +2410,23 @@
     const qr = smallButton("ph:qr-code QR code", "Show a QR code the phone's camera opens", () =>
       showLanQr(holder, first, qr, qr.getAttribute("aria-expanded") !== "true"));
     qr.setAttribute("aria-expanded", "false");
+    qr.dataset.lanQr = "address";
     main.append(value, copy, qr);
+    //: Brief 40: a QR code to the plain-http `/lan/trust` page, where the phone
+    //: installs the certificate once and every later visit has no warning.
+    const trustUrl = (state.trust_urls || [])[0];
+    let trustQr = null;
+    if (trustUrl) {
+      trustQr = smallButton("ph:certificate Phone setup QR code", "Show a QR code to the page where a phone installs this notebook's certificate", () =>
+        showLanQr(holder, trustUrl, trustQr, trustQr.getAttribute("aria-expanded") !== "true",
+          "Point the phone's camera at it: the page has the certificate and the steps. It answers for fifteen minutes."));
+      trustQr.setAttribute("aria-expanded", "false");
+      trustQr.dataset.lanQr = "trust";
+      main.append(trustQr);
+    }
     holder.appendChild(main);
     if (settingsControlState.lanQrShown === first) showLanQr(holder, first, qr, true);
+    else if (trustQr && settingsControlState.lanQrShown === trustUrl) trustQr.click();
     if (!rest.length) return;
     const toggle = document.createElement("button");
     toggle.type = "button";
@@ -2506,6 +2524,12 @@
     trust.classList.toggle("hidden", !state.allow_lan);
     $("account-lan-ask").checked = state.ask_new_devices !== false;
     $("account-lan-any").checked = state.any_network === true;
+    $("account-lan-plain").checked = state.plain_http === true;
+    //: Brief 40: "connection was lost" with a number beside it.
+    const refused = state.failed_handshakes || 0;
+    $("account-lan-handshakes").textContent = refused
+      ? `${refused} secure connection${refused === 1 ? "" : "s"} refused by a device since the app started. A phone that has not installed the certificate does this.`
+      : "";
     const pending = state.pending || [];
     $("account-lan-pending-wrap").classList.toggle("hidden", !pending.length);
     $("account-lan-pending").replaceChildren(
@@ -2604,7 +2628,7 @@
     if (!looser(wanted)) return lanCall("/auth/lan-options", { method: "POST", body: JSON.stringify({ name, enabled: wanted }) });
     let reply = null;
     const done = await askPasswordPrompt({
-      title: name === "any_network" ? "Allow on any network" : "Stop asking about new devices",
+      title: name === "any_network" ? "Allow on any network" : name === "plain_http" ? "Allow plain http" : "Stop asking about new devices",
       message: "Enter your password to change how other devices get in.",
       submitLabel: "Change",
       submit: async (password) => {
@@ -2621,6 +2645,7 @@
 
   $("account-lan-ask")?.addEventListener("change", (event) => setLanOption(event.target, "ask_new_devices", (on) => !on));
   $("account-lan-any")?.addEventListener("change", (event) => setLanOption(event.target, "any_network", (on) => on));
+  $("account-lan-plain")?.addEventListener("change", (event) => setLanOption(event.target, "plain_http", (on) => on));
 
   $("account-lan-allow-here")?.addEventListener("click", () => lanAllowHere(renderLanState));
 
@@ -3060,7 +3085,7 @@
       const result = await apiJson("/system/doctor");
       box.replaceChildren(...result.rows.map(maintenanceDoctorRow));
       box.classList.remove("hidden");
-      const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", ...clockOptions() });
       const worth = result.rows.filter((row) => row.status === "warn").length;
       maintenanceSay(
         result.failed

@@ -38,6 +38,7 @@ async function renderPrefs() {
   $("pref-week-start").value = prefsCache.week_start || "auto";
   $("pref-season-hemisphere").value = prefsCache.season_hemisphere || "auto";
   $("pref-date-order").value = prefsCache.date_order || "auto";
+  $("pref-time-format").value = prefsCache.time_format || "auto";
   $("pref-before-includes-day").checked = prefsCache.before_includes_day === true;
   $("pref-insight").value = prefsCache.insight_level || "one";
   $("pref-profile").value = prefsCache.user_profile;

@@ -580,7 +580,7 @@
     const slots = qaSlotsOf(state);
     if (qaIntent(state.reading, "remind")) {
       const words = slots.due
-        ? `${slots.due.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" })}, ${slots.due.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}`
+        ? `${slots.due.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" })}, ${slots.due.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", ...clockOptions() })}`
         : "when?";
       return {
         group: "Do it",

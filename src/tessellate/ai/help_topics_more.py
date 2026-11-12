@@ -484,13 +484,14 @@ MORE_TOPICS: list[dict] = [
             "smart quotes", "link offers", "offer links", "auto clear",
             "empty the bin", "delete old chats", "chat history", "mute notifications",
             "general settings", "seasons", "hemisphere", "southern hemisphere", "summer", "winter",
-            "date order", "day first", "month first", "before:", "first run preferences",
+            "date order", "day first", "month first", "12 hour", "24 hour", "clock", "before:", "first run preferences",
         ),
         "body": (
-            "Settings, General. Calendar: First day of the week, and Seasons, which half of the year "
+            "Settings, General. Calendar: First day of the week, Seasons, which half of the year "
             "summer, winter, spring and autumn mean (northern or southern hemisphere; automatic follows "
             "your language and region, so en-AU, en-NZ and en-ZA read summer as December to February), "
-            "and Dates like 3/4 mean (day first or month first; automatic follows your region). "
+            "Dates like 3/4 mean (day first or month first; automatic follows your region), "
+            "and Clock (a 12 or 24 hour clock everywhere). "
             "Search: Count the day itself in before: searches (off, before:2026-03-10 stops at the 9th). "
             "The welcome's last card offers the same three choices once, and Skip passes them by. "
             "Bin: auto-clear binned notes, documents, reminders and OCR readings after a "
@@ -1086,7 +1087,7 @@ MORE_TOPICS: list[dict] = [
             "needs your password. The first "
             "visit warns that the certificate is not trusted: compare its "
             "SHA-256 fingerprint with the one under the switch before you "
-            "continue, and Regenerate certificate makes a new one. Trust this certificate on your phone downloads it, and its ? says how to install it on iPhone and Android. If this computer's address changes, the app makes a new certificate straight away. Change your password (private "
+            "continue. Trust this certificate on your phone installs it once (its ? has the steps); Regenerate certificate makes a new one. Also allow plain http is off: on, anyone on the Wi-Fi can read your password. Change your password (private "
             "notes move across; a new one needs at least 8 characters, and an "
             "easy one gets a warning). Re-encrypt private notes (Settings, Account & security) makes "
             "a new encryption key and moves every private note onto it, so an old "
@@ -2023,8 +2024,8 @@ MORE_TOPICS.extend([
             (
                 "Your phone opens this computer's notebook over your own network: turn on Allow other "
                 "devices on this network (Settings, Account & security, Other devices), then open the "
-                "large address it shows (Copy is beside it, and QR code shows a code the phone's camera "
-                "opens; Other addresses folds the rest) on the phone and sign in with your password. On "
+                "large address it shows (Copy is beside it, and QR code opens it, Phone setup QR code "
+                "installs the certificate; Other addresses folds the rest) on the phone and sign in with your password. On "
                 "an iPhone, press Install the certificate on the lock screen, then, in the iPhone's own "
                 "Settings app, General, VPN and Device Management to install it and About, Certificate "
                 "Trust Settings to trust it; its ? has the steps. The phone's first sign-in waits until "

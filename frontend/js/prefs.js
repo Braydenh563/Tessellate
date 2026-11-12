@@ -122,6 +122,45 @@ const prefs = {
 };
 
 //: Run each schema key's `migrate` once per version bump.
+//: **One 12 or 24 hour setting for every clock** (WORLD_CLASS_PLAN 22.2): the
+//: `time_format` preference ("auto" follows the browser's region, "12", "24").
+//: Every time formatter spreads `clockOptions()` into its options, or is made
+//: with `clockOptions.formatter()` (built once and again only when the setting
+//: changes); `tests/test_time_format.py` fails on one that does neither. One
+//: shared name (the global-scope ratchet), the rest hang off it.
+//: `hourCycle`, not `hour12`: `hour12: false` prints midnight as 24:00.
+function clockOptions() {
+  const choice = clockOptions.choice();
+  if (choice === "12") return { hourCycle: "h12" };
+  if (choice === "24") return { hourCycle: "h23" };
+  return {};
+}
+
+//: `prefsCache` is a `let` in settings-panes.js, not a window property, and
+//: is in its temporal dead zone until that script has run.
+clockOptions.choice = () => {
+  try {
+    return prefsCache?.time_format || "auto";
+  } catch {
+    return "auto";
+  }
+};
+
+clockOptions.formatter = (options) => {
+  let made = null;
+  let madeFor = "";
+  return {
+    format(date) {
+      const choice = clockOptions.choice();
+      if (!made || madeFor !== choice) {
+        made = new Intl.DateTimeFormat(undefined, { ...options, ...clockOptions() });
+        madeFor = choice;
+      }
+      return made.format(date);
+    },
+  };
+};
+
 function prefsMigrate() {
   const done = prefs.json("prefs-versions", {});
   let changed = false;

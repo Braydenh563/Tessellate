@@ -96,7 +96,7 @@
     //: Rule 14 (WORLD_CLASS_PLAN 28.1): each field present and dated.
     const trust = health.trust || {};
     const when = (iso) => (iso ? `${relativeTime(iso)} (${whenText(iso)})` : "");
-    const asOf = ` as of ${new Date(trust.checked_at || Date.now()).toLocaleTimeString()}`;
+    const asOf = ` as of ${new Date(trust.checked_at || Date.now()).toLocaleTimeString(undefined, clockOptions())}`;
     $("health-checked").textContent = `Checked${asOf}.`;
     const backup = trust.last_backup || {};
     $("health-last-backup").textContent = backup.at ? `${when(backup.at)} · ${backup.name}` : `No backup yet${asOf}`;

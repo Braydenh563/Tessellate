@@ -32,7 +32,7 @@
     if (!m) return String(value || "");
     const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4] || 0), Number(m[5] || 0));
     const day = d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
-    return m[4] ? `${day}, ${d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}` : day;
+    return m[4] ? `${day}, ${d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", ...clockOptions() })}` : day;
   }
 
   //: The people field: one chip per name and the field to type the next in,
@@ -281,7 +281,7 @@
     if (item.owner) facts.push(`Owner ${item.owner}`);
     if (item.reminder_due) {
       const due = parseServerTime(item.reminder_due) || new Date(item.reminder_due);
-      facts.push(`Reminder ${due.toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`);
+      facts.push(`Reminder ${due.toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", ...clockOptions() })}`);
     }
     if (facts.length) {
       const line = document.createElement("span");
@@ -314,7 +314,7 @@
       const due = parseServerTime(made.due_at) || new Date(made.due_at);
       const binned = meetingBinPair("reminder", made.id, redraw);
       pushUndo("Made a reminder from an action item", binned.undo, binned.redo);
-      toastAction(`Reminder set for ${due.toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}.`, "Show", () => switchTab("reminders"));
+      toastAction(`Reminder set for ${due.toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", ...clockOptions() })}.`, "Show", () => switchTab("reminders"));
       redraw();
     } catch (error) {
       button.disabled = false;

@@ -256,7 +256,7 @@ async function renderStorageBreakdown() {
 function backupScheduleWords(run, newest) {
   const parts = [run?.schedule || "Once a day, at the first start of the day."];
   const day = (iso) =>
-    parseServerTime(iso)?.toLocaleString(undefined, { weekday: "long", day: "numeric", month: "long", hour: "numeric", minute: "2-digit" }) || "";
+    parseServerTime(iso)?.toLocaleString(undefined, { weekday: "long", day: "numeric", month: "long", hour: "numeric", minute: "2-digit", ...clockOptions() }) || "";
   if (run?.ran && run.status === "failed") {
     parts.push(`The last try failed${run.error ? `: ${run.error}` : ""}.`);
   } else if (run?.ran && run.finished_at) {
@@ -343,7 +343,7 @@ async function renderBackups() {
     const name = document.createElement("strong");
     const at = parseServerTime(item.created_at);
     name.textContent = at
-      ? at.toLocaleString(undefined, { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "numeric", minute: "2-digit" })
+      ? at.toLocaleString(undefined, { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "numeric", minute: "2-digit", ...clockOptions() })
       : item.name;
     name.title = item.name;
     const size = document.createElement("span");

@@ -1965,7 +1965,7 @@ def test_a_command_that_fails_reads_as_unknown(monkeypatch):
 
 def _trust_state(**over):
     state = {
-        "networks": [], "devices": [], "any_network": False, "ask_new_devices": True,
+        "networks": [], "devices": [], "any_network": False, "ask_new_devices": True, "plain_http": False,
         "untrusted": [], "turned_on": 0.0, "last_used": 0.0, "switched_off": "",
     }
     state.update(over)
@@ -2334,3 +2334,34 @@ def test_an_old_or_odd_held_request_is_not_brought_back(tmp_path):
     lantrust.adopt(tmp_path)
     assert lantrust.pending() == []
     lantrust.reset_for_tests()
+# --- Brief 40's leftovers: plain http, the trust page window, the handshake count ---
+
+
+def test_plain_http_is_off_until_this_computer_gives_the_password(lan_app):
+    here, phone = _here(lan_app), _phone(lan_app)
+    assert here.get("/auth/lan-access").json()["plain_http"] is False
+    body = {"name": "plain_http", "enabled": True}
+    assert phone.post("/auth/lan-options", json={**body, "current_password": PASSWORD}).status_code == 403
+    assert here.post("/auth/lan-options", json=body).status_code == 401
+    on = here.post("/auth/lan-options", json={**body, "current_password": PASSWORD})
+    assert on.status_code == 200 and on.json()["plain_http"] is True
+    off = here.post("/auth/lan-options", json={**body, "enabled": False})
+    assert off.status_code == 200 and off.json()["plain_http"] is False
+
+
+def test_the_state_carries_the_handshake_count_and_the_trust_address(lan_app, monkeypatch):
+    here = _here(lan_app)
+    monkeypatch.setitem(lanserve._stats, "handshake_failures", 3)  # noqa: SLF001
+    state = here.get("/auth/lan-access").json()
+    assert state["failed_handshakes"] == 3
+    assert isinstance(state["trust_urls"], list)
+    assert all(u.startswith("http://") and u.endswith("/lan/trust") for u in state["trust_urls"])
+
+
+def test_only_this_computer_opens_the_trust_page_window(lan_app, monkeypatch):
+    monkeypatch.setitem(lanserve._stats, "trust_until", 0.0)  # noqa: SLF001
+    here, phone = _here(lan_app), _phone(lan_app)
+    assert phone.post("/auth/lan-trust-page").status_code == 403
+    assert not lanserve.trust_page_open()
+    assert here.post("/auth/lan-trust-page").json()["open_seconds"] == 900
+    assert lanserve.trust_page_open()

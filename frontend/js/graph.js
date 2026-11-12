@@ -2822,7 +2822,14 @@ function openGraphLinkPanel(edge, nodes) {
   card.appendChild(textarea);
 
   const returnFocus = document.activeElement;
+  //: Escape closes it as every dialog here does (tests/test_escape_closes.py).
+  const onKey = (event) => {
+    if (event.key !== "Escape") return;
+    event.stopPropagation();
+    close();
+  };
   const close = () => {
+    document.removeEventListener("keydown", onKey, true);
     overlay.remove();
     returnFocus?.focus?.();
   };
@@ -2878,6 +2885,7 @@ function openGraphLinkPanel(edge, nodes) {
   card.appendChild(row);
   overlay.appendChild(card);
   wireBackdropClose(overlay, () => close());
+  document.addEventListener("keydown", onKey, true);
   document.body.appendChild(overlay);
   textarea.focus();
 }
