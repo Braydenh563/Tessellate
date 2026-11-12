@@ -1,4 +1,4 @@
-"""L412: a tick row in a dock menu matches the menu's items.
+"""Source text: layout and placement are measured in a browser the suite does not run (probe numbers below); the rule is held as its CSS or JS text. L412: a tick row in a dock menu matches the menu's items.
 
 Measured in Settings, Logs, More at 1440 (probe logsm.js): ticks were 8px in,
 14.72px type, 2.4px corners against the items' 12.8px, 13.6px and 4.8px,

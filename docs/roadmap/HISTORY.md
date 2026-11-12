@@ -55651,7 +55651,7 @@ The file's Built list, verbatim; its open items are LEDGER rows sourced "IDEAS.m
 - The help area in settings has an ask-AI feature that knows the program's
   documentation: the Guide, and Ask Atlas about the app (`Ctrl`+`Shift`+`H`).
 - A full security sweep: the audit of 2026-10-05 and its fixes are in the
-  changelog under Security, and [`SECURITY.md`](SECURITY.md) states the model.
+  changelog under Security, and [`SECURITY.md`](../SECURITY.md) states the model.
 - Update the readme: rewritten on 2026-10-05, with every document in `docs/`.
 
 **The AI**

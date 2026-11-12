@@ -15,6 +15,8 @@ import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
+from tessellate.core.subproc import NO_WINDOW
+
 #: When this process started, to the second. Module-level so every call agrees.
 STARTED_AT = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -25,7 +27,8 @@ _STAMP_FILES = (_PACKAGE / "SOURCE_COMMIT", _PACKAGE.parent.parent / "SOURCE_COM
 def _git_head() -> str:
     try:
         done = subprocess.run(  # noqa: S603  # fixed argv, no shell
-            ["git", "rev-parse", "HEAD"], cwd=_PACKAGE, capture_output=True, text=True, timeout=2, check=False
+            ["git", "rev-parse", "HEAD"], cwd=_PACKAGE, capture_output=True, text=True, timeout=2, check=False,
+            creationflags=NO_WINDOW,
         )
     except (OSError, subprocess.SubprocessError):
         return ""

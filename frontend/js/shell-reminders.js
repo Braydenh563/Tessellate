@@ -1223,8 +1223,12 @@ function reminderItem(reminder, label) {
       toastAction("Reminder done.", "Add outcome", async () => {
         const text = await promptDialog("What came of it? One line, added to the end of the note.", "", { confirmLabel: "Add" });
         if (!text?.trim()) return;
-        const added = await apiJson(`/reminders/${reminder.id}/outcome`, { method: "POST", body: JSON.stringify({ text }) }).catch(() => null);
-        toast(added ? "Added to the note." : "Could not add it to the note.");
+        try {
+          await apiJson(`/reminders/${reminder.id}/outcome`, { method: "POST", body: JSON.stringify({ text }) });
+          toast("Added to the note.");
+        } catch (err) {
+          toast(`Could not add it to the note: ${err.message}`, true);
+        }
       });
     }
   });

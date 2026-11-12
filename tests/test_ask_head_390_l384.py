@@ -1,4 +1,4 @@
-"""L384: on a phone Ask's header buttons share the title's line; only the
+"""Source text: layout and placement are measured in a browser the suite does not run (probe numbers below); the rule is held as its CSS or JS text. L384: on a phone Ask's header buttons share the title's line; only the
 model picker takes a line of its own (measured at 390: three lines before,
 two after; probe ask390.js)."""
 

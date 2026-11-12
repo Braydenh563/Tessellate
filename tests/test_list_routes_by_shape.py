@@ -29,6 +29,7 @@ LISTY_CALLS = {"list", "sorted", "all", "_to_out_bulk", "scalars"}
 
 #: Unpaged list routes, each with why its size is bounded (2026-10-05).
 BOUNDED = {
+    "/reminders/{reminder_id}/brief": "at most three notes, cut by the route (hits[:3])",
     "/running-copies": "one row per copy of the app running on this computer, a handful at most",
     "/insights/patterns": "one line per pattern rule, a fixed set in ai/insights.py",
     "/insights/remarks": "the best six things the companion could say, cut by the route",

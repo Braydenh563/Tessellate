@@ -1,4 +1,4 @@
-"""L410: Recent places opened from the phone bar's sheet anchors to Back.
+"""Source text: layout and placement are measured in a browser the suite does not run (probe numbers below); the rule is held as its CSS or JS text. L410: Recent places opened from the phone bar's sheet anchors to Back.
 
 Measured at 390 (probe nh.js): the bar's history button has no box there, so
 the menu went to x=0 with an inline bottom of 848px. Anchored to Back it lands
