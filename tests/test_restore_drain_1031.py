@@ -126,6 +126,9 @@ def test_a_long_poll_behind_the_unlock_check_does_not_hold_a_restore(client, mon
     monkeypatch.setattr(routes_auth, "_require_this_computer", lambda request: None)
     _save(client, "kept")
     name = client.post("/backups").json()["name"]
+    # As in the stream test above: the filing and backup may still be on the pool (CI, Python 3.11: 3.5 s),
+    # and a restore rightly waits for it. What is timed here is the long poll alone.
+    assert pool_idle()
     polled: list[int] = []
     poll = threading.Thread(target=lambda: polled.append(client.get("/auth/lan-watch?since=0").status_code))
     poll.start()
