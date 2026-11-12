@@ -16398,9 +16398,6 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
    dock's picker and Ask's History button were pushed off screen. Below 600
    the picker takes its own full-width line under the header's buttons. */
 @media (max-width: 599.98px) {
-  #ask > .row.space-between {
-    flex-wrap: wrap;
-  }
   #ask .ask-header-actions > .select-shell:has(#ask-feature-model),
   [data-dock-name="writing-room"] .dock-actions > .select-shell:has(#draft-feature-model) {
     order: 9;

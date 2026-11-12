@@ -699,8 +699,15 @@
     min-height: var(--target-min);
   }
 }
+/* Ask's buttons join the title's line and the picker alone takes the next
+   (L384: measured at 390 the group wrapped whole, three lines for two). */
 @media (max-width: 599.98px) {
-  #ask .ask-header-actions,
+  #ask .ask-header-actions {
+    display: contents;
+  }
+  #ask > .row > h2 {
+    flex: 1;
+  }
   [data-dock-name="writing-room"] .dock-actions {
     flex-wrap: wrap;
     justify-content: flex-end;
