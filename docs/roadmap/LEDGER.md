@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 175 | 58 | 0 | 72 | 363 |
+| world-class | 130 | 174 | 58 | 0 | 72 | 362 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 701 | 157 | 3 | 195 | 1411 |
+| all | 553 | 700 | 157 | 3 | 195 | 1410 |
 
 ## graph
 
@@ -702,7 +702,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L566** `world-class` open, M: Sign parked tool calls so /chat/tools/execute stops running client-supplied args. From OPEN.md:4499. Evidence: routes_chat.py:2434 execute_confirmed_tool; signing the parked call needs composer_*.py to sign what it parks
 - [ ] **L567** `world-class` open, M: Move the remaining 13 thread modules onto core/jobs.py and verify second device and calendar app. From OPEN.md:611; OPEN.md:2998. Evidence: tests/test_flaw_class_lints.py:11 ratchet still lists Thread( outside core/jobs.py
 - [ ] **L568** `world-class` open, M: Audit other [^\]\n] scanners for ReDoS and add a JS link-stripping oracle test. From OPEN.md:1249; OPEN.md:3543. Evidence: Python oracles exist (tests/test_doc_graph.py:136, test_file_editing.py:252); JS link stripping has no oracle.
-- [ ] **L569** `world-class` open, M: Add a migration for FK and filtered-column indexes with EXPLAIN at 5,000 notes. From OPEN.md:1506; OPEN.md:3784. Evidence: core/database_indexes.py:261-262 adds entity_mentions indexes; document_bookmarks/entry_bookmarks and filtered columns not confirmed
 - [ ] **L570** `world-class` open, M: Key lexical_filing stamps on edited_at instead of updated_at. From OPEN.md:1699. Evidence: lexical_filing.py:1009,1060,1217 still key stamps on updated_at; edited_at (database.py:581) not used there
 - [ ] **L571** `world-class` open, M: Preserve the note type id on Undo after POST /note-types then delete. From OPEN.md:1771. Evidence: routes_properties.py:145 POST /note-types; no id-preserving restore found; not reproduced here
 - [ ] **L572** `world-class` open, M: Add redo for /events/undo AI-change undo so it folds into pushUndo. From OPEN.md:1775. Evidence: note-history.js:340 undoSkillRun and dashboard activityUndoControl still use /events/undo; no server redo found
