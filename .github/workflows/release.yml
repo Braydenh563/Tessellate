@@ -34,8 +34,10 @@ on:
         description: "Version to release, e.g. 0.1.0 (no leading v)"
         required: true
 
+# Read only by default; the three jobs that create or upload to the release
+# ask for write themselves (zizmor excessive-permissions).
 permissions:
-  contents: write   # needed to create the GitHub Release
+  contents: read
 
 jobs:
   resolve-version:
@@ -265,6 +267,8 @@ jobs:
     needs: [resolve-version, github-release]
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
