@@ -14,10 +14,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
-| timeline | 3 | 0 | 0 | 0 | 1 | 3 |
+| timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 672 | 155 | 3 | 191 | 1380 |
+| all | 553 | 672 | 155 | 3 | 190 | 1380 |
 
 ## graph
 
@@ -980,7 +980,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L907** `ui-modernisation` blocked-hardware, M: Check forced colours, 200% zoom, screen reader; fix applyThemeChoice('light') leaving data-mode dark. From audit-1031-ux.md. Evidence: Screen reader and forced-colours need human/OS; theme data-mode case not re-driven
 - [ ] **L908** `ui-modernisation` blocked-hardware, S: Reproduce dashboard scroll jump (426 u) with owner's preferences. From OPEN.md:2310. Evidence: Needs the owner's preferences (LS=) to reproduce; scrolljump.js reference
 - [ ] **L909** `ui-modernisation` blocked-hardware, M: Frame-cost numbers need GPU; background slider effect unmeasured. From OPEN.md:1234; OPEN.md:3383. Evidence: Needs real GPU hardware to confirm absolute milliseconds.
-- [ ] **L914** `timeline` blocked-hardware, M: Verify Firefox/Safari permission help, webview denied state, hidden-tab firing, non-UTC browser. From OPEN.md:2785. Evidence: Needs other browsers/webview/timezone
 - [ ] **L915** `world-class` blocked-hardware, S: Verify printed manual output, real-model answers and iOS zoom on the 13.6px name field. From OPEN.md:591; OPEN.md:2601. Evidence: Needs real model and iOS device
 - [ ] **L916** `world-class` blocked-hardware, M: Add README tour shots: empty chat (no model) and page reader. From OPEN.md:972; OPEN.md:2965. Evidence: Retaking the chat shot needs a machine with Ollama and a real model
 - [ ] **L917** `world-class` blocked-hardware, S: Replace README OCR shot, still the 0.3.2 dark capture. From OPEN.md:1617. Evidence: Retake needs a Tesseract binary absent from this sandbox (seed-ocr.js removed)
