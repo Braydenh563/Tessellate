@@ -48,3 +48,13 @@ def test_floating_new_buttons_follow_their_surfaces_for_notes_and_library():
         'for (const name of ["notes", "library", "reminders", "timeline", "graph"]) onSurface(name'
         in text
     )
+
+
+def test_graph_hit_testing_is_reachable_for_the_sweeps():
+    text = (ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8")
+    assert "gcRequestDraw.inspect = { gcBowPoint, gcCurvedLinks, gcEdgeAtWorld, gcNodeAtWorld, gcSelectionChanged, gcWorldPoint };" in text
+
+
+def test_editor_hint_is_applied_as_each_surface_is_built():
+    text = (ROOT / "frontend" / "js" / "editor.js").read_text(encoding="utf-8")
+    assert 'onSurface(surface, editorHintAllPlaceholders);' in text
