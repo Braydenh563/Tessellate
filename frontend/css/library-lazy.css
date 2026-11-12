@@ -9234,3 +9234,30 @@ input[type="color"].wb-mixed {
   font-size: var(--text-xs);
   overflow-wrap: anywhere;
 }
+
+/* The outline's cells (decision 34): a topic's markers, due day and labels
+   under its words, the canvas's own painting at the row's text size. */
+#wb-outline-tree .wb-outline-cells {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  padding: 0 var(--space-2) var(--space-1);
+  font-size: var(--text-xs);
+}
+
+#wb-outline-tree .wb-outline-cells[hidden] {
+  display: none;
+}
+
+#wb-outline-tree .wb-outline-tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.wb-map-filter-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}

@@ -1175,8 +1175,11 @@ topic: a control that wide has nowhere to go.
    not at all (decision 12's rule). View, Filter by marker lists the markers
    in use with their counts and dims (never hides) every topic without the
    chosen one, for this visit, with a bar in the focus bar's shell to end
-   it. Not built: due dates, tags, several filters at once, markers as the
-   outline's columns.
+   it. Extended 2026-11-12: the filter takes several at once (a topic stays
+   lit when it carries any of them) and the topic's labels, which are its tags
+   (canvasdepth2; no second field, so `_labels` already rides in OPML and
+   FreeMind); the outline draws each topic's markers, due day and labels as
+   cells under its words. Due dates are decision 37.
 35. **A document maps its own headings, one way** (taken 2026-10-05, the
    audit's M5 second half). The document's menu, Map the headings (and the
    palette's row) makes a new map through the Markdown import, so it opens
@@ -1211,8 +1214,7 @@ topic: a control that wide has nowhere to go.
    drawn in the marker row as words ("14 Mar") in the ink, a day gone in the
    error ink and read "was due"; View, Filter by marker lists "With a due
    date". Remind me makes an ordinary reminder at 9:00 that day; a day gone
-   makes none and says why. No reminder is made by setting a date. Tags on a
-   topic stay open.
+   makes none and says why. No reminder is made by setting a date.
 
 ### Phases, each with the gate it is finished against
 

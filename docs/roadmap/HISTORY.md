@@ -7,6 +7,10 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-12 (mindmap-plan)
+
+- **Built, decision 34 (extended):** Filter by marker takes several at once and the topic's labels (its tags; the labels field is reused, so OPML and FreeMind already carry it as `_labels`), and the outline shows each topic's markers, due day and labels as cells; `tests/test_map_filter_columns.py`.
+
 ## Moved from the plans, 2026-11-12 (Sh1, Sh2, Wb1: shell build agent, PR 216)
 
 - **Built, Sh1 P4:** the reminder edit form's time, priority, repeat and alert share one height (32px, equal top); `tests/test_reminder_edit_form_alert.py` holds the shared-height loop (cb83f2ed3).

@@ -5174,7 +5174,7 @@ function mapPaletteCommands() {
   row("This map", "ph:student Study the map", () => wbMapStartStudy());
   row("This map", "ph:chart-bar-horizontal Gantt chart of the dated topics", () => wbMapLazy.openGantt());
   row("This map", "ph:funnel Filter by marker…", () => wbMapChooseMarkerFilter());
-  if (wbMarkerUi.filter) row("This map", "ph:x-circle Stop filtering by marker", () => wbMapSetMarkerFilter(null));
+  if (wbMarkerUi.filters.size) row("This map", "ph:x-circle Stop filtering by marker", () => wbMapSetMarkerFilter(null));
   row("This map", wbOutlineShowing() ? "ph:list-dashes Hide the outline" : "ph:list-dashes Show the map as an outline", () => wbOutlineToggle());
   row("This map", "ph:frame-corners Zoom to fit the map", () => wbZoomToFit());
   for (const [value, name] of WB_MAP_LAYOUT_NAMES) {
@@ -10339,7 +10339,38 @@ function wbOutlineRowEl(node, depth) {
     setLabel(pencil, "ph:pencil-simple");
     row.appendChild(pencil);
   }
+  //: The topic's markers and due day, then its labels, as cells under its
+  //: words (decision 34): the canvas's own painting, so the two agree.
+  const cells = document.createElement("div");
+  cells.className = "wb-outline-cells";
+  const marks = document.createElement("span");
+  marks.className = "wb-map-markers wb-outline-marks";
+  const tags = document.createElement("span");
+  tags.className = "wb-outline-tags";
+  cells.append(marks, tags);
+  row.appendChild(cells);
+  wbOutlineCells(row);
   return row;
+}
+
+//: Brings a row's cells up to date; each repaints only when its content changed.
+function wbOutlineCells(row, node = row._node) {
+  const data = node.data || {};
+  const [marks, tags] = row.lastChild.children;
+  wbMapPaintMarkers(marks, data);
+  const labels = Array.isArray(data.labels) ? data.labels.filter((l) => typeof l === "string" && l.trim()) : [];
+  const key = labels.join("\u0000");
+  if (tags.dataset.key !== key) {
+    tags.dataset.key = key;
+    tags.replaceChildren(...labels.map((label) => {
+      const chip = document.createElement("span");
+      chip.className = "wb-map-tag";
+      chip.textContent = label;
+      return chip;
+    }));
+    tags.title = labels.length ? "Labels" : "";
+  }
+  row.lastChild.hidden = marks.hidden && !labels.length;
 }
 
 function wbOutlineEditing(row) {
@@ -10405,11 +10436,13 @@ function wbOutlineSync(force = false) {
     }
   }
   const now = tree.contains(document.activeElement) ? document.activeElement : null;
+  let at = 0;
   for (const row of tree.children) {
     const field = row.firstChild;
     const label = wbMapLabel(row._node);
     if (!(field === now && wbOutlineEditing(row)) && field.value !== label) field.value = label;
     row.setAttribute("aria-selected", String(row._node.id === selected));
+    wbOutlineCells(row, rows[at++].node);
   }
 }
 
@@ -10782,7 +10815,7 @@ function wbMapDateRow(node, parts, set, label, key) {
   return wrap;
 }
 
-const wbMarkerUi = { pop: null, filter: null };
+const wbMarkerUi = { pop: null, filters: new Set(), choose: null };
 
 function wbMapCloseMarkers({ restoreFocus = false } = {}) {
   const state = wbMarkerUi.pop;
@@ -10970,9 +11003,11 @@ function wbMapOpenMarkers(id, anchor = null) {
 }
 
 //: --- Filter by marker ---------------------------------------------------
-//: One marker at a time; every topic without it is dimmed, never hidden, so
-//: the tree stays readable around what is lit. For this visit only.
-
+//: Several at once (decision 34): a topic stays lit when it carries any of
+//: the chosen markers or labels (a label is the topic's tag); every other
+//: topic is dimmed, never hidden, so the tree stays readable around what is
+//: lit. For this visit only.
+// WB-MAP-FILTER-BEGIN
 function wbMapMarkerKeys(data) {
   const parts = wbMapMarkerParts(data);
   const keys = [];
@@ -10981,10 +11016,14 @@ function wbMapMarkerKeys(data) {
   if (parts.flag) keys.push("flag");
   if (parts.due) keys.push("due");
   for (const icon of parts.icons) keys.push(`i:${icon}`);
+  for (const label of Array.isArray(data?.labels) ? data.labels : []) {
+    if (typeof label === "string" && label.trim()) keys.push(`t:${label.trim()}`);
+  }
   return keys;
 }
 
 function wbMapMarkerKeyWords(key) {
+  if (key.startsWith("t:")) return [key.slice(2), "ph:tag"];
   if (key.startsWith("p")) return [`Priority ${key.slice(1)}`, "ph:number-circle-one"];
   if (key === "done") return ["Done", "ph:check-circle"];
   if (key === "going") return ["Under way", "ph:circle-half"];
@@ -10994,37 +11033,111 @@ function wbMapMarkerKeyWords(key) {
   return [WB_MAP_MARKER_ICON_NAMES.get(icon) || icon, `ph:${icon}`];
 }
 
+const wbMapFilter = {
+  //: Lit when nothing is chosen, or the topic carries any chosen key.
+  lit: (keys, filters) => !filters.size || keys.some((key) => filters.has(key)),
+  //: The bar's words: the first three by name, then how many more.
+  words(filters) {
+    const names = [...filters].map((key) => wbMapMarkerKeyWords(key)[0]);
+    return names.length > 3 ? `${names.slice(0, 3).join(", ")} and ${names.length - 3} more` : names.join(", ");
+  },
+};
+// WB-MAP-FILTER-END
+
 function wbMapMarkersInUse() {
   const used = new Map();
   for (const node of wbMapIndex().nodes) {
     for (const key of wbMapMarkerKeys(node.data)) used.set(key, (used.get(key) || 0) + 1);
   }
-  const rank = (k) => (k.startsWith("p") ? 0 : k === "flag" ? 1 : k === "going" || k === "done" ? 2 : 3);
+  const rank = (k) => (k.startsWith("t:") ? 4 : k.startsWith("p") ? 0 : k === "flag" ? 1 : k === "going" || k === "done" ? 2 : 3);
   return [...used].sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0]));
 }
 
+//: A popover of pressed-or-not choices (the Markers popover's recipe), one
+//: press adds or takes away one filter and the map follows at once.
 function wbMapChooseMarkerFilter(anchor = null) {
-  const used = wbMapMarkersInUse();
-  if (!used.length) {
-    toast("No topic on this map has a marker yet. A topic's menu, Content, Markers adds one.");
+  if (wbMarkerUi.choose) {
+    wbMarkerUi.choose.close();
     return;
   }
-  const items = used.map(([key, count]) => {
-    const [words, icon] = wbMapMarkerKeyWords(key);
-    return makeMenuItem(`${icon} ${words} (${count})`, `Dim every topic that is not marked ${words.toLowerCase()}`, () => wbMapSetMarkerFilter(key));
+  const used = wbMapMarkersInUse();
+  if (!used.length) {
+    toast("No topic on this map has a marker or a label yet. A topic's menu, Content, Markers adds one.");
+    return;
+  }
+  const target = anchor || document.querySelector('[aria-controls="wb-view-menu"]') || document.getElementById("whiteboard-container");
+  const panel = document.createElement("div");
+  panel.className = "help-popover wb-map-markers-pop wb-map-filter-pop";
+  panel.setAttribute("role", "dialog");
+  panel.setAttribute("aria-label", "Filter by marker");
+  const fill = () => {
+    const chips = used.map(([key, count]) => {
+      const [words, icon] = wbMapMarkerKeyWords(key);
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "ghost small";
+      b.setAttribute("aria-pressed", String(wbMarkerUi.filters.has(key)));
+      b.title = `Light the topics marked ${words.toLowerCase()}`;
+      setLabel(b, `${icon} ${words} (${count})`);
+      b.addEventListener("click", () => {
+        if (!wbMarkerUi.filters.delete(key)) wbMarkerUi.filters.add(key);
+        wbMapSetMarkerFilter(undefined);
+        const again = [...panel.querySelectorAll("button")].indexOf(b);
+        fill();
+        panel.querySelectorAll("button")[again]?.focus({ preventScroll: true });
+      });
+      return b;
+    });
+    const group = document.createElement("div");
+    group.className = "wb-map-filter-choices";
+    group.setAttribute("role", "group");
+    group.setAttribute("aria-label", "Markers and labels in use");
+    group.append(...chips);
+    const hint = document.createElement("p");
+    hint.className = "muted wb-map-markers-hint";
+    hint.textContent = "A topic stays lit if it has any you press. Esc closes.";
+    const clear = document.createElement("button");
+    clear.type = "button";
+    clear.className = "ghost small";
+    clear.textContent = "Show every topic";
+    clear.disabled = !wbMarkerUi.filters.size;
+    clear.addEventListener("click", () => {
+      wbMapSetMarkerFilter(null);
+      fill();
+    });
+    panel.replaceChildren(group, hint, clear);
+  };
+  panel.addEventListener("keydown", (event) => {
+    event.stopPropagation();
+    if (event.key === "Escape") {
+      event.preventDefault();
+      close();
+    }
   });
-  if (wbMarkerUi.filter) items.unshift(makeMenuItem("ph:x-circle Show every topic", "Stop filtering", () => wbMapSetMarkerFilter(null)));
-  const box = (anchor || document.querySelector('[aria-controls="wb-view-menu"]') || document.getElementById("whiteboard-container"))?.getBoundingClientRect();
-  openMenuAtPoint(items, "Filter by marker", box ? box.left : 80, box ? box.bottom + 4 : 80);
+  const close = () => {
+    wbMarkerUi.choose = null;
+    document.removeEventListener("pointerdown", outside, true);
+    panel.remove();
+  };
+  const outside = (event) => {
+    if (!panel.contains(event.target) && !target.contains?.(event.target)) close();
+  };
+  document.addEventListener("pointerdown", outside, true);
+  document.body.appendChild(panel);
+  wbMarkerUi.choose = { close };
+  fill();
+  placeHelpPopover(panel, target);
+  panel.querySelector("button")?.focus({ preventScroll: true });
 }
 
+//: `null` ends the filter; `undefined` repaints for the set as it now stands.
 function wbMapSetMarkerFilter(key) {
-  wbMarkerUi.filter = key;
+  if (key === null) wbMarkerUi.filters.clear();
   wbMapPaintMarkerFilter();
   const bar = document.getElementById("wb-map-filter");
-  if (key) wbAnnounce(`Showing the topics marked ${wbMapMarkerKeyWords(key)[0].toLowerCase()}.`);
-  else wbAnnounce("Showing every topic.");
-  if (bar && !key) document.getElementById("whiteboard-container")?.focus({ preventScroll: true });
+  const on = wbMarkerUi.filters.size > 0;
+  wbAnnounce(on ? `Showing the topics marked ${wbMapFilter.words(wbMarkerUi.filters).toLowerCase()}.` : "Showing every topic.");
+  if (bar && !on) document.getElementById("whiteboard-container")?.focus({ preventScroll: true });
 }
 
 //: After every render (`wbMapAfterRender`): a class on each topic the filter
@@ -11056,13 +11169,12 @@ function wbMapDimLit(index) {
 
 function wbMapPaintMarkerFilter() {
   const bar = document.getElementById("wb-map-filter");
-  const on = Boolean(wbMarkerUi.filter) && wbIsMap();
+  const on = wbMarkerUi.filters.size > 0 && wbIsMap();
   if (bar) {
     bar.hidden = !on;
     if (on) {
-      const [words] = wbMapMarkerKeyWords(wbMarkerUi.filter);
       const label = document.getElementById("wb-map-filter-label");
-      if (label) label.textContent = `Marked: ${words}`;
+      if (label) label.textContent = `Marked: ${wbMapFilter.words(wbMarkerUi.filters)}`;
     }
   }
   const container = document.getElementById("whiteboard-container");
@@ -11074,7 +11186,7 @@ function wbMapPaintMarkerFilter() {
     for (const el of container.querySelectorAll(".wb-map-filtered-out")) el.classList.remove("wb-map-filtered-out");
     return;
   }
-  const out = (node) => (on ? !wbMapMarkerKeys(node.data).includes(wbMarkerUi.filter) : !lit.has(node.id));
+  const out = (node) => (on ? !wbMapFilter.lit(wbMapMarkerKeys(node.data), wbMarkerUi.filters) : !lit.has(node.id));
   for (const node of index.nodes) {
     const el = container.querySelector(`.wb-object[data-id="${node.id}"]`);
     if (el) el.classList.toggle("wb-map-filtered-out", out(node));
@@ -11090,7 +11202,7 @@ function wbMapPaintMarkerFilter() {
 //: What follows every render of a map: the outline and the marker filter.
 function wbMapAfterRender() {
   wbOutlineSync();
-  if (wbMarkerUi.filter || wbMapDim.on || document.getElementById("whiteboard-container")?.classList.contains("wb-map-filtering")) {
+  if (wbMarkerUi.filters.size || wbMapDim.on || document.getElementById("whiteboard-container")?.classList.contains("wb-map-filtering")) {
     wbMapPaintMarkerFilter();
   }
 }
