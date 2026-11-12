@@ -8,6 +8,10 @@ below). Versioning is `0.x` while the app stabilises.
 ## [Unreleased]
 - Tests no longer wait 5 seconds each for the autonomous loop at teardown (CI ran past its 90-minute limit).
 - Chat's side routes have their own file, every file over 800 lines has a cap that only falls, and no Python function passes 150 lines (L624, L640). An import cycle between media cleanup and note text is gone.
+- The Clock's timer and stopwatch help popover and the Count words Guide topic are covered by tests.
+- A confirmation's Cancel (and No thanks, Not now) is a quiet text action, not a second bordered box.
+- The picker's preview of a note with an attached picture is covered by a test: fetched once, removed when it cannot load.
+- Live Text follows the page you scroll to in a PDF's scroll layout (checked, with a test).
 - A package bundle that cannot be installed here says why.
 - Settings, Search and index has a dated currency rate table you can edit; currency answers use it and say its date.
 - Undoing a fresh read puts back who read the old reading too.

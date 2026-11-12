@@ -98,3 +98,47 @@ def test_the_preview_file_rides_the_note_panels_bundle():
     app = (JS_DIR / "app.js").read_text(encoding="utf-8")
     assert '"/js/note-edit-panels.js", "/js/note-pick-preview.js"]' in app
     assert '"renderEditForm", "richPickerNote"]' in app
+
+
+def _thumb(entry: dict, fail: bool = False) -> dict:
+    """Run notePickThumb with a fake DOM and api, as the picker draws an attached picture (L516)."""
+    preview = (JS_DIR / "note-pick-preview.js").read_text(encoding="utf-8")
+    thumb = re.search(r"^function notePickThumb\(.*?^\}", preview, re.S | re.M).group(0)
+    loader = re.search(
+        r"^async function attachmentObjectUrl\(.*?^\}", (JS_DIR / "lightbox.js").read_text(encoding="utf-8"), re.S | re.M
+    ).group(0)
+    script = f"""
+const NOTE_PICK_IMAGE = /!\\[[^\\]\\n]{{0,200}}\\]\\(([^)\\s\\n]{{1,500}})[^)\\n]*\\)/;
+const document = {{ createElement: () => ({{ className: "", alt: "", src: "", removed: false, remove() {{ this.removed = true; }} }}) }};
+const calls = [];
+const api = async (path) => {{ calls.push(path); if ({json.dumps(fail)}) throw new Error("401"); return {{ blob: async () => "bytes" }}; }};
+const URL = {{ createObjectURL: (b) => "blob:" + b }};
+const isRenderableUrl = () => true, isRemoteImage = () => false, mediaSrc = (u) => u;
+const fullEntry = async () => ({{ content: "" }});
+const thumbUrlCache = new Map();
+{loader}
+{thumb}
+(async () => {{
+  const img = notePickThumb({json.dumps(entry)});
+  await new Promise((r) => setTimeout(r, 10));
+  const again = notePickThumb({json.dumps(entry)});
+  await new Promise((r) => setTimeout(r, 10));
+  process.stdout.write(JSON.stringify({{ has: !!img, src: img && img.src, removed: img && img.removed, calls, againSrc: again && again.src }}));
+}})();
+"""
+    return _node(script)
+
+
+def test_an_attached_picture_draws_as_an_object_url_fetched_once():
+    got = _thumb({"id": 1, "content": "no picture inline", "attachments": [{"id": 7, "is_image": True}]})
+    assert got["src"] == "blob:bytes" and not got["removed"]
+    assert got["calls"] == ["/files/7"] and got["againSrc"] == "blob:bytes"
+
+
+def test_an_attached_picture_that_cannot_be_fetched_leaves_no_broken_thumb():
+    got = _thumb({"id": 1, "content": "x", "attachments": [{"id": 7, "is_image": True}]}, fail=True)
+    assert got["removed"] is True and got["src"] == ""
+
+
+def test_a_note_with_no_picture_draws_no_thumb():
+    assert _thumb({"id": 1, "content": "x", "attachments": [{"id": 8, "is_image": False}]})["has"] is False
