@@ -581,13 +581,14 @@ const openReminderList = (() => {
   let cache = { stamp: "", all: null };
   return async () => {
     const look = await apiJson("/reminders/due", { silent: true }).catch(() => null);
-    if (look?.stamp && cache.all && look.stamp === cache.stamp) return { all: cache.all, fetched: false };
-    const all = await apiJson("/reminders?include_done=false", { silent: true }).catch(() => null);
+    if (look?.stamp && cache.all && look.stamp === cache.stamp) return { all: cache.all, fetched: false, open: look?.open };
+    //: A month covers the longest early alert (43200 minutes); later ones are not announced yet.
+    const all = await apiJson("/reminders?include_done=false&due_within_days=31", { silent: true }).catch(() => null);
     if (!all) return null;
     //: The stamp was read first, so a change in between leaves the cache looking
     //: older than the list, and the next look fetches again: the safe side.
     cache = { stamp: look?.stamp || "", all };
-    return { all, fetched: true };
+    return { all, fetched: true, open: look?.open };
   };
 })();
 
@@ -610,6 +611,11 @@ async function checkDueReminders() {
   if (!looked) return; // server asleep or locked, say nothing rather than guess
   const all = looked.all;
   const due = paintReminderList(all);
+  //: The list is a month's window; the status bar's open count is the whole notebook's.
+  if (Number.isInteger(looked.open) && reminderCounts.open !== looked.open) {
+    reminderCounts = { ...reminderCounts, open: looked.open };
+    renderStatusBar();
+  }
   //: Painting only: announcing stays with the tab that asked. An unchanged
   //: list was already sent when it was fetched.
   if (looked.fetched) reminderChannel?.postMessage(all);
