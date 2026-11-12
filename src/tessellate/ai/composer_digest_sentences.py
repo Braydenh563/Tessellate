@@ -667,6 +667,8 @@ _THIS = re.compile(
     #: "what's in here", "explain this", "describe this note", "what is here".
     r"|what(?:'s| is) (?:this|here)(?: note| page)?|what(?:'s| is) in (?:here|this(?: note| page)?)"
     r"|(?:explain|describe|read(?: out)?|go (?:over|through)|run (?:me )?through) (?:this|it)(?: note| page)?"
+    #: "tell me about this", "give me a summary of this note" (L46): a request for the open note, said as a request.
+    r"|(?:tell|talk|walk) me (?:about|through) this(?: note| page| one)?|give me (?:a |an |the )?(?:summary|overview|rundown) of this(?: note| page| one)?"
     r"|what(?:'s| is) (?:the )?(?:main|key|big|core) (?:point|idea|takeaway)s?(?: of (?:this|it))?|(?:the )?(?:main|key) (?:points?|ideas?|takeaways?)|(?:key )?take-?aways?"
     r")(?: for me| please)?$",
     re.I,

@@ -62,7 +62,7 @@ def test_how_long_answers_the_attachment_alone(client, session, question):
     assert "words" in out["text"], out["text"]
 
 
-@pytest.mark.parametrize("question", ["what is this note about?", "summarise this", "what's it about"])
+@pytest.mark.parametrize("question", ["what is this note about?", "summarise this", "what's it about", "tell me about this", "give me a summary of this note"])
 def test_what_about_answers_the_attachment_alone(client, session, question):
     bus = _seed(session)
     out = _ask(client, question, use_tools=False, note_ids=[bus])

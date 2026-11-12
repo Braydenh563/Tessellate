@@ -352,7 +352,7 @@ MID_TOPICS.extend(
                     "rule that needs no AI, with its count and one line on what it finds, the ones with "
                     "nothing to tidy last; press a row to open that review and its back button to return to "
                     "the overview. The reviews: Links to explain (Add reasons gives a link that only says "
-                    "similar in meaning what the two notes share, a tag, a name or a week), Weak automatic "
+                    "similar in meaning what the two notes share, a tag, a name, a week or a sentence each that says the same), Weak automatic "
                     "links (Remove links), Tags Atlas added (tags written by Atlas or a background pass, "
                     "never changed by you, that fit their note poorly; Remove tags), Tags used once (Remove "
                     "tags), Tags that look alike (Merge tags), Notes without a category (Move notes, to the "

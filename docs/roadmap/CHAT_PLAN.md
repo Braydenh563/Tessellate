@@ -364,23 +364,16 @@ for a read (`provider.extract_text_tool_calls`, pass 5). **Still open**: the
 gate itself (8 of 8, and 80% of the skills with no invalid call) on a 3B; a Qwen2.5-1.5B (2026-11-11, w34-unv1-1111.md) found 2 of 8, skills 1 pass 2 partial 6 fail of 9, tool choice 0 of 10: not met.
 
 ### Phase 5: the composer, after INBOX 725 (open)
-Left from INBOX 725, each its own step: (a) when a model runs, feed it the
-composer's chosen sentences as context (the owner: "the composer can assist
-the ai"); (b) run the 25-question eval with a real embedder and set the
+Left from INBOX 725, each its own step: (b) run the 25-question eval with a real embedder and set the
 cosine thresholds from it (decision 19's are reasoned, the lexical ones are
-measured); (c) a "Your notes, no AI" label on a composed Chat bubble, as
-Ask's chip has; (d) a picture attached as a file (`files` captions), not only
-one inside a mostly-picture note; (e) re-capture the eval's retrieval when
+measured); (e) re-capture the eval's retrieval when
 search changes (`tests/fixtures/composer/showcase_725.json`); (f) "the
 composer acts" (the owner: "or the composer can somehow call tools and act
 like an agent"): deterministic commands parsed from a Chat message ("make a
 reminder for X on Friday", "tag these notes Y"), shown as the action they
 would take and confirmed before anything is written, the same confirm card
 an agent's write uses; Agent mode then opens with no model for those verbs;
-(g) link reasons beyond "similar in meaning" (the owner: "can the composer be
-user to write better link reasons"): INBOX 691's concrete overlaps first,
-then the composer's quoted sentence pair, a model's checked line when one
-runs, feeding Tidy's "Add reasons" and "Add reasons to all". Open items and
+(g) built, see HISTORY.md "Moved from the plans, 2026-11-12 (compose agent)". Open items and
 numbers: `composer725-1006.md` (git history).
 INBOX 1301 D5 (an overview note as its gist, sections said as its shape, no "You asked:" echo, a reminder only for a stated task): built, see HISTORY.md "Moved from the plans, 2026-10-18 (design4-1018: how a no-model answer reads)".
 
