@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
-| chat | 176 | 152 | 46 | 2 | 59 | 374 |
+| chat | 176 | 127 | 44 | 2 | 59 | 347 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 659 | 143 | 3 | 195 | 1355 |
+| all | 553 | 634 | 141 | 3 | 195 | 1328 |
 
 ## graph
 
@@ -60,41 +60,22 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L25** `chat` open, S: Read a one-line CJK note as content, not title-only (C10). From OPEN.md:4090. Evidence: Not probed (needs CJK note in seed); recorded in bc-1111.md.
 - [ ] **L26** `chat` open, S: Fix citation superscript landing mid-sentence (E51). From OPEN.md:4503. Evidence: Lead phrase table in composer_*.py, another agent's file; not changed
 - [ ] **L30** `chat` open, S: Record eval numbers for the voice track. From OPEN.md:829. Evidence: tests/_composer_eval.py and _voice_eval.py exist; before/after figures not recorded
-- [ ] **L40** `chat` open, S: Browser-check Ask/Chat with no model: Did you mean chip; merge voice741.js from wip branch. From OPEN.md:3510. Evidence: voice741.js not in scratchpad/ui-sweeps and no wip/composer-voice branch present; check not redone.
 - [ ] **L48** `chat` open, S: Add chips to 'thanks'/'hello' replies (F5). From fc56-1110.md Left. Evidence: No closing-chip change found in composer_talk.py
 - [ ] **L51** `chat` open, S: Make tab-level Guide topics ring each topic's own control, not the tab's main control. From OPEN.md:963; OPEN.md:2709. Evidence: No per-topic ring found in help-chat.js (grep ring/highlight empty); topics carry tab-level path only
 - [ ] **L52** `chat` open, S: Read the Guide fallback log line (help_chat.answer_stream) when the Guide fails with a model. From OPEN.md:968; OPEN.md:987; OPEN.md:2858. Evidence: Only reproduces with a real model; help-chat.js catch needs a model-run server log
 - [ ] **L54** `chat` open, S: Drive Brief 84 Guide first line and act topics in a browser. From OPEN.md:606; OPEN.md:2861. Evidence: API/unit tests only; browser drive of Guide not recorded
-- [ ] **L55** `chat` open, S: Draw run budget usage in the chat-agent.js result box. From OPEN.md:648; OPEN.md:2584. Evidence: grep budget in frontend/js/chat-agent.js returns nothing
-- [ ] **L56** `chat` open, S: Drive an Ask chip click in a sweep with a corrected selector. From OPEN.md:836; OPEN.md:3518. Evidence: Sweep selector missed the chip; no corrected run recorded
-- [ ] **L57** `chat` open, S: Fix or reproduce 'remind me' answer text appearing twice in the bubble. From OPEN.md:964; OPEN.md:2710. Evidence: Not reproduced or fixed; no test or commit found for the duplicate; needs a browser drive
-- [ ] **L58** `chat` open, S: Measure Chat dock streaming state (Stop shown, Send hidden) at narrow widths. From OPEN.md:982; OPEN.md:3521. Evidence: Needs a streaming reply, so a model or stubbed stream; no measure recorded
-- [ ] **L59** `chat` open, S: Fold the three-row answer foot and Grounded in chips into one muted line. From OPEN.md:986; OPEN.md:3651. Evidence: No fix commit found; foot rows not merged
-- [ ] **L60** `chat` open, S: Add undo to 'Save this chat as a document'. From OPEN.md:990; OPEN.md:3693. Evidence: No undo path found for the save in chat-docs/chat.js; undo ledger (28 writes, 7 with undo) not closed
-- [ ] **L61** `chat` open, S: Replace plain-text 'Open Settings, Models' in ai-tools.js with a link or toast button. From OPEN.md:1392; OPEN.md:3566. Evidence: ai-tools.js:136,485 still plain text; no toast action button found
-- [ ] **L62** `chat` open, S: Fix 'Grounded in' note count disagreeing with the '3 of 3' chip and add a test. From OPEN.md:1971; OPEN.md:3731. Evidence: No fix found; not reproduced in code
-- [ ] **L63** `chat` open, S: Fix Z39 citation tags switching style within one answer (renderer sweep). From OPEN.md:4063. Evidence: No composer cause; front-end answer renderer needs a rendered sweep.
 - [ ] **L64** `chat` open, S: Answer a no-model Chat question with an attached note (A44). From OPEN.md:4571. Evidence: Deferred; no commit names A44
 - [ ] **L65** `chat` open, S: Make non-stream /chat route answer capability questions from the list. From OPEN.md:406. Evidence: Real model unverified; route not changed for this per grep of routes_chat.py
 - [ ] **L66** `chat` open, S: Make Stop cover read-only tool calls mid-turn, not only write tools (agent.py). From OPEN.md:445. Evidence: w34-L2r-1111.md:15 TRUE: agent.py:185 only _WRITE_TOOLS check stop_requested; noted design limit, not patched
 - [ ] **L68** `chat` open, S: Reword or remove the dead 'managed runner killed' message (Rule 5). From OPEN.md:1966. Evidence: App starts no runner; message wording/dead path not confirmed removed
 - [ ] **L69** `chat` open, S: Block held-back skills from the agent run_skill tool. From OPEN.md:2583. Evidence: run_skill in agent_turn.py; label only in picker/Settings
-- [ ] **L70** `chat` open, S: Keep modelStatus on a failed status poll so Agent does not grey and flicker. From OPEN.md:2733. Evidence: Verified open 2026-11-10
-- [ ] **L73** `chat` open, S: Draw the chart event in the Ask box (capture-ask.js onChart). From OPEN.md:2854. Evidence: onChart passed only at chat-turn.js:473; capture-ask.js has no chart handling
-- [ ] **L74** `chat` open, S: Wire Ask all notes (#ask-scope-clear) before the Questions view is opened. From OPEN.md:3515. Evidence: Pre-existing; no fix recorded.
-- [ ] **L75** `chat` open, S: Browser-run the Chat can't-be-reached message and quiz chips. From OPEN.md:3853. Evidence: node --check only; a sweep could verify
-- [ ] **L76** `chat` open, S: Sweep hover cross, empty-Send toast, title ellipsis and dark; touch parts need hardware. From OPEN.md:3871. Evidence: Pointer/touch parts need hardware; others could be swept
-- [ ] **L77** `chat` open, S: Verify stopped answers end with a done line in Chat and documents panel. From OPEN.md:3667. Evidence: help-chat.js:431 shows (stopped) text; Chat and documents panel end not browser-verified
 - [ ] **L78** `chat` open, S: Index chat turns so a search hit opens the turn, not just the chat. From OPEN.md:992. Evidence: search/index._conversation_row still one row per thread; no per-turn index found
-- [ ] **L79** `chat` open, S: A failed status poll nulls modelStatus so Agent greys; keep last known status. From a30c-1102.md Still open small. Evidence: status.js:2031 still sets modelStatus = null on unreachable
 - [ ] **L80** `chat` open, S: Check askChartTicks across the 0 to 1,240 range. From OPEN.md:2811. Evidence: Hand-built ticks; verified open
-- [ ] **L81** `chat` open, S: Measure Brief 56 at 1024/820, dark, with a conversation. From OPEN.md:609. Evidence: Measurable with errors.js/Playwright; no hardware needed
 - [ ] **L82** `chat` open, S: Measure and fix Atlas arm angle range and downward arc over a walk cycle. From OPEN.md:1071; OPEN.md:3767; OPEN.md:1090. Evidence: atlasarms.js measures still poses only; walk swing in atlas-motion.js atlasRigFrame unmeasured
 - [ ] **L83** `chat` open, S: Generic faces' arms have no rig or speed cap; add and measure. From OPEN.md:1084; OPEN.md:3494. Evidence: avatars.js generic faces keyframed; speed of wave/hide keyframes unmeasured
 - [ ] **L84** `chat` open, S: Throw must not scroll the page (Playwright test). From OPEN.md:4350. Evidence: No scrollY throw test found; ledger open.
 - [ ] **L85** `chat` open, S: Atlas look row landed under Settings head at 390 in one of four runs. From OPEN.md:1067. Evidence: Intermittent 390 layout flake; no fix commit found
 - [ ] **L86** `chat` open, S: Face sheet: crowns spill 6 px past card top. From OPEN.md:1092. Evidence: facesheet.js removed 2026-10-12; spill not rechecked; needs a fresh sheet run
-- [ ] **L87** `chat` open, S: Popup agent results pane with a conversation in it not measured. From OPEN.md:3414. Evidence: No sweep or test cited for the populated state; measurement gap remains.
 - [ ] **L89** `chat` open, M: Remove or decide the composer's self-describing 'Read as' lines and related frame defects (Z49, F7, Decision 54, F7.3 to F7.9). From OPEN.md:4067; OPEN.md:4310; OPEN.md:1972; fc7-1110.md Left. Evidence: Decision 54 mandates the 'Read as ...' sentence; recommendation shorten it, owner to decide.
 - [ ] **L90** `chat` open, M: Rank the defining note above term frequency in noisy notebooks (C4). From OPEN.md:4085. Evidence: Reproduced at 207 notes: filler notes lead after the Books note; no fix.
 - [ ] **L91** `chat` open, M: Stop gluing notes into one sentence with commas and ellipses (C5). From OPEN.md:4086. Evidence: Reproduced at 207 notes: filler notes quoted in full with ellipses.
@@ -109,13 +90,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L103** `chat` open, M: Answer who/status questions over list notes instead of returning a quote. From OPEN.md:3847. Evidence: composer.py select not changed
 - [ ] **L106** `chat` open, M: Fix R3-2 lead dropping label, R3-18 dentist time, E23 repeated provenance, E17 'when did I last run' seed. From composer-r4-1108.md Still open. Evidence: No tests naming R3-2/R3-18/E23 found; E17 has tests but probe-seed source unresolved
 - [ ] **L107** `chat` open, M: Trim ask-chat Guide topic (1916 of 1919 chars) so it can name Agent-with-no-model. From OPEN.md:804; OPEN.md:2237. Evidence: help_topics_more.py:1712 ask-chat; reply cap test_help_controls.py:342; no cap relief found
-- [ ] **L109** `chat` open, M: Browser-drive the Chat plan card, per-write undo and edit diff in chat-attach.js. From OPEN.md:602; OPEN.md:2773. Evidence: Browser drive not recorded; pytest only. Drivable with serve.sh, no hardware
 - [ ] **L110** `chat` open, M: Give model turns composer next chips and add no-model contradictions and list_bin tool. From OPEN.md:4519; parity-1110.md Remaining. Evidence: Needs composer result frame (chat_chips.continue_chips); a model turn has none
-- [ ] **L111** `chat` open, M: Strip trailing backslash from Chat title and user bubble (Brief 97). From OPEN.md:407; OPEN.md:2557. Evidence: No title-backslash fix or test found in src/tessellate/ai
 - [ ] **L112** `chat` open, M: Ask cannot show a relevant map as a map; add maps to ChatResponse if owner agrees. From OPEN.md:840; OPEN.md:3584. Evidence: Decision taken: retrieval notes only; owner reply pending in row
-- [ ] **L113** `chat` open, M: Fix Chat overlaps after answers (82 px at 1440, 136 px at 390). From OPEN.md:983; OPEN.md:3575. Evidence: Needs a model-made answer to reproduce; no fix commit found
 - [ ] **L114** `chat` open, M: Drive parity tools (boards/maps, rename_tag/delete_tag by sentence, save_user_preference) beyond fake transport. From OPEN.md:4379. Evidence: Only fake-transport tests (tests/test_acts.py:70, test_agent_tools_api.py:50); no driven parity run for boards/maps tools found
-- [ ] **L115** `chat` open, M: Browser-check Ask/Chat no-model 'Did you mean' chip and clarifying question at 1440/390 light and dark. From OPEN.md:830. Evidence: No sweep result for 1440/390 light and dark recorded
 - [ ] **L118** `chat` open, M: Add other tabs' starters to ai/starter_acts.py. From OPEN.md:2774. Evidence: Verified open; palette.js AGENT_TAB_STARTERS fallback
 - [ ] **L119** `chat` open, M: Draw Confirm/Not right in Ask so insights are read. From OPEN.md:3729. Evidence: grep insights in capture-ask.js finds nothing
 - [ ] **L121** `chat` open, M: Mention other matching records in answers (INBOX 744 b, c). From OPEN.md:3655. Evidence: Composer and grounding work (composer*.py, renderAnswerGrounding); no fix commit found
@@ -202,9 +179,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L218** `chat` partly, M: Make composer replies more varied and less prepared (and the '?' question). From INBOX.md:904 B07. Evidence: Replies still from composer_smalltalk.py tables with variant picks; fully AI-like variation not built; '?' is an owner question
 - [ ] **L219** `chat` partly, M: Make composer compose in Ask rather than give the note back. From INBOX.md:904 B30. Evidence: Recency fixed; note-back is OPEN O1; composer batches r4 to r9 and tests/test_composer_chips_1110.py moved many replies
 - [ ] **L222** `chat` partly, M: Read typos in context with notebook word-pair scoring (Brief 104, W2). From SESSION_BRIEFS.md:359; e19-1110.md Tier F. Evidence: ai/spelling.py:56,:456,:580,:594 CONTEXT_READINGS; notebook word-pair scoring and before/after share missing
-- [ ] **L224** `chat` partly, M: Verify Chat next-question chips (.chat-followups) in a browser with a real model; sweep stubs /chat/followups. From OPEN.md:952; OPEN.md:981; OPEN.md:2373; OPEN.md:3517. Evidence: Real chip text needs a real model; no-model path returns [] by design
 - [ ] **L225** `chat` partly, M: Design per-answer 'wrong' feedback (E59) and code editor tabs (D52). From OPEN.md:4505; v1028-4.md Remaining. Evidence: Thumbs/Not right store: what it teaches and consent are owner calls
-- [ ] **L226** `chat` partly, M: Show times for messages saved before stamps existed. From OPEN.md:995. Evidence: chat-time.js and routes_conversations.py:418 last_at fall back to updated_at; per-line old messages still unstamped by nature
 - [ ] **L227** `chat` partly, M: Label or refuse Guide answers to off-topic questions that fall back on open tab help. From OPEN.md:999. Evidence: help_chat.py:640,662 _off_topic and keyword-only matching make weather match nothing (test_help_chat.py:112); tab-fallback label not confirmed
 - [ ] **L228** `chat` partly, M: Redesign Ask at half width and make replies differ across notes. From OPEN.md:356. Evidence: 67ef381 fixed open-note reply (composer_open.py); half-width Ask redesign not built
 - [ ] **L229** `chat` partly, M: Lead 'How do I change the widgets?' with the step sentence behind 'More about'. From OPEN.md:3514. Evidence: composer.py:317 voice=='help' and chat_said.py:636 compose(voice='help') exist; lead-with-step behaviour not confirmed.
@@ -253,8 +228,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-21** `chat` open, M: Write the chat degrade tests. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:929. Evidence: Open line in the plan's prose a session could miss. Section 0 found list; tests/test_chat_degrades.py does not exist.
 - [ ] **L-chat-22** `chat` open, M: Build the missing composer eval fixtures. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1435. Evidence: Open line in the plan's prose a session could miss. Fixtures listed, not built.
 - [ ] **L-chat-24** `chat` open, S: Group the arrange commands in the phone More sheet. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1888. Evidence: Open line in the plan's prose a session could miss. Handed to the whiteboard plan, no row there.
-- [ ] **L-chat-32** `chat` open, M: Organise or sort-out asks about a named topic answer about that topic, not a week plan. From acts2 agent 2026-11-12. Evidence: composer_plan.py:53 plan-or-organise pattern: 'organise everything about the harbor', 'can you sort out my boiler stuff' get a week plan
-- [ ] **L-chat-33** `chat` open, M: Undo by sentence for rename and move survives more than the last act and a restart. From acts2 agent 2026-11-12. Evidence: consent_store.latest_undo holds only the last act in one server process
 
 ## whiteboard
 
