@@ -2,9 +2,9 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8359, frontend ids 2763, CSS sections 524, backend routes 703, backend modules 10800, test files 2688, tests 21874, plan headings 688, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8361, frontend ids 2763, CSS sections 524, backend routes 703, backend modules 10800, test files 2689, tests 21876, plan headings 688, app scripts 29, boot scripts 38, script files 300.
 
-## Frontend functions (8359)
+## Frontend functions (8361)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -5382,16 +5382,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderGraphCanvas` | frontend/js/graph-canvas.js:6517 |
 | `renderGraphPane` | frontend/js/graph-canvas.js:7500 |
 
-### frontend/js/graph-tessellate.js (11)
+### frontend/js/graph-tessellate.js (13)
 
 | Name | File:line |
 |---|---|
 | `fitHeaderLabel` | frontend/js/graph-tessellate.js:236 |
-| `gcCategoryTitleAt` | frontend/js/graph-tessellate.js:360 |
-| `gcDrawTessellation` | frontend/js/graph-tessellate.js:280 |
+| `gcCategoryTitleAt` | frontend/js/graph-tessellate.js:437 |
+| `gcDrawTessellation` | frontend/js/graph-tessellate.js:342 |
 | `gcTessInfo` | frontend/js/graph-tessellate.js:62 |
-| `gcTessNodeAt` | frontend/js/graph-tessellate.js:340 |
+| `gcTessNodeAt` | frontend/js/graph-tessellate.js:417 |
 | `layoutTessellation` | frontend/js/graph-tessellate.js:109 |
+| `tessArrivals` | frontend/js/graph-tessellate.js:288 |
+| `tessArrivePose` | frontend/js/graph-tessellate.js:320 |
 | `tessHexRadius` | frontend/js/graph-tessellate.js:191 |
 | `tessHexSpots` | frontend/js/graph-tessellate.js:206 |
 | `tessInset` | frontend/js/graph-tessellate.js:31 |
@@ -27755,7 +27757,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21874)
+## Tests (21876)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29010,6 +29012,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_graph_slim.py | 3 |
 | tests/test_graph_style_no_relayout.py | 2 |
 | tests/test_graph_tabstops_1518.py | 2 |
+| tests/test_graph_tess_arrive.py | 2 |
 | tests/test_graph_tessellation.py | 17 |
 | tests/test_graph_tether.py | 2 |
 | tests/test_graph_tick_rate_1029.py | 4 |

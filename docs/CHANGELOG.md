@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Graph: in the Tessellation view a new note's cell drifts in and settles like the logo's third cell, 1.4 s, still under reduced motion (L-graph-10).
 - Graph: gcDraw, gcWireInteraction and gcStartWorker split into helpers under 130 lines each (L14); ring tuning measured and closed (L15).
 - Graph: focus mode and the note pane walk boards only with the Maps switch on, as the whole map does (L-graph-8).
 - Graph: a 2,000-note map settles in about 5 s at 4x CPU slowdown (was 11 to 14 s); the cleanup scan reads each dot's size once.

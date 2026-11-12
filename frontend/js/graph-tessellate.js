@@ -277,6 +277,68 @@
   //: The cells, behind the notes: each filled with its note's colour, a hairline
   //: between them, the lit ones (hovered, selected) filled stronger and ringed.
   //: One Path2D per cell is built once per layout and kept on the cell.
+  //: **A new note's cell settles like the logo's third cell** (L-graph-10).
+  //: The emblem's `emblem-arrive` (css/03-dashboard-widgets.css) drifts in
+  //: from 7% up and right turned -10deg, overshoots to -0.8% and 1.5deg at
+  //: 72%, and settles, over 1.4 s; a cell does the same in its own width.
+  //: Only a note newer than every cell before (a filter that shows a
+  //: category again is not an arrival), never on the first draw, and not at
+  //: all under either reduced motion setting.
+  const TESS_ARRIVE_MS = 1400;
+  function tessArrivals(s, tess, now) {
+    if (s.tessLast !== tess) {
+      const before = s.tessLast;
+      s.tessLast = tess;
+      if (before && before.cells.length && !gcStill()) {
+        const known = new Set(before.cells.map((c) => c.id));
+        const newest = Math.max(...before.cells.map((c) => (typeof c.id === "number" ? c.id : -Infinity)));
+        for (const cell of tess.cells) {
+          if (!known.has(cell.id) && typeof cell.id === "number" && cell.id > newest) {
+            (s.tessArrive || (s.tessArrive = new Map())).set(cell.id, now);
+          }
+        }
+      }
+    }
+    if (!s.tessArrive || !s.tessArrive.size) return null;
+    for (const [id, at] of s.tessArrive) if (now - at >= TESS_ARRIVE_MS) s.tessArrive.delete(id);
+    if (!s.tessArrive.size) return null;
+    //: The next frame through the canvas's own loop, inside its self-frame
+    //: bound (INBOX 1643), like a composed frame still moving.
+    if ((s.selfFrames = (s.selfFrames || 0) + 1) <= gcRequestDraw.selfCap) {
+      s.drawAsking = true;
+      try {
+        gcRequestDraw(s);
+      } finally {
+        s.drawAsking = false;
+      }
+    }
+    return s.tessArrive;
+  }
+
+  //: The keyframes as a pose at progress `t` (0 to 1): offsets in cell
+  //: widths, the turn in radians, the opacity. Null once settled.
+  function tessArrivePose(t) {
+    if (!(t >= 0) || t >= 1) return null;
+    const out = (u) => 1 - (1 - u) ** 3;
+    const inOut = (u) => (u < 0.5 ? 4 * u ** 3 : 1 - (-2 * u + 2) ** 3 / 2);
+    const deg = Math.PI / 180;
+    let dx;
+    let dy;
+    let turn;
+    if (t < 0.72) {
+      const u = out(t / 0.72);
+      dx = 0.07 + (-0.008 - 0.07) * u;
+      dy = -0.07 + (0.008 + 0.07) * u;
+      turn = (-10 + 11.5 * u) * deg;
+    } else {
+      const u = inOut((t - 0.72) / 0.28);
+      dx = -0.008 * (1 - u);
+      dy = 0.008 * (1 - u);
+      turn = 1.5 * (1 - u) * deg;
+    }
+    return { dx, dy, turn, alpha: Math.min(1, t / 0.2) };
+  }
+
   function gcDrawTessellation(ctx, s, k) {
     const tess = s.tree && s.tree.tess;
     if (!tess) return;
@@ -314,16 +376,31 @@
       lit.add(s.hoveredId);
       for (const id of (tess.near && tess.near.get(s.hoveredId)) || []) if (!lit.has(id)) linked.add(id);
     }
+    const now = performance.now();
+    const arriving = tessArrivals(s, tess, now);
     ctx.lineWidth = 1 / k;
     ctx.strokeStyle = gcTokens.ink;
     for (const cell of tess.cells) {
       const node = s.byId.get(cell.id);
       const path = cellPath(cell);
-      ctx.globalAlpha = lit.has(cell.id) ? 0.38 : linked.has(cell.id) ? 0.27 : 0.14;
+      const at = arriving && arriving.get(cell.id);
+      const pose = at != null ? tessArrivePose((now - at) / TESS_ARRIVE_MS) : null;
+      if (pose) {
+        ctx.save();
+        const [cx, cy] = d3.polygonCentroid(cell.poly);
+        const [x0, x1] = d3.extent(cell.poly, (p) => p[0]);
+        const size = x1 - x0;
+        ctx.translate(cx + pose.dx * size, cy + pose.dy * size);
+        ctx.rotate(pose.turn);
+        ctx.translate(-cx, -cy);
+      }
+      const fade = pose ? pose.alpha : 1;
+      ctx.globalAlpha = fade * (lit.has(cell.id) ? 0.38 : linked.has(cell.id) ? 0.27 : 0.14);
       ctx.fillStyle = (node && node.colour) || s.colourOf({ isGroup: true, category: cell.category });
       ctx.fill(path);
-      ctx.globalAlpha = linked.has(cell.id) ? 0.5 : 0.16;
+      ctx.globalAlpha = fade * (linked.has(cell.id) ? 0.5 : 0.16);
       ctx.stroke(path);
+      if (pose) ctx.restore();
     }
     ctx.lineWidth = 2.2 / k;
     for (const cell of tess.cells) {
@@ -376,6 +453,7 @@
       paint: gcDrawTessellation,
       nodeAt: gcTessNodeAt,
       titleAt: gcCategoryTitleAt,
+      arrivePose: tessArrivePose,
     },
   });
 })();
