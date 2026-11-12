@@ -2,9 +2,9 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8329, frontend ids 2763, CSS sections 524, backend routes 698, backend modules 10758, test files 2670, tests 21805, plan headings 687, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8331, frontend ids 2763, CSS sections 524, backend routes 698, backend modules 10758, test files 2671, tests 21808, plan headings 687, app scripts 29, boot scripts 38, script files 300.
 
-## Frontend functions (8329)
+## Frontend functions (8331)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -4087,14 +4087,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderDocHistoryList` | frontend/js/documents-history.js:426 |
 | `toggleDocHistoryDiff` | frontend/js/documents-history.js:645 |
 
-### frontend/js/documents-ide.js (31)
+### frontend/js/documents-ide.js (33)
 
 | Name | File:line |
 |---|---|
 | `docIdeChordEnd` | frontend/js/documents-ide.js:343 |
 | `docIdeChordStart` | frontend/js/documents-ide.js:336 |
 | `docIdeChunks` | frontend/js/documents-ide.js:86 |
-| `docIdeCloseKeys` | frontend/js/documents-ide.js:658 |
+| `docIdeCloseKeys` | frontend/js/documents-ide.js:683 |
 | `docIdeCloseSplit` | frontend/js/documents-ide.js:476 |
 | `docIdeCodeView` | frontend/js/documents-ide.js:101 |
 | `docIdeCompareMenu` | frontend/js/documents-ide.js:133 |
@@ -4102,12 +4102,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docIdeExtensions` | frontend/js/documents-ide.js:26 |
 | `docIdeFoldAll` | frontend/js/documents-ide.js:105 |
 | `docIdeKeydown` | frontend/js/documents-ide.js:311 |
+| `docIdeKeysContext` | frontend/js/documents-ide.js:591 |
+| `docIdeKeysFor` | frontend/js/documents-ide.js:599 |
 | `docIdeKeysOverlay` | frontend/js/documents-ide.js:513 |
-| `docIdeOpenKeys` | frontend/js/documents-ide.js:646 |
+| `docIdeOpenKeys` | frontend/js/documents-ide.js:671 |
 | `docIdeOpenPalette` | frontend/js/documents-ide.js:384 |
 | `docIdeProblemsInline` | frontend/js/documents-ide.js:115 |
 | `docIdeReconfigure` | frontend/js/documents-ide.js:78 |
-| `docIdeRenderKeys` | frontend/js/documents-ide.js:589 |
+| `docIdeRenderKeys` | frontend/js/documents-ide.js:608 |
 | `docIdeRevertAtCaret` | frontend/js/documents-ide.js:179 |
 | `docIdeRevertSpec` | frontend/js/documents-ide.js:94 |
 | `docIdeRunApply` | frontend/js/documents-ide.js:232 |
@@ -27663,7 +27665,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21805)
+## Tests (21808)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29034,6 +29036,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_kept_edit_restore_1102.py | 3 |
 | tests/test_kept_suggestions.py | 7 |
 | tests/test_keydown_without_key.py | 1 |
+| tests/test_keys_sheet_context_l302.py | 3 |
 | tests/test_keyword_context.py | 8 |
 | tests/test_keyword_search.py | 22 |
 | tests/test_label_in_name_1029b.py | 7 |
@@ -30756,14 +30759,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1267 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4393 |
-| Needs hardware | docs/roadmap/LEDGER.md:914 |
+| Needs hardware | docs/roadmap/LEDGER.md:912 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:906 |
+| Owner calls | docs/roadmap/LEDGER.md:904 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4266 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -30944,7 +30947,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1114 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1112 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2642 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -30998,25 +31001,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:58 |
-| chat | docs/roadmap/LEDGER.md:1130 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1214 |
+| chat | docs/roadmap/LEDGER.md:1128 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1212 |
 | documents | docs/roadmap/LEDGER.md:361 |
-| documents | docs/roadmap/LEDGER.md:1154 |
-| general | docs/roadmap/LEDGER.md:866 |
+| documents | docs/roadmap/LEDGER.md:1152 |
+| general | docs/roadmap/LEDGER.md:864 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:1118 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1226 |
+| graph | docs/roadmap/LEDGER.md:1116 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1224 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4402 |
-| mindmap | docs/roadmap/LEDGER.md:440 |
-| mindmap | docs/roadmap/LEDGER.md:1166 |
-| timeline | docs/roadmap/LEDGER.md:595 |
-| timeline | docs/roadmap/LEDGER.md:1190 |
-| ui-modernisation | docs/roadmap/LEDGER.md:477 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1178 |
+| mindmap | docs/roadmap/LEDGER.md:438 |
+| mindmap | docs/roadmap/LEDGER.md:1164 |
+| timeline | docs/roadmap/LEDGER.md:593 |
+| timeline | docs/roadmap/LEDGER.md:1188 |
+| ui-modernisation | docs/roadmap/LEDGER.md:475 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1176 |
 | whiteboard | docs/roadmap/LEDGER.md:315 |
-| whiteboard | docs/roadmap/LEDGER.md:1142 |
-| world-class | docs/roadmap/LEDGER.md:630 |
-| world-class | docs/roadmap/LEDGER.md:1202 |
+| whiteboard | docs/roadmap/LEDGER.md:1140 |
+| world-class | docs/roadmap/LEDGER.md:628 |
+| world-class | docs/roadmap/LEDGER.md:1200 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2812 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2863 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2970 |

@@ -583,6 +583,25 @@
     return overlay;
   }
 
+  //: The stepping commands, which have keys only while a debug session is on.
+  const DOC_IDE_STEP_IDS = ["debug-in", "debug-out", "debug-stop"];
+
+  //: Where the sheet was opened: a code file or a prose document, and whether a
+  //: debug session is on (F11 is Step into then, Focus mode otherwise).
+  function docIdeKeysContext() {
+    const code = Boolean(docIdeCodeView());
+    //: A code view means documents-code.js has run, so `docDebugOn` exists.
+    return { code, debugging: code && docDebugOn() };
+  }
+
+  //: The key a row shows in that context: Focus mode gives F11 up while a
+  //: session is paused, and Step into shows plain F11 then.
+  function docIdeKeysFor(command, context) {
+    if (command.id === "focus" && context.debugging) return "None while debugging";
+    if (command.id === "debug-in" && context.debugging) return "F11";
+    return command.keys;
+  }
+
   //: The sheet's sections: the code editor's commands, then the ones every
   //: document has, in the table's order; a row's keys are split into caps,
   //: a two-chord sequence ("Ctrl+K Ctrl+S") into its two chords.
@@ -590,9 +609,15 @@
     const host = $("doc-keys-sections");
     if (!host) return 0;
     const words = String(query).toLowerCase().split(/\s+/).filter(Boolean);
+    //: Context (L302): the sheet shows the keys that work where it was opened.
+    //: From a prose document there is no code section at all; in a code file the
+    //: stepping keys are their own section, and F11 says which command it is now.
+    const context = docIdeKeysContext();
+    const stepping = (c) => DOC_IDE_STEP_IDS.includes(c.id);
     const sections = [
-      { title: "Code files", rows: DOC_COMMANDS.filter((c) => c.code) },
-      { title: "Every document", rows: DOC_COMMANDS.filter((c) => !c.code) },
+      { title: "Code files", rows: context.code ? DOC_COMMANDS.filter((c) => c.code && !stepping(c)) : [] },
+      { title: context.debugging ? "Debugging now (F11 steps in)" : "While debugging", rows: context.code ? DOC_COMMANDS.filter(stepping) : [] },
+      { title: "Every document", rows: DOC_COMMANDS.filter((c) => !c.code && !(context.code && c.prose)) },
     ];
     host.replaceChildren();
     let shown = 0;
@@ -626,7 +651,7 @@
           keys.classList.add("muted");
           keys.textContent = "No key";
         } else {
-          for (const chord of command.keys.split(" / ")) {
+          for (const chord of docIdeKeysFor(command, context).split(" / ")) {
             const kbd = document.createElement("kbd");
             kbd.textContent = chord;
             keys.append(kbd);

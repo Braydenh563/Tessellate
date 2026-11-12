@@ -1877,7 +1877,7 @@ HELP_TOPICS.extend(
                 "in what the run left) and Debug. Ctrl+J shows it, Ctrl+Shift+M "
                 "Problems, Ctrl+Shift+Y the Console, Ctrl+Shift+D Debug; "
                 "Ctrl+Shift+P or F1 runs a command by name (words that match none offer Search notes for), Ctrl+\\ splits the "
-                "editor, Ctrl+K Ctrl+S lists every key, and Outline follows the "
+                "editor, Ctrl+K Ctrl+S lists the keys here, and Outline follows the "
                 "caret. Minimap (Editor and layout, "
                 "off at first) maps the whole file; Compare with a saved version "
                 "(palette) shows the changes inline, with Reject to put a hunk back."

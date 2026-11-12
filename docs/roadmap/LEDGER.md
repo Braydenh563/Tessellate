@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 59 | 17 | 0 | 18 | 146 |
+| documents | 70 | 57 | 17 | 0 | 18 | 144 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 700 | 157 | 3 | 195 | 1410 |
+| all | 553 | 698 | 157 | 3 | 195 | 1408 |
 
 ## graph
 
@@ -368,14 +368,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L292** `documents` open, S: Lift the 78ch cap on the code editor in 09-editor.css (724px panel at 1440). From OPEN.md:1455; OPEN.md:2692. Evidence: 09-editor.css:55,134 max-width: 78ch still set
 - [ ] **L293** `documents` open, S: Preserve run state when a never-ending console loop is killed after 10 s. From OPEN.md:1468. Evidence: Design limit; worker terminate path unchanged, no preservation found
 - [ ] **L294** `documents` open, S: Give the split second half completions, lint, snippets and run panel. From OPEN.md:1469. Evidence: No change found in documents split code; limitation recorded
-- [ ] **L295** `documents` open, S: Wait for the chord so Ctrl+K Ctrl+S opens only the keybindings sheet, not the palette first. From OPEN.md:1470; OPEN.md:2841. Evidence: No chord-wait handling found in documents-code.js by grep
 - [ ] **L296** `documents` open, S: Merge DOC_EMOJI_SOURCE into ICON_EMOJI_SOURCE. From OPEN.md:1487; OPEN.md:3489. Evidence: Both exist: documents-prose.js:1614 and icon-picker.js:27 (comment only, no merge)
 - [ ] **L297** `documents` open, S: Suppress prose grammar lint tooltip in code documents while the pointer menu is open. From OPEN.md:1492; OPEN.md:3552. Evidence: Only documents-cm-theme.js:200 styles it; no suppression while pointer menu open found
 - [ ] **L298** `documents` open, S: Decide and vendor an indent-guides extension for the CodeMirror bundle. From OPEN.md:1508. Evidence: Active line built; no indent-markers extension found in vendor; needs vendoring decision
 - [ ] **L299** `documents` open, S: Fix console line border clash and doc assistant buttons/field/send height. From OPEN.md:1589. Evidence: No fix found in CHANGELOG/tests (backups part marked fixed in row)
 - [ ] **L300** `documents` open, S: Use js-beautify on a selection instead of conservative re-indent. From OPEN.md:1968. Evidence: Selection keeps conservative re-indent; no change
 - [ ] **L301** `documents` open, S: Number new documents 'Untitled document N'. From OPEN.md:2413. Evidence: grep finds only fixed 'Untitled document' fallbacks (dashboard.js:3994, chat-attach.js:578); no numbering
-- [ ] **L302** `documents` open, S: Separate F11 Step into from Focus mode and make keybindings sheet context aware. From OPEN.md:2830. Evidence: documents.js shared F11; Brief 71 sheet not updated
 - [ ] **L303** `documents` open, S: Measure Writing Room stretch on graph note boxes. From OPEN.md:3143. Evidence: Graph note boxes not opened/measured
 - [ ] **L304** `documents` open, S: Make diagram Source view text fold. From diagklm-1108.md Left. Evidence: diagram-lazy.css fold block / diagram-embed.js srcwrap unchanged per source; no later commit found
 - [ ] **L305** `documents` open, S: Probe Documents in dark run; map add undo flaky between runs. From OPEN.md:3696. Evidence: Re-run both before quoting; no re-run record found

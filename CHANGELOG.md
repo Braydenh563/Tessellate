@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Editor keys (L295, L302): Ctrl+K Ctrl+S opens only the keybindings sheet (the wait was built; now tested), and the sheet follows where it was opened: no code keys from a prose document, the stepping keys in their own section, F11 shown as Focus mode or Step into by whether a debug session is paused.
 - Harper (VC6): the notebook's names and your dictionary are Harper's own words (10 invented names, 10 spelling findings to 0), and a dismissed grammar finding stays dismissed inside Harper until restored.
 - Code editor (VC13, L316): Toggle fold at the caret (Ctrl+Alt+.), the lint keymap and a problems list inside the editor join fold all and the Problems tab in the palette; the Writing suggestions panel is the prose Problems list for Harper findings.
 - Fix: Ask as of a day answers "what did I write" with the notebook as it stood, not the newest note; `TurnFrame` lives in `api/schemas.py`, so conversations no longer import the chat stack (import cycle); tests follow the Settings load code into settings-prefs.js.
