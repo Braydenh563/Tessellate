@@ -34,6 +34,8 @@ says which of the three it is.
 
 from __future__ import annotations
 
+import functools
+
 import re
 import sys
 from pathlib import Path
@@ -1028,13 +1030,22 @@ class _ShadowIndex:
         return any(start <= offset <= end for start, end in self.text) or any(start <= offset < end and name in names for start, end, names in self.scopes)
 
 
+@functools.lru_cache(maxsize=None)
+def _shadow_index(text: str) -> "_ShadowIndex":
+    """One scope index per distinct file text: the lint runs six times in this
+    module (the probes copy the frontend), and tokenising every file each time
+    was most of the gate's staged lints (L545: 85 of 211 s)."""
+    return _ShadowIndex(text)
+
+
 def _globals_of(path: Path) -> set[str]:
     """What loading a file puts in the page's global scope: its top-level functions and consts, and its window exports.
     A name bound inside a function or block is not carried to the files loaded with it."""
     return set().union(*_top_level_bindings(path))
 
 
-def _top_level_data(source: str) -> set[str]:
+@functools.lru_cache(maxsize=None)
+def _top_level_data(source: str) -> frozenset[str]:
     """Names a file's top level binds with const/let/class: `const a = 1, b = 2` chains and destructuring included."""
     tokens = _js_tokens(source)
     names: set[str] = set()
@@ -1048,7 +1059,7 @@ def _top_level_data(source: str) -> set[str]:
             names |= _binding_names(tokens, i + 1)
         elif depth == 0 and kind == "id" and text == "class" and i + 1 < len(tokens) and tokens[i + 1][0] == "id":
             names.add(tokens[i + 1][1])
-    return names
+    return frozenset(names)
 
 
 def _top_level_bindings(path: Path) -> tuple[set[str], set[str]]:
@@ -1184,7 +1195,7 @@ def lazy_to_lazy_gaps(used: set[str] | None = None) -> list[str]:
         # A file's own globals; a local of the same name is the shadow index's business, not "any binding anywhere".
         own = _globals_of(FRONTEND / "js" / file_name)
         lines = text.split("\n")
-        shadow = _ShadowIndex(text)
+        shadow = _shadow_index(text)
         line_at = 0
         for number, line in enumerate(lines, 1):
             line_at += len(lines[number - 2]) + 1 if number > 1 else 0

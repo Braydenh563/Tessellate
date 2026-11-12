@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 119 | 42 | 0 | 18 | 291 |
+| world-class | 130 | 118 | 42 | 0 | 18 | 290 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 616 | 139 | 3 | 136 | 1308 |
+| all | 553 | 615 | 139 | 3 | 136 | 1307 |
 
 ## graph
 
@@ -618,7 +618,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L542** `world-class` open, S: Assign INBOX 266 usability/lightweight items to an owner. From OPEN.md:1932. Evidence: Unowned; emblem idle cost built but rest unassigned
 - [ ] **L543** `world-class` open, S: undo.js trust sweep does not walk the OCR workspace. From OPEN.md:1634. Evidence: scratchpad/ui-sweeps/undo.js has no OCR step; ocr79.js measures it instead (still the case)
 - [ ] **L544** `world-class` open, S: Give scripts left in counted bundles (noteFirstImage etc.) a shared home. From OPEN.md:1643. Evidence: noteFirstImage still only in library.js:13226 and used at :13238; graph.js:2913 repeats the rule in a comment, no shared home
-- [ ] **L545** `world-class` open, S: --staged gate took 6 min; measure slowest step. From OPEN.md:2066. Evidence: gate.sh header still says ~40 s base; no timing/measure step found
 - [ ] **L546** `world-class` open, S: deepen72a overlap measure change; run undo.js on agent surface. From OPEN.md:2776. Evidence: Verified open 2026-11-10
 - [ ] **L547** `world-class` open, S: phonetabs.js 3 findings on near-empty notebook. From OPEN.md:3336. Evidence: Found, not fixed; not compared against base
 - [ ] **L548** `world-class` open, S: Sweeps clicking only the Library tab time out. From OPEN.md:3472. Evidence: Sweep-script hygiene; only bm1005 scripts click Boards and maps first.
