@@ -63,7 +63,7 @@ def load(session: Session) -> tuple[list[FactView], dict[int, NoteView]]:
     pairs = session.execute(
         select(DerivedFact, Entry)
         .join(Entry, Entry.id == DerivedFact.entry_id)
-        .where(DerivedFact.deleted_at.is_(None), DerivedFact.kind.in_(facts.KINDS), Entry.is_private.is_(False))
+        .where(DerivedFact.deleted_at.is_(None), DerivedFact.kind.in_(facts.JUDGED_KINDS), Entry.is_private.is_(False))
     ).all()
     rows, notes = [], {}
     for fact, entry in pairs:
@@ -95,7 +95,7 @@ def apply(session: Session, findings: list[Finding], stamp: str, at: datetime | 
     earlier check wrote that no longer holds. Returns the ids by action."""
     by_id = {item.fact_id: item for item in findings}
     done: dict[str, list[int]] = {"retired": [], "flagged": []}
-    for row in session.scalars(select(DerivedFact).where(DerivedFact.kind.in_(facts.KINDS), DerivedFact.deleted_at.is_(None))):
+    for row in session.scalars(select(DerivedFact).where(DerivedFact.kind.in_(facts.JUDGED_KINDS), DerivedFact.deleted_at.is_(None))):
         found = by_id.get(row.id)
         if _mark(row).get("restored") or (found is None and _mark(row).get("action") != "flag"):
             continue

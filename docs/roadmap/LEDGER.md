@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 134 | 45 | 0 | 17 | 309 |
+| world-class | 130 | 127 | 42 | 0 | 17 | 299 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 660 | 144 | 3 | 140 | 1357 |
+| all | 553 | 653 | 141 | 3 | 140 | 1347 |
 
 ## graph
 
@@ -632,13 +632,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 - [ ] **L498** `world-class` open, S: Fix quick add fixture 56/60 and re-run quickadd.js for 60/60. From OPEN.md:3718. Evidence: tests/fixtures/composer/quickadd_1010.json; re-run needs a live server sweep, no recorded 60/60
 - [ ] **L499** `world-class` open, S: Refresh README palette.png which still shows notes, a document, a board. From OPEN.md:1248. Evidence: palette.png last committed 97ba7d73b 2026-10-12; no later retake in git log.
-- [ ] **L500** `world-class` open, S: Stop a titled note's every sentence scoring on title in the brief (TITLE_WEIGHT). From OPEN.md:1947. Evidence: Brief keeps up to four dated sentences; TITLE_WEIGHT fix not found in brief code
-- [ ] **L501** `world-class` open, S: Add a count kind to recognise and make factgraph _QUANTITY use it. From OPEN.md:3713. Evidence: factgraph.py:166 _QUANTITY still own regex; recognise.py has count_of but factgraph delegates only money (:576)
 - [ ] **L504** `world-class` open, S: Speed up the night shift pairing phase (120 s) and stop the bar resetting. From OPEN.md:1945. Evidence: No speed-up commit found
 - [ ] **L505** `world-class` open, S: Audit jobruns detail strings that carry {exc}. From OPEN.md:1950; OPEN.md:3542. Evidence: Audit not recorded
 - [ ] **L510** `world-class` open, S: Trace how 'conversation' is derived as a topic for a gym note. From OPEN.md:4332. Evidence: Ledger open; needs the owner's note to trace topic derivation.
 - [ ] **L511** `world-class` open, S: Drive the dictionary spelling offer in a live empty search result. From OPEN.md:604; OPEN.md:2789. Evidence: Server correction answered every typo tried; finderSpellingOffer path undriven
-- [ ] **L513** `world-class` open, S: Add the person's own titles as a source for alternate category names in tidy.py. From OPEN.md:1703; OPEN.md:3615. Evidence: tidy.py:543-566 _rows_category_names uses profiles and taxonomy.name_topics only
 - [ ] **L515** `world-class` open, S: Extend Live Text to the scroll layout of PDFs. From OPEN.md:1471. Evidence: library.js:6746 ocrBuildScrollPages still builds scroll pages; layer per row says single-page only, no later change found
 - [ ] **L516** `world-class` open, S: Drive the attached-image thumbnail preview path. From OPEN.md:1620. Evidence: note-pick-preview.js:43 attachmentObjectUrl; no sweep drive found
 - [ ] **L527** `world-class` open, S: Restyle Connections unlinked-mention Link button and tool-confirm pair away from bordered ghost. From OPEN.md:1677; OPEN.md:2670. Evidence: connections.js:226 smallButton('ph:link Link', ...) defaults ghost small (app.js:1497-1499)
@@ -671,16 +668,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L561** `world-class` open, M: Condense HANDOVER (over 300 lines) and create NEXT_FABLE_WINDOW.md (Brief 14). From OPEN.md:3594. Evidence: HANDOVER.md is 599 lines (lint cap 600); docs/roadmap/NEXT_FABLE* does not exist
 - [ ] **L562** `world-class` open, M: Make chat search hits open the matching turn, not only the chat. From OPEN.md:3737. Evidence: search/index.py:935 _conversation_row builds one row per conversation
 - [ ] **L563** `world-class` open, M: Carry locale on Chat/Ask routes and finish currency table and day-first dates (decision 43). From OPEN.md:3877. Evidence: Ask 3/4 still day first; decision 43 editor pending
-- [ ] **L564** `world-class` open, M: Fold picture captions into their note for the composer and keyword search. From OPEN.md:3642. Evidence: search/index.py:851 caption+OCR+vision one body per picture row; not folded into its note's row
 - [ ] **L565** `world-class` open, M: Audit harness for destructive tool confirm, regenerate, model unload, embedding switch, support bundle and autonomous trigger. From audit-1031-harness.md. Evidence: Fake transport cannot call delete_note; no later harness audit
 - [ ] **L568** `world-class` open, M: Audit other [^\]\n] scanners for ReDoS and add a JS link-stripping oracle test. From OPEN.md:1249; OPEN.md:3543. Evidence: Python oracles exist (tests/test_doc_graph.py:136, test_file_editing.py:252); JS link stripping has no oracle.
 - [ ] **L571** `world-class` open, M: Preserve the note type id on Undo after POST /note-types then delete. From OPEN.md:1771. Evidence: routes_properties.py:145 POST /note-types; no id-preserving restore found; not reproduced here
 - [ ] **L572** `world-class` open, M: Add redo for /events/undo AI-change undo so it folds into pushUndo. From OPEN.md:1775. Evidence: note-history.js:340 undoSkillRun and dashboard activityUndoControl still use /events/undo; no server redo found
 - [ ] **L573** `world-class` open, M: Build wiki-link hover preview, tag counts on chips, empty-state recipe, icons and card styles. From OPEN.md:4240; bs-1111.md. Evidence: New feature (M); citation-peek.js and attachment-peek.js are the recipe; no wiki-link peek file.
 - [ ] **L574** `world-class` open, M: Measure note editor offers on the Edit form in a sweep. From OPEN.md:868; OPEN.md:3744. Evidence: note-edit-panels offers wired; no Edit-form measurement recorded
-- [ ] **L575** `world-class` open, M: Write imported people and places as tags and recognise more contact shapes. From OPEN.md:870; OPEN.md:3751. Evidence: Row states design; no change commit found
 - [ ] **L576** `world-class` open, M: Make Library boxes suggest the person's own titles, not only recents. From OPEN.md:2497. Evidence: Prior verify: not built
-- [ ] **L577** `world-class` open, M: Offer sums without requiring '=' and support a Total: column in ai/offers.py. From OPEN.md:3745. Evidence: ai/offers.py:38 _SUM requires =
 - [ ] **L578** `world-class` open, M: Recorder: keep timed lines in saved transcripts (transcribe-meeting returns text only). From OPEN.md:1619; OPEN.md:2623. Evidence: No transcribe-meeting route in src now (grep none); core/recordings.py transcription_of:111 holds timed data
 - [ ] **L579** `world-class` open, M: Let notes link or embed a recording and make search find recordings. From OPEN.md:1621; OPEN.md:2739. Evidence: No recording link or search hits in core/search.py or routes_search; only entry_id on Recording
 - [ ] **L580** `world-class` open, M: Replace deprecated ScriptProcessorNode in live captions (AudioWorklet blocked by CSP). From OPEN.md:1630; OPEN.md:2767. Evidence: captions.js:239 still createScriptProcessor, kept deliberately (comment at :237); CSP worker-src is 'self' only
@@ -747,13 +741,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L646** `world-class` partly, S: Re-drive undo counts for documents, OCR, meetings. From OPEN.md:3455. Evidence: undo-kit.js, undo-store.js, standalone-undo.js now exist (Brief 74 landed); counts not re-driven.
 - [ ] **L651** `world-class` partly, S: Drive undo helpers in a browser (only node --check and scanner so far). From OPEN.md:512. Evidence: Scanner + node checks exist; no cited Playwright drive of every undo step; Playwright is available so can be driven
 - [ ] **L656** `world-class` partly, M: Left: per-act note and meeting rows and the search chip in the palette. `/read/acts` rows are drawn (palette.js:177-187); no note, meeting or search-chip row found. From OPEN.md:3721.
-- [ ] **L657** `world-class` partly, M: Left: duplicates, entities and dates as fact kinds. `KINDS` is claim, question, tension, answered (ai/facts.py:109); tensions built. From OPEN.md:1226.
 - [ ] **L659** `world-class` partly, M: Add an egress lint that makes each outbound call site name its purpose and confirm remaining trust-contract rules. From OPEN.md:2023; OPEN.md:2513. Evidence: 72a/72b/73/74 landed (HISTORY 'Moved from the plans' Brief 72b); leftover rules unconfirmed, egress lint absent
 - [ ] **L660** `world-class` partly, M: Fix remaining Brief 101b/101c rows: installer progress and default-model warm. From SESSION_BRIEFS.md:335. Evidence: Files-missing row embed-choices.js:74 built; backend W5 rows re-verified built (ddd087984); installer progress and janitor warm not found
 - [ ] **L662** `world-class` partly, M: Left: a meeting card preview of when, who and open actions. Meeting cards get actions only (entry-card.js:999, note-cards.js:324). From OPEN.md:3563.
-- [ ] **L663** `world-class` partly, M: Left: wire the 30 context rules and 50 fixtures into decide. `taxonomy.context_rules()` (taxonomy.py:441) has no caller outside tests/test_taxonomy_pack.py:228. From OPEN.md:3618.
 - [ ] **L664** `world-class` partly, M: Package bundles: restore Word writer tests in CI (install python-docx, replace missing pictures test). From OPEN.md:1770. Evidence: python-docx 1.2.0 importable here; tests/test_docexport_bundle.py and test_docx_markdown_paths.py exist, but test_docexport_pictures.py cited is gone and CI does not install docx
-- [ ] **L665** `world-class` partly, M: Meeting decision/action rules beyond English cue words. From OPEN.md:1917; OPEN.md:2624. Evidence: Rename done: routes_recordings.py:538, meetings.js:2124; English-only rules remain
 - [ ] **L666** `world-class` partly, M: Verify captions stop attaches audio via the recording object. From OPEN.md:2766. Evidence: routes_captions._save attaches audio only after Brief 80 object; recordings exist but wiring unverified
 - [ ] **L667** `world-class` partly, M: Verify optional-package notices install for real (SearXNG, PDF viewer, RapidOCR). From INBOX.md:1748 Q27; pkg-1111.md Left. Evidence: 59cf5b00f, 9f1cc63d3 notices built; real install via notice unverified (pkg-1111, fake transport)
 - [ ] **L668** `world-class` partly, M: Left: rowActions in the suggestions inbox and the tag manager (categories-panel.js); built in meetings.js:1870, settings-data.js:352,:838. Kinds all is built (timeline.js:336). From OPEN.md:957; OPEN.md:2522.
@@ -804,7 +795,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-18** `world-class` open, M: Write the threat model. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3772. Evidence: Open line in the plan's prose a session could miss. No threat-model doc exists; open in 25 and 26 (3877).
 - [ ] **L-world-class-20** `world-class` open, S: Measure memory and _to_out with a large notebook. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3931. Evidence: Open line in the plan's prose a session could miss. Not measured (also _to_out at 5,000 notes at 3950).
 - [ ] **L-world-class-22** `world-class` open, L: Build the 27.1 remainder: templates, pin and archive, space tools. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3975. Evidence: Open line in the plan's prose a session could miss. Section 27.1 items besides bulk edit and exports have no rows.
-- [ ] **L-world-class-23** `world-class` open, M: Filing leftovers from the 1010 pass. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:4173. Evidence: Open line in the plan's prose a session could miss. Pointer leftovers lost when pointer files were deleted.
 - [ ] **L-world-class-25** `world-class` partly, M: B4 knowledge kernel: per-claim citations, 'what changed about X' on an entity page, and the 'computed by <model> at <ts>' stamp on derived rows. From WORLD_CLASS_PLAN.md B4. Evidence: routes_entities.py entity_page has open_items, timeline, links (2b7d96fe); no per-claim citation rows, no what-changed view, no computed-by stamp
 - [ ] **L-world-class-26** `world-class` partly, M: I5 time travel: the model's judgement over then and now claim pairs, re-embedding past texts for as-of retrieval, and an as-of answer's cards grouped by month (H8). From WORLD_CLASS_PLAN.md I5. Evidence: ai/timetravel.py:179 then_and_now pairs claims by shared words; claims_as_of route (72ce2bca) resolves revisions at a day
 - [ ] **L-world-class-27** `world-class` open, L: I1 night shift pass 2: dates, duplicates and entities as derived_facts rows, with accept of a date (a reminder) and of a duplicate (the merge). From WORLD_CLASS_PLAN.md I1 and H1. Evidence: ai/facts.py:109 KINDS = claim, question, tension, answered; no date, duplicate or entity kinds

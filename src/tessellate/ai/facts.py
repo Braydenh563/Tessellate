@@ -62,7 +62,7 @@ from typing import Any
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import question_cues
+from tessellate.ai import facts_kinds, question_cues
 from tessellate.core import jobruns, model_gate, undo_bin
 from tessellate.core.database import DerivedFact, Entry, EntryLink, utcnow
 from tessellate.core.logbuffer import safe_value
@@ -106,7 +106,10 @@ def _pref_key(name: str) -> str:
 #: (a later claim that answers an open question, pass 5) are pairs, stored on
 #: the later side with the other in `payload`. The lifecycle below does not
 #: care which kind a row is.
-KINDS = ("claim", "question", "tension", "answered")
+#: Dates, entities and duplicates are read exactly by rule (`facts_kinds`, L657): no model narrows
+#: them and the learned-store check does not judge them (`JUDGED_KINDS`).
+JUDGED_KINDS = ("claim", "question", "tension", "answered")
+KINDS = JUDGED_KINDS + ("date", "entity", "duplicate")
 PAIR_KINDS = ("tension", "answered")
 
 #: A sentence, and everything that is not one. Deliberately not
@@ -365,6 +368,12 @@ def _proposed(content: str, questions_on: bool, templates: set[str]) -> list[Can
     ]
 
 
+def _read_note(session: Session, entry: Entry, content: str, questions_on: bool, templates: set[str]) -> list[Candidate]:
+    """Everything one note proposes: its claims and questions and the facts a rule reads exactly (`facts_kinds`)."""
+    exact = [Candidate(*found) for found in facts_kinds.exact(session, entry, content)]
+    return _in_context(entry, _proposed(content, questions_on, templates) + exact)
+
+
 def _in_context(entry: Entry, proposed: list[Candidate]) -> list[Candidate]:
     """Decision 67: a sentence is learned only in its context. What
     `context_reason` says is not a claim (a note tagged joke, quote, fiction,
@@ -554,6 +563,20 @@ def _entries_to_read(session: Session, force: bool) -> list[Entry]:
     return fresh
 
 
+def _narrowed(session, content, guessed, provider, model, spent_box, budget):  # noqa: ANN001, ANN202
+    """The claims and questions the model keeps (all of them when it cannot be asked), and who decided."""
+    cost = int(len(content) * TOKENS_PER_CHAR)
+    if not (guessed and provider is not None and model and spent_box[0] + cost <= budget):
+        return guessed, "local"
+    spent_box[0] += cost
+    _release(session)
+    model_gate.yield_to_interactive()
+    kept = _narrow(provider, model, content, guessed)
+    if kept is None:
+        return guessed, "local"
+    return [item for i, item in enumerate(guessed) if i in kept], model
+
+
 def _derive_note(  # noqa: ANN001
     session: Session,
     night,
@@ -590,16 +613,10 @@ def _derive_note(  # noqa: ANN001
     if not proposed:
         return 0
 
-    decided_by = "local"
-    cost = int(len(content) * TOKENS_PER_CHAR)
-    if provider is not None and model and spent_box[0] + cost <= budget:
-        spent_box[0] += cost
-        _release(session)
-        model_gate.yield_to_interactive()
-        kept = _narrow(provider, model, content, proposed)
-        if kept is not None:
-            proposed = [item for i, item in enumerate(proposed) if i in kept]
-            decided_by = model
+    exact = [item for item in proposed if item.kind in facts_kinds.EXACT_KINDS]
+    guessed = [item for item in proposed if item.kind not in facts_kinds.EXACT_KINDS]
+    guessed, decided_by = _narrowed(session, content, guessed, provider, model, spent_box, budget)
+    proposed = guessed + exact
 
     added = 0
     for item in proposed:
@@ -714,7 +731,7 @@ def run(
             progress.step(scanned, reachable)
             if scanned % 25 == 0:
                 progress.say(f"Read {scanned} of {reachable} notes, {derived} fact{'' if derived == 1 else 's'} found so far.")
-            proposed = _in_context(entry, _proposed(content, questions_on, templates))
+            proposed = _read_note(session, entry, content, questions_on, templates)
             if not proposed:
                 continue
 

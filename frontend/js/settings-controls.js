@@ -4464,6 +4464,9 @@
   const LEARNED_KIND_COPY = {
     claim: "Claim",
     question: "Open question",
+    date: "Date",
+    entity: "Name",
+    duplicate: "Repeated note",
     //: The person's own word (decision 60, B31, B32).
     confirmed: "Confirmed by you",
     pinned: "Pinned as true",

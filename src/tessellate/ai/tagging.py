@@ -123,15 +123,41 @@ def _said(own: str, tag: str) -> list[str]:
     return list(dict.fromkeys(said))[:2]
 
 
-def _purpose_grounds(tag: str, content: str) -> list[str]:
+#: A feeling said in the first person ("felt anxious all morning"): the lexicon
+#: a journal line is made of, which the pack's purpose phrases ("dear diary")
+#: miss. Small and literal; a word not here is simply not grounded (decision 5).
+_FEELING = re.compile(
+    r"\b(?:i\s+)?(?:felt|feel|feeling|am feeling|was feeling)\s+(?:so\s+|very\s+|really\s+|a bit\s+|quite\s+)?"
+    r"(anxious|sad|happy|tired|calm|stressed|angry|lonely|grateful|excited|nervous|low|down|overwhelmed|proud|content|restless|"
+    r"hopeful|anxiety|better|worse|numb|sick|relieved|guilty|bored|upset)\b",
+    re.IGNORECASE,
+)
+#: Company said by name ("Coffee with Priya and Jordan"): what a #friends or
+#: #social tag is backed by when the notebook has no such words in the note.
+_COMPANY = re.compile(r"\bwith\s+([A-Z][a-z]{2,})(?:\s+and\s+([A-Z][a-z]{2,}))?")
+_COMPANY_TAGS = {"friends", "friend", "social", "people"}
+
+
+def _lexicon_grounds(tag: str, content: str) -> list[str]:
+    """What a mood or company lexicon says for a journal or social tag."""
+    words = set(tag_words(tag))
+    if words == {"journal"} and (m := _FEELING.search(content)):
+        return [m.group(0).strip()]
+    if words and words <= _COMPANY_TAGS and (m := _COMPANY.search(content)):
+        return [m.group(0)]
+    return []
+
+
+def _purpose_grounds(tag: str, content: str, raw: str | None = None) -> list[str]:
     """A tag named for what a note is for ("journal") is backed by the pack's
-    phrases for that purpose ("dear diary", "grateful for")."""
+    phrases for that purpose ("dear diary", "grateful for"), else by the
+    mood and company lexicon above."""
     from tessellate.ai import taxonomy
 
     named = {name for name in taxonomy.functional_categories() if stems(tokens(name)) == tag_stems(tag)}
-    if not named:
-        return []
-    return list(dict.fromkeys(phrase for topic in named for phrase in taxonomy.purpose_hits(content).get(topic, ())))
+    found = list(dict.fromkeys(phrase for topic in named for phrase in taxonomy.purpose_hits(content).get(topic, ())))
+    #: Names are read from the text as written: cleaning folds the capitals.
+    return found or _lexicon_grounds(tag, raw if raw is not None else content)
 
 
 def grounds(
@@ -153,9 +179,10 @@ def grounds(
         return _said(own, tag) or words
     named = taxonomy.name_topics(tag)
     if not named:
-        return _purpose_grounds(tag, own)
+        return _purpose_grounds(tag, own, content)
     hits = taxonomy.topic_hits(own) if hits is None else hits
-    return list(dict.fromkeys(phrase for topic in named for phrase in hits.get(topic, ())))
+    found = list(dict.fromkeys(phrase for topic in named for phrase in hits.get(topic, ())))
+    return found or _lexicon_grounds(tag, content)
 
 
 def reason(tag: str, content: str, hits: dict[str, list[str]] | None = None) -> str:

@@ -18,7 +18,7 @@
  "src/tessellate/ai/help_chat.py::_matching_topics": 26,
  "src/tessellate/ai/inbox.py::type_candidates": 21,
  "src/tessellate/ai/janitor.py::_knn_match": 20,
- "src/tessellate/ai/lexical_filing.py::_tally": 25,
+ "src/tessellate/ai/lexical_filing.py::_tally": 23,
  "src/tessellate/ai/ollama_client.py::OllamaClient.chat_tools": 22,
  "src/tessellate/ai/openai_client.py::OpenAICompatClient._to_openai_messages": 24,
  "src/tessellate/ai/recognise.py::_contact_cands": 21,

@@ -346,7 +346,7 @@ def _tally(
     #: Naming the category is a vote of its own ("gym: new shoes").
     for name in notes_in:
         name_words = _name_words(name)
-        if notes_in[name] >= MIN_EXAMPLES and name_words and all(word in wanted for word in name_words):
+        if notes_in[name] >= MIN_EXAMPLES and _name_said(name_words, wanted):
             votes[name] = votes.get(name, 0.0) + NAME_VOTE
             supporters[name] = supporters.get(name, 0) + MIN_SUPPORT
 
@@ -524,6 +524,19 @@ def _name_words(name: str) -> tuple[str, ...]:
     return tuple(tokens(name))
 
 
+def _name_said(name_words: tuple[str, ...], wanted) -> bool:
+    """Every word of a category's name is in the note, as written or folded the
+    way tags fold ("running" for Run, "stats" for Statistics, "uni" for University)."""
+    if not name_words:
+        return False
+    if all(word in wanted for word in name_words):
+        return True
+    from tessellate.ai import tagging
+
+    folded = {tagging.stem(word) for word in wanted}
+    return all(tagging.stem(word) in folded for word in name_words)
+
+
 def holds_sensitive(content: str, category: str | None = None) -> str | None:
     """The sensitive topic that keeps `content` from filing itself, or None.
 
@@ -687,7 +700,7 @@ def _candidate_for(name: str, count: int, read: _NoteRead) -> Candidate | None:
     contributions = {word: read.query_vec[word] * shared[word] * read.idf[word] for word in shared if word in read.query_vec}
     centroid = sum(contributions.values()) / (read.query_norm * (read.lengths.get(name) or 1.0)) if contributions else 0.0
     name_words = _name_words(name)
-    named = bool(name_words) and all(word in read.wanted for word in name_words)
+    named = _name_said(name_words, read.wanted)
     #: The name's own vote (`NAME_VOTE`) is already in the neighbours'.
     score = W_NEIGHBOURS * read.knn_votes.get(name, 0.0) + W_CENTROID * centroid + W_TOPICS * topic_score
     if taught:
@@ -760,7 +773,7 @@ def decide(session: Session, content: str, exclude_entry_id: int | None = None) 
     #: footer says nothing about where it belongs (INBOX 781).
     content = clean(content)
     wanted = tokens(content)
-    hits = taxonomy.topic_hits(content)
+    hits = taxonomy.in_context(content, taxonomy.topic_hits(content))
     note_topics = taxonomy.topic_weights(content, hits)
     sensitive_set = taxonomy.sensitive_topics()
     strong = taxonomy.strong_topics(content, hits)

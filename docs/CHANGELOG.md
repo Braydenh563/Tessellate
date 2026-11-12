@@ -17,6 +17,16 @@ below). Versioning is `0.x` while the app stabilises.
 - Complexity: no function in src is over 15 any more; the CI baseline is 0 (L812: janitor, the Ollama tool stream, the asset stripper and the PE reader split into named steps).
 - Complexity: the board history replay, the folder import line, the map batch move and the shared-signal pairing are split into named steps (L812, C901 findings 8 to 4).
 - Map from notes: build_tree is split into a small builder class, so no part of it is over the complexity bar (L812, 9 findings to 8).
+- Filing: a category's name is found in a note by its folded forms ("running" for Run, "stat" for Statistics); a first-person feeling ("felt anxious") grounds a #journal tag and "with Priya and Jordan" grounds #friends or #social (L-world-class-23).
+- Search: a picture's caption, OCR and vision text, and a document's page readings, are part of its note's search row, so the Ask composer and keyword search find a note by what its files say (L564).
+- Import: the people and places an imported note names become its tags (three of each at most); the recogniser also reads a name after Dr, Mr, Mrs, Ms, Prof, a phone with a (0) trunk digit and a tel: link (L575).
+- Note editor: a sum alone on its line with no "=" is offered its answer, and a "Total:" line with no amount is offered the column's sum (L577).
+- Night pass: dates a note names, the entities it mentions and a note that repeats another word for word are fact kinds, read by rule and not judged by the learned-store check (L657).
+- Meetings: decisions and actions are read in French, Spanish, German, Italian, Portuguese and Dutch as well as English (a cue table per language; a name taking a task on counts only if it is an attendee) (L665).
+- Tidy: the rename review also reads the person's own note titles; a word most of a category's titles share is offered as its name when the pack's topic is not (L513).
+- Filing: the pack's 30 word-sense rules now run in the filing decision ("bank" beside "river" is Geography, not Finance); the 50 context fixtures are a test with the seven the rules cannot yet tell listed as gaps (L663).
+- Facts: `recognise` reads counted things ("5 sets", "three loaves of bread") as a `count` kind, and the fact layer's quantity facts take it and the measure spans instead of a pattern of their own (L501).
+- Brief: a titled note's title weight goes to the sentence that says the title's words, not to every sentence of the note (L500).
 - Timers: the chat timer, focus timer, meeting recorder and status bar clock share one one-second clock (L-world-class-15).
 - Tests: property tests for the time reader and the realiser, a few hundred seeded cases each against a fixed clock (L-world-class-19).
 - Silent excepts: the ratchet now also counts a broad except that returns a fallback ("", [], False) without a word; 59 seeded, the list only shrinks (L797).

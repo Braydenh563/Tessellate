@@ -231,7 +231,7 @@ def check(rows: Iterable[FactView], notes: dict[int, NoteView], known: Known, to
     `notes` the notes they came from as they read now. The rows a person
     wrote or edited are not judged. Retirements first, then flags."""
     judged = _Judged()
-    rows = [row for row in rows if not row.edited and row.kind in facts.KINDS]
+    rows = [row for row in rows if not row.edited and row.kind in facts.JUDGED_KINDS]
     for fact in rows:
         if fact.kind not in facts.PAIR_KINDS:
             _note_check(judged, fact, notes.get(fact.entry_id), known)

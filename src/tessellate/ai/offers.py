@@ -38,7 +38,11 @@ _NUM = r"\d+(?:\.\d+)?"
 _SUM = re.compile(rf"(?<![\w.])({_NUM}(?:\s*[-+*/×x]\s*{_NUM})+)\s*=\s*(-?{_NUM})?(?![\w.])")
 #: A "Total:" line under a column of amounts (OPEN 1100): each line above it,
 #: back to a blank line, ends in an amount, with an optional currency sign.
-_TOTAL = re.compile(rf"^[ \t]*[*_]*(?:total|sum|subtotal)[ \t]*[:=][*_]*[ \t]*([£$€]?)[ \t]*(-?{_NUM})[ \t]*$", re.I | re.M)
+#: The amount may be left off ("Total:" and nothing after): the offer then writes it.
+_TOTAL = re.compile(rf"^[ \t]*[*_]*(?:total|sum|subtotal)[ \t]*[:=][*_]*[ \t]*([£$€]?)[ \t]*(-?{_NUM})?[ \t]*$", re.I | re.M)
+#: A sum written alone on its line with no "=": "12 + 30", "- 4.5 * 3 ?". The operators
+#: stand apart from the numbers, so a range ("3-4 days") or a date is never read as one.
+_BARE_SUM = re.compile(rf"^[ \t]*(?:[-*+][ \t]+)?({_NUM}(?:[ \t]+[-+*/×x][ \t]+{_NUM})+)[ \t]*\??[ \t]*$", re.M)
 _AMOUNT_LINE = re.compile(rf"(?<![\w.])[£$€]?[ \t]*(-?{_NUM})[ \t]*$")
 #: Fewer than this is not a column.
 TOTAL_MIN_AMOUNTS = 2
@@ -109,57 +113,81 @@ def _reminders(text: str, spans: list[recognise.Span], now: datetime, quoted: li
     return out
 
 
+def _sum_offer(found: re.Match, worked: float, said: str | None, bare: bool) -> dict:
+    """The offer for one sum: the answer replaced when one was written, else added
+    after the expression (after "=" when it has one, with " = " when it has none)."""
+    right = arithmetic.spoken(worked).replace(",", "")
+    expr = re.sub(r"\s+", " ", found.group(1))
+    if said is not None:
+        start, end, replace = found.start(2), found.end(2), right
+    else:
+        start = end = found.end(1) if bare else found.end()
+        replace = f" = {right}" if bare else f" {right}"
+    return {
+        "kind": "sum", "start": start, "end": end, "said": said or "",
+        "label": f"{expr} = {right}",
+        "reason": f"{expr} is {right}, not {said}" if said is not None else f"{expr} is {right}",
+        "value": {"replace": replace},
+    }
+
+
 def _sums(text: str, quoted: list) -> list[dict]:
+    """A sum written with its answer is checked; one written with "=" and no answer, or
+    alone on its line with no "=", is offered its answer."""
     out = []
-    for found in _SUM.finditer(text):
+    for found in [*_SUM.finditer(text), *_BARE_SUM.finditer(text)]:
         if _inside(found.start(), found.end(), quoted):
             continue
         try:
             worked = arithmetic.evaluate(found.group(1))
         except arithmetic.NotArithmetic:
             continue
-        said = found.group(2)
-        right = arithmetic.spoken(worked).replace(",", "")
-        if said is not None and abs(float(said) - worked) < 1e-9:
-            continue
-        expr = re.sub(r"\s+", " ", found.group(1))
-        start, end = (found.start(2), found.end(2)) if said is not None else (found.end(), found.end())
-        out.append({
-            "kind": "sum", "start": start, "end": end, "said": said or "",
-            "label": f"{expr} = {right}",
-            "reason": f"{expr} is {right}, not {said}" if said is not None else f"{expr} is {right}",
-            "value": {"replace": right if said is not None else f" {right}"},
-        })
+        bare = found.re is _BARE_SUM
+        said = None if bare else found.group(2)
+        if said is None or abs(float(said) - worked) >= 1e-9:
+            out.append(_sum_offer(found, worked, said, bare))
     return out
 
 
+def _column_above(text: str, at: int) -> list[str]:
+    """The amounts on the lines above `at`, back to a blank or a line with none."""
+    amounts = []
+    for line in reversed(text[:at].rstrip("\n").split("\n")):
+        amount = _AMOUNT_LINE.search(line)
+        if not line.strip() or amount is None:
+            break
+        amounts.append(amount.group(1))
+    return amounts
+
+
+def _total_offer(found: re.Match, amounts: list[str], worked: float, said: str | None) -> dict:
+    #: Written to the places the column is written to: £6.70, not £6.7.
+    places = max(len(a.partition(".")[2]) for a in [*amounts, said or ""])
+    right = f"{worked:.{places}f}"
+    if said is None:
+        spaced = found.group(1) or found.group(0).endswith(" ")
+        start = end = found.end()
+        replace = right if spaced else " " + right
+    else:
+        start, end, replace = found.start(2), found.end(2), right
+    return {
+        "kind": "sum", "start": start, "end": end, "said": said or "",
+        "label": f"Total = {found.group(1)}{right}",
+        "reason": f"the {len(amounts)} amounts above add up to {right}" + ("" if said is None else f", not {said}"),
+        "value": {"replace": replace},
+    }
+
+
 def _totals(text: str, quoted: list) -> list[dict]:
-    """A "Total:" line that does not add up the amounts listed above it."""
+    """A "Total:" line that does not add up the amounts listed above it, or has no
+    amount yet."""
     out = []
     for found in _TOTAL.finditer(text):
-        if _inside(found.start(), found.end(), quoted):
-            continue
-        amounts = []
-        for line in reversed(text[: found.start()].rstrip("\n").split("\n")):
-            amount = _AMOUNT_LINE.search(line)
-            if not line.strip() or amount is None:
-                break
-            amounts.append(amount.group(1))
-        if len(amounts) < TOTAL_MIN_AMOUNTS:
-            continue
+        amounts = [] if _inside(found.start(), found.end(), quoted) else _column_above(text, found.start())
         worked = sum(float(a) for a in amounts)
         said = found.group(2)
-        if abs(float(said) - worked) < 1e-9:
-            continue
-        #: Written to the places the column is written to: £6.70, not £6.7.
-        places = max(len(a.partition(".")[2]) for a in [*amounts, said])
-        right = f"{worked:.{places}f}"
-        out.append({
-            "kind": "sum", "start": found.start(2), "end": found.end(2), "said": said,
-            "label": f"Total = {found.group(1)}{right}",
-            "reason": f"the {len(amounts)} amounts above add up to {right}, not {said}",
-            "value": {"replace": right},
-        })
+        if len(amounts) >= TOTAL_MIN_AMOUNTS and (said is None or abs(float(said) - worked) >= 1e-9):
+            out.append(_total_offer(found, amounts, worked, said))
     return out
 
 

@@ -3756,6 +3756,9 @@ const NIGHT_KIND_WORDS = {
   question: ["open question", "open questions"],
   tension: ["claim that disagrees with another", "claims that disagree with others"],
   answered: ["question answered later", "questions answered later"],
+  date: ["date it names", "dates it names"],
+  entity: ["name it mentions", "names it mentions"],
+  duplicate: ["note that repeats another", "notes that repeat others"],
 };
 const NIGHT_PAIR_LEAD = { tension: "Disagrees with", answered: "Answers" };
 const NIGHT_PAGE = 5;
