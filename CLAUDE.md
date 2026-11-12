@@ -44,7 +44,7 @@ latest dated additions are at the top of
 5. **Quality does not drop with the model:** tests first, measure before
    claiming, one commit per step, push per batch, five-line reports.
 5a. **Speed without losing quality:** targeted tests plus `scripts/gate.sh`
-   per step; the full suite only at session end or for changes targeted tests
+   per step; never push while the head's CI Tests run is unfinished unless it is red (a push cancels it), at most one push per 45 minutes; the full suite only at session end or for changes targeted tests
    cannot see (migrations, event bus, conftest), never by agents (four cores);
    run merged agents' tests serially (the repo-`data/` guard and some ratchets
    fail only serially); agents landing close together are merged, gated and
