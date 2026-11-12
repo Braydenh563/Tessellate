@@ -253,7 +253,7 @@ function atlasMicroDo(kind, box) {
     //: leftover): it added an individual `rotate` over it (`composite: "add"`),
     //: which is the main thread's, so each flick put the figure's loops back
     //: there for its third of a second. The ear's own turn (`--atl-crest`,
-    //: mirrored on the left ear: 08-consistency.css) is written into the
+    //: mirrored on the left ear: characters-lazy.css) is written into the
     //: keyframes, so the ear tips from where the mood holds it and back.
     const turn = (deg) => ({ transform: `rotate(calc(var(--atl-crest) * ${ear.classList.contains("atl-ear-l") ? -1 : 1} + ${deg}deg))` });
     const a = Number((sign * (3.5 + Math.random() * 2)).toFixed(1));

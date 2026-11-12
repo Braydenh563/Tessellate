@@ -205,7 +205,7 @@ function atlasSuggestion(question, label = `Ask Atlas: ${question}`) {
   //: **An offer, drawn as the app's other offers.** It was a `.linklike`, an
   //: underlined accent line that read as a web link out of the app (the
   //: owner, of the empty chat: styled "as an underlined web link"). It wears
-  //: the suggestion chip the chat's own starters wear (08-consistency.css,
+  //: the suggestion chip the chat's own starters wear (07-whiteboard-misc.css,
   //: `.atlas-starter`), with Atlas's compass in front, because pressing it
   //: asks a question the same way theirs do.
   const ask = document.createElement("button");

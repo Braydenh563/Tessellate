@@ -994,7 +994,7 @@ document.addEventListener("keydown", (event) => {
 //: is a fixed card with rounded corners at 1000, so the companion showed
 //: round its edges. `<html data-fullscreen="graph whiteboard">` lists the
 //: surfaces that are up, and the companion's own container fades out on any
-//: of them (08-consistency.css, `#nm-buddy-band`), whichever avatar it is
+//: of them (07-whiteboard-misc.css, `#nm-buddy-band`), whichever avatar it is
 //: drawing. Each surface is *watched* rather than told: a full screen is left
 //: from many places (Escape, the back button, a tab switch, the palette), and
 //: the one that forgot to say so is the one that leaves the companion gone.

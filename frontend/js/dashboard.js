@@ -1820,7 +1820,7 @@ async function renderDashboard({ refresh = false } = {}) {
   grid.dataset.shape = shape;
   grid.replaceChildren();
   //: Unseen while its widgets draw and their spans settle, then faded in
-  //: whole (`dashSettled` below; `.dash-filling`, 08-consistency.css).
+  //: whole (`dashSettled` below; `.dash-filling`, 07-whiteboard-misc.css).
   grid.classList.add("dash-filling");
   $("dash-editbar").classList.toggle("hidden", !dashEditMode); // only while editing
   const drawing = [];

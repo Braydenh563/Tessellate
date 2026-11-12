@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 
 from tests._app_js import app_js_text
+from tests._css_paths import sheets
 
-CSS = (Path(__file__).resolve().parent.parent / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS = sheets("01-forms-settings.css", "07-whiteboard-misc.css")
 
 
 def test_the_list_remembers_what_was_on_screen_and_marks_new_cards():

@@ -2057,7 +2057,7 @@ async function switchTab(name) {
 //: 1440) four frames with nothing of the page under any of nine points,
 //: 488 to 550ms before it was whole. Now the page's own controls wait
 //: hidden under one skeleton the size of the page, which fades as they
-//: fade in (`.tab-loading`, `.tab-revealing`, 08-consistency.css).
+//: fade in (`.tab-loading`, `.tab-revealing`, 07-whiteboard-misc.css).
 //:
 //: **The page's shape, and its name when it is slow** (INBOX 598, the owner:
 //: "the loading screen on features like the graph tab and library is a blank

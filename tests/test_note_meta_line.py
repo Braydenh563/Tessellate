@@ -29,7 +29,7 @@ def _css(name: str) -> str:
 
 
 def test_the_line_never_wraps():
-    css = _css("08-consistency.css")
+    css = "\n".join(_css(n) for n in ("01-forms-settings.css", "05-sidebars-themes.css", "07-whiteboard-misc.css"))
     rules = re.findall(r"\n\.entry-meta\.note-meta \{([^}]*)\}", css)
     assert any("flex-wrap: nowrap" in rule for rule in rules)
     # Measuring sees every fact at its own width; only then may some shrink.
@@ -72,7 +72,7 @@ def test_the_time_is_the_lines_last_fact_everywhere():
     phone = _css("10-responsive.css")
     actions = phone[phone.index("#entry-list > li :is(.entry-actions, .entry-meta-end) {\n    position: static;"):][:120]
     assert "margin-left: 0;" in actions
-    assert "#entry-list > li .entry-meta > .entry-date {\n  margin-inline-start: auto;" in _css("08-consistency.css")
+    assert "#entry-list > li .entry-meta > .entry-date {\n  margin-inline-start: auto;" in "\n".join(_css(n) for n in ("01-forms-settings.css", "05-sidebars-themes.css", "07-whiteboard-misc.css"))
 
 
 def test_the_low_score_sits_with_the_category():

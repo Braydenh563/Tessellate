@@ -4,7 +4,7 @@
    the boot sheets nothing; they are at their cap.
 
    The head: an accent glyph, then the title; the help '?', the tools, minimise
-   and close sit at the right (08-consistency.css and panel-movable.js own
+   and close sit at the right (a component file (08-consistency.css until UI plan 13b) and panel-movable.js own
    those). Under it a glyph tab row where the popup has tabs, and the content in
    bordered cards, each headed by a glyph and a title over a hairline. */
 
@@ -79,7 +79,7 @@
   color: var(--accent-text);
 }
 /* Two classes: `.card h3` is the eyebrow (12px, upper case, muted) and would
-   otherwise win, as it did for the dialog head's title (08-consistency.css). */
+   otherwise win, as it did for the dialog head's title (a component file (08-consistency.css until UI plan 13b)). */
 .pop-card .pop-card-title {
   min-width: 0;
   margin: 0;
@@ -114,7 +114,7 @@
    Its cards made it taller than a short window, and it had no cap: the head
    went off the top with the close button in it. The panel scrolls inside the
    window and its head stays. The head is bare at rest and takes the opaque
-   ground only when stuck (08-consistency.css, INBOX 1503): a ground of its
+   ground only when stuck (07-whiteboard-misc.css, INBOX 1503): a ground of its
    own made a darker block inset in the glass panel. */
 .agent-monitor {
   max-height: calc(100dvh - var(--space-9) * 3);

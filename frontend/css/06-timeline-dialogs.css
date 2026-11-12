@@ -46,11 +46,20 @@
   font-size: var(--text-sm);
   font-weight: 600;
   color: var(--ink);
-  /* Bare until it sticks (INBOX 1489); the stuck ground is in 08-consistency.css. */
+  /* Bare until it sticks (INBOX 1489); the stuck ground is in 07-whiteboard-misc.css. */
   /* An accent underline rather than a grey rule: the headers are a scale, and
      a 2px grey border under each one reads as a spreadsheet. */
   border-bottom: 2px solid var(--accent-soft);
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+/* Today's note button sits at the day head's end, like the other days' counts. */
+.timeline-bucket-head > .timeline-today-action {
+  margin-inline-start: auto;
+  /* Into the head's own padding, so today's head is as tall as every other
+     day's (INBOX 437 (4): 47px against 35, the one head in the list a row
+     taller because a 32px button sat inside 8px of padding each side). */
+  margin-block: calc(-1 * var(--space-2));
 }
 /* Today, with nothing in it yet (TIMELINE_PLAN.md Phase 4). The section is
    drawn so the journal always has a today to write into; the line says which
@@ -192,6 +201,21 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* --- the timeline, de-vibecoded ---------------------------------------------
+   A day of the timeline is a list of a hundred rows, and every title was
+   600 with a bold accent "Uncategorised" pill at its end: a column of
+   identical badges down the right edge, each as loud as the title it
+   describes. Titles step to 500 (a list reads by its rows, not by shouting
+   every one); the category is the same quiet fact the notes' meta line
+   makes it, muted text with no fill. */
+.timeline-row-title {
+  font-weight: 500;
+}
+
+.timeline-feed .timeline-row-title {
+  line-height: 1.25;
+}
 .timeline-row-snippet {
   font-size: var(--text-sm);
   color: var(--muted);
@@ -289,6 +313,17 @@
     flex-wrap: wrap;
   }
 }
+
+/* --- Timeline rows with a snippet: mark and time on the title's line --- */
+/* A row with a second line (a file's first line of code, a note's snippet)
+   centred its kind mark and its time against both lines, so each sat 10px
+   below the title it labels, between the two lines and against neither.
+   They belong to the title: start aligned, centred on its line box. A one
+   line row is unchanged, since there the title's line is the row. */
+.timeline-feed .timeline-row {
+  --timeline-title-line: calc(var(--text-md) * 1.25);
+  align-content: center;
+}
 /* --- Timeline: the density strip (TIMELINE_PLAN.md Phase 3) -----------------
    The feed and the strip share the card's remaining height; the feed takes the
    width, the strip takes 40px of it. */
@@ -297,6 +332,18 @@
   flex: 1 1 auto;
   min-height: 0;
   gap: var(--space-2);
+}
+
+/* --- empty states that sit where they should ------------------------------------
+   1. Timeline: the empty state came after `.timeline-body`, which grows to
+      fill the card even with nothing in it, so "Nothing to plot yet" sat at
+      the card's foot under 421px of blank. With the empty state showing, the
+      body takes no room and the empty state centres in what is left.
+   2. Graph: the empty state's action stretched across the whole map (790px
+      of button for "Capture a note"); it is its own width, like every other
+      empty state's action. */
+.card:has(> #timeline-empty:not(.hidden)) > .timeline-body {
+  flex: 0 0 auto;
 }
 .timeline-scrubber {
   flex: 0 0 auto;
@@ -657,6 +704,16 @@
 #pref-bin-days {
   width: 5rem;
 }
+
+/* 4. A number is a short field. The Preferences pane drew four number
+      inputs at 253, 100, 300 and 300px, so a two-digit day count and a
+      0.25 threshold each got a field wide enough for a sentence, and no
+      two of them lined up. One width for a number, the one that already
+      fitted "0" plus its unit beside it. */
+#settings-modal :is(#pref-bin-days, #pref-chat-retention, #pref-search-min-sim, #pref-search-z-margin) {
+  width: 7rem;
+  flex: 0 0 auto;
+}
 #log-source {
   max-width: 11rem;
 }
@@ -669,6 +726,10 @@
    row"), and the intention has no opinion about the level. */
 .row :is(h2, h3, h4).flush {
   margin: 0;
+}
+
+.heat-legend > span:not(.heat-cell) {
+  margin-inline: var(--space-1);
 }
 /* The "N earlier records dropped" line above the log list. Styled as a
    caution rather than an error: the log is working, it is just not the whole
@@ -710,7 +771,7 @@
 }
 /* --- the log console (§1) ------------------------------------------------ */
 /* **The one dock that lives in a 578px column.** Every other dock spans a tab,
-   so `.dock .dock-find`'s 14rem basis (08-consistency.css) is a floor it never
+   so `.dock .dock-find`'s 14rem basis (07-whiteboard-misc.css) is a floor it never
    has to argue with; a settings screen is 599.6px wide whatever the window is,
    578.4px inside the dock's own padding, and 470.4px at an 820px window. The
    zones around find need 94px of identity, 77px of view segment, 221px of
@@ -1034,6 +1095,12 @@
 .modal-overlay.peeking .modal-card > .dialog-head {
   background: color-mix(in srgb, var(--card) 88%, transparent);
   border-radius: var(--radius-md);
+}
+
+#settings-modal > .modal-card {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: var(--modal-bg-opaque);
 }
 /* A saved look: its name applies it, the ✕ deletes it. One chip rather than a
    row per theme, because the list is meant to stay glanceable, twenty saved
@@ -1552,6 +1619,16 @@
 .entry-meta .chip.review {
   font-weight: 600;
 }
+
+/* The card's own "Built-in" marker is the same fact the persona list states,
+   so it says it the same way. `--accent-soft` is this app's *selected* tone
+   (DESIGN.md), and nothing about a built-in skill is selected. */
+.skill-card .chip.skill-builtin,
+.skill-card-header .chip:not(.skill-fact) {
+  background: var(--chip-bg);
+  color: var(--muted);
+  font-weight: 500;
+}
 /* Chips sit on one optical line. Padding alone does not do it, a chip with a
    descender and one without were a pixel out, which is the kind of thing that
    reads as "nothing quite lines up" without ever being noticeable on its own. */
@@ -1568,6 +1645,13 @@
   min-height: 1.5rem;
   line-height: 1.2;
 }
+
+/* The map chip's height was its words' line box (`line-height: 24px`), not a
+   floor: the same 24px, as a floor. (The 11px labels do the same in their own
+   rule below.) */
+.chip.map-chip {
+  min-height: 1.5rem;
+}
 /* The timestamp is metadata, not a column: it was right-aligned with a
    min-width, which pushed it onto its own line whenever the chips wrapped and
    left a gap the width of "23 September" on every card that didn't. */
@@ -1575,6 +1659,19 @@
   min-width: 0;
   text-align: left;
   font-size: var(--text-sm);
+}
+
+@media (hover: hover) and (min-width: 600px) {
+  /* **On hover the strip takes the time's place, not a slice of it**
+     (wrapzoom, every width: the strip is 222px and the time 250, so the
+     first 29px of "Wed," showed beside "+1h"; with a short time the strip
+     ran over the words instead). The time leaves the row and the strip
+     joins it, so the words end where the strip starts and ellipsise there.
+     The negative block margin keeps the row's height: the worded snoozes
+     are 4px taller than the line they sit in. */
+  #reminder-groups li:is(:hover, :focus-within) .entry-meta > .entry-date {
+    display: none;
+  }
 }
 /* Links to other notes are the least important thing on the card and were the
    widest: full sentences of the linked note's text. Capped, so a card is a
@@ -2319,6 +2416,32 @@
   transform: translateY(-50%) translateX(0.85rem);
   background: #fff;
 }
+
+/*    A switch that leads a help head (its '?' beside it) hangs on the start
+      side only, so it stands on the same edge and its changed bar on the
+      same x as the rows around it (INBOX 1696 c: 9px further in). */
+#settings-modal :is(.settings-group, .settings-fold)
+  .row.help-head > label:is(.check-row, .setting-check):first-child:has(> input[type="checkbox"]) {
+  margin-inline-start: calc(-1 * var(--space-3) - 1px);
+}
+
+/* 3. The hairline between two hung switch rows stops where the head's does
+      (INBOX 464 (13)). Hanging the row (2) took its top border with it, 9px
+      past the head's underline on each side: measured (divider.js, 1440) on
+      67 rows. The line is drawn inset, at the padding, as a background
+      image, so the row's hover and checked fills (`background-color`) keep
+      working under it. After: 0px. */
+#settings-modal :is(.settings-group, .settings-fold)
+  :is(.check-row + .check-row, .setting-check + .setting-check,
+    li:has(> .setting-check) + li > .setting-check, li:has(> .check-row) + li > .check-row,
+    #tool-list > li > .setting-check):is(label):has(> input[type="checkbox"]):not(.row > *, .tool-picker > *) {
+  border-top-color: transparent;
+  background-image: linear-gradient(var(--divider), var(--divider));
+  background-origin: border-box;
+  background-position: top center;
+  background-repeat: no-repeat;
+  background-size: calc(100% - 2 * var(--space-3) - 2px) 1px;
+}
 .checkbox-label>input[type="checkbox"]:not(.sr-only):disabled,
 .wb-snap-label input[type="checkbox"]:disabled {
   opacity: 0.45;
@@ -2600,7 +2723,7 @@
    button, on the modal recipe. The dropdown this replaced painted its own
    surface and placed itself against whichever button opened it, which is how
    it came to run off the bottom of the window (INBOX 12). Its rules are gone;
-   the name still appears in some grouped selectors in 08-consistency.css that
+   the name still appears in some grouped selectors in 03-dashboard-widgets.css that
    cover every menu in the app, which cost nothing to leave. */
 .wb-export-card .wb-export-label {
   font-size: var(--text-xs);
@@ -3459,6 +3582,17 @@ aside[data-resizable="1"] {
 .notif-row.notif-unread .notif-read-toggle {
   color: var(--accent-text);
 }
+
+/* Every row is inset from the panel's edges on both sides (INBOX 451, the
+   owner: the unread dot and the read toggle "arent properly padded from
+   the edges"). Measured: the dot at 0px from the row's left and the toggle
+   at 0px from its right, inside a hover fill that reaches both edges. The
+   padding itself is the row recipe's (06-timeline-dialogs.css, INBOX 585);
+   the unread dot is its own column in every look now, not a flat-look
+   `::before` with its own padding. */
+.notif-row {
+  border-radius: var(--radius-md);
+}
 /* The question a confirm asks, as its title (confirmDialog): a step up from
    the consequence under it, with the gap a heading has. */
 .confirm-text > .confirm-title {
@@ -3467,6 +3601,13 @@ aside[data-resizable="1"] {
   font-size: var(--text-h3);
   font-weight: 600;
   color: var(--ink);
+}
+
+.confirm-card .confirm-title {
+  margin: 0;
+  font-size: var(--text-body);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 /* --- A notification's two controls are a column of their own (INBOX 874) ---
    They were hidden until the row was pointed at and then drawn on the meta
@@ -3719,4 +3860,3 @@ aside[data-resizable="1"] {
 .timeline-monthday:disabled {
   opacity: 0.35;
 }
-

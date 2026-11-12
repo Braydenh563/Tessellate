@@ -142,7 +142,7 @@ def test_a_note_line_still_too_wide_after_folding_wraps_instead_of_clipping_its_
     button at x 388-432. After the fix a line that `fitNoteMetas` has folded
     (any `.is-icon` child) may wrap: the li scrollWidth equals its clientWidth
     (358) and the button sits at x 312-356."""
-    css = (FRONTEND / "css/08-consistency.css").read_text(encoding="utf-8")
+    css = (FRONTEND / "css/01-forms-settings.css").read_text(encoding="utf-8")
     assert ".entry-meta.note-meta:has(> .is-icon):not(.is-measuring) {\n    flex-wrap: wrap;" in css
 
 

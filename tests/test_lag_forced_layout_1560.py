@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._css_paths import FORMER_08, sheets
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -19,7 +20,7 @@ NAV = (JS / "navigation.js").read_text(encoding="utf-8")
 AV = (JS / "avatars.js").read_text(encoding="utf-8")
 MOTION = (JS / "atlas-motion.js").read_text(encoding="utf-8")
 LIFE_BOOT = (JS / "atlas.js").read_text(encoding="utf-8")
-CSS08 = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS08 = sheets(*FORMER_08)
 
 
 def _fn(source: str, name: str) -> str:

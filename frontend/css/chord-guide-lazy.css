@@ -7,7 +7,7 @@
    mid-pair): centred over a scrim that says the next key means something.
    The scrim lets clicks through; the panel takes them, since its rows are
    buttons (the owner: "make these popup options when I press m, actual
-   clickable nav buttons"). The panel itself is in 08-consistency.css. */
+   clickable nav buttons"). The panel itself is in 03-dashboard-widgets.css. */
 .chord-guide {
   position: fixed;
   inset: 0;

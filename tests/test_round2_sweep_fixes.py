@@ -37,7 +37,7 @@ def test_the_phone_band_keeps_one_row_only_where_the_fit_is_mounted() -> None:
 
 
 def test_a_toast_between_600_and_1100_leaves_the_sub_tabs_alone() -> None:
-    css = _css("08-consistency.css")
+    css = "\n".join(_css(n) for n in ("04-chat-dock-appearance.css", "07-whiteboard-misc.css"))
     block = css[css.index("@media (min-width: 600px) and (max-width: 1099.98px)"):]
     block = block[: block.index("\n}\n")]
     assert 'body:not([data-tab=chat]) #toast-box' in block

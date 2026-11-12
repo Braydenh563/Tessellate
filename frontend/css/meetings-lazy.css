@@ -501,7 +501,7 @@
 
 /* **The device as a chip** (V7): the microphone in use, pressed to fold
    out its controls, rather than a line of grey text. By id: the fold
-   recipe's own summary rule (08-consistency.css) is three classes deep. */
+   recipe's own summary rule (a component file (08-consistency.css until UI plan 13b)) is three classes deep. */
 #meeting-mic > summary {
   display: inline-flex;
   width: fit-content;

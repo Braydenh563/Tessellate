@@ -9,7 +9,7 @@
 //
 // Simple mode is a per-device switch (`simpleMode` in localStorage, read by
 // theme-boot.js before first paint): `data-simple="on"` on <html> hides the
-// tabs and settings a new person does not need (08-consistency.css lists
+// tabs and settings a new person does not need (02-chat-graph.css lists
 // them). Every hidden place still opens from the palette.
 
 (() => {

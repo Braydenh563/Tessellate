@@ -17,6 +17,7 @@ import re
 from pathlib import Path
 
 from tests import _js_scope
+from tests._css_paths import FORMER_08
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -85,7 +86,7 @@ def test_the_colour_row_is_one_line_and_none_is_not_alone_on_one():
 
 def test_the_card_sits_in_the_dashboard_card_flow_not_over_what_is_below():
     assert re.search(r"\.dash-widget \.capture-card \{[^}]*position: static", _css("capture-card-lazy.css"))
-    assert re.search(r"\.dash-widget \.capture-bar\.is-open \.capture-bar-row \{[^}]*display: none", _css("08-consistency.css"))
+    assert re.search(r"\.dash-widget \.capture-bar\.is-open \.capture-bar-row \{[^}]*display: none", "\n".join(_css(n) for n in FORMER_08))
 
 
 def test_atlas_is_asked_to_step_aside_when_the_card_changes_its_box():

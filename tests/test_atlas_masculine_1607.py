@@ -28,12 +28,12 @@ from tests.test_atlas_masc_1607 import _arms, _inside, _look, _path, _sample, _w
 
 ROOT = Path(__file__).resolve().parent.parent
 ATLAS = (ROOT / "frontend" / "js" / "atlas.js").read_text(encoding="utf-8")
-CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS = (ROOT / "frontend" / "css" / "characters-lazy.css").read_text(encoding="utf-8")
 LAZY = (ROOT / "frontend" / "css" / "atlas-lazy.css").read_text(encoding="utf-8")
 
 R = 2.2
 PIVOTS = {"l": (25.6, 41.0), "r": (36.4, 41.0)}
-# Every arm angle an act or a mood sets on him (08-consistency.css), both ways.
+# Every arm angle an act or a mood sets on him (characters-lazy.css), both ways.
 ANGLES = (0, 10, 13, 16, 22, 24, 26, 28, 34, 40, 70, 100, 120, 130, 150, 163)
 
 

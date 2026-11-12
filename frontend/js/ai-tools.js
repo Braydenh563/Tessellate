@@ -599,7 +599,7 @@ function renderReindex(status) {
     staleLine.classList.toggle("hidden", !worth);
     if (worth) {
       //: Through `setLabel`, because `.notice` carries its icon as a child
-      //: element (the recipe, 08-consistency.css) and `textContent` would wipe
+      //: element (the recipe, 07-whiteboard-misc.css) and `textContent` would wipe
       //: it and print the token.
       setLabel(
         staleLine,

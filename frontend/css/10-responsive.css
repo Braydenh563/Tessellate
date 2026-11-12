@@ -8,7 +8,7 @@
    new file loaded last conflicts with nobody, and `tests/test_css_braces.py`
    makes the append-two-sections-and-lose-a-brace failure impossible to ship
    from either half.
-   It is loaded after 08-consistency.css, so it wins ties on source order.
+   It is loaded after the component files (00 to 09), so it wins ties on source order.
    That is a licence to be precise, not a licence to be lazy: every rule here
    names the band it belongs to and the number that made it necessary.
    The four bands are stated once, at the top of the responsive section in
@@ -600,7 +600,7 @@ header#top-bar[data-scrolled="1"],
    at 1024 or at 820: with the words in, this control wraps everywhere below
    about 1150, which is the four-line chip row it was built to end.
    1200 rather than 1150, and for the reason `#graph-concept-maps`'s own label
-   rule gives nine lines away in 08-consistency.css: the margin at 1150 is a
+   rule gives nine lines away in 07-whiteboard-misc.css: the margin at 1150 is a
    handful of pixels, the zones do not shrink, and a word that appears and
    disappears twice across one drag of a window edge reads as a glitch.
    Not `display: none`: the segment's accessible name is its text, and a
@@ -631,14 +631,14 @@ header#top-bar[data-scrolled="1"],
    Measured at 390 before this rule: the well 36px tall with four 44x44 cells
    inside it, so the accent-filled cell stood 4px proud of its own ground top
    and bottom. Two rules meeting, each right on its own: `.dock .seg > button`
-   (08-consistency) insets a cell by the well's `--space-1` padding, and the
+   (07-whiteboard-misc) insets a cell by the well's `--space-1` padding, and the
    dock's touch block gives every control in a dock `min-height:
    var(--target-min)`, which below 820 is 44px. Padding plus a 44px floor is a
    52px well, and 52 is taller than every other control in the bar.
    So below 820 the cells *are* the well: no padding, the well on the same
    44px floor as the search box beside it, and the cell's own radius stepped
    up to the well's so the run reads as one block rather than four pills.
-   `.dock` in the selector for specificity against 08-consistency's `.dock
+   `.dock` in the selector for specificity against 07-whiteboard-misc's `.dock
    .seg`, not because it is only true in a dock. */
 @media (max-width: 819.98px), (pointer: coarse) {
   .dock .seg-multi {
@@ -1591,7 +1591,7 @@ header#top-bar[data-scrolled="1"],
   #entry-list > li:not(:has(textarea)) {
     padding-top: var(--space-4);
   }
-  /* No auto margin: the time before it has one (08-consistency.css), and
+  /* No auto margin: the time before it has one (07-whiteboard-misc.css), and
      two in one row split the room, which moved the time on every card. */
   /* The end cluster (time and menu) is the meta line's last item, in the
      flow: absolute against the meta line (the swipe's transform makes it the
@@ -1626,7 +1626,7 @@ header#top-bar[data-scrolled="1"],
   }
   #tab-notes .layout > .tab-main {
     /* Not 0: the cards stand on this edge, and their focus ring needs
-       `--ring-room` (08-consistency.css, "Ring room"; the margin there takes
+       `--ring-room` (07-whiteboard-misc.css, "Ring room"; the margin there takes
        it back out). */
     padding-right: var(--ring-room);
   }
@@ -2102,7 +2102,7 @@ header#top-bar[data-scrolled="1"],
    size, for the reason the dock's height rule gives: a stretched tick box is
    an oval, and its label is the target.
    `:is(...)` rather than a list of descendant selectors, and that is
-   arithmetic rather than taste: 08-consistency.css gives every menu row
+   arithmetic rather than taste: 07-whiteboard-misc.css gives every menu row
    `min-height: var(--control-h-lg)` at (0,2,0), so a plain
    `.graph-controls-body button` at (0,1,1) loses and the rows measured 36px
    inside the sheet. `:is()` takes the weight of its heaviest argument, which
@@ -2753,7 +2753,7 @@ header#top-bar[data-scrolled="1"],
 }
 /* 4. **A finger's floor for what was still under it.** Measured at 390 with
       touch after 1 to 3: the prompt dialog's field 32px tall, the agent
-      sheet's 31, the Guide's box 40 (08-consistency.css takes it to the
+      sheet's 31, the Guide's box 40 (07-whiteboard-misc.css takes it to the
       floor beside its Send); a note's facts folded to their icons were 24px
       squares, which the chip's overhang lengthens but cannot widen; the
       Categories sheet's counts were 21 to 24px of text. A dialog's fields
@@ -2799,7 +2799,7 @@ header#top-bar[data-scrolled="1"],
     width: 0;
     min-width: 0;
   }
-  /* The basis is what decides when a zone wraps (08-consistency.css): a zone
+  /* The basis is what decides when a zone wraps (07-whiteboard-misc.css): a zone
      that is only a search asks for the search's own floor, so the Documents
      dock's 328px of actions fit beside it at 720 instead of one pixel short. */
   .dock .dock-find:has(> .dock-search:only-child),
@@ -2919,7 +2919,7 @@ header#top-bar[data-scrolled="1"],
   grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
 }
 /* 13. **A dock's title gives way on a phone.** The base rule is `flex: 0 0 auto;
-       min-width: max-content` (08-consistency.css) and the phone band above
+       min-width: max-content` (07-whiteboard-misc.css) and the phone band above
        only lifted the min-width, so the heading kept its natural width and
        spilled out of a zone that had already shrunk: "Your reminders" 117px in
        86px at 390 (Reminders, Browse, Links, Contents) and at 480 (Docs,

@@ -14,7 +14,7 @@ import re
 from pathlib import Path
 
 from tests._app_js import with_pieces
-from tests._css_paths import css_text
+from tests._css_paths import css_text, FORMER_08, sheets
 from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -41,7 +41,7 @@ def test_one_main_landmark_wraps_the_tab_pages():
     main = html[html.index('<main id="app-main">'):html.index("</main>")]
     for tab in ("dashboard", "notes", "chat", "timeline", "graph", "documents", "reminders", "library"):
         assert f'id="tab-{tab}"' in main, tab
-    css = (CSS / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets(*FORMER_08)
     assert re.search(r"#app-main \{\s*display: contents;\s*\}", css)
     # No rule still names the inner element by its old tag.
     for path in CSS.glob("*.css"):
@@ -270,7 +270,7 @@ def test_the_heatmap_scroller_is_a_tab_stop_with_a_ring():
 def test_the_folded_tags_chip_keeps_a_24px_target():
     """axe `target-size` (serious, 2026-10-10): the "+N" chip was 23.6 by 24
     px at 390. WCAG 2.5.8 wants 24 on both sides."""
-    css = (CSS / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets(*FORMER_08)
     rule = re.search(r"\.note-meta > \.note-meta-more \{([^}]*)\}", css)
     assert rule, ".note-meta-more rule missing"
     assert "min-width: 24px;" in rule.group(1)  # the height is the chip's own 24

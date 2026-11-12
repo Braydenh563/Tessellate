@@ -187,5 +187,5 @@ def test_a_row_takes_its_item_out_with_a_minus_not_the_close_x():
 
 def test_an_icon_label_carries_its_own_ellipsis():
     # INBOX 1646: setLabel's span.ph-text is a flex item, so a control's ellipsis never reached it.
-    css = (Path(__file__).resolve().parents[1] / "frontend/css/08-consistency.css").read_text(encoding="utf-8")
+    css = (Path(__file__).resolve().parents[1] / "frontend/css/07-whiteboard-misc.css").read_text(encoding="utf-8")
     assert ".ph-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }" in css

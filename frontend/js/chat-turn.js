@@ -2520,7 +2520,7 @@ function addBubble(role, text, attachments = null) {
   label.className = "msg-role";
   // **The user's turn is named for a screen reader only.** The owner once
   // asked for a user avatar in the label row, then later had the row hidden
-  // (08-consistency.css: on your own side of your own conversation "You"
+  // (a component file (08-consistency.css until UI plan 13b): on your own side of your own conversation "You"
   // said nothing the alignment did not), so the label is read, not seen.
   if (role === "user") {
     const name = document.createElement("span");

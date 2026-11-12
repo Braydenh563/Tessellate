@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from tests._js_scope import unwrapped
+from tests._css_paths import sheets
 
 ROOT = Path(__file__).resolve().parents[1]
 LAZY_CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
@@ -54,6 +55,6 @@ def test_settings_search_phone_ranks_other_devices_first():
 
 def test_card_chrome_is_not_selectable_but_previews_are():
     # Browser: scratchpad/ui-sweeps/cardselect.js.
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets("00-tokens-shell.css", "01-forms-settings.css", "07-whiteboard-misc.css")
     assert ".library-card,\n#entry-list li {\n  -webkit-user-select: none;\n  user-select: none;" in css
     assert ".library-card-preview,\n#entry-list li .entry-content" in css

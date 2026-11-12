@@ -541,7 +541,7 @@ select optgroup {
      container that clips (`overflow` other than visible, `contain: paint`)
      and holds a control flush to its edge must leave this much room, by
      padding or `overflow-clip-margin`, or draw the ring inside the control.
-     08-consistency.css "Ring room" lists the containers;
+     07-whiteboard-misc.css "Ring room" lists the containers;
      `tests/test_ring_room.py` holds the list. A fixed length, not a spacing
      token: the ring does not grow with density (INBOX 685). */
   --ring-room: 4px;
@@ -2309,10 +2309,31 @@ button.scroll-row-arrow[hidden] {
 .library-archived .library-card-title {
   text-decoration: line-through;
 }
+
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) :is(.library-note, .library-document, .library-chat, .library-file, .library-tag, .library-archived) {
+  box-shadow: none;
+}
 /* A private note shows that it is one and nothing else. */
 .library-card.library-private .library-card-title {
   color: var(--muted);
   font-style: italic;
+}
+
+.library-grid:not(.library-list) .library-board-card > .library-card-title {
+  padding-right: var(--space-8);
+  /* One line that ends in an ellipsis, so a long name never pushes the grid. */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 6. A note whose words are all in its title (a one-sentence note with no
+      heading) has no preview under it, so its title may take the room the
+      preview would have: four lines rather than two. */
+.library-card-whole .library-card-title {
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
 }
 /* The image a file actually is. Fixed height so a shelf of photos keeps its
    rows level: a grid whose rows are different heights is the thing that reads
@@ -2353,6 +2374,29 @@ button.scroll-row-arrow[hidden] {
   gap: var(--space-5);
   padding: var(--space-3) var(--space-5);
 }
+
+/* And the card keeps those layers to itself, so an overlay at 1 and a tick
+   at 2 can never rise over a sticky bar the grid scrolls under. */
+.library-card,
+.doc-list-item {
+  isolation: isolate;
+}
+
+.library-card:has(.card-open:focus-visible),
+.doc-list-item:has(.card-open:focus-visible) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+#library-grid.library-columns > .library-col > .library-card {
+  margin-bottom: 0;
+}
+
+#library-boards-grid:not(.library-list) > .library-card {
+  margin-bottom: 0;
+}
 /* **A fixed track, not a percentage.** Reported with a screenshot: "the
    middle content in the library lines view isnt aligned." `flex: 1 1 40%`
    on both halves makes each row's split depend on *its own* content, so the
@@ -2366,6 +2410,10 @@ button.scroll-row-arrow[hidden] {
 .library-list .library-card-top {
   flex: 0 0 22rem;
   min-width: 0;
+  padding-right: 0;
+}
+
+.library-grid:not(.library-list) .library-board-card > .library-card-top {
   padding-right: 0;
 }
 .library-list .library-card-preview {
@@ -2430,6 +2478,21 @@ button.scroll-row-arrow[hidden] {
    without touching the DOM order the grid view's picture-on-top relies on. */
 .library-list .library-card-meta {
   order: 2;
+}
+
+.library-card-meta > .library-card-category::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: var(--radius-pill);
+  background: var(--category-dot);
+}
+
+/* The footer is one line: the count truncates, the time never wraps. */
+.library-grid:not(.library-list) .library-board-card > .library-card-meta {
+  min-width: 0;
+  white-space: nowrap;
 }
 .library-list .library-card-menu {
   order: 3;
@@ -3105,6 +3168,47 @@ button.scroll-row-arrow[hidden] {
 .library-image-tile:has(> .library-image-frame) .library-image-caption.library-image-caption-clamped {
   min-height: 2lh;
 }
+
+/* --- a card that opens does not inflate the six beside it -----------------
+   UI_MODERNISATION_PLAN.md Phase 11 (the INBOX 164 block's leftover), measured
+   at 1440 on a row of seven seeded picture cards: at rest every card is 240.7px
+   with a 144px picture and 42.6px of tail. Open one card's fold and every card
+   in the row becomes 411.1px, and six of them are carrying 213px of empty card
+   under their last line.
+   The recorded decision this does *not* remake is about the row at rest: the
+   cards are equalised there, and the leftover goes under the shortest one,
+   because the alternatives (a bigger picture, unequal cards) were measured and
+   rejected. What is being fixed is a different moment. The stretch is what
+   equalises at rest; it is also what copies one card's disclosure onto its six
+   neighbours, and that second effect was never chosen. Measured: the pictures
+   do *not* grow when the row does (144px open and shut), so the 213px is
+   entirely empty card, which also corrects the note in
+   `archive/agent-remaining/ui-phase-11.md` that said the pictures grow to their
+   `max-height` ceiling.
+   `align-self` on the tile rather than `align-items` on the grid, and only
+   while a fold in the grid is open: at rest the grid stretches exactly as it
+   did, and `.library-image-grid:has(details[open])` is the state where the
+   stretch stops paying for itself. One selector, no JS, and it reverts the
+   moment the fold shuts. */
+.library-image-grid:has(.library-image-card-fold[open]) .library-image-tile {
+  align-self: start;
+}
+
+/* The rows' hover transitions stand down while a page scrolls (app.js sets
+   `data-scrolling` on <html> for the length of a scroll gesture; the trace
+   is written there). The rows themselves only: a descendant selector here
+   would restyle every node of every list twice per gesture. */
+:root[data-scrolling] :is(
+  #entry-list > li,
+  .library-card,
+  .doc-list-item,
+  .bookmark-row,
+  .library-image-tile,
+  .timeline-row,
+  .skill-card
+) {
+  transition: none;
+}
 /* The same clip, the same cause, on the two readings inside the fold. */
 .library-image-ocr.library-image-ocr-clamped,
 .library-image-vision-ocr.library-image-vision-ocr-clamped {
@@ -3209,6 +3313,10 @@ button.scroll-row-arrow[hidden] {
   .library-grid {
     gap: var(--space-4);
   }
+}
+
+.library-grid:not(.library-list) .library-board-card > .library-card-meta > .library-card-when {
+  flex: 0 0 auto;
 }
 /* --- the status bar (§36D) ---------------------------------------------------
    A real flex row at the foot of the body, not a fixed overlay. The body is
@@ -3504,6 +3612,15 @@ button.scroll-row-arrow[hidden] {
     white-space: nowrap;
   }
 }
+
+/* The status bar's Ctrl K chip against the words beside it (INBOX 494).
+   Its glyphs were dropped here too, 0.1em onto the x-height in DejaVu; they
+   follow the label recipe now (INBOX 592, `.ph-lead` beside `.ph`). */
+@media (min-width: 1024px) {
+  #status-bar .status-key {
+    translate: 0 0.07em;
+  }
+}
 @media (max-width: 599.98px) {
   /* A phone's scarce dimension is height, and two of these five are the two a
      phone can least use: the keyboard hint needs a keyboard, and the notebook
@@ -3545,6 +3662,27 @@ button.scroll-row-arrow[hidden] {
   #status-bar::-webkit-scrollbar {
     display: none;
   }
+}
+
+/* The status bar is the top bar's twin at the other edge, and with glass on
+   it was the one opaque strip of chrome (96% ground, no blur) under a glass
+   top bar: the same recipe now, keyed on glass being on, so glass off and
+   Performance mode keep the solid bar. */
+:root:not([data-glass="off"]) #status-bar {
+  background: var(--card);
+  backdrop-filter: var(--glass-filter);
+  -webkit-backdrop-filter: var(--glass-filter);
+}
+
+/* **A bar's popup stands above the companion** (INBOX 435, the owner's
+   screenshot: Atlas, perched on the status bar, drawn over the AI status
+   popup). A popup inside the status bar (z 30) or the header (z 40) can
+   rise no higher than its bar, and the companion's band is z 50. While one
+   is open, the bar it belongs to steps above the band; closed, everything
+   is as it was, so a perch on the bar still stands in front of it. */
+#status-bar:has(.ai-status-wrap:hover, .ai-status:focus-visible, .ai-status-popup.pinned, [aria-expanded="true"]),
+header#top-bar:has(.ai-status-wrap:hover, .ai-status:focus-visible, .ai-status-popup.pinned, [aria-expanded="true"], .space-menu:not(.hidden)) {
+  z-index: 51;
 }
 /* --- tab navigation (Wave A; pill style inside the top bar in Wave L) ------- */
 #tab-bar {
@@ -3635,6 +3773,15 @@ button.scroll-row-arrow[hidden] {
 }
 :root[data-mode="dark"] #tab-bar button.active {
   color: #0e1017;
+}
+
+#tab-bar {
+  --glide-radius: var(--radius-md);
+}
+
+/* The phone's bottom dock marks its tab by colour alone, as before. */
+#phone-tab-dock > #tab-bar::before {
+  content: none;
 }
 /* --- the page shell (§35L) --------------------------------------------------
    Every tab used to draw its own outer gutter, and no two agreed. The side
@@ -4312,7 +4459,7 @@ summary.small.icon-button {
    shadow, a faint ring on a card, a dark one in dark: the owner's "meatball
    buttons have a visible outline, is that consistent with the rest of the
    app??". Every `kebabMenu` opener is a plain ghost icon now, styled once in
-   08-consistency.css under `.kebab-opener`; nothing here dresses it. */
+   07-whiteboard-misc.css under `.kebab-opener`; nothing here dresses it. */
 /* **The content column scrolls down, never sideways.**
    Reported: "there's a horizontal scrollbar on the notes tab capture
    subtab". Measured at 1440, 1280 and 1100px: `main` reported scrollWidth
@@ -4333,5 +4480,5 @@ summary.small.icon-button {
   overflow-x: clip;
 }
 /* The kind chips above the boards grid: their gap to the first row of cards
-   is set in 08-consistency.css, beside the ring-room rule that was
+   is set in 07-whiteboard-misc.css, beside the ring-room rule that was
    overriding it from here (INBOX 726). */

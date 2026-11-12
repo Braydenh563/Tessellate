@@ -37,14 +37,14 @@ def _raw(client, url, **headers):
 
 
 def test_a_stylesheet_comes_back_as_its_own_bytes_gzipped(client, cold):
-    response, raw = _raw(client, "/css/08-consistency.css?v=1", **{"Accept-Encoding": "gzip"})
+    response, raw = _raw(client, "/css/07-whiteboard-misc.css?v=1", **{"Accept-Encoding": "gzip"})
     assert response.status_code == 200
     assert response.headers["content-encoding"] == "gzip"
     assert response.headers["vary"] == "Accept-Encoding"
     assert response.headers.get("etag")
     # The security headers are stamped on it like on every other response.
     assert "content-security-policy" in response.headers
-    css = (FRONTEND_DIR / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = (FRONTEND_DIR / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
     assert gzip.decompress(raw) == strip_css(css).encode()
 
 

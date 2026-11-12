@@ -10,10 +10,11 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._css_paths import FORMER_08, sheets
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS = sheets(*FORMER_08)
 FLOOR = CSS[CSS.index("The target floor (audit 1031 class 28") :]
 
 

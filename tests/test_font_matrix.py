@@ -55,7 +55,7 @@ def test_a_menu_row_cuts_its_words_inside_its_padding_and_titles_them():
     1393 at 1440). The kebabMenu item recipe: the row and its words flex with
     min-width 0, the words end in an ellipsis, and a cut row carries its full
     words in a title, never a smaller font."""
-    css = _css("08-consistency.css")
+    css = _css("07-whiteboard-misc.css")
     assert re.search(r"\.menu-item,\s*\.menu-item > \.menu-item-words \{\s*min-width: 0;\s*\}", css)
     assert re.search(r"\.menu-item \.ph-text \{\s*min-width: 0;\s*overflow: hidden;\s*text-overflow: ellipsis;\s*white-space: nowrap;\s*\}", css)
     js = (ROOT / "frontend/js/sheets-selects.js").read_text(encoding="utf-8")

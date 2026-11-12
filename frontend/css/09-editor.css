@@ -14,7 +14,7 @@
    exactly the way this project's notes on "a policy refusing the work" keep
    describing. So: layout here, ink in the theme.
 
-   Linked after 08-consistency.css so it is the last word on the panes it lays
+   Linked after 07-whiteboard-misc.css so it is the last word on the panes it lays
    out, and version-stamped like every other local stylesheet
    (tests/test_asset_cache_busting.py). */
 

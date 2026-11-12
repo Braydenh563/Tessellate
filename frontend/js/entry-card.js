@@ -517,7 +517,7 @@ function entryItem(entry, options = {}) {
   }
 
   const meta = document.createElement("div");
-  //: `note-meta` scopes the one-line facts styling (08-consistency.css) to a
+  //: `note-meta` scopes the one-line facts styling (a component file (08-consistency.css until UI plan 13b)) to a
   //: note card: `.entry-meta` alone is also the chip row of the skills, the
   //: personas and the extras in Settings, which that styling flattened.
   meta.className = "entry-meta note-meta";
@@ -674,7 +674,7 @@ function entryItem(entry, options = {}) {
     group.replaceChildren();
     group.dataset.tag = tag;
     //: Real buttons (N37), not spans with a role: a keyboard, a screen reader and a
-    //: finger all meet a control. The look is the chip's own (08-consistency.css).
+    //: finger all meet a control. The look is the chip's own (01-forms-settings.css).
     const take = document.createElement("button");
     take.type = "button";
     take.className = "suggested-tag-take";
@@ -916,7 +916,7 @@ function entryItem(entry, options = {}) {
     meta.appendChild(busy);
   }
 
-  //: The actions' corner (`.entry-meta-end`, 08-consistency.css).
+  //: The actions' corner (`.entry-meta-end`, 07-whiteboard-misc.css).
   const metaEnd = document.createElement("span");
   metaEnd.className = "entry-meta-end";
 
@@ -981,7 +981,7 @@ function entryItem(entry, options = {}) {
     metaEnd.appendChild(actions);
     //: A draft's strip holds a fifth target (Publish): the card's first
     //: lines and the row's lane keep that much more clear for it
-    //: (08-consistency.css, "The strip's own width, kept clear").
+    //: (01-forms-settings.css, "The strip's own width, kept clear").
     li.classList.toggle("has-wide-strip", actions.childElementCount > 4);
   }
   if (entry.is_private) {

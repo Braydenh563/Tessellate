@@ -1,6 +1,6 @@
 // avatars.js: the generated faces. `nameMood` reads a name for what the
 // face should be (mood, creature, costume, hands, limbs, hair, style) and
-// `nameMark` draws it as an SVG; the CSS motion is in 08-consistency.css.
+// `nameMark` draws it as an SVG; the CSS motion is in characters-lazy.css.
 //
 // Split out of app.js on 2026-09-24, when the faces themselves took the
 // gzipped app.js over tests/test_static_compression.py's bound (762,903
@@ -5399,7 +5399,7 @@
   //: with the README's companion shot: "the atlas avatar gets cut off at the
   //: top"; measured, the figure's top at y=55 against the band's at 77).
   //: Worked out from the size and the pose's pivot (the same origins as the
-  //: CSS in 08-consistency.css, `.nm-buddy-face`), not measured: a placement
+  //: CSS in characters-lazy.css, `.nm-buddy-face`), not measured: a placement
   //: often lands while the figure is mid-way through its appear, and a rect
   //: read then is the small one. `ART_REACH` is the drawing's own reach past
   //: its box at size 1, rings and glow included.
@@ -7530,7 +7530,7 @@
   //: idle span and shortens only for input or a toast; none in a hidden window.
   const NMB_IDLE_MARK_MS = 120000;
   const nmbClock = { timer: 0, inputAt: Date.now() };
-  //: UX3: 20 s without input and Atlas's endless loops hold still (`.is-calm`, 08-consistency.css).
+  //: UX3: 20 s without input and Atlas's endless loops hold still (`.is-calm`, 07-whiteboard-misc.css).
   nmbClock.setCalm = (on) => {
     clearTimeout(nmbClock.calm);
     document.documentElement.classList.toggle("is-calm", on);
@@ -8798,7 +8798,7 @@
   //: pointerout on div.modal-overlay.nm-viewer`; a30p-1103.md, 113ms a write at 4x CPU). The three
   //: properties were inherited, so each write on `#nm-buddy` restyled all 647 of its descendants
   //: for the four elements that read them. They are registered `inherits: false` now
-  //: (08-consistency.css) and set on those four kinds directly: 0.6ms a write. Properties of the function, not globals
+  //: (07-whiteboard-misc.css) and set on those four kinds directly: 0.6ms a write. Properties of the function, not globals
   //: (`tests/test_global_scope_ratchet.py`).
   nameMarkBuddyAim.readers = ".name-mark .nm-eyes, .nm-char .nm-buddy-head, .atl-layer-lids, .nm-atlas .atl-iris";
   nameMarkBuddyAim.set = (buddy, name, value) => {
@@ -8820,7 +8820,7 @@
   }
 
   //: **Atlas lies down on its nebula and curls up in it** (atlas.js's pose
-  //: hooks, 08-consistency.css: `data-pose` lie-1, lie-2, lie, curl-1,
+  //: hooks, characters-lazy.css: `data-pose` lie-1, lie-2, lie, curl-1,
   //: curl). Its own drawing has these as frames that ease into each other,
   //: so a lie-down is played through them, 450ms apart, and getting up plays
   //: them back to the pose it had (`nmb.pose`, which stays "stand" or "sit"
@@ -10509,7 +10509,7 @@
   ];
   function nameMarkBuddyNameProps(buddy, face) {
     const words = NMB_PROP_WORDS.filter(([cls]) => buddy.classList.contains(cls)).map(([, said]) => said);
-    //: Asked of the classes that show the cap (08-consistency.css, `.nmp-nightcap`), not of its computed
+    //: Asked of the classes that show the cap (characters-lazy.css, `.nmp-nightcap`), not of its computed
     //: opacity: that read settled the whole figure's pending style (INBOX 1667: `BUTTON.onpointerenter`
     //: 99ms of forced layout; 210ms at 4x CPU in the probe).
     const capShown = '.nmb-night:is([data-pose="sit"], [data-pose^="curl"], .nmb-act-lie), :is(.nmb-act-lie, :is([data-pose="sit"], [data-pose^="curl"]):is(.nmb-sleep, .nmb-act-nap)):not(.nmb-cap-off)';
@@ -10936,7 +10936,7 @@
     //: with that scroll. It sits under `<html>`, not in the body (INBOX 1726):
     //: a node added under `<body>` re-asks every `:has()` subject (124 to 213ms
     //: on the Library Images tab at 4x), under `<html>` it is 1 to 9ms; the text
-    //: it took from body is restated in 08-consistency.css. Between them the shutter, which closes the band
+    //: it took from body is restated in 07-whiteboard-misc.css. Between them the shutter, which closes the band
     //: down to the bar its perch has gone under (`nameMarkBuddyRideFrames`).
     const band = document.createElement("div");
     band.id = "nm-buddy-band";

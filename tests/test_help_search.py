@@ -19,7 +19,7 @@ from tests._js_scope import unwrapped, unwrapped_copy
 ROOT = Path(__file__).resolve().parents[1]
 JS = unwrapped((ROOT / "frontend" / "js" / "settings-find.js").read_text(encoding="utf-8"))
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
 
 #: meaning.js first: the Settings bundle loads the two together (Brief 94).
 HARNESS = """

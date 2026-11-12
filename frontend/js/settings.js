@@ -33,7 +33,7 @@ let currentSettingsSection = "models";
 //: seven panes began with a title and eleven began mid-thought, with a
 //: description, a status line or a group's small label). The ones without a
 //: head get the nav's own label as the same heading the others use
-//: (a `.dock.settings-pane-title`, styled in 08-consistency.css), made
+//: (a `.dock.settings-pane-title`, styled in 07-whiteboard-misc.css), made
 //: once and kept, so the word in the list and the word over the pane can
 //: never disagree.
 //: **Arrow keys walk the pane list**, the way a sidebar of sections moves
@@ -3837,7 +3837,7 @@ function wireSettingsFolds() {
 //: `ResizeObserver` on the wrapper and the summary re-places it whenever
 //: either changes size, which is also when a hidden pane is first shown.
 //: **The rects are divided by the dialog's own scale** (INBOX 1514): Settings
-//: rises from `scale: 0.985` over 240ms (08-consistency.css, the dialog
+//: rises from `scale: 0.985` over 240ms (07-whiteboard-misc.css, the dialog
 //: motion), the observer fires on the first laid-out frame, and a bounding
 //: rect is drawn size, so the offsets came out short of the real ones (up to
 //: 9.8px at 1440) and stayed, because a scale changes no layout size and the

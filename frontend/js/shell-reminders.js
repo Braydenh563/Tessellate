@@ -294,7 +294,7 @@ $("tab-bar")?.addEventListener("scroll", syncTabOverflowFade);
 
 //: **One sliding indicator for every strip** (the owner, 2026-10-04: "a
 //: slight css sliding animation ... cheap but looks professional", and
-//: 2026-10-05: "Also like the smooth slide across tabs"; 08-consistency.css,
+//: 2026-10-05: "Also like the smooth slide across tabs"; 07-whiteboard-misc.css,
 //: "one sliding indicator"). The top bar, the sub-tab strips, every
 //: segmented control, the Settings sections and a pane's groups: the strip's
 //: `::before` takes the chosen option's place and size at once (custom

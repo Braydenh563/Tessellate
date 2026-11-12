@@ -1364,7 +1364,7 @@ function renderLibraryContextBars() {
   const chosen = [...librarySelection];
   bar.classList.toggle("hidden", chosen.length === 0);
   //: Every tick shows while anything is ticked; see `.is-choosing` in
-  //: 08-consistency.css for why this is a class and not a `:has()`.
+  //: 07-whiteboard-misc.css for why this is a class and not a `:has()`.
   $("library-grid").classList.toggle("is-choosing", chosen.length > 0);
   if (!chosen.length) return;
   $("library-selected-count").textContent =

@@ -454,7 +454,7 @@ document.addEventListener("click", (event) => {
 //: two inside it as themselves. Now the card is only a box, and its title is
 //: the one control that opens it: a button by role, a Tab stop, Enter or
 //: Space to open. Its click area is stretched over the whole card by
-//: `.card-open::after` (08-consistency.css), so a press anywhere on the card
+//: `.card-open::after` (07-whiteboard-misc.css), so a press anywhere on the card
 //: still lands on the title and opens it, and the tick, the ⋯ and a link in
 //: the preview sit above that overlay as controls of their own. The host
 //: keeps its own click listener, which the overlay's press bubbles to, so

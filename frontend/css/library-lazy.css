@@ -1458,7 +1458,7 @@ body.printing-doc #doc-preview p,
 
 /* **No rule above the second job** (INBOX 726, the owner: "random top border
    on link related notes??"). The two jobs sat side by side in a wrapping row,
-   and `.setting-check + .setting-check` (08-consistency.css, "one stack, one
+   and `.setting-check + .setting-check` (07-whiteboard-misc.css, "one stack, one
    line between its rows") drew its hairline on the second one's top edge
    alone: measured, Link related notes `border-top` 1px rgba(31,36,48,0.08)
    at the same y as Tag notes, whose was transparent. They are two jobs under
@@ -1482,7 +1482,7 @@ body.printing-doc #doc-preview p,
 }
 
 /* Does it write? The same warn ink Settings gives "Changes notes"
-   (`.item-writes`, 08-consistency.css); a read-only skill stays muted. */
+   (`.item-writes`, 07-whiteboard-misc.css); a read-only skill stays muted. */
 .skill-fact-writes {
   color: var(--warn);
 }
@@ -4323,7 +4323,7 @@ button.ghost.doc-template-choice.wb-template-choice {
    halves now share the hairline: the caret's start edge overlaps the main
    half's end edge by 1px so there is one seam, and the pair lifts together
    under the pointer or the keyboard. The caret's selector names its
-   `.menu-wrap` because `.dock .menu-wrap > button.ghost` (08-consistency.css)
+   `.menu-wrap` because `.dock .menu-wrap > button.ghost` (07-whiteboard-misc.css)
    quiets every opener in a bar and would otherwise win. */
 .split-button > .split-button-main.ghost,
 .split-button .menu-wrap > .split-button-caret.ghost {
@@ -8280,7 +8280,7 @@ input[type="color"].wb-mixed {
   transform: rotate(180deg);
 }
 /* --- motion: a plus becomes a minus (INBOX 1506 B; the vocabulary is in
-   08-consistency.css, "one vocabulary for what opens and folds") --------- */
+   01-forms-settings.css, "one vocabulary for what opens and folds") --------- */
 .ui-pm {
   position: relative;
   display: inline-block;

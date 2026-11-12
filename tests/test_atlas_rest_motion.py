@@ -10,7 +10,7 @@ from pathlib import Path
 
 from tests._app_js import app_js_text
 
-CSS = Path("frontend/css/08-consistency.css").read_text(encoding="utf-8")
+CSS = Path("frontend/css/characters-lazy.css").read_text(encoding="utf-8")
 JS = app_js_text()
 
 

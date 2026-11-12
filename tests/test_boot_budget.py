@@ -76,7 +76,11 @@ BOOT_JS_CAP = 448_400
 #: 2026-10-31 INBOX 1479: the Notes tab's capture bar (one line of markup that
 #: draws with the tab) and a coloured note's tint cost 151 gzipped bytes; the
 #: card is a lazy file, the bar is not, so the cap rises by 200.
-BOOT_CSS_CAP = 179_300
+#: 2026-11-12, UI plan 13b (owner decision: keep the cap, free room, lower
+#: it): 08-consistency.css dissolved into the component files and its 758
+#: character rules (faces, companion, Atlas) moved to the lazy
+#: characters-lazy.css. Measured 165,450 (was 178,870); the cap is that plus 450.
+BOOT_CSS_CAP = 165_900
 
 
 def _served_gzip(url: str) -> int:

@@ -45,14 +45,14 @@ def test_answer_folds_are_flat_not_boxed_buttons():
 
 
 def test_chat_suggestions_wrap_under_600_instead_of_fading():
-    text = _css("08-consistency.css")
+    text = "\n".join(_css(n) for n in ("02-chat-graph.css", "03-dashboard-widgets.css", "07-whiteboard-misc.css"))
     block = text.split("  .chat-empty #chat-suggest > .chip {", 1)[1].split("}", 1)[0]
     assert "white-space: normal" in block
     assert "overflow-x: auto;\n    scrollbar-width: none;\n    mask-image" not in text.split("choice controls, the owner", 1)[0]
 
 
 def test_ask_box_hides_the_lone_sparkle_and_the_model_picker_takes_the_row():
-    assert ".ask-composer-icon {\n    display: none;" in _css("08-consistency.css")
+    assert ".ask-composer-icon {\n    display: none;" in "\n".join(_css(n) for n in ("02-chat-graph.css", "03-dashboard-widgets.css", "07-whiteboard-misc.css"))
     assert "max-width: none;" in _css("10-responsive.css").split("#ask .ask-header-actions > .select-shell:has(#ask-feature-model)", 1)[1].split("}", 1)[0]
 
 
@@ -64,7 +64,7 @@ def test_documents_dock_closes_up_so_the_more_menu_stays_on_the_row():
 
 
 def test_companion_blocks_browser_touch_scroll_so_a_drag_is_not_cancelled():
-    text = _css("08-consistency.css")
+    text = "\n".join(_css(n) for n in ("02-chat-graph.css", "03-dashboard-widgets.css", "07-whiteboard-misc.css"))
     assert "#nm-buddy { transition: opacity var(--motion-base) var(--ease-out); touch-action: none; }" in text
 
 

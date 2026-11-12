@@ -586,7 +586,7 @@
 }
 
 /* The Generate from path menu's chevron turns open, as the Library's Insert
-   menu's does (library-lazy.css; the transition is 08-consistency.css's
+   menu's does (library-lazy.css; the transition is 03-dashboard-widgets.css's
    `.ph-caret-down`). The graph does not load the Library's sheet. */
 .graph-trace-story[open] > summary > .doc-toolbar-menu-caret {
   transform: rotate(180deg);

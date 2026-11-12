@@ -95,7 +95,7 @@ def test_the_new_chat_page_paints_at_once_with_skeleton_starters():
     render = chat[chat.index("function renderChatEmptyState(") :].split("\n}\n")[0]
     assert 'showSkeletons(suggest, 4, "span")' in render
     assert "loadChatSuggestions.pending" in render and "chatEmptySettle(empty)" in render
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
     assert ".chat-empty.chat-empty-waiting {\n  opacity: 0;" not in css, "the card must not wait unseen"
     assert ".chat-empty-waiting #chat-suggest > .skeleton" in css
     load = frontend_text("sheets-selects.js")
