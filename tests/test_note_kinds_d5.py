@@ -98,3 +98,16 @@ def test_a_note_type_made_before_the_list_was_read_keeps_its_id_through_delete_a
     assert back.json()["id"] == first["id"]
     ids = {t["id"] for t in client.get("/note-types").json()}
     assert {first["id"], second["id"]} <= ids
+
+
+def test_undo_of_a_made_type_then_redo_keeps_its_id_l571(client):
+    from tests._app_js import app_js_text
+
+    made = client.post("/note-types", json={"name": "Recipe", "fields": []}).json()
+    gone = client.delete(f"/note-types/{made['id']}")
+    assert gone.status_code == 200
+    back = client.post("/note-types", json={"name": "Recipe", "fields": [], "id": made["id"], "restore": True})
+    restored = back.json()
+    assert restored["id"] == made["id"]
+    # The sheet's redo sends that same door.
+    assert "{ ...body, id: liveId, restore: true }" in app_js_text()
