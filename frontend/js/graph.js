@@ -3156,13 +3156,23 @@ function graphPopupFollowSpot(box, room, size, floor = 0) {
     [sx - w / 2, sy - r - gap - h],
   ];
   const clear = (x, y) => x + w < sx - r || x > sx + r || y + h < sy - r || y > sy + r;
+  //: The floating chrome that stays put (minimap, zoom strip, legend) is kept clear too: a card
+  //: on the right edge sat over the zoom buttons (graph gsweep, 2250 px2 at 1440x900).
+  const chrome = ["graph-minimap", "graph-zoom", "graph-legend"].map((id) => $(id)).filter((el) => el && el.offsetParent !== null)
+    .map((el) => el.getBoundingClientRect()).filter((q) => q.width > 0 && q.height > 0)
+    .map((q) => ({ l: q.left - box.left, t: q.top - box.top, r: q.right - box.left, b: q.bottom - box.top }));
+  const free = (x, y) => chrome.every((q) => x + w <= q.l || x >= q.r || y + h <= q.t || y >= q.b);
   let best = null;
+  let clearOnly = null;
   for (const [x, y] of tries) {
     const spot = { left: clampX(x), top: clampY(y) };
-    if (clear(spot.left, spot.top)) return spot;
+    if (clear(spot.left, spot.top)) {
+      if (free(spot.left, spot.top)) return spot;
+      clearOnly = clearOnly || spot;
+    }
     best = best || spot;
   }
-  return best;
+  return clearOnly || best;
 }
 
 //: The head drags the popup (pointer and touch); the buttons and fields keep
