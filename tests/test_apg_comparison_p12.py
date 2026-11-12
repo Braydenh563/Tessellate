@@ -57,7 +57,7 @@ def test_the_confirm_and_prompt_dialogs_are_named_and_described():
 
 def _css_switch_selectors() -> set[str]:
     css = re.sub(r"/\*.*?\*/", "", (CSS_DIR / "06-timeline-dialogs.css").read_text(encoding="utf-8"), flags=re.S)
-    rule = re.search(r"([^{}]+)\{\s*appearance: none;\s*-webkit-appearance: none;\s*width: 2rem;", css)
+    rule = re.search(r"(?:(?<=[{}])|\A)([^{}]+)\{\s*appearance: none;\s*-webkit-appearance: none;\s*width: 2rem;", css)
     assert rule, "the switch rule moved"
     return {re.sub(r"\s+", "", part).replace('"', "") for part in rule.group(1).split(",") if part.strip()}
 

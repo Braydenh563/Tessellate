@@ -23,7 +23,7 @@ from tessellate.core.database import LIKE_ESCAPE, Conversation, like_escape, utc
 from tessellate.repo import uploads as uploads_repo
 from tessellate.core.deps import get_session
 from tessellate.ai import consent_store
-from tessellate.api.chat_request import TurnFrame
+from tessellate.api.schemas import TurnFrame
 from tessellate.ai.grounding import composed_support, support as grounding_support
 from tessellate.entry.manager import log_action
 

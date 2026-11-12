@@ -21,16 +21,17 @@ def _read(name: str) -> str:
 
 
 def test_every_remaining_feature_mounts_its_notice() -> None:
+    # documents, semantic and searxng moved with loadPrefs into settings-prefs.js (Sh1 P12, fc806ad6d).
     where = {
         "voice": "navigation.js",
         "translate": "translate.js",
         "languagetool": "documents.js",
         "pyodide": "documents-code.js",
-        "documents": "settings-panes.js",
-        "semantic": "settings-panes.js",
+        "documents": "settings-prefs.js",
+        "semantic": "settings-prefs.js",
         "needle": "status.js",
         "localllm": "status.js",
-        "searxng": "settings-panes.js",
+        "searxng": "settings-prefs.js",
     }
     for ident, name in where.items():
         text = _read(name)

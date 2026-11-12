@@ -27,7 +27,7 @@ from typing import Annotated, Literal
 from tessellate.ai import captioning, composer_digest_sentences, composer_talk, consent, composer_frame, composer_open, librarian, memory, presets, questions, skills, tools, vocative
 from tessellate.api import bounds
 from tessellate.api.chat_attach import _attached_boards, _attached_documents, _attached_notes
-from tessellate.api.schemas import EntryOut
+from tessellate.api.schemas import EntryOut, TurnFrame
 from tessellate.core import activity, deps
 from tessellate.core.database import Category, Entry, like_escape, LIKE_ESCAPE, MediaUpload
 from tessellate.repo import categories as categories_repo
@@ -65,24 +65,6 @@ def _linked_labels(answer: str) -> list[str]:
         if label and label not in labels:
             labels.append(label)
     return labels[:5]
-
-
-class TurnFrame(BaseModel):
-    """What a composed answer showed (`composer_dialogue.turn_frame`), echoed back by the page so
-    the next turn binds to it before searching (fable-composer-1110 F1). Client input: bounded
-    here, and its note ids are read only through `chat_turn._cited_scope`, which checks each."""
-
-    note_ids: list[int] = Field(default_factory=list, max_length=5)
-    subject: str = Field(default="", max_length=80)
-    person: str = Field(default="", max_length=40)
-    ask: str = Field(default="", max_length=200)
-    dates: list[Annotated[str, Field(max_length=10)]] = Field(default_factory=list, max_length=5)
-    items: list[Annotated[str, Field(max_length=80)]] = Field(default_factory=list, max_length=12)
-
-    @model_validator(mode="after")
-    def _real_days(self):  # noqa: ANN202
-        self.dates = [d for d in self.dates if re.fullmatch(r"\d{4}-\d{2}-\d{2}", d)]
-        return self
 
 
 class ChatTurn(BaseModel):

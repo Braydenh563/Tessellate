@@ -20925,48 +20925,47 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_fill` | src/tessellate/api/chat_recent.py:125 |
 | `_recent_questions` | src/tessellate/api/chat_recent.py:55 |
 
-### src/tessellate/api/chat_request.py (38)
+### src/tessellate/api/chat_request.py (37)
 
 | Name | File:line |
 |---|---|
-| `ChatRequest` | src/tessellate/api/chat_request.py:140 |
-| `ChatResponse` | src/tessellate/api/chat_request.py:732 |
-| `ChatTurn` | src/tessellate/api/chat_request.py:88 |
-| `CommandRunBody` | src/tessellate/api/chat_request.py:835 |
-| `CompressBody` | src/tessellate/api/chat_request.py:937 |
+| `ChatRequest` | src/tessellate/api/chat_request.py:122 |
+| `ChatResponse` | src/tessellate/api/chat_request.py:714 |
+| `ChatTurn` | src/tessellate/api/chat_request.py:70 |
+| `CommandRunBody` | src/tessellate/api/chat_request.py:817 |
+| `CompressBody` | src/tessellate/api/chat_request.py:919 |
 | `FollowupBody` | src/tessellate/api/chat_request.py:41 |
-| `PlanRun` | src/tessellate/api/chat_request.py:117 |
+| `PlanRun` | src/tessellate/api/chat_request.py:99 |
 | `RememberBody` | src/tessellate/api/chat_request.py:37 |
-| `ScreenBody` | src/tessellate/api/chat_request.py:130 |
-| `ToolExecuteBody` | src/tessellate/api/chat_request.py:943 |
-| `TurnFrame` | src/tessellate/api/chat_request.py:70 |
-| `_StreamRequest` | src/tessellate/api/chat_request.py:768 |
-| `_Turn` | src/tessellate/api/chat_request.py:845 |
-| `_apply_open` | src/tessellate/api/chat_request.py:502 |
-| `_apply_open_this` | src/tessellate/api/chat_request.py:532 |
-| `_apply_scope` | src/tessellate/api/chat_request.py:361 |
-| `_attached_only` | src/tessellate/api/chat_request.py:398 |
-| `_bind_cited` | src/tessellate/api/chat_request.py:442 |
-| `_category_note_ids` | src/tessellate/api/chat_request.py:380 |
-| `_chat_model_sees_images` | src/tessellate/api/chat_request.py:632 |
-| `_check_refs` | src/tessellate/api/chat_request.py:341 |
-| `_composed` | src/tessellate/api/chat_request.py:828 |
-| `_event` | src/tessellate/api/chat_request.py:879 |
-| `_first_more_is_this` | src/tessellate/api/chat_request.py:391 |
-| `_image_caption_context` | src/tessellate/api/chat_request.py:645 |
-| `_in_full` | src/tessellate/api/chat_request.py:823 |
+| `ScreenBody` | src/tessellate/api/chat_request.py:112 |
+| `ToolExecuteBody` | src/tessellate/api/chat_request.py:925 |
+| `_StreamRequest` | src/tessellate/api/chat_request.py:750 |
+| `_Turn` | src/tessellate/api/chat_request.py:827 |
+| `_apply_open` | src/tessellate/api/chat_request.py:484 |
+| `_apply_open_this` | src/tessellate/api/chat_request.py:514 |
+| `_apply_scope` | src/tessellate/api/chat_request.py:343 |
+| `_attached_only` | src/tessellate/api/chat_request.py:380 |
+| `_bind_cited` | src/tessellate/api/chat_request.py:424 |
+| `_category_note_ids` | src/tessellate/api/chat_request.py:362 |
+| `_chat_model_sees_images` | src/tessellate/api/chat_request.py:614 |
+| `_check_refs` | src/tessellate/api/chat_request.py:323 |
+| `_composed` | src/tessellate/api/chat_request.py:810 |
+| `_event` | src/tessellate/api/chat_request.py:861 |
+| `_first_more_is_this` | src/tessellate/api/chat_request.py:373 |
+| `_image_caption_context` | src/tessellate/api/chat_request.py:627 |
+| `_in_full` | src/tessellate/api/chat_request.py:805 |
 | `_linked_labels` | src/tessellate/api/chat_request.py:58 |
-| `_meta_event` | src/tessellate/api/chat_request.py:883 |
-| `_named_note` | src/tessellate/api/chat_request.py:423 |
-| `_nothing_open` | src/tessellate/api/chat_request.py:547 |
-| `_open_surface` | src/tessellate/api/chat_request.py:490 |
-| `_resolve_chat_images` | src/tessellate/api/chat_request.py:592 |
-| `_resolve_mode` | src/tessellate/api/chat_request.py:553 |
-| `_resolve_persona` | src/tessellate/api/chat_request.py:569 |
-| `_resolve_skill` | src/tessellate/api/chat_request.py:706 |
-| `_small_model_mode` | src/tessellate/api/chat_request.py:685 |
-| `_titled_note` | src/tessellate/api/chat_request.py:474 |
-| `take_up_offer` | src/tessellate/api/chat_request.py:455 |
+| `_meta_event` | src/tessellate/api/chat_request.py:865 |
+| `_named_note` | src/tessellate/api/chat_request.py:405 |
+| `_nothing_open` | src/tessellate/api/chat_request.py:529 |
+| `_open_surface` | src/tessellate/api/chat_request.py:472 |
+| `_resolve_chat_images` | src/tessellate/api/chat_request.py:574 |
+| `_resolve_mode` | src/tessellate/api/chat_request.py:535 |
+| `_resolve_persona` | src/tessellate/api/chat_request.py:551 |
+| `_resolve_skill` | src/tessellate/api/chat_request.py:688 |
+| `_small_model_mode` | src/tessellate/api/chat_request.py:667 |
+| `_titled_note` | src/tessellate/api/chat_request.py:456 |
+| `take_up_offer` | src/tessellate/api/chat_request.py:437 |
 
 ### src/tessellate/api/chat_said.py (60)
 
@@ -23373,24 +23372,25 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `run_sandbox_python` | src/tessellate/api/run_sandbox.py:238 |
 | `start_run_job` | src/tessellate/api/run_sandbox.py:337 |
 
-### src/tessellate/api/schemas.py (14)
+### src/tessellate/api/schemas.py (15)
 
 | Name | File:line |
 |---|---|
-| `AttachmentOut` | src/tessellate/api/schemas.py:242 |
-| `ContextBody` | src/tessellate/api/schemas.py:211 |
-| `DocumentRefOut` | src/tessellate/api/schemas.py:261 |
-| `EntryCreate` | src/tessellate/api/schemas.py:85 |
-| `EntryDateOut` | src/tessellate/api/schemas.py:268 |
-| `EntryOut` | src/tessellate/api/schemas.py:284 |
-| `EntryUpdate` | src/tessellate/api/schemas.py:167 |
-| `LinkOut` | src/tessellate/api/schemas.py:217 |
-| `SimilarOut` | src/tessellate/api/schemas.py:253 |
-| `SpaceCreate` | src/tessellate/api/schemas.py:23 |
-| `SpaceResponse` | src/tessellate/api/schemas.py:44 |
-| `SpaceUpdate` | src/tessellate/api/schemas.py:35 |
-| `known_note_colour` | src/tessellate/api/schemas.py:79 |
-| `not_blank` | src/tessellate/api/schemas.py:14 |
+| `AttachmentOut` | src/tessellate/api/schemas.py:244 |
+| `ContextBody` | src/tessellate/api/schemas.py:213 |
+| `DocumentRefOut` | src/tessellate/api/schemas.py:263 |
+| `EntryCreate` | src/tessellate/api/schemas.py:87 |
+| `EntryDateOut` | src/tessellate/api/schemas.py:270 |
+| `EntryOut` | src/tessellate/api/schemas.py:286 |
+| `EntryUpdate` | src/tessellate/api/schemas.py:169 |
+| `LinkOut` | src/tessellate/api/schemas.py:219 |
+| `SimilarOut` | src/tessellate/api/schemas.py:255 |
+| `SpaceCreate` | src/tessellate/api/schemas.py:25 |
+| `SpaceResponse` | src/tessellate/api/schemas.py:46 |
+| `SpaceUpdate` | src/tessellate/api/schemas.py:37 |
+| `TurnFrame` | src/tessellate/api/schemas.py:394 |
+| `known_note_colour` | src/tessellate/api/schemas.py:81 |
+| `not_blank` | src/tessellate/api/schemas.py:16 |
 
 ### src/tessellate/api/this_computer.py (2)
 
