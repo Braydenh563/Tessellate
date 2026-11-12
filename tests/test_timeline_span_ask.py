@@ -21,7 +21,8 @@ def test_the_ask_sheet_reads_two_dates_and_opens_the_review():
     ask = JS[JS.index("  ask() {") :][:2600]
     assert 'type: "date"' in ask and '"timeline-span-from"' in ask and '"timeline-span-to"' in ask
     assert "[from.value, to.value].sort()" in ask  # From after To is turned round
-    assert "timelineSpans.open(start, end)" in ask
+    assert "await timelineSpans.open(start, end)" in ask
+    assert 'setBusy(review, true, "Reading…")' in ask  # a model takes seconds: the spinner recipe
     assert '$("timeline-span-btn").addEventListener("click"' in JS
 
 

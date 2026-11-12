@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Timeline: the span review is said by the model when one runs (the span's notes, the utility model, librarian's prompt budget) and by the composer otherwise or when the call fails, so model on and off both answer (CHAT_PLAN decision 75); the Review button waits busy while it reads (`tests/test_timeline_span_digest.py`, four fake-transport tests).
 - Timeline: Options, Review some days opens the span review from two dates, the keyboard's and the phone's way to what Shift and drag on the strip does (L-timeline-2 follow-up; measured at 1440 by keyboard and 390 by touch, item 44 px tall on the phone, `tests/test_timeline_span_ask.py`).
 - Timeline: a ranged note shows as a span: the feed and table label it "3 Mar to 7 Mar", the calendar draws a "continues" chip on each later day (not draggable), and the help and Guide say so; the BACKLOG row for spans is removed (`tests/test_timeline_spans_view.py`).
 - Timeline: the startup `done_at` backfill is removed and L472 and L495 close under TIMELINE_PLAN decision 22 (no invented done moment, no streak count on the timeline; the streak stays on the Dashboard).

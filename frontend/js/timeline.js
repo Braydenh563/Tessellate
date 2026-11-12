@@ -1892,18 +1892,23 @@ const timelineSpans = {
         };
         const from = field("From", "timeline-span-from", key(6));
         const to = field("To", "timeline-span-to", key(0));
-        const go = () => {
-          if (!from.value || !to.value) return;
+        //: A model says the review when one runs, which takes seconds: the
+        //: button waits busy (DESIGN.md's spinner recipe) and the sheet closes
+        //: as the review opens.
+        const go = async () => {
+          if (!from.value || !to.value || review.disabled) return;
           const [start, end] = [from.value, to.value].sort();
+          setBusy(review, true, "Reading…");
+          await timelineSpans.open(start, end);
+          setBusy(review, false);
           close();
-          timelineSpans.open(start, end);
         };
         for (const input of [from, to]) input.addEventListener("keydown", (event) => event.key === "Enter" && (event.preventDefault(), go()));
         const actions = document.createElement("div");
         actions.className = "row right space-dialog-actions";
         const cancel = smallButton("Cancel", "Close without reviewing", close, false);
         cancel.className = "ghost small";
-        const review = smallButton("ph:magnifying-glass Review", "Review what you wrote in these days", go, false);
+        const review = smallButton("ph:magnifying-glass Review", "Review what you wrote in these days", () => go(), false);
         review.className = "accent small";
         actions.append(cancel, review);
         card.append(body, actions);

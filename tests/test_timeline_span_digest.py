@@ -139,3 +139,40 @@ def test_the_span_sheet_is_the_sheet_recipe_with_the_notes_beside_the_review():
     assert "/timeline/digest?start=" in body
     for part in ("openSheet(", "renderMarkdown(", "connectionRowEl(", "timeline-span-notes"):
         assert part in body, part
+
+
+# --- The model path (CHAT_PLAN decision 75: model on and model off agree) ----
+
+
+def test_with_a_model_the_span_is_said_by_the_model_over_the_spans_notes(book, ai_client, fake_ollama):
+    fake_ollama.librarian_reply = "October was the Harbor launch and a Lisbon trip."
+    body = ai_client.get("/timeline/digest", params={"start": "2026-10-01", "end": "2026-10-31"}).json()
+    assert body["text"] == "October was the Harbor launch and a Lisbon trip." and body["composed"] is False
+    prompt = fake_ollama.chat_calls[-1][-1]["content"]
+    assert "Harbor launch plan" in prompt and "Lisbon trip" in prompt
+    assert "Garden shed" not in prompt and "September budget" not in prompt  # only the span's notes
+    assert "from 1 October 2026 to 31 October 2026" in prompt  # the span's own ends
+    assert [n["title"] for n in body["notes"]] == ["Harbor launch plan", "Lisbon trip"]
+
+
+def test_a_failed_model_call_falls_back_to_the_composed_review(book, ai_client, fake_ollama, monkeypatch):
+    from tessellate.ai.ollama_client import OllamaError
+
+    def broken(*_a, **_k):
+        raise OllamaError("timed out")
+
+    monkeypatch.setattr(fake_ollama, "chat", broken)
+    body = ai_client.get("/timeline/digest", params={"start": "2026-10-01", "end": "2026-10-31"}).json()
+    assert body["composed"] is True and body["text"].startswith("You wrote two notes from ")
+
+
+def test_a_stopped_model_falls_back_to_the_composed_review(book, ai_client, fake_ollama):
+    fake_ollama.running = False
+    body = ai_client.get("/timeline/digest", params={"start": "2026-10-01", "end": "2026-10-31"}).json()
+    assert body["composed"] is True and body["text"].startswith("You wrote two notes from ")
+    assert not fake_ollama.chat_calls
+
+
+def test_an_empty_span_never_asks_the_model(book, ai_client, fake_ollama):
+    ai_client.get("/timeline/digest", params={"start": "2026-08-01", "end": "2026-08-31"})
+    assert not fake_ollama.chat_calls

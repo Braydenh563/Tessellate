@@ -866,11 +866,45 @@ def _thread_bands(notes: list[dict]) -> list[dict]:
 SPAN_DIGEST_MAX_DAYS = 366
 
 
+SPAN_QUESTION = (
+    "Today is {today}. Give me a short review of what I wrote from {start} to "
+    "{end}, grouped by topic, calling out anything that looks important or "
+    "unfinished. Each note shows the day it was written. Start with the review "
+    "itself: no greeting, and no sentence announcing it."
+)
+
+
+def _span_said_by_model(notes: list[dict], first, last, now) -> str:  # noqa: ANN001
+    """The model's review of the span's notes, or "" for the composer: no
+    notes, no model running, or a call that failed or timed out (librarian
+    answers those with its offline line, which is not a review)."""
+    from tessellate.ai import librarian
+    from tessellate.ai.answer_trim import trim_assistant_padding
+    from tessellate.core import deps
+
+    ollama = deps.get_ollama()
+    if not notes or not ollama.is_running():
+        return ""
+    day = lambda d: f"{d.day} {d:%B %Y}"  # noqa: E731
+    shown = notes[-30:]  # the newest 30, the weekly digest's cap; the budget trims further
+    question = SPAN_QUESTION.format(today=day(now), start=day(first), end=day(last))
+    rows = [{"content": n["content"], "category": n["category"], "written": n["created_at"][:10]} for n in shown]
+    said, _thinking = librarian.answer(
+        question, rows, deps.get_model_manager(), ollama,
+        style=deps.get_config().get_preference("communication_style", "friendly"),
+        persona_prompt=None, use_utility_model=True,
+    )
+    if said in (librarian.OFFLINE_MESSAGE, librarian.BUSY_MESSAGE, librarian.NO_RESULTS_MESSAGE):
+        return ""
+    return trim_assistant_padding(said)
+
+
 @router.get("/digest")
 def span_digest(start: str, end: str, session: Session = Depends(get_session)) -> dict:
-    """What was written from `start` to `end` (L-timeline-2): the composed
-    review (`review_digest.span`, no model) and the notes in it, oldest first,
-    which the brushed sheet lists beside the review."""
+    """What was written from `start` to `end` (L-timeline-2): the review, said
+    by the model when one is running and by the composer (`review_digest.span`)
+    otherwise or when the call fails, and the notes in it, oldest first, which
+    the sheet lists beside the review (CHAT_PLAN decision 75: both paths)."""
     from datetime import date
 
     from tessellate.ai import activity, review_digest
@@ -883,12 +917,14 @@ def span_digest(start: str, end: str, session: Session = Depends(get_session)) -
         raise HTTPException(status_code=422, detail="start and end are days, YYYY-MM-DD") from exc
     if last < first or (last - first).days >= SPAN_DIGEST_MAX_DAYS:
         raise HTTPException(status_code=422, detail=f"a span runs forwards and is at most {SPAN_DIGEST_MAX_DAYS} days")
-    text, notes = review_digest.span(session, first, last, user_now(deps.get_config()))
+    now = user_now(deps.get_config())
+    text, notes = review_digest.span(session, first, last, now)
+    said = _span_said_by_model(notes, first, last, now)
     return {
         "start": first.isoformat(),
         "end": last.isoformat(),
-        "text": text,
-        "composed": True,
+        "text": said or text,
+        "composed": not said,
         "notes": [
             {"id": n["id"], "title": activity._note_name(n["content"]), "day": n["created_at"][:10], "category": n["category"]}
             for n in notes
