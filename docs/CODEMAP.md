@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8329, frontend ids 2763, CSS sections 524, backend routes 698, backend modules 10758, test files 2671, tests 21805, plan headings 682, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8329, frontend ids 2763, CSS sections 524, backend routes 698, backend modules 10758, test files 2672, tests 21808, plan headings 682, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8329)
 
@@ -1903,10 +1903,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `featureCommandRows` | frontend/js/app-features.js:225 |
 | `paletteCommands` | frontend/js/app-features.js:298 |
 | `popupToolMaths` | frontend/js/app-features.js:256 |
-| `quickAccessCurrent` | frontend/js/app-features.js:611 |
-| `quickAccessItems` | frontend/js/app-features.js:602 |
-| `quickCatalogue` | frontend/js/app-features.js:580 |
-| `renderQuickLinks` | frontend/js/app-features.js:616 |
+| `quickAccessCurrent` | frontend/js/app-features.js:617 |
+| `quickAccessItems` | frontend/js/app-features.js:608 |
+| `quickCatalogue` | frontend/js/app-features.js:586 |
+| `renderQuickLinks` | frontend/js/app-features.js:622 |
 | `renderToolShortcutList` | frontend/js/app-features.js:272 |
 
 ### frontend/js/app-import.js (6)
@@ -10583,9 +10583,9 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `duplicate-threshold` | frontend/index.html:14007 |
 | `duplicate-threshold-value` | frontend/index.html:14009 |
 | `duplicates-help` | frontend/index.html:13996 |
-| `editor-menu` | frontend/index.html:16367 |
-| `editor-menu-list` | frontend/index.html:16368 |
-| `editor-menu-preview` | frontend/index.html:16370 |
+| `editor-menu` | frontend/index.html:16370 |
+| `editor-menu-list` | frontend/index.html:16371 |
+| `editor-menu-preview` | frontend/index.html:16373 |
 | `embed-choices` | frontend/index.html:10909 |
 | `embed-choices-cache` | frontend/index.html:10911 |
 | `embed-choices-status` | frontend/index.html:10910 |
@@ -10662,12 +10662,12 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `feature-models-list` | frontend/index.html:10566 |
 | `feature-models-reset` | frontend/index.html:10568 |
 | `feature-models-reset-note` | frontend/index.html:10571 |
-| `features-card` | frontend/index.html:16249 |
-| `features-close` | frontend/index.html:16253 |
-| `features-count` | frontend/index.html:16265 |
-| `features-list` | frontend/index.html:16266 |
-| `features-overlay` | frontend/index.html:16247 |
-| `features-search` | frontend/index.html:16262 |
+| `features-card` | frontend/index.html:16252 |
+| `features-close` | frontend/index.html:16256 |
+| `features-count` | frontend/index.html:16268 |
+| `features-list` | frontend/index.html:16269 |
+| `features-overlay` | frontend/index.html:16250 |
+| `features-search` | frontend/index.html:16265 |
 | `find-duplicates` | frontend/index.html:14005 |
 | `finder-close` | frontend/index.html:824 |
 | `finder-filters` | frontend/index.html:874 |
@@ -10942,19 +10942,19 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `import-notion-file` | frontend/index.html:14150 |
 | `import-obsidian` | frontend/index.html:14155 |
 | `import-obsidian-file` | frontend/index.html:14153 |
-| `improve-apply` | frontend/index.html:16069 |
+| `improve-apply` | frontend/index.html:16072 |
 | `improve-btn` | frontend/index.html:1808 |
-| `improve-card` | frontend/index.html:16035 |
-| `improve-close` | frontend/index.html:16039 |
-| `improve-custom-go` | frontend/index.html:16052 |
-| `improve-custom-input` | frontend/index.html:16050 |
-| `improve-custom-row` | frontend/index.html:16049 |
-| `improve-modes` | frontend/index.html:16043 |
-| `improve-original` | frontend/index.html:16057 |
-| `improve-overlay` | frontend/index.html:16034 |
-| `improve-result` | frontend/index.html:16061 |
-| `improve-retry` | frontend/index.html:16068 |
-| `improve-status` | frontend/index.html:16064 |
+| `improve-card` | frontend/index.html:16038 |
+| `improve-close` | frontend/index.html:16042 |
+| `improve-custom-go` | frontend/index.html:16055 |
+| `improve-custom-input` | frontend/index.html:16053 |
+| `improve-custom-row` | frontend/index.html:16052 |
+| `improve-modes` | frontend/index.html:16046 |
+| `improve-original` | frontend/index.html:16060 |
+| `improve-overlay` | frontend/index.html:16037 |
+| `improve-result` | frontend/index.html:16064 |
+| `improve-retry` | frontend/index.html:16071 |
+| `improve-status` | frontend/index.html:16067 |
 | `installed-box` | frontend/index.html:10638 |
 | `installed-list` | frontend/index.html:10641 |
 | `integrity-notice` | frontend/index.html:14227 |
@@ -11201,37 +11201,37 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `mcp-config-help` | frontend/index.html:11732 |
 | `mcp-config-note` | frontend/index.html:11752 |
 | `mcp-config-snippet` | frontend/index.html:11751 |
-| `meeting-captions` | frontend/index.html:16168 |
-| `meeting-card` | frontend/index.html:16092 |
-| `meeting-close` | frontend/index.html:16110 |
-| `meeting-controls` | frontend/index.html:16161 |
-| `meeting-copy` | frontend/index.html:16231 |
-| `meeting-discard` | frontend/index.html:16232 |
-| `meeting-discard-take` | frontend/index.html:16171 |
-| `meeting-done` | frontend/index.html:16236 |
-| `meeting-done-again` | frontend/index.html:16240 |
-| `meeting-done-lines` | frontend/index.html:16237 |
-| `meeting-done-open` | frontend/index.html:16239 |
-| `meeting-help` | frontend/index.html:16115 |
-| `meeting-live` | frontend/index.html:16192 |
-| `meeting-marker` | frontend/index.html:16165 |
-| `meeting-mic` | frontend/index.html:16149 |
-| `meeting-mic-controls` | frontend/index.html:16151 |
-| `meeting-mic-name` | frontend/index.html:16150 |
-| `meeting-overlay` | frontend/index.html:16090 |
-| `meeting-pause` | frontend/index.html:16163 |
-| `meeting-progress` | frontend/index.html:16196 |
-| `meeting-record` | frontend/index.html:16162 |
-| `meeting-save` | frontend/index.html:16220 |
-| `meeting-save-doc` | frontend/index.html:16226 |
-| `meeting-save-row` | frontend/index.html:16216 |
-| `meeting-stage` | frontend/index.html:16160 |
-| `meeting-status` | frontend/index.html:16201 |
-| `meeting-stop-transcribe` | frontend/index.html:16199 |
-| `meeting-timer` | frontend/index.html:16166 |
-| `meeting-title` | frontend/index.html:16144 |
-| `meeting-transcript` | frontend/index.html:16206 |
-| `meeting-wave` | frontend/index.html:16188 |
+| `meeting-captions` | frontend/index.html:16171 |
+| `meeting-card` | frontend/index.html:16095 |
+| `meeting-close` | frontend/index.html:16113 |
+| `meeting-controls` | frontend/index.html:16164 |
+| `meeting-copy` | frontend/index.html:16234 |
+| `meeting-discard` | frontend/index.html:16235 |
+| `meeting-discard-take` | frontend/index.html:16174 |
+| `meeting-done` | frontend/index.html:16239 |
+| `meeting-done-again` | frontend/index.html:16243 |
+| `meeting-done-lines` | frontend/index.html:16240 |
+| `meeting-done-open` | frontend/index.html:16242 |
+| `meeting-help` | frontend/index.html:16118 |
+| `meeting-live` | frontend/index.html:16195 |
+| `meeting-marker` | frontend/index.html:16168 |
+| `meeting-mic` | frontend/index.html:16152 |
+| `meeting-mic-controls` | frontend/index.html:16154 |
+| `meeting-mic-name` | frontend/index.html:16153 |
+| `meeting-overlay` | frontend/index.html:16093 |
+| `meeting-pause` | frontend/index.html:16166 |
+| `meeting-progress` | frontend/index.html:16199 |
+| `meeting-record` | frontend/index.html:16165 |
+| `meeting-save` | frontend/index.html:16223 |
+| `meeting-save-doc` | frontend/index.html:16229 |
+| `meeting-save-row` | frontend/index.html:16219 |
+| `meeting-stage` | frontend/index.html:16163 |
+| `meeting-status` | frontend/index.html:16204 |
+| `meeting-stop-transcribe` | frontend/index.html:16202 |
+| `meeting-timer` | frontend/index.html:16169 |
+| `meeting-title` | frontend/index.html:16147 |
+| `meeting-transcript` | frontend/index.html:16209 |
+| `meeting-wave` | frontend/index.html:16191 |
 | `memory-add` | frontend/index.html:11425 |
 | `memory-budget` | frontend/index.html:11417 |
 | `memory-empty` | frontend/index.html:11429 |
@@ -11395,19 +11395,19 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `offline-indicator` | frontend/index.html:9457 |
 | `ollama-help` | frontend/index.html:10306 |
 | `ollama-status` | frontend/index.html:10291 |
-| `onboarding-actions` | frontend/index.html:16284 |
-| `onboarding-atlas` | frontend/index.html:16276 |
-| `onboarding-back` | frontend/index.html:16290 |
-| `onboarding-card` | frontend/index.html:16273 |
-| `onboarding-dots` | frontend/index.html:16286 |
-| `onboarding-emblem` | frontend/index.html:16275 |
-| `onboarding-icon` | frontend/index.html:16277 |
-| `onboarding-next` | frontend/index.html:16291 |
-| `onboarding-overlay` | frontend/index.html:16271 |
-| `onboarding-skip` | frontend/index.html:16288 |
-| `onboarding-slide` | frontend/index.html:16274 |
-| `onboarding-text` | frontend/index.html:16279 |
-| `onboarding-title` | frontend/index.html:16278 |
+| `onboarding-actions` | frontend/index.html:16287 |
+| `onboarding-atlas` | frontend/index.html:16279 |
+| `onboarding-back` | frontend/index.html:16293 |
+| `onboarding-card` | frontend/index.html:16276 |
+| `onboarding-dots` | frontend/index.html:16289 |
+| `onboarding-emblem` | frontend/index.html:16278 |
+| `onboarding-icon` | frontend/index.html:16280 |
+| `onboarding-next` | frontend/index.html:16294 |
+| `onboarding-overlay` | frontend/index.html:16274 |
+| `onboarding-skip` | frontend/index.html:16291 |
+| `onboarding-slide` | frontend/index.html:16277 |
+| `onboarding-text` | frontend/index.html:16282 |
+| `onboarding-title` | frontend/index.html:16281 |
 | `open-exports-folder` | frontend/index.html:13829 |
 | `open-exports-row` | frontend/index.html:13828 |
 | `packages-embed-link` | frontend/index.html:12840 |
@@ -11780,14 +11780,14 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `settings-websearch` | frontend/index.html:13285 |
 | `shadow-intensity` | frontend/index.html:12085 |
 | `shadow-intensity-value` | frontend/index.html:12087 |
-| `shortcut-head-whiteboard` | frontend/index.html:15979 |
+| `shortcut-head-whiteboard` | frontend/index.html:15982 |
 | `shortcut-list` | frontend/index.html:15930 |
-| `shortcut-list-documents` | frontend/index.html:15975 |
-| `shortcut-list-documents-note` | frontend/index.html:15976 |
+| `shortcut-list-documents` | frontend/index.html:15978 |
+| `shortcut-list-documents-note` | frontend/index.html:15979 |
 | `shortcut-list-settings` | frontend/index.html:12852 |
-| `shortcut-list-tools` | frontend/index.html:15968 |
-| `shortcut-list-whiteboard` | frontend/index.html:15984 |
-| `shortcut-list-whiteboard-note` | frontend/index.html:15985 |
+| `shortcut-list-tools` | frontend/index.html:15971 |
+| `shortcut-list-whiteboard` | frontend/index.html:15987 |
+| `shortcut-list-whiteboard-note` | frontend/index.html:15988 |
 | `shortcut-status` | frontend/index.html:15931 |
 | `shortcut-status-settings` | frontend/index.html:12853 |
 | `shortcuts-card` | frontend/index.html:15921 |
@@ -11803,8 +11803,8 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `simple-mode-box` | frontend/index.html:13231 |
 | `simple-mode-help` | frontend/index.html:13244 |
 | `sketch-btn` | frontend/index.html:1803 |
-| `sketch-card` | frontend/index.html:16078 |
-| `sketch-overlay` | frontend/index.html:16077 |
+| `sketch-card` | frontend/index.html:16081 |
+| `sketch-overlay` | frontend/index.html:16080 |
 | `skill-add` | frontend/index.html:11315 |
 | `skill-add-fold` | frontend/index.html:11215 |
 | `skill-cancel` | frontend/index.html:11316 |
@@ -12052,23 +12052,23 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `tool-list` | frontend/index.html:11716 |
 | `tools-toggle` | frontend/index.html:3296 |
 | `top-bar` | frontend/index.html:128 |
-| `tour-back` | frontend/index.html:16353 |
-| `tour-block` | frontend/index.html:16328 |
-| `tour-block-bottom` | frontend/index.html:16331 |
-| `tour-block-left` | frontend/index.html:16332 |
-| `tour-block-right` | frontend/index.html:16330 |
-| `tour-block-top` | frontend/index.html:16329 |
-| `tour-card` | frontend/index.html:16338 |
-| `tour-close` | frontend/index.html:16344 |
-| `tour-count` | frontend/index.html:16343 |
-| `tour-next` | frontend/index.html:16354 |
+| `tour-back` | frontend/index.html:16356 |
+| `tour-block` | frontend/index.html:16331 |
+| `tour-block-bottom` | frontend/index.html:16334 |
+| `tour-block-left` | frontend/index.html:16335 |
+| `tour-block-right` | frontend/index.html:16333 |
+| `tour-block-top` | frontend/index.html:16332 |
+| `tour-card` | frontend/index.html:16341 |
+| `tour-close` | frontend/index.html:16347 |
+| `tour-count` | frontend/index.html:16346 |
+| `tour-next` | frontend/index.html:16357 |
 | `tour-replay-buttons` | frontend/index.html:15203 |
-| `tour-section` | frontend/index.html:16341 |
-| `tour-skip` | frontend/index.html:16351 |
-| `tour-spot` | frontend/index.html:16334 |
+| `tour-section` | frontend/index.html:16344 |
+| `tour-skip` | frontend/index.html:16354 |
+| `tour-spot` | frontend/index.html:16337 |
 | `tour-start-btn` | frontend/index.html:15197 |
-| `tour-text` | frontend/index.html:16349 |
-| `tour-title` | frontend/index.html:16348 |
+| `tour-text` | frontend/index.html:16352 |
+| `tour-title` | frontend/index.html:16351 |
 | `ui-motion-row` | frontend/index.html:12277 |
 | `ui-motion-toggle` | frontend/index.html:12278 |
 | `undo-history-menu` | frontend/index.html:9579 |
@@ -12302,15 +12302,15 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `wb-guide-color-center` | frontend/index.html:8030 |
 | `wb-guide-color-edge` | frontend/index.html:8029 |
 | `wb-guide-color-spacing` | frontend/index.html:8031 |
-| `wb-help-about` | frontend/index.html:16016 |
+| `wb-help-about` | frontend/index.html:16019 |
 | `wb-help-btn` | frontend/index.html:7286 |
-| `wb-help-card` | frontend/index.html:16005 |
-| `wb-help-close` | frontend/index.html:16012 |
-| `wb-help-none` | frontend/index.html:16028 |
-| `wb-help-overlay` | frontend/index.html:16003 |
-| `wb-help-search` | frontend/index.html:16024 |
-| `wb-help-sections` | frontend/index.html:16027 |
-| `wb-help-title` | frontend/index.html:16007 |
+| `wb-help-card` | frontend/index.html:16008 |
+| `wb-help-close` | frontend/index.html:16015 |
+| `wb-help-none` | frontend/index.html:16031 |
+| `wb-help-overlay` | frontend/index.html:16006 |
+| `wb-help-search` | frontend/index.html:16027 |
+| `wb-help-sections` | frontend/index.html:16030 |
+| `wb-help-title` | frontend/index.html:16010 |
 | `wb-history-bar` | frontend/index.html:7705 |
 | `wb-history-end` | frontend/index.html:7711 |
 | `wb-history-restore` | frontend/index.html:7709 |
@@ -27663,7 +27663,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21805)
+## Tests (21808)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29811,6 +29811,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_select_score_paths.py | 1 |
 | tests/test_selection_actions_row30.py | 6 |
 | tests/test_selection_context.py | 7 |
+| tests/test_selection_keys_listed_l_ui25.py | 3 |
 | tests/test_selection_menu.py | 13 |
 | tests/test_semantic_auto_install.py | 15 |
 | tests/test_semantic_consent_1027.py | 14 |
@@ -30757,14 +30758,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4383 |
-| Needs hardware | docs/roadmap/LEDGER.md:903 |
+| Needs hardware | docs/roadmap/LEDGER.md:902 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:895 |
+| Owner calls | docs/roadmap/LEDGER.md:894 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4256 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -30940,7 +30941,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1103 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1102 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2632 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -30994,25 +30995,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:58 |
-| chat | docs/roadmap/LEDGER.md:1119 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1203 |
+| chat | docs/roadmap/LEDGER.md:1118 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1202 |
 | documents | docs/roadmap/LEDGER.md:361 |
-| documents | docs/roadmap/LEDGER.md:1143 |
-| general | docs/roadmap/LEDGER.md:855 |
+| documents | docs/roadmap/LEDGER.md:1142 |
+| general | docs/roadmap/LEDGER.md:854 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:1107 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1215 |
+| graph | docs/roadmap/LEDGER.md:1106 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1214 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4392 |
 | mindmap | docs/roadmap/LEDGER.md:441 |
-| mindmap | docs/roadmap/LEDGER.md:1155 |
-| timeline | docs/roadmap/LEDGER.md:584 |
-| timeline | docs/roadmap/LEDGER.md:1179 |
+| mindmap | docs/roadmap/LEDGER.md:1154 |
+| timeline | docs/roadmap/LEDGER.md:583 |
+| timeline | docs/roadmap/LEDGER.md:1178 |
 | ui-modernisation | docs/roadmap/LEDGER.md:478 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1167 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1166 |
 | whiteboard | docs/roadmap/LEDGER.md:315 |
-| whiteboard | docs/roadmap/LEDGER.md:1131 |
-| world-class | docs/roadmap/LEDGER.md:619 |
-| world-class | docs/roadmap/LEDGER.md:1191 |
+| whiteboard | docs/roadmap/LEDGER.md:1130 |
+| world-class | docs/roadmap/LEDGER.md:618 |
+| world-class | docs/roadmap/LEDGER.md:1190 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2802 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2853 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2960 |
