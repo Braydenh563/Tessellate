@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 86 | 4 | 0 | 17 | 186 |
+| ui-modernisation | 96 | 85 | 4 | 0 | 17 | 185 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 13 | 0 | 0 | 0 | 13 |
-| all | 553 | 658 | 158 | 3 | 191 | 1369 |
+| all | 553 | 657 | 158 | 3 | 191 | 1368 |
 
 ## graph
 
@@ -533,7 +533,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L439** `ui-modernisation` open, M: Finish help audit: press-drawn menus, JS popovers, Find/dock at 1440, list/outline/find at 390 and 1024, dark. From OPEN.md:975; OPEN.md:3205; OPEN.md:3889. Evidence: Source-level checks exist; a driven browser audit of '/' menu, message menu, board menus not done (needs sweep)
 - [ ] **L440** `ui-modernisation` open, M: Record Radix/shadcn/APG element comparison (Brief 92b). From SESSION_BRIEFS.md:291. Evidence: No Radix block in HISTORY; E19 W20
 - [ ] **L441** `ui-modernisation` open, M: Unify #attach-image 999px radius with #attach-note at 390 px. From OPEN.md:803; OPEN.md:2236. Evidence: 07-whiteboard-misc.css:3634 comment on spread; 04-chat-dock-appearance.css:2852 only has-attachments; radius equality unverified
-- [ ] **L442** `ui-modernisation` open, M: Decide and build a non-modal Guide sheet so the scrim stops dimming the app. From OPEN.md:973; OPEN.md:3016. Evidence: Only appearance-panel is non-modal (appearance-panel-own-lazy.css:3); Guide sheet scrim unchanged, no commit found
 - [ ] **L444** `ui-modernisation` open, M: Align opened row first line with the chevron (2.6px offset, use 1lh line box). From OPEN.md:1951; OPEN.md:3546. Evidence: 2.6px offset, no fix recorded
 - [ ] **L445** `ui-modernisation` open, M: Fix entry-meta.note-meta and entry-list li overflow at 320/390. From OPEN.md:3698. Evidence: 08-consistency.css:2724 .entry-meta.note-meta; no fix commit found
 - [ ] **L446** `ui-modernisation` open, M: Drive the phone More-sheet paths (agent, Guide, timeline, reminders) at 390. From OPEN.md:746; OPEN.md:3573. Evidence: Touch phone walkthrough; headless drive left toggleAgentPalette hidden at 390
