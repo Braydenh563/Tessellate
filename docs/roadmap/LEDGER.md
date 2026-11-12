@@ -12,12 +12,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
-| mindmap | 33 | 5 | 4 | 1 | 5 | 42 |
+| mindmap | 33 | 3 | 4 | 1 | 5 | 40 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 676 | 156 | 3 | 195 | 1385 |
+| all | 553 | 674 | 156 | 3 | 195 | 1383 |
 
 ## graph
 
@@ -440,15 +440,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## mindmap
 
-- [ ] **L370** `mindmap` open, M: Cut press-to-editable at 390 from 140-159 ms toward 50 ms (renderWbObjects). From OPEN.md:2800. Evidence: Cause not isolated (renderWbObjects); verified open
-- [ ] **L372** `mindmap` open, M: mapcull: cull freehand and link sketches. From OPEN.md:1227. Evidence: Row conditional on a measured many-stroke board; no culling of strokes found.
 - [ ] **L374** `mindmap` open, L: Make picture node resize to its picture; fix mindmap3 timeout and AI half; curve probe at 390. From OPEN.md:1112; OPEN.md:3041. Evidence: mindmapimage.js removed 2026-10-12; picture-fit not confirmed; sweep script gone
 - [ ] **L376** `mindmap` partly, S: Close mind map gaps: structure per branch, labels under topic, .xmind export, stickers. From OPEN.md:1109. Evidence: Callouts whiteboard-map.js:1803, votes :8537, .xmind import wb_import.py:356; .xmind export not found
 - [ ] **L377** `mindmap` partly, M: Drive the undriven checks: dark hand-drawn look, tables, Data tab, XMind, multi-page draw.io, callout export (touch double-tap needs hardware). From OPEN.md:589; OPEN.md:2562. Evidence: Dark theme/tables drivable in Playwright; touch double-tap needs touch hardware
 - [ ] **L378** `mindmap` partly, M: Verify remaining map render and persistence leftovers. From OPEN.md:1935. Evidence: wbMapNodeSize row closed per HISTORY; rest of list not individually verified
 - [ ] **L379** `mindmap` partly, M: Name and finish the two remaining mind map leftover items. From OPEN.md:2388. Evidence: Four of six items done per row; remaining two not named in the first lines read
 - [ ] **L-mindmap-8** `mindmap` open, S: Reproduce a toggle in the note edit preview exiting preview. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1527. Evidence: Open line in the plan's prose a session could miss. A reported bug left unreproduced, with no row.
-- [ ] **L-mindmap-9** `mindmap` open, S: Measure idle and drag cost on a map of hundreds of nodes. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1751. Evidence: Open line in the plan's prose a session could miss. The Brief 60 census gap, with no row.
+- [ ] **L-mindmap-11** `mindmap` open, M: Cut the style recalcs behind press-to-editable at 390 (6x throttle 135 ms toward 50). From L370 measurement 2026-11-12. Evidence: Tab to focus at 390, 6x CPU: 130-146 ms; 25-30 style recalcs per Tab (190 ms at 6x). Needs a Chrome trace with invalidation tracking (scratchpad/ui-sweeps/f2-trace.js INV=1) to name the invalidating class or property, then cut recalcs.
 
 ## ui-modernisation
 
