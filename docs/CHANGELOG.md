@@ -9,7 +9,7 @@ below). Versioning is `0.x` while the app stabilises.
 - The Guide's "did you mean" reads the 92,972-word list (`ai/help_words.py` `forgive`): 28 of 30 misspelt questions reach the right topic, up from 25; the no-model answer leads with the click path then one sentence from the help (owner call L725), and the plain side opens with how the question was read (L53); "how do I set a reminder" starts with step 1 (L108) (`tests/test_guide_wordlist_vc15.py`, `tests/test_guide_read_as_system.py`).
 - With a model running, the model picks among the engine's numbered readings by number and never writes one; the engine answers over the chosen note (`api/chat_pick.py`, CHAT_PLAN decision 45; `tests/test_reading_pick_d45.py`).
 - Currency rates are a dated preference with an editor in Settings, Search and index (CHAT_PLAN decision 43): conversions say the saved date, Reset puts the built-in table back; Guide topic Currency rates (`tests/test_currency_rates_pref.py`).
-- Chat ledger rows L21, L22, L28, L29, L32, L39, L116, L117, L191 carry the 2026-11-12 probe results
+- The composer quotes more than one sentence of a note named for the subject, splits a count of things from a measured quantity, keeps a name-only dated list to two lines and stops offering a yes/no span as a subject chip (`tests/test_composer_closeout_1112.py`, `tests/test_composer_parity_1112b.py`)
 - The composer reads "tell me about this" and "give me a summary of this note" as a question about the attached note
 - Tidy, tool labels and insights name a title-less note the way the composer does (its first sentence), not a raw clip
 - Chat plan phase 5 (a) and (c) verified built: the model reads the composer's chosen sentences, and a composed bubble carries the From your notes chip

@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
-| chat | 176 | 173 | 51 | 2 | 59 | 400 |
+| chat | 176 | 159 | 50 | 2 | 59 | 385 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 680 | 148 | 3 | 195 | 1381 |
+| all | 553 | 666 | 147 | 3 | 195 | 1366 |
 
 ## graph
 
@@ -57,21 +57,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## chat
 
-- [ ] **L21** `chat` open, S: Stop listing past-dated lines as upcoming (Z26). From OPEN.md:4055. Evidence: composer_ahead.py deferred, no fix found. Probed 2026-11-12: "what is coming up" correctly drops a past-dated line; "what is due soon" and "due this week" return "cannot find" on the bare composer (another route may own them); unverified end to end.
-- [ ] **L22** `chat` open, S: Make the due-soon window and due-soon set agree (Z27). From OPEN.md:4056. Evidence: composer_ahead.py date windows deferred, no fix found. Probed 2026-11-12: see L21; not fixed.
 - [ ] **L23** `chat` open, S: Write reminder confirmations as full sentences with one time format (Z62). From OPEN.md:4078. Evidence: Built in when.py/acts.py; was held by another agent, no fix found.
 - [ ] **L25** `chat` open, S: Read a one-line CJK note as content, not title-only (C10). From OPEN.md:4090. Evidence: Not probed (needs CJK note in seed); recorded in bc-1111.md.
 - [ ] **L26** `chat` open, S: Fix citation superscript landing mid-sentence (E51). From OPEN.md:4503. Evidence: Lead phrase table in composer_*.py, another agent's file; not changed
-- [ ] **L27** `chat` open, S: Fix grammar slips in fixed answer frames (C36). From OPEN.md:4515. Evidence: Remaining frames are in composer_tables.py, another agent's file
-- [ ] **L28** `chat` open, S: 'What do I know about X' should not quote one sentence unless notes are tagged. From OPEN.md:813. Evidence: Pinned by 725/741 evals; no change found Probed 2026-11-12 (compose): reproduced, "what do I know about Sam" over one note with three sentences quotes only "Sam is your cousin."; the 725/741 evals pin the one-sentence shape, so a change needs the eval fixtures re-captured and a model-on parity check (decision 75).
-- [ ] **L29** `chat` open, S: Make one_line for 'when is the harbor launch' stop quoting the Q4 roadmap. From OPEN.md:828. Evidence: Grounding rows lack the dated sentence; no fix commit found Probed 2026-11-12: not reproduced as described; _holds treats ship as a synonym of launch, so the Q4 roadmap row is a legitimate match.
 - [ ] **L30** `chat` open, S: Record eval numbers for the voice track. From OPEN.md:829. Evidence: tests/_composer_eval.py and _voice_eval.py exist; before/after figures not recorded
-- [ ] **L31** `chat` open, S: Choose lead-in before the parts, not after (P15). From OPEN.md:847. Evidence: Row says compare opener still chosen first; no later commit
-- [ ] **L32** `chat` open, S: Stop factgraph _QUANTITY reading counts of things. From OPEN.md:859. Evidence: ai/factgraph.py:166 _QUANTITY still in use (line 437); no count kind in recognise Probed 2026-11-12: factgraph._counted_unit treats any plural after a number as a unit; what counts as a "kind" is ambiguous, needs an owner call.
-- [ ] **L39** `chat` open, S: Stop a titled note's every sentence scoring on its title (TITLE_WEIGHT). From OPEN.md:3508. Evidence: TITLE_WEIGHT in composer_select.py still applies; no dated-sentence cap found. Probed 2026-11-12: a titled note's non-matching dated sentence is quoted via title scoring; this is the designed behaviour for the "Due in March." panel test, not changed.
 - [ ] **L40** `chat` open, S: Browser-check Ask/Chat with no model: Did you mean chip; merge voice741.js from wip branch. From OPEN.md:3510. Evidence: voice741.js not in scratchpad/ui-sweeps and no wip/composer-voice branch present; check not redone.
-- [ ] **L43** `chat` open, S: Fix 'summarise today' per-note 'From today:' lines. From OPEN.md:3849. Evidence: composer_digest recall lines unchanged
-- [ ] **L44** `chat` open, S: Stop fragment lines reading as joined events. From OPEN.md:3851. Evidence: composer_digest join unchanged
 - [ ] **L48** `chat` open, S: Add chips to 'thanks'/'hello' replies (F5). From fc56-1110.md Left. Evidence: No closing-chip change found in composer_talk.py
 - [ ] **L51** `chat` open, S: Make tab-level Guide topics ring each topic's own control, not the tab's main control. From OPEN.md:963; OPEN.md:2709. Evidence: No per-topic ring found in help-chat.js (grep ring/highlight empty); topics carry tab-level path only
 - [ ] **L52** `chat` open, S: Read the Guide fallback log line (help_chat.answer_stream) when the Guide fails with a model. From OPEN.md:968; OPEN.md:987; OPEN.md:2858. Evidence: Only reproduces with a real model; help-chat.js catch needs a model-run server log
@@ -129,11 +119,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L113** `chat` open, M: Fix Chat overlaps after answers (82 px at 1440, 136 px at 390). From OPEN.md:983; OPEN.md:3575. Evidence: Needs a model-made answer to reproduce; no fix commit found
 - [ ] **L114** `chat` open, M: Drive parity tools (boards/maps, rename_tag/delete_tag by sentence, save_user_preference) beyond fake transport. From OPEN.md:4379. Evidence: Only fake-transport tests (tests/test_acts.py:70, test_agent_tools_api.py:50); no driven parity run for boards/maps tools found
 - [ ] **L115** `chat` open, M: Browser-check Ask/Chat no-model 'Did you mean' chip and clarifying question at 1440/390 light and dark. From OPEN.md:830. Evidence: No sweep result for 1440/390 light and dark recorded
-- [ ] **L116** `chat` open, M: Make 'What do I know about X' quote more than one sentence unless tagged. From OPEN.md:2700. Evidence: Pinned by 725/741 evals; verified open Same probe as L28 (reproduced, evals pin it).
-- [ ] **L117** `chat` open, M: Fix single-note answer ending '[your note, date]', repeated subject chips and 'at least' over 24 notes. From OPEN.md:2701. Evidence: Verified open 2026-11-10 Probed 2026-11-12: "At least N" wording is deliberate in composer_body._mentions; the literal ending was not found. Unverified.
 - [ ] **L118** `chat` open, M: Add other tabs' starters to ai/starter_acts.py. From OPEN.md:2774. Evidence: Verified open; palette.js AGENT_TAB_STARTERS fallback
 - [ ] **L119** `chat` open, M: Draw Confirm/Not right in Ask so insights are read. From OPEN.md:3729. Evidence: grep insights in capture-ask.js finds nothing
-- [ ] **L120** `chat` open, M: Choose the lead-in after the parts so the compare opener is not picked first (P15). From OPEN.md:3638. Evidence: Not confirmed changed; composer_answer.py opener logic selects before parts
 - [ ] **L121** `chat` open, M: Mention other matching records in answers (INBOX 744 b, c). From OPEN.md:3655. Evidence: Composer and grounding work (composer*.py, renderAnswerGrounding); no fix commit found
 - [ ] **L122** `chat` open, M: Fall back to the composed answer when the model fails mid-stream in routes_chat.py. From a30c-1102.md Still open small. Evidence: routes_chat.py still has no mid-stream composed fallback in grep
 - [ ] **L123** `chat` open, M: Add a typed reader for cancel/rename/restore/add-to-today on the model path. From acts-1108.md Left. Evidence: Source: with a model the model reads the words; no typed reader added
@@ -200,7 +187,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L187** `chat` partly, S: Stop verb word becoming a required term; fix footer wording (Z16). From OPEN.md:4044. Evidence: Quoted-figure answers drop footer (d1c5a1265); frame-word list in composer_unfound.py. Verb-as-term case not shown closed.
 - [ ] **L188** `chat` partly, S: Count sentence should count what notes said, not the largest theme (C6). From OPEN.md:4087. Evidence: Rechecked 2026-11-11: small notebook now agrees (eight/eight); 207-note count still disagrees.
 - [ ] **L189** `chat` partly, S: Fix the run-on line for 'what did I do on 3 October' (E16). From OPEN.md:4140. Evidence: Line run-on (Phone 020... Dentist check-up) left, see bc6-1111.md.
-- [ ] **L191** `chat` partly, S: Fix single-note '[your note, date]' endings, repeated chips and 24-note overview. From OPEN.md:814. Evidence: No literal '[your note, ' found in composer*.py; chip repeats and 24-note wording unverified Probed 2026-11-12: see L117; literal ending not found.
 - [ ] **L192** `chat` partly, S: Show open checklist items for 'what is still open on X' (P16). From OPEN.md:848. Evidence: composer.py:46 handles checklist ticked counts; open-items question not found
 - [ ] **L193** `chat` partly, S: Magic add 'tonight around 7pm'; equalise edit button heights. From OPEN.md:3826. Evidence: reminder_parser.py:218 hedges parse 'probably around 7pm'; button heights unverified
 - [ ] **L195** `chat` partly, S: Check that each Guide topic answers its question (only the head was read). From OPEN.md:984. Evidence: tests/test_help_coverage.py checks topics_for per question; not read end to end by a human rater
@@ -280,7 +266,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-27** `chat` open, M: L100, L123, L220: not reached by acts agent, re-read rows. From acts-1112. Evidence: L100 L123 L220 not reached in acts-1112
 - [ ] **L-chat-28** `chat` open, M: L208: dark-mode act and meeting-anchored reminder. From acts-1112. Evidence: applyThemeChoice in settings.js is client-side; 'an hour before the meeting' anchoring
 - [ ] **L-chat-29** `chat` open, M: L223 remainder: similar-to, rename/move undo, untag parse, summarise note id. From acts-1112. Evidence: similar to X not parsed; rename/move have no undo by sentence; 'untag the note about boiler' parses about=the; 'summarise note 12' drops note_id
-- [ ] **L-chat-30** `chat` open, M: Parity (decision 75): check the model-on path for the compare table, bare 'and the thing' and the only-list question. From readers agent 2026-11-12. Evidence: composer_versus.table, composer_small.only_list_question, composer_dialogue._BARE_AND_THING are rules-only; no model-up path checked.
 
 ## whiteboard
 

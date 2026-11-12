@@ -364,11 +364,11 @@ for a read (`provider.extract_text_tool_calls`, pass 5). **Still open**: the
 gate itself (8 of 8, and 80% of the skills with no invalid call) on a 3B; a Qwen2.5-1.5B (2026-11-11, w34-unv1-1111.md) found 2 of 8, skills 1 pass 2 partial 6 fail of 9, tool choice 0 of 10: not met.
 
 ### Phase 5: the composer, after INBOX 725 (open)
-Left from INBOX 725, each its own step: (b) run the 25-question eval with a real embedder and set the
+Left from INBOX 725: (b) run the 25-question eval with a real embedder and set the
 cosine thresholds from it (decision 19's are reasoned, the lexical ones are
-measured); (e) re-capture the eval's retrieval when search changes
-(`tests/fixtures/composer/showcase_725.json`). (a), (c), (d) and (g): built, see
-HISTORY.md "Moved from the plans, 2026-11-12 (compose agent)"; (f) "the composer
+measured). (a), (c), (d) and (g): built, see
+HISTORY.md "Moved from the plans, 2026-11-12 (compose agent)"; (e): built, see HISTORY.md
+"Moved from the plans, 2026-11-12 (composer closeout)"; (f) "the composer
 acts": built, see HISTORY.md "Moved from the plans, 2026-11-12 (CHAT_PLAN Phase 5 f)".
 Open items and numbers: `composer725-1006.md` (git history).
 INBOX 1301 D5 (an overview note as its gist, sections said as its shape, no "You asked:" echo, a reminder only for a stated task): built, see HISTORY.md "Moved from the plans, 2026-10-18 (design4-1018: how a no-model answer reads)".
