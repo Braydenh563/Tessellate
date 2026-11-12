@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8327, frontend ids 2763, CSS sections 524, backend routes 698, backend modules 10758, test files 2670, tests 21805, plan headings 688, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8327, frontend ids 2763, CSS sections 524, backend routes 698, backend modules 10758, test files 2670, tests 21806, plan headings 688, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8327)
 
@@ -6990,7 +6990,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `buildSelect` | frontend/js/reminder-edit.js:9 |
 | `reminderEditForm` | frontend/js/reminder-edit.js:22 |
-| `snoozeReminderTo` | frontend/js/reminder-edit.js:128 |
+| `snoozeReminderTo` | frontend/js/reminder-edit.js:134 |
 
 ### frontend/js/reminder-notify.js (4)
 
@@ -27661,7 +27661,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21805)
+## Tests (21806)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29699,7 +29699,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_reminder_dupes_1102.py | 6 |
 | tests/test_reminder_duplicate_flag.py | 2 |
 | tests/test_reminder_edit_form_alert.py | 4 |
-| tests/test_reminder_edit_save.py | 7 |
+| tests/test_reminder_edit_save.py | 8 |
 | tests/test_reminder_feedback_dog1.py | 3 |
 | tests/test_reminder_form_1028b.py | 3 |
 | tests/test_reminder_holiday_thing_1110.py | 2 |
