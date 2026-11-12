@@ -87,7 +87,7 @@ from datetime import date, datetime
 from tessellate.ai import act_registry, composer_ack, composer_brief, composer_links, composer_names, composer_numbers, composer_overview, composer_small, composer_open, composer_tables, composer_versus, grounding, phrasing, question_noise, spelling, typo_context, utilities
 from tessellate.ai import recognise as rec
 from tessellate.ai.composer_phrases import PHRASES
-from tessellate.ai.composer_ask import _ASKS_FIRST, _KNOWN, _SHAPE_RULES, _guessing_recent, _holds, _stem, _still_recent, _words, asks_written_when, classify, compare_sides, rephrase, subject_terms, user_now, user_today, when_terms
+from tessellate.ai.composer_ask import _KNOWN, _SHAPE_RULES, _guessing_recent, _holds, _stem, _still_recent, _words, asked_whole, asks_written_when, classify, compare_sides, rephrase, subject_terms, user_now, user_today, when_terms
 from tessellate.ai.composer_read import NoteView, Sentence, _cue, _distinct_ids, read_note
 from tessellate.ai.composer_select import MAX_PER_NOTE, MAX_POINTS, MEANING_POOL, _ASKS_NOW, _Meaning, _score, select
 from tessellate.ai.composer_answer import _Answer, asks_now, _SESSION
@@ -217,7 +217,7 @@ def _readings(out: _Answer, question: str, terms: list[str], views: list[NoteVie
     with Sam**; 2. **Meeting notes, Thursday**?" With a model running it
     picks one (or asks); with none, the person does. Never added when
     `_clarify` already asked."""
-    if out.readings or not terms or len((question or "").split()) > READINGS_WORDS or _ASKS_FIRST.match(rephrase(question)):
+    if out.readings or not terms or len((question or "").split()) > READINGS_WORDS or asked_whole(question):
         return
     stems = {_stem(t) for t in terms}
     named = [v for v in views if v.titled and not v.note.get("connected") and stems <= {w for t in v.title_words for w in (t, _stem(t))}]

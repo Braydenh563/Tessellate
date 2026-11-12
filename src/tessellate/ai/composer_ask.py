@@ -294,6 +294,12 @@ def _overview():
     return composer_overview
 
 
+def asked_whole(question: str) -> bool:
+    """A question, or a subject asked about as a whole ("an overview of my
+    sourdough notes"): no bare name to ask "which do you mean" about (L-chat-31)."""
+    return bool(_ASKS_FIRST.match(rephrase(question)) or _overview().topic(question))
+
+
 @functools.lru_cache(maxsize=1 << 16)
 def _unaccented(word: str) -> str:
     """"josé" as "jose": the key a word is matched on, so a name typed on a

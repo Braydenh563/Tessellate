@@ -1541,14 +1541,14 @@ def _when_words(due: datetime) -> str:
 
 
 def _clock(due: datetime) -> str:
-    """"9", "9:30", "noon", "midnight", "5pm", "12:39pm", "12:39am": the
-    hour as people say it. A morning from 7 is plain ("at 9"); the small
-    hours and anything from noon say which half of the day."""
+    """"9am", "9:30am", "noon", "midnight", "5pm", "12:39pm": the hour as
+    people say it, always with its half of the day, so a card never mixes
+    "at 9" with "at 3pm" (L-chat-25)."""
     hour, minute = due.hour, due.minute
     if minute == 0 and hour in (0, 12):
         return "midnight" if hour == 0 else "noon"
     said = str(hour % 12 or 12) + (f":{minute:02d}" if minute else "")
-    return said + ("pm" if hour >= 12 else "am" if hour < 7 else "")
+    return said + ("pm" if hour >= 12 else "am")
 
 
 def _how_soon(due: datetime, now: datetime) -> str:
@@ -1575,7 +1575,7 @@ def reminder_when(due: datetime, now: datetime, default_clock: bool = False) -> 
         return f"{soon}, at {_clock(due)}"
     clock = _clock(due)
     if default_clock:
-        clock = f"{clock}{'am' if clock.isdigit() or ':' in clock else ''} (the default)"
+        clock = f"{clock} (the default)"
     days = (due.date() - now.date()).days
     if days == 0:
         day = "today"

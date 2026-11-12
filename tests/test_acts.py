@@ -192,18 +192,18 @@ def test_a_reminder_is_said_back_with_the_note_it_comes_from(client, session, mo
     dentist = session.scalars(select(Entry).where(Entry.content.like("# Dentist%"))).one()
     out = _ask(client, phrase, use_tools=False)
     card = out["act"][0]
-    assert card["label"] == "Remind you on Friday at 9: call the dentist", phrase
+    assert card["label"] == "Remind you on Friday at 9am: call the dentist", phrase
     #: Audit 1028 E64 moved the intent: the note is named by its title, not "#id".
     assert card["items"] == ["Dentist"]
     assert card["steps"][0]["arguments"]["note_id"] == dentist.id
     #: Said back in the composer's words (CHAT_PLAN 1353), the card's label exact.
-    assert "remind you on friday at 9: call the dentist" in out["text"].lower() and "!" not in out["text"], out["text"]
+    assert "remind you on friday at 9am: call the dentist" in out["text"].lower() and "!" not in out["text"], out["text"]
     assert "call the dentist" in phrase.lower()
     assert session.scalars(select(Reminder)).all() == [], "nothing is set before Confirm"
     from tests._consent import confirmed
 
     done = confirmed(client, out)  # Confirm words the run as the composer did before the consent order
-    assert done["text"].endswith("remind you on Friday at 9: call the dentist.") and "!" not in done["text"], done["text"]
+    assert done["text"].endswith("remind you on Friday at 9am: call the dentist.") and "!" not in done["text"], done["text"]
     session.expire_all()
     reminder = session.scalars(select(Reminder)).one()
     assert reminder.entry_id == dentist.id and reminder.due_at.strftime("%a %H:%M") == "Fri 09:00"
@@ -211,9 +211,9 @@ def test_a_reminder_is_said_back_with_the_note_it_comes_from(client, session, mo
 
 @pytest.mark.parametrize(
     ("due", "said"),
-    [(datetime(2026, 10, 10, 17, 0), "today at 5pm"), (datetime(2026, 10, 11, 9, 30), "tomorrow at 9:30"),
-     (datetime(2026, 10, 16, 12, 0), "on Friday at noon"), (datetime(2026, 10, 21, 8, 0), "on 21 October at 8"),
-     (datetime(2027, 1, 4, 9, 0), "on 4 January 2027 at 9")],
+    [(datetime(2026, 10, 10, 17, 0), "today at 5pm"), (datetime(2026, 10, 11, 9, 30), "tomorrow at 9:30am"),
+     (datetime(2026, 10, 16, 12, 0), "on Friday at noon"), (datetime(2026, 10, 21, 8, 0), "on 21 October at 8am"),
+     (datetime(2027, 1, 4, 9, 0), "on 4 January 2027 at 9am")],
 )
 def test_reminder_when_says_the_time_against_today(due, said):
     assert commands.reminder_when(due, NOW) == said
