@@ -29,12 +29,12 @@
 - X15 (L): D9 composed mount not started; D19 gate unmet; D22 to D25 ratchets partly
 
 ### Co1
-- O4 (M): 'and the dentist' asks what is meant; frame not saved with a chat (W34 skipped)
-- O6 (M): D23 client-side undo wording (OPEN 4148); undo after 'delete it' not shown fixed
-- X4 (M): B26 Q5 title, Q6 list-add rule, B24 undo sentences, B27 similar-to ranking
+- O4 (M): 'and the dentist' asks what is meant; frame not saved with a chat (W34 skipped) **Fixed 29f06b285**
+- O6 (M): D23 client-side undo wording (OPEN 4148); undo after 'delete it' not shown fixed **Fixed 29f06b285**
+- X4 (M): B26 Q5 title, Q6 list-add rule, B24 undo sentences, B27 similar-to ranking **Fixed ea5a6427d**
 
 ### Co1, Co2
-- P25 (M): F8 'wats on my shoping list' typo, F9 'this week' no day, F13 h frame-only window, i two summaries
+- P25 (M): F8 'wats on my shoping list' typo, F9 'this week' no day, F13 h frame-only window, i two summaries **Fixed 41ed536f5, c83e19460, b65de09f2**
 
 ### Co2
 - O11 (S): 'leads by quote not name' for a joke note has no explicit fix or test
@@ -104,27 +104,27 @@
 - I25 (S): present-mode page counters and preset dropdowns not checked; trackpad zoom unmeasurable without hardware
 
 ### composer-acts
-- D23 (r2:62) (S): typed 'undo' after an act answers Undo key help (real undo client-side); confirm wordings unification not verified
-- D10 (S): bare 'yes' after an offer card not answered; no test
-- D23 (S): undo-after-act wording client side; server confirm wording not unified/verified
-- F3 (S): 'undo' after 'delete it' answers key help; real undo client side
+- D23 (r2:62) (S): typed 'undo' after an act answers Undo key help (real undo client-side); confirm wordings unification not verified **Fixed 29f06b285**
+- D10 (S): bare 'yes' after an offer card not answered; no test **Fixed dc0cdea76**
+- D23 (S): undo-after-act wording client side; server confirm wording not unified/verified **Fixed 29f06b285**
+- F3 (S): 'undo' after 'delete it' answers key help; real undo client side **Fixed 29f06b285**
 
 ### composer-agenda
 - F9 (S): 'this week' with no day as clause, plumber note in the week, mood-note exclusion not re-verified
 
 ### composer-asks
-- F8 (S): 'wats on my shoping list' answers Lisbon packing list not Shopping; 'what's in my budget' picks November not re-checked
-- G11 (M): 'how much more cheese than milk' returns Milk 1.20 only; no arithmetic route
+- F8 (S): 'wats on my shoping list' answers Lisbon packing list not Shopping; 'what's in my budget' picks November not re-checked **Fixed 41ed536f5**
+- G11 (M): 'how much more cheese than milk' returns Milk 1.20 only; no arithmetic route **Fixed 6f42341a5**
 
 ### composer-chat
-- F4 (M): 'you're not very helpful' searched as a note, 'say that again', 'what did I just add'; recheck via route
+- F4 (M): 'you're not very helpful' searched as a note, 'say that again', 'what did I just add'; recheck via route **Fixed 49300e03a, 71f591ebd**
 
 ### composer-chips
-- F5 (S): act cards and 'Nothing is overdue.' chips not checked
+- F5 (S): act cards and 'Nothing is overdue.' chips not checked **Fixed 3d8b1ff47**
 
 ### composer-dialogue
-- F1 (L): general 'reads what the last answer showed' (state beyond last question and 5 titles) not verified or tested
-- F13 (M): h 'the week before' and 'who am I going with' return generic lines; i (two summary shapes) and j ('what links to it') not verified
+- F1 (L): general 'reads what the last answer showed' (state beyond last question and 5 titles) not verified or tested **Fixed 5b5f6f6ab**
+- F13 (M): h 'the week before' and 'who am I going with' return generic lines; i (two summary shapes) and j ('what links to it') not verified **Fixed c83e19460, 5c5dff575**
 
 ### composer-fx
 - FX2 (M): Z58, Z68 (needs model-up Ask run), Z70, Z46 recast, Z23, Z26, Z27 unverified
@@ -141,9 +141,9 @@
 - G14 (M): per-letter recheck; chip code and 'Something sometime' magic add not examined
 
 ### composer-parity
-- P1 (M): routes_chat composed_preview sent first, ungated on composer confidence; needs gate + test; model-on check needs real model
-- D28 (S): no per-surface title-less naming parity test (composer vs model-context)
-- PAR1 (M): 'do my notes contradict each other' answers 'None of your notes mention contradict'; supersede.py not wired to composer; composer_suggest.py:52 _IMPERATIVE unchanged
+- P1 (M): routes_chat composed_preview sent first, ungated on composer confidence; needs gate + test; model-on check needs real model **Fixed 651624f81; the model-on look at the preview needs a real model, left**
+- D28 (S): no per-surface title-less naming parity test (composer vs model-context) **Fixed 651624f81**
+- PAR1 (M): 'do my notes contradict each other' answers 'None of your notes mention contradict'; supersede.py not wired to composer; composer_suggest.py:52 _IMPERATIVE unchanged **Fixed 5b5f6f6ab**
 
 ### composer-perf
 - P6 (M): composer_digest_lines.py:321 _subject_facts and :198 _said_piece present; chat_pool.py:477 _raw_results uncapped; no re-measure on 500 notes
