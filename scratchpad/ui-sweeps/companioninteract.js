@@ -8,7 +8,7 @@ const { boot } = require('./lib.js');
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
   const fails = [];
-  await page.evaluate((k) => { const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
+  await page.evaluate(async (k) => { prefs.set('avatar-buddy', k); await ensureModule('characters'); syncNameMarkBuddy(); }, process.env.KIND || 'me');
   await page.evaluate(() => { localStorage.removeItem('nm-buddy-spots'); document.documentElement.dataset.avatarFollow = 'on'; });
   await page.evaluate(() => revealTab('notes'));
   await page.waitForTimeout(3000);
@@ -84,7 +84,7 @@ const { boot } = require('./lib.js');
   if (slow) fails.push('a slow let-go was tossed');
   // Reduce motion: no petting.
   await page.mouse.move(100, 100);
-  await page.evaluate(() => { document.documentElement.dataset.motion = 'reduced'; nmb.pettedAt = 0; nameMarkBuddyAct(''); nameMarkBuddyPet(); });
+  await page.evaluate(() => { document.documentElement.dataset.motion = 'reduced'; nmb.pettedAt = 0; nameMarkBuddyAct(''); nmb.pet(); });
   const stillPet = await page.evaluate(() => nmb.act);
   await page.evaluate(() => { delete document.documentElement.dataset.motion; });
   if (stillPet === 'wiggle') fails.push('petted under Reduce motion');

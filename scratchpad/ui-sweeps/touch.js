@@ -119,6 +119,7 @@ const SURFACES = [
       localStorage.setItem('onboardingDone', '1');
       localStorage.setItem('tourDone', '1');
       localStorage.setItem('nm-buddy-hint', 'done');
+      localStorage.setItem('avatar-buddy', 'off');
     } catch (e) {}
   });
   const page = await ctx.newPage();
@@ -128,6 +129,9 @@ const SURFACES = [
   await page.goto(BASE + '/', { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#lock-password', { state: 'visible', timeout: 20000 });
   await page.fill('#lock-password', PW); await page.click('#lock-submit'); await page.waitForTimeout(2500);
+  //: The semantic-search question is a toast on a fresh notebook; it sat over Settings controls. Answer it (no) so it is gone.
+  await page.evaluate(() => apiJson('/preferences', { method: 'PUT', body: JSON.stringify({ semantic_auto_install: false }) }).catch(() => {}));
+  await page.evaluate(() => document.querySelectorAll('.semantic-install-toast').forEach((t) => t.remove()));
   //: The opening curtain (lib.js, INBOX 577): the lock stays up, "Opening…",
   //: while the first tab draws; read as a failed unlock, the field was
   //: filled again as it faded and the fill timed out (qa-1005, light 390).
@@ -292,7 +296,7 @@ const SURFACES = [
           const my = Math.round(mid.top + mid.height / 2);
           if (mx >= 0 && my >= 0 && mx <= innerWidth && my <= innerHeight) {
             hit = document.elementFromPoint(mx, my);
-            reached = hit && (control.contains(hit) || hit.contains(control));
+            reached = hit && (control.contains(hit) || hit.contains(control) || hit.closest(".scroll-row-arrow"));
           }
         }
         if (!reached) {

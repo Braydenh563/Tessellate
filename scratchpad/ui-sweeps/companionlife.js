@@ -7,7 +7,7 @@
 const { boot } = require('./lib.js');
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
-  await page.evaluate((k) => { const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'me');
+  await page.evaluate(async (k) => { prefs.set('avatar-buddy', k); await ensureModule('characters'); syncNameMarkBuddy(); }, process.env.KIND || 'me');
   await page.evaluate(() => revealTab('notes'));
   await page.waitForTimeout(3500);
   const fails = [];
@@ -36,7 +36,7 @@ const { boot } = require('./lib.js');
   const away = await page.evaluate(async () => {
     nmb.lastInput = Date.now() - 4 * 60 * 1000;
     nmb.lastAct = '';
-    nameMarkBuddyTick();
+    nmb.tick();
     const sleepy = document.getElementById('nm-buddy').dataset.expr || '';
     if (nmb.act) nameMarkBuddyAct('');
     nmb.lastInput = Date.now() - 4 * 60 * 1000;
@@ -51,7 +51,7 @@ const { boot } = require('./lib.js');
     clearTimeout(nmb.exprTimer);
     nmb.exprTimer = 0;
     nameMarkBuddyExpress('');
-    nameMarkBuddyDrift();
+    nmb.inner.nameMarkBuddyDrift();
     return document.getElementById('nm-buddy').dataset.expr || '';
   });
   if (!drift) fails.push('drift: no change');
@@ -60,7 +60,7 @@ const { boot } = require('./lib.js');
   // a cached picture. A face never drawn (dramatic) is reported, not judged.
   const cost = await page.evaluate(() => {
     const t = (e) => { const a = performance.now(); nameMarkBuddyExpress(e, 0); return performance.now() - a; };
-    const events = NMB_EXPR_EVENTS.map(t);
+    const events = nmb.inner.NMB_EXPR_EVENTS.map(t);
     t('');
     const fresh = t('dramatic');
     t('');

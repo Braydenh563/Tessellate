@@ -895,8 +895,9 @@ function mountPhoneSidebarOpeners() {
   }
 }
 
-mountPhoneSidebarOpeners();
-onSurface("documents", mountPhoneSidebarOpeners);
+//: Each dock is in the page only once its surface is built, so the opener is
+//: mounted as each one arrives (Notes and Chat were left without one).
+for (const surface of ["notes", "chat", "documents", "library"]) onSurface(surface, mountPhoneSidebarOpeners);
 
 //: Choosing a category on a phone closes the drawer, so the filtered list it
 //: chose is what shows; the row's ⋯ stops its own click before this.
@@ -1927,7 +1928,7 @@ function initPrimaryFab() {
   const query = window.matchMedia(PHONE_FAB);
   floatPrimaryActions(query.matches);
   query.addEventListener("change", (event) => floatPrimaryActions(event.matches));
-  for (const name of ["reminders", "timeline", "graph"]) onSurface(name, () => floatPrimaryActions(query.matches));
+  for (const name of ["notes", "library", "reminders", "timeline", "graph"]) onSurface(name, () => floatPrimaryActions(query.matches));
 }
 
 initPrimaryFab();

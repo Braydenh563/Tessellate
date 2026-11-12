@@ -146,7 +146,7 @@ const REDUCED = !!process.env.REDUCED;
     host.id = 'sweep-labels';
     host.style.cssText = 'position:fixed;top:40px;left:40px;width:420px;z-index:99999;background:var(--bg);padding:8px;font-size:0.8rem';
     const a = document.createElement('div'); a.id = 'sweep-run';
-    setLabel(a, runStateLabel('running'));
+    setLabel(a, 'ph:spin Running');
     host.appendChild(a);
     document.body.appendChild(host);
   });

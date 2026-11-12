@@ -13,7 +13,10 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 STABLE=(docks contrast leaks keyboard diskspace vibecheck graphminimap wbgroupguides
   phonehead phoneswipe phonenotepage phoneshare phonedocs phonereminders wbphone
   draftreadonly hoveronly wbtopbar820 docdaily docfallback doctabs mindmapcurve
-  wbtopbar tagoffer imagecardfoot maptwokinds animcost mapdoors libtlscroll wbshapetext)
+  wbtopbar tagoffer imagecardfoot maptwokinds animcost mapdoors libtlscroll wbshapetext
+  touch phonesidebar phonecapture spinners companionbeats companionactease companionblend
+  companioncollapse companionemotes companionentry companionlegs companionsay
+  doccodecopy dockeyboard graphphone slashicons wbexportimage ctrlwheelzoom companionfade companiontabs)
 failed=()
 bash "$ROOT/scratchpad/ui-sweeps/serve.sh" ${SWEEP_PORT:-8781} "$DIR/sweeps" || exit 1
 for name in "${STABLE[@]}"; do

@@ -10,7 +10,7 @@ const { boot } = require("./lib.js");
 
 (async () => {
   const { browser, page, OUT } = await boot({ viewport: { width: Number(process.env.W || 1440), height: 900 } });
-  await page.evaluate((k) => { localStorage.removeItem("nm-buddy-spots"); const b = document.getElementById("avatar-buddy"); b.value = k; b.dispatchEvent(new Event("change", { bubbles: true })); }, process.env.KIND || "atlas");
+  await page.evaluate(async (k) => { localStorage.removeItem("nm-buddy-spots"); prefs.set('avatar-buddy', k); await ensureModule('characters'); syncNameMarkBuddy(); }, process.env.KIND || "atlas");
   const tabs = (process.env.TABS || "dashboard,notes,chat,graph,library,documents,timeline,reminders").split(",");
   let bad = false;
   for (const tab of tabs) {

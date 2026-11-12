@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 101 | 4 | 0 | 17 | 201 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
-| general | 0 | 8 | 2 | 0 | 4 | 10 |
-| all | 553 | 668 | 160 | 3 | 195 | 1381 |
+| general | 0 | 15 | 2 | 0 | 4 | 17 |
+| all | 553 | 675 | 160 | 3 | 195 | 1388 |
 
 ## graph
 
@@ -873,6 +873,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-15** `general` partly, L: W34 L1 remainder: 265 true, 125 owner-call, 22 hardware-only and 153 unverifiable rows by spoke, each confirmed as a LEDGER row or built. From ledger-1112 X20. Evidence: the w34-*.md spoke lists were retired into LEDGER rows (OPEN.md and w34 sources); recheck that each of the 265 true rows has its row
 - [ ] **L-general-16** `general` partly, M: Session briefs W5 and W16 to W18 have no outcome record; W32 left E9, E10 and E12. From ledger-1112 X23. Evidence: no record of W5, W16 to W18 found at the migration; W32 left E9 (hardware), E10 BK6, BK10, BK12, K36, E12 owner
 - [ ] **L-general-47** `general` open, L: Repair every failing ui sweep: fix the app where the sweep is right, the sweep where it rotted; each exits 0. From L-general-14, L-general-20 stability run 2026-11-12. Evidence: /tmp sweep run on port 8790 (70 sweeps, 240s cap): exit 1 or timeout for errors, fontmatrix, touch, phonesidebar, phonecapture, graphphone, wbexportimage, ctrlwheelzoom, libreadingfoot, libreader, doccodecopy, dockeyboard, doctoolbarstate, spinners, asktab, mapperf, mapmidpan, slashicons, uitrio, noteobject, maplayouts, maptheme, canvasconventions, mapviewmenu, companion* (12, all in 6s), profilelook, perchall, iconfloor, maplinkcue; plus tour.js (replay buttons 0 with Settings unopened), toursteps (5 step faults at 1440), anchorsmotion (5 gaps); deepflows flows note, private, link, graph (gcNodeAtWorld), settings, tabs, picker
+- [ ] **L-general-48** `general` open, M: Companion sweeps still failing (interact, life, menu, pin, sleeptab, scroll, smooth, react, perf): compare each asserted behaviour with the current buddy, then change the sweep or the app. From L-general-47. Evidence: scratchpad/ui-sweeps/companioninteract.js, companionlife.js, companionmenu.js, companionpin.js, companionsleeptab.js, companionscroll.js, companionsmooth.js, companionreact.js, companionperf.js fail after the nmb hooks; behaviour drifted
+- [ ] **L-general-49** `general` open, M: Map sweeps still failing: View menu at 587px, theme dialog fit, link cue, layouts, mid pan, perf. From L-general-47. Evidence: mapviewmenu.js exit=1 (View menu at 587px); maptheme.js exit=1 (dialog fit); maplinkcue.js, maplayouts.js, mapmidpan.js (52s) and mapperf.js (500ms wait times out after ensureModule boards plus initWhiteboard)
+- [ ] **L-general-50** `general` open, M: Library reader sweeps need a seeded OCR book and a 390px geometry fix. From L-general-47. Evidence: libreadingfoot.js and libreader.js need a seeded OCR book; libreader also fails the 390px full-screen geometry
+- [ ] **L-general-51** `general` open, M: doctoolbarstate sweep asserts a toolbar strip that no longer exists. From L-general-47. Evidence: doctoolbarstate.js asserts heading and quote buttons that the strip replaced with Turn into
+- [ ] **L-general-52** `general` open, M: perchall, profilelook and iconfloor sweeps fail: a stale id, a profile hair setting not kept, icon buttons under the 44px touch floor. From L-general-47. Evidence: perchall.js: Cannot set properties of null (setting 'value'); profilelook.js: hair value empty after save; iconfloor.js: 65 of 304 icon-only buttons under 44px at 1024x768 touch (privacy-chip, notif-btn, capture-bar, doc-new, doc-back)
+- [ ] **L-general-53** `general` open, M: Sweeps not yet triaged: uitrio, asktab, noteobject, canvasconventions, tour, toursteps, anchorsmotion, fontmatrix; errors needs splitting under 180s. From L-general-47. Evidence: uitrio, asktab, noteobject, canvasconventions, tour, toursteps, anchorsmotion, fontmatrix not reached; errors.js passes but takes 205s, over the CI 180s timeout
+- [ ] **L-general-54** `general` open, M: deepflows flows note, private, link, graph, settings, tabs, picker still unverified. From L-general-47. Evidence: deepflows flows note, private, link, graph, settings, tabs, picker not run on port 8821; deepflows-flows.js now reads gcRequestDraw.inspect for graph
 
 ## Owner calls
 

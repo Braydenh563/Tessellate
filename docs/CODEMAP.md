@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8329, frontend ids 2771, CSS sections 525, backend routes 700, backend modules 10770, test files 2691, tests 21866, plan headings 683, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8329, frontend ids 2771, CSS sections 525, backend routes 700, backend modules 10770, test files 2692, tests 21873, plan headings 683, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8329)
 
@@ -1074,66 +1074,66 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `buildSettingsJumpList` | frontend/js/phone-shell.js:1810 |
-| `clearAppCache` | frontend/js/phone-shell.js:2289 |
-| `closeNotePageIfGone` | frontend/js/phone-shell.js:1118 |
-| `dockArrangeLabel` | frontend/js/phone-shell.js:1974 |
-| `dockArrangeSlot` | frontend/js/phone-shell.js:1963 |
-| `dockChatAttachments` | frontend/js/phone-shell.js:1250 |
-| `dockChatTools` | frontend/js/phone-shell.js:1308 |
+| `buildSettingsJumpList` | frontend/js/phone-shell.js:1811 |
+| `clearAppCache` | frontend/js/phone-shell.js:2290 |
+| `closeNotePageIfGone` | frontend/js/phone-shell.js:1119 |
+| `dockArrangeLabel` | frontend/js/phone-shell.js:1975 |
+| `dockArrangeSlot` | frontend/js/phone-shell.js:1964 |
+| `dockChatAttachments` | frontend/js/phone-shell.js:1251 |
+| `dockChatTools` | frontend/js/phone-shell.js:1309 |
 | `dockPhoneStatus` | frontend/js/phone-shell.js:808 |
-| `dockShown` | frontend/js/phone-shell.js:2053 |
+| `dockShown` | frontend/js/phone-shell.js:2054 |
 | `dockTabBar` | frontend/js/phone-shell.js:647 |
-| `dockTight` | frontend/js/phone-shell.js:2060 |
-| `dropRepeatedTitle` | frontend/js/phone-shell.js:1046 |
-| `echoSettingsPaneTitle` | frontend/js/phone-shell.js:1802 |
+| `dockTight` | frontend/js/phone-shell.js:2061 |
+| `dropRepeatedTitle` | frontend/js/phone-shell.js:1047 |
+| `echoSettingsPaneTitle` | frontend/js/phone-shell.js:1803 |
 | `emblemArt` | frontend/js/phone-shell.js:86 |
 | `emblemHsl` | frontend/js/phone-shell.js:36 |
 | `emblemPalette` | frontend/js/phone-shell.js:57 |
 | `emblemSetBusy` | frontend/js/phone-shell.js:132 |
-| `fitDock` | frontend/js/phone-shell.js:2180 |
-| `floatPrimaryActions` | frontend/js/phone-shell.js:1900 |
+| `fitDock` | frontend/js/phone-shell.js:2181 |
+| `floatPrimaryActions` | frontend/js/phone-shell.js:1901 |
 | `focusTabPage` | frontend/js/phone-shell.js:386 |
-| `foldDockActions` | frontend/js/phone-shell.js:2126 |
-| `foldDockArrange` | frontend/js/phone-shell.js:2071 |
-| `foldSiblingsIntoMenu` | frontend/js/phone-shell.js:2018 |
-| `foldZoneIntoMenu` | frontend/js/phone-shell.js:1986 |
-| `forceReloadApp` | frontend/js/phone-shell.js:2304 |
+| `foldDockActions` | frontend/js/phone-shell.js:2127 |
+| `foldDockArrange` | frontend/js/phone-shell.js:2072 |
+| `foldSiblingsIntoMenu` | frontend/js/phone-shell.js:2019 |
+| `foldZoneIntoMenu` | frontend/js/phone-shell.js:1987 |
+| `forceReloadApp` | frontend/js/phone-shell.js:2305 |
 | `initBottomTabBar` | frontend/js/phone-shell.js:678 |
-| `initDockFolding` | frontend/js/phone-shell.js:2193 |
+| `initDockFolding` | frontend/js/phone-shell.js:2194 |
 | `initHeaderHeightToken` | frontend/js/phone-shell.js:555 |
-| `initKeyboardInset` | frontend/js/phone-shell.js:1723 |
-| `initNotePage` | frontend/js/phone-shell.js:1123 |
+| `initKeyboardInset` | frontend/js/phone-shell.js:1724 |
+| `initNotePage` | frontend/js/phone-shell.js:1124 |
 | `initNotesSubtabHeightToken` | frontend/js/phone-shell.js:590 |
-| `initOcrPhonePage` | frontend/js/phone-shell.js:1210 |
-| `initPhoneChatRow` | frontend/js/phone-shell.js:1363 |
+| `initOcrPhonePage` | frontend/js/phone-shell.js:1211 |
+| `initPhoneChatRow` | frontend/js/phone-shell.js:1364 |
 | `initPhoneHeaderMore` | frontend/js/phone-shell.js:722 |
 | `initPhoneStatus` | frontend/js/phone-shell.js:844 |
-| `initPrimaryFab` | frontend/js/phone-shell.js:1926 |
-| `initRowSwipe` | frontend/js/phone-shell.js:942 |
+| `initPrimaryFab` | frontend/js/phone-shell.js:1927 |
+| `initRowSwipe` | frontend/js/phone-shell.js:943 |
 | `mountPhoneSidebarOpeners` | frontend/js/phone-shell.js:878 |
-| `nameFoldedButton` | frontend/js/phone-shell.js:2006 |
-| `ocrPhonePage` | frontend/js/phone-shell.js:1174 |
-| `openNotePage` | frontend/js/phone-shell.js:1056 |
-| `openSheet` | frontend/js/phone-shell.js:1403 |
-| `phoneMoreDueCount` | frontend/js/phone-shell.js:1676 |
-| `phoneMoreRunCount` | frontend/js/phone-shell.js:1641 |
-| `phoneSheetDialogs` | frontend/js/phone-shell.js:1229 |
-| `quitApp` | frontend/js/phone-shell.js:2256 |
-| `refreshNotePage` | frontend/js/phone-shell.js:1104 |
+| `nameFoldedButton` | frontend/js/phone-shell.js:2007 |
+| `ocrPhonePage` | frontend/js/phone-shell.js:1175 |
+| `openNotePage` | frontend/js/phone-shell.js:1057 |
+| `openSheet` | frontend/js/phone-shell.js:1404 |
+| `phoneMoreDueCount` | frontend/js/phone-shell.js:1677 |
+| `phoneMoreRunCount` | frontend/js/phone-shell.js:1642 |
+| `phoneSheetDialogs` | frontend/js/phone-shell.js:1230 |
+| `quitApp` | frontend/js/phone-shell.js:2257 |
+| `refreshNotePage` | frontend/js/phone-shell.js:1105 |
 | `releaseDetachedEmblems` | frontend/js/phone-shell.js:168 |
 | `releaseEmblem` | frontend/js/phone-shell.js:151 |
 | `renderBrandLogo` | frontend/js/phone-shell.js:218 |
 | `renderEmblem` | frontend/js/phone-shell.js:174 |
 | `renderEmblemWhenShown` | frontend/js/phone-shell.js:255 |
-| `renderExportsList` | frontend/js/phone-shell.js:2315 |
-| `sheetRow` | frontend/js/phone-shell.js:1615 |
+| `renderExportsList` | frontend/js/phone-shell.js:2316 |
+| `sheetRow` | frontend/js/phone-shell.js:1616 |
 | `syncEmblemBusy` | frontend/js/phone-shell.js:122 |
-| `syncPhoneMoreButton` | frontend/js/phone-shell.js:1685 |
-| `syncPhoneMoreRuns` | frontend/js/phone-shell.js:1650 |
+| `syncPhoneMoreButton` | frontend/js/phone-shell.js:1686 |
+| `syncPhoneMoreRuns` | frontend/js/phone-shell.js:1651 |
 | `tabFromTop` | frontend/js/phone-shell.js:487 |
 | `tabPageScroller` | frontend/js/phone-shell.js:402 |
-| `toggleAutonomousPanel` | frontend/js/phone-shell.js:2351 |
+| `toggleAutonomousPanel` | frontend/js/phone-shell.js:2352 |
 | `watchEmblemVisibility` | frontend/js/phone-shell.js:16 |
 | `watchStatusBarIdle` | frontend/js/phone-shell.js:790 |
 
@@ -1295,86 +1295,86 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `agentCommands` | frontend/js/editor.js:711 |
-| `askAboutSelection` | frontend/js/editor.js:2304 |
-| `calloutHint` | frontend/js/editor.js:388 |
-| `calloutKindOf` | frontend/js/editor.js:321 |
-| `calloutRewriteHead` | frontend/js/editor.js:335 |
-| `chatCommands` | frontend/js/editor.js:653 |
-| `chatSlashRows` | frontend/js/editor.js:628 |
-| `editorApplyAction` | frontend/js/editor.js:502 |
-| `editorApplyNamed` | frontend/js/editor.js:560 |
-| `editorBackOverTrail` | frontend/js/editor.js:1007 |
-| `editorBareSlashRows` | frontend/js/editor.js:1721 |
-| `editorBlock` | frontend/js/editor.js:849 |
-| `editorBlockRows` | frontend/js/editor.js:890 |
-| `editorCaretPoint` | frontend/js/editor.js:1152 |
-| `editorChoiceDialog` | frontend/js/editor.js:2328 |
-| `editorCloseMenu` | frontend/js/editor.js:1214 |
-| `editorCloseOrphans` | frontend/js/editor.js:2218 |
-| `editorCodeLanguageRows` | frontend/js/editor.js:878 |
-| `editorCommands` | frontend/js/editor.js:1020 |
+| `agentCommands` | frontend/js/editor.js:713 |
+| `askAboutSelection` | frontend/js/editor.js:2306 |
+| `calloutHint` | frontend/js/editor.js:390 |
+| `calloutKindOf` | frontend/js/editor.js:323 |
+| `calloutRewriteHead` | frontend/js/editor.js:337 |
+| `chatCommands` | frontend/js/editor.js:655 |
+| `chatSlashRows` | frontend/js/editor.js:630 |
+| `editorApplyAction` | frontend/js/editor.js:504 |
+| `editorApplyNamed` | frontend/js/editor.js:562 |
+| `editorBackOverTrail` | frontend/js/editor.js:1009 |
+| `editorBareSlashRows` | frontend/js/editor.js:1723 |
+| `editorBlock` | frontend/js/editor.js:851 |
+| `editorBlockRows` | frontend/js/editor.js:892 |
+| `editorCaretPoint` | frontend/js/editor.js:1154 |
+| `editorChoiceDialog` | frontend/js/editor.js:2330 |
+| `editorCloseMenu` | frontend/js/editor.js:1216 |
+| `editorCloseOrphans` | frontend/js/editor.js:2220 |
+| `editorCodeLanguageRows` | frontend/js/editor.js:880 |
+| `editorCommands` | frontend/js/editor.js:1022 |
 | `editorDocIsCode` | frontend/js/editor.js:82 |
 | `editorEnsureSurfaceModule` | frontend/js/editor.js:143 |
-| `editorFinishFence` | frontend/js/editor.js:1233 |
-| `editorFuzzyMatch` | frontend/js/editor.js:343 |
-| `editorFuzzyRank` | frontend/js/editor.js:364 |
-| `editorGroupStarts` | frontend/js/editor.js:1634 |
-| `editorHandleInput` | frontend/js/editor.js:1791 |
+| `editorFinishFence` | frontend/js/editor.js:1235 |
+| `editorFuzzyMatch` | frontend/js/editor.js:345 |
+| `editorFuzzyRank` | frontend/js/editor.js:366 |
+| `editorGroupStarts` | frontend/js/editor.js:1636 |
+| `editorHandleInput` | frontend/js/editor.js:1793 |
 | `editorHintAllPlaceholders` | frontend/js/editor.js:231 |
 | `editorHintPlaceholder` | frontend/js/editor.js:203 |
-| `editorHomeMenu` | frontend/js/editor.js:1169 |
-| `editorInsertBlock` | frontend/js/editor.js:576 |
-| `editorInsertBoardObject` | frontend/js/editor.js:606 |
-| `editorInsertBookmarkLink` | frontend/js/editor.js:593 |
-| `editorLinkBox` | frontend/js/editor.js:1204 |
-| `editorLinkMatches` | frontend/js/editor.js:1294 |
-| `editorLoadFiles` | frontend/js/editor.js:1421 |
-| `editorMenuIcon` | frontend/js/editor.js:1461 |
-| `editorMenuList` | frontend/js/editor.js:1466 |
-| `editorNextGroupStart` | frontend/js/editor.js:1644 |
-| `editorNotifyHost` | frontend/js/editor.js:414 |
-| `editorOpenMenu` | frontend/js/editor.js:1702 |
+| `editorHomeMenu` | frontend/js/editor.js:1171 |
+| `editorInsertBlock` | frontend/js/editor.js:578 |
+| `editorInsertBoardObject` | frontend/js/editor.js:608 |
+| `editorInsertBookmarkLink` | frontend/js/editor.js:595 |
+| `editorLinkBox` | frontend/js/editor.js:1206 |
+| `editorLinkMatches` | frontend/js/editor.js:1296 |
+| `editorLoadFiles` | frontend/js/editor.js:1423 |
+| `editorMenuIcon` | frontend/js/editor.js:1463 |
+| `editorMenuList` | frontend/js/editor.js:1468 |
+| `editorNextGroupStart` | frontend/js/editor.js:1646 |
+| `editorNotifyHost` | frontend/js/editor.js:416 |
+| `editorOpenMenu` | frontend/js/editor.js:1704 |
 | `editorOpenMenuByShortcut` | frontend/js/editor.js:186 |
-| `editorPickGlyph` | frontend/js/editor.js:479 |
-| `editorPositionMenu` | frontend/js/editor.js:1174 |
-| `editorRankCommands` | frontend/js/editor.js:1287 |
-| `editorRecentIds` | frontend/js/editor.js:822 |
-| `editorRefreshMenu` | frontend/js/editor.js:1726 |
-| `editorRememberBlock` | frontend/js/editor.js:831 |
-| `editorRenderMenu` | frontend/js/editor.js:1470 |
-| `editorRenderPreview` | frontend/js/editor.js:1549 |
-| `editorRevealRow` | frontend/js/editor.js:1611 |
-| `editorRunItem` | frontend/js/editor.js:1656 |
-| `editorSetActive` | frontend/js/editor.js:1590 |
-| `editorSplice` | frontend/js/editor.js:439 |
+| `editorPickGlyph` | frontend/js/editor.js:481 |
+| `editorPositionMenu` | frontend/js/editor.js:1176 |
+| `editorRankCommands` | frontend/js/editor.js:1289 |
+| `editorRecentIds` | frontend/js/editor.js:824 |
+| `editorRefreshMenu` | frontend/js/editor.js:1728 |
+| `editorRememberBlock` | frontend/js/editor.js:833 |
+| `editorRenderMenu` | frontend/js/editor.js:1472 |
+| `editorRenderPreview` | frontend/js/editor.js:1551 |
+| `editorRevealRow` | frontend/js/editor.js:1613 |
+| `editorRunItem` | frontend/js/editor.js:1658 |
+| `editorSetActive` | frontend/js/editor.js:1592 |
+| `editorSplice` | frontend/js/editor.js:441 |
 | `editorSurfaceFor` | frontend/js/editor.js:119 |
-| `editorSurfaceGone` | frontend/js/editor.js:2214 |
+| `editorSurfaceGone` | frontend/js/editor.js:2216 |
 | `editorSurfaceKind` | frontend/js/editor.js:86 |
-| `editorTokenAt` | frontend/js/editor.js:1249 |
-| `editorWarmSurfaceModule` | frontend/js/editor.js:258 |
-| `inlineAiAvailable` | frontend/js/editor.js:2724 |
-| `inlineAiClose` | frontend/js/editor.js:2763 |
-| `inlineAiDescribeScope` | frontend/js/editor.js:2666 |
-| `inlineAiElement` | frontend/js/editor.js:2560 |
-| `inlineAiIsCode` | frontend/js/editor.js:2687 |
-| `inlineAiOpen` | frontend/js/editor.js:2729 |
-| `inlineAiPosition` | frontend/js/editor.js:2645 |
-| `inlineAiRetry` | frontend/js/editor.js:2785 |
-| `inlineAiSubmit` | frontend/js/editor.js:2796 |
-| `inlineAiSyncModel` | frontend/js/editor.js:2695 |
-| `inlineAiUndo` | frontend/js/editor.js:2776 |
-| `isEditorSurface` | frontend/js/editor.js:2177 |
-| `offerToCreateWikiTarget` | frontend/js/editor.js:2393 |
-| `pickIconOrEmoji` | frontend/js/editor.js:465 |
-| `selectionBarElement` | frontend/js/editor.js:2009 |
-| `selectionBarHide` | frontend/js/editor.js:2085 |
-| `selectionBarShow` | frontend/js/editor.js:2090 |
-| `selectionBarSync` | frontend/js/editor.js:2181 |
-| `selectionContextFrom` | frontend/js/editor.js:2252 |
-| `selectionContextSource` | frontend/js/editor.js:2285 |
-| `selectionOffsets` | frontend/js/editor.js:2262 |
-| `skillCommands` | frontend/js/editor.js:734 |
+| `editorTokenAt` | frontend/js/editor.js:1251 |
+| `editorWarmSurfaceModule` | frontend/js/editor.js:260 |
+| `inlineAiAvailable` | frontend/js/editor.js:2726 |
+| `inlineAiClose` | frontend/js/editor.js:2765 |
+| `inlineAiDescribeScope` | frontend/js/editor.js:2668 |
+| `inlineAiElement` | frontend/js/editor.js:2562 |
+| `inlineAiIsCode` | frontend/js/editor.js:2689 |
+| `inlineAiOpen` | frontend/js/editor.js:2731 |
+| `inlineAiPosition` | frontend/js/editor.js:2647 |
+| `inlineAiRetry` | frontend/js/editor.js:2787 |
+| `inlineAiSubmit` | frontend/js/editor.js:2798 |
+| `inlineAiSyncModel` | frontend/js/editor.js:2697 |
+| `inlineAiUndo` | frontend/js/editor.js:2778 |
+| `isEditorSurface` | frontend/js/editor.js:2179 |
+| `offerToCreateWikiTarget` | frontend/js/editor.js:2395 |
+| `pickIconOrEmoji` | frontend/js/editor.js:467 |
+| `selectionBarElement` | frontend/js/editor.js:2011 |
+| `selectionBarHide` | frontend/js/editor.js:2087 |
+| `selectionBarShow` | frontend/js/editor.js:2092 |
+| `selectionBarSync` | frontend/js/editor.js:2183 |
+| `selectionContextFrom` | frontend/js/editor.js:2254 |
+| `selectionContextSource` | frontend/js/editor.js:2287 |
+| `selectionOffsets` | frontend/js/editor.js:2264 |
+| `skillCommands` | frontend/js/editor.js:736 |
 
 ### frontend/js/dashboard.js (131)
 
@@ -27696,7 +27696,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21866)
+## Tests (21873)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30008,6 +30008,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_sweep_1004_inbox_bounds.py | 3 |
 | tests/test_sweep_1004_log_scrub_speed.py | 2 |
 | tests/test_sweep_1004_private_entities.py | 1 |
+| tests/test_sweep_hooks_l_general_47.py | 7 |
 | tests/test_sync_extras.py | 11 |
 | tests/test_sync_lan.py | 15 |
 | tests/test_sync_segments.py | 11 |
@@ -30812,13 +30813,13 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | In-app browser with MCP tools (IDEAS, parked 2026-11-12, L-general-41) | docs/roadmap/BACKLOG.md:4409 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4382 |
-| Needs hardware | docs/roadmap/LEDGER.md:885 |
+| Needs hardware | docs/roadmap/LEDGER.md:892 |
 | Next up: retired queues, now the ledger and HANDOVER | docs/ROADMAP.md:214 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:877 |
+| Owner calls | docs/roadmap/LEDGER.md:884 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4255 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -30994,7 +30995,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1085 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1092 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2632 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31048,25 +31049,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:59 |
-| chat | docs/roadmap/LEDGER.md:1101 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1185 |
+| chat | docs/roadmap/LEDGER.md:1108 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1192 |
 | documents | docs/roadmap/LEDGER.md:367 |
-| documents | docs/roadmap/LEDGER.md:1125 |
+| documents | docs/roadmap/LEDGER.md:1132 |
 | general | docs/roadmap/LEDGER.md:864 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:1089 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1197 |
+| graph | docs/roadmap/LEDGER.md:1096 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1204 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4391 |
 | mindmap | docs/roadmap/LEDGER.md:447 |
-| mindmap | docs/roadmap/LEDGER.md:1137 |
+| mindmap | docs/roadmap/LEDGER.md:1144 |
 | timeline | docs/roadmap/LEDGER.md:593 |
-| timeline | docs/roadmap/LEDGER.md:1161 |
+| timeline | docs/roadmap/LEDGER.md:1168 |
 | ui-modernisation | docs/roadmap/LEDGER.md:485 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1149 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1156 |
 | whiteboard | docs/roadmap/LEDGER.md:320 |
-| whiteboard | docs/roadmap/LEDGER.md:1113 |
+| whiteboard | docs/roadmap/LEDGER.md:1120 |
 | world-class | docs/roadmap/LEDGER.md:628 |
-| world-class | docs/roadmap/LEDGER.md:1173 |
+| world-class | docs/roadmap/LEDGER.md:1180 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2802 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2853 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2960 |

@@ -13,13 +13,13 @@ const { boot } = require('./lib.js');
 
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
-  await page.evaluate((k) => { localStorage.removeItem('nm-buddy-spots'); const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'atlas');
+  await page.evaluate(async (k) => { localStorage.removeItem('nm-buddy-spots'); prefs.set('avatar-buddy', k); await ensureModule('characters'); syncNameMarkBuddy(); }, process.env.KIND || 'atlas');
   await page.evaluate(() => switchTab('dashboard'));
   await page.waitForTimeout(4500);
   await page.evaluate(() => {
     nmb.lastInput = Date.now() - 9 * 60 * 1000;
     nmb.awakeUntil = 0;
-    nameMarkBuddyTick();
+    nmb.tick();
   });
   await page.waitForTimeout(3500);
   console.log('asleep as:', JSON.stringify(await page.evaluate(() => ({ sleep: document.getElementById('nm-buddy').classList.contains('nmb-sleep'), act: nmb.act, pose: nmb.pose }))));

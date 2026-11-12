@@ -247,20 +247,20 @@ const graphPoints = () => {
   for (const n of nodes) {
     const [sx, sy] = screen(n.x, n.y);
     const w = world([sx, sy]);
-    if (gcNodeAtWorld(w[0], w[1], s) === n) { node = { id: n.id, x: sx, y: sy, preview: n.preview }; break; }
+    if (gcRequestDraw.inspect.gcNodeAtWorld(w[0], w[1], s) === n) { node = { id: n.id, x: sx, y: sy, preview: n.preview }; break; }
   }
   let link = null;
   for (const e of s.edges) {
     if (e.kind !== 'link' || !e.source || !e.target || !Number.isFinite(e.source.x)) continue;
     const a = e.source; const b = e.target;
-    const curved = !s.tree && gcCurvedLinks(s);
+    const curved = !s.tree && gcRequestDraw.inspect.gcCurvedLinks(s);
     let mx = (a.x + b.x) / 2; let my = (a.y + b.y) / 2;
-    if (curved) { const c = gcBowPoint(a, b); mx = 0.25 * a.x + 0.5 * c.x + 0.25 * b.x; my = 0.25 * a.y + 0.5 * c.y + 0.25 * b.y; }
+    if (curved) { const c = gcRequestDraw.inspect.gcBowPoint(a, b); mx = 0.25 * a.x + 0.5 * c.x + 0.25 * b.x; my = 0.25 * a.y + 0.5 * c.y + 0.25 * b.y; }
     const sp = screen(mx, my);
     if (!onScreen(sp)) continue;
     const w = world(sp);
-    if (gcNodeAtWorld(w[0], w[1], s)) continue;
-    if (gcEdgeAtWorld(w[0], w[1], s) === e) { link = { x: sp[0], y: sp[1], a: a.id, b: b.id }; break; }
+    if (gcRequestDraw.inspect.gcNodeAtWorld(w[0], w[1], s)) continue;
+    if (gcRequestDraw.inspect.gcEdgeAtWorld(w[0], w[1], s) === e) { link = { x: sp[0], y: sp[1], a: a.id, b: b.id }; break; }
   }
   return { node, link, total: s.nodes.length, edges: s.edges.length };
 };

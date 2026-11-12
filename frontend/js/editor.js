@@ -240,6 +240,8 @@ if (document.readyState === "loading") {
   editorHintAllPlaceholders();
 }
 document.addEventListener("focusin", (event) => editorHintPlaceholder(event.target), true);
+//: And as each lazy surface is built, so a box in it says so before it is focused (the Documents box did not).
+for (const surface of ["notes", "documents", "chat", "quickNote"]) onSurface(surface, editorHintAllPlaceholders);
 
 //: And warmed on focus, so the bundle is usually already there by the time
 //: anything is typed. Focusing an editing surface is the earliest honest
