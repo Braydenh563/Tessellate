@@ -133,6 +133,8 @@ REACTIONS: dict[str, Reaction] = {
     "reminder_bell": Reaction("bell_ring", "surprised", 2.6, "", 5.0),
     "search_nothing": Reaction("puzzle_tilt", "confused", 2.0, "", 45.0),
     "search_found": Reaction("nod_done", "smile", 1.4, "", 45.0),
+    # the note count passed a round number (`companion_events.counted`): the cheer the downloads use, a face to match
+    "note_milestone": Reaction("cheer", "joy", 2.0, "happy", 3600.0),
 }
 #: A poke by mood, as the app's: a happy one giggles, a tired or cross one is miffed, the rest are curious.
 POKE_BY_MOOD = {"happy": "poke_giggle", "proud": "poke_giggle", "sleepy": "poke_miffed", "startled": "poke_miffed", "bored": "poke_curious", "curious": "poke_curious"}

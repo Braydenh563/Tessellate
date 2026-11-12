@@ -21,7 +21,7 @@ from types import SimpleNamespace
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import delete as sa_delete
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -927,6 +927,13 @@ def _starts_sealed(session: Session, body: EntryCreate) -> tuple[bool, bool]:
     return ask, ask
 
 
+def _note_total(session: Session) -> int:
+    """The notes the dashboard counts (`/insights/stats` `total_entries`): not deleted, drafts or boards."""
+    return session.scalar(
+        select(func.count(Entry.id)).where(Entry.is_deleted == False, Entry.is_draft == False, Entry.is_board == False)  # noqa: E712
+    ) or 0
+
+
 @router.post("", response_model=EntryOut, status_code=201)
 def create_entry(body: EntryCreate, session: Session = Depends(get_session)) -> EntryOut:
     earlier = _already_delivered(session, body.client_key)
@@ -969,6 +976,8 @@ def create_entry(body: EntryCreate, session: Session = Depends(get_session)) -> 
     session.commit()  # a note in a private space is sealed on the way in (`database._seal_private_space_joins`)
     if sealed:
         manager_private.scrub_private_leftovers(session)
+    else:
+        companion_events.counted(_note_total(session))  # a round count is a cheer on the desk: a kind and a time (P7)
     _finish_new_entry(session, entry, body, defer)
     out = _to_out(
         session,
