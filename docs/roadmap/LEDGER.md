@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
-| chat | 176 | 194 | 60 | 2 | 59 | 430 |
+| chat | 176 | 193 | 60 | 2 | 59 | 429 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 701 | 157 | 3 | 195 | 1411 |
+| all | 553 | 700 | 157 | 3 | 195 | 1410 |
 
 ## graph
 
@@ -77,7 +77,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L38** `chat` open, S: Read misspelled places such as 'westen australia'. From OPEN.md:2556. Evidence: Open per prior verify
 - [ ] **L39** `chat` open, S: Stop a titled note's every sentence scoring on its title (TITLE_WEIGHT). From OPEN.md:3508. Evidence: TITLE_WEIGHT in composer_select.py still applies; no dated-sentence cap found.
 - [ ] **L40** `chat` open, S: Browser-check Ask/Chat with no model: Did you mean chip; merge voice741.js from wip branch. From OPEN.md:3510. Evidence: voice741.js not in scratchpad/ui-sweeps and no wip/composer-voice branch present; check not redone.
-- [ ] **L41** `chat` open, S: Stop reading.py reading 'review budget friday' as sure at 09:00. From OPEN.md:3719. Evidence: tests/test_reading.py has no friday-without-time ask case
 - [ ] **L42** `chat` open, S: Fix 'five notes about knives' showing one; show total vs shown. From OPEN.md:3848. Evidence: tool_say _found_notes caller; no fixing commit found
 - [ ] **L43** `chat` open, S: Fix 'summarise today' per-note 'From today:' lines. From OPEN.md:3849. Evidence: composer_digest recall lines unchanged
 - [ ] **L44** `chat` open, S: Stop fragment lines reading as joined events. From OPEN.md:3851. Evidence: composer_digest join unchanged
