@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 63 | 4 | 0 | 17 | 163 |
+| ui-modernisation | 96 | 60 | 4 | 0 | 17 | 160 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 604 | 159 | 3 | 186 | 1316 |
+| all | 553 | 601 | 159 | 3 | 186 | 1313 |
 
 ## graph
 
@@ -489,11 +489,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L390** `ui-modernisation` open, S: Measure 390 px layout of Tidy Patterns rows and Chat pattern line. From OPEN.md:3730. Evidence: Never measured at 390; no recorded sweep
 - [ ] **L392** `ui-modernisation` open, S: Measure broom accent contrast and run the automatic contrast pass in a browser; check Tags Atlas review with a real model. From OPEN.md:624; OPEN.md:3562. Evidence: contrast.js measurement and browser run not recorded; pytest only
 - [ ] **L400** `ui-modernisation` open, S: Flatten Library > Contents > Probe document > Outline from depth 4. From OPEN.md:3706. Evidence: One destination at depth 4; no flattening commit found
-- [ ] **L402** `ui-modernisation` open, S: Redesign code document dock at 390 (238px, four rows). From OPEN.md:1454; OPEN.md:2616. Evidence: Measurement; no redesign found in HISTORY
 - [ ] **L403** `ui-modernisation` open, S: Drive and fix doc-focus panels covering the page at 720-819px. From OPEN.md:1825; OPEN.md:3477. Evidence: tests/test_doc_focus_resize_1408.py, test_doc_panels_154x exist; 720-819 sweep not confirmed
 - [ ] **L404** `ui-modernisation` open, S: Fix focus ring touching viewport edge on body-level fixed sheet (phone Writing room draft textarea). From OPEN.md:3506. Evidence: No measured fix; phone Writing room draft textarea.
-- [ ] **L405** `ui-modernisation` open, S: Measure documents sidebar and board zoom pill at 390. From OPEN.md:3544. Evidence: Measurement gap; sidebar is a sheet at 390.
-- [ ] **L406** `ui-modernisation` open, S: Raise output grip to the 44px touch floor at 390 and cover run panel. From OPEN.md:3681. Evidence: No touch.js in frontend/js now; grip rule not found raised; unmeasured at 390
 - [ ] **L409** `ui-modernisation` open, S: Check moved rules in dark and phone width, and first bell press on a slow link. From OPEN.md:638. Evidence: errors.js at 390 clean; dark and slow-link checks not recorded
 - [ ] **L415** `ui-modernisation` open, S: Measure the status ring under 'auto' motion. From OPEN.md:1758. Evidence: No later measurement found; needs a sweep of the status ring in auto motion
 - [ ] **L416** `ui-modernisation` open, S: Stop the Bin row's long label wrapping when its reset appears; add per-row marker. From OPEN.md:1761; OPEN.md:2592. Evidence: No change found in settings rows for the bin reset label; unverified fix absent
